@@ -1,0 +1,33 @@
+{
+  "name": "@kitbag/router",
+  "private": false,
+  "version": "0.0.3",
+  "bugs": {
+    "url": "https://github.com/kitbagjs/router/issues"
+  },
+  "homepage": "https://github.com/kitbagjs/router#readme",
+  "scripts": {
+    "build": "tsc && vite build",
+    "test": "vitest",
+    "types": "tsc --noEmit"
+  },
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/kitbag-router.umd.cjs",
+  "module": "./dist/kitbag-router.js",
+  "types": "./dist/kitbag-router.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/kitbag-router.js",
+      "require": "./dist/kitbag-router.umd.cjs"
+    }
+  },
+  "devDependencies": {
+    "typescript": "^5.0.2",
+    "vite": "^4.4.5",
+    "vite-plugin-dts": "^3.6.3",
+    "vitest": "^0.34.6"
+  }
+}
