@@ -19,15 +19,17 @@ export type Routes = Readonly<Route[]>
 type ExtractRouteParams<
   TRoute extends string,
   TValue = string
-> = TRoute extends `${infer _Start}:${infer Param}/${infer Rest}`
-  ? Param extends `?${infer OptionalParam}`
-    ? { [P in OptionalParam]?: TValue } & ExtractRouteParams<Rest>
-    : { [P in Param]: TValue } & ExtractRouteParams<Rest>
-  : TRoute extends `${infer _Start}:${infer Param}`
-  ? Param extends `?${infer OptionalParam}`
-    ? { [P in OptionalParam]?: TValue }
-    : { [P in Param]: TValue }
-  : never
+> = TRoute extends `${infer Path}/`
+  ? ExtractRouteParams<Path>
+  : TRoute extends `${infer _Start}:${infer Param}/${infer Rest}`
+    ? Param extends `?${infer OptionalParam}`
+      ? { [P in OptionalParam]?: TValue } & ExtractRouteParams<Rest>
+      : { [P in Param]: TValue } & ExtractRouteParams<Rest>
+    : TRoute extends `${infer _Start}:${infer Param}`
+    ? Param extends `?${infer OptionalParam}`
+      ? { [P in OptionalParam]?: TValue }
+      : { [P in Param]: TValue }
+    : never
 
 export type RouteMethod<TParams extends Record<string, unknown>> = (params: TParams) => void
 
