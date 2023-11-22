@@ -1,4 +1,7 @@
 import { Param, Routes, createRouter, path } from "./routes"
+import { useRoute } from './compositions/useRoute'
+import { useRouteParam } from './compositions/useRouteParam'
+import { useParam } from "./compositions/useParam"
 
 const routes = [
   {
@@ -24,3 +27,10 @@ methods.foo.bar({
   accountId: '111',
   workspaceId: 'true' // correctly errors!
 })
+
+const route = useRoute<typeof methods.foo.bar>()
+
+route.params.test // correctly errors
+
+const param = useRouteParam(methods.foo.bar, 'foo', 'foo')
+const value = useParam<boolean>('foo')
