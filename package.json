@@ -29,5 +29,8 @@
     "vite": "^4.4.5",
     "vite-plugin-dts": "^3.6.3",
     "vitest": "^0.34.6"
+  },
+  "peerDependencies": {
+    "vue": "^3.3.8"
   }
 }

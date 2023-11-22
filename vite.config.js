@@ -15,5 +15,13 @@ export default defineConfig({
     dts({ 
       rollupTypes: true 
     })
-  ]
+  ],
+  rollupOptions: {
+    external: ['vue'],
+    output: {
+      globals: {
+        vue: 'Vue',
+      },
+    },
+  },
 })
