@@ -16,16 +16,16 @@ export type Routes = Readonly<Route[]>
 
 // Converts a template literal like `/account/:accountId/workspace/:workspaceId/:?foo` into
 // { accountId: TValue, workspaceId: TValue, foo?: TValue }
-type ExtractRouteParams<
-  TRoute extends string,
+type ExtractPathParams<
+  TPath extends string,
   TValue = string
-> = TRoute extends `${infer Path}/`
-  ? ExtractRouteParams<Path>
-  : TRoute extends `${infer _Start}:${infer Param}/${infer Rest}`
+> = TPath extends `${infer Path}/`
+  ? ExtractPathParams<Path>
+  : TPath extends `${infer _Start}:${infer Param}/${infer Rest}`
     ? Param extends `?${infer OptionalParam}`
-      ? { [P in OptionalParam]?: TValue } & ExtractRouteParams<Rest>
-      : { [P in Param]: TValue } & ExtractRouteParams<Rest>
-    : TRoute extends `${infer _Start}:${infer Param}`
+      ? { [P in OptionalParam]?: TValue } & ExtractPathParams<Rest>
+      : { [P in Param]: TValue } & ExtractPathParams<Rest>
+    : TPath extends `${infer _Start}:${infer Param}`
     ? Param extends `?${infer OptionalParam}`
       ? { [P in OptionalParam]?: TValue }
       : { [P in Param]: TValue }
@@ -51,11 +51,11 @@ type RouteMethods<
 }
 
 type ExtractTypedPathParams<TPath extends Path> = {
-  [P in keyof ExtractRouteParams<TPath['path']>]: P extends keyof TPath['params'] ? ReturnType<TPath['params'][P]['get']> : string
+  [P in keyof ExtractPathParams<TPath['path']>]: P extends keyof TPath['params'] ? ReturnType<TPath['params'][P]['get']> : string
 }
 
 type RoutePathParams<TPath extends Route['path']> = TPath extends string
-  ? ExtractRouteParams<TPath, string>
+  ? ExtractPathParams<TPath>
   : TPath extends Path
     ? ExtractTypedPathParams<TPath>
     : never
@@ -73,7 +73,7 @@ export type Param<T = any> = {
   set(value: T): string,
 }
 
-type PathParams<T extends string> = Partial<Identity<ExtractRouteParams<T, Param>>>
+type PathParams<T extends string> = Partial<Identity<ExtractPathParams<T, Param>>>
 
 export function createRouter<T extends Routes>(_routes: T): RouteMethods<T, {}> {
   throw 'not implemented'
