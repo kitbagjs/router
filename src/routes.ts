@@ -14,12 +14,6 @@ export type RouteWithChildren = Route & {
 
 export type Routes = Readonly<Route[]>
 
-// Utility type that converts types like `{ foo: string } & { bar: string }`
-// into `{ foo: string, bar: string }`
-type Identity<T> = T extends object ? {} & {
-  [P in keyof T]: T[P]
-} : T;
-
 type ExtractPathParams<
   TPath extends Route['path'],
   TParams extends Record<string, Param> = {}
