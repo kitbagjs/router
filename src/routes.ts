@@ -30,8 +30,8 @@ type ExtractPathStringParams<
   ? ExtractPathStringParams<Path, TParams>
   : TPath extends `${infer _Start}:${infer Param}/${infer Rest}`
     ? Param extends `?${infer OptionalParam}`
-      ? MergePathParams<{ [P in OptionalParam]?: ExtractParamType<Param, TParams> }, ExtractPathStringParams<Rest>>
-      : MergePathParams<{ [P in Param]: ExtractParamType<Param, TParams> }, ExtractPathStringParams<Rest>>
+      ? MergePathParams<{ [P in OptionalParam]?: ExtractParamType<Param, TParams> }, ExtractPathStringParams<Rest, TParams>>
+      : MergePathParams<{ [P in Param]: ExtractParamType<Param, TParams> }, ExtractPathStringParams<Rest, TParams>>
     : TPath extends `${infer _Start}:${infer Param}`
     ? Param extends `?${infer OptionalParam}`
       ? { [P in OptionalParam]?: ExtractParamType<Param, TParams> }
@@ -63,7 +63,7 @@ type MergePathParams<
           ? TBeta[K]
           : never
 }
-  
+
 type RouteMethod<TParams extends Record<string, unknown>> = (params: TParams) => void
 
 export type ExtractRouteMethodParams<T> = T extends RouteMethod<infer Params>
@@ -81,7 +81,7 @@ type RouteMethods<
         ? RouteMethods<C, TParams & ExtractPathParams<P>>
         : never
       : TRoutes[number] extends { path: infer P }
-        ? RouteMethod<Identity<TParams & ExtractPathParams<P>>>
+        ? RouteMethod<Identity<MergePathParams<TParams, ExtractPathParams<P>>>>
         : never
 }
 
