@@ -14,24 +14,63 @@ export type RouteWithChildren = Route & {
 
 export type Routes = Readonly<Route[]>
 
-// Converts a template literal like `/account/:accountId/workspace/:workspaceId/:?foo` into
-// { accountId: TValue, workspaceId: TValue, foo?: TValue }
+// Utility type that converts types like `{ foo: string } & { bar: string }`
+// into `{ foo: string, bar: string }`
+type Identity<T> = T extends object ? {} & {
+  [P in keyof T]: T[P]
+} : T;
+
 type ExtractPathParams<
-  TPath extends string,
-  TValue = string
-> = TPath extends `${infer Path}/`
-  ? ExtractPathParams<Path>
-  : TPath extends `${infer _Start}:${infer Param}/${infer Rest}`
-    ? Param extends `?${infer OptionalParam}`
-      ? { [P in OptionalParam]?: TValue } & ExtractPathParams<Rest>
-      : { [P in Param]: TValue } & ExtractPathParams<Rest>
-    : TPath extends `${infer _Start}:${infer Param}`
-    ? Param extends `?${infer OptionalParam}`
-      ? { [P in OptionalParam]?: TValue }
-      : { [P in Param]: TValue }
+  TPath extends Route['path'],
+  TParams extends Record<string, Param> = {}
+> = TPath extends Path
+  ? ExtractPathStringParams<TPath['path'], TPath['params']>
+  : TPath extends string
+    ? ExtractPathStringParams<TPath, TParams>
     : never
 
-export type RouteMethod<TParams extends Record<string, unknown>> = (params: TParams) => void
+type ExtractPathStringParams<
+  TPath extends string,
+  TParams extends Record<string, Param> = {}
+> = TPath extends `${infer Path}/`
+  ? ExtractPathStringParams<Path, TParams>
+  : TPath extends `${infer _Start}:${infer Param}/${infer Rest}`
+    ? Param extends `?${infer OptionalParam}`
+      ? MergePathParams<{ [P in OptionalParam]?: ExtractParamType<Param, TParams> }, ExtractPathStringParams<Rest>>
+      : MergePathParams<{ [P in Param]: ExtractParamType<Param, TParams> }, ExtractPathStringParams<Rest>>
+    : TPath extends `${infer _Start}:${infer Param}`
+    ? Param extends `?${infer OptionalParam}`
+      ? { [P in OptionalParam]?: ExtractParamType<Param, TParams> }
+      : { [P in Param]: ExtractParamType<Param, TParams> }
+    : {}
+
+type ExtractParamType<
+  TParam extends string,
+  TParams extends Record<string, Param>
+> = TParam extends keyof TParams
+  ? ReturnType<TParams[TParam]['get']>
+  : string
+  
+type MergePathParams<
+    TAlpha extends Record<PropertyKey, unknown>, 
+    TBeta extends Record<PropertyKey, unknown>
+  > = {
+    [K in keyof TAlpha | keyof TBeta]: K extends keyof TAlpha & keyof TBeta 
+      ? (TAlpha[K] extends [...infer AlphaTuple]
+        ? TBeta[K] extends [...infer BetaTuple]
+          ? [...AlphaTuple, ...BetaTuple]
+          : [...AlphaTuple, TBeta[K]]
+        : TBeta[K] extends [...infer BetaTuple]
+          ? [TAlpha[K], ...BetaTuple]
+          : [TAlpha[K], TBeta[K]])
+      : K extends keyof TAlpha 
+        ? TAlpha[K] 
+        : K extends keyof TBeta
+          ? TBeta[K]
+          : never
+}
+  
+type RouteMethod<TParams extends Record<string, unknown>> = (params: TParams) => void
 
 export type ExtractRouteMethodParams<T> = T extends RouteMethod<infer Params>
   ? IsAny<Params> extends true
@@ -43,22 +82,14 @@ type RouteMethods<
   TRoutes extends Routes, 
   TParams extends Record<string, unknown>,
 > = {
-  [K in TRoutes[number]['name']]: TRoutes[number] extends { children: infer C }
+  [K in TRoutes[number]['name']]: TRoutes[number] extends { path: infer P,  children: infer C }
       ? C extends Routes
-          ? RouteMethods<C, TParams & RoutePathParams<TRoutes[number]['path']>>
-          : never
-      : RouteMethod<Identity<TParams & RoutePathParams<TRoutes[number]['path']>>>
+        ? RouteMethods<C, TParams & ExtractPathParams<P>>
+        : never
+      : TRoutes[number] extends { path: infer P }
+        ? RouteMethod<Identity<TParams & ExtractPathParams<P>>>
+        : never
 }
-
-type ExtractTypedPathParams<TPath extends Path> = {
-  [P in keyof ExtractPathParams<TPath['path']>]: P extends keyof TPath['params'] ? ReturnType<TPath['params'][P]['get']> : string
-}
-
-type RoutePathParams<TPath extends Route['path']> = TPath extends string
-  ? ExtractPathParams<TPath>
-  : TPath extends Path
-    ? ExtractTypedPathParams<TPath>
-    : never
 
 type Path<
   T extends string = any,
@@ -73,12 +104,14 @@ export type Param<T = any> = {
   set(value: T): string,
 }
 
-type PathParams<T extends string> = Partial<Identity<ExtractPathParams<T, Param>>>
+type PathParams<T extends string> = {
+  [K in keyof ExtractPathStringParams<T>]?: Param
+}
 
 export function createRouter<T extends Routes>(_routes: T): RouteMethods<T, {}> {
   throw 'not implemented'
 }
 
-export function path<T extends string, P extends PathParams<T>>(_path: T, _params: P): Path<T, P> {
+export function path<T extends string, P extends PathParams<T>>(_path: T, _params: Identity<P>): Path<T, P> {
   throw 'not implemented'
 }
