@@ -1,3 +1,5 @@
+import { Identity, IsAny } from './types/utilities'
+
 export type Route<
   TRoute extends string | Path = any,
 > = {
@@ -10,12 +12,6 @@ export type RouteWithChildren = Route & {
 }
 
 export type Routes = Readonly<(Route | RouteWithChildren)[]>
-
-// Utility type that converts types like `{ foo: string } & { bar: string }`
-// into `{ foo: string, bar: string }`
-type Identity<T> = T extends object ? {} & {
-  [P in keyof T]: T[P]
-} : T;
 
 // Converts a template literal like `/account/:accountId/workspace/:workspaceId/:?foo` into
 // { accountId: TValue, workspaceId: TValue, foo?: TValue }
@@ -32,7 +28,13 @@ type ExtractRouteParams<
     : { [P in Param]: TValue }
   : never
 
-type RouteMethod<TParams extends Record<string, unknown>> = (params: TParams) => void
+export type RouteMethod<TParams extends Record<string, unknown>> = (params: TParams) => void
+
+export type ExtractRouteMethodParams<T> = T extends RouteMethod<infer Params>
+  ? IsAny<Params> extends true
+    ? Record<string, unknown>
+    : Params
+  : Record<string, unknown>
 
 type RouteMethods<
   TRoutes extends Routes, 
