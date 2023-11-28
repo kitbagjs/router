@@ -6,31 +6,47 @@ import { useParam } from "./compositions/useParam"
 const routes = [
   {
       name: 'foo',
-      path: '/foo/:accountId',
+      path: path('/foo/:accountId/:workspaceId', {
+        workspaceId: {
+          get: value => Boolean(value),
+          set: value => value.toString()
+        } satisfies Param<boolean>
+      }),
       children: [
           {
               name: 'bar',
-              path: path('/bar/:workspaceId/:?foo', {
-                workspaceId: {
-                  get: value => Boolean(value),
-                  set: value => value.toString()
-                } satisfies Param<boolean>
-              }),
+              path: '/bar/:workspaceId/:?foo',
+              children: [
+                {
+                  name: 'child',
+                  path: '/:test/hello'
+                }
+              ]
           }
       ]
   }
 ] as const satisfies Routes
 
-const methods = createRouter(routes)
+const router = createRouter(routes)
 
-methods.foo.bar({
-  accountId: '111',
-  workspaceId: 'true' // correctly errors!
-})
+// router.foo.bar.child({
+//   accountId: '111',
+//   workspaceId: 'true' // correctly errors!
+// })
 
-const route = useRoute<typeof methods.foo.bar>()
+// const route = useRoute<typeof methods.foo.bar>()
 
-route.params.test // correctly errors
+// route.params.test // correctly errors
 
-const param = useRouteParam(methods.foo.bar, 'foo', 'foo')
-const value = useParam<boolean>('foo')
+// const param = useRouteParam(methods.foo.bar, 'foo', 'foo')
+// const value = useParam<boolean>('foo')
+
+const route = {
+  name: 'foo',
+  path: '/foo',
+  middleware: [MiddleWare, {
+    ware: SecondMiddleWare,
+    children: [],
+    type: 'concurrent'
+  }]
+}
