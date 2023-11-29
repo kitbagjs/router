@@ -5,13 +5,14 @@ export type Route<
 > = {
   name: string,
   path: TRoute 
-}
-
-export type RouteWithChildren = Route & {
   children?: Routes
 }
 
-export type Routes = Readonly<(Route | RouteWithChildren)[]>
+export type RouteWithChildren = Route & {
+  children: Routes
+}
+
+export type Routes = Readonly<Route[]>
 
 // Converts a template literal like `/account/:accountId/workspace/:workspaceId/:?foo` into
 // { accountId: TValue, workspaceId: TValue, foo?: TValue }
