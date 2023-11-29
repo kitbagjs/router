@@ -1,4 +1,4 @@
-import { Identity, IsAny } from './types/utilities'
+import { Identity, IsAny, TupleCanBeAllUndefined } from './types/utilities'
 
 export type Route<
   TRoute extends string | Path = any,
@@ -28,59 +28,76 @@ type ExtractParamsFromPathString<
 > = TPath extends `${infer Path}/`
   ? ExtractParamsFromPathString<Path, TParams>
   : TPath extends `${string}:${infer Param}/${infer Rest}`
-    ? Param extends `?${infer OptionalParam}`
-      ? MergeParams<AsTuple<{ [P in OptionalParam]?: ExtractParamType<OptionalParam, TParams> }>, ExtractParamsFromPathString<Rest, TParams>>
-      : MergeParams<AsTuple<{ [P in Param]: ExtractParamType<Param, TParams> }>, ExtractParamsFromPathString<Rest, TParams>>
+    ? MergeParams<{ [P in ExtractParamName<Param>]: ExtractParam<Param, TParams>}, ExtractParamsFromPathString<Rest, TParams>>
     : TPath extends `${string}:${infer Param}`
-    ? Param extends `?${infer OptionalParam}`
-      ? { [P in OptionalParam]?: ExtractParamType<OptionalParam, TParams> }
-      : { [P in Param]: ExtractParamType<Param, TParams> }
-    : {}
+      ? { [P in ExtractParamName<Param>]: ExtractParam<Param, TParams> }
+      : {}
 
-type AsTuple<T extends Record<string, any> | Record<string, any[]>> = {[K in keyof T]: T[K] extends any[] ? T[K] : [T[K]]}
+type ExtractParamName<
+  TParam extends string
+> = TParam extends `?${infer Param}` ? Param : TParam
 
-type ExtractParamType<
+type ExtractParam<
   TParam extends string,
   TParams extends Record<string, Param>
-> = TParam extends keyof TParams
-  ? ReturnType<TParams[TParam]['get']>
-  : string
+> = TParam extends `?${infer OptionalParam}`
+  ? OptionalParam extends keyof TParams
+    ? Param<ReturnType<TParams[OptionalParam]['get']> | undefined>
+    : Param<string | undefined>
+  : TParam extends keyof TParams
+    ? Param<ReturnType<TParams[TParam]['get']>>
+    : Param<string>
 
 type MergeParams<
-  TParams extends Record<string, any[]>, 
-  TInput extends Record<string, unknown>
-> = {
-  [K in keyof TParams | keyof TInput]: K extends keyof TParams & keyof TInput
-    ? TParams[K] extends [...infer Params]
-      ? [...Params, TInput[K]]
-      : never
-    : K extends keyof TParams
-      ? TParams[K]
-      : K extends keyof TInput
-        ? [TInput[K]]
-        : never
+    TAlpha extends Record<string, unknown>, 
+    TBeta extends Record<string, unknown>
+  > = {
+    [K in keyof TAlpha | keyof TBeta]: K extends keyof TAlpha & keyof TBeta
+      ? TAlpha[K] extends [...infer AlphaParams]
+        ? TBeta[K] extends [...infer BetaParams]
+          ? [...AlphaParams, ...BetaParams]
+          : [...AlphaParams, TBeta[K]]
+        : TBeta[K] extends [...infer BetaParams]
+          ? [TAlpha[K], ...BetaParams]
+          : [TAlpha[K], TBeta[K]]
+      : K extends keyof TAlpha
+        ? TAlpha[K] extends [...infer AlphaParams]
+          ? [...AlphaParams]
+          : [TAlpha[K]]
+        : K extends keyof TBeta
+          ? TBeta[K] extends [...infer BetaParams]
+            ? [...BetaParams]
+            : [TBeta[K]]
+          : never
+}
+
+type ExtractParamsRecord<TParams extends Record<string, any[]>> = {
+  [K in keyof TParams]: ExtractParamTuple<TParams[K]>
+}
+
+type ExtractParamTuple<TParams extends any[]> = {
+  [K in keyof TParams]: ExtractParamType<TParams[K]>
+}
+
+type ExtractParamType<TParam> = TParam extends Param<infer Type> ? Type : never
+
+type TransformParamsRecord<TParams extends Record<string, any[]>> = {
+  [K in keyof GetAllOptionalParams<TParams>]?: K extends keyof TParams ? UnwrapSingleParams<TParams[K]> : never
+} & {
+  [K in keyof GetAllRequiredParams<TParams>]: K extends keyof TParams ? UnwrapSingleParams<TParams[K]> : never
+}
+
+type UnwrapSingleParams<T extends any[]> = T extends [infer SingleParam] ? SingleParam : T
+
+type GetAllOptionalParams<TParams extends Record<string, any[]>> = {
+  [K in keyof TParams as TupleCanBeAllUndefined<TParams[K]> extends true ? K : never]: K
+}
+
+type GetAllRequiredParams<TParams extends Record<string, any[]>> = {
+  [K in keyof TParams as TupleCanBeAllUndefined<TParams[K]> extends false ? K : never]: K
 }
 
 type RouteMethod<TParams extends Record<string, unknown>> = (params: TParams) => void
-
-type MergePathParams<
-    TAlpha extends Record<PropertyKey, unknown>, 
-    TBeta extends Record<PropertyKey, unknown>
-  > = {
-    [K in keyof TAlpha | keyof TBeta]: K extends keyof TAlpha & keyof TBeta 
-      ? (TAlpha[K] extends [...infer AlphaTuple]
-        ? TBeta[K] extends [...infer BetaTuple]
-          ? [...AlphaTuple, ...BetaTuple]
-          : [...AlphaTuple, TBeta[K]]
-        : TBeta[K] extends [...infer BetaTuple]
-          ? [TAlpha[K], ...BetaTuple]
-          : [TAlpha[K], TBeta[K]])
-      : K extends keyof TAlpha 
-        ? TAlpha[K] 
-        : K extends keyof TBeta
-          ? TBeta[K]
-          : never
-      }
 
 export type ExtractRouteMethodParams<T> = T extends RouteMethod<infer Params>
   ? IsAny<Params> extends true
@@ -94,10 +111,10 @@ type RouteMethods<
 > = {
   [K in TRoutes[number]['name']]: TRoutes[number] extends { path: infer Path,  children: infer Children }
       ? Children extends Routes
-        ? RouteMethods<Children, MergePathParams<TParams, ExtractParamsFromPath<Path>>>
+        ? RouteMethods<Children, MergeParams<TParams, ExtractParamsFromPath<Path>>>
         : never
       : TRoutes[number] extends { path: infer Path }
-        ? RouteMethod<Identity<MergePathParams<TParams, ExtractParamsFromPath<Path>>>>
+        ? RouteMethod<Identity<TransformParamsRecord<ExtractParamsRecord<MergeParams<TParams, ExtractParamsFromPath<Path>>>>>>
         : never
 }
 

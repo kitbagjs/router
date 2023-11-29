@@ -1,16 +1,13 @@
 import { Param, Routes, createRouter, path } from "./routes"
-import { useRoute } from './compositions/useRoute'
-import { useRouteParam } from './compositions/useRouteParam'
-import { useParam } from "./compositions/useParam"
 
 const routes = [
   {
       name: 'foo',
-      path: path('/foo/:accountId/:workspaceId', {
+      path: path('/foo/:accountId/:workspaceId/:accountId/:?workspaceId', {
         workspaceId: {
-          get: value => Boolean(value),
+          get: value => [Boolean(value)],
           set: value => value.toString()
-        } satisfies Param<boolean>
+        } satisfies Param<[boolean]>
       }),
       children: [
           {
@@ -29,24 +26,4 @@ const routes = [
 
 const router = createRouter(routes)
 
-// router.foo.bar.child({
-//   accountId: '111',
-//   workspaceId: 'true' // correctly errors!
-// })
-
-// const route = useRoute<typeof methods.foo.bar>()
-
-// route.params.test // correctly errors
-
-// const param = useRouteParam(methods.foo.bar, 'foo', 'foo')
-// const value = useParam<boolean>('foo')
-
-const route = {
-  name: 'foo',
-  path: '/foo',
-  middleware: [MiddleWare, {
-    ware: SecondMiddleWare,
-    children: [],
-    type: 'concurrent'
-  }]
-}
+router.routes.foo.bar.child()
