@@ -27,7 +27,7 @@ export function generateRouteRegexPattern(path: string, route: Route): string {
 }
 
 export function combineRoute(...parts:string[]): string {
-  throw 'not implemented'
+  return parts.map(removeLeadingAndTrailingSlashes).join('/')
 }
 
 export function removeLeadingAndTrailingSlashes(value: string): string {
