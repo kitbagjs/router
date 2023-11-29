@@ -23,8 +23,5 @@
         "project": "./tsconfig.json"
       }
     }
-  },
-  "rules": {
-    "indent": "off"
   }
 }
