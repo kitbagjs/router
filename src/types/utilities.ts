@@ -6,8 +6,6 @@ export type Identity<T> = T extends object ? {} & {
 
 export type IsAny<T> = 0 extends (1 & T) ? true : false; 
 
-export type IsSingleTuple<T> = T extends [any] ? true : false;
-
 // Returns true if all values in a tuple could be undefined like `[string | undefined, boolean | undefined]`
 export type TupleCanBeAllUndefined<T extends any[]> = T extends [infer First, ...infer Rest]
   ? undefined extends First 
