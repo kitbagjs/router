@@ -9,6 +9,7 @@
   "scripts": {
     "build": "tsc && vite build",
     "test": "vitest",
+    "lint": "eslint ./src",
     "types": "tsc --noEmit"
   },
   "type": "module",
@@ -25,6 +26,8 @@
     }
   },
   "devDependencies": {
+    "@prefecthq/eslint-config": "^1.0.31",
+    "eslint": "^8.54.0",
     "typescript": "^5.0.2",
     "vite": "^4.4.5",
     "vite-plugin-dts": "^3.6.3",
