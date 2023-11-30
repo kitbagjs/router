@@ -1,4 +1,5 @@
-import { Param, Routes, createRouter, path } from "./routes"
+import { Param, Routes } from "./types"
+import { createRouter, path } from "./utilities"
 
 const routes = [
   {
