@@ -73,7 +73,13 @@ type MergeParams<
 
 type ExtractParamName<
   TParam extends string
-> = TParam extends `?${infer Param}` ? Param : TParam
+> = TParam extends `?${infer Param}`
+  ? Param extends ''
+    ? never
+    : Param
+  : TParam extends ''
+    ? never
+    : TParam
 
 type ExtractParam<
   TParam extends string,
