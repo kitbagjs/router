@@ -39,14 +39,14 @@ export type ExtractParamsFromPath<
 
 export type ExtractParamsFromPathString<
   TPath extends string,
-  TParams extends Record<string, Param> = {}
+  TParams extends Record<string, Param> = Record<never, never>
 > = TPath extends `${infer Path}/`
   ? ExtractParamsFromPathString<Path, TParams>
   : TPath extends `${string}:${infer Param}/${infer Rest}`
     ? MergeParams<{ [P in ExtractParamName<Param>]: ExtractParam<Param, TParams> }, ExtractParamsFromPathString<Rest, TParams>>
     : TPath extends `${string}:${infer Param}`
       ? { [P in ExtractParamName<Param>]: ExtractParam<Param, TParams> }
-      : {}
+      : Record<never, never>
 
 type MergeParams<
   TAlpha extends Record<string, unknown>,
@@ -93,28 +93,28 @@ type ExtractParam<
     : Param<string>
 
 
-type TransformParamsRecord<TParams extends Record<string, any[]>> = {
+type TransformParamsRecord<TParams extends Record<string, unknown[]>> = {
   [K in keyof GetAllOptionalParams<TParams>]?: K extends keyof TParams ? UnwrapSingleParams<TParams[K]> : never
 } & {
   [K in keyof GetAllRequiredParams<TParams>]: K extends keyof TParams ? UnwrapSingleParams<TParams[K]> : never
 }
 
-type ExtractParamsRecord<TParams extends Record<string, any[]>> = {
+type ExtractParamsRecord<TParams extends Record<string, unknown[]>> = {
   [K in keyof TParams]: ExtractParamTuple<TParams[K]>
 }
 
-type ExtractParamTuple<TParams extends any[]> = {
+type ExtractParamTuple<TParams extends unknown[]> = {
   [K in keyof TParams]: ExtractParamType<TParams[K]>
 }
 
 type ExtractParamType<TParam> = TParam extends Param<infer Type> ? Type : never
 
-type UnwrapSingleParams<T extends any[]> = T extends [infer SingleParam] ? SingleParam : T
+type UnwrapSingleParams<T extends unknown[]> = T extends [infer SingleParam] ? SingleParam : T
 
-type GetAllOptionalParams<TParams extends Record<string, any[]>> = {
+type GetAllOptionalParams<TParams extends Record<string, unknown[]>> = {
   [K in keyof TParams as TupleCanBeAllUndefined<TParams[K]> extends true ? K : never]: K
 }
 
-type GetAllRequiredParams<TParams extends Record<string, any[]>> = {
+type GetAllRequiredParams<TParams extends Record<string, unknown[]>> = {
   [K in keyof TParams as TupleCanBeAllUndefined<TParams[K]> extends false ? K : never]: K
 }
