@@ -1,2 +1,2 @@
-export * from './createRouter';
-export * from './path';
+export * from './createRouter'
+export * from './path'

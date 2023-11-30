@@ -1,9 +1,9 @@
-import { ExtractRouteMethodParams, RouteMethod } from '../types/routeMethods'
-import { Identity } from '../types/utilities'
+import { ExtractRouteMethodParams, RouteMethod } from '@/types/routeMethods'
+import { Identity } from '@/types/utilities'
 
 type Route<T> = {
   name: string,
-  params: ExtractRouteMethodParams<T>
+  params: ExtractRouteMethodParams<T>,
   query: unknown,
   hash: string,
 }

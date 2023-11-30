@@ -1,5 +1,5 @@
-import { Ref } from "vue";
-import { ExtractRouteMethodParams, RouteMethod } from "../types/routeMethods";
+import { Ref } from 'vue'
+import { ExtractRouteMethodParams, RouteMethod } from '@/types/routeMethods'
 
 type ParamRawValue<T> = Extract<T, undefined> extends never ? string : string | undefined
 

@@ -1,4 +1,4 @@
-import { Ref } from "vue";
+import { Ref } from 'vue'
 
 export function useParamRaw(param: string): Ref<string | undefined>
 export function useParamRaw(param: string, defaultValue: string): Ref<string>

@@ -1,4 +1,4 @@
-import { Ref } from "vue";
+import { Ref } from 'vue'
 
 export function useParam<T>(param: string): Ref<T | undefined>
 export function useParam<T>(param: string, defaultValue: T): Ref<T>

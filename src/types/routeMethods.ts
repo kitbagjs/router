@@ -1,21 +1,21 @@
-import { Path } from "../utilities/path"
-import { Param } from "./params"
-import { Route, Routes } from "./routes"
-import { Identity, IsAny, TupleCanBeAllUndefined } from "./utilities"
+import { Param } from '@/types/params'
+import { Route, Routes } from '@/types/routes'
+import { Identity, IsAny, TupleCanBeAllUndefined } from '@/types/utilities'
+import { Path } from '@/utilities/path'
 
 export type RouteMethod<TParams extends Record<string, unknown>> = (params: TParams) => void
 
 export type RouteMethods<
-  TRoutes extends Routes, 
-  TParams extends Record<string, unknown>,
+  TRoutes extends Routes,
+  TParams extends Record<string, unknown>
 > = {
-  [K in TRoutes[number]['name']]: TRoutes[number] extends { path: infer Path,  children: infer Children }
-      ? Children extends Routes
-        ? RouteMethods<Children, MergeParams<TParams, ExtractParamsFromPath<Path>>>
-        : never
-      : TRoutes[number] extends { path: infer Path }
-        ? RouteMethod<Identity<TransformParamsRecord<ExtractParamsRecord<MergeParams<TParams, ExtractParamsFromPath<Path>>>>>>
-        : never
+  [K in TRoutes[number]['name']]: TRoutes[number] extends { path: infer Path, children: infer Children }
+    ? Children extends Routes
+      ? RouteMethods<Children, MergeParams<TParams, ExtractParamsFromPath<Path>>>
+      : never
+    : TRoutes[number] extends { path: infer Path }
+      ? RouteMethod<Identity<TransformParamsRecord<ExtractParamsRecord<MergeParams<TParams, ExtractParamsFromPath<Path>>>>>>
+      : never
 }
 
 export type ExtractRouteMethodParams<T> = T extends RouteMethod<infer Params>
@@ -26,45 +26,45 @@ export type ExtractRouteMethodParams<T> = T extends RouteMethod<infer Params>
 
 
 export type ExtractParamsFromPath<
-  TPath extends Route['path'],
+  TPath extends Route['path']
 > = TPath extends Path
   ? ExtractParamsFromPathString<TPath['path'], TPath['params']>
   : TPath extends string
-    ? ExtractParamsFromPathString<TPath, {}>
+    ? ExtractParamsFromPathString<TPath>
     : never
 
 export type ExtractParamsFromPathString<
   TPath extends string,
-  TParams extends Record<string, Param> = {},
+  TParams extends Record<string, Param> = {}
 > = TPath extends `${infer Path}/`
   ? ExtractParamsFromPathString<Path, TParams>
   : TPath extends `${string}:${infer Param}/${infer Rest}`
-    ? MergeParams<{ [P in ExtractParamName<Param>]: ExtractParam<Param, TParams>}, ExtractParamsFromPathString<Rest, TParams>>
+    ? MergeParams<{ [P in ExtractParamName<Param>]: ExtractParam<Param, TParams> }, ExtractParamsFromPathString<Rest, TParams>>
     : TPath extends `${string}:${infer Param}`
       ? { [P in ExtractParamName<Param>]: ExtractParam<Param, TParams> }
       : {}
 
 type MergeParams<
-  TAlpha extends Record<string, unknown>, 
+  TAlpha extends Record<string, unknown>,
   TBeta extends Record<string, unknown>
 > = {
-[K in keyof TAlpha | keyof TBeta]: K extends keyof TAlpha & keyof TBeta
-  ? TAlpha[K] extends [...infer AlphaParams]
-    ? TBeta[K] extends [...infer BetaParams]
-      ? [...AlphaParams, ...BetaParams]
-      : [...AlphaParams, TBeta[K]]
-    : TBeta[K] extends [...infer BetaParams]
-      ? [TAlpha[K], ...BetaParams]
-      : [TAlpha[K], TBeta[K]]
-  : K extends keyof TAlpha
+  [K in keyof TAlpha | keyof TBeta]: K extends keyof TAlpha & keyof TBeta
     ? TAlpha[K] extends [...infer AlphaParams]
-      ? [...AlphaParams]
-      : [TAlpha[K]]
-    : K extends keyof TBeta
       ? TBeta[K] extends [...infer BetaParams]
-        ? [...BetaParams]
-        : [TBeta[K]]
-      : never
+        ? [...AlphaParams, ...BetaParams]
+        : [...AlphaParams, TBeta[K]]
+      : TBeta[K] extends [...infer BetaParams]
+        ? [TAlpha[K], ...BetaParams]
+        : [TAlpha[K], TBeta[K]]
+    : K extends keyof TAlpha
+      ? TAlpha[K] extends [...infer AlphaParams]
+        ? [...AlphaParams]
+        : [TAlpha[K]]
+      : K extends keyof TBeta
+        ? TBeta[K] extends [...infer BetaParams]
+          ? [...BetaParams]
+          : [TBeta[K]]
+        : never
 }
 
 type ExtractParamName<
