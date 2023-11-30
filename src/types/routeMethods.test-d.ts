@@ -27,3 +27,18 @@ test('does not match single colons as params', () => {
 
   expectTypeOf(router.routes.foo).parameters.toEqualTypeOf<[]>()
 })
+
+test('does not match :? as params', () => {
+  const routes = [
+    {
+      name: 'foo',
+      path: ':?',
+    },
+  ] as const satisfies Routes
+
+  const router = createRouter(routes)
+
+  router.routes.foo()
+
+  expectTypeOf(router.routes.foo).parameters.toEqualTypeOf<[]>()
+})
