@@ -12,3 +12,5 @@ export type TupleCanBeAllUndefined<T extends any[]> = T extends [infer First, ..
     ? TupleCanBeAllUndefined<Rest>
     : false
   : true
+
+export type IsEmptyObject<T> = T extends Record<string, never> ? (keyof T extends never ? true : false) : false

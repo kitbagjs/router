@@ -10,3 +10,4 @@ lerna-debug.log*
 node_modules
 dist
 *.local
+tsconfig.vitest-temp.json

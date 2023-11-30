@@ -1,9 +1,13 @@
 import { Param } from '@/types/params'
 import { Route, Routes } from '@/types/routes'
-import { Identity, IsAny, TupleCanBeAllUndefined } from '@/types/utilities'
+import { Identity, IsAny, IsEmptyObject, TupleCanBeAllUndefined } from '@/types/utilities'
 import { Path } from '@/utilities/path'
 
-export type RouteMethod<TParams extends Record<string, unknown>> = (params: TParams) => void
+export type RouteMethod<
+  TParams extends Record<string, unknown>
+> = IsEmptyObject<TParams> extends false
+  ? (params: TParams) => void
+  : () => void
 
 export type RouteMethods<
   TRoutes extends Routes,
@@ -69,7 +73,13 @@ type MergeParams<
 
 type ExtractParamName<
   TParam extends string
-> = TParam extends `?${infer Param}` ? Param : TParam
+> = TParam extends `?${infer Param}`
+  ? Param extends ''
+    ? never
+    : Param
+  : TParam extends ''
+    ? never
+    : TParam
 
 type ExtractParam<
   TParam extends string,

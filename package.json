@@ -9,6 +9,7 @@
   "scripts": {
     "build": "tsc && vite build",
     "test": "vitest",
+    "test:types": "vitest typecheck",
     "lint": "eslint ./src",
     "lint:fix": "eslint ./src --fix",
     "types": "tsc --noEmit"
