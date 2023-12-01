@@ -1,15 +1,20 @@
 import { Path } from '@/utilities/path'
 
-export type Route<
+export type ParentRoute<
+  TRoute extends string | Path = any
+> = {
+  name?: string,
+  path: TRoute,
+  children: Routes,
+}
+
+export type ChildRoute<
   TRoute extends string | Path = any
 > = {
   name: string,
   path: TRoute,
-  children?: Routes,
 }
 
-export type RouteWithChildren = Route & {
-  children: Routes,
-}
+export type Route = ParentRoute | ChildRoute
 
-export type Routes = Readonly<Route[]>
+export type Routes = Readonly<(ParentRoute | ChildRoute)[]>
