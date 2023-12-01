@@ -24,8 +24,6 @@ describe('removeLeadingAndTrailingSlashes', () => {
     const input = 'ABC123'
     const inputWithLeading = `${leading}${input}`
 
-    console.log({ inputWithLeading })
-
     const response = removeLeadingAndTrailingSlashes(inputWithLeading)
 
     expect(response).toBe(input)
