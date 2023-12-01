@@ -1,6 +1,14 @@
+import { RouteFlat } from '@/types'
 import { RouteMethods } from '@/types/routeMethods'
 import { Routes } from '@/types/routes'
+import { flattenRoutes } from '@/utilities/flattenRoutes'
 
-export function createRouter<T extends Routes>(_routes: T): { routes: RouteMethods<T, Record<never, never>> } {
+export function createRouter<T extends Routes>(routes: T): { routes: RouteMethods<T, Record<never, never>> } {
+  const flattened = flattenRoutes(routes)
+
+  function routeMatch(path: string): RouteFlat | undefined {
+    return flattened.find(route => route.regex.test(path))
+  }
+
   throw 'not implemented'
 }
