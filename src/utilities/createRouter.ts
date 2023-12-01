@@ -1,6 +1,4 @@
-import { RouteFlat } from '@/types'
-import { RouteMethods } from '@/types/routeMethods'
-import { Routes } from '@/types/routes'
+import { RouteFlat, RouteMethods, Routes } from '@/types'
 import { flattenRoutes } from '@/utilities/flattenRoutes'
 
 export function createRouter<T extends Routes>(routes: T): { routes: RouteMethods<T, Record<never, never>> } {
