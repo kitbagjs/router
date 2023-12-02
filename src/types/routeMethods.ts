@@ -12,9 +12,20 @@ export type RouteMethod<
 export type RouteMethods<
   TRoutes extends Routes,
   TParams extends Record<string, unknown>
-> = TRoutes[number] extends { name: string }
-  ? { [Route in TRoutes[number] as Route['name']]: RouteMethodsOrMethod<Route, TParams> }
-  : RouteMethodsOrMethod<TRoutes[number], TParams>
+> = {
+  [Route in TRoutes[number] as Route['name']]: Route extends { path: infer Path, children: infer Children }
+    ? Children extends Routes
+      ? RouteMethods<Children, MergeParams<TParams, ExtractParamsFromPath<Path>>>
+      : never
+    : Route extends { path: infer Path }
+      ? RouteMethod<Identity<TransformParamsRecord<ExtractParamsRecord<MergeParams<TParams, ExtractParamsFromPath<Path>>>>>>
+      : never
+}
+
+// [Route in TRoutes[number] as Route['name']]: Route extends { path: infer Path, children: infer Children }
+// ? Children extends Routes
+//   ? RouteMethods<Children, MergeParams<TParams, ExtractParamsFromPath<Path>>>
+//   : never
 
 type RouteMethodsOrMethod<
   TRoute extends Route,
