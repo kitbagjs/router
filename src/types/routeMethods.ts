@@ -13,7 +13,7 @@ export type RouteMethods<
   TRoutes extends Routes,
   TParams extends Record<string, unknown>
 > = {
-  [K in TRoutes[number]['name']]: TRoutes[number] extends { path: infer Path, children: infer Children }
+  [Route in TRoutes[number] as Route['name']]: Route extends { path: infer Path, children: infer Children }
     ? Children extends Routes
       ? RouteMethods<Children, MergeParams<TParams, ExtractParamsFromPath<Path>>>
       : never

@@ -227,3 +227,27 @@ test('matches multiple params with the same name as optional across children', (
     foo?: [string | undefined, string | undefined],
   }]>()
 })
+
+test('multiple root routes produces multiple routes', () => {
+  const routes = [
+    {
+      name: 'foo',
+      path: '/foo',
+      children: [
+        {
+          name: 'bar',
+          path: '/bar',
+        },
+      ],
+    },
+    {
+      name: 'bar',
+      path: '/bar',
+    },
+  ] as const satisfies Routes
+
+  const router = createRouter(routes)
+
+  expectTypeOf(router.routes.foo.bar).toBeFunction()
+  expectTypeOf(router.routes.bar).toBeFunction()
+})
