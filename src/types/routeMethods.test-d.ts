@@ -265,6 +265,10 @@ test('parent routes without a name do not appear in the routes object', () => {
               name: 'baz',
               path: '/baz',
             },
+            {
+              name: 'buz',
+              path: '/buz',
+            },
           ],
         },
       ],
@@ -274,4 +278,5 @@ test('parent routes without a name do not appear in the routes object', () => {
   const router = createRouter(routes)
 
   expectTypeOf(router.routes.foo.baz).toBeFunction()
+  expectTypeOf(router.routes.foo.buz).toBeFunction()
 })
