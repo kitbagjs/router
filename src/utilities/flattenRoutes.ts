@@ -7,7 +7,7 @@ export function flattenRoutes<T extends Routes>(routes: T, path = ''): RouteFlat
     if (route.children) {
       const flattened = flattenRoutes(route.children, fullPath)
 
-      value = value.concat(flattened)
+      value.push(...flattened)
     } else {
       value.push({
         name: route.name,
