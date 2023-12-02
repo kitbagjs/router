@@ -17,7 +17,7 @@ export type RouteMethods<
     ? Children extends Routes
       ? RouteMethods<Children, MergeParams<TParams, ExtractParamsFromPath<Path>>>
       : never
-    : TRoutes[number] extends { path: infer Path }
+    : Route extends { path: infer Path }
       ? RouteMethod<Identity<TransformParamsRecord<ExtractParamsRecord<MergeParams<TParams, ExtractParamsFromPath<Path>>>>>>
       : never
 }
