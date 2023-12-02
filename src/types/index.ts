@@ -1,3 +1,4 @@
+export * from './location'
 export * from './params'
 export * from './routeMethods'
 export * from './routes'

@@ -8,6 +8,7 @@
   "homepage": "https://github.com/kitbagjs/router#readme",
   "scripts": {
     "build": "tsc && vite build",
+    "build:watch": "tsc -w & tsc-alias -w & vite build -w",
     "test": "vitest",
     "test:types": "vitest typecheck",
     "lint": "eslint ./src",
