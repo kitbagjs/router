@@ -15,6 +15,8 @@ export type ChildRoute<
   path: TRoute,
 }
 
-export type Route = ParentRoute | ChildRoute
+export type Route<
+  TRoute extends string | Path = any
+> = ParentRoute<TRoute> | ChildRoute<TRoute>
 
 export type Routes = Readonly<(ParentRoute | ChildRoute)[]>
