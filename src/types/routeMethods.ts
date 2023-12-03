@@ -1,10 +1,11 @@
+import { Tuples, Call, Objects } from 'hotscript'
 import { Param } from '@/types/params'
 import { Route, Routes } from '@/types/routes'
 import { Identity, IsAny, IsEmptyObject, TupleCanBeAllUndefined } from '@/types/utilities'
 import { Path } from '@/utilities/path'
 
 export type RouteMethod<
-  TParams extends Record<string, unknown>
+  TParams extends Record<string, unknown> = any
 > = IsEmptyObject<TParams> extends false
   ? (params: TParams) => void
   : () => void
@@ -12,20 +13,11 @@ export type RouteMethod<
 export type RouteMethods<
   TRoutes extends Routes,
   TParams extends Record<string, unknown>
-> = {
-  [Route in TRoutes[number] as Route['name']]: Route extends { path: infer Path, children: infer Children }
-    ? Children extends Routes
-      ? RouteMethods<Children, MergeParams<TParams, ExtractParamsFromPath<Path>>>
-      : never
-    : Route extends { path: infer Path }
-      ? RouteMethod<Identity<TransformParamsRecord<ExtractParamsRecord<MergeParams<TParams, ExtractParamsFromPath<Path>>>>>>
-      : never
-}
-
-// [Route in TRoutes[number] as Route['name']]: Route extends { path: infer Path, children: infer Children }
-// ? Children extends Routes
-//   ? RouteMethods<Children, MergeParams<TParams, ExtractParamsFromPath<Path>>>
-//   : never
+> = Call<Tuples.Reduce<Objects.Assign, {}>, {
+  [K in keyof TRoutes]: TRoutes[K] extends { name: infer Name extends string }
+    ? { [N in Name]: RouteMethodsOrMethod<TRoutes[K], TParams> }
+    : RouteMethodsOrMethod<TRoutes[K], TParams>
+}>
 
 type RouteMethodsOrMethod<
   TRoute extends Route,
