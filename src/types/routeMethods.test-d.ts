@@ -251,3 +251,37 @@ test('multiple root routes produces multiple routes', () => {
   expectTypeOf(router.routes.foo.bar).toBeFunction()
   expectTypeOf(router.routes.bar).toBeFunction()
 })
+
+test('parent routes without a name do not appear in the routes object', () => {
+  const routes = [
+    {
+      name: 'one',
+      path: '/one',
+      children: [
+        {
+          path: '/two',
+          children: [
+            {
+              name: 'three',
+              path: '/three',
+            },
+            {
+              path: '/four',
+              children: [
+                {
+                  name: 'five',
+                  path: '/five',
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  ] as const satisfies Routes
+
+  const router = createRouter(routes)
+
+  expectTypeOf(router.routes.one.three).toBeFunction()
+  expectTypeOf(router.routes.one.five).toBeFunction()
+})

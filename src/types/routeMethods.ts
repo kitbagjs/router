@@ -1,10 +1,10 @@
 import { Param } from '@/types/params'
 import { Route, Routes } from '@/types/routes'
-import { Identity, IsAny, IsEmptyObject, TupleCanBeAllUndefined } from '@/types/utilities'
+import { Identity, IsAny, IsEmptyObject, TupleCanBeAllUndefined, UnionToIntersection } from '@/types/utilities'
 import { Path } from '@/utilities/path'
 
 export type RouteMethod<
-  TParams extends Record<string, unknown>
+  TParams extends Record<string, unknown> = any
 > = IsEmptyObject<TParams> extends false
   ? (params: TParams) => void
   : () => void
@@ -12,22 +12,33 @@ export type RouteMethod<
 export type RouteMethods<
   TRoutes extends Routes,
   TParams extends Record<string, unknown>
+> = Identity<UnionToIntersection<RouteMethodsTuple<TRoutes, TParams>[number]>>
+
+type RouteMethodsTuple<
+  TRoutes extends Routes,
+  TParams extends Record<string, unknown>
 > = {
-  [Route in TRoutes[number] as Route['name']]: Route extends { path: infer Path, children: infer Children }
-    ? Children extends Routes
-      ? RouteMethods<Children, MergeParams<TParams, ExtractParamsFromPath<Path>>>
-      : never
-    : Route extends { path: infer Path }
-      ? RouteMethod<Identity<TransformParamsRecord<ExtractParamsRecord<MergeParams<TParams, ExtractParamsFromPath<Path>>>>>>
-      : never
+  [K in keyof TRoutes]: TRoutes[K] extends { name: infer Name extends string }
+    ? { [N in Name]: RouteMethodsOrMethod<TRoutes[K], TParams> }
+    : RouteMethodsOrMethod<TRoutes[K], TParams>
 }
+
+type RouteMethodsOrMethod<
+  TRoute extends Route,
+  TParams extends Record<string, unknown>
+> = TRoute extends { path: infer Path, children: infer Children }
+  ? Children extends Routes
+    ? RouteMethods<Children, MergeParams<TParams, ExtractParamsFromPath<Path>>>
+    : never
+  : TRoute extends { path: infer Path }
+    ? RouteMethod<Identity<TransformParamsRecord<ExtractParamsRecord<MergeParams<TParams, ExtractParamsFromPath<Path>>>>>>
+    : never
 
 export type ExtractRouteMethodParams<T> = T extends RouteMethod<infer Params>
   ? IsAny<Params> extends true
     ? Record<string, unknown>
     : Params
   : Record<string, unknown>
-
 
 export type ExtractParamsFromPath<
   TPath extends Route['path']
