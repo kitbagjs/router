@@ -5,6 +5,7 @@ export type ParentRoute<
 > = {
   name?: string,
   path: TRoute,
+  public?: false,
   children: Routes,
 }
 
@@ -12,6 +13,7 @@ export type ChildRoute<
   TRoute extends string | Path = any
 > = {
   name: string,
+  public?: false,
   path: TRoute,
 }
 
