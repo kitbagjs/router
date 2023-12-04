@@ -1,7 +1,6 @@
-import { Tuples, Call, Objects } from 'hotscript'
 import { Param } from '@/types/params'
 import { Route, Routes } from '@/types/routes'
-import { Identity, IsAny, IsEmptyObject, TupleCanBeAllUndefined } from '@/types/utilities'
+import { Identity, IsAny, IsEmptyObject, TupleCanBeAllUndefined, UnionToIntersection } from '@/types/utilities'
 import { Path } from '@/utilities/path'
 
 export type RouteMethod<
@@ -13,11 +12,16 @@ export type RouteMethod<
 export type RouteMethods<
   TRoutes extends Routes,
   TParams extends Record<string, unknown>
-> = Call<Tuples.Reduce<Objects.Assign, {}>, {
+> = Identity<UnionToIntersection<RouteMethodsTuple<TRoutes, TParams>[number]>>
+
+type RouteMethodsTuple<
+  TRoutes extends Routes,
+  TParams extends Record<string, unknown>
+> = {
   [K in keyof TRoutes]: TRoutes[K] extends { name: infer Name extends string }
     ? { [N in Name]: RouteMethodsOrMethod<TRoutes[K], TParams> }
     : RouteMethodsOrMethod<TRoutes[K], TParams>
-}>
+}
 
 type RouteMethodsOrMethod<
   TRoute extends Route,
