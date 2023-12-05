@@ -5,7 +5,7 @@ export type ParentRoute<
 > = {
   name?: string,
   path: TRoute,
-  public?: false,
+  public?: boolean,
   children: Routes,
 }
 
@@ -13,7 +13,7 @@ export type ChildRoute<
   TRoute extends string | Path = any
 > = {
   name: string,
-  public?: false,
+  public?: boolean,
   path: TRoute,
 }
 
