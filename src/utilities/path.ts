@@ -1,9 +1,9 @@
-import { Param } from '@/types/params'
+import { Param, ParamGetter } from '@/types/params'
 import { ExtractParamsFromPathString } from '@/types/routeMethods'
 import { Identity } from '@/types/utilities'
 
 type PathParams<T extends string> = {
-  [K in keyof ExtractParamsFromPathString<T>]?: Param
+  [K in keyof ExtractParamsFromPathString<T>]?: Param | ParamGetter
 }
 
 export type Path<

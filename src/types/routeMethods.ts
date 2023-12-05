@@ -1,4 +1,4 @@
-import { Param } from '@/types/params'
+import { Param, ParamGetter } from '@/types/params'
 import { Route, Routes } from '@/types/routes'
 import { Identity, IsAny, IsEmptyObject, TupleCanBeAllUndefined, UnionToIntersection } from '@/types/utilities'
 import { Path } from '@/utilities/path'
@@ -97,12 +97,17 @@ type ExtractParam<
   TParams extends Record<string, Param>
 > = TParam extends `?${infer OptionalParam}`
   ? OptionalParam extends keyof TParams
-    ? Param<ReturnType<TParams[OptionalParam]['get']> | undefined>
+    ? Param<ExtractParamType<TParams[OptionalParam]> | undefined>
     : Param<string | undefined>
   : TParam extends keyof TParams
-    ? Param<ReturnType<TParams[TParam]['get']>>
+    ? Param<ExtractParamType<TParams[TParam]>>
     : Param<string>
 
+type ExtractParamType<TParam> = TParam extends Param<infer Type>
+  ? Type
+  : TParam extends ParamGetter
+    ? ReturnType<TParam>
+    : never
 
 type TransformParamsRecord<TParams extends Record<string, unknown[]>> = {
   [K in keyof GetAllOptionalParams<TParams>]?: K extends keyof TParams ? UnwrapSingleParams<TParams[K]> : never
@@ -117,8 +122,6 @@ type ExtractParamsRecord<TParams extends Record<string, unknown[]>> = {
 type ExtractParamTuple<TParams extends unknown[]> = {
   [K in keyof TParams]: ExtractParamType<TParams[K]>
 }
-
-type ExtractParamType<TParam> = TParam extends Param<infer Type> ? Type : never
 
 type UnwrapSingleParams<T extends unknown[]> = T extends [infer SingleParam] ? SingleParam : T
 

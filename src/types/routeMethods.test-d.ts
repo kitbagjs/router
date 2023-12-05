@@ -104,7 +104,7 @@ test('matches multiple params with the same name as optional', () => {
   }]>()
 })
 
-test('matches typed params', () => {
+test('matches typed params using a Param', () => {
   const routes = [
     {
       name: 'foo',
@@ -124,15 +124,29 @@ test('matches typed params', () => {
   }]>()
 })
 
+test('matches typed params using a ParamGetter', () => {
+  const routes = [
+    {
+      name: 'foo',
+      path: path(':foo', {
+        foo: Boolean,
+      }),
+    },
+  ] as const satisfies Routes
+
+  const router = createRouter(routes)
+
+  expectTypeOf(router.routes.foo).parameters.toEqualTypeOf<[{
+    foo: boolean,
+  }]>()
+})
+
 test('matches multiple typed params', () => {
   const routes = [
     {
       name: 'foo',
       path: path(':foo/:foo/:foo', {
-        foo: {
-          get: value => Boolean(value),
-          set: value => value.toString(),
-        } satisfies Param<boolean>,
+        foo: Boolean,
       }),
     },
   ] as const satisfies Routes
@@ -149,10 +163,7 @@ test('matches individual as optional when matching multiple params with the same
     {
       name: 'foo',
       path: path(':foo/:?foo/:foo', {
-        foo: {
-          get: value => Boolean(value),
-          set: value => value.toString(),
-        } satisfies Param<boolean>,
+        foo: Boolean,
       }),
     },
   ] as const satisfies Routes

@@ -1,4 +1,6 @@
+export type ParamGetter<T = any> = (value: string) => T
+
 export type Param<T = any> = {
-  get: (value: string) => T,
+  get: ParamGetter<T>,
   set: (value: T) => string,
 }
