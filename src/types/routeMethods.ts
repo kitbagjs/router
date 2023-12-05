@@ -12,7 +12,7 @@ export type RouteMethod<
 export type RouteMethods<
   TRoutes extends Routes,
   TParams extends Record<string, unknown>
-> = Identity<UnionToIntersection<RouteMethodsTuple<TRoutes, TParams>[number]>>
+> = UnionToIntersection<RouteMethodsTuple<TRoutes, TParams>[number]>
 
 type RouteMethodsTuple<
   TRoutes extends Routes,
@@ -28,11 +28,26 @@ type RouteMethodsOrMethod<
   TParams extends Record<string, unknown>
 > = TRoute extends { path: infer Path, children: infer Children }
   ? Children extends Routes
-    ? RouteMethods<Children, MergeParams<TParams, ExtractParamsFromPath<Path>>>
+    ? IsPublicRoute<TRoute> extends true
+      ? RouteMethods<Children, MergeParams<TParams, ExtractParamsFromPath<Path>>> & CreateRouteMethod<TParams, Path>
+      : RouteMethods<Children, MergeParams<TParams, ExtractParamsFromPath<Path>>>
     : never
   : TRoute extends { path: infer Path }
-    ? RouteMethod<Identity<TransformParamsRecord<ExtractParamsRecord<MergeParams<TParams, ExtractParamsFromPath<Path>>>>>>
+    ? IsPublicRoute<TRoute> extends true
+      ? CreateRouteMethod<TParams, Path>
+      : never
     : never
+
+type IsPublicRoute<TRoute extends Route> = 'public' extends keyof TRoute
+  ? TRoute extends { public: false }
+    ? false
+    : true
+  : true
+
+type CreateRouteMethod<
+  TParams extends Record<string, unknown>,
+  TPath extends Route['path']
+> = RouteMethod<Identity<TransformParamsRecord<ExtractParamsRecord<MergeParams<TParams, ExtractParamsFromPath<TPath>>>>>>
 
 export type ExtractRouteMethodParams<T> = T extends RouteMethod<infer Params>
   ? IsAny<Params> extends true

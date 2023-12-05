@@ -3,6 +3,11 @@ import { Param } from '@/types/params'
 import { Routes } from '@/types/routes'
 import { createRouter, path } from '@/utilities'
 
+const boolean: Param<boolean> = {
+  get: value => Boolean(value),
+  set: value => value.toString(),
+}
+
 test('requires no arguments when there are no parameters', () => {
   const routes = [
     {
@@ -109,10 +114,7 @@ test('matches typed params using a Param', () => {
     {
       name: 'foo',
       path: path(':foo', {
-        foo: {
-          get: value => Boolean(value),
-          set: value => value.toString(),
-        } satisfies Param<boolean>,
+        foo: boolean,
       }),
     },
   ] as const satisfies Routes
@@ -295,4 +297,82 @@ test('parent routes without a name do not appear in the routes object', () => {
 
   expectTypeOf(router.routes.one.three).toBeFunction()
   expectTypeOf(router.routes.one.five).toBeFunction()
+})
+
+test('all routes with a name can be called unless disabled', () => {
+  const routes = [
+    {
+      name: 'parent',
+      path: path('/:parent', {
+        parent: boolean,
+      }),
+      children: [
+        {
+          name: 'child',
+          path: '/:child',
+          children: [
+            {
+              name: 'grandchild',
+              path: '/:grandchild',
+            },
+          ],
+        },
+      ],
+    },
+    {
+      name: 'parent2',
+      path: '/parent',
+      public: false,
+      children: [
+        {
+          name: 'child2',
+          path: '/child',
+        },
+        {
+          name: 'child3',
+          path: '/child3',
+          public: false,
+        },
+      ],
+    },
+    {
+      path: '/parent3',
+      children: [
+        {
+          name: 'child4',
+          path: '/child4',
+        },
+      ],
+    },
+  ] as const satisfies Routes
+
+  const router = createRouter(routes)
+
+  expectTypeOf(router.routes.parent).toBeFunction()
+  expectTypeOf(router.routes.parent.child).toBeFunction()
+  expectTypeOf(router.routes.parent2).not.toBeFunction()
+  expectTypeOf(router.routes.parent2.child2).toBeFunction()
+  expectTypeOf(router.routes.parent2.child3).not.toBeFunction()
+  expectTypeOf(router.routes).not.toHaveProperty('parent3')
+  expectTypeOf(router.routes.child4).toBeFunction()
+})
+
+test('public parent routes have correct type for parameters', () => {
+  const routes = [
+    {
+      name: 'parent',
+      path: path('/:param1/:param1/:param2/:param3', {
+        param3: boolean,
+      }),
+      children: [{ name: 'child', path: '/:param4' }],
+    },
+  ] as const satisfies Routes
+
+  const router = createRouter(routes)
+
+  expectTypeOf(router.routes.parent).parameters.toEqualTypeOf<[{
+    param1: [string, string],
+    param2: string,
+    param3: boolean,
+  }]>()
 })
