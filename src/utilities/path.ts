@@ -17,14 +17,3 @@ export type Path<
 export function path<T extends string, P extends PathParams<T>>(_path: T, _params: Identity<P>): Path<T, P> {
   throw 'not implemented'
 }
-
-export function combineRoute(...parts: string[]): string {
-  return parts.map(removeLeadingAndTrailingSlashes).join('/')
-}
-
-export function removeLeadingAndTrailingSlashes(value: string): string {
-  const regex = /^\/*(.*?)\/*$/g
-
-  const [, inside] = regex.exec(value) ?? []
-  return inside
-}

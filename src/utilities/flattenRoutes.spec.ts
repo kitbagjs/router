@@ -1,6 +1,6 @@
-import { describe, expect, test, vi } from 'vitest'
+import { describe, expect, test } from 'vitest'
 import { Route, Routes } from '@/types'
-import { flattenRoutes } from '@/utilities/flattenRoutes'
+import { flattenRoutes, generateRouteRegexPattern } from '@/utilities/flattenRoutes'
 
 describe('flattenRoutes', () => {
   test('always returns 1 record per leaf', () => {
@@ -58,23 +58,25 @@ describe('flattenRoutes', () => {
 
     expect(response.path).toBe(parentRoute.path + childRoute.path)
   })
+})
 
-  test('always replaces param syntax with regex catchall', () => {
-    const childRoute: Route = {
-      name: 'view-account',
-      path: '/:accountId',
-    }
+describe('generateRouteRegexPattern', () => {
+  test('given path without params, returns unmodified value with start and end markers', () => {
+    const input = 'parent/child/grandchild'
 
-    const parentRoute: Route = {
-      name: 'accounts',
-      path: '/accounts',
-      children: [childRoute],
-    }
+    const result = generateRouteRegexPattern(input)
 
-    const [response] = flattenRoutes([parentRoute])
+    const expected = new RegExp(`^${input}$`)
+    expect(result.toString()).toBe(expected.toString())
+  })
 
-    const catchAll = '(.*?)'
-    const expectedPattern = new RegExp(`${parentRoute.path }/${ catchAll}`)
-    expect(response.regex.toString()).toBe(expectedPattern.toString())
+  test('given path with params, returns value with params replaced with catchall', () => {
+    const input = 'parent/child/:child-param/grand-child/:grandChild123'
+
+    const result = generateRouteRegexPattern(input)
+
+    const catchAll = '(.*)'
+    const expected = new RegExp(`^parent/child/${catchAll}/grand-child/${catchAll}$`)
+    expect(result.toString()).toBe(expected.toString())
   })
 })
