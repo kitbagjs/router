@@ -1,9 +1,9 @@
 import { test, expectTypeOf } from 'vitest'
-import { Param } from '@/types/params'
+import { ParamGetSet } from '@/types/params'
 import { Routes } from '@/types/routes'
 import { createRouter, path } from '@/utilities'
 
-const boolean: Param<boolean> = {
+const boolean: ParamGetSet<boolean> = {
   get: value => Boolean(value),
   set: value => value.toString(),
 }
