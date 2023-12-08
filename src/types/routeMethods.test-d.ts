@@ -3,6 +3,8 @@ import { ParamGetSet } from '@/types/params'
 import { Routes } from '@/types/routes'
 import { createRouter, path } from '@/utilities'
 
+const component = { template: '<div>This is component</div>' }
+
 const boolean: ParamGetSet<boolean> = {
   get: value => Boolean(value),
   set: value => value.toString(),
@@ -13,6 +15,7 @@ test('requires no arguments when there are no parameters', () => {
     {
       name: 'foo',
       path: '',
+      component,
     },
   ] as const satisfies Routes
 
@@ -26,6 +29,7 @@ test('does not match single colons as params', () => {
     {
       name: 'foo',
       path: ':',
+      component,
     },
   ] as const satisfies Routes
 
@@ -39,6 +43,7 @@ test('does not match :? as params', () => {
     {
       name: 'foo',
       path: ':?',
+      component,
     },
   ] as const satisfies Routes
 
@@ -54,6 +59,7 @@ test('matches individual params', () => {
     {
       name: 'foo',
       path: ':foo',
+      component,
     },
   ] as const satisfies Routes
 
@@ -69,6 +75,7 @@ test('matches individual optional params', () => {
     {
       name: 'foo',
       path: ':?foo',
+      component,
     },
   ] as const satisfies Routes
 
@@ -84,6 +91,7 @@ test('matches multiple params with the same name', () => {
     {
       name: 'foo',
       path: ':foo/:?foo/:foo',
+      component,
     },
   ] as const satisfies Routes
 
@@ -99,6 +107,7 @@ test('matches multiple params with the same name as optional', () => {
     {
       name: 'foo',
       path: ':?foo/:?foo/:?foo',
+      component,
     },
   ] as const satisfies Routes
 
@@ -116,6 +125,7 @@ test('matches typed params using a Param', () => {
       path: path(':foo', {
         foo: boolean,
       }),
+      component,
     },
   ] as const satisfies Routes
 
@@ -133,6 +143,7 @@ test('matches typed params using a ParamGetter', () => {
       path: path(':foo', {
         foo: Boolean,
       }),
+      component,
     },
   ] as const satisfies Routes
 
@@ -150,6 +161,7 @@ test('matches multiple typed params', () => {
       path: path(':foo/:foo/:foo', {
         foo: Boolean,
       }),
+      component,
     },
   ] as const satisfies Routes
 
@@ -167,6 +179,7 @@ test('matches individual as optional when matching multiple params with the same
       path: path(':foo/:?foo/:foo', {
         foo: Boolean,
       }),
+      component,
     },
   ] as const satisfies Routes
 
@@ -186,6 +199,7 @@ test('matches params across children', () => {
         {
           name: 'bar',
           path: '/:bar',
+          component,
         },
       ],
     },
@@ -208,6 +222,7 @@ test('matches multiple params with the same name across children', () => {
         {
           name: 'bar',
           path: '/:?foo',
+          component,
         },
       ],
     },
@@ -229,6 +244,7 @@ test('matches multiple params with the same name as optional across children', (
         {
           name: 'bar',
           path: '/:?foo',
+          component,
         },
       ],
     },
@@ -250,12 +266,14 @@ test('multiple root routes produces multiple routes', () => {
         {
           name: 'bar',
           path: '/bar',
+          component,
         },
       ],
     },
     {
       name: 'bar',
       path: '/bar',
+      component,
     },
   ] as const satisfies Routes
 
@@ -277,6 +295,7 @@ test('parent routes without a name do not appear in the routes object', () => {
             {
               name: 'three',
               path: '/three',
+              component,
             },
             {
               path: '/four',
@@ -284,6 +303,7 @@ test('parent routes without a name do not appear in the routes object', () => {
                 {
                   name: 'five',
                   path: '/five',
+                  component,
                 },
               ],
             },
@@ -314,6 +334,7 @@ test('all routes with a name can be called unless disabled', () => {
             {
               name: 'grandchild',
               path: '/:grandchild',
+              component,
             },
           ],
         },
@@ -327,11 +348,13 @@ test('all routes with a name can be called unless disabled', () => {
         {
           name: 'child2',
           path: '/child',
+          component,
         },
         {
           name: 'child3',
           path: '/child3',
           public: false,
+          component,
         },
       ],
     },
@@ -341,6 +364,7 @@ test('all routes with a name can be called unless disabled', () => {
         {
           name: 'child4',
           path: '/child4',
+          component,
         },
       ],
     },
@@ -364,7 +388,13 @@ test('public parent routes have correct type for parameters', () => {
       path: path('/:param1/:param1/:param2/:param3', {
         param3: boolean,
       }),
-      children: [{ name: 'child', path: '/:param4' }],
+      children: [
+        {
+          name: 'child',
+          path: '/:param4',
+          component,
+        },
+      ],
     },
   ] as const satisfies Routes
 

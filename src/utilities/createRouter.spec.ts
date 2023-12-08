@@ -2,6 +2,8 @@ import { describe, expect, test } from 'vitest'
 import { Routes } from '@/types'
 import { createRouter } from '@/utilities'
 
+const component = { template: '<div>This is component</div>' }
+
 describe('router.routeMatch', () => {
   test('given path without params, returns unmodified regex', () => {
     const routes = [
@@ -16,6 +18,7 @@ describe('router.routeMatch', () => {
               {
                 name: 'grandchild',
                 path: '/grandchild',
+                component,
               },
             ],
           },
@@ -43,6 +46,7 @@ describe('router.routeMatch', () => {
               {
                 name: 'namedGrandchild',
                 path: '/named-grandchild',
+                component,
               },
             ],
           },
@@ -64,6 +68,7 @@ describe('router.routeMatch', () => {
           {
             name: 'unnamed-child-root',
             path: '',
+            component,
           },
         ],
       },
@@ -89,6 +94,7 @@ describe('router.routeMatch', () => {
               {
                 name: 'namedGrandchild',
                 path: '',
+                component,
               },
             ],
           },

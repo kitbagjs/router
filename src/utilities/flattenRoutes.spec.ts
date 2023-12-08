@@ -2,6 +2,8 @@ import { describe, expect, test } from 'vitest'
 import { Route, Routes } from '@/types'
 import { flattenRoutes, generateRouteRegexPattern } from '@/utilities/flattenRoutes'
 
+const component = { template: '<div>This is component</div>' }
+
 describe('flattenRoutes', () => {
   test('always returns 1 record per named route', () => {
     const routes = [
@@ -12,6 +14,7 @@ describe('flattenRoutes', () => {
           {
             name: 'bar',
             path: '/bar/:bparam',
+            component,
           },
         ],
       },
@@ -22,6 +25,7 @@ describe('flattenRoutes', () => {
           {
             name: 'new-account',
             path: '/new',
+            component,
           },
           {
             name: 'account',
@@ -30,6 +34,7 @@ describe('flattenRoutes', () => {
               {
                 name: 'edit-account',
                 path: '/edit',
+                component,
               },
             ],
           },
@@ -46,6 +51,7 @@ describe('flattenRoutes', () => {
     const childRoute: Route = {
       name: 'new-account',
       path: '/new',
+      component,
     }
 
     const parentRoute: Route = {
