@@ -3,7 +3,7 @@ import { Route, Routes } from '@/types'
 import { flattenRoutes, generateRouteRegexPattern } from '@/utilities/flattenRoutes'
 
 describe('flattenRoutes', () => {
-  test('always returns 1 record per leaf', () => {
+  test('always returns 1 record per named route', () => {
     const routes = [
       {
         name: 'foo',
@@ -39,7 +39,7 @@ describe('flattenRoutes', () => {
 
     const response = flattenRoutes(routes)
 
-    expect(response).toHaveLength(3)
+    expect(response).toHaveLength(6)
   })
 
   test('always combines paths into return value', () => {
@@ -75,7 +75,7 @@ describe('generateRouteRegexPattern', () => {
 
     const result = generateRouteRegexPattern(input)
 
-    const catchAll = '(.*)'
+    const catchAll = '([^/]+)'
     const expected = new RegExp(`^parent/child/${catchAll}/grand-child/${catchAll}$`)
     expect(result.toString()).toBe(expected.toString())
   })

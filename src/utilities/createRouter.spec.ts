@@ -2,74 +2,101 @@ import { describe, expect, test } from 'vitest'
 import { Routes } from '@/types'
 import { createRouter } from '@/utilities'
 
-const routes = [
-  {
-    name: 'parent',
-    path: '/parent1',
-    children: [
+describe('router.routeMatch', () => {
+  test('given path without params, returns unmodified regex', () => {
+    const routes = [
       {
-        name: 'child',
-        path: '/:child',
+        name: 'parent',
+        path: '/parent',
         children: [
           {
-            name: 'grandchild',
-            path: '/:grandchild',
+            name: 'child',
+            path: '/child',
+            children: [
+              {
+                name: 'grandchild',
+                path: '/grandchild',
+              },
+            ],
           },
         ],
       },
-    ],
-  },
-  {
-    name: 'parent2',
-    path: '/parent2',
-    children: [
-      {
-        name: 'root',
-        path: '',
-      },
-      {
-        name: 'child2',
-        path: '/child',
-      },
-      {
-        name: 'child3',
-        path: '/child3',
-      },
-    ],
-  },
-] as const satisfies Routes
+    ] as const satisfies Routes
 
-describe('router.routeMatch', () => {
-  test('given path without params, returns matching RouteFlat', () => {
     const router = createRouter(routes)
-    const match = router.routeMatch('/parent2/child')
+    const matches = router.routeMatch('/parent/child/grandchild')
 
-    expect(match).toMatchObject([
-      {
-        name: 'child2',
-        path: '/parent2/child',
-        regex: new RegExp('/parent2/child'),
-      },
-    ])
+    expect(matches).toHaveLength(1)
+    const [singleRoute] = matches
+    expect(singleRoute.regex).toMatchObject(new RegExp('/parent/child/grandchild'))
   })
 
-  test('given path to parent, without option to get to leaf, returns empty array', () => {
-    const router = createRouter(routes)
-    const match = router.routeMatch('/parent1')
+  test('given path to unnamed parent, without option to get to leaf, returns empty array', () => {
+    const routes = [
+      {
+        path: '/unnamed',
+        children: [
+          {
+            name: 'unnamed-child',
+            path: '/unnamed-child/:child-id',
+            children: [
+              {
+                name: 'namedGrandchild',
+                path: '/named-grandchild',
+              },
+            ],
+          },
+        ],
+      },
+    ] as const satisfies Routes
 
-    expect(match).toHaveLength(0)
+    const router = createRouter(routes)
+    const matches = router.routeMatch('/unnamed')
+
+    expect(matches).toHaveLength(0)
   })
 
-  test('given path to parent, with option to get to leaf, returns available leaf', () => {
-    const router = createRouter(routes)
-    const match = router.routeMatch('/parent2')
-
-    expect(match).toMatchObject([
+  test('given path to unnamed  parent, with option to get to leaf, returns available leaf', () => {
+    const routes = [
       {
-        name: 'root',
-        path: '/parent2',
-        regex: new RegExp('/parent2'),
+        path: '/unnamed',
+        children: [
+          {
+            name: 'unnamed-child-root',
+            path: '',
+          },
+        ],
+      },
+    ] as const satisfies Routes
+    const router = createRouter(routes)
+    const matches = router.routeMatch('/unnamed')
+
+    expect(matches).toHaveLength(1)
+    const [singleRoute] = matches
+    expect(singleRoute.name).toBe('unnamed-child-root')
+  })
+
+  test('given path that includes named parent and path to leaf, includes every named route parent the way', () => {
+    const router = createRouter([
+      {
+        name: 'namedParent',
+        path: '/named-parent',
+        children: [
+          {
+            name: 'namedChild',
+            path: '',
+            children: [
+              {
+                name: 'namedGrandchild',
+                path: '',
+              },
+            ],
+          },
+        ],
       },
     ])
+    const matches = router.routeMatch('/named-parent')
+
+    expect(matches.map(match => match.name)).toMatchObject(['namedGrandchild', 'namedChild', 'namedParent'])
   })
 })
