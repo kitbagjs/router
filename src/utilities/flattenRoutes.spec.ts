@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { Route, Routes } from '@/types'
-import { flattenRoutes, generateRouteRegexPattern } from '@/utilities/flattenRoutes'
+import { flattenRoutes, generateRouteRegexPattern, path } from '@/utilities'
 
 const component = { template: '<div>This is component</div>' }
 
@@ -77,11 +77,21 @@ describe('generateRouteRegexPattern', () => {
   })
 
   test('given path with params, returns value with params replaced with catchall', () => {
-    const input = 'parent/child/:child-param/grand-child/:grandChild123'
+    const input = 'parent/child/:childParam/grand-child/:grandChild123'
 
     const result = generateRouteRegexPattern(input)
 
     const catchAll = '([^/]+)'
+    const expected = new RegExp(`^parent/child/${catchAll}/grand-child/${catchAll}$`)
+    expect(result.toString()).toBe(expected.toString())
+  })
+
+  test('given path with optional params, returns value with params replaced with catchall', () => {
+    const input = 'parent/child/:?childParam/grand-child/:?grandChild123'
+
+    const result = generateRouteRegexPattern(input)
+
+    const catchAll = '([^/]*)'
     const expected = new RegExp(`^parent/child/${catchAll}/grand-child/${catchAll}$`)
     expect(result.toString()).toBe(expected.toString())
   })
