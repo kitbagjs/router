@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { Route, Routes } from '@/types'
-import { flattenRoutes, generateRouteRegexPattern, path } from '@/utilities'
+import { flattenRoutes, generateRouteRegexPattern } from '@/utilities'
 
 const component = { template: '<div>This is component</div>' }
 
