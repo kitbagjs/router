@@ -37,3 +37,12 @@ export type UnionToIntersection<Union> = (
   : never
 
 export type MaybeLazy<T> = T | (() => Promise<T>)
+
+// Copied and modified from [type-fest](https://github.com/sindresorhus/type-fest/blob/main/source/replace.d.ts)
+export type ReplaceAll<
+  Input extends string,
+  Search extends string,
+  Replacement extends string
+> = Input extends `${infer Head}${Search}${infer Tail}`
+  ? `${Head}${Replacement}${ReplaceAll<Tail, Search, Replacement>}`
+  : Input
