@@ -24,8 +24,8 @@ export function flattenRoutes(routes: Routes, path = ''): RouteFlat[] {
 
 export function generateRouteRegexPattern(path: string): RegExp {
   const optionalParamRegex = /(:\?[\w]+)(?=\W|$)/g
-  const paramRegex = /(:[\w]+)(?=\W|$)/g
+  const requiredParamRegex = /(:[\w]+)(?=\W|$)/g
 
-  const routeRegex = path.replace(optionalParamRegex, '([^/]*)').replace(paramRegex, '([^/]+)')
+  const routeRegex = path.replace(optionalParamRegex, '([^/]*)').replace(requiredParamRegex, '([^/]+)')
   return new RegExp(`^${routeRegex}$`)
 }
