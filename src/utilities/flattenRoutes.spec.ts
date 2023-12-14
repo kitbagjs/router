@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
-import { Route, Routes } from '@/types'
-import { flattenRoutes, generateRouteRegexPattern } from '@/utilities'
+import { Route, Routes, optional } from '@/types'
+import { flattenRoutes, generateRouteRegexPattern, getRouteParams, path } from '@/utilities'
 
 const component = { template: '<div>This is component</div>' }
 
@@ -63,6 +63,71 @@ describe('flattenRoutes', () => {
     const [response] = flattenRoutes([parentRoute])
 
     expect(response.path).toBe(parentRoute.path + childRoute.path)
+  })
+
+  test('given path not as string, still combines to fullPath', () => {
+    const childRoute: Route = {
+      name: 'edit-account',
+      path: path('/:accountId', {
+        accountId: Number,
+      }),
+      component,
+    }
+
+    const parentRoute: Route = {
+      name: 'accounts',
+      path: '/accounts',
+      children: [childRoute],
+    }
+
+    const [response] = flattenRoutes([parentRoute])
+
+    expect(response.path).toBe(parentRoute.path + childRoute.path)
+  })
+})
+
+describe('getRouteParams', () => {
+  test('given path without params, returns empty object', () => {
+    const path = '/string/example/without/params'
+
+    const response = getRouteParams(path)
+
+    expect(response).toMatchObject({})
+  })
+
+  test('given path with simple params, returns each param name as type String', () => {
+    const path = '/parent/:parentId/child/:childId'
+
+    const response = getRouteParams(path)
+
+    expect(response).toMatchObject({
+      parentId: String,
+      childId: String,
+    })
+  })
+
+  test('given path with optional params, returns each param name as type String with optional', () => {
+    const path = '/parent/:?parentId/child/:?childId'
+
+    const response = getRouteParams(path)
+
+    expect(JSON.stringify(response)).toMatch(JSON.stringify({
+      parentId: optional(String),
+      childId: optional(String),
+    }))
+  })
+
+  test('given path not as string, returns each param with corresponding param', () => {
+    const pathValue = path('/parent/:parentId/child/:childId', {
+      parentId: Boolean,
+    })
+
+    const response = getRouteParams(pathValue)
+
+    expect(response).toMatchObject({
+      parentId: Boolean,
+      childId: String,
+    })
   })
 })
 
