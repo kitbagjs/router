@@ -2,7 +2,7 @@ import { RouteFlat, Routes, isParentRoute, isNamedRoute } from '@/types'
 
 export function flattenRoutes(routes: Routes, path = ''): RouteFlat[] {
   return routes.reduce<RouteFlat[]>((value, route) => {
-    const fullPath = path + route.path
+    const fullPath = path + route.path.toString()
 
     if (isParentRoute(route)) {
       const flattened = flattenRoutes(route.children, fullPath)
