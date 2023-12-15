@@ -406,3 +406,22 @@ test('public parent routes have correct type for parameters', () => {
     param3: boolean,
   }]>()
 })
+
+test('param names must be alphanumeric', () => {
+  const routes = [
+    {
+      name: 'foo',
+      path: '/:param1-:param2/:param3_:param4',
+      component,
+    },
+  ] as const satisfies Routes
+
+  const router = createRouter(routes)
+
+  expectTypeOf(router.routes.foo).parameters.toEqualTypeOf<[{
+    param1: string,
+    param2: string,
+    param3: string,
+    param4: string,
+  }]>()
+})
