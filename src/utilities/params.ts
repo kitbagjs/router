@@ -51,6 +51,7 @@ const numberParam: ParamGetSet<unknown> = {
   },
 }
 
+export function getParamValue<T extends Param>(value: string, param: T): ExtractParamType<T>
 export function getParamValue<T extends Param>(value: string, param: T): unknown {
   if (param === Boolean) {
     return booleanParam.get(value, extras)
