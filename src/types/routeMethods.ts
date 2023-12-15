@@ -1,7 +1,5 @@
-import { Param, ParamGetSet, ParamGetter } from '@/types/params'
-import { Route, Routes } from '@/types/routes'
+import { Param, ParamGetSet, ParamGetter, Route, Routes, Path, PathParams } from '@/types'
 import { Identity, IsAny, IsEmptyObject, TupleCanBeAllUndefined, UnionToIntersection } from '@/types/utilities'
-import { Path } from '@/utilities/path'
 
 export type RouteMethod<
   TParams extends Record<string, unknown> = any
@@ -65,7 +63,7 @@ export type ExtractParamsFromPath<
 
 export type ExtractParamsFromPathString<
   TPath extends string,
-  TParams extends Record<string, Param> = Record<never, never>
+  TParams extends PathParams = Record<never, never>
 > = TPath extends `${infer Path}/`
   ? ExtractParamsFromPathString<Path, TParams>
   : TPath extends `${string}:${infer Param}/${infer Rest}`
@@ -109,7 +107,7 @@ type ExtractParamName<
 
 type ExtractPathParamType<
   TParam extends string,
-  TParams extends Record<string, Param>
+  TParams extends PathParams
 > = TParam extends `?${infer OptionalParam}`
   ? OptionalParam extends keyof TParams
     ? ExtractParamType<TParams[OptionalParam]> | undefined

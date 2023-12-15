@@ -1,10 +1,10 @@
 import { describe, expect, test } from 'vitest'
-import { Param } from '@/types'
+import { PathParams } from '@/types'
 import { combineParams } from '@/utilities'
 
 describe('combineParams', () => {
   test('given params without overlap, returns combination of both', () => {
-    const input: Record<string, Param[]>[] = [
+    const input: PathParams[] = [
       {
         foo: [String],
         bar: [String],
@@ -22,7 +22,7 @@ describe('combineParams', () => {
   })
 
   test('given params with overlap of same type, does not combine into new tuple', () => {
-    const input: Record<string, Param[]>[] = [
+    const input: PathParams[] = [
       {
         foo: [String],
       },
@@ -38,7 +38,7 @@ describe('combineParams', () => {
   })
 
   test('given params with overlap of different types, combines overlapped into new tuple', () => {
-    const input: Record<string, Param[]>[] = [
+    const input: PathParams[] = [
       {
         foo: [String],
       },

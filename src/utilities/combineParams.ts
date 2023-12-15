@@ -1,7 +1,7 @@
-import { Param } from '@/types'
+import { PathParams } from '@/types'
 
-export function combineParams(...params: Record<string, Param[]>[]): Record<string, Param[]> {
-  return params.reduce<Record<string, Param[]>>((combined, collection) => {
+export function combineParams(...params: PathParams[]): PathParams {
+  return params.reduce<PathParams>((combined, collection) => {
     Object.entries(collection).forEach(([key, params]) => {
       if (key in combined) {
         params.forEach(param => {
