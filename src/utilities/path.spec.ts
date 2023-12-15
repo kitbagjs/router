@@ -37,4 +37,14 @@ describe('path', () => {
       childId: [String],
     })
   })
+
+  test('given path with the same param name one required and one optional, returns both in tuple', () => {
+    const response = path('/foo/:foo/sub/:?foo', {
+      foo: Boolean,
+    })
+
+    expect(JSON.stringify(response.params)).toMatchObject(JSON.stringify({
+      foo: [Boolean, optional(Boolean)],
+    }))
+  })
 })
