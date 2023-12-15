@@ -1,7 +1,5 @@
-import { optional } from '@/types'
-import { Param } from '@/types/params'
-import { ExtractParamsFromPathString } from '@/types/routeMethods'
-import { Identity } from '@/types/utilities'
+import { optional, Param, ExtractParamsFromPathString, Identity } from '@/types'
+import { combineParams, getCaptureGroup } from '@/utilities'
 
 type PathParams<T extends string> = {
   [K in keyof ExtractParamsFromPathString<T>]?: Param
@@ -16,31 +14,37 @@ export type Path<
 }
 
 export function path<T extends string, P extends PathParams<T>>(path: T, params: Identity<P>): Path<T, P> {
-  const optionalParamRegex = /:\?([\w]+)(?=\W|$)/g
-  const requiredParamRegex = /:([\w]+)(?=\W|$)/g
+  const optionalParamNames = getCaptureGroup(path, /:\?([\w]+)(?=\W|$)/g)
+  const requiredParamNames = getCaptureGroup(path, /:([\w]+)(?=\W|$)/g)
 
-  const value: Record<string, any> = params
-  let match
-
-  while ((match = optionalParamRegex.exec(path)) !== null) {
-    const [, paramName] = match
-
+  const optionalParams = optionalParamNames.reduce<Record<string, any>>((reduced, paramName) => {
     if (!(paramName in params)) {
-      value[paramName] = paramName in params ? optional(params[paramName]) : optional(String)
+      const param = getParam(params, paramName)
+      reduced[paramName] = param ? optional(param) : optional(String)
     }
-  }
 
-  while ((match = requiredParamRegex.exec(path)) !== null) {
-    const [, paramName] = match
+    return params
+  }, {})
 
-
+  const requiredParams = requiredParamNames.reduce<Record<string, any>>((reduced, paramName) => {
     if (!(paramName in params)) {
-      value[paramName] = params[paramName] ?? String
+      const param = getParam(params, paramName)
+      reduced[paramName] = param ?? String
     }
-  }
+
+    return params
+  }, {})
 
   return {
     path,
-    params: value,
+    params: combineParams(optionalParams, requiredParams),
   }
+}
+
+function getParam<T extends string, P extends PathParams<T>>(params: P, key: string): Param | undefined {
+  if (key in params) {
+    return params[key as keyof P]
+  }
+
+  return undefined
 }
