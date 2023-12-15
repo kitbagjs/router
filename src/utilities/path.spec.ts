@@ -17,8 +17,8 @@ describe('path', () => {
     const response = path(input, {})
 
     expect(response.params).toMatchObject({
-      parentId: String,
-      childId: String,
+      parentId: [String],
+      childId: [String],
     })
   })
 
@@ -28,8 +28,8 @@ describe('path', () => {
     const response = path(input, {})
 
     expect(JSON.stringify(response.params)).toMatch(JSON.stringify({
-      parentId: optional(String),
-      childId: optional(String),
+      parentId: [optional(String)],
+      childId: [optional(String)],
     }))
   })
 
@@ -41,8 +41,8 @@ describe('path', () => {
     const response = path('/parent/:parentId/child/:childId', userDefinedParams)
 
     expect(response.params).toMatchObject({
-      parentId: Boolean,
-      childId: String,
+      parentId: [Boolean],
+      childId: [String],
     })
   })
 })

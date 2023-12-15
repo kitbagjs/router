@@ -6,7 +6,7 @@ const extras: ParamExtras = {
   },
 }
 
-const booleanParam: ParamGetSet = {
+const booleanParam: ParamGetSet<unknown> = {
   get: (value, { invalid }) => {
     if (value === 'true') {
       return true
@@ -27,7 +27,7 @@ const booleanParam: ParamGetSet = {
   },
 }
 
-const numberParam: ParamGetSet = {
+const numberParam: ParamGetSet<unknown> = {
   get: (value, { invalid }) => {
     // Number('') === 0
     if (value.length === 0) {
@@ -44,14 +44,14 @@ const numberParam: ParamGetSet = {
   },
   set: (value, { invalid }) => {
     if (typeof value !== 'number') {
-      invalid()
+      throw invalid()
     }
 
     return value.toString()
   },
 }
 
-export function getParamValue<T extends Param>(value: string, param: T): ExtractParamType<T> {
+export function getParamValue<T extends Param>(value: string, param: T): unknown {
   if (param === Boolean) {
     return booleanParam.get(value, extras)
   }

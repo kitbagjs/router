@@ -1,5 +1,5 @@
 import { optional, Param, ExtractParamsFromPathString, Identity } from '@/types'
-import { combineParams, getCaptureGroup } from '@/utilities'
+import { combineParams } from '@/utilities'
 
 type PathParams<T extends string> = {
   [K in keyof ExtractParamsFromPathString<T>]?: Param
@@ -7,44 +7,31 @@ type PathParams<T extends string> = {
 
 export type Path<
   T extends string = any,
-  P extends PathParams<T> = any
+  P extends Record<string, Param[]> = any
 > = {
   path: T,
-  params: P,
+  params: Required<P>,
 }
 
-export function path<T extends string, P extends PathParams<T>>(path: T, params: Identity<P>): Path<T, P> {
-  const optionalParamNames = getCaptureGroup(path, /:\?([\w]+)(?=\W|$)/g)
-  const requiredParamNames = getCaptureGroup(path, /:([\w]+)(?=\W|$)/g)
+function getParam<P extends Record<string, Param | undefined>>(params: P, param: string): Param {
+  return params[param] ?? String
+}
 
-  const optionalParams = optionalParamNames.reduce<Record<string, any>>((reduced, paramName) => {
-    if (!(paramName in params)) {
-      const param = getParam(params, paramName)
-      reduced[paramName] = param ? optional(param) : optional(String)
+export function path<T extends string, P extends PathParams<T>>(path: T, params: Identity<P>): Path<T> {
+  const paramPattern = /:\??([\w]+)(?=\W|$)/g
+  const matches = Array.from(path.matchAll(paramPattern))
+
+  const paramAssignments = matches.map(([match, paramName]) => {
+    const isOptional = match.startsWith(':?')
+    const param = getParam(params, paramName)
+
+    return {
+      [paramName]: [isOptional ? optional(param) : param],
     }
-
-    return params
-  }, {})
-
-  const requiredParams = requiredParamNames.reduce<Record<string, any>>((reduced, paramName) => {
-    if (!(paramName in params)) {
-      const param = getParam(params, paramName)
-      reduced[paramName] = param ?? String
-    }
-
-    return params
-  }, {})
+  })
 
   return {
     path,
-    params: combineParams(optionalParams, requiredParams),
+    params: combineParams(...paramAssignments),
   }
-}
-
-function getParam<T extends string, P extends PathParams<T>>(params: P, key: string): Param | undefined {
-  if (key in params) {
-    return params[key as keyof P]
-  }
-
-  return undefined
 }
