@@ -3,7 +3,7 @@ import { Path, combineParams, path } from '@/utilities'
 
 export function flattenRoutes(routes: Routes, parentPath = '', parentParams = {}): RouteFlat[] {
   return routes.reduce<RouteFlat[]>((value, route) => {
-    const { params }: Path = typeof route.path === 'string' ? path(route.path, {}) : route.path
+    const { params } = toPath(route.path)
     const fullPath = parentPath + route.path.toString()
     const fullParams = combineParams(parentParams, params)
 
@@ -24,6 +24,10 @@ export function flattenRoutes(routes: Routes, parentPath = '', parentParams = {}
 
     return value
   }, [])
+}
+
+export function toPath(value: string | Path): Path {
+  return typeof value === 'string' ? path(value, {}) : value
 }
 
 export function generateRouteRegexPattern(value: string): RegExp {
