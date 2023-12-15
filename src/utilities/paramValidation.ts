@@ -1,6 +1,7 @@
-import { ExtractParamsFromPath, Route, RouteFlat, Routes } from '@/types'
+import { RouteFlat } from '@/types'
 
-export function routeParamsAreValid(path: string, route: RouteFlat): boolean {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
+export function routeParamsAreValid(_path: string, _route: RouteFlat): boolean {
   // each param
   // get string value from string path (param)
   // run that through utilities.getParamValue (if non-simple param)

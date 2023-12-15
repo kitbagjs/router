@@ -1,9 +1,9 @@
 import { RouteFlat, Routes, isParentRoute, isNamedRoute } from '@/types'
-import { Path, combineParams, path as createPath } from '@/utilities'
+import { Path, combineParams, path } from '@/utilities'
 
 export function flattenRoutes(routes: Routes, parentPath = '', parentParams = {}): RouteFlat[] {
   return routes.reduce<RouteFlat[]>((value, route) => {
-    const { params }: Path = typeof route.path === 'string' ? createPath(route.path, {}) : route.path
+    const { params }: Path = typeof route.path === 'string' ? path(route.path, {}) : route.path
     const fullPath = parentPath + route.path.toString()
     const fullParams = combineParams(parentParams, params)
 
