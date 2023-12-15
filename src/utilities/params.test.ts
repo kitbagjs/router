@@ -61,13 +61,15 @@ describe('setParamValue', () => {
   test('returns for correct value for Boolean', () => {
     expect(setParamValue(true, Boolean)).toBe('true')
     expect(setParamValue(false, Boolean)).toBe('false')
-    expect(() => setParamValue('' as unknown as boolean, Boolean)).toThrowError()
+    // @ts-expect-error testing ignore type
+    expect(() => setParamValue('', Boolean)).toThrowError()
   })
 
   test('returns for correct value for Number', () => {
     expect(setParamValue(1, Number)).toBe('1')
     expect(setParamValue(1.5, Number)).toBe('1.5')
-    expect(() => setParamValue('' as unknown as number, Number)).toThrowError()
+    // @ts-expect-error testing ignore type
+    expect(() => setParamValue('', Number)).toThrowError()
   })
 
   test('returns for correct value for RegExp', () => {

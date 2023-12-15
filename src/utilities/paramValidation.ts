@@ -6,5 +6,5 @@ export function routeParamsAreValid(path: string, route: RouteFlat): boolean {
   // run that through utilities.getParamValue (if non-simple param)
   // if it throws exception, consider not swallowing
 
-  throw 'not implemented'
+  return true
 }

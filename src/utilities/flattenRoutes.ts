@@ -1,12 +1,14 @@
-import { RouteFlat, Routes, isParentRoute, isNamedRoute, Param } from '@/types'
-import { path, Path } from '@/utilities'
+import { RouteFlat, Routes, isParentRoute, isNamedRoute } from '@/types'
+import { Path, combineParams, path as createPath } from '@/utilities'
 
-export function flattenRoutes(routes: Routes, path = ''): RouteFlat[] {
+export function flattenRoutes(routes: Routes, parentPath = '', parentParams = {}): RouteFlat[] {
   return routes.reduce<RouteFlat[]>((value, route) => {
-    const fullPath = path + route.path.toString()
+    const { params }: Path = typeof route.path === 'string' ? createPath(route.path, {}) : route.path
+    const fullPath = parentPath + route.path.toString()
+    const fullParams = combineParams(parentParams, params)
 
     if (isParentRoute(route)) {
-      const flattened = flattenRoutes(route.children, fullPath)
+      const flattened = flattenRoutes(route.children, fullPath, fullParams)
 
       value.push(...flattened)
     }
@@ -14,20 +16,14 @@ export function flattenRoutes(routes: Routes, path = ''): RouteFlat[] {
     if (isNamedRoute(route)) {
       value.push({
         name: route.name,
+        params: fullParams,
         path: fullPath,
         regex: generateRouteRegexPattern(fullPath),
-        params: getRouteParams(route.path),
       })
     }
 
     return value
   }, [])
-}
-
-export function getRouteParams(value: string | Path): Record<string, Param[]> {
-  const { params } = typeof value === 'string' ? path(value, {}) : value
-
-  return params
 }
 
 export function generateRouteRegexPattern(value: string): RegExp {

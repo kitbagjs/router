@@ -1,3 +1,4 @@
+export * from './combineParams'
 export * from './createRouter'
 export * from './flattenRoutes'
 export * from './paramValidation'

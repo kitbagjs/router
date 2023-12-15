@@ -1,4 +1,4 @@
-import { Param, ParamGetSet, ParamExtras, isParamGetSet, isParamGetter, InvalidRouteParamValueError, ParamReturn } from '@/types'
+import { Param, ParamGetSet, ParamExtras, isParamGetSet, isParamGetter, InvalidRouteParamValueError, ExtractParamType } from '@/types'
 
 const extras: ParamExtras = {
   invalid: (message?: string) => {
@@ -6,7 +6,7 @@ const extras: ParamExtras = {
   },
 }
 
-const booleanParam: ParamGetSet<boolean> = {
+const booleanParam: ParamGetSet = {
   get: (value, { invalid }) => {
     if (value === 'true') {
       return true
@@ -27,7 +27,7 @@ const booleanParam: ParamGetSet<boolean> = {
   },
 }
 
-const numberParam: ParamGetSet<number> = {
+const numberParam: ParamGetSet = {
   get: (value, { invalid }) => {
     // Number('') === 0
     if (value.length === 0) {
@@ -51,7 +51,7 @@ const numberParam: ParamGetSet<number> = {
   },
 }
 
-export function getParamValue<T extends Param>(value: string, param: T): ParamReturn<T> {
+export function getParamValue<T extends Param>(value: string, param: T): ExtractParamType<T> {
   if (param === Boolean) {
     return booleanParam.get(value, extras)
   }
@@ -79,7 +79,7 @@ export function getParamValue<T extends Param>(value: string, param: T): ParamRe
   return value
 }
 
-export function setParamValue<T extends Param>(value: ParamReturn<T>, param: T): string {
+export function setParamValue<T extends Param>(value: ExtractParamType<T>, param: T): string {
   if (param === Boolean) {
     return booleanParam.set(value, extras)
   }

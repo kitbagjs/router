@@ -1,12 +1,21 @@
-import { Param, ParamGetter } from '@/types/params'
-import { getParamValue } from '@/utilities'
+import { ExtractParamType, Param, ParamGetSet } from '@/types'
+import { getParamValue, setParamValue } from '@/utilities'
 
-export function optional<T extends Param>(param: T): ParamGetter<T | undefined> {
-  return (value: string | undefined) => {
-    if (value === undefined) {
-      return undefined
-    }
+export function optional<TParam extends Param, TValue extends ExtractParamType<TParam>>(param: TParam): ParamGetSet<TValue | undefined> {
+  return {
+    get: (value) => {
+      if (value === '') {
+        return undefined
+      }
 
-    return getParamValue(value, param)
+      return getParamValue(value, param)
+    },
+    set: (value) => {
+      if (value === undefined) {
+        return ''
+      }
+
+      return setParamValue(value, param)
+    },
   }
 }

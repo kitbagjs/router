@@ -13,12 +13,12 @@ export type Path<
 > = {
   path: T,
   params: P,
-  toString: () => string,
 }
 
 export function path<T extends string, P extends PathParams<T>>(path: T, params: Identity<P>): Path<T, P> {
   const optionalParamRegex = /:\?([\w]+)(?=\W|$)/g
   const requiredParamRegex = /:([\w]+)(?=\W|$)/g
+
   const value: Record<string, any> = params
   let match
 
@@ -26,7 +26,7 @@ export function path<T extends string, P extends PathParams<T>>(path: T, params:
     const [, paramName] = match
 
     if (!(paramName in params)) {
-      value[paramName] = optional(String)
+      value[paramName] = paramName in params ? optional(params[paramName]) : optional(String)
     }
   }
 
@@ -35,13 +35,12 @@ export function path<T extends string, P extends PathParams<T>>(path: T, params:
 
 
     if (!(paramName in params)) {
-      value[paramName] = String
+      value[paramName] = params[paramName] ?? String
     }
   }
 
   return {
     path,
-    params,
-    toString: () => path,
+    params: value,
   }
 }
