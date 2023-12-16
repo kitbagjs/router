@@ -1,5 +1,7 @@
-import { Param, ParamGetSet, ParamGetter, Route, Routes, Path, PathParams } from '@/types'
-import { Identity, IsAny, IsEmptyObject, TupleCanBeAllUndefined, UnionToIntersection } from '@/types/utilities'
+import { Param, ParamGetSet, ParamGetter } from '@/types/params'
+import { Path, PathParams } from '@/types/path'
+import { Route, Routes } from '@/types/routes'
+import { Identity, IsAny, IsEmptyObject, ReplaceAll, TupleCanBeAllUndefined, UnionToIntersection } from '@/types/utilities'
 
 export type RouteMethod<
   TParams extends Record<string, unknown> = any
@@ -56,17 +58,23 @@ export type ExtractRouteMethodParams<T> = T extends RouteMethod<infer Params>
 export type ExtractParamsFromPath<
   TPath extends Route['path']
 > = TPath extends Path
-  ? ExtractParamsFromPathString<TPath['path'], TPath['params']>
+  ? ExtractParamsFromPathString<UnifyParamEnds<TPath['path']>, TPath['params']>
   : TPath extends string
-    ? ExtractParamsFromPathString<TPath>
+    ? ExtractParamsFromPathString<UnifyParamEnds<TPath>>
     : never
+
+type ParamEnd = '/'
+
+type UnifyParamEnds<
+  TPath extends string
+> = ReplaceAll<ReplaceAll<TPath, '-', ParamEnd>, '_', ParamEnd>
 
 export type ExtractParamsFromPathString<
   TPath extends string,
   TParams extends PathParams = Record<never, never>
-> = TPath extends `${infer Path}/`
+> = TPath extends `${infer Path}${ParamEnd}`
   ? ExtractParamsFromPathString<Path, TParams>
-  : TPath extends `${string}:${infer Param}/${infer Rest}`
+  : TPath extends `${string}:${infer Param}${ParamEnd}${infer Rest}`
     ? MergeParams<{ [P in ExtractParamName<Param>]: ExtractPathParamType<Param, TParams> }, ExtractParamsFromPathString<Rest, TParams>>
     : TPath extends `${string}:${infer Param}`
       ? { [P in ExtractParamName<Param>]: ExtractPathParamType<Param, TParams> }
