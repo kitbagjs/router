@@ -1,4 +1,13 @@
 import { Param } from '@/types/params'
+import { ExtractParamsFromPathString } from '@/types/routeMethods'
+
+export type PathParamsParameter<T extends string> = {
+  [K in keyof ExtractParamsFromPathString<T>]?: Param
+}
+
+export type PathParamsParameterToPathParams<TPath extends string, TParams extends PathParamsParameter<TPath>> = {
+  [K in keyof ExtractParamsFromPathString<TPath>]: TParams[K] extends Param ? [TParams[K]] : [StringConstructor]
+}
 
 export type PathParams = Record<string, Param[]>
 
@@ -7,5 +16,5 @@ export type Path<
   P extends PathParams = any
 > = {
   path: T,
-  params: Required<P>,
+  params: P,
 }
