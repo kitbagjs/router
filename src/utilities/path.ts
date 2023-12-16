@@ -1,11 +1,11 @@
-import { optional, Param, Identity, Path, PathParamsParameter, PathParamsParameterToPathParams } from '@/types'
+import { optional, Param, Identity, Path, PathParamsParameter, PathParams } from '@/types'
 import { mergeParams } from '@/utilities'
 
 function getParam<P extends Record<string, Param | undefined>>(params: P, param: string): Param {
   return params[param] ?? String
 }
 
-export function path<T extends string, P extends PathParamsParameter<T>>(path: T, params: Identity<P>): Path<T, PathParamsParameterToPathParams<T, P>> {
+export function path<T extends string, P extends PathParamsParameter<T>>(path: T, params: Identity<P>): Path<T, PathParams<T, P>> {
   const paramPattern = /:\??([\w]+)(?=\W|$)/g
   const matches = Array.from(path.matchAll(paramPattern))
 
@@ -20,6 +20,6 @@ export function path<T extends string, P extends PathParamsParameter<T>>(path: T
 
   return {
     path,
-    params: mergeParams(...paramAssignments) as PathParamsParameterToPathParams<T, P>,
+    params: mergeParams(...paramAssignments) as PathParams<T, P>,
   }
 }
