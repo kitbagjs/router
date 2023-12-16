@@ -1,6 +1,5 @@
 import { Component, DefineComponent } from 'vue'
-import { MaybeLazy } from '@/types/utilities'
-import { Path } from '@/utilities/path'
+import { MaybeLazy, Path } from '@/types'
 
 type RouteComponent = MaybeLazy<Component | DefineComponent>
 
