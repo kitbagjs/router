@@ -11,6 +11,7 @@ export type ParamGetSet<T = any> = {
 }
 
 export type Param = ParamGetter | ParamGetSet | RegExp | BooleanConstructor | NumberConstructor
+export type OptionalParam = Param | undefined
 
 export function isParamGetter(value: Param): value is ParamGetter {
   return typeof value === 'function' && value !== Boolean && value !== Number

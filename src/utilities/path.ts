@@ -1,7 +1,7 @@
-import { optional, Param, Identity, Path, PathParamsParameter, PathParams } from '@/types'
+import { optional, Param, Identity, Path, PathParamsParameter, PathParams, OptionalParam } from '@/types'
 import { mergeParams } from '@/utilities'
 
-function getParam<P extends Record<string, Param | undefined>>(params: P, param: string): Param {
+function getParam<P extends Record<string, OptionalParam>>(params: P, param: string): Param {
   return params[param] ?? String
 }
 
