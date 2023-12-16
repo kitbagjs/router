@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'vitest'
 import { PathParams } from '@/types'
-import { combineParams } from '@/utilities'
+import { mergeParams } from '@/utilities'
 
-describe('combineParams', () => {
+describe('mergeParams', () => {
   test('given params without overlap, returns combination of both', () => {
     const input: PathParams[] = [
       {
@@ -14,7 +14,7 @@ describe('combineParams', () => {
       },
     ]
 
-    const response = combineParams(...input)
+    const response = mergeParams(...input)
 
     expect(response).toHaveProperty('foo')
     expect(response).toHaveProperty('bar')
@@ -31,7 +31,7 @@ describe('combineParams', () => {
       },
     ]
 
-    const response = combineParams(...input)
+    const response = mergeParams(...input)
 
     expect(response).toHaveProperty('foo')
     expect(response.foo).toMatchObject([String])
@@ -47,7 +47,7 @@ describe('combineParams', () => {
       },
     ]
 
-    const response = combineParams(...input)
+    const response = mergeParams(...input)
 
     expect(response).toHaveProperty('foo')
     expect(response.foo).toMatchObject([String, Number])

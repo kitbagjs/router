@@ -1,5 +1,5 @@
 import { optional, Param, ExtractParamsFromPathString, Identity, Path } from '@/types'
-import { combineParams } from '@/utilities'
+import { mergeParams } from '@/utilities'
 
 type PathParamsParameter<T extends string> = {
   [K in keyof ExtractParamsFromPathString<T>]?: Param
@@ -24,6 +24,6 @@ export function path<T extends string, P extends PathParamsParameter<T>>(path: T
 
   return {
     path,
-    params: combineParams(...paramAssignments),
+    params: mergeParams(...paramAssignments),
   }
 }
