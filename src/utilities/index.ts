@@ -1,6 +1,7 @@
 export * from './createRouter'
 export * from './flattenRoutes'
 export * from './mergeParams'
+export * from './paramValidation'
 export * from './params'
 export * from './path'
 export * from './random'

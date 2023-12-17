@@ -5,7 +5,7 @@ import { createRouter } from '@/utilities'
 const component = { template: '<div>This is component</div>' }
 
 describe('router.routeMatch', () => {
-  test('given path without params, returns unmodified regex', () => {
+  test('given path without params, returns match', () => {
     const routes = [
       {
         name: 'parent',
@@ -27,14 +27,12 @@ describe('router.routeMatch', () => {
     ] as const satisfies Routes
 
     const router = createRouter(routes)
-    const matches = router.routeMatch('/parent/child/grandchild')
+    const match = router.routeMatch('/parent/child/grandchild')
 
-    expect(matches).toHaveLength(1)
-    const [singleRoute] = matches
-    expect(singleRoute.regex).toMatchObject(new RegExp('/parent/child/grandchild'))
+    expect(match?.name).toBe('grandchild')
   })
 
-  test('given path to unnamed parent, without option to get to leaf, returns empty array', () => {
+  test('given path to unnamed parent, without option to get to leaf, returns undefined', () => {
     const routes = [
       {
         path: '/unnamed',
@@ -55,9 +53,9 @@ describe('router.routeMatch', () => {
     ] as const satisfies Routes
 
     const router = createRouter(routes)
-    const matches = router.routeMatch('/unnamed')
+    const match = router.routeMatch('/unnamed')
 
-    expect(matches).toHaveLength(0)
+    expect(match).toBeUndefined()
   })
 
   test('given path to unnamed  parent, with option to get to leaf, returns available leaf', () => {
@@ -74,14 +72,12 @@ describe('router.routeMatch', () => {
       },
     ] as const satisfies Routes
     const router = createRouter(routes)
-    const matches = router.routeMatch('/unnamed')
+    const match = router.routeMatch('/unnamed')
 
-    expect(matches).toHaveLength(1)
-    const [singleRoute] = matches
-    expect(singleRoute.name).toBe('unnamed-child-root')
+    expect(match?.name).toBe('unnamed-child-root')
   })
 
-  test('given path that includes named parent and path to leaf, includes every named route parent the way', () => {
+  test('given path that includes named parent and path to leaf, return first match', () => {
     const router = createRouter([
       {
         name: 'namedParent',
@@ -101,8 +97,8 @@ describe('router.routeMatch', () => {
         ],
       },
     ])
-    const matches = router.routeMatch('/named-parent')
+    const match = router.routeMatch('/named-parent')
 
-    expect(matches.map(match => match.name)).toMatchObject(['namedGrandchild', 'namedChild', 'namedParent'])
+    expect(match?.name).toBe('namedGrandchild')
   })
 })

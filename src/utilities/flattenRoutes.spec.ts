@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { Route, Routes } from '@/types'
-import { flattenRoutes, generateRouteRegexPattern } from '@/utilities'
+import { flattenRoutes, generateRouteRegexPattern, path } from '@/utilities'
 
 const component = { template: '<div>This is component</div>' }
 
@@ -47,10 +47,30 @@ describe('flattenRoutes', () => {
     expect(response).toHaveLength(6)
   })
 
-  test('always combines paths into return value', () => {
+  test('always combines paths into return path', () => {
     const childRoute: Route = {
       name: 'new-account',
       path: '/new',
+      component,
+    }
+
+    const parentRoute: Route = {
+      name: 'accounts',
+      path: '/accounts',
+      children: [childRoute],
+    }
+
+    const [response] = flattenRoutes([parentRoute])
+
+    expect(response.path).toBe(parentRoute.path + childRoute.path)
+  })
+
+  test('given path not as string, still combines to path', () => {
+    const childRoute: Route = {
+      name: 'edit-account',
+      path: path('/:accountId', {
+        accountId: Number,
+      }),
       component,
     }
 
