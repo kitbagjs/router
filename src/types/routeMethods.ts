@@ -65,18 +65,18 @@ export type ExtractParamsFromPath<
 
 type ParamEnd = '/'
 
-export type UnifyParamEnds<
+type UnifyParamEnds<
   TPath extends string
 > = ReplaceAll<ReplaceAll<TPath, '-', ParamEnd>, '_', ParamEnd>
 
 export type ExtractParamsFromPathString<
   TPath extends string,
   TParams extends Record<string, Param | undefined> = Record<never, never>
-> = TPath extends `${infer Path}${ParamEnd}`
+> = UnifyParamEnds<TPath> extends `${infer Path}${ParamEnd}`
   ? ExtractParamsFromPathString<Path, TParams>
-  : TPath extends `${string}:${infer Param}${ParamEnd}${infer Rest}`
+  : UnifyParamEnds<TPath> extends `${string}:${infer Param}${ParamEnd}${infer Rest}`
     ? MergeParams<{ [P in ExtractParamName<Param>]: ExtractPathParamType<Param, TParams> }, ExtractParamsFromPathString<Rest, TParams>>
-    : TPath extends `${string}:${infer Param}`
+    : UnifyParamEnds<TPath> extends `${string}:${infer Param}`
       ? { [P in ExtractParamName<Param>]: ExtractPathParamType<Param, TParams> }
       : Record<never, never>
 
