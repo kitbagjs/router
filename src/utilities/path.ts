@@ -1,5 +1,5 @@
 import { Param } from '@/types/params'
-import { ExtractParamsFromPathString } from '@/types/routeMethods'
+import { ExtractParamsFromPathString, UnifyParamEnds } from '@/types/routeMethods'
 import { Identity } from '@/types/utilities'
 
 type PathParams<T extends string> = {
@@ -11,7 +11,7 @@ export type Path<
   P extends PathParams<T> = any
 > = {
   path: T,
-  params: P,
+  params: Identity<ExtractParamsFromPathString<UnifyParamEnds<T>, P>>,
 }
 
 export function path<T extends string, P extends PathParams<T>>(_path: T, _params: Identity<P>): Path<T, P> {
