@@ -1,5 +1,6 @@
 import { Param, ExtractParamsFromPathString, Identity, ParamGetSet, ExtractParamType } from '@/types'
 import { getParamValue, mergeParams, setParamValue } from '@/utilities'
+import { stringHasValue } from '@/utilities/string'
 
 type OptionalParam = Param | undefined
 
@@ -41,15 +42,15 @@ export function path<T extends string, P extends PathParams<T>>(path: T, params:
 export function optional<TParam extends Param>(param: TParam): ParamGetSet<ExtractParamType<TParam> | undefined> {
   return {
     get: (value) => {
-      if (value === '') {
+      if (!stringHasValue(value)) {
         return undefined
       }
 
       return getParamValue(value, param)
     },
     set: (value) => {
-      if (value === undefined) {
-        return ''
+      if (!stringHasValue(value)) {
+        return undefined
       }
 
       return setParamValue(value, param)
