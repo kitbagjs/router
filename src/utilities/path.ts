@@ -11,7 +11,7 @@ export type Path<
   P extends PathParams<T> = any
 > = {
   path: T,
-  params: P,
+  params: Identity<ExtractParamsFromPathString<T, P>>,
 }
 
 export function path<T extends string, P extends PathParams<T>>(_path: T, _params: Identity<P>): Path<T, P> {

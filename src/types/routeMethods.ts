@@ -58,9 +58,9 @@ export type ExtractRouteMethodParams<T> = T extends RouteMethod<infer Params>
 export type ExtractParamsFromPath<
   TPath extends Route['path']
 > = TPath extends Path
-  ? ExtractParamsFromPathString<UnifyParamEnds<TPath['path']>, TPath['params']>
+  ? TPath['params']
   : TPath extends string
-    ? ExtractParamsFromPathString<UnifyParamEnds<TPath>>
+    ? Path<TPath, {}>['params']
     : never
 
 type ParamEnd = '/'
@@ -71,12 +71,12 @@ type UnifyParamEnds<
 
 export type ExtractParamsFromPathString<
   TPath extends string,
-  TParams extends Record<string, Param> = Record<never, never>
-> = TPath extends `${infer Path}${ParamEnd}`
+  TParams extends Record<string, Param | undefined> = Record<never, never>
+> = UnifyParamEnds<TPath> extends `${infer Path}${ParamEnd}`
   ? ExtractParamsFromPathString<Path, TParams>
-  : TPath extends `${string}:${infer Param}${ParamEnd}${infer Rest}`
+  : UnifyParamEnds<TPath> extends `${string}:${infer Param}${ParamEnd}${infer Rest}`
     ? MergeParams<{ [P in ExtractParamName<Param>]: ExtractPathParamType<Param, TParams> }, ExtractParamsFromPathString<Rest, TParams>>
-    : TPath extends `${string}:${infer Param}`
+    : UnifyParamEnds<TPath> extends `${string}:${infer Param}`
       ? { [P in ExtractParamName<Param>]: ExtractPathParamType<Param, TParams> }
       : Record<never, never>
 
@@ -115,7 +115,7 @@ type ExtractParamName<
 
 type ExtractPathParamType<
   TParam extends string,
-  TParams extends Record<string, Param>
+  TParams extends Record<string, Param | undefined>
 > = TParam extends `?${infer OptionalParam}`
   ? OptionalParam extends keyof TParams
     ? ExtractParamType<TParams[OptionalParam]> | undefined
@@ -124,7 +124,7 @@ type ExtractPathParamType<
     ? ExtractParamType<TParams[TParam]>
     : string
 
-type ExtractParamType<TParam extends Param> = TParam extends ParamGetSet<infer Type>
+type ExtractParamType<TParam extends Param | undefined> = TParam extends ParamGetSet<infer Type>
   ? Type
   : TParam extends ParamGetter
     ? ReturnType<TParam>
