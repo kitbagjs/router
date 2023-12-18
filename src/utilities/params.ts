@@ -7,6 +7,23 @@ const extras: ParamExtras = {
   },
 }
 
+const stringParam: ParamGetSet<unknown> = {
+  get: (value, { invalid }) => {
+    if (typeof value !== 'string') {
+      throw invalid()
+    }
+
+    return value
+  },
+  set: (value, { invalid }) => {
+    if (typeof value !== 'string') {
+      throw invalid()
+    }
+
+    return value.toString()
+  },
+}
+
 const booleanParam: ParamGetSet<unknown> = {
   get: (value, { invalid }) => {
     if (value === 'true') {
@@ -54,6 +71,10 @@ const numberParam: ParamGetSet<unknown> = {
 
 export function getParamValue<T extends Param>(value: string, param: T): ExtractParamType<T>
 export function getParamValue<T extends Param>(value: string, param: T): unknown {
+  if (param === String) {
+    return stringParam.get(value, extras)
+  }
+
   if (param === Boolean) {
     return booleanParam.get(value, extras)
   }
