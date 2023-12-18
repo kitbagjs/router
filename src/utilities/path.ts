@@ -1,5 +1,5 @@
-import { optional, Param, ExtractParamsFromPathString, Identity } from '@/types'
-import { mergeParams } from '@/utilities'
+import { Param, ExtractParamsFromPathString, Identity, ParamGetSet, ExtractParamType } from '@/types'
+import { getParamValue, mergeParams, setParamValue } from '@/utilities'
 
 type OptionalParam = Param | undefined
 
@@ -34,6 +34,25 @@ export function path<T extends string, P extends PathParams<T>>(path: T, params:
 
   return {
     path,
-    params: mergeParams(...paramAssignments) as Identity<ExtractParamsFromPathString<T, P>>,
+    params: mergeParams(...paramAssignments) as Path<T, P>['params'],
+  }
+}
+
+export function optional<TParam extends Param>(param: TParam): ParamGetSet<ExtractParamType<TParam> | undefined> {
+  return {
+    get: (value) => {
+      if (value === '') {
+        return undefined
+      }
+
+      return getParamValue(value, param)
+    },
+    set: (value) => {
+      if (value === undefined) {
+        return ''
+      }
+
+      return setParamValue(value, param)
+    },
   }
 }

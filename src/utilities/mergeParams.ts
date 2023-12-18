@@ -4,11 +4,7 @@ export function mergeParams(...params: Record<string, Param[]>[]): Record<string
   return params.reduce<Record<string, Param[]>>((combined, collection) => {
     Object.entries(collection).forEach(([key, params]) => {
       if (key in combined) {
-        params.forEach(param => {
-          if (!combined[key].includes(param)) {
-            combined[key].push(param)
-          }
-        })
+        params.forEach(param => combined[key].push(param))
       } else {
         combined[key] = params
       }

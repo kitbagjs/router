@@ -1,6 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { optional } from '@/types'
-import { path } from '@/utilities'
+import { optional, path } from '@/utilities'
 
 describe('path', () => {
   test('given path without params, returns empty object', () => {
@@ -43,7 +42,7 @@ describe('path', () => {
       foo: Boolean,
     })
 
-    expect(JSON.stringify(response.params)).toMatchObject(JSON.stringify({
+    expect(JSON.stringify(response.params)).toMatch(JSON.stringify({
       foo: [Boolean, optional(Boolean)],
     }))
   })
