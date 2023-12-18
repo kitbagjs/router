@@ -82,7 +82,7 @@ describe('flattenRoutes', () => {
 
     const [response] = flattenRoutes([parentRoute])
 
-    expect(response.path).toBe(parentRoute.path + childRoute.path)
+    expect(response.path).toBe(`${parentRoute.path}/:accountId`)
   })
 })
 

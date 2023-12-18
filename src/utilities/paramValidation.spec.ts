@@ -52,7 +52,7 @@ describe('routeParamsAreValid', () => {
     }
     const [flat] = flattenRoutes([route])
 
-    const response = routeParamsAreValid('/simple', flat)
+    const response = routeParamsAreValid('/simple/', flat)
 
     expect(response).toBe(true)
   })

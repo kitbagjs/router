@@ -1,8 +1,8 @@
-import { PathParams } from '@/types/path'
+import { Param } from '@/types/params'
 
 export type RouteFlat = {
   name: string,
   path: string,
   regex: RegExp,
-  params: PathParams,
+  params: Record<string, Param[]>,
 }

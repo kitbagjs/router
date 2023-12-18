@@ -1,20 +1,18 @@
 import { Param, RouteFlat } from '@/types'
 import { getParamValue, findParamValues } from '@/utilities'
 
-export function routeParamsAreValid(value: string, route: RouteFlat): boolean {
-  const entries = Object.entries<Param[]>(route.params)
+export function routeParamsAreValid(url: string, route: RouteFlat): boolean {
+  const params = Object.entries<Param[]>(route.params)
 
-  if (entries.length === 0) {
-    return true
-  }
-
-  for (const [key, paramsTuple] of entries) {
-    const stringValues = findParamValues(value, route.path, key)
+  for (const [key, paramsTuple] of params) {
+    const stringValues = findParamValues(url, route.path, key)
 
     try {
-      const parsed = stringValues.map((stringValue, index) => getParamValue(stringValue, paramsTuple[index]))
+      paramsTuple.forEach((param, index) => {
+        const stringValue = stringValues[index]
 
-      console.log(parsed)
+        return getParamValue(stringValue, param)
+      })
     } catch {
       return false
     }
