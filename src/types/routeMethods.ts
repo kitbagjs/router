@@ -77,7 +77,7 @@ export type ExtractParamsFromPathString<
   : UnifyParamEnds<TPath> extends `${string}:${infer Param}${ParamEnd}${infer Rest}`
     ? MergeParams<{ [P in ExtractParamName<Param>]: ExtractPathParamType<Param, TParams> }, ExtractParamsFromPathString<Rest, TParams>>
     : UnifyParamEnds<TPath> extends `${string}:${infer Param}`
-      ? { [P in ExtractParamName<Param>]: ExtractPathParamType<Param, TParams> }
+      ? { [P in ExtractParamName<Param>]: [ExtractPathParamType<Param, TParams>] }
       : Record<never, never>
 
 type MergeParams<
