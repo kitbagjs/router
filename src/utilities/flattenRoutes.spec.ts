@@ -101,7 +101,7 @@ describe('generateRouteRegexPattern', () => {
 
     const result = generateRouteRegexPattern(input)
 
-    const catchAll = '([^/]+)'
+    const catchAll = '(.+)'
     const expected = new RegExp(`^parent/child/${catchAll}/grand-child/${catchAll}$`)
     expect(result.toString()).toBe(expected.toString())
   })
@@ -111,7 +111,7 @@ describe('generateRouteRegexPattern', () => {
 
     const result = generateRouteRegexPattern(input)
 
-    const catchAll = '([^/]*)'
+    const catchAll = '(.*)'
     const expected = new RegExp(`^parent/child/${catchAll}/grand-child/${catchAll}$`)
     expect(result.toString()).toBe(expected.toString())
   })
