@@ -124,7 +124,7 @@ type ExtractPathParamType<
     ? ExtractParamType<TParams[TParam]>
     : string
 
-type ExtractParamType<TParam extends Param | undefined> = TParam extends ParamGetSet<infer Type>
+export type ExtractParamType<TParam extends Param | undefined> = TParam extends ParamGetSet<infer Type>
   ? Type
   : TParam extends ParamGetter
     ? ReturnType<TParam>
