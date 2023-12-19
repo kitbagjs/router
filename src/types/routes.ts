@@ -23,7 +23,7 @@ export type ChildRoute<
   public?: boolean,
   path: TRoute,
   component: RouteComponent,
-  middleware?: RouteMiddleware,
+  middleware?: MaybeArray<RouteMiddleware>,
 }
 
 export type Route<
