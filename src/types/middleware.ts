@@ -18,7 +18,7 @@ interface RouteRejection {
 
 type RouteReject = (type?: keyof RouteRejection) => void
 
-type MiddleWareExtras = {
+type MiddlewareExtras = {
   from: Route | null,
   state: RouteState,
   reject: RouteReject,
