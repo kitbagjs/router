@@ -32,9 +32,9 @@ describe('findParamValues', () => {
     expect(response).toMatchObject(['ABC', 'DEF', 'GHI'])
   })
 
-  test('given paramName that matches multiple param on route value is present with some optional, returns each value in array including undefined', () => {
+  test('given paramName that matches multiple param on route value is present with some optional, returns each value in array including empty string', () => {
     const response = findParamValues('/simple/ABC//gap/GHI', '/simple/:simple/:?simple/gap/:simple', 'simple')
 
-    expect(response).toMatchObject(['ABC', undefined, 'GHI'])
+    expect(response).toMatchObject(['ABC', '', 'GHI'])
   })
 })

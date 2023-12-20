@@ -50,7 +50,7 @@ export function optional<TParam extends Param>(param: TParam): ParamGetSet<Extra
     },
     set: (value) => {
       if (!stringHasValue(value)) {
-        return undefined
+        return ''
       }
 
       return setParamValue(value, param)

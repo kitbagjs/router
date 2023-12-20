@@ -2,8 +2,8 @@ export type ParamExtras = {
   invalid: (message?: string) => never,
 }
 
-export type ParamGetter<T = any> = (value: string | undefined, extras: ParamExtras) => T
-export type ParamSetter<T = any> = (value: T, extras: ParamExtras) => string | undefined
+export type ParamGetter<T = any> = (value: string, extras: ParamExtras) => T
+export type ParamSetter<T = any> = (value: T, extras: ParamExtras) => string
 
 export type ParamGetSet<T = any> = {
   get: ParamGetter<T>,

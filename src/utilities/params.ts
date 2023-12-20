@@ -47,7 +47,7 @@ const booleanParam: ParamGetSet<unknown> = {
 
 const numberParam: ParamGetSet<unknown> = {
   get: (value, { invalid }) => {
-    if (value === undefined) {
+    if (value === '') {
       throw invalid()
     }
 
@@ -73,8 +73,8 @@ const numberParam: ParamGetSet<unknown> = {
   },
 }
 
-export function getParamValue<T extends Param>(value: string | undefined, param: T): ExtractParamType<T>
-export function getParamValue<T extends Param>(value: string | undefined, param: T): unknown {
+export function getParamValue<T extends Param>(value: string, param: T): ExtractParamType<T>
+export function getParamValue<T extends Param>(value: string, param: T): unknown {
   if (param === String) {
     return stringParam.get(value, extras)
   }
@@ -96,7 +96,7 @@ export function getParamValue<T extends Param>(value: string | undefined, param:
   }
 
   if (param instanceof RegExp) {
-    if (value !== undefined && param.test(value)) {
+    if (param.test(value)) {
       return value
     }
 
@@ -106,7 +106,7 @@ export function getParamValue<T extends Param>(value: string | undefined, param:
   return value
 }
 
-export function setParamValue(value: unknown, param: Param): string | undefined {
+export function setParamValue(value: unknown, param: Param): string {
   if (param === Boolean) {
     return booleanParam.set(value, extras)
   }

@@ -8,11 +8,7 @@ export function routeParamsAreValid(url: string, route: RouteFlat): boolean {
     const stringValues = findParamValues(url, route.path, key)
 
     try {
-      paramsTuple.forEach((param, index) => {
-        const stringValue = stringValues[index]
-
-        return getParamValue(stringValue, param)
-      })
+      paramsTuple.forEach((param, index) => getParamValue(stringValues[index], param))
     } catch {
       return false
     }
