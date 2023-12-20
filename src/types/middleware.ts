@@ -1,5 +1,6 @@
 import { EffectScope } from 'vue'
 import { MaybePromise } from '@/types/utilities'
+import { Router } from '@/utilities'
 
 type Route = {
   name: string,
@@ -23,6 +24,7 @@ type MiddlewareExtras = {
   state: RouteState,
   reject: RouteReject,
   scope: EffectScope,
+  router: Omit<Router<[]>, 'routes'> & { routes: Record<string, any> },
 }
 
-export type RouteMiddleware = (route: Route, extras: MiddleWareExtras) => MaybePromise<void>
+export type RouteMiddleware = (route: Route, extras: MiddlewareExtras) => MaybePromise<void>
