@@ -11,7 +11,7 @@ export type RouteMethod<
 
 export type RouteMethods<
   TRoutes extends Routes,
-  TParams extends Record<string, unknown>
+  TParams extends Record<string, unknown> = Record<never, never>
 > = UnionToIntersection<RouteMethodsTuple<TRoutes, TParams>[number]>
 
 type RouteMethodsTuple<
