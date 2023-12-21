@@ -1,8 +1,10 @@
 import { RouteFlat, RouteMethods, Routes } from '@/types'
 import { flattenRoutes, routeParamsAreValid } from '@/utilities'
 
-export type Router<T extends Routes> = {
-  routes: RouteMethods<T>,
+export type Router<
+  TRoutes extends Routes
+> = {
+  routes: RouteMethods<TRoutes>,
   push: (url: string) => void,
   replace: (url: string) => void,
   back: () => void,

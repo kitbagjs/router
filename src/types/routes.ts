@@ -5,6 +5,10 @@ import { Path } from '@/utilities/path'
 
 type RouteComponent = MaybeLazy<Component | DefineComponent>
 
+export interface RouteMeta {
+
+}
+
 export type ParentRoute<
   TRoute extends string | Path = any
 > = {
@@ -14,6 +18,7 @@ export type ParentRoute<
   children: Routes,
   component?: RouteComponent,
   middleware?: MaybeArray<RouteMiddleware>,
+  meta?: RouteMeta,
 }
 
 export type ChildRoute<
@@ -24,6 +29,7 @@ export type ChildRoute<
   path: TRoute,
   component: RouteComponent,
   middleware?: MaybeArray<RouteMiddleware>,
+  meta?: RouteMeta,
 }
 
 export type Route<
