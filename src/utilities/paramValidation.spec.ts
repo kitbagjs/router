@@ -31,19 +31,6 @@ describe('routeParamsAreValid', () => {
     expect(response).toBe(true)
   })
 
-  test('given route with simple string param WITHOUT value present, returns false', () => {
-    const route: Route = {
-      name: 'simple-params',
-      path: '/simple/:simple',
-      component,
-    }
-    const [flat] = flattenRoutes([route])
-
-    const response = routeParamsAreValid('/simple', flat)
-
-    expect(response).toBe(false)
-  })
-
   test('given route with OPTIONAL string param WITHOUT value present, returns true', () => {
     const route: Route = {
       name: 'simple-params',

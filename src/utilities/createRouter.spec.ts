@@ -5,7 +5,7 @@ import { createRouter } from '@/utilities'
 const component = { template: '<div>This is component</div>' }
 
 describe('router.routeMatch', () => {
-  test('given path without params, returns match', () => {
+  test('given path WITHOUT params, returns match', () => {
     const routes = [
       {
         name: 'parent',
@@ -100,5 +100,20 @@ describe('router.routeMatch', () => {
     const match = router.routeMatch('/named-parent')
 
     expect(match?.name).toBe('namedGrandchild')
+  })
+
+  test('given route with simple string param WITHOUT value present, returns undefined', () => {
+    const routes: Routes = [
+      {
+        name: 'simple-params',
+        path: '/simple/:simple',
+        component,
+      },
+    ]
+
+    const router = createRouter(routes)
+    const response = router.routeMatch('/simple/')
+
+    expect(response).toBeUndefined()
   })
 })

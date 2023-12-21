@@ -8,11 +8,7 @@ const extras: ParamExtras = {
 }
 
 const stringParam: ParamGetSet<unknown> = {
-  get: (value, { invalid }) => {
-    if (typeof value !== 'string') {
-      throw invalid()
-    }
-
+  get: (value) => {
     return value
   },
   set: (value, { invalid }) => {
@@ -47,15 +43,6 @@ const booleanParam: ParamGetSet<unknown> = {
 
 const numberParam: ParamGetSet<unknown> = {
   get: (value, { invalid }) => {
-    if (value === '') {
-      throw invalid()
-    }
-
-    // Number('') === 0
-    if (value.length === 0) {
-      throw invalid()
-    }
-
     const number = Number(value)
 
     if (isNaN(number)) {
