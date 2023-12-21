@@ -10,7 +10,7 @@ export type ParamGetSet<T = any> = {
   set: ParamSetter<T>,
 }
 
-export type Param = ParamGetter | ParamGetSet | RegExp | BooleanConstructor | NumberConstructor
+export type Param = ParamGetter | ParamGetSet | RegExp | BooleanConstructor | NumberConstructor | StringConstructor
 
 export function isParamGetter(value: Param): value is ParamGetter {
   return typeof value === 'function' && value !== Boolean && value !== Number

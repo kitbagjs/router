@@ -7,13 +7,13 @@ describe('getParamValue', () => {
   test('returns for correct value for Boolean', () => {
     expect(getParamValue('true', Boolean)).toBe(true)
     expect(getParamValue('false', Boolean)).toBe(false)
-    expect(() => getParamValue('', Boolean)).toThrowError()
+    expect(() => getParamValue('foo', Boolean)).toThrowError()
   })
 
   test('returns for correct value for Number', () => {
     expect(getParamValue('1', Number)).toBe(1)
     expect(getParamValue('1.5', Number)).toBe(1.5)
-    expect(() => getParamValue('', Number)).toThrowError()
+    expect(() => getParamValue('foo', Number)).toThrowError()
   })
 
   test('returns for correct value for RegExp', () => {
@@ -21,7 +21,7 @@ describe('getParamValue', () => {
 
     expect(getParamValue('yes', param)).toBe('yes')
     expect(() => getParamValue('no', param)).toThrowError()
-    expect(() => getParamValue('', param)).toThrowError()
+    expect(() => getParamValue('foo', param)).toThrowError()
   })
 
   test('returns for correct value for ParamGetter', () => {
@@ -35,7 +35,7 @@ describe('getParamValue', () => {
 
     expect(getParamValue('yes', param)).toBe('yes')
     expect(() => getParamValue('no', param)).toThrowError()
-    expect(() => getParamValue('', param)).toThrowError()
+    expect(() => getParamValue('foo', param)).toThrowError()
   })
 
   test('returns correct value for ParamGetSet', () => {
@@ -52,7 +52,7 @@ describe('getParamValue', () => {
 
     expect(getParamValue('yes', getter)).toBe('yes')
     expect(() => getParamValue('no', getter)).toThrowError()
-    expect(() => getParamValue('', getter)).toThrowError()
+    expect(() => getParamValue('foo', getter)).toThrowError()
   })
 
 })
@@ -61,13 +61,13 @@ describe('setParamValue', () => {
   test('returns for correct value for Boolean', () => {
     expect(setParamValue(true, Boolean)).toBe('true')
     expect(setParamValue(false, Boolean)).toBe('false')
-    expect(() => setParamValue('', Boolean)).toThrowError()
+    expect(() => setParamValue('foo', Boolean)).toThrowError()
   })
 
   test('returns for correct value for Number', () => {
     expect(setParamValue(1, Number)).toBe('1')
     expect(setParamValue(1.5, Number)).toBe('1.5')
-    expect(() => setParamValue('', Number)).toThrowError()
+    expect(() => setParamValue('foo', Number)).toThrowError()
   })
 
   test('returns for correct value for RegExp', () => {
@@ -75,7 +75,7 @@ describe('setParamValue', () => {
 
     expect(setParamValue('yes', param)).toBe('yes')
     expect(() => setParamValue('no', param)).toThrowError()
-    expect(() => setParamValue('', param)).toThrowError()
+    expect(() => setParamValue('foo', param)).toThrowError()
   })
 
   test('returns for correct value for ParamGetter', () => {
@@ -89,7 +89,7 @@ describe('setParamValue', () => {
 
     expect(setParamValue('yes', param)).toBe('yes')
     expect(() => setParamValue('no', param)).toThrowError()
-    expect(() => setParamValue('', param)).toThrowError()
+    expect(() => setParamValue('foo', param)).toThrowError()
   })
 
   test('returns correct value for ParamGetSet', () => {
@@ -112,6 +112,6 @@ describe('setParamValue', () => {
 
     expect(setParamValue('yes', param)).toBe('yes')
     expect(() => setParamValue('no', param)).toThrowError()
-    expect(() => setParamValue('', param)).toThrowError()
+    expect(() => setParamValue('foo', param)).toThrowError()
   })
 })
