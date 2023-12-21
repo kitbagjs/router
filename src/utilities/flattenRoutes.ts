@@ -1,11 +1,14 @@
 import { RouteFlat, Routes, isParentRoute, isNamedRoute } from '@/types'
+import { mergeParams, path as createPath } from '@/utilities'
 
-export function flattenRoutes(routes: Routes, path = ''): RouteFlat[] {
+export function flattenRoutes(routes: Routes, parentPath = '', parentParams = {}): RouteFlat[] {
   return routes.reduce<RouteFlat[]>((value, route) => {
-    const fullPath = path + route.path
+    const { params, path } = typeof route.path === 'string' ? createPath(route.path, {}) : route.path
+    const fullPath = parentPath + path.toString()
+    const fullParams = mergeParams(parentParams, params)
 
     if (isParentRoute(route)) {
-      const flattened = flattenRoutes(route.children, fullPath)
+      const flattened = flattenRoutes(route.children, fullPath, fullParams)
 
       value.push(...flattened)
     }
@@ -13,8 +16,9 @@ export function flattenRoutes(routes: Routes, path = ''): RouteFlat[] {
     if (isNamedRoute(route)) {
       value.push({
         name: route.name,
-        regex: generateRouteRegexPattern(fullPath),
         path: fullPath,
+        params: fullParams,
+        regex: generateRouteRegexPattern(fullPath),
       })
     }
 
@@ -22,10 +26,10 @@ export function flattenRoutes(routes: Routes, path = ''): RouteFlat[] {
   }, [])
 }
 
-export function generateRouteRegexPattern(path: string): RegExp {
+export function generateRouteRegexPattern(value: string): RegExp {
   const optionalParamRegex = /(:\?[\w]+)(?=\W|$)/g
   const requiredParamRegex = /(:[\w]+)(?=\W|$)/g
 
-  const routeRegex = path.replace(optionalParamRegex, '([^/]*)').replace(requiredParamRegex, '([^/]+)')
+  const routeRegex = value.replace(optionalParamRegex, '(.*)').replace(requiredParamRegex, '(.+)')
   return new RegExp(`^${routeRegex}$`)
 }

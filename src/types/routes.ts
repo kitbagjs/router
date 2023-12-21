@@ -1,5 +1,6 @@
 import { Component, DefineComponent } from 'vue'
-import { MaybeLazy } from '@/types/utilities'
+import { RouteMiddleware } from '@/types/middleware'
+import { MaybeArray, MaybeLazy } from '@/types/utilities'
 import { Path } from '@/utilities/path'
 
 type RouteComponent = MaybeLazy<Component | DefineComponent>
@@ -18,11 +19,13 @@ export type ParentRoute = BaseRoute & {
   name?: string,
   children: Routes,
   component?: RouteComponent,
+  middleware?: MaybeArray<RouteMiddleware>,
 }
 
 export type ChildRoute = BaseRoute & {
   name: string,
   component: RouteComponent,
+  middleware?: MaybeArray<RouteMiddleware>,
 }
 
 export type Route = ParentRoute | ChildRoute
