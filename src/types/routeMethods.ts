@@ -32,15 +32,15 @@ type RouteMethodsTuple<
 type RouteMethodsOrMethod<
   TRoute extends Route,
   TParams extends Record<string, unknown>
-> = TRoute extends { path: infer Path, children: infer Children }
+> = TRoute extends { path: infer PathOrPathString extends string | Path, children: infer Children }
   ? Children extends Routes
     ? IsPublicRoute<TRoute> extends true
-      ? RouteMethods<Children, MergeParams<TParams, ExtractParamsFromPath<Path>>> & CreateRouteMethod<TParams, Path>
-      : RouteMethods<Children, MergeParams<TParams, ExtractParamsFromPath<Path>>>
+      ? RouteMethods<Children, MergeParams<TParams, ExtractParamsFromPath<PathOrPathString>>> & CreateRouteMethod<TParams, PathOrPathString>
+      : RouteMethods<Children, MergeParams<TParams, ExtractParamsFromPath<PathOrPathString>>>
     : never
-  : TRoute extends { path: infer Path }
+  : TRoute extends { path: infer PathOrPathString extends string | Path }
     ? IsPublicRoute<TRoute> extends true
-      ? CreateRouteMethod<TParams, Path>
+      ? CreateRouteMethod<TParams, PathOrPathString>
       : never
     : never
 

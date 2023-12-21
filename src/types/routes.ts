@@ -4,28 +4,28 @@ import { Path } from '@/utilities/path'
 
 type RouteComponent = MaybeLazy<Component | DefineComponent>
 
-export type ParentRoute<
-  TRoute extends string | Path = any
-> = {
-  name?: string,
-  path: TRoute,
+export interface RouteMeta {
+
+}
+
+type BaseRoute = {
+  meta?: RouteMeta,
   public?: boolean,
+  path: string | Path,
+}
+
+export type ParentRoute = BaseRoute & {
+  name?: string,
   children: Routes,
   component?: RouteComponent,
 }
 
-export type ChildRoute<
-  TRoute extends string | Path = any
-> = {
+export type ChildRoute = BaseRoute & {
   name: string,
-  public?: boolean,
-  path: TRoute,
   component: RouteComponent,
 }
 
-export type Route<
-  TRoute extends string | Path = any
-> = ParentRoute<TRoute> | ChildRoute<TRoute>
+export type Route = ParentRoute | ChildRoute
 
 export type Routes = Readonly<Route[]>
 
