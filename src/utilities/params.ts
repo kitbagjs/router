@@ -16,7 +16,7 @@ const stringParam: ParamGetSet<unknown> = {
       throw invalid()
     }
 
-    return value.toString()
+    return value
   },
 }
 
