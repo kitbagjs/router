@@ -11,9 +11,9 @@ describe('routeParamsAreValid', () => {
       path: '/no-params',
       component,
     }
-    const [flat] = resolveRoutes([route])
+    const [resolved] = resolveRoutes([route])
 
-    const response = routeParamsAreValid('/no-params', flat)
+    const response = routeParamsAreValid('/no-params', resolved)
 
     expect(response).toBe(true)
   })
@@ -24,9 +24,9 @@ describe('routeParamsAreValid', () => {
       path: '/simple/:simple',
       component,
     }
-    const [flat] = resolveRoutes([route])
+    const [resolved] = resolveRoutes([route])
 
-    const response = routeParamsAreValid('/simple/ABC', flat)
+    const response = routeParamsAreValid('/simple/ABC', resolved)
 
     expect(response).toBe(true)
   })
@@ -37,9 +37,9 @@ describe('routeParamsAreValid', () => {
       path: '/simple/:?simple',
       component,
     }
-    const [flat] = resolveRoutes([route])
+    const [resolved] = resolveRoutes([route])
 
-    const response = routeParamsAreValid('/simple/', flat)
+    const response = routeParamsAreValid('/simple/', resolved)
 
     expect(response).toBe(true)
   })
@@ -52,9 +52,9 @@ describe('routeParamsAreValid', () => {
       }),
       component,
     }
-    const [flat] = resolveRoutes([route])
+    const [resolved] = resolveRoutes([route])
 
-    const response = routeParamsAreValid('/simple/123', flat)
+    const response = routeParamsAreValid('/simple/123', resolved)
 
     expect(response).toBe(true)
   })
@@ -67,9 +67,9 @@ describe('routeParamsAreValid', () => {
       }),
       component,
     }
-    const [flat] = resolveRoutes([route])
+    const [resolved] = resolveRoutes([route])
 
-    const response = routeParamsAreValid('/simple/fail', flat)
+    const response = routeParamsAreValid('/simple/fail', resolved)
 
     expect(response).toBe(false)
   })
@@ -82,9 +82,9 @@ describe('routeParamsAreValid', () => {
       }),
       component,
     }
-    const [flat] = resolveRoutes([route])
+    const [resolved] = resolveRoutes([route])
 
-    const response = routeParamsAreValid('/simple/fail', flat)
+    const response = routeParamsAreValid('/simple/fail', resolved)
 
     expect(response).toBe(false)
   })

@@ -18,10 +18,10 @@ function createRouteMethods<T extends Routes>(_routes: T): RouteMethods<T> {
 }
 
 export function createRouter<T extends Routes>(routes: T): Router<T> {
-  const flattened = resolveRoutes(routes)
+  const resolved = resolveRoutes(routes)
 
   function routeMatch(path: string): Resolved<T[number]> | undefined {
-    return flattened.find(route => route.regex.test(path) && routeParamsAreValid(path, route))
+    return resolved.find(route => route.regex.test(path) && routeParamsAreValid(path, route))
   }
 
   const push: Router<T>['push'] = (_url) => {
