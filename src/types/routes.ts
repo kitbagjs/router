@@ -18,6 +18,7 @@ export type ParentRoute<
   children: Routes,
   component?: RouteComponent,
   middleware?: MaybeArray<RouteMiddleware>,
+  meta?: RouteMeta,
 }
 
 export type ChildRoute<
@@ -28,6 +29,7 @@ export type ChildRoute<
   path: TRoute,
   component: RouteComponent,
   middleware?: MaybeArray<RouteMiddleware>,
+  meta?: RouteMeta,
 }
 
 export type Route<
