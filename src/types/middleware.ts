@@ -9,11 +9,11 @@ type Route = {
   hash: string,
 }
 
-interface RouteState {
+export interface RouteState {
 
 }
 
-interface RouteRejection {
+export interface RouteRejection {
   NotFound: unknown,
 }
 
