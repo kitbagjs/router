@@ -15,7 +15,7 @@ export function resolveRoutes(routes: Routes, parentPath = '', parentParams = {}
 
     if (isNamedRoute(route)) {
       value.push({
-        ...route,
+        matched: route,
         name: route.name,
         path: fullPath,
         params: fullParams,
