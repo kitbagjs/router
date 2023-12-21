@@ -48,17 +48,17 @@ describe('flattenRoutes', () => {
   })
 
   test('always combines paths into return path', () => {
-    const childRoute = {
+    const childRoute: Route = {
       name: 'new-account',
       path: '/new',
       component,
-    } as const satisfies Route
+    }
 
-    const parentRoute = {
+    const parentRoute: Route = {
       name: 'accounts',
       path: '/accounts',
       children: [childRoute],
-    } as const satisfies Route
+    }
 
     const [response] = flattenRoutes([parentRoute])
 
