@@ -1,6 +1,6 @@
 export * from './invalidRouteParamValueError'
 export * from './params'
-export * from './routeFlat'
+export * from './resolved'
 export * from './routeMethods'
 export * from './routes'
 export * from './utilities'

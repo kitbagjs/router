@@ -1,10 +1,10 @@
 import { describe, expect, test } from 'vitest'
 import { Route, Routes } from '@/types'
-import { flattenRoutes, generateRouteRegexPattern, path } from '@/utilities'
+import { resolveRoutes, generateRouteRegexPattern, path } from '@/utilities'
 
 const component = { template: '<div>This is component</div>' }
 
-describe('flattenRoutes', () => {
+describe('resolveRoutes', () => {
   test('always returns 1 record per named route', () => {
     const routes = [
       {
@@ -42,7 +42,7 @@ describe('flattenRoutes', () => {
       },
     ] as const satisfies Routes
 
-    const response = flattenRoutes(routes)
+    const response = resolveRoutes(routes)
 
     expect(response).toHaveLength(6)
   })
@@ -60,7 +60,7 @@ describe('flattenRoutes', () => {
       children: [childRoute],
     }
 
-    const [response] = flattenRoutes([parentRoute])
+    const [response] = resolveRoutes([parentRoute])
 
     expect(response.path).toBe(parentRoute.path + childRoute.path)
   })
@@ -80,7 +80,7 @@ describe('flattenRoutes', () => {
       children: [childRoute],
     }
 
-    const [response] = flattenRoutes([parentRoute])
+    const [response] = resolveRoutes([parentRoute])
 
     expect(response.path).toBe(`${parentRoute.path}/:accountId`)
   })
