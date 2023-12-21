@@ -6,8 +6,14 @@ import { Path } from '@/utilities/path'
 export type RouteMethod<
   TParams extends Record<string, unknown> = any
 > = IsEmptyObject<TParams> extends false
-  ? (params: TParams) => void
-  : () => void
+  ? (params: TParams) => RouteMethodRoute
+  : () => RouteMethodRoute
+
+export type RouteMethodRoute = {
+  push: () => void,
+  replace: () => void,
+  url: string,
+}
 
 export type RouteMethods<
   TRoutes extends Routes,
