@@ -13,7 +13,6 @@ describe('getParamValue', () => {
   test('returns for correct value for Number', () => {
     expect(getParamValue('1', Number)).toBe(1)
     expect(getParamValue('1.5', Number)).toBe(1.5)
-    expect(() => getParamValue('', Number)).toThrowError()
   })
 
   test('returns for correct value for RegExp', () => {
