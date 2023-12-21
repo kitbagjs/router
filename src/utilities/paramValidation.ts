@@ -1,7 +1,7 @@
-import { Param, RouteFlat } from '@/types'
+import { Param, Resolved, Route } from '@/types'
 import { getParamValue, findParamValues } from '@/utilities'
 
-export function routeParamsAreValid(url: string, route: RouteFlat): boolean {
+export function routeParamsAreValid(url: string, route: Resolved<Route>): boolean {
   const params = Object.entries<Param[]>(route.params)
 
   for (const [key, paramsTuple] of params) {

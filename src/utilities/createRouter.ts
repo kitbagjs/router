@@ -1,5 +1,5 @@
-import { RouteFlat, RouteMethods, Routes } from '@/types'
-import { flattenRoutes, routeParamsAreValid } from '@/utilities'
+import { Resolved, RouteMethods, Routes } from '@/types'
+import { resolveRoutes, routeParamsAreValid } from '@/utilities'
 
 export type Router<
   TRoutes extends Routes
@@ -10,7 +10,7 @@ export type Router<
   back: () => void,
   forward: () => void,
   go: (number: number) => void,
-  routeMatch: (path: string) => RouteFlat | undefined,
+  routeMatch: (path: string) => Resolved<TRoutes[number]> | undefined,
 }
 
 function createRouteMethods<T extends Routes>(_routes: T): RouteMethods<T> {
@@ -18,9 +18,9 @@ function createRouteMethods<T extends Routes>(_routes: T): RouteMethods<T> {
 }
 
 export function createRouter<T extends Routes>(routes: T): Router<T> {
-  const flattened = flattenRoutes(routes)
+  const flattened = resolveRoutes(routes)
 
-  function routeMatch(path: string): RouteFlat | undefined {
+  function routeMatch(path: string): Resolved<T[number]> | undefined {
     return flattened.find(route => route.regex.test(path) && routeParamsAreValid(path, route))
   }
 

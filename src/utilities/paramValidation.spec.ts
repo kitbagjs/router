@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { Route } from '@/types'
-import { flattenRoutes, routeParamsAreValid, path } from '@/utilities'
+import { resolveRoutes, routeParamsAreValid, path } from '@/utilities'
 
 const component = { template: '<div>This is component</div>' }
 
@@ -11,7 +11,7 @@ describe('routeParamsAreValid', () => {
       path: '/no-params',
       component,
     }
-    const [flat] = flattenRoutes([route])
+    const [flat] = resolveRoutes([route])
 
     const response = routeParamsAreValid('/no-params', flat)
 
@@ -24,7 +24,7 @@ describe('routeParamsAreValid', () => {
       path: '/simple/:simple',
       component,
     }
-    const [flat] = flattenRoutes([route])
+    const [flat] = resolveRoutes([route])
 
     const response = routeParamsAreValid('/simple/ABC', flat)
 
@@ -37,7 +37,7 @@ describe('routeParamsAreValid', () => {
       path: '/simple/:?simple',
       component,
     }
-    const [flat] = flattenRoutes([route])
+    const [flat] = resolveRoutes([route])
 
     const response = routeParamsAreValid('/simple/', flat)
 
@@ -52,7 +52,7 @@ describe('routeParamsAreValid', () => {
       }),
       component,
     }
-    const [flat] = flattenRoutes([route])
+    const [flat] = resolveRoutes([route])
 
     const response = routeParamsAreValid('/simple/123', flat)
 
@@ -67,7 +67,7 @@ describe('routeParamsAreValid', () => {
       }),
       component,
     }
-    const [flat] = flattenRoutes([route])
+    const [flat] = resolveRoutes([route])
 
     const response = routeParamsAreValid('/simple/fail', flat)
 
@@ -82,7 +82,7 @@ describe('routeParamsAreValid', () => {
       }),
       component,
     }
-    const [flat] = flattenRoutes([route])
+    const [flat] = resolveRoutes([route])
 
     const response = routeParamsAreValid('/simple/fail', flat)
 

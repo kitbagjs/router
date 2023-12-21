@@ -1,6 +1,7 @@
 import { Param } from '@/types/params'
+import { Route } from '@/types/routes'
 
-export type RouteFlat = {
+export type Resolved<T extends Route> = T & {
   name: string,
   path: string,
   regex: RegExp,
