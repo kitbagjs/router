@@ -2,7 +2,7 @@ import { RouteFlat, RouteMethods, Routes } from '@/types'
 import { flattenRoutes, routeParamsAreValid } from '@/utilities'
 
 export type Router<
-  TRoutes extends Routes = []
+  TRoutes extends Routes
 > = {
   routes: RouteMethods<TRoutes>,
   push: (url: string) => void,
