@@ -12,7 +12,7 @@ export type Router<T extends Routes> = {
 }
 
 function createRouteMethods<T extends Routes>(_routes: T): RouteMethods<T> {
-  throw 'not implemented'
+  return {} as any
 }
 
 export function createRouter<T extends Routes>(routes: T): Router<T> {
