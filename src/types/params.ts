@@ -20,10 +20,6 @@ export function isParamGetter(value: Param): value is ParamGetter {
   return typeof value === 'function' && isNotConstructor(value)
 }
 
-export function isParamSetter(value: Param): value is ParamSetter {
-  return typeof value === 'function' && isNotConstructor(value)
-}
-
 export function isParamGetSet(value: Param): value is ParamGetSet {
   return typeof value === 'object'
     && 'get' in value

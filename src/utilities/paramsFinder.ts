@@ -2,7 +2,7 @@ import { Param } from '@/types'
 import { setParamValue } from '@/utilities/params'
 import { stringHasValue } from '@/utilities/string'
 
-export function getParamValues(url: string, path: string, paramName: string): string[] {
+export function getParamValuesFromUrl(url: string, path: string, paramName: string): string[] {
   const regexPattern = getParamRegexPattern(path, paramName)
 
   return getCaptureGroups(url, regexPattern)
@@ -10,16 +10,18 @@ export function getParamValues(url: string, path: string, paramName: string): st
 
 export type ParamReplace = {
   name: string,
-  params: Param[],
-  values: unknown[],
+  params?: Param[],
+  values?: unknown[],
 }
 
-export function setParamValues(path: string, paramReplace?: ParamReplace): string {
+export function setParamValuesOnUrl(path: string, paramReplace?: ParamReplace): string {
   if (!paramReplace) {
     return path
   }
 
-  const { name, params, values } = paramReplace
+  const { name } = { ...paramReplace }
+  const params = paramReplace.params ?? []
+  const values = paramReplace.values ?? []
   const regexPattern = getParamRegexPattern(path, name)
   const captureGroups = getCaptureGroups(path, regexPattern)
 

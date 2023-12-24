@@ -1,4 +1,4 @@
-import { Param, ParamGetSet, ParamExtras, isParamGetSet, isParamGetter, ExtractParamType, isParamSetter } from '@/types'
+import { Param, ParamGetSet, ParamExtras, isParamGetSet, isParamGetter, ExtractParamType } from '@/types'
 import { InvalidRouteParamValueError } from '@/types/invalidRouteParamValueError'
 
 const extras: ParamExtras = {
@@ -102,20 +102,8 @@ export function setParamValue(value: unknown, param: Param): string {
     return numberParam.set(value, extras)
   }
 
-  if (isParamSetter(param)) {
-    return param(value, extras)
-  }
-
   if (isParamGetSet(param)) {
     return param.set(value, extras)
-  }
-
-  if (param instanceof RegExp) {
-    if (typeof value === 'string' && param.test(value)) {
-      return value
-    }
-
-    throw new InvalidRouteParamValueError()
   }
 
   try {

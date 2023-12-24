@@ -4,19 +4,19 @@ import { getParamValue, setParamValue } from '@/utilities/params'
 
 describe('getParamValue', () => {
 
-  test('returns for correct value for Boolean', () => {
+  test('given Boolean constructor Param, returns for correct value for Boolean', () => {
     expect(getParamValue('true', Boolean)).toBe(true)
     expect(getParamValue('false', Boolean)).toBe(false)
     expect(() => getParamValue('foo', Boolean)).toThrowError()
   })
 
-  test('returns for correct value for Number', () => {
+  test('given  Number constructor Param, returns for correct value for Number', () => {
     expect(getParamValue('1', Number)).toBe(1)
     expect(getParamValue('1.5', Number)).toBe(1.5)
     expect(() => getParamValue('foo', Number)).toThrowError()
   })
 
-  test('returns for correct value for RegExp', () => {
+  test('Given Regex Param, returns for correct value for RegExp', () => {
     const param = /yes/
 
     expect(getParamValue('yes', param)).toBe('yes')
@@ -24,7 +24,7 @@ describe('getParamValue', () => {
     expect(() => getParamValue('foo', param)).toThrowError()
   })
 
-  test('returns for correct value for ParamGetter', () => {
+  test('Given Custom Getter Param, returns for correct value for ParamGetter', () => {
     const param: ParamGetter<'yes'> = (value, { invalid }) => {
       if (value !== 'yes') {
         invalid()
@@ -38,7 +38,7 @@ describe('getParamValue', () => {
     expect(() => getParamValue('foo', param)).toThrowError()
   })
 
-  test('returns correct value for ParamGetSet', () => {
+  test('Given Custom GetSet, returns correct value for ParamGetSet', () => {
     const getter: ParamGetSet<'yes'> = {
       get: (value, { invalid }) => {
         if (value !== 'yes') {
@@ -58,27 +58,25 @@ describe('getParamValue', () => {
 })
 
 describe('setParamValue', () => {
-  test('returns for correct value for Boolean', () => {
+  test('Given Boolean Param, returns for correct value for Boolean', () => {
     expect(setParamValue(true, Boolean)).toBe('true')
     expect(setParamValue(false, Boolean)).toBe('false')
     expect(() => setParamValue('foo', Boolean)).toThrowError()
   })
 
-  test('returns for correct value for Number', () => {
+  test('Given Number Param, returns for correct value for Number', () => {
     expect(setParamValue(1, Number)).toBe('1')
     expect(setParamValue(1.5, Number)).toBe('1.5')
     expect(() => setParamValue('foo', Number)).toThrowError()
   })
 
-  test('returns for correct value for RegExp', () => {
+  test('Given Regex Param, returns value as String', () => {
     const param = /yes/
 
     expect(setParamValue('yes', param)).toBe('yes')
-    expect(() => setParamValue('no', param)).toThrowError()
-    expect(() => setParamValue('foo', param)).toThrowError()
   })
 
-  test('returns for correct value for ParamGetter', () => {
+  test('Given Getter Custom Param, returns value as String', () => {
     const param: ParamGetter = (value, { invalid }) => {
       if (value !== 'yes') {
         invalid()
@@ -88,11 +86,9 @@ describe('setParamValue', () => {
     }
 
     expect(setParamValue('yes', param)).toBe('yes')
-    expect(() => setParamValue('no', param)).toThrowError()
-    expect(() => setParamValue('foo', param)).toThrowError()
   })
 
-  test('returns correct value for ParamGetSet', () => {
+  test('Given Custom GetSet Param, returns correct value for ParamGetSet', () => {
     const param: ParamGetSet = {
       get: (value, { invalid }) => {
         if (value !== 'yes') {
