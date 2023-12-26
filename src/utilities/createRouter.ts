@@ -14,6 +14,7 @@ export type Router<
 }
 
 function createRouteMethods<T extends Routes>(_routes: T): RouteMethods<T> {
+  // use assembleUrl(route, args) to generate string URL
   return {} as any
 }
 
