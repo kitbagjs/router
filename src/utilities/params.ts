@@ -102,24 +102,8 @@ export function setParamValue(value: unknown, param: Param): string {
     return numberParam.set(value, extras)
   }
 
-  if (isParamGetter(param)) {
-    const stringValue = (value as any).toString()
-
-    param(stringValue, extras)
-
-    return stringValue
-  }
-
   if (isParamGetSet(param)) {
     return param.set(value, extras)
-  }
-
-  if (param instanceof RegExp) {
-    if (typeof value === 'string' && param.test(value)) {
-      return value
-    }
-
-    throw new InvalidRouteParamValueError()
   }
 
   try {

@@ -12,8 +12,12 @@ export type ParamGetSet<T = any> = {
 
 export type Param = ParamGetter | ParamGetSet | RegExp | BooleanConstructor | NumberConstructor | StringConstructor
 
+function isNotConstructor(value: Param): boolean {
+  return value !== String && value !== Boolean && value !== Number
+}
+
 export function isParamGetter(value: Param): value is ParamGetter {
-  return typeof value === 'function' && value !== Boolean && value !== Number
+  return typeof value === 'function' && isNotConstructor(value)
 }
 
 export function isParamGetSet(value: Param): value is ParamGetSet {
