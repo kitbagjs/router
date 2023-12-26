@@ -8,6 +8,6 @@ type Route<T> = {
   hash: string,
 }
 
-export function useRoute<T extends RouteMethod<any>>(): Identity<Route<T>> {
+export function useRoute<T extends RouteMethod>(): Identity<Route<T>> {
   throw 'not implemented'
 }

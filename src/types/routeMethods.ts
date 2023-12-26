@@ -66,7 +66,7 @@ export type ExtractParamsFromPath<
 > = TPath extends Path
   ? TPath['params']
   : TPath extends string
-    ? Path<TPath, {}>['params']
+    ? Path<TPath, object>['params']
     : never
 
 type ParamEnd = '/'
