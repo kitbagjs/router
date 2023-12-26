@@ -19,9 +19,7 @@ export function setParamValuesOnUrl(path: string, paramReplace?: ParamReplace): 
     return path
   }
 
-  const { name } = { ...paramReplace }
-  const params = paramReplace.params ?? []
-  const values = paramReplace.values ?? []
+  const { name, params = [], values = [] } = paramReplace
   const regexPattern = getParamRegexPattern(path, name)
   const captureGroups = getCaptureGroups(path, regexPattern)
 
