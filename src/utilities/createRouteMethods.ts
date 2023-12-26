@@ -1,18 +1,25 @@
 import { Resolved, Route, isPublicRoute } from '@/types'
 import { assembleUrl } from '@/utilities/urlAssembly'
 
-export function createRouteMethods(routes: Resolved<Route>[]): Record<string, unknown> {
-  return routes.reduce<Record<string, unknown>>((methods, route) => {
-    Object.assign(methods, assembleRouteParentContext(route))
+export function createRouteMethods(routes: Resolved<Route>[]): Record<string, any> {
+  return routes.reduce<Record<string, any>>((methods, route) => {
+    const thing = assembleRouteParentContext(route, [...route.parentNames])
+
+    console.log(JSON.stringify(thing))
 
     return methods
-    // use assembleUrl(route, args) to generate string URL
   }, {})
 }
 
-export function assembleRouteParentContext(route: Resolved<Route>): Record<string, unknown> {
+export function assembleRouteParentContext(route: Resolved<Route>, parentNames: string[]): Record<string, any> {
+  const nextLevel = parentNames.shift()
+
+  if (!nextLevel) {
+    return isPublicRoute(route.matched) ? routeMethodInstance(route) : {}
+  }
+
   return {
-    [route.name]: isPublicRoute(route.matched) ? routeMethodInstance(route) : {},
+    [nextLevel]: assembleRouteParentContext(route, parentNames),
   }
 }
 

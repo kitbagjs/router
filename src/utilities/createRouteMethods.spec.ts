@@ -64,4 +64,31 @@ describe('createRouteMethods', () => {
 
     expect(response.child).not.toBeUndefined()
   })
+
+  test.only('given parent route with named children and grandchildren, has path to grandchild', () => {
+    const routes = [
+      {
+        name: 'parent',
+        path: '/parent',
+        children: [
+          {
+            name: 'child',
+            path: '/child',
+            children: [
+              {
+                name: 'grandchild',
+                path: '/grandchild',
+                component,
+              },
+            ],
+          },
+        ],
+      },
+    ] as const satisfies Routes
+    const resolved = resolveRoutes(routes)
+
+    const response = createRouteMethods(resolved)
+
+    expect(response.child.grandchild).not.toBeUndefined()
+  })
 })
