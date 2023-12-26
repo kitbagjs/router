@@ -47,10 +47,13 @@ describe('resolveRoutes', () => {
     expect(response).toHaveLength(6)
   })
 
-  test('always combines paths into return path', () => {
+  test.each([
+    ['/:accountId'],
+    [path('/:accountId', { accountId: Number })],
+  ])('always combines paths into return path', (path) => {
     const childRoute: Route = {
       name: 'new-account',
-      path: '/new',
+      path,
       component,
     }
 
@@ -60,29 +63,10 @@ describe('resolveRoutes', () => {
       children: [childRoute],
     }
 
-    const [response] = resolveRoutes([parentRoute])
+    const routes = resolveRoutes([parentRoute])
+    const resolvedChild = routes.find(route => route.name === childRoute.name)
 
-    expect(response.path).toBe(parentRoute.path + childRoute.path)
-  })
-
-  test('given path not as string, still combines to path', () => {
-    const childRoute: Route = {
-      name: 'edit-account',
-      path: path('/:accountId', {
-        accountId: Number,
-      }),
-      component,
-    }
-
-    const parentRoute: Route = {
-      name: 'accounts',
-      path: '/accounts',
-      children: [childRoute],
-    }
-
-    const [response] = resolveRoutes([parentRoute])
-
-    expect(response.path).toBe(`${parentRoute.path}/:accountId`)
+    expect(resolvedChild?.path).toBe(`${parentRoute.path}/:accountId`)
   })
 })
 

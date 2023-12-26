@@ -1,14 +1,26 @@
-import { Resolved, Routes, isParentRoute, isNamedRoute, Route } from '@/types'
+import { Resolved, Routes, isParentRoute, isNamedRoute, Route, Param } from '@/types'
 import { mergeParams, path as createPath } from '@/utilities'
 
-export function resolveRoutes(routes: Routes, parentPath = '', parentParams = {}): Resolved<Route>[] {
+type RouteParentContext = {
+  parentPath: string,
+  parentParams: Record<string, Param[]>,
+  parentNames: string[],
+}
+
+export function resolveRoutes(routes: Routes, parents?: RouteParentContext): Resolved<Route>[] {
+  const { parentPath = [], parentParams = {}, parentNames = [] } = { ...parents }
   return routes.reduce<Resolved<Route>[]>((value, route) => {
     const { params, path } = typeof route.path === 'string' ? createPath(route.path, {}) : route.path
     const fullPath = parentPath + path.toString()
     const fullParams = mergeParams(parentParams, params)
+    const fullNames = [...parentNames, ...isNamedRoute(route) ? [route.name] : []]
 
     if (isParentRoute(route)) {
-      const flattened = resolveRoutes(route.children, fullPath, fullParams)
+      const flattened = resolveRoutes(route.children, {
+        parentPath: fullPath,
+        parentParams: fullParams,
+        parentNames: fullNames,
+      })
 
       value.push(...flattened)
     }
@@ -20,6 +32,7 @@ export function resolveRoutes(routes: Routes, parentPath = '', parentParams = {}
         path: fullPath,
         params: fullParams,
         regex: generateRouteRegexPattern(fullPath),
+        parentNames,
       })
     }
 
