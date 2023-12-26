@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { Routes } from '@/types'
-import { createRouteMethods } from '@/utilities'
+import { createRouteMethods, resolveRoutes } from '@/utilities'
 
 const component = { template: '<div>This is component</div>' }
 
@@ -16,8 +16,9 @@ describe('createRouteMethods', () => {
         component,
       },
     ] as const satisfies Routes
+    const resolved = resolveRoutes(routes)
 
-    const response = createRouteMethods(routes)
+    const response = createRouteMethods(resolved)
 
     expect(response.parent).toBeTypeOf('function')
   })
@@ -31,8 +32,9 @@ describe('createRouteMethods', () => {
         component,
       },
     ] as const satisfies Routes
+    const resolved = resolveRoutes(routes)
 
-    const response = createRouteMethods(routes)
+    const response = createRouteMethods(resolved)
 
     expect(response).toMatchObject({})
   })
@@ -56,8 +58,9 @@ describe('createRouteMethods', () => {
         ],
       },
     ] as const satisfies Routes
+    const resolved = resolveRoutes(routes)
 
-    const response = createRouteMethods(routes)
+    const response = createRouteMethods(resolved)
 
     expect(response.child).not.toBeUndefined()
   })
