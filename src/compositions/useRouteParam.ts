@@ -2,7 +2,7 @@ import { Ref } from 'vue'
 import { ExtractRouteMethodParams, RouteMethod } from '@/types/routeMethods'
 
 export function useRouteParam<
-  TRoute extends RouteMethod<any>,
+  TRoute extends RouteMethod,
   TParam extends keyof ExtractRouteMethodParams<TRoute>,
   TParamType extends ExtractRouteMethodParams<TRoute>[TParam]
 >(_route: TRoute, _param: TParam, _defaultValue?: TParamType): Ref<TParamType> {
