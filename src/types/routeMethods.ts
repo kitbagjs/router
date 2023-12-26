@@ -1,5 +1,5 @@
 import { Param, ParamGetSet, ParamGetter } from '@/types/params'
-import { Route, Routes } from '@/types/routes'
+import { IsPublicRoute, Route, Routes } from '@/types/routes'
 import { Identity, IsAny, IsEmptyObject, ReplaceAll, TupleCanBeAllUndefined, UnionToIntersection } from '@/types/utilities'
 import { Path } from '@/utilities/path'
 
@@ -43,12 +43,6 @@ type RouteMethodsOrMethod<
       ? CreateRouteMethod<TParams, Path>
       : never
     : never
-
-type IsPublicRoute<TRoute extends Route> = 'public' extends keyof TRoute
-  ? TRoute extends { public: false }
-    ? false
-    : true
-  : true
 
 type CreateRouteMethod<
   TParams extends Record<string, unknown>,
