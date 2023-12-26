@@ -15,6 +15,16 @@ export function resolveRoutes(routes: Routes, parents?: RouteParentContext): Res
     const fullParams = mergeParams(parentParams, params)
     const fullNames = [...parentNames, ...isNamedRoute(route) ? [route.name] : []]
 
+    if (isParentRoute(route)) {
+      const flattened = resolveRoutes(route.children, {
+        parentPath: fullPath,
+        parentParams: fullParams,
+        parentNames: fullNames,
+      })
+
+      value.push(...flattened)
+    }
+
     if (isNamedRoute(route)) {
       value.push({
         matched: route,
@@ -24,16 +34,6 @@ export function resolveRoutes(routes: Routes, parents?: RouteParentContext): Res
         regex: generateRouteRegexPattern(fullPath),
         parentNames,
       })
-    }
-
-    if (isParentRoute(route)) {
-      const flattened = resolveRoutes(route.children, {
-        parentPath: fullPath,
-        parentParams: fullParams,
-        parentNames: fullNames,
-      })
-
-      value.push(...flattened)
     }
 
     return value
