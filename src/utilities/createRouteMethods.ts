@@ -1,33 +1,55 @@
-import { Resolved, Route, isPublicRoute } from '@/types'
+import { Resolved, Route, RouteMethodRoute, isPublicRoute } from '@/types'
 import { assembleUrl } from '@/utilities/urlAssembly'
 
-export function createRouteMethods(routes: Resolved<Route>[]): Record<string, any> {
-  return routes.reduce<Record<string, any>>((methods, route) => {
-    const thing = assembleRouteParentContext(route, [...route.parentNames])
+type NonCallableNode = Record<string, any>
+type CallableNode = NonCallableNode & {
+  (values: Record<string, unknown[]>): RouteMethodRoute,
+}
+type Node = CallableNode | NonCallableNode
 
-    console.log(JSON.stringify(thing))
+export function createRouteMethods(routes: Resolved<Route>[]): Record<string, Node> {
+  const methods: Record<string, any> = {}
 
-    return methods
-  }, {})
+  routes.forEach(route => {
+    const currentLevel = traverseParents(route, methods)
+    const routeNode = createNodeForRoute(route)
+
+    Object.assign(routeNode, currentLevel[route.name])
+
+    currentLevel[route.name] = routeNode
+  })
+
+  return methods
 }
 
-export function assembleRouteParentContext(route: Resolved<Route>, parentNames: string[]): Record<string, any> {
-  const nextLevel = parentNames.shift()
+function traverseParents(route: Resolved<Route>, currentLevel: Record<string, any>): Record<string, any> {
+  route.parentNames.forEach(parentName => {
+    if (!currentLevel[parentName]) {
+      currentLevel[parentName] = {}
+    }
 
-  if (!nextLevel) {
-    return isPublicRoute(route.matched) ? routeMethodInstance(route) : {}
-  }
+    currentLevel = currentLevel[parentName]
+  })
 
-  return {
-    [nextLevel]: assembleRouteParentContext(route, parentNames),
-  }
+  return currentLevel
 }
 
-export type RouteMethodInstance = (values: Record<string, unknown[]>) => { url: string }
-function routeMethodInstance(route: Resolved<Route>): RouteMethodInstance {
-  return (values) => {
-    const url = assembleUrl(route, values)
-
-    return { url }
+function createNodeForRoute(route: Resolved<Route>): Node {
+  if (isPublicRoute(route.matched)) {
+    return createCallableNode(route)
   }
+
+  return {}
+}
+
+function createCallableNode(route: Resolved<Route>): CallableNode {
+  const node: CallableNode = (values) => {
+    return {
+      push: () => null,
+      replace: () => null,
+      url: assembleUrl(route, values),
+    }
+  }
+
+  return node
 }

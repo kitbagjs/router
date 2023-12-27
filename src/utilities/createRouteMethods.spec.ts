@@ -62,10 +62,14 @@ describe('createRouteMethods', () => {
 
     const response = createRouteMethods(resolved)
 
-    expect(response.child).not.toBeUndefined()
+    expect(response.parent.child).not.toBeUndefined()
+
+    if (isPublic !== false) {
+      expect(response.parent.child).toBeTypeOf('function')
+    }
   })
 
-  test.only('given parent route with named children and grandchildren, has path to grandchild', () => {
+  test('given parent route with named children and grandchildren, has path to grandchild all callable', () => {
     const routes = [
       {
         name: 'parent',
@@ -89,6 +93,8 @@ describe('createRouteMethods', () => {
 
     const response = createRouteMethods(resolved)
 
-    expect(response.child.grandchild).not.toBeUndefined()
+    expect(response.parent).toBeTypeOf('function')
+    expect(response.parent.child).toBeTypeOf('function')
+    expect(response.parent.child.grandchild).toBeTypeOf('function')
   })
 })
