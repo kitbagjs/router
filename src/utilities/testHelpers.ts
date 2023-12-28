@@ -6,3 +6,5 @@ export const random = {
     return randomNumber
   },
 }
+
+export const component = { template: '<div>This is component</div>' }

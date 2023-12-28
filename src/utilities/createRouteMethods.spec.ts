@@ -1,8 +1,7 @@
 import { describe, expect, test } from 'vitest'
 import { Routes } from '@/types'
 import { createRouteMethods, resolveRoutes } from '@/utilities'
-
-const component = { template: '<div>This is component</div>' }
+import { component } from '@/utilities/testHelpers'
 
 describe('createRouteMethods', () => {
   test.each([

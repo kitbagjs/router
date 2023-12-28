@@ -1,8 +1,7 @@
 import { describe, expect, test } from 'vitest'
 import { Route, Routes } from '@/types'
 import { resolveRoutes, generateRouteRegexPattern, path } from '@/utilities'
-
-const component = { template: '<div>This is component</div>' }
+import { component } from '@/utilities/testHelpers'
 
 describe('resolveRoutes', () => {
   test('always returns 1 record per named route', () => {

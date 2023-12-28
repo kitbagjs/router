@@ -1,8 +1,7 @@
 import { describe, expect, test } from 'vitest'
 import { Route } from '@/types'
 import { resolveRoutes, routeParamsAreValid, path } from '@/utilities'
-
-const component = { template: '<div>This is component</div>' }
+import { component } from '@/utilities/testHelpers'
 
 describe('routeParamsAreValid', () => {
   test('given route WITHOUT params, always return true', () => {

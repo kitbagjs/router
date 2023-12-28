@@ -2,8 +2,7 @@ import { test, expectTypeOf } from 'vitest'
 import { ParamGetSet } from '@/types/params'
 import { Routes } from '@/types/routes'
 import { createRouter, path } from '@/utilities'
-
-const component = { template: '<div>This is component</div>' }
+import { component } from '@/utilities/testHelpers'
 
 const boolean: ParamGetSet<boolean> = {
   get: value => Boolean(value),
