@@ -8,11 +8,12 @@ describe('createRouteMethods', () => {
   test.each([
     [undefined],
     [true],
-  ])('given route is named and is public, makes parent callable', () => {
+  ])('given route is named and is public, makes parent callable', (isPublic) => {
     const routes = [
       {
         name: 'parent',
         path: '/parent',
+        public: isPublic,
         component,
       },
     ] as const satisfies Routes
