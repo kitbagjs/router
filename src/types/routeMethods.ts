@@ -1,5 +1,5 @@
 import { Param, ParamGetSet, ParamGetter } from '@/types/params'
-import { IsPublicRoute, Route, Routes } from '@/types/routes'
+import { Public, Route, Routes } from '@/types/routes'
 import { Identity, IsAny, IsEmptyObject, ReplaceAll, TupleCanBeAllUndefined, UnionToIntersection } from '@/types/utilities'
 import { Path } from '@/utilities/path'
 
@@ -34,12 +34,12 @@ type RouteMethodsOrMethod<
   TParams extends Record<string, unknown>
 > = TRoute extends { path: infer Path, children: infer Children }
   ? Children extends Routes
-    ? IsPublicRoute<TRoute> extends true
+    ? TRoute extends Public<TRoute>
       ? RouteMethods<Children, MergeParams<TParams, ExtractParamsFromPath<Path>>> & CreateRouteMethod<TParams, Path>
       : RouteMethods<Children, MergeParams<TParams, ExtractParamsFromPath<Path>>>
     : never
   : TRoute extends { path: infer Path }
-    ? IsPublicRoute<TRoute> extends true
+    ? TRoute extends Public<TRoute>
       ? CreateRouteMethod<TParams, Path>
       : never
     : never

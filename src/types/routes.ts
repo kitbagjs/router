@@ -46,12 +46,8 @@ export function isNamedRoute(value: Route): value is Route & { name: string } {
   return 'name' in value && !!value.name
 }
 
-export function isPublicRoute(value: Route): value is Route & { public: true } {
+export type Public<T extends Route> = T & { public?: true | undefined }
+
+export function isPublicRoute(value: Route): value is Public<Route> {
   return value.public !== false
 }
-
-export type IsPublicRoute<TRoute extends Route> = 'public' extends keyof TRoute
-  ? TRoute extends { public: false }
-    ? false
-    : true
-  : true
