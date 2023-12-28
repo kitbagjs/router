@@ -62,7 +62,7 @@ describe('createRouteMethods', () => {
 
     const response = createRouteMethods(resolved)
 
-    expect(response.parent.child).not.toBeUndefined()
+    expect(response.parent.child).toBeDefined()
 
     if (isPublic !== false) {
       expect(response.parent.child).toBeTypeOf('function')
