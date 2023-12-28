@@ -1,9 +1,8 @@
 import { describe, expect, test } from 'vitest'
 import { InvalidRouteParamValueError, Route } from '@/types'
 import { path, resolveRoutes } from '@/utilities'
+import { component } from '@/utilities/testHelpers'
 import { assembleUrl } from '@/utilities/urlAssembly'
-
-const component = { template: '<div>This is component</div>' }
 
 describe('assembleUrl', () => {
   test.each([
