@@ -1,19 +1,22 @@
 import { Param, ParamGetSet, ParamGetter } from '@/types/params'
 import { Route, Routes } from '@/types/routes'
-import { Identity, IsAny, IsEmptyObject, ReplaceAll, TupleCanBeAllUndefined, UnionToIntersection } from '@/types/utilities'
+import { Identity, IsEmptyObject, ReplaceAll, TupleCanBeAllUndefined, UnionToIntersection } from '@/types/utilities'
 import { Path } from '@/utilities/path'
 
 export type RouteMethod<
   TParams extends Record<string, unknown> = any
 > = IsEmptyObject<TParams> extends false
-  ? (params: TParams) => RouteMethodRoute
-  : () => RouteMethodRoute
+  ? (params: TParams, options?: RouteMethodOptions) => RouteMethodRoute
+  : (options?: RouteMethodOptions) => RouteMethodRoute
 
-export type RouteMethodRoute = {
-  push: () => void,
-  replace: () => void,
-  url: string,
+export type RouteMethodOptions = {
+  replace: boolean,
+  skipRouting: boolean,
 }
+
+export type RouteMethodRoute = PromiseLike<{
+  url: string,
+}>
 
 export type RouteMethods<
   TRoutes extends Routes,
@@ -55,11 +58,12 @@ type CreateRouteMethod<
   TPath extends Route['path']
 > = RouteMethod<MarkOptionalParams<MergeParams<TParams, ExtractParamsFromPath<TPath>>>>
 
-export type ExtractRouteMethodParams<T> = T extends RouteMethod<infer Params>
-  ? IsAny<Params> extends true
-    ? Record<string, unknown>
-    : Params
-  : Record<string, unknown>
+export type ExtractRouteMethodParams<T extends RouteMethod> =
+  T extends () => RouteMethodRoute
+    ? never
+    : T extends (params: infer Params) => RouteMethodRoute
+      ? Params
+      : never
 
 export type ExtractParamsFromPath<
   TPath extends Route['path']
