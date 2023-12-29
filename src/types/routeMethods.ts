@@ -6,15 +6,15 @@ import { Path } from '@/utilities/path'
 export type RouteMethod<
   TParams extends Record<string, unknown> = any
 > = IsEmptyObject<TParams> extends false
-  ? (params: TParams, options?: RouteMethodOptions) => RouteMethodRoute
-  : (options?: RouteMethodOptions) => RouteMethodRoute
+  ? (params: TParams, options?: RouteMethodOptions) => RouteMethodResponse
+  : (options?: RouteMethodOptions) => RouteMethodResponse
 
 export type RouteMethodOptions = {
   replace: boolean,
   skipRouting: boolean,
 }
 
-export type RouteMethodRoute = PromiseLike<{
+export type RouteMethodResponse = PromiseLike<{
   url: string,
 }>
 
@@ -59,9 +59,9 @@ type CreateRouteMethod<
 > = RouteMethod<MarkOptionalParams<MergeParams<TParams, ExtractParamsFromPath<TPath>>>>
 
 export type ExtractRouteMethodParams<T extends RouteMethod> =
-  T extends () => RouteMethodRoute
+  T extends () => RouteMethodResponse
     ? never
-    : T extends (params: infer Params) => RouteMethodRoute
+    : T extends (params: infer Params) => RouteMethodResponse
       ? Params
       : never
 
