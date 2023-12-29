@@ -1,7 +1,7 @@
 import { ExtractRouteMethodParams, RouteMethod } from '@/types/routeMethods'
 import { Identity } from '@/types/utilities'
 
-type Route<T> = {
+type Route<T extends RouteMethod> = {
   name: string,
   params: ExtractRouteMethodParams<T>,
   query: unknown,
