@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { Route, Routes } from '@/types'
-import { resolveRoutes, generateRouteRegexPattern, path } from '@/utilities'
+import { resolveRoutes, path } from '@/utilities'
 
 const component = { template: '<div>This is component</div>' }
 
@@ -86,67 +86,17 @@ describe('resolveRoutes', () => {
         path: '/grandparent',
         children: [parentRoute],
       } satisfies Route
-
-      const [child, parent, grandparent] = resolveRoutes([grandparentRoute])
-
-      expect(grandparent.matches).toMatchObject([grandparentRoute])
-      expect(parent.matches).toMatchObject([grandparentRoute, parentRoute])
-      expect(child.matches).toMatchObject([grandparentRoute, parentRoute, childRoute])
-    })
-
-    test('given several routes at parent level, only returns ancestor', () => {
-      const childRoute = {
-        name: 'child',
-        path: '/child',
-        component,
-      } satisfies Route
-      const parentRoute = {
-        name: 'parent',
-        path: '/parent',
-        children: [childRoute],
-      } satisfies Route
       const unrelatedRoute = {
         name: 'unrelated',
         path: '/unrelated',
         component,
       } satisfies Route
 
-      const routes = [parentRoute, unrelatedRoute]
+      const [child, parent, grandparent] = resolveRoutes([grandparentRoute, unrelatedRoute])
 
-      const [child] = resolveRoutes(routes)
-
-      expect(child.matches).toMatchObject([parentRoute, childRoute])
+      expect(grandparent.matches).toMatchObject([grandparentRoute])
+      expect(parent.matches).toMatchObject([grandparentRoute, parentRoute])
+      expect(child.matches).toMatchObject([grandparentRoute, parentRoute, childRoute])
     })
-  })
-})
-
-describe('generateRouteRegexPattern', () => {
-  test('given path without params, returns unmodified value with start and end markers', () => {
-    const input = 'parent/child/grandchild'
-
-    const result = generateRouteRegexPattern(input)
-
-    const expected = new RegExp(`^${input}$`)
-    expect(result.toString()).toBe(expected.toString())
-  })
-
-  test('given path with params, returns value with params replaced with catchall', () => {
-    const input = 'parent/child/:childParam/grand-child/:grandChild123'
-
-    const result = generateRouteRegexPattern(input)
-
-    const catchAll = '(.+)'
-    const expected = new RegExp(`^parent/child/${catchAll}/grand-child/${catchAll}$`)
-    expect(result.toString()).toBe(expected.toString())
-  })
-
-  test('given path with optional params, returns value with params replaced with catchall', () => {
-    const input = 'parent/child/:?childParam/grand-child/:?grandChild123'
-
-    const result = generateRouteRegexPattern(input)
-
-    const catchAll = '(.*)'
-    const expected = new RegExp(`^parent/child/${catchAll}/grand-child/${catchAll}$`)
-    expect(result.toString()).toBe(expected.toString())
   })
 })

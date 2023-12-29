@@ -6,6 +6,5 @@ export type Resolved<T extends Route> = {
   matches: Route[],
   name: string,
   path: string,
-  regex: RegExp,
   params: Record<string, Param[]>,
 }

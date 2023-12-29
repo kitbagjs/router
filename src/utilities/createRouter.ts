@@ -1,5 +1,5 @@
-import { Resolved, RouteMethods, Routes } from '@/types'
-import { resolveRoutes, routeParamsAreValid } from '@/utilities'
+import { Resolved, Route, RouteMethods, Routes } from '@/types'
+import { generateRouteRegexPattern, resolveRoutes, routeParamsAreValid } from '@/utilities'
 
 export type Router<
   TRoutes extends Routes
@@ -20,9 +20,16 @@ function createRouteMethods<T extends Routes>(_routes: T): RouteMethods<T> {
 
 export function createRouter<T extends Routes>(routes: T): Router<T> {
   const resolved = resolveRoutes(routes)
+  const resolvedWithRegex: { regexp: RegExp, route: Resolved<Route> }[] = resolved.map(route => {
+    const regexp = generateRouteRegexPattern(route.path)
+
+    return { regexp, route }
+  })
 
   function routeMatch(path: string): Resolved<T[number]> | undefined {
-    return resolved.find(route => route.regex.test(path) && routeParamsAreValid(path, route))
+    const { route } = resolvedWithRegex.find(({ regexp, route }) => regexp.test(path) && routeParamsAreValid(path, route)) ?? {}
+
+    return route
   }
 
   const push: Router<T>['push'] = (_url) => {
