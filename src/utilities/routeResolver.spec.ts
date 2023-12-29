@@ -68,6 +68,56 @@ describe('resolveRoutes', () => {
 
     expect(resolvedChild?.path).toBe(`${parentRoute.path}/:accountId`)
   })
+
+  describe('matches', () => {
+    test('given 3 levels, returns all parent routes in matches', () => {
+      const childRoute = {
+        name: 'child',
+        path: '/child',
+        component,
+      } satisfies Route
+      const parentRoute = {
+        name: 'parent',
+        path: '/parent',
+        children: [childRoute],
+      } satisfies Route
+      const grandparentRoute = {
+        name: 'grandparent',
+        path: '/grandparent',
+        children: [parentRoute],
+      } satisfies Route
+
+      const [child, parent, grandparent] = resolveRoutes([grandparentRoute])
+
+      expect(grandparent.matches).toMatchObject([grandparentRoute])
+      expect(parent.matches).toMatchObject([grandparentRoute, parentRoute])
+      expect(child.matches).toMatchObject([grandparentRoute, parentRoute, childRoute])
+    })
+
+    test('given several routes at parent level, only returns ancestor', () => {
+      const childRoute = {
+        name: 'child',
+        path: '/child',
+        component,
+      } satisfies Route
+      const parentRoute = {
+        name: 'parent',
+        path: '/parent',
+        children: [childRoute],
+      } satisfies Route
+      const unrelatedRoute = {
+        name: 'unrelated',
+        path: '/unrelated',
+        component,
+      } satisfies Route
+
+      const routes = [parentRoute, unrelatedRoute]
+
+      const [child] = resolveRoutes(routes)
+
+      expect(child.matches).toMatchObject([parentRoute, childRoute])
+    })
+  })
 })
 
 describe('generateRouteRegexPattern', () => {

@@ -3,9 +3,9 @@ import { Route } from '@/types/routes'
 
 export type Resolved<T extends Route> = {
   matched: T,
+  matches: Route[],
   name: string,
   path: string,
   regex: RegExp,
-  parentNames: T['name'][],
   params: Record<string, Param[]>,
 }

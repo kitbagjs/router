@@ -1,25 +1,26 @@
 import { Resolved, Routes, isParentRoute, isNamedRoute, Route, Param } from '@/types'
 import { mergeParams, path as createPath } from '@/utilities'
 
-type RouteParentContext = {
-  parentPath: string,
-  parentParams: Record<string, Param[]>,
-  parentNames: string[],
+type ParentContext = {
+  parentPath?: string,
+  parentParams?: Record<string, Param[]>,
+  parentMatches?: Route[],
 }
 
-export function resolveRoutes(routes: Routes, parents?: RouteParentContext): Resolved<Route>[] {
-  const { parentPath = [], parentParams = {}, parentNames = [] } = { ...parents }
+export function resolveRoutes(routes: Routes, parentContext: ParentContext = {}): Resolved<Route>[] {
+  const { parentPath = [], parentParams = {}, parentMatches = [] } = { ...parentContext }
+
   return routes.reduce<Resolved<Route>[]>((value, route) => {
     const { params, path } = typeof route.path === 'string' ? createPath(route.path, {}) : route.path
     const fullPath = parentPath + path.toString()
     const fullParams = mergeParams(parentParams, params)
-    const fullNames = [...parentNames, ...isNamedRoute(route) ? [route.name] : []]
+    const fullMatches = [...parentMatches, route]
 
     if (isParentRoute(route)) {
       const flattened = resolveRoutes(route.children, {
         parentPath: fullPath,
         parentParams: fullParams,
-        parentNames: fullNames,
+        parentMatches: fullMatches,
       })
 
       value.push(...flattened)
@@ -28,11 +29,11 @@ export function resolveRoutes(routes: Routes, parents?: RouteParentContext): Res
     if (isNamedRoute(route)) {
       value.push({
         matched: route,
+        matches: fullMatches,
         name: route.name,
         path: fullPath,
         params: fullParams,
         regex: generateRouteRegexPattern(fullPath),
-        parentNames,
       })
     }
 
