@@ -427,7 +427,7 @@ test('param names must be alphanumeric', () => {
   }>()
 })
 
-test('route method returns correct typ when called', async () => {
+test('route method returns correct type when called', async () => {
   const routes = [
     {
       name: 'foo',
