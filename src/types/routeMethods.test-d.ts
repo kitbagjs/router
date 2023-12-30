@@ -376,7 +376,7 @@ test('all routes with a name can be called unless disabled', () => {
   expectTypeOf(router.routes.parent.child).toBeFunction()
   expectTypeOf(router.routes.parent2).not.toBeFunction()
   expectTypeOf(router.routes.parent2.child2).toBeFunction()
-  expectTypeOf(router.routes.parent2.child3).not.toBeFunction()
+  expectTypeOf(router.routes.parent2).not.toHaveProperty('child3')
   expectTypeOf(router.routes).not.toHaveProperty('parent3')
   expectTypeOf(router.routes.child4).toBeFunction()
 })

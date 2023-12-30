@@ -1,10 +1,10 @@
-// Utility type that converts types like `{ foo: string } & { bar: string }`
+// Utility type that converts types like `{ foo: string } & { bar: string, baz: never }`
 // into `{ foo: string, bar: string }`
 //
 // this is a magic type and don't wanna mess with the {}
 // eslint-disable-next-line @typescript-eslint/ban-types
 export type Identity<T> = T extends object ? {} & {
-  [P in keyof T]: T[P]
+  [P in keyof T as T[P] extends never ? never : P]: T[P]
 } : T
 
 export type IsAny<T> = 0 extends (1 & T) ? true : false

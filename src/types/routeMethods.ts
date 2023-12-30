@@ -21,7 +21,7 @@ export type RouteMethodResponse = Thenable<{
 export type RouteMethods<
   TRoutes extends Routes,
   TParams extends Record<string, unknown> = Record<never, never>
-> = UnionToIntersection<RouteMethodsTuple<TRoutes, TParams>[number]>
+> = Identity<UnionToIntersection<RouteMethodsTuple<TRoutes, TParams>[number]>>
 
 type RouteMethodsTuple<
   TRoutes extends Routes,
