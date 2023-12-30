@@ -1,23 +1,21 @@
-import { Resolved, Route, RouteMethodResponse, RouteMethods, Routes, isPublicRoute } from '@/types'
+import { Resolved, Route, RouteMethod, RouteMethods, Routes, isPublicRoute } from '@/types'
 import { assembleUrl } from '@/utilities/urlAssembly'
 
-type NonCallableNode = Record<string, any>
-type CallableNode = NonCallableNode & {
-  (values: Record<string, unknown[]>): RouteMethodResponse,
-}
-type Node = CallableNode | NonCallableNode
+type Node = RouteMethod | { [key: string]: Node } | RouteMethod & { [key: string]: Node }
 
 export function createRouteMethods<T extends Routes>(routes: Resolved<Route>[]): RouteMethods<T> {
-  const methods: Record<string, any> = {}
+  const methods: Record<string, Node | undefined> = {}
 
   routes.forEach(route => {
-    traverseParents(route, methods)
+    createRouteMethod(route, methods)
   })
 
   return methods as unknown as RouteMethods<T>
 }
 
-function traverseParents(route: Resolved<Route>, currentLevel: Record<string, any>): Record<string, any> {
+function createRouteMethod(route: Resolved<Route>, methods: Record<string, Node | undefined>): void {
+  let currentLevel = methods
+
   route.matches.forEach(match => {
     if (!match.name) {
       return
@@ -30,7 +28,7 @@ function traverseParents(route: Resolved<Route>, currentLevel: Record<string, an
 
       currentLevel[route.name] = routeNode
 
-      return currentLevel
+      return
     }
 
     if (!currentLevel[match.name]) {
@@ -39,8 +37,6 @@ function traverseParents(route: Resolved<Route>, currentLevel: Record<string, an
 
     currentLevel = currentLevel[match.name]
   })
-
-  return currentLevel
 }
 
 function createNodeForRoute(route: Resolved<Route>): Node {
@@ -51,8 +47,8 @@ function createNodeForRoute(route: Resolved<Route>): Node {
   return {}
 }
 
-function createCallableNode(route: Resolved<Route>): CallableNode {
-  const node: CallableNode = (values) => {
+function createCallableNode(route: Resolved<Route>): RouteMethod {
+  const node: RouteMethod = (values) => {
     const url = assembleUrl(route, values)
     const { then } = new Promise<{ url: string }>(resolve => resolve({ url }))
 
