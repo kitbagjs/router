@@ -11,7 +11,7 @@ export function createRouteMethods<T extends Routes>(routes: Resolved<Route>[]):
       }
 
       if (match === route.matched && isPublicRoute(route.matched)) {
-        level[route.name] = createCallableNode(route)
+        level[route.name] = Object.assign(createCallableNode(route), level[route.name])
         return
       }
 
