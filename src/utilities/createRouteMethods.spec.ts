@@ -18,7 +18,7 @@ describe('createRouteMethods', () => {
     ] as const satisfies Routes
     const resolved = resolveRoutes(routes)
 
-    const response = createRouteMethods(resolved)
+    const response = createRouteMethods<typeof routes>(resolved)
 
     expect(response.parent).toBeTypeOf('function')
   })
@@ -34,7 +34,7 @@ describe('createRouteMethods', () => {
     ] as const satisfies Routes
     const resolved = resolveRoutes(routes)
 
-    const response = createRouteMethods(resolved)
+    const response = createRouteMethods<typeof routes>(resolved)
 
     expect(response).toMatchObject({})
   })
@@ -60,7 +60,7 @@ describe('createRouteMethods', () => {
     ] as const satisfies Routes
     const resolved = resolveRoutes(routes)
 
-    const response = createRouteMethods(resolved)
+    const response = createRouteMethods<typeof routes>(resolved)
 
     expect(response.parent.child).toBeDefined()
 
@@ -91,7 +91,7 @@ describe('createRouteMethods', () => {
     ] as const satisfies Routes
     const resolved = resolveRoutes(routes)
 
-    const response = createRouteMethods(resolved)
+    const response = createRouteMethods<typeof routes>(resolved)
 
     expect(response.parent).toBeTypeOf('function')
     expect(response.parent.child).toBeTypeOf('function')

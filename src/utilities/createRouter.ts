@@ -48,7 +48,7 @@ export function createRouter<T extends Routes>(routes: T): Router<T> {
   }
 
   const router = {
-    routes: createRouteMethods(resolved) as RouteMethods<T>,
+    routes: createRouteMethods<T>(resolved),
     push,
     replace,
     forward,

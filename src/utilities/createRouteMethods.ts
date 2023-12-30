@@ -1,4 +1,4 @@
-import { Resolved, Route, RouteMethodResponse, isPublicRoute } from '@/types'
+import { Resolved, Route, RouteMethodResponse, RouteMethods, Routes, isPublicRoute } from '@/types'
 import { assembleUrl } from '@/utilities/urlAssembly'
 
 type NonCallableNode = Record<string, any>
@@ -7,14 +7,14 @@ type CallableNode = NonCallableNode & {
 }
 type Node = CallableNode | NonCallableNode
 
-export function createRouteMethods(routes: Resolved<Route>[]): Record<string, Node> {
+export function createRouteMethods<T extends Routes>(routes: Resolved<Route>[]): RouteMethods<T> {
   const methods: Record<string, any> = {}
 
   routes.forEach(route => {
     traverseParents(route, methods)
   })
 
-  return methods
+  return methods as unknown as RouteMethods<T>
 }
 
 function traverseParents(route: Resolved<Route>, currentLevel: Record<string, any>): Record<string, any> {
