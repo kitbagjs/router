@@ -1,3 +1,4 @@
+export * from './createRouteMethods'
 export * from './createRouter'
 export * from './mergeParams'
 export * from './paramValidation'
