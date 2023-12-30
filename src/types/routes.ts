@@ -45,3 +45,9 @@ export function isParentRoute(value: Route): value is ParentRoute {
 export function isNamedRoute(value: Route): value is Route & { name: string } {
   return 'name' in value && !!value.name
 }
+
+export type Public<T extends Route> = T & { public?: true | undefined }
+
+export function isPublicRoute(value: Route): value is Public<Route> {
+  return value.public !== false
+}
