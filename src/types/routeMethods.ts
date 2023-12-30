@@ -1,6 +1,6 @@
 import { Param, ParamGetSet, ParamGetter } from '@/types/params'
 import { Route, Routes } from '@/types/routes'
-import { Identity, IsEmptyObject, ReplaceAll, TupleCanBeAllUndefined, UnionToIntersection } from '@/types/utilities'
+import { Identity, IsEmptyObject, ReplaceAll, Thenable, TupleCanBeAllUndefined, UnionToIntersection } from '@/types/utilities'
 import { Path } from '@/utilities/path'
 
 export type RouteMethod<
@@ -14,7 +14,7 @@ export type RouteMethodOptions = {
   skipRouting: boolean,
 }
 
-export type RouteMethodResponse = PromiseLike<{
+export type RouteMethodResponse = Thenable<{
   url: string,
 }>
 

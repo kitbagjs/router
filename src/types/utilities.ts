@@ -50,3 +50,5 @@ export type ReplaceAll<
 > = Input extends `${infer Head}${Search}${infer Tail}`
   ? `${Head}${Replacement}${ReplaceAll<Tail, Search, Replacement>}`
   : Input
+
+export type Thenable<T> = T & PromiseLike<T>
