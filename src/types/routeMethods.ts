@@ -14,9 +14,10 @@ export type RouteMethodOptions = {
   skipRouting: boolean,
 }
 
-export type RouteMethodResponse = PromiseLike<{
+export type RouteMethodResponse = {
   url: string,
-}>
+  then: PromiseLike<Omit<RouteMethodResponse, 'then'>>['then'],
+}
 
 export type RouteMethods<
   TRoutes extends Routes,

@@ -426,3 +426,18 @@ test('param names must be alphanumeric', () => {
     param4: string,
   }>()
 })
+
+test('route method returns correct typ when called', async () => {
+  const routes = [
+    {
+      name: 'foo',
+      path: '/foo',
+      component,
+    },
+  ] as const satisfies Routes
+
+  const router = createRouter(routes)
+
+  expectTypeOf(router.routes.foo()).toMatchTypeOf<{ url: string }>()
+  expectTypeOf(await router.routes.foo()).toEqualTypeOf<{ url: string }>()
+})
