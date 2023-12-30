@@ -1,56 +1,33 @@
-import { Resolved, Route, RouteMethod, RouteMethods, Routes, isPublicRoute } from '@/types'
+import { Resolved, Route, RouteMethod, RouteMethodResponse, RouteMethods, Routes, Then, isPublicRoute } from '@/types'
 import { assembleUrl } from '@/utilities/urlAssembly'
 
-type Node = RouteMethod | { [key: string]: Node } | RouteMethod & { [key: string]: Node }
-
 export function createRouteMethods<T extends Routes>(routes: Resolved<Route>[]): RouteMethods<T> {
-  const methods: Record<string, Node | undefined> = {}
+  const methods = routes.reduce<Record<string, any>>((methods, route) => {
+    let level = methods
 
-  routes.forEach(route => {
-    createRouteMethod(route, methods)
-  })
+    route.matches.forEach(match => {
+      if (!match.name) {
+        return
+      }
 
-  return methods as unknown as RouteMethods<T>
-}
+      if (match === route.matched && isPublicRoute(route.matched)) {
+        level[route.name] = createCallableNode(route)
+        return
+      }
 
-function createRouteMethod(route: Resolved<Route>, methods: Record<string, Node | undefined>): void {
-  let currentLevel = methods
+      level = level[match.name] ??= {}
+    })
 
-  route.matches.forEach(match => {
-    if (!match.name) {
-      return
-    }
+    return methods
+  }, {})
 
-    if (match === route.matched) {
-      const routeNode = createNodeForRoute(route)
-
-      Object.assign(routeNode, currentLevel[route.name])
-
-      currentLevel[route.name] = routeNode
-
-      return
-    }
-
-    if (!currentLevel[match.name]) {
-      currentLevel[match.name] = {}
-    }
-
-    currentLevel = currentLevel[match.name]
-  })
-}
-
-function createNodeForRoute(route: Resolved<Route>): Node {
-  if (isPublicRoute(route.matched)) {
-    return createCallableNode(route)
-  }
-
-  return {}
+  return methods as any
 }
 
 function createCallableNode(route: Resolved<Route>): RouteMethod {
   const node: RouteMethod = (values) => {
     const url = assembleUrl(route, values)
-    const { then } = new Promise<{ url: string }>(resolve => resolve({ url }))
+    const { then } = new Promise<Then<RouteMethodResponse>>(resolve => resolve({ url }))
 
     return {
       url,
