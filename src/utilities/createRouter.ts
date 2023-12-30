@@ -1,5 +1,5 @@
 import { Resolved, Route, RouteMethods, Routes } from '@/types'
-import { generateRouteRegexPattern, resolveRoutes, routeParamsAreValid } from '@/utilities'
+import { createRouteMethods, generateRouteRegexPattern, resolveRoutes, routeParamsAreValid } from '@/utilities'
 
 export type Router<
   TRoutes extends Routes
@@ -11,11 +11,6 @@ export type Router<
   forward: () => void,
   go: (number: number) => void,
   routeMatch: (path: string) => Resolved<TRoutes[number]> | undefined,
-}
-
-function createRouteMethods<T extends Routes>(_routes: T): RouteMethods<T> {
-  // use assembleUrl(route, args) to generate string URL
-  return {} as any
 }
 
 export function createRouter<T extends Routes>(routes: T): Router<T> {
@@ -53,7 +48,7 @@ export function createRouter<T extends Routes>(routes: T): Router<T> {
   }
 
   const router = {
-    routes: createRouteMethods(routes),
+    routes: createRouteMethods(resolved) as RouteMethods<T>,
     push,
     replace,
     forward,
