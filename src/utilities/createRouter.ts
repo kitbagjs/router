@@ -3,6 +3,7 @@ import { Resolved, Route, RouteMethods, Routes } from '@/types'
 import { createRouteMethods, resolveRoutes } from '@/utilities'
 import { resolveRoutesRegex } from '@/utilities/resolveRoutesRegex'
 import { routeMatch } from '@/utilities/routeMatch'
+import { updateWindowLocation } from '@/utilities/updateWindowLocation'
 
 type RouterPush = (url: string, options?: { replace: boolean }) => Promise<void>
 type RouterReplace = (url: string) => Promise<void>
@@ -31,9 +32,7 @@ export function createRouter<T extends Routes>(routes: T): Router<T> {
     const match = routeMatch(resolvedWithRegex, url)
 
     if (!match) {
-      const method = options?.replace ? window.location.replace : window.location.assign
-      method(url)
-      return
+      return updateWindowLocation(url, options)
     }
 
     throw 'not implemented'
