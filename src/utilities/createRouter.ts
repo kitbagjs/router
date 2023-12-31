@@ -39,19 +39,19 @@ export function createRouter<T extends Routes>(routes: T): Router<T> {
     throw 'not implemented'
   }
 
-  const replace: Router<T>['replace'] = (url) => {
+  const replace: RouterReplace = (url) => {
     return push(url, { replace: true })
   }
 
-  const forward: Router<T>['forward'] = (number = 1) => {
+  const forward: RouterNavigation = (number = 1) => {
     return go(number)
   }
 
-  const back: Router<T>['forward'] = (number = -1) => {
+  const back: RouterNavigation = (number = -1) => {
     return go(number)
   }
 
-  const go: Router<T>['go'] = (_number) => {
+  const go: RouterNavigation = (_number) => {
     throw 'not implemented'
   }
 
