@@ -20,7 +20,14 @@ describe('createRouteMethods', () => {
 
     const response = createRouteMethods<typeof routes>(resolved)
 
-    expect(response.parent).toBeTypeOf('function')
+    if (isPublic !== false) {
+      // @ts-expect-error
+      expect(response.parent).toBeTypeOf('function')
+    } else {
+      // @ts-expect-error
+      expect(response.parent).not.toBeDefined()
+    }
+
   })
 
   test('given route is NOT public, returns empty object', () => {
@@ -62,10 +69,12 @@ describe('createRouteMethods', () => {
 
     const response = createRouteMethods<typeof routes>(resolved)
 
-    expect(response.parent.child).toBeDefined()
-
     if (isPublic !== false) {
+      // @ts-expect-error
       expect(response.parent.child).toBeTypeOf('function')
+    } else {
+      // @ts-expect-error
+      expect(response.parent.child).not.toBeDefined()
     }
   })
 

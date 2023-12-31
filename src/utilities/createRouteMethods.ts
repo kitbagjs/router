@@ -10,8 +10,14 @@ export function createRouteMethods<T extends Routes>(routes: Resolved<Route>[]):
         return
       }
 
-      if (match === route.matched && isPublicRoute(route.matched)) {
+      const isLeaf = match === route.matched
+
+      if (isLeaf && isPublicRoute(route.matched)) {
         level[route.name] = Object.assign(createCallableNode(route), level[route.name])
+        return
+      }
+
+      if (isLeaf) {
         return
       }
 
