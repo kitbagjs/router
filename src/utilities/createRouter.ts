@@ -1,60 +1,68 @@
+import { readonly } from 'vue'
 import { Resolved, Route, RouteMethods, Routes } from '@/types'
-import { createRouteMethods, generateRouteRegexPattern, resolveRoutes, routeParamsAreValid } from '@/utilities'
+import { createRouteMethods, resolveRoutes } from '@/utilities'
+import { resolveRoutesRegex } from '@/utilities/resolveRoutesRegex'
+import { routeMatch } from '@/utilities/routeMatch'
+
+type RouterPush = (url: string, options?: { replace: boolean }) => Promise<void>
+type RouterReplace = (url: string) => Promise<void>
+type RouterNavigation = (number: number) => Promise<void>
 
 export type Router<
   TRoutes extends Routes
 > = {
   routes: RouteMethods<TRoutes>,
-  push: (url: string) => void,
-  replace: (url: string) => void,
-  back: () => void,
-  forward: () => void,
-  go: (number: number) => void,
-  routeMatch: (path: string) => Resolved<TRoutes[number]> | undefined,
+  route: Readonly<Resolved<Route>>,
+  push: RouterPush,
+  replace: RouterReplace,
+  back: RouterNavigation,
+  forward: RouterNavigation,
+  go: RouterNavigation,
 }
 
 export function createRouter<T extends Routes>(routes: T): Router<T> {
   const resolved = resolveRoutes(routes)
-  const resolvedWithRegex: { regexp: RegExp, route: Resolved<Route> }[] = resolved.map(route => {
-    const regexp = generateRouteRegexPattern(route.path)
+  const resolvedWithRegex = resolveRoutesRegex(resolved)
 
-    return { regexp, route }
-  })
+  // todo: implement this
+  const route: Router<T>['route'] = readonly({} as any)
 
-  function routeMatch(path: string): Resolved<T[number]> | undefined {
-    const { route } = resolvedWithRegex.find(({ regexp, route }) => regexp.test(path) && routeParamsAreValid(path, route)) ?? {}
+  const push: RouterPush = async (url, options) => {
+    const match = routeMatch(resolvedWithRegex, url)
 
-    return route
-  }
+    if (!match) {
+      const method = options?.replace ? window.location.replace : window.location.assign
+      method(url)
+      return
+    }
 
-  const push: Router<T>['push'] = (_url) => {
     throw 'not implemented'
   }
 
-  const replace: Router<T>['replace'] = (_url) => {
-    throw 'not implemented'
+  const replace: RouterReplace = (url) => {
+    return push(url, { replace: true })
   }
 
-  const forward: Router<T>['forward'] = () => {
-    throw 'not implemented'
+  const forward: RouterNavigation = (number = 1) => {
+    return go(number)
   }
 
-  const back: Router<T>['forward'] = () => {
-    throw 'not implemented'
+  const back: RouterNavigation = (number = -1) => {
+    return go(number)
   }
 
-  const go: Router<T>['go'] = (_number) => {
+  const go: RouterNavigation = (_number) => {
     throw 'not implemented'
   }
 
   const router = {
     routes: createRouteMethods<T>(resolved),
+    route,
     push,
     replace,
     forward,
     back,
     go,
-    routeMatch,
   }
 
   return router
