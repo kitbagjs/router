@@ -10,8 +10,14 @@ export function createRouteMethods<T extends Routes>(routes: Resolved<Route>[]):
         return
       }
 
-      if (match === route.matched && isPublicRoute(route.matched)) {
+      const isLeaf = match === route.matched
+
+      if (isLeaf && isPublicRoute(route.matched)) {
         level[route.name] = Object.assign(createCallableNode(route), level[route.name])
+        return
+      }
+
+      if (isLeaf) {
         return
       }
 
@@ -21,7 +27,7 @@ export function createRouteMethods<T extends Routes>(routes: Resolved<Route>[]):
     return methods
   }, {})
 
-  return methods as any
+  return removeEmptyObjects(methods) as any
 }
 
 function createCallableNode(route: Resolved<Route>): RouteMethod {
@@ -36,4 +42,24 @@ function createCallableNode(route: Resolved<Route>): RouteMethod {
   }
 
   return node
+}
+
+function removeEmptyObjects(source: Record<PropertyKey, unknown>): Record<PropertyKey, unknown> {
+  for (const property in source) {
+    const value = source[property]
+
+    if (isRecord(value)) {
+      removeEmptyObjects(value)
+
+      if (Object.keys(value).length === 0) {
+        delete source[property]
+      }
+    }
+  }
+
+  return source
+}
+
+function isRecord(value: unknown): value is Record<PropertyKey, unknown> {
+  return typeof value === 'object' && value !== null
 }
