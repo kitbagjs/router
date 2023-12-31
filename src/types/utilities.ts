@@ -52,3 +52,4 @@ export type ReplaceAll<
   : Input
 
 export type Thenable<T> = T & PromiseLike<T>
+export type Then<T extends Thenable<unknown>> = T extends PromiseLike<infer R> ? R : never

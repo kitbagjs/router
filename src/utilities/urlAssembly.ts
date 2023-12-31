@@ -1,7 +1,7 @@
 import { Param, Resolved, Route } from '@/types'
 import { setParamValuesOnUrl } from '@/utilities/paramsFinder'
 
-export function assembleUrl<T extends Resolved<Route>>(route: T, values: Record<string, unknown[]>): string {
+export function assembleUrl(route: Resolved<Route>, values: Record<string, unknown[]>): string {
   const params = Object.entries<Param[]>(route.params)
 
   return params.reduce((url, [name, params]) => {
