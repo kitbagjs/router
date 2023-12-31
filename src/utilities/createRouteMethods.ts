@@ -27,7 +27,7 @@ export function createRouteMethods<T extends Routes>(routes: Resolved<Route>[]):
     return methods
   }, {})
 
-  return removeEmptyObjects(methods) as any
+  return methods as any
 }
 
 function createCallableNode(route: Resolved<Route>): RouteMethod {
@@ -42,24 +42,4 @@ function createCallableNode(route: Resolved<Route>): RouteMethod {
   }
 
   return node
-}
-
-function removeEmptyObjects(source: Record<PropertyKey, unknown>): Record<PropertyKey, unknown> {
-  for (const property in source) {
-    const value = source[property]
-
-    if (isRecord(value)) {
-      removeEmptyObjects(value)
-
-      if (Object.keys(value).length === 0) {
-        delete source[property]
-      }
-    }
-  }
-
-  return source
-}
-
-function isRecord(value: unknown): value is Record<PropertyKey, unknown> {
-  return typeof value === 'object' && value !== null
 }
