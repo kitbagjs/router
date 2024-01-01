@@ -1,6 +1,7 @@
 export type RouterHistory = {
   length: number,
   state: unknown,
+  dispose: () => void,
   forward: () => void,
   back: () => void,
   go: (delta: number) => void,

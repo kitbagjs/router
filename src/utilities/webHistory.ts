@@ -2,59 +2,73 @@ import { RouterHistory } from '@/types'
 import { HistoryStateKey } from '@/utilities/historyStateKey'
 import { getWindow } from '@/utilities/window'
 
-export class WebHistory implements RouterHistory {
-  public items: unknown[] = []
-  public readonly state: unknown = null
+export function createWebHistory(): RouterHistory {
+  const items: unknown[] = []
+  const state: unknown = null
 
-  private handlePopState(event: PopStateEvent): void {
+  function handlePopState(event: PopStateEvent): void {
     console.log('popstate', event)
   }
 
-  public constructor() {
-    getWindow().addEventListener('popstate', this.handlePopState)
+  getWindow().addEventListener('popstate', handlePopState)
+
+  function dispose(): void {
+    getWindow().removeEventListener('popstate', handlePopState)
   }
 
-  public dispose(): void {
-    getWindow().removeEventListener('popstate', this.handlePopState)
-  }
-
-  public go(): void {
-
-  }
-
-  public back(): void {
+  function go(): void {
 
   }
 
-  public forward(): void {
+  function back(): void {
 
   }
 
-  public pushState(): void {
+  function forward(): void {
+
+  }
+
+  function pushState(data: unknown, url?: string | URL | null): void {
     const window = getWindow()
-    const url = '' // not implemented
+    items.push(data)
 
     try {
       const state = { key: HistoryStateKey.next() }
       window.history.pushState(state, '', url)
     } catch {
-      window.location.assign(url)
+      window.location.assign(url ?? '')
     }
   }
 
-  public replaceState(): void {
+  function replaceState(data: unknown, url?: string | URL | null): void {
     const window = getWindow()
-    const url = '' // not implemented
 
     try {
       const state = Object.assign({}, window.history.state, { key: HistoryStateKey.get() })
       window.history.replaceState(state, '', url)
     } catch {
-      window.location.replace(url)
+      window.location.replace(url ?? '')
     }
   }
 
-  public get length(): number {
-    return this.items.length
-  }
+  return new Proxy({
+    length: items.length,
+    state,
+    dispose,
+    go,
+    back,
+    forward,
+    pushState,
+    replaceState,
+  }, {
+    get: (target, prop) => {
+      if (prop === 'length') {
+        return items.length
+      }
+
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error
+      return target[prop]
+    },
+  })
 }

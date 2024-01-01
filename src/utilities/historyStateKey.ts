@@ -1,17 +1,14 @@
-export class HistoryStateKey {
-  private static key: number = this.getKeyValue()
+let currentKey = getKeyValue()
 
-  public static get(): number {
-    return this.key
-  }
+export const HistoryStateKey = {
+  get: () => currentKey,
+  next: () => {
+    currentKey = getKeyValue()
 
-  public static next(): number {
-    this.key = this.getKeyValue()
+    return currentKey
+  },
+}
 
-    return this.key
-  }
-
-  private static getKeyValue(): number {
-    return Date.now()
-  }
+function getKeyValue(): number {
+  return Date.now()
 }
