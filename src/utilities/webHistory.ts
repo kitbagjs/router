@@ -1,31 +1,39 @@
 import { RouterHistory } from '@/types'
-import { HistoryStateKey } from '@/utilities/historyStateKey'
+import { createHistoryStateKey } from '@/utilities/historyStateKey'
 import { getWindow } from '@/utilities/window'
 
 export function createWebHistory(): RouterHistory {
+  const historyStateKey = createHistoryStateKey()
   const items: unknown[] = []
-  const state: unknown = null
+  let state: unknown = null
 
-  function handlePopState(event: PopStateEvent): void {
-    console.log('popstate', event)
+  function handlePopState(): void {
+    // check if new location is different, if so navigate back to it
   }
 
-  getWindow().addEventListener('popstate', handlePopState)
+  function init(): void {
+    const window = getWindow()
+
+    state = getUpdatedState({}, true)
+    items.push(state)
+
+    window.addEventListener('popstate', handlePopState)
+  }
 
   function dispose(): void {
     getWindow().removeEventListener('popstate', handlePopState)
   }
 
-  function go(): void {
-
+  function go(delta: number): void {
+    getWindow().history.go(delta)
   }
 
   function back(): void {
-
+    return go(-1)
   }
 
   function forward(): void {
-
+    return go(+1)
   }
 
   function pushState(data: unknown, url?: string | URL | null): void {
@@ -33,7 +41,7 @@ export function createWebHistory(): RouterHistory {
     items.push(data)
 
     try {
-      const state = { key: HistoryStateKey.next() }
+      state = getUpdatedState(data)
       window.history.pushState(state, '', url)
     } catch {
       window.location.assign(url ?? '')
@@ -44,15 +52,25 @@ export function createWebHistory(): RouterHistory {
     const window = getWindow()
 
     try {
-      const state = Object.assign({}, window.history.state, { key: HistoryStateKey.get() })
+      state = getUpdatedState(data)
       window.history.replaceState(state, '', url)
     } catch {
       window.location.replace(url ?? '')
     }
   }
 
+  function getUpdatedState(data: unknown, replace = false): unknown {
+    if (replace) {
+      return Object.assign({}, window.history.state, data, { key: historyStateKey.get() })
+    }
+
+    return Object.assign({}, data, { key: historyStateKey.next() })
+  }
+
+  init()
+
   return new Proxy({
-    length: items.length,
+    length,
     state,
     dispose,
     go,
@@ -64,6 +82,10 @@ export function createWebHistory(): RouterHistory {
     get: (target, prop) => {
       if (prop === 'length') {
         return items.length
+      }
+
+      if (prop === 'state') {
+        return state
       }
 
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment

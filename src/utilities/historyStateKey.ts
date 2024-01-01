@@ -1,14 +1,27 @@
-let currentKey = getKeyValue()
+export type HistoryStateKey = {
+  get: () => number,
+  next: () => number,
+}
 
-export const HistoryStateKey = {
-  get: () => currentKey,
-  next: () => {
+export function createHistoryStateKey(): HistoryStateKey {
+  let currentKey = getKeyValue()
+
+  function get(): number {
+    return currentKey
+  }
+
+  function next(): number {
     currentKey = getKeyValue()
 
     return currentKey
-  },
-}
+  }
 
-function getKeyValue(): number {
-  return Date.now()
+  function getKeyValue(): number {
+    return Math.floor(Math.random() * (999_999 - 100_001)) + 100_000
+  }
+
+  return {
+    get,
+    next,
+  }
 }
