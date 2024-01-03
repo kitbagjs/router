@@ -1,11 +1,10 @@
-import { globalExists } from '@/utilities/globalExists'
+import { isBrowser } from '@/utilities/isBrowser'
 
 type UpdateBrowserUrlOptions = {
   replace?: boolean,
 }
-
 export function updateBrowserUrl(url: string, options: UpdateBrowserUrlOptions = {}): void {
-  if (!globalExists('window') || !globalExists('history')) {
+  if (!isBrowser) {
     return
   }
 
