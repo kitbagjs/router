@@ -16,7 +16,7 @@ export function updateBrowserUrl(url: string, options: UpdateBrowserUrlOptions =
   return updateWindow(url, options)
 }
 
-function updateHistory(url: string, options: UpdateBrowserUrlOptions = {}): void {
+function updateHistory(url: string, options: UpdateBrowserUrlOptions): void {
   if (options.replace) {
     return history.replaceState({}, '', url)
   }
@@ -24,7 +24,7 @@ function updateHistory(url: string, options: UpdateBrowserUrlOptions = {}): void
   history.pushState({}, '', url)
 }
 
-function updateWindow(url: string, options: UpdateBrowserUrlOptions = {}): void {
+function updateWindow(url: string, options: UpdateBrowserUrlOptions): void {
   if (options.replace) {
     return window.location.replace(url)
   }
