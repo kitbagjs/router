@@ -3,6 +3,7 @@ import { isBrowser } from '@/utilities/isBrowser'
 type UpdateBrowserUrlOptions = {
   replace?: boolean,
 }
+
 export function updateBrowserUrl(url: string, options: UpdateBrowserUrlOptions = {}): void {
   if (!isBrowser) {
     return
