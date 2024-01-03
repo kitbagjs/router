@@ -4,32 +4,39 @@ import { updateBrowserUrl } from '@/utilities/updateBrowserUrl'
 
 test('updates the window location', () => {
   vi.spyOn(window.location, 'assign').mockImplementation(() => {})
+  const url = 'http://example.com2/foo'
 
-  updateBrowserUrl('http://example.com2/foo')
+  updateBrowserUrl(url)
 
-  expect(window.location.assign).toHaveBeenCalled()
+  expect(window.location.assign).toHaveBeenCalledWith(url)
 })
 
 test('updates the window location using replace when options.replace is true', () => {
   vi.spyOn(window.location, 'replace').mockImplementation(() => {})
 
-  updateBrowserUrl('http://example.com/foo', { replace: true })
+  const url = 'http://example.com/foo'
 
-  expect(window.location.replace).toHaveBeenCalled()
+  updateBrowserUrl(url, { replace: true })
+
+  expect(window.location.replace).toHaveBeenCalledWith(url)
 })
 
 test('updates the history', () => {
   vi.spyOn(history, 'pushState').mockImplementation(() => {})
 
-  updateBrowserUrl('/foo')
+  const url = '/foo'
 
-  expect(history.pushState).toHaveBeenCalled()
+  updateBrowserUrl(url)
+
+  expect(history.pushState).toHaveBeenCalledWith({}, '', url)
 })
 
 test('updates the history using replaceState when options.replace is true', () => {
   vi.spyOn(history, 'replaceState').mockImplementation(() => {})
 
-  updateBrowserUrl('/foo', { replace: true })
+  const url = '/foo'
 
-  expect(history.replaceState).toHaveBeenCalled()
+  updateBrowserUrl(url, { replace: true })
+
+  expect(history.replaceState).toHaveBeenCalledWith({}, '', url)
 })
