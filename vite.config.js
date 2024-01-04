@@ -3,6 +3,12 @@ import { defineConfig } from 'vitest/config'
 import dts from 'vite-plugin-dts'
 
 export default defineConfig({
+  test: {
+    environmentMatchGlobs: [
+      ['**\/*.browser.spec.ts', 'happy-dom'],
+      ['**\/*.spec.ts', 'node'],
+    ]
+  },
   resolve: {
     alias: [
       {
