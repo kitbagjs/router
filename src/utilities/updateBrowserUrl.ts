@@ -5,7 +5,7 @@ type UpdateBrowserUrlOptions = {
 }
 
 export function updateBrowserUrl(url: string, options: UpdateBrowserUrlOptions = {}): void {
-  if (!isBrowser) {
+  if (!isBrowser()) {
     return
   }
 
