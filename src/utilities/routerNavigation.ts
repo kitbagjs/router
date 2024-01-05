@@ -1,11 +1,15 @@
 import { isBrowser } from '@/utilities/isBrowser'
 import { updateBrowserUrl } from '@/utilities/updateBrowserUrl'
 
+type RouterNavigationUpdateOptions = {
+  replace?: boolean,
+}
+
 type RouterNavigation = {
   forward: () => void,
   back: () => void,
   go: (delta: number) => void,
-  update: (url: string) => void,
+  update: (url: string, options?: RouterNavigationUpdateOptions) => void,
 }
 
 export function createRouterNavigation(): RouterNavigation {
@@ -22,10 +26,5 @@ function createWebNavigation(): RouterNavigation {
 }
 
 function createMemoryNavigation(): RouterNavigation {
-  return {
-    go: () => {},
-    back: () => {},
-    forward: () => {},
-    update: updateBrowserUrl,
-  }
+  throw 'not implemented'
 }
