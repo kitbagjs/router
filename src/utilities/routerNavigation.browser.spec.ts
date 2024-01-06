@@ -5,10 +5,11 @@ import * as utilities from '@/utilities/updateBrowserUrl'
 
 describe('createRouterNavigation', () => {
   test('when go is called, forwards call to window history', () => {
+    const onLocationUpdate = vi.fn()
     vi.spyOn(window.history, 'go')
 
     const delta = random.number({ min: 0, max: 100 })
-    const history = createRouterNavigation()
+    const history = createRouterNavigation({ onLocationUpdate })
 
     history.go(delta)
 
@@ -16,9 +17,10 @@ describe('createRouterNavigation', () => {
   })
 
   test('when back is called, forwards call to window history', () => {
+    const onLocationUpdate = vi.fn()
     vi.spyOn(window.history, 'back')
 
-    const history = createRouterNavigation()
+    const history = createRouterNavigation({ onLocationUpdate })
 
     history.back()
 
@@ -26,9 +28,10 @@ describe('createRouterNavigation', () => {
   })
 
   test('when forward is called, forwards call to window history', () => {
+    const onLocationUpdate = vi.fn()
     vi.spyOn(window.history, 'forward')
 
-    const history = createRouterNavigation()
+    const history = createRouterNavigation({ onLocationUpdate })
 
     history.forward()
 
@@ -36,13 +39,38 @@ describe('createRouterNavigation', () => {
   })
 
   test('when update is called, calls updateBrowserUrl', () => {
+    const onLocationUpdate = vi.fn()
     vi.spyOn(utilities, 'updateBrowserUrl')
 
     const url = random.number().toString()
-    const history = createRouterNavigation()
+    const history = createRouterNavigation({ onLocationUpdate })
 
     history.update(url)
 
     expect(utilities.updateBrowserUrl).toHaveBeenCalledWith(url)
+  })
+
+  test('when update is called and same origin calls onLocationUpdate', () => {
+    const onLocationUpdate = vi.fn()
+    vi.spyOn(utilities, 'isSameOrigin').mockReturnValue(true)
+
+    const url = random.number().toString()
+    const history = createRouterNavigation({ onLocationUpdate })
+
+    history.update(url)
+
+    expect(onLocationUpdate).toHaveBeenCalledWith(url)
+  })
+
+  test('when update is called and not same origin does not call onLocationUpdate ', () => {
+    const onLocationUpdate = vi.fn()
+    vi.spyOn(utilities, 'isSameOrigin').mockReturnValue(true)
+
+    const url = random.number().toString()
+    const history = createRouterNavigation({ onLocationUpdate })
+
+    history.update(url)
+
+    expect(onLocationUpdate).not.toHaveBeenCalled()
   })
 })
