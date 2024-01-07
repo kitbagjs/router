@@ -1,55 +1,53 @@
-import { describe, expect, test } from 'vitest'
+import { expect, test } from 'vitest'
 import { Param } from '@/types'
 import { mergeParams } from '@/utilities'
 
-describe('mergeParams', () => {
-  test('given params without overlap, returns combination of both', () => {
-    const input: Record<string, Param[]>[] = [
-      {
-        foo: [String],
-        bar: [String],
-      },
-      {
-        zoo: [String],
-      },
-    ]
+test('given params without overlap, returns combination of both', () => {
+  const input: Record<string, Param[]>[] = [
+    {
+      foo: [String],
+      bar: [String],
+    },
+    {
+      zoo: [String],
+    },
+  ]
 
-    const response = mergeParams(...input)
+  const response = mergeParams(...input)
 
-    expect(response).toHaveProperty('foo')
-    expect(response).toHaveProperty('bar')
-    expect(response).toHaveProperty('zoo')
-  })
+  expect(response).toHaveProperty('foo')
+  expect(response).toHaveProperty('bar')
+  expect(response).toHaveProperty('zoo')
+})
 
-  test('given params with overlap of same type, combines into new tuple', () => {
-    const input: Record<string, Param[]>[] = [
-      {
-        foo: [String],
-      },
-      {
-        foo: [String],
-      },
-    ]
+test('given params with overlap of same type, combines into new tuple', () => {
+  const input: Record<string, Param[]>[] = [
+    {
+      foo: [String],
+    },
+    {
+      foo: [String],
+    },
+  ]
 
-    const response = mergeParams(...input)
+  const response = mergeParams(...input)
 
-    expect(response).toHaveProperty('foo')
-    expect(response.foo).toMatchObject([String, String])
-  })
+  expect(response).toHaveProperty('foo')
+  expect(response.foo).toMatchObject([String, String])
+})
 
-  test('given params with overlap of different types, combines overlapped into new tuple', () => {
-    const input: Record<string, Param[]>[] = [
-      {
-        foo: [String],
-      },
-      {
-        foo: [Number],
-      },
-    ]
+test('given params with overlap of different types, combines overlapped into new tuple', () => {
+  const input: Record<string, Param[]>[] = [
+    {
+      foo: [String],
+    },
+    {
+      foo: [Number],
+    },
+  ]
 
-    const response = mergeParams(...input)
+  const response = mergeParams(...input)
 
-    expect(response).toHaveProperty('foo')
-    expect(response.foo).toMatchObject([String, Number])
-  })
+  expect(response).toHaveProperty('foo')
+  expect(response.foo).toMatchObject([String, Number])
 })
