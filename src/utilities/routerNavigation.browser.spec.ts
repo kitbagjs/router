@@ -47,17 +47,17 @@ describe('createRouterNavigation', () => {
 
     history.update(url)
 
-    expect(utilities.updateBrowserUrl).toHaveBeenCalledWith(url)
+    expect(utilities.updateBrowserUrl).toHaveBeenCalledWith(url, undefined)
   })
 
-  test('when update is called and same origin calls onLocationUpdate', () => {
+  test('when update is called and same origin calls onLocationUpdate', async () => {
     const onLocationUpdate = vi.fn()
     vi.spyOn(utilities, 'isSameOrigin').mockReturnValue(true)
 
-    const url = random.number().toString()
+    const url = '/foo'
     const history = createRouterNavigation({ onLocationUpdate })
 
-    history.update(url)
+    await history.update(url)
 
     expect(onLocationUpdate).toHaveBeenCalledWith(url)
   })
