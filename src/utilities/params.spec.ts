@@ -3,7 +3,6 @@ import { ParamGetSet, ParamGetter } from '@/types'
 import { getParamValue, setParamValue } from '@/utilities/params'
 
 describe('getParamValue', () => {
-
   test('given Boolean constructor Param, returns for correct value for Boolean', () => {
     expect(getParamValue('true', Boolean)).toBe(true)
     expect(getParamValue('false', Boolean)).toBe(false)
