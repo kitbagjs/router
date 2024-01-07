@@ -1,8 +1,6 @@
 import { DeepReadonly, reactive, readonly } from 'vue'
 import { Resolved, Route, RouteMethods, Routes } from '@/types'
-import { createRouteMethods, createRouterNavigation, resolveRoutes, routeMatch } from '@/utilities'
-import { isBrowser } from '@/utilities/isBrowser'
-import { resolveRoutesRegex } from '@/utilities/resolveRoutesRegex'
+import { createRouteMethods, createRouterNavigation, resolveRoutes, routeMatch, getInitialUrl, resolveRoutesRegex } from '@/utilities'
 
 type RouterOptions = {
   initialUrl?: string,
@@ -23,7 +21,7 @@ export type Router<
   go: (delta: number) => void,
 }
 
-export function createRouter<T extends Routes>(routes: T, options?: RouterOptions): Router<T> {
+export function createRouter<T extends Routes>(routes: T, options: RouterOptions = {}): Router<T> {
   const resolved = resolveRoutes(routes)
   const resolvedWithRegex = resolveRoutesRegex(resolved)
   const navigation = createRouterNavigation({
@@ -32,20 +30,8 @@ export function createRouter<T extends Routes>(routes: T, options?: RouterOption
 
   const route: Resolved<Route> = reactive(getInitialRoute())
 
-  function getInitialUrl(): string {
-    if (options?.initialUrl) {
-      return options.initialUrl
-    }
-
-    if (isBrowser()) {
-      return window.location.toString()
-    }
-
-    throw new Error('initialUrl must be set if window.location is unavailable')
-  }
-
   function getInitialRoute(): Resolved<Route> {
-    const url = getInitialUrl()
+    const url = getInitialUrl(options.initialUrl)
 
     return getRoute(url)
   }
