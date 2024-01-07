@@ -1,7 +1,10 @@
-import { readonly } from 'vue'
+import { DeepReadonly, reactive, readonly } from 'vue'
 import { Resolved, Route, RouteMethods, Routes } from '@/types'
-import { createRouteMethods, createRouterNavigation, resolveRoutes, routeMatch } from '@/utilities'
-import { resolveRoutesRegex } from '@/utilities/resolveRoutesRegex'
+import { createRouteMethods, createRouterNavigation, resolveRoutes, routeMatch, getInitialUrl, resolveRoutesRegex } from '@/utilities'
+
+type RouterOptions = {
+  initialUrl?: string,
+}
 
 type RouterPush = (url: string, options?: { replace: boolean }) => Promise<void>
 type RouterReplace = (url: string) => Promise<void>
@@ -10,7 +13,7 @@ export type Router<
   TRoutes extends Routes
 > = {
   routes: RouteMethods<TRoutes>,
-  route: Readonly<Resolved<Route>>,
+  route: DeepReadonly<Resolved<Route>>,
   push: RouterPush,
   replace: RouterReplace,
   back: () => void,
@@ -18,24 +21,36 @@ export type Router<
   go: (delta: number) => void,
 }
 
-export function createRouter<T extends Routes>(routes: T): Router<T> {
+export function createRouter<T extends Routes>(routes: T, options: RouterOptions = {}): Router<T> {
   const resolved = resolveRoutes(routes)
   const resolvedWithRegex = resolveRoutesRegex(resolved)
   const navigation = createRouterNavigation({
     onLocationUpdate,
   })
 
-  // todo: implement this
-  const route: Router<T>['route'] = readonly({} as any)
+  const route: Resolved<Route> = reactive(getInitialRoute())
 
-  async function onLocationUpdate(url: string): Promise<void> {
-    const match = routeMatch(resolvedWithRegex, url)
+  function getInitialRoute(): Resolved<Route> {
+    const url = getInitialUrl(options.initialUrl)
 
-    if (!match) {
+    return getRoute(url)
+  }
+
+  function getRoute(url: string): Resolved<Route> {
+    const route = routeMatch(resolvedWithRegex, url)
+
+    if (!route) {
+      // not found
       throw 'not implemented'
     }
 
-    throw 'not implemented'
+    return route
+  }
+
+  async function onLocationUpdate(url: string): Promise<void> {
+    const newRoute = getRoute(url)
+
+    Object.assign(route, newRoute)
   }
 
   const push: RouterPush = async (url, options) => {
@@ -48,7 +63,7 @@ export function createRouter<T extends Routes>(routes: T): Router<T> {
 
   const router = {
     routes: createRouteMethods<T>(resolved),
-    route,
+    route: readonly(route),
     push,
     replace,
     forward: navigation.forward,
