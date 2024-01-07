@@ -1,14 +1,10 @@
 import { readonly } from 'vue'
 import { Resolved, Route, RouteMethods, Routes } from '@/types'
-import { createRouteMethods, createRouterNavigation, resolveRoutes } from '@/utilities'
+import { createRouteMethods, createRouterNavigation, resolveRoutes, routeMatch } from '@/utilities'
 import { resolveRoutesRegex } from '@/utilities/resolveRoutesRegex'
-import { routeMatch } from '@/utilities/routeMatch'
-import { updateBrowserUrl } from '@/utilities/updateBrowserUrl'
 
 type RouterPush = (url: string, options?: { replace: boolean }) => Promise<void>
 type RouterReplace = (url: string) => Promise<void>
-type RouterBackForward = () => Promise<void>
-type RouterGo = (delta: number) => Promise<void>
 
 export type Router<
   TRoutes extends Routes
@@ -17,43 +13,37 @@ export type Router<
   route: Readonly<Resolved<Route>>,
   push: RouterPush,
   replace: RouterReplace,
-  back: RouterBackForward,
-  forward: RouterBackForward,
-  go: RouterGo,
+  back: () => void,
+  forward: () => void,
+  go: (delta: number) => void,
 }
 
 export function createRouter<T extends Routes>(routes: T): Router<T> {
   const resolved = resolveRoutes(routes)
   const resolvedWithRegex = resolveRoutesRegex(resolved)
-  const routerNavigation = createRouterNavigation()
+  const navigation = createRouterNavigation({
+    onLocationUpdate,
+  })
 
   // todo: implement this
   const route: Router<T>['route'] = readonly({} as any)
 
-  const push: RouterPush = async (url, options) => {
+  async function onLocationUpdate(url: string): Promise<void> {
     const match = routeMatch(resolvedWithRegex, url)
 
     if (!match) {
-      return updateBrowserUrl(url, options)
+      throw 'not implemented'
     }
 
-    await routerNavigation.update(url, options)
+    throw 'not implemented'
   }
 
-  const replace: RouterReplace = (url) => {
-    return push(url, { replace: true })
+  const push: RouterPush = async (url, options) => {
+    await navigation.update(url, options)
   }
 
-  const forward: RouterBackForward = async () => {
-    await routerNavigation.forward()
-  }
-
-  const back: RouterBackForward = async () => {
-    await routerNavigation.back()
-  }
-
-  const go: RouterGo = async (delta) => {
-    await routerNavigation.go(delta)
+  const replace: RouterReplace = async (url) => {
+    await navigation.update(url, { replace: true })
   }
 
   const router = {
@@ -61,9 +51,9 @@ export function createRouter<T extends Routes>(routes: T): Router<T> {
     route,
     push,
     replace,
-    forward,
-    back,
-    go,
+    forward: navigation.forward,
+    back: navigation.back,
+    go: navigation.go,
   }
 
   return router
