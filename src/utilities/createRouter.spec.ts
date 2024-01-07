@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest'
 import { createRouter } from '@/utilities/createRouter'
 import { component } from '@/utilities/testHelpers'
 
-describe('getInitialRoute', () => {
+describe('createRouter', () => {
   test('initial route is set', () => {
     const root = {
       name: 'root',
@@ -18,7 +18,9 @@ describe('getInitialRoute', () => {
   })
 
   test('throws error if route is not matched', () => {
-    expect(() => createRouter([])).toThrowError('not implemented')
+    expect(() => createRouter([], {
+      initialUrl: '/foo',
+    })).toThrowError('not implemented')
   })
 
   test('updates the route when navigating', async () => {
