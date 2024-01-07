@@ -54,7 +54,7 @@ describe('createRouterNavigation', () => {
     const onLocationUpdate = vi.fn()
     vi.spyOn(utilities, 'isSameOrigin').mockReturnValue(true)
 
-    const url = '/foo'
+    const url = random.number().toString()
     const history = createRouterNavigation({ onLocationUpdate })
 
     await history.update(url)
