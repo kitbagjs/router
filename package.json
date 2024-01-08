@@ -7,12 +7,11 @@
   },
   "homepage": "https://github.com/kitbagjs/router#readme",
   "scripts": {
-    "build": "tsc && vite build",
+    "build": "vue-tsc && vite build",
     "test": "vitest",
     "test:types": "vitest typecheck",
     "lint": "eslint ./src",
-    "lint:fix": "eslint ./src --fix",
-    "types": "tsc --noEmit"
+    "lint:fix": "eslint ./src --fix"
   },
   "type": "module",
   "files": [
@@ -29,14 +28,17 @@
   },
   "devDependencies": {
     "@prefecthq/eslint-config": "^1.0.31",
+    "@vitejs/plugin-vue": "^5.0.2",
     "eslint": "^8.54.0",
     "happy-dom": "^12.10.3",
     "typescript": "^5.0.2",
-    "vite": "^4.5.1",
+    "vite": "^5.0.11",
     "vite-plugin-dts": "^3.6.3",
-    "vitest": "^0.34.6"
+    "vitest": "^0.34.6",
+    "vue": "^3.4.5",
+    "vue-tsc": "^1.8.27"
   },
   "peerDependencies": {
-    "vue": "^3.3.8"
+    "vue": "^3.4.5"
   }
 }

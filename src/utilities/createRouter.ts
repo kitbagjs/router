@@ -1,4 +1,5 @@
-import { DeepReadonly, reactive, readonly } from 'vue'
+import { DeepReadonly, reactive, readonly, App } from 'vue'
+import { RouterView } from '@/components'
 import { Resolved, Route, RouteMethods, Routes } from '@/types'
 import { createRouteMethods, createRouterNavigation, resolveRoutes, routeMatch, getInitialUrl, resolveRoutesRegex } from '@/utilities'
 
@@ -19,6 +20,7 @@ export type Router<
   back: () => void,
   forward: () => void,
   go: (delta: number) => void,
+  install: (app: App) => void,
 }
 
 export function createRouter<T extends Routes>(routes: T, options: RouterOptions = {}): Router<T> {
@@ -29,6 +31,10 @@ export function createRouter<T extends Routes>(routes: T, options: RouterOptions
   })
 
   const route: Resolved<Route> = reactive(getInitialRoute())
+
+  function install(app: App): void {
+    app.component('RouterView', RouterView)
+  }
 
   function getInitialRoute(): Resolved<Route> {
     const url = getInitialUrl(options.initialUrl)
@@ -69,6 +75,7 @@ export function createRouter<T extends Routes>(routes: T, options: RouterOptions
     forward: navigation.forward,
     back: navigation.back,
     go: navigation.go,
+    install,
   }
 
   return router
