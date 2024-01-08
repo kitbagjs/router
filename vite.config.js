@@ -5,6 +5,9 @@ import dts from 'vite-plugin-dts'
 
 export default defineConfig({
   test: {
+    typecheck: {
+      checker: 'vue-tsc',
+    },
     environmentMatchGlobs: [
       ['**\/*.browser.spec.ts', 'happy-dom'],
       ['**\/*.spec.ts', 'node'],
