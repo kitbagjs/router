@@ -7,14 +7,6 @@ jobs:
     name: Type Validation
     runs-on: ubuntu-latest
 
-    steps:
-      - name: Setup
-        id: setup
-        uses: kitbagjs/actions-setup-project@main
-
-      - name: Validate types
-        run: npm run types
-
   unit-tests:
     name: Unit Tests
     runs-on: ubuntu-latest

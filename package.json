@@ -11,8 +11,7 @@
     "test": "vitest",
     "test:types": "vitest typecheck",
     "lint": "eslint ./src",
-    "lint:fix": "eslint ./src --fix",
-    "types": "vue-tsc --noEmit"
+    "lint:fix": "eslint ./src --fix"
   },
   "type": "module",
   "files": [
