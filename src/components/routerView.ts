@@ -1,5 +1,5 @@
 import { InjectionKey, computed, defineComponent, h, inject, provide, resolveComponent } from 'vue'
-import { routerInjectionKey } from '@/utilities'
+import { loadRoute, routerInjectionKey } from '@/utilities'
 
 const depthInjectionKey: InjectionKey<number> = Symbol()
 
@@ -24,7 +24,6 @@ export default defineComponent({
       return route.component ?? routerView
     })
 
-    // @ts-expect-error
     return () => h(component.value)
   },
 })

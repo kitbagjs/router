@@ -3,7 +3,7 @@ import { RouteMiddleware } from '@/types/middleware'
 import { MaybeArray, MaybeLazy } from '@/types/utilities'
 import { Path } from '@/utilities/path'
 
-export type RouteComponent = MaybeLazy<Component | DefineComponent>
+export type RouteComponent = Component | DefineComponent
 
 export interface RouteMeta {
 
@@ -16,7 +16,7 @@ export type ParentRoute<
   path: TRoute,
   public?: boolean,
   children: Routes,
-  component?: RouteComponent,
+  component?: MaybeLazy<RouteComponent>,
   middleware?: MaybeArray<RouteMiddleware>,
   meta?: RouteMeta,
 }
@@ -27,7 +27,7 @@ export type ChildRoute<
   name: string,
   public?: boolean,
   path: TRoute,
-  component: RouteComponent,
+  component: MaybeLazy<RouteComponent>,
   middleware?: MaybeArray<RouteMiddleware>,
   meta?: RouteMeta,
 }
