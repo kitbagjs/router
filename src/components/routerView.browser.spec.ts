@@ -37,7 +37,6 @@ test('renders components for initial route', () => {
   const parentRoute = {
     name: 'parent',
     path: '',
-    component: { template: '<RouterView />' },
     children: [childRoute],
   } as const satisfies Route
 
