@@ -53,7 +53,7 @@ export function createRouter<T extends Routes>(routes: T, options: RouterOptions
       throw 'not implemented'
     }
 
-    return route
+    return { ...route }
   }
 
   async function onLocationUpdate(url: string): Promise<void> {
