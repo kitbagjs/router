@@ -1,4 +1,4 @@
-import RouterView from '@/components/RouterView.vue'
+import RouterView from '@/components/routerView'
 
 export { RouterView }
 

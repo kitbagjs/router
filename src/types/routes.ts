@@ -3,7 +3,7 @@ import { RouteMiddleware } from '@/types/middleware'
 import { MaybeArray, MaybeLazy } from '@/types/utilities'
 import { Path } from '@/utilities/path'
 
-type RouteComponent = MaybeLazy<Component | DefineComponent>
+export type RouteComponent = MaybeLazy<Component | DefineComponent | string>
 
 export interface RouteMeta {
 
