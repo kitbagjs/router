@@ -1,4 +1,4 @@
-import { DeepReadonly, reactive, readonly, App } from 'vue'
+import { DeepReadonly, reactive, readonly, App, InjectionKey } from 'vue'
 import { RouterView } from '@/components'
 import { Resolved, Route, RouteMethods, Routes } from '@/types'
 import { createRouteMethods, createRouterNavigation, resolveRoutes, routeMatch, getInitialUrl, resolveRoutesRegex } from '@/utilities'
@@ -11,7 +11,7 @@ type RouterPush = (url: string, options?: { replace: boolean }) => Promise<void>
 type RouterReplace = (url: string) => Promise<void>
 
 export type Router<
-  TRoutes extends Routes
+  TRoutes extends Routes = []
 > = {
   routes: RouteMethods<TRoutes>,
   route: DeepReadonly<Resolved<Route>>,
@@ -22,6 +22,8 @@ export type Router<
   go: (delta: number) => void,
   install: (app: App) => void,
 }
+
+export const routerInjectionKey: InjectionKey<Router> = Symbol()
 
 export function createRouter<T extends Routes>(routes: T, options: RouterOptions = {}): Router<T> {
   const resolved = resolveRoutes(routes)
@@ -34,6 +36,7 @@ export function createRouter<T extends Routes>(routes: T, options: RouterOptions
 
   function install(app: App): void {
     app.component('RouterView', RouterView)
+    app.provide(routerInjectionKey, router)
   }
 
   function getInitialRoute(): Resolved<Route> {
