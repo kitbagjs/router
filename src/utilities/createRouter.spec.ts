@@ -1,6 +1,5 @@
 import { expect, test } from 'vitest'
 import { createRouter } from '@/utilities/createRouter'
-import { path } from '@/utilities/path'
 import { component } from '@/utilities/testHelpers'
 
 test('initial route is set', () => {
