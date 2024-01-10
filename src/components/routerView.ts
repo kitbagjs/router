@@ -1,5 +1,4 @@
 import { AsyncComponentLoader, InjectionKey, computed, defineAsyncComponent, defineComponent, h, inject, provide, resolveComponent } from 'vue'
-import { RouteComponent } from '@/types'
 import { routerInjectionKey } from '@/utilities'
 
 const depthInjectionKey: InjectionKey<number> = Symbol()
@@ -26,7 +25,7 @@ export default defineComponent({
           return defineAsyncComponent(routeComponent as AsyncComponentLoader)
         }
 
-        return routeComponent as RouteComponent
+        return routeComponent
       }
 
       return routerView
