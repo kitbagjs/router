@@ -36,8 +36,6 @@ export type UnionToIntersection<Union> = (
   ? Intersection & Union
   : never
 
-export type MaybeLazy<T> = T | (() => Promise<T>)
-
 export type MaybeArray<T> = T | T[]
 
 export type MaybePromise<T> = T | Promise<T>

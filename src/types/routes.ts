@@ -1,9 +1,9 @@
-import { Component, DefineComponent } from 'vue'
+import { AsyncComponentLoader, Component, DefineComponent } from 'vue'
 import { RouteMiddleware } from '@/types/middleware'
-import { MaybeArray, MaybeLazy } from '@/types/utilities'
+import { MaybeArray } from '@/types/utilities'
 import { Path } from '@/utilities/path'
 
-export type RouteComponent = MaybeLazy<Component | DefineComponent>
+export type RouteComponent = Component | DefineComponent | AsyncComponentLoader
 
 export interface RouteMeta {
 

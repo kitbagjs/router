@@ -1,4 +1,5 @@
-import { InjectionKey, computed, defineComponent, h, inject, provide, resolveComponent } from 'vue'
+import { AsyncComponentLoader, InjectionKey, computed, defineAsyncComponent, defineComponent, h, inject, provide, resolveComponent } from 'vue'
+import { RouteComponent } from '@/types'
 import { routerInjectionKey } from '@/utilities'
 
 const depthInjectionKey: InjectionKey<number> = Symbol()
@@ -9,6 +10,7 @@ export default defineComponent({
   setup() {
     const router = inject(routerInjectionKey)
     const depth = inject(depthInjectionKey, 0)
+    const routerView = resolveComponent('RouterView')
 
     if (!router) {
       throw new Error('Router not installed')
@@ -16,15 +18,20 @@ export default defineComponent({
 
     provide(depthInjectionKey, depth + 1)
 
-    const routerView = resolveComponent('RouterView')
-
     const component = computed(() => {
-      const route = router.route.matches[depth]
+      const routeComponent = router.route.matches[depth].component
 
-      return route.component ?? routerView
+      if (routeComponent) {
+        if (typeof routeComponent === 'function') {
+          return defineAsyncComponent(routeComponent as AsyncComponentLoader)
+        }
+
+        return routeComponent as RouteComponent
+      }
+
+      return routerView
     })
 
-    // @ts-expect-error
     return () => h(component.value)
   },
 })

@@ -1,5 +1,7 @@
-import { mount } from '@vue/test-utils'
-import { expect, test } from 'vitest'
+import { mount, flushPromises } from '@vue/test-utils'
+import { expect, it, test } from 'vitest'
+import { defineAsyncComponent } from 'vue'
+import helloWorld from '@/components/helloWorld'
 import { Route } from '@/types'
 import { createRouter } from '@/utilities'
 
@@ -103,4 +105,33 @@ test('updates components when route changes', async () => {
   await router.push(childA.path)
 
   expect(app.html()).toBe(childA.component.template)
+})
+
+it.each([
+  defineAsyncComponent(() => import('./helloWorld')),
+  () => import('./helloWorld'),
+])('resolves async components', async (component) => {
+  const route = {
+    name: 'parent',
+    path: '/',
+    component,
+  } as const satisfies Route
+
+  const router = createRouter([route], {
+    initialUrl: route.path,
+  })
+
+  const root = {
+    template: '<suspense><RouterView/></suspense>',
+  }
+
+  const app = mount(root, {
+    global: {
+      plugins: [router],
+    },
+  })
+
+  await flushPromises()
+
+  expect(app.html()).toBe(helloWorld.template)
 })
