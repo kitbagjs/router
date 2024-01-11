@@ -1,4 +1,5 @@
-import { Resolved, Route, RouteMethod, RouteMethodResponse, RouteMethods, Routes, Then, isPublicRoute } from '@/types'
+import { Resolved, Route, RouteMethods, Routes, isPublicRoute } from '@/types'
+import { RouteMethod } from '@/types/routeMethod'
 import { assembleUrl } from '@/utilities/urlAssembly'
 
 export function createRouteMethods<T extends Routes>(routes: Resolved<Route>[]): RouteMethods<T> {
@@ -33,11 +34,9 @@ export function createRouteMethods<T extends Routes>(routes: Resolved<Route>[]):
 function createCallableNode(route: Resolved<Route>): RouteMethod {
   const node: RouteMethod = (values) => {
     const url = assembleUrl(route, values)
-    const { then } = new Promise<Then<RouteMethodResponse>>(resolve => resolve({ url }))
 
     return {
       url,
-      then,
     }
   }
 

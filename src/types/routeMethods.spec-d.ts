@@ -1,6 +1,6 @@
 import { test, expectTypeOf } from 'vitest'
 import { ParamGetSet } from '@/types/params'
-import { RouteMethodOptions } from '@/types/routeMethods'
+import { RouteMethodOptions } from '@/types/routeMethod'
 import { Routes } from '@/types/routes'
 import { createRouter, path } from '@/utilities'
 import { component } from '@/utilities/testHelpers'
