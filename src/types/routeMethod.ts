@@ -1,11 +1,14 @@
 import { RouterPushOptions, RouterReplaceOptions } from '@/types/router'
-import { IsEmptyObject } from '@/types/utilities'
+import { IsEmptyObject, OnlyRequiredProperties } from '@/types/utilities'
 
 export type RouteMethod<
   TParams extends Record<string, unknown> = Record<string, unknown>
-> = IsEmptyObject<TParams> extends false
-  ? (params: TParams) => RouteMethodResponse<TParams>
-  : () => RouteMethodResponse<TParams>
+> = IsEmptyObject<TParams> extends true
+  ? () => RouteMethodResponse<TParams>
+  : IsEmptyObject<OnlyRequiredProperties<TParams>> extends true
+    ? (params?: TParams) => RouteMethodResponse<TParams>
+    : (params: TParams) => RouteMethodResponse<TParams>
+
 
 export type RouteMethodOptions<
   TParams extends Record<string, unknown>

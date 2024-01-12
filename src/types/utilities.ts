@@ -51,3 +51,7 @@ export type ReplaceAll<
 
 export type Thenable<T> = T & PromiseLike<T>
 export type Then<T extends Thenable<unknown>> = T extends PromiseLike<infer R> ? R : never
+
+export type OnlyRequiredProperties<T extends Record<string, unknown>> = {
+  [K in keyof T as Extract<T[K], undefined> extends never ? K : never]: T[K]
+}
