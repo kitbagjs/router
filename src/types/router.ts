@@ -17,7 +17,7 @@ export type RouterPush = (url: string, options?: RouterPushOptions) => Promise<v
 
 export type RouterReplaceOptions = Omit<RouterPushOptions, 'replace'>
 
-export type RouterReplace = (url: string) => Promise<void>
+export type RouterReplace = (url: string, options?: RouterReplaceOptions) => Promise<void>
 
 export type Router<
   TRoutes extends Routes = []
