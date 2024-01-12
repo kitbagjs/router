@@ -1,4 +1,4 @@
-import { expect, test, vi } from 'vitest'
+import { describe, expect, test, vi } from 'vitest'
 import { Routes } from '@/types'
 import { createRouteMethods, resolveRoutes } from '@/utilities'
 import { component } from '@/utilities/testHelpers'
@@ -104,4 +104,57 @@ test('given parent route with named children and grandchildren, has path to gran
   expect(response.parent).toBeTypeOf('function')
   expect(response.parent.child).toBeTypeOf('function')
   expect(response.parent.child.grandchild).toBeTypeOf('function')
+})
+
+describe('routeMethod', () => {
+  test('push and replace call router.push with correct parameters', () => {
+    const routerPush = vi.fn()
+
+    const routes = [
+      {
+        name: 'route',
+        path: '/route/:?param',
+        component,
+      },
+    ] as const satisfies Routes
+    const resolved = resolveRoutes(routes)
+    const { route } = createRouteMethods<typeof routes>(resolved, routerPush)
+
+    route().push()
+
+    expect(routerPush).toHaveBeenCalledWith('/route/', {})
+
+    routerPush.mockClear()
+
+    route().replace()
+
+    expect(routerPush).toHaveBeenCalledWith('/route/', { replace: true })
+
+    routerPush.mockClear()
+
+    route({ param: 'foo' }).push()
+    expect(routerPush).toHaveBeenCalledWith('/route/foo', {})
+
+    routerPush.mockClear()
+
+    route({ param: 'foo' }).push({ params: { param: 'bar' } })
+    expect(routerPush).toHaveBeenCalledWith('/route/bar', {})
+  })
+
+  test('returns correct url', () => {
+    const routerPush = vi.fn()
+
+    const routes = [
+      {
+        name: 'route',
+        path: '/route/:?param',
+        component,
+      },
+    ] as const satisfies Routes
+    const resolved = resolveRoutes(routes)
+    const { route } = createRouteMethods<typeof routes>(resolved, routerPush)
+
+    expect(route().url).toBe('/route/')
+    expect(route({ param: 'param' }).url).toBe('/route/param')
+  })
 })

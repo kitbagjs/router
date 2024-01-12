@@ -40,15 +40,18 @@ type CreateRouteMethodArgs = {
 }
 
 function createRouteMethod({ route, routerPush }: CreateRouteMethodArgs): RouteMethod {
-  const node: RouteMethod = (params) => {
+  const node: RouteMethod = (params = {}) => {
     const normalizedParams = normalizeRouteParams(params)
     const url = assembleUrl(route, normalizedParams)
 
     const push: RouteMethodPush = ({ params, ...options } = {}) => {
       if (params) {
         const normalizedParamOverrides = normalizeRouteParams(params)
-        const merged = mergeRouteParams(normalizedParams, normalizedParamOverrides)
-        const url = assembleUrl(route, merged)
+
+        const url = assembleUrl(route, {
+          ...normalizeRouteParams,
+          ...normalizedParamOverrides,
+        })
 
         return routerPush(url, options)
       }
@@ -76,23 +79,11 @@ function createRouteMethod({ route, routerPush }: CreateRouteMethodArgs): RouteM
 function normalizeRouteParams(params: Record<string, unknown>): Record<string, unknown[]> {
   const normalizedParams: Record<string, unknown[]> = {}
 
-  for (const key in Object.keys(params)) {
+  for (const key of Object.keys(params)) {
     const value = params[key]
 
     normalizedParams[key] = Array.isArray(value) ? value : [value]
   }
 
   return normalizedParams
-}
-
-function mergeRouteParams(paramsA: Record<string, unknown[]>, paramsB: Record<string, unknown[]>): Record<string, unknown[] | undefined> {
-  const merged: Record<string, unknown[] | undefined> = { ...paramsA }
-
-  for (const [key, params] of Object.entries(paramsB)) {
-    const existing = merged[key] ?? []
-
-    merged[key] = [...existing, ...params]
-  }
-
-  return merged
 }
