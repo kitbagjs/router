@@ -1,6 +1,5 @@
 import { test, expectTypeOf } from 'vitest'
 import { ParamGetSet } from '@/types/params'
-import { RouteMethodOptions } from '@/types/routeMethod'
 import { Routes } from '@/types/routes'
 import { createRouter, path } from '@/utilities'
 import { component } from '@/utilities/testHelpers'
@@ -21,7 +20,7 @@ test('requires no arguments when there are no parameters', () => {
 
   const router = createRouter(routes)
 
-  expectTypeOf(router.routes.foo).parameter(0).toEqualTypeOf<RouteMethodOptions | undefined>()
+  expectTypeOf(router.routes.foo).parameters.toEqualTypeOf<[]>()
 })
 
 test('does not match single colons as params', () => {
@@ -35,7 +34,7 @@ test('does not match single colons as params', () => {
 
   const router = createRouter(routes)
 
-  expectTypeOf(router.routes.foo).parameter(0).toEqualTypeOf<RouteMethodOptions | undefined>()
+  expectTypeOf(router.routes.foo).parameters.toEqualTypeOf<[]>()
 })
 
 test('does not match :? as params', () => {
@@ -51,7 +50,7 @@ test('does not match :? as params', () => {
 
   router.routes.foo()
 
-  expectTypeOf(router.routes.foo).parameter(0).toEqualTypeOf<RouteMethodOptions | undefined>()
+  expectTypeOf(router.routes.foo).parameters.toEqualTypeOf<[]>()
 })
 
 test('matches individual params', () => {
@@ -438,5 +437,4 @@ test('route method returns correct type when called', async () => {
   const router = createRouter(routes)
 
   expectTypeOf(router.routes.foo()).toMatchTypeOf<{ url: string }>()
-  expectTypeOf(await router.routes.foo()).toEqualTypeOf<{ url: string }>()
 })

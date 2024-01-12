@@ -1,4 +1,4 @@
-import { expect, test } from 'vitest'
+import { expect, test, vi } from 'vitest'
 import { Routes } from '@/types'
 import { createRouteMethods, resolveRoutes } from '@/utilities'
 import { component } from '@/utilities/testHelpers'
@@ -17,7 +17,7 @@ test.each([
   ] as const satisfies Routes
   const resolved = resolveRoutes(routes)
 
-  const response = createRouteMethods<typeof routes>(resolved)
+  const response = createRouteMethods<typeof routes>(resolved, vi.fn())
 
   if (isPublic !== false) {
     // @ts-expect-error
@@ -40,7 +40,7 @@ test('given route is NOT public, returns empty object', () => {
   ] as const satisfies Routes
   const resolved = resolveRoutes(routes)
 
-  const response = createRouteMethods<typeof routes>(resolved)
+  const response = createRouteMethods<typeof routes>(resolved, vi.fn())
 
   expect(response).toMatchObject({})
 })
@@ -66,7 +66,7 @@ test.each([
   ] as const satisfies Routes
   const resolved = resolveRoutes(routes)
 
-  const response = createRouteMethods<typeof routes>(resolved)
+  const response = createRouteMethods<typeof routes>(resolved, vi.fn())
 
   if (isPublic !== false) {
     // @ts-expect-error
@@ -99,7 +99,7 @@ test('given parent route with named children and grandchildren, has path to gran
   ] as const satisfies Routes
   const resolved = resolveRoutes(routes)
 
-  const response = createRouteMethods<typeof routes>(resolved)
+  const response = createRouteMethods<typeof routes>(resolved, vi.fn())
 
   expect(response.parent).toBeTypeOf('function')
   expect(response.parent.child).toBeTypeOf('function')
