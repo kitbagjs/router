@@ -7,16 +7,15 @@ export type RouterOptions = {
   initialUrl?: string,
 }
 
-export type RouterPushOptions = RouterReplaceOptions & {
+export type RouterPushOptions = {
+  // not implemented
+  query?: never,
   replace?: boolean,
 }
 
 export type RouterPush = (url: string, options?: RouterPushOptions) => Promise<void>
 
-export type RouterReplaceOptions = {
-  // not implemented
-  query?: never,
-}
+export type RouterReplaceOptions = Omit<RouterPushOptions, 'replace'>
 
 export type RouterReplace = (url: string) => Promise<void>
 
