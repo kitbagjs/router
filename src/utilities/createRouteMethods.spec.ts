@@ -121,24 +121,16 @@ describe('routeMethod', () => {
     const { route } = createRouteMethods<typeof routes>(resolved, routerPush)
 
     route().push()
-
-    expect(routerPush).toHaveBeenCalledWith('/route/', {})
-
-    routerPush.mockClear()
+    expect(routerPush).toHaveBeenLastCalledWith('/route/', {})
 
     route().replace()
-
-    expect(routerPush).toHaveBeenCalledWith('/route/', { replace: true })
-
-    routerPush.mockClear()
+    expect(routerPush).toHaveBeenLastCalledWith('/route/', { replace: true })
 
     route({ param: 'foo' }).push()
-    expect(routerPush).toHaveBeenCalledWith('/route/foo', {})
-
-    routerPush.mockClear()
+    expect(routerPush).toHaveBeenLastCalledWith('/route/foo', {})
 
     route({ param: 'foo' }).push({ params: { param: 'bar' } })
-    expect(routerPush).toHaveBeenCalledWith('/route/bar', {})
+    expect(routerPush).toHaveBeenLastCalledWith('/route/bar', {})
   })
 
   test('returns correct url', () => {
