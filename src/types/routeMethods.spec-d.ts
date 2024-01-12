@@ -82,7 +82,7 @@ test('matches individual optional params', () => {
 
   expectTypeOf(router.routes.foo).parameter(0).toEqualTypeOf<{
     foo?: string,
-  }>()
+  } | undefined>()
 })
 
 test('matches multiple params with the same name', () => {
@@ -114,7 +114,7 @@ test('matches multiple params with the same name as optional', () => {
 
   expectTypeOf(router.routes.foo).parameter(0).toEqualTypeOf<{
     foo?: [string | undefined, string | undefined, string | undefined],
-  }>()
+  } | undefined>()
 })
 
 test('matches typed params using a Param', () => {
@@ -253,7 +253,7 @@ test('matches multiple params with the same name as optional across children', (
 
   expectTypeOf(router.routes.foo.bar).parameter(0).toEqualTypeOf<{
     foo?: [string | undefined, string | undefined],
-  }>()
+  } | undefined>()
 })
 
 test('multiple root routes produces multiple routes', () => {
