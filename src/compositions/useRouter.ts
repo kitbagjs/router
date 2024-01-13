@@ -1,5 +1,6 @@
 import { inject } from 'vue'
-import { Router, routerInjectionKey } from '@/utilities'
+import { Router } from '@/types/router'
+import { routerInjectionKey } from '@/utilities'
 
 export function useRouter(): Router {
   const router = inject(routerInjectionKey)
