@@ -1,22 +1,8 @@
 import { Param, ParamGetSet, ParamGetter } from '@/types/params'
+import { RouteMethod, RouteMethodResponse } from '@/types/routeMethod'
 import { Public, Route, Routes } from '@/types/routes'
-import { Identity, IsEmptyObject, ReplaceAll, Thenable, TupleCanBeAllUndefined, UnionToIntersection } from '@/types/utilities'
+import { Identity, ReplaceAll, TupleCanBeAllUndefined, UnionToIntersection } from '@/types/utilities'
 import { Path } from '@/utilities/path'
-
-export type RouteMethod<
-  TParams extends Record<string, unknown> = any
-> = IsEmptyObject<TParams> extends false
-  ? (params: TParams, options?: RouteMethodOptions) => RouteMethodResponse
-  : (options?: RouteMethodOptions) => RouteMethodResponse
-
-export type RouteMethodOptions = {
-  replace: boolean,
-  skipRouting: boolean,
-}
-
-export type RouteMethodResponse = Thenable<{
-  url: string,
-}>
 
 export type RouteMethods<
   TRoutes extends Routes,

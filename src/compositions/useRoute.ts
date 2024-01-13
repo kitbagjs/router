@@ -1,4 +1,5 @@
-import { ExtractRouteMethodParams, RouteMethod } from '@/types/routeMethods'
+import { RouteMethod } from '@/types/routeMethod'
+import { ExtractRouteMethodParams } from '@/types/routeMethods'
 import { Identity } from '@/types/utilities'
 
 type Route<T extends RouteMethod> = {

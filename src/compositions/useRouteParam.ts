@@ -1,5 +1,6 @@
 import { Ref } from 'vue'
-import { ExtractRouteMethodParams, RouteMethod } from '@/types/routeMethods'
+import { RouteMethod } from '@/types/routeMethod'
+import { ExtractRouteMethodParams } from '@/types/routeMethods'
 
 export function useRouteParam<
   TRoute extends RouteMethod,
