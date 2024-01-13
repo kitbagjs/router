@@ -12,7 +12,6 @@ export default defineComponent({
     },
     replace: {
       type: Boolean,
-      required: false,
     },
   },
   setup(props, { slots }) {
