@@ -1,6 +1,6 @@
 import { PropType, defineComponent, h } from 'vue'
 import { useRouter } from '@/compositions/useRouter'
-import { RouteMethod } from '@/types'
+import { RouteMethod } from '@/types/routeMethod'
 
 export default defineComponent({
   name: 'RouterLink',
@@ -15,20 +15,22 @@ export default defineComponent({
       required: false,
     },
   },
-  setup(props) {
+  setup(props, { slots }) {
     const router = useRouter()
 
     function onClick(event: PointerEvent): void {
       event.preventDefault()
 
-      const method = props.replace ? router.replace : router.push
+      const { url } = props.to()
 
-      method(props.to().url)
+      router.push(url, {
+        replace: props.replace,
+      })
     }
 
-    return h('a', {
+    return () => h('a', {
       href: props.to().url,
       onClick,
-    })
+    }, slots.default?.())
   },
 })
