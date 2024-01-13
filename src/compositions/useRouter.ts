@@ -9,6 +9,5 @@ export function useRouter(): Router {
     throw new Error('Router is not installed')
   }
 
-  // any prevents typescript from trying to verify the types are compatible
-  return router as any
+  return router
 }
