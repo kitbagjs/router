@@ -1,5 +1,5 @@
 import { reactive, readonly, App, InjectionKey } from 'vue'
-import { RouterView } from '@/components'
+import { RouterLink, RouterView } from '@/components'
 import { Resolved, Route, Routes } from '@/types'
 import { Router, RouterOptions, RouterPush, RouterReplace } from '@/types/router'
 import { createRouteMethods, createRouterNavigation, resolveRoutes, routeMatch, getInitialUrl, resolveRoutesRegex } from '@/utilities'
@@ -18,6 +18,7 @@ export function createRouter<T extends Routes>(routes: T, options: RouterOptions
 
   function install(app: App): void {
     app.component('RouterView', RouterView)
+    app.component('RouterLink', RouterLink)
     app.provide(routerInjectionKey, router)
   }
 
