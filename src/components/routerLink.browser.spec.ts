@@ -1,5 +1,5 @@
-import { flushPromises, mount } from '@vue/test-utils'
-import { expect, test } from 'vitest'
+import { mount } from '@vue/test-utils'
+import { expect, test, vi } from 'vitest'
 import { h } from 'vue'
 import routerLink from '@/components/routerLink'
 import { Route } from '@/types'
@@ -36,24 +36,27 @@ test('renders an anchor tag with the correct href and slot content', () => {
   expect(wrapper.html()).toBe(`<a href="${href}">${content}</a>`)
 })
 
-test('updates route component when clicked', async () => {
-  const routeAContent = 'routeA'
+test.each([
+  true,
+  false,
+])('calls router.push with url and replace %s', (replace) => {
   const routeA = {
     name: 'routeA',
     path: '/routeA',
-    component: { render: () => h(routerLink, { to: router.routes.routeB }, routeAContent) },
+    component: { render: () => h(routerLink, { to: router.routes.routeB, replace }) },
   } as const satisfies Route
 
-  const routeBContent = 'routeB'
   const routeB = {
     name: 'routeB',
     path: '/routeB',
-    component: { template: routeBContent },
+    component,
   } as const satisfies Route
 
   const router = createRouter([routeA, routeB], {
     initialUrl: routeA.path,
   })
+
+  const spy = vi.spyOn(router, 'push')
 
   const root = {
     template: '<RouterView />',
@@ -65,11 +68,7 @@ test('updates route component when clicked', async () => {
     },
   })
 
-  expect(app.text()).toBe(routeAContent)
-
   app.find('a').trigger('click')
 
-  await flushPromises()
-
-  expect(app.text()).toBe(routeBContent)
+  expect(spy).toHaveBeenLastCalledWith(routeB.path, { replace })
 })
