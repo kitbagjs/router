@@ -18,13 +18,13 @@ export function resolveRoutes(routes: Routes, parentContext: ParentContext = {})
     const fullMatches = [...parentMatches, route]
 
     if (isParentRoute(route)) {
-      const flattened = resolveRoutes(route.children, {
+      const resolved = resolveRoutes(route.children, {
         parentPath: fullPath,
         parentParams: fullParams,
         parentMatches: fullMatches,
       })
 
-      value.push(...flattened)
+      value.push(...resolved)
     }
 
     if (isNamedRoute(route)) {

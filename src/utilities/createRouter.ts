@@ -2,8 +2,7 @@ import { reactive, readonly, App, InjectionKey } from 'vue'
 import { RouterLink, RouterView } from '@/components'
 import { Resolved, Route, Routes } from '@/types'
 import { Router, RouterOptions, RouterPush, RouterReplace } from '@/types/router'
-import { createRouteMethods, createRouterNavigation, resolveRoutes, routeMatch, getInitialUrl, resolveRoutesRegex } from '@/utilities'
-
+import { createRouteMethods, createRouterNavigation, resolveRoutes, routeMatch, getInitialUrl, resolveRoutesRegex, assembleUrl } from '@/utilities'
 
 export const routerInjectionKey: InjectionKey<Router> = Symbol()
 
@@ -45,22 +44,20 @@ export function createRouter<T extends Routes>(routes: T, options: RouterOptions
     Object.assign(route, newRoute)
   }
 
-  async function push(url: string, options?: RouterPushOptions): Promise<void>
-  async function push(route: { name: T[number]['name'] }, params?: Record<string, unknown>, options?: RouterPushOptions): Promise<void>
-  async function push(urlOrRoute: { name: T[number]['name'] } | string, optionsOrParams: Record<string, any> = {}, possiblyOptions: RouterPushOptions = {}): Promise<void> {
-    if (typeof urlOrRoute !== 'string') {
-      const route = resolved.find(({ name }) => name === urlOrRoute.name)
-
-      if (!route) {
-        throw `No route found with name "${urlOrRoute.name}"`
-      }
-
-      const url = assembleUrl(route, optionsOrParams)
-
-      return push(url, possiblyOptions)
+  const push: RouterPush<T> = (urlOrRoute, optionsOrParams: Record<string, any> = {}, possiblyOptions: Record<string, any> = {}) => {
+    if (typeof urlOrRoute === 'string') {
+      return navigation.update(urlOrRoute, optionsOrParams)
     }
 
-    await navigation.update(urlOrRoute, optionsOrParams)
+    const route = resolved.find(({ name }) => name === urlOrRoute.name)
+
+    if (!route) {
+      throw `No route found with name "${urlOrRoute.name}"`
+    }
+
+    const url = assembleUrl(route, optionsOrParams)
+
+    return navigation.update(url, possiblyOptions)
   }
 
   const replace: RouterReplace = async (url) => {

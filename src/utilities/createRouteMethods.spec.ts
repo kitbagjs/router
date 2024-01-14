@@ -7,6 +7,8 @@ test.each([
   [undefined],
   [true],
 ])('given route is named and is public, makes parent callable', (isPublic) => {
+  const routerPush = vi.fn()
+
   const routes = [
     {
       name: 'parent',
@@ -17,7 +19,7 @@ test.each([
   ] as const satisfies Routes
   const resolved = resolveRoutes(routes)
 
-  const response = createRouteMethods<typeof routes>(resolved, vi.fn())
+  const response = createRouteMethods<typeof routes>(resolved, routerPush)
 
   if (isPublic !== false) {
     // @ts-expect-error
@@ -30,6 +32,8 @@ test.each([
 })
 
 test('given route is NOT public, returns empty object', () => {
+  const routerPush = vi.fn()
+
   const routes = [
     {
       name: 'parent',
@@ -40,7 +44,7 @@ test('given route is NOT public, returns empty object', () => {
   ] as const satisfies Routes
   const resolved = resolveRoutes(routes)
 
-  const response = createRouteMethods<typeof routes>(resolved, vi.fn())
+  const response = createRouteMethods<typeof routes>(resolved, routerPush)
 
   expect(response).toMatchObject({})
 })
@@ -50,6 +54,8 @@ test.each([
   [true],
   [false],
 ])('given parent route with named children, has property for child name', (isPublic) => {
+  const routerPush = vi.fn()
+
   const routes = [
     {
       name: 'parent',
@@ -66,7 +72,7 @@ test.each([
   ] as const satisfies Routes
   const resolved = resolveRoutes(routes)
 
-  const response = createRouteMethods<typeof routes>(resolved, vi.fn())
+  const response = createRouteMethods<typeof routes>(resolved, routerPush)
 
   if (isPublic !== false) {
     // @ts-expect-error
@@ -78,6 +84,8 @@ test.each([
 })
 
 test('given parent route with named children and grandchildren, has path to grandchild all callable', () => {
+  const routerPush = vi.fn()
+
   const routes = [
     {
       name: 'parent',
@@ -99,7 +107,7 @@ test('given parent route with named children and grandchildren, has path to gran
   ] as const satisfies Routes
   const resolved = resolveRoutes(routes)
 
-  const response = createRouteMethods<typeof routes>(resolved, vi.fn())
+  const response = createRouteMethods<typeof routes>(resolved, routerPush)
 
   expect(response.parent).toBeTypeOf('function')
   expect(response.parent.child).toBeTypeOf('function')

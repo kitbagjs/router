@@ -1,4 +1,5 @@
 import { expect, test } from 'vitest'
+import { Route } from '@/types'
 import { createRouter } from '@/utilities/createRouter'
 import { component } from '@/utilities/testHelpers'
 
@@ -27,19 +28,19 @@ test('updates the route when navigating', async () => {
     name: 'first',
     component,
     path: '/first',
-  }
+  } as const satisfies Route
 
   const second = {
     name: 'second',
     component,
     path: '/second',
-  }
+  } as const satisfies Route
 
   const third = {
     name: 'third',
     component,
     path: '/third/:id',
-  }
+  } as const satisfies Route
 
   const { push, route } = createRouter([first, second, third], {
     initialUrl: first.path,
@@ -51,7 +52,7 @@ test('updates the route when navigating', async () => {
 
   expect(route.matched).toMatchObject(second)
 
-  await push({ name: third.name }, { id: ['123'] })
+  await push({ name: third.name }, { id: '123' })
 
   expect(route.matched).toMatchObject(third)
 })
