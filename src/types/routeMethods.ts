@@ -70,7 +70,7 @@ export type ExtractParamsFromPathString<
       ? { [P in ExtractParamName<Param>]: [ExtractPathParamType<Param, TParams>] }
       : Record<never, never>
 
-type MergeParams<
+export type MergeParams<
   TAlpha extends Record<string, unknown>,
   TBeta extends Record<string, unknown>
 > = {
@@ -120,7 +120,7 @@ export type ExtractParamType<TParam extends Param | undefined> = TParam extends 
     ? ReturnType<TParam>
     : string
 
-type MarkOptionalParams<TParams extends Record<string, unknown[]>> = Identity<{
+export type MarkOptionalParams<TParams extends Record<string, unknown[]>> = Identity<{
   [K in keyof GetAllOptionalParams<TParams>]?: K extends keyof TParams ? UnwrapSingleParams<TParams[K]> : never
 } & {
   [K in keyof GetAllRequiredParams<TParams>]: K extends keyof TParams ? UnwrapSingleParams<TParams[K]> : never
