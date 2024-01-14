@@ -1,35 +1,49 @@
-import { PropType, defineComponent, h } from 'vue'
+/* eslint-disable vue/no-unused-properties */
+/* eslint-disable vue/require-prop-types */
+/* eslint-disable vue/require-expose */
+import { defineComponent, h } from 'vue'
 import { useRouter } from '@/compositions/useRouter'
 import { RouteMethod } from '@/types/routeMethod'
+import { RouterPush, RouterPushOptions } from '@/types/router'
 
-export default defineComponent({
-  name: 'RouterLink',
-  expose: [],
-  props: {
-    to: {
-      type: Function as PropType<() => ReturnType<RouteMethod>>,
-      required: true,
-    },
-    replace: {
-      type: Boolean,
-    },
-  },
-  setup(props, { slots }) {
-    const router = useRouter()
+type RouterLinkTo = string | (() => ReturnType<RouteMethod>)
 
-    function onClick(event: PointerEvent): void {
-      event.preventDefault()
+type RouterLinkProps = {
+  to: RouterLinkTo,
+  replace?: boolean,
+}
 
-      const { url } = props.to()
+export default defineComponent((props: RouterLinkProps, { slots }) => {
+  const router = useRouter()
 
-      router.push(url, {
-        replace: props.replace,
-      })
+  function getUrl(): string {
+    if (typeof props.to === 'string') {
+      return props.to
     }
 
-    return () => h('a', {
-      href: props.to().url,
-      onClick,
-    }, slots.default?.())
-  },
+    const { url } = props.to()
+
+    return url
+  }
+
+  function getPushParameters(): Parameters<RouterPush> {
+    const options: RouterPushOptions = { replace: props.replace ?? false }
+    const url = getUrl()
+
+    return [url, options]
+  }
+
+  function onClick(event: PointerEvent): void {
+    event.preventDefault()
+
+    router.push(...getPushParameters())
+  }
+
+  return () => h('a', {
+    href: getUrl(),
+    onClick,
+  }, slots.default?.())
+}, {
+  name: 'RouterLink',
+  props: ['to', 'replace'],
 })
