@@ -1,8 +1,8 @@
 import { inject } from 'vue'
-import { Router } from '@/types/router'
+import { RegisteredRouter } from '@/types'
 import { routerInjectionKey } from '@/utilities'
 
-export function useRouter(): Router {
+export function useRouter(): RegisteredRouter {
   const router = inject(routerInjectionKey)
 
   if (!router) {
