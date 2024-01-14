@@ -1,22 +1,8 @@
 import { Param, ParamGetSet, ParamGetter } from '@/types/params'
+import { RouteMethod, RouteMethodResponse } from '@/types/routeMethod'
 import { Public, Route, Routes } from '@/types/routes'
-import { Identity, IsEmptyObject, ReplaceAll, Thenable, TupleCanBeAllUndefined, UnionToIntersection } from '@/types/utilities'
+import { Identity, ReplaceAll, TupleCanBeAllUndefined, UnionToIntersection } from '@/types/utilities'
 import { Path } from '@/utilities/path'
-
-export type RouteMethod<
-  TParams extends Record<string, unknown> = any
-> = IsEmptyObject<TParams> extends false
-  ? (params: TParams, options?: RouteMethodOptions) => RouteMethodResponse
-  : (options?: RouteMethodOptions) => RouteMethodResponse
-
-export type RouteMethodOptions = {
-  replace: boolean,
-  skipRouting: boolean,
-}
-
-export type RouteMethodResponse = Thenable<{
-  url: string,
-}>
 
 export type RouteMethods<
   TRoutes extends Routes,
@@ -84,7 +70,7 @@ export type ExtractParamsFromPathString<
       ? { [P in ExtractParamName<Param>]: [ExtractPathParamType<Param, TParams>] }
       : Record<never, never>
 
-type MergeParams<
+export type MergeParams<
   TAlpha extends Record<string, unknown>,
   TBeta extends Record<string, unknown>
 > = {
@@ -134,7 +120,7 @@ export type ExtractParamType<TParam extends Param | undefined> = TParam extends 
     ? ReturnType<TParam>
     : string
 
-type MarkOptionalParams<TParams extends Record<string, unknown[]>> = Identity<{
+export type MarkOptionalParams<TParams extends Record<string, unknown[]>> = Identity<{
   [K in keyof GetAllOptionalParams<TParams>]?: K extends keyof TParams ? UnwrapSingleParams<TParams[K]> : never
 } & {
   [K in keyof GetAllRequiredParams<TParams>]: K extends keyof TParams ? UnwrapSingleParams<TParams[K]> : never

@@ -1,4 +1,4 @@
-import { expect, test } from 'vitest'
+import { describe, expect, test, vi } from 'vitest'
 import { Routes } from '@/types'
 import { createRouteMethods, resolveRoutes } from '@/utilities'
 import { component } from '@/utilities/testHelpers'
@@ -17,7 +17,7 @@ test.each([
   ] as const satisfies Routes
   const resolved = resolveRoutes(routes)
 
-  const response = createRouteMethods<typeof routes>(resolved)
+  const response = createRouteMethods<typeof routes>(resolved, vi.fn())
 
   if (isPublic !== false) {
     // @ts-expect-error
@@ -40,7 +40,7 @@ test('given route is NOT public, returns empty object', () => {
   ] as const satisfies Routes
   const resolved = resolveRoutes(routes)
 
-  const response = createRouteMethods<typeof routes>(resolved)
+  const response = createRouteMethods<typeof routes>(resolved, vi.fn())
 
   expect(response).toMatchObject({})
 })
@@ -66,7 +66,7 @@ test.each([
   ] as const satisfies Routes
   const resolved = resolveRoutes(routes)
 
-  const response = createRouteMethods<typeof routes>(resolved)
+  const response = createRouteMethods<typeof routes>(resolved, vi.fn())
 
   if (isPublic !== false) {
     // @ts-expect-error
@@ -99,9 +99,54 @@ test('given parent route with named children and grandchildren, has path to gran
   ] as const satisfies Routes
   const resolved = resolveRoutes(routes)
 
-  const response = createRouteMethods<typeof routes>(resolved)
+  const response = createRouteMethods<typeof routes>(resolved, vi.fn())
 
   expect(response.parent).toBeTypeOf('function')
   expect(response.parent.child).toBeTypeOf('function')
   expect(response.parent.child.grandchild).toBeTypeOf('function')
+})
+
+describe('routeMethod', () => {
+  test('push and replace call router.push with correct parameters', () => {
+    const routerPush = vi.fn()
+
+    const routes = [
+      {
+        name: 'route',
+        path: '/route/:?param',
+        component,
+      },
+    ] as const satisfies Routes
+    const resolved = resolveRoutes(routes)
+    const { route } = createRouteMethods<typeof routes>(resolved, routerPush)
+
+    route().push()
+    expect(routerPush).toHaveBeenLastCalledWith('/route/', {})
+
+    route().replace()
+    expect(routerPush).toHaveBeenLastCalledWith('/route/', { replace: true })
+
+    route({ param: 'foo' }).push()
+    expect(routerPush).toHaveBeenLastCalledWith('/route/foo', {})
+
+    route({ param: 'foo' }).push({ params: { param: 'bar' } })
+    expect(routerPush).toHaveBeenLastCalledWith('/route/bar', {})
+  })
+
+  test('returns correct url', () => {
+    const routerPush = vi.fn()
+
+    const routes = [
+      {
+        name: 'route',
+        path: '/route/:?param',
+        component,
+      },
+    ] as const satisfies Routes
+    const resolved = resolveRoutes(routes)
+    const { route } = createRouteMethods<typeof routes>(resolved, routerPush)
+
+    expect(route().url).toBe('/route/')
+    expect(route({ param: 'param' }).url).toBe('/route/param')
+  })
 })

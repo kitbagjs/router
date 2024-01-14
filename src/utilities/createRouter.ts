@@ -1,32 +1,11 @@
-import { DeepReadonly, reactive, readonly, App } from 'vue'
-import { RouterView } from '@/components'
-import { Resolved, Route, RouteMethods, Routes } from '@/types'
-import { createRouteMethods, createRouterNavigation, resolveRoutes, routeMatch, getInitialUrl, resolveRoutesRegex, assembleUrl } from '@/utilities'
-
-type RouterOptions = {
-  initialUrl?: string,
-}
-
-type RouterPushOptions = { replace?: boolean }
-type RouterPush<T extends Routes> = {
-  (route: { name: T[number]['name'] }, params?: Record<string, unknown>, options?: RouterPushOptions): Promise<void>,
-  (url: string, options?: RouterPushOptions): Promise<void>,
-}
-type RouterReplace = (url: string) => Promise<void>
+import { reactive, readonly, App, InjectionKey } from 'vue'
+import { RouterLink, RouterView } from '@/components'
+import { Resolved, Route, Routes } from '@/types'
+import { Router, RouterOptions, RouterPush, RouterReplace } from '@/types/router'
+import { createRouteMethods, createRouterNavigation, resolveRoutes, routeMatch, getInitialUrl, resolveRoutesRegex } from '@/utilities'
 
 
-export type Router<
-  TRoutes extends Routes
-> = {
-  routes: RouteMethods<TRoutes>,
-  route: DeepReadonly<Resolved<Route>>,
-  push: RouterPush<TRoutes>,
-  replace: RouterReplace,
-  back: () => void,
-  forward: () => void,
-  go: (delta: number) => void,
-  install: (app: App) => void,
-}
+export const routerInjectionKey: InjectionKey<Router> = Symbol()
 
 export function createRouter<T extends Routes>(routes: T, options: RouterOptions = {}): Router<T> {
   const resolved = resolveRoutes(routes)
@@ -39,6 +18,8 @@ export function createRouter<T extends Routes>(routes: T, options: RouterOptions
 
   function install(app: App): void {
     app.component('RouterView', RouterView)
+    app.component('RouterLink', RouterLink)
+    app.provide(routerInjectionKey, router)
   }
 
   function getInitialRoute(): Resolved<Route> {
@@ -55,7 +36,7 @@ export function createRouter<T extends Routes>(routes: T, options: RouterOptions
       throw 'not implemented'
     }
 
-    return route
+    return { ...route }
   }
 
   async function onLocationUpdate(url: string): Promise<void> {
@@ -87,7 +68,7 @@ export function createRouter<T extends Routes>(routes: T, options: RouterOptions
   }
 
   const router = {
-    routes: createRouteMethods<T>(resolved),
+    routes: createRouteMethods<T>(resolved, push),
     route: readonly(route),
     push,
     replace,

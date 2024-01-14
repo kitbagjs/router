@@ -4,7 +4,9 @@ import { routeParamsAreValid } from '@/utilities/paramValidation'
 import { ResolvedWithRegex } from '@/utilities/resolveRoutesRegex'
 
 export function routeMatch(routes: ResolvedWithRegex[], path: string): Resolved<Route> | undefined {
-  const { route } = routes.find(({ regexp, route }) => regexp.test(path) && routeParamsAreValid(path, route)) ?? {}
+  const { route } = routes.find(({ regexp, route }) => {
+    return regexp.test(path) && routeParamsAreValid(path, route)
+  }) ?? {}
 
   return route
 }

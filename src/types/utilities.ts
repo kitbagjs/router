@@ -36,8 +36,6 @@ export type UnionToIntersection<Union> = (
   ? Intersection & Union
   : never
 
-export type MaybeLazy<T> = T | (() => Promise<T>)
-
 export type MaybeArray<T> = T | T[]
 
 export type MaybePromise<T> = T | Promise<T>
@@ -51,5 +49,6 @@ export type ReplaceAll<
   ? `${Head}${Replacement}${ReplaceAll<Tail, Search, Replacement>}`
   : Input
 
-export type Thenable<T> = T & PromiseLike<T>
-export type Then<T extends Thenable<unknown>> = T extends PromiseLike<infer R> ? R : never
+export type OnlyRequiredProperties<T extends Record<string, unknown>> = {
+  [K in keyof T as Extract<T[K], undefined> extends never ? K : never]: T[K]
+}
