@@ -2,6 +2,7 @@ import { AsyncComponentLoader, Component, DefineComponent } from 'vue'
 import { RouteMiddleware } from '@/types/middleware'
 import { MaybeArray } from '@/types/utilities'
 import { Path } from '@/utilities/path'
+import { Query } from '@/utilities/query'
 
 export type RouteComponent = Component | DefineComponent | AsyncComponentLoader
 
@@ -11,7 +12,7 @@ export interface RouteMeta {
 
 export type ParentRoute<
   TPath extends string | Path = any,
-  TQuery extends string | Path = any
+  TQuery extends string | Query = any
 > = {
   name?: string,
   path: TPath,
@@ -25,7 +26,7 @@ export type ParentRoute<
 
 export type ChildRoute<
   TPath extends string | Path = any,
-  TQuery extends string | Path = any
+  TQuery extends string | Query = any
 > = {
   name: string,
   public?: boolean,
