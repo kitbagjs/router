@@ -10,10 +10,12 @@ export interface RouteMeta {
 }
 
 export type ParentRoute<
-  TRoute extends string | Path = any
+  TPath extends string | Path = any,
+  TQuery extends string | Path = any
 > = {
   name?: string,
-  path: TRoute,
+  path: TPath,
+  query?: TQuery,
   public?: boolean,
   children: Routes,
   component?: RouteComponent,
@@ -22,11 +24,13 @@ export type ParentRoute<
 }
 
 export type ChildRoute<
-  TRoute extends string | Path = any
+  TPath extends string | Path = any,
+  TQuery extends string | Path = any
 > = {
   name: string,
   public?: boolean,
-  path: TRoute,
+  path: TPath,
+  query?: TQuery,
   component: RouteComponent,
   middleware?: MaybeArray<RouteMiddleware>,
   meta?: RouteMeta,

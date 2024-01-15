@@ -1,7 +1,6 @@
-import { Param, ParamGetSet, ParamGetter } from '@/types/params'
 import { RouteMethod, RouteMethodResponse } from '@/types/routeMethod'
 import { Public, Route, Routes } from '@/types/routes'
-import { Identity, ReplaceAll, TupleCanBeAllUndefined, UnionToIntersection } from '@/types/utilities'
+import { Identity, TupleCanBeAllUndefined, UnionToIntersection } from '@/types/utilities'
 import { Path } from '@/utilities/path'
 
 export type RouteMethods<
@@ -53,23 +52,6 @@ export type ExtractParamsFromPath<
     ? Path<TPath, object>['params']
     : never
 
-type ParamEnd = '/'
-
-type UnifyParamEnds<
-  TPath extends string
-> = ReplaceAll<ReplaceAll<TPath, '-', ParamEnd>, '_', ParamEnd>
-
-export type ExtractParamsFromPathString<
-  TPath extends string,
-  TParams extends Record<string, Param | undefined> = Record<never, never>
-> = UnifyParamEnds<TPath> extends `${infer Path}${ParamEnd}`
-  ? ExtractParamsFromPathString<Path, TParams>
-  : UnifyParamEnds<TPath> extends `${string}:${infer Param}${ParamEnd}${infer Rest}`
-    ? MergeParams<{ [P in ExtractParamName<Param>]: ExtractPathParamType<Param, TParams> }, ExtractParamsFromPathString<Rest, TParams>>
-    : UnifyParamEnds<TPath> extends `${string}:${infer Param}`
-      ? { [P in ExtractParamName<Param>]: [ExtractPathParamType<Param, TParams>] }
-      : Record<never, never>
-
 export type MergeParams<
   TAlpha extends Record<string, unknown>,
   TBeta extends Record<string, unknown>
@@ -92,33 +74,6 @@ export type MergeParams<
           : [TBeta[K]]
         : never
 }
-
-type ExtractParamName<
-  TParam extends string
-> = TParam extends `?${infer Param}`
-  ? Param extends ''
-    ? never
-    : Param
-  : TParam extends ''
-    ? never
-    : TParam
-
-type ExtractPathParamType<
-  TParam extends string,
-  TParams extends Record<string, Param | undefined>
-> = TParam extends `?${infer OptionalParam}`
-  ? OptionalParam extends keyof TParams
-    ? ExtractParamType<TParams[OptionalParam]> | undefined
-    : string | undefined
-  : TParam extends keyof TParams
-    ? ExtractParamType<TParams[TParam]>
-    : string
-
-export type ExtractParamType<TParam extends Param | undefined> = TParam extends ParamGetSet<infer Type>
-  ? Type
-  : TParam extends ParamGetter
-    ? ReturnType<TParam>
-    : string
 
 export type MarkOptionalParams<TParams extends Record<string, unknown[]>> = Identity<{
   [K in keyof GetAllOptionalParams<TParams>]?: K extends keyof TParams ? UnwrapSingleParams<TParams[K]> : never

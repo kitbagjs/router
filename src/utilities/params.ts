@@ -1,5 +1,46 @@
 import { Param, ParamGetSet, ParamExtras, isParamGetSet, isParamGetter, ExtractParamType } from '@/types'
 import { InvalidRouteParamValueError } from '@/types/invalidRouteParamValueError'
+import { mergeParams } from '@/utilities/mergeParams'
+import { stringHasValue } from '@/utilities/string'
+
+export function getParam<P extends Record<string, Param | undefined>>(params: P, param: string): Param {
+  return params[param] ?? String
+}
+
+export function optional<TParam extends Param>(param: TParam): ParamGetSet<ExtractParamType<TParam> | undefined> {
+  return {
+    get: (value) => {
+      if (!stringHasValue(value)) {
+        return undefined
+      }
+
+      return getParamValue(value, param)
+    },
+    set: (value) => {
+      if (!stringHasValue(value)) {
+        return ''
+      }
+
+      return setParamValue(value, param)
+    },
+  }
+}
+
+export function getParamsForString<TInput extends string, TParams extends Record<string, Param | undefined>>(string: TInput, params: TParams): Record<string, unknown[]> {
+  const paramPattern = /:\??([\w]+)(?=\W|$)/g
+  const matches = Array.from(string.matchAll(paramPattern))
+
+  const paramAssignments = matches.map(([match, paramName]) => {
+    const isOptional = match.startsWith(':?')
+    const param = getParam(params, paramName)
+
+    return {
+      [paramName]: [isOptional ? optional(param) : param],
+    }
+  })
+
+  return mergeParams(...paramAssignments)
+}
 
 const extras: ParamExtras = {
   invalid: (message?: string) => {

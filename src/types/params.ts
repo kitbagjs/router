@@ -27,3 +27,30 @@ export function isParamGetSet(value: Param): value is ParamGetSet {
     && 'set' in value
     && typeof value.set === 'function'
 }
+
+export type ExtractParamName<
+  TParam extends string
+> = TParam extends `?${infer Param}`
+  ? Param extends ''
+    ? never
+    : Param
+  : TParam extends ''
+    ? never
+    : TParam
+
+export type ExtractPathParamType<
+  TParam extends string,
+  TParams extends Record<string, Param | undefined>
+> = TParam extends `?${infer OptionalParam}`
+  ? OptionalParam extends keyof TParams
+    ? ExtractParamType<TParams[OptionalParam]> | undefined
+    : string | undefined
+  : TParam extends keyof TParams
+    ? ExtractParamType<TParams[TParam]>
+    : string
+
+export type ExtractParamType<TParam extends Param | undefined> = TParam extends ParamGetSet<infer Type>
+  ? Type
+  : TParam extends ParamGetter
+    ? ReturnType<TParam>
+    : string
