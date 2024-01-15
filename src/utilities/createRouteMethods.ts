@@ -1,9 +1,9 @@
 import { Resolved, Route, RouteMethods, Routes, isPublicRoute } from '@/types'
 import { RouteMethod, RouteMethodPush, RouteMethodReplace } from '@/types/routeMethod'
-import { RouterPush } from '@/types/router'
+import { RouterPushUrl } from '@/types/router'
 import { assembleUrl } from '@/utilities/urlAssembly'
 
-export function createRouteMethods<T extends Routes>(routes: Resolved<Route>[], routerPush: RouterPush): RouteMethods<T> {
+export function createRouteMethods<T extends Routes = Routes>(routes: Resolved<Route>[], routerPush: RouterPushUrl): RouteMethods<T> {
   const methods = routes.reduce<Record<string, any>>((methods, route) => {
     let level = methods
 
@@ -36,7 +36,7 @@ export function createRouteMethods<T extends Routes>(routes: Resolved<Route>[], 
 
 type CreateRouteMethodArgs = {
   route: Resolved<Route>,
-  routerPush: RouterPush,
+  routerPush: RouterPushUrl,
 }
 
 function createRouteMethod({ route, routerPush }: CreateRouteMethodArgs): RouteMethod {

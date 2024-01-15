@@ -4,7 +4,7 @@
 import { defineComponent, h } from 'vue'
 import { useRouter } from '@/compositions/useRouter'
 import { RouteMethod } from '@/types/routeMethod'
-import { RouterPush, RouterPushOptions } from '@/types/router'
+import { RouterPushOptions } from '@/types/router'
 
 type RouterLinkTo = string | (() => ReturnType<RouteMethod>)
 
@@ -26,7 +26,7 @@ export default defineComponent((props: RouterLinkProps, { slots }) => {
     return url
   }
 
-  function getPushParameters(): Parameters<RouterPush> {
+  function getPushParameters(): [string, RouterPushOptions] {
     const options: RouterPushOptions = { replace: props.replace ?? false }
     const url = getUrl()
 
@@ -36,7 +36,9 @@ export default defineComponent((props: RouterLinkProps, { slots }) => {
   function onClick(event: PointerEvent): void {
     event.preventDefault()
 
-    router.push(...getPushParameters())
+    const [url, options] = getPushParameters()
+
+    router.push(url, options)
   }
 
   return () => h('a', {

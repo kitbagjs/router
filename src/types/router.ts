@@ -22,6 +22,8 @@ export type RouterPushRoute<
   params?: Flattened<TRoutes>[TRoute],
 }
 
+export type RouterPushUrl = (url: string, options?: RouterPushOptions) => Promise<void>
+
 export type RouterPush<TRoutes extends Routes = Routes> = {
   (url: string, options?: RouterPushOptions): Promise<void>,
   <TRoute extends keyof Flattened<TRoutes>>(route: RouterPushRoute<TRoutes, TRoute>): Promise<void>,

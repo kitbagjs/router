@@ -11,7 +11,7 @@ export function getParamValuesFromUrl(url: string, path: string, paramName: stri
 export type ParamReplace = {
   name: string,
   params?: Param[],
-  values?: unknown[],
+  values?: unknown,
 }
 
 export function setParamValuesOnUrl(path: string, paramReplace?: ParamReplace): string {
@@ -24,7 +24,8 @@ export function setParamValuesOnUrl(path: string, paramReplace?: ParamReplace): 
   const captureGroups = getCaptureGroups(path, regexPattern)
 
   return captureGroups.reduce((value, captureGroup, index) => {
-    return value.replace(captureGroup, () => setParamValue(values[index], params[index++]))
+    const valueForIndex = Array.isArray(values) ? values[index] : values
+    return value.replace(captureGroup, () => setParamValue(valueForIndex, params[index++]))
   }, path)
 }
 

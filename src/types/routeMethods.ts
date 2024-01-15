@@ -5,7 +5,7 @@ import { Identity, ReplaceAll, TupleCanBeAllUndefined, UnionToIntersection } fro
 import { Path } from '@/utilities/path'
 
 export type RouteMethods<
-  TRoutes extends Routes,
+  TRoutes extends Routes = Routes,
   TParams extends Record<string, unknown> = Record<never, never>
 > = Identity<UnionToIntersection<RouteMethodsTuple<TRoutes, TParams>[number]>>
 
