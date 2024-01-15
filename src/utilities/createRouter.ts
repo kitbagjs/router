@@ -74,7 +74,7 @@ export function createRouter<T extends Routes>(routes: T, options: RouterOptions
   const router = {
     routes: createRouteMethods<T>(resolved, pushUrl),
     route: readonly(route),
-    push,
+    push: push as any,
     replace,
     forward: navigation.forward,
     back: navigation.back,
