@@ -72,3 +72,36 @@ test.each([
 
   expect(spy).toHaveBeenLastCalledWith(routeB.path, { replace })
 })
+
+test('to prop as string renders and routes correctly', () => {
+  const route = {
+    name: 'route',
+    path: '/route',
+    component,
+  } as const satisfies Route
+
+  const router = createRouter([route], {
+    initialUrl: route.path,
+  })
+
+  const spy = vi.spyOn(router, 'push')
+
+  const wrapper = mount(routerLink, {
+    props: {
+      to: route.path,
+    },
+    slots: {
+      default: route.name,
+    },
+    global: {
+      plugins: [router],
+    },
+  })
+
+  const anchor = wrapper.find('a')
+  expect(anchor.html()).toBe(`<a href="${route.path}">${route.name}</a>`)
+
+  anchor.trigger('click')
+
+  expect(spy).toHaveBeenCalledWith(route.path, { replace: false })
+})
