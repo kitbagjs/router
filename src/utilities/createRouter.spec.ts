@@ -52,7 +52,7 @@ test('updates the route when navigating', async () => {
 
   expect(route.matched).toMatchObject(second)
 
-  await push({ name: third.name }, { id: '123' })
+  await push({ name: third.name, params: { id: '123' } })
 
   expect(route.matched).toMatchObject(third)
 })

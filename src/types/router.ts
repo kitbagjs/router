@@ -14,9 +14,17 @@ export type RouterPushOptions = {
   replace?: boolean,
 }
 
+export type RouterPushRoute<
+  TRoutes extends Routes = Routes,
+  TRoute extends keyof Flattened<TRoutes> = keyof Flattened<TRoutes>
+> = RouterPushOptions & {
+  name: TRoute,
+  params?: Flattened<TRoutes>[TRoute],
+}
+
 export type RouterPush<TRoutes extends Routes = Routes> = {
   (url: string, options?: RouterPushOptions): Promise<void>,
-  <TRoute extends keyof Flattened<TRoutes>>(route: { name: TRoute }, params?: Flattened<TRoutes>[TRoute], options?: RouterPushOptions): Promise<void>,
+  <TRoute extends keyof Flattened<TRoutes>>(route: RouterPushRoute<TRoutes, TRoute>): Promise<void>,
 }
 
 export type RouterReplaceOptions = Omit<RouterPushOptions, 'replace'>

@@ -1,8 +1,7 @@
 import { reactive, readonly, App, InjectionKey } from 'vue'
 import { RouterLink, RouterView } from '@/components'
-import { Resolved, Route, Routes } from '@/types'
-import { Router, RouterOptions, RouterPush, RouterReplace } from '@/types/router'
-import { createRouteMethods, createRouterNavigation, resolveRoutes, routeMatch, getInitialUrl, resolveRoutesRegex, assembleUrl } from '@/utilities'
+import { Resolved, Route, Routes, Router, RouterOptions, RouterPush, RouterReplace, RouterPushRoute, RouterPushOptions } from '@/types'
+import { createRouteMethods, createRouterNavigation, resolveRoutes, routeMatch, getInitialUrl, resolveRoutesRegex, assembleUrl, flattenParentMatches } from '@/utilities'
 
 export const routerInjectionKey: InjectionKey<Router> = Symbol()
 
@@ -44,20 +43,21 @@ export function createRouter<T extends Routes>(routes: T, options: RouterOptions
     Object.assign(route, newRoute)
   }
 
-  const push: RouterPush<T> = (urlOrRoute, optionsOrParams: Record<string, any> = {}, possiblyOptions: Record<string, any> = {}) => {
+  const push: RouterPush = (urlOrRoute: string | RouterPushRoute, possiblyOptions: RouterPushOptions = {}) => {
     if (typeof urlOrRoute === 'string') {
-      return navigation.update(urlOrRoute, optionsOrParams)
+      return navigation.update(urlOrRoute, possiblyOptions)
     }
 
-    const route = resolved.find(({ name }) => name === urlOrRoute.name)
+    const { name, params, replace } = urlOrRoute
+    const route = resolved.find((route) => flattenParentMatches(route) === name)
 
     if (!route) {
-      throw `No route found with name "${urlOrRoute.name}"`
+      throw `No route found with name "${String(name)}"`
     }
 
-    const url = assembleUrl(route, optionsOrParams)
+    const url = assembleUrl(route, params)
 
-    return navigation.update(url, possiblyOptions)
+    return navigation.update(url, { replace })
   }
 
   const replace: RouterReplace = async (url) => {
