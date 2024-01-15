@@ -1,6 +1,6 @@
 import { reactive, readonly, App, InjectionKey } from 'vue'
 import { RouterLink, RouterView } from '@/components'
-import { Resolved, Route, Routes, Router, RouterOptions, RouterPushOptions, RegisteredRouter, RouterReplaceOptions } from '@/types'
+import { Resolved, Route, Routes, Router, RouterOptions, RouterPushOptions, RegisteredRouter, RouterReplaceOptions, RouterPush } from '@/types'
 import { createRouteMethods, createRouterNavigation, resolveRoutes, routeMatch, getInitialUrl, resolveRoutesRegex, assembleUrl, flattenParentMatches } from '@/utilities'
 
 export const routerInjectionKey: InjectionKey<RegisteredRouter> = Symbol()
@@ -74,7 +74,7 @@ export function createRouter<T extends Routes>(routes: T, options: RouterOptions
   const router = {
     routes: createRouteMethods<T>(resolved, pushUrl),
     route: readonly(route),
-    push: push as any,
+    push: push as RouterPush<T>,
     replace,
     forward: navigation.forward,
     back: navigation.back,
