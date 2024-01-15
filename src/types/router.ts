@@ -1,4 +1,5 @@
 import { App, DeepReadonly } from 'vue'
+import { Flattened } from '@/types/flattened'
 import { Resolved } from '@/types/resolved'
 import { RouteMethods } from '@/types/routeMethods'
 import { Route, Routes } from '@/types/routes'
@@ -13,7 +14,20 @@ export type RouterPushOptions = {
   replace?: boolean,
 }
 
-export type RouterPush = (url: string, options?: RouterPushOptions) => Promise<void>
+type RouterPushRoute<
+  TRoutes extends Routes,
+  TRoute extends PropertyKey
+> = RouterPushOptions & {
+  name: TRoute,
+  params?: TRoute extends keyof Flattened<TRoutes> ? Flattened<TRoutes>[TRoute] : Record<never, never>,
+}
+
+export type RouterPushUrl = (url: string, options?: RouterPushOptions) => Promise<void>
+
+export type RouterPush<TRoutes extends Routes = Routes> = {
+  (url: string, options?: RouterPushOptions): Promise<void>,
+  <TRoute extends keyof Flattened<TRoutes>>(route: RouterPushRoute<TRoutes, TRoute>): Promise<void>,
+}
 
 export type RouterReplaceOptions = Omit<RouterPushOptions, 'replace'>
 
@@ -24,7 +38,7 @@ export type Router<
 > = {
   routes: RouteMethods<TRoutes>,
   route: DeepReadonly<Resolved<Route>>,
-  push: RouterPush,
+  push: RouterPush<TRoutes>,
   replace: RouterReplace,
   back: () => void,
   forward: () => void,

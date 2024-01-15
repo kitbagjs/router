@@ -4,6 +4,28 @@ import { resolveRoutes, path } from '@/utilities'
 import { component } from '@/utilities/testHelpers'
 
 describe('resolveRoutes', () => {
+  test('given no named routes, returns empty array', () => {
+    const routes = [
+      {
+        path: 'foo',
+        children: [],
+      },
+      {
+        path: 'bar',
+        children: [
+          {
+            path: 'zoo',
+            children: [],
+          },
+        ],
+      },
+    ] as const satisfies Routes
+
+    const resolved = resolveRoutes(routes)
+
+    expect(resolved).toMatchObject([])
+  })
+
   test('always returns 1 record per named route', () => {
     const routes = [
       {
