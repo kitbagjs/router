@@ -132,8 +132,6 @@ describe('resolveRoutes', () => {
     const routes = resolveRoutes([parentRoute])
     const resolvedChild = routes.find(route => route.name === childRoute.name)
 
-    console.log(resolvedChild?.params)
-
     expect(resolvedChild?.params).toMatchObject({ workspaceId: [String], startDate: [String], handle: [String] })
     // check
     expect(Object.keys(resolvedChild?.params ?? {})).toMatchObject(['workspaceId', 'startDate', 'handle'])
