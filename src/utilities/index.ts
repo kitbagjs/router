@@ -1,3 +1,4 @@
+export * from './array'
 export * from './createRouteMethods'
 export * from './createRouter'
 export * from './flattenParentMatches'
