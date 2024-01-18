@@ -85,17 +85,17 @@ test('returns correct param type for routes', () => {
 test('works with query params', () => {
   const routes = [
     {
-      path: '/:A',
-      query: query('B=:B', {
-        B: Boolean,
+      path: '/:param1',
+      query: query('param2=:param2', {
+        param2: Boolean,
       }),
       children: [
         {
           name: 'child',
-          path: path('/:B/:?D', {
-            D: Boolean,
+          path: path('/:param2/:?param3', {
+            param3: Boolean,
           }),
-          query: 'A=:A&D=:?D',
+          query: 'param1=:param1&param3=:?param3',
           component,
         },
       ],
@@ -104,9 +104,9 @@ test('works with query params', () => {
 
   expectTypeOf<Flattened<typeof routes>>().toMatchTypeOf<{
     child: {
-      A: [string, string],
-      B: [string, boolean],
-      D?: [boolean | undefined, string | undefined],
+      param1: [string, string],
+      param2: [string, boolean],
+      param3?: [boolean | undefined, string | undefined],
     },
   }>()
 
