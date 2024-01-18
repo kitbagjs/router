@@ -82,7 +82,7 @@ test('returns correct param type for routes', () => {
   }>()
 })
 
-test('works with query params', () => {
+test('returns correct type when query params are used', () => {
   const routes = [
     {
       path: '/:param1',
