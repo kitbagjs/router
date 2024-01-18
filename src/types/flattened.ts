@@ -1,18 +1,19 @@
-import { ExtractParamsFromPath, MarkOptionalParams, MergeParams } from '@/types/routeMethods'
+import { MarkOptionalParams, MergeParams, RoutePathParams, RouteQueryParams } from '@/types/routeMethods'
 import { Public, Route, Routes } from '@/types/routes'
 import { Identity, UnionToIntersection } from '@/types/utilities'
 
 export type Flattened<
   TRoute extends Route | Routes,
   TPrefix extends string = '',
-  TParams extends Record<string, unknown> = Record<never, never>
+  TPathParams extends Record<string, unknown> = Record<never, never>,
+  TQueryParams extends Record<string, unknown> = Record<never, never>
 > = Identity<
 TRoute extends Route
-  ? RouteFlat<TRoute, TPrefix, TParams> & RouteChildrenFlat<TRoute, TPrefix, TParams>
+  ? RouteFlat<TRoute, TPrefix, TPathParams, TQueryParams> & RouteChildrenFlat<TRoute, TPrefix, TPathParams, TQueryParams>
   : TRoute extends Routes
     ? UnionToIntersection<{
       [K in keyof TRoute]: TRoute[K] extends Route
-        ? Flattened<TRoute[K], TPrefix, TParams>
+        ? Flattened<TRoute[K], TPrefix, TPathParams, TQueryParams>
         : Record<never, never>
     }[number]>
     : Record<never, never>
@@ -21,19 +22,22 @@ TRoute extends Route
 type RouteFlat<
   TRoute extends Route,
   TPrefix extends string,
-  TParams extends Record<string, unknown> = Record<never, never>
-> = TRoute extends Public<TRoute> & { path: infer Path, name: infer Name extends string }
-  ? Record<Prefix<Name, TPrefix>, MarkOptionalParams<MergeParams<TParams, ExtractParamsFromPath<Path>>>>
+  TPathParams extends Record<string, unknown> = Record<never, never>,
+  TQueryParams extends Record<string, unknown> = Record<never, never>
+> = TRoute extends Public<TRoute> & { name: infer Name extends string }
+  ? Record<Prefix<Name, TPrefix>, MarkOptionalParams<MergeParams<RoutePathParams<TRoute, TPathParams>, RouteQueryParams<TRoute, TQueryParams>>>>
   : Record<never, never>
+
 
 type RouteChildrenFlat<
   TRoute extends Route,
   TPrefix extends string,
-  TParams extends Record<string, unknown> = Record<never, never>
-> = TRoute extends { path: infer Path, children: infer Children extends Routes }
+  TPathParams extends Record<string, unknown> = Record<never, never>,
+  TQueryParams extends Record<string, unknown> = Record<never, never>
+> = TRoute extends { children: infer Children extends Routes }
   ? TRoute extends Public<TRoute> & { name: infer Name extends string }
-    ? Flattened<Children, Prefix<Name, TPrefix>, MergeParams<TParams, ExtractParamsFromPath<Path>>>
-    : Flattened<Children, Prefix<'', TPrefix>, MergeParams<TParams, ExtractParamsFromPath<Path>>>
+    ? Flattened<Children, Prefix<Name, TPrefix>, RoutePathParams<TRoute, TPathParams>, RouteQueryParams<TRoute, TQueryParams>>
+    : Flattened<Children, Prefix<'', TPrefix>, RoutePathParams<TRoute, TPathParams>, RouteQueryParams<TRoute, TQueryParams>>
   : Record<never, never>
 
 type Prefix<
