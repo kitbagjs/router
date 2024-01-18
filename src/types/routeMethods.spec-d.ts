@@ -2,6 +2,7 @@ import { test, expectTypeOf } from 'vitest'
 import { ParamGetSet } from '@/types/params'
 import { Routes } from '@/types/routes'
 import { createRouter, path } from '@/utilities'
+import { query } from '@/utilities/query'
 import { component } from '@/utilities/testHelpers'
 
 const boolean: ParamGetSet<boolean> = {
@@ -425,7 +426,7 @@ test('param names must be alphanumeric', () => {
   }>()
 })
 
-test('route method returns correct type when called', async () => {
+test('route method returns correct type when called', () => {
   const routes = [
     {
       name: 'foo',
@@ -437,4 +438,38 @@ test('route method returns correct type when called', async () => {
   const router = createRouter(routes)
 
   expectTypeOf(router.routes.foo()).toMatchTypeOf<{ url: string }>()
+})
+
+test('params includes query params', () => {
+  const routes = [
+    {
+      name: 'parent',
+      path: '/:param1',
+      query: 'param2=:param2',
+      children: [
+        {
+          name: 'child',
+          path: path('/:param2', {
+            param2: Boolean,
+          }),
+          query: query('param1=:param1', {
+            param1: Boolean,
+          }),
+          component,
+        },
+      ],
+    },
+  ] as const satisfies Routes
+
+  const router = createRouter(routes)
+
+  expectTypeOf(router.routes.parent).parameter(0).toEqualTypeOf<{
+    param1: string,
+    param2: string,
+  }>()
+
+  expectTypeOf(router.routes.parent.child).parameter(0).toEqualTypeOf<{
+    param1: [string, boolean],
+    param2: [boolean, string],
+  }>()
 })

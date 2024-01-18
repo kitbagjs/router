@@ -2,6 +2,7 @@
 import { expectTypeOf, test } from 'vitest'
 import { Flattened, Routes } from '.'
 import { component, path } from '@/utilities'
+import { query } from '@/utilities/query'
 
 test('Returns the correct route keys', () => {
   const routes = [
@@ -79,4 +80,34 @@ test('returns correct param type for routes', () => {
       A: [string, string],
     },
   }>()
+})
+
+test('works with query params', () => {
+  const routes = [
+    {
+      path: '/:A',
+      query: query('B=:B', {
+        B: Boolean,
+      }),
+      children: [
+        {
+          name: 'child',
+          path: path('/:B/:?D', {
+            D: Boolean,
+          }),
+          query: 'A=:A&D=:?D',
+          component,
+        },
+      ],
+    },
+  ] as const satisfies Routes
+
+  expectTypeOf<Flattened<typeof routes>>().toMatchTypeOf<{
+    child: {
+      A: [string, string],
+      B: [string, boolean],
+      D?: [boolean | undefined, string | undefined],
+    },
+  }>()
+
 })
