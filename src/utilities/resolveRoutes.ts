@@ -44,6 +44,6 @@ export function resolveRoutes(routes: Routes, parentContext: ParentContext = {})
   }, [])
 }
 
-function reduceParams(entries: { params: Record<PropertyKey, unknown> }[]): Record<PropertyKey, Param[]> {
+function reduceParams(entries: Path[] | Query[]): Record<string, Param[]> {
   return entries.reduce((params, entry) => mergeParams(params, entry.params as Record<string, Param | Param[]>), {})
 }
