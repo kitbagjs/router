@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { Route, Routes } from '@/types'
-import { resolveRoutes, path } from '@/utilities'
+import { resolveRoutes, path, query } from '@/utilities'
 import { component } from '@/utilities/testHelpers'
 
 describe('resolveRoutes', () => {
@@ -88,6 +88,51 @@ describe('resolveRoutes', () => {
     const resolvedChild = routes.find(route => route.name === childRoute.name)
 
     expect(resolvedChild?.path).toBe(`${parentRoute.path}/:accountId`)
+  })
+
+  test.each([
+    ['id=:accountId'],
+    [query('id=:accountId', { accountId: Number })],
+  ])('always combines query into return query', (query) => {
+    const childRoute: Route = {
+      name: 'new-account',
+      path: '/new-account',
+      query: 'handle=:?handle',
+      component,
+    }
+
+    const parentRoute: Route = {
+      name: 'accounts',
+      path: '/accounts',
+      query,
+      children: [childRoute],
+    }
+
+    const routes = resolveRoutes([parentRoute])
+    const resolvedChild = routes.find(route => route.name === childRoute.name)
+
+    expect(resolvedChild?.query).toBe('id=:accountId&handle=:?handle')
+  })
+
+  test('always combines params into return params', () => {
+    const childRoute: Route = {
+      name: 'new-account',
+      path: '/new-account',
+      query: 'handle=:handle',
+      component,
+    }
+
+    const parentRoute: Route = {
+      name: 'accounts',
+      path: ':workspaceId/accounts',
+      query: 'start=?:startDate',
+      children: [childRoute],
+    }
+
+    const routes = resolveRoutes([parentRoute])
+    const resolvedChild = routes.find(route => route.name === childRoute.name)
+
+    expect(resolvedChild?.params).toMatchObject({ workspaceId: [String], startDate: [String], handle: [String] })
   })
 
   describe('matches', () => {

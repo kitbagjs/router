@@ -1,6 +1,7 @@
 import { Resolved, Route, RouteMethods, Routes, isPublicRoute } from '@/types'
 import { RouteMethod, RouteMethodPush, RouteMethodReplace } from '@/types/routeMethod'
 import { RouterPushUrl } from '@/types/router'
+import { asArray } from '@/utilities/array'
 import { assembleUrl } from '@/utilities/urlAssembly'
 
 export function createRouteMethods<T extends Routes = Routes>(routes: Resolved<Route>[], routerPush: RouterPushUrl): RouteMethods<T> {
@@ -82,7 +83,7 @@ function normalizeRouteParams(params: Record<string, unknown>): Record<string, u
   for (const key of Object.keys(params)) {
     const value = params[key]
 
-    normalizedParams[key] = Array.isArray(value) ? value : [value]
+    normalizedParams[key] = asArray(value)
   }
 
   return normalizedParams
