@@ -44,8 +44,8 @@ export function createRouter<T extends Routes>(routes: T, options: RouterOptions
     Object.assign(route, newRoute)
   }
 
-  async function replace(url: string, options: RouterReplaceOptions = {}): Promise<void> {
-    await navigation.update(url, { ...options, replace: true })
+  function replace(url: string, options: RouterReplaceOptions = {}): Promise<void> {
+    return push(url, { ...options, replace: true })
   }
 
   const push = createRouterPush<T>({ navigation, resolved })
