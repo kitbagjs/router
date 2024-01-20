@@ -119,18 +119,18 @@ test('given route with simple string param WITHOUT value present, returns undefi
   expect(response).toBeUndefined()
 })
 
-test.skip('given route with simple string query param WITHOUT value present, returns undefined', () => {
+test('given route with simple string query param WITHOUT value present, returns undefined', () => {
   const routes: Routes = [
     {
       name: 'simple-params',
-      path: '',
+      path: '/missing',
       query: 'simple=:simple',
       component,
     },
   ]
 
   const resolved = resolveRoutes(routes)
-  const response = routeMatch(resolved, 'irrelevant?missing=params')
+  const response = routeMatch(resolved, '/missing?without=params')
 
   expect(response).toBeUndefined()
 })
