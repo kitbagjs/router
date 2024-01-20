@@ -1,7 +1,8 @@
-import { expect, test } from 'vitest'
-import { Routes } from '@/types'
+import { expect, test, vi } from 'vitest'
+import { Resolved, Route, Routes } from '@/types'
 import { resolveRoutes } from '@/utilities/resolveRoutes'
 import { routeMatch } from '@/utilities/routeMatch'
+import * as utilities from '@/utilities/routeMatchScore'
 import { component } from '@/utilities/testHelpers'
 
 test('given path WITHOUT params, returns match', () => {
@@ -133,4 +134,36 @@ test('given route with simple string query param WITHOUT value present, returns 
   const response = routeMatch(resolved, '/missing?without=params')
 
   expect(response).toBeUndefined()
+})
+
+
+test('given route with equal matches, returns route with highest score', () => {
+  vi.spyOn(utilities, 'getRouteScoreSortMethod').mockImplementation(() => {
+    return (route: Resolved<Route>) => {
+      return route.name === 'second-route' ? -1 : +1
+    }
+  })
+
+  const routes = [
+    {
+      name: 'first-route',
+      path: '/',
+      component,
+    },
+    {
+      name: 'second-route',
+      path: '/',
+      component,
+    },
+    {
+      name: 'third-route',
+      path: '/',
+      component,
+    },
+  ] as const satisfies Routes
+
+  const resolved = resolveRoutes(routes)
+  const response = routeMatch(resolved, '/')
+
+  expect(response?.name).toBe('second-route')
 })
