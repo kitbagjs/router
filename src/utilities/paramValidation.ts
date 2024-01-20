@@ -1,7 +1,7 @@
-import { Param, Resolved, Route } from '@/types'
+import { Param, RouteMatchRule } from '@/types'
 import { getParamValue, getParamValuesFromUrl } from '@/utilities'
 
-export function routeParamsAreValid(url: string, route: Resolved<Route>): boolean {
+export const routeParamsAreValid: RouteMatchRule = (route, url) => {
   const params = Object.entries<Param[]>(route.params)
 
   for (const [key, paramsTuple] of params) {

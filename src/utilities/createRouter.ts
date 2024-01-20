@@ -1,13 +1,12 @@
 import { reactive, readonly, App, InjectionKey } from 'vue'
 import { RouterLink, RouterView } from '@/components'
 import { Resolved, Route, Routes, Router, RouterOptions, RouterPushOptions, RegisteredRouter, RouterReplaceOptions, RouterPush } from '@/types'
-import { createRouteMethods, createRouterNavigation, resolveRoutes, routeMatch, getInitialUrl, resolveRoutesRegex, assembleUrl, flattenParentMatches } from '@/utilities'
+import { createRouteMethods, createRouterNavigation, resolveRoutes, routeMatch, getInitialUrl, assembleUrl, flattenParentMatches } from '@/utilities'
 
 export const routerInjectionKey: InjectionKey<RegisteredRouter> = Symbol()
 
 export function createRouter<T extends Routes>(routes: T, options: RouterOptions = {}): Router<T> {
   const resolved = resolveRoutes(routes)
-  const resolvedWithRegex = resolveRoutesRegex(resolved)
   const navigation = createRouterNavigation({
     onLocationUpdate,
   })
@@ -27,7 +26,7 @@ export function createRouter<T extends Routes>(routes: T, options: RouterOptions
   }
 
   function getRoute(url: string): Resolved<Route> {
-    const route = routeMatch(resolvedWithRegex, url)
+    const route = routeMatch(resolved, url)
 
     if (!route) {
       // not found

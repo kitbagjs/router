@@ -1,12 +1,10 @@
 import { Route } from '@/types'
 import { Resolved } from '@/types/resolved'
 import { routeParamsAreValid } from '@/utilities/paramValidation'
-import { ResolvedWithRegex } from '@/utilities/resolveRoutesRegex'
+import { routePathMatches, routeQueryMatches } from '@/utilities/routeMatchRegexRules'
 
-export function routeMatch(routes: ResolvedWithRegex[], path: string): Resolved<Route> | undefined {
-  const { route } = routes.find(({ regexp, route }) => {
-    return regexp.test(path) && routeParamsAreValid(path, route)
-  }) ?? {}
+export function routeMatch(routes: Resolved<Route>[], url: string): Resolved<Route> | undefined {
+  const rules = [routePathMatches, routeQueryMatches, routeParamsAreValid]
 
-  return route
+  return routes.find(route => rules.every(test => test(route, url)))
 }
