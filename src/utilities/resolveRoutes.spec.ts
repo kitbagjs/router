@@ -135,6 +135,40 @@ describe('resolveRoutes', () => {
     expect(resolvedChild?.params).toMatchObject({ workspaceId: [String], startDate: [String], handle: [String] })
   })
 
+  test('always returns depth equal to distance from root', () => {
+    const routes = [
+      {
+        name: 'accounts',
+        path: '/accounts',
+        children: [
+          {
+            name: 'new-account',
+            path: '/new',
+            component,
+          },
+          {
+            name: 'account',
+            path: '/:accountId',
+            children: [
+              {
+                name: 'edit-account',
+                path: '/edit',
+                component,
+              },
+            ],
+          },
+        ],
+      },
+    ] as const satisfies Routes
+
+    const response = resolveRoutes(routes)
+
+    expect(response.find(route => route.name === 'accounts')?.depth).toBe(1)
+    expect(response.find(route => route.name === 'new-account')?.depth).toBe(2)
+    expect(response.find(route => route.name === 'account')?.depth).toBe(2)
+    expect(response.find(route => route.name === 'edit-account')?.depth).toBe(3)
+  })
+
   describe('matches', () => {
     test('given 3 levels, returns all parent routes in matches', () => {
       const childRoute = {

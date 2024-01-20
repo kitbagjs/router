@@ -6,10 +6,11 @@ type ParentContext = {
   parentPath?: Path[],
   parentQuery?: Query[],
   parentMatches?: Route[],
+  parentDepth?: number,
 }
 
 export function resolveRoutes(routes: Routes, parentContext: ParentContext = {}): Resolved<Route>[] {
-  const { parentPath = [], parentQuery = [], parentMatches = [] } = { ...parentContext }
+  const { parentPath = [], parentQuery = [], parentMatches = [], parentDepth = 0 } = { ...parentContext }
 
   return routes.reduce<Resolved<Route>[]>((value, route) => {
     const path = typeof route.path === 'string' ? createPath(route.path, {}) : route.path
@@ -24,6 +25,7 @@ export function resolveRoutes(routes: Routes, parentContext: ParentContext = {})
         parentPath: fullPath,
         parentQuery: fullQuery,
         parentMatches: fullMatches,
+        parentDepth: parentDepth + 1,
       })
 
       value.push(...resolved)
@@ -34,6 +36,7 @@ export function resolveRoutes(routes: Routes, parentContext: ParentContext = {})
         matched: markRaw(route),
         matches: markRaw(fullMatches),
         name: route.name,
+        depth: parentDepth + 1,
         path: fullPath.map(({ path }) => path.toString()).join(''),
         query: fullQuery.map(({ query }) => query.toString()).join('&'),
         params: mergeParams(reduceParams(fullPath), reduceParams(fullQuery)),
