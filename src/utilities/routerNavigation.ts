@@ -15,7 +15,7 @@ type NavigationGo = (delta: number) => void
 type NavigationUpdate = (url: string, options?: RouterNavigationUpdateOptions) => Promise<void>
 type NavigationCleanup = () => void
 
-type RouterNavigation = {
+export type RouterNavigation = {
   forward: NavigationForward,
   back: NavigationBack,
   go: NavigationGo,
