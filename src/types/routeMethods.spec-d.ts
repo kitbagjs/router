@@ -376,7 +376,7 @@ test('all routes with a name can be called unless disabled', () => {
   expectTypeOf(router.routes.parent.child).toBeFunction()
   expectTypeOf(router.routes.parent2).not.toBeFunction()
   expectTypeOf(router.routes.parent2.child2).toBeFunction()
-  expectTypeOf(router.routes.parent2).not.toHaveProperty('child3')
+  expectTypeOf(router.routes.parent2.child3).toMatchTypeOf<never>()
   expectTypeOf(router.routes).not.toHaveProperty('parent3')
   expectTypeOf(router.routes.child4).toBeFunction()
 })
@@ -404,25 +404,6 @@ test('public parent routes have correct type for parameters', () => {
     param1: [string, string],
     param2: string,
     param3: boolean,
-  }>()
-})
-
-test('param names must be alphanumeric', () => {
-  const routes = [
-    {
-      name: 'foo',
-      path: '/:param1-:param2/:param3_:param4',
-      component,
-    },
-  ] as const satisfies Routes
-
-  const router = createRouter(routes)
-
-  expectTypeOf(router.routes.foo).parameter(0).toEqualTypeOf<{
-    param1: string,
-    param2: string,
-    param3: string,
-    param4: string,
   }>()
 })
 

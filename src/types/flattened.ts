@@ -5,8 +5,8 @@ import { Identity, UnionToIntersection } from '@/types/utilities'
 export type Flattened<
   TRoute extends Route | Routes,
   TPrefix extends string = '',
-  TPathParams extends Record<string, unknown> = Record<never, never>,
-  TQueryParams extends Record<string, unknown> = Record<never, never>
+  TPathParams extends Record<string, unknown[]> = Record<never, never>,
+  TQueryParams extends Record<string, unknown[]> = Record<never, never>
 > = Identity<
 TRoute extends Route
   ? RouteFlat<TRoute, TPrefix, TPathParams, TQueryParams> & RouteChildrenFlat<TRoute, TPrefix, TPathParams, TQueryParams>
@@ -22,8 +22,8 @@ TRoute extends Route
 type RouteFlat<
   TRoute extends Route,
   TPrefix extends string,
-  TPathParams extends Record<string, unknown> = Record<never, never>,
-  TQueryParams extends Record<string, unknown> = Record<never, never>
+  TPathParams extends Record<string, unknown[]> = Record<never, never>,
+  TQueryParams extends Record<string, unknown[]> = Record<never, never>
 > = TRoute extends Public<TRoute> & { name: infer Name extends string }
   ? Record<Prefix<Name, TPrefix>, MarkOptionalParams<MergeParams<RoutePathParams<TRoute, TPathParams>, RouteQueryParams<TRoute, TQueryParams>>>>
   : Record<never, never>
@@ -31,8 +31,8 @@ type RouteFlat<
 type RouteChildrenFlat<
   TRoute extends Route,
   TPrefix extends string,
-  TPathParams extends Record<string, unknown> = Record<never, never>,
-  TQueryParams extends Record<string, unknown> = Record<never, never>
+  TPathParams extends Record<string, unknown[]> = Record<never, never>,
+  TQueryParams extends Record<string, unknown[]> = Record<never, never>
 > = TRoute extends { children: infer Children extends Routes }
   ? TRoute extends Public<TRoute> & { name: infer Name extends string }
     ? Flattened<Children, Prefix<Name, TPrefix>, RoutePathParams<TRoute, TPathParams>, RouteQueryParams<TRoute, TQueryParams>>

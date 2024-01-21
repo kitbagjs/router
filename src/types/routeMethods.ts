@@ -6,14 +6,14 @@ import { Query } from '@/utilities/query'
 
 export type RouteMethods<
   TRoutes extends Routes = Routes,
-  TPathParams extends Record<string, unknown> = Record<never, never>,
-  TQueryParams extends Record<string, unknown> = Record<never, never>
-> = Identity<UnionToIntersection<RouteMethodsTuple<TRoutes, TPathParams, TQueryParams>[number]>>
+  TPathParams extends Record<string, unknown[]> = Record<never, never>,
+  TQueryParams extends Record<string, unknown[]> = Record<never, never>
+> = UnionToIntersection<RouteMethodsTuple<TRoutes, TPathParams, TQueryParams>[number]>
 
 type RouteMethodsTuple<
   TRoutes extends Routes,
-  TPathParams extends Record<string, unknown>,
-  TQueryParams extends Record<string, unknown>
+  TPathParams extends Record<string, unknown[]>,
+  TQueryParams extends Record<string, unknown[]>
 > = {
   [K in keyof TRoutes]: TRoutes[K] extends { name: infer Name extends string }
     ? { [N in Name]: RouteMethodsOrMethod<TRoutes[K], TPathParams, TQueryParams> }
@@ -22,21 +22,21 @@ type RouteMethodsTuple<
 
 type RouteMethodsOrMethod<
   TRoute extends Route,
-  TPathParams extends Record<string, unknown>,
-  TQueryParams extends Record<string, unknown>
-> = TRoute extends { children: infer Children }
-  ? Children extends Routes
-    ? TRoute extends Public<TRoute>
-      ? RouteMethods<Children, RoutePathParams<TRoute, TPathParams>, RouteQueryParams<TRoute, TQueryParams>> & CreateRouteMethod<MergeParams<RoutePathParams<TRoute, TPathParams>, RouteQueryParams<TRoute, TQueryParams>>>
-      : RouteMethods<Children, RoutePathParams<TRoute, TPathParams>, RouteQueryParams<TRoute, TQueryParams>>
-    : never
+  TPathParams extends Record<string, unknown[]>,
+  TQueryParams extends Record<string, unknown[]>
+> = TRoute extends { children: infer Children extends Routes }
+  ? TRoute extends Public<TRoute>
+    ? RouteMethods<Children, RoutePathParams<TRoute, TPathParams>, RouteQueryParams<TRoute, TQueryParams>> & CreateRouteMethod<TRoute, TPathParams, TQueryParams>
+    : RouteMethods<Children, RoutePathParams<TRoute, TPathParams>, RouteQueryParams<TRoute, TQueryParams>>
   : TRoute extends Public<TRoute>
-    ? CreateRouteMethod<MergeParams<RoutePathParams<TRoute, TPathParams>, RouteQueryParams<TRoute, TQueryParams>>>
+    ? CreateRouteMethod<TRoute, TPathParams, TQueryParams>
     : never
 
 type CreateRouteMethod<
-  TParams extends Record<string, unknown[]>
-> = RouteMethod<MarkOptionalParams<TParams>>
+  TRoute extends Route,
+  TPathParams extends Record<string, unknown[]>,
+  TQueryParams extends Record<string, unknown[]>
+> = RouteMethod<MarkOptionalParams<MergeParams<RoutePathParams<TRoute, TPathParams>, RouteQueryParams<TRoute, TQueryParams>>>>
 
 export type ExtractRouteMethodParams<T extends RouteMethod> =
   T extends () => RouteMethodResponse
@@ -47,14 +47,14 @@ export type ExtractRouteMethodParams<T extends RouteMethod> =
 
 export type RoutePathParams<
   TRoute extends Route,
-  TPathParams extends Record<string, unknown>
+  TPathParams extends Record<string, unknown[]>
 > = TRoute extends { path: infer TPath extends string | Path }
   ? MergeParams<TPathParams, ExtractParamsFromPath<TPath>>
   : MergeParams<TPathParams, {}>
 
 export type RouteQueryParams<
   TRoute extends Route,
-  TQueryParams extends Record<string, unknown>
+  TQueryParams extends Record<string, unknown[]>
 > = TRoute extends { query: infer TQuery extends string | Query }
   ? MergeParams<TQueryParams, ExtractParamsFromQuery<TQuery>>
   : MergeParams<TQueryParams, {}>
