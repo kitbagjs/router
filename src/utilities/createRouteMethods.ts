@@ -1,11 +1,15 @@
-import { Resolved, Route, RouteMethods, Routes, isPublicRoute } from '@/types'
+import { Resolved, Route, RouteMethods, RouterPush, Routes, isPublicRoute } from '@/types'
 import { RouteMethod, RouteMethodPush, RouteMethodReplace } from '@/types/routeMethod'
-import { RouterPushUrl } from '@/types/router'
 import { asArray } from '@/utilities/array'
 import { assembleUrl } from '@/utilities/urlAssembly'
 
-export function createRouteMethods<T extends Routes = Routes>(routes: Resolved<Route>[], routerPush: RouterPushUrl): RouteMethods<T> {
-  const methods = routes.reduce<Record<string, any>>((methods, route) => {
+type RouteMethodsContext<T extends Routes> = {
+  resolved: Resolved<Route>[],
+  push: RouterPush<T>,
+}
+
+export function createRouteMethods<T extends Routes>({ resolved, push }: RouteMethodsContext<T>): RouteMethods<T> {
+  const methods = resolved.reduce<Record<string, any>>((methods, route) => {
     let level = methods
 
     route.matches.forEach(match => {
@@ -16,7 +20,7 @@ export function createRouteMethods<T extends Routes = Routes>(routes: Resolved<R
       const isLeaf = match === route.matched
 
       if (isLeaf && isPublicRoute(route.matched)) {
-        const method = createRouteMethod({ route, routerPush })
+        const method = createRouteMethod<T>({ route, push })
 
         level[route.name] = Object.assign(method, level[route.name])
         return
@@ -35,12 +39,12 @@ export function createRouteMethods<T extends Routes = Routes>(routes: Resolved<R
   return methods as any
 }
 
-type CreateRouteMethodArgs = {
+type CreateRouteMethodArgs<T extends Routes> = {
   route: Resolved<Route>,
-  routerPush: RouterPushUrl,
+  push: RouterPush<T>,
 }
 
-function createRouteMethod({ route, routerPush }: CreateRouteMethodArgs): RouteMethod {
+function createRouteMethod<T extends Routes>({ route, push: routerPush }: CreateRouteMethodArgs<T>): RouteMethod {
   const node: RouteMethod = (params = {}) => {
     const normalizedParams = normalizeRouteParams(params)
     const url = assembleUrl(route, normalizedParams)
