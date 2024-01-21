@@ -1,10 +1,9 @@
-import { Resolved, Route, RouterPush, RouterPushOptions, Routes } from '@/types'
+import { Resolved, Route, RouteComponent, RouterPush, RouterPushOptions, Routes } from '@/types'
 import { flattenParentMatches } from '@/utilities/flattenParentMatches'
 import { RouterNavigation } from '@/utilities/routerNavigation'
-import { component } from '@/utilities/testHelpers'
 import { assembleUrl } from '@/utilities/urlAssembly'
 
-type DummyRoutes = [{ name: string, path: '/', component: typeof component }]
+type AnyRoutes = [{ name: string, path: string, component: RouteComponent }]
 
 type RouterPushContext = {
   navigation: RouterNavigation,
@@ -13,7 +12,7 @@ type RouterPushContext = {
 
 export function createRouterPush<const TRoutes extends Routes>({ navigation, resolved }: RouterPushContext): RouterPush<TRoutes> {
 
-  const push: RouterPush<DummyRoutes> = (urlOrRouteConfig, options?: RouterPushOptions) => {
+  const push: RouterPush<AnyRoutes> = (urlOrRouteConfig, options?: RouterPushOptions) => {
     if (typeof urlOrRouteConfig === 'object') {
       const { route, params, ...options } = urlOrRouteConfig
       const match = resolved.find((resolvedRoute) => flattenParentMatches(resolvedRoute) === route)
