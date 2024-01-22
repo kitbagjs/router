@@ -48,15 +48,15 @@ export type ExtractRouteMethodParams<T extends RouteMethod> =
 export type RoutePathParams<
   TRoute extends Route,
   TPathParams extends Record<string, unknown>
-> = TRoute extends { path: infer Path }
-  ? MergeParams<TPathParams, ExtractParamsFromPath<Path>>
+> = TRoute extends { path: infer TPath extends string | Path }
+  ? MergeParams<TPathParams, ExtractParamsFromPath<TPath>>
   : MergeParams<TPathParams, {}>
 
 export type RouteQueryParams<
   TRoute extends Route,
   TQueryParams extends Record<string, unknown>
-> = TRoute extends { query: infer Query }
-  ? MergeParams<TQueryParams, ExtractParamsFromQuery<Query>>
+> = TRoute extends { query: infer TQuery extends string | Query }
+  ? MergeParams<TQueryParams, ExtractParamsFromQuery<TQuery>>
   : MergeParams<TQueryParams, {}>
 
 type ExtractParamsFromPath<

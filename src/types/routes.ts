@@ -38,8 +38,9 @@ export type ChildRoute<
 }
 
 export type Route<
-  TRoute extends string | Path = any
-> = ParentRoute<TRoute> | ChildRoute<TRoute>
+  TPath extends string | Path = any,
+  TQuery extends string | Query = any
+> = ParentRoute<TPath, TQuery> | ChildRoute<TPath, TQuery>
 
 export type Routes = Readonly<Route[]>
 
