@@ -1,5 +1,5 @@
 import { App, DeepReadonly } from 'vue'
-import { Flattened } from '@/types/flattened'
+import { FlattenedRoutes } from '@/types/flattened'
 import { Resolved } from '@/types/resolved'
 import { RouteMethods } from '@/types/routeMethods'
 import { Route, Routes } from '@/types/routes'
@@ -25,7 +25,7 @@ type RoutePushConfigParams<
 
 export type RouterPushConfig<
   TRoutes extends Routes,
-  TFlat = Flattened<TRoutes>
+  TFlat = FlattenedRoutes<TRoutes>
 > = Identity<{
   [Route in keyof TFlat]: {
     route: Route,
