@@ -1,17 +1,17 @@
 import { RouteMatchRule } from '@/types'
+import { createMaybeRelativeUrl } from '@/utilities/createMaybeRelativeUrl'
 import { generateRoutePathRegexPattern, generateRouteQueryRegexPatterns } from '@/utilities/routeRegex'
-import { splitUrl } from '@/utilities/urlSplitter'
 
 export const routePathMatches: RouteMatchRule = (route, url) => {
-  const { path = '' } = splitUrl(url)
+  const { pathname } = createMaybeRelativeUrl(url)
   const pathPattern = generateRoutePathRegexPattern(route)
 
-  return pathPattern.test(path)
+  return pathPattern.test(pathname)
 }
 
 export const routeQueryMatches: RouteMatchRule = (route, url) => {
-  const { query = '' } = splitUrl(url)
+  const { search } = createMaybeRelativeUrl(url)
   const queryPatterns = generateRouteQueryRegexPatterns(route)
 
-  return queryPatterns.every(pattern => pattern.test(query))
+  return queryPatterns.every(pattern => pattern.test(search))
 }

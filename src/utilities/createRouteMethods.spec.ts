@@ -7,7 +7,7 @@ test.each([
   [undefined],
   [true],
 ])('given route is named and is public, makes parent callable', (isPublic) => {
-  const routerPush = vi.fn()
+  const push = vi.fn()
 
   const routes = [
     {
@@ -19,7 +19,7 @@ test.each([
   ] as const satisfies Routes
   const resolved = resolveRoutes(routes)
 
-  const response = createRouteMethods<typeof routes>(resolved, routerPush)
+  const response = createRouteMethods<typeof routes>({ resolved, push })
 
   if (isPublic !== false) {
     // @ts-expect-error
@@ -32,7 +32,7 @@ test.each([
 })
 
 test('given route is NOT public, returns empty object', () => {
-  const routerPush = vi.fn()
+  const push = vi.fn()
 
   const routes = [
     {
@@ -44,7 +44,7 @@ test('given route is NOT public, returns empty object', () => {
   ] as const satisfies Routes
   const resolved = resolveRoutes(routes)
 
-  const response = createRouteMethods<typeof routes>(resolved, routerPush)
+  const response = createRouteMethods<typeof routes>({ resolved, push })
 
   expect(response).toMatchObject({})
 })
@@ -54,7 +54,7 @@ test.each([
   [true],
   [false],
 ])('given parent route with named children, has property for child name', (isPublic) => {
-  const routerPush = vi.fn()
+  const push = vi.fn()
 
   const routes = [
     {
@@ -72,7 +72,7 @@ test.each([
   ] as const satisfies Routes
   const resolved = resolveRoutes(routes)
 
-  const response = createRouteMethods<typeof routes>(resolved, routerPush)
+  const response = createRouteMethods<typeof routes>({ resolved, push })
 
   if (isPublic !== false) {
     // @ts-expect-error
@@ -84,7 +84,7 @@ test.each([
 })
 
 test('given parent route with named children and grandchildren, has path to grandchild all callable', () => {
-  const routerPush = vi.fn()
+  const push = vi.fn()
 
   const routes = [
     {
@@ -107,7 +107,7 @@ test('given parent route with named children and grandchildren, has path to gran
   ] as const satisfies Routes
   const resolved = resolveRoutes(routes)
 
-  const response = createRouteMethods<typeof routes>(resolved, routerPush)
+  const response = createRouteMethods<typeof routes>({ resolved, push })
 
   expect(response.parent).toBeTypeOf('function')
   expect(response.parent.child).toBeTypeOf('function')
@@ -116,7 +116,7 @@ test('given parent route with named children and grandchildren, has path to gran
 
 describe('routeMethod', () => {
   test('push and replace call router.push with correct parameters', () => {
-    const routerPush = vi.fn()
+    const push = vi.fn()
 
     const routes = [
       {
@@ -126,23 +126,23 @@ describe('routeMethod', () => {
       },
     ] as const satisfies Routes
     const resolved = resolveRoutes(routes)
-    const { route } = createRouteMethods<typeof routes>(resolved, routerPush)
+    const { route } = createRouteMethods<typeof routes>({ resolved, push })
 
     route().push()
-    expect(routerPush).toHaveBeenLastCalledWith('/route/', {})
+    expect(push).toHaveBeenLastCalledWith('/route/', {})
 
     route().replace()
-    expect(routerPush).toHaveBeenLastCalledWith('/route/', { replace: true })
+    expect(push).toHaveBeenLastCalledWith('/route/', { replace: true })
 
     route({ param: 'foo' }).push()
-    expect(routerPush).toHaveBeenLastCalledWith('/route/foo', {})
+    expect(push).toHaveBeenLastCalledWith('/route/foo', {})
 
     route({ param: 'foo' }).push({ params: { param: 'bar' } })
-    expect(routerPush).toHaveBeenLastCalledWith('/route/bar', {})
+    expect(push).toHaveBeenLastCalledWith('/route/bar', {})
   })
 
   test('returns correct url', () => {
-    const routerPush = vi.fn()
+    const push = vi.fn()
 
     const routes = [
       {
@@ -152,7 +152,7 @@ describe('routeMethod', () => {
       },
     ] as const satisfies Routes
     const resolved = resolveRoutes(routes)
-    const { route } = createRouteMethods<typeof routes>(resolved, routerPush)
+    const { route } = createRouteMethods<typeof routes>({ resolved, push })
 
     expect(route().url).toBe('/route/')
     expect(route({ param: 'param' }).url).toBe('/route/param')

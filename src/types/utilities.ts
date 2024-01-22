@@ -52,3 +52,5 @@ export type ReplaceAll<
 export type OnlyRequiredProperties<T extends Record<string, unknown>> = {
   [K in keyof T as Extract<T[K], undefined> extends never ? K : never]: T[K]
 }
+
+export type AllPropertiesAreOptional<T extends Record<string, unknown>> = IsEmptyObject<OnlyRequiredProperties<T>>

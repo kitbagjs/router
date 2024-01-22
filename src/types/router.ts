@@ -3,6 +3,7 @@ import { Flattened } from '@/types/flattened'
 import { Resolved } from '@/types/resolved'
 import { RouteMethods } from '@/types/routeMethods'
 import { Route, Routes } from '@/types/routes'
+import { AllPropertiesAreOptional, Identity } from '@/types/utilities'
 
 export type RouterOptions = {
   initialUrl?: string,
@@ -14,19 +15,26 @@ export type RouterPushOptions = {
   replace?: boolean,
 }
 
-type RouterPushRoute<
+type RoutePushConfigParams<
+  TParams
+> = TParams extends Record<string, unknown>
+  ? AllPropertiesAreOptional<TParams> extends true
+    ? { params?: TParams }
+    : { params: TParams }
+  : {}
+
+export type RouterPushConfig<
   TRoutes extends Routes,
-  TRoute extends PropertyKey
-> = RouterPushOptions & {
-  name: TRoute,
-  params?: TRoute extends keyof Flattened<TRoutes> ? Flattened<TRoutes>[TRoute] : Record<never, never>,
-}
+  TFlat = Flattened<TRoutes>
+> = Identity<{
+  [Route in keyof TFlat]: {
+    route: Route,
+  } & RoutePushConfigParams<TFlat[Route]>
+}[keyof TFlat] & RouterPushOptions>
 
-export type RouterPushUrl = (url: string, options?: RouterPushOptions) => Promise<void>
-
-export type RouterPush<TRoutes extends Routes = Routes> = {
+export type RouterPush<TRoutes extends Routes> = {
   (url: string, options?: RouterPushOptions): Promise<void>,
-  <TRoute extends keyof Flattened<TRoutes>>(route: RouterPushRoute<TRoutes, TRoute>): Promise<void>,
+  (route: RouterPushConfig<TRoutes>): Promise<void>,
 }
 
 export type RouterReplaceOptions = Omit<RouterPushOptions, 'replace'>

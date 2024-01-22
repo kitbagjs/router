@@ -28,7 +28,6 @@ type RouteFlat<
   ? Record<Prefix<Name, TPrefix>, MarkOptionalParams<MergeParams<RoutePathParams<TRoute, TPathParams>, RouteQueryParams<TRoute, TQueryParams>>>>
   : Record<never, never>
 
-
 type RouteChildrenFlat<
   TRoute extends Route,
   TPrefix extends string,

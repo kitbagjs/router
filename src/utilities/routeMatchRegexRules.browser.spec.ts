@@ -6,7 +6,6 @@ import { component } from '@/utilities/testHelpers'
 describe('routePathMatches', () => {
   test.each([
     ['we*23mf#0'],
-    ['www.kitbag.io/'],
     ['http://www.kitbag.io'],
     ['http://www.kitbag.io/'],
     ['http://www.kitbag.io/is/empty'],
@@ -26,7 +25,6 @@ describe('routePathMatches', () => {
 
   test.each([
     ['/without/params'],
-    ['www.kitbag.io/without/params'],
     ['http://www.kitbag.io/without/params'],
   ])('given url and route.path WITHOUT params that does match, returns true', (url) => {
     const route = {
@@ -44,7 +42,6 @@ describe('routePathMatches', () => {
   test.each([
     ['/with/true/params/true'],
     ['/with/%/params/%'],
-    ['www.kitbag.io/with/123/params/true'],
     ['http://www.kitbag.io/with/a/params/b'],
   ])('given url and route.path with params that does match, returns true', (url) => {
     const route = {
@@ -63,7 +60,6 @@ describe('routePathMatches', () => {
 describe('routeQueryMatches', () => {
   test.each([
     ['we*23mf#0'],
-    ['www.kitbag.io/'],
     ['http://www.kitbag.io'],
     ['http://www.kitbag.io/'],
     ['http://www.kitbag.io/is/empty'],
@@ -84,8 +80,6 @@ describe('routeQueryMatches', () => {
 
   test.each([
     ['?without=params&static=true'],
-    ['www.kitbag.io?without=params&static=true'],
-    ['www.kitbag.io/some/path?without=params&static=true'],
     ['http://www.kitbag.io?without=params&static=true'],
   ])('given url and route.query WITHOUT params that does match, returns true', (url) => {
     const route = {
@@ -104,9 +98,8 @@ describe('routeQueryMatches', () => {
   test.each([
     ['?with=true&static=false'],
     ['?with=%20&static=%20'],
-    ['www.kitbag.io?with=true&static=20'],
-    ['www.kitbag.io/some/path?with=true&static=20'],
     ['http://www.kitbag.io?with=a&static=b'],
+    ['http://www.kitbag.io/some/path?with=a&static=b'],
   ])('given url and route.query with params that does match, returns true', (url) => {
     const route = {
       name: 'no-params',
