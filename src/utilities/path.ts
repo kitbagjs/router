@@ -14,8 +14,6 @@ type ExtractParamsFromPathString<
       ? { [P in ExtractParamName<Param>]: [ExtractPathParamType<Param, TParams>] }
       : Record<never, never>
 
-// type T = ExtractParamsFromPathString<'/:a/:b/:c/:d/:e/:f/:g/:h/:i/:j/:k/:l/:m/:n/:o/:p/:q/:r/:s/:t/:u/:v/:w/:x/:y/:z/:a/:b/:c/:d/:e/:f/:g/:h/:i/:j/:k/:l/:m/:n/:o/:p/:q/:r/:s/:t/:u/:v/'>
-
 type PathParams<T extends string> = {
   [K in keyof ExtractParamsFromPathString<T>]?: Param
 }
