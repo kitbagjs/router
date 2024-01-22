@@ -22,10 +22,8 @@ test.each([
   const response = createRouteMethods<typeof routes>({ resolved, push })
 
   if (isPublic !== false) {
-    // @ts-expect-error
     expect(response.parent).toBeTypeOf('function')
   } else {
-    // @ts-expect-error
     expect(response.parent).not.toBeDefined()
   }
 
@@ -75,10 +73,8 @@ test.each([
   const response = createRouteMethods<typeof routes>({ resolved, push })
 
   if (isPublic !== false) {
-    // @ts-expect-error
     expect(response.parent.child).toBeTypeOf('function')
   } else {
-    // @ts-expect-error
     expect(response.parent.child).not.toBeDefined()
   }
 })

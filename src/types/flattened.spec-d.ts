@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { expectTypeOf, test } from 'vitest'
-import { Flattened, Routes } from '.'
+import { FlattenedRoutes } from '@/types/flattened'
+import { Routes } from '@/types/routes'
 import { component, path } from '@/utilities'
 import { query } from '@/utilities/query'
 
@@ -41,7 +42,7 @@ test('Returns the correct route keys', () => {
     },
   ] as const satisfies Routes
 
-  expectTypeOf<Flattened<typeof routes>>().toMatchTypeOf<{
+  expectTypeOf<FlattenedRoutes<typeof routes>>().toMatchTypeOf<{
     parentA: {},
     'parentA.childA': {},
     'parentA.childA.grandChildA': {},
@@ -73,7 +74,7 @@ test('returns correct param type for routes', () => {
     },
   ] as const satisfies Routes
 
-  expectTypeOf<Flattened<typeof routes>>().toMatchTypeOf<{
+  expectTypeOf<FlattenedRoutes<typeof routes>>().toMatchTypeOf<{
     grandchild: {
       B: [boolean, string],
       C?: string,
@@ -102,7 +103,7 @@ test('returns correct type when query params are used', () => {
     },
   ] as const satisfies Routes
 
-  expectTypeOf<Flattened<typeof routes>>().toMatchTypeOf<{
+  expectTypeOf<FlattenedRoutes<typeof routes>>().toMatchTypeOf<{
     child: {
       param1: [string, string],
       param2: [string, boolean],
