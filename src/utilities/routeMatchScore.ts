@@ -1,13 +1,12 @@
 import { Resolved, Route } from '@/types'
-import { splitUrl } from '@/utilities'
+import { createMaybeRelativeUrl } from '@/utilities'
 
 type RouteSortMethod = (aRoute: Resolved<Route>, bRoute: Resolved<Route>) => number
 
-export function getRouteScoreSortMethod(url: string, direction: 'asc' | 'desc' = 'desc'): RouteSortMethod {
-  const { query } = splitUrl(url)
-  const actualQuery = new URLSearchParams(query)
-  const sortBefore = direction === 'asc' ? +1 : -1
-  const sortAfter = direction === 'asc' ? -1 : +1
+export function getRouteScoreSortMethod(url: string): RouteSortMethod {
+  const { searchParams: actualQuery } = createMaybeRelativeUrl(url)
+  const sortBefore = -1
+  const sortAfter = +1
 
   return (aRoute, bRoute) => {
     const aRouteQueryScore = countExpectedQueryKeys(aRoute, actualQuery)

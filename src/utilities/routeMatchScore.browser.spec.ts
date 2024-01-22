@@ -64,7 +64,7 @@ describe('countExpectedQueryKeys', () => {
 })
 
 describe('getRouteScoreSortMethod', () => {
-  test('given routes with different query scores and default sort, returns them sorted by query score descending', () => {
+  test('given routes with different query scores, returns them sorted by query score descending', () => {
     const routes = [
       {
         name: 'lower-query',
@@ -88,31 +88,7 @@ describe('getRouteScoreSortMethod', () => {
     expect(response).toMatchObject([bRoute, aRoute])
   })
 
-  test('given routes with different query scores and asc sort, returns them sorted by query score ascending', () => {
-    const routes = [
-      {
-        name: 'lower-query',
-        path: '/',
-        query: 'color=red',
-        component,
-      },
-      {
-        name: 'higher-query',
-        path: '/',
-        query: 'color=red&id=1',
-        component,
-      },
-    ] as const satisfies Routes
-
-    const [aRoute, bRoute] = resolveRoutes(routes)
-
-    const sortByRouteScore = getRouteScoreSortMethod('/?color=red&id=1&extra=ok', 'asc')
-    const response = [aRoute, bRoute].sort(sortByRouteScore)
-
-    expect(response).toMatchObject([aRoute, bRoute])
-  })
-
-  test('given routes with equal query scores and default sort, returns them sorted by route depth descending', () => {
+  test('given routes with equal query scores, returns them sorted by route depth descending', () => {
     const routes = [
       {
         name: 'lower-depth',
@@ -140,35 +116,5 @@ describe('getRouteScoreSortMethod', () => {
     const response = [aRoute, bRoute].sort(sortByRouteScore)
 
     expect(response).toMatchObject([bRoute, aRoute])
-  })
-
-  test('given routes with equal query scores and asc sort, returns them sorted by route depth ascending', () => {
-    const routes = [
-      {
-        name: 'lower-depth',
-        path: '/',
-        query: 'color=red',
-        component,
-      },
-      {
-        name: 'higher-depth',
-        path: '/',
-        children: [
-          {
-            name: 'higher-depth-child',
-            path: '',
-            query: 'color=red',
-            component,
-          },
-        ],
-      },
-    ] as const satisfies Routes
-
-    const [aRoute, bRoute] = resolveRoutes(routes)
-
-    const sortByRouteScore = getRouteScoreSortMethod('/?color=red&extra=ok', 'asc')
-    const response = [aRoute, bRoute].sort(sortByRouteScore)
-
-    expect(response).toMatchObject([aRoute, bRoute])
   })
 })
