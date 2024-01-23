@@ -1,5 +1,5 @@
 import { MarkOptionalParams, MergeParams, RoutePathParams, RouteQueryParams } from '@/types/routeMethods'
-import { Public, Route, Routes } from '@/types/routes'
+import { Public, Route } from '@/types/routes'
 import { UnionToIntersection } from '@/types/utilities'
 
 export type Flattened<
@@ -10,7 +10,7 @@ export type Flattened<
 > = RouteFlat<TRoute, TPrefix, TPathParams, TQueryParams> & RouteChildrenFlat<TRoute, TPrefix, TPathParams, TQueryParams>
 
 export type FlattenedRoutes<
-  TRoute extends Routes,
+  TRoute extends Readonly<unknown[]>,
   TPrefix extends string = '',
   TPathParams extends Record<string, unknown[]> = Record<never, never>,
   TQueryParams extends Record<string, unknown[]> = Record<never, never>
@@ -34,7 +34,7 @@ type RouteChildrenFlat<
   TPrefix extends string,
   TPathParams extends Record<string, unknown[]> = Record<never, never>,
   TQueryParams extends Record<string, unknown[]> = Record<never, never>
-> = TRoute extends { children: infer Children extends Routes }
+> = TRoute extends { children: infer Children extends Readonly<unknown[]> }
   ? TRoute extends Public<TRoute> & { name: infer Name extends string }
     ? FlattenedRoutes<Children, Prefix<Name, TPrefix>, RoutePathParams<TRoute, TPathParams>, RouteQueryParams<TRoute, TQueryParams>>
     : FlattenedRoutes<Children, TPrefix, RoutePathParams<TRoute, TPathParams>, RouteQueryParams<TRoute, TQueryParams>>
