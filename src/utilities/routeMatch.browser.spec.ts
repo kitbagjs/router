@@ -1,7 +1,6 @@
 import { expect, test } from 'vitest'
 import { Routes } from '@/types'
 import { resolveRoutes } from '@/utilities/resolveRoutes'
-import { resolveRoutesRegex } from '@/utilities/resolveRoutesRegex'
 import { routeMatch } from '@/utilities/routeMatch'
 import { component } from '@/utilities/testHelpers'
 
@@ -27,8 +26,7 @@ test('given path WITHOUT params, returns match', () => {
   ] as const satisfies Routes
 
   const resolved = resolveRoutes(routes)
-  const resolvedWithRegex = resolveRoutesRegex(resolved)
-  const match = routeMatch(resolvedWithRegex, '/parent/child/grandchild')
+  const match = routeMatch(resolved, '/parent/child/grandchild')
 
   expect(match?.name).toBe('grandchild')
 })
@@ -54,8 +52,7 @@ test('given path to unnamed parent, without option to get to leaf, returns undef
   ] as const satisfies Routes
 
   const resolved = resolveRoutes(routes)
-  const resolvedWithRegex = resolveRoutesRegex(resolved)
-  const match = routeMatch(resolvedWithRegex, '/unnamed')
+  const match = routeMatch(resolved, '/unnamed')
 
   expect(match).toBeUndefined()
 })
@@ -75,8 +72,7 @@ test('given path to unnamed  parent, with option to get to leaf, returns availab
   ] as const satisfies Routes
 
   const resolved = resolveRoutes(routes)
-  const resolvedWithRegex = resolveRoutesRegex(resolved)
-  const match = routeMatch(resolvedWithRegex, '/unnamed')
+  const match = routeMatch(resolved, '/unnamed')
 
   expect(match?.name).toBe('unnamed-child-root')
 })
@@ -103,8 +99,7 @@ test('given path that includes named parent and path to leaf, return first match
   ] as const satisfies Routes
 
   const resolved = resolveRoutes(routes)
-  const resolvedWithRegex = resolveRoutesRegex(resolved)
-  const match = routeMatch(resolvedWithRegex, '/named-parent')
+  const match = routeMatch(resolved, '/named-parent')
 
   expect(match?.name).toBe('namedGrandchild')
 })
@@ -119,8 +114,23 @@ test('given route with simple string param WITHOUT value present, returns undefi
   ]
 
   const resolved = resolveRoutes(routes)
-  const resolvedWithRegex = resolveRoutesRegex(resolved)
-  const response = routeMatch(resolvedWithRegex, '/simple/')
+  const response = routeMatch(resolved, '/simple/')
+
+  expect(response).toBeUndefined()
+})
+
+test('given route with simple string query param WITHOUT value present, returns undefined', () => {
+  const routes: Routes = [
+    {
+      name: 'simple-params',
+      path: '/missing',
+      query: 'simple=:simple',
+      component,
+    },
+  ]
+
+  const resolved = resolveRoutes(routes)
+  const response = routeMatch(resolved, '/missing?without=params')
 
   expect(response).toBeUndefined()
 })

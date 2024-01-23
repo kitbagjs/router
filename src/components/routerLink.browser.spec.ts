@@ -6,7 +6,7 @@ import { Route } from '@/types'
 import { component, createRouter } from '@/utilities'
 
 test('renders an anchor tag with the correct href and slot content', () => {
-  const path = 'path/:param'
+  const path = '/path/:param'
   const param = 'param'
   const content = 'hello world'
   const href = path.replace(':param', param)

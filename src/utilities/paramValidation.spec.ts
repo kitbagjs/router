@@ -11,7 +11,7 @@ test('given route WITHOUT params, always return true', () => {
   }
   const [resolved] = resolveRoutes([route])
 
-  const response = routeParamsAreValid('/no-params', resolved)
+  const response = routeParamsAreValid(resolved, '/no-params')
 
   expect(response).toBe(true)
 })
@@ -24,7 +24,7 @@ test('given route with simple string param and value present, returns true', () 
   }
   const [resolved] = resolveRoutes([route])
 
-  const response = routeParamsAreValid('/simple/ABC', resolved)
+  const response = routeParamsAreValid(resolved, '/simple/ABC')
 
   expect(response).toBe(true)
 })
@@ -37,7 +37,7 @@ test('given route with OPTIONAL string param WITHOUT value present, returns true
   }
   const [resolved] = resolveRoutes([route])
 
-  const response = routeParamsAreValid('/simple/', resolved)
+  const response = routeParamsAreValid(resolved, '/simple/')
 
   expect(response).toBe(true)
 })
@@ -52,7 +52,7 @@ test('given route with non-string param with value that satisfies, returns true'
   }
   const [resolved] = resolveRoutes([route])
 
-  const response = routeParamsAreValid('/simple/123', resolved)
+  const response = routeParamsAreValid(resolved, '/simple/123')
 
   expect(response).toBe(true)
 })
@@ -67,7 +67,7 @@ test('given route with non-string param with value that does NOT satisfy, return
   }
   const [resolved] = resolveRoutes([route])
 
-  const response = routeParamsAreValid('/simple/fail', resolved)
+  const response = routeParamsAreValid(resolved, '/simple/fail')
 
   expect(response).toBe(false)
 })
@@ -82,7 +82,7 @@ test('given route with OPTIONAL non-string param with value that does NOT satisf
   }
   const [resolved] = resolveRoutes([route])
 
-  const response = routeParamsAreValid('/simple/fail', resolved)
+  const response = routeParamsAreValid(resolved, '/simple/fail')
 
   expect(response).toBe(false)
 })

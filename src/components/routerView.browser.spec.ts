@@ -32,18 +32,18 @@ test('renders component for initial route', () => {
 test('renders components for initial route', () => {
   const childRoute = {
     name: 'child',
-    path: 'child',
+    path: '/child',
     component: { template: 'Child' },
   } as const satisfies Route
 
   const parentRoute = {
     name: 'parent',
-    path: '',
+    path: '/parent',
     children: [childRoute],
   } as const satisfies Route
 
   const router = createRouter([parentRoute], {
-    initialUrl: childRoute.path,
+    initialUrl: '/parent/child',
   })
 
   const root = {
@@ -62,19 +62,19 @@ test('renders components for initial route', () => {
 test('updates components when route changes', async () => {
   const childA = {
     name: 'childA',
-    path: 'childA',
+    path: '/childA',
     component: { template: 'ChildA' },
   } as const satisfies Route
 
   const childB = {
     name: 'childB',
-    path: 'childB',
+    path: '/childB',
     component: { template: 'ChildB' },
   } as const satisfies Route
 
   const childC = {
     name: 'childC',
-    path: 'childC',
+    path: '/childC',
     component: { template: 'ChildC' },
   } as const satisfies Route
 
