@@ -1,5 +1,5 @@
-import { ExtractRouteMethodParams, RouteComponent } from '.'
-import { Public, Route } from '@/types/routes'
+import { ExtractRouteMethodParams } from '@/types/routeMethods'
+import { RouteComponent, Public, Route } from '@/types/routes'
 
 type NoInfer<T> = T & {}
 type AnyRoute = { name: string, path: string, component: RouteComponent }
@@ -7,28 +7,25 @@ type AnyRoutes = Readonly<AnyRoute[]>
 
 export type PushArgs<
   TRoutes extends AnyRoutes,
-  TRouteMethods
+  TRouteMethods extends Record<string, unknown>
 > = {
   // (url: string): void,
   <TRouteKey extends RouteKeys<TRoutes>>(route: TRouteKey, params: ExtractRouteKeyParameters<TRouteMethods, NoInfer<TRouteKey>>): void,
 }
 
 export type ExtractRouteKeyParameters<
-  TRoutes,
+  TRoutes extends Record<string, unknown>,
   TRouteKey
 > = TRouteKey extends string ? NestedObjectValue<TRoutes, TRouteKey> : never
 
-export type NestedObjectValue<
-  T,
-  K extends string
-> =
-  K extends `${infer F}.${infer R}`
-    ? F extends keyof T
-      ? NestedObjectValue<T[F], R>
+export type NestedObjectValue<T extends Record<string, unknown>, K extends string> =
+  K extends `${infer F extends string & keyof Required<T>}.${infer R}`
+    ? Pick<Required<T>[F], keyof Required<T>[F]> extends Record<string, unknown>
+      ? NestedObjectValue<Pick<Required<T>[F], keyof Required<T>[F]>, R>
       : never
     : K extends keyof T
       ? ExtractRouteMethodParams<T[K]>
-      : never
+      : undefined
 
 export type RouteKeys<
   TRoutes extends AnyRoutes,

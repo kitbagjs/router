@@ -1,6 +1,6 @@
 import { test } from 'vitest'
 import { ExtractRouteMethodParams, RouteMethod, RouteMethods, Routes } from '@/types'
-import { ExtractRouteKeyParameters, NestedObjectValue, PushArgs, RouteKeys } from '@/types/routeKeys'
+import { ExtractRouteKeyParameters, NestedObjectValue, PushArgs, RouteKeys, StringPropertiesOnly } from '@/types/routeKeys'
 import { createRouter } from '@/utilities/createRouter'
 import { component } from '@/utilities/testHelpers'
 
@@ -80,14 +80,19 @@ test('works with lots of params', () => {
 
   const router = createRouter(routes)
 
-  // type Keys = RouteKeys<typeof routes>
-  // type Bar = ExtractRouteKeyParameters<RouteMethods<typeof routes>, 'A-ten.B-five.C'>
+  type Demo = typeof routes
+  type Keys = RouteKeys<typeof routes>
 
-  // function test<T extends Keys>(args: Foo<T>): void {
+  type SimpleRouteMethods = StringPropertiesOnly<typeof router.routes>
 
-  // }
+  function getValueAtPath<Path extends Keys>(
+    path: Path,
+    args: NestedObjectValue<Pick<typeof router.routes, keyof typeof router.routes>, Path>,
+  ): void {
+    throw new Error()
+  }
 
-  // test({ route: 'A-eight', params: {})
+  getValueAtPath('A-eight.B-five.C', {})
 
 
   // test<'A-eight.B-eight.C'>({ route: 'A-eight.B-eight.C', params: { 'A-eight': '', 'A-c-eight': 1 } })
