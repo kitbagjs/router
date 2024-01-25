@@ -92,6 +92,20 @@ function test2<T extends string>(_args: { route: T & Keys, params: ExtractRouteK
 
 }
 
+test2({
+  route: 'AEight.GEight.L',
+  params: {
+    ABEight: '',
+  },
+})
+
+test2({
+  route: 'CTen.HFour.M',
+  params: {
+    HBFour: true,
+  },
+})
+
 type ExtractRouteKeyParameters<
   TRoutes,
   TRouteKey
@@ -109,11 +123,8 @@ type NestedObjectValue<
       ? ExtractRouteMethodParams<T[K]>
       : never
 
-type AnyRoute = { name: string, path: string, component: RouteComponent }
-type AnyRoutes = Readonly<AnyRoute[]>
-
 type RouteKeys<
-  TRoutes extends AnyRoutes,
+  TRoutes extends Routes,
   TPrefix extends string = ''
 > = FlatArray<{
   [K in keyof TRoutes]: TRoutes[K] extends Route
@@ -122,7 +133,7 @@ type RouteKeys<
 }, 1>
 
 type RouteKey<
-  TRoute extends AnyRoute,
+  TRoute extends Route,
   TPrefix extends string
 > = TRoute extends Public<TRoute> & { name: infer Name extends string }
   ? Prefix<TPrefix, Name>
@@ -131,7 +142,7 @@ type RouteKey<
 type ChildrenKeys<
   TRoute extends Route,
   TPrefix extends string
-> = TRoute extends { children: infer Children extends AnyRoutes }
+> = TRoute extends { children: infer Children extends Routes }
   ? TRoute extends { name: infer Name extends string }
     ? RouteKeys<Children, Prefix<TPrefix, Name>>
     : never
