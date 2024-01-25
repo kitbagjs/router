@@ -1,9 +1,7 @@
 import { App, DeepReadonly } from 'vue'
-import { FlattenedRoutes } from '@/types/flattened'
 import { Resolved } from '@/types/resolved'
 import { RouteMethods } from '@/types/routeMethods'
 import { Route, Routes } from '@/types/routes'
-import { AllPropertiesAreOptional, Identity } from '@/types/utilities'
 
 export type RouterOptions = {
   initialUrl?: string,
@@ -15,26 +13,8 @@ export type RouterPushOptions = {
   replace?: boolean,
 }
 
-type RoutePushConfigParams<
-  TParams
-> = TParams extends Record<string, unknown>
-  ? AllPropertiesAreOptional<TParams> extends true
-    ? { params?: TParams }
-    : { params: TParams }
-  : {}
-
-export type RouterPushConfig<
-  TRoutes extends Routes,
-  TFlat = FlattenedRoutes<TRoutes>
-> = Identity<{
-  [Route in keyof TFlat]: {
-    route: Route,
-  } & RoutePushConfigParams<TFlat[Route]>
-}[keyof TFlat] & RouterPushOptions>
-
-export type RouterPush<TRoutes extends Routes> = {
+export type RouterPush = {
   (url: string, options?: RouterPushOptions): Promise<void>,
-  (route: RouterPushConfig<TRoutes>): Promise<void>,
 }
 
 export type RouterReplaceOptions = Omit<RouterPushOptions, 'replace'>
@@ -46,7 +26,7 @@ export type Router<
 > = {
   routes: RouteMethods<TRoutes>,
   route: DeepReadonly<Resolved<Route>>,
-  push: RouterPush<TRoutes>,
+  push: RouterPush,
   replace: RouterReplace,
   back: () => void,
   forward: () => void,

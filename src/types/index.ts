@@ -1,4 +1,3 @@
-export * from './flattened'
 export * from './invalidRouteParamValueError'
 export * from './middleware'
 export * from './params'
