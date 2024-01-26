@@ -11,7 +11,7 @@ export type RouterPushOptions = {
   replace?: boolean,
 }
 
-type RouteWithParams<
+export type RouteWithParams<
   TRoutes extends Routes,
   TRoutePath extends string
 > = {
@@ -23,7 +23,7 @@ export type RouterPush<
   TRoutes extends Routes
 > = <
   TRoutePath extends string
->(arg1: string | RouteWithParams<TRoutes, TRoutePath> | ReturnType<RouteMethod>, options?: RouterPushOptions) => Promise<void>
+>(source: string | RouteWithParams<TRoutes, TRoutePath> | ReturnType<RouteMethod>, options?: RouterPushOptions) => Promise<void>
 
 type RouterPushContext = {
   navigation: RouterNavigation,
