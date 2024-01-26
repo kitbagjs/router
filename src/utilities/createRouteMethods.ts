@@ -1,7 +1,7 @@
 import { Resolved, Route, RouteMethods, Routes, isPublicRoute } from '@/types'
 import { RouteMethod, RouteMethodPush, RouteMethodReplace } from '@/types/routeMethod'
-import { asArray } from '@/utilities/array'
 import { RouterPush } from '@/utilities/createRouterPush'
+import { normalizeRouteParams } from '@/utilities/normalizeRouteParams'
 import { assembleUrl } from '@/utilities/urlAssembly'
 
 type RouteMethodsContext<T extends Routes> = {
@@ -80,16 +80,4 @@ function createRouteMethod<T extends Routes>({ route, push: routerPush }: Create
   }
 
   return node
-}
-
-export function normalizeRouteParams(params: Record<string, unknown>): Record<string, unknown[]> {
-  const normalizedParams: Record<string, unknown[]> = {}
-
-  for (const key of Object.keys(params)) {
-    const value = params[key]
-
-    normalizedParams[key] = asArray(value)
-  }
-
-  return normalizedParams
 }

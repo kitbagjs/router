@@ -1,8 +1,8 @@
 import { Resolved, Route, RouteMethod, RouteMethods, Routes, isRouteMethodResponse } from '@/types'
 import { ExtractRoutePathParameters, RoutePaths } from '@/types/routePaths'
-import { normalizeRouteParams } from '@/utilities/createRouteMethods'
 import { flattenParentMatches } from '@/utilities/flattenParentMatches'
 import { isRecord } from '@/utilities/guards'
+import { normalizeRouteParams } from '@/utilities/normalizeRouteParams'
 import { RouterNavigation } from '@/utilities/routerNavigation'
 import { assembleUrl } from '@/utilities/urlAssembly'
 
@@ -33,13 +33,13 @@ type RouterPushContext = {
 export function createRouterPush<
   TRoutes extends Routes
 >({ navigation, resolved }: RouterPushContext): RouterPush<TRoutes> {
-  const push: RouterPush<TRoutes> = (source, options?: RouterPushOptions) => {
+  return (source, options) => {
     if (typeof source === 'string') {
       return navigation.update(source, options)
     }
 
     if (isRouteMethodResponse(source)) {
-      return push(source.url, options)
+      return navigation.update(source.url, options)
     }
 
     if (isRecord(source)) {
@@ -53,14 +53,12 @@ export function createRouterPush<
       const normalized = normalizeRouteParams(params)
       const url = assembleUrl(match, normalized)
 
-      return push(url, options)
+      return navigation.update(url, options)
     }
 
     const exhaustive: never = source
     throw new Error(`Unhandled router push overload: ${JSON.stringify(exhaustive)}`)
   }
-
-  return push
 }
 
 // This is a typescript hack to prevent typescript from attempting to do any type checking on a property
