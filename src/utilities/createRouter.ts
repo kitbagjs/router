@@ -47,7 +47,7 @@ export function createRouter<T extends Routes>(routes: T, options: RouterOptions
     return push(url, { ...options, replace: true })
   }
 
-  const push = createRouterPush({ navigation, resolved })
+  const push = createRouterPush<T>({ navigation, resolved })
 
   const router = {
     routes: createRouteMethods<T>({ resolved, push }),
