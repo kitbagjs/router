@@ -1,14 +1,15 @@
-import { Resolved, Route, RouteMethods, RouterPush, Routes, isPublicRoute } from '@/types'
+import { Resolved, Route, RouteMethods, Routes, isPublicRoute } from '@/types'
 import { RouteMethod, RouteMethodPush, RouteMethodReplace } from '@/types/routeMethod'
 import { asArray } from '@/utilities/array'
+import { RouterPush } from '@/utilities/createRouterPush'
 import { assembleUrl } from '@/utilities/urlAssembly'
 
-type RouteMethodsContext = {
+type RouteMethodsContext<T extends Routes> = {
   resolved: Resolved<Route>[],
-  push: RouterPush,
+  push: RouterPush<T>,
 }
 
-export function createRouteMethods<T extends Routes>({ resolved, push }: RouteMethodsContext): RouteMethods<T> {
+export function createRouteMethods<T extends Routes>({ resolved, push }: RouteMethodsContext<T>): RouteMethods<T> {
   const methods = resolved.reduce<Record<string, any>>((methods, route) => {
     let level = methods
 
@@ -20,7 +21,7 @@ export function createRouteMethods<T extends Routes>({ resolved, push }: RouteMe
       const isLeaf = match === route.matched
 
       if (isLeaf && isPublicRoute(route.matched)) {
-        const method = createRouteMethod({ route, push })
+        const method = createRouteMethod<T>({ route, push })
 
         level[route.name] = Object.assign(method, level[route.name])
         return
@@ -39,12 +40,12 @@ export function createRouteMethods<T extends Routes>({ resolved, push }: RouteMe
   return methods as any
 }
 
-type CreateRouteMethodArgs = {
+type CreateRouteMethodArgs<T extends Routes> = {
   route: Resolved<Route>,
-  push: RouterPush,
+  push: RouterPush<T>,
 }
 
-function createRouteMethod({ route, push: routerPush }: CreateRouteMethodArgs): RouteMethod {
+function createRouteMethod<T extends Routes>({ route, push: routerPush }: CreateRouteMethodArgs<T>): RouteMethod {
   const node: RouteMethod = (params = {}) => {
     const normalizedParams = normalizeRouteParams(params)
     const url = assembleUrl(route, normalizedParams)
@@ -81,7 +82,7 @@ function createRouteMethod({ route, push: routerPush }: CreateRouteMethodArgs): 
   return node
 }
 
-function normalizeRouteParams(params: Record<string, unknown>): Record<string, unknown[]> {
+export function normalizeRouteParams(params: Record<string, unknown>): Record<string, unknown[]> {
   const normalizedParams: Record<string, unknown[]> = {}
 
   for (const key of Object.keys(params)) {
