@@ -32,7 +32,7 @@
     "@vue/test-utils": "^2.4.3",
     "eslint": "^8.54.0",
     "happy-dom": "^12.10.3",
-    "typescript": "^5.0.2",
+    "typescript": "^5.4.0-dev.20240125",
     "vite": "^5.0.11",
     "vite-plugin-dts": "^3.6.3",
     "vitest": "^0.34.6",

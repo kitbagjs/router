@@ -38,7 +38,7 @@ type CreateRouteMethod<
   TQueryParams extends Record<string, unknown[]>
 > = RouteMethod<MarkOptionalParams<MergeParams<RoutePathParams<TRoute, TPathParams>, RouteQueryParams<TRoute, TQueryParams>>>>
 
-export type ExtractRouteMethodParams<T extends RouteMethod> =
+export type ExtractRouteMethodParams<T> =
   T extends () => RouteMethodResponse
     ? never
     : T extends (params: infer Params) => RouteMethodResponse

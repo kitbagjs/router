@@ -4,7 +4,7 @@
 import { defineComponent, h } from 'vue'
 import { useRouter } from '@/compositions/useRouter'
 import { RouteMethod } from '@/types/routeMethod'
-import { RouterPushOptions } from '@/types/router'
+import { RouterPushOptions } from '@/utilities/createRouterPush'
 
 type RouterLinkTo = string | (() => ReturnType<RouteMethod>)
 
