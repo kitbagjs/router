@@ -1,5 +1,5 @@
 import { ExtractRouteMethodParams } from '@/types/routeMethods'
-import { Public, Route, Routes } from '@/types/routes'
+import { Route, Routes } from '@/types/routes'
 
 export type ExtractRoutePathParameters<
   TRouteMethods,
@@ -28,7 +28,7 @@ export type RoutePaths<
 type RoutePath<
   TRoute extends Route,
   TPrefix extends string
-> = TRoute extends Public<TRoute> & { name: infer Name extends string }
+> = TRoute extends { name: infer Name extends string }
   ? Prefix<TPrefix, Name>
   : never
 
