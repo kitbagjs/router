@@ -10,10 +10,8 @@ type NestedObjectValue<
   TRouteMethods,
   TRoutePath extends string
 > =
-  TRoutePath extends `${infer F}.${infer R}`
-    ? F extends keyof TRouteMethods
-      ? NestedObjectValue<TRouteMethods[F], R>
-      : never
+  TRoutePath extends `${infer F extends string & keyof TRouteMethods}.${infer R}`
+    ? NestedObjectValue<TRouteMethods[F], R>
     : TRoutePath extends keyof TRouteMethods
       ? ExtractRouteMethodParams<TRouteMethods[TRoutePath]>
       : never
