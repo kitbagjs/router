@@ -10,13 +10,10 @@ export interface RouteMeta {
 
 }
 
-export type ParentRoute<
-  TPath extends string | Path = any,
-  TQuery extends string | Query = any
-> = {
+export type ParentRoute = {
   name?: string,
-  path: TPath,
-  query?: TQuery,
+  path: string | Path,
+  query?: string | Query,
   public?: boolean,
   children: Routes,
   component?: RouteComponent,
@@ -24,24 +21,17 @@ export type ParentRoute<
   meta?: RouteMeta,
 }
 
-export type ChildRoute<
-  TPath extends string | Path = any,
-  TQuery extends string | Query = any
-> = {
+export type ChildRoute = {
   name: string,
   public?: boolean,
-  path: TPath,
-  query?: TQuery,
+  path: string | Path,
+  query?: string | Query,
   component: RouteComponent,
   middleware?: MaybeArray<RouteMiddleware>,
   meta?: RouteMeta,
 }
 
-export type Route<
-  TPath extends string | Path = any,
-  TQuery extends string | Query = any
-> = ParentRoute<TPath, TQuery> | ChildRoute<TPath, TQuery>
-
+export type Route = Readonly<ParentRoute | ChildRoute>
 export type Routes = Readonly<Route[]>
 
 export function isParentRoute(value: Route): value is ParentRoute {
