@@ -19,9 +19,3 @@ export function hasProperty<
 
   return true
 }
-
-const test = { bar: true }
-
-if (hasProperty(test, 'foo', Boolean)) {
-  test
-}
