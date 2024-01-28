@@ -3,6 +3,7 @@ import { RouterLink, RouterView } from '@/components'
 import { Resolved, Route, Routes, Router, RouterOptions, RegisteredRouter, RouterReplaceOptions } from '@/types'
 import { createRouteMethods, createRouterNavigation, resolveRoutes, routeMatch, getInitialUrl } from '@/utilities'
 import { createRouterPush } from '@/utilities/createRouterPush'
+import { createRouterResolve } from '@/utilities/createRouterResolve'
 
 export const routerInjectionKey: InjectionKey<RegisteredRouter> = Symbol()
 
@@ -47,11 +48,13 @@ export function createRouter<T extends Routes>(routes: T, options: RouterOptions
     return push(url, { ...options, replace: true })
   }
 
-  const push = createRouterPush<T>({ navigation, resolved })
+  const resolve = createRouterResolve({ resolved })
+  const push = createRouterPush<T>({ navigation, resolve })
 
   const router = {
     routes: createRouteMethods<T>({ resolved, push }),
     route: readonly(route),
+    resolve,
     push,
     replace,
     forward: navigation.forward,

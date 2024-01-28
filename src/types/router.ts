@@ -3,6 +3,7 @@ import { Resolved } from '@/types/resolved'
 import { RouteMethods } from '@/types/routeMethods'
 import { Route, Routes } from '@/types/routes'
 import { RouterPush, RouterPushOptions } from '@/utilities/createRouterPush'
+import { RouterResolve } from '@/utilities/createRouterResolve'
 
 export type RouterOptions = {
   initialUrl?: string,
@@ -18,6 +19,7 @@ export type Router<
 > = {
   routes: RouteMethods<TRoutes>,
   route: DeepReadonly<Resolved<Route>>,
+  resolve: RouterResolve,
   push: RouterPush<TRoutes>,
   replace: RouterReplace,
   back: () => void,
