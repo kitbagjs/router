@@ -26,3 +26,15 @@ jobs:
 
       - name: Run unit tests
         run: npm run test:types
+
+  types:
+    name: Types
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup
+        id: setup
+        uses: kitbagjs/actions-setup-project@main
+
+      - name: Run tsc
+        run: npm run types
