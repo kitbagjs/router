@@ -10,7 +10,7 @@ type RouteMethodsContext = {
 }
 
 export function createRouteMethods({ resolved, push }: RouteMethodsContext): RouteMethodsImplementation {
-  const methods = resolved.reduce<Record<string, any>>((methods, route) => {
+  return resolved.reduce<Record<string, any>>((methods, route) => {
     let level = methods
 
     route.matches.forEach(match => {
@@ -36,8 +36,6 @@ export function createRouteMethods({ resolved, push }: RouteMethodsContext): Rou
 
     return methods
   }, {})
-
-  return methods as any
 }
 
 type CreateRouteMethodArgs = {
