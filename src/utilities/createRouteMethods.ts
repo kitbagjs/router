@@ -1,15 +1,15 @@
-import { Resolved, Route, RouteMethods, Routes, isPublicRoute } from '@/types'
-import { RouteMethod, RouteMethodPush, RouteMethodReplace } from '@/types/routeMethod'
-import { RouterPush } from '@/utilities/createRouterPush'
+import { Resolved, Route, RouteMethodImplementation, RouteMethodsImplementation, isPublicRoute } from '@/types'
+import { RouteMethodPush, RouteMethodReplace } from '@/types/routeMethod'
+import { RouterPushImplementation } from '@/utilities/createRouterPush'
 import { normalizeRouteParams } from '@/utilities/normalizeRouteParams'
 import { assembleUrl } from '@/utilities/urlAssembly'
 
-type RouteMethodsContext<T extends Routes> = {
+type RouteMethodsContext = {
   resolved: Resolved<Route>[],
-  push: RouterPush<T>,
+  push: RouterPushImplementation,
 }
 
-export function createRouteMethods<T extends Routes>({ resolved, push }: RouteMethodsContext<T>): RouteMethods<T> {
+export function createRouteMethods({ resolved, push }: RouteMethodsContext): RouteMethodsImplementation {
   const methods = resolved.reduce<Record<string, any>>((methods, route) => {
     let level = methods
 
@@ -21,7 +21,7 @@ export function createRouteMethods<T extends Routes>({ resolved, push }: RouteMe
       const isLeaf = match === route.matched
 
       if (isLeaf && isPublicRoute(route.matched)) {
-        const method = createRouteMethod<T>({ route, push })
+        const method = createRouteMethod({ route, push })
 
         level[route.name] = Object.assign(method, level[route.name])
         return
@@ -40,13 +40,13 @@ export function createRouteMethods<T extends Routes>({ resolved, push }: RouteMe
   return methods as any
 }
 
-type CreateRouteMethodArgs<T extends Routes> = {
+type CreateRouteMethodArgs = {
   route: Resolved<Route>,
-  push: RouterPush<T>,
+  push: RouterPushImplementation,
 }
 
-function createRouteMethod<T extends Routes>({ route, push: routerPush }: CreateRouteMethodArgs<T>): RouteMethod {
-  const node: RouteMethod = (params = {}) => {
+function createRouteMethod({ route, push: routerPush }: CreateRouteMethodArgs): RouteMethodImplementation {
+  return (params = {}) => {
     const normalizedParams = normalizeRouteParams(params)
     const url = assembleUrl(route, normalizedParams)
 
@@ -78,6 +78,4 @@ function createRouteMethod<T extends Routes>({ route, push: routerPush }: Create
       replace,
     }
   }
-
-  return node
 }
