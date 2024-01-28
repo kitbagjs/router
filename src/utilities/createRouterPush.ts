@@ -1,10 +1,7 @@
-import { Resolved, Route, RouteMethod, RouteMethods, Routes, isRouteMethodResponse } from '@/types'
+import { RouteMethod, RouteMethods, Routes } from '@/types'
 import { ExtractRoutePathParameters, RoutePaths } from '@/types/routePaths'
-import { flattenParentMatches } from '@/utilities/flattenParentMatches'
-import { isRecord } from '@/utilities/guards'
-import { normalizeRouteParams } from '@/utilities/normalizeRouteParams'
+import { RouterResolve } from '@/utilities/createRouterResolve'
 import { RouterNavigation } from '@/utilities/routerNavigation'
-import { assembleUrl } from '@/utilities/urlAssembly'
 
 export type RouterPushOptions = {
   query?: Record<string, unknown>,
@@ -27,41 +24,15 @@ export type RouterPush<
 
 type RouterPushContext = {
   navigation: RouterNavigation,
-  resolved: Resolved<Route>[],
+  resolve: RouterResolve,
 }
 
 export function createRouterPush<
   TRoutes extends Routes
->({ navigation, resolved }: RouterPushContext): RouterPush<TRoutes> {
+>({ navigation, resolve }: RouterPushContext): RouterPush<TRoutes> {
   return (source, options) => {
-    if (typeof source === 'string') {
-      return navigation.update(source, options)
-    }
+    const url = resolve(source as any)
 
-    if (isRouteMethodResponse(source)) {
-      return navigation.update(source.url, options)
-    }
-
-    if (isRecord(source)) {
-      const match = resolved.find((resolvedRoute) => flattenParentMatches(resolvedRoute) === source.route)
-
-      if (!match) {
-        throw `No route found: "${String(source)}"`
-      }
-
-      const params = get<Record<string, unknown>>(source, 'params')
-      const normalized = normalizeRouteParams(params)
-      const url = assembleUrl(match, normalized)
-
-      return navigation.update(url, options)
-    }
-
-    const exhaustive: never = source
-    throw new Error(`Unhandled router push overload: ${JSON.stringify(exhaustive)}`)
+    return navigation.update(url, options)
   }
-}
-
-// This is a typescript hack to prevent typescript from attempting to do any type checking on a property
-function get<T = unknown>(source: Record<PropertyKey, unknown>, key: string): T {
-  return source[key] as T
 }
