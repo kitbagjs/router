@@ -11,7 +11,8 @@
     "test": "vitest",
     "test:types": "vitest typecheck",
     "lint": "eslint ./src",
-    "lint:fix": "eslint ./src --fix"
+    "lint:fix": "eslint ./src --fix",
+    "types": "tsc --noEmit"
   },
   "type": "module",
   "files": [
