@@ -1,4 +1,4 @@
-import { RouteMethod, RouteMethods, Routes } from '@/types'
+import { RouteMethod, RouteMethodResponseImplementation, RouteMethods, Routes } from '@/types'
 import { ExtractRoutePathParameters, RoutePaths } from '@/types/routePaths'
 import { RouterResolve } from '@/utilities/createRouterResolve'
 import { RouterNavigation } from '@/utilities/routerNavigation'
@@ -22,16 +22,17 @@ export type RouterPush<
   TRoutePath extends string
 >(source: string | RouteWithParams<TRoutes, TRoutePath> | ReturnType<RouteMethod>, options?: RouterPushOptions) => Promise<void>
 
+type RouteWithParamsImplementation = { route: string, params?: Record<string, unknown> }
+export type RouterPushImplementation = (source: string | RouteWithParamsImplementation | RouteMethodResponseImplementation, options?: RouterPushOptions) => Promise<void>
+
 type RouterPushContext = {
   navigation: RouterNavigation,
   resolve: RouterResolve,
 }
 
-export function createRouterPush<
-  TRoutes extends Routes
->({ navigation, resolve }: RouterPushContext): RouterPush<TRoutes> {
+export function createRouterPush({ navigation, resolve }: RouterPushContext): RouterPushImplementation {
   return (source, options) => {
-    const url = resolve(source as any)
+    const url = resolve(source)
 
     return navigation.update(url, options)
   }

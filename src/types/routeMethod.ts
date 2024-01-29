@@ -11,6 +11,7 @@ export type RouteMethod<
     ? (params?: TParams) => RouteMethodResponse<TParams>
     : (params: TParams) => RouteMethodResponse<TParams>
 
+export type RouteMethodImplementation = (params?: Record<string, unknown>) => RouteMethodResponseImplementation
 
 export type RouteMethodOptions<
   TParams extends Record<string, unknown>
@@ -32,6 +33,12 @@ export type RouteMethodResponse<
   url: string,
   push: RouteMethodPush<TParams>,
   replace: RouteMethodReplace<TParams>,
+}
+
+export type RouteMethodResponseImplementation = {
+  url: string,
+  push: (options?: { params?: Record<string, unknown> } & RouterPushOptions) => Promise<void>,
+  replace: (options?: { params?: Record<string, unknown> } & RouterReplaceOptions) => Promise<void>,
 }
 
 export function isRouteMethodResponse(value: unknown): value is RouteMethodResponse {

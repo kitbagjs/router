@@ -10,7 +10,7 @@ test('push calls onLocationUpdated', () => {
   const navigation = createRouterNavigation({ onLocationUpdate })
   const resolved = resolveRoutes(routes)
   const resolve = createRouterResolve({ resolved })
-  const push = createRouterPush<typeof routes>({ navigation, resolve })
+  const push = createRouterPush({ navigation, resolve })
 
   push({ route: 'parentA', params: { paramA: '' } })
 

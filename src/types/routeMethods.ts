@@ -1,4 +1,4 @@
-import { RouteMethod, RouteMethodResponse } from '@/types/routeMethod'
+import { RouteMethod, RouteMethodImplementation, RouteMethodResponse } from '@/types/routeMethod'
 import { Public, Route, Routes } from '@/types/routes'
 import { Identity, TupleCanBeAllUndefined, UnionToIntersection } from '@/types/utilities'
 import { Path } from '@/utilities/path'
@@ -9,6 +9,10 @@ export type RouteMethods<
   TPathParams extends Record<string, unknown[]> = Record<never, never>,
   TQueryParams extends Record<string, unknown[]> = Record<never, never>
 > = UnionToIntersection<RouteMethodsTuple<TRoutes, TPathParams, TQueryParams>[number]>
+
+export type RouteMethodsImplementation = {
+  [key: string]: RouteMethodImplementation & Record<string, RouteMethodsImplementation>,
+}
 
 type RouteMethodsTuple<
   TRoutes extends Routes,

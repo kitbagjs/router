@@ -19,7 +19,7 @@ test.each([
   ] as const satisfies Routes
   const resolved = resolveRoutes(routes)
 
-  const response = createRouteMethods<typeof routes>({ resolved, push })
+  const response = createRouteMethods({ resolved, push })
 
   if (isPublic !== false) {
     expect(response.parent).toBeTypeOf('function')
@@ -42,7 +42,7 @@ test('given route is NOT public, returns empty object', () => {
   ] as const satisfies Routes
   const resolved = resolveRoutes(routes)
 
-  const response = createRouteMethods<typeof routes>({ resolved, push })
+  const response = createRouteMethods({ resolved, push })
 
   expect(response).toMatchObject({})
 })
@@ -70,7 +70,7 @@ test.each([
   ] as const satisfies Routes
   const resolved = resolveRoutes(routes)
 
-  const response = createRouteMethods<typeof routes>({ resolved, push })
+  const response = createRouteMethods({ resolved, push })
 
   if (isPublic !== false) {
     expect(response.parent.child).toBeTypeOf('function')
@@ -103,7 +103,7 @@ test('given parent route with named children and grandchildren, has path to gran
   ] as const satisfies Routes
   const resolved = resolveRoutes(routes)
 
-  const response = createRouteMethods<typeof routes>({ resolved, push })
+  const response = createRouteMethods({ resolved, push })
 
   expect(response.parent).toBeTypeOf('function')
   expect(response.parent.child).toBeTypeOf('function')
@@ -122,7 +122,7 @@ describe('routeMethod', () => {
       },
     ] as const satisfies Routes
     const resolved = resolveRoutes(routes)
-    const { route } = createRouteMethods<typeof routes>({ resolved, push })
+    const { route } = createRouteMethods({ resolved, push })
 
     route().push()
     expect(push).toHaveBeenLastCalledWith('/route/', {})
@@ -148,7 +148,7 @@ describe('routeMethod', () => {
       },
     ] as const satisfies Routes
     const resolved = resolveRoutes(routes)
-    const { route } = createRouteMethods<typeof routes>({ resolved, push })
+    const { route } = createRouteMethods({ resolved, push })
 
     expect(route().url).toBe('/route/')
     expect(route({ param: 'param' }).url).toBe('/route/param')
