@@ -1,13 +1,20 @@
 import { App, DeepReadonly } from 'vue'
+import { BuiltInRejection, RegisteredRejections } from '@/types/register'
 import { Resolved } from '@/types/resolved'
 import { RouteMethods, RouteMethodsImplementation } from '@/types/routeMethods'
 import { Route, Routes } from '@/types/routes'
 import { RouterPush, RouterPushImplementation, RouterPushOptions } from '@/utilities/createRouterPush'
 import { RouterResolve } from '@/utilities/createRouterResolve'
 
+type BuiltInRejectionComponents = Partial<Record<BuiltInRejection, RouteComponent>>
+
+type RouterRejectionComponents = RegisteredRejections extends never
+  ? { rejections?: BuiltInRejectionComponents }
+  : { rejections: BuiltInRejectionComponents & Record<RegisteredRejections, RouteComponent> }
+
 export type RouterOptions = {
   initialUrl?: string,
-}
+} & RouterRejectionComponents
 
 export type RouterReplaceOptions = Omit<RouterPushOptions, 'replace'>
 
