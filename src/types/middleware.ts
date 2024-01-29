@@ -1,6 +1,7 @@
 import { EffectScope } from 'vue'
-import { RegisteredRejections, RegisteredRouter } from '@/types/register'
+import { RegisteredRouter } from '@/types/register'
 import { MaybePromise } from '@/types/utilities'
+import { RouterReject } from '@/utilities/createRouterReject'
 
 type Route = {
   name: string,
@@ -13,12 +14,10 @@ export interface RouteState {
 
 }
 
-type RouteReject = (type?: RegisteredRejections) => void
-
 type MiddlewareExtras = {
   from: Route | null,
   state: RouteState,
-  reject: RouteReject,
+  reject: RouterReject,
   scope: EffectScope,
   router: RegisteredRouter,
 }

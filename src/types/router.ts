@@ -1,16 +1,17 @@
 import { App, DeepReadonly } from 'vue'
-import { BuiltInRejection, RegisteredRejections } from '@/types/register'
+import { RegisteredRejection } from '@/types/register'
 import { Resolved } from '@/types/resolved'
 import { RouteMethods, RouteMethodsImplementation } from '@/types/routeMethods'
 import { Route, RouteComponent, Routes } from '@/types/routes'
 import { RouterPush, RouterPushImplementation, RouterPushOptions } from '@/utilities/createRouterPush'
+import { BuiltInRejection, RouterReject } from '@/utilities/createRouterReject'
 import { RouterResolve } from '@/utilities/createRouterResolve'
 
 type BuiltInRejectionComponents = Partial<Record<BuiltInRejection, RouteComponent>>
 
-type RouterRejectionComponents = RegisteredRejections extends never
+type RouterRejectionComponents = RegisteredRejection extends never
   ? { rejections?: BuiltInRejectionComponents }
-  : { rejections: BuiltInRejectionComponents & Record<RegisteredRejections, RouteComponent> }
+  : { rejections: BuiltInRejectionComponents & Record<RegisteredRejection, RouteComponent> }
 
 export type RouterOptions = {
   initialUrl?: string,
@@ -29,6 +30,7 @@ export type Router<
   resolve: RouterResolve,
   push: RouterPush<TRoutes>,
   replace: RouterReplace,
+  reject: RouterReject,
   back: () => void,
   forward: () => void,
   go: (delta: number) => void,
@@ -41,6 +43,7 @@ export type RouterImplementation = {
   resolve: RouterResolve,
   push: RouterPushImplementation,
   replace: RouterReplace,
+  reject: RouterReject,
   back: () => void,
   forward: () => void,
   go: (delta: number) => void,
