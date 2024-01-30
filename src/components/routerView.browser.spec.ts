@@ -188,3 +188,33 @@ it('Renders the NotFound component when the router.push does not match', async (
 
   expect(app.text()).toBe(notFoundText)
 })
+
+it('Renders the route component when the router.push does match after a rejection', async () => {
+  const route = {
+    name: 'parent',
+    path: '/',
+    component: { template: 'hello world' },
+  } as const satisfies Route
+
+  const router = createRouter([route], {
+    initialUrl: '/does-not-exist',
+  })
+
+  const root = {
+    template: '<RouterView/>',
+  }
+
+  const app = mount(root, {
+    global: {
+      plugins: [router],
+    },
+  })
+
+  expect(app.text()).toBe(notFoundText)
+
+  router.push(route.path)
+
+  await flushPromises()
+
+  expect(app.text()).toBe(route.component.template)
+})
