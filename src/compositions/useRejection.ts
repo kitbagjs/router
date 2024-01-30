@@ -1,9 +1,9 @@
 import { InjectionKey, inject } from 'vue'
-import { RouterRejectionComponent } from '@/utilities/createRouterReject'
+import { RouterRejection } from '@/utilities/createRouterReject'
 
-export const routerRejectionKey: InjectionKey<RouterRejectionComponent> = Symbol()
+export const routerRejectionKey: InjectionKey<RouterRejection> = Symbol()
 
-export function useRejection(): RouterRejectionComponent {
+export function useRejection(): RouterRejection {
   const rejection = inject(routerRejectionKey)
 
   if (!rejection) {

@@ -1,28 +1,27 @@
 import { Ref, ref } from 'vue'
 import { NotFound } from '@/components'
-import { RegisteredRejection, Resolved, Route, RouteComponent } from '@/types'
+import { RegisteredRejectionType, Resolved, Route, RouteComponent } from '@/types'
 
 export const builtInRejections = ['NotFound'] as const
-export type BuiltInRejection = typeof builtInRejections[number]
+export type BuiltInRejectionType = typeof builtInRejections[number]
 
-export const builtInRejectionComponents: Record<BuiltInRejection, RouteComponent> = {
+export const builtInRejectionComponents: Record<BuiltInRejectionType, RouteComponent> = {
   NotFound,
 }
 
-export type RouterRejection = BuiltInRejection | RegisteredRejection
+export type RouterRejectionType = BuiltInRejectionType | RegisteredRejectionType
 
-type BuiltInRejectionComponents = Partial<Record<BuiltInRejection, RouteComponent>>
+type BuiltInRejectionComponents = Partial<Record<BuiltInRejectionType, RouteComponent>>
 
-export type RouterRejectionComponents = RegisteredRejection extends never
+export type RouterRejectionComponents = RegisteredRejectionType extends never
   ? { rejections?: BuiltInRejectionComponents }
-  : { rejections: BuiltInRejectionComponents & Record<RegisteredRejection, RouteComponent> }
+  : { rejections: BuiltInRejectionComponents & Record<RegisteredRejectionType, RouteComponent> }
 
-export type RouterReject = (type: RouterRejection) => void
+export type RouterReject = (type: RouterRejectionType) => void
 
-type GetRejectionComponent = (type: RouterRejection) => RouteComponent
-type GetRejectionRoute = (type: RouterRejection) => Resolved<Route>
+type GetRejectionRoute = (type: RouterRejectionType) => Resolved<Route>
 type ClearRejection = () => void
-export type RouterRejectionComponent = Ref<null | { type: RouterRejection, component: RouteComponent }>
+export type RouterRejection = Ref<null | { type: RouterRejectionType, component: RouteComponent }>
 
 type CreateRouterRejectContext = {
   rejections?: RouterRejectionComponents['rejections'],
@@ -30,17 +29,16 @@ type CreateRouterRejectContext = {
 
 type CreateRouterReject = {
   reject: RouterReject,
-  rejection: RouterRejectionComponent,
+  rejection: RouterRejection,
   clearRejection: ClearRejection,
   getRejectionRoute: GetRejectionRoute,
-  getRejectionComponent: GetRejectionComponent,
 }
 
 export function createRouterReject({
   rejections: customRejectionComponents,
 }: CreateRouterRejectContext): CreateRouterReject {
 
-  const getRejectionComponent: GetRejectionComponent = (type) => {
+  const getRejectionComponent = (type: RouterRejectionType): RouteComponent => {
     const components = {
       ...builtInRejectionComponents,
       ...customRejectionComponents,
@@ -79,13 +77,12 @@ export function createRouterReject({
     rejection.value = { type, component }
   }
 
-  const rejection: RouterRejectionComponent = ref(null)
+  const rejection: RouterRejection = ref(null)
 
   return {
     reject,
     rejection,
     clearRejection,
     getRejectionRoute,
-    getRejectionComponent,
   }
 }
