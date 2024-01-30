@@ -138,13 +138,7 @@ it.each([
 })
 
 it('Renders the NotFound component when the initialUrl does not match', () => {
-  const route = {
-    name: 'parent',
-    path: '/',
-    component: { template: 'hello world' },
-  } as const satisfies Route
-
-  const router = createRouter([route], {
+  const router = createRouter([], {
     initialUrl: '/does-not-exist',
   })
 
@@ -159,6 +153,28 @@ it('Renders the NotFound component when the initialUrl does not match', () => {
   })
 
   expect(app.text()).toBe(notFoundText)
+})
+
+it('Renders custom NotFound component when the initialUrl does not match', () => {
+  const template = 'Custom Not Fount'
+  const router = createRouter([], {
+    initialUrl: '/does-not-exist',
+    rejections: {
+      NotFound: { template },
+    },
+  })
+
+  const root = {
+    template: '<RouterView/>',
+  }
+
+  const app = mount(root, {
+    global: {
+      plugins: [router],
+    },
+  })
+
+  expect(app.text()).toBe(template)
 })
 
 it('Renders the NotFound component when the router.push does not match', async () => {
