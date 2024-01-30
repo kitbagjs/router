@@ -12,5 +12,5 @@ dist
 *.local
 tsconfig.vitest-temp.json
 
-.vitepress/dist
-.vitepress/cache
+docs/.vitepress/cache
+docs/.vitepress/dist

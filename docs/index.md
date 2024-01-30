@@ -3,12 +3,13 @@
 layout: home
 
 hero:
-  name: "Router"
-  text: "A type safe router for vuejs"
-  tagline: My great project tagline
+  name: "Kitbag Router"
+  text: "Typesafe router for Vue.js"
+  image: "/kitbag-logo.svg"
+  tagline: Simple, extensible, and developer friendly routing for Vue.js
   actions:
     - theme: brand
-      text: Markdown Examples
+      text: Get Started
       link: /markdown-examples
     - theme: alt
       text: API Examples

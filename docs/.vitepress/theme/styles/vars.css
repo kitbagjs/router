@@ -1,0 +1,18 @@
+:root {
+  --kitbag-orange-light: #FEA844;
+  --kitbag-orange-dark: #EF1F44;
+
+  --vp-home-hero-name-color: transparent;
+  --vp-home-hero-name-background: -webkit-linear-gradient(
+    120deg,
+    var(--kitbag-orange-light) 30%,
+    var(--kitbag-orange-dark)
+  );
+
+  --vp-home-hero-image-background-image: linear-gradient(
+    -45deg,
+    var(--kitbag-orange-light) 50%,
+    var(--kitbag-orange-dark) 50%
+  );
+  --vp-home-hero-image-filter: blur(40px);
+}

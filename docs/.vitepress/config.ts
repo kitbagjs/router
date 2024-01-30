@@ -2,9 +2,11 @@ import { defineConfig } from 'vitepress'
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
-  title: "Router",
-  description: "A type safe router for vuejs",
+  title: "Kitbag Router | Typesafe router for Vue.js",
+  description: "Typesafe router for Vue.js",
   themeConfig: {
+    logo: '/kitbag-logo-circle.svg',
+    siteTitle: 'Kitbag Router',
     // https://vitepress.dev/reference/default-theme-config
     nav: [
       { text: 'Home', link: '/' },
@@ -22,7 +24,7 @@ export default defineConfig({
     ],
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/vuejs/vitepress' }
+      { icon: 'github', link: 'https://github.com/kitbagjs/router' }
     ]
   }
 })
