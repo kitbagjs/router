@@ -2,6 +2,7 @@ import { mount, flushPromises } from '@vue/test-utils'
 import { expect, it, test } from 'vitest'
 import { defineAsyncComponent } from 'vue'
 import helloWorld from '@/components/helloWorld'
+import { notFoundText } from '@/components/notFound'
 import { Route } from '@/types'
 import { createRouter } from '@/utilities'
 
@@ -134,4 +135,56 @@ it.each([
   await flushPromises()
 
   expect(app.html()).toBe(helloWorld.template)
+})
+
+it('Renders the NotFound component when the initialUrl does not match', () => {
+  const route = {
+    name: 'parent',
+    path: '/',
+    component: { template: 'hello world' },
+  } as const satisfies Route
+
+  const router = createRouter([route], {
+    initialUrl: '/does-not-exist',
+  })
+
+  const root = {
+    template: '<RouterView/>',
+  }
+
+  const app = mount(root, {
+    global: {
+      plugins: [router],
+    },
+  })
+
+  expect(app.text()).toBe(notFoundText)
+})
+
+it('Renders the NotFound component when the router.push does not match', async () => {
+  const route = {
+    name: 'parent',
+    path: '/',
+    component: { template: 'hello world' },
+  } as const satisfies Route
+
+  const router = createRouter([route], {
+    initialUrl: route.path,
+  })
+
+  const root = {
+    template: '<RouterView/>',
+  }
+
+  const app = mount(root, {
+    global: {
+      plugins: [router],
+    },
+  })
+
+  router.push('/does-not-exist')
+
+  await flushPromises()
+
+  expect(app.text()).toBe(notFoundText)
 })

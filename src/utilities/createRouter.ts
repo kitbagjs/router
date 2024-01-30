@@ -1,14 +1,14 @@
-import { reactive, readonly, App, InjectionKey } from 'vue'
+import { reactive, readonly, App } from 'vue'
 import { RouterLink, RouterView } from '@/components'
-import { Resolved, Route, Routes, Router, RouterOptions, RegisteredRouter, RouterReplaceOptions, RouterImplementation } from '@/types'
+import { routerInjectionKey, routerRejectionKey } from '@/compositions'
+import { Resolved, Route, Routes, Router, RouterOptions, RouterReplaceOptions, RouterImplementation } from '@/types'
 import { createRouteMethods, createRouterNavigation, resolveRoutes, routeMatch, getInitialUrl } from '@/utilities'
 import { createRouterPush } from '@/utilities/createRouterPush'
 import { createRouterReject } from '@/utilities/createRouterReject'
 import { createRouterResolve } from '@/utilities/createRouterResolve'
 
-export const routerInjectionKey: InjectionKey<RegisteredRouter> = Symbol()
-
 export function createRouter<T extends Routes>(routes: T, options: RouterOptions = {}): Router<T> {
+  const { reject, rejection, getRejectionRoute } = createRouterReject(options)
   const resolved = resolveRoutes(routes)
   const navigation = createRouterNavigation({
     onLocationUpdate,
@@ -20,6 +20,7 @@ export function createRouter<T extends Routes>(routes: T, options: RouterOptions
     app.component('RouterView', RouterView)
     app.component('RouterLink', RouterLink)
     app.provide(routerInjectionKey, router as any)
+    app.provide(routerRejectionKey, rejection)
   }
 
   function getInitialRoute(): Resolved<Route> {
@@ -32,8 +33,8 @@ export function createRouter<T extends Routes>(routes: T, options: RouterOptions
     const route = routeMatch(resolved, url)
 
     if (!route) {
-      // not found
-      throw 'not implemented'
+      reject('NotFound')
+      return getRejectionRoute('NotFound')
     }
 
     return { ...route }
@@ -45,7 +46,6 @@ export function createRouter<T extends Routes>(routes: T, options: RouterOptions
     Object.assign(route, newRoute)
   }
 
-
   function replace(url: string, options: RouterReplaceOptions = {}): Promise<void> {
     return push(url, { ...options, replace: true })
   }
@@ -53,7 +53,6 @@ export function createRouter<T extends Routes>(routes: T, options: RouterOptions
   const resolve = createRouterResolve({ resolved })
   const push = createRouterPush({ navigation, resolve })
   const methods = createRouteMethods({ resolved, push })
-  const reject = createRouterReject()
 
   const router: RouterImplementation = {
     routes: methods,
