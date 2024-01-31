@@ -3,11 +3,12 @@ import { Resolved } from '@/types/resolved'
 import { RouteMethods, RouteMethodsImplementation } from '@/types/routeMethods'
 import { Route, Routes } from '@/types/routes'
 import { RouterPush, RouterPushImplementation, RouterPushOptions } from '@/utilities/createRouterPush'
+import { RouterReject, RouterRejectionComponents } from '@/utilities/createRouterReject'
 import { RouterResolve } from '@/utilities/createRouterResolve'
 
 export type RouterOptions = {
   initialUrl?: string,
-}
+} & RouterRejectionComponents
 
 export type RouterReplaceOptions = Omit<RouterPushOptions, 'replace'>
 
@@ -22,6 +23,7 @@ export type Router<
   resolve: RouterResolve,
   push: RouterPush<TRoutes>,
   replace: RouterReplace,
+  reject: RouterReject,
   back: () => void,
   forward: () => void,
   go: (delta: number) => void,
@@ -34,6 +36,7 @@ export type RouterImplementation = {
   resolve: RouterResolve,
   push: RouterPushImplementation,
   replace: RouterReplace,
+  reject: RouterReject,
   back: () => void,
   forward: () => void,
   go: (delta: number) => void,

@@ -1,5 +1,6 @@
 export * from './useParam'
 export * from './useParamRaw'
+export * from './useRejection'
 export * from './useRoute'
 export * from './useRouteParam'
 export * from './useRouteParamRaw'
