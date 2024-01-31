@@ -43,7 +43,7 @@ export default defineConfig({
         {
           text: 'Core Concepts',
           items: [
-            { text: 'Defining Routes', link: '/core-concepts/' },
+            { text: 'Defining Routes', link: '/core-concepts/defining-routes' },
             { text: 'Route Params', link: '/core-concepts/route-params' },
             { text: 'Query Params', link: '/core-concepts/query-params' },
             { text: 'Nested Routes', link: '/core-concepts/nested-routes' },
@@ -53,10 +53,10 @@ export default defineConfig({
         {
           text: 'Advanced Concepts',
           items: [
-            { text: 'Middleware', link: '/core-concepts/middleware' },
-            { text: 'Route Meta', link: '/core-concepts/route-meta' },
-            { text: 'Composables', link: '/core-concepts/composables' },
-            { text: 'Transitions', link: '/core-concepts/transitions' },
+            { text: 'Middleware', link: '/advanced-concepts/middleware' },
+            { text: 'Route Meta', link: '/advanced-concepts/route-meta' },
+            { text: 'Composables', link: '/advanced-concepts/composables' },
+            { text: 'Transitions', link: '/advanced-concepts/transitions' },
           ],
         },
         {

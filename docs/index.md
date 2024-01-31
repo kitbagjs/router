@@ -13,14 +13,16 @@ hero:
       link: /introduction
     - theme: alt
       text: Documentation
-      link: /core-concepts
+      link: /core-concepts/defining-routes
 
 features:
-  - title: Feature A
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
-  - title: Feature B
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
-  - title: Feature C
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
+  - title: Typesafety
+    details: No more magic strings when navigating, accessing params, etc.
+  - title: Better Route Params
+    details: Params are accessible on route by name, and converted to whatever type you need.
+  - title: Support for Query
+    details: Rich param support just like path params, including being considered in route matching.
+  - title: Rejection Handling
+    details: Configure app-wide rejection handling for 404, 401, whatever you need.
 ---
 
