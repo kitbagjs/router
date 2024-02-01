@@ -48,7 +48,7 @@ export function createRouter<T extends Routes>(routes: T, options: RouterOptions
   }
 
   async function refresh(): Promise<void> {
-    replace(navigation.getUrl().href)
+    await replace(navigation.getUrl().href)
   }
 
   function replace(url: string, options: RouterReplaceOptions = {}): Promise<void> {
