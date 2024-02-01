@@ -59,9 +59,7 @@ Give your route components a place to be mounted
 </div>
 ```
 
-This component can be mounted anywhere you want route components to be mounted. Child routes can also have a nested `RouterView` which would be responsible for rendering any children that route may have. See more about [nested routes](/core-concepts/nested-routes). 
-
-By default the router assumes any route that doesn't explicitly declare a `component` wants to mount `RouterView`.
+This component can be mounted anywhere you want route components to be mounted. Child routes can also have a nested `RouterView` which would be responsible for rendering any children that route may have. See more about [nested routes](/core-concepts/defining-routes#nested-routes). 
 
 ### RouterLink
 

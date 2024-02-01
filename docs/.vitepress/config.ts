@@ -46,7 +46,6 @@ export default defineConfig({
             { text: 'Defining Routes', link: '/core-concepts/defining-routes' },
             { text: 'Route Params', link: '/core-concepts/route-params' },
             { text: 'Query Params', link: '/core-concepts/query-params' },
-            { text: 'Nested Routes', link: '/core-concepts/nested-routes' },
             { text: 'Navigating', link: '/core-concepts/navigating' },
           ],
         },
@@ -57,6 +56,7 @@ export default defineConfig({
             { text: 'Route Meta', link: '/advanced-concepts/route-meta' },
             { text: 'Composables', link: '/advanced-concepts/composables' },
             { text: 'Transitions', link: '/advanced-concepts/transitions' },
+            { text: 'Reusing Param Names', link: '/advanced-concepts/reusing-param-names' },
           ],
         },
         {
