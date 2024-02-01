@@ -41,14 +41,12 @@ export function createRouter<T extends Routes>(routes: T, options: RouterOptions
     return { ...route }
   }
 
-  async function onLocationUpdate(url: string): Promise<void> {
+  function onLocationUpdate(url: string): Promise<void> {
     const newRoute = getRoute(url)
 
     Object.assign(route, newRoute)
-  }
 
-  async function refresh(): Promise<void> {
-    await replace(navigation.getUrl().href)
+    return Promise.resolve()
   }
 
   function replace(url: string, options: RouterReplaceOptions = {}): Promise<void> {
@@ -66,7 +64,7 @@ export function createRouter<T extends Routes>(routes: T, options: RouterOptions
     push,
     replace,
     reject,
-    refresh,
+    refresh: navigation.refresh,
     forward: navigation.forward,
     back: navigation.back,
     go: navigation.go,

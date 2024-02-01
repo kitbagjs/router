@@ -13,16 +13,16 @@ type NavigationForward = () => void
 type NavigationBack = () => void
 type NavigationGo = (delta: number) => void
 type NavigationUpdate = (url: string, options?: RouterNavigationUpdateOptions) => Promise<void>
+type NavigationRefresh = () => Promise<void>
 type NavigationCleanup = () => void
-type NavigationGetUrl = () => Location
 
 export type RouterNavigation = {
   forward: NavigationForward,
   back: NavigationBack,
   go: NavigationGo,
   update: NavigationUpdate,
+  refresh: NavigationRefresh,
   cleanup?: () => void,
-  getUrl: NavigationGetUrl,
 }
 
 export function createRouterNavigation(options: RouterNavigationOptions): RouterNavigation {
@@ -41,25 +41,21 @@ function createBrowserNavigation({ onLocationUpdate }: RouterNavigationOptions):
     return await onLocationUpdate(url)
   }
 
+  const refresh: NavigationRefresh = async () => {
+    await onLocationUpdate(window.location.toString())
+  }
+
   const cleanup: NavigationCleanup = () => {
-    removeEventListener('popstate', onPopstate)
+    removeEventListener('popstate', refresh)
   }
 
-  const getUrl: NavigationGetUrl = () => {
-    return window.location
-  }
-
-  const onPopstate = (): void => {
-    onLocationUpdate(window.location.toString())
-  }
-
-  addEventListener('popstate', onPopstate)
+  addEventListener('popstate', refresh)
 
   return {
     forward: history.forward,
     back: history.back,
     go: history.go,
-    getUrl,
+    refresh,
     update,
     cleanup,
   }
@@ -80,7 +76,7 @@ function createNodeNavigation({ onLocationUpdate }: RouterNavigationOptions): Ro
     forward: notSupported,
     back: notSupported,
     go: notSupported,
-    getUrl: notSupported,
+    refresh: notSupported,
     cleanup,
     update,
   }
