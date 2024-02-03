@@ -25,6 +25,6 @@
 
     const { to, ...options } = props
 
-    router.push(props.to, options)
+    router.push(to, options)
   }
 </script>
