@@ -17,9 +17,7 @@
   const router = useRouter()
 
   function resolve(): string {
-    const thing = props.to
-
-    return router.resolve(thing)
+    return router.resolve(props.to)
   }
 
   function onClick(event: MouseEvent): void {
