@@ -13,7 +13,7 @@ export type RouterResolve<
   TRoutes extends Routes
 > = <
   TRoutePath extends string
->(source: string | RouteWithParams<TRoutes, TRoutePath> | ReturnType<RouteMethod>) => Promise<void>
+>(source: string | RouteWithParams<TRoutes, TRoutePath> | ReturnType<RouteMethod>) => string
 
 export type RouterResolveImplementation = (source: string | RouteWithParamsImplementation | RouteMethodResponseImplementation) => string
 
