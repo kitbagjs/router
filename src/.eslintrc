@@ -37,6 +37,15 @@
       "rules": {
         "@typescript-eslint/ban-ts-comment": "off"
       }
+    },
+    {
+      "files": [
+        "**/*.ts",
+        "**/*.vue"
+      ],
+      "rules": {
+        "typescript-eslint/no-unused-vars": "off"
+      }
     }
   ]
 }
