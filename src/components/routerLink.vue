@@ -6,13 +6,12 @@
 
 <script setup lang="ts" generic="T extends string">
   import { useRouter } from '@/compositions'
-  import { RegisteredRoutes } from '@/types/register'
   import { RouteMethod } from '@/types/routeMethod'
-  import { RouteWithParams } from '@/types/routeWithParams'
+  import { RegisteredRouteWithParams } from '@/types/routeWithParams'
   import { RouterPushOptions } from '@/utilities/createRouterPush'
 
   const props = defineProps<{
-    to: string | RouteWithParams<RegisteredRoutes, T> | ReturnType<RouteMethod>,
+    to: string | RegisteredRouteWithParams<T> | ReturnType<RouteMethod>,
   } & RouterPushOptions>()
 
   const router = useRouter()
