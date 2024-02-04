@@ -63,31 +63,30 @@ const routes = [
 
 ## Optional Params
 
-Add a question mark `?:` to your query param to make it optional.
+Add a question mark `:?` to your query param to make it optional.
 
 ```ts
 const routes = [
   {
     name: 'users',
     path: '/users',
-    query: 'sort=?:sort',// [!code focus]
+    query: 'sort=:?sort',// [!code focus]
     component: ...
   }
 ] as const satisfies Routes
 ```
 
-## Unnamed query params
+## Unnamed Query Params
 
 The entire query is also available in `route.query`. This includes any named query params but with their raw value.
 
-:::info
-The name you provide for the browser does not have to match the name you provide for the router. `query: 'sortForBrowser=:sortForRouter'`.
+### Query Param Naming
+
+The name you provide for the param does not have to match the key from the URL. `query: 'keySort=:paramSort'`.
 
 ```ts
 const route = useRoute()
 
-route.params.sortForRouter
-route.params.query.sortForBrowser
+route.params.paramSort
+route.params.query.keySort
 ```
-
-:::

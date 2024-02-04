@@ -59,7 +59,7 @@ Give your route components a place to be mounted
 </div>
 ```
 
-This component can be mounted anywhere you want route components to be mounted. Child routes can also have a nested `RouterView` which would be responsible for rendering any children that route may have. See more about [nested routes](/core-concepts/defining-routes#nested-routes). 
+This component can be mounted anywhere you want route components to be mounted. Nested routes can also have a nested `RouterView` which would be responsible for rendering any children that route may have. See more about [nested routes](/core-concepts/defining-routes#nested-routes).
 
 ### RouterLink
 
@@ -69,7 +69,7 @@ Use RouterLink for navigating between routes.
 <div id="app">
   ...
   <!-- router-link renders as <a> with href -->
-  <router-link to="somewhere">Go somewhere</router-link>
+  <router-link :to="{ route: 'home' }">Go somewhere</router-link>
 </div>
 ```
 

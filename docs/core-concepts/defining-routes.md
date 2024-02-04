@@ -5,15 +5,17 @@
 For typesafety to work properly we need to make sure Typescript doesn't widen your routes.
 
 ```ts
-export const routes = [// [!code ++]
-  { name: 'home', path: '/', component: Home },// [!code ++]
-  { name: 'path', path: '/about', component: About },// [!code ++]
-] as const satisfies Routes // [!code ++]
+/* Typesafe */
+export const routes = [
+  { name: 'home', path: '/', component: Home },
+  { name: 'path', path: '/about', component: About },
+] as const satisfies Routes 
 
-export const routes: Routes = [// [!code --]
-  { name: 'home', path: '/', component: Home },// [!code --]
-  { name: 'path', path: '/about', component: About },// [!code --]
-]// [!code --]
+/* Not Typesafe */
+export const routes: Routes = [
+  { name: 'home', path: '/', component: Home },
+  { name: 'path', path: '/about', component: About },
+]
 ```
 
 ::: info
@@ -33,7 +35,7 @@ const routes = [
     children: [
       {
         name: 'profile',
-        path: '',
+        path: '/profile',
         component: ...,
       },
       {
@@ -59,10 +61,9 @@ Providing the `name` property for each route ensures that we have a way of progr
 With the example user routes above
 
 ```ts
-const { routes } = createRouter(routes)
+const router = createRouter(routes)
 
-// navigate to /user/settings/keys route
-routes.user.settings.keys()
+router.push({ route: 'user.settings.keys' })
 ```
 
 Learn more about [navigating](/core-concepts/navigating) to routes.
@@ -71,9 +72,9 @@ Learn more about [navigating](/core-concepts/navigating) to routes.
 While there are no constraints on what you pick for the name, we recommend camelCase strings which will feel the most natural when using the route methods for navigation.
 :::
 
-## Public Routes
+## Disabled Routes
 
-By default, the routes you define are considered to be "public". This means the route will be callable in the `routes` response from `createRouter`. If your desire is to setup a parent route that's not accessible itself, you can set that parent as non-public.
+When an individual route is disabled, it will never count as an exact match. Children of disabled route behave normally and can still be matched. This gives the developer the ability to ensure that partial views are not loaded without having to flatten your routes and lose the context of nested routes.
 
 Let's update the example above
 
@@ -82,7 +83,7 @@ const routes = [
   {
     name: 'user',
     path: '/user',
-    public: false, // [!code focus] 
+    disabled: true, // [!code focus] 
     component: ...,
     children: [
       ...
@@ -91,10 +92,11 @@ const routes = [
 ] as const satisfies Routes
 ```
 
-Now `routes.user` is no longer callable
+Now developers would get a Typescript error if they try navigating to `routes.user`.
 
 ```ts
-const { routes } = createRouter(routes)
+const router = createRouter(routes)
 
-routes.user() // [!code error] This expression is not callable
+router.push({ route: 'routes.user' }) // [!code error] error
+router.push({ route: 'routes.user.profile' }) // ok
 ```

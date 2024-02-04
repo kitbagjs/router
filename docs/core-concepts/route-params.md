@@ -28,7 +28,7 @@ When defined this way, these params are reactive strings. If you update a param,
 
 ## Param Types
 
-With the `path` function, kitbag/router supports mapping params to types other than `string`.
+With the `path` function, kitbag/router supports parsing params to types other than `string`.
 
 ```ts
 import { 
@@ -46,27 +46,47 @@ const routes = [
 ] as const satisfies Routes
 ```
 
-This will automatically parse the param from `string` in the URL to `number` in `route.params`.
+This will automatically parse the param from `string` in the URL to `number` in `route.params`. If the value cannot be parsed, the route will not be considered a match.
 
-kitbag/router ships with support for `String` (default), `Boolean`, and `Number`. However, you can define whatever type mapping you desire with your own `ParamGetter` or `ParamGetSet`.
+kitbag/router ships with support for `String` (default), `Boolean`, `Number`, and `RegExp`.
+
+### RegExp Params
+
+Using native RegExp is a powerful way of controlling route matching.
 
 ```ts
-type ExpectedId = `A${number}`
+const routes = [
+  {
+    name: 'users',
+    path: path('/users/:id', { id: /^A[0-9]$/  }), // [!code focus]
+    component: ...
+  }
+] as const satisfies Routes
+```
 
-// using simple type guard as example
-function isExpectedId(value: string): value is ExpectedId {
-  return /^A[0-9]$/.test(value)
+### Custom Param
+
+You're not limited to the param types that ship with kitbag/router, use `ParamGetter<T>` or `ParamGetSet<T>` to parse params to whatever type you need.
+
+```ts
+type MyType = {
+  version: number,
+  subversion?: string,
 }
 
-const validIdParam: ParamGetter<ExpectedId> = (value, { invalid }) => {
-  if (isExpectedId(value)) {
-    // Return value is what will be provided in route.params.id
-    return value
+const myTypeParam: ParamGetter<MyType> = (value, { invalid }) => {
+  // expected input format '123.alpha'
+  const [versionString, subversion] = value.split('.')
+  const version = parseInt(versionString)
+
+  if (isNaN(version)) {
+    // If any exception is thrown, the route will not match.
+    // Use the provided `invalid` function to provide additional context to the router.
+    throw invalid('Value provided for version is not valid integer')
   }
 
-  // If any exception is thrown, the route will not match. 
-  // Use the provided `invalid` function to provide additional context to the router. 
-  throw invalid('Value does not follow expected id format')
+  // Return value is what will be provided in route.params.id
+  return { version, subversion }
 }
 ```
 
@@ -76,7 +96,7 @@ Update your param assignment on the route's path
 const routes = [
   {
     name: 'users',
-    path: path('/users/:id', { id: validIdParam }), // [!code focus]
+    path: path('/users/:id', { id: myTypeParam }), // [!code focus]
     component: ...
   }
 ] as const satisfies Routes
@@ -84,7 +104,7 @@ const routes = [
 
 With this getter defined, now our route will only match if the param matches our rules above.
 
-As a `ParamGetter`, the value in `route.params` is readonly. Alternatively if you use `ParamGetSet`, the value will be writable as well.
+As a `ParamGetter`, the value in `route.params` is still writable, but the set will assume `value.toString()` is sufficient. Alternatively if you use `ParamGetSet`, you can provide the same validation on value set as well.
 
 ```ts
 const validIdParam: ParamGetSet<ExpectedId> = {
