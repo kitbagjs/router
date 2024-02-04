@@ -1,60 +1,34 @@
-import { expect, test } from 'vitest'
-import { Route } from '@/types'
-import { createRouter } from '@/utilities/createRouter'
-import { component } from '@/utilities/testHelpers'
+import { expect, test, vi } from 'vitest'
+import { createRouteMethods } from '@/utilities/createRouteMethods'
+import { createRouterResolve } from '@/utilities/createRouterResolve'
+import { resolveRoutes } from '@/utilities/resolveRoutes'
+import { routes } from '@/utilities/testHelpers'
 
 test('when given a string returns that string', () => {
-  const route = {
-    name: 'route',
-    path: '/route/:param',
-    component,
-  } as const satisfies Route
+  const resolved = resolveRoutes(routes)
+  const resolve = createRouterResolve({ resolved })
 
-  const { resolve } = createRouter([route], {
-    initialUrl: '/route/bar',
-  })
-
-  expect(resolve('/route/bar')).toBe('/route/bar')
+  expect(resolve('/bar')).toBe('/bar')
 })
 
 test('when given a route method returns the url', () => {
-  const route = {
-    name: 'route',
-    path: '/route/:param',
-    component,
-  } as const satisfies Route
+  const resolved = resolveRoutes(routes)
+  const resolve = createRouterResolve({ resolved })
+  const methods = createRouteMethods({ resolved, push: vi.fn() })
 
-  const { resolve, routes } = createRouter([route], {
-    initialUrl: '/route/bar',
-  })
-
-  expect(resolve(routes.route({ param: 'bar' }))).toBe('/route/bar')
+  expect(resolve(methods.parentA({ paramA: 'bar' }))).toBe('/bar')
 })
 
 test('when given a route with params returns the url', () => {
-  const route = {
-    name: 'route',
-    path: '/route/:param',
-    component,
-  } as const satisfies Route
+  const resolved = resolveRoutes(routes)
+  const resolve = createRouterResolve({ resolved })
 
-  const { resolve } = createRouter([route], {
-    initialUrl: '/route/bar',
-  })
-
-  expect(resolve({ route: 'route', params: { param: 'bar' } })).toBe('/route/bar')
+  expect(resolve({ route: 'parentA', params: { paramA: 'bar' } })).toBe('/bar')
 })
 
 test('throws an error if route with params cannot be matched', () => {
-  const route = {
-    name: 'route',
-    path: '/route/:param',
-    component,
-  } as const satisfies Route
-
-  const { resolve } = createRouter([route], {
-    initialUrl: '/route/bar',
-  })
+  const resolved = resolveRoutes(routes)
+  const resolve = createRouterResolve({ resolved })
 
   expect(() => resolve({ route: 'foo' })).toThrowError()
 })

@@ -1,4 +1,5 @@
-import { Resolved, Route, RouteMethod, isRouteMethodResponse } from '@/types'
+import { Resolved, Route, RouteMethod, RouteMethodResponseImplementation, Routes, isRouteMethodResponse } from '@/types'
+import { RouteWithParams, RouteWithParamsImplementation } from '@/types/routeWithParams'
 import { flattenParentMatches } from '@/utilities/flattenParentMatches'
 import { isRecord } from '@/utilities/guards'
 import { normalizeRouteParams } from '@/utilities/normalizeRouteParams'
@@ -8,9 +9,15 @@ type RouterResolveContext = {
   resolved: Resolved<Route>[],
 }
 
-export type RouterResolve = (source: string | ReturnType<RouteMethod> | { route: string, params?: Record<string, unknown> }) => string
+export type RouterResolve<
+  TRoutes extends Routes
+> = <
+  TRoutePath extends string
+>(source: string | RouteWithParams<TRoutes, TRoutePath> | ReturnType<RouteMethod>) => string
 
-export function createRouterResolve({ resolved }: RouterResolveContext): RouterResolve {
+export type RouterResolveImplementation = (source: string | RouteWithParamsImplementation | RouteMethodResponseImplementation) => string
+
+export function createRouterResolve({ resolved }: RouterResolveContext): RouterResolveImplementation {
   return (source) => {
     if (typeof source === 'string') {
       return source

@@ -4,7 +4,7 @@ import { RouteMethods, RouteMethodsImplementation } from '@/types/routeMethods'
 import { Route, Routes } from '@/types/routes'
 import { RouterPush, RouterPushImplementation, RouterPushOptions } from '@/utilities/createRouterPush'
 import { RouterReject, RouterRejectionComponents } from '@/utilities/createRouterReject'
-import { RouterResolve } from '@/utilities/createRouterResolve'
+import { RouterResolve, RouterResolveImplementation } from '@/utilities/createRouterResolve'
 
 export type RouterOptions = {
   initialUrl?: string,
@@ -20,7 +20,7 @@ export type Router<
 > = {
   routes: RouteMethods<TRoutes>,
   route: DeepReadonly<Resolved<Route>>,
-  resolve: RouterResolve,
+  resolve: RouterResolve<TRoutes>,
   push: RouterPush<TRoutes>,
   replace: RouterReplace,
   reject: RouterReject,
@@ -34,7 +34,7 @@ export type Router<
 export type RouterImplementation = {
   routes: RouteMethodsImplementation,
   route: DeepReadonly<Resolved<Route>>,
-  resolve: RouterResolve,
+  resolve: RouterResolveImplementation,
   push: RouterPushImplementation,
   replace: RouterReplace,
   reject: RouterReject,
