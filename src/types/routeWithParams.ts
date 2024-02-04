@@ -7,10 +7,15 @@ export type RouteWithParams<
   TRoutes extends Routes,
   TRoutePath extends string
 > = {
-  route: TRoutePath & RoutePaths<TRoutes>,
-  params: ExtractRoutePathParameters<RouteMethods<TRoutes>, TRoutePath>,
-}
+  route: TRoutePath | RoutePaths<TRoutes>,
+} & RouteParams<ExtractRoutePathParameters<RouteMethods<TRoutes>, TRoutePath>>
 
 export type RegisteredRouteWithParams<T extends string> = RouteWithParams<RegisteredRoutes, T>
 
 export type RouteWithParamsImplementation = { route: string, params?: Record<string, unknown> }
+
+type RouteParams<T> = [T] extends [never]
+  ? {}
+  : undefined extends T
+    ? { params?: T }
+    : { params: T }
