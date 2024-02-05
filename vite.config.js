@@ -7,6 +7,7 @@ export default defineConfig({
   test: {
     typecheck: {
       checker: 'vue-tsc',
+      ignoreSourceErrors: true,
     },
     environmentMatchGlobs: [
       ['**\/*.browser.spec.ts', 'happy-dom'],

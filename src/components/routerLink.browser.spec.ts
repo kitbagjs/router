@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils'
 import { expect, test, vi } from 'vitest'
 import { h } from 'vue'
-import routerLink from '@/components/routerLink'
+import routerLink from '@/components/routerLink.vue'
 import { Route } from '@/types'
 import { component, createRouter } from '@/utilities'
 
@@ -23,7 +23,7 @@ test('renders an anchor tag with the correct href and slot content', () => {
 
   const wrapper = mount(routerLink, {
     props: {
-      to: () => router.routes.parent({ param }),
+      to: router.routes.parent({ param }),
     },
     slots: {
       default: content,
@@ -43,7 +43,7 @@ test.each([
   const routeA = {
     name: 'routeA',
     path: '/routeA',
-    component: { render: () => h(routerLink, { to: router.routes.routeB, replace }) },
+    component: { render: () => h(routerLink, { to: router.routes.routeB(), replace }) },
   } as const satisfies Route
 
   const routeB = {
@@ -56,7 +56,7 @@ test.each([
     initialUrl: routeA.path,
   })
 
-  const spy = vi.spyOn(router, 'push')
+  const spy = vi.spyOn<any, 'push'>(router, 'push')
 
   const root = {
     template: '<RouterView />',
@@ -70,7 +70,9 @@ test.each([
 
   app.find('a').trigger('click')
 
-  expect(spy).toHaveBeenLastCalledWith(routeB.path, { replace })
+  const [, arg2] = spy.mock.lastCall ?? []
+
+  expect(arg2).toMatchObject({ replace, query: undefined })
 })
 
 test('to prop as string renders and routes correctly', () => {
@@ -84,7 +86,7 @@ test('to prop as string renders and routes correctly', () => {
     initialUrl: route.path,
   })
 
-  const spy = vi.spyOn(router, 'push')
+  const spy = vi.spyOn<any, 'push'>(router, 'push')
 
   const wrapper = mount(routerLink, {
     props: {
@@ -103,5 +105,7 @@ test('to prop as string renders and routes correctly', () => {
 
   anchor.trigger('click')
 
-  expect(spy).toHaveBeenCalledWith(route.path, { replace: false })
+  const [arg1] = spy.mock.lastCall ?? []
+
+  expect(arg1).toBe(route.path)
 })

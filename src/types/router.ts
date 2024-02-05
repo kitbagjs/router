@@ -1,24 +1,18 @@
 import { App, DeepReadonly } from 'vue'
 import { Resolved } from '@/types/resolved'
-import { RouteMethods } from '@/types/routeMethods'
+import { RouteMethods, RouteMethodsImplementation } from '@/types/routeMethods'
 import { Route, Routes } from '@/types/routes'
+import { RouterPush, RouterPushImplementation, RouterPushOptions } from '@/utilities/createRouterPush'
+import { RouterReject, RouterRejectionComponents } from '@/utilities/createRouterReject'
+import { RouterResolve, RouterResolveImplementation } from '@/utilities/createRouterResolve'
 
 export type RouterOptions = {
   initialUrl?: string,
-}
-
-export type RouterPushOptions = {
-  // not implemented
-  query?: never,
-  replace?: boolean,
-}
-
-export type RouterPush = {
-  (url: string, options?: RouterPushOptions): Promise<void>,
-}
+} & RouterRejectionComponents
 
 export type RouterReplaceOptions = Omit<RouterPushOptions, 'replace'>
 
+// todo this type should mirror RouterPush
 export type RouterReplace = (url: string, options?: RouterReplaceOptions) => Promise<void>
 
 export type Router<
@@ -26,8 +20,25 @@ export type Router<
 > = {
   routes: RouteMethods<TRoutes>,
   route: DeepReadonly<Resolved<Route>>,
-  push: RouterPush,
+  resolve: RouterResolve<TRoutes>,
+  push: RouterPush<TRoutes>,
   replace: RouterReplace,
+  reject: RouterReject,
+  refresh: () => Promise<void>,
+  back: () => void,
+  forward: () => void,
+  go: (delta: number) => void,
+  install: (app: App) => void,
+}
+
+export type RouterImplementation = {
+  routes: RouteMethodsImplementation,
+  route: DeepReadonly<Resolved<Route>>,
+  resolve: RouterResolveImplementation,
+  push: RouterPushImplementation,
+  replace: RouterReplace,
+  reject: RouterReject,
+  refresh: () => Promise<void>,
   back: () => void,
   forward: () => void,
   go: (delta: number) => void,

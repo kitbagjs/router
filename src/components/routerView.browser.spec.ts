@@ -2,6 +2,7 @@ import { mount, flushPromises } from '@vue/test-utils'
 import { expect, it, test } from 'vitest'
 import { defineAsyncComponent } from 'vue'
 import helloWorld from '@/components/helloWorld'
+import { notFoundText } from '@/components/notFound'
 import { Route } from '@/types'
 import { createRouter } from '@/utilities'
 
@@ -134,4 +135,102 @@ it.each([
   await flushPromises()
 
   expect(app.html()).toBe(helloWorld.template)
+})
+
+it('Renders the NotFound component when the initialUrl does not match', () => {
+  const router = createRouter([], {
+    initialUrl: '/does-not-exist',
+  })
+
+  const root = {
+    template: '<RouterView/>',
+  }
+
+  const app = mount(root, {
+    global: {
+      plugins: [router],
+    },
+  })
+
+  expect(app.text()).toBe(notFoundText)
+})
+
+it('Renders custom NotFound component when the initialUrl does not match', () => {
+  const template = 'Custom Not Fount'
+  const router = createRouter([], {
+    initialUrl: '/does-not-exist',
+    rejections: {
+      NotFound: { template },
+    },
+  })
+
+  const root = {
+    template: '<RouterView/>',
+  }
+
+  const app = mount(root, {
+    global: {
+      plugins: [router],
+    },
+  })
+
+  expect(app.text()).toBe(template)
+})
+
+it('Renders the NotFound component when the router.push does not match', async () => {
+  const route = {
+    name: 'parent',
+    path: '/',
+    component: { template: 'hello world' },
+  } as const satisfies Route
+
+  const router = createRouter([route], {
+    initialUrl: route.path,
+  })
+
+  const root = {
+    template: '<RouterView/>',
+  }
+
+  const app = mount(root, {
+    global: {
+      plugins: [router],
+    },
+  })
+
+  router.push('/does-not-exist')
+
+  await flushPromises()
+
+  expect(app.text()).toBe(notFoundText)
+})
+
+it('Renders the route component when the router.push does match after a rejection', async () => {
+  const route = {
+    name: 'parent',
+    path: '/',
+    component: { template: 'hello world' },
+  } as const satisfies Route
+
+  const router = createRouter([route], {
+    initialUrl: '/does-not-exist',
+  })
+
+  const root = {
+    template: '<RouterView/>',
+  }
+
+  const app = mount(root, {
+    global: {
+      plugins: [router],
+    },
+  })
+
+  expect(app.text()).toBe(notFoundText)
+
+  router.push(route.path)
+
+  await flushPromises()
+
+  expect(app.text()).toBe(route.component.template)
 })

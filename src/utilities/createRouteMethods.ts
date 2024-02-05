@@ -1,15 +1,16 @@
-import { Resolved, Route, RouteMethods, RouterPush, Routes, isPublicRoute } from '@/types'
-import { RouteMethod, RouteMethodPush, RouteMethodReplace } from '@/types/routeMethod'
-import { asArray } from '@/utilities/array'
+import { Resolved, Route, RouteMethodImplementation, RouteMethodsImplementation, isPublicRoute } from '@/types'
+import { RouteMethodPush, RouteMethodReplace } from '@/types/routeMethod'
+import { RouterPushImplementation } from '@/utilities/createRouterPush'
+import { normalizeRouteParams } from '@/utilities/normalizeRouteParams'
 import { assembleUrl } from '@/utilities/urlAssembly'
 
 type RouteMethodsContext = {
   resolved: Resolved<Route>[],
-  push: RouterPush,
+  push: RouterPushImplementation,
 }
 
-export function createRouteMethods<T extends Routes>({ resolved, push }: RouteMethodsContext): RouteMethods<T> {
-  const methods = resolved.reduce<Record<string, any>>((methods, route) => {
+export function createRouteMethods({ resolved, push }: RouteMethodsContext): RouteMethodsImplementation {
+  return resolved.reduce<Record<string, any>>((methods, route) => {
     let level = methods
 
     route.matches.forEach(match => {
@@ -35,17 +36,15 @@ export function createRouteMethods<T extends Routes>({ resolved, push }: RouteMe
 
     return methods
   }, {})
-
-  return methods as any
 }
 
 type CreateRouteMethodArgs = {
   route: Resolved<Route>,
-  push: RouterPush,
+  push: RouterPushImplementation,
 }
 
-function createRouteMethod({ route, push: routerPush }: CreateRouteMethodArgs): RouteMethod {
-  const node: RouteMethod = (params = {}) => {
+function createRouteMethod({ route, push: routerPush }: CreateRouteMethodArgs): RouteMethodImplementation {
+  return (params = {}) => {
     const normalizedParams = normalizeRouteParams(params)
     const url = assembleUrl(route, normalizedParams)
 
@@ -77,18 +76,4 @@ function createRouteMethod({ route, push: routerPush }: CreateRouteMethodArgs): 
       replace,
     }
   }
-
-  return node
-}
-
-function normalizeRouteParams(params: Record<string, unknown>): Record<string, unknown[]> {
-  const normalizedParams: Record<string, unknown[]> = {}
-
-  for (const key of Object.keys(params)) {
-    const value = params[key]
-
-    normalizedParams[key] = asArray(value)
-  }
-
-  return normalizedParams
 }

@@ -12,6 +12,7 @@
     "test:types": "vitest typecheck",
     "lint": "eslint ./src",
     "lint:fix": "eslint ./src --fix",
+    "types": "vue-tsc --noEmit",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs"
@@ -35,12 +36,13 @@
     "@vue/test-utils": "^2.4.3",
     "eslint": "^8.54.0",
     "happy-dom": "^12.10.3",
-    "typescript": "^5.0.2",
+    "typescript": "^5.4.0-dev.20240125",
     "vite": "^5.0.11",
     "vite-plugin-dts": "^3.6.3",
     "vitepress": "^1.0.0-rc.40",
     "vitest": "^0.34.6",
-    "vue": "^3.4.5"
+    "vue": "^3.4.5",
+    "vue-tsc": "^1.8.27"
   },
   "peerDependencies": {
     "vue": "^3.4.5"

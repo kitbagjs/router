@@ -13,6 +13,7 @@ type NavigationForward = () => void
 type NavigationBack = () => void
 type NavigationGo = (delta: number) => void
 type NavigationUpdate = (url: string, options?: RouterNavigationUpdateOptions) => Promise<void>
+type NavigationRefresh = () => Promise<void>
 type NavigationCleanup = () => void
 
 export type RouterNavigation = {
@@ -20,6 +21,7 @@ export type RouterNavigation = {
   back: NavigationBack,
   go: NavigationGo,
   update: NavigationUpdate,
+  refresh: NavigationRefresh,
   cleanup?: () => void,
 }
 
@@ -39,27 +41,28 @@ function createBrowserNavigation({ onLocationUpdate }: RouterNavigationOptions):
     return await onLocationUpdate(url)
   }
 
+  const refresh: NavigationRefresh = async () => {
+    await onLocationUpdate(window.location.toString())
+  }
+
   const cleanup: NavigationCleanup = () => {
-    removeEventListener('popstate', onPopstate)
+    removeEventListener('popstate', refresh)
   }
 
-  const onPopstate = (): void => {
-    onLocationUpdate(window.location.toString())
-  }
-
-  addEventListener('popstate', onPopstate)
+  addEventListener('popstate', refresh)
 
   return {
     forward: history.forward,
     back: history.back,
     go: history.go,
+    refresh,
     update,
     cleanup,
   }
 }
 
 function createNodeNavigation({ onLocationUpdate }: RouterNavigationOptions): RouterNavigation {
-  const notSupported = (): void => {
+  const notSupported = (): any => {
     throw new Error('Browser like navigation is not supported outside of a browser context')
   }
 
@@ -73,6 +76,7 @@ function createNodeNavigation({ onLocationUpdate }: RouterNavigationOptions): Ro
     forward: notSupported,
     back: notSupported,
     go: notSupported,
+    refresh: notSupported,
     cleanup,
     update,
   }

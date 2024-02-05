@@ -1,6 +1,7 @@
-import { inject } from 'vue'
+import { InjectionKey, inject } from 'vue'
 import { RegisteredRouter } from '@/types'
-import { routerInjectionKey } from '@/utilities'
+
+export const routerInjectionKey: InjectionKey<RegisteredRouter> = Symbol()
 
 export function useRouter(): RegisteredRouter {
   const router = inject(routerInjectionKey)

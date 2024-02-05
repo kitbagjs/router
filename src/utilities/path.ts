@@ -1,5 +1,5 @@
 import { Param, Identity, MergeParams, ExtractParamName, ExtractPathParamType } from '@/types'
-import { getParamsForString } from '@/utilities'
+import { getParamsForString } from '@/utilities/getParamsForString'
 
 type ParamEnd = '/'
 

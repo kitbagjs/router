@@ -1,7 +1,7 @@
 import { ExtractParamName, ExtractPathParamType, Param } from '@/types/params'
 import { MergeParams } from '@/types/routeMethods'
 import { Identity } from '@/types/utilities'
-import { getParamsForString } from '@/utilities/params'
+import { getParamsForString } from '@/utilities/getParamsForString'
 
 type ExtractQueryParamsFromQueryString<
   TQuery extends string,
