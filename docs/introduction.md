@@ -1,11 +1,21 @@
 # Introduction
 
+kitbag/router introduces a fresh, developer-centric approach to routing in Vue.js applications.
+
+At the heart of kitbag/router lies a commitment to enhancing the developer experience.  First and foremost that means **typesafety**, but also **better parameter experience**, **support for query**, **rejection handling**, simple intuitive syntax, and an extensible design written with modern Typescript.
+
 ## Typesafety
 
-## Route Methods
+You already know what routes exist, so why are we using magic strings and hoping it works out? With kitbag/router, the routes that are available to you couldn't be clearer. If the routes change, Typescript will tell you the links that need to be updated.
 
-## Params
+## Better Route Params
 
-## Query
+Adding dynamic parameters to your route is just as easy as you'd expect but infinitely more powerful. With kitbag/router, your parameters can be expressed as `String`, `Number`, `Boolean`, `RegExp`, or literally anything else. Parameters in the route will be expected when navigating (typesafety!). This param type is enforced when matching routes, so routes can be differentiated by subtle changes in param types.
 
-## Rejections
+## Support for Query
+
+Defining a query on routes can control route matching, just like it does with the path. Better yet, with kitbag/router you get the same support for params inside the query as you do the path!
+
+## Rejection Handling
+
+Virtually every app that needs a router will eventually need to handle urls without a match (404), routes protected by auth (401) but the solution is on you to figure out. With kitbag/router you have this functionality out of the box. Each rejection type you need is registered with a corresponding view, if rejections happen at any point in the router lifecycle the router will handle it.
