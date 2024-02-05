@@ -61,10 +61,6 @@ export default defineConfig({
           ],
         },
         {
-          text: "Delete this",
-          link: "/vitepress-syntax"
-        },
-        {
           text: "Migrating from vue-router",
           link: "/migrating-vue-router"
         }
