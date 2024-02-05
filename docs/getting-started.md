@@ -47,7 +47,19 @@ app.use(router)
 app.mount('#app')
 ```
 
-### RouterView
+## Update Registered Router
+
+This block utilizes [declaration merging](https://www.typescriptlang.org/docs/handbook/declaration-merging.html) to provide the internal types to match the actual router you're using. You put this in main.ts right after you call `createRouter`, or you can export your router and put this interface inside of a `router.d.ts` file, anywhere that your tsconfig can find it.
+
+```ts
+declare module '@kitbag/router' {
+  interface Register {
+    router: typeof router
+  }
+}
+```
+
+## RouterView
 
 Give your route components a place to be mounted
 
@@ -61,7 +73,7 @@ Give your route components a place to be mounted
 
 This component can be mounted anywhere you want route components to be mounted. Nested routes can also have a nested `RouterView` which would be responsible for rendering any children that route may have. See more about [nested routes](/core-concepts/defining-routes#nested-routes).
 
-### RouterLink
+## RouterLink
 
 Use RouterLink for navigating between routes.
 
