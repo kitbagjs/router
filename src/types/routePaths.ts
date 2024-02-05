@@ -4,14 +4,9 @@ import { Route, Routes } from '@/types/routes'
 export type ExtractRoutePathParameters<
   TRouteMethods,
   TRoutePath extends string
-> = TRoutePath extends string ? NestedObjectValue<TRouteMethods, TRoutePath> : never
-
-type NestedObjectValue<
-  TRouteMethods,
-  TRoutePath extends string
 > =
   TRoutePath extends `${infer F extends string & keyof TRouteMethods}.${infer R}`
-    ? NestedObjectValue<TRouteMethods[F], R>
+    ? ExtractRoutePathParameters<TRouteMethods[F], R>
     : TRoutePath extends keyof TRouteMethods
       ? ExtractRouteMethodParams<TRouteMethods[TRoutePath]>
       : never

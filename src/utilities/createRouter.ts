@@ -7,7 +7,7 @@ import { createRouterPush } from '@/utilities/createRouterPush'
 import { createRouterReject } from '@/utilities/createRouterReject'
 import { createRouterResolve } from '@/utilities/createRouterResolve'
 
-export function createRouter<T extends Routes>(routes: T, options: RouterOptions = {}): Router<T> {
+export function createRouter<const T extends Routes>(routes: T, options: RouterOptions = {}): Router<T> {
   const { reject, rejection, clearRejection, getRejectionRoute } = createRouterReject(options)
   const resolved = resolveRoutes(routes)
   const navigation = createRouterNavigation({
