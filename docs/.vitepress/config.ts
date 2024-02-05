@@ -53,6 +53,7 @@ export default defineConfig({
         {
           text: 'Advanced Concepts',
           items: [
+            { text: 'Rejections', link: '/advanced-concepts/rejections' },
             { text: 'Middleware', link: '/advanced-concepts/middleware' },
             { text: 'Route Meta', link: '/advanced-concepts/route-meta' },
             { text: 'Composables', link: '/advanced-concepts/composables' },
