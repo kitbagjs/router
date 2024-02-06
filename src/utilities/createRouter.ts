@@ -1,10 +1,11 @@
 import { reactive, readonly, App } from 'vue'
 import { RouterLink, RouterView } from '@/components'
 import { routerInjectionKey, routerRejectionKey } from '@/compositions'
-import { Resolved, Route, Routes, Router, RouterOptions, RouterReplaceOptions, RouterImplementation } from '@/types'
+import { Resolved, Route, Routes, Router, RouterOptions, RouterImplementation } from '@/types'
 import { createRouteMethods, createRouterNavigation, resolveRoutes, routeMatch, getInitialUrl } from '@/utilities'
 import { createRouterPush } from '@/utilities/createRouterPush'
 import { createRouterReject } from '@/utilities/createRouterReject'
+import { createRouterReplace } from '@/utilities/createRouterReplace'
 import { createRouterResolve } from '@/utilities/createRouterResolve'
 
 export function createRouter<const T extends Routes>(routes: T, options: RouterOptions = {}): Router<T> {
@@ -49,12 +50,9 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
     return Promise.resolve()
   }
 
-  function replace(url: string, options: RouterReplaceOptions = {}): Promise<void> {
-    return push(url, { ...options, replace: true })
-  }
-
   const resolve = createRouterResolve({ resolved })
   const push = createRouterPush({ navigation, resolve })
+  const replace = createRouterReplace({ push })
   const methods = createRouteMethods({ resolved, push })
 
   const router: RouterImplementation = {
