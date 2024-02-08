@@ -2,49 +2,35 @@ import { DeepReadonly, reactive, readonly } from 'vue'
 import { Resolved, Route } from '@/types'
 import { RouterPushError, RouterRejectionError, RouterReplaceError } from '@/types/errors'
 import { RouterPushImplementation } from '@/utilities/createRouterPush'
-import { CreateRouterReject, RouterReject } from '@/utilities/createRouterReject'
+import { RouterReject, notFoundRouteResolved } from '@/utilities/createRouterReject'
 import { RouterReplaceImplementation } from '@/utilities/createRouterReplace'
 import { RouterResolveImplementation } from '@/utilities/createRouterResolve'
-import { getInitialUrl } from '@/utilities/getInitialUrl'
-import { routeMatch } from '@/utilities/routeMatch'
 import { RouterNavigation } from '@/utilities/routerNavigation'
 import { getRouteMiddleware } from '@/utilities/routes'
 
-type RouterRouteUpdate = (url: string) => Promise<void>
+type RouterRouteUpdate = (matched: Resolved<Route>) => void
+type RouterRouteMiddleware = (matched: Resolved<Route>) => Promise<void>
 
 type RouterRoute = {
   route: DeepReadonly<Resolved<Route>>,
   updateRoute: RouterRouteUpdate,
-  initialized: Promise<void>,
+  executeMiddleware: RouterRouteMiddleware,
 }
 
-type RouterGetContext = {
-  resolved: Resolved<Route>[],
-  resolve: RouterResolveImplementation,
-  navigation: RouterNavigation,
-  routerReject: CreateRouterReject,
-  initialUrl: string | undefined,
-}
-
-export function createRouterRoute({ resolved, resolve, navigation, routerReject, initialUrl }: RouterGetContext): RouterRoute {
-  const { reject, getRejectionRoute, clearRejection } = routerReject
-  const route = reactive<Resolved<Route>>(getRejectionRoute('NotFound'))
+export function createRouterRoute(resolve: RouterResolveImplementation, navigation: RouterNavigation): RouterRoute {
+  const route = reactive<Resolved<Route>>(notFoundRouteResolved)
 
   const setRoute = (newRoute: Resolved<Route>): void => {
     Object.assign(route, newRoute)
   }
 
-  const updateRoute: RouterRouteUpdate = async (url) => {
-    const matched = routeMatch(resolved, url)
+  const updateRoute: RouterRouteUpdate = (matched: Resolved<Route>) => {
+    setRoute(matched)
+  }
 
-    if (!matched) {
-      reject('NotFound')
-      setRoute(getRejectionRoute('NotFound'))
-      return
-    }
-
+  const executeMiddleware: RouterRouteMiddleware = async (matched) => {
     const middleware = getRouteMiddleware(matched)
-    const from = route.name === 'NotFound' ? null : readonly(route)
+    const from = route === notFoundRouteResolved ? null : readonly(route)
 
     try {
       const results = middleware.map(callback => callback(matched, {
@@ -56,18 +42,11 @@ export function createRouterRoute({ resolved, resolve, navigation, routerReject,
 
       await Promise.all(results)
     } catch (error) {
-      if (error instanceof RouterRejectionError) {
-        reject(error.type)
-        return
-      }
-
       if (error instanceof RouterPushError) {
         const [source, options] = error.to
         const url = resolve(source)
 
         navigation.update(url, options)
-
-        return
       }
 
       if (error instanceof RouterReplaceError) {
@@ -75,23 +54,16 @@ export function createRouterRoute({ resolved, resolve, navigation, routerReject,
         const url = resolve(source)
 
         navigation.update(url, { replace: true })
-
-        return
       }
 
       throw error
     }
-
-    clearRejection()
-    setRoute(matched)
   }
-
-  const initialized = updateRoute(getInitialUrl(initialUrl))
 
   return {
     route: readonly(route),
-    initialized,
     updateRoute,
+    executeMiddleware,
   }
 }
 

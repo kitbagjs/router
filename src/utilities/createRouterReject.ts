@@ -5,6 +5,22 @@ import { RegisteredRejectionType, Resolved, Route, RouteComponent } from '@/type
 export const builtInRejections = ['NotFound'] as const
 export type BuiltInRejectionType = typeof builtInRejections[number]
 
+const notFoundRoute = {
+  name: Math.random().toString(),
+  path: '',
+  component: markRaw(NotFound),
+}
+
+export const notFoundRouteResolved: Resolved<Route> = {
+  matched: notFoundRoute,
+  matches: [notFoundRoute],
+  name: notFoundRoute.name,
+  depth: 0,
+  path: '',
+  query: '',
+  params: {},
+}
+
 export const builtInRejectionComponents: Record<BuiltInRejectionType, RouteComponent> = {
   NotFound,
 }
@@ -19,7 +35,6 @@ export type RouterRejectionComponents = RegisteredRejectionType extends never
 
 export type RouterReject = (type: RouterRejectionType) => void
 
-type GetRejectionRoute = (type: RouterRejectionType) => Resolved<Route>
 type ClearRejection = () => void
 export type RouterRejection = Ref<null | { type: RouterRejectionType, component: RouteComponent }>
 
@@ -31,7 +46,6 @@ export type CreateRouterReject = {
   reject: RouterReject,
   rejection: RouterRejection,
   clearRejection: ClearRejection,
-  getRejectionRoute: GetRejectionRoute,
 }
 
 export function createRouterReject({
@@ -45,26 +59,6 @@ export function createRouterReject({
     }
 
     return components[type]
-  }
-
-  const getRejectionRoute: GetRejectionRoute = (type) => {
-    const route = {
-      name: type,
-      path: '',
-      component: markRaw(getRejectionComponent(type)),
-    }
-
-    const resolved: Resolved<Route> = {
-      matched: route,
-      matches: [route],
-      name: type,
-      depth: 0,
-      path: '',
-      query: '',
-      params: {},
-    }
-
-    return resolved
   }
 
   const clearRejection: ClearRejection = () => {
@@ -83,6 +77,5 @@ export function createRouterReject({
     reject,
     rejection,
     clearRejection,
-    getRejectionRoute,
   }
 }
