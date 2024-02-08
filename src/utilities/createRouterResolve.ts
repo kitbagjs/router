@@ -1,8 +1,8 @@
 import { Resolved, Route, RouteMethod, RouteMethodResponseImplementation, Routes, isRouteMethodResponse } from '@/types'
 import { RouteWithParams, RouteWithParamsImplementation } from '@/types/routeWithParams'
-import { flattenParentMatches } from '@/utilities/flattenParentMatches'
 import { isRecord } from '@/utilities/guards'
 import { normalizeRouteParams } from '@/utilities/normalizeRouteParams'
+import { getRoutePath } from '@/utilities/routes'
 import { assembleUrl } from '@/utilities/urlAssembly'
 
 type RouterResolveContext = {
@@ -28,7 +28,7 @@ export function createRouterResolve({ resolved }: RouterResolveContext): RouterR
     }
 
     if (isRecord(source)) {
-      const match = resolved.find((resolvedRoute) => flattenParentMatches(resolvedRoute) === source.route)
+      const match = resolved.find((resolvedRoute) => getRoutePath(resolvedRoute) === source.route)
 
       if (!match) {
         throw `No route found: "${String(source)}"`

@@ -19,8 +19,8 @@ export type RouterRejectionComponents = RegisteredRejectionType extends never
 
 export type RouterReject = (type: RouterRejectionType) => void
 
-type GetRejectionRoute = (type: RouterRejectionType) => Resolved<Route>
-type ClearRejection = () => void
+export type GetRejectionRoute = (type: RouterRejectionType) => Resolved<Route>
+export type ClearRejection = () => void
 export type RouterRejection = Ref<null | { type: RouterRejectionType, component: RouteComponent }>
 
 type CreateRouterRejectContext = {
