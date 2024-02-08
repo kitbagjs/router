@@ -48,7 +48,6 @@ test('updates the route when navigating', async () => {
   expect(route.matched.name).toBe(first.name)
 
   await push(second.path)
-  await flushPromises()
 
   expect(route.matched).toMatchObject(second)
 })

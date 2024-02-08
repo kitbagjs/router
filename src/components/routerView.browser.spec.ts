@@ -103,19 +103,13 @@ test('updates components when route changes', async () => {
 
   await router.push(childB.path)
 
-  await flushPromises()
-
   expect(app.html()).toBe(childB.component.template)
 
   await router.push(childC.path)
 
-  await flushPromises()
-
   expect(app.html()).toBe(childC.component.template)
 
   await router.push(childA.path)
-
-  await flushPromises()
 
   expect(app.html()).toBe(childA.component.template)
 })
@@ -210,9 +204,7 @@ it('Renders the NotFound component when the router.push does not match', async (
     },
   })
 
-  router.push('/does-not-exist')
-
-  await flushPromises()
+  await router.push('/does-not-exist')
 
   expect(app.text()).toBe(notFoundText)
 })
@@ -240,9 +232,7 @@ it('Renders the route component when the router.push does match after a rejectio
 
   expect(app.text()).toBe(notFoundText)
 
-  router.push(route.path)
-
-  await flushPromises()
+  await router.push(route.path)
 
   expect(app.text()).toBe(route.component.template)
 })
