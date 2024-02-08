@@ -60,7 +60,7 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
     resolve,
     push,
     replace,
-    reject: reject,
+    reject,
     refresh: navigation.refresh,
     forward: navigation.forward,
     back: navigation.back,
