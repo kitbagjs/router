@@ -1,6 +1,6 @@
-import { RouterReplaceOptions } from '@/types/router'
 import { IsEmptyObject, OnlyRequiredProperties } from '@/types/utilities'
 import { RouterPushOptions } from '@/utilities/createRouterPush'
+import { RouterReplaceOptions } from '@/utilities/createRouterReplace'
 import { hasProperty, isRecord } from '@/utilities/guards'
 
 export type RouteMethod<
