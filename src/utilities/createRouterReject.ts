@@ -1,4 +1,4 @@
-import { Ref, ref } from 'vue'
+import { Ref, markRaw, ref } from 'vue'
 import { NotFound } from '@/components'
 import { RegisteredRejectionType, Resolved, Route, RouteComponent } from '@/types'
 
@@ -27,7 +27,7 @@ type CreateRouterRejectContext = {
   rejections?: RouterRejectionComponents['rejections'],
 }
 
-type CreateRouterReject = {
+export type CreateRouterReject = {
   reject: RouterReject,
   rejection: RouterRejection,
   clearRejection: ClearRejection,
@@ -51,7 +51,7 @@ export function createRouterReject({
     const route = {
       name: type,
       path: '',
-      component: getRejectionComponent(type),
+      component: markRaw(getRejectionComponent(type)),
     }
 
     const resolved: Resolved<Route> = {

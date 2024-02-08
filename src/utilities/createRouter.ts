@@ -1,67 +1,42 @@
-import { reactive, readonly, App } from 'vue'
+import { App } from 'vue'
 import { RouterLink, RouterView } from '@/components'
 import { routerInjectionKey, routerRejectionKey } from '@/compositions'
-import { Resolved, Route, Routes, Router, RouterOptions, RouterImplementation } from '@/types'
-import { createRouteMethods, createRouterNavigation, resolveRoutes, routeMatch, getInitialUrl } from '@/utilities'
+import { Routes, Router, RouterOptions, RouterImplementation } from '@/types'
+import { createRouteMethods, createRouterNavigation, resolveRoutes } from '@/utilities'
 import { createRouterPush } from '@/utilities/createRouterPush'
 import { createRouterReject } from '@/utilities/createRouterReject'
 import { createRouterReplace } from '@/utilities/createRouterReplace'
 import { createRouterResolve } from '@/utilities/createRouterResolve'
+import { createRouterRoute } from '@/utilities/createRouterRoute'
 
 export function createRouter<const T extends Routes>(routes: T, options: RouterOptions = {}): Router<T> {
-  const { reject, rejection, clearRejection, getRejectionRoute } = createRouterReject(options)
   const resolved = resolveRoutes(routes)
+  const resolve = createRouterResolve({ resolved })
+
   const navigation = createRouterNavigation({
-    onLocationUpdate,
+    onLocationUpdate: (url) => updateRoute(url),
   })
 
-  const route: Resolved<Route> = reactive(getInitialRoute())
+  const push = createRouterPush({ navigation, resolve })
+  const replace = createRouterReplace({ push })
+  const methods = createRouteMethods({ resolved, push })
+  const routerReject = createRouterReject(options)
+  const { route, updateRoute } = createRouterRoute({ resolve, resolved, navigation, routerReject, initialUrl: options.initialUrl })
 
   function install(app: App): void {
     app.component('RouterView', RouterView)
     app.component('RouterLink', RouterLink)
     app.provide(routerInjectionKey, router as any)
-    app.provide(routerRejectionKey, rejection)
+    app.provide(routerRejectionKey, routerReject.rejection)
   }
-
-  function getInitialRoute(): Resolved<Route> {
-    const url = getInitialUrl(options.initialUrl)
-
-    return getRoute(url)
-  }
-
-  function getRoute(url: string): Resolved<Route> {
-    const route = routeMatch(resolved, url)
-
-    if (!route) {
-      reject('NotFound')
-      return getRejectionRoute('NotFound')
-    }
-
-    clearRejection()
-    return { ...route }
-  }
-
-  function onLocationUpdate(url: string): Promise<void> {
-    const newRoute = getRoute(url)
-
-    Object.assign(route, newRoute)
-
-    return Promise.resolve()
-  }
-
-  const resolve = createRouterResolve({ resolved })
-  const push = createRouterPush({ navigation, resolve })
-  const replace = createRouterReplace({ push })
-  const methods = createRouteMethods({ resolved, push })
 
   const router: RouterImplementation = {
     routes: methods,
-    route: readonly(route),
+    route,
     resolve,
     push,
     replace,
-    reject,
+    reject: routerReject.reject,
     refresh: navigation.refresh,
     forward: navigation.forward,
     back: navigation.back,

@@ -1,5 +1,4 @@
-import { DeepReadonly, EffectScope } from 'vue'
-import { RegisteredRouter, RegisteredRouterState } from '@/types/register'
+import { DeepReadonly } from 'vue'
 import { Resolved } from '@/types/resolved'
 import { Route } from '@/types/routes'
 import { MaybePromise } from '@/types/utilities'

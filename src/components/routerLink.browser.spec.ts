@@ -1,4 +1,4 @@
-import { mount } from '@vue/test-utils'
+import { flushPromises, mount } from '@vue/test-utils'
 import { expect, test, vi } from 'vitest'
 import { h } from 'vue'
 import routerLink from '@/components/routerLink.vue'
@@ -39,7 +39,7 @@ test('renders an anchor tag with the correct href and slot content', () => {
 test.each([
   true,
   false,
-])('calls router.push with url and replace %s', (replace) => {
+])('calls router.push with url and replace %s', async (replace) => {
   const routeA = {
     name: 'routeA',
     path: '/routeA',
@@ -55,6 +55,8 @@ test.each([
   const router = createRouter([routeA, routeB], {
     initialUrl: routeA.path,
   })
+
+  await flushPromises()
 
   const spy = vi.spyOn<any, 'push'>(router, 'push')
 

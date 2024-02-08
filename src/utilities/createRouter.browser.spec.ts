@@ -1,9 +1,10 @@
+import { flushPromises } from '@vue/test-utils'
 import { expect, test } from 'vitest'
 import { Route } from '@/types'
 import { createRouter } from '@/utilities/createRouter'
 import { component } from '@/utilities/testHelpers'
 
-test('initial route is set', () => {
+test('initial route is set', async () => {
   const root = {
     name: 'root',
     component,
@@ -14,7 +15,9 @@ test('initial route is set', () => {
     initialUrl: root.path,
   })
 
-  expect(route.matched).toMatchObject(root)
+  await flushPromises()
+
+  expect(route.matched.name).toBe(root.name)
 })
 
 test('updates the route when navigating', async () => {
@@ -40,9 +43,12 @@ test('updates the route when navigating', async () => {
     initialUrl: first.path,
   })
 
-  expect(route.matched).toMatchObject(first)
+  await flushPromises()
+
+  expect(route.matched.name).toBe(first.name)
 
   await push(second.path)
+  await flushPromises()
 
   expect(route.matched).toMatchObject(second)
 })

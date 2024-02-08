@@ -6,7 +6,7 @@ import { notFoundText } from '@/components/notFound'
 import { Route } from '@/types'
 import { createRouter } from '@/utilities'
 
-test('renders component for initial route', () => {
+test('renders component for initial route', async () => {
   const route = {
     name: 'parent',
     path: '/',
@@ -16,6 +16,8 @@ test('renders component for initial route', () => {
   const router = createRouter([route], {
     initialUrl: route.path,
   })
+
+  await flushPromises()
 
   const root = {
     template: '<RouterView/>',
@@ -30,7 +32,7 @@ test('renders component for initial route', () => {
   expect(app.html()).toBe(route.component.template)
 })
 
-test('renders components for initial route', () => {
+test('renders components for initial route', async () => {
   const childRoute = {
     name: 'child',
     path: '/child',
@@ -46,6 +48,8 @@ test('renders components for initial route', () => {
   const router = createRouter([parentRoute], {
     initialUrl: '/parent/child',
   })
+
+  await flushPromises()
 
   const root = {
     template: '<RouterView />',
@@ -93,17 +97,25 @@ test('updates components when route changes', async () => {
     },
   })
 
+  await flushPromises()
+
   expect(app.html()).toBe(childA.component.template)
 
   await router.push(childB.path)
+
+  await flushPromises()
 
   expect(app.html()).toBe(childB.component.template)
 
   await router.push(childC.path)
 
+  await flushPromises()
+
   expect(app.html()).toBe(childC.component.template)
 
   await router.push(childA.path)
+
+  await flushPromises()
 
   expect(app.html()).toBe(childA.component.template)
 })
