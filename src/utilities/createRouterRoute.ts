@@ -28,7 +28,6 @@ type RouterGetContext = {
 export function createRouterRoute({ resolved, resolve, navigation, routerReject, initialUrl }: RouterGetContext): RouterRoute {
   const { reject, getRejectionRoute, clearRejection } = routerReject
   const route = reactive<Resolved<Route>>(getRejectionRoute('NotFound'))
-  const from: Resolved<Route> | null = null
 
   const setRoute = (newRoute: Resolved<Route>): void => {
     Object.assign(route, newRoute)
@@ -44,6 +43,7 @@ export function createRouterRoute({ resolved, resolve, navigation, routerReject,
     }
 
     const middleware = getRouteMiddleware(matched)
+    const from = route.name === 'NotFound' ? null : readonly(route)
 
     try {
       const results = middleware.map(callback => callback(matched, {
