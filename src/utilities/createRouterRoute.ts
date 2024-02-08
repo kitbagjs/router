@@ -66,7 +66,7 @@ export function createRouterRoute({ resolved, resolve, navigation, routerReject,
 
         navigation.update(url, options)
 
-        return updateRoute(url)
+        return
       }
 
       if (error instanceof RouterReplaceError) {
@@ -75,7 +75,7 @@ export function createRouterRoute({ resolved, resolve, navigation, routerReject,
 
         navigation.update(url, { replace: true })
 
-        return updateRoute(url)
+        return
       }
 
       throw error
