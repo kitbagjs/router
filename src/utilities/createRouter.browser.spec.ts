@@ -1,4 +1,3 @@
-import { flushPromises } from '@vue/test-utils'
 import { expect, test } from 'vitest'
 import { Route } from '@/types'
 import { createRouter } from '@/utilities/createRouter'
@@ -11,11 +10,11 @@ test('initial route is set', async () => {
     path: '/',
   }
 
-  const { route } = createRouter([root], {
+  const { route, initialized } = createRouter([root], {
     initialUrl: root.path,
   })
 
-  await flushPromises()
+  await initialized
 
   expect(route.matched.name).toBe(root.name)
 })
@@ -39,11 +38,11 @@ test('updates the route when navigating', async () => {
     path: '/third/:id',
   } as const satisfies Route
 
-  const { push, route } = createRouter([first, second, third], {
+  const { push, route, initialized } = createRouter([first, second, third], {
     initialUrl: first.path,
   })
 
-  await flushPromises()
+  await initialized
 
   expect(route.matched.name).toBe(first.name)
 

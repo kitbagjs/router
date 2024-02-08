@@ -21,7 +21,7 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
   const replace = createRouterReplace({ push })
   const methods = createRouteMethods({ resolved, push })
   const routerReject = createRouterReject(options)
-  const { route, updateRoute } = createRouterRoute({ resolve, resolved, navigation, routerReject, initialUrl: options.initialUrl })
+  const { route, updateRoute, initialized } = createRouterRoute({ resolve, resolved, navigation, routerReject, initialUrl: options.initialUrl })
 
   function install(app: App): void {
     app.component('RouterView', RouterView)
@@ -42,6 +42,7 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
     back: navigation.back,
     go: navigation.go,
     install,
+    initialized,
   }
 
   return router as any

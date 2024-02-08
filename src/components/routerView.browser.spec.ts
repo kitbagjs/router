@@ -17,7 +17,7 @@ test('renders component for initial route', async () => {
     initialUrl: route.path,
   })
 
-  await flushPromises()
+  await router.initialized
 
   const root = {
     template: '<RouterView/>',
@@ -49,7 +49,7 @@ test('renders components for initial route', async () => {
     initialUrl: '/parent/child',
   })
 
-  await flushPromises()
+  await router.initialized
 
   const root = {
     template: '<RouterView />',
@@ -97,7 +97,7 @@ test('updates components when route changes', async () => {
     },
   })
 
-  await flushPromises()
+  await router.initialized
 
   expect(app.html()).toBe(childA.component.template)
 
@@ -138,6 +138,7 @@ it.each([
     },
   })
 
+  await router.initialized
   await flushPromises()
 
   expect(app.html()).toBe(helloWorld.template)

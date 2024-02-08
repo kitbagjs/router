@@ -1,4 +1,4 @@
-import { flushPromises, mount } from '@vue/test-utils'
+import { mount } from '@vue/test-utils'
 import { expect, test, vi } from 'vitest'
 import { h } from 'vue'
 import routerLink from '@/components/routerLink.vue'
@@ -56,7 +56,7 @@ test.each([
     initialUrl: routeA.path,
   })
 
-  await flushPromises()
+  await router.initialized
 
   const spy = vi.spyOn<any, 'push'>(router, 'push')
 

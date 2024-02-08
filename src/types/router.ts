@@ -25,6 +25,7 @@ export type Router<
   forward: () => void,
   go: (delta: number) => void,
   install: (app: App) => void,
+  initialized: Promise<void>,
 }
 
 export type RouterImplementation = {
@@ -39,4 +40,5 @@ export type RouterImplementation = {
   forward: () => void,
   go: (delta: number) => void,
   install: (app: App) => void,
+  initialized: Promise<void>,
 }

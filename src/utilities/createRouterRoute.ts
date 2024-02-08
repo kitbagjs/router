@@ -15,6 +15,7 @@ type RouterRouteUpdate = (url: string) => Promise<void>
 type RouterRoute = {
   route: DeepReadonly<Resolved<Route>>,
   updateRoute: RouterRouteUpdate,
+  initialized: Promise<void>,
 }
 
 type RouterGetContext = {
@@ -85,10 +86,11 @@ export function createRouterRoute({ resolved, resolve, navigation, routerReject,
     setRoute(matched)
   }
 
-  updateRoute(getInitialUrl(initialUrl))
+  const initialized = updateRoute(getInitialUrl(initialUrl))
 
   return {
     route: readonly(route),
+    initialized,
     updateRoute,
   }
 }
