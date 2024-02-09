@@ -199,6 +199,8 @@ test('Renders the NotFound component when the router.push does not match', async
     initialUrl: route.path,
   })
 
+  await router.initialized
+
   const root = {
     template: '<RouterView/>',
   }

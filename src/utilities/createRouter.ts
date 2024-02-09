@@ -1,15 +1,16 @@
-import { App } from 'vue'
+import { App, readonly } from 'vue'
 import { RouterLink, RouterView } from '@/components'
 import { routerInjectionKey, routerRejectionKey } from '@/compositions'
 import { Routes, Router, RouterOptions, RouterImplementation } from '@/types'
-import { RouterRejectionError } from '@/types/errors'
+import { RouterPushError, RouterRejectionError, RouterReplaceError } from '@/types/errors'
 import { createRouteMethods, createRouterNavigation, resolveRoutes } from '@/utilities'
 import { createRouterPush } from '@/utilities/createRouterPush'
-import { createRouterReject, notFoundRouteResolved } from '@/utilities/createRouterReject'
+import { createRouterReject } from '@/utilities/createRouterReject'
 import { createRouterReplace } from '@/utilities/createRouterReplace'
 import { createRouterResolve } from '@/utilities/createRouterResolve'
 import { createRouterRoute } from '@/utilities/createRouterRoute'
 import { getInitialUrl } from '@/utilities/getInitialUrl'
+import { executeMiddleware } from '@/utilities/middleware'
 import { routeMatch } from '@/utilities/routeMatch'
 
 export function createRouter<const T extends Routes>(routes: T, options: RouterOptions = {}): Router<T> {
@@ -20,19 +21,42 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
     const matched = routeMatch(resolved, url)
 
     if (!matched) {
-      await executeMiddleware(notFoundRouteResolved)
       return reject('NotFound')
     }
 
     try {
-      await executeMiddleware(matched)
-      updateRoute(matched)
-      clearRejection()
+      await executeMiddleware({
+        to: readonly(matched),
+        from: route,
+      })
     } catch (error) {
       if (error instanceof RouterRejectionError) {
         reject(error.type)
       }
+
+      if (error instanceof RouterPushError) {
+        const [source, options] = error.to
+        const url = resolve(source)
+
+        navigation.update(url, options)
+        return
+      }
+
+      if (error instanceof RouterReplaceError) {
+        const [source] = error.to
+        const url = resolve(source)
+
+        navigation.update(url, { replace: true })
+        return
+      }
+
+      if (!(error instanceof RouterRejectionError)) {
+        throw error
+      }
     }
+
+    updateRoute(matched)
+    clearRejection()
   }
 
   const navigation = createRouterNavigation({
@@ -43,7 +67,7 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
   const replace = createRouterReplace({ push })
   const methods = createRouteMethods({ resolved, push })
   const { reject, rejection, clearRejection } = createRouterReject(options)
-  const { route, updateRoute, executeMiddleware } = createRouterRoute(resolve, navigation)
+  const { route, updateRoute } = createRouterRoute()
 
   const initialized = onLocationUpdate(getInitialUrl(options.initialUrl))
 
