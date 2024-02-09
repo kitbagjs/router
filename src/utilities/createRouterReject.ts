@@ -6,7 +6,7 @@ export const builtInRejections = ['NotFound'] as const
 export type BuiltInRejectionType = typeof builtInRejections[number]
 
 const notFoundRoute = {
-  name: Math.random().toString(),
+  name: 'NotFoundRejectionRoute',
   path: '',
   component: markRaw(NotFound),
 }
