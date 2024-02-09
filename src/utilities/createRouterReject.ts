@@ -58,7 +58,7 @@ export function createRouterReject({
       ...customRejectionComponents,
     }
 
-    return components[type]
+    return markRaw(components[type])
   }
 
   const clearRejection: ClearRejection = () => {
