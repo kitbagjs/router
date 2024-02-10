@@ -10,7 +10,7 @@ type RouterRoute = {
 }
 
 export function createRouterRoute(): RouterRoute {
-  const route = reactive<Resolved<Route>>(notFoundRouteResolved)
+  const route = reactive<Resolved<Route>>({ ...notFoundRouteResolved })
 
   const updateRoute: RouterRouteUpdate = (newRoute) => {
     Object.assign(route, newRoute)
