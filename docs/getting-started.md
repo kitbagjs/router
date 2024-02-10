@@ -63,8 +63,9 @@ declare module '@kitbag/router' {
 
 Give your route components a place to be mounted
 
-```html {3-4}
-<div id="app">
+```html {4-5}
+<!-- App.vue -->
+<div class="app">
   ...
   <!-- matched route.component gets rendered here -->
   <router-view />
