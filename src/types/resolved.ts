@@ -1,7 +1,7 @@
 import { Param } from '@/types/params'
 import { Route } from '@/types/routes'
 
-export const isRejectionRouteSymbol = Symbol('isRejectionRoute')
+export const isRejectionRouteSymbol = Symbol()
 
 export type Resolved<T extends Route> = {
   matched: T,
