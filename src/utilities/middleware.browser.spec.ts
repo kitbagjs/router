@@ -50,3 +50,25 @@ test.each<{ type: string, error: any, middleware: RouteMiddleware }>([
 
   await expect(() => execute()).rejects.toThrowError(error)
 })
+
+test('middleware is called in order', () => {
+  const middlewareA = vi.fn()
+  const middlewareB = vi.fn()
+  const middlewareC = vi.fn()
+  const routeA = {
+    name: 'routeA',
+    path: '/routeA',
+    component,
+    middleware: [middlewareA, middlewareB, middlewareC],
+  } as const satisfies Route
+
+  const [resolvedA] = resolveRoutes([routeA])
+
+  executeMiddleware({ to: readonly(resolvedA), from: null })
+  const [orderA] = middlewareA.mock.invocationCallOrder
+  const [orderB] = middlewareB.mock.invocationCallOrder
+  const [orderC] = middlewareC.mock.invocationCallOrder
+
+  expect(orderA).toBeLessThan(orderB)
+  expect(orderB).toBeLessThan(orderC)
+})
