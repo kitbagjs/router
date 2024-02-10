@@ -26,7 +26,7 @@ const routes = [
 ] as const satisfies Routes
 ```
 
-Notice how in this example the param `id` is used at every level. The router treats this as a single param with a value that is a tuple with each occurrence having a spot. So calling ``, would expect `params: { id: [string, string, string] }`.
+Notice how in this example the param `id` is used at every level. The router treats this as a single param with a value that is a tuple with each occurrence having a spot. So calling `router.push({ route:'account.workspace.key' })`, would expect `params: { id: [string, string, string] }`.
 
 ```ts
 router.push({ route: 'account.workspace.key', params: { id: ['a', 'b', 'c'] } })
@@ -63,7 +63,7 @@ const routes = [
 ] as const satisfies Routes
 ```
 
-Calling `router.push` for the route `"account.workspace.key"`, would have params
+So now calling `router.push({ route:'account.workspace.key' })`, would expect params
 
 ```ts
 {
