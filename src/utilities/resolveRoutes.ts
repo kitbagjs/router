@@ -1,5 +1,5 @@
 import { markRaw } from 'vue'
-import { Resolved, Routes, isParentRoute, isNamedRoute, Route, Param } from '@/types'
+import { Resolved, Routes, isParentRoute, isNamedRoute, Route, Param, isRejectionRouteSymbol } from '@/types'
 import { mergeParams, path as createPath, query as createQuery, Query, Path } from '@/utilities'
 
 type ParentContext = {
@@ -40,6 +40,7 @@ export function resolveRoutes(routes: Routes, parentContext: ParentContext = {})
         path: fullPath.map(({ path }) => path.toString()).join(''),
         query: fullQuery.map(({ query }) => query.toString()).join('&'),
         params: mergeParams(reduceParams(fullPath), reduceParams(fullQuery)),
+        [isRejectionRouteSymbol]: false,
       })
     }
 
