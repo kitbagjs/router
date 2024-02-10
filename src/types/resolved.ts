@@ -11,9 +11,9 @@ export type Resolved<T extends Route> = {
   path: string,
   query: string,
   params: Record<string, Param[]>,
-  [isRejectionRouteSymbol]: boolean,
+  [isRejectionRouteSymbol]?: true,
 }
 
 export function isRejectionRoute(route: Resolved<Route>): boolean {
-  return route[isRejectionRouteSymbol]
+  return Boolean(route[isRejectionRouteSymbol])
 }
