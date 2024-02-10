@@ -4,7 +4,7 @@ layout: home
 
 hero:
   name: "Kitbag Router"
-  text: "Typesafe router for Vue.js"
+  text: "Type safe router for Vue.js"
   image: "/kitbag-logo.svg"
   tagline: Simple, extensible, and developer friendly routing for Vue.js
   actions:
@@ -16,7 +16,7 @@ hero:
       link: /core-concepts/defining-routes
 
 features:
-  - title: Typesafety
+  - title: Type Safety
     details: No more magic strings when navigating, accessing params, etc.
   - title: Better Route Params
     details: Params are accessible on route by name, and converted to whatever type you need.

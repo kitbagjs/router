@@ -6,8 +6,6 @@
   "typescript.tsdk": "node_modules/typescript/lib",
   "cSpell.words": [
     "composables",
-    "Typesafe",
-    "Typesafety",
     "vitepress"
   ],
 }

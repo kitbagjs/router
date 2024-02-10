@@ -2,8 +2,8 @@ import { defineConfig } from 'vitepress'
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
-  title: "Kitbag Router | Typesafe router for Vue.js",
-  description: "Typesafe router for Vue.js",
+  title: "Kitbag Router | Type safe router for Vue.js",
+  description: "Type safe router for Vue.js",
   head: [['link', { rel: 'icon', href: '/favicon.ico' }]],
   themeConfig: {
     logo: '/kitbag-logo-circle.svg',

@@ -38,7 +38,7 @@ The push method also accepts a plain string if you know the URL you want to go t
 router.push('/user/settings')
 ```
 
-Using push with the route object syntax provides a much better developer experience. The `route` property is typesafe, expecting only a "path" that uses route names separated by a period `.` that lead to a non-disabled route. Furthermore, if your route has any params, the route object syntax will require that those params be passed in.
+Using push with the route object syntax provides a much better developer experience. The `route` property is type safe, expecting only a "path" that uses route names separated by a period `.` that lead to a non-disabled route. Furthermore, if your route has any params, the route object syntax will require that those params be passed in.
 
 ### Providing Params
 

@@ -1,17 +1,17 @@
 # Defining Routes
 
-## Typesafety
+## Type Safety
 
-For typesafety to work properly we need to make sure Typescript doesn't widen your routes.
+For type safety to work properly we need to make sure Typescript doesn't widen your routes.
 
 ```ts
-/* Typesafe */
+/* type safe */
 export const routes = [
   { name: 'home', path: '/', component: Home },
   { name: 'path', path: '/about', component: About },
 ] as const satisfies Routes 
 
-/* Not Typesafe */
+/* not type safe */
 export const routes: Routes = [
   { name: 'home', path: '/', component: Home },
   { name: 'path', path: '/about', component: About },

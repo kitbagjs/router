@@ -1,3 +1,3 @@
 # Router
 
-Typesafe router for Vue.js
+Type safe router for Vue.js
