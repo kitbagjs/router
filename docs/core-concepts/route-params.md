@@ -16,7 +16,7 @@ const routes = [
 ] as const satisfies Routes
 ```
 
-This means the route will expect 1+ extra string characters (anything but a forward slash `/`) in order to be considered a match. The value of these extra characters is captured and exposed in the `route.params`
+This means the route will expect 1+ extra string characters in order to be considered a match. This value can be anything, including forward slashes `/`. The value of these extra characters is captured and exposed in the `route.params`
 
 ```ts
 const route = useRoute()

@@ -2,7 +2,7 @@
 
 ## Type Safety
 
-For type safety to work properly we need to make sure Typescript doesn't widen your routes.
+For type safety to work properly we need to make sure Typescript doesn't widen your routes by using Typescripts `const` and `satisfies` keywords.
 
 ```ts
 /* type safe */
