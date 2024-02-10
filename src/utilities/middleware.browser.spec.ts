@@ -1,5 +1,4 @@
 import { expect, test, vi } from 'vitest'
-import { readonly } from 'vue'
 import { RouteMiddleware } from '@/types'
 import { RouterPushError, RouterRejectionError, RouterReplaceError } from '@/types/errors'
 import { Route } from '@/types/routes'
@@ -24,7 +23,7 @@ test('calls middleware with correct routes', () => {
 
   const [resolvedA, resolvedB] = resolveRoutes([routeA, routeB])
 
-  executeMiddleware({ to: readonly(resolvedA), from: readonly(resolvedB) })
+  executeMiddleware({ to: resolvedA, from: resolvedB })
 
   expect(middleware).toHaveBeenCalledOnce()
 
@@ -46,7 +45,7 @@ test.each<{ type: string, error: any, middleware: RouteMiddleware }>([
   } as const satisfies Route
 
   const [resolvedA] = resolveRoutes([routeA])
-  const execute = (): Promise<void> => executeMiddleware({ to: readonly(resolvedA), from: null })
+  const execute = (): Promise<void> => executeMiddleware({ to: resolvedA, from: null })
 
   await expect(() => execute()).rejects.toThrowError(error)
 })
@@ -64,7 +63,7 @@ test('middleware is called in order', () => {
 
   const [resolvedA] = resolveRoutes([routeA])
 
-  executeMiddleware({ to: readonly(resolvedA), from: null })
+  executeMiddleware({ to: resolvedA, from: null })
   const [orderA] = middlewareA.mock.invocationCallOrder
   const [orderB] = middlewareB.mock.invocationCallOrder
   const [orderC] = middlewareC.mock.invocationCallOrder
