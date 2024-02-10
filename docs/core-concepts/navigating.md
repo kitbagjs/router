@@ -75,7 +75,7 @@ router.push({ route: 'user.settings', params: { id: 42, tab: 'github' } }) // [!
 
 ### Query
 
-With the optional 2nd argument, you add additional query params. Note if you know your route will expect certain parameters, [query params](/core-concepts/query-params) is a much better developer experience for dealing with the query.
+With the optional 2nd argument, you add additional values to the query. Note if you know your route will expect certain parameters, [query params](/core-concepts/query-params) is a much better developer experience for dealing with the query.
 
 ```ts
 router.push({ route: 'user.settings' }, {
