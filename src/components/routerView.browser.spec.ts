@@ -165,11 +165,11 @@ test('Renders the NotFound component when the initialUrl does not match', async 
 })
 
 test('Renders custom NotFound component when the initialUrl does not match', async () => {
-  const template = 'Custom Not Found'
+  const NotFound = { template: 'Custom Not Found' }
   const router = createRouter([], {
     initialUrl: '/does-not-exist',
     rejections: {
-      NotFound: { template },
+      NotFound,
     },
   })
 
@@ -185,7 +185,10 @@ test('Renders custom NotFound component when the initialUrl does not match', asy
     },
   })
 
-  expect(app.text()).toBe(template)
+  const route = mount(router.route.matched.component)
+
+  expect(app.text()).toBe(NotFound.template)
+  expect(route.text()).toBe(NotFound.template)
 })
 
 test('Renders the NotFound component when the router.push does not match', async () => {
