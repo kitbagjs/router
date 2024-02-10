@@ -96,7 +96,7 @@ test('given route with regex param that expects slashes, still matches', () => {
 
   const [resolved] = resolveRoutes([route])
 
-  const response = routeParamsAreValid(resolved, '/supports/first/second/third/bookmark')
+  const response = routeParamsAreValid(resolved, '/supports/first/second/third/bookmarked')
 
   expect(response).toBe(true)
 })
