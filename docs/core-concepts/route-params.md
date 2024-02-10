@@ -69,24 +69,21 @@ const routes = [
 You're not limited to the param types that ship with kitbag/router, use `ParamGetter<T>` or `ParamGetSet<T>` to parse params to whatever type you need.
 
 ```ts
-type MyType = {
-  version: number,
-  subversion?: string,
-}
+type IdFormat = `${number}-${number}`
 
-const myTypeParam: ParamGetter<MyType> = (value, { invalid }) => {
-  // expected input format '123.alpha'
-  const [versionString, subversion] = value.split('.')
+const idFormatParam: ParamGetter<IdFormat> = (value, { invalid }) => {
+  const [versionString, subversionString] = value.split('-')
   const version = parseInt(versionString)
+  const subversion = parseInt(subversionString)
 
-  if (isNaN(version)) {
+  if (isNaN(version) || isNaN(subversion)) {
     // If any exception is thrown, the route will not match.
     // Use the provided `invalid` function to provide additional context to the router.
     throw invalid('Value provided for version is not valid integer')
   }
 
   // Return value is what will be provided in route.params.id
-  return { version, subversion }
+  return `${version}-${subversion}`
 }
 ```
 
@@ -96,7 +93,7 @@ Update your param assignment on the route's path
 const routes = [
   {
     name: 'users',
-    path: path('/users/:id', { id: myTypeParam }), // [!code focus]
+    path: path('/users/:id', { id: idFormatParam }), // [!code focus]
     component: ...
   }
 ] as const satisfies Routes
@@ -107,16 +104,25 @@ With this getter defined, now our route will only match if the param matches our
 As a `ParamGetter`, the value in `route.params` is still writable, but the set will assume `value.toString()` is sufficient. Alternatively if you use `ParamGetSet`, you can provide the same validation on value set as well.
 
 ```ts
-const validIdParam: ParamGetSet<ExpectedId> = {
+// pulling out logic into simple type guard
+function isValidIdFormat(value: string): value is IdFormat {
+  const [versionString, subversionString] = value.split('-')
+  const version = parseInt(versionString)
+  const subversion = parseInt(subversionString)
+
+  return !isNaN(version) && !isNaN(subversion)
+}
+
+const idFormatParam: ParamGetSet<IdFormat> = {
   get: (value, { invalid }) => {
-    if (isExpectedId(value)) {
+    if (isValidIdFormat(value)) {
       return value
     }
 
     throw invalid()
   },
   set: (value, { invalid }) => {
-    if (isExpectedId(value)) {
+    if (isValidIdFormat(value)) {
       return value
     }
 
