@@ -1,23 +1,22 @@
-import { DeepReadonly, reactive, readonly } from 'vue'
+import { reactive } from 'vue'
 import { Resolved, Route } from '@/types'
-import { notFoundRouteResolved } from '@/utilities/createRouterReject'
 
 type RouterRouteUpdate = (matched: Resolved<Route>) => void
 
 type RouterRoute = {
-  route: DeepReadonly<Resolved<Route>>,
+  route: Resolved<Route>,
   updateRoute: RouterRouteUpdate,
 }
 
-export function createRouterRoute(): RouterRoute {
-  const route = reactive<Resolved<Route>>({ ...notFoundRouteResolved })
+export function createRouterRoute(fallbackRoute: Resolved<Route>): RouterRoute {
+  const route = reactive<Resolved<Route>>(fallbackRoute)
 
   const updateRoute: RouterRouteUpdate = (newRoute) => {
     Object.assign(route, newRoute)
   }
 
   return {
-    route: readonly(route),
+    route,
     updateRoute,
   }
 }

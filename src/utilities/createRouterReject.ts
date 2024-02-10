@@ -1,25 +1,10 @@
 import { Ref, markRaw, ref } from 'vue'
 import { NotFound } from '@/components'
 import { RegisteredRejectionType, Resolved, Route, RouteComponent } from '@/types'
+import { NotFoundRejectionKey } from '@/types/rejections'
 
 export const builtInRejections = ['NotFound'] as const
 export type BuiltInRejectionType = typeof builtInRejections[number]
-
-const notFoundRoute = {
-  name: 'NotFoundRejectionRoute',
-  path: '',
-  component: markRaw(NotFound),
-}
-
-export const notFoundRouteResolved: Resolved<Route> = {
-  matched: notFoundRoute,
-  matches: [notFoundRoute],
-  name: notFoundRoute.name,
-  depth: 0,
-  path: '',
-  query: '',
-  params: {},
-}
 
 export const builtInRejectionComponents: Record<BuiltInRejectionType, RouteComponent> = {
   NotFound,
@@ -35,6 +20,7 @@ export type RouterRejectionComponents = RegisteredRejectionType extends never
 
 export type RouterReject = (type: RouterRejectionType) => void
 
+type GetRejectionRoute = (type: RouterRejectionType) => Resolved<Route>
 type ClearRejection = () => void
 export type RouterRejection = Ref<null | { type: RouterRejectionType, component: RouteComponent }>
 
@@ -45,6 +31,7 @@ type CreateRouterRejectContext = {
 export type CreateRouterReject = {
   reject: RouterReject,
   rejection: RouterRejection,
+  getRejectionRoute: GetRejectionRoute,
   clearRejection: ClearRejection,
 }
 
@@ -59,6 +46,30 @@ export function createRouterReject({
     }
 
     return markRaw(components[type])
+  }
+
+  const getRejectionRoute: GetRejectionRoute = (type) => {
+    const component = markRaw(getRejectionComponent(type))
+    const route = {
+      name: type,
+      path: '',
+      component,
+      _internal: {
+        key: NotFoundRejectionKey,
+      },
+    }
+
+    const resolved: Resolved<Route> = {
+      matched: route,
+      matches: [route],
+      name: type,
+      depth: 0,
+      path: '',
+      query: '',
+      params: {},
+    }
+
+    return resolved
   }
 
   const clearRejection: ClearRejection = () => {
@@ -76,6 +87,7 @@ export function createRouterReject({
   return {
     reject,
     rejection,
+    getRejectionRoute,
     clearRejection,
   }
 }

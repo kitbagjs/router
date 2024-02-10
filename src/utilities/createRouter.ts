@@ -1,4 +1,4 @@
-import { App, readonly } from 'vue'
+import { App } from 'vue'
 import { RouterLink, RouterView } from '@/components'
 import { routerInjectionKey, routerRejectionKey } from '@/compositions'
 import { Routes, Router, RouterOptions, RouterImplementation } from '@/types'
@@ -26,7 +26,7 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
 
     try {
       await executeMiddleware({
-        to: readonly(matched),
+        to: matched,
         from: route,
       })
     } catch (error) {
@@ -66,8 +66,9 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
   const push = createRouterPush({ navigation, resolve })
   const replace = createRouterReplace({ push })
   const methods = createRouteMethods({ resolved, push })
-  const { reject, rejection, clearRejection } = createRouterReject(options)
-  const { route, updateRoute } = createRouterRoute()
+  const { reject, rejection, getRejectionRoute, clearRejection } = createRouterReject(options)
+  const notFoundRoute = getRejectionRoute('NotFound')
+  const { route, updateRoute } = createRouterRoute(notFoundRoute)
 
   const initialized = onLocationUpdate(getInitialUrl(options.initialUrl))
 

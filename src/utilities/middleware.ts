@@ -1,14 +1,14 @@
-import { DeepReadonly } from 'vue'
 import { Resolved, Route } from '@/types'
 import { RouterPushError, RouterRejectionError, RouterReplaceError } from '@/types/errors'
+import { isNotFoundRejectionRoute } from '@/types/rejections'
 import { RouterPushImplementation } from '@/utilities/createRouterPush'
-import { RouterReject, notFoundRouteResolved } from '@/utilities/createRouterReject'
+import { RouterReject } from '@/utilities/createRouterReject'
 import { RouterReplaceImplementation } from '@/utilities/createRouterReplace'
 import { getRouteMiddleware } from '@/utilities/routes'
 
 type ExecuteMiddlewareContext = {
-  to: DeepReadonly<Resolved<Route>>,
-  from: DeepReadonly<Resolved<Route>>,
+  to: Resolved<Route>,
+  from: Resolved<Route>,
 }
 
 export async function executeMiddleware({ to, from }: ExecuteMiddlewareContext): Promise<void> {
@@ -24,8 +24,8 @@ export async function executeMiddleware({ to, from }: ExecuteMiddlewareContext):
   await Promise.all(results)
 }
 
-function getFromRoute(from: DeepReadonly<Resolved<Route>>): DeepReadonly<Resolved<Route>> | null {
-  return from === notFoundRouteResolved ? null : from
+function getFromRoute(from: Resolved<Route>): Resolved<Route> | null {
+  return isNotFoundRejectionRoute(from.matched) ? null : from
 }
 
 const middlewareReject: RouterReject = (type) => {
