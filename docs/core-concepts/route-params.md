@@ -5,7 +5,7 @@ When defining your route `path`, you can use a colon `:` to denote dynamic param
 ```ts
 import { 
   Routes,
-} from 'kitbag/router'
+} from '@kitbag/router'
 
 const routes = [
   {
@@ -28,13 +28,13 @@ When defined this way, these params are reactive strings. If you update a param,
 
 ## Param Types
 
-With the `path` function, kitbag/router supports parsing params to types other than `string`.
+With the `path` function, Kitbag Router supports parsing params to types other than `string`.
 
 ```ts
 import { 
   Routes,
   path, // [!code ++]
-} from 'kitbag/router'
+} from '@kitbag/router'
 
 const routes = [
   {
@@ -48,7 +48,7 @@ const routes = [
 
 This will automatically parse the param from `string` in the URL to `number` in `route.params`. If the value cannot be parsed, the route will not be considered a match.
 
-kitbag/router ships with support for `String` (default), `Boolean`, `Number`, and `RegExp`.
+Kitbag Router ships with support for `String` (default), `Boolean`, `Number`, and `RegExp`.
 
 ### RegExp Params
 
@@ -66,7 +66,7 @@ const routes = [
 
 ### Custom Param
 
-You're not limited to the param types that ship with kitbag/router, use `ParamGetter<T>` or `ParamGetSet<T>` to parse params to whatever type you need.
+You're not limited to the param types that ship with Kitbag Router, use `ParamGetter<T>` or `ParamGetSet<T>` to parse params to whatever type you need.
 
 ```ts
 type IdFormat = `${number}-${number}`

@@ -2,15 +2,15 @@
 
 ## Installation
 
-Install `kitbag/router` with your favorite package manager
+Install Kitbag Router with your favorite package manager
 
 ```bash
 # bun
-bun add kitbag/router
+bun add @kitbag/router
 # yarn
-yarn add kitbag/router
+yarn add @kitbag/router
 # npm
-npm install kitbag/router
+npm install @kitbag/router
 ```
 
 ## Define Basic Routes
@@ -79,11 +79,11 @@ This component can be mounted anywhere you want route components to be mounted. 
 Use RouterLink for navigating between routes.
 
 ```html {3-4}
-<div id="app">
+<template>
   ...
   <!-- router-link renders as <a> with href -->
   <router-link :to="{ route: 'home' }">Go somewhere</router-link>
-</div>
+</template>
 ```
 
 This component gives the router the power to change the URL without reloading the page.

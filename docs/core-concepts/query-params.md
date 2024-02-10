@@ -1,6 +1,6 @@
 # Query Params
 
-Kitbag/router has first class support for query params.
+Kitbag Router has first class support for query params.
 
 ```ts
 const routes = [
@@ -20,7 +20,7 @@ The router supports dynamic params declared in the query as well.
 ```ts
 import { 
   Routes,
-} from 'kitbag/router'
+} from '@kitbag/router'
 
 const routes = [
   {
@@ -48,7 +48,7 @@ Again like params declared in `path`, these params default as writable `string`,
 import { 
   Routes,
   query, // [!code ++]
-} from 'kitbag/router'
+} from '@kitbag/router'
 
 const routes = [
   {
