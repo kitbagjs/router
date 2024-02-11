@@ -1,0 +1,24 @@
+:root {
+  --kitbag-orange-300: rgba(254, 168, 68, 1);
+  --kitbag-orange-500: rgba(212, 80, 66, 1);
+  --kitbag-orange-700: rgba(239, 31, 68, 1);
+  --kitbag-orange-700-75: rgba(239, 31, 68, 0.75);
+
+  --vp-button-brand-bg: var(--kitbag-orange-700-75);
+  --vp-c-brand-1: var(--kitbag-orange-500);
+  --vp-c-brand-2: var(--kitbag-orange-700);
+
+  --vp-home-hero-name-color: transparent;
+  --vp-home-hero-name-background: -webkit-linear-gradient(
+    120deg,
+    var(--kitbag-orange-300) 30%,
+    var(--kitbag-orange-700)
+  );
+
+  --vp-home-hero-image-background-image: linear-gradient(
+    -45deg,
+    var(--kitbag-orange-300) 50%,
+    var(--kitbag-orange-700) 50%
+  );
+  --vp-home-hero-image-filter: blur(40px);
+}
