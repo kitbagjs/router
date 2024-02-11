@@ -1,4 +1,4 @@
-import { App, DeepReadonly } from 'vue'
+import { App } from 'vue'
 import { Resolved } from '@/types/resolved'
 import { RouteMethods, RouteMethodsImplementation } from '@/types/routeMethods'
 import { Route, Routes } from '@/types/routes'
@@ -15,7 +15,7 @@ export type Router<
   TRoutes extends Routes = []
 > = {
   routes: RouteMethods<TRoutes>,
-  route: DeepReadonly<Resolved<Route>>,
+  route: Resolved<Route>,
   resolve: RouterResolve<TRoutes>,
   push: RouterPush<TRoutes>,
   replace: RouterReplace<TRoutes>,
@@ -25,11 +25,12 @@ export type Router<
   forward: () => void,
   go: (delta: number) => void,
   install: (app: App) => void,
+  initialized: Promise<void>,
 }
 
 export type RouterImplementation = {
   routes: RouteMethodsImplementation,
-  route: DeepReadonly<Resolved<Route>>,
+  route: Resolved<Route>,
   resolve: RouterResolveImplementation,
   push: RouterPushImplementation,
   replace: RouterReplaceImplementation,
@@ -39,4 +40,5 @@ export type RouterImplementation = {
   forward: () => void,
   go: (delta: number) => void,
   install: (app: App) => void,
+  initialized: Promise<void>,
 }

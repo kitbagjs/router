@@ -1,12 +1,12 @@
 import { mount, flushPromises } from '@vue/test-utils'
-import { expect, it, test } from 'vitest'
+import { expect, test } from 'vitest'
 import { defineAsyncComponent } from 'vue'
 import helloWorld from '@/components/helloWorld'
 import { notFoundText } from '@/components/notFound'
 import { Route } from '@/types'
 import { createRouter } from '@/utilities'
 
-test('renders component for initial route', () => {
+test('renders component for initial route', async () => {
   const route = {
     name: 'parent',
     path: '/',
@@ -16,6 +16,8 @@ test('renders component for initial route', () => {
   const router = createRouter([route], {
     initialUrl: route.path,
   })
+
+  await router.initialized
 
   const root = {
     template: '<RouterView/>',
@@ -30,7 +32,7 @@ test('renders component for initial route', () => {
   expect(app.html()).toBe(route.component.template)
 })
 
-test('renders components for initial route', () => {
+test('renders components for initial route', async () => {
   const childRoute = {
     name: 'child',
     path: '/child',
@@ -46,6 +48,8 @@ test('renders components for initial route', () => {
   const router = createRouter([parentRoute], {
     initialUrl: '/parent/child',
   })
+
+  await router.initialized
 
   const root = {
     template: '<RouterView />',
@@ -93,6 +97,8 @@ test('updates components when route changes', async () => {
     },
   })
 
+  await router.initialized
+
   expect(app.html()).toBe(childA.component.template)
 
   await router.push(childB.path)
@@ -108,7 +114,7 @@ test('updates components when route changes', async () => {
   expect(app.html()).toBe(childA.component.template)
 })
 
-it.each([
+test.each([
   defineAsyncComponent(() => import('./helloWorld')),
   () => import('./helloWorld'),
 ])('resolves async components', async (component) => {
@@ -132,15 +138,18 @@ it.each([
     },
   })
 
+  await router.initialized
   await flushPromises()
 
   expect(app.html()).toBe(helloWorld.template)
 })
 
-it('Renders the NotFound component when the initialUrl does not match', () => {
+test('Renders the NotFound component when the initialUrl does not match', async () => {
   const router = createRouter([], {
     initialUrl: '/does-not-exist',
   })
+
+  await router.initialized
 
   const root = {
     template: '<RouterView/>',
@@ -155,14 +164,16 @@ it('Renders the NotFound component when the initialUrl does not match', () => {
   expect(app.text()).toBe(notFoundText)
 })
 
-it('Renders custom NotFound component when the initialUrl does not match', () => {
-  const template = 'Custom Not Fount'
+test('Renders custom NotFound component when the initialUrl does not match', async () => {
+  const NotFound = { template: 'Custom Not Found' }
   const router = createRouter([], {
     initialUrl: '/does-not-exist',
     rejections: {
-      NotFound: { template },
+      NotFound,
     },
   })
+
+  await router.initialized
 
   const root = {
     template: '<RouterView/>',
@@ -174,10 +185,13 @@ it('Renders custom NotFound component when the initialUrl does not match', () =>
     },
   })
 
-  expect(app.text()).toBe(template)
+  const route = mount(router.route.matched.component)
+
+  expect(app.text()).toBe(NotFound.template)
+  expect(route.text()).toBe(NotFound.template)
 })
 
-it('Renders the NotFound component when the router.push does not match', async () => {
+test('Renders the NotFound component when the router.push does not match', async () => {
   const route = {
     name: 'parent',
     path: '/',
@@ -188,6 +202,8 @@ it('Renders the NotFound component when the router.push does not match', async (
     initialUrl: route.path,
   })
 
+  await router.initialized
+
   const root = {
     template: '<RouterView/>',
   }
@@ -198,14 +214,12 @@ it('Renders the NotFound component when the router.push does not match', async (
     },
   })
 
-  router.push('/does-not-exist')
-
-  await flushPromises()
+  await router.push('/does-not-exist')
 
   expect(app.text()).toBe(notFoundText)
 })
 
-it('Renders the route component when the router.push does match after a rejection', async () => {
+test('Renders the route component when the router.push does match after a rejection', async () => {
   const route = {
     name: 'parent',
     path: '/',
@@ -216,6 +230,8 @@ it('Renders the route component when the router.push does match after a rejectio
     initialUrl: '/does-not-exist',
   })
 
+  await router.initialized
+
   const root = {
     template: '<RouterView/>',
   }
@@ -228,9 +244,7 @@ it('Renders the route component when the router.push does match after a rejectio
 
   expect(app.text()).toBe(notFoundText)
 
-  router.push(route.path)
-
-  await flushPromises()
+  await router.push(route.path)
 
   expect(app.text()).toBe(route.component.template)
 })

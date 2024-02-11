@@ -1,25 +1,18 @@
-import { EffectScope } from 'vue'
-import { RegisteredRouter } from '@/types/register'
+import { Resolved } from '@/types/resolved'
+import { Route } from '@/types/routes'
 import { MaybePromise } from '@/types/utilities'
+import { RegisteredRouterPush } from '@/utilities/createRouterPush'
 import { RouterReject } from '@/utilities/createRouterReject'
+import { RegisteredRouterReplace } from '@/utilities/createRouterReplace'
 
-type Route = {
-  name: string,
-  params: Record<string, unknown>,
-  query: unknown,
-  hash: string,
-}
-
-export interface RouteState {
-
-}
-
-type MiddlewareExtras = {
-  from: Route | null,
-  state: RouteState,
+type MiddlewareContext = {
+  from: Resolved<Route> | null,
+  // state: RegisteredRouterState,
   reject: RouterReject,
-  scope: EffectScope,
-  router: RegisteredRouter,
+  push: RegisteredRouterPush,
+  replace: RegisteredRouterReplace,
+  // scope: EffectScope,
+  // router: RegisteredRouter,
 }
 
-export type RouteMiddleware = (route: Route, extras: MiddlewareExtras) => MaybePromise<void>
+export type RouteMiddleware = (route: Resolved<Route>, context: MiddlewareContext) => MaybePromise<void>

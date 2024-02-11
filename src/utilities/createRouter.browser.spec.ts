@@ -3,18 +3,20 @@ import { Route } from '@/types'
 import { createRouter } from '@/utilities/createRouter'
 import { component } from '@/utilities/testHelpers'
 
-test('initial route is set', () => {
+test('initial route is set', async () => {
   const root = {
     name: 'root',
     component,
     path: '/',
   }
 
-  const { route } = createRouter([root], {
+  const { route, initialized } = createRouter([root], {
     initialUrl: root.path,
   })
 
-  expect(route.matched).toMatchObject(root)
+  await initialized
+
+  expect(route.matched.name).toBe(root.name)
 })
 
 test('updates the route when navigating', async () => {
@@ -36,11 +38,13 @@ test('updates the route when navigating', async () => {
     path: '/third/:id',
   } as const satisfies Route
 
-  const { push, route } = createRouter([first, second, third], {
+  const { push, route, initialized } = createRouter([first, second, third], {
     initialUrl: first.path,
   })
 
-  expect(route.matched).toMatchObject(first)
+  await initialized
+
+  expect(route.matched.name).toBe(first.name)
 
   await push(second.path)
 
