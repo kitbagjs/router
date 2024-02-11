@@ -1,2 +1,3 @@
-# router
-A type safe router for vuejs
+# Router
+
+Type safe router for Vue.js
