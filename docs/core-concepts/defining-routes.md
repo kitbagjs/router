@@ -100,3 +100,7 @@ const router = createRouter(routes)
 router.push({ route: 'routes.user' }) // [!code error] error
 router.push({ route: 'routes.user.profile' }) // ok
 ```
+
+## Case Sensitivity
+
+By default route paths are NOT case sensitive. If you need part of your route to be case sensitive, we recommend using a [Regex Param](/core-concepts/route-params#regexp-params).

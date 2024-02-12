@@ -3,7 +3,7 @@ import { Resolved, Route } from '@/types'
 export function generateRoutePathRegexPattern(route: Resolved<Route>): RegExp {
   const routeRegex = replaceParamSyntaxWithCatchAlls(route.path)
 
-  return new RegExp(`^${routeRegex}$`)
+  return new RegExp(`^${routeRegex}$`, 'i')
 }
 
 export function generateRouteQueryRegexPatterns(route: Resolved<Route>): RegExp[] {
@@ -11,7 +11,7 @@ export function generateRouteQueryRegexPatterns(route: Resolved<Route>): RegExp[
 
   return Array
     .from(queryParams.entries())
-    .map(([key, value]) => new RegExp(`${key}=${replaceParamSyntaxWithCatchAlls(value)}`))
+    .map(([key, value]) => new RegExp(`${key}=${replaceParamSyntaxWithCatchAlls(value)}`, 'i'))
 }
 
 function replaceParamSyntaxWithCatchAlls(value: string): string {
