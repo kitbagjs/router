@@ -1,5 +1,5 @@
 import { RouteMethod, RouteMethodImplementation, RouteMethodResponse } from '@/types/routeMethod'
-import { Public, Route, Routes } from '@/types/routes'
+import { Disabled, Route, Routes } from '@/types/routes'
 import { Identity, TupleCanBeAllUndefined, UnionToIntersection } from '@/types/utilities'
 import { Path } from '@/utilities/path'
 import { Query } from '@/utilities/query'
@@ -29,12 +29,12 @@ type RouteMethodsOrMethod<
   TPathParams extends Record<string, unknown[]>,
   TQueryParams extends Record<string, unknown[]>
 > = TRoute extends { children: infer Children extends Routes }
-  ? TRoute extends Public<TRoute>
-    ? RouteMethods<Children, RoutePathParams<TRoute, TPathParams>, RouteQueryParams<TRoute, TQueryParams>> & CreateRouteMethod<TRoute, TPathParams, TQueryParams>
-    : RouteMethods<Children, RoutePathParams<TRoute, TPathParams>, RouteQueryParams<TRoute, TQueryParams>>
-  : TRoute extends Public<TRoute>
-    ? CreateRouteMethod<TRoute, TPathParams, TQueryParams>
-    : never
+  ? TRoute extends Disabled<TRoute>
+    ? RouteMethods<Children, RoutePathParams<TRoute, TPathParams>, RouteQueryParams<TRoute, TQueryParams>>
+    : RouteMethods<Children, RoutePathParams<TRoute, TPathParams>, RouteQueryParams<TRoute, TQueryParams>> & CreateRouteMethod<TRoute, TPathParams, TQueryParams>
+  : TRoute extends Disabled<TRoute>
+    ? never
+    : CreateRouteMethod<TRoute, TPathParams, TQueryParams>
 
 type CreateRouteMethod<
   TRoute extends Route,
