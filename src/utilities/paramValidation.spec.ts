@@ -87,7 +87,7 @@ test('given route with OPTIONAL non-string param with value that does NOT satisf
   expect(response).toBe(false)
 })
 
-test('given route with regex param that expects slashes, still matches', () => {
+test('given route with regex param that expects forward slashes, will NOT match', () => {
   const route: Route = {
     name: 'support-slashes',
     path: path('/supports/:slashes/bookmarked', { slashes: /first\/second\/third/g }),
@@ -98,5 +98,5 @@ test('given route with regex param that expects slashes, still matches', () => {
 
   const response = routeParamsAreValid(resolved, '/supports/first/second/third/bookmarked')
 
-  expect(response).toBe(true)
+  expect(response).toBe(false)
 })

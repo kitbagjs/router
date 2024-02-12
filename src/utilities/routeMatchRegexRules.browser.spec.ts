@@ -68,6 +68,19 @@ describe('routePathMatches', () => {
 
     expect(response).toBe(true)
   })
+
+  test('given route with extra slashes in param value, does NOT match', () => {
+    const route = {
+      name: 'support-slashes',
+      path: '/supports/:slashes/bookmarked',
+      component,
+    } as const satisfies Route
+
+    const [resolved] = resolveRoutes([route])
+    const response = routePathMatches(resolved, '/supports/first/second/third/bookmarked')
+
+    expect(response).toBe(false)
+  })
 })
 
 describe('routeQueryMatches', () => {
