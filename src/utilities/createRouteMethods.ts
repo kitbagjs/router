@@ -1,4 +1,4 @@
-import { Resolved, Route, RouteMethodImplementation, RouteMethodsImplementation, isPublicRoute } from '@/types'
+import { Resolved, Route, RouteMethodImplementation, RouteMethodsImplementation, isDisabledRoute } from '@/types'
 import { RouteMethodPush, RouteMethodReplace } from '@/types/routeMethod'
 import { RouterPushImplementation } from '@/utilities/createRouterPush'
 import { normalizeRouteParams } from '@/utilities/normalizeRouteParams'
@@ -20,7 +20,7 @@ export function createRouteMethods({ resolved, push }: RouteMethodsContext): Rou
 
       const isLeaf = match === route.matched
 
-      if (isLeaf && isPublicRoute(route.matched)) {
+      if (isLeaf && !isDisabledRoute(route.matched)) {
         const method = createRouteMethod({ route, push })
 
         level[route.name] = Object.assign(method, level[route.name])

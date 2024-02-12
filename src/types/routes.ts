@@ -14,7 +14,7 @@ export type ParentRoute = {
   name?: string,
   path: string | Path,
   query?: string | Query,
-  public?: boolean,
+  disabled?: boolean,
   children: Routes,
   component?: RouteComponent,
   middleware?: MaybeArray<RouteMiddleware>,
@@ -23,7 +23,7 @@ export type ParentRoute = {
 
 export type ChildRoute = {
   name: string,
-  public?: boolean,
+  disabled?: boolean,
   path: string | Path,
   query?: string | Query,
   component: RouteComponent,
@@ -42,8 +42,8 @@ export function isNamedRoute(value: Route): value is Route & { name: string } {
   return 'name' in value && !!value.name
 }
 
-export type Public<T extends Route> = T & { public?: true | undefined }
+export type Disabled<T extends Route> = T & { disabled: true }
 
-export function isPublicRoute(value: Route): value is Public<Route> {
-  return value.public !== false
+export function isDisabledRoute(value: Route): value is Disabled<Route> {
+  return !!value.disabled
 }

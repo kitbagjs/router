@@ -343,7 +343,7 @@ test('all routes with a name can be called unless disabled', () => {
     {
       name: 'parent2',
       path: '/parent',
-      public: false,
+      disabled: true,
       children: [
         {
           name: 'child2',
@@ -353,7 +353,7 @@ test('all routes with a name can be called unless disabled', () => {
         {
           name: 'child3',
           path: '/child3',
-          public: false,
+          disabled: true,
           component,
         },
       ],
@@ -381,7 +381,7 @@ test('all routes with a name can be called unless disabled', () => {
   expectTypeOf(router.routes.child4).toBeFunction()
 })
 
-test('public parent routes have correct type for parameters', () => {
+test('non-disabled parent routes have correct type for parameters', () => {
   const routes = [
     {
       name: 'parent',

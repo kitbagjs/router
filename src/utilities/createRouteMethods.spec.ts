@@ -5,15 +5,15 @@ import { component } from '@/utilities/testHelpers'
 
 test.each([
   [undefined],
-  [true],
-])('given route is named and is public, makes parent callable', (isPublic) => {
+  [false],
+])('given route is named and is NOT disabled, makes parent callable', (isDisabled) => {
   const push = vi.fn()
 
   const routes = [
     {
       name: 'parent',
       path: '/parent',
-      public: isPublic,
+      disabled: isDisabled,
       component,
     },
   ] as const satisfies Routes
@@ -21,22 +21,17 @@ test.each([
 
   const response = createRouteMethods({ resolved, push })
 
-  if (isPublic !== false) {
-    expect(response.parent).toBeTypeOf('function')
-  } else {
-    expect(response.parent).not.toBeDefined()
-  }
-
+  expect(response.parent).toBeTypeOf('function')
 })
 
-test('given route is NOT public, returns empty object', () => {
+test('given route is NOT disabled, returns empty object', () => {
   const push = vi.fn()
 
   const routes = [
     {
       name: 'parent',
       path: '/parent',
-      public: false,
+      disabled: false,
       component,
     },
   ] as const satisfies Routes
@@ -51,7 +46,7 @@ test.each([
   [undefined],
   [true],
   [false],
-])('given parent route with named children, has property for child name', (isPublic) => {
+])('given parent route with named children, has property for child name', (isDisabled) => {
   const push = vi.fn()
 
   const routes = [
@@ -62,7 +57,7 @@ test.each([
         {
           name: 'child',
           path: '/child',
-          public: isPublic,
+          disabled: isDisabled,
           component,
         },
       ],
@@ -72,7 +67,7 @@ test.each([
 
   const response = createRouteMethods({ resolved, push })
 
-  if (isPublic !== false) {
+  if (isDisabled !== true) {
     expect(response.parent.child).toBeTypeOf('function')
   } else {
     expect(response.parent.child).not.toBeDefined()
