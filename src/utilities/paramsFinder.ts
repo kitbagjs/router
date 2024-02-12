@@ -33,7 +33,7 @@ function getParamRegexPattern(path: string, paramName: string): RegExp {
   const optionalParamRegex = new RegExp(`(:\\?${paramName})(?=\\W|$)`, 'g')
   const requiredParamRegex = new RegExp(`(:${paramName})(?=\\W|$)`, 'g')
 
-  return new RegExp(path.replace(optionalParamRegex, '(.*)').replace(requiredParamRegex, '(.+)'), 'g')
+  return new RegExp(path.replace(optionalParamRegex, '([^/]*)').replace(requiredParamRegex, '([^/]+)'), 'g')
 }
 
 function getCaptureGroups(value: string, pattern: RegExp): string[] {

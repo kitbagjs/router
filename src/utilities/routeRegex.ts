@@ -18,5 +18,5 @@ function replaceParamSyntaxWithCatchAlls(value: string): string {
   const optionalParamRegex = /(:\?[\w]+)(?=\W|$)/g
   const requiredParamRegex = /(:[\w]+)(?=\W|$)/g
 
-  return value.replace(optionalParamRegex, '(.*)').replace(requiredParamRegex, '(.+)')
+  return value.replace(optionalParamRegex, '([^/]*)').replace(requiredParamRegex, '([^/]+)')
 }

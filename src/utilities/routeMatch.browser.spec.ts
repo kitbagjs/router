@@ -167,18 +167,3 @@ test('given route with equal matches, returns route with highest score', () => {
 
   expect(response?.name).toBe('second-route')
 })
-
-test('given route with forward slashes in param value, still matches', () => {
-  const routes: Routes = [
-    {
-      name: 'support-slashes',
-      path: '/supports/:slashes/bookmarked',
-      component,
-    },
-  ]
-
-  const resolved = resolveRoutes(routes)
-  const response = routeMatch(resolved, '/supports/first/second/third/bookmarked')
-
-  expect(response?.name).toBe('support-slashes')
-})

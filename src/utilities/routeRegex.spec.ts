@@ -28,7 +28,7 @@ describe('generateRoutePathRegexPattern', () => {
 
     const result = generateRoutePathRegexPattern(resolved)
 
-    const catchAll = '(.+)'
+    const catchAll = '([^/]+)'
     const expected = new RegExp(`^parent/child/${catchAll}/grand-child/${catchAll}$`, 'i')
     expect(result.toString()).toBe(expected.toString())
   })
@@ -43,7 +43,7 @@ describe('generateRoutePathRegexPattern', () => {
 
     const result = generateRoutePathRegexPattern(resolved)
 
-    const catchAll = '(.*)'
+    const catchAll = '([^/]*)'
     const expected = new RegExp(`^parent/child/${catchAll}/grand-child/${catchAll}$`, 'i')
     expect(result.toString()).toBe(expected.toString())
   })
@@ -74,7 +74,7 @@ describe('generateRouteQueryRegexPatterns', () => {
 
     const result = generateRouteQueryRegexPatterns(resolved)
 
-    const catchAll = '(.+)'
+    const catchAll = '([^/]+)'
     expect(result).toMatchObject([new RegExp(`dynamic=${catchAll}`), new RegExp('static=params'), new RegExp(`dynamic=${catchAll}`)])
   })
 
@@ -89,7 +89,7 @@ describe('generateRouteQueryRegexPatterns', () => {
 
     const result = generateRouteQueryRegexPatterns(resolved)
 
-    const catchAll = '(.*)'
+    const catchAll = '([^/]*)'
     expect(result).toMatchObject([new RegExp(`dynamic=${catchAll}`), new RegExp('static=params'), new RegExp(`dynamic=${catchAll}`)])
   })
 })
