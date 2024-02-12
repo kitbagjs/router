@@ -39,6 +39,19 @@ describe('routePathMatches', () => {
     expect(response).toBe(true)
   })
 
+  test('route matching logic is case insensitive', () => {
+    const route = {
+      name: 'no-params',
+      path: '/without/params',
+      component,
+    } as const satisfies Route
+    const [resolved] = resolveRoutes([route])
+
+    const response = routePathMatches(resolved, '/WITHOUT/params')
+
+    expect(response).toBe(true)
+  })
+
   test.each([
     ['/with/true/params/true'],
     ['/with/%/params/%'],

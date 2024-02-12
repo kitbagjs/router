@@ -14,7 +14,7 @@ describe('generateRoutePathRegexPattern', () => {
 
     const result = generateRoutePathRegexPattern(resolved)
 
-    const expected = new RegExp(`^${route.path}$`)
+    const expected = new RegExp(`^${route.path}$`, 'i')
     expect(result.toString()).toBe(expected.toString())
   })
 
@@ -29,7 +29,7 @@ describe('generateRoutePathRegexPattern', () => {
     const result = generateRoutePathRegexPattern(resolved)
 
     const catchAll = '(.+)'
-    const expected = new RegExp(`^parent/child/${catchAll}/grand-child/${catchAll}$`)
+    const expected = new RegExp(`^parent/child/${catchAll}/grand-child/${catchAll}$`, 'i')
     expect(result.toString()).toBe(expected.toString())
   })
 
@@ -44,7 +44,7 @@ describe('generateRoutePathRegexPattern', () => {
     const result = generateRoutePathRegexPattern(resolved)
 
     const catchAll = '(.*)'
-    const expected = new RegExp(`^parent/child/${catchAll}/grand-child/${catchAll}$`)
+    const expected = new RegExp(`^parent/child/${catchAll}/grand-child/${catchAll}$`, 'i')
     expect(result.toString()).toBe(expected.toString())
   })
 })
