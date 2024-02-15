@@ -1,6 +1,6 @@
 import { Ref, markRaw, ref } from 'vue'
 import { NotFound } from '@/components'
-import { RegisteredRejectionType, Resolved, Route, RouteComponent, isRejectionRouteSymbol } from '@/types'
+import { RegisteredRejectionType, Resolved, Route, RouteComponent, createResolvedRoute } from '@/types'
 
 export const builtInRejections = ['NotFound'] as const
 export type BuiltInRejectionType = typeof builtInRejections[number]
@@ -55,16 +55,16 @@ export function createRouterReject({
       component,
     }
 
-    const resolved: Resolved<Route> = {
+    const resolved = createResolvedRoute({
       matched: route,
       matches: [route],
       name: type,
-      depth: 0,
       path: '',
       query: '',
       params: {},
-      [isRejectionRouteSymbol]: true,
-    }
+      depth: 0,
+      isRejection: true,
+    })
 
     return resolved
   }

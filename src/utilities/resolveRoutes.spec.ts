@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { Route, Routes } from '@/types'
+import { Route, Routes, getRouteDepth } from '@/types'
 import { resolveRoutes, path, query } from '@/utilities'
 import { component } from '@/utilities/testHelpers'
 
@@ -163,10 +163,21 @@ describe('resolveRoutes', () => {
 
     const response = resolveRoutes(routes)
 
-    expect(response.find(route => route.name === 'accounts')?.depth).toBe(1)
-    expect(response.find(route => route.name === 'new-account')?.depth).toBe(2)
-    expect(response.find(route => route.name === 'account')?.depth).toBe(2)
-    expect(response.find(route => route.name === 'edit-account')?.depth).toBe(3)
+    const resolvedAccountsRoute = response.find(route => route.name === 'accounts')
+    expect(resolvedAccountsRoute).toBeTruthy()
+    expect(getRouteDepth(resolvedAccountsRoute!)).toBe(1)
+
+    const resolvedNewAccountRoute = response.find(route => route.name === 'new-account')
+    expect(resolvedNewAccountRoute).toBeTruthy()
+    expect(getRouteDepth(resolvedNewAccountRoute!)).toBe(2)
+
+    const resolvedAccountRoute = response.find(route => route.name === 'account')
+    expect(resolvedAccountRoute).toBeTruthy()
+    expect(getRouteDepth(resolvedAccountRoute!)).toBe(2)
+
+    const resolvedEditAccountRoute = response.find(route => route.name === 'edit-account')
+    expect(resolvedEditAccountRoute).toBeTruthy()
+    expect(getRouteDepth(resolvedEditAccountRoute!)).toBe(3)
   })
 
   describe('matches', () => {
