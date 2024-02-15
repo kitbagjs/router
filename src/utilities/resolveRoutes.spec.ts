@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest'
-import { Route, Routes, getRouteDepth } from '@/types'
+import { Route, Routes } from '@/types'
 import { resolveRoutes, path, query } from '@/utilities'
+import { getRouteDepth } from '@/utilities/createResolvedRoute'
 import { component } from '@/utilities/testHelpers'
 
 describe('resolveRoutes', () => {

@@ -1,5 +1,6 @@
-import { Resolved, Route, getRouteDepth } from '@/types'
+import { Resolved, Route } from '@/types'
 import { createMaybeRelativeUrl } from '@/utilities'
+import { getRouteDepth } from '@/utilities/createResolvedRoute'
 
 type RouteSortMethod = (aRoute: Resolved<Route>, bRoute: Resolved<Route>) => number
 
