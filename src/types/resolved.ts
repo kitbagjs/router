@@ -40,7 +40,7 @@ export function createResolvedRoute<T extends Route>(route: ResolvedRoutePropert
   }
 }
 
-export function getRoutIsRejection(route: Resolved<Route>): boolean {
+export function getRouteIsRejection(route: Resolved<Route>): boolean {
   return Boolean(route[isRejectionSymbol])
 }
 
