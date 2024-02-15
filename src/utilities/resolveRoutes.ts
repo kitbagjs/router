@@ -1,5 +1,6 @@
-import { Resolved, Routes, isParentRoute, isNamedRoute, Route, Param, createResolvedRoute } from '@/types'
+import { Resolved, Routes, isParentRoute, isNamedRoute, Route, Param } from '@/types'
 import { mergeParams, path as createPath, query as createQuery, Query, Path } from '@/utilities'
+import { createResolvedRoute } from '@/utilities/createResolvedRoute'
 
 type ParentContext = {
   parentPath?: Path[],
