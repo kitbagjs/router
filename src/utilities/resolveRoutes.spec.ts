@@ -164,19 +164,15 @@ describe('resolveRoutes', () => {
     const response = resolveRoutes(routes)
 
     const resolvedAccountsRoute = response.find(route => route.name === 'accounts')
-    expect(resolvedAccountsRoute).toBeTruthy()
     expect(getRouteDepth(resolvedAccountsRoute!)).toBe(1)
 
     const resolvedNewAccountRoute = response.find(route => route.name === 'new-account')
-    expect(resolvedNewAccountRoute).toBeTruthy()
     expect(getRouteDepth(resolvedNewAccountRoute!)).toBe(2)
 
     const resolvedAccountRoute = response.find(route => route.name === 'account')
-    expect(resolvedAccountRoute).toBeTruthy()
     expect(getRouteDepth(resolvedAccountRoute!)).toBe(2)
 
     const resolvedEditAccountRoute = response.find(route => route.name === 'edit-account')
-    expect(resolvedEditAccountRoute).toBeTruthy()
     expect(getRouteDepth(resolvedEditAccountRoute!)).toBe(3)
   })
 
