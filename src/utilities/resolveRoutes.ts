@@ -1,6 +1,6 @@
-import { markRaw } from 'vue'
 import { Resolved, Routes, isParentRoute, isNamedRoute, Route, Param } from '@/types'
 import { mergeParams, path as createPath, query as createQuery, Query, Path } from '@/utilities'
+import { createResolvedRoute } from '@/utilities/createResolvedRoute'
 
 type ParentContext = {
   parentPath?: Path[],
@@ -32,15 +32,17 @@ export function resolveRoutes(routes: Routes, parentContext: ParentContext = {})
     }
 
     if (isNamedRoute(route)) {
-      value.push({
-        matched: markRaw(route),
-        matches: markRaw(fullMatches),
+      const resolved = createResolvedRoute({
+        matched: route,
+        matches: fullMatches,
         name: route.name,
-        depth: parentDepth + 1,
         path: fullPath.map(({ path }) => path.toString()).join(''),
         query: fullQuery.map(({ query }) => query.toString()).join('&'),
         params: mergeParams(reduceParams(fullPath), reduceParams(fullQuery)),
+        depth: parentDepth + 1,
       })
+
+      value.push(resolved)
     }
 
     return value

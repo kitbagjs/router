@@ -1,5 +1,6 @@
 import { Resolved, Route } from '@/types'
 import { createMaybeRelativeUrl } from '@/utilities'
+import { getRouteDepth } from '@/utilities/createResolvedRoute'
 
 type RouteSortMethod = (aRoute: Resolved<Route>, bRoute: Resolved<Route>) => number
 
@@ -19,10 +20,10 @@ export function getRouteScoreSortMethod(url: string): RouteSortMethod {
       return sortAfter
     }
 
-    if (aRoute.depth > bRoute.depth) {
+    if (getRouteDepth(aRoute) > getRouteDepth(bRoute)) {
       return sortBefore
     }
-    if (aRoute.depth < bRoute.depth) {
+    if (getRouteDepth(aRoute) < getRouteDepth(bRoute)) {
       return sortAfter
     }
 

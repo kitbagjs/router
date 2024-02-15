@@ -1,9 +1,10 @@
 import { App } from 'vue'
 import { RouterLink, RouterView } from '@/components'
 import { routerInjectionKey, routerRejectionKey } from '@/compositions'
-import { Routes, Router, RouterOptions, RouterImplementation, isRejectionRoute } from '@/types'
+import { Routes, Router, RouterOptions, RouterImplementation } from '@/types'
 import { RouterPushError, RouterRejectionError, RouterReplaceError } from '@/types/errors'
 import { createRouteMethods, createRouterNavigation, resolveRoutes } from '@/utilities'
+import { getRouteIsRejection } from '@/utilities/createResolvedRoute'
 import { createRouterPush } from '@/utilities/createRouterPush'
 import { createRouterReject } from '@/utilities/createRouterReject'
 import { createRouterReplace } from '@/utilities/createRouterReplace'
@@ -27,7 +28,7 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
     try {
       await executeMiddleware({
         to: matched,
-        from: isRejectionRoute(route) ? null : route,
+        from: getRouteIsRejection(route) ? null : route,
       })
     } catch (error) {
       if (error instanceof RouterRejectionError) {
