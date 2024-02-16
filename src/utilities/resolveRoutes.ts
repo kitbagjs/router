@@ -9,10 +9,10 @@ type ParentContext = {
   parentDepth?: number,
 }
 
-export function resolveRoutes(routes: Routes, parentContext: ParentContext = {}): Resolved<Route>[] {
+export function resolveRoutes(routes: Routes, parentContext: ParentContext = {}): Resolved[] {
   const { parentPath = [], parentQuery = [], parentMatches = [], parentDepth = 0 } = { ...parentContext }
 
-  return routes.reduce<Resolved<Route>[]>((value, route) => {
+  return routes.reduce<Resolved[]>((value, route) => {
     const path = typeof route.path === 'string' ? createPath(route.path, {}) : route.path
     const query = typeof route.query === 'string' ? createQuery(route.query, {}) : route.query ?? { query: '', params: {} }
 

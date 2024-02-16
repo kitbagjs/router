@@ -1,8 +1,8 @@
 import { markRaw } from 'vue'
 import { Route, Param, Resolved } from '@/types'
 
-type ResolvedRouteProperties<T extends Route> = {
-  matched: T,
+type ResolvedRouteProperties = {
+  matched: Route,
   matches: Route[],
   name: string,
   path: string,
@@ -12,7 +12,7 @@ type ResolvedRouteProperties<T extends Route> = {
   isRejection: boolean,
 }
 
-export function createResolvedRoute<T extends Route>(route: ResolvedRouteProperties<T>): Resolved<T> {
+export function createResolvedRoute(route: ResolvedRouteProperties): Resolved {
   return {
     matched: markRaw(route.matched),
     matches: markRaw(route.matches),

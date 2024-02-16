@@ -1,4 +1,4 @@
-import { Resolved, Route } from '@/types'
+import { Resolved } from '@/types'
 import { RouterPushError, RouterRejectionError, RouterReplaceError } from '@/types/errors'
 import { RouterPushImplementation } from '@/utilities/createRouterPush'
 import { RouterReject } from '@/utilities/createRouterReject'
@@ -6,8 +6,8 @@ import { RouterReplaceImplementation } from '@/utilities/createRouterReplace'
 import { getRouteMiddleware } from '@/utilities/routes'
 
 type ExecuteMiddlewareContext = {
-  to: Resolved<Route>,
-  from: Resolved<Route> | null,
+  to: Resolved,
+  from: Resolved | null,
 }
 
 export async function executeMiddleware({ to, from }: ExecuteMiddlewareContext): Promise<void> {
