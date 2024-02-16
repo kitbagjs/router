@@ -1,5 +1,5 @@
 import { App } from 'vue'
-import { Resolved } from '@/types/resolved'
+import { ResolvedRoute } from '@/types/resolved'
 import { RouteMethods, RouteMethodsImplementation } from '@/types/routeMethods'
 import { Routes } from '@/types/routes'
 import { RouterPush, RouterPushImplementation } from '@/utilities/createRouterPush'
@@ -15,7 +15,7 @@ export type Router<
   TRoutes extends Routes = []
 > = {
   routes: RouteMethods<TRoutes>,
-  route: Resolved,
+  route: ResolvedRoute,
   resolve: RouterResolve<TRoutes>,
   push: RouterPush<TRoutes>,
   replace: RouterReplace<TRoutes>,
@@ -30,7 +30,7 @@ export type Router<
 
 export type RouterImplementation = {
   routes: RouteMethodsImplementation,
-  route: Resolved,
+  route: ResolvedRoute,
   resolve: RouterResolveImplementation,
   push: RouterPushImplementation,
   replace: RouterReplaceImplementation,

@@ -1,5 +1,5 @@
 import { expect, test, vi } from 'vitest'
-import { Resolved, Route, Routes } from '@/types'
+import { ResolvedRoute, Route, Routes } from '@/types'
 import { resolveRoutes } from '@/utilities/resolveRoutes'
 import { routeMatch } from '@/utilities/routeMatch'
 import * as utilities from '@/utilities/routeMatchScore'
@@ -139,7 +139,7 @@ test('given route with simple string query param WITHOUT value present, returns 
 
 test('given route with equal matches, returns route with highest score', () => {
   vi.spyOn(utilities, 'getRouteScoreSortMethod').mockImplementation(() => {
-    return (route: Resolved) => {
+    return (route: ResolvedRoute) => {
       return route.name === 'second-route' ? -1 : +1
     }
   })

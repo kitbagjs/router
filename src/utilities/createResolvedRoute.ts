@@ -1,5 +1,5 @@
 import { markRaw } from 'vue'
-import { Route, Param, Resolved } from '@/types'
+import { Route, Param, ResolvedRoute } from '@/types'
 
 type ResolvedRouteProperties = {
   matched: Route,
@@ -12,7 +12,7 @@ type ResolvedRouteProperties = {
   isRejection: boolean,
 }
 
-export function createResolvedRoute(route: ResolvedRouteProperties): Resolved {
+export function createResolvedRoute(route: ResolvedRouteProperties): ResolvedRoute {
   return {
     matched: markRaw(route.matched),
     matches: markRaw(route.matches),

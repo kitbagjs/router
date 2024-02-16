@@ -1,11 +1,11 @@
-import { Resolved, RouteMethodImplementation, RouteMethodsImplementation, isDisabledRoute } from '@/types'
+import { ResolvedRoute, RouteMethodImplementation, RouteMethodsImplementation, isDisabledRoute } from '@/types'
 import { RouteMethodPush, RouteMethodReplace } from '@/types/routeMethod'
 import { RouterPushImplementation } from '@/utilities/createRouterPush'
 import { normalizeRouteParams } from '@/utilities/normalizeRouteParams'
 import { assembleUrl } from '@/utilities/urlAssembly'
 
 type RouteMethodsContext = {
-  resolved: Resolved[],
+  resolved: ResolvedRoute[],
   push: RouterPushImplementation,
 }
 
@@ -39,7 +39,7 @@ export function createRouteMethods({ resolved, push }: RouteMethodsContext): Rou
 }
 
 type CreateRouteMethodArgs = {
-  route: Resolved,
+  route: ResolvedRoute,
   push: RouterPushImplementation,
 }
 

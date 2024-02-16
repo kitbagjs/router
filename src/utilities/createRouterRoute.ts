@@ -1,15 +1,15 @@
 import { reactive } from 'vue'
-import { Resolved } from '@/types'
+import { ResolvedRoute } from '@/types'
 
-type RouterRouteUpdate = (matched: Resolved) => void
+type RouterRouteUpdate = (matched: ResolvedRoute) => void
 
 type RouterRoute = {
-  route: Resolved,
+  route: ResolvedRoute,
   updateRoute: RouterRouteUpdate,
 }
 
-export function createRouterRoute(fallbackRoute: Resolved): RouterRoute {
-  const route = reactive<Resolved>(fallbackRoute)
+export function createRouterRoute(fallbackRoute: ResolvedRoute): RouterRoute {
+  const route = reactive<ResolvedRoute>(fallbackRoute)
 
   const updateRoute: RouterRouteUpdate = (newRoute) => {
     Object.assign(route, newRoute)

@@ -1,4 +1,4 @@
-import { Resolved, Routes, isParentRoute, isNamedRoute, Route, Param } from '@/types'
+import { ResolvedRoute, Routes, isParentRoute, isNamedRoute, Route, Param } from '@/types'
 import { mergeParams, path as createPath, query as createQuery, Query, Path } from '@/utilities'
 import { createResolvedRoute } from '@/utilities/createResolvedRoute'
 
@@ -9,10 +9,10 @@ type ParentContext = {
   parentDepth?: number,
 }
 
-export function resolveRoutes(routes: Routes, parentContext: ParentContext = {}): Resolved[] {
+export function resolveRoutes(routes: Routes, parentContext: ParentContext = {}): ResolvedRoute[] {
   const { parentPath = [], parentQuery = [], parentMatches = [], parentDepth = 0 } = { ...parentContext }
 
-  return routes.reduce<Resolved[]>((value, route) => {
+  return routes.reduce<ResolvedRoute[]>((value, route) => {
     const path = typeof route.path === 'string' ? createPath(route.path, {}) : route.path
     const query = typeof route.query === 'string' ? createQuery(route.query, {}) : route.query ?? { query: '', params: {} }
 

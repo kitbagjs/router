@@ -1,7 +1,7 @@
 import { Param } from '@/types/params'
 import { Route } from '@/types/routes'
 
-export type Resolved = {
+export type ResolvedRoute = {
   matched: Route,
   matches: Route[],
   name: string,

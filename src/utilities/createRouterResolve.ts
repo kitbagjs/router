@@ -1,4 +1,4 @@
-import { Resolved, RouteMethod, RouteMethodResponseImplementation, Routes, isRouteMethodResponse } from '@/types'
+import { ResolvedRoute, RouteMethod, RouteMethodResponseImplementation, Routes, isRouteMethodResponse } from '@/types'
 import { RouteWithParams, RouteWithParamsImplementation } from '@/types/routeWithParams'
 import { isRecord } from '@/utilities/guards'
 import { normalizeRouteParams } from '@/utilities/normalizeRouteParams'
@@ -6,7 +6,7 @@ import { getRoutePath } from '@/utilities/routes'
 import { assembleUrl } from '@/utilities/urlAssembly'
 
 type RouterResolveContext = {
-  resolved: Resolved[],
+  resolved: ResolvedRoute[],
 }
 
 export type RouterResolve<

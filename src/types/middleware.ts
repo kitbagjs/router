@@ -1,11 +1,11 @@
-import { Resolved } from '@/types/resolved'
+import { ResolvedRoute } from '@/types/resolved'
 import { MaybePromise } from '@/types/utilities'
 import { RegisteredRouterPush } from '@/utilities/createRouterPush'
 import { RouterReject } from '@/utilities/createRouterReject'
 import { RegisteredRouterReplace } from '@/utilities/createRouterReplace'
 
 type MiddlewareContext = {
-  from: Resolved | null,
+  from: ResolvedRoute | null,
   // state: RegisteredRouterState,
   reject: RouterReject,
   push: RegisteredRouterPush,
@@ -14,4 +14,4 @@ type MiddlewareContext = {
   // router: RegisteredRouter,
 }
 
-export type RouteMiddleware = (route: Resolved, context: MiddlewareContext) => MaybePromise<void>
+export type RouteMiddleware = (route: ResolvedRoute, context: MiddlewareContext) => MaybePromise<void>
