@@ -40,6 +40,7 @@ export function resolveRoutes(routes: Routes, parentContext: ParentContext = {})
         query: fullQuery.map(({ query }) => query.toString()).join('&'),
         params: mergeParams(reduceParams(fullPath), reduceParams(fullQuery)),
         depth: parentDepth + 1,
+        isRejection: false,
       })
 
       value.push(resolved)

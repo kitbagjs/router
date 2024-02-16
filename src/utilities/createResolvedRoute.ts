@@ -1,5 +1,5 @@
 import { markRaw } from 'vue'
-import { Route, Param, Resolved, routeDepthSymbol, isRejectionSymbol } from '@/types'
+import { Route, Param, Resolved } from '@/types'
 
 type ResolvedRouteProperties<T extends Route> = {
   matched: T,
@@ -9,7 +9,7 @@ type ResolvedRouteProperties<T extends Route> = {
   query: string,
   params: Record<string, Param[]>,
   depth: number,
-  isRejection?: true,
+  isRejection: boolean,
 }
 
 export function createResolvedRoute<T extends Route>(route: ResolvedRouteProperties<T>): Resolved<T> {
@@ -20,15 +20,7 @@ export function createResolvedRoute<T extends Route>(route: ResolvedRoutePropert
     path: route.path,
     query: route.query,
     params: route.params,
-    [routeDepthSymbol]: route.depth,
-    [isRejectionSymbol]: route.isRejection,
+    depth: route.depth,
+    isRejection: route.isRejection,
   }
-}
-
-export function getRouteIsRejection(route: Resolved<Route>): boolean {
-  return Boolean(route[isRejectionSymbol])
-}
-
-export function getRouteDepth(route: Resolved<Route>): number {
-  return route[routeDepthSymbol]
 }

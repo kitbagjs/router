@@ -4,7 +4,6 @@ import { routerInjectionKey, routerRejectionKey } from '@/compositions'
 import { Routes, Router, RouterOptions, RouterImplementation } from '@/types'
 import { RouterPushError, RouterRejectionError, RouterReplaceError } from '@/types/errors'
 import { createRouteMethods, createRouterNavigation, resolveRoutes } from '@/utilities'
-import { getRouteIsRejection } from '@/utilities/createResolvedRoute'
 import { createRouterPush } from '@/utilities/createRouterPush'
 import { createRouterReject } from '@/utilities/createRouterReject'
 import { createRouterReplace } from '@/utilities/createRouterReplace'
@@ -28,7 +27,7 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
     try {
       await executeMiddleware({
         to: matched,
-        from: getRouteIsRejection(route) ? null : route,
+        from: route.isRejection ? null : route,
       })
     } catch (error) {
       if (error instanceof RouterRejectionError) {
