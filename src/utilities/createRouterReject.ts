@@ -1,6 +1,6 @@
 import { Ref, markRaw, ref } from 'vue'
 import { NotFound } from '@/components'
-import { RegisteredRejectionType, Resolved, Route, RouteComponent } from '@/types'
+import { RegisteredRejectionType, ResolvedRoute, RouteComponent } from '@/types'
 import { createResolvedRoute } from '@/utilities/createResolvedRoute'
 
 export const builtInRejections = ['NotFound'] as const
@@ -20,7 +20,7 @@ export type RouterRejectionComponents = RegisteredRejectionType extends never
 
 export type RouterReject = (type: RouterRejectionType) => void
 
-type GetRejectionRoute = (type: RouterRejectionType) => Resolved<Route>
+type GetRejectionRoute = (type: RouterRejectionType) => ResolvedRoute
 type ClearRejection = () => void
 export type RouterRejection = Ref<null | { type: RouterRejectionType, component: RouteComponent }>
 

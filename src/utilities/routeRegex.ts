@@ -1,12 +1,12 @@
-import { Resolved, Route } from '@/types'
+import { ResolvedRoute } from '@/types'
 
-export function generateRoutePathRegexPattern(route: Resolved<Route>): RegExp {
+export function generateRoutePathRegexPattern(route: ResolvedRoute): RegExp {
   const routeRegex = replaceParamSyntaxWithCatchAlls(route.path)
 
   return new RegExp(`^${routeRegex}$`, 'i')
 }
 
-export function generateRouteQueryRegexPatterns(route: Resolved<Route>): RegExp[] {
+export function generateRouteQueryRegexPatterns(route: ResolvedRoute): RegExp[] {
   const queryParams = new URLSearchParams(route.query)
 
   return Array
