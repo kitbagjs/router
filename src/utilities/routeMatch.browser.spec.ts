@@ -1,5 +1,5 @@
 import { expect, test, vi } from 'vitest'
-import { ResolvedRoute, Route, Routes } from '@/types'
+import { ResolvedRoute, Routes } from '@/types'
 import { resolveRoutes } from '@/utilities/resolveRoutes'
 import { routeMatch } from '@/utilities/routeMatch'
 import * as utilities from '@/utilities/routeMatchScore'
