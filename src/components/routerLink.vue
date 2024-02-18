@@ -23,7 +23,7 @@
   const isMatched = computed(() => !!route.value && router.route.matched === route.value)
 
   const classes = computed(() => ({
-    'router-link--matches': inMatches.value,
+    'router-link--match': inMatches.value,
     'router-link--exact-match': isMatched.value,
   }))
 
