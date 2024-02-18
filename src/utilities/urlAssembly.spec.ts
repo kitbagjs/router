@@ -176,3 +176,36 @@ describe('query params', () => {
     expect(url).toBe('/?simple=ABC')
   })
 })
+
+describe('queries', () => {
+  test('given a static query returns route with query values added', () => {
+    const route = {
+      name: 'simple',
+      path: '/',
+      component,
+    } satisfies Route
+    const [resolved] = resolveRoutes([route])
+
+    const url = assembleUrl(resolved, {
+      query: { simple: 'ABC' },
+    })
+
+    expect(url).toBe('/?simple=ABC')
+  })
+
+  test('given a route with a query and a static query returns route with query values added', () => {
+    const route = {
+      name: 'simple',
+      path: '/',
+      query: 'foo=foo',
+      component,
+    } satisfies Route
+    const [resolved] = resolveRoutes([route])
+
+    const url = assembleUrl(resolved, {
+      query: { simple: 'ABC' },
+    })
+
+    expect(url).toBe('/?foo=foo&simple=ABC')
+  })
+})
