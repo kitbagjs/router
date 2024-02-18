@@ -44,17 +44,22 @@ type CreateRouteMethodArgs = {
 }
 
 function createRouteMethod({ route, push: routerPush }: CreateRouteMethodArgs): RouteMethodImplementation {
-  return (params = {}) => {
+  return (params = {}, options = {}) => {
     const normalizedParams = normalizeRouteParams(params)
-    const url = assembleUrl(route, normalizedParams)
+    const url = assembleUrl(route, {
+      params: normalizedParams,
+      query: options.query,
+    })
 
     const push: RouteMethodPush = ({ params, ...options } = {}) => {
       if (params) {
         const normalizedParamOverrides = normalizeRouteParams(params)
 
         const url = assembleUrl(route, {
-          ...normalizeRouteParams,
-          ...normalizedParamOverrides,
+          params: {
+            ...normalizeRouteParams,
+            ...normalizedParamOverrides,
+          },
         })
 
         return routerPush(url, options)
