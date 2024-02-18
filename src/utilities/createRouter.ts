@@ -1,4 +1,4 @@
-import { App } from 'vue'
+import { App, readonly } from 'vue'
 import { RouterLink, RouterView } from '@/components'
 import { routerInjectionKey, routerRejectionKey } from '@/compositions'
 import { Routes, Router, RouterOptions, RouterImplementation } from '@/types'
@@ -83,7 +83,7 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
 
   const router: RouterImplementation = {
     routes: methods,
-    route: () => route,
+    route: readonly(route),
     resolve,
     push,
     replace,
