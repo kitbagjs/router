@@ -1,11 +1,11 @@
-import { App } from 'vue'
+import { App, DeepReadonly } from 'vue'
 import { RouteMethods, RouteMethodsImplementation } from '@/types/routeMethods'
-import { RouterRouteMethod, RouterRouteMethodImplementation } from '@/types/routerRouteMethod'
 import { Routes } from '@/types/routes'
 import { RouterPush, RouterPushImplementation } from '@/utilities/createRouterPush'
 import { RouterReject, RouterRejectionComponents } from '@/utilities/createRouterReject'
 import { RouterReplace, RouterReplaceImplementation } from '@/utilities/createRouterReplace'
 import { RouterResolve, RouterResolveImplementation } from '@/utilities/createRouterResolve'
+import { RouterRoute } from '@/utilities/createRouterRoute'
 
 export type RouterOptions = {
   initialUrl?: string,
@@ -15,7 +15,7 @@ export type Router<
   TRoutes extends Routes = []
 > = {
   routes: RouteMethods<TRoutes>,
-  route: RouterRouteMethod<TRoutes>,
+  route: DeepReadonly<RouterRoute>,
   resolve: RouterResolve<TRoutes>,
   push: RouterPush<TRoutes>,
   replace: RouterReplace<TRoutes>,
@@ -30,7 +30,7 @@ export type Router<
 
 export type RouterImplementation = {
   routes: RouteMethodsImplementation,
-  route: RouterRouteMethodImplementation,
+  route: DeepReadonly<RouterRoute>,
   resolve: RouterResolveImplementation,
   push: RouterPushImplementation,
   replace: RouterReplaceImplementation,
