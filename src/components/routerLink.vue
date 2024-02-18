@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts" generic="T extends string">
-  import { computed } from 'vue'
+  import { computed, readonly } from 'vue'
   import { useRouter } from '@/compositions'
   import { RouteMethod } from '@/types/routeMethod'
   import { RegisteredRouteWithParams } from '@/types/routeWithParams'
@@ -19,7 +19,7 @@
 
   const route = computed(() => router.find(props.to)?.matched)
 
-  const inMatches = computed(() => !!route.value && router.route.matches.includes(route.value))
+  const inMatches = computed(() => !!route.value && router.route.matches.includes(readonly(route.value)))
   const isMatched = computed(() => !!route.value && router.route.matched === route.value)
 
   const classes = computed(() => ({
