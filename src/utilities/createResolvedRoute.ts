@@ -9,7 +9,6 @@ type ResolvedRouteProperties = {
   query: string,
   params: Record<string, Param[]>,
   depth: number,
-  isRejection: boolean,
 }
 
 export function createResolvedRoute(route: ResolvedRouteProperties): ResolvedRoute {
@@ -21,6 +20,5 @@ export function createResolvedRoute(route: ResolvedRouteProperties): ResolvedRou
     query: route.query,
     params: route.params,
     depth: route.depth,
-    isRejection: route.isRejection,
   }
 }
