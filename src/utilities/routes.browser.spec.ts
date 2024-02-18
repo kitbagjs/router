@@ -1,5 +1,5 @@
 import { expect, test, vi } from 'vitest'
-import { ResolvedRoute, Routes } from '@/types'
+import { ResolvedRoute, Route, Routes } from '@/types'
 import { resolveRoutes } from '@/utilities/resolveRoutes'
 import * as utilities from '@/utilities/routeMatchScore'
 import { getRouterRouteForUrl } from '@/utilities/routes'
@@ -166,4 +166,53 @@ test('given route with equal matches, returns route with highest score', () => {
   const response = getRouterRouteForUrl(resolved, '/')
 
   expect(response?.name).toBe('second-route')
+})
+
+test('given a route without params or query returns an empty params and query', () => {
+  const route = {
+    name: 'route',
+    path: '/',
+    component,
+  } as const satisfies Route
+
+  const resolved = resolveRoutes([route])
+  const response = getRouterRouteForUrl(resolved, '/')
+
+  expect(response?.params).toMatchObject({})
+  expect(response?.query).toMatchObject({})
+})
+
+test('given a url with a query returns all query values', () => {
+  const route = {
+    name: 'route',
+    path: '/',
+    component,
+  } as const satisfies Route
+
+  const resolved = resolveRoutes([route])
+  const response = getRouterRouteForUrl(resolved, '/?foo=foo1&foo=foo2&bar=bar&baz')
+
+  expect(response?.query.get('foo')).toBe('foo1')
+  expect(response?.query.getAll('foo')).toMatchObject(['foo1', 'foo2'])
+  expect(response?.query.get('bar')).toBe('bar')
+  expect(response?.query.getAll('bar')).toMatchObject(['bar'])
+  expect(response?.query.get('baz')).toBe('')
+  expect(response?.query.getAll('baz')).toMatchObject([''])
+  expect(response?.query.get('does-not-exist')).toBe(null)
+  expect(response?.query.getAll('does-not-exist')).toMatchObject([])
+})
+
+test('given a route with params returns all params', () => {
+  const route = {
+    name: 'route',
+    path: '/:paramA',
+    component,
+  } as const satisfies Route
+
+  const resolved = resolveRoutes([route])
+  const response = getRouterRouteForUrl(resolved, '/hello')
+
+  expect(response?.params).toMatchObject({
+    paramA: 'hello',
+  })
 })
