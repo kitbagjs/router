@@ -3,13 +3,13 @@ import { expect, test, vi } from 'vitest'
 import { h } from 'vue'
 import routerLink from '@/components/routerLink.vue'
 import { Route } from '@/types'
-import { component, createRouter } from '@/utilities'
+import { component, createMaybeRelativeUrl, createRouter } from '@/utilities'
 
 test('renders an anchor tag with the correct href and slot content', () => {
   const path = '/path/:param'
   const param = 'param'
   const content = 'hello world'
-  const href = path.replace(':param', param)
+  const href = createMaybeRelativeUrl(path.replace(':param', param))
 
   const route = {
     name: 'parent',
@@ -33,7 +33,11 @@ test('renders an anchor tag with the correct href and slot content', () => {
     },
   })
 
-  expect(wrapper.html()).toBe(`<a href="${href}">${content}</a>`)
+  const anchor = wrapper.find('a')
+  const element = anchor.element as HTMLAnchorElement
+  expect(element).toBeInstanceOf(HTMLAnchorElement)
+  expect(element.href).toBe(href.toString())
+  expect(element.innerHTML).toBe(content)
 })
 
 test.each([
@@ -83,6 +87,7 @@ test('to prop as string renders and routes correctly', () => {
     path: '/route',
     component,
   } as const satisfies Route
+  const href = createMaybeRelativeUrl(route.path)
 
   const router = createRouter([route], {
     initialUrl: route.path,
@@ -103,11 +108,86 @@ test('to prop as string renders and routes correctly', () => {
   })
 
   const anchor = wrapper.find('a')
-  expect(anchor.html()).toBe(`<a href="${route.path}">${route.name}</a>`)
+  const element = anchor.element as HTMLAnchorElement
+  expect(element).toBeInstanceOf(HTMLAnchorElement)
+  expect(element.href).toBe(href.toString())
+  expect(element.innerHTML).toBe(route.name)
 
   anchor.trigger('click')
 
   const [arg1] = spy.mock.lastCall ?? []
 
   expect(arg1).toBe(route.path)
+})
+
+test('when current route matches descendant, parent has "match" class', async () => {
+  const route = {
+    name: 'parent-route',
+    path: '/parent-route',
+    children: [
+      {
+        name: 'child-route',
+        path: '/child-route',
+        component,
+      },
+    ],
+  } as const satisfies Route
+
+  const router = createRouter([route], {
+    initialUrl: '/parent-route/child-route',
+  })
+
+  const wrapper = mount(routerLink, {
+    props: {
+      to: route.path,
+    },
+    slots: {
+      default: route.name,
+    },
+    global: {
+      plugins: [router],
+    },
+  })
+
+  await router.initialized
+
+  const anchor = wrapper.find('a')
+  expect(anchor.classes()).toContain('router-link--match')
+  expect(anchor.classes()).not.toContain('router-link--exact-match')
+})
+
+test('when current route matches to prop, parent has "match" and "exact-match" classes', async () => {
+  const route = {
+    name: 'parent-route',
+    path: '/parent-route',
+    children: [
+      {
+        name: 'child-route',
+        path: '/child-route',
+        component,
+      },
+    ],
+  } as const satisfies Route
+
+  const router = createRouter([route], {
+    initialUrl: '/parent-route',
+  })
+
+  const wrapper = mount(routerLink, {
+    props: {
+      to: route.path,
+    },
+    slots: {
+      default: route.name,
+    },
+    global: {
+      plugins: [router],
+    },
+  })
+
+  await router.initialized
+
+  const anchor = wrapper.find('a')
+  expect(anchor.classes()).toContain('router-link--match')
+  expect(anchor.classes()).toContain('router-link--exact-match')
 })

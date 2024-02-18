@@ -1,10 +1,11 @@
 <template>
-  <a :href="resolve()" @click="onClick">
+  <a :href="resolve()" :class="classes" @click="onClick">
     <slot />
   </a>
 </template>
 
 <script setup lang="ts" generic="T extends string">
+  import { computed } from 'vue'
   import { useRouter } from '@/compositions'
   import { RouteMethod } from '@/types/routeMethod'
   import { RegisteredRouteWithParams } from '@/types/routeWithParams'
@@ -15,6 +16,16 @@
   } & RouterPushOptions>()
 
   const router = useRouter()
+
+  const route = computed(() => router.find(props.to)?.matched)
+
+  const inMatches = computed(() => !!route.value && router.route.matches.includes(route.value))
+  const isMatched = computed(() => !!route.value && router.route.matched === route.value)
+
+  const classes = computed(() => ({
+    'router-link--match': inMatches.value,
+    'router-link--exact-match': isMatched.value,
+  }))
 
   function resolve(): string {
     return router.resolve(props.to)

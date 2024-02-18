@@ -4,6 +4,7 @@ import { routerInjectionKey, routerRejectionKey } from '@/compositions'
 import { Routes, Router, RouterOptions, RouterImplementation } from '@/types'
 import { RouterPushError, RouterRejectionError, RouterReplaceError } from '@/types/errors'
 import { createRouteMethods, createRouterNavigation, resolveRoutes } from '@/utilities'
+import { createRouterFind } from '@/utilities/createRouterFind'
 import { createRouterPush } from '@/utilities/createRouterPush'
 import { createRouterReject } from '@/utilities/createRouterReject'
 import { createRouterReplace } from '@/utilities/createRouterReplace'
@@ -66,6 +67,7 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
   const push = createRouterPush({ navigation, resolve })
   const replace = createRouterReplace({ push })
   const methods = createRouteMethods({ resolved, push })
+  const find = createRouterFind({ resolved, resolve })
   const { reject, rejection, getRejectionRoute, clearRejection } = createRouterReject(options)
   const notFoundRoute = getRejectionRoute('NotFound')
   const { route, updateRoute } = createRouterRoute(notFoundRoute)
@@ -86,6 +88,7 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
     push,
     replace,
     reject,
+    find,
     refresh: navigation.refresh,
     forward: navigation.forward,
     back: navigation.back,
