@@ -18,6 +18,12 @@ export const getRouteParams = (route: ResolvedRoute, url: string): Record<string
     const stringValues = getParamValuesFromUrl(url, route.path, key)
     const values = paramsTuple.map((param, index) => getParamValue(stringValues[index], param))
 
+    if (paramsTuple.length === 1) {
+      const [value] = values
+      params[key] = value
+      continue
+    }
+
     params[key] = values
   }
 
