@@ -13,9 +13,9 @@ export function assembleUrl(route: ResolvedRoute, options: AssembleUrlOptions = 
 
   const path = params.reduce((url, [name, params]) => {
     return setParamValuesOnUrl(url, { name, params, values: paramValues[name] })
-  }, withQuery(pathWithQuery, queryValues))
+  }, pathWithQuery)
 
-  return path
+  return withQuery(path, queryValues)
 }
 
 function withQuery(url: string, query?: Record<string, string>): string {
