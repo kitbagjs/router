@@ -9,5 +9,4 @@ export type ResolvedRoute = {
   query: string,
   params: Record<string, Param[]>,
   depth: number,
-  isRejection: boolean,
 }

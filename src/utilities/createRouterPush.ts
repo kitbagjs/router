@@ -4,7 +4,7 @@ import { RouterResolveImplementation } from '@/utilities/createRouterResolve'
 import { RouterNavigation } from '@/utilities/routerNavigation'
 
 export type RouterPushOptions = {
-  query?: Record<string, unknown>,
+  query?: Record<string, string>,
   replace?: boolean,
 }
 
