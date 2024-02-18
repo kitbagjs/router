@@ -119,3 +119,75 @@ test('to prop as string renders and routes correctly', () => {
 
   expect(arg1).toBe(route.path)
 })
+
+test('when current route matches descendant, parent has "match" class', async () => {
+  const route = {
+    name: 'parent-route',
+    path: '/parent-route',
+    children: [
+      {
+        name: 'child-route',
+        path: '/child-route',
+        component,
+      },
+    ],
+  } as const satisfies Route
+
+  const router = createRouter([route], {
+    initialUrl: '/parent-route/child-route',
+  })
+
+  const wrapper = mount(routerLink, {
+    props: {
+      to: route.path,
+    },
+    slots: {
+      default: route.name,
+    },
+    global: {
+      plugins: [router],
+    },
+  })
+
+  await router.initialized
+
+  const anchor = wrapper.find('a')
+  expect(anchor.classes()).toContain('router-link--match')
+  expect(anchor.classes()).not.toContain('router-link--exact-match')
+})
+
+test('when current route matches to prop, parent has "match" and "exact-match" classes', async () => {
+  const route = {
+    name: 'parent-route',
+    path: '/parent-route',
+    children: [
+      {
+        name: 'child-route',
+        path: '/child-route',
+        component,
+      },
+    ],
+  } as const satisfies Route
+
+  const router = createRouter([route], {
+    initialUrl: '/parent-route',
+  })
+
+  const wrapper = mount(routerLink, {
+    props: {
+      to: route.path,
+    },
+    slots: {
+      default: route.name,
+    },
+    global: {
+      plugins: [router],
+    },
+  })
+
+  await router.initialized
+
+  const anchor = wrapper.find('a')
+  expect(anchor.classes()).toContain('router-link--match')
+  expect(anchor.classes()).toContain('router-link--exact-match')
+})
