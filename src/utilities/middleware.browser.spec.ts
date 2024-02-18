@@ -4,6 +4,7 @@ import { RouterPushError, RouterRejectionError, RouterReplaceError } from '@/typ
 import { Route } from '@/types/routes'
 import { executeMiddleware } from '@/utilities/middleware'
 import { resolveRoutes } from '@/utilities/resolveRoutes'
+import { getRouterRouteForUrl } from '@/utilities/routes'
 import { component } from '@/utilities/testHelpers'
 
 test('calls middleware with correct routes', () => {
@@ -21,15 +22,17 @@ test('calls middleware with correct routes', () => {
     component,
   } as const satisfies Route
 
-  const [resolvedA, resolvedB] = resolveRoutes([routeA, routeB])
+  const resolved = resolveRoutes([routeA, routeB])
+  const routerRouteA = getRouterRouteForUrl(resolved, '/routeA')
+  const routerRouteB = getRouterRouteForUrl(resolved, '/routeB')
 
-  executeMiddleware({ to: resolvedA, from: resolvedB })
+  executeMiddleware({ to: routerRouteA!, from: routerRouteB! })
 
   expect(middleware).toHaveBeenCalledOnce()
 
   const [to, { from }] = middleware.mock.lastCall
-  expect(to).toMatchObject(resolvedA)
-  expect(from).toMatchObject(resolvedB)
+  expect(to).toMatchObject(routerRouteA!)
+  expect(from).toMatchObject(routerRouteB!)
 })
 
 test.each<{ type: string, error: any, middleware: RouteMiddleware }>([
@@ -44,8 +47,9 @@ test.each<{ type: string, error: any, middleware: RouteMiddleware }>([
     middleware,
   } as const satisfies Route
 
-  const [resolvedA] = resolveRoutes([routeA])
-  const execute = (): Promise<void> => executeMiddleware({ to: resolvedA, from: null })
+  const resolved = resolveRoutes([routeA])
+  const routerRouteA = getRouterRouteForUrl(resolved, '/routeA')
+  const execute = (): Promise<void> => executeMiddleware({ to: routerRouteA!, from: null })
 
   await expect(() => execute()).rejects.toThrowError(error)
 })
@@ -61,9 +65,10 @@ test('middleware is called in order', () => {
     middleware: [middlewareA, middlewareB, middlewareC],
   } as const satisfies Route
 
-  const [resolvedA] = resolveRoutes([routeA])
+  const resolved = resolveRoutes([routeA])
+  const routerRouteA = getRouterRouteForUrl(resolved, '/routeA')
 
-  executeMiddleware({ to: resolvedA, from: null })
+  executeMiddleware({ to: routerRouteA!, from: null })
   const [orderA] = middlewareA.mock.invocationCallOrder
   const [orderB] = middlewareB.mock.invocationCallOrder
   const [orderC] = middlewareC.mock.invocationCallOrder
