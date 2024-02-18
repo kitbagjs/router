@@ -3,7 +3,7 @@ export type RouterRouteQuery = {
   getAll: (key: string) => string[],
 }
 
-export function createRouterRouteQuery(query: string): RouterRouteQuery {
+export function createRouterRouteQuery(query?: string): RouterRouteQuery {
   const params = new URLSearchParams(query)
 
   return {
