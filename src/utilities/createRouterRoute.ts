@@ -1,12 +1,12 @@
 import { reactive } from 'vue'
 import { Route } from '@/types'
-import { MatchedRouteQuery } from '@/utilities/createRouterRouteQuery'
+import { RouterRouteQuery } from '@/utilities/createRouterRouteQuery'
 
 export type RouterRoute = {
   matched: Route,
   matches: Route[],
   name: string,
-  query: MatchedRouteQuery,
+  query: RouterRouteQuery,
   params: Record<string, unknown>,
 }
 

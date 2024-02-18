@@ -1,9 +1,9 @@
-export type MatchedRouteQuery = {
+export type RouterRouteQuery = {
   get: (key: string) => string | null,
   getAll: (key: string) => string[],
 }
 
-export function createRouterRouteQuery(query: string): MatchedRouteQuery {
+export function createRouterRouteQuery(query: string): RouterRouteQuery {
   const params = new URLSearchParams(query)
 
   return {
