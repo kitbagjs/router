@@ -3,13 +3,13 @@ import { expect, test, vi } from 'vitest'
 import { h } from 'vue'
 import routerLink from '@/components/routerLink.vue'
 import { Route } from '@/types'
-import { component, createRouter } from '@/utilities'
+import { component, createMaybeRelativeUrl, createRouter } from '@/utilities'
 
 test('renders an anchor tag with the correct href and slot content', () => {
   const path = '/path/:param'
   const param = 'param'
   const content = 'hello world'
-  const href = path.replace(':param', param)
+  const href = createMaybeRelativeUrl(path.replace(':param', param))
 
   const route = {
     name: 'parent',
@@ -33,7 +33,11 @@ test('renders an anchor tag with the correct href and slot content', () => {
     },
   })
 
-  expect(wrapper.html()).toBe(`<a href="${href}">${content}</a>`)
+  const anchor = wrapper.find('a')
+  const element = anchor.element as HTMLAnchorElement
+  expect(element).toBeInstanceOf(HTMLAnchorElement)
+  expect(element.href).toBe(href.toString())
+  expect(element.innerHTML).toBe(content)
 })
 
 test.each([
@@ -83,6 +87,7 @@ test('to prop as string renders and routes correctly', () => {
     path: '/route',
     component,
   } as const satisfies Route
+  const href = createMaybeRelativeUrl(route.path)
 
   const router = createRouter([route], {
     initialUrl: route.path,
@@ -103,7 +108,10 @@ test('to prop as string renders and routes correctly', () => {
   })
 
   const anchor = wrapper.find('a')
-  expect(anchor.html()).toBe(`<a href="${route.path}">${route.name}</a>`)
+  const element = anchor.element as HTMLAnchorElement
+  expect(element).toBeInstanceOf(HTMLAnchorElement)
+  expect(element.href).toBe(href.toString())
+  expect(element.innerHTML).toBe(route.name)
 
   anchor.trigger('click')
 
