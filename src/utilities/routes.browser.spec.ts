@@ -206,13 +206,15 @@ test('given a route with params returns all params', () => {
   const route = {
     name: 'route',
     path: '/:paramA',
+    query: 'paramB=:paramB',
     component,
   } as const satisfies Route
 
   const resolved = resolveRoutes([route])
-  const response = getRouterRouteForUrl(resolved, '/hello')
+  const response = getRouterRouteForUrl(resolved, '/A?paramB=B')
 
   expect(response?.params).toMatchObject({
-    paramA: 'hello',
+    paramA: 'A',
+    paramB: 'B',
   })
 })
