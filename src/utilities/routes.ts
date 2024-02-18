@@ -19,7 +19,7 @@ export function getRouterRouteForUrl(routes: ResolvedRoute[], url: string): Rout
   }
 
   const [route] = matches
-  const { search } = new URL(url)
+  const [, search] = url.split('?')
   const query = createRouterRouteQuery(search)
   const params = getRouteParams(route, url)
 
