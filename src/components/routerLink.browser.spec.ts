@@ -3,13 +3,13 @@ import { expect, test, vi } from 'vitest'
 import { h } from 'vue'
 import routerLink from '@/components/routerLink.vue'
 import { Route } from '@/types'
-import { component, createMaybeRelativeUrl, createRouter } from '@/utilities'
+import { component, createRouter } from '@/utilities'
 
 test('renders an anchor tag with the correct href and slot content', () => {
   const path = '/path/:param'
   const param = 'param'
   const content = 'hello world'
-  const href = createMaybeRelativeUrl(path.replace(':param', param))
+  const href = new URL(path.replace(':param', param), window.location.origin)
 
   const route = {
     name: 'parent',
@@ -87,7 +87,7 @@ test('to prop as string renders and routes correctly', () => {
     path: '/route',
     component,
   } as const satisfies Route
-  const href = createMaybeRelativeUrl(route.path)
+  const href = new URL(route.path, window.location.origin)
 
   const router = createRouter([route], {
     initialUrl: route.path,
