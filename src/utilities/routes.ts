@@ -2,7 +2,7 @@ import { ResolvedRoute, RouteMiddleware, isNamedRoute } from '@/types'
 import { asArray } from '@/utilities/array'
 import { RouterRoute } from '@/utilities/createRouterRoute'
 import { createRouterRouteQuery } from '@/utilities/createRouterRouteQuery'
-import { getRouteParams, routeParamsAreValid } from '@/utilities/paramValidation'
+import { getRouteParamValues, routeParamsAreValid } from '@/utilities/paramValidation'
 import { routePathMatches, routeQueryMatches } from '@/utilities/routeMatchRegexRules'
 import { getRouteScoreSortMethod } from '@/utilities/routeMatchScore'
 
@@ -21,7 +21,7 @@ export function getRouterRouteForUrl(routes: ResolvedRoute[], url: string): Rout
   const [route] = matches
   const [, search] = url.split('?')
   const query = createRouterRouteQuery(search)
-  const params = getRouteParams(route, url)
+  const params = getRouteParamValues(route, url)
 
   return {
     matched: route.matched,
