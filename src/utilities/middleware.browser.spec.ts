@@ -44,8 +44,8 @@ test('calls middleware with correct routes', () => {
   expect(middleware).toHaveBeenCalledOnce()
 
   const [to, { from }] = middleware.mock.lastCall
-  expect(to).toMatchObject(routerRouteA!)
-  expect(from).toMatchObject(routerRouteB!)
+  expect(to).toMatchObject(routerRouteA)
+  expect(from).toMatchObject(routerRouteB)
 })
 
 test.each<{ type: string, error: any, middleware: RouteMiddleware }>([
