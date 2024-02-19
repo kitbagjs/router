@@ -2,6 +2,7 @@ export type MaybeRelativeUrl = {
   protocol?: string,
   host?: string,
   pathname: string,
+  searchParams: URLSearchParams,
   search: string,
   hash: string,
 }
@@ -13,17 +14,17 @@ export function createMaybeRelativeUrl(value: string): MaybeRelativeUrl {
 }
 
 function createAbsoluteUrl(value: string): MaybeRelativeUrl {
-  const { protocol, host, pathname, search, hash } = new URL(value, value)
+  const { protocol, host, pathname, search, searchParams, hash } = new URL(value, value)
 
   return {
-    protocol, host, pathname, search, hash,
+    protocol, host, pathname, search, searchParams, hash,
   }
 }
 
 function createRelativeUrl(value: string): MaybeRelativeUrl {
-  const { pathname, search, hash } = new URL(value, 'https://localhost')
+  const { pathname, search, searchParams, hash } = new URL(value, 'https://localhost')
 
   return {
-    pathname, search, hash,
+    pathname, search, searchParams, hash,
   }
 }
