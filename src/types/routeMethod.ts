@@ -8,10 +8,10 @@ export type RouteMethod<
 > = IsEmptyObject<TParams> extends true
   ? () => RouteMethodResponse<TParams>
   : IsEmptyObject<OnlyRequiredProperties<TParams>> extends true
-    ? (params?: TParams) => RouteMethodResponse<TParams>
-    : (params: TParams) => RouteMethodResponse<TParams>
+    ? (params?: TParams, options?: RouterPushOptions) => RouteMethodResponse<TParams>
+    : (params: TParams, options?: RouterPushOptions) => RouteMethodResponse<TParams>
 
-export type RouteMethodImplementation = (params?: Record<string, unknown>) => RouteMethodResponseImplementation
+export type RouteMethodImplementation = (params?: Record<string, unknown>, options?: RouterPushOptions) => RouteMethodResponseImplementation
 
 export type RouteMethodOptions<
   TParams extends Record<string, unknown>

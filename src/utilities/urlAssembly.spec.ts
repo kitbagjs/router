@@ -16,7 +16,7 @@ describe('path params', () => {
     } satisfies Route
     const [resolved] = resolveRoutes([route])
 
-    const url = assembleUrl(resolved, {})
+    const url = assembleUrl(resolved)
 
     expect(url).toBe('/simple')
   })
@@ -32,7 +32,7 @@ describe('path params', () => {
     } satisfies Route
     const [resolved] = resolveRoutes([route])
 
-    const url = assembleUrl(resolved, {})
+    const url = assembleUrl(resolved)
 
     expect(url).toBe('/simple/')
   })
@@ -48,7 +48,9 @@ describe('path params', () => {
     } satisfies Route
     const [resolved] = resolveRoutes([route])
 
-    const url = assembleUrl(resolved, { simple: ['ABC'] })
+    const url = assembleUrl(resolved, {
+      params: { simple: ['ABC'] },
+    })
 
     expect(url).toBe('/simple/ABC')
   })
@@ -78,7 +80,9 @@ describe('path params', () => {
     } satisfies Route
     const [resolved] = resolveRoutes([route])
 
-    const url = assembleUrl(resolved, { simple: ['ABC'] })
+    const url = assembleUrl(resolved, {
+      params: { simple: ['ABC'] },
+    })
 
     expect(url).toBe('/simple/ABC')
   })
@@ -97,7 +101,7 @@ describe('query params', () => {
     } satisfies Route
     const [resolved] = resolveRoutes([route])
 
-    const url = assembleUrl(resolved, {})
+    const url = assembleUrl(resolved)
 
     expect(url).toBe('/?simple=abc')
   })
@@ -114,7 +118,7 @@ describe('query params', () => {
     } satisfies Route
     const [resolved] = resolveRoutes([route])
 
-    const url = assembleUrl(resolved, {})
+    const url = assembleUrl(resolved)
 
     expect(url).toBe('/?simple=')
   })
@@ -131,7 +135,9 @@ describe('query params', () => {
     } satisfies Route
     const [resolved] = resolveRoutes([route])
 
-    const url = assembleUrl(resolved, { simple: ['ABC'] })
+    const url = assembleUrl(resolved, {
+      params: { simple: ['ABC'] },
+    })
 
     expect(url).toBe('/?simple=ABC')
   })
@@ -148,7 +154,7 @@ describe('query params', () => {
     } satisfies Route
     const [resolved] = resolveRoutes([route])
 
-    expect(() => assembleUrl(resolved, {})).toThrowError(InvalidRouteParamValueError)
+    expect(() => assembleUrl(resolved)).toThrowError(InvalidRouteParamValueError)
   })
 
   test.each([
@@ -163,8 +169,43 @@ describe('query params', () => {
     } satisfies Route
     const [resolved] = resolveRoutes([route])
 
-    const url = assembleUrl(resolved, { simple: ['ABC'] })
+    const url = assembleUrl(resolved, {
+      params: { simple: ['ABC'] },
+    })
 
     expect(url).toBe('/?simple=ABC')
+  })
+})
+
+describe('queries', () => {
+  test('given a static query returns route with query values added', () => {
+    const route = {
+      name: 'simple',
+      path: '/',
+      component,
+    } satisfies Route
+    const [resolved] = resolveRoutes([route])
+
+    const url = assembleUrl(resolved, {
+      query: { simple: 'ABC' },
+    })
+
+    expect(url).toBe('/?simple=ABC')
+  })
+
+  test('given a route with a query and a static query returns route with query values added', () => {
+    const route = {
+      name: 'simple',
+      path: '/',
+      query: 'foo=foo',
+      component,
+    } satisfies Route
+    const [resolved] = resolveRoutes([route])
+
+    const url = assembleUrl(resolved, {
+      query: { simple: 'ABC' },
+    })
+
+    expect(url).toBe('/?foo=foo&simple=ABC')
   })
 })

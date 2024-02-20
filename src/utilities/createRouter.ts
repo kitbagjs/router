@@ -37,15 +37,15 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
 
       if (error instanceof RouterPushError) {
         const [source, options] = error.to
-        const url = resolve(source)
+        const url = resolve(source, options)
 
         navigation.update(url, options)
         return
       }
 
       if (error instanceof RouterReplaceError) {
-        const [source] = error.to
-        const url = resolve(source)
+        const [source, options] = error.to
+        const url = resolve(source, options)
 
         navigation.update(url, { replace: true })
         return
