@@ -102,7 +102,7 @@ test('given route with regex param that expects forward slashes, will NOT match'
 })
 
 describe('getRouteParamValues', () => {
-  test.fails('given route with path params and query params of the same name, combines both', () => {
+  test('given route with path params and query params of the same name, combines both', () => {
     const route: Route = {
       name: 'duplicate-names',
       path: '/:foo',

@@ -1,5 +1,5 @@
 import { Param } from '@/types'
-import { mergeParams } from '@/utilities/mergeParams'
+import { mergeMaybeTuples } from '@/utilities/mergeMaybeTuples'
 import { getParam, optional } from '@/utilities/params'
 
 export function getParamsForString<TInput extends string, TParams extends Record<string, Param | undefined>>(string: TInput, params: TParams): Record<string, unknown[]> {
@@ -15,5 +15,5 @@ export function getParamsForString<TInput extends string, TParams extends Record
     }
   })
 
-  return mergeParams(...paramAssignments)
+  return mergeMaybeTuples(...paramAssignments)
 }

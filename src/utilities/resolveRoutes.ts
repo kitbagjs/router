@@ -1,7 +1,7 @@
 import { ResolvedRoute, Routes, isParentRoute, isNamedRoute, Route, Param } from '@/types'
 import { path as createPath, query as createQuery, Query, Path } from '@/utilities'
 import { createResolvedRoute } from '@/utilities/createResolvedRoute'
-import { mergeParams } from '@/utilities/mergeParams'
+import { mergeMaybeTuples } from '@/utilities/mergeMaybeTuples'
 
 type ParentContext = {
   parentPath?: Path[],
@@ -52,5 +52,5 @@ export function resolveRoutes(routes: Routes, parentContext: ParentContext = {})
 }
 
 function reduceParams(entries: Path[] | Query[]): Record<string, Param[]> {
-  return entries.reduce((params, entry) => mergeParams(params, entry.params as Record<string, Param | Param[]>), {})
+  return entries.reduce((params, entry) => mergeMaybeTuples(params, entry.params as Record<string, Param | Param[]>), {})
 }
