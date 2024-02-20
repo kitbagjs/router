@@ -48,6 +48,7 @@ function getRouterHookTypes(type: RouteHookType): RouteHookLifeCycle[] {
   throw 'not implemented'
 }
 
+// todo: need the concept of a hook condition here as well
 export function getRouteHooks(route: RouterRoute | null, type: RouteHookType): RouteMiddleware[] {
   if (!route) {
     return []
