@@ -1,8 +1,9 @@
-import { AsyncComponentLoader, InjectionKey, computed, defineAsyncComponent, defineComponent, h, inject, provide, resolveComponent } from 'vue'
+import { AsyncComponentLoader, InjectionKey, computed, defineAsyncComponent, defineComponent, h, provide, resolveComponent } from 'vue'
 import { useRejection } from '@/compositions/useRejection'
 import { useRouter } from '@/compositions/useRouter'
+import { useRouterDepth } from '@/compositions/useRouterDepth'
 
-const depthInjectionKey: InjectionKey<number> = Symbol()
+export const depthInjectionKey: InjectionKey<number> = Symbol()
 
 export default defineComponent({
   name: 'RouterView',
@@ -10,7 +11,7 @@ export default defineComponent({
   setup() {
     const router = useRouter()
     const rejection = useRejection()
-    const depth = inject(depthInjectionKey, 0)
+    const depth = useRouterDepth()
     const routerView = resolveComponent('RouterView', true)
 
     provide(depthInjectionKey, depth + 1)
