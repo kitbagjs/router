@@ -7,7 +7,7 @@ export type ResolvedRoute = {
   name: string,
   path: string,
   query: string,
-  params: Record<string, Param[]>,
+  pathParams: Record<string, Param[]>,
+  queryParams: Record<string, Param[]>,
   depth: number,
-  isRejection: boolean,
 }

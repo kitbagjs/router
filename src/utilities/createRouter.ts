@@ -1,4 +1,4 @@
-import { App } from 'vue'
+import { App, readonly } from 'vue'
 import { RouterLink, RouterView } from '@/components'
 import { routerInjectionKey, routerRejectionKey } from '@/compositions'
 import { Routes, Router, RouterOptions, RouterImplementation } from '@/types'
@@ -12,14 +12,14 @@ import { createRouterResolve } from '@/utilities/createRouterResolve'
 import { createRouterRoute } from '@/utilities/createRouterRoute'
 import { getInitialUrl } from '@/utilities/getInitialUrl'
 import { executeMiddleware } from '@/utilities/middleware'
-import { routeMatch } from '@/utilities/routeMatch'
+import { getRouterRouteForUrl } from '@/utilities/routes'
 
 export function createRouter<const T extends Routes>(routes: T, options: RouterOptions = {}): Router<T> {
   const resolved = resolveRoutes(routes)
   const resolve = createRouterResolve({ resolved })
 
   const onLocationUpdate = async (url: string): Promise<void> => {
-    const matched = routeMatch(resolved, url)
+    const matched = getRouterRouteForUrl(resolved, url)
 
     if (!matched) {
       return reject('NotFound')
@@ -28,7 +28,7 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
     try {
       await executeMiddleware({
         to: matched,
-        from: route.isRejection ? null : route,
+        from: isRejectionRoute(route) ? null : route,
       })
     } catch (error) {
       if (error instanceof RouterRejectionError) {
@@ -68,7 +68,7 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
   const replace = createRouterReplace({ push })
   const methods = createRouteMethods({ resolved, push })
   const find = createRouterFind({ resolved, resolve })
-  const { reject, rejection, getRejectionRoute, clearRejection } = createRouterReject(options)
+  const { reject, rejection, getRejectionRoute, isRejectionRoute, clearRejection } = createRouterReject(options)
   const notFoundRoute = getRejectionRoute('NotFound')
   const { route, updateRoute } = createRouterRoute(notFoundRoute)
 
@@ -83,7 +83,7 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
 
   const router: RouterImplementation = {
     routes: methods,
-    route,
+    route: readonly(route),
     resolve,
     push,
     replace,

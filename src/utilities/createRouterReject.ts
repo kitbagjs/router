@@ -1,7 +1,8 @@
 import { Ref, markRaw, ref } from 'vue'
 import { NotFound } from '@/components'
-import { RegisteredRejectionType, ResolvedRoute, RouteComponent } from '@/types'
-import { createResolvedRoute } from '@/utilities/createResolvedRoute'
+import { RegisteredRejectionType, RouteComponent } from '@/types'
+import { RouterRoute } from '@/utilities/createRouterRoute'
+import { createRouterRouteQuery } from '@/utilities/createRouterRouteQuery'
 
 export const builtInRejections = ['NotFound'] as const
 export type BuiltInRejectionType = typeof builtInRejections[number]
@@ -20,7 +21,8 @@ export type RouterRejectionComponents = RegisteredRejectionType extends never
 
 export type RouterReject = (type: RouterRejectionType) => void
 
-type GetRejectionRoute = (type: RouterRejectionType) => ResolvedRoute
+type GetRejectionRoute = (type: RouterRejectionType) => RouterRoute
+type IsRejectionRoute = (route: RouterRoute) => boolean
 type ClearRejection = () => void
 export type RouterRejection = Ref<null | { type: RouterRejectionType, component: RouteComponent }>
 
@@ -28,10 +30,15 @@ type CreateRouterRejectContext = {
   rejections?: RouterRejectionComponents['rejections'],
 }
 
+const isRejectionRouteSymbol = Symbol()
+
+type RouterRejectionRoute = RouterRoute & { [isRejectionRouteSymbol]?: true }
+
 export type CreateRouterReject = {
   reject: RouterReject,
   rejection: RouterRejection,
   getRejectionRoute: GetRejectionRoute,
+  isRejectionRoute: IsRejectionRoute,
   clearRejection: ClearRejection,
 }
 
@@ -50,24 +57,27 @@ export function createRouterReject({
 
   const getRejectionRoute: GetRejectionRoute = (type) => {
     const component = markRaw(getRejectionComponent(type))
+
     const route = {
       name: type,
       path: '',
       component,
     }
 
-    const resolved = createResolvedRoute({
+    const resolved = {
       matched: route,
       matches: [route],
       name: type,
-      path: '',
-      query: '',
+      query: createRouterRouteQuery(''),
       params: {},
-      depth: 0,
-      isRejection: true,
-    })
+      [isRejectionRouteSymbol]: true,
+    }
 
     return resolved
+  }
+
+  const isRejectionRoute: IsRejectionRoute = (route: RouterRejectionRoute) => {
+    return route[isRejectionRouteSymbol] === true
   }
 
   const clearRejection: ClearRejection = () => {
@@ -86,6 +96,7 @@ export function createRouterReject({
     reject,
     rejection,
     getRejectionRoute,
+    isRejectionRoute,
     clearRejection,
   }
 }
