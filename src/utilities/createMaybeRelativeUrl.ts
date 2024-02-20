@@ -1,17 +1,30 @@
-import { isBrowser } from '@/utilities'
-
-export function createMaybeRelativeUrl(value: string): URL {
-  const isRelative = !value.startsWith('http')
-  const base = isRelative ? getBase() : undefined
-
-  return new URL(value, base)
+export type MaybeRelativeUrl = {
+  protocol?: string,
+  host?: string,
+  pathname: string,
+  searchParams: URLSearchParams,
+  search: string,
+  hash: string,
 }
 
-function getBase(): string {
-  if (!isBrowser()) {
-    // return 'https://kitbag.io'
-    throw 'Must have browser context to generate base url'
-  }
+export function createMaybeRelativeUrl(value: string): MaybeRelativeUrl {
+  const isRelative = !value.startsWith('http')
 
-  return window.location.origin
+  return isRelative ? createRelativeUrl(value) : createAbsoluteUrl(value)
+}
+
+function createAbsoluteUrl(value: string): MaybeRelativeUrl {
+  const { protocol, host, pathname, search, searchParams, hash } = new URL(value, value)
+
+  return {
+    protocol, host, pathname, search, searchParams, hash,
+  }
+}
+
+function createRelativeUrl(value: string): MaybeRelativeUrl {
+  const { pathname, search, searchParams, hash } = new URL(value, 'https://localhost')
+
+  return {
+    pathname, search, searchParams, hash,
+  }
 }
