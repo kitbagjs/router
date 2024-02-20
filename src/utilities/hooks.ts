@@ -6,26 +6,12 @@ import { asArray } from '@/utilities'
 import { RouteHookType, addRouteHookInjectionKey } from '@/utilities/createRouterHooks'
 import { RouterRoute } from '@/utilities/createRouterRoute'
 
-/*
-global beforeRouteEnter
-route beforeRouteEnter
-component beforeRouteEnter
-global afterRouteEnter
-route afterRouteEnter
-component afterRouteEnter
-component beforeRouteUpdate
-component afterRouteUpdate
-component beforeRouteLeave
-route beforeRouteLeave
-route afterRouteLeave
-global afterRouteLeave
-
-
+/* Desired Hooks
 beforeRouteEnter
-afterRouteEnter
 beforeRouteUpdate
-afterRouteUpdate
 beforeRouteLeave
+afterRouteEnter
+afterRouteUpdate
 afterRouteLeave
 */
 
