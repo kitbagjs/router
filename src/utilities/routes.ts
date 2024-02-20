@@ -1,5 +1,6 @@
 import { ResolvedRoute, RouteMiddleware, isNamedRoute } from '@/types'
 import { asArray } from '@/utilities/array'
+import { RouteHookLifeCycle, RouteHookType } from '@/utilities/createRouterHooks'
 import { RouterRoute } from '@/utilities/createRouterRoute'
 import { createRouterRouteQuery } from '@/utilities/createRouterRouteQuery'
 import { getRouteParamValues, routeParamsAreValid } from '@/utilities/paramValidation'
@@ -39,12 +40,28 @@ export function getRoutePath(route: ResolvedRoute): string {
     .join('.')
 }
 
-export function getRouteMiddleware(route: RouterRoute): RouteMiddleware[] {
-  return route.matches.flatMap(route => {
-    if (!route.middleware) {
+function getRouterHookTypes(type: RouteHookType): RouteHookLifeCycle[] {
+  if (type === 'before') {
+    return ['onBeforeRouteEnter', 'onBeforeRouteUpdate', 'onBeforeRouteLeave']
+  }
+
+  throw 'not implemented'
+}
+
+export function getRouteHooks(route: RouterRoute | null, type: RouteHookType): RouteMiddleware[] {
+  if (!route) {
+    return []
+  }
+
+  const types = getRouterHookTypes(type)
+
+  return route.matches.flatMap(route => types.flatMap(type => {
+    const hooks = route[type]
+
+    if (!hooks) {
       return []
     }
 
-    return asArray(route.middleware)
-  })
+    return asArray(hooks)
+  }))
 }

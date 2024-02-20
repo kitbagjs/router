@@ -7,6 +7,10 @@ import { createRouterRouteQuery } from '@/utilities/createRouterRouteQuery'
 import { executeMiddleware } from '@/utilities/middleware'
 import { component } from '@/utilities/testHelpers'
 
+const rethrow = (error: unknown): void => {
+  throw error
+}
+
 test('calls middleware with correct routes', () => {
   const middleware = vi.fn()
 
@@ -14,7 +18,6 @@ test('calls middleware with correct routes', () => {
     name: 'routeA',
     path: '/routeA',
     component,
-    middleware,
   } as const satisfies Route
 
   const routerRouteA: RouterRoute = {
@@ -39,7 +42,12 @@ test('calls middleware with correct routes', () => {
     params: {},
   }
 
-  executeMiddleware({ to: routerRouteA, from: routerRouteB })
+  executeMiddleware({
+    middleware: [middleware],
+    to: routerRouteA,
+    from: routerRouteB,
+    onMiddlewareError: rethrow,
+  })
 
   expect(middleware).toHaveBeenCalledOnce()
 
@@ -57,7 +65,6 @@ test.each<{ type: string, error: any, middleware: RouteMiddleware }>([
     name: 'routeA',
     path: '/routeA',
     component,
-    middleware,
   } as const satisfies Route
 
   const routerRoute: RouterRoute = {
@@ -68,7 +75,12 @@ test.each<{ type: string, error: any, middleware: RouteMiddleware }>([
     params: {},
   }
 
-  const execute = (): Promise<void> => executeMiddleware({ to: routerRoute, from: null })
+  const execute = (): Promise<boolean> => executeMiddleware({
+    middleware: [middleware],
+    to: routerRoute,
+    from: null,
+    onMiddlewareError: rethrow,
+  })
 
   await expect(() => execute()).rejects.toThrowError(error)
 })
@@ -82,7 +94,6 @@ test('middleware is called in order', () => {
     name: 'routeA',
     path: '/routeA',
     component,
-    middleware: [middlewareA, middlewareB, middlewareC],
   } as const satisfies Route
 
   const routerRoute: RouterRoute = {
@@ -93,7 +104,13 @@ test('middleware is called in order', () => {
     params: {},
   }
 
-  executeMiddleware({ to: routerRoute, from: null })
+  executeMiddleware({
+    middleware: [middlewareA, middlewareB, middlewareC],
+    to: routerRoute,
+    from: null,
+    onMiddlewareError: rethrow,
+  })
+
   const [orderA] = middlewareA.mock.invocationCallOrder
   const [orderB] = middlewareB.mock.invocationCallOrder
   const [orderC] = middlewareC.mock.invocationCallOrder

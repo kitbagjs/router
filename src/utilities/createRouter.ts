@@ -5,18 +5,52 @@ import { Routes, Router, RouterOptions, RouterImplementation } from '@/types'
 import { RouterPushError, RouterRejectionError, RouterReplaceError } from '@/types/errors'
 import { createRouteMethods, createRouterNavigation, resolveRoutes } from '@/utilities'
 import { createRouterFind } from '@/utilities/createRouterFind'
+import { addRouteHookInjectionKey, createRouterHooks } from '@/utilities/createRouterHooks'
 import { createRouterPush } from '@/utilities/createRouterPush'
 import { createRouterReject } from '@/utilities/createRouterReject'
 import { createRouterReplace } from '@/utilities/createRouterReplace'
 import { createRouterResolve } from '@/utilities/createRouterResolve'
 import { createRouterRoute } from '@/utilities/createRouterRoute'
 import { getInitialUrl } from '@/utilities/getInitialUrl'
-import { executeMiddleware } from '@/utilities/middleware'
-import { getRouteMiddleware, getRouterRouteForUrl } from '@/utilities/routes'
+import { OnMiddlewareError, executeMiddleware } from '@/utilities/middleware'
+import { getRouteHooks, getRouterRouteForUrl } from '@/utilities/routes'
 
 export function createRouter<const T extends Routes>(routes: T, options: RouterOptions = {}): Router<T> {
   const resolved = resolveRoutes(routes)
   const resolve = createRouterResolve({ resolved })
+  const {
+    onBeforeRouteEnter,
+    onBeforeRouteLeave,
+    onBeforeRouteUpdate,
+    addRouteHook,
+    hooks,
+  } = createRouterHooks()
+
+  const onMiddlewareError: OnMiddlewareError = (error) => {
+    if (error instanceof RouterRejectionError) {
+      reject(error.type)
+    }
+
+    if (error instanceof RouterPushError) {
+      const [source, options] = error.to
+      const url = resolve(source)
+
+      navigation.update(url, options)
+      return
+    }
+
+    if (error instanceof RouterReplaceError) {
+      const [source, options] = error.to
+      const url = resolve(source, options)
+
+      navigation.update(url, { replace: true })
+      return
+    }
+
+    if (!(error instanceof RouterRejectionError)) {
+      throw error
+    }
+  }
 
   const onLocationUpdate = async (url: string): Promise<void> => {
     const to = getRouterRouteForUrl(resolved, url)
@@ -26,36 +60,18 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
       return reject('NotFound')
     }
 
-    try {
-      await executeMiddleware({
-        middleware: getRouteMiddleware(to),
-        to,
-        from,
-      })
-    } catch (error) {
-      if (error instanceof RouterRejectionError) {
-        reject(error.type)
-      }
+    const success = await executeMiddleware({
+      middleware: [
+        ...hooks.before,
+        ...getRouteHooks(to, 'before'),
+      ],
+      to,
+      from,
+      onMiddlewareError,
+    })
 
-      if (error instanceof RouterPushError) {
-        const [source, options] = error.to
-        const url = resolve(source, options)
-
-        navigation.update(url, options)
-        return
-      }
-
-      if (error instanceof RouterReplaceError) {
-        const [source, options] = error.to
-        const url = resolve(source, options)
-
-        navigation.update(url, { replace: true })
-        return
-      }
-
-      if (!(error instanceof RouterRejectionError)) {
-        throw error
-      }
+    if (!success) {
+      return
     }
 
     updateRoute(to)
@@ -81,6 +97,7 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
     app.component('RouterLink', RouterLink)
     app.provide(routerInjectionKey, router as any)
     app.provide(routerRejectionKey, rejection)
+    app.provide(addRouteHookInjectionKey, addRouteHook)
   }
 
   const router: RouterImplementation = {
@@ -96,6 +113,9 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
     back: navigation.back,
     go: navigation.go,
     install,
+    onBeforeRouteEnter,
+    onBeforeRouteLeave,
+    onBeforeRouteUpdate,
     initialized,
   }
 

@@ -17,7 +17,9 @@ export type ParentRoute = {
   disabled?: boolean,
   children: Routes,
   component?: RouteComponent,
-  middleware?: MaybeArray<RouteMiddleware>,
+  onBeforeRouteEnter?: MaybeArray<RouteMiddleware>,
+  onBeforeRouteUpdate?: MaybeArray<RouteMiddleware>,
+  onBeforeRouteLeave?: MaybeArray<RouteMiddleware>,
   meta?: RouteMeta,
 }
 
@@ -27,7 +29,9 @@ export type ChildRoute = {
   path: string | Path,
   query?: string | Query,
   component: RouteComponent,
-  middleware?: MaybeArray<RouteMiddleware>,
+  onBeforeRouteEnter?: MaybeArray<RouteMiddleware>,
+  onBeforeRouteUpdate?: MaybeArray<RouteMiddleware>,
+  onBeforeRouteLeave?: MaybeArray<RouteMiddleware>,
   meta?: RouteMeta,
 }
 

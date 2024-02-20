@@ -5,21 +5,33 @@ import { RouterReject } from '@/utilities/createRouterReject'
 import { RouterReplaceImplementation } from '@/utilities/createRouterReplace'
 import { RouterRoute } from '@/utilities/createRouterRoute'
 
+export type OnMiddlewareError = (error: unknown) => void
+
 type ExecuteMiddlewareContext = {
-  middleware: RouteMiddleware[] | Set<RouteMiddleware>,
+  middleware: RouteMiddleware[],
   to: RouterRoute,
   from: RouterRoute | null,
+  onMiddlewareError: OnMiddlewareError,
 }
 
-export async function executeMiddleware({ middleware, to, from }: ExecuteMiddlewareContext): Promise<void> {
-  const results = Array.from(middleware).map(callback => callback(to, {
-    from,
-    reject: middlewareReject,
-    push: middlewarePush,
-    replace: middlewareReplace,
-  }))
+export async function executeMiddleware({ middleware, to, from, onMiddlewareError }: ExecuteMiddlewareContext): Promise<boolean> {
+  try {
+    const results = middleware.map(callback => callback(to, {
+      from,
+      reject: middlewareReject,
+      push: middlewarePush,
+      replace: middlewareReplace,
+    }))
 
-  await Promise.all(results)
+    await Promise.all(results)
+
+  } catch (error) {
+    onMiddlewareError(error)
+
+    return false
+  }
+
+  return true
 }
 
 const middlewareReject: RouterReject = (type) => {
