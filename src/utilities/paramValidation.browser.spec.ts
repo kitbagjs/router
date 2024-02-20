@@ -1,6 +1,6 @@
-import { expect, test } from 'vitest'
+import { describe, expect, test } from 'vitest'
 import { Route } from '@/types'
-import { resolveRoutes, routeParamsAreValid, path } from '@/utilities'
+import { resolveRoutes, routeParamsAreValid, path, getRouteParamValues } from '@/utilities'
 import { component } from '@/utilities/testHelpers'
 
 test('given route WITHOUT params, always return true', () => {
@@ -99,4 +99,22 @@ test('given route with regex param that expects forward slashes, will NOT match'
   const response = routeParamsAreValid(resolved, '/supports/first/second/third/bookmarked')
 
   expect(response).toBe(false)
+})
+
+describe('getRouteParamValues', () => {
+  test.fails('given route with path params and query params of the same name, combines both', () => {
+    const route: Route = {
+      name: 'duplicate-names',
+      path: '/:foo',
+      query: 'foo=:foo',
+      component,
+    }
+
+    const [resolved] = resolveRoutes([route])
+
+    const response = getRouteParamValues(resolved, '/first-foo?foo=second-foo')
+
+    expect(response).toHaveProperty('foo')
+    expect(response.foo).toMatchObject(['first-foo', 'second-foo'])
+  })
 })
