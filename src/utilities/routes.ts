@@ -1,3 +1,4 @@
+import { createMaybeRelativeUrl } from '.'
 import { ResolvedRoute, RouteMiddleware, isNamedRoute } from '@/types'
 import { asArray } from '@/utilities/array'
 import { RouterRoute } from '@/utilities/createRouterRoute'
@@ -19,7 +20,7 @@ export function getRouterRouteForUrl(routes: ResolvedRoute[], url: string): Rout
   }
 
   const [route] = matches
-  const [, search] = url.split('?')
+  const { search } = createMaybeRelativeUrl(url)
   const query = createRouterRouteQuery(search)
   const params = getRouteParamValues(route, url)
 
