@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { InvalidRouteParamValueError, Route } from '@/types'
-import { path, query, resolveRoutes } from '@/utilities'
+import { path, query, createRouterRoutes } from '@/utilities'
 import { component } from '@/utilities/testHelpers'
 import { assembleUrl } from '@/utilities/urlAssembly'
 
@@ -14,9 +14,9 @@ describe('path params', () => {
       path,
       component,
     } satisfies Route
-    const [resolved] = resolveRoutes([route])
+    const [routerRoutes] = createRouterRoutes([route])
 
-    const url = assembleUrl(resolved)
+    const url = assembleUrl(routerRoutes)
 
     expect(url).toBe('/simple')
   })
@@ -30,9 +30,9 @@ describe('path params', () => {
       path,
       component,
     } satisfies Route
-    const [resolved] = resolveRoutes([route])
+    const [routerRoutes] = createRouterRoutes([route])
 
-    const url = assembleUrl(resolved)
+    const url = assembleUrl(routerRoutes)
 
     expect(url).toBe('/simple/')
   })
@@ -46,9 +46,9 @@ describe('path params', () => {
       path,
       component,
     } satisfies Route
-    const [resolved] = resolveRoutes([route])
+    const [routerRoutes] = createRouterRoutes([route])
 
-    const url = assembleUrl(resolved, {
+    const url = assembleUrl(routerRoutes, {
       params: { simple: ['ABC'] },
     })
 
@@ -64,9 +64,9 @@ describe('path params', () => {
       path,
       component,
     } satisfies Route
-    const [resolved] = resolveRoutes([route])
+    const [routerRoutes] = createRouterRoutes([route])
 
-    expect(() => assembleUrl(resolved, {})).toThrowError(InvalidRouteParamValueError)
+    expect(() => assembleUrl(routerRoutes, {})).toThrowError(InvalidRouteParamValueError)
   })
 
   test.each([
@@ -78,9 +78,9 @@ describe('path params', () => {
       path,
       component,
     } satisfies Route
-    const [resolved] = resolveRoutes([route])
+    const [routerRoutes] = createRouterRoutes([route])
 
-    const url = assembleUrl(resolved, {
+    const url = assembleUrl(routerRoutes, {
       params: { simple: ['ABC'] },
     })
 
@@ -99,9 +99,9 @@ describe('query params', () => {
       query,
       component,
     } satisfies Route
-    const [resolved] = resolveRoutes([route])
+    const [routerRoutes] = createRouterRoutes([route])
 
-    const url = assembleUrl(resolved)
+    const url = assembleUrl(routerRoutes)
 
     expect(url).toBe('/?simple=abc')
   })
@@ -116,9 +116,9 @@ describe('query params', () => {
       query,
       component,
     } satisfies Route
-    const [resolved] = resolveRoutes([route])
+    const [routerRoutes] = createRouterRoutes([route])
 
-    const url = assembleUrl(resolved)
+    const url = assembleUrl(routerRoutes)
 
     expect(url).toBe('/?simple=')
   })
@@ -133,9 +133,9 @@ describe('query params', () => {
       query,
       component,
     } satisfies Route
-    const [resolved] = resolveRoutes([route])
+    const [routerRoutes] = createRouterRoutes([route])
 
-    const url = assembleUrl(resolved, {
+    const url = assembleUrl(routerRoutes, {
       params: { simple: ['ABC'] },
     })
 
@@ -152,9 +152,9 @@ describe('query params', () => {
       query,
       component,
     } satisfies Route
-    const [resolved] = resolveRoutes([route])
+    const [routerRoutes] = createRouterRoutes([route])
 
-    expect(() => assembleUrl(resolved)).toThrowError(InvalidRouteParamValueError)
+    expect(() => assembleUrl(routerRoutes)).toThrowError(InvalidRouteParamValueError)
   })
 
   test.each([
@@ -167,9 +167,9 @@ describe('query params', () => {
       query,
       component,
     } satisfies Route
-    const [resolved] = resolveRoutes([route])
+    const [routerRoutes] = createRouterRoutes([route])
 
-    const url = assembleUrl(resolved, {
+    const url = assembleUrl(routerRoutes, {
       params: { simple: ['ABC'] },
     })
 
@@ -184,9 +184,9 @@ describe('queries', () => {
       path: '/',
       component,
     } satisfies Route
-    const [resolved] = resolveRoutes([route])
+    const [routerRoutes] = createRouterRoutes([route])
 
-    const url = assembleUrl(resolved, {
+    const url = assembleUrl(routerRoutes, {
       query: { simple: 'ABC' },
     })
 
@@ -200,9 +200,9 @@ describe('queries', () => {
       query: 'foo=foo',
       component,
     } satisfies Route
-    const [resolved] = resolveRoutes([route])
+    const [routerRoutes] = createRouterRoutes([route])
 
-    const url = assembleUrl(resolved, {
+    const url = assembleUrl(routerRoutes, {
       query: { simple: 'ABC' },
     })
 

@@ -1,6 +1,6 @@
-import { ResolvedRoute, Routes, isParentRoute, isNamedRoute, Route, Param } from '@/types'
+import { RouterRoute, Routes, isParentRoute, isNamedRoute, Route, Param } from '@/types'
 import { path as createPath, query as createQuery, Query, Path } from '@/utilities'
-import { createResolvedRoute } from '@/utilities/createResolvedRoute'
+import { createRouterRoute } from '@/utilities/createRouterRoute'
 import { mergeMaybeTuples } from '@/utilities/mergeMaybeTuples'
 
 type ParentContext = {
@@ -10,10 +10,10 @@ type ParentContext = {
   parentDepth?: number,
 }
 
-export function resolveRoutes(routes: Routes, parentContext: ParentContext = {}): ResolvedRoute[] {
+export function createRouterRoutes(routes: Routes, parentContext: ParentContext = {}): RouterRoute[] {
   const { parentPath = [], parentQuery = [], parentMatches = [], parentDepth = 0 } = { ...parentContext }
 
-  return routes.reduce<ResolvedRoute[]>((value, route) => {
+  return routes.reduce<RouterRoute[]>((value, route) => {
     const path = typeof route.path === 'string' ? createPath(route.path, {}) : route.path
     const query = typeof route.query === 'string' ? createQuery(route.query, {}) : route.query ?? { query: '', params: {} }
 
@@ -22,18 +22,18 @@ export function resolveRoutes(routes: Routes, parentContext: ParentContext = {})
     const fullMatches: Route[] = [...parentMatches, route]
 
     if (isParentRoute(route)) {
-      const resolved = resolveRoutes(route.children, {
+      const routerRoute = createRouterRoutes(route.children, {
         parentPath: fullPath,
         parentQuery: fullQuery,
         parentMatches: fullMatches,
         parentDepth: parentDepth + 1,
       })
 
-      value.push(...resolved)
+      value.push(...routerRoute)
     }
 
     if (isNamedRoute(route)) {
-      const resolved = createResolvedRoute({
+      const routerRoute = createRouterRoute({
         matched: route,
         matches: fullMatches,
         name: route.name,
@@ -44,7 +44,7 @@ export function resolveRoutes(routes: Routes, parentContext: ParentContext = {})
         depth: parentDepth + 1,
       })
 
-      value.push(resolved)
+      value.push(routerRoute)
     }
 
     return value

@@ -1,16 +1,16 @@
-import { ResolvedRoute, RouteMethodImplementation, RouteMethodsImplementation, isDisabledRoute } from '@/types'
+import { RouterRoute, RouteMethodImplementation, RouteMethodsImplementation, isDisabledRoute } from '@/types'
 import { RouteMethodPush, RouteMethodReplace } from '@/types/routeMethod'
 import { RouterPushImplementation } from '@/utilities/createRouterPush'
 import { normalizeRouteParams } from '@/utilities/normalizeRouteParams'
 import { assembleUrl } from '@/utilities/urlAssembly'
 
 type RouteMethodsContext = {
-  resolved: ResolvedRoute[],
+  routes: RouterRoute[],
   push: RouterPushImplementation,
 }
 
-export function createRouteMethods({ resolved, push }: RouteMethodsContext): RouteMethodsImplementation {
-  return resolved.reduce<Record<string, any>>((methods, route) => {
+export function createRouteMethods({ routes, push }: RouteMethodsContext): RouteMethodsImplementation {
+  return routes.reduce<Record<string, any>>((methods, route) => {
     let level = methods
 
     route.matches.forEach(match => {
@@ -39,7 +39,7 @@ export function createRouteMethods({ resolved, push }: RouteMethodsContext): Rou
 }
 
 type CreateRouteMethodArgs = {
-  route: ResolvedRoute,
+  route: RouterRoute,
   push: RouterPushImplementation,
 }
 

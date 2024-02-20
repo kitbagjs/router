@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { Route, Routes } from '@/types'
-import { resolveRoutes, countExpectedQueryKeys, component, getRouteScoreSortMethod } from '@/utilities'
+import { createRouterRoutes, countExpectedQueryKeys, component, getRouteScoreSortMethod } from '@/utilities'
 
 describe('countExpectedQueryKeys', () => {
   test('given route without query, returns 0', () => {
@@ -9,10 +9,10 @@ describe('countExpectedQueryKeys', () => {
       path: '/',
       component,
     } as const satisfies Route
-    const [resolved] = resolveRoutes([route])
+    const [routerRoutes] = createRouterRoutes([route])
     const actualQuery = new URLSearchParams('/?can=have&some=queries')
 
-    const response = countExpectedQueryKeys(resolved, actualQuery)
+    const response = countExpectedQueryKeys(routerRoutes, actualQuery)
 
     expect(response).toBe(0)
   })
@@ -24,10 +24,10 @@ describe('countExpectedQueryKeys', () => {
       query: 'value=blue',
       component,
     } as const satisfies Route
-    const [resolved] = resolveRoutes([route])
+    const [routerRoutes] = createRouterRoutes([route])
     const actualQuery = new URLSearchParams('value=red')
 
-    const response = countExpectedQueryKeys(resolved, actualQuery)
+    const response = countExpectedQueryKeys(routerRoutes, actualQuery)
 
     expect(response).toBe(1)
   })
@@ -39,10 +39,10 @@ describe('countExpectedQueryKeys', () => {
       query: 'one=1&two=2&three=3&four=4',
       component,
     } as const satisfies Route
-    const [resolved] = resolveRoutes([route])
+    const [routerRoutes] = createRouterRoutes([route])
     const actualQuery = new URLSearchParams('three=3&one=1&four=4&two=2')
 
-    const response = countExpectedQueryKeys(resolved, actualQuery)
+    const response = countExpectedQueryKeys(routerRoutes, actualQuery)
 
     expect(response).toBe(4)
   })
@@ -54,10 +54,10 @@ describe('countExpectedQueryKeys', () => {
       query: 'one=1&two=2&three=3&four=4',
       component,
     } as const satisfies Route
-    const [resolved] = resolveRoutes([route])
+    const [routerRoutes] = createRouterRoutes([route])
     const actualQuery = new URLSearchParams('one=1&three=3')
 
-    const response = countExpectedQueryKeys(resolved, actualQuery)
+    const response = countExpectedQueryKeys(routerRoutes, actualQuery)
 
     expect(response).toBe(2)
   })
@@ -80,7 +80,7 @@ describe('getRouteScoreSortMethod', () => {
       },
     ] as const satisfies Routes
 
-    const [aRoute, bRoute] = resolveRoutes(routes)
+    const [aRoute, bRoute] = createRouterRoutes(routes)
 
     const sortByRouteScore = getRouteScoreSortMethod('/?color=red&id=1&extra=ok')
     const response = [aRoute, bRoute].sort(sortByRouteScore)
@@ -110,7 +110,7 @@ describe('getRouteScoreSortMethod', () => {
       },
     ] as const satisfies Routes
 
-    const [aRoute, bRoute] = resolveRoutes(routes)
+    const [aRoute, bRoute] = createRouterRoutes(routes)
 
     const sortByRouteScore = getRouteScoreSortMethod('/?color=red&extra=ok')
     const response = [aRoute, bRoute].sort(sortByRouteScore)

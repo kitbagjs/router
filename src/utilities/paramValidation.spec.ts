@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { Route } from '@/types'
-import { resolveRoutes, routeParamsAreValid, path, getRouteParamValues } from '@/utilities'
+import { createRouterRoutes, routeParamsAreValid, path, getRouteParamValues } from '@/utilities'
 import { component } from '@/utilities/testHelpers'
 
 test('given route WITHOUT params, always return true', () => {
@@ -9,9 +9,9 @@ test('given route WITHOUT params, always return true', () => {
     path: '/no-params',
     component,
   }
-  const [resolved] = resolveRoutes([route])
+  const [routerRoutes] = createRouterRoutes([route])
 
-  const response = routeParamsAreValid(resolved, '/no-params')
+  const response = routeParamsAreValid(routerRoutes, '/no-params')
 
   expect(response).toBe(true)
 })
@@ -22,9 +22,9 @@ test('given route with simple string param and value present, returns true', () 
     path: '/simple/:simple',
     component,
   }
-  const [resolved] = resolveRoutes([route])
+  const [routerRoutes] = createRouterRoutes([route])
 
-  const response = routeParamsAreValid(resolved, '/simple/ABC')
+  const response = routeParamsAreValid(routerRoutes, '/simple/ABC')
 
   expect(response).toBe(true)
 })
@@ -35,9 +35,9 @@ test('given route with OPTIONAL string param WITHOUT value present, returns true
     path: '/simple/:?simple',
     component,
   }
-  const [resolved] = resolveRoutes([route])
+  const [routerRoutes] = createRouterRoutes([route])
 
-  const response = routeParamsAreValid(resolved, '/simple/')
+  const response = routeParamsAreValid(routerRoutes, '/simple/')
 
   expect(response).toBe(true)
 })
@@ -50,9 +50,9 @@ test('given route with non-string param with value that satisfies, returns true'
     }),
     component,
   }
-  const [resolved] = resolveRoutes([route])
+  const [routerRoutes] = createRouterRoutes([route])
 
-  const response = routeParamsAreValid(resolved, '/simple/123')
+  const response = routeParamsAreValid(routerRoutes, '/simple/123')
 
   expect(response).toBe(true)
 })
@@ -65,9 +65,9 @@ test('given route with non-string param with value that does NOT satisfy, return
     }),
     component,
   }
-  const [resolved] = resolveRoutes([route])
+  const [routerRoutes] = createRouterRoutes([route])
 
-  const response = routeParamsAreValid(resolved, '/simple/fail')
+  const response = routeParamsAreValid(routerRoutes, '/simple/fail')
 
   expect(response).toBe(false)
 })
@@ -80,9 +80,9 @@ test('given route with OPTIONAL non-string param with value that does NOT satisf
     }),
     component,
   }
-  const [resolved] = resolveRoutes([route])
+  const [routerRoutes] = createRouterRoutes([route])
 
-  const response = routeParamsAreValid(resolved, '/simple/fail')
+  const response = routeParamsAreValid(routerRoutes, '/simple/fail')
 
   expect(response).toBe(false)
 })
@@ -94,9 +94,9 @@ test('given route with regex param that expects forward slashes, will NOT match'
     component,
   }
 
-  const [resolved] = resolveRoutes([route])
+  const [routerRoutes] = createRouterRoutes([route])
 
-  const response = routeParamsAreValid(resolved, '/supports/first/second/third/bookmarked')
+  const response = routeParamsAreValid(routerRoutes, '/supports/first/second/third/bookmarked')
 
   expect(response).toBe(false)
 })
@@ -110,9 +110,9 @@ describe('getRouteParamValues', () => {
       component,
     }
 
-    const [resolved] = resolveRoutes([route])
+    const [routerRoutes] = createRouterRoutes([route])
 
-    const response = getRouteParamValues(resolved, '/first-foo?foo=second-foo')
+    const response = getRouteParamValues(routerRoutes, '/first-foo?foo=second-foo')
 
     expect(response).toHaveProperty('foo')
     expect(response.foo).toMatchObject(['first-foo', 'second-foo'])

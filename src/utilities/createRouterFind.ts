@@ -1,26 +1,26 @@
-import { ResolvedRoute, RouteMethod, RouteMethodResponseImplementation, Routes } from '@/types'
+import { RouterRoute, RouteMethod, RouteMethodResponseImplementation, Routes } from '@/types'
+import { ResolvedRoute } from '@/types/resolved'
 import { RouteWithParams, RouteWithParamsImplementation } from '@/types/routeWithParams'
 import { RouterResolveImplementation } from '@/utilities/createRouterResolve'
-import { RouterRoute } from '@/utilities/createRouterRoute'
-import { getRouterRouteForUrl } from '@/utilities/routes'
+import { getResolvedRouteForUrl } from '@/utilities/getResolvedRouteForUrl'
 
 export type RouterFind<
   TRoutes extends Routes
 > = <
   TRoutePath extends string
->(source: string | RouteWithParams<TRoutes, TRoutePath> | ReturnType<RouteMethod>) => RouterRoute | undefined
+>(source: string | RouteWithParams<TRoutes, TRoutePath> | ReturnType<RouteMethod>) => ResolvedRoute | undefined
 
-export type RouterFindImplementation = (source: string | RouteWithParamsImplementation | RouteMethodResponseImplementation) => RouterRoute | undefined
+export type RouterFindImplementation = (source: string | RouteWithParamsImplementation | RouteMethodResponseImplementation) => ResolvedRoute | undefined
 
 type CreateRouterFindContext = {
-  resolved: ResolvedRoute[],
+  routes: RouterRoute[],
   resolve: RouterResolveImplementation,
 }
 
-export function createRouterFind({ resolved, resolve }: CreateRouterFindContext): RouterFindImplementation {
+export function createRouterFind({ routes, resolve }: CreateRouterFindContext): RouterFindImplementation {
   return (source) => {
     const url = resolve(source)
 
-    return getRouterRouteForUrl(resolved, url)
+    return getResolvedRouteForUrl(routes, url)
   }
 }

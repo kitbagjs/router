@@ -1,13 +1,10 @@
-import { Param } from '@/types/params'
+import { ResolvedRouteQuery } from '@/types/resolvedQuery'
 import { Route } from '@/types/routes'
 
 export type ResolvedRoute = {
   matched: Route,
   matches: Route[],
   name: string,
-  path: string,
-  query: string,
-  pathParams: Record<string, Param[]>,
-  queryParams: Record<string, Param[]>,
-  depth: number,
+  query: ResolvedRouteQuery,
+  params: Record<string, unknown>,
 }
