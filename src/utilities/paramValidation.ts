@@ -1,5 +1,9 @@
-import { Param, ResolvedRoute, RouteMatchRule } from '@/types'
-import { createMaybeRelativeUrl, getParamValue, getParamValuesFromUrl, mergeMaybeTuples, unwrapTuples } from '@/utilities'
+import { Param, RouterRoute, RouteMatchRule } from '@/types'
+import { createMaybeRelativeUrl } from '@/utilities/createMaybeRelativeUrl'
+import { mergeMaybeTuples } from '@/utilities/mergeMaybeTuples'
+import { getParamValue } from '@/utilities/params'
+import { getParamValuesFromUrl } from '@/utilities/paramsFinder'
+import { unwrapTuples } from '@/utilities/unwrapTuples'
 
 export const routeParamsAreValid: RouteMatchRule = (route, url) => {
   try {
@@ -11,7 +15,7 @@ export const routeParamsAreValid: RouteMatchRule = (route, url) => {
   return true
 }
 
-export const getRouteParamValues = (route: ResolvedRoute, url: string): Record<string, unknown> => {
+export const getRouteParamValues = (route: RouterRoute, url: string): Record<string, unknown> => {
   const { pathname, search } = createMaybeRelativeUrl(url)
 
   const params = mergeMaybeTuples(

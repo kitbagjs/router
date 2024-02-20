@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { Route, Routes } from '@/types'
-import { resolveRoutes, path, query } from '@/utilities'
+import { createRouterRoutes, path, query } from '@/utilities'
 import { component } from '@/utilities/testHelpers'
 
 describe('resolveRoutes', () => {
@@ -21,9 +21,9 @@ describe('resolveRoutes', () => {
       },
     ] as const satisfies Routes
 
-    const resolved = resolveRoutes(routes)
+    const routerRoutes = createRouterRoutes(routes)
 
-    expect(resolved).toMatchObject([])
+    expect(routerRoutes).toMatchObject([])
   })
 
   test('always returns 1 record per named route', () => {
@@ -63,7 +63,7 @@ describe('resolveRoutes', () => {
       },
     ] as const satisfies Routes
 
-    const response = resolveRoutes(routes)
+    const response = createRouterRoutes(routes)
 
     expect(response).toHaveLength(6)
   })
@@ -84,10 +84,10 @@ describe('resolveRoutes', () => {
       children: [childRoute],
     }
 
-    const routes = resolveRoutes([parentRoute])
-    const resolvedChild = routes.find(route => route.name === childRoute.name)
+    const routes = createRouterRoutes([parentRoute])
+    const routerRouteChild = routes.find(route => route.name === childRoute.name)
 
-    expect(resolvedChild?.path).toBe(`${parentRoute.path}/:accountId`)
+    expect(routerRouteChild?.path).toBe(`${String(parentRoute.path)}/:accountId`)
   })
 
   test.each([
@@ -108,10 +108,10 @@ describe('resolveRoutes', () => {
       children: [childRoute],
     }
 
-    const routes = resolveRoutes([parentRoute])
-    const resolvedChild = routes.find(route => route.name === childRoute.name)
+    const routes = createRouterRoutes([parentRoute])
+    const routerRouteChild = routes.find(route => route.name === childRoute.name)
 
-    expect(resolvedChild?.query).toBe('id=:accountId&handle=:?handle')
+    expect(routerRouteChild?.query).toBe('id=:accountId&handle=:?handle')
   })
 
   test('always combines path params into return pathParams', () => {
@@ -127,10 +127,10 @@ describe('resolveRoutes', () => {
       children: [childRoute],
     }
 
-    const routes = resolveRoutes([parentRoute])
-    const resolvedChild = routes.find(route => route.name === childRoute.name)
+    const routes = createRouterRoutes([parentRoute])
+    const routerRouteChild = routes.find(route => route.name === childRoute.name)
 
-    expect(resolvedChild?.pathParams).toMatchObject({ workspaceId: [String], accountId: [String] })
+    expect(routerRouteChild?.pathParams).toMatchObject({ workspaceId: [String], accountId: [String] })
   })
 
   test('always combines query params into return queryParams', () => {
@@ -148,10 +148,10 @@ describe('resolveRoutes', () => {
       children: [childRoute],
     }
 
-    const routes = resolveRoutes([parentRoute])
-    const resolvedChild = routes.find(route => route.name === childRoute.name)
+    const routes = createRouterRoutes([parentRoute])
+    const routerRouteChild = routes.find(route => route.name === childRoute.name)
 
-    expect(resolvedChild?.queryParams).toMatchObject({ startDate: [String], handle: [String] })
+    expect(routerRouteChild?.queryParams).toMatchObject({ startDate: [String], handle: [String] })
   })
 
   test('always returns depth equal to distance from root', () => {
@@ -180,19 +180,19 @@ describe('resolveRoutes', () => {
       },
     ] as const satisfies Routes
 
-    const response = resolveRoutes(routes)
+    const response = createRouterRoutes(routes)
 
-    const resolvedAccountsRoute = response.find(route => route.name === 'accounts')
-    expect(resolvedAccountsRoute!.depth).toBe(1)
+    const routerRouteAccountsRoute = response.find(route => route.name === 'accounts')
+    expect(routerRouteAccountsRoute!.depth).toBe(1)
 
-    const resolvedNewAccountRoute = response.find(route => route.name === 'new-account')
-    expect(resolvedNewAccountRoute!.depth).toBe(2)
+    const routerRouteNewAccountRoute = response.find(route => route.name === 'new-account')
+    expect(routerRouteNewAccountRoute!.depth).toBe(2)
 
-    const resolvedAccountRoute = response.find(route => route.name === 'account')
-    expect(resolvedAccountRoute!.depth).toBe(2)
+    const routerRouteAccountRoute = response.find(route => route.name === 'account')
+    expect(routerRouteAccountRoute!.depth).toBe(2)
 
-    const resolvedEditAccountRoute = response.find(route => route.name === 'edit-account')
-    expect(resolvedEditAccountRoute!.depth).toBe(3)
+    const routerRouteEditAccountRoute = response.find(route => route.name === 'edit-account')
+    expect(routerRouteEditAccountRoute!.depth).toBe(3)
   })
 
   describe('matches', () => {
@@ -218,7 +218,7 @@ describe('resolveRoutes', () => {
         component,
       } satisfies Route
 
-      const [child, parent, grandparent] = resolveRoutes([grandparentRoute, unrelatedRoute])
+      const [child, parent, grandparent] = createRouterRoutes([grandparentRoute, unrelatedRoute])
 
       expect(grandparent.matches).toMatchObject([grandparentRoute])
       expect(parent.matches).toMatchObject([grandparentRoute, parentRoute])

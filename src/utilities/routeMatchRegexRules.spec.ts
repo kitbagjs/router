@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { Route } from '@/types'
-import { resolveRoutes, routePathMatches, routeQueryMatches } from '@/utilities'
+import { createRouterRoutes, routePathMatches, routeQueryMatches } from '@/utilities'
 import { component } from '@/utilities/testHelpers'
 
 describe('routePathMatches', () => {
@@ -16,9 +16,9 @@ describe('routePathMatches', () => {
       path: '/not/empty',
       component,
     } as const satisfies Route
-    const [resolved] = resolveRoutes([route])
+    const [routerRoutes] = createRouterRoutes([route])
 
-    const response = routePathMatches(resolved, url)
+    const response = routePathMatches(routerRoutes, url)
 
     expect(response).toBe(false)
   })
@@ -32,9 +32,9 @@ describe('routePathMatches', () => {
       path: '/without/params',
       component,
     } as const satisfies Route
-    const [resolved] = resolveRoutes([route])
+    const [routerRoutes] = createRouterRoutes([route])
 
-    const response = routePathMatches(resolved, url)
+    const response = routePathMatches(routerRoutes, url)
 
     expect(response).toBe(true)
   })
@@ -45,9 +45,9 @@ describe('routePathMatches', () => {
       path: '/without/params',
       component,
     } as const satisfies Route
-    const [resolved] = resolveRoutes([route])
+    const [routerRoutes] = createRouterRoutes([route])
 
-    const response = routePathMatches(resolved, '/WITHOUT/params')
+    const response = routePathMatches(routerRoutes, '/WITHOUT/params')
 
     expect(response).toBe(true)
   })
@@ -62,9 +62,9 @@ describe('routePathMatches', () => {
       path: '/with/:some/params/:inPath',
       component,
     } as const satisfies Route
-    const [resolved] = resolveRoutes([route])
+    const [routerRoutes] = createRouterRoutes([route])
 
-    const response = routePathMatches(resolved, url)
+    const response = routePathMatches(routerRoutes, url)
 
     expect(response).toBe(true)
   })
@@ -76,8 +76,8 @@ describe('routePathMatches', () => {
       component,
     } as const satisfies Route
 
-    const [resolved] = resolveRoutes([route])
-    const response = routePathMatches(resolved, '/supports/first/second/third/bookmarked')
+    const [routerRoutes] = createRouterRoutes([route])
+    const response = routePathMatches(routerRoutes, '/supports/first/second/third/bookmarked')
 
     expect(response).toBe(false)
   })
@@ -97,9 +97,9 @@ describe('routeQueryMatches', () => {
       query: 'not=empty',
       component,
     } as const satisfies Route
-    const [resolved] = resolveRoutes([route])
+    const [routerRoutes] = createRouterRoutes([route])
 
-    const response = routeQueryMatches(resolved, url)
+    const response = routeQueryMatches(routerRoutes, url)
 
     expect(response).toBe(false)
   })
@@ -114,9 +114,9 @@ describe('routeQueryMatches', () => {
       query: 'without=params&static=true',
       component,
     } as const satisfies Route
-    const [resolved] = resolveRoutes([route])
+    const [routerRoutes] = createRouterRoutes([route])
 
-    const response = routeQueryMatches(resolved, url)
+    const response = routeQueryMatches(routerRoutes, url)
 
     expect(response).toBe(true)
   })
@@ -133,9 +133,9 @@ describe('routeQueryMatches', () => {
       query: 'with=:params&static=:dynamic',
       component,
     } as const satisfies Route
-    const [resolved] = resolveRoutes([route])
+    const [routerRoutes] = createRouterRoutes([route])
 
-    const response = routeQueryMatches(resolved, url)
+    const response = routeQueryMatches(routerRoutes, url)
 
     expect(response).toBe(true)
   })
@@ -147,9 +147,9 @@ describe('routeQueryMatches', () => {
       query: 'expected=value',
       component,
     } as const satisfies Route
-    const [resolved] = resolveRoutes([route])
+    const [routerRoutes] = createRouterRoutes([route])
 
-    const response = routeQueryMatches(resolved, 'www.kitbag.io/some/path?expected=value&unexpected=ok')
+    const response = routeQueryMatches(routerRoutes, 'www.kitbag.io/some/path?expected=value&unexpected=ok')
 
     expect(response).toBe(true)
   })
@@ -161,9 +161,9 @@ describe('routeQueryMatches', () => {
       query: 'first=1&second=2&third=3',
       component,
     } as const satisfies Route
-    const [resolved] = resolveRoutes([route])
+    const [routerRoutes] = createRouterRoutes([route])
 
-    const response = routeQueryMatches(resolved, 'www.kitbag.io/some/path?second=2&first=1&third=3')
+    const response = routeQueryMatches(routerRoutes, 'www.kitbag.io/some/path?second=2&first=1&third=3')
 
     expect(response).toBe(true)
   })
