@@ -12,23 +12,25 @@ import { createRouterResolve } from '@/utilities/createRouterResolve'
 import { createRouterRoute } from '@/utilities/createRouterRoute'
 import { getInitialUrl } from '@/utilities/getInitialUrl'
 import { executeMiddleware } from '@/utilities/middleware'
-import { getRouterRouteForUrl } from '@/utilities/routes'
+import { getRouteMiddleware, getRouterRouteForUrl } from '@/utilities/routes'
 
 export function createRouter<const T extends Routes>(routes: T, options: RouterOptions = {}): Router<T> {
   const resolved = resolveRoutes(routes)
   const resolve = createRouterResolve({ resolved })
 
   const onLocationUpdate = async (url: string): Promise<void> => {
-    const matched = getRouterRouteForUrl(resolved, url)
+    const to = getRouterRouteForUrl(resolved, url)
+    const from = isRejectionRoute(route) ? null : route
 
-    if (!matched) {
+    if (!to) {
       return reject('NotFound')
     }
 
     try {
       await executeMiddleware({
-        to: matched,
-        from: isRejectionRoute(route) ? null : route,
+        middleware: getRouteMiddleware(to),
+        to,
+        from,
       })
     } catch (error) {
       if (error instanceof RouterRejectionError) {
@@ -56,7 +58,7 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
       }
     }
 
-    updateRoute(matched)
+    updateRoute(to)
     clearRejection()
   }
 

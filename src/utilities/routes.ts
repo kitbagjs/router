@@ -39,12 +39,12 @@ export function getRoutePath(route: ResolvedRoute): string {
     .join('.')
 }
 
-export function getRouteMiddleware(route: RouterRoute): Readonly<RouteMiddleware[]> {
+export function getRouteMiddleware(route: RouterRoute): RouteMiddleware[] {
   return route.matches.flatMap(route => {
     if (!route.middleware) {
       return []
     }
 
-    return asArray(route.middleware) as RouteMiddleware[]
+    return asArray(route.middleware)
   })
 }

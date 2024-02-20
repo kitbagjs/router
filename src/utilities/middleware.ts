@@ -1,19 +1,18 @@
+import { RouteMiddleware } from '@/types'
 import { RouterPushError, RouterRejectionError, RouterReplaceError } from '@/types/errors'
 import { RouterPushImplementation } from '@/utilities/createRouterPush'
 import { RouterReject } from '@/utilities/createRouterReject'
 import { RouterReplaceImplementation } from '@/utilities/createRouterReplace'
 import { RouterRoute } from '@/utilities/createRouterRoute'
-import { getRouteMiddleware } from '@/utilities/routes'
 
 type ExecuteMiddlewareContext = {
+  middleware: RouteMiddleware[] | Set<RouteMiddleware>,
   to: RouterRoute,
   from: RouterRoute | null,
 }
 
-export async function executeMiddleware({ to, from }: ExecuteMiddlewareContext): Promise<void> {
-  const middleware = getRouteMiddleware(to)
-
-  const results = middleware.map(callback => callback(to, {
+export async function executeMiddleware({ middleware, to, from }: ExecuteMiddlewareContext): Promise<void> {
+  const results = Array.from(middleware).map(callback => callback(to, {
     from,
     reject: middlewareReject,
     push: middlewarePush,

@@ -14,4 +14,4 @@ type MiddlewareContext = {
   // router: RegisteredRouter,
 }
 
-export type RouteMiddleware = (route: RouterRoute, context: MiddlewareContext) => MaybePromise<void>
+export type RouteMiddleware = (to: RouterRoute, context: MiddlewareContext) => MaybePromise<void>
