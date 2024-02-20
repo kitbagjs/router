@@ -114,17 +114,36 @@ describe('resolveRoutes', () => {
     expect(resolvedChild?.query).toBe('id=:accountId&handle=:?handle')
   })
 
-  test('always combines params into return params', () => {
+  test('always combines path params into return pathParams', () => {
     const childRoute: Route = {
-      name: 'new-account',
-      path: '/new-account',
+      name: 'account',
+      path: '/account/:accountId',
+      component,
+    }
+
+    const parentRoute: Route = {
+      name: 'workspace',
+      path: '/workspace/:workspaceId',
+      children: [childRoute],
+    }
+
+    const routes = resolveRoutes([parentRoute])
+    const resolvedChild = routes.find(route => route.name === childRoute.name)
+
+    expect(resolvedChild?.pathParams).toMatchObject({ workspaceId: [String], accountId: [String] })
+  })
+
+  test('always combines query params into return queryParams', () => {
+    const childRoute: Route = {
+      name: 'account',
+      path: '/account',
       query: 'handle=:handle',
       component,
     }
 
     const parentRoute: Route = {
-      name: 'accounts',
-      path: ':workspaceId/accounts',
+      name: 'workspace',
+      path: '/workspace',
       query: 'start=?:startDate',
       children: [childRoute],
     }
@@ -132,7 +151,7 @@ describe('resolveRoutes', () => {
     const routes = resolveRoutes([parentRoute])
     const resolvedChild = routes.find(route => route.name === childRoute.name)
 
-    expect(resolvedChild?.params).toMatchObject({ workspaceId: [String], startDate: [String], handle: [String] })
+    expect(resolvedChild?.queryParams).toMatchObject({ startDate: [String], handle: [String] })
   })
 
   test('always returns depth equal to distance from root', () => {
