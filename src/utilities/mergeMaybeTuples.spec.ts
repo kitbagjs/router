@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 import { Param } from '@/types'
-import { mergeParams } from '@/utilities'
+import { mergeMaybeTuples } from '@/utilities'
 
 test('given params without overlap, returns combination of both', () => {
   const input: Record<string, Param[]>[] = [
@@ -13,7 +13,7 @@ test('given params without overlap, returns combination of both', () => {
     },
   ]
 
-  const response = mergeParams(...input)
+  const response = mergeMaybeTuples(...input)
 
   expect(response).toHaveProperty('foo')
   expect(response).toHaveProperty('bar')
@@ -30,7 +30,7 @@ test('given params with overlap of same type, combines into new tuple', () => {
     },
   ]
 
-  const response = mergeParams(...input)
+  const response = mergeMaybeTuples(...input)
 
   expect(response).toHaveProperty('foo')
   expect(response.foo).toMatchObject([String, String])
@@ -46,7 +46,7 @@ test('given params with overlap of different types, combines overlapped into new
     },
   ]
 
-  const response = mergeParams(...input)
+  const response = mergeMaybeTuples(...input)
 
   expect(response).toHaveProperty('foo')
   expect(response.foo).toMatchObject([String, Number])
