@@ -1,5 +1,6 @@
 import { InjectionKey } from 'vue'
 import { RouteMiddleware } from '@/types'
+import { asArray } from '@/utilities/array'
 import { RouterRoute } from '@/utilities/createRouterRoute'
 
 export type RouteHookRemove = () => void
@@ -20,15 +21,17 @@ export type RouterHooks = {
   hooks: RouteHooks,
 }
 
-function isGlobalEnter(to: RouterRoute, from: RouterRoute | null): boolean {
+type GlobalHookCondition = (to: RouterRoute, from: RouterRoute | null) => boolean
+
+const isGlobalEnter: GlobalHookCondition = (to, from) => {
   return to.matches[1] !== from?.matches[1]
 }
 
-function isGlobalUpdate(to: RouterRoute, from: RouterRoute | null): boolean {
+const isGlobalUpdate: GlobalHookCondition = (to, from) => {
   return to.matches.some((route, depth) => route === from?.matches[depth])
 }
 
-function isGlobalLeave(to: RouterRoute, from: RouterRoute | null): boolean {
+const isGlobalLeave: GlobalHookCondition = (to, from) => {
   return to.matches[1] !== from?.matches[1]
 }
 
@@ -38,46 +41,24 @@ export function createRouterHooks(): RouterHooks {
     after: new Set(),
   }
 
-  const onBeforeRouteEnter: AddRouteHook = (fn) => {
-    const hook: RouteMiddleware = (to, context) => {
-      if (!isGlobalEnter(to, context.from)) {
-        return
-      }
+  const factory = (type: RouteHookType, condition: GlobalHookCondition): AddRouteHook => {
+    return (middleware) => {
+      const remove = asArray(middleware).map(middleware => {
+        const hook: RouteMiddleware = (to, context) => {
+          if (!condition(to, context.from)) {
+            return
+          }
 
-      fn(to, context)
+          middleware(to, context)
+        }
+
+        hooks[type].add(hook)
+
+        return () => hooks[type].delete(hook)
+      })
+
+      return () => remove.forEach(fn => fn())
     }
-
-    hooks.before.add(hook)
-
-    return () => hooks.before.delete(hook)
-  }
-
-  const onBeforeRouteUpdate: AddRouteHook = (fn) => {
-    const hook: RouteMiddleware = (to, context) => {
-      if (!isGlobalUpdate(to, context.from)) {
-        return
-      }
-
-      fn(to, context)
-    }
-
-    hooks.before.add(hook)
-
-    return () => hooks.before.delete(hook)
-  }
-
-  const onBeforeRouteLeave: AddRouteHook = (fn) => {
-    const hook: RouteMiddleware = (to, context) => {
-      if (!isGlobalLeave(to, context.from)) {
-        return
-      }
-
-      fn(to, context)
-    }
-
-    hooks.after.add(hook)
-
-    return () => hooks.after.delete(hook)
   }
 
   const addRouteHook: AddRouteHookForLifeCycle = (type, hook) => {
@@ -87,9 +68,9 @@ export function createRouterHooks(): RouterHooks {
   }
 
   return {
-    onBeforeRouteEnter,
-    onBeforeRouteUpdate,
-    onBeforeRouteLeave,
+    onBeforeRouteEnter: factory('before', isGlobalEnter),
+    onBeforeRouteUpdate: factory('before', isGlobalUpdate),
+    onBeforeRouteLeave: factory('before', isGlobalLeave),
     addRouteHook,
     hooks,
   }

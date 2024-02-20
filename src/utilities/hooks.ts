@@ -1,9 +1,9 @@
 import { inject, onUnmounted } from 'vue'
 import { useRouterDepth } from '@/compositions/useRouterDepth'
 import { RouterNotInstalledError } from '@/errors/routerNotInstalledError'
-import { MaybeArray, RouteMiddleware } from '@/types'
+import { RouteMiddleware } from '@/types'
 import { asArray } from '@/utilities'
-import { RouteHookType, addRouteHookInjectionKey } from '@/utilities/createRouterHooks'
+import { AddRouteHook, RouteHookRemove, RouteHookType, addRouteHookInjectionKey } from '@/utilities/createRouterHooks'
 import { RouterRoute } from '@/utilities/createRouterRoute'
 
 /* Desired Hooks
@@ -16,9 +16,8 @@ afterRouteLeave
 */
 
 type ComponentHookCondition = (to: RouterRoute, from: RouterRoute | null, depth: number) => boolean
-type ComponentAddRouteHook = (middleware: MaybeArray<RouteMiddleware>) => void
 
-function factory(type: RouteHookType, condition: ComponentHookCondition): ComponentAddRouteHook {
+function factory(type: RouteHookType, condition: ComponentHookCondition): AddRouteHook {
   return (middleware) => {
     const depth = useRouterDepth()
     const addRouteHook = inject(addRouteHookInjectionKey)
@@ -27,19 +26,23 @@ function factory(type: RouteHookType, condition: ComponentHookCondition): Compon
       throw new RouterNotInstalledError()
     }
 
-    const remove = asArray(middleware).map(fn => {
+    const remove = asArray(middleware).map(middleware => {
       const hook: RouteMiddleware = (to, context) => {
         if (!condition(to, context.from, depth)) {
           return
         }
 
-        fn(to, context)
+        middleware(to, context)
       }
 
       return addRouteHook(type, hook)
     })
 
-    onUnmounted(() => remove.forEach(fn => fn()))
+    const removeAll: RouteHookRemove = () => remove.forEach(fn => fn())
+
+    onUnmounted(removeAll)
+
+    return removeAll
   }
 }
 
