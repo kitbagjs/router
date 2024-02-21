@@ -6,6 +6,7 @@ import { RouterPushError, RouterRejectionError, RouterReplaceError } from '@/typ
 import { createCurrentRoute } from '@/utilities/createCurrentRoute'
 import { createRouteMethods } from '@/utilities/createRouteMethods'
 import { createRouterFind } from '@/utilities/createRouterFind'
+import { addRouteHookInjectionKey, createRouterHooks } from '@/utilities/createRouterHooks'
 import { createRouterPush } from '@/utilities/createRouterPush'
 import { createRouterReject } from '@/utilities/createRouterReject'
 import { createRouterReplace } from '@/utilities/createRouterReplace'
@@ -13,52 +14,71 @@ import { createRouterResolve } from '@/utilities/createRouterResolve'
 import { createRouterRoutes } from '@/utilities/createRouterRoutes'
 import { getInitialUrl } from '@/utilities/getInitialUrl'
 import { getResolvedRouteForUrl } from '@/utilities/getResolvedRouteForUrl'
-import { executeMiddleware } from '@/utilities/middleware'
+import { OnRouteHookError, executeRouteHooks } from '@/utilities/hooks'
 import { createRouterNavigation } from '@/utilities/routerNavigation'
+import { getRouteHooks } from '@/utilities/routes'
 
 export function createRouter<const T extends Routes>(routes: T, options: RouterOptions = {}): Router<T> {
   const routerRoutes = createRouterRoutes(routes)
   const resolve = createRouterResolve(routerRoutes)
 
-  const onLocationUpdate = async (url: string): Promise<void> => {
-    const matched = getResolvedRouteForUrl(routerRoutes, url)
+  const {
+    onBeforeRouteEnter,
+    onBeforeRouteLeave,
+    onBeforeRouteUpdate,
+    addRouteHook,
+    hooks,
+  } = createRouterHooks()
 
-    if (!matched) {
+  const onRouteHookError: OnRouteHookError = (error) => {
+    if (error instanceof RouterRejectionError) {
+      reject(error.type)
+    }
+
+    if (error instanceof RouterPushError) {
+      const [source, options] = error.to
+      const url = resolve(source)
+
+      navigation.update(url, options)
+      return
+    }
+
+    if (error instanceof RouterReplaceError) {
+      const [source, options] = error.to
+      const url = resolve(source, options)
+
+      navigation.update(url, { replace: true })
+      return
+    }
+
+    if (!(error instanceof RouterRejectionError)) {
+      throw error
+    }
+  }
+
+  const onLocationUpdate = async (url: string): Promise<void> => {
+    const to = getResolvedRouteForUrl(routerRoutes, url)
+    const from = isRejectionRoute(route) ? null : route
+
+    if (!to) {
       return reject('NotFound')
     }
 
-    try {
-      await executeMiddleware({
-        to: matched,
-        from: isRejectionRoute(route) ? null : route,
-      })
-    } catch (error) {
-      if (error instanceof RouterRejectionError) {
-        reject(error.type)
-      }
+    const success = await executeRouteHooks({
+      hooks: [
+        ...hooks.before,
+        ...getRouteHooks(to, 'before'),
+      ],
+      to,
+      from,
+      onRouteHookError,
+    })
 
-      if (error instanceof RouterPushError) {
-        const [source, options] = error.to
-        const url = resolve(source, options)
-
-        navigation.update(url, options)
-        return
-      }
-
-      if (error instanceof RouterReplaceError) {
-        const [source, options] = error.to
-        const url = resolve(source, options)
-
-        navigation.update(url, { replace: true })
-        return
-      }
-
-      if (!(error instanceof RouterRejectionError)) {
-        throw error
-      }
+    if (!success) {
+      return
     }
 
-    updateRoute(matched)
+    updateRoute(to)
     clearRejection()
   }
 
@@ -81,6 +101,7 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
     app.component('RouterLink', RouterLink)
     app.provide(routerInjectionKey, router as any)
     app.provide(routerRejectionKey, rejection)
+    app.provide(addRouteHookInjectionKey, addRouteHook)
   }
 
   const router: RouterImplementation = {
@@ -96,6 +117,9 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
     back: navigation.back,
     go: navigation.go,
     install,
+    onBeforeRouteEnter,
+    onBeforeRouteLeave,
+    onBeforeRouteUpdate,
     initialized,
   }
 

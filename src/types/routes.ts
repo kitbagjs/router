@@ -1,5 +1,5 @@
 import { AsyncComponentLoader, Component, DefineComponent } from 'vue'
-import { RouteMiddleware } from '@/types/middleware'
+import { RouteHook } from '@/types/hooks'
 import { MaybeArray } from '@/types/utilities'
 import { Path } from '@/utilities/path'
 import { Query } from '@/utilities/query'
@@ -17,7 +17,9 @@ export type ParentRoute = {
   disabled?: boolean,
   children: Routes,
   component?: RouteComponent,
-  middleware?: MaybeArray<RouteMiddleware>,
+  onBeforeRouteEnter?: MaybeArray<RouteHook>,
+  onBeforeRouteUpdate?: MaybeArray<RouteHook>,
+  onBeforeRouteLeave?: MaybeArray<RouteHook>,
   meta?: RouteMeta,
 }
 
@@ -27,7 +29,9 @@ export type ChildRoute = {
   path: string | Path,
   query?: string | Query,
   component: RouteComponent,
-  middleware?: MaybeArray<RouteMiddleware>,
+  onBeforeRouteEnter?: MaybeArray<RouteHook>,
+  onBeforeRouteUpdate?: MaybeArray<RouteHook>,
+  onBeforeRouteLeave?: MaybeArray<RouteHook>,
   meta?: RouteMeta,
 }
 

@@ -1,4 +1,5 @@
 import { App, DeepReadonly } from 'vue'
+import { AddRouteHook } from '@/types/hooks'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouteMethods, RouteMethodsImplementation } from '@/types/routeMethods'
 import { Routes } from '@/types/routes'
@@ -27,6 +28,9 @@ export type Router<
   forward: () => void,
   go: (delta: number) => void,
   install: (app: App) => void,
+  onBeforeRouteEnter: AddRouteHook,
+  onBeforeRouteLeave: AddRouteHook,
+  onBeforeRouteUpdate: AddRouteHook,
   initialized: Promise<void>,
 }
 
@@ -43,5 +47,8 @@ export type RouterImplementation = {
   forward: () => void,
   go: (delta: number) => void,
   install: (app: App) => void,
+  onBeforeRouteEnter: AddRouteHook,
+  onBeforeRouteLeave: AddRouteHook,
+  onBeforeRouteUpdate: AddRouteHook,
   initialized: Promise<void>,
 }
