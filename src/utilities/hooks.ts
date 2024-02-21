@@ -82,8 +82,6 @@ export const isRouteEnter: HookCondition = (to, from, depth) => {
   return toMatches.length < depth || toMatches[depth] !== fromMatches[depth]
 }
 
-export const onBeforeRouteEnter = componentHookFactory('before', isRouteEnter)
-
 export const isRouteLeave: HookCondition = (to, from, depth) => {
   const toMatches = to.matches
   const fromMatches = from?.matches ?? []
@@ -91,10 +89,10 @@ export const isRouteLeave: HookCondition = (to, from, depth) => {
   return toMatches.length < depth || toMatches[depth] !== fromMatches[depth]
 }
 
-export const onBeforeRouteLeave = componentHookFactory('before', isRouteLeave)
-
 export const isRouteUpdate: HookCondition = (to, from, depth) => {
   return to.matches[depth] === from?.matches[depth]
 }
 
+export const onBeforeRouteEnter = componentHookFactory('before', isRouteEnter)
+export const onBeforeRouteLeave = componentHookFactory('before', isRouteLeave)
 export const onBeforeRouteUpdate = componentHookFactory('before', isRouteUpdate)
