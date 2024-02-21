@@ -35,6 +35,7 @@ export default defineComponent({
         return h(rejection.value.component)
       }
 
+      // might be able to use onVnodeMounted here to inform router that the last component has been mounted in the route matches
       return h(component.value)
     }
   },
