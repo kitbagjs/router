@@ -75,7 +75,7 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
     const success = await executeRouteHooks({
       hooks: [
         ...hooks.before,
-        ...getRouteHooks(to, 'before'),
+        ...getRouteHooks(to, from, 'before'),
       ],
       to,
       from,

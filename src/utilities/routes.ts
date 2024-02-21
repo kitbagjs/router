@@ -1,6 +1,7 @@
-import { RouterRoute, RouteHook, isNamedRoute, RouteHookLifeCycle, RouteHookType } from '@/types'
+import { RouterRoute, RouteHook, isNamedRoute, RouteHookType } from '@/types'
 import { ResolvedRoute } from '@/types/resolved'
 import { asArray } from '@/utilities/array'
+import { isRouteEnter, isRouteLeave, isRouteUpdate } from '@/utilities/hooks'
 
 export function getRoutePath(route: RouterRoute): string {
   return route.matches
@@ -9,29 +10,43 @@ export function getRoutePath(route: RouterRoute): string {
     .join('.')
 }
 
-function getRouterHookTypes(type: RouteHookType): RouteHookLifeCycle[] {
+export function getRouteHooks(to: ResolvedRoute, from: ResolvedRoute | null, type: RouteHookType): RouteHook[] {
   if (type === 'before') {
-    return ['onBeforeRouteEnter', 'onBeforeRouteUpdate', 'onBeforeRouteLeave']
+    return getRouteBeforeHooks(to, from)
   }
 
-  throw 'not implemented'
+  if (type === 'after') {
+    throw 'not implemented'
+  }
+
+  const exhaustive: never = type
+  throw new Error(`Missing RouteHookType condition in getRouteHooks: ${exhaustive}`)
 }
 
-// todo: need the concept of a hook condition here as well
-export function getRouteHooks(route: ResolvedRoute | null, type: RouteHookType): RouteHook[] {
-  if (!route) {
-    return []
-  }
+function getRouteBeforeHooks(to: ResolvedRoute, from: ResolvedRoute | null): RouteHook[] {
+  const toHooks = to.matches.flatMap((route, depth) => {
+    const hooks = []
 
-  const types = getRouterHookTypes(type)
-
-  return route.matches.flatMap(route => types.flatMap(type => {
-    const hooks = route[type]
-
-    if (!hooks) {
-      return []
+    if (route.onBeforeRouteEnter && isRouteEnter(to, from, depth)) {
+      hooks.push(...asArray(route.onBeforeRouteEnter))
     }
 
-    return asArray(hooks)
-  }))
+    if (route.onBeforeRouteUpdate && isRouteUpdate(to, from, depth)) {
+      hooks.push(...asArray(route.onBeforeRouteUpdate))
+    }
+
+    return hooks
+  })
+
+  const fromHooks = from?.matches.flatMap((route, depth) => {
+    const hooks = []
+
+    if (route.onBeforeRouteLeave && isRouteLeave(to, from, depth)) {
+      hooks.push(...asArray(route.onBeforeRouteLeave))
+    }
+
+    return hooks
+  }) ?? []
+
+  return [...fromHooks, ...toHooks]
 }
