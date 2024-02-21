@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from 'vitest'
 import { Routes } from '@/types'
-import { createRouteMethods, resolveRoutes } from '@/utilities'
+import { createRouteMethods, createRouterRoutes } from '@/utilities'
 import { component } from '@/utilities/testHelpers'
 
 test.each([
@@ -17,9 +17,9 @@ test.each([
       component,
     },
   ] as const satisfies Routes
-  const resolved = resolveRoutes(routes)
+  const routerRoutes = createRouterRoutes(routes)
 
-  const response = createRouteMethods({ resolved, push })
+  const response = createRouteMethods({ routes: routerRoutes, push })
 
   expect(response.parent).toBeTypeOf('function')
 })
@@ -35,9 +35,9 @@ test('given route is NOT disabled, returns empty object', () => {
       component,
     },
   ] as const satisfies Routes
-  const resolved = resolveRoutes(routes)
+  const routerRoutes = createRouterRoutes(routes)
 
-  const response = createRouteMethods({ resolved, push })
+  const response = createRouteMethods({ routes: routerRoutes, push })
 
   expect(response).toMatchObject({})
 })
@@ -63,9 +63,9 @@ test.each([
       ],
     },
   ] as const satisfies Routes
-  const resolved = resolveRoutes(routes)
+  const routerRoutes = createRouterRoutes(routes)
 
-  const response = createRouteMethods({ resolved, push })
+  const response = createRouteMethods({ routes: routerRoutes, push })
 
   if (isDisabled !== true) {
     expect(response.parent.child).toBeTypeOf('function')
@@ -96,9 +96,9 @@ test('given parent route with named children and grandchildren, has path to gran
       ],
     },
   ] as const satisfies Routes
-  const resolved = resolveRoutes(routes)
+  const routerRoutes = createRouterRoutes(routes)
 
-  const response = createRouteMethods({ resolved, push })
+  const response = createRouteMethods({ routes: routerRoutes, push })
 
   expect(response.parent).toBeTypeOf('function')
   expect(response.parent.child).toBeTypeOf('function')
@@ -116,8 +116,8 @@ describe('routeMethod', () => {
         component,
       },
     ] as const satisfies Routes
-    const resolved = resolveRoutes(routes)
-    const { route } = createRouteMethods({ resolved, push })
+    const routerRoutes = createRouterRoutes(routes)
+    const { route } = createRouteMethods({ routes: routerRoutes, push })
 
     route().push()
     expect(push).toHaveBeenLastCalledWith('/route/', {})
@@ -142,8 +142,8 @@ describe('routeMethod', () => {
         component,
       },
     ] as const satisfies Routes
-    const resolved = resolveRoutes(routes)
-    const { route } = createRouteMethods({ resolved, push })
+    const routerRoutes = createRouterRoutes(routes)
+    const { route } = createRouteMethods({ routes: routerRoutes, push })
 
     expect(route().url).toBe('/route/')
     expect(route({ param: 'param' }).url).toBe('/route/param')

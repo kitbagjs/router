@@ -1,3 +1,3 @@
-import { ResolvedRoute } from '@/types/resolved'
+import { RouterRoute } from '@/types/routerRoute'
 
-export type RouteMatchRule = (route: ResolvedRoute, url: string) => boolean
+export type RouteMatchRule = (route: RouterRoute, url: string) => boolean

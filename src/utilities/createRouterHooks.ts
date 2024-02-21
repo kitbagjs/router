@@ -1,7 +1,6 @@
 import { InjectionKey } from 'vue'
-import { RouteMiddleware } from '@/types'
+import { ResolvedRoute, RouteMiddleware } from '@/types'
 import { asArray } from '@/utilities/array'
-import { RouterRoute } from '@/utilities/createRouterRoute'
 
 export type RouteHookRemove = () => void
 export type AddRouteHook = (hook: RouteMiddleware) => RouteHookRemove
@@ -21,7 +20,7 @@ export type RouterHooks = {
   hooks: RouteHooks,
 }
 
-type GlobalHookCondition = (to: RouterRoute, from: RouterRoute | null) => boolean
+type GlobalHookCondition = (to: ResolvedRoute, from: ResolvedRoute | null) => boolean
 
 const isGlobalEnter: GlobalHookCondition = (to, from) => {
   return to.matches[1] !== from?.matches[1]

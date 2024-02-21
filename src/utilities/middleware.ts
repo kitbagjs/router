@@ -1,16 +1,16 @@
 import { RouteMiddleware } from '@/types'
 import { RouterPushError, RouterRejectionError, RouterReplaceError } from '@/types/errors'
+import { ResolvedRoute } from '@/types/resolved'
 import { RouterPushImplementation } from '@/utilities/createRouterPush'
 import { RouterReject } from '@/utilities/createRouterReject'
 import { RouterReplaceImplementation } from '@/utilities/createRouterReplace'
-import { RouterRoute } from '@/utilities/createRouterRoute'
 
 export type OnMiddlewareError = (error: unknown) => void
 
 type ExecuteMiddlewareContext = {
   middleware: RouteMiddleware[],
-  to: RouterRoute,
-  from: RouterRoute | null,
+  to: ResolvedRoute,
+  from: ResolvedRoute | null,
   onMiddlewareError: OnMiddlewareError,
 }
 

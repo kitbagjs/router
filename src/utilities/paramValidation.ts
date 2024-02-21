@@ -1,5 +1,9 @@
-import { Param, ResolvedRoute, RouteMatchRule } from '@/types'
-import { createMaybeRelativeUrl, getParamValue, getParamValuesFromUrl } from '@/utilities'
+import { Param, RouterRoute, RouteMatchRule } from '@/types'
+import { createMaybeRelativeUrl } from '@/utilities/createMaybeRelativeUrl'
+import { mergeMaybeTuples } from '@/utilities/mergeMaybeTuples'
+import { getParamValue } from '@/utilities/params'
+import { getParamValuesFromUrl } from '@/utilities/paramsFinder'
+import { unwrapTuples } from '@/utilities/unwrapTuples'
 
 export const routeParamsAreValid: RouteMatchRule = (route, url) => {
   try {
@@ -11,27 +15,23 @@ export const routeParamsAreValid: RouteMatchRule = (route, url) => {
   return true
 }
 
-export const getRouteParamValues = (route: ResolvedRoute, url: string): Record<string, unknown> => {
+export const getRouteParamValues = (route: RouterRoute, url: string): Record<string, unknown> => {
   const { pathname, search } = createMaybeRelativeUrl(url)
 
-  return {
-    ...getRouteParams(route.pathParams, route.path, pathname),
-    ...getRouteParams(route.queryParams, route.query, search),
-  }
+  const params = mergeMaybeTuples(
+    getRouteParams(route.pathParams, route.path, pathname),
+    getRouteParams(route.queryParams, route.query, search),
+  )
+
+  return unwrapTuples(params)
 }
 
-const getRouteParams = (paramDefinitions: Record<string, Param[]>, paramFormat: string, valueFromUrl: string): Record<string, unknown> => {
-  const params: Record<string, unknown> = {}
+const getRouteParams = (paramDefinitions: Record<string, Param[]>, paramFormat: string, valueFromUrl: string): Record<string, unknown[]> => {
+  const params: Record<string, unknown[]> = {}
 
   for (const [key, paramsTuple] of Object.entries(paramDefinitions)) {
     const stringValues = getParamValuesFromUrl(valueFromUrl, paramFormat, key)
     const values = paramsTuple.map((param, index) => getParamValue(stringValues[index], param))
-
-    if (paramsTuple.length === 1) {
-      const [value] = values
-      params[key] = value
-      continue
-    }
 
     params[key] = values
   }

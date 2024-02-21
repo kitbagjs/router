@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { Route } from '@/types'
-import { resolveRoutes } from '@/utilities/resolveRoutes'
+import { createRouterRoutes } from '@/utilities/createRouterRoutes'
 import { getRoutePath } from '@/utilities/routes'
 import { component } from '@/utilities/testHelpers'
 
@@ -25,8 +25,8 @@ describe('getRoutePath', () => {
       children: [parent],
     } as const satisfies Route
 
-    const [resolved] = resolveRoutes([grandparent])
-    const flattened = getRoutePath(resolved)
+    const [routerRoutes] = createRouterRoutes([grandparent])
+    const flattened = getRoutePath(routerRoutes)
 
     expect(flattened).toBe('grandparent.parent.child')
   })
@@ -48,8 +48,8 @@ describe('getRoutePath', () => {
       children: [parent],
     } as const satisfies Route
 
-    const [resolved] = resolveRoutes([grandparent])
-    const flattened = getRoutePath(resolved)
+    const [routerRoutes] = createRouterRoutes([grandparent])
+    const flattened = getRoutePath(routerRoutes)
 
     expect(flattened).toBe('child')
   })

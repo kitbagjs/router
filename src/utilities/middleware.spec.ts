@@ -1,9 +1,9 @@
 import { expect, test, vi } from 'vitest'
 import { RouteMiddleware } from '@/types'
 import { RouterPushError, RouterRejectionError, RouterReplaceError } from '@/types/errors'
+import { ResolvedRoute } from '@/types/resolved'
 import { Route } from '@/types/routes'
-import { RouterRoute } from '@/utilities/createRouterRoute'
-import { createRouterRouteQuery } from '@/utilities/createRouterRouteQuery'
+import { createResolvedRouteQuery } from '@/utilities/createResolvedRouteQuery'
 import { executeMiddleware } from '@/utilities/middleware'
 import { component } from '@/utilities/testHelpers'
 
@@ -20,11 +20,11 @@ test('calls middleware with correct routes', () => {
     component,
   } as const satisfies Route
 
-  const routerRouteA: RouterRoute = {
+  const resolvedRouteA: ResolvedRoute = {
     matched: routeA,
     matches: [routeA],
     name: routeA.name,
-    query: createRouterRouteQuery(),
+    query: createResolvedRouteQuery(),
     params: {},
   }
 
@@ -34,26 +34,26 @@ test('calls middleware with correct routes', () => {
     component,
   } as const satisfies Route
 
-  const routerRouteB: RouterRoute = {
+  const resolvedRouteB: ResolvedRoute = {
     matched: routeB,
     matches: [routeB],
     name: routeB.name,
-    query: createRouterRouteQuery(),
+    query: createResolvedRouteQuery(),
     params: {},
   }
 
   executeMiddleware({
     middleware: [middleware],
-    to: routerRouteA,
-    from: routerRouteB,
+    to: resolvedRouteA,
+    from: resolvedRouteB,
     onMiddlewareError: rethrow,
   })
 
   expect(middleware).toHaveBeenCalledOnce()
 
   const [to, { from }] = middleware.mock.lastCall
-  expect(to).toMatchObject(routerRouteA)
-  expect(from).toMatchObject(routerRouteB)
+  expect(to).toMatchObject(resolvedRouteA)
+  expect(from).toMatchObject(resolvedRouteB)
 })
 
 test.each<{ type: string, error: any, middleware: RouteMiddleware }>([
@@ -67,17 +67,17 @@ test.each<{ type: string, error: any, middleware: RouteMiddleware }>([
     component,
   } as const satisfies Route
 
-  const routerRoute: RouterRoute = {
+  const resolvedRoute: ResolvedRoute = {
     matched: route,
     matches: [route],
     name: route.name,
-    query: createRouterRouteQuery(),
+    query: createResolvedRouteQuery(),
     params: {},
   }
 
   const execute = (): Promise<boolean> => executeMiddleware({
     middleware: [middleware],
-    to: routerRoute,
+    to: resolvedRoute,
     from: null,
     onMiddlewareError: rethrow,
   })
@@ -96,17 +96,17 @@ test('middleware is called in order', () => {
     component,
   } as const satisfies Route
 
-  const routerRoute: RouterRoute = {
+  const resolvedRoute: ResolvedRoute = {
     matched: route,
     matches: [route],
     name: route.name,
-    query: createRouterRouteQuery(),
+    query: createResolvedRouteQuery(),
     params: {},
   }
 
   executeMiddleware({
     middleware: [middlewareA, middlewareB, middlewareC],
-    to: routerRoute,
+    to: resolvedRoute,
     from: null,
     onMiddlewareError: rethrow,
   })

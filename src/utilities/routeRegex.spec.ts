@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { Route } from '@/types'
-import { resolveRoutes, generateRoutePathRegexPattern, generateRouteQueryRegexPatterns } from '@/utilities'
+import { createRouterRoutes, generateRoutePathRegexPattern, generateRouteQueryRegexPatterns } from '@/utilities'
 import { component } from '@/utilities/testHelpers'
 
 describe('generateRoutePathRegexPattern', () => {
@@ -10,9 +10,9 @@ describe('generateRoutePathRegexPattern', () => {
       path: 'parent/child/grandchild',
       component,
     } as const satisfies Route
-    const [resolved] = resolveRoutes([route])
+    const [routerRoutes] = createRouterRoutes([route])
 
-    const result = generateRoutePathRegexPattern(resolved)
+    const result = generateRoutePathRegexPattern(routerRoutes)
 
     const expected = new RegExp(`^${route.path}$`, 'i')
     expect(result.toString()).toBe(expected.toString())
@@ -24,9 +24,9 @@ describe('generateRoutePathRegexPattern', () => {
       path: 'parent/child/:childParam/grand-child/:grandChild123',
       component,
     } as const satisfies Route
-    const [resolved] = resolveRoutes([route])
+    const [routerRoutes] = createRouterRoutes([route])
 
-    const result = generateRoutePathRegexPattern(resolved)
+    const result = generateRoutePathRegexPattern(routerRoutes)
 
     const catchAll = '([^/]+)'
     const expected = new RegExp(`^parent/child/${catchAll}/grand-child/${catchAll}$`, 'i')
@@ -39,9 +39,9 @@ describe('generateRoutePathRegexPattern', () => {
       path: 'parent/child/:?childParam/grand-child/:?grandChild123',
       component,
     } as const satisfies Route
-    const [resolved] = resolveRoutes([route])
+    const [routerRoutes] = createRouterRoutes([route])
 
-    const result = generateRoutePathRegexPattern(resolved)
+    const result = generateRoutePathRegexPattern(routerRoutes)
 
     const catchAll = '([^/]*)'
     const expected = new RegExp(`^parent/child/${catchAll}/grand-child/${catchAll}$`, 'i')
@@ -56,9 +56,9 @@ describe('generateRouteQueryRegexPatterns', () => {
       path: 'query',
       component,
     } as const satisfies Route
-    const [resolved] = resolveRoutes([route])
+    const [routerRoutes] = createRouterRoutes([route])
 
-    const result = generateRouteQueryRegexPatterns(resolved)
+    const result = generateRouteQueryRegexPatterns(routerRoutes)
 
     expect(result).toMatchObject([])
   })
@@ -70,9 +70,9 @@ describe('generateRouteQueryRegexPatterns', () => {
       query: 'dynamic=:first&static=params&another=:second',
       component,
     } as const satisfies Route
-    const [resolved] = resolveRoutes([route])
+    const [routerRoutes] = createRouterRoutes([route])
 
-    const result = generateRouteQueryRegexPatterns(resolved)
+    const result = generateRouteQueryRegexPatterns(routerRoutes)
 
     const catchAll = '([^/]+)'
     expect(result).toMatchObject([new RegExp(`dynamic=${catchAll}`), new RegExp('static=params'), new RegExp(`dynamic=${catchAll}`)])
@@ -85,9 +85,9 @@ describe('generateRouteQueryRegexPatterns', () => {
       query: 'dynamic=:?first&static=params&another=:?second',
       component,
     } as const satisfies Route
-    const [resolved] = resolveRoutes([route])
+    const [routerRoutes] = createRouterRoutes([route])
 
-    const result = generateRouteQueryRegexPatterns(resolved)
+    const result = generateRouteQueryRegexPatterns(routerRoutes)
 
     const catchAll = '([^/]*)'
     expect(result).toMatchObject([new RegExp(`dynamic=${catchAll}`), new RegExp('static=params'), new RegExp(`dynamic=${catchAll}`)])

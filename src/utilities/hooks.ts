@@ -1,10 +1,9 @@
 import { inject, onUnmounted } from 'vue'
 import { useRouterDepth } from '@/compositions/useRouterDepth'
 import { RouterNotInstalledError } from '@/errors/routerNotInstalledError'
-import { RouteMiddleware } from '@/types'
+import { ResolvedRoute, RouteMiddleware } from '@/types'
 import { asArray } from '@/utilities'
 import { AddRouteHook, RouteHookRemove, RouteHookType, addRouteHookInjectionKey } from '@/utilities/createRouterHooks'
-import { RouterRoute } from '@/utilities/createRouterRoute'
 
 /* Desired Hooks
 beforeRouteEnter
@@ -15,7 +14,7 @@ afterRouteUpdate
 afterRouteLeave
 */
 
-type ComponentHookCondition = (to: RouterRoute, from: RouterRoute | null, depth: number) => boolean
+type ComponentHookCondition = (to: ResolvedRoute, from: ResolvedRoute | null, depth: number) => boolean
 
 function factory(type: RouteHookType, condition: ComponentHookCondition): AddRouteHook {
   return (middleware) => {

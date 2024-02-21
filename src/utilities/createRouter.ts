@@ -3,21 +3,25 @@ import { RouterLink, RouterView } from '@/components'
 import { routerInjectionKey, routerRejectionKey } from '@/compositions'
 import { Routes, Router, RouterOptions, RouterImplementation } from '@/types'
 import { RouterPushError, RouterRejectionError, RouterReplaceError } from '@/types/errors'
-import { createRouteMethods, createRouterNavigation, resolveRoutes } from '@/utilities'
+import { createCurrentRoute } from '@/utilities/createCurrentRoute'
+import { createRouteMethods } from '@/utilities/createRouteMethods'
 import { createRouterFind } from '@/utilities/createRouterFind'
 import { addRouteHookInjectionKey, createRouterHooks } from '@/utilities/createRouterHooks'
 import { createRouterPush } from '@/utilities/createRouterPush'
 import { createRouterReject } from '@/utilities/createRouterReject'
 import { createRouterReplace } from '@/utilities/createRouterReplace'
 import { createRouterResolve } from '@/utilities/createRouterResolve'
-import { createRouterRoute } from '@/utilities/createRouterRoute'
+import { createRouterRoutes } from '@/utilities/createRouterRoutes'
 import { getInitialUrl } from '@/utilities/getInitialUrl'
+import { getResolvedRouteForUrl } from '@/utilities/getResolvedRouteForUrl'
 import { OnMiddlewareError, executeMiddleware } from '@/utilities/middleware'
-import { getRouteHooks, getRouterRouteForUrl } from '@/utilities/routes'
+import { createRouterNavigation } from '@/utilities/routerNavigation'
+import { getRouteHooks } from '@/utilities/routes'
 
 export function createRouter<const T extends Routes>(routes: T, options: RouterOptions = {}): Router<T> {
-  const resolved = resolveRoutes(routes)
-  const resolve = createRouterResolve({ resolved })
+  const routerRoutes = createRouterRoutes(routes)
+  const resolve = createRouterResolve(routerRoutes)
+
   const {
     onBeforeRouteEnter,
     onBeforeRouteLeave,
@@ -53,7 +57,7 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
   }
 
   const onLocationUpdate = async (url: string): Promise<void> => {
-    const to = getRouterRouteForUrl(resolved, url)
+    const to = getResolvedRouteForUrl(routerRoutes, url)
     const from = isRejectionRoute(route) ? null : route
 
     if (!to) {
@@ -84,11 +88,11 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
 
   const push = createRouterPush({ navigation, resolve })
   const replace = createRouterReplace({ push })
-  const methods = createRouteMethods({ resolved, push })
-  const find = createRouterFind({ resolved, resolve })
+  const methods = createRouteMethods({ routes: routerRoutes, push })
+  const find = createRouterFind({ routes: routerRoutes, resolve })
   const { reject, rejection, getRejectionRoute, isRejectionRoute, clearRejection } = createRouterReject(options)
   const notFoundRoute = getRejectionRoute('NotFound')
-  const { route, updateRoute } = createRouterRoute(notFoundRoute)
+  const { route, updateRoute } = createCurrentRoute(notFoundRoute)
 
   const initialized = onLocationUpdate(getInitialUrl(options.initialUrl))
 
