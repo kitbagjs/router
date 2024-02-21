@@ -14,7 +14,7 @@ import { createRouterResolve } from '@/utilities/createRouterResolve'
 import { createRouterRoutes } from '@/utilities/createRouterRoutes'
 import { getInitialUrl } from '@/utilities/getInitialUrl'
 import { getResolvedRouteForUrl } from '@/utilities/getResolvedRouteForUrl'
-import { OnMiddlewareError, executeMiddleware } from '@/utilities/middleware'
+import { OnRouteHookError, executeRouteHooks } from '@/utilities/hooks'
 import { createRouterNavigation } from '@/utilities/routerNavigation'
 import { getRouteHooks } from '@/utilities/routes'
 
@@ -30,7 +30,7 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
     hooks,
   } = createRouterHooks()
 
-  const onMiddlewareError: OnMiddlewareError = (error) => {
+  const onRouteHookError: OnRouteHookError = (error) => {
     if (error instanceof RouterRejectionError) {
       reject(error.type)
     }
@@ -64,14 +64,14 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
       return reject('NotFound')
     }
 
-    const success = await executeMiddleware({
-      middleware: [
+    const success = await executeRouteHooks({
+      hooks: [
         ...hooks.before,
         ...getRouteHooks(to, 'before'),
       ],
       to,
       from,
-      onMiddlewareError,
+      onRouteHookError,
     })
 
     if (!success) {

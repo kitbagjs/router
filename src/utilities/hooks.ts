@@ -1,23 +1,55 @@
 import { inject, onUnmounted } from 'vue'
 import { useRouterDepth } from '@/compositions/useRouterDepth'
 import { RouterNotInstalledError } from '@/errors/routerNotInstalledError'
-import { ResolvedRoute, RouteMiddleware } from '@/types'
-import { asArray } from '@/utilities'
-import { AddRouteHook, RouteHookRemove, RouteHookType, addRouteHookInjectionKey } from '@/utilities/createRouterHooks'
+import { AddRouteHook, ResolvedRoute, RouteHook, RouteHookRemove, RouteHookType, RouterPushError, RouterRejectionError, RouterReplaceError } from '@/types'
+import { RouterPushImplementation, RouterReject, RouterReplaceImplementation, asArray } from '@/utilities'
+import { addRouteHookInjectionKey } from '@/utilities/createRouterHooks'
 
-/* Desired Hooks
-beforeRouteEnter
-beforeRouteUpdate
-beforeRouteLeave
-afterRouteEnter
-afterRouteUpdate
-afterRouteLeave
-*/
+export type OnRouteHookError = (error: unknown) => void
+
+type ExecuteRouteHooksContext = {
+  hooks: RouteHook[],
+  to: ResolvedRoute,
+  from: ResolvedRoute | null,
+  onRouteHookError: OnRouteHookError,
+}
+
+export async function executeRouteHooks({ hooks, to, from, onRouteHookError }: ExecuteRouteHooksContext): Promise<boolean> {
+  try {
+    const results = hooks.map(callback => callback(to, {
+      from,
+      reject: routeHookReject,
+      push: routeHookPush,
+      replace: routeHookReplace,
+    }))
+
+    await Promise.all(results)
+
+  } catch (error) {
+    onRouteHookError(error)
+
+    return false
+  }
+
+  return true
+}
+
+const routeHookReject: RouterReject = (type) => {
+  throw new RouterRejectionError(type)
+}
+
+const routeHookPush: RouterPushImplementation = (...parameters) => {
+  throw new RouterPushError(parameters)
+}
+
+const routeHookReplace: RouterReplaceImplementation = (...parameters) => {
+  throw new RouterReplaceError(parameters)
+}
 
 type ComponentHookCondition = (to: ResolvedRoute, from: ResolvedRoute | null, depth: number) => boolean
 
 function factory(type: RouteHookType, condition: ComponentHookCondition): AddRouteHook {
-  return (middleware) => {
+  return (hookOrHooks) => {
     const depth = useRouterDepth()
     const addRouteHook = inject(addRouteHookInjectionKey)
 
@@ -25,16 +57,16 @@ function factory(type: RouteHookType, condition: ComponentHookCondition): AddRou
       throw new RouterNotInstalledError()
     }
 
-    const remove = asArray(middleware).map(middleware => {
-      const hook: RouteMiddleware = (to, context) => {
+    const remove = asArray(hookOrHooks).map(hook => {
+      const wrapper: RouteHook = (to, context) => {
         if (!condition(to, context.from, depth)) {
           return
         }
 
-        middleware(to, context)
+        hook(to, context)
       }
 
-      return addRouteHook(type, hook)
+      return addRouteHook(type, wrapper)
     })
 
     const removeAll: RouteHookRemove = () => remove.forEach(fn => fn())

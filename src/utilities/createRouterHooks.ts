@@ -1,14 +1,9 @@
 import { InjectionKey } from 'vue'
-import { ResolvedRoute, RouteMiddleware } from '@/types'
+import { AddRouteHook, ResolvedRoute, RouteHook, RouteHookRemove, RouteHookType } from '@/types'
 import { asArray } from '@/utilities/array'
 
-export type RouteHookRemove = () => void
-export type AddRouteHook = (hook: RouteMiddleware) => RouteHookRemove
-export type RouteHookType = 'before' | 'after'
-export type RouteHookLifeCycle = 'onBeforeRouteEnter' | 'onBeforeRouteLeave' | 'onBeforeRouteUpdate'
-
-type AddRouteHookForLifeCycle = (type: RouteHookType, hook: RouteMiddleware) => RouteHookRemove
-type RouteHooks = Record<RouteHookType, Set<RouteMiddleware>>
+type AddRouteHookForLifeCycle = (type: RouteHookType, hook: RouteHook) => RouteHookRemove
+type RouteHooks = Record<RouteHookType, Set<RouteHook>>
 
 export const addRouteHookInjectionKey: InjectionKey<AddRouteHookForLifeCycle> = Symbol()
 
@@ -41,19 +36,19 @@ export function createRouterHooks(): RouterHooks {
   }
 
   const factory = (type: RouteHookType, condition: GlobalHookCondition): AddRouteHook => {
-    return (middleware) => {
-      const remove = asArray(middleware).map(middleware => {
-        const hook: RouteMiddleware = (to, context) => {
+    return (hookOrHooks) => {
+      const remove = asArray(hookOrHooks).map(hook => {
+        const wrapper: RouteHook = (to, context) => {
           if (!condition(to, context.from)) {
             return
           }
 
-          middleware(to, context)
+          hook(to, context)
         }
 
-        hooks[type].add(hook)
+        hooks[type].add(wrapper)
 
-        return () => hooks[type].delete(hook)
+        return () => hooks[type].delete(wrapper)
       })
 
       return () => remove.forEach(fn => fn())

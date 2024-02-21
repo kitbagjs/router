@@ -1,7 +1,6 @@
-import { RouterRoute, RouteMiddleware, isNamedRoute } from '@/types'
+import { RouterRoute, RouteHook, isNamedRoute, RouteHookLifeCycle, RouteHookType } from '@/types'
 import { ResolvedRoute } from '@/types/resolved'
 import { asArray } from '@/utilities/array'
-import { RouteHookLifeCycle, RouteHookType } from '@/utilities/createRouterHooks'
 
 export function getRoutePath(route: RouterRoute): string {
   return route.matches
@@ -19,7 +18,7 @@ function getRouterHookTypes(type: RouteHookType): RouteHookLifeCycle[] {
 }
 
 // todo: need the concept of a hook condition here as well
-export function getRouteHooks(route: ResolvedRoute | null, type: RouteHookType): RouteMiddleware[] {
+export function getRouteHooks(route: ResolvedRoute | null, type: RouteHookType): RouteHook[] {
   if (!route) {
     return []
   }
