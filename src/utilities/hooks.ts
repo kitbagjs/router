@@ -1,7 +1,7 @@
 import { inject, onUnmounted } from 'vue'
 import { useRouterDepth } from '@/compositions/useRouterDepth'
 import { RouterNotInstalledError } from '@/errors/routerNotInstalledError'
-import { AddRouteHook, HookCondition, ResolvedRoute, RouteHook, RouteHookRemove, RouteHookType, RouterPushError, RouterRejectionError, RouterReplaceError } from '@/types'
+import { AddRouteHook, RouteHookCondition, ResolvedRoute, RouteHook, RouteHookRemove, RouteHookType, RouterPushError, RouterRejectionError, RouterReplaceError } from '@/types'
 import { RouterPushImplementation, RouterReject, RouterReplaceImplementation, asArray } from '@/utilities'
 import { addRouteHookInjectionKey } from '@/utilities/createRouterHooks'
 
@@ -46,7 +46,7 @@ const routeHookReplace: RouterReplaceImplementation = (...parameters) => {
   throw new RouterReplaceError(parameters)
 }
 
-function componentHookFactory(type: RouteHookType, condition: HookCondition): AddRouteHook {
+function componentHookFactory(type: RouteHookType, condition: RouteHookCondition): AddRouteHook {
   return (hookOrHooks) => {
     const depth = useRouterDepth()
     const addRouteHook = inject(addRouteHookInjectionKey)
@@ -75,21 +75,21 @@ function componentHookFactory(type: RouteHookType, condition: HookCondition): Ad
   }
 }
 
-export const isRouteEnter: HookCondition = (to, from, depth) => {
+export const isRouteEnter: RouteHookCondition = (to, from, depth) => {
   const toMatches = to.matches
   const fromMatches = from?.matches ?? []
 
   return toMatches.length < depth || toMatches[depth] !== fromMatches[depth]
 }
 
-export const isRouteLeave: HookCondition = (to, from, depth) => {
+export const isRouteLeave: RouteHookCondition = (to, from, depth) => {
   const toMatches = to.matches
   const fromMatches = from?.matches ?? []
 
   return toMatches.length < depth || toMatches[depth] !== fromMatches[depth]
 }
 
-export const isRouteUpdate: HookCondition = (to, from, depth) => {
+export const isRouteUpdate: RouteHookCondition = (to, from, depth) => {
   return to.matches[depth] === from?.matches[depth]
 }
 

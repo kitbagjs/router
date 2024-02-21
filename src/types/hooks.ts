@@ -20,4 +20,4 @@ export type RouteHookRemove = () => void
 export type AddRouteHook = (hook: RouteHook) => RouteHookRemove
 export type RouteHookType = 'before' | 'after'
 export type RouteHookLifeCycle = 'onBeforeRouteEnter' | 'onBeforeRouteLeave' | 'onBeforeRouteUpdate'
-export type HookCondition = (to: ResolvedRoute, from: ResolvedRoute | null, depth: number) => boolean
+export type RouteHookCondition = (to: ResolvedRoute, from: ResolvedRoute | null, depth: number) => boolean
