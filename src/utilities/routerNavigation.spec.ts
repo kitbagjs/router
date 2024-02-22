@@ -3,20 +3,20 @@ import { createRouterNavigation } from '@/utilities/routerNavigation'
 import { random } from '@/utilities/testHelpers'
 
 test('Browser like navigation is not supported', () => {
-  const onLocationUpdate = vi.fn()
-  const navigation = createRouterNavigation({ onLocationUpdate })
+  const onAfterLocationUpdate = vi.fn()
+  const navigation = createRouterNavigation({ onAfterLocationUpdate })
 
   expect(() => navigation.back()).toThrowError()
   expect(() => navigation.forward()).toThrowError()
   expect(() => navigation.go(1)).toThrowError()
 })
 
-test('when update is called and same origin calls onLocationUpdate', () => {
-  const onLocationUpdate = vi.fn()
+test('when update is called and same origin calls onAfterLocationUpdate', () => {
+  const onAfterLocationUpdate = vi.fn()
   const url = random.number().toString()
-  const history = createRouterNavigation({ onLocationUpdate })
+  const history = createRouterNavigation({ onAfterLocationUpdate })
 
   history.update(url)
 
-  expect(onLocationUpdate).toHaveBeenCalledWith(url)
+  expect(onAfterLocationUpdate).toHaveBeenCalledWith(url)
 })

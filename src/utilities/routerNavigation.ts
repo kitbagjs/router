@@ -2,7 +2,8 @@ import { isBrowser } from '@/utilities/isBrowser'
 import { updateBrowserUrl } from '@/utilities/updateBrowserUrl'
 
 type RouterNavigationOptions = {
-  onLocationUpdate: (url: string) => Promise<void>,
+  onBeforeLocationUpdate?: (url: string) => Promise<void>,
+  onAfterLocationUpdate?: (url: string) => Promise<void>,
 }
 
 type RouterNavigationUpdateOptions = {
@@ -33,16 +34,24 @@ export function createRouterNavigation(options: RouterNavigationOptions): Router
   return createNodeNavigation(options)
 }
 
-function createBrowserNavigation({ onLocationUpdate }: RouterNavigationOptions): RouterNavigation {
+function createBrowserNavigation({ onBeforeLocationUpdate, onAfterLocationUpdate }: RouterNavigationOptions): RouterNavigation {
 
   const update: NavigationUpdate = async (url, options) => {
+    if (onBeforeLocationUpdate) {
+      await onBeforeLocationUpdate(url)
+    }
+
     await updateBrowserUrl(url, options)
 
-    return await onLocationUpdate(url)
+    if (onAfterLocationUpdate) {
+      return await onAfterLocationUpdate(url)
+    }
   }
 
   const refresh: NavigationRefresh = async () => {
-    await onLocationUpdate(window.location.toString())
+    if (onAfterLocationUpdate) {
+      await onAfterLocationUpdate(window.location.toString())
+    }
   }
 
   const cleanup: NavigationCleanup = () => {
@@ -61,13 +70,20 @@ function createBrowserNavigation({ onLocationUpdate }: RouterNavigationOptions):
   }
 }
 
-function createNodeNavigation({ onLocationUpdate }: RouterNavigationOptions): RouterNavigation {
+function createNodeNavigation({ onBeforeLocationUpdate, onAfterLocationUpdate }: RouterNavigationOptions): RouterNavigation {
+
   const notSupported = (): any => {
     throw new Error('Browser like navigation is not supported outside of a browser context')
   }
 
   const update: NavigationUpdate = async (url) => {
-    return await onLocationUpdate(url)
+    if (onBeforeLocationUpdate) {
+      await onBeforeLocationUpdate(url)
+    }
+
+    if (onAfterLocationUpdate) {
+      return await onAfterLocationUpdate(url)
+    }
   }
 
   const cleanup: NavigationCleanup = () => {}
