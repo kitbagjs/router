@@ -49,8 +49,14 @@ function createBrowserNavigation({ onBeforeLocationUpdate, onAfterLocationUpdate
   }
 
   const refresh: NavigationRefresh = async () => {
+    const url = window.location.toString()
+
+    if (onBeforeLocationUpdate) {
+      await onBeforeLocationUpdate(url)
+    }
+
     if (onAfterLocationUpdate) {
-      await onAfterLocationUpdate(window.location.toString())
+      await onAfterLocationUpdate(url)
     }
   }
 
