@@ -56,8 +56,9 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
     }
   }
 
-  const onBeforeLocationUpdate = async (url: string): Promise<void> => {
-    const to = getResolvedRouteForUrl(routerRoutes, url)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars, require-await
+  const onBeforeLocationUpdate = async (_url: string): Promise<void> => {
+    // const to = getResolvedRouteForUrl(routerRoutes, url)
 
     // execute before hooks
     return Promise.resolve()
