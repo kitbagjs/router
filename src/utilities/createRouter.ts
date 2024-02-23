@@ -56,7 +56,15 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
     }
   }
 
-  const onLocationUpdate = async (url: string): Promise<void> => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars, require-await
+  const onBeforeLocationUpdate = async (_url: string): Promise<void> => {
+    // const to = getResolvedRouteForUrl(routerRoutes, url)
+
+    // execute before hooks
+    return Promise.resolve()
+  }
+
+  const onAfterLocationUpdate = async (url: string): Promise<void> => {
     const to = getResolvedRouteForUrl(routerRoutes, url)
     const from = isRejectionRoute(route) ? null : route
 
@@ -83,7 +91,8 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
   }
 
   const navigation = createRouterNavigation({
-    onLocationUpdate,
+    onBeforeLocationUpdate,
+    onAfterLocationUpdate,
   })
 
   const push = createRouterPush({ navigation, resolve })
@@ -94,7 +103,7 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
   const notFoundRoute = getRejectionRoute('NotFound')
   const { route, updateRoute } = createCurrentRoute(notFoundRoute)
 
-  const initialized = onLocationUpdate(getInitialUrl(options.initialUrl))
+  const initialized = onAfterLocationUpdate(getInitialUrl(options.initialUrl))
 
   function install(app: App): void {
     app.component('RouterView', RouterView)
