@@ -1,8 +1,7 @@
-import { describe, expect, test, vi } from 'vitest'
-import { createResolvedRouteQuery } from '.'
-import { ResolvedRoute, Route } from '@/types'
+import { describe, expect, test } from 'vitest'
+import { Route } from '@/types'
 import { createRouterRoutes } from '@/utilities/createRouterRoutes'
-import { getRouteHooks, getRoutePath } from '@/utilities/routes'
+import { getRoutePath } from '@/utilities/routes'
 import { component } from '@/utilities/testHelpers'
 
 describe('getRoutePath', () => {
