@@ -1,7 +1,7 @@
 import { inject, onUnmounted } from 'vue'
 import { useRouterDepth } from '@/compositions/useRouterDepth'
 import { RouterNotInstalledError } from '@/errors/routerNotInstalledError'
-import { AddRouteHook, RouteHookCondition, ResolvedRoute, RouteHook, RouteHookRemove, RouteHookType, RouterPushError, RouterRejectionError, RouterReplaceError } from '@/types'
+import { AddRouteHook, RouteHookCondition, ResolvedRoute, RouteHook, RouteHookRemove, RouteHookTiming, RouterPushError, RouterRejectionError, RouterReplaceError } from '@/types'
 import { RouterPushImplementation, RouterReject, RouterReplaceImplementation, asArray } from '@/utilities'
 import { addRouteHookInjectionKey } from '@/utilities/createRouterHooks'
 
@@ -46,7 +46,7 @@ const routeHookReplace: RouterReplaceImplementation = (...parameters) => {
   throw new RouterReplaceError(parameters)
 }
 
-function componentHookFactory(type: RouteHookType, condition: RouteHookCondition): AddRouteHook {
+function componentHookFactory(type: RouteHookTiming, condition: RouteHookCondition): AddRouteHook {
   return (hookOrHooks) => {
     const depth = useRouterDepth()
     const addRouteHook = inject(addRouteHookInjectionKey)

@@ -1,9 +1,9 @@
 import { InjectionKey } from 'vue'
-import { AddRouteHook, ResolvedRoute, RouteHook, RouteHookRemove, RouteHookType } from '@/types'
+import { AddRouteHook, ResolvedRoute, RouteHook, RouteHookRemove, RouteHookTiming } from '@/types'
 import { asArray } from '@/utilities/array'
 
-type AddRouteHookForLifeCycle = (type: RouteHookType, hook: RouteHook) => RouteHookRemove
-type RouteHooks = Record<RouteHookType, Set<RouteHook>>
+type AddRouteHookForLifeCycle = (type: RouteHookTiming, hook: RouteHook) => RouteHookRemove
+type RouteHooks = Record<RouteHookTiming, Set<RouteHook>>
 
 export const addRouteHookInjectionKey: InjectionKey<AddRouteHookForLifeCycle> = Symbol()
 
@@ -35,7 +35,7 @@ export function createRouterHooks(): RouterHooks {
     after: new Set(),
   }
 
-  const factory = (type: RouteHookType, condition: GlobalHookCondition): AddRouteHook => {
+  const factory = (type: RouteHookTiming, condition: GlobalHookCondition): AddRouteHook => {
     return (hookOrHooks) => {
       const remove = asArray(hookOrHooks).map(hook => {
         const wrapper: RouteHook = (to, context) => {

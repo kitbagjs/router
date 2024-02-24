@@ -1,4 +1,4 @@
-import { RouterRoute, RouteHook, isNamedRoute, RouteHookType } from '@/types'
+import { RouterRoute, RouteHook, isNamedRoute, RouteHookTiming } from '@/types'
 import { ResolvedRoute } from '@/types/resolved'
 import { asArray } from '@/utilities/array'
 import { isRouteEnter, isRouteLeave, isRouteUpdate } from '@/utilities/hooks'
@@ -10,7 +10,7 @@ export function getRoutePath(route: RouterRoute): string {
     .join('.')
 }
 
-export function getRouteHooks(to: ResolvedRoute, from: ResolvedRoute | null, type: RouteHookType): RouteHook[] {
+export function getRouteHooks(to: ResolvedRoute, from: ResolvedRoute | null, type: RouteHookTiming): RouteHook[] {
   if (type === 'before') {
     return getRouteBeforeHooks(to, from)
   }
@@ -20,7 +20,7 @@ export function getRouteHooks(to: ResolvedRoute, from: ResolvedRoute | null, typ
   }
 
   const exhaustive: never = type
-  throw new Error(`Missing RouteHookType condition in getRouteHooks: ${exhaustive}`)
+  throw new Error(`Missing RouteHookTiming condition in getRouteHooks: ${exhaustive}`)
 }
 
 function getRouteBeforeHooks(to: ResolvedRoute, from: ResolvedRoute | null): RouteHook[] {
