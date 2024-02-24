@@ -14,9 +14,9 @@ import { createRouterResolve } from '@/utilities/createRouterResolve'
 import { createRouterRoutes } from '@/utilities/createRouterRoutes'
 import { getInitialUrl } from '@/utilities/getInitialUrl'
 import { getResolvedRouteForUrl } from '@/utilities/getResolvedRouteForUrl'
+import { getRouteHooks } from '@/utilities/getRouteHooks'
 import { OnRouteHookError, executeRouteHooks } from '@/utilities/hooks'
 import { createRouterNavigation } from '@/utilities/routerNavigation'
-import { getRouteHooks } from '@/utilities/routes'
 
 export function createRouter<const T extends Routes>(routes: T, options: RouterOptions = {}): Router<T> {
   const routerRoutes = createRouterRoutes(routes)
