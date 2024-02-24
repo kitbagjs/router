@@ -1,7 +1,7 @@
 import { inject, onUnmounted } from 'vue'
 import { useRouterDepth } from '@/compositions/useRouterDepth'
 import { RouterNotInstalledError } from '@/errors/routerNotInstalledError'
-import { AddRouteHook, ResolvedRoute, RouteHook, RouteHookRemove, RouteHookType, RouterPushError, RouterRejectionError, RouterReplaceError } from '@/types'
+import { AddRouteHook, RouteHookCondition, ResolvedRoute, RouteHook, RouteHookRemove, RouteHookTiming, RouterPushError, RouterRejectionError, RouterReplaceError } from '@/types'
 import { RouterPushImplementation, RouterReject, RouterReplaceImplementation, asArray } from '@/utilities'
 import { addRouteHookInjectionKey } from '@/utilities/createRouterHooks'
 
@@ -46,9 +46,7 @@ const routeHookReplace: RouterReplaceImplementation = (...parameters) => {
   throw new RouterReplaceError(parameters)
 }
 
-type ComponentHookCondition = (to: ResolvedRoute, from: ResolvedRoute | null, depth: number) => boolean
-
-function factory(type: RouteHookType, condition: ComponentHookCondition): AddRouteHook {
+function componentHookFactory(type: RouteHookTiming, condition: RouteHookCondition): AddRouteHook {
   return (hookOrHooks) => {
     const depth = useRouterDepth()
     const addRouteHook = inject(addRouteHookInjectionKey)
@@ -77,26 +75,24 @@ function factory(type: RouteHookType, condition: ComponentHookCondition): AddRou
   }
 }
 
-const isComponentEnter: ComponentHookCondition = (to, from, depth) => {
+export const isRouteEnter: RouteHookCondition = (to, from, depth) => {
   const toMatches = to.matches
   const fromMatches = from?.matches ?? []
 
   return toMatches.length < depth || toMatches[depth] !== fromMatches[depth]
 }
 
-export const onBeforeRouteEnter = factory('before', isComponentEnter)
-
-const isComponentLeave: ComponentHookCondition = (to, from, depth) => {
+export const isRouteLeave: RouteHookCondition = (to, from, depth) => {
   const toMatches = to.matches
   const fromMatches = from?.matches ?? []
 
   return toMatches.length < depth || toMatches[depth] !== fromMatches[depth]
 }
 
-export const onBeforeRouteLeave = factory('before', isComponentLeave)
-
-const isComponentUpdate: ComponentHookCondition = (to, from, depth) => {
+export const isRouteUpdate: RouteHookCondition = (to, from, depth) => {
   return to.matches[depth] === from?.matches[depth]
 }
 
-export const onBeforeRouteUpdate = factory('before', isComponentUpdate)
+export const onBeforeRouteEnter = componentHookFactory('before', isRouteEnter)
+export const onBeforeRouteLeave = componentHookFactory('before', isRouteLeave)
+export const onBeforeRouteUpdate = componentHookFactory('before', isRouteUpdate)
