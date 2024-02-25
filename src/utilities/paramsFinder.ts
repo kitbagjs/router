@@ -33,7 +33,7 @@ export function setParamValuesOnUrl(path: string, paramReplace?: ParamReplace): 
 function getParamRegexPattern(path: string, paramName: string): RegExp {
   const regexPattern = [
     replaceOptionalParamSyntaxWithCaptureGroup,
-    replaceREquiredParamSyntaxWithCaptureGroup,
+    replaceRequiredParamSyntaxWithCaptureGroup,
     replaceParamSyntaxWithCatchAlls,
   ].reduce((pattern, regexBuild) => {
     return regexBuild(pattern, paramName)
@@ -48,7 +48,7 @@ function replaceOptionalParamSyntaxWithCaptureGroup(path: string, paramName: str
   return path.replace(optionalParamRegex, '([^/]*)')
 }
 
-function replaceREquiredParamSyntaxWithCaptureGroup(path: string, paramName: string): string {
+function replaceRequiredParamSyntaxWithCaptureGroup(path: string, paramName: string): string {
   const requiredParamRegex = new RegExp(`(:${paramName})(?=\\W|$)`, 'g')
 
   return path.replace(requiredParamRegex, '([^/]+)')
