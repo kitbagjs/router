@@ -1,6 +1,6 @@
 <template>
-  <a :href="resolve()" :class="classes" @click="onClick">
-    <slot />
+  <a :href="resolved" :class="classes" @click="onClick">
+    <slot v-bind="{ resolved, match, exactMatch, isExternal }" />
   </a>
 </template>
 
@@ -15,21 +15,29 @@
     to: string | RegisteredRouteWithParams<T> | ReturnType<RouteMethod>,
   } & RouterPushOptions>()
 
+  defineSlots<{
+    default?: (props: {
+      resolved: string,
+      match: boolean,
+      exactMatch: boolean,
+      isExternal: boolean,
+    }) => unknown,
+  }>()
+
   const router = useRouter()
 
   const route = computed(() => router.find(props.to)?.matched)
 
-  const inMatches = computed(() => !!route.value && router.route.matches.includes(readonly(route.value)))
-  const isMatched = computed(() => !!route.value && router.route.matched === route.value)
+  const match = computed(() => !!route.value && router.route.matches.includes(readonly(route.value)))
+  const exactMatch = computed(() => !!route.value && router.route.matched === route.value)
 
   const classes = computed(() => ({
-    'router-link--match': inMatches.value,
-    'router-link--exact-match': isMatched.value,
+    'router-link--match': match.value,
+    'router-link--exact-match': exactMatch.value,
   }))
 
-  function resolve(): string {
-    return router.resolve(props.to)
-  }
+  const resolved = computed(() => router.resolve(props.to))
+  const isExternal = computed(() => resolved.value.startsWith('http'))
 
   function onClick(event: MouseEvent): void {
     event.preventDefault()
