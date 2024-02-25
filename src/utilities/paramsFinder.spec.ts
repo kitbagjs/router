@@ -38,6 +38,12 @@ describe('getParamValuesFromUrl', () => {
 
     expect(response).toMatchObject(['ABC', '', 'GHI'])
   })
+
+  test('given multiple params, uses wildcards for non-selected param name', () => {
+    const response = getParamValuesFromUrl('/ABC/123/true', '/:str/:num/:bool', 'num')
+
+    expect(response).toMatchObject(['123'])
+  })
 })
 
 describe('setParamValuesOnUrl', () => {
