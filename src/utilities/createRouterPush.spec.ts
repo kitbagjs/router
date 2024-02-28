@@ -16,3 +16,15 @@ test('push calls onAfterLocationUpdate', () => {
 
   expect(onAfterLocationUpdate).toHaveBeenCalledOnce()
 })
+
+test('push with query, ', () => {
+  const onAfterLocationUpdate = vi.fn()
+  const navigation = createRouterNavigation({ onAfterLocationUpdate })
+  const routerRoutes = createRouterRoutes(routes)
+  const resolve = createRouterResolve(routerRoutes)
+  const push = createRouterPush({ navigation, resolve })
+
+  push({ route: 'parentB' }, { query: { foo: '123', bar: 'true' } })
+
+  expect(onAfterLocationUpdate).toHaveBeenCalledWith('/parentB?foo=123&bar=true')
+})
