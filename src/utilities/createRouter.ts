@@ -56,14 +56,13 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
     }
   }
 
-  const onBeforeLocationUpdate: BeforeLocationUpdate = async (url, { done }) => {
+  const onBeforeLocationUpdate: BeforeLocationUpdate = async (url) => {
     const to = getResolvedRouteForUrl(routerRoutes, url)
     const from = isRejectionRoute(route) ? null : route
 
     if (!to) {
       reject('NotFound')
-      done()
-      return
+      return false
     }
 
     const success = await executeRouteHooks({
@@ -76,9 +75,7 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
       onRouteHookError,
     })
 
-    if (!success) {
-      done()
-    }
+    return success
   }
 
   const onAfterLocationUpdate: AfterLocationUpdate = async (url) => {
