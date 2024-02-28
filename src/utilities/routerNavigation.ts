@@ -1,9 +1,19 @@
+import { NavigationAbortError } from '@/errors/navigationAbortError'
+import { NavigationDoneError } from '@/errors/navigationDoneError'
 import { isBrowser } from '@/utilities/isBrowser'
 import { updateBrowserUrl } from '@/utilities/updateBrowserUrl'
 
+type BeforeLocationUpdateContext = {
+  abort: () => void,
+  done: () => void,
+}
+
+export type BeforeLocationUpdate = (url: string, context: BeforeLocationUpdateContext) => Promise<void>
+export type AfterLocationUpdate = (url: string) => Promise<void>
+
 type RouterNavigationOptions = {
-  onBeforeLocationUpdate?: (url: string) => Promise<void>,
-  onAfterLocationUpdate?: (url: string) => Promise<void>,
+  onBeforeLocationUpdate?: BeforeLocationUpdate,
+  onAfterLocationUpdate?: AfterLocationUpdate,
 }
 
 type RouterNavigationUpdateOptions = {
@@ -37,11 +47,29 @@ export function createRouterNavigation(options: RouterNavigationOptions): Router
 function createBrowserNavigation({ onBeforeLocationUpdate, onAfterLocationUpdate }: RouterNavigationOptions): RouterNavigation {
 
   const update: NavigationUpdate = async (url, options) => {
+    const updateUrl = (): Promise<void> => updateBrowserUrl(url, options)
+
     if (onBeforeLocationUpdate) {
-      await onBeforeLocationUpdate(url)
+      try {
+        await onBeforeLocationUpdate(url, {
+          abort: navigationAbort,
+          done: navigationDone,
+        })
+      } catch (error) {
+        if (error instanceof NavigationAbortError) {
+          return
+        }
+
+        if (error instanceof NavigationDoneError) {
+          await updateUrl()
+          return
+        }
+
+        throw error
+      }
     }
 
-    await updateBrowserUrl(url, options)
+    await updateUrl()
 
     if (onAfterLocationUpdate) {
       return await onAfterLocationUpdate(url)
@@ -52,7 +80,22 @@ function createBrowserNavigation({ onBeforeLocationUpdate, onAfterLocationUpdate
     const url = window.location.toString()
 
     if (onBeforeLocationUpdate) {
-      await onBeforeLocationUpdate(url)
+      try {
+        await onBeforeLocationUpdate(url, {
+          abort: navigationAbort,
+          done: navigationDone,
+        })
+      } catch (error) {
+        if (error instanceof NavigationAbortError) {
+          return
+        }
+
+        if (error instanceof NavigationDoneError) {
+          return
+        }
+
+        throw error
+      }
     }
 
     if (onAfterLocationUpdate) {
@@ -84,7 +127,22 @@ function createNodeNavigation({ onBeforeLocationUpdate, onAfterLocationUpdate }:
 
   const update: NavigationUpdate = async (url) => {
     if (onBeforeLocationUpdate) {
-      await onBeforeLocationUpdate(url)
+      try {
+        await onBeforeLocationUpdate(url, {
+          abort: navigationAbort,
+          done: navigationDone,
+        })
+      } catch (error) {
+        if (error instanceof NavigationAbortError) {
+          return
+        }
+
+        if (error instanceof NavigationDoneError) {
+          return
+        }
+
+        throw error
+      }
     }
 
     if (onAfterLocationUpdate) {
@@ -102,4 +160,12 @@ function createNodeNavigation({ onBeforeLocationUpdate, onAfterLocationUpdate }:
     cleanup,
     update,
   }
+}
+
+function navigationAbort(): void {
+  throw new NavigationAbortError()
+}
+
+function navigationDone(): void {
+  throw new NavigationDoneError()
 }
