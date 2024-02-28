@@ -25,7 +25,7 @@ type RouterPushContext = {
 
 export function createRouterPush({ navigation, resolve }: RouterPushContext): RouterPushImplementation {
   return (source, options) => {
-    const url = resolve(source)
+    const url = resolve(source, options)
 
     return navigation.update(url, options)
   }
