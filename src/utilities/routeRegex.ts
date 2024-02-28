@@ -14,9 +14,23 @@ export function generateRouteQueryRegexPatterns(route: RouterRoute): RegExp[] {
     .map(([key, value]) => new RegExp(`${key}=${replaceParamSyntaxWithCatchAlls(value)}`, 'i'))
 }
 
-function replaceParamSyntaxWithCatchAlls(value: string): string {
+export function replaceParamSyntaxWithCatchAlls(value: string): string {
+  return [
+    replaceOptionalParamSyntaxWithCatchAll,
+    replaceRequiredParamSyntaxWithCatchAll,
+  ].reduce((pattern, regexBuild) => {
+    return regexBuild(pattern)
+  }, value)
+}
+
+function replaceOptionalParamSyntaxWithCatchAll(value: string): string {
   const optionalParamRegex = /(:\?[\w]+)(?=\W|$)/g
+
+  return value.replace(optionalParamRegex, '[^/]*')
+}
+
+function replaceRequiredParamSyntaxWithCatchAll(value: string): string {
   const requiredParamRegex = /(:[\w]+)(?=\W|$)/g
 
-  return value.replace(optionalParamRegex, '([^/]*)').replace(requiredParamRegex, '([^/]+)')
+  return value.replace(requiredParamRegex, '[^/]+')
 }

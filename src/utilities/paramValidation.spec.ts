@@ -101,6 +101,28 @@ test('given route with regex param that expects forward slashes, will NOT match'
   expect(response).toBe(false)
 })
 
+test.each([
+  ['/:sameId/:SameId/:SAMEID'],
+  [
+    path('/:sameId/:SameId/:SAMEID', {
+      sameId: String,
+      SameId: Number,
+      SAMEID: Boolean,
+    }),
+  ],
+])('given route with the same param name of different casing, treats params separately', (path) => {
+  const route: Route = {
+    name: 'different-cased-params',
+    path,
+    component,
+  }
+  const [routerRoutes] = createRouterRoutes([route])
+
+  const response = routeParamsAreValid(routerRoutes, '/ABC/123/true')
+
+  expect(response).toBe(true)
+})
+
 describe('getRouteParamValues', () => {
   test('given route with path params and query params of the same name, combines both', () => {
     const route: Route = {
