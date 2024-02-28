@@ -37,7 +37,12 @@
   }))
 
   const resolved = computed(() => router.resolve(props.to))
-  const isExternal = computed(() => resolved.value.startsWith('http'))
+  const host = computed(() => {
+    const { host } = new URL(resolved.value, window.location.origin)
+
+    return host
+  })
+  const isExternal = computed(() => host.value !== window.location.host)
 
   function onClick(event: MouseEvent): void {
     event.preventDefault()

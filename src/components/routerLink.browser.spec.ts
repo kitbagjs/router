@@ -191,3 +191,43 @@ test('when current route matches to prop, parent has "match" and "exact-match" c
   expect(anchor.classes()).toContain('router-link--match')
   expect(anchor.classes()).toContain('router-link--exact-match')
 })
+
+test.each([
+  [true],
+  [false],
+])('isExternal slot prop works as expected', async (isExternal) => {
+  const route = {
+    name: 'parent-route',
+    path: '/parent-route',
+    children: [
+      {
+        name: 'child-route',
+        path: '/child-route',
+        component,
+      },
+    ],
+  } as const satisfies Route
+
+  const router = createRouter([route], {
+    initialUrl: '/parent-route',
+  })
+
+  const wrapper = mount(routerLink, {
+    props: {
+      to: isExternal ? 'https://vuejs.org/' : route.path,
+    },
+    slots: {
+      default: '{{ params.isExternal }}',
+    },
+    global: {
+      plugins: [router],
+    },
+  })
+
+  await router.initialized
+
+  const anchor = wrapper.find('a')
+  const element = anchor.element as HTMLAnchorElement
+
+  expect(isExternal.toString()).toBe(element.innerHTML)
+})
