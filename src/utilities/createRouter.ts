@@ -62,10 +62,11 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
 
     if (!to) {
       reject('NotFound')
+
       return false
     }
 
-    const success = await executeRouteHooks({
+    return await executeRouteHooks({
       hooks: [
         ...hooks.before,
         ...getRouteHooks(to, from, 'before'),
@@ -74,8 +75,6 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
       from,
       onRouteHookError,
     })
-
-    return success
   }
 
   const onAfterLocationUpdate: AfterLocationUpdate = async (url) => {
@@ -83,10 +82,14 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
     // const from = isRejectionRoute(route) ? null : route
 
     if (!to) {
-      return reject('NotFound')
+      reject('NotFound')
+      return
     }
 
-    // const success = await executeRouteHooks({
+    updateRoute(to)
+    clearRejection()
+
+    // await executeRouteHooks({
     //   hooks: [
     //     ...hooks.after,
     //     ...getRouteHooks(to, from, 'after'),
@@ -95,13 +98,6 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
     //   from,
     //   onRouteHookError,
     // })
-
-    // if (!success) {
-    //   return
-    // }
-
-    updateRoute(to)
-    clearRejection()
   }
 
   const navigation = createRouterNavigation({
