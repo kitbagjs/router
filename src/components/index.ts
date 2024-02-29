@@ -1,6 +1,6 @@
 import NotFound from '@/components/notFound'
 import RouterLink from '@/components/routerLink.vue'
-import RouterView from '@/components/routerView'
+import RouterView from '@/components/routerView.vue'
 
 export { RouterView, RouterLink, NotFound }
 
