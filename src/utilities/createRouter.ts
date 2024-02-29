@@ -16,7 +16,7 @@ import { getInitialUrl } from '@/utilities/getInitialUrl'
 import { getResolvedRouteForUrl } from '@/utilities/getResolvedRouteForUrl'
 import { getRouteHooks } from '@/utilities/getRouteHooks'
 import { OnRouteHookError, executeRouteHooks } from '@/utilities/hooks'
-import { createRouterNavigation } from '@/utilities/routerNavigation'
+import { AfterLocationUpdate, BeforeLocationUpdate, createRouterNavigation } from '@/utilities/routerNavigation'
 
 export function createRouter<const T extends Routes>(routes: T, options: RouterOptions = {}): Router<T> {
   const routerRoutes = createRouterRoutes(routes)
@@ -56,23 +56,17 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars, require-await
-  const onBeforeLocationUpdate = async (_url: string): Promise<void> => {
-    // const to = getResolvedRouteForUrl(routerRoutes, url)
-
-    // execute before hooks
-    return Promise.resolve()
-  }
-
-  const onAfterLocationUpdate = async (url: string): Promise<void> => {
+  const onBeforeLocationUpdate: BeforeLocationUpdate = async (url) => {
     const to = getResolvedRouteForUrl(routerRoutes, url)
     const from = isRejectionRoute(route) ? null : route
 
     if (!to) {
-      return reject('NotFound')
+      reject('NotFound')
+
+      return false
     }
 
-    const success = await executeRouteHooks({
+    return await executeRouteHooks({
       hooks: [
         ...hooks.before,
         ...getRouteHooks(to, from, 'before'),
@@ -81,13 +75,29 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
       from,
       onRouteHookError,
     })
+  }
 
-    if (!success) {
+  const onAfterLocationUpdate: AfterLocationUpdate = async (url) => {
+    const to = getResolvedRouteForUrl(routerRoutes, url)
+    // const from = isRejectionRoute(route) ? null : route
+
+    if (!to) {
+      reject('NotFound')
       return
     }
 
     updateRoute(to)
     clearRejection()
+
+    // await executeRouteHooks({
+    //   hooks: [
+    //     ...hooks.after,
+    //     ...getRouteHooks(to, from, 'after'),
+    //   ],
+    //   to,
+    //   from,
+    //   onRouteHookError,
+    // })
   }
 
   const navigation = createRouterNavigation({

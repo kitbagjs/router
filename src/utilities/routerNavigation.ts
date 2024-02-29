@@ -1,9 +1,17 @@
+import { NavigationAbortError } from '@/errors/navigationAbortError'
 import { isBrowser } from '@/utilities/isBrowser'
 import { updateBrowserUrl } from '@/utilities/updateBrowserUrl'
 
+type BeforeLocationUpdateContext = {
+  abort: () => void,
+}
+
+export type BeforeLocationUpdate = (url: string, context: BeforeLocationUpdateContext) => Promise<boolean>
+export type AfterLocationUpdate = (url: string) => Promise<void>
+
 type RouterNavigationOptions = {
-  onBeforeLocationUpdate?: (url: string) => Promise<void>,
-  onAfterLocationUpdate?: (url: string) => Promise<void>,
+  onBeforeLocationUpdate?: BeforeLocationUpdate,
+  onAfterLocationUpdate?: AfterLocationUpdate,
 }
 
 type RouterNavigationUpdateOptions = {
@@ -37,25 +45,49 @@ export function createRouterNavigation(options: RouterNavigationOptions): Router
 function createBrowserNavigation({ onBeforeLocationUpdate, onAfterLocationUpdate }: RouterNavigationOptions): RouterNavigation {
 
   const update: NavigationUpdate = async (url, options) => {
+    let shouldRunOnAfterLocationUpdate = true
+
     if (onBeforeLocationUpdate) {
-      await onBeforeLocationUpdate(url)
+      try {
+        shouldRunOnAfterLocationUpdate = await onBeforeLocationUpdate(url, {
+          abort: navigationAbort,
+        })
+      } catch (error) {
+        if (error instanceof NavigationAbortError) {
+          return
+        }
+
+        throw error
+      }
     }
 
     await updateBrowserUrl(url, options)
 
-    if (onAfterLocationUpdate) {
-      return await onAfterLocationUpdate(url)
+    if (shouldRunOnAfterLocationUpdate && onAfterLocationUpdate) {
+      await onAfterLocationUpdate(url)
     }
   }
 
   const refresh: NavigationRefresh = async () => {
     const url = window.location.toString()
 
+    let shouldRunOnAfterLocationUpdate = true
+
     if (onBeforeLocationUpdate) {
-      await onBeforeLocationUpdate(url)
+      try {
+        shouldRunOnAfterLocationUpdate = await onBeforeLocationUpdate(url, {
+          abort: navigationAbort,
+        })
+      } catch (error) {
+        if (error instanceof NavigationAbortError) {
+          return
+        }
+
+        throw error
+      }
     }
 
-    if (onAfterLocationUpdate) {
+    if (shouldRunOnAfterLocationUpdate && onAfterLocationUpdate) {
       await onAfterLocationUpdate(url)
     }
   }
@@ -83,11 +115,23 @@ function createNodeNavigation({ onBeforeLocationUpdate, onAfterLocationUpdate }:
   }
 
   const update: NavigationUpdate = async (url) => {
+    let shouldRunOnAfterLocationUpdate = true
+
     if (onBeforeLocationUpdate) {
-      await onBeforeLocationUpdate(url)
+      try {
+        shouldRunOnAfterLocationUpdate = await onBeforeLocationUpdate(url, {
+          abort: navigationAbort,
+        })
+      } catch (error) {
+        if (error instanceof NavigationAbortError) {
+          return
+        }
+
+        throw error
+      }
     }
 
-    if (onAfterLocationUpdate) {
+    if (shouldRunOnAfterLocationUpdate && onAfterLocationUpdate) {
       return await onAfterLocationUpdate(url)
     }
   }
@@ -102,4 +146,8 @@ function createNodeNavigation({ onBeforeLocationUpdate, onAfterLocationUpdate }:
     cleanup,
     update,
   }
+}
+
+function navigationAbort(): void {
+  throw new NavigationAbortError()
 }
