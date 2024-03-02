@@ -39,7 +39,7 @@ export function createRouterNavigation({ onBeforeLocationUpdate, onAfterLocation
 
   const cleanup: NavigationCleanup = history.listen((update) => {
     if (update.action === Action.Pop) {
-      throw 'not implemented'
+      refresh()
     }
   })
 
