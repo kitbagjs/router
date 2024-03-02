@@ -1,6 +1,6 @@
+import { Action, createBrowserHistory, createMemoryHistory, createPath } from 'history'
 import { NavigationAbortError } from '@/errors/navigationAbortError'
 import { isBrowser } from '@/utilities/isBrowser'
-import { updateBrowserUrl } from '@/utilities/updateBrowserUrl'
 
 type BeforeLocationUpdateContext = {
   abort: () => void,
@@ -34,17 +34,18 @@ export type RouterNavigation = {
   cleanup?: () => void,
 }
 
-export function createRouterNavigation(options: RouterNavigationOptions): RouterNavigation {
-  if (isBrowser()) {
-    return createBrowserNavigation(options)
-  }
+export function createRouterNavigation({ onBeforeLocationUpdate, onAfterLocationUpdate }: RouterNavigationOptions): RouterNavigation {
+  const history = isBrowser() ? createBrowserHistory() : createMemoryHistory()
 
-  return createNodeNavigation(options)
-}
-
-function createBrowserNavigation({ onBeforeLocationUpdate, onAfterLocationUpdate }: RouterNavigationOptions): RouterNavigation {
+  const cleanup: NavigationCleanup = history.listen((update) => {
+    if (update.action === Action.Pop) {
+      throw 'not implemented'
+    }
+  })
 
   const update: NavigationUpdate = async (url, options) => {
+    const action = options?.replace ? history.replace : history.push
+
     let shouldRunOnAfterLocationUpdate = true
 
     if (onBeforeLocationUpdate) {
@@ -61,7 +62,7 @@ function createBrowserNavigation({ onBeforeLocationUpdate, onAfterLocationUpdate
       }
     }
 
-    await updateBrowserUrl(url, options)
+    action(url)
 
     if (shouldRunOnAfterLocationUpdate && onAfterLocationUpdate) {
       await onAfterLocationUpdate(url)
@@ -69,7 +70,7 @@ function createBrowserNavigation({ onBeforeLocationUpdate, onAfterLocationUpdate
   }
 
   const refresh: NavigationRefresh = async () => {
-    const url = window.location.toString()
+    const url = createPath(history.location)
 
     let shouldRunOnAfterLocationUpdate = true
 
@@ -91,12 +92,6 @@ function createBrowserNavigation({ onBeforeLocationUpdate, onAfterLocationUpdate
       await onAfterLocationUpdate(url)
     }
   }
-
-  const cleanup: NavigationCleanup = () => {
-    removeEventListener('popstate', refresh)
-  }
-
-  addEventListener('popstate', refresh)
 
   return {
     forward: history.forward,
@@ -105,46 +100,6 @@ function createBrowserNavigation({ onBeforeLocationUpdate, onAfterLocationUpdate
     refresh,
     update,
     cleanup,
-  }
-}
-
-function createNodeNavigation({ onBeforeLocationUpdate, onAfterLocationUpdate }: RouterNavigationOptions): RouterNavigation {
-
-  const notSupported = (): any => {
-    throw new Error('Browser like navigation is not supported outside of a browser context')
-  }
-
-  const update: NavigationUpdate = async (url) => {
-    let shouldRunOnAfterLocationUpdate = true
-
-    if (onBeforeLocationUpdate) {
-      try {
-        shouldRunOnAfterLocationUpdate = await onBeforeLocationUpdate(url, {
-          abort: navigationAbort,
-        })
-      } catch (error) {
-        if (error instanceof NavigationAbortError) {
-          return
-        }
-
-        throw error
-      }
-    }
-
-    if (shouldRunOnAfterLocationUpdate && onAfterLocationUpdate) {
-      return await onAfterLocationUpdate(url)
-    }
-  }
-
-  const cleanup: NavigationCleanup = () => {}
-
-  return {
-    forward: notSupported,
-    back: notSupported,
-    go: notSupported,
-    refresh: notSupported,
-    cleanup,
-    update,
   }
 }
 

@@ -46,5 +46,8 @@
   },
   "peerDependencies": {
     "vue": "^3.4.5"
+  },
+  "dependencies": {
+    "history": "^5.3.0"
   }
 }
