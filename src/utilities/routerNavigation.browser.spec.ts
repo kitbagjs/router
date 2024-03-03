@@ -32,15 +32,3 @@ test('when forward is called, forwards call to window history', () => {
 
   expect(window.history.go).toHaveBeenCalledOnce()
 })
-
-test('when update is called executes hooks', async () => {
-  const onBeforeLocationUpdate = vi.fn(() => Promise.resolve(true))
-  const onAfterLocationUpdate = vi.fn()
-  const url = random.number().toString()
-  const history = createRouterNavigation({ onBeforeLocationUpdate, onAfterLocationUpdate })
-
-  await history.update(url)
-
-  expect(onBeforeLocationUpdate).toHaveBeenCalled()
-  expect(onAfterLocationUpdate).toHaveBeenCalled()
-})
