@@ -37,6 +37,14 @@ export type RouterNavigation = {
 export function createRouterNavigation({ onBeforeLocationUpdate, onAfterLocationUpdate }: RouterNavigationOptions): RouterNavigation {
   const history = isBrowser() ? createBrowserHistory() : createMemoryHistory()
 
+  function updateUrl(url: string, options?: RouterNavigationUpdateOptions): void {
+    if (options?.replace) {
+      return history.replace(url)
+    }
+
+    history.push(url)
+  }
+
   const cleanup: NavigationCleanup = history.listen((update) => {
     if (update.action === Action.Pop) {
       refresh()
@@ -44,8 +52,6 @@ export function createRouterNavigation({ onBeforeLocationUpdate, onAfterLocation
   })
 
   const update: NavigationUpdate = async (url, options) => {
-    const action = options?.replace ? history.replace : history.push
-
     let shouldRunOnAfterLocationUpdate = true
 
     if (onBeforeLocationUpdate) {
@@ -62,7 +68,7 @@ export function createRouterNavigation({ onBeforeLocationUpdate, onAfterLocation
       }
     }
 
-    action(url)
+    updateUrl(url, options)
 
     if (shouldRunOnAfterLocationUpdate && onAfterLocationUpdate) {
       await onAfterLocationUpdate(url)
