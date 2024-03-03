@@ -1,7 +1,8 @@
 import { inject, onUnmounted } from 'vue'
 import { useRouterDepth } from '@/compositions/useRouterDepth'
+import { NavigationAbortError } from '@/errors/navigationAbortError'
 import { RouterNotInstalledError } from '@/errors/routerNotInstalledError'
-import { AddRouteHook, RouteHookCondition, ResolvedRoute, RouteHook, RouteHookRemove, RouteHookTiming, RouterPushError, RouterRejectionError, RouterReplaceError } from '@/types'
+import { AddRouteHook, RouteHookCondition, ResolvedRoute, RouteHook, RouteHookRemove, RouteHookTiming, RouterPushError, RouterRejectionError, RouterReplaceError, RouteHookAbort } from '@/types'
 import { RouterPushImplementation, RouterReject, RouterReplaceImplementation, asArray } from '@/utilities'
 import { addRouteHookInjectionKey } from '@/utilities/createRouterHooks'
 
@@ -44,6 +45,10 @@ const routeHookPush: RouterPushImplementation = (...parameters) => {
 
 const routeHookReplace: RouterReplaceImplementation = (...parameters) => {
   throw new RouterReplaceError(parameters)
+}
+
+const routeHookAbort: RouteHookAbort = () => {
+  throw new NavigationAbortError()
 }
 
 function componentHookFactory(type: RouteHookTiming, condition: RouteHookCondition): AddRouteHook {

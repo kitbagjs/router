@@ -2,11 +2,7 @@ import { Action, createBrowserHistory, createMemoryHistory, createPath } from 'h
 import { NavigationAbortError } from '@/errors/navigationAbortError'
 import { isBrowser } from '@/utilities/isBrowser'
 
-type BeforeLocationUpdateContext = {
-  abort: () => void,
-}
-
-export type BeforeLocationUpdate = (url: string, context: BeforeLocationUpdateContext) => Promise<boolean>
+export type BeforeLocationUpdate = (url: string) => Promise<boolean>
 export type AfterLocationUpdate = (url: string) => Promise<void>
 
 type RouterNavigationOptions = {
@@ -34,7 +30,7 @@ export type RouterNavigation = {
   cleanup?: () => void,
 }
 
-export function createRouterNavigation({ onBeforeLocationUpdate, onAfterLocationUpdate }: RouterNavigationOptions): RouterNavigation {
+export function createRouterNavigation({ onBeforeLocationUpdate, onAfterLocationUpdate }: RouterNavigationOptions = {}): RouterNavigation {
   const history = isBrowser() ? createBrowserHistory() : createMemoryHistory()
 
   function updateUrl(url: string, options?: RouterNavigationUpdateOptions): void {
@@ -50,9 +46,7 @@ export function createRouterNavigation({ onBeforeLocationUpdate, onAfterLocation
 
     if (onBeforeLocationUpdate) {
       try {
-        shouldRunOnAfterLocationUpdate = await onBeforeLocationUpdate(url, {
-          abort: navigationAbort,
-        })
+        shouldRunOnAfterLocationUpdate = await onBeforeLocationUpdate(url)
       } catch (error) {
         if (error instanceof NavigationAbortError) {
           return
@@ -93,8 +87,4 @@ export function createRouterNavigation({ onBeforeLocationUpdate, onAfterLocation
     update,
     cleanup,
   }
-}
-
-function navigationAbort(): void {
-  throw new NavigationAbortError()
 }

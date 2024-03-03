@@ -5,9 +5,8 @@ import { random } from '@/utilities/testHelpers'
 test('when go is called, forwards call to window history', () => {
   vi.spyOn(window.history, 'go')
 
-  const onAfterLocationUpdate = vi.fn()
   const delta = random.number({ min: 0, max: 100 })
-  const history = createRouterNavigation({ onAfterLocationUpdate })
+  const history = createRouterNavigation()
 
   history.go(delta)
 
@@ -17,8 +16,7 @@ test('when go is called, forwards call to window history', () => {
 test('when back is called, forwards call to window history', () => {
   vi.spyOn(window.history, 'go')
 
-  const onAfterLocationUpdate = vi.fn()
-  const history = createRouterNavigation({ onAfterLocationUpdate })
+  const history = createRouterNavigation()
 
   history.back()
 
@@ -28,8 +26,7 @@ test('when back is called, forwards call to window history', () => {
 test('when forward is called, forwards call to window history', () => {
   vi.spyOn(window.history, 'go')
 
-  const onAfterLocationUpdate = vi.fn()
-  const history = createRouterNavigation({ onAfterLocationUpdate })
+  const history = createRouterNavigation()
 
   history.forward()
 
