@@ -45,13 +45,7 @@ export function createRouterNavigation({ onBeforeLocationUpdate, onAfterLocation
     history.push(url)
   }
 
-  const cleanup: NavigationCleanup = history.listen((update) => {
-    if (update.action === Action.Pop) {
-      refresh()
-    }
-  })
-
-  const update: NavigationUpdate = async (url, options) => {
+  async function execute(url: string, action?: () => void): Promise<void> {
     let shouldRunOnAfterLocationUpdate = true
 
     if (onBeforeLocationUpdate) {
@@ -68,35 +62,27 @@ export function createRouterNavigation({ onBeforeLocationUpdate, onAfterLocation
       }
     }
 
-    updateUrl(url, options)
+    action?.()
 
     if (shouldRunOnAfterLocationUpdate && onAfterLocationUpdate) {
       await onAfterLocationUpdate(url)
     }
   }
 
-  const refresh: NavigationRefresh = async () => {
+  const cleanup: NavigationCleanup = history.listen((update) => {
+    if (update.action === Action.Pop) {
+      refresh()
+    }
+  })
+
+  const update: NavigationUpdate = (url, options) => {
+    return execute(url, () => updateUrl(url, options))
+  }
+
+  const refresh: NavigationRefresh = () => {
     const url = createPath(history.location)
 
-    let shouldRunOnAfterLocationUpdate = true
-
-    if (onBeforeLocationUpdate) {
-      try {
-        shouldRunOnAfterLocationUpdate = await onBeforeLocationUpdate(url, {
-          abort: navigationAbort,
-        })
-      } catch (error) {
-        if (error instanceof NavigationAbortError) {
-          return
-        }
-
-        throw error
-      }
-    }
-
-    if (shouldRunOnAfterLocationUpdate && onAfterLocationUpdate) {
-      await onAfterLocationUpdate(url)
-    }
+    return execute(url)
   }
 
   return {

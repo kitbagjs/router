@@ -113,6 +113,7 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
   const notFoundRoute = getRejectionRoute('NotFound')
   const { route, updateRoute } = createCurrentRoute(notFoundRoute)
 
+  // todo this isn't correct anymore because we need to run before hooks on the initialUrl
   const initialized = onAfterLocationUpdate(getInitialUrl(options.initialUrl))
 
   function install(app: App): void {
