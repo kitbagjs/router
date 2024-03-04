@@ -5,26 +5,30 @@ import { createRouterRoutes } from '@/utilities/createRouterRoutes'
 import { createRouterNavigation } from '@/utilities/routerNavigation'
 import { routes } from '@/utilities/testHelpers'
 
-test('push calls onAfterLocationUpdate', () => {
+test('push calls onBeforeLocationUpdate and onAfterLocationUpdate', async () => {
+  const onBeforeLocationUpdate = vi.fn(() => Promise.resolve(true))
   const onAfterLocationUpdate = vi.fn()
-  const navigation = createRouterNavigation({ onAfterLocationUpdate })
+  const navigation = createRouterNavigation({ onBeforeLocationUpdate, onAfterLocationUpdate })
   const routerRoutes = createRouterRoutes(routes)
   const resolve = createRouterResolve(routerRoutes)
   const push = createRouterPush({ navigation, resolve })
 
-  push({ route: 'parentA', params: { paramA: '' } })
+  await push({ route: 'parentA', params: { paramA: '' } })
 
-  expect(onAfterLocationUpdate).toHaveBeenCalledOnce()
+  expect(onBeforeLocationUpdate).toHaveBeenCalledWith('/')
+  expect(onAfterLocationUpdate).toHaveBeenCalledWith('/')
 })
 
-test('push with query, ', () => {
+test('push with query calls onBeforeLocationUpdate and onAfterLocationUpdate', async () => {
+  const onBeforeLocationUpdate = vi.fn(() => Promise.resolve(true))
   const onAfterLocationUpdate = vi.fn()
-  const navigation = createRouterNavigation({ onAfterLocationUpdate })
+  const navigation = createRouterNavigation({ onBeforeLocationUpdate, onAfterLocationUpdate })
   const routerRoutes = createRouterRoutes(routes)
   const resolve = createRouterResolve(routerRoutes)
   const push = createRouterPush({ navigation, resolve })
 
-  push({ route: 'parentB' }, { query: { foo: '123', bar: 'true' } })
+  await push({ route: 'parentB' }, { query: { foo: '123', bar: 'true' } })
 
+  expect(onBeforeLocationUpdate).toHaveBeenCalledWith('/parentB?foo=123&bar=true')
   expect(onAfterLocationUpdate).toHaveBeenCalledWith('/parentB?foo=123&bar=true')
 })

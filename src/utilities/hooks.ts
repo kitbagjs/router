@@ -46,6 +46,10 @@ const routeHookReplace: RouterReplaceImplementation = (...parameters) => {
   throw new RouterReplaceError(parameters)
 }
 
+// const routeHookAbort: RouteHookAbort = () => {
+//   throw new NavigationAbortError()
+// }
+
 function componentHookFactory(type: RouteHookTiming, condition: RouteHookCondition): AddRouteHook {
   return (hookOrHooks) => {
     const depth = useRouterDepth()
