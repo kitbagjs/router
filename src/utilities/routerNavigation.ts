@@ -1,6 +1,6 @@
 import { Action, createBrowserHistory, createMemoryHistory, createPath } from 'history'
-import { NavigationAbortError } from '@/errors/navigationAbortError'
 import { isBrowser } from '@/utilities/isBrowser'
+import { executeLocationUpdateSequence } from '@/utilities/locationUpdateSequence'
 
 export type BeforeLocationUpdate = (url: string) => Promise<boolean>
 export type AfterLocationUpdate = (url: string) => Promise<void>
@@ -41,28 +41,6 @@ export function createRouterNavigation({ onBeforeLocationUpdate, onAfterLocation
     history.push(url)
   }
 
-  async function execute(url: string, action?: () => void): Promise<void> {
-    let shouldRunOnAfterLocationUpdate = true
-
-    if (onBeforeLocationUpdate) {
-      try {
-        shouldRunOnAfterLocationUpdate = await onBeforeLocationUpdate(url)
-      } catch (error) {
-        if (error instanceof NavigationAbortError) {
-          return
-        }
-
-        throw error
-      }
-    }
-
-    action?.()
-
-    if (shouldRunOnAfterLocationUpdate && onAfterLocationUpdate) {
-      await onAfterLocationUpdate(url)
-    }
-  }
-
   const cleanup: NavigationCleanup = history.listen((update) => {
     if (update.action === Action.Pop) {
       refresh()
@@ -70,13 +48,20 @@ export function createRouterNavigation({ onBeforeLocationUpdate, onAfterLocation
   })
 
   const update: NavigationUpdate = (url, options) => {
-    return execute(url, () => updateUrl(url, options))
+    return executeLocationUpdateSequence({
+      onBeforeLocationUpdate: () => onBeforeLocationUpdate?.(url),
+      onAfterLocationUpdate: () => onAfterLocationUpdate?.(url),
+      updateLocation: () => updateUrl(url, options),
+    })
   }
 
   const refresh: NavigationRefresh = () => {
     const url = createPath(history.location)
 
-    return execute(url)
+    return executeLocationUpdateSequence({
+      onBeforeLocationUpdate: () => onBeforeLocationUpdate?.(url),
+      onAfterLocationUpdate: () => onAfterLocationUpdate?.(url),
+    })
   }
 
   return {
