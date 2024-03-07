@@ -47,9 +47,9 @@ const routeHookReplace: RouterReplaceImplementation = (to, options) => {
   throw new RouterPushError([to, { ...options, replace: true }])
 }
 
-const routeHookAbort: RouteHookAbort = () => {
-  throw new NavigationAbortError()
-}
+// const routeHookAbort: RouteHookAbort = () => {
+//   throw new NavigationAbortError()
+// }
 
 function componentHookFactory(type: RouteHookTiming, condition: RouteHookCondition): AddRouteHook {
   return (hookOrHooks) => {

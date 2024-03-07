@@ -1,6 +1,6 @@
 import { expect, test, vi } from 'vitest'
 import { RouteHook } from '@/types'
-import { RouterPushError, RouterRejectionError, RouterReplaceError } from '@/types/errors'
+import { RouterPushError, RouterRejectionError } from '@/types/errors'
 import { ResolvedRoute } from '@/types/resolved'
 import { Route } from '@/types/routes'
 import { createResolvedRouteQuery } from '@/utilities/createResolvedRouteQuery'
@@ -59,7 +59,7 @@ test('calls hook with correct routes', () => {
 test.each<{ type: string, error: any, hook: RouteHook }>([
   { type: 'reject', error: RouterRejectionError, hook: (_to, { reject }) => reject('NotFound') },
   { type: 'push', error: RouterPushError, hook: (_to, { push }) => push('') },
-  { type: 'replace', error: RouterReplaceError, hook: (_to, { replace }) => replace('') },
+  { type: 'replace', error: RouterPushError, hook: (_to, { replace }) => replace('') },
 ])('throws exception when $type is called', async ({ error, hook }) => {
   const route = {
     name: 'routeA',
