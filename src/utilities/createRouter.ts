@@ -2,7 +2,7 @@ import { App, readonly } from 'vue'
 import { RouterLink, RouterView } from '@/components'
 import { routerInjectionKey, routerRejectionKey } from '@/compositions'
 import { Routes, Router, RouterOptions, RouterImplementation } from '@/types'
-import { RouterPushError, RouterRejectionError, RouterReplaceError } from '@/types/errors'
+import { RouterPushError, RouterRejectionError } from '@/types/errors'
 import { createCurrentRoute } from '@/utilities/createCurrentRoute'
 import { createRouteMethods } from '@/utilities/createRouteMethods'
 import { createRouterFind } from '@/utilities/createRouterFind'
@@ -41,14 +41,6 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
       const url = resolve(source)
 
       navigation.update(url, options)
-      return
-    }
-
-    if (error instanceof RouterReplaceError) {
-      const [source, options] = error.to
-      const url = resolve(source, options)
-
-      navigation.update(url, { replace: true })
       return
     }
 
