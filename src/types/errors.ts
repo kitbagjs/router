@@ -1,5 +1,5 @@
 /* eslint-disable max-classes-per-file */
-import { RouterPushImplementation } from '@/utilities'
+import { RouterPushImplementation } from '@/types/routerPush'
 import { RouterRejectionType } from '@/utilities/createRouterReject'
 
 export class RouterRejectionError extends Error {
