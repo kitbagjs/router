@@ -4,6 +4,7 @@ import { ResolvedRoute } from '@/types/resolved'
 import { RouteMethods, RouteMethodsImplementation } from '@/types/routeMethods'
 import { Routes } from '@/types/routes'
 import { RouterFind, RouterFindImplementation } from '@/utilities/createRouterFind'
+import { RouterHistoryMode } from '@/utilities/createRouterHistory'
 import { RouterPush, RouterPushImplementation } from '@/utilities/createRouterPush'
 import { RouterReject, RouterRejectionComponents } from '@/utilities/createRouterReject'
 import { RouterReplace, RouterReplaceImplementation } from '@/utilities/createRouterReplace'
@@ -11,6 +12,7 @@ import { RouterResolve, RouterResolveImplementation } from '@/utilities/createRo
 
 export type RouterOptions = {
   initialUrl?: string,
+  historyMode?: RouterHistoryMode,
 } & RouterRejectionComponents
 
 export type Router<
@@ -23,7 +25,7 @@ export type Router<
   replace: RouterReplace<TRoutes>,
   find: RouterFind<TRoutes>,
   reject: RouterReject,
-  refresh: () => Promise<void>,
+  refresh: () => void,
   back: () => void,
   forward: () => void,
   go: (delta: number) => void,
@@ -42,7 +44,7 @@ export type RouterImplementation = {
   replace: RouterReplaceImplementation,
   find: RouterFindImplementation,
   reject: RouterReject,
-  refresh: () => Promise<void>,
+  refresh: () => void,
   back: () => void,
   forward: () => void,
   go: (delta: number) => void,
