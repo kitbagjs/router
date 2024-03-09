@@ -1,7 +1,7 @@
 import { RouterRoute, RouteMethodImplementation, RouteMethodsImplementation, isDisabledRoute } from '@/types'
 import { RouteMethodPush, RouteMethodReplace } from '@/types/routeMethod'
-import { RouterPushImplementation } from '@/utilities/createRouterPush'
 import { normalizeRouteParams } from '@/utilities/normalizeRouteParams'
+import { RouterPushImplementation } from '@/types/routerPush'
 import { assembleUrl } from '@/utilities/urlAssembly'
 
 type RouteMethodsContext = {

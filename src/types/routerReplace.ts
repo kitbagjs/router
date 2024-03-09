@@ -1,8 +1,8 @@
 import { RegisteredRoutes } from '@/types'
 import { RouteMethod, RouteMethodResponseImplementation } from '@/types/routeMethod'
+import { RouterPushOptions } from '@/types/routerPush'
 import { Routes } from '@/types/routes'
 import { RouteWithParams, RouteWithParamsImplementation } from '@/types/routeWithParams'
-import { RouterPushOptions } from '@/utilities/createRouterPush'
 
 export type RouterReplaceOptions = Omit<RouterPushOptions, 'replace'>
 

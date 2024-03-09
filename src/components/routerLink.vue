@@ -8,8 +8,8 @@
   import { computed, readonly } from 'vue'
   import { useRouter } from '@/compositions'
   import { RouteMethod } from '@/types/routeMethod'
+  import { RouterPushOptions } from '@/types/routerPush'
   import { RegisteredRouteWithParams } from '@/types/routeWithParams'
-  import { RouterPushOptions } from '@/utilities/createRouterPush'
 
   const props = defineProps<{
     to: string | RegisteredRouteWithParams<T> | ReturnType<RouteMethod>,
@@ -51,4 +51,4 @@
 
     router.push(to, options)
   }
-</script>
+</script>@/utilities/routerPush

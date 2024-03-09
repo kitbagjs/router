@@ -2,13 +2,13 @@ import { App, DeepReadonly } from 'vue'
 import { AddRouteHook } from '@/types/hooks'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouteMethods, RouteMethodsImplementation } from '@/types/routeMethods'
+import { RouterPush, RouterPushImplementation } from '@/types/routerPush'
 import { Routes } from '@/types/routes'
 import { RouterFind, RouterFindImplementation } from '@/utilities/createRouterFind'
 import { RouterHistoryMode } from '@/utilities/createRouterHistory'
-import { RouterPush, RouterPushImplementation } from '@/utilities/createRouterPush'
 import { RouterReject, RouterRejectionComponents } from '@/utilities/createRouterReject'
-import { RouterReplace, RouterReplaceImplementation } from '@/utilities/createRouterReplace'
 import { RouterResolve, RouterResolveImplementation } from '@/utilities/createRouterResolve'
+import { RouterReplace, RouterReplaceImplementation } from '@/types/routerReplace'
 
 export type RouterOptions = {
   initialUrl?: string,
