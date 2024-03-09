@@ -51,4 +51,4 @@
 
     router.push(to, options)
   }
-</script>@/utilities/routerPush
+</script>
