@@ -1,8 +1,8 @@
 import { ResolvedRoute } from '@/types/resolved'
+import { RegisteredRouterPush } from '@/types/routerPush'
 import { MaybePromise } from '@/types/utilities'
-import { RegisteredRouterPush } from '@/utilities/createRouterPush'
 import { RouterReject } from '@/utilities/createRouterReject'
-import { RegisteredRouterReplace } from '@/utilities/createRouterReplace'
+import { RegisteredRouterReplace } from '@/types/routerReplace'
 
 export type AddRouteHook = (hook: RouteHook) => RouteHookRemove
 export type RouteHookAbort = () => void

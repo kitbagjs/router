@@ -2,7 +2,9 @@ import { inject, onUnmounted } from 'vue'
 import { useRouterDepth } from '@/compositions/useRouterDepth'
 import { RouterNotInstalledError } from '@/errors/routerNotInstalledError'
 import { AddRouteHook, RouteHookCondition, ResolvedRoute, RouteHook, RouteHookRemove, RouteHookTiming, RouterPushError, RouterRejectionError } from '@/types'
-import { RouterPushImplementation, RouterReject, RouterReplaceImplementation, asArray } from '@/utilities'
+import { RouterPushImplementation } from '@/types/routerPush'
+import { RouterReplaceImplementation } from '@/types/routerReplace'
+import { RouterReject, asArray } from '@/utilities'
 import { addRouteHookInjectionKey } from '@/utilities/createRouterHooks'
 
 export type OnRouteHookError = (error: unknown) => void
