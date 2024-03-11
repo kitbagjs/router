@@ -1,44 +1,40 @@
 import { inject, onUnmounted } from 'vue'
 import { useRouterDepth } from '@/compositions/useRouterDepth'
+import { NavigationAbortError } from '@/errors/navigationAbortError'
 import { RouterNotInstalledError } from '@/errors/routerNotInstalledError'
-import { AddRouteHook, RouteHookCondition, ResolvedRoute, RouteHook, RouteHookRemove, RouteHookTiming, RouterPushError, RouterRejectionError } from '@/types'
+import { AddRouteHook, RouteHookCondition, ResolvedRoute, RouteHook, RouteHookRemove, RouteHookTiming, RouterPushError, RouterRejectionError, BeforeRouteHook, RouteHookAbort, AfterRouteHook } from '@/types'
 import { RouterPushImplementation } from '@/types/routerPush'
 import { RouterReplaceImplementation } from '@/types/routerReplace'
-import { RouterReject, asArray } from '@/utilities'
+import { RouterReject, RouterRejectionType, asArray } from '@/utilities'
 import { addRouteHookInjectionKey } from '@/utilities/createRouterHooks'
 
-export type OnRouteHookError = (error: unknown) => void
-
-type ExecuteRouteHooksContext = {
-  hooks: RouteHook[],
-  to: ResolvedRoute,
-  from: ResolvedRoute | null,
-  onRouteHookError: OnRouteHookError,
+type RouteHookSuccessResponse = {
+  status: 'SUCCESS',
 }
 
-type RouteHookAbort = {
-  kind: 'ABORT'
+type RouteHookAbortResponse = {
+  status: 'ABORT',
 }
 
-type RouteHookPush = {
-  kind: 'PUSH',
-  to: Parameters<RouterPushImplementation>
+type RouteHookPushResponse = {
+  status: 'PUSH',
+  to: Parameters<RouterPushImplementation>,
 }
 
-type RouteHookReject = {
-  kind: 'REJECT',
+type RouteHookRejectResponse = {
+  status: 'REJECT',
   type: RouterRejectionType,
 }
 
-type RouteHookBeforeResponse = RouteHookPush | RouteHookReject | RouteHookAbort
+type RouteHookBeforeResponse = RouteHookSuccessResponse | RouteHookPushResponse | RouteHookRejectResponse | RouteHookAbortResponse
 
 type BeforeContext = {
   to: ResolvedRoute,
   from: ResolvedRoute,
-  hooks: BeforeRouteHook[]
+  hooks: BeforeRouteHook[],
 }
 
-function before({ to, from, hooks}: BeforeContext): RouteHookBeforeResponse {
+export async function before({ to, from, hooks }: BeforeContext): Promise<RouteHookBeforeResponse> {
   try {
     const results = hooks.map(callback => callback(to, {
       from,
@@ -50,67 +46,74 @@ function before({ to, from, hooks}: BeforeContext): RouteHookBeforeResponse {
 
     await Promise.all(results)
 
-  } catch(error) {
-    if(error instanceof RouterPushError) {
+  } catch (error) {
+    if (error instanceof RouterPushError) {
       return {
-        kind: 'PUSH',
-        to: error.to
+        status: 'PUSH',
+        to: error.to,
       }
     }
 
-    if(error instanceof RouterRejectionError) {
+    if (error instanceof RouterRejectionError) {
       return {
-        kind: 'REJECT',
-        type: error.type
+        status: 'REJECT',
+        type: error.type,
       }
     }
 
-    if(error instanceof RouterAbortError) {
+    if (error instanceof NavigationAbortError) {
       return {
-        kind: 'ABORT'
+        status: 'ABORT',
       }
     }
 
     throw error
   }
+
+  return {
+    status: 'SUCCESS',
+  }
 }
 
-type RouteHookAfterResponse = RouteHookPush | RouteHookReject
+type RouteHookAfterResponse = RouteHookSuccessResponse | RouteHookPushResponse | RouteHookRejectResponse
 
 type AfterContext = {
   to: ResolvedRoute,
   from: ResolvedRoute,
-  hooks: AfterRouteHook[]
+  hooks: AfterRouteHook[],
 }
 
-function after({ to, from, hooks }: AfterContext): RouteHookAfterResponse {
+export async function after({ to, from, hooks }: AfterContext): Promise<RouteHookAfterResponse> {
   try {
     const results = hooks.map(callback => callback(to, {
       from,
       reject,
       push,
       replace,
-      abort,
     }))
 
     await Promise.all(results)
 
-  } catch(error) {
-    if(error instanceof RouterPushError) {
+  } catch (error) {
+    if (error instanceof RouterPushError) {
       return {
-        kind: 'PUSH',
-        to: error.to
+        status: 'PUSH',
+        to: error.to,
       }
     }
 
-    if(error instanceof RouterRejectionError) {
+    if (error instanceof RouterRejectionError) {
       return {
-        kind: 'REJECT',
-        type: error.type
+        status: 'REJECT',
+        type: error.type,
       }
     }
 
     throw error
+  }
+
+  return {
+    status: 'SUCCESS',
   }
 }
 
