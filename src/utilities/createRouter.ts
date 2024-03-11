@@ -51,6 +51,17 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
         onRouteHookError,
       })
 
+      // abort
+      // do nothing
+
+      // reject
+      // update history
+      // update route
+      // run after hooks with to being the rejection? 
+
+      // push
+      // update history
+
       history.update(url, { replace })
 
       if (isRejectionRoute(to)) {

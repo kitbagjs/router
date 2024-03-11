@@ -16,41 +16,119 @@ type ExecuteRouteHooksContext = {
   onRouteHookError: OnRouteHookError,
 }
 
-export async function executeRouteHooks({ hooks, to, from, onRouteHookError }: ExecuteRouteHooksContext): Promise<boolean> {
+type RouteHookAbort = {
+  kind: 'ABORT'
+}
+
+type RouteHookPush = {
+  kind: 'PUSH',
+  to: Parameters<RouterPushImplementation>
+}
+
+type RouteHookReject = {
+  kind: 'REJECT',
+  type: RouterRejectionType,
+}
+
+type RouteHookBeforeResponse = RouteHookPush | RouteHookReject | RouteHookAbort
+
+type BeforeContext = {
+  to: ResolvedRoute,
+  from: ResolvedRoute,
+  hooks: BeforeRouteHook[]
+}
+
+function before({ to, from, hooks}: BeforeContext): RouteHookBeforeResponse {
   try {
     const results = hooks.map(callback => callback(to, {
       from,
-      reject: routeHookReject,
-      push: routeHookPush,
-      replace: routeHookReplace,
+      reject,
+      push,
+      replace,
+      abort,
     }))
 
     await Promise.all(results)
 
-  } catch (error) {
-    onRouteHookError(error)
+  } catch(error) {
+    if(error instanceof RouterPushError) {
+      return {
+        kind: 'PUSH',
+        to: error.to
+      }
+    }
 
-    return false
+    if(error instanceof RouterRejectionError) {
+      return {
+        kind: 'REJECT',
+        type: error.type
+      }
+    }
+
+    if(error instanceof RouterAbortError) {
+      return {
+        kind: 'ABORT'
+      }
+    }
+
+    throw error
   }
-
-  return true
 }
 
-const routeHookReject: RouterReject = (type) => {
+type RouteHookAfterResponse = RouteHookPush | RouteHookReject
+
+type AfterContext = {
+  to: ResolvedRoute,
+  from: ResolvedRoute,
+  hooks: AfterRouteHook[]
+}
+
+function after({ to, from, hooks }: AfterContext): RouteHookAfterResponse {
+  try {
+    const results = hooks.map(callback => callback(to, {
+      from,
+      reject,
+      push,
+      replace,
+      abort,
+    }))
+
+    await Promise.all(results)
+
+  } catch(error) {
+    if(error instanceof RouterPushError) {
+      return {
+        kind: 'PUSH',
+        to: error.to
+      }
+    }
+
+    if(error instanceof RouterRejectionError) {
+      return {
+        kind: 'REJECT',
+        type: error.type
+      }
+    }
+
+    throw error
+  }
+}
+
+const reject: RouterReject = (type) => {
   throw new RouterRejectionError(type)
 }
 
-const routeHookPush: RouterPushImplementation = (...parameters) => {
+const push: RouterPushImplementation = (...parameters) => {
   throw new RouterPushError(parameters)
 }
 
-const routeHookReplace: RouterReplaceImplementation = (to, options) => {
+const replace: RouterReplaceImplementation = (to, options) => {
   throw new RouterPushError([to, { ...options, replace: true }])
 }
 
-// const routeHookAbort: RouteHookAbort = () => {
-//   throw new NavigationAbortError()
-// }
+const abort: RouteHookAbort = () => {
+  throw new NavigationAbortError()
+}
 
 function componentHookFactory(type: RouteHookTiming, condition: RouteHookCondition): AddRouteHook {
   return (hookOrHooks) => {
