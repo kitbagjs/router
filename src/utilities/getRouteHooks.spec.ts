@@ -2,7 +2,7 @@ import { expect, test, vi } from 'vitest'
 import { ResolvedRoute } from '@/types/resolved'
 import { Route } from '@/types/routes'
 import { createResolvedRouteQuery } from '@/utilities/createResolvedRouteQuery'
-import { getRouteHooks } from '@/utilities/getRouteHooks'
+import { getBeforeRouteHooks } from '@/utilities/getRouteHooks'
 import { component } from '@/utilities/testHelpers'
 
 function mockRoute(name: string): Route {
@@ -36,7 +36,7 @@ test('given two ResolvedRoutes returns before timing hooks in correct order', ()
   const to = mockResolvedRoute(grandchildB, [parent, childA, grandchildA])
   const from = mockResolvedRoute(grandchildA, [parent, childB, grandchildB])
 
-  const hooks = getRouteHooks(to, from, 'before')
+  const hooks = getBeforeRouteHooks(to, from)
 
   expect(hooks).toMatchObject([
     childB.onBeforeRouteLeave,

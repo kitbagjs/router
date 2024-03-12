@@ -3,16 +3,19 @@ import { BeforeRouteHook } from '@/types'
 import { ResolvedRoute } from '@/types/resolved'
 import { Route } from '@/types/routes'
 import { createResolvedRouteQuery } from '@/utilities/createResolvedRouteQuery'
+import { createRouterHooks } from '@/utilities/createRouterHooks'
 import { runBeforeRouteHooks } from '@/utilities/hooks'
 import { component } from '@/utilities/testHelpers'
 
 test('calls hook with correct routes', () => {
   const hook = vi.fn()
+  const { hooks } = createRouterHooks()
 
   const routeA = {
     name: 'routeA',
     path: '/routeA',
     component,
+    onBeforeRouteEnter: hook,
   } as const satisfies Route
 
   const resolvedRouteA: ResolvedRoute = {
@@ -38,7 +41,7 @@ test('calls hook with correct routes', () => {
   }
 
   runBeforeRouteHooks({
-    hooks: [hook],
+    hooks,
     to: resolvedRouteA,
     from: resolvedRouteB,
   })
@@ -55,11 +58,13 @@ test.each<{ type: string, status: string, hook: BeforeRouteHook }>([
   { type: 'push', status: 'PUSH', hook: (_to, { push }) => push('') },
   { type: 'replace', status: 'PUSH', hook: (_to, { replace }) => replace('') },
   { type: 'abort', status: 'ABORT', hook: (_to, { abort }) => abort() },
-])('throws exception when $type is called', async ({ status, hook }) => {
+])('Returns correct status when hook is called', async ({ status, hook }) => {
+  const { hooks } = createRouterHooks()
   const route = {
     name: 'routeA',
     path: '/routeA',
     component,
+    onBeforeRouteEnter: hook,
   } as const satisfies Route
 
   const resolvedRoute: ResolvedRoute = {
@@ -70,10 +75,24 @@ test.each<{ type: string, status: string, hook: BeforeRouteHook }>([
     params: {},
   }
 
+  const routeB = {
+    name: 'routeB',
+    path: '/routeB',
+    component,
+  } as const satisfies Route
+
+  const resolvedRouteB: ResolvedRoute = {
+    matched: routeB,
+    matches: [routeB],
+    name: routeB.name,
+    query: createResolvedRouteQuery(),
+    params: {},
+  }
+
   const response = await runBeforeRouteHooks({
-    hooks: [hook],
     to: resolvedRoute,
-    from: resolvedRoute,
+    from: resolvedRouteB,
+    hooks,
   })
 
   await expect(response.status).toBe(status)
@@ -83,11 +102,13 @@ test('hook is called in order', async () => {
   const hookA = vi.fn()
   const hookB = vi.fn()
   const hookC = vi.fn()
+  const { hooks } = createRouterHooks()
 
   const route = {
     name: 'routeA',
     path: '/routeA',
     component,
+    onBeforeRouteEnter: [hookA, hookB, hookC],
   } as const satisfies Route
 
   const resolvedRoute: ResolvedRoute = {
@@ -98,10 +119,24 @@ test('hook is called in order', async () => {
     params: {},
   }
 
+  const routeB = {
+    name: 'routeB',
+    path: '/routeB',
+    component,
+  } as const satisfies Route
+
+  const resolvedRouteB: ResolvedRoute = {
+    matched: routeB,
+    matches: [routeB],
+    name: routeB.name,
+    query: createResolvedRouteQuery(),
+    params: {},
+  }
+
   await runBeforeRouteHooks({
-    hooks: [hookA, hookB, hookC],
+    hooks,
     to: resolvedRoute,
-    from: resolvedRoute,
+    from: resolvedRouteB,
   })
 
   const [orderA] = hookA.mock.invocationCallOrder

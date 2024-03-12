@@ -10,7 +10,7 @@ import { RouterPushImplementation } from '@/types/routerPush'
 import { RouterReplaceImplementation } from '@/types/routerReplace'
 import { asArray } from '@/utilities/array'
 import { RouteHooks, addRouteHookInjectionKey } from '@/utilities/createRouterHooks'
-import { getRouteHooks } from '@/utilities/getRouteHooks'
+import { getAfterRouteHooks, getBeforeRouteHooks } from '@/utilities/getRouteHooks'
 
 type BeforeContext = {
   to: ResolvedRoute,
@@ -21,7 +21,7 @@ type BeforeContext = {
 export async function runBeforeRouteHooks({ to, from, hooks }: BeforeContext): Promise<BeforeRouteHookResponse> {
   const allHooks: BeforeRouteHook[] = [
     ...hooks.before,
-    ...getRouteHooks(to, from, 'before'),
+    ...getBeforeRouteHooks(to, from),
   ]
 
   try {
@@ -74,7 +74,7 @@ type AfterContext = {
 export async function runAfterRouteHooks({ to, from, hooks }: AfterContext): Promise<AfterRouteHookResponse> {
   const allHooks: AfterRouteHook[] = [
     ...hooks.after,
-    ...getRouteHooks(to, from, 'after'),
+    ...getAfterRouteHooks(to, from),
   ]
 
   try {

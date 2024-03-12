@@ -26,12 +26,11 @@ type AfterRouteHookContext = RouteHookContext
 
 export type BeforeRouteHook = (to: ResolvedRoute, context: BeforeRouteHookContext) => MaybePromise<void>
 export type AfterRouteHook = (to: ResolvedRoute, context: AfterRouteHookContext) => MaybePromise<void>
-export type RouteHook = (to: ResolvedRoute, context: RouteHookContext) => MaybePromise<void>
+export type RouteHook = BeforeRouteHook | AfterRouteHook
 export type RouteHookRemove = () => void
 export type RouteHookTiming = 'before' | 'after'
 export type RouteHookLifeCycle = 'onBeforeRouteEnter' | 'onBeforeRouteLeave' | 'onBeforeRouteUpdate'
 export type RouteHookCondition = (to: ResolvedRoute, from: ResolvedRoute | null, depth: number) => boolean
-
 
 type RouteHookSuccessResponse = {
   status: 'SUCCESS',

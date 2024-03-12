@@ -1,7 +1,7 @@
 import { App, readonly } from 'vue'
 import { RouterLink, RouterView } from '@/components'
 import { routerInjectionKey, routerRejectionKey } from '@/compositions'
-import { Routes, Router, RouterOptions, RouterImplementation, RouterReject, RouteHookResponse } from '@/types'
+import { Routes, Router, RouterOptions, RouterImplementation, RouterReject } from '@/types'
 import { RouterPushImplementation } from '@/types/routerPush'
 import { RouterReplaceImplementation } from '@/types/routerReplace'
 import { createCurrentRoute } from '@/utilities/createCurrentRoute'
@@ -14,7 +14,6 @@ import { createRouterResolve } from '@/utilities/createRouterResolve'
 import { createRouterRoutes } from '@/utilities/createRouterRoutes'
 import { getInitialUrl } from '@/utilities/getInitialUrl'
 import { getResolvedRouteForUrl } from '@/utilities/getResolvedRouteForUrl'
-import { getRouteHooks } from '@/utilities/getRouteHooks'
 import { runAfterRouteHooks, runBeforeRouteHooks } from '@/utilities/hooks'
 
 type RouterUpdateOptions = {
