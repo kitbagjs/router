@@ -3,7 +3,7 @@ import { AddRouteHook, ResolvedRoute, RouteHook, RouteHookRemove, RouteHookTimin
 import { asArray } from '@/utilities/array'
 
 type AddRouteHookForLifeCycle = (type: RouteHookTiming, hook: RouteHook) => RouteHookRemove
-type RouteHooks = Record<RouteHookTiming, Set<RouteHook>>
+export type RouteHooks = Record<RouteHookTiming, Set<RouteHook>>
 
 export const addRouteHookInjectionKey: InjectionKey<AddRouteHookForLifeCycle> = Symbol()
 

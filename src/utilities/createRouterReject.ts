@@ -19,11 +19,11 @@ export type RouterRejectionComponents = RegisteredRejectionType extends never
   ? { rejections?: BuiltInRejectionComponents }
   : { rejections: BuiltInRejectionComponents & Record<RegisteredRejectionType, RouteComponent> }
 
-export type RouterReject = (type: RouterRejectionType) => void
+export type RouterSetReject = (type: RouterRejectionType | null) => void
 
 type GetRejectionRoute = (type: RouterRejectionType) => ResolvedRoute
 type IsRejectionRoute = (route: ResolvedRoute) => boolean
-type ClearRejection = () => void
+
 export type RouterRejection = Ref<null | { type: RouterRejectionType, component: RouteComponent }>
 
 type CreateRouterRejectContext = {
@@ -35,11 +35,10 @@ const isRejectionRouteSymbol = Symbol()
 type RouterRejectionRoute = ResolvedRoute & { [isRejectionRouteSymbol]?: true }
 
 export type CreateRouterReject = {
-  reject: RouterReject,
+  setRejection: RouterSetReject,
   rejection: RouterRejection,
   getRejectionRoute: GetRejectionRoute,
   isRejectionRoute: IsRejectionRoute,
-  clearRejection: ClearRejection,
 }
 
 export function createRouterReject({
@@ -80,11 +79,12 @@ export function createRouterReject({
     return route[isRejectionRouteSymbol] === true
   }
 
-  const clearRejection: ClearRejection = () => {
-    rejection.value = null
-  }
+  const setRejection: RouterSetReject = (type) => {
+    if (!type) {
+      rejection.value = null
+      return
+    }
 
-  const reject: RouterReject = (type) => {
     const component = getRejectionComponent(type)
 
     rejection.value = { type, component }
@@ -93,10 +93,9 @@ export function createRouterReject({
   const rejection: RouterRejection = ref(null)
 
   return {
-    reject,
+    setRejection,
     rejection,
     getRejectionRoute,
     isRejectionRoute,
-    clearRejection,
   }
 }

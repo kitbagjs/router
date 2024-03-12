@@ -2,41 +2,30 @@ import { inject, onUnmounted } from 'vue'
 import { useRouterDepth } from '@/compositions/useRouterDepth'
 import { NavigationAbortError } from '@/errors/navigationAbortError'
 import { RouterNotInstalledError } from '@/errors/routerNotInstalledError'
-import { AddRouteHook, RouteHookCondition, ResolvedRoute, RouteHook, RouteHookRemove, RouteHookTiming, RouterPushError, RouterRejectionError, BeforeRouteHook, RouteHookAbort, AfterRouteHook } from '@/types'
+import { RouterPushError, RouterRejectionError } from '@/types/errors'
+import { AddRouteHook, AfterRouteHook, AfterRouteHookResponse, BeforeRouteHook, BeforeRouteHookResponse, RouteHook, RouteHookAbort, RouteHookCondition, RouteHookRemove, RouteHookTiming } from '@/types/hooks'
+import { ResolvedRoute } from '@/types/resolved'
+import { RouterReject } from '@/types/router'
 import { RouterPushImplementation } from '@/types/routerPush'
 import { RouterReplaceImplementation } from '@/types/routerReplace'
-import { RouterReject, RouterRejectionType, asArray } from '@/utilities'
-import { addRouteHookInjectionKey } from '@/utilities/createRouterHooks'
-
-type RouteHookSuccessResponse = {
-  status: 'SUCCESS',
-}
-
-type RouteHookAbortResponse = {
-  status: 'ABORT',
-}
-
-type RouteHookPushResponse = {
-  status: 'PUSH',
-  to: Parameters<RouterPushImplementation>,
-}
-
-type RouteHookRejectResponse = {
-  status: 'REJECT',
-  type: RouterRejectionType,
-}
-
-type RouteHookBeforeResponse = RouteHookSuccessResponse | RouteHookPushResponse | RouteHookRejectResponse | RouteHookAbortResponse
+import { asArray } from '@/utilities/array'
+import { RouteHooks, addRouteHookInjectionKey } from '@/utilities/createRouterHooks'
+import { getRouteHooks } from '@/utilities/getRouteHooks'
 
 type BeforeContext = {
   to: ResolvedRoute,
   from: ResolvedRoute,
-  hooks: BeforeRouteHook[],
+  hooks: RouteHooks,
 }
 
-export async function before({ to, from, hooks }: BeforeContext): Promise<RouteHookBeforeResponse> {
+export async function runBeforeRouteHooks({ to, from, hooks }: BeforeContext): Promise<BeforeRouteHookResponse> {
+  const allHooks: BeforeRouteHook[] = [
+    ...hooks.before,
+    ...getRouteHooks(to, from, 'before'),
+  ]
+
   try {
-    const results = hooks.map(callback => callback(to, {
+    const results = allHooks.map(callback => callback(to, {
       from,
       reject,
       push,
@@ -75,17 +64,21 @@ export async function before({ to, from, hooks }: BeforeContext): Promise<RouteH
   }
 }
 
-type RouteHookAfterResponse = RouteHookSuccessResponse | RouteHookPushResponse | RouteHookRejectResponse
 
 type AfterContext = {
   to: ResolvedRoute,
   from: ResolvedRoute,
-  hooks: AfterRouteHook[],
+  hooks: RouteHooks,
 }
 
-export async function after({ to, from, hooks }: AfterContext): Promise<RouteHookAfterResponse> {
+export async function runAfterRouteHooks({ to, from, hooks }: AfterContext): Promise<AfterRouteHookResponse> {
+  const allHooks: AfterRouteHook[] = [
+    ...hooks.after,
+    ...getRouteHooks(to, from, 'after'),
+  ]
+
   try {
-    const results = hooks.map(callback => callback(to, {
+    const results = allHooks.map(callback => callback(to, {
       from,
       reject,
       push,

@@ -3,12 +3,14 @@ import { AddRouteHook } from '@/types/hooks'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouteMethods, RouteMethodsImplementation } from '@/types/routeMethods'
 import { RouterPush, RouterPushImplementation } from '@/types/routerPush'
+import { RouterReplace, RouterReplaceImplementation } from '@/types/routerReplace'
 import { Routes } from '@/types/routes'
 import { RouterFind, RouterFindImplementation } from '@/utilities/createRouterFind'
 import { RouterHistoryMode } from '@/utilities/createRouterHistory'
-import { RouterReject, RouterRejectionComponents } from '@/utilities/createRouterReject'
+import { RouterRejectionComponents, RouterRejectionType } from '@/utilities/createRouterReject'
 import { RouterResolve, RouterResolveImplementation } from '@/utilities/createRouterResolve'
-import { RouterReplace, RouterReplaceImplementation } from '@/types/routerReplace'
+
+export type RouterReject = (type: RouterRejectionType) => void
 
 export type RouterOptions = {
   initialUrl?: string,

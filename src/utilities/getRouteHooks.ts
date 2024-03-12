@@ -8,7 +8,8 @@ export function getRouteHooks(to: ResolvedRoute, from: ResolvedRoute | null, typ
     case 'before':
       return getRouteBeforeHooks(to, from)
     case 'after':
-      throw 'not implemented'
+      // todo
+      return []
     default:
       const exhaustive: never = type
       throw new Error(`Missing RouteHookTiming condition in getRouteHooks: ${exhaustive}`)

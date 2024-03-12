@@ -1,9 +1,7 @@
 import { App, readonly } from 'vue'
 import { RouterLink, RouterView } from '@/components'
 import { routerInjectionKey, routerRejectionKey } from '@/compositions'
-import { NavigationAbortError } from '@/errors/navigationAbortError'
-import { Routes, Router, RouterOptions, RouterImplementation } from '@/types'
-import { RouterPushError, RouterRejectionError } from '@/types/errors'
+import { Routes, Router, RouterOptions, RouterImplementation, RouterReject, RouteHookResponse } from '@/types'
 import { RouterPushImplementation } from '@/types/routerPush'
 import { RouterReplaceImplementation } from '@/types/routerReplace'
 import { createCurrentRoute } from '@/utilities/createCurrentRoute'
@@ -17,7 +15,7 @@ import { createRouterRoutes } from '@/utilities/createRouterRoutes'
 import { getInitialUrl } from '@/utilities/getInitialUrl'
 import { getResolvedRouteForUrl } from '@/utilities/getResolvedRouteForUrl'
 import { getRouteHooks } from '@/utilities/getRouteHooks'
-import { OnRouteHookError, executeRouteHooks } from '@/utilities/hooks'
+import { runAfterRouteHooks, runBeforeRouteHooks } from '@/utilities/hooks'
 
 type RouterUpdateOptions = {
   replace?: boolean,
@@ -38,78 +36,60 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
 
   async function update(url: string, { replace }: RouterUpdateOptions = {}): Promise<void> {
     const to = getResolvedRouteForUrl(routerRoutes, url) ?? getRejectionRoute('NotFound')
-    const from = isRejectionRoute(route) ? null : route
+    const from = route
 
-    try {
-      await executeRouteHooks({
-        hooks: [
-          ...hooks.before,
-          ...getRouteHooks(to, from, 'before'),
-        ],
-        to,
-        from,
-        onRouteHookError,
-      })
+    const beforeResponse = await runBeforeRouteHooks({ to, from, hooks })
 
-      // abort
-      // do nothing
+    const setHistory = (): void => history.update(url, { replace })
+    const setRoute = (): void => updateRoute(to)
 
-      // reject
-      // update history
-      // update route
-      // run after hooks with to being the rejection? 
-
-      // push
-      // update history
-
-      history.update(url, { replace })
-
-      if (isRejectionRoute(to)) {
-        reject('NotFound')
-      } else {
-        clearRejection()
-      }
-
-      updateRoute(to)
-
-      // if (!shouldRunOnAfterLocationUpdate) {
-      //   return
-      // }
-
-      // await executeRouteHooks({
-      //   hooks: [
-      //     ...hooks.after,
-      //     ...getRouteHooks(to, from, 'after'),
-      //   ],
-      //   to,
-      //   from,
-      //   onRouteHookError,
-      // })
-
-    } catch (error) {
-      if (error instanceof NavigationAbortError) {
+    switch (beforeResponse.status) {
+      // On abort do nothing
+      case 'ABORT':
         return
-      }
 
-      throw error
+      // On push update the history, and push new route, and return
+      case 'PUSH':
+        setHistory()
+        push(...beforeResponse.to)
+        return
+
+      // On reject update the history, the route, and set the rejection type
+      case 'REJECT':
+        setHistory()
+        setRoute()
+        setRejection(beforeResponse.type)
+        break
+
+      // On success update history, set the route, and clear the rejection
+      case 'SUCCESS':
+        setHistory()
+        setRoute()
+        setRejection(null)
+        break
+
+      default:
+        const exhaustive: never = beforeResponse
+        throw new Error(`Switch is not exhaustive for before hook response status: ${JSON.stringify(exhaustive)}`)
     }
-  }
 
-  const onRouteHookError: OnRouteHookError = (error) => {
-    if (error instanceof RouterRejectionError) {
-      reject(error.type)
-    }
+    const afterResponse = await runAfterRouteHooks({ to, from, hooks })
 
-    if (error instanceof RouterPushError) {
-      const [source, options] = error.to
-      const url = resolve(source)
+    switch (afterResponse.status) {
+      case 'PUSH':
+        push(...afterResponse.to)
+        break
 
-      history.update(url, options)
-      return
-    }
+      case 'REJECT':
+        setRejection(afterResponse.type)
+        break
 
-    if (!(error instanceof RouterRejectionError)) {
-      throw error
+      case 'SUCCESS':
+        break
+
+      default:
+        const exhaustive: never = afterResponse
+        throw new Error(`Switch is not exhaustive for after hook response status: ${JSON.stringify(exhaustive)}`)
     }
   }
 
@@ -123,9 +103,13 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
     return push(source, { ...options, replace: true })
   }
 
+  const reject: RouterReject = (type) => {
+    return setRejection(type)
+  }
+
   const methods = createRouteMethods({ routes: routerRoutes, push })
   const find = createRouterFind({ routes: routerRoutes, resolve })
-  const { reject, rejection, getRejectionRoute, isRejectionRoute, clearRejection } = createRouterReject(options)
+  const { setRejection, rejection, getRejectionRoute } = createRouterReject(options)
   const notFoundRoute = getRejectionRoute('NotFound')
   const { route, updateRoute } = createCurrentRoute(notFoundRoute)
 

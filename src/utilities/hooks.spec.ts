@@ -1,15 +1,10 @@
 import { expect, test, vi } from 'vitest'
-import { RouteHook } from '@/types'
-import { RouterPushError, RouterRejectionError } from '@/types/errors'
+import { BeforeRouteHook } from '@/types'
 import { ResolvedRoute } from '@/types/resolved'
 import { Route } from '@/types/routes'
 import { createResolvedRouteQuery } from '@/utilities/createResolvedRouteQuery'
-import { executeRouteHooks } from '@/utilities/hooks'
+import { runBeforeRouteHooks } from '@/utilities/hooks'
 import { component } from '@/utilities/testHelpers'
-
-const rethrow = (error: unknown): void => {
-  throw error
-}
 
 test('calls hook with correct routes', () => {
   const hook = vi.fn()
@@ -42,11 +37,10 @@ test('calls hook with correct routes', () => {
     params: {},
   }
 
-  executeRouteHooks({
+  runBeforeRouteHooks({
     hooks: [hook],
     to: resolvedRouteA,
     from: resolvedRouteB,
-    onRouteHookError: rethrow,
   })
 
   expect(hook).toHaveBeenCalledOnce()
@@ -56,11 +50,12 @@ test('calls hook with correct routes', () => {
   expect(from).toMatchObject(resolvedRouteB)
 })
 
-test.each<{ type: string, error: any, hook: RouteHook }>([
-  { type: 'reject', error: RouterRejectionError, hook: (_to, { reject }) => reject('NotFound') },
-  { type: 'push', error: RouterPushError, hook: (_to, { push }) => push('') },
-  { type: 'replace', error: RouterPushError, hook: (_to, { replace }) => replace('') },
-])('throws exception when $type is called', async ({ error, hook }) => {
+test.each<{ type: string, status: string, hook: BeforeRouteHook }>([
+  { type: 'reject', status: 'REJECT', hook: (_to, { reject }) => reject('NotFound') },
+  { type: 'push', status: 'PUSH', hook: (_to, { push }) => push('') },
+  { type: 'replace', status: 'PUSH', hook: (_to, { replace }) => replace('') },
+  { type: 'abort', status: 'ABORT', hook: (_to, { abort }) => abort() },
+])('throws exception when $type is called', async ({ status, hook }) => {
   const route = {
     name: 'routeA',
     path: '/routeA',
@@ -75,17 +70,16 @@ test.each<{ type: string, error: any, hook: RouteHook }>([
     params: {},
   }
 
-  const execute = (): Promise<boolean> => executeRouteHooks({
+  const response = await runBeforeRouteHooks({
     hooks: [hook],
     to: resolvedRoute,
-    from: null,
-    onRouteHookError: rethrow,
+    from: resolvedRoute,
   })
 
-  await expect(() => execute()).rejects.toThrowError(error)
+  await expect(response.status).toBe(status)
 })
 
-test('hook is called in order', () => {
+test('hook is called in order', async () => {
   const hookA = vi.fn()
   const hookB = vi.fn()
   const hookC = vi.fn()
@@ -104,11 +98,10 @@ test('hook is called in order', () => {
     params: {},
   }
 
-  executeRouteHooks({
+  await runBeforeRouteHooks({
     hooks: [hookA, hookB, hookC],
     to: resolvedRoute,
-    from: null,
-    onRouteHookError: rethrow,
+    from: resolvedRoute,
   })
 
   const [orderA] = hookA.mock.invocationCallOrder
