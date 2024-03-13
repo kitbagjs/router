@@ -68,8 +68,7 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
         break
 
       default:
-        const exhaustive: never = beforeResponse
-        throw new Error(`Switch is not exhaustive for before hook response status: ${JSON.stringify(exhaustive)}`)
+        throw new Error(`Switch is not exhaustive for before hook response status: ${JSON.stringify(beforeResponse satisfies never)}`)
     }
 
     const afterResponse = await runAfterRouteHooks({ to, from, hooks })
