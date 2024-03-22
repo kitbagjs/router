@@ -24,14 +24,7 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
   const routerRoutes = createRouterRoutes(routes)
   const resolve = createRouterResolve(routerRoutes)
   const history = createRouterHistory({ mode: options.historyMode })
-
-  const {
-    onBeforeRouteEnter,
-    onBeforeRouteLeave,
-    onBeforeRouteUpdate,
-    addRouteHook,
-    hooks,
-  } = createRouterHooks()
+  const { addRouteHook, hooks, ...routeHookMethods } = createRouterHooks()
 
   async function update(url: string, { replace }: RouterUpdateOptions = {}): Promise<void> {
     const to = getResolvedRouteForUrl(routerRoutes, url) ?? getRejectionRoute('NotFound')
@@ -135,10 +128,8 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
     back: history.back,
     go: history.go,
     install,
-    onBeforeRouteEnter,
-    onBeforeRouteLeave,
-    onBeforeRouteUpdate,
     initialized,
+    ...routeHookMethods,
   }
 
   return router as any

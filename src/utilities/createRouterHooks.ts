@@ -1,70 +1,133 @@
 import { InjectionKey } from 'vue'
-import { AddRouteHook, ResolvedRoute, RouteHook, RouteHookRemove, RouteHookTiming } from '@/types'
-import { asArray } from '@/utilities/array'
+import { RouteHooksStore } from '@/models/RouteHooksStore'
+import { AddAfterRouteHook, AddBeforeRouteHook, AfterRouteHook, BeforeRouteHook, RouteHook, RouteHookLifecycle, RouteHookRemove, isAfterRouteHookLifecycle, isBeforeRouteHookLifecycle } from '@/types'
+import { getRouteHookCondition } from '@/utilities/hooks'
 
-type AddRouteHookForLifeCycle = (type: RouteHookTiming, hook: RouteHook) => RouteHookRemove
-export type RouteHooks = Record<RouteHookTiming, Set<RouteHook>>
+export type RouterAddRouteHook = (register: BeforeRouteHookRegistration | AfterRouteHookRegistration) => RouteHookRemove
+export type RouterGetRouteHooks = (lifecycle: RouteHookLifecycle, timing: RouteHookTiming) => RouteHook[]
 
-export const addRouteHookInjectionKey: InjectionKey<AddRouteHookForLifeCycle> = Symbol()
+type RouteHookTiming = 'global' | 'component'
+
+type BeforeRouteHookRegistration = {
+  timing: RouteHookTiming,
+  lifecycle: 'onBeforeRouteEnter' | 'onBeforeRouteUpdate' | 'onBeforeRouteLeave',
+  hook: BeforeRouteHook,
+  depth: number,
+}
+
+function isBeforeRouteHookRegistration(value: RouteHookRegistration): value is BeforeRouteHookRegistration {
+  return isBeforeRouteHookLifecycle(value.lifecycle)
+}
+
+type AfterRouteHookRegistration = {
+  timing: RouteHookTiming,
+  lifecycle: 'onAfterRouteEnter' | 'onAfterRouteUpdate' | 'onAfterRouteLeave',
+  hook: AfterRouteHook,
+  depth: number,
+}
+
+function isAfterRouteHookRegistration(value: RouteHookRegistration): value is AfterRouteHookRegistration {
+  return isAfterRouteHookLifecycle(value.lifecycle)
+}
+
+type RouteHookRegistration = BeforeRouteHookRegistration | AfterRouteHookRegistration
+
+export const addRouteHookInjectionKey: InjectionKey<RouterAddRouteHook> = Symbol()
 
 export type RouterHooks = {
-  onBeforeRouteEnter: AddRouteHook,
-  onBeforeRouteUpdate: AddRouteHook,
-  onBeforeRouteLeave: AddRouteHook,
-  addRouteHook: AddRouteHookForLifeCycle,
-  hooks: RouteHooks,
-}
-
-type GlobalHookCondition = (to: ResolvedRoute, from: ResolvedRoute | null) => boolean
-
-const isGlobalEnter: GlobalHookCondition = (to, from) => {
-  return to.matches[1] !== from?.matches[1]
-}
-
-const isGlobalUpdate: GlobalHookCondition = (to, from) => {
-  return to.matches.some((route, depth) => route === from?.matches[depth])
-}
-
-const isGlobalLeave: GlobalHookCondition = (to, from) => {
-  return to.matches[1] !== from?.matches[1]
+  addRouteHook: RouterAddRouteHook,
+  onBeforeRouteEnter: AddBeforeRouteHook,
+  onBeforeRouteUpdate: AddBeforeRouteHook,
+  onBeforeRouteLeave: AddBeforeRouteHook,
+  onAfterRouteEnter: AddAfterRouteHook,
+  onAfterRouteUpdate: AddAfterRouteHook,
+  onAfterRouteLeave: AddAfterRouteHook,
+  hooks: RouteHooksStore,
 }
 
 export function createRouterHooks(): RouterHooks {
-  const hooks: RouteHooks = {
-    before: new Set(),
-    after: new Set(),
-  }
+  const hooks = new RouteHooksStore()
 
-  const factory = (type: RouteHookTiming, condition: GlobalHookCondition): AddRouteHook => {
-    return (hookOrHooks) => {
-      const remove = asArray(hookOrHooks).map(hook => {
-        const wrapper: RouteHook = (to, context) => {
-          if (!condition(to, context.from)) {
-            return
-          }
+  function addBeforeRouteHook({ lifecycle, timing, depth, hook }: BeforeRouteHookRegistration): RouteHookRemove {
+    const condition = getRouteHookCondition(lifecycle)
+    const store = hooks[timing][lifecycle]
 
-          hook(to, context)
-        }
+    const wrapped: BeforeRouteHook = (to, context) => {
+      if (!condition(to, context.from, depth)) {
+        return
+      }
 
-        hooks[type].add(wrapper)
-
-        return () => hooks[type].delete(wrapper)
-      })
-
-      return () => remove.forEach(fn => fn())
+      return hook(to, context)
     }
+
+
+    store.add(wrapped)
+
+    return () => store.delete(wrapped)
   }
 
-  const addRouteHook: AddRouteHookForLifeCycle = (type, hook) => {
-    hooks[type].add(hook)
+  function addAfterRouteHook({ lifecycle, timing, depth, hook }: AfterRouteHookRegistration): RouteHookRemove {
+    const condition = getRouteHookCondition(lifecycle)
+    const store = hooks[timing][lifecycle]
 
-    return () => hooks[type].delete(hook)
+    const wrapped: AfterRouteHook = (to, context) => {
+      if (!condition(to, context.from, depth)) {
+        return
+      }
+
+      return hook(to, context)
+    }
+
+
+    store.add(wrapped)
+
+    return () => store.delete(wrapped)
+  }
+
+  const addRouteHook: RouterAddRouteHook = (registration) => {
+    if (isAfterRouteHookRegistration(registration)) {
+      return addAfterRouteHook(registration)
+    }
+
+    if (isBeforeRouteHookRegistration(registration)) {
+      return addBeforeRouteHook(registration)
+    }
+
+    const exhaustive: never = registration
+    throw new Error(`addRouteHook registration has missing cause for lifecycle: ${(exhaustive as RouteHookRegistration).lifecycle}`)
+  }
+
+  const onBeforeRouteEnter: AddBeforeRouteHook = (hook) => {
+    return addRouteHook({ lifecycle: 'onBeforeRouteEnter', hook, timing: 'global', depth: 0 })
+  }
+
+  const onBeforeRouteUpdate: AddBeforeRouteHook = (hook) => {
+    return addRouteHook({ lifecycle: 'onBeforeRouteUpdate', hook, timing: 'global', depth: 0 })
+  }
+
+  const onBeforeRouteLeave: AddBeforeRouteHook = (hook) => {
+    return addRouteHook({ lifecycle: 'onBeforeRouteLeave', hook, timing: 'global', depth: 0 })
+  }
+
+  const onAfterRouteEnter: AddAfterRouteHook = (hook) => {
+    return addRouteHook({ lifecycle: 'onAfterRouteEnter', hook, timing: 'global', depth: 0 })
+  }
+
+  const onAfterRouteUpdate: AddAfterRouteHook = (hook) => {
+    return addRouteHook({ lifecycle: 'onAfterRouteUpdate', hook, timing: 'global', depth: 0 })
+  }
+
+  const onAfterRouteLeave: AddAfterRouteHook = (hook) => {
+    return addRouteHook({ lifecycle: 'onAfterRouteLeave', hook, timing: 'global', depth: 0 })
   }
 
   return {
-    onBeforeRouteEnter: factory('before', isGlobalEnter),
-    onBeforeRouteUpdate: factory('before', isGlobalUpdate),
-    onBeforeRouteLeave: factory('before', isGlobalLeave),
+    onBeforeRouteEnter,
+    onBeforeRouteUpdate,
+    onBeforeRouteLeave,
+    onAfterRouteEnter,
+    onAfterRouteUpdate,
+    onAfterRouteLeave,
     addRouteHook,
     hooks,
   }

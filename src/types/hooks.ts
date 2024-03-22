@@ -5,7 +5,8 @@ import { RegisteredRouterReplace } from '@/types/routerReplace'
 import { MaybePromise } from '@/types/utilities'
 import { RouterRejectionType } from '@/utilities/createRouterReject'
 
-export type AddRouteHook = (hook: RouteHook) => RouteHookRemove
+export type AddBeforeRouteHook = (hook: BeforeRouteHook) => RouteHookRemove
+export type AddAfterRouteHook = (hook: AfterRouteHook) => RouteHookRemove
 export type RouteHookAbort = () => void
 
 type RouteHookContext = {
@@ -28,9 +29,26 @@ export type BeforeRouteHook = (to: ResolvedRoute, context: BeforeRouteHookContex
 export type AfterRouteHook = (to: ResolvedRoute, context: AfterRouteHookContext) => MaybePromise<void>
 export type RouteHook = BeforeRouteHook | AfterRouteHook
 export type RouteHookRemove = () => void
-export type RouteHookTiming = 'before' | 'after'
-export type RouteHookLifeCycle = 'onBeforeRouteEnter' | 'onBeforeRouteLeave' | 'onBeforeRouteUpdate'
-export type RouteHookCondition = (to: ResolvedRoute, from: ResolvedRoute | null, depth: number) => boolean
+
+const beforeRouteHookLifecycle = ['onBeforeRouteEnter', 'onBeforeRouteUpdate', 'onBeforeRouteLeave'] as const
+export type BeforeRouteHookLifecycle = typeof beforeRouteHookLifecycle[number]
+
+export function isBeforeRouteHookLifecycle(value: unknown): value is BeforeRouteHookLifecycle {
+  return beforeRouteHookLifecycle.includes(value as any)
+}
+
+const afterRouteHookLifecycle = ['onAfterRouteEnter', 'onAfterRouteUpdate', 'onAfterRouteLeave'] as const
+export type AfterRouteHookLifecycle = typeof afterRouteHookLifecycle[number]
+
+export function isAfterRouteHookLifecycle(value: unknown): value is AfterRouteHookLifecycle {
+  return afterRouteHookLifecycle.includes(value as any)
+}
+
+export type RouteHookLifecycle = BeforeRouteHookLifecycle | AfterRouteHookLifecycle
+
+export function isRouteHookLifecycle(value: unknown): value is RouteHookLifecycle {
+  return isBeforeRouteHookLifecycle(value) || isAfterRouteHookLifecycle(value)
+}
 
 type RouteHookSuccessResponse = {
   status: 'SUCCESS',
