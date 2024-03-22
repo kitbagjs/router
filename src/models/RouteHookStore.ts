@@ -34,7 +34,6 @@ export class RouteHookStore {
       return hook(to, context)
     }
 
-
     store.add(wrapped)
 
     return () => store.delete(wrapped)
@@ -51,7 +50,6 @@ export class RouteHookStore {
 
       return hook(to, context)
     }
-
 
     store.add(wrapped)
 
