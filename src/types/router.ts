@@ -1,5 +1,5 @@
 import { App, DeepReadonly } from 'vue'
-import { AddBeforeRouteHook } from '@/types/hooks'
+import { AddAfterRouteHook, AddBeforeRouteHook } from '@/types/hooks'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouteMethods, RouteMethodsImplementation } from '@/types/routeMethods'
 import { RouterPush, RouterPushImplementation } from '@/types/routerPush'
@@ -35,6 +35,9 @@ export type Router<
   onBeforeRouteEnter: AddBeforeRouteHook,
   onBeforeRouteLeave: AddBeforeRouteHook,
   onBeforeRouteUpdate: AddBeforeRouteHook,
+  onAfterRouteEnter: AddAfterRouteHook,
+  onAfterRouteLeave: AddAfterRouteHook,
+  onAfterRouteUpdate: AddAfterRouteHook,
   initialized: Promise<void>,
 }
 
@@ -54,5 +57,8 @@ export type RouterImplementation = {
   onBeforeRouteEnter: AddBeforeRouteHook,
   onBeforeRouteLeave: AddBeforeRouteHook,
   onBeforeRouteUpdate: AddBeforeRouteHook,
+  onAfterRouteEnter: AddAfterRouteHook,
+  onAfterRouteLeave: AddAfterRouteHook,
+  onAfterRouteUpdate: AddAfterRouteHook,
   initialized: Promise<void>,
 }
