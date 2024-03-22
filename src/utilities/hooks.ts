@@ -1,10 +1,7 @@
-import { onUnmounted } from 'vue'
-import { useAddRouteHook } from '@/compositions/useAddRouteHook'
-import { useRouterDepth } from '@/compositions/useRouterDepth'
 import { NavigationAbortError } from '@/errors/navigationAbortError'
-import { RouteHooksStore } from '@/models/RouteHooksStore'
+import { RouteHookStore } from '@/models/RouteHookStore'
 import { RouterPushError, RouterRejectionError } from '@/types/errors'
-import { AddAfterRouteHook, AddBeforeRouteHook, AfterRouteHook, AfterRouteHookLifecycle, AfterRouteHookResponse, BeforeRouteHook, BeforeRouteHookLifecycle, BeforeRouteHookResponse, RouteHookAbort, RouteHookLifecycle } from '@/types/hooks'
+import { AfterRouteHook, AfterRouteHookResponse, BeforeRouteHook, BeforeRouteHookResponse, RouteHookAbort, RouteHookLifecycle } from '@/types/hooks'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouterReject } from '@/types/router'
 import { RouterPushImplementation } from '@/types/routerPush'
@@ -14,7 +11,7 @@ import { getAfterRouteHooksFromRoutes, getBeforeRouteHooksFromRoutes } from '@/u
 type BeforeContext = {
   to: ResolvedRoute,
   from: ResolvedRoute,
-  hooks: RouteHooksStore,
+  hooks: RouteHookStore,
 }
 
 export async function runBeforeRouteHooks({ to, from, hooks }: BeforeContext): Promise<BeforeRouteHookResponse> {
@@ -76,7 +73,7 @@ export async function runBeforeRouteHooks({ to, from, hooks }: BeforeContext): P
 type AfterContext = {
   to: ResolvedRoute,
   from: ResolvedRoute,
-  hooks: RouteHooksStore,
+  hooks: RouteHookStore,
 }
 
 export async function runAfterRouteHooks({ to, from, hooks }: AfterContext): Promise<AfterRouteHookResponse> {
@@ -143,33 +140,8 @@ const abort: RouteHookAbort = () => {
   throw new NavigationAbortError()
 }
 
-function beforeComponentHookFactory<T extends BeforeRouteHookLifecycle>(lifecycle: T) {
-  return (hook: BeforeRouteHook) => {
-    const depth = useRouterDepth()
-    const addRouteHook = useAddRouteHook()
 
-    const remove = addRouteHook({ lifecycle, hook, depth, timing: 'component' })
-
-    onUnmounted(remove)
-
-    return remove
-  }
-}
-
-function afterComponentHookFactory<T extends AfterRouteHookLifecycle>(lifecycle: T) {
-  return (hook: AfterRouteHook) => {
-    const depth = useRouterDepth()
-    const addRouteHook = useAddRouteHook()
-
-    const remove = addRouteHook({ lifecycle, hook, depth, timing: 'component' })
-
-    onUnmounted(remove)
-
-    return remove
-  }
-}
-
-type RouteHookCondition = (to: ResolvedRoute, from: ResolvedRoute | null, depth: number) => boolean
+export type RouteHookCondition = (to: ResolvedRoute, from: ResolvedRoute | null, depth: number) => boolean
 
 export const isRouteEnter: RouteHookCondition = (to, from, depth) => {
   const toMatches = to.matches
@@ -204,9 +176,3 @@ export function getRouteHookCondition(lifecycle: RouteHookLifecycle): RouteHookC
       throw new Error(`No route hook condition for lifecycle: ${lifecycle satisfies never}`)
   }
 }
-
-export const onBeforeRouteLeave: AddBeforeRouteHook = beforeComponentHookFactory('onBeforeRouteUpdate')
-export const onBeforeRouteUpdate: AddBeforeRouteHook = beforeComponentHookFactory('onBeforeRouteLeave')
-export const onAfterRouteEnter: AddAfterRouteHook = afterComponentHookFactory('onAfterRouteEnter')
-export const onAfterRouteLeave: AddAfterRouteHook = afterComponentHookFactory('onAfterRouteUpdate')
-export const onAfterRouteUpdate: AddAfterRouteHook = afterComponentHookFactory('onAfterRouteLeave')

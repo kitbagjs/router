@@ -30,20 +30,8 @@ export type AfterRouteHook = (to: ResolvedRoute, context: AfterRouteHookContext)
 export type RouteHook = BeforeRouteHook | AfterRouteHook
 export type RouteHookRemove = () => void
 
-const beforeRouteHookLifecycle = ['onBeforeRouteEnter', 'onBeforeRouteUpdate', 'onBeforeRouteLeave'] as const
-export type BeforeRouteHookLifecycle = typeof beforeRouteHookLifecycle[number]
-
-export function isBeforeRouteHookLifecycle(value: unknown): value is BeforeRouteHookLifecycle {
-  return beforeRouteHookLifecycle.includes(value as any)
-}
-
-const afterRouteHookLifecycle = ['onAfterRouteEnter', 'onAfterRouteUpdate', 'onAfterRouteLeave'] as const
-export type AfterRouteHookLifecycle = typeof afterRouteHookLifecycle[number]
-
-export function isAfterRouteHookLifecycle(value: unknown): value is AfterRouteHookLifecycle {
-  return afterRouteHookLifecycle.includes(value as any)
-}
-
+export type BeforeRouteHookLifecycle = 'onBeforeRouteEnter' | 'onBeforeRouteUpdate' |'onBeforeRouteLeave'
+export type AfterRouteHookLifecycle = 'onAfterRouteEnter' | 'onAfterRouteUpdate' | 'onAfterRouteLeave'
 export type RouteHookLifecycle = BeforeRouteHookLifecycle | AfterRouteHookLifecycle
 
 type RouteHookSuccessResponse = {
