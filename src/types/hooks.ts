@@ -46,10 +46,6 @@ export function isAfterRouteHookLifecycle(value: unknown): value is AfterRouteHo
 
 export type RouteHookLifecycle = BeforeRouteHookLifecycle | AfterRouteHookLifecycle
 
-export function isRouteHookLifecycle(value: unknown): value is RouteHookLifecycle {
-  return isBeforeRouteHookLifecycle(value) || isAfterRouteHookLifecycle(value)
-}
-
 type RouteHookSuccessResponse = {
   status: 'SUCCESS',
 }
