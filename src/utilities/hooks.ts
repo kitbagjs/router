@@ -20,12 +20,12 @@ export async function runBeforeRouteHooks({ to, from, hooks }: BeforeContext): P
 
   const allHooks: BeforeRouteHook[] = [
     ...global.onBeforeRouteEnter,
-    ...global.onBeforeRouteUpdate,
-    ...global.onBeforeRouteLeave,
     ...route.onBeforeRouteEnter,
+    ...global.onBeforeRouteUpdate,
     ...route.onBeforeRouteUpdate,
-    ...route.onBeforeRouteLeave,
     ...component.onBeforeRouteUpdate,
+    ...global.onBeforeRouteLeave,
+    ...route.onBeforeRouteLeave,
     ...component.onBeforeRouteLeave,
   ]
 
@@ -81,14 +81,15 @@ export async function runAfterRouteHooks({ to, from, hooks }: AfterContext): Pro
   const route = getAfterRouteHooksFromRoutes(to, from)
 
   const allHooks: AfterRouteHook[] = [
-    ...component.onAfterRouteUpdate,
     ...component.onAfterRouteLeave,
-    ...route.onAfterRouteEnter,
-    ...route.onAfterRouteUpdate,
     ...route.onAfterRouteLeave,
-    ...global.onAfterRouteEnter,
-    ...global.onAfterRouteUpdate,
     ...global.onAfterRouteLeave,
+    ...component.onAfterRouteUpdate,
+    ...route.onAfterRouteUpdate,
+    ...global.onAfterRouteUpdate,
+    ...component.onAfterRouteEnter,
+    ...route.onAfterRouteEnter,
+    ...global.onAfterRouteEnter,
   ]
 
   try {
