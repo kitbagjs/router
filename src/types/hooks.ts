@@ -5,7 +5,8 @@ import { RegisteredRouterReplace } from '@/types/routerReplace'
 import { MaybePromise } from '@/types/utilities'
 import { RouterRejectionType } from '@/utilities/createRouterReject'
 
-export type AddRouteHook = (hook: RouteHook) => RouteHookRemove
+export type AddBeforeRouteHook = (hook: BeforeRouteHook) => RouteHookRemove
+export type AddAfterRouteHook = (hook: AfterRouteHook) => RouteHookRemove
 export type RouteHookAbort = () => void
 
 type RouteHookContext = {
@@ -28,9 +29,10 @@ export type BeforeRouteHook = (to: ResolvedRoute, context: BeforeRouteHookContex
 export type AfterRouteHook = (to: ResolvedRoute, context: AfterRouteHookContext) => MaybePromise<void>
 export type RouteHook = BeforeRouteHook | AfterRouteHook
 export type RouteHookRemove = () => void
-export type RouteHookTiming = 'before' | 'after'
-export type RouteHookLifeCycle = 'onBeforeRouteEnter' | 'onBeforeRouteLeave' | 'onBeforeRouteUpdate'
-export type RouteHookCondition = (to: ResolvedRoute, from: ResolvedRoute | null, depth: number) => boolean
+
+export type BeforeRouteHookLifecycle = 'onBeforeRouteEnter' | 'onBeforeRouteUpdate' |'onBeforeRouteLeave'
+export type AfterRouteHookLifecycle = 'onAfterRouteEnter' | 'onAfterRouteUpdate' | 'onAfterRouteLeave'
+export type RouteHookLifecycle = BeforeRouteHookLifecycle | AfterRouteHookLifecycle
 
 type RouteHookSuccessResponse = {
   status: 'SUCCESS',

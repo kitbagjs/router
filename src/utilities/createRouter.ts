@@ -8,7 +8,7 @@ import { createCurrentRoute } from '@/utilities/createCurrentRoute'
 import { createRouteMethods } from '@/utilities/createRouteMethods'
 import { createRouterFind } from '@/utilities/createRouterFind'
 import { createRouterHistory } from '@/utilities/createRouterHistory'
-import { addRouteHookInjectionKey, createRouterHooks } from '@/utilities/createRouterHooks'
+import { routeHookStoreKey, createRouterHooks } from '@/utilities/createRouterHooks'
 import { createRouterReject } from '@/utilities/createRouterReject'
 import { createRouterResolve } from '@/utilities/createRouterResolve'
 import { createRouterRoutes } from '@/utilities/createRouterRoutes'
@@ -24,13 +24,14 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
   const routerRoutes = createRouterRoutes(routes)
   const resolve = createRouterResolve(routerRoutes)
   const history = createRouterHistory({ mode: options.historyMode })
-
   const {
-    onBeforeRouteEnter,
-    onBeforeRouteLeave,
-    onBeforeRouteUpdate,
-    addRouteHook,
     hooks,
+    onBeforeRouteEnter,
+    onAfterRouteUpdate,
+    onBeforeRouteLeave,
+    onAfterRouteEnter,
+    onBeforeRouteUpdate,
+    onAfterRouteLeave,
   } = createRouterHooks()
 
   async function update(url: string, { replace }: RouterUpdateOptions = {}): Promise<void> {
@@ -119,7 +120,7 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
     app.component('RouterLink', RouterLink)
     app.provide(routerInjectionKey, router as any)
     app.provide(routerRejectionKey, rejection)
-    app.provide(addRouteHookInjectionKey, addRouteHook)
+    app.provide(routeHookStoreKey, hooks)
   }
 
   const router: RouterImplementation = {
@@ -135,10 +136,13 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
     back: history.back,
     go: history.go,
     install,
-    onBeforeRouteEnter,
-    onBeforeRouteLeave,
-    onBeforeRouteUpdate,
     initialized,
+    onBeforeRouteEnter,
+    onAfterRouteUpdate,
+    onBeforeRouteLeave,
+    onAfterRouteEnter,
+    onBeforeRouteUpdate,
+    onAfterRouteLeave,
   }
 
   return router as any
