@@ -17,7 +17,7 @@ npm install @kitbag/router
 
 Create an array of possible routes. Learn more about [defining routes](/core-concepts/defining-routes).
 
-```js
+```ts
 // /routes.ts
 import { Routes } from '@kitbag/router'
 
@@ -34,7 +34,7 @@ export const routes = [
 
 Create a router instance and pass it to the app as a plugin
 
-```js {2-3,6,9}
+```ts {2-3,6,9}
 import { createApp } from 'vue'
 import { createRouter } from '@kitbag/router'
 import { routes } from '/routes'
