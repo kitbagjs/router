@@ -84,18 +84,18 @@ const numberParam: ParamGetSet<unknown> = {
   },
 }
 
-export function getParamValue<T extends Param>(value: string, param: T): ExtractParamType<T>
-export function getParamValue<T extends Param>(value: string, param: T): unknown {
+export function getParamValue<T extends Param>(value: string | undefined, param: T): ExtractParamType<T>
+export function getParamValue<T extends Param>(value: string | undefined, param: T): unknown {
   if (param === String) {
-    return stringParam.get(value, extras)
+    return stringParam.get(value!, extras)
   }
 
   if (param === Boolean) {
-    return booleanParam.get(value, extras)
+    return booleanParam.get(value!, extras)
   }
 
   if (param === Number) {
-    return numberParam.get(value, extras)
+    return numberParam.get(value!, extras)
   }
 
   if (isParamGetter(param)) {
@@ -103,11 +103,11 @@ export function getParamValue<T extends Param>(value: string, param: T): unknown
   }
 
   if (isParamGetSet(param)) {
-    return param.get(value, extras)
+    return param.get(value!, extras)
   }
 
   if (param instanceof RegExp) {
-    if (param.test(value)) {
+    if (param.test(value!)) {
       return value
     }
 

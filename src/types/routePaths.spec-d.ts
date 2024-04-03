@@ -19,7 +19,7 @@ describe('ExtractRoutePathParameters', () => {
   test('returns parameters for route', () => {
     type Source = ExtractRoutePathParameters<RouteMethods<typeof routes>, 'parentA.childA.grandChildA'>
     type Expect = {
-      paramA: [string, string],
+      paramA: string,
       paramB?: string | undefined,
       paramC: string,
     }

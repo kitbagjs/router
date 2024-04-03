@@ -1,19 +1,18 @@
 import { RouterRoute } from '@/types'
-import { mergeMaybeTuples } from '@/utilities/mergeMaybeTuples'
-import { setParamValuesOnUrl } from '@/utilities/paramsFinder'
+import { setParamValueOnUrl } from '@/utilities/paramsFinder'
 
 type AssembleUrlOptions = {
-  params?: Record<string, unknown[]>,
+  params?: Record<string, unknown>,
   query?: Record<string, string>,
 }
 
 export function assembleUrl(route: RouterRoute, options: AssembleUrlOptions = {}): string {
   const { params: paramValues = {}, query: queryValues } = options
-  const params = Object.entries(mergeMaybeTuples(route.pathParams, route.queryParams))
+  const params = Object.entries({ ...route.pathParams, ...route.queryParams })
   const pathWithQuery = route.query.length ? `${route.path}?${route.query}` : route.path
 
-  const path = params.reduce((url, [name, params]) => {
-    return setParamValuesOnUrl(url, { name, params, values: paramValues[name] })
+  const path = params.reduce((url, [name, param]) => {
+    return setParamValueOnUrl(url, { name, param, value: paramValues[name] })
   }, pathWithQuery)
 
   return withQuery(path, queryValues)

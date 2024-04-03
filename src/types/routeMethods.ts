@@ -1,13 +1,15 @@
+import { Component } from 'vue'
+import { ExtractParamType, Param } from '@/types/params'
 import { RouteMethod, RouteMethodImplementation, RouteMethodResponse } from '@/types/routeMethod'
 import { Disabled, Route, Routes } from '@/types/routes'
-import { Identity, TupleCanBeAllUndefined, UnionToIntersection } from '@/types/utilities'
+import { Identity, UnionToIntersection } from '@/types/utilities'
 import { Path } from '@/utilities/path'
 import { Query } from '@/utilities/query'
 
 export type RouteMethods<
   TRoutes extends Routes = Routes,
-  TPathParams extends Record<string, unknown[]> = Record<never, never>,
-  TQueryParams extends Record<string, unknown[]> = Record<never, never>
+  TPathParams extends Record<string, Param> = Record<never, never>,
+  TQueryParams extends Record<string, Param> = Record<never, never>
 > = UnionToIntersection<RouteMethodsTuple<TRoutes, TPathParams, TQueryParams>[number]>
 
 export type RouteMethodsImplementation = {
@@ -16,8 +18,8 @@ export type RouteMethodsImplementation = {
 
 type RouteMethodsTuple<
   TRoutes extends Routes,
-  TPathParams extends Record<string, unknown[]>,
-  TQueryParams extends Record<string, unknown[]>
+  TPathParams extends Record<string, Param>,
+  TQueryParams extends Record<string, Param>
 > = {
   [K in keyof TRoutes]: TRoutes[K] extends { name: infer Name extends string }
     ? { [N in Name]: RouteMethodsOrMethod<TRoutes[K], TPathParams, TQueryParams> }
@@ -26,8 +28,8 @@ type RouteMethodsTuple<
 
 type RouteMethodsOrMethod<
   TRoute extends Route,
-  TPathParams extends Record<string, unknown[]>,
-  TQueryParams extends Record<string, unknown[]>
+  TPathParams extends Record<string, Param>,
+  TQueryParams extends Record<string, Param>
 > = TRoute extends { children: infer Children extends Routes }
   ? TRoute extends Disabled<TRoute>
     ? RouteMethods<Children, RoutePathParams<TRoute, TPathParams>, RouteQueryParams<TRoute, TQueryParams>>
@@ -38,8 +40,8 @@ type RouteMethodsOrMethod<
 
 type CreateRouteMethod<
   TRoute extends Route,
-  TPathParams extends Record<string, unknown[]>,
-  TQueryParams extends Record<string, unknown[]>
+  TPathParams extends Record<string, Param>,
+  TQueryParams extends Record<string, Param>
 > = RouteMethod<MarkOptionalParams<MergeParams<RoutePathParams<TRoute, TPathParams>, RouteQueryParams<TRoute, TQueryParams>>>>
 
 export type ExtractRouteMethodParams<T> =
@@ -51,17 +53,17 @@ export type ExtractRouteMethodParams<T> =
 
 export type RoutePathParams<
   TRoute extends Route,
-  TPathParams extends Record<string, unknown[]>
+  TPathParams extends Record<string, Param>
 > = TRoute extends { path: infer TPath extends string | Path }
   ? MergeParams<TPathParams, ExtractParamsFromPath<TPath>>
-  : MergeParams<TPathParams, {}>
+  : TPathParams
 
 export type RouteQueryParams<
   TRoute extends Route,
-  TQueryParams extends Record<string, unknown[]>
+  TQueryParams extends Record<string, Param>
 > = TRoute extends { query: infer TQuery extends string | Query }
   ? MergeParams<TQueryParams, ExtractParamsFromQuery<TQuery>>
-  : MergeParams<TQueryParams, {}>
+  : TQueryParams
 
 type ExtractParamsFromPath<
   TPath extends Route['path']
@@ -84,36 +86,24 @@ export type MergeParams<
   TBeta extends Record<string, unknown>
 > = {
   [K in keyof TAlpha | keyof TBeta]: K extends keyof TAlpha & keyof TBeta
-    ? TAlpha[K] extends [...infer AlphaParams]
-      ? TBeta[K] extends [...infer BetaParams]
-        ? [...AlphaParams, ...BetaParams]
-        : [...AlphaParams, TBeta[K]]
-      : TBeta[K] extends [...infer BetaParams]
-        ? [TAlpha[K], ...BetaParams]
-        : [TAlpha[K], TBeta[K]]
+    ? never
     : K extends keyof TAlpha
-      ? TAlpha[K] extends [...infer AlphaParams]
-        ? [...AlphaParams]
-        : [TAlpha[K]]
+      ? TAlpha[K]
       : K extends keyof TBeta
-        ? TBeta[K] extends [...infer BetaParams]
-          ? [...BetaParams]
-          : [TBeta[K]]
+        ? TBeta[K]
         : never
 }
 
-export type MarkOptionalParams<TParams extends Record<string, unknown[]>> = Identity<{
-  [K in keyof GetAllOptionalParams<TParams>]?: K extends keyof TParams ? UnwrapSingleParams<TParams[K]> : never
+export type MarkOptionalParams<TParams extends Record<string, Param | undefined>> = Identity<{
+  [K in keyof GetAllOptionalParams<TParams>]?: K extends keyof TParams ? ExtractParamType<TParams[K]> : never
 } & {
-  [K in keyof GetAllRequiredParams<TParams>]: K extends keyof TParams ? UnwrapSingleParams<TParams[K]> : never
+  [K in keyof GetAllRequiredParams<TParams>]: K extends keyof TParams ? ExtractParamType<TParams[K]> : never
 }>
 
-type UnwrapSingleParams<T extends unknown[]> = T extends [infer SingleParam] ? SingleParam : T
-
-type GetAllOptionalParams<TParams extends Record<string, unknown[]>> = {
-  [K in keyof TParams as TupleCanBeAllUndefined<TParams[K]> extends true ? K : never]: K
+type GetAllOptionalParams<TParams extends Record<string, unknown>> = {
+  [K in keyof TParams as undefined extends TParams[K] ? K : never]: K
 }
 
-type GetAllRequiredParams<TParams extends Record<string, unknown[]>> = {
-  [K in keyof TParams as TupleCanBeAllUndefined<TParams[K]> extends false ? K : never]: K
+type GetAllRequiredParams<TParams extends Record<string, unknown>> = {
+  [K in keyof TParams as undefined extends TParams[K] ? never : K]: K
 }

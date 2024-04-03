@@ -86,38 +86,6 @@ test('matches individual optional params', () => {
   } | undefined>()
 })
 
-test('matches multiple params with the same name', () => {
-  const routes = [
-    {
-      name: 'foo',
-      path: ':foo/:?foo/:foo',
-      component,
-    },
-  ] as const satisfies Routes
-
-  const router = createRouter(routes)
-
-  expectTypeOf(router.routes.foo).parameter(0).toEqualTypeOf<{
-    foo: [string, string | undefined, string],
-  }>()
-})
-
-test('matches multiple params with the same name as optional', () => {
-  const routes = [
-    {
-      name: 'foo',
-      path: ':?foo/:?foo/:?foo',
-      component,
-    },
-  ] as const satisfies Routes
-
-  const router = createRouter(routes)
-
-  expectTypeOf(router.routes.foo).parameter(0).toEqualTypeOf<{
-    foo?: [string | undefined, string | undefined, string | undefined],
-  } | undefined>()
-})
-
 test('matches typed params using a Param', () => {
   const routes = [
     {
@@ -154,42 +122,6 @@ test('matches typed params using a ParamGetter', () => {
   }>()
 })
 
-test('matches multiple typed params', () => {
-  const routes = [
-    {
-      name: 'foo',
-      path: path(':foo/:foo/:foo', {
-        foo: Boolean,
-      }),
-      component,
-    },
-  ] as const satisfies Routes
-
-  const router = createRouter(routes)
-
-  expectTypeOf(router.routes.foo).parameter(0).toEqualTypeOf<{
-    foo: [boolean, boolean, boolean],
-  }>()
-})
-
-test('matches individual as optional when matching multiple params with the same name', () => {
-  const routes = [
-    {
-      name: 'foo',
-      path: path(':foo/:?foo/:foo', {
-        foo: Boolean,
-      }),
-      component,
-    },
-  ] as const satisfies Routes
-
-  const router = createRouter(routes)
-
-  expectTypeOf(router.routes.foo).parameter(0).toEqualTypeOf<{
-    foo: [boolean, boolean | undefined, boolean],
-  }>()
-})
-
 test('matches params across children', () => {
   const routes = [
     {
@@ -211,50 +143,6 @@ test('matches params across children', () => {
     foo: string,
     bar: string,
   }>()
-})
-
-test('matches multiple params with the same name across children', () => {
-  const routes = [
-    {
-      name: 'foo',
-      path: '/:foo',
-      children: [
-        {
-          name: 'bar',
-          path: '/:?foo',
-          component,
-        },
-      ],
-    },
-  ] as const satisfies Routes
-
-  const router = createRouter(routes)
-
-  expectTypeOf(router.routes.foo.bar).parameter(0).toEqualTypeOf<{
-    foo: [string, string | undefined],
-  }>()
-})
-
-test('matches multiple params with the same name as optional across children', () => {
-  const routes = [
-    {
-      name: 'foo',
-      path: '/:?foo',
-      children: [
-        {
-          name: 'bar',
-          path: '/:?foo',
-          component,
-        },
-      ],
-    },
-  ] as const satisfies Routes
-
-  const router = createRouter(routes)
-
-  expectTypeOf(router.routes.foo.bar).parameter(0).toEqualTypeOf<{
-    foo?: [string | undefined, string | undefined],
-  } | undefined>()
 })
 
 test('multiple root routes produces multiple routes', () => {
@@ -385,7 +273,7 @@ test('non-disabled parent routes have correct type for parameters', () => {
   const routes = [
     {
       name: 'parent',
-      path: path('/:param1/:param1/:param2/:param3', {
+      path: path('/:param1/:param2/:param3', {
         param3: boolean,
       }),
       children: [
@@ -401,7 +289,7 @@ test('non-disabled parent routes have correct type for parameters', () => {
   const router = createRouter(routes)
 
   expectTypeOf(router.routes.parent).parameter(0).toEqualTypeOf<{
-    param1: [string, string],
+    param1: string,
     param2: string,
     param3: boolean,
   }>()
@@ -430,11 +318,11 @@ test('params includes query params', () => {
       children: [
         {
           name: 'child',
-          path: path('/:param2', {
-            param2: Boolean,
+          path: path('/:param3', {
+            param3: Boolean,
           }),
-          query: query('param1=:param1', {
-            param1: Boolean,
+          query: query('param4=:param4', {
+            param4: Boolean,
           }),
           component,
         },
@@ -450,7 +338,9 @@ test('params includes query params', () => {
   }>()
 
   expectTypeOf(router.routes.parent.child).parameter(0).toEqualTypeOf<{
-    param1: [string, boolean],
-    param2: [boolean, string],
+    param1: string,
+    param2: string,
+    param3: boolean,
+    param4: boolean,
   }>()
 })

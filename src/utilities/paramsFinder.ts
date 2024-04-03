@@ -3,30 +3,30 @@ import { setParamValue } from '@/utilities/params'
 import { replaceParamSyntaxWithCatchAlls } from '@/utilities/routeRegex'
 import { stringHasValue } from '@/utilities/string'
 
-export function getParamValuesFromUrl(url: string, path: string, paramName: string): string[] {
+export function getParamValueFromUrl(url: string, path: string, paramName: string): string | undefined {
   const regexPattern = getParamRegexPattern(path, paramName)
+  const [paramValue] = getCaptureGroups(url, regexPattern)
 
-  return getCaptureGroups(url, regexPattern)
+  return paramValue
 }
 
 export type ParamReplace = {
   name: string,
-  params?: Param[],
-  values?: unknown,
+  param: Param,
+  value?: unknown,
 }
 
-export function setParamValuesOnUrl(path: string, paramReplace?: ParamReplace): string {
+export function setParamValueOnUrl(path: string, paramReplace?: ParamReplace): string {
   if (!paramReplace) {
     return path
   }
 
-  const { name, params = [], values = [] } = paramReplace
+  const { name, param, value } = paramReplace
   const regexPattern = getParamRegexPattern(path, name)
   const captureGroups = getCaptureGroups(path, regexPattern)
 
-  return captureGroups.reduce((value, captureGroup, index) => {
-    const valueForIndex = Array.isArray(values) ? values[index] : values
-    return value.replace(captureGroup, () => setParamValue(valueForIndex, params[index++]))
+  return captureGroups.reduce((url, captureGroup) => {
+    return url.replace(captureGroup, () => setParamValue(value, param))
   }, path)
 }
 

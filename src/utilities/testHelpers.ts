@@ -22,7 +22,7 @@ export const routes = [
         children: [
           {
             name: 'grandChildA',
-            path: '/:paramC/:paramA',
+            path: '/:paramC',
             component,
           },
         ],
