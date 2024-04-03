@@ -1,4 +1,3 @@
-import { Component } from 'vue'
 import { ExtractParamType, Param } from '@/types/params'
 import { RouteMethod, RouteMethodImplementation, RouteMethodResponse } from '@/types/routeMethod'
 import { Disabled, Route, Routes } from '@/types/routes'

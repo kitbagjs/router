@@ -1,4 +1,3 @@
-import { Param } from '@/types/params'
 import { RegisteredRoutes } from '@/types/register'
 import { RouteMethods } from '@/types/routeMethods'
 import { ExtractRoutePathParameters, RoutePaths } from '@/types/routePaths'
@@ -13,7 +12,7 @@ export type RouteWithParams<
 
 export type RegisteredRouteWithParams<T extends string> = RouteWithParams<RegisteredRoutes, T>
 
-export type RouteWithParamsImplementation = { route: string, params?: Record<string, Param> }
+export type RouteWithParamsImplementation = { route: string, params?: Record<string, unknown> }
 
 type RouteParams<T> = [T] extends [never]
   ? {}
