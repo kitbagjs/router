@@ -1,7 +1,6 @@
 import { RouterRoute, RouteMethodImplementation, RouteMethodsImplementation, isDisabledRoute } from '@/types'
 import { RouteMethodPush, RouteMethodReplace } from '@/types/routeMethod'
 import { RouterPushImplementation } from '@/types/routerPush'
-import { removePartial } from '@/utilities/removePartial'
 import { assembleUrl } from '@/utilities/urlAssembly'
 
 type RouteMethodsContext = {
@@ -52,7 +51,7 @@ function createRouteMethod({ route, push: routerPush }: CreateRouteMethodArgs): 
 
     const push: RouteMethodPush = ({ params: paramOverrides, ...options } = {}) => {
       if (paramOverrides) {
-        const mergedParams = { ...params, ...removePartial(paramOverrides) }
+        const mergedParams = { ...params, ...paramOverrides }
         const url = assembleUrl(route, {
           params: mergedParams,
         })
