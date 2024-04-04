@@ -7,7 +7,7 @@ export type RouterRoute = {
   name: string,
   path: string,
   query: string,
-  pathParams: Record<string, Param[]>,
-  queryParams: Record<string, Param[]>,
+  pathParams: Record<string, Param>,
+  queryParams: Record<string, Param>,
   depth: number,
 }

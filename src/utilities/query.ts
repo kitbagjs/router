@@ -9,10 +9,10 @@ type ExtractQueryParamsFromQueryString<
 > = TQuery extends `${string}=:${infer Param}&${infer Rest}`
   ? MergeParams<{ [P in ExtractParamName<Param>]: ExtractPathParamType<Param, TParams> }, ExtractQueryParamsFromQueryString<Rest, TParams>>
   : TQuery extends `${string}:${infer Param}`
-    ? { [P in ExtractParamName<Param>]: [ExtractPathParamType<Param, TParams>] }
+    ? { [P in ExtractParamName<Param>]: ExtractPathParamType<Param, TParams> }
     : Record<never, never>
 
-type QueryParams<T extends string> = {
+export type QueryParams<T extends string> = {
   [K in keyof ExtractQueryParamsFromQueryString<T>]?: Param
 }
 

@@ -1,7 +1,6 @@
 import { RouteMethod, RouteMethodResponseImplementation, RouterRoute, Routes, isRouteMethodResponse } from '@/types'
 import { RouteWithParams, RouteWithParamsImplementation } from '@/types/routeWithParams'
 import { isRecord } from '@/utilities/guards'
-import { normalizeRouteParams } from '@/utilities/normalizeRouteParams'
 import { getRoutePath } from '@/utilities/routes'
 import { assembleUrl } from '@/utilities/urlAssembly'
 
@@ -34,9 +33,8 @@ export function createRouterResolve(routes: RouterRoute[]): RouterResolveImpleme
         throw `No route found: "${String(source)}"`
       }
 
-      const normalized = normalizeRouteParams(source.params ?? {})
       const url = assembleUrl(match, {
-        params: normalized,
+        params: source.params ?? {},
         query: options?.query,
       })
 

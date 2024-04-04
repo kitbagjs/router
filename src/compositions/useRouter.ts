@@ -1,5 +1,5 @@
 import { InjectionKey, inject } from 'vue'
-import { RouterNotInstalledError } from '@/errors/routerNotInstalledError'
+import { RouterNotInstalledError } from '@/errors'
 import { RegisteredRouter } from '@/types'
 
 export const routerInjectionKey: InjectionKey<RegisteredRouter> = Symbol()

@@ -1,6 +1,7 @@
-import { describe, expect, test } from 'vitest'
+import { expect, test } from 'vitest'
+import { DuplicateParamsError } from '@/errors'
 import { Route } from '@/types'
-import { createRouterRoutes, routeParamsAreValid, path, getRouteParamValues } from '@/utilities'
+import { createRouterRoutes, routeParamsAreValid, path } from '@/utilities'
 import { component } from '@/utilities/testHelpers'
 
 test('given route WITHOUT params, always return true', () => {
@@ -123,20 +124,14 @@ test.each([
   expect(response).toBe(true)
 })
 
-describe('getRouteParamValues', () => {
-  test('given route with path params and query params of the same name, combines both', () => {
-    const route: Route = {
-      name: 'duplicate-names',
-      path: '/:foo',
-      query: 'foo=:foo',
-      component,
-    }
+test('given route with duplicate param names across path and query, throws DuplicateParamsError', () => {
+  const route: Route = {
+    name: 'different-cased-params',
+    path: '/duplicate/:foo',
+    query: 'params=:?foo',
+    component,
+  }
+  const action: () => void = () => createRouterRoutes([route])
 
-    const [routerRoutes] = createRouterRoutes([route])
-
-    const response = getRouteParamValues(routerRoutes, '/first-foo?foo=second-foo')
-
-    expect(response).toHaveProperty('foo')
-    expect(response.foo).toMatchObject(['first-foo', 'second-foo'])
-  })
+  expect(action).toThrowError(DuplicateParamsError)
 })

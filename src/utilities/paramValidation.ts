@@ -1,9 +1,7 @@
 import { Param, RouterRoute, RouteMatchRule } from '@/types'
 import { createMaybeRelativeUrl } from '@/utilities/createMaybeRelativeUrl'
-import { mergeMaybeTuples } from '@/utilities/mergeMaybeTuples'
 import { getParamValue } from '@/utilities/params'
-import { getParamValuesFromUrl } from '@/utilities/paramsFinder'
-import { unwrapTuples } from '@/utilities/unwrapTuples'
+import { getParamValueFromUrl } from '@/utilities/paramsFinder'
 
 export const routeParamsAreValid: RouteMatchRule = (route, url) => {
   try {
@@ -18,22 +16,20 @@ export const routeParamsAreValid: RouteMatchRule = (route, url) => {
 export const getRouteParamValues = (route: RouterRoute, url: string): Record<string, unknown> => {
   const { pathname, search } = createMaybeRelativeUrl(url)
 
-  const params = mergeMaybeTuples(
-    getRouteParams(route.pathParams, route.path, pathname),
-    getRouteParams(route.queryParams, route.query, search),
-  )
-
-  return unwrapTuples(params)
+  return {
+    ...getRouteParams(route.pathParams, route.path, pathname),
+    ...getRouteParams(route.queryParams, route.query, search),
+  }
 }
 
-const getRouteParams = (paramDefinitions: Record<string, Param[]>, paramFormat: string, valueFromUrl: string): Record<string, unknown[]> => {
+const getRouteParams = (paramDefinitions: Record<string, Param>, paramFormat: string, valueFromUrl: string): Record<string, unknown[]> => {
   const params: Record<string, unknown[]> = {}
 
-  for (const [key, paramsTuple] of Object.entries(paramDefinitions)) {
-    const stringValues = getParamValuesFromUrl(valueFromUrl, paramFormat, key)
-    const values = paramsTuple.map((param, index) => getParamValue(stringValues[index], param))
+  for (const [key, param] of Object.entries(paramDefinitions)) {
+    const stringValue = getParamValueFromUrl(valueFromUrl, paramFormat, key)
+    const formattedValues = getParamValue(stringValue, param)
 
-    params[key] = values
+    params[key] = formattedValues
   }
 
   return params

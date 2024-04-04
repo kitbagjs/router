@@ -43,11 +43,11 @@ export type ExtractPathParamType<
   TParams extends Record<string, Param | undefined>
 > = TParam extends `?${infer OptionalParam}`
   ? OptionalParam extends keyof TParams
-    ? ExtractParamType<TParams[OptionalParam]> | undefined
-    : string | undefined
+    ? TParams[OptionalParam] | undefined
+    : StringConstructor | undefined
   : TParam extends keyof TParams
-    ? ExtractParamType<TParams[TParam]>
-    : string
+    ? TParams[TParam]
+    : StringConstructor
 
 export type ExtractParamType<TParam extends Param | undefined> = TParam extends ParamGetSet<infer Type>
   ? Type

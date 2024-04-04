@@ -49,7 +49,7 @@ describe('path params', () => {
     const [routerRoutes] = createRouterRoutes([route])
 
     const url = assembleUrl(routerRoutes, {
-      params: { simple: ['ABC'] },
+      params: { simple: 'ABC' },
     })
 
     expect(url).toBe('/simple/ABC')
@@ -81,7 +81,7 @@ describe('path params', () => {
     const [routerRoutes] = createRouterRoutes([route])
 
     const url = assembleUrl(routerRoutes, {
-      params: { simple: ['ABC'] },
+      params: { simple: 'ABC' },
     })
 
     expect(url).toBe('/simple/ABC')
@@ -136,7 +136,7 @@ describe('query params', () => {
     const [routerRoutes] = createRouterRoutes([route])
 
     const url = assembleUrl(routerRoutes, {
-      params: { simple: ['ABC'] },
+      params: { simple: 'ABC' },
     })
 
     expect(url).toBe('/?simple=ABC')
@@ -170,7 +170,7 @@ describe('query params', () => {
     const [routerRoutes] = createRouterRoutes([route])
 
     const url = assembleUrl(routerRoutes, {
-      params: { simple: ['ABC'] },
+      params: { simple: 'ABC' },
     })
 
     expect(url).toBe('/?simple=ABC')

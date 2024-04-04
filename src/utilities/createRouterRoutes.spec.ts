@@ -30,7 +30,7 @@ describe('resolveRoutes', () => {
     const routes = [
       {
         name: 'foo',
-        path: '/foo/:fparam/:fparam',
+        path: '/foo/:fparam',
         children: [
           {
             name: 'bar',
@@ -130,7 +130,7 @@ describe('resolveRoutes', () => {
     const routes = createRouterRoutes([parentRoute])
     const routerRouteChild = routes.find(route => route.name === childRoute.name)
 
-    expect(routerRouteChild?.pathParams).toMatchObject({ workspaceId: [String], accountId: [String] })
+    expect(routerRouteChild?.pathParams).toMatchObject({ workspaceId: String, accountId: String })
   })
 
   test('always combines query params into return queryParams', () => {
@@ -151,7 +151,7 @@ describe('resolveRoutes', () => {
     const routes = createRouterRoutes([parentRoute])
     const routerRouteChild = routes.find(route => route.name === childRoute.name)
 
-    expect(routerRouteChild?.queryParams).toMatchObject({ startDate: [String], handle: [String] })
+    expect(routerRouteChild?.queryParams).toMatchObject({ startDate: String, handle: String })
   })
 
   test('always returns depth equal to distance from root', () => {
