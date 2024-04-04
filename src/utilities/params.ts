@@ -6,8 +6,20 @@ export function getParam<P extends Record<string, Param | undefined>>(params: P,
   return params[param] ?? String
 }
 
-export function optional<TParam extends Param>(param: TParam): ParamGetSet<ExtractParamType<TParam> | undefined> {
+const optionalKey = Symbol()
+
+type OptionalParamGetSet<TParam extends Param, TValue = ExtractParamType<TParam> | undefined> = ParamGetSet<TValue> & {
+  [optionalKey]: true,
+  get: (value: string | undefined, extras: ParamExtras) => TValue,
+}
+
+function isOptionalParam(param: Param | OptionalParamGetSet<Param>): param is OptionalParamGetSet<Param> {
+  return optionalKey in param
+}
+
+export function optional<TParam extends Param>(param: TParam): OptionalParamGetSet<TParam> {
   return {
+    [optionalKey]: true,
     get: (value) => {
       if (!stringHasValue(value)) {
         return undefined
@@ -86,16 +98,24 @@ const numberParam: ParamGetSet<unknown> = {
 
 export function getParamValue<T extends Param>(value: string | undefined, param: T): ExtractParamType<T>
 export function getParamValue<T extends Param>(value: string | undefined, param: T): unknown {
+  if (value === undefined) {
+    if (isOptionalParam(param)) {
+      return param.get(value, extras)
+    }
+
+    throw new InvalidRouteParamValueError()
+  }
+
   if (param === String) {
-    return stringParam.get(value!, extras)
+    return stringParam.get(value, extras)
   }
 
   if (param === Boolean) {
-    return booleanParam.get(value!, extras)
+    return booleanParam.get(value, extras)
   }
 
   if (param === Number) {
-    return numberParam.get(value!, extras)
+    return numberParam.get(value, extras)
   }
 
   if (isParamGetter(param)) {
@@ -103,11 +123,11 @@ export function getParamValue<T extends Param>(value: string | undefined, param:
   }
 
   if (isParamGetSet(param)) {
-    return param.get(value!, extras)
+    return param.get(value, extras)
   }
 
   if (param instanceof RegExp) {
-    if (param.test(value!)) {
+    if (param.test(value)) {
       return value
     }
 

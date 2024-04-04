@@ -51,9 +51,8 @@ function createRouteMethod({ route, push: routerPush }: CreateRouteMethodArgs): 
 
     const push: RouteMethodPush = ({ params: paramOverrides, ...options } = {}) => {
       if (paramOverrides) {
-        const mergedParams = { ...params, ...paramOverrides }
         const url = assembleUrl(route, {
-          params: mergedParams,
+          params: { ...params, ...paramOverrides },
         })
 
         return routerPush(url, options)

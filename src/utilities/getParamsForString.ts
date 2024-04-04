@@ -11,7 +11,7 @@ export function getParamsForString<TInput extends string, TParams extends Record
     const param = getParam(params, paramName)
 
     if (paramName in value) {
-      throw new DuplicateParamsError()
+      throw new DuplicateParamsError(paramName)
     }
 
     value[paramName] = isOptional ? optional(param) : param

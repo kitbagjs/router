@@ -17,8 +17,9 @@ export function createRouterRoutes<T extends Routes>(routes: T, parentContext: P
     const path = typeof route.path === 'string' ? createPath(route.path, {}) : route.path
     const query = typeof route.query === 'string' ? createQuery(route.query, {}) : route.query ?? { query: '', params: {} }
 
-    if (hasDuplicateParams(path, query)) {
-      throw new DuplicateParamsError()
+    const { hasDuplicates, key } = checkDuplicateKeys(path, query)
+    if (hasDuplicates) {
+      throw new DuplicateParamsError(key)
     }
 
     const fullPath: Path[] = [...parentPath, path]
@@ -55,10 +56,22 @@ export function createRouterRoutes<T extends Routes>(routes: T, parentContext: P
   }, [])
 }
 
-function hasDuplicateParams(path: Path, query: Query): boolean {
-  const keys = [...Object.keys(path.params), ...Object.keys(query.params)]
+function checkDuplicateKeys(path: Path, query: Query): { key: string, hasDuplicates: true } | { key: undefined, hasDuplicates: false } {
+  const pathKeys = Object.keys(path.params)
+  const queryKeys = Object.keys(query.params)
+  const duplicateKey = pathKeys.find(key => queryKeys.includes(key))
 
-  return new Set(keys).size !== keys.length
+  if (duplicateKey) {
+    return {
+      key: duplicateKey,
+      hasDuplicates: true,
+    }
+  }
+
+  return {
+    key: undefined,
+    hasDuplicates: false,
+  }
 }
 
 function extractParams(entries: Path[] | Query[]): Record<string, Param> {
