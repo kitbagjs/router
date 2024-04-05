@@ -1,69 +1,32 @@
-import { Component } from 'vue'
-import { ExtractPathParamType, Identity, MergeParams, Param, Route, isNamedRoute } from '@/types'
-import { createRouterRoute } from '@/utilities/createRouterRoute'
+import { MergeParams, Param, Route } from '@/types'
 import { Path, path as createPath, PathParams, path, ToPath } from '@/utilities/path'
 import { Query, QueryParams, ToQuery, query as createQuery, query } from '@/utilities/query'
 import { component } from '@/utilities/testHelpers'
 
-export function createRoute<
-  TName extends string | undefined,
-  TPath extends string | Path,
-  TQuery extends string | Query
->(route: {
-  name: TName,
-  path: TPath,
-  query: TQuery,
-}) {
-  throw 'not implements'
-}
-
-// return type will use generics, will need to combine children
-// function createParentRoute<
-//   TName extends string | undefined,
-//   TPath extends string | Path,
-//   TQuery extends string | Query
-//   TChildren extends
-// >(route: {
-//   name: TName,
-//   path: TPath,
-//   query: TQuery,
-// }) {
-
-// }
-
 // user land (input)
-type FutureRoute = (Omit<Route, 'children'> & { children?: NewRouterRoute[] })
-
-type FlattenNewRouterRoutes<
-  TName extends string | undefined,
-  TPath extends Path,
-  TQuery extends Query | undefined,
-  TChildren extends NewRouterRoute[] | undefined
-> = [NewRouterRoute<TName, TPath, TQuery>, ...(TChildren extends infer NotUndefinedChildren extends NewRouterRoute[] ? {
-  [K in keyof NotUndefinedChildren]: NewRouterRoute<NotUndefinedChildren[K]['name'], CombinePath<TPath, ToPath<NotUndefinedChildren[K]['path']>>, CombineQuery<ToQuery<TQuery>, ToQuery<NotUndefinedChildren[K]['query']>>>
-} : [])]
+type FutureRoute = (Omit<Route, 'children'> & { children?: Readonly<NewRouterRoute[]> })
 
 // internal version of FutureRoute (output)
 type NewRouterRoute<
-  TName extends string | undefined = string | undefined,
-  TPath extends Path = Path,
-  TQuery extends Query | undefined = Query | undefined
+  TName extends string | undefined = any,
+  TPath extends string | Path = any,
+  TQuery extends string | Query | undefined = any
 > = {
   matched: Route,
   matches: Route[],
   name: TName,
-  path: TPath,
-  query: TQuery,
+  path: ToPath<TPath>,
+  query: ToQuery<TQuery>,
   pathParams: Record<string, Param>,
   queryParams: Record<string, Param>,
   depth: number,
 }
 
 type CombinePath<
-  TParent extends Path,
-  TChild extends Path
-> = TParent extends { path: infer TParentPath extends string, params: infer TParentParams extends Record<string, unknown> }
-  ? TChild extends { path: infer TChildPath extends string, params: infer TChildParams extends Record<string, unknown> }
+  TParent extends string | Path,
+  TChild extends string | Path
+> = ToPath<TParent> extends { path: infer TParentPath extends string, params: infer TParentParams extends Record<string, unknown> }
+  ? ToPath<TChild> extends { path: infer TChildPath extends string, params: infer TChildParams extends Record<string, unknown> }
     ? MergeParams<TParentParams, TChildParams> extends PathParams<`${TParentPath}${TChildPath}`>
       ? Path<`${TParentPath}${TChildPath}`, MergeParams<TParentParams, TChildParams>>
       : never
@@ -71,58 +34,49 @@ type CombinePath<
   : never
 
 type CombineQuery<
-  TParent extends Query,
-  TChild extends Query
-> = TParent extends { query: infer TParentQuery extends string, params: infer TParentParams extends Record<string, unknown> }
-  ? TChild extends { query: infer TChildQuery extends string, params: infer TChildParams extends Record<string, unknown> }
+  TParent extends string | Query | undefined,
+  TChild extends string | Query | undefined
+> = ToQuery<TParent> extends { query: infer TParentQuery extends string, params: infer TParentParams extends Record<string, unknown> }
+  ? ToQuery<TChild> extends { query: infer TChildQuery extends string, params: infer TChildParams extends Record<string, unknown> }
     ? MergeParams<TParentParams, TChildParams> extends QueryParams<`${TParentQuery}${TChildQuery}`>
       ? Query<`${TParentQuery}${TChildQuery}`, MergeParams<TParentParams, TChildParams>>
       : never
     : never
   : never
 
-type NewRouterRoutes<TRoutes extends FutureRoute[]> = FlatArray<{
-  [K in keyof TRoutes]: FlattenNewRouterRoutes<TRoutes[K]['name'], ToPath<TRoutes[K]['path']>, ToQuery<TRoutes[K]['query']>, TRoutes[K]['children']>
-}, 0>
+type FlattenNewRouterRoute<TRoute extends FutureRoute, TChildren extends NewRouterRoute[] = TRoute['children'] extends NewRouterRoute[] ? TRoute['children'] : []> = [
+  NewRouterRoute<TRoute['name'], TRoute['path'], TRoute['query']>,
+  ...{ [K in keyof TChildren]: NewRouterRoute<
+  TChildren[K]['name'],
+  CombinePath<TRoute['path'], TChildren[K]['path']>,
+  CombineQuery<TRoute['query'], TChildren[K]['query']>
+  > }
+]
 
-function createNewRouterRoutes<const TRoutes extends FutureRoute[]>(routes: TRoutes): NewRouterRoutes<TRoutes> {
+type FlattenNewRouterRoutes<TRoutes extends Readonly<FutureRoute[]>> = FlatArray<{
+  [K in keyof TRoutes]: FlattenNewRouterRoute<TRoutes[K]>
+}, 1>
+
+function createNewRouterRoutes<const TRoutes extends Readonly<FutureRoute[]>>(routes: TRoutes): FlattenNewRouterRoutes<TRoutes> {
   throw 'not implemented'
 }
 
-// start here, need return type to type TChildren above
-function createNewRouterRoute<
-  const TRoute extends FutureRoute
->(route: TRoute): FlattenNewRouterRoutes<TRoute['name'], ToPath<TRoute['path']>, ToQuery<TRoute['query']>, TRoute['children']>
-function createNewRouterRoute(route: FutureRoute): [NewRouterRoute] {
+function createNewRouterRoute<const TRoute extends FutureRoute>(route: TRoute): FlattenNewRouterRoute<TRoute> {
   const path: Path = typeof route.path === 'string' ? createPath(route.path, {}) : route.path
   const query: Query = typeof route.query === 'string' ? createQuery(route.query, {}) : route.query ?? { query: '', params: {} }
-  // const value: NewRouterRoute[] = []
 
-  // if (isParentRoute(route)) {
-  //   const routerRoute = createRouterRoutes(route.children, {
-  //     parentPath: fullPath,
-  //     parentQuery: fullQuery,
-  //     parentMatches: fullMatches,
-  //     parentDepth: parentDepth + 1,
-  //   })
-
-  //   value.push(...routerRoute)
-  // }
-
-  // value.push({
-  const routerRoute = {
-    matched: route,
-    matches: [route],
-    name: route.name,
-    path,
-    query,
-    pathParams: extractParams([path]),
-    queryParams: extractParams([query]),
-    depth: 1,
-  }
-  // })
-
-  return [routerRoute]
+  return [
+    {
+      matched: route,
+      matches: [route],
+      name: route.name,
+      path,
+      query,
+      pathParams: extractParams([path]),
+      queryParams: extractParams([query]),
+      depth: 1,
+    },
+  ]
 }
 
 function extractParams(entries: Path[] | Query[]): Record<string, Param> {
@@ -156,7 +110,7 @@ function extractParams(entries: Path[] | Query[]): Record<string, Param> {
 //   ],
 // })
 
-const [stringPath] = createNewRouterRoute({
+const stringPath = createNewRouterRoute({
   name: 'lower-depth',
   path: path('/', {}),
   query: query('color=:red', { red: Boolean }),
@@ -200,3 +154,4 @@ const objPath = createNewRouterRoutes([
 
 // - check plural version createRouterRoutes
 // - fix order of combine Path (probably Query)
+// - what if name is omitted?

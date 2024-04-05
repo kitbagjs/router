@@ -32,3 +32,5 @@ export function path<T extends string, P extends PathParams<T>>(path: T, params:
     params: getParamsForString(path, params) as Path<T, P>['params'],
   }
 }
+
+export type ToPath<T extends string | Path> = T extends string ? Path<T> : T
