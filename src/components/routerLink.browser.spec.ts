@@ -2,8 +2,8 @@ import { mount } from '@vue/test-utils'
 import { expect, test, vi } from 'vitest'
 import { h } from 'vue'
 import routerLink from '@/components/routerLink.vue'
-import { Route } from '@/types'
-import { component, createRouter } from '@/utilities'
+import { component, createRouter, createRouterRoutes } from '@/utilities'
+import { RoutePaths } from '@/types'
 
 test('renders an anchor tag with the correct href and slot content', () => {
   const path = '/path/:param'
@@ -11,19 +11,21 @@ test('renders an anchor tag with the correct href and slot content', () => {
   const content = 'hello world'
   const href = new URL(path.replace(':param', param), window.location.origin)
 
-  const route = {
-    name: 'parent',
-    path,
-    component,
-  } as const satisfies Route
+  const routes = createRouterRoutes([
+    {
+      name: 'parent',
+      path,
+      component,
+    },
+  ])
 
-  const router = createRouter([route], {
-    initialUrl: route.path,
+  const router = createRouter(routes, {
+    initialUrl: path,
   })
 
   const wrapper = mount(routerLink, {
     props: {
-      to: router.routes.parent({ param }),
+      to: routes[0].name,
     },
     slots: {
       default: content,
@@ -44,20 +46,21 @@ test.each([
   true,
   false,
 ])('calls router.push with url and replace %s', async (replace) => {
-  const routeA = {
-    name: 'routeA',
-    path: '/routeA',
-    component: { render: () => h(routerLink, { to: router.routes.routeB(), replace }) },
-  } as const satisfies Route
+  const routes = createRouterRoutes([
+    {
+      name: 'routeA',
+      path: '/routeA',
+      component: { render: () => h(routerLink, { to: router.routes.routeB(), replace }) },
+    },
+    {
+      name: 'routeB',
+      path: '/routeB',
+      component,
+    },
+  ])
 
-  const routeB = {
-    name: 'routeB',
-    path: '/routeB',
-    component,
-  } as const satisfies Route
-
-  const router = createRouter([routeA, routeB], {
-    initialUrl: routeA.path,
+  const router = createRouter(routes, {
+    initialUrl: '/routeA',
   })
 
   await router.initialized
@@ -82,25 +85,27 @@ test.each([
 })
 
 test('to prop as string renders and routes correctly', () => {
-  const route = {
-    name: 'route',
-    path: '/route',
-    component,
-  } as const satisfies Route
-  const href = new URL(route.path, window.location.origin)
+  const routes = createRouterRoutes([
+    {
+      name: 'route',
+      path: '/route',
+      component,
+    },
+  ])
+  const href = new URL('/route', window.location.origin)
 
-  const router = createRouter([route], {
-    initialUrl: route.path,
+  const router = createRouter(routes, {
+    initialUrl: '/route',
   })
 
   const spy = vi.spyOn<any, 'push'>(router, 'push')
 
   const wrapper = mount(routerLink, {
     props: {
-      to: route.path,
+      to: '/route',
     },
     slots: {
-      default: route.name,
+      default: 'route',
     },
     global: {
       plugins: [router],
@@ -111,38 +116,40 @@ test('to prop as string renders and routes correctly', () => {
   const element = anchor.element as HTMLAnchorElement
   expect(element).toBeInstanceOf(HTMLAnchorElement)
   expect(element.href).toBe(href.toString())
-  expect(element.innerHTML).toBe(route.name)
+  expect(element.innerHTML).toBe('route')
 
   anchor.trigger('click')
 
   const [arg1] = spy.mock.lastCall ?? []
 
-  expect(arg1).toBe(route.path)
+  expect(arg1).toBe('/route')
 })
 
 test('when current route matches descendant, parent has "match" class', async () => {
-  const route = {
-    name: 'parent-route',
-    path: '/parent-route',
-    children: [
-      {
-        name: 'child-route',
-        path: '/child-route',
-        component,
-      },
-    ],
-  } as const satisfies Route
+  const routes = createRouterRoutes([
+    {
+      name: 'parent-route',
+      path: '/parent-route',
+      children: createRouterRoutes([
+        {
+          name: 'child-route',
+          path: '/child-route',
+          component,
+        },
+      ]),
+    },
+  ])
 
-  const router = createRouter([route], {
+  const router = createRouter(routes, {
     initialUrl: '/parent-route/child-route',
   })
 
   const wrapper = mount(routerLink, {
     props: {
-      to: route.path,
+      to: '/parent-route',
     },
     slots: {
-      default: route.name,
+      default: 'parent-route',
     },
     global: {
       plugins: [router],
@@ -157,28 +164,30 @@ test('when current route matches descendant, parent has "match" class', async ()
 })
 
 test('when current route matches to prop, parent has "match" and "exact-match" classes', async () => {
-  const route = {
-    name: 'parent-route',
-    path: '/parent-route',
-    children: [
-      {
-        name: 'child-route',
-        path: '/child-route',
-        component,
-      },
-    ],
-  } as const satisfies Route
+  const routes = createRouterRoutes([
+    {
+      name: 'parent-route',
+      path: '/parent-route',
+      children: createRouterRoutes([
+        {
+          name: 'child-route',
+          path: '/child-route',
+          component,
+        },
+      ]),
+    },
+  ])
 
-  const router = createRouter([route], {
+  const router = createRouter(routes, {
     initialUrl: '/parent-route',
   })
 
   const wrapper = mount(routerLink, {
     props: {
-      to: route.path,
+      to: '/parent-route',
     },
     slots: {
-      default: route.name,
+      default: 'parent-route',
     },
     global: {
       plugins: [router],
@@ -196,25 +205,27 @@ test.each([
   [true],
   [false],
 ])('isExternal slot prop works as expected', async (isExternal) => {
-  const route = {
-    name: 'parent-route',
-    path: '/parent-route',
-    children: [
-      {
-        name: 'child-route',
-        path: '/child-route',
-        component,
-      },
-    ],
-  } as const satisfies Route
+  const routes = createRouterRoutes([
+    {
+      name: 'parent-route',
+      path: '/parent-route',
+      children: createRouterRoutes([
+        {
+          name: 'child-route',
+          path: '/child-route',
+          component,
+        },
+      ]),
+    },
+  ])
 
-  const router = createRouter([route], {
+  const router = createRouter(routes, {
     initialUrl: '/parent-route',
   })
 
   const wrapper = mount(routerLink, {
     props: {
-      to: isExternal ? 'https://vuejs.org/' : route.path,
+      to: isExternal ? 'https://vuejs.org/' : '/parent-route',
     },
     slots: {
       default: '{{ params.isExternal }}',

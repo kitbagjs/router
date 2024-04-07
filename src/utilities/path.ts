@@ -24,12 +24,14 @@ export type Path<
 > = {
   path: T,
   params: Identity<ExtractParamsFromPathString<T, P>>,
+  toString: () => string,
 }
 
 export function path<T extends string, P extends PathParams<T>>(path: T, params: Identity<P>): Path<T, P> {
   return {
     path,
     params: getParamsForString(path, params) as Path<T, P>['params'],
+    toString: () => path,
   }
 }
 

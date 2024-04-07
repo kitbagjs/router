@@ -3,18 +3,19 @@ import { expect, test } from 'vitest'
 import { defineAsyncComponent } from 'vue'
 import helloWorld from '@/components/helloWorld'
 import { notFoundText } from '@/components/notFound'
-import { Route } from '@/types'
-import { createRouter } from '@/utilities'
+import { createRouter, createRouterRoutes } from '@/utilities'
 
 test('renders component for initial route', async () => {
-  const route = {
-    name: 'parent',
-    path: '/',
-    component: { template: 'hello world' },
-  } as const satisfies Route
+  const routes = createRouterRoutes([
+    {
+      name: 'parent',
+      path: '/',
+      component: { template: 'hello world' },
+    },
+  ])
 
-  const router = createRouter([route], {
-    initialUrl: route.path,
+  const router = createRouter(routes, {
+    initialUrl: '/',
   })
 
   await router.initialized
@@ -29,23 +30,25 @@ test('renders component for initial route', async () => {
     },
   })
 
-  expect(app.html()).toBe(route.component.template)
+  expect(app.html()).toBe('hello world')
 })
 
 test('renders components for initial route', async () => {
-  const childRoute = {
-    name: 'child',
-    path: '/child',
-    component: { template: 'Child' },
-  } as const satisfies Route
+  const routes = createRouterRoutes([
+    {
+      name: 'parent',
+      path: '/parent',
+      children: createRouterRoutes([
+        {
+          name: 'child',
+          path: '/child',
+          component: { template: 'Child' },
+        },
+      ]),
+    },
+  ])
 
-  const parentRoute = {
-    name: 'parent',
-    path: '/parent',
-    children: [childRoute],
-  } as const satisfies Route
-
-  const router = createRouter([parentRoute], {
+  const router = createRouter(routes, {
     initialUrl: '/parent/child',
   })
 
@@ -61,30 +64,28 @@ test('renders components for initial route', async () => {
     },
   })
 
-  expect(app.html()).toBe(childRoute.component.template)
+  expect(app.html()).toBe('<RouterView />')
 })
 
 test('updates components when route changes', async () => {
-  const childA = {
-    name: 'childA',
-    path: '/childA',
-    component: { template: 'ChildA' },
-  } as const satisfies Route
+  const routes = createRouterRoutes([
+    {
+      name: 'childA',
+      path: '/childA',
+      component: { template: 'ChildA' },
+    }, {
+      name: 'childB',
+      path: '/childB',
+      component: { template: 'ChildB' },
+    }, {
+      name: 'childC',
+      path: '/childC',
+      component: { template: 'ChildC' },
+    },
+  ])
 
-  const childB = {
-    name: 'childB',
-    path: '/childB',
-    component: { template: 'ChildB' },
-  } as const satisfies Route
-
-  const childC = {
-    name: 'childC',
-    path: '/childC',
-    component: { template: 'ChildC' },
-  } as const satisfies Route
-
-  const router = createRouter([childA, childB, childC], {
-    initialUrl: childA.path,
+  const router = createRouter(routes, {
+    initialUrl: '/childA',
   })
 
   const root = {
@@ -99,33 +100,35 @@ test('updates components when route changes', async () => {
 
   await router.initialized
 
-  expect(app.html()).toBe(childA.component.template)
+  expect(app.html()).toBe('childA')
 
-  await router.push(childB.path)
+  await router.push('/childB')
 
-  expect(app.html()).toBe(childB.component.template)
+  expect(app.html()).toBe('childB')
 
-  await router.push(childC.path)
+  await router.push('/childC')
 
-  expect(app.html()).toBe(childC.component.template)
+  expect(app.html()).toBe('childC')
 
-  await router.push(childA.path)
+  await router.push('/childA')
 
-  expect(app.html()).toBe(childA.component.template)
+  expect(app.html()).toBe('childA')
 })
 
 test.each([
   defineAsyncComponent(() => import('./helloWorld')),
   () => import('./helloWorld'),
 ])('resolves async components', async (component) => {
-  const route = {
-    name: 'parent',
-    path: '/',
-    component,
-  } as const satisfies Route
+  const routes = createRouterRoutes([
+    {
+      name: 'parent',
+      path: '/',
+      component,
+    },
+  ])
 
-  const router = createRouter([route], {
-    initialUrl: route.path,
+  const router = createRouter(routes, {
+    initialUrl: '/',
   })
 
   const root = {
@@ -192,14 +195,16 @@ test('Renders custom NotFound component when the initialUrl does not match', asy
 })
 
 test('Renders the NotFound component when the router.push does not match', async () => {
-  const route = {
-    name: 'parent',
-    path: '/',
-    component: { template: 'hello world' },
-  } as const satisfies Route
+  const routes = createRouterRoutes([
+    {
+      name: 'parent',
+      path: '/',
+      component: { template: 'hello world' },
+    },
+  ])
 
-  const router = createRouter([route], {
-    initialUrl: route.path,
+  const router = createRouter(routes, {
+    initialUrl: '/',
   })
 
   await router.initialized
@@ -220,13 +225,15 @@ test('Renders the NotFound component when the router.push does not match', async
 })
 
 test('Renders the route component when the router.push does match after a rejection', async () => {
-  const route = {
-    name: 'parent',
-    path: '/',
-    component: { template: 'hello world' },
-  } as const satisfies Route
+  const routes = createRouterRoutes([
+    {
+      name: 'parent',
+      path: '/',
+      component: { template: 'hello world' },
+    },
+  ])
 
-  const router = createRouter([route], {
+  const router = createRouter(routes, {
     initialUrl: '/does-not-exist',
   })
 
@@ -244,7 +251,7 @@ test('Renders the route component when the router.push does match after a reject
 
   expect(app.text()).toBe(notFoundText)
 
-  await router.push(route.path)
+  await router.push('/')
 
-  expect(app.text()).toBe(route.component.template)
+  expect(app.text()).toBe('hello world')
 })

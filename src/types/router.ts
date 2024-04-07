@@ -1,14 +1,13 @@
 import { App, DeepReadonly } from 'vue'
 import { AddAfterRouteHook, AddBeforeRouteHook } from '@/types/hooks'
 import { ResolvedRoute } from '@/types/resolved'
-import { RouteMethods, RouteMethodsImplementation } from '@/types/routeMethods'
 import { RouterPush, RouterPushImplementation } from '@/types/routerPush'
 import { RouterReplace, RouterReplaceImplementation } from '@/types/routerReplace'
-import { Routes } from '@/types/routes'
 import { RouterFind, RouterFindImplementation } from '@/utilities/createRouterFind'
 import { RouterHistoryMode } from '@/utilities/createRouterHistory'
 import { RouterRejectionComponents, RouterRejectionType } from '@/utilities/createRouterReject'
 import { RouterResolve, RouterResolveImplementation } from '@/utilities/createRouterResolve'
+import { RouterRoute } from '.'
 
 export type RouterReject = (type: RouterRejectionType) => void
 
@@ -18,9 +17,8 @@ export type RouterOptions = {
 } & RouterRejectionComponents
 
 export type Router<
-  TRoutes extends Routes = []
+  TRoutes extends RouterRoute[] = []
 > = {
-  routes: RouteMethods<TRoutes>,
   route: DeepReadonly<ResolvedRoute>,
   resolve: RouterResolve<TRoutes>,
   push: RouterPush<TRoutes>,
@@ -42,7 +40,6 @@ export type Router<
 }
 
 export type RouterImplementation = {
-  routes: RouteMethodsImplementation,
   route: DeepReadonly<ResolvedRoute>,
   resolve: RouterResolveImplementation,
   push: RouterPushImplementation,

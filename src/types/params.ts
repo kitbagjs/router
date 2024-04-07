@@ -49,8 +49,25 @@ export type ExtractPathParamType<
     ? TParams[TParam]
     : StringConstructor
 
+export type ExtractParamTypes<TParams extends Record<string, Param | undefined>> = {
+  [K in keyof TParams]: ExtractParamType<TParams[K]>
+}
+
 export type ExtractParamType<TParam extends Param | undefined> = TParam extends ParamGetSet<infer Type>
   ? Type
   : TParam extends ParamGetter
     ? ReturnType<TParam>
     : string
+
+export type MergeParams<
+  TAlpha extends Record<string, unknown>,
+  TBeta extends Record<string, unknown>
+> = {
+  [K in keyof TAlpha | keyof TBeta]: K extends keyof TAlpha & keyof TBeta
+    ? never
+    : K extends keyof TAlpha
+      ? TAlpha[K]
+      : K extends keyof TBeta
+        ? TBeta[K]
+        : never
+}

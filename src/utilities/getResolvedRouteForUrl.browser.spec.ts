@@ -1,5 +1,5 @@
 import { expect, test, vi } from 'vitest'
-import { RouterRoute, Route, Routes } from '@/types'
+import { RouterRoute, Routes } from '@/types'
 import { createRouterRoutes } from '@/utilities/createRouterRoutes'
 import { getResolvedRouteForUrl } from '@/utilities/getResolvedRouteForUrl'
 import * as utilities from '@/utilities/routeMatchScore'
@@ -10,21 +10,21 @@ test('given path WITHOUT params, returns match', () => {
     {
       name: 'parent',
       path: '/parent',
-      children: [
+      children: createRouterRoutes([
         {
           name: 'child',
           path: '/child',
-          children: [
+          children: createRouterRoutes([
             {
               name: 'grandchild',
               path: '/grandchild',
               component,
             },
-          ],
+          ]),
         },
-      ],
+      ]),
     },
-  ] as const satisfies Routes
+  ]
 
   const routerRoutes = createRouterRoutes(routes)
   const match = getResolvedRouteForUrl(routerRoutes, '/parent/child/grandchild')
@@ -36,21 +36,21 @@ test('given path to unnamed parent, without option to get to leaf, returns undef
   const routes = [
     {
       path: '/unnamed',
-      children: [
+      children: createRouterRoutes([
         {
           name: 'unnamed-child',
           path: '/unnamed-child/:child-id',
-          children: [
+          children: createRouterRoutes([
             {
               name: 'namedGrandchild',
               path: '/named-grandchild',
               component,
             },
-          ],
+          ]),
         },
-      ],
+      ]),
     },
-  ] as const satisfies Routes
+  ]
 
   const routerRoutes = createRouterRoutes(routes)
   const match = getResolvedRouteForUrl(routerRoutes, '/unnamed')
@@ -62,15 +62,15 @@ test('given path to unnamed  parent, with option to get to leaf, returns availab
   const routes = [
     {
       path: '/unnamed',
-      children: [
+      children: createRouterRoutes([
         {
           name: 'unnamed-child-root',
           path: '',
           component,
         },
-      ],
+      ]),
     },
-  ] as const satisfies Routes
+  ]
 
   const routerRoutes = createRouterRoutes(routes)
   const match = getResolvedRouteForUrl(routerRoutes, '/unnamed')
@@ -83,21 +83,21 @@ test('given path that includes named parent and path to leaf, return first match
     {
       name: 'namedParent',
       path: '/named-parent',
-      children: [
+      children: createRouterRoutes([
         {
           name: 'namedChild',
           path: '',
-          children: [
+          children: createRouterRoutes([
             {
               name: 'namedGrandchild',
               path: '',
               component,
             },
-          ],
+          ]),
         },
-      ],
+      ]),
     },
-  ] as const satisfies Routes
+  ]
 
   const routerRoutes = createRouterRoutes(routes)
   const match = getResolvedRouteForUrl(routerRoutes, '/named-parent')
@@ -160,7 +160,7 @@ test('given route with equal matches, returns route with highest score', () => {
       path: '/',
       component,
     },
-  ] as const satisfies Routes
+  ]
 
   const routerRoutes = createRouterRoutes(routes)
   const response = getResolvedRouteForUrl(routerRoutes, '/')
@@ -173,7 +173,7 @@ test('given a route without params or query returns an empty params and query', 
     name: 'route',
     path: '/',
     component,
-  } as const satisfies Route
+  }
 
   const routerRoutes = createRouterRoutes([route])
   const response = getResolvedRouteForUrl(routerRoutes, '/')
@@ -187,7 +187,7 @@ test('given a url with a query returns all query values', () => {
     name: 'route',
     path: '/',
     component,
-  } as const satisfies Route
+  }
 
   const routerRoutes = createRouterRoutes([route])
   const response = getResolvedRouteForUrl(routerRoutes, '/?foo=foo1&foo=foo2&bar=bar&baz')
@@ -208,7 +208,7 @@ test('given a route with params returns all params', () => {
     path: '/:paramA',
     query: 'paramB=:paramB',
     component,
-  } as const satisfies Route
+  }
 
   const routerRoutes = createRouterRoutes([route])
   const response = getResolvedRouteForUrl(routerRoutes, '/A?paramB=B')

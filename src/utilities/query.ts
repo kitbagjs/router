@@ -1,5 +1,4 @@
-import { ExtractParamName, ExtractPathParamType, Param } from '@/types/params'
-import { MergeParams } from '@/types/routeMethods'
+import { ExtractParamName, ExtractPathParamType, MergeParams, Param } from '@/types/params'
 import { Identity } from '@/types/utilities'
 import { getParamsForString } from '@/utilities/getParamsForString'
 
@@ -22,17 +21,19 @@ export type Query<
 > = {
   query: T,
   params: Identity<ExtractQueryParamsFromQueryString<T, P>>,
+  toString: () => string,
 }
 
 export function query<T extends string, P extends QueryParams<T>>(query: T, params: Identity<P>): Query<T, P> {
   return {
     query,
     params: getParamsForString(query, params) as Query<T, P>['params'],
+    toString: () => query,
   }
 }
 
 export type ToQuery<T extends string | Query | undefined> = T extends string
   ? Query<T>
   : T extends undefined
-    ? Query<''>
+    ? Query<'', {}>
     : T

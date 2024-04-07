@@ -31,7 +31,7 @@ export function getRouteScoreSortMethod(url: string): RouteSortMethod {
 }
 
 export function countExpectedQueryKeys(route: RouterRoute, actualQuery: URLSearchParams): number {
-  const expectedQuery = new URLSearchParams(route.query)
+  const expectedQuery = new URLSearchParams(route.query.toString())
   const expectedQueryKeys = Array.from(expectedQuery.keys())
 
   const missing = expectedQueryKeys.filter(expected => !actualQuery.has(expected))

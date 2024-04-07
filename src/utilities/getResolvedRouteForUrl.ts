@@ -6,7 +6,7 @@ import { getRouteParamValues, routeParamsAreValid } from '@/utilities/paramValid
 import { routePathMatches, routeQueryMatches } from '@/utilities/routeMatchRegexRules'
 import { getRouteScoreSortMethod } from '@/utilities/routeMatchScore'
 
-export function getResolvedRouteForUrl(routes: RouterRoute[], url: string): ResolvedRoute | undefined {
+export function getResolvedRouteForUrl(routes: Readonly<RouterRoute[]>, url: string): ResolvedRoute | undefined {
   const rules = [routePathMatches, routeQueryMatches, routeParamsAreValid]
   const sortByRouteScore = getRouteScoreSortMethod(url)
 

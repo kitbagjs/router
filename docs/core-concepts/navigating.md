@@ -97,37 +97,3 @@ Push also let's you pass `replace: true` to achieve the same behavior.
 ```ts
 router.push({ route: 'user.settings' }, { replace: true })
 ```
-
-## Route Methods
-
-The router also provides an alternative syntax that encapsulates the route properties in a callback method.
-
-```ts
-const routes = [
-  {
-    name: 'user',
-    path: '/user',
-    component: ...,
-    children: [
-      {
-        name: 'profile',
-        path: '/profile',
-        component: ...,
-      },
-      {
-        name: 'settings',
-        path: '/settings',
-        component: ...,
-      }
-    ]
-  }
-] as const satisfies Routes
-
-const { routes } = useRouter(routes) // [!code focus]
-
-routes.user.profile() // [!code focus]
-```
-
-Calling this method returns the context for the route, which can later be used to actually navigate. This context includes a `url` string as well as `push` and `replace` methods, which have the same syntax as `router.push` and `router.replace`.
-
-[example that demonstrates the value]
