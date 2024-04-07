@@ -25,7 +25,8 @@ describe('route name dot notation', () => {
       },
     ])
 
-    expect(routes[2].name).toBe('grandparent.parent.child')
+    const childRoute = routes.find(route => route.matched.name === 'child')
+    expect(childRoute?.name).toBe('grandparent.parent.child')
   })
 
   test('given parents without names, returns only the leaf', () => {
@@ -47,7 +48,8 @@ describe('route name dot notation', () => {
       },
     ])
 
-    expect(routes[2].name).toBe('child')
+    const childRoute = routes.find(route => route.matched.name === 'child')
+    expect(childRoute?.name).toBe('child')
   })
 
 })

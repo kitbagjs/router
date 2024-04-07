@@ -86,7 +86,7 @@ describe('getRouteScoreSortMethod', () => {
   })
 
   test('given routes with equal query scores, returns them sorted by route depth descending', () => {
-    const [aRoute, bRoute] = createRouterRoutes([
+    const routes = createRouterRoutes([
       {
         name: 'lower-depth',
         path: '/',
@@ -108,8 +108,8 @@ describe('getRouteScoreSortMethod', () => {
     ])
 
     const sortByRouteScore = getRouteScoreSortMethod('/?color=red&extra=ok')
-    const response = [aRoute, bRoute].sort(sortByRouteScore)
+    const response = routes.sort(sortByRouteScore)
 
-    expect(response).toMatchObject([bRoute, aRoute])
+    expect(response.map(route => route.matched.name)).toMatchObject(['higher-depth-child', 'lower-depth', 'higher-depth'])
   })
 })

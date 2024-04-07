@@ -50,5 +50,5 @@ test('updates the route when navigating', async () => {
 
   await push('/second')
 
-  expect(route.matched).toMatchObject('second')
+  expect(route.matched.name).toBe('second')
 })

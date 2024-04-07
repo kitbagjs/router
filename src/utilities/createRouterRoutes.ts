@@ -15,7 +15,7 @@ export function createRouterRoutes(routes: Readonly<Route[]>): RouterRoute[] {
         name: combineName(routerRoute.name, childRoute.name),
         path: combinePath(routerRoute.path, childRoute.path),
         query: combineQuery(routerRoute.query, childRoute.query),
-        depth: childRoute.depth++,
+        depth: childRoute.depth + 1,
       })))
     }
 
