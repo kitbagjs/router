@@ -1,4 +1,4 @@
-import { RouterRoute, Routes } from '@/types'
+import { RouterRoute } from '@/types'
 import { RouteWithParams, RouteWithParamsImplementation } from '@/types/routeWithParams'
 import { isRecord } from '@/utilities/guards'
 import { assembleUrl } from '@/utilities/urlAssembly'
@@ -8,7 +8,7 @@ export type RouterResolveOptions = {
 }
 
 export type RouterResolve<
-  TRoutes extends Routes
+  TRoutes extends RouterRoute[]
 > = <
   TRoutePath extends string
 >(source: string | RouteWithParams<TRoutes, TRoutePath>, options?: RouterResolveOptions) => string

@@ -3,7 +3,6 @@ import { expect, test, vi } from 'vitest'
 import { h } from 'vue'
 import routerLink from '@/components/routerLink.vue'
 import { component, createRouter, createRouterRoutes } from '@/utilities'
-import { RoutePaths } from '@/types'
 
 test('renders an anchor tag with the correct href and slot content', () => {
   const path = '/path/:param'
@@ -50,7 +49,7 @@ test.each([
     {
       name: 'routeA',
       path: '/routeA',
-      component: { render: () => h(routerLink, { to: router.routes.routeB(), replace }) },
+      component: { render: () => h(routerLink, { to: 'routeB', replace }) },
     },
     {
       name: 'routeB',
