@@ -9,13 +9,15 @@ type AssembleUrlOptions = {
 export function assembleUrl(route: RouterRoute, options: AssembleUrlOptions = {}): string {
   const { params: paramValues = {}, query: queryValues } = options
   const params = Object.entries({ ...route.pathParams, ...route.queryParams })
-  const pathWithQuery = `${route.path.toString()}?${route.query.toString()}`
+  const path = route.path.toString()
+  const query = route.query.toString()
+  const pathWithQuery = query.length ? `${path}?${query}` : path
 
-  const path = params.reduce<string>((url, [name, param]) => {
+  const url = params.reduce<string>((url, [name, param]) => {
     return setParamValueOnUrl(url, { name, param, value: paramValues[name] })
   }, pathWithQuery)
 
-  return withQuery(path, queryValues)
+  return withQuery(url, queryValues)
 }
 
 function withQuery(url: string, query?: Record<string, string>): string {
