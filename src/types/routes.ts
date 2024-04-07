@@ -1,6 +1,6 @@
 import { AsyncComponentLoader, Component, DefineComponent } from 'vue'
 import { AfterRouteHook, BeforeRouteHook } from '@/types/hooks'
-import { RouterRoute } from '@/types/routerRoute'
+import { RouterRoutes } from '@/types/routerRoute'
 import { MaybeArray } from '@/types/utilities'
 import { Path } from '@/utilities/path'
 import { Query } from '@/utilities/query'
@@ -25,7 +25,7 @@ export type ParentRoute = RouteWithHooks & {
   path: string | Path,
   query?: string | Query,
   disabled?: boolean,
-  children?: Readonly<RouterRoute[]>,
+  children?: RouterRoutes,
   component?: RouteComponent,
   meta?: RouteMeta,
 }

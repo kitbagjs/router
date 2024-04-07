@@ -1,7 +1,7 @@
 import { App, readonly } from 'vue'
 import { RouterLink, RouterView } from '@/components'
 import { routerInjectionKey, routerRejectionKey } from '@/compositions'
-import { Router, RouterOptions, RouterImplementation, RouterReject, RouterRoute } from '@/types'
+import { Router, RouterOptions, RouterImplementation, RouterReject, RouterRoutes } from '@/types'
 import { RouterPushImplementation } from '@/types/routerPush'
 import { RouterReplaceImplementation } from '@/types/routerReplace'
 import { createCurrentRoute } from '@/utilities/createCurrentRoute'
@@ -18,7 +18,7 @@ type RouterUpdateOptions = {
   replace?: boolean,
 }
 
-export function createRouter<const T extends Readonly<RouterRoute[]>>(routes: T, options: RouterOptions = {}): Router<T> {
+export function createRouter<const T extends RouterRoutes>(routes: T, options: RouterOptions = {}): Router<T> {
   const resolve = createRouterResolve(routes)
   const history = createRouterHistory({ mode: options.historyMode })
   const {

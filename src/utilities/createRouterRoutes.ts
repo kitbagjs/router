@@ -36,7 +36,7 @@ export function createRouterRoutes(routes: Readonly<Route[]>): RouterRoute[] {
 
 function createRouterRoute(route: Route): RouterRoute {
   const path = typeof route.path === 'string' ? createPath(route.path, {}) : route.path
-  const query = typeof route.query === 'string' ? createQuery(route.query, {}) : route.query ?? { query: '', params: {} }
+  const query = typeof route.query === 'string' ? createQuery(route.query, {}) : route.query ?? createQuery('', {})
 
   return {
     matched: markRaw(route),

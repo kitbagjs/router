@@ -35,4 +35,4 @@ export function path<T extends string, P extends PathParams<T>>(path: T, params:
   }
 }
 
-export type ToPath<T extends string | Path> = T extends string ? Path<T> : T
+export type ToPath<T extends string | Path> = T extends string ? Path<T, {}> : T

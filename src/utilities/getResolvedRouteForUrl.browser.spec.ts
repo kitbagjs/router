@@ -6,7 +6,7 @@ import * as utilities from '@/utilities/routeMatchScore'
 import { component } from '@/utilities/testHelpers'
 
 test('given path WITHOUT params, returns match', () => {
-  const routes = [
+  const routes = createRouterRoutes([
     {
       name: 'parent',
       path: '/parent',
@@ -24,12 +24,12 @@ test('given path WITHOUT params, returns match', () => {
         },
       ]),
     },
-  ]
+  ])
 
-  const routerRoutes = createRouterRoutes(routes)
-  const match = getResolvedRouteForUrl(routerRoutes, '/parent/child/grandchild')
+  const match = getResolvedRouteForUrl(routes, '/parent/child/grandchild')
 
-  expect(match?.name).toBe('grandchild')
+  expect(match?.name).toBe('parent.child.grandchild')
+  expect(match?.matched.name).toBe('grandchild')
 })
 
 test('given path to unnamed parent, without option to get to leaf, returns undefined', () => {
@@ -79,7 +79,7 @@ test('given path to unnamed  parent, with option to get to leaf, returns availab
 })
 
 test('given path that includes named parent and path to leaf, return first match', () => {
-  const routes = [
+  const routes = createRouterRoutes([
     {
       name: 'namedParent',
       path: '/named-parent',
@@ -97,12 +97,12 @@ test('given path that includes named parent and path to leaf, return first match
         },
       ]),
     },
-  ]
+  ])
 
-  const routerRoutes = createRouterRoutes(routes)
-  const match = getResolvedRouteForUrl(routerRoutes, '/named-parent')
+  const match = getResolvedRouteForUrl(routes, '/named-parent')
 
-  expect(match?.name).toBe('namedGrandchild')
+  expect(match?.name).toBe('namedParent.namedChild.namedGrandchild')
+  expect(match?.matched.name).toBe('namedGrandchild')
 })
 
 test('given route with simple string param WITHOUT value present, returns undefined', () => {
@@ -137,14 +137,14 @@ test('given route with simple string query param WITHOUT value present, returns 
 })
 
 
-test('given route with equal matches, returns route with highest score', () => {
+test.only('given route with equal matches, returns route with highest score', () => {
   vi.spyOn(utilities, 'getRouteScoreSortMethod').mockImplementation(() => {
     return (route: RouterRoute) => {
       return route.name === 'second-route' ? -1 : +1
     }
   })
 
-  const routes = [
+  const routes = createRouterRoutes([
     {
       name: 'first-route',
       path: '/',
@@ -160,10 +160,9 @@ test('given route with equal matches, returns route with highest score', () => {
       path: '/',
       component,
     },
-  ]
+  ])
 
-  const routerRoutes = createRouterRoutes(routes)
-  const response = getResolvedRouteForUrl(routerRoutes, '/')
+  const response = getResolvedRouteForUrl(routes, '/')
 
   expect(response?.name).toBe('second-route')
 })

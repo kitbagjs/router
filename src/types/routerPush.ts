@@ -1,4 +1,4 @@
-import { RegisteredRoutes, RouterRoute } from '@/types'
+import { RegisteredRoutes, RouterRoutes } from '@/types'
 import { RouteWithParams, RouteWithParamsImplementation } from '@/types/routeWithParams'
 
 export type RouterPushOptions = {
@@ -7,7 +7,7 @@ export type RouterPushOptions = {
 }
 
 export type RouterPush<
-  TRoutes extends RouterRoute[]
+  TRoutes extends RouterRoutes
 > = <
   TRoutePath extends string
 >(source: string | RouteWithParams<TRoutes, TRoutePath>, options?: RouterPushOptions) => Promise<void>

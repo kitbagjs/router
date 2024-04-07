@@ -24,7 +24,7 @@ test('renders an anchor tag with the correct href and slot content', () => {
 
   const wrapper = mount(routerLink, {
     props: {
-      to: routes[0].name,
+      to: 'parent',
     },
     slots: {
       default: content,

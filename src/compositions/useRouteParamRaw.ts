@@ -6,7 +6,7 @@ type ParamRawValue<T> = Extract<T, undefined> extends never ? string : string | 
 export function useRouteParamRaw<
   TRoute extends RouterRoute,
   TParam extends keyof ExtractRouterRouteParamTypes<TRoute>,
-  TParamType extends ParamRawValue<TParam[TParam]>
+  TParamType extends ParamRawValue<ExtractRouterRouteParamTypes<TRoute>[TParam]>
 >(_route: TRoute, _param: TParam, _defaultValue?: TParamType): Ref<ParamRawValue<TParamType>> {
   throw 'not implemented'
 }

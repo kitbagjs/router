@@ -64,7 +64,7 @@ test('renders components for initial route', async () => {
     },
   })
 
-  expect(app.html()).toBe('<RouterView />')
+  expect(app.html()).toBe('Child')
 })
 
 test('updates components when route changes', async () => {
@@ -100,19 +100,19 @@ test('updates components when route changes', async () => {
 
   await router.initialized
 
-  expect(app.html()).toBe('childA')
+  expect(app.html()).toBe('ChildA')
 
   await router.push('/childB')
 
-  expect(app.html()).toBe('childB')
+  expect(app.html()).toBe('ChildB')
 
   await router.push('/childC')
 
-  expect(app.html()).toBe('childC')
+  expect(app.html()).toBe('ChildC')
 
   await router.push('/childA')
 
-  expect(app.html()).toBe('childA')
+  expect(app.html()).toBe('ChildA')
 })
 
 test.each([

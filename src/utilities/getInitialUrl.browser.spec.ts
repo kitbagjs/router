@@ -1,6 +1,6 @@
 import { expect, test, vi } from 'vitest'
-import { random } from '.'
 import { getInitialUrl } from '@/utilities/getInitialUrl'
+import { random } from '@/utilities/testHelpers'
 
 test('given value for initial route, returns value', () => {
   const initialRoute = random.number().toString()

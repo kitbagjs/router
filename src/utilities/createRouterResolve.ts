@@ -1,4 +1,4 @@
-import { RouterRoute } from '@/types'
+import { RouterRoutes } from '@/types/routerRoute'
 import { RouteWithParams, RouteWithParamsImplementation } from '@/types/routeWithParams'
 import { isRecord } from '@/utilities/guards'
 import { assembleUrl } from '@/utilities/urlAssembly'
@@ -8,14 +8,14 @@ export type RouterResolveOptions = {
 }
 
 export type RouterResolve<
-  TRoutes extends RouterRoute[]
+  TRoutes extends RouterRoutes
 > = <
   TRoutePath extends string
 >(source: string | RouteWithParams<TRoutes, TRoutePath>, options?: RouterResolveOptions) => string
 
 export type RouterResolveImplementation = (source: string | RouteWithParamsImplementation, options?: RouterResolveOptions) => string
 
-export function createRouterResolve(routes: Readonly<RouterRoute[]>): RouterResolveImplementation {
+export function createRouterResolve(routes: RouterRoutes): RouterResolveImplementation {
   return (source, options) => {
     if (typeof source === 'string') {
       return source

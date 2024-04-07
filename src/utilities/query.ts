@@ -33,7 +33,7 @@ export function query<T extends string, P extends QueryParams<T>>(query: T, para
 }
 
 export type ToQuery<T extends string | Query | undefined> = T extends string
-  ? Query<T>
+  ? Query<T, {}>
   : T extends undefined
     ? Query<'', {}>
     : T
