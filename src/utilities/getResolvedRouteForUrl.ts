@@ -7,24 +7,11 @@ import { routePathMatches, routeQueryMatches } from '@/utilities/routeMatchRegex
 import { getRouteScoreSortMethod } from '@/utilities/routeMatchScore'
 
 export function getResolvedRouteForUrl(routes: RouterRoutes, url: string): ResolvedRoute | undefined {
-  // const rules = [routePathMatches, routeQueryMatches, routeParamsAreValid]
+  const rules = [routePathMatches, routeQueryMatches, routeParamsAreValid]
   const sortByRouteScore = getRouteScoreSortMethod(url)
 
   const matches = routes
-    // .filter(route => rules.every(test => test(route, url)))
-    .filter(route => {
-      if (!routePathMatches(route, url)) {
-        return false
-      }
-      if (!routeQueryMatches(route, url)) {
-        return false
-      }
-      if (!routeParamsAreValid(route, url)) {
-        return false
-      }
-
-      return true
-    })
+    .filter(route => rules.every(test => test(route, url)))
     .sort(sortByRouteScore)
 
   if (matches.length === 0) {

@@ -5,10 +5,10 @@ import routerLink from '@/components/routerLink.vue'
 import { component, createRouter, createRouterRoutes } from '@/utilities'
 
 test('renders an anchor tag with the correct href and slot content', () => {
-  const path = '/path/:param'
-  const param = 'param'
+  const path = '/path/:paramName'
+  const paramValue = 'ABC'
   const content = 'hello world'
-  const href = new URL(path.replace(':param', param), window.location.origin)
+  const href = new URL(path.replace(':paramName', paramValue), window.location.origin)
 
   const routes = createRouterRoutes([
     {
@@ -22,9 +22,11 @@ test('renders an anchor tag with the correct href and slot content', () => {
     initialUrl: path,
   })
 
+  const to = { route: 'parent', params: { paramName: paramValue } } as any
+
   const wrapper = mount(routerLink, {
     props: {
-      to: 'parent',
+      to,
     },
     slots: {
       default: content,
