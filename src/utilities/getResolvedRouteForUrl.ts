@@ -1,3 +1,4 @@
+import { isNamedRoute } from '@/types'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouterRoutes } from '@/types/routerRoute'
 import { createMaybeRelativeUrl } from '@/utilities/createMaybeRelativeUrl'
@@ -7,7 +8,7 @@ import { routePathMatches, routeQueryMatches } from '@/utilities/routeMatchRegex
 import { getRouteScoreSortMethod } from '@/utilities/routeMatchScore'
 
 export function getResolvedRouteForUrl(routes: RouterRoutes, url: string): ResolvedRoute | undefined {
-  const rules = [routePathMatches, routeQueryMatches, routeParamsAreValid]
+  const rules = [isNamedRoute, routePathMatches, routeQueryMatches, routeParamsAreValid]
   const sortByRouteScore = getRouteScoreSortMethod(url)
 
   const matches = routes

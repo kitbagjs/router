@@ -33,7 +33,7 @@ test('given path WITHOUT params, returns match', () => {
 })
 
 test('given path to unnamed parent, without option to get to leaf, returns undefined', () => {
-  const routes = [
+  const routes = createRouterRoutes([
     {
       path: '/unnamed',
       children: createRouterRoutes([
@@ -50,10 +50,9 @@ test('given path to unnamed parent, without option to get to leaf, returns undef
         },
       ]),
     },
-  ]
+  ])
 
-  const routerRoutes = createRouterRoutes(routes)
-  const match = getResolvedRouteForUrl(routerRoutes, '/unnamed')
+  const match = getResolvedRouteForUrl(routes, '/unnamed')
 
   expect(match).toBeUndefined()
 })
@@ -137,7 +136,7 @@ test('given route with simple string query param WITHOUT value present, returns 
 })
 
 
-test.only('given route with equal matches, returns route with highest score', () => {
+test('given route with equal matches, returns route with highest score', () => {
   vi.spyOn(utilities, 'getRouteScoreSortMethod').mockImplementation(() => {
     return (route: RouterRoute) => {
       return route.name === 'second-route' ? -1 : +1
