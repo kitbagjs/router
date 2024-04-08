@@ -1,6 +1,7 @@
 import { ExtractParamName, ExtractPathParamType, MergeParams, Param } from '@/types/params'
 import { Identity } from '@/types/utilities'
 import { getParamsForString } from '@/utilities/getParamsForString'
+import { isRecord } from '@/utilities/guards'
 
 type ExtractQueryParamsFromQueryString<
   TQuery extends string,
@@ -37,3 +38,20 @@ export type ToQuery<T extends string | Query | undefined> = T extends string
   : T extends undefined
     ? Query<'', {}>
     : T
+
+function isQuery(value: unknown): value is Query {
+  return isRecord(value) && typeof value.query === 'string'
+}
+
+export function toQuery<T extends string | Query | undefined>(value: T): ToQuery<T>
+export function toQuery<T extends string | Query | undefined>(value: T): Query {
+  if (value === undefined) {
+    return query('', {})
+  }
+
+  if (isQuery(value)) {
+    return value
+  }
+
+  return query(value, {})
+}

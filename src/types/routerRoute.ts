@@ -17,8 +17,9 @@ export type RouterRoute<
   pathParams: ToPath<TPath>['params'],
   queryParams: ToQuery<TQuery>['params'],
   depth: number,
+  disabled: boolean,
 }
 
-export type ExtractRouterRouteParamTypes<TRoute extends RouterRoute> = TRoute extends { pathParams: infer PathParams extends Record<string, Param | undefined>, queryParams: infer QueryParams extends Record<string, Param | undefined> }
+export type ExtractRouterRouteParamTypes<TRoute extends { pathParams: Record<string, unknown>, queryParams: Record<string, unknown> }> = TRoute extends { pathParams: infer PathParams extends Record<string, Param | undefined>, queryParams: infer QueryParams extends Record<string, Param | undefined> }
   ? ExtractParamTypes<MergeParams<PathParams, QueryParams>>
   : never

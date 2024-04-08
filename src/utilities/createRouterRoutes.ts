@@ -1,11 +1,11 @@
 import { markRaw } from 'vue'
 import { DuplicateParamsError } from '@/errors'
-import { MergeParams, Param, ParentRoute, Route, RouterRoute, isParentRoute } from '@/types'
-import { Path, path as createPath, PathParams, ToPath } from '@/utilities/path'
-import { Query, QueryParams, ToQuery, query as createQuery } from '@/utilities/query'
+import { MergeParams, ParentRoute, Route, RouterRoute, isParentRoute } from '@/types'
+import { Path, path as createPath, PathParams, ToPath, toPath } from '@/utilities/path'
+import { Query, QueryParams, ToQuery, query as createQuery, toQuery } from '@/utilities/query'
 
-export function createRouterRoutes<const TRoutes extends Readonly<Route[]>>(routes: TRoutes): FlattenRouterRoutes<TRoutes>
-export function createRouterRoutes(routes: Readonly<Route[]>): RouterRoute[] {
+export function createRoutes<const TRoutes extends Readonly<Route[]>>(routes: TRoutes): FlattenRouterRoutes<TRoutes>
+export function createRoutes(routes: Readonly<Route[]>): RouterRoute[] {
   const routerRoutes = routes.reduce<RouterRoute[]>((routerRoutes, route) => {
     const routerRoute = createRouterRoute(route)
 
@@ -36,18 +36,20 @@ export function createRouterRoutes(routes: Readonly<Route[]>): RouterRoute[] {
 }
 
 function createRouterRoute(route: Route): RouterRoute {
-  const path = typeof route.path === 'string' ? createPath(route.path, {}) : route.path
-  const query = typeof route.query === 'string' ? createQuery(route.query, {}) : route.query ?? createQuery('', {})
+  const path = toPath(route.path)
+  const query = toQuery(route.query)
+  const rawRoute = markRaw(route)
 
   return {
-    matched: markRaw(route),
-    matches: markRaw([route]),
+    matched: rawRoute,
+    matches: [rawRoute],
     name: route.name,
     path,
     query,
-    pathParams: extractParams([path]),
-    queryParams: extractParams([query]),
+    pathParams: path.params,
+    queryParams: query.params,
     depth: 1,
+    disabled: route.disabled ?? false,
   }
 }
 
@@ -67,15 +69,6 @@ function checkDuplicateKeys(path: Record<string, unknown>, query: Record<string,
     key: undefined,
     hasDuplicates: false,
   }
-}
-
-function extractParams(entries: Path[] | Query[]): Record<string, Param> {
-  return entries.reduce((params, entry) => {
-    return {
-      ...params,
-      ...entry.params,
-    }
-  }, {})
 }
 
 type FlattenRouterRoute<TRoute extends Route, TChildren extends RouterRoute[] = ExtractRouteChildren<TRoute>> = [

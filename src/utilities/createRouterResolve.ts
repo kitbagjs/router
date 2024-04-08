@@ -25,7 +25,11 @@ export function createRouterResolve(routes: RouterRoutes): RouterResolveImplemen
       const match = routes.find((route) => route.name === source.route)
 
       if (!match) {
-        throw `No route found: "${String(source)}"`
+        throw `Route not found: "${String(source)}"`
+      }
+
+      if (match.matched.disabled) {
+        throw `Route disabled: "${String(source)}"`
       }
 
       const url = assembleUrl(match, {

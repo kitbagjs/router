@@ -1,5 +1,5 @@
 import { RegisteredRoutes } from '@/types/register'
-import { ExtractRouterRouteParamTypes, RouterRoute, RouterRoutes } from '@/types/routerRoute'
+import { ExtractRouterRouteParamTypes, RouterRoutes } from '@/types/routerRoute'
 import { AllPropertiesAreOptional } from '@/types/utilities'
 
 export type RouteWithParams<
@@ -9,13 +9,14 @@ export type RouteWithParams<
   route: TRoutePath,
 } & RouteParams<RouteParamsByName<TRoutes, TRoutePath>>
 
-export type RegisteredRouteWithParams<T extends string> = RouteWithParams<RegisteredRoutes, T>
+export type RegisteredRouteMap = RoutesMap<RegisteredRoutes>
+export type RegisteredRouteWithParams<T extends keyof RegisteredRouteMap> = RouteWithParams<RegisteredRoutes, T>
 export type RouteWithParamsImplementation = { route: string, params?: Record<string, unknown> }
 
-type ExtractNamedElements<T> = T extends { name: string }? T : never
+type NamedNotDisabled<T> = T extends { name: string, disabled: false, pathParams: Record<string, unknown>, queryParams: Record<string, unknown> } ? T : never
 
-type RoutesMap<TRoutes extends RouterRoutes > = RouterRoute & {
-  [K in TRoutes[number] as ExtractNamedElements<K> extends { name: string } ? ExtractNamedElements<K>['name']: never]: ExtractNamedElements<K>
+type RoutesMap<TRoutes extends RouterRoutes> = {
+  [K in TRoutes[number] as NamedNotDisabled<K> extends { name: string } ? NamedNotDisabled<K>['name']: never]: NamedNotDisabled<K>
 }
 
 type RouteParams<T extends Record<string, unknown>> = AllPropertiesAreOptional<T> extends true ? { params?: T } : { params: T }

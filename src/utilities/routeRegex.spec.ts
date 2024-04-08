@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { createRouterRoutes, generateRoutePathRegexPattern, generateRouteQueryRegexPatterns } from '@/utilities'
+import { createRoutes, generateRoutePathRegexPattern, generateRouteQueryRegexPatterns } from '@/utilities'
 import { component } from '@/utilities/testHelpers'
 
 describe('generateRoutePathRegexPattern', () => {
@@ -9,7 +9,7 @@ describe('generateRoutePathRegexPattern', () => {
       path: 'parent/child/grandchild',
       component,
     }
-    const [routerRoutes] = createRouterRoutes([route])
+    const [routerRoutes] = createRoutes([route])
 
     const result = generateRoutePathRegexPattern(routerRoutes)
 
@@ -23,7 +23,7 @@ describe('generateRoutePathRegexPattern', () => {
       path: 'parent/child/:childParam/grand-child/:grandChild123',
       component,
     }
-    const [routerRoutes] = createRouterRoutes([route])
+    const [routerRoutes] = createRoutes([route])
 
     const result = generateRoutePathRegexPattern(routerRoutes)
 
@@ -38,7 +38,7 @@ describe('generateRoutePathRegexPattern', () => {
       path: 'parent/child/:?childParam/grand-child/:?grandChild123',
       component,
     }
-    const [routerRoutes] = createRouterRoutes([route])
+    const [routerRoutes] = createRoutes([route])
 
     const result = generateRoutePathRegexPattern(routerRoutes)
 
@@ -55,7 +55,7 @@ describe('generateRouteQueryRegexPatterns', () => {
       path: 'query',
       component,
     }
-    const [routerRoutes] = createRouterRoutes([route])
+    const [routerRoutes] = createRoutes([route])
 
     const result = generateRouteQueryRegexPatterns(routerRoutes)
 
@@ -69,7 +69,7 @@ describe('generateRouteQueryRegexPatterns', () => {
       query: 'dynamic=:first&static=params&another=:second',
       component,
     }
-    const [routerRoutes] = createRouterRoutes([route])
+    const [routerRoutes] = createRoutes([route])
 
     const result = generateRouteQueryRegexPatterns(routerRoutes)
 
@@ -84,7 +84,7 @@ describe('generateRouteQueryRegexPatterns', () => {
       query: 'dynamic=:?first&static=params&another=:?second',
       component,
     }
-    const [routerRoutes] = createRouterRoutes([route])
+    const [routerRoutes] = createRoutes([route])
 
     const result = generateRouteQueryRegexPatterns(routerRoutes)
 

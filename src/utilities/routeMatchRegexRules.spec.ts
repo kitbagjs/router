@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { createRouterRoutes, routePathMatches, routeQueryMatches } from '@/utilities'
+import { createRoutes, routePathMatches, routeQueryMatches } from '@/utilities'
 import { component } from '@/utilities/testHelpers'
 
 describe('routePathMatches', () => {
@@ -15,7 +15,7 @@ describe('routePathMatches', () => {
       path: '/not/empty',
       component,
     }
-    const [routerRoutes] = createRouterRoutes([route])
+    const [routerRoutes] = createRoutes([route])
 
     const response = routePathMatches(routerRoutes, url)
 
@@ -31,7 +31,7 @@ describe('routePathMatches', () => {
       path: '/without/params',
       component,
     }
-    const [routerRoutes] = createRouterRoutes([route])
+    const [routerRoutes] = createRoutes([route])
 
     const response = routePathMatches(routerRoutes, url)
 
@@ -44,7 +44,7 @@ describe('routePathMatches', () => {
       path: '/without/params',
       component,
     }
-    const [routerRoutes] = createRouterRoutes([route])
+    const [routerRoutes] = createRoutes([route])
 
     const response = routePathMatches(routerRoutes, '/WITHOUT/params')
 
@@ -61,7 +61,7 @@ describe('routePathMatches', () => {
       path: '/with/:some/params/:inPath',
       component,
     }
-    const [routerRoutes] = createRouterRoutes([route])
+    const [routerRoutes] = createRoutes([route])
 
     const response = routePathMatches(routerRoutes, url)
 
@@ -75,7 +75,7 @@ describe('routePathMatches', () => {
       component,
     }
 
-    const [routerRoutes] = createRouterRoutes([route])
+    const [routerRoutes] = createRoutes([route])
     const response = routePathMatches(routerRoutes, '/supports/first/second/third/bookmarked')
 
     expect(response).toBe(false)
@@ -96,7 +96,7 @@ describe('routeQueryMatches', () => {
       query: 'not=empty',
       component,
     }
-    const [routerRoutes] = createRouterRoutes([route])
+    const [routerRoutes] = createRoutes([route])
 
     const response = routeQueryMatches(routerRoutes, url)
 
@@ -113,7 +113,7 @@ describe('routeQueryMatches', () => {
       query: 'without=params&static=true',
       component,
     }
-    const [routerRoutes] = createRouterRoutes([route])
+    const [routerRoutes] = createRoutes([route])
 
     const response = routeQueryMatches(routerRoutes, url)
 
@@ -132,7 +132,7 @@ describe('routeQueryMatches', () => {
       query: 'with=:params&static=:dynamic',
       component,
     }
-    const [routerRoutes] = createRouterRoutes([route])
+    const [routerRoutes] = createRoutes([route])
 
     const response = routeQueryMatches(routerRoutes, url)
 
@@ -146,7 +146,7 @@ describe('routeQueryMatches', () => {
       query: 'expected=value',
       component,
     }
-    const [routerRoutes] = createRouterRoutes([route])
+    const [routerRoutes] = createRoutes([route])
 
     const response = routeQueryMatches(routerRoutes, 'www.kitbag.io/some/path?expected=value&unexpected=ok')
 
@@ -160,7 +160,7 @@ describe('routeQueryMatches', () => {
       query: 'first=1&second=2&third=3',
       component,
     }
-    const [routerRoutes] = createRouterRoutes([route])
+    const [routerRoutes] = createRoutes([route])
 
     const response = routeQueryMatches(routerRoutes, 'www.kitbag.io/some/path?second=2&first=1&third=3')
 

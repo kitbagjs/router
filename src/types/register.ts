@@ -1,7 +1,25 @@
 import { Router } from '@/types/router'
+import { component, createRouter, createRoutes } from '@/utilities'
 
+const routes = createRoutes([
+  {
+    name: 'first',
+    component,
+    path: '/first',
+  },
+  {
+    name: 'second',
+    component,
+    path: '/second',
+  },
+  {
+    name: 'third',
+    component,
+    path: '/third/:id',
+  },
+])
 export interface Register {
-  // router: Router
+  router: Router<typeof routes>,
   // rejections: ['Auth'],
   // state: {}
 }

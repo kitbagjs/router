@@ -3,10 +3,10 @@ import { expect, test } from 'vitest'
 import { defineAsyncComponent } from 'vue'
 import helloWorld from '@/components/helloWorld'
 import { notFoundText } from '@/components/notFound'
-import { createRouter, createRouterRoutes } from '@/utilities'
+import { createRouter, createRoutes } from '@/utilities'
 
 test('renders component for initial route', async () => {
-  const routes = createRouterRoutes([
+  const routes = createRoutes([
     {
       name: 'parent',
       path: '/',
@@ -34,11 +34,11 @@ test('renders component for initial route', async () => {
 })
 
 test('renders components for initial route', async () => {
-  const routes = createRouterRoutes([
+  const routes = createRoutes([
     {
       name: 'parent',
       path: '/parent',
-      children: createRouterRoutes([
+      children: createRoutes([
         {
           name: 'child',
           path: '/child',
@@ -68,7 +68,7 @@ test('renders components for initial route', async () => {
 })
 
 test('updates components when route changes', async () => {
-  const routes = createRouterRoutes([
+  const routes = createRoutes([
     {
       name: 'childA',
       path: '/childA',
@@ -119,7 +119,7 @@ test.each([
   defineAsyncComponent(() => import('./helloWorld')),
   () => import('./helloWorld'),
 ])('resolves async components', async (component) => {
-  const routes = createRouterRoutes([
+  const routes = createRoutes([
     {
       name: 'parent',
       path: '/',
@@ -195,7 +195,7 @@ test('Renders custom NotFound component when the initialUrl does not match', asy
 })
 
 test('Renders the NotFound component when the router.push does not match', async () => {
-  const routes = createRouterRoutes([
+  const routes = createRoutes([
     {
       name: 'parent',
       path: '/',
@@ -225,7 +225,7 @@ test('Renders the NotFound component when the router.push does not match', async
 })
 
 test('Renders the route component when the router.push does match after a rejection', async () => {
-  const routes = createRouterRoutes([
+  const routes = createRoutes([
     {
       name: 'parent',
       path: '/',

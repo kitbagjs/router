@@ -1,19 +1,19 @@
 import { describe, expect, test } from 'vitest'
-import { createRouterRoutes } from '@/utilities/createRouterRoutes'
+import { createRoutes } from '@/utilities/createRouterRoutes'
 import { component } from '@/utilities/testHelpers'
 
 describe('route name dot notation', () => {
 
   test('given named routes, returns string of each route name', () => {
-    const routes = createRouterRoutes([
+    const routes = createRoutes([
       {
         name: 'grandparent',
         path: '/grandparent',
-        children: createRouterRoutes([
+        children: createRoutes([
           {
             name: 'parent',
             path: '/parent',
-            children: createRouterRoutes([
+            children: createRoutes([
               {
                 name: 'child',
                 path: '/child',
@@ -30,13 +30,13 @@ describe('route name dot notation', () => {
   })
 
   test('given parents without names, returns only the leaf', () => {
-    const routes = createRouterRoutes([
+    const routes = createRoutes([
       {
         path: '/grandparent',
-        children: createRouterRoutes([
+        children: createRoutes([
           {
             path: '/parent',
-            children: createRouterRoutes([
+            children: createRoutes([
               {
                 name: 'child',
                 path: '/child',
