@@ -7,7 +7,8 @@ export type RouterRoutes = Readonly<RouterRoute[]>
 export type RouterRoute<
   TName extends string | undefined = any,
   TPath extends string | Path = Path,
-  TQuery extends string | Query | undefined = Query
+  TQuery extends string | Query | undefined = Query,
+  TDisabled extends boolean | undefined = boolean
 > = {
   matched: Route,
   matches: Route[],
@@ -17,7 +18,7 @@ export type RouterRoute<
   pathParams: ToPath<TPath>['params'],
   queryParams: ToQuery<TQuery>['params'],
   depth: number,
-  disabled: boolean,
+  disabled: TDisabled extends boolean ? TDisabled : false,
 }
 
 export type ExtractRouterRouteParamTypes<TRoute extends { pathParams: Record<string, unknown>, queryParams: Record<string, unknown> }> = TRoute extends { pathParams: infer PathParams extends Record<string, Param | undefined>, queryParams: infer QueryParams extends Record<string, Param | undefined> }

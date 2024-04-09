@@ -1,25 +1,8 @@
 import { Router } from '@/types/router'
-import { component, createRouter, createRoutes } from '@/utilities'
+import { RouterRoutes } from '@/types/routerRoute'
 
-const routes = createRoutes([
-  {
-    name: 'first',
-    component,
-    path: '/first',
-  },
-  {
-    name: 'second',
-    component,
-    path: '/second',
-  },
-  {
-    name: 'third',
-    component,
-    path: '/third/:id',
-  },
-])
 export interface Register {
-  router: Router<typeof routes>,
+  // router: Router
   // rejections: ['Auth'],
   // state: {}
 }
@@ -28,7 +11,7 @@ export type RegisteredRouter = Register extends { router: infer TRouter }
   ? TRouter
   : Router
 
-export type RegisteredRoutes = RegisteredRouter extends { router: Router<infer Routes> }
+export type RegisteredRoutes = Register extends { router: Router<infer Routes extends RouterRoutes> }
   ? Routes
   : []
 

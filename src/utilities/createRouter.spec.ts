@@ -1,5 +1,4 @@
 import { expect, test } from 'vitest'
-import { useRouter } from '@/compositions'
 import { createRouter } from '@/utilities/createRouter'
 import { createRoutes } from '@/utilities/createRouterRoutes'
 import { component } from '@/utilities/testHelpers'
@@ -13,17 +12,13 @@ test('initial route is set', async () => {
     },
   ])
 
-  // const router = createRouter(routes, {
-  //   initialUrl: '/',
-  // })
+  const { route, initialized } = createRouter(routes, {
+    initialUrl: '/',
+  })
 
-  const router = useRouter()
+  await initialized
 
-  router.push({ route: 'test' })
-
-  // await initialized
-
-  // expect(route.matched.name).toBe('root')
+  expect(route.matched.name).toBe('root')
 })
 
 test('updates the route when navigating', async () => {

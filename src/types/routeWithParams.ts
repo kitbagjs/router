@@ -4,18 +4,21 @@ import { AllPropertiesAreOptional } from '@/types/utilities'
 
 export type RouteWithParams<
   TRoutes extends RouterRoutes,
-  TRoutePath extends string
-> = {
+  TRoutePath extends string,
+  TRouteMap extends RoutesMap = RoutesMap<TRoutes>
+> = TRoutePath extends keyof TRouteMap ? {
   route: TRoutePath,
 } & RouteParams<RouteParamsByName<TRoutes, TRoutePath>>
+  : never
 
-export type RegisteredRouteMap = RoutesMap<RegisteredRoutes>
+export type RegisteredRouteMap = RoutesMap
 export type RegisteredRouteWithParams<T extends keyof RegisteredRouteMap> = RouteWithParams<RegisteredRoutes, T>
 export type RouteWithParamsImplementation = { route: string, params?: Record<string, unknown> }
 
-type NamedNotDisabled<T> = T extends { name: string, disabled: false, pathParams: Record<string, unknown>, queryParams: Record<string, unknown> } ? T : never
+type BaseRouterRoute = { name: string, disabled: false, pathParams: Record<string, unknown>, queryParams: Record<string, unknown> }
+type NamedNotDisabled<T> = T extends BaseRouterRoute ? T : never
 
-type RoutesMap<TRoutes extends RouterRoutes> = {
+type RoutesMap<TRoutes extends RouterRoutes = []> = {
   [K in TRoutes[number] as NamedNotDisabled<K> extends { name: string } ? NamedNotDisabled<K>['name']: never]: NamedNotDisabled<K>
 }
 

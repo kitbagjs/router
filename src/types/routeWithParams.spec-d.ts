@@ -1,5 +1,5 @@
-import { expectTypeOf, test } from 'vitest'
-import { ExtractRouterRouteParamTypes, RouterRoute } from '@/types/routerRoute'
+import { describe, expectTypeOf, test } from 'vitest'
+import { RouterRoute } from '@/types/routerRoute'
 import { RouteGetByName, RouteWithParams } from '@/types/routeWithParams'
 import { Path, Query } from '@/utilities'
 import { routes } from '@/utilities/testHelpers'
@@ -14,23 +14,14 @@ test('CombineName returns correct keys for routes', () => {
 
 test('RouteGetByName works as expected', () => {
   type Source = RouteGetByName<typeof routes, 'parentA'>
-  type Expect = RouterRoute<'parentA', Path<'/:paramA', {}>>
+  type Expect = RouterRoute<'parentA', Path<'/:paramA', {}>, Query, false>
 
   expectTypeOf<Source>().toMatchTypeOf<Expect>()
   expectTypeOf<Expect>().toMatchTypeOf<Source>()
 })
 
-test('ExtractRouterRouteParamTypes works as expected', () => {
-  type Route = RouterRoute<'parentA', Path<'/:paramA', {}>, Query<'foo=:paramB&bar=:?paramC', { paramB: BooleanConstructor }>>
-
-  type Source = ExtractRouterRouteParamTypes<Route>
-  type Expect = { paramA: string, paramB: boolean, paramC?: string }
-
-  expectTypeOf<Source>().toMatchTypeOf<Expect>()
-  expectTypeOf<Expect>().toMatchTypeOf<Source>()
-})
-
-test('RouteWithParams returns correct params for route', () => {
+describe('RouteWithParams', () => {
+  test('given valid route dot name, returns correct params for route', () => {
   type Source = RouteWithParams<typeof routes, 'parentA.childA.grandChildA'>
   type Expect = {
     route: 'parentA.childA.grandChildA',
@@ -43,10 +34,10 @@ test('RouteWithParams returns correct params for route', () => {
 
   expectTypeOf<Source>().toMatchTypeOf<Expect>()
   expectTypeOf<Expect>().toMatchTypeOf<Source>()
-})
+  })
 
-test('RouteWithParams given all optional params, does not require params property', () => {
-  type Routes = [RouterRoute<'parentA', Path<'/:?paramA', {}>, Query<'foo=:?paramB&bar=:?paramC', { paramB: BooleanConstructor }>>]
+  test('given all optional params, does not require params property', () => {
+  type Routes = [RouterRoute<'parentA', Path<'/:?paramA', {}>, Query<'foo=:?paramB&bar=:?paramC', { paramB: BooleanConstructor }>, false>]
 
   type Source = RouteWithParams<Routes, 'parentA'>
   type Expect = {
@@ -55,4 +46,15 @@ test('RouteWithParams given all optional params, does not require params propert
 
   expectTypeOf<Source>().toMatchTypeOf<Expect>()
   expectTypeOf<Expect>().toMatchTypeOf<Source>()
+  })
+
+  test('given route that is disabled, returns never', () => {
+  type Routes = [RouterRoute<'parentA', Path<'/:?paramA', {}>, Query<'foo=:?paramB&bar=:?paramC', { paramB: BooleanConstructor }>, true>]
+
+  type Source = RouteWithParams<Routes, 'parentA'>
+  type Expect = never
+
+  expectTypeOf<Source>().toMatchTypeOf<Expect>()
+  expectTypeOf<Expect>().toMatchTypeOf<Source>()
+  })
 })

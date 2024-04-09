@@ -71,14 +71,24 @@ function checkDuplicateKeys(path: Record<string, unknown>, query: Record<string,
   }
 }
 
-type FlattenRouterRoute<TRoute extends Route, TChildren extends RouterRoute[] = ExtractRouteChildren<TRoute>> = [
-  RouterRoute<TRoute['name'], ToPath<TRoute['path']>, TRoute extends { query: any } ? ToQuery<TRoute['query']> : Query<string, {}>>,
-  ...{ [K in keyof TChildren]: RouterRoute<
-  CombineName<TRoute['name'], TChildren[K]['name']>,
-  CombinePath<ToPath<TRoute['path']>, TChildren[K]['path']>,
-  CombineQuery<ToQuery<TRoute['query']>, TChildren[K]['query']>
-  > }
-]
+type FlattenRouterRoute<
+  TRoute extends Route,
+  TName extends string | undefined = TRoute['name'],
+  TPath extends Path = ToPath<TRoute['path']>,
+  TQuery extends Query = TRoute extends { query: any } ? ToQuery<TRoute['query']> : Query<string, {}>,
+  TDisabled extends boolean = TRoute['disabled'] extends boolean ? TRoute['disabled'] : false,
+  TChildren extends RouterRoute[] = ExtractRouteChildren<TRoute>> =
+  [
+    RouterRoute<TName, TPath, TQuery, TDisabled>,
+    ...{
+      [K in keyof TChildren]: RouterRoute<
+      CombineName<TName, TChildren[K]['name']>,
+      CombinePath<TPath, TChildren[K]['path']>,
+      CombineQuery<TQuery, TChildren[K]['query']>,
+      TChildren[K]['disabled']
+      >
+    }
+  ]
 
 type FlattenRouterRoutes<TRoutes extends Readonly<Route[]>> = Flatten<[...{
   [K in keyof TRoutes]: FlattenRouterRoute<TRoutes[K]>
