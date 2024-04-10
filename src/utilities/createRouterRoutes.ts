@@ -75,7 +75,7 @@ type FlattenRouterRoute<
   TRoute extends Route,
   TName extends string | undefined = TRoute['name'],
   TPath extends Path = ToPath<TRoute['path']>,
-  TQuery extends Query = TRoute extends { query: any } ? ToQuery<TRoute['query']> : Query<string, {}>,
+  TQuery extends Query = ToQuery<TRoute['query']>,
   TDisabled extends boolean = TRoute['disabled'] extends boolean ? TRoute['disabled'] : false,
   TChildren extends RouterRoute[] = ExtractRouteChildren<TRoute>> =
   [

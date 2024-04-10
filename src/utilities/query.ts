@@ -37,7 +37,9 @@ export type ToQuery<T extends string | Query | undefined> = T extends string
   ? Query<T, {}>
   : T extends undefined
     ? Query<'', {}>
-    : T
+    : unknown extends T
+      ? Query<'', {}>
+      : T
 
 function isQuery(value: unknown): value is Query {
   return isRecord(value) && typeof value.query === 'string'
