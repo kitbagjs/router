@@ -53,10 +53,10 @@ function createRouterRoute(route: Route): RouterRoute {
   }
 }
 
-function checkDuplicateKeys(path: Record<string, unknown>, query: Record<string, unknown>): { key: string, hasDuplicates: true } | { key: undefined, hasDuplicates: false } {
-  const pathKeys = Object.keys(path)
-  const queryKeys = Object.keys(query)
-  const duplicateKey = pathKeys.find(key => queryKeys.includes(key))
+function checkDuplicateKeys(aParams: Record<string, unknown>, bParams: Record<string, unknown>): { key: string, hasDuplicates: true } | { key: undefined, hasDuplicates: false } {
+  const aParamKeys = Object.keys(aParams)
+  const bParamKeys = Object.keys(bParams)
+  const duplicateKey = aParamKeys.find(key => bParamKeys.includes(key))
 
   if (duplicateKey) {
     return {
