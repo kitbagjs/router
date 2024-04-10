@@ -1,4 +1,5 @@
 import { Router } from '@/types/router'
+import { RouterRoutes } from '@/types/routerRoute'
 
 export interface Register {
   // router: Router
@@ -10,7 +11,7 @@ export type RegisteredRouter = Register extends { router: infer TRouter }
   ? TRouter
   : Router
 
-export type RegisteredRoutes = RegisteredRouter extends { router: Router<infer Routes> }
+export type RegisteredRoutes = Register extends { router: Router<infer Routes extends RouterRoutes> }
   ? Routes
   : []
 

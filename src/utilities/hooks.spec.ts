@@ -1,7 +1,6 @@
 import { expect, test, vi } from 'vitest'
 import { BeforeRouteHook } from '@/types'
 import { ResolvedRoute } from '@/types/resolved'
-import { Route } from '@/types/routes'
 import { createResolvedRouteQuery } from '@/utilities/createResolvedRouteQuery'
 import { createRouterHooks } from '@/utilities/createRouterHooks'
 import { runBeforeRouteHooks } from '@/utilities/hooks'
@@ -16,7 +15,7 @@ test('calls hook with correct routes', () => {
     path: '/routeA',
     component,
     onBeforeRouteEnter: hook,
-  } as const satisfies Route
+  }
 
   const resolvedRouteA: ResolvedRoute = {
     matched: routeA,
@@ -30,7 +29,7 @@ test('calls hook with correct routes', () => {
     name: 'routeB',
     path: '/routeB',
     component,
-  } as const satisfies Route
+  }
 
   const resolvedRouteB: ResolvedRoute = {
     matched: routeB,
@@ -65,7 +64,7 @@ test.each<{ type: string, status: string, hook: BeforeRouteHook }>([
     path: '/routeA',
     component,
     onBeforeRouteEnter: hook,
-  } as const satisfies Route
+  }
 
   const resolvedRoute: ResolvedRoute = {
     matched: route,
@@ -79,7 +78,7 @@ test.each<{ type: string, status: string, hook: BeforeRouteHook }>([
     name: 'routeB',
     path: '/routeB',
     component,
-  } as const satisfies Route
+  }
 
   const resolvedRouteB: ResolvedRoute = {
     matched: routeB,
@@ -109,7 +108,7 @@ test('hook is called in order', async () => {
     path: '/routeA',
     component,
     onBeforeRouteEnter: [hookA, hookB, hookC],
-  } as const satisfies Route
+  }
 
   const resolvedRoute: ResolvedRoute = {
     matched: route,
@@ -123,7 +122,7 @@ test('hook is called in order', async () => {
     name: 'routeB',
     path: '/routeB',
     component,
-  } as const satisfies Route
+  }
 
   const resolvedRouteB: ResolvedRoute = {
     matched: routeB,

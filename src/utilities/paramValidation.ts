@@ -17,8 +17,8 @@ export const getRouteParamValues = (route: RouterRoute, url: string): Record<str
   const { pathname, search } = createMaybeRelativeUrl(url)
 
   return {
-    ...getRouteParams(route.pathParams, route.path, pathname),
-    ...getRouteParams(route.queryParams, route.query, search),
+    ...getRouteParams(route.pathParams, route.path.toString(), pathname),
+    ...getRouteParams(route.queryParams, route.query.toString(), search),
   }
 }
 

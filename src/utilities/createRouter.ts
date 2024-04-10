@@ -1,17 +1,15 @@
 import { App, readonly } from 'vue'
 import { RouterLink, RouterView } from '@/components'
 import { routerInjectionKey, routerRejectionKey } from '@/compositions'
-import { Routes, Router, RouterOptions, RouterImplementation, RouterReject } from '@/types'
+import { Router, RouterOptions, RouterImplementation, RouterReject, RouterRoutes } from '@/types'
 import { RouterPushImplementation } from '@/types/routerPush'
 import { RouterReplaceImplementation } from '@/types/routerReplace'
 import { createCurrentRoute } from '@/utilities/createCurrentRoute'
-import { createRouteMethods } from '@/utilities/createRouteMethods'
 import { createRouterFind } from '@/utilities/createRouterFind'
 import { createRouterHistory } from '@/utilities/createRouterHistory'
 import { routeHookStoreKey, createRouterHooks } from '@/utilities/createRouterHooks'
 import { createRouterReject } from '@/utilities/createRouterReject'
 import { createRouterResolve } from '@/utilities/createRouterResolve'
-import { createRouterRoutes } from '@/utilities/createRouterRoutes'
 import { getInitialUrl } from '@/utilities/getInitialUrl'
 import { getResolvedRouteForUrl } from '@/utilities/getResolvedRouteForUrl'
 import { runAfterRouteHooks, runBeforeRouteHooks } from '@/utilities/hooks'
@@ -20,9 +18,8 @@ type RouterUpdateOptions = {
   replace?: boolean,
 }
 
-export function createRouter<const T extends Routes>(routes: T, options: RouterOptions = {}): Router<T> {
-  const routerRoutes = createRouterRoutes(routes)
-  const resolve = createRouterResolve(routerRoutes)
+export function createRouter<const T extends RouterRoutes>(routes: T, options: RouterOptions = {}): Router<T> {
+  const resolve = createRouterResolve(routes)
   const history = createRouterHistory({ mode: options.historyMode })
   const {
     hooks,
@@ -35,7 +32,7 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
   } = createRouterHooks()
 
   async function update(url: string, { replace }: RouterUpdateOptions = {}): Promise<void> {
-    const to = getResolvedRouteForUrl(routerRoutes, url) ?? getRejectionRoute('NotFound')
+    const to = getResolvedRouteForUrl(routes, url) ?? getRejectionRoute('NotFound')
     const from = route
 
     const beforeResponse = await runBeforeRouteHooks({ to, from, hooks })
@@ -106,8 +103,7 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
     return setRejection(type)
   }
 
-  const methods = createRouteMethods({ routes: routerRoutes, push })
-  const find = createRouterFind({ routes: routerRoutes, resolve })
+  const find = createRouterFind({ routes, resolve })
   const { setRejection, rejection, getRejectionRoute } = createRouterReject(options)
   const notFoundRoute = getRejectionRoute('NotFound')
   const { route, updateRoute } = createCurrentRoute(notFoundRoute)
@@ -124,7 +120,6 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
   }
 
   const router: RouterImplementation = {
-    routes: methods,
     route: readonly(route),
     resolve,
     push,

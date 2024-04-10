@@ -1,19 +1,19 @@
-import { RouterRoute, RouteMethod, RouteMethodResponseImplementation, Routes } from '@/types'
 import { ResolvedRoute } from '@/types/resolved'
+import { RouterRoutes } from '@/types/routerRoute'
 import { RouteWithParams, RouteWithParamsImplementation } from '@/types/routeWithParams'
 import { RouterResolveImplementation } from '@/utilities/createRouterResolve'
 import { getResolvedRouteForUrl } from '@/utilities/getResolvedRouteForUrl'
 
 export type RouterFind<
-  TRoutes extends Routes
+  TRoutes extends RouterRoutes
 > = <
   TRoutePath extends string
->(source: string | RouteWithParams<TRoutes, TRoutePath> | ReturnType<RouteMethod>) => ResolvedRoute | undefined
+>(source: string | RouteWithParams<TRoutes, TRoutePath>) => ResolvedRoute | undefined
 
-export type RouterFindImplementation = (source: string | RouteWithParamsImplementation | RouteMethodResponseImplementation) => ResolvedRoute | undefined
+export type RouterFindImplementation = (source: string | RouteWithParamsImplementation) => ResolvedRoute | undefined
 
 type CreateRouterFindContext = {
-  routes: RouterRoute[],
+  routes: RouterRoutes,
   resolve: RouterResolveImplementation,
 }
 

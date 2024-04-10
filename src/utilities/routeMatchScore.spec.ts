@@ -1,6 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { Route, Routes } from '@/types'
-import { createRouterRoutes, countExpectedQueryKeys, component, getRouteScoreSortMethod } from '@/utilities'
+import { createRoutes, countExpectedQueryKeys, component, getRouteScoreSortMethod } from '@/utilities'
 
 describe('countExpectedQueryKeys', () => {
   test('given route without query, returns 0', () => {
@@ -8,11 +7,11 @@ describe('countExpectedQueryKeys', () => {
       name: 'without-query',
       path: '/',
       component,
-    } as const satisfies Route
-    const [routerRoutes] = createRouterRoutes([route])
+    }
+    const [routerRoute] = createRoutes([route])
     const actualQuery = new URLSearchParams('/?can=have&some=queries')
 
-    const response = countExpectedQueryKeys(routerRoutes, actualQuery)
+    const response = countExpectedQueryKeys(routerRoute, actualQuery)
 
     expect(response).toBe(0)
   })
@@ -23,11 +22,11 @@ describe('countExpectedQueryKeys', () => {
       path: '/',
       query: 'value=blue',
       component,
-    } as const satisfies Route
-    const [routerRoutes] = createRouterRoutes([route])
+    }
+    const [routerRoute] = createRoutes([route])
     const actualQuery = new URLSearchParams('value=red')
 
-    const response = countExpectedQueryKeys(routerRoutes, actualQuery)
+    const response = countExpectedQueryKeys(routerRoute, actualQuery)
 
     expect(response).toBe(1)
   })
@@ -38,11 +37,11 @@ describe('countExpectedQueryKeys', () => {
       path: '/',
       query: 'one=1&two=2&three=3&four=4',
       component,
-    } as const satisfies Route
-    const [routerRoutes] = createRouterRoutes([route])
+    }
+    const [routerRoute] = createRoutes([route])
     const actualQuery = new URLSearchParams('three=3&one=1&four=4&two=2')
 
-    const response = countExpectedQueryKeys(routerRoutes, actualQuery)
+    const response = countExpectedQueryKeys(routerRoute, actualQuery)
 
     expect(response).toBe(4)
   })
@@ -53,11 +52,11 @@ describe('countExpectedQueryKeys', () => {
       path: '/',
       query: 'one=1&two=2&three=3&four=4',
       component,
-    } as const satisfies Route
-    const [routerRoutes] = createRouterRoutes([route])
+    }
+    const [routerRoute] = createRoutes([route])
     const actualQuery = new URLSearchParams('one=1&three=3')
 
-    const response = countExpectedQueryKeys(routerRoutes, actualQuery)
+    const response = countExpectedQueryKeys(routerRoute, actualQuery)
 
     expect(response).toBe(2)
   })
@@ -65,7 +64,7 @@ describe('countExpectedQueryKeys', () => {
 
 describe('getRouteScoreSortMethod', () => {
   test('given routes with different query scores, returns them sorted by query score descending', () => {
-    const routes = [
+    const [aRoute, bRoute] = createRoutes([
       {
         name: 'lower-query',
         path: '/',
@@ -78,9 +77,7 @@ describe('getRouteScoreSortMethod', () => {
         query: 'color=red&id=1',
         component,
       },
-    ] as const satisfies Routes
-
-    const [aRoute, bRoute] = createRouterRoutes(routes)
+    ])
 
     const sortByRouteScore = getRouteScoreSortMethod('/?color=red&id=1&extra=ok')
     const response = [aRoute, bRoute].sort(sortByRouteScore)
@@ -89,7 +86,7 @@ describe('getRouteScoreSortMethod', () => {
   })
 
   test('given routes with equal query scores, returns them sorted by route depth descending', () => {
-    const routes = [
+    const routes = createRoutes([
       {
         name: 'lower-depth',
         path: '/',
@@ -99,22 +96,20 @@ describe('getRouteScoreSortMethod', () => {
       {
         name: 'higher-depth',
         path: '/',
-        children: [
+        children: createRoutes([
           {
             name: 'higher-depth-child',
             path: '',
             query: 'color=red',
             component,
           },
-        ],
+        ]),
       },
-    ] as const satisfies Routes
-
-    const [aRoute, bRoute] = createRouterRoutes(routes)
+    ])
 
     const sortByRouteScore = getRouteScoreSortMethod('/?color=red&extra=ok')
-    const response = [aRoute, bRoute].sort(sortByRouteScore)
+    const response = routes.sort(sortByRouteScore)
 
-    expect(response).toMatchObject([bRoute, aRoute])
+    expect(response.map(route => route.matched.name)).toMatchObject(['higher-depth-child', 'lower-depth', 'higher-depth'])
   })
 })

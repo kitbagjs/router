@@ -1,14 +1,13 @@
-import { RouteMethod } from '@/types/routeMethod'
-import { ExtractRouteMethodParams } from '@/types/routeMethods'
+import { ExtractRouterRouteParamTypes, RouterRoute } from '@/types'
 import { Identity } from '@/types/utilities'
 
-type Route<T extends RouteMethod> = {
+type Route<T extends RouterRoute> = {
   name: string,
-  params: ExtractRouteMethodParams<T>,
+  params: ExtractRouterRouteParamTypes<T>,
   query: unknown,
   hash: string,
 }
 
-export function useRoute<T extends RouteMethod>(): Identity<Route<T>> {
+export function useRoute<T extends RouterRoute>(): Identity<Route<T>> {
   throw 'not implemented'
 }

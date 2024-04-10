@@ -1,13 +1,13 @@
 import { RouterRoute } from '@/types'
 
 export function generateRoutePathRegexPattern(route: RouterRoute): RegExp {
-  const routeRegex = replaceParamSyntaxWithCatchAlls(route.path)
+  const routeRegex = replaceParamSyntaxWithCatchAlls(route.path.toString())
 
   return new RegExp(`^${routeRegex}$`, 'i')
 }
 
 export function generateRouteQueryRegexPatterns(route: RouterRoute): RegExp[] {
-  const queryParams = new URLSearchParams(route.query)
+  const queryParams = new URLSearchParams(route.query.toString())
 
   return Array
     .from(queryParams.entries())

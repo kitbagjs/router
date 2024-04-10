@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest'
 import { DuplicateParamsError } from '@/errors'
 import { Route } from '@/types'
-import { createRouterRoutes, routeParamsAreValid, path } from '@/utilities'
+import { createRoutes, routeParamsAreValid, path } from '@/utilities'
 import { component } from '@/utilities/testHelpers'
 
 test('given route WITHOUT params, always return true', () => {
@@ -10,7 +10,7 @@ test('given route WITHOUT params, always return true', () => {
     path: '/no-params',
     component,
   }
-  const [routerRoutes] = createRouterRoutes([route])
+  const [routerRoutes] = createRoutes([route])
 
   const response = routeParamsAreValid(routerRoutes, '/no-params')
 
@@ -23,7 +23,7 @@ test('given route with simple string param and value present, returns true', () 
     path: '/simple/:simple',
     component,
   }
-  const [routerRoutes] = createRouterRoutes([route])
+  const [routerRoutes] = createRoutes([route])
 
   const response = routeParamsAreValid(routerRoutes, '/simple/ABC')
 
@@ -36,7 +36,7 @@ test('given route with OPTIONAL string param WITHOUT value present, returns true
     path: '/simple/:?simple',
     component,
   }
-  const [routerRoutes] = createRouterRoutes([route])
+  const [routerRoutes] = createRoutes([route])
 
   const response = routeParamsAreValid(routerRoutes, '/simple/')
 
@@ -51,7 +51,7 @@ test('given route with non-string param with value that satisfies, returns true'
     }),
     component,
   }
-  const [routerRoutes] = createRouterRoutes([route])
+  const [routerRoutes] = createRoutes([route])
 
   const response = routeParamsAreValid(routerRoutes, '/simple/123')
 
@@ -66,7 +66,7 @@ test('given route with non-string param with value that does NOT satisfy, return
     }),
     component,
   }
-  const [routerRoutes] = createRouterRoutes([route])
+  const [routerRoutes] = createRoutes([route])
 
   const response = routeParamsAreValid(routerRoutes, '/simple/fail')
 
@@ -81,7 +81,7 @@ test('given route with OPTIONAL non-string param with value that does NOT satisf
     }),
     component,
   }
-  const [routerRoutes] = createRouterRoutes([route])
+  const [routerRoutes] = createRoutes([route])
 
   const response = routeParamsAreValid(routerRoutes, '/simple/fail')
 
@@ -95,7 +95,7 @@ test('given route with regex param that expects forward slashes, will NOT match'
     component,
   }
 
-  const [routerRoutes] = createRouterRoutes([route])
+  const [routerRoutes] = createRoutes([route])
 
   const response = routeParamsAreValid(routerRoutes, '/supports/first/second/third/bookmarked')
 
@@ -117,7 +117,7 @@ test.each([
     path,
     component,
   }
-  const [routerRoutes] = createRouterRoutes([route])
+  const [routerRoutes] = createRoutes([route])
 
   const response = routeParamsAreValid(routerRoutes, '/ABC/123/true')
 
@@ -131,7 +131,7 @@ test('given route with duplicate param names across path and query, throws Dupli
     query: 'params=:?foo',
     component,
   }
-  const action: () => void = () => createRouterRoutes([route])
+  const action: () => void = () => createRoutes([route])
 
   expect(action).toThrowError(DuplicateParamsError)
 })

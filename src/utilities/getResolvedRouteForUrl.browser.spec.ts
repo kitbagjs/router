@@ -1,59 +1,58 @@
 import { expect, test, vi } from 'vitest'
-import { RouterRoute, Route, Routes } from '@/types'
-import { createRouterRoutes } from '@/utilities/createRouterRoutes'
+import { RouterRoute, Routes } from '@/types'
+import { createRoutes } from '@/utilities/createRouterRoutes'
 import { getResolvedRouteForUrl } from '@/utilities/getResolvedRouteForUrl'
 import * as utilities from '@/utilities/routeMatchScore'
 import { component } from '@/utilities/testHelpers'
 
 test('given path WITHOUT params, returns match', () => {
-  const routes = [
+  const routes = createRoutes([
     {
       name: 'parent',
       path: '/parent',
-      children: [
+      children: createRoutes([
         {
           name: 'child',
           path: '/child',
-          children: [
+          children: createRoutes([
             {
               name: 'grandchild',
               path: '/grandchild',
               component,
             },
-          ],
+          ]),
         },
-      ],
+      ]),
     },
-  ] as const satisfies Routes
+  ])
 
-  const routerRoutes = createRouterRoutes(routes)
-  const match = getResolvedRouteForUrl(routerRoutes, '/parent/child/grandchild')
+  const match = getResolvedRouteForUrl(routes, '/parent/child/grandchild')
 
-  expect(match?.name).toBe('grandchild')
+  expect(match?.name).toBe('parent.child.grandchild')
+  expect(match?.matched.name).toBe('grandchild')
 })
 
 test('given path to unnamed parent, without option to get to leaf, returns undefined', () => {
-  const routes = [
+  const routes = createRoutes([
     {
       path: '/unnamed',
-      children: [
+      children: createRoutes([
         {
           name: 'unnamed-child',
           path: '/unnamed-child/:child-id',
-          children: [
+          children: createRoutes([
             {
               name: 'namedGrandchild',
               path: '/named-grandchild',
               component,
             },
-          ],
+          ]),
         },
-      ],
+      ]),
     },
-  ] as const satisfies Routes
+  ])
 
-  const routerRoutes = createRouterRoutes(routes)
-  const match = getResolvedRouteForUrl(routerRoutes, '/unnamed')
+  const match = getResolvedRouteForUrl(routes, '/unnamed')
 
   expect(match).toBeUndefined()
 })
@@ -62,47 +61,47 @@ test('given path to unnamed  parent, with option to get to leaf, returns availab
   const routes = [
     {
       path: '/unnamed',
-      children: [
+      children: createRoutes([
         {
           name: 'unnamed-child-root',
           path: '',
           component,
         },
-      ],
+      ]),
     },
-  ] as const satisfies Routes
+  ]
 
-  const routerRoutes = createRouterRoutes(routes)
+  const routerRoutes = createRoutes(routes)
   const match = getResolvedRouteForUrl(routerRoutes, '/unnamed')
 
   expect(match?.name).toBe('unnamed-child-root')
 })
 
 test('given path that includes named parent and path to leaf, return first match', () => {
-  const routes = [
+  const routes = createRoutes([
     {
       name: 'namedParent',
       path: '/named-parent',
-      children: [
+      children: createRoutes([
         {
           name: 'namedChild',
           path: '',
-          children: [
+          children: createRoutes([
             {
               name: 'namedGrandchild',
               path: '',
               component,
             },
-          ],
+          ]),
         },
-      ],
+      ]),
     },
-  ] as const satisfies Routes
+  ])
 
-  const routerRoutes = createRouterRoutes(routes)
-  const match = getResolvedRouteForUrl(routerRoutes, '/named-parent')
+  const match = getResolvedRouteForUrl(routes, '/named-parent')
 
-  expect(match?.name).toBe('namedGrandchild')
+  expect(match?.name).toBe('namedParent.namedChild.namedGrandchild')
+  expect(match?.matched.name).toBe('namedGrandchild')
 })
 
 test('given route with simple string param WITHOUT value present, returns undefined', () => {
@@ -114,7 +113,7 @@ test('given route with simple string param WITHOUT value present, returns undefi
     },
   ]
 
-  const routerRoutes = createRouterRoutes(routes)
+  const routerRoutes = createRoutes(routes)
   const response = getResolvedRouteForUrl(routerRoutes, '/simple/')
 
   expect(response).toBeUndefined()
@@ -130,7 +129,7 @@ test('given route with simple string query param WITHOUT value present, returns 
     },
   ]
 
-  const routerRoutes = createRouterRoutes(routes)
+  const routerRoutes = createRoutes(routes)
   const response = getResolvedRouteForUrl(routerRoutes, '/missing?without=params')
 
   expect(response).toBeUndefined()
@@ -144,7 +143,7 @@ test('given route with equal matches, returns route with highest score', () => {
     }
   })
 
-  const routes = [
+  const routes = createRoutes([
     {
       name: 'first-route',
       path: '/',
@@ -160,10 +159,9 @@ test('given route with equal matches, returns route with highest score', () => {
       path: '/',
       component,
     },
-  ] as const satisfies Routes
+  ])
 
-  const routerRoutes = createRouterRoutes(routes)
-  const response = getResolvedRouteForUrl(routerRoutes, '/')
+  const response = getResolvedRouteForUrl(routes, '/')
 
   expect(response?.name).toBe('second-route')
 })
@@ -173,9 +171,9 @@ test('given a route without params or query returns an empty params and query', 
     name: 'route',
     path: '/',
     component,
-  } as const satisfies Route
+  }
 
-  const routerRoutes = createRouterRoutes([route])
+  const routerRoutes = createRoutes([route])
   const response = getResolvedRouteForUrl(routerRoutes, '/')
 
   expect(response?.params).toMatchObject({})
@@ -187,9 +185,9 @@ test('given a url with a query returns all query values', () => {
     name: 'route',
     path: '/',
     component,
-  } as const satisfies Route
+  }
 
-  const routerRoutes = createRouterRoutes([route])
+  const routerRoutes = createRoutes([route])
   const response = getResolvedRouteForUrl(routerRoutes, '/?foo=foo1&foo=foo2&bar=bar&baz')
 
   expect(response?.query.get('foo')).toBe('foo1')
@@ -208,9 +206,9 @@ test('given a route with params returns all params', () => {
     path: '/:paramA',
     query: 'paramB=:paramB',
     component,
-  } as const satisfies Route
+  }
 
-  const routerRoutes = createRouterRoutes([route])
+  const routerRoutes = createRoutes([route])
   const response = getResolvedRouteForUrl(routerRoutes, '/A?paramB=B')
 
   expect(response?.params).toMatchObject({

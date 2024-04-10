@@ -1,4 +1,4 @@
-import { Routes } from '@/types/routes'
+import { createRoutes } from '@/utilities/createRouterRoutes'
 
 export const random = {
   number(options: { min?: number, max?: number } = {}): number {
@@ -11,32 +11,32 @@ export const random = {
 
 export const component = { template: '<div>This is component</div>' }
 
-export const routes = [
+export const routes = createRoutes([
   {
     name: 'parentA',
     path: '/:paramA',
-    children: [
+    children: createRoutes([
       {
         name: 'childA',
         path: '/:?paramB',
-        children: [
+        children: createRoutes([
           {
             name: 'grandChildA',
             path: '/:paramC',
             component,
           },
-        ],
+        ]),
       },
       {
         name: 'childB',
         path: '/:paramD',
         component,
       },
-    ],
+    ]),
   },
   {
     name: 'parentB',
     path: '/parentB',
     component,
   },
-] as const satisfies Routes
+])

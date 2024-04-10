@@ -1,3 +1,5 @@
+import { Identity } from '@/types/utilities'
+
 export type ParamExtras = {
   invalid: (message?: string) => never,
 }
@@ -49,8 +51,41 @@ export type ExtractPathParamType<
     ? TParams[TParam]
     : StringConstructor
 
+export type ExtractParamTypes<TParams extends Record<string, Param | undefined>> = Identity<MakeOptional<{
+  [K in keyof TParams]: ExtractParamType<TParams[K]>
+}>>
+
 export type ExtractParamType<TParam extends Param | undefined> = TParam extends ParamGetSet<infer Type>
-  ? Type
+  ? undefined extends TParam
+    ? Type | undefined
+    : Type
   : TParam extends ParamGetter
-    ? ReturnType<TParam>
-    : string
+    ? undefined extends TParam
+      ? ReturnType<TParam> | undefined
+      : ReturnType<TParam>
+    : undefined extends TParam
+      ? undefined
+      : string
+
+type WithOptionalProperties<T> = {
+  [P in keyof T]-?: undefined extends T[P] ? P : never
+}[keyof T]
+
+type MakeOptional<T> = {
+  [P in WithOptionalProperties<T>]?: T[P];
+} & {
+  [P in Exclude<keyof T, WithOptionalProperties<T>>]: T[P];
+}
+
+export type MergeParams<
+  TAlpha extends Record<string, unknown>,
+  TBeta extends Record<string, unknown>
+> = {
+  [K in keyof TAlpha | keyof TBeta]: K extends keyof TAlpha & keyof TBeta
+    ? never
+    : K extends keyof TAlpha
+      ? TAlpha[K]
+      : K extends keyof TBeta
+        ? TBeta[K]
+        : never
+}

@@ -1,52 +1,54 @@
 import { expect, test } from 'vitest'
-import { Route } from '@/types'
 import { createRouter } from '@/utilities/createRouter'
+import { createRoutes } from '@/utilities/createRouterRoutes'
 import { component } from '@/utilities/testHelpers'
 
 test('initial route is set', async () => {
-  const root = {
-    name: 'root',
-    component,
-    path: '/',
-  }
+  const routes = createRoutes([
+    {
+      name: 'root',
+      component,
+      path: '/',
+    },
+  ])
 
-  const { route, initialized } = createRouter([root], {
-    initialUrl: root.path,
+  const { route, initialized } = createRouter(routes, {
+    initialUrl: '/',
   })
 
   await initialized
 
-  expect(route.matched.name).toBe(root.name)
+  expect(route.matched.name).toBe('root')
 })
 
 test('updates the route when navigating', async () => {
-  const first = {
-    name: 'first',
-    component,
-    path: '/first',
-  } as const satisfies Route
+  const routes = createRoutes([
+    {
+      name: 'first',
+      component,
+      path: '/first',
+    },
+    {
+      name: 'second',
+      component,
+      path: '/second',
+    },
+    {
+      name: 'third',
+      component,
+      path: '/third/:id',
+    },
+  ])
 
-  const second = {
-    name: 'second',
-    component,
-    path: '/second',
-  } as const satisfies Route
-
-  const third = {
-    name: 'third',
-    component,
-    path: '/third/:id',
-  } as const satisfies Route
-
-  const { push, route, initialized } = createRouter([first, second, third], {
-    initialUrl: first.path,
+  const { push, route, initialized } = createRouter(routes, {
+    initialUrl: '/first',
   })
 
   await initialized
 
-  expect(route.matched.name).toBe(first.name)
+  expect(route.matched.name).toBe('first')
 
-  await push(second.path)
+  await push('/second')
 
-  expect(route.matched).toMatchObject(second)
+  expect(route.matched.name).toBe('second')
 })
