@@ -9,7 +9,6 @@ describe('ExtractRouterRouteParamTypes', () => {
   type Source = ExtractRouterRouteParamTypes<Route>
   type Expect = { paramA: string, paramB: boolean, paramC?: string }
 
-  expectTypeOf<Source>().toMatchTypeOf<Expect>()
-  expectTypeOf<Expect>().toMatchTypeOf<Source>()
+  expectTypeOf<Source>().toEqualTypeOf<Expect>()
   })
 })
