@@ -25,5 +25,6 @@ export type RegisteredRouterState = Register extends { state: infer TState }
   ? TState
   : {}
 
-export type RegisteredRouteMap = RoutesMap
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-arguments
+export type RegisteredRouteMap = RoutesMap<RegisteredRoutes>
 export type RegisteredRouteWithParams<T extends keyof RegisteredRouteMap> = RouteWithParams<RegisteredRoutes, T>
