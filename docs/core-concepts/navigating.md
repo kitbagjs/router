@@ -7,12 +7,14 @@ The most common way of navigating is with the `<router-link/>` component inside 
 To navigate to another route, you can use `router.push`. This method will update the URL for the browser and also add the URL into the history so when a user uses the back button on their browser it will behave as expected.
 
 ```ts
-const routes = [
+import { createRoutes, useRouter } from '@kitbag/router'
+
+const routes = createRoutes([
   {
     name: 'user',
     path: '/user',
     component: ...,
-    children: [
+    children: createRoutes([
       {
         name: 'profile',
         path: '/profile',
@@ -23,9 +25,9 @@ const routes = [
         path: '/settings',
         component: ...,
       }
-    ]
+    ])
   }
-] as const satisfies Routes
+])
 
 const router = useRouter(routes)
 
@@ -45,13 +47,13 @@ Using push with the route object syntax provides a much better developer experie
 When navigating to a route that has params, the router will require those params be given in the correct type.
 
 ```ts
-const routes = [
+const routes = createRoutes([
   {
     name: 'user',
     path: '/user', // [!code --]
     path: '/user/:id', // [!code ++]
     component: ...,
-    children: [
+    children: createRoutes([
       {
         name: 'profile',
         path: '/profile',
@@ -63,9 +65,9 @@ const routes = [
         query: 'tab=:?tab', // [!code ++]
         component: ...,
       }
-    ]
+    ])
   }
-] as const satisfies Routes
+])
 
 const router = useRouter(routes)
 

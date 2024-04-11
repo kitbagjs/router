@@ -58,7 +58,6 @@ export default defineConfig({
             { text: 'Route Meta', link: '/advanced-concepts/route-meta' },
             { text: 'Composables', link: '/advanced-concepts/composables' },
             { text: 'Transitions', link: '/advanced-concepts/transitions' },
-            { text: 'Reusing Param Names', link: '/advanced-concepts/reusing-param-names' },
           ],
         },
         {

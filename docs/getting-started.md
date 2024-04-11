@@ -17,18 +17,21 @@ npm install @kitbag/router
 
 Create an array of possible routes. Learn more about [defining routes](/core-concepts/defining-routes).
 
-```ts
-// /routes.ts
-import { Routes } from '@kitbag/router'
+::: code-group
+
+```ts [routes.ts]
+import { createRoutes } from '@kitbag/router'
 
 const Home = { template: '<div>Home</div>' }
 const About = { template: '<div>About</div>' }
 
-export const routes = [
+export const routes = createRoutes([
   { name: 'home', path: '/', component: Home },
   { name: 'path', path: '/about', component: About },
-] as const satisfies Routes 
+])
 ```
+
+:::
 
 ## Plugin
 
