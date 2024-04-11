@@ -1,9 +1,9 @@
 import { useRouter } from '@/compositions/useRouter'
 import { UseRouteInvalidError } from '@/errors'
-import { ResolvedRoute, RouterRoute } from '@/types'
+import { RegisteredRouteMap, ResolvedRoute } from '@/types'
 
-export function useRoute<TRoute extends RouterRoute>(routeName: TRoute['name']): ResolvedRoute<TRoute>
-export function useRoute(routeName: 'string'): ResolvedRoute {
+export function useRoute<TRouteName extends keyof RegisteredRouteMap>(routeName: TRouteName): ResolvedRoute<TRouteName>
+export function useRoute(routeName: string): ResolvedRoute {
   const router = useRouter()
   const route = router.find(routeName)
 
