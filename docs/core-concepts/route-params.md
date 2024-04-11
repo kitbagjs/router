@@ -181,18 +181,7 @@ const route = useRoute()
 route.params['can-have#what.ever!?']
 ```
 
-If your param name starts with a question mark `?`, Router will assume your param was intended to be optional.
-
-```ts
-// single param (name "id") which has type string | undefined
-const routes = createRoutes([
-  {
-    name: 'users',
-    path: '/users/:?id',
-    component: ...
-  }
-])
-```
+Also, route names that start with a question mark `?` are interpreted as optional params.
 
 The other important constraint is that param names must be unique. This includes params defined in a path parent and params defined in the query.
 
