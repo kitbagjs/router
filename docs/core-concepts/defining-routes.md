@@ -7,7 +7,7 @@ Kitbag Router provides `createRoutes`, which provides the type you'll need to su
 ```ts
 import { createRoutes } from '@kitbag/router'
 
-export const routes = createRoutes([
+const routes = createRoutes([
   { name: 'home', path: '/', component: Home },
   { name: 'path', path: '/about', component: About },
 ])
