@@ -1,38 +1,31 @@
 # Defining Routes
 
-## Type Safety
+## Basics
 
-For type safety to work properly we need to make sure Typescript doesn't widen your routes by using Typescripts `const` and `satisfies` keywords.
+Kitbag Router provides `createRoutes`, which provides the type you'll need to supply when creating your router.
 
 ```ts
-/* type safe */
-export const routes = [
-  { name: 'home', path: '/', component: Home },
-  { name: 'path', path: '/about', component: About },
-] as const satisfies Routes 
+import { createRoutes } from '@kitbag/router'
 
-/* not type safe */
-export const routes: Routes = [
+export const routes = createRoutes([
   { name: 'home', path: '/', component: Home },
   { name: 'path', path: '/about', component: About },
-]
+])
+
+const router = createRouter(routes)
 ```
-
-::: info
-The [satisfies](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-4-9.html) operator was introduced to Typescript in v4.9.
-:::
 
 ## Nested Routes
 
-When your application supports nested component views, you can use nested routes to support this behavior with router.  
+When your application supports nested component views, you can use nested routes to support this behavior with router. The `children` value should use `createRoutes` at each level.
 
 ```ts
-const routes = [
+const routes = createRoutes([
   {
     name: 'user',
     path: '/user',
     component: ...,
-    children: [
+    children: createRoutes([
       {
         name: 'profile',
         path: '/profile',
@@ -42,14 +35,14 @@ const routes = [
         name: 'settings',
         path: '/settings',
         component: ...,
-        children: [
+        children: createRoutes([
           { name: 'keys', path: '/keys', component: ... },
           { name: 'notifications', path: '/notifications', component: ... },
-        ]
+        ])
       }
-    ]
+    ])
   }
-] as const satisfies Routes
+])
 ```
 
 Any Route can have `children`, though to have those children's components be rendered correctly you need to put a `<router-view />` component somewhere in the parent's template. Alternatively, you can omit `component` from the parent route, since router assumes any route that has `children` and doesn't explicitly declare a `component` wants to mount `RouterView`.
@@ -79,17 +72,17 @@ When an individual route is disabled, it will never count as an exact match. Chi
 Let's update the example above
 
 ```ts
-const routes = [
+const routes = createRoutes([
   {
     name: 'user',
     path: '/user',
     disabled: true, // [!code focus] 
     component: ...,
-    children: [
+    children: createRouter([
       ...
-    ]
+    ])
   }
-] as const satisfies Routes
+])
 ```
 
 Now developers would get a Typescript error if they try navigating to `routes.user`.

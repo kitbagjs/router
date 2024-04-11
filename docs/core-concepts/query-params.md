@@ -3,14 +3,16 @@
 Kitbag Router has first class support for query params.
 
 ```ts
-const routes = [
+import { createRoutes } from '@kitbag/router'
+
+const routes = createRoutes([
   {
     name: 'users',
     path: '/users',
     query: 'sort=descending',
     component: ...
   }
-] as const satisfies Routes
+])
 ```
 
 This static value will be used in determining if a route matches a given URL. Unlike `path`, the order of params is not enforced and the presence of extra query params in the URL does not preclude the route from being considered a match.
@@ -18,23 +20,21 @@ This static value will be used in determining if a route matches a given URL. Un
 The router supports dynamic params declared in the query as well.
 
 ```ts
-import { 
-  Routes,
-} from '@kitbag/router'
-
-const routes = [
+const routes = createRoutes([
   {
     name: 'users',
     path: '/users',
     query: 'sort=:sort',
     component: ...
   }
-] as const satisfies Routes
+])
 ```
 
 Just like params declared in `path`, these values will be found in the `route.params`.
 
 ```ts
+import { useRoute } from '@kitbag/router'
+
 const route = useRoute()
 
 route.params.sort
@@ -46,11 +46,11 @@ Again like params declared in `path`, these params default as writable `string`,
 
 ```ts
 import { 
-  Routes,
+  createRoutes,
   query, // [!code ++]
 } from '@kitbag/router'
 
-const routes = [
+const routes = createRoutes([
   {
     name: 'users',
     path: '/users',
@@ -58,7 +58,7 @@ const routes = [
     query: query('sort=:sort', { sort: Number }),// [!code ++]
     component: ...
   }
-] as const satisfies Routes
+])
 ```
 
 ## Optional Params
@@ -66,14 +66,14 @@ const routes = [
 Add a question mark `:?` to your query param to make it optional.
 
 ```ts
-const routes = [
+const routes = createRoutes([
   {
     name: 'users',
     path: '/users',
     query: 'sort=:?sort',// [!code focus]
     component: ...
   }
-] as const satisfies Routes
+])
 ```
 
 ## Unnamed Query Params
@@ -90,3 +90,5 @@ const route = useRoute()
 route.params.paramSort
 route.params.query.keySort
 ```
+
+As for the param name, query params follow the same rules as [path params](/core-concepts/route-params#param-name)

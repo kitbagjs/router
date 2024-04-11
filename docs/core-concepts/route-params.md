@@ -3,17 +3,15 @@
 When defining your route `path`, you can use a colon `:` to denote dynamic params.
 
 ```ts
-import { 
-  Routes,
-} from '@kitbag/router'
+import { createRoutes } from '@kitbag/router'
 
-const routes = [
+const routes = createRoutes([
   {
     name: 'users',
     path: '/users/:id',
     component: ...
   }
-] as const satisfies Routes
+])
 ```
 
 This means the route will expect 1+ extra string characters in order to be considered a match. This value can be anything, including forward slashes `/`. The value of these extra characters is captured and exposed in the `route.params`
@@ -32,18 +30,18 @@ With the `path` function, Kitbag Router supports parsing params to types other t
 
 ```ts
 import { 
-  Routes,
+  createRoutes,
   path, // [!code ++]
 } from '@kitbag/router'
 
-const routes = [
+const routes = createRoutes([
   {
     name: 'users',
     path: '/users/:id', // [!code --]
     path: path('/users/:id', { id: Number }), // [!code ++]
     component: ...
   }
-] as const satisfies Routes
+])
 ```
 
 This will automatically parse the param from `string` in the URL to `number` in `route.params`. If the value cannot be parsed, the route will not be considered a match.
@@ -55,13 +53,13 @@ Kitbag Router ships with support for `String` (default), `Boolean`, `Number`, an
 Using native RegExp is a powerful way of controlling route matching.
 
 ```ts
-const routes = [
+const routes = createRoutes([
   {
     name: 'users',
     path: path('/users/:id', { id: /^A[0-9]$/  }), // [!code focus]
     component: ...
   }
-] as const satisfies Routes
+])
 ```
 
 ### Custom Param
@@ -90,13 +88,13 @@ const idFormatParam: ParamGetter<IdFormat> = (value, { invalid }) => {
 Update your param assignment on the route's path
 
 ```ts
-const routes = [
+const routes = createRoutes([
   {
     name: 'users',
     path: path('/users/:id', { id: idFormatParam }), // [!code focus]
     component: ...
   }
-] as const satisfies Routes
+])
 ```
 
 With this getter defined, now our route will only match if the param matches our rules above.
@@ -136,13 +134,13 @@ const idFormatParam: ParamGetSet<IdFormat> = {
 If you define your path params with a question mark, `:?` the router assumes this param is not required.
 
 ```ts
-const routes = [
+const routes = createRoutes([
   {
     name: 'users',
     path: '/users/:?id', // [!code focus]
     component: ...
   }
-] as const satisfies Routes
+])
 ```
 
 This means the route will match even if nothing is provided after `/users/`.
@@ -150,13 +148,74 @@ This means the route will match even if nothing is provided after `/users/`.
 This also works for non-string params.
 
 ```ts
-const routes = [
+const routes = createRoutes([
   {
     name: 'users',
     path: path('/users/:?id', { id: Number }), // [!code focus]
     component: ...
   }
-] as const satisfies Routes
+])
 ```
 
 Which now, `router.params.id` has the type `number | undefined`, and will only match url where the value passes as a number or is missing entirely.
+
+## Param Name
+
+There are very few constraints on the name you choose for a param. Your param name can include any special character except forward slash `/`. Kitbag Router uses forward slash (or the end of the string) to denote the end of a param name in a path.
+
+```ts
+const routes = createRoutes([
+  {
+    name: 'users',
+    path: '/users/:can-have#what.ever!?',
+    component: ...
+  }
+])
+```
+
+Keep in mind that any special characters in the param name will make accessing the value slightly less pretty.
+
+```ts
+const route = useRoute()
+
+route.params['can-have#what.ever!?']
+```
+
+If your param name starts with a question mark `?`, Router will assume your param was intended to be optional.
+
+```ts
+// single param (name "id") which has type string | undefined
+const routes = createRoutes([
+  {
+    name: 'users',
+    path: '/users/:?id',
+    component: ...
+  }
+])
+```
+
+The other important constraint is that param names must be unique. This includes params defined in a path parent and params defined in the query.
+
+```ts
+// invalid
+const routes = createRoutes([
+  {
+    name: 'users',
+    path: '/users/:id',
+    query: 'sortBy=:id'
+  }
+])
+
+// invalid
+const routes = createRoutes([
+  {
+    name: 'users',
+    path: '/users/:id',
+    children: createRoutes([
+      name: 'tokens',
+      path: '/tokens/:id',
+      component: ...
+    ])
+  }
+])
+```
