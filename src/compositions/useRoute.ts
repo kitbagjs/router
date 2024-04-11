@@ -1,13 +1,15 @@
-import { ExtractRouterRouteParamTypes, RouterRoute } from '@/types'
-import { Identity } from '@/types/utilities'
+import { useRouter } from '@/compositions/useRouter'
+import { UseRouteInvalidError } from '@/errors'
+import { ResolvedRoute, RouterRoute } from '@/types'
 
-type Route<T extends RouterRoute> = {
-  name: string,
-  params: ExtractRouterRouteParamTypes<T>,
-  query: unknown,
-  hash: string,
-}
+export function useRoute<TRoute extends RouterRoute>(routeName: TRoute['name']): ResolvedRoute<TRoute>
+export function useRoute(routeName: 'string'): ResolvedRoute {
+  const router = useRouter()
+  const route = router.find(routeName)
 
-export function useRoute<T extends RouterRoute>(): Identity<Route<T>> {
-  throw 'not implemented'
+  if (!route || route.name !== routeName) {
+    throw new UseRouteInvalidError(routeName, router.route.name)
+  }
+
+  return route
 }
