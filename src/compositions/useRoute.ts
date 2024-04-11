@@ -23,7 +23,7 @@ export function useRoute(routeName?: string): DeepReadonly<ResolvedRoute> {
     }
   }
 
-  watch(router.route, () => checkRouteNameIsValid, { immediate: true, deep: true })
+  watch(router.route, checkRouteNameIsValid, { immediate: true, deep: true })
 
   return router.route
 }
