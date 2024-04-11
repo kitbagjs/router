@@ -24,7 +24,7 @@ export type RegisteredRejectionType = Register extends { rejections: infer TReje
 export type RegisteredRouterState = Register extends { state: infer TState }
   ? TState
   : {}
-
+// Because RegisteredRoutes defaults to `[]` it thinks passing it is unnecessary
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-arguments
 export type RegisteredRouteMap = RoutesMap<RegisteredRoutes>
 export type RegisteredRouteWithParams<T extends keyof RegisteredRouteMap> = RouteWithParams<RegisteredRoutes, T>
