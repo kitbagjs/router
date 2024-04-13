@@ -1,9 +1,10 @@
-import { RouterPushImplementation } from '@/types/routerPush'
+import { RouterRoutes } from '@/types'
+import { RouterPush } from '@/types/routerPush'
 
-export class RouterPushError extends Error {
-  public to: Parameters<RouterPushImplementation>
+export class RouterPushError<T extends RouterRoutes> extends Error {
+  public to: Parameters<RouterPush<T>>
 
-  public constructor(to: Parameters<RouterPushImplementation>) {
+  public constructor(to: Parameters<RouterPush<T>>) {
     super()
 
     this.to = to

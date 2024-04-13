@@ -1,7 +1,7 @@
 import { ResolvedRoute } from '@/types/resolved'
 import { RouterRoutes } from '@/types/routerRoute'
-import { RouteWithParams, RouteWithParamsImplementation } from '@/types/routeWithParams'
-import { RouterResolveImplementation } from '@/utilities/createRouterResolve'
+import { RouteWithParams } from '@/types/routeWithParams'
+import { RouterResolve } from '@/utilities/createRouterResolve'
 import { getResolvedRouteForUrl } from '@/utilities/getResolvedRouteForUrl'
 
 export type RouterFind<
@@ -10,14 +10,12 @@ export type RouterFind<
   TRoutePath extends string
 >(source: string | RouteWithParams<TRoutes, TRoutePath>) => ResolvedRoute | undefined
 
-export type RouterFindImplementation = (source: string | RouteWithParamsImplementation) => ResolvedRoute | undefined
-
-type CreateRouterFindContext = {
-  routes: RouterRoutes,
-  resolve: RouterResolveImplementation,
+type CreateRouterFindContext<T extends RouterRoutes> = {
+  routes: T,
+  resolve: RouterResolve<T>,
 }
 
-export function createRouterFind({ routes, resolve }: CreateRouterFindContext): RouterFindImplementation {
+export function createRouterFind<const T extends RouterRoutes>({ routes, resolve }: CreateRouterFindContext<T>): RouterFind<T> {
   return (source) => {
     const url = resolve(source)
 

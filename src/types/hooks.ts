@@ -1,7 +1,8 @@
 import { ResolvedRoute } from '@/types/resolved'
 import { RouterReject } from '@/types/router'
-import { RegisteredRouterPush, RouterPushImplementation } from '@/types/routerPush'
+import { RegisteredRouterPush, RouterPush } from '@/types/routerPush'
 import { RegisteredRouterReplace } from '@/types/routerReplace'
+import { RouterRoutes } from '@/types/routerRoute'
 import { MaybePromise } from '@/types/utilities'
 import { RouterRejectionType } from '@/utilities/createRouterReject'
 
@@ -42,9 +43,9 @@ type RouteHookAbortResponse = {
   status: 'ABORT',
 }
 
-type RouteHookPushResponse = {
+type RouteHookPushResponse<T extends RouterRoutes> = {
   status: 'PUSH',
-  to: Parameters<RouterPushImplementation>,
+  to: Parameters<RouterPush<T>>,
 }
 
 type RouteHookRejectResponse = {
@@ -52,6 +53,6 @@ type RouteHookRejectResponse = {
   type: RouterRejectionType,
 }
 
-export type BeforeRouteHookResponse = RouteHookSuccessResponse | RouteHookPushResponse | RouteHookRejectResponse | RouteHookAbortResponse
-export type AfterRouteHookResponse = RouteHookSuccessResponse | RouteHookPushResponse | RouteHookRejectResponse
-export type RouteHookResponse = BeforeRouteHookResponse | AfterRouteHookResponse
+export type BeforeRouteHookResponse<T extends RouterRoutes> = RouteHookSuccessResponse | RouteHookPushResponse<T> | RouteHookRejectResponse | RouteHookAbortResponse
+export type AfterRouteHookResponse<T extends RouterRoutes> = RouteHookSuccessResponse | RouteHookPushResponse<T> | RouteHookRejectResponse
+export type RouteHookResponse<T extends RouterRoutes> = BeforeRouteHookResponse<T> | AfterRouteHookResponse<T>

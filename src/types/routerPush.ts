@@ -1,5 +1,5 @@
 import { RegisteredRoutes, RouterRoutes } from '@/types'
-import { RouteWithParams, RouteWithParamsImplementation } from '@/types/routeWithParams'
+import { RouteWithParams } from '@/types/routeWithParams'
 
 export type RouterPushOptions = {
   query?: Record<string, string>,
@@ -12,6 +12,5 @@ export type RouterPush<
   TRoutePath extends string
 >(source: string | RouteWithParams<TRoutes, TRoutePath>, options?: RouterPushOptions) => Promise<void>
 
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-arguments
 export type RegisteredRouterPush = RouterPush<RegisteredRoutes>
-
-export type RouterPushImplementation = (source: string | RouteWithParamsImplementation, options?: RouterPushOptions) => Promise<void>
