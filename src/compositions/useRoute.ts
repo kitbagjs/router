@@ -1,13 +1,46 @@
-import { ExtractRouterRouteParamTypes, RouterRoute } from '@/types'
-import { Identity } from '@/types/utilities'
+import { DeepReadonly, watch } from 'vue'
+import { useRouter } from '@/compositions/useRouter'
+import { UseRouteInvalidError } from '@/errors'
+import { RegisteredRouteMap, ResolvedRoute } from '@/types'
+import { combineName } from '@/utilities/combineName'
 
-type Route<T extends RouterRoute> = {
-  name: string,
-  params: ExtractRouterRouteParamTypes<T>,
-  query: unknown,
-  hash: string,
+export function useRoute<TRouteName extends keyof RegisteredRouteMap>(routeName: TRouteName): DeepReadonly<ResolvedRoute<TRouteName>>
+export function useRoute(): DeepReadonly<ResolvedRoute>
+export function useRoute(routeName?: string): DeepReadonly<ResolvedRoute> {
+  const router = useRouter()
+
+  function checkRouteNameIsValid(): void {
+    if (!routeName) {
+      return
+    }
+
+    const routeNames = router.route.matches.map(route => route.name)
+    const routeAncestryNames = getRouteDotNotationNames(routeNames)
+    const routeNameIsValid = routeAncestryNames.includes(routeName)
+
+    if (!routeNameIsValid) {
+      throw new UseRouteInvalidError(routeName, router.route.name)
+    }
+  }
+
+  watch(router.route, checkRouteNameIsValid, { immediate: true, deep: true })
+
+  return router.route
 }
 
-export function useRoute<T extends RouterRoute>(): Identity<Route<T>> {
-  throw 'not implemented'
+function getRouteDotNotationNames(names: (string | undefined)[]): string[] {
+  return names.reduce<string[]>((ancestorNames, name) => {
+    const previous = ancestorNames.pop()
+    const next = name ? [combineName(previous, name)] : []
+
+    if (!previous) {
+      return next
+    }
+
+    return [
+      ...ancestorNames,
+      previous,
+      ...next,
+    ]
+  }, [])
 }

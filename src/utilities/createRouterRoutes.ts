@@ -1,8 +1,12 @@
 import { markRaw } from 'vue'
 import { DuplicateParamsError } from '@/errors'
-import { MergeParams, ParentRoute, Route, RouterRoute, isParentRoute } from '@/types'
-import { Path, path as createPath, PathParams, ToPath, toPath } from '@/utilities/path'
-import { Query, QueryParams, ToQuery, query as createQuery, toQuery } from '@/utilities/query'
+import { ParentRoute, Route, RouterRoute, isParentRoute } from '@/types'
+import { checkDuplicateKeys } from '@/utilities/checkDuplicateKeys'
+import { CombineName, combineName } from '@/utilities/combineName'
+import { CombinePath, combinePath } from '@/utilities/combinePath'
+import { CombineQuery, combineQuery } from '@/utilities/combineQuery'
+import { Path, ToPath, toPath } from '@/utilities/path'
+import { Query, ToQuery, toQuery } from '@/utilities/query'
 
 export function createRoutes<const TRoutes extends Readonly<Route[]>>(routes: TRoutes): FlattenRouterRoutes<TRoutes>
 export function createRoutes(routes: Readonly<Route[]>): RouterRoute[] {
@@ -53,24 +57,6 @@ function createRouterRoute(route: Route): RouterRoute {
   }
 }
 
-function checkDuplicateKeys(aParams: Record<string, unknown>, bParams: Record<string, unknown>): { key: string, hasDuplicates: true } | { key: undefined, hasDuplicates: false } {
-  const aParamKeys = Object.keys(aParams)
-  const bParamKeys = Object.keys(bParams)
-  const duplicateKey = aParamKeys.find(key => bParamKeys.includes(key))
-
-  if (duplicateKey) {
-    return {
-      key: duplicateKey,
-      hasDuplicates: true,
-    }
-  }
-
-  return {
-    key: undefined,
-    hasDuplicates: false,
-  }
-}
-
 type FlattenRouterRoute<
   TRoute extends Route,
   TName extends string | undefined = TRoute['name'],
@@ -93,61 +79,6 @@ type FlattenRouterRoute<
 type FlattenRouterRoutes<TRoutes extends Readonly<Route[]>> = Flatten<[...{
   [K in keyof TRoutes]: FlattenRouterRoute<TRoutes[K]>
 }]>
-
-type CombineName<TParentName extends string | undefined, TChildName extends string | undefined> = TParentName extends string
-  ? TChildName extends string
-    ? `${TParentName}.${TChildName}`
-    : TParentName
-  : TChildName extends string
-    ? TChildName
-    : ''
-
-function combineName<TParentName extends string | undefined, TChildName extends string | undefined>(parentName: TParentName, childName: TChildName): CombineName<TParentName, TChildName>
-function combineName(parentName: string, childName: string): string {
-  return [parentName, childName].filter(value => !!value).join('.')
-}
-
-type CombinePath<
-  TParent extends Path,
-  TChild extends Path
-> = ToPath<TParent> extends { path: infer TParentPath extends string, params: infer TParentParams extends Record<string, unknown> }
-  ? ToPath<TChild> extends { path: infer TChildPath extends string, params: infer TChildParams extends Record<string, unknown> }
-    ? MergeParams<TParentParams, TChildParams> extends PathParams<`${TParentPath}${TChildPath}`>
-      ? Path<`${TParentPath}${TChildPath}`, MergeParams<TParentParams, TChildParams>>
-      : Path<'', {}>
-    : Path<'', {}>
-  : Path<'', {}>
-
-function combinePath<TParentPath extends Path, TChildPath extends Path>(parentPath: TParentPath, childPath: TChildPath): CombinePath<TParentPath, TChildPath>
-function combinePath(parentPath: Path, childPath: Path): Path {
-  const { hasDuplicates, key } = checkDuplicateKeys(parentPath.params, childPath.params)
-  if (hasDuplicates) {
-    throw new DuplicateParamsError(key)
-  }
-
-  return createPath(`${parentPath.path}${childPath.path}`, { ...parentPath.params, ...childPath.params })
-}
-
-type CombineQuery<
-  TParent extends Query | undefined,
-  TChild extends Query | undefined
-> = ToQuery<TParent> extends { query: infer TParentQuery extends string, params: infer TParentParams extends Record<string, unknown> }
-  ? ToQuery<TChild> extends { query: infer TChildQuery extends string, params: infer TChildParams extends Record<string, unknown> }
-    ? MergeParams<TParentParams, TChildParams> extends QueryParams<`${TParentQuery}${TChildQuery}`>
-      ? Query<`${TParentQuery}${TChildQuery}`, MergeParams<TParentParams, TChildParams>>
-      : Query<'', {}>
-    : Query<'', {}>
-  : Query<'', {}>
-
-function combineQuery<TParentQuery extends Query, TChildQuery extends Query>(parentQuery: TParentQuery, childQuery: TChildQuery): CombineQuery<TParentQuery, TChildQuery>
-function combineQuery(parentQuery: Query, childQuery: Query): Query {
-  const { hasDuplicates, key } = checkDuplicateKeys(parentQuery.params, childQuery.params)
-  if (hasDuplicates) {
-    throw new DuplicateParamsError(key)
-  }
-
-  return createQuery(`${parentQuery.query}${childQuery.query}`, { ...parentQuery.params, ...childQuery.params })
-}
 
 type ExtractRouteChildren<TRoute extends Route> = TRoute extends ParentRoute
   ? TRoute['children'] extends RouterRoute[]

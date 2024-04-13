@@ -7,8 +7,8 @@
 <script setup lang="ts" generic="T extends keyof RegisteredRouteMap">
   import { computed, readonly } from 'vue'
   import { useRouter } from '@/compositions'
+  import { RegisteredRouteMap, RegisteredRouteWithParams } from '@/types/register'
   import { RouterPushOptions } from '@/types/routerPush'
-  import { RegisteredRouteMap, RegisteredRouteWithParams } from '@/types/routeWithParams'
 
   const props = defineProps<{
     to: string | RegisteredRouteWithParams<T>,

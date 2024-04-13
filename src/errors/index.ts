@@ -1,3 +1,6 @@
 export * from './duplicateParamsError'
 export * from './navigationAbortError'
 export * from './routerNotInstalledError'
+export * from './routerPushError'
+export * from './routerRejectionError'
+export * from './useRouteInvalidError'
