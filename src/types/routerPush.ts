@@ -7,7 +7,7 @@ export type RouterPushOptions = {
 }
 
 export type RouterPush<
-  TRoutes extends RouterRoutes = []
+  TRoutes extends RouterRoutes
 > = <
   TRoutePath extends string
 >(source: string | RouteWithParams<TRoutes, TRoutePath>, options?: RouterPushOptions) => Promise<void>

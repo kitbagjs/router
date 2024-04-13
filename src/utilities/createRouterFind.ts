@@ -5,7 +5,7 @@ import { RouterResolve } from '@/utilities/createRouterResolve'
 import { getResolvedRouteForUrl } from '@/utilities/getResolvedRouteForUrl'
 
 export type RouterFind<
-  TRoutes extends RouterRoutes = []
+  TRoutes extends RouterRoutes
 > = <
   TRoutePath extends string
 >(source: string | RouteWithParams<TRoutes, TRoutePath>) => ResolvedRoute | undefined

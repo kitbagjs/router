@@ -5,7 +5,7 @@ import { RouteWithParams } from '@/types/routeWithParams'
 export type RouterReplaceOptions = Omit<RouterPushOptions, 'replace'>
 
 export type RouterReplace<
-  TRoutes extends RouterRoutes = []
+  TRoutes extends RouterRoutes
 > = <
   TRoutePath extends string
 >(source: string | RouteWithParams<TRoutes, TRoutePath>, options?: RouterPushOptions) => Promise<void>

@@ -8,7 +8,7 @@ export type RouterResolveOptions = {
 }
 
 export type RouterResolve<
-  TRoutes extends RouterRoutes = []
+  TRoutes extends RouterRoutes
 > = <
   TRoutePath extends string
 >(source: string | RouteWithParams<TRoutes, TRoutePath>, options?: RouterResolveOptions) => string
