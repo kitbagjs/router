@@ -12,7 +12,7 @@ import { createRouterReject } from '@/utilities/createRouterReject'
 import { createRouterResolve } from '@/utilities/createRouterResolve'
 import { getInitialUrl } from '@/utilities/getInitialUrl'
 import { getResolvedRouteForUrl } from '@/utilities/getResolvedRouteForUrl'
-import { runAfterRouteHooks, runBeforeRouteHooks } from '@/utilities/hooks'
+import { createRouteHookRunners } from '@/utilities/hooks'
 
 type RouterUpdateOptions = {
   replace?: boolean,
@@ -21,6 +21,7 @@ type RouterUpdateOptions = {
 export function createRouter<const T extends RouterRoutes>(routes: T, options: RouterOptions = {}): Router<T> {
   const resolve = createRouterResolve(routes)
   const history = createRouterHistory({ mode: options.historyMode })
+  const { runBeforeRouteHooks, runAfterRouteHooks } = createRouteHookRunners<T>()
   const {
     hooks,
     onBeforeRouteEnter,

@@ -14,7 +14,7 @@ export class RouterRejectionError extends Error {
 }
 
 export class RouterPushError<T extends RouterRoutes> extends Error {
-  public to: Parameters<RouterPush>
+  public to: Parameters<RouterPush<T>>
 
   public constructor(to: Parameters<RouterPush<T>>) {
     super()
