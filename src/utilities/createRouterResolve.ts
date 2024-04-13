@@ -14,8 +14,10 @@ export type RouterResolve<TRoutes extends RouterRoutes> = {
   (source: Url, options?: RouterResolveOptions): string,
 }
 
-export function resolve<TRoutes extends RouterRoutes, TRouteKey extends RoutesKey<TRoutes>>(routes: TRoutes, ...args: ResolveRouteWithParamsArgs<TRoutes, TRouteKey>): string
+export function resolve<TRoutes extends RouterRoutes, TRouteKey extends RoutesKey<TRoutes>>(routes: TRoutes, source: TRouteKey, ...args: ResolveRouteWithParamsArgs<TRoutes, TRouteKey>): string
 export function resolve(routes: RouterRoutes, source: Url, options?: RouterResolveOptions): string
+// eslint-disable-next-line max-params
+export function resolve(routes: RouterRoutes, source: string, paramsOrOptions?: Record<string, unknown>, maybeOptions?: RouterResolveOptions): string
 // eslint-disable-next-line max-params
 export function resolve(routes: RouterRoutes, source: string, paramsOrOptions?: Record<string, unknown>, maybeOptions?: RouterResolveOptions): string {
   if (isUrl(source)) {
@@ -44,5 +46,5 @@ export function resolve(routes: RouterRoutes, source: string, paramsOrOptions?: 
 
 
 export function createRouterResolve<TRoutes extends RouterRoutes>(routes: TRoutes): RouterResolve<TRoutes> {
-  return (source: string, ...args: any[]) => resolve(routes as any, source, ...args)
+  return (source: string, ...args: any[]) => resolve(routes, source, ...args)
 }

@@ -124,6 +124,7 @@ export function createRouter<const T extends RouterRoutes>(routes: T, options: R
 
   const router = {
     route: readonly(route),
+    routes,
     resolve: createRouterResolve(routes),
     find: createRouterFind(routes),
     push,

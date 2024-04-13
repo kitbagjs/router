@@ -6,9 +6,13 @@ import { Url } from '@/types/url'
 
 export type RouterReplaceOptions = Omit<RouterPushOptions, 'replace'>
 
-export type ReplaceRouteWithParamsArgs<TRoutes extends RouterRoutes, TRouteKey extends string> = [...RouteWithParamsArgs<TRoutes, TRouteKey>, options?: RouterReplaceOptions | undefined]
+export type ReplaceRouteWithParamsArgs<TRoutes extends RouterRoutes, TRouteKey extends string> = [
+  source: TRouteKey,
+  ...RouteWithParamsArgs<TRoutes, TRouteKey>,
+  options?: RouterReplaceOptions | undefined
+]
 
 export type RouterReplace<TRoutes extends RouterRoutes> = {
-  <TRouteKey extends keyof RoutesMap<TRoutes>>(...args: [source: TRouteKey, ...ReplaceRouteWithParamsArgs<TRoutes, TRouteKey>, options?: RouterReplaceOptions | undefined]): Promise<void>,
+  <TRouteKey extends keyof RoutesMap<TRoutes>>(...args: ReplaceRouteWithParamsArgs<TRoutes, TRouteKey>): Promise<void>,
   (source: Url, options?: RouterReplaceOptions): Promise<void>,
 }

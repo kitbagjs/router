@@ -7,20 +7,16 @@
 <script setup lang="ts" generic="T extends keyof RegisteredRouteMap | Url">
   import { computed, readonly } from 'vue'
   import { useRouter } from '@/compositions'
-  import { AllPropertiesAreOptional, Param, RouteParamsByName } from '@/types'
-  import { RegisteredRouteMap, RegisteredRoutes } from '@/types/register'
-  import { Url } from '@/types/url'
+  import { RegisteredRouteMap, RegisteredRouteWithParams } from '@/types/register'
+  import { RouterPushOptions } from '@/types/routerPush'
+  import { Url, isUrl } from '@/types/url'
+  import { find } from '@/utilities/createRouterFind'
+  import { resolve } from '@/utilities/createRouterResolve'
 
-  export type RouterLinkProps<
-    TSource extends string,
-    TRouteParams extends Record<string, Param> = RouteParamsByName<RegisteredRoutes, TSource>
-  > = TSource extends Url
-    ? { to: TSource }
-    : AllPropertiesAreOptional<TRouteParams> extends true
-    ? { to: TSource, params?: TRouteParams }
-    : { to: TSource, params: TRouteParams }
-
-  const props = defineProps<RouterLinkProps<T>>()
+  const props = defineProps<{
+    to: T,
+    params?: T extends keyof RegisteredRouteMap ? RegisteredRouteWithParams<T> : undefined,
+  } & RouterPushOptions>()
 
   defineSlots<{
     default?: (props: {
@@ -33,7 +29,12 @@
 
   const router = useRouter()
 
-  const route = computed(() => router.find(props.to)?.matched)
+  const route = computed(() => {
+    const { to, params, ...options } = props
+    const args = isUrl(to) ? [options] : [params, options]
+
+    return find(router.routes, to, ...args)?.matched
+  })
 
   const match = computed(() => !!route.value && router.route.matches.includes(readonly(route.value)))
   const exactMatch = computed(() => !!route.value && router.route.matched === route.value)
@@ -43,7 +44,12 @@
     'router-link--exact-match': exactMatch.value,
   }))
 
-  const resolved = computed(() => router.resolve(props.to))
+  const resolved = computed(() => {
+    const { to, params, ...options } = props
+    const args = isUrl(to) ? [options] : [params, options]
+
+    return resolve(router.routes, to, ...args)
+  })
   const host = computed(() => {
     const { host } = new URL(resolved.value, window.location.origin)
 
@@ -54,8 +60,9 @@
   function onClick(event: MouseEvent): void {
     event.preventDefault()
 
-    const { to, ...options } = props
+    const { to, params, ...options } = props
+    const args = isUrl(to) ? [options] : [params, options]
 
-    router.push(to, options)
+    router.push(to, ...args)
   }
 </script>

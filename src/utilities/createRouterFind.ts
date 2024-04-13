@@ -11,11 +11,12 @@ export type RouterFind<TRoutes extends RouterRoutes> = {
 }
 
 export function createRouterFind<TRoutes extends RouterRoutes>(routes: TRoutes): RouterFind<TRoutes> {
-  return (source: string, ...args: any[]) => find(routes as any, source, ...args)
+  return (source: string, ...args: any[]) => find(routes, source, ...args)
 }
 
-export function find<TRoutes extends RouterRoutes, TRouteKey extends string>(routes: TRoutes, ...args: RouteWithParamsArgs<TRoutes, TRouteKey>): ResolvedRoute | undefined
+export function find<TRoutes extends RouterRoutes, TRouteKey extends string>(routes: TRoutes, source: TRouteKey, ...args: RouteWithParamsArgs<TRoutes, TRouteKey>): ResolvedRoute | undefined
 export function find(routes: RouterRoutes, source: Url): ResolvedRoute | undefined
+export function find(routes: RouterRoutes, source: string, maybeParams?: Record<string, unknown>): ResolvedRoute | undefined
 export function find(routes: RouterRoutes, source: string, maybeParams?: Record<string, unknown>): ResolvedRoute | undefined {
   const url = resolve(routes as any, source, maybeParams)
 

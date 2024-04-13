@@ -20,6 +20,7 @@ export type Router<
   TRoutes extends RouterRoutes = []
 > = {
   route: DeepReadonly<ResolvedRoute>,
+  routes: TRoutes,
   resolve: RouterResolve<TRoutes>,
   find: RouterFind<TRoutes>,
   push: RouterPush<TRoutes>,

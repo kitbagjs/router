@@ -8,9 +8,13 @@ export type RouterPushOptions = {
   replace?: boolean,
 }
 
-export type PushRouteWithParamsArgs<TRoutes extends RouterRoutes, TRouteKey extends string> = [...RouteWithParamsArgs<TRoutes, TRouteKey>, options?: RouterPushOptions | undefined]
+export type PushRouteWithParamsArgs<TRoutes extends RouterRoutes, TRouteKey extends string> = [
+  source: TRouteKey,
+  ...RouteWithParamsArgs<TRoutes, TRouteKey>,
+  options?: RouterPushOptions | undefined
+]
 
 export type RouterPush<TRoutes extends RouterRoutes> = {
-  <TRouteKey extends keyof RoutesMap<TRoutes>>(...args: [source: TRouteKey, ...PushRouteWithParamsArgs<TRoutes, TRouteKey>, options?: RouterPushOptions | undefined]): Promise<void>,
+  <TRouteKey extends keyof RoutesMap<TRoutes>>(...args: PushRouteWithParamsArgs<TRoutes, TRouteKey>): Promise<void>,
   (source: Url, options?: RouterPushOptions): Promise<void>,
 }

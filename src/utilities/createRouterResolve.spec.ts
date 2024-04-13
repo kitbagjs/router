@@ -31,6 +31,5 @@ test('given a route and a query appends query to the url', () => {
 test('throws an error if route with params cannot be matched', () => {
   const routerRoutes = createRoutes(routes)
 
-  // @ts-expect-error
   expect(() => resolve(routerRoutes, 'foo')).toThrowError()
 })

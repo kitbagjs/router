@@ -24,7 +24,6 @@ export type RouteWithParamsArgs<
   TRoutes extends RouterRoutes,
   TRouteName extends string,
   TRouteParams extends Record<string, Param> = RouteParamsByName<TRoutes, TRouteName>
-> = [
-  source: TRouteName,
-  ...AllPropertiesAreOptional<TRouteParams> extends true ? [params?: TRouteParams] : [params: TRouteParams]
-]
+> = AllPropertiesAreOptional<TRouteParams> extends true
+  ? [params?: TRouteParams]
+  : [params: TRouteParams]
