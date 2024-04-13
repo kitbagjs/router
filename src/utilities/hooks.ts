@@ -1,7 +1,6 @@
 import { NavigationAbortError, RouterPushError, RouterRejectionError } from '@/errors'
 import { RouteHookStore } from '@/models/RouteHookStore'
 import { RouterRoutes } from '@/types'
-import { RouterPushError, RouterRejectionError } from '@/types/errors'
 import { AfterRouteHook, AfterRouteHookResponse, BeforeRouteHook, BeforeRouteHookResponse, RouteHookAbort, RouteHookLifecycle } from '@/types/hooks'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouterReject } from '@/types/router'
