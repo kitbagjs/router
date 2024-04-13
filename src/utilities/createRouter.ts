@@ -1,6 +1,7 @@
 import { App, readonly } from 'vue'
 import { RouterLink, RouterView } from '@/components'
 import { routerInjectionKey, routerRejectionKey } from '@/compositions'
+import { RegisteredRouter } from '@/types/register'
 import { Router, RouterOptions, RouterReject } from '@/types/router'
 import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { RouterReplace } from '@/types/routerReplace'
@@ -92,13 +93,13 @@ export function createRouter<const T extends RouterRoutes>(routes: T, options: R
 
   const push: RouterPush<T> = (source: string, ...args: any[]): Promise<void> => {
     const options: RouterPushOptions = (isUrl(source) ? args[1] : args[2]) ?? {}
-    const url = resolve(routes as any, source, ...args)
+    const url = resolve(routes, source, ...args)
 
     return update(url, { replace: options.replace })
   }
 
   const replace: RouterReplace<T> = (source: string, ...args: any[]): Promise<void> => {
-    const url = resolve(routes as any, source, ...args)
+    const url = resolve(routes, source, ...args)
 
     return update(url, { replace: true })
   }

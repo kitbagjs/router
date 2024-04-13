@@ -18,7 +18,7 @@ export function find<TRoutes extends RouterRoutes, TRouteKey extends string>(rou
 export function find(routes: RouterRoutes, source: Url): ResolvedRoute | undefined
 export function find(routes: RouterRoutes, source: string, maybeParams?: Record<string, unknown>): ResolvedRoute | undefined
 export function find(routes: RouterRoutes, source: string, maybeParams?: Record<string, unknown>): ResolvedRoute | undefined {
-  const url = resolve(routes as any, source, maybeParams)
+  const url = resolve(routes, source, maybeParams)
 
   return getResolvedRouteForUrl(routes, url)
 }
