@@ -1,12 +1,13 @@
 import { ResolvedRoute } from '@/types/resolved'
 import { RouterRoutes } from '@/types/routerRoute'
+import { RoutesMap } from '@/types/routesMap'
 import { RouteWithParamsArgs } from '@/types/routeWithParams'
 import { Url } from '@/types/url'
 import { resolve } from '@/utilities/createRouterResolve'
 import { getResolvedRouteForUrl } from '@/utilities/getResolvedRouteForUrl'
 
 export type RouterFind<TRoutes extends RouterRoutes> = {
-  <TRouteKey extends string>(source: TRouteKey, ...args: RouteWithParamsArgs<TRoutes, TRouteKey>): ResolvedRoute | undefined,
+  <TRouteKey extends keyof RoutesMap<TRoutes>>(source: TRouteKey, ...args: RouteWithParamsArgs<TRoutes, TRouteKey>): ResolvedRoute | undefined,
   (source: Url): ResolvedRoute | undefined,
 }
 
