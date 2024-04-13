@@ -29,5 +29,6 @@ test('throws an error if route with params cannot be matched', () => {
   const routerRoutes = createRoutes(routes)
   const resolve = createRouterResolve(routerRoutes)
 
+  // @ts-expect-error
   expect(() => resolve({ route: 'foo' })).toThrowError()
 })

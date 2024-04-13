@@ -11,7 +11,8 @@ export type RouteWithParams<
 } & RouteParams<RouteParamsByName<TRoutes, TRoutePath>>
   : never
 
-export type RouteWithParamsImplementation = { route: string, params?: Record<string, unknown> }
+export type RegisteredRouteMap = RoutesMap
+export type RegisteredRouteWithParams<T extends keyof RegisteredRouteMap> = RouteWithParams<RegisteredRoutes, T>
 
 type RouteParams<T extends Record<string, unknown>> = AllPropertiesAreOptional<T> extends true ? { params?: T } : { params: T }
 

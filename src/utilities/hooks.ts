@@ -1,11 +1,18 @@
 import { NavigationAbortError, RouterPushError, RouterRejectionError } from '@/errors'
 import { RouteHookStore } from '@/models/RouteHookStore'
+import { RouterRoutes } from '@/types'
+import { RouterPushError, RouterRejectionError } from '@/types/errors'
 import { AfterRouteHook, AfterRouteHookResponse, BeforeRouteHook, BeforeRouteHookResponse, RouteHookAbort, RouteHookLifecycle } from '@/types/hooks'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouterReject } from '@/types/router'
-import { RouterPushImplementation } from '@/types/routerPush'
-import { RouterReplaceImplementation } from '@/types/routerReplace'
+import { RouterPush } from '@/types/routerPush'
+import { RouterReplace } from '@/types/routerReplace'
 import { getAfterRouteHooksFromRoutes, getBeforeRouteHooksFromRoutes } from '@/utilities/getRouteHooks'
+
+// type RouteHookRunners<T extends RouterRoutes> = {
+//   runBeforeRouteHooks: RouteHookBeforeRunner<T>,
+//   runAfterRouteHooks: RouteHookAfterRunner<T>,
+// }
 
 type BeforeContext = {
   to: ResolvedRoute,
@@ -13,7 +20,22 @@ type BeforeContext = {
   hooks: RouteHookStore,
 }
 
-export async function runBeforeRouteHooks({ to, from, hooks }: BeforeContext): Promise<BeforeRouteHookResponse> {
+// type RouteHookBeforeRunner<T extends RouterRoutes> = (context: BeforeContext) => Promise<BeforeRouteHookResponse<T>>
+
+type AfterContext = {
+  to: ResolvedRoute,
+  from: ResolvedRoute,
+  hooks: RouteHookStore,
+}
+
+// type RouteHookAfterRunner<T extends RouterRoutes> = (context: AfterContext) => Promise<AfterRouteHookResponse<T>>
+
+// export function createRouteHookRunners<const T extends RouterRoutes>(): RouteHookRunners<T> {
+
+// }
+
+
+export async function runBeforeRouteHooks<const T extends RouterRoutes>({ to, from, hooks }: BeforeContext): Promise<BeforeRouteHookResponse<T>> {
   const { global, component } = hooks
   const route = getBeforeRouteHooksFromRoutes(to, from)
 
@@ -43,7 +65,7 @@ export async function runBeforeRouteHooks({ to, from, hooks }: BeforeContext): P
     if (error instanceof RouterPushError) {
       return {
         status: 'PUSH',
-        to: error.to,
+        to: error.to as Parameters<RouterPush<T>>,
       }
     }
 
@@ -68,14 +90,7 @@ export async function runBeforeRouteHooks({ to, from, hooks }: BeforeContext): P
   }
 }
 
-
-type AfterContext = {
-  to: ResolvedRoute,
-  from: ResolvedRoute,
-  hooks: RouteHookStore,
-}
-
-export async function runAfterRouteHooks({ to, from, hooks }: AfterContext): Promise<AfterRouteHookResponse> {
+export async function runAfterRouteHooks<const T extends RouterRoutes>({ to, from, hooks }: AfterContext): Promise<AfterRouteHookResponse<T>> {
   const { global, component } = hooks
   const route = getAfterRouteHooksFromRoutes(to, from)
 
@@ -105,7 +120,7 @@ export async function runAfterRouteHooks({ to, from, hooks }: AfterContext): Pro
     if (error instanceof RouterPushError) {
       return {
         status: 'PUSH',
-        to: error.to,
+        to: error.to as Parameters<RouterPush<T>>,
       }
     }
 
@@ -128,11 +143,11 @@ const reject: RouterReject = (type) => {
   throw new RouterRejectionError(type)
 }
 
-const push: RouterPushImplementation = (...parameters) => {
+const push: RouterPush = (...parameters) => {
   throw new RouterPushError(parameters)
 }
 
-const replace: RouterReplaceImplementation = (to, options) => {
+const replace: RouterReplace = (to, options) => {
   throw new RouterPushError([to, { ...options, replace: true }])
 }
 

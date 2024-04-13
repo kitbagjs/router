@@ -1,9 +1,9 @@
 import { App, readonly } from 'vue'
 import { RouterLink, RouterView } from '@/components'
 import { routerInjectionKey, routerRejectionKey } from '@/compositions'
-import { Router, RouterOptions, RouterImplementation, RouterReject, RouterRoutes } from '@/types'
-import { RouterPushImplementation } from '@/types/routerPush'
-import { RouterReplaceImplementation } from '@/types/routerReplace'
+import { Router, RouterOptions, RouterReject, RouterRoutes } from '@/types'
+import { RouterPush } from '@/types/routerPush'
+import { RouterReplace } from '@/types/routerReplace'
 import { createCurrentRoute } from '@/utilities/createCurrentRoute'
 import { createRouterFind } from '@/utilities/createRouterFind'
 import { createRouterHistory } from '@/utilities/createRouterHistory'
@@ -89,13 +89,13 @@ export function createRouter<const T extends RouterRoutes>(routes: T, options: R
     }
   }
 
-  const push: RouterPushImplementation = (source, options) => {
+  const push: RouterPush<T> = (source, options) => {
     const url = resolve(source, options)
 
     return update(url, { replace: options?.replace })
   }
 
-  const replace: RouterReplaceImplementation = (source, options) => {
+  const replace: RouterReplace<T> = (source, options) => {
     return push(source, { ...options, replace: true })
   }
 
@@ -119,7 +119,7 @@ export function createRouter<const T extends RouterRoutes>(routes: T, options: R
     app.provide(routeHookStoreKey, hooks)
   }
 
-  const router: RouterImplementation = {
+  const router: Router<T> = {
     route: readonly(route),
     resolve,
     push,
@@ -140,5 +140,5 @@ export function createRouter<const T extends RouterRoutes>(routes: T, options: R
     onAfterRouteLeave,
   }
 
-  return router as any
+  return router
 }
