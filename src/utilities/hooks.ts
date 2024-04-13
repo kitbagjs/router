@@ -135,12 +135,12 @@ const push: RegisteredRouterPush = (source: string, ...args: any[]) => {
 
 const replace: RegisteredRouterReplace = (source: string, ...args: any[]) => {
   if (isUrl(source)) {
-    const options: RouterPushOptions = { ...args[1], replace: true }
-    throw new RouterPushError([source, options])
+    const [options] = args
+    throw new RouterPushError([source, { ...options, replace: true }])
   }
 
-  const options: RouterPushOptions = { ...args[2], replace: true }
-  throw new RouterPushError([source, args[1], options])
+  const [params, options] = args
+  throw new RouterPushError([source, params, { ...options, replace: true }])
 }
 
 const abort: RouteHookAbort = () => {
