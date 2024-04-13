@@ -4,7 +4,6 @@ import { AfterRouteHook, AfterRouteHookResponse, BeforeRouteHook, BeforeRouteHoo
 import { RegisteredRouterPush, RegisteredRouterReplace } from '@/types/register'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouterReject } from '@/types/router'
-import { RouterPushOptions } from '@/types/routerPush'
 import { isUrl } from '@/types/url'
 import { getAfterRouteHooksFromRoutes, getBeforeRouteHooksFromRoutes } from '@/utilities/getRouteHooks'
 
@@ -136,11 +135,11 @@ const push: RegisteredRouterPush = (source: string, ...args: any[]) => {
 const replace: RegisteredRouterReplace = (source: string, ...args: any[]) => {
   if (isUrl(source)) {
     const [options] = args
-    throw new RouterPushError([source, { ...options, replace: true }])
+    throw new RouterPushError([source, { ...options ?? {}, replace: true }])
   }
 
   const [params, options] = args
-  throw new RouterPushError([source, params, { ...options, replace: true }])
+  throw new RouterPushError([source, params, { ...options ?? {}, replace: true }])
 }
 
 const abort: RouteHookAbort = () => {
