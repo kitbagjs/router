@@ -1,14 +1,11 @@
 import { NavigationAbortError, RouterPushError, RouterRejectionError } from '@/errors'
 import { RouteHookStore } from '@/models/RouteHookStore'
 import { AfterRouteHook, AfterRouteHookResponse, BeforeRouteHook, BeforeRouteHookResponse, RouteHookAbort, RouteHookLifecycle } from '@/types/hooks'
-import { RegisteredRouterPush } from '@/types/register'
+import { RegisteredRouterPush, RegisteredRouterReplace } from '@/types/register'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouterReject } from '@/types/router'
-import { PushRouteWithParamsArgs, RouterPushOptions } from '@/types/routerPush'
-import { ReplaceRouteWithParamsArgs, RouterReplaceOptions } from '@/types/routerReplace'
-import { RouterRoutes } from '@/types/routerRoute'
-import { RoutesMap } from '@/types/routesMap'
-import { Url, isUrl } from '@/types/url'
+import { RouterPushOptions } from '@/types/routerPush'
+import { isUrl } from '@/types/url'
 import { getAfterRouteHooksFromRoutes, getBeforeRouteHooksFromRoutes } from '@/utilities/getRouteHooks'
 
 type BeforeContext = {
@@ -132,22 +129,18 @@ const reject: RouterReject = (type) => {
   throw new RouterRejectionError(type)
 }
 
-function push<TRoutes extends RouterRoutes, TRouteKey extends keyof RoutesMap<TRoutes>>(...args: [...PushRouteWithParamsArgs<TRoutes, TRouteKey>, options?: RouterPushOptions | undefined]): Promise<void>
-function push(source: Url, options?: RouterPushOptions): Promise<void>
-function push(source: string, paramsOrOptions?: Record<string, unknown>, maybeOptions?: RouterPushOptions): Promise<void> {
-  throw new RouterPushError([source, paramsOrOptions, maybeOptions])
+const push: RegisteredRouterPush = (source: string, ...args: any[]) => {
+  throw new RouterPushError([source, ...args])
 }
 
-function replace<TRoutes extends RouterRoutes, TRouteKey extends keyof RoutesMap<TRoutes>>(...args: [...ReplaceRouteWithParamsArgs<TRoutes, TRouteKey>, options?: RouterReplaceOptions | undefined]): Promise<void>
-function replace(source: Url, options?: RouterReplaceOptions): Promise<void>
-function replace(source: string, paramsOrOptions?: Record<string, unknown>, maybeOptions?: RouterReplaceOptions): Promise<void> {
+const replace: RegisteredRouterReplace = (source: string, ...args: any[]) => {
   if (isUrl(source)) {
-    const options: RouterPushOptions = { ...paramsOrOptions, replace: true }
+    const options: RouterPushOptions = { ...args[1], replace: true }
     throw new RouterPushError([source, options])
   }
 
-  const options: RouterPushOptions = { ...maybeOptions, replace: true }
-  throw new RouterPushError([source, paramsOrOptions, options])
+  const options: RouterPushOptions = { ...args[2], replace: true }
+  throw new RouterPushError([source, args[1], options])
 }
 
 const abort: RouteHookAbort = () => {
