@@ -1,7 +1,6 @@
+import { RegisteredRouterPush, RegisteredRouterReplace } from '@/types/register'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouterReject } from '@/types/router'
-import { RegisteredRouterPush, RouterPushImplementation } from '@/types/routerPush'
-import { RegisteredRouterReplace } from '@/types/routerReplace'
 import { MaybePromise } from '@/types/utilities'
 import { RouterRejectionType } from '@/utilities/createRouterReject'
 
@@ -44,7 +43,7 @@ type RouteHookAbortResponse = {
 
 type RouteHookPushResponse = {
   status: 'PUSH',
-  to: Parameters<RouterPushImplementation>,
+  to: Parameters<RegisteredRouterPush>,
 }
 
 type RouteHookRejectResponse = {

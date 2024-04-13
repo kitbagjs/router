@@ -1,15 +1,14 @@
-import { RegisteredRoutes, RouterRoutes } from '@/types'
 import { RouterPushOptions } from '@/types/routerPush'
-import { RouteWithParams, RouteWithParamsImplementation } from '@/types/routeWithParams'
+import { RouterRoutes } from '@/types/routerRoute'
+import { RoutesMap } from '@/types/routesMap'
+import { RouteWithParamsArgs } from '@/types/routeWithParams'
+import { Url } from '@/types/url'
 
 export type RouterReplaceOptions = Omit<RouterPushOptions, 'replace'>
 
-export type RouterReplace<
-  TRoutes extends RouterRoutes
-> = <
-  TRoutePath extends string
->(source: string | RouteWithParams<TRoutes, TRoutePath>, options?: RouterPushOptions) => Promise<void>
+export type ReplaceRouteWithParamsArgs<TRoutes extends RouterRoutes, TRouteKey extends string> = [...RouteWithParamsArgs<TRoutes, TRouteKey>, options?: RouterReplaceOptions | undefined]
 
-export type RegisteredRouterReplace = RouterReplace<RegisteredRoutes>
-
-export type RouterReplaceImplementation = (source: string | RouteWithParamsImplementation, options?: RouterReplaceOptions) => Promise<void>
+export type RouterReplace<TRoutes extends RouterRoutes> = {
+  <TRouteKey extends keyof RoutesMap<TRoutes>>(...args: [source: TRouteKey, ...ReplaceRouteWithParamsArgs<TRoutes, TRouteKey>, options?: RouterReplaceOptions | undefined]): Promise<void>,
+  (source: Url, options?: RouterReplaceOptions): Promise<void>,
+}

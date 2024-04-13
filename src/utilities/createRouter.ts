@@ -1,15 +1,17 @@
 import { App, readonly } from 'vue'
 import { RouterLink, RouterView } from '@/components'
 import { routerInjectionKey, routerRejectionKey } from '@/compositions'
-import { Router, RouterOptions, RouterImplementation, RouterReject, RouterRoutes } from '@/types'
-import { RouterPushImplementation } from '@/types/routerPush'
-import { RouterReplaceImplementation } from '@/types/routerReplace'
+import { Router, RouterOptions, RouterReject } from '@/types/router'
+import { RouterPush, RouterPushOptions } from '@/types/routerPush'
+import { RouterReplace } from '@/types/routerReplace'
+import { RouterRoutes } from '@/types/routerRoute'
+import { isUrl } from '@/types/url'
 import { createCurrentRoute } from '@/utilities/createCurrentRoute'
 import { createRouterFind } from '@/utilities/createRouterFind'
 import { createRouterHistory } from '@/utilities/createRouterHistory'
 import { routeHookStoreKey, createRouterHooks } from '@/utilities/createRouterHooks'
 import { createRouterReject } from '@/utilities/createRouterReject'
-import { createRouterResolve } from '@/utilities/createRouterResolve'
+import { createRouterResolve, resolve } from '@/utilities/createRouterResolve'
 import { getInitialUrl } from '@/utilities/getInitialUrl'
 import { getResolvedRouteForUrl } from '@/utilities/getResolvedRouteForUrl'
 import { runAfterRouteHooks, runBeforeRouteHooks } from '@/utilities/hooks'
@@ -19,7 +21,6 @@ type RouterUpdateOptions = {
 }
 
 export function createRouter<const T extends RouterRoutes>(routes: T, options: RouterOptions = {}): Router<T> {
-  const resolve = createRouterResolve(routes)
   const history = createRouterHistory({ mode: options.historyMode })
   const {
     hooks,
@@ -89,21 +90,23 @@ export function createRouter<const T extends RouterRoutes>(routes: T, options: R
     }
   }
 
-  const push: RouterPushImplementation = (source, options) => {
-    const url = resolve(source, options)
+  const push: RouterPush<T> = (source: string, ...args: any[]): Promise<void> => {
+    const options: RouterPushOptions = (isUrl(source) ? args[1] : args[2]) ?? {}
+    const url = resolve(routes as any, source, ...args)
 
-    return update(url, { replace: options?.replace })
+    return update(url, { replace: options.replace })
   }
 
-  const replace: RouterReplaceImplementation = (source, options) => {
-    return push(source, { ...options, replace: true })
+  const replace: RouterReplace<T> = (source: string, ...args: any[]): Promise<void> => {
+    const url = resolve(routes as any, source, ...args)
+
+    return update(url, { replace: true })
   }
 
   const reject: RouterReject = (type) => {
     return setRejection(type)
   }
 
-  const find = createRouterFind({ routes, resolve })
   const { setRejection, rejection, getRejectionRoute } = createRouterReject(options)
   const notFoundRoute = getRejectionRoute('NotFound')
   const { route, updateRoute } = createCurrentRoute(notFoundRoute)
@@ -119,13 +122,13 @@ export function createRouter<const T extends RouterRoutes>(routes: T, options: R
     app.provide(routeHookStoreKey, hooks)
   }
 
-  const router: RouterImplementation = {
+  const router = {
     route: readonly(route),
-    resolve,
+    resolve: createRouterResolve(routes),
+    find: createRouterFind(routes),
     push,
     replace,
     reject,
-    find,
     refresh: history.refresh,
     forward: history.forward,
     back: history.back,
@@ -140,5 +143,5 @@ export function createRouter<const T extends RouterRoutes>(routes: T, options: R
     onAfterRouteLeave,
   }
 
-  return router as any
+  return router
 }

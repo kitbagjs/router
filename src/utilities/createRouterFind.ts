@@ -1,26 +1,23 @@
 import { ResolvedRoute } from '@/types/resolved'
 import { RouterRoutes } from '@/types/routerRoute'
-import { RouteWithParams, RouteWithParamsImplementation } from '@/types/routeWithParams'
-import { RouterResolveImplementation } from '@/utilities/createRouterResolve'
+import { RouteWithParamsArgs } from '@/types/routeWithParams'
+import { Url } from '@/types/url'
+import { resolve } from '@/utilities/createRouterResolve'
 import { getResolvedRouteForUrl } from '@/utilities/getResolvedRouteForUrl'
 
-export type RouterFind<
-  TRoutes extends RouterRoutes
-> = <
-  TRoutePath extends string
->(source: string | RouteWithParams<TRoutes, TRoutePath>) => ResolvedRoute | undefined
-
-export type RouterFindImplementation = (source: string | RouteWithParamsImplementation) => ResolvedRoute | undefined
-
-type CreateRouterFindContext = {
-  routes: RouterRoutes,
-  resolve: RouterResolveImplementation,
+export type RouterFind<TRoutes extends RouterRoutes> = {
+  <TRouteKey extends string>(source: TRouteKey, ...args: RouteWithParamsArgs<TRoutes, TRouteKey>): ResolvedRoute | undefined,
+  (source: Url): ResolvedRoute | undefined,
 }
 
-export function createRouterFind({ routes, resolve }: CreateRouterFindContext): RouterFindImplementation {
-  return (source) => {
-    const url = resolve(source)
+export function createRouterFind<TRoutes extends RouterRoutes>(routes: TRoutes): RouterFind<TRoutes> {
+  return (source: string, ...args: any[]) => find(routes as any, source, ...args)
+}
 
-    return getResolvedRouteForUrl(routes, url)
-  }
+export function find<TRoutes extends RouterRoutes, TRouteKey extends string>(routes: TRoutes, ...args: RouteWithParamsArgs<TRoutes, TRouteKey>): ResolvedRoute | undefined
+export function find(routes: RouterRoutes, source: Url): ResolvedRoute | undefined
+export function find(routes: RouterRoutes, source: string, maybeParams?: Record<string, unknown>): ResolvedRoute | undefined {
+  const url = resolve(routes as any, source, maybeParams)
+
+  return getResolvedRouteForUrl(routes, url)
 }

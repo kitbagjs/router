@@ -51,7 +51,7 @@ test.each([
     {
       name: 'routeA',
       path: '/routeA',
-      component: { render: () => h(routerLink, { to: 'routeB', replace }) },
+      component: { render: () => h(routerLink, { to: 'routeB' as any, replace }) },
     },
     {
       name: 'routeB',

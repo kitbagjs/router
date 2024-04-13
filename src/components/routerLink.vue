@@ -4,15 +4,23 @@
   </a>
 </template>
 
-<script setup lang="ts" generic="T extends keyof RegisteredRouteMap">
+<script setup lang="ts" generic="T extends keyof RegisteredRouteMap | Url">
   import { computed, readonly } from 'vue'
   import { useRouter } from '@/compositions'
-  import { RegisteredRouteMap, RegisteredRouteWithParams } from '@/types/register'
-  import { RouterPushOptions } from '@/types/routerPush'
+  import { AllPropertiesAreOptional, Param, RouteParamsByName } from '@/types'
+  import { RegisteredRouteMap, RegisteredRoutes } from '@/types/register'
+  import { Url } from '@/types/url'
 
-  const props = defineProps<{
-    to: string | RegisteredRouteWithParams<T>,
-  } & RouterPushOptions>()
+  export type RouterLinkProps<
+    TSource extends string,
+    TRouteParams extends Record<string, Param> = RouteParamsByName<RegisteredRoutes, TSource>
+  > = TSource extends Url
+    ? { to: TSource }
+    : AllPropertiesAreOptional<TRouteParams> extends true
+    ? { to: TSource, params?: TRouteParams }
+    : { to: TSource, params: TRouteParams }
+
+  const props = defineProps<RouterLinkProps<T>>()
 
   defineSlots<{
     default?: (props: {

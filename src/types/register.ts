@@ -1,4 +1,6 @@
 import { Router } from '@/types/router'
+import { RouterPush } from '@/types/routerPush'
+import { RouterReplace } from '@/types/routerReplace'
 import { RouterRoutes } from '@/types/routerRoute'
 import { RoutesMap } from '@/types/routesMap'
 import { RouteWithParams } from '@/types/routeWithParams'
@@ -28,3 +30,6 @@ export type RegisteredRouterState = Register extends { state: infer TState }
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-arguments
 export type RegisteredRouteMap = RoutesMap<RegisteredRoutes>
 export type RegisteredRouteWithParams<T extends keyof RegisteredRouteMap> = RouteWithParams<RegisteredRoutes, T>
+
+export type RegisteredRouterPush = RouterPush<RegisteredRoutes>
+export type RegisteredRouterReplace = RouterReplace<RegisteredRoutes>
