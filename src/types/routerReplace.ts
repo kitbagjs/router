@@ -8,7 +8,7 @@ export type RouterReplaceOptions = Omit<RouterPushOptions, 'replace'>
 export type RouterReplace<
   TRoutes extends RouterRoutes
 > = {
-  <TSource extends RouteKeysThatHaveOptionalParams<TRoutes>>(source: TSource, params?: RouteParamsByName<TRoutes, TSource>, options?: RouterPushOptions): Promise<void>,
-  <TSource extends RouteKeysThatHaveRequireParams<TRoutes>>(source: TSource, params: RouteParamsByName<TRoutes, TSource>, options?: RouterPushOptions): Promise<void>,
-  (source: Url, options?: RouterPushOptions): Promise<void>,
+  <TSource extends RouteKeysThatHaveOptionalParams<TRoutes>>(source: TSource, params?: RouteParamsByName<TRoutes, TSource>, options?: RouterReplaceOptions): Promise<void>,
+  <TSource extends RouteKeysThatHaveRequireParams<TRoutes>>(source: TSource, params: RouteParamsByName<TRoutes, TSource>, options?: RouterReplaceOptions): Promise<void>,
+  (source: Url, options?: RouterReplaceOptions): Promise<void>,
 }
