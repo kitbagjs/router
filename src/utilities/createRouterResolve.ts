@@ -1,6 +1,7 @@
 import { RouterRoutes } from '@/types/routerRoute'
-import { RouteWithParams } from '@/types/routeWithParams'
-import { isRecord } from '@/utilities/guards'
+import { RoutesKey } from '@/types/routesMap'
+import { RouteKeysThatHaveOptionalParams, RouteKeysThatHaveRequireParams, RouteParamsByName } from '@/types/routeWithParams'
+import { isUrl, Url } from '@/types/url'
 import { assembleUrl } from '@/utilities/urlAssembly'
 
 export type RouterResolveOptions = {
@@ -9,36 +10,55 @@ export type RouterResolveOptions = {
 
 export type RouterResolve<
   TRoutes extends RouterRoutes
-> = <
-  TRoutePath extends string
->(source: string | RouteWithParams<TRoutes, TRoutePath>, options?: RouterResolveOptions) => string
+> = {
+  <TSource extends RouteKeysThatHaveOptionalParams<TRoutes>>(source: TSource, params?: RouteParamsByName<TRoutes, TSource>, options?: RouterResolveOptions): string,
+  <TSource extends RouteKeysThatHaveRequireParams<TRoutes>>(source: TSource, params: RouteParamsByName<TRoutes, TSource>, options?: RouterResolveOptions): string,
+  (source: Url, options?: RouterResolveOptions): string,
+}
 
-export function createRouterResolve<const T extends RouterRoutes>(routes: T): RouterResolve<T> {
-  return (source, options) => {
-    if (typeof source === 'string') {
+export function createRouterResolve<const TRoutes extends RouterRoutes>(routes: TRoutes): RouterResolve<TRoutes> {
+  function resolve<TSource extends RouteKeysThatHaveRequireParams<TRoutes>>(
+    source: TSource,
+    params: RouteParamsByName<TRoutes, TSource>,
+    options?: RouterResolveOptions
+  ): string
+  function resolve<TSource extends RouteKeysThatHaveOptionalParams<TRoutes>>(
+    source: TSource,
+    params?: RouteParamsByName<TRoutes, TSource>,
+    options?: RouterResolveOptions
+  ): string
+  function resolve(
+    source: Url,
+    options?: RouterResolveOptions
+  ): string
+  function resolve<TRoutes extends RouterRoutes, TSource extends Url | RoutesKey<TRoutes>>(
+    source: TSource,
+    paramsOrOptions?: Record<string, unknown>,
+    maybeOptions?: RouterResolveOptions,
+  ): string {
+    if (isUrl(source)) {
       return source
     }
 
-    if (isRecord(source)) {
-      const match = routes.find((route) => route.name === source.route)
+    const params = paramsOrOptions ?? {}
+    const options: RouterResolveOptions = maybeOptions ?? {}
+    const match = routes.find((route) => route.name === source)
 
-      if (!match) {
-        throw `Route not found: "${String(source)}"`
-      }
-
-      if (match.matched.disabled) {
-        throw `Route disabled: "${String(source)}"`
-      }
-
-      const url = assembleUrl(match, {
-        params: source.params ?? {},
-        query: options?.query,
-      })
-
-      return url
+    if (!match) {
+      throw `Route not found: "${String(source)}"`
     }
 
-    const exhaustive: never = source
-    throw new Error(`Unhandled router push overload: ${JSON.stringify(exhaustive)}`)
+    if (match.matched.disabled) {
+      throw `Route disabled: "${String(source)}"`
+    }
+
+    const url = assembleUrl(match, {
+      params,
+      query: options.query,
+    })
+
+    return url
   }
+
+  return resolve
 }
