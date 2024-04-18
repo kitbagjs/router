@@ -1,25 +1,29 @@
 import { ResolvedRoute } from '@/types/resolved'
 import { RouterRoutes } from '@/types/routerRoute'
 import { RoutesKey } from '@/types/routesMap'
-import { RouteKeysThatHaveOptionalParams, RouteKeysThatHaveRequireParams, RouteParamsByName } from '@/types/routeWithParams'
+import { RouteParamsByName } from '@/types/routeWithParams'
 import { Url } from '@/types/url'
+import { AllPropertiesAreOptional } from '@/types/utilities'
 import { createRouterResolve } from '@/utilities/createRouterResolve'
 import { getResolvedRouteForUrl } from '@/utilities/getResolvedRouteForUrl'
+
+type RouterFindArgs<
+  TRoutes extends RouterRoutes,
+  TSource extends string & keyof RoutesKey<TRoutes>,
+  TParams = RouteParamsByName<TRoutes, TSource>
+> = AllPropertiesAreOptional<TParams> extends true
+  ? [params?: TParams]
+  : [params: TParams]
 
 export type RouterFind<
   TRoutes extends RouterRoutes
 > = {
-  <TSource extends RouteKeysThatHaveRequireParams<TRoutes>>(source: TSource, params: RouteParamsByName<TRoutes, TSource>): ResolvedRoute | undefined,
-  <TSource extends RouteKeysThatHaveOptionalParams<TRoutes>>(source: TSource, params?: RouteParamsByName<TRoutes, TSource>): ResolvedRoute | undefined,
+  <TSource extends RoutesKey<TRoutes>>(source: TSource, ...args: RouterFindArgs<TRoutes, TSource>): ResolvedRoute | undefined,
   (source: Url): ResolvedRoute | undefined,
 }
 
 export function createRouterFind<const TRoutes extends RouterRoutes>(routes: TRoutes): RouterFind<TRoutes> {
-  function find<TSource extends RouteKeysThatHaveRequireParams<TRoutes>>(
-    source: TSource,
-    params: RouteParamsByName<TRoutes, TSource>
-  ): ResolvedRoute | undefined
-  function find<TSource extends RouteKeysThatHaveOptionalParams<TRoutes>>(
+  function find<TSource extends RoutesKey<TRoutes>>(
     source: TSource,
     params?: RouteParamsByName<TRoutes, TSource>
   ): ResolvedRoute | undefined

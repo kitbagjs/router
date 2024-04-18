@@ -2,12 +2,10 @@ import { App, readonly } from 'vue'
 import { RouterLink, RouterView } from '@/components'
 import { routerInjectionKey, routerRejectionKey } from '@/compositions'
 import { Router, RouterOptions, RouterReject } from '@/types/router'
-import { RouterPushOptions } from '@/types/routerPush'
-import { RouterReplaceOptions } from '@/types/routerReplace'
+import { RouterPush, RouterPushOptions } from '@/types/routerPush'
+import { RouterReplace } from '@/types/routerReplace'
 import { RouterRoutes } from '@/types/routerRoute'
-import { RoutesKey } from '@/types/routesMap'
-import { RouteKeysThatHaveRequireParams, RouteParamsByName } from '@/types/routeWithParams'
-import { Url, isUrl } from '@/types/url'
+import { isUrl } from '@/types/url'
 import { createCurrentRoute } from '@/utilities/createCurrentRoute'
 import { createRouterFind } from '@/utilities/createRouterFind'
 import { createRouterHistory } from '@/utilities/createRouterHistory'
@@ -94,50 +92,14 @@ export function createRouter<const T extends RouterRoutes>(routes: T, options: R
     }
   }
 
-  function push<TSource extends RouteKeysThatHaveRequireParams<T>>(
-    source: TSource,
-    params: RouteParamsByName<T, TSource>,
-    options?: RouterPushOptions
-  ): Promise<void>
-  function push<TSource extends RoutesKey<T>>(
-    source: TSource,
-    params?: RouteParamsByName<T, TSource>,
-    options?: RouterPushOptions
-  ): Promise<void>
-  function push(
-    source: Url,
-    options?: RouterPushOptions
-  ): Promise<void>
-  function push(
-    source: any,
-    paramsOrOptions?: any,
-    maybeOptions?: RouterPushOptions,
-  ): Promise<void> {
+  const push: RouterPush<T> = (source: any, paramsOrOptions?: any, maybeOptions?: any) => {
     const options: RouterPushOptions = (isUrl(source) ? paramsOrOptions : maybeOptions) ?? {}
     const url = resolve(source, paramsOrOptions, maybeOptions)
 
     return update(url, { replace: options.replace })
   }
 
-  function replace<TSource extends RouteKeysThatHaveRequireParams<T>>(
-    source: TSource,
-    params: RouteParamsByName<T, TSource>,
-    options?: RouterReplaceOptions
-  ): Promise<void>
-  function replace<TSource extends RoutesKey<T>>(
-    source: TSource,
-    params?: RouteParamsByName<T, TSource>,
-    options?: RouterReplaceOptions
-  ): Promise<void>
-  function replace(
-    source: Url,
-    options?: RouterReplaceOptions
-  ): Promise<void>
-  function replace<TSource extends Url | RoutesKey<T>>(
-    source: TSource,
-    paramsOrOptions?: Record<string, unknown> | RouterPushOptions,
-    maybeOptions?: RouterReplaceOptions,
-  ): Promise<void> {
+  const replace: RouterReplace<T> = (source: any, paramsOrOptions?: any, maybeOptions?: any) => {
     if (isUrl(source)) {
       const options: RouterPushOptions = paramsOrOptions ?? {}
       return push(source, { ...options, replace: true })

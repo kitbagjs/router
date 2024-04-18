@@ -4,7 +4,7 @@ import { UseRouteInvalidError } from '@/errors'
 import { RegisteredRouteMap, ResolvedRoute } from '@/types'
 import { combineName } from '@/utilities/combineName'
 
-export function useRoute<TRouteName extends keyof RegisteredRouteMap>(routeName: TRouteName): DeepReadonly<ResolvedRoute<TRouteName>>
+export function useRoute<TRouteName extends string & keyof RegisteredRouteMap>(routeName: TRouteName): DeepReadonly<ResolvedRoute<RegisteredRouteMap[TRouteName]>>
 export function useRoute(): DeepReadonly<ResolvedRoute>
 export function useRoute(routeName?: string): DeepReadonly<ResolvedRoute> {
   const router = useRouter()

@@ -4,7 +4,7 @@
   </a>
 </template>
 
-<script setup lang="ts" generic="T extends keyof RegisteredRouteMap | Url">
+<script setup lang="ts" generic="T extends string & keyof RegisteredRouteMap | Url">
   import { computed, readonly } from 'vue'
   import { useRouter } from '@/compositions'
   import { RegisteredRouteMap, RegisteredRoutes } from '@/types/register'

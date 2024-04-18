@@ -52,7 +52,7 @@ test.each([
     {
       name: 'routeA',
       path: '/routeA',
-      component: { render: () => h(routerLink, { to: '/routeB', replace }) },
+      component: { render: () => h(routerLink, { to: 'routeB', replace }) },
     },
     {
       name: 'routeB',
@@ -81,9 +81,9 @@ test.each([
 
   app.find('a').trigger('click')
 
-  const [, arg2] = spy.mock.lastCall ?? []
+  const [, , options] = spy.mock.lastCall ?? []
 
-  expect(arg2).toMatchObject({ replace, query: undefined })
+  expect(options).toMatchObject({ replace, query: undefined })
 })
 
 test('to prop as string renders and routes correctly', () => {
