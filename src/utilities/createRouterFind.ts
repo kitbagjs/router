@@ -23,22 +23,15 @@ export type RouterFind<
 }
 
 export function createRouterFind<const TRoutes extends RouterRoutes>(routes: TRoutes): RouterFind<TRoutes> {
-  function find<TSource extends RoutesKey<TRoutes>>(
-    source: TSource,
-    params?: RouteParamsByName<TRoutes, TSource>
-  ): ResolvedRoute | undefined
-  function find(
-    source: Url
-  ): ResolvedRoute | undefined
-  function find<TRoutes extends RouterRoutes, TSource extends Url | RoutesKey<TRoutes>>(
+
+  return <TRoutes extends RouterRoutes, TSource extends Url | RoutesKey<TRoutes>>(
     source: TSource,
     params: Record<PropertyKey, unknown> = {},
-  ): ResolvedRoute | undefined {
+  ): ResolvedRoute | undefined => {
     const resolve = createRouterResolve(routes)
     const url = resolve(source, params)
 
     return getResolvedRouteForUrl(routes, url)
   }
 
-  return find
 }

@@ -25,20 +25,12 @@ export type RouterResolve<
 }
 
 export function createRouterResolve<const TRoutes extends RouterRoutes>(routes: TRoutes): RouterResolve<TRoutes> {
-  function resolve<TSource extends RoutesKey<TRoutes>>(
-    source: TSource,
-    params?: RouteParamsByName<TRoutes, TSource>,
-    options?: RouterResolveOptions
-  ): string
-  function resolve(
-    source: Url,
-    options?: RouterResolveOptions
-  ): string
-  function resolve<TRoutes extends RouterRoutes, TSource extends Url | RoutesKey<TRoutes>>(
+
+  return <TRoutes extends RouterRoutes, TSource extends Url | RoutesKey<TRoutes>>(
     source: TSource,
     paramsOrOptions?: Record<string, unknown>,
     maybeOptions?: RouterResolveOptions,
-  ): string {
+  ): string => {
     if (isUrl(source)) {
       return source
     }
@@ -63,5 +55,4 @@ export function createRouterResolve<const TRoutes extends RouterRoutes>(routes: 
     return url
   }
 
-  return resolve
 }
