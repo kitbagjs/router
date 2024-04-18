@@ -22,12 +22,13 @@ test('renders an anchor tag with the correct href and slot content', () => {
     initialUrl: path,
   })
 
-  const to = { route: 'parent', params: { paramName: paramValue } } as any
+  const props = {
+    to: 'parent',
+    params: { paramName: paramValue },
+  } as any
 
   const wrapper = mount(routerLink, {
-    props: {
-      to,
-    },
+    props,
     slots: {
       default: content,
     },
@@ -80,9 +81,9 @@ test.each([
 
   app.find('a').trigger('click')
 
-  const [, arg2] = spy.mock.lastCall ?? []
+  const [, , options] = spy.mock.lastCall ?? []
 
-  expect(arg2).toMatchObject({ replace, query: undefined })
+  expect(options).toMatchObject({ replace, query: undefined })
 })
 
 test('to prop as string renders and routes correctly', () => {

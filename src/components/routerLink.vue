@@ -4,14 +4,17 @@
   </a>
 </template>
 
-<script setup lang="ts" generic="T extends keyof RegisteredRouteMap">
+<script setup lang="ts" generic="T extends string & keyof RegisteredRouteMap | Url">
   import { computed, readonly } from 'vue'
   import { useRouter } from '@/compositions'
-  import { RegisteredRouteMap, RegisteredRouteWithParams } from '@/types/register'
+  import { RegisteredRouteMap, RegisteredRoutes } from '@/types/register'
   import { RouterPushOptions } from '@/types/routerPush'
+  import { RouteParamsByName } from '@/types/routeWithParams'
+  import { Url, isUrl } from '@/types/url'
 
   const props = defineProps<{
-    to: string | RegisteredRouteWithParams<T>,
+    to: T,
+    params?: T extends keyof RegisteredRouteMap ? RouteParamsByName<RegisteredRoutes, T> : undefined,
   } & RouterPushOptions>()
 
   defineSlots<{
@@ -25,7 +28,12 @@
 
   const router = useRouter()
 
-  const route = computed(() => router.find(props.to)?.matched)
+  const route = computed(() => {
+    const { to, params, ...options } = props
+    const args = isUrl(to) ? [options] : [params, options]
+
+    return router.find(to, ...args)?.matched
+  })
 
   const match = computed(() => !!route.value && router.route.matches.includes(readonly(route.value)))
   const exactMatch = computed(() => !!route.value && router.route.matched === route.value)
@@ -35,7 +43,12 @@
     'router-link--exact-match': exactMatch.value,
   }))
 
-  const resolved = computed(() => router.resolve(props.to))
+  const resolved = computed(() => {
+    const { to, params, ...options } = props
+    const args = isUrl(to) ? [options] : [params, options]
+
+    return router.resolve(to, ...args)
+  })
   const host = computed(() => {
     const { host } = new URL(resolved.value, window.location.origin)
 
@@ -46,8 +59,9 @@
   function onClick(event: MouseEvent): void {
     event.preventDefault()
 
-    const { to, ...options } = props
+    const { to, params, ...options } = props
+    const args = isUrl(to) ? [options] : [params, options]
 
-    router.push(to, options)
+    router.push(to, ...args)
   }
 </script>

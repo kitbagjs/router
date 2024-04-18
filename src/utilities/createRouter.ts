@@ -1,9 +1,12 @@
 import { App, readonly } from 'vue'
 import { RouterLink, RouterView } from '@/components'
 import { routerInjectionKey, routerRejectionKey } from '@/compositions'
-import { Router, RouterOptions, RouterReject, RouterRoutes } from '@/types'
-import { RouterPush } from '@/types/routerPush'
-import { RouterReplace } from '@/types/routerReplace'
+import { RoutesKey } from '@/types'
+import { Router, RouterOptions, RouterReject } from '@/types/router'
+import { RouterPush, RouterPushOptions } from '@/types/routerPush'
+import { RouterReplace, RouterReplaceOptions } from '@/types/routerReplace'
+import { RouterRoutes } from '@/types/routerRoute'
+import { Url, isUrl } from '@/types/url'
 import { createCurrentRoute } from '@/utilities/createCurrentRoute'
 import { createRouterFind } from '@/utilities/createRouterFind'
 import { createRouterHistory } from '@/utilities/createRouterHistory'
@@ -90,21 +93,39 @@ export function createRouter<const T extends RouterRoutes>(routes: T, options: R
     }
   }
 
-  const push: RouterPush<T> = (source, options) => {
-    const url = resolve(source, options)
+  const push: RouterPush<T> = (source: Url | RoutesKey<T>, paramsOrOptions?: Record<string, unknown> | RouterPushOptions, maybeOptions?: RouterPushOptions) => {
+    if (isUrl(source)) {
+      const options: RouterPushOptions = { ...paramsOrOptions }
+      const url = resolve(source, options)
 
-    return update(url, { replace: options?.replace })
+      return update(url, { replace: options.replace })
+    }
+
+    const options: RouterPushOptions = { ...maybeOptions }
+    const params: any = paramsOrOptions ?? {}
+    const url = resolve(source, params, options)
+
+    return update(url, { replace: options.replace })
   }
 
-  const replace: RouterReplace<T> = (source, options) => {
-    return push(source, { ...options, replace: true })
+  const replace: RouterReplace<T> = (source: Url | RoutesKey<T>, paramsOrOptions?: Record<string, unknown> | RouterReplaceOptions, maybeOptions?: RouterReplaceOptions) => {
+    if (isUrl(source)) {
+      const options: RouterPushOptions = { ...paramsOrOptions, replace: true }
+
+      return push(source, options)
+    }
+
+    const params: any = paramsOrOptions ?? {}
+    const options: RouterPushOptions = { ...maybeOptions, replace: true }
+
+    return push(source, params, options)
   }
 
   const reject: RouterReject = (type) => {
     return setRejection(type)
   }
 
-  const find = createRouterFind({ routes, resolve })
+  const find = createRouterFind(routes)
   const { setRejection, rejection, getRejectionRoute } = createRouterReject(options)
   const notFoundRoute = getRejectionRoute('NotFound')
   const { route, updateRoute } = createCurrentRoute(notFoundRoute)

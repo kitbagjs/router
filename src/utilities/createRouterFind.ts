@@ -1,24 +1,37 @@
 import { ResolvedRoute } from '@/types/resolved'
 import { RouterRoutes } from '@/types/routerRoute'
-import { RouteWithParams } from '@/types/routeWithParams'
-import { RouterResolve } from '@/utilities/createRouterResolve'
+import { RoutesKey } from '@/types/routesMap'
+import { RouteParamsByName } from '@/types/routeWithParams'
+import { Url } from '@/types/url'
+import { AllPropertiesAreOptional } from '@/types/utilities'
+import { createRouterResolve } from '@/utilities/createRouterResolve'
 import { getResolvedRouteForUrl } from '@/utilities/getResolvedRouteForUrl'
+
+type RouterFindArgs<
+  TRoutes extends RouterRoutes,
+  TSource extends string & keyof RoutesKey<TRoutes>,
+  TParams = RouteParamsByName<TRoutes, TSource>
+> = AllPropertiesAreOptional<TParams> extends true
+  ? [params?: TParams]
+  : [params: TParams]
 
 export type RouterFind<
   TRoutes extends RouterRoutes
-> = <
-  TRoutePath extends string
->(source: string | RouteWithParams<TRoutes, TRoutePath>) => ResolvedRoute | undefined
-
-type CreateRouterFindContext<T extends RouterRoutes> = {
-  routes: T,
-  resolve: RouterResolve<T>,
+> = {
+  <TSource extends RoutesKey<TRoutes>>(source: TSource, ...args: RouterFindArgs<TRoutes, TSource>): ResolvedRoute | undefined,
+  (source: Url): ResolvedRoute | undefined,
 }
 
-export function createRouterFind<const T extends RouterRoutes>({ routes, resolve }: CreateRouterFindContext<T>): RouterFind<T> {
-  return (source) => {
-    const url = resolve(source)
+export function createRouterFind<const TRoutes extends RouterRoutes>(routes: TRoutes): RouterFind<TRoutes> {
+
+  return <TRoutes extends RouterRoutes, TSource extends Url | RoutesKey<TRoutes>>(
+    source: TSource,
+    params: Record<PropertyKey, unknown> = {},
+  ): ResolvedRoute | undefined => {
+    const resolve = createRouterResolve(routes)
+    const url = resolve(source, params)
 
     return getResolvedRouteForUrl(routes, url)
   }
+
 }

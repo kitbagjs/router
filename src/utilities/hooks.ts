@@ -1,11 +1,13 @@
 import { NavigationAbortError, RouterPushError, RouterRejectionError } from '@/errors'
 import { RouteHookStore } from '@/models/RouteHookStore'
-import { RouterRoutes } from '@/types'
+import { isUrl } from '@/types'
 import { AfterRouteHook, AfterRouteHookResponse, BeforeRouteHook, BeforeRouteHookResponse, RouteHookAbort, RouteHookLifecycle } from '@/types/hooks'
+import { RegisteredRouterPush, RegisteredRouterReplace } from '@/types/register'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouterReject } from '@/types/router'
-import { RegisteredRouterPush, RouterPush } from '@/types/routerPush'
-import { RegisteredRouterReplace, RouterReplace } from '@/types/routerReplace'
+import { RouterPush, RouterPushOptions } from '@/types/routerPush'
+import { RouterReplace } from '@/types/routerReplace'
+import { RouterRoutes } from '@/types/routerRoute'
 import { getAfterRouteHooksFromRoutes, getBeforeRouteHooksFromRoutes } from '@/utilities/getRouteHooks'
 
 type RouteHookRunners<T extends RouterRoutes> = {
@@ -34,12 +36,19 @@ export function createRouteHookRunners<const T extends RouterRoutes>(): RouteHoo
     throw new RouterRejectionError(type)
   }
 
-  const push: RouterPush<T> = (...parameters) => {
-    throw new RouterPushError<T>(parameters)
+  const push: RouterPush<T> = (...parameters: any[]) => {
+    throw new RouterPushError(parameters)
   }
 
-  const replace: RouterReplace<T> = (to, options) => {
-    throw new RouterPushError<T>([to, { ...options, replace: true }])
+  const replace: RouterReplace<T> = (source: any, paramsOrOptions?: any, maybeOptions?: any) => {
+    if (isUrl(source)) {
+      const options: RouterPushOptions = paramsOrOptions ?? {}
+      throw new RouterPushError([source, { ...options, replace: true }])
+    }
+
+    const params = paramsOrOptions
+    const options: RouterPushOptions = maybeOptions ?? {}
+    throw new RouterPushError([source, params, { ...options, replace: true }])
   }
 
   const abort: RouteHookAbort = () => {
@@ -66,7 +75,7 @@ export function createRouteHookRunners<const T extends RouterRoutes>(): RouteHoo
         from,
         reject,
         push: push as RegisteredRouterPush,
-        replace: replace as RegisteredRouterReplace,
+        replace: replace as RegisteredRouterPush,
         abort,
       }))
 

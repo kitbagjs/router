@@ -3,29 +3,30 @@ import { createRouterResolve } from '@/utilities/createRouterResolve'
 import { createRoutes } from '@/utilities/createRouterRoutes'
 import { routes } from '@/utilities/testHelpers'
 
-test('given a string returns that string', () => {
+test('given a url returns that string', () => {
   const routerRoutes = createRoutes(routes)
   const resolve = createRouterResolve(routerRoutes)
 
   expect(resolve('/bar')).toBe('/bar')
 })
 
-test('given a route with params returns the url', () => {
+test('given a route key with params returns the url', () => {
   const routerRoutes = createRoutes(routes)
   const resolve = createRouterResolve(routerRoutes)
 
-  expect(resolve({ route: 'parentA', params: { paramA: 'bar' } })).toBe('/bar')
+  expect(resolve('parentA', { paramA: 'bar' })).toBe('/bar')
 })
 
-test('given a route and a query appends query to the url', () => {
+test('given a route key and a query appends query to the url', () => {
   const routerRoutes = createRoutes(routes)
+
   const resolve = createRouterResolve(routerRoutes)
-  const url = resolve({ route: 'parentA', params: { paramA: 'bar' } }, { query: { foo: 'foo' } })
+  const url = resolve('parentA', { paramA: 'bar' }, { query: { foo: 'foo' } })
 
   expect(url).toBe('/bar?foo=foo')
 })
 
-test('throws an error if route with params cannot be matched', () => {
+test('given a route key with params cannot be matched, throws an error', () => {
   const routerRoutes = createRoutes(routes)
   const resolve = createRouterResolve(routerRoutes)
 

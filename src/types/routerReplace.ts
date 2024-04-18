@@ -1,14 +1,23 @@
-import { RegisteredRoutes, RouterRoutes } from '@/types'
 import { RouterPushOptions } from '@/types/routerPush'
-import { RouteWithParams } from '@/types/routeWithParams'
+import { RouterRoutes } from '@/types/routerRoute'
+import { RoutesKey } from '@/types/routesMap'
+import { RouteParamsByName } from '@/types/routeWithParams'
+import { Url } from '@/types/url'
+import { AllPropertiesAreOptional } from '@/types/utilities'
 
 export type RouterReplaceOptions = Omit<RouterPushOptions, 'replace'>
 
+type RouterReplaceArgs<
+  TRoutes extends RouterRoutes,
+  TSource extends string & keyof RoutesKey<TRoutes>,
+  TParams = RouteParamsByName<TRoutes, TSource>
+> = AllPropertiesAreOptional<TParams> extends true
+  ? [params?: TParams, options?: RouterReplaceOptions]
+  : [params: TParams, options?: RouterReplaceOptions]
+
 export type RouterReplace<
   TRoutes extends RouterRoutes
-> = <
-  TRoutePath extends string
->(source: string | RouteWithParams<TRoutes, TRoutePath>, options?: RouterPushOptions) => Promise<void>
-
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-arguments
-export type RegisteredRouterReplace = RouterReplace<RegisteredRoutes>
+> = {
+  <TSource extends RoutesKey<TRoutes>>(source: TSource, ...args: RouterReplaceArgs<TRoutes, TSource>): Promise<void>,
+  (source: Url, options?: RouterReplaceOptions): Promise<void>,
+}
