@@ -1,9 +1,11 @@
+import { RouterPushOptions } from '@/types'
 import { Routes } from '@/types/route'
 import { RoutesKey } from '@/types/routesMap'
 import { RouteParamsByKey } from '@/types/routeWithParams'
 import { isUrl, Url } from '@/types/url'
 import { AllPropertiesAreOptional } from '@/types/utilities'
 import { assembleUrl } from '@/utilities/urlAssembly'
+import { withQuery } from '@/utilities/withQuery'
 
 export type RouterResolveOptions = {
   query?: Record<string, string>,
@@ -32,7 +34,9 @@ export function createRouterResolve<const TRoutes extends Routes>(routes: TRoute
     maybeOptions?: RouterResolveOptions,
   ): string => {
     if (isUrl(source)) {
-      return source
+      const options: RouterPushOptions = paramsOrOptions ?? {}
+
+      return withQuery(source, options.query)
     }
 
     const params = paramsOrOptions ?? {}
