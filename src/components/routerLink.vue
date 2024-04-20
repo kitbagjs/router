@@ -7,12 +7,13 @@
 <script setup lang="ts">
   import { computed, readonly } from 'vue'
   import { useRouter } from '@/compositions'
+  import { Url } from '@/types'
   import { RegisteredRouter } from '@/types/register'
   import { RouterPushOptions } from '@/types/routerPush'
 
   type ToCallback = (resolve: RegisteredRouter['resolve']) => string
 
-  const props = defineProps<{ to: string | ToCallback } & RouterPushOptions>()
+  const props = defineProps<{ to: Url | ToCallback } & RouterPushOptions>()
 
   defineSlots<{
     default?: (props: {
