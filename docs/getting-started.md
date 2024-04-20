@@ -85,8 +85,18 @@ Use RouterLink for navigating between routes.
 <template>
   ...
   <!-- router-link renders as <a> with href -->
-  <router-link :to="{ route: 'home' }">Go somewhere</router-link>
+  <router-link to="/">Go somewhere</router-link>
 </template>
 ```
 
 This component gives the router the power to change the URL without reloading the page.
+
+### Type Safety in RouterLink
+
+Rather than using a url in your router-link, you can utilize a push callback to have full type safety.
+
+```html
+<router-link :to="(push) => push('home')">Go somewhere</router-link>
+```
+
+this push method will suggest all available route keys for you, as well as prompt for any params required for the route selected.
