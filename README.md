@@ -131,7 +131,7 @@ Use RouterLink for navigating between routes.
 <template>
   ...
   <!-- router-link renders as <a> with href -->
-  <router-link :to="{ route: 'home' }">Go somewhere</router-link>
+  <router-link :to="(resolve) => resolve('home')">Go somewhere</router-link>
 </template>
 ```
 
