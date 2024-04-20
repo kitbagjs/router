@@ -1,6 +1,6 @@
 import { expect, test, vi } from 'vitest'
 import { ResolvedRoute } from '@/types/resolved'
-import { RouteProps } from '@/types/routes'
+import { RouteProps } from '@/types/routeProps'
 import { createResolvedRouteQuery } from '@/utilities/createResolvedRouteQuery'
 import { getBeforeRouteHooksFromRoutes } from '@/utilities/getRouteHooks'
 import { component } from '@/utilities/testHelpers'

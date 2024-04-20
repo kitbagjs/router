@@ -1,12 +1,12 @@
 import { describe, expectTypeOf, test } from 'vitest'
-import { ExtractRouterRouteParamTypes, RouterRoute } from '@/types/routerRoute'
+import { ExtractRouteParamTypes, Route } from '@/types/routerRoute'
 import { Path, Query } from '@/utilities'
 
-describe('ExtractRouterRouteParamTypes', () => {
+describe('ExtractRouteParamTypes', () => {
   test('given routes with different params, some optional, combines into expected args for developer', () => {
-    type Route = RouterRoute<'parentA', Path<'/:paramA', {}>, Query<'foo=:paramB&bar=:?paramC', { paramB: BooleanConstructor }>>
+    type TestRoute = Route<'parentA', Path<'/:paramA', {}>, Query<'foo=:paramB&bar=:?paramC', { paramB: BooleanConstructor }>>
 
-    type Source = ExtractRouterRouteParamTypes<Route>
+    type Source = ExtractRouteParamTypes<TestRoute>
     type Expect = { paramA: string, paramB: boolean, paramC?: string }
 
     expectTypeOf<Source>().toEqualTypeOf<Expect>()

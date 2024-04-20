@@ -1,10 +1,10 @@
 import { ExtractParamTypes, MergeParams, Param } from '@/types/params'
-import { RouteProps } from '@/types/routes'
+import { RouteProps } from '@/types/routeProps'
 import { Path, Query, ToPath, ToQuery } from '@/utilities'
 
-export type RouterRoutes = Readonly<RouterRoute[]>
+export type Routes = Readonly<Route[]>
 
-export type RouterRoute<
+export type Route<
   TName extends string | undefined = any,
   TPath extends string | Path = Path,
   TQuery extends string | Query | undefined = Query,
@@ -21,6 +21,6 @@ export type RouterRoute<
   disabled: TDisabled extends boolean ? TDisabled : false,
 }
 
-export type ExtractRouterRouteParamTypes<TRoute extends { pathParams: Record<string, unknown>, queryParams: Record<string, unknown> }> = TRoute extends { pathParams: infer PathParams extends Record<string, Param | undefined>, queryParams: infer QueryParams extends Record<string, Param | undefined> }
+export type ExtractRouteParamTypes<TRoute extends { pathParams: Record<string, unknown>, queryParams: Record<string, unknown> }> = TRoute extends { pathParams: infer PathParams extends Record<string, Param | undefined>, queryParams: infer QueryParams extends Record<string, Param | undefined> }
   ? ExtractParamTypes<MergeParams<PathParams, QueryParams>>
   : never

@@ -7,10 +7,10 @@ import { ResolvedRoute } from '@/types/resolved'
 import { RouterReject } from '@/types/router'
 import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { RouterReplace } from '@/types/routerReplace'
-import { RouterRoutes } from '@/types/routerRoute'
+import { Routes } from '@/types/routerRoute'
 import { getAfterRouteHooksFromRoutes, getBeforeRouteHooksFromRoutes } from '@/utilities/getRouteHooks'
 
-type RouteHookRunners<T extends RouterRoutes> = {
+type RouteHookRunners<T extends Routes> = {
   runBeforeRouteHooks: RouteHookBeforeRunner<T>,
   runAfterRouteHooks: RouteHookAfterRunner<T>,
 }
@@ -21,7 +21,7 @@ type BeforeContext = {
   hooks: RouteHookStore,
 }
 
-type RouteHookBeforeRunner<T extends RouterRoutes> = (context: BeforeContext) => Promise<BeforeRouteHookResponse<T>>
+type RouteHookBeforeRunner<T extends Routes> = (context: BeforeContext) => Promise<BeforeRouteHookResponse<T>>
 
 type AfterContext = {
   to: ResolvedRoute,
@@ -29,9 +29,9 @@ type AfterContext = {
   hooks: RouteHookStore,
 }
 
-type RouteHookAfterRunner<T extends RouterRoutes> = (context: AfterContext) => Promise<AfterRouteHookResponse<T>>
+type RouteHookAfterRunner<T extends Routes> = (context: AfterContext) => Promise<AfterRouteHookResponse<T>>
 
-export function createRouteHookRunners<const T extends RouterRoutes>(): RouteHookRunners<T> {
+export function createRouteHookRunners<const T extends Routes>(): RouteHookRunners<T> {
   const reject: RouterReject = (type) => {
     throw new RouterRejectionError(type)
   }
@@ -55,7 +55,7 @@ export function createRouteHookRunners<const T extends RouterRoutes>(): RouteHoo
     throw new NavigationAbortError()
   }
 
-  async function runBeforeRouteHooks<const T extends RouterRoutes>({ to, from, hooks }: BeforeContext): Promise<BeforeRouteHookResponse<T>> {
+  async function runBeforeRouteHooks<const T extends Routes>({ to, from, hooks }: BeforeContext): Promise<BeforeRouteHookResponse<T>> {
     const { global, component } = hooks
     const route = getBeforeRouteHooksFromRoutes(to, from)
 
@@ -110,7 +110,7 @@ export function createRouteHookRunners<const T extends RouterRoutes>(): RouteHoo
     }
   }
 
-  async function runAfterRouteHooks<const T extends RouterRoutes>({ to, from, hooks }: AfterContext): Promise<AfterRouteHookResponse<T>> {
+  async function runAfterRouteHooks<const T extends Routes>({ to, from, hooks }: AfterContext): Promise<AfterRouteHookResponse<T>> {
     const { global, component } = hooks
     const route = getAfterRouteHooksFromRoutes(to, from)
 

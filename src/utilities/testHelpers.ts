@@ -11,7 +11,7 @@ export const random = {
 
 export const component = { template: '<div>This is component</div>' }
 
-export const routes = createRoutes([
+export const routeProps = createRoutes([
   {
     name: 'parentA',
     path: '/:paramA',

@@ -1,4 +1,4 @@
-import { RouterRoutes } from '@/types/routerRoute'
+import { Routes } from '@/types/routerRoute'
 import { RoutesKey } from '@/types/routesMap'
 import { RouteParamsByName } from '@/types/routeWithParams'
 import { isUrl, Url } from '@/types/url'
@@ -10,7 +10,7 @@ export type RouterResolveOptions = {
 }
 
 type RouterResolveArgs<
-  TRoutes extends RouterRoutes,
+  TRoutes extends Routes,
   TSource extends string & keyof RoutesKey<TRoutes>,
   TParams = RouteParamsByName<TRoutes, TSource>
 > = AllPropertiesAreOptional<TParams> extends true
@@ -18,15 +18,15 @@ type RouterResolveArgs<
   : [params: TParams, options?: RouterResolveOptions]
 
 export type RouterResolve<
-  TRoutes extends RouterRoutes
+  TRoutes extends Routes
 > = {
   <TSource extends RoutesKey<TRoutes>>(source: TSource, ...args: RouterResolveArgs<TRoutes, TSource>): string,
   (source: Url, options?: RouterResolveOptions): string,
 }
 
-export function createRouterResolve<const TRoutes extends RouterRoutes>(routes: TRoutes): RouterResolve<TRoutes> {
+export function createRouterResolve<const TRoutes extends Routes>(routes: TRoutes): RouterResolve<TRoutes> {
 
-  return <TRoutes extends RouterRoutes, TSource extends Url | RoutesKey<TRoutes>>(
+  return <TRoutes extends Routes, TSource extends Url | RoutesKey<TRoutes>>(
     source: TSource,
     paramsOrOptions?: Record<string, unknown>,
     maybeOptions?: RouterResolveOptions,

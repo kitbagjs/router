@@ -5,7 +5,7 @@ import { RoutesKey } from '@/types'
 import { Router, RouterOptions, RouterReject } from '@/types/router'
 import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { RouterReplace, RouterReplaceOptions } from '@/types/routerReplace'
-import { RouterRoutes } from '@/types/routerRoute'
+import { Routes } from '@/types/routerRoute'
 import { Url, isUrl } from '@/types/url'
 import { createCurrentRoute } from '@/utilities/createCurrentRoute'
 import { createRouterFind } from '@/utilities/createRouterFind'
@@ -21,7 +21,7 @@ type RouterUpdateOptions = {
   replace?: boolean,
 }
 
-export function createRouter<const T extends RouterRoutes>(routes: T, options: RouterOptions = {}): Router<T> {
+export function createRouter<const T extends Routes>(routes: T, options: RouterOptions = {}): Router<T> {
   const resolve = createRouterResolve(routes)
   const history = createRouterHistory({ mode: options.historyMode })
   const { runBeforeRouteHooks, runAfterRouteHooks } = createRouteHookRunners<T>()
