@@ -2,7 +2,9 @@ import { Router } from '@/types/router'
 import { RouterPush } from '@/types/routerPush'
 import { RouterReplace } from '@/types/routerReplace'
 import { RouterRoute, RouterRoutes } from '@/types/routerRoute'
-import { RoutesMap } from '@/types/routesMap'
+import { RoutesKey, RoutesMap } from '@/types/routesMap'
+import { Path } from '@/utilities/path'
+import { Query } from '@/utilities/query'
 
 export interface Register {
   // router: Router
@@ -16,7 +18,7 @@ export type RegisteredRouter = Register extends { router: infer TRouter }
 
 export type RegisteredRoutes = Register extends { router: Router<infer Routes extends RouterRoutes> }
   ? Routes
-  : RouterRoute<string, any, any, false>[]
+  : RouterRoute<string, Path<'', {}>, Query<'', {}>, false>[]
 
 export type RegisteredRejectionType = Register extends { rejections: infer TRejections extends string[] }
   ? TRejections[number]
@@ -29,6 +31,8 @@ export type RegisteredRouterState = Register extends { state: infer TState }
 // Because RegisteredRoutes defaults to `[]` it thinks passing it is unnecessary
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-arguments
 export type RegisteredRouteMap = RoutesMap<RegisteredRoutes>
+
+export type RegisteredRoutesKey = RoutesKey<RegisteredRoutes>
 
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-arguments
 export type RegisteredRouterPush = RouterPush<RegisteredRoutes>
