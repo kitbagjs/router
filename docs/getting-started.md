@@ -85,8 +85,16 @@ Use RouterLink for navigating between routes.
 <template>
   ...
   <!-- router-link renders as <a> with href -->
-  <router-link :to="{ route: 'home' }">Go somewhere</router-link>
+  <router-link to="/">Go somewhere</router-link>
 </template>
 ```
 
 This component gives the router the power to change the URL without reloading the page.
+
+### Type Safety in RouterLink
+
+Rather than constructing your own urls for the `to` prop, you can use the callback syntax which provides `router.resolve`. This gives you full type safety by suggesting all available route keys for you as well as prompt for any params that may be required.
+
+```html
+<router-link :to="(resolve) => resolve('home')">Go somewhere</router-link>
+```
