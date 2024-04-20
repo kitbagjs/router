@@ -1,3 +1,3 @@
-import { Route } from '@/types/routerRoute'
+import { Route } from '@/types/route'
 
 export type RouteMatchRule = (route: Route, url: string) => boolean

@@ -20,7 +20,7 @@ function mockResolvedRoute(matched: RouteProps, matches: RouteProps[]): Resolved
   return {
     matched,
     matches,
-    name: matched.name!,
+    key: matched.name!,
     query: createResolvedRouteQuery(),
     params: {},
   }

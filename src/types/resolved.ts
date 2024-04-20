@@ -1,11 +1,11 @@
 import { ResolvedRouteQuery } from '@/types/resolvedQuery'
+import { ExtractRouteParamTypes, Route } from '@/types/route'
 import { RouteProps } from '@/types/routeProps'
-import { ExtractRouteParamTypes, Route } from '@/types/routerRoute'
 
 export type ResolvedRoute<TRoute extends Route = Route> = {
   matched: TRoute['matched'],
   matches: RouteProps[],
-  name: TRoute['name'],
+  key: TRoute['key'],
   query: ResolvedRouteQuery,
   params: ExtractRouteParamTypes<TRoute>,
 }

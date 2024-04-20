@@ -1,5 +1,5 @@
 import { describe, expectTypeOf, test } from 'vitest'
-import { ExtractRouteParamTypes, Route } from '@/types/routerRoute'
+import { ExtractRouteParamTypes, Route } from '@/types/route'
 import { Path, Query } from '@/utilities'
 
 describe('ExtractRouteParamTypes', () => {

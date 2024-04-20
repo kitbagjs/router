@@ -5,14 +5,14 @@ import { Path, Query, ToPath, ToQuery } from '@/utilities'
 export type Routes = Readonly<Route[]>
 
 export type Route<
-  TName extends string | undefined = any,
+  TKey extends string | undefined = any,
   TPath extends string | Path = Path,
   TQuery extends string | Query | undefined = Query,
   TDisabled extends boolean | undefined = boolean
 > = {
   matched: RouteProps,
   matches: RouteProps[],
-  name: TName,
+  key: TKey,
   path: ToPath<TPath>,
   query: ToQuery<TQuery>,
   pathParams: ToPath<TPath>['params'],

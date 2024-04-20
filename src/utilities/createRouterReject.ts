@@ -66,7 +66,7 @@ export function createRouterReject({
     const resolved = {
       matched: route,
       matches: [route],
-      name: type,
+      key: type,
       query: createResolvedRouteQuery(''),
       params: {},
       [isRejectionRouteSymbol]: true,

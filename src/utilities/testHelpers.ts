@@ -1,4 +1,4 @@
-import { createRoutes } from '@/utilities/createRouterRoutes'
+import { createRoutes } from '@/utilities/createRoutes'
 
 export const random = {
   number(options: { min?: number, max?: number } = {}): number {
@@ -11,7 +11,7 @@ export const random = {
 
 export const component = { template: '<div>This is component</div>' }
 
-export const routeProps = createRoutes([
+export const routes = createRoutes([
   {
     name: 'parentA',
     path: '/:paramA',

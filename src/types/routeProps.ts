@@ -1,6 +1,6 @@
 import { AsyncComponentLoader, Component, DefineComponent } from 'vue'
 import { AfterRouteHook, BeforeRouteHook } from '@/types/hooks'
-import { Routes } from '@/types/routerRoute'
+import { Routes } from '@/types/route'
 import { MaybeArray } from '@/types/utilities'
 import { Path } from '@/utilities/path'
 import { Query } from '@/utilities/query'
@@ -43,14 +43,4 @@ export type RouteProps = Readonly<ParentRouteProps | ChildRouteProps>
 
 export function isParentRoute(value: RouteProps): value is ParentRouteProps {
   return 'children' in value
-}
-
-export function isNamedRoute(value: RouteProps): value is RouteProps & { name: string } {
-  return 'name' in value && !!value.name
-}
-
-export type Disabled<T extends RouteProps> = T & { disabled: true }
-
-export function isDisabledRoute(value: RouteProps): value is Disabled<RouteProps> {
-  return !!value.disabled
 }

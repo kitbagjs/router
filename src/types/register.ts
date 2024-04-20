@@ -1,7 +1,7 @@
 import { Router } from '@/types/router'
 import { RouterPush } from '@/types/routerPush'
 import { RouterReplace } from '@/types/routerReplace'
-import { Route, Routes } from '@/types/routerRoute'
+import { Route, Routes } from '@/types/route'
 import { RoutesKey, RoutesMap } from '@/types/routesMap'
 import { Path } from '@/utilities/path'
 import { Query } from '@/utilities/query'
