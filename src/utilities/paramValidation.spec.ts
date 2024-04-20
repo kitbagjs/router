@@ -1,11 +1,11 @@
 import { expect, test } from 'vitest'
 import { DuplicateParamsError } from '@/errors'
-import { Route } from '@/types'
+import { RouteProps } from '@/types'
 import { createRoutes, routeParamsAreValid, path } from '@/utilities'
 import { component } from '@/utilities/testHelpers'
 
 test('given route WITHOUT params, always return true', () => {
-  const route: Route = {
+  const route: RouteProps = {
     name: 'no-params',
     path: '/no-params',
     component,
@@ -18,7 +18,7 @@ test('given route WITHOUT params, always return true', () => {
 })
 
 test('given route with simple string param and value present, returns true', () => {
-  const route: Route = {
+  const route: RouteProps = {
     name: 'simple-params',
     path: '/simple/:simple',
     component,
@@ -31,7 +31,7 @@ test('given route with simple string param and value present, returns true', () 
 })
 
 test('given route with OPTIONAL string param WITHOUT value present, returns true', () => {
-  const route: Route = {
+  const route: RouteProps = {
     name: 'simple-params',
     path: '/simple/:?simple',
     component,
@@ -44,7 +44,7 @@ test('given route with OPTIONAL string param WITHOUT value present, returns true
 })
 
 test('given route with non-string param with value that satisfies, returns true', () => {
-  const route: Route = {
+  const route: RouteProps = {
     name: 'simple-params',
     path: path('/simple/:simple', {
       simple: Number,
@@ -59,7 +59,7 @@ test('given route with non-string param with value that satisfies, returns true'
 })
 
 test('given route with non-string param with value that does NOT satisfy, returns false', () => {
-  const route: Route = {
+  const route: RouteProps = {
     name: 'simple-params',
     path: path('/simple/:simple', {
       simple: Number,
@@ -74,7 +74,7 @@ test('given route with non-string param with value that does NOT satisfy, return
 })
 
 test('given route with OPTIONAL non-string param with value that does NOT satisfy, returns false', () => {
-  const route: Route = {
+  const route: RouteProps = {
     name: 'simple-params',
     path: path('/simple/:?simple', {
       simple: Number,
@@ -89,7 +89,7 @@ test('given route with OPTIONAL non-string param with value that does NOT satisf
 })
 
 test('given route with regex param that expects forward slashes, will NOT match', () => {
-  const route: Route = {
+  const route: RouteProps = {
     name: 'support-slashes',
     path: path('/supports/:slashes/bookmarked', { slashes: /first\/second\/third/g }),
     component,
@@ -112,7 +112,7 @@ test.each([
     }),
   ],
 ])('given route with the same param name of different casing, treats params separately', (path) => {
-  const route: Route = {
+  const route: RouteProps = {
     name: 'different-cased-params',
     path,
     component,
@@ -125,7 +125,7 @@ test.each([
 })
 
 test('given route with duplicate param names across path and query, throws DuplicateParamsError', () => {
-  const route: Route = {
+  const route: RouteProps = {
     name: 'different-cased-params',
     path: '/duplicate/:foo',
     query: 'params=:?foo',

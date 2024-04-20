@@ -11,7 +11,7 @@ export interface RouteMeta {
 
 }
 
-type RouteWithHooks = {
+type WithHooks = {
   onBeforeRouteEnter?: MaybeArray<BeforeRouteHook>,
   onBeforeRouteUpdate?: MaybeArray<BeforeRouteHook>,
   onBeforeRouteLeave?: MaybeArray<BeforeRouteHook>,
@@ -20,7 +20,7 @@ type RouteWithHooks = {
   onAfterRouteLeave?: MaybeArray<AfterRouteHook>,
 }
 
-export type ParentRoute = RouteWithHooks & {
+export type ParentRouteProps = WithHooks & {
   name?: string,
   path: string | Path,
   query?: string | Query,
@@ -30,7 +30,7 @@ export type ParentRoute = RouteWithHooks & {
   meta?: RouteMeta,
 }
 
-export type ChildRoute = RouteWithHooks & {
+export type ChildRouteProps = WithHooks & {
   name: string,
   disabled?: boolean,
   path: string | Path,
@@ -39,19 +39,18 @@ export type ChildRoute = RouteWithHooks & {
   meta?: RouteMeta,
 }
 
-export type Route = Readonly<ParentRoute | ChildRoute>
-export type Routes = Readonly<Route[]>
+export type RouteProps = Readonly<ParentRouteProps | ChildRouteProps>
 
-export function isParentRoute(value: Route): value is ParentRoute {
+export function isParentRoute(value: RouteProps): value is ParentRouteProps {
   return 'children' in value
 }
 
-export function isNamedRoute(value: Route): value is Route & { name: string } {
+export function isNamedRoute(value: RouteProps): value is RouteProps & { name: string } {
   return 'name' in value && !!value.name
 }
 
-export type Disabled<T extends Route> = T & { disabled: true }
+export type Disabled<T extends RouteProps> = T & { disabled: true }
 
-export function isDisabledRoute(value: Route): value is Disabled<Route> {
+export function isDisabledRoute(value: RouteProps): value is Disabled<RouteProps> {
   return !!value.disabled
 }
