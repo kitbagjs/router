@@ -1,8 +1,8 @@
 import { RegisteredRouterPush, RegisteredRouterReplace } from '@/types/register'
 import { ResolvedRoute } from '@/types/resolved'
+import { Routes } from '@/types/route'
 import { RouterReject } from '@/types/router'
 import { RouterPush } from '@/types/routerPush'
-import { Routes } from '@/types/route'
 import { MaybePromise } from '@/types/utilities'
 import { RouterRejectionType } from '@/utilities/createRouterReject'
 

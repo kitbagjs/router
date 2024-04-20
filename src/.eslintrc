@@ -27,7 +27,16 @@
   "rules": {
     "func-call-spacing": "off", // overridden by @typescript-eslint/func-call-spacing
     "@typescript-eslint/no-explicit-any": "off",
-    "vue/new-line-between-multi-line-property": "off"
+    "vue/new-line-between-multi-line-property": "off",
+    "@typescript-eslint/ban-types": [
+      "error",
+      {
+        "types": {
+          "{}": false
+        },
+        "extendDefaults": true
+      },
+    ],
   },
   "overrides": [
     {

@@ -1,5 +1,5 @@
-import { RouterPushOptions } from '@/types/routerPush'
 import { Routes } from '@/types/route'
+import { RouterPushOptions } from '@/types/routerPush'
 import { RoutesKey } from '@/types/routesMap'
 import { RouteParamsByKey } from '@/types/routeWithParams'
 import { Url } from '@/types/url'
