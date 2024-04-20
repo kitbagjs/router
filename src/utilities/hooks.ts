@@ -7,7 +7,7 @@ import { ResolvedRoute } from '@/types/resolved'
 import { RouterReject } from '@/types/router'
 import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { RouterReplace } from '@/types/routerReplace'
-import { Routes } from '@/types/routerRoute'
+import { Routes } from '@/types/route'
 import { getAfterRouteHooksFromRoutes, getBeforeRouteHooksFromRoutes } from '@/utilities/getRouteHooks'
 
 type RouteHookRunners<T extends Routes> = {

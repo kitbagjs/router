@@ -1,6 +1,6 @@
 import { expect, test, vi } from 'vitest'
 import { Route } from '@/types'
-import { createRoutes } from '@/utilities/createRouterRoutes'
+import { createRoutes } from '@/utilities/createRoutes'
 import { getResolvedRouteForUrl } from '@/utilities/getResolvedRouteForUrl'
 import * as utilities from '@/utilities/routeMatchScore'
 import { component } from '@/utilities/testHelpers'
@@ -28,7 +28,7 @@ test('given path WITHOUT params, returns match', () => {
 
   const match = getResolvedRouteForUrl(routes, '/parent/child/grandchild')
 
-  expect(match?.name).toBe('parent.child.grandchild')
+  expect(match?.key).toBe('parent.child.grandchild')
   expect(match?.matched.name).toBe('grandchild')
 })
 
@@ -72,7 +72,7 @@ test('given path to unnamed  parent, with option to get to leaf, returns availab
   ])
   const match = getResolvedRouteForUrl(routes, '/unnamed')
 
-  expect(match?.name).toBe('unnamed-child-root')
+  expect(match?.key).toBe('unnamed-child-root')
 })
 
 test('given path that includes named parent and path to leaf, return first match', () => {
@@ -98,7 +98,7 @@ test('given path that includes named parent and path to leaf, return first match
 
   const match = getResolvedRouteForUrl(routes, '/named-parent')
 
-  expect(match?.name).toBe('namedParent.namedChild.namedGrandchild')
+  expect(match?.key).toBe('namedParent.namedChild.namedGrandchild')
   expect(match?.matched.name).toBe('namedGrandchild')
 })
 
@@ -133,7 +133,7 @@ test('given route with simple string query param WITHOUT value present, returns 
 test('given route with equal matches, returns route with highest score', () => {
   vi.spyOn(utilities, 'getRouteScoreSortMethod').mockImplementation(() => {
     return (route: Route) => {
-      return route.name === 'second-route' ? -1 : +1
+      return route.key === 'second-route' ? -1 : +1
     }
   })
 
@@ -157,7 +157,7 @@ test('given route with equal matches, returns route with highest score', () => {
 
   const response = getResolvedRouteForUrl(routes, '/')
 
-  expect(response?.name).toBe('second-route')
+  expect(response?.key).toBe('second-route')
 })
 
 test('given a route without params or query returns an empty params and query', () => {

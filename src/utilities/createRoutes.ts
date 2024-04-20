@@ -16,7 +16,7 @@ export function createRoutes(routesProps: Readonly<RouteProps[]>): Route[] {
     if (isParentRoute(routeProps) && routeProps.children) {
       routes.push(...routeProps.children.map(childRoute => ({
         ...childRoute,
-        name: combineName(route.name, childRoute.name),
+        key: combineName(route.key, childRoute.key),
         path: combinePath(route.path, childRoute.path),
         query: combineQuery(route.query, childRoute.query),
         matches: [...childRoute.matches, route.matched],
@@ -47,7 +47,7 @@ function createRoute(route: RouteProps): Route {
   return {
     matched: rawRoute,
     matches: [rawRoute],
-    name: route.name,
+    key: route.name,
     path,
     query,
     pathParams: path.params,
@@ -59,16 +59,16 @@ function createRoute(route: RouteProps): Route {
 
 type FlattenRoute<
   TRoute extends RouteProps,
-  TName extends string | undefined = TRoute['name'],
+  TKey extends string | undefined = TRoute['name'],
   TPath extends Path = ToPath<TRoute['path']>,
   TQuery extends Query = ToQuery<TRoute['query']>,
   TDisabled extends boolean = TRoute['disabled'] extends boolean ? TRoute['disabled'] : false,
   TChildren extends Route[] = ExtractRouteChildren<TRoute>> =
   [
-    Route<TName, TPath, TQuery, TDisabled>,
+    Route<TKey, TPath, TQuery, TDisabled>,
     ...{
       [K in keyof TChildren]: Route<
-      CombineName<TName, TChildren[K]['name']>,
+      CombineName<TKey, TChildren[K]['key']>,
       CombinePath<TPath, TChildren[K]['path']>,
       CombineQuery<TQuery, TChildren[K]['query']>,
       TChildren[K]['disabled']

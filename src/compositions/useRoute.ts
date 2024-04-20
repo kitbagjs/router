@@ -4,31 +4,31 @@ import { UseRouteInvalidError } from '@/errors'
 import { RegisteredRouteMap, ResolvedRoute } from '@/types'
 import { combineName } from '@/utilities/combineName'
 
-export function useRoute<TRouteName extends string & keyof RegisteredRouteMap>(routeName: TRouteName): DeepReadonly<ResolvedRoute<RegisteredRouteMap[TRouteName]>>
+export function useRoute<TRouteKey extends string & keyof RegisteredRouteMap>(routeKey: TRouteKey): DeepReadonly<ResolvedRoute<RegisteredRouteMap[TRouteKey]>>
 export function useRoute(): DeepReadonly<ResolvedRoute>
-export function useRoute(routeName?: string): DeepReadonly<ResolvedRoute> {
+export function useRoute(routeKey?: string): DeepReadonly<ResolvedRoute> {
   const router = useRouter()
 
-  function checkRouteNameIsValid(): void {
-    if (!routeName) {
+  function checkRouteKeyIsValid(): void {
+    if (!routeKey) {
       return
     }
 
-    const routeNames = router.route.matches.map(route => route.name)
-    const routeAncestryNames = getRouteDotNotationNames(routeNames)
-    const routeNameIsValid = routeAncestryNames.includes(routeName)
+    const actualRouteKeys = router.route.matches.map(route => route.name)
+    const actualRouteKey = getRouteKey(actualRouteKeys)
+    const routeKeyIsValid = actualRouteKey.includes(routeKey)
 
-    if (!routeNameIsValid) {
-      throw new UseRouteInvalidError(routeName, router.route.name)
+    if (!routeKeyIsValid) {
+      throw new UseRouteInvalidError(routeKey, router.route.key)
     }
   }
 
-  watch(router.route, checkRouteNameIsValid, { immediate: true, deep: true })
+  watch(router.route, checkRouteKeyIsValid, { immediate: true, deep: true })
 
   return router.route
 }
 
-function getRouteDotNotationNames(names: (string | undefined)[]): string[] {
+function getRouteKey(names: (string | undefined)[]): string[] {
   return names.reduce<string[]>((ancestorNames, name) => {
     const previous = ancestorNames.pop()
     const next = name ? [combineName(previous, name)] : []

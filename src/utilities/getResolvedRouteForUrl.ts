@@ -1,6 +1,6 @@
-import { isNamedRoute } from '@/types'
+import { RouteMatchRule } from '@/types'
 import { ResolvedRoute } from '@/types/resolved'
-import { Routes } from '@/types/routerRoute'
+import { Routes } from '@/types/route'
 import { createMaybeRelativeUrl } from '@/utilities/createMaybeRelativeUrl'
 import { createResolvedRouteQuery } from '@/utilities/createResolvedRouteQuery'
 import { getRouteParamValues, routeParamsAreValid } from '@/utilities/paramValidation'
@@ -27,8 +27,12 @@ export function getResolvedRouteForUrl(routes: Routes, url: string): ResolvedRou
   return {
     matched: route.matched,
     matches: route.matches,
-    name: route.name,
+    key: route.key,
     query,
     params,
   }
+}
+
+const isNamedRoute: RouteMatchRule = (route) => {
+  return 'name' in route.matched && !!route.matched.name
 }

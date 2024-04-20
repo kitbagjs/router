@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'vitest'
-import { createRoutes } from '@/utilities/createRouterRoutes'
+import { createRoutes } from '@/utilities/createRoutes'
 import { component } from '@/utilities/testHelpers'
 
-describe('route name dot notation', () => {
+describe('route key dot notation', () => {
 
   test('given named routes, returns string of each route name', () => {
     const routes = createRoutes([
@@ -26,7 +26,7 @@ describe('route name dot notation', () => {
     ])
 
     const childRoute = routes.find(route => route.matched.name === 'child')
-    expect(childRoute?.name).toBe('grandparent.parent.child')
+    expect(childRoute?.key).toBe('grandparent.parent.child')
   })
 
   test('given parents without names, returns only the leaf', () => {
@@ -49,7 +49,7 @@ describe('route name dot notation', () => {
     ])
 
     const childRoute = routes.find(route => route.matched.name === 'child')
-    expect(childRoute?.name).toBe('child')
+    expect(childRoute?.key).toBe('child')
   })
 
 })
