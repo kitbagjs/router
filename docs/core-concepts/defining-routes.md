@@ -56,7 +56,7 @@ With the example user routes above
 ```ts
 const router = createRouter(routes)
 
-router.push({ route: 'user.settings.keys' })
+router.push('user.settings.keys')
 ```
 
 Learn more about [navigating](/core-concepts/navigating) to routes.
@@ -90,8 +90,8 @@ Now developers would get a Typescript error if they try navigating to `routes.us
 ```ts
 const router = createRouter(routes)
 
-router.push({ route: 'routes.user' }) // [!code error] error
-router.push({ route: 'routes.user.profile' }) // ok
+router.push('routes.user') // [!code error] error
+router.push('routes.user.profile') // ok
 ```
 
 ## Case Sensitivity

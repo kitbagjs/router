@@ -67,6 +67,47 @@ declare module '@kitbag/router' {
 }
 ```
 
+## Push
+
+To navigate to another route, you can use `router.push`. This method will update the URL for the browser and also add the URL into the history so when a user uses the back button on their browser it will behave as expected.
+
+```ts
+import { createRoutes, useRouter } from '@kitbag/router'
+
+const routes = createRoutes([
+  {
+    name: 'user',
+    path: '/user',
+    component: ...,
+    children: createRoutes([
+      {
+        name: 'profile',
+        path: '/profile',
+        component: ...,
+      },
+      {
+        name: 'settings',
+        path: '/settings',
+        component: ...,
+      }
+    ])
+  }
+])
+
+const router = useRouter(routes)
+
+router.push('user.settings')
+```
+
+The push method also accepts a plain string if you know the URL you want to go to.
+
+```ts
+router.push('/user/settings')
+router.push('https://github.com/kitbagjs/router')
+```
+
+This `source` argument is type safe, expecting either a Url or a valid route "key". Url is any string that starts with "http", "https", or a forward slash "/". Route key is a string of route names joined by a period `.` that lead to a non-disabled route. Additionally if using the route key, push will require params be passed in if there are any.
+
 ## RouterView
 
 Give your route components a place to be mounted

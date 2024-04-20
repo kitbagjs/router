@@ -31,16 +31,17 @@ const routes = createRoutes([
 
 const router = useRouter(routes)
 
-router.push({ route: 'user.settings' })
+router.push('user.settings')
 ```
 
 The push method also accepts a plain string if you know the URL you want to go to.
 
 ```ts
 router.push('/user/settings')
+router.push('https://github.com/kitbagjs/router')
 ```
 
-Using push with the route object syntax provides a much better developer experience. The `route` property is type safe, expecting only a "path" that uses route names separated by a period `.` that lead to a non-disabled route. Furthermore, if your route has any params, the route object syntax will require that those params be passed in.
+This `source` argument is type safe, expecting either a Url or a valid route "key". Url is any string that starts with "http", "https", or a forward slash "/". Route key is a string of route names joined by a period `.` that lead to a non-disabled route. Additionally if using the route key, push will require params be passed in if there are any.
 
 ### Providing Params
 
@@ -71,18 +72,25 @@ const routes = createRoutes([
 
 const router = useRouter(routes)
 
-router.push({ route: 'user.settings' }) // [!code --]
-router.push({ route: 'user.settings', params: { id: 42, tab: 'github' } }) // [!code ++]
+router.push('user.settings') // [!code --]
+router.push('user.settings', { id: 42, tab: 'github' }) // [!code ++]
 ```
 
 ### Query
 
-With the optional 2nd argument, you add additional values to the query. Note if you know your route will expect certain parameters, [query params](/core-concepts/query-params) is a much better developer experience for dealing with the query.
+With the options argument, you add additional values to the query. Note if you know your route will expect certain parameters, [query params](/core-concepts/query-params) is a much better developer experience for dealing with the query.
 
 ```ts
-router.push({ route: 'user.settings' }, {
+router.push('user.settings', params, {
   query: { foo: 'bar' },
-  replace: true
+})
+```
+
+If using push with a Url, there is no params argument so options will be the 2nd arg
+
+```ts
+router.push('/user/settings', {
+  query: { foo: 'bar' },
 })
 ```
 
@@ -91,11 +99,11 @@ router.push({ route: 'user.settings' }, {
 If you want to change the current route without pushing an entry to the browser's history, you can use `router.replace`.
 
 ```ts
-router.replace({ route: 'user.settings' })
+router.replace('user.settings')
 ```
 
 Push also let's you pass `replace: true` to achieve the same behavior.
 
 ```ts
-router.push({ route: 'user.settings' }, { replace: true })
+router.push('user.settings', params, { replace: true })
 ```
