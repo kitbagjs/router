@@ -22,13 +22,10 @@ test('renders an anchor tag with the correct href and slot content', () => {
     initialUrl: path,
   })
 
-  const props = {
-    to: 'parent',
-    params: { paramName: paramValue },
-  } as any
-
   const wrapper = mount(routerLink, {
-    props,
+    props: {
+      to: (resolve) => resolve('parent', { paramName: paramValue }),
+    },
     slots: {
       default: content,
     },
@@ -52,7 +49,7 @@ test.each([
     {
       name: 'routeA',
       path: '/routeA',
-      component: { render: () => h(routerLink, { to: 'routeB', replace }) },
+      component: { render: () => h(routerLink, { to: resolve => resolve('routeB'), replace }) },
     },
     {
       name: 'routeB',
@@ -81,7 +78,7 @@ test.each([
 
   app.find('a').trigger('click')
 
-  const [, , options] = spy.mock.lastCall ?? []
+  const [, options] = spy.mock.lastCall ?? []
 
   expect(options).toMatchObject({ replace, query: undefined })
 })
