@@ -7,7 +7,7 @@
 <script setup lang="ts">
   import { computed, readonly } from 'vue'
   import { useRouter } from '@/compositions'
-  import { Url } from '@/types'
+  import { Url, isUrl } from '@/types'
   import { RegisteredRouter } from '@/types/register'
   import { RouterPushOptions } from '@/types/routerPush'
 
@@ -27,7 +27,7 @@
   const router = useRouter()
 
   const resolved = computed(() => {
-    return typeof props.to === 'string' ? props.to : props.to(router.resolve)
+    return isUrl(props.to) ? props.to : props.to(router.resolve)
   })
 
   const options = computed(() => {
