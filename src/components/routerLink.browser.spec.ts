@@ -49,7 +49,7 @@ test.each([
     {
       name: 'routeA',
       path: '/routeA',
-      component: { render: () => h(routerLink, { to: push => push('routeB'), replace }) },
+      component: { render: () => h(routerLink, { to: resolve => resolve('routeB'), replace }) },
     },
     {
       name: 'routeB',
@@ -78,7 +78,7 @@ test.each([
 
   app.find('a').trigger('click')
 
-  const [, , options] = spy.mock.lastCall ?? []
+  const [, options] = spy.mock.lastCall ?? []
 
   expect(options).toMatchObject({ replace, query: undefined })
 })
