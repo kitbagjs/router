@@ -1,11 +1,11 @@
 import { expect, test, vi } from 'vitest'
 import { ResolvedRoute } from '@/types/resolved'
-import { Route } from '@/types/routes'
+import { RouteProps } from '@/types/routes'
 import { createResolvedRouteQuery } from '@/utilities/createResolvedRouteQuery'
 import { getBeforeRouteHooksFromRoutes } from '@/utilities/getRouteHooks'
 import { component } from '@/utilities/testHelpers'
 
-function mockRoute(name: string): Route {
+function mockRoute(name: string): RouteProps {
   return {
     name,
     path: `/${name}`,
@@ -16,7 +16,7 @@ function mockRoute(name: string): Route {
   }
 }
 
-function mockResolvedRoute(matched: Route, matches: Route[]): ResolvedRoute {
+function mockResolvedRoute(matched: RouteProps, matches: RouteProps[]): ResolvedRoute {
   return {
     matched,
     matches,

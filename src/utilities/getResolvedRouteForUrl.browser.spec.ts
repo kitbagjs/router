@@ -1,5 +1,5 @@
 import { expect, test, vi } from 'vitest'
-import { RouterRoute, Routes } from '@/types'
+import { RouteProps, RouterRoute } from '@/types'
 import { createRoutes } from '@/utilities/createRouterRoutes'
 import { getResolvedRouteForUrl } from '@/utilities/getResolvedRouteForUrl'
 import * as utilities from '@/utilities/routeMatchScore'
@@ -105,7 +105,7 @@ test('given path that includes named parent and path to leaf, return first match
 })
 
 test('given route with simple string param WITHOUT value present, returns undefined', () => {
-  const routes: Routes = [
+  const routes: RouteProps[] = [
     {
       name: 'simple-params',
       path: '/simple/:simple',
@@ -120,7 +120,7 @@ test('given route with simple string param WITHOUT value present, returns undefi
 })
 
 test('given route with simple string query param WITHOUT value present, returns undefined', () => {
-  const routes: Routes = [
+  const routes: RouteProps[] = [
     {
       name: 'simple-params',
       path: '/missing',

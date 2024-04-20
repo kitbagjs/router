@@ -1,6 +1,6 @@
 import { markRaw } from 'vue'
 import { DuplicateParamsError } from '@/errors'
-import { ParentRoute, Route, RouterRoute, isParentRoute } from '@/types'
+import { ParentRouteProps, RouteProps, RouterRoute, isParentRoute } from '@/types'
 import { checkDuplicateKeys } from '@/utilities/checkDuplicateKeys'
 import { CombineName, combineName } from '@/utilities/combineName'
 import { CombinePath, combinePath } from '@/utilities/combinePath'
@@ -8,8 +8,8 @@ import { CombineQuery, combineQuery } from '@/utilities/combineQuery'
 import { Path, ToPath, toPath } from '@/utilities/path'
 import { Query, ToQuery, toQuery } from '@/utilities/query'
 
-export function createRoutes<const TRoutes extends Readonly<Route[]>>(routes: TRoutes): FlattenRouterRoutes<TRoutes>
-export function createRoutes(routes: Readonly<Route[]>): RouterRoute[] {
+export function createRoutes<const TRoutes extends Readonly<RouteProps[]>>(routes: TRoutes): FlattenRouterRoutes<TRoutes>
+export function createRoutes(routes: Readonly<RouteProps[]>): RouterRoute[] {
   const routerRoutes = routes.reduce<RouterRoute[]>((routerRoutes, route) => {
     const routerRoute = createRouterRoute(route)
 
@@ -39,7 +39,7 @@ export function createRoutes(routes: Readonly<Route[]>): RouterRoute[] {
   return routerRoutes
 }
 
-function createRouterRoute(route: Route): RouterRoute {
+function createRouterRoute(route: RouteProps): RouterRoute {
   const path = toPath(route.path)
   const query = toQuery(route.query)
   const rawRoute = markRaw(route)
@@ -58,7 +58,7 @@ function createRouterRoute(route: Route): RouterRoute {
 }
 
 type FlattenRouterRoute<
-  TRoute extends Route,
+  TRoute extends RouteProps,
   TName extends string | undefined = TRoute['name'],
   TPath extends Path = ToPath<TRoute['path']>,
   TQuery extends Query = ToQuery<TRoute['query']>,
@@ -76,11 +76,11 @@ type FlattenRouterRoute<
     }
   ]
 
-type FlattenRouterRoutes<TRoutes extends Readonly<Route[]>> = Flatten<[...{
+type FlattenRouterRoutes<TRoutes extends Readonly<RouteProps[]>> = Flatten<[...{
   [K in keyof TRoutes]: FlattenRouterRoute<TRoutes[K]>
 }]>
 
-type ExtractRouteChildren<TRoute extends Route> = TRoute extends ParentRoute
+type ExtractRouteChildren<TRoute extends RouteProps> = TRoute extends ParentRouteProps
   ? TRoute['children'] extends RouterRoute[]
     ? TRoute['children']
     : []
