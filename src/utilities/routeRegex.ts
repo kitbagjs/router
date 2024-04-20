@@ -1,12 +1,12 @@
-import { RouterRoute } from '@/types'
+import { Route } from '@/types'
 
-export function generateRoutePathRegexPattern(route: RouterRoute): RegExp {
+export function generateRoutePathRegexPattern(route: Route): RegExp {
   const routeRegex = replaceParamSyntaxWithCatchAlls(route.path.toString())
 
   return new RegExp(`^${routeRegex}$`, 'i')
 }
 
-export function generateRouteQueryRegexPatterns(route: RouterRoute): RegExp[] {
+export function generateRouteQueryRegexPatterns(route: Route): RegExp[] {
   const queryParams = new URLSearchParams(route.query.toString())
 
   return Array

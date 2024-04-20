@@ -1,7 +1,7 @@
 import { Router } from '@/types/router'
 import { RouterPush } from '@/types/routerPush'
 import { RouterReplace } from '@/types/routerReplace'
-import { RouterRoute, RouterRoutes } from '@/types/routerRoute'
+import { Route, Routes } from '@/types/routerRoute'
 import { RoutesKey, RoutesMap } from '@/types/routesMap'
 import { Path } from '@/utilities/path'
 import { Query } from '@/utilities/query'
@@ -16,9 +16,9 @@ export type RegisteredRouter = Register extends { router: infer TRouter }
   ? TRouter
   : Router<any>
 
-export type RegisteredRoutes = Register extends { router: Router<infer Routes extends RouterRoutes> }
-  ? Routes
-  : RouterRoute<string, Path<'', {}>, Query<'', {}>, false>[]
+export type RegisteredRoutes = Register extends { router: Router<infer TRoutes extends Routes> }
+  ? TRoutes
+  : Route<string, Path<'', {}>, Query<'', {}>, false>[]
 
 export type RegisteredRejectionType = Register extends { rejections: infer TRejections extends string[] }
   ? TRejections[number]

@@ -3,7 +3,7 @@ import { AddAfterRouteHook, AddBeforeRouteHook } from '@/types/hooks'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouterPush } from '@/types/routerPush'
 import { RouterReplace } from '@/types/routerReplace'
-import { RouterRoutes } from '@/types/routerRoute'
+import { Routes } from '@/types/routerRoute'
 import { RouterFind } from '@/utilities/createRouterFind'
 import { RouterHistoryMode } from '@/utilities/createRouterHistory'
 import { RouterRejectionComponents, RouterRejectionType } from '@/utilities/createRouterReject'
@@ -17,7 +17,7 @@ export type RouterOptions = {
 } & RouterRejectionComponents
 
 export type Router<
-  TRoutes extends RouterRoutes = []
+  TRoutes extends Routes = []
 > = {
   route: DeepReadonly<ResolvedRoute>,
   resolve: RouterResolve<TRoutes>,

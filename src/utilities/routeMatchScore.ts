@@ -1,7 +1,7 @@
-import { RouterRoute } from '@/types'
+import { Route } from '@/types'
 import { createMaybeRelativeUrl } from '@/utilities'
 
-type RouteSortMethod = (aRoute: RouterRoute, bRoute: RouterRoute) => number
+type RouteSortMethod = (aRoute: Route, bRoute: Route) => number
 
 export function getRouteScoreSortMethod(url: string): RouteSortMethod {
   const { searchParams: actualQuery } = createMaybeRelativeUrl(url)
@@ -30,7 +30,7 @@ export function getRouteScoreSortMethod(url: string): RouteSortMethod {
   }
 }
 
-export function countExpectedQueryKeys(route: RouterRoute, actualQuery: URLSearchParams): number {
+export function countExpectedQueryKeys(route: Route, actualQuery: URLSearchParams): number {
   const expectedQuery = new URLSearchParams(route.query.toString())
   const expectedQueryKeys = Array.from(expectedQuery.keys())
 

@@ -1,4 +1,4 @@
-import { RouterRoute } from '@/types'
+import { Route } from '@/types'
 import { setParamValueOnUrl } from '@/utilities/paramsFinder'
 
 type AssembleUrlOptions = {
@@ -6,7 +6,7 @@ type AssembleUrlOptions = {
   query?: Record<string, string>,
 }
 
-export function assembleUrl(route: RouterRoute, options: AssembleUrlOptions = {}): string {
+export function assembleUrl(route: Route, options: AssembleUrlOptions = {}): string {
   const { params: paramValues = {}, query: queryValues } = options
   const params = Object.entries({ ...route.pathParams, ...route.queryParams })
   const path = route.path.toString()

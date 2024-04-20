@@ -1,5 +1,5 @@
 import { ResolvedRoute } from '@/types/resolved'
-import { RouterRoutes } from '@/types/routerRoute'
+import { Routes } from '@/types/routerRoute'
 import { RoutesKey } from '@/types/routesMap'
 import { RouteParamsByName } from '@/types/routeWithParams'
 import { Url } from '@/types/url'
@@ -8,7 +8,7 @@ import { createRouterResolve } from '@/utilities/createRouterResolve'
 import { getResolvedRouteForUrl } from '@/utilities/getResolvedRouteForUrl'
 
 type RouterFindArgs<
-  TRoutes extends RouterRoutes,
+  TRoutes extends Routes,
   TSource extends string & keyof RoutesKey<TRoutes>,
   TParams = RouteParamsByName<TRoutes, TSource>
 > = AllPropertiesAreOptional<TParams> extends true
@@ -16,15 +16,15 @@ type RouterFindArgs<
   : [params: TParams]
 
 export type RouterFind<
-  TRoutes extends RouterRoutes
+  TRoutes extends Routes
 > = {
   <TSource extends RoutesKey<TRoutes>>(source: TSource, ...args: RouterFindArgs<TRoutes, TSource>): ResolvedRoute | undefined,
   (source: Url): ResolvedRoute | undefined,
 }
 
-export function createRouterFind<const TRoutes extends RouterRoutes>(routes: TRoutes): RouterFind<TRoutes> {
+export function createRouterFind<const TRoutes extends Routes>(routes: TRoutes): RouterFind<TRoutes> {
 
-  return <TRoutes extends RouterRoutes, TSource extends Url | RoutesKey<TRoutes>>(
+  return <TRoutes extends Routes, TSource extends Url | RoutesKey<TRoutes>>(
     source: TSource,
     params: Record<PropertyKey, unknown> = {},
   ): ResolvedRoute | undefined => {

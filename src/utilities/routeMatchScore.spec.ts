@@ -3,60 +3,64 @@ import { createRoutes, countExpectedQueryKeys, component, getRouteScoreSortMetho
 
 describe('countExpectedQueryKeys', () => {
   test('given route without query, returns 0', () => {
-    const route = {
-      name: 'without-query',
-      path: '/',
-      component,
-    }
-    const [routerRoute] = createRoutes([route])
+    const [route] = createRoutes([
+      {
+        name: 'without-query',
+        path: '/',
+        component,
+      },
+    ])
     const actualQuery = new URLSearchParams('/?can=have&some=queries')
 
-    const response = countExpectedQueryKeys(routerRoute, actualQuery)
+    const response = countExpectedQueryKeys(route, actualQuery)
 
     expect(response).toBe(0)
   })
 
   test('given route with query where url has keys but different values, still counts as present', () => {
-    const route = {
-      name: 'different-values',
-      path: '/',
-      query: 'value=blue',
-      component,
-    }
-    const [routerRoute] = createRoutes([route])
+    const [route] = createRoutes([
+      {
+        name: 'different-values',
+        path: '/',
+        query: 'value=blue',
+        component,
+      },
+    ])
     const actualQuery = new URLSearchParams('value=red')
 
-    const response = countExpectedQueryKeys(routerRoute, actualQuery)
+    const response = countExpectedQueryKeys(route, actualQuery)
 
     expect(response).toBe(1)
   })
 
   test('given route with query all included in url in any order, returns count of route queries', () => {
-    const route = {
-      name: 'all-satisfied',
-      path: '/',
-      query: 'one=1&two=2&three=3&four=4',
-      component,
-    }
-    const [routerRoute] = createRoutes([route])
+    const [route] = createRoutes([
+      {
+        name: 'all-satisfied',
+        path: '/',
+        query: 'one=1&two=2&three=3&four=4',
+        component,
+      },
+    ])
     const actualQuery = new URLSearchParams('three=3&one=1&four=4&two=2')
 
-    const response = countExpectedQueryKeys(routerRoute, actualQuery)
+    const response = countExpectedQueryKeys(route, actualQuery)
 
     expect(response).toBe(4)
   })
 
   test('given route with query with some missing from url, returns count not missing', () => {
-    const route = {
-      name: 'some-missing',
-      path: '/',
-      query: 'one=1&two=2&three=3&four=4',
-      component,
-    }
-    const [routerRoute] = createRoutes([route])
+    const [route] = createRoutes([
+      {
+        name: 'some-missing',
+        path: '/',
+        query: 'one=1&two=2&three=3&four=4',
+        component,
+      },
+    ])
     const actualQuery = new URLSearchParams('one=1&three=3')
 
-    const response = countExpectedQueryKeys(routerRoute, actualQuery)
+    const response = countExpectedQueryKeys(route, actualQuery)
 
     expect(response).toBe(2)
   })

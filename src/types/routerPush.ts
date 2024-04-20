@@ -1,4 +1,4 @@
-import { RouterRoutes } from '@/types/routerRoute'
+import { Routes } from '@/types/routerRoute'
 import { RoutesKey } from '@/types/routesMap'
 import { RouteParamsByName } from '@/types/routeWithParams'
 import { Url } from '@/types/url'
@@ -10,7 +10,7 @@ export type RouterPushOptions = {
 }
 
 type RouterPushArgs<
-  TRoutes extends RouterRoutes,
+  TRoutes extends Routes,
   TSource extends string & keyof RoutesKey<TRoutes>,
   TParams = RouteParamsByName<TRoutes, TSource>
 > = AllPropertiesAreOptional<TParams> extends true
@@ -18,7 +18,7 @@ type RouterPushArgs<
   : [params: TParams, options?: RouterPushOptions]
 
 export type RouterPush<
-  TRoutes extends RouterRoutes
+  TRoutes extends Routes
 > = {
   <TSource extends RoutesKey<TRoutes>>(source: TSource, ...args: RouterPushArgs<TRoutes, TSource>): Promise<void>,
   (source: Url, options?: RouterPushOptions): Promise<void>,
