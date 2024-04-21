@@ -28,6 +28,14 @@ export default defineConfig({
       name: '@kitbag/router',
       fileName: 'kitbag-router',
     },
+    rollupOptions: {
+      external: ['vue'],
+      output: {
+        globals: {
+          vue: 'Vue',
+        },
+      },
+    },
   },
   plugins: [
     vue(),
@@ -35,12 +43,4 @@ export default defineConfig({
       rollupTypes: true 
     })
   ],
-  rollupOptions: {
-    external: ['vue'],
-    output: {
-      globals: {
-        vue: 'Vue',
-      },
-    },
-  },
 })

@@ -1,13 +1,14 @@
 {
   "name": "@kitbag/router",
   "private": false,
-  "version": "0.0.3",
+  "version": "0.0.1",
   "bugs": {
     "url": "https://github.com/kitbagjs/router/issues"
   },
   "homepage": "https://github.com/kitbagjs/router#readme",
   "scripts": {
     "build": "vite build",
+    "build:watch": "vite build --watch",
     "test": "vitest",
     "test:types": "vitest typecheck",
     "lint": "eslint ./src",
@@ -41,7 +42,6 @@
     "vite-plugin-dts": "^3.8.1",
     "vitepress": "^1.0.1",
     "vitest": "^0.34.6",
-    "vue": "^3.4.5",
     "vue-tsc": "^2.0.7"
   },
   "peerDependencies": {
