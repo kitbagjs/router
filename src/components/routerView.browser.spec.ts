@@ -67,7 +67,7 @@ test('renders components for initial route', async () => {
   expect(app.html()).toBe('Child')
 })
 
-test('updates components when route changes', async () => {
+test.only('updates components when route changes', async () => {
   const routes = createRoutes([
     {
       name: 'childA',

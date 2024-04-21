@@ -1,4 +1,4 @@
-import { createBrowserHistory, createHashHistory, createMemoryHistory, createPath, History } from 'history'
+import { createBrowserHistory, createHashHistory, createMemoryHistory, createPath, History, Listener } from 'history'
 import { isBrowser } from '@/utilities/isBrowser'
 
 type NavigationPushOptions = {
@@ -11,15 +11,18 @@ type NavigationRefresh = () => void
 export type RouterHistory = History & {
   update: NavigationUpdate,
   refresh: NavigationRefresh,
+  startListening: () => void,
+  stopListening: () => void,
 }
 
 export type RouterHistoryMode = 'auto' | 'browser' | 'memory' | 'hash'
 
 type RouterHistoryOptions = {
+  listener?: Listener,
   mode?: RouterHistoryMode,
 }
 
-export function createRouterHistory({ mode }: RouterHistoryOptions = {}): RouterHistory {
+export function createRouterHistory({ mode, listener }: RouterHistoryOptions = {}): RouterHistory {
   const history = createHistory(mode)
 
   const update: NavigationUpdate = (url, options) => {
@@ -36,10 +39,24 @@ export function createRouterHistory({ mode }: RouterHistoryOptions = {}): Router
     return history.replace(url)
   }
 
+  let removeListener: (() => void) | undefined
+
+  const startListening: () => void = () => {
+    if (!!listener && removeListener === undefined) {
+      removeListener = history.listen(listener)
+    }
+  }
+
+  const stopListening: () => void = () => {
+    removeListener?.()
+  }
+
   return {
     ...history,
     update,
     refresh,
+    startListening,
+    stopListening,
   }
 }
 
