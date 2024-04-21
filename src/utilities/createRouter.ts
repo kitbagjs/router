@@ -1,4 +1,4 @@
-import { App, readonly } from 'vue'
+import { App } from 'vue'
 import { RouterLink, RouterView } from '@/components'
 import { routerInjectionKey, routerRejectionKey } from '@/compositions'
 import { RoutesKey } from '@/types'
@@ -8,6 +8,7 @@ import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { RouterReplace, RouterReplaceOptions } from '@/types/routerReplace'
 import { Url, isUrl } from '@/types/url'
 import { createCurrentRoute } from '@/utilities/createCurrentRoute'
+import { createReadonlyResolvedRoute } from '@/utilities/createReadonlyResolvedRoute'
 import { createRouterFind } from '@/utilities/createRouterFind'
 import { createRouterHistory } from '@/utilities/createRouterHistory'
 import { routeHookStoreKey, createRouterHooks } from '@/utilities/createRouterHooks'
@@ -142,7 +143,7 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
   }
 
   const router: Router<T> = {
-    route: readonly(route),
+    route: createReadonlyResolvedRoute(route),
     resolve,
     push,
     replace,
