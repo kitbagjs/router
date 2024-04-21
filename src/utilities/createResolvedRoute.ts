@@ -1,7 +1,7 @@
 import { readonly } from 'vue'
-import { ReadonlyResolvedRoute, ResolvedRoute } from '@/types/resolved'
+import { ResolvedRoute, ResolvedRouteSource } from '@/types/resolved'
 
-export function createReadonlyResolvedRoute(route: ResolvedRoute): ReadonlyResolvedRoute {
+export function createResolvedRoute(route: ResolvedRouteSource): ResolvedRoute {
   const restricted = readonly(route)
 
   return new Proxy(restricted, {

@@ -2,6 +2,7 @@ import { RouteMatchRule } from '@/types'
 import { ResolvedRoute } from '@/types/resolved'
 import { Routes } from '@/types/route'
 import { createMaybeRelativeUrl } from '@/utilities/createMaybeRelativeUrl'
+import { createResolvedRoute } from '@/utilities/createResolvedRoute'
 import { createResolvedRouteQuery } from '@/utilities/createResolvedRouteQuery'
 import { getRouteParamValues, routeParamsAreValid } from '@/utilities/paramValidation'
 import { routePathMatches, routeQueryMatches } from '@/utilities/routeMatchRegexRules'
@@ -24,13 +25,13 @@ export function getResolvedRouteForUrl(routes: Routes, url: string): ResolvedRou
   const query = createResolvedRouteQuery(search)
   const params = getRouteParamValues(route, url)
 
-  return {
+  return createResolvedRoute({
     matched: route.matched,
     matches: route.matches,
     key: route.key,
     query,
     params,
-  }
+  })
 }
 
 const isNamedRoute: RouteMatchRule = (route) => {

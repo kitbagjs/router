@@ -1,6 +1,7 @@
 import { expect, test, vi } from 'vitest'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouteProps } from '@/types/routeProps'
+import { createResolvedRoute } from '@/utilities/createResolvedRoute'
 import { createResolvedRouteQuery } from '@/utilities/createResolvedRouteQuery'
 import { getBeforeRouteHooksFromRoutes } from '@/utilities/getRouteHooks'
 import { component } from '@/utilities/testHelpers'
@@ -17,13 +18,13 @@ function mockRoute(name: string): RouteProps {
 }
 
 function mockResolvedRoute(matched: RouteProps, matches: RouteProps[]): ResolvedRoute {
-  return {
+  return createResolvedRoute({
     matched,
     matches,
     key: matched.name!,
     query: createResolvedRouteQuery(),
     params: {},
-  }
+  })
 }
 
 test('given two ResolvedRoutes returns before timing hooks in correct order', () => {
