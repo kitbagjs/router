@@ -10,7 +10,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { AsyncComponentLoader, DeepReadonly, computed, defineAsyncComponent, provide, resolveComponent } from 'vue'
+  import { AsyncComponentLoader, DeepReadonly, computed, defineAsyncComponent, provide } from 'vue'
   import { useRejection } from '@/compositions/useRejection'
   import { useRouter } from '@/compositions/useRouter'
   import { useRouterDepth } from '@/compositions/useRouterDepth'
@@ -19,7 +19,6 @@
   const router = useRouter()
   const rejection = useRejection()
   const depth = useRouterDepth()
-  const routerView = resolveComponent('RouterView', true)
 
   defineSlots<{
     default?: (props: {
@@ -31,16 +30,15 @@
   provide(depthInjectionKey, depth + 1)
 
   const component = computed(() => {
-    const routeComponent = router.route.matches[depth].component
+    const routeComponent = router.route.matches[depth]?.component
 
     if (routeComponent) {
       if (typeof routeComponent === 'function') {
         return defineAsyncComponent(routeComponent as AsyncComponentLoader)
       }
-
       return routeComponent
     }
 
-    return routerView
+    return 'span'
   })
 </script>

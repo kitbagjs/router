@@ -136,7 +136,7 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
   function install(app: App): void {
     app.component('RouterView', RouterView)
     app.component('RouterLink', RouterLink)
-    app.provide(routerInjectionKey, router as any)
+    app.provide(routerInjectionKey, router)
     app.provide(routerRejectionKey, rejection)
     app.provide(routeHookStoreKey, hooks)
   }

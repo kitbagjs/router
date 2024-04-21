@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'vitest'
+import RouterView from '@/components/routerView.vue'
 import { createRoutes } from '@/utilities/createRoutes'
 import { component } from '@/utilities/testHelpers'
 
@@ -52,4 +53,15 @@ describe('route key dot notation', () => {
     expect(childRoute?.key).toBe('child')
   })
 
+})
+
+test('given route without component, sets component default to RouterView', () => {
+  const [route] = createRoutes([
+    {
+      name: 'without-component',
+      path: '/without-component',
+    },
+  ])
+
+  expect(route.matched.component).toMatchObject(RouterView)
 })
