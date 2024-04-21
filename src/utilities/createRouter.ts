@@ -1,7 +1,7 @@
 import { App, readonly } from 'vue'
 import { RouterLink, RouterView } from '@/components'
 import { routerInjectionKey, routerRejectionKey } from '@/compositions'
-import { RoutesKey } from '@/types'
+import { ResolvedRoute, RoutesKey } from '@/types'
 import { Routes } from '@/types/route'
 import { Router, RouterOptions, RouterReject } from '@/types/router'
 import { RouterPush, RouterPushOptions } from '@/types/routerPush'
@@ -41,9 +41,6 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
 
     const beforeResponse = await runBeforeRouteHooks({ to, from, hooks })
 
-    const setHistory = (): void => history.update(url, { replace })
-    const setRoute = (): void => updateRoute(to)
-
     switch (beforeResponse.status) {
       // On abort do nothing
       case 'ABORT':
@@ -51,28 +48,28 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
 
       // On push update the history, and push new route, and return
       case 'PUSH':
-        setHistory()
+        history.update(url, { replace })
         push(...beforeResponse.to)
         return
 
       // On reject update the history, the route, and set the rejection type
       case 'REJECT':
-        setHistory()
-        setRoute()
+        history.update(url, { replace })
         setRejection(beforeResponse.type)
         break
 
       // On success update history, set the route, and clear the rejection
       case 'SUCCESS':
-        setHistory()
-        setRoute()
+        history.update(url, { replace })
         setRejection(null)
         break
 
       default:
         throw new Error(`Switch is not exhaustive for before hook response status: ${JSON.stringify(beforeResponse satisfies never)}`)
     }
+  }
 
+  async function afterUpdate(to: ResolvedRoute, from: ResolvedRoute): Promise<void> {
     const afterResponse = await runAfterRouteHooks({ to, from, hooks })
 
     switch (afterResponse.status) {
@@ -132,6 +129,15 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
 
   const initialUrl = getInitialUrl(options.initialUrl)
   const initialized = update(initialUrl, { replace: true })
+
+  history.listen(({ location }) => {
+    const url = `${location.pathname}${location.search}${location.hash}`
+    const to = getResolvedRouteForUrl(routes, url) ?? getRejectionRoute('NotFound')
+    const from = route
+
+    updateRoute(to)
+    afterUpdate(to, from)
+  })
 
   function install(app: App): void {
     app.component('RouterView', RouterView)

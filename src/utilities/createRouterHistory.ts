@@ -5,16 +5,10 @@ type NavigationPushOptions = {
   replace?: boolean,
 }
 
-type NavigationForward = () => void
-type NavigationBack = () => void
-type NavigationGo = (delta: number) => void
 type NavigationUpdate = (url: string, options?: NavigationPushOptions) => void
 type NavigationRefresh = () => void
 
-export type RouterHistory = {
-  forward: NavigationForward,
-  back: NavigationBack,
-  go: NavigationGo,
+export type RouterHistory = History & {
   update: NavigationUpdate,
   refresh: NavigationRefresh,
 }
@@ -43,9 +37,7 @@ export function createRouterHistory({ mode }: RouterHistoryOptions = {}): Router
   }
 
   return {
-    forward: history.forward,
-    back: history.back,
-    go: history.go,
+    ...history,
     update,
     refresh,
   }
