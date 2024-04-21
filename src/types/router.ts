@@ -18,7 +18,7 @@ export type RouterOptions = {
 
 export type Router<
   TRoutes extends Routes = []
-> = {
+> = Plugin & {
   route: DeepReadonly<ResolvedRoute>,
   resolve: RouterResolve<TRoutes>,
   push: RouterPush<TRoutes>,
@@ -36,4 +36,4 @@ export type Router<
   onAfterRouteLeave: AddAfterRouteHook,
   onAfterRouteUpdate: AddAfterRouteHook,
   initialized: Promise<void>,
-} & Plugin
+}

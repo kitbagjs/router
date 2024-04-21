@@ -39,6 +39,6 @@
       return routeComponent
     }
 
-    return 'span'
+    return null
   })
 </script>
