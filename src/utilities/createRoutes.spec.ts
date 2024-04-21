@@ -60,6 +60,7 @@ test('given route without component, sets component default to RouterView', () =
     {
       name: 'without-component',
       path: '/without-component',
+      children: [],
     },
   ])
 
