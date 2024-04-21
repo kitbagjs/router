@@ -1,4 +1,4 @@
-import { App, DeepReadonly } from 'vue'
+import { DeepReadonly, Plugin } from 'vue'
 import { AddAfterRouteHook, AddBeforeRouteHook } from '@/types/hooks'
 import { ResolvedRoute } from '@/types/resolved'
 import { Routes } from '@/types/route'
@@ -18,7 +18,7 @@ export type RouterOptions = {
 
 export type Router<
   TRoutes extends Routes = []
-> = {
+> = Plugin & {
   route: DeepReadonly<ResolvedRoute>,
   resolve: RouterResolve<TRoutes>,
   push: RouterPush<TRoutes>,
@@ -29,7 +29,6 @@ export type Router<
   back: () => void,
   forward: () => void,
   go: (delta: number) => void,
-  install: (app: App) => void,
   onBeforeRouteEnter: AddBeforeRouteHook,
   onBeforeRouteLeave: AddBeforeRouteHook,
   onBeforeRouteUpdate: AddBeforeRouteHook,

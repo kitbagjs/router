@@ -1,4 +1,5 @@
 import { markRaw } from 'vue'
+import RouterView from '@/components/routerView.vue'
 import { DuplicateParamsError } from '@/errors'
 import { ParentRouteProps, RouteProps, Route, isParentRoute } from '@/types'
 import { checkDuplicateKeys } from '@/utilities/checkDuplicateKeys'
@@ -11,7 +12,10 @@ import { Query, ToQuery, toQuery } from '@/utilities/query'
 export function createRoutes<const TRoutes extends Readonly<RouteProps[]>>(routes: TRoutes): FlattenRoutes<TRoutes>
 export function createRoutes(routesProps: Readonly<RouteProps[]>): Route[] {
   const routes = routesProps.reduce<Route[]>((routes, routeProps) => {
-    const route = createRoute(routeProps)
+    const route = createRoute({
+      ...routeProps,
+      component: routeProps.component ?? RouterView,
+    })
 
     if (isParentRoute(routeProps) && routeProps.children) {
       routes.push(...routeProps.children.map(childRoute => ({
@@ -19,7 +23,7 @@ export function createRoutes(routesProps: Readonly<RouteProps[]>): Route[] {
         key: combineName(route.key, childRoute.key),
         path: combinePath(route.path, childRoute.path),
         query: combineQuery(route.query, childRoute.query),
-        matches: [...childRoute.matches, route.matched],
+        matches: [route.matched, ...childRoute.matches],
         depth: childRoute.depth + 1,
       })))
     }
