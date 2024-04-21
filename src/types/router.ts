@@ -1,6 +1,6 @@
-import { DeepReadonly, Plugin } from 'vue'
+import { Plugin } from 'vue'
 import { AddAfterRouteHook, AddBeforeRouteHook } from '@/types/hooks'
-import { ResolvedRoute } from '@/types/resolved'
+import { ReadonlyResolvedRoute } from '@/types/resolved'
 import { Routes } from '@/types/route'
 import { RouterPush } from '@/types/routerPush'
 import { RouterReplace } from '@/types/routerReplace'
@@ -19,7 +19,7 @@ export type RouterOptions = {
 export type Router<
   TRoutes extends Routes = []
 > = Plugin & {
-  route: DeepReadonly<ResolvedRoute>,
+  route: ReadonlyResolvedRoute,
   resolve: RouterResolve<TRoutes>,
   push: RouterPush<TRoutes>,
   replace: RouterReplace<TRoutes>,
