@@ -25,7 +25,7 @@ export type ParentRouteProps = WithHooks & {
   path: string | Path,
   query?: string | Query,
   disabled?: boolean,
-  children?: Routes,
+  children: Routes,
   component?: RouteComponent,
   meta?: RouteMeta,
 }
