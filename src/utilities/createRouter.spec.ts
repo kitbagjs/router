@@ -52,3 +52,40 @@ test('updates the route when navigating', async () => {
 
   expect(route.matched.name).toBe('second')
 })
+
+test('route is readonly except for individual params', async () => {
+  const routes = createRoutes([
+    {
+      name: 'root',
+      component,
+      path: '/:param',
+    },
+  ])
+
+  const { route, initialized } = createRouter(routes, {
+    initialUrl: '/hello',
+  })
+
+  await initialized
+
+  // @ts-expect-error
+  route.key = 'child'
+  expect(route.key).toBe('root')
+
+  // @ts-expect-error
+  route.matched = 'match'
+  expect(route.matched).toMatchObject(routes[0].matched)
+
+  // @ts-expect-error
+  route.matches = 'matches'
+  expect(route.matches).toMatchObject(routes[0].matches)
+
+  // @ts-expect-error
+  route.params = { foo: 'bar' }
+  expect(route.params).toMatchObject({ param: 'hello' })
+
+  // @ts-expect-error
+  route.params.param = 'goodbye'
+  // @ts-expect-error
+  expect(route.params.param).toBe('goodbye')
+})

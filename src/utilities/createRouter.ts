@@ -1,5 +1,5 @@
 import { createPath } from 'history'
-import { App, readonly } from 'vue'
+import { App } from 'vue'
 import { RouterLink, RouterView } from '@/components'
 import { routerInjectionKey, routerRejectionKey } from '@/compositions'
 import { RoutesKey } from '@/types'
@@ -9,6 +9,7 @@ import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { RouterReplace, RouterReplaceOptions } from '@/types/routerReplace'
 import { Url, isUrl } from '@/types/url'
 import { createCurrentRoute } from '@/utilities/createCurrentRoute'
+import { createResolvedRoute } from '@/utilities/createResolvedRoute'
 import { createRouterFind } from '@/utilities/createRouterFind'
 import { createRouterHistory } from '@/utilities/createRouterHistory'
 import { routeHookStoreKey, createRouterHooks } from '@/utilities/createRouterHooks'
@@ -47,7 +48,7 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
   async function update(url: string, { replace }: RouterUpdateOptions = {}): Promise<void> {
     history.stopListening()
 
-    const to = getResolvedRouteForUrl(routes, url) ?? getRejectionRoute('NotFound')
+    const to = getResolvedRouteForUrl(routes, url) ?? createResolvedRoute(getRejectionRoute('NotFound'))
     const from = route
 
     const beforeResponse = await runBeforeRouteHooks({ to, from, hooks })
@@ -154,7 +155,7 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
   }
 
   const router: Router<T> = {
-    route: readonly(route),
+    route,
     resolve,
     push,
     replace,
