@@ -49,7 +49,7 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
     history.stopListening()
 
     const to = getResolvedRouteForUrl(routes, url) ?? createResolvedRoute(getRejectionRoute('NotFound'))
-    const from = route
+    const from = { ...route }
 
     const beforeResponse = await runBeforeRouteHooks({ to, from, hooks })
 

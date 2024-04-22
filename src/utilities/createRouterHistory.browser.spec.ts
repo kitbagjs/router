@@ -2,11 +2,13 @@ import { expect, test, vi } from 'vitest'
 import { createRouterHistory } from '@/utilities/createRouterHistory'
 import { random } from '@/utilities/testHelpers'
 
+function noop(): void {}
+
 test('when go is called, forwards call to window history', () => {
   vi.spyOn(window.history, 'go')
 
   const delta = random.number({ min: 0, max: 100 })
-  const history = createRouterHistory()
+  const history = createRouterHistory({ listener: noop })
 
   history.go(delta)
 
@@ -16,7 +18,7 @@ test('when go is called, forwards call to window history', () => {
 test('when back is called, forwards call to window history', () => {
   vi.spyOn(window.history, 'go')
 
-  const history = createRouterHistory()
+  const history = createRouterHistory({ listener: noop })
 
   history.back()
 
@@ -26,7 +28,7 @@ test('when back is called, forwards call to window history', () => {
 test('when forward is called, forwards call to window history', () => {
   vi.spyOn(window.history, 'go')
 
-  const history = createRouterHistory()
+  const history = createRouterHistory({ listener: noop })
 
   history.forward()
 
