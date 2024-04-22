@@ -1,4 +1,6 @@
-import { expect, test } from 'vitest'
+import { flushPromises } from '@vue/test-utils'
+import { expect, test, vi } from 'vitest'
+import { toRefs } from 'vue'
 import { createRouter } from '@/utilities/createRouter'
 import { createRoutes } from '@/utilities/createRoutes'
 import { component } from '@/utilities/testHelpers'
@@ -62,11 +64,15 @@ test('route is readonly except for individual params', async () => {
     },
   ])
 
-  const { route, initialized } = createRouter(routes, {
+  const router = createRouter(routes, {
     initialUrl: '/hello',
   })
 
-  await initialized
+  await router.initialized
+
+  const spy = vi.spyOn(router, 'push')
+
+  const { route } = router
 
   // @ts-expect-error
   route.key = 'child'
@@ -86,6 +92,23 @@ test('route is readonly except for individual params', async () => {
 
   // @ts-expect-error
   route.params.param = 'goodbye'
+
+  expect(spy).toHaveBeenCalledOnce()
+
+  await flushPromises()
+
   // @ts-expect-error
   expect(route.params.param).toBe('goodbye')
+
+  // @ts-expect-error
+  const { param } = toRefs(route.params)
+
+  param.value = 'again'
+
+  expect(spy).toHaveBeenCalledTimes(2)
+
+  await flushPromises()
+
+  // @ts-expect-error
+  expect(route.params.param).toBe('again')
 })
