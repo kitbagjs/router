@@ -1,7 +1,7 @@
-import { Ref, markRaw, ref } from 'vue'
+import { Ref, markRaw, ref, readonly } from 'vue'
 import { NotFound } from '@/components'
 import { RegisteredRejectionType, RouteComponent } from '@/types'
-import { ResolvedRoute, ResolvedRouteSource } from '@/types/resolved'
+import { ResolvedRoute } from '@/types/resolved'
 import { createResolvedRouteQuery } from '@/utilities/createResolvedRouteQuery'
 
 export const builtInRejections = ['NotFound'] as const
@@ -21,7 +21,7 @@ export type RouterRejectionComponents = RegisteredRejectionType extends never
 
 export type RouterSetReject = (type: RouterRejectionType | null) => void
 
-type GetRejectionRoute = (type: RouterRejectionType) => ResolvedRouteSource
+type GetRejectionRoute = (type: RouterRejectionType) => ResolvedRoute
 type IsRejectionRoute = (route: ResolvedRoute) => boolean
 
 export type RouterRejection = Ref<null | { type: RouterRejectionType, component: RouteComponent }>
@@ -63,14 +63,16 @@ export function createRouterReject({
       component,
     }
 
-    return {
+    const resolved = readonly({
       matched: route,
       matches: [route],
       key: type,
       query: createResolvedRouteQuery(''),
       params: {},
       [isRejectionRouteSymbol]: true,
-    }
+    })
+
+    return resolved
   }
 
   const isRejectionRoute: IsRejectionRoute = (route: RouterRejectionRoute) => {
