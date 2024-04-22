@@ -1,3 +1,4 @@
+import { createPath } from 'history'
 import { App } from 'vue'
 import { RouterLink, RouterView } from '@/components'
 import { routerInjectionKey, routerRejectionKey } from '@/compositions'
@@ -24,7 +25,15 @@ type RouterUpdateOptions = {
 
 export function createRouter<const T extends Routes>(routes: T, options: RouterOptions = {}): Router<T> {
   const resolve = createRouterResolve(routes)
-  const history = createRouterHistory({ mode: options.historyMode })
+  const history = createRouterHistory({
+    mode: options.historyMode,
+    listener: () => {
+      const url = createPath(location)
+
+      update(url)
+    },
+  })
+
   const { runBeforeRouteHooks, runAfterRouteHooks } = createRouteHookRunners<T>()
   const {
     hooks,
@@ -37,13 +46,12 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
   } = createRouterHooks()
 
   async function update(url: string, { replace }: RouterUpdateOptions = {}): Promise<void> {
+    history.stopListening()
+
     const to = getResolvedRouteForUrl(routes, url) ?? createResolvedRoute(getRejectionRoute('NotFound'))
     const from = route
 
     const beforeResponse = await runBeforeRouteHooks({ to, from, hooks })
-
-    const setHistory = (): void => history.update(url, { replace })
-    const setRoute = (): void => updateRoute(to)
 
     switch (beforeResponse.status) {
       // On abort do nothing
@@ -52,22 +60,22 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
 
       // On push update the history, and push new route, and return
       case 'PUSH':
-        setHistory()
-        push(...beforeResponse.to)
+        history.update(url, { replace })
+        await push(...beforeResponse.to)
         return
 
       // On reject update the history, the route, and set the rejection type
       case 'REJECT':
-        setHistory()
-        setRoute()
+        history.update(url, { replace })
         setRejection(beforeResponse.type)
+        updateRoute(to)
         break
 
       // On success update history, set the route, and clear the rejection
       case 'SUCCESS':
-        setHistory()
-        setRoute()
+        history.update(url, { replace })
         setRejection(null)
+        updateRoute(to)
         break
 
       default:
@@ -78,7 +86,7 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
 
     switch (afterResponse.status) {
       case 'PUSH':
-        push(...afterResponse.to)
+        await push(...afterResponse.to)
         break
 
       case 'REJECT':
@@ -92,6 +100,8 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
         const exhaustive: never = afterResponse
         throw new Error(`Switch is not exhaustive for after hook response status: ${JSON.stringify(exhaustive)}`)
     }
+
+    history.startListening()
   }
 
   const push: RouterPush<T> = (source: Url | RoutesKey<T>, paramsOrOptions?: Record<string, unknown> | RouterPushOptions, maybeOptions?: RouterPushOptions) => {
@@ -130,6 +140,8 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
   const { setRejection, rejection, getRejectionRoute } = createRouterReject(options)
   const notFoundRoute = getRejectionRoute('NotFound')
   const { route, updateRoute } = createCurrentRoute(notFoundRoute)
+
+  history.startListening()
 
   const initialUrl = getInitialUrl(options.initialUrl)
   const initialized = update(initialUrl, { replace: true })

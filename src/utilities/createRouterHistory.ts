@@ -1,31 +1,28 @@
-import { createBrowserHistory, createHashHistory, createMemoryHistory, createPath, History } from 'history'
+import { createBrowserHistory, createHashHistory, createMemoryHistory, createPath, History, Listener } from 'history'
 import { isBrowser } from '@/utilities/isBrowser'
 
 type NavigationPushOptions = {
   replace?: boolean,
 }
 
-type NavigationForward = () => void
-type NavigationBack = () => void
-type NavigationGo = (delta: number) => void
 type NavigationUpdate = (url: string, options?: NavigationPushOptions) => void
 type NavigationRefresh = () => void
 
-export type RouterHistory = {
-  forward: NavigationForward,
-  back: NavigationBack,
-  go: NavigationGo,
+export type RouterHistory = History & {
   update: NavigationUpdate,
   refresh: NavigationRefresh,
+  startListening: () => void,
+  stopListening: () => void,
 }
 
 export type RouterHistoryMode = 'auto' | 'browser' | 'memory' | 'hash'
 
 type RouterHistoryOptions = {
+  listener?: Listener,
   mode?: RouterHistoryMode,
 }
 
-export function createRouterHistory({ mode }: RouterHistoryOptions = {}): RouterHistory {
+export function createRouterHistory({ mode, listener }: RouterHistoryOptions = {}): RouterHistory {
   const history = createHistory(mode)
 
   const update: NavigationUpdate = (url, options) => {
@@ -42,12 +39,24 @@ export function createRouterHistory({ mode }: RouterHistoryOptions = {}): Router
     return history.replace(url)
   }
 
+  let removeListener: (() => void) | undefined
+
+  const startListening: () => void = () => {
+    if (!!listener && removeListener === undefined) {
+      removeListener = history.listen(listener)
+    }
+  }
+
+  const stopListening: () => void = () => {
+    removeListener?.()
+  }
+
   return {
-    forward: history.forward,
-    back: history.back,
-    go: history.go,
+    ...history,
     update,
     refresh,
+    startListening,
+    stopListening,
   }
 }
 
