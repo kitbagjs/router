@@ -18,11 +18,11 @@ export type RouterHistory = History & {
 export type RouterHistoryMode = 'auto' | 'browser' | 'memory' | 'hash'
 
 type RouterHistoryOptions = {
-  listener?: Listener,
+  listener: Listener,
   mode?: RouterHistoryMode,
 }
 
-export function createRouterHistory({ mode, listener }: RouterHistoryOptions = {}): RouterHistory {
+export function createRouterHistory({ mode, listener }: RouterHistoryOptions): RouterHistory {
   const history = createHistory(mode)
 
   const update: NavigationUpdate = (url, options) => {
@@ -42,10 +42,8 @@ export function createRouterHistory({ mode, listener }: RouterHistoryOptions = {
   let removeListener: (() => void) | undefined
 
   const startListening: () => void = () => {
-    if (listener) {
-      removeListener?.()
-      removeListener = history.listen(listener)
-    }
+    removeListener?.()
+    removeListener = history.listen(listener)
   }
 
   const stopListening: () => void = () => {
