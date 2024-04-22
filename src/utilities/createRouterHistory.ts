@@ -42,7 +42,8 @@ export function createRouterHistory({ mode, listener }: RouterHistoryOptions = {
   let removeListener: (() => void) | undefined
 
   const startListening: () => void = () => {
-    if (!!listener && removeListener === undefined) {
+    if (listener) {
+      removeListener?.()
       removeListener = history.listen(listener)
     }
   }
