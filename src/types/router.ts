@@ -1,6 +1,6 @@
 import { Plugin } from 'vue'
 import { AddAfterRouteHook, AddBeforeRouteHook } from '@/types/hooks'
-import { ResolvedRoute, RouterRoute } from '@/types/resolved'
+import { RouterRoute } from '@/types/resolved'
 import { Routes } from '@/types/route'
 import { RouterPush } from '@/types/routerPush'
 import { RouterReplace } from '@/types/routerReplace'
