@@ -1,7 +1,7 @@
 import { expect, test, vi } from 'vitest'
+import { readonly } from 'vue'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouteProps } from '@/types/routeProps'
-import { createResolvedRoute } from '@/utilities/createResolvedRoute'
 import { createResolvedRouteQuery } from '@/utilities/createResolvedRouteQuery'
 import { getBeforeRouteHooksFromRoutes } from '@/utilities/getRouteHooks'
 import { component } from '@/utilities/testHelpers'
@@ -18,7 +18,7 @@ function mockRoute(name: string): RouteProps {
 }
 
 function mockResolvedRoute(matched: RouteProps, matches: RouteProps[]): ResolvedRoute {
-  return createResolvedRoute({
+  return readonly({
     matched,
     matches,
     key: matched.name!,

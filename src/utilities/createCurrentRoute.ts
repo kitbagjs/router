@@ -1,6 +1,5 @@
 import { reactive } from 'vue'
-import { ResolvedRoute, ResolvedRouteSource } from '@/types/resolved'
-import { createResolvedRoute } from '@/utilities/createResolvedRoute'
+import { ResolvedRoute } from '@/types/resolved'
 
 type ResolvedRouteUpdate = (route: ResolvedRoute) => void
 
@@ -9,7 +8,7 @@ type CurrentRoute = {
   updateRoute: ResolvedRouteUpdate,
 }
 
-export function createCurrentRoute(fallbackRoute: ResolvedRouteSource): CurrentRoute {
+export function createCurrentRoute(fallbackRoute: ResolvedRoute): CurrentRoute {
   const route = reactive(fallbackRoute)
 
   const updateRoute: ResolvedRouteUpdate = (newRoute) => {
@@ -17,7 +16,7 @@ export function createCurrentRoute(fallbackRoute: ResolvedRouteSource): CurrentR
   }
 
   return {
-    route: createResolvedRoute(route),
+    route,
     updateRoute,
   }
 }
