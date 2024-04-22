@@ -1,4 +1,4 @@
-import { reactive } from 'vue'
+import { readonly, reactive } from 'vue'
 import { ResolvedRoute } from '@/types/resolved'
 
 type ResolvedRouteUpdate = (route: ResolvedRoute) => void
@@ -9,14 +9,14 @@ type CurrentRoute = {
 }
 
 export function createCurrentRoute(fallbackRoute: ResolvedRoute): CurrentRoute {
-  const route = reactive(fallbackRoute)
+  const route = reactive({ ...fallbackRoute })
 
   const updateRoute: ResolvedRouteUpdate = (newRoute) => {
-    Object.assign(route, newRoute)
+    Object.assign(route, { ...newRoute })
   }
 
   return {
-    route,
+    route: readonly(route),
     updateRoute,
   }
 }
