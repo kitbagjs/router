@@ -17,7 +17,7 @@ export function createRoutes(routesProps: Readonly<RouteProps[]>): Route[] {
       component: routeProps.component ?? RouterView,
     })
 
-    if (isParentRoute(routeProps) && routeProps.children) {
+    if (isParentRoute(routeProps)) {
       routes.push(...routeProps.children.map(childRoute => ({
         ...childRoute,
         key: combineName(route.key, childRoute.key),
