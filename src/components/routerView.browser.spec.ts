@@ -2,7 +2,6 @@ import { mount, flushPromises } from '@vue/test-utils'
 import { expect, test } from 'vitest'
 import { defineAsyncComponent } from 'vue'
 import helloWorld from '@/components/helloWorld'
-import { notFoundText } from '@/components/notFound'
 import { createRouter, createRoutes } from '@/utilities'
 
 test('renders component for initial route', async () => {
@@ -147,7 +146,7 @@ test.each([
   expect(app.html()).toBe(helloWorld.template)
 })
 
-test('Renders the NotFound component when the initialUrl does not match', async () => {
+test('Renders the genericRejection component when the initialUrl does not match', async () => {
   const router = createRouter([], {
     initialUrl: '/does-not-exist',
   })
@@ -164,10 +163,10 @@ test('Renders the NotFound component when the initialUrl does not match', async 
     },
   })
 
-  expect(app.text()).toBe(notFoundText)
+  expect(app.text()).toBe('NotFound')
 })
 
-test('Renders custom NotFound component when the initialUrl does not match', async () => {
+test('Renders custom genericRejection component when the initialUrl does not match', async () => {
   const NotFound = { template: 'Custom Not Found' }
   const router = createRouter([], {
     initialUrl: '/does-not-exist',
@@ -221,7 +220,7 @@ test('Renders the NotFound component when the router.push does not match', async
 
   await router.push('/does-not-exist')
 
-  expect(app.text()).toBe(notFoundText)
+  expect(app.text()).toBe('NotFound')
 })
 
 test('Renders the route component when the router.push does match after a rejection', async () => {
@@ -249,7 +248,7 @@ test('Renders the route component when the router.push does match after a reject
     },
   })
 
-  expect(app.text()).toBe(notFoundText)
+  expect(app.text()).toBe('NotFound')
 
   await router.push('/')
 
