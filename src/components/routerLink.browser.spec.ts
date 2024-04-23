@@ -64,7 +64,7 @@ test.each([
 
   await router.initialized
 
-  const spy = vi.spyOn<any, 'push'>(router, 'push')
+  const spy = vi.spyOn(router, 'push')
 
   const root = {
     template: '<RouterView />',
@@ -97,7 +97,7 @@ test('to prop as string renders and routes correctly', () => {
     initialUrl: '/route',
   })
 
-  const spy = vi.spyOn<any, 'push'>(router, 'push')
+  const spy = vi.spyOn(router, 'push')
 
   const wrapper = mount(routerLink, {
     props: {
