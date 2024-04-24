@@ -32,4 +32,6 @@ export type OnlyRequiredProperties<T> = {
   [K in keyof T as Extract<T[K], undefined> extends never ? K : never]: T[K]
 }
 
-export type AllPropertiesAreOptional<T> = IsEmptyObject<OnlyRequiredProperties<T>>
+export type AllPropertiesAreOptional<T> = Record<string, unknown> extends T
+  ? true
+  : IsEmptyObject<OnlyRequiredProperties<T>>

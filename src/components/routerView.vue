@@ -10,11 +10,11 @@
 </template>
 
 <script lang="ts" setup>
-  import { AsyncComponentLoader, DeepReadonly, computed, defineAsyncComponent, provide } from 'vue'
+  import { AsyncComponentLoader, computed, defineAsyncComponent, provide } from 'vue'
   import { useRejection } from '@/compositions/useRejection'
   import { useRouter } from '@/compositions/useRouter'
   import { useRouterDepth } from '@/compositions/useRouterDepth'
-  import { ResolvedRoute, RouteComponent, depthInjectionKey } from '@/types'
+  import { RouteComponent, RouterRoute, depthInjectionKey } from '@/types'
 
   const router = useRouter()
   const rejection = useRejection()
@@ -22,7 +22,7 @@
 
   defineSlots<{
     default?: (props: {
-      route: DeepReadonly<ResolvedRoute>,
+      route: RouterRoute,
       component: RouteComponent,
     }) => unknown,
   }>()
