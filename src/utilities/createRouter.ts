@@ -153,23 +153,8 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
     app.provide(routeHookStoreKey, hooks)
   }
 
-  const route2 = new Proxy(route, {
-    get(target, prop, receiver) {
-      if (prop === 'params') {
-        return new Proxy(route.params, {
-          set(target, prop, value) {
-            router.push(route.key, { ...target, [prop]: value })
-            return true
-          },
-        })
-      }
-
-      return Reflect.get(target, prop, receiver)
-    },
-  })
-
   const router: Router<T> = {
-    route: route2,
+    route,
     resolve,
     push,
     replace,
