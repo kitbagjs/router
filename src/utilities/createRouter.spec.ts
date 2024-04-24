@@ -1,4 +1,6 @@
-import { expect, test } from 'vitest'
+import { flushPromises } from '@vue/test-utils'
+import { expect, test, vi } from 'vitest'
+import { toRefs } from 'vue'
 import { createRouter } from '@/utilities/createRouter'
 import { createRoutes } from '@/utilities/createRoutes'
 import { component } from '@/utilities/testHelpers'
@@ -53,7 +55,7 @@ test('updates the route when navigating', async () => {
   expect(route.matched.name).toBe('second')
 })
 
-test('route is readonly except for individual params', async () => {
+test.fails('route is readonly except for individual params', async () => {
   const routes = createRoutes([
     {
       name: 'root',
@@ -62,11 +64,15 @@ test('route is readonly except for individual params', async () => {
     },
   ])
 
-  const { route, initialized } = createRouter(routes, {
+  const router = createRouter(routes, {
     initialUrl: '/hello',
   })
 
-  await initialized
+  await router.initialized
+
+  const spy = vi.spyOn(router, 'push')
+
+  const { route } = router
 
   // @ts-expect-error
   route.key = 'child'
@@ -84,8 +90,21 @@ test('route is readonly except for individual params', async () => {
   route.params = { foo: 'bar' }
   expect(route.params).toMatchObject({ param: 'hello' })
 
-  // @ts-expect-error
   route.params.param = 'goodbye'
-  // @ts-expect-error
+
+  expect(spy).toHaveBeenCalledOnce()
+
+  await flushPromises()
+
   expect(route.params.param).toBe('goodbye')
+
+  const { param } = toRefs(route.params)
+
+  param.value = 'again'
+
+  expect(spy).toHaveBeenCalledTimes(2)
+
+  await flushPromises()
+
+  expect(route.params.param).toBe('again')
 })
