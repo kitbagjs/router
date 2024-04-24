@@ -97,10 +97,8 @@ test('route is readonly except for individual params', async () => {
 
   await flushPromises()
 
-  // @ts-expect-error
   expect(route.params.param).toBe('goodbye')
 
-  // @ts-expect-error
   const { param } = toRefs(route.params)
 
   param.value = 'again'
@@ -109,6 +107,5 @@ test('route is readonly except for individual params', async () => {
 
   await flushPromises()
 
-  // @ts-expect-error
   expect(route.params.param).toBe('again')
 })

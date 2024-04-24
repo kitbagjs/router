@@ -3,7 +3,9 @@ import { ResolvedRouteQuery } from '@/types/resolvedQuery'
 import { ExtractRouteParamTypes, Route } from '@/types/route'
 import { RouteProps } from '@/types/routeProps'
 
-export type ResolvedRoute<TRoute extends Route = Route> = DeepReadonly<{
+type BaseResolvedRoute = Route & { pathParams: Record<string, unknown>, queryParams: Record<string, unknown> }
+
+export type ResolvedRoute<TRoute extends Route = BaseResolvedRoute> = DeepReadonly<{
   matched: TRoute['matched'],
   matches: RouteProps[],
   key: TRoute['key'],
@@ -11,6 +13,6 @@ export type ResolvedRoute<TRoute extends Route = Route> = DeepReadonly<{
   params: ExtractRouteParamTypes<TRoute>,
 }>
 
-export type RouterRoute<TRoute extends Route = Route> = Omit<ResolvedRoute<TRoute>, 'params'> & Readonly<{
+export type RouterRoute<TRoute extends Route = BaseResolvedRoute> = Omit<ResolvedRoute<TRoute>, 'params'> & Readonly<{
   params: ExtractRouteParamTypes<TRoute>,
 }>
