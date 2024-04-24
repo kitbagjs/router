@@ -1,12 +1,12 @@
-import { DeepReadonly, watch } from 'vue'
+import { watch } from 'vue'
 import { useRouter } from '@/compositions/useRouter'
 import { UseRouteInvalidError } from '@/errors'
-import { RegisteredRouteMap, ResolvedRoute } from '@/types'
+import { RegisteredRouteMap, RouterRoute } from '@/types'
 import { combineName } from '@/utilities/combineName'
 
-export function useRoute<TRouteKey extends string & keyof RegisteredRouteMap>(routeKey: TRouteKey): DeepReadonly<ResolvedRoute<RegisteredRouteMap[TRouteKey]>>
-export function useRoute(): DeepReadonly<ResolvedRoute>
-export function useRoute(routeKey?: string): DeepReadonly<ResolvedRoute> {
+export function useRoute<TRouteKey extends string & keyof RegisteredRouteMap>(routeKey: TRouteKey): RouterRoute<RegisteredRouteMap[TRouteKey]>
+export function useRoute(): RouterRoute
+export function useRoute(routeKey?: string): RouterRoute {
   const router = useRouter()
 
   function checkRouteKeyIsValid(): void {
