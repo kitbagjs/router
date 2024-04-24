@@ -48,7 +48,7 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
     history.stopListening()
 
     const to = getResolvedRouteForUrl(routes, url) ?? getRejectionRoute('NotFound')
-    const from = { ...resolvedRoute }
+    const from = { ...currentRoute }
 
     const beforeResponse = await runBeforeRouteHooks({ to, from, hooks })
 
@@ -138,7 +138,7 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
   const find = createRouterFind(routes)
   const { setRejection, rejection, getRejectionRoute } = createRouterReject(options)
   const notFoundRoute = getRejectionRoute('NotFound')
-  const { resolvedRoute, routerRoute, updateRoute } = createCurrentRoute(notFoundRoute)
+  const { currentRoute, routerRoute, updateRoute } = createCurrentRoute(notFoundRoute)
 
   history.startListening()
 

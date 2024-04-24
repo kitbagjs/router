@@ -4,7 +4,7 @@ import { ResolvedRoute, RouterRoute } from '@/types/resolved'
 type ResolvedRouteUpdate = (route: ResolvedRoute) => void
 
 type CurrentRouteContext = {
-  resolvedRoute: ResolvedRoute,
+  currentRoute: ResolvedRoute,
   routerRoute: RouterRoute,
   updateRoute: ResolvedRouteUpdate,
 }
@@ -17,7 +17,7 @@ export function createCurrentRoute(fallbackRoute: ResolvedRoute): CurrentRouteCo
   }
 
   return {
-    resolvedRoute: readonly(route),
+    currentRoute: readonly(route),
     routerRoute: readonly(route),
     updateRoute,
   }
