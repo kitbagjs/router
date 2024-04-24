@@ -1,5 +1,4 @@
 export * from './array'
-export * from './createCurrentRoute'
 export * from './createMaybeRelativeUrl'
 export * from './createResolvedRouteQuery'
 export * from './createRouter'
