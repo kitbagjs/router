@@ -23,4 +23,4 @@ export type Route<
 
 export type ExtractRouteParamTypes<TRoute extends { pathParams: Record<string, unknown>, queryParams: Record<string, unknown> }> = TRoute extends { pathParams: infer PathParams extends Record<string, Param | undefined>, queryParams: infer QueryParams extends Record<string, Param | undefined> }
   ? ExtractParamTypes<MergeParams<PathParams, QueryParams>>
-  : Readonly<Record<string, unknown>>
+  : Record<string, unknown>
