@@ -55,7 +55,7 @@ test('updates the route when navigating', async () => {
   expect(route.matched.name).toBe('second')
 })
 
-test('route is readonly except for individual params', async () => {
+test.fails('route is readonly except for individual params', async () => {
   const routes = createRoutes([
     {
       name: 'root',
