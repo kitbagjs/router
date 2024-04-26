@@ -3,7 +3,7 @@ import { ResolvedRoute } from '@/types/resolved'
 import { RouteUpdate, RouteUpdateOptions, RouterUpdate } from '@/types/routerUpdate'
 
 export type RouterRoute<TRoute extends ResolvedRoute = ResolvedRoute> = Omit<ResolvedRoute, 'params'> & Readonly<{
-  params: TRoute['params'],
+  params: { -readonly [P in keyof TRoute['params']]: TRoute['params'][P] },
   update: RouteUpdate<TRoute>,
 }>
 

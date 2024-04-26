@@ -90,7 +90,6 @@ test.fails('route is readonly except for individual params', async () => {
   route.params = { foo: 'bar' }
   expect(route.params).toMatchObject({ param: 'hello' })
 
-  // @ts-expect-error
   route.params.param = 'goodbye'
 
   expect(spy).toHaveBeenCalledOnce()
