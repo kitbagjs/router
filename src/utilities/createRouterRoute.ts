@@ -1,9 +1,9 @@
-import { readonly } from 'vue'
+import { Writable } from '@/types'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouteUpdate, RouteUpdateOptions, RouterUpdate } from '@/types/routerUpdate'
 
 export type RouterRoute<TRoute extends ResolvedRoute = ResolvedRoute> = Omit<ResolvedRoute, 'params'> & Readonly<{
-  params: { -readonly [P in keyof TRoute['params']]: TRoute['params'][P] },
+  params: Writable<TRoute['params']>,
   update: RouteUpdate<TRoute>,
 }>
 
@@ -13,14 +13,14 @@ export function createRouterRoute<TRoute extends ResolvedRoute>(route: TRoute, u
       return update(route, keyOrParams, valueOrOptions)
     }
 
-    const updatedParams = readonly({
+    const updatedParams: Partial<ResolvedRoute['params']> = {
       ...route.params,
       [keyOrParams]: valueOrOptions,
-    })
+    }
     return update(route, updatedParams, maybeOptions)
   }
 
-  return new Proxy(route as RouterRoute<TRoute>, {
+  return new Proxy<RouterRoute<TRoute>>(route, {
     get: (target, prop, receiver) => {
       if (prop === 'update') {
         return routeUpdate
