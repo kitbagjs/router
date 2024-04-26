@@ -2,11 +2,12 @@ import { createPath } from 'history'
 import { App } from 'vue'
 import { RouterLink, RouterView } from '@/components'
 import { routerInjectionKey, routerRejectionKey } from '@/compositions'
-import { RoutesKey } from '@/types'
 import { Routes } from '@/types/route'
 import { Router, RouterOptions, RouterReject } from '@/types/router'
 import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { RouterReplace, RouterReplaceOptions } from '@/types/routerReplace'
+import { RouteUpdateOptions, RouterUpdate } from '@/types/routerUpdate'
+import { RoutesKey } from '@/types/routesMap'
 import { Url, isUrl } from '@/types/url'
 import { createCurrentRoute } from '@/utilities/createCurrentRoute'
 import { createRouterFind } from '@/utilities/createRouterFind'
@@ -29,7 +30,7 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
     listener: () => {
       const url = createPath(location)
 
-      update(url)
+      set(url)
     },
   })
 
@@ -44,7 +45,7 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
     onAfterRouteLeave,
   } = createRouterHooks()
 
-  async function update(url: string, { replace }: RouterUpdateOptions = {}): Promise<void> {
+  async function set(url: string, { replace }: RouterUpdateOptions = {}): Promise<void> {
     history.stopListening()
 
     const to = getResolvedRouteForUrl(routes, url) ?? getRejectionRoute('NotFound')
@@ -108,14 +109,14 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
       const options: RouterPushOptions = { ...paramsOrOptions }
       const url = resolve(source, options)
 
-      return update(url, { replace: options.replace })
+      return set(url, { replace: options.replace })
     }
 
     const options: RouterPushOptions = { ...maybeOptions }
     const params: any = paramsOrOptions ?? {}
     const url = resolve(source, params, options)
 
-    return update(url, { replace: options.replace })
+    return set(url, { replace: options.replace })
   }
 
   const replace: RouterReplace<T> = (source: Url | RoutesKey<T>, paramsOrOptions?: Record<string, unknown> | RouterReplaceOptions, maybeOptions?: RouterReplaceOptions) => {
@@ -131,6 +132,18 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
     return push(source, params, options)
   }
 
+  const update: RouterUpdate = (
+    params: Record<string, unknown>,
+    options: RouteUpdateOptions = {},
+  ): Promise<void> => {
+    const updatedParams: any = {
+      ...currentRoute.params,
+      ...params,
+    }
+
+    return push(currentRoute.key, updatedParams, options)
+  }
+
   const reject: RouterReject = (type) => {
     return setRejection(type)
   }
@@ -143,7 +156,7 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
   history.startListening()
 
   const initialUrl = getInitialUrl(options.initialUrl)
-  const initialized = update(initialUrl, { replace: true })
+  const initialized = set(initialUrl, { replace: true })
 
   function install(app: App): void {
     app.component('RouterView', RouterView)
@@ -158,6 +171,7 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
     resolve,
     push,
     replace,
+    update,
     reject,
     find,
     refresh: history.refresh,
