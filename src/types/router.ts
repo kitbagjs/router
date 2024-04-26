@@ -1,6 +1,5 @@
 import { Plugin } from 'vue'
 import { AddAfterRouteHook, AddBeforeRouteHook } from '@/types/hooks'
-import { RouterRoute } from '@/types/resolved'
 import { Routes } from '@/types/route'
 import { RouterPush } from '@/types/routerPush'
 import { RouterReplace } from '@/types/routerReplace'
@@ -9,6 +8,7 @@ import { RouterFind } from '@/utilities/createRouterFind'
 import { RouterHistoryMode } from '@/utilities/createRouterHistory'
 import { RouterRejectionComponents, RouterRejectionType } from '@/utilities/createRouterReject'
 import { RouterResolve } from '@/utilities/createRouterResolve'
+import { RouterRoute } from '@/utilities/createRouterRoute'
 
 export type RouterReject = (type: RouterRejectionType) => void
 

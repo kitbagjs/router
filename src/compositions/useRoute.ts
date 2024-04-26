@@ -1,10 +1,11 @@
 import { watch } from 'vue'
 import { useRouter } from '@/compositions/useRouter'
 import { UseRouteInvalidError } from '@/errors'
-import { RegisteredRouteMap, RouterRoute } from '@/types'
+import { RegisteredRouteMap, ResolvedRoute } from '@/types'
 import { combineName } from '@/utilities/combineName'
+import { RouterRoute } from '@/utilities/createRouterRoute'
 
-export function useRoute<TRouteKey extends string & keyof RegisteredRouteMap>(routeKey: TRouteKey): RouterRoute<RegisteredRouteMap[TRouteKey]>
+export function useRoute<TRouteKey extends string & keyof RegisteredRouteMap>(routeKey: TRouteKey): RouterRoute<ResolvedRoute<RegisteredRouteMap[TRouteKey]>>
 export function useRoute(): RouterRoute
 export function useRoute(routeKey?: string): RouterRoute {
   const router = useRouter()
