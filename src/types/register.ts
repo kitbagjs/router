@@ -14,7 +14,7 @@ export interface Register {
 
 export type RegisteredRouter = Register extends { router: infer TRouter }
   ? TRouter
-  : Router<any>
+  : Router
 
 export type RegisteredRoutes = Register extends { router: Router<infer TRoutes extends Routes> }
   ? TRoutes

@@ -18,7 +18,7 @@ type RouterPushArgs<
   : [params: TParams, options?: RouterPushOptions]
 
 export type RouterPush<
-  TRoutes extends Routes
+  TRoutes extends Routes = any
 > = {
   <TSource extends RoutesKey<TRoutes>>(source: TSource, ...args: RouterPushArgs<TRoutes, TSource>): Promise<void>,
   (source: Url, options?: RouterPushOptions): Promise<void>,
