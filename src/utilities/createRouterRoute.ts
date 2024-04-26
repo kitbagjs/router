@@ -20,7 +20,7 @@ export function createRouterRoute<TRoute extends ResolvedRoute>(route: TRoute, u
     return update(route, updatedParams, maybeOptions)
   }
 
-  return new Proxy(route as RouterRoute, {
+  return new Proxy(route as RouterRoute<TRoute>, {
     get: (target, prop, receiver) => {
       if (prop === 'update') {
         return routeUpdate
