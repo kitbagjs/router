@@ -12,7 +12,3 @@ export type ResolvedRoute<TRoute extends Route = BaseResolvedRoute> = DeepReadon
   query: ResolvedRouteQuery,
   params: ExtractRouteParamTypes<TRoute>,
 }>
-
-export type RouterRoute<TRoute extends Route = BaseResolvedRoute> = Omit<ResolvedRoute<TRoute>, 'params'> & Readonly<{
-  params: ExtractRouteParamTypes<TRoute>,
-}>

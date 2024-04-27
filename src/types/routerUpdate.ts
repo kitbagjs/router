@@ -1,5 +1,4 @@
-import { Param } from '@/types/params'
-import { ExtractRouteParamTypes, Route } from '@/types/route'
+import { ResolvedRoute } from '@/types/resolved'
 
 export type RouteUpdateOptions = {
   query?: Record<string, string>,
@@ -8,7 +7,7 @@ export type RouteUpdateOptions = {
 
 export type RouterUpdate = (params: Partial<Record<string, unknown>>, options?: RouteUpdateOptions) => Promise<void>
 
-export type RouteUpdate<TRoute extends Route = Route, TParams extends Record<string, Param | undefined> = ExtractRouteParamTypes<TRoute>> = {
-  <TKey extends keyof TParams>(key: TKey, value: TParams[TKey], options?: RouteUpdateOptions): Promise<void>,
-  (params: Partial<TParams>, options?: RouteUpdateOptions): Promise<void>,
+export type RouteUpdate<TRoute extends ResolvedRoute = ResolvedRoute> = {
+  <TKey extends keyof TRoute['params']>(key: TKey, value: TRoute['params'][TKey], options?: RouteUpdateOptions): Promise<void>,
+  (params: Partial<TRoute['params']>, options?: RouteUpdateOptions): Promise<void>,
 }

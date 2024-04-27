@@ -108,6 +108,23 @@ router.push('https://github.com/kitbagjs/router')
 
 This `source` argument is type safe, expecting either a Url or a valid route "key". Url is any string that starts with "http", "https", or a forward slash "/". Route key is a string of route names joined by a period `.` that lead to a non-disabled route. Additionally if using the route key, push will require params be passed in if there are any.
 
+## Update
+
+If you only wish to change the params on the current route you can use `router.update`.
+
+```ts
+router.update('myParam': 123)
+```
+
+or for setting multiple params at once
+
+```ts
+router.update({
+  myParam: 123,
+  tab: 'github',
+})
+```
+
 ## RouterView
 
 Give your route components a place to be mounted

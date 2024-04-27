@@ -107,3 +107,20 @@ Push also let's you pass `replace: true` to achieve the same behavior.
 ```ts
 router.push('user.settings', params, { replace: true })
 ```
+
+## Update
+
+If you only wish to change the params on the current route you can use `router.update`.
+
+```ts
+router.update('myParam': 123)
+```
+
+or for setting multiple params at once
+
+```ts
+router.update({
+  myParam: 123,
+  tab: 'github',
+})
+```

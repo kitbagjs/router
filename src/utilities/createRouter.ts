@@ -148,7 +148,7 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
   const find = createRouterFind(routes)
   const { setRejection, rejection, getRejectionRoute } = createRouterReject(options)
   const notFoundRoute = getRejectionRoute('NotFound')
-  const { currentRoute, routerRoute, updateRoute } = createCurrentRoute(notFoundRoute)
+  const { currentRoute, routerRoute, updateRoute } = createCurrentRoute(notFoundRoute, update)
 
   history.startListening()
 
