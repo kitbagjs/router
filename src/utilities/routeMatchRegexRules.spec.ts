@@ -93,6 +93,7 @@ describe('routeQueryMatches', () => {
     ['http://www.kitbag.io/'],
     ['http://www.kitbag.io/is/empty'],
     ['http://www.kitbag.io/is/empty?with=query'],
+    ['http://www.kitbag.io/is/empty?not=emptyish'],
   ])('given url and route.query that does NOT match, returns false', (url) => {
     const [route] = createRoutes([
       {

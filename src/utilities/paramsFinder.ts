@@ -1,10 +1,11 @@
 import { Param } from '@/types'
 import { setParamValue } from '@/utilities/params'
+import { Path } from '@/utilities/path'
 import { replaceParamSyntaxWithCatchAlls } from '@/utilities/routeRegex'
 import { stringHasValue } from '@/utilities/string'
 
-export function getParamValueFromUrl(url: string, path: string, paramName: string): string | undefined {
-  const regexPattern = getParamRegexPattern(path, paramName)
+export function getParamValueFromUrl(url: string, path: Path | string, paramName: string): string | undefined {
+  const regexPattern = getParamRegexPattern(path.toString(), paramName)
   const [paramValue] = getCaptureGroups(url, regexPattern)
 
   return paramValue

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { createRoutes, countExpectedQueryKeys, component, getRouteScoreSortMethod } from '@/utilities'
+import { createRoutes, countExpectedQueryParams, component, getRouteScoreSortMethod } from '@/utilities'
 
 describe('countExpectedQueryKeys', () => {
   test('given route without query, returns 0', () => {
@@ -12,7 +12,7 @@ describe('countExpectedQueryKeys', () => {
     ])
     const actualQuery = new URLSearchParams('/?can=have&some=queries')
 
-    const response = countExpectedQueryKeys(route, actualQuery)
+    const response = countExpectedQueryParams(route, actualQuery)
 
     expect(response).toBe(0)
   })
@@ -28,7 +28,7 @@ describe('countExpectedQueryKeys', () => {
     ])
     const actualQuery = new URLSearchParams('value=red')
 
-    const response = countExpectedQueryKeys(route, actualQuery)
+    const response = countExpectedQueryParams(route, actualQuery)
 
     expect(response).toBe(1)
   })
@@ -44,7 +44,7 @@ describe('countExpectedQueryKeys', () => {
     ])
     const actualQuery = new URLSearchParams('three=3&one=1&four=4&two=2')
 
-    const response = countExpectedQueryKeys(route, actualQuery)
+    const response = countExpectedQueryParams(route, actualQuery)
 
     expect(response).toBe(4)
   })
@@ -60,13 +60,59 @@ describe('countExpectedQueryKeys', () => {
     ])
     const actualQuery = new URLSearchParams('one=1&three=3')
 
-    const response = countExpectedQueryKeys(route, actualQuery)
+    const response = countExpectedQueryParams(route, actualQuery)
 
     expect(response).toBe(2)
   })
 })
 
 describe('getRouteScoreSortMethod', () => {
+  test('given routes with different path scores, returns them sorted by path score descending', () => {
+    const [aRoute, bRoute] = createRoutes([
+      {
+        name: 'lower-path',
+        path: ':?color',
+        component,
+      },
+      {
+        name: 'higher-path',
+        path: ':?color/:?id',
+        component,
+      },
+    ])
+
+    const sortByRouteScore = getRouteScoreSortMethod('/red/123')
+    const response = [aRoute, bRoute].sort(sortByRouteScore)
+
+    expect(response).toMatchObject([bRoute, aRoute])
+  })
+
+  test('given routes with equal path scores, returns them sorted by route depth descending', () => {
+    const routes = createRoutes([
+      {
+        name: 'lower-depth',
+        path: '/:?color',
+        component,
+      },
+      {
+        name: 'higher-depth',
+        path: '/',
+        children: createRoutes([
+          {
+            name: 'higher-depth-child',
+            path: ':?color',
+            component,
+          },
+        ]),
+      },
+    ])
+
+    const sortByRouteScore = getRouteScoreSortMethod('/red')
+    const response = routes.sort(sortByRouteScore)
+
+    expect(response.map(route => route.matched.name)).toMatchObject(['higher-depth-child', 'lower-depth', 'higher-depth'])
+  })
+
   test('given routes with different query scores, returns them sorted by query score descending', () => {
     const [aRoute, bRoute] = createRoutes([
       {
