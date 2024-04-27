@@ -6,7 +6,7 @@ import { Routes } from '@/types/route'
 import { Router, RouterOptions, RouterReject } from '@/types/router'
 import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { RouterReplace, RouterReplaceOptions } from '@/types/routerReplace'
-import { RouteUpdateOptions, RouterUpdate } from '@/types/routerUpdate'
+import { RouterUpdate } from '@/types/routerUpdate'
 import { RoutesKey } from '@/types/routesMap'
 import { Url, isUrl } from '@/types/url'
 import { createCurrentRoute } from '@/utilities/createCurrentRoute'
@@ -132,10 +132,7 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
     return push(source, params, options)
   }
 
-  const update: RouterUpdate = (
-    params: Record<string, unknown>,
-    options: RouteUpdateOptions = {},
-  ): Promise<void> => {
+  const update: RouterUpdate = (params, options = {}): Promise<void> => {
     const updatedParams: any = {
       ...currentRoute.params,
       ...params,

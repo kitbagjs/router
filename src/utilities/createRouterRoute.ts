@@ -10,17 +10,17 @@ export type RouterRoute<TRoute extends ResolvedRoute = ResolvedRoute> = Omit<Res
 export function createRouterRoute<TRoute extends ResolvedRoute>(route: TRoute, update: RouterUpdate): RouterRoute<TRoute> {
   function routeUpdate(keyOrParams: PropertyKey | Partial<ResolvedRoute['params']>, valueOrOptions: any, maybeOptions?: RouteUpdateOptions): Promise<void> {
     if (typeof keyOrParams === 'object') {
-      return update(route, keyOrParams, valueOrOptions)
+      return update(keyOrParams, valueOrOptions)
     }
 
     const updatedParams: Partial<ResolvedRoute['params']> = {
       ...route.params,
       [keyOrParams]: valueOrOptions,
     }
-    return update(route, updatedParams, maybeOptions)
+    return update(updatedParams, maybeOptions)
   }
 
-  return new Proxy<RouterRoute<TRoute>>(route, {
+  return new Proxy(route as RouterRoute<TRoute>, {
     get: (target, prop, receiver) => {
       if (prop === 'update') {
         return routeUpdate
