@@ -7,7 +7,7 @@
 :white_check_mark: View transition effects powered by Vue.js' transition system **(todo!)**  
 :white_check_mark: Fine-grained navigation control  
 :white_check_mark: Links with automatic active CSS classes **(todo!)**  
-:x: HTML5 history mode or hash mode  
+:white_check_mark: HTML5 history mode or hash mode  
 :white_check_mark: Customizable Scroll Behavior **(todo!)**  
 :white_check_mark: Proper encoding for URLs **(todo?)**  
 
