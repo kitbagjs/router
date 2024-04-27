@@ -53,6 +53,7 @@ export default defineConfig({
         {
           text: 'Advanced Concepts',
           items: [
+            { text: 'Route Matching', link: '/advanced-concepts/route-matching' },
             { text: 'Rejections', link: '/advanced-concepts/rejections' },
             { text: 'Hooks', link: '/advanced-concepts/hooks' },
             { text: 'Route Meta', link: '/advanced-concepts/route-meta' },
