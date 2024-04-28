@@ -1,5 +1,5 @@
 import { readonly, reactive } from 'vue'
-import { RouterUpdate } from '@/types'
+import { RouterPush } from '@/types'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouterRoute, createRouterRoute } from '@/utilities/createRouterRoute'
 
@@ -11,7 +11,7 @@ type CurrentRouteContext = {
   updateRoute: ResolvedRouteUpdate,
 }
 
-export function createCurrentRoute(fallbackRoute: ResolvedRoute, update: RouterUpdate): CurrentRouteContext {
+export function createCurrentRoute(fallbackRoute: ResolvedRoute, push: RouterPush): CurrentRouteContext {
   const route = reactive({ ...fallbackRoute })
 
   const updateRoute: ResolvedRouteUpdate = (newRoute) => {
@@ -20,7 +20,7 @@ export function createCurrentRoute(fallbackRoute: ResolvedRoute, update: RouterU
 
   return {
     currentRoute: readonly(route),
-    routerRoute: createRouterRoute(route, update),
+    routerRoute: createRouterRoute(route, push),
     updateRoute,
   }
 }
