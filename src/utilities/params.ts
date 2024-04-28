@@ -13,7 +13,7 @@ type OptionalParamGetSet<TParam extends Param, TValue = ExtractParamType<TParam>
   get: (value: string | undefined, extras: ParamExtras) => TValue,
 }
 
-function isOptionalParam(param: Param | OptionalParamGetSet<Param>): param is OptionalParamGetSet<Param> {
+export function isOptionalParam(param: Param | OptionalParamGetSet<Param>): param is OptionalParamGetSet<Param> {
   return optionalKey in param
 }
 
