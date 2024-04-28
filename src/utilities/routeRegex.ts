@@ -11,7 +11,7 @@ export function generateRouteQueryRegexPatterns(route: Route): RegExp[] {
 
   return Array
     .from(queryParams.entries())
-    .map(([key, value]) => new RegExp(`${key}=${replaceParamSyntaxWithCatchAlls(value)}(&|$)`, 'i'))
+    .map(([key, value]) => new RegExp(`${key}(=${replaceParamSyntaxWithCatchAlls(value)})?(&|$)`, 'i'))
 }
 
 export function replaceParamSyntaxWithCatchAlls(value: string): string {

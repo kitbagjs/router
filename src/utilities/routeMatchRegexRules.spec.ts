@@ -91,9 +91,9 @@ describe('routeQueryMatches', () => {
     ['we*23mf#0'],
     ['http://www.kitbag.io'],
     ['http://www.kitbag.io/'],
-    ['http://www.kitbag.io/is/empty'],
-    ['http://www.kitbag.io/is/empty?with=query'],
-    ['http://www.kitbag.io/is/empty?not=emptyish'],
+    ['http://www.kitbag.io/empty'],
+    ['http://www.kitbag.io/empty?with=query'],
+    ['http://www.kitbag.io/empty?not=emptyish'],
   ])('given url and route.query that does NOT match, returns false', (url) => {
     const [route] = createRoutes([
       {
@@ -138,6 +138,26 @@ describe('routeQueryMatches', () => {
         name: 'no-params',
         path: '',
         query: 'with=:params&static=:dynamic',
+        component,
+      },
+    ])
+
+    const response = routeQueryMatches(route, url)
+
+    expect(response).toBe(true)
+  })
+
+  test.each([
+    ['?optional'],
+    ['?optional='],
+    ['?optional=true'],
+    ['http://www.kitbag.io?extra=params&optional=provided'],
+  ])('given url and route.query with optional params that does match, returns true', (url) => {
+    const [route] = createRoutes([
+      {
+        name: 'optional-params',
+        path: '',
+        query: 'optional=:?optional',
         component,
       },
     ])
