@@ -57,3 +57,15 @@ function maybeAuthNeeded() {
   router.reject('AuthNeeded')
 }
 ```
+
+### Get Rejection
+
+Your rejection components have access to the current rejection with `useRejection`.
+
+```ts
+import { useRejection } from '@kitbag/router'
+
+const rejection = useRejection()
+
+const rejectionType = computed(() => rejection.value.type)
+```
