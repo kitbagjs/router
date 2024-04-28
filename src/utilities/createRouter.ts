@@ -6,7 +6,6 @@ import { Routes } from '@/types/route'
 import { Router, RouterOptions, RouterReject } from '@/types/router'
 import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { RouterReplace, RouterReplaceOptions } from '@/types/routerReplace'
-import { RouterUpdate } from '@/types/routerUpdate'
 import { RoutesKey } from '@/types/routesMap'
 import { Url, isUrl } from '@/types/url'
 import { createCurrentRoute } from '@/utilities/createCurrentRoute'
@@ -132,15 +131,6 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
     return push(source, params, options)
   }
 
-  const update: RouterUpdate = (params, options = {}): Promise<void> => {
-    const updatedParams: any = {
-      ...currentRoute.params,
-      ...params,
-    }
-
-    return push(currentRoute.key, updatedParams, options)
-  }
-
   const reject: RouterReject = (type) => {
     return setRejection(type)
   }
@@ -148,7 +138,7 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
   const find = createRouterFind(routes)
   const { setRejection, rejection, getRejectionRoute } = createRouterReject(options)
   const notFoundRoute = getRejectionRoute('NotFound')
-  const { currentRoute, routerRoute, updateRoute } = createCurrentRoute(notFoundRoute, update)
+  const { currentRoute, routerRoute, updateRoute } = createCurrentRoute(notFoundRoute, push)
 
   history.startListening()
 
@@ -168,7 +158,6 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
     resolve,
     push,
     replace,
-    update,
     reject,
     find,
     refresh: history.refresh,

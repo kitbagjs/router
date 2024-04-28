@@ -55,6 +55,33 @@ test('updates the route when navigating', async () => {
   expect(route.matched.name).toBe('second')
 })
 
+test('route update updates the current route', async () => {
+  const routes = createRoutes([
+    {
+      name: 'root',
+      component,
+      path: '/:param',
+    },
+  ])
+
+  const router = createRouter(routes, {
+    initialUrl: '/one',
+  })
+
+  await router.initialized
+
+  await router.route.update('param', 'two')
+
+  expect(router.route.params.param).toBe('two')
+
+  await router.route.update({
+    param: 'three',
+  })
+
+  expect(router.route.params.param).toBe('three')
+
+})
+
 test.fails('route is readonly except for individual params', async () => {
   const routes = createRoutes([
     {
