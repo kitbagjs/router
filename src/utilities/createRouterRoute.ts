@@ -1,23 +1,23 @@
-import { Writable } from '@/types'
+import { RouterPush, RouterPushOptions, Writable } from '@/types'
 import { ResolvedRoute } from '@/types/resolved'
-import { RouteUpdate, RouteUpdateOptions, RouterUpdate } from '@/types/routerUpdate'
+import { RouteUpdate } from '@/types/routeUpdate'
 
 export type RouterRoute<TRoute extends ResolvedRoute = ResolvedRoute> = Omit<ResolvedRoute, 'params'> & Readonly<{
   params: Writable<TRoute['params']>,
   update: RouteUpdate<TRoute>,
 }>
 
-export function createRouterRoute<TRoute extends ResolvedRoute>(route: TRoute, update: RouterUpdate): RouterRoute<TRoute> {
-  function routeUpdate(keyOrParams: PropertyKey | Partial<ResolvedRoute['params']>, valueOrOptions: any, maybeOptions?: RouteUpdateOptions): Promise<void> {
+export function createRouterRoute<TRoute extends ResolvedRoute>(route: TRoute, push: RouterPush): RouterRoute<TRoute> {
+  function routeUpdate(keyOrParams: PropertyKey | Partial<ResolvedRoute['params']>, valueOrOptions: any, maybeOptions?: RouterPushOptions): Promise<void> {
     if (typeof keyOrParams === 'object') {
-      return update(keyOrParams, valueOrOptions)
+      return push(keyOrParams, valueOrOptions)
     }
 
     const updatedParams: Partial<ResolvedRoute['params']> = {
       ...route.params,
       [keyOrParams]: valueOrOptions,
     }
-    return update(updatedParams, maybeOptions)
+    return push(updatedParams, maybeOptions)
   }
 
   return new Proxy(route as RouterRoute<TRoute>, {

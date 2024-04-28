@@ -3,7 +3,6 @@ import { AddAfterRouteHook, AddBeforeRouteHook } from '@/types/hooks'
 import { Routes } from '@/types/route'
 import { RouterPush } from '@/types/routerPush'
 import { RouterReplace } from '@/types/routerReplace'
-import { RouterUpdate } from '@/types/routerUpdate'
 import { RouterFind } from '@/utilities/createRouterFind'
 import { RouterHistoryMode } from '@/utilities/createRouterHistory'
 import { RouterRejectionComponents, RouterRejectionType } from '@/utilities/createRouterReject'
@@ -24,7 +23,6 @@ export type Router<
   resolve: RouterResolve<TRoutes>,
   push: RouterPush<TRoutes>,
   replace: RouterReplace<TRoutes>,
-  update: RouterUpdate,
   find: RouterFind<TRoutes>,
   reject: RouterReject,
   refresh: () => void,
