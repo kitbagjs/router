@@ -110,16 +110,16 @@ router.push('user.settings', params, { replace: true })
 
 ## Update
 
-If you only wish to change the params on the current route you can use `router.update`.
+If you only wish to change the params on the current route you can use `router.route.update`.
 
 ```ts
-router.update('myParam': 123)
+router.route.update('myParam': 123)
 ```
 
 or for setting multiple params at once
 
 ```ts
-router.update({
+router.route.update({
   myParam: 123,
   tab: 'github',
 })
