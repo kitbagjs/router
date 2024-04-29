@@ -8,7 +8,7 @@ export type RouterRoute<TRoute extends ResolvedRoute = ResolvedRoute> = Omit<Res
 }>
 
 export function createRouterRoute<TRoute extends ResolvedRoute>(route: TRoute, push: RouterPush): RouterRoute<TRoute> {
-  function routeUpdate(keyOrParams: PropertyKey | Partial<ResolvedRoute['params']>, valueOrOptions: any, maybeOptions?: RouterPushOptions): Promise<void> {
+  function update(keyOrParams: PropertyKey | Partial<ResolvedRoute['params']>, valueOrOptions: any, maybeOptions?: RouterPushOptions): Promise<void> {
     if (typeof keyOrParams === 'object') {
       const params = {
         ...route.params,
@@ -27,12 +27,22 @@ export function createRouterRoute<TRoute extends ResolvedRoute>(route: TRoute, p
   }
 
   return new Proxy(route as RouterRoute<TRoute>, {
-    get: (target, prop, receiver) => {
-      if (prop === 'update') {
-        return routeUpdate
+    get: (target, property, receiver) => {
+      if (property === 'update') {
+        return update
       }
 
-      return Reflect.get(target, prop, receiver)
+      if (property === 'params') {
+        return new Proxy(route.params, {
+          set(_target, property, value) {
+            update(property, value)
+
+            return true
+          },
+        })
+      }
+
+      return Reflect.get(target, property, receiver)
     },
   })
 }
