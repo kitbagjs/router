@@ -1,5 +1,5 @@
 import { flushPromises } from '@vue/test-utils'
-import { expect, test, vi } from 'vitest'
+import { expect, test } from 'vitest'
 import { toRefs } from 'vue'
 import { createRouter } from '@/utilities/createRouter'
 import { createRoutes } from '@/utilities/createRoutes'
@@ -82,24 +82,19 @@ test('route update updates the current route', async () => {
 
 })
 
-test.fails('route is readonly except for individual params', async () => {
+test('route is readonly except for individual params', async () => {
   const routes = createRoutes([
     {
       name: 'root',
       component,
-      path: '/:param',
+      path: '/',
     },
   ])
-
-  const router = createRouter(routes, {
-    initialUrl: '/hello',
+  const { route, initialized } = createRouter(routes, {
+    initialUrl: '/',
   })
 
-  await router.initialized
-
-  const spy = vi.spyOn(router, 'push')
-
-  const { route } = router
+  await initialized
 
   // @ts-expect-error
   route.key = 'child'
@@ -115,11 +110,25 @@ test.fails('route is readonly except for individual params', async () => {
 
   // @ts-expect-error
   route.params = { foo: 'bar' }
-  expect(route.params).toMatchObject({ param: 'hello' })
+  expect(route.params).toMatchObject({})
+})
+
+test('individual prams are writable', async () => {
+  const routes = createRoutes([
+    {
+      name: 'root',
+      component,
+      path: '/:param',
+    },
+  ])
+
+  const { route, initialized } = createRouter(routes, {
+    initialUrl: '/one',
+  })
+
+  await initialized
 
   route.params.param = 'goodbye'
-
-  expect(spy).toHaveBeenCalledOnce()
 
   await flushPromises()
 
@@ -129,9 +138,59 @@ test.fails('route is readonly except for individual params', async () => {
 
   param.value = 'again'
 
-  expect(spy).toHaveBeenCalledTimes(2)
-
   await flushPromises()
 
   expect(route.params.param).toBe('again')
+
+  route.params.nothing = 'nothing'
+
+  await flushPromises()
+
+  expect(route.params.nothing).toBeUndefined()
+})
+
+test('individual params are writable when using toRefs', async () => {
+  const routes = createRoutes([
+    {
+      name: 'root',
+      component,
+      path: '/:param',
+    },
+  ])
+
+  const { route, initialized } = createRouter(routes, {
+    initialUrl: '/one',
+  })
+
+  await initialized
+
+  const { param } = toRefs(route.params)
+
+  param.value = 'two'
+
+  await flushPromises()
+
+  expect(route.params.param).toBe('two')
+})
+
+test('setting an unknown param does not add its value to the route', async () => {
+  const routes = createRoutes([
+    {
+      name: 'root',
+      component,
+      path: '/',
+    },
+  ])
+
+  const { route, initialized } = createRouter(routes, {
+    initialUrl: '/',
+  })
+
+  await initialized
+
+  route.params.nothing = 'nothing'
+
+  await flushPromises()
+
+  expect(route.params.nothing).toBeUndefined()
 })
