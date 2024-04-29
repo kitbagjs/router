@@ -18,9 +18,12 @@ export function createCurrentRoute(fallbackRoute: ResolvedRoute, push: RouterPus
     Object.assign(route, { ...newRoute })
   }
 
+  const currentRoute = readonly(route)
+  const routerRoute = createRouterRoute(currentRoute, push)
+
   return {
-    currentRoute: readonly(route),
-    routerRoute: createRouterRoute(route, push),
+    currentRoute,
+    routerRoute,
     updateRoute,
   }
 }
