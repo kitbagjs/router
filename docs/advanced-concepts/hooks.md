@@ -76,9 +76,9 @@ const routes = createRoutes([
 In order to register a hook from within a component, you must use the [composition API](https://vuejs.org/guide/extras/composition-api-faq.html#composition-api-faq).
 
 ```ts
-import { useOnBeforeRouteLeave } from '@kitbag/router'
+import { onBeforeRouteLeave } from '@kitbag/router'
 
-useOnAfterRouteEnter((to, context) => {
+onAfterRouteEnter((to, context) => {
   ...
 })
 ```
