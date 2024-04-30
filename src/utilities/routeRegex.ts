@@ -11,7 +11,8 @@ export function generateRouteQueryRegexPatterns(route: Route): RegExp[] {
 
   return Array
     .from(queryParams.entries())
-    .map(([key, value]) => new RegExp(`${key}(=${replaceParamSyntaxWithCatchAlls(value)})?(&|$)`, 'i'))
+    .filter(([, value]) => !isOptionalParamSyntax(value))
+    .map(([key, value]) => new RegExp(`${key}=${replaceParamSyntaxWithCatchAlls(value)}(&|$)`, 'i'))
 }
 
 export function replaceParamSyntaxWithCatchAlls(value: string): string {
@@ -23,14 +24,18 @@ export function replaceParamSyntaxWithCatchAlls(value: string): string {
   }, value)
 }
 
-function replaceOptionalParamSyntaxWithCatchAll(value: string): string {
-  const optionalParamRegex = /(:\?[\w]+)(?=\W|$)/g
+const optionalParamRegex = /(:\?[\w]+)(?=\W|$)/g
+const requiredParamRegex = /(:[\w]+)(?=\W|$)/g
 
-  return value.replace(optionalParamRegex, '[^/]*')
+function replaceOptionalParamSyntaxWithCatchAll(value: string): string {
+  return value.replace(optionalParamRegex, '[^\\/]*')
+}
+
+function isOptionalParamSyntax(value: string): boolean {
+  return optionalParamRegex.test(value)
 }
 
 function replaceRequiredParamSyntaxWithCatchAll(value: string): string {
-  const requiredParamRegex = /(:[\w]+)(?=\W|$)/g
 
-  return value.replace(requiredParamRegex, '[^/]+')
+  return value.replace(requiredParamRegex, '[^\\/]+')
 }

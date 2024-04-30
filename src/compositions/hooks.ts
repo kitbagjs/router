@@ -41,8 +41,8 @@ function afterComponentHookFactory(lifecycle: AfterRouteHookLifecycle) {
   }
 }
 
-export const useOnBeforeRouteLeave: AddBeforeRouteHook = beforeComponentHookFactory('onBeforeRouteUpdate')
-export const useOnBeforeRouteUpdate: AddBeforeRouteHook = beforeComponentHookFactory('onBeforeRouteLeave')
-export const useOnAfterRouteEnter: AddAfterRouteHook = afterComponentHookFactory('onAfterRouteEnter')
-export const useOnAfterRouteLeave: AddAfterRouteHook = afterComponentHookFactory('onAfterRouteUpdate')
-export const useOnAfterRouteUpdate: AddAfterRouteHook = afterComponentHookFactory('onAfterRouteLeave')
+export const onBeforeRouteLeave: AddBeforeRouteHook = beforeComponentHookFactory('onBeforeRouteUpdate')
+export const onBeforeRouteUpdate: AddBeforeRouteHook = beforeComponentHookFactory('onBeforeRouteLeave')
+export const onAfterRouteEnter: AddAfterRouteHook = afterComponentHookFactory('onAfterRouteEnter')
+export const onAfterRouteLeave: AddAfterRouteHook = afterComponentHookFactory('onAfterRouteUpdate')
+export const onAfterRouteUpdate: AddAfterRouteHook = afterComponentHookFactory('onAfterRouteLeave')

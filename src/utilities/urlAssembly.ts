@@ -1,4 +1,4 @@
-import { Route } from '@/types'
+import { Param, Route } from '@/types'
 import { setParamValueOnUrl } from '@/utilities/paramsFinder'
 import { withQuery } from '@/utilities/withQuery'
 
@@ -12,11 +12,19 @@ export function assembleUrl(route: Route, options: AssembleUrlOptions = {}): str
   const params = Object.entries({ ...route.pathParams, ...route.queryParams })
   const path = route.path.toString()
   const query = route.query.toString()
-  const pathWithQuery = query.length ? `${path}?${query}` : path
 
-  const url = params.reduce<string>((url, [name, param]) => {
+  const pathWithParamsSet = assembleParamValues(path, params, paramValues)
+  const queryWithParamsSet = assembleParamValues(query, params, paramValues)
+
+  return withQuery(pathWithParamsSet, queryWithParamsSet, queryValues)
+}
+
+function assembleParamValues(part: string, params: [string, Param][], paramValues: Record<string, unknown>): string {
+  if (!part.length) {
+    return part
+  }
+
+  return params.reduce<string>((url, [name, param]) => {
     return setParamValueOnUrl(url, { name, param, value: paramValues[name] })
-  }, pathWithQuery)
-
-  return withQuery(url, queryValues)
+  }, part)
 }

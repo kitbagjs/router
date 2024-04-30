@@ -62,7 +62,7 @@ const route {
 :white_check_mark: ?foo=bar  
 :white_check_mark: ?kitbag=cat&foo=bar  
 :x: ?foo=123  
-:x: ?foo=  
+:x: ?foo  
 
 ```ts
 const route {
@@ -74,7 +74,7 @@ const route {
 :white_check_mark: ?foo=bar  
 :white_check_mark: ?kitbag=cat&foo=bar  
 :white_check_mark: ?foo=123  
-:x: ?foo=  
+:x: ?foo  
 
 ```ts
 const route {
@@ -86,7 +86,11 @@ const route {
 :white_check_mark: ?foo=bar  
 :white_check_mark: ?kitbag=cat&foo=bar  
 :white_check_mark: ?foo=123  
-:white_check_mark: ?foo=  
+:white_check_mark: ?foo  
+
+::: tip
+when your query param is optional, the entire property can be missing and the route will still match. For the example above with query `foo=:?bar`, the url might be `/my-route` without any query, or it might have an unrelated query `/my-route?other=value`, and still be a match because the entire foo param is optional.
+:::
 
 ### Params Are Valid
 

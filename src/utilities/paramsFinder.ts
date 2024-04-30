@@ -1,10 +1,9 @@
 import { Param } from '@/types'
 import { setParamValue } from '@/utilities/params'
-import { Path } from '@/utilities/path'
 import { replaceParamSyntaxWithCatchAlls } from '@/utilities/routeRegex'
 import { stringHasValue } from '@/utilities/string'
 
-export function getParamValueFromUrl(url: string, path: Path | string, paramName: string): string | undefined {
+export function getParamValueFromUrl(url: string, path: string, paramName: string): string | undefined {
   const regexPattern = getParamRegexPattern(path.toString(), paramName)
   const [paramValue] = getCaptureGroups(url, regexPattern)
 
@@ -46,13 +45,13 @@ function getParamRegexPattern(path: string, paramName: string): RegExp {
 function replaceOptionalParamSyntaxWithCaptureGroup(path: string, paramName: string): string {
   const optionalParamRegex = new RegExp(`(:\\?${paramName})(?=\\W|$)`, 'g')
 
-  return path.replace(optionalParamRegex, '([^/]*)')
+  return path.replace(optionalParamRegex, '([^\\/]*)')
 }
 
 function replaceRequiredParamSyntaxWithCaptureGroup(path: string, paramName: string): string {
   const requiredParamRegex = new RegExp(`(:${paramName})(?=\\W|$)`, 'g')
 
-  return path.replace(requiredParamRegex, '([^/]+)')
+  return path.replace(requiredParamRegex, '([^\\/]+)')
 }
 
 function getCaptureGroups(value: string, pattern: RegExp): string[] {
