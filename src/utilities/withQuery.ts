@@ -1,17 +1,19 @@
-export function withQuery(url: string, query?: Record<string, string>): string {
-  if (!query) {
-    return url
-  }
+export function withQuery(url: string, ...queries: (string | URLSearchParams | Record<string, string> | undefined)[]): string {
+  return queries.reduce<string>((value, query) => {
+    if (!query) {
+      return value
+    }
 
-  if (Object.keys(query).length === 0) {
-    return url
-  }
+    const queryString = new URLSearchParams(query).toString()
 
-  const queryString = new URLSearchParams(query).toString()
+    if (Object.keys(queryString).length === 0) {
+      return value
+    }
 
-  if (url.includes('?')) {
-    return `${url}&${queryString}`
-  }
+    if (value.includes('?')) {
+      return `${value}&${queryString}`
+    }
 
-  return `${url}?${queryString}`
+    return `${value}?${queryString}`
+  }, url)
 }

@@ -37,7 +37,7 @@ export function countExpectedPathParams(route: Route, actualPath: string): numbe
     .filter(([, value]) => isOptionalParam(value))
     .map(([key]) => key)
 
-  const missing = optionalParams.filter(expected => getParamValueFromUrl(actualPath, route.path, expected) === undefined)
+  const missing = optionalParams.filter(expected => getParamValueFromUrl(actualPath, route.path.toString(), expected) === undefined)
 
   return optionalParams.length - missing.length
 }

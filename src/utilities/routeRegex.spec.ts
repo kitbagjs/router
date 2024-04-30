@@ -29,7 +29,7 @@ describe('generateRoutePathRegexPattern', () => {
 
     const result = generateRoutePathRegexPattern(route)
 
-    const catchAll = '[^/]+'
+    const catchAll = '[^\\/]+'
     const expected = new RegExp(`^parent/child/${catchAll}/grand-child/${catchAll}$`, 'i')
     expect(result.toString()).toBe(expected.toString())
   })
@@ -45,7 +45,7 @@ describe('generateRoutePathRegexPattern', () => {
 
     const result = generateRoutePathRegexPattern(route)
 
-    const catchAll = '[^/]*'
+    const catchAll = '[^\\/]*'
     const expected = new RegExp(`^parent/child/${catchAll}/grand-child/${catchAll}$`, 'i')
     expect(result.toString()).toBe(expected.toString())
   })
@@ -66,7 +66,7 @@ describe('generateRouteQueryRegexPatterns', () => {
     expect(result).toMatchObject([])
   })
 
-  test('given query with params, returns value with params replaced with catchall', () => {
+  test('given query with required params, returns value with params replaced with catchall', () => {
     const [route] = createRoutes([
       {
         name: 'query-with-params',
@@ -82,7 +82,7 @@ describe('generateRouteQueryRegexPatterns', () => {
     expect(result).toMatchObject([new RegExp(`dynamic=${catchAll}`), new RegExp('static=params'), new RegExp(`dynamic=${catchAll}`)])
   })
 
-  test('given query with optional params, returns value with params replaced with catchall', () => {
+  test('given query with optional params, returns value without params', () => {
     const [route] = createRoutes([
       {
         name: 'query-with-optional-params',
@@ -94,7 +94,6 @@ describe('generateRouteQueryRegexPatterns', () => {
 
     const result = generateRouteQueryRegexPatterns(route)
 
-    const catchAll = '([^/]*)'
-    expect(result).toMatchObject([new RegExp(`dynamic=${catchAll}`), new RegExp('static=params'), new RegExp(`dynamic=${catchAll}`)])
+    expect(result).toMatchObject([new RegExp('static=params')])
   })
 })
