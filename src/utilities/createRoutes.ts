@@ -46,7 +46,7 @@ export function createRoutes(routesProps: Readonly<RouteProps[]>): Route[] {
 function createRoute(route: RouteProps): Route {
   const path = toPath(route.path)
   const query = toQuery(route.query)
-  const rawRoute = markRaw(route)
+  const rawRoute = markRaw({ meta: {}, ...route })
 
   return {
     matched: rawRoute,
