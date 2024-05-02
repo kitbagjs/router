@@ -1,8 +1,10 @@
 import { ExtractParamTypes, MergeParams, Param } from '@/types/params'
-import { RouteProps } from '@/types/routeProps'
+import { RouteMeta, RouteProps } from '@/types/routeProps'
 import { Path, Query, ToPath, ToQuery } from '@/utilities'
 
 export type Routes = Readonly<Route[]>
+
+type RoutePropsWithMeta = RouteProps & { meta: RouteMeta }
 
 export type Route<
   TKey extends string | undefined = any,
@@ -10,8 +12,8 @@ export type Route<
   TQuery extends string | Query | undefined = Query,
   TDisabled extends boolean | undefined = boolean
 > = {
-  matched: RouteProps,
-  matches: RouteProps[],
+  matched: RoutePropsWithMeta,
+  matches: RoutePropsWithMeta[],
   key: TKey,
   path: ToPath<TPath>,
   query: ToQuery<TQuery>,

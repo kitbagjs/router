@@ -7,9 +7,7 @@ import { Query } from '@/utilities/query'
 
 export type RouteComponent = Component | DefineComponent | AsyncComponentLoader
 
-export interface RouteMeta {
-
-}
+export interface RouteMeta extends Record<string, unknown> {}
 
 type WithHooks = {
   onBeforeRouteEnter?: MaybeArray<BeforeRouteHook>,

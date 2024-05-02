@@ -66,3 +66,15 @@ test('given route without component, sets component default to RouterView', () =
 
   expect(route.matched.component).toMatchObject(RouterView)
 })
+
+test('given route without meta, sets meta equal to empty object', () => {
+  const [route] = createRoutes([
+    {
+      name: 'without-meta',
+      path: '/without-meta',
+      component,
+    },
+  ])
+
+  expect(route.matched.meta).toEqual({})
+})

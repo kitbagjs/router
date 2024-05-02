@@ -1,14 +1,12 @@
 # Route Matching
 
-## Rules
-
 There are several rules Kitbag Router uses to determine which of your routes corresponds to the current URL.
 
-### Named
+## Named
 
 Routes without a [name](/core-concepts/defining-routes#route-names) property cannot be a direct match.
 
-### Path Matches
+## Path Matches
 
 Routes `path` must match the structure of the URL pathname.
 
@@ -48,7 +46,7 @@ const route {
 :white_check_mark: parent//child  
 :x: parent/child  
 
-### Query Matches
+## Query Matches
 
 Routes `query` must match the structure of the URL search.
 
@@ -92,7 +90,7 @@ const route {
 when your query param is optional, the entire property can be missing and the route will still match. For the example above with query `foo=:?bar`, the url might be `/my-route` without any query, or it might have an unrelated query `/my-route?other=value`, and still be a match because the entire foo param is optional.
 :::
 
-### Params Are Valid
+## Params Are Valid
 
 Assuming a route's path and query match the structure of the URL, the last test is to make sure that values provided by the URL pass the Param parsing. By default params are assumed to be strings, so by default if structure matches, parsing will pass as well since the URL is a string. However, if you define your params with `Boolean`, `Number`, or a custom `Param` the value will be need to pass the param's `get` function.
 

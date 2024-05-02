@@ -52,6 +52,7 @@ export function createRouterReject({
       name: type,
       path: '',
       component,
+      meta: {},
     }
 
     const resolved = readonly({
