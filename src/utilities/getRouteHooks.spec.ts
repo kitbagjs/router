@@ -6,7 +6,9 @@ import { createResolvedRouteQuery } from '@/utilities/createResolvedRouteQuery'
 import { getBeforeRouteHooksFromRoutes } from '@/utilities/getRouteHooks'
 import { component } from '@/utilities/testHelpers'
 
-function mockRoute(name: string): RouteProps {
+type RoutePropsWithMeta = RouteProps & { meta: Record<string, unknown> }
+
+function mockRoute(name: string): RoutePropsWithMeta {
   return {
     name,
     path: `/${name}`,
@@ -14,10 +16,11 @@ function mockRoute(name: string): RouteProps {
     onBeforeRouteEnter: vi.fn(),
     onBeforeRouteUpdate: vi.fn(),
     onBeforeRouteLeave: vi.fn(),
+    meta: {},
   }
 }
 
-function mockResolvedRoute(matched: RouteProps, matches: RouteProps[]): ResolvedRoute {
+function mockResolvedRoute(matched: RoutePropsWithMeta, matches: RoutePropsWithMeta[]): ResolvedRoute {
   return readonly({
     matched,
     matches,

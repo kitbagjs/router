@@ -16,6 +16,7 @@ test('calls hook with correct routes', () => {
     path: '/routeA',
     component,
     onBeforeRouteEnter: hook,
+    meta: {},
   }
 
   const resolvedRouteA: ResolvedRoute = {
@@ -30,6 +31,7 @@ test('calls hook with correct routes', () => {
     name: 'routeB',
     path: '/routeB',
     component,
+    meta: {},
   }
 
   const resolvedRouteB: ResolvedRoute = {
@@ -66,6 +68,7 @@ test.each<{ type: string, status: string, hook: BeforeRouteHook }>([
     path: '/routeA',
     component,
     onBeforeRouteEnter: hook,
+    meta: {},
   }
 
   const resolvedRoute: ResolvedRoute = {
@@ -80,6 +83,7 @@ test.each<{ type: string, status: string, hook: BeforeRouteHook }>([
     name: 'routeB',
     path: '/routeB',
     component,
+    meta: {},
   }
 
   const resolvedRouteB: ResolvedRoute = {
@@ -111,6 +115,7 @@ test('hook is called in order', async () => {
     path: '/routeA',
     component,
     onBeforeRouteEnter: [hookA, hookB, hookC],
+    meta: {},
   }
 
   const resolvedRoute: ResolvedRoute = {
@@ -125,6 +130,7 @@ test('hook is called in order', async () => {
     name: 'routeB',
     path: '/routeB',
     component,
+    meta: {},
   }
 
   const resolvedRouteB: ResolvedRoute = {
