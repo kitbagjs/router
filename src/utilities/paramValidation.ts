@@ -24,9 +24,10 @@ export const getRouteParamValues = (route: Route, url: string): Record<string, u
 
 const getRouteParams = (paramDefinitions: Record<string, Param>, paramFormat: string, valueFromUrl: string): Record<string, unknown[]> => {
   const params: Record<string, unknown[]> = {}
+  const decodedValueFromUrl = decodeURIComponent(valueFromUrl)
 
   for (const [key, param] of Object.entries(paramDefinitions)) {
-    const stringValue = getParamValueFromUrl(valueFromUrl, paramFormat, key)
+    const stringValue = getParamValueFromUrl(decodedValueFromUrl, paramFormat, key)
     const formattedValues = getParamValue(stringValue, param)
 
     params[key] = formattedValues

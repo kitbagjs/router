@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 import { DuplicateParamsError } from '@/errors'
-import { createRoutes, routeParamsAreValid, path } from '@/utilities'
+import { createRoutes, routeParamsAreValid, path, getRouteParamValues } from '@/utilities'
 import { component } from '@/utilities/testHelpers'
 
 test('given route WITHOUT params, always return true', () => {
@@ -141,4 +141,40 @@ test('given route with duplicate param names across path and query, throws Dupli
   ])
 
   expect(action).toThrowError(DuplicateParamsError)
+})
+
+test('given value with encoded URL characters, decodes those characters', () => {
+  const escapeCodes = [
+    { decoded: ' ', encoded: '%20' },
+    { decoded: '<', encoded: '%3C' },
+    { decoded: '>', encoded: '%3E' },
+    { decoded: '#', encoded: '%23' },
+    { decoded: '%', encoded: '%25' },
+    { decoded: '{', encoded: '%7B' },
+    { decoded: '}', encoded: '%7D' },
+    { decoded: '|', encoded: '%7C' },
+    { decoded: '\\', encoded: '%5C' },
+    { decoded: '^', encoded: '%5E' },
+    { decoded: '~', encoded: '%7E' },
+    { decoded: '[', encoded: '%5B' },
+    { decoded: ']', encoded: '%5D' },
+    { decoded: '`', encoded: '%60' },
+    { decoded: ';', encoded: '%3B' },
+    { decoded: '?', encoded: '%3F' },
+    { decoded: ':', encoded: '%3A' },
+    { decoded: '@', encoded: '%40' },
+    { decoded: '=', encoded: '%3D' },
+    { decoded: '&', encoded: '%26' },
+    { decoded: '$', encoded: '%24' },
+  ]
+
+  const input = escapeCodes.map(code => code.encoded).join('')
+  const output = escapeCodes.map(code => code.decoded).join('')
+
+  const [route] = createRoutes([{ name: 'test', path: '/:inPath', query: 'inQuery=:inQuery', component }])
+
+  const response = getRouteParamValues(route, `/${input}?inQuery=${input}`)
+
+  expect(response.inPath).toBe(output)
+  expect(response.inQuery).toBe(output)
 })
