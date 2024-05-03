@@ -1,7 +1,7 @@
-import { expect, expectTypeOf, test } from 'vitest'
+import { expect, test } from 'vitest'
 import { DuplicateParamsError } from '@/errors'
 import { createRoutes, routeParamsAreValid, path, getRouteParamValues } from '@/utilities'
-import { component, random } from '@/utilities/testHelpers'
+import { component } from '@/utilities/testHelpers'
 
 test('given route WITHOUT params, always return true', () => {
   const [route] = createRoutes([
