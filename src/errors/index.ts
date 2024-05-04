@@ -1,4 +1,5 @@
 export * from './duplicateParamsError'
+export * from './invalidRouteParamValueError'
 export * from './navigationAbortError'
 export * from './routerNotInstalledError'
 export * from './routerPushError'

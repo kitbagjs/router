@@ -14,8 +14,9 @@
   import { useRejection } from '@/compositions/useRejection'
   import { useRouter } from '@/compositions/useRouter'
   import { useRouterDepth } from '@/compositions/useRouterDepth'
-  import { RouteComponent, depthInjectionKey } from '@/types'
-  import { RouterRoute } from '@/utilities/createRouterRoute'
+  import { RouterRoute } from '@/services/createRouterRoute'
+  import { depthInjectionKey } from '@/types/injectionDepth'
+  import { RouteComponent } from '@/types/routeProps'
 
   const router = useRouter()
   const rejection = useRejection()
@@ -42,4 +43,4 @@
 
     return null
   })
-</script>
+</script>@/services/createRouterRoute

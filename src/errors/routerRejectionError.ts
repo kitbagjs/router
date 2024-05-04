@@ -1,4 +1,4 @@
-import { RouterRejectionType } from '@/utilities'
+import { RouterRejectionType } from '@/services/createRouterReject'
 
 export class RouterRejectionError extends Error {
   public type: RouterRejectionType

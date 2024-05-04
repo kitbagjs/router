@@ -1,6 +1,7 @@
 import { describe, expectTypeOf, test } from 'vitest'
+import { Path } from '@/types/path'
+import { Query } from '@/types/query'
 import { ExtractRouteParamTypes, Route } from '@/types/route'
-import { Path, Query } from '@/utilities'
 
 describe('ExtractRouteParamTypes', () => {
   test('given routes with different params, some optional, combines into expected args for developer', () => {

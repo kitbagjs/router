@@ -1,9 +1,9 @@
 import { AsyncComponentLoader, Component, DefineComponent } from 'vue'
 import { AfterRouteHook, BeforeRouteHook } from '@/types/hooks'
+import { Path } from '@/types/path'
+import { Query } from '@/types/query'
 import { Routes } from '@/types/route'
 import { MaybeArray } from '@/types/utilities'
-import { Path } from '@/utilities/path'
-import { Query } from '@/utilities/query'
 
 export type RouteComponent = Component | DefineComponent | AsyncComponentLoader
 

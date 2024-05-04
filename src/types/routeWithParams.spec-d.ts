@@ -1,7 +1,8 @@
 import { expectTypeOf, test } from 'vitest'
+import { Path } from '@/types/path'
+import { Query } from '@/types/query'
 import { Route } from '@/types/route'
 import { RouteGetByKey } from '@/types/routeWithParams'
-import { Path, Query } from '@/utilities'
 import { routes } from '@/utilities/testHelpers'
 
 test('CombineName returns correct keys for routes', () => {

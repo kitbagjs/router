@@ -1,4 +1,4 @@
-import { createRoutes } from '@/utilities/createRoutes'
+import { createRoutes } from '@/services/createRoutes'
 
 export const random = {
   number(options: { min?: number, max?: number } = {}): number {
