@@ -1,10 +1,10 @@
+import { RouterRejectionType } from '@/services/createRouterReject'
 import { RegisteredRouterPush, RegisteredRouterReplace } from '@/types/register'
 import { ResolvedRoute } from '@/types/resolved'
 import { Routes } from '@/types/route'
 import { RouterReject } from '@/types/router'
 import { RouterPush } from '@/types/routerPush'
 import { MaybePromise } from '@/types/utilities'
-import { RouterRejectionType } from '@/utilities/createRouterReject'
 
 export type AddBeforeRouteHook = (hook: BeforeRouteHook) => RouteHookRemove
 export type AddAfterRouteHook = (hook: AfterRouteHook) => RouteHookRemove

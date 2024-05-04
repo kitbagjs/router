@@ -1,8 +1,9 @@
 import { expectTypeOf, test } from 'vitest'
+import { RouterRoute } from '@/services/createRouterRoute'
+import { Path } from '@/types/path'
+import { Query } from '@/types/query'
 import { ResolvedRoute } from '@/types/resolved'
 import { Route } from '@/types/route'
-import { Path, Query } from '@/utilities'
-import { RouterRoute } from '@/utilities/createRouterRoute'
 
 test('given a specific Route, params are narrow', () => {
     type TestRoute = Route<'parentA', Path<'/:paramA', {}>, Query<'foo=:paramB&bar=:?paramC', { paramB: BooleanConstructor }>>

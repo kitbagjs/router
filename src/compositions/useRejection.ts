@@ -1,5 +1,5 @@
 import { InjectionKey, inject } from 'vue'
-import { RouterRejection } from '@/utilities/createRouterReject'
+import { RouterRejection } from '@/services/createRouterReject'
 
 export const routerRejectionKey: InjectionKey<RouterRejection> = Symbol()
 

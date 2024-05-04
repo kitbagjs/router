@@ -1,6 +1,8 @@
-import { ExtractParamTypes, MergeParams, Param } from '@/types/params'
+import { ExtractParamTypes, MergeParams } from '@/types/params'
+import { Param } from '@/types/paramTypes'
+import { Path, ToPath } from '@/types/path'
+import { Query, ToQuery } from '@/types/query'
 import { RouteMeta, RouteProps } from '@/types/routeProps'
-import { Path, Query, ToPath, ToQuery } from '@/utilities'
 
 export type Routes = Readonly<Route[]>
 

@@ -1,10 +1,10 @@
+import { Path } from '@/types/path'
+import { Query } from '@/types/query'
 import { Route, Routes } from '@/types/route'
 import { Router } from '@/types/router'
 import { RouterPush } from '@/types/routerPush'
 import { RouterReplace } from '@/types/routerReplace'
 import { RoutesKey, RoutesMap } from '@/types/routesMap'
-import { Path } from '@/utilities/path'
-import { Query } from '@/utilities/query'
 
 export interface Register {
   // router: Router

@@ -7,9 +7,9 @@
 <script setup lang="ts">
   import { computed, readonly } from 'vue'
   import { useRouter } from '@/compositions'
-  import { Url, isUrl } from '@/types'
   import { RegisteredRouter } from '@/types/register'
   import { RouterPushOptions } from '@/types/routerPush'
+  import { Url, isUrl } from '@/types/url'
 
   type ToCallback = (resolve: RegisteredRouter['resolve']) => string
 

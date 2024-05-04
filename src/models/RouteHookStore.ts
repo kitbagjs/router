@@ -1,6 +1,6 @@
 import { RouteHooks } from '@/models/RouteHooks'
+import { getRouteHookCondition } from '@/services/hooks'
 import { AfterRouteHook, BeforeRouteHook, RouteHookRemove } from '@/types/hooks'
-import { getRouteHookCondition } from '@/utilities/hooks'
 
 type RouteHookTiming = 'global' | 'component'
 

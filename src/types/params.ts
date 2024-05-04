@@ -1,18 +1,5 @@
+import { Param, ParamGetSet, ParamGetter } from '@/types/paramTypes'
 import { Identity } from '@/types/utilities'
-
-export type ParamExtras = {
-  invalid: (message?: string) => never,
-}
-
-export type ParamGetter<T = any> = (value: string, extras: ParamExtras) => T
-export type ParamSetter<T = any> = (value: T, extras: ParamExtras) => string
-
-export type ParamGetSet<T = any> = {
-  get: ParamGetter<T>,
-  set: ParamSetter<T>,
-}
-
-export type Param = ParamGetter | ParamGetSet | RegExp | BooleanConstructor | NumberConstructor | StringConstructor
 
 function isNotConstructor(value: Param): boolean {
   return value !== String && value !== Boolean && value !== Number
