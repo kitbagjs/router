@@ -78,7 +78,7 @@ export const onAfterRouteEnter: AddAfterRouteHook = afterComponentHookFactory('o
 export const onAfterRouteLeave: AddAfterRouteHook = afterComponentHookFactory('onAfterRouteUpdate')
 
 /**
- * Composition API function to register a hook that is called after a route has been updated.
+ * Registers a hook that is called after a route has been updated. Must be called during setup.
  * This is ideal for responding to updates within the same route, such as parameter changes, without full component reloads.
  *
  * @param AfterRouteHook - The hook callback function
