@@ -60,7 +60,7 @@ export const onBeforeRouteLeave: AddBeforeRouteHook = beforeComponentHookFactory
 export const onBeforeRouteUpdate: AddBeforeRouteHook = beforeComponentHookFactory('onBeforeRouteLeave')
 
 /**
- * Composition API function to register a hook that is called after a route has been entered.
+ * Registers a hook that is called after a route has been entered. Must be called during setup.
  * This allows performing actions right after the component becomes active, such as fetching data or setting up event listeners.
  *
  * @param AfterRouteHook - The hook callback function
