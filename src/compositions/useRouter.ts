@@ -5,7 +5,7 @@ import { RegisteredRouter } from '@/types'
 export const routerInjectionKey: InjectionKey<RegisteredRouter> = Symbol()
 
 /**
- * Composition API function to access the registered router instance within a Vue component.
+ * A composition to access the registered router instance within a Vue component.
  *
  * @returns The registered router instance.
  * @throws {RouterNotInstalledError} Throws an error if the router has not been installed,
