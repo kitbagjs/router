@@ -42,7 +42,7 @@ function afterComponentHookFactory(lifecycle: AfterRouteHookLifecycle) {
 }
 
 /**
- * Composition API function to register a hook that is called before a route is left.
+ * Registers a hook that is called before a route is left. Must be called from setup.
  * This is useful for performing actions or cleanups before navigating away from a route component.
  *
  * @param BeforeRouteHook - The hook callback function
