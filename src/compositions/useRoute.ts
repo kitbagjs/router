@@ -10,7 +10,7 @@ import { ResolvedRoute } from '@/types/resolved'
  * Composition API function to access the current route or verify a specific route key within a Vue component.
  * This function provides two overloads:
  * 1. When called without arguments, it returns the current route from the router without types.
- * 2. When called with a route key, it checks if the current active routes include the specified route key.
+ * 2. When called with a route key, it checks if the current active route includes the specified route key.
  *
  * @template TRouteKey - A string type that should match route key of RegisteredRouteMap, ensuring the route key exists.
  * @param routeKey - Optional. The key of the route to validate against the current active routes.
