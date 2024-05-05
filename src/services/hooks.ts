@@ -197,6 +197,6 @@ export function getRouteHookCondition(lifecycle: RouteHookLifecycle): RouteHookC
     case 'onAfterRouteLeave':
       return isRouteLeave
     default:
-      throw new Error(`No route hook condition for lifecycle: ${lifecycle satisfies never}`)
+      throw new Error(`Switch is not exhaustive for lifecycle: ${lifecycle satisfies never}`)
   }
 }

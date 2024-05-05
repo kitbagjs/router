@@ -11,29 +11,91 @@ import { RouterReplace } from '@/types/routerReplace'
 
 export type RouterReject = (type: RouterRejectionType) => void
 
+/**
+ * Options to initialize a {@link Router} instance.
+ */
 export type RouterOptions = {
+  /**
+   * Initial URL for the router to use. Required if using Node environment.
+   *
+   * @default window.location.toString()
+   */
   initialUrl?: string,
+  /**
+   * Specifies the history mode for the router, such as 'hash', 'history', or 'abstract'.
+   */
   historyMode?: RouterHistoryMode,
 } & RouterRejectionComponents
 
 export type Router<
   TRoutes extends Routes = any
 > = Plugin & {
+  /**
+   * Manages the current route state.
+   */
   route: RouterRoute,
+  /**
+   * Resolves a URL to a route object.
+   */
   resolve: RouterResolve<TRoutes>,
+  /**
+   * Navigates to a specified path or route object in the history stack, adding a new entry.
+   */
   push: RouterPush<TRoutes>,
+  /**
+   * Replaces the current entry in the history stack with a new one.
+   */
   replace: RouterReplace<TRoutes>,
+  /**
+   * Finds a route object based on the provided lookup parameters.
+   */
   find: RouterFind<TRoutes>,
+  /**
+   * Handles route rejection based on a specified rejection type.
+   */
   reject: RouterReject,
+  /**
+   * Forces the router to re-evaluate the current route.
+   */
   refresh: () => void,
+  /**
+   * Navigates to the previous entry in the browser's history stack.
+   */
   back: () => void,
+  /**
+   * Navigates to the next entry in the browser's history stack.
+   */
   forward: () => void,
+  /**
+   * Moves the current history entry to a specific point in the history stack.
+   */
   go: (delta: number) => void,
+  /**
+   * Registers a hook to be called before a route is entered.
+   */
   onBeforeRouteEnter: AddBeforeRouteHook,
+  /**
+   * Registers a hook to be called before a route is left.
+   */
   onBeforeRouteLeave: AddBeforeRouteHook,
+  /**
+   * Registers a hook to be called before a route is updated.
+   */
   onBeforeRouteUpdate: AddBeforeRouteHook,
+  /**
+   * Registers a hook to be called after a route is entered.
+   */
   onAfterRouteEnter: AddAfterRouteHook,
+  /**
+   * Registers a hook to be called after a route is left.
+   */
   onAfterRouteLeave: AddAfterRouteHook,
+  /**
+   * Registers a hook to be called after a route is updated.
+   */
   onAfterRouteUpdate: AddAfterRouteHook,
+  /**
+   * A promise that resolves when the router is fully initialized.
+   */
   initialized: Promise<void>,
 }

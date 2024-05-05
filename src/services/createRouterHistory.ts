@@ -71,6 +71,6 @@ function createHistory(mode: RouterHistoryMode = 'auto'): History {
       return createHashHistory()
     default:
       const exhaustive: never = mode
-      throw new Error(`createHistory missing case for mode: ${exhaustive}`)
+      throw new Error(`Switch is not exhaustive for mode: ${exhaustive}`)
   }
 }
