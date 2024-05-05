@@ -1,3 +1,4 @@
+import { InitialRouteMissingError } from '@/errors/initialRouteMissingError'
 import { isBrowser } from '@/utilities/isBrowser'
 
 export function getInitialUrl(initialUrl?: string): string {
@@ -9,5 +10,5 @@ export function getInitialUrl(initialUrl?: string): string {
     return window.location.toString()
   }
 
-  throw new Error('initialUrl must be set if window.location is unavailable')
+  throw new InitialRouteMissingError()
 }
