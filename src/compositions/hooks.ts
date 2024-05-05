@@ -69,7 +69,7 @@ export const onBeforeRouteUpdate: AddBeforeRouteHook = beforeComponentHookFactor
 export const onAfterRouteEnter: AddAfterRouteHook = afterComponentHookFactory('onAfterRouteEnter')
 
 /**
- * Composition API function to register a hook that is called after a route has been left.
+ * Registers a hook that is called after a route has been left. Must be called during setup.
  * This can be used for cleanup actions after the component is no longer active, ensuring proper resource management.
  *
  * @param AfterRouteHook - The hook callback function
