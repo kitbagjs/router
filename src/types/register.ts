@@ -6,36 +6,65 @@ import { RouterPush } from '@/types/routerPush'
 import { RouterReplace } from '@/types/routerReplace'
 import { RoutesKey, RoutesMap } from '@/types/routesMap'
 
-export interface Register {
-  // router: Router
-  // rejections: ['Auth'],
-  // state: {}
-}
+/**
+ * Represents the state of currently registered router, and rejections. Used to provide correct type context for
+ * components like `RouterLink`, as well as for composables like `useRouter`, `useRoute`, and hooks.
+ *
+ * @example
+ * ```ts
+ * declare module '@kitbag/router' {
+ *   interface Register {
+ *     router: typeof router
+ *   }
+ * }
+ * ```
+ */
+export interface Register {}
 
+/**
+ * Represents the Router property within {@link Register}
+ */
 export type RegisteredRouter = Register extends { router: infer TRouter }
   ? TRouter
   : Router
 
+/**
+ * Represents the Router routes property within {@link Register}
+ */
 export type RegisteredRoutes = Register extends { router: Router<infer TRoutes extends Routes> }
   ? TRoutes
   : Route<string, Path<'', {}>, Query<'', {}>, false>[]
 
+/**
+ * Represents the possible Rejections registered within {@link Register}
+ */
 export type RegisteredRejectionType = Register extends { rejections: infer TRejections extends string[] }
   ? TRejections[number]
   : never
 
+/**
+ * Represents the State property registered within {@link Register}
+ */
 export type RegisteredRouterState = Register extends { state: infer TState }
   ? TState
   : {}
 
-// Because RegisteredRoutes defaults to `[]` it thinks passing it is unnecessary
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-arguments
+/**
+ * Represents the a map of all possible RouteKeys with corresponding Route registered within {@link Register}
+ */
 export type RegisteredRouteMap = RoutesMap<RegisteredRoutes>
 
+/**
+ * Represents the union of all possible RouteKeys registered within {@link Register}
+ */
 export type RegisteredRoutesKey = RoutesKey<RegisteredRoutes>
 
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-arguments
+/**
+ * Represents the type for router `push`, with types for routes registered within {@link Register}
+ */
 export type RegisteredRouterPush = RouterPush<RegisteredRoutes>
 
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-arguments
+/**
+ * Represents the type for router `replace`, with types for routes registered within {@link Register}
+ */
 export type RegisteredRouterReplace = RouterReplace<RegisteredRoutes>

@@ -41,8 +41,47 @@ function afterComponentHookFactory(lifecycle: AfterRouteHookLifecycle) {
   }
 }
 
+/**
+ * Composition API function to register a hook that is called before a route is left.
+ * This is useful for performing actions or cleanups before navigating away from a route component.
+ *
+ * @param BeforeRouteHook - The hook callback function
+ * @returns {RouteHookRemove} A function that removes the added hook.
+ */
 export const onBeforeRouteLeave: AddBeforeRouteHook = beforeComponentHookFactory('onBeforeRouteUpdate')
+
+/**
+ * Composition API function to register a hook that is called before a route is updated.
+ * This is particularly useful for handling changes in route parameters or query while staying within the same component.
+ *
+ * @param BeforeRouteHook - The hook callback function
+ * @returns {RouteHookRemove} A function that removes the added hook.
+ */
 export const onBeforeRouteUpdate: AddBeforeRouteHook = beforeComponentHookFactory('onBeforeRouteLeave')
+
+/**
+ * Composition API function to register a hook that is called after a route has been entered.
+ * This allows performing actions right after the component becomes active, such as fetching data or setting up event listeners.
+ *
+ * @param AfterRouteHook - The hook callback function
+ * @returns {RouteHookRemove} A function that removes the added hook.
+ */
 export const onAfterRouteEnter: AddAfterRouteHook = afterComponentHookFactory('onAfterRouteEnter')
+
+/**
+ * Composition API function to register a hook that is called after a route has been left.
+ * This can be used for cleanup actions after the component is no longer active, ensuring proper resource management.
+ *
+ * @param AfterRouteHook - The hook callback function
+ * @returns {RouteHookRemove} A function that removes the added hook.
+ */
 export const onAfterRouteLeave: AddAfterRouteHook = afterComponentHookFactory('onAfterRouteUpdate')
+
+/**
+ * Composition API function to register a hook that is called after a route has been updated.
+ * This is ideal for responding to updates within the same route, such as parameter changes, without full component reloads.
+ *
+ * @param AfterRouteHook - The hook callback function
+ * @returns {RouteHookRemove} A function that removes the added hook.
+ */
 export const onAfterRouteUpdate: AddAfterRouteHook = afterComponentHookFactory('onAfterRouteLeave')

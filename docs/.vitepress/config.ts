@@ -8,6 +8,11 @@ export default defineConfig({
   themeConfig: {
     logo: '/kitbag-logo-circle.svg',
     siteTitle: 'Kitbag Router',
+
+    editLink: {
+      pattern: 'https://github.com/kitbagjs/router/edit/main/docs/:path',
+      text: 'Suggest changes to this page',
+    },
     
     nav: [
       { text: 'Guide', link: '/core-concepts' },
