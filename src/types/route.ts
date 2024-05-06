@@ -19,12 +19,10 @@ export type Route<
   key: TKey,
   path: ToPath<TPath>,
   query: ToQuery<TQuery>,
-  pathParams: ToPath<TPath>['params'],
-  queryParams: ToQuery<TQuery>['params'],
   depth: number,
   disabled: TDisabled extends boolean ? TDisabled : false,
 }
 
-export type ExtractRouteParamTypes<TRoute extends { pathParams: Record<string, unknown>, queryParams: Record<string, unknown> }> = TRoute extends { pathParams: infer PathParams extends Record<string, Param | undefined>, queryParams: infer QueryParams extends Record<string, Param | undefined> }
+export type ExtractRouteParamTypes<TRoute extends { path: { params: Record<string, unknown> }, query: { params: Record<string, unknown> } }> = TRoute extends { path: { params: infer PathParams extends Record<string, Param | undefined> }, query: { params: infer QueryParams extends Record<string, Param | undefined> } }
   ? ExtractParamTypes<MergeParams<PathParams, QueryParams>>
   : Record<string, unknown>

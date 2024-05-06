@@ -35,7 +35,7 @@ export function getRouteScoreSortMethod(url: string): RouteSortMethod {
 }
 
 export function countExpectedPathParams(route: Route, actualPath: string): number {
-  const optionalParams = Object.entries(route.pathParams)
+  const optionalParams = Object.entries(route.path.params)
     .filter(([, value]) => isOptionalParam(value))
     .map(([key]) => key)
 

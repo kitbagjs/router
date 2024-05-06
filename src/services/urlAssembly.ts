@@ -10,7 +10,7 @@ type AssembleUrlOptions = {
 
 export function assembleUrl(route: Route, options: AssembleUrlOptions = {}): string {
   const { params: paramValues = {}, query: queryValues } = options
-  const params = Object.entries({ ...route.pathParams, ...route.queryParams })
+  const params = Object.entries({ ...route.path.params, ...route.query.params })
   const path = route.path.toString()
   const query = route.query.toString()
 
