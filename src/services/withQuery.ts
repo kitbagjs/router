@@ -1,4 +1,6 @@
-export function withQuery(url: string, ...queries: (string | URLSearchParams | Record<string, string> | undefined)[]): string {
+export type QueryRecord = Record<string, string>
+
+export function withQuery(url: string, ...queries: (string | URLSearchParams | QueryRecord | undefined)[]): string {
   return queries.reduce<string>((value, query) => {
     if (!query) {
       return value
