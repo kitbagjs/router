@@ -60,6 +60,12 @@ export type Route<
  * @template TRoute - The route type from which to extract and merge parameter types.
  * @returns A record of parameter names to their respective types, extracted and merged from both path and query parameters.
  */
-export type ExtractRouteParamTypes<TRoute extends { path: { params: Record<string, unknown> }, query: { params: Record<string, unknown> } }> = TRoute extends { path: { params: infer PathParams extends Record<string, Param | undefined> }, query: { params: infer QueryParams extends Record<string, Param | undefined> } }
+export type ExtractRouteParamTypes<TRoute extends {
+  path: { params: Record<string, unknown> },
+  query: { params: Record<string, unknown> },
+}> = TRoute extends {
+  path: { params: infer PathParams extends Record<string, Param | undefined> },
+  query: { params: infer QueryParams extends Record<string, Param | undefined> },
+}
   ? ExtractParamTypes<MergeParams<PathParams, QueryParams>>
   : Record<string, unknown>
