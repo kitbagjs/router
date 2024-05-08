@@ -10,6 +10,13 @@ import { Route } from '@/types/route'
 import { ParentRouteProps, RouteProps, isParentRoute } from '@/types/routeProps'
 import { checkDuplicateKeys } from '@/utilities/checkDuplicateKeys'
 
+/**
+ * Creates an array of routes from a defined set of route properties, handling hierarchical route combinations.
+ * This function also validates for duplicate parameter keys across the combined routes.
+ *
+ * @param routesProps - An array of route properties used to configure and create routes.
+ * @returns An array of fully configured Route instances.
+ */
 export function createRoutes<const TRoutes extends Readonly<RouteProps[]>>(routes: TRoutes): FlattenRoutes<TRoutes>
 export function createRoutes(routesProps: Readonly<RouteProps[]>): Route[] {
   const routes = routesProps.reduce<Route[]>((routes, routeProps) => {

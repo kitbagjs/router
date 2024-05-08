@@ -4,8 +4,9 @@ export class RouterRejectionError extends Error {
   public type: RouterRejectionType
 
   public constructor(type: RouterRejectionType) {
-    super()
+    super(`Routing action rejected: ${type}`)
 
     this.type = type
   }
 }
+
