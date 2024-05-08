@@ -3,6 +3,7 @@ import { query } from '@/services/query'
 import { MergeParams } from '@/types/params'
 import { Query, QueryParams, ToQuery } from '@/types/query'
 import { checkDuplicateKeys } from '@/utilities/checkDuplicateKeys'
+import { stringHasValue } from '@/utilities/string'
 
 export type CombineQuery<
   TParent extends Query | undefined,
@@ -22,5 +23,9 @@ export function combineQuery(parentQuery: Query, childQuery: Query): Query {
     throw new DuplicateParamsError(key)
   }
 
-  return query(`${parentQuery.query}${childQuery.query}`, { ...parentQuery.params, ...childQuery.params })
+  const newQueryString = [parentQuery.query, childQuery.query]
+    .filter(stringHasValue)
+    .join('&')
+
+  return query(newQueryString, { ...parentQuery.params, ...childQuery.params })
 }
