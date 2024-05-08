@@ -108,7 +108,7 @@ describe('getParamName', () => {
     expect(response).toBe(paramName)
   })
 
-  test('given string with optional param name syntax, returns param name', () => {
+  test('given string with param name syntax, returns param name', () => {
     const paramName = 'foo'
 
     const response = getParamName(`:${paramName}`)
