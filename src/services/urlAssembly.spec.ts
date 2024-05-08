@@ -117,7 +117,7 @@ describe('query params', () => {
   test.each([
     ['simple=:?simple'],
     [query('simple=:?simple', { simple: String })],
-  ])('given route with optional string param NOT provided, returns route Query with string without values interpolated', (query) => {
+  ])('given route with optional param NOT provided, leaves entire key off', (query) => {
     const [route] = createRoutes([
       {
         name: 'simple',
@@ -128,6 +128,24 @@ describe('query params', () => {
     ])
 
     const url = assembleUrl(route)
+
+    expect(url).toBe('/')
+  })
+
+  test.each([
+    ['simple=:?simple'],
+    [query('simple=:?simple', { simple: String })],
+  ])('given route with optional string param provided but empty, returns route Query with string without values interpolated', (query) => {
+    const [route] = createRoutes([
+      {
+        name: 'simple',
+        path: '/',
+        query,
+        component,
+      },
+    ])
+
+    const url = assembleUrl(route, { params: { simple: '' } })
 
     expect(url).toBe('/?simple=')
   })
@@ -189,7 +207,7 @@ describe('query params', () => {
   })
 })
 
-describe('queries', () => {
+describe('static query', () => {
   test('given a static query returns route with query values added', () => {
     const [route] = createRoutes([
       {

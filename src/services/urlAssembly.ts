@@ -1,5 +1,7 @@
+import { setParamValue } from '@/services/params'
 import { setParamValueOnUrl } from '@/services/paramsFinder'
-import { withQuery } from '@/services/withQuery'
+import { getParamName, isOptionalParamSyntax } from '@/services/routeRegex'
+import { QueryRecord, withQuery } from '@/services/withQuery'
 import { Route } from '@/types'
 import { Param } from '@/types/paramTypes'
 
@@ -10,22 +12,45 @@ type AssembleUrlOptions = {
 
 export function assembleUrl(route: Route, options: AssembleUrlOptions = {}): string {
   const { params: paramValues = {}, query: queryValues } = options
-  const params = Object.entries({ ...route.path.params, ...route.query.params })
+  const params: Record<string, Param> = { ...route.path.params, ...route.query.params }
   const path = route.path.toString()
   const query = route.query.toString()
 
-  const pathWithParamsSet = assembleParamValues(path, params, paramValues)
-  const queryWithParamsSet = assembleParamValues(query, params, paramValues)
+  const pathWithParamsSet = assemblePathParamValues(path, params, paramValues)
+  const queryWithParamsSet = assembleQueryParamValues(query, params, paramValues)
 
   return withQuery(pathWithParamsSet, queryWithParamsSet, queryValues)
 }
 
-function assembleParamValues(part: string, params: [string, Param][], paramValues: Record<string, unknown>): string {
-  if (!part.length) {
-    return part
+function assemblePathParamValues(path: string, params: Record<string, Param>, paramValues: Record<string, unknown>): string {
+  if (!path.length) {
+    return path
   }
 
-  return params.reduce<string>((url, [name, param]) => {
+  return Object.entries(params).reduce((url, [name, param]) => {
     return setParamValueOnUrl(url, { name, param, value: paramValues[name] })
-  }, part)
+  }, path)
+}
+
+function assembleQueryParamValues(query: string, params: Record<string, Param>, paramValues: Record<string, unknown>): QueryRecord {
+  if (!query.length) {
+    return {}
+  }
+
+  const search = new URLSearchParams(query)
+
+  return Array.from(search.entries()).reduce<QueryRecord>((url, [key, value]) => {
+    const paramName = getParamName(value)
+
+    if (!paramName) {
+      return { ...url, [key]: value }
+    }
+
+    const paramValue = setParamValue(paramValues[paramName], params[paramName])
+    if (isOptionalParamSyntax(value) && paramValues[paramName] === undefined && paramValue === '') {
+      return url
+    }
+
+    return { ...url, [key]: paramValue }
+  }, {})
 }
