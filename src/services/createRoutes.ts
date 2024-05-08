@@ -62,8 +62,6 @@ function createRoute(route: RouteProps): Route {
     key: route.name,
     path,
     query,
-    pathParams: path.params,
-    queryParams: query.params,
     depth: 1,
     disabled: route.disabled ?? false,
   }

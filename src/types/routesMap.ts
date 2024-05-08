@@ -1,6 +1,6 @@
 import { Routes } from '@/types/route'
 
-type BaseRoute = { key: string, disabled: false, pathParams: Record<string, unknown>, queryParams: Record<string, unknown> }
+type BaseRoute = { key: string, disabled: false, path: { params: Record<string, unknown> }, query: { params: Record<string, unknown> } }
 type NamedNotDisabled<T> = T extends BaseRoute ? T : never
 
 export type RoutesMap<TRoutes extends Routes = []> = {
