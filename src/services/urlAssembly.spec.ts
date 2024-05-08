@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { InvalidRouteParamValueError } from '@/errors'
+import { InvalidRouteParamValueError } from '@/errors/invalidRouteParamValueError'
 import { createRoutes } from '@/services/createRoutes'
 import { path } from '@/services/path'
 import { query } from '@/services/query'
