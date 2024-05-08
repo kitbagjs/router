@@ -1,10 +1,9 @@
 import { setParamValue } from '@/services/params'
-import { replaceParamSyntaxWithCatchAlls } from '@/services/routeRegex'
+import { getCaptureGroups, replaceParamSyntaxWithCatchAlls } from '@/services/routeRegex'
 import { Param } from '@/types/paramTypes'
-import { stringHasValue } from '@/utilities/string'
 
 export function getParamValueFromUrl(url: string, path: string, paramName: string): string | undefined {
-  const regexPattern = getParamRegexPattern(path.toString(), paramName)
+  const regexPattern = getParamRegexPattern(path, paramName)
   const [paramValue] = getCaptureGroups(url, regexPattern)
 
   return paramValue
@@ -25,7 +24,11 @@ export function setParamValueOnUrl(path: string, paramReplace?: ParamReplace): s
   const regexPattern = getParamRegexPattern(path, name)
   const captureGroups = getCaptureGroups(path, regexPattern)
 
-  return captureGroups.reduce((url, captureGroup) => {
+  return captureGroups.reduce<string>((url, captureGroup) => {
+    if (captureGroup === undefined) {
+      return url
+    }
+
     return url.replace(captureGroup, () => setParamValue(value, param))
   }, path)
 }
@@ -52,10 +55,4 @@ function replaceRequiredParamSyntaxWithCaptureGroup(path: string, paramName: str
   const requiredParamRegex = new RegExp(`(:${paramName})(?=\\W|$)`, 'g')
 
   return path.replace(requiredParamRegex, '([^\\/]+)')
-}
-
-function getCaptureGroups(value: string, pattern: RegExp): string[] {
-  const matches = Array.from(value.matchAll(pattern))
-
-  return matches.flatMap(([, ...values]) => values.map(value => stringHasValue(value) ? value : ''))
 }

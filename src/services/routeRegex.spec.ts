@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { createRoutes } from '@/services/createRoutes'
-import { generateRoutePathRegexPattern, generateRouteQueryRegexPatterns } from '@/services/routeRegex'
+import { generateRoutePathRegexPattern, generateRouteQueryRegexPatterns, getParamName } from '@/services/routeRegex'
 import { component } from '@/utilities/testHelpers'
 
 describe('generateRoutePathRegexPattern', () => {
@@ -96,5 +96,33 @@ describe('generateRouteQueryRegexPatterns', () => {
     const result = generateRouteQueryRegexPatterns(route)
 
     expect(result).toMatchObject([new RegExp('static=params')])
+  })
+})
+
+describe('getParamName', () => {
+  test('given string with optional param name syntax, returns param name', () => {
+    const paramName = 'foo'
+
+    const response = getParamName(`:?${paramName}`)
+
+    expect(response).toBe(paramName)
+  })
+
+  test('given string with param name syntax, returns param name', () => {
+    const paramName = 'foo'
+
+    const response = getParamName(`:${paramName}`)
+
+    expect(response).toBe(paramName)
+  })
+
+  test.each([
+    ['foo'],
+    ['?foo'],
+    ['?:*foo'],
+  ])('given string that is not param syntax, returns undefined', (paramName) => {
+    const response = getParamName(paramName)
+
+    expect(response).toBe(undefined)
   })
 })
