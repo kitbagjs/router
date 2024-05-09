@@ -15,8 +15,8 @@ export default defineConfig({
     },
     
     nav: [
-      { text: 'Guide', link: '/core-concepts' },
-      { text: 'API', link: '/api' }
+      { text: 'Guide', link: '/core-concepts/defining-routes' },
+      { text: 'API', link: '/api/index' }
     ],
 
     search: {
@@ -26,9 +26,74 @@ export default defineConfig({
     sidebar: {
       '/api/': [
         {
-          text: 'packages',
+          text: 'Components',
           items: [
-            { text: '@kitbag/router', link: '/api/modules/kitbag' },
+            { text: 'RouterLink', link: '/api/components/RouterLink' },
+            { text: 'RouterView', link: '/api/components/RouterView' },
+          ],
+        },
+        {
+          text: 'Composables',
+          items: [
+            { text: 'onAfterRouteEnter', link: '/api/composables/onAfterRouteEnter' },
+            { text: 'onAfterRouteLeave', link: '/api/composables/onAfterRouteLeave' },
+            { text: 'onAfterRouteUpdate', link: '/api/composables/onAfterRouteUpdate' },
+            { text: 'onBeforeRouteLeave', link: '/api/composables/onBeforeRouteLeave' },
+            { text: 'onBeforeRouteUpdate', link: '/api/composables/onBeforeRouteUpdate' },
+            { text: 'useRejection', link: '/api/composables/useRejection' },
+            { text: 'useRoute', link: '/api/composables/useRoute' },
+            { text: 'useRouter', link: '/api/composables/useRouter' },
+          ],
+        },
+        {
+          text: 'Errors',
+          items: [
+            { text: 'DuplicateParamsError', link: '/api/errors/DuplicateParamsError' },
+            { text: 'RouterNotInstalledError', link: '/api/errors/RouterNotInstalledError' },
+            { text: 'UseRouteInvalidError', link: '/api/errors/UseRouteInvalidError' },
+          ],
+        },
+        {
+          text: 'Functions',
+          items: [
+            { text: 'createRouter', link: 'api/functions/createRouter' },
+            { text: 'createRoutes', link: 'api/functions/createRoutes' },
+            { text: 'path', link: 'api/functions/path' },
+            { text: 'query', link: 'api/functions/query' },
+          ],
+        },
+        {
+          text: 'Interfaces',
+          items: [
+            { text: 'Register', link: '/api/interfaces/Register' },
+          ],
+        },
+        {
+          text: 'Types',
+          items: [
+            { text: 'AddAfterRouteHook', link: '/api/types/AddAfterRouteHook' },
+            { text: 'AddBeforeRouteHook', link: '/api/types/AddBeforeRouteHook' },
+            { text: 'AfterRouteHook', link: '/api/types/AfterRouteHook' },
+            { text: 'AfterRouteHookLifecycle', link: '/api/types/AfterRouteHookLifecycle' },
+            { text: 'AfterRouteHookResponse', link: '/api/types/AfterRouteHookResponse' },
+            { text: 'BeforeRouteHook', link: '/api/types/BeforeRouteHook' },
+            { text: 'BeforeRouteHookLifecycle', link: '/api/types/BeforeRouteHookLifecycle' },
+            { text: 'BeforeRouteHookResponse', link: '/api/types/BeforeRouteHookResponse' },
+            { text: 'Param', link: '/api/types/Param' },
+            { text: 'ParamExtras', link: '/api/types/ParamExtras' },
+            { text: 'ParamGetSet', link: '/api/types/ParamGetSet' },
+            { text: 'ParamGetter', link: '/api/types/ParamGetter' },
+            { text: 'ParamSetter', link: '/api/types/ParamSetter' },
+            { text: 'Route', link: '/api/types/Route' },
+            { text: 'RouteHook', link: '/api/types/RouteHook' },
+            { text: 'RouteHookAbort', link: '/api/types/RouteHookAbort' },
+            { text: 'RouteHookLifecycle', link: '/api/types/RouteHookLifecycle' },
+            { text: 'RouteHookRemove', link: '/api/types/RouteHookRemove' },
+            { text: 'RouteHookResponse', link: '/api/types/RouteHookResponse' },
+            { text: 'Router', link: '/api/types/Router' },
+            { text: 'RouterOptions', link: '/api/types/RouterOptions' },
+            { text: 'RouterReject', link: '/api/types/RouterReject' },
+            { text: 'Route', link: '/api/types/Route' },
           ],
         },
       ],
