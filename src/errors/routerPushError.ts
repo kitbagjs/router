@@ -1,6 +1,3 @@
-/**
- * Represents an error thrown when a route hook wishes to redirect the user to a different route.
- */
 export class RouterPushError extends Error {
   public to: unknown[]
 

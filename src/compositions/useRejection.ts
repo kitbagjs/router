@@ -1,10 +1,11 @@
 import { InjectionKey, inject } from 'vue'
+import { RouterNotInstalledError } from '@/errors'
 import { RouterRejection } from '@/services/createRouterReject'
 
 export const routerRejectionKey: InjectionKey<RouterRejection> = Symbol()
 
 /**
- * Composition API function to access the router's rejection state.
+ * A composition to access the router's rejection state.
  *
  * @returns {RouterRejection} The rejection state object from the router, which can be used to handle route rejections
  *          such as authentication failures or permission denials.
@@ -15,7 +16,7 @@ export function useRejection(): RouterRejection {
   const rejection = inject(routerRejectionKey)
 
   if (!rejection) {
-    throw new Error('Router is not installed')
+    throw new RouterNotInstalledError()
   }
 
   return rejection

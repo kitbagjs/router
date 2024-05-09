@@ -1,4 +1,5 @@
 import { Route } from '@/types'
+import { stringHasValue } from '@/utilities/string'
 
 export function generateRoutePathRegexPattern(route: Route): RegExp {
   const routeRegex = replaceParamSyntaxWithCatchAlls(route.path.toString())
@@ -24,18 +25,35 @@ export function replaceParamSyntaxWithCatchAlls(value: string): string {
   }, value)
 }
 
-const optionalParamRegex = /(:\?[\w]+)(?=\W|$)/g
-const requiredParamRegex = /(:[\w]+)(?=\W|$)/g
+const optionalParamRegex = ':\\?([\\w]+)(?=\\W|$)'
+const requiredParamRegex = ':([\\w]+)(?=\\W|$)'
 
 function replaceOptionalParamSyntaxWithCatchAll(value: string): string {
-  return value.replace(optionalParamRegex, '[^\\/]*')
+  return value.replace(new RegExp(optionalParamRegex, 'g'), '[^\\/]*')
 }
 
-function isOptionalParamSyntax(value: string): boolean {
-  return optionalParamRegex.test(value)
+export function isOptionalParamSyntax(value: string): boolean {
+  return new RegExp(optionalParamRegex, 'g').test(value)
 }
 
 function replaceRequiredParamSyntaxWithCatchAll(value: string): string {
 
-  return value.replace(requiredParamRegex, '[^\\/]+')
+  return value.replace(new RegExp(requiredParamRegex, 'g'), '[^\\/]+')
+}
+
+export function isRequiredParamSyntax(value: string): boolean {
+  return new RegExp(requiredParamRegex, 'g').test(value)
+}
+
+export function getParamName(value: string): string | undefined {
+  const [optionalName] = getCaptureGroups(value, new RegExp(optionalParamRegex, 'g'))
+  const [requiredName] = getCaptureGroups(value, new RegExp(requiredParamRegex, 'g'))
+
+  return optionalName ?? requiredName
+}
+
+export function getCaptureGroups(value: string, pattern: RegExp): (string | undefined)[] {
+  const matches = Array.from(value.matchAll(pattern))
+
+  return matches.flatMap(([, ...values]) => values.map(value => stringHasValue(value) ? value : ''))
 }

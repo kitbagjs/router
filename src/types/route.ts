@@ -48,17 +48,6 @@ export type Route<
    * Represents the structured query of the route, including query params.
   */
   query: ToQuery<TQuery>,
-  /**
-   * Extracted path params based on the route's path type.
-  */
-  pathParams: ToPath<TPath>['params'],
-  /**
-   * Extracted query params based on the route's query type.
-  */
-  queryParams: ToQuery<TQuery>['params'],
-  /**
-   * Represents the depth of the route in the route hierarchy.
-  */
   depth: number,
   /**
    * Indicates if the route is disabled.
@@ -71,6 +60,12 @@ export type Route<
  * @template TRoute - The route type from which to extract and merge parameter types.
  * @returns A record of parameter names to their respective types, extracted and merged from both path and query parameters.
  */
-export type ExtractRouteParamTypes<TRoute extends { pathParams: Record<string, unknown>, queryParams: Record<string, unknown> }> = TRoute extends { pathParams: infer PathParams extends Record<string, Param | undefined>, queryParams: infer QueryParams extends Record<string, Param | undefined> }
+export type ExtractRouteParamTypes<TRoute extends {
+  path: { params: Record<string, unknown> },
+  query: { params: Record<string, unknown> },
+}> = TRoute extends {
+  path: { params: infer PathParams extends Record<string, Param | undefined> },
+  query: { params: infer QueryParams extends Record<string, Param | undefined> },
+}
   ? ExtractParamTypes<MergeParams<PathParams, QueryParams>>
   : Record<string, unknown>

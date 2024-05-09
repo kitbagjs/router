@@ -2,7 +2,8 @@ import { createMaybeRelativeUrl } from '@/services/createMaybeRelativeUrl'
 import { getParamValue } from '@/services/params'
 import { getParamValueFromUrl } from '@/services/paramsFinder'
 import { Route } from '@/types'
-import { Param } from '@/types/paramTypes'
+import { Path } from '@/types/path'
+import { Query } from '@/types/query'
 import { RouteMatchRule } from '@/types/routeMatchRule'
 
 export const routeParamsAreValid: RouteMatchRule = (route, url) => {
@@ -19,20 +20,34 @@ export const getRouteParamValues = (route: Route, url: string): Record<string, u
   const { pathname, search } = createMaybeRelativeUrl(url)
 
   return {
-    ...getRouteParams(route.pathParams, route.path.toString(), pathname),
-    ...getRouteParams(route.queryParams, route.query.toString(), search),
+    ...getPathParams(route.path, pathname),
+    ...getQueryParams(route.query, search),
   }
 }
 
-const getRouteParams = (paramDefinitions: Record<string, Param>, paramFormat: string, valueFromUrl: string): Record<string, unknown[]> => {
-  const params: Record<string, unknown[]> = {}
-  const decodedValueFromUrl = decodeURIComponent(valueFromUrl)
+function getPathParams(path: Path, url: string): Record<string, unknown> {
+  const params: Record<string, unknown> = {}
+  const decodedValueFromUrl = decodeURIComponent(url)
 
-  for (const [key, param] of Object.entries(paramDefinitions)) {
-    const stringValue = getParamValueFromUrl(decodedValueFromUrl, paramFormat, key)
+  for (const [key, param] of Object.entries(path.params)) {
+    const stringValue = getParamValueFromUrl(decodedValueFromUrl, path.toString(), key)
     const formattedValues = getParamValue(stringValue, param)
 
     params[key] = formattedValues
+  }
+
+  return params
+}
+
+function getQueryParams(query: Query, url: string): Record<string, unknown> {
+  const params: Record<string, unknown> = {}
+  const actualSearch = new URLSearchParams(url)
+
+  for (const [key, param] of Object.entries(query.params)) {
+    const valueOnUrl = actualSearch.get(key) ?? undefined
+    const paramValue = getParamValue(valueOnUrl, param)
+
+    params[key] = paramValue
   }
 
   return params

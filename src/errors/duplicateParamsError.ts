@@ -1,5 +1,5 @@
 /**
- * Represents an error thrown when duplicate parameters are detected in a router configuration.
+ * An error thrown when duplicate parameters are detected in a route when creating a router.
  * When defining routes, param names must be unique. This includes params defined in a path
  * parent and params defined in the query.
  */

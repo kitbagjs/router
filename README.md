@@ -2,9 +2,8 @@
 
 A simple and versatile mapping utility for Typescript.
 
-[![Npm Version](https://img.shields.io/npm/v/@kitbag/router.svg)](https://www.npmjs.org/package/kitbag/router)
-[![Zip Size](https://img.badgesize.io/https:/unpkg.com/@kitbag/router/dist/kitbag-router?compression=gzip)](https:/unpkg.com/@kitbag/router/dist/kitbag-router)
-[![Netlify Status](https://api.netlify.com/api/v1/badges/d6033c76-88c3-4963-b24f-7a0bda20f271/deploy-status)](https://app.netlify.com/sites/kitbag-router/deploys)
+[![Npm Version](https://img.shields.io/npm/v/@kitbag/router.svg)](https://www.npmjs.org/package/@kitbag/router)
+[![Netlify Status](https://api.netlify.com/api/v1/badges/c12f79b8-49f9-4529-bc23-f8ffca8919a3/deploy-status)](https://app.netlify.com/sites/kitbag-router/deploys)
 
 Get started with the [documentation](https://kitbag-router.netlify.app/)
 

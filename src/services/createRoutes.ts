@@ -11,7 +11,7 @@ import { ParentRouteProps, RouteProps, isParentRoute } from '@/types/routeProps'
 import { checkDuplicateKeys } from '@/utilities/checkDuplicateKeys'
 
 /**
- * Creates an array of Route instances from a defined set of route properties, handling hierarchical route combinations.
+ * Creates an array of routes from a defined set of route properties, handling hierarchical route combinations.
  * This function also validates for duplicate parameter keys across the combined routes.
  *
  * @param routesProps - An array of route properties used to configure and create routes.
@@ -62,8 +62,6 @@ function createRoute(route: RouteProps): Route {
     key: route.name,
     path,
     query,
-    pathParams: path.params,
-    queryParams: query.params,
     depth: 1,
     disabled: route.disabled ?? false,
   }
