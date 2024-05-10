@@ -1,23 +1,22 @@
-import { Ref, markRaw, ref, readonly } from 'vue'
+import { Ref, markRaw, ref, readonly, Component } from 'vue'
 import { genericRejection } from '@/components/rejection'
 import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
 import { RegisteredRejectionType } from '@/types'
 import { ResolvedRoute } from '@/types/resolved'
-import { RouteComponent } from '@/types/routeProps'
 
 export const builtInRejections = ['NotFound'] as const
 export type BuiltInRejectionType = typeof builtInRejections[number]
 
 export type RouterRejectionType = BuiltInRejectionType | RegisteredRejectionType
 
-export type RouterRejectionComponents = { rejections?: Partial<Record<RouterRejectionType, RouteComponent>> }
+export type RouterRejectionComponents = { rejections?: Partial<Record<RouterRejectionType, Component>> }
 
 export type RouterSetReject = (type: RouterRejectionType | null) => void
 
 type GetRejectionRoute = (type: RouterRejectionType) => ResolvedRoute
 type IsRejectionRoute = (route: ResolvedRoute) => boolean
 
-export type RouterRejection = Ref<null | { type: RouterRejectionType, component: RouteComponent }>
+export type RouterRejection = Ref<null | { type: RouterRejectionType, component: Component }>
 
 type CreateRouterRejectContext = {
   rejections?: RouterRejectionComponents['rejections'],
@@ -38,7 +37,7 @@ export function createRouterReject({
   rejections: customRejectionComponents,
 }: CreateRouterRejectContext): CreateRouterReject {
 
-  const getRejectionComponent = (type: RouterRejectionType): RouteComponent => {
+  const getRejectionComponent = (type: RouterRejectionType): Component => {
     const components = {
       ...customRejectionComponents,
     }

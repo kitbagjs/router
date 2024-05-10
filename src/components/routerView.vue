@@ -10,13 +10,12 @@
 </template>
 
 <script lang="ts" setup>
-  import { AsyncComponentLoader, computed, defineAsyncComponent, provide } from 'vue'
+  import { AsyncComponentLoader, Component, computed, defineAsyncComponent, provide } from 'vue'
   import { useRejection } from '@/compositions/useRejection'
   import { useRouter } from '@/compositions/useRouter'
   import { useRouterDepth } from '@/compositions/useRouterDepth'
   import { RouterRoute } from '@/services/createRouterRoute'
   import { depthInjectionKey } from '@/types/injectionDepth'
-  import { RouteComponent } from '@/types/routeProps'
 
   const router = useRouter()
   const rejection = useRejection()
@@ -25,7 +24,7 @@
   defineSlots<{
     default?: (props: {
       route: RouterRoute,
-      component: RouteComponent,
+      component: Component,
     }) => unknown,
   }>()
 
@@ -43,4 +42,4 @@
 
     return null
   })
-</script>@/services/createRouterRoute
+</script>

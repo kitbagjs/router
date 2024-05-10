@@ -1,14 +1,9 @@
-import { AsyncComponentLoader, Component, DefineComponent } from 'vue'
+import { Component } from 'vue'
 import { AfterRouteHook, BeforeRouteHook } from '@/types/hooks'
 import { Path } from '@/types/path'
 import { Query } from '@/types/query'
 import { Routes } from '@/types/route'
 import { MaybeArray } from '@/types/utilities'
-
-/**
- * Type alias for Vue components, which can be either synchronous or asynchronous components.
- */
-export type RouteComponent = Component | DefineComponent | AsyncComponentLoader
 
 /**
  * Represents additional metadata associated with a route, customizable via extensions.
@@ -44,7 +39,7 @@ export type ParentRouteProps = WithHooks & {
   query?: string | Query,
   disabled?: boolean,
   children: Routes,
-  component?: RouteComponent,
+  component?: Component,
   meta?: RouteMeta,
 }
 
@@ -56,7 +51,7 @@ export type ChildRouteProps = WithHooks & {
   disabled?: boolean,
   path: string | Path,
   query?: string | Query,
-  component: RouteComponent,
+  component: Component,
   meta?: RouteMeta,
 }
 
