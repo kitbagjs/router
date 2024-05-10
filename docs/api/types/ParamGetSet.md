@@ -6,9 +6,9 @@ type ParamGetSet<T>: object;
 
 ## Type parameters
 
-| Type parameter | Value |
-| :------ | :------ |
-| `T` | `any` |
+| Type parameter |
+| :------ |
+| `T` |
 
 ## Type declaration
 

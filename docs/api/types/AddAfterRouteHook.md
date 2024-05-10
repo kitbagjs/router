@@ -1,4 +1,4 @@
-# AddAfterRouteHook()
+# AddAfterRouteHook
 
 ```ts
 type AddAfterRouteHook: (hook) => RouteHookRemove;

@@ -1,4 +1,4 @@
-# ParamGetter()\<T\>
+# ParamGetter
 
 ```ts
 type ParamGetter<T>: (value, extras) => T;
@@ -6,9 +6,9 @@ type ParamGetter<T>: (value, extras) => T;
 
 ## Type parameters
 
-| Type parameter | Value |
-| :------ | :------ |
-| `T` | `any` |
+| Type parameter |
+| :------ |
+| `T` |
 
 ## Parameters
 

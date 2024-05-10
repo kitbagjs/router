@@ -24,20 +24,24 @@ onAfterRouteEnter: (to, context) => {
 
 ## Context
 
-The router provides `to` and a `context` argument to your hook callback. The context will always include
+The router provides `to` and a `context` argument to your hook callback. The context will always include: 
 
-| Property | Intent |
+| Property | Description |
 | ---- | ---- |
 | from | What was the route prior to the hook's execution |
-| push | Convenient way to move the user from wherever they were to a new route |
-| replace | Same as push, but with `options: { replace: true }` |
+| push | Convenient way to move the user from wherever they were to a new route. |
+| replace | Same as push, but with `options: { replace: true }`. |
 | reject | Trigger a [rejection](/advanced-concepts/rejections) for the router to handle |
 
-If the hooks lifecycle is a [before](/advanced-concepts/hooks#before-hooks) hook, you'll also have access to the following property in your context
+See [AfterRouteHookContext](/api/types/AfterRouteHookContext)
 
-| Property | Intent |
+If the hooks lifecycle is a [before](/advanced-concepts/hooks#before-hooks) hook, you'll also have access to the following property in your context:
+
+| Property | Description |
 | ---- | ---- |
 | abort | Stops the router from continuing with route change |
+
+See [BeforeRouteHookContext](/api/types/BeforeRouteHookContext)
 
 ## Levels
 

@@ -1,4 +1,4 @@
-# BeforeRouteHook()
+# BeforeRouteHook
 
 ```ts
 type BeforeRouteHook: (to, context) => MaybePromise<void>;

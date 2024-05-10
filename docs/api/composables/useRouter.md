@@ -1,4 +1,4 @@
-# useRouter()
+# useRouter
 
 ```ts
 function useRouter(): RegisteredRouter
@@ -8,7 +8,7 @@ A composition to access the registered router instance within a Vue component.
 
 ## Returns
 
-[`RegisteredRouter`](../types/RegisteredRouter)
+`RegisteredRouter`
 
 The registered router instance.
 

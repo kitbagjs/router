@@ -1,4 +1,4 @@
-# createRoutes()
+# createRoutes
 
 ```ts
 function createRoutes<TRoutes>(routes): FlattenRoutes<TRoutes>
@@ -11,7 +11,7 @@ This function also validates for duplicate parameter keys across the combined ro
 
 | Type parameter |
 | :------ |
-| `TRoutes` *extends* readonly `RouteProps`[] |
+| `TRoutes` *extends* readonly [`RouteProps`](/api/types/RouteProps)[] |
 
 ## Parameters
 

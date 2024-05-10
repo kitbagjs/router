@@ -1,5 +1,12 @@
 # RouterView
 
-```ts
-const RouterView: __VLS_WithTemplateSlots<DefineComponent<object, object, object, object, object, ComponentOptionsMixin, ComponentOptionsMixin, object, string, PublicProps, Readonly<ExtractPropTypes<object>>, object, object>, Readonly<object> & object>;
-```
+Renders `route` component based on depth. Also responsible for rendering [`Rejection`](/advanced-concepts/rejections#rejections) component if in rejection state.
+
+## Slots
+
+### Default
+
+| Scope Property | Type |
+| :---- | :---- |
+| route | [`Route`]('/api/types/Route') |
+| component | `Component` |

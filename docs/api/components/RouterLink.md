@@ -1,5 +1,31 @@
 # RouterLink
 
-```ts
-const RouterLink: __VLS_WithTemplateSlots_2<DefineComponent<__VLS_TypePropsToRuntimeProps<object & RouterPushOptions>, object, unknown, object, object, ComponentOptionsMixin, ComponentOptionsMixin, object, string, PublicProps, Readonly<ExtractPropTypes<__VLS_TypePropsToRuntimeProps<object & RouterPushOptions>>>, object, object>, Readonly<object> & object>;
-```
+RouterLink component renders anchor tag (`<a>`) for routing both within the SPA and to external locations.
+
+## Props
+
+| Parameter | Type |
+| :---- | :---- |
+| to | [`Url`]('/api/types/Url') \| `(resolve: RouterResolve) => Url` |
+| query | `Record<string, string>` \| `undefined` |
+| replace | `boolean` \| `undefined` |
+
+[RouterResolve](/api/types/RouterResolve)
+
+## Slots
+
+### Default
+
+| Scope Property | Type |
+| :---- | :---- |
+| resolved | string |
+| match | boolean |
+| exactMatch | boolean |
+| isExternal | boolean |
+
+## Notes
+
+RouterLink applies class names for styling
+
+- `router-link--match` -> route is current route or ancestor of current route
+- `router-link--exact-match` -> route is current route

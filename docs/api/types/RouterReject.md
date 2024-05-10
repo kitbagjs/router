@@ -1,4 +1,4 @@
-# RouterReject()
+# RouterReject
 
 ```ts
 type RouterReject: (type) => void;

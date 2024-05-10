@@ -1,4 +1,4 @@
-# useRejection()
+# useRejection
 
 ```ts
 function useRejection(): RouterRejection

@@ -1,0 +1,28 @@
+# RouterReplace
+
+Replace has the same effect as [`RouterPush`](/api/types/RouterPush) but without pushing an entry to the browser's history.
+
+## Type parameters
+
+| Parameter | Type |
+| :------ | :------ |
+| `TSource` | [`Key`](/api/types/Route#key) |
+
+## Parameters
+
+| Parameter | Type |
+| :------ | :------ |
+| `source` | [`Url`](/api/types/Url) \| `TSource` |
+| `options` | [`RouterReplaceOptions`](/api/types/RouterReplace#routerreplaceoptions) \| `undefined` |
+
+### RouterReplaceOptions
+
+```ts
+{
+  query?: Record<string, string>,
+}
+```
+
+## Returns
+
+`Promise<void>`

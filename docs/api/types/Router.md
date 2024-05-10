@@ -1,7 +1,7 @@
 # Router\<TRoutes\>
 
 ```ts
-type Router<TRoutes>: Plugin_2 & object;
+type Router<TRoutes>: Plugin & object;
 ```
 
 ## Type declaration
@@ -13,10 +13,6 @@ back: () => void;
 ```
 
 Navigates to the previous entry in the browser's history stack.
-
-#### Returns
-
-`void`
 
 ### find
 
@@ -34,27 +30,13 @@ forward: () => void;
 
 Navigates to the next entry in the browser's history stack.
 
-#### Returns
-
-`void`
-
 ### go()
 
 ```ts
-go: (delta) => void;
+go: (delta: number) => void;
 ```
 
 Moves the current history entry to a specific point in the history stack.
-
-#### Parameters
-
-| Parameter | Type |
-| :------ | :------ |
-| `delta` | `number` |
-
-#### Returns
-
-`void`
 
 ### initialized
 
@@ -70,7 +52,7 @@ A promise that resolves when the router is fully initialized.
 onAfterRouteEnter: AddAfterRouteHook;
 ```
 
-Registers a hook to be called after a route is entered.
+Registers a hook to be called after a route is entered. [AddAfterRouteHook](/api/types/AddAfterRouteHook)
 
 ### onAfterRouteLeave
 
@@ -78,7 +60,7 @@ Registers a hook to be called after a route is entered.
 onAfterRouteLeave: AddAfterRouteHook;
 ```
 
-Registers a hook to be called after a route is left.
+Registers a hook to be called after a route is left. [AddAfterRouteHook](/api/types/AddAfterRouteHook)
 
 ### onAfterRouteUpdate
 
@@ -86,7 +68,7 @@ Registers a hook to be called after a route is left.
 onAfterRouteUpdate: AddAfterRouteHook;
 ```
 
-Registers a hook to be called after a route is updated.
+Registers a hook to be called after a route is updated. [AddAfterRouteHook](/api/types/AddAfterRouteHook)
 
 ### onBeforeRouteEnter
 
@@ -94,7 +76,7 @@ Registers a hook to be called after a route is updated.
 onBeforeRouteEnter: AddBeforeRouteHook;
 ```
 
-Registers a hook to be called before a route is entered.
+Registers a hook to be called before a route is entered. [AddBeforeRouteHook](/api/types/AddBeforeRouteHook)
 
 ### onBeforeRouteLeave
 
@@ -102,7 +84,7 @@ Registers a hook to be called before a route is entered.
 onBeforeRouteLeave: AddBeforeRouteHook;
 ```
 
-Registers a hook to be called before a route is left.
+Registers a hook to be called before a route is left. [AddBeforeRouteHook](/api/types/AddBeforeRouteHook)
 
 ### onBeforeRouteUpdate
 
@@ -110,15 +92,15 @@ Registers a hook to be called before a route is left.
 onBeforeRouteUpdate: AddBeforeRouteHook;
 ```
 
-Registers a hook to be called before a route is updated.
+Registers a hook to be called before a route is updated. [AddBeforeRouteHook](/api/types/AddBeforeRouteHook)
 
 ### push
 
 ```ts
-push: RouterPush<TRoutes>;
+push: RouterPush;
 ```
 
-Navigates to a specified path or route object in the history stack, adding a new entry.
+Navigates to a specified path or route object in the history stack, adding a new entry. [RouterPush](/api/types/RouterPush)
 
 ### refresh()
 
@@ -127,10 +109,6 @@ refresh: () => void;
 ```
 
 Forces the router to re-evaluate the current route.
-
-#### Returns
-
-`void`
 
 ### reject
 
@@ -143,29 +121,29 @@ Handles route rejection based on a specified rejection type.
 ### replace
 
 ```ts
-replace: RouterReplace<TRoutes>;
+replace: RouterReplace;
 ```
 
-Replaces the current entry in the history stack with a new one.
+Replaces the current entry in the history stack with a new one. [RouterReplace](/api/types/RouterReplace)
 
 ### resolve
 
 ```ts
-resolve: RouterResolve<TRoutes>;
+resolve: RouterResolve;
 ```
 
-Resolves a URL to a route object.
+Resolves a URL to a route object. [RouterResolve](/api/types/RouterResolve)
 
 ### route
 
 ```ts
-route: RouterRoute;
+route: Route;
 ```
 
-Manages the current route state.
+Manages the current route state. [Route](/api/types/Route)
 
 ## Type parameters
 
-| Type parameter | Value |
-| :------ | :------ |
-| `TRoutes` *extends* [`Routes`](Routes) | `any` |
+| Type parameter |
+| :------ |
+| `TRoutes` *extends* [`Routes`](Routes) |

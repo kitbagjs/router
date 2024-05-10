@@ -1,4 +1,4 @@
-# path()
+# path
 
 ```ts
 function path<TPath, TParams>(path, params): Path<TPath, TParams>
@@ -40,3 +40,7 @@ export const routes = createRoutes([
   },
 ])
 ```
+
+## Custom Params
+
+Param types is customizable with [`ParamGetter`](/api/types/ParamGetter), [`ParamSetter`](/api/types/ParamSetter), and [`ParamGetSet`](/api/types/ParamGetSet). Read more about [custom params](/core-concepts/route-params#custom-param).

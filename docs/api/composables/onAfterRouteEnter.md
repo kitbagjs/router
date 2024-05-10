@@ -1,4 +1,4 @@
-# onAfterRouteEnter()
+# onAfterRouteEnter
 
 ```ts
 function onAfterRouteEnter(hook): RouteHookRemove

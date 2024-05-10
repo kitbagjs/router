@@ -1,4 +1,4 @@
-# RouteHookRemove()
+# RouteHookRemove
 
 ```ts
 type RouteHookRemove: () => void;

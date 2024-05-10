@@ -1,4 +1,4 @@
-# ParamSetter()\<T\>
+# ParamSetter
 
 ```ts
 type ParamSetter<T>: (value, extras) => string;
@@ -6,9 +6,9 @@ type ParamSetter<T>: (value, extras) => string;
 
 ## Type parameters
 
-| Type parameter | Value |
-| :------ | :------ |
-| `T` | `any` |
+| Type parameter |
+| :------ |
+| `T` |
 
 ## Parameters
 

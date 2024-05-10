@@ -15,7 +15,7 @@ export type Routes = Readonly<Route[]>
 type RoutePropsWithMeta = RouteProps & { meta: RouteMeta }
 
 /**
- * Represents the structure of a route within the application.
+ * Represents the structure of a route within the application. Return value of `createRoutes`
  * @template TKey - Represents the unique key identifying the route, typically a string.
  * @template TPath - The type or structure of the route's path.
  * @template TQuery - The type or structure of the query parameters associated with the route.

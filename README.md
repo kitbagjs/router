@@ -137,7 +137,7 @@ Give your route components a place to be mounted
 </div>
 ```
 
-This component can be mounted anywhere you want route components to be mounted. Nested routes can also have a nested `RouterView` which would be responsible for rendering any children that route may have. See more about [nested routes](https://kitbag-router.netlify.app/core-concepts/defining-routes#nested-routes).
+This component can be mounted anywhere you want route components to be mounted. Nested routes can also have a nested `RouterView` which would be responsible for rendering any children that route may have. Read more about [nested routes](https://kitbag-router.netlify.app/core-concepts/defining-routes#nested-routes).
 
 ## RouterLink
 

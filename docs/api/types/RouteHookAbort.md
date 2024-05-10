@@ -1,4 +1,4 @@
-# RouteHookAbort()
+# RouteHookAbort
 
 ```ts
 type RouteHookAbort: () => void;

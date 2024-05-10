@@ -1,4 +1,4 @@
-# onAfterRouteUpdate()
+# onAfterRouteUpdate
 
 ```ts
 function onAfterRouteUpdate(hook): RouteHookRemove

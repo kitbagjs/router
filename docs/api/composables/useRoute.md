@@ -1,13 +1,14 @@
-# useRoute()
+# useRoute
 
 ## useRoute(routeKey)
 
 ```ts
-function useRoute<TRouteKey>(routeKey): RouterRoute<ResolvedRoute<RegisteredRouteMap[TRouteKey]>>
+function useRoute<TRouteKey>(routeKey): Route<ResolvedRoute<RegisteredRouteMap[TRouteKey]>>
 ```
 
 A composition to access the current route or verify a specific route key within a Vue component.
 This function provides two overloads:
+
 1. When called without arguments, it returns the current route from the router without types.
 2. When called with a route key, it checks if the current active route includes the specified route key.
 
@@ -25,7 +26,7 @@ This function provides two overloads:
 
 ### Returns
 
-`RouterRoute`\<`ResolvedRoute`\<[`RegisteredRouteMap`](../types/RegisteredRouteMap)\[`TRouteKey`\]\>\>
+[`Route`](/api/types/Route)\<[`ResolvedRoute`](/api/types/ResolvedRoute)\>
 
 The current router route. If a route key is provided, it validates the route key first.
 
