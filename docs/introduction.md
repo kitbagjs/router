@@ -18,4 +18,4 @@ Defining a query on routes can control route matching, just like it does with th
 
 ## Rejection Handling
 
-Virtually every app that needs a router will eventually need to handle urls without a match (404), routes protected by auth (401) but the solution is on you to figure out. With Kitbag Router you have this functionality out of the box.
+Virtually every app that needs a router will eventually need to handle URLs without a match (404), routes protected by auth (401) but the solution is on you to figure out. With Kitbag Router you have this functionality out of the box.
