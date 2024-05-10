@@ -8,5 +8,5 @@ Renders `route` component based on depth. Also responsible for rendering [`Rejec
 
 | Scope Property | Type |
 | :---- | :---- |
-| route | [`Route`]('/api/types/Route') |
+| route | [`Route`](/api/types/Route) |
 | component | `Component` |

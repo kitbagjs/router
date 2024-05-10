@@ -8,7 +8,7 @@ Represents properties common to parent routes in a route configuration, includin
 
 ### name
 
-Name for route, used to create route keys and in navigation. Read more about [route naming](http://localhost:5173/core-concepts/defining-routes#route-names).
+Name for route, used to create route keys and in navigation. Read more about [route naming](/core-concepts/defining-routes#route-names).
 
 ```ts
 name: string | undefined;

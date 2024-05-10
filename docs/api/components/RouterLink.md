@@ -6,7 +6,7 @@ RouterLink component renders anchor tag (`<a>`) for routing both within the SPA 
 
 | Parameter | Type |
 | :---- | :---- |
-| to | [`Url`]('/api/types/Url') \| `(resolve: RouterResolve) => Url` |
+| to | [`Url`](/api/types/Url) \| `(resolve: RouterResolve) => Url` |
 | query | `Record<string, string>` \| `undefined` |
 | replace | `boolean` \| `undefined` |
 
