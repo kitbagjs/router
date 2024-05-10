@@ -48,10 +48,10 @@ children: Routes;
 
 ### component
 
-Type alias for Vue components, which can be either synchronous or asynchronous components. See [RouteComponent](/api/types/RouteProps.html#routecomponent)
+Vue component, which can be either synchronous or asynchronous components.
 
 ```ts
-component: RouteComponent | undefined;
+component: Component | undefined;
 ```
 
 ### meta
@@ -72,17 +72,9 @@ type ChildRouteProps = WithHooks & {
   disabled?: boolean,
   path: string | Path,
   query?: string | Query,
-  component: RouteComponent,
+  component: Component,
   meta?: RouteMeta,
 }
-```
-
-## RouteComponent
-
-Type alias for Vue components, which can be either synchronous or asynchronous components.
-
-```ts
-type RouteComponent = Component | DefineComponent | AsyncComponentLoader
 ```
 
 ## WithHooks
