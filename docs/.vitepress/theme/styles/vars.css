@@ -22,3 +22,18 @@
   );
   --vp-home-hero-image-filter: blur(40px);
 }
+
+a.alt.stackblitz {
+  display: flex;
+  align-items: center;
+  color: rgb(19, 137, 253);
+  gap: 0.2rem;
+}
+
+a.alt.stackblitz::after {
+  display: block;
+  height: 14px;
+  width: 14px;
+  content: '';
+  background-image: url('/stackblitz.svg');
+}

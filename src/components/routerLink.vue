@@ -1,5 +1,5 @@
 <template>
-  <a :href="resolved" :class="classes" @click="onClick">
+  <a :href="resolved" class="router-link" :class="classes" @click="onClick">
     <slot v-bind="{ resolved, match, exactMatch, isExternal }" />
   </a>
 </template>
