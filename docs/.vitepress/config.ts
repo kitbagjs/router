@@ -15,7 +15,7 @@ export default defineConfig({
     },
     
     nav: [
-      { text: 'Guide', link: '/core-concepts/defining-routes' },
+      { text: 'Guide', link: '/introduction' },
       { text: 'API', link: '/api/index' }
     ],
 
