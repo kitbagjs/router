@@ -1,4 +1,4 @@
-import { AsyncComponentLoader, Component, defineComponent, h } from 'vue'
+import { AsyncComponentLoader, Component, FunctionalComponent, defineComponent, h } from 'vue'
 import { MaybePromise } from '@/types/utilities'
 
 type Constructor = new (...args: any) => any
@@ -7,7 +7,9 @@ type Props<TComponent extends Component> = TComponent extends Constructor
   ? InstanceType<TComponent>['$props']
   : TComponent extends AsyncComponentLoader<infer T extends Component>
     ? Props<T>
-    : never
+    : TComponent extends FunctionalComponent<infer T>
+      ? T
+      : never
 
 type PropsGetter<TComponent extends Component> = () => MaybePromise<Props<TComponent>>
 
