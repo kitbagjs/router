@@ -6,7 +6,7 @@ import { Routes } from '@/types/route'
 import { MaybeArray } from '@/types/utilities'
 
 /**
- * Represents additional metadata associated with a route, customizable via extensions.
+ * Represents additional metadata associated with a route, customizable via declaration merging.
  * @example
  * ```ts
  * declare module '@kitbag/router' {
@@ -34,12 +34,33 @@ type WithHooks = {
  * Represents properties common to parent routes in a route configuration, including hooks, path, and optional query parameters.
  */
 export type ParentRouteProps = WithHooks & {
+  /**
+   * Name for route, used to create route keys and in navigation.
+   */
   name?: string,
+  /**
+   * Path part of URL.
+   */
   path: string | Path,
+  /**
+   * Query (aka search) part of URL.
+   */
   query?: string | Query,
+  /**
+   * Disabled routes will not ever match but can still provide physical structure, nested children behave normally.
+   */
   disabled?: boolean,
+  /**
+   * Children routes, expected type comes from `createRoutes()`
+   */
   children: Routes,
+  /**
+   * A Vue component, which can be either synchronous or asynchronous components.
+   */
   component?: Component,
+  /**
+   * Represents additional metadata associated with a route, customizable via declaration merging.
+   */
   meta?: RouteMeta,
 }
 
@@ -47,11 +68,29 @@ export type ParentRouteProps = WithHooks & {
  * Represents properties for child routes, including required component, name, and path.
  */
 export type ChildRouteProps = WithHooks & {
+  /**
+   * Name for route, used to create route keys and in navigation.
+   */
   name: string,
+  /**
+   * Children routes, expected type comes from `createRoutes()`
+   */
   disabled?: boolean,
+  /**
+   * Path part of URL.
+   */
   path: string | Path,
+  /**
+   * Query (aka search) part of URL.
+   */
   query?: string | Query,
+  /**
+   * A Vue component, which can be either synchronous or asynchronous components.
+   */
   component: Component,
+  /**
+   * Represents additional metadata associated with a route, customizable via declaration merging.
+   */
   meta?: RouteMeta,
 }
 

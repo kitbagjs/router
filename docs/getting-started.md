@@ -75,7 +75,7 @@ Give your route components a place to be mounted
 </div>
 ```
 
-This component can be mounted anywhere you want route components to be mounted. Nested routes can also have a nested `RouterView` which would be responsible for rendering any children that route may have. See more about [nested routes](/core-concepts/defining-routes#nested-routes).
+This component can be mounted anywhere you want route components to be mounted. Nested routes can also have a nested `RouterView` which would be responsible for rendering any children that route may have. Read more about [nested routes](/core-concepts/defining-routes#nested-routes).
 
 ## RouterLink
 
@@ -93,7 +93,7 @@ This component gives the router the power to change the URL without reloading th
 
 ### Type Safety in RouterLink
 
-Rather than constructing your own urls for the `to` prop, you can use the callback syntax which provides `router.resolve`. This gives you full type safety by suggesting all available route keys for you as well as prompt for any params that may be required.
+Rather than constructing your own URLs for the `to` prop, you can use the callback syntax which provides `router.resolve`. This gives you full type safety by suggesting all available route keys for you as well as prompt for any params that may be required.
 
 ```html
 <router-link :to="(resolve) => resolve('home')">Go somewhere</router-link>

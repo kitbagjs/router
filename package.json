@@ -1,7 +1,7 @@
 {
   "name": "@kitbag/router",
   "private": false,
-  "version": "0.0.3",
+  "version": "0.1.0",
   "bugs": {
     "url": "https://github.com/kitbagjs/router/issues"
   },
@@ -16,7 +16,8 @@
     "types": "vue-tsc --noEmit",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs"
+    "docs:preview": "vitepress preview docs",
+    "docs:generate": "typedoc"
   },
   "type": "module",
   "files": [
@@ -37,6 +38,9 @@
     "@vue/test-utils": "^2.4.3",
     "eslint": "^8.54.0",
     "happy-dom": "^12.10.3",
+    "typedoc": "^0.25.13",
+    "typedoc-plugin-markdown": "^4.0.0",
+    "typedoc-plugin-vue": "^1.1.0",
     "typescript": "^5.4.3",
     "vite": "^5.2.7",
     "vite-plugin-dts": "^3.8.1",
