@@ -1,6 +1,11 @@
 import { Param, ParamGetSet, ParamGetter } from '@/types/paramTypes'
 import { Identity } from '@/types/utilities'
 
+export const paramStart = '['
+export type ParamStart = typeof paramStart
+export const paramEnd = ']'
+export type ParamEnd = typeof paramEnd
+
 /**
  * Determines if a given value is not a constructor for String, Boolean, or Number.
  * @param value - The value to check.
