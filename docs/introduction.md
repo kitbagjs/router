@@ -10,7 +10,7 @@ You already know what routes exist, so why are we using magic strings and hoping
 
 ## Better Route Params
 
-Adding dynamic parameters to your route is just as easy as you'd expect but infinitely more powerful. With Kitbag Router, your parameters can be expressed as `String`, `Number`, `Boolean`, `Date`, `RegExp`, or literally anything else. Parameters in the route will be expected when navigating (type safety!). This param type is enforced when matching routes, so routes can be differentiated by subtle changes in param types.
+Adding dynamic parameters to your route is just as easy as you'd expect but infinitely more powerful. With Kitbag Router, your parameters can be expressed as `String`, `Number`, `Boolean`, `Date`, `JSON`, `RegExp`, or literally anything else. Parameters in the route will be expected when navigating (type safety!). This param type is enforced when matching routes, so routes can be differentiated by subtle changes in param types.
 
 ## Support for Query
 

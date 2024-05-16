@@ -42,7 +42,7 @@ route.params.sort
 
 ## Param Types
 
-Again like params declared in `path`, these params default as writable `string`, but can be overridden with built in `Number`, `Boolean`, `Date`, `RegExp`, or any `ParamGetter`/`ParamGetSet` you define.
+Again like params declared in `path`, these params default as writable `string`, but can be overridden with built in `Number`, `Boolean`, `Date`, `JSON`, `RegExp`, or any `ParamGetter`/`ParamGetSet` you define.
 
 ```ts
 import { 

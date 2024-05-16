@@ -46,7 +46,7 @@ const routes = createRoutes([
 
 This will automatically parse the param from `string` in the URL to `number` in `route.params`. If the value cannot be parsed, the route will not be considered a match.
 
-Kitbag Router ships with support for `String` (default), `Boolean`, `Number`, `Date`, and `RegExp`.
+Kitbag Router ships with support for `String` (default), `Boolean`, `Number`, `Date`, `JSON`, and `RegExp`.
 
 ### RegExp Params
 
