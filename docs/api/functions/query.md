@@ -35,7 +35,7 @@ import { createRoutes, query } from '@kitbag/router'
 export const routes = createRoutes([
   {
     name: 'home',
-    query: query('?bar=[bar]', { bar: Boolean }),
+    query: query('bar=[bar]', { bar: Boolean }),
     component: Home
   },
 ])
@@ -43,4 +43,4 @@ export const routes = createRoutes([
 
 ## Custom Params
 
-Param types is customizable with [`ParamGetter`](/api/types/ParamGetter), [`ParamSetter`](/api/types/ParamSetter), and [`ParamGetSet`](/api/types/ParamGetSet). Read more about [custom params](/core-concepts/route-params#custom-param).
+Param types is customizable with [`ParamGetter`](/api/types/ParamGetter), [`ParamSetter`](/api/types/ParamSetter), and [`ParamGetSet`](/api/types/ParamGetSet). Read more about [custom params](/core-concepts/path-params#custom-param).

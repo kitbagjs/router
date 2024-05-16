@@ -22,6 +22,11 @@ describe('getParamValue', () => {
     expect(() => getParamValue('foo', JSON)).toThrow(InvalidRouteParamValueError)
   })
 
+  test('given  Date constructor Param, returns for correct value for Date', () => {
+    expect(getParamValue('2024-05-16T21:13:56.842Z', Date)).toMatchObject(new Date('2024-05-16T21:13:56.842Z'))
+    expect(() => getParamValue('foo', Date)).toThrow(InvalidRouteParamValueError)
+  })
+
   test('Given Regex Param, returns for correct value for RegExp', () => {
     const param = /yes/
 
@@ -74,6 +79,11 @@ describe('setParamValue', () => {
     expect(setParamValue(1, Number)).toBe('1')
     expect(setParamValue(1.5, Number)).toBe('1.5')
     expect(() => setParamValue('foo', Number)).toThrow(InvalidRouteParamValueError)
+  })
+
+  test('given  Date constructor Param, returns for correct value for Date', () => {
+    expect(setParamValue(new Date('2024-05-16T21:13:56.842Z'), Date)).toBe('2024-05-16T21:13:56.842Z')
+    expect(() => setParamValue('foo', Date)).toThrow(InvalidRouteParamValueError)
   })
 
   test('Given a JSON Param, returns correct value for JSON', () => {

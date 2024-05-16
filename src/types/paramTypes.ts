@@ -10,4 +10,4 @@ export type ParamGetSet<T = any> = {
   set: ParamSetter<T>,
 }
 
-export type Param = ParamGetter | ParamGetSet | RegExp | BooleanConstructor | NumberConstructor | StringConstructor | JSON
+export type Param = ParamGetter | ParamGetSet | RegExp | BooleanConstructor | NumberConstructor | StringConstructor | DateConstructor | JSON

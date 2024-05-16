@@ -46,7 +46,7 @@ const routes = createRoutes([
 
 This will automatically parse the param from `string` in the URL to `number` in `route.params`. If the value cannot be parsed, the route will not be considered a match.
 
-Kitbag Router ships with support for `String` (default), `Boolean`, `Number`, and `RegExp`.
+Kitbag Router ships with support for `String` (default), `Boolean`, `Number`, `Date`, `JSON`, and `RegExp`.
 
 ### RegExp Params
 
@@ -64,20 +64,20 @@ const routes = createRoutes([
 
 ### Custom Param
 
-You're not limited to the param types that ship with Kitbag Router, use `ParamGetter<T>` or `ParamGetSet<T>` to parse params to whatever type you need.
+You're not limited to the param types that ship with Kitbag Router, use `ParamGetter<T>` or `ParamGetSet<T>` to parse params to whatever type you need. For example, here is the ParamGetter Kitbag Router defines for Number params.
 
 ```ts
-const dateParam: ParamGetter<Date> = (value, { invalid }) => {
-  const date = new Date(value)
+const numberParam: ParamGetter<number> = (value, { invalid }) => {
+  const number = Number(value)
 
-  if (isNaN(date.getTime())) {
+  if (isNaN(number)) {
     // If any exception is thrown, the route will not match.
     // Use the provided `invalid` function to provide additional context to the router.
-    throw invalid('Value provided for version is not valid date format')
+    throw invalid()
   }
 
   // Return value is what will be provided in route.params.id
-  return date
+  return number
 }
 ```
 
@@ -86,8 +86,8 @@ Update your param assignment on the route's path
 ```ts
 const routes = createRoutes([
   {
-    name: 'feed',
-    path: path('/feed/[start]', { start: dateParam }), // [!code focus]
+    name: 'users',
+    path: path('/users/[id]', { id: numberParam }), // [!code focus]
     component: ...
   }
 ])
@@ -98,20 +98,25 @@ With this getter defined, now our route will only match if the param matches our
 As a `ParamGetter`, the value in `route.params` is still writable, but the set will assume `value.toString()` is sufficient. Alternatively if you use `ParamGetSet`, you can provide the same validation on value set as well.
 
 ```ts
-const dateParam: ParamGetSet<Date> = {
+const numberParam: ParamGetSet<number> = {
   get: (value, { invalid }) => {
-    if (isValidIdFormat(value)) {
-      return value
+    const number = Number(value)
+
+    if (isNaN(number)) {
+      throw invalid()
     }
 
-    throw invalid()
+    return number
   },
   set: (value, { invalid }) => {
-    if (isValidIdFormat(value)) {
-      return value
+    if (typeof value !== 'number') {
+      // If any exception is thrown, the route will not match.
+      // Use the provided `invalid` function to provide additional context to the router.
+      throw invalid()
     }
 
-    throw invalid()
+    // Return value is what will be provided in route.params.id
+    return value.toString()
   },
 }
 ```

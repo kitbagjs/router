@@ -19,7 +19,7 @@ import { Identity } from '@/types/utilities'
  * export const routes = createRoutes([
  *   {
  *     name: 'home',
- *     query: query('?bar=[bar]', { bar: Boolean }),
+ *     query: query('bar=[bar]', { bar: Boolean }),
  *     component: Home
  *   },
  * ])

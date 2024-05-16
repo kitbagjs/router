@@ -7,12 +7,12 @@ export const paramEnd = ']'
 export type ParamEnd = typeof paramEnd
 
 /**
- * Determines if a given value is not a constructor for String, Boolean, or Number.
+ * Determines if a given value is not a constructor for String, Boolean, Date, or Number.
  * @param value - The value to check.
- * @returns True if the value is not a constructor function for String, Boolean, or Number.
+ * @returns True if the value is not a constructor function for String, Boolean, Date, or Number.
  */
 function isNotConstructor(value: Param): boolean {
-  return value !== String && value !== Boolean && value !== Number
+  return value !== String && value !== Boolean && value !== Number && value !== Date
 }
 
 /**
