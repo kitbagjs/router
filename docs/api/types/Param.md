@@ -7,5 +7,6 @@ type Param:
   | RegExp
   | BooleanConstructor
   | NumberConstructor
-  | StringConstructor;
+  | StringConstructor
+  | DateConstructor;
 ```

@@ -96,4 +96,4 @@ router.push('routes.user.profile') // ok
 
 ## Case Sensitivity
 
-By default route paths are NOT case sensitive. If you need part of your route to be case sensitive, we recommend using a [Regex Param](/core-concepts/route-params#regexp-params).
+By default route paths are NOT case sensitive. If you need part of your route to be case sensitive, we recommend using a [Regex Param](/core-concepts/path-params#regexp-params).

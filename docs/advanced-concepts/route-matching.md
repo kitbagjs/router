@@ -92,7 +92,7 @@ when your query param is optional, the entire property can be missing and the ro
 
 ## Params Are Valid
 
-Assuming a route's path and query match the structure of the URL, the last test is to make sure that values provided by the URL pass the Param parsing. By default params are assumed to be strings, so by default if structure matches, parsing will pass as well since the URL is a string. However, if you define your params with `Boolean`, `Number`, or a custom `Param` the value will be need to pass the param's `get` function.
+Assuming a route's path and query match the structure of the URL, the last test is to make sure that values provided by the URL pass the Param parsing. By default params are assumed to be strings, so by default if structure matches, parsing will pass as well since the URL is a string. However, if you define your params with `Boolean`, `Number`, `Date`, or a custom `Param` the value will be need to pass the param's `get` function.
 
 ```ts
 const route {

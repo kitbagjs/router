@@ -42,7 +42,7 @@ route.params.sort
 
 ## Param Types
 
-Again like params declared in `path`, these params default as writable `string`, but can be overridden with built in `Number`, `Boolean`, `RegExp`, or any `ParamGetter`/`ParamGetSet` you define.
+Again like params declared in `path`, these params default as writable `string`, but can be overridden with built in `Number`, `Boolean`, `Date`, `RegExp`, or any `ParamGetter`/`ParamGetSet` you define.
 
 ```ts
 import { 
@@ -91,4 +91,4 @@ route.params.paramSort
 route.params.query.keySort
 ```
 
-As for the param name, query params follow the same rules as [path params](/core-concepts/route-params#param-name)
+As for the param name, query params follow the same rules as [path params](/core-concepts/path-params#param-name)
