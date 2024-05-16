@@ -7,13 +7,19 @@ describe('getParamValue', () => {
   test('given Boolean constructor Param, returns for correct value for Boolean', () => {
     expect(getParamValue('true', Boolean)).toBe(true)
     expect(getParamValue('false', Boolean)).toBe(false)
-    expect(() => getParamValue('foo', Boolean)).toThrowError()
+    expect(() => getParamValue('foo', Boolean)).toThrow(InvalidRouteParamValueError)
   })
 
   test('given  Number constructor Param, returns for correct value for Number', () => {
     expect(getParamValue('1', Number)).toBe(1)
     expect(getParamValue('1.5', Number)).toBe(1.5)
-    expect(() => getParamValue('foo', Number)).toThrowError()
+    expect(() => getParamValue('foo', Number)).toThrow(InvalidRouteParamValueError)
+  })
+
+  test('Given a JSON Param, returns correct value for JSON', () => {
+    expect(getParamValue('1', JSON)).toBe(1)
+    expect(getParamValue('"foo"', JSON)).toBe('foo')
+    expect(() => getParamValue('foo', JSON)).toThrow(InvalidRouteParamValueError)
   })
 
   test('given  Date constructor Param, returns for correct value for Date', () => {
@@ -25,8 +31,8 @@ describe('getParamValue', () => {
     const param = /yes/
 
     expect(getParamValue('yes', param)).toBe('yes')
-    expect(() => getParamValue('no', param)).toThrowError()
-    expect(() => getParamValue('foo', param)).toThrowError()
+    expect(() => getParamValue('no', param)).toThrow(InvalidRouteParamValueError)
+    expect(() => getParamValue('foo', param)).toThrow(InvalidRouteParamValueError)
   })
 
   test('Given Custom Getter Param, returns for correct value for ParamGetter', () => {
@@ -66,13 +72,23 @@ describe('setParamValue', () => {
   test('Given Boolean Param, returns for correct value for Boolean', () => {
     expect(setParamValue(true, Boolean)).toBe('true')
     expect(setParamValue(false, Boolean)).toBe('false')
-    expect(() => setParamValue('foo', Boolean)).toThrowError()
+    expect(() => setParamValue('foo', Boolean)).toThrow(InvalidRouteParamValueError)
   })
 
   test('Given Number Param, returns for correct value for Number', () => {
     expect(setParamValue(1, Number)).toBe('1')
     expect(setParamValue(1.5, Number)).toBe('1.5')
-    expect(() => setParamValue('foo', Number)).toThrowError()
+    expect(() => setParamValue('foo', Number)).toThrow(InvalidRouteParamValueError)
+  })
+
+  test('Given a JSON Param, returns correct value for JSON', () => {
+    expect(setParamValue(['foo'], JSON)).toBe('["foo"]')
+    expect(setParamValue(1.5, JSON)).toBe('1.5')
+
+    const circular: Record<string, any> = { foo: 'bar' }
+    circular.foo = circular
+
+    expect(() => setParamValue(circular, JSON)).toThrow(InvalidRouteParamValueError)
   })
 
   test('Given Regex Param, returns value as String', () => {

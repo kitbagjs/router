@@ -23,14 +23,14 @@ describe('generateRoutePathRegexPattern', () => {
     const [route] = createRoutes([
       {
         name: 'path-with-params',
-        path: 'parent/child/:childParam/grand-child/:grandChild123',
+        path: 'parent/child/[childParam]/grand-child/[grandChild123]',
         component,
       },
     ])
 
     const result = generateRoutePathRegexPattern(route)
 
-    const catchAll = '[^\\/]+'
+    const catchAll = '.+'
     const expected = new RegExp(`^parent/child/${catchAll}/grand-child/${catchAll}$`, 'i')
     expect(result.toString()).toBe(expected.toString())
   })
@@ -39,14 +39,14 @@ describe('generateRoutePathRegexPattern', () => {
     const [route] = createRoutes([
       {
         name: 'path-with-optional-params',
-        path: 'parent/child/:?childParam/grand-child/:?grandChild123',
+        path: 'parent/child/[?childParam]/grand-child/[?grandChild123]',
         component,
       },
     ])
 
     const result = generateRoutePathRegexPattern(route)
 
-    const catchAll = '[^\\/]*'
+    const catchAll = '.*'
     const expected = new RegExp(`^parent/child/${catchAll}/grand-child/${catchAll}$`, 'i')
     expect(result.toString()).toBe(expected.toString())
   })
@@ -72,7 +72,7 @@ describe('generateRouteQueryRegexPatterns', () => {
       {
         name: 'query-with-params',
         path: 'query',
-        query: 'dynamic=:first&static=params&another=:second',
+        query: 'dynamic=[first]&static=params&another=[second]',
         component,
       },
     ])
@@ -88,7 +88,7 @@ describe('generateRouteQueryRegexPatterns', () => {
       {
         name: 'query-with-optional-params',
         path: 'query',
-        query: 'dynamic=:?first&static=params&another=:?second',
+        query: 'dynamic=[?first]&static=params&another=[?second]',
         component,
       },
     ])
@@ -103,7 +103,7 @@ describe('getParamName', () => {
   test('given string with optional param name syntax, returns param name', () => {
     const paramName = 'foo'
 
-    const response = getParamName(`:?${paramName}`)
+    const response = getParamName(`[?${paramName}]`)
 
     expect(response).toBe(paramName)
   })
@@ -111,7 +111,7 @@ describe('getParamName', () => {
   test('given string with param name syntax, returns param name', () => {
     const paramName = 'foo'
 
-    const response = getParamName(`:${paramName}`)
+    const response = getParamName(`[${paramName}]`)
 
     expect(response).toBe(paramName)
   })

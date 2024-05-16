@@ -7,10 +7,10 @@ import { createRoutes } from '@/services/createRoutes'
 import { component } from '@/utilities/testHelpers'
 
 test('renders an anchor tag with the correct href and slot content', () => {
-  const path = '/path/:paramName'
+  const path = '/path/[paramName]'
   const paramValue = 'ABC'
   const content = 'hello world'
-  const href = new URL(path.replace(':paramName', paramValue), window.location.origin)
+  const href = new URL(path.replace('[paramName]', paramValue), window.location.origin)
 
   const routes = createRoutes([
     {

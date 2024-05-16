@@ -23,7 +23,7 @@ test('given route with simple string param and value present, returns true', () 
   const [route] = createRoutes([
     {
       name: 'simple-params',
-      path: '/simple/:simple',
+      path: '/simple/[simple]',
       component,
     },
   ])
@@ -37,7 +37,7 @@ test('given route with OPTIONAL string param WITHOUT value present, returns true
   const [route] = createRoutes([
     {
       name: 'simple-params',
-      path: '/simple/:?simple',
+      path: '/simple/[?simple]',
       component,
     },
   ])
@@ -51,7 +51,7 @@ test('given route with non-string param with value that satisfies, returns true'
   const [route] = createRoutes([
     {
       name: 'simple-params',
-      path: path('/simple/:simple', {
+      path: path('/simple/[simple]', {
         simple: Number,
       }),
       component,
@@ -67,7 +67,7 @@ test('given route with non-string param with value that does NOT satisfy, return
   const [route] = createRoutes([
     {
       name: 'simple-params',
-      path: path('/simple/:simple', {
+      path: path('/simple/[simple]', {
         simple: Number,
       }),
       component,
@@ -83,7 +83,7 @@ test('given route with OPTIONAL non-string param with value that does NOT satisf
   const [route] = createRoutes([
     {
       name: 'simple-params',
-      path: path('/simple/:?simple', {
+      path: path('/simple/[?simple]', {
         simple: Number,
       }),
       component,
@@ -95,24 +95,24 @@ test('given route with OPTIONAL non-string param with value that does NOT satisf
   expect(response).toBe(false)
 })
 
-test('given route with regex param that expects forward slashes, will NOT match', () => {
+test('given route with regex param that expects forward slashes, will match', () => {
   const [route] = createRoutes([
     {
       name: 'support-slashes',
-      path: path('/supports/:slashes/bookmarked', { slashes: /first\/second\/third/g }),
+      path: path('/supports/[slashes]/bookmarked', { slashes: /first\/second\/third/g }),
       component,
     },
   ])
 
   const response = routeParamsAreValid(route, '/supports/first/second/third/bookmarked')
 
-  expect(response).toBe(false)
+  expect(response).toBe(true)
 })
 
 test.each([
-  ['/:sameId/:SameId/:SAMEID'],
+  ['/[sameId]/[SameId]/[SAMEID]'],
   [
-    path('/:sameId/:SameId/:SAMEID', {
+    path('/[sameId]/[SameId]/[SAMEID]', {
       sameId: String,
       SameId: Number,
       SAMEID: Boolean,
@@ -136,8 +136,8 @@ test('given route with duplicate param names across path and query, throws Dupli
   const action: () => void = () => createRoutes([
     {
       name: 'different-cased-params',
-      path: '/duplicate/:foo',
-      query: 'params=:?foo',
+      path: '/duplicate/[foo]',
+      query: 'params=[?foo]',
       component,
     },
   ])
@@ -173,7 +173,7 @@ test('given value with encoded URL characters, decodes those characters', () => 
   const input = escapeCodes.map(code => code.encoded).join('')
   const output = escapeCodes.map(code => code.decoded).join('')
 
-  const [route] = createRoutes([{ name: 'test', path: '/:inPath', query: 'inQuery=:inQuery', component }])
+  const [route] = createRoutes([{ name: 'test', path: '/[inPath]', query: 'inQuery=[inQuery]', component }])
 
   const response = getRouteParamValues(route, `/${input}?inQuery=${input}`)
 

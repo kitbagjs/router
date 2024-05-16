@@ -1,5 +1,6 @@
 import { setParamValue } from '@/services/params'
 import { getCaptureGroups, replaceParamSyntaxWithCatchAlls } from '@/services/routeRegex'
+import { paramEnd, paramStart } from '@/types/params'
 import { Param } from '@/types/paramTypes'
 
 export function getParamValueFromUrl(url: string, path: string, paramName: string): string | undefined {
@@ -46,13 +47,13 @@ function getParamRegexPattern(path: string, paramName: string): RegExp {
 }
 
 function replaceOptionalParamSyntaxWithCaptureGroup(path: string, paramName: string): string {
-  const optionalParamRegex = new RegExp(`(:\\?${paramName})(?=\\W|$)`, 'g')
+  const optionalParamRegex = new RegExp(`(\\${paramStart}\\?${paramName})\\${paramEnd}`, 'g')
 
-  return path.replace(optionalParamRegex, '([^\\/]*)')
+  return path.replace(optionalParamRegex, '(.*)')
 }
 
 function replaceRequiredParamSyntaxWithCaptureGroup(path: string, paramName: string): string {
-  const requiredParamRegex = new RegExp(`(:${paramName})(?=\\W|$)`, 'g')
+  const requiredParamRegex = new RegExp(`(\\${paramStart}${paramName})\\${paramEnd}`, 'g')
 
-  return path.replace(requiredParamRegex, '([^\\/]+)')
+  return path.replace(requiredParamRegex, '(.+)')
 }

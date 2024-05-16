@@ -117,6 +117,23 @@ const dateParam: ParamGetSet<Date> = {
   },
 }
 
+const jsonParam: ParamGetSet<unknown> = {
+  get: (value, { invalid }) => {
+    try {
+      return JSON.parse(value)
+    } catch (error) {
+      throw invalid()
+    }
+  },
+  set: (value, { invalid }) => {
+    try {
+      return JSON.stringify(value)
+    } catch (error) {
+      throw invalid()
+    }
+  },
+}
+
 export function getParamValue<T extends Param>(value: string | undefined, param: T): ExtractParamType<T>
 export function getParamValue<T extends Param>(value: string | undefined, param: T): unknown {
   if (value === undefined) {
@@ -141,6 +158,10 @@ export function getParamValue<T extends Param>(value: string | undefined, param:
 
   if (param === Date) {
     return dateParam.get(value, extras)
+  }
+
+  if (param === JSON) {
+    return jsonParam.get(value, extras)
   }
 
   if (isParamGetter(param)) {
@@ -169,6 +190,10 @@ export function setParamValue(value: unknown, param: Param): string {
 
   if (param === Number) {
     return numberParam.set(value as number, extras)
+  }
+
+  if (param === JSON) {
+    return jsonParam.set(value, extras)
   }
 
   if (isParamGetSet(param)) {

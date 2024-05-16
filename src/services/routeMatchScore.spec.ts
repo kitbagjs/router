@@ -73,12 +73,12 @@ describe('getRouteScoreSortMethod', () => {
     const [aRoute, bRoute] = createRoutes([
       {
         name: 'lower-path',
-        path: ':?color',
+        path: '[?color]',
         component,
       },
       {
         name: 'higher-path',
-        path: ':?color/:?id',
+        path: '[?color]/[?id]',
         component,
       },
     ])
@@ -93,7 +93,7 @@ describe('getRouteScoreSortMethod', () => {
     const routes = createRoutes([
       {
         name: 'lower-depth',
-        path: '/:?color',
+        path: '/[?color]',
         component,
       },
       {
@@ -102,7 +102,7 @@ describe('getRouteScoreSortMethod', () => {
         children: createRoutes([
           {
             name: 'higher-depth-child',
-            path: ':?color',
+            path: '[?color]',
             component,
           },
         ]),

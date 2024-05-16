@@ -35,7 +35,7 @@ import { createRoutes, path } from '@kitbag/router'
 export const routes = createRoutes([
   {
     name: 'home',
-    path: path('/:foo', { foo: Number }),
+    path: path('/[foo]', { foo: Number }),
     component: Home
   },
 ])
