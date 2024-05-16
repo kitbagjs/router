@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'vitest'
+import { InvalidRouteParamValueError } from '@/errors/invalidRouteParamValueError'
 import { getParamValue, setParamValue } from '@/services/params'
 import { ParamGetSet, ParamGetter } from '@/types/paramTypes'
 
@@ -13,6 +14,11 @@ describe('getParamValue', () => {
     expect(getParamValue('1', Number)).toBe(1)
     expect(getParamValue('1.5', Number)).toBe(1.5)
     expect(() => getParamValue('foo', Number)).toThrowError()
+  })
+
+  test('given  Date constructor Param, returns for correct value for Date', () => {
+    expect(getParamValue('2024-05-16T21:13:56.842Z', Date)).toMatchObject(new Date('2024-05-16T21:13:56.842Z'))
+    expect(() => getParamValue('foo', Date)).toThrow(InvalidRouteParamValueError)
   })
 
   test('Given Regex Param, returns for correct value for RegExp', () => {

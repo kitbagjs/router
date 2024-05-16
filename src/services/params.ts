@@ -44,7 +44,7 @@ const extras: ParamExtras = {
   },
 }
 
-const stringParam: ParamGetSet<unknown> = {
+const stringParam: ParamGetSet<string> = {
   get: (value) => {
     return value
   },
@@ -57,7 +57,7 @@ const stringParam: ParamGetSet<unknown> = {
   },
 }
 
-const booleanParam: ParamGetSet<unknown> = {
+const booleanParam: ParamGetSet<boolean> = {
   get: (value, { invalid }) => {
     if (value === 'true') {
       return true
@@ -78,7 +78,7 @@ const booleanParam: ParamGetSet<unknown> = {
   },
 }
 
-const numberParam: ParamGetSet<unknown> = {
+const numberParam: ParamGetSet<number> = {
   get: (value, { invalid }) => {
     const number = Number(value)
 
@@ -94,6 +94,26 @@ const numberParam: ParamGetSet<unknown> = {
     }
 
     return value.toString()
+  },
+}
+
+const dateParam: ParamGetSet<Date> = {
+  get: (value, { invalid }) => {
+    console.log('inside date getter')
+    const date = new Date(value)
+
+    if (isNaN(date.getTime())) {
+      throw invalid()
+    }
+
+    return date
+  },
+  set: (value, { invalid }) => {
+    if (typeof value !== 'object' || !(value instanceof Date)) {
+      throw invalid()
+    }
+
+    return value.toISOString()
   },
 }
 
@@ -119,6 +139,10 @@ export function getParamValue<T extends Param>(value: string | undefined, param:
     return numberParam.get(value, extras)
   }
 
+  if (param === Date) {
+    return dateParam.get(value, extras)
+  }
+
   if (isParamGetter(param)) {
     return param(value, extras)
   }
@@ -140,11 +164,11 @@ export function getParamValue<T extends Param>(value: string | undefined, param:
 
 export function setParamValue(value: unknown, param: Param): string {
   if (param === Boolean) {
-    return booleanParam.set(value, extras)
+    return booleanParam.set(value as boolean, extras)
   }
 
   if (param === Number) {
-    return numberParam.set(value, extras)
+    return numberParam.set(value as number, extras)
   }
 
   if (isParamGetSet(param)) {
