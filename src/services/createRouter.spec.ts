@@ -38,7 +38,7 @@ test('updates the route when navigating', async () => {
     {
       name: 'third',
       component,
-      path: '/third/:id',
+      path: '/third/[id]',
     },
   ])
 
@@ -60,7 +60,7 @@ test('route update updates the current route', async () => {
     {
       name: 'root',
       component,
-      path: '/:param',
+      path: '/[param]',
     },
   ])
 
@@ -118,7 +118,7 @@ test('individual prams are writable', async () => {
     {
       name: 'root',
       component,
-      path: '/:param',
+      path: '/[param]',
     },
   ])
 
@@ -154,7 +154,7 @@ test('individual params are writable when using toRefs', async () => {
     {
       name: 'root',
       component,
-      path: '/:param',
+      path: '/[param]',
     },
   ])
 

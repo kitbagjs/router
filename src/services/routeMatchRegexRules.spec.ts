@@ -63,7 +63,7 @@ describe('routePathMatches', () => {
     const [route] = createRoutes([
       {
         name: 'no-params',
-        path: '/with/:some/params/:inPath',
+        path: '/with/[some]/params/[inPath]',
         component,
       },
     ])
@@ -73,17 +73,17 @@ describe('routePathMatches', () => {
     expect(response).toBe(true)
   })
 
-  test('given route with extra slashes in param value, does NOT match', () => {
+  test('given route with extra slashes in param value, does match', () => {
     const [route] = createRoutes([
       {
         name: 'support-slashes',
-        path: '/supports/:slashes/bookmarked',
+        path: '/supports/[slashes]/bookmarked',
         component,
       },
     ])
     const response = routePathMatches(route, '/supports/first/second/third/bookmarked')
 
-    expect(response).toBe(false)
+    expect(response).toBe(true)
   })
 })
 
@@ -138,7 +138,7 @@ describe('routeQueryMatches', () => {
       {
         name: 'no-params',
         path: '',
-        query: 'with=:params&static=:dynamic',
+        query: 'with=[params]&static=[dynamic]',
         component,
       },
     ])
@@ -158,7 +158,7 @@ describe('routeQueryMatches', () => {
       {
         name: 'optional-params',
         path: '',
-        query: 'optional=:?optional',
+        query: 'optional=[?optional]',
         component,
       },
     ])

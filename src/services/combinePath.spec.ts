@@ -13,18 +13,18 @@ test('given 2 paths, returns new Path joined together', () => {
 })
 
 test('given 2 paths with params, returns new Path joined together with params', () => {
-  const aPath = path('/:foz', { foz: String })
-  const bPath = path('/:?baz', { baz: Number })
+  const aPath = path('/[foz]', { foz: String })
+  const bPath = path('/[?baz]', { baz: Number })
 
   const response = combinePath(aPath, bPath)
 
-  expect(response.toString()).toBe('/:foz/:?baz')
+  expect(response.toString()).toBe('/[foz]/[?baz]')
   expect(Object.keys(response.params)).toMatchObject(['foz', 'baz'])
 })
 
 test('given 2 paths with params that include duplicates, throws DuplicateParamsError', () => {
-  const aPath = path('/:foz', { foz: String })
-  const bPath = path('/:foz', { foz: String })
+  const aPath = path('/[foz]', { foz: String })
+  const bPath = path('/[foz]', { foz: String })
 
   const action: () => void = () => combinePath(aPath, bPath)
 

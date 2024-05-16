@@ -14,7 +14,7 @@ test('CombineName returns correct keys for routes', () => {
 
 test('RouteGetByName works as expected', () => {
   type Source = RouteGetByKey<typeof routes, 'parentA'>
-  type Expect = Route<'parentA', Path<'/:paramA', {}>, Query<'', {}>, false>
+  type Expect = Route<'parentA', Path<'/[paramA]', {}>, Query<'', {}>, false>
 
   expectTypeOf<Source>().toEqualTypeOf<Expect>()
 })

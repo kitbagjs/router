@@ -14,22 +14,22 @@ export const component = { template: '<div>This is component</div>' }
 export const routes = createRoutes([
   {
     name: 'parentA',
-    path: '/:paramA',
+    path: '/[paramA]',
     children: createRoutes([
       {
         name: 'childA',
-        path: '/:?paramB',
+        path: '/[?paramB]',
         children: createRoutes([
           {
             name: 'grandChildA',
-            path: '/:paramC',
+            path: '/[paramC]',
             component,
           },
         ]),
       },
       {
         name: 'childB',
-        path: '/:paramD',
+        path: '/[paramD]',
         component,
       },
     ]),

@@ -39,7 +39,7 @@ test('given path to unnamed parent, without option to get to leaf, returns undef
       children: createRoutes([
         {
           name: 'unnamed-child',
-          path: '/unnamed-child/:child-id',
+          path: '/unnamed-child/[child-id]',
           children: createRoutes([
             {
               name: 'namedGrandchild',
@@ -106,7 +106,7 @@ test('given route with simple string param WITHOUT value present, returns undefi
   const routes = createRoutes([
     {
       name: 'simple-params',
-      path: '/simple/:simple',
+      path: '/simple/[simple]',
       component,
     },
   ])
@@ -120,7 +120,7 @@ test('given route with simple string query param WITHOUT value present, returns 
     {
       name: 'simple-params',
       path: '/missing',
-      query: 'simple=:simple',
+      query: 'simple=[simple]',
       component,
     },
   ])
@@ -198,8 +198,8 @@ test('given a route with params returns all params', () => {
   const routes = createRoutes([
     {
       name: 'route',
-      path: '/:paramA',
-      query: 'paramB=:paramB',
+      path: '/[paramA]',
+      query: 'paramB=[paramB]',
       component,
     },
   ])
