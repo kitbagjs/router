@@ -35,7 +35,7 @@ import { createRoutes, query } from '@kitbag/router'
 export const routes = createRoutes([
   {
     name: 'home',
-    query: query('?bar=:bar', { bar: Boolean }),
+    query: query('?bar=[bar]', { bar: Boolean }),
     component: Home
   },
 ])

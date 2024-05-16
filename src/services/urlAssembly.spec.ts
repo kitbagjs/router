@@ -25,8 +25,8 @@ describe('path params', () => {
   })
 
   test.each([
-    ['/simple/:?simple'],
-    [path('/simple/:?simple', { simple: String })],
+    ['/simple/[?simple]'],
+    [path('/simple/[?simple]', { simple: String })],
   ])('given route with optional string param NOT provided, returns route Path with string without values interpolated', (path) => {
     const [route] = createRoutes([
       {
@@ -42,8 +42,8 @@ describe('path params', () => {
   })
 
   test.each([
-    ['/simple/:?simple'],
-    [path('/simple/:?simple', { simple: String })],
+    ['/simple/[?simple]'],
+    [path('/simple/[?simple]', { simple: String })],
   ])('given route with optional string param provided, returns route Path with string with values interpolated', (path) => {
     const [route] = createRoutes([
       {
@@ -61,8 +61,8 @@ describe('path params', () => {
   })
 
   test.each([
-    ['/simple/:simple'],
-    [path('/simple/:simple', { simple: String })],
+    ['/simple/[simple]'],
+    [path('/simple/[simple]', { simple: String })],
   ])('given route with required string param NOT provided, throws error', (path) => {
     const [route] = createRoutes([
       {
@@ -76,8 +76,8 @@ describe('path params', () => {
   })
 
   test.each([
-    ['/simple/:simple'],
-    [path('/simple/:simple', { simple: String })],
+    ['/simple/[simple]'],
+    [path('/simple/[simple]', { simple: String })],
   ])('given route with required string param provided, returns route Path with string with values interpolated', (path) => {
     const [route] = createRoutes([
       {
@@ -115,8 +115,8 @@ describe('query params', () => {
   })
 
   test.each([
-    ['simple=:?simple'],
-    [query('simple=:?simple', { simple: String })],
+    ['simple=[?simple]'],
+    [query('simple=[?simple]', { simple: String })],
   ])('given route with optional param NOT provided, leaves entire key off', (query) => {
     const [route] = createRoutes([
       {
@@ -133,8 +133,8 @@ describe('query params', () => {
   })
 
   test.each([
-    ['simple=:?simple'],
-    [query('simple=:?simple', { simple: String })],
+    ['simple=[?simple]'],
+    [query('simple=[?simple]', { simple: String })],
   ])('given route with optional string param provided but empty, returns route Query with string without values interpolated', (query) => {
     const [route] = createRoutes([
       {
@@ -151,8 +151,8 @@ describe('query params', () => {
   })
 
   test.each([
-    ['simple=:?simple'],
-    [query('simple=:?simple', { simple: String })],
+    ['simple=[?simple]'],
+    [query('simple=[?simple]', { simple: String })],
   ])('given route with optional string param provided, returns route Query with string with values interpolated', (query) => {
     const [route] = createRoutes([
       {
@@ -171,8 +171,8 @@ describe('query params', () => {
   })
 
   test.each([
-    ['simple=:simple'],
-    [query('simple=:simple', { simple: String })],
+    ['simple=[simple]'],
+    [query('simple=[simple]', { simple: String })],
   ])('given route with required string param NOT provided, throws error', (query) => {
     const [route] = createRoutes([
       {
@@ -187,8 +187,8 @@ describe('query params', () => {
   })
 
   test.each([
-    ['simple=:simple'],
-    [query('simple=:simple', { simple: String })],
+    ['simple=[simple]'],
+    [query('simple=[simple]', { simple: String })],
   ])('given route with required string param provided, returns route Query with string with values interpolated', (query) => {
     const [route] = createRoutes([
       {
