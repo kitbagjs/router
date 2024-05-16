@@ -192,6 +192,10 @@ export function setParamValue(value: unknown, param: Param): string {
     return numberParam.set(value as number, extras)
   }
 
+  if (param === Date) {
+    return dateParam.set(value as Date, extras)
+  }
+
   if (param === JSON) {
     return jsonParam.set(value, extras)
   }

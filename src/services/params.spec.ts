@@ -81,6 +81,11 @@ describe('setParamValue', () => {
     expect(() => setParamValue('foo', Number)).toThrow(InvalidRouteParamValueError)
   })
 
+  test('given  Date constructor Param, returns for correct value for Date', () => {
+    expect(setParamValue(new Date('2024-05-16T21:13:56.842Z'), Date)).toBe('2024-05-16T21:13:56.842Z')
+    expect(() => setParamValue('foo', Date)).toThrow(InvalidRouteParamValueError)
+  })
+
   test('Given a JSON Param, returns correct value for JSON', () => {
     expect(setParamValue(['foo'], JSON)).toBe('["foo"]')
     expect(setParamValue(1.5, JSON)).toBe('1.5')
