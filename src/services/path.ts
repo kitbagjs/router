@@ -19,7 +19,7 @@ import { Identity } from '@/types/utilities'
  * export const routes = createRoutes([
  *   {
  *     name: 'home',
- *     path: path('/:foo', { foo: Number }),
+ *     path: path('/[foo]', { foo: Number }),
  *     component: Home
  *   },
  * ])

@@ -24,7 +24,7 @@ const routes = createRoutes([
   {
     name: 'users',
     path: '/users',
-    query: 'sort=:sort',
+    query: 'sort=[sort]',
     component: ...
   }
 ])
@@ -54,8 +54,8 @@ const routes = createRoutes([
   {
     name: 'users',
     path: '/users',
-    query: 'sort=:sort',// [!code --]
-    query: query('sort=:sort', { sort: Number }),// [!code ++]
+    query: 'sort=[sort]',// [!code --]
+    query: query('sort=[sort]', { sort: Number }),// [!code ++]
     component: ...
   }
 ])
@@ -70,7 +70,7 @@ const routes = createRoutes([
   {
     name: 'users',
     path: '/users',
-    query: 'sort=:?sort',// [!code focus]
+    query: 'sort=[?sort]',// [!code focus]
     component: ...
   }
 ])
@@ -82,7 +82,7 @@ The entire query is also available in `route.query`. This includes any named que
 
 ### Query Param Naming
 
-The name you provide for the param does not have to match the key from the URL. `query: 'keySort=:paramSort'`.
+The name you provide for the param does not have to match the key from the URL. `query: 'keySort=[paramSort]'`.
 
 ```ts
 const route = useRoute()

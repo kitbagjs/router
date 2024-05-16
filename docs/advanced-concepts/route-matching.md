@@ -25,7 +25,7 @@ const route {
 ```ts
 const route {
   ...
-  path: '/parent/:myParam/child'
+  path: '/parent/[myParam]/child'
 }
 ```
 
@@ -37,7 +37,7 @@ const route {
 ```ts
 const route {
   ...
-  path: '/parent/:?myParam/child'
+  path: '/parent/[?myParam]/child'
 }
 ```
 
@@ -65,7 +65,7 @@ const route {
 ```ts
 const route {
   ...
-  query: 'foo=:bar'
+  query: 'foo=[bar]'
 }
 ```
 
@@ -77,7 +77,7 @@ const route {
 ```ts
 const route {
   ...
-  query: 'foo=:?bar'
+  query: 'foo=[?bar]'
 }
 ```
 
@@ -87,7 +87,7 @@ const route {
 :white_check_mark: ?foo  
 
 ::: tip
-when your query param is optional, the entire property can be missing and the route will still match. For the example above with query `foo=:?bar`, the url might be `/my-route` without any query, or it might have an unrelated query `/my-route?other=value`, and still be a match because the entire foo param is optional.
+when your query param is optional, the entire property can be missing and the route will still match. For the example above with query `foo=[?bar]`, the url might be `/my-route` without any query, or it might have an unrelated query `/my-route?other=value`, and still be a match because the entire foo param is optional.
 :::
 
 ## Params Are Valid
@@ -97,8 +97,8 @@ Assuming a route's path and query match the structure of the URL, the last test 
 ```ts
 const route {
   ...
-  path: '/parent/:id'
-  query: 'tab=:?tab'
+  path: '/parent/[id]'
+  query: 'tab=[?tab]'
 }
 ```
 
@@ -110,8 +110,8 @@ const route {
 ```ts
 const route {
   ...
-  path: path('/parent/:id', { id: Number })
-  query: 'tab=:?tab'
+  path: path('/parent/[id]', { id: Number })
+  query: 'tab=[?tab]'
 }
 ```
 
@@ -123,8 +123,8 @@ const route {
 ```ts
 const route {
   ...
-  path: path('/parent/:id', { id: Number })
-  query: query('tab=:?tab', { tab: Boolean })
+  path: path('/parent/[id]', { id: Number })
+  query: query('tab=[?tab]', { tab: Boolean })
 }
 ```
 

@@ -1,5 +1,5 @@
 import { query } from '@/services/query'
-import { ExtractParamName, ExtractPathParamType, MergeParams } from '@/types/params'
+import { ExtractParamName, ExtractPathParamType, MergeParams, ParamEnd, ParamStart } from '@/types/params'
 import { Param } from '@/types/paramTypes'
 import { Identity } from '@/types/utilities'
 import { isRecord } from '@/utilities/guards'
@@ -7,11 +7,9 @@ import { isRecord } from '@/utilities/guards'
 type ExtractQueryParamsFromQueryString<
   TQuery extends string,
   TParams extends Record<string, Param | undefined> = Record<never, never>
-> = TQuery extends `${string}=:${infer Param}&${infer Rest}`
+> = TQuery extends `${string}=${ParamStart}${infer Param}${ParamEnd}${infer Rest}`
   ? MergeParams<{ [P in ExtractParamName<Param>]: ExtractPathParamType<Param, TParams> }, ExtractQueryParamsFromQueryString<Rest, TParams>>
-  : TQuery extends `${string}:${infer Param}`
-    ? { [P in ExtractParamName<Param>]: ExtractPathParamType<Param, TParams> }
-    : Record<never, never>
+  : Record<never, never>
 
 export type QueryParams<T extends string> = {
   [K in keyof ExtractQueryParamsFromQueryString<T>]?: Param

@@ -52,7 +52,7 @@ const routes = createRoutes([
   {
     name: 'user',
     path: '/user', // [!code --]
-    path: '/user/:id', // [!code ++]
+    path: '/user/[id]', // [!code ++]
     component: ...,
     children: createRoutes([
       {
@@ -63,7 +63,7 @@ const routes = createRoutes([
       {
         name: 'settings',
         path: '/settings',
-        query: 'tab=:?tab', // [!code ++]
+        query: 'tab=[?tab]', // [!code ++]
         component: ...,
       }
     ])

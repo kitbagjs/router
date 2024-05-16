@@ -1,4 +1,5 @@
 import { Route } from '@/types'
+import { paramEnd, paramStart } from '@/types/params'
 import { stringHasValue } from '@/utilities/string'
 
 export function generateRoutePathRegexPattern(route: Route): RegExp {
@@ -25,11 +26,11 @@ export function replaceParamSyntaxWithCatchAlls(value: string): string {
   }, value)
 }
 
-const optionalParamRegex = ':\\?([\\w]+)(?=\\W|$)'
-const requiredParamRegex = ':([\\w]+)(?=\\W|$)'
+const optionalParamRegex = `\\${paramStart}\\?([\\w]+)\\${paramEnd}`
+const requiredParamRegex = `\\${paramStart}([\\w]+)\\${paramEnd}`
 
 function replaceOptionalParamSyntaxWithCatchAll(value: string): string {
-  return value.replace(new RegExp(optionalParamRegex, 'g'), '[^\\/]*')
+  return value.replace(new RegExp(optionalParamRegex, 'g'), '.*')
 }
 
 export function isOptionalParamSyntax(value: string): boolean {
@@ -38,7 +39,7 @@ export function isOptionalParamSyntax(value: string): boolean {
 
 function replaceRequiredParamSyntaxWithCatchAll(value: string): string {
 
-  return value.replace(new RegExp(requiredParamRegex, 'g'), '[^\\/]+')
+  return value.replace(new RegExp(requiredParamRegex, 'g'), '.+')
 }
 
 export function isRequiredParamSyntax(value: string): boolean {
