@@ -79,14 +79,14 @@ In order to setup redirects for your routes, you'll have to use route [hooks](/a
 {
   name: 'old-route',
   path: '/old',
-  component: ...
+  onBeforeRouteEnter: (to, { replace }) => {
+    replace('new-route')
+  }
 },
 {
   name: 'new-route',
   path: '/new',
-  onBeforeRouteEnter: (to, { replace }) => {
-    replace('old-route')
-  }
+  component: ...
 }
 ```
 
