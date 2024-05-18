@@ -2,14 +2,16 @@
 
 Type safe router for Vue.js
 
-[![Npm Version](https://img.shields.io/npm/v/@kitbag/router.svg)](https://www.npmjs.org/package/@kitbag/router)
-[![Netlify Status](https://api.netlify.com/api/v1/badges/c12f79b8-49f9-4529-bc23-f8ffca8919a3/deploy-status)](https://app.netlify.com/sites/kitbag-router/deploys)
+[![NPM Version][npm-badge]][npm-url]
+[![Netlify Status][netlify-badge]][netlify-url]
+[![Discord chat][discord-badge]][discord-url]
+[![Open in StackBlitz][stackblitz-badge]][stackblitz-url]
 
-Get started with the [documentation](https://kitbag-router.netlify.app/)
+## Getting Started
+
+Get Started with our [documentation](https://kitbag-router.netlify.app/)
 
 ## Installation
-
-Install Kitbag Router with your favorite package manager
 
 ```bash
 # bun
@@ -152,3 +154,12 @@ Use RouterLink for navigating between routes.
 ```
 
 This component gives the router the power to change the URL without reloading the page.
+
+[npm-badge]: https://img.shields.io/npm/v/@kitbag/router.svg
+[npm-url]: https://www.npmjs.org/package/@kitbag/router
+[netlify-badge]: https://api.netlify.com/api/v1/badges/c12f79b8-49f9-4529-bc23-f8ffca8919a3/deploy-status
+[netlify-url]: https://app.netlify.com/sites/kitbag-router/deploys
+[discord-badge]: https://img.shields.io/discord/1079625926024900739?logo=discord&label=Discord
+[discord-url]: https://discord.gg/UT7JrAxU
+[stackblitz-badge]: https://developer.stackblitz.com/img/open_in_stackblitz_small.svg
+[stackblitz-url]: https://stackblitz.com/~/github.com/kitbagjs/router-preview
