@@ -1,12 +1,12 @@
 <template>
   <a :href="resolved" class="router-link" :class="classes" @click="onClick">
-    <slot v-bind="{ resolved, match, exactMatch, isExternal }" />
+    <slot v-bind="{ resolved, isMatch, isExactMatch, isExternal }" />
   </a>
 </template>
 
 <script setup lang="ts">
-  import { computed, readonly } from 'vue'
-  import { useRouter } from '@/compositions'
+  import { computed } from 'vue'
+  import { useRouter, useLink } from '@/compositions'
   import { RegisteredRouter } from '@/types/register'
   import { RouterPushOptions } from '@/types/routerPush'
   import { Url, isUrl } from '@/types/url'
@@ -18,8 +18,8 @@
   defineSlots<{
     default?: (props: {
       resolved: string,
-      match: boolean,
-      exactMatch: boolean,
+      isMatch: boolean,
+      isExactMatch: boolean,
       isExternal: boolean,
     }) => unknown,
   }>()
@@ -36,16 +36,11 @@
     return options
   })
 
-  const route = computed(() => {
-    return router.find(resolved.value, options.value)?.matched
-  })
-
-  const match = computed(() => !!route.value && router.route.matches.includes(readonly(route.value)))
-  const exactMatch = computed(() => !!route.value && router.route.matched === route.value)
+  const { href, isMatch, isExactMatch } = useLink(resolved)
 
   const classes = computed(() => ({
-    'router-link--match': match.value,
-    'router-link--exact-match': exactMatch.value,
+    'router-link--match': isMatch.value,
+    'router-link--exact-match': isExactMatch.value,
   }))
 
   const isExternal = computed(() => {
@@ -57,6 +52,6 @@
   function onClick(event: MouseEvent): void {
     event.preventDefault()
 
-    router.push(resolved.value, options.value)
+    router.push(href.value, options.value)
   }
 </script>
