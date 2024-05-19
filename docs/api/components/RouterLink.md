@@ -19,8 +19,8 @@ RouterLink component renders anchor tag (`<a>`) for routing both within the SPA 
 | Scope Property | Type |
 | :---- | :---- |
 | resolved | string |
-| match | boolean |
-| exactMatch | boolean |
+| isMatch | boolean |
+| isExactMatch | boolean |
 | isExternal | boolean |
 
 ## Notes

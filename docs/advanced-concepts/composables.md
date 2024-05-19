@@ -21,3 +21,34 @@ import { useRouter } from '@kitbag/router'
 
 const router = useRouter()
 ```
+
+## useLink
+
+Returns the functionality used by RouterLink to generate links and assign classes based on if route is currently active.
+
+```ts
+import { useLink } from '@kitbag/router'
+
+const {
+  // the resolved route object ref
+  route,
+  // the href string ref
+  href,
+  // boolean ref, true when route matches current URL or is ancestor route that matches current URL.
+  isActive,
+  // boolean ref, true when route matches current URL.
+  isExactActive,
+  // triggers `router.push` with context provided
+  push,
+  // triggers `router.replace` with context provided
+  replace
+} = useLink('my-route', { foo: 'bar' })
+```
+
+The `useLink` composable can also be provided a URL for `source` argument. Any of the arguments for `useLink` can be reactive.
+
+```ts
+const url = ref('/settings')
+
+const { ... } = useLink(url)
+```
