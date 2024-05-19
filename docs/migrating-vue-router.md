@@ -119,15 +119,3 @@ If you need additional routes that ultimately result in another route being load
 ## Named Route
 
 Currently Kitbag Router has a 1:1 relationship between a route and a component. However, support for a feature like Named Routes is planned and tracked by [this issue](https://github.com/kitbagjs/router/issues/174).
-
-## UseLink
-
-Currently Kitbag Router does export much of the underlying logic for what `useLink` offers. 
-
-:white_check_mark: `route` can be fetched for a source with `router.find`  
-:white_check_mark: `href` can be fetched for a source with `router.resolve`  
-:x: `isActive` is only used internally by `RouterLink` component and is not exported  
-:x: `isExactActive` is only used internally by `RouterLink` component and is not exported  
-:white_check_mark: `navigate` can be achieved for a source with `router.push` or `router.replace`  
-
-Adding a similar composable is planned and tracked by [this issue](https://github.com/kitbagjs/router/issues/175).
