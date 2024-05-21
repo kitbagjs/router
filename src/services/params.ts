@@ -29,7 +29,7 @@ export function optional<TParam extends Param>(param: TParam): OptionalParamGetS
       return getParamValue(value, param)
     },
     set: (value) => {
-      if (!stringHasValue(value)) {
+      if (value === undefined) {
         return ''
       }
 
@@ -99,7 +99,6 @@ const numberParam: ParamGetSet<number> = {
 
 const dateParam: ParamGetSet<Date> = {
   get: (value, { invalid }) => {
-    console.log('inside date getter')
     const date = new Date(value)
 
     if (isNaN(date.getTime())) {
