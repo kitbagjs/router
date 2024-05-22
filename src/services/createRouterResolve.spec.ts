@@ -11,7 +11,7 @@ test('given a url returns that string', () => {
 test('given a route key with params returns the url', () => {
   const resolve = createRouterResolve(routes)
 
-  expect(resolve('parentA', { paramA: 'bar' })).toBe('/bar')
+  expect(resolve('parentA', { paramA: 'bar' })).toBe('/parentA/bar')
 })
 
 test('given a route key and a query appends query to the url', () => {
@@ -19,7 +19,7 @@ test('given a route key and a query appends query to the url', () => {
   const resolve = createRouterResolve(routes)
   const url = resolve('parentA', { paramA: 'bar' }, { query: { foo: 'foo' } })
 
-  expect(url).toBe('/bar?foo=foo')
+  expect(url).toBe('/parentA/bar?foo=foo')
 })
 
 test('given a route key with params cannot be matched, throws an error', () => {
