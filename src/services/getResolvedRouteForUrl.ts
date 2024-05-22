@@ -2,14 +2,21 @@ import { readonly } from 'vue'
 import { createMaybeRelativeUrl } from '@/services/createMaybeRelativeUrl'
 import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
 import { getRouteParamValues, routeParamsAreValid } from '@/services/paramValidation'
-import { routePathMatches, routeQueryMatches } from '@/services/routeMatchRegexRules'
+import { isNamedRoute, routeHostMatches, routePathMatches, routeQueryMatches } from '@/services/routeMatchRules'
 import { getRouteScoreSortMethod } from '@/services/routeMatchScore'
 import { ResolvedRoute } from '@/types/resolved'
 import { Routes } from '@/types/route'
 import { RouteMatchRule } from '@/types/routeMatchRule'
 
+const rules: RouteMatchRule[] = [
+  isNamedRoute,
+  routeHostMatches,
+  routePathMatches,
+  routeQueryMatches,
+  routeParamsAreValid,
+]
+
 export function getResolvedRouteForUrl(routes: Routes, url: string): ResolvedRoute | undefined {
-  const rules = [isNamedRoute, routePathMatches, routeQueryMatches, routeParamsAreValid]
   const sortByRouteScore = getRouteScoreSortMethod(url)
 
   const matches = routes
@@ -32,8 +39,4 @@ export function getResolvedRouteForUrl(routes: Routes, url: string): ResolvedRou
     query,
     params,
   })
-}
-
-const isNamedRoute: RouteMatchRule = (route) => {
-  return 'name' in route.matched && !!route.matched.name
 }
