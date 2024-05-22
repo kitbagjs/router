@@ -14,7 +14,7 @@ export const component = { template: '<div>This is component</div>' }
 export const routes = createRoutes([
   {
     name: 'parentA',
-    path: '/[paramA]',
+    path: '/parentA/[paramA]',
     children: createRoutes([
       {
         name: 'childA',
@@ -37,6 +37,11 @@ export const routes = createRoutes([
   {
     name: 'parentB',
     path: '/parentB',
+    component,
+  },
+  {
+    name: 'parentC',
+    path: '/',
     component,
   },
 ])
