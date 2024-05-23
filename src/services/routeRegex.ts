@@ -26,8 +26,8 @@ export function replaceParamSyntaxWithCatchAlls(value: string): string {
   }, value)
 }
 
-const optionalParamRegex = `\\${paramStart}\\?([\\w]+)\\${paramEnd}`
-const requiredParamRegex = `\\${paramStart}([\\w]+)\\${paramEnd}`
+const optionalParamRegex = `\\${paramStart}\\?([\\w-_]+)\\${paramEnd}`
+const requiredParamRegex = `\\${paramStart}([\\w-_]+)\\${paramEnd}`
 
 function replaceOptionalParamSyntaxWithCatchAll(value: string): string {
   return value.replace(new RegExp(optionalParamRegex, 'g'), '.*')
