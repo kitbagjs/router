@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest'
 import { createRouterResolve } from '@/services/createRouterResolve'
-import { routes } from '@/utilities/testHelpers'
+import { createRoutes } from '@/services/createRoutes'
+import { component, routes } from '@/utilities/testHelpers'
 
 test('given a url returns that string', () => {
   const resolve = createRouterResolve(routes)
@@ -27,4 +28,30 @@ test('given a route key with params cannot be matched, throws an error', () => {
 
   // @ts-expect-error
   expect(() => resolve({ route: 'foo' })).toThrowError()
+})
+
+
+test('given a param with a dash or underscore resolves the correct url', () => {
+  const routes = createRoutes([
+    {
+      name: 'kebab',
+      path: '/[test-param]',
+      component,
+    },
+    {
+      name: 'snake',
+      path: '/[test_param]',
+      component,
+    },
+  ])
+
+  const resolve = createRouterResolve(routes)
+
+  const kebab = resolve('kebab', { 'test-param': 'foo' })
+
+  expect(kebab).toBe('/foo')
+
+  const snake = resolve('snake', { 'test_param': 'foo' })
+
+  expect(snake).toBe('/foo')
 })
