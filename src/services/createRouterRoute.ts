@@ -12,7 +12,6 @@ export type RouterRoute<TRoute extends ResolvedRoute = ResolvedRoute> = Omit<Res
 }>
 
 export function isRouterRoute(value: unknown): value is RouterRoute {
-  return true
   return typeof value === 'object' && value !== null && isRouterRouteSymbol in value && value[isRouterRouteSymbol] === true
 }
 
@@ -36,9 +35,15 @@ export function createRouterRoute<TRoute extends ResolvedRoute>(route: TRoute, p
   }
 
   return new Proxy(route as RouterRoute<TRoute>, {
+    has: (target, property) => {
+      if (['update', 'params', isRouterRouteSymbol].includes(property)) {
+        return true
+      }
+
+      return Reflect.has(target, property)
+    },
     get: (target, property, receiver) => {
       if (property === isRouterRouteSymbol) {
-        throw 'here'
         return true
       }
 
