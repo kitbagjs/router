@@ -9,6 +9,16 @@ export const random = {
   },
 }
 
+export function getError(callback: () => any): unknown {
+  try {
+    callback()
+  } catch (error) {
+    return error
+  }
+
+  throw new Error('callback given to getError ran without throwing an error')
+}
+
 export const component = { template: '<div>This is component</div>' }
 
 export const routes = createRoutes([
