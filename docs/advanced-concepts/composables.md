@@ -12,6 +12,13 @@ const route = useRoute('route.key.here')
 
 the route key argument is what acts as a route guard, providing back the correct types for `params` and `update`. This route key argument is optional on `useRoute`, if omitted will return the same wider type as `Router.route`. If the key is provided it must match the current route key or a parent of the current route.
 
+### Exact matches
+If you'd like to only match on an exact route match and not match on a parent route you can pass the `exact` option.
+
+```ts
+const route = useRoute('route.key.here', { exact: true })
+```
+
 ## useRouter
 
 Returns the router, with types provided by [the `Register` interface](/getting-started#update-registered-router).
