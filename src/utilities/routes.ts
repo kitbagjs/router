@@ -1,13 +1,23 @@
 import { combineName } from '@/services/combineName'
-import { RouterRoute } from '@/services/createRouterRoute'
-import { RegisteredRouteMap } from '@/types/register'
+import { RouterRoute, isRouterRoute } from '@/services/createRouterRoute'
+import { RegisteredRouteMap, RegisteredRoutesKey } from '@/types/register'
 import { ResolvedRoute } from '@/types/resolved'
 
-export type RouteIsOptions = {
+export type IsRouteOptions = {
   exact?: boolean,
 }
 
-export function routeIs<TRouteKey extends string & keyof RegisteredRouteMap>(route: RouterRoute, routeKey: TRouteKey, { exact }: RouteIsOptions = {}): route is RouterRoute<ResolvedRoute<RegisteredRouteMap[TRouteKey]>> {
+export function isRoute(route: unknown): route is RouterRoute
+export function isRoute<TRouteKey extends RegisteredRoutesKey>(route: unknown, routeKey: TRouteKey, options: IsRouteOptions): route is RouterRoute<ResolvedRoute<RegisteredRouteMap[TRouteKey]>>
+export function isRoute(route: unknown, routeKey?: string, { exact }: IsRouteOptions = {}): boolean {
+  if (!isRouterRoute(route)) {
+    return false
+  }
+
+  if (routeKey === undefined) {
+    return true
+  }
+
   const keys = getRouteKeys(route)
 
   if (exact) {

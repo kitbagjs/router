@@ -63,6 +63,12 @@ export default defineConfig({
           ],
         },
         {
+          text: 'Type Guards',
+          items: [
+            { text: 'isRoute', link: '/api/guards/isRoute' }
+          ]
+        },
+        {
           text: 'Interfaces',
           items: [
             { text: 'Register', link: '/api/interfaces/Register' },
@@ -136,7 +142,7 @@ export default defineConfig({
             { text: 'Rejections', link: '/advanced-concepts/rejections' },
             { text: 'Hooks', link: '/advanced-concepts/hooks' },
             { text: 'Route Meta', link: '/advanced-concepts/route-meta' },
-            { text: 'Composables', link: '/advanced-concepts/composables' },
+            { text: 'Utilities', link: '/advanced-concepts/utilities' },
             { text: 'Transitions', link: '/advanced-concepts/transitions' },
           ],
         },

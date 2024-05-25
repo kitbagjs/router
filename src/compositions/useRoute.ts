@@ -1,10 +1,10 @@
 import { watch } from 'vue'
 import { useRouter } from '@/compositions/useRouter'
 import { UseRouteInvalidError } from '@/errors'
-import { RouterRoute } from '@/services/createRouterRoute'
+import { RouterRoute, isRouterRoute } from '@/services/createRouterRoute'
 import { RegisteredRouteMap } from '@/types/register'
 import { ResolvedRoute } from '@/types/resolved'
-import { routeIs } from '@/utilities/routes'
+import { isRoute } from '@/utilities/routes'
 
 export type UseRouteOptions = {
   exact?: boolean,
@@ -34,7 +34,7 @@ export function useRoute(routeKey?: string, { exact }: UseRouteOptions = {}): Ro
       return
     }
 
-    const routeKeyIsValid = routeIs(router.route, routeKey, { exact })
+    const routeKeyIsValid = isRoute(router.route, routeKey, { exact })
 
     if (!routeKeyIsValid) {
       throw new UseRouteInvalidError(routeKey, router.route.key)

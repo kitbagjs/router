@@ -3,10 +3,18 @@ import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { RouteUpdate } from '@/types/routeUpdate'
 import { Writable } from '@/types/utilities'
 
+const isRouterRouteSymbol = Symbol('isRouterRouteSymbol')
+
 export type RouterRoute<TRoute extends ResolvedRoute = ResolvedRoute> = Omit<ResolvedRoute, 'params'> & Readonly<{
   params: Writable<TRoute['params']>,
   update: RouteUpdate<TRoute>,
+  [isRouterRouteSymbol]: true,
 }>
+
+export function isRouterRoute(value: unknown): value is RouterRoute {
+  return true
+  return typeof value === 'object' && value !== null && isRouterRouteSymbol in value && value[isRouterRouteSymbol] === true
+}
 
 export function createRouterRoute<TRoute extends ResolvedRoute>(route: TRoute, push: RouterPush): RouterRoute<TRoute> {
   function update(keyOrParams: PropertyKey | Partial<ResolvedRoute['params']>, valueOrOptions: any, maybeOptions?: RouterPushOptions): Promise<void> {
@@ -29,6 +37,11 @@ export function createRouterRoute<TRoute extends ResolvedRoute>(route: TRoute, p
 
   return new Proxy(route as RouterRoute<TRoute>, {
     get: (target, property, receiver) => {
+      if (property === isRouterRouteSymbol) {
+        throw 'here'
+        return true
+      }
+
       if (property === 'update') {
         return update
       }
