@@ -1,4 +1,4 @@
-import { Component } from 'vue'
+import { Component, DeepReadonly } from 'vue'
 import { AfterRouteHook, BeforeRouteHook } from '@/types/hooks'
 import { Path } from '@/types/path'
 import { Query } from '@/types/query'
@@ -30,10 +30,24 @@ type WithHooks = {
   onAfterRouteLeave?: MaybeArray<AfterRouteHook>,
 }
 
+type WithComponent = {
+  /**
+   * A Vue component, which can be either synchronous or asynchronous components.
+   */
+  component: Component,
+}
+
+type WithComponents = {
+  /**
+   * Multiple components for named views, which can be either synchronous or asynchronous components.
+   */
+  components: Record<string, Component>,
+}
+
 /**
  * Represents properties common to parent routes in a route configuration, including hooks, path, and optional query parameters.
  */
-export type ParentRouteProps = WithHooks & {
+export type ParentRouteProps = Partial<WithComponent | WithComponents> & WithHooks & {
   /**
    * Name for route, used to create route keys and in navigation.
    */
@@ -55,10 +69,6 @@ export type ParentRouteProps = WithHooks & {
    */
   children: Routes,
   /**
-   * A Vue component, which can be either synchronous or asynchronous components.
-   */
-  component?: Component,
-  /**
    * Represents additional metadata associated with a route, customizable via declaration merging.
    */
   meta?: RouteMeta,
@@ -67,7 +77,7 @@ export type ParentRouteProps = WithHooks & {
 /**
  * Represents properties for child routes, including required component, name, and path.
  */
-export type ChildRouteProps = WithHooks & {
+export type ChildRouteProps = (WithComponent | WithComponents) & WithHooks & {
   /**
    * Name for route, used to create route keys and in navigation.
    */
@@ -84,10 +94,6 @@ export type ChildRouteProps = WithHooks & {
    * Query (aka search) part of URL.
    */
   query?: string | Query,
-  /**
-   * A Vue component, which can be either synchronous or asynchronous components.
-   */
-  component: Component,
   /**
    * Represents additional metadata associated with a route, customizable via declaration merging.
    */
@@ -106,4 +112,18 @@ export type RouteProps = Readonly<ParentRouteProps | ChildRouteProps>
  */
 export function isParentRoute(value: RouteProps): value is ParentRouteProps {
   return 'children' in value
+}
+
+export function isWithComponent(value: RouteProps): value is RouteProps & WithComponent
+export function isWithComponent(value: Readonly<RouteProps>): value is Readonly<RouteProps & WithComponent>
+export function isWithComponent(value: DeepReadonly<RouteProps>): value is DeepReadonly<RouteProps & WithComponent>
+export function isWithComponent(value: unknown): boolean {
+  return typeof value === 'object' && value !== null && 'component' in value
+}
+
+export function isWithComponents(value: RouteProps): value is RouteProps & WithComponents
+export function isWithComponents(value: Readonly<RouteProps>): value is Readonly<RouteProps & WithComponents>
+export function isWithComponents(value: DeepReadonly<RouteProps>): value is DeepReadonly<RouteProps & WithComponents>
+export function isWithComponents(value: unknown): boolean {
+  return typeof value === 'object' && value !== null && 'components' in value
 }
