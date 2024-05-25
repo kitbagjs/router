@@ -1,6 +1,7 @@
 # isRoute
 
 ```ts
+export function isRoute(route: unknown): route is RouterRoute
 function isRoute<TRouteKey>(route: RouterRoute, routeKey: TRouteKey, options?: isRouteOptions): route is RouterRoute<ResolvedRoute<RegisteredRouteMap[TRouteKey]>>
 ```
 
