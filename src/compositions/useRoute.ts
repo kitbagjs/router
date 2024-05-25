@@ -2,7 +2,7 @@ import { watch } from 'vue'
 import { useRouter } from '@/compositions/useRouter'
 import { UseRouteInvalidError } from '@/errors'
 import { isRoute } from '@/guards/routes'
-import { RouterRoute, isRouterRoute } from '@/services/createRouterRoute'
+import { RouterRoute } from '@/services/createRouterRoute'
 import { RegisteredRouteMap } from '@/types/register'
 import { ResolvedRoute } from '@/types/resolved'
 
