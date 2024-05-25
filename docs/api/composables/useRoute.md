@@ -23,6 +23,7 @@ This function provides two overloads:
 | Parameter | Type | Description |
 | :------ | :------ | :------ |
 | `routeKey` | `TRouteKey` | Optional. The key of the route to validate against the current active routes. |
+| `options.exact` | `boolean` | Optional. Whether to throw if the route is not an exact match. If `true` a parent of the current route will not be considered a match |
 
 ### Returns
 

@@ -1,10 +1,14 @@
 import { watch } from 'vue'
 import { useRouter } from '@/compositions/useRouter'
 import { UseRouteInvalidError } from '@/errors'
-import { combineName } from '@/services/combineName'
+import { isRoute } from '@/guards/routes'
 import { RouterRoute } from '@/services/createRouterRoute'
 import { RegisteredRouteMap } from '@/types/register'
 import { ResolvedRoute } from '@/types/resolved'
+
+export type UseRouteOptions = {
+  exact?: boolean,
+}
 
 /**
  * A composition to access the current route or verify a specific route key within a Vue component.
@@ -20,9 +24,9 @@ import { ResolvedRoute } from '@/types/resolved'
  * The function also sets up a reactive watcher on the route object from the router to continually check the validity of the route key
  * if provided, throwing an error if the validation fails at any point during the component's lifecycle.
  */
-export function useRoute<TRouteKey extends string & keyof RegisteredRouteMap>(routeKey: TRouteKey): RouterRoute<ResolvedRoute<RegisteredRouteMap[TRouteKey]>>
+export function useRoute<TRouteKey extends string & keyof RegisteredRouteMap>(routeKey: TRouteKey, options?: UseRouteOptions): RouterRoute<ResolvedRoute<RegisteredRouteMap[TRouteKey]>>
 export function useRoute(): RouterRoute
-export function useRoute(routeKey?: string): RouterRoute {
+export function useRoute(routeKey?: string, { exact }: UseRouteOptions = {}): RouterRoute {
   const router = useRouter()
 
   function checkRouteKeyIsValid(): void {
@@ -30,9 +34,7 @@ export function useRoute(routeKey?: string): RouterRoute {
       return
     }
 
-    const actualRouteKeys = router.route.matches.map(route => route.name)
-    const actualRouteKey = getRouteKey(actualRouteKeys)
-    const routeKeyIsValid = actualRouteKey.includes(routeKey)
+    const routeKeyIsValid = isRoute(router.route, routeKey, { exact })
 
     if (!routeKeyIsValid) {
       throw new UseRouteInvalidError(routeKey, router.route.key)
@@ -42,21 +44,4 @@ export function useRoute(routeKey?: string): RouterRoute {
   watch(router.route, checkRouteKeyIsValid, { immediate: true, deep: true })
 
   return router.route
-}
-
-function getRouteKey(names: (string | undefined)[]): string[] {
-  return names.reduce<string[]>((ancestorNames, name) => {
-    const previous = ancestorNames.pop()
-    const next = name ? [combineName(previous, name)] : []
-
-    if (!previous) {
-      return next
-    }
-
-    return [
-      ...ancestorNames,
-      previous,
-      ...next,
-    ]
-  }, [])
 }
