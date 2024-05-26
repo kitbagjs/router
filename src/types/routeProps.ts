@@ -114,16 +114,20 @@ export function isParentRoute(value: RouteProps): value is ParentRouteProps {
   return 'children' in value
 }
 
-export function isWithComponent(value: RouteProps): value is RouteProps & WithComponent
-export function isWithComponent(value: Readonly<RouteProps>): value is Readonly<RouteProps & WithComponent>
-export function isWithComponent(value: DeepReadonly<RouteProps>): value is DeepReadonly<RouteProps & WithComponent>
-export function isWithComponent(value: unknown): boolean {
+export function isParentRouteWithoutComponent(value: RouteProps): value is Omit<ParentRouteProps, 'component' | 'components'> {
+  return isParentRoute(value) && !('component' in value) && !('components' in value)
+}
+
+export function isRouteWithComponent(value: RouteProps): value is RouteProps & WithComponent
+export function isRouteWithComponent(value: Readonly<RouteProps>): value is Readonly<RouteProps & WithComponent>
+export function isRouteWithComponent(value: DeepReadonly<RouteProps>): value is DeepReadonly<RouteProps & WithComponent>
+export function isRouteWithComponent(value: unknown): boolean {
   return typeof value === 'object' && value !== null && 'component' in value
 }
 
-export function isWithComponents(value: RouteProps): value is RouteProps & WithComponents
-export function isWithComponents(value: Readonly<RouteProps>): value is Readonly<RouteProps & WithComponents>
-export function isWithComponents(value: DeepReadonly<RouteProps>): value is DeepReadonly<RouteProps & WithComponents>
-export function isWithComponents(value: unknown): boolean {
+export function isRouteWithComponents(value: RouteProps): value is RouteProps & WithComponents
+export function isRouteWithComponents(value: Readonly<RouteProps>): value is Readonly<RouteProps & WithComponents>
+export function isRouteWithComponents(value: DeepReadonly<RouteProps>): value is DeepReadonly<RouteProps & WithComponents>
+export function isRouteWithComponents(value: unknown): boolean {
   return typeof value === 'object' && value !== null && 'components' in value
 }

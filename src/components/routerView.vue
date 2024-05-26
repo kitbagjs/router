@@ -12,7 +12,7 @@
   import { RouterRejection } from '@/services/createRouterReject'
   import { RouterRoute } from '@/services/createRouterRoute'
   import { depthInjectionKey } from '@/types/injectionDepth'
-  import { RouteProps, isWithComponent, isWithComponents } from '@/types/routeProps'
+  import { RouteProps, isRouteWithComponent, isRouteWithComponents } from '@/types/routeProps'
 
   const { name = 'default' } = defineProps<{
     name?: string,
@@ -58,11 +58,11 @@
   })
 
   function getComponents(route: DeepReadonly<RouteProps>): Record<string, DeepReadonly<Component> | undefined> {
-    if (isWithComponents(route)) {
+    if (isRouteWithComponents(route)) {
       return route.components
     }
 
-    if (isWithComponent(route)) {
+    if (isRouteWithComponent(route)) {
       return { default: route.component }
     }
 

@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest'
 import RouterView from '@/components/routerView.vue'
 import { createRoutes } from '@/services/createRoutes'
+import { isRouteWithComponent } from '@/types/routeProps'
 import { component } from '@/utilities/testHelpers'
 
 describe('route key dot notation', () => {
@@ -63,6 +64,10 @@ test('given route without component, sets component default to RouterView', () =
       children: [],
     },
   ])
+
+  if (!isRouteWithComponent(route.matched)) {
+    throw 'Matched route does not have a single component'
+  }
 
   expect(route.matched.component).toMatchObject(RouterView)
 })

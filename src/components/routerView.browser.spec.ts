@@ -4,6 +4,7 @@ import { defineAsyncComponent } from 'vue'
 import helloWorld from '@/components/helloWorld'
 import { createRouter } from '@/services/createRouter'
 import { createRoutes } from '@/services/createRoutes'
+import { isRouteWithComponent } from '@/types/routeProps'
 
 test('renders component for initial route', async () => {
   const routes = createRoutes([
@@ -187,6 +188,10 @@ test('Renders custom genericRejection component when the initialUrl does not mat
       plugins: [router],
     },
   })
+
+  if (!isRouteWithComponent(router.route.matched)) {
+    throw 'Matched route does not have a single component'
+  }
 
   const route = mount(router.route.matched.component)
 
