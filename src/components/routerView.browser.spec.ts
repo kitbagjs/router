@@ -260,3 +260,39 @@ test('Renders the route component when the router.push does match after a reject
 
   expect(app.text()).toBe('hello world')
 })
+
+test('Renders the multiple components when using named route views', async () => {
+  const routes = createRoutes([
+    {
+      name: 'parent',
+      path: '/',
+      components: {
+        default: { template: '_default_' },
+        one: { template: '_one_' },
+        two: { template: '_two_' },
+      },
+    },
+  ])
+
+  const router = createRouter(routes, {
+    initialUrl: '/',
+  })
+
+  await router.initialized
+
+  const root = {
+    template: `
+      <RouterView name="one" />
+      <RouterView />
+      <RouterView name="two" />
+    `,
+  }
+
+  const app = mount(root, {
+    global: {
+      plugins: [router],
+    },
+  })
+
+  expect(app.text()).toBe('_one__default__two_')
+})
