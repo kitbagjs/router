@@ -1,23 +1,19 @@
 <template>
-  <template v-if="rejection">
-    <component :is="rejection.component" />
-  </template>
-  <template v-else>
-    <slot name="default" :route="router.route" :component="component">
-      <component :is="component" />
-    </slot>
-  </template>
+  <slot name="default" v-bind="{ route, component, rejection }">
+    <component :is="component" />
+  </slot>
 </template>
 
 <script lang="ts" setup>
-  import { AsyncComponentLoader, Component, computed, defineAsyncComponent, provide } from 'vue'
+  import { AsyncComponentLoader, Component, UnwrapRef, VNode, computed, defineAsyncComponent, provide } from 'vue'
   import { useRejection } from '@/compositions/useRejection'
-  import { useRouter } from '@/compositions/useRouter'
+  import { useRoute } from '@/compositions/useRoute'
   import { useRouterDepth } from '@/compositions/useRouterDepth'
+  import { RouterRejection } from '@/services/createRouterReject'
   import { RouterRoute } from '@/services/createRouterRoute'
   import { depthInjectionKey } from '@/types/injectionDepth'
 
-  const router = useRouter()
+  const route = useRoute()
   const rejection = useRejection()
   const depth = useRouterDepth()
 
@@ -25,13 +21,18 @@
     default?: (props: {
       route: RouterRoute,
       component: Component,
-    }) => unknown,
+      rejection: UnwrapRef<RouterRejection>,
+    }) => VNode,
   }>()
 
   provide(depthInjectionKey, depth + 1)
 
   const component = computed(() => {
-    const routeComponent = router.route.matches[depth]?.component
+    if (rejection.value) {
+      return rejection.value.component
+    }
+
+    const routeComponent = route.matches[depth]?.component
 
     if (routeComponent) {
       if (typeof routeComponent === 'function') {
