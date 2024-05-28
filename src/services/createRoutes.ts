@@ -7,7 +7,7 @@ import { CombineQuery, combineQuery } from '@/services/combineQuery'
 import { Path, ToPath, toPath } from '@/types/path'
 import { Query, ToQuery, toQuery } from '@/types/query'
 import { Route } from '@/types/route'
-import { ParentRouteProps, RouteProps, isParentRoute } from '@/types/routeProps'
+import { ParentRouteProps, RouteProps, isParentRoute, isParentRouteWithoutComponent } from '@/types/routeProps'
 import { checkDuplicateKeys } from '@/utilities/checkDuplicateKeys'
 
 /**
@@ -20,10 +20,7 @@ import { checkDuplicateKeys } from '@/utilities/checkDuplicateKeys'
 export function createRoutes<const TRoutes extends Readonly<RouteProps[]>>(routes: TRoutes): FlattenRoutes<TRoutes>
 export function createRoutes(routesProps: Readonly<RouteProps[]>): Route[] {
   const routes = routesProps.reduce<Route[]>((routes, routeProps) => {
-    const route = createRoute({
-      ...routeProps,
-      component: routeProps.component ?? RouterView,
-    })
+    const route = createRoute(routeProps)
 
     if (isParentRoute(routeProps)) {
       routes.push(...routeProps.children.map(childRoute => ({
@@ -52,9 +49,10 @@ export function createRoutes(routesProps: Readonly<RouteProps[]>): Route[] {
 }
 
 function createRoute(route: RouteProps): Route {
+  const routeWithComponent = addRouterViewComponentIfParentWithoutComponent(route)
   const path = toPath(route.path)
   const query = toQuery(route.query)
-  const rawRoute = markRaw({ meta: {}, ...route })
+  const rawRoute = markRaw({ meta: {}, ...routeWithComponent })
 
   return {
     matched: rawRoute,
@@ -65,6 +63,14 @@ function createRoute(route: RouteProps): Route {
     depth: 1,
     disabled: route.disabled ?? false,
   }
+}
+
+function addRouterViewComponentIfParentWithoutComponent(route: RouteProps): RouteProps {
+  if (isParentRouteWithoutComponent(route)) {
+    return { ...route, component: RouterView }
+  }
+
+  return route
 }
 
 type FlattenRoute<
