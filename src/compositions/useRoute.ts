@@ -3,7 +3,7 @@ import { useRouter } from '@/compositions/useRouter'
 import { UseRouteInvalidError } from '@/errors'
 import { isRoute } from '@/guards/routes'
 import { RouterRoute } from '@/services/createRouterRoute'
-import { RegisteredRouteMap } from '@/types/register'
+import { RegisteredRouteMap, RegisteredRouter } from '@/types/register'
 import { ResolvedRoute } from '@/types/resolved'
 
 export type UseRouteOptions = {
@@ -24,8 +24,8 @@ export type UseRouteOptions = {
  * The function also sets up a reactive watcher on the route object from the router to continually check the validity of the route key
  * if provided, throwing an error if the validation fails at any point during the component's lifecycle.
  */
+export function useRoute(): RegisteredRouter['route']
 export function useRoute<TRouteKey extends string & keyof RegisteredRouteMap>(routeKey: TRouteKey, options?: UseRouteOptions): RouterRoute<ResolvedRoute<RegisteredRouteMap[TRouteKey]>>
-export function useRoute(): RouterRoute
 export function useRoute(routeKey?: string, { exact }: UseRouteOptions = {}): RouterRoute {
   const router = useRouter()
 
