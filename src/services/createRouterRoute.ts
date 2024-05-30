@@ -5,7 +5,7 @@ import { Writable } from '@/types/utilities'
 
 const isRouterRouteSymbol = Symbol('isRouterRouteSymbol')
 
-export type RouterRoute<TRoute extends ResolvedRoute = ResolvedRoute> = Omit<ResolvedRoute, 'params'> & Readonly<{
+export type RouterRoute<TRoute extends ResolvedRoute = ResolvedRoute> = Omit<TRoute, 'params'> & Readonly<{
   params: Writable<TRoute['params']>,
   update: RouteUpdate<TRoute>,
   [isRouterRouteSymbol]: true,
