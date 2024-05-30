@@ -5,6 +5,7 @@ import helloWorld from '@/components/helloWorld'
 import { createRouter } from '@/services/createRouter'
 import { createRoutes } from '@/services/createRoutes'
 import { isRouteWithComponent } from '@/types/routeProps'
+import { routes } from '@/utilities/testHelpers'
 
 test('renders component for initial route', async () => {
   const routes = createRoutes([
@@ -170,7 +171,7 @@ test('Renders the genericRejection component when the initialUrl does not match'
 
 test('Renders custom genericRejection component when the initialUrl does not match', async () => {
   const NotFound = { template: 'Custom Not Found' }
-  const router = createRouter([], {
+  const router = createRouter(routes, {
     initialUrl: '/does-not-exist',
     rejections: {
       NotFound,
