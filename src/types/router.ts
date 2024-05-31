@@ -34,7 +34,7 @@ export type Router<
   /**
    * Manages the current route state.
    */
-  route: RouterRoute<ResolvedRoute<TRoutes[number]>>,
+  route: RouterRoutes<TRoutes>,
   /**
    * Resolves a URL to a route object.
    */
@@ -100,3 +100,10 @@ export type Router<
    */
   initialized: Promise<void>,
 }
+
+/**
+ * This type is the same as `RouterRoute<ResolvedRoute<TRoutes[number]>>` while remaining distributive
+ */
+type RouterRoutes<TRoutes extends Routes> = {
+  [K in keyof TRoutes]: RouterRoute<ResolvedRoute<TRoutes[K]>>
+}[number]
