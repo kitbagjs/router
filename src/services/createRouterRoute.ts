@@ -28,7 +28,7 @@ export type RouterRoute<TRoute extends ResolvedRoute = ResolvedRoute> = Readonly
   query: TRoute['query'],
 
   /**
-   * Key value pair for route params, values will be the user provided value from current browser location. Updating these params calls `route.update`
+   * Key value pair for route params, values will be the user provided value from current browser location. Updating these params calls `router.update`
    */
   params: Writable<TRoute['params']>,
 
