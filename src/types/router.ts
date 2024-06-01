@@ -1,4 +1,4 @@
-import { Plugin } from 'vue'
+import { FunctionPlugin } from 'vue'
 import { RouterFind } from '@/services/createRouterFind'
 import { RouterHistoryMode } from '@/services/createRouterHistory'
 import { RouterRejectionComponents, RouterRejectionType } from '@/services/createRouterReject'
@@ -30,7 +30,7 @@ export type RouterOptions = {
 
 export type Router<
   TRoutes extends Routes = any
-> = Plugin & {
+> = {
   /**
    * Manages the current route state.
    */
@@ -99,6 +99,7 @@ export type Router<
    * A promise that resolves when the router is fully initialized.
    */
   initialized: Promise<void>,
+  install: FunctionPlugin,
 }
 
 /**

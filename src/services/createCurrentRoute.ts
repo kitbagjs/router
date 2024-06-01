@@ -7,7 +7,7 @@ type ResolvedRouteUpdate = (route: ResolvedRoute) => void
 
 type CurrentRouteContext = {
   currentRoute: ResolvedRoute,
-  routerRoute: RouterRoute,
+  routerRoute: RouterRoute<any>,
   updateRoute: ResolvedRouteUpdate,
 }
 
