@@ -1,3 +1,4 @@
+import { reactive, toRefs } from 'vue'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { RouteUpdate } from '@/types/routeUpdate'
@@ -48,6 +49,7 @@ export function isRouterRoute(value: unknown): value is RouterRoute {
 }
 
 export function createRouterRoute<TRoute extends ResolvedRoute>(route: TRoute, push: RouterPush): RouterRoute<TRoute> {
+
   function update(keyOrParams: PropertyKey | Partial<ResolvedRoute['params']>, valueOrOptions: any, maybeOptions?: RouterPushOptions): Promise<void> {
     if (typeof keyOrParams === 'object') {
       const params = {
@@ -66,23 +68,20 @@ export function createRouterRoute<TRoute extends ResolvedRoute>(route: TRoute, p
     return push(route.key, params, maybeOptions)
   }
 
-  return new Proxy(route as RouterRoute<TRoute>, {
-    has: (target, property) => {
-      if (['update', 'params', isRouterRouteSymbol].includes(property)) {
-        return true
-      }
+  const { matched, matches, key, query, params } = toRefs(route)
 
-      return Reflect.has(target, property)
-    },
+  const routerRoute: RouterRoute<TRoute> = reactive({
+    matched,
+    matches,
+    query,
+    params,
+    key,
+    update,
+    [isRouterRouteSymbol]: true,
+  })
+
+  return new Proxy(routerRoute, {
     get: (target, property, receiver) => {
-      if (property === isRouterRouteSymbol) {
-        return true
-      }
-
-      if (property === 'update') {
-        return update
-      }
-
       if (property === 'params') {
         return new Proxy(route.params, {
           set(_target, property, value) {
