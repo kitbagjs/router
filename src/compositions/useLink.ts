@@ -1,4 +1,4 @@
-import { MaybeRefOrGetter, Ref, computed, readonly, toValue } from 'vue'
+import { MaybeRefOrGetter, Ref, computed, toValue } from 'vue'
 import { useRouter } from '@/compositions/useRouter'
 import { InvalidRouteParamValueError } from '@/errors/invalidRouteParamValueError'
 import { RouterResolveOptions } from '@/services/createRouterResolve'
@@ -87,7 +87,7 @@ export function useLink(
     return router.find(href.value, optionsRef.value)
   })
 
-  const isMatch = computed(() => !!route.value && router.route.matches.includes(readonly(route.value.matched)))
+  const isMatch = computed(() => !!route.value && router.route.matches.includes(route.value.matched))
   const isExactMatch = computed(() => !!route.value && router.route.matched === route.value.matched)
 
   return {

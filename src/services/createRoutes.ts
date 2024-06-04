@@ -75,7 +75,7 @@ function addRouterViewComponentIfParentWithoutComponent(route: RouteProps): Rout
 
 type FlattenRoute<
   TRoute extends RouteProps,
-  TKey extends string | undefined = TRoute['name'],
+  TKey extends string | undefined = TRoute extends { name: string } ? TRoute['name'] : undefined,
   TPath extends Path = ToPath<TRoute['path']>,
   TQuery extends Query = ToQuery<TRoute['query']>,
   TDisabled extends boolean = TRoute['disabled'] extends boolean ? TRoute['disabled'] : false,

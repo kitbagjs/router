@@ -1,4 +1,4 @@
-import { Ref, markRaw, ref, readonly, Component } from 'vue'
+import { Ref, markRaw, ref, Component } from 'vue'
 import { genericRejection } from '@/components/rejection'
 import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
 import { RegisteredRejectionType } from '@/types'
@@ -22,9 +22,7 @@ type CreateRouterRejectContext = {
   rejections?: RouterRejectionComponents['rejections'],
 }
 
-const isRejectionRouteSymbol = Symbol()
-
-type RouterRejectionRoute = ResolvedRoute & { [isRejectionRouteSymbol]?: true }
+type RouterRejectionRoute = ResolvedRoute & { __isRejectionRoute?: true }
 
 export type CreateRouterReject = {
   setRejection: RouterSetReject,
@@ -55,20 +53,20 @@ export function createRouterReject({
       meta: {},
     }
 
-    const resolved = readonly({
+    const resolved = {
       matched: route,
       matches: [route],
       key: type,
       query: createResolvedRouteQuery(''),
       params: {},
-      [isRejectionRouteSymbol]: true,
-    })
+      __isRejectionRoute: true,
+    }
 
     return resolved
   }
 
   const isRejectionRoute: IsRejectionRoute = (route: RouterRejectionRoute) => {
-    return route[isRejectionRouteSymbol] === true
+    return route.__isRejectionRoute === true
   }
 
   const setRejection: RouterSetReject = (type) => {

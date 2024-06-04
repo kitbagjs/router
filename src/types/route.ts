@@ -7,12 +7,12 @@ import { RouteMeta, RouteProps } from '@/types/routeProps'
 /**
  * Represents an immutable array of Route instances. Return value of `createRoutes`, expected param for `createRouter`.
  */
-export type Routes = Readonly<Route[]>
+export type Routes = Route[]
 
 /**
  * The Route properties originally provided to `createRoutes`. The only change is normalizing meta to always default to an empty object.
  */
-type RoutePropsWithMeta = RouteProps & { meta: RouteMeta }
+export type RoutePropsWithMeta = RouteProps & { meta: RouteMeta }
 
 /**
  * Represents the structure of a route within the application. Return value of `createRoutes`
@@ -22,7 +22,7 @@ type RoutePropsWithMeta = RouteProps & { meta: RouteMeta }
  * @template TDisabled - Indicates whether the route is disabled, which could affect routing logic.
  */
 export type Route<
-  TKey extends string | undefined = any,
+  TKey extends string | undefined = string | undefined,
   TPath extends string | Path = Path,
   TQuery extends string | Query | undefined = Query,
   TDisabled extends boolean | undefined = boolean
@@ -60,10 +60,7 @@ export type Route<
  * @template TRoute - The route type from which to extract and merge parameter types.
  * @returns A record of parameter names to their respective types, extracted and merged from both path and query parameters.
  */
-export type ExtractRouteParamTypes<TRoute extends {
-  path: { params: Record<string, unknown> },
-  query: { params: Record<string, unknown> },
-}> = TRoute extends {
+export type ExtractRouteParamTypes<TRoute> = TRoute extends {
   path: { params: infer PathParams extends Record<string, Param | undefined> },
   query: { params: infer QueryParams extends Record<string, Param | undefined> },
 }

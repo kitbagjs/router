@@ -11,6 +11,7 @@ import { createRouterResolve } from '@/services/createRouterResolve'
 import { getInitialUrl } from '@/services/getInitialUrl'
 import { getResolvedRouteForUrl } from '@/services/getResolvedRouteForUrl'
 import { createRouteHookRunners } from '@/services/hooks'
+import { RegisteredRouter } from '@/types'
 import { Routes } from '@/types/route'
 import { Router, RouterOptions, RouterReject } from '@/types/router'
 import { RouterPush, RouterPushOptions } from '@/types/routerPush'
@@ -171,7 +172,7 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
   function install(app: App): void {
     app.component('RouterView', RouterView)
     app.component('RouterLink', RouterLink)
-    app.provide(routerInjectionKey, router)
+    app.provide(routerInjectionKey, router as RegisteredRouter)
     app.provide(routerRejectionKey, rejection)
     app.provide(routeHookStoreKey, hooks)
   }

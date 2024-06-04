@@ -1,10 +1,9 @@
-import { Routes } from '@/types/route'
+import { Route, Routes } from '@/types/route'
 
-type BaseRoute = { key: string, disabled: false, path: { params: Record<string, unknown> }, query: { params: Record<string, unknown> } }
-type NamedNotDisabled<T> = T extends BaseRoute ? T : never
+type NamedNotDisabledRoute = Route & { key: string, disabled: false }
 
 export type RoutesMap<TRoutes extends Routes = []> = {
-  [K in TRoutes[number] as NamedNotDisabled<K> extends { key: string } ? NamedNotDisabled<K>['key']: never]: NamedNotDisabled<K>
+  [Route in TRoutes[number] as Route extends NamedNotDisabledRoute ? Route['key']: never]: Route
 }
 
 export type RoutesKey<TRoutes extends Routes> = string & keyof RoutesMap<TRoutes>

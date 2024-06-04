@@ -16,11 +16,13 @@ export type QueryParams<T extends string> = {
 }
 
 export type Query<
-  T extends string = any,
-  P extends QueryParams<T> = any
+  TQuery extends string = any,
+  TParams extends QueryParams<TQuery> = any
 > = {
-  query: T,
-  params: Identity<ExtractQueryParamsFromQueryString<T, P>>,
+  query: TQuery,
+  params: string extends TQuery
+    ? Record<string, Param>
+    : Identity<ExtractQueryParamsFromQueryString<TQuery, TParams>>,
   toString: () => string,
 }
 

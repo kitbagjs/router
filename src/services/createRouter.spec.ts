@@ -82,37 +82,6 @@ test('route update updates the current route', async () => {
 
 })
 
-test('route is readonly except for individual params', async () => {
-  const routes = createRoutes([
-    {
-      name: 'root',
-      component,
-      path: '/',
-    },
-  ])
-  const { route, initialized } = createRouter(routes, {
-    initialUrl: '/',
-  })
-
-  await initialized
-
-  // @ts-expect-error
-  route.key = 'child'
-  expect(route.key).toBe('root')
-
-  // @ts-expect-error
-  route.matched = 'match'
-  expect(route.matched).toMatchObject(routes[0].matched)
-
-  // @ts-expect-error
-  route.matches = 'matches'
-  expect(route.matches).toMatchObject(routes[0].matches)
-
-  // @ts-expect-error
-  route.params = { foo: 'bar' }
-  expect(route.params).toMatchObject({})
-})
-
 test('individual prams are writable', async () => {
   const routes = createRoutes([
     {

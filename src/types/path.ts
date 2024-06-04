@@ -20,7 +20,9 @@ export type Path<
   TParams extends PathParams<TPath> = any
 > = {
   path: TPath,
-  params: Identity<ExtractParamsFromPathString<TPath, TParams>>,
+  params: string extends TPath
+    ? Record<string, Param>
+    : Identity<ExtractParamsFromPathString<TPath, TParams>>,
   toString: () => string,
 }
 export type ToPath<T extends string | Path> = T extends string ? Path<T, {}> : T

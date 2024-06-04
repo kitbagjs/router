@@ -11,14 +11,14 @@ export type RouterPushOptions = {
 
 type RouterPushArgs<
   TRoutes extends Routes,
-  TSource extends string & keyof RoutesKey<TRoutes>,
+  TSource extends RoutesKey<TRoutes>,
   TParams = RouteParamsByKey<TRoutes, TSource>
 > = AllPropertiesAreOptional<TParams> extends true
   ? [params?: TParams, options?: RouterPushOptions]
   : [params: TParams, options?: RouterPushOptions]
 
 export type RouterPush<
-  TRoutes extends Routes = any
+  TRoutes extends Routes
 > = {
   <TSource extends RoutesKey<TRoutes>>(source: TSource, ...args: RouterPushArgs<TRoutes, TSource>): Promise<void>,
   (source: Url, options?: RouterPushOptions): Promise<void>,
