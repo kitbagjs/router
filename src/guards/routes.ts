@@ -7,9 +7,9 @@ export type IsRouteOptions = {
   exact?: boolean,
 }
 
-export function isRoute(route: unknown): route is RegisteredRouter['route']
-export function isRoute<TRouteKey extends RegisteredRoutesKey>(route: unknown, routeKey: TRouteKey, options?: IsRouteOptions): route is RouterRoute<ResolvedRoute<RegisteredRouteMap[TRouteKey]>>
-export function isRoute(route: unknown, routeKey?: string, { exact }: IsRouteOptions = {}): boolean {
+export function isRoute(route: RouterRoute): route is RegisteredRouter['route']
+export function isRoute<TRouteKey extends RegisteredRoutesKey>(route: RouterRoute, routeKey: TRouteKey, options?: IsRouteOptions): route is RouterRoute<ResolvedRoute<RegisteredRouteMap[TRouteKey]>>
+export function isRoute(route: RouterRoute, routeKey?: string, { exact }: IsRouteOptions = {}): boolean {
   if (!isRouterRoute(route)) {
     return false
   }

@@ -7,18 +7,20 @@ export function getParam<P extends Record<string, Param | undefined>>(params: P,
   return params[param] ?? String
 }
 
+const optionalKey = Symbol()
+
 type OptionalParamGetSet<TParam extends Param, TValue = ExtractParamType<TParam> | undefined> = ParamGetSet<TValue> & {
-  __optionalParam: true,
+  [optionalKey]: true,
   get: (value: string | undefined, extras: ParamExtras) => TValue,
 }
 
 export function isOptionalParam(param: Param | OptionalParamGetSet<Param>): param is OptionalParamGetSet<Param> {
-  return '__optionalParam' in param
+  return optionalKey in param
 }
 
 export function optional<TParam extends Param>(param: TParam): OptionalParamGetSet<TParam> {
   return {
-    __optionalParam: true,
+    [optionalKey]: true,
     get: (value) => {
       if (!stringHasValue(value)) {
         return undefined

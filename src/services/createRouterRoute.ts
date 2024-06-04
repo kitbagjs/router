@@ -7,6 +7,8 @@ import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { RouteUpdate } from '@/types/routeUpdate'
 import { Writable } from '@/types/utilities'
 
+const isRouterRouteSymbol = Symbol('isRouterRouteSymbol')
+
 export type RouterRoute<TRoute extends ResolvedRoute = ResolvedRoute> = {
   /**
    * The specific route properties that were matched in the current route.
@@ -42,11 +44,11 @@ export type RouterRoute<TRoute extends ResolvedRoute = ResolvedRoute> = {
   /**
    * A private property for type guarding withing this project
    */
-  __isRouterRoute: true,
+  [isRouterRouteSymbol]: true,
 }
 
 export function isRouterRoute(value: unknown): value is RouterRoute {
-  return typeof value === 'object' && value !== null && '__isRouterRoute' in value && value.__isRouterRoute === true
+  return typeof value === 'object' && value !== null && isRouterRouteSymbol in value && value[isRouterRouteSymbol] === true
 }
 
 export function createRouterRoute<TRoute extends ResolvedRoute>(route: TRoute, push: RouterPush<Route<string, Path, Query, false>[]>): RouterRoute<TRoute> {
@@ -78,7 +80,7 @@ export function createRouterRoute<TRoute extends ResolvedRoute>(route: TRoute, p
     params,
     key,
     update,
-    __isRouterRoute: true,
+    [isRouterRouteSymbol]: true,
   })
 
   return new Proxy(routerRoute, {

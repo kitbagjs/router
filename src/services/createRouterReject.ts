@@ -22,7 +22,9 @@ type CreateRouterRejectContext = {
   rejections?: RouterRejectionComponents['rejections'],
 }
 
-type RouterRejectionRoute = ResolvedRoute & { __isRejectionRoute?: true }
+const isRejectionRouteSymbol = Symbol()
+
+type RouterRejectionRoute = ResolvedRoute & { [isRejectionRouteSymbol]?: true }
 
 export type CreateRouterReject = {
   setRejection: RouterSetReject,
@@ -59,14 +61,14 @@ export function createRouterReject({
       key: type,
       query: createResolvedRouteQuery(''),
       params: {},
-      __isRejectionRoute: true,
+      [isRejectionRouteSymbol]: true,
     }
 
     return resolved
   }
 
   const isRejectionRoute: IsRejectionRoute = (route: RouterRejectionRoute) => {
-    return route.__isRejectionRoute === true
+    return route[isRejectionRouteSymbol] === true
   }
 
   const setRejection: RouterSetReject = (type) => {
