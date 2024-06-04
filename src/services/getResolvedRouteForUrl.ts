@@ -31,11 +31,14 @@ export function getResolvedRouteForUrl(routes: Routes, url: string): ResolvedRou
   const query = createResolvedRouteQuery(search)
   const params = getRouteParamValues(route, url)
 
+  if (typeof route.key === 'undefined') {
+    throw 'ResolvedRoute key must be defined'
+  }
+
   return {
     matched: route.matched,
     matches: route.matches,
-    // enforced by isNamedRoute rule check
-    key: route.key!,
+    key: route.key,
     query,
     params,
   }
