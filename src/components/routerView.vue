@@ -10,8 +10,8 @@
   import { useRoute } from '@/compositions/useRoute'
   import { useRouterDepth } from '@/compositions/useRouterDepth'
   import { RouterRejection } from '@/services/createRouterReject'
-  import { RouterRoute } from '@/services/createRouterRoute'
   import { depthInjectionKey } from '@/types/injectionDepth'
+  import { RegisteredRouter } from '@/types/register'
   import { RouteProps, isRouteWithComponent, isRouteWithComponents } from '@/types/routeProps'
 
   const { name = 'default' } = defineProps<{
@@ -24,7 +24,7 @@
 
   defineSlots<{
     default?: (props: {
-      route: RouterRoute,
+      route: RegisteredRouter['route'],
       component: Component,
       rejection: UnwrapRef<RouterRejection>,
     }) => VNode,
