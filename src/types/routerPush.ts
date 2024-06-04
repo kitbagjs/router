@@ -1,4 +1,4 @@
-import { Routes } from '@/types/route'
+import { NamedNotDisabledRoute, Routes } from '@/types/route'
 import { RoutesKey } from '@/types/routesMap'
 import { RouteParamsByKey } from '@/types/routeWithParams'
 import { Url } from '@/types/url'
@@ -18,7 +18,7 @@ type RouterPushArgs<
   : [params: TParams, options?: RouterPushOptions]
 
 export type RouterPush<
-  TRoutes extends Routes
+  TRoutes extends Routes = NamedNotDisabledRoute[]
 > = {
   <TSource extends RoutesKey<TRoutes>>(source: TSource, ...args: RouterPushArgs<TRoutes, TSource>): Promise<void>,
   (source: Url, options?: RouterPushOptions): Promise<void>,

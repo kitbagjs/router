@@ -66,3 +66,5 @@ export type ExtractRouteParamTypes<TRoute> = TRoute extends {
 }
   ? ExtractParamTypes<MergeParams<PathParams, QueryParams>>
   : Record<string, unknown>
+
+export type NamedNotDisabledRoute = Route<string, Path, Query, false>

@@ -1,6 +1,4 @@
-import { Route, Routes } from '@/types/route'
-
-type NamedNotDisabledRoute = Route & { key: string, disabled: false }
+import { NamedNotDisabledRoute, Routes } from '@/types/route'
 
 export type RoutesMap<TRoutes extends Routes = []> = {
   [Route in TRoutes[number] as Route extends NamedNotDisabledRoute ? Route['key']: never]: Route

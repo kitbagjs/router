@@ -1,12 +1,10 @@
 import { createRouterResolve } from '@/services/createRouterResolve'
 import { getResolvedRouteForUrl } from '@/services/getResolvedRouteForUrl'
-import { Path } from '@/types/path'
-import { Query } from '@/types/query'
 import { ResolvedRoute } from '@/types/resolved'
-import { Route, Routes } from '@/types/route'
+import { Routes } from '@/types/route'
 import { RoutesKey } from '@/types/routesMap'
 import { RouteParamsByKey } from '@/types/routeWithParams'
-import { Url } from '@/types/url'
+import { isUrl, Url } from '@/types/url'
 import { AllPropertiesAreOptional } from '@/types/utilities'
 
 type RouterFindArgs<
@@ -26,12 +24,19 @@ export type RouterFind<
 
 export function createRouterFind<const TRoutes extends Routes>(routes: TRoutes): RouterFind<TRoutes> {
 
-  return <TRoutes extends Routes, TSource extends RoutesKey<TRoutes>>(
-    source: TSource,
+  return <TSource extends RoutesKey<TRoutes>>(
+    source: Url | TSource,
     params: Record<PropertyKey, unknown> = {},
   ): ResolvedRoute | undefined => {
-    const resolve = createRouterResolve(routes as Route<string, Path, Query, false>[])
-    const url = resolve(source, params)
+    const resolve = createRouterResolve(routes)
+
+    if (isUrl(source)) {
+      const url = resolve(source)
+
+      return getResolvedRouteForUrl(routes, url)
+    }
+
+    const url = resolve(source, params as RouteParamsByKey<TRoutes, TSource>)
 
     return getResolvedRouteForUrl(routes, url)
   }
