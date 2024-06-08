@@ -1,4 +1,5 @@
-import { ExtractRouteParamTypes, Routes } from '@/types/route'
+import { ExtractRouteParamTypes } from '@/types/params'
+import { Routes } from '@/types/route'
 import { RoutesKey, RoutesMap } from '@/types/routesMap'
 
 export type RouteGetByKey<TRoutes extends Routes, TKey extends RoutesKey<TRoutes>> = RoutesMap<TRoutes>[TKey]
