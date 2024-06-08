@@ -151,6 +151,10 @@ const routes = createRoutes([
 
 Which now, `router.params.id` has the type `number | undefined`, and will only match URL where the value passes as a number or is missing entirely.
 
+## Params with Default Value
+
+
+
 ## Param Name
 
 There are no constraints on the name you choose for param names
