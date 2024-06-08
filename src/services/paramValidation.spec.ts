@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest'
 import { DuplicateParamsError } from '@/errors'
 import { createRoutes } from '@/services/createRoutes'
+import { withDefault } from '@/services/params'
 import { getRouteParamValues, routeParamsAreValid } from '@/services/paramValidation'
 import { path } from '@/services/path'
 import { component } from '@/utilities/testHelpers'
@@ -38,6 +39,20 @@ test('given route with OPTIONAL string param WITHOUT value present, returns true
     {
       name: 'simple-params',
       path: '/simple/[?simple]',
+      component,
+    },
+  ])
+
+  const response = routeParamsAreValid(route, '/simple/')
+
+  expect(response).toBe(true)
+})
+
+test('given route with DEFAULT string param WITHOUT value present, returns true', () => {
+  const [route] = createRoutes([
+    {
+      name: 'simple-params',
+      path: path('/simple/[simple]', { simple: withDefault(String, 'abc') }),
       component,
     },
   ])
@@ -85,6 +100,22 @@ test('given route with OPTIONAL non-string param with value that does NOT satisf
       name: 'simple-params',
       path: path('/simple/[?simple]', {
         simple: Number,
+      }),
+      component,
+    },
+  ])
+
+  const response = routeParamsAreValid(route, '/simple/fail')
+
+  expect(response).toBe(false)
+})
+
+test('given route with DEFAULT non-string param with value that does NOT satisfy, returns false', () => {
+  const [route] = createRoutes([
+    {
+      name: 'simple-params',
+      path: path('/simple/[?simple]', {
+        simple: withDefault(Number, 42),
       }),
       component,
     },

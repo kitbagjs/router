@@ -1,5 +1,7 @@
 import { describe, expect, test } from 'vitest'
 import { createRoutes } from '@/services/createRoutes'
+import { withDefault } from '@/services/params'
+import { query } from '@/services/query'
 import { routePathMatches, routeQueryMatches } from '@/services/routeMatchRules'
 import { component } from '@/utilities/testHelpers'
 
@@ -159,6 +161,26 @@ describe('routeQueryMatches', () => {
         name: 'optional-params',
         path: '',
         query: 'optional=[?optional]',
+        component,
+      },
+    ])
+
+    const response = routeQueryMatches(route, url)
+
+    expect(response).toBe(true)
+  })
+
+  test.each([
+    ['?default'],
+    ['?default='],
+    ['?default=true'],
+    ['http://www.kitbag.io?extra=params&default=provided'],
+  ])('given url and route.query with default params that does match, returns true', (url) => {
+    const [route] = createRoutes([
+      {
+        name: 'default-params',
+        path: '',
+        query: query('default=[?default]', { default: withDefault(String, 'abc') }),
         component,
       },
     ])

@@ -7,20 +7,23 @@ export function getParam<P extends Record<string, Param | undefined>>(params: P,
   return params[param] ?? String
 }
 
-const optionalKey = Symbol()
+const optionalParamKey = Symbol()
 
-type OptionalParamGetSet<TParam extends Param, TValue = ExtractParamType<TParam> | undefined> = ParamGetSet<TValue> & {
-  [optionalKey]: true,
-  get: (value: string | undefined, extras: ParamExtras) => TValue,
+export type IsOptionalParam = {
+  [optionalParamKey]: true,
+}
+
+export type OptionalParamGetSet<TParam extends Param, TParamType extends ExtractParamType<TParam> | undefined = ExtractParamType<TParam> | undefined> = ParamGetSet<TParamType> & IsOptionalParam & {
+  get: (value: string | undefined, extras: ParamExtras) => TParamType,
 }
 
 export function isOptionalParam(param: Param | OptionalParamGetSet<Param>): param is OptionalParamGetSet<Param> {
-  return optionalKey in param
+  return optionalParamKey in param
 }
 
 export function optional<TParam extends Param>(param: TParam): OptionalParamGetSet<TParam> {
   return {
-    [optionalKey]: true,
+    [optionalParamKey]: true,
     get: (value) => {
       if (!stringHasValue(value)) {
         return undefined
@@ -31,6 +34,35 @@ export function optional<TParam extends Param>(param: TParam): OptionalParamGetS
     set: (value) => {
       if (value === undefined) {
         return ''
+      }
+
+      return setParamValue(value, param)
+    },
+  }
+}
+
+const defaultParamKey = Symbol()
+
+export type IsWithDefaultParam = {
+  [defaultParamKey]: true,
+}
+
+export type WithDefaultParamGetSet<TParam extends Param, TParamType = ExtractParamType<TParam> | undefined> = ParamGetSet<TParamType> & IsWithDefaultParam & OptionalParamGetSet<TParam>
+
+export function withDefault<TParam extends Param, TParamType extends ExtractParamType<TParam> = ExtractParamType<TParam>>(param: TParam, defaultValue: TParamType): WithDefaultParamGetSet<TParam, TParamType> {
+  return {
+    [optionalParamKey]: true,
+    [defaultParamKey]: true,
+    get: (value) => {
+      if (!stringHasValue(value)) {
+        return defaultValue
+      }
+
+      return getParamValue(value, param)
+    },
+    set: (value) => {
+      if (value === undefined) {
+        return defaultValue
       }
 
       return setParamValue(value, param)

@@ -1,5 +1,8 @@
 import { describe, expect, test } from 'vitest'
 import { createRoutes } from '@/services/createRoutes'
+import { withDefault } from '@/services/params'
+import { path } from '@/services/path'
+import { query } from '@/services/query'
 import { generateRoutePathRegexPattern, generateRouteQueryRegexPatterns, getParamName } from '@/services/routeRegex'
 import { component } from '@/utilities/testHelpers'
 
@@ -50,6 +53,23 @@ describe('generateRoutePathRegexPattern', () => {
     const expected = new RegExp(`^parent/child/${catchAll}/grand-child/${catchAll}$`, 'i')
     expect(result.toString()).toBe(expected.toString())
   })
+
+
+  test('given path with default params, returns value with params replaced with catchall', () => {
+    const [route] = createRoutes([
+      {
+        name: 'path-with-default-params',
+        path: path('parent/child/[?childParam]/grand-child/[?grandChild123]', { childParam: withDefault(String, 'abc'), grandChild123: withDefault(String, 'def') }),
+        component,
+      },
+    ])
+
+    const result = generateRoutePathRegexPattern(route)
+
+    const catchAll = '.*'
+    const expected = new RegExp(`^parent/child/${catchAll}/grand-child/${catchAll}$`, 'i')
+    expect(result.toString()).toBe(expected.toString())
+  })
 })
 
 describe('generateRouteQueryRegexPatterns', () => {
@@ -89,6 +109,21 @@ describe('generateRouteQueryRegexPatterns', () => {
         name: 'query-with-optional-params',
         path: 'query',
         query: 'dynamic=[?first]&static=params&another=[?second]',
+        component,
+      },
+    ])
+
+    const result = generateRouteQueryRegexPatterns(route)
+
+    expect(result).toMatchObject([new RegExp('static=params')])
+  })
+
+  test('given query with default params, returns value without params', () => {
+    const [route] = createRoutes([
+      {
+        name: 'query-with-default-params',
+        path: 'query',
+        query: query('dynamic=[?first]&static=params&another=[?second]', { first: withDefault(String, 'abc'), second: withDefault(String, 'abc') }),
         component,
       },
     ])
