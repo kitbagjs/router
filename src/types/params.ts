@@ -1,3 +1,4 @@
+import { IsOptionalParam, OptionalParamGetSet } from '@/services/params'
 import { Param, ParamGetSet, ParamGetter } from '@/types/paramTypes'
 import { Identity } from '@/types/utilities'
 
@@ -63,18 +64,32 @@ export type ExtractPathParamType<
   TParams extends Record<string, Param | undefined>
 > = TParam extends `?${infer OptionalParam}`
   ? OptionalParam extends keyof TParams
-    ? TParams[OptionalParam] | undefined
-    : StringConstructor | undefined
+    ? TParams[OptionalParam] extends Param
+      ? OptionalParamGetSet<TParams[OptionalParam]>
+      : OptionalParamGetSet<StringConstructor>
+    : OptionalParamGetSet<StringConstructor>
   : TParam extends keyof TParams
     ? TParams[TParam]
     : StringConstructor
+
+/**
+ * Extracts combined types of path and query parameters for a given route, creating a unified parameter object.
+ * @template TRoute - The route type from which to extract and merge parameter types.
+ * @returns A record of parameter names to their respective types, extracted and merged from both path and query parameters.
+ */
+export type ExtractRouteParamTypes<TRoute> = TRoute extends {
+  path: { params: infer PathParams extends Record<string, Param> },
+  query: { params: infer QueryParams extends Record<string, Param> },
+}
+  ? ExtractParamTypes<MergeParams<PathParams, QueryParams>>
+  : Record<string, unknown>
 
 /**
  * Transforms a record of parameter types into a type with optional properties where the original type allows undefined.
  * @template TParams - The record of parameter types, possibly including undefined.
  * @returns A new type with the appropriate properties marked as optional.
  */
-export type ExtractParamTypes<TParams extends Record<string, Param | undefined>> = Identity<MakeOptional<{
+export type ExtractParamTypes<TParams extends Record<string, Param>> = Identity<MakeOptional<{
   [K in keyof TParams]: ExtractParamType<TParams[K]>
 }>>
 
@@ -83,17 +98,13 @@ export type ExtractParamTypes<TParams extends Record<string, Param | undefined>>
  * @template TParam - The parameter type.
  * @returns The extracted type, or 'string' as a fallback.
  */
-export type ExtractParamType<TParam extends Param | undefined> = TParam extends ParamGetSet<infer Type>
-  ? undefined extends TParam
+export type ExtractParamType<TParam extends Param> = TParam extends ParamGetSet<infer Type>
+  ? TParam extends IsOptionalParam
     ? Type | undefined
     : Type
   : TParam extends ParamGetter
-    ? undefined extends TParam
-      ? ReturnType<TParam> | undefined
-      : ReturnType<TParam>
-    : undefined extends TParam
-      ? undefined
-      : string
+    ? ReturnType<TParam>
+    : string
 
 type WithOptionalProperties<T> = {
   [P in keyof T]-?: undefined extends T[P] ? P : never
