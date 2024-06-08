@@ -153,7 +153,11 @@ Which now, `router.params.id` has the type `number | undefined`, and will only m
 
 ## Params with Default Value
 
+You can also default your params as having a default value.
 
+```ts
+
+```
 
 ## Param Name
 
