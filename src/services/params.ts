@@ -9,8 +9,11 @@ export function getParam<P extends Record<string, Param | undefined>>(params: P,
 
 const optionalKey = Symbol()
 
-type OptionalParamGetSet<TParam extends Param, TValue = ExtractParamType<TParam> | undefined> = ParamGetSet<TValue> & {
+export type IsOptionalParam = {
   [optionalKey]: true,
+}
+
+export type OptionalParamGetSet<TParam extends Param, TValue = ExtractParamType<TParam> | undefined> = ParamGetSet<TValue> & IsOptionalParam & {
   get: (value: string | undefined, extras: ParamExtras) => TValue,
 }
 
