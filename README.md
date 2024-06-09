@@ -7,6 +7,8 @@ Type safe router for Vue.js
 [![Discord chat][discord-badge]][discord-url]
 [![Open in StackBlitz][stackblitz-badge]][stackblitz-url]
 
+<img src="https://kitbag.dev/kitbag-logo.svg" width="20%" />
+
 ## Getting Started
 
 Get Started with our [documentation](https://kitbag-router.netlify.app/)
