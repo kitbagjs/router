@@ -1,6 +1,7 @@
 import { DeepReadonly } from 'vue'
+import { ExtractRouteParamTypes } from '@/types/params'
 import { ResolvedRouteQuery } from '@/types/resolvedQuery'
-import { ExtractRouteParamTypes, Route } from '@/types/route'
+import { Route } from '@/types/route'
 
 type BaseResolvedRoute = Route & { path: { params: Record<string, unknown> }, query: { params: Record<string, unknown> } }
 
@@ -29,5 +30,5 @@ export type ResolvedRoute<TRoute extends Route = BaseResolvedRoute> = DeepReadon
   /**
    * Key value pair for route params, values will be the user provided value from current browser location.
   */
-  params: ExtractRouteParamTypes<TRoute>,
+  params: BaseResolvedRoute extends TRoute ? Record<string, unknown> : ExtractRouteParamTypes<TRoute>,
 }>
