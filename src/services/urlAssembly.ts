@@ -41,13 +41,17 @@ function assembleQueryParamValues(query: string, params: Record<string, Param>, 
 
   return Array.from(search.entries()).reduce<QueryRecord>((url, [key, value]) => {
     const paramName = getParamName(value)
+    const isNotParam = !paramName
 
-    if (!paramName) {
+    if (isNotParam) {
       return { ...url, [key]: value }
     }
 
     const paramValue = setParamValue(paramValues[paramName], params[paramName])
-    if (isOptionalParamSyntax(value) && paramValues[paramName] === undefined && paramValue === '') {
+    const valueNotProvidedAndNoDefaultUsed = paramValues[paramName] === undefined && paramValue === ''
+    const shouldLeaveEmptyValueOut = isOptionalParamSyntax(value) && valueNotProvidedAndNoDefaultUsed
+
+    if (shouldLeaveEmptyValueOut) {
       return url
     }
 
