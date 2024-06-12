@@ -1,5 +1,3 @@
-import { ExtractParamTypes, MergeParams } from '@/types/params'
-import { Param } from '@/types/paramTypes'
 import { Path, ToPath } from '@/types/path'
 import { Query, ToQuery } from '@/types/query'
 import { RouteMeta, RouteProps } from '@/types/routeProps'
@@ -54,18 +52,3 @@ export type Route<
   */
   disabled: TDisabled extends boolean ? TDisabled : false,
 }
-
-/**
- * Extracts combined types of path and query parameters for a given route, creating a unified parameter object.
- * @template TRoute - The route type from which to extract and merge parameter types.
- * @returns A record of parameter names to their respective types, extracted and merged from both path and query parameters.
- */
-export type ExtractRouteParamTypes<TRoute extends {
-  path: { params: Record<string, unknown> },
-  query: { params: Record<string, unknown> },
-}> = TRoute extends {
-  path: { params: infer PathParams extends Record<string, Param | undefined> },
-  query: { params: infer QueryParams extends Record<string, Param | undefined> },
-}
-  ? ExtractParamTypes<MergeParams<PathParams, QueryParams>>
-  : Record<string, unknown>
