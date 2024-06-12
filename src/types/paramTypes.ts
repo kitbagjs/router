@@ -8,6 +8,7 @@ export type ParamSetter<T = any> = (value: T, extras: ParamExtras) => string
 export type ParamGetSet<T = any> = {
   get: ParamGetter<T>,
   set: ParamSetter<T>,
+  defaultValue?: T,
 }
 
 export type Param = ParamGetter | ParamGetSet | RegExp | BooleanConstructor | NumberConstructor | StringConstructor | DateConstructor | JSON

@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 import { DuplicateParamsError } from '@/errors'
-import { optional, withDefault } from '@/services/params'
+import { optional } from '@/services/optional'
 import { query } from '@/services/query'
 
 test('given query without params, returns empty object', () => {
@@ -24,15 +24,6 @@ test('given query with optional params, returns each param name as type String w
   expect(JSON.stringify(response.params)).toMatch(JSON.stringify({
     parentId: optional(String),
     childId: optional(String),
-  }))
-})
-
-test('given query with default params, returns each param name as type String with default', () => {
-  const response = query('parent=[?parentId]&child=[?childId]', {})
-
-  expect(JSON.stringify(response.params)).toMatch(JSON.stringify({
-    parentId: withDefault(String, 'abc'),
-    childId: withDefault(String, 'abc'),
   }))
 })
 

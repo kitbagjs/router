@@ -1,9 +1,9 @@
 import { expect, test } from 'vitest'
 import { DuplicateParamsError } from '@/errors'
 import { createRoutes } from '@/services/createRoutes'
-import { withDefault } from '@/services/params'
 import { getRouteParamValues, routeParamsAreValid } from '@/services/paramValidation'
 import { path } from '@/services/path'
+import { withDefault } from '@/services/withDefault'
 import { component } from '@/utilities/testHelpers'
 
 test('given route WITHOUT params, always return true', () => {
@@ -52,7 +52,7 @@ test('given route with DEFAULT string param WITHOUT value present, returns true'
   const [route] = createRoutes([
     {
       name: 'simple-params',
-      path: path('/simple/[simple]', { simple: withDefault(String, 'abc') }),
+      path: path('/simple/[?simple]', { simple: withDefault(String, 'abc') }),
       component,
     },
   ])

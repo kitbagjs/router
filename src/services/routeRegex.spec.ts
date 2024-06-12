@@ -1,9 +1,9 @@
 import { describe, expect, test } from 'vitest'
 import { createRoutes } from '@/services/createRoutes'
-import { withDefault } from '@/services/params'
 import { path } from '@/services/path'
 import { query } from '@/services/query'
 import { generateRoutePathRegexPattern, generateRouteQueryRegexPatterns, getParamName } from '@/services/routeRegex'
+import { withDefault } from '@/services/withDefault'
 import { component } from '@/utilities/testHelpers'
 
 describe('generateRoutePathRegexPattern', () => {

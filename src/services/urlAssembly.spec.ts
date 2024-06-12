@@ -1,10 +1,10 @@
 import { describe, expect, test } from 'vitest'
 import { InvalidRouteParamValueError } from '@/errors/invalidRouteParamValueError'
 import { createRoutes } from '@/services/createRoutes'
-import { withDefault } from '@/services/params'
 import { path } from '@/services/path'
 import { query } from '@/services/query'
 import { assembleUrl } from '@/services/urlAssembly'
+import { withDefault } from '@/services/withDefault'
 import { component } from '@/utilities/testHelpers'
 
 describe('path params', () => {
@@ -46,7 +46,7 @@ describe('path params', () => {
     const [route] = createRoutes([
       {
         name: 'simple',
-        path: path('/simple/[simple]', { simple: withDefault(String, 'abc') }),
+        path: path('/simple/[?simple]', { simple: withDefault(String, 'abc') }),
         component,
       },
     ])
@@ -168,7 +168,7 @@ describe('query params', () => {
       {
         name: 'simple',
         path: '/',
-        query: query('simple=[simple]', { simple: withDefault(String, 'abc') }),
+        query: query('simple=[?simple]', { simple: withDefault(String, 'abc') }),
         component,
       },
     ])

@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'vitest'
 import { createRoutes } from '@/services/createRoutes'
-import { withDefault } from '@/services/params'
 import { query } from '@/services/query'
 import { routePathMatches, routeQueryMatches } from '@/services/routeMatchRules'
+import { withDefault } from '@/services/withDefault'
 import { component } from '@/utilities/testHelpers'
 
 describe('routePathMatches', () => {

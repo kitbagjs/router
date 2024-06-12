@@ -1,4 +1,4 @@
-import { IsOptionalParam, OptionalParamGetSet } from '@/services/params'
+import { IsOptionalParam, OptionalParamGetSet } from '@/services/optional'
 import { Param, ParamGetSet, ParamGetter } from '@/types/paramTypes'
 import { Identity } from '@/types/utilities'
 
