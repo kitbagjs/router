@@ -8,7 +8,7 @@ export type IsOptionalParam = {
   [optionalParamKey]: true,
 }
 
-export type OptionalParamGetSet<TParam extends Param, TParamType extends ExtractParamType<TParam> = ExtractParamType<TParam>> = ParamGetSet<TParamType> & IsOptionalParam
+export type OptionalParamGetSet<TParam extends Param> = ParamGetSet<ExtractParamType<TParam>> & IsOptionalParam
 
 export function isOptionalParam(param: Param | OptionalParamGetSet<Param>): param is OptionalParamGetSet<Param> {
   return optionalParamKey in param
