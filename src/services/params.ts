@@ -155,7 +155,7 @@ export function getParamValue<T extends Param>(value: string | undefined, param:
 export function setParamValue(value: unknown, param: Param): string {
   if (value === undefined) {
     if (isOptionalParam(param)) {
-      return param.defaultValue ?? ''
+      return ''
     }
 
     throw new InvalidRouteParamValueError()

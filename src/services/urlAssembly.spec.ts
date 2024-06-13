@@ -28,6 +28,7 @@ describe('path params', () => {
   test.each([
     ['/simple/[?simple]'],
     [path('/simple/[?simple]', { simple: String })],
+    [path('/simple/[?simple]', { simple: withDefault(String, 'abc') })],
   ])('given route with optional string param NOT provided, returns route Path with string without values interpolated', (path) => {
     const [route] = createRoutes([
       {
@@ -40,20 +41,6 @@ describe('path params', () => {
     const url = assembleUrl(route)
 
     expect(url).toBe('/simple/')
-  })
-
-  test('given route with default string param NOT provided, returns route Path with string with default value interpolated', () => {
-    const [route] = createRoutes([
-      {
-        name: 'simple',
-        path: path('/simple/[?simple]', { simple: withDefault(String, 'abc') }),
-        component,
-      },
-    ])
-
-    const url = assembleUrl(route)
-
-    expect(url).toBe('/simple/abc')
   })
 
   test.each([
@@ -148,6 +135,7 @@ describe('query params', () => {
   test.each([
     ['simple=[?simple]'],
     [query('simple=[?simple]', { simple: String })],
+    [query('simple=[?simple]', { simple: withDefault(String, 'abc') })],
   ])('given route with optional param NOT provided, leaves entire key off', (query) => {
     const [route] = createRoutes([
       {
@@ -161,21 +149,6 @@ describe('query params', () => {
     const url = assembleUrl(route)
 
     expect(url).toBe('/')
-  })
-
-  test('given route with default param NOT provided, adds key with default value', () => {
-    const [route] = createRoutes([
-      {
-        name: 'simple',
-        path: '/',
-        query: query('simple=[?simple]', { simple: withDefault(String, 'abc') }),
-        component,
-      },
-    ])
-
-    const url = assembleUrl(route)
-
-    expect(url).toBe('/?simple=abc')
   })
 
   test.each([

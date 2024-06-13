@@ -131,16 +131,10 @@ describe('setParamValue', () => {
 
     for (const param of paramTypes) {
       expect(setParamValue(undefined, optional(param))).toBe('')
+      expect(setParamValue(undefined, optional(withDefault(param, 'abc')))).toBe('')
     }
   })
 
-  test('Given Optional Param with default and value undefined, assigns default value', () => {
-    const paramTypes = [String, Number, Boolean, Date, JSON, /regexp/g, () => 'getter']
-
-    for (const param of paramTypes) {
-      expect(setParamValue(undefined, withDefault(optional(param), 'abc'))).toBe('abc')
-    }
-  })
 
   test('Given Getter Custom Param, returns value as String', () => {
     const param: ParamGetter = (value, { invalid }) => {
