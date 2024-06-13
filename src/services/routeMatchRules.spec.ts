@@ -171,6 +171,8 @@ describe('routeQueryMatches', () => {
   })
 
   test.each([
+    [''],
+    ['?'],
     ['?default'],
     ['?default='],
     ['?default=true'],
