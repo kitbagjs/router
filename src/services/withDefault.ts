@@ -2,9 +2,9 @@ import { asParamGetSet } from '@/services/asParamGetSet'
 import { ExtractParamType, isParamGetSet } from '@/types/params'
 import { Param, ParamGetSet } from '@/types/paramTypes'
 
-export type ParamWithDefault<TParam extends Param> = Required<ParamGetSet<ExtractParamType<TParam>>>
+export type ParamWithDefault<TParam extends Param = Param> = Required<ParamGetSet<ExtractParamType<TParam>>>
 
-export function isParamWithDefault(param: Param): param is ParamWithDefault<Param> {
+export function isParamWithDefault(param: Param): param is ParamWithDefault {
   return isParamGetSet(param) && param.defaultValue !== undefined
 }
 

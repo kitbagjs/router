@@ -1,3 +1,4 @@
+import { ParamWithDefault } from '@/services'
 import { IsOptionalParam, OptionalParamGetSet } from '@/services/optional'
 import { Param, ParamGetSet, ParamGetter } from '@/types/paramTypes'
 import { Identity } from '@/types/utilities'
@@ -65,7 +66,9 @@ export type ExtractPathParamType<
 > = TParam extends `?${infer OptionalParam}`
   ? OptionalParam extends keyof TParams
     ? TParams[OptionalParam] extends Param
-      ? OptionalParamGetSet<TParams[OptionalParam]>
+      ? TParams[OptionalParam] extends ParamWithDefault
+        ? TParams[OptionalParam]
+        : OptionalParamGetSet<TParams[OptionalParam]>
       : OptionalParamGetSet<StringConstructor>
     : OptionalParamGetSet<StringConstructor>
   : TParam extends keyof TParams
