@@ -1,5 +1,6 @@
 import { DuplicateParamsError } from '@/errors'
-import { getParam, optional } from '@/services/params'
+import { optional } from '@/services/optional'
+import { getParam } from '@/services/params'
 import { paramEnd, paramStart } from '@/types/params'
 import { Param } from '@/types/paramTypes'
 

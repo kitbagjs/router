@@ -1,7 +1,7 @@
 import { createMaybeRelativeUrl } from '@/services/createMaybeRelativeUrl'
-import { isOptionalParam } from '@/services/params'
+import { isOptionalParam } from '@/services/optional'
 import { getParamValueFromUrl } from '@/services/paramsFinder'
-import { Route } from '@/types'
+import { Route } from '@/types/route'
 
 type RouteSortMethod = (aRoute: Route, bRoute: Route) => number
 

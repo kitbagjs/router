@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 import { DuplicateParamsError } from '@/errors'
-import { optional } from '@/services/params'
+import { optional } from '@/services/optional'
 import { query } from '@/services/query'
 
 test('given query without params, returns empty object', () => {

@@ -1,6 +1,8 @@
 import { describe, expect, test } from 'vitest'
 import { InvalidRouteParamValueError } from '@/errors/invalidRouteParamValueError'
-import { getParamValue, optional, setParamValue } from '@/services/params'
+import { optional } from '@/services/optional'
+import { getParamValue, setParamValue } from '@/services/params'
+import { withDefault } from '@/services/withDefault'
 import { ParamGetSet, ParamGetter } from '@/types/paramTypes'
 
 describe('getParamValue', () => {
@@ -43,6 +45,17 @@ describe('getParamValue', () => {
 
     for (const param of paramTypes) {
       expect(getParamValue(stringWithoutValue, optional(param))).toBe(undefined)
+    }
+  })
+
+  test.each([
+    [undefined],
+    [''],
+  ])('Given Optional Param with default and string without value, returns default value', (stringWithoutValue) => {
+    const paramTypes = [String, Number, Boolean, Date, JSON, /regexp/g, () => 'getter']
+
+    for (const param of paramTypes) {
+      expect(getParamValue(stringWithoutValue, withDefault(optional(param), 'abc'))).toBe('abc')
     }
   })
 
@@ -118,8 +131,10 @@ describe('setParamValue', () => {
 
     for (const param of paramTypes) {
       expect(setParamValue(undefined, optional(param))).toBe('')
+      expect(setParamValue(undefined, optional(withDefault(param, 'abc')))).toBe('')
     }
   })
+
 
   test('Given Getter Custom Param, returns value as String', () => {
     const param: ParamGetter = (value, { invalid }) => {

@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 import { DuplicateParamsError } from '@/errors'
-import { optional } from '@/services/params'
+import { optional } from '@/services/optional'
 import { path } from '@/services/path'
 
 test('given path without params, returns empty object', () => {

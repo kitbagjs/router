@@ -1,44 +1,12 @@
 import { InvalidRouteParamValueError } from '@/errors/invalidRouteParamValueError'
+import { isOptionalParam } from '@/services/optional'
+import { isParamWithDefault } from '@/services/withDefault'
 import { ExtractParamType, isParamGetSet, isParamGetter } from '@/types/params'
 import { Param, ParamExtras, ParamGetSet } from '@/types/paramTypes'
 import { stringHasValue } from '@/utilities/string'
 
-export function getParam<P extends Record<string, Param | undefined>>(params: P, param: string): Param {
+export function getParam<TParams extends Record<string, Param | undefined>>(params: TParams, param: string): Param {
   return params[param] ?? String
-}
-
-const optionalKey = Symbol()
-
-export type IsOptionalParam = {
-  [optionalKey]: true,
-}
-
-export type OptionalParamGetSet<TParam extends Param, TValue = ExtractParamType<TParam> | undefined> = ParamGetSet<TValue> & IsOptionalParam & {
-  get: (value: string | undefined, extras: ParamExtras) => TValue,
-}
-
-export function isOptionalParam(param: Param | OptionalParamGetSet<Param>): param is OptionalParamGetSet<Param> {
-  return optionalKey in param
-}
-
-export function optional<TParam extends Param>(param: TParam): OptionalParamGetSet<TParam> {
-  return {
-    [optionalKey]: true,
-    get: (value) => {
-      if (!stringHasValue(value)) {
-        return undefined
-      }
-
-      return getParamValue(value, param)
-    },
-    set: (value) => {
-      if (value === undefined) {
-        return ''
-      }
-
-      return setParamValue(value, param)
-    },
-  }
 }
 
 const extras: ParamExtras = {
@@ -138,9 +106,13 @@ const jsonParam: ParamGetSet<unknown> = {
 
 export function getParamValue<T extends Param>(value: string | undefined, param: T): ExtractParamType<T>
 export function getParamValue<T extends Param>(value: string | undefined, param: T): unknown {
-  if (value === undefined) {
+  if (value === undefined || !stringHasValue(value)) {
+    if (isParamWithDefault(param)) {
+      return param.defaultValue
+    }
+
     if (isOptionalParam(param)) {
-      return param.get(value, extras)
+      return undefined
     }
 
     throw new InvalidRouteParamValueError()
@@ -186,6 +158,14 @@ export function getParamValue<T extends Param>(value: string | undefined, param:
 }
 
 export function setParamValue(value: unknown, param: Param): string {
+  if (value === undefined) {
+    if (isOptionalParam(param)) {
+      return ''
+    }
+
+    throw new InvalidRouteParamValueError()
+  }
+
   if (param === Boolean) {
     return booleanParam.set(value as boolean, extras)
   }
