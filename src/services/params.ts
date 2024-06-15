@@ -1,5 +1,6 @@
 import { InvalidRouteParamValueError } from '@/errors/invalidRouteParamValueError'
 import { isOptionalParam } from '@/services/optional'
+import { isParamWithDefault } from '@/services/withDefault'
 import { ExtractParamType, isParamGetSet, isParamGetter } from '@/types/params'
 import { Param, ParamExtras, ParamGetSet } from '@/types/paramTypes'
 import { stringHasValue } from '@/utilities/string'
@@ -106,8 +107,12 @@ const jsonParam: ParamGetSet<unknown> = {
 export function getParamValue<T extends Param>(value: string | undefined, param: T): ExtractParamType<T>
 export function getParamValue<T extends Param>(value: string | undefined, param: T): unknown {
   if (value === undefined || !stringHasValue(value)) {
-    if (isOptionalParam(param)) {
+    if (isParamWithDefault(param)) {
       return param.defaultValue
+    }
+
+    if (isOptionalParam(param)) {
+      return undefined
     }
 
     throw new InvalidRouteParamValueError()

@@ -2,6 +2,7 @@ import { ParamWithDefault } from '@/services'
 import { IsOptionalParam, OptionalParamGetSet } from '@/services/optional'
 import { Param, ParamGetSet, ParamGetter } from '@/types/paramTypes'
 import { Identity } from '@/types/utilities'
+import { MakeOptional } from '@/utilities/makeOptional'
 
 export const paramStart = '['
 export type ParamStart = typeof paramStart
@@ -66,9 +67,7 @@ export type ExtractPathParamType<
 > = TParam extends `?${infer OptionalParam}`
   ? OptionalParam extends keyof TParams
     ? TParams[OptionalParam] extends Param
-      ? TParams[OptionalParam] extends ParamWithDefault
-        ? TParams[OptionalParam]
-        : OptionalParamGetSet<TParams[OptionalParam]>
+      ? OptionalParamGetSet<TParams[OptionalParam]>
       : OptionalParamGetSet<StringConstructor>
     : OptionalParamGetSet<StringConstructor>
   : TParam extends keyof TParams
@@ -77,6 +76,7 @@ export type ExtractPathParamType<
 
 /**
  * Extracts combined types of path and query parameters for a given route, creating a unified parameter object.
+ * This parameter object type represents the expected type when accessing params from router.route or useRoute.
  * @template TRoute - The route type from which to extract and merge parameter types.
  * @returns A record of parameter names to their respective types, extracted and merged from both path and query parameters.
  */
@@ -98,26 +98,19 @@ export type ExtractParamTypes<TParams extends Record<string, Param>> = Identity<
 
 /**
  * Extracts the actual type from a parameter type, handling getters, setters, and potential undefined values.
+ * This type also is responsible for narrowing possibly undefined values when the param has a default value.
  * @template TParam - The parameter type.
  * @returns The extracted type, or 'string' as a fallback.
  */
 export type ExtractParamType<TParam extends Param> = TParam extends ParamGetSet<infer Type>
   ? TParam extends IsOptionalParam
-    ? Type | undefined
+    ? TParam extends ParamWithDefault
+      ? Type
+      : Type | undefined
     : Type
   : TParam extends ParamGetter
     ? ReturnType<TParam>
     : string
-
-type WithOptionalProperties<T> = {
-  [P in keyof T]-?: undefined extends T[P] ? P : never
-}[keyof T]
-
-type MakeOptional<T> = {
-  [P in WithOptionalProperties<T>]?: T[P];
-} & {
-  [P in Exclude<keyof T, WithOptionalProperties<T>>]: T[P];
-}
 
 /**
  * Merges two parameter type records, ensuring no overlap in properties.
