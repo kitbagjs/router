@@ -1,6 +1,6 @@
 # Query Params
 
-Kitbag Router has first class support for query params.
+Kitbag Router lets you define your query just like the path.
 
 ```ts
 import { createRoutes } from '@kitbag/router'
@@ -17,7 +17,9 @@ const routes = createRoutes([
 
 This static value will be used in determining if a route matches a given URL. Unlike `path`, the order of params is not enforced and the presence of extra query params in the URL does not preclude the route from being considered a match.
 
-The router supports dynamic params declared in the query as well.
+## Route Params
+
+The query was also built to support all of the same [route params](/core-concepts/route-params) benefits as path.
 
 ```ts
 const routes = createRoutes([
@@ -30,7 +32,7 @@ const routes = createRoutes([
 ])
 ```
 
-Just like params declared in `path`, these values will be found in the `route.params`.
+Like params declared in `path`, these values will be found in the `route.params`.
 
 ```ts
 import { useRoute } from '@kitbag/router'
@@ -38,42 +40,6 @@ import { useRoute } from '@kitbag/router'
 const route = useRoute()
 
 route.params.sort
-```
-
-## Param Types
-
-Again like params declared in `path`, these params default as writable `string`, but can be overridden with built in `Number`, `Boolean`, `Date`, `JSON`, `RegExp`, or any `ParamGetter`/`ParamGetSet` you define.
-
-```ts
-import { 
-  createRoutes,
-  query, // [!code ++]
-} from '@kitbag/router'
-
-const routes = createRoutes([
-  {
-    name: 'users',
-    path: '/users',
-    query: 'sort=[sort]',// [!code --]
-    query: query('sort=[sort]', { sort: Number }),// [!code ++]
-    component: ...
-  }
-])
-```
-
-## Optional Params
-
-Add a question mark `:?` to your query param to make it optional.
-
-```ts
-const routes = createRoutes([
-  {
-    name: 'users',
-    path: '/users',
-    query: 'sort=[?sort]',// [!code focus]
-    component: ...
-  }
-])
 ```
 
 ## Unnamed Query Params
@@ -91,4 +57,4 @@ route.params.paramSort
 route.params.query.keySort
 ```
 
-As for the param name, query params follow the same rules as [path params](/core-concepts/path-params#param-name)
+As for the param name, query params follow the same rules as [route params](/core-concepts/route-params#param-name)
