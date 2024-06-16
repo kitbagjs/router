@@ -151,6 +151,80 @@ const routes = createRoutes([
 
 Which now, `router.params.id` has the type `number | undefined`, and will only match URL where the value passes as a number or is missing entirely.
 
+## Default Value
+
+Often times when a param is optional, we want to assign a value to use as the default.
+
+```ts
+import { createRoutes, useRoute } from '@kitbag/router'
+
+const routes = createRoutes([
+  {
+    name: 'users',
+    path: '/users',
+    query: 'sort-by=[sort]'
+  }
+])
+
+const route = useRoute('users')
+const sort = computed(() => route.params.sort ?? 'asc')
+```
+
+With Kitbag Router we can configure this on the route or within custom params.
+
+```ts
+import { withDefault } from '@kitbag/router'
+
+const sortParam = withDefault(String, 'asc')
+```
+
+The `withDefault` utility accepts any param, including custom params and returns a custom param that can be used just like any other custom param.
+
+```ts
+const routes = createRoutes([
+  {
+    name: 'users',
+    path: '/users',
+    query: query('sort-by=[sort]', { sort: sortParam })// [!code focus]
+  }
+])
+```
+
+If you already have a `ParamGetSet`, you can also assign the default value right in your param definition
+
+```ts
+const sortParam: ParamGetSet<'asc' | 'desc'> = {
+  get: (value, { invalid }) => {
+    if (value !== 'asc' && value !== 'desc') {
+      throw invalid()
+    }
+
+    return value
+  },
+  set: (value) => {
+    return value.toString()
+  },
+  defaultValue: 'asc'// [!code focus]
+}
+```
+
+Params with a default value will remain optional when navigating.
+
+```ts
+const router = useRouter()
+
+router.push('users') // -> /users
+router.push('users', { sort: 'desc' }) // -> /users?sort=desc
+```
+
+However, the type when accessing the param will **not** be optional. Even if the value is not in the URL, your components can expect a value to be assigned.
+
+```ts
+const route = useRoute('users')
+
+route.params.sort // -> 'asc' | 'desc'
+```
+
 ## Param Name
 
 There are no constraints on the name you choose for param names
@@ -183,7 +257,7 @@ const routes = createRoutes([
   {
     name: 'users',
     path: '/users/[id]',
-    query: 'sortBy=[id]'
+    query: 'sort-by=[id]'
   }
 ])
 
