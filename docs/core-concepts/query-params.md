@@ -22,11 +22,32 @@ This static value will be used in determining if a route matches a given URL. Un
 The query was also built to support all of the same [route params](/core-concepts/route-params) benefits as path.
 
 ```ts
+import { createRoutes } from '@kitbag/router'
+
 const routes = createRoutes([
   {
     name: 'users',
     path: '/users',
     query: 'sort=[sort]',
+    component: ...
+  },
+])
+```
+
+Kitbag router exports a `query` function, which offers support for changing param types in the query just like [path](/core-concepts/route-params#param-types).
+
+```ts
+import { 
+  createRoutes,
+  query, // [!code ++]
+} from '@kitbag/router'
+
+const routes = createRoutes([
+  {
+    name: 'users',
+    path: '/users'
+    query: 'sort=[sort]', // [!code --]
+    query: query('sort=[sort]', { sort: Number }), // [!code ++]
     component: ...
   }
 ])
@@ -46,9 +67,9 @@ route.params.sort
 
 The entire query is also available in `route.query`. This includes any named query params but with their raw value.
 
-### Query Param Naming
+## Query Param Naming
 
-The name you provide for the param does not have to match the key from the URL. `query: 'keySort=[paramSort]'`.
+The name you provide for the param does not have to match the key from the URL. `query: 'nameInUrl=[nameInParams]'`.
 
 ```ts
 const route = useRoute()
