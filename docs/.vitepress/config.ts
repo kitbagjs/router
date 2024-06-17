@@ -130,7 +130,7 @@ export default defineConfig({
           text: 'Core Concepts',
           items: [
             { text: 'Defining Routes', link: '/core-concepts/defining-routes' },
-            { text: 'Path Params', link: '/core-concepts/path-params' },
+            { text: 'Route Params', link: '/core-concepts/route-params' },
             { text: 'Query Params', link: '/core-concepts/query-params' },
             { text: 'Navigating', link: '/core-concepts/navigating' },
           ],
