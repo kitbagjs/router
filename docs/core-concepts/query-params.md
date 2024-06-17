@@ -74,8 +74,8 @@ The name you provide for the param does not have to match the key from the URL. 
 ```ts
 const route = useRoute()
 
-route.params.paramSort
-route.params.query.keySort
+route.params.nameInParams // Kitbag router param
+route.query.nameInUrl // native URL search param
 ```
 
 As for the param name, query params follow the same rules as [route params](/core-concepts/route-params#param-name)

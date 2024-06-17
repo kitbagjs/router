@@ -123,7 +123,7 @@ const numberParam: ParamGetSet<number> = {
 
 ## Optional Params
 
-If you define your path params with a question mark, `:?` the router assumes this param is not required.
+If you define your path params with a question mark, `?` the router assumes this param is not required.
 
 ```ts
 const routes = createRoutes([
@@ -162,7 +162,7 @@ const routes = createRoutes([
   {
     name: 'users',
     path: '/users',
-    query: 'sort-by=[sort]'
+    query: 'sort-by=[?sort]'
   }
 ])
 
@@ -185,7 +185,7 @@ const routes = createRoutes([
   {
     name: 'users',
     path: '/users',
-    query: query('sort-by=[sort]', { sort: sortParam })// [!code focus]
+    query: query('sort-by=[?sort]', { sort: sortParam })// [!code focus]
   }
 ])
 ```
@@ -193,7 +193,7 @@ const routes = createRoutes([
 If you already have a `ParamGetSet`, you can also assign the default value right in your param definition
 
 ```ts
-const sortParam: ParamGetSet<'asc' | 'desc'> = {
+const sortParam = {
   get: (value, { invalid }) => {
     if (value !== 'asc' && value !== 'desc') {
       throw invalid()
@@ -205,7 +205,7 @@ const sortParam: ParamGetSet<'asc' | 'desc'> = {
     return value.toString()
   },
   defaultValue: 'asc'// [!code focus]
-}
+} satisfies ParamGetSet<'asc' | 'desc'>
 ```
 
 Params with a default value will remain optional when navigating.
