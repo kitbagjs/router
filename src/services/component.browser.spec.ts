@@ -1,29 +1,49 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { expect, test } from 'vitest'
-import { defineAsyncComponent } from 'vue'
 import echo from '@/components/echo'
 import { component } from '@/services/component'
 import { createRouter } from '@/services/createRouter'
 import { createRoutes } from '@/services/createRoutes'
 
-test('renders component with props', async () => {
+test('renders component with sync props', async () => {
   const routes = createRoutes([
     {
-      name: 'one',
-      path: '/one',
-      component: component(echo, () => ({ value: 'one' })),
+      name: 'echo',
+      path: '/echo',
+      component: component(echo, () => ({ value: 'echo' })),
     },
+  ])
+
+  const router = createRouter(routes, {
+    initialUrl: '/',
+  })
+
+  await router.initialized
+
+  // purposefully not using suspense here to make sure sync props doesn't require suspense
+  const root = {
+    template: '<RouterView/>',
+  }
+
+  const app = mount(root, {
+    global: {
+      plugins: [router],
+    },
+  })
+
+  await router.push('echo')
+
+  expect(app.html()).toBe('echo')
+})
+
+test('renders component with async props', async () => {
+  const routes = createRoutes([
     {
-      name: 'two',
-      path: '/two',
+      name: 'echo',
+      path: '/echo',
       component: component(echo, async () => {
-        return await { value: 'two' }
+        return await { value: 'echo' }
       }),
-    },
-    {
-      name: 'three',
-      path: '/three',
-      component: component(defineAsyncComponent(() => import('@/components/echo')), () => ({ value: 'three' })),
     },
   ])
 
@@ -43,18 +63,10 @@ test('renders component with props', async () => {
     },
   })
 
-  await router.push('one')
+  await router.push('echo')
+
+  // needed because of suspense
   await flushPromises()
 
-  expect(app.html()).toBe('one')
-
-  await router.push('two')
-  await flushPromises()
-
-  expect(app.html()).toBe('two')
-
-  await router.push('three')
-  await flushPromises()
-
-  expect(app.html()).toBe('three')
+  expect(app.html()).toBe('echo')
 })

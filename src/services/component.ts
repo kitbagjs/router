@@ -1,3 +1,4 @@
+/* eslint-disable vue/one-component-per-file */
 import { AsyncComponentLoader, Component, FunctionalComponent, defineComponent, h } from 'vue'
 import { MaybePromise } from '@/types/utilities'
 
@@ -37,8 +38,24 @@ export function component<TComponent extends Component>(component: TComponent, p
   return defineComponent({
     name: 'PropsWrapper',
     expose: [],
+    setup() {
+      const values = props()
+
+      if ('then' in values) {
+        return () => h(asyncPropsWrapper(component, values))
+      }
+
+      return () => h(component, values)
+    },
+  })
+}
+
+function asyncPropsWrapper<TComponent extends Component>(component: TComponent, props: Promise<Props<TComponent>>): Component {
+  return defineComponent({
+    name: 'AsyncPropsWrapper',
+    expose: [],
     async setup() {
-      const values = await props()
+      const values = await props
 
       return () => h(component, values)
     },
