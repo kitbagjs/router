@@ -1,5 +1,3 @@
-import { DeepReadonly } from 'vue'
-
 // Utility type that converts types like `{ foo: string } & { bar: string, baz: never }`
 // into `{ foo: string, bar: string }`
 //
@@ -16,8 +14,6 @@ export type IsEmptyObject<T> = T extends Record<string, never> ? (keyof T extend
 export type MaybeArray<T> = T | T[]
 
 export type MaybePromise<T> = T | Promise<T>
-
-export type MaybeDeepReadonly<T> = T | DeepReadonly<T>
 
 // Copied and modified from [type-fest](https://github.com/sindresorhus/type-fest/blob/main/source/replace.d.ts)
 export type ReplaceAll<

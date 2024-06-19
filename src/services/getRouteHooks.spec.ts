@@ -1,5 +1,4 @@
 import { expect, test, vi } from 'vitest'
-import { readonly } from 'vue'
 import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
 import { getBeforeRouteHooksFromRoutes } from '@/services/getRouteHooks'
 import { ResolvedRoute } from '@/types/resolved'
@@ -21,13 +20,13 @@ function mockRoute(name: string): RoutePropsWithMeta {
 }
 
 function mockResolvedRoute(matched: RoutePropsWithMeta, matches: RoutePropsWithMeta[]): ResolvedRoute {
-  return readonly({
+  return {
     matched,
     matches,
     key: matched.name!,
     query: createResolvedRouteQuery(),
     params: {},
-  })
+  }
 }
 
 test('given two ResolvedRoutes returns before timing hooks in correct order', () => {

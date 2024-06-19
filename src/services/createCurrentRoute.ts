@@ -1,4 +1,4 @@
-import { readonly, reactive } from 'vue'
+import { reactive } from 'vue'
 import { RouterRoute, createRouterRoute } from '@/services/createRouterRoute'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouterPush } from '@/types/routerPush'
@@ -18,7 +18,7 @@ export function createCurrentRoute(fallbackRoute: ResolvedRoute, push: RouterPus
     Object.assign(route, { ...newRoute })
   }
 
-  const currentRoute = readonly(route)
+  const currentRoute = route
   const routerRoute = createRouterRoute(currentRoute, push)
 
   return {
