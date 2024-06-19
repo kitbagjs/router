@@ -1,11 +1,16 @@
 import { ResolvedRoute } from '@/types/resolved'
+import { ResolvedRouteQuery } from '@/types/resolvedQuery'
 import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { RouteUpdate } from '@/types/routeUpdate'
 import { Writable } from '@/types/utilities'
 
 const isRouterRouteSymbol = Symbol('isRouterRouteSymbol')
 
-export type RouterRoute<TRoute extends ResolvedRoute = ResolvedRoute> = Omit<ResolvedRoute, 'params'> & Readonly<{
+export type RouterRoute<TRoute extends ResolvedRoute = ResolvedRoute> = Readonly<{
+  key: TRoute['key'],
+  matched: TRoute['matched'],
+  matches: TRoute['matches'],
+  query: ResolvedRouteQuery,
   params: Writable<TRoute['params']>,
   update: RouteUpdate<TRoute>,
   [isRouterRouteSymbol]: true,
