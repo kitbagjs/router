@@ -9,7 +9,7 @@ import { AllPropertiesAreOptional } from '@/types/utilities'
 
 type RouterFindArgs<
   TRoutes extends Routes,
-  TSource extends string & keyof RoutesKey<TRoutes>,
+  TSource extends RoutesKey<TRoutes>,
   TParams = RouteParamsByKey<TRoutes, TSource>
 > = AllPropertiesAreOptional<TParams> extends true
   ? [params?: TParams]
