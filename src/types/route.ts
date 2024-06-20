@@ -20,7 +20,7 @@ type RoutePropsWithMeta = RouteProps & { meta: RouteMeta }
  * @template TDisabled - Indicates whether the route is disabled, which could affect routing logic.
  */
 export type Route<
-  TKey extends string | undefined = any,
+  TKey extends string | undefined = string,
   TPath extends string | Path = Path,
   TQuery extends string | Query | undefined = Query,
   TDisabled extends boolean | undefined = boolean
