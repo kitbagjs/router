@@ -1,4 +1,3 @@
-import { DeepReadonly } from 'vue'
 import { ExtractRouteParamTypes } from '@/types/params'
 import { ResolvedRouteQuery } from '@/types/resolvedQuery'
 import { Route } from '@/types/route'
@@ -9,7 +8,7 @@ type BaseResolvedRoute = Route & { path: { params: Record<string, unknown> }, qu
  * Represents a route that the router has matched to current browser location.
  * @template TRoute - Underlying Route that has been resolved.
  */
-export type ResolvedRoute<TRoute extends Route = BaseResolvedRoute> = DeepReadonly<{
+export type ResolvedRoute<TRoute extends Route = BaseResolvedRoute> = Readonly<{
   /**
    * The specific route properties that were matched in the current route.
   */
