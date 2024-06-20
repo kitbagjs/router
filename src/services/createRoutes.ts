@@ -57,7 +57,7 @@ function createRoute(route: RouteProps): Route {
   return {
     matched: rawRoute,
     matches: [rawRoute],
-    key: route.name,
+    key: route.name ?? '',
     path,
     query,
     depth: 1,
@@ -75,7 +75,7 @@ function addRouterViewComponentIfParentWithoutComponent(route: RouteProps): Rout
 
 type FlattenRoute<
   TRoute extends RouteProps,
-  TKey extends string | undefined = TRoute['name'],
+  TKey extends string = string & TRoute['name'],
   TPath extends Path = ToPath<TRoute['path']>,
   TQuery extends Query = ToQuery<TRoute['query']>,
   TDisabled extends boolean = TRoute['disabled'] extends boolean ? TRoute['disabled'] : false,
