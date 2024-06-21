@@ -1,33 +1,6 @@
-import { expect, test, vi } from 'vitest'
-import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
+import { expect, test } from 'vitest'
 import { getBeforeRouteHooksFromRoutes } from '@/services/getRouteHooks'
-import { ResolvedRoute } from '@/types/resolved'
-import { RouteProps } from '@/types/routeProps'
-import { component } from '@/utilities/testHelpers'
-
-type RoutePropsWithMeta = RouteProps & { meta: Record<string, unknown> }
-
-function mockRoute(name: string): RoutePropsWithMeta {
-  return {
-    name,
-    path: `/${name}`,
-    component,
-    onBeforeRouteEnter: vi.fn(),
-    onBeforeRouteUpdate: vi.fn(),
-    onBeforeRouteLeave: vi.fn(),
-    meta: {},
-  }
-}
-
-function mockResolvedRoute(matched: RoutePropsWithMeta, matches: RoutePropsWithMeta[]): ResolvedRoute {
-  return {
-    matched,
-    matches,
-    key: matched.name!,
-    query: createResolvedRouteQuery(),
-    params: {},
-  }
-}
+import { mockResolvedRoute, mockRoute } from '@/utilities/testHelpers'
 
 test('given two ResolvedRoutes returns before timing hooks in correct order', () => {
   const grandchildA = mockRoute('grandchildA')

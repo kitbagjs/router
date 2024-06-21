@@ -10,7 +10,7 @@ export type Routes = Readonly<Route[]>
 /**
  * The Route properties originally provided to `createRoutes`. The only change is normalizing meta to always default to an empty object.
  */
-type RoutePropsWithMeta = RouteProps & { meta: RouteMeta }
+export type RoutePropsWithMeta = RouteProps & { meta: RouteMeta }
 
 /**
  * Represents the structure of a route within the application. Return value of `createRoutes`
