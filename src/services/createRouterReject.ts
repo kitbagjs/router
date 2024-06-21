@@ -24,8 +24,6 @@ type CreateRouterRejectContext = {
 
 const isRejectionRouteSymbol = Symbol()
 
-type RouterRejectionRoute = ResolvedRoute & { [isRejectionRouteSymbol]?: true }
-
 export type CreateRouterReject = {
   setRejection: RouterSetReject,
   rejection: RouterRejection,
@@ -67,8 +65,8 @@ export function createRouterReject({
     return resolved
   }
 
-  const isRejectionRoute: IsRejectionRoute = (route: RouterRejectionRoute) => {
-    return route[isRejectionRouteSymbol] === true
+  const isRejectionRoute: IsRejectionRoute = (route) => {
+    return isRejectionRouteSymbol in route
   }
 
   const setRejection: RouterSetReject = (type) => {
