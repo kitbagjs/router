@@ -14,11 +14,10 @@ export type RouterRoute<TRoute extends ResolvedRoute = ResolvedRoute> = Readonly
   query: ResolvedRouteQuery,
   params: Writable<TRoute['params']>,
   update: RouteUpdate<TRoute>,
-  [isRouterRouteSymbol]: true,
 }>
 
 export function isRouterRoute(value: unknown): value is RouterRoute {
-  return typeof value === 'object' && value !== null && isRouterRouteSymbol in value && value[isRouterRouteSymbol] === true
+  return typeof value === 'object' && value !== null && isRouterRouteSymbol in value
 }
 
 export function createRouterRoute<TRoute extends ResolvedRoute>(route: TRoute, push: RouterPush): RouterRoute<TRoute> {
