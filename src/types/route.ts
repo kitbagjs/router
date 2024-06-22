@@ -10,7 +10,7 @@ export type Routes = Readonly<Route[]>
 /**
  * The Route properties originally provided to `createRoutes`. The only change is normalizing meta to always default to an empty object.
  */
-type RoutePropsWithMeta = RouteProps & { meta: RouteMeta }
+export type RoutePropsWithMeta = RouteProps & { meta: RouteMeta }
 
 /**
  * Represents the structure of a route within the application. Return value of `createRoutes`
@@ -20,10 +20,10 @@ type RoutePropsWithMeta = RouteProps & { meta: RouteMeta }
  * @template TDisabled - Indicates whether the route is disabled, which could affect routing logic.
  */
 export type Route<
-  TKey extends string | undefined = any,
+  TKey extends string = string,
   TPath extends string | Path = Path,
-  TQuery extends string | Query | undefined = Query,
-  TDisabled extends boolean | undefined = boolean
+  TQuery extends string | Query = Query,
+  TDisabled extends boolean = boolean
 > = {
   /**
    * The specific route properties that were matched in the current route.

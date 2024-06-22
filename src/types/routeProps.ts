@@ -1,4 +1,4 @@
-import { Component, DeepReadonly } from 'vue'
+import { Component } from 'vue'
 import { AfterRouteHook, BeforeRouteHook } from '@/types/hooks'
 import { Path } from '@/types/path'
 import { Query } from '@/types/query'
@@ -120,14 +120,12 @@ export function isParentRouteWithoutComponent(value: RouteProps): value is Omit<
 
 export function isRouteWithComponent(value: RouteProps): value is RouteProps & WithComponent
 export function isRouteWithComponent(value: Readonly<RouteProps>): value is Readonly<RouteProps & WithComponent>
-export function isRouteWithComponent(value: DeepReadonly<RouteProps>): value is DeepReadonly<RouteProps & WithComponent>
 export function isRouteWithComponent(value: unknown): boolean {
   return typeof value === 'object' && value !== null && 'component' in value
 }
 
 export function isRouteWithComponents(value: RouteProps): value is RouteProps & WithComponents
 export function isRouteWithComponents(value: Readonly<RouteProps>): value is Readonly<RouteProps & WithComponents>
-export function isRouteWithComponents(value: DeepReadonly<RouteProps>): value is DeepReadonly<RouteProps & WithComponents>
 export function isRouteWithComponents(value: unknown): boolean {
   return typeof value === 'object' && value !== null && 'components' in value
 }

@@ -1,4 +1,3 @@
-import { readonly } from 'vue'
 import { createMaybeRelativeUrl } from '@/services/createMaybeRelativeUrl'
 import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
 import { getRouteParamValues, routeParamsAreValid } from '@/services/paramValidation'
@@ -32,11 +31,11 @@ export function getResolvedRouteForUrl(routes: Routes, url: string): ResolvedRou
   const query = createResolvedRouteQuery(search)
   const params = getRouteParamValues(route, url)
 
-  return readonly({
+  return {
     matched: route.matched,
     matches: route.matches,
     key: route.key,
     query,
     params,
-  })
+  }
 }

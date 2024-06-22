@@ -1,8 +1,8 @@
-import { MaybeRefOrGetter, Ref, computed, readonly, toValue } from 'vue'
+import { MaybeRefOrGetter, Ref, computed, toValue } from 'vue'
 import { useRouter } from '@/compositions/useRouter'
 import { InvalidRouteParamValueError } from '@/errors/invalidRouteParamValueError'
 import { RouterResolveOptions } from '@/services/createRouterResolve'
-import { RegisteredRouteMap, RegisteredRoutes } from '@/types/register'
+import { RegisteredRoutes, RegisteredRoutesKey } from '@/types/register'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouterPushOptions } from '@/types/routerPush'
 import { RouterReplaceOptions } from '@/types/routerReplace'
@@ -38,7 +38,7 @@ export type UseLink = {
 }
 
 type UseLinkArgs<
-  TSource extends string & keyof RegisteredRouteMap,
+  TSource extends RegisteredRoutesKey,
   TParams = RouteParamsByKey<RegisteredRoutes, TSource>
 > = AllPropertiesAreOptional<TParams> extends true
   ? [params?: MaybeRefOrGetter<TParams>, options?: MaybeRefOrGetter<RouterResolveOptions>]
@@ -55,7 +55,7 @@ type UseLinkArgs<
  * @returns {UseLink} Reactive context values for as well as navigation methods.
  *
  */
-export function useLink<TRouteKey extends string & keyof RegisteredRouteMap>(routeKey: MaybeRefOrGetter<TRouteKey>, ...args: UseLinkArgs<TRouteKey>): UseLink
+export function useLink<TRouteKey extends RegisteredRoutesKey>(routeKey: MaybeRefOrGetter<TRouteKey>, ...args: UseLinkArgs<TRouteKey>): UseLink
 export function useLink(url: MaybeRefOrGetter<Url>): UseLink
 export function useLink(
   source: MaybeRefOrGetter<string>,
@@ -87,7 +87,7 @@ export function useLink(
     return router.find(href.value, optionsRef.value)
   })
 
-  const isMatch = computed(() => !!route.value && router.route.matches.includes(readonly(route.value.matched)))
+  const isMatch = computed(() => !!route.value && router.route.matches.includes(route.value.matched))
   const isExactMatch = computed(() => !!route.value && router.route.matched === route.value.matched)
 
   return {

@@ -5,7 +5,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { AsyncComponentLoader, Component, DeepReadonly, UnwrapRef, VNode, computed, defineAsyncComponent, provide } from 'vue'
+  import { AsyncComponentLoader, Component, UnwrapRef, VNode, computed, defineAsyncComponent, provide } from 'vue'
   import { useRejection } from '@/compositions/useRejection'
   import { useRoute } from '@/compositions/useRoute'
   import { useRouterDepth } from '@/compositions/useRouterDepth'
@@ -57,7 +57,7 @@
     return null
   })
 
-  function getComponents(route: DeepReadonly<RouteProps>): Record<string, DeepReadonly<Component> | undefined> {
+  function getComponents(route: RouteProps): Record<string, Component | undefined> {
     if (isRouteWithComponents(route)) {
       return route.components
     }

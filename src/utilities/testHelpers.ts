@@ -1,4 +1,8 @@
+import { vi } from 'vitest'
+import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
 import { createRoutes } from '@/services/createRoutes'
+import { ResolvedRoute } from '@/types/resolved'
+import { RoutePropsWithMeta } from '@/types/route'
 
 export const random = {
   number(options: { min?: number, max?: number } = {}): number {
@@ -55,3 +59,25 @@ export const routes = createRoutes([
     component,
   },
 ])
+
+export function mockRoute(name: string): RoutePropsWithMeta {
+  return {
+    name,
+    path: `/${name}`,
+    component,
+    onBeforeRouteEnter: vi.fn(),
+    onBeforeRouteUpdate: vi.fn(),
+    onBeforeRouteLeave: vi.fn(),
+    meta: {},
+  }
+}
+
+export function mockResolvedRoute(matched: RoutePropsWithMeta, matches: RoutePropsWithMeta[]): ResolvedRoute {
+  return {
+    matched,
+    matches,
+    key: matched.name!,
+    query: createResolvedRouteQuery(),
+    params: {},
+  }
+}
