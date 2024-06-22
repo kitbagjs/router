@@ -192,7 +192,7 @@ const routes = createRoutes([
 ])
 ```
 
-If you're using `createParam`, you can also assign a default value with the 2nd argument.
+You can also assign a default value with the 2nd argument of `createParam`.
 
 ```ts
 const sortParam = createParam({
