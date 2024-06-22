@@ -1,4 +1,4 @@
-import { asParamGetSet } from '@/services/asParamGetSet'
+import { createParam } from '@/services/createParam'
 import { ExtractParamType } from '@/types/params'
 import { Param, ParamGetSet } from '@/types/paramTypes'
 
@@ -19,6 +19,6 @@ export function isOptionalParam(param: Param | OptionalParamGetSet<Param>): para
 export function optional<TParam extends Param>(param: TParam): OptionalParamGetSet<TParam> {
   return {
     [optionalParamKey]: true,
-    ...asParamGetSet(param),
+    ...createParam(param),
   } as OptionalParamGetSet<TParam>
 }
