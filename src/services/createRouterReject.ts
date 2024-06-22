@@ -4,7 +4,7 @@ import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
 import { RegisteredRejectionType } from '@/types'
 import { ResolvedRoute } from '@/types/resolved'
 
-export const builtInRejections = ['NotFound'] as const
+export const builtInRejections: ['NotFound'] = ['NotFound']
 export type BuiltInRejectionType = typeof builtInRejections[number]
 
 export type RouterRejectionType = BuiltInRejectionType | RegisteredRejectionType
