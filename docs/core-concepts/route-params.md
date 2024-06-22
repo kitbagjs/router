@@ -97,7 +97,7 @@ const routes = createRoutes([
 
 With this getter defined, now our route will only match if the param matches our rules above.
 
-As a `ParamGetter`, the value in `route.params` is still writable, but the set will assume `value.toString()` is sufficient. Alternatively if you use the `ParamGetSet` syntax, you can provide the same validation on value set as well.
+If you only supply a getter for your param it will assume that `value.toString()` is sufficient when setting the value. Alternatively you can supply both a `get` and a `set` method and provide validation on the value when setting as well.
 
 ```ts
 const numberParam = createParam({
