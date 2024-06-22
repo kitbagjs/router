@@ -142,10 +142,12 @@ test('individual prams are writable', async () => {
 
   expect(route.params.param).toBe('again')
 
+  // @ts-expect-error
   route.params.nothing = 'nothing'
 
   await flushPromises()
 
+  // @ts-expect-error
   expect(route.params.nothing).toBeUndefined()
 })
 
@@ -188,9 +190,11 @@ test('setting an unknown param does not add its value to the route', async () =>
 
   await initialized
 
+  // @ts-expect-error
   route.params.nothing = 'nothing'
 
   await flushPromises()
 
+  // @ts-expect-error
   expect(route.params.nothing).toBeUndefined()
 })
