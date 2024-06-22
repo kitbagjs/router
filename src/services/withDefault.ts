@@ -1,4 +1,4 @@
-import { asParamGetSet } from '@/services/asParamGetSet'
+import { createParam } from '@/services/createParam'
 import { ExtractParamType, isParamGetSet } from '@/types/params'
 import { Param, ParamGetSet } from '@/types/paramTypes'
 
@@ -11,6 +11,6 @@ export function isParamWithDefault(param: Param): param is ParamWithDefault {
 export function withDefault<TParam extends Param>(param: TParam, defaultValue: ExtractParamType<TParam>): ParamWithDefault<TParam> {
   return {
     defaultValue,
-    ...asParamGetSet(param),
+    ...createParam(param),
   }
 }

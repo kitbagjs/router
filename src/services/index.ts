@@ -1,4 +1,5 @@
 export * from './component'
+export * from './createParam'
 export * from './createRouter'
 export * from './createRoutes'
 export * from './path'
