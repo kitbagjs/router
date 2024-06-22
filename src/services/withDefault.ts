@@ -9,8 +9,5 @@ export function isParamWithDefault(param: Param): param is ParamWithDefault {
 }
 
 export function withDefault<TParam extends Param>(param: TParam, defaultValue: ExtractParamType<TParam>): ParamWithDefault<TParam> {
-  return {
-    defaultValue,
-    ...createParam(param),
-  }
+  return createParam(param, defaultValue)
 }

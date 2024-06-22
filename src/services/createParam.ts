@@ -4,6 +4,7 @@ import { ExtractParamType, isParamGetSet } from '@/types/params'
 import { Param, ParamGetSet } from '@/types/paramTypes'
 
 export function createParam<TParam extends Param>(param: TParam): ParamGetSet<ExtractParamType<TParam>>
+export function createParam<TParam extends ParamWithDefault>(param: TParam): TParam
 export function createParam<TParam extends Param>(param: TParam, defaultValue: ExtractParamType<TParam>): ParamWithDefault<TParam>
 export function createParam<TParam extends Param>(param: TParam, defaultValue?: ExtractParamType<TParam>): ParamGetSet<ExtractParamType<TParam>> {
   if (isParamGetSet(param)) {
