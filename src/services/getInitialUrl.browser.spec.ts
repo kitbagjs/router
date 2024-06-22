@@ -17,5 +17,5 @@ test('defaults to window.location without protocol or host', () => {
 
   const response = getInitialUrl()
 
-  expect(response).toBe(initialRoute)
+  expect(response).toBe('/home?with=search#foo')
 })

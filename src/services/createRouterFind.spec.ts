@@ -41,8 +41,7 @@ test('when given a url that does not match a route returns undefined', () => {
   expect(route).toBeUndefined()
 })
 
-// until route has host this test is not useful
-test.fails('when given an external url that does not match a route returns undefined', () => {
+test('when given an external url that does not match a route returns undefined', () => {
   const find = createRouterFind(routes)
   const route = find('https://example.com')
 
