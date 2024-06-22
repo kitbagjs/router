@@ -64,10 +64,12 @@ const routes = createRoutes([
 
 ### Custom Param
 
-You're not limited to the param types that ship with Kitbag Router, use `ParamGetter<T>` or `ParamGetSet<T>` to parse params to whatever type you need. For example, here is the ParamGetter Kitbag Router defines for Number params.
+You're not limited to the param types that ship with Kitbag Router, use the `createParam` utility to parse params to whatever type you need. For example, here is the param Kitbag Router defines for Number params.
 
 ```ts
-const numberParam: ParamGetter<number> = (value, { invalid }) => {
+import { createParam } from '@kitbag/router'
+
+const numberParam = createParam((value, { invalid }) => {
   const number = Number(value)
 
   if (isNaN(number)) {
@@ -78,7 +80,7 @@ const numberParam: ParamGetter<number> = (value, { invalid }) => {
 
   // Return value is what will be provided in route.params.id
   return number
-}
+})
 ```
 
 Update your param assignment on the route's path
@@ -95,10 +97,10 @@ const routes = createRoutes([
 
 With this getter defined, now our route will only match if the param matches our rules above.
 
-As a `ParamGetter`, the value in `route.params` is still writable, but the set will assume `value.toString()` is sufficient. Alternatively if you use `ParamGetSet`, you can provide the same validation on value set as well.
+If you only supply a getter for your param it will assume that `value.toString()` is sufficient when setting the value. Alternatively you can supply both a `get` and a `set` method and provide validation on the value when setting as well.
 
 ```ts
-const numberParam: ParamGetSet<number> = {
+const numberParam = createParam({
   get: (value, { invalid }) => {
     const number = Number(value)
 
@@ -118,7 +120,7 @@ const numberParam: ParamGetSet<number> = {
     // Return value is what will be provided in route.params.id
     return value.toString()
   },
-}
+})
 ```
 
 ## Optional Params
@@ -190,10 +192,10 @@ const routes = createRoutes([
 ])
 ```
 
-If you already have a `ParamGetSet`, you can also assign the default value right in your param definition
+You can also assign a default value with the 2nd argument of `createParam`.
 
 ```ts
-const sortParam = {
+const sortParam = createParam({
   get: (value, { invalid }) => {
     if (value !== 'asc' && value !== 'desc') {
       throw invalid()
@@ -204,8 +206,7 @@ const sortParam = {
   set: (value) => {
     return value.toString()
   },
-  defaultValue: 'asc'// [!code focus]
-} satisfies ParamGetSet<'asc' | 'desc'>
+}, 'asc') // [!code focus]
 ```
 
 Params with a default value will remain optional when navigating.
