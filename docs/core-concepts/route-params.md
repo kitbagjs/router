@@ -64,7 +64,7 @@ const routes = createRoutes([
 
 ### Custom Param
 
-You're not limited to the param types that ship with Kitbag Router, use `createParam` utility to parse params to whatever type you need. For example, here is the ParamGetter Kitbag Router defines for Number params.
+You're not limited to the param types that ship with Kitbag Router, use the `createParam` utility to parse params to whatever type you need. For example, here is the param Kitbag Router defines for Number params.
 
 ```ts
 import { createParam } from '@kitbag/router'
