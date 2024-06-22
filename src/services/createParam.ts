@@ -7,7 +7,7 @@ export function createParam<TParam extends Param>(param: TParam): ParamGetSet<Ex
 export function createParam<TParam extends Param>(param: TParam, defaultValue: ExtractParamType<TParam>): ParamWithDefault<TParam>
 export function createParam<TParam extends Param>(param: TParam, defaultValue?: ExtractParamType<TParam>): ParamGetSet<ExtractParamType<TParam>> {
   if (isParamGetSet(param)) {
-    return param
+    return { ...param, defaultValue: defaultValue ?? param.defaultValue }
   }
 
   return {
