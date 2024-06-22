@@ -11,11 +11,11 @@ test('given value for initial route, returns value', () => {
   expect(response).toBe(initialRoute)
 })
 
-test('defaults to window.location', () => {
-  const initialRoute = random.number().toString()
+test('defaults to window.location without protocol or host', () => {
+  const initialRoute = 'https://localhost:5173/home?with=search#foo'
   vi.stubGlobal('location', initialRoute)
 
   const response = getInitialUrl()
 
-  expect(response).toBe(initialRoute)
+  expect(response).toBe('/home?with=search#foo')
 })
