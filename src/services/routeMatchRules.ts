@@ -10,7 +10,7 @@ export const routeHostMatches: RouteMatchRule = (route, url) => {
   const { host: urlHost } = createMaybeRelativeUrl(url)
   const { host: routeHost } = createMaybeRelativeUrl(route.path.toString())
 
-  return urlHost === routeHost
+  return routeHost === undefined || urlHost === routeHost
 }
 
 export const routePathMatches: RouteMatchRule = (route, url) => {
