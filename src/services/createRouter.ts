@@ -171,9 +171,12 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
   function install(app: App): void {
     app.component('RouterView', RouterView)
     app.component('RouterLink', RouterLink)
-    app.provide(routerInjectionKey, router)
     app.provide(routerRejectionKey, rejection)
     app.provide(routeHookStoreKey, hooks)
+
+    // We cant technically guarantee that the user registered the same router that they installed
+    // So we're making an assumption here that when installing a router its the same as the RegisteredRouter
+    app.provide(routerInjectionKey, router as any)
   }
 
   const router: Router<T> = {
