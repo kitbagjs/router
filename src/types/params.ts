@@ -82,7 +82,7 @@ export type ExtractRouteParamTypes<TRoute> = TRoute extends {
   query: { params: infer QueryParams extends Record<string, Param> },
 }
   ? ExtractParamTypes<MergeParams<PathParams, QueryParams>>
-  : Record<string, unknown>
+  : {}
 
 /**
  * Transforms a record of parameter types into a type with optional properties where the original type allows undefined.

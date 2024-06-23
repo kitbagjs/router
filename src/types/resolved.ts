@@ -2,13 +2,11 @@ import { ExtractRouteParamTypes } from '@/types/params'
 import { ResolvedRouteQuery } from '@/types/resolvedQuery'
 import { Route } from '@/types/route'
 
-type BaseResolvedRoute = Route & { path: { params: Record<string, unknown> }, query: { params: Record<string, unknown> } }
-
 /**
  * Represents a route that the router has matched to current browser location.
  * @template TRoute - Underlying Route that has been resolved.
  */
-export type ResolvedRoute<TRoute extends Route = BaseResolvedRoute> = Readonly<{
+export type ResolvedRoute<TRoute extends Route = Route> = Readonly<{
   /**
    * The specific route properties that were matched in the current route.
   */
@@ -29,5 +27,5 @@ export type ResolvedRoute<TRoute extends Route = BaseResolvedRoute> = Readonly<{
   /**
    * Key value pair for route params, values will be the user provided value from current browser location.
   */
-  params: BaseResolvedRoute extends TRoute ? Record<string, unknown> : ExtractRouteParamTypes<TRoute>,
+  params: ExtractRouteParamTypes<TRoute>,
 }>
