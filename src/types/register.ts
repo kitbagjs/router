@@ -24,9 +24,16 @@ export interface Register {}
 /**
  * Represents the Router property within {@link Register}
  */
-export type RegisteredRouter = Register extends { router: infer TRouter }
+export type RegisteredRouter = Register extends { router: infer TRouter extends Router }
   ? TRouter
   : Router
+
+/**
+ * Represents the Router property within {@link Register}
+ */
+export type RegisteredRouterRoute = Register extends { router: infer TRouter extends Router }
+  ? TRouter['route']
+  : RouterRoute
 
 /**
  * Represents the Router routes property within {@link Register}

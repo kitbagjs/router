@@ -1,14 +1,9 @@
 import { watch } from 'vue'
 import { useRouter } from '@/compositions/useRouter'
 import { UseRouteInvalidError } from '@/errors'
-import { isRoute } from '@/guards/routes'
+import { IsRouteOptions, isRoute } from '@/guards/routes'
 import { RouterRoute } from '@/services/createRouterRoute'
-import { RegisteredRouteMap } from '@/types/register'
-import { ResolvedRoute } from '@/types/resolved'
-
-export type UseRouteOptions = {
-  exact?: boolean,
-}
+import { RegisteredRouterRoute, RegisteredRoutesKey } from '@/types/register'
 
 /**
  * A composition to access the current route or verify a specific route key within a Vue component.
@@ -24,9 +19,17 @@ export type UseRouteOptions = {
  * The function also sets up a reactive watcher on the route object from the router to continually check the validity of the route key
  * if provided, throwing an error if the validation fails at any point during the component's lifecycle.
  */
-export function useRoute<TRouteKey extends string & keyof RegisteredRouteMap>(routeKey: TRouteKey, options?: UseRouteOptions): RouterRoute<ResolvedRoute<RegisteredRouteMap[TRouteKey]>>
-export function useRoute(): RouterRoute
-export function useRoute(routeKey?: string, { exact }: UseRouteOptions = {}): RouterRoute {
+export function useRoute(): RegisteredRouterRoute
+
+export function useRoute<
+  TRouteKey extends RegisteredRoutesKey
+>(routeKey: TRouteKey, options: IsRouteOptions<true>): RegisteredRouterRoute & { key: `${TRouteKey}` }
+
+export function useRoute<
+  TRouteKey extends RegisteredRoutesKey
+>(routeKey: TRouteKey, options?: IsRouteOptions<false>): RegisteredRouterRoute & { key: `${TRouteKey}${string}` }
+
+export function useRoute(routeKey?: string, options?: IsRouteOptions): RouterRoute {
   const router = useRouter()
 
   function checkRouteKeyIsValid(): void {
@@ -34,7 +37,7 @@ export function useRoute(routeKey?: string, { exact }: UseRouteOptions = {}): Ro
       return
     }
 
-    const routeKeyIsValid = isRoute(router.route, routeKey, { exact })
+    const routeKeyIsValid = isRoute(router.route, routeKey, options)
 
     if (!routeKeyIsValid) {
       throw new UseRouteInvalidError(routeKey, router.route.key)
