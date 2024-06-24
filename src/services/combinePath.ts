@@ -1,5 +1,4 @@
 import { DuplicateParamsError } from '@/errors'
-import { path } from '@/services/path'
 import { MergeParams } from '@/types/params'
 import { Path, PathParams, ToPath } from '@/types/path'
 import { checkDuplicateKeys } from '@/utilities/checkDuplicateKeys'
@@ -22,5 +21,11 @@ export function combinePath(parentPath: Path, childPath: Path): Path {
     throw new DuplicateParamsError(key)
   }
 
-  return path(`${parentPath.path}${childPath.path}`, { ...parentPath.params, ...childPath.params })
+  const newPathString = `${parentPath.path}${childPath.path}`
+
+  return {
+    path: newPathString,
+    params: { ...parentPath.params, ...childPath.params },
+    toString: () => newPathString,
+  }
 }

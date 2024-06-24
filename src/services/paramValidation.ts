@@ -30,10 +30,12 @@ function getPathParams(path: Path, url: string): Record<string, unknown> {
   const decodedValueFromUrl = decodeURIComponent(url)
 
   for (const [key, param] of Object.entries(path.params)) {
-    const stringValue = getParamValueFromUrl(decodedValueFromUrl, path.toString(), key)
-    const formattedValues = getParamValue(stringValue, param)
+    const isOptional = key.startsWith('?')
+    const paramName = isOptional ? key.slice(1) : key
+    const stringValue = getParamValueFromUrl(decodedValueFromUrl, path.toString(), paramName)
+    const formattedValues = getParamValue(stringValue, param, isOptional)
 
-    params[key] = formattedValues
+    params[paramName] = formattedValues
   }
 
   return params
@@ -44,10 +46,12 @@ function getQueryParams(query: Query, url: string): Record<string, unknown> {
   const actualSearch = new URLSearchParams(url)
 
   for (const [key, param] of Object.entries(query.params)) {
-    const valueOnUrl = actualSearch.get(key) ?? undefined
-    const paramValue = getParamValue(valueOnUrl, param)
+    const isOptional = key.startsWith('?')
+    const paramName = isOptional ? key.slice(1) : key
+    const valueOnUrl = actualSearch.get(paramName) ?? undefined
+    const paramValue = getParamValue(valueOnUrl, param, isOptional)
 
-    params[key] = paramValue
+    params[paramName] = paramValue
   }
 
   return params

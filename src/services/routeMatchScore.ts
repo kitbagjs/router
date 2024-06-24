@@ -1,5 +1,4 @@
 import { createMaybeRelativeUrl } from '@/services/createMaybeRelativeUrl'
-import { isOptionalParam } from '@/services/optional'
 import { getParamValueFromUrl } from '@/services/paramsFinder'
 import { Route } from '@/types/route'
 
@@ -35,9 +34,9 @@ export function getRouteScoreSortMethod(url: string): RouteSortMethod {
 }
 
 export function countExpectedPathParams(route: Route, actualPath: string): number {
-  const optionalParams = Object.entries(route.path.params)
-    .filter(([, value]) => isOptionalParam(value))
-    .map(([key]) => key)
+  const optionalParams = Object.keys(route.path.params)
+    .filter((key) => key.startsWith('?'))
+    .map((key) => key)
 
   const missing = optionalParams.filter(expected => getParamValueFromUrl(actualPath, route.path.toString(), expected) === undefined)
 

@@ -1,5 +1,4 @@
 import { DuplicateParamsError } from '@/errors'
-import { query } from '@/services/query'
 import { MergeParams } from '@/types/params'
 import { Query, QueryParams, ToQuery } from '@/types/query'
 import { checkDuplicateKeys } from '@/utilities/checkDuplicateKeys'
@@ -33,5 +32,9 @@ export function combineQuery(parentQuery: Query, childQuery: Query): Query {
     .filter(stringHasValue)
     .join('&')
 
-  return query(newQueryString, { ...parentQuery.params, ...childQuery.params })
+  return {
+    query: newQueryString,
+    params: { ...parentQuery.params, ...childQuery.params },
+    toString: () => newQueryString,
+  }
 }

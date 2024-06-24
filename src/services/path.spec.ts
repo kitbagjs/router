@@ -1,6 +1,5 @@
 import { expect, test } from 'vitest'
 import { DuplicateParamsError } from '@/errors'
-import { optional } from '@/services/optional'
 import { path } from '@/services/path'
 
 test('given path without params, returns empty object', () => {
@@ -18,12 +17,12 @@ test('given path with simple params, returns each param name as type String', ()
   })
 })
 
-test('given path with optional params, returns each param name as type String with optional', () => {
+test('given path with optional params, returns each param name as type String', () => {
   const response = path('/parent/[?parentId]/child/[?childId]', {})
 
   expect(JSON.stringify(response.params)).toMatch(JSON.stringify({
-    parentId: optional(String),
-    childId: optional(String),
+    parentId: String,
+    childId: String,
   }))
 })
 

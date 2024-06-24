@@ -9,7 +9,7 @@ describe('ExtractRouteParamTypes', () => {
     type TestRoute = Route<'parentA', Path<'/[paramA]', {}>, Query<'foo=[paramB]&bar=[?paramC]', { paramB: BooleanConstructor }>>
 
     type Source = ExtractRouteParamTypes<TestRoute>
-    type Expect = { paramA: string, paramB: boolean, paramC?: string }
+    type Expect = { paramA: string, paramB: boolean, '?paramC'?: string }
 
     expectTypeOf<Source>().toEqualTypeOf<Expect>()
   })

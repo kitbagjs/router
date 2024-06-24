@@ -1,5 +1,4 @@
 import { ParamWithDefault } from '@/services'
-import { IsOptionalParam, OptionalParamGetSet } from '@/services/optional'
 import { Param, ParamGetSet, ParamGetter } from '@/types/paramTypes'
 import { Identity } from '@/types/utilities'
 import { MakeOptional } from '@/utilities/makeOptional'
@@ -66,10 +65,8 @@ export type ExtractPathParamType<
   TParams extends Record<string, Param | undefined>
 > = TParam extends `?${infer OptionalParam}`
   ? OptionalParam extends keyof TParams
-    ? TParams[OptionalParam] extends Param
-      ? OptionalParamGetSet<TParams[OptionalParam]>
-      : OptionalParamGetSet<StringConstructor>
-    : OptionalParamGetSet<StringConstructor>
+    ? TParams[OptionalParam]
+    : StringConstructor
   : TParam extends keyof TParams
     ? TParams[TParam]
     : StringConstructor
@@ -93,7 +90,7 @@ export type ExtractRouteParamTypes<TRoute> = TRoute extends {
  * @returns A new type with the appropriate properties marked as optional.
  */
 export type ExtractParamTypes<TParams extends Record<string, Param>> = Identity<MakeOptional<{
-  [K in keyof TParams]: ExtractParamType<TParams[K]>
+  [K in keyof TParams]: ExtractParamType<TParams[K], K>
 }>>
 
 /**
@@ -102,15 +99,19 @@ export type ExtractParamTypes<TParams extends Record<string, Param>> = Identity<
  * @template TParam - The parameter type.
  * @returns The extracted type, or 'string' as a fallback.
  */
-export type ExtractParamType<TParam extends Param> = TParam extends ParamGetSet<infer Type>
-  ? TParam extends IsOptionalParam
+export type ExtractParamType<TParam extends Param, TParamKey extends PropertyKey = string> = TParam extends ParamGetSet<infer Type>
+  ? TParamKey extends `?${string}`
     ? TParam extends ParamWithDefault
       ? Type
       : Type | undefined
     : Type
   : TParam extends ParamGetter
-    ? ReturnType<TParam>
-    : string
+    ? TParamKey extends `?${string}`
+      ? ReturnType<TParam> | undefined
+      : ReturnType<TParam>
+    : TParamKey extends `?${string}`
+      ? string | undefined
+      : string
 
 /**
  * Merges two parameter type records, ensuring no overlap in properties.
