@@ -12,7 +12,7 @@ type ExtractParamsFromPathString<
   : Record<never, never>
 
 export type PathParams<TPath extends string> = {
-  [K in ExtractParamName<string & keyof ExtractParamsFromPathString<TPath>>]?: Param
+  [K in ExtractParamName<keyof ExtractParamsFromPathString<TPath>>]?: Param
 }
 
 export type Path<

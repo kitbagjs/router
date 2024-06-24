@@ -45,7 +45,7 @@ export function isParamGetSet(value: Param): value is ParamGetSet {
  * @returns The extracted parameter name, or never if the parameter string is empty.
  */
 export type ExtractParamName<
-  TParam extends string
+  TParam extends PropertyKey
 > = TParam extends `?${infer Param}`
   ? Param extends ''
     ? never
@@ -90,7 +90,7 @@ export type ExtractRouteParamTypes<TRoute> = TRoute extends {
  * @returns A new type with the appropriate properties marked as optional.
  */
 export type ExtractParamTypes<TParams extends Record<string, Param>> = Identity<MakeOptional<{
-  [K in keyof TParams]: ExtractParamType<TParams[K], K>
+  [K in keyof TParams as ExtractParamName<K>]: ExtractParamType<TParams[K], K>
 }>>
 
 /**

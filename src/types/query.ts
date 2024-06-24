@@ -12,7 +12,7 @@ type ExtractQueryParamsFromQueryString<
   : Record<never, never>
 
 export type QueryParams<T extends string> = {
-  [K in ExtractParamName<string & keyof ExtractQueryParamsFromQueryString<T>>]?: Param
+  [K in ExtractParamName<keyof ExtractQueryParamsFromQueryString<T>>]?: Param
 }
 
 export type Query<
