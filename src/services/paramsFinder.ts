@@ -30,7 +30,9 @@ export function setParamValueOnUrl(path: string, paramReplace?: ParamReplace): s
       return url
     }
 
-    return url.replace(captureGroup, () => setParamValue(value, param))
+    return url.replace(captureGroup, () => {
+      return setParamValue(value, param, name.startsWith('?'))
+    })
   }, path)
 }
 
@@ -47,13 +49,21 @@ function getParamRegexPattern(path: string, paramName: string): RegExp {
 }
 
 function replaceOptionalParamSyntaxWithCaptureGroup(path: string, paramName: string): string {
-  const optionalParamRegex = new RegExp(`(\\${paramStart}\\?${paramName})\\${paramEnd}`, 'g')
+  if (!paramName.startsWith('?')) {
+    return path
+  }
+
+  const optionalParamRegex = new RegExp(`\\${paramStart}\\${paramName}\\${paramEnd}`, 'g')
 
   return path.replace(optionalParamRegex, '(.*)')
 }
 
 function replaceRequiredParamSyntaxWithCaptureGroup(path: string, paramName: string): string {
-  const requiredParamRegex = new RegExp(`(\\${paramStart}${paramName})\\${paramEnd}`, 'g')
+  if (paramName.startsWith('?')) {
+    return path
+  }
+
+  const requiredParamRegex = new RegExp(`\\${paramStart}${paramName}\\${paramEnd}`, 'g')
 
   return path.replace(requiredParamRegex, '(.+)')
 }

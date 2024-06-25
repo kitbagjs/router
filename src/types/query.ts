@@ -8,16 +8,20 @@ type ExtractQueryParamsFromQueryString<
   TQuery extends string,
   TParams extends Record<string, Param | undefined> = Record<never, never>
 > = TQuery extends `${string}=${ParamStart}${infer Param}${ParamEnd}${infer Rest}`
-  ? MergeParams<{ [P in ExtractParamName<Param>]: ExtractPathParamType<Param, TParams> }, ExtractQueryParamsFromQueryString<Rest, TParams>>
+  ? MergeParams<{ [P in Param]: ExtractPathParamType<Param, TParams> }, ExtractQueryParamsFromQueryString<Rest, TParams>>
   : Record<never, never>
 
 export type QueryParams<T extends string> = {
   [K in keyof ExtractQueryParamsFromQueryString<T>]?: Param
 }
 
+export type QueryParamsWithParamNameExtracted<T extends string> = {
+  [K in keyof ExtractQueryParamsFromQueryString<T> as ExtractParamName<K>]?: Param
+}
+
 export type Query<
   TQuery extends string = string,
-  TQueryParams extends QueryParams<TQuery> = Record<string, Param | undefined>
+  TQueryParams extends QueryParamsWithParamNameExtracted<TQuery> = Record<string, Param | undefined>
 > = {
   query: TQuery,
   params: string extends TQuery ? Record<string, Param> : Identity<ExtractQueryParamsFromQueryString<TQuery, TQueryParams>>,

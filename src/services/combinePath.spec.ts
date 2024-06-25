@@ -19,7 +19,7 @@ test('given 2 paths with params, returns new Path joined together with params', 
   const response = combinePath(aPath, bPath)
 
   expect(response.toString()).toBe('/[foz]/[?baz]')
-  expect(Object.keys(response.params)).toMatchObject(['foz', 'baz'])
+  expect(Object.keys(response.params)).toMatchObject(['foz', '?baz'])
 })
 
 test('given 2 paths with params that include duplicates, throws DuplicateParamsError', () => {

@@ -8,16 +8,20 @@ type ExtractParamsFromPathString<
   TPath extends string,
   TParams extends Record<string, Param | undefined> = Record<never, never>
 > = TPath extends `${string}${ParamStart}${infer Param}${ParamEnd}${infer Rest}`
-  ? MergeParams<{ [P in ExtractParamName<Param>]: ExtractPathParamType<Param, TParams> }, ExtractParamsFromPathString<Rest, TParams>>
+  ? MergeParams<{ [P in Param]: ExtractPathParamType<Param, TParams> }, ExtractParamsFromPathString<Rest, TParams>>
   : Record<never, never>
 
 export type PathParams<TPath extends string> = {
   [K in keyof ExtractParamsFromPathString<TPath>]?: Param
 }
 
+export type PathParamsWithParamNameExtracted<TPath extends string> = {
+  [K in keyof ExtractParamsFromPathString<TPath> as ExtractParamName<K>]?: Param
+}
+
 export type Path<
   TPath extends string = string,
-  TParams extends PathParams<TPath> = Record<string, Param | undefined>
+  TParams extends PathParamsWithParamNameExtracted<TPath> = Record<string, Param | undefined>
 > = {
   path: TPath,
   params: string extends TPath ? Record<string, Param> : Identity<ExtractParamsFromPathString<TPath, TParams>>,

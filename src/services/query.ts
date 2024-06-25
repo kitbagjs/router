@@ -1,5 +1,6 @@
 import { getParamsForString } from '@/services/getParamsForString'
-import { Query, QueryParams } from '@/types/query'
+import { Param } from '@/types/paramTypes'
+import { Query, QueryParamsWithParamNameExtracted } from '@/types/query'
 import { Identity } from '@/types/utilities'
 
 /**
@@ -25,10 +26,11 @@ import { Identity } from '@/types/utilities'
  * ])
  * ```
  */
-export function query<TQuery extends string, TParams extends QueryParams<TQuery>>(query: TQuery, params: Identity<TParams>): Query<TQuery, TParams> {
+export function query<TQuery extends string, TParams extends QueryParamsWithParamNameExtracted<TQuery>>(query: TQuery, params: Identity<TParams>): Query<TQuery, TParams>
+export function query(query: string, params: Record<string, Param | undefined>): Query {
   return {
     query,
-    params: getParamsForString(query, params) as Query<TQuery, TParams>['params'],
+    params: getParamsForString(query, params),
     toString: () => query,
   }
 }

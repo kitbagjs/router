@@ -1,22 +1,27 @@
 import { DuplicateParamsError } from '@/errors'
-import { optional } from '@/services/optional'
 import { getParam } from '@/services/params'
+import { getParamName } from '@/services/routeRegex'
 import { paramEnd, paramStart } from '@/types/params'
 import { Param } from '@/types/paramTypes'
 
 export function getParamsForString<TInput extends string, TParams extends Record<string, Param | undefined>>(string: TInput, params: TParams): Record<string, Param> {
-  const paramPattern = new RegExp(`\\${paramStart}\\??([\\w-_]+)\\${paramEnd}`, 'g')
+  const paramPattern = new RegExp(`\\${paramStart}(\\??[\\w-_]+)\\${paramEnd}`, 'g')
   const matches = Array.from(string.matchAll(paramPattern))
 
-  return matches.reduce<Record<string, Param>>((value, [match, paramName]) => {
-    const isOptional = match.startsWith(`${paramStart}?`)
+  return matches.reduce<Record<string, Param>>((value, [match, key]) => {
+    const paramName = getParamName(match)
+
+    if (!paramName) {
+      return value
+    }
+
     const param = getParam(params, paramName)
 
     if (paramName in value) {
-      throw new DuplicateParamsError(paramName)
+      throw new DuplicateParamsError(key)
     }
 
-    value[paramName] = isOptional ? optional(param) : param
+    value[key] = param
 
     return value
   }, {})

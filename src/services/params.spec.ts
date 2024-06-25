@@ -1,6 +1,5 @@
 import { describe, expect, test } from 'vitest'
 import { InvalidRouteParamValueError } from '@/errors/invalidRouteParamValueError'
-import { optional } from '@/services/optional'
 import { getParamValue, setParamValue } from '@/services/params'
 import { withDefault } from '@/services/withDefault'
 import { ParamGetSet, ParamGetter } from '@/types/paramTypes'
@@ -44,7 +43,7 @@ describe('getParamValue', () => {
     const paramTypes = [String, Number, Boolean, Date, JSON, /regexp/g, () => 'getter']
 
     for (const param of paramTypes) {
-      expect(getParamValue(stringWithoutValue, optional(param))).toBe(undefined)
+      expect(getParamValue(stringWithoutValue, param, true)).toBe(undefined)
     }
   })
 
@@ -55,7 +54,7 @@ describe('getParamValue', () => {
     const paramTypes = [String, Number, Boolean, Date, JSON, /regexp/g, () => 'getter']
 
     for (const param of paramTypes) {
-      expect(getParamValue(stringWithoutValue, withDefault(optional(param), 'abc'))).toBe('abc')
+      expect(getParamValue(stringWithoutValue, withDefault(param, 'abc'), true)).toBe('abc')
     }
   })
 
@@ -130,8 +129,8 @@ describe('setParamValue', () => {
     const paramTypes = [String, Number, Boolean, Date, JSON, /regexp/g, () => 'getter']
 
     for (const param of paramTypes) {
-      expect(setParamValue(undefined, optional(param))).toBe('')
-      expect(setParamValue(undefined, optional(withDefault(param, 'abc')))).toBe('')
+      expect(setParamValue(undefined, param, true)).toBe('')
+      expect(setParamValue(undefined, withDefault(param, 'abc'), true)).toBe('')
     }
   })
 

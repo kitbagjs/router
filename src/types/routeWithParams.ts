@@ -1,5 +1,4 @@
-import { IsOptionalParam } from '@/services/optional'
-import { MergeParams } from '@/types/params'
+import { ExtractParamName, MergeParams } from '@/types/params'
 import { Param, ParamGetSet, ParamGetter } from '@/types/paramTypes'
 import { Routes } from '@/types/route'
 import { RoutesKey, RoutesMap } from '@/types/routesMap'
@@ -21,13 +20,17 @@ type ExtractRouteParamTypesWithoutLosingOptional<TRoute> = TRoute extends {
   : Record<string, unknown>
 
 type ExtractParamTypesWithoutLosingOptional<TParams extends Record<string, Param>> = Identity<MakeOptional<{
-  [K in keyof TParams]: ExtractParamTypeWithoutLosingOptional<TParams[K]>
+  [K in keyof TParams as ExtractParamName<K>]: ExtractParamTypeWithoutLosingOptional<TParams[K], K>
 }>>
 
-type ExtractParamTypeWithoutLosingOptional<TParam extends Param> = TParam extends ParamGetSet<infer Type>
-  ? TParam extends IsOptionalParam
+type ExtractParamTypeWithoutLosingOptional<TParam extends Param, TParamKey extends PropertyKey> = TParam extends ParamGetSet<infer Type>
+  ? TParamKey extends `?${string}`
     ? Type | undefined
     : Type
   : TParam extends ParamGetter
-    ? ReturnType<TParam>
-    : string
+    ? TParamKey extends `?${string}`
+      ? ReturnType<TParam> |undefined
+      : ReturnType<TParam>
+    : TParamKey extends `?${string}`
+      ? string | undefined
+      : string
