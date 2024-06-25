@@ -12,12 +12,16 @@ type ExtractParamsFromPathString<
   : Record<never, never>
 
 export type PathParams<TPath extends string> = {
-  [K in ExtractParamName<keyof ExtractParamsFromPathString<TPath>>]?: Param
+  [K in keyof ExtractParamsFromPathString<TPath>]?: Param
+}
+
+export type PathParamsWithParamNameExtracted<TPath extends string> = {
+  [K in keyof ExtractParamsFromPathString<TPath> as ExtractParamName<K>]?: Param
 }
 
 export type Path<
   TPath extends string = string,
-  TParams extends PathParams<TPath> = Record<string, Param | undefined>
+  TParams extends PathParamsWithParamNameExtracted<TPath> = Record<string, Param | undefined>
 > = {
   path: TPath,
   params: string extends TPath ? Record<string, Param> : Identity<ExtractParamsFromPathString<TPath, TParams>>,

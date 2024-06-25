@@ -12,12 +12,16 @@ type ExtractQueryParamsFromQueryString<
   : Record<never, never>
 
 export type QueryParams<T extends string> = {
-  [K in ExtractParamName<keyof ExtractQueryParamsFromQueryString<T>>]?: Param
+  [K in keyof ExtractQueryParamsFromQueryString<T>]?: Param
+}
+
+export type QueryParamsWithParamNameExtracted<T extends string> = {
+  [K in keyof ExtractQueryParamsFromQueryString<T> as ExtractParamName<K>]?: Param
 }
 
 export type Query<
   TQuery extends string = string,
-  TQueryParams extends QueryParams<TQuery> = Record<string, Param | undefined>
+  TQueryParams extends QueryParamsWithParamNameExtracted<TQuery> = Record<string, Param | undefined>
 > = {
   query: TQuery,
   params: string extends TQuery ? Record<string, Param> : Identity<ExtractQueryParamsFromQueryString<TQuery, TQueryParams>>,

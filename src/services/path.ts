@@ -1,5 +1,6 @@
 import { getParamsForString } from '@/services/getParamsForString'
-import { Path, PathParams } from '@/types/path'
+import { Param } from '@/types/paramTypes'
+import { Path, PathParamsWithParamNameExtracted } from '@/types/path'
 import { Identity } from '@/types/utilities'
 
 /**
@@ -25,10 +26,11 @@ import { Identity } from '@/types/utilities'
  * ])
  * ```
  */
-export function path<TPath extends string, TParams extends PathParams<TPath>>(path: TPath, params: Identity<TParams>): Path<TPath, TParams> {
+export function path<TPath extends string, TParams extends PathParamsWithParamNameExtracted<TPath>>(path: TPath, params: Identity<TParams>): Path<TPath, TParams>
+export function path(path: string, params: Record<string, Param | undefined>): Path {
   return {
     path,
-    params: getParamsForString(path, params) as Path<TPath, TParams>['params'],
+    params: getParamsForString(path, params),
     toString: () => path,
   }
 }
