@@ -161,7 +161,7 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
   const find = createRouterFind(routes)
   const { setRejection, rejection, getRejectionRoute } = createRouterReject(options)
   const notFoundRoute = getRejectionRoute('NotFound')
-  const { currentRoute, routerRoute, updateRoute } = createCurrentRoute(notFoundRoute, push)
+  const { currentRoute, routerRoute, updateRoute } = createCurrentRoute<T>(notFoundRoute, push)
 
   history.startListening()
 
@@ -179,12 +179,8 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
     app.provide(routerInjectionKey, router as any)
   }
 
-  // This cast is necessary because the implementation of routerRoute returns a RouterRoute (with no generic)
-  // and it doesn't match the expected route type. "Fixing" this is probably more trouble than its worth right now.
-  const route = routerRoute as unknown as Router<T>['route']
-
   const router: Router<T> = {
-    route,
+    route: routerRoute,
     resolve,
     push,
     replace,

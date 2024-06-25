@@ -104,6 +104,6 @@ export type Router<
 /**
  * This type is the same as `RouterRoute<ResolvedRoute<TRoutes[number]>>` while remaining distributive
  */
-type RouterRoutes<TRoutes extends Routes> = {
+export type RouterRoutes<TRoutes extends Routes> = {
   [K in keyof TRoutes]: RouterRoute<ResolvedRoute<TRoutes[K]>>
 }[number]
