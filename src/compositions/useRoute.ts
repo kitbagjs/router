@@ -22,7 +22,7 @@ export function useRoute(): RegisteredRouterRoute
 
 export function useRoute<
   TRouteKey extends RegisteredRoutesKey
->(routeKey: TRouteKey, options: IsRouteOptions<true>): RegisteredRouterRoute & { key: `${TRouteKey}` }
+>(routeKey: TRouteKey, options: IsRouteOptions<true>): RegisteredRouterRoute & { key: TRouteKey }
 
 export function useRoute<
   TRouteKey extends RegisteredRoutesKey

@@ -13,7 +13,7 @@ export function isRoute(route: unknown): route is RouterRoute
 export function isRoute<
   TRoute extends RouterRoute,
   TRouteKey extends TRoute['key']
->(route: TRoute, routeKey: TRouteKey, options: IsRouteOptions<true>): route is TRoute & { key: `${TRouteKey}` }
+>(route: TRoute, routeKey: TRouteKey, options: IsRouteOptions<true>): route is TRoute & { key: TRouteKey }
 
 export function isRoute<
   TRoute extends RouterRoute,
@@ -22,7 +22,7 @@ export function isRoute<
 
 export function isRoute<
   TRouteKey extends RegisteredRoutesKey
->(route: unknown, routeKey: TRouteKey, options: IsRouteOptions<true>): route is RegisteredRouterRoute & { key: `${TRouteKey}` }
+>(route: unknown, routeKey: TRouteKey, options: IsRouteOptions<true>): route is RegisteredRouterRoute & { key: TRouteKey }
 
 export function isRoute<
   TRouteKey extends RegisteredRoutesKey
