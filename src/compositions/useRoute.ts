@@ -22,11 +22,11 @@ export function useRoute(): RegisteredRouterRoute
 
 export function useRoute<
   TRouteKey extends RegisteredRoutesKey
->(routeKey: TRouteKey, options: IsRouteOptions<true>): RegisteredRouterRoute & { key: TRouteKey }
+>(routeKey: TRouteKey, options: IsRouteOptions & { exact: true }): RegisteredRouterRoute & { key: TRouteKey }
 
 export function useRoute<
   TRouteKey extends RegisteredRoutesKey
->(routeKey: TRouteKey, options?: IsRouteOptions<false>): RegisteredRouterRoute & { key: `${TRouteKey}${string}` }
+>(routeKey: TRouteKey, options?: IsRouteOptions): RegisteredRouterRoute & { key: `${TRouteKey}${string}` }
 
 export function useRoute(routeKey?: string, options?: IsRouteOptions): RegisteredRouterRoute {
   const router = useRouter()

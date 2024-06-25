@@ -2,10 +2,8 @@ import { combineName } from '@/services/combineName'
 import { RouterRoute, isRouterRoute } from '@/services/createRouterRoute'
 import { RegisteredRouterRoute, RegisteredRoutesKey } from '@/types/register'
 
-export type IsRouteOptions<
-  TExact extends boolean = boolean
-> = {
-  exact?: TExact,
+export type IsRouteOptions = {
+  exact?: boolean,
 }
 
 export function isRoute(route: unknown): route is RouterRoute
@@ -13,20 +11,20 @@ export function isRoute(route: unknown): route is RouterRoute
 export function isRoute<
   TRoute extends RouterRoute,
   TRouteKey extends TRoute['key']
->(route: TRoute, routeKey: TRouteKey, options: IsRouteOptions<true>): route is TRoute & { key: TRouteKey }
+>(route: TRoute, routeKey: TRouteKey, options: IsRouteOptions & { exact: true }): route is TRoute & { key: TRouteKey }
 
 export function isRoute<
   TRoute extends RouterRoute,
   TRouteKey extends TRoute['key']
->(route: TRoute, routeKey: TRouteKey, options?: IsRouteOptions<false>): route is TRoute & { key: `${TRouteKey}${string}` }
+>(route: TRoute, routeKey: TRouteKey, options?: IsRouteOptions): route is TRoute & { key: `${TRouteKey}${string}` }
 
 export function isRoute<
   TRouteKey extends RegisteredRoutesKey
->(route: unknown, routeKey: TRouteKey, options: IsRouteOptions<true>): route is RegisteredRouterRoute & { key: TRouteKey }
+>(route: unknown, routeKey: TRouteKey, options: IsRouteOptions & { exact: true }): route is RegisteredRouterRoute & { key: TRouteKey }
 
 export function isRoute<
   TRouteKey extends RegisteredRoutesKey
->(route: unknown, routeKey: TRouteKey, options?: IsRouteOptions<false>): route is RegisteredRouterRoute & { key: `${TRouteKey}${string}` }
+>(route: unknown, routeKey: TRouteKey, options?: IsRouteOptions): route is RegisteredRouterRoute & { key: `${TRouteKey}${string}` }
 
 export function isRoute(route: unknown, routeKey?: string, options?: IsRouteOptions): boolean
 
