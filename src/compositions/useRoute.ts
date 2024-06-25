@@ -2,7 +2,6 @@ import { watch } from 'vue'
 import { useRouter } from '@/compositions/useRouter'
 import { UseRouteInvalidError } from '@/errors'
 import { IsRouteOptions, isRoute } from '@/guards/routes'
-import { RouterRoute } from '@/services/createRouterRoute'
 import { RegisteredRouterRoute, RegisteredRoutesKey } from '@/types/register'
 
 /**
@@ -29,7 +28,7 @@ export function useRoute<
   TRouteKey extends RegisteredRoutesKey
 >(routeKey: TRouteKey, options?: IsRouteOptions<false>): RegisteredRouterRoute & { key: `${TRouteKey}${string}` }
 
-export function useRoute(routeKey?: string, options?: IsRouteOptions): RouterRoute {
+export function useRoute(routeKey?: string, options?: IsRouteOptions): RegisteredRouterRoute {
   const router = useRouter()
 
   function checkRouteKeyIsValid(): void {
