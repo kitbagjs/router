@@ -5,6 +5,7 @@ import { RouterRejectionComponents, RouterRejectionType } from '@/services/creat
 import { RouterResolve } from '@/services/createRouterResolve'
 import { RouterRoute } from '@/services/createRouterRoute'
 import { AddAfterRouteHook, AddBeforeRouteHook } from '@/types/hooks'
+import { ResolvedRoute } from '@/types/resolved'
 import { Routes } from '@/types/route'
 import { RouterPush } from '@/types/routerPush'
 import { RouterReplace } from '@/types/routerReplace'
@@ -33,7 +34,7 @@ export type Router<
   /**
    * Manages the current route state.
    */
-  route: RouterRoute,
+  route: RouterRoutes<TRoutes>,
   /**
    * Resolves a URL to a route object.
    */
@@ -99,3 +100,10 @@ export type Router<
    */
   initialized: Promise<void>,
 }
+
+/**
+ * This type is the same as `RouterRoute<ResolvedRoute<TRoutes[number]>>` while remaining distributive
+ */
+export type RouterRoutes<TRoutes extends Routes> = {
+  [K in keyof TRoutes]: RouterRoute<ResolvedRoute<TRoutes[K]>>
+}[number]
