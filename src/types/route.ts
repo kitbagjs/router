@@ -1,5 +1,5 @@
-import { Path, ToPath } from '@/types/path'
-import { Query, ToQuery } from '@/types/query'
+import { Path } from '@/types/path'
+import { Query } from '@/types/query'
 import { RouteMeta, RouteProps } from '@/types/routeProps'
 
 /**
@@ -21,8 +21,8 @@ export type RoutePropsWithMeta = RouteProps & { meta: RouteMeta }
  */
 export type Route<
   TKey extends string = string,
-  TPath extends string | Path = Path,
-  TQuery extends string | Query = Query,
+  TPath extends Path = Path,
+  TQuery extends Query = Query,
   TDisabled extends boolean = boolean
 > = {
   /**
@@ -41,14 +41,14 @@ export type Route<
   /**
    * Represents the structured path of the route, including path params.
   */
-  path: ToPath<TPath>,
+  path: TPath,
   /**
    * Represents the structured query of the route, including query params.
   */
-  query: ToQuery<TQuery>,
+  query: TQuery,
   depth: number,
   /**
    * Indicates if the route is disabled.
   */
-  disabled: TDisabled extends boolean ? TDisabled : false,
+  disabled: TDisabled,
 }
