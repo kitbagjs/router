@@ -49,7 +49,7 @@ Any Route can have `children`, though to have those children's components be ren
 
 ## Route Names
 
-Providing the `name` property for each route ensures that we have a way of programmatically navigating. Having names for parent methods also ensures that the parent is part of the ancestry chain of child route methods.
+Providing the `name` property for each route ensures that we have a way of programmatically navigating. Having names for parent routes also ensures that the parent is part of the hierarchal key of any child routes.
 
 With the example user routes above
 
@@ -60,10 +60,6 @@ router.push('user.settings.keys')
 ```
 
 Learn more about [navigating](/core-concepts/navigating) to routes.
-
-::: info
-While there are no constraints on what you pick for the name, we recommend camelCase strings which will feel the most natural when using the route methods for navigation.
-:::
 
 ## Disabled Routes
 

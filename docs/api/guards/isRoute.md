@@ -2,7 +2,24 @@
 
 ```ts
 export function isRoute(route: unknown): route is RouterRoute
-function isRoute<TRouteKey>(route: RouterRoute, routeKey: TRouteKey, options?: isRouteOptions): route is RouterRoute<ResolvedRoute<RegisteredRouteMap[TRouteKey]>>
+
+export function isRoute<
+  TRoute extends RouterRoute,
+  TRouteKey extends TRoute['key']
+>(route: TRoute, routeKey: TRouteKey, options: IsRouteOptions & { exact: true }): route is TRoute & { key: TRouteKey }
+
+export function isRoute<
+  TRoute extends RouterRoute,
+  TRouteKey extends TRoute['key']
+>(route: TRoute, routeKey: TRouteKey, options?: IsRouteOptions): route is TRoute & { key: `${TRouteKey}${string}` }
+
+export function isRoute<
+  TRouteKey extends RegisteredRoutesKey
+>(route: unknown, routeKey: TRouteKey, options: IsRouteOptions & { exact: true }): route is RegisteredRouterRoute & { key: TRouteKey }
+
+export function isRoute<
+  TRouteKey extends RegisteredRoutesKey
+>(route: unknown, routeKey: TRouteKey, options?: IsRouteOptions): route is RegisteredRouterRoute & { key: `${TRouteKey}${string}` }
 ```
 
 Type guards that asserts a value is `RouterRoute` and optionally that it is also a specific route based on a route key.
