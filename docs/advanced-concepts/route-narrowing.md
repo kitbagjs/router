@@ -53,19 +53,9 @@ if(router.route, 'user', { exact: true }) {
 }
 ```
 
-Its recommended to use the `isRoute` type guard because it offers more flexibility by its use of `exact`. 
+The `isRoute` type guard offers more flexibility with the optional `exact` argument, which defaults to `false` and will return narrow to the target route or any of it's descendants. 
 
 ```ts
 if(router.route, 'user', { exact: false }) {
   router.route.key // "user" | "user.profile" | "user.settings"
   router.route.params // { userId: string } | { userId: string, tab: string }
-```
-
-The `exact` option is optional and defaults to `false`.
-
-```ts
-if(router.route, 'user') {
-  router.route.key // "user" | "user.profile" | "user.settings"
-  router.route.params // { userId: string } | { userId: string, tab: string }
-}
-```
