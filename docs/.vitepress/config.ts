@@ -133,12 +133,14 @@ export default defineConfig({
             { text: 'Route Params', link: '/core-concepts/route-params' },
             { text: 'Query Params', link: '/core-concepts/query-params' },
             { text: 'Navigating', link: '/core-concepts/navigating' },
+            { text: 'Composables', link: '/core-concepts/composables' },
           ],
         },
         {
           text: 'Advanced Concepts',
           items: [
             { text: 'Route Matching', link: '/advanced-concepts/route-matching' },
+            { text: 'Route Narrowing', link: '/advanced-concepts/route-narrowing' },
             { text: 'Rejections', link: '/advanced-concepts/rejections' },
             { text: 'Hooks', link: '/advanced-concepts/hooks' },
             { text: 'Route Meta', link: '/advanced-concepts/route-meta' },

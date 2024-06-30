@@ -1,5 +1,15 @@
 # Composables
 
+## useRouter
+
+Returns the router, with types provided by [the `Register` interface](/getting-started#update-registered-router).
+
+```ts
+import { useRouter } from '@kitbag/router'
+
+const router = useRouter()
+```
+
 ## useRoute
 
 Returns the current route with built in type guard.
@@ -17,16 +27,6 @@ If you'd like to only match on an exact route match and not match on a parent ro
 
 ```ts
 const route = useRoute('route.key.here', { exact: true })
-```
-
-## useRouter
-
-Returns the router, with types provided by [the `Register` interface](/getting-started#update-registered-router).
-
-```ts
-import { useRouter } from '@kitbag/router'
-
-const router = useRouter()
 ```
 
 ## useLink
