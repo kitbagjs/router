@@ -35,7 +35,7 @@ const router = createRouter(routes)
 router.route.key // "home" | "user" | "user.profile" | "user.settings"
 ```
 
-This can be narrowed by using the route key to check which route is the current route.
+This can be narrowed like any union in Typescript, by checking the route key.
 
 ```ts
 if(router.route.key === 'user') {
