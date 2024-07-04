@@ -50,6 +50,10 @@
   })
 
   function onClick(event: MouseEvent): void {
+    if (isExternal.value) {
+      return
+    }
+
     event.preventDefault()
 
     router.push(href.value, options.value)
