@@ -22,7 +22,7 @@ Specifies the history mode for the router, such as 'hash', 'history', or 'abstra
 optional initialUrl: string;
 ```
 
-Initial URL for the router to use. Required if using Node environment.
+Initial URL for the router to use. Required if using Node environment.  If host is included, the router will use validate that changes to route are within the same host.
 
 #### Default
 

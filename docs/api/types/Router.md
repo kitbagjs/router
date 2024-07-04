@@ -46,6 +46,14 @@ initialized: Promise<void>;
 
 A promise that resolves when the router is fully initialized.
 
+### isExternal
+
+```ts
+isExternal: (url: string) => boolean
+```
+
+A utility function for determining if the host of a given url matches the host stored on the router instance.
+
 ### onAfterRouteEnter
 
 ```ts
