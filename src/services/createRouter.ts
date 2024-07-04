@@ -3,7 +3,7 @@ import { App } from 'vue'
 import { RouterLink, RouterView } from '@/components'
 import { routerInjectionKey, routerRejectionKey } from '@/compositions'
 import { createCurrentRoute } from '@/services/createCurrentRoute'
-import { createIsSameHost } from '@/services/createIsSameHost'
+import { createIsExternal } from '@/services/createIsExternal'
 import { createMaybeRelativeUrl } from '@/services/createMaybeRelativeUrl'
 import { createRouterFind } from '@/services/createRouterFind'
 import { createRouterHistory } from '@/services/createRouterHistory'
@@ -72,9 +72,7 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
   async function set(url: string, { replace }: RouterUpdateOptions = {}): Promise<void> {
     history.stopListening()
 
-    const isExternal = !isSameHost(url)
-
-    if (isExternal) {
+    if (isExternal(url)) {
       return history.update(url, { replace })
     }
 
@@ -174,8 +172,8 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
   history.startListening()
 
   const initialUrl = getInitialUrl(options.initialUrl)
-  const host = options.host ?? createMaybeRelativeUrl(initialUrl).host
-  const isSameHost = createIsSameHost(host)
+  const { host } = createMaybeRelativeUrl(initialUrl)
+  const isExternal = createIsExternal(host)
   const initialized = set(initialUrl, { replace: true })
 
   function install(app: App): void {
@@ -202,7 +200,7 @@ export function createRouter<const T extends Routes>(routes: T, options: RouterO
     go: history.go,
     install,
     initialized,
-    isSameHost,
+    isExternal,
     onBeforeRouteEnter,
     onAfterRouteUpdate,
     onBeforeRouteLeave,

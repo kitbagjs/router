@@ -221,8 +221,7 @@ test.each([
   ])
 
   const router = createRouter(routes, {
-    initialUrl: '/parent-route',
-    host: 'router.kitbag.dev',
+    initialUrl: 'https://router.kitbag.dev/parent-route',
   })
 
   const wrapper = mount(routerLink, {

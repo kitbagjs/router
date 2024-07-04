@@ -17,7 +17,7 @@ export type RouterReject = (type: RouterRejectionType) => void
  */
 export type RouterOptions = {
   /**
-   * Initial URL for the router to use. Required if using Node environment. Defaults to window.location is using browser.
+   * Initial URL for the router to use. Required if using Node environment. Defaults to window.location when using browser.
    *
    * @default window.location.toString()
    */
@@ -26,10 +26,6 @@ export type RouterOptions = {
    * Specifies the history mode for the router, such as 'hash', 'history', or 'abstract'.
    */
   historyMode?: RouterHistoryMode,
-  /**
-   * Specifies the desired host for the router, defaults to host of initialUrl.
-   */
-  host?: string,
 } & RouterRejectionComponents
 
 export type Router<
@@ -104,9 +100,9 @@ export type Router<
    */
   initialized: Promise<void>,
   /**
-  * Given a URL, returns true if host matches host stored on router instance
+  * Given a URL, returns true if host does not match host stored on router instance
   */
-  isSameHost: (url: string) => boolean,
+  isExternal: (url: string) => boolean,
 }
 
 /**

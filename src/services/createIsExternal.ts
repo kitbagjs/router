@@ -1,16 +1,16 @@
 import { createMaybeRelativeUrl } from '@/services/createMaybeRelativeUrl'
 
-export function createIsSameHost(host: string | undefined): (url: string) => boolean {
+export function createIsExternal(host: string | undefined): (url: string) => boolean {
   return (url: string) => {
     if (host === undefined) {
-      return true
+      return false
     }
 
     const { host: targetHost } = createMaybeRelativeUrl(url)
     if (targetHost === undefined || targetHost === host) {
-      return true
+      return false
     }
 
-    return false
+    return true
   }
 }

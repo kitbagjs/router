@@ -44,7 +44,7 @@
   }))
 
   const isExternal = computed(() => {
-    return !router.isSameHost(resolved.value)
+    return router.isExternal(resolved.value)
   })
 
   function onClick(event: MouseEvent): void {
