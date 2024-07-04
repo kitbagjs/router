@@ -44,16 +44,10 @@
   }))
 
   const isExternal = computed(() => {
-    const { host } = new URL(resolved.value, window.location.origin)
-
-    return host !== window.location.host
+    return !router.isSameHost(resolved.value)
   })
 
   function onClick(event: MouseEvent): void {
-    if (isExternal.value) {
-      return
-    }
-
     event.preventDefault()
 
     router.push(href.value, options.value)
