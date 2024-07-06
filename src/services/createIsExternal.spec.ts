@@ -1,14 +1,14 @@
 import { expect, test } from 'vitest'
 import { createIsExternal } from '@/services/createIsExternal'
 
-test('given undefined host, returns false', () => {
+test('given undefined host, returns true', () => {
   const host: string | undefined = undefined
   const url = 'https://router.kitbag.dev/introduction.html#introduction'
 
   const isExternal = createIsExternal(host)
   const response = isExternal(url)
 
-  expect(response).toBe(false)
+  expect(response).toBe(true)
 })
 
 test('given host with url that matches, returns false', () => {
