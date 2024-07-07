@@ -8,7 +8,7 @@ First, let's create two top level routes `home` and `settings`. Then we're going
 
 ## Installing the Router
 
-In this clip, we take the router we install the router and setup the Type Safety in components with the `Register` interface. Read more about [updating the registered router](/getting-started#update-registered-router).
+Next, we install the router and register the router type using the `Register` interface. Read more about [updating the registered router](/getting-started#update-registered-router).
 
 ![Installing the Router](/install-router.gif)
 
