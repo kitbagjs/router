@@ -2,7 +2,7 @@
 
 ## Create Routes and Router
 
-In this clip, we're going to create (2) top level routes `home` and `settings`. Then we're going to add (2) additional routes under `settings`. Finally, we will create and export our `router`.
+First, let's create two top level routes `home` and `settings`. Then we're going to add two additional routes under `settings`. Finally, we will create and export our `router`.
 
 ![Create Routes and Router](/create-routes.gif)
 
