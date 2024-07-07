@@ -13,7 +13,6 @@ export function createExternalRoutes<const TRoutes extends ExternalRouteProps[]>
 export function createExternalRoutes(routesProps: ExternalRouteProps[]): Route[] {
   const routes = routesProps.reduce<Route[]>((routes, routeProps) => {
     const route = createExternalRoute(routeProps)
-    const host = 'host' in routeProps ? routeProps.host : ''
 
     if (routeProps.children) {
       routes.push(...routeProps.children.map(childRoute => ({
@@ -23,7 +22,7 @@ export function createExternalRoutes(routesProps: ExternalRouteProps[]): Route[]
         query: combineQuery(route.query, childRoute.query),
         matches: [route.matched, ...childRoute.matches],
         depth: childRoute.depth + 1,
-        host,
+        host: routeProps.host ?? '',
       })))
     }
 
@@ -45,7 +44,6 @@ export function createExternalRoutes(routesProps: ExternalRouteProps[]): Route[]
 function createExternalRoute(route: ExternalRouteProps): Route {
   const path = toPath(route.path)
   const query = toQuery(route.query)
-  const host = 'host' in route ? route.host : ''
   const rawRoute = markRaw({ meta: {}, ...route, name: '', children: [] })
 
   return {
@@ -56,6 +54,6 @@ function createExternalRoute(route: ExternalRouteProps): Route {
     query,
     depth: 1,
     disabled: route.disabled ?? false,
-    host,
+    host: route.host ?? '',
   }
 }

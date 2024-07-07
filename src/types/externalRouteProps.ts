@@ -1,16 +1,15 @@
 import { Path } from '@/types/path'
 import { Query } from '@/types/query'
 import { Route } from '@/types/route'
-import { RouteMeta } from '@/types/routeProps'
 
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-arguments
 export type ExternalRoutes = Route<string, '', Path, Query, boolean>[]
 
-export type ExternalRouteParentPropsWithHost = {
+export type ExternalRouteParentProps = {
   /**
    * Represents the host for this route. Used for external routes.
   */
-  host: string,
+  host?: string,
   /**
    * Name for route, used to create route keys and in navigation.
    */
@@ -27,37 +26,6 @@ export type ExternalRouteParentPropsWithHost = {
    * Query (aka search) part of URL.
    */
   query?: string | Query,
-  /**
-   * Represents additional metadata associated with a route, customizable via declaration merging.
-   */
-  meta?: RouteMeta,
-  /**
-   * Children routes, expected type comes from `createExternalRoutes()`
-   */
-  children?: ExternalRoutes,
-}
-
-export type ExternalRouteParentProps = {
-  /**
-   * Name for route, used to create route keys and in navigation.
-   */
-  name?: string,
-  /**
-   * Disabled routes will not ever match but can still provide physical structure, nested children behave normally.
-   */
-  disabled?: boolean,
-  /**
-   * Path part of URL.
-   */
-  path: string | Path,
-  /**
-   * Query (aka search) part of URL.
-   */
-  query?: string | Query,
-  /**
-   * Represents additional metadata associated with a route, customizable via declaration merging.
-   */
-  meta?: RouteMeta,
   /**
    * Children routes, expected type comes from `createExternalRoutes()`
    */
@@ -65,6 +33,10 @@ export type ExternalRouteParentProps = {
 }
 
 export type ExternalRouteChildProps = {
+  /**
+   * Represents the host for this route. Used for external routes.
+  */
+  host?: string,
   /**
    * Name for route, used to create route keys and in navigation.
    */
@@ -82,14 +54,10 @@ export type ExternalRouteChildProps = {
    */
   query?: string | Query,
   /**
-   * Represents additional metadata associated with a route, customizable via declaration merging.
-   */
-  meta?: RouteMeta,
-  /**
    * Children routes, cannot have a value for a child route.
   */
   // never here important to keep a ExternalRouteParentProps with incorrect children from matching this type
   children?: never,
 }
 
-export type ExternalRouteProps = ExternalRouteParentPropsWithHost | ExternalRouteParentProps | ExternalRouteChildProps
+export type ExternalRouteProps = ExternalRouteParentProps | ExternalRouteChildProps
