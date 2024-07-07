@@ -1,13 +1,14 @@
 import { markRaw } from 'vue'
 import RouterView from '@/components/routerView.vue'
 import { DuplicateParamsError } from '@/errors'
-import { CombineName, combineName } from '@/services/combineName'
-import { CombinePath, combinePath } from '@/services/combinePath'
-import { CombineQuery, combineQuery } from '@/services/combineQuery'
-import { Path, ToPath, toPath } from '@/types/path'
-import { Query, ToQuery, toQuery } from '@/types/query'
+import { combineName } from '@/services/combineName'
+import { combinePath } from '@/services/combinePath'
+import { combineQuery } from '@/services/combineQuery'
+import { FlattenRoutes } from '@/types/flattenRouts'
+import { toPath } from '@/types/path'
+import { toQuery } from '@/types/query'
 import { Route } from '@/types/route'
-import { ParentRouteProps, RouteProps, isParentRoute, isParentRouteWithoutComponent } from '@/types/routeProps'
+import { RouteProps, isParentRoute, isParentRouteWithoutComponent } from '@/types/routeProps'
 import { checkDuplicateKeys } from '@/utilities/checkDuplicateKeys'
 
 /**
@@ -17,8 +18,8 @@ import { checkDuplicateKeys } from '@/utilities/checkDuplicateKeys'
  * @param routesProps - An array of route properties used to configure and create routes.
  * @returns An array of fully configured Route instances.
  */
-export function createRoutes<const TRoutes extends Readonly<RouteProps[]>>(routes: TRoutes): FlattenRoutes<TRoutes>
-export function createRoutes(routesProps: Readonly<RouteProps[]>): Route[] {
+export function createRoutes<const TRoutes extends RouteProps[]>(routes: TRoutes): FlattenRoutes<TRoutes>
+export function createRoutes(routesProps: RouteProps[]): Route[] {
   const routes = routesProps.reduce<Route[]>((routes, routeProps) => {
     const route = createRoute(routeProps)
 
@@ -38,12 +39,7 @@ export function createRoutes(routesProps: Readonly<RouteProps[]>): Route[] {
     return routes
   }, [])
 
-  routes.forEach(({ path, query }) => {
-    const { hasDuplicates, key } = checkDuplicateKeys(path.params, query.params)
-    if (hasDuplicates) {
-      throw new DuplicateParamsError(key)
-    }
-  })
+  throwIfDuplicateParamsAreFound(routes)
 
   return routes
 }
@@ -62,7 +58,17 @@ function createRoute(route: RouteProps): Route {
     query,
     depth: 1,
     disabled: route.disabled ?? false,
+    host: '',
   }
+}
+
+export function throwIfDuplicateParamsAreFound(routes: Route[]): void {
+  routes.forEach(({ path, query }) => {
+    const { hasDuplicates, key } = checkDuplicateKeys(path.params, query.params)
+    if (hasDuplicates) {
+      throw new DuplicateParamsError(key)
+    }
+  })
 }
 
 function addRouterViewComponentIfParentWithoutComponent(route: RouteProps): RouteProps {
@@ -72,38 +78,3 @@ function addRouterViewComponentIfParentWithoutComponent(route: RouteProps): Rout
 
   return route
 }
-
-type FlattenRoute<
-  TRoute extends RouteProps,
-  TKey extends string = string & TRoute['name'],
-  TPath extends Path = ToPath<TRoute['path']>,
-  TQuery extends Query = ToQuery<TRoute['query']>,
-  TDisabled extends boolean = TRoute['disabled'] extends boolean ? TRoute['disabled'] : false,
-  TChildren extends Route[] = ExtractRouteChildren<TRoute>> =
-  [
-    Route<TKey, TPath, TQuery, TDisabled>,
-    ...{
-      [K in keyof TChildren]: Route<
-      CombineName<TKey, TChildren[K]['key']>,
-      CombinePath<TPath, TChildren[K]['path']>,
-      CombineQuery<TQuery, TChildren[K]['query']>,
-      TChildren[K]['disabled']
-      >
-    }
-  ]
-
-type FlattenRoutes<TRoutes extends Readonly<RouteProps[]>> = Flatten<[...{
-  [K in keyof TRoutes]: FlattenRoute<TRoutes[K]>
-}]>
-
-type ExtractRouteChildren<TRoute extends RouteProps> = TRoute extends ParentRouteProps
-  ? TRoute['children'] extends Route[]
-    ? TRoute['children']
-    : []
-  : []
-
-type Flatten<T extends any[]> = T extends [infer First, ...infer Rest]
-  ? First extends unknown[]
-    ? Flatten<[...First, ...Flatten<Rest>]>
-    : [First, ...Flatten<Rest>]
-  : []
