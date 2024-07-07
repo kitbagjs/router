@@ -14,7 +14,7 @@ Next, we install the router and register the router type using the `Register` in
 
 ## Navigating with Router Push
 
-In this clip, we call `useRouter` in setup of `HomeView` and call `router.push` when the button is clicked. Notice how all (4) of our routes show up in autocomplete. Typescript will throw an error if I use a value other than a valid route key or a fully formed external URL. Read more about [router push](/core-concepts/navigating#push).
+Now we can use the `useRouter` composable in the setup of the `HomeView` component. We can then call `router.push` when the button is clicked. Notice how all four of our routes show up in autocomplete. Typescript will throw an error if a value other than a valid route key or a fully formed external URL. Read more about [router push](/core-concepts/navigating#push).
 
 ![Navigating with Router Push](/router-push.gif)
 
