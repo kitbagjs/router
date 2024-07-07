@@ -13,6 +13,8 @@ Type safe router for Vue.js
 
 Get Started with our [documentation](https://kitbag-router.netlify.app/)
 
+![Adding Route Param](https://i.imgur.com/Hp5dMpw.gif)
+
 ## Installation
 
 ```bash

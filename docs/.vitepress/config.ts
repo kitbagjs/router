@@ -117,6 +117,10 @@ export default defineConfig({
           text: 'Introduction',
           items: [
             {
+              text: 'Show Me',
+              link: '/show-me',
+            },
+            {
               text: 'Introduction',
               link: '/introduction',
             },
@@ -175,5 +179,10 @@ export default defineConfig({
       { icon: 'discord', link: 'https://discord.gg/UT7JrAxU' },
       { icon: 'npm', link: 'https://www.npmjs.com/package/@kitbag/router' },
     ]
+  },
+  markdown: {
+    image: {
+      lazyLoading: true
+    }
   }
 })
