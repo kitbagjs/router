@@ -26,6 +26,6 @@ We need to add `RouterView` component to `SettingsView`, since it has children. 
 
 ## Adding Params
 
-In this clip, we're going to add a param to our `settings.keys` route. Notice how as soon as I save the route with `[id]` in the path, I get a Typescript error where I have a router-link in the `SettingsView` tab. Which I can satisfy by providing a value for that required param. Alternatively I can add (?) to the param, making it optional `[?id]`. Finally, I'll pull in the `path` utility to change the expected type for `id` from string to number. Notice how this too creates Typescript errors until I provide a valid value of the correct type. Read more about [route params](/core-concepts/route-params#route-params).
+Let's add a param to our `settings.keys` route. Notice how as soon as I save the route with `[id]` in the path, I get a Typescript error where I have a router-link in the `SettingsView` tab. Which I can satisfy by providing a value for that required param. Alternatively I can add (?) to the param, making it optional `[?id]`. Finally, I'll pull in the `path` utility to change the expected type for `id` from string to number. Notice how this too creates Typescript errors until I provide a valid value of the correct type. Read more about [route params](/core-concepts/route-params#route-params).
 
 ![Adding Params](/route-params.gif)
