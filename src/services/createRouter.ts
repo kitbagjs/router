@@ -19,6 +19,7 @@ import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { RouterReplace, RouterReplaceOptions } from '@/types/routerReplace'
 import { RoutesKey } from '@/types/routesMap'
 import { Url, isUrl } from '@/types/url'
+import { isNestedArray } from '@/utilities/guards'
 
 type RouterUpdateOptions = {
   replace?: boolean,
@@ -47,7 +48,10 @@ type RouterUpdateOptions = {
  * const router = createRouter(routes)
  * ```
  */
-export function createRouter<const T extends Routes>(routes: T, options: RouterOptions = {}): Router<T> {
+export function createRouter<const T extends Routes>(routes: T, options?: RouterOptions): Router<T>
+export function createRouter<const T extends Routes>(arrayOfRoutes: T[], options?: RouterOptions): Router<T>
+export function createRouter<const T extends Routes>(routesOrArrayOfRoutes: T | T[], options: RouterOptions = {}): Router<T> {
+  const routes = isNestedArray(routesOrArrayOfRoutes) ? routesOrArrayOfRoutes.flat() : routesOrArrayOfRoutes
   const resolve = createRouterResolve(routes)
   const history = createRouterHistory({
     mode: options.historyMode,
