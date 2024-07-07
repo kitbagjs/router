@@ -44,7 +44,7 @@ export function createExternalRoutes(routesProps: ExternalRouteProps[]): Route[]
 function createExternalRoute(route: ExternalRouteProps): Route {
   const path = toPath(route.path)
   const query = toQuery(route.query)
-  const rawRoute = markRaw({ meta: {}, ...route, name: '', children: [] })
+  const rawRoute = markRaw({ meta: {}, ...route, name: route.name ?? '', children: [] })
 
   return {
     matched: rawRoute,
