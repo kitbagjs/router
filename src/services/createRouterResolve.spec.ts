@@ -1,4 +1,5 @@
 import { expect, test } from 'vitest'
+import { createExternalRoutes } from '@/services/createExternalRoutes'
 import { createRouterResolve } from '@/services/createRouterResolve'
 import { createRoutes } from '@/services/createRoutes'
 import { component, routes } from '@/utilities/testHelpers'
@@ -54,4 +55,20 @@ test('given a param with a dash or underscore resolves the correct url', () => {
   const snake = resolve('snake', { 'test_param': 'foo' })
 
   expect(snake).toBe('/foo')
+})
+
+test('when given an external route returns a fully qualified url', () => {
+  const routes = createExternalRoutes([
+    {
+      host: 'https://kitbag.dev',
+      name: 'external',
+      path: '/',
+    },
+  ])
+
+  const resolve = createRouterResolve(routes)
+
+  const url = resolve('external', { 'test-param': 'foo' })
+
+  expect(url).toBe('https://kitbag.dev/')
 })

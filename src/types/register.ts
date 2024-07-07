@@ -38,7 +38,7 @@ export type RegisteredRouterRoute = RegisteredRouter['route']
  */
 export type RegisteredRoutes = Register extends { router: Router<infer TRoutes extends Routes> }
   ? TRoutes
-  : Route<string, Path<'', {}>, Query<'', {}>, false>[]
+  : Route<string, '', Path<'', {}>, Query<'', {}>, false>[]
 
 /**
  * Represents the possible Rejections registered within {@link Register}
