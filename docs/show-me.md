@@ -20,7 +20,7 @@ Now we can use the `useRouter` composable in the setup of the `HomeView` compone
 
 ## RouterView and RouterLink
 
-In this clip, we add `RouterView` component to `SettingsView`, since it has children. We also add a couple `RouterLink` components to the navbar to give the user links to those child pages. Notice how the `to` callback syntax is also type safe and autocompletes all possible routes for us.
+We need to add `RouterView` component to `SettingsView`, since it has children. We'll also add a couple `RouterLink` components to the navbar to give the user links to those child pages. Notice how the `to` callback syntax is also type safe and autocompletes all possible routes for us.
 
 ![RouterView and RouterLink](/router-link.gif)
 
