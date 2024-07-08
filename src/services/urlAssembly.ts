@@ -17,7 +17,13 @@ export function assembleUrl(route: Route, options: AssembleUrlOptions = {}): str
   const pathWithParamsSet = assemblePathParamValues(route.path, paramValues)
   const queryWithParamsSet = assembleQueryParamValues(route.query, paramValues)
 
-  return withQuery(pathWithParamsSet, queryWithParamsSet, queryValues)
+  const relativeUrl = withQuery(pathWithParamsSet, queryWithParamsSet, queryValues)
+
+  if (route.host) {
+    return `${route.host}${relativeUrl}`
+  }
+
+  return relativeUrl
 }
 
 function assemblePathParamValues(path: Path, paramValues: Record<string, unknown>): string {
