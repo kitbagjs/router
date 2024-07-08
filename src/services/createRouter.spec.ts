@@ -1,7 +1,8 @@
 import { flushPromises } from '@vue/test-utils'
-import { expect, test } from 'vitest'
+import { expect, test, vi } from 'vitest'
 import { toRefs } from 'vue'
 import { createRouter } from '@/services/createRouter'
+import * as resolveUtilities from '@/services/createRouterResolve'
 import { createRoutes } from '@/services/createRoutes'
 import { component } from '@/utilities/testHelpers'
 
@@ -197,4 +198,26 @@ test('setting an unknown param does not add its value to the route', async () =>
 
   // @ts-expect-error
   expect(route.params.nothing).toBeUndefined()
+})
+
+test('given an array of Routes, combines into single routes collection', () => {
+  const aRoutes = createRoutes([
+    { name: 'a-route-1', path: '/a-route-1', component },
+    { name: 'a-route-2', path: '/a-route-2', component },
+  ])
+  const bRoutes = createRoutes([
+    { name: 'b-route-1', path: '/b-route-1', component },
+    { name: 'b-route-2', path: '/b-route-2', component },
+  ])
+
+  const spy = vi.spyOn(resolveUtilities, 'createRouterResolve')
+
+  createRouter([aRoutes, bRoutes], {
+    initialUrl: '/',
+  })
+
+  expect(spy).toHaveBeenLastCalledWith([
+    ...aRoutes,
+    ...bRoutes,
+  ])
 })
