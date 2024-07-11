@@ -6,8 +6,8 @@ type RouteIsNamedAndNotDisabled<T extends Route> = IsRouteDisabled<T> extends tr
   : IsRouteNamed<T> extends true
     ? T
     : never
-type IsRouteDisabled<T extends Route> = T extends { disabled: true } ? true : false
-type IsRouteNamed<T extends Route> = StringHasValue<T['key']>
+type IsRouteDisabled<T> = T extends { disabled: true } ? true : false
+type IsRouteNamed<T> = T extends { key: infer TKey } ? StringHasValue<TKey> : false
 
 export type RoutesMap<TRoutes extends Routes = []> = {
   [K in TRoutes[number] as RouteIsNamedAndNotDisabled<K>['key']]: RouteIsNamedAndNotDisabled<K>
