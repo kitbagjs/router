@@ -1,4 +1,3 @@
-import { DuplicateParamsError } from '@/errors'
 import { MergeParams } from '@/types/params'
 import { Query, QueryParams, ToQuery } from '@/types/query'
 import { checkDuplicateKeys } from '@/utilities/checkDuplicateKeys'
@@ -23,10 +22,7 @@ export type CombineQuery<
 
 export function combineQuery<TParentQuery extends Query, TChildQuery extends Query>(parentQuery: TParentQuery, childQuery: TChildQuery): CombineQuery<TParentQuery, TChildQuery>
 export function combineQuery(parentQuery: Query, childQuery: Query): Query {
-  const { hasDuplicates, key } = checkDuplicateKeys(parentQuery.params, childQuery.params)
-  if (hasDuplicates) {
-    throw new DuplicateParamsError(key)
-  }
+  checkDuplicateKeys(parentQuery.params, childQuery.params)
 
   const newQueryString = [parentQuery.query, childQuery.query]
     .filter(stringHasValue)
