@@ -1,8 +1,10 @@
-export type CombineName<TParentName extends string | undefined, TChildName extends string | undefined> = TParentName extends string
-  ? TChildName extends string
+import { StringHasValue } from '@/utilities/string'
+
+export type CombineName<TParentName extends string | undefined, TChildName extends string | undefined> = StringHasValue<TParentName> extends true
+  ? StringHasValue<TChildName> extends true
     ? `${TParentName}.${TChildName}`
     : TParentName
-  : TChildName extends string
+  : StringHasValue<TChildName> extends true
     ? TChildName
     : ''
 
