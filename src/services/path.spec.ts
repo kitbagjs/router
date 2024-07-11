@@ -26,7 +26,7 @@ test('given path with optional params, returns each param name as type String', 
   }))
 })
 
-test('given path not as string, returns each param with corresponding param', () => {
+test('given path with param types, returns each param with corresponding param', () => {
   const response = path('/parent/[parentId]/child/[childId]', {
     parentId: Boolean,
   })

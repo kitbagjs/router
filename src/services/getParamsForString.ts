@@ -1,8 +1,8 @@
-import { DuplicateParamsError } from '@/errors'
 import { getParam } from '@/services/params'
 import { getParamName } from '@/services/routeRegex'
 import { paramEnd, paramStart } from '@/types/params'
 import { Param } from '@/types/paramTypes'
+import { checkDuplicateKeys } from '@/utilities/checkDuplicateKeys'
 
 export function getParamsForString<TInput extends string, TParams extends Record<string, Param | undefined>>(string: TInput, params: TParams): Record<string, Param> {
   const paramPattern = new RegExp(`\\${paramStart}(\\??[\\w-_]+)\\${paramEnd}`, 'g')
@@ -17,9 +17,7 @@ export function getParamsForString<TInput extends string, TParams extends Record
 
     const param = getParam(params, paramName)
 
-    if (paramName in value) {
-      throw new DuplicateParamsError(key)
-    }
+    checkDuplicateKeys([paramName], value)
 
     value[key] = param
 

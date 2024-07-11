@@ -1,6 +1,5 @@
 import { markRaw } from 'vue'
 import RouterView from '@/components/routerView.vue'
-import { DuplicateParamsError } from '@/errors'
 import { combineName } from '@/services/combineName'
 import { combinePath } from '@/services/combinePath'
 import { combineQuery } from '@/services/combineQuery'
@@ -64,10 +63,7 @@ function createRoute(route: RouteProps): Route {
 
 export function throwIfDuplicateParamsAreFound(routes: Route[]): void {
   routes.forEach(({ path, query }) => {
-    const { hasDuplicates, key } = checkDuplicateKeys(path.params, query.params)
-    if (hasDuplicates) {
-      throw new DuplicateParamsError(key)
-    }
+    checkDuplicateKeys(path.params, query.params)
   })
 }
 

@@ -26,7 +26,7 @@ test('given query with optional params, returns each param name as type String',
   }))
 })
 
-test('given query not as string, returns each param with corresponding param', () => {
+test('given query with param types, returns each param with corresponding param', () => {
   const response = query('parent=[parentId]&child=[childId]', {
     parentId: Boolean,
   })
