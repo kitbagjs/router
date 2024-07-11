@@ -13,7 +13,7 @@ export type FlattenRoutes<TRoutes extends Readonly<RouteProps[] | ExternalRouteP
 
 type FlattenRoute<
   TRoute extends RouteProps | ExternalRouteProps,
-  TKey extends string = string & TRoute['name'],
+  TKey extends string = TRoute extends { name: infer T extends string } ? T : '',
   THost extends string = TRoute extends { host: infer T extends string } ? T : '',
   TPath extends Path = ToPath<TRoute['path']>,
   TQuery extends Query = ToQuery<TRoute['query']>,
