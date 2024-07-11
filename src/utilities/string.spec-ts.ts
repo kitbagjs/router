@@ -1,4 +1,4 @@
-import { describe, expectTypeOf, test } from 'vitest'
+import { describe, expectTypeOf } from 'vitest'
 import { StringHasValue } from '@/utilities/string'
 
 describe('given empty string, returns false', () => {
