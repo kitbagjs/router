@@ -1,6 +1,6 @@
 import { expectTypeOf, test } from 'vitest'
 import { isRoute } from '@/guards/routes'
-import { createRouter, createRoutes } from '@/services'
+import { createRouter, createRoutes, query } from '@/services'
 import { component } from '@/utilities/testHelpers'
 
 test('router route can be narrowed', () => {
@@ -10,9 +10,10 @@ test('router route can be narrowed', () => {
       path: '/parentA',
       children: createRoutes([
         {
-          component,
           name: 'childA',
-          path: '/childA/[childA]',
+          path: '[?foo]',
+          query: query('bar=[?bar]', { bar: Boolean }),
+          component,
         },
       ]),
     },
@@ -52,14 +53,16 @@ test('router route can be narrowed', () => {
   }
 
   if (isRoute(route, 'parentA', { exact: false })) {
-    expectTypeOf<typeof route.params>().toMatchTypeOf<{} | {
-      childA: string,
+    expectTypeOf<typeof route.params>().toMatchTypeOf<{
+      foo: string,
+      bar: boolean,
     }>()
   }
 
   if (isRoute(route, 'parentA')) {
-    expectTypeOf<typeof route.params>().toMatchTypeOf<{} |{
-      childA: string,
+    expectTypeOf<typeof route.params>().toMatchTypeOf<{
+      foo: string,
+      bar: boolean,
     }>()
   }
 })
