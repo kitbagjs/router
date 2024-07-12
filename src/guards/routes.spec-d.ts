@@ -54,15 +54,15 @@ test('router route can be narrowed', () => {
 
   if (isRoute(route, 'parentA', { exact: false })) {
     expectTypeOf<typeof route.params>().toMatchTypeOf<{
-      foo: string,
-      bar: boolean,
+      foo?: string | undefined,
+      bar?: boolean | undefined,
     }>()
   }
 
   if (isRoute(route, 'parentA')) {
     expectTypeOf<typeof route.params>().toMatchTypeOf<{
-      foo: string,
-      bar: boolean,
+      foo?: string | undefined,
+      bar?: boolean | undefined,
     }>()
   }
 })

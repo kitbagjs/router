@@ -1,5 +1,5 @@
-import { MergeParams } from '@/types/params'
-import { Path, PathParams, ToPath } from '@/types/path'
+import { MergeParams, RemoveLeadingQuestionMarkFromKeys } from '@/types/params'
+import { Path, PathParamsWithParamNameExtracted, ToPath } from '@/types/path'
 import { checkDuplicateKeys } from '@/utilities/checkDuplicateKeys'
 
 export type CombinePath<
@@ -7,8 +7,8 @@ export type CombinePath<
   TChild extends Path
 > = ToPath<TParent> extends { path: infer TParentPath extends string, params: infer TParentParams extends Record<string, unknown> }
   ? ToPath<TChild> extends { path: infer TChildPath extends string, params: infer TChildParams extends Record<string, unknown> }
-    ? MergeParams<TParentParams, TChildParams> extends PathParams<`${TParentPath}${TChildPath}`>
-      ? Path<`${TParentPath}${TChildPath}`, MergeParams<TParentParams, TChildParams>>
+    ? MergeParams<RemoveLeadingQuestionMarkFromKeys<TParentParams>, RemoveLeadingQuestionMarkFromKeys<TChildParams>> extends PathParamsWithParamNameExtracted<`${TParentPath}${TChildPath}`>
+      ? Path<`${TParentPath}${TChildPath}`, MergeParams<RemoveLeadingQuestionMarkFromKeys<TParentParams>, RemoveLeadingQuestionMarkFromKeys<TChildParams>>>
       : Path<'', {}>
     : Path<'', {}>
   : Path<'', {}>
