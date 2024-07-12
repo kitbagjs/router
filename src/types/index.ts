@@ -1,5 +1,6 @@
 export * from './hooks'
-export * from './params'
+export type { ParamStart, ParamEnd, ExtractParamName, ExtractPathParamType, ExtractRouteParamTypes, ExtractParamTypes, ExtractParamType, MergeParams } from './params'
+export { paramStart, paramEnd, isParamGetter, isParamGetSet } from './params'
 export * from './paramTypes'
 export * from './register'
 export * from './route'

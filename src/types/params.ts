@@ -131,3 +131,8 @@ export type MergeParams<
         ? TBeta[K]
         : never
 }
+
+type RemoveLeadingQuestionMark<T extends PropertyKey> = T extends `?${infer TRest extends string}` ? TRest : T
+export type RemoveLeadingQuestionMarkFromKeys<T extends Record<string, unknown>> = {
+  [K in keyof T as RemoveLeadingQuestionMark<K>]: T[K]
+}

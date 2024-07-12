@@ -1,5 +1,5 @@
-import { MergeParams } from '@/types/params'
-import { Query, QueryParams, ToQuery } from '@/types/query'
+import { MergeParams, RemoveLeadingQuestionMarkFromKeys } from '@/types/params'
+import { Query, QueryParamsWithParamNameExtracted, ToQuery } from '@/types/query'
 import { checkDuplicateKeys } from '@/utilities/checkDuplicateKeys'
 import { StringHasValue, stringHasValue } from '@/utilities/string'
 
@@ -14,8 +14,8 @@ export type CombineQuery<
   TChild extends Query | undefined
 > = ToQuery<TParent> extends { query: infer TParentQuery extends string, params: infer TParentParams extends Record<string, unknown> }
   ? ToQuery<TChild> extends { query: infer TChildQuery extends string, params: infer TChildParams extends Record<string, unknown> }
-    ? MergeParams<TParentParams, TChildParams> extends QueryParams<CombineQueryString<TParentQuery, TChildQuery>>
-      ? Query<CombineQueryString<TParentQuery, TChildQuery>, MergeParams<TParentParams, TChildParams>>
+    ? MergeParams<RemoveLeadingQuestionMarkFromKeys<TParentParams>, RemoveLeadingQuestionMarkFromKeys<TChildParams>> extends QueryParamsWithParamNameExtracted<CombineQueryString<TParentQuery, TChildQuery>>
+      ? Query<CombineQueryString<TParentQuery, TChildQuery>, MergeParams<RemoveLeadingQuestionMarkFromKeys<TParentParams>, RemoveLeadingQuestionMarkFromKeys<TChildParams>>>
       : Query<'', {}>
     : Query<'', {}>
   : Query<'', {}>
