@@ -15,17 +15,17 @@ export function getRouteScoreSortMethod(url: string): RouteSortMethod {
     const bRouteQueryScore = countExpectedQueryParams(bRoute, actualQuery)
     const bRoutePathScore = countExpectedPathParams(bRoute, actualPath)
 
-    if (aRouteQueryScore + aRoutePathScore > bRouteQueryScore + bRoutePathScore) {
-      return sortBefore
-    }
-    if (aRouteQueryScore + aRoutePathScore < bRouteQueryScore + bRoutePathScore) {
-      return sortAfter
-    }
-
     if (aRoute.depth > bRoute.depth) {
       return sortBefore
     }
     if (aRoute.depth < bRoute.depth) {
+      return sortAfter
+    }
+
+    if (aRouteQueryScore + aRoutePathScore > bRouteQueryScore + bRoutePathScore) {
+      return sortBefore
+    }
+    if (aRouteQueryScore + aRoutePathScore < bRouteQueryScore + bRoutePathScore) {
       return sortAfter
     }
 

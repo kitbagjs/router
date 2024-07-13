@@ -137,5 +137,5 @@ const route {
 
 If there are more than 1 routes that pass the rules then we sort the results by the following.
 
-1. **Optional Params:** prioritize routes that match the greater number of optional path and query params
-2. **Route Depth:** prioritize routes that are more deeply nested
+1. **Route Depth:** prioritize routes that are more deeply nested
+2. **Optional Params:** prioritize routes that match the greater number of optional path and query params
