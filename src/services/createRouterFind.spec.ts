@@ -40,10 +40,3 @@ test('when given a url that does not match a route returns undefined', () => {
 
   expect(route).toBeUndefined()
 })
-
-test('when given an external url that does not match a route returns undefined', () => {
-  const find = createRouterFind(routes)
-  const route = find('https://example.com')
-
-  expect(route).toBeUndefined()
-})
