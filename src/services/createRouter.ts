@@ -182,9 +182,7 @@ export function createRouter<const T extends Routes>(routesOrArrayOfRoutes: T | 
       return undefined
     }
 
-    const url = resolve(source)
-
-    return getResolvedRouteForUrl(routes, url)
+    return getResolvedRouteForUrl(routes, source)
   }
 
   const { setRejection, rejection, getRejectionRoute } = createRouterReject(options)
