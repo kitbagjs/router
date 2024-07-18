@@ -1,3 +1,4 @@
+import { Host } from '@/types/host'
 import { Path } from '@/types/path'
 import { Query } from '@/types/query'
 import { RouteMeta, RouteProps } from '@/types/routeProps'
@@ -21,7 +22,7 @@ export type RoutePropsWithMeta = RouteProps & { meta: RouteMeta }
  */
 export type Route<
   TKey extends string = string,
-  THost extends string = string,
+  THost extends Host = Host,
   TPath extends Path = Path,
   TQuery extends Query = Query,
   TDisabled extends boolean = boolean

@@ -1,4 +1,5 @@
 import { expectTypeOf, test } from 'vitest'
+import { Host } from '@/types/host'
 import { Path } from '@/types/path'
 import { Query } from '@/types/query'
 import { Route } from '@/types/route'
@@ -14,7 +15,7 @@ test('CombineName returns correct keys for routes', () => {
 
 test('RouteGetByName works as expected', () => {
   type Source = RouteGetByKey<typeof routes, 'parentA'>
-  type Expect = Route<'parentA', '', Path<'/parentA/[paramA]', {}>, Query<'', {}>, false>
+  type Expect = Route<'parentA', Host, Path<'/parentA/[paramA]', {}>, Query<'', {}>, false>
 
   expectTypeOf<Source>().toEqualTypeOf<Expect>()
 })

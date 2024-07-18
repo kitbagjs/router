@@ -3,6 +3,7 @@ import RouterView from '@/components/routerView.vue'
 import { combineName } from '@/services/combineName'
 import { combinePath } from '@/services/combinePath'
 import { combineQuery } from '@/services/combineQuery'
+import { host } from '@/services/host'
 import { FlattenRoutes } from '@/types/flattenRoutes'
 import { toPath } from '@/types/path'
 import { toQuery } from '@/types/query'
@@ -57,7 +58,7 @@ function createRoute(route: RouteProps): Route {
     query,
     depth: 1,
     disabled: route.disabled ?? false,
-    host: '',
+    host: host('', {}),
   }
 }
 

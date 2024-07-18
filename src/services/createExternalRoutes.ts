@@ -5,6 +5,7 @@ import { combineQuery } from '@/services/combineQuery'
 import { throwIfDuplicateParamsAreFound } from '@/services/createRoutes'
 import { ExternalRouteProps } from '@/types/externalRouteProps'
 import { FlattenRoutes } from '@/types/flattenRoutes'
+import { toHost } from '@/types/host'
 import { toPath } from '@/types/path'
 import { toQuery } from '@/types/query'
 import { Route } from '@/types/route'
@@ -22,7 +23,7 @@ export function createExternalRoutes(routesProps: ExternalRouteProps[]): Route[]
         query: combineQuery(route.query, childRoute.query),
         matches: [route.matched, ...childRoute.matches],
         depth: childRoute.depth + 1,
-        host: routeProps.host ?? '',
+        host: route.host,
       })))
     }
 
@@ -44,16 +45,17 @@ export function createExternalRoutes(routesProps: ExternalRouteProps[]): Route[]
 function createExternalRoute(route: ExternalRouteProps): Route {
   const path = toPath(route.path)
   const query = toQuery(route.query)
+  const host = toHost(route.host ?? '')
   const rawRoute = markRaw({ meta: {}, ...route, name: route.name ?? '', children: [] })
 
   return {
     matched: rawRoute,
     matches: [],
     key: route.name ?? '',
+    host,
     path,
     query,
     depth: 1,
     disabled: route.disabled ?? false,
-    host: route.host ?? '',
   }
 }
