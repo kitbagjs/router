@@ -5,7 +5,6 @@ import { routerInjectionKey, routerRejectionKey } from '@/compositions'
 import { createCurrentRoute } from '@/services/createCurrentRoute'
 import { createIsExternal } from '@/services/createIsExternal'
 import { createMaybeRelativeUrl } from '@/services/createMaybeRelativeUrl'
-import { createRouterFind } from '@/services/createRouterFind'
 import { createRouterHistory } from '@/services/createRouterHistory'
 import { routeHookStoreKey, createRouterHooks } from '@/services/createRouterHooks'
 import { createRouterReject } from '@/services/createRouterReject'
@@ -13,6 +12,7 @@ import { createRouterResolve } from '@/services/createRouterResolve'
 import { getInitialUrl } from '@/services/getInitialUrl'
 import { getResolvedRouteForUrl } from '@/services/getResolvedRouteForUrl'
 import { createRouteHookRunners } from '@/services/hooks'
+import { ResolvedRoute } from '@/types/resolved'
 import { Routes } from '@/types/route'
 import { Router, RouterOptions, RouterReject } from '@/types/router'
 import { RouterPush, RouterPushOptions } from '@/types/routerPush'
@@ -168,7 +168,23 @@ export function createRouter<const T extends Routes>(routesOrArrayOfRoutes: T | 
     return setRejection(type)
   }
 
-  const find = createRouterFind(routes)
+  const find = <TSource extends RoutesKey<T>>(
+    source: Url | TSource,
+    params: Record<PropertyKey, unknown> = {},
+  ): ResolvedRoute | undefined => {
+    if (!isUrl(source)) {
+      const url = resolve(source, params as any)
+
+      return getResolvedRouteForUrl(routes, url)
+    }
+
+    if (isExternal(source)) {
+      return undefined
+    }
+
+    return getResolvedRouteForUrl(routes, source)
+  }
+
   const { setRejection, rejection, getRejectionRoute } = createRouterReject(options)
   const notFoundRoute = getRejectionRoute('NotFound')
   const { currentRoute, routerRoute, updateRoute } = createCurrentRoute<T>(notFoundRoute, push)

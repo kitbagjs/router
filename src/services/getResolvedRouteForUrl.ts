@@ -1,7 +1,7 @@
 import { createMaybeRelativeUrl } from '@/services/createMaybeRelativeUrl'
 import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
 import { getRouteParamValues, routeParamsAreValid } from '@/services/paramValidation'
-import { isNamedRoute, routeHostMatches, routePathMatches, routeQueryMatches } from '@/services/routeMatchRules'
+import { isNamedRoute, routePathMatches, routeQueryMatches } from '@/services/routeMatchRules'
 import { getRouteScoreSortMethod } from '@/services/routeMatchScore'
 import { ResolvedRoute } from '@/types/resolved'
 import { Routes } from '@/types/route'
@@ -9,7 +9,6 @@ import { RouteMatchRule } from '@/types/routeMatchRule'
 
 const rules: RouteMatchRule[] = [
   isNamedRoute,
-  routeHostMatches,
   routePathMatches,
   routeQueryMatches,
   routeParamsAreValid,
