@@ -15,7 +15,7 @@ export type FlattenRoutes<TRoutes extends Readonly<RouteProps[] | ExternalRouteP
 type FlattenRoute<
   TRoute extends RouteProps | ExternalRouteProps,
   TKey extends string = TRoute extends { name: infer T extends string } ? T : '',
-  THost extends Host = TRoute extends { host: infer T extends Host | string } ? ToHost<T> : Host,
+  THost extends Host = TRoute extends { host: infer T extends Host | string } ? ToHost<T> : never,
   TPath extends Path = ToPath<TRoute['path']>,
   TQuery extends Query = ToQuery<TRoute['query']>,
   TDisabled extends boolean = TRoute['disabled'] extends boolean ? TRoute['disabled'] : false,

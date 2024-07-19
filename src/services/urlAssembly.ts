@@ -25,10 +25,6 @@ export function assembleUrl(route: Route, options: AssembleUrlOptions = {}): str
 function assembleHostParamValues(host: Host, paramValues: Record<string, unknown>): string {
   const value = host.toString()
 
-  if (!value.length) {
-    return value
-  }
-
   return Object.entries(host.params).reduce((url, [name, param]) => {
     const paramName = getParamName(`${paramStart}${name}${paramEnd}`)
 
@@ -42,10 +38,6 @@ function assembleHostParamValues(host: Host, paramValues: Record<string, unknown
 
 function assemblePathParamValues(path: Path, paramValues: Record<string, unknown>): string {
   const value = path.toString()
-
-  if (!value.length) {
-    return value
-  }
 
   return Object.entries(path.params).reduce((url, [name, param]) => {
     const paramName = getParamName(`${paramStart}${name}${paramEnd}`)
