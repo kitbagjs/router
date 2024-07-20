@@ -1,9 +1,10 @@
 import { createMaybeRelativeUrl } from '@/services/createMaybeRelativeUrl'
 import { getParamValue } from '@/services/params'
 import { getParamValueFromUrl } from '@/services/paramsFinder'
-import { Route } from '@/types'
+import { Host } from '@/types/host'
 import { Path } from '@/types/path'
 import { Query } from '@/types/query'
+import { Route } from '@/types/route'
 import { RouteMatchRule } from '@/types/routeMatchRule'
 
 export const routeParamsAreValid: RouteMatchRule = (route, url) => {
@@ -17,15 +18,24 @@ export const routeParamsAreValid: RouteMatchRule = (route, url) => {
 }
 
 export const getRouteParamValues = (route: Route, url: string): Record<string, unknown> => {
-  const { pathname, search } = createMaybeRelativeUrl(url)
+  const { host, pathname, search } = createMaybeRelativeUrl(url)
 
   return {
+    ...getHostParams(route.host, host),
     ...getPathParams(route.path, pathname),
     ...getQueryParams(route.query, search),
   }
 }
 
-function getPathParams(path: Path, url: string): Record<string, unknown> {
+function getHostParams(host: Host, url: string | undefined): Record<string, unknown> {
+  if (!url) {
+    return {}
+  }
+
+  return getPathParams(host, url)
+}
+
+function getPathParams(path: Path | Host, url: string): Record<string, unknown> {
   const params: Record<string, unknown> = {}
   const decodedValueFromUrl = decodeURIComponent(url)
 
