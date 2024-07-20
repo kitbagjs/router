@@ -4,7 +4,7 @@ import { Param } from '@/types/paramTypes'
 import { Identity } from '@/types/utilities'
 
 /**
- * Constructs a Host object, which enables assigning types for params.
+ * Constructs a Host object, which enables assigning types for params. Note, the host should not include protocol.
  *
  * @template THost - The string literal type that represents the host.
  * @template TParams - The type of the host parameters associated with the host.
@@ -20,7 +20,7 @@ import { Identity } from '@/types/utilities'
  * export const routes = createRoutes([
  *   {
  *     name: 'docs',
- *     host: host('https://[subdomain]', { foo: String }),
+ *     host: host('[subdomain]', { foo: String }),
  *     component: Docs
  *   },
  * ])
