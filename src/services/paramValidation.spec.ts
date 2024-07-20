@@ -1,5 +1,6 @@
 import { expect, test } from 'vitest'
 import { DuplicateParamsError } from '@/errors'
+import { createExternalRoutes } from '@/services/createExternalRoutes'
 import { createRoutes } from '@/services/createRoutes'
 import { getRouteParamValues, routeParamsAreValid } from '@/services/paramValidation'
 import { path } from '@/services/path'
@@ -163,12 +164,16 @@ test.each([
   expect(response).toBe(true)
 })
 
-test('given route with duplicate param names across path and query, throws DuplicateParamsError', () => {
-  const action: () => void = () => createRoutes([
+test.each([
+  { path: '/duplicate/[foo]', query: 'params=[?foo]' },
+  { path: '/duplicate/[foo]', host: 'https://[foo].kitbag.dev' },
+  { path: '/', host: 'https://[?foo].kitbag.dev', query: 'params=[?foo]' },
+  { path: '/duplicate/[foo]', host: 'https://[foo].kitbag.dev', query: 'params=[foo]' },
+])('given route with duplicate param names across path and query, throws DuplicateParamsError', (route) => {
+  const action: () => void = () => createExternalRoutes([
     {
       name: 'different-cased-params',
-      path: '/duplicate/[foo]',
-      query: 'params=[?foo]',
+      ...route,
       component,
     },
   ])
