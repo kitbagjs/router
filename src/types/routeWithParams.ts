@@ -13,10 +13,11 @@ export type RouteParamsByKey<
 > = ExtractRouteParamTypesWithoutLosingOptional<RouteGetByKey<TRoutes, TKey>>
 
 type ExtractRouteParamTypesWithoutLosingOptional<TRoute> = TRoute extends {
+  host: { params: infer HostParams extends Record<string, Param> },
   path: { params: infer PathParams extends Record<string, Param> },
   query: { params: infer QueryParams extends Record<string, Param> },
 }
-  ? ExtractParamTypesWithoutLosingOptional<MergeParams<PathParams, QueryParams>>
+  ? ExtractParamTypesWithoutLosingOptional<MergeParams<HostParams, MergeParams<PathParams, QueryParams>>>
   : Record<string, unknown>
 
 type ExtractParamTypesWithoutLosingOptional<TParams extends Record<string, Param>> = Identity<MakeOptional<{
