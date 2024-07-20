@@ -63,8 +63,8 @@ function createRoute(route: RouteProps): Route {
 }
 
 export function throwIfDuplicateParamsAreFound(routes: Route[]): void {
-  routes.forEach(({ path, query }) => {
-    checkDuplicateKeys(path.params, query.params)
+  routes.forEach(({ path, query, host }) => {
+    checkDuplicateKeys(path.params, query.params, host.params)
   })
 }
 
