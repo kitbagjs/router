@@ -2,10 +2,44 @@ import { Route } from '@/types'
 import { paramEnd, paramStart } from '@/types/params'
 import { stringHasValue } from '@/utilities/string'
 
-export function generateRoutePathRegexPattern(route: Route): RegExp {
-  const routeRegex = replaceParamSyntaxWithCatchAlls(route.path.toString())
+export function escapeRegExp(string: string): string {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
 
-  return new RegExp(`^${routeRegex}$`, 'i')
+export function splitByMatches(string: string, regexp: RegExp): string[] {
+  const matches = Array.from(string.matchAll(regexp))
+
+  if (matches.length === 0) {
+    return [string]
+  }
+
+  let lastSlice = 0
+  const slices = matches.reduce<string[]>((slices, match) => {
+    const slice = escapeRegExp(string.slice(lastSlice, match.index))
+
+    if (slice.length) {
+      slices.push(slice)
+    }
+
+    const [value] = match
+    slices.push(value)
+    lastSlice = match.index + value.length
+    return slices
+  }, [])
+
+  const last = string.slice(lastSlice)
+
+  if (last) {
+    slices.push(last)
+  }
+
+  return slices
+}
+
+export function generateRoutePathRegexPattern(route: Route): RegExp {
+  const pathRegex = replaceParamSyntaxWithCatchAllsAndEscapeRest(route.path.toString())
+
+  return new RegExp(`^${pathRegex}$`, 'i')
 }
 
 export function generateRouteQueryRegexPatterns(route: Route): RegExp[] {
@@ -14,7 +48,17 @@ export function generateRouteQueryRegexPatterns(route: Route): RegExp[] {
   return Array
     .from(queryParams.entries())
     .filter(([, value]) => !isOptionalParamSyntax(value))
-    .map(([key, value]) => new RegExp(`${key}=${replaceParamSyntaxWithCatchAlls(value)}(&|$)`, 'i'))
+    .map(([key, value]) => {
+      const valueRegex = replaceParamSyntaxWithCatchAllsAndEscapeRest(value)
+
+      return new RegExp(`${escapeRegExp(key)}=${valueRegex}(&|$)`, 'i')
+    })
+}
+
+export function replaceParamSyntaxWithCatchAllsAndEscapeRest(value: string): string {
+  return splitByMatches(value, new RegExp(paramRegex, 'g'))
+    .map(slice => slice.startsWith(paramStart) ? replaceParamSyntaxWithCatchAlls(slice) : escapeRegExp(slice))
+    .join('')
 }
 
 export function replaceParamSyntaxWithCatchAlls(value: string): string {
@@ -26,6 +70,7 @@ export function replaceParamSyntaxWithCatchAlls(value: string): string {
   }, value)
 }
 
+const paramRegex = `\\${paramStart}\\??([\\w-_]+)\\${paramEnd}`
 const optionalParamRegex = `\\${paramStart}\\?([\\w-_]+)\\${paramEnd}`
 const requiredParamRegex = `\\${paramStart}([\\w-_]+)\\${paramEnd}`
 
