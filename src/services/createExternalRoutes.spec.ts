@@ -19,7 +19,7 @@ test('when given external route props with a host and children return host for e
       children: createExternalRoutes([
         {
           name: 'foo',
-          path: 'child',
+          path: '/foo',
         },
       ]),
     },
