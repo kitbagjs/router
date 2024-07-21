@@ -154,7 +154,7 @@ import { createExternalRoutes } from '@kitbag/router'
 
 export const documentationRoutes = createExternalRoutes([
   {
-    host: 'https://[subdomain].kitbag.dev/',
+    host: 'https://[subdomain].kitbag.dev',
     name: 'docs',
     children: createExternalRoutes([
       {
