@@ -1,15 +1,15 @@
+import { Host } from '@/types/host'
 import { Path } from '@/types/path'
 import { Query } from '@/types/query'
 import { Route } from '@/types/route'
 
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-arguments
-export type ExternalRoutes = Route<string, '', Path, Query, boolean>[]
+type ExternalChildRoutes = Route<string, never>[]
 
 export type ExternalRouteParentProps = {
   /**
    * Represents the host for this route. Used for external routes.
   */
-  host?: string,
+  host?: string | Host,
   /**
    * Name for route, used to create route keys and in navigation.
    */
@@ -29,14 +29,14 @@ export type ExternalRouteParentProps = {
   /**
    * Children routes, expected type comes from `createExternalRoutes()`
    */
-  children: ExternalRoutes,
+  children: ExternalChildRoutes,
 }
 
 export type ExternalRouteChildProps = {
   /**
    * Represents the host for this route. Used for external routes.
   */
-  host?: string,
+  host?: string | Host,
   /**
    * Name for route, used to create route keys and in navigation.
    */

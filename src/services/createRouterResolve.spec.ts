@@ -10,13 +10,13 @@ test('given a url returns that string', () => {
   expect(resolve('/bar')).toBe('/bar')
 })
 
-test('given a route key with params returns the url', () => {
+test('given a route key with params, interpolates param values', () => {
   const resolve = createRouterResolve(routes)
 
   expect(resolve('parentA', { paramA: 'bar' })).toBe('/parentA/bar')
 })
 
-test('given a route key and a query appends query to the url', () => {
+test('given a route key with query, interpolates param values', () => {
 
   const resolve = createRouterResolve(routes)
   const url = resolve('parentA', { paramA: 'bar' }, { query: { foo: 'foo' } })
@@ -68,7 +68,23 @@ test('when given an external route returns a fully qualified url', () => {
 
   const resolve = createRouterResolve(routes)
 
-  const url = resolve('external', { 'test-param': 'foo' })
+  const url = resolve('external')
 
   expect(url).toBe('https://kitbag.dev/')
+})
+
+test('when given an external route with params in host, interpolates param values', () => {
+  const routes = createExternalRoutes([
+    {
+      host: 'https://[subdomain].kitbag.dev',
+      name: 'external',
+      path: '/',
+    },
+  ])
+
+  const resolve = createRouterResolve(routes)
+
+  const url = resolve('external', { 'subdomain': 'router' })
+
+  expect(url).toBe('https://router.kitbag.dev/')
 })

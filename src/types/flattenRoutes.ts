@@ -2,6 +2,7 @@ import { CombineName } from '@/services/combineName'
 import { CombinePath } from '@/services/combinePath'
 import { CombineQuery } from '@/services/combineQuery'
 import { ExternalRouteProps } from '@/types/externalRouteProps'
+import { Host, ToHost } from '@/types/host'
 import { Path, ToPath } from '@/types/path'
 import { Query, ToQuery } from '@/types/query'
 import { Route } from '@/types/route'
@@ -14,7 +15,7 @@ export type FlattenRoutes<TRoutes extends Readonly<RouteProps[] | ExternalRouteP
 type FlattenRoute<
   TRoute extends RouteProps | ExternalRouteProps,
   TKey extends string = TRoute extends { name: infer T extends string } ? T : '',
-  THost extends string = TRoute extends { host: infer T extends string } ? T : '',
+  THost extends Host = TRoute extends { host: infer T extends Host | string } ? ToHost<T> : never,
   TPath extends Path = ToPath<TRoute['path']>,
   TQuery extends Query = ToQuery<TRoute['query']>,
   TDisabled extends boolean = TRoute['disabled'] extends boolean ? TRoute['disabled'] : false,

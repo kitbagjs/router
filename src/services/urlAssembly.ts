@@ -3,6 +3,7 @@ import { setParamValueOnUrl } from '@/services/paramsFinder'
 import { getParamName, isOptionalParamSyntax } from '@/services/routeRegex'
 import { QueryRecord, withQuery } from '@/services/withQuery'
 import { Route, paramEnd, paramStart } from '@/types'
+import { Host } from '@/types/host'
 import { Path } from '@/types/path'
 import { Query } from '@/types/query'
 
@@ -14,24 +15,29 @@ type AssembleUrlOptions = {
 export function assembleUrl(route: Route, options: AssembleUrlOptions = {}): string {
   const { params: paramValues = {}, query: queryValues } = options
 
+  const hostWithParamsSet = assembleHostParamValues(route.host, paramValues)
   const pathWithParamsSet = assemblePathParamValues(route.path, paramValues)
   const queryWithParamsSet = assembleQueryParamValues(route.query, paramValues)
 
-  const relativeUrl = withQuery(pathWithParamsSet, queryWithParamsSet, queryValues)
+  return withQuery(`${hostWithParamsSet}${pathWithParamsSet}`, queryWithParamsSet, queryValues)
+}
 
-  if (route.host) {
-    return `${route.host}${relativeUrl}`
-  }
+function assembleHostParamValues(host: Host, paramValues: Record<string, unknown>): string {
+  const value = host.toString()
 
-  return relativeUrl
+  return Object.entries(host.params).reduce((url, [name, param]) => {
+    const paramName = getParamName(`${paramStart}${name}${paramEnd}`)
+
+    if (!paramName) {
+      return url
+    }
+
+    return setParamValueOnUrl(url, { name, param, value: paramValues[paramName] })
+  }, value)
 }
 
 function assemblePathParamValues(path: Path, paramValues: Record<string, unknown>): string {
   const value = path.toString()
-
-  if (!value.length) {
-    return value
-  }
 
   return Object.entries(path.params).reduce((url, [name, param]) => {
     const paramName = getParamName(`${paramStart}${name}${paramEnd}`)
