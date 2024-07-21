@@ -93,3 +93,75 @@ router.push('routes.user.profile') // ok
 ## Case Sensitivity
 
 By default route paths are NOT case sensitive. If you need part of your route to be case sensitive, we recommend using a [Regex Param](/core-concepts/route-params#regexp-params).
+
+## External Routes
+
+Kitbag Router supports defining routes that are "external" to your single-page app (SPA). With `createExternalRoutes`, you can get all of the benefits of defined routes for routing that takes the user to another website, like perhaps your docs.
+
+```ts
+import { createExternalRoutes } from '@kitbag/router'
+
+export const documentationRoutes = createExternalRoutes([
+  {
+    host: 'https://router.kitbag.dev/',
+    name: 'docs',
+    children: createExternalRoutes([
+      {
+        name: 'api',
+        path: '/api/[topic]',
+      },
+    ]),
+  },
+])
+```
+
+Now we can include these routes with all of the internal routes your app already uses.
+
+```ts
+import { createRoutes, createRouter } from '@kitbag/router'
+import { documentationRoutes } from './documentationRoutes'
+
+export const routes = createRoutes([
+  {
+    name: 'home',
+    path: '/',
+    component: () => import('@/views/HomeView.vue'),
+  },
+  ...
+])
+
+export const router = createRouter([routes, documentationRoutes])
+```
+
+Now your router has all the context it needs to not only handle routing between your internal views, but also for sending users to your external docs site.
+
+```ts
+import { useRouter } from '@kitbag/router'
+
+const router = useRouter()
+
+function goToTopic(topic: string): void {
+  router.push('docs.api', { topic })
+}
+```
+
+### Host
+
+External routes support route params inside of the `host`, just like `path` and `query`.
+
+```ts
+import { createExternalRoutes } from '@kitbag/router'
+
+export const documentationRoutes = createExternalRoutes([
+  {
+    host: 'https://[subdomain].kitbag.dev/',
+    name: 'docs',
+    children: createExternalRoutes([
+      {
+        name: 'api',
+        path: '/api/[topic]',
+      },
+    ]),
+  },
+])
+```

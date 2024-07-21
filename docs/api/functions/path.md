@@ -24,8 +24,7 @@ Constructs a Path object, which enables assigning types for params.
 
 `Path`\<`TPath`, `TParams`\>
 
-An object representing the path which includes the path string, its parameters,
-         and a toString method for getting the path as a string.
+An object representing the path which includes the path string, its parameters, and a toString method for getting the path as a string.
 
 ## Example
 
