@@ -24,8 +24,7 @@ Constructs a Query object, which enables assigning types for params.
 
 `Query`\<`TQuery`, `TParams`\>
 
-An object representing the query which includes the query string, its parameters,
-         and a toString method for getting the query as a string.
+An object representing the query which includes the query string, its parameters, and a toString method for getting the query as a string.
 
 ## Example
 

@@ -19,7 +19,7 @@ name: string | undefined;
 Path part of URL. If value is provided as `string`, assumes any params will be `string`. See [Path](/api/functions/path).
 
 ```ts
-path: : string | Path;
+path?: : string | Path | undefined;
 ```
 
 ### query
