@@ -55,7 +55,7 @@ export type ParentRouteProps = Partial<WithComponent | WithComponents> & WithHoo
   /**
    * Path part of URL.
    */
-  path: string | Path,
+  path?: string | Path,
   /**
    * Query (aka search) part of URL.
    */
@@ -89,7 +89,7 @@ export type ChildRouteProps = (WithComponent | WithComponents) & WithHooks & {
   /**
    * Path part of URL.
    */
-  path: string | Path,
+  path?: string | Path,
   /**
    * Query (aka search) part of URL.
    */

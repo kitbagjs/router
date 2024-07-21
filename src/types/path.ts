@@ -27,14 +27,25 @@ export type Path<
   params: string extends TPath ? Record<string, Param> : Identity<ExtractParamsFromPathString<TPath, TParams>>,
   toString: () => string,
 }
-export type ToPath<T extends string | Path> = T extends string ? Path<T, {}> : T
+export type ToPath<T extends string | Path | undefined> =T extends string
+  ? Path<T, {}>
+  : T extends undefined
+    ? Path<'', {}>
+    : unknown extends T
+      ? Path<'', {}>
+      : T
+
 
 function isPath(value: unknown): value is Path {
   return isRecord(value) && typeof value.path === 'string'
 }
 
-export function toPath<T extends string | Path>(value: T): ToPath<T>
-export function toPath<T extends string | Path>(value: T): Path {
+export function toPath<T extends string | Path | undefined>(value: T): ToPath<T>
+export function toPath<T extends string | Path | undefined>(value: T): Path {
+  if (value === undefined) {
+    return path('', {})
+  }
+
   if (isPath(value)) {
     return value
   }

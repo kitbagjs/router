@@ -83,3 +83,14 @@ test('given route without meta, sets meta equal to empty object', () => {
 
   expect(route.matched.meta).toEqual({})
 })
+
+test('given route without path, sets path equal to empty string', () => {
+  const [route] = createRoutes([
+    {
+      name: 'without-path',
+      component,
+    },
+  ])
+
+  expect(route.path.toString()).toEqual('')
+})

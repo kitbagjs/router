@@ -6,7 +6,6 @@ test('when given external route props with a host return a route with a host', (
     {
       host: 'https://kitbag.dev',
       name: 'kitbag',
-      path: '/',
     },
   ])
 
@@ -17,11 +16,10 @@ test('when given external route props with a host and children return host for e
   const [routeA, routeB] = createExternalRoutes([
     {
       host: 'https://kitbag.dev',
-      path: '/',
       children: createExternalRoutes([
         {
           name: 'foo',
-          path: 'child',
+          path: '/foo',
         },
       ]),
     },
