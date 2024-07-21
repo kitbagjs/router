@@ -21,7 +21,7 @@ export type ExternalRouteParentProps = {
   /**
    * Path part of URL.
    */
-  path: string | Path,
+  path?: string | Path,
   /**
    * Query (aka search) part of URL.
    */
@@ -48,7 +48,7 @@ export type ExternalRouteChildProps = {
   /**
    * Path part of URL.
    */
-  path: string | Path,
+  path?: string | Path,
   /**
    * Query (aka search) part of URL.
    */
