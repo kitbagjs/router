@@ -45,7 +45,7 @@ test.each([
   true,
   false,
 ])('calls router.push with url and replace %s', async (replace) => {
-  const routes = [
+  const router = createRouter([
     createRoute({
       name: 'routeA',
       path: '/routeA',
@@ -56,9 +56,7 @@ test.each([
       path: '/routeB',
       component,
     }),
-  ] as const
-
-  const router = createRouter(routes, {
+  ], {
     initialUrl: '/routeA',
   })
 

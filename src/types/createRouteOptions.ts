@@ -46,15 +46,15 @@ export function isRouteWithParent(options: CreateRouteOptions): options is Creat
 }
 
 export function isRouteWithComponent(value: CreateRouteOptions): value is CreateRouteOptions & WithComponent {
-  return typeof 'component' in value
+  return 'component' in value
 }
 
 export function isRouteWithComponents(value: CreateRouteOptions): value is CreateRouteOptions & WithComponents {
-  return typeof 'components' in value
+  return 'components' in value
 }
 
 export function isRouteWithComponentCallback(value: CreateRouteOptions): value is CreateRouteOptions & WithComponentCallback {
-  return typeof 'loadComponent' in value
+  return 'loadComponent' in value
 }
 
 export function isRouteWithoutComponent(value: CreateRouteOptions): value is Omit<CreateRouteOptions, 'component' | 'components'> {
@@ -119,8 +119,8 @@ export function combineRoutes(parent: Route, child: Route): Route {
     key: combineName(parent.key, child.key),
     path: combinePath(parent.path, child.path),
     query: combineQuery(parent.query, child.query),
-    matches: [parent.matched, ...child.matches],
+    matches: [...parent.matches, child.matched],
     host: parent.host,
-    depth: child.depth + 1,
+    depth: parent.depth + 1,
   }
 }

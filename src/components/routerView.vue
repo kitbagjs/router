@@ -67,7 +67,7 @@
     }
 
     if (isRouteWithComponentCallback(options)) {
-      return options.loadComponent(route.params)
+      return { default: options.loadComponent(route.params) }
     }
 
     return {}
