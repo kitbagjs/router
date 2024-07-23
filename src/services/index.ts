@@ -1,7 +1,5 @@
 export * from './component'
 export * from './createParam'
-export type { CreateRouteOptions } from './createRoute'
-export { createRoute } from './createRoute'
 export * from './createRouter'
 export * from './path'
 export * from './query'

@@ -75,12 +75,17 @@ export type CreateRouteOptions<
   TName extends string | undefined = string,
   TPath extends string | Path | undefined = string | Path | undefined,
   TQuery extends string | Query | undefined = string | Query | undefined,
+  THost extends string | Host | undefined = string | Host | undefined,
   TParent extends Route | undefined = undefined
 > = Partial<WithComponent | WithComponents | WithComponentCallback<ComponentCallbackParams<CombinePath<ParentPath<TParent>, ToPath<TPath>>, CombineQuery<ParentQuery<TParent>, ToQuery<TQuery>>>>> & WithHooks & {
   /**
    * Name for route, used to create route keys and in navigation.
    */
   name?: TName,
+  /**
+   * Host part of URL.
+   */
+  host?: THost,
   /**
    * Path part of URL.
    */
@@ -110,7 +115,7 @@ type CreateRouteOptionsWithParent<
   TName extends string | undefined = undefined,
   TPath extends string | Path | undefined = undefined,
   TQuery extends string | Query | undefined = undefined
-> = CreateRouteOptions<TName, TPath, TQuery, TParent> & {
+> = CreateRouteOptions<TName, TPath, TQuery, Host<'', {}>, TParent> & {
   parent: TParent,
 }
 

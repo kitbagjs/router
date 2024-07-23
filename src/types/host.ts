@@ -28,7 +28,13 @@ export type Host<
   toString: () => string,
 }
 
-export type ToHost<T extends string | Host> = T extends string ? Host<T, {}> : T
+export type ToHost<T extends string | Host | undefined> = T extends string
+  ? Host<T, {}>
+  : T extends undefined
+    ? Host<'', {}>
+    : unknown extends T
+      ? Host<'', {}>
+      : T
 
 function isHost(value: unknown): value is Host {
   return isRecord(value) && typeof value.host === 'string'

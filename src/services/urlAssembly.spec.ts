@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { InvalidRouteParamValueError } from '@/errors/invalidRouteParamValueError'
+import { createExternalRoute } from '@/services/createExternalRoute'
 import { createRoute } from '@/services/createRoute'
 import { host } from '@/services/host'
 import { path } from '@/services/path'
@@ -264,115 +265,103 @@ describe('static query', () => {
   })
 })
 
-// describe('host params', () => {
-//   test.each([
-//     ['kitbag.dev'],
-//     [host('kitbag.dev', {})],
-//   ])('given simple route with string host and without params, returns route host', (host) => {
-//     const route = createExternalRoutes([
-//       {
-//         name: 'simple',
-//         path: '/',
-//         host,
-//         component,
-//       },
-//     ])
+describe('host params', () => {
+  test.each([
+    ['kitbag.dev'],
+    [host('kitbag.dev', {})],
+  ])('given simple route with string host and without params, returns route host', (host) => {
+    const route = createExternalRoute({
+      name: 'simple',
+      path: '/',
+      host,
+      component,
+    })
 
-//     const url = assembleUrl(route)
+    const url = assembleUrl(route)
 
-//     expect(url).toBe('kitbag.dev/')
-//   })
+    expect(url).toBe('kitbag.dev/')
+  })
 
-//   test.each([
-//     ['[?subdomain]kitbag.dev'],
-//     [host('[?subdomain]kitbag.dev', { subdomain: String })],
-//     [host('[?subdomain]kitbag.dev', { subdomain: withDefault(String, 'abc') })],
-//   ])('given route with optional param NOT provided, leaves entire key off', (host) => {
-//     const route = createExternalRoutes([
-//       {
-//         name: 'simple',
-//         path: '/',
-//         host,
-//         component,
-//       },
-//     ])
+  test.each([
+    ['[?subdomain]kitbag.dev'],
+    [host('[?subdomain]kitbag.dev', { subdomain: String })],
+    [host('[?subdomain]kitbag.dev', { subdomain: withDefault(String, 'abc') })],
+  ])('given route with optional param NOT provided, leaves entire key off', (host) => {
+    const route = createExternalRoute({
+      name: 'simple',
+      path: '/',
+      host,
+      component,
+    })
 
-//     const url = assembleUrl(route)
+    const url = assembleUrl(route)
 
-//     expect(url).toBe('kitbag.dev/')
-//   })
+    expect(url).toBe('kitbag.dev/')
+  })
 
-//   test.each([
-//     ['[?subdomain]kitbag.dev'],
-//     [host('[?subdomain]kitbag.dev', { subdomain: String })],
-//   ])('given route with optional string param provided, returns route Host with string with values interpolated', (host) => {
-//     const route = createExternalRoutes([
-//       {
-//         name: 'simple',
-//         path: '/',
-//         host,
-//         component,
-//       },
-//     ])
+  test.each([
+    ['[?subdomain]kitbag.dev'],
+    [host('[?subdomain]kitbag.dev', { subdomain: String })],
+  ])('given route with optional string param provided, returns route Host with string with values interpolated', (host) => {
+    const route = createExternalRoute({
+      name: 'simple',
+      path: '/',
+      host,
+      component,
+    })
 
-//     const url = assembleUrl(route, {
-//       params: { subdomain: 'ABC.' },
-//     })
+    const url = assembleUrl(route, {
+      params: { subdomain: 'ABC.' },
+    })
 
-//     expect(url).toBe('ABC.kitbag.dev/')
-//   })
+    expect(url).toBe('ABC.kitbag.dev/')
+  })
 
 
-//   test('given route with default string param provided, returns route Host with string with values interpolated', () => {
-//     const route = createExternalRoutes([
-//       {
-//         name: 'simple',
-//         path: '/',
-//         host: host('[?subdomain]kitbag.dev', { subdomain: withDefault(String, 'abc.') }),
-//         component,
-//       },
-//     ])
+  test('given route with default string param provided, returns route Host with string with values interpolated', () => {
+    const route = createExternalRoute({
+      name: 'simple',
+      path: '/',
+      host: host('[?subdomain]kitbag.dev', { subdomain: withDefault(String, 'abc.') }),
+      component,
+    })
 
-//     const url = assembleUrl(route, {
-//       params: { subdomain: 'DEF.' },
-//     })
+    const url = assembleUrl(route, {
+      params: { subdomain: 'DEF.' },
+    })
 
-//     expect(url).toBe('DEF.kitbag.dev/')
-//   })
+    expect(url).toBe('DEF.kitbag.dev/')
+  })
 
-//   test.each([
-//     ['[subdomain]kitbag.dev'],
-//     [host('[subdomain]kitbag.dev', { subdomain: String })],
-//   ])('given route with required string param NOT provided, throws error', (host) => {
-//     const route = createExternalRoutes([
-//       {
-//         name: 'simple',
-//         path: '/',
-//         host,
-//         component,
-//       },
-//     ])
+  test.each([
+    ['[subdomain]kitbag.dev'],
+    [host('[subdomain]kitbag.dev', { subdomain: String })],
+  ])('given route with required string param NOT provided, throws error', (host) => {
+    const route = createExternalRoute({
+      name: 'simple',
+      path: '/',
+      host,
+      component,
+    })
 
-//     expect(() => assembleUrl(route)).toThrowError(InvalidRouteParamValueError)
-//   })
+    expect(() => assembleUrl(route)).toThrowError(InvalidRouteParamValueError)
+  })
 
-//   test.each([
-//     ['[subdomain]kitbag.dev'],
-//     [host('[subdomain]kitbag.dev', { subdomain: String })],
-//   ])('given route with required string param provided, returns route Host with string with values interpolated', (host) => {
-//     const route = createExternalRoutes([
-//       {
-//         name: 'simple',
-//         path: '/',
-//         host,
-//         component,
-//       },
-//     ])
+  test.each([
+    ['[subdomain]kitbag.dev'],
+    [host('[subdomain]kitbag.dev', { subdomain: String })],
+  ])('given route with required string param provided, returns route Host with string with values interpolated', (host) => {
+    const route = createExternalRoute({
+      name: 'simple',
+      path: '/',
+      host,
+      component,
+    })
 
-//     const url = assembleUrl(route, {
-//       params: { subdomain: 'ABC.' },
-//     })
+    const url = assembleUrl(route, {
+      params: { subdomain: 'ABC.' },
+    })
 
-//     expect(url).toBe('ABC.kitbag.dev/')
-//   })
-// })
+    expect(url).toBe('ABC.kitbag.dev/')
+  })
+})
