@@ -2,8 +2,9 @@ import { mount, flushPromises } from '@vue/test-utils'
 import { expect, test } from 'vitest'
 import { defineAsyncComponent } from 'vue'
 import helloWorld from '@/components/helloWorld'
-import { createRoute, isRouteWithComponent } from '@/services/createRoute'
+import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
+import { isRouteWithComponent } from '@/types/createRouteOptions'
 import { routes } from '@/utilities/testHelpers'
 
 test('renders component for initial route', async () => {

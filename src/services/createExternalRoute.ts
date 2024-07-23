@@ -1,11 +1,13 @@
+import { markRaw } from 'vue'
 import { CombineName } from '@/services/combineName'
 import { CombinePath } from '@/services/combinePath'
 import { CombineQuery } from '@/services/combineQuery'
-import { CreateRouteOptions } from '@/services/createRoute'
-import { Host, ToHost } from '@/types/host'
-import { Path, ToPath } from '@/types/path'
-import { Query, ToQuery } from '@/types/query'
+import { combineRoutes, CreateRouteOptions, isRouteWithParent } from '@/types/createRouteOptions'
+import { Host, toHost, ToHost } from '@/types/host'
+import { Path, toPath, ToPath } from '@/types/path'
+import { Query, toQuery, ToQuery } from '@/types/query'
 import { Route } from '@/types/route'
+import { checkDuplicateKeys } from '@/utilities/checkDuplicateKeys'
 
 
 type CreateRouteOptionsWithoutParent<
@@ -42,6 +44,26 @@ export function createExternalRoute<
   THost extends string | Host | undefined = undefined
 >(options: CreateRouteOptionsWithParent<TParent, TName, TPath, TQuery, THost>): Route<CombineName<TParent['key'], TName extends string ? TName : ''>, ToHost<THost>, CombinePath<TParent['path'], ToPath<TPath>>, CombineQuery<TParent['query'], ToQuery<TQuery>>>
 
-export function createExternalRoute(_options: any): Route {
-  throw 'not implemented'
+export function createExternalRoute(options: CreateRouteOptions | CreateRouteOptionsWithParent<Route>): Route {
+  const path = toPath(options.path)
+  const query = toQuery(options.query)
+  const host = toHost(options.host ?? '')
+  const rawRoute = markRaw({ meta: {}, ...options })
+
+  const route = {
+    matched: rawRoute,
+    matches: [rawRoute],
+    key: options.name ?? '',
+    host,
+    path,
+    query,
+    depth: 1,
+    disabled: options.disabled ?? false,
+  }
+
+  const merged = isRouteWithParent(options) ? combineRoutes(options.parent, route) : route
+
+  checkDuplicateKeys(merged.path.params, merged.query.params, merged.host.params)
+
+  return merged
 }

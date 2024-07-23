@@ -1,4 +1,4 @@
-import { CreateRouteOptions } from '@/services/createRoute'
+import { CreateRouteOptions } from '@/types/createRouteOptions'
 import { Host } from '@/types/host'
 import { Path } from '@/types/path'
 import { Query } from '@/types/query'
