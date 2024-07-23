@@ -1,4 +1,6 @@
 import { expect, test } from 'vitest'
+import { DuplicateParamsError } from '@/errors/duplicateParamsError'
+import { createExternalRoute } from '@/services/createExternalRoute'
 import { createRoute } from '@/services/createRoute'
 import { getRouteParamValues, routeParamsAreValid } from '@/services/paramValidation'
 import { path } from '@/services/path'
@@ -142,21 +144,20 @@ test.each([
   expect(response).toBe(true)
 })
 
-// test.each([
-//   { path: '/duplicate/[foo]', query: 'params=[?foo]' },
-//   { path: '/duplicate/[foo]', host: 'https://[foo].kitbag.dev' },
-//   { path: '/', host: 'https://[?foo].kitbag.dev', query: 'params=[?foo]' },
-//   { path: '/duplicate/[foo]', host: 'https://[foo].kitbag.dev', query: 'params=[foo]' },
-// ])('given route with duplicate param names across path and query, throws DuplicateParamsError', (route) => {
-//   const action: () => void = () => createExternalRoutes([
-//     {
-//       name: 'different-cased-params',
-//       ...route,
-//       component,
-//     })
+test.each([
+  { path: '/duplicate/[foo]', query: 'params=[?foo]' },
+  { path: '/duplicate/[foo]', host: 'https://[foo].kitbag.dev' },
+  { path: '/', host: 'https://[?foo].kitbag.dev', query: 'params=[?foo]' },
+  { path: '/duplicate/[foo]', host: 'https://[foo].kitbag.dev', query: 'params=[foo]' },
+])('given route with duplicate param names across path and query, throws DuplicateParamsError', (route) => {
+  const action: () => void = () => createExternalRoute({
+    name: 'different-cased-params',
+    ...route,
+    component,
+  })
 
-//   expect(action).toThrowError(DuplicateParamsError)
-// })
+  expect(action).toThrowError(DuplicateParamsError)
+})
 
 test('given value with encoded URL characters, decodes those characters', () => {
   const escapeCodes = [

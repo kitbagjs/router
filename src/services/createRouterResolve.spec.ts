@@ -1,4 +1,5 @@
 import { expect, test } from 'vitest'
+import { createExternalRoute } from '@/services/createExternalRoute'
 import { createRoute } from '@/services/createRoute'
 import { createRouterResolve } from '@/services/createRouterResolve'
 import { component, routes } from '@/utilities/testHelpers'
@@ -56,34 +57,30 @@ test('given a param with a dash or underscore resolves the correct url', () => {
   expect(snake).toBe('/foo')
 })
 
-// test('when given an external route returns a fully qualified url', () => {
-//   const routes = createExternalRoutes([
-//     {
-//       host: 'https://kitbag.dev',
-//       name: 'external',
-//       path: '/',
-//     },
-//   ])
+test('when given an external route returns a fully qualified url', () => {
+  const route = createExternalRoute({
+    host: 'https://kitbag.dev',
+    name: 'external',
+    path: '/',
+  })
 
-//   const resolve = createRouterResolve(routes)
+  const resolve = createRouterResolve([route])
 
-//   const url = resolve('external')
+  const url = resolve('external')
 
-//   expect(url).toBe('https://kitbag.dev/')
-// })
+  expect(url).toBe('https://kitbag.dev/')
+})
 
-// test('when given an external route with params in host, interpolates param values', () => {
-//   const routes = createExternalRoutes([
-//     {
-//       host: 'https://[subdomain].kitbag.dev',
-//       name: 'external',
-//       path: '/',
-//     },
-//   ])
+test('when given an external route with params in host, interpolates param values', () => {
+  const route = createExternalRoute({
+    host: 'https://[subdomain].kitbag.dev',
+    name: 'external',
+    path: '/',
+  })
 
-//   const resolve = createRouterResolve(routes)
+  const resolve = createRouterResolve([route])
 
-//   const url = resolve('external', { 'subdomain': 'router' })
+  const url = resolve('external', { 'subdomain': 'router' })
 
-//   expect(url).toBe('https://router.kitbag.dev/')
-// })
+  expect(url).toBe('https://router.kitbag.dev/')
+})
