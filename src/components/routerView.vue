@@ -9,10 +9,10 @@
   import { useRejection } from '@/compositions/useRejection'
   import { useRoute } from '@/compositions/useRoute'
   import { useRouterDepth } from '@/compositions/useRouterDepth'
+  import { CreateRouteOptions, isRouteWithComponent, isRouteWithComponents } from '@/services/createRoute'
   import { RouterRejection } from '@/services/createRouterReject'
   import { RouterRoute } from '@/services/createRouterRoute'
   import { depthInjectionKey } from '@/types/injectionDepth'
-  import { RouteProps, isRouteWithComponent, isRouteWithComponents } from '@/types/routeProps'
 
   const { name = 'default' } = defineProps<{
     name?: string,
@@ -57,7 +57,7 @@
     return null
   })
 
-  function getComponents(route: RouteProps): Record<string, Component | undefined> {
+  function getComponents(route: CreateRouteOptions): Record<string, Component | undefined> {
     if (isRouteWithComponents(route)) {
       return route.components
     }

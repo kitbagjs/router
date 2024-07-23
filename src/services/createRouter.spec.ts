@@ -1,21 +1,19 @@
 import { flushPromises } from '@vue/test-utils'
 import { expect, test, vi } from 'vitest'
 import { toRefs } from 'vue'
+import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
 import * as resolveUtilities from '@/services/createRouterResolve'
-import { createRoutes } from '@/services/createRoutes'
 import { component } from '@/utilities/testHelpers'
 
 test('initial route is set', async () => {
-  const routes = createRoutes([
-    {
+  const { route, initialized } = createRouter([
+    createRoute({
       name: 'root',
       component,
       path: '/',
-    },
-  ])
-
-  const { route, initialized } = createRouter(routes, {
+    }),
+  ], {
     initialUrl: '/',
   })
 
@@ -25,25 +23,23 @@ test('initial route is set', async () => {
 })
 
 test('updates the route when navigating', async () => {
-  const routes = createRoutes([
-    {
+  const { push, route, initialized } = createRouter([
+    createRoute({
       name: 'first',
       component,
       path: '/first',
-    },
-    {
+    }),
+    createRoute({
       name: 'second',
       component,
       path: '/second',
-    },
-    {
+    }),
+    createRoute({
       name: 'third',
       component,
       path: '/third/[id]',
-    },
-  ])
-
-  const { push, route, initialized } = createRouter(routes, {
+    }),
+  ], {
     initialUrl: '/first',
   })
 
@@ -57,15 +53,14 @@ test('updates the route when navigating', async () => {
 })
 
 test('route update updates the current route', async () => {
-  const routes = createRoutes([
+  const route = createRoute(
     {
       name: 'root',
       component,
       path: '/[param]',
-    },
-  ])
+    })
 
-  const router = createRouter(routes, {
+  const router = createRouter([route], {
     initialUrl: '/one',
   })
 
@@ -84,13 +79,14 @@ test('route update updates the current route', async () => {
 })
 
 test.fails('route is readonly except for individual params', async () => {
-  const routes = createRoutes([
-    {
+  const routes = [
+    createRoute({
       name: 'root',
       component,
       path: '/',
-    },
-  ])
+    }),
+  ] as const
+
   const { route, initialized } = createRouter(routes, {
     initialUrl: '/',
   })
@@ -114,14 +110,14 @@ test.fails('route is readonly except for individual params', async () => {
   expect(route.params).toMatchObject({})
 })
 
-test('individual prams are writable', async () => {
-  const routes = createRoutes([
-    {
+test('individual params are writable', async () => {
+  const routes = [
+    createRoute({
       name: 'root',
       component,
       path: '/[param]',
-    },
-  ])
+    }),
+  ] as const
 
   const { route, initialized } = createRouter(routes, {
     initialUrl: '/one',
@@ -153,13 +149,13 @@ test('individual prams are writable', async () => {
 })
 
 test('individual params are writable when using toRefs', async () => {
-  const routes = createRoutes([
-    {
+  const routes = [
+    createRoute({
       name: 'root',
       component,
       path: '/[param]',
-    },
-  ])
+    }),
+  ] as const
 
   const { route, initialized } = createRouter(routes, {
     initialUrl: '/one',
@@ -177,15 +173,13 @@ test('individual params are writable when using toRefs', async () => {
 })
 
 test('setting an unknown param does not add its value to the route', async () => {
-  const routes = createRoutes([
-    {
+  const { route, initialized } = createRouter([
+    createRoute({
       name: 'root',
       component,
       path: '/',
-    },
-  ])
-
-  const { route, initialized } = createRouter(routes, {
+    }),
+  ], {
     initialUrl: '/',
   })
 
@@ -201,14 +195,14 @@ test('setting an unknown param does not add its value to the route', async () =>
 })
 
 test('given an array of Routes, combines into single routes collection', () => {
-  const aRoutes = createRoutes([
-    { name: 'a-route-1', path: '/a-route-1', component },
-    { name: 'a-route-2', path: '/a-route-2', component },
-  ])
-  const bRoutes = createRoutes([
-    { name: 'b-route-1', path: '/b-route-1', component },
-    { name: 'b-route-2', path: '/b-route-2', component },
-  ])
+  const aRoutes = [
+    createRoute({ name: 'a-route-1', path: '/a-route-1', component }),
+    createRoute({ name: 'a-route-2', path: '/a-route-2', component }),
+  ]
+  const bRoutes = [
+    createRoute({ name: 'b-route-1', path: '/b-route-1', component }),
+    createRoute({ name: 'b-route-2', path: '/b-route-2', component }),
+  ]
 
   const spy = vi.spyOn(resolveUtilities, 'createRouterResolve')
 

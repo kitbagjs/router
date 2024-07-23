@@ -23,15 +23,13 @@ type PropsGetter<TComponent extends Component> = () => MaybePromise<Props<TCompo
  *
  * @example
  * ```ts
- * import { createRoutes, component } from '@kitbag/router'
+ * import { createRoute, component } from '@kitbag/router'
  *
- * export const routes = createRoutes([
- *   {
- *     name: 'User',
- *     path: '/',
- *     component: component(User, () => ({ userId: 1 }))
- *   },
- * ])
+ * export const routes = createRoute({
+ *   name: 'User',
+ *   path: '/',
+ *   component: component(User, () => ({ userId: 1 }))
+ * })
  * ```
  */
 export function component<TComponent extends Component>(component: TComponent, props: PropsGetter<TComponent>): Component {

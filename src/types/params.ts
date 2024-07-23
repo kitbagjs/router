@@ -80,8 +80,9 @@ export type ExtractPathParamType<
 export type ExtractRouteParamTypes<TRoute> = TRoute extends {
   path: { params: infer PathParams extends Record<string, Param> },
   query: { params: infer QueryParams extends Record<string, Param> },
+  host: { params: infer HostParams extends Record<string, Param> },
 }
-  ? ExtractParamTypes<MergeParams<PathParams, QueryParams>>
+  ? ExtractParamTypes<MergeParams<HostParams, MergeParams<PathParams, QueryParams>>>
   : {}
 
 /**

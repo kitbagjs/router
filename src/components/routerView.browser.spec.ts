@@ -2,21 +2,18 @@ import { mount, flushPromises } from '@vue/test-utils'
 import { expect, test } from 'vitest'
 import { defineAsyncComponent } from 'vue'
 import helloWorld from '@/components/helloWorld'
+import { createRoute, isRouteWithComponent } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
-import { createRoutes } from '@/services/createRoutes'
-import { isRouteWithComponent } from '@/types/routeProps'
 import { routes } from '@/utilities/testHelpers'
 
 test('renders component for initial route', async () => {
-  const routes = createRoutes([
-    {
-      name: 'parent',
-      path: '/',
-      component: { template: 'hello world' },
-    },
-  ])
+  const route = createRoute({
+    name: 'parent',
+    path: '/',
+    component: { template: 'hello world' },
+  })
 
-  const router = createRouter(routes, {
+  const router = createRouter([route], {
     initialUrl: '/',
   })
 
@@ -36,21 +33,19 @@ test('renders component for initial route', async () => {
 })
 
 test('renders components for initial route', async () => {
-  const routes = createRoutes([
-    {
-      name: 'parent',
-      path: '/parent',
-      children: createRoutes([
-        {
-          name: 'child',
-          path: '/child',
-          component: { template: 'Child' },
-        },
-      ]),
-    },
-  ])
+  const parentRoute = createRoute({
+    name: 'parent',
+    path: '/parent',
+  })
 
-  const router = createRouter(routes, {
+  const childRoute = createRoute({
+    parent: parentRoute,
+    name: 'child',
+    path: '/child',
+    component: { template: 'Child' },
+  })
+
+  const router = createRouter([parentRoute, childRoute], {
     initialUrl: '/parent/child',
   })
 
@@ -70,21 +65,23 @@ test('renders components for initial route', async () => {
 })
 
 test('updates components when route changes', async () => {
-  const routes = createRoutes([
-    {
+  const routes = [
+    createRoute({
       name: 'childA',
       path: '/childA',
       component: { template: 'ChildA' },
-    }, {
+    }),
+    createRoute({
       name: 'childB',
       path: '/childB',
       component: { template: 'ChildB' },
-    }, {
+    }),
+    createRoute({
       name: 'childC',
       path: '/childC',
       component: { template: 'ChildC' },
-    },
-  ])
+    }),
+  ] as const
 
   const router = createRouter(routes, {
     initialUrl: '/childA',
@@ -121,15 +118,13 @@ test.each([
   defineAsyncComponent(() => import('./helloWorld')),
   () => import('./helloWorld'),
 ])('resolves async components', async (component) => {
-  const routes = createRoutes([
-    {
-      name: 'parent',
-      path: '/',
-      component,
-    },
-  ])
+  const route = createRoute({
+    name: 'parent',
+    path: '/',
+    component,
+  })
 
-  const router = createRouter(routes, {
+  const router = createRouter([route], {
     initialUrl: '/',
   })
 
@@ -201,15 +196,13 @@ test('Renders custom genericRejection component when the initialUrl does not mat
 })
 
 test('Renders the NotFound component when the router.push does not match', async () => {
-  const routes = createRoutes([
-    {
-      name: 'parent',
-      path: '/',
-      component: { template: 'hello world' },
-    },
-  ])
+  const route = createRoute({
+    name: 'parent',
+    path: '/',
+    component: { template: 'hello world' },
+  })
 
-  const router = createRouter(routes, {
+  const router = createRouter([route], {
     initialUrl: '/',
   })
 
@@ -231,15 +224,13 @@ test('Renders the NotFound component when the router.push does not match', async
 })
 
 test('Renders the route component when the router.push does match after a rejection', async () => {
-  const routes = createRoutes([
-    {
-      name: 'parent',
-      path: '/',
-      component: { template: 'hello world' },
-    },
-  ])
+  const route = createRoute({
+    name: 'parent',
+    path: '/',
+    component: { template: 'hello world' },
+  })
 
-  const router = createRouter(routes, {
+  const router = createRouter([route], {
     initialUrl: '/does-not-exist',
   })
 
@@ -263,19 +254,17 @@ test('Renders the route component when the router.push does match after a reject
 })
 
 test('Renders the multiple components when using named route views', async () => {
-  const routes = createRoutes([
-    {
-      name: 'parent',
-      path: '/',
-      components: {
-        default: { template: '_default_' },
-        one: { template: '_one_' },
-        two: { template: '_two_' },
-      },
+  const route = createRoute({
+    name: 'parent',
+    path: '/',
+    components: {
+      default: { template: '_default_' },
+      one: { template: '_one_' },
+      two: { template: '_two_' },
     },
-  ])
+  })
 
-  const router = createRouter(routes, {
+  const router = createRouter([route], {
     initialUrl: '/',
   })
 

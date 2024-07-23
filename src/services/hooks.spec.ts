@@ -11,48 +11,46 @@ test('calls hook with correct routes', () => {
   const { hooks } = createRouterHooks()
   const { runBeforeRouteHooks } = createRouteHookRunners()
 
-  const routeA = {
+  const toOptions = {
     name: 'routeA',
-    path: '/routeA',
     component,
     onBeforeRouteEnter: hook,
     meta: {},
   }
 
-  const resolvedRouteA: ResolvedRoute = {
-    matched: routeA,
-    matches: [routeA],
-    key: routeA.name,
+  const toRoute: ResolvedRoute = {
+    matched: toOptions,
+    matches: [toOptions],
+    key: toOptions.name,
     query: createResolvedRouteQuery(),
     params: {},
   }
 
-  const routeB = {
+  const fromOptions = {
     name: 'routeB',
-    path: '/routeB',
     component,
     meta: {},
   }
 
-  const resolvedRouteB: ResolvedRoute = {
-    matched: routeB,
-    matches: [routeB],
-    key: routeB.name,
+  const fromRoute: ResolvedRoute = {
+    matched: fromOptions,
+    matches: [fromOptions],
+    key: fromOptions.name,
     query: createResolvedRouteQuery(),
     params: {},
   }
 
   runBeforeRouteHooks({
     hooks,
-    to: resolvedRouteA,
-    from: resolvedRouteB,
+    to: toRoute,
+    from: fromRoute,
   })
 
   expect(hook).toHaveBeenCalledOnce()
 
   const [to, { from }] = hook.mock.lastCall
-  expect(to).toMatchObject(resolvedRouteA)
-  expect(from).toMatchObject(resolvedRouteB)
+  expect(to).toMatchObject(toRoute)
+  expect(from).toMatchObject(fromRoute)
 })
 
 test.each<{ type: string, status: string, hook: BeforeRouteHook }>([
@@ -63,40 +61,38 @@ test.each<{ type: string, status: string, hook: BeforeRouteHook }>([
 ])('Returns correct status when hook is called', async ({ status, hook }) => {
   const { runBeforeRouteHooks } = createRouteHookRunners()
   const { hooks } = createRouterHooks()
-  const route = {
+  const toOptions = {
     name: 'routeA',
-    path: '/routeA',
     component,
     onBeforeRouteEnter: hook,
     meta: {},
   }
 
-  const resolvedRoute: ResolvedRoute = {
-    matched: route,
-    matches: [route],
-    key: route.name,
+  const to: ResolvedRoute = {
+    matched: toOptions,
+    matches: [toOptions],
+    key: toOptions.name,
     query: createResolvedRouteQuery(),
     params: {},
   }
 
-  const routeB = {
+  const fromOptions = {
     name: 'routeB',
-    path: '/routeB',
     component,
     meta: {},
   }
 
-  const resolvedRouteB: ResolvedRoute = {
-    matched: routeB,
-    matches: [routeB],
-    key: routeB.name,
+  const from: ResolvedRoute = {
+    matched: fromOptions,
+    matches: [fromOptions],
+    key: fromOptions.name,
     query: createResolvedRouteQuery(),
     params: {},
   }
 
   const response = await runBeforeRouteHooks({
-    to: resolvedRoute,
-    from: resolvedRouteB,
+    to,
+    from,
     hooks,
   })
 
@@ -110,41 +106,39 @@ test('hook is called in order', async () => {
   const { hooks } = createRouterHooks()
   const { runBeforeRouteHooks } = createRouteHookRunners()
 
-  const route = {
+  const toOptions = {
     name: 'routeA',
-    path: '/routeA',
     component,
     onBeforeRouteEnter: [hookA, hookB, hookC],
     meta: {},
   }
 
-  const resolvedRoute: ResolvedRoute = {
-    matched: route,
-    matches: [route],
-    key: route.name,
+  const to: ResolvedRoute = {
+    matched: toOptions,
+    matches: [toOptions],
+    key: toOptions.name,
     query: createResolvedRouteQuery(),
     params: {},
   }
 
-  const routeB = {
+  const fromOptions = {
     name: 'routeB',
-    path: '/routeB',
     component,
     meta: {},
   }
 
-  const resolvedRouteB: ResolvedRoute = {
-    matched: routeB,
-    matches: [routeB],
-    key: routeB.name,
+  const from: ResolvedRoute = {
+    matched: fromOptions,
+    matches: [fromOptions],
+    key: fromOptions.name,
     query: createResolvedRouteQuery(),
     params: {},
   }
 
   await runBeforeRouteHooks({
     hooks,
-    to: resolvedRoute,
-    from: resolvedRouteB,
+    to,
+    from,
   })
 
   const [orderA] = hookA.mock.invocationCallOrder

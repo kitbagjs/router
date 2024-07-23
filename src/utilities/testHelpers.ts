@@ -1,8 +1,9 @@
 import { vi } from 'vitest'
+import { path } from '@/services'
 import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
-import { createRoutes } from '@/services/createRoutes'
+import { createRoute } from '@/services/createRoute'
 import { ResolvedRoute } from '@/types/resolved'
-import { RoutePropsWithMeta } from '@/types/route'
+import { CreateRouteOptionsWithMeta } from '@/types/route'
 
 export const random = {
   number(options: { min?: number, max?: number } = {}): number {
@@ -25,45 +26,52 @@ export function getError(callback: () => any): unknown {
 
 export const component = { template: '<div>This is component</div>' }
 
-export const routes = createRoutes([
-  {
-    name: 'parentA',
-    path: '/parentA/[paramA]',
-    children: createRoutes([
-      {
-        name: 'childA',
-        path: '/[?paramB]',
-        children: createRoutes([
-          {
-            name: 'grandChildA',
-            path: '/[paramC]',
-            component,
-          },
-        ]),
-      },
-      {
-        name: 'childB',
-        path: '/[paramD]',
-        component,
-      },
-    ]),
-  },
-  {
+const parentA = createRoute({
+  name: 'parentA',
+  path: '/parentA/[paramA]',
+})
+
+const childA = createRoute({
+  parent: parentA,
+  name: 'childA',
+  path: '/[?paramB]',
+})
+
+const childB = createRoute({
+  parent: parentA,
+  name: 'childB',
+  path: '/[paramD]',
+  component,
+})
+
+const grandChild = createRoute({
+  parent: childA,
+  name: 'grandChildA',
+  path: '/[paramC]',
+  component,
+})
+
+export const routes = [
+  parentA,
+  childA,
+  childB,
+  grandChild,
+  createRoute({
     name: 'parentB',
     path: '/parentB',
     component,
-  },
-  {
+  }),
+  createRoute({
     name: 'parentC',
     path: '/',
     component,
-  },
-])
+  }),
+] as const
 
-export function mockRoute(name: string): RoutePropsWithMeta {
+export function mockRoute<TName extends string>(name: TName): CreateRouteOptionsWithMeta {
   return {
     name,
-    path: `/${name}`,
+    path: path(`/${name}`, {}),
     component,
     onBeforeRouteEnter: vi.fn(),
     onBeforeRouteUpdate: vi.fn(),
@@ -72,7 +80,7 @@ export function mockRoute(name: string): RoutePropsWithMeta {
   }
 }
 
-export function mockResolvedRoute(matched: RoutePropsWithMeta, matches: RoutePropsWithMeta[]): ResolvedRoute {
+export function mockResolvedRoute(matched: CreateRouteOptionsWithMeta, matches: CreateRouteOptionsWithMeta[]): ResolvedRoute {
   return {
     matched,
     matches,

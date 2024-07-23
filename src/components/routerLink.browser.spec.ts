@@ -2,8 +2,8 @@ import { mount } from '@vue/test-utils'
 import { expect, test, vi } from 'vitest'
 import { h } from 'vue'
 import routerLink from '@/components/routerLink.vue'
+import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
-import { createRoutes } from '@/services/createRoutes'
 import { component } from '@/utilities/testHelpers'
 
 test('renders an anchor tag with the correct href and slot content', () => {
@@ -12,15 +12,13 @@ test('renders an anchor tag with the correct href and slot content', () => {
   const content = 'hello world'
   const href = new URL(path.replace('[paramName]', paramValue), window.location.origin)
 
-  const routes = createRoutes([
-    {
-      name: 'parent',
-      path,
-      component,
-    },
-  ])
+  const route = createRoute({
+    name: 'parent',
+    path,
+    component,
+  })
 
-  const router = createRouter(routes, {
+  const router = createRouter([route], {
     initialUrl: path,
   })
 
@@ -47,18 +45,18 @@ test.each([
   true,
   false,
 ])('calls router.push with url and replace %s', async (replace) => {
-  const routes = createRoutes([
-    {
+  const routes = [
+    createRoute({
       name: 'routeA',
       path: '/routeA',
       component: { render: () => h(routerLink, { to: resolve => resolve('routeB'), replace }) },
-    },
-    {
+    }),
+    createRoute({
       name: 'routeB',
       path: '/routeB',
       component,
-    },
-  ])
+    }),
+  ] as const
 
   const router = createRouter(routes, {
     initialUrl: '/routeA',
@@ -86,16 +84,14 @@ test.each([
 })
 
 test('to prop as string renders and routes correctly', () => {
-  const routes = createRoutes([
-    {
-      name: 'route',
-      path: '/route',
-      component,
-    },
-  ])
+  const route = createRoute({
+    name: 'route',
+    path: '/route',
+    component,
+  })
   const href = new URL('/route', window.location.origin)
 
-  const router = createRouter(routes, {
+  const router = createRouter([route], {
     initialUrl: '/route',
   })
 
@@ -127,21 +123,19 @@ test('to prop as string renders and routes correctly', () => {
 })
 
 test('when current route matches descendant, parent has "match" class', async () => {
-  const routes = createRoutes([
-    {
-      name: 'parent-route',
-      path: '/parent-route',
-      children: createRoutes([
-        {
-          name: 'child-route',
-          path: '/child-route',
-          component,
-        },
-      ]),
-    },
-  ])
+  const parentRoute = createRoute({
+    name: 'parent-route',
+    path: '/parent-route',
+  })
 
-  const router = createRouter(routes, {
+  const childRoute = createRoute({
+    parent: parentRoute,
+    name: 'child-route',
+    path: '/child-route',
+    component,
+  })
+
+  const router = createRouter([parentRoute, childRoute], {
     initialUrl: '/parent-route/child-route',
   })
 
@@ -165,21 +159,19 @@ test('when current route matches descendant, parent has "match" class', async ()
 })
 
 test('when current route matches to prop, parent has "match" and "exact-match" classes', async () => {
-  const routes = createRoutes([
-    {
-      name: 'parent-route',
-      path: '/parent-route',
-      children: createRoutes([
-        {
-          name: 'child-route',
-          path: '/child-route',
-          component,
-        },
-      ]),
-    },
-  ])
+  const parentRoute = createRoute({
+    name: 'parent-route',
+    path: '/parent-route',
+  })
 
-  const router = createRouter(routes, {
+  const childRoute = createRoute({
+    parent: parentRoute,
+    name: 'child-route',
+    path: '/child-route',
+    component,
+  })
+
+  const router = createRouter([parentRoute, childRoute], {
     initialUrl: '/parent-route',
   })
 
@@ -206,21 +198,19 @@ test.each([
   [true],
   [false],
 ])('isExternal slot prop works as expected', async (isExternal) => {
-  const routes = createRoutes([
-    {
-      name: 'parent-route',
-      path: '/parent-route',
-      children: createRoutes([
-        {
-          name: 'child-route',
-          path: '/child-route',
-          component,
-        },
-      ]),
-    },
-  ])
+  const parentRoute = createRoute({
+    name: 'parent-route',
+    path: '/parent-route',
+  })
 
-  const router = createRouter(routes, {
+  const childRoute = createRoute({
+    parent: parentRoute,
+    name: 'child-route',
+    path: '/child-route',
+    component,
+  })
+
+  const router = createRouter([parentRoute, childRoute], {
     initialUrl: '/parent-route',
   })
 

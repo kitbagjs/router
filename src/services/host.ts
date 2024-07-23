@@ -15,15 +15,13 @@ import { Identity } from '@/types/utilities'
  *
  * @example
  * ```ts
- * import { createRoutes, host } from '@kitbag/router'
+ * import { createRoute, host } from '@kitbag/router'
  *
- * export const routes = createRoutes([
- *   {
- *     name: 'docs',
- *     host: host('[subdomain]', { foo: String }),
- *     component: Docs
- *   },
- * ])
+ * export const routes = createRoute({
+ *   name: 'docs',
+ *   host: host('[subdomain]', { foo: String }),
+ *   component: Docs
+ * })
  * ```
  */
 export function host<THost extends string, TParams extends HostParamsWithParamNameExtracted<THost>>(host: THost, params: Identity<TParams>): Host<THost, TParams>

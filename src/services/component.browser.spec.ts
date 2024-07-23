@@ -2,19 +2,17 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { expect, test } from 'vitest'
 import echo from '@/components/echo'
 import { component } from '@/services/component'
+import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
-import { createRoutes } from '@/services/createRoutes'
 
 test('renders component with sync props', async () => {
-  const routes = createRoutes([
-    {
-      name: 'echo',
-      path: '/echo',
-      component: component(echo, () => ({ value: 'echo' })),
-    },
-  ])
+  const route = createRoute({
+    name: 'echo',
+    path: '/echo',
+    component: component(echo, () => ({ value: 'echo' })),
+  })
 
-  const router = createRouter(routes, {
+  const router = createRouter([route], {
     initialUrl: '/',
   })
 
@@ -37,17 +35,15 @@ test('renders component with sync props', async () => {
 })
 
 test('renders component with async props', async () => {
-  const routes = createRoutes([
-    {
-      name: 'echo',
-      path: '/echo',
-      component: component(echo, async () => {
-        return await { value: 'echo' }
-      }),
-    },
-  ])
+  const route = createRoute({
+    name: 'echo',
+    path: '/echo',
+    component: component(echo, async () => {
+      return await { value: 'echo' }
+    }),
+  })
 
-  const router = createRouter(routes, {
+  const router = createRouter([route], {
     initialUrl: '/',
   })
 

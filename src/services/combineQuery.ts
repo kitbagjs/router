@@ -10,8 +10,8 @@ type CombineQueryString<TParent extends string | undefined, TChild extends strin
   : TChild
 
 export type CombineQuery<
-  TParent extends Query | undefined,
-  TChild extends Query | undefined
+  TParent extends Query,
+  TChild extends Query
 > = ToQuery<TParent> extends { query: infer TParentQuery extends string, params: infer TParentParams extends Record<string, unknown> }
   ? ToQuery<TChild> extends { query: infer TChildQuery extends string, params: infer TChildParams extends Record<string, unknown> }
     ? MergeParams<RemoveLeadingQuestionMarkFromKeys<TParentParams>, RemoveLeadingQuestionMarkFromKeys<TChildParams>> extends QueryParamsWithParamNameExtracted<CombineQueryString<TParentQuery, TChildQuery>>

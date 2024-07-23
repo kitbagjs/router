@@ -1,17 +1,15 @@
 import { describe, expect, test } from 'vitest'
-import { createRoutes } from '@/services/createRoutes'
+import { createRoute } from '@/services/createRoute'
 import { generateRoutePathRegexPattern, generateRouteQueryRegexPatterns, getParamName, splitByMatches } from '@/services/routeRegex'
 import { component } from '@/utilities/testHelpers'
 
 describe('generateRoutePathRegexPattern', () => {
   test('given path without params, returns unmodified value with start and end markers', () => {
-    const [route] = createRoutes([
-      {
-        name: 'path-without-params',
-        path: 'parent/child/grandchild',
-        component,
-      },
-    ])
+    const route = createRoute({
+      name: 'path-without-params',
+      path: 'parent/child/grandchild',
+      component,
+    })
 
     const result = generateRoutePathRegexPattern(route)
 
@@ -20,13 +18,11 @@ describe('generateRoutePathRegexPattern', () => {
   })
 
   test('given path with params, returns value with params replaced with catchall', () => {
-    const [route] = createRoutes([
-      {
-        name: 'path-with-params',
-        path: 'parent/child/[childParam]/grand-child/[grandChild123]',
-        component,
-      },
-    ])
+    const route = createRoute({
+      name: 'path-with-params',
+      path: 'parent/child/[childParam]/grand-child/[grandChild123]',
+      component,
+    })
 
     const result = generateRoutePathRegexPattern(route)
 
@@ -36,13 +32,11 @@ describe('generateRoutePathRegexPattern', () => {
   })
 
   test('given path with optional params, returns value with params replaced with catchall', () => {
-    const [route] = createRoutes([
-      {
-        name: 'path-with-optional-params',
-        path: 'parent/child/[?childParam]/grand-child/[?grandChild123]',
-        component,
-      },
-    ])
+    const route = createRoute({
+      name: 'path-with-optional-params',
+      path: 'parent/child/[?childParam]/grand-child/[?grandChild123]',
+      component,
+    })
 
     const result = generateRoutePathRegexPattern(route)
 
@@ -52,13 +46,11 @@ describe('generateRoutePathRegexPattern', () => {
   })
 
   test('given path with regex characters outside of params, escapes regex characters', () => {
-    const [route] = createRoutes([
-      {
-        name: 'path-with-regex-chars',
-        path: 'path.with$]regex[params*',
-        component,
-      },
-    ])
+    const route = createRoute({
+      name: 'path-with-regex-chars',
+      path: 'path.with$]regex[params*',
+      component,
+    })
 
     const result = generateRoutePathRegexPattern(route)
 
@@ -69,13 +61,11 @@ describe('generateRoutePathRegexPattern', () => {
 
 describe('generateRouteQueryRegexPatterns', () => {
   test('given query without params, returns unmodified value with start and end markers', () => {
-    const [route] = createRoutes([
-      {
-        name: 'query-without-params',
-        path: 'query',
-        component,
-      },
-    ])
+    const route = createRoute({
+      name: 'query-without-params',
+      path: 'query',
+      component,
+    })
 
     const result = generateRouteQueryRegexPatterns(route)
 
@@ -83,14 +73,12 @@ describe('generateRouteQueryRegexPatterns', () => {
   })
 
   test('given query with required params, returns value with params replaced with catchall', () => {
-    const [route] = createRoutes([
-      {
-        name: 'query-with-params',
-        path: 'query',
-        query: 'dynamic=[first]&static=params&another=[second]',
-        component,
-      },
-    ])
+    const route = createRoute({
+      name: 'query-with-params',
+      path: 'query',
+      query: 'dynamic=[first]&static=params&another=[second]',
+      component,
+    })
 
     const result = generateRouteQueryRegexPatterns(route)
 
@@ -99,14 +87,12 @@ describe('generateRouteQueryRegexPatterns', () => {
   })
 
   test('given query with optional params, returns value without params', () => {
-    const [route] = createRoutes([
-      {
-        name: 'query-with-optional-params',
-        path: 'query',
-        query: 'dynamic=[?first]&static=params&another=[?second]',
-        component,
-      },
-    ])
+    const route = createRoute({
+      name: 'query-with-optional-params',
+      path: 'query',
+      query: 'dynamic=[?first]&static=params&another=[?second]',
+      component,
+    })
 
     const result = generateRouteQueryRegexPatterns(route)
 
@@ -114,14 +100,12 @@ describe('generateRouteQueryRegexPatterns', () => {
   })
 
   test('given query with regex characters outside of params, escapes regex characters', () => {
-    const [route] = createRoutes([
-      {
-        name: 'query-with-regex-chars',
-        path: 'query',
-        query: 'query=$with&normal=[param]&regex*chars=)throughout[&',
-        component,
-      },
-    ])
+    const route = createRoute({
+      name: 'query-with-regex-chars',
+      path: 'query',
+      query: 'query=$with&normal=[param]&regex*chars=)throughout[&',
+      component,
+    })
 
     const result = generateRouteQueryRegexPatterns(route)
 

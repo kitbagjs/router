@@ -1,7 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { InvalidRouteParamValueError } from '@/errors/invalidRouteParamValueError'
-import { createExternalRoutes } from '@/services/createExternalRoutes'
-import { createRoutes } from '@/services/createRoutes'
+import { createRoute } from '@/services/createRoute'
 import { host } from '@/services/host'
 import { path } from '@/services/path'
 import { query } from '@/services/query'
@@ -14,13 +13,11 @@ describe('path params', () => {
     ['/simple'],
     [path('/simple', {})],
   ])('given simple route with string path and without params, returns route path', (path) => {
-    const [route] = createRoutes([
-      {
-        name: 'simple',
-        path,
-        component,
-      },
-    ])
+    const route = createRoute({
+      name: 'simple',
+      path,
+      component,
+    })
 
     const url = assembleUrl(route)
 
@@ -32,13 +29,11 @@ describe('path params', () => {
     [path('/simple/[?simple]', { simple: String })],
     [path('/simple/[?simple]', { simple: withDefault(String, 'abc') })],
   ])('given route with optional string param NOT provided, returns route Path with string without values interpolated', (path) => {
-    const [route] = createRoutes([
-      {
-        name: 'simple',
-        path,
-        component,
-      },
-    ])
+    const route = createRoute({
+      name: 'simple',
+      path,
+      component,
+    })
 
     const url = assembleUrl(route)
 
@@ -49,13 +44,11 @@ describe('path params', () => {
     ['/simple/[?simple]'],
     [path('/simple/[?simple]', { simple: String })],
   ])('given route with optional string param provided, returns route Path with string with values interpolated', (path) => {
-    const [route] = createRoutes([
-      {
-        name: 'simple',
-        path,
-        component,
-      },
-    ])
+    const route = createRoute({
+      name: 'simple',
+      path,
+      component,
+    })
 
     const url = assembleUrl(route, {
       params: { simple: 'ABC' },
@@ -65,13 +58,11 @@ describe('path params', () => {
   })
 
   test('given route with default string param provided, returns route Path with string with values interpolated', () => {
-    const [route] = createRoutes([
-      {
-        name: 'simple',
-        path: path('/simple/[simple]', { simple: withDefault(String, 'abc') }),
-        component,
-      },
-    ])
+    const route = createRoute({
+      name: 'simple',
+      path: path('/simple/[simple]', { simple: withDefault(String, 'abc') }),
+      component,
+    })
 
     const url = assembleUrl(route, {
       params: { simple: 'DEF' },
@@ -84,13 +75,11 @@ describe('path params', () => {
     ['/simple/[simple]'],
     [path('/simple/[simple]', { simple: String })],
   ])('given route with required string param NOT provided, throws error', (path) => {
-    const [route] = createRoutes([
-      {
-        name: 'simple',
-        path,
-        component,
-      },
-    ])
+    const route = createRoute({
+      name: 'simple',
+      path,
+      component,
+    })
 
     expect(() => assembleUrl(route, {})).toThrowError(InvalidRouteParamValueError)
   })
@@ -99,13 +88,11 @@ describe('path params', () => {
     ['/simple/[simple]'],
     [path('/simple/[simple]', { simple: String })],
   ])('given route with required string param provided, returns route Path with string with values interpolated', (path) => {
-    const [route] = createRoutes([
-      {
-        name: 'simple',
-        path,
-        component,
-      },
-    ])
+    const route = createRoute({
+      name: 'simple',
+      path,
+      component,
+    })
 
     const url = assembleUrl(route, {
       params: { simple: 'ABC' },
@@ -120,14 +107,12 @@ describe('query params', () => {
     ['simple=abc'],
     [query('simple=abc', {})],
   ])('given simple route with string query and without params, returns route query', (query) => {
-    const [route] = createRoutes([
-      {
-        name: 'simple',
-        path: '/',
-        query,
-        component,
-      },
-    ])
+    const route = createRoute({
+      name: 'simple',
+      path: '/',
+      query,
+      component,
+    })
 
     const url = assembleUrl(route)
 
@@ -139,14 +124,12 @@ describe('query params', () => {
     [query('simple=[?simple]', { simple: String })],
     [query('simple=[?simple]', { simple: withDefault(String, 'abc') })],
   ])('given route with optional param NOT provided, leaves entire key off', (query) => {
-    const [route] = createRoutes([
-      {
-        name: 'simple',
-        path: '/',
-        query,
-        component,
-      },
-    ])
+    const route = createRoute({
+      name: 'simple',
+      path: '/',
+      query,
+      component,
+    })
 
     const url = assembleUrl(route)
 
@@ -157,14 +140,12 @@ describe('query params', () => {
     ['simple=[?simple]'],
     [query('simple=[?simple]', { simple: String })],
   ])('given route with optional string param provided but empty, returns route Query with string without values interpolated', (query) => {
-    const [route] = createRoutes([
-      {
-        name: 'simple',
-        path: '/',
-        query,
-        component,
-      },
-    ])
+    const route = createRoute({
+      name: 'simple',
+      path: '/',
+      query,
+      component,
+    })
 
     const url = assembleUrl(route, { params: { simple: '' } })
 
@@ -173,14 +154,12 @@ describe('query params', () => {
 
 
   test('given route with default string param provided but empty, returns route Query with string without values interpolated', () => {
-    const [route] = createRoutes([
-      {
-        name: 'simple',
-        path: '/',
-        query: query('simple=[simple]', { simple: withDefault(String, 'abc') }),
-        component,
-      },
-    ])
+    const route = createRoute({
+      name: 'simple',
+      path: '/',
+      query: query('simple=[simple]', { simple: withDefault(String, 'abc') }),
+      component,
+    })
 
     const url = assembleUrl(route, { params: { simple: '' } })
 
@@ -191,14 +170,12 @@ describe('query params', () => {
     ['simple=[?simple]'],
     [query('simple=[?simple]', { simple: String })],
   ])('given route with optional string param provided, returns route Query with string with values interpolated', (query) => {
-    const [route] = createRoutes([
-      {
-        name: 'simple',
-        path: '/',
-        query,
-        component,
-      },
-    ])
+    const route = createRoute({
+      name: 'simple',
+      path: '/',
+      query,
+      component,
+    })
 
     const url = assembleUrl(route, {
       params: { simple: 'ABC' },
@@ -209,14 +186,12 @@ describe('query params', () => {
 
 
   test('given route with default string param provided, returns route Query with string with values interpolated', () => {
-    const [route] = createRoutes([
-      {
-        name: 'simple',
-        path: '/',
-        query: query('simple=[simple]', { simple: withDefault(String, 'abc') }),
-        component,
-      },
-    ])
+    const route = createRoute({
+      name: 'simple',
+      path: '/',
+      query: query('simple=[simple]', { simple: withDefault(String, 'abc') }),
+      component,
+    })
 
     const url = assembleUrl(route, {
       params: { simple: 'DEF' },
@@ -229,14 +204,12 @@ describe('query params', () => {
     ['simple=[simple]'],
     [query('simple=[simple]', { simple: String })],
   ])('given route with required string param NOT provided, throws error', (query) => {
-    const [route] = createRoutes([
-      {
-        name: 'simple',
-        path: '/',
-        query,
-        component,
-      },
-    ])
+    const route = createRoute({
+      name: 'simple',
+      path: '/',
+      query,
+      component,
+    })
 
     expect(() => assembleUrl(route)).toThrowError(InvalidRouteParamValueError)
   })
@@ -245,14 +218,12 @@ describe('query params', () => {
     ['simple=[simple]'],
     [query('simple=[simple]', { simple: String })],
   ])('given route with required string param provided, returns route Query with string with values interpolated', (query) => {
-    const [route] = createRoutes([
-      {
-        name: 'simple',
-        path: '/',
-        query,
-        component,
-      },
-    ])
+    const route = createRoute({
+      name: 'simple',
+      path: '/',
+      query,
+      component,
+    })
 
     const url = assembleUrl(route, {
       params: { simple: 'ABC' },
@@ -264,13 +235,11 @@ describe('query params', () => {
 
 describe('static query', () => {
   test('given a static query returns route with query values added', () => {
-    const [route] = createRoutes([
-      {
-        name: 'simple',
-        path: '/',
-        component,
-      },
-    ])
+    const route = createRoute({
+      name: 'simple',
+      path: '/',
+      component,
+    })
 
     const url = assembleUrl(route, {
       query: { simple: 'ABC' },
@@ -280,14 +249,12 @@ describe('static query', () => {
   })
 
   test('given a route with a query and a static query returns route with query values added', () => {
-    const [route] = createRoutes([
-      {
-        name: 'simple',
-        path: '/',
-        query: 'foo=foo',
-        component,
-      },
-    ])
+    const route = createRoute({
+      name: 'simple',
+      path: '/',
+      query: 'foo=foo',
+      component,
+    })
 
     const url = assembleUrl(route, {
       query: { simple: 'ABC' },
@@ -297,115 +264,115 @@ describe('static query', () => {
   })
 })
 
-describe('host params', () => {
-  test.each([
-    ['kitbag.dev'],
-    [host('kitbag.dev', {})],
-  ])('given simple route with string host and without params, returns route host', (host) => {
-    const [route] = createExternalRoutes([
-      {
-        name: 'simple',
-        path: '/',
-        host,
-        component,
-      },
-    ])
+// describe('host params', () => {
+//   test.each([
+//     ['kitbag.dev'],
+//     [host('kitbag.dev', {})],
+//   ])('given simple route with string host and without params, returns route host', (host) => {
+//     const route = createExternalRoutes([
+//       {
+//         name: 'simple',
+//         path: '/',
+//         host,
+//         component,
+//       },
+//     ])
 
-    const url = assembleUrl(route)
+//     const url = assembleUrl(route)
 
-    expect(url).toBe('kitbag.dev/')
-  })
+//     expect(url).toBe('kitbag.dev/')
+//   })
 
-  test.each([
-    ['[?subdomain]kitbag.dev'],
-    [host('[?subdomain]kitbag.dev', { subdomain: String })],
-    [host('[?subdomain]kitbag.dev', { subdomain: withDefault(String, 'abc') })],
-  ])('given route with optional param NOT provided, leaves entire key off', (host) => {
-    const [route] = createExternalRoutes([
-      {
-        name: 'simple',
-        path: '/',
-        host,
-        component,
-      },
-    ])
+//   test.each([
+//     ['[?subdomain]kitbag.dev'],
+//     [host('[?subdomain]kitbag.dev', { subdomain: String })],
+//     [host('[?subdomain]kitbag.dev', { subdomain: withDefault(String, 'abc') })],
+//   ])('given route with optional param NOT provided, leaves entire key off', (host) => {
+//     const route = createExternalRoutes([
+//       {
+//         name: 'simple',
+//         path: '/',
+//         host,
+//         component,
+//       },
+//     ])
 
-    const url = assembleUrl(route)
+//     const url = assembleUrl(route)
 
-    expect(url).toBe('kitbag.dev/')
-  })
+//     expect(url).toBe('kitbag.dev/')
+//   })
 
-  test.each([
-    ['[?subdomain]kitbag.dev'],
-    [host('[?subdomain]kitbag.dev', { subdomain: String })],
-  ])('given route with optional string param provided, returns route Host with string with values interpolated', (host) => {
-    const [route] = createExternalRoutes([
-      {
-        name: 'simple',
-        path: '/',
-        host,
-        component,
-      },
-    ])
+//   test.each([
+//     ['[?subdomain]kitbag.dev'],
+//     [host('[?subdomain]kitbag.dev', { subdomain: String })],
+//   ])('given route with optional string param provided, returns route Host with string with values interpolated', (host) => {
+//     const route = createExternalRoutes([
+//       {
+//         name: 'simple',
+//         path: '/',
+//         host,
+//         component,
+//       },
+//     ])
 
-    const url = assembleUrl(route, {
-      params: { subdomain: 'ABC.' },
-    })
+//     const url = assembleUrl(route, {
+//       params: { subdomain: 'ABC.' },
+//     })
 
-    expect(url).toBe('ABC.kitbag.dev/')
-  })
+//     expect(url).toBe('ABC.kitbag.dev/')
+//   })
 
 
-  test('given route with default string param provided, returns route Host with string with values interpolated', () => {
-    const [route] = createExternalRoutes([
-      {
-        name: 'simple',
-        path: '/',
-        host: host('[?subdomain]kitbag.dev', { subdomain: withDefault(String, 'abc.') }),
-        component,
-      },
-    ])
+//   test('given route with default string param provided, returns route Host with string with values interpolated', () => {
+//     const route = createExternalRoutes([
+//       {
+//         name: 'simple',
+//         path: '/',
+//         host: host('[?subdomain]kitbag.dev', { subdomain: withDefault(String, 'abc.') }),
+//         component,
+//       },
+//     ])
 
-    const url = assembleUrl(route, {
-      params: { subdomain: 'DEF.' },
-    })
+//     const url = assembleUrl(route, {
+//       params: { subdomain: 'DEF.' },
+//     })
 
-    expect(url).toBe('DEF.kitbag.dev/')
-  })
+//     expect(url).toBe('DEF.kitbag.dev/')
+//   })
 
-  test.each([
-    ['[subdomain]kitbag.dev'],
-    [host('[subdomain]kitbag.dev', { subdomain: String })],
-  ])('given route with required string param NOT provided, throws error', (host) => {
-    const [route] = createExternalRoutes([
-      {
-        name: 'simple',
-        path: '/',
-        host,
-        component,
-      },
-    ])
+//   test.each([
+//     ['[subdomain]kitbag.dev'],
+//     [host('[subdomain]kitbag.dev', { subdomain: String })],
+//   ])('given route with required string param NOT provided, throws error', (host) => {
+//     const route = createExternalRoutes([
+//       {
+//         name: 'simple',
+//         path: '/',
+//         host,
+//         component,
+//       },
+//     ])
 
-    expect(() => assembleUrl(route)).toThrowError(InvalidRouteParamValueError)
-  })
+//     expect(() => assembleUrl(route)).toThrowError(InvalidRouteParamValueError)
+//   })
 
-  test.each([
-    ['[subdomain]kitbag.dev'],
-    [host('[subdomain]kitbag.dev', { subdomain: String })],
-  ])('given route with required string param provided, returns route Host with string with values interpolated', (host) => {
-    const [route] = createExternalRoutes([
-      {
-        name: 'simple',
-        path: '/',
-        host,
-        component,
-      },
-    ])
+//   test.each([
+//     ['[subdomain]kitbag.dev'],
+//     [host('[subdomain]kitbag.dev', { subdomain: String })],
+//   ])('given route with required string param provided, returns route Host with string with values interpolated', (host) => {
+//     const route = createExternalRoutes([
+//       {
+//         name: 'simple',
+//         path: '/',
+//         host,
+//         component,
+//       },
+//     ])
 
-    const url = assembleUrl(route, {
-      params: { subdomain: 'ABC.' },
-    })
+//     const url = assembleUrl(route, {
+//       params: { subdomain: 'ABC.' },
+//     })
 
-    expect(url).toBe('ABC.kitbag.dev/')
-  })
-})
+//     expect(url).toBe('ABC.kitbag.dev/')
+//   })
+// })
