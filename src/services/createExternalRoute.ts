@@ -1,9 +1,10 @@
 import { markRaw } from 'vue'
-import { CombineName } from '@/services/combineName'
+import { CombineKey } from '@/services/combineKey'
 import { CombinePath } from '@/services/combinePath'
 import { CombineQuery } from '@/services/combineQuery'
 import { combineRoutes, CreateRouteOptions, isRouteWithParent } from '@/types/createRouteOptions'
 import { Host, toHost, ToHost } from '@/types/host'
+import { ToKey, toKey } from '@/types/key'
 import { Path, toPath, ToPath } from '@/types/path'
 import { Query, toQuery, ToQuery } from '@/types/query'
 import { Route } from '@/types/route'
@@ -34,7 +35,7 @@ export function createExternalRoute<
   TPath extends string | Path | undefined = undefined,
   TQuery extends string | Query | undefined = undefined,
   THost extends string | Host | undefined = undefined
->(options: CreateRouteOptionsWithoutParent<TName, TPath, TQuery, THost>): Route<TName extends string ? TName : '', ToHost<THost>, ToPath<TPath>, ToQuery<TQuery>>
+>(options: CreateRouteOptionsWithoutParent<TName, TPath, TQuery, THost>): Route<ToKey<TName>, ToHost<THost>, ToPath<TPath>, ToQuery<TQuery>>
 
 export function createExternalRoute<
   TParent extends Route,
@@ -42,9 +43,10 @@ export function createExternalRoute<
   TPath extends string | Path | undefined = undefined,
   TQuery extends string | Query | undefined = undefined,
   THost extends string | Host | undefined = undefined
->(options: CreateRouteOptionsWithParent<TParent, TName, TPath, TQuery, THost>): Route<CombineName<TParent['key'], TName extends string ? TName : ''>, ToHost<THost>, CombinePath<TParent['path'], ToPath<TPath>>, CombineQuery<TParent['query'], ToQuery<TQuery>>>
+>(options: CreateRouteOptionsWithParent<TParent, TName, TPath, TQuery, THost>): Route<CombineKey<TParent['key'], ToKey<TName>>, ToHost<THost>, CombinePath<TParent['path'], ToPath<TPath>>, CombineQuery<TParent['query'], ToQuery<TQuery>>>
 
 export function createExternalRoute(options: CreateRouteOptions | CreateRouteOptionsWithParent<Route>): Route {
+  const key = toKey(options.name)
   const path = toPath(options.path)
   const query = toQuery(options.query)
   const host = toHost(options.host ?? '')
@@ -53,7 +55,7 @@ export function createExternalRoute(options: CreateRouteOptions | CreateRouteOpt
   const route = {
     matched: rawRoute,
     matches: [rawRoute],
-    key: options.name ?? '',
+    key,
     host,
     path,
     query,

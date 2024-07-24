@@ -1,11 +1,12 @@
 import { markRaw } from 'vue'
 import { RouterView } from '@/components'
-import { CombineName } from '@/services/combineName'
+import { CombineKey } from '@/services/combineKey'
 import { CombinePath } from '@/services/combinePath'
 import { CombineQuery } from '@/services/combineQuery'
 import { host } from '@/services/host'
 import { combineRoutes, CreateRouteOptions, CreateRouteOptionsWithoutParent, CreateRouteOptionsWithParent, isRouteWithParent, isRouteWithoutComponent } from '@/types/createRouteOptions'
 import { Host } from '@/types/host'
+import { ToKey, toKey } from '@/types/key'
 import { Path, ToPath, toPath } from '@/types/path'
 import { Query, ToQuery, toQuery } from '@/types/query'
 import { Route } from '@/types/route'
@@ -15,17 +16,18 @@ export function createRoute<
   TName extends string | undefined = undefined,
   TPath extends string | Path | undefined = undefined,
   TQuery extends string | Query | undefined = undefined
->(options: CreateRouteOptionsWithoutParent<TName, TPath, TQuery>): Route<TName extends string ? TName : '', Host<'', {}>, ToPath<TPath>, ToQuery<TQuery>>
+>(options: CreateRouteOptionsWithoutParent<TName, TPath, TQuery>): Route<ToKey<TName>, Host<'', {}>, ToPath<TPath>, ToQuery<TQuery>>
 
 export function createRoute<
   TParent extends Route,
   TName extends string | undefined = undefined,
   TPath extends string | Path | undefined = undefined,
   TQuery extends string | Query | undefined = undefined
->(options: CreateRouteOptionsWithParent<TParent, TName, TPath, TQuery>): Route<CombineName<TParent['key'], TName extends string ? TName : ''>, Host<'', {}>, CombinePath<TParent['path'], ToPath<TPath>>, CombineQuery<TParent['query'], ToQuery<TQuery>>>
+>(options: CreateRouteOptionsWithParent<TParent, TName, TPath, TQuery>): Route<CombineKey<TParent['key'], ToKey<TName>>, Host<'', {}>, CombinePath<TParent['path'], ToPath<TPath>>, CombineQuery<TParent['query'], ToQuery<TQuery>>>
 
 export function createRoute(options: CreateRouteOptions | CreateRouteOptionsWithParent<Route>): Route {
   const routeWithComponent = addRouterViewComponentIfParentWithoutComponent(options)
+  const key = toKey(options.name)
   const path = toPath(options.path)
   const query = toQuery(options.query)
   const rawRoute = markRaw({ meta: {}, ...routeWithComponent })
@@ -33,7 +35,7 @@ export function createRoute(options: CreateRouteOptions | CreateRouteOptionsWith
   const route = {
     matched: rawRoute,
     matches: [rawRoute],
-    key: options.name ?? '',
+    key,
     path,
     query,
     depth: 1,

@@ -1,4 +1,4 @@
-import { combineName } from '@/services/combineName'
+import { combineKey } from '@/services/combineKey'
 import { RouterRoute, isRouterRoute } from '@/services/createRouterRoute'
 import { RegisteredRouterRoute, RegisteredRoutesKey } from '@/types/register'
 
@@ -53,7 +53,7 @@ function getRouteKeys(route: RouterRoute): string[] {
 
   return names.reduce<string[]>((ancestorNames, name) => {
     const previous = ancestorNames.pop()
-    const next = name ? [combineName(previous, name)] : []
+    const next = name ? [combineKey(previous, name)] : []
 
     if (!previous) {
       return next

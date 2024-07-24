@@ -6,7 +6,7 @@ import { Route } from '@/types/route'
 import { RouteGetByKey } from '@/types/routeWithParams'
 import { routes } from '@/utilities/testHelpers'
 
-test('CombineName returns correct keys for routes', () => {
+test('CombineKey returns correct keys for routes', () => {
   type Source = typeof routes[number]['key']
   type Expect = 'parentA' | 'parentB' | 'parentA.childA' | 'parentA.childA.grandChildA' | 'parentA.childB' | 'parentC'
 
