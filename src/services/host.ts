@@ -17,9 +17,9 @@ import { Identity } from '@/types/utilities'
  * ```ts
  * import { createExternalRoute, host } from '@kitbag/router'
  *
- * export const routes = createRoute({
+ * export const routes = createExternalRoute({
  *   name: 'docs',
- *   host: host('[subdomain]', { foo: String }),
+ *   host: host('[subdomain].example.com', { foo: String }),
  *   component: Docs
  * })
  * ```
