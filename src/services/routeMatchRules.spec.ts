@@ -90,7 +90,6 @@ describe('routeQueryMatches', () => {
   ])('given url and route.query that does NOT match, returns false', (url) => {
     const route = createRoute({
       name: 'not-matches',
-      path: '',
       query: 'not=empty',
       component,
     })
@@ -106,7 +105,6 @@ describe('routeQueryMatches', () => {
   ])('given url and route.query WITHOUT params that does match, returns true', (url) => {
     const route = createRoute({
       name: 'no-params',
-      path: '',
       query: 'without=params&static=true',
       component,
     })
@@ -124,7 +122,6 @@ describe('routeQueryMatches', () => {
   ])('given url and route.query with params that does match, returns true', (url) => {
     const route = createRoute({
       name: 'no-params',
-      path: '',
       query: 'with=[params]&static=[dynamic]',
       component,
     })
@@ -142,7 +139,6 @@ describe('routeQueryMatches', () => {
   ])('given url and route.query with optional params that does match, returns true', (url) => {
     const route = createRoute({
       name: 'optional-params',
-      path: '',
       query: 'optional=[?optional]',
       component,
     })
@@ -162,7 +158,6 @@ describe('routeQueryMatches', () => {
   ])('given url and route.query with default params that does match, returns true', (url) => {
     const route = createRoute({
       name: 'default-params',
-      path: '',
       query: query('default=[?default]', { default: withDefault(String, 'abc') }),
       component,
     })
@@ -175,7 +170,6 @@ describe('routeQueryMatches', () => {
   test('given url that as additional unexpected query params, returns true', () => {
     const route = createRoute({
       name: 'extra-params',
-      path: '',
       query: 'expected=value',
       component,
     })
@@ -188,7 +182,6 @@ describe('routeQueryMatches', () => {
   test('given url with query params in random order, returns true', () => {
     const route = createRoute({
       name: 'extra-params',
-      path: '',
       query: 'first=1&second=2&third=3',
       component,
     })

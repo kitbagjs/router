@@ -65,7 +65,6 @@ test('given path to unnamed  parent, with option to get to leaf, returns availab
   const unnamedChildRoot = createRoute({
     parent: unnamedParent,
     name: 'unnamed-child-root',
-    path: '',
     component,
   })
 
@@ -84,13 +83,11 @@ test('given path that includes named parent and path to leaf, return first match
   const namedChild = createRoute({
     parent: namedParent,
     name: 'namedChild',
-    path: '',
   })
 
   const namedGrandchild = createRoute({
     parent: namedChild,
     name: 'namedGrandchild',
-    path: '',
     component,
   })
 

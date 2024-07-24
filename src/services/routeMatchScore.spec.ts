@@ -142,7 +142,6 @@ describe('getRouteScoreSortMethod', () => {
     const higherRouteChild = createRoute({
       parent: higherRoute,
       name: 'higher-depth-child',
-      path: '',
       query: 'color=red',
       component,
     })
