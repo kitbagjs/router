@@ -1,12 +1,11 @@
 import { Component } from 'vue'
 import { combineKey } from '@/services/combineKey'
-import { combinePath, CombinePath } from '@/services/combinePath'
-import { combineQuery, CombineQuery } from '@/services/combineQuery'
+import { combinePath } from '@/services/combinePath'
+import { combineQuery } from '@/services/combineQuery'
 import { AfterRouteHook, BeforeRouteHook } from '@/types/hooks'
-import { Host, ToHost } from '@/types/host'
-import { ExtractParamTypes } from '@/types/params'
-import { Path, ToPath } from '@/types/path'
-import { Query, ToQuery } from '@/types/query'
+import { Host } from '@/types/host'
+import { Path } from '@/types/path'
+import { Query } from '@/types/query'
 import { RouteMeta } from '@/types/register'
 import { Route } from '@/types/route'
 import { MaybeArray } from '@/types/utilities'
@@ -23,55 +22,55 @@ type WithHooks = {
   onAfterRouteLeave?: MaybeArray<AfterRouteHook>,
 }
 
-type WithComponent = {
+type WithSingleComponent = {
   /**
    * A Vue component, which can be either synchronous or asynchronous components.
    */
   component: Component,
 }
 
-type WithComponents = {
+type WithComponentRecord = {
   /**
    * Multiple components for named views, which can be either synchronous or asynchronous components.
    */
   components: Record<string, Component>,
 }
 
-type WithComponentCallback<Params = unknown> = {
-  loadComponent: (params: Params) => any,
-}
+type WithComponent = Partial<WithSingleComponent | WithComponentRecord>
 
 export function isRouteWithParent(options: CreateRouteOptions): options is CreateRouteOptionsWithParent<Route> {
   return 'parent' in options
 }
 
-export function isRouteWithComponent(value: CreateRouteOptions): value is CreateRouteOptions & WithComponent {
+export function isRouteWithComponent(value: CreateRouteOptions): value is CreateRouteOptions & WithSingleComponent {
   return 'component' in value
 }
 
-export function isRouteWithComponents(value: CreateRouteOptions): value is CreateRouteOptions & WithComponents {
+export function isRouteWithComponents(value: CreateRouteOptions): value is CreateRouteOptions & WithComponentRecord {
   return 'components' in value
 }
 
-export function isRouteWithComponentCallback(value: CreateRouteOptions): value is CreateRouteOptions & WithComponentCallback {
-  return 'loadComponent' in value
-}
-
 export function isRouteWithoutComponent(value: CreateRouteOptions): value is Omit<CreateRouteOptions, 'component' | 'components'> {
-  return !isRouteWithComponent(value) && !isRouteWithComponents(value) && !isRouteWithComponentCallback(value)
+  return !isRouteWithComponent(value) && !isRouteWithComponents(value)
 }
 
-type ParentPath<TParent extends Route | undefined> = TParent extends Route ? TParent['path'] : Path<'', {}>
-type ParentQuery<TParent extends Route | undefined> = TParent extends Route ? TParent['query'] : Query<'', {}>
-type ComponentCallbackParams<TPath extends Path, TQuery extends Query, THost extends Host> = ExtractParamTypes<TPath['params'] & TQuery['params'] & THost['params']>
+// type ParentPath<TParent extends Route | undefined> = TParent extends Route ? TParent['path'] : Path<'', {}>
+// type ParentQuery<TParent extends Route | undefined> = TParent extends Route ? TParent['query'] : Query<'', {}>
+// type CombineParams<
+//   TPath extends string | Path | undefined = string | Path | undefined,
+//   TQuery extends string | Query | undefined = string | Query | undefined,
+//   THost extends string | Host | undefined = string | Host | undefined,
+//   TParent extends Route | undefined = undefined
+// > = CombinePath<ParentPath<TParent>, ToPath<TPath>>['params'] & CombineQuery<ParentQuery<TParent>, ToQuery<TQuery>>['params'] & ToHost<THost>['params']
 
 export type CreateRouteOptions<
   TName extends string | undefined = string,
   TPath extends string | Path | undefined = string | Path | undefined,
   TQuery extends string | Query | undefined = string | Query | undefined,
   THost extends string | Host | undefined = string | Host | undefined,
-  TParent extends Route | undefined = undefined
-> = Partial<WithComponent | WithComponents | WithComponentCallback<ComponentCallbackParams<CombinePath<ParentPath<TParent>, ToPath<TPath>>, CombineQuery<ParentQuery<TParent>, ToQuery<TQuery>>, ToHost<THost>>>> & WithHooks & {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _TParent extends Route | undefined = undefined
+> = WithComponent & WithHooks & {
   /**
    * Name for route, used to create route keys and in navigation.
    */

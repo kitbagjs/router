@@ -13,16 +13,16 @@ import { Route } from '@/types/route'
 import { checkDuplicateKeys } from '@/utilities/checkDuplicateKeys'
 
 export function createRoute<
-  TName extends string | undefined = undefined,
-  TPath extends string | Path | undefined = undefined,
-  TQuery extends string | Query | undefined = undefined
+  const TName extends string | undefined = undefined,
+  const TPath extends string | Path | undefined = undefined,
+  const TQuery extends string | Query | undefined = undefined
 >(options: CreateRouteOptionsWithoutParent<TName, TPath, TQuery>): Route<ToKey<TName>, Host<'', {}>, ToPath<TPath>, ToQuery<TQuery>>
 
 export function createRoute<
-  TParent extends Route,
-  TName extends string | undefined = undefined,
-  TPath extends string | Path | undefined = undefined,
-  TQuery extends string | Query | undefined = undefined
+  const TParent extends Route,
+  const TName extends string | undefined = undefined,
+  const TPath extends string | Path | undefined = undefined,
+  const TQuery extends string | Query | undefined = undefined
 >(options: CreateRouteOptionsWithParent<TParent, TName, TPath, TQuery>): Route<CombineKey<TParent['key'], ToKey<TName>>, Host<'', {}>, CombinePath<TParent['path'], ToPath<TPath>>, CombineQuery<TParent['query'], ToQuery<TQuery>>>
 
 export function createRoute(options: CreateRouteOptions | CreateRouteOptionsWithParent<Route>): Route {

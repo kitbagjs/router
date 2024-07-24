@@ -11,18 +11,18 @@ import { Route } from '@/types/route'
 import { checkDuplicateKeys } from '@/utilities/checkDuplicateKeys'
 
 export function createExternalRoute<
-  TName extends string | undefined = undefined,
-  TPath extends string | Path | undefined = undefined,
-  TQuery extends string | Query | undefined = undefined,
-  THost extends string | Host | undefined = undefined
+  const TName extends string | undefined = undefined,
+  const TPath extends string | Path | undefined = undefined,
+  const TQuery extends string | Query | undefined = undefined,
+  const THost extends string | Host | undefined = undefined
 >(options: CreateRouteOptionsWithoutParent<TName, TPath, TQuery, THost>): Route<ToKey<TName>, ToHost<THost>, ToPath<TPath>, ToQuery<TQuery>>
 
 export function createExternalRoute<
-  TParent extends Route,
-  TName extends string | undefined = undefined,
-  TPath extends string | Path | undefined = undefined,
-  TQuery extends string | Query | undefined = undefined,
-  THost extends string | Host | undefined = undefined
+  const TParent extends Route,
+  const TName extends string | undefined = undefined,
+  const TPath extends string | Path | undefined = undefined,
+  const TQuery extends string | Query | undefined = undefined,
+  const THost extends string | Host | undefined = undefined
 >(options: CreateRouteOptionsWithParent<TParent, TName, TPath, TQuery, THost>): Route<CombineKey<TParent['key'], ToKey<TName>>, ToHost<THost>, CombinePath<TParent['path'], ToPath<TPath>>, CombineQuery<TParent['query'], ToQuery<TQuery>>>
 
 export function createExternalRoute(options: CreateRouteOptions | CreateRouteOptionsWithParent<Route>): Route {
