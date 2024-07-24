@@ -3,7 +3,7 @@ import { combineKey } from '@/services/combineKey'
 import { combinePath, CombinePath } from '@/services/combinePath'
 import { combineQuery, CombineQuery } from '@/services/combineQuery'
 import { AfterRouteHook, BeforeRouteHook } from '@/types/hooks'
-import { Host } from '@/types/host'
+import { Host, ToHost } from '@/types/host'
 import { ExtractParamTypes } from '@/types/params'
 import { Path, ToPath } from '@/types/path'
 import { Query, ToQuery } from '@/types/query'
@@ -63,7 +63,7 @@ export function isRouteWithoutComponent(value: CreateRouteOptions): value is Omi
 
 type ParentPath<TParent extends Route | undefined> = TParent extends Route ? TParent['path'] : Path<'', {}>
 type ParentQuery<TParent extends Route | undefined> = TParent extends Route ? TParent['query'] : Query<'', {}>
-type ComponentCallbackParams<TCombinedPath extends Path, TCombinedQuery extends Query> = ExtractParamTypes<TCombinedPath['params'] & TCombinedQuery['params']>
+type ComponentCallbackParams<TPath extends Path, TQuery extends Query, THost extends Host> = ExtractParamTypes<TPath['params'] & TQuery['params'] & THost['params']>
 
 export type CreateRouteOptions<
   TName extends string | undefined = string,
@@ -71,7 +71,7 @@ export type CreateRouteOptions<
   TQuery extends string | Query | undefined = string | Query | undefined,
   THost extends string | Host | undefined = string | Host | undefined,
   TParent extends Route | undefined = undefined
-> = Partial<WithComponent | WithComponents | WithComponentCallback<ComponentCallbackParams<CombinePath<ParentPath<TParent>, ToPath<TPath>>, CombineQuery<ParentQuery<TParent>, ToQuery<TQuery>>>>> & WithHooks & {
+> = Partial<WithComponent | WithComponents | WithComponentCallback<ComponentCallbackParams<CombinePath<ParentPath<TParent>, ToPath<TPath>>, CombineQuery<ParentQuery<TParent>, ToQuery<TQuery>>, ToHost<THost>>>> & WithHooks & {
   /**
    * Name for route, used to create route keys and in navigation.
    */
@@ -99,8 +99,9 @@ export type CreateRouteOptions<
 export type CreateRouteOptionsWithoutParent<
   TName extends string | undefined = undefined,
   TPath extends string | Path | undefined = undefined,
-  TQuery extends string | Query | undefined = undefined
-> = CreateRouteOptions<TName, TPath, TQuery> & {
+  TQuery extends string | Query | undefined = undefined,
+  THost extends string | Host | undefined = undefined
+> = CreateRouteOptions<TName, TPath, TQuery, THost> & {
   parent?: never,
 }
 
@@ -108,8 +109,9 @@ export type CreateRouteOptionsWithParent<
   TParent extends Route,
   TName extends string | undefined = undefined,
   TPath extends string | Path | undefined = undefined,
-  TQuery extends string | Query | undefined = undefined
-> = CreateRouteOptions<TName, TPath, TQuery, Host<'', {}>, TParent> & {
+  TQuery extends string | Query | undefined = undefined,
+  THost extends string | Host | undefined = undefined
+> = CreateRouteOptions<TName, TPath, TQuery, THost, TParent> & {
   parent: TParent,
 }
 
