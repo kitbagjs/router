@@ -26,7 +26,7 @@ export function createRoute<
 >(options: CreateRouteOptionsWithParent<TParent, TName, TPath, TQuery>): Route<CombineKey<TParent['key'], ToKey<TName>>, Host<'', {}>, CombinePath<TParent['path'], ToPath<TPath>>, CombineQuery<TParent['query'], ToQuery<TQuery>>>
 
 export function createRoute(options: CreateRouteOptions | CreateRouteOptionsWithParent<Route>): Route {
-  const routeWithComponent = addRouterViewComponentIfParentWithoutComponent(options)
+  const routeWithComponent = addRouterViewComponentIfWithoutComponent(options)
   const key = toKey(options.name)
   const path = toPath(options.path)
   const query = toQuery(options.query)
@@ -50,7 +50,7 @@ export function createRoute(options: CreateRouteOptions | CreateRouteOptionsWith
   return merged
 }
 
-function addRouterViewComponentIfParentWithoutComponent(options: CreateRouteOptions): CreateRouteOptions {
+function addRouterViewComponentIfWithoutComponent(options: CreateRouteOptions): CreateRouteOptions {
   if (isRouteWithoutComponent(options)) {
     return { ...options, component: RouterView }
   }
