@@ -4,8 +4,6 @@ export * from './errors'
 export * from './services'
 export * from './types'
 
-export type { ParamStart, ParamEnd, ExtractParamName, ExtractPathParamType, ExtractRouteParamTypes, ExtractParamTypes, ExtractParamType, MergeParams } from './types/params'
-export { paramStart, paramEnd, isParamGetter, isParamGetSet } from './types/params'
 export type { CreateRouteOptions } from './types/createRouteOptions'
 export { isRoute } from './guards/routes'
 export { createRoute } from './services/createRoute'
