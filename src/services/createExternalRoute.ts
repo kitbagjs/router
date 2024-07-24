@@ -21,9 +21,8 @@ export function createExternalRoute<
   const TParent extends Route,
   const TName extends string | undefined = undefined,
   const TPath extends string | Path | undefined = undefined,
-  const TQuery extends string | Query | undefined = undefined,
-  const THost extends string | Host | undefined = undefined
->(options: CreateRouteOptionsWithParent<TParent, TName, TPath, TQuery, THost>): Route<CombineKey<TParent['key'], ToKey<TName>>, ToHost<THost>, CombinePath<TParent['path'], ToPath<TPath>>, CombineQuery<TParent['query'], ToQuery<TQuery>>>
+  const TQuery extends string | Query | undefined = undefined
+>(options: CreateRouteOptionsWithParent<TParent, TName, TPath, TQuery, Host<'', {}>>): Route<CombineKey<TParent['key'], ToKey<TName>>, ToHost<Host<'', {}>>, CombinePath<TParent['path'], ToPath<TPath>>, CombineQuery<TParent['query'], ToQuery<TQuery>>>
 
 export function createExternalRoute(options: CreateRouteOptions | CreateRouteOptionsWithParent<Route>): Route {
   const key = toKey(options.name)
