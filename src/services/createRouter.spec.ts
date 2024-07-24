@@ -173,13 +173,14 @@ test('individual params are writable when using toRefs', async () => {
 })
 
 test('setting an unknown param does not add its value to the route', async () => {
-  const { route, initialized } = createRouter([
+  const routes = [
     createRoute({
       name: 'root',
       component,
       path: '/',
     }),
-  ], {
+  ]
+  const { route, initialized } = createRouter(routes, {
     initialUrl: '/',
   })
 

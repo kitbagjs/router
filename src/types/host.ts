@@ -1,5 +1,5 @@
 import { host } from '@/services/host'
-import { ExtractParamName, ExtractPathParamType, MergeParams, ParamEnd, ParamStart } from '@/types/params'
+import { ExtractParamName, ExtractPathParamType, ParamEnd, ParamStart } from '@/types/params'
 import { Param } from '@/types/paramTypes'
 import { Identity } from '@/types/utilities'
 import { isRecord } from '@/utilities/guards'
@@ -8,7 +8,7 @@ type ExtractParamsFromHostString<
   THost extends string,
   TParams extends Record<string, Param | undefined> = Record<never, never>
 > = THost extends `${string}${ParamStart}${infer Param}${ParamEnd}${infer Rest}`
-  ? MergeParams<{ [P in Param]: ExtractPathParamType<Param, TParams> }, ExtractParamsFromHostString<Rest, TParams>>
+  ? { [P in Param]: ExtractPathParamType<Param, TParams> } & ExtractParamsFromHostString<Rest, TParams>
   : Record<never, never>
 
 export type HostParams<THost extends string> = {

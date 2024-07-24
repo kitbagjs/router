@@ -4,7 +4,7 @@ import { combinePath, CombinePath } from '@/services/combinePath'
 import { combineQuery, CombineQuery } from '@/services/combineQuery'
 import { AfterRouteHook, BeforeRouteHook } from '@/types/hooks'
 import { Host } from '@/types/host'
-import { ExtractParamTypes, MergeParams } from '@/types/params'
+import { ExtractParamTypes } from '@/types/params'
 import { Path, ToPath } from '@/types/path'
 import { Query, ToQuery } from '@/types/query'
 import { RouteMeta } from '@/types/register'
@@ -63,7 +63,7 @@ export function isRouteWithoutComponent(value: CreateRouteOptions): value is Omi
 
 type ParentPath<TParent extends Route | undefined> = TParent extends Route ? TParent['path'] : Path<'', {}>
 type ParentQuery<TParent extends Route | undefined> = TParent extends Route ? TParent['query'] : Query<'', {}>
-type ComponentCallbackParams<TCombinedPath extends Path, TCombinedQuery extends Query> = ExtractParamTypes<MergeParams<TCombinedPath['params'], TCombinedQuery['params']>>
+type ComponentCallbackParams<TCombinedPath extends Path, TCombinedQuery extends Query> = ExtractParamTypes<TCombinedPath['params'] & TCombinedQuery['params']>
 
 export type CreateRouteOptions<
   TName extends string | undefined = string,
