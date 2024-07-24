@@ -27,7 +27,7 @@ test('router route can be narrowed', () => {
       path: '/parentB',
       component,
     }),
-  ] as const
+  ]
 
   const { route } = createRouter(routes)
 

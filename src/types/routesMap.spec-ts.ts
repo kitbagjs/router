@@ -44,7 +44,7 @@ test('RoutesMap given unnamed parents, removes them from return value and childr
     zooFoo,
     bar,
     zooBar,
-  ] as const
+  ]
 
   type Map = RoutesMap<typeof routes>
 

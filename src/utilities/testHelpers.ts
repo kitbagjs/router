@@ -66,7 +66,7 @@ export const routes = [
     path: '/',
     component,
   }),
-] as const
+]
 
 export function mockRoute<TName extends string>(name: TName): CreateRouteOptionsWithMeta {
   return {

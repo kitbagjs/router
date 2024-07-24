@@ -44,7 +44,7 @@ test('given a param with a dash or underscore resolves the correct url', () => {
       path: '/[test_param]',
       component,
     }),
-  ] as const
+  ]
 
   const resolve = createRouterResolve(routes)
 

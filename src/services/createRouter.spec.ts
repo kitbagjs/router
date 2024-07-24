@@ -85,7 +85,7 @@ test.fails('route is readonly except for individual params', async () => {
       component,
       path: '/',
     }),
-  ] as const
+  ]
 
   const { route, initialized } = createRouter(routes, {
     initialUrl: '/',
@@ -117,7 +117,7 @@ test('individual params are writable', async () => {
       component,
       path: '/[param]',
     }),
-  ] as const
+  ]
 
   const { route, initialized } = createRouter(routes, {
     initialUrl: '/one',
@@ -155,7 +155,7 @@ test('individual params are writable when using toRefs', async () => {
       component,
       path: '/[param]',
     }),
-  ] as const
+  ]
 
   const { route, initialized } = createRouter(routes, {
     initialUrl: '/one',

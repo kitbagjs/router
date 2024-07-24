@@ -24,7 +24,7 @@ test('given path WITHOUT params, returns match', () => {
     component,
   })
 
-  const routes = [parent, child, grandchild] as const
+  const routes = [parent, child, grandchild]
 
   const match = getResolvedRouteForUrl(routes, '/parent/child/grandchild')
 
@@ -50,7 +50,7 @@ test('given path to unnamed parent, without option to get to leaf, returns undef
     component,
   })
 
-  const routes = [unnamedParent, unnamedChild, namedGrandchild] as const
+  const routes = [unnamedParent, unnamedChild, namedGrandchild]
 
   const match = getResolvedRouteForUrl(routes, '/unnamed')
 
@@ -69,7 +69,7 @@ test('given path to unnamed  parent, with option to get to leaf, returns availab
     component,
   })
 
-  const routes = [unnamedChildRoot, unnamedParent] as const
+  const routes = [unnamedChildRoot, unnamedParent]
   const match = getResolvedRouteForUrl(routes, '/unnamed')
 
   expect(match?.key).toBe('unnamed-child-root')
@@ -94,7 +94,7 @@ test('given path that includes named parent and path to leaf, return first match
     component,
   })
 
-  const routes = [namedParent, namedChild, namedGrandchild] as const
+  const routes = [namedParent, namedChild, namedGrandchild]
   const match = getResolvedRouteForUrl(routes, '/named-parent')
 
   expect(match?.key).toBe('namedParent.namedChild.namedGrandchild')
@@ -148,7 +148,7 @@ test('given route with equal matches, returns route with highest score', () => {
       path: '/',
       component,
     }),
-  ] as const
+  ]
 
   const response = getResolvedRouteForUrl(routes, '/')
 
