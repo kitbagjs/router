@@ -15,7 +15,7 @@ import { Identity } from '@/types/utilities'
  *
  * @example
  * ```ts
- * import { createRoute, host } from '@kitbag/router'
+ * import { createExternalRoute, host } from '@kitbag/router'
  *
  * export const routes = createRoute({
  *   name: 'docs',
