@@ -33,7 +33,7 @@ import { createExternalRoute, host } from '@kitbag/router'
 
 export const docs = createExternalRoute({
   name: 'home',
-  host: host('https://[subdomain].kitbag.dev', { subdomain: Number })
+  host: host('https://[subdomain].kitbag.dev', { subdomain: String })
 })
 ```
 
