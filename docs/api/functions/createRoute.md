@@ -21,7 +21,7 @@ Creates an individual route record for your router.
 
 | Type parameter | Description |
 | :------ | :------ |
-| `TParent` *extends* [`Route`](Route) \| `undefined` | The parent route for this route. |
+| `TParent` *extends* [`Route`](/api/types/Route) \| `undefined` | The parent route for this route. |
 | `TName` *extends* `string` \| `undefined` | Optional name, will be used to create `key`. |
 | `TPath` *extends* [`Path`](/api/functions/path) \| `string` \| `undefined` | The optional path part of your route. |
 | `TQuery` *extends* [`Query`](/api/functions/query) \| `string` \| `undefined` | The optional query part of your route. |
