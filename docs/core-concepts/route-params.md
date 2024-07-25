@@ -171,13 +171,11 @@ const sortParam = withDefault(String, 'asc')
 The `withDefault` utility accepts any param, including custom params and returns a custom param that can be used just like any other custom param.
 
 ```ts
-const routes = createRoute([
-  {
-    name: 'users',
-    path: '/users',
-    query: query('sort-by=[?sort]', { sort: sortParam })// [!code focus]
-  }
-])
+const users = createRoute({
+  name: 'users',
+  path: '/users',
+  query: query('sort-by=[?sort]', { sort: sortParam })// [!code focus]
+})
 ```
 
 You can also assign a default value with the 2nd argument of `createParam`.
@@ -219,13 +217,11 @@ route.params.sort // -> 'asc' | 'desc'
 There are no constraints on the name you choose for param names
 
 ```ts
-const routes = createRoute([
-  {
-    name: 'users',
-    path: '/users/[can-have#what.ever/you/want!?]',
-    component: ...
-  }
-])
+const users = createRoute({
+  name: 'users',
+  path: '/users/[can-have#what.ever/you/want!?]',
+  component: ...
+})
 ```
 
 Keep in mind that any special characters in the param name will make accessing the value slightly less pretty.
@@ -242,24 +238,24 @@ Param names must be unique. This includes params defined in a path parent and pa
 
 ```ts
 // invalid
-const routes = createRoute([
-  {
-    name: 'users',
-    path: '/users/[id]',
-    query: 'sort-by=[id]'
-  }
-])
+const users = createRoute({
+  name: 'users',
+  path: '/users/[id]',
+  query: 'sort-by=[id]'
+})
+```
 
+```ts
 // invalid
-const routes = createRoute([
-  {
-    name: 'users',
-    path: '/users/[id]',
-    children: createRoute([
-      name: 'tokens',
-      path: '/tokens/[id]',
-      component: ...
-    ])
-  }
-])
+const users = createRoute({
+  name: 'users',
+  path: '/users/[id]',
+})
+
+const tokens = createRoute({
+  parent: users,
+  name: 'tokens',
+  path: '/tokens/[id]',
+  component: ... 
+})
 ```

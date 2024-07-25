@@ -63,7 +63,7 @@ const settingsNotifications = createRoute({
 })
 ```
 
-Any Route can be a parent, though to have the children components be rendered correctly you need to put a `<router-view />` component somewhere in the parent's template. Alternatively, you can omit `component` from the parent route, since router assumes any route that has `children` and doesn't explicitly declare a `component` wants to mount `RouterView`.
+Any Route can be a parent, though to have the children components be rendered correctly you need to put a `<router-view />` component somewhere in the parent's template. Alternatively, you can omit `component` from the parent route, since router assumes any route that doesn't explicitly declare a `component` wants to mount `RouterView`.
 
 ## Route Names
 
@@ -91,9 +91,6 @@ const user = createRoute({
   path: '/user',
   disabled: true, // [!code focus] 
   component: ...,
-  children: createRouter([
-    ...
-  ])
 })
 ```
 
