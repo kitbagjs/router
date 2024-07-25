@@ -30,15 +30,15 @@ Create an array of possible routes. Learn more about [defining routes](https://k
 
 ```ts
 // /routes.ts
-import { createRoutes } from '@kitbag/router'
+import { createRoute } from '@kitbag/router'
 
 const Home = { template: '<div>Home</div>' }
 const About = { template: '<div>About</div>' }
 
-export const routes = createRoutes([
-  { name: 'home', path: '/', component: Home },
-  { name: 'path', path: '/about', component: About },
-])
+export const routes = [
+  createRoute({ name: 'home', path: '/', component: Home }),
+  createRoute({ name: 'path', path: '/about', component: About }),
+]
 ```
 
 ## Plugin
@@ -75,29 +75,29 @@ declare module '@kitbag/router' {
 To navigate to another route, you can use `router.push`. This method will update the URL for the browser and also add the URL into the history so when a user uses the back button on their browser it will behave as expected.
 
 ```ts
-import { createRoutes, useRouter } from '@kitbag/router'
+import { createRoute, useRouter } from '@kitbag/router'
 
-const routes = createRoutes([
-  {
-    name: 'user',
-    path: '/user',
-    component: ...,
-    children: createRoutes([
-      {
-        name: 'profile',
-        path: '/profile',
-        component: ...,
-      },
-      {
-        name: 'settings',
-        path: '/settings',
-        component: ...,
-      }
-    ])
-  }
-])
+const user = createRoute({
+  name: 'user',
+  path: '/user',
+  component: ...,
+})
 
-const router = useRouter(routes)
+const profile = createRoute({
+  parent: user,
+  name: 'profile',
+  path: '/profile',
+  component: ...,
+})
+
+const settings = createRoute({
+  parent: user,
+  name: 'settings',
+  path: '/settings',
+  component: ...,
+})
+
+const router = useRouter([user, profile, settings])
 
 router.push('user.settings')
 ```

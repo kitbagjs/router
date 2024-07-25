@@ -15,15 +15,13 @@ import { Identity } from '@/types/utilities'
  *
  * @example
  * ```ts
- * import { createRoutes, path } from '@kitbag/router'
+ * import { createRoute, path } from '@kitbag/router'
  *
- * export const routes = createRoutes([
- *   {
- *     name: 'home',
- *     path: path('/[foo]', { foo: Number }),
- *     component: Home
- *   },
- * ])
+ * export const routes = createRoute({
+ *   name: 'home',
+ *   path: path('/[foo]', { foo: Number }),
+ *   component: Home
+ * })
  * ```
  */
 export function path<TPath extends string, TParams extends PathParamsWithParamNameExtracted<TPath>>(path: TPath, params: Identity<TParams>): Path<TPath, TParams>

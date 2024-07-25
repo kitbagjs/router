@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { createRoutes } from '@/services/createRoutes'
+import { createRoute } from '@/services/createRoute'
 import { query } from '@/services/query'
 import { routePathMatches, routeQueryMatches } from '@/services/routeMatchRules'
 import { withDefault } from '@/services/withDefault'
@@ -13,13 +13,11 @@ describe('routePathMatches', () => {
     ['http://www.kitbag.io/is/empty'],
     ['http://www.kitbag.io/is/empty?with=query'],
   ])('given url and route.path that does NOT match, returns false', (url) => {
-    const [route] = createRoutes([
-      {
-        name: 'not-matches',
-        path: '/not/empty',
-        component,
-      },
-    ])
+    const route = createRoute({
+      name: 'not-matches',
+      path: '/not/empty',
+      component,
+    })
 
     const response = routePathMatches(route, url)
 
@@ -30,13 +28,11 @@ describe('routePathMatches', () => {
     ['/without/params'],
     ['http://www.kitbag.io/without/params'],
   ])('given url and route.path WITHOUT params that does match, returns true', (url) => {
-    const [route] = createRoutes([
-      {
-        name: 'no-params',
-        path: '/without/params',
-        component,
-      },
-    ])
+    const route = createRoute({
+      name: 'no-params',
+      path: '/without/params',
+      component,
+    })
 
     const response = routePathMatches(route, url)
 
@@ -44,13 +40,11 @@ describe('routePathMatches', () => {
   })
 
   test('route matching logic is case insensitive', () => {
-    const [route] = createRoutes([
-      {
-        name: 'no-params',
-        path: '/without/params',
-        component,
-      },
-    ])
+    const route = createRoute({
+      name: 'no-params',
+      path: '/without/params',
+      component,
+    })
 
     const response = routePathMatches(route, '/WITHOUT/params')
 
@@ -62,13 +56,11 @@ describe('routePathMatches', () => {
     ['/with/%/params/%'],
     ['http://www.kitbag.io/with/a/params/b'],
   ])('given url and route.path with params that does match, returns true', (url) => {
-    const [route] = createRoutes([
-      {
-        name: 'no-params',
-        path: '/with/[some]/params/[inPath]',
-        component,
-      },
-    ])
+    const route = createRoute({
+      name: 'no-params',
+      path: '/with/[some]/params/[inPath]',
+      component,
+    })
 
     const response = routePathMatches(route, url)
 
@@ -76,13 +68,11 @@ describe('routePathMatches', () => {
   })
 
   test('given route with extra slashes in param value, does match', () => {
-    const [route] = createRoutes([
-      {
-        name: 'support-slashes',
-        path: '/supports/[slashes]/bookmarked',
-        component,
-      },
-    ])
+    const route = createRoute({
+      name: 'support-slashes',
+      path: '/supports/[slashes]/bookmarked',
+      component,
+    })
     const response = routePathMatches(route, '/supports/first/second/third/bookmarked')
 
     expect(response).toBe(true)
@@ -98,14 +88,11 @@ describe('routeQueryMatches', () => {
     ['http://www.kitbag.io/empty?with=query'],
     ['http://www.kitbag.io/empty?not=emptyish'],
   ])('given url and route.query that does NOT match, returns false', (url) => {
-    const [route] = createRoutes([
-      {
-        name: 'not-matches',
-        path: '',
-        query: 'not=empty',
-        component,
-      },
-    ])
+    const route = createRoute({
+      name: 'not-matches',
+      query: 'not=empty',
+      component,
+    })
 
     const response = routeQueryMatches(route, url)
 
@@ -116,14 +103,11 @@ describe('routeQueryMatches', () => {
     ['?without=params&static=true'],
     ['http://www.kitbag.io?without=params&static=true'],
   ])('given url and route.query WITHOUT params that does match, returns true', (url) => {
-    const [route] = createRoutes([
-      {
-        name: 'no-params',
-        path: '',
-        query: 'without=params&static=true',
-        component,
-      },
-    ])
+    const route = createRoute({
+      name: 'no-params',
+      query: 'without=params&static=true',
+      component,
+    })
 
     const response = routeQueryMatches(route, url)
 
@@ -136,14 +120,11 @@ describe('routeQueryMatches', () => {
     ['http://www.kitbag.io?with=a&static=b'],
     ['http://www.kitbag.io/some/path?with=a&static=b'],
   ])('given url and route.query with params that does match, returns true', (url) => {
-    const [route] = createRoutes([
-      {
-        name: 'no-params',
-        path: '',
-        query: 'with=[params]&static=[dynamic]',
-        component,
-      },
-    ])
+    const route = createRoute({
+      name: 'no-params',
+      query: 'with=[params]&static=[dynamic]',
+      component,
+    })
 
     const response = routeQueryMatches(route, url)
 
@@ -156,14 +137,11 @@ describe('routeQueryMatches', () => {
     ['?optional=true'],
     ['http://www.kitbag.io?extra=params&optional=provided'],
   ])('given url and route.query with optional params that does match, returns true', (url) => {
-    const [route] = createRoutes([
-      {
-        name: 'optional-params',
-        path: '',
-        query: 'optional=[?optional]',
-        component,
-      },
-    ])
+    const route = createRoute({
+      name: 'optional-params',
+      query: 'optional=[?optional]',
+      component,
+    })
 
     const response = routeQueryMatches(route, url)
 
@@ -178,14 +156,11 @@ describe('routeQueryMatches', () => {
     ['?default=true'],
     ['http://www.kitbag.io?extra=params&default=provided'],
   ])('given url and route.query with default params that does match, returns true', (url) => {
-    const [route] = createRoutes([
-      {
-        name: 'default-params',
-        path: '',
-        query: query('default=[?default]', { default: withDefault(String, 'abc') }),
-        component,
-      },
-    ])
+    const route = createRoute({
+      name: 'default-params',
+      query: query('default=[?default]', { default: withDefault(String, 'abc') }),
+      component,
+    })
 
     const response = routeQueryMatches(route, url)
 
@@ -193,14 +168,11 @@ describe('routeQueryMatches', () => {
   })
 
   test('given url that as additional unexpected query params, returns true', () => {
-    const [route] = createRoutes([
-      {
-        name: 'extra-params',
-        path: '',
-        query: 'expected=value',
-        component,
-      },
-    ])
+    const route = createRoute({
+      name: 'extra-params',
+      query: 'expected=value',
+      component,
+    })
 
     const response = routeQueryMatches(route, 'www.kitbag.io/some/path?expected=value&unexpected=ok')
 
@@ -208,14 +180,11 @@ describe('routeQueryMatches', () => {
   })
 
   test('given url with query params in random order, returns true', () => {
-    const [route] = createRoutes([
-      {
-        name: 'extra-params',
-        path: '',
-        query: 'first=1&second=2&third=3',
-        component,
-      },
-    ])
+    const route = createRoute({
+      name: 'extra-params',
+      query: 'first=1&second=2&third=3',
+      component,
+    })
 
     const response = routeQueryMatches(route, 'www.kitbag.io/some/path?second=2&first=1&third=3')
 

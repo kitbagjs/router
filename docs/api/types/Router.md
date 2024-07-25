@@ -1,4 +1,4 @@
-# Router\<TRoutes\>
+# Router
 
 ```ts
 type Router<TRoutes>: Plugin & object;

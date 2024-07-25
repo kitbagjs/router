@@ -29,15 +29,13 @@ An object representing the query which includes the query string, its parameters
 ## Example
 
 ```ts
-import { createRoutes, query } from '@kitbag/router'
+import { createRoute, query } from '@kitbag/router'
 
-export const routes = createRoutes([
-  {
-    name: 'home',
-    query: query('bar=[bar]', { bar: Boolean }),
-    component: Home
-  },
-])
+export const home = createRoute({
+  name: 'home',
+  query: query('bar=[bar]', { bar: Boolean }),
+  component: Home
+})
 ```
 
 ## Custom Params

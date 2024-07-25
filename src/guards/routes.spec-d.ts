@@ -1,28 +1,33 @@
 import { expectTypeOf, test } from 'vitest'
 import { isRoute } from '@/guards/routes'
-import { createRouter, createRoutes, query } from '@/services'
+import { createRoute } from '@/services/createRoute'
+import { createRouter } from '@/services/createRouter'
+import { query } from '@/services/query'
 import { component } from '@/utilities/testHelpers'
 
 test('router route can be narrowed', () => {
-  const routes = createRoutes([
-    {
-      name: 'parentA',
-      path: '/parentA',
-      children: createRoutes([
-        {
-          name: 'childA',
-          path: '[?foo]',
-          query: query('bar=[?bar]', { bar: Boolean }),
-          component,
-        },
-      ]),
-    },
-    {
+  const parentA = createRoute({
+    name: 'parentA',
+    path: '/parentA',
+  })
+
+  const childA = createRoute({
+    parent: parentA,
+    name: 'childA',
+    path: '[?foo]',
+    query: query('bar=[?bar]', { bar: Boolean }),
+    component,
+  })
+
+  const routes = [
+    parentA,
+    childA,
+    createRoute({
       name: 'parentB',
       path: '/parentB',
       component,
-    },
-  ])
+    }),
+  ]
 
   const { route } = createRouter(routes)
 

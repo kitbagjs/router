@@ -3,15 +3,13 @@
 When defining your route `path` and `query`, you can wrap part in square brackets `[]` to denote dynamic params.
 
 ```ts
-import { createRoutes } from '@kitbag/router'
+import { createRoute } from '@kitbag/router'
 
-const routes = createRoutes([
-  {
-    name: 'users',
-    path: '/users/[id]',
-    component: ...
-  }
-])
+const users = createRoute({
+  name: 'users',
+  path: '/users/[id]',
+  component: ...
+})
 ```
 
 This means the route will expect 1+ extra string characters in order to be considered a match. This value can be anything, including forward slashes `/`. The value of these extra characters is captured and exposed in the `route.params`.
@@ -30,18 +28,16 @@ With the `path` function, Kitbag Router supports parsing params to types other t
 
 ```ts
 import { 
-  createRoutes,
+  createRoute,
   path, // [!code ++]
 } from '@kitbag/router'
 
-const routes = createRoutes([
-  {
-    name: 'users',
-    path: '/users/[id]', // [!code --]
-    path: path('/users/[id]', { id: Number }), // [!code ++]
-    component: ...
-  }
-])
+const users = createRoute({
+  name: 'users',
+  path: '/users/[id]', // [!code --]
+  path: path('/users/[id]', { id: Number }), // [!code ++]
+  component: ...
+})
 ```
 
 This will automatically parse the param from `string` in the URL to `number` in `route.params`. If the value cannot be parsed, the route will not be considered a match.
@@ -53,13 +49,11 @@ Kitbag Router ships with support for `String` (default), `Boolean`, `Number`, `D
 Using native RegExp is a powerful way of controlling route matching.
 
 ```ts
-const routes = createRoutes([
-  {
-    name: 'users',
-    path: path('/users/[id]', { id: /^A[0-9]$/  }), // [!code focus]
-    component: ...
-  }
-])
+const users = createRoute({
+  name: 'users',
+  path: path('/users/[id]', { id: /^A[0-9]$/  }), // [!code focus]
+  component: ...
+})
 ```
 
 ### Custom Param
@@ -86,13 +80,11 @@ const numberParam = createParam((value, { invalid }) => {
 Update your param assignment on the route's path
 
 ```ts
-const routes = createRoutes([
-  {
-    name: 'users',
-    path: path('/users/[id]', { id: numberParam }), // [!code focus]
-    component: ...
-  }
-])
+const users = createRoute({
+  name: 'users',
+  path: path('/users/[id]', { id: numberParam }), // [!code focus]
+  component: ...
+})
 ```
 
 With this getter defined, now our route will only match if the param matches our rules above.
@@ -128,13 +120,11 @@ const numberParam = createParam({
 If you define your path params with a question mark, `?` the router assumes this param is not required.
 
 ```ts
-const routes = createRoutes([
-  {
-    name: 'users',
-    path: '/users/[?id]', // [!code focus]
-    component: ...
-  }
-])
+const users = createRoute({
+  name: 'users',
+  path: '/users/[?id]', // [!code focus]
+  component: ...
+})
 ```
 
 This means the route will match even if nothing is provided after `/users/`.
@@ -142,13 +132,11 @@ This means the route will match even if nothing is provided after `/users/`.
 This also works for non-string params.
 
 ```ts
-const routes = createRoutes([
-  {
-    name: 'users',
-    path: path('/users/[?id]', { id: Number }), // [!code focus]
-    component: ...
-  }
-])
+const users = createRoute({
+  name: 'users',
+  path: path('/users/[?id]', { id: Number }), // [!code focus]
+  component: ...
+})
 ```
 
 Which now, `router.params.id` has the type `number | undefined`, and will only match URL where the value passes as a number or is missing entirely.
@@ -158,16 +146,16 @@ Which now, `router.params.id` has the type `number | undefined`, and will only m
 Often times when a param is optional, we want to assign a value to use as the default.
 
 ```ts
-import { createRoutes, useRoute } from '@kitbag/router'
+import { createRoute, useRoute } from '@kitbag/router'
 
-const routes = createRoutes([
-  {
-    name: 'users',
-    path: '/users',
-    query: 'sort-by=[?sort]'
-  }
-])
+const users = createRoute({
+  name: 'users',
+  path: '/users',
+  query: 'sort-by=[?sort]'
+})
+```
 
+```ts
 const route = useRoute('users')
 const sort = computed(() => route.params.sort ?? 'asc')
 ```
@@ -183,13 +171,11 @@ const sortParam = withDefault(String, 'asc')
 The `withDefault` utility accepts any param, including custom params and returns a custom param that can be used just like any other custom param.
 
 ```ts
-const routes = createRoutes([
-  {
-    name: 'users',
-    path: '/users',
-    query: query('sort-by=[?sort]', { sort: sortParam })// [!code focus]
-  }
-])
+const users = createRoute({
+  name: 'users',
+  path: '/users',
+  query: query('sort-by=[?sort]', { sort: sortParam })// [!code focus]
+})
 ```
 
 You can also assign a default value with the 2nd argument of `createParam`.
@@ -231,13 +217,11 @@ route.params.sort // -> 'asc' | 'desc'
 There are no constraints on the name you choose for param names
 
 ```ts
-const routes = createRoutes([
-  {
-    name: 'users',
-    path: '/users/[can-have#what.ever/you/want!?]',
-    component: ...
-  }
-])
+const users = createRoute({
+  name: 'users',
+  path: '/users/[can-have#what.ever/you/want!?]',
+  component: ...
+})
 ```
 
 Keep in mind that any special characters in the param name will make accessing the value slightly less pretty.
@@ -254,24 +238,24 @@ Param names must be unique. This includes params defined in a path parent and pa
 
 ```ts
 // invalid
-const routes = createRoutes([
-  {
-    name: 'users',
-    path: '/users/[id]',
-    query: 'sort-by=[id]'
-  }
-])
+const users = createRoute({
+  name: 'users',
+  path: '/users/[id]',
+  query: 'sort-by=[id]'
+})
+```
 
+```ts
 // invalid
-const routes = createRoutes([
-  {
-    name: 'users',
-    path: '/users/[id]',
-    children: createRoutes([
-      name: 'tokens',
-      path: '/tokens/[id]',
-      component: ...
-    ])
-  }
-])
+const users = createRoute({
+  name: 'users',
+  path: '/users/[id]',
+})
+
+const tokens = createRoute({
+  parent: users,
+  name: 'tokens',
+  path: '/tokens/[id]',
+  component: ... 
+})
 ```

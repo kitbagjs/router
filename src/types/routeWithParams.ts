@@ -1,4 +1,4 @@
-import { ExtractParamName, MergeParams } from '@/types/params'
+import { ExtractParamName } from '@/types/params'
 import { Param, ParamGetSet, ParamGetter } from '@/types/paramTypes'
 import { Routes } from '@/types/route'
 import { RoutesKey, RoutesMap } from '@/types/routesMap'
@@ -17,7 +17,7 @@ type ExtractRouteParamTypesWithoutLosingOptional<TRoute> = TRoute extends {
   path: { params: infer PathParams extends Record<string, Param> },
   query: { params: infer QueryParams extends Record<string, Param> },
 }
-  ? ExtractParamTypesWithoutLosingOptional<MergeParams<HostParams, MergeParams<PathParams, QueryParams>>>
+  ? ExtractParamTypesWithoutLosingOptional<HostParams & PathParams & QueryParams>
   : Record<string, unknown>
 
 type ExtractParamTypesWithoutLosingOptional<TParams extends Record<string, Param>> = Identity<MakeOptional<{

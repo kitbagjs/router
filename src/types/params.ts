@@ -80,8 +80,9 @@ export type ExtractPathParamType<
 export type ExtractRouteParamTypes<TRoute> = TRoute extends {
   path: { params: infer PathParams extends Record<string, Param> },
   query: { params: infer QueryParams extends Record<string, Param> },
+  host: { params: infer HostParams extends Record<string, Param> },
 }
-  ? ExtractParamTypes<MergeParams<PathParams, QueryParams>>
+  ? ExtractParamTypes<HostParams & PathParams & QueryParams>
   : {}
 
 /**
@@ -112,25 +113,6 @@ export type ExtractParamType<TParam extends Param, TParamKey extends PropertyKey
     : TParamKey extends `?${string}`
       ? string | undefined
       : string
-
-/**
- * Merges two parameter type records, ensuring no overlap in properties.
- * @template TAlpha - The first record type.
- * @template TBeta - The second record type.
- * @returns A new record type combining properties from both inputs without overlaps.
- */
-export type MergeParams<
-  TAlpha extends Record<string, unknown>,
-  TBeta extends Record<string, unknown>
-> = {
-  [K in keyof TAlpha | keyof TBeta]: K extends keyof TAlpha & keyof TBeta
-    ? never
-    : K extends keyof TAlpha
-      ? TAlpha[K]
-      : K extends keyof TBeta
-        ? TBeta[K]
-        : never
-}
 
 type RemoveLeadingQuestionMark<T extends PropertyKey> = T extends `?${infer TRest extends string}` ? TRest : T
 export type RemoveLeadingQuestionMarkFromKeys<T extends Record<string, unknown>> = {

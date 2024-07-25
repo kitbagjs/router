@@ -64,15 +64,14 @@ router.onAfterRouteEnter((to, context) => {
 ### Route
 
 ```ts
-const routes = createRoutes([
-  {
+const routes = [
+  createRoute({
     name: 'Home',
-    path: '/',
     onAfterRouteEnter: (to, context) => {
       ...
     }
-  }
-])
+  })
+]
 ```
 
 ### Component

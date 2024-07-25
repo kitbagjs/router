@@ -1,4 +1,4 @@
-# AfterRouteHookResponse\<TRoutes\>
+# AfterRouteHookResponse
 
 ```ts
 type AfterRouteHookResponse<TRoutes>: RouteHookSuccessResponse | RouteHookPushResponse<TRoutes> | RouteHookRejectResponse;

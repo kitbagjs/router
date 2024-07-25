@@ -74,3 +74,16 @@ export type RegisteredRouterPush = RouterPush<RegisteredRoutes>
  * Represents the type for router `replace`, with types for routes registered within {@link Register}
  */
 export type RegisteredRouterReplace = RouterReplace<RegisteredRoutes>
+
+/**
+ * Represents additional metadata associated with a route, customizable via declaration merging.
+ * @example
+ * ```ts
+ * declare module '@kitbag/router' {
+ *   interface RouteMeta {
+ *     pageTitle?: string
+ *   }
+ * }
+ * ```
+ */
+export interface RouteMeta extends Record<string, unknown> {}

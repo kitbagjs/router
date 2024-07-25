@@ -15,15 +15,13 @@ import { Identity } from '@/types/utilities'
  *
  * @example
  * ```ts
- * import { createRoutes, query } from '@kitbag/router'
+ * import { createRoute, query } from '@kitbag/router'
  *
- * export const routes = createRoutes([
- *   {
- *     name: 'home',
- *     query: query('bar=[bar]', { bar: Boolean }),
- *     component: Home
- *   },
- * ])
+ * export const routes = createRoute({
+ *   name: 'home',
+ *   query: query('bar=[bar]', { bar: Boolean }),
+ *   component: Home
+ * })
  * ```
  */
 export function query<TQuery extends string, TParams extends QueryParamsWithParamNameExtracted<TQuery>>(query: TQuery, params: Identity<TParams>): Query<TQuery, TParams>

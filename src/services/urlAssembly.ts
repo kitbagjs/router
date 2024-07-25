@@ -2,10 +2,11 @@ import { setParamValue } from '@/services/params'
 import { setParamValueOnUrl } from '@/services/paramsFinder'
 import { getParamName, isOptionalParamSyntax } from '@/services/routeRegex'
 import { QueryRecord, withQuery } from '@/services/withQuery'
-import { Route, paramEnd, paramStart } from '@/types'
 import { Host } from '@/types/host'
+import { paramEnd, paramStart } from '@/types/params'
 import { Path } from '@/types/path'
 import { Query } from '@/types/query'
+import { Route } from '@/types/route'
 
 type AssembleUrlOptions = {
   params?: Record<string, unknown>,

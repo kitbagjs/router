@@ -2,50 +2,68 @@
 
 ## Basics
 
-Kitbag Router provides `createRoutes`, which provides the type you'll need to supply when creating your router.
+Kitbag Router provides `createRoute`, which creates the `Route` types you'll use when creating your router.
 
 ```ts
-import { createRoutes } from '@kitbag/router'
+import { createRoute } from '@kitbag/router'
 
-const routes = createRoutes([
-  { name: 'home', path: '/', component: Home },
-  { name: 'path', path: '/about', component: About },
-])
+const routes = [
+  createRoute({ name: 'home', path: '/', component: Home }),
+  createRoute({ name: 'path', path: '/about', component: About }),
+]
 
 const router = createRouter(routes)
 ```
 
 ## Nested Routes
 
-When your application supports nested component views, you can use nested routes to support this behavior with router. The `children` value should use `createRoutes` at each level.
+When creating a route, you can optionally supply `parent`. This will nest your route under the parent route. Let's create the following route structure
 
-```ts
-const routes = createRoutes([
-  {
-    name: 'user',
-    path: '/user',
-    component: ...,
-    children: createRoutes([
-      {
-        name: 'profile',
-        path: '/profile',
-        component: ...,
-      },
-      {
-        name: 'settings',
-        path: '/settings',
-        component: ...,
-        children: createRoutes([
-          { name: 'keys', path: '/keys', component: ... },
-          { name: 'notifications', path: '/notifications', component: ... },
-        ])
-      }
-    ])
-  }
-])
+```txt
+└── user
+    └── profile
+    └── settings
+        └── keys
+        └── notifications
 ```
 
-Any Route can have `children`, though to have those children's components be rendered correctly you need to put a `<router-view />` component somewhere in the parent's template. Alternatively, you can omit `component` from the parent route, since router assumes any route that has `children` and doesn't explicitly declare a `component` wants to mount `RouterView`.
+```ts
+const user = createRoute({
+  name: 'user',
+  path: '/user',
+  component: ...,
+})
+
+const profile = createRoute({
+  parent: user,
+  name: 'profile',
+  path: '/profile',
+  component: ...,
+})
+
+const settings = createRoute({
+  parent: user,
+  name: 'settings',
+  path: '/settings',
+  component: ...,
+})
+
+const settingsKeys = createRoute({ 
+  parent: settings,
+  name: 'keys', 
+  path: '/keys', 
+  component: ... 
+})
+
+const settingsNotifications = createRoute({ 
+  parent: settings,
+  name: 'notifications', 
+  path: '/notifications', 
+  component: ... 
+})
+```
+
+Any Route can be a parent, though to have the children components be rendered correctly you need to put a `<router-view />` component somewhere in the parent's template. Alternatively, you can omit `component` from the parent route, since router assumes any route that doesn't explicitly declare a `component` wants to mount `RouterView`.
 
 ## Route Names
 
@@ -68,17 +86,12 @@ When an individual route is disabled, it will never count as an exact match. Chi
 Let's update the example above
 
 ```ts
-const routes = createRoutes([
-  {
-    name: 'user',
-    path: '/user',
-    disabled: true, // [!code focus] 
-    component: ...,
-    children: createRouter([
-      ...
-    ])
-  }
-])
+const user = createRoute({
+  name: 'user',
+  path: '/user',
+  disabled: true, // [!code focus] 
+  component: ...,
+})
 ```
 
 Now developers would get a Typescript error if they try navigating to `routes.user`.
@@ -96,37 +109,37 @@ By default route paths are NOT case sensitive. If you need part of your route to
 
 ## External Routes
 
-Kitbag Router supports defining routes that are "external" to your single-page app (SPA). With `createExternalRoutes`, you can get all of the benefits of defined routes for routing that takes the user to another website, like perhaps your docs.
+Kitbag Router supports defining routes that are "external" to your single-page app (SPA). With `createExternalRoute`, you can get all of the benefits of defined routes for routing that takes the user to another website, like perhaps your docs.
 
 ```ts
-import { createExternalRoutes } from '@kitbag/router'
+import { createExternalRoute } from '@kitbag/router'
 
-export const documentationRoutes = createExternalRoutes([
-  {
-    host: 'https://router.kitbag.dev',
-    name: 'docs',
-    children: createExternalRoutes([
-      {
-        name: 'api',
-        path: '/api/[topic]',
-      },
-    ]),
-  },
-])
+const routerDocs = createExternalRoute({
+  host: 'https://router.kitbag.dev',
+  name: 'docs',
+})
+
+const routerApiDocs = createExternalRoute({
+  parent: routerDocs,
+  name: 'api',
+  path: '/api/[topic]',
+})
+
+export const documentationRoutes = [routerDocs, routerApiDocs]
 ```
 
 Now we can include these routes with all of the internal routes your app already uses.
 
 ```ts
-import { createRoutes, createRouter } from '@kitbag/router'
+import { createRoute, createRouter } from '@kitbag/router'
 import { documentationRoutes } from './documentationRoutes'
 
-export const routes = createRoutes([
-  {
+export const routes = [
+  createRoute({
     name: 'home',
     path: '/',
     component: () => import('@/views/HomeView.vue'),
-  },
+  }),
   ...
 ])
 
@@ -150,18 +163,10 @@ function goToTopic(topic: string): void {
 External routes support route params inside of the `host`, just like `path` and `query`.
 
 ```ts
-import { createExternalRoutes } from '@kitbag/router'
+import { createExternalRoute } from '@kitbag/router'
 
-export const documentationRoutes = createExternalRoutes([
-  {
-    host: 'https://[subdomain].kitbag.dev',
-    name: 'docs',
-    children: createExternalRoutes([
-      {
-        name: 'api',
-        path: '/api/[topic]',
-      },
-    ]),
-  },
-])
+const routerDocs = createExternalRoute({
+  host: 'https://[subdomain].kitbag.dev',
+  name: 'docs',
+})
 ```

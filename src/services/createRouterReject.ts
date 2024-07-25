@@ -1,8 +1,9 @@
 import { Ref, markRaw, ref, Component } from 'vue'
 import { genericRejection } from '@/components/rejection'
 import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
-import { RegisteredRejectionType } from '@/types'
+import { RegisteredRejectionType } from '@/types/register'
 import { ResolvedRoute } from '@/types/resolved'
+import { CreateRouteOptionsWithMeta } from '@/types/route'
 
 export const builtInRejections: ['NotFound'] = ['NotFound']
 export type BuiltInRejectionType = typeof builtInRejections[number]
@@ -46,9 +47,8 @@ export function createRouterReject({
   const getRejectionRoute: GetRejectionRoute = (type) => {
     const component = markRaw(getRejectionComponent(type))
 
-    const route = {
+    const route: CreateRouteOptionsWithMeta = {
       name: type,
-      path: '',
       component,
       meta: {},
     }

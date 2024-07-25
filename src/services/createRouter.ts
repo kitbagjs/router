@@ -29,21 +29,21 @@ type RouterUpdateOptions = {
  * Creates a router instance for a Vue application, equipped with methods for route handling, lifecycle hooks, and state management.
  *
  * @param routes - {@link Routes} An array of route definitions specifying the configuration of routes in the application.
- * Use createRoutes method to create the route definitions.
+ * Use createRoute method to create the route definitions.
  * @param options - {@link RouterOptions} for the router, including history mode and initial URL settings.
  * @returns Router instance
  *
  * @example
  * ```ts
- * import { createRoutes, createRouter } from '@kitbag/router'
+ * import { createRoute, createRouter } from '@kitbag/router'
  *
  * const Home = { template: '<div>Home</div>' }
  * const About = { template: '<div>About</div>' }
  *
- * export const routes = createRoutes([
- *   { name: 'home', path: '/', component: Home },
- *   { name: 'path', path: '/about', component: About },
- * ])
+ * export const routes = [
+ *   createRoute({ name: 'home', path: '/', component: Home }),
+ *   createRoute({ name: 'path', path: '/about', component: About }),
+ * ]
  *
  * const router = createRouter(routes)
  * ```
