@@ -46,7 +46,7 @@ This param will expect at least (1) character past the slash to match, but will 
 - `/one/two/three`
 - etc
 
-Then to convert the captured value into an array, you'll need to define a [custom param](/core-concepts/path-params#custom-param).
+Then to convert the captured value into an array, you'll need to define a [custom param](/core-concepts/route-params#custom-param).
 
 ```ts
 import { ParamGetSet } from '@kitbag/router'

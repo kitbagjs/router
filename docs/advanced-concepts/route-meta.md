@@ -3,26 +3,26 @@
 It may be useful to store additional context on your route to be used in a hook, or within a component. Meta data might be useful for authorization, analytics, and much more. For example, below we will use route meta to configure the document title per route.
 
 ```ts
-import { createRoutes, createRouter } from '@kitbag/router'
+import { createRoute, createRouter } from '@kitbag/router'
 
-const routes = createRoutes([
-  { 
+const routes = [
+  createRoute({ 
     name: 'home',
     path: '/',
     component: Home,
     meta: {
       pageTitle: 'Kitbag Home'
     }
-  },
-  { 
+  }),
+  createRoute({ 
     name: 'path',
     path: '/about',
     component: About,
     meta: {
       pageTitle: 'Learn More About Kitbag'
     }
-  },
-])
+  }),
+]
 
 const router = createRouter(routes)
 

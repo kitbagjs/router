@@ -20,7 +20,7 @@ declare module '@kitbag/router' {
 When a rejection happens, Kitbag router mounts whatever component is registered for the type of rejection. Assign your rejection components wherever you call `createRouter`.
 
 ```ts
-import { createRoutes } from "@kitbag/router";
+import { createRouter } from "@kitbag/router";
 import MyNotFound from "@/components/MyNotFound.vue";
 import MyAuthNeeded from "@/components/MyAuthNeeded.vue";
 

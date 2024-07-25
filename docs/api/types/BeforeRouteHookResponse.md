@@ -1,4 +1,4 @@
-# BeforeRouteHookResponse\<TRoutes\>
+# BeforeRouteHookResponse
 
 ```ts
 type BeforeRouteHookResponse<TRoutes>: RouteHookSuccessResponse | RouteHookPushResponse<TRoutes> | RouteHookRejectResponse | RouteHookAbortResponse;

@@ -7,29 +7,29 @@ The most common way of navigating is with the `<router-link/>` component inside 
 To navigate to another route, you can use `router.push`. This method will update the URL for the browser and also add the URL into the history so when a user uses the back button on their browser it will behave as expected.
 
 ```ts
-import { createRoutes, useRouter } from '@kitbag/router'
+import { createRoute, useRouter } from '@kitbag/router'
 
-const routes = createRoutes([
-  {
-    name: 'user',
-    path: '/user',
-    component: ...,
-    children: createRoutes([
-      {
-        name: 'profile',
-        path: '/profile',
-        component: ...,
-      },
-      {
-        name: 'settings',
-        path: '/settings',
-        component: ...,
-      }
-    ])
-  }
-])
+const user = createRoute({
+  name: 'user',
+  path: '/user',
+  component: ...,
+})
 
-const router = useRouter(routes)
+const profile = createRoute({
+  parent: user,
+  name: 'profile',
+  path: '/profile',
+  component: ...,
+})
+
+const settings = createRoute({
+  parent: user,
+  name: 'settings',
+  path: '/settings',
+  component: ...,
+})
+
+const router = useRouter([user, profile, settings])
 
 router.push('user.settings')
 ```
@@ -48,29 +48,29 @@ This `source` argument is type safe, expecting either a [`Url`](/api/types/Url) 
 When navigating to a route that has params, the router will require those params be given in the correct type.
 
 ```ts
-const routes = createRoutes([
-  {
-    name: 'user',
-    path: '/user', // [!code --]
-    path: '/user/[id]', // [!code ++]
-    component: ...,
-    children: createRoutes([
-      {
-        name: 'profile',
-        path: '/profile',
-        component: ...,
-      },
-      {
-        name: 'settings',
-        path: '/settings',
-        query: 'tab=[?tab]', // [!code ++]
-        component: ...,
-      }
-    ])
-  }
-])
+const user = createRoute({
+  name: 'user',
+  path: '/user', // [!code --]
+  path: '/user/[id]', // [!code ++]
+  component: ...,
+})
 
-const router = useRouter(routes)
+const profile = createRoute({
+  parent: user,
+  name: 'profile',
+  path: '/profile',
+  component: ...,
+})
+
+const settings = createRoute({
+  parent: user,
+  name: 'settings',
+  path: '/settings',
+  query: 'tab=[?tab]', // [!code ++]
+  component: ...,
+})
+
+const router = useRouter([user, profile, settings])
 
 router.push('user.settings') // [!code --]
 router.push('user.settings', { id: 42, tab: 'github' }) // [!code ++]

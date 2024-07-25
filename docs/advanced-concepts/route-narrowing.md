@@ -1,36 +1,38 @@
 # Route Narrowing
+
 When accessing the current route, by default the type is a union of all possible routes. 
 
 ```ts
-import { createRoutes, createRouter } from '@kitbag/router'
+import { createRoute, createRouter } from '@kitbag/router'
 
-const routes = createRoutes([
-  {
-    name: 'home',
-    path: '/',
-    component: ...,
-  },
-  {
-    name: 'user',
-    path: '/user/[userId]',
-    component: ...,
-    children: createRoutes([
-      {
-        name: 'profile',
-        path: '/profile',
-        query: '?tab=[tab]',
-        component: ...,
-      },
-      {
-        name: 'settings',
-        path: '/settings',
-        component: ...,
-      }
-    ])
-  }
-])
+const home = createRoute({
+  name: 'home',
+  path: '/',
+  component: ...,
+})
 
-const router = createRouter(routes)
+const user = createRoute({
+  name: 'user',
+  path: '/user/[userId]',
+  component: ...,
+})
+
+const profile = createRoute({
+  parent: user,
+  name: 'profile',
+  path: '/profile',
+  query: '?tab=[tab]',
+  component: ...,
+})
+
+const settings = createRoute({
+  parent: user,
+  name: 'settings',
+  path: '/settings',
+  component: ...,
+})
+
+const router = createRouter([home, user, profile, settings])
 
 router.route.key // "home" | "user" | "user.profile" | "user.settings"
 ```

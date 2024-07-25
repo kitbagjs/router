@@ -29,14 +29,12 @@ An object representing the host which includes the host string, its parameters, 
 ## Example
 
 ```ts
-import { createExternalRoutes, host } from '@kitbag/router'
+import { createExternalRoute, host } from '@kitbag/router'
 
-export const routes = createExternalRoutes([
-  {
-    name: 'home',
-    host: host('https://[subdomain].kitbag.dev', { subdomain: Number })
-  },
-])
+export const docs = createExternalRoute({
+  name: 'home',
+  host: host('https://[subdomain].kitbag.dev', { subdomain: Number })
+})
 ```
 
 ## Custom Params

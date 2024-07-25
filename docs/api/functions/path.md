@@ -29,15 +29,13 @@ An object representing the path which includes the path string, its parameters, 
 ## Example
 
 ```ts
-import { createRoutes, path } from '@kitbag/router'
+import { createRoute, path } from '@kitbag/router'
 
-export const routes = createRoutes([
-  {
-    name: 'home',
-    path: path('/[foo]', { foo: Number }),
-    component: Home
-  },
-])
+export const home = createRoute({
+  name: 'home',
+  path: path('/[foo]', { foo: Number }),
+  component: Home
+})
 ```
 
 ## Custom Params

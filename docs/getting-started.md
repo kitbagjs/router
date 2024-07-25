@@ -15,20 +15,20 @@ npm install @kitbag/router
 
 ## Define Basic Routes
 
-Create an array of possible routes. Learn more about [defining routes](/core-concepts/defining-routes).
+Routes are created individually using the `createRoute` utility. Learn more about [defining routes](/core-concepts/defining-routes).
 
 ::: code-group
 
 ```ts [routes.ts]
-import { createRoutes } from '@kitbag/router'
+import { createRoute } from '@kitbag/router'
 
 const Home = { template: '<div>Home</div>' }
 const About = { template: '<div>About</div>' }
 
-export const routes = createRoutes([
-  { name: 'home', path: '/', component: Home },
-  { name: 'path', path: '/about', component: About },
-])
+export const routes = [
+  createRoute({ name: 'home', path: '/', component: Home }),
+  createRoute({ name: 'path', path: '/about', component: About }),
+]
 ```
 
 :::

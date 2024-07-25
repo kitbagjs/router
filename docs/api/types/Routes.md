@@ -4,4 +4,4 @@
 type Routes: Readonly<Route[]>;
 ```
 
-Represents an immutable array of Route instances. Return value of `createRoutes`, expected param for `createRouter`.
+Represents an immutable array of Route instances. Array of return value from `createRoute`, expected param for `createRouter`.

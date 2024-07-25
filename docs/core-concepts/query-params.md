@@ -3,16 +3,14 @@
 Kitbag Router lets you define your query just like the path.
 
 ```ts
-import { createRoutes } from '@kitbag/router'
+import { createRoute } from '@kitbag/router'
 
-const routes = createRoutes([
-  {
-    name: 'users',
-    path: '/users',
-    query: 'sort=descending',
-    component: ...
-  }
-])
+const users = createRoute({
+  name: 'users',
+  path: '/users',
+  query: 'sort=descending',
+  component: ...
+})
 ```
 
 This static value will be used in determining if a route matches a given URL. Unlike `path`, the order of params is not enforced and the presence of extra query params in the URL does not preclude the route from being considered a match.
@@ -22,35 +20,31 @@ This static value will be used in determining if a route matches a given URL. Un
 The query was also built to support all of the same [route params](/core-concepts/route-params) benefits as path.
 
 ```ts
-import { createRoutes } from '@kitbag/router'
+import { createRoute } from '@kitbag/router'
 
-const routes = createRoutes([
-  {
-    name: 'users',
-    path: '/users',
-    query: 'sort=[sort]',
-    component: ...
-  },
-])
+const users = createRoute({
+  name: 'users',
+  path: '/users',
+  query: 'sort=[sort]',
+  component: ...
+})
 ```
 
 Kitbag router exports a `query` function, which offers support for changing param types in the query just like [path](/core-concepts/route-params#param-types).
 
 ```ts
 import { 
-  createRoutes,
+  createRoute,
   query, // [!code ++]
 } from '@kitbag/router'
 
-const routes = createRoutes([
-  {
-    name: 'users',
-    path: '/users'
-    query: 'sort=[sort]', // [!code --]
-    query: query('sort=[sort]', { sort: Number }), // [!code ++]
-    component: ...
-  }
-])
+const users = createRoute({
+  name: 'users',
+  path: '/users'
+  query: 'sort=[sort]', // [!code --]
+  query: query('sort=[sort]', { sort: Number }), // [!code ++]
+  component: ...
+})
 ```
 
 Like params declared in `path`, these values will be found in the `route.params`.
