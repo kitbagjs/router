@@ -2,13 +2,12 @@ import { Component } from 'vue'
 import { combineKey } from '@/services/combineKey'
 import { combinePath } from '@/services/combinePath'
 import { combineQuery } from '@/services/combineQuery'
-import { ComponentProps } from '@/services/component'
 import { AfterRouteHook, BeforeRouteHook } from '@/types/hooks'
 import { Path } from '@/types/path'
 import { Query } from '@/types/query'
 import { RouteMeta } from '@/types/register'
 import { Route } from '@/types/route'
-import { Identity, MaybeArray, MaybePromise } from '@/types/utilities'
+import { MaybeArray } from '@/types/utilities'
 
 /**
  * Defines route hooks that can be applied before entering, updating, or leaving a route, as well as after these events.
@@ -34,19 +33,10 @@ export type WithoutParent = {
   parent?: never,
 }
 
-type RouteDataRecord<
-  TComponents extends Record<string, Component> | undefined,
-  TParams extends Record<string, unknown>
-> = Identity<{
-  [TKey in keyof TComponents]?: TComponents[TKey] extends Component ? (params: TParams) => MaybePromise<ComponentProps<TComponents[TKey]> | void> : void
-}>
-
 export type WithComponent<
-  TComponent extends Component | undefined = Component | undefined,
-  TParams extends Record<string, unknown> = Record<string, unknown>
+  TComponent extends Component | undefined = Component | undefined
 > = {
   component?: TComponent,
-  data?: (params: TParams) => TComponent extends Component ? ComponentProps<TComponent> | void : void,
 }
 
 export function isWithComponent(options: CreateRouteOptions): options is CreateRouteOptions & { component: Component } {
@@ -54,11 +44,9 @@ export function isWithComponent(options: CreateRouteOptions): options is CreateR
 }
 
 export type WithComponents<
-  TComponents extends Record<string, Component> | undefined = Record<string, Component> | undefined,
-  TParams extends Record<string, unknown> = Record<string, unknown>
+  TComponents extends Record<string, Component> | undefined = Record<string, Component> | undefined
 > = {
   components?: TComponents,
-  data?: RouteDataRecord<TComponents, TParams>,
 }
 
 export function isWithComponents(options: CreateRouteOptions): options is CreateRouteOptions & { components: Record<string, Component> } {

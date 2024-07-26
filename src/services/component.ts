@@ -4,15 +4,15 @@ import { MaybePromise } from '@/types/utilities'
 
 type Constructor = new (...args: any) => any
 
-export type ComponentProps<TComponent extends Component> = TComponent extends Constructor
+type Props<TComponent extends Component> = TComponent extends Constructor
   ? InstanceType<TComponent>['$props']
   : TComponent extends AsyncComponentLoader<infer T extends Component>
-    ? ComponentProps<T>
+    ? Props<T>
     : TComponent extends FunctionalComponent<infer T>
       ? T
       : never
 
-type ComponentPropsGetter<TComponent extends Component> = () => MaybePromise<ComponentProps<TComponent>>
+type PropsGetter<TComponent extends Component> = () => MaybePromise<Props<TComponent>>
 
 /**
  * Creates a component wrapper which has no props itself but mounts another component within while binding its props
@@ -32,7 +32,7 @@ type ComponentPropsGetter<TComponent extends Component> = () => MaybePromise<Com
  * })
  * ```
  */
-export function component<TComponent extends Component>(component: TComponent, props: ComponentPropsGetter<TComponent>): Component {
+export function component<TComponent extends Component>(component: TComponent, props: PropsGetter<TComponent>): Component {
   return defineComponent({
     name: 'PropsWrapper',
     expose: [],
@@ -48,7 +48,7 @@ export function component<TComponent extends Component>(component: TComponent, p
   })
 }
 
-function asyncPropsWrapper<TComponent extends Component>(component: TComponent, props: Promise<ComponentProps<TComponent>>): Component {
+function asyncPropsWrapper<TComponent extends Component>(component: TComponent, props: Promise<Props<TComponent>>): Component {
   return defineComponent({
     name: 'AsyncPropsWrapper',
     expose: [],
