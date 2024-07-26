@@ -1,6 +1,3 @@
-import { Host } from '@/types/host'
-import { Path } from '@/types/path'
-import { Query } from '@/types/query'
 import { Route, Routes } from '@/types/route'
 import { Router } from '@/types/router'
 import { RouterPush } from '@/types/routerPush'
@@ -39,7 +36,7 @@ export type RegisteredRouterRoute = RegisteredRouter['route']
  */
 export type RegisteredRoutes = Register extends { router: Router<infer TRoutes extends Routes> }
   ? TRoutes
-  : Route<string, Host, Path, Query, false>[]
+  : Route[]
 
 /**
  * Represents the possible Rejections registered within {@link Register}

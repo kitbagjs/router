@@ -1,4 +1,3 @@
-import { RouteDisabledError } from '@/errors/routeDisabledError'
 import { RouteNotFoundError } from '@/errors/routeNotFoundError'
 import { assembleUrl } from '@/services/urlAssembly'
 import { withQuery } from '@/services/withQuery'
@@ -47,10 +46,6 @@ export function createRouterResolve<const TRoutes extends Routes>(routes: TRoute
 
     if (!match) {
       throw new RouteNotFoundError(String(source))
-    }
-
-    if (match.matched.disabled) {
-      throw new RouteDisabledError(String(source))
     }
 
     const url = assembleUrl(match, {

@@ -67,7 +67,6 @@ export function createRoute(options: CreateRouteOptions): Route {
     path,
     query,
     depth: 1,
-    disabled: false,
     host: host('', {}),
   }
 
