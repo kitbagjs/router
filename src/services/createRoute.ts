@@ -39,7 +39,6 @@ export function createRoute(options: CreateRouteOptions | CreateRouteOptionsWith
     path,
     query,
     depth: 1,
-    disabled: options.disabled ?? false,
     host: host('', {}),
   }
 

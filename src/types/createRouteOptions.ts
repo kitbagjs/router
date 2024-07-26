@@ -91,8 +91,6 @@ export type CreateRouteOptions<
    * Represents additional metadata associated with a route, customizable via declaration merging.
    */
   meta?: RouteMeta,
-  // will be removed in follow-up PR
-  disabled?: boolean,
 }
 
 export type CreateRouteOptionsWithoutParent<

@@ -19,14 +19,12 @@ export type CreateRouteOptionsWithMeta = CreateRouteOptions & { meta: RouteMeta 
  * @template TKey - Represents the unique key identifying the route, typically a string.
  * @template TPath - The type or structure of the route's path.
  * @template TQuery - The type or structure of the query parameters associated with the route.
- * @template TDisabled - Indicates whether the route is disabled, which could affect routing logic.
  */
 export type Route<
   TKey extends string = string,
   THost extends Host = Host,
   TPath extends Path = Path,
-  TQuery extends Query = Query,
-  TDisabled extends boolean = boolean
+  TQuery extends Query = Query
 > = {
   /**
    * The specific route properties that were matched in the current route.
@@ -54,8 +52,4 @@ export type Route<
   */
   query: TQuery,
   depth: number,
-  /**
-   * Indicates if the route is disabled.
-  */
-  disabled: TDisabled,
 }
