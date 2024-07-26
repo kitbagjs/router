@@ -274,7 +274,6 @@ describe('host params', () => {
       name: 'simple',
       path: '/',
       host,
-      component,
     })
 
     const url = assembleUrl(route)
@@ -291,7 +290,6 @@ describe('host params', () => {
       name: 'simple',
       path: '/',
       host,
-      component,
     })
 
     const url = assembleUrl(route)
@@ -307,7 +305,6 @@ describe('host params', () => {
       name: 'simple',
       path: '/',
       host,
-      component,
     })
 
     const url = assembleUrl(route, {
@@ -323,7 +320,6 @@ describe('host params', () => {
       name: 'simple',
       path: '/',
       host: host('[?subdomain]kitbag.dev', { subdomain: withDefault(String, 'abc.') }),
-      component,
     })
 
     const url = assembleUrl(route, {
@@ -341,7 +337,6 @@ describe('host params', () => {
       name: 'simple',
       path: '/',
       host,
-      component,
     })
 
     expect(() => assembleUrl(route)).toThrowError(InvalidRouteParamValueError)
@@ -355,7 +350,6 @@ describe('host params', () => {
       name: 'simple',
       path: '/',
       host,
-      component,
     })
 
     const url = assembleUrl(route, {

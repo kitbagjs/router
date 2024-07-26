@@ -22,11 +22,11 @@ export type WithHooks = {
   onAfterRouteLeave?: MaybeArray<AfterRouteHook>,
 }
 
-export type WithParent<TParent extends Route> = {
+export type WithParent<TParent extends Route = Route> = {
   parent: TParent,
 }
 
-export function isWithParent<T extends Record<string, unknown>>(options: T): options is T & WithParent<Route> {
+export function isWithParent<T extends Record<string, unknown>>(options: T): options is T & WithParent {
   return 'parent' in options && Boolean(options.parent)
 }
 
@@ -42,8 +42,8 @@ type RouteDataRecord<
 }>
 
 export type WithComponent<
-  TComponent extends Component | undefined,
-  TParams extends Record<string, unknown>
+  TComponent extends Component | undefined = Component | undefined,
+  TParams extends Record<string, unknown> = Record<string, unknown>
 > = {
   component?: TComponent,
   data?: (params: TParams) => TComponent extends Component ? ComponentProps<TComponent> | void : void,
@@ -54,8 +54,8 @@ export function isWithComponent(options: CreateRouteOptions): options is CreateR
 }
 
 export type WithComponents<
-  TComponents extends Record<string, Component> | undefined,
-  TParams extends Record<string, unknown>
+  TComponents extends Record<string, Component> | undefined = Record<string, Component> | undefined,
+  TParams extends Record<string, unknown> = Record<string, unknown>
 > = {
   components?: TComponents,
   data?: RouteDataRecord<TComponents, TParams>,
@@ -66,9 +66,9 @@ export function isWithComponents(options: CreateRouteOptions): options is Create
 }
 
 export type CreateRouteOptions<
-  TName extends string | undefined = undefined,
-  TPath extends string | Path | undefined = undefined,
-  TQuery extends string | Query | undefined = undefined
+  TName extends string | undefined = string | undefined,
+  TPath extends string | Path | undefined = string | Path | undefined,
+  TQuery extends string | Query | undefined = string | Query | undefined
 > = {
   name?: TName,
   path?: TPath,
