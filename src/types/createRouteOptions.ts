@@ -22,14 +22,14 @@ export type WithHooks = {
   onAfterRouteLeave?: MaybeArray<AfterRouteHook>,
 }
 
-export type WithHost<THost extends string | Host> = {
+export type WithHost<THost extends string | Host = string | Host> = {
   /**
    * Host part of URL.
    */
   host: THost,
 }
 
-export function isWithHost(options: CreateRouteOptions): options is CreateRouteOptions & WithHost<string | Host> {
+export function isWithHost(options: CreateRouteOptions): options is CreateRouteOptions & WithHost {
   return 'host' in options && Boolean(options.host)
 }
 
