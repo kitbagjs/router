@@ -57,7 +57,7 @@
     return null
   })
 
-  function getComponents(options: CreateRouteOptions): Record<string, Component | undefined> {
+  function getComponents(options: CreateRouteOptions): Record<string, Component | string | undefined> {
     if (isWithComponents(options)) {
       return options.components
     }
@@ -66,6 +66,6 @@
       return { default: options.component }
     }
 
-    return {}
+    return { default: 'RouterView' }
   }
 </script>

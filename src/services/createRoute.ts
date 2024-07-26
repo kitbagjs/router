@@ -1,10 +1,9 @@
 import { Component, markRaw } from 'vue'
-import { RouterView } from '@/components'
 import { CombineKey } from '@/services/combineKey'
 import { CombinePath } from '@/services/combinePath'
 import { CombineQuery } from '@/services/combineQuery'
 import { host } from '@/services/host'
-import { CreateRouteOptions, WithComponent, WithComponents, WithHooks, WithParent, WithoutParent, combineRoutes, isWithComponent, isWithComponents, isWithParent } from '@/types/createRouteOptions'
+import { CreateRouteOptions, WithComponent, WithComponents, WithHooks, WithParent, WithoutParent, combineRoutes, isWithParent } from '@/types/createRouteOptions'
 import { Host } from '@/types/host'
 import { ToKey, toKey } from '@/types/key'
 import { Path, ToPath, toPath } from '@/types/path'
@@ -43,11 +42,10 @@ export function createRoute<
 >(options: CreateRouteOptions<TName, TPath, TQuery> & WithHooks & WithComponents<TComponents> & WithParent<TParent>): Route<CombineKey<TParent['key'], ToKey<TName>>, Host<'', {}>, CombinePath<TParent['path'], ToPath<TPath>>, CombineQuery<TParent['query'], ToQuery<TQuery>>>
 
 export function createRoute(options: CreateRouteOptions): Route {
-  const routeWithComponent = addRouterViewComponentIfWithoutComponent(options)
   const key = toKey(options.name)
   const path = toPath(options.path)
   const query = toQuery(options.query)
-  const rawRoute = markRaw({ meta: {}, ...routeWithComponent })
+  const rawRoute = markRaw({ meta: {}, ...options })
 
   const route = {
     matched: rawRoute,
@@ -64,16 +62,4 @@ export function createRoute(options: CreateRouteOptions): Route {
   checkDuplicateKeys(merged.path.params, merged.query.params)
 
   return merged
-}
-
-function addRouterViewComponentIfWithoutComponent(options: CreateRouteOptions): CreateRouteOptions & ({ component: Component } | { components: Record<string, Component> }) {
-  if (isWithComponents(options)) {
-    return options
-  }
-
-  if (isWithComponent(options)) {
-    return options
-  }
-
-  return { ...options, component: RouterView }
 }
