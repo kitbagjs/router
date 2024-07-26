@@ -145,7 +145,7 @@ test.each([
 })
 
 test.each([
-  { path: '/duplicate/[foo]', query: 'params=[?foo]' },
+  { path: '/duplicate/[foo]', host: 'https://router.kitbag.dev', query: 'params=[?foo]' },
   { path: '/duplicate/[foo]', host: 'https://[foo].kitbag.dev' },
   { path: '/', host: 'https://[?foo].kitbag.dev', query: 'params=[?foo]' },
   { path: '/duplicate/[foo]', host: 'https://[foo].kitbag.dev', query: 'params=[foo]' },
@@ -153,7 +153,6 @@ test.each([
   const action: () => void = () => createExternalRoute({
     name: 'different-cased-params',
     ...route,
-    component,
   })
 
   expect(action).toThrowError(DuplicateParamsError)

@@ -4,7 +4,7 @@ import { defineAsyncComponent } from 'vue'
 import helloWorld from '@/components/helloWorld'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
-import { isRouteWithComponent } from '@/types/createRouteOptions'
+import { isWithComponent } from '@/types/createRouteOptions'
 import { routes } from '@/utilities/testHelpers'
 
 test('renders component for initial route', async () => {
@@ -186,7 +186,7 @@ test('Renders custom genericRejection component when the initialUrl does not mat
     },
   })
 
-  if (!isRouteWithComponent(router.route.matched)) {
+  if (!isWithComponent(router.route.matched)) {
     throw 'Matched route does not have a single component'
   }
 

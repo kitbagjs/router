@@ -1,10 +1,10 @@
-import { markRaw } from 'vue'
+import { Component, markRaw } from 'vue'
 import { RouterView } from '@/components'
 import { CombineKey } from '@/services/combineKey'
 import { CombinePath } from '@/services/combinePath'
 import { CombineQuery } from '@/services/combineQuery'
 import { host } from '@/services/host'
-import { combineRoutes, CreateRouteOptions, isRouteWithParent, isRouteWithoutComponent, CreateRouteOptionsWithoutParent, CreateRouteOptionsWithParent } from '@/types/createRouteOptions'
+import { CreateRouteOptions, WithComponent, WithComponents, WithHooks, WithParent, WithoutParent, combineRoutes, isWithComponent, isWithComponents, isWithParent } from '@/types/createRouteOptions'
 import { Host } from '@/types/host'
 import { ToKey, toKey } from '@/types/key'
 import { Path, ToPath, toPath } from '@/types/path'
@@ -15,17 +15,34 @@ import { checkDuplicateKeys } from '@/utilities/checkDuplicateKeys'
 export function createRoute<
   const TName extends string | undefined = undefined,
   const TPath extends string | Path | undefined = undefined,
-  const TQuery extends string | Query | undefined = undefined
->(options: CreateRouteOptionsWithoutParent<TName, TPath, TQuery>): Route<ToKey<TName>, Host<'', {}>, ToPath<TPath>, ToQuery<TQuery>>
+  const TQuery extends string | Query | undefined = undefined,
+  TComponent extends Component | undefined = undefined
+>(options: CreateRouteOptions<TName, TPath, TQuery> & WithHooks & WithComponent<TComponent> & WithoutParent): Route<ToKey<TName>, Host<'', {}>, ToPath<TPath>, ToQuery<TQuery>>
+
+export function createRoute<
+  const TName extends string | undefined = undefined,
+  const TPath extends string | Path | undefined = undefined,
+  const TQuery extends string | Query | undefined = undefined,
+  TComponents extends Record<string, Component> | undefined = undefined
+>(options: CreateRouteOptions<TName, TPath, TQuery> & WithHooks & WithComponents<TComponents> & WithoutParent): Route<ToKey<TName>, Host<'', {}>, ToPath<TPath>, ToQuery<TQuery>>
 
 export function createRoute<
   const TParent extends Route,
   const TName extends string | undefined = undefined,
   const TPath extends string | Path | undefined = undefined,
-  const TQuery extends string | Query | undefined = undefined
->(options: CreateRouteOptionsWithParent<TParent, TName, TPath, TQuery>): Route<CombineKey<TParent['key'], ToKey<TName>>, Host<'', {}>, CombinePath<TParent['path'], ToPath<TPath>>, CombineQuery<TParent['query'], ToQuery<TQuery>>>
+  const TQuery extends string | Query | undefined = undefined,
+  TComponent extends Component | undefined = undefined
+>(options: CreateRouteOptions<TName, TPath, TQuery> & WithHooks & WithComponent<TComponent> & WithParent<TParent>): Route<CombineKey<TParent['key'], ToKey<TName>>, Host<'', {}>, CombinePath<TParent['path'], ToPath<TPath>>, CombineQuery<TParent['query'], ToQuery<TQuery>>>
 
-export function createRoute(options: CreateRouteOptions | CreateRouteOptionsWithParent<Route>): Route {
+export function createRoute<
+  const TParent extends Route,
+  const TName extends string | undefined = undefined,
+  const TPath extends string | Path | undefined = undefined,
+  const TQuery extends string | Query | undefined = undefined,
+  TComponents extends Record<string, Component> | undefined = undefined
+>(options: CreateRouteOptions<TName, TPath, TQuery> & WithHooks & WithComponents<TComponents> & WithParent<TParent>): Route<CombineKey<TParent['key'], ToKey<TName>>, Host<'', {}>, CombinePath<TParent['path'], ToPath<TPath>>, CombineQuery<TParent['query'], ToQuery<TQuery>>>
+
+export function createRoute(options: CreateRouteOptions): Route {
   const routeWithComponent = addRouterViewComponentIfWithoutComponent(options)
   const key = toKey(options.name)
   const path = toPath(options.path)
@@ -42,17 +59,21 @@ export function createRoute(options: CreateRouteOptions | CreateRouteOptionsWith
     host: host('', {}),
   }
 
-  const merged = isRouteWithParent(options) ? combineRoutes(options.parent, route) : route
+  const merged = isWithParent(options) ? combineRoutes(options.parent, route) : route
 
   checkDuplicateKeys(merged.path.params, merged.query.params)
 
   return merged
 }
 
-function addRouterViewComponentIfWithoutComponent(options: CreateRouteOptions): CreateRouteOptions {
-  if (isRouteWithoutComponent(options)) {
-    return { ...options, component: RouterView }
+function addRouterViewComponentIfWithoutComponent(options: CreateRouteOptions): CreateRouteOptions & ({ component: Component } | { components: Record<string, Component> }) {
+  if (isWithComponents(options)) {
+    return options
   }
 
-  return options
+  if (isWithComponent(options)) {
+    return options
+  }
+
+  return { ...options, component: RouterView }
 }

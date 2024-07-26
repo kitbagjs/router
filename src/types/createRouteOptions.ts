@@ -13,7 +13,7 @@ import { MaybeArray } from '@/types/utilities'
 /**
  * Defines route hooks that can be applied before entering, updating, or leaving a route, as well as after these events.
  */
-type WithHooks = {
+export type WithHooks = {
   onBeforeRouteEnter?: MaybeArray<BeforeRouteHook>,
   onBeforeRouteUpdate?: MaybeArray<BeforeRouteHook>,
   onBeforeRouteLeave?: MaybeArray<BeforeRouteHook>,
@@ -22,63 +22,68 @@ type WithHooks = {
   onAfterRouteLeave?: MaybeArray<AfterRouteHook>,
 }
 
-type WithSingleComponent = {
+export type WithHost<THost extends string | Host = string | Host> = {
+  /**
+   * Host part of URL.
+   */
+  host: THost,
+}
+
+export function isWithHost(options: CreateRouteOptions): options is CreateRouteOptions & WithHost {
+  return 'host' in options && Boolean(options.host)
+}
+
+export type WithoutHost = {
+  host?: never,
+}
+
+export type WithParent<TParent extends Route = Route> = {
+  parent: TParent,
+}
+
+export function isWithParent<T extends Record<string, unknown>>(options: T): options is T & WithParent {
+  return 'parent' in options && Boolean(options.parent)
+}
+
+export type WithoutParent = {
+  parent?: never,
+}
+
+export type WithComponent<
+  TComponent extends Component | undefined = Component | undefined
+> = {
   /**
    * A Vue component, which can be either synchronous or asynchronous components.
    */
-  component: Component,
+  component?: TComponent,
 }
 
-type WithComponentRecord = {
+export function isWithComponent(options: CreateRouteOptions): options is CreateRouteOptions & { component: Component } {
+  return 'component' in options && Boolean(options.component)
+}
+
+export type WithComponents<
+  TComponents extends Record<string, Component> | undefined = Record<string, Component> | undefined
+> = {
   /**
    * Multiple components for named views, which can be either synchronous or asynchronous components.
    */
-  components: Record<string, Component>,
+  components?: TComponents,
 }
 
-type WithComponent = Partial<WithSingleComponent | WithComponentRecord>
-
-export function isRouteWithParent(options: CreateRouteOptions): options is CreateRouteOptionsWithParent<Route> {
-  return 'parent' in options
+export function isWithComponents(options: CreateRouteOptions): options is CreateRouteOptions & { components: Record<string, Component> } {
+  return 'components' in options && Boolean(options.components)
 }
-
-export function isRouteWithComponent(value: CreateRouteOptions): value is CreateRouteOptions & WithSingleComponent {
-  return 'component' in value
-}
-
-export function isRouteWithComponents(value: CreateRouteOptions): value is CreateRouteOptions & WithComponentRecord {
-  return 'components' in value
-}
-
-export function isRouteWithoutComponent(value: CreateRouteOptions): value is Omit<CreateRouteOptions, 'component' | 'components'> {
-  return !isRouteWithComponent(value) && !isRouteWithComponents(value)
-}
-
-// type ParentPath<TParent extends Route | undefined> = TParent extends Route ? TParent['path'] : Path<'', {}>
-// type ParentQuery<TParent extends Route | undefined> = TParent extends Route ? TParent['query'] : Query<'', {}>
-// type CombineParams<
-//   TPath extends string | Path | undefined = string | Path | undefined,
-//   TQuery extends string | Query | undefined = string | Query | undefined,
-//   THost extends string | Host | undefined = string | Host | undefined,
-//   TParent extends Route | undefined = undefined
-// > = CombinePath<ParentPath<TParent>, ToPath<TPath>>['params'] & CombineQuery<ParentQuery<TParent>, ToQuery<TQuery>>['params'] & ToHost<THost>['params']
 
 export type CreateRouteOptions<
-  TName extends string | undefined = string,
+  TName extends string | undefined = string | undefined,
   TPath extends string | Path | undefined = string | Path | undefined,
-  TQuery extends string | Query | undefined = string | Query | undefined,
-  THost extends string | Host | undefined = string | Host | undefined,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _TParent extends Route | undefined = undefined
-> = WithComponent & WithHooks & {
+  TQuery extends string | Query | undefined = string | Query | undefined
+> = {
   /**
    * Name for route, used to create route keys and in navigation.
    */
   name?: TName,
-  /**
-   * Host part of URL.
-   */
-  host?: THost,
   /**
    * Path part of URL.
    */
@@ -91,25 +96,6 @@ export type CreateRouteOptions<
    * Represents additional metadata associated with a route, customizable via declaration merging.
    */
   meta?: RouteMeta,
-}
-
-export type CreateRouteOptionsWithoutParent<
-  TName extends string | undefined = undefined,
-  TPath extends string | Path | undefined = undefined,
-  TQuery extends string | Query | undefined = undefined,
-  THost extends string | Host | undefined = undefined
-> = CreateRouteOptions<TName, TPath, TQuery, THost> & {
-  parent?: never,
-}
-
-export type CreateRouteOptionsWithParent<
-  TParent extends Route,
-  TName extends string | undefined = undefined,
-  TPath extends string | Path | undefined = undefined,
-  TQuery extends string | Query | undefined = undefined,
-  THost extends string | Host | undefined = undefined
-> = CreateRouteOptions<TName, TPath, TQuery, THost, TParent> & {
-  parent: TParent,
 }
 
 export function combineRoutes(parent: Route, child: Route): Route {
