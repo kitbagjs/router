@@ -39,7 +39,6 @@ export function createExternalRoute(options: CreateRouteOptions | CreateRouteOpt
     path,
     query,
     depth: 1,
-    disabled: options.disabled ?? false,
   }
 
   const merged = isRouteWithParent(options) ? combineRoutes(options.parent, route) : route

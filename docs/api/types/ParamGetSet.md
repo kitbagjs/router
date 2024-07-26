@@ -1,4 +1,4 @@
-# ParamGetSet\<T\>
+# ParamGetSet
 
 ```ts
 type ParamGetSet<T>: object;

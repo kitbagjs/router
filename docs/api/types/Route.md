@@ -1,7 +1,7 @@
-# Route\<TKey, TPath, TQuery, TDisabled\>
+# Route
 
 ```ts
-type Route<TKey, TPath, TQuery, TDisabled>: object;
+type Route<TKey, TPath, TQuery>: object;
 ```
 
 Represents the structure of a route within the application. Return value of `createRoute`
@@ -13,7 +13,6 @@ Represents the structure of a route within the application. Return value of `cre
 | `TKey` *extends* `string` \| `undefined` | `string` | Represents the unique key identifying the route, typically a string. |
 | `TPath` *extends* `string` \| `Path` | `Path` | The type or structure of the route's path. |
 | `TQuery` *extends* `string` \| `Query` \| `undefined` | `Query` | The type or structure of the query parameters associated with the route. |
-| `TDisabled` *extends* `boolean` \| `undefined` | `boolean` | Indicates whether the route is disabled, which could affect routing logic. |
 
 ## Type declaration
 
@@ -22,14 +21,6 @@ Represents the structure of a route within the application. Return value of `cre
 ```ts
 depth: number;
 ```
-
-### disabled
-
-```ts
-disabled: TDisabled extends boolean ? TDisabled : false;
-```
-
-Indicates if the route is disabled.
 
 ### key
 

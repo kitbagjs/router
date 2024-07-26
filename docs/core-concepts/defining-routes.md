@@ -79,30 +79,6 @@ router.push('user.settings.keys')
 
 Learn more about [navigating](/core-concepts/navigating) to routes.
 
-## Disabled Routes
-
-When an individual route is disabled, it will never count as an exact match. Children of disabled route behave normally and can still be matched. This gives the developer the ability to ensure that partial views are not loaded without having to flatten your routes and lose the context of nested routes.
-
-Let's update the example above
-
-```ts
-const user = createRoute({
-  name: 'user',
-  path: '/user',
-  disabled: true, // [!code focus] 
-  component: ...,
-})
-```
-
-Now developers would get a Typescript error if they try navigating to `routes.user`.
-
-```ts
-const router = createRouter(routes)
-
-router.push('routes.user') // [!code error] error
-router.push('routes.user.profile') // ok
-```
-
 ## Case Sensitivity
 
 By default route paths are NOT case sensitive. If you need part of your route to be case sensitive, we recommend using a [Regex Param](/core-concepts/route-params#regexp-params).
