@@ -9,7 +9,7 @@ import { Path } from '@/types/path'
 import { Query } from '@/types/query'
 import { RouteMeta } from '@/types/register'
 import { Route } from '@/types/route'
-import { Identity, MaybeArray, MaybePromise } from '@/types/utilities'
+import { MaybeArray, MaybePromise } from '@/types/utilities'
 
 /**
  * Defines route hooks that can be applied before entering, updating, or leaving a route, as well as after these events.
