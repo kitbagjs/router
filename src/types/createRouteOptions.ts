@@ -3,6 +3,7 @@ import { combineKey } from '@/services/combineKey'
 import { combinePath } from '@/services/combinePath'
 import { combineQuery } from '@/services/combineQuery'
 import { AfterRouteHook, BeforeRouteHook } from '@/types/hooks'
+import { Host } from '@/types/host'
 import { Path } from '@/types/path'
 import { Query } from '@/types/query'
 import { RouteMeta } from '@/types/register'
@@ -21,6 +22,21 @@ export type WithHooks = {
   onAfterRouteLeave?: MaybeArray<AfterRouteHook>,
 }
 
+export type WithHost<THost extends string | Host> = {
+  /**
+   * Host part of URL.
+   */
+  host: THost,
+}
+
+export function isWithHost(options: CreateRouteOptions): options is CreateRouteOptions & WithHost<string | Host> {
+  return 'host' in options && Boolean(options.host)
+}
+
+export type WithoutHost = {
+  host?: never,
+}
+
 export type WithParent<TParent extends Route = Route> = {
   parent: TParent,
 }
@@ -36,6 +52,9 @@ export type WithoutParent = {
 export type WithComponent<
   TComponent extends Component | undefined = Component | undefined
 > = {
+  /**
+   * A Vue component, which can be either synchronous or asynchronous components.
+   */
   component?: TComponent,
 }
 
@@ -46,6 +65,9 @@ export function isWithComponent(options: CreateRouteOptions): options is CreateR
 export type WithComponents<
   TComponents extends Record<string, Component> | undefined = Record<string, Component> | undefined
 > = {
+  /**
+   * Multiple components for named views, which can be either synchronous or asynchronous components.
+   */
   components?: TComponents,
 }
 
@@ -58,9 +80,21 @@ export type CreateRouteOptions<
   TPath extends string | Path | undefined = string | Path | undefined,
   TQuery extends string | Query | undefined = string | Query | undefined
 > = {
+  /**
+   * Name for route, used to create route keys and in navigation.
+   */
   name?: TName,
+  /**
+   * Path part of URL.
+   */
   path?: TPath,
+  /**
+   * Query (aka search) part of URL.
+   */
   query?: TQuery,
+  /**
+   * Represents additional metadata associated with a route, customizable via declaration merging.
+   */
   meta?: RouteMeta,
 }
 

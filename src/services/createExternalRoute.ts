@@ -2,25 +2,13 @@ import { markRaw } from 'vue'
 import { CombineKey } from '@/services/combineKey'
 import { CombinePath } from '@/services/combinePath'
 import { CombineQuery } from '@/services/combineQuery'
-import { combineRoutes, CreateRouteOptions, isWithParent, WithoutParent, WithParent } from '@/types/createRouteOptions'
+import { combineRoutes, CreateRouteOptions, isWithHost, isWithParent, WithHost, WithoutHost, WithoutParent, WithParent } from '@/types/createRouteOptions'
 import { Host, toHost, ToHost } from '@/types/host'
 import { ToKey, toKey } from '@/types/key'
 import { Path, toPath, ToPath } from '@/types/path'
 import { Query, toQuery, ToQuery } from '@/types/query'
 import { Route } from '@/types/route'
 import { checkDuplicateKeys } from '@/utilities/checkDuplicateKeys'
-
-type WithHost<THost extends string | Host> = {
-  host: THost,
-}
-
-function isWithHost(options: CreateRouteOptions): options is CreateRouteOptions & WithHost<string | Host> {
-  return 'host' in options && Boolean(options.host)
-}
-
-type WithoutHost = {
-  host?: never,
-}
 
 export function createExternalRoute<
   const THost extends string | Host,
