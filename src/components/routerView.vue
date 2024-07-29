@@ -66,7 +66,7 @@
     return allComponents[name]
   }
 
-  function getAllComponents(options: CreateRouteOptions): Record<string, Component | undefined> {
+  function getAllComponents(options: CreateRouteOptions): Record<string, Component | string | undefined> {
     if (isWithComponents(options)) {
       return options.components
     }
@@ -75,7 +75,7 @@
       return { default: options.component }
     }
 
-    return {}
+    return { default: 'RouterView' }
   }
 
   type ComponentProps = (params: Record<string, unknown>) => Record<string, unknown>

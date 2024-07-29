@@ -3,7 +3,7 @@ import { path } from '@/services'
 import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
 import { createRoute } from '@/services/createRoute'
 import { ResolvedRoute } from '@/types/resolved'
-import { CreateRouteOptionsWithMeta } from '@/types/route'
+import { CreateRouteOptionsMatched } from '@/types/route'
 
 export const random = {
   number(options: { min?: number, max?: number } = {}): number {
@@ -68,7 +68,7 @@ export const routes = [
   }),
 ]
 
-export function mockRoute<TName extends string>(name: TName): CreateRouteOptionsWithMeta {
+export function mockRoute<TName extends string>(name: TName): CreateRouteOptionsMatched {
   return {
     name,
     path: path(`/${name}`, {}),
@@ -80,7 +80,7 @@ export function mockRoute<TName extends string>(name: TName): CreateRouteOptions
   }
 }
 
-export function mockResolvedRoute(matched: CreateRouteOptionsWithMeta, matches: CreateRouteOptionsWithMeta[]): ResolvedRoute {
+export function mockResolvedRoute(matched: CreateRouteOptionsMatched, matches: CreateRouteOptionsMatched[]): ResolvedRoute {
   return {
     matched,
     matches,

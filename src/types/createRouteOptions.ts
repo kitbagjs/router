@@ -91,7 +91,8 @@ export function isWithComponents(options: CreateRouteOptions): options is Create
 export type CreateRouteOptions<
   TName extends string | undefined = string | undefined,
   TPath extends string | Path | undefined = string | Path | undefined,
-  TQuery extends string | Query | undefined = string | Query | undefined
+  TQuery extends string | Query | undefined = string | Query | undefined,
+  TMeta extends RouteMeta = RouteMeta
 > = {
   /**
    * Name for route, used to create route keys and in navigation.
@@ -108,7 +109,7 @@ export type CreateRouteOptions<
   /**
    * Represents additional metadata associated with a route, customizable via declaration merging.
    */
-  meta?: RouteMeta,
+  meta?: TMeta,
 }
 
 export function combineRoutes(parent: Route, child: Route): Route {
