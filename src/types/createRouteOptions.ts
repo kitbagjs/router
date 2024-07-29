@@ -58,7 +58,7 @@ export type WithComponent<
    * A Vue component, which can be either synchronous or asynchronous components.
    */
   component: TComponent,
-  props?: (params: TParams) => TComponent extends Component ? ComponentProps<TComponent> : {},
+  props?: (params: TParams) => TComponent extends Component ? MaybePromise<ComponentProps<TComponent>> : {},
 }
 
 export function isWithComponent(options: CreateRouteOptions): options is CreateRouteOptions & WithComponent {
