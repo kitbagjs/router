@@ -12,7 +12,7 @@ export type Routes = Readonly<Route[]>
 /**
  * The Route properties originally provided to `createRoute`. The only change is normalizing meta to always default to an empty object.
  */
-export type CreateRouteOptionsWithMeta = CreateRouteOptions & WithHooks & (WithHost | WithoutHost) & (WithComponent | WithComponents) & (WithParent | WithoutParent) & { meta: RouteMeta }
+export type CreateRouteOptionsWithMeta = CreateRouteOptions & WithHooks & (WithHost | WithoutHost) & Partial<WithComponent | WithComponents> & (WithParent | WithoutParent) & { meta: RouteMeta }
 
 /**
  * Represents the structure of a route within the application. Return value of `createRoute`

@@ -26,31 +26,44 @@ type RouteParams<
 export function createRoute<
   const TName extends string | undefined = undefined,
   const TPath extends string | Path | undefined = undefined,
-  const TQuery extends string | Query | undefined = undefined,
-  TComponent extends Component | undefined = undefined
+  const TQuery extends string | Query | undefined = undefined
+>(options: CreateRouteOptions<TName, TPath, TQuery> & WithHooks & WithoutParent): Route<ToKey<TName>, Host<'', {}>, ToPath<TPath>, ToQuery<TQuery>>
+
+export function createRoute<
+  const TParent extends Route,
+  const TName extends string | undefined = undefined,
+  const TPath extends string | Path | undefined = undefined,
+  const TQuery extends string | Query | undefined = undefined
+>(options: CreateRouteOptions<TName, TPath, TQuery> & WithHooks & WithParent<TParent>): Route<CombineKey<TParent['key'], ToKey<TName>>, Host<'', {}>, CombinePath<TParent['path'], ToPath<TPath>>, CombineQuery<TParent['query'], ToQuery<TQuery>>>
+
+export function createRoute<
+  TComponent extends Component,
+  const TName extends string | undefined = undefined,
+  const TPath extends string | Path | undefined = undefined,
+  const TQuery extends string | Query | undefined = undefined
 >(options: CreateRouteOptions<TName, TPath, TQuery> & WithHooks & WithComponent<TComponent, RouteParams<TPath, TQuery>> & WithoutParent): Route<ToKey<TName>, Host<'', {}>, ToPath<TPath>, ToQuery<TQuery>>
 
 export function createRoute<
-  const TName extends string | undefined = undefined,
-  const TPath extends string | Path | undefined = undefined,
-  const TQuery extends string | Query | undefined = undefined,
-  TComponents extends Record<string, Component> | undefined = undefined
->(options: CreateRouteOptions<TName, TPath, TQuery> & WithHooks & WithComponents<TComponents, RouteParams<TPath, TQuery>> & WithoutParent): Route<ToKey<TName>, Host<'', {}>, ToPath<TPath>, ToQuery<TQuery>>
-
-export function createRoute<
+  TComponent extends Component,
   const TParent extends Route,
   const TName extends string | undefined = undefined,
   const TPath extends string | Path | undefined = undefined,
-  const TQuery extends string | Query | undefined = undefined,
-  TComponent extends Component | undefined = undefined
+  const TQuery extends string | Query | undefined = undefined
 >(options: CreateRouteOptions<TName, TPath, TQuery> & WithHooks & WithComponent<TComponent, RouteParams<TPath, TQuery, TParent>> & WithParent<TParent>): Route<CombineKey<TParent['key'], ToKey<TName>>, Host<'', {}>, CombinePath<TParent['path'], ToPath<TPath>>, CombineQuery<TParent['query'], ToQuery<TQuery>>>
 
 export function createRoute<
+  TComponents extends Record<string, Component>,
+  const TName extends string | undefined = undefined,
+  const TPath extends string | Path | undefined = undefined,
+  const TQuery extends string | Query | undefined = undefined
+>(options: CreateRouteOptions<TName, TPath, TQuery> & WithHooks & WithComponents<TComponents, RouteParams<TPath, TQuery>> & WithoutParent): Route<ToKey<TName>, Host<'', {}>, ToPath<TPath>, ToQuery<TQuery>>
+
+export function createRoute<
+  TComponents extends Record<string, Component>,
   const TParent extends Route,
   const TName extends string | undefined = undefined,
   const TPath extends string | Path | undefined = undefined,
-  const TQuery extends string | Query | undefined = undefined,
-  TComponents extends Record<string, Component> | undefined = undefined
+  const TQuery extends string | Query | undefined = undefined
 >(options: CreateRouteOptions<TName, TPath, TQuery> & WithHooks & WithComponents<TComponents, RouteParams<TPath, TQuery, TParent>> & WithParent<TParent>): Route<CombineKey<TParent['key'], ToKey<TName>>, Host<'', {}>, CombinePath<TParent['path'], ToPath<TPath>>, CombineQuery<TParent['query'], ToQuery<TQuery>>>
 
 export function createRoute(options: CreateRouteOptions): Route {

@@ -51,36 +51,34 @@ export type WithoutParent = {
 }
 
 export type WithComponent<
-  TComponent extends Component | undefined = Component | undefined,
+  TComponent extends Component = Component,
   TParams extends Record<string, unknown> = Record<string, unknown>
 > = {
   /**
    * A Vue component, which can be either synchronous or asynchronous components.
    */
-  component?: TComponent,
-  components?: never,
+  component: TComponent,
   props?: (params: TParams) => TComponent extends Component ? ComponentProps<TComponent> : {},
 }
 
-export function isWithComponent(options: CreateRouteOptions): options is CreateRouteOptions & { component: Component } {
+export function isWithComponent(options: CreateRouteOptions): options is CreateRouteOptions & WithComponent {
   return 'component' in options && Boolean(options.component)
 }
 
 export type WithComponents<
-  TComponents extends Record<string, Component> | undefined = Record<string, Component> | undefined,
+  TComponents extends Record<string, Component> = Record<string, Component>,
   TParams extends Record<string, unknown> = Record<string, unknown>
 > = {
   /**
    * Multiple components for named views, which can be either synchronous or asynchronous components.
    */
-  components?: TComponents,
-  component?: never,
+  components: TComponents,
   props?: {
     [TKey in keyof TComponents]?: (params: TParams) => TComponents[TKey] extends Component ? MaybePromise<ComponentProps<TComponents[TKey]>> : {}
   },
 }
 
-export function isWithComponents(options: CreateRouteOptions): options is CreateRouteOptions & { components: Record<string, Component> } {
+export function isWithComponents(options: CreateRouteOptions): options is CreateRouteOptions & WithComponents {
   return 'components' in options && Boolean(options.components)
 }
 
