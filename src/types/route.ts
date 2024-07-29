@@ -1,4 +1,4 @@
-import { CreateRouteOptions, WithComponent, WithComponents, WithHooks, WithHost, WithParent, WithoutHost, WithoutParent } from '@/types/createRouteOptions'
+import { CreateRouteOptions, WithComponent, WithComponents, WithHooks, WithHost, WithParent, WithoutComponents, WithoutHost, WithoutParent } from '@/types/createRouteOptions'
 import { Host } from '@/types/host'
 import { Path } from '@/types/path'
 import { Query } from '@/types/query'
@@ -12,7 +12,7 @@ export type Routes = Readonly<Route[]>
 /**
  * The Route properties originally provided to `createRoute`. The only change is normalizing meta to always default to an empty object.
  */
-export type CreateRouteOptionsWithMeta = CreateRouteOptions & WithHooks & (WithHost | WithoutHost) & Partial<WithComponent | WithComponents> & (WithParent | WithoutParent) & { meta: RouteMeta }
+export type CreateRouteOptionsMatched = CreateRouteOptions & WithHooks & (WithHost | WithoutHost) & (WithComponent | WithComponents | WithoutComponents) & (WithParent | WithoutParent) & { meta: RouteMeta }
 
 /**
  * Represents the structure of a route within the application. Return value of `createRoute`
