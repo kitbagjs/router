@@ -3,7 +3,6 @@ import { genericRejection } from '@/components/rejection'
 import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
 import { RegisteredRejectionType } from '@/types/register'
 import { ResolvedRoute } from '@/types/resolved'
-import { CreateRouteOptionsMatched } from '@/types/route'
 
 export const builtInRejections: ['NotFound'] = ['NotFound']
 export type BuiltInRejectionType = typeof builtInRejections[number]
@@ -47,10 +46,11 @@ export function createRouterReject({
   const getRejectionRoute: GetRejectionRoute = (type) => {
     const component = markRaw(getRejectionComponent(type))
 
-    const route: CreateRouteOptionsMatched = {
+    const route = {
       name: type,
       component,
       meta: {},
+      state: {},
     }
 
     const resolved = {
@@ -59,6 +59,7 @@ export function createRouterReject({
       key: type,
       query: createResolvedRouteQuery(''),
       params: {},
+      state: {},
       [isRejectionRouteSymbol]: true,
     }
 

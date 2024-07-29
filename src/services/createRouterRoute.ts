@@ -11,6 +11,7 @@ export type RouterRoute<TRoute extends ResolvedRoute = ResolvedRoute> = Readonly
   key: TRoute['key'],
   matched: TRoute['matched'],
   matches: TRoute['matches'],
+  state: TRoute['state'],
   query: ResolvedRouteQuery,
   params: Writable<TRoute['params']>,
   update: RouteUpdate<TRoute>,
@@ -39,11 +40,12 @@ export function createRouterRoute<TRoute extends ResolvedRoute>(route: TRoute, p
     return push(route.key, params, maybeOptions)
   }
 
-  const { matched, matches, key, query, params } = toRefs(route)
+  const { matched, matches, key, query, params, state } = toRefs(route)
 
   const routerRoute: RouterRoute<TRoute> = reactive({
     matched,
     matches,
+    state,
     query,
     params,
     key,

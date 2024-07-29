@@ -4,6 +4,7 @@ import { combinePath } from '@/services/combinePath'
 import { combineQuery } from '@/services/combineQuery'
 import { AfterRouteHook, BeforeRouteHook } from '@/types/hooks'
 import { Host } from '@/types/host'
+import { Param } from '@/types/paramTypes'
 import { Path } from '@/types/path'
 import { Query } from '@/types/query'
 import { RouteMeta } from '@/types/register'
@@ -79,7 +80,8 @@ export type CreateRouteOptions<
   TName extends string | undefined = string | undefined,
   TPath extends string | Path | undefined = string | Path | undefined,
   TQuery extends string | Query | undefined = string | Query | undefined,
-  TMeta extends RouteMeta = RouteMeta
+  TMeta extends RouteMeta = RouteMeta,
+  TStateParams extends Record<string, Param> = {}
 > = {
   /**
    * Name for route, used to create route keys and in navigation.
@@ -97,6 +99,10 @@ export type CreateRouteOptions<
    * Represents additional metadata associated with a route, customizable via declaration merging.
    */
   meta?: TMeta,
+  /**
+   * Type params for additional data intended to be stored in history state, all keys will be optional.
+   */
+  state?: TStateParams,
 }
 
 export function combineRoutes(parent: Route, child: Route): Route {

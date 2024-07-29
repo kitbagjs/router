@@ -3,7 +3,6 @@ import { path } from '@/services'
 import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
 import { createRoute } from '@/services/createRoute'
 import { ResolvedRoute } from '@/types/resolved'
-import { CreateRouteOptionsMatched } from '@/types/route'
 
 export const random = {
   number(options: { min?: number, max?: number } = {}): number {
@@ -68,7 +67,7 @@ export const routes = [
   }),
 ]
 
-export function mockRoute<TName extends string>(name: TName): CreateRouteOptionsMatched {
+export function mockRoute<TName extends string>(name: TName): ResolvedRoute['matched'] {
   return {
     name,
     path: path(`/${name}`, {}),
@@ -77,15 +76,17 @@ export function mockRoute<TName extends string>(name: TName): CreateRouteOptions
     onBeforeRouteUpdate: vi.fn(),
     onBeforeRouteLeave: vi.fn(),
     meta: {},
+    state: {},
   }
 }
 
-export function mockResolvedRoute(matched: CreateRouteOptionsMatched, matches: CreateRouteOptionsMatched[]): ResolvedRoute {
+export function mockResolvedRoute(matched: ResolvedRoute['matched'], matches: ResolvedRoute['matched'][]): ResolvedRoute {
   return {
     matched,
     matches,
     key: matched.name!,
     query: createResolvedRouteQuery(),
     params: {},
+    state: {},
   }
 }

@@ -16,6 +16,7 @@ test('calls hook with correct routes', () => {
     component,
     onBeforeRouteEnter: hook,
     meta: {},
+    state: {},
   }
 
   const toRoute: ResolvedRoute = {
@@ -24,12 +25,14 @@ test('calls hook with correct routes', () => {
     key: toOptions.name,
     query: createResolvedRouteQuery(),
     params: {},
+    state: {},
   }
 
   const fromOptions = {
     name: 'routeB',
     component,
     meta: {},
+    state: {},
   }
 
   const fromRoute: ResolvedRoute = {
@@ -38,6 +41,7 @@ test('calls hook with correct routes', () => {
     key: fromOptions.name,
     query: createResolvedRouteQuery(),
     params: {},
+    state: {},
   }
 
   runBeforeRouteHooks({
@@ -66,6 +70,7 @@ test.each<{ type: string, status: string, hook: BeforeRouteHook }>([
     component,
     onBeforeRouteEnter: hook,
     meta: {},
+    state: {},
   }
 
   const to: ResolvedRoute = {
@@ -74,12 +79,14 @@ test.each<{ type: string, status: string, hook: BeforeRouteHook }>([
     key: toOptions.name,
     query: createResolvedRouteQuery(),
     params: {},
+    state: {},
   }
 
   const fromOptions = {
     name: 'routeB',
     component,
     meta: {},
+    state: {},
   }
 
   const from: ResolvedRoute = {
@@ -88,6 +95,7 @@ test.each<{ type: string, status: string, hook: BeforeRouteHook }>([
     key: fromOptions.name,
     query: createResolvedRouteQuery(),
     params: {},
+    state: {},
   }
 
   const response = await runBeforeRouteHooks({
@@ -111,6 +119,7 @@ test('hook is called in order', async () => {
     component,
     onBeforeRouteEnter: [hookA, hookB, hookC],
     meta: {},
+    state: {},
   }
 
   const to: ResolvedRoute = {
@@ -119,12 +128,14 @@ test('hook is called in order', async () => {
     key: toOptions.name,
     query: createResolvedRouteQuery(),
     params: {},
+    state: {},
   }
 
   const fromOptions = {
     name: 'routeB',
     component,
     meta: {},
+    state: {},
   }
 
   const from: ResolvedRoute = {
@@ -133,6 +144,7 @@ test('hook is called in order', async () => {
     key: fromOptions.name,
     query: createResolvedRouteQuery(),
     params: {},
+    state: {},
   }
 
   await runBeforeRouteHooks({

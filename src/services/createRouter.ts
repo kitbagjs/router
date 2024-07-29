@@ -81,7 +81,7 @@ export function createRouter<const T extends Routes>(routesOrArrayOfRoutes: T | 
       return history.update(url, options)
     }
 
-    const to = getResolvedRouteForUrl(routes, url) ?? getRejectionRoute('NotFound')
+    const to = getResolvedRouteForUrl(routes, url, options.state) ?? getRejectionRoute('NotFound')
     const from = { ...currentRoute }
 
     const beforeResponse = await runBeforeRouteHooks({ to, from, hooks })
