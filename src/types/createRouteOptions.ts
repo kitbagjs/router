@@ -78,6 +78,12 @@ export type WithComponents<
   },
 }
 
+export type WithoutComponents = {
+  component?: never,
+  components?: never,
+  props?: never,
+}
+
 export function isWithComponents(options: CreateRouteOptions): options is CreateRouteOptions & WithComponents {
   return 'components' in options && Boolean(options.components)
 }

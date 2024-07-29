@@ -4,7 +4,7 @@ import { CombineKey } from '@/services/combineKey'
 import { CombinePath } from '@/services/combinePath'
 import { CombineQuery } from '@/services/combineQuery'
 import { host } from '@/services/host'
-import { CreateRouteOptions, WithComponent, WithComponents, WithHooks, WithParent, WithoutParent, combineRoutes, isWithComponent, isWithComponents, isWithParent } from '@/types/createRouteOptions'
+import { CreateRouteOptions, WithComponent, WithComponents, WithHooks, WithParent, WithoutComponents, WithoutParent, combineRoutes, isWithComponent, isWithComponents, isWithParent } from '@/types/createRouteOptions'
 import { Host } from '@/types/host'
 import { ToKey, toKey } from '@/types/key'
 import { ExtractParamTypes } from '@/types/params'
@@ -27,14 +27,14 @@ export function createRoute<
   const TName extends string | undefined = undefined,
   const TPath extends string | Path | undefined = undefined,
   const TQuery extends string | Query | undefined = undefined
->(options: CreateRouteOptions<TName, TPath, TQuery> & WithHooks & WithoutParent): Route<ToKey<TName>, Host<'', {}>, ToPath<TPath>, ToQuery<TQuery>>
+>(options: CreateRouteOptions<TName, TPath, TQuery> & WithHooks & WithoutComponents & WithoutParent): Route<ToKey<TName>, Host<'', {}>, ToPath<TPath>, ToQuery<TQuery>>
 
 export function createRoute<
   const TParent extends Route,
   const TName extends string | undefined = undefined,
   const TPath extends string | Path | undefined = undefined,
   const TQuery extends string | Query | undefined = undefined
->(options: CreateRouteOptions<TName, TPath, TQuery> & WithHooks & WithParent<TParent>): Route<CombineKey<TParent['key'], ToKey<TName>>, Host<'', {}>, CombinePath<TParent['path'], ToPath<TPath>>, CombineQuery<TParent['query'], ToQuery<TQuery>>>
+>(options: CreateRouteOptions<TName, TPath, TQuery> & WithHooks & WithoutComponents & WithParent<TParent>): Route<CombineKey<TParent['key'], ToKey<TName>>, Host<'', {}>, CombinePath<TParent['path'], ToPath<TPath>>, CombineQuery<TParent['query'], ToQuery<TQuery>>>
 
 export function createRoute<
   TComponent extends Component,
