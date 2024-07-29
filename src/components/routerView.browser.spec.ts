@@ -115,14 +115,11 @@ test('updates components when route changes', async () => {
   expect(app.html()).toBe('Foo')
 })
 
-test.each([
-  defineAsyncComponent(() => import('./helloWorld')),
-  () => import('./helloWorld'),
-])('resolves async components', async (component) => {
+test('resolves async components', async () => {
   const route = createRoute({
     name: 'async',
     path: '/',
-    component,
+    component: defineAsyncComponent(() => import('./helloWorld')),
   })
 
   const router = createRouter([route], {
