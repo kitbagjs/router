@@ -3,6 +3,7 @@ import { isBrowser } from '@/utilities/isBrowser'
 
 type NavigationPushOptions = {
   replace?: boolean,
+  state?: unknown,
 }
 
 type NavigationUpdate = (url: string, options?: NavigationPushOptions) => void
@@ -27,13 +28,14 @@ export function createRouterHistory({ mode, listener }: RouterHistoryOptions): R
 
   const update: NavigationUpdate = (url, options) => {
     if (options?.replace) {
-      return history.replace(url)
+      return history.replace(url, options.state)
     }
 
-    history.push(url)
+    history.push(url, options?.state)
   }
 
   const refresh: NavigationRefresh = () => {
+    // todo: should state be cleared by refresh?
     const url = createPath(history.location)
 
     return history.replace(url)

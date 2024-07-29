@@ -23,6 +23,7 @@ import { isNestedArray } from '@/utilities/guards'
 
 type RouterUpdateOptions = {
   replace?: boolean,
+  state?: unknown,
 }
 
 /**
@@ -55,10 +56,10 @@ export function createRouter<const T extends Routes>(routesOrArrayOfRoutes: T | 
   const resolve = createRouterResolve(routes)
   const history = createRouterHistory({
     mode: options.historyMode,
-    listener: () => {
+    listener: ({ location }) => {
       const url = createPath(location)
 
-      set(url)
+      set(url, { state: location.state })
     },
   })
 
@@ -73,11 +74,11 @@ export function createRouter<const T extends Routes>(routesOrArrayOfRoutes: T | 
     onAfterRouteLeave,
   } = createRouterHooks()
 
-  async function set(url: string, { replace }: RouterUpdateOptions = {}): Promise<void> {
+  async function set(url: string, options: RouterUpdateOptions = {}): Promise<void> {
     history.stopListening()
 
     if (isExternal(url)) {
-      return history.update(url, { replace })
+      return history.update(url, options)
     }
 
     const to = getResolvedRouteForUrl(routes, url) ?? getRejectionRoute('NotFound')
@@ -92,20 +93,20 @@ export function createRouter<const T extends Routes>(routesOrArrayOfRoutes: T | 
 
       // On push update the history, and push new route, and return
       case 'PUSH':
-        history.update(url, { replace })
+        history.update(url, options)
         await push(...beforeResponse.to)
         return
 
       // On reject update the history, the route, and set the rejection type
       case 'REJECT':
-        history.update(url, { replace })
+        history.update(url, options)
         setRejection(beforeResponse.type)
         updateRoute(to)
         break
 
       // On success update history, set the route, and clear the rejection
       case 'SUCCESS':
-        history.update(url, { replace })
+        history.update(url, options)
         setRejection(null)
         updateRoute(to)
         break
@@ -148,7 +149,7 @@ export function createRouter<const T extends Routes>(routesOrArrayOfRoutes: T | 
     const params: any = paramsOrOptions ?? {}
     const url = resolve(source, params, options)
 
-    return set(url, { replace: options.replace })
+    return set(url, options)
   }
 
   const replace: RouterReplace<T> = (source: Url | RoutesKey<T>, paramsOrOptions?: Record<string, unknown> | RouterReplaceOptions, maybeOptions?: RouterReplaceOptions) => {
