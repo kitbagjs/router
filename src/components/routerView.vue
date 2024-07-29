@@ -1,14 +1,17 @@
 <template>
-  <slot name="default" v-bind="{ route, component, rejection }">
-    <component :is="component" />
-  </slot>
+  <template v-if="component">
+    <slot name="default" v-bind="{ route, component, rejection }">
+      <component :is="component" />
+    </slot>
+  </template>
 </template>
 
 <script lang="ts" setup>
-  import { AsyncComponentLoader, Component, UnwrapRef, VNode, computed, defineAsyncComponent, provide } from 'vue'
+  import { Component, UnwrapRef, VNode, computed, provide } from 'vue'
   import { useRejection } from '@/compositions/useRejection'
   import { useRoute } from '@/compositions/useRoute'
   import { useRouterDepth } from '@/compositions/useRouterDepth'
+  import { component as componentUtil } from '@/services/component'
   import { RouterRejection } from '@/services/createRouterReject'
   import { RouterRoute } from '@/services/createRouterRoute'
   import { CreateRouteOptions, isWithComponent, isWithComponents } from '@/types/createRouteOptions'
@@ -43,27 +46,53 @@
       return null
     }
 
-    const components = getComponents(match)
-    const component = components[name]
+    const component = getComponent(match)
+    const props = getProps(match)
 
-    if (component) {
-      if (typeof component === 'function') {
-        return defineAsyncComponent(component as AsyncComponentLoader)
-      }
-
-      return component
+    if (!component) {
+      return null
     }
 
-    return null
+    if (props) {
+      return componentUtil(component, () => props(route.params))
+    }
+
+    return component
   })
 
-  function getComponents(options: CreateRouteOptions): Record<string, Component | undefined> {
+  function getComponent(match: CreateRouteOptions): Component | undefined {
+    const allComponents = getAllComponents(match)
+
+    return allComponents[name]
+  }
+
+  function getAllComponents(options: CreateRouteOptions): Record<string, Component | undefined> {
     if (isWithComponents(options)) {
       return options.components
     }
 
     if (isWithComponent(options)) {
       return { default: options.component }
+    }
+
+    return {}
+  }
+
+  type ComponentProps = (params: Record<string, unknown>) => Record<string, unknown>
+
+  function getProps(options: CreateRouteOptions): ComponentProps | undefined {
+    const allProps = getAllProps(options)
+
+    return allProps[name]
+  }
+
+  function getAllProps(options: CreateRouteOptions): Record<string, ComponentProps | undefined> {
+    if (isWithComponents(options)) {
+      return options.props ?? {}
+    }
+
+    if (isWithComponent(options)) {
+      return { default: options.props }
     }
 
     return {}
