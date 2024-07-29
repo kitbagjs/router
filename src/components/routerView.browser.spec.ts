@@ -1,6 +1,7 @@
 import { mount, flushPromises } from '@vue/test-utils'
 import { expect, test } from 'vitest'
 import { defineAsyncComponent } from 'vue'
+import echo from '@/components/echo'
 import helloWorld from '@/components/helloWorld'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
@@ -283,4 +284,50 @@ test('Renders the multiple components when using named route views', async () =>
   })
 
   expect(app.text()).toBe('_one__default__two_')
+})
+
+test('Binds props and attrs from route', async () => {
+
+  const routeA = createRoute({
+    name: 'routeA',
+    path: '/routeA/[param]',
+    component: echo,
+    props: ({ param }) => ({ value: param }),
+  })
+
+  const routeB = createRoute({
+    name: 'routeB',
+    path: '/routeB/[param]',
+    component: echo,
+    props: async ({ param }) => {
+      return await { value: param }
+    },
+  })
+
+  const router = createRouter([routeA, routeB], {
+    initialUrl: '/',
+  })
+
+  await router.initialized
+
+  const root = {
+    template: '<Suspense><RouterView/></Suspense>',
+  }
+
+  const app = mount(root, {
+    global: {
+      plugins: [router],
+    },
+  })
+
+  await router.push('/routeA/hello')
+
+  expect(app.html()).toBe('hello')
+
+  await router.push('/routeB/world')
+
+  // needed because of suspense
+  await flushPromises()
+
+  expect(app.html()).toBe('world')
 })
