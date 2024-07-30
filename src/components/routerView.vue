@@ -7,7 +7,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { Component, UnwrapRef, VNode, computed, provide } from 'vue'
+  import { Component, UnwrapRef, VNode, computed, provide, resolveComponent } from 'vue'
   import { useRejection } from '@/compositions/useRejection'
   import { useRoute } from '@/compositions/useRoute'
   import { useRouterDepth } from '@/compositions/useRouterDepth'
@@ -24,6 +24,7 @@
   const route = useRoute()
   const rejection = useRejection()
   const depth = useRouterDepth()
+  const routerView = resolveComponent('RouterView', true)
 
   defineSlots<{
     default?: (props: {
@@ -66,7 +67,7 @@
     return allComponents[name]
   }
 
-  function getAllComponents(options: CreateRouteOptions): Record<string, Component | string | undefined> {
+  function getAllComponents(options: CreateRouteOptions): Record<string, Component | undefined> {
     if (isWithComponents(options)) {
       return options.components
     }
@@ -75,7 +76,11 @@
       return { default: options.component }
     }
 
-    return { default: 'RouterView' }
+    if (typeof routerView === 'string') {
+      return {}
+    }
+
+    return { default: routerView }
   }
 
   type ComponentProps = (params: Record<string, unknown>) => Record<string, unknown>
