@@ -2,6 +2,7 @@ import { Component } from 'vue'
 import { combineKey } from '@/services/combineKey'
 import { combinePath } from '@/services/combinePath'
 import { combineQuery } from '@/services/combineQuery'
+import { combineState } from '@/services/combineState'
 import { AfterRouteHook, BeforeRouteHook } from '@/types/hooks'
 import { Host } from '@/types/host'
 import { Param } from '@/types/paramTypes'
@@ -76,12 +77,26 @@ export function isWithComponents(options: CreateRouteOptions): options is Create
   return 'components' in options && Boolean(options.components)
 }
 
+export type WithState<TState extends Record<string, Param> = Record<string, Param>> = {
+  /**
+   * Type params for additional data intended to be stored in history state, all keys will be optional.
+   */
+  state: TState,
+}
+
+export function isWithState(options: CreateRouteOptions): options is CreateRouteOptions & WithState {
+  return 'state' in options && Boolean(options.state)
+}
+
+export type WithoutState = {
+  state?: never,
+}
+
 export type CreateRouteOptions<
   TName extends string | undefined = string | undefined,
   TPath extends string | Path | undefined = string | Path | undefined,
   TQuery extends string | Query | undefined = string | Query | undefined,
-  TMeta extends RouteMeta = RouteMeta,
-  TStateParams extends Record<string, Param> = {}
+  TMeta extends RouteMeta = RouteMeta
 > = {
   /**
    * Name for route, used to create route keys and in navigation.
@@ -99,10 +114,6 @@ export type CreateRouteOptions<
    * Represents additional metadata associated with a route, customizable via declaration merging.
    */
   meta?: TMeta,
-  /**
-   * Type params for additional data intended to be stored in history state, all keys will be optional.
-   */
-  state?: TStateParams,
 }
 
 export function combineRoutes(parent: Route, child: Route): Route {
@@ -111,6 +122,7 @@ export function combineRoutes(parent: Route, child: Route): Route {
     key: combineKey(parent.key, child.key),
     path: combinePath(parent.path, child.path),
     query: combineQuery(parent.query, child.query),
+    state: combineState(parent.state, child.state),
     matches: [...parent.matches, child.matched],
     host: parent.host,
     depth: parent.depth + 1,

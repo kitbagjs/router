@@ -2,8 +2,9 @@ import { Component, markRaw } from 'vue'
 import { CombineKey } from '@/services/combineKey'
 import { CombinePath } from '@/services/combinePath'
 import { CombineQuery } from '@/services/combineQuery'
+import { CombineState } from '@/services/combineState'
 import { host } from '@/services/host'
-import { CreateRouteOptions, WithComponent, WithComponents, WithHooks, WithParent, WithoutParent, combineRoutes, isWithParent } from '@/types/createRouteOptions'
+import { CreateRouteOptions, WithComponent, WithComponents, WithHooks, WithParent, WithState, WithoutParent, WithoutState, combineRoutes, isWithParent, isWithState } from '@/types/createRouteOptions'
 import { Host } from '@/types/host'
 import { ToKey, toKey } from '@/types/key'
 import { Param } from '@/types/paramTypes'
@@ -20,7 +21,7 @@ export function createRoute<
   const TMeta extends RouteMeta = RouteMeta,
   const TStateParams extends Record<string, Param> = Record<string, Param>,
   TComponent extends Component | undefined = undefined
->(options: CreateRouteOptions<TName, TPath, TQuery, TMeta, TStateParams> & WithHooks & WithComponent<TComponent> & WithoutParent): Route<ToKey<TName>, Host<'', {}>, ToPath<TPath>, ToQuery<TQuery>, TMeta, TStateParams>
+>(options: CreateRouteOptions<TName, TPath, TQuery, TMeta> & WithHooks & (WithState<TStateParams> | WithoutState) & WithComponent<TComponent> & WithoutParent): Route<ToKey<TName>, Host<'', {}>, ToPath<TPath>, ToQuery<TQuery>, TMeta, TStateParams>
 
 export function createRoute<
   const TName extends string | undefined = undefined,
@@ -29,7 +30,7 @@ export function createRoute<
   const TMeta extends RouteMeta = RouteMeta,
   const TStateParams extends Record<string, Param> = Record<string, Param>,
   TComponents extends Record<string, Component> | undefined = undefined
->(options: CreateRouteOptions<TName, TPath, TQuery, TMeta, TStateParams> & WithHooks & WithComponents<TComponents> & WithoutParent): Route<ToKey<TName>, Host<'', {}>, ToPath<TPath>, ToQuery<TQuery>, TMeta, TStateParams>
+>(options: CreateRouteOptions<TName, TPath, TQuery, TMeta> & WithHooks & (WithState<TStateParams> | WithoutState) & WithComponents<TComponents> & WithoutParent): Route<ToKey<TName>, Host<'', {}>, ToPath<TPath>, ToQuery<TQuery>, TMeta, TStateParams>
 
 export function createRoute<
   const TParent extends Route,
@@ -39,7 +40,7 @@ export function createRoute<
   const TMeta extends RouteMeta = RouteMeta,
   const TStateParams extends Record<string, Param> = Record<string, Param>,
   TComponent extends Component | undefined = undefined
->(options: CreateRouteOptions<TName, TPath, TQuery, TMeta, TStateParams> & WithHooks & WithComponent<TComponent> & WithParent<TParent>): Route<CombineKey<TParent['key'], ToKey<TName>>, Host<'', {}>, CombinePath<TParent['path'], ToPath<TPath>>, CombineQuery<TParent['query'], ToQuery<TQuery>>, TMeta, TStateParams>
+>(options: CreateRouteOptions<TName, TPath, TQuery, TMeta> & WithHooks & (WithState<TStateParams> | WithoutState) & WithComponent<TComponent> & WithParent<TParent>): Route<CombineKey<TParent['key'], ToKey<TName>>, Host<'', {}>, CombinePath<TParent['path'], ToPath<TPath>>, CombineQuery<TParent['query'], ToQuery<TQuery>>, TMeta, CombineState<TStateParams, TParent['state']>>
 
 export function createRoute<
   const TParent extends Route,
@@ -49,12 +50,13 @@ export function createRoute<
   const TMeta extends RouteMeta = RouteMeta,
   const TStateParams extends Record<string, Param> = Record<string, Param>,
   TComponents extends Record<string, Component> | undefined = undefined
->(options: CreateRouteOptions<TName, TPath, TQuery, TMeta, TStateParams> & WithHooks & WithComponents<TComponents> & WithParent<TParent>): Route<CombineKey<TParent['key'], ToKey<TName>>, Host<'', {}>, CombinePath<TParent['path'], ToPath<TPath>>, CombineQuery<TParent['query'], ToQuery<TQuery>>, TMeta, TStateParams>
+>(options: CreateRouteOptions<TName, TPath, TQuery, TMeta> & WithHooks & (WithState<TStateParams> | WithoutState) & WithComponents<TComponents> & WithParent<TParent>): Route<CombineKey<TParent['key'], ToKey<TName>>, Host<'', {}>, CombinePath<TParent['path'], ToPath<TPath>>, CombineQuery<TParent['query'], ToQuery<TQuery>>, TMeta, CombineState<TStateParams, TParent['state']>>
 
 export function createRoute(options: CreateRouteOptions): Route {
   const key = toKey(options.name)
   const path = toPath(options.path)
   const query = toQuery(options.query)
+  const state = isWithState(options) ? options.state : {}
   const rawRoute = markRaw({ meta: {}, state: {}, ...options })
 
   const route = {
@@ -63,6 +65,7 @@ export function createRoute(options: CreateRouteOptions): Route {
     key,
     path,
     query,
+    state,
     depth: 1,
     host: host('', {}),
   }

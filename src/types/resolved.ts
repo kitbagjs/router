@@ -32,5 +32,5 @@ export type ResolvedRoute<TRoute extends Route = Route> = Readonly<{
   /**
    * Type for additional data intended to be stored in history state.
    */
-  state: ExtractRouteStateParamsAsOptional<TRoute['matched']['state']>,
+  state: ExtractRouteStateParamsAsOptional<TRoute['state']>,
 }>

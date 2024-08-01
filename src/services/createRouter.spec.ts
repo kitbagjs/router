@@ -7,13 +7,14 @@ import * as resolveUtilities from '@/services/createRouterResolve'
 import { component } from '@/utilities/testHelpers'
 
 test('initial route is set', async () => {
-  const { route, initialized } = createRouter([
-    createRoute({
-      name: 'root',
-      component,
-      path: '/',
-    }),
-  ], {
+  const foo = createRoute({
+    name: 'root',
+    component,
+    path: '/',
+    state: { something: Boolean },
+  })
+
+  const { route, initialized } = createRouter([foo], {
     initialUrl: '/',
   })
 
@@ -23,12 +24,15 @@ test('initial route is set', async () => {
 })
 
 test('updates the route when navigating', async () => {
-  const { push, route, initialized } = createRouter([
-    createRoute({
-      name: 'first',
-      component,
-      path: '/first',
-    }),
+  const theRoute = createRoute({
+    name: 'first',
+    component,
+    path: '/first',
+    state: { foo: Number },
+  })
+
+  const routes = [
+    theRoute,
     createRoute({
       name: 'second',
       component,
@@ -39,11 +43,15 @@ test('updates the route when navigating', async () => {
       component,
       path: '/third/[id]',
     }),
-  ], {
+  ]
+
+  const { push, route, initialized } = createRouter(routes, {
     initialUrl: '/first',
   })
 
   await initialized
+
+  await push('first', {}, { state: { foo: 123 } })
 
   expect(route.matched.name).toBe('first')
 
