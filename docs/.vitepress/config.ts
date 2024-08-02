@@ -74,7 +74,6 @@ export default defineConfig({
           text: 'Interfaces',
           items: [
             { text: 'Register', link: '/api/interfaces/Register' },
-            { text: 'RouteMeta', link: '/api/interfaces/RouteMeta' },
           ],
         },
         {

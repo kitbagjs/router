@@ -35,8 +35,10 @@ You might notice that the default type for `pageTitle` is `unknown`. By default 
 
 ```ts
 declare module '@kitbag/router' {
-  interface RouteMeta {
-    pageTitle?: string
+  interface Register {
+    routeMeta: {
+      pageTitle?: string
+    }
   }
 }
 ```

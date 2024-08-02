@@ -3,6 +3,7 @@ import { combineKey } from '@/services/combineKey'
 import { combinePath } from '@/services/combinePath'
 import { combineQuery } from '@/services/combineQuery'
 import { combineState } from '@/services/combineState'
+import { ComponentProps } from '@/services/component'
 import { AfterRouteHook, BeforeRouteHook } from '@/types/hooks'
 import { Host } from '@/types/host'
 import { Param } from '@/types/paramTypes'
@@ -10,7 +11,7 @@ import { Path } from '@/types/path'
 import { Query } from '@/types/query'
 import { RouteMeta } from '@/types/register'
 import { Route } from '@/types/route'
-import { MaybeArray } from '@/types/utilities'
+import { MaybeArray, MaybePromise } from '@/types/utilities'
 
 /**
  * Defines route hooks that can be applied before entering, updating, or leaving a route, as well as after these events.
@@ -52,28 +53,40 @@ export type WithoutParent = {
 }
 
 export type WithComponent<
-  TComponent extends Component | undefined = Component | undefined
+  TComponent extends Component = Component,
+  TParams extends Record<string, unknown> = Record<string, unknown>
 > = {
   /**
    * A Vue component, which can be either synchronous or asynchronous components.
    */
-  component?: TComponent,
+  component: TComponent,
+  props?: (params: TParams) => TComponent extends Component ? MaybePromise<ComponentProps<TComponent>> : {},
 }
 
-export function isWithComponent(options: CreateRouteOptions): options is CreateRouteOptions & { component: Component } {
+export function isWithComponent(options: CreateRouteOptions): options is CreateRouteOptions & WithComponent {
   return 'component' in options && Boolean(options.component)
 }
 
 export type WithComponents<
-  TComponents extends Record<string, Component> | undefined = Record<string, Component> | undefined
+  TComponents extends Record<string, Component> = Record<string, Component>,
+  TParams extends Record<string, unknown> = Record<string, unknown>
 > = {
   /**
    * Multiple components for named views, which can be either synchronous or asynchronous components.
    */
-  components?: TComponents,
+  components: TComponents,
+  props?: {
+    [TKey in keyof TComponents]?: (params: TParams) => TComponents[TKey] extends Component ? MaybePromise<ComponentProps<TComponents[TKey]>> : {}
+  },
 }
 
-export function isWithComponents(options: CreateRouteOptions): options is CreateRouteOptions & { components: Record<string, Component> } {
+export type WithoutComponents = {
+  component?: never,
+  components?: never,
+  props?: never,
+}
+
+export function isWithComponents(options: CreateRouteOptions): options is CreateRouteOptions & WithComponents {
   return 'components' in options && Boolean(options.components)
 }
 
