@@ -79,7 +79,7 @@ export function isWithComponents(options: CreateRouteOptions): options is Create
 
 export type WithState<TState extends Record<string, Param> = Record<string, Param>> = {
   /**
-   * Type params for additional data intended to be stored in history state, all keys will be optional.
+   * Type params for additional data intended to be stored in history state, all keys will be optional unless a default is provided.
    */
   state: TState,
 }
