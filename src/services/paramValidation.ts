@@ -1,7 +1,6 @@
 import { createMaybeRelativeUrl } from '@/services/createMaybeRelativeUrl'
 import { getParamValue } from '@/services/params'
 import { getParamValueFromUrl } from '@/services/paramsFinder'
-import { Param } from '@/types/paramTypes'
 import { Path } from '@/types/path'
 import { Query } from '@/types/query'
 import { Route } from '@/types/route'
@@ -24,20 +23,6 @@ export const getRouteParamValues = (route: Route, url: string): Record<string, u
     ...getPathParams(route.path, pathname),
     ...getQueryParams(route.query, search),
   }
-}
-
-export const getRouteStateParamValues = (params: Record<string, Param>, state: unknown): Record<string, unknown> => {
-  const values: Record<string, unknown> = {}
-
-  for (const [key, param] of Object.entries(params)) {
-    const isOptional = true
-    const value = getStateValue(state, key)
-    const paramValue = getParamValue(value, param, isOptional)
-
-    values[key] = paramValue
-  }
-
-  return values
 }
 
 function getPathParams(path: Path, url: string): Record<string, unknown> {
@@ -70,20 +55,4 @@ function getQueryParams(query: Query, url: string): Record<string, unknown> {
   }
 
   return values
-}
-
-function stateIsRecord(state: unknown): state is Record<string, unknown> {
-  return !!state && typeof state === 'object'
-}
-
-function getStateValue(state: unknown, key: string): string | undefined {
-  if (stateIsRecord(state) && key in state) {
-    const value = state[key]
-
-    if (typeof value === 'string') {
-      return value
-    }
-  }
-
-  return undefined
 }

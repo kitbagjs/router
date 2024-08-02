@@ -40,7 +40,7 @@ export function createRoute<
   const TMeta extends RouteMeta = RouteMeta,
   const TStateParams extends Record<string, Param> = Record<string, Param>,
   TComponent extends Component | undefined = undefined
->(options: CreateRouteOptions<TName, TPath, TQuery, TMeta> & WithHooks & (WithState<TStateParams> | WithoutState) & WithComponent<TComponent> & WithParent<TParent>): Route<CombineKey<TParent['key'], ToKey<TName>>, Host<'', {}>, CombinePath<TParent['path'], ToPath<TPath>>, CombineQuery<TParent['query'], ToQuery<TQuery>>, TMeta, CombineState<TStateParams, TParent['state']>>
+>(options: CreateRouteOptions<TName, TPath, TQuery, TMeta> & WithHooks & (WithState<TStateParams> | WithoutState) & WithComponent<TComponent> & WithParent<TParent>): Route<CombineKey<TParent['key'], ToKey<TName>>, Host<'', {}>, CombinePath<TParent['path'], ToPath<TPath>>, CombineQuery<TParent['query'], ToQuery<TQuery>>, TMeta, CombineState<TStateParams, TParent['stateParams']>>
 
 export function createRoute<
   const TParent extends Route,
@@ -50,13 +50,13 @@ export function createRoute<
   const TMeta extends RouteMeta = RouteMeta,
   const TStateParams extends Record<string, Param> = Record<string, Param>,
   TComponents extends Record<string, Component> | undefined = undefined
->(options: CreateRouteOptions<TName, TPath, TQuery, TMeta> & WithHooks & (WithState<TStateParams> | WithoutState) & WithComponents<TComponents> & WithParent<TParent>): Route<CombineKey<TParent['key'], ToKey<TName>>, Host<'', {}>, CombinePath<TParent['path'], ToPath<TPath>>, CombineQuery<TParent['query'], ToQuery<TQuery>>, TMeta, CombineState<TStateParams, TParent['state']>>
+>(options: CreateRouteOptions<TName, TPath, TQuery, TMeta> & WithHooks & (WithState<TStateParams> | WithoutState) & WithComponents<TComponents> & WithParent<TParent>): Route<CombineKey<TParent['key'], ToKey<TName>>, Host<'', {}>, CombinePath<TParent['path'], ToPath<TPath>>, CombineQuery<TParent['query'], ToQuery<TQuery>>, TMeta, CombineState<TStateParams, TParent['stateParams']>>
 
 export function createRoute(options: CreateRouteOptions): Route {
   const key = toKey(options.name)
   const path = toPath(options.path)
   const query = toQuery(options.query)
-  const state = isWithState(options) ? options.state : {}
+  const stateParams = isWithState(options) ? options.state : {}
   const rawRoute = markRaw({ meta: {}, state: {}, ...options })
 
   const route = {
@@ -65,7 +65,7 @@ export function createRoute(options: CreateRouteOptions): Route {
     key,
     path,
     query,
-    state,
+    stateParams,
     depth: 1,
     host: host('', {}),
   }

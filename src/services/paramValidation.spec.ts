@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest'
 import { DuplicateParamsError } from '@/errors/duplicateParamsError'
 import { createExternalRoute } from '@/services/createExternalRoute'
 import { createRoute } from '@/services/createRoute'
-import { getRouteParamValues, getRouteStateParamValues, routeParamsAreValid } from '@/services/paramValidation'
+import { getRouteParamValues, routeParamsAreValid } from '@/services/paramValidation'
 import { path } from '@/services/path'
 import { withDefault } from '@/services/withDefault'
 import { component } from '@/utilities/testHelpers'
@@ -194,53 +194,5 @@ describe('getRouteParamValues', () => {
 
     expect(response.inPath).toBe(output)
     expect(response.inQuery).toBe(output)
-  })
-})
-
-describe('getRouteStateParamValues', () => {
-  test.each([
-    [null],
-    [undefined],
-    ['{}'],
-    [[]],
-  ])('given state that is not expected format, returns empty object', (state) => {
-    const params = {
-      foo: String,
-    }
-
-    const response = getRouteStateParamValues(params, state)
-
-    expect(response).toMatchObject({})
-  })
-
-  test('given state missing the expected key without default, returns undefined', () => {
-    const params = {
-      foo: String,
-    }
-    const state = {
-      bar: 'abc',
-    }
-
-    const response = getRouteStateParamValues(params, state)
-
-    expect(response).toMatchObject({
-      foo: undefined,
-    })
-  })
-
-
-  test('given state missing the expected key wit default, returns default value', () => {
-    const params = {
-      foo: withDefault(String, 'def'),
-    }
-    const state = {
-      bar: 'abc',
-    }
-
-    const response = getRouteStateParamValues(params, state)
-
-    expect(response).toMatchObject({
-      foo: 'def',
-    })
   })
 })

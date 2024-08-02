@@ -1,8 +1,9 @@
 import { createMaybeRelativeUrl } from '@/services/createMaybeRelativeUrl'
 import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
-import { getRouteParamValues, getRouteStateParamValues, routeParamsAreValid } from '@/services/paramValidation'
+import { getRouteParamValues, routeParamsAreValid } from '@/services/paramValidation'
 import { isNamedRoute, routePathMatches, routeQueryMatches } from '@/services/routeMatchRules'
 import { getRouteScoreSortMethod } from '@/services/routeMatchScore'
+import { getStateValues } from '@/services/state'
 import { ResolvedRoute } from '@/types/resolved'
 import { Routes } from '@/types/route'
 import { RouteMatchRule } from '@/types/routeMatchRule'
@@ -32,8 +33,9 @@ export function getResolvedRouteForUrl(routes: Routes, url: string, state?: unkn
     matched: route.matched,
     matches: route.matches,
     key: route.key,
+    stateParams: route.stateParams,
     query: createResolvedRouteQuery(search),
     params: getRouteParamValues(route, url),
-    state: getRouteStateParamValues(route.state, state),
+    state: getStateValues(route.stateParams, state),
   }
 }

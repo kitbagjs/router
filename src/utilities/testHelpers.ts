@@ -88,5 +88,6 @@ export function mockResolvedRoute(matched: ResolvedRoute['matched'], matches: Re
     query: createResolvedRouteQuery(),
     params: {},
     state: {},
+    stateParams: {},
   }
 }

@@ -26,6 +26,7 @@ test('calls hook with correct routes', () => {
     query: createResolvedRouteQuery(),
     params: {},
     state: {},
+    stateParams: {},
   }
 
   const fromOptions = {
@@ -42,6 +43,7 @@ test('calls hook with correct routes', () => {
     query: createResolvedRouteQuery(),
     params: {},
     state: {},
+    stateParams: {},
   }
 
   runBeforeRouteHooks({
@@ -80,6 +82,7 @@ test.each<{ type: string, status: string, hook: BeforeRouteHook }>([
     query: createResolvedRouteQuery(),
     params: {},
     state: {},
+    stateParams: {},
   }
 
   const fromOptions = {
@@ -96,6 +99,7 @@ test.each<{ type: string, status: string, hook: BeforeRouteHook }>([
     query: createResolvedRouteQuery(),
     params: {},
     state: {},
+    stateParams: {},
   }
 
   const response = await runBeforeRouteHooks({
@@ -129,6 +133,7 @@ test('hook is called in order', async () => {
     query: createResolvedRouteQuery(),
     params: {},
     state: {},
+    stateParams: {},
   }
 
   const fromOptions = {
@@ -145,6 +150,7 @@ test('hook is called in order', async () => {
     query: createResolvedRouteQuery(),
     params: {},
     state: {},
+    stateParams: {},
   }
 
   await runBeforeRouteHooks({

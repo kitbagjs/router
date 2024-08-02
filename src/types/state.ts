@@ -19,7 +19,7 @@ export type RouteStateByKey<
 > = ExtractStateParams<RouteGetByKey<TRoutes, TKey>>
 
 type ExtractStateParams<TRoute> = TRoute extends {
-  matched: { state: infer TState extends Record<string, Param> },
+  state: infer TState extends Record<string, Param>,
 }
   ? ExtractParamTypes<TState>
   : Record<string, unknown>

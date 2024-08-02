@@ -52,6 +52,6 @@ export type Route<
   /**
    * Represents the schema of the route state, combined with any parents.
   */
-  state: TStateParams,
+  stateParams: TStateParams,
   depth: number,
 }
