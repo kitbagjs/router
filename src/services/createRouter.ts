@@ -24,6 +24,7 @@ import { isNestedArray } from '@/utilities/guards'
 
 type RouterUpdateOptions = {
   replace?: boolean,
+  state?: unknown,
 }
 
 /**
@@ -74,14 +75,14 @@ export function createRouter<const T extends Routes>(routesOrArrayOfRoutes: T | 
     onAfterRouteLeave,
   } = createRouterHooks()
 
-  async function set(url: string, state: unknown, options: RouterUpdateOptions = {}): Promise<void> {
+  async function set(url: string, options: RouterUpdateOptions = {}): Promise<void> {
     history.stopListening()
 
     if (isExternal(url)) {
-      return history.update(url, state, options)
+      return history.update(url, options)
     }
 
-    const to = getResolvedRouteForUrl(routes, url, state) ?? getRejectionRoute('NotFound')
+    const to = getResolvedRouteForUrl(routes, url, options.state) ?? getRejectionRoute('NotFound')
     const from = { ...currentRoute }
 
     const beforeResponse = await runBeforeRouteHooks({ to, from, hooks })
@@ -93,20 +94,20 @@ export function createRouter<const T extends Routes>(routesOrArrayOfRoutes: T | 
 
       // On push update the history, and push new route, and return
       case 'PUSH':
-        history.update(url, state, options)
+        history.update(url, options)
         await push(...beforeResponse.to)
         return
 
       // On reject update the history, the route, and set the rejection type
       case 'REJECT':
-        history.update(url, state, options)
+        history.update(url, options)
         setRejection(beforeResponse.type)
         updateRoute(to)
         break
 
       // On success update history, set the route, and clear the rejection
       case 'SUCCESS':
-        history.update(url, state, options)
+        history.update(url, options)
         setRejection(null)
         updateRoute(to)
         break
@@ -141,9 +142,8 @@ export function createRouter<const T extends Routes>(routesOrArrayOfRoutes: T | 
     if (isUrl(source)) {
       const options: RouterPushOptions = { ...paramsOrOptions }
       const url = resolve(source, options)
-      const { state } = options
 
-      return set(url, state, options)
+      return set(url, options)
     }
 
     const options: RouterPushOptions = { ...maybeOptions }
@@ -152,16 +152,15 @@ export function createRouter<const T extends Routes>(routesOrArrayOfRoutes: T | 
     const route = getRoute(source)
     const state = setStateValues(route?.stateParams ?? {}, options.state)
 
-    return set(url, state, options)
+    return set(url, { ...options, state })
   }
 
   const replace: RouterReplace<T> = (source: Url | RoutesKey<T>, paramsOrOptions?: Record<string, unknown> | RouterReplaceOptions, maybeOptions?: RouterReplaceOptions) => {
     if (isUrl(source)) {
       const options: RouterPushOptions = { ...paramsOrOptions, replace: true }
       const url = resolve(source, options)
-      const { state } = options
 
-      return set(url, state, options)
+      return set(url, options)
     }
 
     const options: RouterPushOptions = { ...maybeOptions, replace: true }
@@ -170,7 +169,7 @@ export function createRouter<const T extends Routes>(routesOrArrayOfRoutes: T | 
     const route = getRoute(source)
     const state = setStateValues(route?.stateParams ?? {}, options.state)
 
-    return set(url, state, options)
+    return set(url, { ...options, state })
   }
 
   const reject: RouterReject = (type) => {
@@ -201,9 +200,10 @@ export function createRouter<const T extends Routes>(routesOrArrayOfRoutes: T | 
   history.startListening()
 
   const initialUrl = getInitialUrl(options.initialUrl)
+  const initialState = history.location.state
   const { host } = createMaybeRelativeUrl(initialUrl)
   const isExternal = createIsExternal(host)
-  const initialized = set(initialUrl, { replace: true })
+  const initialized = set(initialUrl, { replace: true, state: initialState })
 
   function getRoute(key: string): Route | undefined {
     return routes.find(route => route.key === key)

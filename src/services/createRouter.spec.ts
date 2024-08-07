@@ -1,8 +1,10 @@
 import { flushPromises } from '@vue/test-utils'
+import { Location } from 'history'
 import { expect, test, vi } from 'vitest'
 import { toRefs } from 'vue'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
+import * as createRouterHistoryUtilities from '@/services/createRouterHistory'
 import * as resolveUtilities from '@/services/createRouterResolve'
 import { component } from '@/utilities/testHelpers'
 
@@ -11,7 +13,6 @@ test('initial route is set', async () => {
     name: 'root',
     component,
     path: '/',
-    state: { something: Boolean },
   })
 
   const { route, initialized } = createRouter([foo], {
@@ -23,12 +24,42 @@ test('initial route is set', async () => {
   expect(route.matched.name).toBe('root')
 })
 
+test('initial state is set', async () => {
+  const location: Location = {
+    key: 'foo',
+    pathname: '/',
+    search: '',
+    hash: '',
+    state: { zoo: '123' },
+  }
+
+  const actual = createRouterHistoryUtilities.createRouterHistory({ listener: () => {} })
+  vi.spyOn(createRouterHistoryUtilities, 'createRouterHistory').mockImplementation(() => ({
+    ...actual,
+    location,
+  }))
+
+  const foo = createRoute({
+    name: 'root',
+    component,
+    path: '/',
+    state: { zoo: Number },
+  })
+
+  const { route, initialized } = createRouter([foo], {
+    initialUrl: '/',
+  })
+
+  await initialized
+
+  expect(route.state).toMatchObject({ zoo: 123 })
+})
+
 test('updates the route when navigating', async () => {
   const theRoute = createRoute({
     name: 'first',
     component,
     path: '/first',
-    state: { foo: Number },
   })
 
   const routes = [

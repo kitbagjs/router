@@ -3,9 +3,10 @@ import { isBrowser } from '@/utilities/isBrowser'
 
 type NavigationPushOptions = {
   replace?: boolean,
+  state?: unknown,
 }
 
-type NavigationUpdate = (url: string, state: unknown, options?: NavigationPushOptions) => void
+type NavigationUpdate = (url: string, options?: NavigationPushOptions) => void
 type NavigationRefresh = () => void
 
 export type RouterHistory = History & {
@@ -25,16 +26,15 @@ type RouterHistoryOptions = {
 export function createRouterHistory({ mode, listener }: RouterHistoryOptions): RouterHistory {
   const history = createHistory(mode)
 
-  const update: NavigationUpdate = (url, state, options) => {
+  const update: NavigationUpdate = (url, options) => {
     if (options?.replace) {
-      return history.replace(url, state)
+      return history.replace(url, options.state)
     }
 
-    history.push(url, state)
+    history.push(url, options?.state)
   }
 
   const refresh: NavigationRefresh = () => {
-    // todo: should state be cleared by refresh?
     const url = createPath(history.location)
 
     return history.replace(url)

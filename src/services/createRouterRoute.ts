@@ -65,6 +65,16 @@ export function createRouterRoute<TRoute extends ResolvedRoute>(route: TRoute, p
         })
       }
 
+      if (property === 'state') {
+        return new Proxy(route.state, {
+          set(_target, property, value) {
+            update({}, { state: { ...route.state, [property]: value } })
+
+            return true
+          },
+        })
+      }
+
       return Reflect.get(target, property, receiver)
     },
   })
