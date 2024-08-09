@@ -2,9 +2,11 @@ import { Component } from 'vue'
 import { combineKey } from '@/services/combineKey'
 import { combinePath } from '@/services/combinePath'
 import { combineQuery } from '@/services/combineQuery'
+import { combineState } from '@/services/combineState'
 import { ComponentProps } from '@/services/component'
 import { AfterRouteHook, BeforeRouteHook } from '@/types/hooks'
 import { Host } from '@/types/host'
+import { Param } from '@/types/paramTypes'
 import { Path } from '@/types/path'
 import { Query } from '@/types/query'
 import { RouteMeta } from '@/types/register'
@@ -88,6 +90,21 @@ export function isWithComponents(options: CreateRouteOptions): options is Create
   return 'components' in options && Boolean(options.components)
 }
 
+export type WithState<TState extends Record<string, Param> = Record<string, Param>> = {
+  /**
+   * Type params for additional data intended to be stored in history state, all keys will be optional unless a default is provided.
+   */
+  state: TState,
+}
+
+export function isWithState(options: CreateRouteOptions): options is CreateRouteOptions & WithState {
+  return 'state' in options && Boolean(options.state)
+}
+
+export type WithoutState = {
+  state?: never,
+}
+
 export type CreateRouteOptions<
   TName extends string | undefined = string | undefined,
   TPath extends string | Path | undefined = string | Path | undefined,
@@ -118,6 +135,7 @@ export function combineRoutes(parent: Route, child: Route): Route {
     key: combineKey(parent.key, child.key),
     path: combinePath(parent.path, child.path),
     query: combineQuery(parent.query, child.query),
+    stateParams: combineState(parent.stateParams, child.stateParams),
     matches: [...parent.matches, child.matched],
     host: parent.host,
     depth: parent.depth + 1,

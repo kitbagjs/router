@@ -30,7 +30,7 @@ type ExtractParamTypeWithoutLosingOptional<TParam extends Param, TParamKey exten
     : Type
   : TParam extends ParamGetter
     ? TParamKey extends `?${string}`
-      ? ReturnType<TParam> |undefined
+      ? ReturnType<TParam> | undefined
       : ReturnType<TParam>
     : TParamKey extends `?${string}`
       ? string | undefined

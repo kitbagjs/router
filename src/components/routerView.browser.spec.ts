@@ -83,7 +83,7 @@ test('updates components when route changes', async () => {
       path: '/zoo',
       component: { template: 'Zoo' },
     }),
-  ]
+  ] as const
 
   const router = createRouter(routes, {
     initialUrl: '/foo',

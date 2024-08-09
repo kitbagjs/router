@@ -1,5 +1,6 @@
-import { CreateRouteOptions, WithComponent, WithComponents, WithHooks, WithHost, WithParent, WithoutComponents, WithoutHost, WithoutParent } from '@/types/createRouteOptions'
+import { CreateRouteOptions, WithComponent, WithComponents, WithHooks, WithHost, WithParent, WithState, WithoutComponents, WithoutHost, WithoutParent, WithoutState } from '@/types/createRouteOptions'
 import { Host } from '@/types/host'
+import { Param } from '@/types/paramTypes'
 import { Path } from '@/types/path'
 import { Query } from '@/types/query'
 import { RouteMeta } from '@/types/register'
@@ -12,7 +13,7 @@ export type Routes = Readonly<Route[]>
 /**
  * The Route properties originally provided to `createRoute`. The only change is normalizing meta to always default to an empty object.
  */
-export type CreateRouteOptionsMatched = CreateRouteOptions & WithHooks & (WithHost | WithoutHost) & (WithComponent | WithComponents | WithoutComponents) & (WithParent | WithoutParent) & { meta: RouteMeta }
+type CreateRouteOptionsMatched = CreateRouteOptions & WithHooks & (WithHost | WithoutHost) & (WithComponent | WithComponents | WithoutComponents) & (WithParent | WithoutParent) & (WithState | WithoutState) & { meta: RouteMeta }
 
 /**
  * Represents the structure of a route within the application. Return value of `createRoute`
@@ -25,12 +26,12 @@ export type Route<
   THost extends Host = Host,
   TPath extends Path = Path,
   TQuery extends Query = Query,
-  TMeta extends RouteMeta = RouteMeta
+  TStateParams extends Record<string, Param> = Record<string, Param>
 > = {
   /**
    * The specific route properties that were matched in the current route.
   */
-  matched: CreateRouteOptionsMatched & { meta: TMeta },
+  matched: CreateRouteOptionsMatched,
   /**
    * The specific route properties that were matched in the current route, including any ancestors.
    * Order of routes will be from greatest ancestor to narrowest matched.
@@ -52,5 +53,9 @@ export type Route<
    * Represents the structured query of the route, including query params.
   */
   query: TQuery,
+  /**
+   * Represents the schema of the route state, combined with any parents.
+  */
+  stateParams: TStateParams,
   depth: number,
 }

@@ -1,19 +1,21 @@
 import { flushPromises } from '@vue/test-utils'
+import { Location } from 'history'
 import { expect, test, vi } from 'vitest'
 import { toRefs } from 'vue'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
+import * as createRouterHistoryUtilities from '@/services/createRouterHistory'
 import * as resolveUtilities from '@/services/createRouterResolve'
 import { component } from '@/utilities/testHelpers'
 
 test('initial route is set', async () => {
-  const { route, initialized } = createRouter([
-    createRoute({
-      name: 'root',
-      component,
-      path: '/',
-    }),
-  ], {
+  const foo = createRoute({
+    name: 'root',
+    component,
+    path: '/',
+  })
+
+  const { route, initialized } = createRouter([foo], {
     initialUrl: '/',
   })
 
@@ -22,13 +24,46 @@ test('initial route is set', async () => {
   expect(route.matched.name).toBe('root')
 })
 
+test('initial state is set', async () => {
+  const location: Location = {
+    key: 'foo',
+    pathname: '/',
+    search: '',
+    hash: '',
+    state: { zoo: '123' },
+  }
+
+  const actual = createRouterHistoryUtilities.createRouterHistory({ listener: () => {} })
+  vi.spyOn(createRouterHistoryUtilities, 'createRouterHistory').mockImplementation(() => ({
+    ...actual,
+    location,
+  }))
+
+  const foo = createRoute({
+    name: 'root',
+    component,
+    path: '/',
+    state: { zoo: Number },
+  })
+
+  const { route, initialized } = createRouter([foo], {
+    initialUrl: '/',
+  })
+
+  await initialized
+
+  expect(route.state).toMatchObject({ zoo: 123 })
+})
+
 test('updates the route when navigating', async () => {
-  const { push, route, initialized } = createRouter([
-    createRoute({
-      name: 'first',
-      component,
-      path: '/first',
-    }),
+  const theRoute = createRoute({
+    name: 'first',
+    component,
+    path: '/first',
+  })
+
+  const routes = [
+    theRoute,
     createRoute({
       name: 'second',
       component,
@@ -39,11 +74,15 @@ test('updates the route when navigating', async () => {
       component,
       path: '/third/[id]',
     }),
-  ], {
+  ]
+
+  const { push, route, initialized } = createRouter(routes, {
     initialUrl: '/first',
   })
 
   await initialized
+
+  await push('first', {}, { state: { foo: 123 } })
 
   expect(route.matched.name).toBe('first')
 
