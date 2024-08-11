@@ -196,3 +196,24 @@ test('given a route with params returns all params', () => {
     paramB: 'B',
   })
 })
+
+test('given state that matches state params, returns state', () => {
+  const parent = createRoute({
+    name: 'parent',
+    state: { foo: Boolean },
+  })
+
+  const child = createRoute({
+    parent,
+    name: 'foo',
+    path: '/foo',
+    component,
+    state: { bar: String },
+  })
+
+  const routes = [parent, child] as const
+
+  const response = getResolvedRouteForUrl(routes, '/foo', { foo: 'true', bar: 'abc' })
+
+  expect(response?.state).toMatchObject({ foo: true, bar: 'abc' })
+})

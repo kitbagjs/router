@@ -3,6 +3,7 @@ import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
 import { getRouteParamValues, routeParamsAreValid } from '@/services/paramValidation'
 import { isNamedRoute, routePathMatches, routeQueryMatches } from '@/services/routeMatchRules'
 import { getRouteScoreSortMethod } from '@/services/routeMatchScore'
+import { getStateValues } from '@/services/state'
 import { ResolvedRoute } from '@/types/resolved'
 import { Routes } from '@/types/route'
 import { RouteMatchRule } from '@/types/routeMatchRule'
@@ -14,7 +15,7 @@ const rules: RouteMatchRule[] = [
   routeParamsAreValid,
 ]
 
-export function getResolvedRouteForUrl(routes: Routes, url: string): ResolvedRoute | undefined {
+export function getResolvedRouteForUrl(routes: Routes, url: string, state?: unknown): ResolvedRoute | undefined {
   const sortByRouteScore = getRouteScoreSortMethod(url)
 
   const matches = routes
@@ -27,14 +28,14 @@ export function getResolvedRouteForUrl(routes: Routes, url: string): ResolvedRou
 
   const [route] = matches
   const { search } = createMaybeRelativeUrl(url)
-  const query = createResolvedRouteQuery(search)
-  const params = getRouteParamValues(route, url)
 
   return {
     matched: route.matched,
     matches: route.matches,
     key: route.key,
-    query,
-    params,
+    stateParams: route.stateParams,
+    query: createResolvedRouteQuery(search),
+    params: getRouteParamValues(route, url),
+    state: getStateValues(route.stateParams, state),
   }
 }
