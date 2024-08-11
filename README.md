@@ -116,7 +116,7 @@ This `source` argument is type safe, expecting either a Url or a valid route "ke
 If you only wish to change the params on the current route you can use `router.route.update`.
 
 ```ts
-router.route.update('myParam': 123)
+router.route.update('myParam', 123)
 ```
 
 or for setting multiple params at once
