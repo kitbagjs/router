@@ -20,7 +20,7 @@ const router = createRouter(routes)
 
 ## Always Optional
 
-Unlike params, properties on the state are always expected to be optional. The only exception to this is when your state property is defined with the `withDefault` utility.
+State properties are always expected to be optional. The only exception to this is when your state property is defined with the `withDefault` utility.
 
 ```ts
 const routes = [
