@@ -22,7 +22,7 @@
     /**
      * Determines what assets are prefetched when router-link is rendered for this route. Overrides route level prefetch.
      */
-    prefetch: PrefetchConfig,
+    prefetch?: PrefetchConfig,
   }
 
   const props = defineProps<RouterLinkProps & RouterPushOptions>()
