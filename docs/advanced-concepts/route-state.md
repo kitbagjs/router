@@ -55,4 +55,4 @@ router.push('example-form', {}, {
 })
 ```
 
-Also just params, the state values on the route are **writable**. This means that you can just modify the values directly and Kitbag Router will handle the communication with browser to update history state. To debounce this, or update multiple properties you can use `route.update()` method which takes the same properties as `push()`.
+The state values on the route are **writable**. This means that you can just modify the values directly and Kitbag Router will handle the communication with browser to update history state. You can use `route.update()` method which takes the same properties as `push()`.
