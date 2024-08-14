@@ -4,6 +4,7 @@ import { RouterRejectionComponents, RouterRejectionType } from '@/services/creat
 import { RouterResolve } from '@/services/createRouterResolve'
 import { RouterRoute } from '@/services/createRouterRoute'
 import { AddAfterRouteHook, AddBeforeRouteHook } from '@/types/hooks'
+import { PrefetchConfig } from '@/types/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
 import { Routes } from '@/types/route'
 import { RouterFind } from '@/types/routerFind'
@@ -33,6 +34,10 @@ export type RouterOptions = {
    * For example having `base` of `/foo` would assume all routes should start with `your.domain.com/foo`.
    */
   base?: string,
+  /**
+   * Determines what assets are prefetched when router-link is rendered for a specific route
+   */
+  prefetch?: PrefetchConfig,
 } & RouterRejectionComponents
 
 export type Router<
@@ -110,6 +115,10 @@ export type Router<
   * Given a URL, returns true if host does not match host stored on router instance
   */
   isExternal: (url: string) => boolean,
+  /**
+   * Determines what assets are prefetched.
+   */
+  prefetch: PrefetchConfig,
 }
 
 /**

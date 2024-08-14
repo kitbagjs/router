@@ -15,6 +15,7 @@ import { getResolvedRouteForUrl } from '@/services/getResolvedRouteForUrl'
 import { createRouteHookRunners } from '@/services/hooks'
 import { insertBaseRoute } from '@/services/insertBaseRoute'
 import { setStateValues } from '@/services/state'
+import { DEFAULT_PREFETCH_CONFIG } from '@/types/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
 import { Route, Routes } from '@/types/route'
 import { Router, RouterOptions, RouterReject } from '@/types/router'
@@ -247,6 +248,7 @@ export function createRouter<const T extends Routes>(routesOrArrayOfRoutes: T | 
     onAfterRouteEnter,
     onBeforeRouteUpdate,
     onAfterRouteLeave,
+    prefetch: options.prefetch ?? DEFAULT_PREFETCH_CONFIG,
   }
 
   return router

@@ -7,13 +7,25 @@
 <script setup lang="ts">
   import { computed } from 'vue'
   import { useRouter, useLink } from '@/compositions'
+  import { PrefetchConfig } from '@/types/prefetch'
   import { RegisteredRouter } from '@/types/register'
   import { RouterPushOptions } from '@/types/routerPush'
   import { Url, isUrl } from '@/types/url'
 
   type ToCallback = (resolve: RegisteredRouter['resolve']) => string
 
-  const props = defineProps<{ to: Url | ToCallback } & RouterPushOptions>()
+  type RouterLinkProps = {
+    /**
+     * The url string to navigate to or a callback that returns a url string
+     */
+    to: Url | ToCallback,
+    /**
+     * Determines what assets are prefetched when router-link is rendered for this route. Overrides route level prefetch.
+     */
+    prefetch: PrefetchConfig,
+  }
+
+  const props = defineProps<RouterLinkProps & RouterPushOptions>()
 
   defineSlots<{
     default?: (props: {

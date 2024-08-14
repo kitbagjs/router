@@ -98,6 +98,7 @@ export function createRoute(options: CreateRouteOptions): Route {
     state,
     depth: 1,
     host: host('', {}),
+    prefetch: options.prefetch,
   }
 
   const merged = isWithParent(options) ? combineRoutes(options.parent, route) : route
