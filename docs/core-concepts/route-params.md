@@ -20,7 +20,7 @@ const route = useRoute()
 route.params.id
 ```
 
-When defined this way, these params are reactive strings. If you update a param, the URL will be updated accordingly.
+When defined this way, these params are **writable**. If you update a param, the URL will be updated accordingly.
 
 ## Param Types
 
