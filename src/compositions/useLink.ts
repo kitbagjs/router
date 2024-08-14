@@ -1,7 +1,8 @@
-import { MaybeRefOrGetter, Ref, computed, toValue } from 'vue'
+import { MaybeRefOrGetter, Ref, computed, toRef, toValue, watch } from 'vue'
 import { useRouter } from '@/compositions/useRouter'
 import { InvalidRouteParamValueError } from '@/errors/invalidRouteParamValueError'
 import { RouterResolveOptions } from '@/services/createRouterResolve'
+import { isWithComponent, isWithComponents } from '@/types/createRouteOptions'
 import { RegisteredRoutes, RegisteredRoutesName } from '@/types/register'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouterPushOptions } from '@/types/routerPush'
@@ -63,9 +64,9 @@ export function useLink(
   options: MaybeRefOrGetter<RouterResolveOptions> = {},
 ): UseLink {
   const router = useRouter()
-  const sourceRef = computed(() => toValue(source))
-  const paramsRef = computed(() => toValue(params))
-  const optionsRef = computed(() => toValue(options))
+  const sourceRef = toRef(source)
+  const paramsRef = toRef(params)
+  const optionsRef = toRef(options)
 
   const href = computed(() => {
     if (isUrl(sourceRef.value)) {
@@ -89,6 +90,22 @@ export function useLink(
 
   const isMatch = computed(() => !!route.value && router.route.matches.includes(route.value.matched))
   const isExactMatch = computed(() => !!route.value && router.route.matched === route.value.matched)
+
+  // watch(route, route => {
+  //   if (!route) {
+  //     return
+  //   }
+
+  //   route.matches.forEach(route => {
+  //     if (isWithComponent(route)) {
+  //       route.component.setup()
+  //     }
+
+  //     if (isWithComponents(route)) {
+  //       Object.values(route.components).forEach(component => component.setup())
+  //     }
+  //   })
+  // })
 
   return {
     route,
