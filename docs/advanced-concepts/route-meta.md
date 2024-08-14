@@ -33,7 +33,7 @@ router.onAfterRouteEnter(to => {
 
 ## Meta Type
 
-You might notice that the default type for `pageTitle` is `unknown`. While the router does retain a generic for meta passed in at runtime, a global type can be established for all routes with [declaration merging](https://www.typescriptlang.org/docs/handbook/declaration-merging.html).
+Types for meta defined on individual routes will just work. If you want to require certain properties be set on all routes, you can update the global type with [declaration merging](https://www.typescriptlang.org/docs/handbook/declaration-merging.html).
 
 ```ts
 declare module '@kitbag/router' {
