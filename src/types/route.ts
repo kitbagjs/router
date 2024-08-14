@@ -26,6 +26,7 @@ export type Route<
   THost extends Host = Host,
   TPath extends Path = Path,
   TQuery extends Query = Query,
+  TMeta extends RouteMeta = RouteMeta,
   TStateParams extends Record<string, Param> = Record<string, Param>
 > = {
   /**
@@ -53,6 +54,10 @@ export type Route<
    * Represents the structured query of the route, including query params.
   */
   query: TQuery,
+  /**
+   * Represents additional metadata associated with a route, combined with any parents.
+  */
+  meta: TMeta,
   /**
    * Represents the schema of the route state, combined with any parents.
   */
