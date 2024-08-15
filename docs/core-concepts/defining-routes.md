@@ -107,6 +107,7 @@ export const documentationRoutes = [routerDocs, routerApiDocs]
 Now we can include these routes with all of the internal routes your app already uses.
 
 ```ts
+import { defineAsyncComponent } from 'vue'
 import { createRoute, createRouter } from '@kitbag/router'
 import { documentationRoutes } from './documentationRoutes'
 
@@ -114,7 +115,7 @@ export const routes = [
   createRoute({
     name: 'home',
     path: '/',
-    component: () => import('@/views/HomeView.vue'),
+    component: defineAsyncComponent(() => import('@/views/HomeView.vue')),
   }),
   ...
 ])
