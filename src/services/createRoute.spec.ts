@@ -52,7 +52,7 @@ test('given parent, query is combined', () => {
   })
 })
 
-test('given parent, state is combined into stateParams', () => {
+test('given parent, state is combined into state', () => {
   const parent = createRoute({
     state: {
       foo: Number,
@@ -66,7 +66,7 @@ test('given parent, state is combined into stateParams', () => {
     },
   })
 
-  expect(child.stateParams).toMatchObject({
+  expect(child.state).toMatchObject({
     foo: Number,
     bar: String,
   })
@@ -83,7 +83,7 @@ test('given parent and child without state, state matches parent', () => {
     parent: parent,
   })
 
-  expect(child.stateParams).toMatchObject({
+  expect(child.state).toMatchObject({
     foo: Number,
   })
 })
