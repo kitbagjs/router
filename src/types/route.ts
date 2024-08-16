@@ -27,7 +27,7 @@ export type Route<
   TPath extends Path = Path,
   TQuery extends Query = Query,
   TMeta extends RouteMeta = RouteMeta,
-  TStateParams extends Record<string, Param> = Record<string, Param>
+  TState extends Record<string, Param> = Record<string, Param>
 > = {
   /**
    * The specific route properties that were matched in the current route.
@@ -61,6 +61,6 @@ export type Route<
   /**
    * Represents the schema of the route state, combined with any parents.
   */
-  stateParams: TStateParams,
+  state: TState,
   depth: number,
 }

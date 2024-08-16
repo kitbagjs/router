@@ -137,7 +137,7 @@ export function combineRoutes(parent: Route, child: Route): Route {
     path: combinePath(parent.path, child.path),
     query: combineQuery(parent.query, child.query),
     meta: combineMeta(parent.meta, child.meta),
-    stateParams: combineState(parent.stateParams, child.stateParams),
+    state: combineState(parent.state, child.state),
     matches: [...parent.matches, child.matched],
     host: parent.host,
     depth: parent.depth + 1,
