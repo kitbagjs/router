@@ -75,26 +75,27 @@ declare module '@kitbag/router' {
 To navigate to another route, you can use `router.push`. This method will update the URL for the browser and also add the URL into the history so when a user uses the back button on their browser it will behave as expected.
 
 ```ts
+import { defineAsyncComponent } from 'vue'
 import { createRoute, useRouter } from '@kitbag/router'
 
 const user = createRoute({
   name: 'user',
   path: '/user',
-  component: ...,
+  component: defineAsyncComponent(() => import('./UserPage.vue')),
 })
 
 const profile = createRoute({
   parent: user,
   name: 'profile',
   path: '/profile',
-  component: ...,
+  component: defineAsyncComponent(() => import('./ProfilePage.vue')),
 })
 
 const settings = createRoute({
   parent: user,
   name: 'settings',
   path: '/settings',
-  component: ...,
+  component: defineAsyncComponent(() => import('./SettingsPage.vue')),
 })
 
 const router = useRouter([user, profile, settings])

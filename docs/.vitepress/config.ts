@@ -150,7 +150,7 @@ export default defineConfig({
             { text: 'Rejections', link: '/advanced-concepts/rejections' },
             { text: 'Hooks', link: '/advanced-concepts/hooks' },
             { text: 'Route Meta', link: '/advanced-concepts/route-meta' },
-            { text: 'Utilities', link: '/advanced-concepts/utilities' },
+            { text: 'Route State', link: '/advanced-concepts/route-state' },
             { text: 'Transitions', link: '/advanced-concepts/transitions' },
           ],
         },
