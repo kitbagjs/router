@@ -150,7 +150,7 @@ export function createRouter<const T extends Routes>(routesOrArrayOfRoutes: T | 
     const params: any = paramsOrOptions ?? {}
     const url = resolve(source, params, options)
     const route = getRoute(source)
-    const state = setStateValues(route?.stateParams ?? {}, options.state)
+    const state = setStateValues(route?.state ?? {}, options.state)
 
     return set(url, { ...options, state })
   }
@@ -167,7 +167,7 @@ export function createRouter<const T extends Routes>(routesOrArrayOfRoutes: T | 
     const params: any = paramsOrOptions ?? {}
     const url = resolve(source, params, options)
     const route = getRoute(source)
-    const state = setStateValues(route?.stateParams ?? {}, options.state)
+    const state = setStateValues(route?.state ?? {}, options.state)
 
     return set(url, { ...options, state })
   }

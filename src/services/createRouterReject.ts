@@ -60,7 +60,6 @@ export function createRouterReject({
       query: createResolvedRouteQuery(''),
       params: {},
       state: {},
-      stateParams: {},
       [isRejectionRouteSymbol]: true,
     }
 

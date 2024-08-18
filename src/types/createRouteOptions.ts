@@ -1,5 +1,6 @@
 import { Component } from 'vue'
 import { combineKey } from '@/services/combineKey'
+import { combineMeta } from '@/services/combineMeta'
 import { combinePath } from '@/services/combinePath'
 import { combineQuery } from '@/services/combineQuery'
 import { combineState } from '@/services/combineState'
@@ -135,7 +136,8 @@ export function combineRoutes(parent: Route, child: Route): Route {
     key: combineKey(parent.key, child.key),
     path: combinePath(parent.path, child.path),
     query: combineQuery(parent.query, child.query),
-    stateParams: combineState(parent.stateParams, child.stateParams),
+    meta: combineMeta(parent.meta, child.meta),
+    state: combineState(parent.state, child.state),
     matches: [...parent.matches, child.matched],
     host: parent.host,
     depth: parent.depth + 1,
