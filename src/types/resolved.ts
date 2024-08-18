@@ -30,11 +30,7 @@ export type ResolvedRoute<TRoute extends Route = Route> = Readonly<{
   */
   params: ExtractRouteParamTypes<TRoute>,
   /**
-   * Represents the schema of the route state, combined with any parents.
-   */
-  stateParams: TRoute['stateParams'],
-  /**
    * Type for additional data intended to be stored in history state.
    */
-  state: ExtractRouteStateParamsAsOptional<TRoute['stateParams']>,
+  state: ExtractRouteStateParamsAsOptional<TRoute['state']>,
 }>
