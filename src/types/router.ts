@@ -23,7 +23,9 @@ export type RouterOptions = {
    */
   initialUrl?: string,
   /**
-   * Specifies the history mode for the router, such as 'hash', 'history', or 'abstract'.
+   * Specifies the history mode for the router, such as "browser", "memory", or "hash".
+   *
+   * @default "auto"
    */
   historyMode?: RouterHistoryMode,
 } & RouterRejectionComponents
