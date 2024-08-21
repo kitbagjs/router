@@ -10,6 +10,8 @@ const asyncComponent = defineAsyncComponent<Component>(() => {
   })
 })
 
-export function isAsyncComponent(component: Component): boolean {
-  return component.name === asyncComponent.name
+type ComponentWithSetup = Component & { setup: () => void }
+
+export function isAsyncComponent(component: Component): component is ComponentWithSetup {
+  return component.name === asyncComponent.name && 'setup' in component
 }

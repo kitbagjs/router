@@ -118,7 +118,7 @@ export type Router<
   /**
    * Determines what assets are prefetched.
    */
-  prefetch: PrefetchConfig,
+  prefetch?: PrefetchConfig,
 }
 
 /**

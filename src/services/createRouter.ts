@@ -248,7 +248,7 @@ export function createRouter<const T extends Routes>(routesOrArrayOfRoutes: T | 
     onAfterRouteEnter,
     onBeforeRouteUpdate,
     onAfterRouteLeave,
-    prefetch: options.prefetch ?? DEFAULT_PREFETCH_CONFIG,
+    prefetch: options.prefetch,
   }
 
   return router

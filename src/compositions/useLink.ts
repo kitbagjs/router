@@ -3,6 +3,7 @@ import { useRouter } from '@/compositions/useRouter'
 import { InvalidRouteParamValueError } from '@/errors/invalidRouteParamValueError'
 import { RouterResolveOptions } from '@/services/createRouterResolve'
 import { isWithComponent, isWithComponents } from '@/types/createRouteOptions'
+import { PrefetchConfig, getPrefetchOption } from '@/types/prefetch'
 import { RegisteredRoutes, RegisteredRoutesName } from '@/types/register'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouterPushOptions } from '@/types/routerPush'
@@ -10,6 +11,7 @@ import { RouterReplaceOptions } from '@/types/routerReplace'
 import { RouteParamsByKey } from '@/types/routeWithParams'
 import { Url, isUrl } from '@/types/url'
 import { AllPropertiesAreOptional } from '@/types/utilities'
+import { isAsyncComponent } from '@/utilities/components'
 
 export type UseLink = {
   /**
@@ -38,12 +40,16 @@ export type UseLink = {
   replace: (options?: RouterReplaceOptions) => Promise<void>,
 }
 
+export type UseLinkOptions = RouterResolveOptions & {
+  prefetch?: PrefetchConfig,
+}
+
 type UseLinkArgs<
   TSource extends RegisteredRoutesName,
   TParams = RouteParamsByKey<RegisteredRoutes, TSource>
 > = AllPropertiesAreOptional<TParams> extends true
-  ? [params?: MaybeRefOrGetter<TParams>, options?: MaybeRefOrGetter<RouterResolveOptions>]
-  : [params: MaybeRefOrGetter<TParams>, options?: MaybeRefOrGetter<RouterResolveOptions>]
+  ? [params?: MaybeRefOrGetter<TParams>, options?: MaybeRefOrGetter<UseLinkOptions>]
+  : [params: MaybeRefOrGetter<TParams>, options?: MaybeRefOrGetter<UseLinkOptions>]
 
 /**
  * A composition to export much of the functionality that drives RouterLink component. Can be given route details to discover resolved URL,
@@ -61,7 +67,7 @@ export function useLink(url: MaybeRefOrGetter<Url>): UseLink
 export function useLink(
   source: MaybeRefOrGetter<string>,
   params: MaybeRefOrGetter<Record<PropertyKey, unknown>> = {},
-  options: MaybeRefOrGetter<RouterResolveOptions> = {},
+  options: MaybeRefOrGetter<UseLinkOptions> = {},
 ): UseLink {
   const router = useRouter()
   const sourceRef = toRef(source)
@@ -84,28 +90,23 @@ export function useLink(
     }
   })
 
-  const route = computed(() => {
-    return router.find(href.value, optionsRef.value)
-  })
-
+  const route = computed(() => router.find(href.value, optionsRef.value))
   const isMatch = computed(() => !!route.value && router.route.matches.includes(route.value.matched))
   const isExactMatch = computed(() => !!route.value && router.route.matched === route.value.matched)
 
-  // watch(route, route => {
-  //   if (!route) {
-  //     return
-  //   }
+  watch(route, route => {
+    if (!route) {
+      return
+    }
 
-  //   route.matches.forEach(route => {
-  //     if (isWithComponent(route)) {
-  //       route.component.setup()
-  //     }
+    const { prefetch: routerPrefetch } = router
+    const { prefetch: linkPrefetch } = optionsRef.value
 
-  //     if (isWithComponents(route)) {
-  //       Object.values(route.components).forEach(component => component.setup())
-  //     }
-  //   })
-  // })
+    prefetchComponentsForRoute(route, {
+      routerPrefetch,
+      linkPrefetch,
+    })
+  })
 
   return {
     route,
@@ -115,4 +116,28 @@ export function useLink(
     push: (options?: RouterPushOptions) => router.push(href.value, {}, { ...optionsRef.value, ...options }),
     replace: (options?: RouterReplaceOptions) => router.replace(href.value, {}, { ...optionsRef.value, ...options }),
   }
+}
+
+type ComponentPrefect = {
+  routerPrefetch: PrefetchConfig | undefined,
+  linkPrefetch: PrefetchConfig | undefined,
+}
+
+function prefetchComponentsForRoute(route: ResolvedRoute, { routerPrefetch, linkPrefetch }: ComponentPrefect): void {
+
+  route.matches.forEach(route => {
+
+    if (isWithComponent(route) && isAsyncComponent(route.component)) {
+      route.component.setup()
+    }
+
+    if (isWithComponents(route)) {
+      Object.values(route.components).forEach(component => {
+        if (isAsyncComponent(component)) {
+          component.setup()
+        }
+      })
+    }
+  })
+
 }
