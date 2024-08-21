@@ -52,7 +52,8 @@ app.mount('#app')
 
 ## Update Registered Router
 
-This block utilizes [declaration merging](https://www.typescriptlang.org/docs/handbook/declaration-merging.html) to provide the internal types to match the actual router you're using. You put this in main.ts right after you call `createRouter`, or you can export your router and put this interface inside of a `router.d.ts` file, anywhere that your tsconfig can find it.
+This block utilizes [declaration merging](https://www.typescriptlang.org/docs/handbook/declaration-merging.html) to provide the internal types to match the actual router you're using.
+You put this in _main.ts_ right after you call `createRouter`:
 
 ```ts
 declare module '@kitbag/router' {
@@ -60,6 +61,19 @@ declare module '@kitbag/router' {
     router: typeof router
   }
 }
+```
+
+If you call `createRouter` in another module and export `router`, you can put this interface inside a `router.d.ts` file, anywhere that your tsconfig can find it.
+
+```ts
+import { router } from './routes'
+
+declare module '@kitbag/router' {
+  export interface Register {
+    router: typeof router
+  }
+}
+
 ```
 
 ## RouterView
