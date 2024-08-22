@@ -1,7 +1,8 @@
 import { createPath } from 'history'
 import { App } from 'vue'
 import { RouterLink, RouterView } from '@/components'
-import { routerInjectionKey, routerRejectionKey } from '@/compositions'
+import { routerRejectionKey } from '@/compositions/useRejection'
+import { routerInjectionKey } from '@/compositions/useRouter'
 import { createCurrentRoute } from '@/services/createCurrentRoute'
 import { createIsExternal } from '@/services/createIsExternal'
 import { createMaybeRelativeUrl } from '@/services/createMaybeRelativeUrl'
@@ -12,6 +13,7 @@ import { createRouterResolve } from '@/services/createRouterResolve'
 import { getInitialUrl } from '@/services/getInitialUrl'
 import { getResolvedRouteForUrl } from '@/services/getResolvedRouteForUrl'
 import { createRouteHookRunners } from '@/services/hooks'
+import { insertBaseRoute } from '@/services/insertBaseRoute'
 import { setStateValues } from '@/services/state'
 import { ResolvedRoute } from '@/types/resolved'
 import { Route, Routes } from '@/types/route'
@@ -20,7 +22,6 @@ import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { RouterReplace, RouterReplaceOptions } from '@/types/routerReplace'
 import { RoutesKey } from '@/types/routesMap'
 import { Url, isUrl } from '@/types/url'
-import { isNestedArray } from '@/utilities/guards'
 
 type RouterUpdateOptions = {
   replace?: boolean,
@@ -53,7 +54,8 @@ type RouterUpdateOptions = {
 export function createRouter<const T extends Routes>(routes: T, options?: RouterOptions): Router<T>
 export function createRouter<const T extends Routes>(arrayOfRoutes: T[], options?: RouterOptions): Router<T>
 export function createRouter<const T extends Routes>(routesOrArrayOfRoutes: T | T[], options: RouterOptions = {}): Router<T> {
-  const routes = isNestedArray(routesOrArrayOfRoutes) ? routesOrArrayOfRoutes.flat() : routesOrArrayOfRoutes
+  const routes = insertBaseRoute(routesOrArrayOfRoutes, options.base)
+
   const resolve = createRouterResolve(routes)
   const history = createRouterHistory({
     mode: options.historyMode,

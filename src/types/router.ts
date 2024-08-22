@@ -28,6 +28,11 @@ export type RouterOptions = {
    * @default "auto"
    */
   historyMode?: RouterHistoryMode,
+  /**
+   * Base path to be prepended to any URL. Can be used for Vue applications that run in nested folder for domain.
+   * For example having `base` of `/foo` would assume all routes should start with `your.domain.com/foo`.
+   */
+  base?: string,
 } & RouterRejectionComponents
 
 export type Router<
