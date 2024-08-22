@@ -1,4 +1,4 @@
-import { StringHasValue } from '@/utilities/string'
+import { StringHasValue } from '@/utilities/guards'
 
 export type CombineKey<TParentKey extends string | undefined, TChildKey extends string | undefined> = StringHasValue<TParentKey> extends true
   ? StringHasValue<TChildKey> extends true

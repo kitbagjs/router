@@ -2,7 +2,7 @@ import { InvalidRouteParamValueError } from '@/errors/invalidRouteParamValueErro
 import { isParamWithDefault } from '@/services/withDefault'
 import { ExtractParamType, isParamGetSet, isParamGetter } from '@/types/params'
 import { Param, ParamExtras, ParamGetSet } from '@/types/paramTypes'
-import { stringHasValue } from '@/utilities/string'
+import { stringHasValue } from '@/utilities/guards'
 
 export function getParam<TParams extends Record<string, Param | undefined>>(params: TParams, paramName: string): Param {
   return params[paramName] ?? String
