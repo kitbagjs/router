@@ -2,37 +2,6 @@ import { expect, test } from 'vitest'
 import { createRoute } from '@/services/createRoute'
 import { insertBaseRoute } from '@/services/insertBaseRoute'
 
-test('given nested Routes array, always flattens', () => {
-  const aRoute = createRoute({ name: 'a', path: '/a' })
-  const bRoute = createRoute({ name: 'b', path: '/b' })
-  const cRoute = createRoute({ name: 'c', path: '/c' })
-  const dRoute = createRoute({ name: 'd', path: '/d' })
-  const eRoute = createRoute({ name: 'e', path: '/e' })
-  const fRoute = createRoute({ name: 'f', path: '/f' })
-
-  const response = insertBaseRoute([
-    [
-      aRoute,
-      bRoute,
-      cRoute,
-    ],
-    [
-      dRoute,
-      eRoute,
-    ],
-    [fRoute],
-  ])
-
-  expect(response).toMatchObject([
-    aRoute,
-    bRoute,
-    cRoute,
-    dRoute,
-    eRoute,
-    fRoute,
-  ])
-})
-
 test.each([
   [undefined],
   [''],

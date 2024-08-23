@@ -1,19 +1,16 @@
-import { combinePath } from '@/services/combinePath'
-import { path } from '@/services/path'
+import { createRoute } from '@/services/createRoute'
 import { Routes } from '@/types'
-import { isNestedArray, stringHasValue } from '@/utilities/guards'
+import { stringHasValue } from '@/utilities/guards'
 
-export function insertBaseRoute(routesOrArrayOfRoutes: Routes | Routes[], base?: string): Routes {
-  const routes = isNestedArray(routesOrArrayOfRoutes) ? routesOrArrayOfRoutes.flat() : routesOrArrayOfRoutes
-
+export function insertBaseRoute(routes: Routes, base?: string): Routes {
   if (!stringHasValue(base)) {
     return routes
   }
 
-  const basePath = path(base, {})
+  const baseRoute = createRoute({ path: base })
 
-  return routes.map(route => ({
+  return routes.map(route => createRoute({
+    parent: baseRoute,
     ...route,
-    path: combinePath(basePath, route.path),
   }))
 }
