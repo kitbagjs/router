@@ -1,7 +1,7 @@
 import { RemoveLeadingQuestionMarkFromKeys } from '@/types/params'
 import { Query, QueryParamsWithParamNameExtracted, ToQuery } from '@/types/query'
 import { checkDuplicateKeys } from '@/utilities/checkDuplicateKeys'
-import { StringHasValue, stringHasValue } from '@/utilities/string'
+import { StringHasValue, stringHasValue } from '@/utilities/guards'
 
 type CombineQueryString<TParent extends string | undefined, TChild extends string | undefined> = StringHasValue<TParent> extends true
   ? StringHasValue<TChild> extends true

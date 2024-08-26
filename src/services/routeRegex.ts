@@ -1,6 +1,6 @@
 import { Route } from '@/types'
 import { paramEnd, paramStart } from '@/types/params'
-import { stringHasValue } from '@/utilities/string'
+import { stringHasValue } from '@/utilities/guards'
 
 export function escapeRegExp(string: string): string {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')

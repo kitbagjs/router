@@ -23,3 +23,15 @@ export function hasProperty<
 export function isNestedArray<T extends any[] | readonly any[]>(value: T | T[]): value is T[] {
   return value.every(item => Array.isArray(item))
 }
+
+export function stringHasValue(value: string | undefined): value is string {
+  return typeof value === 'string' && value.length > 0
+}
+
+export type StringHasValue<T> = string extends T
+  ? true
+  : '' extends T
+    ? false
+    : T extends string
+      ? true
+      : false
