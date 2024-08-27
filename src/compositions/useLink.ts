@@ -1,4 +1,4 @@
-import { MaybeRefOrGetter, Ref, computed, toRef, toValue, watch } from 'vue'
+import { MaybeRefOrGetter, Ref, computed, toRef, watch } from 'vue'
 import { useRouter } from '@/compositions/useRouter'
 import { InvalidRouteParamValueError } from '@/errors/invalidRouteParamValueError'
 import { RouterResolveOptions } from '@/services/createRouterResolve'
@@ -126,6 +126,15 @@ type ComponentPrefect = {
 function prefetchComponentsForRoute(route: ResolvedRoute, { routerPrefetch, linkPrefetch }: ComponentPrefect): void {
 
   route.matches.forEach(route => {
+    const shouldPrefetchComponents = getPrefetchOption({
+      routePrefetch: route.prefetch,
+      routerPrefetch,
+      linkPrefetch,
+    }, 'components')
+
+    if (!shouldPrefetchComponents) {
+      return
+    }
 
     if (isWithComponent(route) && isAsyncComponent(route.component)) {
       route.component.setup()
