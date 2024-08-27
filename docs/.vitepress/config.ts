@@ -178,7 +178,7 @@ export default defineConfig({
         ariaLabel: 'Kitbag Home'
       },
       { icon: 'github', link: 'https://github.com/kitbagjs/router' },
-      { icon: 'discord', link: 'https://discord.gg/UT7JrAxU' },
+      { icon: 'discord', link: 'https://discord.gg/zw7dpcc5HV' },
       { icon: 'npm', link: 'https://www.npmjs.com/package/@kitbag/router' },
     ]
   },
