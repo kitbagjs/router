@@ -163,6 +163,6 @@ This component gives the router the power to change the URL without reloading th
 [netlify-badge]: https://api.netlify.com/api/v1/badges/c12f79b8-49f9-4529-bc23-f8ffca8919a3/deploy-status
 [netlify-url]: https://app.netlify.com/sites/kitbag-router/deploys
 [discord-badge]: https://img.shields.io/discord/1079625926024900739?logo=discord&label=Discord
-[discord-url]: https://discord.gg/UT7JrAxU
+[discord-url]: https://discord.gg/zw7dpcc5HV
 [stackblitz-badge]: https://developer.stackblitz.com/img/open_in_stackblitz_small.svg
 [stackblitz-url]: https://stackblitz.com/~/github.com/kitbagjs/router-preview
