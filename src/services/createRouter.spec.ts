@@ -2,6 +2,7 @@ import { flushPromises } from '@vue/test-utils'
 import { Location } from 'history'
 import { expect, test, vi } from 'vitest'
 import { toRefs } from 'vue'
+import { DuplicateNamesError } from '@/errors/duplicateNamesError'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
 import * as createRouterHistoryUtilities from '@/services/createRouterHistory'
@@ -254,4 +255,22 @@ test('given an array of Routes, combines into single routes collection', () => {
     ...aRoutes,
     ...bRoutes,
   ])
+})
+
+
+test('given an array of Routes with duplicate names, throws ', () => {
+  const aRoutes = [
+    createRoute({ name: 'foo', component }),
+    createRoute({ name: 'bar', component }),
+  ]
+  const bRoutes = [
+    createRoute({ name: 'zoo', component }),
+    createRoute({ name: 'bar', component }),
+  ]
+
+  const action: () => void = () => createRouter([aRoutes, bRoutes], {
+    initialUrl: '/',
+  })
+
+  expect(action).toThrow(DuplicateNamesError)
 })

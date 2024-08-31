@@ -1,33 +1,29 @@
 import { expect, test } from 'vitest'
+import { DuplicateNamesError } from '@/errors/duplicateNamesError'
+import { createRoute } from '@/main'
 import { checkDuplicateNames } from '@/utilities/checkDuplicateNames'
 
 test('given a single array without duplicates, does nothing', () => {
-  const input = ['foo', 'bar', 'zoo']
+  const routes = [
+    createRoute({ name: 'foo' }),
+    createRoute({ name: 'bar' }),
+    createRoute({ name: 'zoo' }),
+  ]
 
-  const action: () => void = () => checkDuplicateNames(input)
+  const action: () => void = () => checkDuplicateNames(routes)
 
   expect(action).not.toThrow()
 })
 
-// test.each([
-//   [['foo', 'bar', 'zoo', 'bar']],
-//   [['foo', 'bar', 'zoo'], ['jar', 'zoo']],
-//   [['foo', 'bar', 'zoo'], ['jar'], ['zoo']],
-// ])('given a multiple arrays with duplicates, throws DuplicateParamsError', (...arrays) => {
-//   const action: () => void = () => checkDuplicateNames(arrays)
+test('given a multiple arrays with duplicates, throws DuplicateParamsError', () => {
+  const routes = [
+    createRoute({ name: 'foo' }),
+    createRoute({ name: 'bar' }),
+    createRoute({ name: 'zoo' }),
+    createRoute({ name: 'bar' }),
+    createRoute({ name: 'foo' }),
+  ]
+  const action: () => void = () => checkDuplicateNames(routes)
 
-//   expect(action).toThrow(DuplicateParamsError)
-// })
-
-// test.each([
-//   [['foo', 'bar', 'zoo']],
-//   [['foo', 'bar', 'zoo'], ['jar']],
-//   [['foo', 'bar'], ['jar'], ['zoo']],
-// ])('given a multiple arrays without duplicates, does nothing', () => {
-//   const aArray = ['foo', 'bar', 'zoo']
-//   const bArray = ['jar']
-
-//   const action: () => void = () => checkDuplicateNames(aArray, bArray)
-
-//   expect(action).not.toThrow()
-// })
+  expect(action).toThrow(DuplicateNamesError)
+})

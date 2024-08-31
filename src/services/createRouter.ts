@@ -22,6 +22,7 @@ import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { RouterReplace, RouterReplaceOptions } from '@/types/routerReplace'
 import { RoutesName } from '@/types/routesMap'
 import { Url, isUrl } from '@/types/url'
+import { checkDuplicateNames } from '@/utilities/checkDuplicateNames'
 import { isNestedArray } from '@/utilities/guards'
 
 type RouterUpdateOptions = {
@@ -57,6 +58,8 @@ export function createRouter<const T extends Routes>(arrayOfRoutes: T[], options
 export function createRouter<const T extends Routes>(routesOrArrayOfRoutes: T | T[], options: RouterOptions = {}): Router<T> {
   const flattenedRoutes = isNestedArray(routesOrArrayOfRoutes) ? routesOrArrayOfRoutes.flat() : routesOrArrayOfRoutes
   const routes = insertBaseRoute(flattenedRoutes, options.base)
+
+  checkDuplicateNames(routes)
 
   const resolve = createRouterResolve(routes)
   const history = createRouterHistory({

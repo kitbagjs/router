@@ -1,8 +1,9 @@
 import { DuplicateNamesError } from '@/errors/duplicateNamesError'
+import { Routes } from '@/types'
 import { getCount } from '@/utilities/array'
 
-export function checkDuplicateNames(names: string[]): void {
-  // const names = routesOrNames.flatMap(routeOrName => typeof routeOrName === 'string' ? routeOrName : routeOrName.name)
+export function checkDuplicateNames(routes: Routes): void {
+  const names = routes.map(({ name }) => name)
 
   for (const name of names) {
     if (getCount(names, name) > 1) {
