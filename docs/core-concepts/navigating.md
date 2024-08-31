@@ -31,7 +31,7 @@ const settings = createRoute({
 
 const router = useRouter([user, profile, settings])
 
-router.push('user.settings')
+router.push('settings')
 ```
 
 The push method also accepts a plain string if you know the URL you want to go to.
@@ -72,8 +72,8 @@ const settings = createRoute({
 
 const router = useRouter([user, profile, settings])
 
-router.push('user.settings') // [!code --]
-router.push('user.settings', { id: 42, tab: 'github' }) // [!code ++]
+router.push('settings') // [!code --]
+router.push('settings', { id: 42, tab: 'github' }) // [!code ++]
 ```
 
 ### Query
@@ -81,7 +81,7 @@ router.push('user.settings', { id: 42, tab: 'github' }) // [!code ++]
 With the options argument, you add additional values to the query. Note if you know your route will expect certain parameters, [query params](/core-concepts/query-params) is a much better developer experience for dealing with the query.
 
 ```ts
-router.push('user.settings', params, {
+router.push('settings', params, {
   query: { foo: 'bar' },
 })
 ```
@@ -99,13 +99,13 @@ router.push('/user/settings', {
 If you want to change the current route without pushing an entry to the browser's history, you can use `router.replace`.
 
 ```ts
-router.replace('user.settings')
+router.replace('settings')
 ```
 
 Push also let's you pass `replace: true` to achieve the same behavior.
 
 ```ts
-router.push('user.settings', params, { replace: true })
+router.push('settings', params, { replace: true })
 ```
 
 ## Update

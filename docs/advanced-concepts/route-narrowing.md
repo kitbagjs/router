@@ -1,6 +1,6 @@
 # Route Narrowing
 
-When accessing the current route, by default the type is a union of all possible routes. 
+When accessing the current route, by default the type is a union of all possible routes.
 
 ```ts
 import { createRoute, createRouter } from '@kitbag/router'
@@ -34,7 +34,7 @@ const settings = createRoute({
 
 const router = createRouter([home, user, profile, settings])
 
-router.route.name // "home" | "user" | "user.profile" | "user.settings"
+router.route.name // "home" | "user" | "profile" | "settings"
 ```
 
 This can be narrowed like any union in Typescript, by checking the route name.

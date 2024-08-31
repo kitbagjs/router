@@ -100,7 +100,7 @@ const settings = createRoute({
 
 const router = useRouter([user, profile, settings])
 
-router.push('user.settings')
+router.push('settings')
 ```
 
 The push method also accepts a plain string if you know the URL you want to go to.
