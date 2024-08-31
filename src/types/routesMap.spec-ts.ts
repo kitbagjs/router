@@ -10,13 +10,13 @@ import { component } from '@/utilities/testHelpers'
 test('RoutesMap given generic routes, returns generic string', () => {
   type Map = RoutesMap<Route<string, Host, Path<'', {}>, Query<'', {}>>[]>
 
-  type Source = Map[keyof Map]['key']
+  type Source = Map[keyof Map]['name']
   type Expect = string
 
   expectTypeOf<Source>().toEqualTypeOf<Expect>()
 })
 
-test('RoutesMap given unnamed parents, removes them from return value and children keys', () => {
+test('RoutesMap given unnamed parents, removes them from return value and children names', () => {
   const root = createRoute({
     path: '/',
   })
@@ -28,7 +28,7 @@ test('RoutesMap given unnamed parents, removes them from return value and childr
     component,
   })
 
-  const zooFoo = createRoute({ name: 'zoo', path: '/zoo', component, parent: foo })
+  const zooFoo = createRoute({ name: 'zoofoo', path: '/zoofoo', component, parent: foo })
 
   const bar = createRoute({
     parent: root,
@@ -49,7 +49,7 @@ test('RoutesMap given unnamed parents, removes them from return value and childr
   type Map = RoutesMap<typeof routes>
 
   type Source = keyof Map
-  type Expect = 'foo' | 'foo.zoo' | 'zoo'
+  type Expect = 'foo' | 'zoofoo' | 'zoo'
 
   expectTypeOf<Source>().toEqualTypeOf<Expect>()
 })

@@ -7,10 +7,10 @@ export type ExtractRouteStateParamsAsOptional<T extends Record<string, Param>> =
   [K in keyof T as K extends string ? `?${K}` : never]: T[K]
 }>
 
-export type RouteStateByKey<
+export type RouteStateByName<
   TRoutes extends Routes,
-  TKey extends string
-> = ExtractStateParams<RouteGetByKey<TRoutes, TKey>>
+  TName extends string
+> = ExtractStateParams<RouteGetByKey<TRoutes, TName>>
 
 type ExtractStateParams<TRoute> = TRoute extends {
   state: infer TState extends Record<string, Param>,

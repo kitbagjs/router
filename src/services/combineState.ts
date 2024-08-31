@@ -1,5 +1,5 @@
 import { Param } from '@/types/paramTypes'
-import { checkDuplicateKeys } from '@/utilities/checkDuplicateKeys'
+import { checkDuplicateParams } from '@/utilities/checkDuplicateKeys'
 
 export type CombineState<
   TParent extends Record<string, Param>,
@@ -8,7 +8,7 @@ export type CombineState<
 
 export function combineState<TParentState extends Record<string, Param>, TChildState extends Record<string, Param>>(parentState: TParentState, childState: TChildState): CombineState<TParentState, TChildState>
 export function combineState(parentState: Record<string, Param>, childState: Record<string, Param>): Record<string, Param> {
-  checkDuplicateKeys(parentState, childState)
+  checkDuplicateParams(parentState, childState)
 
   return { ...parentState, ...childState }
 }

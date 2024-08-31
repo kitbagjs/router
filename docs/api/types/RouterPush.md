@@ -6,7 +6,7 @@ Push will update the URL for the browser and also add the URL into the history s
 
 | Parameter | Type |
 | :------ | :------ |
-| `TSource` | [`Key`](/api/types/Route#key) |
+| `TSource` | [`Name`](/api/types/Route#name) |
 
 ## Parameters
 

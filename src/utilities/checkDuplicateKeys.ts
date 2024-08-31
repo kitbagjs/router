@@ -1,17 +1,14 @@
 import { DuplicateParamsError } from '@/errors/duplicateParamsError'
+import { getCount } from '@/utilities/array'
 
-export function checkDuplicateKeys(...withParams: (Record<string, unknown> | string[])[]): void {
-  const paramKeys = withParams.flatMap(params => Array.isArray(params) ? params : Object.keys(params).map(removeLeadingQuestionMark))
+export function checkDuplicateParams(...withParams: (Record<string, unknown> | string[])[]): void {
+  const paramNames = withParams.flatMap(params => Array.isArray(params) ? params : Object.keys(params).map(removeLeadingQuestionMark))
 
-  for (const key of paramKeys) {
-    if (getCount(paramKeys, key) > 1) {
-      throw new DuplicateParamsError(key)
+  for (const paramName of paramNames) {
+    if (getCount(paramNames, paramName) > 1) {
+      throw new DuplicateParamsError(paramName)
     }
   }
-}
-
-function getCount<T>(array: T[], item: T): number {
-  return array.filter(itemAtIndex => item === itemAtIndex).length
 }
 
 function removeLeadingQuestionMark(value: string): string {

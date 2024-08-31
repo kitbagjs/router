@@ -133,8 +133,8 @@ test.fails('route is readonly except for individual params', async () => {
   await initialized
 
   // @ts-expect-error
-  route.key = 'child'
-  expect(route.key).toBe('root')
+  route.name = 'child'
+  expect(route.name).toBe('root')
 
   // @ts-expect-error
   route.matched = 'match'

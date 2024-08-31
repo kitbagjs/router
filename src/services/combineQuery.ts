@@ -1,6 +1,6 @@
 import { RemoveLeadingQuestionMarkFromKeys } from '@/types/params'
 import { Query, QueryParamsWithParamNameExtracted, ToQuery } from '@/types/query'
-import { checkDuplicateKeys } from '@/utilities/checkDuplicateKeys'
+import { checkDuplicateParams } from '@/utilities/checkDuplicateKeys'
 import { StringHasValue, stringHasValue } from '@/utilities/guards'
 
 type CombineQueryString<TParent extends string | undefined, TChild extends string | undefined> = StringHasValue<TParent> extends true
@@ -22,7 +22,7 @@ export type CombineQuery<
 
 export function combineQuery<TParentQuery extends Query, TChildQuery extends Query>(parentQuery: TParentQuery, childQuery: TChildQuery): CombineQuery<TParentQuery, TChildQuery>
 export function combineQuery(parentQuery: Query, childQuery: Query): Query {
-  checkDuplicateKeys(parentQuery.params, childQuery.params)
+  checkDuplicateParams(parentQuery.params, childQuery.params)
 
   const newQueryString = [parentQuery.query, childQuery.query]
     .filter(stringHasValue)

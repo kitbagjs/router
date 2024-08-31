@@ -8,7 +8,7 @@ import { Writable } from '@/types/utilities'
 const isRouterRouteSymbol = Symbol('isRouterRouteSymbol')
 
 export type RouterRoute<TRoute extends ResolvedRoute = ResolvedRoute> = Readonly<{
-  key: TRoute['key'],
+  name: TRoute['name'],
   matched: TRoute['matched'],
   matches: TRoute['matches'],
   state: TRoute['state'],
@@ -22,25 +22,25 @@ export function isRouterRoute(value: unknown): value is RouterRoute {
 }
 
 export function createRouterRoute<TRoute extends ResolvedRoute>(route: TRoute, push: RouterPush): RouterRoute<TRoute> {
-  function update(keyOrParams: PropertyKey | Partial<ResolvedRoute['params']>, valueOrOptions: any, maybeOptions?: RouterPushOptions): Promise<void> {
-    if (typeof keyOrParams === 'object') {
+  function update(nameOrParams: PropertyKey | Partial<ResolvedRoute['params']>, valueOrOptions: any, maybeOptions?: RouterPushOptions): Promise<void> {
+    if (typeof nameOrParams === 'object') {
       const params = {
         ...route.params,
-        ...keyOrParams,
+        ...nameOrParams,
       }
 
-      return push(route.key, params, valueOrOptions)
+      return push(route.name, params, valueOrOptions)
     }
 
     const params = {
       ...route.params,
-      [keyOrParams]: valueOrOptions,
+      [nameOrParams]: valueOrOptions,
     }
 
-    return push(route.key, params, maybeOptions)
+    return push(route.name, params, maybeOptions)
   }
 
-  const { matched, matches, key, query, params, state } = toRefs(route)
+  const { matched, matches, name, query, params, state } = toRefs(route)
 
   const routerRoute: RouterRoute<TRoute> = reactive({
     matched,
@@ -48,7 +48,7 @@ export function createRouterRoute<TRoute extends ResolvedRoute>(route: TRoute, p
     state,
     query,
     params,
-    key,
+    name,
     update,
     [isRouterRouteSymbol]: true,
   })

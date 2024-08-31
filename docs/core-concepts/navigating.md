@@ -41,7 +41,7 @@ router.push('/user/settings')
 router.push('https://github.com/kitbagjs/router')
 ```
 
-This `source` argument is type safe, expecting either a [`Url`](/api/types/Url) or a valid route [`Key`](/api/types/Route#key). URL is any string that starts with "http", "https", or a forward slash "/". Route key is a string of route names joined by a period `.`. Additionally if using the route key, push will require params be passed in if there are any.
+This `source` argument is type safe, expecting either a [`Url`](/api/types/Url) or a valid route [`name`](/api/types/Route#name). URL is any string that starts with "http", "https", or a forward slash "/". Additionally if using the route name, push will require params be passed in if there are any.
 
 ### Providing Params
 

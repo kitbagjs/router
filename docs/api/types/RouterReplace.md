@@ -6,7 +6,7 @@ Replace has the same effect as [`RouterPush`](/api/types/RouterPush) but without
 
 | Parameter | Type |
 | :------ | :------ |
-| `TSource` | [`Key`](/api/types/Route#key) |
+| `TSource` | [`Name`](/api/types/Route#name) |
 
 ## Parameters
 

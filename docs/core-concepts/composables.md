@@ -17,16 +17,16 @@ Returns the current route with built in type guard.
 ```ts
 import { useRoute } from '@kitbag/router'
 
-const route = useRoute('route.key.here')
+const route = useRoute('route.name.here')
 ```
 
-the route key argument is what acts as a route guard, providing back the correct types for `params` and `update`. This route key argument is optional on `useRoute`, if omitted will return the same wider type as `Router.route`. If the key is provided it must match the current route key or a parent of the current route.
+the route name argument is what acts as a route guard, providing back the correct types for `params` and `update`. This route name argument is optional on `useRoute`, if omitted will return the same wider type as `Router.route`. If the name is provided it must match the current route name or a parent of the current route.
 
 ### Exact matches
 If you'd like to only match on an exact route match and not match on a parent route you can pass the `exact` option.
 
 ```ts
-const route = useRoute('route.key.here', { exact: true })
+const route = useRoute('route.name.here', { exact: true })
 ```
 
 ## useLink

@@ -67,7 +67,7 @@ Any Route can be a parent, though to have the children components be rendered co
 
 ## Route Names
 
-Providing the `name` property for each route ensures that we have a way of programmatically navigating. Having names for parent routes also ensures that the parent is part of the hierarchal key of any child routes.
+Providing the `name` property for each route ensures that we have a way of programmatically navigating.
 
 With the example user routes above
 

@@ -13,13 +13,13 @@ test('given path WITHOUT params, returns match', () => {
 
   const child = createRoute({
     parent: parent,
-    name: 'child',
+    name: 'parent.child',
     path: '/child',
   })
 
   const grandchild = createRoute({
     parent: child,
-    name: 'grandchild',
+    name: 'parent.child.grandchild',
     path: '/grandchild',
     component,
   })
@@ -28,8 +28,8 @@ test('given path WITHOUT params, returns match', () => {
 
   const match = getResolvedRouteForUrl(routes, '/parent/child/grandchild')
 
-  expect(match?.key).toBe('parent.child.grandchild')
-  expect(match?.matched.name).toBe('grandchild')
+  expect(match?.name).toBe('parent.child.grandchild')
+  expect(match?.matched.name).toBe('parent.child.grandchild')
 })
 
 test('given path to unnamed parent, without option to get to leaf, returns undefined', () => {
@@ -39,13 +39,11 @@ test('given path to unnamed parent, without option to get to leaf, returns undef
 
   const unnamedChild = createRoute({
     parent: unnamedParent,
-    name: 'unnamed-child',
     path: '/unnamed-child/[child-id]',
   })
 
   const namedGrandchild = createRoute({
     parent: unnamedChild,
-    name: 'namedGrandchild',
     path: '/named-grandchild',
     component,
   })
@@ -64,14 +62,14 @@ test('given path to unnamed  parent, with option to get to leaf, returns availab
 
   const unnamedChildRoot = createRoute({
     parent: unnamedParent,
-    name: 'unnamed-child-root',
+    name: 'child-root',
     component,
   })
 
   const routes = [unnamedChildRoot, unnamedParent]
   const match = getResolvedRouteForUrl(routes, '/unnamed')
 
-  expect(match?.key).toBe('unnamed-child-root')
+  expect(match?.name).toBe('child-root')
 })
 
 test('given path that includes named parent and path to leaf, return first match', () => {
@@ -82,20 +80,20 @@ test('given path that includes named parent and path to leaf, return first match
 
   const namedChild = createRoute({
     parent: namedParent,
-    name: 'namedChild',
+    name: 'namedParent.namedChild',
   })
 
   const namedGrandchild = createRoute({
     parent: namedChild,
-    name: 'namedGrandchild',
+    name: 'namedParent.namedChild.namedGrandchild',
     component,
   })
 
   const routes = [namedParent, namedChild, namedGrandchild]
   const match = getResolvedRouteForUrl(routes, '/named-parent')
 
-  expect(match?.key).toBe('namedParent.namedChild.namedGrandchild')
-  expect(match?.matched.name).toBe('namedGrandchild')
+  expect(match?.name).toBe('namedParent.namedChild.namedGrandchild')
+  expect(match?.matched.name).toBe('namedParent.namedChild.namedGrandchild')
 })
 
 test('given route with simple string param WITHOUT value present, returns undefined', () => {
@@ -125,7 +123,7 @@ test('given route with simple string query param WITHOUT value present, returns 
 test('given route with equal matches, returns route with highest score', () => {
   vi.spyOn(utilities, 'getRouteScoreSortMethod').mockImplementation(() => {
     return (route: Route) => {
-      return route.key === 'second-route' ? -1 : +1
+      return route.name === 'second-route' ? -1 : +1
     }
   })
 
@@ -149,7 +147,7 @@ test('given route with equal matches, returns route with highest score', () => {
 
   const response = getResolvedRouteForUrl(routes, '/')
 
-  expect(response?.key).toBe('second-route')
+  expect(response?.name).toBe('second-route')
 })
 
 test('given a route without params or query returns an empty params and query', () => {

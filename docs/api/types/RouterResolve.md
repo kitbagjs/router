@@ -6,7 +6,7 @@ Resolves a URL to a route object.
 
 | Parameter | Type |
 | :------ | :------ |
-| `TSource` | [`Key`](/api/types/Route#key) |
+| `TSource` | [`Name`](/api/types/Route#name) |
 
 ## Parameters
 

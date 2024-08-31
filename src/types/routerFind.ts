@@ -1,13 +1,13 @@
 import { ResolvedRoute } from '@/types/resolved'
 import { Routes } from '@/types/route'
-import { RoutesKey } from '@/types/routesMap'
+import { RoutesName } from '@/types/routesMap'
 import { RouteParamsByKey } from '@/types/routeWithParams'
 import { Url } from '@/types/url'
 import { AllPropertiesAreOptional } from '@/types/utilities'
 
 type RouterFindArgs<
   TRoutes extends Routes,
-  TSource extends RoutesKey<TRoutes>,
+  TSource extends RoutesName<TRoutes>,
   TParams = RouteParamsByKey<TRoutes, TSource>
 > = AllPropertiesAreOptional<TParams> extends true
   ? [params?: TParams]
@@ -16,6 +16,6 @@ type RouterFindArgs<
 export type RouterFind<
   TRoutes extends Routes
 > = {
-  <TSource extends RoutesKey<TRoutes>>(source: TSource, ...args: RouterFindArgs<TRoutes, TSource>): ResolvedRoute | undefined,
-  (source: Url): ResolvedRoute | undefined,
+  <TSource extends RoutesName<TRoutes>>(name: TSource, ...args: RouterFindArgs<TRoutes, TSource>): ResolvedRoute | undefined,
+  (url: Url): ResolvedRoute | undefined,
 }
