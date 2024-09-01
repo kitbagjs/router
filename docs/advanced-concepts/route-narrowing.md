@@ -34,7 +34,7 @@ const settings = createRoute({
 
 const router = createRouter([home, user, profile, settings])
 
-router.route.name // "home" | "user" | "profile" | "settings"
+router.route.name // "home" | "user" | "user.profile" | "user.settings"
 ```
 
 This can be narrowed like any union in Typescript, by checking the route name.
