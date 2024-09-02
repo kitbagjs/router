@@ -67,14 +67,14 @@ Any Route can be a parent, though to have the children components be rendered co
 
 ## Route Names
 
-Providing the `name` property for each route ensures that we have a way of programmatically navigating. Having names for parent routes also ensures that the parent is part of the hierarchal key of any child routes.
+Providing the `name` property for each route ensures that we have a way of programmatically navigating. This also means that each route must have a unique name, failure to do so will result in a `DuplicateNamesError` being thrown on `createRouter`.
 
 With the example user routes above
 
 ```ts
 const router = createRouter(routes)
 
-router.push('user.settings.keys')
+router.push('keys')
 ```
 
 Learn more about [navigating](/core-concepts/navigating) to routes.
@@ -97,7 +97,7 @@ const routerDocs = createExternalRoute({
 
 const routerApiDocs = createExternalRoute({
   parent: routerDocs,
-  name: 'api',
+  name: 'docs.api',
   path: '/api/[topic]',
 })
 

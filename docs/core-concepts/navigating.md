@@ -31,7 +31,7 @@ const settings = createRoute({
 
 const router = useRouter([user, profile, settings])
 
-router.push('user.settings')
+router.push('settings')
 ```
 
 The push method also accepts a plain string if you know the URL you want to go to.
@@ -41,7 +41,7 @@ router.push('/user/settings')
 router.push('https://github.com/kitbagjs/router')
 ```
 
-This `source` argument is type safe, expecting either a [`Url`](/api/types/Url) or a valid route [`Key`](/api/types/Route#key). URL is any string that starts with "http", "https", or a forward slash "/". Route key is a string of route names joined by a period `.`. Additionally if using the route key, push will require params be passed in if there are any.
+This `source` argument is type safe, expecting either a [`Url`](/api/types/Url) or a valid route [`name`](/api/types/Route#name). URL is any string that starts with "http", "https", or a forward slash "/". Additionally if using the route name, push will require params be passed in if there are any.
 
 ### Providing Params
 
@@ -72,8 +72,8 @@ const settings = createRoute({
 
 const router = useRouter([user, profile, settings])
 
-router.push('user.settings') // [!code --]
-router.push('user.settings', { id: 42, tab: 'github' }) // [!code ++]
+router.push('settings') // [!code --]
+router.push('settings', { id: 42, tab: 'github' }) // [!code ++]
 ```
 
 ### Query
@@ -81,7 +81,7 @@ router.push('user.settings', { id: 42, tab: 'github' }) // [!code ++]
 With the options argument, you add additional values to the query. Note if you know your route will expect certain parameters, [query params](/core-concepts/query-params) is a much better developer experience for dealing with the query.
 
 ```ts
-router.push('user.settings', params, {
+router.push('settings', params, {
   query: { foo: 'bar' },
 })
 ```
@@ -99,13 +99,13 @@ router.push('/user/settings', {
 If you want to change the current route without pushing an entry to the browser's history, you can use `router.replace`.
 
 ```ts
-router.replace('user.settings')
+router.replace('settings')
 ```
 
 Push also let's you pass `replace: true` to achieve the same behavior.
 
 ```ts
-router.push('user.settings', params, { replace: true })
+router.push('settings', params, { replace: true })
 ```
 
 ## Update

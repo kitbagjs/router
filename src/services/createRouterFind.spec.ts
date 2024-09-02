@@ -3,13 +3,13 @@ import { RouteNotFoundError } from '@/errors/routeNotFoundError'
 import { createRouter } from '@/services/createRouter'
 import { routes } from '@/utilities'
 
-test('when given a key that matches a route return that route', () => {
+test('when given a name that matches a route return that route', () => {
   const router = createRouter(routes, { initialUrl: '/' })
 
   const route = router.find('parentB')
 
   expect(route).toBeDefined()
-  expect(route?.key).toBe('parentB')
+  expect(route?.name).toBe('parentB')
 })
 
 test('when given a url that matches a route returns that route', () => {
@@ -17,10 +17,10 @@ test('when given a url that matches a route returns that route', () => {
   const route = router.find('/parentB')
 
   expect(route).toBeDefined()
-  expect(route?.key).toBe('parentB')
+  expect(route?.name).toBe('parentB')
 })
 
-test('when given a key that does not match a route returns undefined', () => {
+test('when given a name that does not match a route returns undefined', () => {
   const router = createRouter(routes, { initialUrl: '/' })
 
   // @ts-expect-error

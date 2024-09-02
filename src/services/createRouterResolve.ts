@@ -3,7 +3,7 @@ import { assembleUrl } from '@/services/urlAssembly'
 import { withQuery } from '@/services/withQuery'
 import { Routes } from '@/types/route'
 import { RouterPushOptions } from '@/types/routerPush'
-import { RoutesKey } from '@/types/routesMap'
+import { RoutesName } from '@/types/routesMap'
 import { RouteParamsByKey } from '@/types/routeWithParams'
 import { isUrl, Url } from '@/types/url'
 import { AllPropertiesAreOptional } from '@/types/utilities'
@@ -14,7 +14,7 @@ export type RouterResolveOptions = {
 
 type RouterResolveArgs<
   TRoutes extends Routes,
-  TSource extends RoutesKey<TRoutes>,
+  TSource extends RoutesName<TRoutes>,
   TParams = RouteParamsByKey<TRoutes, TSource>
 > = AllPropertiesAreOptional<TParams> extends true
   ? [params?: TParams, options?: RouterResolveOptions]
@@ -23,13 +23,13 @@ type RouterResolveArgs<
 export type RouterResolve<
   TRoutes extends Routes
 > = {
-  <TSource extends RoutesKey<TRoutes>>(source: TSource, ...args: RouterResolveArgs<TRoutes, TSource>): string,
-  (source: Url, options?: RouterResolveOptions): string,
+  <TSource extends RoutesName<TRoutes>>(name: TSource, ...args: RouterResolveArgs<TRoutes, TSource>): string,
+  (url: Url, options?: RouterResolveOptions): string,
 }
 
 export function createRouterResolve<const TRoutes extends Routes>(routes: TRoutes): RouterResolve<TRoutes> {
 
-  return <TSource extends RoutesKey<TRoutes>>(
+  return <TSource extends RoutesName<TRoutes>>(
     source: Url | TSource,
     paramsOrOptions?: Record<string, unknown>,
     maybeOptions?: RouterResolveOptions,
@@ -42,7 +42,7 @@ export function createRouterResolve<const TRoutes extends Routes>(routes: TRoute
 
     const params = paramsOrOptions ?? {}
     const options: RouterResolveOptions = maybeOptions ?? {}
-    const match = routes.find((route) => route.key === source)
+    const match = routes.find((route) => route.name === source)
 
     if (!match) {
       throw new RouteNotFoundError(String(source))

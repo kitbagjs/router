@@ -2,7 +2,7 @@ import { MaybeRefOrGetter, Ref, computed, toValue } from 'vue'
 import { useRouter } from '@/compositions/useRouter'
 import { InvalidRouteParamValueError } from '@/errors/invalidRouteParamValueError'
 import { RouterResolveOptions } from '@/services/createRouterResolve'
-import { RegisteredRoutes, RegisteredRoutesKey } from '@/types/register'
+import { RegisteredRoutes, RegisteredRoutesName } from '@/types/register'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouterPushOptions } from '@/types/routerPush'
 import { RouterReplaceOptions } from '@/types/routerReplace'
@@ -38,7 +38,7 @@ export type UseLink = {
 }
 
 type UseLinkArgs<
-  TSource extends RegisteredRoutesKey,
+  TSource extends RegisteredRoutesName,
   TParams = RouteParamsByKey<RegisteredRoutes, TSource>
 > = AllPropertiesAreOptional<TParams> extends true
   ? [params?: MaybeRefOrGetter<TParams>, options?: MaybeRefOrGetter<RouterResolveOptions>]
@@ -49,13 +49,13 @@ type UseLinkArgs<
  * or resolved URL to discover route details. Also exports some useful context about routes relationship to current URL and convenience methods
  * for navigating.
  *
- * @param source - The key of the route or the URL value.
- * @param params - If providing route key, this argument will expect corresponding params.
+ * @param source - The name of the route or the URL value.
+ * @param params - If providing route name, this argument will expect corresponding params.
  * @param options - {@link RouterResolveOptions}Same options as router resolve.
  * @returns {UseLink} Reactive context values for as well as navigation methods.
  *
  */
-export function useLink<TRouteKey extends RegisteredRoutesKey>(routeKey: MaybeRefOrGetter<TRouteKey>, ...args: UseLinkArgs<TRouteKey>): UseLink
+export function useLink<TRouteKey extends RegisteredRoutesName>(name: MaybeRefOrGetter<TRouteKey>, ...args: UseLinkArgs<TRouteKey>): UseLink
 export function useLink(url: MaybeRefOrGetter<Url>): UseLink
 export function useLink(
   source: MaybeRefOrGetter<string>,

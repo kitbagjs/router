@@ -5,35 +5,35 @@ export function isRoute(route: unknown): route is RouterRoute
 
 export function isRoute<
   TRoute extends RouterRoute,
-  TRouteKey extends TRoute['key']
->(route: TRoute, routeKey: TRouteKey, options: IsRouteOptions & { exact: true }): route is TRoute & { key: TRouteKey }
+  TRouteName extends TRoute['name']
+>(route: TRoute, routeName: TRouteName, options: IsRouteOptions & { exact: true }): route is TRoute & { name: TRouteName }
 
 export function isRoute<
   TRoute extends RouterRoute,
-  TRouteKey extends TRoute['key']
->(route: TRoute, routeKey: TRouteKey, options?: IsRouteOptions): route is TRoute & { key: `${TRouteKey}${string}` }
+  TRouteName extends TRoute['name']
+>(route: TRoute, routeName: TRouteName, options?: IsRouteOptions): route is TRoute & { name: `${TRouteName}${string}` }
 
 export function isRoute<
-  TRouteKey extends RegisteredRoutesKey
->(route: unknown, routeKey: TRouteKey, options: IsRouteOptions & { exact: true }): route is RegisteredRouterRoute & { key: TRouteKey }
+  TRouteName extends RegisteredRoutesName
+>(route: unknown, routeName: TRouteName, options: IsRouteOptions & { exact: true }): route is RegisteredRouterRoute & { name: TRouteName }
 
 export function isRoute<
-  TRouteKey extends RegisteredRoutesKey
->(route: unknown, routeKey: TRouteKey, options?: IsRouteOptions): route is RegisteredRouterRoute & { key: `${TRouteKey}${string}` }
+  TRouteName extends RegisteredRoutesName
+>(route: unknown, routeName: TRouteName, options?: IsRouteOptions): route is RegisteredRouterRoute & { name: `${TRouteName}${string}` }
 ```
 
-Type guards that asserts a value is `RouterRoute` and optionally that it is also a specific route based on a route key.
+Type guards that asserts a value is `RouterRoute` and optionally that it is also a specific route based on a route name.
 
 ## Type parameters
 
 | Type parameter | Description |
 | :------ | :------ |
-| `TRouteKey` *extends* `string` | A string type that should match route key of RegisteredRouteMap, ensuring the route key exists. |
+| `TRouteName` *extends* `string` | A string type that should match route name of RegisteredRouteMap, ensuring the route name exists. |
 
 ## Parameters
 
 | Parameter | Type | Description |
 | :------ | :------ | :------ |
 | `route` | `RouterRoute` | The current route |
-| `routeKey` | `TRouteKey` | Optional. The key of the route to validate against. |
+| `routeName` | `TRouteName` | Optional. The name of the route to validate against. |
 | `options.exact` | `boolean` | Optional. If `true` a parent of the current route will not be considered a match |

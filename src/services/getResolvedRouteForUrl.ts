@@ -32,7 +32,7 @@ export function getResolvedRouteForUrl(routes: Routes, url: string, state?: unkn
   return {
     matched: route.matched,
     matches: route.matches,
-    key: route.key,
+    name: route.name,
     query: createResolvedRouteQuery(search),
     params: getRouteParamValues(route, url),
     state: getStateValues(route.state, state),

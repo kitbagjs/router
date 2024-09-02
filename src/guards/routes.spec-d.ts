@@ -31,25 +31,25 @@ test('router route can be narrowed', () => {
 
   const { route } = createRouter(routes)
 
-  expectTypeOf<typeof route.key>().toMatchTypeOf<'parentA' | 'parentB' | 'parentA.childA'>()
+  expectTypeOf<typeof route.name>().toMatchTypeOf<'parentA' | 'parentB' | 'childA'>()
 
-  if (route.key === 'parentA') {
-    expectTypeOf<typeof route.key>().toMatchTypeOf<'parentA'>()
+  if (route.name === 'parentA') {
+    expectTypeOf<typeof route.name>().toMatchTypeOf<'parentA'>()
   }
 
   if (isRoute(route, 'parentA', { exact: true })) {
-    expectTypeOf<typeof route.key>().toMatchTypeOf<'parentA'>()
+    expectTypeOf<typeof route.name>().toMatchTypeOf<'parentA'>()
   }
 
   if (isRoute(route, 'parentA', { exact: false })) {
-    expectTypeOf<typeof route.key>().toMatchTypeOf<'parentA' | 'parentA.childA'>()
+    expectTypeOf<typeof route.name>().toMatchTypeOf<'parentA' | 'parentA.childA'>()
   }
 
   if (isRoute(route, 'parentA')) {
-    expectTypeOf<typeof route.key>().toMatchTypeOf<'parentA' | 'parentA.childA'>()
+    expectTypeOf<typeof route.name>().toMatchTypeOf<'parentA' | 'parentA.childA'>()
   }
 
-  if (route.key === 'parentA') {
+  if (route.name === 'parentA') {
     expectTypeOf<typeof route.params>().toMatchTypeOf<{}>()
   }
 

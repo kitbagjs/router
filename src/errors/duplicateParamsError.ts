@@ -1,6 +1,6 @@
 /**
- * An error thrown when duplicate parameters are detected in a route when creating a router.
- * When defining routes, param names must be unique. This includes params defined in a path
+ * An error thrown when duplicate parameters are detected in a route.
+ * Param names must be unique. This includes params defined in a path
  * parent and params defined in the query.
  */
 export class DuplicateParamsError extends Error {

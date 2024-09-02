@@ -20,8 +20,9 @@ import { Route, Routes } from '@/types/route'
 import { Router, RouterOptions, RouterReject } from '@/types/router'
 import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { RouterReplace, RouterReplaceOptions } from '@/types/routerReplace'
-import { RoutesKey } from '@/types/routesMap'
+import { RoutesName } from '@/types/routesMap'
 import { Url, isUrl } from '@/types/url'
+import { checkDuplicateNames } from '@/utilities/checkDuplicateNames'
 import { isNestedArray } from '@/utilities/guards'
 
 type RouterUpdateOptions = {
@@ -57,6 +58,8 @@ export function createRouter<const T extends Routes>(arrayOfRoutes: T[], options
 export function createRouter<const T extends Routes>(routesOrArrayOfRoutes: T | T[], options: RouterOptions = {}): Router<T> {
   const flattenedRoutes = isNestedArray(routesOrArrayOfRoutes) ? routesOrArrayOfRoutes.flat() : routesOrArrayOfRoutes
   const routes = insertBaseRoute(flattenedRoutes, options.base)
+
+  checkDuplicateNames(routes)
 
   const resolve = createRouterResolve(routes)
   const history = createRouterHistory({
@@ -142,7 +145,7 @@ export function createRouter<const T extends Routes>(routesOrArrayOfRoutes: T | 
     history.startListening()
   }
 
-  const push: RouterPush<T> = (source: Url | RoutesKey<T>, paramsOrOptions?: Record<string, unknown> | RouterPushOptions, maybeOptions?: RouterPushOptions) => {
+  const push: RouterPush<T> = (source: Url | RoutesName<T>, paramsOrOptions?: Record<string, unknown> | RouterPushOptions, maybeOptions?: RouterPushOptions) => {
     if (isUrl(source)) {
       const options: RouterPushOptions = { ...paramsOrOptions }
       const url = resolve(source, options)
@@ -159,7 +162,7 @@ export function createRouter<const T extends Routes>(routesOrArrayOfRoutes: T | 
     return set(url, { ...options, state })
   }
 
-  const replace: RouterReplace<T> = (source: Url | RoutesKey<T>, paramsOrOptions?: Record<string, unknown> | RouterReplaceOptions, maybeOptions?: RouterReplaceOptions) => {
+  const replace: RouterReplace<T> = (source: Url | RoutesName<T>, paramsOrOptions?: Record<string, unknown> | RouterReplaceOptions, maybeOptions?: RouterReplaceOptions) => {
     if (isUrl(source)) {
       const options: RouterPushOptions = { ...paramsOrOptions, replace: true }
       const url = resolve(source, options)
@@ -180,7 +183,7 @@ export function createRouter<const T extends Routes>(routesOrArrayOfRoutes: T | 
     return setRejection(type)
   }
 
-  const find = <TSource extends RoutesKey<T>>(
+  const find = <TSource extends RoutesName<T>>(
     source: Url | TSource,
     params: Record<PropertyKey, unknown> = {},
   ): ResolvedRoute | undefined => {
@@ -209,8 +212,8 @@ export function createRouter<const T extends Routes>(routesOrArrayOfRoutes: T | 
   const isExternal = createIsExternal(host)
   const initialized = set(initialUrl, { replace: true, state: initialState })
 
-  function getRoute(key: string): Route | undefined {
-    return routes.find(route => route.key === key)
+  function getRoute(name: string): Route | undefined {
+    return routes.find(route => route.name === name)
   }
 
   function install(app: App): void {

@@ -1,11 +1,11 @@
 import { ExtractParamName } from '@/types/params'
 import { Param, ParamGetSet, ParamGetter } from '@/types/paramTypes'
 import { Routes } from '@/types/route'
-import { RoutesKey, RoutesMap } from '@/types/routesMap'
+import { RoutesName, RoutesMap } from '@/types/routesMap'
 import { Identity } from '@/types/utilities'
 import { MakeOptional } from '@/utilities/makeOptional'
 
-export type RouteGetByKey<TRoutes extends Routes, TKey extends RoutesKey<TRoutes>> = RoutesMap<TRoutes>[TKey]
+export type RouteGetByKey<TRoutes extends Routes, TKey extends RoutesName<TRoutes>> = RoutesMap<TRoutes>[TKey]
 
 export type RouteParamsByKey<
   TRoutes extends Routes,

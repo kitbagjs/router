@@ -1,5 +1,4 @@
 import { Component } from 'vue'
-import { combineKey } from '@/services/combineKey'
 import { combineMeta } from '@/services/combineMeta'
 import { combinePath } from '@/services/combinePath'
 import { combineQuery } from '@/services/combineQuery'
@@ -133,7 +132,6 @@ export type CreateRouteOptions<
 export function combineRoutes(parent: Route, child: Route): Route {
   return {
     ...child,
-    key: combineKey(parent.key, child.key),
     path: combinePath(parent.path, child.path),
     query: combineQuery(parent.query, child.query),
     meta: combineMeta(parent.meta, child.meta),

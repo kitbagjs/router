@@ -1,6 +1,6 @@
 import { RemoveLeadingQuestionMarkFromKeys } from '@/types/params'
 import { Path, PathParamsWithParamNameExtracted, ToPath } from '@/types/path'
-import { checkDuplicateKeys } from '@/utilities/checkDuplicateKeys'
+import { checkDuplicateParams } from '@/utilities/checkDuplicateKeys'
 
 export type CombinePath<
   TParent extends Path,
@@ -15,7 +15,7 @@ export type CombinePath<
 
 export function combinePath<TParentPath extends Path, TChildPath extends Path>(parentPath: TParentPath, childPath: TChildPath): CombinePath<TParentPath, TChildPath>
 export function combinePath(parentPath: Path, childPath: Path): Path {
-  checkDuplicateKeys(parentPath.params, childPath.params)
+  checkDuplicateParams(parentPath.params, childPath.params)
 
   const newPathString = `${parentPath.path}${childPath.path}`
 

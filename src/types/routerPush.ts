@@ -1,7 +1,7 @@
 import { Routes } from '@/types/route'
-import { RoutesKey } from '@/types/routesMap'
+import { RoutesName } from '@/types/routesMap'
 import { RouteParamsByKey } from '@/types/routeWithParams'
-import { RouteStateByKey } from '@/types/state'
+import { RouteStateByName } from '@/types/state'
 import { Url } from '@/types/url'
 import { AllPropertiesAreOptional } from '@/types/utilities'
 
@@ -15,14 +15,14 @@ export type RouterPushOptions<
 
 type RouterPushArgs<
   TRoutes extends Routes,
-  TSource extends RoutesKey<TRoutes>
+  TSource extends RoutesName<TRoutes>
 > = AllPropertiesAreOptional<RouteParamsByKey<TRoutes, TSource>> extends true
-  ? [params?: RouteParamsByKey<TRoutes, TSource>, options?: RouterPushOptions<RouteStateByKey<TRoutes, TSource>>]
-  : [params: RouteParamsByKey<TRoutes, TSource>, options?: RouterPushOptions<RouteStateByKey<TRoutes, TSource>>]
+  ? [params?: RouteParamsByKey<TRoutes, TSource>, options?: RouterPushOptions<RouteStateByName<TRoutes, TSource>>]
+  : [params: RouteParamsByKey<TRoutes, TSource>, options?: RouterPushOptions<RouteStateByName<TRoutes, TSource>>]
 
 export type RouterPush<
   TRoutes extends Routes = any
 > = {
-  <TSource extends RoutesKey<TRoutes>>(source: TSource, ...args: RouterPushArgs<TRoutes, TSource>): Promise<void>,
-  (source: Url, options?: RouterPushOptions): Promise<void>,
+  <TSource extends RoutesName<TRoutes>>(name: TSource, ...args: RouterPushArgs<TRoutes, TSource>): Promise<void>,
+  (url: Url, options?: RouterPushOptions): Promise<void>,
 }

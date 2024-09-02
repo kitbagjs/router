@@ -1,6 +1,6 @@
 # Route Narrowing
 
-When accessing the current route, by default the type is a union of all possible routes. 
+When accessing the current route, by default the type is a union of all possible routes.
 
 ```ts
 import { createRoute, createRouter } from '@kitbag/router'
@@ -19,7 +19,7 @@ const user = createRoute({
 
 const profile = createRoute({
   parent: user,
-  name: 'profile',
+  name: 'user.profile',
   path: '/profile',
   query: '?tab=[tab]',
   component: ...,
@@ -27,21 +27,21 @@ const profile = createRoute({
 
 const settings = createRoute({
   parent: user,
-  name: 'settings',
+  name: 'user.settings',
   path: '/settings',
   component: ...,
 })
 
 const router = createRouter([home, user, profile, settings])
 
-router.route.key // "home" | "user" | "user.profile" | "user.settings"
+router.route.name // "home" | "user" | "user.profile" | "user.settings"
 ```
 
-This can be narrowed like any union in Typescript, by checking the route key.
+This can be narrowed like any union in Typescript, by checking the route name.
 
 ```ts
-if(router.route.key === 'user') {
-  router.route.key // "user"
+if(router.route.name === 'user') {
+  router.route.name // "user"
   router.route.params // { userId: string }
 }
 ```
@@ -50,7 +50,7 @@ You can also use the `isRoute` type guard. You could write the same logic as abo
 
 ```ts
 if(router.route, 'user', { exact: true }) {
-  router.route.key // "user"
+  router.route.name // "user"
   router.route.params // { userId: string }
 }
 ```
@@ -59,5 +59,5 @@ The `isRoute` type guard offers more flexibility with the optional `exact` argum
 
 ```ts
 if(router.route, 'user', { exact: false }) {
-  router.route.key // "user" | "user.profile" | "user.settings"
+  router.route.name // "user" | "user.profile" | "user.settings"
   router.route.params // { userId: string } | { userId: string, tab: string }

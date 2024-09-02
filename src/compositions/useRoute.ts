@@ -2,48 +2,48 @@ import { watch } from 'vue'
 import { useRouter } from '@/compositions/useRouter'
 import { UseRouteInvalidError } from '@/errors'
 import { IsRouteOptions, isRoute } from '@/guards/routes'
-import { RegisteredRouterRoute, RegisteredRoutesKey } from '@/types/register'
+import { RegisteredRouterRoute, RegisteredRoutesName } from '@/types/register'
 
 /**
- * A composition to access the current route or verify a specific route key within a Vue component.
+ * A composition to access the current route or verify a specific route name within a Vue component.
  * This function provides two overloads:
  * 1. When called without arguments, it returns the current route from the router without types.
- * 2. When called with a route key, it checks if the current active route includes the specified route key.
+ * 2. When called with a route name, it checks if the current active route includes the specified route name.
  *
- * @template TRouteKey - A string type that should match route key of RegisteredRouteMap, ensuring the route key exists.
- * @param routeKey - Optional. The key of the route to validate against the current active routes.
- * @returns The current router route. If a route key is provided, it validates the route key first.
- * @throws {UseRouteInvalidError} Throws an error if the provided route key is not valid or does not match the current route.
+ * @template TRouteName - A string type that should match route name of RegisteredRouteMap, ensuring the route name exists.
+ * @param routeName - Optional. The name of the route to validate against the current active routes.
+ * @returns The current router route. If a route name is provided, it validates the route name first.
+ * @throws {UseRouteInvalidError} Throws an error if the provided route name is not valid or does not match the current route.
  *
- * The function also sets up a reactive watcher on the route object from the router to continually check the validity of the route key
+ * The function also sets up a reactive watcher on the route object from the router to continually check the validity of the route name
  * if provided, throwing an error if the validation fails at any point during the component's lifecycle.
  */
 export function useRoute(): RegisteredRouterRoute
 
 export function useRoute<
-  TRouteKey extends RegisteredRoutesKey
->(routeKey: TRouteKey, options: IsRouteOptions & { exact: true }): RegisteredRouterRoute & { key: TRouteKey }
+  TRouteName extends RegisteredRoutesName
+>(routeName: TRouteName, options: IsRouteOptions & { exact: true }): RegisteredRouterRoute & { name: TRouteName }
 
 export function useRoute<
-  TRouteKey extends RegisteredRoutesKey
->(routeKey: TRouteKey, options?: IsRouteOptions): RegisteredRouterRoute & { key: `${TRouteKey}${string}` }
+  TRouteName extends RegisteredRoutesName
+>(routeName: TRouteName, options?: IsRouteOptions): RegisteredRouterRoute & { name: `${TRouteName}${string}` }
 
-export function useRoute(routeKey?: string, options?: IsRouteOptions): RegisteredRouterRoute {
+export function useRoute(routeName?: string, options?: IsRouteOptions): RegisteredRouterRoute {
   const router = useRouter()
 
-  function checkRouteKeyIsValid(): void {
-    if (!routeKey) {
+  function checkRouteNameIsValid(): void {
+    if (!routeName) {
       return
     }
 
-    const routeKeyIsValid = isRoute(router.route, routeKey, options)
+    const routeNameIsValid = isRoute(router.route, routeName, options)
 
-    if (!routeKeyIsValid) {
-      throw new UseRouteInvalidError(routeKey, router.route.key)
+    if (!routeNameIsValid) {
+      throw new UseRouteInvalidError(routeName, router.route.name)
     }
   }
 
-  watch(router.route, checkRouteKeyIsValid, { immediate: true, deep: true })
+  watch(router.route, checkRouteNameIsValid, { immediate: true, deep: true })
 
   return router.route
 }

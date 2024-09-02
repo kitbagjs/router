@@ -6,7 +6,7 @@ Finds a route object based on the provided lookup parameters.
 
 | Parameter | Type |
 | :------ | :------ |
-| `TSource` | [`Key`](/api/types/Route#key) |
+| `TSource` | [`Name`](/api/types/Route#name) |
 
 ## Parameters
 

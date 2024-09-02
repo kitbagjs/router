@@ -3,19 +3,6 @@ import { createRoute } from '@/services/createRoute'
 import { path } from '@/services/path'
 import { query } from '@/services/query'
 
-test('given parent, key is combined', () => {
-  const parent = createRoute({
-    name: 'parent',
-  })
-
-  const child = createRoute({
-    parent: parent,
-    name: 'child',
-  })
-
-  expect(child.key).toBe('parent.child')
-})
-
 test('given parent, path is combined', () => {
   const parent = createRoute({
     path: '/parent',

@@ -32,20 +32,20 @@ const parentA = createRoute({
 
 const childA = createRoute({
   parent: parentA,
-  name: 'childA',
+  name: 'parentA.childA',
   path: '/[?paramB]',
 })
 
 const childB = createRoute({
   parent: parentA,
-  name: 'childB',
+  name: 'parentA.childB',
   path: '/[paramD]',
   component,
 })
 
 const grandChild = createRoute({
   parent: childA,
-  name: 'grandChildA',
+  name: 'parentA.childA.grandChildA',
   path: '/[paramC]',
   component,
 })
@@ -84,7 +84,7 @@ export function mockResolvedRoute(matched: ResolvedRoute['matched'], matches: Re
   return {
     matched,
     matches,
-    key: matched.name!,
+    name: matched.name!,
     query: createResolvedRouteQuery(),
     params: {},
     state: {},

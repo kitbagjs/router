@@ -22,7 +22,7 @@ test('calls hook with correct routes', () => {
   const toRoute: ResolvedRoute = {
     matched: toOptions,
     matches: [toOptions],
-    key: toOptions.name,
+    name: toOptions.name,
     query: createResolvedRouteQuery(),
     params: {},
     state: {},
@@ -38,7 +38,7 @@ test('calls hook with correct routes', () => {
   const fromRoute: ResolvedRoute = {
     matched: fromOptions,
     matches: [fromOptions],
-    key: fromOptions.name,
+    name: fromOptions.name,
     query: createResolvedRouteQuery(),
     params: {},
     state: {},
@@ -76,7 +76,7 @@ test.each<{ type: string, status: string, hook: BeforeRouteHook }>([
   const to: ResolvedRoute = {
     matched: toOptions,
     matches: [toOptions],
-    key: toOptions.name,
+    name: toOptions.name,
     query: createResolvedRouteQuery(),
     params: {},
     state: {},
@@ -92,7 +92,7 @@ test.each<{ type: string, status: string, hook: BeforeRouteHook }>([
   const from: ResolvedRoute = {
     matched: fromOptions,
     matches: [fromOptions],
-    key: fromOptions.name,
+    name: fromOptions.name,
     query: createResolvedRouteQuery(),
     params: {},
     state: {},
@@ -125,7 +125,7 @@ test('hook is called in order', async () => {
   const to: ResolvedRoute = {
     matched: toOptions,
     matches: [toOptions],
-    key: toOptions.name,
+    name: toOptions.name,
     query: createResolvedRouteQuery(),
     params: {},
     state: {},
@@ -141,7 +141,7 @@ test('hook is called in order', async () => {
   const from: ResolvedRoute = {
     matched: fromOptions,
     matches: [fromOptions],
-    key: fromOptions.name,
+    name: fromOptions.name,
     query: createResolvedRouteQuery(),
     params: {},
     state: {},

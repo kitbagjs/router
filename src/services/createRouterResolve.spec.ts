@@ -10,13 +10,13 @@ test('given a url returns that string', () => {
   expect(resolve('/bar')).toBe('/bar')
 })
 
-test('given a route key with params, interpolates param values', () => {
+test('given a route name with params, interpolates param values', () => {
   const resolve = createRouterResolve(routes)
 
   expect(resolve('parentA', { paramA: 'bar' })).toBe('/parentA/bar')
 })
 
-test('given a route key with query, interpolates param values', () => {
+test('given a route name with query, interpolates param values', () => {
 
   const resolve = createRouterResolve(routes)
   const url = resolve('parentA', { paramA: 'bar' }, { query: { foo: 'foo' } })
@@ -24,7 +24,7 @@ test('given a route key with query, interpolates param values', () => {
   expect(url).toBe('/parentA/bar?foo=foo')
 })
 
-test('given a route key with params cannot be matched, throws an error', () => {
+test('given a route name with params cannot be matched, throws an error', () => {
   const resolve = createRouterResolve(routes)
 
   // @ts-expect-error
