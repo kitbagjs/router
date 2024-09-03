@@ -1,9 +1,10 @@
-import { mount } from '@vue/test-utils'
+import { flushPromises, mount } from '@vue/test-utils'
 import { expect, test, vi } from 'vitest'
-import { h } from 'vue'
+import { defineAsyncComponent, h } from 'vue'
 import routerLink from '@/components/routerLink.vue'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
+import { PrefetchConfig, getPrefetchConfigValue } from '@/types/prefetch'
 import { component } from '@/utilities/testHelpers'
 
 test('renders an anchor tag with the correct href and slot content', () => {
@@ -230,4 +231,139 @@ test.each([
   const element = anchor.element as HTMLAnchorElement
 
   expect(isExternal.toString()).toBe(element.innerHTML)
+})
+
+test.each<PrefetchConfig | undefined>([
+  undefined,
+  true,
+  false,
+  { components: true },
+  { components: false },
+])('prefetch components respects router config when prefetch is %s', async (prefetch) => {
+  let loaded = undefined
+
+  const route = createRoute({
+    name: 'route',
+    path: '/route',
+    component: defineAsyncComponent(() => {
+      return new Promise(resolve => {
+        loaded = true
+        resolve({ default: { template: '' } })
+      })
+    }),
+  })
+
+  const router = createRouter([route], {
+    initialUrl: '/',
+    prefetch,
+  })
+
+  mount(routerLink, {
+    props: {
+      to: '/route',
+    },
+    global: {
+      plugins: [router],
+    },
+  })
+
+  await flushPromises()
+
+  const value = getPrefetchConfigValue(prefetch, 'components')
+
+  if (value === true || value === undefined) {
+    expect(loaded).toBe(true)
+  } else {
+    expect(loaded).toBeUndefined()
+  }
+})
+
+test.each<PrefetchConfig | undefined>([
+  undefined,
+  true,
+  false,
+  { components: true },
+  { components: false },
+])('prefetch components respects route config when prefetch is %s', async (prefetch) => {
+  let loaded = undefined
+
+  const route = createRoute({
+    name: 'route',
+    path: '/route',
+    prefetch,
+    component: defineAsyncComponent(() => {
+      return new Promise(resolve => {
+        loaded = true
+        resolve({ default: { template: '' } })
+      })
+    }),
+  })
+
+  const router = createRouter([route], {
+    initialUrl: '/',
+  })
+
+  mount(routerLink, {
+    props: {
+      to: '/route',
+    },
+    global: {
+      plugins: [router],
+    },
+  })
+
+  await flushPromises()
+
+  const value = getPrefetchConfigValue(prefetch, 'components')
+
+  if (value === true || value === undefined) {
+    expect(loaded).toBe(true)
+  } else {
+    expect(loaded).toBeUndefined()
+  }
+})
+
+test.each<PrefetchConfig | undefined>([
+  undefined,
+  true,
+  false,
+  { components: true },
+  { components: false },
+])('prefetch components respects link config when prefetch is %s', async (prefetch) => {
+  let loaded = undefined
+
+  const route = createRoute({
+    name: 'route',
+    path: '/route',
+    component: defineAsyncComponent(() => {
+      return new Promise(resolve => {
+        loaded = true
+        resolve({ default: { template: '' } })
+      })
+    }),
+  })
+
+  const router = createRouter([route], {
+    initialUrl: '/',
+  })
+
+  mount(routerLink, {
+    props: {
+      to: '/route',
+      prefetch,
+    },
+    global: {
+      plugins: [router],
+    },
+  })
+
+  await flushPromises()
+
+  const value = getPrefetchConfigValue(prefetch, 'components')
+
+  if (value === true || value === undefined) {
+    expect(loaded).toBe(true)
+  } else {
+    expect(loaded).toBeUndefined()
+  }
 })
