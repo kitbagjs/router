@@ -62,7 +62,7 @@ export type Route<
   /**
    * Represents the schema of the route state, combined with any parents.
   */
-  state: TStateParams,
+  state: TState,
   /**
    * Determines what assets are prefetched when router-link is rendered for this route. Overrides router level prefetch.
   */
