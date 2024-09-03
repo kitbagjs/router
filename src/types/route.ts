@@ -2,6 +2,7 @@ import { CreateRouteOptions, WithComponent, WithComponents, WithHooks, WithHost,
 import { Host } from '@/types/host'
 import { Param } from '@/types/paramTypes'
 import { Path } from '@/types/path'
+import { PrefetchConfig } from '@/types/prefetch'
 import { Query } from '@/types/query'
 import { RouteMeta } from '@/types/register'
 
@@ -62,5 +63,13 @@ export type Route<
    * Represents the schema of the route state, combined with any parents.
   */
   state: TState,
+  /**
+   * Determines what assets are prefetched when router-link is rendered for this route. Overrides router level prefetch.
+  */
+  prefetch?: PrefetchConfig,
+  /**
+  * A value that represents how many parents a route has. Used for route matching
+  * @internal
+  */
   depth: number,
 }

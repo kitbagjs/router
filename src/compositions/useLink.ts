@@ -1,7 +1,9 @@
-import { MaybeRefOrGetter, Ref, computed, toValue } from 'vue'
+import { MaybeRefOrGetter, Ref, computed, toRef, toValue, watch } from 'vue'
 import { useRouter } from '@/compositions/useRouter'
 import { InvalidRouteParamValueError } from '@/errors/invalidRouteParamValueError'
 import { RouterResolveOptions } from '@/services/createRouterResolve'
+import { isWithComponent, isWithComponents } from '@/types/createRouteOptions'
+import { PrefetchConfig, getPrefetchOption } from '@/types/prefetch'
 import { RegisteredRoutes, RegisteredRoutesName } from '@/types/register'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouterPushOptions } from '@/types/routerPush'
@@ -9,6 +11,7 @@ import { RouterReplaceOptions } from '@/types/routerReplace'
 import { RouteParamsByKey } from '@/types/routeWithParams'
 import { Url, isUrl } from '@/types/url'
 import { AllPropertiesAreOptional } from '@/types/utilities'
+import { isAsyncComponent } from '@/utilities/components'
 
 export type UseLink = {
   /**
@@ -37,12 +40,16 @@ export type UseLink = {
   replace: (options?: RouterReplaceOptions) => Promise<void>,
 }
 
+export type UseLinkOptions = RouterResolveOptions & {
+  prefetch?: PrefetchConfig,
+}
+
 type UseLinkArgs<
   TSource extends RegisteredRoutesName,
   TParams = RouteParamsByKey<RegisteredRoutes, TSource>
 > = AllPropertiesAreOptional<TParams> extends true
-  ? [params?: MaybeRefOrGetter<TParams>, options?: MaybeRefOrGetter<RouterResolveOptions>]
-  : [params: MaybeRefOrGetter<TParams>, options?: MaybeRefOrGetter<RouterResolveOptions>]
+  ? [params?: MaybeRefOrGetter<TParams>, options?: MaybeRefOrGetter<UseLinkOptions>]
+  : [params: MaybeRefOrGetter<TParams>, options?: MaybeRefOrGetter<UseLinkOptions>]
 
 /**
  * A composition to export much of the functionality that drives RouterLink component. Can be given route details to discover resolved URL,
@@ -56,16 +63,16 @@ type UseLinkArgs<
  *
  */
 export function useLink<TRouteKey extends RegisteredRoutesName>(name: MaybeRefOrGetter<TRouteKey>, ...args: UseLinkArgs<TRouteKey>): UseLink
-export function useLink(url: MaybeRefOrGetter<Url>): UseLink
+export function useLink(url: MaybeRefOrGetter<Url>, options?: MaybeRefOrGetter<UseLinkOptions>): UseLink
 export function useLink(
   source: MaybeRefOrGetter<string>,
-  params: MaybeRefOrGetter<Record<PropertyKey, unknown>> = {},
-  options: MaybeRefOrGetter<RouterResolveOptions> = {},
+  paramsOrOptions: MaybeRefOrGetter<Record<PropertyKey, unknown> | UseLinkOptions> = {},
+  maybeOptions: MaybeRefOrGetter<UseLinkOptions> = {},
 ): UseLink {
   const router = useRouter()
-  const sourceRef = computed(() => toValue(source))
-  const paramsRef = computed(() => toValue(params))
-  const optionsRef = computed(() => toValue(options))
+  const sourceRef = toRef(source)
+  const paramsRef = computed<Record<PropertyKey, unknown>>(() => isUrl(sourceRef.value) ? {} : toValue(paramsOrOptions))
+  const optionsRef = computed<UseLinkOptions>(() => isUrl(sourceRef.value) ? toValue(paramsOrOptions) : toValue(maybeOptions))
 
   const href = computed(() => {
     if (isUrl(sourceRef.value)) {
@@ -83,12 +90,23 @@ export function useLink(
     }
   })
 
-  const route = computed(() => {
-    return router.find(href.value, optionsRef.value)
-  })
-
+  const route = computed(() => router.find(href.value, optionsRef.value))
   const isMatch = computed(() => !!route.value && router.route.matches.includes(route.value.matched))
   const isExactMatch = computed(() => !!route.value && router.route.matched === route.value.matched)
+
+  watch(route, route => {
+    if (!route) {
+      return
+    }
+
+    const { prefetch: routerPrefetch } = router
+    const { prefetch: linkPrefetch } = optionsRef.value
+
+    prefetchComponentsForRoute(route, {
+      routerPrefetch,
+      linkPrefetch,
+    })
+  }, { immediate: true })
 
   return {
     route,
@@ -98,4 +116,37 @@ export function useLink(
     push: (options?: RouterPushOptions) => router.push(href.value, {}, { ...optionsRef.value, ...options }),
     replace: (options?: RouterReplaceOptions) => router.replace(href.value, {}, { ...optionsRef.value, ...options }),
   }
+}
+
+type ComponentPrefect = {
+  routerPrefetch: PrefetchConfig | undefined,
+  linkPrefetch: PrefetchConfig | undefined,
+}
+
+function prefetchComponentsForRoute(route: ResolvedRoute, { routerPrefetch, linkPrefetch }: ComponentPrefect): void {
+
+  route.matches.forEach(route => {
+    const shouldPrefetchComponents = getPrefetchOption({
+      routePrefetch: route.prefetch,
+      routerPrefetch,
+      linkPrefetch,
+    }, 'components')
+
+    if (!shouldPrefetchComponents) {
+      return
+    }
+
+    if (isWithComponent(route) && isAsyncComponent(route.component)) {
+      route.component.setup()
+    }
+
+    if (isWithComponents(route)) {
+      Object.values(route.components).forEach(component => {
+        if (isAsyncComponent(component)) {
+          component.setup()
+        }
+      })
+    }
+  })
+
 }

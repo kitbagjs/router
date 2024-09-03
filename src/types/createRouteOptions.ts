@@ -8,6 +8,7 @@ import { AfterRouteHook, BeforeRouteHook } from '@/types/hooks'
 import { Host } from '@/types/host'
 import { Param } from '@/types/paramTypes'
 import { Path } from '@/types/path'
+import { PrefetchConfig } from '@/types/prefetch'
 import { Query } from '@/types/query'
 import { RouteMeta } from '@/types/register'
 import { Route } from '@/types/route'
@@ -127,6 +128,10 @@ export type CreateRouteOptions<
    * Represents additional metadata associated with a route, customizable via declaration merging.
    */
   meta?: TMeta,
+  /**
+   * Determines what assets are prefetched when router-link is rendered for this route. Overrides router level prefetch.
+   */
+  prefetch?: PrefetchConfig,
 }
 
 export function combineRoutes(parent: Route, child: Route): Route {
