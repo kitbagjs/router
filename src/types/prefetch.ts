@@ -27,7 +27,7 @@ export function getPrefetchOption({ routerPrefetch, routePrefetch, linkPrefetch 
   return getPrefetchConfigValue(linkPrefetch, setting) ?? getPrefetchConfigValue(routePrefetch, setting) ?? getPrefetchConfigValue(routerPrefetch, setting) ?? DEFAULT_PREFETCH_CONFIG[setting]
 }
 
-function getPrefetchConfigValue(prefetch: PrefetchConfig | undefined, setting: keyof PrefetchConfigOptions): boolean | undefined {
+export function getPrefetchConfigValue(prefetch: PrefetchConfig | undefined, setting: keyof PrefetchConfigOptions): boolean | undefined {
   if (isRecord(prefetch)) {
     return prefetch[setting]
   }
