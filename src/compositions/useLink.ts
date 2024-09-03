@@ -1,4 +1,4 @@
-import { MaybeRefOrGetter, Ref, computed, toRef, watch } from 'vue'
+import { MaybeRefOrGetter, Ref, computed, toRef, toValue, watch } from 'vue'
 import { useRouter } from '@/compositions/useRouter'
 import { InvalidRouteParamValueError } from '@/errors/invalidRouteParamValueError'
 import { RouterResolveOptions } from '@/services/createRouterResolve'
@@ -63,16 +63,16 @@ type UseLinkArgs<
  *
  */
 export function useLink<TRouteKey extends RegisteredRoutesName>(name: MaybeRefOrGetter<TRouteKey>, ...args: UseLinkArgs<TRouteKey>): UseLink
-export function useLink(url: MaybeRefOrGetter<Url>): UseLink
+export function useLink(url: MaybeRefOrGetter<Url>, options?: MaybeRefOrGetter<UseLinkOptions>): UseLink
 export function useLink(
   source: MaybeRefOrGetter<string>,
-  params: MaybeRefOrGetter<Record<PropertyKey, unknown>> = {},
-  options: MaybeRefOrGetter<UseLinkOptions> = {},
+  paramsOrOptions: MaybeRefOrGetter<Record<PropertyKey, unknown> | UseLinkOptions> = {},
+  maybeOptions: MaybeRefOrGetter<UseLinkOptions> = {},
 ): UseLink {
   const router = useRouter()
   const sourceRef = toRef(source)
-  const paramsRef = toRef(params)
-  const optionsRef = toRef(options)
+  const paramsRef = computed<Record<PropertyKey, unknown>>(() => isUrl(sourceRef.value) ? {} : toValue(paramsOrOptions))
+  const optionsRef = computed<UseLinkOptions>(() => isUrl(sourceRef.value) ? toValue(paramsOrOptions) : toValue(maybeOptions))
 
   const href = computed(() => {
     if (isUrl(sourceRef.value)) {
@@ -106,7 +106,7 @@ export function useLink(
       routerPrefetch,
       linkPrefetch,
     })
-  })
+  }, { immediate: true })
 
   return {
     route,
