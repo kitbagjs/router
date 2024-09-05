@@ -1,5 +1,6 @@
+import { BuiltInRejectionType, RejectionType } from '@/services/createRouterReject'
 import { Route, Routes } from '@/types/route'
-import { Router } from '@/types/router'
+import { Router, RouterOptions } from '@/types/router'
 import { RouterPush } from '@/types/routerPush'
 import { RouterReplace } from '@/types/routerReplace'
 import { RoutesName, RoutesMap } from '@/types/routesMap'
@@ -13,7 +14,6 @@ import { RoutesName, RoutesMap } from '@/types/routesMap'
  * declare module '@kitbag/router' {
  *   interface Register {
  *     router: typeof router
- *     rejections: ["NotAuthorized"],
  *     routeMeta: { public?: boolean }
  *   }
  * }
@@ -38,9 +38,9 @@ export type RegisteredRoutes = Register extends { router: Router<infer TRoutes e
 /**
  * Represents the possible Rejections registered within {@link Register}
  */
-export type RegisteredRejectionType = Register extends { rejections: infer TRejections extends string[] }
-  ? TRejections[number]
-  : never
+export type RegisteredRejectionType = Register extends { router: Router<Routes, infer TOptions extends RouterOptions> }
+  ? RejectionType<TOptions>
+  : BuiltInRejectionType
 
 /**
  * Represents additional metadata associated with a route, customizable via declaration merging.

@@ -1,9 +1,9 @@
-import { RouterRejectionType } from '@/services/createRouterReject'
+import { RegisteredRejectionType } from '@/types/register'
 
 export class RouterRejectionError extends Error {
-  public type: RouterRejectionType
+  public type: RegisteredRejectionType
 
-  public constructor(type: RouterRejectionType) {
+  public constructor(type: RegisteredRejectionType) {
     super(`Routing action rejected: ${type}`)
 
     this.type = type
