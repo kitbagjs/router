@@ -95,6 +95,7 @@ export default defineConfig({
             { text: 'ParamGetSet', link: '/api/types/ParamGetSet' },
             { text: 'ParamGetter', link: '/api/types/ParamGetter' },
             { text: 'ParamSetter', link: '/api/types/ParamSetter' },
+            { text: 'PrefetchConfigOptions', link: '/api/types/PrefetchConfigOptions' },
             { text: 'ResolvedRoute', link: '/api/types/ResolvedRoute' },
             { text: 'Route', link: '/api/types/Route' },
             { text: 'RouteHook', link: '/api/types/RouteHook' },
@@ -152,6 +153,7 @@ export default defineConfig({
             { text: 'Route Meta', link: '/advanced-concepts/route-meta' },
             { text: 'Route State', link: '/advanced-concepts/route-state' },
             { text: 'Transitions', link: '/advanced-concepts/transitions' },
+            { text: 'Prefetching', link: '/advanced-concepts/prefetching' },
           ],
         },
         {

@@ -62,3 +62,11 @@ query: ToQuery<TQuery>;
 ```
 
 Represents the structured query of the route, including query params.
+
+### prefetch
+
+```ts
+prefetch?: boolean | PrefetchConfigOptions;
+```
+
+Determines what assets are prefetched when router-link is rendered for this route. Overrides router level prefetch. [PrefetchConfigOptions](/api/types/PrefetchConfigOptions)
