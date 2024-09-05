@@ -1,6 +1,6 @@
 # Prefetching
 
-Prefetching is a powerful feature in the Kitbag Router that allows your application to load components in advance, improving user experience by reducing the wait time when navigating to a new route. 
+Prefetching is a powerful feature in Kitbag Router that allows your application to load components in advance, improving user experience by reducing the wait time when navigating to a new route. 
 
 ::: info Async Components Only
 Prefetching is only relevant to routes with components defined with `defineAsyncComponent`.
