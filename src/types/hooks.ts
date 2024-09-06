@@ -1,7 +1,7 @@
 import { RegisteredRejectionType, RegisteredRouterPush, RegisteredRouterReplace } from '@/types/register'
 import { ResolvedRoute } from '@/types/resolved'
 import { Routes } from '@/types/route'
-import { RouterOptions, RouterReject } from '@/types/router'
+import { RouterReject } from '@/types/router'
 import { RouterPush } from '@/types/routerPush'
 import { MaybePromise } from '@/types/utilities'
 
@@ -10,14 +10,14 @@ import { MaybePromise } from '@/types/utilities'
  * @param hook - {@link BeforeRouteHook} The hook function to add.
  * @returns {RouteHookRemove} A function that removes the added hook.
  */
-export type AddBeforeRouteHook<TOptions extends RouterOptions = RouterOptions> = (hook: BeforeRouteHook<TOptions>) => RouteHookRemove
+export type AddBeforeRouteHook = (hook: BeforeRouteHook) => RouteHookRemove
 
 /**
  * Adds a hook that is called after a route change. Returns a function to remove the hook.
  * @param hook - {@link AfterRouteHook} The hook function to add.
  * @returns {RouteHookRemove} A function that removes the added hook.
  */
-export type AddAfterRouteHook<TOptions extends RouterOptions = RouterOptions> = (hook: AfterRouteHook<TOptions>) => RouteHookRemove
+export type AddAfterRouteHook = (hook: AfterRouteHook) => RouteHookRemove
 
 /**
  * A function that can be called to abort a routing operation.
@@ -27,9 +27,9 @@ export type RouteHookAbort = () => void
 /**
  * Context provided to route hooks, containing context of previous route and functions for triggering rejections and push/replace to another route.
  */
-type RouteHookContext<TOptions extends RouterOptions = RouterOptions> = {
+type RouteHookContext = {
   from: ResolvedRoute | null,
-  reject: RouterReject<TOptions>,
+  reject: RouterReject,
   push: RegisteredRouterPush,
   replace: RegisteredRouterReplace,
 }
@@ -38,14 +38,14 @@ type RouteHookContext<TOptions extends RouterOptions = RouterOptions> = {
  * Context provided to route hooks, containing context of previous route and functions for triggering rejections, push/replace to another route,
  * as well as aborting current route change.
  */
-type BeforeRouteHookContext<TOptions extends RouterOptions = RouterOptions> = RouteHookContext<TOptions> & {
+type BeforeRouteHookContext = RouteHookContext & {
   abort: RouteHookAbort,
 }
 
 /**
  * Context provided to route hooks, containing context of previous route and functions for triggering rejections and push/replace to another route.
  */
-type AfterRouteHookContext<TOptions extends RouterOptions = RouterOptions> = RouteHookContext<TOptions>
+type AfterRouteHookContext = RouteHookContext
 
 /**
  * Represents a function called before a route change, potentially altering the routing operation.
@@ -53,7 +53,7 @@ type AfterRouteHookContext<TOptions extends RouterOptions = RouterOptions> = Rou
  * @param context - {@link BeforeRouteHookContext} The context providing functions and state for the routing operation.
  * @returns Possibly a promise that resolves when the hook's logic has completed.
  */
-export type BeforeRouteHook<TOptions extends RouterOptions = RouterOptions> = (to: ResolvedRoute, context: BeforeRouteHookContext<TOptions>) => MaybePromise<void>
+export type BeforeRouteHook = (to: ResolvedRoute, context: BeforeRouteHookContext) => MaybePromise<void>
 
 /**
  * Represents a function called after a route change has occurred.
@@ -61,7 +61,7 @@ export type BeforeRouteHook<TOptions extends RouterOptions = RouterOptions> = (t
  * @param context - {@link AfterRouteHookContext} The context providing functions and state for the routing operation.
  * @returns Possibly a promise that resolves when the hook's logic has completed.
  */
-export type AfterRouteHook<TOptions extends RouterOptions = RouterOptions> = (to: ResolvedRoute, context: AfterRouteHookContext<TOptions>) => MaybePromise<void>
+export type AfterRouteHook = (to: ResolvedRoute, context: AfterRouteHookContext) => MaybePromise<void>
 
 /**
  * Generic type representing a route hook, which can be either before or after a route change.

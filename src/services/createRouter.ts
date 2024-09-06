@@ -53,9 +53,9 @@ type RouterUpdateOptions = {
  * const router = createRouter(routes)
  * ```
  */
-export function createRouter<const TRoutes extends Routes, TOptions extends RouterOptions>(routes: TRoutes, options?: TOptions): Router<TRoutes, TOptions>
-export function createRouter<const TRoutes extends Routes, TOptions extends RouterOptions>(arrayOfRoutes: TRoutes[], options?: TOptions): Router<TRoutes, TOptions>
-export function createRouter<const TRoutes extends Routes, TOptions extends RouterOptions>(routesOrArrayOfRoutes: TRoutes | TRoutes[], options: TOptions): Router<TRoutes, TOptions> {
+export function createRouter<const TRoutes extends Routes, const TOptions extends RouterOptions>(routes: TRoutes, options?: TOptions): Router<TRoutes, TOptions>
+export function createRouter<const TRoutes extends Routes, const TOptions extends RouterOptions>(arrayOfRoutes: TRoutes[], options?: TOptions): Router<TRoutes, TOptions>
+export function createRouter<const TRoutes extends Routes, const TOptions extends RouterOptions>(routesOrArrayOfRoutes: TRoutes | TRoutes[], options: TOptions): Router<TRoutes, TOptions> {
   const flattenedRoutes = isNestedArray(routesOrArrayOfRoutes) ? routesOrArrayOfRoutes.flat() : routesOrArrayOfRoutes
   const routes = insertBaseRoute(flattenedRoutes, options.base)
 

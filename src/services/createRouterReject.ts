@@ -3,14 +3,11 @@ import { genericRejection } from '@/components/rejection'
 import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
 import { RegisteredRejectionType } from '@/types/register'
 import { ResolvedRoute } from '@/types/resolved'
-import { RouterOptions } from '@/types/router'
 
 export const builtInRejections: ['NotFound'] = ['NotFound']
 export type BuiltInRejectionType = typeof builtInRejections[number]
 
 export type RouterSetReject = (type: RegisteredRejectionType | null) => void
-
-export type RejectionType<TOptions extends RouterOptions> = keyof TOptions['rejections'] | BuiltInRejectionType
 
 type GetRejectionRoute = (type: RegisteredRejectionType) => ResolvedRoute
 type IsRejectionRoute = (route: ResolvedRoute) => boolean

@@ -1,6 +1,5 @@
 import { Component, Plugin } from 'vue'
 import { RouterHistoryMode } from '@/services/createRouterHistory'
-import { RejectionType } from '@/services/createRouterReject'
 import { RouterResolve } from '@/services/createRouterResolve'
 import { RouterRoute } from '@/services/createRouterRoute'
 import { AddAfterRouteHook, AddBeforeRouteHook } from '@/types/hooks'
@@ -12,7 +11,7 @@ import { RouterFind } from '@/types/routerFind'
 import { RouterPush } from '@/types/routerPush'
 import { RouterReplace } from '@/types/routerReplace'
 
-export type RouterReject<TOptions extends RouterOptions = RouterOptions> = (type: RouterOptions extends TOptions ? RegisteredRejectionType : RejectionType<TOptions>) => void
+export type RouterReject = (type: RegisteredRejectionType) => void
 
 /**
  * Options to initialize a {@link Router} instance.
@@ -47,7 +46,8 @@ export type RouterOptions = {
 
 export type Router<
   TRoutes extends Routes = any,
-  TOptions extends RouterOptions = any
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  __TOptions extends RouterOptions = any
 > = Plugin & {
   /**
    * Manages the current route state.
@@ -72,7 +72,7 @@ export type Router<
   /**
    * Handles route rejection based on a specified rejection type.
    */
-  reject: RouterReject<TOptions>,
+  reject: RouterReject,
   /**
    * Forces the router to re-evaluate the current route.
    */
@@ -92,27 +92,27 @@ export type Router<
   /**
    * Registers a hook to be called before a route is entered.
    */
-  onBeforeRouteEnter: AddBeforeRouteHook<TOptions>,
+  onBeforeRouteEnter: AddBeforeRouteHook,
   /**
    * Registers a hook to be called before a route is left.
    */
-  onBeforeRouteLeave: AddBeforeRouteHook<TOptions>,
+  onBeforeRouteLeave: AddBeforeRouteHook,
   /**
    * Registers a hook to be called before a route is updated.
    */
-  onBeforeRouteUpdate: AddBeforeRouteHook<TOptions>,
+  onBeforeRouteUpdate: AddBeforeRouteHook,
   /**
    * Registers a hook to be called after a route is entered.
    */
-  onAfterRouteEnter: AddAfterRouteHook<TOptions>,
+  onAfterRouteEnter: AddAfterRouteHook,
   /**
    * Registers a hook to be called after a route is left.
    */
-  onAfterRouteLeave: AddAfterRouteHook<TOptions>,
+  onAfterRouteLeave: AddAfterRouteHook,
   /**
    * Registers a hook to be called after a route is updated.
    */
-  onAfterRouteUpdate: AddAfterRouteHook<TOptions>,
+  onAfterRouteUpdate: AddAfterRouteHook,
   /**
    * A promise that resolves when the router is fully initialized.
    */
