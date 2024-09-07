@@ -53,9 +53,9 @@ type RouterUpdateOptions = {
  * const router = createRouter(routes)
  * ```
  */
-export function createRouter<const T extends Routes>(routes: T, options?: RouterOptions): Router<T>
-export function createRouter<const T extends Routes>(arrayOfRoutes: T[], options?: RouterOptions): Router<T>
-export function createRouter<const T extends Routes>(routesOrArrayOfRoutes: T | T[], options: RouterOptions = {}): Router<T> {
+export function createRouter<const TRoutes extends Routes, const TOptions extends RouterOptions>(routes: TRoutes, options?: TOptions): Router<TRoutes, TOptions>
+export function createRouter<const TRoutes extends Routes, const TOptions extends RouterOptions>(arrayOfRoutes: TRoutes[], options?: TOptions): Router<TRoutes, TOptions>
+export function createRouter<const TRoutes extends Routes, const TOptions extends RouterOptions>(routesOrArrayOfRoutes: TRoutes | TRoutes[], options: TOptions): Router<TRoutes, TOptions> {
   const flattenedRoutes = isNestedArray(routesOrArrayOfRoutes) ? routesOrArrayOfRoutes.flat() : routesOrArrayOfRoutes
   const routes = insertBaseRoute(flattenedRoutes, options.base)
 
@@ -71,7 +71,7 @@ export function createRouter<const T extends Routes>(routesOrArrayOfRoutes: T | 
     },
   })
 
-  const { runBeforeRouteHooks, runAfterRouteHooks } = createRouteHookRunners<T>()
+  const { runBeforeRouteHooks, runAfterRouteHooks } = createRouteHookRunners<TRoutes>()
   const {
     hooks,
     onBeforeRouteEnter,
@@ -145,7 +145,7 @@ export function createRouter<const T extends Routes>(routesOrArrayOfRoutes: T | 
     history.startListening()
   }
 
-  const push: RouterPush<T> = (source: Url | RoutesName<T>, paramsOrOptions?: Record<string, unknown> | RouterPushOptions, maybeOptions?: RouterPushOptions) => {
+  const push: RouterPush<TRoutes> = (source: Url | RoutesName<TRoutes>, paramsOrOptions?: Record<string, unknown> | RouterPushOptions, maybeOptions?: RouterPushOptions) => {
     if (isUrl(source)) {
       const options: RouterPushOptions = { ...paramsOrOptions }
       const url = resolve(source, options)
@@ -162,7 +162,7 @@ export function createRouter<const T extends Routes>(routesOrArrayOfRoutes: T | 
     return set(url, { ...options, state })
   }
 
-  const replace: RouterReplace<T> = (source: Url | RoutesName<T>, paramsOrOptions?: Record<string, unknown> | RouterReplaceOptions, maybeOptions?: RouterReplaceOptions) => {
+  const replace: RouterReplace<TRoutes> = (source: Url | RoutesName<TRoutes>, paramsOrOptions?: Record<string, unknown> | RouterReplaceOptions, maybeOptions?: RouterReplaceOptions) => {
     if (isUrl(source)) {
       const options: RouterPushOptions = { ...paramsOrOptions, replace: true }
       const url = resolve(source, options)
@@ -183,7 +183,7 @@ export function createRouter<const T extends Routes>(routesOrArrayOfRoutes: T | 
     return setRejection(type)
   }
 
-  const find = <TSource extends RoutesName<T>>(
+  const find = <TSource extends RoutesName<TRoutes>>(
     source: Url | TSource,
     params: Record<PropertyKey, unknown> = {},
   ): ResolvedRoute | undefined => {
@@ -202,7 +202,7 @@ export function createRouter<const T extends Routes>(routesOrArrayOfRoutes: T | 
 
   const { setRejection, rejection, getRejectionRoute } = createRouterReject(options)
   const notFoundRoute = getRejectionRoute('NotFound')
-  const { currentRoute, routerRoute, updateRoute } = createCurrentRoute<T>(notFoundRoute, push)
+  const { currentRoute, routerRoute, updateRoute } = createCurrentRoute<TRoutes>(notFoundRoute, push)
 
   history.startListening()
 
@@ -227,7 +227,7 @@ export function createRouter<const T extends Routes>(routesOrArrayOfRoutes: T | 
     app.provide(routerInjectionKey, router as any)
   }
 
-  const router: Router<T> = {
+  const router: Router<TRoutes> = {
     route: routerRoute,
     resolve,
     push,

@@ -1,5 +1,4 @@
-import { RouterRejectionType } from '@/services/createRouterReject'
-import { RegisteredRouterPush, RegisteredRouterReplace } from '@/types/register'
+import { RegisteredRejectionType, RegisteredRouterPush, RegisteredRouterReplace } from '@/types/register'
 import { ResolvedRoute } from '@/types/resolved'
 import { Routes } from '@/types/route'
 import { RouterReject } from '@/types/router'
@@ -117,7 +116,7 @@ type RouteHookPushResponse<T extends Routes> = {
  */
 type RouteHookRejectResponse = {
   status: 'REJECT',
-  type: RouterRejectionType,
+  type: RegisteredRejectionType,
 }
 
 /**

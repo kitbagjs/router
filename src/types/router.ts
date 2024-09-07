@@ -1,17 +1,17 @@
-import { Plugin } from 'vue'
+import { Component, Plugin } from 'vue'
 import { RouterHistoryMode } from '@/services/createRouterHistory'
-import { RouterRejectionComponents, RouterRejectionType } from '@/services/createRouterReject'
 import { RouterResolve } from '@/services/createRouterResolve'
 import { RouterRoute } from '@/services/createRouterRoute'
 import { AddAfterRouteHook, AddBeforeRouteHook } from '@/types/hooks'
 import { PrefetchConfig } from '@/types/prefetch'
+import { RegisteredRejectionType } from '@/types/register'
 import { ResolvedRoute } from '@/types/resolved'
 import { Routes } from '@/types/route'
 import { RouterFind } from '@/types/routerFind'
 import { RouterPush } from '@/types/routerPush'
 import { RouterReplace } from '@/types/routerReplace'
 
-export type RouterReject = (type: RouterRejectionType) => void
+export type RouterReject = (type: RegisteredRejectionType) => void
 
 /**
  * Options to initialize a {@link Router} instance.
@@ -38,10 +38,16 @@ export type RouterOptions = {
    * Determines what assets are prefetched when router-link is rendered for a specific route
    */
   prefetch?: PrefetchConfig,
-} & RouterRejectionComponents
+  /**
+   * Components assigned to each type of rejection your router supports.
+   */
+  rejections?: Partial<Record<string, Component>>,
+}
 
 export type Router<
-  TRoutes extends Routes = any
+  TRoutes extends Routes = any,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  __TOptions extends RouterOptions = any
 > = Plugin & {
   /**
    * Manages the current route state.
