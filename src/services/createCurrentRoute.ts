@@ -19,7 +19,10 @@ export function createCurrentRoute(fallbackRoute: ResolvedRoute, push: RouterPus
   const route = reactive({ ...fallbackRoute })
 
   const updateRoute: ResolvedRouteUpdate = (newRoute) => {
-    Object.assign(route, { [isRejectionRouteSymbol]: false, ...newRoute })
+    Object.assign(route, { 
+      [isRejectionRouteSymbol]: false,
+      ...newRoute 
+    })
   }
 
   const currentRoute = route
