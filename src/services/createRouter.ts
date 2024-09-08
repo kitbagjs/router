@@ -55,15 +55,15 @@ type RouterUpdateOptions = {
  */
 export function createRouter<const TRoutes extends Routes, const TOptions extends RouterOptions>(routes: TRoutes, options?: TOptions): Router<TRoutes, TOptions>
 export function createRouter<const TRoutes extends Routes, const TOptions extends RouterOptions>(arrayOfRoutes: TRoutes[], options?: TOptions): Router<TRoutes, TOptions>
-export function createRouter<const TRoutes extends Routes, const TOptions extends RouterOptions>(routesOrArrayOfRoutes: TRoutes | TRoutes[], options: TOptions): Router<TRoutes, TOptions> {
+export function createRouter<const TRoutes extends Routes, const TOptions extends RouterOptions>(routesOrArrayOfRoutes: TRoutes | TRoutes[], options?: TOptions): Router<TRoutes, TOptions> {
   const flattenedRoutes = isNestedArray(routesOrArrayOfRoutes) ? routesOrArrayOfRoutes.flat() : routesOrArrayOfRoutes
-  const routes = insertBaseRoute(flattenedRoutes, options.base)
+  const routes = insertBaseRoute(flattenedRoutes, options?.base)
 
   checkDuplicateNames(routes)
 
   const resolve = createRouterResolve(routes)
   const history = createRouterHistory({
-    mode: options.historyMode,
+    mode: options?.historyMode,
     listener: ({ location }) => {
       const url = createPath(location)
 
@@ -200,13 +200,13 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
     return getResolvedRouteForUrl(routes, source)
   }
 
-  const { setRejection, rejection, getRejectionRoute } = createRouterReject(options)
+  const { setRejection, rejection, getRejectionRoute } = createRouterReject(options ?? {})
   const notFoundRoute = getRejectionRoute('NotFound')
   const { currentRoute, routerRoute, updateRoute } = createCurrentRoute<TRoutes>(notFoundRoute, push)
 
   history.startListening()
 
-  const initialUrl = getInitialUrl(options.initialUrl)
+  const initialUrl = getInitialUrl(options?.initialUrl)
   const initialState = history.location.state
   const { host } = createMaybeRelativeUrl(initialUrl)
   const isExternal = createIsExternal(host)
@@ -247,7 +247,7 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
     onAfterRouteEnter,
     onBeforeRouteUpdate,
     onAfterRouteLeave,
-    prefetch: options.prefetch,
+    prefetch: options?.prefetch,
   }
 
   return router
