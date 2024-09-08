@@ -1,5 +1,6 @@
 import { reactive } from 'vue'
 import { createRouterRoute } from '@/services/createRouterRoute'
+import { isRejectionRouteSymbol } from '@/services/isRejectionRoute'
 import { RouterRoutes } from '@/types'
 import { ResolvedRoute } from '@/types/resolved'
 import { Routes } from '@/types/route'
@@ -18,7 +19,7 @@ export function createCurrentRoute(fallbackRoute: ResolvedRoute, push: RouterPus
   const route = reactive({ ...fallbackRoute })
 
   const updateRoute: ResolvedRouteUpdate = (newRoute) => {
-    Object.assign(route, { ...newRoute })
+    Object.assign(route, { [isRejectionRouteSymbol]: false, ...newRoute })
   }
 
   const currentRoute = route

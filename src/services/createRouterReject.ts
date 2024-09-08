@@ -1,6 +1,7 @@
 import { Ref, markRaw, ref, Component } from 'vue'
 import { genericRejection } from '@/components/rejection'
 import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
+import { isRejectionRouteSymbol } from '@/services/isRejectionRoute'
 import { RegisteredRejectionType } from '@/types/register'
 import { ResolvedRoute } from '@/types/resolved'
 
@@ -10,7 +11,6 @@ export type BuiltInRejectionType = typeof builtInRejections[number]
 export type RouterSetReject = (type: RegisteredRejectionType | null) => void
 
 type GetRejectionRoute = (type: RegisteredRejectionType) => ResolvedRoute
-type IsRejectionRoute = (route: ResolvedRoute) => boolean
 
 export type RouterRejection = Ref<null | { type: RegisteredRejectionType, component: Component }>
 
@@ -18,13 +18,11 @@ type CreateRouterRejectContext = {
   rejections?: Partial<Record<string, Component>>,
 }
 
-const isRejectionRouteSymbol = Symbol()
 
 export type CreateRouterReject = {
   setRejection: RouterSetReject,
   rejection: RouterRejection,
   getRejectionRoute: GetRejectionRoute,
-  isRejectionRoute: IsRejectionRoute,
 }
 
 export function createRouterReject({
@@ -62,10 +60,6 @@ export function createRouterReject({
     return resolved
   }
 
-  const isRejectionRoute: IsRejectionRoute = (route) => {
-    return isRejectionRouteSymbol in route
-  }
-
   const setRejection: RouterSetReject = (type) => {
     if (!type) {
       rejection.value = null
@@ -83,6 +77,5 @@ export function createRouterReject({
     setRejection,
     rejection,
     getRejectionRoute,
-    isRejectionRoute,
   }
 }
