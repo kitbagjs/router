@@ -9,7 +9,6 @@ When a rejection happens, Kitbag router mounts whatever component is registered 
 ```ts
 import { createRouter } from "@kitbag/router";
 import MyNotFound from "@/components/MyNotFound.vue";
-import MyAuthNeeded from "@/components/MyAuthNeeded.vue";
 
 export const router = createRouter(routes, {
   rejections: {
@@ -29,7 +28,7 @@ By default the only registered rejection type is `NotFound`. Creating custom rej
 ```ts
 import { createRouter } from "@kitbag/router";
 import MyNotFound from "@/components/MyNotFound.vue";
-import MyAuthNeeded from "@/components/MyAuthNeeded.vue";
+import MyAuthNeeded from "@/components/MyAuthNeeded.vue"; // [!code ++]
 
 export const router = createRouter(routes, {
   rejections: {
