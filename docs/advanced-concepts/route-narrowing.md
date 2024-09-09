@@ -49,7 +49,9 @@ if(router.route.name === 'user') {
 You can also use the `isRoute` type guard. You could write the same logic as above like this.
 
 ```ts
-if(router.route, 'user', { exact: true }) {
+import { isRoute } from '@kitbag/router'
+
+if(isRoute(router.route, 'user', { exact: true })) {
   router.route.name // "user"
   router.route.params // { userId: string }
 }
@@ -58,6 +60,8 @@ if(router.route, 'user', { exact: true }) {
 The `isRoute` type guard offers more flexibility with the optional `exact` argument, which defaults to `false` and will return narrow to the target route or any of it's descendants. 
 
 ```ts
-if(router.route, 'user', { exact: false }) {
+import { isRoute } from '@kitbag/router'
+
+if(isRoute(router.route, 'user', { exact: false })) {
   router.route.name // "user" | "user.profile" | "user.settings"
   router.route.params // { userId: string } | { userId: string, tab: string }
