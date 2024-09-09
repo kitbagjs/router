@@ -331,3 +331,59 @@ test('Binds props and attrs from route', async () => {
 
   expect(app.html()).toBe('world')
 })
+
+test('Updates props and attrs when route params change', async () => {
+
+  const syncProps = createRoute({
+    name: 'sync',
+    path: '/sync/[param]',
+    component: echo,
+    props: ({ param }) => ({ value: param }),
+  })
+
+
+  const asyncProps = createRoute({
+    name: 'async',
+    path: '/async/[param]',
+    component: echo,
+    props: async ({ param }) => {
+      return await { value: param }
+    },
+  })
+
+  const router = createRouter([syncProps, asyncProps], {
+    initialUrl: '/',
+  })
+
+  await router.initialized
+
+  const root = {
+    template: '<Suspense><RouterView/></Suspense>',
+  }
+
+  const app = mount(root, {
+    global: {
+      plugins: [router],
+    },
+  })
+
+  await router.push('sync', { param: 'foo' })
+
+  expect(app.html()).toBe('foo')
+
+  await router.push('sync', { param: 'bar' })
+
+  expect(app.html()).toBe('bar')
+
+  await router.push('async', { param: 'async-foo' })
+
+  await flushPromises()
+
+  expect(app.html()).toBe('async-foo')
+
+  await router.push('async', { param: 'async-bar' })
+
+  await flushPromises()
+
+  expect(app.html()).toBe('async-bar')
+})
