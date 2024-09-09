@@ -57,7 +57,7 @@ export function createRouteHookRunners<const T extends Routes>(): RouteHookRunne
     throw new NavigationAbortError()
   }
 
-  async function runBeforeRouteHooks<const T extends Routes>({ to, from, hooks }: BeforeContext): Promise<BeforeRouteHookResponse<T>> {
+  async function runBeforeRouteHooks({ to, from, hooks }: BeforeContext): Promise<BeforeRouteHookResponse<T>> {
     const { global, component } = hooks
     const route = getBeforeRouteHooksFromRoutes(to, from)
 
@@ -112,7 +112,7 @@ export function createRouteHookRunners<const T extends Routes>(): RouteHookRunne
     }
   }
 
-  async function runAfterRouteHooks<const T extends Routes>({ to, from, hooks }: AfterContext): Promise<AfterRouteHookResponse<T>> {
+  async function runAfterRouteHooks({ to, from, hooks }: AfterContext): Promise<AfterRouteHookResponse<T>> {
     const { global, component } = hooks
     const route = getAfterRouteHooksFromRoutes(to, from)
 
