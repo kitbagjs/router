@@ -106,6 +106,12 @@ export function useLink(
       routerPrefetch,
       linkPrefetch,
     })
+
+    prefetchPropsForRoute(route, {
+      params: paramsRef.value,
+      routerPrefetch,
+      linkPrefetch,
+    })
   }, { immediate: true })
 
   return {
@@ -149,4 +155,37 @@ function prefetchComponentsForRoute(route: ResolvedRoute, { routerPrefetch, link
     }
   })
 
+}
+
+type PropsPrefetch = {
+  routerPrefetch: PrefetchConfig | undefined,
+  linkPrefetch: PrefetchConfig | undefined,
+  params: Record<string, unknown>,
+}
+
+function prefetchPropsForRoute(route: ResolvedRoute, { params, routerPrefetch, linkPrefetch }: PropsPrefetch): void {
+
+  route.matches.forEach(route => {
+    const shouldPrefetchProps = getPrefetchOption({
+      routePrefetch: route.prefetch,
+      routerPrefetch,
+      linkPrefetch,
+    }, 'props')
+
+    if (!shouldPrefetchProps) {
+      return
+    }
+
+    if (isWithComponent(route) && route.props) {
+      // aight, we called the prop callback. Now what....
+      route.props(params)
+    }
+
+    if (isWithComponents(route) && route.props) {
+      Object.values(route.props).forEach(props => {
+        props?.(params)
+      })
+    }
+
+  })
 }
