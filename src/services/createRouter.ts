@@ -158,7 +158,7 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
     }
 
     const options: RouterPushOptions = { ...maybeOptions }
-    const params: any = paramsOrOptions ?? {}
+    const params: Record<string, unknown> = paramsOrOptions ?? {}
     const url = resolve(source, params, options)
     const route = getRoute(source)
     const state = setStateValues(route?.state ?? {}, options.state)
@@ -175,7 +175,7 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
     }
 
     const options: RouterPushOptions = { ...maybeOptions, replace: true }
-    const params: any = paramsOrOptions ?? {}
+    const params: Record<string, unknown> = paramsOrOptions ?? {}
     const url = resolve(source, params, options)
     const route = getRoute(source)
     const state = setStateValues(route?.state ?? {}, options.state)
