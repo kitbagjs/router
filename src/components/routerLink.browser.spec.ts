@@ -381,17 +381,13 @@ describe('prefetch props', () => {
     { props: true },
     { props: false },
   ])('prefetch props respects router config when prefetch is %s', (prefetch) => {
-    let loaded = undefined
+    const callback = vi.fn()
 
     const route = createRoute({
       name: 'route',
       path: '/route',
       component: echo,
-      props: () => {
-        loaded = true
-
-        return { value: 'foo' }
-      },
+      props: callback,
     })
 
     const router = createRouter([route], {
@@ -411,9 +407,9 @@ describe('prefetch props', () => {
     const value = getPrefetchConfigValue(prefetch, 'props')
 
     if (value) {
-      expect(loaded).toBe(true)
+      expect(callback).toHaveBeenCalledOnce()
     } else {
-      expect(loaded).toBeUndefined()
+      expect(callback).not.toHaveBeenCalled()
     }
   })
 
@@ -424,18 +420,14 @@ describe('prefetch props', () => {
     { props: true },
     { props: false },
   ])('prefetch props respects route config when prefetch is %s', (prefetch) => {
-    let loaded = undefined
+    const callback = vi.fn()
 
     const route = createRoute({
       name: 'route',
       path: '/route',
       component: echo,
       prefetch,
-      props: () => {
-        loaded = true
-
-        return { value: 'foo' }
-      },
+      props: callback,
     })
 
     const router = createRouter([route], {
@@ -454,9 +446,9 @@ describe('prefetch props', () => {
     const value = getPrefetchConfigValue(prefetch, 'props')
 
     if (value) {
-      expect(loaded).toBe(true)
+      expect(callback).toHaveBeenCalledOnce()
     } else {
-      expect(loaded).toBeUndefined()
+      expect(callback).not.toHaveBeenCalled()
     }
   })
 
@@ -467,17 +459,13 @@ describe('prefetch props', () => {
     { props: true },
     { props: false },
   ])('prefetch props respects link config when prefetch is %s', (prefetch) => {
-    let loaded = undefined
+    const callback = vi.fn()
 
     const route = createRoute({
       name: 'route',
       path: '/route',
       component: echo,
-      props: () => {
-        loaded = true
-
-        return { value: 'foo' }
-      },
+      props: callback,
     })
 
     const router = createRouter([route], {
@@ -497,9 +485,9 @@ describe('prefetch props', () => {
     const value = getPrefetchConfigValue(prefetch, 'props')
 
     if (value) {
-      expect(loaded).toBe(true)
+      expect(callback).toHaveBeenCalledOnce()
     } else {
-      expect(loaded).toBeUndefined()
+      expect(callback).not.toHaveBeenCalled()
     }
   })
 })
