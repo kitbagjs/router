@@ -10,6 +10,7 @@ import { AllPropertiesAreOptional } from '@/types/utilities'
 
 export type RouterResolveOptions = {
   query?: Record<string, string>,
+  hash?: string,
 }
 
 type RouterResolveArgs<
@@ -51,6 +52,7 @@ export function createRouterResolve<const TRoutes extends Routes>(routes: TRoute
     const url = assembleUrl(match, {
       params,
       query: options.query,
+      hash: options.hash,
     })
 
     return url

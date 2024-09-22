@@ -13,6 +13,7 @@ export type RouterRoute<TRoute extends ResolvedRoute = ResolvedRoute> = Readonly
   matches: TRoute['matches'],
   state: TRoute['state'],
   query: ResolvedRouteQuery,
+  hash: TRoute['hash'],
   params: Writable<TRoute['params']>,
   update: RouteUpdate<TRoute>,
 }>

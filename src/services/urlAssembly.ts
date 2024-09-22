@@ -11,6 +11,7 @@ import { Route } from '@/types/route'
 type AssembleUrlOptions = {
   params?: Record<string, unknown>,
   query?: Record<string, string>,
+  hash?: string,
 }
 
 export function assembleUrl(route: Route, options: AssembleUrlOptions = {}): string {
@@ -20,7 +21,10 @@ export function assembleUrl(route: Route, options: AssembleUrlOptions = {}): str
   const pathWithParamsSet = assemblePathParamValues(route.path, paramValues)
   const queryWithParamsSet = assembleQueryParamValues(route.query, paramValues)
 
-  return withQuery(`${hostWithParamsSet}${pathWithParamsSet}`, queryWithParamsSet, queryValues)
+  const url = withQuery(`${hostWithParamsSet}${pathWithParamsSet}`, queryWithParamsSet, queryValues)
+  const hash = options.hash ? `#${options.hash.replace(/^#/, '')}` : ''
+
+  return `${url}${hash}`
 }
 
 function assembleHostParamValues(host: Host, paramValues: Record<string, unknown>): string {
