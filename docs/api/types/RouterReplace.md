@@ -20,6 +20,7 @@ Replace has the same effect as [`RouterPush`](/api/types/RouterPush) but without
 ```ts
 {
   query?: Record<string, string>,
+  hash?: string,
 }
 ```
 

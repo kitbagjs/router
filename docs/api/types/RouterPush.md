@@ -21,6 +21,7 @@ Push will update the URL for the browser and also add the URL into the history s
 {
   query?: Record<string, string>,
   replace?: boolean,
+  hash?: string,
 }
 ```
 
