@@ -26,6 +26,10 @@ export type ResolvedRoute<TRoute extends Route = Route> = Readonly<{
   */
   query: ResolvedRouteQuery,
   /**
+   * Hash value of the route.
+  */
+  hash?: string,
+  /**
    * Key value pair for route params, values will be the user provided value from current browser location.
   */
   params: ExtractRouteParamTypes<TRoute>,

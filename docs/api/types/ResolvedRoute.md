@@ -43,6 +43,14 @@ query: ResolvedRouteQuery;
 
 Accessor for query string values from user in the current browser location. [ResolvedRouteQuery](/api/types/ResolvedRouteQuery)
 
+### hash
+
+```ts
+hash?: string;
+```
+
+Accessor for hash string value (or undefined) from user in the current browser location.
+
 ### params
 
 ```ts

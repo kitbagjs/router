@@ -215,3 +215,14 @@ test('given state that matches state params, returns state', () => {
 
   expect(response?.state).toMatchObject({ foo: true, bar: 'abc' })
 })
+
+test('given a route with hash returns hash property', () => {
+  const route = createRoute({
+    name: 'route',
+    path: '/foo',
+    component,
+  })
+  const response = getResolvedRouteForUrl([route], '/foo#bar')
+
+  expect(response?.hash).toBe('#bar')
+})

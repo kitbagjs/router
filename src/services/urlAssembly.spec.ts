@@ -359,3 +359,14 @@ describe('host params', () => {
     expect(url).toBe('ABC.kitbag.dev/')
   })
 })
+
+test('given route with hash, returns url with hash value interpolated', () => {
+  const route = createRoute({
+    name: 'simple',
+    path: '/',
+  })
+
+  const url = assembleUrl(route, { hash: 'foo' })
+
+  expect(url).toBe('/#foo')
+})

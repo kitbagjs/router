@@ -9,6 +9,7 @@ export type RouterPushOptions<
   TState = unknown
 > = {
   query?: Record<string, string>,
+  hash?: string,
   replace?: boolean,
   state?: Partial<TState>,
 }

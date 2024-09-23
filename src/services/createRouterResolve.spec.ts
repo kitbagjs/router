@@ -84,3 +84,9 @@ test('when given an external route with params in host, interpolates param value
 
   expect(url).toBe('https://router.kitbag.dev/')
 })
+
+test('given a route with hash, interpolates hash value', () => {
+  const resolve = createRouterResolve(routes)
+
+  expect(resolve('parentA', { paramA: 'bar' }, { hash: 'foo' })).toBe('/parentA/bar#foo')
+})

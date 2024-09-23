@@ -9,6 +9,7 @@ export type RouterReplaceOptions<
   TState = unknown
 > = {
   query?: Record<string, string>,
+  hash?: string,
   state?: Partial<TState>,
 }
 
