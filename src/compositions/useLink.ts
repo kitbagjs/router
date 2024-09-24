@@ -74,6 +74,8 @@ export function useLink(
   const paramsRef = computed<Record<PropertyKey, unknown>>(() => isUrl(sourceRef.value) ? {} : toValue(paramsOrOptions))
   const optionsRef = computed<UseLinkOptions>(() => isUrl(sourceRef.value) ? toValue(paramsOrOptions) : toValue(maybeOptions))
 
+  let props: Record<string, unknown> = {}
+
   const href = computed(() => {
     if (isUrl(sourceRef.value)) {
       return sourceRef.value
@@ -107,7 +109,7 @@ export function useLink(
       linkPrefetch,
     })
 
-    prefetchPropsForRoute(route, {
+    props = prefetchPropsForRoute(route, {
       params: paramsRef.value,
       routerPrefetch,
       linkPrefetch,
@@ -171,9 +173,8 @@ type PropsPrefetch = {
   params: Record<string, unknown>,
 }
 
-function prefetchPropsForRoute(route: ResolvedRoute, { params, routerPrefetch, linkPrefetch }: PropsPrefetch): void {
-
-  route.matches.forEach(route => {
+function prefetchPropsForRoute(route: ResolvedRoute, { params, routerPrefetch, linkPrefetch }: PropsPrefetch): Record<string, unknown> {
+  return route.matches.reduce<Record<string, unknown>>((props, route) => {
     const shouldPrefetchProps = getPrefetchOption({
       routePrefetch: route.prefetch,
       routerPrefetch,
@@ -181,19 +182,19 @@ function prefetchPropsForRoute(route: ResolvedRoute, { params, routerPrefetch, l
     }, 'props')
 
     if (!shouldPrefetchProps) {
-      return
+      return props
     }
 
     if (isWithComponent(route) && route.props) {
-      // aight, we called the prop callback. Now what....
-      route.props(params)
+      props.default = route.props(params)
     }
 
     if (isWithComponents(route) && route.props) {
-      Object.values(route.props).forEach(props => {
-        props?.(params)
-      })
+      for (const [name, callback] of Object.entries(route.props)) {
+        props[name] = callback?.(params)
+      }
     }
 
-  })
+    return props
+  }, {})
 }
