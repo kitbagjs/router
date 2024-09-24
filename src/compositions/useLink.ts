@@ -114,13 +114,21 @@ export function useLink(
     })
   }, { immediate: true })
 
+  const push: UseLink['push'] = (options) => {
+    return router.push(href.value, {}, options)
+  }
+
+  const replace: UseLink['replace'] = (options) => {
+    return push({ ...options, replace: true })
+  }
+
   return {
     route,
     href,
     isMatch,
     isExactMatch,
-    push: (options?: RouterPushOptions) => router.push(href.value, {}, { ...optionsRef.value, ...options }),
-    replace: (options?: RouterReplaceOptions) => router.replace(href.value, {}, { ...optionsRef.value, ...options }),
+    push,
+    replace,
   }
 }
 
