@@ -28,6 +28,7 @@ export type Route<
   TPath extends Path = Path,
   TQuery extends Query = Query,
   TMeta extends RouteMeta = RouteMeta,
+  THash extends string | undefined = string | undefined,
   TState extends Record<string, Param> = Record<string, Param>
 > = {
   /**
@@ -55,6 +56,10 @@ export type Route<
    * Represents the structured query of the route, including query params.
   */
   query: TQuery,
+  /**
+   * Represents the hash of the route.
+   */
+  hash: THash,
   /**
    * Represents additional metadata associated with a route, combined with any parents.
   */
