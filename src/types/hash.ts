@@ -2,9 +2,10 @@ import { hash } from '@/services/hash'
 import { isRecord } from '@/utilities/guards'
 
 export type Hash<
-  THash extends string = string
+  THash extends string | undefined = string | undefined
 > = {
   value: THash,
+  hasValue: () => boolean,
   toString: () => string,
 }
 export type ToHash<T extends string | Hash | undefined> = T extends string
@@ -22,7 +23,7 @@ function isHash(value: unknown): value is Hash {
 export function toHash<T extends string | Hash | undefined>(value: T): ToHash<T>
 export function toHash<T extends string | Hash | undefined>(value: T): Hash {
   if (value === undefined) {
-    return hash('')
+    return hash()
   }
 
   if (isHash(value)) {

@@ -44,6 +44,7 @@ test('given parent, state is combined into state', () => {
     state: {
       foo: Number,
     },
+    hash: 'foo',
   })
 
   const child = createRoute({
@@ -51,7 +52,10 @@ test('given parent, state is combined into state', () => {
     state: {
       bar: String,
     },
+    hash: 'bar',
   })
+
+  child.host
 
   expect(child.state).toMatchObject({
     foo: Number,

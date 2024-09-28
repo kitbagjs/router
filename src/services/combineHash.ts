@@ -7,10 +7,10 @@ export type CombineHash<
 > = ToHash<TParent> extends { value: infer TParentHash extends string }
   ? ToHash<TChild> extends { value: infer ChildHash extends string }
     ? Hash<`${TParentHash}${ChildHash}`>
-    : Hash<''>
-  : Hash<''>
+    : TParent
+  : Hash
 
 export function combineHash<TParentHash extends Hash, TChildHash extends Hash>(parentHash: TParentHash, childHash: TChildHash): CombineHash<TParentHash, TChildHash>
 export function combineHash(parentHash: Hash, childHash: Hash): Hash {
-  return hash(`${parentHash.value}${childHash.value}`)
+  return hash(`${parentHash.value ?? ''}${childHash.value ?? ''}`)
 }

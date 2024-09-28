@@ -23,7 +23,7 @@ export function assembleUrl(route: Route, options: AssembleUrlOptions = {}): str
   const queryWithParamsSet = assembleQueryParamValues(route.query, paramValues)
 
   const url = withQuery(`${hostWithParamsSet}${pathWithParamsSet}`, queryWithParamsSet, queryValues)
-  const hash = createHash(options.hash ?? route.hash.value).toString()
+  const hash = createHash(route.hash.value ?? options.hash).toString()
 
   return `${url}${hash}`
 }

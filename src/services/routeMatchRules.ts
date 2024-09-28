@@ -1,7 +1,6 @@
 import { createMaybeRelativeUrl } from '@/services/createMaybeRelativeUrl'
 import { generateRoutePathRegexPattern, generateRouteQueryRegexPatterns } from '@/services/routeRegex'
 import { RouteMatchRule } from '@/types/routeMatchRule'
-import { stringHasValue } from '@/utilities/guards'
 
 export const isNamedRoute: RouteMatchRule = (route) => {
   return 'name' in route.matched && !!route.matched.name
@@ -25,5 +24,5 @@ export const routeHashMatches: RouteMatchRule = (route, url) => {
   const { hash } = createMaybeRelativeUrl(url)
   const value = route.hash.toString()
 
-  return !stringHasValue(value) || value.toLowerCase() === hash.toLowerCase()
+  return !route.hash.hasValue() || value.toLowerCase() === hash.toLowerCase()
 }
