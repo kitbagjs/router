@@ -216,7 +216,7 @@ test('given state that matches state params, returns state', () => {
   expect(response?.state).toMatchObject({ foo: true, bar: 'abc' })
 })
 
-test('given a route with hash returns hash property', () => {
+test('given a url with hash, returns hash property', () => {
   const route = createRoute({
     name: 'route',
     path: '/foo',
@@ -225,4 +225,28 @@ test('given a route with hash returns hash property', () => {
   const response = getResolvedRouteForUrl([route], '/foo#bar')
 
   expect(response?.hash).toBe('#bar')
+})
+
+test.only('given a route with hash, matches url with same hash', () => {
+  const noHashRoute = createRoute({
+    name: 'no-hash',
+    path: '/foo',
+    component,
+  })
+  const differentHashRoute = createRoute({
+    name: 'different-hash',
+    path: '/foo',
+    component,
+    hash: 'bar',
+  })
+  const matchingRoute = createRoute({
+    name: 'matching-route',
+    path: '/foo',
+    component,
+    hash: 'foo',
+  })
+
+  const response = getResolvedRouteForUrl([noHashRoute, matchingRoute, differentHashRoute], '/foo#foo')
+
+  expect(response?.name).toBe('matching-route')
 })

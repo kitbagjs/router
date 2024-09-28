@@ -29,6 +29,14 @@ export function getRouteScoreSortMethod(url: string): RouteSortMethod {
       return sortAfter
     }
 
+    const { hash } = createMaybeRelativeUrl(url)
+    if (aRoute.hash.toString() === hash) {
+      return sortBefore
+    }
+    if (bRoute.hash.toString() === hash) {
+      return sortAfter
+    }
+
     return 0
   }
 }
