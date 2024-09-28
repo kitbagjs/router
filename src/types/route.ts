@@ -1,4 +1,5 @@
 import { CreateRouteOptions, WithComponent, WithComponents, WithHooks, WithHost, WithParent, WithState, WithoutComponents, WithoutHost, WithoutParent, WithoutState } from '@/types/createRouteOptions'
+import { Hash } from '@/types/hash'
 import { Host } from '@/types/host'
 import { Param } from '@/types/paramTypes'
 import { Path } from '@/types/path'
@@ -27,8 +28,8 @@ export type Route<
   THost extends Host = Host,
   TPath extends Path = Path,
   TQuery extends Query = Query,
+  THash extends Hash = Hash,
   TMeta extends RouteMeta = RouteMeta,
-  THash extends string | undefined = string | undefined,
   TState extends Record<string, Param> = Record<string, Param>
 > = {
   /**

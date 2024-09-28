@@ -1,27 +1,16 @@
-import { StringHasValue, stringHasValue } from '@/utilities/guards'
+import { hash } from '@/services/hash'
+import { Hash, ToHash } from '@/types/hash'
 
 export type CombineHash<
-  TParent extends string | undefined,
-  TChild extends string | undefined
-> = HashHasValue<TParent> extends true
-  ? HashHasValue<TChild> extends true
-    ? `${TParent}${TChild}`
-    : TParent
-  : HashHasValue<TChild> extends true
-    ? TChild
-    : undefined
+  TParent extends Hash,
+  TChild extends Hash
+> = ToHash<TParent> extends { value: infer TParentHash extends string }
+  ? ToHash<TChild> extends { value: infer ChildHash extends string }
+    ? Hash<`${TParentHash}${ChildHash}`>
+    : Hash<''>
+  : Hash<''>
 
-type HashHasValue<T> = StringHasValue<T> extends true
-  ? string extends T
-    ? false
-    : true
-  : false
-
-export function combineHash<TParentHash extends string | undefined, TChildHash extends string | undefined>(parentHash: TParentHash, childHash: TChildHash): CombineHash<TParentHash, TChildHash>
-export function combineHash(parentHash: string | undefined, childHash: string | undefined): string | undefined {
-  if (!stringHasValue(parentHash) && !stringHasValue(childHash)) {
-    return undefined
-  }
-
-  return `${parentHash ?? ''}${childHash ?? ''}`
+export function combineHash<TParentHash extends Hash, TChildHash extends Hash>(parentHash: TParentHash, childHash: TChildHash): CombineHash<TParentHash, TChildHash>
+export function combineHash(parentHash: Hash, childHash: Hash): Hash {
+  return hash(`${parentHash.value}${childHash.value}`)
 }

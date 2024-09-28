@@ -1,3 +1,4 @@
+import { hash as createHash } from '@/services/hash'
 import { setParamValue } from '@/services/params'
 import { setParamValueOnUrl } from '@/services/paramsFinder'
 import { getParamName, isOptionalParamSyntax } from '@/services/routeRegex'
@@ -22,7 +23,7 @@ export function assembleUrl(route: Route, options: AssembleUrlOptions = {}): str
   const queryWithParamsSet = assembleQueryParamValues(route.query, paramValues)
 
   const url = withQuery(`${hostWithParamsSet}${pathWithParamsSet}`, queryWithParamsSet, queryValues)
-  const hash = options.hash ? `#${options.hash.replace(/^#/, '')}` : ''
+  const hash = createHash(options.hash ?? route.hash.value).toString()
 
   return `${url}${hash}`
 }

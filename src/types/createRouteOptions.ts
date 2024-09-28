@@ -5,6 +5,7 @@ import { combinePath } from '@/services/combinePath'
 import { combineQuery } from '@/services/combineQuery'
 import { combineState } from '@/services/combineState'
 import { ComponentProps } from '@/services/component'
+import { Hash } from '@/types/hash'
 import { AfterRouteHook, BeforeRouteHook } from '@/types/hooks'
 import { Host } from '@/types/host'
 import { Param } from '@/types/paramTypes'
@@ -111,8 +112,8 @@ export type CreateRouteOptions<
   TName extends string | undefined = string | undefined,
   TPath extends string | Path | undefined = string | Path | undefined,
   TQuery extends string | Query | undefined = string | Query | undefined,
-  TMeta extends RouteMeta = RouteMeta,
-  THash extends string | undefined = string | undefined
+  THash extends string | Hash | undefined = string | Hash | undefined,
+  TMeta extends RouteMeta = RouteMeta
 > = {
   /**
    * Name for route, used to create route keys and in navigation.
