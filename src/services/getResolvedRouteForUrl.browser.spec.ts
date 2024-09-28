@@ -1,9 +1,13 @@
-import { expect, test, vi } from 'vitest'
+import { afterEach, expect, test, vi } from 'vitest'
 import { createRoute } from '@/services/createRoute'
 import { getResolvedRouteForUrl } from '@/services/getResolvedRouteForUrl'
 import * as utilities from '@/services/routeMatchScore'
 import { Route } from '@/types'
 import { component } from '@/utilities/testHelpers'
+
+afterEach(() => {
+  vi.restoreAllMocks()
+})
 
 test('given path WITHOUT params, returns match', () => {
   const parent = createRoute({
@@ -227,7 +231,7 @@ test('given a url with hash, returns hash property', () => {
   expect(response?.hash).toBe('#bar')
 })
 
-test.only('given a route with hash, matches url with same hash', () => {
+test('given a route with hash, matches url with same hash', () => {
   const noHashRoute = createRoute({
     name: 'no-hash',
     path: '/foo',
