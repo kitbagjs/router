@@ -8,7 +8,7 @@ import { Identity } from '@/types/utilities'
  *
  * @template TPath - The string literal type that represents the path.
  * @template TParams - The type of the path parameters associated with the path.
- * @param path - The path string.
+ * @param value - The path string.
  * @param params - The parameters associated with the path, typically as key-value pairs.
  * @returns An object representing the path which includes the path string, its parameters,
  *          and a toString method for getting the path as a string.
@@ -24,11 +24,11 @@ import { Identity } from '@/types/utilities'
  * })
  * ```
  */
-export function path<TPath extends string, TParams extends PathParamsWithParamNameExtracted<TPath>>(path: TPath, params: Identity<TParams>): Path<TPath, TParams>
-export function path(path: string, params: Record<string, Param | undefined>): Path {
+export function path<TPath extends string, TParams extends PathParamsWithParamNameExtracted<TPath>>(value: TPath, params: Identity<TParams>): Path<TPath, TParams>
+export function path(value: string, params: Record<string, Param | undefined>): Path {
   return {
-    path,
-    params: getParamsForString(path, params),
-    toString: () => path,
+    value,
+    params: getParamsForString(value, params),
+    toString: () => value,
   }
 }

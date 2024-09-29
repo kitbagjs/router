@@ -1,4 +1,4 @@
-import { query } from '@/services/query'
+import { query as createQuery } from '@/services/query'
 import { ExtractParamName, ExtractPathParamType, ParamEnd, ParamStart } from '@/types/params'
 import { Param } from '@/types/paramTypes'
 import { Identity } from '@/types/utilities'
@@ -23,7 +23,7 @@ export type Query<
   TQuery extends string = string,
   TQueryParams extends QueryParamsWithParamNameExtracted<TQuery> = Record<string, Param | undefined>
 > = {
-  query: TQuery,
+  value: TQuery,
   params: string extends TQuery ? Record<string, Param> : Identity<ExtractQueryParamsFromQueryString<TQuery, TQueryParams>>,
   toString: () => string,
 }
@@ -36,19 +36,19 @@ export type ToQuery<T extends string | Query | undefined> = T extends string
       ? Query<'', {}>
       : T
 
-function isQuery(value: unknown): value is Query {
-  return isRecord(value) && typeof value.query === 'string'
+function isQuery(maybeQuery: unknown): maybeQuery is Query {
+  return isRecord(maybeQuery) && typeof maybeQuery.value === 'string'
 }
 
-export function toQuery<T extends string | Query | undefined>(value: T): ToQuery<T>
-export function toQuery<T extends string | Query | undefined>(value: T): Query {
-  if (value === undefined) {
-    return query('', {})
+export function toQuery<T extends string | Query | undefined>(query: T): ToQuery<T>
+export function toQuery<T extends string | Query | undefined>(query: T): Query {
+  if (query === undefined) {
+    return createQuery('', {})
   }
 
-  if (isQuery(value)) {
-    return value
+  if (isQuery(query)) {
+    return query
   }
 
-  return query(value, {})
+  return createQuery(query, {})
 }

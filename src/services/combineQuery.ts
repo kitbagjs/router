@@ -12,8 +12,8 @@ type CombineQueryString<TParent extends string | undefined, TChild extends strin
 export type CombineQuery<
   TParent extends Query,
   TChild extends Query
-> = ToQuery<TParent> extends { query: infer TParentQuery extends string, params: infer TParentParams extends Record<string, unknown> }
-  ? ToQuery<TChild> extends { query: infer TChildQuery extends string, params: infer TChildParams extends Record<string, unknown> }
+> = ToQuery<TParent> extends { value: infer TParentQuery extends string, params: infer TParentParams extends Record<string, unknown> }
+  ? ToQuery<TChild> extends { value: infer TChildQuery extends string, params: infer TChildParams extends Record<string, unknown> }
     ? RemoveLeadingQuestionMarkFromKeys<TParentParams> & RemoveLeadingQuestionMarkFromKeys<TChildParams> extends QueryParamsWithParamNameExtracted<CombineQueryString<TParentQuery, TChildQuery>>
       ? Query<CombineQueryString<TParentQuery, TChildQuery>, RemoveLeadingQuestionMarkFromKeys<TParentParams> & RemoveLeadingQuestionMarkFromKeys<TChildParams>>
       : Query<'', {}>
@@ -24,12 +24,12 @@ export function combineQuery<TParentQuery extends Query, TChildQuery extends Que
 export function combineQuery(parentQuery: Query, childQuery: Query): Query {
   checkDuplicateParams(parentQuery.params, childQuery.params)
 
-  const newQueryString = [parentQuery.query, childQuery.query]
+  const newQueryString = [parentQuery.value, childQuery.value]
     .filter(stringHasValue)
     .join('&')
 
   return {
-    query: newQueryString,
+    value: newQueryString,
     params: { ...parentQuery.params, ...childQuery.params },
     toString: () => newQueryString,
   }

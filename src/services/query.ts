@@ -8,7 +8,7 @@ import { Identity } from '@/types/utilities'
  *
  * @template TQuery - The string literal type that represents the query.
  * @template TParams - The type of the query parameters associated with the query.
- * @param query - The query string.
+ * @param value - The query string.
  * @param params - The parameters associated with the query, typically as key-value pairs.
  * @returns An object representing the query which includes the query string, its parameters,
  *          and a toString method for getting the query as a string.
@@ -24,11 +24,11 @@ import { Identity } from '@/types/utilities'
  * })
  * ```
  */
-export function query<TQuery extends string, TParams extends QueryParamsWithParamNameExtracted<TQuery>>(query: TQuery, params: Identity<TParams>): Query<TQuery, TParams>
-export function query(query: string, params: Record<string, Param | undefined>): Query {
+export function query<TQuery extends string, TParams extends QueryParamsWithParamNameExtracted<TQuery>>(value: TQuery, params: Identity<TParams>): Query<TQuery, TParams>
+export function query(value: string, params: Record<string, Param | undefined>): Query {
   return {
-    query,
-    params: getParamsForString(query, params),
-    toString: () => query,
+    value,
+    params: getParamsForString(value, params),
+    toString: () => value,
   }
 }
