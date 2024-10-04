@@ -31,6 +31,7 @@ export function getResolvedRouteForUrl(routes: Routes, url: string, state?: unkn
   const { search, hash } = createMaybeRelativeUrl(url)
 
   return {
+    id: route.id,
     matched: route.matched,
     matches: route.matches,
     name: route.name,

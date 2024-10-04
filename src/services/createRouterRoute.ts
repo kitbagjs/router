@@ -8,6 +8,7 @@ import { Writable } from '@/types/utilities'
 const isRouterRouteSymbol = Symbol('isRouterRouteSymbol')
 
 export type RouterRoute<TRoute extends ResolvedRoute = ResolvedRoute> = Readonly<{
+  id: TRoute['id'],
   name: TRoute['name'],
   matched: TRoute['matched'],
   matches: TRoute['matches'],
@@ -41,9 +42,10 @@ export function createRouterRoute<TRoute extends ResolvedRoute>(route: TRoute, p
     return push(route.name, params, maybeOptions)
   }
 
-  const { matched, matches, name, query, params, state, hash } = toRefs(route)
+  const { id, matched, matches, name, query, params, state, hash } = toRefs(route)
 
   const routerRoute: RouterRoute<TRoute> = reactive({
+    id,
     matched,
     matches,
     state,

@@ -127,7 +127,7 @@ export function createRoute(options: CreateRouteOptions): Route {
   const hash = toHash(options.hash)
   const meta = options.meta ?? {}
   const state = isWithState(options) ? options.state : {}
-  const rawRoute = markRaw({ meta: {}, state: {}, ...options })
+  const rawRoute = markRaw({ id, meta: {}, state: {}, ...options })
 
   const route = {
     id,
@@ -142,7 +142,7 @@ export function createRoute(options: CreateRouteOptions): Route {
     depth: 1,
     host: host('', {}),
     prefetch: options.prefetch,
-  }
+  } satisfies Route
 
   const merged = isWithParent(options) ? combineRoutes(options.parent, route) : route
 

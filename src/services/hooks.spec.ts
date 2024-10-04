@@ -12,6 +12,7 @@ test('calls hook with correct routes', () => {
   const { runBeforeRouteHooks } = createRouteHookRunners()
 
   const toOptions = {
+    id: Math.random().toString(),
     name: 'routeA',
     component,
     onBeforeRouteEnter: hook,
@@ -20,6 +21,7 @@ test('calls hook with correct routes', () => {
   }
 
   const toRoute: ResolvedRoute = {
+    id: toOptions.id,
     matched: toOptions,
     matches: [toOptions],
     name: toOptions.name,
@@ -29,6 +31,7 @@ test('calls hook with correct routes', () => {
   }
 
   const fromOptions = {
+    id: Math.random().toString(),
     name: 'routeB',
     component,
     meta: {},
@@ -36,6 +39,7 @@ test('calls hook with correct routes', () => {
   }
 
   const fromRoute: ResolvedRoute = {
+    id: fromOptions.id,
     matched: fromOptions,
     matches: [fromOptions],
     name: fromOptions.name,
@@ -66,6 +70,7 @@ test.each<{ type: string, status: string, hook: BeforeRouteHook }>([
   const { runBeforeRouteHooks } = createRouteHookRunners()
   const { hooks } = createRouterHooks()
   const toOptions = {
+    id: Math.random().toString(),
     name: 'routeA',
     component,
     onBeforeRouteEnter: hook,
@@ -74,6 +79,7 @@ test.each<{ type: string, status: string, hook: BeforeRouteHook }>([
   }
 
   const to: ResolvedRoute = {
+    id: toOptions.id,
     matched: toOptions,
     matches: [toOptions],
     name: toOptions.name,
@@ -83,6 +89,7 @@ test.each<{ type: string, status: string, hook: BeforeRouteHook }>([
   }
 
   const fromOptions = {
+    id: Math.random().toString(),
     name: 'routeB',
     component,
     meta: {},
@@ -90,6 +97,7 @@ test.each<{ type: string, status: string, hook: BeforeRouteHook }>([
   }
 
   const from: ResolvedRoute = {
+    id: fromOptions.id,
     matched: fromOptions,
     matches: [fromOptions],
     name: fromOptions.name,
@@ -115,6 +123,7 @@ test('hook is called in order', async () => {
   const { runBeforeRouteHooks } = createRouteHookRunners()
 
   const toOptions = {
+    id: Math.random().toString(),
     name: 'routeA',
     component,
     onBeforeRouteEnter: [hookA, hookB, hookC],
@@ -123,6 +132,7 @@ test('hook is called in order', async () => {
   }
 
   const to: ResolvedRoute = {
+    id: toOptions.id,
     matched: toOptions,
     matches: [toOptions],
     name: toOptions.name,
@@ -132,6 +142,7 @@ test('hook is called in order', async () => {
   }
 
   const fromOptions = {
+    id: Math.random().toString(),
     name: 'routeB',
     component,
     meta: {},
@@ -139,6 +150,7 @@ test('hook is called in order', async () => {
   }
 
   const from: ResolvedRoute = {
+    id: fromOptions.id,
     matched: fromOptions,
     matches: [fromOptions],
     name: fromOptions.name,

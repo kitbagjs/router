@@ -1,6 +1,7 @@
 import { Ref, markRaw, ref, Component } from 'vue'
 import { genericRejection } from '@/components/rejection'
 import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
+import { createRouteId } from '@/services/createRouteId'
 import { isRejectionRouteSymbol } from '@/services/isRejectionRoute'
 import { RegisteredRejectionType } from '@/types/register'
 import { ResolvedRoute } from '@/types/resolved'
@@ -41,6 +42,7 @@ export function createRouterReject({
     const component = markRaw(getRejectionComponent(type))
 
     const route = {
+      id: createRouteId(),
       name: type,
       component,
       meta: {},
@@ -48,6 +50,7 @@ export function createRouterReject({
     }
 
     const resolved = {
+      id: route.id,
       matched: route,
       matches: [route],
       name: type,
