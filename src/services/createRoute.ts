@@ -4,6 +4,7 @@ import { CombineMeta } from '@/services/combineMeta'
 import { CombinePath } from '@/services/combinePath'
 import { CombineQuery } from '@/services/combineQuery'
 import { CombineState } from '@/services/combineState'
+import { createRouteId } from '@/services/createRouteId'
 import { host } from '@/services/host'
 import { CreateRouteOptions, WithComponent, WithComponents, WithHooks, WithParent, WithState, WithoutComponents, WithoutParent, WithoutState, combineRoutes, isWithParent, isWithState } from '@/types/createRouteOptions'
 import { Hash, toHash, ToHash } from '@/types/hash'
@@ -119,6 +120,7 @@ export function createRoute<
 Route<ToName<TName>, Host<'', {}>, CombinePath<TParent['path'], ToPath<TPath>>, CombineQuery<TParent['query'], ToQuery<TQuery>>, CombineHash<TParent['hash'], ToHash<THash>>, CombineMeta<TMeta, TParent['meta']>, CombineState<TState, TParent['state']>>
 
 export function createRoute(options: CreateRouteOptions): Route {
+  const id = createRouteId()
   const name = toName(options.name)
   const path = toPath(options.path)
   const query = toQuery(options.query)
@@ -128,6 +130,7 @@ export function createRoute(options: CreateRouteOptions): Route {
   const rawRoute = markRaw({ meta: {}, state: {}, ...options })
 
   const route = {
+    id,
     matched: rawRoute,
     matches: [rawRoute],
     name,
