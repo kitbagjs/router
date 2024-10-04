@@ -69,6 +69,7 @@ export const routes = [
 
 export function mockRoute<TName extends string>(name: TName): ResolvedRoute['matched'] {
   return {
+    id: Math.random().toString(),
     name,
     path: path(`/${name}`, {}),
     component,
@@ -82,6 +83,7 @@ export function mockRoute<TName extends string>(name: TName): ResolvedRoute['mat
 
 export function mockResolvedRoute(matched: ResolvedRoute['matched'], matches: ResolvedRoute['matched'][]): ResolvedRoute {
   return {
+    id: matched.id,
     matched,
     matches,
     name: matched.name!,

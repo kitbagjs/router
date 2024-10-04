@@ -42,7 +42,7 @@ export function createExternalRoute(options: CreateRouteOptions): Route {
   const hash = toHash(options.hash)
   const meta = options.meta ?? {}
   const host = isWithHost(options) ? toHost(options.host) : toHost('')
-  const rawRoute = markRaw({ meta: {}, state: {}, ...options })
+  const rawRoute = markRaw({ id, meta: {}, state: {}, ...options })
 
   const route = {
     id,
