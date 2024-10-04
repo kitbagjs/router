@@ -3,6 +3,7 @@ import { CombineHash } from '@/services/combineHash'
 import { CombineMeta } from '@/services/combineMeta'
 import { CombinePath } from '@/services/combinePath'
 import { CombineQuery } from '@/services/combineQuery'
+import { createRouteId } from '@/services/createRouteId'
 import { combineRoutes, CreateRouteOptions, isWithHost, isWithParent, WithHost, WithoutHost, WithoutParent, WithParent } from '@/types/createRouteOptions'
 import { Hash, toHash, ToHash } from '@/types/hash'
 import { Host, toHost, ToHost } from '@/types/host'
@@ -34,6 +35,7 @@ export function createExternalRoute<
 Route<ToName<TName>, Host<'', {}>, CombinePath<TParent['path'], ToPath<TPath>>, CombineQuery<TParent['query'], ToQuery<TQuery>>, CombineHash<TParent['hash'], ToHash<THash>>, CombineMeta<TMeta, TParent['meta']>>
 
 export function createExternalRoute(options: CreateRouteOptions): Route {
+  const id = createRouteId()
   const name = toName(options.name)
   const path = toPath(options.path)
   const query = toQuery(options.query)
@@ -43,6 +45,7 @@ export function createExternalRoute(options: CreateRouteOptions): Route {
   const rawRoute = markRaw({ meta: {}, state: {}, ...options })
 
   const route = {
+    id,
     matched: rawRoute,
     matches: [rawRoute],
     name,
