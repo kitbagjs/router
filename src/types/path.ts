@@ -1,4 +1,4 @@
-import { path } from '@/services/path'
+import { path as createPath } from '@/services/path'
 import { ExtractParamName, ExtractPathParamType, ParamEnd, ParamStart } from '@/types/params'
 import { Param } from '@/types/paramTypes'
 import { Identity } from '@/types/utilities'
@@ -23,7 +23,7 @@ export type Path<
   TPath extends string = string,
   TParams extends PathParamsWithParamNameExtracted<TPath> = Record<string, Param | undefined>
 > = {
-  path: TPath,
+  value: TPath,
   params: string extends TPath ? Record<string, Param> : Identity<ExtractParamsFromPathString<TPath, TParams>>,
   toString: () => string,
 }
@@ -35,19 +35,19 @@ export type ToPath<T extends string | Path | undefined> = T extends string
       ? Path<'', {}>
       : T
 
-function isPath(value: unknown): value is Path {
-  return isRecord(value) && typeof value.path === 'string'
+function isPath(maybePath: unknown): maybePath is Path {
+  return isRecord(maybePath) && typeof maybePath.value === 'string'
 }
 
-export function toPath<T extends string | Path | undefined>(value: T): ToPath<T>
-export function toPath<T extends string | Path | undefined>(value: T): Path {
-  if (value === undefined) {
-    return path('', {})
+export function toPath<T extends string | Path | undefined>(path: T): ToPath<T>
+export function toPath<T extends string | Path | undefined>(path: T): Path {
+  if (path === undefined) {
+    return createPath('', {})
   }
 
-  if (isPath(value)) {
-    return value
+  if (isPath(path)) {
+    return path
   }
 
-  return path(value, {})
+  return createPath(path, {})
 }

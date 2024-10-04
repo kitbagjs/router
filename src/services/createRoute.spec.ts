@@ -14,7 +14,7 @@ test('given parent, path is combined', () => {
   })
 
   expect(child.path).toMatchObject({
-    path: '/parent/child/[id]',
+    value: '/parent/child/[id]',
     params: {
       id: Number,
     },
@@ -32,7 +32,7 @@ test('given parent, query is combined', () => {
   })
 
   expect(child.query).toMatchObject({
-    query: 'static=123&sort=[sort]',
+    value: 'static=123&sort=[sort]',
     params: {
       sort: Boolean,
     },

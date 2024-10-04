@@ -1,4 +1,4 @@
-import { host } from '@/services/host'
+import { host as createHost } from '@/services/host'
 import { ExtractParamName, ExtractPathParamType, ParamEnd, ParamStart } from '@/types/params'
 import { Param } from '@/types/paramTypes'
 import { Identity } from '@/types/utilities'
@@ -23,7 +23,7 @@ export type Host<
   THost extends string = string,
   TParams extends HostParamsWithParamNameExtracted<THost> = Record<string, Param | undefined>
 > = {
-  host: THost,
+  value: THost,
   params: string extends THost ? Record<string, Param> : Identity<ExtractParamsFromHostString<THost, TParams>>,
   toString: () => string,
 }
@@ -36,15 +36,15 @@ export type ToHost<T extends string | Host | undefined> = T extends string
       ? Host<'', {}>
       : T
 
-function isHost(value: unknown): value is Host {
-  return isRecord(value) && typeof value.host === 'string'
+function isHost(maybeHost: unknown): maybeHost is Host {
+  return isRecord(maybeHost) && typeof maybeHost.value === 'string'
 }
 
-export function toHost<T extends string | Host>(value: T): ToHost<T>
-export function toHost<T extends string | Host>(value: T): Host {
-  if (isHost(value)) {
-    return value
+export function toHost<T extends string | Host>(host: T): ToHost<T>
+export function toHost<T extends string | Host>(host: T): Host {
+  if (isHost(host)) {
+    return host
   }
 
-  return host(value, {})
+  return createHost(host, {})
 }

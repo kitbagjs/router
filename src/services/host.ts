@@ -8,7 +8,7 @@ import { Identity } from '@/types/utilities'
  *
  * @template THost - The string literal type that represents the host.
  * @template TParams - The type of the host parameters associated with the host.
- * @param host - The host string.
+ * @param value - The host string.
  * @param params - The parameters associated with the host, typically as key-value pairs.
  * @returns An object representing the host which includes the host string, its parameters,
  *          and a toString method for getting the host as a string.
@@ -24,11 +24,11 @@ import { Identity } from '@/types/utilities'
  * })
  * ```
  */
-export function host<THost extends string, TParams extends HostParamsWithParamNameExtracted<THost>>(host: THost, params: Identity<TParams>): Host<THost, TParams>
-export function host(host: string, params: Record<string, Param | undefined>): Host {
+export function host<THost extends string, TParams extends HostParamsWithParamNameExtracted<THost>>(value: THost, params: Identity<TParams>): Host<THost, TParams>
+export function host(value: string, params: Record<string, Param | undefined>): Host {
   return {
-    host,
-    params: getParamsForString(host, params),
-    toString: () => host,
+    value,
+    params: getParamsForString(value, params),
+    toString: () => value,
   }
 }
