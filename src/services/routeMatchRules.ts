@@ -19,3 +19,10 @@ export const routeQueryMatches: RouteMatchRule = (route, url) => {
 
   return queryPatterns.every(pattern => pattern.test(search))
 }
+
+export const routeHashMatches: RouteMatchRule = (route, url) => {
+  const { hash } = createMaybeRelativeUrl(url)
+  const value = route.hash.toString()
+
+  return !route.hash.hasValue() || value.toLowerCase() === hash.toLowerCase()
+}

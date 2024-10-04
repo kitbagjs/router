@@ -1,9 +1,11 @@
 import { Component } from 'vue'
+import { combineHash } from '@/services/combineHash'
 import { combineMeta } from '@/services/combineMeta'
 import { combinePath } from '@/services/combinePath'
 import { combineQuery } from '@/services/combineQuery'
 import { combineState } from '@/services/combineState'
 import { ComponentProps } from '@/services/component'
+import { Hash } from '@/types/hash'
 import { AfterRouteHook, BeforeRouteHook } from '@/types/hooks'
 import { Host } from '@/types/host'
 import { Param } from '@/types/paramTypes'
@@ -110,6 +112,7 @@ export type CreateRouteOptions<
   TName extends string | undefined = string | undefined,
   TPath extends string | Path | undefined = string | Path | undefined,
   TQuery extends string | Query | undefined = string | Query | undefined,
+  THash extends string | Hash | undefined = string | Hash | undefined,
   TMeta extends RouteMeta = RouteMeta
 > = {
   /**
@@ -124,6 +127,10 @@ export type CreateRouteOptions<
    * Query (aka search) part of URL.
    */
   query?: TQuery,
+  /**
+   * Hash part of URL.
+   */
+  hash?: THash,
   /**
    * Represents additional metadata associated with a route, customizable via declaration merging.
    */
@@ -141,6 +148,7 @@ export function combineRoutes(parent: Route, child: Route): Route {
     query: combineQuery(parent.query, child.query),
     meta: combineMeta(parent.meta, child.meta),
     state: combineState(parent.state, child.state),
+    hash: combineHash(parent.hash, child.hash),
     matches: [...parent.matches, child.matched],
     host: parent.host,
     depth: parent.depth + 1,

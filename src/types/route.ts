@@ -1,4 +1,5 @@
 import { CreateRouteOptions, WithComponent, WithComponents, WithHooks, WithHost, WithParent, WithState, WithoutComponents, WithoutHost, WithoutParent, WithoutState } from '@/types/createRouteOptions'
+import { Hash } from '@/types/hash'
 import { Host } from '@/types/host'
 import { Param } from '@/types/paramTypes'
 import { Path } from '@/types/path'
@@ -27,6 +28,7 @@ export type Route<
   THost extends Host = Host,
   TPath extends Path = Path,
   TQuery extends Query = Query,
+  THash extends Hash = Hash,
   TMeta extends RouteMeta = RouteMeta,
   TState extends Record<string, Param> = Record<string, Param>
 > = {
@@ -55,6 +57,10 @@ export type Route<
    * Represents the structured query of the route, including query params.
   */
   query: TQuery,
+  /**
+   * Represents the hash of the route.
+   */
+  hash: THash,
   /**
    * Represents additional metadata associated with a route, combined with any parents.
   */

@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest'
 import { createRoute } from '@/services/createRoute'
 import { query } from '@/services/query'
-import { routePathMatches, routeQueryMatches } from '@/services/routeMatchRules'
+import { routeHashMatches, routePathMatches, routeQueryMatches } from '@/services/routeMatchRules'
 import { withDefault } from '@/services/withDefault'
 import { component } from '@/utilities/testHelpers'
 
@@ -187,6 +187,57 @@ describe('routeQueryMatches', () => {
     })
 
     const response = routeQueryMatches(route, 'www.kitbag.io/some/path?second=2&first=1&third=3')
+
+    expect(response).toBe(true)
+  })
+})
+
+describe('routeHashMatches', () => {
+  test.each([
+    ['we*23mf#0'],
+    ['http://www.kitbag.io'],
+    ['http://www.kitbag.io/'],
+    ['http://www.kitbag.io/empty'],
+    ['http://www.kitbag.io/empty#'],
+    ['http://www.kitbag.io/empty#bar'],
+  ])('given %s and route.hash that does NOT match, returns false', (url) => {
+    const route = createRoute({
+      name: 'not-matches',
+      path: '/',
+      component,
+      hash: 'foo',
+    })
+
+    const response = routeHashMatches(route, url)
+
+    expect(response).toBe(false)
+  })
+
+  test.each([
+    ['/#foo'],
+    ['http://www.kitbag.io/#foo'],
+  ])('given url and route.path WITHOUT params that does match, returns true', (url) => {
+    const route = createRoute({
+      name: 'hash-matches',
+      path: '/',
+      component,
+      hash: 'foo',
+    })
+
+    const response = routeHashMatches(route, url)
+
+    expect(response).toBe(true)
+  })
+
+  test('route matching logic is case insensitive', () => {
+    const route = createRoute({
+      name: 'hash-matches',
+      path: '/',
+      component,
+      hash: 'foo',
+    })
+
+    const response = routeHashMatches(route, '/#FOO')
 
     expect(response).toBe(true)
   })
