@@ -7,10 +7,11 @@
 </template>
 
 <script lang="ts" setup>
-  import { Component, UnwrapRef, VNode, computed, provide, resolveComponent } from 'vue'
+  import { Component, UnwrapRef, VNode, computed, inject, provide, resolveComponent } from 'vue'
   import { useRejection } from '@/compositions/useRejection'
   import { useRoute } from '@/compositions/useRoute'
   import { useRouterDepth } from '@/compositions/useRouterDepth'
+  import { propStoreKey } from '@/models/PropStore'
   import { component as componentUtil } from '@/services/component'
   import { RouterRejection } from '@/services/createRouterReject'
   import { RouterRoute } from '@/services/createRouterRoute'
@@ -24,6 +25,8 @@
   const route = useRoute()
   const rejection = useRejection()
   const depth = useRouterDepth()
+
+  const propStore = inject(propStoreKey)
   const routerView = resolveComponent('RouterView', true)
 
   defineSlots<{
@@ -48,7 +51,7 @@
     }
 
     const component = getComponent(match)
-    const props = getProps(match)
+    const props = propStore?.getProps(route, name)
 
     if (!component) {
       return null
@@ -59,7 +62,7 @@
       // eslint-disable-next-line @typescript-eslint/no-unused-expressions, no-unused-expressions
       route.params
 
-      return componentUtil(component, () => props(route.params))
+      return componentUtil(component, () => props)
     }
 
     return component
@@ -85,25 +88,5 @@
     }
 
     return { default: routerView }
-  }
-
-  type ComponentProps = (params: Record<string, unknown>) => Record<string, unknown>
-
-  function getProps(options: CreateRouteOptions): ComponentProps | undefined {
-    const allProps = getAllProps(options)
-
-    return allProps[name]
-  }
-
-  function getAllProps(options: CreateRouteOptions): Record<string, ComponentProps | undefined> {
-    if (isWithComponents(options)) {
-      return options.props ?? {}
-    }
-
-    if (isWithComponent(options)) {
-      return { default: options.props }
-    }
-
-    return {}
   }
 </script>

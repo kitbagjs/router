@@ -3,6 +3,7 @@ import { App } from 'vue'
 import { RouterLink, RouterView } from '@/components'
 import { routerRejectionKey } from '@/compositions/useRejection'
 import { routerInjectionKey } from '@/compositions/useRouter'
+import { PropStore, propStoreKey } from '@/models/PropStore'
 import { createCurrentRoute } from '@/services/createCurrentRoute'
 import { createIsExternal } from '@/services/createIsExternal'
 import { createMaybeRelativeUrl } from '@/services/createMaybeRelativeUrl'
@@ -61,6 +62,7 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
 
   checkDuplicateNames(routes)
 
+  const propStore = new PropStore()
   const resolve = createRouterResolve(routes)
   const history = createRouterHistory({
     mode: options?.historyMode,
@@ -109,19 +111,21 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
       case 'REJECT':
         history.update(url, options)
         setRejection(beforeResponse.type)
-        updateRoute(to)
         break
 
       // On success update history, set the route, and clear the rejection
       case 'SUCCESS':
         history.update(url, options)
         setRejection(null)
-        updateRoute(to)
         break
 
       default:
         throw new Error(`Switch is not exhaustive for before hook response status: ${JSON.stringify(beforeResponse satisfies never)}`)
     }
+
+    propStore.setProps(to)
+
+    updateRoute(to)
 
     const afterResponse = await runAfterRouteHooks({ to, from, hooks })
 
@@ -221,6 +225,7 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
     app.component('RouterLink', RouterLink)
     app.provide(routerRejectionKey, rejection)
     app.provide(routeHookStoreKey, hooks)
+    app.provide(propStoreKey, propStore)
 
     // We cant technically guarantee that the user registered the same router that they installed
     // So we're making an assumption here that when installing a router its the same as the RegisteredRouter
