@@ -7,11 +7,11 @@
 </template>
 
 <script lang="ts" setup>
-  import { Component, UnwrapRef, VNode, computed, inject, provide, resolveComponent } from 'vue'
+  import { Component, UnwrapRef, VNode, computed, provide, resolveComponent } from 'vue'
+  import { usePropStore } from '@/compositions/usePropStore'
   import { useRejection } from '@/compositions/useRejection'
   import { useRoute } from '@/compositions/useRoute'
   import { useRouterDepth } from '@/compositions/useRouterDepth'
-  import { propStoreKey } from '@/models/PropStore'
   import { component as componentUtil } from '@/services/component'
   import { RouterRejection } from '@/services/createRouterReject'
   import { RouterRoute } from '@/services/createRouterRoute'
@@ -26,7 +26,7 @@
   const rejection = useRejection()
   const depth = useRouterDepth()
 
-  const propStore = inject(propStoreKey)
+  const propStore = usePropStore()
   const routerView = resolveComponent('RouterView', true)
 
   defineSlots<{
@@ -51,7 +51,7 @@
     }
 
     const component = getComponent(match)
-    const props = propStore?.getProps(route, name)
+    const props = propStore.getProps(route, name)
 
     if (!component) {
       return null
