@@ -6,7 +6,7 @@ import { MaybePromise } from '@/types/utilities'
 
 export const propStoreKey: InjectionKey<PropStore> = Symbol()
 
-type ComponentProps = { id: string, name: string, props?: (params: Record<string, unknown>) => MaybePromise<Record<string, unknown>> }
+type ComponentProps = { id: string, name: string, props?: (params: Record<string, unknown>) => unknown }
 
 export class PropStore {
   private readonly store = reactive(new Map<string, unknown>())
