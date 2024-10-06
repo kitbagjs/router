@@ -1,6 +1,6 @@
 import { inject } from 'vue'
 import { RouterNotInstalledError } from '@/errors/routerNotInstalledError'
-import { PropStore, propStoreKey } from '@/models/PropStore'
+import { PropStore, propStoreKey } from '@/services/createPropStore'
 
 export function usePropStore(): PropStore {
   const store = inject(propStoreKey)

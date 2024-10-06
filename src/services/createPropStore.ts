@@ -8,35 +8,40 @@ export const propStoreKey: InjectionKey<PropStore> = Symbol()
 
 type ComponentProps = { id: string, name: string, props?: (params: Record<string, unknown>) => unknown }
 
-export class PropStore {
-  private readonly store = reactive(new Map<string, unknown>())
+export type PropStore = {
+  setProps: (route: ResolvedRoute) => void,
+  getProps: (id: string, name: string, params: unknown) => MaybePromise<unknown> | undefined,
+}
 
-  public setProps(route: ResolvedRoute): void {
-    this.store.clear()
+export function createPropStore(): PropStore {
+  const store = reactive(new Map<string, unknown>())
+
+  function setProps(route: ResolvedRoute): void {
+    store.clear()
 
     route.matches
-      .flatMap(match => this.getComponentProps(match))
+      .flatMap(match => getComponentProps(match))
       .forEach(({ id, name, props }) => {
         if (props) {
-          const key = this.getPropKey(id, name, route.params)
+          const key = getPropKey(id, name, route.params)
           const value = props(route.params)
 
-          this.store.set(key, value)
+          store.set(key, value)
         }
       })
   }
 
-  public getProps(id: string, name: string, params: unknown): MaybePromise<unknown> | undefined {
-    const key = this.getPropKey(id, name, params)
+  function getProps(id: string, name: string, params: unknown): MaybePromise<unknown> | undefined {
+    const key = getPropKey(id, name, params)
 
-    return this.store.get(key)
+    return store.get(key)
   }
 
-  private getPropKey(id: string, name: string, params: unknown): string {
+  function getPropKey(id: string, name: string, params: unknown): string {
     return [id, name, JSON.stringify(params)].join('-')
   }
 
-  private getComponentProps(options: Route['matched']): ComponentProps[] {
+  function getComponentProps(options: Route['matched']): ComponentProps[] {
     if (isWithComponents(options)) {
       return Object.entries(options.props ?? {}).map(([name, props]) => ({ id: options.id, name, props }))
     }
@@ -53,4 +58,6 @@ export class PropStore {
 
     return []
   }
+
+  return { setProps, getProps }
 }

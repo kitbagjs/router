@@ -1,7 +1,7 @@
 import { inject, onUnmounted } from 'vue'
 import { useRouterDepth } from '@/compositions/useRouterDepth'
 import { RouterNotInstalledError } from '@/errors'
-import { RouteHookStore } from '@/models/RouteHookStore'
+import { RouteHookStore } from '@/services/createRouteHookStore'
 import { routeHookStoreKey } from '@/services/createRouterHooks'
 import { AddAfterRouteHook, AddBeforeRouteHook, AfterRouteHook, AfterRouteHookLifecycle, BeforeRouteHook, BeforeRouteHookLifecycle } from '@/types/hooks'
 
@@ -51,7 +51,7 @@ function afterComponentHookFactory(lifecycle: AfterRouteHookLifecycle) {
 export const onBeforeRouteLeave: AddBeforeRouteHook = beforeComponentHookFactory('onBeforeRouteUpdate')
 
 /**
- * Registers a hook that is called before a route is updated. Must be called from setup. 
+ * Registers a hook that is called before a route is updated. Must be called from setup.
  * This is particularly useful for handling changes in route parameters or query while staying within the same component.
  *
  * @param BeforeRouteHook - The hook callback function

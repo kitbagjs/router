@@ -58,10 +58,6 @@
     }
 
     if (props) {
-      // So that the props are reactive we need to actually access the route params in this computed
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions, no-unused-expressions
-      route.params
-
       return componentUtil(component, () => props)
     }
 

@@ -1,5 +1,5 @@
 import { InjectionKey } from 'vue'
-import { RouteHookStore } from '@/models/RouteHookStore'
+import { createRouteHookStore, RouteHookStore } from '@/services/createRouteHookStore'
 import { AddAfterRouteHook, AddBeforeRouteHook } from '@/types'
 
 export const routeHookStoreKey: InjectionKey<RouteHookStore> = Symbol()
@@ -15,7 +15,7 @@ export type RouterHooks = {
 }
 
 export function createRouterHooks(): RouterHooks {
-  const hooks = new RouteHookStore()
+  const hooks = createRouteHookStore()
 
   const onBeforeRouteEnter: AddBeforeRouteHook = (hook) => {
     return hooks.addBeforeRouteHook({ lifecycle: 'onBeforeRouteEnter', hook, timing: 'global', depth: 0 })

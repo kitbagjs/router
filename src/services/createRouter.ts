@@ -3,10 +3,10 @@ import { App } from 'vue'
 import { RouterLink, RouterView } from '@/components'
 import { routerRejectionKey } from '@/compositions/useRejection'
 import { routerInjectionKey } from '@/compositions/useRouter'
-import { PropStore, propStoreKey } from '@/models/PropStore'
 import { createCurrentRoute } from '@/services/createCurrentRoute'
 import { createIsExternal } from '@/services/createIsExternal'
 import { createMaybeRelativeUrl } from '@/services/createMaybeRelativeUrl'
+import { createPropStore, propStoreKey } from '@/services/createPropStore'
 import { createRouterHistory } from '@/services/createRouterHistory'
 import { routeHookStoreKey, createRouterHooks } from '@/services/createRouterHooks'
 import { createRouterReject } from '@/services/createRouterReject'
@@ -62,7 +62,7 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
 
   checkDuplicateNames(routes)
 
-  const propStore = new PropStore()
+  const propStore = createPropStore()
   const resolve = createRouterResolve(routes)
   const history = createRouterHistory({
     mode: options?.historyMode,
