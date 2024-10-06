@@ -1,23 +1,24 @@
-import { InjectionKey } from 'vue'
-import { CreateRouteOptions, isWithComponent, isWithComponents } from '@/types/createRouteOptions'
+import { InjectionKey, reactive } from 'vue'
+import { isWithComponent, isWithComponents } from '@/types/createRouteOptions'
 import { ResolvedRoute } from '@/types/resolved'
+import { Route } from '@/types/route'
 import { MaybePromise } from '@/types/utilities'
 
 export const propStoreKey: InjectionKey<PropStore> = Symbol()
 
-type NamedComponentProps = { name: string, props?: (params: Record<string, unknown>) => MaybePromise<Record<string, unknown>> }
+type ComponentProps = { id: string, name: string, props?: (params: Record<string, unknown>) => MaybePromise<Record<string, unknown>> }
 
 export class PropStore {
-  private readonly store = new Map<string, MaybePromise<Record<string, unknown>>>()
+  private readonly store = reactive(new Map<string, unknown>())
 
   public setProps(route: ResolvedRoute): void {
     this.store.clear()
 
     route.matches
       .flatMap(match => this.getComponentProps(match))
-      .forEach(({ name, props }) => {
+      .forEach(({ id, name, props }) => {
         if (props) {
-          const key = this.getPropKey(route, name)
+          const key = this.getPropKey(id, name, route.params)
           const value = props(route.params)
 
           this.store.set(key, value)
@@ -25,23 +26,29 @@ export class PropStore {
       })
   }
 
-  public getProps(route: ResolvedRoute, name: string = 'default'): MaybePromise<Record<string, unknown>> | undefined {
-    const key = this.getPropKey(route, name)
+  public getProps(id: string, name: string, params: unknown): MaybePromise<unknown> | undefined {
+    const key = this.getPropKey(id, name, params)
 
     return this.store.get(key)
   }
 
-  private getPropKey(route: ResolvedRoute, name: string = 'default'): string {
-    return [route.id, name, JSON.stringify(route.params)].join('-')
+  private getPropKey(id: string, name: string, params: unknown): string {
+    return [id, name, JSON.stringify(params)].join('-')
   }
 
-  private getComponentProps(options: CreateRouteOptions): NamedComponentProps[] {
+  private getComponentProps(options: Route['matched']): ComponentProps[] {
     if (isWithComponents(options)) {
-      return Object.entries(options.props ?? {}).map(([name, props]) => ({ name, props }))
+      return Object.entries(options.props ?? {}).map(([name, props]) => ({ id: options.id, name, props }))
     }
 
     if (isWithComponent(options)) {
-      return [{ name: 'default', props: options.props }]
+      return [
+        {
+          id: options.id,
+          name: 'default',
+          props: options.props,
+        },
+      ]
     }
 
     return []

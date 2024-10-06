@@ -51,7 +51,7 @@
     }
 
     const component = getComponent(match)
-    const props = propStore.getProps(route, name)
+    const props = propStore.getProps(match.id, name, route.params)
 
     if (!component) {
       return null
