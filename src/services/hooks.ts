@@ -1,16 +1,14 @@
 import { NavigationAbortError } from '@/errors/navigationAbortError'
 import { RouterPushError } from '@/errors/routerPushError'
 import { RouterRejectionError } from '@/errors/routerRejectionError'
+import { createCallbackContext } from '@/services/createCallbackContext'
 import { RouteHookStore } from '@/services/createRouteHookStore'
 import { getAfterRouteHooksFromRoutes, getBeforeRouteHooksFromRoutes } from '@/services/getRouteHooks'
 import { AfterRouteHook, AfterRouteHookResponse, BeforeRouteHook, BeforeRouteHookResponse, RouteHookAbort, RouteHookLifecycle } from '@/types/hooks'
 import { RegisteredRouterPush, RegisteredRouterReplace } from '@/types/register'
 import { ResolvedRoute } from '@/types/resolved'
 import { Routes } from '@/types/route'
-import { RouterReject } from '@/types/router'
-import { RouterPush, RouterPushOptions } from '@/types/routerPush'
-import { RouterReplace } from '@/types/routerReplace'
-import { isUrl } from '@/types/url'
+import { RouterPush } from '@/types/routerPush'
 
 type RouteHookRunners<T extends Routes> = {
   runBeforeRouteHooks: RouteHookBeforeRunner<T>,
@@ -34,24 +32,7 @@ type AfterContext = {
 type RouteHookAfterRunner<T extends Routes> = (context: AfterContext) => Promise<AfterRouteHookResponse<T>>
 
 export function createRouteHookRunners<const T extends Routes>(): RouteHookRunners<T> {
-  const reject: RouterReject = (type) => {
-    throw new RouterRejectionError(type)
-  }
-
-  const push: RouterPush<T> = (...parameters: any[]) => {
-    throw new RouterPushError(parameters)
-  }
-
-  const replace: RouterReplace<T> = (source: any, paramsOrOptions?: any, maybeOptions?: any) => {
-    if (isUrl(source)) {
-      const options: RouterPushOptions = paramsOrOptions ?? {}
-      throw new RouterPushError([source, { ...options, replace: true }])
-    }
-
-    const params = paramsOrOptions
-    const options: RouterPushOptions = maybeOptions ?? {}
-    throw new RouterPushError([source, params, { ...options, replace: true }])
-  }
+  const { reject, push, replace } = createCallbackContext()
 
   const abort: RouteHookAbort = () => {
     throw new NavigationAbortError()
@@ -76,8 +57,8 @@ export function createRouteHookRunners<const T extends Routes>(): RouteHookRunne
       const results = allHooks.map(callback => callback(to, {
         from,
         reject,
-        push: push as RegisteredRouterPush,
-        replace: replace as RegisteredRouterPush,
+        push,
+        replace,
         abort,
       }))
 
