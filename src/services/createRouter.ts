@@ -3,6 +3,8 @@ import { App } from 'vue'
 import { RouterLink, RouterView } from '@/components'
 import { routerRejectionKey } from '@/compositions/useRejection'
 import { routerInjectionKey } from '@/compositions/useRouter'
+import { RouterPushError } from '@/errors/routerPushError'
+import { RouterRejectionError } from '@/errors/routerRejectionError'
 import { createCurrentRoute } from '@/services/createCurrentRoute'
 import { createIsExternal } from '@/services/createIsExternal'
 import { createMaybeRelativeUrl } from '@/services/createMaybeRelativeUrl'
@@ -16,9 +18,10 @@ import { getResolvedRouteForUrl } from '@/services/getResolvedRouteForUrl'
 import { createRouteHookRunners } from '@/services/hooks'
 import { insertBaseRoute } from '@/services/insertBaseRoute'
 import { setStateValues } from '@/services/state'
+import { RegisteredRouterReject } from '@/types'
 import { ResolvedRoute } from '@/types/resolved'
 import { Route, Routes } from '@/types/route'
-import { Router, RouterOptions, RouterReject } from '@/types/router'
+import { Router, RouterOptions } from '@/types/router'
 import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { RouterReplace, RouterReplaceOptions } from '@/types/routerReplace'
 import { RoutesName } from '@/types/routesMap'
@@ -123,7 +126,18 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
         throw new Error(`Switch is not exhaustive for before hook response status: ${JSON.stringify(beforeResponse satisfies never)}`)
     }
 
-    propStore.setProps(to)
+    try {
+      propStore.setProps(to)
+    } catch (error) {
+      if (error instanceof RouterPushError) {
+        await push(...error.to as Parameters<RouterPush>)
+        return
+      }
+
+      if (error instanceof RouterRejectionError) {
+        setRejection(error.type)
+      }
+    }
 
     updateRoute(to)
 
@@ -183,7 +197,7 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
     return set(url, { ...options, state })
   }
 
-  const reject: RouterReject = (type) => {
+  const reject: RegisteredRouterReject = (type) => {
     return setRejection(type)
   }
 

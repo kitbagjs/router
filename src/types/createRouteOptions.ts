@@ -5,6 +5,7 @@ import { combinePath } from '@/services/combinePath'
 import { combineQuery } from '@/services/combineQuery'
 import { combineState } from '@/services/combineState'
 import { ComponentProps } from '@/services/component'
+import { CallbackContext } from '@/services/createCallbackContext'
 import { Hash } from '@/types/hash'
 import { AfterRouteHook, BeforeRouteHook } from '@/types/hooks'
 import { Host } from '@/types/host'
@@ -63,7 +64,7 @@ export type WithComponent<
    * A Vue component, which can be either synchronous or asynchronous components.
    */
   component: TComponent,
-  props?: (params: TParams) => TComponent extends Component ? MaybePromise<ComponentProps<TComponent>> : {},
+  props?: (params: TParams, context: CallbackContext) => TComponent extends Component ? MaybePromise<ComponentProps<TComponent>> : {},
 }
 
 export function isWithComponent(options: CreateRouteOptions): options is CreateRouteOptions & WithComponent {
@@ -79,7 +80,7 @@ export type WithComponents<
    */
   components: TComponents,
   props?: {
-    [TKey in keyof TComponents]?: (params: TParams) => TComponents[TKey] extends Component ? MaybePromise<ComponentProps<TComponents[TKey]>> : {}
+    [TKey in keyof TComponents]?: (params: TParams, context: CallbackContext) => TComponents[TKey] extends Component ? MaybePromise<ComponentProps<TComponents[TKey]>> : {}
   },
 }
 
