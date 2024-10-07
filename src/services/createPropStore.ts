@@ -24,7 +24,7 @@ type RoutePropsContext = {
 }
 
 /**
- * A unique identifier for a route component's props based on the route id, view name, and stringified params
+ * A unique identifier for a component's props based on the route id, view name, and stringified params
  * Format: `${id}-${name}-${params}
  */
 type RoutePropsKey = `${string}-${string}-${string}`
