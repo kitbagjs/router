@@ -1,6 +1,8 @@
 import { MaybeRefOrGetter, Ref, computed, toRef, toValue, watch } from 'vue'
+import { usePropStore } from '@/compositions/usePropStore'
 import { useRouter } from '@/compositions/useRouter'
 import { InvalidRouteParamValueError } from '@/errors/invalidRouteParamValueError'
+import { PropStore, RouteProps } from '@/services/createPropStore'
 import { RouterResolveOptions } from '@/services/createRouterResolve'
 import { isWithComponent, isWithComponents } from '@/types/createRouteOptions'
 import { PrefetchConfig, getPrefetchOption } from '@/types/prefetch'
@@ -70,11 +72,15 @@ export function useLink(
   maybeOptions: MaybeRefOrGetter<UseLinkOptions> = {},
 ): UseLink {
   const router = useRouter()
+  const { getRouteProps, setRouteProps } = usePropStore()
   const sourceRef = toRef(source)
   const paramsRef = computed<Record<PropertyKey, unknown>>(() => isUrl(sourceRef.value) ? {} : toValue(paramsOrOptions))
   const optionsRef = computed<UseLinkOptions>(() => isUrl(sourceRef.value) ? toValue(paramsOrOptions) : toValue(maybeOptions))
 
-  let props: Record<string, unknown> = {}
+  /**
+   * Props prefetched for this specific link
+   */
+  let props: RouteProps | null = null
 
   const href = computed(() => {
     if (isUrl(sourceRef.value)) {
@@ -110,13 +116,17 @@ export function useLink(
     })
 
     props = prefetchPropsForRoute(route, {
-      params: paramsRef.value,
+      getRouteProps,
       routerPrefetch,
       linkPrefetch,
     })
   }, { immediate: true })
 
   const push: UseLink['push'] = (options) => {
+    if (props) {
+      setRouteProps(props, { prefetched: true })
+    }
+
     return router.push(href.value, {}, options)
   }
 
@@ -134,12 +144,12 @@ export function useLink(
   }
 }
 
-type ComponentPrefect = {
+type ComponentPrefetchContext = {
   routerPrefetch: PrefetchConfig | undefined,
   linkPrefetch: PrefetchConfig | undefined,
 }
 
-function prefetchComponentsForRoute(route: ResolvedRoute, { routerPrefetch, linkPrefetch }: ComponentPrefect): void {
+function prefetchComponentsForRoute(route: ResolvedRoute, { routerPrefetch, linkPrefetch }: ComponentPrefetchContext): void {
 
   route.matches.forEach(route => {
     const shouldPrefetchComponents = getPrefetchOption({
@@ -167,34 +177,27 @@ function prefetchComponentsForRoute(route: ResolvedRoute, { routerPrefetch, link
 
 }
 
-type PropsPrefetch = {
+type PropsPrefetchContext = {
   routerPrefetch: PrefetchConfig | undefined,
   linkPrefetch: PrefetchConfig | undefined,
-  params: Record<string, unknown>,
+  getRouteProps: PropStore['getRouteProps'],
 }
 
-function prefetchPropsForRoute(route: ResolvedRoute, { params, routerPrefetch, linkPrefetch }: PropsPrefetch): Record<string, unknown> {
-  return route.matches.reduce<Record<string, unknown>>((props, route) => {
-    const shouldPrefetchProps = getPrefetchOption({
-      routePrefetch: route.prefetch,
-      routerPrefetch,
-      linkPrefetch,
-    }, 'props')
+function prefetchPropsForRoute(route: ResolvedRoute, { getRouteProps, routerPrefetch, linkPrefetch }: PropsPrefetchContext): RouteProps | null {
 
-    if (!shouldPrefetchProps) {
-      return props
-    }
+  // filter down the route's matches to just the matches that should be prefetched
+  const matches = route.matches.filter((match) => getPrefetchOption({
+    routePrefetch: match.prefetch,
+    routerPrefetch,
+    linkPrefetch,
+  }, 'props'))
 
-    if (isWithComponent(route) && route.props) {
-      props.default = route.props(params)
-    }
+  if (!matches.length) {
+    return null
+  }
 
-    if (isWithComponents(route) && route.props) {
-      for (const [name, callback] of Object.entries(route.props)) {
-        props[name] = callback?.(params)
-      }
-    }
-
-    return props
-  }, {})
+  return getRouteProps({
+    ...route,
+    matches,
+  })
 }

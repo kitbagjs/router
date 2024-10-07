@@ -490,4 +490,52 @@ describe('prefetch props', () => {
       expect(callback).not.toHaveBeenCalled()
     }
   })
+
+  test('prefetch props are passed to route component', async () => {
+    const value = 'hello world'
+
+    const props = vi.fn(() => Promise.resolve({
+      value,
+    }))
+
+    const home = createRoute({
+      name: 'home',
+      path: '/',
+      component: () => h(routerLink, { to: resolve => resolve('echo') }),
+    })
+
+    const route = createRoute({
+      name: 'echo',
+      path: '/echo',
+      component: echo,
+      prefetch: { props: true },
+      props,
+    })
+
+    const router = createRouter([home, route], {
+      initialUrl: '/',
+    })
+
+    await router.initialized
+
+    const root = {
+      template: '<Suspense><RouterView /></Suspense>',
+    }
+
+    const app = mount(root, {
+      global: {
+        plugins: [router],
+      },
+    })
+
+    expect(props).toHaveBeenCalledOnce()
+
+    await app.find('a').trigger('click')
+
+    await flushPromises()
+
+    expect(router.route.name).toBe('echo')
+    expect(props).toHaveBeenCalledOnce()
+    expect(app.text()).toBe(value)
+  })
 })

@@ -52,7 +52,7 @@
     return options
   })
 
-  const { href, isMatch, isExactMatch } = useLink(resolved, options)
+  const { isMatch, isExactMatch, push } = useLink(resolved, options)
 
   const classes = computed(() => ({
     'router-link--match': isMatch.value,
@@ -66,6 +66,6 @@
   function onClick(event: MouseEvent): void {
     event.preventDefault()
 
-    router.push(href.value, options.value)
+    push()
   }
 </script>

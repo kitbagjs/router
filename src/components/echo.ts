@@ -8,7 +8,7 @@ export default defineComponent(({ value }) => {
 }, {
   props: {
     value: {
-      type: String,
+      type: [String, Number],
       required: true,
     },
   },

@@ -15,6 +15,7 @@
   import { component as componentUtil } from '@/services/component'
   import { RouterRejection } from '@/services/createRouterReject'
   import { RouterRoute } from '@/services/createRouterRoute'
+  import { Route } from '@/types'
   import { CreateRouteOptions, isWithComponent, isWithComponents } from '@/types/createRouteOptions'
   import { depthInjectionKey } from '@/types/injectionDepth'
 
@@ -44,14 +45,18 @@
       return rejection.value.component
     }
 
-    const match = route.matches.at(depth)
+    const match: Route['matched'] | undefined = route.matches.at(depth)
 
     if (!match) {
       return null
     }
 
     const component = getComponent(match)
-    const props = getProps(match.id, name, route.params)
+    const props = getProps({
+      params: route.params,
+      id: match.id,
+      name,
+    })
 
     if (!component) {
       return null

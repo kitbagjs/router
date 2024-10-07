@@ -341,7 +341,6 @@ test('Updates props and attrs when route params change', async () => {
     props: ({ param }) => ({ value: param }),
   })
 
-
   const asyncProps = createRoute({
     name: 'async',
     path: '/async/[param]',

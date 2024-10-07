@@ -11,10 +11,6 @@ export type RouterReplaceOptions<
   query?: Record<string, string>,
   hash?: string,
   state?: Partial<TState>,
-  /**
-   * @internal
-   */
-  __props?: Record<string, unknown>,
 }
 
 type RouterReplaceArgs<
