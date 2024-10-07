@@ -33,6 +33,10 @@ export type UseLink = {
    */
   isExactMatch: Ref<boolean>,
   /**
+  * Returns true if host does not match host stored on router instance
+  */
+  isExternal: Ref<boolean>,
+  /**
    * Convenience method for executing `router.push` with route context passed in.
    */
   push: (options?: RouterPushOptions) => Promise<void>,
@@ -101,6 +105,7 @@ export function useLink(
   const route = computed(() => router.find(href.value, optionsRef.value))
   const isMatch = computed(() => !!route.value && router.route.matches.includes(route.value.matched))
   const isExactMatch = computed(() => !!route.value && router.route.matched === route.value.matched)
+  const isExternal = computed(() => router.isExternal(href.value))
 
   watch(route, route => {
     if (!route) {
@@ -139,6 +144,7 @@ export function useLink(
     href,
     isMatch,
     isExactMatch,
+    isExternal,
     push,
     replace,
   }
