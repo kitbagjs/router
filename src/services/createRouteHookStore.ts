@@ -18,13 +18,22 @@ type AfterRouteHookRegistration = {
   depth: number,
 }
 
-export class RouteHookStore {
-  public global = new RouteHooks()
-  public component = new RouteHooks()
+export type RouteHookStore = {
+  global: RouteHooks,
+  component: RouteHooks,
+  addBeforeRouteHook: (registration: BeforeRouteHookRegistration) => RouteHookRemove,
+  addAfterRouteHook: (registration: AfterRouteHookRegistration) => RouteHookRemove,
+}
 
-  public addBeforeRouteHook({ lifecycle, timing, depth, hook }: BeforeRouteHookRegistration): RouteHookRemove {
+export function createRouteHookStore(): RouteHookStore {
+  const store = {
+    global: new RouteHooks(),
+    component: new RouteHooks(),
+  }
+
+  function addBeforeRouteHook({ lifecycle, timing, depth, hook }: BeforeRouteHookRegistration): RouteHookRemove {
     const condition = getRouteHookCondition(lifecycle)
-    const store = this[timing][lifecycle]
+    const hooks = store[timing][lifecycle]
 
     const wrapped: BeforeRouteHook = (to, context) => {
       if (!condition(to, context.from, depth)) {
@@ -34,14 +43,14 @@ export class RouteHookStore {
       return hook(to, context)
     }
 
-    store.add(wrapped)
+    hooks.add(wrapped)
 
-    return () => store.delete(wrapped)
+    return () => hooks.delete(wrapped)
   }
 
-  public addAfterRouteHook({ lifecycle, timing, depth, hook }: AfterRouteHookRegistration): RouteHookRemove {
+  function addAfterRouteHook({ lifecycle, timing, depth, hook }: AfterRouteHookRegistration): RouteHookRemove {
     const condition = getRouteHookCondition(lifecycle)
-    const store = this[timing][lifecycle]
+    const hooks = store[timing][lifecycle]
 
     const wrapped: AfterRouteHook = (to, context) => {
       if (!condition(to, context.from, depth)) {
@@ -51,9 +60,11 @@ export class RouteHookStore {
       return hook(to, context)
     }
 
-    store.add(wrapped)
+    hooks.add(wrapped)
 
-    return () => store.delete(wrapped)
+    return () => hooks.delete(wrapped)
   }
+
+  return { ...store, addBeforeRouteHook, addAfterRouteHook }
 
 }

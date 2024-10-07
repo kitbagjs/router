@@ -1,7 +1,7 @@
 import { NavigationAbortError } from '@/errors/navigationAbortError'
 import { RouterPushError } from '@/errors/routerPushError'
 import { RouterRejectionError } from '@/errors/routerRejectionError'
-import { RouteHookStore } from '@/models/RouteHookStore'
+import { RouteHookStore } from '@/services/createRouteHookStore'
 import { getAfterRouteHooksFromRoutes, getBeforeRouteHooksFromRoutes } from '@/services/getRouteHooks'
 import { AfterRouteHook, AfterRouteHookResponse, BeforeRouteHook, BeforeRouteHookResponse, RouteHookAbort, RouteHookLifecycle } from '@/types/hooks'
 import { RegisteredRouterPush, RegisteredRouterReplace } from '@/types/register'

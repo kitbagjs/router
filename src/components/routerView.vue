@@ -8,6 +8,7 @@
 
 <script lang="ts" setup>
   import { Component, UnwrapRef, VNode, computed, provide, resolveComponent } from 'vue'
+  import { usePropStore } from '@/compositions/usePropStore'
   import { useRejection } from '@/compositions/useRejection'
   import { useRoute } from '@/compositions/useRoute'
   import { useRouterDepth } from '@/compositions/useRouterDepth'
@@ -24,6 +25,8 @@
   const route = useRoute()
   const rejection = useRejection()
   const depth = useRouterDepth()
+
+  const { getProps } = usePropStore()
   const routerView = resolveComponent('RouterView', true)
 
   defineSlots<{
@@ -48,18 +51,14 @@
     }
 
     const component = getComponent(match)
-    const props = getProps(match)
+    const props = getProps(match.id, name, route.params)
 
     if (!component) {
       return null
     }
 
     if (props) {
-      // So that the props are reactive we need to actually access the route params in this computed
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions, no-unused-expressions
-      route.params
-
-      return componentUtil(component, () => props(route.params))
+      return componentUtil(component, () => props)
     }
 
     return component
@@ -85,25 +84,5 @@
     }
 
     return { default: routerView }
-  }
-
-  type ComponentProps = (params: Record<string, unknown>) => Record<string, unknown>
-
-  function getProps(options: CreateRouteOptions): ComponentProps | undefined {
-    const allProps = getAllProps(options)
-
-    return allProps[name]
-  }
-
-  function getAllProps(options: CreateRouteOptions): Record<string, ComponentProps | undefined> {
-    if (isWithComponents(options)) {
-      return options.props ?? {}
-    }
-
-    if (isWithComponent(options)) {
-      return { default: options.props }
-    }
-
-    return {}
   }
 </script>
