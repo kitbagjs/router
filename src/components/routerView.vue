@@ -26,7 +26,7 @@
   const rejection = useRejection()
   const depth = useRouterDepth()
 
-  const propStore = usePropStore()
+  const { getProps } = usePropStore()
   const routerView = resolveComponent('RouterView', true)
 
   defineSlots<{
@@ -51,7 +51,7 @@
     }
 
     const component = getComponent(match)
-    const props = propStore.getProps(match.id, name, route.params)
+    const props = getProps(match.id, name, route.params)
 
     if (!component) {
       return null
