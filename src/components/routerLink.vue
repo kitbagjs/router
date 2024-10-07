@@ -66,6 +66,6 @@
   function onClick(event: MouseEvent): void {
     event.preventDefault()
 
-    push()
+    push(options.value)
   }
 </script>
