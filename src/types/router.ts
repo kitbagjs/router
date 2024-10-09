@@ -114,10 +114,6 @@ export type Router<
    */
   onAfterRouteUpdate: AddAfterRouteHook,
   /**
-   * A promise that resolves when the router is fully initialized.
-   */
-  initialized: Promise<void>,
-  /**
   * Given a URL, returns true if host does not match host stored on router instance
   */
   isExternal: (url: string) => boolean,
@@ -125,6 +121,10 @@ export type Router<
    * Determines what assets are prefetched.
    */
   prefetch?: PrefetchConfig,
+  /**
+   * Initializes the router based on the initial route. Automatically called when the router is installed. Calling this more than once has no effect.
+   */
+  start: () => Promise<void>,
 }
 
 /**
