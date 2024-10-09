@@ -16,7 +16,7 @@ test('renders component with sync props', async () => {
     initialUrl: '/',
   })
 
-  await router.initialized
+  await router.start()
 
   // purposefully not using suspense here to make sure sync props doesn't require suspense
   const root = {
@@ -47,7 +47,7 @@ test('renders component with async props', async () => {
     initialUrl: '/',
   })
 
-  await router.initialized
+  await router.start()
 
   const root = {
     template: '<Suspense><RouterView/></Suspense>',
