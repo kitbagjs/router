@@ -80,7 +80,7 @@ test.each([
 
   const [, options] = spy.mock.lastCall ?? []
 
-  expect(options).toMatchObject({ replace, query: undefined })
+  expect(options).toMatchObject({ replace })
 })
 
 test('to prop as string renders and routes correctly', () => {

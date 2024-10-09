@@ -8,7 +8,7 @@ import { isWithComponent, isWithComponents } from '@/types/createRouteOptions'
 import { PrefetchConfig, getPrefetchOption } from '@/types/prefetch'
 import { RegisteredRoutes, RegisteredRoutesName } from '@/types/register'
 import { ResolvedRoute } from '@/types/resolved'
-import { RouterPushOptions } from '@/types/routerPush'
+import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { RouterReplaceOptions } from '@/types/routerReplace'
 import { RouteParamsByKey } from '@/types/routeWithParams'
 import { Url, isUrl } from '@/types/url'
@@ -132,7 +132,7 @@ export function useLink(
       setRouteProps(props, { prefetched: true })
     }
 
-    return router.push(href.value, {}, options)
+    return router.push(href.value, { ...optionsRef.value, ...options })
   }
 
   const replace: UseLink['replace'] = (options) => {
