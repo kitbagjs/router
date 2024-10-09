@@ -128,7 +128,7 @@ test('resolves async components', async () => {
   })
 
   const root = {
-    template: '<suspense><RouterView/></suspense>',
+    template: '<RouterView/>',
   }
 
   const app = mount(root, {
@@ -311,7 +311,7 @@ test('Binds props and attrs from route', async () => {
   await router.initialized
 
   const root = {
-    template: '<Suspense><RouterView/></Suspense>',
+    template: '<RouterView/>',
   }
 
   const app = mount(root, {
@@ -325,9 +325,6 @@ test('Binds props and attrs from route', async () => {
   expect(app.html()).toBe('hello')
 
   await router.push('/routeB/world')
-
-  // needed because of suspense
-  await flushPromises()
 
   expect(app.html()).toBe('world')
 })
@@ -358,7 +355,7 @@ test('Updates props and attrs when route params change', async () => {
   await router.initialized
 
   const root = {
-    template: '<Suspense><RouterView/></Suspense>',
+    template: '<RouterView/>',
   }
 
   const app = mount(root, {

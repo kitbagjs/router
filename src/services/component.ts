@@ -1,5 +1,5 @@
 /* eslint-disable vue/one-component-per-file */
-import { AsyncComponentLoader, Component, FunctionalComponent, defineComponent, h } from 'vue'
+import { AsyncComponentLoader, Component, FunctionalComponent, defineComponent, h, ref } from 'vue'
 import { MaybePromise } from '@/types/utilities'
 
 type Constructor = new (...args: any) => any
@@ -52,10 +52,21 @@ function asyncPropsWrapper<TComponent extends Component>(component: TComponent, 
   return defineComponent({
     name: 'AsyncPropsWrapper',
     expose: [],
-    async setup() {
-      const values = await props
+    setup() {
+      const values = ref()
 
-      return () => h(component, values)
+      // eslint-disable-next-line semi-style
+      ;(async () => {
+        values.value = await props
+      })()
+
+      return () => {
+        if (values.value) {
+          return h(component, values.value)
+        }
+
+        return ''
+      }
     },
   })
 }
