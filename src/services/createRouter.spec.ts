@@ -7,7 +7,7 @@ import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
 import * as createRouterHistoryUtilities from '@/services/createRouterHistory'
 import * as resolveUtilities from '@/services/createRouterResolve'
-import { component } from '@/utilities/testHelpers'
+import { component, routes } from '@/utilities/testHelpers'
 
 test('initial route is set', async () => {
   const foo = createRoute({
@@ -272,4 +272,22 @@ test('given an array of Routes with duplicate names, throws ', () => {
   })
 
   expect(action).toThrow(DuplicateNamesError)
+})
+
+test('initial route is not set until the router is started', async () => {
+  const route = createRoute({
+    name: 'root',
+    path: '/',
+    component,
+  })
+
+  const router = createRouter([route], {
+    initialUrl: '/',
+  })
+
+  expect(router.route.name).toBe('NotFound')
+
+  await router.start()
+
+  expect(router.route.name).toBe('root')
 })
