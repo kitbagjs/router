@@ -248,7 +248,7 @@ test.each<PrefetchConfig | undefined>([
     component: defineAsyncComponent(() => {
       return new Promise(resolve => {
         loaded = true
-        resolve({ default: { template: '' } })
+        resolve({ default: { template: 'foo' } })
       })
     }),
   })
@@ -294,7 +294,7 @@ test.each<PrefetchConfig | undefined>([
     component: defineAsyncComponent(() => {
       return new Promise(resolve => {
         loaded = true
-        resolve({ default: { template: '' } })
+        resolve({ default: { template: 'foo' } })
       })
     }),
   })
@@ -338,7 +338,7 @@ test.each<PrefetchConfig | undefined>([
     component: defineAsyncComponent(() => {
       return new Promise(resolve => {
         loaded = true
-        resolve({ default: { template: '' } })
+        resolve({ default: { template: 'foo' } })
       })
     }),
   })
