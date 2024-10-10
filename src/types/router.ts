@@ -4,14 +4,12 @@ import { RouterResolve } from '@/services/createRouterResolve'
 import { RouterRoute } from '@/services/createRouterRoute'
 import { AddAfterRouteHook, AddBeforeRouteHook } from '@/types/hooks'
 import { PrefetchConfig } from '@/types/prefetch'
-import { RegisteredRejectionType } from '@/types/register'
+import { RegisteredRouterReject } from '@/types/register'
 import { ResolvedRoute } from '@/types/resolved'
 import { Routes } from '@/types/route'
 import { RouterFind } from '@/types/routerFind'
 import { RouterPush } from '@/types/routerPush'
 import { RouterReplace } from '@/types/routerReplace'
-
-export type RouterReject = (type: RegisteredRejectionType) => void
 
 /**
  * Options to initialize a {@link Router} instance.
@@ -72,7 +70,7 @@ export type Router<
   /**
    * Handles route rejection based on a specified rejection type.
    */
-  reject: RouterReject,
+  reject: RegisteredRouterReject,
   /**
    * Forces the router to re-evaluate the current route.
    */
