@@ -38,13 +38,13 @@ go: (delta: number) => void;
 
 Moves the current history entry to a specific point in the history stack.
 
-### initialized
+### start
 
 ```ts
-initialized: Promise<void>;
+start: () => Promise<void>;
 ```
 
-A promise that resolves when the router is fully initialized.
+Initializes the router based on the initial route. Automatically called when the router is installed. Calling this more than once has no effect.
 
 ### isExternal
 

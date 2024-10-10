@@ -16,7 +16,7 @@ test('renders component with sync props', async () => {
     initialUrl: '/',
   })
 
-  await router.initialized
+  await router.start()
 
   const root = {
     template: '<RouterView/>',
@@ -46,7 +46,7 @@ test('renders component with async props', async () => {
     initialUrl: '/',
   })
 
-  await router.initialized
+  await router.start()
 
   const root = {
     template: '<RouterView/>',

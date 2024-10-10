@@ -61,7 +61,7 @@ test.each([
     initialUrl: '/routeA',
   })
 
-  await router.initialized
+  await router.start()
 
   const spy = vi.spyOn(router, 'push')
 
@@ -150,7 +150,7 @@ test('when current route matches descendant, parent has "match" class', async ()
     },
   })
 
-  await router.initialized
+  await router.start()
 
   const anchor = wrapper.find('a')
   expect(anchor.classes()).toContain('router-link--match')
@@ -186,7 +186,7 @@ test('when current route matches to prop, parent has "match" and "exact-match" c
     },
   })
 
-  await router.initialized
+  await router.start()
 
   const anchor = wrapper.find('a')
   expect(anchor.classes()).toContain('router-link--match')
@@ -225,7 +225,7 @@ test.each([
     },
   })
 
-  await router.initialized
+  await router.start()
 
   const anchor = wrapper.find('a')
   const element = anchor.element as HTMLAnchorElement

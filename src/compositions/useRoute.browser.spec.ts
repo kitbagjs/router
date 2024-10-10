@@ -10,7 +10,7 @@ test('when given no routeKey returns the router route', async () => {
     initialUrl: '/routeA',
   })
 
-  await router.initialized
+  await router.start()
 
   const component = {
     template: 'foo',
@@ -35,7 +35,7 @@ test('when given a routeKey that matches the current route returns the router ro
     initialUrl: '/parentB',
   })
 
-  await router.initialized
+  await router.start()
 
   const component = {
     template: 'foo',
@@ -60,7 +60,7 @@ test('when given a routeKey that matches exactly the current route returns the r
     initialUrl: '/parentA/parentAParam/childAParam',
   })
 
-  await router.initialized
+  await router.start()
 
   const component = {
     template: 'foo',
@@ -85,7 +85,7 @@ test('when given a routeKey that does not match the current route throws an erro
     initialUrl: '/parentB',
   })
 
-  await router.initialized
+  await router.start()
 
   const component = {
     template: 'foo',
@@ -112,7 +112,7 @@ test('when given a routeKey that does not match exactly the current route throws
     initialUrl: '/parentA/parentAParam/childAParam',
   })
 
-  await router.initialized
+  await router.start()
 
   const component = {
     template: 'foo',

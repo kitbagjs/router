@@ -16,11 +16,11 @@ test('initial route is set', async () => {
     path: '/',
   })
 
-  const { route, initialized } = createRouter([foo], {
+  const { route, start } = createRouter([foo], {
     initialUrl: '/',
   })
 
-  await initialized
+  await start()
 
   expect(route.matched.name).toBe('root')
 })
@@ -47,11 +47,11 @@ test('initial state is set', async () => {
     state: { zoo: Number },
   })
 
-  const { route, initialized } = createRouter([foo], {
+  const { route, start } = createRouter([foo], {
     initialUrl: '/',
   })
 
-  await initialized
+  await start()
 
   expect(route.state).toMatchObject({ zoo: 123 })
 })
@@ -77,11 +77,11 @@ test('updates the route when navigating', async () => {
     }),
   ]
 
-  const { push, route, initialized } = createRouter(routes, {
+  const { push, route, start } = createRouter(routes, {
     initialUrl: '/first',
   })
 
-  await initialized
+  await start()
 
   await push('first', {}, { state: { foo: 123 } })
 
@@ -104,7 +104,7 @@ test('route update updates the current route', async () => {
     initialUrl: '/one',
   })
 
-  await router.initialized
+  await router.start()
 
   await router.route.update('param', 'two')
 
@@ -127,11 +127,11 @@ test.fails('route is readonly except for individual params', async () => {
     }),
   ]
 
-  const { route, initialized } = createRouter(routes, {
+  const { route, start } = createRouter(routes, {
     initialUrl: '/',
   })
 
-  await initialized
+  await start()
 
   // @ts-expect-error
   route.name = 'child'
@@ -159,11 +159,11 @@ test('individual params are writable', async () => {
     }),
   ]
 
-  const { route, initialized } = createRouter(routes, {
+  const { route, start } = createRouter(routes, {
     initialUrl: '/one',
   })
 
-  await initialized
+  await start()
 
   route.params.param = 'goodbye'
 
@@ -197,11 +197,11 @@ test('individual params are writable when using toRefs', async () => {
     }),
   ]
 
-  const { route, initialized } = createRouter(routes, {
+  const { route, start } = createRouter(routes, {
     initialUrl: '/one',
   })
 
-  await initialized
+  await start()
 
   const { param } = toRefs(route.params)
 
@@ -220,11 +220,11 @@ test('setting an unknown param does not add its value to the route', async () =>
       path: '/',
     }),
   ]
-  const { route, initialized } = createRouter(routes, {
+  const { route, start } = createRouter(routes, {
     initialUrl: '/',
   })
 
-  await initialized
+  await start()
 
   // @ts-expect-error
   route.params.nothing = 'nothing'
@@ -257,7 +257,6 @@ test('given an array of Routes, combines into single routes collection', () => {
   ])
 })
 
-
 test('given an array of Routes with duplicate names, throws ', () => {
   const aRoutes = [
     createRoute({ name: 'foo', component }),
@@ -273,4 +272,22 @@ test('given an array of Routes with duplicate names, throws ', () => {
   })
 
   expect(action).toThrow(DuplicateNamesError)
+})
+
+test('initial route is not set until the router is started', async () => {
+  const route = createRoute({
+    name: 'root',
+    path: '/',
+    component,
+  })
+
+  const router = createRouter([route], {
+    initialUrl: '/',
+  })
+
+  expect(router.route.name).toBe('NotFound')
+
+  await router.start()
+
+  expect(router.route.name).toBe('root')
 })

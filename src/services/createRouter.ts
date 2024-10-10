@@ -214,7 +214,18 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
   const initialState = history.location.state
   const { host } = createMaybeRelativeUrl(initialUrl)
   const isExternal = createIsExternal(host)
-  const initialized = set(initialUrl, { replace: true, state: initialState })
+
+  let initialized = false
+
+  async function start(): Promise<void> {
+    if (initialized) {
+      return
+    }
+
+    await set(initialUrl, { replace: true, state: initialState })
+
+    initialized = true
+  }
 
   function getRoute(name: string): Route | undefined {
     return routes.find(route => route.name === name)
@@ -230,6 +241,8 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
     // We cant technically guarantee that the user registered the same router that they installed
     // So we're making an assumption here that when installing a router its the same as the RegisteredRouter
     app.provide(routerInjectionKey, router as any)
+
+    start()
   }
 
   const router: Router<TRoutes> = {
@@ -244,7 +257,6 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
     back: history.back,
     go: history.go,
     install,
-    initialized,
     isExternal,
     onBeforeRouteEnter,
     onAfterRouteUpdate,
@@ -253,6 +265,7 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
     onBeforeRouteUpdate,
     onAfterRouteLeave,
     prefetch: options?.prefetch,
+    start,
   }
 
   return router
