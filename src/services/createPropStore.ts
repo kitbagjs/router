@@ -8,14 +8,14 @@ export const propStoreKey: InjectionKey<PropStore> = Symbol()
 type ComponentProps = { id: string, name: string, props?: (params: Record<string, unknown>) => unknown }
 
 export type PropStore = {
-  setProps: (route: ResolvedRoute, options: { prefetched: boolean }) => void,
+  setProps: (route: ResolvedRoute, options: { prefetch: boolean }) => void,
   getProps: (id: string, name: string, params: Record<string, unknown>) => unknown,
 }
 
 export function createPropStore(): PropStore {
   const store: Map<string, unknown> = reactive(new Map())
 
-  const setProps: PropStore['setProps'] = (route, { prefetched }) => {
+  const setProps: PropStore['setProps'] = (route, { prefetch }) => {
     const routeKeys: string[] = []
     const componentProps = route.matches.flatMap(match => getComponentProps(match))
 
@@ -38,7 +38,7 @@ export function createPropStore(): PropStore {
     }
 
     // if props are being prefetched then we return early and don't clear out any other props
-    if (prefetched) {
+    if (prefetch) {
       return
     }
 
