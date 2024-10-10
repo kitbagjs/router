@@ -25,16 +25,13 @@ export function createPropStore(): PropStore {
       }
 
       const key = getPropKey(id, name, route.params)
+      routeKeys.push(key)
 
       if (store.has(key)) {
         continue
       }
 
-      const value = props(route.params)
-
-      store.set(key, value)
-
-      routeKeys.push(key)
+      store.set(key, props(route.params))
     }
 
     // if props are being prefetched then we return early and don't clear out any other props
