@@ -2,43 +2,62 @@ import { InjectionKey, reactive } from 'vue'
 import { isWithComponent, isWithComponents } from '@/types/createRouteOptions'
 import { ResolvedRoute } from '@/types/resolved'
 import { Route } from '@/types/route'
-import { MaybePromise } from '@/types/utilities'
 
 export const propStoreKey: InjectionKey<PropStore> = Symbol()
 
 type ComponentProps = { id: string, name: string, props?: (params: Record<string, unknown>) => unknown }
+type PropStoreEntry = { prefetched: boolean, value: unknown }
 
 export type PropStore = {
+  prefetchProps: (route: ResolvedRoute) => void,
   setProps: (route: ResolvedRoute) => void,
-  getProps: (id: string, name: string, params: unknown) => MaybePromise<unknown> | undefined,
+  getProps: (id: string, name: string, params: Record<string, unknown>) => unknown,
 }
 
 export function createPropStore(): PropStore {
-  const store = reactive(new Map<string, unknown>())
+  const store: Map<string, PropStoreEntry> = reactive(new Map())
 
-  function setProps(route: ResolvedRoute): void {
-    store.clear()
-
+  const prefetchProps: PropStore['prefetchProps'] = (route) => {
     route.matches
-      .flatMap(match => getComponentProps(match))
+      .filter(match => match.prefetch !== false)
+      .flatMap(getComponentProps)
       .forEach(({ id, name, props }) => {
         if (props) {
           const key = getPropKey(id, name, route.params)
           const value = props(route.params)
 
-          store.set(key, value)
+          store.set(key, { prefetched: true, value })
         }
       })
   }
 
-  function getProps(id: string, name: string, params: unknown): MaybePromise<unknown> | undefined {
+  const setProps: PropStore['setProps'] = (route) => {
+    const componentProps = route.matches.flatMap(getComponentProps)
+    const routeKeys = componentProps.reduce<string[]>((routeKeys, { id, name, props }) => {
+      if (!props) {
+        return routeKeys
+      }
+
+      const key = getPropKey(id, name, route.params)
+      const existingKey = store.get(key)
+      const value = existingKey?.prefetched ? existingKey.value : props(route.params)
+
+      store.set(key, { prefetched: false, value })
+
+      return [...routeKeys, key]
+    }, [])
+
+    clearUnusedStoreEntries(routeKeys)
+  }
+
+  const getProps: PropStore['getProps'] = (id, name, params) => {
     const key = getPropKey(id, name, params)
 
-    return store.get(key)
+    return store.get(key)?.value
   }
 
   function getPropKey(id: string, name: string, params: unknown): string {
-    return [id, name, JSON.stringify(params)].join('-')
+    return `${id}-${name}-${JSON.stringify(params)}`
   }
 
   function getComponentProps(options: Route['matched']): ComponentProps[] {
@@ -59,5 +78,15 @@ export function createPropStore(): PropStore {
     return []
   }
 
-  return { setProps, getProps }
+  function clearUnusedStoreEntries(keysToKeep: string[]): void {
+    for (const key in store.keys()) {
+      if (keysToKeep.includes(key)) {
+        continue
+      }
+
+      store.delete(key)
+    }
+  }
+
+  return { prefetchProps, setProps, getProps }
 }
