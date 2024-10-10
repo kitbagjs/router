@@ -7,7 +7,7 @@ import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
 import * as createRouterHistoryUtilities from '@/services/createRouterHistory'
 import * as resolveUtilities from '@/services/createRouterResolve'
-import { component, routes } from '@/utilities/testHelpers'
+import { component } from '@/utilities/testHelpers'
 
 test('initial route is set', async () => {
   const foo = createRoute({
