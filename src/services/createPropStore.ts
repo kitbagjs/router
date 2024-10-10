@@ -6,53 +6,54 @@ import { Route } from '@/types/route'
 export const propStoreKey: InjectionKey<PropStore> = Symbol()
 
 type ComponentProps = { id: string, name: string, props?: (params: Record<string, unknown>) => unknown }
+type PropStoreEntry = { prefetched: boolean, value: unknown }
 
 export type PropStore = {
-  setProps: (route: ResolvedRoute, options: { prefetch: boolean }) => void,
+  prefetchProps: (route: ResolvedRoute) => void,
+  setProps: (route: ResolvedRoute) => void,
   getProps: (id: string, name: string, params: Record<string, unknown>) => unknown,
 }
 
 export function createPropStore(): PropStore {
-  const store: Map<string, unknown> = reactive(new Map())
+  const store: Map<string, PropStoreEntry> = reactive(new Map())
 
-  const setProps: PropStore['setProps'] = (route, { prefetch }) => {
-    const routeKeys: string[] = []
-    const componentProps = route.matches.flatMap(match => getComponentProps(match))
+  const prefetchProps: PropStore['prefetchProps'] = (route) => {
+    route.matches
+      .filter(match => match.prefetch !== false)
+      .flatMap(getComponentProps)
+      .forEach(({ id, name, props }) => {
+        if (props) {
+          const key = getPropKey(id, name, route.params)
+          const value = props(route.params)
 
-    for (const { id, name, props } of componentProps) {
+          store.set(key, { prefetched: true, value })
+        }
+      })
+  }
+
+  const setProps: PropStore['setProps'] = (route) => {
+    const componentProps = route.matches.flatMap(getComponentProps)
+    const routeKeys = componentProps.reduce<string[]>((routeKeys, { id, name, props }) => {
       if (!props) {
-        continue
+        return routeKeys
       }
 
       const key = getPropKey(id, name, route.params)
-      routeKeys.push(key)
+      const existingKey = store.get(key)
+      const value = existingKey?.prefetched ? existingKey.value : props(route.params)
 
-      if (store.has(key)) {
-        continue
-      }
+      store.set(key, { prefetched: false, value })
 
-      store.set(key, props(route.params))
-    }
+      return [...routeKeys, key]
+    }, [])
 
-    // if props are being prefetched then we return early and don't clear out any other props
-    if (prefetch) {
-      return
-    }
-
-    // clear out any props that don't match the route passed in
-    for (const key in store.keys()) {
-      if (routeKeys.includes(key)) {
-        continue
-      }
-
-      store.delete(key)
-    }
+    clearUnusedStoreEntries(routeKeys)
   }
 
   const getProps: PropStore['getProps'] = (id, name, params) => {
     const key = getPropKey(id, name, params)
 
-    return store.get(key)
+    return store.get(key)?.value
   }
 
   function getPropKey(id: string, name: string, params: unknown): string {
@@ -77,5 +78,15 @@ export function createPropStore(): PropStore {
     return []
   }
 
-  return { setProps, getProps }
+  function clearUnusedStoreEntries(keysToKeep: string[]): void {
+    for (const key in store.keys()) {
+      if (keysToKeep.includes(key)) {
+        continue
+      }
+
+      store.delete(key)
+    }
+  }
+
+  return { prefetchProps, setProps, getProps }
 }
