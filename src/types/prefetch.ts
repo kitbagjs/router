@@ -17,7 +17,7 @@ export const DEFAULT_PREFETCH_CONFIG: Required<PrefetchConfigOptions> = {
   components: true,
 }
 
-type PrefetchConfigs = {
+export type PrefetchConfigs = {
   routerPrefetch: PrefetchConfig | undefined,
   routePrefetch: PrefetchConfig | undefined,
   linkPrefetch: PrefetchConfig | undefined,

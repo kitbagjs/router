@@ -1,5 +1,6 @@
 import { InjectionKey, reactive } from 'vue'
 import { isWithComponent, isWithComponents } from '@/types/createRouteOptions'
+import { getPrefetchOption, PrefetchConfigs } from '@/types/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
 import { Route } from '@/types/route'
 
@@ -9,7 +10,7 @@ type ComponentProps = { id: string, name: string, props?: (params: Record<string
 type PropStoreEntry = { prefetched: boolean, value: unknown }
 
 export type PropStore = {
-  prefetchProps: (route: ResolvedRoute) => void,
+  prefetchProps: (route: ResolvedRoute, prefetch: PrefetchConfigs) => void,
   setProps: (route: ResolvedRoute) => void,
   getProps: (id: string, name: string, params: Record<string, unknown>) => unknown,
 }
@@ -17,9 +18,9 @@ export type PropStore = {
 export function createPropStore(): PropStore {
   const store: Map<string, PropStoreEntry> = reactive(new Map())
 
-  const prefetchProps: PropStore['prefetchProps'] = (route) => {
+  const prefetchProps: PropStore['prefetchProps'] = (route, prefetch) => {
     route.matches
-      .filter(match => match.prefetch !== false)
+      .filter(match => getPrefetchOption({ ...prefetch, routePrefetch: match.prefetch }, 'components'))
       .flatMap(getComponentProps)
       .forEach(({ id, name, props }) => {
         if (props) {
