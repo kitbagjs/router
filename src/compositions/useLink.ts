@@ -1,4 +1,4 @@
-import { MaybeRefOrGetter, Ref, computed, toRef, toValue, watch } from 'vue'
+import { ComputedRef, MaybeRefOrGetter, Ref, computed, toRef, toValue, watch } from 'vue'
 import { useRouter } from '@/compositions/useRouter'
 import { InvalidRouteParamValueError } from '@/errors/invalidRouteParamValueError'
 import { RouterResolveOptions } from '@/services/createRouterResolve'
@@ -17,19 +17,23 @@ export type UseLink = {
   /**
    * ResolvedRoute if matched. Same value as `router.find`
    */
-  route: Ref<ResolvedRoute | undefined>,
+  route: ComputedRef<ResolvedRoute | undefined>,
   /**
    * Resolved URL with params interpolated and query applied. Same value as `router.resolve`.
    */
-  href: Ref<string>,
+  href: ComputedRef<string>,
   /**
    * True if route matches current URL or is ancestor of route that matches current URL
    */
-  isMatch: Ref<boolean>,
+  isMatch: ComputedRef<boolean>,
   /**
    * True if route matches current URL. Route is the same as what's currently stored at `router.route`.
    */
-  isExactMatch: Ref<boolean>,
+  isExactMatch: ComputedRef<boolean>,
+  /**
+   *
+   */
+  isExternal: ComputedRef<boolean>,
   /**
    * Convenience method for executing `router.push` with route context passed in.
    */
@@ -93,6 +97,15 @@ export function useLink(
   const route = computed(() => router.find(href.value, optionsRef.value))
   const isMatch = computed(() => !!route.value && router.route.matches.includes(route.value.matched))
   const isExactMatch = computed(() => !!route.value && router.route.matched === route.value.matched)
+  const isExternal = computed(() => router.isExternal(href.value))
+
+  const push: UseLink['push'] = (options) => {
+    return router.push(href.value, { ...optionsRef.value, ...options })
+  }
+
+  const replace: UseLink['replace'] = (options) => {
+    return push(options)
+  }
 
   watch(route, route => {
     if (!route) {
@@ -113,8 +126,9 @@ export function useLink(
     href,
     isMatch,
     isExactMatch,
-    push: (options?: RouterPushOptions) => router.push(href.value, {}, { ...optionsRef.value, ...options }),
-    replace: (options?: RouterReplaceOptions) => router.replace(href.value, {}, { ...optionsRef.value, ...options }),
+    isExternal,
+    push,
+    replace,
   }
 }
 
