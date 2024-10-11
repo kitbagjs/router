@@ -7,16 +7,15 @@ import { Route } from '@/types/route'
 export const propStoreKey: InjectionKey<PropStore> = Symbol()
 
 type ComponentProps = { id: string, name: string, props?: (params: Record<string, unknown>) => unknown }
-type PropStoreEntry = { prefetched: boolean, value: unknown }
 
 export type PropStore = {
   prefetchProps: (route: ResolvedRoute, prefetch: PrefetchConfigs) => void,
   setProps: (route: ResolvedRoute) => void,
-  getProps: (id: string, name: string, params: Record<string, unknown>) => unknown,
+  getProps: (id: string, name: string, route: ResolvedRoute) => unknown,
 }
 
 export function createPropStore(): PropStore {
-  const store: Map<string, PropStoreEntry> = reactive(new Map())
+  const store: Map<string, unknown> = reactive(new Map())
 
   const prefetchProps: PropStore['prefetchProps'] = (route, prefetch) => {
     route.matches
@@ -24,7 +23,7 @@ export function createPropStore(): PropStore {
       .flatMap(getComponentProps)
       .forEach(({ id, name, props }) => {
         if (props) {
-          const key = getPropKey(id, name, route.params)
+          const key = getPropKey(id, name, route)
           const value = props(route.params)
 
           store.set(key, { prefetched: true, value })
@@ -35,15 +34,15 @@ export function createPropStore(): PropStore {
   const setProps: PropStore['setProps'] = (route) => {
     const componentProps = route.matches.flatMap(getComponentProps)
     const routeKeys = componentProps.reduce<string[]>((routeKeys, { id, name, props }) => {
-      if (!props) {
+      const key = getPropKey(id, name, route)
+
+      if (!props || store.has(key)) {
         return routeKeys
       }
 
-      const key = getPropKey(id, name, route.params)
-      const existingKey = store.get(key)
-      const value = existingKey?.prefetched ? existingKey.value : props(route.params)
+      const value = props(route.params)
 
-      store.set(key, { prefetched: false, value })
+      store.set(key, value)
 
       return [...routeKeys, key]
     }, [])
@@ -51,14 +50,14 @@ export function createPropStore(): PropStore {
     clearUnusedStoreEntries(routeKeys)
   }
 
-  const getProps: PropStore['getProps'] = (id, name, params) => {
-    const key = getPropKey(id, name, params)
+  const getProps: PropStore['getProps'] = (id, name, route) => {
+    const key = getPropKey(id, name, route)
 
-    return store.get(key)?.value
+    return store.get(key)
   }
 
-  function getPropKey(id: string, name: string, params: unknown): string {
-    return `${id}-${name}-${JSON.stringify(params)}`
+  function getPropKey(id: string, name: string, route: ResolvedRoute): string {
+    return [id, name, route.id, JSON.stringify(route.params)].join('-')
   }
 
   function getComponentProps(options: Route['matched']): ComponentProps[] {
