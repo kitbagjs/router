@@ -1,4 +1,4 @@
-import { ComputedRef, MaybeRefOrGetter, Ref, computed, toRef, toValue, watch } from 'vue'
+import { ComputedRef, MaybeRefOrGetter, computed, toRef, toValue, watch } from 'vue'
 import { useRouter } from '@/compositions/useRouter'
 import { InvalidRouteParamValueError } from '@/errors/invalidRouteParamValueError'
 import { RouterResolveOptions } from '@/services/createRouterResolve'
