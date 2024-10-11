@@ -20,7 +20,7 @@ export function createPropStore(): PropStore {
 
   const prefetchProps: PropStore['prefetchProps'] = (route, prefetch) => {
     route.matches
-      .filter(match => getPrefetchOption({ ...prefetch, routePrefetch: match.prefetch }, 'components'))
+      .filter(match => getPrefetchOption({ ...prefetch, routePrefetch: match.prefetch }, 'props'))
       .flatMap(getComponentProps)
       .forEach(({ id, name, props }) => {
         if (props) {
