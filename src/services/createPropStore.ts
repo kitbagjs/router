@@ -43,8 +43,9 @@ export function createPropStore(): PropStore {
       const value = props(route.params)
 
       store.set(key, value)
+      routeKeys.push(key)
 
-      return [...routeKeys, key]
+      return routeKeys
     }, [])
 
     clearUnusedStoreEntries(routeKeys)
