@@ -26,7 +26,7 @@ export function createPropStore(): PropStore {
           const key = getPropKey(id, name, route)
           const value = props(route.params)
 
-          store.set(key, { prefetched: true, value })
+          store.set(key, value)
         }
       })
   }
