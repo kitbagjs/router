@@ -1,4 +1,5 @@
 import { InjectionKey, reactive } from 'vue'
+import { CallbackContext, createCallbackContext } from '@/services/createCallbackContext'
 import { isWithComponent, isWithComponents } from '@/types/createRouteOptions'
 import { ResolvedRoute } from '@/types/resolved'
 import { Route } from '@/types/route'
@@ -6,7 +7,7 @@ import { MaybePromise } from '@/types/utilities'
 
 export const propStoreKey: InjectionKey<PropStore> = Symbol()
 
-type ComponentProps = { id: string, name: string, props?: (params: Record<string, unknown>) => unknown }
+type ComponentProps = { id: string, name: string, props?: (params: Record<string, unknown>, context: CallbackContext) => unknown }
 
 export type PropStore = {
   setProps: (route: ResolvedRoute) => void,
@@ -14,6 +15,7 @@ export type PropStore = {
 }
 
 export function createPropStore(): PropStore {
+  const context = createCallbackContext()
   const store = reactive(new Map<string, unknown>())
 
   function setProps(route: ResolvedRoute): void {
@@ -24,7 +26,7 @@ export function createPropStore(): PropStore {
       .forEach(({ id, name, props }) => {
         if (props) {
           const key = getPropKey(id, name, route.params)
-          const value = props(route.params)
+          const value = props(route.params, context)
 
           store.set(key, value)
         }

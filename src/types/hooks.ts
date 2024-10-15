@@ -1,7 +1,7 @@
-import { RegisteredRejectionType, RegisteredRouterPush, RegisteredRouterReplace } from '@/types/register'
+import { CallbackContext } from '@/services/createCallbackContext'
+import { RegisteredRejectionType } from '@/types/register'
 import { ResolvedRoute } from '@/types/resolved'
 import { Routes } from '@/types/route'
-import { RouterReject } from '@/types/router'
 import { RouterPush } from '@/types/routerPush'
 import { MaybePromise } from '@/types/utilities'
 
@@ -29,10 +29,7 @@ export type RouteHookAbort = () => void
  */
 type RouteHookContext = {
   from: ResolvedRoute | null,
-  reject: RouterReject,
-  push: RegisteredRouterPush,
-  replace: RegisteredRouterReplace,
-}
+} & CallbackContext
 
 /**
  * Context provided to route hooks, containing context of previous route and functions for triggering rejections, push/replace to another route,

@@ -43,6 +43,11 @@ export type RegisteredRejectionType = Register extends { router: Router<Routes, 
   : BuiltInRejectionType
 
 /**
+ * Type for Router Reject method. Triggers rejections registered within {@link Register}
+ */
+export type RegisteredRouterReject = (type: RegisteredRejectionType) => void
+
+/**
  * Represents additional metadata associated with a route, customizable via declaration merging.
  */
 export type RouteMeta = Register extends { routeMeta: infer RouteMeta extends Record<string, unknown> }
