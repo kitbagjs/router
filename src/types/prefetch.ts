@@ -6,6 +6,11 @@ export type PrefetchConfigOptions = {
    * @default true
    */
   components?: boolean,
+  /**
+   * When true any props for routes will be prefetched
+   * @default false
+   */
+  props?: boolean,
 }
 
 /**
@@ -15,9 +20,10 @@ export type PrefetchConfig = boolean | PrefetchConfigOptions
 
 export const DEFAULT_PREFETCH_CONFIG: Required<PrefetchConfigOptions> = {
   components: true,
+  props: false,
 }
 
-type PrefetchConfigs = {
+export type PrefetchConfigs = {
   routerPrefetch: PrefetchConfig | undefined,
   routePrefetch: PrefetchConfig | undefined,
   linkPrefetch: PrefetchConfig | undefined,
