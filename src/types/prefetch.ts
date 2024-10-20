@@ -24,9 +24,9 @@ export const DEFAULT_PREFETCH_CONFIG: Required<PrefetchConfigOptions> = {
 }
 
 export type PrefetchConfigs = {
-  routerPrefetch: PrefetchConfig | undefined,
-  routePrefetch: PrefetchConfig | undefined,
-  linkPrefetch: PrefetchConfig | undefined,
+  routerPrefetch?: PrefetchConfig,
+  routePrefetch?: PrefetchConfig,
+  linkPrefetch?: PrefetchConfig,
 }
 
 export function getPrefetchOption({ routerPrefetch, routePrefetch, linkPrefetch }: PrefetchConfigs, setting: keyof PrefetchConfigOptions): boolean {

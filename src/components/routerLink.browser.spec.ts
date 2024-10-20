@@ -1,6 +1,7 @@
 import { flushPromises, mount } from '@vue/test-utils'
-import { expect, test, vi } from 'vitest'
+import { describe, expect, test, vi } from 'vitest'
 import { defineAsyncComponent, h } from 'vue'
+import echo from '@/components/echo'
 import routerLink from '@/components/routerLink.vue'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
@@ -233,137 +234,357 @@ test.each([
   expect(isExternal.toString()).toBe(element.innerHTML)
 })
 
-test.each<PrefetchConfig | undefined>([
-  undefined,
-  true,
-  false,
-  { components: true },
-  { components: false },
-])('prefetch components respects router config when prefetch is %s', async (prefetch) => {
-  let loaded = undefined
+describe('prefetch components', () => {
 
-  const route = createRoute({
-    name: 'route',
-    path: '/route',
-    component: defineAsyncComponent(() => {
-      return new Promise(resolve => {
-        loaded = true
-        resolve({ default: { template: 'foo' } })
-      })
-    }),
-  })
+  test.each<PrefetchConfig | undefined>([
+    undefined,
+    true,
+    false,
+    { components: true },
+    { components: false },
+  ])('prefetch components respects router config when prefetch is %s', async (prefetch) => {
+    let loaded = undefined
 
-  const router = createRouter([route], {
-    initialUrl: '/',
-    prefetch,
-  })
+    const route = createRoute({
+      name: 'route',
+      path: '/route',
+      component: defineAsyncComponent(() => {
+        return new Promise(resolve => {
+          loaded = true
+          resolve({ default: { template: 'foo' } })
+        })
+      }),
+    })
 
-  mount(routerLink, {
-    props: {
-      to: '/route',
-    },
-    global: {
-      plugins: [router],
-    },
-  })
-
-  await flushPromises()
-
-  const value = getPrefetchConfigValue(prefetch, 'components')
-
-  if (value === true || value === undefined) {
-    expect(loaded).toBe(true)
-  } else {
-    expect(loaded).toBeUndefined()
-  }
-})
-
-test.each<PrefetchConfig | undefined>([
-  undefined,
-  true,
-  false,
-  { components: true },
-  { components: false },
-])('prefetch components respects route config when prefetch is %s', async (prefetch) => {
-  let loaded = undefined
-
-  const route = createRoute({
-    name: 'route',
-    path: '/route',
-    prefetch,
-    component: defineAsyncComponent(() => {
-      return new Promise(resolve => {
-        loaded = true
-        resolve({ default: { template: 'foo' } })
-      })
-    }),
-  })
-
-  const router = createRouter([route], {
-    initialUrl: '/',
-  })
-
-  mount(routerLink, {
-    props: {
-      to: '/route',
-    },
-    global: {
-      plugins: [router],
-    },
-  })
-
-  await flushPromises()
-
-  const value = getPrefetchConfigValue(prefetch, 'components')
-
-  if (value === true || value === undefined) {
-    expect(loaded).toBe(true)
-  } else {
-    expect(loaded).toBeUndefined()
-  }
-})
-
-test.each<PrefetchConfig | undefined>([
-  undefined,
-  true,
-  false,
-  { components: true },
-  { components: false },
-])('prefetch components respects link config when prefetch is %s', async (prefetch) => {
-  let loaded = undefined
-
-  const route = createRoute({
-    name: 'route',
-    path: '/route',
-    component: defineAsyncComponent(() => {
-      return new Promise(resolve => {
-        loaded = true
-        resolve({ default: { template: 'foo' } })
-      })
-    }),
-  })
-
-  const router = createRouter([route], {
-    initialUrl: '/',
-  })
-
-  mount(routerLink, {
-    props: {
-      to: '/route',
+    const router = createRouter([route], {
+      initialUrl: '/',
       prefetch,
-    },
-    global: {
-      plugins: [router],
-    },
+    })
+
+    mount(routerLink, {
+      props: {
+        to: '/route',
+      },
+      global: {
+        plugins: [router],
+      },
+    })
+
+    await flushPromises()
+
+    const value = getPrefetchConfigValue(prefetch, 'components')
+
+    if (value === true || value === undefined) {
+      expect(loaded).toBe(true)
+    } else {
+      expect(loaded).toBeUndefined()
+    }
   })
 
-  await flushPromises()
+  test.each<PrefetchConfig | undefined>([
+    undefined,
+    true,
+    false,
+    { components: true },
+    { components: false },
+  ])('prefetch components respects route config when prefetch is %s', async (prefetch) => {
+    let loaded = undefined
 
-  const value = getPrefetchConfigValue(prefetch, 'components')
+    const route = createRoute({
+      name: 'route',
+      path: '/route',
+      prefetch,
+      component: defineAsyncComponent(() => {
+        return new Promise(resolve => {
+          loaded = true
+          resolve({ default: { template: 'foo' } })
+        })
+      }),
+    })
 
-  if (value === true || value === undefined) {
-    expect(loaded).toBe(true)
-  } else {
-    expect(loaded).toBeUndefined()
-  }
+    const router = createRouter([route], {
+      initialUrl: '/',
+    })
+
+    mount(routerLink, {
+      props: {
+        to: '/route',
+      },
+      global: {
+        plugins: [router],
+      },
+    })
+
+    await flushPromises()
+
+    const value = getPrefetchConfigValue(prefetch, 'components')
+
+    if (value === true || value === undefined) {
+      expect(loaded).toBe(true)
+    } else {
+      expect(loaded).toBeUndefined()
+    }
+  })
+
+  test.each<PrefetchConfig | undefined>([
+    undefined,
+    true,
+    false,
+    { components: true },
+    { components: false },
+  ])('prefetch components respects link config when prefetch is %s', async (prefetch) => {
+    let loaded = undefined
+
+    const route = createRoute({
+      name: 'route',
+      path: '/route',
+      component: defineAsyncComponent(() => {
+        return new Promise(resolve => {
+          loaded = true
+          resolve({ default: { template: 'foo' } })
+        })
+      }),
+    })
+
+    const router = createRouter([route], {
+      initialUrl: '/',
+    })
+
+    mount(routerLink, {
+      props: {
+        to: '/route',
+        prefetch,
+      },
+      global: {
+        plugins: [router],
+      },
+    })
+
+    await flushPromises()
+
+    const value = getPrefetchConfigValue(prefetch, 'components')
+
+    if (value === true || value === undefined) {
+      expect(loaded).toBe(true)
+    } else {
+      expect(loaded).toBeUndefined()
+    }
+  })
+
+})
+
+describe('prefetch props', () => {
+
+  test.each<PrefetchConfig | undefined>([
+    undefined,
+    true,
+    false,
+    { props: true },
+    { props: false },
+  ])('prefetch props respects router config when prefetch is %s', (prefetch) => {
+    const callback = vi.fn()
+
+    const route = createRoute({
+      name: 'route',
+      path: '/route',
+      component: echo,
+      props: callback,
+    })
+
+    const router = createRouter([route], {
+      initialUrl: '/',
+      prefetch,
+    })
+
+    mount(routerLink, {
+      props: {
+        to: '/route',
+      },
+      global: {
+        plugins: [router],
+      },
+    })
+
+    const value = getPrefetchConfigValue(prefetch, 'props')
+
+    if (value) {
+      expect(callback).toHaveBeenCalledOnce()
+    } else {
+      expect(callback).not.toHaveBeenCalled()
+    }
+  })
+
+  test.each<PrefetchConfig | undefined>([
+    undefined,
+    true,
+    false,
+    { props: true },
+    { props: false },
+  ])('prefetch props respects route config when prefetch is %s', (prefetch) => {
+    const callback = vi.fn()
+
+    const route = createRoute({
+      name: 'route',
+      path: '/route',
+      component: echo,
+      prefetch,
+      props: callback,
+    })
+
+    const router = createRouter([route], {
+      initialUrl: '/',
+    })
+
+    mount(routerLink, {
+      props: {
+        to: '/route',
+      },
+      global: {
+        plugins: [router],
+      },
+    })
+
+    const value = getPrefetchConfigValue(prefetch, 'props')
+
+    if (value) {
+      expect(callback).toHaveBeenCalledOnce()
+    } else {
+      expect(callback).not.toHaveBeenCalled()
+    }
+  })
+
+  test.each<PrefetchConfig | undefined>([
+    undefined,
+    true,
+    false,
+    { props: true },
+    { props: false },
+  ])('prefetch props respects link config when prefetch is %s', (prefetch) => {
+    const callback = vi.fn()
+
+    const route = createRoute({
+      name: 'route',
+      path: '/route',
+      component: echo,
+      props: callback,
+    })
+
+    const router = createRouter([route], {
+      initialUrl: '/',
+    })
+
+    mount(routerLink, {
+      props: {
+        to: '/route',
+        prefetch,
+      },
+      global: {
+        plugins: [router],
+      },
+    })
+
+    const value = getPrefetchConfigValue(prefetch, 'props')
+
+    if (value) {
+      expect(callback).toHaveBeenCalledOnce()
+    } else {
+      expect(callback).not.toHaveBeenCalled()
+    }
+  })
+
+  test('prefetch props are passed to route component', async () => {
+    const value = 'hello world'
+
+    const props = vi.fn(() => Promise.resolve({
+      value,
+    }))
+
+    const home = createRoute({
+      name: 'home',
+      path: '/',
+      component: () => h(routerLink, { to: resolve => resolve('echo') }),
+    })
+
+    const route = createRoute({
+      name: 'echo',
+      path: '/echo',
+      component: echo,
+      prefetch: { props: true },
+      props,
+    })
+
+    const router = createRouter([home, route], {
+      initialUrl: '/',
+    })
+
+    await router.start()
+
+    const root = {
+      template: '<RouterView />',
+    }
+
+    const app = mount(root, {
+      global: {
+        plugins: [router],
+      },
+    })
+
+    expect(props).toHaveBeenCalledOnce()
+
+    await app.find('a').trigger('click')
+
+    await flushPromises()
+
+    expect(router.route.name).toBe('echo')
+    expect(props).toHaveBeenCalledOnce()
+    expect(app.text()).toBe(value)
+  })
+
+  test('parent routes that should not prefetch props are not prefetched', async () => {
+    const parentProps = vi.fn()
+    const childProps = vi.fn()
+
+    const home = createRoute({
+      name: 'home',
+      path: '/',
+      component: () => h(routerLink, { to: resolve => resolve('child') }),
+    })
+
+    const parent = createRoute({
+      name: 'parent',
+      path: '/parent',
+      component: echo,
+      prefetch: { props: false },
+      props: parentProps,
+    })
+
+    const child = createRoute({
+      parent,
+      name: 'child',
+      path: '/child',
+      component: echo,
+      prefetch: { props: true },
+      props: childProps,
+    })
+
+    const router = createRouter([home, child], {
+      initialUrl: '/',
+    })
+
+    await router.start()
+
+    const root = {
+      template: '<RouterView />',
+    }
+
+    mount(root, {
+      global: {
+        plugins: [router],
+      },
+    })
+
+    expect(childProps).toHaveBeenCalledOnce()
+    expect(parentProps).not.toHaveBeenCalledOnce()
+  })
+
 })

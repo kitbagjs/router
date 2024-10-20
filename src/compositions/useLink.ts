@@ -1,9 +1,10 @@
 import { ComputedRef, MaybeRefOrGetter, computed, toRef, toValue, watch } from 'vue'
+import { usePropStore } from '@/compositions/usePropStore'
 import { useRouter } from '@/compositions/useRouter'
 import { InvalidRouteParamValueError } from '@/errors/invalidRouteParamValueError'
 import { RouterResolveOptions } from '@/services/createRouterResolve'
 import { isWithComponent, isWithComponents } from '@/types/createRouteOptions'
-import { PrefetchConfig, getPrefetchOption } from '@/types/prefetch'
+import { PrefetchConfig, PrefetchConfigs, getPrefetchOption } from '@/types/prefetch'
 import { RegisteredRoutes, RegisteredRoutesName } from '@/types/register'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouterPushOptions } from '@/types/routerPush'
@@ -77,6 +78,9 @@ export function useLink(
   const sourceRef = toRef(source)
   const paramsRef = computed<Record<PropertyKey, unknown>>(() => isUrl(sourceRef.value) ? {} : toValue(paramsOrOptions))
   const optionsRef = computed<UseLinkOptions>(() => isUrl(sourceRef.value) ? toValue(paramsOrOptions) : toValue(maybeOptions))
+  const { getPrefetchProps, setPrefetchProps } = usePropStore()
+
+  let props: Record<string, unknown> = {}
 
   const href = computed(() => {
     if (isUrl(sourceRef.value)) {
@@ -100,6 +104,8 @@ export function useLink(
   const isExternal = computed(() => router.isExternal(href.value))
 
   const push: UseLink['push'] = (options) => {
+    setPrefetchProps(props)
+
     return router.push(href.value, { ...optionsRef.value, ...options })
   }
 
@@ -119,6 +125,11 @@ export function useLink(
       routerPrefetch,
       linkPrefetch,
     })
+
+    props = getPrefetchProps(route, {
+      routerPrefetch,
+      linkPrefetch,
+    })
   }, { immediate: true })
 
   return {
@@ -132,12 +143,7 @@ export function useLink(
   }
 }
 
-type ComponentPrefect = {
-  routerPrefetch: PrefetchConfig | undefined,
-  linkPrefetch: PrefetchConfig | undefined,
-}
-
-function prefetchComponentsForRoute(route: ResolvedRoute, { routerPrefetch, linkPrefetch }: ComponentPrefect): void {
+function prefetchComponentsForRoute(route: ResolvedRoute, { routerPrefetch, linkPrefetch }: PrefetchConfigs): void {
 
   route.matches.forEach(route => {
     const shouldPrefetchComponents = getPrefetchOption({
