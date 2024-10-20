@@ -9,7 +9,8 @@ export const propStoreKey: InjectionKey<PropStore> = Symbol()
 type ComponentProps = { id: string, name: string, props?: (params: Record<string, unknown>) => unknown }
 
 export type PropStore = {
-  prefetchProps: (route: ResolvedRoute, prefetch: PrefetchConfigs) => void,
+  getPrefetchProps: (route: ResolvedRoute, prefetch: PrefetchConfigs) => Record<string, unknown>,
+  setPrefetchProps: (props: Record<string, unknown>) => void,
   setProps: (route: ResolvedRoute) => void,
   getProps: (id: string, name: string, route: ResolvedRoute) => unknown,
 }
@@ -17,18 +18,23 @@ export type PropStore = {
 export function createPropStore(): PropStore {
   const store: Map<string, unknown> = reactive(new Map())
 
-  const prefetchProps: PropStore['prefetchProps'] = (route, prefetch) => {
-    route.matches
+  const getPrefetchProps: PropStore['getPrefetchProps'] = (route, prefetch) => {
+    return route.matches
       .filter(match => getPrefetchOption({ ...prefetch, routePrefetch: match.prefetch }, 'props'))
-      .flatMap(getComponentProps)
-      .forEach(({ id, name, props }) => {
-        if (props) {
-          const key = getPropKey(id, name, route)
-          const value = props(route.params)
+      .flatMap(match => getComponentProps(match))
+      .reduce<Record<string, unknown>>((response, { id, name, props }) => {
+        const key = getPropKey(id, name, route)
 
-          store.set(key, value)
-        }
-      })
+        response[key] = props?.(route.params)
+
+        return response
+      }, {})
+  }
+
+  const setPrefetchProps: PropStore['setPrefetchProps'] = (props) => {
+    Object.entries(props).forEach(([key, value]) => {
+      store.set(key, value)
+    })
   }
 
   const setProps: PropStore['setProps'] = (route) => {
@@ -89,5 +95,10 @@ export function createPropStore(): PropStore {
     }
   }
 
-  return { prefetchProps, setProps, getProps }
+  return {
+    getPrefetchProps,
+    setPrefetchProps,
+    getProps,
+    setProps,
+  }
 }
