@@ -1,4 +1,5 @@
 import { ComputedRef, MaybeRefOrGetter, computed, toRef, toValue, watch } from 'vue'
+import { usePrefetching } from '@/compositions/usePrefetching'
 import { usePropStore } from '@/compositions/usePropStore'
 import { useRouter } from '@/compositions/useRouter'
 import { InvalidRouteParamValueError } from '@/errors/invalidRouteParamValueError'
@@ -78,9 +79,6 @@ export function useLink(
   const sourceRef = toRef(source)
   const paramsRef = computed<Record<PropertyKey, unknown>>(() => isUrl(sourceRef.value) ? {} : toValue(paramsOrOptions))
   const optionsRef = computed<UseLinkOptions>(() => isUrl(sourceRef.value) ? toValue(paramsOrOptions) : toValue(maybeOptions))
-  const { getPrefetchProps, setPrefetchProps } = usePropStore()
-
-  let props: Record<string, unknown> = {}
 
   const href = computed(() => {
     if (isUrl(sourceRef.value)) {
@@ -103,8 +101,14 @@ export function useLink(
   const isExactMatch = computed(() => !!route.value && router.route.matched === route.value.matched)
   const isExternal = computed(() => router.isExternal(href.value))
 
+  const { commit } = usePrefetching(() => ({
+    route: route.value,
+    routerPrefetch: router.prefetch,
+    linkPrefetch: optionsRef.value.prefetch,
+  }))
+
   const push: UseLink['push'] = (options) => {
-    setPrefetchProps(props)
+    commit()
 
     return router.push(href.value, { ...optionsRef.value, ...options })
   }
@@ -112,25 +116,6 @@ export function useLink(
   const replace: UseLink['replace'] = (options) => {
     return push(options)
   }
-
-  watch(route, route => {
-    if (!route) {
-      return
-    }
-
-    const { prefetch: routerPrefetch } = router
-    const { prefetch: linkPrefetch } = optionsRef.value
-
-    prefetchComponentsForRoute(route, {
-      routerPrefetch,
-      linkPrefetch,
-    })
-
-    props = getPrefetchProps(route, {
-      routerPrefetch,
-      linkPrefetch,
-    })
-  }, { immediate: true })
 
   return {
     route,
@@ -141,32 +126,4 @@ export function useLink(
     push,
     replace,
   }
-}
-
-function prefetchComponentsForRoute(route: ResolvedRoute, { routerPrefetch, linkPrefetch }: PrefetchConfigs): void {
-
-  route.matches.forEach(route => {
-    const shouldPrefetchComponents = getPrefetchOption({
-      routePrefetch: route.prefetch,
-      routerPrefetch,
-      linkPrefetch,
-    }, 'components')
-
-    if (!shouldPrefetchComponents) {
-      return
-    }
-
-    if (isWithComponent(route) && isAsyncComponent(route.component)) {
-      route.component.setup()
-    }
-
-    if (isWithComponents(route)) {
-      Object.values(route.components).forEach(component => {
-        if (isAsyncComponent(component)) {
-          component.setup()
-        }
-      })
-    }
-  })
-
 }
