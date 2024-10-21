@@ -1,11 +1,9 @@
-import { ComputedRef, MaybeRefOrGetter, computed, toRef, toValue, watch } from 'vue'
+import { ComputedRef, MaybeRefOrGetter, computed, toRef, toValue } from 'vue'
 import { usePrefetching } from '@/compositions/usePrefetching'
-import { usePropStore } from '@/compositions/usePropStore'
 import { useRouter } from '@/compositions/useRouter'
 import { InvalidRouteParamValueError } from '@/errors/invalidRouteParamValueError'
 import { RouterResolveOptions } from '@/services/createRouterResolve'
-import { isWithComponent, isWithComponents } from '@/types/createRouteOptions'
-import { PrefetchConfig, PrefetchConfigs, getPrefetchOption } from '@/types/prefetch'
+import { PrefetchConfig } from '@/types/prefetch'
 import { RegisteredRoutes, RegisteredRoutesName } from '@/types/register'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouterPushOptions } from '@/types/routerPush'
@@ -13,7 +11,6 @@ import { RouterReplaceOptions } from '@/types/routerReplace'
 import { RouteParamsByKey } from '@/types/routeWithParams'
 import { Url, isUrl } from '@/types/url'
 import { AllPropertiesAreOptional } from '@/types/utilities'
-import { isAsyncComponent } from '@/utilities/components'
 
 export type UseLink = {
   /**
