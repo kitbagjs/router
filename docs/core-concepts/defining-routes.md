@@ -83,6 +83,10 @@ Learn more about [navigating](/core-concepts/navigating) to routes.
 
 By default route paths are NOT case sensitive. If you need part of your route to be case sensitive, we recommend using a [Regex Param](/core-concepts/route-params#regexp-params).
 
+## Hash
+
+With the `hash` property, you can assign a static value expected for the route to match. The behavior of the hash is very similar to how Kitbag Router treats the `path`. If a parent and a child both define `hash`, the end result is the concatenation of parent and child values. Unlike the `path` however, `hash` only supports a static `string` value without params.
+
 ## External Routes
 
 Kitbag Router supports defining routes that are "external" to your single-page app (SPA). With `createExternalRoute`, you can get all of the benefits of defined routes for routing that takes the user to another website, like perhaps your docs.
