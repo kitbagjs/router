@@ -94,6 +94,16 @@ router.push('/user/settings', {
 })
 ```
 
+### Hash
+
+Another options argument is `hash`. Providing this value will populate the `hash` part of the end URL. If the target route has a static `hash` value, any `hash` sent during a navigation event will be ignored.
+
+```ts
+router.push('settings', params, {
+  hash: '#examples'
+})
+```
+
 ## Replace
 
 If you want to change the current route without pushing an entry to the browser's history, you can use `router.replace`.

@@ -13,6 +13,7 @@ Represents the structure of a route within the application. Return value of `cre
 | `TName` *extends* `string` \| `undefined` | `string` | Represents the unique name identifying the route, typically a string. |
 | `TPath` *extends* `string` \| `Path` | `Path` | The type or structure of the route's path. |
 | `TQuery` *extends* `string` \| `Query` \| `undefined` | `Query` | The type or structure of the query parameters associated with the route. |
+| `THash` *extends* `string` \| `Hash` \| `undefined` | The type or structure of the static hash associated with the route. |
 
 ## Type declaration
 
@@ -62,6 +63,14 @@ query: ToQuery<TQuery>;
 ```
 
 Represents the structured query of the route, including query params.
+
+### hash
+
+```ts
+hash: ToHash<THash>;
+```
+
+Represents the hash of the route.
 
 ### prefetch
 

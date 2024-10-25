@@ -8,6 +8,7 @@ RouterLink component renders anchor tag (`<a>`) for routing both within the SPA 
 | :---- | :---- |
 | to | [`Url`](/api/types/Url) \| `(resolve: RouterResolve) => Url` |
 | query | `Record<string, string>` \| `undefined` |
+| hash | `string` \| `undefined` |
 | replace | `boolean` \| `undefined` |
 | prefetch | `boolean` \| `PrefetchConfigOptions` \| `undefined` |
 
