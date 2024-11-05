@@ -1,9 +1,9 @@
 import { isRecord } from '@/utilities'
 
-export const DEFAULT_PREFETCH_STRATEGY: PrefetchStrategy = 'lazy'
+export const DEFAULT_PREFETCH_STRATEGY: PrefetchStrategy = 'eager'
 
 const DEFAULT_PREFETCH_CONFIG: Required<PrefetchConfigOptions> = {
-  components: DEFAULT_PREFETCH_STRATEGY,
+  components: true,
   props: false,
 }
 

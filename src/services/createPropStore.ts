@@ -15,7 +15,7 @@ type ComponentProps = { id: string, name: string, props?: (params: Record<string
 type SetPropsResponse = CallbackSuccessResponse | CallbackPushResponse | CallbackRejectResponse
 
 export type PropStore = {
-  getPrefetchProps: (route: ResolvedRoute, prefetch: PrefetchConfigs) => Record<string, unknown>,
+  getPrefetchProps: (strategy: PrefetchStrategy, route: ResolvedRoute, configs: PrefetchConfigs) => null | Record<string, unknown>,
   setPrefetchProps: (props: Record<string, unknown>) => void,
   setProps: (route: ResolvedRoute) => Promise<SetPropsResponse>,
   getProps: (id: string, name: string, route: ResolvedRoute) => unknown,
@@ -39,8 +39,17 @@ export function createPropStore(): PropStore {
 
         response[key] = value
 
-        return response
-      }, {})
+    if (!callbacks.length) {
+      return null
+    }
+
+    return callbacks.reduce<Record<string, unknown>>((response, { id, name, props }) => {
+      const key = getPropKey(id, name, route)
+
+      response[key] = props?.(route.params)
+
+      return response
+    }, {})
   }
 
   const setPrefetchProps: PropStore['setPrefetchProps'] = (props) => {

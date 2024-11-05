@@ -1,7 +1,7 @@
-import { MaybeRefOrGetter, toValue, watch } from 'vue'
+import { MaybeRefOrGetter, onMounted, ref, Ref, toValue, watch } from 'vue'
 import { usePropStore } from '@/compositions/usePropStore'
 import { isWithComponent, isWithComponents } from '@/types/createRouteOptions'
-import { getPrefetchOption, PrefetchConfigs } from '@/types/prefetch'
+import { getPrefetchOption, PrefetchConfigs, PrefetchStrategy } from '@/types/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
 import { isAsyncComponent } from '@/utilities/components'
 
@@ -14,38 +14,49 @@ type UsePrefetching = {
 }
 
 export function usePrefetching(config: MaybeRefOrGetter<UsePrefetchingConfig>): UsePrefetching {
-  let props: Record<string, unknown> = {}
+  let prefetchedProps: Record<string, unknown> = {}
 
   const { getPrefetchProps, setPrefetchProps } = usePropStore()
+
+  const commit: UsePrefetching['commit'] = () => {
+    setPrefetchProps(prefetchedProps)
+  }
+
+  onMounted(() => {
+    if (!element.value) {
+      console.warn('The usePrefetching composition will not work correctly if the element ref is not bound.')
+    }
+  })
 
   watch(() => toValue(config), ({ route, ...configs }) => {
     if (!route) {
       return
     }
 
-    prefetchComponentsForRoute(route, configs)
+    prefetchComponentsForRoute('eager', route, configs)
 
-    props = getPrefetchProps(route, configs)
+    const prefetched = getPrefetchProps('eager', route, configs)
+
+    if (prefetched) {
+      prefetchedProps = prefetched
+    }
+
   }, { immediate: true })
-
-  const commit: UsePrefetching['commit'] = () => {
-    setPrefetchProps(props)
-  }
 
   return {
     commit,
   }
 }
 
-function prefetchComponentsForRoute(route: ResolvedRoute, { routerPrefetch, linkPrefetch }: PrefetchConfigs): void {
-  route.matches.forEach((route) => {
-    const shouldPrefetchComponents = getPrefetchOption({
+function prefetchComponentsForRoute(strategy: PrefetchStrategy, route: ResolvedRoute, configs: PrefetchConfigs): void {
+
+  route.matches.forEach(route => {
+    const routeStrategy = getPrefetchOption({
+      ...configs,
       routePrefetch: route.prefetch,
-      routerPrefetch,
-      linkPrefetch,
     }, 'components')
 
-    if (!shouldPrefetchComponents) {
+    if (!routeStrategy || routeStrategy !== strategy) {
       return
     }
 

@@ -6,7 +6,6 @@ describe('getPrefetchOptions', () => {
   test.each([
     [undefined, 'lazy', false, 'lazy'],
     [true, false, false, DEFAULT_PREFETCH_STRATEGY],
-    [true, false, false, DEFAULT_PREFETCH_STRATEGY],
     [{ components: true }, false, false, DEFAULT_PREFETCH_STRATEGY],
     [{ components: true }, 'intent', false, 'intent'],
     [false, 'intent', true, false],
