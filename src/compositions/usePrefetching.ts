@@ -10,11 +10,14 @@ type UsePrefetchingConfig = PrefetchConfigs & {
 }
 
 type UsePrefetching = {
+  element: Ref<HTMLElement | undefined>,
   commit: () => void,
 }
 
 export function usePrefetching(config: MaybeRefOrGetter<UsePrefetchingConfig>): UsePrefetching {
   let prefetchedProps: Record<string, unknown> = {}
+
+  const element = ref<HTMLElement>()
 
   const { getPrefetchProps, setPrefetchProps } = usePropStore()
 
@@ -44,6 +47,7 @@ export function usePrefetching(config: MaybeRefOrGetter<UsePrefetchingConfig>): 
   }, { immediate: true })
 
   return {
+    element,
     commit,
   }
 }

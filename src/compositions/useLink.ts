@@ -1,4 +1,4 @@
-import { ComputedRef, MaybeRefOrGetter, computed, toRef, toValue } from 'vue'
+import { ComputedRef, MaybeRefOrGetter, Ref, computed, toRef, toValue } from 'vue'
 import { usePrefetching } from '@/compositions/usePrefetching'
 import { useRouter } from '@/compositions/useRouter'
 import { InvalidRouteParamValueError } from '@/errors/invalidRouteParamValueError'
@@ -13,6 +13,10 @@ import { Url, isUrl } from '@/types/url'
 import { AllPropertiesAreOptional } from '@/types/utilities'
 
 export type UseLink = {
+  /**
+   * A template ref to bind to the dom for automatic prefetching
+   */
+  element: Ref<HTMLElement | undefined>,
   /**
    * ResolvedRoute if matched. Same value as `router.find`
    */
@@ -102,7 +106,7 @@ export function useLink(
   const isExactMatch = computed(() => !!route.value && router.route.matched === route.value.matched)
   const isExternal = computed(() => router.isExternal(href.value))
 
-  const { commit } = usePrefetching(() => ({
+  const { element, commit } = usePrefetching(() => ({
     route: route.value,
     routerPrefetch: router.prefetch,
     linkPrefetch: optionsRef.value.prefetch,
@@ -119,6 +123,7 @@ export function useLink(
   }
 
   return {
+    element,
     route,
     href,
     isMatch,
