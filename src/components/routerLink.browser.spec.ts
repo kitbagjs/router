@@ -26,7 +26,7 @@ test('renders an anchor tag with the correct href and slot content', () => {
 
   const wrapper = mount(routerLink, {
     props: {
-      to: (resolve) => resolve('parent', { paramName: paramValue }),
+      to: resolve => resolve('parent', { paramName: paramValue }),
     },
     slots: {
       default: content,
@@ -235,7 +235,6 @@ test.each([
 })
 
 describe('prefetch components', () => {
-
   test.each<PrefetchConfig | undefined>([
     undefined,
     true,
@@ -249,7 +248,7 @@ describe('prefetch components', () => {
       name: 'route',
       path: '/route',
       component: defineAsyncComponent(() => {
-        return new Promise(resolve => {
+        return new Promise((resolve) => {
           loaded = true
           resolve({ default: { template: 'foo' } })
         })
@@ -295,7 +294,7 @@ describe('prefetch components', () => {
       path: '/route',
       prefetch,
       component: defineAsyncComponent(() => {
-        return new Promise(resolve => {
+        return new Promise((resolve) => {
           loaded = true
           resolve({ default: { template: 'foo' } })
         })
@@ -339,7 +338,7 @@ describe('prefetch components', () => {
       name: 'route',
       path: '/route',
       component: defineAsyncComponent(() => {
-        return new Promise(resolve => {
+        return new Promise((resolve) => {
           loaded = true
           resolve({ default: { template: 'foo' } })
         })
@@ -370,11 +369,9 @@ describe('prefetch components', () => {
       expect(loaded).toBeUndefined()
     }
   })
-
 })
 
 describe('prefetch props', () => {
-
   test.each<PrefetchConfig | undefined>([
     undefined,
     true,
@@ -586,5 +583,4 @@ describe('prefetch props', () => {
     expect(childProps).toHaveBeenCalledOnce()
     expect(parentProps).not.toHaveBeenCalledOnce()
   })
-
 })

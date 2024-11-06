@@ -82,7 +82,6 @@ export function createRouteHookRunners<const T extends Routes>(): RouteHookRunne
       }))
 
       await Promise.all(results)
-
     } catch (error) {
       if (error instanceof RouterPushError) {
         return {
@@ -137,7 +136,6 @@ export function createRouteHookRunners<const T extends Routes>(): RouteHookRunne
       }))
 
       await Promise.all(results)
-
     } catch (error) {
       if (error instanceof RouterPushError) {
         return {

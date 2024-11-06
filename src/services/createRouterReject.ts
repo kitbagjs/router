@@ -19,7 +19,6 @@ type CreateRouterRejectContext = {
   rejections?: Partial<Record<string, Component>>,
 }
 
-
 export type CreateRouterReject = {
   setRejection: RouterSetReject,
   rejection: RouterRejection,
@@ -29,7 +28,6 @@ export type CreateRouterReject = {
 export function createRouterReject({
   rejections: customRejectionComponents,
 }: CreateRouterRejectContext): CreateRouterReject {
-
   const getRejectionComponent = (type: RegisteredRejectionType): Component => {
     const components = {
       ...customRejectionComponents,

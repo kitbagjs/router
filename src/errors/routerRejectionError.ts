@@ -9,4 +9,3 @@ export class RouterRejectionError extends Error {
     this.type = type
   }
 }
-

@@ -38,6 +38,7 @@ test('RoutesMap given unnamed parents, removes them from return value and childr
 
   const zooBar = createRoute({ name: 'zoo', path: '/zoo', component, parent: bar })
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const routes = [
     root,
     foo,

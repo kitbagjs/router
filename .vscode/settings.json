@@ -3,9 +3,17 @@
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit"
   },
+  "eslint.rules.customizations": [
+    {
+      "rule": "@stylistic/*",
+      "fixable": true,
+      "severity": "warn"
+    }
+  ],
   "typescript.tsdk": "node_modules/typescript/lib",
   "cSpell.words": [
     "composables",
+    "tseslint",
     "vitepress"
   ],
 }

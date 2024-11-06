@@ -76,7 +76,7 @@ export type RouteHookRemove = () => void
 /**
  * Enumerates the lifecycle events for before route hooks.
  */
-export type BeforeRouteHookLifecycle = 'onBeforeRouteEnter' | 'onBeforeRouteUpdate' |'onBeforeRouteLeave'
+export type BeforeRouteHookLifecycle = 'onBeforeRouteEnter' | 'onBeforeRouteUpdate' | 'onBeforeRouteLeave'
 
 /**
  * Enumerates the lifecycle events for after route hooks.

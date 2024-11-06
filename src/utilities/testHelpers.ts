@@ -67,7 +67,7 @@ export const routes = [
   }),
 ]
 
-export function mockRoute<TName extends string>(name: TName): ResolvedRoute['matched'] {
+export function mockRoute(name: string): ResolvedRoute['matched'] {
   return {
     id: Math.random().toString(),
     name,
@@ -82,11 +82,15 @@ export function mockRoute<TName extends string>(name: TName): ResolvedRoute['mat
 }
 
 export function mockResolvedRoute(matched: ResolvedRoute['matched'], matches: ResolvedRoute['matched'][]): ResolvedRoute {
+  if (!matched.name) {
+    throw new Error('name is required')
+  }
+
   return {
     id: matched.id,
     matched,
     matches,
-    name: matched.name!,
+    name: matched.name,
     query: createResolvedRouteQuery(),
     params: {},
     state: {},

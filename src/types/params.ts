@@ -32,11 +32,7 @@ export function isParamGetter(value: Param): value is ParamGetter {
  * @returns True if the value is an object with both 'get' and 'set' functions defined.
  */
 export function isParamGetSet(value: Param): value is ParamGetSet {
-  return typeof value === 'object'
-    && 'get' in value
-    && typeof value.get === 'function'
-    && 'set' in value
-    && typeof value.set === 'function'
+  return typeof value === 'object' && 'get' in value && typeof value.get === 'function' && 'set' in value && typeof value.set === 'function'
 }
 
 /**

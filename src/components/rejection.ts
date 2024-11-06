@@ -1,5 +1,3 @@
-/* eslint-disable vue/require-expose */
-
 import { Component, defineComponent, h } from 'vue'
 
 export function genericRejection(type: string): Component {

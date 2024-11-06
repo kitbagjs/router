@@ -17,7 +17,6 @@ test('given a route name with params, interpolates param values', () => {
 })
 
 test('given a route name with query, interpolates param values', () => {
-
   const resolve = createRouterResolve(routes)
   const url = resolve('parentA', { paramA: 'bar' }, { query: { foo: 'foo' } })
 
@@ -27,10 +26,9 @@ test('given a route name with query, interpolates param values', () => {
 test('given a route name with params cannot be matched, throws an error', () => {
   const resolve = createRouterResolve(routes)
 
-  // @ts-expect-error
+  // @ts-expect-error route doesn't actually exist
   expect(() => resolve({ route: 'foo' })).toThrowError()
 })
-
 
 test('given a param with a dash or underscore resolves the correct url', () => {
   const routes = [
@@ -52,7 +50,7 @@ test('given a param with a dash or underscore resolves the correct url', () => {
 
   expect(kebab).toBe('/foo')
 
-  const snake = resolve('snake', { 'test_param': 'foo' })
+  const snake = resolve('snake', { test_param: 'foo' })
 
   expect(snake).toBe('/foo')
 })
@@ -80,7 +78,7 @@ test('when given an external route with params in host, interpolates param value
 
   const resolve = createRouterResolve([route])
 
-  const url = resolve('external', { 'subdomain': 'router' })
+  const url = resolve('external', { subdomain: 'router' })
 
   expect(url).toBe('https://router.kitbag.dev/')
 })

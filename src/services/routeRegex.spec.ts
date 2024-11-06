@@ -109,7 +109,6 @@ describe('generateRouteQueryRegexPatterns', () => {
 
     const result = generateRouteQueryRegexPatterns(route)
 
-
     expect(result.map(pattern => pattern.toString())).toMatchObject([
       '/query=\\$with(&|$)/i',
       '/normal=.+(&|$)/i',

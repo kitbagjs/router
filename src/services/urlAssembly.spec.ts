@@ -153,7 +153,6 @@ describe('query params', () => {
     expect(url).toBe('/?simple=')
   })
 
-
   test('given route with default string param provided but empty, returns route Query with string without values interpolated', () => {
     const route = createRoute({
       name: 'simple',
@@ -184,7 +183,6 @@ describe('query params', () => {
 
     expect(url).toBe('/?simple=ABC')
   })
-
 
   test('given route with default string param provided, returns route Query with string with values interpolated', () => {
     const route = createRoute({
@@ -313,7 +311,6 @@ describe('host params', () => {
 
     expect(url).toBe('ABC.kitbag.dev/')
   })
-
 
   test('given route with default string param provided, returns route Host with string with values interpolated', () => {
     const route = createExternalRoute({

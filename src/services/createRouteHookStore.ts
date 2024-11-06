@@ -66,5 +66,4 @@ export function createRouteHookStore(): RouteHookStore {
   }
 
   return { ...store, addBeforeRouteHook, addAfterRouteHook }
-
 }

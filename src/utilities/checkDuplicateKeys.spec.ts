@@ -5,7 +5,9 @@ import { checkDuplicateParams } from '@/utilities/checkDuplicateKeys'
 test('given a single array without duplicates, does nothing', () => {
   const input = ['foo', 'bar', 'zoo']
 
-  const action: () => void = () => checkDuplicateParams(input)
+  const action: () => void = () => {
+    checkDuplicateParams(input)
+  }
 
   expect(action).not.toThrow()
 })
@@ -15,7 +17,9 @@ test.each([
   [['foo', 'bar', 'zoo'], ['jar', 'zoo']],
   [['foo', 'bar', 'zoo'], ['jar'], ['zoo']],
 ])('given a multiple arrays with duplicates, throws DuplicateParamsError', (...arrays) => {
-  const action: () => void = () => checkDuplicateParams(...arrays)
+  const action: () => void = () => {
+    checkDuplicateParams(...arrays)
+  }
 
   expect(action).toThrow(DuplicateParamsError)
 })
@@ -28,7 +32,9 @@ test.each([
   const aArray = ['foo', 'bar', 'zoo']
   const bArray = ['jar']
 
-  const action: () => void = () => checkDuplicateParams(aArray, bArray)
+  const action: () => void = () => {
+    checkDuplicateParams(aArray, bArray)
+  }
 
   expect(action).not.toThrow()
 })
@@ -37,7 +43,9 @@ test.each([
   [{ foo: 'foo', var: 'bar', zoo: 'zoo' }, { jar: 'jar', zoo: 'zoo' }],
   [{ foo: 'foo', var: 'bar', zoo: 'zoo' }, { jar: 'jar' }, { zoo: 'zoo' }],
 ])('given multiple records with duplicates keys, throws DuplicateParamsError', (...records) => {
-  const action: () => void = () => checkDuplicateParams(...records)
+  const action: () => void = () => {
+    checkDuplicateParams(...records)
+  }
 
   expect(action).toThrow(DuplicateParamsError)
 })
@@ -49,7 +57,9 @@ test.each([
   const aRecord = { foo: 'foo', var: 'bar' }
   const bRecord = { jar: 'jar', zoo: 'zoo' }
 
-  const action: () => void = () => checkDuplicateParams(aRecord, bRecord)
+  const action: () => void = () => {
+    checkDuplicateParams(aRecord, bRecord)
+  }
 
   expect(action).not.toThrow()
 })

@@ -8,7 +8,7 @@ type ExtractParamsFromHostString<
   THost extends string,
   TParams extends Record<string, Param | undefined> = Record<never, never>
 > = THost extends `${string}${ParamStart}${infer Param}${ParamEnd}${infer Rest}`
-  ? { [P in Param]: ExtractPathParamType<Param, TParams> } & ExtractParamsFromHostString<Rest, TParams>
+  ? Record<Param, ExtractPathParamType<Param, TParams>> & ExtractParamsFromHostString<Rest, TParams>
   : Record<never, never>
 
 export type HostParams<THost extends string> = {

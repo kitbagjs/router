@@ -13,7 +13,7 @@ export function combineMeta(parentMeta: Record<string, unknown>, childMeta: Reco
 }
 
 function checkForConflicts(parentMeta: Record<string, unknown>, childMeta: Record<string, unknown>): void {
-  const conflict = Object.keys(parentMeta).find(key => {
+  const conflict = Object.keys(parentMeta).find((key) => {
     return key in childMeta && typeof childMeta[key] !== typeof parentMeta[key]
   })
 

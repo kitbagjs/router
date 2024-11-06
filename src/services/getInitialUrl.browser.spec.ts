@@ -7,7 +7,6 @@ test('given value for initial route, returns value', () => {
 
   const response = getInitialUrl(initialRoute)
 
-
   expect(response).toBe(initialRoute)
 })
 

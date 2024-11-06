@@ -1,5 +1,5 @@
-import { Route } from '@/types'
 import { paramEnd, paramStart } from '@/types/params'
+import { Route } from '@/types/route'
 import { stringHasValue } from '@/utilities/guards'
 
 export function escapeRegExp(string: string): string {
@@ -57,7 +57,9 @@ export function generateRouteQueryRegexPatterns(route: Route): RegExp[] {
 
 export function replaceParamSyntaxWithCatchAllsAndEscapeRest(value: string): string {
   return splitByMatches(value, new RegExp(paramRegex, 'g'))
-    .map(slice => slice.startsWith(paramStart) ? replaceParamSyntaxWithCatchAlls(slice) : escapeRegExp(slice))
+    .map((slice) => {
+      return slice.startsWith(paramStart) ? replaceParamSyntaxWithCatchAlls(slice) : escapeRegExp(slice)
+    })
     .join('')
 }
 
@@ -83,7 +85,6 @@ export function isOptionalParamSyntax(value: string): boolean {
 }
 
 function replaceRequiredParamSyntaxWithCatchAll(value: string): string {
-
   return value.replace(new RegExp(requiredParamRegex, 'g'), '.+')
 }
 
@@ -101,5 +102,7 @@ export function getParamName(value: string): string | undefined {
 export function getCaptureGroups(value: string, pattern: RegExp): (string | undefined)[] {
   const matches = Array.from(value.matchAll(pattern))
 
-  return matches.flatMap(([, ...values]) => values.map(value => stringHasValue(value) ? value : ''))
+  return matches.flatMap(([, ...values]) => values.map((value) => {
+    return stringHasValue(value) ? value : ''
+  }))
 }

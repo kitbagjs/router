@@ -8,7 +8,7 @@ type ExtractParamsFromPathString<
   TPath extends string,
   TParams extends Record<string, Param | undefined> = Record<never, never>
 > = TPath extends `${string}${ParamStart}${infer Param}${ParamEnd}${infer Rest}`
-  ? { [P in Param]: ExtractPathParamType<Param, TParams> } & ExtractParamsFromPathString<Rest, TParams>
+  ? Record<Param, ExtractPathParamType<Param, TParams>> & ExtractParamsFromPathString<Rest, TParams>
   : Record<never, never>
 
 export type PathParams<TPath extends string> = {

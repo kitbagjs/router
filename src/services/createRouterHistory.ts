@@ -28,7 +28,8 @@ export function createRouterHistory({ mode, listener }: RouterHistoryOptions): R
 
   const update: NavigationUpdate = (url, options) => {
     if (options?.replace) {
-      return history.replace(url, options.state)
+      history.replace(url, options.state)
+      return
     }
 
     history.push(url, options?.state)
@@ -37,7 +38,7 @@ export function createRouterHistory({ mode, listener }: RouterHistoryOptions): R
   const refresh: NavigationRefresh = () => {
     const url = createPath(history.location)
 
-    return history.replace(url)
+    history.replace(url)
   }
 
   let removeListener: (() => void) | undefined
