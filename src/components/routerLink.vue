@@ -1,10 +1,5 @@
 <template>
-  <a
-    :href="resolved"
-    class="router-link"
-    :class="classes"
-    @click="onClick"
-  >
+  <a :href="resolved" class="router-link" :class="classes" @click="onClick">
     <slot v-bind="{ resolved, isMatch, isExactMatch, isExternal }" />
   </a>
 </template>
@@ -50,10 +45,6 @@
   const resolved = computed(() => {
     return isUrl(props.to) ? props.to : props.to(router.resolve)
   })
-
-  const something_new = '123'
-
-  console.log(something_new)
 
   const options = computed(() => {
     const { to, ...options } = props
