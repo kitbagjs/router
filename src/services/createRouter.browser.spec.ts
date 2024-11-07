@@ -30,5 +30,4 @@ test('Router is automatically started when installed', async () => {
   await router.start()
 
   expect(router.route.name).toBe('root')
-
 })

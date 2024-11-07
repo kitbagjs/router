@@ -103,7 +103,7 @@ describe('getRouteScoreSortMethod', () => {
     const sortByRouteScore = getRouteScoreSortMethod('/red')
     const response = routes.sort(sortByRouteScore)
 
-    expect(response.map(route => route.matched.name)).toMatchObject(['higher-depth-child', 'lower-depth', 'higher-depth'])
+    expect(response.map((route) => route.matched.name)).toMatchObject(['higher-depth-child', 'lower-depth', 'higher-depth'])
   })
 
   test('given routes with different query scores, returns them sorted by query score descending', () => {
@@ -155,6 +155,6 @@ describe('getRouteScoreSortMethod', () => {
     const sortByRouteScore = getRouteScoreSortMethod('/?color=red&extra=ok')
     const response = routes.sort(sortByRouteScore)
 
-    expect(response.map(route => route.matched.name)).toMatchObject(['higher-depth-child', 'lower-depth', 'higher-depth'])
+    expect(response.map((route) => route.matched.name)).toMatchObject(['higher-depth-child', 'lower-depth', 'higher-depth'])
   })
 })

@@ -4,7 +4,7 @@ import { ExtractParamType, isParamGetSet, isParamGetter } from '@/types/params'
 import { Param, ParamExtras, ParamGetSet } from '@/types/paramTypes'
 import { stringHasValue } from '@/utilities/guards'
 
-export function getParam<TParams extends Record<string, Param | undefined>>(params: TParams, paramName: string): Param {
+export function getParam(params: Record<string, Param | undefined>, paramName: string): Param {
   return params[paramName] ?? String
 }
 
@@ -90,14 +90,14 @@ const jsonParam: ParamGetSet<unknown> = {
   get: (value, { invalid }) => {
     try {
       return JSON.parse(value)
-    } catch (error) {
+    } catch {
       throw invalid()
     }
   },
   set: (value, { invalid }) => {
     try {
       return JSON.stringify(value)
-    } catch (error) {
+    } catch {
       throw invalid()
     }
   },
@@ -187,7 +187,7 @@ export function setParamValue(value: unknown, param: Param, isOptional = false):
 
   try {
     return (value as any).toString()
-  } catch (error) {
+  } catch {
     throw new InvalidRouteParamValueError()
   }
 }

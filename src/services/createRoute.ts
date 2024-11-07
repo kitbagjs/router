@@ -36,10 +36,10 @@ export function createRoute<
   const TMeta extends RouteMeta = RouteMeta,
   const TState extends Record<string, Param> = Record<string, Param>
 >(options: CreateRouteOptions<TName, TPath, TQuery, THash, TMeta>
-& WithHooks
-& WithoutComponents
-& WithoutParent
-& (WithState<TState> | WithoutState)):
+  & WithHooks
+  & WithoutComponents
+  & WithoutParent
+  & (WithState<TState> | WithoutState)):
 Route<ToName<TName>, Host<'', {}>, ToPath<TPath>, ToQuery<TQuery>, ToHash<THash>, TMeta, TState>
 
 export function createRoute<
@@ -51,10 +51,10 @@ export function createRoute<
   const TMeta extends RouteMeta = RouteMeta,
   const TState extends Record<string, Param> = Record<string, Param>
 >(options: CreateRouteOptions<TName, TPath, TQuery, THash, TMeta>
-& WithHooks
-& WithoutComponents
-& WithParent<TParent>
-& (WithState<TState> | WithoutState)):
+  & WithHooks
+  & WithoutComponents
+  & WithParent<TParent>
+  & (WithState<TState> | WithoutState)):
 Route<ToName<TName>, Host<'', {}>, CombinePath<TParent['path'], ToPath<TPath>>, CombineQuery<TParent['query'], ToQuery<TQuery>>, CombineHash<TParent['hash'], ToHash<THash>>, CombineMeta<TMeta, TParent['meta']>, CombineState<TState, TParent['state']>>
 
 export function createRoute<
@@ -66,10 +66,10 @@ export function createRoute<
   const TMeta extends RouteMeta = RouteMeta,
   const TState extends Record<string, Param> = Record<string, Param>
 >(options: CreateRouteOptions<TName, TPath, TQuery, THash, TMeta>
-& WithHooks
-& WithComponent<TComponent, RouteParams<TPath, TQuery>>
-& WithoutParent
-& (WithState<TState> | WithoutState)):
+  & WithHooks
+  & WithComponent<TComponent, RouteParams<TPath, TQuery>>
+  & WithoutParent
+  & (WithState<TState> | WithoutState)):
 Route<ToName<TName>, Host<'', {}>, ToPath<TPath>, ToQuery<TQuery>, ToHash<THash>, TMeta, TState>
 
 export function createRoute<
@@ -82,10 +82,10 @@ export function createRoute<
   const TMeta extends RouteMeta = RouteMeta,
   const TState extends Record<string, Param> = Record<string, Param>
 >(options: CreateRouteOptions<TName, TPath, TQuery, THash, TMeta>
-& WithHooks
-& WithComponent<TComponent, RouteParams<TPath, TQuery, TParent>>
-& WithParent<TParent>
-& (WithState<TState> | WithoutState)):
+  & WithHooks
+  & WithComponent<TComponent, RouteParams<TPath, TQuery, TParent>>
+  & WithParent<TParent>
+  & (WithState<TState> | WithoutState)):
 Route<ToName<TName>, Host<'', {}>, CombinePath<TParent['path'], ToPath<TPath>>, CombineQuery<TParent['query'], ToQuery<TQuery>>, CombineHash<TParent['hash'], ToHash<THash>>, CombineMeta<TMeta, TParent['meta']>, CombineState<TState, TParent['state']>>
 
 export function createRoute<
@@ -97,10 +97,10 @@ export function createRoute<
   const TMeta extends RouteMeta = RouteMeta,
   const TState extends Record<string, Param> = Record<string, Param>
 >(options: CreateRouteOptions<TName, TPath, TQuery, THash, TMeta>
-& WithHooks
-& WithComponents<TComponents, RouteParams<TPath, TQuery>>
-& WithoutParent
-& (WithState<TState> | WithoutState)):
+  & WithHooks
+  & WithComponents<TComponents, RouteParams<TPath, TQuery>>
+  & WithoutParent
+  & (WithState<TState> | WithoutState)):
 Route<ToName<TName>, Host<'', {}>, ToPath<TPath>, ToQuery<TQuery>, ToHash<THash>, TMeta, TState>
 
 export function createRoute<
@@ -113,10 +113,10 @@ export function createRoute<
   const TMeta extends RouteMeta = RouteMeta,
   const TState extends Record<string, Param> = Record<string, Param>
 >(options: CreateRouteOptions<TName, TPath, TQuery, THash, TMeta>
-& WithHooks
-& WithComponents<TComponents, RouteParams<TPath, TQuery, TParent>>
-& WithParent<TParent>
-& (WithState<TState> | WithoutState)):
+  & WithHooks
+  & WithComponents<TComponents, RouteParams<TPath, TQuery, TParent>>
+  & WithParent<TParent>
+  & (WithState<TState> | WithoutState)):
 Route<ToName<TName>, Host<'', {}>, CombinePath<TParent['path'], ToPath<TPath>>, CombineQuery<TParent['query'], ToQuery<TQuery>>, CombineHash<TParent['hash'], ToHash<THash>>, CombineMeta<TMeta, TParent['meta']>, CombineState<TState, TParent['state']>>
 
 export function createRoute(options: CreateRouteOptions): Route {

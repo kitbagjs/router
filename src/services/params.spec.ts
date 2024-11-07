@@ -81,14 +81,13 @@ describe('getParamValue', () => {
 
         return 'yes'
       },
-      set: value => value,
+      set: (value) => value,
     }
 
     expect(getParamValue('yes', getter)).toBe('yes')
     expect(() => getParamValue('no', getter)).toThrowError()
     expect(() => getParamValue('foo', getter)).toThrowError()
   })
-
 })
 
 describe('setParamValue', () => {
@@ -133,7 +132,6 @@ describe('setParamValue', () => {
       expect(setParamValue(undefined, withDefault(param, 'abc'), true)).toBe('')
     }
   })
-
 
   test('Given Getter Custom Param, returns value as String', () => {
     const param: ParamGetter = (value, { invalid }) => {

@@ -2,7 +2,6 @@ import { describe, expect, expectTypeOf, test } from 'vitest'
 import { hasProperty, StringHasValue } from '@/utilities/guards'
 
 describe('hasProperty', () => {
-
   test('returns true when property exists', () => {
     const source = hasProperty({ foo: true }, 'foo')
 
@@ -26,7 +25,6 @@ describe('hasProperty', () => {
 
     expect(source).toBe(false)
   })
-
 })
 
 describe('stringHasValue', () => {

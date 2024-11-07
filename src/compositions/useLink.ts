@@ -74,8 +74,12 @@ export function useLink(
 ): UseLink {
   const router = useRouter()
   const sourceRef = toRef(source)
-  const paramsRef = computed<Record<PropertyKey, unknown>>(() => isUrl(sourceRef.value) ? {} : toValue(paramsOrOptions))
-  const optionsRef = computed<UseLinkOptions>(() => isUrl(sourceRef.value) ? toValue(paramsOrOptions) : toValue(maybeOptions))
+  const paramsRef = computed<Record<PropertyKey, unknown>>(() => {
+    return isUrl(sourceRef.value) ? {} : toValue(paramsOrOptions)
+  })
+  const optionsRef = computed<UseLinkOptions>(() => {
+    return isUrl(sourceRef.value) ? toValue(paramsOrOptions) : toValue(maybeOptions)
+  })
 
   const href = computed(() => {
     if (isUrl(sourceRef.value)) {

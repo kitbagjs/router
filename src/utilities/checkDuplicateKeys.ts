@@ -2,7 +2,9 @@ import { DuplicateParamsError } from '@/errors/duplicateParamsError'
 import { getCount } from '@/utilities/array'
 
 export function checkDuplicateParams(...withParams: (Record<string, unknown> | string[])[]): void {
-  const paramNames = withParams.flatMap(params => Array.isArray(params) ? params : Object.keys(params).map(removeLeadingQuestionMark))
+  const paramNames = withParams.flatMap((params) => {
+    return Array.isArray(params) ? params : Object.keys(params).map(removeLeadingQuestionMark)
+  })
 
   for (const paramName of paramNames) {
     if (getCount(paramNames, paramName) > 1) {

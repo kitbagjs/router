@@ -115,7 +115,6 @@ test('route update updates the current route', async () => {
   })
 
   expect(router.route.params.param).toBe('three')
-
 })
 
 test.fails('route is readonly except for individual params', async () => {
@@ -133,19 +132,19 @@ test.fails('route is readonly except for individual params', async () => {
 
   await start()
 
-  // @ts-expect-error
+  // @ts-expect-error value is immutable
   route.name = 'child'
   expect(route.name).toBe('root')
 
-  // @ts-expect-error
+  // @ts-expect-error value is immutable
   route.matched = 'match'
   expect(route.matched).toMatchObject(routes[0].matched)
 
-  // @ts-expect-error
+  // @ts-expect-error value is immutable
   route.matches = 'matches'
   expect(route.matches).toMatchObject(routes[0].matches)
 
-  // @ts-expect-error
+  // @ts-expect-error value is immutable
   route.params = { foo: 'bar' }
   expect(route.params).toMatchObject({})
 })
@@ -179,12 +178,12 @@ test('individual params are writable', async () => {
 
   expect(route.params.param).toBe('again')
 
-  // @ts-expect-error
+  // @ts-expect-error value is immutable
   route.params.nothing = 'nothing'
 
   await flushPromises()
 
-  // @ts-expect-error
+  // @ts-expect-error value is immutable
   expect(route.params.nothing).toBeUndefined()
 })
 
@@ -226,12 +225,12 @@ test('setting an unknown param does not add its value to the route', async () =>
 
   await start()
 
-  // @ts-expect-error
+  // @ts-expect-error value is immutable
   route.params.nothing = 'nothing'
 
   await flushPromises()
 
-  // @ts-expect-error
+  // @ts-expect-error value is immutable
   expect(route.params.nothing).toBeUndefined()
 })
 

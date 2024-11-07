@@ -8,7 +8,7 @@ type ExtractQueryParamsFromQueryString<
   TQuery extends string,
   TParams extends Record<string, Param | undefined> = Record<never, never>
 > = TQuery extends `${string}=${ParamStart}${infer Param}${ParamEnd}${infer Rest}`
-  ? { [P in Param]: ExtractPathParamType<Param, TParams> } & ExtractQueryParamsFromQueryString<Rest, TParams>
+  ? Record<Param, ExtractPathParamType<Param, TParams>> & ExtractQueryParamsFromQueryString<Rest, TParams>
   : Record<never, never>
 
 export type QueryParams<T extends string> = {

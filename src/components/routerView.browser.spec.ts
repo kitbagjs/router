@@ -185,7 +185,7 @@ test('Renders custom genericRejection component when the initialUrl does not mat
   })
 
   if (!isWithComponent(router.route.matched)) {
-    throw 'Matched route does not have a single component'
+    throw new Error('Matched route does not have a single component')
   }
 
   const route = mount(router.route.matched.component)
@@ -287,7 +287,6 @@ test('Renders the multiple components when using named route views', async () =>
 })
 
 test('Binds props and attrs from route', async () => {
-
   const routeA = createRoute({
     name: 'routeA',
     path: '/routeA/[param]',
@@ -300,7 +299,7 @@ test('Binds props and attrs from route', async () => {
     path: '/routeB/[param]',
     component: echo,
     props: async ({ param }) => {
-      return await { value: param }
+      return { value: param }
     },
   })
 
@@ -330,7 +329,6 @@ test('Binds props and attrs from route', async () => {
 })
 
 test('Updates props and attrs when route params change', async () => {
-
   const syncProps = createRoute({
     name: 'sync',
     path: '/sync/[param]',
@@ -338,13 +336,12 @@ test('Updates props and attrs when route params change', async () => {
     props: ({ param }) => ({ value: param }),
   })
 
-
   const asyncProps = createRoute({
     name: 'async',
     path: '/async/[param]',
     component: echo,
     props: async ({ param }) => {
-      return await { value: param }
+      return { value: param }
     },
   })
 

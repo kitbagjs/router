@@ -55,7 +55,6 @@ function asyncPropsWrapper<TComponent extends Component>(component: TComponent, 
     setup() {
       const values = ref()
 
-      // eslint-disable-next-line semi-style
       ;(async () => {
         values.value = await props
       })()

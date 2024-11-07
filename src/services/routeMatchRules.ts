@@ -17,7 +17,7 @@ export const routeQueryMatches: RouteMatchRule = (route, url) => {
   const { search } = createMaybeRelativeUrl(url)
   const queryPatterns = generateRouteQueryRegexPatterns(route)
 
-  return queryPatterns.every(pattern => pattern.test(search))
+  return queryPatterns.every((pattern) => pattern.test(search))
 }
 
 export const routeHashMatches: RouteMatchRule = (route, url) => {

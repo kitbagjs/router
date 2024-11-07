@@ -38,7 +38,7 @@ test('renders component with async props', async () => {
     name: 'echo',
     path: '/echo',
     component: component(echo, async () => {
-      return await { value: 'echo' }
+      return { value: 'echo' }
     }),
   })
 

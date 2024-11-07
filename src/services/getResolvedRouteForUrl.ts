@@ -20,7 +20,7 @@ export function getResolvedRouteForUrl(routes: Routes, url: string, state?: unkn
   const sortByRouteScore = getRouteScoreSortMethod(url)
 
   const matches = routes
-    .filter(route => rules.every(test => test(route, url)))
+    .filter((route) => rules.every((test) => test(route, url)))
     .sort(sortByRouteScore)
 
   if (matches.length === 0) {

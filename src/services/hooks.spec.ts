@@ -62,10 +62,22 @@ test('calls hook with correct routes', () => {
 })
 
 test.each<{ type: string, status: string, hook: BeforeRouteHook }>([
-  { type: 'reject', status: 'REJECT', hook: (_to, { reject }) => reject('NotFound') },
+  {
+    type: 'reject',
+    status: 'REJECT',
+    hook: (_to, { reject }) => {
+      reject('NotFound')
+    },
+  },
   { type: 'push', status: 'PUSH', hook: (_to, { push }) => push('/') },
   { type: 'replace', status: 'PUSH', hook: (_to, { replace }) => replace('/') },
-  { type: 'abort', status: 'ABORT', hook: (_to, { abort }) => abort() },
+  {
+    type: 'abort',
+    status: 'ABORT',
+    hook: (_to, { abort }) => {
+      abort()
+    },
+  },
 ])('Returns correct status when hook is called', async ({ status, hook }) => {
   const { runBeforeRouteHooks } = createRouteHookRunners()
   const { hooks } = createRouterHooks()
@@ -112,7 +124,7 @@ test.each<{ type: string, status: string, hook: BeforeRouteHook }>([
     hooks,
   })
 
-  await expect(response.status).toBe(status)
+  expect(response.status).toBe(status)
 })
 
 test('hook is called in order', async () => {

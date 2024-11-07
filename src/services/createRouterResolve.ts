@@ -29,9 +29,8 @@ export type RouterResolve<
 }
 
 export function createRouterResolve<const TRoutes extends Routes>(routes: TRoutes): RouterResolve<TRoutes> {
-
-  return <TSource extends RoutesName<TRoutes>>(
-    source: Url | TSource,
+  return (
+    source: Url | RoutesName<TRoutes>,
     paramsOrOptions?: Record<string, unknown>,
     maybeOptions?: RouterResolveOptions,
   ): string => {
@@ -57,5 +56,4 @@ export function createRouterResolve<const TRoutes extends Routes>(routes: TRoute
 
     return url
   }
-
 }

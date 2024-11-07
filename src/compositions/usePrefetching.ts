@@ -38,8 +38,7 @@ export function usePrefetching(config: MaybeRefOrGetter<UsePrefetchingConfig>): 
 }
 
 function prefetchComponentsForRoute(route: ResolvedRoute, { routerPrefetch, linkPrefetch }: PrefetchConfigs): void {
-
-  route.matches.forEach(route => {
+  route.matches.forEach((route) => {
     const shouldPrefetchComponents = getPrefetchOption({
       routePrefetch: route.prefetch,
       routerPrefetch,
@@ -55,12 +54,11 @@ function prefetchComponentsForRoute(route: ResolvedRoute, { routerPrefetch, link
     }
 
     if (isWithComponents(route)) {
-      Object.values(route.components).forEach(component => {
+      Object.values(route.components).forEach((component) => {
         if (isAsyncComponent(component)) {
           component.setup()
         }
       })
     }
   })
-
 }

@@ -51,7 +51,7 @@ test.each([
     createRoute({
       name: 'routeA',
       path: '/routeA',
-      component: { render: () => h(routerLink, { to: resolve => resolve('routeB'), replace }) },
+      component: { render: () => h(routerLink, { to: (resolve) => resolve('routeB'), replace }) },
     }),
     createRoute({
       name: 'routeB',
@@ -235,7 +235,6 @@ test.each([
 })
 
 describe('prefetch components', () => {
-
   test.each<PrefetchConfig | undefined>([
     undefined,
     true,
@@ -249,7 +248,7 @@ describe('prefetch components', () => {
       name: 'route',
       path: '/route',
       component: defineAsyncComponent(() => {
-        return new Promise(resolve => {
+        return new Promise((resolve) => {
           loaded = true
           resolve({ default: { template: 'foo' } })
         })
@@ -295,7 +294,7 @@ describe('prefetch components', () => {
       path: '/route',
       prefetch,
       component: defineAsyncComponent(() => {
-        return new Promise(resolve => {
+        return new Promise((resolve) => {
           loaded = true
           resolve({ default: { template: 'foo' } })
         })
@@ -339,7 +338,7 @@ describe('prefetch components', () => {
       name: 'route',
       path: '/route',
       component: defineAsyncComponent(() => {
-        return new Promise(resolve => {
+        return new Promise((resolve) => {
           loaded = true
           resolve({ default: { template: 'foo' } })
         })
@@ -370,11 +369,9 @@ describe('prefetch components', () => {
       expect(loaded).toBeUndefined()
     }
   })
-
 })
 
 describe('prefetch props', () => {
-
   test.each<PrefetchConfig | undefined>([
     undefined,
     true,
@@ -502,7 +499,7 @@ describe('prefetch props', () => {
     const home = createRoute({
       name: 'home',
       path: '/',
-      component: () => h(routerLink, { to: resolve => resolve('echo') }),
+      component: () => h(routerLink, { to: (resolve) => resolve('echo') }),
     })
 
     const route = createRoute({
@@ -547,7 +544,7 @@ describe('prefetch props', () => {
     const home = createRoute({
       name: 'home',
       path: '/',
-      component: () => h(routerLink, { to: resolve => resolve('child') }),
+      component: () => h(routerLink, { to: (resolve) => resolve('child') }),
     })
 
     const parent = createRoute({
@@ -586,5 +583,4 @@ describe('prefetch props', () => {
     expect(childProps).toHaveBeenCalledOnce()
     expect(parentProps).not.toHaveBeenCalledOnce()
   })
-
 })

@@ -10,7 +10,9 @@ test('given a single array without duplicates, does nothing', () => {
     createRoute({ name: 'zoo' }),
   ]
 
-  const action: () => void = () => checkDuplicateNames(routes)
+  const action: () => void = () => {
+    checkDuplicateNames(routes)
+  }
 
   expect(action).not.toThrow()
 })
@@ -23,7 +25,9 @@ test('given a multiple arrays with duplicates, throws DuplicateParamsError', () 
     createRoute({ name: 'bar' }),
     createRoute({ name: 'foo' }),
   ]
-  const action: () => void = () => checkDuplicateNames(routes)
+  const action: () => void = () => {
+    checkDuplicateNames(routes)
+  }
 
   expect(action).toThrow(DuplicateNamesError)
 })

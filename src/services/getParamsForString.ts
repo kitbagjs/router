@@ -4,7 +4,7 @@ import { paramEnd, paramStart } from '@/types/params'
 import { Param } from '@/types/paramTypes'
 import { checkDuplicateParams } from '@/utilities/checkDuplicateKeys'
 
-export function getParamsForString<TInput extends string, TParams extends Record<string, Param | undefined>>(string: TInput, params: TParams): Record<string, Param> {
+export function getParamsForString(string: string, params: Record<string, Param | undefined>): Record<string, Param> {
   const paramPattern = new RegExp(`\\${paramStart}(\\??[\\w-_]+)\\${paramEnd}`, 'g')
   const matches = Array.from(string.matchAll(paramPattern))
 

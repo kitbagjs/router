@@ -3,5 +3,5 @@ export function asArray<T>(value: Readonly<T | T[]>): T[] {
 }
 
 export function getCount<T>(array: T[], item: T): number {
-  return array.filter(itemAtIndex => item === itemAtIndex).length
+  return array.filter((itemAtIndex) => item === itemAtIndex).length
 }

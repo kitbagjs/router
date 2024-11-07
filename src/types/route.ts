@@ -10,7 +10,7 @@ import { RouteMeta } from '@/types/register'
 /**
  * Represents an immutable array of Route instances. Return value of `createRoute`, expected param for `createRouter`.
  */
-export type Routes = Readonly<Route[]>
+export type Routes = readonly Route[]
 
 /**
  * The Route properties originally provided to `createRoute`. The only change is normalizing meta to always default to an empty object.

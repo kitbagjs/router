@@ -88,7 +88,8 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
     history.stopListening()
 
     if (isExternal(url)) {
-      return history.update(url, options)
+      history.update(url, options)
+      return
     }
 
     const to = getResolvedRouteForUrl(routes, url, options.state) ?? getRejectionRoute('NotFound')
@@ -184,11 +185,11 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
   }
 
   const reject: RouterReject = (type) => {
-    return setRejection(type)
+    setRejection(type)
   }
 
-  const find = <TSource extends RoutesName<TRoutes>>(
-    source: Url | TSource,
+  const find = (
+    source: Url | RoutesName<TRoutes>,
     params: Record<PropertyKey, unknown> = {},
   ): ResolvedRoute | undefined => {
     if (!isUrl(source)) {
@@ -228,7 +229,7 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
   }
 
   function getRoute(name: string): Route | undefined {
-    return routes.find(route => route.name === name)
+    return routes.find((route) => route.name === name)
   }
 
   function install(app: App): void {

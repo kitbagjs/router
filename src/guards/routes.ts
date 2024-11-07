@@ -37,7 +37,7 @@ export function isRoute(route: unknown, routeName?: string, { exact }: IsRouteOp
     return true
   }
 
-  const names = route.matches.map(route => toName(route.name))
+  const names = route.matches.map((route) => toName(route.name))
 
   if (exact) {
     const actualRouteName = names.at(-1)

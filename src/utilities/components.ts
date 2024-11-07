@@ -5,7 +5,7 @@ import { Component, defineAsyncComponent } from 'vue'
  * if they were wrapped in vue's defineAsyncComponent utility
  */
 const asyncComponent = defineAsyncComponent<Component>(() => {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     resolve({ default: { template: 'foo' } })
   })
 })
