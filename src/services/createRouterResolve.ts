@@ -42,7 +42,7 @@ export function createRouterResolve<const TRoutes extends Routes>(routes: TRoute
 
     const params = paramsOrOptions ?? {}
     const options: RouterResolveOptions = maybeOptions ?? {}
-    const match = routes.find(route => route.name === source)
+    const match = routes.find((route) => route.name === source)
 
     if (!match) {
       throw new RouteNotFoundError(String(source))

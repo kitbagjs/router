@@ -21,7 +21,7 @@ export function hasProperty<
 }
 
 export function isNestedArray<T extends any[] | readonly any[]>(value: T | T[]): value is T[] {
-  return value.every(item => Array.isArray(item))
+  return value.every((item) => Array.isArray(item))
 }
 
 export function stringHasValue(value: string | undefined): value is string {

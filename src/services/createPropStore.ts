@@ -20,8 +20,8 @@ export function createPropStore(): PropStore {
 
   const getPrefetchProps: PropStore['getPrefetchProps'] = (route, prefetch) => {
     return route.matches
-      .filter(match => getPrefetchOption({ ...prefetch, routePrefetch: match.prefetch }, 'props'))
-      .flatMap(match => getComponentProps(match))
+      .filter((match) => getPrefetchOption({ ...prefetch, routePrefetch: match.prefetch }, 'props'))
+      .flatMap((match) => getComponentProps(match))
       .reduce<Record<string, unknown>>((response, { id, name, props }) => {
         const key = getPropKey(id, name, route)
 

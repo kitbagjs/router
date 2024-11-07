@@ -73,7 +73,7 @@ export function createRouteHookRunners<const T extends Routes>(): RouteHookRunne
     ]
 
     try {
-      const results = allHooks.map(callback => callback(to, {
+      const results = allHooks.map((callback) => callback(to, {
         from,
         reject,
         push: push as RegisteredRouterPush,
@@ -128,7 +128,7 @@ export function createRouteHookRunners<const T extends Routes>(): RouteHookRunne
     ]
 
     try {
-      const results = allHooks.map(callback => callback(to, {
+      const results = allHooks.map((callback) => callback(to, {
         from,
         reject,
         push: push as RegisteredRouterPush,

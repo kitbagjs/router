@@ -43,10 +43,10 @@ export function getRouteScoreSortMethod(url: string): RouteSortMethod {
 
 export function countExpectedPathParams(route: Route, actualPath: string): number {
   const optionalParams = Object.keys(route.path.params)
-    .filter(key => key.startsWith('?'))
-    .map(key => key)
+    .filter((key) => key.startsWith('?'))
+    .map((key) => key)
 
-  const missing = optionalParams.filter(expected => getParamValueFromUrl(actualPath, route.path.toString(), expected) === undefined)
+  const missing = optionalParams.filter((expected) => getParamValueFromUrl(actualPath, route.path.toString(), expected) === undefined)
 
   return optionalParams.length - missing.length
 }
@@ -55,7 +55,7 @@ export function countExpectedQueryParams(route: Route, actualQuery: URLSearchPar
   const expectedQuery = new URLSearchParams(route.query.toString())
   const expectedQueryKeys = Array.from(expectedQuery.keys())
 
-  const missing = expectedQueryKeys.filter(expected => !actualQuery.has(expected))
+  const missing = expectedQueryKeys.filter((expected) => !actualQuery.has(expected))
 
   return expectedQueryKeys.length - missing.length
 }

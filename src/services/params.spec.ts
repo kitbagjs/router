@@ -81,7 +81,7 @@ describe('getParamValue', () => {
 
         return 'yes'
       },
-      set: value => value,
+      set: (value) => value,
     }
 
     expect(getParamValue('yes', getter)).toBe('yes')

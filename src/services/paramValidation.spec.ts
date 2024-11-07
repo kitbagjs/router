@@ -186,8 +186,8 @@ describe('getRouteParamValues', () => {
       { decoded: '$', encoded: '%24' },
     ]
 
-    const input = escapeCodes.map(code => code.encoded).join('')
-    const output = escapeCodes.map(code => code.decoded).join('')
+    const input = escapeCodes.map((code) => code.encoded).join('')
+    const output = escapeCodes.map((code) => code.decoded).join('')
 
     const route = createRoute({ name: 'test', path: '/[inPath]', query: 'inQuery=[inQuery]', component })
     const response = getRouteParamValues(route, `/${input}?inQuery=${input}`)

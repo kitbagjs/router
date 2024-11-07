@@ -229,7 +229,7 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
   }
 
   function getRoute(name: string): Route | undefined {
-    return routes.find(route => route.name === name)
+    return routes.find((route) => route.name === name)
   }
 
   function install(app: App): void {
