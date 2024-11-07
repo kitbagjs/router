@@ -26,7 +26,7 @@ test('renders an anchor tag with the correct href and slot content', () => {
 
   const wrapper = mount(routerLink, {
     props: {
-      to: resolve => resolve('parent', { paramName: paramValue }),
+      to: (resolve) => resolve('parent', { paramName: paramValue }),
     },
     slots: {
       default: content,
@@ -51,7 +51,7 @@ test.each([
     createRoute({
       name: 'routeA',
       path: '/routeA',
-      component: { render: () => h(routerLink, { to: resolve => resolve('routeB'), replace }) },
+      component: { render: () => h(routerLink, { to: (resolve) => resolve('routeB'), replace }) },
     }),
     createRoute({
       name: 'routeB',
@@ -499,7 +499,7 @@ describe('prefetch props', () => {
     const home = createRoute({
       name: 'home',
       path: '/',
-      component: () => h(routerLink, { to: resolve => resolve('echo') }),
+      component: () => h(routerLink, { to: (resolve) => resolve('echo') }),
     })
 
     const route = createRoute({
@@ -544,7 +544,7 @@ describe('prefetch props', () => {
     const home = createRoute({
       name: 'home',
       path: '/',
-      component: () => h(routerLink, { to: resolve => resolve('child') }),
+      component: () => h(routerLink, { to: (resolve) => resolve('child') }),
     })
 
     const parent = createRoute({

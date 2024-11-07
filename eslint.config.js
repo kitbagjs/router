@@ -50,6 +50,7 @@ export default [
       '@typescript-eslint/switch-exhaustiveness-check': ['warn'],
       '@typescript-eslint/unbound-method': ['off'],
       '@typescript-eslint/unified-signatures': ['off'],
+      '@stylistic/arrow-parens': ['warn', 'always'],
       '@stylistic/array-bracket-newline': ['warn', 'consistent'],
       '@stylistic/array-element-newline': ['warn', { consistent: true, multiline: true }],
       '@stylistic/brace-style': ['warn', '1tbs'],
