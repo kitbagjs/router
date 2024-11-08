@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/only-throw-error */
 import { InvalidRouteParamValueError } from '@/errors/invalidRouteParamValueError'
 import { isParamWithDefault } from '@/services/withDefault'
 import { ExtractParamType, isParamGetSet, isParamGetter } from '@/types/params'
