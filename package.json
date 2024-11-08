@@ -33,7 +33,7 @@
     }
   },
   "devDependencies": {
-    "@kitbag/eslint-config": "1.0.1-beta.2",
+    "@kitbag/eslint-config": "1.0.1",
     "@vitejs/plugin-vue": "^5.0.4",
     "@vue/test-utils": "^2.4.3",
     "eslint": "^9.14.0",
