@@ -15,6 +15,10 @@
 
 Child routes in vue-router have very different behavior depending on if the path starts with `/` or not. In Kitbag Router, the behavior is always the same, so add slashes where you want them and leave them off where you don't.
 
+## Props Binding
+
+With vue-router you can bind all the route params to the component automatically with the `route.props` attribute. However, this is NOT type safe. Kitbag Router gives you a type safe way to bind props. If the component you assign to a route has required props, you'll get a Typescript error until you satisfy the props.
+
 ## Route Regex
 
 Kitbag Router support FULL regex pattern matching in both the path and query. The only caveat is that your regex must be encapsulated by a param.

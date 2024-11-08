@@ -139,6 +139,7 @@ export default defineConfig({
             { text: 'Defining Routes', link: '/core-concepts/defining-routes' },
             { text: 'Route Params', link: '/core-concepts/route-params' },
             { text: 'Query Params', link: '/core-concepts/query-params' },
+            { text: 'Component Props', link: '/core-concepts/component-props' },
             { text: 'Navigating', link: '/core-concepts/navigating' },
             { text: 'Composables', link: '/core-concepts/composables' },
           ],
