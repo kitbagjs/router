@@ -9,8 +9,12 @@ export function insertBaseRoute(routes: Routes, base?: string): Routes {
 
   const baseRoute = createRoute({ path: base })
 
-  return routes.map((route) => createRoute({
-    parent: baseRoute,
-    ...route,
-  }))
+  return routes.map((route) => {
+    const matched: any = route.matched
+
+    return createRoute({
+      parent: baseRoute,
+      ...matched,
+    })
+  })
 }
