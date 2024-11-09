@@ -1,14 +1,42 @@
 # Prefetching
 
-Prefetching is a powerful feature in Kitbag Router that allows your application to load components in advance, improving user experience by reducing the wait time when navigating to a new route. 
+Prefetching is a powerful feature in Kitbag Router that allows your application to start loading dependencies before users navigate, improving user experience by reducing the wait time when navigating. 
 
-::: info Async Components Only
-Prefetching is only relevant to routes with components defined with `defineAsyncComponent`.
-:::
+## Prefetching the Component
+
+When your route uses `defineAsyncComponent`, Kitbag Router can start loading that component file.
+
+```ts
+import { defineAsyncComponent } from 'vue'
+
+const user = createRoute({
+  name: 'user',
+  path: '/user/[id]',
+  component: defineAsyncComponent(() => import('./UserPage.vue')),
+})
+```
+
+## Prefetching props
+
+When your route uses the [props callback](/core-concepts/component-props), Kitbag Router can start fetching your component props.
+
+```ts
+const user = createRoute({
+  name: 'user',
+  path: '/user/[id]',
+  component: defineAsyncComponent(() => import('./UserPage.vue')),
+  props: async (({ id }) => {
+    const user = await userStore.getById(id)
+    return { user }
+  })
+})
+```
 
 ## How Prefetching Works
 
-Prefetching is triggered when a router-link is rendered or when the `useLink` composable is called. If the target route for the link is defined as an asynchronous component, Kitbag Router will automatically start loading the component as soon as the link is rendered or the composable is used. This ensures that when the user clicks on the link, the component is already loaded, leading to a faster navigation experience.
+Prefetching is triggered when a router-link is rendered or when the `useLink` composable is called. Route for the link is setup for prefetching and prefetching is enabled, Kitbag Router will automatically start loading as soon as the link is rendered or the composable is used. This ensures that when the user clicks on the link, the component and/or props are already loaded, leading to a faster navigation experience.
+
+Props for routes and any parent routes are collected concurrently before components are mounted. This means that any async props are not blocking and avoids a waterfall from happening.
 
 ## Configuration Options
 
@@ -22,14 +50,14 @@ This means that global is `true` but per-route is `false`. That route will NOT p
 
 ### Global Configuration
 
-By default, `prefetching` components is enabled. However, you can disable prefetching globally in your router instance by setting the `options.prefetch` property.
+By default, prefetching components is enabled and prefetching props is disabled. However, you can modify prefetching globally in your router instance by setting the `options.prefetch` property.
 
 ```ts
 import { createRouter } from 'kitbag-router';
 
 const router = createRouter({
   options: {
-    prefetch: false, // Prefetching is disabled globally
+    prefetch: false, // all prefetching is disabled globally
   },
 });
 ```
@@ -43,19 +71,19 @@ const routes = [
   {
     path: '/about',
     component: () => import('./About.vue'),
-    prefetch: true, // Enable prefetching for this route
+    prefetch: true, // enable prefetching for this route
   },
   {
     path: '/contact',
     component: () => import('./Contact.vue'),
-    prefetch: false, // Disable prefetching for this route
+    prefetch: false, // disable prefetching for this route
   },
 ];
 ```
 
 ### Per-Link Configuration
 
-You can also control prefetching at the level of individual router-link components by passing a prefetch prop.
+You can also control prefetching at the level of individual router-links by passing a prefetch prop.
 
 ```html
 <router-link to="/about" prefetch>About Us</router-link>
@@ -69,18 +97,17 @@ import { useLink } from 'kitbag-router';
 
 const link = useLink({
   to: '/about',
-  prefetch: true, // Enable prefetching for this link
+  prefetch: true, // enable prefetching for this link
 });
 ```
 
 ## Prefetch Configuration Options
 
-The prefetch option can take a value of `boolean | PrefetchConfigOptions`. Currently, `PrefetchConfigOptions` is an object with a single property:
+Everywhere you can set `prefetch` you can use `boolean` to enable/disable for both `components` and `props`. Alternatively, you can use the `PrefetchConfigOptions` object syntax to configure prefetching separately.
 
 ```ts
 type PrefetchConfigOptions = {
-  component: boolean
+  component: boolean,
+  props: boolean,
 }
 ```
-
-The `PrefetchConfigOptions` object is designed to allow for future expansion. In upcoming releases, additional prefetch-related options may be added, providing even more control over how and when prefetching occurs in your application.
