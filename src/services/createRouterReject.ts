@@ -41,7 +41,6 @@ export function createRouterReject({
 
     const route = {
       id: createRouteId(),
-      name: type,
       component,
       meta: {},
       state: {},
