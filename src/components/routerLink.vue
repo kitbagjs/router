@@ -12,7 +12,7 @@
   import { RouterPushOptions } from '@/types/routerPush'
   import { Url, isUrl } from '@/types/url'
 
-  type ToCallback = (resolve: RegisteredRouter['resolve']) => string
+  type ToCallback = (resolve: RegisteredRouter['resolve']) => Url
 
   type RouterLinkProps = {
     /**
