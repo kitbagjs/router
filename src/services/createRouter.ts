@@ -25,6 +25,7 @@ import { RoutesName } from '@/types/routesMap'
 import { Url, isUrl } from '@/types/url'
 import { checkDuplicateNames } from '@/utilities/checkDuplicateNames'
 import { isNestedArray } from '@/utilities/guards'
+import { checkUrlAssemblesValidUrl } from '@/utilities/checkUrlAssemblesValidUrl'
 
 type RouterUpdateOptions = {
   replace?: boolean,
@@ -60,6 +61,7 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
   const flattenedRoutes = isNestedArray(routesOrArrayOfRoutes) ? routesOrArrayOfRoutes.flat() : routesOrArrayOfRoutes
   const routes = insertBaseRoute(flattenedRoutes, options?.base)
 
+  checkUrlAssemblesValidUrl(routes)
   checkDuplicateNames(routes)
 
   const propStore = createPropStore()

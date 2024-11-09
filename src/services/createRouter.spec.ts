@@ -8,6 +8,7 @@ import { createRouter } from '@/services/createRouter'
 import * as createRouterHistoryUtilities from '@/services/createRouterHistory'
 import * as resolveUtilities from '@/services/createRouterResolve'
 import { component } from '@/utilities/testHelpers'
+import { InvalidRouteUrlError } from '@/errors/invalidRouteUrlError'
 
 test('initial route is set', async () => {
   const foo = createRoute({
@@ -256,14 +257,14 @@ test('given an array of Routes, combines into single routes collection', () => {
   ])
 })
 
-test('given an array of Routes with duplicate names, throws ', () => {
+test('given an array of Routes with duplicate names, throws DuplicateNamesError', () => {
   const aRoutes = [
-    createRoute({ name: 'foo', component }),
-    createRoute({ name: 'bar', component }),
+    createRoute({ name: 'foo', path: '/foo', component }),
+    createRoute({ name: 'bar', path: '/bar', component }),
   ]
   const bRoutes = [
-    createRoute({ name: 'zoo', component }),
-    createRoute({ name: 'bar', component }),
+    createRoute({ name: 'zoo', path: '/zoo', component }),
+    createRoute({ name: 'bar', path: '/bar', component }),
   ]
 
   const action: () => void = () => createRouter([aRoutes, bRoutes], {
@@ -271,6 +272,19 @@ test('given an array of Routes with duplicate names, throws ', () => {
   })
 
   expect(action).toThrow(DuplicateNamesError)
+})
+
+test('given an array of Routes without params that are invalid url when assembled, throws InvalidRouteUrlError', () => {
+  const routes = [
+    createRoute({ name: 'foo', path: '/foo', component }),
+    createRoute({ name: 'not-valid', path: 'not-valid', component }),
+  ]
+
+  const action: () => void = () => createRouter(routes, {
+    initialUrl: '/',
+  })
+
+  expect(action).toThrow(InvalidRouteUrlError)
 })
 
 test('initial route is not set until the router is started', async () => {
