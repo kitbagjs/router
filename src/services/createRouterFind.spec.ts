@@ -23,8 +23,9 @@ test('when given a url that matches a route returns that route', () => {
 test('when given a name that does not match a route returns undefined', () => {
   const router = createRouter(routes, { initialUrl: '/' })
 
-  // @ts-expect-error route doesn't exist
-  expect(() => router.find('parentD')).toThrow(RouteNotFoundError)
+  const action: () => void = () => router.find('parentD' as any)
+
+  expect(action).toThrow(RouteNotFoundError)
 })
 
 test('when given a url that does not match a route returns undefined', () => {
