@@ -23,6 +23,7 @@ test.each([
 
 test('given value for base, returns routes with base prefixed', () => {
   const base = '/kitbag'
+
   const parent = createRoute({ name: 'c', path: '/c' })
   const routes = [
     createRoute({ name: 'a', path: '/a' }),
