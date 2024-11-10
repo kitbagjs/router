@@ -8,6 +8,7 @@ import { paramEnd, paramStart } from '@/types/params'
 import { Path } from '@/types/path'
 import { Query } from '@/types/query'
 import { Route } from '@/types/route'
+import { isUrl, Url } from '@/types/url'
 
 type AssembleUrlOptions = {
   params?: Record<string, unknown>,
@@ -15,17 +16,22 @@ type AssembleUrlOptions = {
   hash?: string,
 }
 
-export function assembleUrl(route: Route, options: AssembleUrlOptions = {}): string {
+export function assembleUrl(route: Route, options: AssembleUrlOptions = {}): Url {
   const { params: paramValues = {}, query: queryValues } = options
 
   const hostWithParamsSet = assembleHostParamValues(route.host, paramValues)
   const pathWithParamsSet = assemblePathParamValues(route.path, paramValues)
   const queryWithParamsSet = assembleQueryParamValues(route.query, paramValues)
 
-  const url = withQuery(`${hostWithParamsSet}${pathWithParamsSet}`, queryWithParamsSet, queryValues)
+  const hostPathAndQuery = withQuery(`${hostWithParamsSet}${pathWithParamsSet}`, queryWithParamsSet, queryValues)
   const hash = createHash(route.hash.value ?? options.hash).toString()
+  const url = `${hostPathAndQuery}${hash}`
 
-  return `${url}${hash}`
+  if (isUrl(url)) {
+    return url
+  }
+
+  return `/${url}`
 }
 
 function assembleHostParamValues(host: Host, paramValues: Record<string, unknown>): string {

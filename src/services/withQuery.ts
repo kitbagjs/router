@@ -1,5 +1,9 @@
+import { Url } from '@/types/url'
+
 export type QueryRecord = Record<string, string>
 
+export function withQuery(url: Url, ...queries: (string | URLSearchParams | QueryRecord | undefined)[]): Url
+export function withQuery(url: string, ...queries: (string | URLSearchParams | QueryRecord | undefined)[]): string
 export function withQuery(url: string, ...queries: (string | URLSearchParams | QueryRecord | undefined)[]): string {
   return queries.reduce<string>((value, query) => {
     if (!query) {

@@ -40,4 +40,4 @@ If source is `Url`, expected type for params is `never`. Else when source is `TS
 
 ## Returns
 
-`string`
+`Url`

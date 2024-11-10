@@ -24,8 +24,8 @@ type RouterResolveArgs<
 export type RouterResolve<
   TRoutes extends Routes
 > = {
-  <TSource extends RoutesName<TRoutes>>(name: TSource, ...args: RouterResolveArgs<TRoutes, TSource>): string,
-  (url: Url, options?: RouterResolveOptions): string,
+  <TSource extends RoutesName<TRoutes>>(name: TSource, ...args: RouterResolveArgs<TRoutes, TSource>): Url,
+  (url: Url, options?: RouterResolveOptions): Url,
 }
 
 export function createRouterResolve<const TRoutes extends Routes>(routes: TRoutes): RouterResolve<TRoutes> {
@@ -33,7 +33,7 @@ export function createRouterResolve<const TRoutes extends Routes>(routes: TRoute
     source: Url | RoutesName<TRoutes>,
     paramsOrOptions?: Record<string, unknown>,
     maybeOptions?: RouterResolveOptions,
-  ): string => {
+  ): Url => {
     if (isUrl(source)) {
       const options: RouterPushOptions = paramsOrOptions ?? {}
 
