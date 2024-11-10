@@ -80,7 +80,7 @@ test('when given a routeKey that matches exactly the current route returns the r
   expect(wrapper.vm.route).toBe(router.route)
 })
 
-test('when given a routeKey that does not match the current route throws an error', async () => {
+test('when given a routeKey that does not match the current route, throws UseRouteInvalidError', async () => {
   const router = createRouter(routes, {
     initialUrl: '/parentB',
   })
@@ -107,7 +107,7 @@ test('when given a routeKey that does not match the current route throws an erro
   expect(error).toBeInstanceOf(UseRouteInvalidError)
 })
 
-test('when given a routeKey that does not match exactly the current route throws an error', async () => {
+test('when given a routeKey that does not match exactly the current route, throws UseRouteInvalidError', async () => {
   const router = createRouter(routes, {
     initialUrl: '/parentA/parentAParam/childAParam',
   })
