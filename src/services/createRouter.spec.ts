@@ -256,7 +256,7 @@ test('given an array of Routes, combines into single routes collection', () => {
   ])
 })
 
-test('given an array of Routes with duplicate names, throws ', () => {
+test('given an array of Routes with duplicate names, throws DuplicateNamesError', () => {
   const aRoutes = [
     createRoute({ name: 'foo', component }),
     createRoute({ name: 'bar', component }),

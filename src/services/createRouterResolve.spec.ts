@@ -3,6 +3,7 @@ import { createExternalRoute } from '@/services/createExternalRoute'
 import { createRoute } from '@/services/createRoute'
 import { createRouterResolve } from '@/services/createRouterResolve'
 import { component, routes } from '@/utilities/testHelpers'
+import { RouteNotFoundError } from '@/errors/routeNotFoundError'
 
 test('given a url returns that string', () => {
   const resolve = createRouterResolve(routes)
@@ -23,11 +24,12 @@ test('given a route name with query, interpolates param values', () => {
   expect(url).toBe('/parentA/bar?foo=foo')
 })
 
-test('given a route name with params cannot be matched, throws an error', () => {
+test('given a route name with params cannot be matched, throws RouteNotFoundError', () => {
   const resolve = createRouterResolve(routes)
 
-  // @ts-expect-error route doesn't actually exist
-  expect(() => resolve({ route: 'foo' })).toThrowError()
+  const action: () => void = () => resolve({ route: 'foo' } as any)
+
+  expect(action).toThrow(RouteNotFoundError)
 })
 
 test('given a param with a dash or underscore resolves the correct url', () => {
