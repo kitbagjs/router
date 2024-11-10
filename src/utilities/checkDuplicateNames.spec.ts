@@ -17,7 +17,7 @@ test('given a single array without duplicates, does nothing', () => {
   expect(action).not.toThrow()
 })
 
-test('given a multiple arrays with duplicates, throws DuplicateParamsError', () => {
+test('given a multiple arrays with duplicates, throws DuplicateNamesError', () => {
   const routes = [
     createRoute({ name: 'foo' }),
     createRoute({ name: 'bar' }),
