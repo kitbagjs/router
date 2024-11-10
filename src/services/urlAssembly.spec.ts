@@ -367,3 +367,50 @@ test('given route with hash, returns url with hash value interpolated', () => {
 
   expect(url).toBe('/#foo')
 })
+
+test('given route without host that does not start with a forward slash, returns url with forward slash', () => {
+  const route = createRoute({
+    name: 'invalid-relative-path',
+    path: 'foo',
+  })
+
+  const url = assembleUrl(route)
+
+  expect(url).toBe('/foo')
+})
+
+test('given route with host that does not start with a protocol, returns url with protocol', () => {
+  const route = createExternalRoute({
+    name: 'invalid-host-protocol',
+    path: '/foo',
+    host: 'kitbag.dev',
+  })
+
+  const url = assembleUrl(route)
+
+  expect(url).toBe('https://kitbag.dev/foo')
+})
+
+test('given route with host and path without forward slash, returns forward slash after host', () => {
+  const route = createExternalRoute({
+    name: 'missing-delimiter-after-host',
+    path: 'foo',
+    host: 'https://kitbag.dev',
+  })
+
+  const url = assembleUrl(route)
+
+  expect(url).toBe('https://kitbag.dev/foo')
+})
+
+test('given route with host and path with excess forward slashes, returns forward slash after host', () => {
+  const route = createExternalRoute({
+    name: 'extra-delimiter-after-host',
+    path: '/foo',
+    host: 'https://kitbag.dev/',
+  })
+
+  const url = assembleUrl(route)
+
+  expect(url).toBe('https://kitbag.dev/foo')
+})

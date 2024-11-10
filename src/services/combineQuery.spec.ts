@@ -9,7 +9,7 @@ test('given 2 queries, returns new Query joined together', () => {
 
   const response = combineQuery(aQuery, bQuery)
 
-  expect(response.toString()).toBe('foo=ABC&bar=123')
+  expect(response.value).toBe('foo=ABC&bar=123')
 })
 
 test('given 2 queries with params, returns new Query joined together with params', () => {
@@ -18,7 +18,7 @@ test('given 2 queries with params, returns new Query joined together with params
 
   const response = combineQuery(aQuery, bQuery)
 
-  expect(response.toString()).toBe('foo=[foz]&bar=[?baz]')
+  expect(response.value).toBe('foo=[foz]&bar=[?baz]')
   expect(Object.keys(response.params)).toMatchObject(['foz', '?baz'])
 })
 

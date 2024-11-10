@@ -22,7 +22,7 @@ export const routeQueryMatches: RouteMatchRule = (route, url) => {
 
 export const routeHashMatches: RouteMatchRule = (route, url) => {
   const { hash } = createMaybeRelativeUrl(url)
-  const value = route.hash.toString()
+  const { value } = route.hash
 
-  return !route.hash.hasValue() || value.toLowerCase() === hash.toLowerCase()
+  return value === undefined || `#${value.toLowerCase()}` === hash.toLowerCase()
 }

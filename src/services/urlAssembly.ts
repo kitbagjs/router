@@ -8,7 +8,10 @@ import { paramEnd, paramStart } from '@/types/params'
 import { Path } from '@/types/path'
 import { Query } from '@/types/query'
 import { Route } from '@/types/route'
-import { isUrl, Url } from '@/types/url'
+import { Url } from '@/types/url'
+import { withHost } from './withHost'
+import { withHash } from './withHash'
+import { withPath } from './withPath'
 
 type AssembleUrlOptions = {
   params?: Record<string, unknown>,
@@ -19,23 +22,25 @@ type AssembleUrlOptions = {
 export function assembleUrl(route: Route, options: AssembleUrlOptions = {}): Url {
   const { params: paramValues = {}, query: queryValues } = options
 
-  const hostWithParamsSet = assembleHostParamValues(route.host, paramValues)
   const pathWithParamsSet = assemblePathParamValues(route.path, paramValues)
   const queryWithParamsSet = assembleQueryParamValues(route.query, paramValues)
+  const hostWithParamsSet = assembleHostParamValues(route.host, paramValues)
+  const hash = createHash(route.hash.value ?? options.hash)
 
-  const hostPathAndQuery = withQuery(`${hostWithParamsSet}${pathWithParamsSet}`, queryWithParamsSet, queryValues)
-  const hash = createHash(route.hash.value ?? options.hash).toString()
-  const url = `${hostPathAndQuery}${hash}`
+  type UrlAssemblyFunction = (url: Url) => Url
 
-  if (isUrl(url)) {
-    return url
-  }
+  const assembly: UrlAssemblyFunction[] = [
+    (url) => withPath(url, pathWithParamsSet),
+    (url) => withQuery(url, queryWithParamsSet, queryValues),
+    (url) => withHost(url, hostWithParamsSet),
+    (url) => withHash(url, hash),
+  ]
 
-  return `/${url}`
+  return assembly.reduce<Url>((url, join) => join(url), '/')
 }
 
 function assembleHostParamValues(host: Host, paramValues: Record<string, unknown>): string {
-  const value = host.toString()
+  const { value } = host
 
   return Object.entries(host.params).reduce((url, [name, param]) => {
     const paramName = getParamName(`${paramStart}${name}${paramEnd}`)
@@ -49,7 +54,7 @@ function assembleHostParamValues(host: Host, paramValues: Record<string, unknown
 }
 
 function assemblePathParamValues(path: Path, paramValues: Record<string, unknown>): string {
-  const value = path.toString()
+  const { value } = path
 
   return Object.entries(path.params).reduce((url, [name, param]) => {
     const paramName = getParamName(`${paramStart}${name}${paramEnd}`)
@@ -63,7 +68,7 @@ function assemblePathParamValues(path: Path, paramValues: Record<string, unknown
 }
 
 function assembleQueryParamValues(query: Query, paramValues: Record<string, unknown>): QueryRecord {
-  const value = query.toString()
+  const { value } = query
 
   if (!value) {
     return {}

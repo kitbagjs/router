@@ -31,6 +31,5 @@ export function combineQuery(parentQuery: Query, childQuery: Query): Query {
   return {
     value: newQueryString,
     params: { ...parentQuery.params, ...childQuery.params },
-    toString: () => newQueryString,
   }
 }

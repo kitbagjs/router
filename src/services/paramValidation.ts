@@ -32,7 +32,7 @@ function getPathParams(path: Path, url: string): Record<string, unknown> {
   for (const [key, param] of Object.entries(path.params)) {
     const isOptional = key.startsWith('?')
     const paramName = isOptional ? key.slice(1) : key
-    const stringValue = getParamValueFromUrl(decodedValueFromUrl, path.toString(), key)
+    const stringValue = getParamValueFromUrl(decodedValueFromUrl, path.value, key)
     const paramValue = getParamValue(stringValue, param, isOptional)
 
     values[paramName] = paramValue

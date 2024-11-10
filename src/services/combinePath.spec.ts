@@ -9,7 +9,7 @@ test('given 2 paths, returns new Path joined together', () => {
 
   const response = combinePath(aPath, bPath)
 
-  expect(response.toString()).toBe('/foo/bar')
+  expect(response.value).toBe('/foo/bar')
 })
 
 test('given 2 paths with params, returns new Path joined together with params', () => {
@@ -18,7 +18,7 @@ test('given 2 paths with params, returns new Path joined together with params', 
 
   const response = combinePath(aPath, bPath)
 
-  expect(response.toString()).toBe('/[foz]/[?baz]')
+  expect(response.value).toBe('/[foz]/[?baz]')
   expect(Object.keys(response.params)).toMatchObject(['foz', '?baz'])
 })
 

@@ -25,7 +25,6 @@ export type Query<
 > = {
   value: TQuery,
   params: string extends TQuery ? Record<string, Param> : Identity<ExtractQueryParamsFromQueryString<TQuery, TQueryParams>>,
-  toString: () => string,
 }
 
 export type ToQuery<T extends string | Query | undefined> = T extends string
