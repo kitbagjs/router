@@ -1,4 +1,5 @@
 import { MaybeRefOrGetter, onMounted, ref, Ref, toValue, watch } from 'vue'
+import { useEventListener } from '@/compositions/useEventListener'
 import { usePropStore } from '@/compositions/usePropStore'
 import { isWithComponent, isWithComponents } from '@/types/createRouteOptions'
 import { getPrefetchOption, PrefetchConfigs, PrefetchStrategy } from '@/types/prefetch'
@@ -15,7 +16,8 @@ type UsePrefetching = {
 }
 
 export function usePrefetching(config: MaybeRefOrGetter<UsePrefetchingConfig>): UsePrefetching {
-  let prefetchedProps: Record<string, unknown> = {}
+  // if the route changes this will need to be reset to an empty object or we'll have a memory leak
+  const prefetchedProps: Record<string, unknown> = {}
 
   const element = ref<HTMLElement>()
 
@@ -36,15 +38,20 @@ export function usePrefetching(config: MaybeRefOrGetter<UsePrefetchingConfig>): 
       return
     }
 
-    prefetchComponentsForRoute('eager', route, configs)
-
-    const prefetched = getPrefetchProps('eager', route, configs)
-
-    if (prefetched) {
-      prefetchedProps = prefetched
-    }
+    doPrefetchingForStrategy('eager', route, configs)
 
   }, { immediate: true })
+
+  // listeners used for `intent`
+  useEventListener(element, 'focus', () => {})
+  useEventListener(element, 'mouseover', () => {})
+  useEventListener(element, 'mouseout', () => {})
+
+  function doPrefetchingForStrategy(strategy: PrefetchStrategy, route: ResolvedRoute, configs: PrefetchConfigs): void {
+    prefetchComponentsForRoute(strategy, route, configs)
+
+    Object.assign(prefetchedProps, getPrefetchProps(strategy, route, configs))
+  }
 
   return {
     element,
