@@ -56,7 +56,7 @@ test('calls hook with correct routes', () => {
 
   expect(hook).toHaveBeenCalledOnce()
 
-  const [to, { from }] = hook.mock.lastCall
+  const [to, { from }] = hook.mock.lastCall ?? []
   expect(to).toMatchObject(toRoute)
   expect(from).toMatchObject(fromRoute)
 })

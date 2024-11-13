@@ -24,13 +24,13 @@ describe('getParamValueFromUrl', () => {
   test('given paramName that matches param on route, returns value', () => {
     const response = getParamValueFromUrl('/simple/ABC', '/simple/[simple]', 'simple')
 
-    expect(response).toMatchObject('ABC')
+    expect(response).toBe('ABC')
   })
 
   test('given multiple params, uses wildcards for non-selected param name', () => {
     const response = getParamValueFromUrl('/ABC/123/true', '/[str]/[num]/[bool]', 'num')
 
-    expect(response).toMatchObject('123')
+    expect(response).toBe('123')
   })
 })
 
