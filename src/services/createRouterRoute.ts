@@ -79,6 +79,36 @@ export function createRouterRoute<TRoute extends ResolvedRoute>(route: TRoute, p
         })
       }
 
+      if (property === 'query') {
+        return new Proxy(route.query, {
+          get(_target, property, receiver) {
+            if (property === 'append' || property === 'set') {
+              const response: URLSearchParams[typeof property] = (...parameters) => {
+                const query = new URLSearchParams(route.query.toString())
+                query[property](...parameters)
+
+                update({}, { query })
+              }
+
+              return response
+            }
+
+            if (property === 'delete') {
+              const response: URLSearchParams['delete'] = (...parameters) => {
+                const query = new URLSearchParams(route.query.toString())
+                query.delete(...parameters)
+
+                update({}, { query })
+              }
+
+              return response
+            }
+
+            return Reflect.get(_target, property, receiver)
+          },
+        })
+      }
+
       return Reflect.get(target, property, receiver)
     },
   })

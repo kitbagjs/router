@@ -234,6 +234,78 @@ test('setting an unknown param does not add its value to the route', async () =>
   expect(route.params.nothing).toBeUndefined()
 })
 
+test('query.set updates the route', async () => {
+  const root = createRoute({
+    name: 'root',
+    component,
+    path: '/',
+  })
+
+  const { route, start } = createRouter([root], {
+    initialUrl: '/',
+  })
+
+  await start()
+
+  route.query.set('foo', 'bar')
+
+  await flushPromises()
+
+  expect(route.query.toString()).toBe('foo=bar')
+
+  route.query.set('fuz', 'buz')
+
+  await flushPromises()
+
+  expect(route.query.toString()).toBe('foo=bar&fuz=buz')
+})
+
+test('query.append updates the route', async () => {
+  const root = createRoute({
+    name: 'root',
+    component,
+    path: '/',
+  })
+
+  const { route, start } = createRouter([root], {
+    initialUrl: '/',
+  })
+
+  await start()
+
+  route.query.append('foo', 'bar')
+
+  await flushPromises()
+
+  expect(route.query.toString()).toBe('foo=bar')
+
+  route.query.append('fuz', 'buz')
+
+  await flushPromises()
+
+  expect(route.query.toString()).toBe('foo=bar&fuz=buz')
+})
+
+test('query.delete updates the route', async () => {
+  const root = createRoute({
+    name: 'root',
+    component,
+    path: '/',
+  })
+
+  const { route, start } = createRouter([root], {
+    initialUrl: '/?foo=bar&fiz=buz',
+  })
+
+  await start()
+
+  route.query.delete('foo')
+
+  await flushPromises()
+
+  expect(route.query.toString()).toBe('fiz=buz')
+})
+
 test('given an array of Routes, combines into single routes collection', () => {
   const aRoutes = [
     createRoute({ name: 'a-route-1', path: '/a-route-1', component }),
