@@ -1,4 +1,13 @@
 export type ResolvedRouteQuery = {
-  get: (key: string) => string | null,
-  getAll: (key: string) => string[],
+  append: URLSearchParams['append'],
+  delete: URLSearchParams['delete'],
+  entries: URLSearchParams['entries'],
+  forEach: URLSearchParams['forEach'],
+  get: URLSearchParams['get'],
+  getAll: URLSearchParams['getAll'],
+  has: URLSearchParams['has'],
+  keys: URLSearchParams['keys'],
+  set: URLSearchParams['set'],
+  toString: URLSearchParams['toString'],
+  values: URLSearchParams['values'],
 }
