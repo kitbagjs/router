@@ -1,7 +1,7 @@
 import { flushPromises } from '@vue/test-utils'
 import { Location } from 'history'
 import { expect, test, vi } from 'vitest'
-import { toRefs } from 'vue'
+import { computed, toRefs } from 'vue'
 import { DuplicateNamesError } from '@/errors/duplicateNamesError'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
@@ -304,6 +304,30 @@ test('query.delete updates the route', async () => {
   await flushPromises()
 
   expect(route.query.toString()).toBe('fiz=buz')
+})
+
+test('query.values is reactive', async () => {
+  const root = createRoute({
+    name: 'root',
+    component,
+    path: '/',
+  })
+
+  const { route, start } = createRouter([root], {
+    initialUrl: '/?foo=bar&fiz=buz',
+  })
+
+  await start()
+
+  const values = computed(() => Array.from(route.query.values()))
+
+  expect(values.value).toMatchObject(['bar', 'buz'])
+
+  route.query.append('foo', 'bar2')
+
+  await flushPromises()
+
+  expect(values.value).toMatchObject(['bar', 'buz', 'bar2'])
 })
 
 test('given an array of Routes, combines into single routes collection', () => {
