@@ -8,11 +8,13 @@ export default defineConfig({
     typecheck: {
       checker: 'vue-tsc',
       ignoreSourceErrors: true,
+      include: ['src/**/*.spec-d.ts'],
     },
+    include: ['src/**/*.spec.ts'],
     environmentMatchGlobs: [
       ['**\/*.browser.spec.ts', 'happy-dom'],
       ['**\/*.spec.ts', 'node'],
-    ]
+    ],
   },
   resolve: {
     alias: [
@@ -39,8 +41,8 @@ export default defineConfig({
   },
   plugins: [
     vue(),
-    dts({ 
-      rollupTypes: true 
-    })
+    dts({
+      rollupTypes: true,
+    }),
   ],
 })

@@ -12,20 +12,8 @@ jobs:
         id: setup
         uses: kitbagjs/actions-setup-project@main
 
-      - name: Run unit tests
+      - name: Run tests
         run: npm run test
-
-  type-test:
-    name: Type Tests
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Setup
-        id: setup
-        uses: kitbagjs/actions-setup-project@main
-
-      - name: Run unit tests
-        run: npm run test:types
 
   types:
     name: Types

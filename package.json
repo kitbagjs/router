@@ -9,8 +9,7 @@
   "scripts": {
     "build": "vite build",
     "build:watch": "vite build --watch",
-    "test": "vitest",
-    "test:types": "vitest typecheck",
+    "test": "vitest --typecheck",
     "lint": "eslint ./src",
     "lint:fix": "eslint ./src --fix",
     "types": "vue-tsc --noEmit",
