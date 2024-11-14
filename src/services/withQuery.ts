@@ -1,11 +1,11 @@
-import { Url } from '@/types/url'
+import { asUrl, Url } from '@/types/url'
 
 export type QueryRecord = Record<string, string>
 
 export function withQuery(url: Url, ...queries: (string | URLSearchParams | QueryRecord | undefined)[]): Url
-export function withQuery(url: string, ...queries: (string | URLSearchParams | QueryRecord | undefined)[]): string
-export function withQuery(url: string, ...queries: (string | URLSearchParams | QueryRecord | undefined)[]): string {
-  return queries.reduce<string>((value, query) => {
+export function withQuery(url: string, ...queries: (string | URLSearchParams | QueryRecord | undefined)[]): Url
+export function withQuery(url: string, ...queries: (string | URLSearchParams | QueryRecord | undefined)[]): Url {
+  return queries.reduce<Url>((value, query) => {
     if (!query) {
       return value
     }
@@ -21,5 +21,5 @@ export function withQuery(url: string, ...queries: (string | URLSearchParams | Q
     }
 
     return `${value}?${queryString}`
-  }, url)
+  }, asUrl(url))
 }

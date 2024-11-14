@@ -9,9 +9,9 @@ import { Path } from '@/types/path'
 import { Query } from '@/types/query'
 import { Route } from '@/types/route'
 import { Url } from '@/types/url'
-import { withHost } from './withHost'
-import { withHash } from './withHash'
-import { withPath } from './withPath'
+import { withHost } from '@/services/withHost'
+import { withHash } from '@/services/withHash'
+import { withPath } from '@/services/withPath'
 
 type AssembleUrlOptions = {
   params?: Record<string, unknown>,
@@ -33,15 +33,13 @@ export function assembleUrl(route: Route, options: AssembleUrlOptions = {}): Url
     (url) => withPath(url, pathWithParamsSet),
     (url) => withQuery(url, queryWithParamsSet, queryValues),
     (url) => withHost(url, hostWithParamsSet),
-    (url) => withHash(url, hash),
+    (url) => withHash(url, hash.value),
   ]
 
   return assembly.reduce<Url>((url, join) => join(url), '/')
 }
 
 function assembleHostParamValues(host: Host, paramValues: Record<string, unknown>): string {
-  const { value } = host
-
   return Object.entries(host.params).reduce((url, [name, param]) => {
     const paramName = getParamName(`${paramStart}${name}${paramEnd}`)
 
@@ -50,12 +48,10 @@ function assembleHostParamValues(host: Host, paramValues: Record<string, unknown
     }
 
     return setParamValueOnUrl(url, { name, param, value: paramValues[paramName] })
-  }, value)
+  }, host.value)
 }
 
 function assemblePathParamValues(path: Path, paramValues: Record<string, unknown>): string {
-  const { value } = path
-
   return Object.entries(path.params).reduce((url, [name, param]) => {
     const paramName = getParamName(`${paramStart}${name}${paramEnd}`)
 
@@ -64,17 +60,15 @@ function assemblePathParamValues(path: Path, paramValues: Record<string, unknown
     }
 
     return setParamValueOnUrl(url, { name, param, value: paramValues[paramName] })
-  }, value)
+  }, path.value)
 }
 
 function assembleQueryParamValues(query: Query, paramValues: Record<string, unknown>): QueryRecord {
-  const { value } = query
-
-  if (!value) {
+  if (!query.value) {
     return {}
   }
 
-  const search = new URLSearchParams(value)
+  const search = new URLSearchParams(query.value)
 
   return Array.from(search.entries()).reduce<QueryRecord>((url, [key, value]) => {
     const paramName = getParamName(value)

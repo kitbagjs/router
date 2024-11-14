@@ -1,5 +1,5 @@
 import { isUrl, Url } from '@/types/url'
-import { stringHasValue } from '@/utilities'
+import { stringHasValue } from '@/utilities/guards'
 
 export function withHost(url: Url, host?: string): Url
 export function withHost(url: string, host?: string): string

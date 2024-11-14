@@ -1,4 +1,4 @@
-import { createMaybeRelativeUrl } from '@/services/createMaybeRelativeUrl'
+import { createMaybeRelativeUrl } from '@/services/maybeRelativeUrl'
 import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
 import { getRouteParamValues, routeParamsAreValid } from '@/services/paramValidation'
 import { isNamedRoute, routePathMatches, routeQueryMatches, routeHashMatches } from '@/services/routeMatchRules'

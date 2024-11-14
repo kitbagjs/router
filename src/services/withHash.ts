@@ -1,12 +1,11 @@
-import { Hash } from '@/types/hash'
 import { Url } from '@/types/url'
+import { createMaybeRelativeUrl, maybeRelativeUrlToString } from '@/services/maybeRelativeUrl'
 
-export function withHash(url: Url, hash: Hash): Url
-export function withHash(url: string, hash: Hash): string
-export function withHash(url: string, hash: Hash): string {
-  if (hash.value) {
-    return `${url}#${hash.value}`
-  }
+export function withHash(url: Url, hash?: string): Url
+export function withHash(url: string, hash?: string): Url
+export function withHash(url: string, hash?: string): Url {
+  const { hash: previousHash, ...parts } = createMaybeRelativeUrl(url)
+  const cleanHash = hash ? `#${hash}` : ''
 
-  return url
+  return maybeRelativeUrlToString({ hash: cleanHash, ...parts })
 }

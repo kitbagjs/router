@@ -1,4 +1,4 @@
-import { createMaybeRelativeUrl } from '@/services/createMaybeRelativeUrl'
+import { createMaybeRelativeUrl } from '@/services/maybeRelativeUrl'
 import { getParamValueFromUrl } from '@/services/paramsFinder'
 import { Route } from '@/types/route'
 import { routeHashMatches } from './routeMatchRules'

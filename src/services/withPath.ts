@@ -1,13 +1,11 @@
-import { isUrl, Url } from '@/types/url'
+import { Url } from '@/types/url'
+import { createMaybeRelativeUrl, maybeRelativeUrlToString } from '@/services/maybeRelativeUrl'
 
-export function withPath(url: Url, path: string): Url
-export function withPath(url: string, path: string): Url
-export function withPath(url: string, path: string): Url {
-  const cleanPath = path.replace(/^\/*/, '')
+export function withPath(url: Url, path?: string): Url
+export function withPath(url: string, path?: string): Url
+export function withPath(url: string, path?: string): Url {
+  const { pathname, ...parts } = createMaybeRelativeUrl(url)
+  const cleanPath = path?.replace(/^\/*/, '/') ?? ''
 
-  if (isUrl(url)) {
-    return `${url}${cleanPath}`
-  }
-
-  return `/${url}${cleanPath}`
+  return maybeRelativeUrlToString({ pathname: cleanPath, ...parts })
 }

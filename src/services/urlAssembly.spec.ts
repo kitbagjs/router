@@ -309,7 +309,7 @@ describe('host params', () => {
       params: { subdomain: 'ABC.' },
     })
 
-    expect(url).toBe('https://ABC.kitbag.dev/')
+    expect(url).toBe('https://abc.kitbag.dev/')
   })
 
   test('given route with default string param provided, returns route Host with string with values interpolated', () => {
@@ -323,7 +323,7 @@ describe('host params', () => {
       params: { subdomain: 'DEF.' },
     })
 
-    expect(url).toBe('https://DEF.kitbag.dev/')
+    expect(url).toBe('https://def.kitbag.dev/')
   })
 
   test.each([
@@ -353,7 +353,7 @@ describe('host params', () => {
       params: { subdomain: 'ABC.' },
     })
 
-    expect(url).toBe('https://ABC.kitbag.dev/')
+    expect(url).toBe('https://abc.kitbag.dev/')
   })
 })
 
