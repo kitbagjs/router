@@ -1,7 +1,7 @@
 import { flushPromises } from '@vue/test-utils'
 import { Location } from 'history'
 import { expect, test, vi } from 'vitest'
-import { toRefs } from 'vue'
+import { computed, toRefs } from 'vue'
 import { DuplicateNamesError } from '@/errors/duplicateNamesError'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
@@ -232,6 +232,102 @@ test('setting an unknown param does not add its value to the route', async () =>
 
   // @ts-expect-error value is immutable
   expect(route.params.nothing).toBeUndefined()
+})
+
+test('query.set updates the route', async () => {
+  const root = createRoute({
+    name: 'root',
+    component,
+    path: '/',
+  })
+
+  const { route, start } = createRouter([root], {
+    initialUrl: '/',
+  })
+
+  await start()
+
+  route.query.set('foo', 'bar')
+
+  await flushPromises()
+
+  expect(route.query.toString()).toBe('foo=bar')
+
+  route.query.set('fuz', 'buz')
+
+  await flushPromises()
+
+  expect(route.query.toString()).toBe('foo=bar&fuz=buz')
+})
+
+test('query.append updates the route', async () => {
+  const root = createRoute({
+    name: 'root',
+    component,
+    path: '/',
+  })
+
+  const { route, start } = createRouter([root], {
+    initialUrl: '/',
+  })
+
+  await start()
+
+  route.query.append('foo', 'bar')
+
+  await flushPromises()
+
+  expect(route.query.toString()).toBe('foo=bar')
+
+  route.query.append('fuz', 'buz')
+
+  await flushPromises()
+
+  expect(route.query.toString()).toBe('foo=bar&fuz=buz')
+})
+
+test('query.delete updates the route', async () => {
+  const root = createRoute({
+    name: 'root',
+    component,
+    path: '/',
+  })
+
+  const { route, start } = createRouter([root], {
+    initialUrl: '/?foo=bar&fiz=buz',
+  })
+
+  await start()
+
+  route.query.delete('foo')
+
+  await flushPromises()
+
+  expect(route.query.toString()).toBe('fiz=buz')
+})
+
+test('query.values is reactive', async () => {
+  const root = createRoute({
+    name: 'root',
+    component,
+    path: '/',
+  })
+
+  const { route, start } = createRouter([root], {
+    initialUrl: '/?foo=bar&fiz=buz',
+  })
+
+  await start()
+
+  const values = computed(() => Array.from(route.query.values()))
+
+  expect(values.value).toMatchObject(['bar', 'buz'])
+
+  route.query.append('foo', 'bar2')
+
+  await flushPromises()
+
+  expect(values.value).toMatchObject(['bar', 'buz', 'bar2'])
 })
 
 test('given an array of Routes, combines into single routes collection', () => {
