@@ -42,6 +42,27 @@ export function createRouterRoute<TRoute extends ResolvedRoute>(route: TRoute, p
     return push(route.name, params, maybeOptions)
   }
 
+  const querySet: URLSearchParams['set'] = (...parameters) => {
+    const query = new URLSearchParams(route.query.toString())
+    query.set(...parameters)
+
+    update({}, { query: Object.fromEntries(query.entries()) })
+  }
+
+  const queryAppend: URLSearchParams['append'] = (...parameters) => {
+    const query = new URLSearchParams(route.query.toString())
+    query.append(...parameters)
+
+    update({}, { query: Object.fromEntries(query.entries()) })
+  }
+
+  const queryDelete: URLSearchParams['delete'] = (...parameters) => {
+    const query = new URLSearchParams(route.query.toString())
+    query.delete(...parameters)
+
+    update({}, { query: Object.fromEntries(query.entries()) })
+  }
+
   const { id, matched, matches, name, query, params, state, hash } = toRefs(route)
 
   const routerRoute: RouterRoute<TRoute> = reactive({
@@ -82,29 +103,16 @@ export function createRouterRoute<TRoute extends ResolvedRoute>(route: TRoute, p
       if (property === 'query') {
         return new Proxy(route.query, {
           get(_target, property, receiver) {
-            if (property === 'append' || property === 'set') {
-              const response: URLSearchParams[typeof property] = (...parameters) => {
-                const query = new URLSearchParams(route.query.toString())
-                query[property](...parameters)
-
-                update({}, { query })
-              }
-
-              return response
+            switch (property) {
+              case 'append':
+                return queryAppend
+              case 'set':
+                return querySet
+              case 'delete':
+                return queryDelete
+              default:
+                return Reflect.get(_target, property, receiver)
             }
-
-            if (property === 'delete') {
-              const response: URLSearchParams['delete'] = (...parameters) => {
-                const query = new URLSearchParams(route.query.toString())
-                query.delete(...parameters)
-
-                update({}, { query })
-              }
-
-              return response
-            }
-
-            return Reflect.get(_target, property, receiver)
           },
         })
       }
