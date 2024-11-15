@@ -1,4 +1,4 @@
-import { createMaybeRelativeUrl } from '@/services/maybeRelativeUrl'
+import { parseUrl } from '@/services/urlParser'
 import { getParamValueFromUrl } from '@/services/paramsFinder'
 import { Route } from '@/types/route'
 import { routeHashMatches } from './routeMatchRules'
@@ -6,7 +6,7 @@ import { routeHashMatches } from './routeMatchRules'
 type RouteSortMethod = (aRoute: Route, bRoute: Route) => number
 
 export function getRouteScoreSortMethod(url: string): RouteSortMethod {
-  const { searchParams: actualQuery, pathname: actualPath } = createMaybeRelativeUrl(url)
+  const { searchParams: actualQuery, pathname: actualPath } = parseUrl(url)
   const sortBefore = -1
   const sortAfter = +1
 

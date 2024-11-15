@@ -1,4 +1,4 @@
-import { createMaybeRelativeUrl } from '@/services/maybeRelativeUrl'
+import { parseUrl } from '@/services/urlParser'
 import { getParamValue } from '@/services/params'
 import { getParamValueFromUrl } from '@/services/paramsFinder'
 import { Path } from '@/types/path'
@@ -17,7 +17,7 @@ export const routeParamsAreValid: RouteMatchRule = (route, url) => {
 }
 
 export const getRouteParamValues = (route: Route, url: string): Record<string, unknown> => {
-  const { pathname, search } = createMaybeRelativeUrl(url)
+  const { pathname, search } = parseUrl(url)
 
   return {
     ...getPathParams(route.path, pathname),

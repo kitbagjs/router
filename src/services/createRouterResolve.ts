@@ -1,12 +1,13 @@
 import { RouteNotFoundError } from '@/errors/routeNotFoundError'
 import { assembleUrl } from '@/services/urlAssembly'
-import { withQuery } from '@/services/withQuery'
 import { Routes } from '@/types/route'
 import { RouterPushOptions } from '@/types/routerPush'
 import { RoutesName } from '@/types/routesMap'
 import { RouteParamsByKey } from '@/types/routeWithParams'
 import { isUrl, Url } from '@/types/url'
 import { AllPropertiesAreOptional } from '@/types/utilities'
+import { createUrl } from './urlCreator'
+import { parseUrl } from './urlParser'
 
 export type RouterResolveOptions = {
   query?: Record<string, string>,
@@ -37,7 +38,11 @@ export function createRouterResolve<const TRoutes extends Routes>(routes: TRoute
     if (isUrl(source)) {
       const options: RouterPushOptions = paramsOrOptions ?? {}
 
-      return withQuery(source, options.query)
+      const { searchParams, ...parts } = parseUrl(source)
+      Object.entries(options.query ?? {}).forEach(([key, value]) => {
+        searchParams.append(key, value)
+      })
+      return createUrl({ ...parts, searchParams })
     }
 
     const params = paramsOrOptions ?? {}

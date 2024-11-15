@@ -2,17 +2,16 @@ import { hash as createHash } from '@/services/hash'
 import { setParamValue } from '@/services/params'
 import { setParamValueOnUrl } from '@/services/paramsFinder'
 import { getParamName, isOptionalParamSyntax } from '@/services/routeRegex'
-import { QueryRecord, withQuery } from '@/services/withQuery'
 import { Host } from '@/types/host'
 import { paramEnd, paramStart } from '@/types/params'
 import { Path } from '@/types/path'
 import { Query } from '@/types/query'
 import { Route } from '@/types/route'
 import { Url } from '@/types/url'
-import { withHost } from '@/services/withHost'
-import { withHash } from '@/services/withHash'
-import { withPath } from '@/services/withPath'
+import { createUrl } from './urlCreator'
+import { parseUrl } from './urlParser'
 
+export type QueryRecord = Record<string, string>
 type AssembleUrlOptions = {
   params?: Record<string, unknown>,
   query?: Record<string, string>,
@@ -21,25 +20,20 @@ type AssembleUrlOptions = {
 
 export function assembleUrl(route: Route, options: AssembleUrlOptions = {}): Url {
   const { params: paramValues = {}, query: queryValues } = options
-
-  const pathWithParamsSet = assemblePathParamValues(route.path, paramValues)
   const queryWithParamsSet = assembleQueryParamValues(route.query, paramValues)
+  const searchParams = new URLSearchParams({ ...queryWithParamsSet, ...queryValues })
+  const pathname = assemblePathParamValues(route.path, paramValues)
+  const hash = createHash(route.hash.value ?? options.hash).value
+
   const hostWithParamsSet = assembleHostParamValues(route.host, paramValues)
-  const hash = createHash(route.hash.value ?? options.hash)
+  const { protocol, host } = parseUrl(hostWithParamsSet)
 
-  type UrlAssemblyFunction = (url: Url) => Url
-
-  const assembly: UrlAssemblyFunction[] = [
-    (url) => withPath(url, pathWithParamsSet),
-    (url) => withQuery(url, queryWithParamsSet, queryValues),
-    (url) => withHost(url, hostWithParamsSet),
-    (url) => withHash(url, hash.value),
-  ]
-
-  return assembly.reduce<Url>((url, join) => join(url), '/')
+  return createUrl({ protocol, host, pathname, searchParams, hash })
 }
 
 function assembleHostParamValues(host: Host, paramValues: Record<string, unknown>): string {
+  const hostWithProtocol = !!host.value && !host.value.startsWith('http') ? `https://${host.value}` : host.value
+
   return Object.entries(host.params).reduce((url, [name, param]) => {
     const paramName = getParamName(`${paramStart}${name}${paramEnd}`)
 
@@ -48,7 +42,7 @@ function assembleHostParamValues(host: Host, paramValues: Record<string, unknown
     }
 
     return setParamValueOnUrl(url, { name, param, value: paramValues[paramName] })
-  }, host.value)
+  }, hostWithProtocol)
 }
 
 function assemblePathParamValues(path: Path, paramValues: Record<string, unknown>): string {
