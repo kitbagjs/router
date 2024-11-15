@@ -19,7 +19,7 @@ Push will update the URL for the browser and also add the URL into the history s
 
 ```ts
 {
-  query?: Record<string, string>,
+  query?: ConstructorParameters<typeof URLSearchParams>[0],
   replace?: boolean,
   hash?: string,
 }

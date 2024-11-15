@@ -4,11 +4,12 @@ import { RouteParamsByKey } from '@/types/routeWithParams'
 import { RouteStateByName } from '@/types/state'
 import { Url } from '@/types/url'
 import { AllPropertiesAreOptional } from '@/types/utilities'
+import { QueryRecord } from '@/types/query'
 
 export type RouterReplaceOptions<
   TState = unknown
 > = {
-  query?: Record<string, string>,
+  query?: QueryRecord,
   hash?: string,
   state?: Partial<TState>,
 }

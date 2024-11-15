@@ -5,23 +5,23 @@ import { getParamName, isOptionalParamSyntax } from '@/services/routeRegex'
 import { Host } from '@/types/host'
 import { paramEnd, paramStart } from '@/types/params'
 import { Path } from '@/types/path'
-import { Query } from '@/types/query'
+import { Query, QueryRecord } from '@/types/query'
 import { Route } from '@/types/route'
 import { Url } from '@/types/url'
-import { createUrl } from './urlCreator'
-import { parseUrl } from './urlParser'
+import { createUrl } from '@/services/urlCreator'
+import { parseUrl } from '@/services/urlParser'
+import { combineUrlSearchParams } from '@/utilities/urlSearchParams'
 
-export type QueryRecord = Record<string, string>
 type AssembleUrlOptions = {
   params?: Record<string, unknown>,
-  query?: Record<string, string>,
+  query?: QueryRecord,
   hash?: string,
 }
 
 export function assembleUrl(route: Route, options: AssembleUrlOptions = {}): Url {
   const { params: paramValues = {}, query: queryValues } = options
-  const queryWithParamsSet = assembleQueryParamValues(route.query, paramValues)
-  const searchParams = new URLSearchParams({ ...queryWithParamsSet, ...queryValues })
+  const routeQuery = assembleQueryParamValues(route.query, paramValues)
+  const searchParams = combineUrlSearchParams(routeQuery, queryValues)
   const pathname = assemblePathParamValues(route.path, paramValues)
   const hash = createHash(route.hash.value ?? options.hash).value
 
@@ -57,19 +57,19 @@ function assemblePathParamValues(path: Path, paramValues: Record<string, unknown
   }, path.value)
 }
 
-function assembleQueryParamValues(query: Query, paramValues: Record<string, unknown>): QueryRecord {
-  if (!query.value) {
-    return {}
-  }
-
+function assembleQueryParamValues(query: Query, paramValues: Record<string, unknown>): URLSearchParams {
   const search = new URLSearchParams(query.value)
 
-  return Array.from(search.entries()).reduce<QueryRecord>((url, [key, value]) => {
+  if (!query.value) {
+    return search
+  }
+
+  for (const [key, value] of search.entries()) {
     const paramName = getParamName(value)
     const isNotParam = !paramName
 
     if (isNotParam) {
-      return { ...url, [key]: value }
+      continue
     }
 
     const paramValue = setParamValue(paramValues[paramName], query.params[paramName], isOptionalParamSyntax(value))
@@ -77,9 +77,11 @@ function assembleQueryParamValues(query: Query, paramValues: Record<string, unkn
     const shouldLeaveEmptyValueOut = isOptionalParamSyntax(value) && valueNotProvidedAndNoDefaultUsed
 
     if (shouldLeaveEmptyValueOut) {
-      return url
+      search.delete(key, value)
+    } else {
+      search.set(key, paramValue)
     }
+  }
 
-    return { ...url, [key]: paramValue }
-  }, {})
+  return search
 }

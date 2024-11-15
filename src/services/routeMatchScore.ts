@@ -1,7 +1,7 @@
 import { parseUrl } from '@/services/urlParser'
 import { getParamValueFromUrl } from '@/services/paramsFinder'
 import { Route } from '@/types/route'
-import { routeHashMatches } from './routeMatchRules'
+import { routeHashMatches } from '@/services/routeMatchRules'
 
 type RouteSortMethod = (aRoute: Route, bRoute: Route) => number
 

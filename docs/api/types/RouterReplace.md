@@ -19,7 +19,7 @@ Replace has the same effect as [`RouterPush`](/api/types/RouterPush) but without
 
 ```ts
 {
-  query?: Record<string, string>,
+  query?: ConstructorParameters<typeof URLSearchParams>[0],
   hash?: string,
 }
 ```

@@ -33,7 +33,7 @@ If source is `Url`, expected type for params is `never`. Else when source is `TS
 
 ```ts
 {
-  query?: Record<string, string>,
+  query?: ConstructorParameters<typeof URLSearchParams>[0]****,
   hash?: string,
 }
 ```
