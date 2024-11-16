@@ -5,7 +5,7 @@ import { getParamName, isOptionalParamSyntax } from '@/services/routeRegex'
 import { Host } from '@/types/host'
 import { paramEnd, paramStart } from '@/types/params'
 import { Path } from '@/types/path'
-import { Query, QueryRecord } from '@/types/query'
+import { Query, QuerySource } from '@/types/query'
 import { Route } from '@/types/route'
 import { Url } from '@/types/url'
 import { createUrl } from '@/services/urlCreator'
@@ -14,7 +14,7 @@ import { combineUrlSearchParams } from '@/utilities/urlSearchParams'
 
 type AssembleUrlOptions = {
   params?: Record<string, unknown>,
-  query?: QueryRecord,
+  query?: QuerySource,
   hash?: string,
 }
 

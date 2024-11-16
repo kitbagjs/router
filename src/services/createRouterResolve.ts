@@ -8,10 +8,10 @@ import { isUrl, Url } from '@/types/url'
 import { AllPropertiesAreOptional } from '@/types/utilities'
 import { createUrl } from '@/services/urlCreator'
 import { parseUrl } from '@/services/urlParser'
-import { QueryRecord } from '@/types/query'
+import { QuerySource } from '@/types/query'
 
 export type RouterResolveOptions = {
-  query?: QueryRecord,
+  query?: QuerySource,
   hash?: string,
 }
 

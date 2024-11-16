@@ -111,6 +111,7 @@ export default defineConfig({
             { text: 'RouterReplace', link: '/api/types/RouterReplace' },
             { text: 'RouterResolve', link: '/api/types/RouterResolve' },
             { text: 'Routes', link: '/api/types/Routes' },
+            { text: 'QuerySource', link: '/api/types/QuerySource' },
             { text: 'Url', link: '/api/types/Url' },
           ],
         },

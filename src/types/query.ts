@@ -4,7 +4,7 @@ import { Param } from '@/types/paramTypes'
 import { Identity } from '@/types/utilities'
 import { isRecord } from '@/utilities/guards'
 
-export type QueryRecord = ConstructorParameters<typeof URLSearchParams>[0]
+export type QuerySource = ConstructorParameters<typeof URLSearchParams>[0]
 
 type ExtractQueryParamsFromQueryString<
   TQuery extends string,

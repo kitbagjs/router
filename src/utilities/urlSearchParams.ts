@@ -1,6 +1,6 @@
-import { QueryRecord } from '@/types/query'
+import { QuerySource } from '@/types/query'
 
-export function combineUrlSearchParams(aParams: URLSearchParams | QueryRecord, bParams: URLSearchParams | QueryRecord): URLSearchParams {
+export function combineUrlSearchParams(aParams: URLSearchParams | QuerySource, bParams: URLSearchParams | QuerySource): URLSearchParams {
   const combinedParams = new URLSearchParams(aParams)
   const paramsToAdd = new URLSearchParams(bParams)
 
