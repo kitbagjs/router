@@ -25,7 +25,6 @@ export type Host<
 > = {
   value: THost,
   params: string extends THost ? Record<string, Param> : Identity<ExtractParamsFromHostString<THost, TParams>>,
-  toString: () => string,
 }
 
 export type ToHost<T extends string | Host | undefined> = T extends string

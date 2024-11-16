@@ -1,4 +1,4 @@
-import { createMaybeRelativeUrl } from '@/services/createMaybeRelativeUrl'
+import { parseUrl } from '@/services/urlParser'
 import { getParamValue } from '@/services/params'
 import { getParamValueFromUrl } from '@/services/paramsFinder'
 import { Path } from '@/types/path'
@@ -17,7 +17,7 @@ export const routeParamsAreValid: RouteMatchRule = (route, url) => {
 }
 
 export const getRouteParamValues = (route: Route, url: string): Record<string, unknown> => {
-  const { pathname, search } = createMaybeRelativeUrl(url)
+  const { pathname, search } = parseUrl(url)
 
   return {
     ...getPathParams(route.path, pathname),
@@ -32,7 +32,7 @@ function getPathParams(path: Path, url: string): Record<string, unknown> {
   for (const [key, param] of Object.entries(path.params)) {
     const isOptional = key.startsWith('?')
     const paramName = isOptional ? key.slice(1) : key
-    const stringValue = getParamValueFromUrl(decodedValueFromUrl, path.toString(), key)
+    const stringValue = getParamValueFromUrl(decodedValueFromUrl, path.value, key)
     const paramValue = getParamValue(stringValue, param, isOptional)
 
     values[paramName] = paramValue

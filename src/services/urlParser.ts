@@ -1,19 +1,12 @@
-export type MaybeRelativeUrl = {
-  protocol?: string,
-  host?: string,
-  pathname: string,
-  searchParams: URLSearchParams,
-  search: string,
-  hash: string,
-}
+import { UrlParts } from '@/types/url'
 
-export function createMaybeRelativeUrl(value: string): MaybeRelativeUrl {
+export function parseUrl(value: string): UrlParts {
   const isRelative = !value.startsWith('http')
 
   return isRelative ? createRelativeUrl(value) : createAbsoluteUrl(value)
 }
 
-function createAbsoluteUrl(value: string): MaybeRelativeUrl {
+function createAbsoluteUrl(value: string): UrlParts {
   const { protocol, host, pathname, search, searchParams, hash } = new URL(value, value)
 
   return {
@@ -21,7 +14,7 @@ function createAbsoluteUrl(value: string): MaybeRelativeUrl {
   }
 }
 
-function createRelativeUrl(value: string): MaybeRelativeUrl {
+function createRelativeUrl(value: string): UrlParts {
   const { pathname, search, searchParams, hash } = new URL(value, 'https://localhost')
 
   return {

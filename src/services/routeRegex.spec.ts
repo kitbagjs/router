@@ -13,7 +13,7 @@ describe('generateRoutePathRegexPattern', () => {
 
     const result = generateRoutePathRegexPattern(route)
 
-    const expected = new RegExp(`^${route.path}$`, 'i')
+    const expected = new RegExp(`^${route.path.value}$`, 'i')
     expect(result.toString()).toBe(expected.toString())
   })
 

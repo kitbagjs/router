@@ -5,7 +5,7 @@ import { routerRejectionKey } from '@/compositions/useRejection'
 import { routerInjectionKey } from '@/compositions/useRouter'
 import { createCurrentRoute } from '@/services/createCurrentRoute'
 import { createIsExternal } from '@/services/createIsExternal'
-import { createMaybeRelativeUrl } from '@/services/createMaybeRelativeUrl'
+import { parseUrl } from '@/services/urlParser'
 import { createPropStore, propStoreKey } from '@/services/createPropStore'
 import { createRouterHistory } from '@/services/createRouterHistory'
 import { routeHookStoreKey, createRouterHooks } from '@/services/createRouterHooks'
@@ -213,7 +213,7 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
 
   const initialUrl = getInitialUrl(options?.initialUrl)
   const initialState = history.location.state
-  const { host } = createMaybeRelativeUrl(initialUrl)
+  const { host } = parseUrl(initialUrl)
   const isExternal = createIsExternal(host)
 
   let initialized = false

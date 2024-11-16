@@ -1,4 +1,4 @@
-import { createMaybeRelativeUrl } from '@/services/createMaybeRelativeUrl'
+import { parseUrl } from '@/services/urlParser'
 import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
 import { getRouteParamValues, routeParamsAreValid } from '@/services/paramValidation'
 import { isNamedRoute, routePathMatches, routeQueryMatches, routeHashMatches } from '@/services/routeMatchRules'
@@ -28,7 +28,7 @@ export function getResolvedRouteForUrl(routes: Routes, url: string, state?: unkn
   }
 
   const [route] = matches
-  const { search, hash } = createMaybeRelativeUrl(url)
+  const { search, hash } = parseUrl(url)
 
   return {
     id: route.id,

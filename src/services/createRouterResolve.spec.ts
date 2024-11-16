@@ -88,5 +88,7 @@ test('when given an external route with params in host, interpolates param value
 test('given a route with hash, interpolates hash value', () => {
   const resolve = createRouterResolve(routes)
 
-  expect(resolve('parentA', { paramA: 'bar' }, { hash: 'foo' })).toBe('/parentA/bar#foo')
+  const url = resolve('parentA', { paramA: 'bar' }, { hash: 'foo' })
+
+  expect(url).toBe('/parentA/bar#foo')
 })

@@ -22,6 +22,5 @@ export function combinePath(parentPath: Path, childPath: Path): Path {
   return {
     value: newPathString,
     params: { ...parentPath.params, ...childPath.params },
-    toString: () => newPathString,
   }
 }

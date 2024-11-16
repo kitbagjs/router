@@ -29,6 +29,5 @@ export function host(value: string, params: Record<string, Param | undefined>): 
   return {
     value,
     params: getParamsForString(value, params),
-    toString: () => value,
   }
 }

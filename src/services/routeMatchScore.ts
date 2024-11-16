@@ -1,11 +1,12 @@
-import { createMaybeRelativeUrl } from '@/services/createMaybeRelativeUrl'
+import { parseUrl } from '@/services/urlParser'
 import { getParamValueFromUrl } from '@/services/paramsFinder'
 import { Route } from '@/types/route'
+import { routeHashMatches } from './routeMatchRules'
 
 type RouteSortMethod = (aRoute: Route, bRoute: Route) => number
 
 export function getRouteScoreSortMethod(url: string): RouteSortMethod {
-  const { searchParams: actualQuery, pathname: actualPath } = createMaybeRelativeUrl(url)
+  const { searchParams: actualQuery, pathname: actualPath } = parseUrl(url)
   const sortBefore = -1
   const sortAfter = +1
 
@@ -29,11 +30,10 @@ export function getRouteScoreSortMethod(url: string): RouteSortMethod {
       return sortAfter
     }
 
-    const { hash } = createMaybeRelativeUrl(url)
-    if (aRoute.hash.toString() === hash) {
+    if (routeHashMatches(aRoute, url)) {
       return sortBefore
     }
-    if (bRoute.hash.toString() === hash) {
+    if (routeHashMatches(bRoute, url)) {
       return sortAfter
     }
 
@@ -46,13 +46,13 @@ export function countExpectedPathParams(route: Route, actualPath: string): numbe
     .filter((key) => key.startsWith('?'))
     .map((key) => key)
 
-  const missing = optionalParams.filter((expected) => getParamValueFromUrl(actualPath, route.path.toString(), expected) === undefined)
+  const missing = optionalParams.filter((expected) => getParamValueFromUrl(actualPath, route.path.value, expected) === undefined)
 
   return optionalParams.length - missing.length
 }
 
 export function countExpectedQueryParams(route: Route, actualQuery: URLSearchParams): number {
-  const expectedQuery = new URLSearchParams(route.query.toString())
+  const expectedQuery = new URLSearchParams(route.query.value)
   const expectedQueryKeys = Array.from(expectedQuery.keys())
 
   const missing = expectedQueryKeys.filter((expected) => !actualQuery.has(expected))

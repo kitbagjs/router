@@ -5,8 +5,6 @@ export type Hash<
   THash extends string | undefined = string | undefined
 > = {
   value: THash,
-  hasValue: () => boolean,
-  toString: () => string,
 }
 export type ToHash<T extends string | Hash | undefined> = T extends string
   ? Hash<T>
