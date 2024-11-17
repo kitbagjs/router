@@ -234,6 +234,26 @@ test('setting an unknown param does not add its value to the route', async () =>
   expect(route.params.nothing).toBeUndefined()
 })
 
+test('query is writable', async () => {
+  const root = createRoute({
+    name: 'root',
+    component,
+    path: '/',
+  })
+
+  const { route, start } = createRouter([root], {
+    initialUrl: '/?foo=bar&fiz=buz',
+  })
+
+  await start()
+
+  route.query = 'foo=bar&foo=baz'
+
+  await flushPromises()
+
+  expect(route.query.toString()).toBe('foo=bar&foo=baz')
+})
+
 test('query.set updates the route', async () => {
   const root = createRoute({
     name: 'root',
