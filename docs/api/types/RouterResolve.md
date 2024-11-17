@@ -33,10 +33,12 @@ If source is `Url`, expected type for params is `never`. Else when source is `TS
 
 ```ts
 {
-  query?: Record<string, string>,
+  query?: QuerySource,
   hash?: string,
 }
 ```
+
+[QuerySource](/api/types/QuerySource)
 
 ## Returns
 

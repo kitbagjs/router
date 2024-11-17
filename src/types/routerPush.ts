@@ -4,11 +4,12 @@ import { RouteParamsByKey } from '@/types/routeWithParams'
 import { RouteStateByName } from '@/types/state'
 import { Url } from '@/types/url'
 import { AllPropertiesAreOptional } from '@/types/utilities'
+import { QuerySource } from '@/types/query'
 
 export type RouterPushOptions<
   TState = unknown
 > = {
-  query?: Record<string, string>,
+  query?: QuerySource,
   hash?: string,
   replace?: boolean,
   state?: Partial<TState>,

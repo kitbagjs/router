@@ -6,11 +6,12 @@ import { RoutesName } from '@/types/routesMap'
 import { RouteParamsByKey } from '@/types/routeWithParams'
 import { isUrl, Url } from '@/types/url'
 import { AllPropertiesAreOptional } from '@/types/utilities'
-import { createUrl } from './urlCreator'
-import { parseUrl } from './urlParser'
+import { createUrl } from '@/services/urlCreator'
+import { parseUrl } from '@/services/urlParser'
+import { QuerySource } from '@/types/query'
 
 export type RouterResolveOptions = {
-  query?: Record<string, string>,
+  query?: QuerySource,
   hash?: string,
 }
 

@@ -19,11 +19,13 @@ Push will update the URL for the browser and also add the URL into the history s
 
 ```ts
 {
-  query?: Record<string, string>,
+  query?: QuerySource,
   replace?: boolean,
   hash?: string,
 }
 ```
+
+[QuerySource](/api/types/QuerySource)
 
 ## Returns
 

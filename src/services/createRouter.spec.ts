@@ -306,7 +306,7 @@ test('query.delete updates the route', async () => {
   expect(route.query.toString()).toBe('fiz=buz')
 })
 
-test.fails('query.values is reactive', async () => {
+test('query.values is reactive', async () => {
   const root = createRoute({
     name: 'root',
     component,
@@ -314,20 +314,20 @@ test.fails('query.values is reactive', async () => {
   })
 
   const { route, start } = createRouter([root], {
-    initialUrl: '/?foo=bar&fiz=buz',
+    initialUrl: '/?foo=foo1&bar=bar1',
   })
 
   await start()
 
   const values = computed(() => Array.from(route.query.values()))
 
-  expect(values.value).toMatchObject(['bar', 'buz'])
+  expect(values.value).toMatchObject(['foo1', 'bar1'])
 
-  route.query.append('foo', 'bar2')
+  route.query.append('foo', 'foo2')
 
   await flushPromises()
 
-  expect(values.value).toMatchObject(['bar', 'buz', 'bar2'])
+  expect(values.value).toMatchObject(['foo1', 'bar1', 'foo2'])
 })
 
 test('given an array of Routes, combines into single routes collection', () => {
