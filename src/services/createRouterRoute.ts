@@ -4,20 +4,23 @@ import { ResolvedRouteQuery } from '@/types/resolvedQuery'
 import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { RouteUpdate } from '@/types/routeUpdate'
 import { Writable } from '@/types/utilities'
+import { QuerySource } from '@/types/query'
 
 const isRouterRouteSymbol = Symbol('isRouterRouteSymbol')
 
-export type RouterRoute<TRoute extends ResolvedRoute = ResolvedRoute> = Readonly<{
-  id: TRoute['id'],
-  name: TRoute['name'],
-  matched: TRoute['matched'],
-  matches: TRoute['matches'],
-  state: TRoute['state'],
-  query: ResolvedRouteQuery,
-  hash: TRoute['hash'],
-  params: Writable<TRoute['params']>,
-  update: RouteUpdate<TRoute>,
-}>
+export type RouterRoute<TRoute extends ResolvedRoute = ResolvedRoute> = {
+  readonly id: TRoute['id'],
+  readonly name: TRoute['name'],
+  readonly matched: TRoute['matched'],
+  readonly matches: TRoute['matches'],
+  readonly state: TRoute['state'],
+  readonly hash: TRoute['hash'],
+  readonly params: Writable<TRoute['params']>,
+  readonly update: RouteUpdate<TRoute>,
+
+  get query(): ResolvedRouteQuery,
+  set query(value: QuerySource),
+}
 
 export function isRouterRoute(value: unknown): value is RouterRoute {
   return typeof value === 'object' && value !== null && isRouterRouteSymbol in value
@@ -118,6 +121,16 @@ export function createRouterRoute<TRoute extends ResolvedRoute>(route: TRoute, p
       }
 
       return Reflect.get(target, property, receiver)
+    },
+
+    set(target, property, value, receiver) {
+      if (property === 'query') {
+        update({}, { query: value })
+
+        return true
+      }
+
+      return Reflect.set(target, property, value, receiver)
     },
   })
 }
