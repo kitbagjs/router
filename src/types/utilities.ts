@@ -30,5 +30,3 @@ export type OnlyRequiredProperties<T> = {
 export type AllPropertiesAreOptional<T> = Record<string, unknown> extends T
   ? true
   : IsEmptyObject<OnlyRequiredProperties<T>>
-
-export type Writable<T> = { -readonly [P in keyof T]: T[P] }
