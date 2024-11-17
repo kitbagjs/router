@@ -247,7 +247,7 @@ test('query is writable', async () => {
 
   await start()
 
-  route.query = new URLSearchParams('foo=bar&foo=baz')
+  route.query = 'foo=bar&foo=baz'
 
   await flushPromises()
 
