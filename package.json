@@ -37,7 +37,7 @@
     "@vue/test-utils": "^2.4.3",
     "eslint": "^9.14.0",
     "globals": "^15.11.0",
-    "happy-dom": "^12.10.3",
+    "happy-dom": "^15.11.6",
     "typedoc": "^0.25.13",
     "typedoc-plugin-markdown": "^4.0.0",
     "typedoc-plugin-vue": "^1.1.0",
