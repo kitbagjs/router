@@ -144,7 +144,6 @@ test.fails('route is readonly except for individual params', async () => {
   route.matches = 'matches'
   expect(route.matches).toMatchObject(routes[0].matches)
 
-  // @ts-expect-error value is immutable
   route.params = { foo: 'bar' }
   expect(route.params).toMatchObject({})
 })
@@ -232,6 +231,40 @@ test('setting an unknown param does not add its value to the route', async () =>
 
   // @ts-expect-error value is immutable
   expect(route.params.nothing).toBeUndefined()
+})
+
+test('params are writable', async () => {
+  const routes = [
+    createRoute({
+      name: 'root',
+      component,
+      path: '/[paramA]/[paramB]/[?paramC]',
+    }),
+  ]
+
+  const { route, start } = createRouter(routes, {
+    initialUrl: '/one/two/three',
+  })
+
+  await start()
+
+  expect(route.params).toMatchObject({
+    paramA: 'one',
+    paramB: 'two',
+    paramC: 'three',
+  })
+
+  route.params = {
+    paramA: 'four',
+    paramB: 'five',
+  }
+
+  await flushPromises()
+
+  expect(route.params).toMatchObject({
+    paramA: 'four',
+    paramB: 'five',
+  })
 })
 
 test('query is writable', async () => {

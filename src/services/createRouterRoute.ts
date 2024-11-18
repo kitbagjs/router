@@ -3,7 +3,6 @@ import { ResolvedRoute } from '@/types/resolved'
 import { ResolvedRouteQuery } from '@/types/resolvedQuery'
 import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { RouteUpdate } from '@/types/routeUpdate'
-import { Writable } from '@/types/utilities'
 import { QuerySource } from '@/types/query'
 
 const isRouterRouteSymbol = Symbol('isRouterRouteSymbol')
@@ -15,8 +14,9 @@ export type RouterRoute<TRoute extends ResolvedRoute = ResolvedRoute> = {
   readonly matches: TRoute['matches'],
   readonly state: TRoute['state'],
   readonly hash: TRoute['hash'],
-  readonly params: Writable<TRoute['params']>,
   readonly update: RouteUpdate<TRoute>,
+
+  params: TRoute['params'],
 
   get query(): ResolvedRouteQuery,
   set query(value: QuerySource),
@@ -27,7 +27,7 @@ export function isRouterRoute(value: unknown): value is RouterRoute {
 }
 
 export function createRouterRoute<TRoute extends ResolvedRoute>(route: TRoute, push: RouterPush): RouterRoute<TRoute> {
-  function update(nameOrParams: PropertyKey | Partial<ResolvedRoute['params']>, valueOrOptions: any, maybeOptions?: RouterPushOptions): Promise<void> {
+  function update(nameOrParams: PropertyKey | Partial<ResolvedRoute['params']>, valueOrOptions?: any, maybeOptions?: RouterPushOptions): Promise<void> {
     if (typeof nameOrParams === 'object') {
       const params = {
         ...route.params,
@@ -124,6 +124,12 @@ export function createRouterRoute<TRoute extends ResolvedRoute>(route: TRoute, p
     },
 
     set(target, property, value, receiver) {
+      if (property === 'params') {
+        update(value)
+
+        return true
+      }
+
       if (property === 'query') {
         update({}, { query: value })
 
