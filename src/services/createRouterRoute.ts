@@ -1,4 +1,4 @@
-import { reactive, toRefs } from 'vue'
+import { computed, reactive, toRefs } from 'vue'
 import { ResolvedRoute } from '@/types/resolved'
 import { ResolvedRouteQuery } from '@/types/resolvedQuery'
 import { RouterPush, RouterPushOptions } from '@/types/routerPush'
@@ -12,11 +12,11 @@ export type RouterRoute<TRoute extends ResolvedRoute = ResolvedRoute> = {
   readonly name: TRoute['name'],
   readonly matched: TRoute['matched'],
   readonly matches: TRoute['matches'],
-  readonly state: TRoute['state'],
   readonly hash: TRoute['hash'],
   readonly update: RouteUpdate<TRoute>,
 
   params: TRoute['params'],
+  state: TRoute['state'],
 
   get query(): ResolvedRouteQuery,
   set query(value: QuerySource),
@@ -66,7 +66,59 @@ export function createRouterRoute<TRoute extends ResolvedRoute>(route: TRoute, p
     update({}, { query })
   }
 
-  const { id, matched, matches, name, query, params, state, hash } = toRefs(route)
+  const { id, matched, matches, name, hash } = toRefs(route)
+
+  const params = computed({
+    get() {
+      return new Proxy(route.params, {
+        set(_target, property, value) {
+          update(property, value)
+
+          return true
+        },
+      })
+    },
+    set(params) {
+      update(params)
+    },
+  })
+
+  const query = computed({
+    get() {
+      return new Proxy<ResolvedRouteQuery>(route.query, {
+        get(target, property, receiver) {
+          switch (property) {
+            case 'append':
+              return queryAppend
+            case 'set':
+              return querySet
+            case 'delete':
+              return queryDelete
+            default:
+              return Reflect.get(target, property, receiver)
+          }
+        },
+      })
+    },
+    set(query: QuerySource) {
+      update({}, { query })
+    },
+  })
+
+  const state = computed({
+    get() {
+      return new Proxy(route.state, {
+        set(_target, property, value) {
+          update({}, { state: { ...route.state, [property]: value } })
+
+          return true
+        },
+      })
+    },
+    set(state) {
+      update({}, { state })
+    },
+  })
 
   const routerRoute: RouterRoute<TRoute> = reactive({
     id,
@@ -81,62 +133,5 @@ export function createRouterRoute<TRoute extends ResolvedRoute>(route: TRoute, p
     [isRouterRouteSymbol]: true,
   })
 
-  return new Proxy(routerRoute, {
-    get: (target, property, receiver) => {
-      if (property === 'params') {
-        return new Proxy(route.params, {
-          set(_target, property, value) {
-            update(property, value)
-
-            return true
-          },
-        })
-      }
-
-      if (property === 'state') {
-        return new Proxy(route.state, {
-          set(_target, property, value) {
-            update({}, { state: { ...route.state, [property]: value } })
-
-            return true
-          },
-        })
-      }
-
-      if (property === 'query') {
-        return new Proxy(route.query, {
-          get(_target, property, receiver) {
-            switch (property) {
-              case 'append':
-                return queryAppend
-              case 'set':
-                return querySet
-              case 'delete':
-                return queryDelete
-              default:
-                return Reflect.get(_target, property, receiver)
-            }
-          },
-        })
-      }
-
-      return Reflect.get(target, property, receiver)
-    },
-
-    set(target, property, value, receiver) {
-      if (property === 'params') {
-        update(value)
-
-        return true
-      }
-
-      if (property === 'query') {
-        update({}, { query: value })
-
-        return true
-      }
-
-      return Reflect.set(target, property, value, receiver)
-    },
-  })
+  return routerRoute
 }
