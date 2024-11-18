@@ -265,6 +265,20 @@ test('params are writable', async () => {
     paramA: 'four',
     paramB: 'five',
   })
+
+  const { params } = toRefs(route)
+
+  params.value = {
+    paramA: 'six',
+    paramB: 'seven',
+  }
+
+  await flushPromises()
+
+  expect(route.params).toMatchObject({
+    paramA: 'six',
+    paramB: 'seven',
+  })
 })
 
 test('query is writable', async () => {
@@ -285,6 +299,15 @@ test('query is writable', async () => {
   await flushPromises()
 
   expect(route.query.toString()).toBe('foo=bar&foo=baz')
+
+  const { query } = toRefs(route)
+
+  // @ts-expect-error vue's `reactive` utility loses the type information for computed setters but we do expect this to work
+  query.value = 'foo2=bar2&foo2=baz2'
+
+  await flushPromises()
+
+  expect(route.query.toString()).toBe('foo2=bar2&foo2=baz2')
 })
 
 test('query.set updates the route', async () => {
