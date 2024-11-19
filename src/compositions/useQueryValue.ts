@@ -49,11 +49,15 @@ export function useQueryValue(
         .filter((value) => value !== null)
     },
     set(values) {
-      route.query.delete(toValue(key))
+      const query = new URLSearchParams(route.query.toString())
+
+      query.delete(toValue(key))
 
       values.forEach((value) => {
-        route.query.append(toValue(key), setParamValue(value, param))
+        query.append(toValue(key), setParamValue(value, param))
       })
+
+      route.query = query
     },
   })
 
