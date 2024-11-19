@@ -157,6 +157,17 @@ export function getParamValue<T extends Param>(value: string | undefined, param:
   return value
 }
 
+export function safeGetParamValue<T extends Param>(value: string | undefined, param: T, isOptional = false): ExtractParamType<T> | undefined {
+  try {
+    return getParamValue(value, param, isOptional)
+  } catch (error) {
+    if (error instanceof InvalidRouteParamValueError) {
+      return undefined
+    }
+    throw error
+  }
+}
+
 export function setParamValue(value: unknown, param: Param, isOptional = false): string {
   if (value === undefined) {
     if (isOptional) {

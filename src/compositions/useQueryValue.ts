@@ -2,24 +2,30 @@ import { computed, Ref, MaybeRefOrGetter, toValue } from 'vue'
 import { useRoute } from './useRoute'
 import { Param } from '@/types'
 import { ExtractParamType } from '@/types/params'
-import { getParamValue, setParamValue } from '@/services/params'
-import { InvalidRouteParamValueError } from '@/errors/invalidRouteParamValueError'
+import { safeGetParamValue, setParamValue } from '@/services/params'
 
 export type UseQueryValue<T> = {
   value: Ref<T | null>,
   values: Ref<T[]>,
 }
 
+export function useQueryValue(key: MaybeRefOrGetter<string>): UseQueryValue<string>
+
 export function useQueryValue<
   TParam extends Param,
   TParamType extends ExtractParamType<TParam>
 >(
   key: MaybeRefOrGetter<string>,
-  type: TParam,
-): UseQueryValue<TParamType> {
+  param: TParam
+): UseQueryValue<ExtractParamType<TParamType>>
+
+export function useQueryValue(
+  key: MaybeRefOrGetter<string>,
+  param: Param = String,
+): UseQueryValue<unknown> {
   const route = useRoute()
 
-  const value = computed<TParamType | null>({
+  const value = computed({
     get() {
       const value = route.query.get(toValue(key))
 
@@ -27,43 +33,26 @@ export function useQueryValue<
         return null
       }
 
-      try {
-        return getParamValue(value, type)
-      } catch (error) {
-        if (error instanceof InvalidRouteParamValueError) {
-          return null
-        }
-
-        throw error
-      }
+      return safeGetParamValue(value, param)
     },
-    set(value: TParamType | null) {
-      route.query.set(toValue(key), setParamValue(value, type))
+    set(value) {
+      route.query.set(toValue(key), setParamValue(value, param))
     },
   })
 
-  const values = computed<TParamType[]>({
+  const values = computed({
     get() {
       const values = route.query.getAll(toValue(key))
 
       return values
-        .map((value) => {
-          try {
-            return getParamValue(value, type)
-          } catch (error) {
-            if (error instanceof InvalidRouteParamValueError) {
-              return null
-            }
-            throw error
-          }
-        })
-        .filter((value): value is TParamType => value !== null)
+        .map((value) => safeGetParamValue(value, param))
+        .filter((value) => value !== null)
     },
-    set(values: TParamType[]) {
+    set(values) {
       route.query.delete(toValue(key))
 
       values.forEach((value) => {
-        route.query.append(toValue(key), setParamValue(value, type))
+        route.query.append(toValue(key), setParamValue(value, param))
       })
     },
   })
