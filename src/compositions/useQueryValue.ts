@@ -12,12 +12,11 @@ export type UseQueryValue<T> = {
 export function useQueryValue(key: MaybeRefOrGetter<string>): UseQueryValue<string>
 
 export function useQueryValue<
-  TParam extends Param,
-  TParamType extends ExtractParamType<TParam>
+  TParam extends Param
 >(
   key: MaybeRefOrGetter<string>,
   param: TParam
-): UseQueryValue<ExtractParamType<TParamType>>
+): UseQueryValue<ExtractParamType<TParam>>
 
 export function useQueryValue(
   key: MaybeRefOrGetter<string>,
