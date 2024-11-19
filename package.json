@@ -40,7 +40,7 @@
     "happy-dom": "^15.11.6",
     "typedoc": "^0.25.13",
     "typedoc-plugin-markdown": "^4.0.3",
-    "typedoc-plugin-vue": "^1.1.0",
+    "typedoc-plugin-vue": "^1.2.0",
     "typescript": "^5.4.3",
     "vite": "^5.4.11",
     "vite-plugin-dts": "^4.3.0",
