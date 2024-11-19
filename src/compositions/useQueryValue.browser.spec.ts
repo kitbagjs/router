@@ -182,3 +182,34 @@ test('updates the query string when the values is set', async () => {
 
   expect(router.route.query.toString()).toBe('foo=3&foo=4')
 })
+
+test('removes the query string when the remove method is called', async () => {
+  const root = createRoute({
+    name: 'root',
+    path: '/',
+  })
+
+  const router = createRouter([root], {
+    initialUrl: '/?foo=1&foo=2',
+  })
+
+  await router.start()
+
+  const component = {
+    setup() {
+      const { remove } = useQueryValue('foo')
+
+      remove()
+    },
+  }
+
+  mount(component, {
+    global: {
+      plugins: [router],
+    },
+  })
+
+  await flushPromises()
+
+  expect(router.route.query.toString()).toBe('')
+})

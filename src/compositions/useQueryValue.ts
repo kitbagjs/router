@@ -7,6 +7,7 @@ import { safeGetParamValue, setParamValue } from '@/services/params'
 export type UseQueryValue<T> = {
   value: Ref<T | null>,
   values: Ref<T[]>,
+  remove: () => void,
 }
 
 export function useQueryValue(key: MaybeRefOrGetter<string>): UseQueryValue<string>
@@ -63,5 +64,8 @@ export function useQueryValue(
   return {
     value,
     values,
+    remove: () => {
+      route.query.delete(toValue(key))
+    },
   }
 }
