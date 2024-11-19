@@ -41,7 +41,7 @@
     "typedoc": "^0.25.13",
     "typedoc-plugin-markdown": "^4.0.3",
     "typedoc-plugin-vue": "^1.2.0",
-    "typescript": "^5.4.3",
+    "typescript": "^5.6.3",
     "vite": "^5.4.11",
     "vite-plugin-dts": "^4.3.0",
     "vitepress": "^1.5.0",
