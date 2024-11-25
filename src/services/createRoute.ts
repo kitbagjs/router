@@ -40,7 +40,7 @@ export function createRoute<
   & WithoutComponents
   & WithoutParent
   & (WithState<TState> | WithoutState)):
-Route<ToName<TName>, Host<'', {}>, ToPath<TPath>, ToQuery<TQuery>, ToHash<THash>, TMeta, TState>
+Route<ToName<TName>, Host<'', {}>, ToPath<TPath>, ToQuery<TQuery>, ToHash<THash>, TMeta, TState, TName>
 
 export function createRoute<
   const TParent extends Route,
@@ -55,7 +55,7 @@ export function createRoute<
   & WithoutComponents
   & WithParent<TParent>
   & (WithState<TState> | WithoutState)):
-Route<ToName<TName>, Host<'', {}>, CombinePath<TParent['path'], ToPath<TPath>>, CombineQuery<TParent['query'], ToQuery<TQuery>>, CombineHash<TParent['hash'], ToHash<THash>>, CombineMeta<TMeta, TParent['meta']>, CombineState<TState, TParent['state']>>
+Route<ToName<TName>, Host<'', {}>, CombinePath<TParent['path'], ToPath<TPath>>, CombineQuery<TParent['query'], ToQuery<TQuery>>, CombineHash<TParent['hash'], ToHash<THash>>, CombineMeta<TMeta, TParent['meta']>, CombineState<TState, TParent['state']>, TName | TParent['matches'][number]['name']>
 
 export function createRoute<
   TComponent extends Component,
@@ -70,7 +70,7 @@ export function createRoute<
   & WithComponent<TComponent, RouteParams<TPath, TQuery>>
   & WithoutParent
   & (WithState<TState> | WithoutState)):
-Route<ToName<TName>, Host<'', {}>, ToPath<TPath>, ToQuery<TQuery>, ToHash<THash>, TMeta, TState>
+Route<ToName<TName>, Host<'', {}>, ToPath<TPath>, ToQuery<TQuery>, ToHash<THash>, TMeta, TState, TName>
 
 export function createRoute<
   TComponent extends Component,
@@ -86,7 +86,7 @@ export function createRoute<
   & WithComponent<TComponent, RouteParams<TPath, TQuery, TParent>>
   & WithParent<TParent>
   & (WithState<TState> | WithoutState)):
-Route<ToName<TName>, Host<'', {}>, CombinePath<TParent['path'], ToPath<TPath>>, CombineQuery<TParent['query'], ToQuery<TQuery>>, CombineHash<TParent['hash'], ToHash<THash>>, CombineMeta<TMeta, TParent['meta']>, CombineState<TState, TParent['state']>>
+Route<ToName<TName>, Host<'', {}>, CombinePath<TParent['path'], ToPath<TPath>>, CombineQuery<TParent['query'], ToQuery<TQuery>>, CombineHash<TParent['hash'], ToHash<THash>>, CombineMeta<TMeta, TParent['meta']>, CombineState<TState, TParent['state']>, TName | TParent['matches'][number]['name']>
 
 export function createRoute<
   TComponents extends Record<string, Component>,
@@ -101,7 +101,7 @@ export function createRoute<
   & WithComponents<TComponents, RouteParams<TPath, TQuery>>
   & WithoutParent
   & (WithState<TState> | WithoutState)):
-Route<ToName<TName>, Host<'', {}>, ToPath<TPath>, ToQuery<TQuery>, ToHash<THash>, TMeta, TState>
+Route<ToName<TName>, Host<'', {}>, ToPath<TPath>, ToQuery<TQuery>, ToHash<THash>, TMeta, TState, TName>
 
 export function createRoute<
   TComponents extends Record<string, Component>,
@@ -117,7 +117,7 @@ export function createRoute<
   & WithComponents<TComponents, RouteParams<TPath, TQuery, TParent>>
   & WithParent<TParent>
   & (WithState<TState> | WithoutState)):
-Route<ToName<TName>, Host<'', {}>, CombinePath<TParent['path'], ToPath<TPath>>, CombineQuery<TParent['query'], ToQuery<TQuery>>, CombineHash<TParent['hash'], ToHash<THash>>, CombineMeta<TMeta, TParent['meta']>, CombineState<TState, TParent['state']>>
+Route<ToName<TName>, Host<'', {}>, CombinePath<TParent['path'], ToPath<TPath>>, CombineQuery<TParent['query'], ToQuery<TQuery>>, CombineHash<TParent['hash'], ToHash<THash>>, CombineMeta<TMeta, TParent['meta']>, CombineState<TState, TParent['state']>, TName | TParent['matches'][number]['name']>
 
 export function createRoute(options: CreateRouteOptions): Route {
   const id = createRouteId()
