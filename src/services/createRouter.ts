@@ -3,8 +3,6 @@ import { App } from 'vue'
 import { RouterLink, RouterView } from '@/components'
 import { routerRejectionKey } from '@/compositions/useRejection'
 import { routerInjectionKey } from '@/compositions/useRouter'
-import { RouterPushError } from '@/errors/routerPushError'
-import { RouterRejectionError } from '@/errors/routerRejectionError'
 import { createCurrentRoute } from '@/services/createCurrentRoute'
 import { createIsExternal } from '@/services/createIsExternal'
 import { createMaybeRelativeUrl } from '@/services/createMaybeRelativeUrl'
@@ -28,6 +26,7 @@ import { RoutesName } from '@/types/routesMap'
 import { Url, isUrl } from '@/types/url'
 import { checkDuplicateNames } from '@/utilities/checkDuplicateNames'
 import { isNestedArray } from '@/utilities/guards'
+import { CallbackContextResponse } from './createCallbackContext'
 
 type RouterUpdateOptions = {
   replace?: boolean,
@@ -76,7 +75,7 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
     },
   })
 
-  const { runBeforeRouteHooks, runAfterRouteHooks } = createRouteHookRunners<TRoutes>()
+  const { runBeforeRouteHooks, runAfterRouteHooks } = createRouteHookRunners()
   const {
     hooks,
     onBeforeRouteEnter,
@@ -99,73 +98,24 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
 
     const beforeResponse = await runBeforeRouteHooks({ to, from, hooks })
 
-    switch (beforeResponse.status) {
-      // On abort do nothing
-      case 'ABORT':
-        return
+    handleCallbackContextResponse(beforeResponse)
 
-      // On push update the history, and push new route, and return
-      case 'PUSH':
-        history.update(url, options)
-        await push(...beforeResponse.to)
-        return
-
-      // On reject update the history, the route, and set the rejection type
-      case 'REJECT':
-        history.update(url, options)
-        setRejection(beforeResponse.type)
-        break
-
-      // On success update history, set the route, and clear the rejection
-      case 'SUCCESS':
-        history.update(url, options)
-        setRejection(null)
-        break
-
-      default:
-        throw new Error(`Switch is not exhaustive for before hook response status: ${JSON.stringify(beforeResponse satisfies never)}`)
+    // If the before hook aborted or pushed then we don't need to continue
+    if (beforeResponse.status === 'ABORT' || beforeResponse.status === 'PUSH') {
+      return
     }
 
     // not awaiting this so that we can start mounting components before all of the props are set
     // but that means there's possibly a race condition where a second navigation already happened but a context error happens after
     propStore.setProps(to).then(response => {
-      switch (response.status) {
-        case 'PUSH':
-          push(...response.to)
-          break
-
-        case 'REJECT':
-          setRejection(response.type)
-          break
-
-        case 'SUCCESS':
-          break
-
-        default:
-          throw new Error(`Switch is not exhaustive for prop store response status: ${JSON.stringify(response satisfies never)}`)
-      }
+      handleCallbackContextResponse(response)
     })
 
     updateRoute(to)
 
     const afterResponse = await runAfterRouteHooks({ to, from, hooks })
 
-    switch (afterResponse.status) {
-      case 'PUSH':
-        await push(...afterResponse.to)
-        break
-
-      case 'REJECT':
-        setRejection(afterResponse.type)
-        break
-
-      case 'SUCCESS':
-        break
-
-      default:
-        const exhaustive: never = afterResponse
-        throw new Error(`Switch is not exhaustive for after hook response status: ${JSON.stringify(exhaustive)}`)
-    }
+    handleCallbackContextResponse(afterResponse)
 
     history.startListening()
   }
@@ -239,6 +189,25 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
 
   function getRoute(name: string): Route | undefined {
     return routes.find(route => route.name === name)
+  }
+
+  function handleCallbackContextResponse(response: CallbackContextResponse): void {
+    switch (response.status) {
+      case 'ABORT':
+      case 'SUCCESS':
+        break
+
+      case 'PUSH':
+        push(...response.to)
+        break
+
+      case 'REJECT':
+        setRejection(response.type)
+        break
+
+      default:
+        throw new Error(`Switch is not exhaustive for callback context response status: ${JSON.stringify(response satisfies never)}`)
+    }
   }
 
   function install(app: App): void {
