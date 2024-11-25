@@ -1,10 +1,10 @@
 import { InjectionKey, reactive } from 'vue'
-import { CallbackContext, createCallbackContext } from '@/services/createCallbackContext'
+import { CallbackContext, CallbackContextPushResponse, CallbackContextRejectResponse, CallbackContextSuccessResponse, createCallbackContext } from '@/services/createCallbackContext'
 import { isWithComponent, isWithComponents } from '@/types/createRouteOptions'
 import { ResolvedRoute } from '@/types/resolved'
 import { Route} from '@/types/route'
 import { MaybePromise } from '@/types/utilities'
-import { RegisteredRejectionType, RegisteredRouterPush } from '@/types/register'
+import { RegisteredRouterPush } from '@/types/register'
 import { RouterPushError } from '@/errors/routerPushError'
 import { RouterRejectionError } from '@/errors/routerRejectionError'
 
@@ -12,31 +12,7 @@ export const propStoreKey: InjectionKey<PropStore> = Symbol()
 
 type ComponentProps = { id: string, name: string, props?: (params: Record<string, unknown>, context: CallbackContext) => unknown }
 
-/**
- * Defines the structure of a successful route hook response.
- */
-type RoutePropsSuccessResponse = {
-  status: 'SUCCESS',
-}
-
-/**
- * Defines the structure of a route hook response that results in a push to a new route.
- * @template T - The type of the routes configuration.
- */
-type RoutePropsPushResponse = {
-  status: 'PUSH',
-  to: Parameters<RegisteredRouterPush>,
-}
-
-/**
- * Defines the structure of a route hook response that results in the rejection of a route transition.
- */
-type RoutePropsRejectResponse = {
-  status: 'REJECT',
-  type: RegisteredRejectionType,
-}
-
-type RoutePropsResponse = RoutePropsSuccessResponse | RoutePropsPushResponse | RoutePropsRejectResponse
+type RoutePropsResponse = CallbackContextSuccessResponse | CallbackContextPushResponse | CallbackContextRejectResponse
 
 export type PropStore = {
   setProps: (route: ResolvedRoute) => Promise<RoutePropsResponse>,

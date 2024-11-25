@@ -1,8 +1,45 @@
 import { RouterPushError } from '@/errors/routerPushError'
 import { RouterRejectionError } from '@/errors/routerRejectionError'
-import { RegisteredRouterPush, RegisteredRouterReject, RegisteredRouterReplace } from '@/types/register'
+import { RegisteredRejectionType, RegisteredRouterPush, RegisteredRouterReject, RegisteredRouterReplace } from '@/types/register'
 import { RouterPushOptions } from '@/types/routerPush'
 import { isUrl } from '@/types/url'
+
+
+/**
+ * Defines the structure of a successful callback context response.
+ */
+export type CallbackContextSuccessResponse = {
+  status: 'SUCCESS',
+}
+
+/**
+ * Defines the structure of an aborted callback context response.
+ */
+export type CallbackContextAbortResponse = {
+  status: 'ABORT',
+}
+
+/**
+ * Defines the structure of a callback context response that results in a push to a new route.
+ * @template T - The type of the routes configuration.
+ */
+export type CallbackContextPushResponse = {
+  status: 'PUSH',
+  to: Parameters<RegisteredRouterPush>,
+}
+
+/**
+ * Defines the structure of a callback context response that results in the rejection of a route transition.
+ */
+export type CallbackContextRejectResponse = {
+  status: 'REJECT',
+  type: RegisteredRejectionType,
+}
+
+/**
+ * Union type for all possible callback context responses.
+ */
+export type CallbackContextResponse = CallbackContextSuccessResponse | CallbackContextAbortResponse | CallbackContextPushResponse | CallbackContextRejectResponse
 
 export type CallbackContext = {
   reject: RegisteredRouterReject,

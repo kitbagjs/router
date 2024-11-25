@@ -1,8 +1,6 @@
-import { CallbackContext } from '@/services/createCallbackContext'
-import { RegisteredRejectionType } from '@/types/register'
+import { CallbackContext, CallbackContextAbortResponse, CallbackContextPushResponse, CallbackContextRejectResponse, CallbackContextSuccessResponse } from '@/services/createCallbackContext'
+import { RegisteredRejectionType, RegisteredRouterPush } from '@/types/register'
 import { ResolvedRoute } from '@/types/resolved'
-import { Routes } from '@/types/route'
-import { RouterPush } from '@/types/routerPush'
 import { MaybePromise } from '@/types/utilities'
 
 /**
@@ -85,51 +83,21 @@ export type AfterRouteHookLifecycle = 'onAfterRouteEnter' | 'onAfterRouteUpdate'
  */
 export type RouteHookLifecycle = BeforeRouteHookLifecycle | AfterRouteHookLifecycle
 
-/**
- * Defines the structure of a successful route hook response.
- */
-type RouteHookSuccessResponse = {
-  status: 'SUCCESS',
-}
-
-/**
- * Defines the structure of an aborted route hook response.
- */
-type RouteHookAbortResponse = {
-  status: 'ABORT',
-}
-
-/**
- * Defines the structure of a route hook response that results in a push to a new route.
- * @template T - The type of the routes configuration.
- */
-type RouteHookPushResponse<T extends Routes> = {
-  status: 'PUSH',
-  to: Parameters<RouterPush<T>>,
-}
-
-/**
- * Defines the structure of a route hook response that results in the rejection of a route transition.
- */
-type RouteHookRejectResponse = {
-  status: 'REJECT',
-  type: RegisteredRejectionType,
-}
 
 /**
  * Type for responses from a before route hook, which may indicate different outcomes such as success, push, reject, or abort.
  * @template TRoutes - The type of the routes configuration.
  */
-export type BeforeRouteHookResponse<TRoutes extends Routes> = RouteHookSuccessResponse | RouteHookPushResponse<TRoutes> | RouteHookRejectResponse | RouteHookAbortResponse
+export type BeforeRouteHookResponse = CallbackContextSuccessResponse | CallbackContextPushResponse | CallbackContextRejectResponse | CallbackContextAbortResponse
 
 /**
  * Type for responses from an after route hook, which may indicate different outcomes such as success, push, or reject.
  * @template TRoutes - The type of the routes configuration.
  */
-export type AfterRouteHookResponse<TRoutes extends Routes> = RouteHookSuccessResponse | RouteHookPushResponse<TRoutes> | RouteHookRejectResponse
+export type AfterRouteHookResponse = CallbackContextSuccessResponse | CallbackContextPushResponse | CallbackContextRejectResponse
 
 /**
  * Union type for all possible route hook responses, covering both before and after scenarios.
  * @template TRoutes - The type of the routes configuration.
  */
-export type RouteHookResponse<TRoutes extends Routes> = BeforeRouteHookResponse<TRoutes> | AfterRouteHookResponse<TRoutes>
+export type RouteHookResponse = BeforeRouteHookResponse | AfterRouteHookResponse

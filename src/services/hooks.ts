@@ -7,12 +7,10 @@ import { getAfterRouteHooksFromRoutes, getBeforeRouteHooksFromRoutes } from '@/s
 import { AfterRouteHook, AfterRouteHookResponse, BeforeRouteHook, BeforeRouteHookResponse, RouteHookAbort, RouteHookLifecycle } from '@/types/hooks'
 import { RegisteredRouterPush, RegisteredRouterReplace } from '@/types/register'
 import { ResolvedRoute } from '@/types/resolved'
-import { Routes } from '@/types/route'
-import { RouterPush } from '@/types/routerPush'
 
-type RouteHookRunners<T extends Routes> = {
-  runBeforeRouteHooks: RouteHookBeforeRunner<T>,
-  runAfterRouteHooks: RouteHookAfterRunner<T>,
+type RouteHookRunners = {
+  runBeforeRouteHooks: RouteHookBeforeRunner,
+  runAfterRouteHooks: RouteHookAfterRunner,
 }
 
 type BeforeContext = {
@@ -21,7 +19,7 @@ type BeforeContext = {
   hooks: RouteHookStore,
 }
 
-type RouteHookBeforeRunner<T extends Routes> = (context: BeforeContext) => Promise<BeforeRouteHookResponse<T>>
+type RouteHookBeforeRunner = (context: BeforeContext) => Promise<BeforeRouteHookResponse>
 
 type AfterContext = {
   to: ResolvedRoute,
@@ -29,16 +27,16 @@ type AfterContext = {
   hooks: RouteHookStore,
 }
 
-type RouteHookAfterRunner<T extends Routes> = (context: AfterContext) => Promise<AfterRouteHookResponse<T>>
+type RouteHookAfterRunner = (context: AfterContext) => Promise<AfterRouteHookResponse>
 
-export function createRouteHookRunners<const T extends Routes>(): RouteHookRunners<T> {
+export function createRouteHookRunners(): RouteHookRunners {
   const { reject, push, replace } = createCallbackContext()
 
   const abort: RouteHookAbort = () => {
     throw new NavigationAbortError()
   }
 
-  async function runBeforeRouteHooks({ to, from, hooks }: BeforeContext): Promise<BeforeRouteHookResponse<T>> {
+  async function runBeforeRouteHooks({ to, from, hooks }: BeforeContext): Promise<BeforeRouteHookResponse> {
     const { global, component } = hooks
     const route = getBeforeRouteHooksFromRoutes(to, from)
 
@@ -68,7 +66,7 @@ export function createRouteHookRunners<const T extends Routes>(): RouteHookRunne
       if (error instanceof RouterPushError) {
         return {
           status: 'PUSH',
-          to: error.to as Parameters<RouterPush<T>>,
+          to: error.to as Parameters<RegisteredRouterPush>,
         }
       }
 
@@ -93,7 +91,7 @@ export function createRouteHookRunners<const T extends Routes>(): RouteHookRunne
     }
   }
 
-  async function runAfterRouteHooks({ to, from, hooks }: AfterContext): Promise<AfterRouteHookResponse<T>> {
+  async function runAfterRouteHooks({ to, from, hooks }: AfterContext): Promise<AfterRouteHookResponse> {
     const { global, component } = hooks
     const route = getAfterRouteHooksFromRoutes(to, from)
 
@@ -123,7 +121,7 @@ export function createRouteHookRunners<const T extends Routes>(): RouteHookRunne
       if (error instanceof RouterPushError) {
         return {
           status: 'PUSH',
-          to: error.to as Parameters<RouterPush<T>>,
+          to: error.to as Parameters<RegisteredRouterPush>,
         }
       }
 
