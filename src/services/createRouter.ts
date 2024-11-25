@@ -126,18 +126,25 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
         throw new Error(`Switch is not exhaustive for before hook response status: ${JSON.stringify(beforeResponse satisfies never)}`)
     }
 
-    try {
-      propStore.setProps(to)
-    } catch (error) {
-      if (error instanceof RouterPushError) {
-        await push(...error.to as Parameters<RouterPush>)
-        return
-      }
+    // not awaiting this so that we can start mounting components before all of the props are set
+    // but that means there's possibly a race condition where a second navigation already happened but a context error happens after
+    propStore.setProps(to).then(response => {
+      switch (response.status) {
+        case 'PUSH':
+          push(...response.to)
+          break
 
-      if (error instanceof RouterRejectionError) {
-        setRejection(error.type)
+        case 'REJECT':
+          setRejection(response.type)
+          break
+
+        case 'SUCCESS':
+          break
+
+        default:
+          throw new Error(`Switch is not exhaustive for prop store response status: ${JSON.stringify(response satisfies never)}`)
       }
-    }
+    })
 
     updateRoute(to)
 
