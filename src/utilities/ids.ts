@@ -1,0 +1,5 @@
+export function uniqueIdSequence(): () => string {
+    let currentId = 0
+  
+    return () => (++currentId).toString()
+  }

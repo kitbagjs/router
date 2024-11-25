@@ -27,6 +27,7 @@ import { Url, isUrl } from '@/types/url'
 import { checkDuplicateNames } from '@/utilities/checkDuplicateNames'
 import { isNestedArray } from '@/utilities/guards'
 import { CallbackContextResponse } from './createCallbackContext'
+import { uniqueIdSequence } from '@/utilities/ids'
 
 type RouterUpdateOptions = {
   replace?: boolean,
@@ -59,6 +60,9 @@ type RouterUpdateOptions = {
 export function createRouter<const TRoutes extends Routes, const TOptions extends RouterOptions>(routes: TRoutes, options?: TOptions): Router<TRoutes, TOptions>
 export function createRouter<const TRoutes extends Routes, const TOptions extends RouterOptions>(arrayOfRoutes: TRoutes[], options?: TOptions): Router<TRoutes, TOptions>
 export function createRouter<const TRoutes extends Routes, const TOptions extends RouterOptions>(routesOrArrayOfRoutes: TRoutes | TRoutes[], options?: TOptions): Router<TRoutes, TOptions> {
+  const getNavigationId = uniqueIdSequence()
+  let navigationId = getNavigationId()
+
   const flattenedRoutes = isNestedArray(routesOrArrayOfRoutes) ? routesOrArrayOfRoutes.flat() : routesOrArrayOfRoutes
   const routes = insertBaseRoute(flattenedRoutes, options?.base)
 
@@ -87,6 +91,8 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
   } = createRouterHooks()
 
   async function set(url: string, options: RouterUpdateOptions = {}): Promise<void> {
+    navigationId = getNavigationId()
+
     history.stopListening()
 
     if (isExternal(url)) {
@@ -105,9 +111,13 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
       return
     }
 
-    // not awaiting this so that we can start mounting components before all of the props are set
-    // but that means there's possibly a race condition where a second navigation already happened but a context error happens after
+    const currentNavigationId = navigationId
+
     propStore.setProps(to).then(response => {
+      if (currentNavigationId !== navigationId) {
+        return
+      }
+
       handleCallbackContextResponse(response)
     })
 

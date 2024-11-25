@@ -1,7 +1,3 @@
-function uniqueIdSequence(): () => string {
-  let currentId = 0
-
-  return () => (++currentId).toString()
-}
+import { uniqueIdSequence } from "@/utilities/ids";
 
 export const createRouteId = uniqueIdSequence()
