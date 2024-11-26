@@ -409,7 +409,7 @@ test('Props from route can trigger push', async () => {
   await router.start()
 
   const root = {
-    template: '<Suspense><RouterView/></Suspense>',
+    template: '<RouterView/>',
   }
 
   const app = mount(root, {
@@ -420,7 +420,6 @@ test('Props from route can trigger push', async () => {
 
   await router.push('/routeA')
 
-  // needed because of suspense
   await flushPromises()
 
   expect(app.html()).toBe('routeB')
@@ -453,7 +452,7 @@ test('Props from route can trigger reject', async () => {
   await router.start()
 
   const root = {
-    template: '<Suspense><RouterView/></Suspense>',
+    template: '<RouterView/>',
   }
 
   const app = mount(root, {
@@ -464,7 +463,6 @@ test('Props from route can trigger reject', async () => {
 
   await router.push('/routeA')
 
-  // needed because of suspense
   await flushPromises()
 
   expect(app.html()).toBe('<h1>NotFound</h1>')
