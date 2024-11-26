@@ -1,5 +1,5 @@
 import { CallbackAbortResponse, CallbackPushResponse, CallbackRejectResponse, CallbackSuccessResponse } from '@/services/createCallbackContext'
-import { RegisteredRejectionType, RegisteredRouterPush, RegisteredRouterReplace } from '@/types/register'
+import { RegisteredRouterPush, RegisteredRouterReplace } from '@/types/register'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouterReject } from '@/types/router'
 import { MaybePromise } from '@/types/utilities'
