@@ -210,7 +210,7 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
   function handleCallbackResponse(response: CallbackResponse): void {
     switch (response.status) {
       case 'ABORT':
-        case 'SUCCESS':
+      case 'SUCCESS':
         return
 
       case 'PUSH':
