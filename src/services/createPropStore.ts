@@ -1,22 +1,30 @@
 import { InjectionKey, reactive } from 'vue'
 import { isWithComponent, isWithComponents } from '@/types/createRouteOptions'
 import { getPrefetchOption, PrefetchConfigs } from '@/types/prefetch'
-import { ResolvedRoute } from '@/types/resolved'
+import { ResolvedRoute } from '@/types/resolved'  
 import { Route } from '@/types/route'
+import { getResponseAndError } from '@/utilities/errors'
+import { CallbackContext, CallbackPushResponse, CallbackRejectResponse, CallbackSuccessResponse, createCallbackContext } from './createCallbackContext'
+import { RouterPushError } from '@/errors/routerPushError'
+import { RegisteredRouterPush } from '@/types/register'
+import { RouterRejectionError } from '@/errors/routerRejectionError'
 
 export const propStoreKey: InjectionKey<PropStore> = Symbol()
 
-type ComponentProps = { id: string, name: string, props?: (params: Record<string, unknown>) => unknown }
+type ComponentProps = { id: string, name: string, props?: (params: Record<string, unknown>, context: CallbackContext) => unknown }
+
+type SetPropsResponse = CallbackSuccessResponse | CallbackPushResponse | CallbackRejectResponse
 
 export type PropStore = {
   getPrefetchProps: (route: ResolvedRoute, prefetch: PrefetchConfigs) => Record<string, unknown>,
   setPrefetchProps: (props: Record<string, unknown>) => void,
-  setProps: (route: ResolvedRoute) => void,
+  setProps: (route: ResolvedRoute) => Promise<SetPropsResponse>,
   getProps: (id: string, name: string, route: ResolvedRoute) => unknown,
 }
 
 export function createPropStore(): PropStore {
   const store: Map<string, unknown> = reactive(new Map())
+  const context = createCallbackContext()
 
   const getPrefetchProps: PropStore['getPrefetchProps'] = (route, prefetch) => {
     return route.matches
@@ -24,8 +32,10 @@ export function createPropStore(): PropStore {
       .flatMap((match) => getComponentProps(match))
       .reduce<Record<string, unknown>>((response, { id, name, props }) => {
         const key = getPropKey(id, name, route)
+        
+        const [value, error] = getResponseAndError(() => props?.(route.params, context))
 
-        response[key] = props?.(route.params)
+        response[key] = value ?? error
 
         return response
       }, {})
@@ -37,24 +47,53 @@ export function createPropStore(): PropStore {
     })
   }
 
-  const setProps: PropStore['setProps'] = (route) => {
+  const setProps: PropStore['setProps'] = async (route) => {
     const componentProps = route.matches.flatMap(getComponentProps)
-    const routeKeys = componentProps.reduce<string[]>((routeKeys, { id, name, props }) => {
-      const key = getPropKey(id, name, route)
+    const keys: string[] = []
+    const promises: Promise<unknown>[] = []
 
-      if (!props || store.has(key)) {
-        return routeKeys
+    for (const { id, name, props } of componentProps) {
+      if (!props) {
+        continue
       }
 
-      const value = props(route.params)
+      const key = getPropKey(id, name, route)
 
-      store.set(key, value)
-      routeKeys.push(key)
+      keys.push(key)
 
-      return routeKeys
-    }, [])
+      promises.push((async () => {
+        const value = store.get(key) ?? props(route.params, context)
 
-    clearUnusedStoreEntries(routeKeys)
+        if (value instanceof Error) {
+          throw value
+        }
+
+        await value
+
+        store.set(key, value)
+      })())
+    }
+
+    clearUnusedStoreEntries(keys)
+
+    try {
+      await Promise.all(promises)
+
+      return { status: 'SUCCESS' }
+    } catch (error) {
+      if (error instanceof RouterPushError) {
+        return {
+          status: 'PUSH',
+          to: error.to as Parameters<RegisteredRouterPush>,
+        }
+      }
+
+      if (error instanceof RouterRejectionError) {
+        return { status: 'REJECT', type: error.type }
+      }
+
+      throw error
+    }
   }
 
   const getProps: PropStore['getProps'] = (id, name, route) => {

@@ -15,6 +15,7 @@ import { Query } from '@/types/query'
 import { RouteMeta } from '@/types/register'
 import { Route } from '@/types/route'
 import { MaybeArray, MaybePromise } from '@/types/utilities'
+import { CallbackContext } from '@/services/createCallbackContext'
 
 /**
  * Defines route hooks that can be applied before entering, updating, or leaving a route, as well as after these events.
@@ -63,7 +64,7 @@ export type WithComponent<
    * A Vue component, which can be either synchronous or asynchronous components.
    */
   component: TComponent,
-  props?: (params: TParams) => TComponent extends Component ? MaybePromise<ComponentProps<TComponent>> : {},
+  props?: (params: TParams, context: CallbackContext) => TComponent extends Component ? MaybePromise<ComponentProps<TComponent>> : {},
 }
 
 export function isWithComponent(options: CreateRouteOptions): options is CreateRouteOptions & WithComponent {
@@ -79,7 +80,7 @@ export type WithComponents<
    */
   components: TComponents,
   props?: {
-    [TKey in keyof TComponents]?: (params: TParams) => TComponents[TKey] extends Component ? MaybePromise<ComponentProps<TComponents[TKey]>> : {}
+    [TKey in keyof TComponents]?: (params: TParams, context: CallbackContext) => TComponents[TKey] extends Component ? MaybePromise<ComponentProps<TComponents[TKey]>> : {}
   },
 }
 
