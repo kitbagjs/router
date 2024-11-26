@@ -1,7 +1,3 @@
-function uniqueIdSequence(): () => string {
-  let currentId = 0
+import { createUniqueIdSequence } from './createUniqueIdSequence'
 
-  return () => (++currentId).toString()
-}
-
-export const createRouteId = uniqueIdSequence()
+export const createRouteId = createUniqueIdSequence()
