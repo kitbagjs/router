@@ -1,12 +1,13 @@
 import { mount, flushPromises } from '@vue/test-utils'
-import { expect, test } from 'vitest'
-import { defineAsyncComponent } from 'vue'
+import { expect, test, vi } from 'vitest'
+import { defineAsyncComponent, h } from 'vue'
 import echo from '@/components/echo'
 import helloWorld from '@/components/helloWorld'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
 import { isWithComponent } from '@/types/createRouteOptions'
 import { routes } from '@/utilities/testHelpers'
+import routerLink from '@/components/routerLink.vue'
 
 test('renders component for initial route', async () => {
   const route = createRoute({
@@ -426,7 +427,6 @@ test('Props from route can trigger push', async () => {
 })
 
 test('Props from route can trigger reject', async () => {
-
   const routeA = createRoute({
     name: 'routeA',
     path: '/routeA',
@@ -436,16 +436,7 @@ test('Props from route can trigger reject', async () => {
     },
   })
 
-  const routeB = createRoute({
-    name: 'routeB',
-    path: '/routeB',
-    component: echo,
-    props: () => ({
-      value: 'routeB',
-    }),
-  })
-
-  const router = createRouter([routeA, routeB], {
+  const router = createRouter([routeA], {
     initialUrl: '/',
   })
 
@@ -466,4 +457,106 @@ test('Props from route can trigger reject', async () => {
   await flushPromises()
 
   expect(app.html()).toBe('<h1>NotFound</h1>')
+})
+
+test('prefetched props trigger push when navigation is initiated', async () => {
+  const routeA = createRoute({
+    name: 'routeA',
+    path: '/routeA',
+    component: { render: () => h(routerLink, { to: (resolve) => resolve('routeB') }, 'routeB') },
+  })
+
+  const routeB = createRoute({
+    name: 'routeB',
+    path: '/routeB',
+    component: echo,
+    prefetch: { props: true },
+    props: (__, { push }) => {
+      throw push('routeC')
+    },
+  })
+
+  const routeC = createRoute({
+    name: 'routeC',
+    path: '/routeC',
+    component: echo,
+    props: () => ({
+      value: 'routeC',
+    }),
+  })
+
+  const router = createRouter([routeA, routeB, routeC], {
+    initialUrl: '/routeA',
+  })
+
+  await router.start()
+
+  const root = {
+    template: '<RouterView/>',
+  }
+
+  const app = mount(root, {
+    global: {
+      plugins: [router],
+    },
+  })
+
+  expect(app.text()).toBe('routeB')
+  
+  app.find('a').trigger('click')
+
+  await flushPromises()
+  
+  expect(app.text()).toBe('routeC')
+})
+
+test('prefetched async props trigger push when navigation is initiated', async () => {
+  const routeA = createRoute({
+    name: 'routeA',
+    path: '/routeA',
+    component: { render: () => h(routerLink, { to: (resolve) => resolve('routeB') }, 'routeB') },
+  })
+
+  const routeB = createRoute({
+    name: 'routeB',
+    path: '/routeB',
+    component: echo,
+    prefetch: { props: true },
+    props: async (__, { push }) => {
+      throw push('routeC')
+    },
+  })
+
+  const routeC = createRoute({
+    name: 'routeC',
+    path: '/routeC',
+    component: echo,
+    props: () => ({
+      value: 'routeC',
+    }),
+  })
+
+  const router = createRouter([routeA, routeB, routeC], {
+    initialUrl: '/routeA',
+  })
+
+  await router.start()
+
+  const root = {
+    template: '<RouterView/>',
+  }
+
+  const app = mount(root, {
+    global: {
+      plugins: [router],
+    },
+  })
+
+  expect(app.text()).toBe('routeB')
+  
+  // app.find('a').trigger('click')
+
+  await flushPromises()
+  
+  expect(app.text()).toBe('routeC')
 })
