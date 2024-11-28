@@ -5,9 +5,8 @@ import { ResolvedRoute } from '@/types/resolved'
 import { Route } from '@/types/route'
 import { getResponseAndError } from '@/utilities/errors'
 import { CallbackContext, CallbackPushResponse, CallbackRejectResponse, CallbackSuccessResponse, createCallbackContext } from './createCallbackContext'
-import { RouterPushError } from '@/errors/routerPushError'
-import { RegisteredRouterPush } from '@/types/register'
-import { RouterRejectionError } from '@/errors/routerRejectionError'
+import { CallbackContextPushError } from '@/errors/callbackContextPushError'
+import { CallbackContextRejectionError } from '@/errors/callbackContextRejectionError'
 
 export const propStoreKey: InjectionKey<PropStore> = Symbol()
 
@@ -81,15 +80,12 @@ export function createPropStore(): PropStore {
 
       return { status: 'SUCCESS' }
     } catch (error) {
-      if (error instanceof RouterPushError) {
-        return {
-          status: 'PUSH',
-          to: error.to as Parameters<RegisteredRouterPush>,
-        }
+      if (error instanceof CallbackContextPushError) {
+        return error.response
       }
 
-      if (error instanceof RouterRejectionError) {
-        return { status: 'REJECT', type: error.type }
+      if (error instanceof CallbackContextRejectionError) {
+        return error.response
       }
 
       throw error

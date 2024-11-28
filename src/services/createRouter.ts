@@ -135,7 +135,22 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
         return
       }
 
-      handleCallbackResponse(response)
+      switch (response.status) {
+        case 'SUCCESS':
+          break
+
+        case 'PUSH':
+          push(...response.to)
+          break
+
+        case 'REJECT':
+          setRejection(response.type)
+          break
+
+        default:
+          const exhaustive: never = response
+          throw new Error(`Switch is not exhaustive for prop store response status: ${JSON.stringify(exhaustive)}`)
+      }
     })
 
     updateRoute(to)
