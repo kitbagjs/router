@@ -1,8 +1,7 @@
 import { RegisteredRejectionType } from '@/types/register'
-import { CallbackContextError } from './callbackContextError'
 import { CallbackRejectResponse } from '@/services/createCallbackContext'
 
-export class CallbackContextRejectionError extends CallbackContextError {
+export class CallbackContextRejectionError extends Error {
   public response: CallbackRejectResponse
 
   public constructor(type: RegisteredRejectionType) {

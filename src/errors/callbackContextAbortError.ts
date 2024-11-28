@@ -1,7 +1,6 @@
 import { CallbackAbortResponse } from "@/services/createCallbackContext";
-import { CallbackContextError } from "./callbackContextError";
 
-export class CallbackContextAbortError extends CallbackContextError {
+export class CallbackContextAbortError extends Error {
   public response: CallbackAbortResponse
 
   public constructor() {
