@@ -1,11 +1,11 @@
 import { CallbackAbortResponse } from "@/services/createCallbackContext";
 import { CallbackContextError } from "./callbackContextError";
 
-export class NavigationAbortError extends CallbackContextError {
+export class CallbackContextAbortError extends CallbackContextError {
   public response: CallbackAbortResponse
 
   public constructor() {
-    super('Error occurred during a navigation abort operation.')
+    super('Uncaught CallbackContextAbortError')
 
     this.response = { status: 'ABORT' }
   }
