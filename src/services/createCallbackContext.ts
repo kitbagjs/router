@@ -36,11 +36,6 @@ export type CallbackRejectResponse = {
 }
 
 /**
- * Defines the structure of a callback response.
- */
-export type CallbackResponse = CallbackSuccessResponse | CallbackPushResponse | CallbackRejectResponse | CallbackAbortResponse
-
-/**
  * A function that can be called to abort a routing operation.
  */
 export type CallbackContextAbort = () => void
