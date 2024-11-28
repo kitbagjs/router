@@ -25,7 +25,6 @@ import { RoutesName } from '@/types/routesMap'
 import { Url, isUrl } from '@/types/url'
 import { checkDuplicateNames } from '@/utilities/checkDuplicateNames'
 import { isNestedArray } from '@/utilities/guards'
-import { CallbackResponse } from './createCallbackContext'
 
 type RouterUpdateOptions = {
   replace?: boolean,
@@ -124,7 +123,7 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
       default:
         throw new Error(`Switch is not exhaustive for before hook response status: ${JSON.stringify(beforeResponse satisfies never)}`)
     }
-    
+
     propStore.setProps(to)
 
     updateRoute(to)

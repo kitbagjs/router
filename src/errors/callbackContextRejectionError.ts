@@ -9,5 +9,4 @@ export class CallbackContextRejectionError extends Error {
 
     this.response = { status: 'REJECT', type }
   }
-  
 }

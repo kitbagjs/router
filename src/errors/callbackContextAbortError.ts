@@ -1,4 +1,4 @@
-import { CallbackAbortResponse } from "@/services/createCallbackContext";
+import { CallbackAbortResponse } from '@/services/createCallbackContext'
 
 export class CallbackContextAbortError extends Error {
   public response: CallbackAbortResponse
@@ -8,5 +8,4 @@ export class CallbackContextAbortError extends Error {
 
     this.response = { status: 'ABORT' }
   }
-  
 }
