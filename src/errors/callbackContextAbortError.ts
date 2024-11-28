@@ -1,11 +1,10 @@
 import { CallbackAbortResponse } from '@/services/createCallbackContext'
+import { BeforeCallbackContextError } from '@/errors/beforeCallbackContextError'
 
-export class CallbackContextAbortError extends Error {
-  public response: CallbackAbortResponse
-
+export class CallbackContextAbortError extends BeforeCallbackContextError {
   public constructor() {
-    super('Uncaught CallbackContextAbortError')
+    const response: CallbackAbortResponse = { status: 'ABORT' }
 
-    this.response = { status: 'ABORT' }
+    super('Uncaught CallbackContextAbortError', response)
   }
 }
