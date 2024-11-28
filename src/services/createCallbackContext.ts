@@ -1,3 +1,4 @@
+import { NavigationAbortError } from '@/errors/navigationAbortError'
 import { RouterPushError } from '@/errors/routerPushError'
 import { RouterRejectionError } from '@/errors/routerRejectionError'
 import { RegisteredRejectionType, RegisteredRouterPush, RegisteredRouterReject, RegisteredRouterReplace } from '@/types/register'
@@ -34,12 +35,21 @@ export type CallbackRejectResponse = {
   type: RegisteredRejectionType,
 }
 
+/**
+ * Defines the structure of a callback response.
+ */
 export type CallbackResponse = CallbackSuccessResponse | CallbackPushResponse | CallbackRejectResponse | CallbackAbortResponse
+
+/**
+ * A function that can be called to abort a routing operation.
+ */
+export type CallbackContextAbort = () => void
 
 export type CallbackContext = {
   reject: RegisteredRouterReject,
   push: RegisteredRouterPush,
   replace: RegisteredRouterReplace,
+  abort: CallbackContextAbort,
 }
 
 export function createCallbackContext(): CallbackContext {
@@ -62,5 +72,9 @@ export function createCallbackContext(): CallbackContext {
     throw new RouterPushError([source, params, { ...options, replace: true }])
   }
 
-  return { reject, push, replace }
+  const abort: CallbackContextAbort = () => {
+    throw new NavigationAbortError()
+  }
+
+  return { reject, push, replace, abort }
 }

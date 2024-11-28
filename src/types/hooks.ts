@@ -1,4 +1,4 @@
-import { CallbackAbortResponse, CallbackPushResponse, CallbackRejectResponse, CallbackSuccessResponse } from '@/services/createCallbackContext'
+import { CallbackAbortResponse, CallbackContextAbort, CallbackPushResponse, CallbackRejectResponse, CallbackSuccessResponse } from '@/services/createCallbackContext'
 import { RegisteredRouterPush, RegisteredRouterReplace } from '@/types/register'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouterReject } from '@/types/router'
@@ -19,11 +19,6 @@ export type AddBeforeRouteHook = (hook: BeforeRouteHook) => RouteHookRemove
 export type AddAfterRouteHook = (hook: AfterRouteHook) => RouteHookRemove
 
 /**
- * A function that can be called to abort a routing operation.
- */
-export type RouteHookAbort = () => void
-
-/**
  * Context provided to route hooks, containing context of previous route and functions for triggering rejections and push/replace to another route.
  */
 type RouteHookContext = {
@@ -38,7 +33,7 @@ type RouteHookContext = {
  * as well as aborting current route change.
  */
 type BeforeRouteHookContext = RouteHookContext & {
-  abort: RouteHookAbort,
+  abort: CallbackContextAbort,
 }
 
 /**

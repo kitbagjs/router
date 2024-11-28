@@ -3,7 +3,7 @@ import { RouterPushError } from '@/errors/routerPushError'
 import { RouterRejectionError } from '@/errors/routerRejectionError'
 import { RouteHookStore } from '@/services/createRouteHookStore'
 import { getAfterRouteHooksFromRoutes, getBeforeRouteHooksFromRoutes } from '@/services/getRouteHooks'
-import { AfterRouteHook, AfterRouteHookResponse, BeforeRouteHook, BeforeRouteHookResponse, RouteHookAbort, RouteHookLifecycle } from '@/types/hooks'
+import { AfterRouteHook, AfterRouteHookResponse, BeforeRouteHook, BeforeRouteHookResponse, RouteHookLifecycle } from '@/types/hooks'
 import { RegisteredRouterPush, RegisteredRouterReplace } from '@/types/register'
 import { ResolvedRoute } from '@/types/resolved'
 import { createCallbackContext } from './createCallbackContext'
@@ -30,11 +30,7 @@ type AfterContext = {
 type RouteHookAfterRunner = (context: AfterContext) => Promise<AfterRouteHookResponse>
 
 export function createRouteHookRunners(): RouteHookRunners {
-  const { reject, push, replace } = createCallbackContext()
-
-  const abort: RouteHookAbort = () => {
-    throw new NavigationAbortError()
-  }
+  const { reject, push, replace, abort } = createCallbackContext()
 
   async function runBeforeRouteHooks({ to, from, hooks }: BeforeContext): Promise<BeforeRouteHookResponse> {
     const { global, component } = hooks
@@ -63,23 +59,15 @@ export function createRouteHookRunners(): RouteHookRunners {
       await Promise.all(results)
     } catch (error) {
       if (error instanceof RouterPushError) {
-        return {
-          status: 'PUSH',
-          to: error.to as Parameters<RegisteredRouterPush>,
-        }
+        return error.response
       }
 
       if (error instanceof RouterRejectionError) {
-        return {
-          status: 'REJECT',
-          type: error.type,
-        }
+        return error.response
       }
 
       if (error instanceof NavigationAbortError) {
-        return {
-          status: 'ABORT',
-        }
+        return error.response
       }
 
       throw error
@@ -117,17 +105,11 @@ export function createRouteHookRunners(): RouteHookRunners {
       await Promise.all(results)
     } catch (error) {
       if (error instanceof RouterPushError) {
-        return {
-          status: 'PUSH',
-          to: error.to as Parameters<RegisteredRouterPush>,
-        }
+        return error.response
       }
 
       if (error instanceof RouterRejectionError) {
-        return {
-          status: 'REJECT',
-          type: error.type,
-        }
+        return error.response
       }
 
       throw error

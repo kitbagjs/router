@@ -1,11 +1,14 @@
 import { RegisteredRejectionType } from '@/types/register'
+import { CallbackContextError } from './callbackContextError'
+import { CallbackRejectResponse } from '@/services/createCallbackContext'
 
-export class RouterRejectionError extends Error {
-  public type: RegisteredRejectionType
+export class RouterRejectionError extends CallbackContextError {
+  public response: CallbackRejectResponse
 
   public constructor(type: RegisteredRejectionType) {
-    super(`Routing action rejected: ${type}`)
+    super('Error occurred during a router rejection operation.')
 
-    this.type = type
+    this.response = { status: 'REJECT', type }
   }
+  
 }

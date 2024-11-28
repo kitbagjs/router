@@ -99,28 +99,54 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
     const beforeResponse = await runBeforeRouteHooks({ to, from, hooks })
 
     switch (beforeResponse.status) {
+      // On abort do nothing
       case 'ABORT':
         return
 
+      // On push update the history, and push new route, and return
       case 'PUSH':
+        history.update(url, options)
+        await push(...beforeResponse.to)
+        return
+
+      // On reject update the history, the route, and set the rejection type
       case 'REJECT':
         history.update(url, options)
+        setRejection(beforeResponse.type)
         break
 
+      // On success update history, set the route, and clear the rejection
       case 'SUCCESS':
+        history.update(url, options)
         setRejection(null)
         break
+
+      default:
+        throw new Error(`Switch is not exhaustive for before hook response status: ${JSON.stringify(beforeResponse satisfies never)}`)
     }
     
-    handleCallbackResponse(beforeResponse)
-
     propStore.setProps(to)
 
     updateRoute(to)
 
     const afterResponse = await runAfterRouteHooks({ to, from, hooks })
 
-    handleCallbackResponse(afterResponse)
+    switch (afterResponse.status) {
+      case 'PUSH':
+        await push(...afterResponse.to)
+        break
+
+      case 'REJECT':
+        setRejection(afterResponse.type)
+        break
+
+      case 'SUCCESS':
+        break
+
+      default:
+        const exhaustive: never = afterResponse
+        throw new Error(`Switch is not exhaustive for after hook response status: ${JSON.stringify(exhaustive)}`)
+    }
 
     history.startListening()
   }
@@ -205,25 +231,6 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
 
   function getRoute(name: string): Route | undefined {
     return routes.find((route) => route.name === name)
-  }
-
-  function handleCallbackResponse(response: CallbackResponse): void {
-    switch (response.status) {
-      case 'ABORT':
-      case 'SUCCESS':
-        return
-
-      case 'PUSH':
-        push(...response.to)
-        return
-
-      case 'REJECT':
-        setRejection(response.type)
-        break
-
-      default:
-        throw new Error(`Switch is not exhaustive callback response status: ${JSON.stringify(response satisfies never)}`)
-    }
   }
 
   function install(app: App): void {
