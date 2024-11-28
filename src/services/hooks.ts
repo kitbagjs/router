@@ -1,11 +1,10 @@
-import { CallbackContextAbortError } from '@/errors/callbackContextAbortError'
-import { CallbackContextPushError } from '@/errors/callbackContextPushError'
-import { CallbackContextRejectionError } from '@/errors/callbackContextRejectionError'
 import { RouteHookStore } from '@/services/createRouteHookStore'
 import { getAfterRouteHooksFromRoutes, getBeforeRouteHooksFromRoutes } from '@/services/getRouteHooks'
 import { AfterRouteHook, AfterRouteHookResponse, BeforeRouteHook, BeforeRouteHookResponse, RouteHookLifecycle } from '@/types/hooks'
 import { ResolvedRoute } from '@/types/resolved'
 import { createCallbackContext } from './createCallbackContext'
+import { AfterCallbackContextError } from '@/errors/afterCallbackContextError'
+import { BeforeCallbackContextError } from '@/errors/beforeCallbackContextError'
 
 type RouteHookRunners = {
   runBeforeRouteHooks: RouteHookBeforeRunner,
@@ -57,15 +56,7 @@ export function createRouteHookRunners(): RouteHookRunners {
 
       await Promise.all(results)
     } catch (error) {
-      if (error instanceof CallbackContextPushError) {
-        return error.response
-      }
-
-      if (error instanceof CallbackContextRejectionError) {
-        return error.response
-      }
-
-      if (error instanceof CallbackContextAbortError) {
+      if (error instanceof BeforeCallbackContextError) {
         return error.response
       }
 
@@ -103,11 +94,7 @@ export function createRouteHookRunners(): RouteHookRunners {
 
       await Promise.all(results)
     } catch (error) {
-      if (error instanceof CallbackContextPushError) {
-        return error.response
-      }
-
-      if (error instanceof CallbackContextRejectionError) {
+      if (error instanceof AfterCallbackContextError) {
         return error.response
       }
 

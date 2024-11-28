@@ -36,9 +36,14 @@ export type CallbackRejectResponse = {
 }
 
 /**
- * Defines the structure of a callback response.
+ * Defines the structure of a callback response thrown before a route changes.
  */
-export type CallbackResponse = CallbackSuccessResponse | CallbackPushResponse | CallbackRejectResponse | CallbackAbortResponse
+export type BeforeCallbackResponse = CallbackSuccessResponse | CallbackPushResponse | CallbackRejectResponse | CallbackAbortResponse
+
+/**
+ * Defines the structure of a callback response thrown after a route changes.
+ */
+export type AfterCallbackResponse = CallbackSuccessResponse | CallbackPushResponse | CallbackRejectResponse
 
 /**
  * A function that can be called to abort a routing operation.
