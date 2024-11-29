@@ -1,5 +1,5 @@
 import { mount, flushPromises } from '@vue/test-utils'
-import { expect, test, vi } from 'vitest'
+import { expect, test } from 'vitest'
 import { defineAsyncComponent, h } from 'vue'
 import echo from '@/components/echo'
 import helloWorld from '@/components/helloWorld'
