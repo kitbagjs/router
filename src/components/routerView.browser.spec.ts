@@ -1,12 +1,12 @@
 import { mount, flushPromises } from '@vue/test-utils'
-import { expect, test } from 'vitest'
+import { expect, test, vi } from 'vitest'
 import { defineAsyncComponent, h } from 'vue'
 import echo from '@/components/echo'
 import helloWorld from '@/components/helloWorld'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
 import { isWithComponent } from '@/types/createRouteOptions'
-import { routes } from '@/utilities/testHelpers'
+import { component, routes } from '@/utilities/testHelpers'
 import routerLink from '@/components/routerLink.vue'
 
 test('renders component for initial route', async () => {
@@ -520,7 +520,7 @@ test('prefetched async props trigger push when navigation is initiated', async (
   const routeB = createRoute({
     name: 'routeB',
     path: '/routeB',
-    component: echo,
+    component,
     prefetch: { props: true },
     props: async (__, { push }) => {
       throw push('routeC')
@@ -554,9 +554,9 @@ test('prefetched async props trigger push when navigation is initiated', async (
 
   expect(app.text()).toBe('routeB')
   
-  // app.find('a').trigger('click')
+  app.find('a').trigger('click')
 
-  // await flushPromises()
+  await flushPromises()
   
-  // expect(app.text()).toBe('routeC')
+  expect(app.text()).toBe('routeC')
 })

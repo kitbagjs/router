@@ -3,10 +3,10 @@ import { isWithComponent, isWithComponents } from '@/types/createRouteOptions'
 import { getPrefetchOption, PrefetchConfigs } from '@/types/prefetch'
 import { ResolvedRoute } from '@/types/resolved'  
 import { Route } from '@/types/route'
-import { getResponseAndError } from '@/utilities/errors'
 import { CallbackContext, CallbackPushResponse, CallbackRejectResponse, CallbackSuccessResponse, createCallbackContext } from './createCallbackContext'
 import { CallbackContextPushError } from '@/errors/callbackContextPushError'
 import { CallbackContextRejectionError } from '@/errors/callbackContextRejectionError'
+import { getPropsValue } from '@/utilities/props'
 
 export const propStoreKey: InjectionKey<PropStore> = Symbol()
 
@@ -30,11 +30,14 @@ export function createPropStore(): PropStore {
       .filter((match) => getPrefetchOption({ ...prefetch, routePrefetch: match.prefetch }, 'props'))
       .flatMap((match) => getComponentProps(match))
       .reduce<Record<string, unknown>>((response, { id, name, props }) => {
-        const key = getPropKey(id, name, route)
-        
-        const [value, error] = getResponseAndError(() => props?.(route.params, context))
+        if (!props) {
+          return response
+        }
 
-        response[key] = value ?? error
+        const key = getPropKey(id, name, route)
+        const value = getPropsValue(() => props(route.params, context))
+
+        response[key] = value
 
         return response
       }, {})
@@ -60,16 +63,18 @@ export function createPropStore(): PropStore {
 
       keys.push(key)
 
+      if (!store.has(key)) {
+        const value = getPropsValue(() => props(route.params, context))
+
+        store.set(key, value)
+      }
+
       promises.push((async () => {
-        const value = store.get(key) ?? props(route.params, context)
+        const value = await store.get(key)
 
         if (value instanceof Error) {
           throw value
         }
-
-        await value
-
-        store.set(key, value)
       })())
     }
 
