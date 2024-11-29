@@ -73,3 +73,8 @@ export type RegisteredRouterPush = RouterPush<RegisteredRoutes>
  * Represents the type for router `replace`, with types for routes registered within {@link Register}
  */
 export type RegisteredRouterReplace = RouterReplace<RegisteredRoutes>
+
+/**
+ * Type for Router Reject method. Triggers rejections registered within {@link Register}
+ */
+export type RegisteredRouterReject = (type: RegisteredRejectionType) => void

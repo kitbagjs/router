@@ -73,7 +73,7 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
     },
   })
 
-  const { runBeforeRouteHooks, runAfterRouteHooks } = createRouteHookRunners<TRoutes>()
+  const { runBeforeRouteHooks, runAfterRouteHooks } = createRouteHookRunners()
   const {
     hooks,
     onBeforeRouteEnter,
