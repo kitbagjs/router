@@ -17,6 +17,7 @@ test('returns correct value and values when key does not exist', async () => {
   await router.start()
 
   const component = {
+    template: 'empty',
     setup() {
       return useQueryValue('foo')
     },
@@ -45,6 +46,7 @@ test('returns correct value and values when key does exist', async () => {
   await router.start()
 
   const component = {
+    template: 'empty',
     setup() {
       return useQueryValue('foo')
     },
@@ -73,6 +75,7 @@ test('returns correct value and values when a param is used', async () => {
   await router.start()
 
   const component = {
+    template: 'empty',
     setup() {
       return useQueryValue('foo', Number)
     },
@@ -101,6 +104,7 @@ test('updates value and values when the query string changes', async () => {
   await router.start()
 
   const component = {
+    template: 'empty',
     setup() {
       return useQueryValue('foo', Number)
     },
@@ -134,6 +138,7 @@ test('updates the query string when the value is set', async () => {
   await router.start()
 
   const component = {
+    template: 'empty',
     setup() {
       const { value } = useQueryValue('foo', Number)
 
@@ -165,6 +170,7 @@ test('updates the query string when the values is set', async () => {
   await router.start()
 
   const component = {
+    template: 'empty',
     setup() {
       const { values } = useQueryValue('foo', Number)
 
@@ -196,6 +202,7 @@ test('removes the query string when the remove method is called', async () => {
   await router.start()
 
   const component = {
+    template: 'empty',
     setup() {
       const { remove } = useQueryValue('foo')
 
