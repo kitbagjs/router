@@ -463,7 +463,7 @@ test('prefetched props trigger push when navigation is initiated', async () => {
   const routeA = createRoute({
     name: 'routeA',
     path: '/routeA',
-    component: { render: () => h(routerLink, { to: (resolve) => resolve('routeB') }, 'routeB') },
+    component: { render: () => h(routerLink, { to: (resolve) => resolve('routeB') }, () => 'routeB') },
   })
 
   const routeB = createRoute({
