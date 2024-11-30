@@ -97,8 +97,8 @@ export function createRouteHookRunners(): RouteHookRunners {
       const results = allHooks.map((callback) => callback(to, {
         from,
         reject,
-        push: push,
-        replace: replace,
+        push,
+        replace,
       }))
 
       await Promise.all(results)
@@ -131,18 +131,18 @@ export const isRouteEnter: RouteHookCondition = (to, from, depth) => {
   const toMatches = to.matches
   const fromMatches = from?.matches ?? []
 
-  return toMatches.length < depth || toMatches[depth] !== fromMatches[depth]
+  return toMatches.length < depth || toMatches[depth].id !== fromMatches[depth]?.id
 }
 
 export const isRouteLeave: RouteHookCondition = (to, from, depth) => {
   const toMatches = to.matches
   const fromMatches = from?.matches ?? []
 
-  return toMatches.length < depth || toMatches[depth] !== fromMatches[depth]
+  return toMatches.length < depth || toMatches[depth].id !== fromMatches[depth]?.id
 }
 
 export const isRouteUpdate: RouteHookCondition = (to, from, depth) => {
-  return to.matches[depth] === from?.matches[depth]
+  return to.matches[depth].id === from?.matches[depth]?.id
 }
 
 export function getRouteHookCondition(lifecycle: RouteHookLifecycle): RouteHookCondition {
