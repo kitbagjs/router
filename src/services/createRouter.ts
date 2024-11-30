@@ -25,6 +25,7 @@ import { RoutesName } from '@/types/routesMap'
 import { Url, isUrl } from '@/types/url'
 import { checkDuplicateNames } from '@/utilities/checkDuplicateNames'
 import { isNestedArray } from '@/utilities/guards'
+import { createUniqueIdSequence } from './createUniqueIdSequence'
 
 type RouterUpdateOptions = {
   replace?: boolean,
@@ -62,6 +63,7 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
 
   checkDuplicateNames(routes)
 
+  const getNavigationId = createUniqueIdSequence()
   const propStore = createPropStore()
   const resolve = createRouterResolve(routes)
   const history = createRouterHistory({
@@ -85,6 +87,8 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
   } = createRouterHooks()
 
   async function set(url: string, options: RouterUpdateOptions = {}): Promise<void> {
+    const navigationId = getNavigationId()
+
     history.stopListening()
 
     if (isExternal(url)) {
@@ -124,7 +128,30 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
         throw new Error(`Switch is not exhaustive for before hook response status: ${JSON.stringify(beforeResponse satisfies never)}`)
     }
 
-    propStore.setProps(to)
+    const currentNavigationId = navigationId
+
+    propStore.setProps(to).then((response) => {
+      if (currentNavigationId !== navigationId) {
+        return
+      }
+
+      switch (response.status) {
+        case 'SUCCESS':
+          break
+
+        case 'PUSH':
+          push(...response.to)
+          break
+
+        case 'REJECT':
+          setRejection(response.type)
+          break
+
+        default:
+          const exhaustive: never = response
+          throw new Error(`Switch is not exhaustive for prop store response status: ${JSON.stringify(exhaustive)}`)
+      }
+    })
 
     updateRoute(to)
 

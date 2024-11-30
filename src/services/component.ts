@@ -1,6 +1,7 @@
 /* eslint-disable vue/one-component-per-file */
 import { AsyncComponentLoader, Component, FunctionalComponent, defineComponent, h, ref } from 'vue'
 import { MaybePromise } from '@/types/utilities'
+import { isPromise } from '@/utilities/promises'
 
 type Constructor = new (...args: any) => any
 
@@ -39,11 +40,17 @@ export function component<TComponent extends Component>(component: TComponent, p
     setup() {
       const values = props()
 
-      if ('then' in values) {
-        return () => h(asyncPropsWrapper(component, values))
-      }
+      return () => {
+        if (values instanceof Error) {
+          return '' 
+        }
 
-      return () => h(component, values)
+        if (isPromise(values)) {
+          return h(asyncPropsWrapper(component, values))
+        }
+
+        return h(component, values)
+      }
     },
   })
 }
@@ -60,6 +67,10 @@ function asyncPropsWrapper<TComponent extends Component>(component: TComponent, 
       })()
 
       return () => {
+        if (values.value instanceof Error) {
+          return ''
+        }
+
         if (values.value) {
           return h(component, values.value)
         }
