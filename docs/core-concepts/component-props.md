@@ -32,8 +32,41 @@ The props call back supports promises. This means you can do much more than just
 const user = createRoute({
   name: 'user',
   path: '/user/[id]',
+  component: UserComponent,
   props: async (({ id }) => {
     const user = await userStore.getById(id)
     return { user }
   })
 })
+```
+
+## Context
+
+The router provides a second `context` argument to your props callback. The context will always include: 
+
+| Property | Description |
+| ---- | ---- |
+| push | Convenient way to move the user from wherever they were to a new route. |
+| replace | Same as push, but with `options: { replace: true }`. |
+| reject | Trigger a [rejection](/advanced-concepts/rejections) for the router to handle |
+
+::: warning
+Unlike [hooks](/advanced-concepts/hooks), props are not awaited during navigation. This means that any parent components will be mounted and any [After Hooks](/advanced-concepts/hooks#after-hooks) will start while any async prop fetching is happening.
+:::
+
+```ts
+const user = createRoute({
+  name: 'user',
+  path: '/user/[id]',
+  component: UserComponent,
+  props: async (({ id }, { reject }) => {
+    try {
+      const user = await userStore.getById(id)
+
+      return { user }
+    } catch (error) {
+      reject('NotFound')
+    }
+  })
+})
+```
