@@ -15,8 +15,7 @@ type UsePrefetching = {
 }
 
 export function usePrefetching(config: MaybeRefOrGetter<UsePrefetchingConfig>): UsePrefetching {
-  // if the route changes this will need to be reset to an empty object or we'll have a memory leak
-  const prefetchedProps: Record<string, unknown> = {}
+  let prefetchedProps: Record<string, unknown> = {}
 
   const element = ref<HTMLElement>()
 
@@ -33,6 +32,8 @@ export function usePrefetching(config: MaybeRefOrGetter<UsePrefetchingConfig>): 
   })
 
   watch(() => toValue(config), ({ route, ...configs }) => {
+    prefetchedProps = {}
+
     if (!route) {
       return
     }
