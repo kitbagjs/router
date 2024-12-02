@@ -1,5 +1,4 @@
 import { MaybeRefOrGetter, onMounted, ref, Ref, toValue, watch } from 'vue'
-import { useEventListener } from '@/compositions/useEventListener'
 import { usePropStore } from '@/compositions/usePropStore'
 import { isWithComponent, isWithComponents } from '@/types/createRouteOptions'
 import { getPrefetchOption, PrefetchConfigs, PrefetchStrategy } from '@/types/prefetch'
@@ -41,11 +40,6 @@ export function usePrefetching(config: MaybeRefOrGetter<UsePrefetchingConfig>): 
     doPrefetchingForStrategy('eager', route, configs)
 
   }, { immediate: true })
-
-  // listeners used for `intent`
-  useEventListener(element, 'focus', () => {})
-  useEventListener(element, 'mouseover', () => {})
-  useEventListener(element, 'mouseout', () => {})
 
   function doPrefetchingForStrategy(strategy: PrefetchStrategy, route: ResolvedRoute, configs: PrefetchConfigs): void {
     prefetchComponentsForRoute(strategy, route, configs)

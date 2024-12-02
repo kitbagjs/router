@@ -7,9 +7,9 @@ describe('getPrefetchOptions', () => {
     [undefined, 'lazy', false, 'lazy'],
     [true, false, false, DEFAULT_PREFETCH_STRATEGY],
     [{ components: true }, false, false, DEFAULT_PREFETCH_STRATEGY],
-    [{ components: true }, 'intent', false, 'intent'],
-    [false, 'intent', true, false],
-    [{ components: false }, 'intent', true, false],
+    [{ components: true }, 'eager', false, 'eager'],
+    [false, 'eager', true, false],
+    [{ components: false }, 'lazy', true, false],
   ] as const)('when given [`%s`, `%s`, `%s`] returns `%s`', (linkPrefetch, routePrefetch, routerPrefetch, expected) => {
     const value = getPrefetchOption({
       linkPrefetch,

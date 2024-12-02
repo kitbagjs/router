@@ -11,12 +11,11 @@ const DEFAULT_PREFETCH_CONFIG: Required<PrefetchConfigOptions> = {
  * Determines when assets are prefetched.
  * eager: Fetched immediately
  * lazy: Fetched when visible
- * intent: Fetched when user focuses or hovers
  */
-export type PrefetchStrategy = 'eager' | 'lazy' | 'intent'
+export type PrefetchStrategy = 'eager' | 'lazy'
 
 function isPrefetchStrategy(value: any): value is PrefetchStrategy {
-  return ['eager', 'lazy', 'intent'].includes(value)
+  return ['eager', 'lazy'].includes(value)
 }
 
 export type PrefetchConfigOptions = {
