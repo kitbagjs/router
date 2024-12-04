@@ -7,6 +7,8 @@ import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
 import { PrefetchConfig, getPrefetchConfigValue } from '@/types/prefetch'
 import { component } from '@/utilities/testHelpers'
+import { visibilityObserverKey } from '@/compositions/useVisibilityObserver'
+import { VisibilityObserver } from '@/services/createVisibilityObserver'
 
 test('renders an anchor tag with the correct href and slot content', () => {
   const path = '/path/[paramName]'
@@ -607,8 +609,18 @@ describe('prefetch props', () => {
 
     await router.start()
 
+    const visible = ref(false)
+    
     const root = {
       template: '<RouterView />',
+      provide: {
+        [visibilityObserverKey]: {
+          observe: vi.fn(),
+          unobserve: vi.fn(),
+          disconnect: vi.fn(),
+          isElementVisible: () => visible.value,
+        } satisfies VisibilityObserver,
+      },
     }
 
     mount(root, {
@@ -619,8 +631,9 @@ describe('prefetch props', () => {
 
     expect(callback).not.toHaveBeenCalled()
 
+    visible.value = true
+    
     await nextTick()
-    // await flushPromises()
 
     expect(callback).toHaveBeenCalled()
   })
