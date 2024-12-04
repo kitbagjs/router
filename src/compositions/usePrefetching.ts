@@ -68,7 +68,7 @@ export function usePrefetching(config: MaybeRefOrGetter<UsePrefetchingConfig>): 
     }
 
     doPrefetchingForStrategy('lazy', route, configs)
-  })
+  }, { immediate: true })
 
   function doPrefetchingForStrategy(strategy: PrefetchStrategy, route: ResolvedRoute, configs: PrefetchConfigs): void {
     prefetchComponentsForRoute(strategy, route, configs)
