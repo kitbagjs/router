@@ -26,6 +26,8 @@ import { Url, isUrl } from '@/types/url'
 import { checkDuplicateNames } from '@/utilities/checkDuplicateNames'
 import { isNestedArray } from '@/utilities/guards'
 import { createUniqueIdSequence } from './createUniqueIdSequence'
+import { createVisibilityObserver } from './createVisibilityObserver'
+import { visibilityObserverKey } from '@/compositions/useVisibilityObserver'
 
 type RouterUpdateOptions = {
   replace?: boolean,
@@ -65,6 +67,7 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
 
   const getNavigationId = createUniqueIdSequence()
   const propStore = createPropStore()
+  const visibilityObserver = createVisibilityObserver()
   const resolve = createRouterResolve(routes)
   const history = createRouterHistory({
     mode: options?.historyMode,
@@ -265,6 +268,7 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
     app.provide(routerRejectionKey, rejection)
     app.provide(routeHookStoreKey, hooks)
     app.provide(propStoreKey, propStore)
+    app.provide(visibilityObserverKey, visibilityObserver)
 
     // We cant technically guarantee that the user registered the same router that they installed
     // So we're making an assumption here that when installing a router its the same as the RegisteredRouter

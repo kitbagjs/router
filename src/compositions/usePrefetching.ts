@@ -1,51 +1,97 @@
-import { MaybeRefOrGetter, toValue, watch } from 'vue'
+import { MaybeRefOrGetter, onBeforeUnmount, onMounted, ref, Ref, toValue, watch } from 'vue'
 import { usePropStore } from '@/compositions/usePropStore'
 import { isWithComponent, isWithComponents } from '@/types/createRouteOptions'
-import { getPrefetchOption, PrefetchConfigs } from '@/types/prefetch'
+import { getPrefetchOption, PrefetchConfigs, PrefetchStrategy } from '@/types/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
 import { isAsyncComponent } from '@/utilities/components'
+import { useVisibilityObserver } from './useVisibilityObserver'
 
 type UsePrefetchingConfig = PrefetchConfigs & {
   route: ResolvedRoute | undefined,
 }
 
 type UsePrefetching = {
+  element: Ref<HTMLElement | undefined>,
   commit: () => void,
 }
 
 export function usePrefetching(config: MaybeRefOrGetter<UsePrefetchingConfig>): UsePrefetching {
-  let props: Record<string, unknown> = {}
+  const prefetchedProps = new Map<PrefetchStrategy, Record<string, unknown>>()
+  const element = ref<HTMLElement>()
 
   const { getPrefetchProps, setPrefetchProps } = usePropStore()
+  const { observe, unobserve, isElementVisible } = useVisibilityObserver()
+
+  const commit: UsePrefetching['commit'] = () => {
+    const props = Array.from(prefetchedProps.values()).reduce((accumulator, value) => {
+      Object.assign(accumulator, value)
+      
+      return accumulator
+    }, {})
+
+    setPrefetchProps(props)
+  }
+
+  onMounted(() => {
+    if (!element.value) {
+      console.warn('The usePrefetching composition will not work correctly if the element ref is not bound.')
+      return
+    }
+
+    observe(element.value)
+  })
+
+  onBeforeUnmount(() => {
+    if (!element.value) {
+      return
+    }
+
+    unobserve(element.value)
+  })
 
   watch(() => toValue(config), ({ route, ...configs }) => {
+    prefetchedProps.clear()
+
     if (!route) {
       return
     }
 
-    prefetchComponentsForRoute(route, configs)
-
-    props = getPrefetchProps(route, configs)
+    doPrefetchingForStrategy('eager', route, configs)
   }, { immediate: true })
 
-  const commit: UsePrefetching['commit'] = () => {
-    setPrefetchProps(props)
+  watch(() => Boolean(element.value && isElementVisible(element.value)), (isVisible) => {
+    const { route, ...configs } = toValue(config)
+
+    if (!route || !isVisible) {
+      return
+    }
+
+    doPrefetchingForStrategy('lazy', route, configs)
+  }, { immediate: true })
+
+  function doPrefetchingForStrategy(strategy: PrefetchStrategy, route: ResolvedRoute, configs: PrefetchConfigs): void {
+    prefetchComponentsForRoute(strategy, route, configs)
+
+    if (!prefetchedProps.has(strategy)) {
+      prefetchedProps.set(strategy, getPrefetchProps(strategy, route, configs))
+    }
   }
 
   return {
+    element,
     commit,
   }
 }
 
-function prefetchComponentsForRoute(route: ResolvedRoute, { routerPrefetch, linkPrefetch }: PrefetchConfigs): void {
-  route.matches.forEach((route) => {
-    const shouldPrefetchComponents = getPrefetchOption({
+function prefetchComponentsForRoute(strategy: PrefetchStrategy, route: ResolvedRoute, configs: PrefetchConfigs): void {
+
+  route.matches.forEach(route => {
+    const routeStrategy = getPrefetchOption({
+      ...configs,
       routePrefetch: route.prefetch,
-      routerPrefetch,
-      linkPrefetch,
     }, 'components')
 
-    if (!shouldPrefetchComponents) {
+    if (routeStrategy !== strategy) {
       return
     }
 

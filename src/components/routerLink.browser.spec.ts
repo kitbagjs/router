@@ -1,12 +1,14 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { describe, expect, test, vi } from 'vitest'
-import { defineAsyncComponent, h } from 'vue'
+import { defineAsyncComponent, h, nextTick, ref } from 'vue'
 import echo from '@/components/echo'
 import routerLink from '@/components/routerLink.vue'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
 import { PrefetchConfig, getPrefetchConfigValue } from '@/types/prefetch'
 import { component } from '@/utilities/testHelpers'
+import { visibilityObserverKey } from '@/compositions/useVisibilityObserver'
+import { VisibilityObserver } from '@/services/createVisibilityObserver'
 
 test('renders an anchor tag with the correct href and slot content', () => {
   const path = '/path/[paramName]'
@@ -582,5 +584,57 @@ describe('prefetch props', () => {
 
     expect(childProps).toHaveBeenCalledOnce()
     expect(parentProps).not.toHaveBeenCalledOnce()
+  })
+
+  test('props are not prefetched until link is visible when prefetch is lazy', async () => {
+    const callback = vi.fn()
+
+    const routeA = createRoute({
+      name: 'routeA',
+      path: '/routeA',
+      component: () => h(routerLink, { to: (resolve) => resolve('routeB') }),
+    })
+
+    const routeB = createRoute({
+      name: 'routeB',
+      path: '/routeB',
+      component: echo,
+      prefetch: { props: 'lazy' },
+      props: callback,
+    })
+
+    const router = createRouter([routeA, routeB], {
+      initialUrl: '/routeA',
+    })
+
+    await router.start()
+
+    const visible = ref(false)
+    
+    const root = {
+      template: '<RouterView />',
+      provide: {
+        [visibilityObserverKey]: {
+          observe: vi.fn(),
+          unobserve: vi.fn(),
+          disconnect: vi.fn(),
+          isElementVisible: () => visible.value,
+        } satisfies VisibilityObserver,
+      },
+    }
+
+    mount(root, {
+      global: {
+        plugins: [router],
+      },
+    })
+
+    expect(callback).not.toHaveBeenCalled()
+
+    visible.value = true
+    
+    await nextTick()
+
+    expect(callback).toHaveBeenCalled()
   })
 })

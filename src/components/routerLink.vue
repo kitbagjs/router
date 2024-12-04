@@ -1,5 +1,5 @@
 <template>
-  <a :href="resolved" class="router-link" :class="classes" @click="onClick">
+  <a ref="element" :href="resolved" class="router-link" :class="classes" @click="onClick">
     <slot v-bind="{ resolved, isMatch, isExactMatch, isExternal }" />
   </a>
 </template>
@@ -52,7 +52,7 @@
     return options
   })
 
-  const { isMatch, isExactMatch, isExternal, push } = useLink(resolved, options)
+  const { element, isMatch, isExactMatch, isExternal, push } = useLink(resolved, options)
 
   const classes = computed(() => ({
     'router-link--match': isMatch.value,
