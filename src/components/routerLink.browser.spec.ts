@@ -1,6 +1,6 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { describe, expect, test, vi } from 'vitest'
-import { defineAsyncComponent, h } from 'vue'
+import { defineAsyncComponent, h, nextTick, ref } from 'vue'
 import echo from '@/components/echo'
 import routerLink from '@/components/routerLink.vue'
 import { createRoute } from '@/services/createRoute'
@@ -582,5 +582,46 @@ describe('prefetch props', () => {
 
     expect(childProps).toHaveBeenCalledOnce()
     expect(parentProps).not.toHaveBeenCalledOnce()
+  })
+
+  test('props are not prefetched until link is visible when prefetch is lazy', async () => {
+    const callback = vi.fn()
+
+    const routeA = createRoute({
+      name: 'routeA',
+      path: '/routeA',
+      component: () => h(routerLink, { to: (resolve) => resolve('routeB') }),
+    })
+
+    const routeB = createRoute({
+      name: 'routeB',
+      path: '/routeB',
+      component: echo,
+      prefetch: { props: 'lazy' },
+      props: callback,
+    })
+
+    const router = createRouter([routeA, routeB], {
+      initialUrl: '/routeA',
+    })
+
+    await router.start()
+
+    const root = {
+      template: '<RouterView />',
+    }
+
+    mount(root, {
+      global: {
+        plugins: [router],
+      },
+    })
+
+    expect(callback).not.toHaveBeenCalled()
+
+    await nextTick()
+    // await flushPromises()
+
+    expect(callback).toHaveBeenCalled()
   })
 })
