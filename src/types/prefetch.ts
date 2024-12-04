@@ -21,7 +21,7 @@ function isPrefetchStrategy(value: any): value is PrefetchStrategy {
 export type PrefetchConfigOptions = {
   /**
    * When true any component that is wrapped in vue's defineAsyncComponent will be prefetched
-   * @default 'lazy'
+   * @default 'eager'
    */
   components?: boolean | PrefetchStrategy,
   /**
