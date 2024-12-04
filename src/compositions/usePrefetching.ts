@@ -23,10 +23,10 @@ export function usePrefetching(config: MaybeRefOrGetter<UsePrefetchingConfig>): 
   const { observe, unobserve, isElementVisible } = useVisibilityObserver()
 
   const commit: UsePrefetching['commit'] = () => {
-    const props = Array.from(prefetchedProps.values()).reduce((acc, value) => {
-      Object.assign(acc, value)
+    const props = Array.from(prefetchedProps.values()).reduce((accumulator, value) => {
+      Object.assign(accumulator, value)
       
-      return acc
+      return accumulator
     }, {})
 
     setPrefetchProps(props)
