@@ -16,6 +16,7 @@ import { RouteMeta } from '@/types/register'
 import { Route } from '@/types/route'
 import { MaybeArray, MaybePromise } from '@/types/utilities'
 import { CallbackContext } from '@/services/createCallbackContext'
+import { ResolvedRoute } from './resolved'
 
 /**
  * Defines route hooks that can be applied before entering, updating, or leaving a route, as well as after these events.
@@ -58,13 +59,13 @@ export type WithoutParent = {
 
 export type WithComponent<
   TComponent extends Component = Component,
-  TParams extends Record<string, unknown> = Record<string, unknown>
+  TRoute extends Route = Route
 > = {
   /**
    * A Vue component, which can be either synchronous or asynchronous components.
    */
   component: TComponent,
-  props?: (params: TParams, context: CallbackContext) => TComponent extends Component ? MaybePromise<ComponentProps<TComponent>> : {},
+  props?: (route: ResolvedRoute<TRoute>, context: CallbackContext) => TComponent extends Component ? MaybePromise<ComponentProps<TComponent>> : {},
 }
 
 export function isWithComponent(options: CreateRouteOptions): options is CreateRouteOptions & WithComponent {
@@ -73,14 +74,14 @@ export function isWithComponent(options: CreateRouteOptions): options is CreateR
 
 export type WithComponents<
   TComponents extends Record<string, Component> = Record<string, Component>,
-  TParams extends Record<string, unknown> = Record<string, unknown>
+  TRoute extends Route = Route
 > = {
   /**
    * Multiple components for named views, which can be either synchronous or asynchronous components.
    */
   components: TComponents,
   props?: {
-    [TKey in keyof TComponents]?: (params: TParams, context: CallbackContext) => TComponents[TKey] extends Component ? MaybePromise<ComponentProps<TComponents[TKey]>> : {}
+    [TKey in keyof TComponents]?: (route: ResolvedRoute<TRoute>, context: CallbackContext) => TComponents[TKey] extends Component ? MaybePromise<ComponentProps<TComponents[TKey]>> : {}
   },
 }
 

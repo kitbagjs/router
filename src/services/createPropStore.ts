@@ -10,7 +10,7 @@ import { getPropsValue } from '@/utilities/props'
 
 export const propStoreKey: InjectionKey<PropStore> = Symbol()
 
-type ComponentProps = { id: string, name: string, props?: (params: Record<string, unknown>, context: CallbackContext) => unknown }
+type ComponentProps = { id: string, name: string, props?: (params: ResolvedRoute, context: CallbackContext) => unknown }
 
 type SetPropsResponse = CallbackSuccessResponse | CallbackPushResponse | CallbackRejectResponse
 
@@ -35,7 +35,7 @@ export function createPropStore(): PropStore {
         }
 
         const key = getPropKey(id, name, route)
-        const value = getPropsValue(() => props(route.params, context))
+        const value = getPropsValue(() => props(route, context))
 
         response[key] = value
 
@@ -64,7 +64,7 @@ export function createPropStore(): PropStore {
       keys.push(key)
 
       if (!store.has(key)) {
-        const value = getPropsValue(() => props(route.params, context))
+        const value = getPropsValue(() => props(route, context))
 
         store.set(key, value)
       }
