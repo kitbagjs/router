@@ -23,11 +23,11 @@ export function usePrefetching(config: MaybeRefOrGetter<UsePrefetchingConfig>): 
   const { observe, unobserve, isElementVisible } = useVisibilityObserver()
 
   const commit: UsePrefetching['commit'] = () => {
-    const props = {}
-    
-    prefetchedProps.forEach((value) => {
-      Object.assign(props, value)
-    })
+    const props = Array.from(prefetchedProps.values()).reduce((acc, value) => {
+      Object.assign(acc, value)
+      
+      return acc
+    }, {})
 
     setPrefetchProps(props)
   }
@@ -57,7 +57,6 @@ export function usePrefetching(config: MaybeRefOrGetter<UsePrefetchingConfig>): 
     }
 
     doPrefetchingForStrategy('eager', route, configs)
-
   }, { immediate: true })
 
   watch(() => Boolean(element.value) && isElementVisible(element.value!), (isVisible) => {
