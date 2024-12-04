@@ -59,7 +59,7 @@ export function usePrefetching(config: MaybeRefOrGetter<UsePrefetchingConfig>): 
     doPrefetchingForStrategy('eager', route, configs)
   }, { immediate: true })
 
-  watch(() => Boolean(element.value) && isElementVisible(element.value!), (isVisible) => {
+  watch(() => Boolean(element.value && isElementVisible(element.value)), (isVisible) => {
     const { route, ...configs } = toValue(config)
 
     if (!route || !isVisible) {
@@ -91,7 +91,7 @@ function prefetchComponentsForRoute(strategy: PrefetchStrategy, route: ResolvedR
       routePrefetch: route.prefetch,
     }, 'components')
 
-    if (!routeStrategy || routeStrategy !== strategy) {
+    if (routeStrategy !== strategy) {
       return
     }
 
