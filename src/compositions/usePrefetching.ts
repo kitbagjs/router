@@ -73,7 +73,9 @@ export function usePrefetching(config: MaybeRefOrGetter<UsePrefetchingConfig>): 
   function doPrefetchingForStrategy(strategy: PrefetchStrategy, route: ResolvedRoute, configs: PrefetchConfigs): void {
     prefetchComponentsForRoute(strategy, route, configs)
 
-    prefetchedProps.set(strategy, getPrefetchProps(strategy, route, configs))
+    if (!prefetchedProps.has(strategy)) {
+      prefetchedProps.set(strategy, getPrefetchProps(strategy, route, configs))
+    }
   }
 
   return {
