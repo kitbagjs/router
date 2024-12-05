@@ -74,7 +74,7 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
     listener: ({ location }) => {
       const url = createPath(location)
 
-      set(url, { state: location.state })
+      set(url, { state: location.state, replace: true })
     },
   })
 
