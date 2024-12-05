@@ -292,15 +292,15 @@ test('Binds props and attrs from route', async () => {
     name: 'routeA',
     path: '/routeA/[param]',
     component: echo,
-    props: ({ param }) => ({ value: param }),
+    props: (route) => ({ value: route.params.param }),
   })
 
   const routeB = createRoute({
     name: 'routeB',
     path: '/routeB/[param]',
     component: echo,
-    props: async ({ param }) => {
-      return { value: param }
+    props: (route) => {
+      return { value: route.params.param }
     },
   })
 
@@ -334,15 +334,15 @@ test('Updates props and attrs when route params change', async () => {
     name: 'sync',
     path: '/sync/[param]',
     component: echo,
-    props: ({ param }) => ({ value: param }),
+    props: (route) => ({ value: route.params.param }),
   })
 
   const asyncProps = createRoute({
     name: 'async',
     path: '/async/[param]',
     component: echo,
-    props: async ({ param }) => {
-      return { value: param }
+    props: async (route) => {
+      return { value: route.params.param }
     },
   })
 

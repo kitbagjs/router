@@ -10,24 +10,13 @@ import { CreateRouteOptions, WithComponent, WithComponents, WithHooks, WithParen
 import { Hash, toHash, ToHash } from '@/types/hash'
 import { Host } from '@/types/host'
 import { toName, ToName } from '@/types/name'
-import { ExtractParamTypes } from '@/types/params'
 import { Param } from '@/types/paramTypes'
 import { Path, ToPath, toPath } from '@/types/path'
 import { Query, ToQuery, toQuery } from '@/types/query'
 import { RouteMeta } from '@/types/register'
 import { Route } from '@/types/route'
-import { Identity } from '@/types/utilities'
 import { checkDuplicateParams } from '@/utilities/checkDuplicateKeys'
 
-type ParentPath<TParent extends Route | undefined> = TParent extends Route ? TParent['path'] : Path<'', {}>
-type ParentQuery<TParent extends Route | undefined> = TParent extends Route ? TParent['query'] : Query<'', {}>
-
-type RouteParams<
-  TPath extends string | Path | undefined,
-  TQuery extends string | Query | undefined,
-  TParent extends Route | undefined = undefined
-> = ExtractParamTypes<Identity<CombinePath<ParentPath<TParent>, ToPath<TPath>>['params'] & CombineQuery<ParentQuery<TParent>, ToQuery<TQuery>>['params']>>
-
 export function createRoute<
   const TName extends string | undefined = undefined,
   const TPath extends string | Path | undefined = undefined,
@@ -67,7 +56,7 @@ export function createRoute<
   const TState extends Record<string, Param> = Record<string, Param>
 >(options: CreateRouteOptions<TName, TPath, TQuery, THash, TMeta>
   & WithHooks
-  & WithComponent<TComponent, RouteParams<TPath, TQuery>>
+  & WithComponent<TComponent, Route<ToName<TName>, Host<'', {}>, ToPath<TPath>, ToQuery<TQuery>, ToHash<THash>, TMeta, TState, TName>>
   & WithoutParent
   & (WithState<TState> | WithoutState)):
 Route<ToName<TName>, Host<'', {}>, ToPath<TPath>, ToQuery<TQuery>, ToHash<THash>, TMeta, TState, TName>
@@ -83,7 +72,7 @@ export function createRoute<
   const TState extends Record<string, Param> = Record<string, Param>
 >(options: CreateRouteOptions<TName, TPath, TQuery, THash, TMeta>
   & WithHooks
-  & WithComponent<TComponent, RouteParams<TPath, TQuery, TParent>>
+  & WithComponent<TComponent, Route<ToName<TName>, Host<'', {}>, CombinePath<TParent['path'], ToPath<TPath>>, CombineQuery<TParent['query'], ToQuery<TQuery>>, CombineHash<TParent['hash'], ToHash<THash>>, CombineMeta<TMeta, TParent['meta']>, CombineState<TState, TParent['state']>, TName | TParent['matches'][number]['name']>>
   & WithParent<TParent>
   & (WithState<TState> | WithoutState)):
 Route<ToName<TName>, Host<'', {}>, CombinePath<TParent['path'], ToPath<TPath>>, CombineQuery<TParent['query'], ToQuery<TQuery>>, CombineHash<TParent['hash'], ToHash<THash>>, CombineMeta<TMeta, TParent['meta']>, CombineState<TState, TParent['state']>, TName | TParent['matches'][number]['name']>
@@ -98,7 +87,7 @@ export function createRoute<
   const TState extends Record<string, Param> = Record<string, Param>
 >(options: CreateRouteOptions<TName, TPath, TQuery, THash, TMeta>
   & WithHooks
-  & WithComponents<TComponents, RouteParams<TPath, TQuery>>
+  & WithComponents<TComponents, Route<ToName<TName>, Host<'', {}>, ToPath<TPath>, ToQuery<TQuery>, ToHash<THash>, TMeta, TState, TName>>
   & WithoutParent
   & (WithState<TState> | WithoutState)):
 Route<ToName<TName>, Host<'', {}>, ToPath<TPath>, ToQuery<TQuery>, ToHash<THash>, TMeta, TState, TName>
@@ -114,7 +103,7 @@ export function createRoute<
   const TState extends Record<string, Param> = Record<string, Param>
 >(options: CreateRouteOptions<TName, TPath, TQuery, THash, TMeta>
   & WithHooks
-  & WithComponents<TComponents, RouteParams<TPath, TQuery, TParent>>
+  & WithComponents<TComponents, Route<ToName<TName>, Host<'', {}>, CombinePath<TParent['path'], ToPath<TPath>>, CombineQuery<TParent['query'], ToQuery<TQuery>>, CombineHash<TParent['hash'], ToHash<THash>>, CombineMeta<TMeta, TParent['meta']>, CombineState<TState, TParent['state']>, TName | TParent['matches'][number]['name']>>
   & WithParent<TParent>
   & (WithState<TState> | WithoutState)):
 Route<ToName<TName>, Host<'', {}>, CombinePath<TParent['path'], ToPath<TPath>>, CombineQuery<TParent['query'], ToQuery<TQuery>>, CombineHash<TParent['hash'], ToHash<THash>>, CombineMeta<TMeta, TParent['meta']>, CombineState<TState, TParent['state']>, TName | TParent['matches'][number]['name']>
