@@ -64,7 +64,7 @@ function assembleQueryParamValues(query: Query, paramValues: Record<string, unkn
     return search
   }
 
-  for (const [key, value] of search.entries()) {
+  for (const [key, value] of Array.from(search.entries())) {
     const paramName = getParamName(value)
     const isNotParam = !paramName
 
