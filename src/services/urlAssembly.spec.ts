@@ -230,6 +230,24 @@ describe('query params', () => {
 
     expect(url).toBe('/?simple=ABC')
   })
+
+  test('given route with multiple empty and optional query params, removes both from url', () => {
+    const parent = createRoute({
+      query: 'search=[?search]'
+    })
+
+    const route = createRoute({
+      parent,
+      name: 'simple',
+      path: '/',
+      query: query('sort=[?sort]', {sort: Boolean}),
+      component,
+    })
+
+    const url = assembleUrl(route)
+
+    expect(url).toBe('/')
+  })
 })
 
 describe('static query', () => {
