@@ -1,5 +1,4 @@
 import { RouterRoute, isRouterRoute } from '@/services/createRouterRoute'
-import { toName } from '@/types/name'
 import { RegisteredRouterRoute, RegisteredRoutesName } from '@/types/register'
 
 export type IsRouteOptions = {
@@ -37,13 +36,9 @@ export function isRoute(route: unknown, routeName?: string, { exact }: IsRouteOp
     return true
   }
 
-  const names = route.matches.map((route) => toName(route.name))
-
   if (exact) {
-    const actualRouteName = names.at(-1)
-
-    return routeName === actualRouteName
+    return route.matched.name === routeName
   }
 
-  return names.includes(routeName)
+  return route.matches.map((route) => route.name).includes(routeName)
 }
