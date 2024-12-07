@@ -241,8 +241,12 @@ describe('prefetch components', () => {
     undefined,
     true,
     false,
+    'eager',
+    'lazy',
     { components: true },
     { components: false },
+    { components: 'eager' },
+    { components: 'lazy' },
   ])('prefetch components respects router config when prefetch is %s', async (prefetch) => {
     let loaded = undefined
 
@@ -275,7 +279,7 @@ describe('prefetch components', () => {
 
     const value = getPrefetchConfigValue(prefetch, 'components')
 
-    if (value === true || value === undefined) {
+    if (value === 'eager') {
       expect(loaded).toBe(true)
     } else {
       expect(loaded).toBeUndefined()
@@ -286,8 +290,12 @@ describe('prefetch components', () => {
     undefined,
     true,
     false,
+    'eager',
+    'lazy',
     { components: true },
     { components: false },
+    { components: 'eager' },
+    { components: 'lazy' },
   ])('prefetch components respects route config when prefetch is %s', async (prefetch) => {
     let loaded = undefined
 
@@ -320,7 +328,7 @@ describe('prefetch components', () => {
 
     const value = getPrefetchConfigValue(prefetch, 'components')
 
-    if (value === true || value === undefined) {
+    if (value === 'eager') {
       expect(loaded).toBe(true)
     } else {
       expect(loaded).toBeUndefined()
@@ -331,8 +339,12 @@ describe('prefetch components', () => {
     undefined,
     true,
     false,
+    'eager',
+    'lazy',
     { components: true },
     { components: false },
+    { components: 'eager' },
+    { components: 'lazy' },
   ])('prefetch components respects link config when prefetch is %s', async (prefetch) => {
     let loaded = undefined
 
@@ -365,7 +377,7 @@ describe('prefetch components', () => {
 
     const value = getPrefetchConfigValue(prefetch, 'components')
 
-    if (value === true || value === undefined) {
+    if (value === 'eager') {
       expect(loaded).toBe(true)
     } else {
       expect(loaded).toBeUndefined()
@@ -378,8 +390,12 @@ describe('prefetch props', () => {
     undefined,
     true,
     false,
+    'eager',
+    'lazy',
     { props: true },
     { props: false },
+    { props: 'eager' },
+    { props: 'lazy' },
   ])('prefetch props respects router config when prefetch is %s', (prefetch) => {
     const callback = vi.fn()
 
@@ -406,7 +422,7 @@ describe('prefetch props', () => {
 
     const value = getPrefetchConfigValue(prefetch, 'props')
 
-    if (value) {
+    if (value === 'eager') {
       expect(callback).toHaveBeenCalledOnce()
     } else {
       expect(callback).not.toHaveBeenCalled()
@@ -417,8 +433,12 @@ describe('prefetch props', () => {
     undefined,
     true,
     false,
+    'eager',
+    'lazy',
     { props: true },
     { props: false },
+    { props: 'eager' },
+    { props: 'lazy' },
   ])('prefetch props respects route config when prefetch is %s', (prefetch) => {
     const callback = vi.fn()
 
@@ -445,7 +465,7 @@ describe('prefetch props', () => {
 
     const value = getPrefetchConfigValue(prefetch, 'props')
 
-    if (value) {
+    if (value === 'eager') {
       expect(callback).toHaveBeenCalledOnce()
     } else {
       expect(callback).not.toHaveBeenCalled()
@@ -456,8 +476,12 @@ describe('prefetch props', () => {
     undefined,
     true,
     false,
+    'eager',
+    'lazy',
     { props: true },
     { props: false },
+    { props: 'eager' },
+    { props: 'lazy' },
   ])('prefetch props respects link config when prefetch is %s', (prefetch) => {
     const callback = vi.fn()
 
@@ -484,7 +508,7 @@ describe('prefetch props', () => {
 
     const value = getPrefetchConfigValue(prefetch, 'props')
 
-    if (value) {
+    if (value === 'eager') {
       expect(callback).toHaveBeenCalledOnce()
     } else {
       expect(callback).not.toHaveBeenCalled()
@@ -508,7 +532,7 @@ describe('prefetch props', () => {
       name: 'echo',
       path: '/echo',
       component: echo,
-      prefetch: { props: true },
+      prefetch: { props: 'eager' },
       props,
     })
 
@@ -562,7 +586,7 @@ describe('prefetch props', () => {
       name: 'child',
       path: '/child',
       component: echo,
-      prefetch: { props: true },
+      prefetch: { props: 'eager' },
       props: childProps,
     })
 
