@@ -2,9 +2,9 @@
 
 Prefetching is a powerful feature in Kitbag Router that allows your application to start loading dependencies before users navigate, improving user experience by reducing the wait time when navigating. 
 
-## Prefetching the Component
+## Prefetching Components
 
-When your route uses `defineAsyncComponent`, Kitbag Router can start loading that component file.
+When your route component is defined using `defineAsyncComponent`, Kitbag Router can start fetching that component asynchronously before it is needed.
 
 ```ts
 import { defineAsyncComponent } from 'vue'
@@ -12,33 +12,41 @@ import { defineAsyncComponent } from 'vue'
 const user = createRoute({
   name: 'user',
   path: '/user/[id]',
-  component: defineAsyncComponent(() => import('./UserPage.vue')),
+  component: defineAsyncComponent(() => import('./UserPage.vue')), // [!code focus]
 })
 ```
 
-## Prefetching props
+## Prefetching Props
 
-When your route uses the [props callback](/core-concepts/component-props), Kitbag Router can start fetching your component props.
+When your route uses the [props callback](/core-concepts/component-props), Kitbag Router can start fetching your component props before they are needed.
 
 ```ts
 const user = createRoute({
   name: 'user',
   path: '/user/[id]',
   component: defineAsyncComponent(() => import('./UserPage.vue')),
-  props: async (({ id }) => {
-    const user = await userStore.getById(id)
-    return { user }
-  })
+  props: async (({ id }) => { // [!code focus]
+    const user = await userStore.getById(id) // [!code focus]
+    return { user } // [!code focus]
+  }) // [!code focus]
 })
 ```
+::: info
+Props for routes and any parent routes are collected concurrently while components are being mounted. This avoids a waterfall from happening for async props.
+:::
 
 ## How Prefetching Works
 
-Prefetching is triggered when a router-link is rendered or when the `useLink` composable is called. Route for the link is setup for prefetching and prefetching is enabled, Kitbag Router will automatically start loading as soon as the link is rendered or the composable is used. This ensures that when the user clicks on the link, the component and/or props are already loaded, leading to a faster navigation experience.
+Prefetching is handled automatically when using the `router-link` component or the `useLink` composable based on the prefetch strategy determined for that specific link.
 
-Props for routes and any parent routes are collected concurrently before components are mounted. This means that any async props are not blocking and avoids a waterfall from happening.
+## Prefetch Strategies
 
-## Configuration Options
+The following prefetch strategies are supported:
+
+- `eager` - Prefetch immediately when the link is rendered.
+- `lazy` - Prefetch when the link is visible in the viewport.
+
+## Configuration
 
 Prefetching can be configured at various levels. Each nested layer **overrides** the parent configuration.
 
@@ -46,7 +54,30 @@ Prefetching can be configured at various levels. Each nested layer **overrides**
 - Per-Route Configuration
 - Per-Link Configuration
 
-This means that global is `true` but per-route is `false`. That route will NOT prefetch. If per-route is `false` but per-link is `true`, the route WILL prefetch.
+This means that if prefetching is enabled globally, but disabled for a specific route, that route will not prefetch. Conversely, if prefetching is disabled globally, but enabled for a specific route, that route will prefetch.
+
+Prefetching can be configured with a `boolean`, a `PrefetchStrategy`, or a `PrefetchConfigOptions` object.
+
+::: code-group
+```ts [boolean]
+prefetch: true
+```
+
+```ts [PrefetchStrategy]
+prefetch: 'lazy'
+```
+
+```ts [PrefetchConfigOptions]
+prefetch: {
+  components: 'eager',
+  props: false,
+}
+```
+:::
+
+::: info
+If the prefetch configuration is `true`, Kitbag Router will look at any overriden prefetch configs for a strategy. If no stragety is configured the default strategy `lazy` is used.
+:::
 
 ### Global Configuration
 
@@ -87,7 +118,8 @@ You can also control prefetching at the level of individual router-links by pass
 
 ```html
 <router-link to="/about" prefetch>About Us</router-link>
-<router-link to="/contact">Contact Us</router-link>
+<router-link to="/about" prefetch="lazy">About Us</router-link>
+<router-link to="/contact" :prefetch="false">Contact Us</router-link>
 ```
 
 Similarly, when using the `useLink` composable, you can pass a prefetch option.
@@ -99,15 +131,4 @@ const link = useLink({
   to: '/about',
   prefetch: true, // enable prefetching for this link
 });
-```
-
-## Prefetch Configuration Options
-
-Everywhere you can set `prefetch` you can use `boolean` to enable/disable for both `components` and `props`. Alternatively, you can use the `PrefetchConfigOptions` object syntax to configure prefetching separately.
-
-```ts
-type PrefetchConfigOptions = {
-  component: boolean,
-  props: boolean,
-}
 ```
