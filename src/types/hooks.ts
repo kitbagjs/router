@@ -1,7 +1,5 @@
-import { CallbackAbortResponse, CallbackContextAbort, CallbackPushResponse, CallbackRejectResponse, CallbackSuccessResponse } from '@/services/createCallbackContext'
-import { RegisteredRouterPush, RegisteredRouterReplace } from '@/types/register'
+import { CallbackAbortResponse, CallbackContext, CallbackContextAbort, CallbackPushResponse, CallbackRejectResponse, CallbackSuccessResponse } from '@/services/createCallbackContext'
 import { ResolvedRoute } from '@/types/resolved'
-import { RouterReject } from '@/types/router'
 import { MaybePromise } from '@/types/utilities'
 
 /**
@@ -23,9 +21,9 @@ export type AddAfterRouteHook = (hook: AfterRouteHook) => RouteHookRemove
  */
 type RouteHookContext = {
   from: ResolvedRoute | null,
-  reject: RouterReject,
-  push: RegisteredRouterPush,
-  replace: RegisteredRouterReplace,
+  reject: CallbackContext['reject'],
+  push: CallbackContext['push'],
+  replace: CallbackContext['replace'],
 }
 
 /**
