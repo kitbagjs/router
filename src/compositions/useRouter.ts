@@ -10,6 +10,7 @@ export const routerInjectionKey: InjectionKey<RegisteredRouter> = Symbol()
  * @returns The registered router instance.
  * @throws {RouterNotInstalledError} Throws an error if the router has not been installed,
  *         ensuring the component does not operate without routing functionality.
+ * @group Compositions
  */
 export function useRouter(): RegisteredRouter {
   const router = inject(routerInjectionKey)

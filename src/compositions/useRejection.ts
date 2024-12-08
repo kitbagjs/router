@@ -11,6 +11,7 @@ export const routerRejectionKey: InjectionKey<RouterRejection> = Symbol()
  *          such as authentication failures or permission denials.
  * @throws {Error} Throws an error if the router's rejection state is not available, typically indicating
  *         that createRouter was never called.
+ * @group Compositions
  */
 export function useRejection(): RouterRejection {
   const rejection = inject(routerRejectionKey)

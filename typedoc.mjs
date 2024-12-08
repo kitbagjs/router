@@ -13,8 +13,7 @@ export default{
   hideGroupHeadings: true,
   useCodeBlocks: true,
   disableSources: true,
-  categorizeByGroup: true,
-  // groupOrder: ["Errors", "*"],
+  groupOrder: ["Interfaces", "Functions", "Utilities", "Type Guards", "Errors", "Types", "*"],
   sidebar: {
     pretty: true
   },

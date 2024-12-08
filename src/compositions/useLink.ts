@@ -63,11 +63,11 @@ type UseLinkArgs<
  * or resolved URL to discover route details. Also exports some useful context about routes relationship to current URL and convenience methods
  * for navigating.
  *
- * @param source - The name of the route or the URL value.
+ * @param source - The name of the route or a valid URL.
  * @param params - If providing route name, this argument will expect corresponding params.
- * @param options - {@link RouterResolveOptions}Same options as router resolve.
+ * @param options - {@link RouterResolveOptions} Same options as router resolve.
  * @returns {UseLink} Reactive context values for as well as navigation methods.
- *
+ * @group Compositions
  */
 export function useLink<TRouteKey extends RegisteredRoutesName>(name: MaybeRefOrGetter<TRouteKey>, ...args: UseLinkArgs<TRouteKey>): UseLink
 export function useLink(url: MaybeRefOrGetter<Url>, options?: MaybeRefOrGetter<UseLinkOptions>): UseLink

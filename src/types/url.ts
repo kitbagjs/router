@@ -9,6 +9,12 @@ export type UrlParts = {
   hash: string,
 }
 
+/**
+ * A type guard for determining if a value is a valid URL.
+ * @param value - The value to check.
+ * @returns `true` if the value is a valid URL, otherwise `false`.
+ * @group Type Guards
+ */
 export function isUrl(value: unknown): value is Url {
   if (typeof value !== 'string') {
     return false
@@ -19,6 +25,12 @@ export function isUrl(value: unknown): value is Url {
   return regexPattern.test(value)
 }
 
+/**
+ * Converts a string to a valid URL.
+ * @param value - The string to convert.
+ * @returns The valid URL.
+ * @group Utilities
+ */
 export function asUrl(value: string): Url {
   if (isUrl(value)) {
     return value
