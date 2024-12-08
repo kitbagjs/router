@@ -1,17 +1,78 @@
-# API Reference
+# @kitbag/router
 
-<script setup>
-import { useSidebar } from 'vitepress/theme'
+## Interfaces
 
-const { sidebarGroups } = useSidebar()
-</script>
+- [Register](interfaces/Register.md)
 
-<div v-for="group in sidebarGroups" :key=group.text>
-  <h2>{{ group.text }}</h2>
+## Types
 
-  <ul v-for="item in group.items" :key="item.text">
-    <li>
-      <a :href="`/api/${group.text.toLowerCase()}/${item.text}`">{{ item.text }}</a>
-    </li>
-  </ul>
-</div>
+- [AddAfterRouteHook](types/AddAfterRouteHook.md)
+- [AddBeforeRouteHook](types/AddBeforeRouteHook.md)
+- [AfterRouteHook](types/AfterRouteHook.md)
+- [AfterRouteHookLifecycle](types/AfterRouteHookLifecycle.md)
+- [AfterRouteHookResponse](types/AfterRouteHookResponse.md)
+- [BeforeRouteHook](types/BeforeRouteHook.md)
+- [BeforeRouteHookLifecycle](types/BeforeRouteHookLifecycle.md)
+- [BeforeRouteHookResponse](types/BeforeRouteHookResponse.md)
+- [ComponentProps](types/ComponentProps.md)
+- [CreateRouteOptions](types/CreateRouteOptions.md)
+- [Param](types/Param.md)
+- [ParamExtras](types/ParamExtras.md)
+- [ParamGetSet](types/ParamGetSet.md)
+- [ParamGetter](types/ParamGetter.md)
+- [ParamSetter](types/ParamSetter.md)
+- [ParamWithDefault](types/ParamWithDefault.md)
+- [RegisteredRejectionType](types/RegisteredRejectionType.md)
+- [RegisteredRouteMap](types/RegisteredRouteMap.md)
+- [RegisteredRouter](types/RegisteredRouter.md)
+- [RegisteredRouterPush](types/RegisteredRouterPush.md)
+- [RegisteredRouterReject](types/RegisteredRouterReject.md)
+- [RegisteredRouterReplace](types/RegisteredRouterReplace.md)
+- [RegisteredRouterRoute](types/RegisteredRouterRoute.md)
+- [RegisteredRoutes](types/RegisteredRoutes.md)
+- [RegisteredRoutesName](types/RegisteredRoutesName.md)
+- [Route](types/Route.md)
+- [RouteHook](types/RouteHook.md)
+- [RouteHookLifecycle](types/RouteHookLifecycle.md)
+- [RouteHookRemove](types/RouteHookRemove.md)
+- [RouteHookResponse](types/RouteHookResponse.md)
+- [RouteMeta](types/RouteMeta.md)
+- [Router](types/Router.md)
+- [RouterOptions](types/RouterOptions.md)
+- [RouterReject](types/RouterReject.md)
+- [RouterRoutes](types/RouterRoutes.md)
+- [Routes](types/Routes.md)
+- [Url](types/Url.md)
+- [UrlParts](types/UrlParts.md)
+- [UseLink](types/UseLink.md)
+- [UseLinkOptions](types/UseLinkOptions.md)
+
+## Functions
+
+- [asUrl](functions/asUrl.md)
+- [component](functions/component.md)
+- [createExternalRoute](functions/createExternalRoute.md)
+- [createParam](functions/createParam.md)
+- [createRoute](functions/createRoute.md)
+- [createRouter](functions/createRouter.md)
+- [isParamWithDefault](functions/isParamWithDefault.md)
+- [isRoute](functions/isRoute.md)
+- [isUrl](functions/isUrl.md)
+- [onAfterRouteEnter](functions/onAfterRouteEnter.md)
+- [onAfterRouteLeave](functions/onAfterRouteLeave.md)
+- [onAfterRouteUpdate](functions/onAfterRouteUpdate.md)
+- [onBeforeRouteLeave](functions/onBeforeRouteLeave.md)
+- [onBeforeRouteUpdate](functions/onBeforeRouteUpdate.md)
+- [path](functions/path.md)
+- [query](functions/query.md)
+- [useLink](functions/useLink.md)
+- [useRejection](functions/useRejection.md)
+- [useRoute](functions/useRoute.md)
+- [useRouter](functions/useRouter.md)
+- [withDefault](functions/withDefault.md)
+
+## Errors
+
+- [DuplicateParamsError](classes/DuplicateParamsError.md)
+- [RouterNotInstalledError](classes/RouterNotInstalledError.md)
+- [UseRouteInvalidError](classes/UseRouteInvalidError.md)

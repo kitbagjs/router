@@ -1,4 +1,4 @@
-# ParamExtras
+# Types: ParamExtras
 
 ```ts
 type ParamExtras: object;
@@ -15,5 +15,9 @@ invalid: (message?) => never;
 #### Parameters
 
 | Parameter | Type |
-| :------ | :------ |
+| ------ | ------ |
 | `message`? | `string` |
+
+#### Returns
+
+`never`

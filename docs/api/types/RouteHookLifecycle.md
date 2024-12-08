@@ -1,4 +1,4 @@
-# RouteHookLifecycle
+# Types: RouteHookLifecycle
 
 ```ts
 type RouteHookLifecycle: BeforeRouteHookLifecycle | AfterRouteHookLifecycle;

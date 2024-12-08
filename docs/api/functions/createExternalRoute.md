@@ -1,60 +1,55 @@
-# createExternalRoute
+# Functions: createExternalRoute()
+
+## Call Signature
 
 ```ts
-export function createExternalRoute<
-  const TName extends string | undefined = undefined,
-  const TPath extends string | Path | undefined = undefined,
-  const TQuery extends string | Query | undefined = undefined,
-  const THost extends string | Host | undefined = undefined
->(options: CreateRouteOptionsWithoutParent<TName, TPath, TQuery, THost>): Route<ToName<TName>, ToHost<THost>, ToPath<TPath>, ToQuery<TQuery>>
-
-export function createExternalRoute<
-  const TParent extends Route,
-  const TName extends string | undefined = undefined,
-  const TPath extends string | Path | undefined = undefined,
-  const TQuery extends string | Query | undefined = undefined
->(options: CreateRouteOptionsWithParent<TParent, TName, TPath, TQuery, Host<'', {}>>): Route<CombineName<TParent['name'], ToName<TName>>, ToHost<Host<'', {}>>, CombinePath<TParent['path'], ToPath<TPath>>, CombineQuery<TParent['query'], ToQuery<TQuery>>>
+function createExternalRoute<THost, TName, TPath, TQuery, THash, TMeta>(options): Route<ToName<TName>, ToHost<THost>, ToPath<TPath>, ToQuery<TQuery>, ToHash<THash>, TMeta>
 ```
 
-Creates an individual route record for your router.
+### Type Parameters
 
-## Type parameters
+| Type Parameter | Default type |
+| ------ | ------ |
+| `THost` *extends* `string` \| `Host`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\> | - |
+| `TName` *extends* `undefined` \| `string` | `undefined` |
+| `TPath` *extends* `undefined` \| `string` \| `Path`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\> | `undefined` |
+| `TQuery` *extends* `undefined` \| `string` \| `Query`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\> | `undefined` |
+| `THash` *extends* `undefined` \| `string` \| `Hash`\<`undefined` \| `string`\> | `undefined` |
+| `TMeta` *extends* `Record`\<`string`, `unknown`\> | `Record`\<`string`, `unknown`\> |
 
-| Type parameter | Description |
-| :------ | :------ |
-| `TParent` *extends* [`Route`](/api/types/Route) \| `undefined` | The parent route for this route. |
-| `TName` *extends* `string` \| `undefined` | Optional name, will be used for navigating and matching. |
-| `TPath` *extends* [`Path`](/api/functions/path) \| `string` \| `undefined` | The optional path part of your route. |
-| `TQuery` *extends* [`Query`](/api/functions/query) \| `string` \| `undefined` | The optional query part of your route. |
-| `THost` *extends* [`Host`](/api/functions/host) \| `string` \| `undefined` | The optional host part of your route. |
+### Parameters
 
-## Parameters
+| Parameter | Type |
+| ------ | ------ |
+| `options` | [`CreateRouteOptions`](../types/CreateRouteOptions.md)\<`TName`, `TPath`, `TQuery`, `undefined` \| `string` \| `Hash`\<`undefined` \| `string`\>, `Record`\<`string`, `unknown`\>\> & `WithHost`\<`THost`\> & `WithoutParent` |
 
-| Parameter | Type | Description |
-| :------ | :------ | :------ |
-| `options`? | [`CreateRouteOptions`](../types/CreateRouteOptions) | Route configuration options. |
+### Returns
 
-## Returns
+[`Route`](../types/Route.md)\<`ToName`\<`TName`\>, `ToHost`\<`THost`\>, `ToPath`\<`TPath`\>, `ToQuery`\<`TQuery`\>, `ToHash`\<`THash`\>, `TMeta`\>
 
-[`Route`](../types/Route)\<`T`\>
-
-Single Route instance.
-
-## Example
+## Call Signature
 
 ```ts
-import { createExternalRoute } from '@kitbag/router'
-
-const routerDocs = createExternalRoute({
-  host: 'https://router.kitbag.dev',
-  name: 'docs',
-})
-
-const routerApiDocs = createExternalRoute({
-  parent: routerDocs,
-  name: 'api',
-  path: '/api/[topic]',
-})
-
-export const documentationRoutes = [routerDocs, routerApiDocs]
+function createExternalRoute<TParent, TName, TPath, TQuery, THash, TMeta>(options): Route<ToName<TName>, Host<"", object>, CombinePath<TParent["path"], ToPath<TPath>>, CombineQuery<TParent["query"], ToQuery<TQuery>>, CombineHash<TParent["hash"], ToHash<THash>>, CombineMeta<TMeta, TParent["meta"]>>
 ```
+
+### Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `TParent` *extends* [`Route`](../types/Route.md)\<`string`, `Host`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\>, `Path`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\>, `Query`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\>, `Hash`\<`undefined` \| `string`\>, `Record`\<`string`, `unknown`\>, `Record`\<`string`, [`Param`](../types/Param.md)\>, `undefined` \| `string`\> | - |
+| `TName` *extends* `undefined` \| `string` | `undefined` |
+| `TPath` *extends* `undefined` \| `string` \| `Path`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\> | `undefined` |
+| `TQuery` *extends* `undefined` \| `string` \| `Query`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\> | `undefined` |
+| `THash` *extends* `undefined` \| `string` \| `Hash`\<`undefined` \| `string`\> | `undefined` |
+| `TMeta` *extends* `Record`\<`string`, `unknown`\> | `Record`\<`string`, `unknown`\> |
+
+### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `options` | [`CreateRouteOptions`](../types/CreateRouteOptions.md)\<`TName`, `TPath`, `TQuery`, `undefined` \| `string` \| `Hash`\<`undefined` \| `string`\>, `Record`\<`string`, `unknown`\>\> & `WithoutHost` & `WithParent`\<`TParent`\> |
+
+### Returns
+
+[`Route`](../types/Route.md)\<`ToName`\<`TName`\>, `Host`\<`""`, `object`\>, `CombinePath`\<`TParent`\[`"path"`\], `ToPath`\<`TPath`\>\>, `CombineQuery`\<`TParent`\[`"query"`\], `ToQuery`\<`TQuery`\>\>, `CombineHash`\<`TParent`\[`"hash"`\], `ToHash`\<`THash`\>\>, `CombineMeta`\<`TMeta`, `TParent`\[`"meta"`\]\>\>

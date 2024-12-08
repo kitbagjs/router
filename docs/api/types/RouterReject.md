@@ -1,4 +1,4 @@
-# RouterReject
+# Types: RouterReject()
 
 ```ts
 type RouterReject: (type) => void;
@@ -7,8 +7,8 @@ type RouterReject: (type) => void;
 ## Parameters
 
 | Parameter | Type |
-| :------ | :------ |
-| `type` | `RouterRejectionType` |
+| ------ | ------ |
+| `type` | [`RegisteredRejectionType`](RegisteredRejectionType.md) |
 
 ## Returns
 

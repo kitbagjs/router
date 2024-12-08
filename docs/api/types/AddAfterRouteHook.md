@@ -1,4 +1,4 @@
-# AddAfterRouteHook
+# Types: AddAfterRouteHook()
 
 ```ts
 type AddAfterRouteHook: (hook) => RouteHookRemove;
@@ -9,9 +9,11 @@ Adds a hook that is called after a route change. Returns a function to remove th
 ## Parameters
 
 | Parameter | Type | Description |
-| :------ | :------ | :------ |
-| `hook` | [`AfterRouteHook`](AfterRouteHook) | [AfterRouteHook](AfterRouteHook) The hook function to add. |
+| ------ | ------ | ------ |
+| `hook` | [`AfterRouteHook`](AfterRouteHook.md) | [AfterRouteHook](AfterRouteHook.md) The hook function to add. |
 
 ## Returns
 
-[`RouteHookRemove`](RouteHookRemove)
+[`RouteHookRemove`](RouteHookRemove.md)
+
+A function that removes the added hook.

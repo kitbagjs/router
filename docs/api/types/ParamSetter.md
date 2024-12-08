@@ -1,21 +1,21 @@
-# ParamSetter
+# Types: ParamSetter()\<T\>
 
 ```ts
 type ParamSetter<T>: (value, extras) => string;
 ```
 
-## Type parameters
+## Type Parameters
 
-| Type parameter |
-| :------ |
-| `T` |
+| Type Parameter | Default type |
+| ------ | ------ |
+| `T` | `any` |
 
 ## Parameters
 
 | Parameter | Type |
-| :------ | :------ |
+| ------ | ------ |
 | `value` | `T` |
-| `extras` | [`ParamExtras`](ParamExtras) |
+| `extras` | [`ParamExtras`](ParamExtras.md) |
 
 ## Returns
 

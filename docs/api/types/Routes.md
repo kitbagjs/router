@@ -1,7 +1,7 @@
-# Routes
+# Types: Routes
 
 ```ts
-type Routes: Readonly<Route[]>;
+type Routes: readonly Route[];
 ```
 
-Represents an immutable array of Route instances. Array of return value from `createRoute`, expected param for `createRouter`.
+Represents an immutable array of Route instances. Return value of `createRoute`, expected param for `createRouter`.

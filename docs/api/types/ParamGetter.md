@@ -1,21 +1,21 @@
-# ParamGetter
+# Types: ParamGetter()\<T\>
 
 ```ts
 type ParamGetter<T>: (value, extras) => T;
 ```
 
-## Type parameters
+## Type Parameters
 
-| Type parameter |
-| :------ |
-| `T` |
+| Type Parameter | Default type |
+| ------ | ------ |
+| `T` | `any` |
 
 ## Parameters
 
 | Parameter | Type |
-| :------ | :------ |
+| ------ | ------ |
 | `value` | `string` |
-| `extras` | [`ParamExtras`](ParamExtras) |
+| `extras` | [`ParamExtras`](ParamExtras.md) |
 
 ## Returns
 

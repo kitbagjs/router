@@ -1,16 +1,22 @@
-# ParamGetSet
+# Types: ParamGetSet\<T\>
 
 ```ts
 type ParamGetSet<T>: object;
 ```
 
-## Type parameters
+## Type Parameters
 
-| Type parameter |
-| :------ |
-| `T` |
+| Type Parameter | Default type |
+| ------ | ------ |
+| `T` | `any` |
 
 ## Type declaration
+
+### defaultValue?
+
+```ts
+optional defaultValue: T;
+```
 
 ### get
 

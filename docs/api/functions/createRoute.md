@@ -1,52 +1,170 @@
-# createRoute
+# Functions: createRoute()
+
+## Call Signature
 
 ```ts
-export function createRoute<
-  const TName extends string | undefined = undefined,
-  const TPath extends string | Path | undefined = undefined,
-  const TQuery extends string | Query | undefined = undefined
->(options: CreateRouteOptionsWithoutParent<TName, TPath, TQuery>): Route<ToName<TName>, Host<'', {}>, ToPath<TPath>, ToQuery<TQuery>>
-
-export function createRoute<
-  const TParent extends Route,
-  const TName extends string | undefined = undefined,
-  const TPath extends string | Path | undefined = undefined,
-  const TQuery extends string | Query | undefined = undefined
->(options: CreateRouteOptionsWithParent<TParent, TName, TPath, TQuery>): Route<CombineName<TParent['name'], ToName<TName>>, Host<'', {}>, CombinePath<TParent['path'], ToPath<TPath>>, CombineQuery<TParent['query'], ToQuery<TQuery>>>
+function createRoute<TName, TPath, TQuery, THash, TMeta, TState>(options): Route<ToName<TName>, Host<"", object>, ToPath<TPath>, ToQuery<TQuery>, ToHash<THash>, TMeta, TState, TName>
 ```
 
-Creates an individual route record for your router.
+### Type Parameters
 
-## Type parameters
+| Type Parameter | Default type |
+| ------ | ------ |
+| `TName` *extends* `undefined` \| `string` | `undefined` |
+| `TPath` *extends* `undefined` \| `string` \| `Path`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\> | `undefined` |
+| `TQuery` *extends* `undefined` \| `string` \| `Query`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\> | `undefined` |
+| `THash` *extends* `undefined` \| `string` \| `Hash`\<`undefined` \| `string`\> | `undefined` |
+| `TMeta` *extends* `Record`\<`string`, `unknown`\> | `Record`\<`string`, `unknown`\> |
+| `TState` *extends* `Record`\<`string`, [`Param`](../types/Param.md)\> | `Record`\<`string`, [`Param`](../types/Param.md)\> |
 
-| Type parameter | Description |
-| :------ | :------ |
-| `TParent` *extends* [`Route`](/api/types/Route) \| `undefined` | The parent route for this route. |
-| `TName` *extends* `string` \| `undefined` | Optional name, will be used for routing and matching. |
-| `TPath` *extends* [`Path`](/api/functions/path) \| `string` \| `undefined` | The optional path part of your route. |
-| `TQuery` *extends* [`Query`](/api/functions/query) \| `string` \| `undefined` | The optional query part of your route. |
+### Parameters
 
-## Parameters
+| Parameter | Type |
+| ------ | ------ |
+| `options` | [`CreateRouteOptions`](../types/CreateRouteOptions.md)\<`TName`, `TPath`, `TQuery`, `THash`, `TMeta`\> & `WithHooks` & WithoutComponents & (WithoutParent & (WithState\<TState\> \| WithoutState)) |
 
-| Parameter | Type | Description |
-| :------ | :------ | :------ |
-| `options`? | [`CreateRouteOptions`](../types/CreateRouteOptions) | Route configuration options. |
+### Returns
 
-## Returns
+[`Route`](../types/Route.md)\<`ToName`\<`TName`\>, `Host`\<`""`, `object`\>, `ToPath`\<`TPath`\>, `ToQuery`\<`TQuery`\>, `ToHash`\<`THash`\>, `TMeta`, `TState`, `TName`\>
 
-[`Route`](../types/Route)\<`T`\>
-
-Single Route instance.
-
-## Example
+## Call Signature
 
 ```ts
-import { createRoute } from '@kitbag/router'
-
-const routes = [
-  createRoute({ name: 'home', path: '/', component: Home }),
-  createRoute({ name: 'path', path: '/about', component: About }),
-]
-
-const router = createRouter(routes)
+function createRoute<TParent, TName, TPath, TQuery, THash, TMeta, TState>(options): Route<ToName<TName>, Host<"", object>, CombinePath<TParent["path"], ToPath<TPath>>, CombineQuery<TParent["query"], ToQuery<TQuery>>, CombineHash<TParent["hash"], ToHash<THash>>, CombineMeta<TMeta, TParent["meta"]>, CombineState<TState, TParent["state"]>, TName | TParent["matches"][number]["name"]>
 ```
+
+### Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `TParent` *extends* [`Route`](../types/Route.md)\<`string`, `Host`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\>, `Path`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\>, `Query`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\>, `Hash`\<`undefined` \| `string`\>, `Record`\<`string`, `unknown`\>, `Record`\<`string`, [`Param`](../types/Param.md)\>, `undefined` \| `string`\> | - |
+| `TName` *extends* `undefined` \| `string` | `undefined` |
+| `TPath` *extends* `undefined` \| `string` \| `Path`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\> | `undefined` |
+| `TQuery` *extends* `undefined` \| `string` \| `Query`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\> | `undefined` |
+| `THash` *extends* `undefined` \| `string` \| `Hash`\<`undefined` \| `string`\> | `undefined` |
+| `TMeta` *extends* `Record`\<`string`, `unknown`\> | `Record`\<`string`, `unknown`\> |
+| `TState` *extends* `Record`\<`string`, [`Param`](../types/Param.md)\> | `Record`\<`string`, [`Param`](../types/Param.md)\> |
+
+### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `options` | [`CreateRouteOptions`](../types/CreateRouteOptions.md)\<`TName`, `TPath`, `TQuery`, `THash`, `TMeta`\> & `WithHooks` & WithoutComponents & (WithParent\<TParent\> & (WithoutState \| WithState\<TState\>)) |
+
+### Returns
+
+[`Route`](../types/Route.md)\<`ToName`\<`TName`\>, `Host`\<`""`, `object`\>, `CombinePath`\<`TParent`\[`"path"`\], `ToPath`\<`TPath`\>\>, `CombineQuery`\<`TParent`\[`"query"`\], `ToQuery`\<`TQuery`\>\>, `CombineHash`\<`TParent`\[`"hash"`\], `ToHash`\<`THash`\>\>, `CombineMeta`\<`TMeta`, `TParent`\[`"meta"`\]\>, `CombineState`\<`TState`, `TParent`\[`"state"`\]\>, `TName` \| `TParent`\[`"matches"`\]\[`number`\]\[`"name"`\]\>
+
+## Call Signature
+
+```ts
+function createRoute<TComponent, TName, TPath, TQuery, THash, TMeta, TState>(options): Route<ToName<TName>, Host<"", object>, ToPath<TPath>, ToQuery<TQuery>, ToHash<THash>, TMeta, TState, TName>
+```
+
+### Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `TComponent` *extends* `Component` | - |
+| `TName` *extends* `undefined` \| `string` | `undefined` |
+| `TPath` *extends* `undefined` \| `string` \| `Path`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\> | `undefined` |
+| `TQuery` *extends* `undefined` \| `string` \| `Query`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\> | `undefined` |
+| `THash` *extends* `undefined` \| `string` \| `Hash`\<`undefined` \| `string`\> | `undefined` |
+| `TMeta` *extends* `Record`\<`string`, `unknown`\> | `Record`\<`string`, `unknown`\> |
+| `TState` *extends* `Record`\<`string`, [`Param`](../types/Param.md)\> | `Record`\<`string`, [`Param`](../types/Param.md)\> |
+
+### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `options` | [`CreateRouteOptions`](../types/CreateRouteOptions.md)\<`TName`, `TPath`, `TQuery`, `THash`, `TMeta`\> & `WithHooks` & WithComponent\<TComponent, Route\<ToName\<TName\>, Host\<"", \{\}\>, ToPath\<TPath\>, ToQuery\<TQuery\>, ToHash\<THash\>, TMeta, TState, TName\>\> & (WithoutParent & (WithoutState \| WithState\<...\>)) |
+
+### Returns
+
+[`Route`](../types/Route.md)\<`ToName`\<`TName`\>, `Host`\<`""`, `object`\>, `ToPath`\<`TPath`\>, `ToQuery`\<`TQuery`\>, `ToHash`\<`THash`\>, `TMeta`, `TState`, `TName`\>
+
+## Call Signature
+
+```ts
+function createRoute<TComponent, TParent, TName, TPath, TQuery, THash, TMeta, TState>(options): Route<ToName<TName>, Host<"", object>, CombinePath<TParent["path"], ToPath<TPath>>, CombineQuery<TParent["query"], ToQuery<TQuery>>, CombineHash<TParent["hash"], ToHash<THash>>, CombineMeta<TMeta, TParent["meta"]>, CombineState<TState, TParent["state"]>, TName | TParent["matches"][number]["name"]>
+```
+
+### Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `TComponent` *extends* `Component` | - |
+| `TParent` *extends* [`Route`](../types/Route.md)\<`string`, `Host`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\>, `Path`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\>, `Query`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\>, `Hash`\<`undefined` \| `string`\>, `Record`\<`string`, `unknown`\>, `Record`\<`string`, [`Param`](../types/Param.md)\>, `undefined` \| `string`\> | - |
+| `TName` *extends* `undefined` \| `string` | `undefined` |
+| `TPath` *extends* `undefined` \| `string` \| `Path`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\> | `undefined` |
+| `TQuery` *extends* `undefined` \| `string` \| `Query`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\> | `undefined` |
+| `THash` *extends* `undefined` \| `string` \| `Hash`\<`undefined` \| `string`\> | `undefined` |
+| `TMeta` *extends* `Record`\<`string`, `unknown`\> | `Record`\<`string`, `unknown`\> |
+| `TState` *extends* `Record`\<`string`, [`Param`](../types/Param.md)\> | `Record`\<`string`, [`Param`](../types/Param.md)\> |
+
+### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `options` | [`CreateRouteOptions`](../types/CreateRouteOptions.md)\<`TName`, `TPath`, `TQuery`, `THash`, `TMeta`\> & `WithHooks` & WithComponent\<TComponent, Route\<ToName\<TName\>, Host\<"", \{\}\>, CombinePath\<TParent\["path"\], ToPath\<TPath\>\>, CombineQuery\<...\>, CombineHash\<...\>, CombineMeta\<...\>, CombineState\<...\>, TName \| TParent\["matches"\]\[number\]\["name"\]\>\> & (WithParent\<...\> & (WithoutState \| WithState\<...\>)) |
+
+### Returns
+
+[`Route`](../types/Route.md)\<`ToName`\<`TName`\>, `Host`\<`""`, `object`\>, `CombinePath`\<`TParent`\[`"path"`\], `ToPath`\<`TPath`\>\>, `CombineQuery`\<`TParent`\[`"query"`\], `ToQuery`\<`TQuery`\>\>, `CombineHash`\<`TParent`\[`"hash"`\], `ToHash`\<`THash`\>\>, `CombineMeta`\<`TMeta`, `TParent`\[`"meta"`\]\>, `CombineState`\<`TState`, `TParent`\[`"state"`\]\>, `TName` \| `TParent`\[`"matches"`\]\[`number`\]\[`"name"`\]\>
+
+## Call Signature
+
+```ts
+function createRoute<TComponents, TName, TPath, TQuery, THash, TMeta, TState>(options): Route<ToName<TName>, Host<"", object>, ToPath<TPath>, ToQuery<TQuery>, ToHash<THash>, TMeta, TState, TName>
+```
+
+### Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `TComponents` *extends* `Record`\<`string`, `Component`\> | - |
+| `TName` *extends* `undefined` \| `string` | `undefined` |
+| `TPath` *extends* `undefined` \| `string` \| `Path`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\> | `undefined` |
+| `TQuery` *extends* `undefined` \| `string` \| `Query`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\> | `undefined` |
+| `THash` *extends* `undefined` \| `string` \| `Hash`\<`undefined` \| `string`\> | `undefined` |
+| `TMeta` *extends* `Record`\<`string`, `unknown`\> | `Record`\<`string`, `unknown`\> |
+| `TState` *extends* `Record`\<`string`, [`Param`](../types/Param.md)\> | `Record`\<`string`, [`Param`](../types/Param.md)\> |
+
+### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `options` | [`CreateRouteOptions`](../types/CreateRouteOptions.md)\<`TName`, `TPath`, `TQuery`, `THash`, `TMeta`\> & `WithHooks` & WithComponents\<TComponents, Route\<ToName\<TName\>, Host\<"", \{\}\>, ToPath\<TPath\>, ToQuery\<TQuery\>, ToHash\<THash\>, TMeta, TState, TName\>\> & (WithoutParent & (WithoutState \| WithState\<...\>)) |
+
+### Returns
+
+[`Route`](../types/Route.md)\<`ToName`\<`TName`\>, `Host`\<`""`, `object`\>, `ToPath`\<`TPath`\>, `ToQuery`\<`TQuery`\>, `ToHash`\<`THash`\>, `TMeta`, `TState`, `TName`\>
+
+## Call Signature
+
+```ts
+function createRoute<TComponents, TParent, TName, TPath, TQuery, THash, TMeta, TState>(options): Route<ToName<TName>, Host<"", object>, CombinePath<TParent["path"], ToPath<TPath>>, CombineQuery<TParent["query"], ToQuery<TQuery>>, CombineHash<TParent["hash"], ToHash<THash>>, CombineMeta<TMeta, TParent["meta"]>, CombineState<TState, TParent["state"]>, TName | TParent["matches"][number]["name"]>
+```
+
+### Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `TComponents` *extends* `Record`\<`string`, `Component`\> | - |
+| `TParent` *extends* [`Route`](../types/Route.md)\<`string`, `Host`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\>, `Path`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\>, `Query`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\>, `Hash`\<`undefined` \| `string`\>, `Record`\<`string`, `unknown`\>, `Record`\<`string`, [`Param`](../types/Param.md)\>, `undefined` \| `string`\> | - |
+| `TName` *extends* `undefined` \| `string` | `undefined` |
+| `TPath` *extends* `undefined` \| `string` \| `Path`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\> | `undefined` |
+| `TQuery` *extends* `undefined` \| `string` \| `Query`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\> | `undefined` |
+| `THash` *extends* `undefined` \| `string` \| `Hash`\<`undefined` \| `string`\> | `undefined` |
+| `TMeta` *extends* `Record`\<`string`, `unknown`\> | `Record`\<`string`, `unknown`\> |
+| `TState` *extends* `Record`\<`string`, [`Param`](../types/Param.md)\> | `Record`\<`string`, [`Param`](../types/Param.md)\> |
+
+### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `options` | [`CreateRouteOptions`](../types/CreateRouteOptions.md)\<`TName`, `TPath`, `TQuery`, `THash`, `TMeta`\> & `WithHooks` & WithComponents\<TComponents, Route\<ToName\<TName\>, Host\<"", \{\}\>, CombinePath\<TParent\["path"\], ToPath\<TPath\>\>, ... 4 more ..., TName \| TParent\["matches"\]\[number\]\["name"\]\>\> & (WithParent\<...\> & (WithoutState \| WithState\<...\>)) |
+
+### Returns
+
+[`Route`](../types/Route.md)\<`ToName`\<`TName`\>, `Host`\<`""`, `object`\>, `CombinePath`\<`TParent`\[`"path"`\], `ToPath`\<`TPath`\>\>, `CombineQuery`\<`TParent`\[`"query"`\], `ToQuery`\<`TQuery`\>\>, `CombineHash`\<`TParent`\[`"hash"`\], `ToHash`\<`THash`\>\>, `CombineMeta`\<`TMeta`, `TParent`\[`"meta"`\]\>, `CombineState`\<`TState`, `TParent`\[`"state"`\]\>, `TName` \| `TParent`\[`"matches"`\]\[`number`\]\[`"name"`\]\>

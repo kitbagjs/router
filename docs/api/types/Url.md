@@ -1,3 +1,5 @@
-# Url
+# Types: Url
 
-URL is any `string` that starts with "http", "https", or a forward slash "/".
+```ts
+type Url: `http://${string}` | `https://${string}` | `/${string}`;
+```

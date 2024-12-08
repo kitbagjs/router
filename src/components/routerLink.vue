@@ -4,6 +4,12 @@
   </a>
 </template>
 
+<script lang="ts">
+/**
+ * @ignore
+ */
+</script>
+
 <script setup lang="ts">
   import { computed } from 'vue'
   import { useRouter, useLink } from '@/compositions'

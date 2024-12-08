@@ -1,13 +1,11 @@
-# BeforeRouteHookResponse
+# Types: BeforeRouteHookResponse
 
 ```ts
-type BeforeRouteHookResponse<TRoutes>: RouteHookSuccessResponse | RouteHookPushResponse<TRoutes> | RouteHookRejectResponse | RouteHookAbortResponse;
+type BeforeRouteHookResponse: CallbackSuccessResponse | CallbackPushResponse | CallbackRejectResponse | CallbackAbortResponse;
 ```
 
 Type for responses from a before route hook, which may indicate different outcomes such as success, push, reject, or abort.
 
-## Type parameters
+## Template
 
-| Type parameter | Description |
-| :------ | :------ |
-| `TRoutes` *extends* [`Routes`](Routes) | The type of the routes configuration. |
+The type of the routes configuration.

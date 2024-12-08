@@ -1,4 +1,4 @@
-# RouteHook
+# Types: RouteHook
 
 ```ts
 type RouteHook: BeforeRouteHook | AfterRouteHook;
