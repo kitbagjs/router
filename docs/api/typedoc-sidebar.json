@@ -232,6 +232,10 @@
         "link": "/api/types/RegisteredRoutesName.md"
       },
       {
+        "text": "ResolvedRoute",
+        "link": "/api/types/ResolvedRoute.md"
+      },
+      {
         "text": "Route",
         "link": "/api/types/Route.md"
       },

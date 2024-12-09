@@ -68,6 +68,7 @@
 - [RegisteredRouterRoute](types/RegisteredRouterRoute.md)
 - [RegisteredRoutes](types/RegisteredRoutes.md)
 - [RegisteredRoutesName](types/RegisteredRoutesName.md)
+- [ResolvedRoute](types/ResolvedRoute.md)
 - [Route](types/Route.md)
 - [RouteHook](types/RouteHook.md)
 - [RouteHookLifecycle](types/RouteHookLifecycle.md)
