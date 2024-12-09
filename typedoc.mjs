@@ -1,7 +1,10 @@
 export default{
   $schema: "https://typedoc.org/schema.json",
   entryPoints: ["./dist/kitbag-router.d.ts"],
-  plugin: ["typedoc-plugin-markdown", "typedoc-vitepress-theme"],
+  plugin: [
+    "typedoc-plugin-markdown",
+    "typedoc-vitepress-theme",
+  ],
   out: "./docs/api",
   docsRoot: "./docs/",
   tsconfig: "./typedoc.tsconfig.json",
