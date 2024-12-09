@@ -1,5 +1,4 @@
 import { RouterRoute, isRouterRoute } from '@/services/createRouterRoute'
-import { CreateRouteOptionsMatched } from '@/types'
 import { RegisteredRouterRoute, RegisteredRoutesName } from '@/types/register'
 
 export type IsRouteOptions = {
