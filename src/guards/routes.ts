@@ -24,7 +24,7 @@ export function isRoute<
 export function isRoute<
   TRoute extends RouterRoute,
   TRouteName extends TRoute['name']
->(route: TRoute, routeName: TRouteName, options?: IsRouteOptions): route is RouteWithMatch<typeof route, TRouteName>
+>(route: TRoute, routeName: TRouteName, options?: IsRouteOptions): route is RouteWithMatch<TRoute, TRouteName>
 
 export function isRoute<
   TRouteName extends RegisteredRoutesName

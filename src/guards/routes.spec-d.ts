@@ -27,7 +27,7 @@ test('router route can be narrowed', () => {
       path: '/parentB',
       component,
     }),
-  ]as const
+  ] as const
 
   const { route } = createRouter(routes)
 
@@ -41,8 +41,16 @@ test('router route can be narrowed', () => {
     expectTypeOf<typeof route.name>().toMatchTypeOf<'parentA'>()
   }
 
+  if (isRoute(route, 'parentB', { exact: true })) {
+    expectTypeOf<typeof route.name>().toMatchTypeOf<'parentB'>()
+  }
+
   if (isRoute(route, 'parentA', { exact: false })) {
     expectTypeOf<typeof route.name>().toMatchTypeOf<'parentA' | 'childA'>()
+  }
+
+  if (isRoute(route, 'parentB', { exact: false })) {
+    expectTypeOf<typeof route.name>().toMatchTypeOf<'parentB'>()
   }
 
   if (isRoute(route, 'parentA')) {
