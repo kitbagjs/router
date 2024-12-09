@@ -13,9 +13,17 @@ export default{
   hideGroupHeadings: true,
   useCodeBlocks: true,
   disableSources: true,
-  groupOrder: ["Interfaces", "Functions", "Utilities", "Type Guards", "Errors", "Types", "*"],
+  groupOrder: [
+    "Compositions",
+    "Errors",
+    "Interfaces",
+    "Type Guards",
+    "Types",
+    "Utilities",
+    "*",
+  ],
   sidebar: {
-    pretty: true
+    pretty: true,
   },
   pageTitleTemplates: {
     member: (args) => `${args.group}: ${args.name}`,
