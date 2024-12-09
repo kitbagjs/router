@@ -1,4 +1,4 @@
-# Functions: onBeforeRouteLeave()
+# Hooks: onBeforeRouteLeave()
 
 ```ts
 function onBeforeRouteLeave(hook): RouteHookRemove

@@ -1,4 +1,4 @@
-# Functions: useRoute()
+# Compositions: useRoute()
 
 ## Call Signature
 
@@ -11,6 +11,9 @@ This function provides two overloads:
 1. When called without arguments, it returns the current route from the router without types.
 2. When called with a route name, it checks if the current active route includes the specified route name.
 
+The function also sets up a reactive watcher on the route object from the router to continually check the validity of the route name
+if provided, throwing an error if the validation fails at any point during the component's lifecycle.
+
 ### Returns
 
 [`RegisteredRouterRoute`](../types/RegisteredRouterRoute.md)
@@ -20,9 +23,6 @@ The current router route. If a route name is provided, it validates the route na
 ### Throws
 
 Throws an error if the provided route name is not valid or does not match the current route.
-
-The function also sets up a reactive watcher on the route object from the router to continually check the validity of the route name
-if provided, throwing an error if the validation fails at any point during the component's lifecycle.
 
 ## Call Signature
 
@@ -34,6 +34,9 @@ A composition to access the current route or verify a specific route name within
 This function provides two overloads:
 1. When called without arguments, it returns the current route from the router without types.
 2. When called with a route name, it checks if the current active route includes the specified route name.
+
+The function also sets up a reactive watcher on the route object from the router to continually check the validity of the route name
+if provided, throwing an error if the validation fails at any point during the component's lifecycle.
 
 ### Type Parameters
 
@@ -58,9 +61,6 @@ The current router route. If a route name is provided, it validates the route na
 
 Throws an error if the provided route name is not valid or does not match the current route.
 
-The function also sets up a reactive watcher on the route object from the router to continually check the validity of the route name
-if provided, throwing an error if the validation fails at any point during the component's lifecycle.
-
 ## Call Signature
 
 ```ts
@@ -71,6 +71,9 @@ A composition to access the current route or verify a specific route name within
 This function provides two overloads:
 1. When called without arguments, it returns the current route from the router without types.
 2. When called with a route name, it checks if the current active route includes the specified route name.
+
+The function also sets up a reactive watcher on the route object from the router to continually check the validity of the route name
+if provided, throwing an error if the validation fails at any point during the component's lifecycle.
 
 ### Type Parameters
 
@@ -94,6 +97,3 @@ The current router route. If a route name is provided, it validates the route na
 ### Throws
 
 Throws an error if the provided route name is not valid or does not match the current route.
-
-The function also sets up a reactive watcher on the route object from the router to continually check the validity of the route name
-if provided, throwing an error if the validation fails at any point during the component's lifecycle.

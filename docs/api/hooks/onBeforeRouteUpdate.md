@@ -1,4 +1,4 @@
-# Functions: onBeforeRouteUpdate()
+# Hooks: onBeforeRouteUpdate()
 
 ```ts
 function onBeforeRouteUpdate(hook): RouteHookRemove

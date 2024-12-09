@@ -32,16 +32,6 @@ This detailed error message aids in quickly identifying and resolving mismatches
 
 `Error.constructor`
 
-## Properties
-
-| Property | Modifier | Type | Description | Inherited from |
-| ------ | ------ | ------ | ------ | ------ |
-| `message` | `public` | `string` | - | `Error.message` |
-| `name` | `public` | `string` | - | `Error.name` |
-| `stack?` | `public` | `string` | - | `Error.stack` |
-| `prepareStackTrace?` | `static` | (`err`: `Error`, `stackTraces`: `CallSite`[]) => `any` | Optional override for formatting stack traces **See** https://v8.dev/docs/stack-trace-api#customizing-stack-traces | `Error.prepareStackTrace` |
-| `stackTraceLimit` | `static` | `number` | - | `Error.stackTraceLimit` |
-
 ## Methods
 
 ### captureStackTrace()
@@ -66,3 +56,13 @@ Create .stack property on a target object
 #### Inherited from
 
 `Error.captureStackTrace`
+
+## Properties
+
+| Property | Modifier | Type | Description | Inherited from |
+| ------ | ------ | ------ | ------ | ------ |
+| `message` | `public` | `string` | - | `Error.message` |
+| `name` | `public` | `string` | - | `Error.name` |
+| `stack?` | `public` | `string` | - | `Error.stack` |
+| `prepareStackTrace?` | `static` | (`err`: `Error`, `stackTraces`: `CallSite`[]) => `any` | Optional override for formatting stack traces **See** https://v8.dev/docs/stack-trace-api#customizing-stack-traces | `Error.prepareStackTrace` |
+| `stackTraceLimit` | `static` | `number` | - | `Error.stackTraceLimit` |

@@ -19,4 +19,4 @@ function withDefault<TParam>(param, defaultValue): ParamWithDefault<TParam>
 
 ## Returns
 
-[`ParamWithDefault`](../types/ParamWithDefault.md)\<`TParam`\>
+`ParamWithDefault`\<`TParam`\>

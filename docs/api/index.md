@@ -1,8 +1,45 @@
 # @kitbag/router
 
+## Compositions
+
+- [useLink](compositions/useLink.md)
+- [useRejection](compositions/useRejection.md)
+- [useRoute](compositions/useRoute.md)
+- [useRouter](compositions/useRouter.md)
+
+## Errors
+
+- [DuplicateParamsError](errors/DuplicateParamsError.md)
+- [RouterNotInstalledError](errors/RouterNotInstalledError.md)
+- [UseRouteInvalidError](errors/UseRouteInvalidError.md)
+
 ## Interfaces
 
 - [Register](interfaces/Register.md)
+
+## Type Guards
+
+- [isRoute](type-guards/isRoute.md)
+- [isUrl](type-guards/isUrl.md)
+
+## Functions
+
+- [asUrl](functions/asUrl.md)
+- [createExternalRoute](functions/createExternalRoute.md)
+- [createParam](functions/createParam.md)
+- [createRoute](functions/createRoute.md)
+- [createRouter](functions/createRouter.md)
+- [path](functions/path.md)
+- [query](functions/query.md)
+- [withDefault](functions/withDefault.md)
+
+## Hooks
+
+- [onAfterRouteEnter](hooks/onAfterRouteEnter.md)
+- [onAfterRouteLeave](hooks/onAfterRouteLeave.md)
+- [onAfterRouteUpdate](hooks/onAfterRouteUpdate.md)
+- [onBeforeRouteLeave](hooks/onBeforeRouteLeave.md)
+- [onBeforeRouteUpdate](hooks/onBeforeRouteUpdate.md)
 
 ## Types
 
@@ -14,14 +51,12 @@
 - [BeforeRouteHook](types/BeforeRouteHook.md)
 - [BeforeRouteHookLifecycle](types/BeforeRouteHookLifecycle.md)
 - [BeforeRouteHookResponse](types/BeforeRouteHookResponse.md)
-- [ComponentProps](types/ComponentProps.md)
 - [CreateRouteOptions](types/CreateRouteOptions.md)
 - [Param](types/Param.md)
 - [ParamExtras](types/ParamExtras.md)
 - [ParamGetSet](types/ParamGetSet.md)
 - [ParamGetter](types/ParamGetter.md)
 - [ParamSetter](types/ParamSetter.md)
-- [ParamWithDefault](types/ParamWithDefault.md)
 - [RegisteredRejectionType](types/RegisteredRejectionType.md)
 - [RegisteredRouteMap](types/RegisteredRouteMap.md)
 - [RegisteredRouter](types/RegisteredRouter.md)
@@ -46,33 +81,3 @@
 - [UrlParts](types/UrlParts.md)
 - [UseLink](types/UseLink.md)
 - [UseLinkOptions](types/UseLinkOptions.md)
-
-## Functions
-
-- [asUrl](functions/asUrl.md)
-- [component](functions/component.md)
-- [createExternalRoute](functions/createExternalRoute.md)
-- [createParam](functions/createParam.md)
-- [createRoute](functions/createRoute.md)
-- [createRouter](functions/createRouter.md)
-- [isParamWithDefault](functions/isParamWithDefault.md)
-- [isRoute](functions/isRoute.md)
-- [isUrl](functions/isUrl.md)
-- [onAfterRouteEnter](functions/onAfterRouteEnter.md)
-- [onAfterRouteLeave](functions/onAfterRouteLeave.md)
-- [onAfterRouteUpdate](functions/onAfterRouteUpdate.md)
-- [onBeforeRouteLeave](functions/onBeforeRouteLeave.md)
-- [onBeforeRouteUpdate](functions/onBeforeRouteUpdate.md)
-- [path](functions/path.md)
-- [query](functions/query.md)
-- [useLink](functions/useLink.md)
-- [useRejection](functions/useRejection.md)
-- [useRoute](functions/useRoute.md)
-- [useRouter](functions/useRouter.md)
-- [withDefault](functions/withDefault.md)
-
-## Errors
-
-- [DuplicateParamsError](classes/DuplicateParamsError.md)
-- [RouterNotInstalledError](classes/RouterNotInstalledError.md)
-- [UseRouteInvalidError](classes/UseRouteInvalidError.md)

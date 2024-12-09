@@ -1,4 +1,4 @@
-# Functions: useRouter()
+# Compositions: useRouter()
 
 ```ts
 function useRouter(): RegisteredRouter

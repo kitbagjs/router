@@ -1,4 +1,4 @@
-# Functions: useLink()
+# Compositions: useLink()
 
 ## Call Signature
 
@@ -44,7 +44,7 @@ for navigating.
 | Parameter | Type | Description |
 | ------ | ------ | ------ |
 | `url` | `MaybeRefOrGetter`\<[`Url`](../types/Url.md)\> | - |
-| `options`? | `MaybeRefOrGetter`\<[`UseLinkOptions`](../types/UseLinkOptions.md)\> | RouterResolveOptionsSame options as router resolve. |
+| `options`? | `MaybeRefOrGetter`\<[`UseLinkOptions`](../types/UseLinkOptions.md)\> | RouterResolveOptions Same options as router resolve. |
 
 ### Returns
 

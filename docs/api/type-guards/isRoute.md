@@ -1,4 +1,4 @@
-# Functions: isRoute()
+# Type Guards: isRoute()
 
 ## Call Signature
 
@@ -6,15 +6,19 @@
 function isRoute(route): route is RouterRoute<Readonly<{ hash?: string; id: string; matched: CreateRouteOptionsMatched<string>; matches: CreateRouteOptionsMatched<undefined | string>[]; name: string; params: { (key: string): any; (key: number): any }; query: ResolvedRouteQuery; state: { (key: string): any; (key: number): any } }>>
 ```
 
+A type guard for determining if a value is a valid RouterRoute.
+
 ### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `route` | `unknown` |
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `route` | `unknown` | The value to check. |
 
 ### Returns
 
 route is RouterRoute\<Readonly\<\{ hash?: string; id: string; matched: CreateRouteOptionsMatched\<string\>; matches: CreateRouteOptionsMatched\<undefined \| string\>\[\]; name: string; params: \{ (key: string): any; (key: number): any \}; query: ResolvedRouteQuery; state: \{ (key: string): any; (key: number): any \} \}\>\>
+
+`true` if the value is a valid RouterRoute, otherwise `false`.
 
 ## Call Signature
 
@@ -25,6 +29,8 @@ function isRoute<TRoute, TRouteName>(
    options): route is TRoute & { name: TRouteName }
 ```
 
+A type guard for determining if a value is a valid RouterRoute with an exact match.
+
 ### Type Parameters
 
 | Type Parameter |
@@ -34,15 +40,17 @@ function isRoute<TRoute, TRouteName>(
 
 ### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `route` | `TRoute` |
-| `routeName` | `TRouteName` |
-| `options` | `IsRouteOptions` & `object` |
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `route` | `TRoute` | The value to check. |
+| `routeName` | `TRouteName` | The expected route name. |
+| `options` | `IsRouteOptions` & `object` | - |
 
 ### Returns
 
 `route is TRoute & { name: TRouteName }`
+
+`true` if the value is a valid RouterRoute with an exact match, otherwise `false`.
 
 ## Call Signature
 
@@ -53,6 +61,8 @@ function isRoute<TRoute, TRouteName>(
 options?): route is TRoute & { name: `${TRouteName}${string}` }
 ```
 
+A type guard for determining if a value is a valid RouterRoute with a partial match.
+
 ### Type Parameters
 
 | Type Parameter |
@@ -62,15 +72,17 @@ options?): route is TRoute & { name: `${TRouteName}${string}` }
 
 ### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `route` | `TRoute` |
-| `routeName` | `TRouteName` |
-| `options`? | `IsRouteOptions` |
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `route` | `TRoute` | The value to check. |
+| `routeName` | `TRouteName` | The expected route name. |
+| `options`? | `IsRouteOptions` | - |
 
 ### Returns
 
 route is TRoute & \{ name: \`$\{TRouteName\}$\{string\}\` \}
+
+`true` if the value is a valid RouterRoute with a partial match, otherwise `false`.
 
 ## Call Signature
 
@@ -81,6 +93,8 @@ function isRoute<TRouteName>(
 options): route is RouterRoute<Readonly<{ hash?: string; id: any; matched: any; matches: any; name: any; params: {} | { (key: string): any; (key: number): any }; query: ResolvedRouteQuery; state: { (key: string): any; (key: number): any } }>> & { name: TRouteName }
 ```
 
+A type guard for determining if a value is a valid RegisteredRouterRoute with an exact match.
+
 ### Type Parameters
 
 | Type Parameter |
@@ -89,15 +103,17 @@ options): route is RouterRoute<Readonly<{ hash?: string; id: any; matched: any; 
 
 ### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `route` | `unknown` |
-| `routeName` | `TRouteName` |
-| `options` | `IsRouteOptions` & `object` |
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `route` | `unknown` | The value to check. |
+| `routeName` | `TRouteName` | The expected route name. |
+| `options` | `IsRouteOptions` & `object` | - |
 
 ### Returns
 
 route is RouterRoute\<Readonly\<\{ hash?: string; id: any; matched: any; matches: any; name: any; params: \{\} \| \{ (key: string): any; (key: number): any \}; query: ResolvedRouteQuery; state: \{ (key: string): any; (key: number): any \} \}\>\> & \{ name: TRouteName \}
+
+`true` if the value is a valid RegisteredRouterRoute with an exact match, otherwise `false`.
 
 ## Call Signature
 
@@ -108,6 +124,8 @@ function isRoute<TRouteName>(
 options?): route is RouterRoute<Readonly<{ hash?: string; id: any; matched: any; matches: any; name: any; params: {} | { (key: string): any; (key: number): any }; query: ResolvedRouteQuery; state: { (key: string): any; (key: number): any } }>> & { name: `${TRouteName}${string}` }
 ```
 
+A type guard for determining if a value is a valid RegisteredRouterRoute with a partial match.
+
 ### Type Parameters
 
 | Type Parameter |
@@ -116,15 +134,17 @@ options?): route is RouterRoute<Readonly<{ hash?: string; id: any; matched: any;
 
 ### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `route` | `unknown` |
-| `routeName` | `TRouteName` |
-| `options`? | `IsRouteOptions` |
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `route` | `unknown` | The value to check. |
+| `routeName` | `TRouteName` | The expected route name. |
+| `options`? | `IsRouteOptions` | - |
 
 ### Returns
 
 route is RouterRoute\<Readonly\<\{ hash?: string; id: any; matched: any; matches: any; name: any; params: \{\} \| \{ (key: string): any; (key: number): any \}; query: ResolvedRouteQuery; state: \{ (key: string): any; (key: number): any \} \}\>\> & \{ name: \`$\{TRouteName\}$\{string\}\` \}
+
+`true` if the value is a valid RegisteredRouterRoute with a partial match, otherwise `false`.
 
 ## Call Signature
 
@@ -135,14 +155,18 @@ function isRoute(
    options?): boolean
 ```
 
+A type guard for determining if a value is a valid RouterRoute.
+
 ### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `route` | `unknown` |
-| `routeName`? | `string` |
-| `options`? | `IsRouteOptions` |
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `route` | `unknown` | The value to check. |
+| `routeName`? | `string` | The expected route name. |
+| `options`? | `IsRouteOptions` | - |
 
 ### Returns
 
 `boolean`
+
+`true` if the value is a valid RouterRoute, otherwise `false`.

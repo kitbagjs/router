@@ -1,11 +1,129 @@
 [
   {
+    "text": "Compositions",
+    "collapsed": true,
+    "items": [
+      {
+        "text": "useLink",
+        "link": "/api/compositions/useLink.md"
+      },
+      {
+        "text": "useRejection",
+        "link": "/api/compositions/useRejection.md"
+      },
+      {
+        "text": "useRoute",
+        "link": "/api/compositions/useRoute.md"
+      },
+      {
+        "text": "useRouter",
+        "link": "/api/compositions/useRouter.md"
+      }
+    ]
+  },
+  {
+    "text": "Errors",
+    "collapsed": true,
+    "items": [
+      {
+        "text": "DuplicateParamsError",
+        "link": "/api/errors/DuplicateParamsError.md"
+      },
+      {
+        "text": "RouterNotInstalledError",
+        "link": "/api/errors/RouterNotInstalledError.md"
+      },
+      {
+        "text": "UseRouteInvalidError",
+        "link": "/api/errors/UseRouteInvalidError.md"
+      }
+    ]
+  },
+  {
     "text": "Interfaces",
     "collapsed": true,
     "items": [
       {
         "text": "Register",
         "link": "/api/interfaces/Register.md"
+      }
+    ]
+  },
+  {
+    "text": "Type Guards",
+    "collapsed": true,
+    "items": [
+      {
+        "text": "isRoute",
+        "link": "/api/type-guards/isRoute.md"
+      },
+      {
+        "text": "isUrl",
+        "link": "/api/type-guards/isUrl.md"
+      }
+    ]
+  },
+  {
+    "text": "Functions",
+    "collapsed": true,
+    "items": [
+      {
+        "text": "asUrl",
+        "link": "/api/functions/asUrl.md"
+      },
+      {
+        "text": "createExternalRoute",
+        "link": "/api/functions/createExternalRoute.md"
+      },
+      {
+        "text": "createParam",
+        "link": "/api/functions/createParam.md"
+      },
+      {
+        "text": "createRoute",
+        "link": "/api/functions/createRoute.md"
+      },
+      {
+        "text": "createRouter",
+        "link": "/api/functions/createRouter.md"
+      },
+      {
+        "text": "path",
+        "link": "/api/functions/path.md"
+      },
+      {
+        "text": "query",
+        "link": "/api/functions/query.md"
+      },
+      {
+        "text": "withDefault",
+        "link": "/api/functions/withDefault.md"
+      }
+    ]
+  },
+  {
+    "text": "Hooks",
+    "collapsed": true,
+    "items": [
+      {
+        "text": "onAfterRouteEnter",
+        "link": "/api/hooks/onAfterRouteEnter.md"
+      },
+      {
+        "text": "onAfterRouteLeave",
+        "link": "/api/hooks/onAfterRouteLeave.md"
+      },
+      {
+        "text": "onAfterRouteUpdate",
+        "link": "/api/hooks/onAfterRouteUpdate.md"
+      },
+      {
+        "text": "onBeforeRouteLeave",
+        "link": "/api/hooks/onBeforeRouteLeave.md"
+      },
+      {
+        "text": "onBeforeRouteUpdate",
+        "link": "/api/hooks/onBeforeRouteUpdate.md"
       }
     ]
   },
@@ -46,10 +164,6 @@
         "link": "/api/types/BeforeRouteHookResponse.md"
       },
       {
-        "text": "ComponentProps",
-        "link": "/api/types/ComponentProps.md"
-      },
-      {
         "text": "CreateRouteOptions",
         "link": "/api/types/CreateRouteOptions.md"
       },
@@ -72,10 +186,6 @@
       {
         "text": "ParamSetter",
         "link": "/api/types/ParamSetter.md"
-      },
-      {
-        "text": "ParamWithDefault",
-        "link": "/api/types/ParamWithDefault.md"
       },
       {
         "text": "RegisteredRejectionType",
@@ -172,114 +282,6 @@
       {
         "text": "UseLinkOptions",
         "link": "/api/types/UseLinkOptions.md"
-      }
-    ]
-  },
-  {
-    "text": "Functions",
-    "collapsed": true,
-    "items": [
-      {
-        "text": "asUrl",
-        "link": "/api/functions/asUrl.md"
-      },
-      {
-        "text": "component",
-        "link": "/api/functions/component.md"
-      },
-      {
-        "text": "createExternalRoute",
-        "link": "/api/functions/createExternalRoute.md"
-      },
-      {
-        "text": "createParam",
-        "link": "/api/functions/createParam.md"
-      },
-      {
-        "text": "createRoute",
-        "link": "/api/functions/createRoute.md"
-      },
-      {
-        "text": "createRouter",
-        "link": "/api/functions/createRouter.md"
-      },
-      {
-        "text": "isParamWithDefault",
-        "link": "/api/functions/isParamWithDefault.md"
-      },
-      {
-        "text": "isRoute",
-        "link": "/api/functions/isRoute.md"
-      },
-      {
-        "text": "isUrl",
-        "link": "/api/functions/isUrl.md"
-      },
-      {
-        "text": "onAfterRouteEnter",
-        "link": "/api/functions/onAfterRouteEnter.md"
-      },
-      {
-        "text": "onAfterRouteLeave",
-        "link": "/api/functions/onAfterRouteLeave.md"
-      },
-      {
-        "text": "onAfterRouteUpdate",
-        "link": "/api/functions/onAfterRouteUpdate.md"
-      },
-      {
-        "text": "onBeforeRouteLeave",
-        "link": "/api/functions/onBeforeRouteLeave.md"
-      },
-      {
-        "text": "onBeforeRouteUpdate",
-        "link": "/api/functions/onBeforeRouteUpdate.md"
-      },
-      {
-        "text": "path",
-        "link": "/api/functions/path.md"
-      },
-      {
-        "text": "query",
-        "link": "/api/functions/query.md"
-      },
-      {
-        "text": "useLink",
-        "link": "/api/functions/useLink.md"
-      },
-      {
-        "text": "useRejection",
-        "link": "/api/functions/useRejection.md"
-      },
-      {
-        "text": "useRoute",
-        "link": "/api/functions/useRoute.md"
-      },
-      {
-        "text": "useRouter",
-        "link": "/api/functions/useRouter.md"
-      },
-      {
-        "text": "withDefault",
-        "link": "/api/functions/withDefault.md"
-      }
-    ]
-  },
-  {
-    "text": "Errors",
-    "collapsed": true,
-    "items": [
-      {
-        "text": "DuplicateParamsError",
-        "link": "/api/classes/DuplicateParamsError.md"
-      },
-      {
-        "text": "RouterNotInstalledError",
-        "link": "/api/classes/RouterNotInstalledError.md"
-      },
-      {
-        "text": "UseRouteInvalidError",
-        "link": "/api/classes/UseRouteInvalidError.md"
       }
     ]
   }
