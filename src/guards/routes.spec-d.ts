@@ -49,6 +49,10 @@ test('router route can be narrowed', () => {
     expectTypeOf<typeof route.name>().toMatchTypeOf<'parentA' | 'childA'>()
   }
 
+  if (isRoute(route, 'parentB', { exact: false })) {
+    expectTypeOf<typeof route.name>().toMatchTypeOf<'parentB'>()
+  }
+
   if (isRoute(route, 'parentA')) {
     expectTypeOf<typeof route.name>().toMatchTypeOf<'parentA' | 'childA'>()
   }
