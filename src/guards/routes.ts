@@ -2,6 +2,15 @@ import { RouterRoute, isRouterRoute } from '@/services/createRouterRoute'
 import { toName } from '@/types/name'
 import { RegisteredRouterRoute, RegisteredRoutesName } from '@/types/register'
 
+type RouteWithMatch<
+  TRoute extends RouterRoute,
+  TRouteName extends TRoute['name']
+> = TRoute extends RouterRoute
+  ? TRouteName extends TRoute['matches'][number]['name']
+    ? TRoute
+    : never
+  : never
+
 export type IsRouteOptions = {
   exact?: boolean,
 }
@@ -16,7 +25,7 @@ export function isRoute<
 export function isRoute<
   TRoute extends RouterRoute,
   TRouteName extends TRoute['name']
->(route: TRoute, routeName: TRouteName, options?: IsRouteOptions): route is TRoute & { name: `${TRouteName}${string}` }
+>(route: TRoute, routeName: TRouteName, options?: IsRouteOptions): route is RouteWithMatch<TRoute, TRouteName>
 
 export function isRoute<
   TRouteName extends RegisteredRoutesName
@@ -24,7 +33,7 @@ export function isRoute<
 
 export function isRoute<
   TRouteName extends RegisteredRoutesName
->(route: unknown, routeName: TRouteName, options?: IsRouteOptions): route is RegisteredRouterRoute & { name: `${TRouteName}${string}` }
+>(route: unknown, routeName: TRouteName, options?: IsRouteOptions): route is RouteWithMatch<RegisteredRouterRoute, TRouteName>
 
 export function isRoute(route: unknown, routeName?: string, options?: IsRouteOptions): boolean
 
