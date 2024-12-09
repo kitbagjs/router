@@ -6,14 +6,12 @@ export type IsRouteOptions = {
   exact?: boolean,
 }
 
-type RouteNamesInMatches<
+type RouteWithMatch<
   TRoute extends RouterRoute,
-  TRouteName extends TRoute['name'],
-> = TRoute['matches'] extends (infer U)[]
-  ? U extends CreateRouteOptionsMatched<infer TNames>
-    ? TRouteName extends TNames
-      ? TNames
-      : never
+  TRouteName extends TRoute['name']
+> = TRoute extends RouterRoute
+  ? TRouteName extends TRoute['matches'][number]['name']
+    ? TRoute
     : never
   : never
 
@@ -27,7 +25,7 @@ export function isRoute<
 export function isRoute<
   TRoute extends RouterRoute,
   TRouteName extends TRoute['name']
->(route: TRoute, routeName: TRouteName, options?: IsRouteOptions): route is TRoute & {name: RouteNamesInMatches<typeof route, TRouteName>}
+>(route: TRoute, routeName: TRouteName, options?: IsRouteOptions): route is RouteWithMatch<typeof route, TRouteName>
 
 export function isRoute<
   TRouteName extends RegisteredRoutesName
@@ -35,7 +33,7 @@ export function isRoute<
 
 export function isRoute<
   TRouteName extends RegisteredRoutesName
->(route: unknown, routeName: TRouteName, options?: IsRouteOptions): route is RegisteredRouterRoute & {name: RouteNamesInMatches<RegisteredRouterRoute, TRouteName>}
+>(route: unknown, routeName: TRouteName, options?: IsRouteOptions): route is RouteWithMatch<RegisteredRouterRoute, TRouteName>
 
 export function isRoute(route: unknown, routeName?: string, options?: IsRouteOptions): boolean
 
