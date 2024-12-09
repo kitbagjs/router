@@ -1,15 +1,6 @@
 import { RouterRoute, isRouterRoute } from '@/services/createRouterRoute'
 import { RegisteredRouterRoute, RegisteredRoutesName } from '@/types/register'
 
-type RouteWithMatch<
-  TRoute extends RouterRoute,
-  TRouteName extends TRoute['name']
-> = TRoute extends RouterRoute
-  ? TRouteName extends TRoute['matches'][number]['name']
-    ? TRoute
-    : never
-  : never
-
 export type IsRouteOptions = {
   exact?: boolean,
 }
