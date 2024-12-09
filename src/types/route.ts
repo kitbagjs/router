@@ -15,7 +15,7 @@ export type Routes = readonly Route[]
 /**
  * The Route properties originally provided to `createRoute`. The only change is normalizing meta to always default to an empty object.
  */
-type CreateRouteOptionsMatched<TName extends string | undefined = string | undefined> = CreateRouteOptions<TName> & WithHooks & (WithHost | WithoutHost) & (WithComponent | WithComponents | WithoutComponents) & (WithParent | WithoutParent) & (WithState | WithoutState) & { id: string, meta: RouteMeta }
+export type CreateRouteOptionsMatched<TName extends string | undefined = string | undefined> = CreateRouteOptions<TName> & WithHooks & (WithHost | WithoutHost) & (WithComponent | WithComponents | WithoutComponents) & (WithParent | WithoutParent) & (WithState | WithoutState) & { id: string, meta: RouteMeta }
 
 /**
  * Represents the structure of a route within the application. Return value of `createRoute`
