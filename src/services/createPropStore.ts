@@ -3,14 +3,15 @@ import { isWithComponent, isWithComponents } from '@/types/createRouteOptions'
 import { getPrefetchOption, PrefetchConfigs, PrefetchStrategy } from '@/types/prefetch'
 import { ResolvedRoute } from '@/types/resolved'  
 import { Route } from '@/types/route'
-import { CallbackContext, CallbackPushResponse, CallbackRejectResponse, CallbackSuccessResponse, createCallbackContext } from './createCallbackContext'
+import { CallbackPushResponse, CallbackRejectResponse, CallbackSuccessResponse, createCallbackContext } from './createCallbackContext'
 import { CallbackContextPushError } from '@/errors/callbackContextPushError'
 import { CallbackContextRejectionError } from '@/errors/callbackContextRejectionError'
 import { getPropsValue } from '@/utilities/props'
+import { PropsCallbackContext } from '@/types/props'
 
 export const propStoreKey: InjectionKey<PropStore> = Symbol()
 
-type ComponentProps = { id: string, name: string, props?: (params: ResolvedRoute, context: CallbackContext) => unknown }
+type ComponentProps = { id: string, name: string, props?: (params: ResolvedRoute, context: PropsCallbackContext) => unknown }
 
 type SetPropsResponse = CallbackSuccessResponse | CallbackPushResponse | CallbackRejectResponse
 
@@ -23,7 +24,7 @@ export type PropStore = {
 
 export function createPropStore(): PropStore {
   const store: Map<string, unknown> = reactive(new Map())
-  const context = createCallbackContext()
+  const { push, replace, reject} = createCallbackContext()
 
   const getPrefetchProps: PropStore['getPrefetchProps'] = (strategy, route, prefetch) => {
     return route.matches
@@ -35,7 +36,11 @@ export function createPropStore(): PropStore {
         }
 
         const key = getPropKey(id, name, route)
-        const value = getPropsValue(() => props(route, context))
+        const value = getPropsValue(() => props(route, {
+          push,
+          replace,
+          reject,
+        }))
 
         response[key] = value
 
@@ -64,7 +69,11 @@ export function createPropStore(): PropStore {
       keys.push(key)
 
       if (!store.has(key)) {
-        const value = getPropsValue(() => props(route, context))
+        const value = getPropsValue(() => props(route, {
+          push,
+          replace,
+          reject,
+        }))
 
         store.set(key, value)
       }
