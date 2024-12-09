@@ -1,5 +1,4 @@
 import { RouterRoute, isRouterRoute } from '@/services/createRouterRoute'
-import { toName } from '@/types/name'
 import { RegisteredRouterRoute, RegisteredRoutesName } from '@/types/register'
 
 type RouteWithMatch<
@@ -15,12 +14,21 @@ export type IsRouteOptions = {
   exact?: boolean,
 }
 
+type RouteWithMatch<
+  TRoute extends RouterRoute,
+  TRouteName extends TRoute['name']
+> = TRoute extends RouterRoute
+  ? TRouteName extends TRoute['matches'][number]['name']
+    ? TRoute
+    : never
+  : never
+
 export function isRoute(route: unknown): route is RouterRoute
 
 export function isRoute<
   TRoute extends RouterRoute,
   TRouteName extends TRoute['name']
->(route: TRoute, routeName: TRouteName, options: IsRouteOptions & { exact: true }): route is TRoute & { name: TRouteName }
+>(route: TRoute, routeName: TRouteName, options: IsRouteOptions & { exact: true }): route is TRoute & {name: TRouteName}
 
 export function isRoute<
   TRoute extends RouterRoute,
@@ -46,13 +54,9 @@ export function isRoute(route: unknown, routeName?: string, { exact }: IsRouteOp
     return true
   }
 
-  const names = route.matches.map((route) => toName(route.name))
-
   if (exact) {
-    const actualRouteName = names.at(-1)
-
-    return routeName === actualRouteName
+    return route.matched.name === routeName
   }
 
-  return names.includes(routeName)
+  return route.matches.map((route) => route.name).includes(routeName)
 }
