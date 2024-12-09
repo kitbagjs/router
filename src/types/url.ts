@@ -29,7 +29,6 @@ export function isUrl(value: unknown): value is Url {
  * Converts a string to a valid URL.
  * @param value - The string to convert.
  * @returns The valid URL.
- * @group Utilities
  */
 export function asUrl(value: string): Url {
   if (isUrl(value)) {

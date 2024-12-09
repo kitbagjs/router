@@ -1,6 +1,5 @@
-export * from './component'
 export * from './createParam'
 export * from './createRouter'
 export * from './path'
 export * from './query'
-export * from './withDefault'
+export { withDefault } from './withDefault'
