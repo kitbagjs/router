@@ -8,10 +8,6 @@
         "link": "/api/compositions/useLink.md"
       },
       {
-        "text": "useRejection",
-        "link": "/api/compositions/useRejection.md"
-      },
-      {
         "text": "useRoute",
         "link": "/api/compositions/useRoute.md"
       },
@@ -28,6 +24,10 @@
       {
         "text": "DuplicateParamsError",
         "link": "/api/errors/DuplicateParamsError.md"
+      },
+      {
+        "text": "MetaPropertyConflict",
+        "link": "/api/errors/MetaPropertyConflict.md"
       },
       {
         "text": "RouterNotInstalledError",

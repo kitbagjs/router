@@ -15,7 +15,7 @@ npm install @kitbag/router
 
 ## Define Basic Routes
 
-Routes are created individually using the `createRoute` utility. Learn more about [defining routes](/core-concepts/defining-routes).
+Routes are created individually using the [`createRoute`](/api/functions/createRoute) utility. Learn more about [defining routes](/core-concepts/defining-routes).
 
 ::: code-group
 

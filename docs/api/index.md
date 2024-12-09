@@ -3,13 +3,13 @@
 ## Compositions
 
 - [useLink](compositions/useLink.md)
-- [useRejection](compositions/useRejection.md)
 - [useRoute](compositions/useRoute.md)
 - [useRouter](compositions/useRouter.md)
 
 ## Errors
 
 - [DuplicateParamsError](errors/DuplicateParamsError.md)
+- [MetaPropertyConflict](errors/MetaPropertyConflict.md)
 - [RouterNotInstalledError](errors/RouterNotInstalledError.md)
 - [UseRouteInvalidError](errors/UseRouteInvalidError.md)
 
