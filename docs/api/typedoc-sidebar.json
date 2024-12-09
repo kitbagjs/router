@@ -144,6 +144,10 @@
         "link": "/api/types/AfterRouteHook.md"
       },
       {
+        "text": "AfterRouteHookContext",
+        "link": "/api/types/AfterRouteHookContext.md"
+      },
+      {
         "text": "AfterRouteHookLifecycle",
         "link": "/api/types/AfterRouteHookLifecycle.md"
       },
@@ -154,6 +158,10 @@
       {
         "text": "BeforeRouteHook",
         "link": "/api/types/BeforeRouteHook.md"
+      },
+      {
+        "text": "BeforeRouteHookContext",
+        "link": "/api/types/BeforeRouteHookContext.md"
       },
       {
         "text": "BeforeRouteHookLifecycle",

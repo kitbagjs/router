@@ -11,7 +11,7 @@ Represents a function called after a route change has occurred.
 | Parameter | Type | Description |
 | ------ | ------ | ------ |
 | `to` | `ResolvedRoute` | ResolvedRoute The resolved route the router has navigated to. |
-| `context` | `AfterRouteHookContext` | AfterRouteHookContext The context providing functions and state for the routing operation. |
+| `context` | [`AfterRouteHookContext`](AfterRouteHookContext.md) | [AfterRouteHookContext](AfterRouteHookContext.md) The context providing functions and state for the routing operation. |
 
 ## Returns
 

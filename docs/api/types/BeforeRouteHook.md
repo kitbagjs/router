@@ -11,7 +11,7 @@ Represents a function called before a route change, potentially altering the rou
 | Parameter | Type | Description |
 | ------ | ------ | ------ |
 | `to` | `ResolvedRoute` | ResolvedRoute The resolved route the router is navigating to. |
-| `context` | `BeforeRouteHookContext` | BeforeRouteHookContext The context providing functions and state for the routing operation. |
+| `context` | [`BeforeRouteHookContext`](BeforeRouteHookContext.md) | [BeforeRouteHookContext](BeforeRouteHookContext.md) The context providing functions and state for the routing operation. |
 
 ## Returns
 
