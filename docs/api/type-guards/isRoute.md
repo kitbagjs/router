@@ -1,0 +1,172 @@
+# Type Guards: isRoute()
+
+## Call Signature
+
+```ts
+function isRoute(route): route is RouterRoute<Readonly<{ hash?: string; id: string; matched: CreateRouteOptionsMatched<string>; matches: CreateRouteOptionsMatched<undefined | string>[]; name: string; params: { (key: string): any; (key: number): any }; query: ResolvedRouteQuery; state: { (key: string): any; (key: number): any } }>>
+```
+
+A type guard for determining if a value is a valid RouterRoute.
+
+### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `route` | `unknown` | The value to check. |
+
+### Returns
+
+route is RouterRoute\<Readonly\<\{ hash?: string; id: string; matched: CreateRouteOptionsMatched\<string\>; matches: CreateRouteOptionsMatched\<undefined \| string\>\[\]; name: string; params: \{ (key: string): any; (key: number): any \}; query: ResolvedRouteQuery; state: \{ (key: string): any; (key: number): any \} \}\>\>
+
+`true` if the value is a valid RouterRoute, otherwise `false`.
+
+## Call Signature
+
+```ts
+function isRoute<TRoute, TRouteName>(
+   route, 
+   routeName, 
+   options): route is TRoute & { name: TRouteName }
+```
+
+A type guard for determining if a value is a valid RouterRoute with an exact match.
+
+### Type Parameters
+
+| Type Parameter |
+| ------ |
+| `TRoute` *extends* `RouterRoute`\<`Readonly`\<`object`\>\> |
+| `TRouteName` *extends* `string` |
+
+### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `route` | `TRoute` | The value to check. |
+| `routeName` | `TRouteName` | The expected route name. |
+| `options` | `IsRouteOptions` & `object` | - |
+
+### Returns
+
+`route is TRoute & { name: TRouteName }`
+
+`true` if the value is a valid RouterRoute with an exact match, otherwise `false`.
+
+## Call Signature
+
+```ts
+function isRoute<TRoute, TRouteName>(
+   route, 
+   routeName, 
+options?): route is TRoute & { name: `${TRouteName}${string}` }
+```
+
+A type guard for determining if a value is a valid RouterRoute with a partial match.
+
+### Type Parameters
+
+| Type Parameter |
+| ------ |
+| `TRoute` *extends* `RouterRoute`\<`Readonly`\<`object`\>\> |
+| `TRouteName` *extends* `string` |
+
+### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `route` | `TRoute` | The value to check. |
+| `routeName` | `TRouteName` | The expected route name. |
+| `options`? | `IsRouteOptions` | - |
+
+### Returns
+
+route is TRoute & \{ name: \`$\{TRouteName\}$\{string\}\` \}
+
+`true` if the value is a valid RouterRoute with a partial match, otherwise `false`.
+
+## Call Signature
+
+```ts
+function isRoute<TRouteName>(
+   route, 
+   routeName, 
+options): route is RouterRoute<Readonly<{ hash?: string; id: any; matched: any; matches: any; name: any; params: {} | { (key: string): any; (key: number): any }; query: ResolvedRouteQuery; state: { (key: string): any; (key: number): any } }>> & { name: TRouteName }
+```
+
+A type guard for determining if a value is a valid RegisteredRouterRoute with an exact match.
+
+### Type Parameters
+
+| Type Parameter |
+| ------ |
+| `TRouteName` *extends* `string` |
+
+### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `route` | `unknown` | The value to check. |
+| `routeName` | `TRouteName` | The expected route name. |
+| `options` | `IsRouteOptions` & `object` | - |
+
+### Returns
+
+route is RouterRoute\<Readonly\<\{ hash?: string; id: any; matched: any; matches: any; name: any; params: \{\} \| \{ (key: string): any; (key: number): any \}; query: ResolvedRouteQuery; state: \{ (key: string): any; (key: number): any \} \}\>\> & \{ name: TRouteName \}
+
+`true` if the value is a valid RegisteredRouterRoute with an exact match, otherwise `false`.
+
+## Call Signature
+
+```ts
+function isRoute<TRouteName>(
+   route, 
+   routeName, 
+options?): route is RouterRoute<Readonly<{ hash?: string; id: any; matched: any; matches: any; name: any; params: {} | { (key: string): any; (key: number): any }; query: ResolvedRouteQuery; state: { (key: string): any; (key: number): any } }>> & { name: `${TRouteName}${string}` }
+```
+
+A type guard for determining if a value is a valid RegisteredRouterRoute with a partial match.
+
+### Type Parameters
+
+| Type Parameter |
+| ------ |
+| `TRouteName` *extends* `string` |
+
+### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `route` | `unknown` | The value to check. |
+| `routeName` | `TRouteName` | The expected route name. |
+| `options`? | `IsRouteOptions` | - |
+
+### Returns
+
+route is RouterRoute\<Readonly\<\{ hash?: string; id: any; matched: any; matches: any; name: any; params: \{\} \| \{ (key: string): any; (key: number): any \}; query: ResolvedRouteQuery; state: \{ (key: string): any; (key: number): any \} \}\>\> & \{ name: \`$\{TRouteName\}$\{string\}\` \}
+
+`true` if the value is a valid RegisteredRouterRoute with a partial match, otherwise `false`.
+
+## Call Signature
+
+```ts
+function isRoute(
+   route, 
+   routeName?, 
+   options?): boolean
+```
+
+A type guard for determining if a value is a valid RouterRoute.
+
+### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `route` | `unknown` | The value to check. |
+| `routeName`? | `string` | The expected route name. |
+| `options`? | `IsRouteOptions` | - |
+
+### Returns
+
+`boolean`
+
+`true` if the value is a valid RouterRoute, otherwise `false`.

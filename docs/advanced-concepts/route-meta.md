@@ -68,4 +68,4 @@ child.meta.public
 
 ### Meta Property Conflict
 
-Unlike other cascading properties like params, a child **can** also define duplicate keys in meta. However, in order for the types to be accurate child properties must match the `typeof` on the parent meta. When the router finds a duplicate key with conflicting types it will throw a [MetaPropertyConflict](../api//errors/MetaPropertyConflict) error.
+Unlike other cascading properties like params, a child **can** also define duplicate keys in meta. However, in order for the types to be accurate child properties must match the `typeof` on the parent meta. When the router finds a duplicate key with conflicting types it will throw a [MetaPropertyConflict](/api/errors/MetaPropertyConflict) error.

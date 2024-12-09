@@ -1,4 +1,4 @@
-# onBeforeRouteLeave
+# Hooks: onBeforeRouteLeave()
 
 ```ts
 function onBeforeRouteLeave(hook): RouteHookRemove
@@ -10,11 +10,11 @@ This is useful for performing actions or cleanups before navigating away from a 
 ## Parameters
 
 | Parameter | Type |
-| :------ | :------ |
-| `hook` | [`BeforeRouteHook`](../types/BeforeRouteHook) |
+| ------ | ------ |
+| `hook` | [`BeforeRouteHook`](../types/BeforeRouteHook.md) |
 
 ## Returns
 
-[`RouteHookRemove`](../types/RouteHookRemove)
+[`RouteHookRemove`](../types/RouteHookRemove.md)
 
 A function that removes the added hook.

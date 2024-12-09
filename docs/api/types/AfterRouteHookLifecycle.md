@@ -1,4 +1,4 @@
-# AfterRouteHookLifecycle
+# Types: AfterRouteHookLifecycle
 
 ```ts
 type AfterRouteHookLifecycle: "onAfterRouteEnter" | "onAfterRouteUpdate" | "onAfterRouteLeave";

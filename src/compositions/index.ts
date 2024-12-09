@@ -1,7 +1,6 @@
 export * from './useLink'
-export * from './useRejection'
-export * from './useRoute'
-export * from './useRouter'
+export { useRoute } from './useRoute'
+export { useRouter } from './useRouter'
 export {
   onBeforeRouteLeave,
   onBeforeRouteUpdate,

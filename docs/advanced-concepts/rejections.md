@@ -4,7 +4,7 @@ Kitbag Router ships with built in support for rejection handling. Each rejection
 
 ## Rejection Component
 
-When a rejection happens, Kitbag router mounts whatever component is registered for the type of rejection. Assign your rejection components wherever you call `createRouter`.
+When a rejection happens, Kitbag router mounts whatever component is registered for the type of rejection. Assign your rejection components wherever you call [`createRouter`](/api/functions/createRouter).
 
 ```ts
 import { createRouter } from "@kitbag/router";

@@ -30,14 +30,14 @@ type RouteHookContext = {
  * Context provided to route hooks, containing context of previous route and functions for triggering rejections, push/replace to another route,
  * as well as aborting current route change.
  */
-type BeforeRouteHookContext = RouteHookContext & {
+export type BeforeRouteHookContext = RouteHookContext & {
   abort: CallbackContextAbort,
 }
 
 /**
  * Context provided to route hooks, containing context of previous route and functions for triggering rejections and push/replace to another route.
  */
-type AfterRouteHookContext = RouteHookContext
+export type AfterRouteHookContext = RouteHookContext
 
 /**
  * Represents a function called before a route change, potentially altering the routing operation.

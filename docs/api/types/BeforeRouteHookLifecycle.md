@@ -1,4 +1,4 @@
-# BeforeRouteHookLifecycle
+# Types: BeforeRouteHookLifecycle
 
 ```ts
 type BeforeRouteHookLifecycle: "onBeforeRouteEnter" | "onBeforeRouteUpdate" | "onBeforeRouteLeave";

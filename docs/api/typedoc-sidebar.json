@@ -1,0 +1,300 @@
+[
+  {
+    "text": "Compositions",
+    "collapsed": true,
+    "items": [
+      {
+        "text": "useLink",
+        "link": "/api/compositions/useLink.md"
+      },
+      {
+        "text": "useRoute",
+        "link": "/api/compositions/useRoute.md"
+      },
+      {
+        "text": "useRouter",
+        "link": "/api/compositions/useRouter.md"
+      }
+    ]
+  },
+  {
+    "text": "Errors",
+    "collapsed": true,
+    "items": [
+      {
+        "text": "DuplicateParamsError",
+        "link": "/api/errors/DuplicateParamsError.md"
+      },
+      {
+        "text": "MetaPropertyConflict",
+        "link": "/api/errors/MetaPropertyConflict.md"
+      },
+      {
+        "text": "RouterNotInstalledError",
+        "link": "/api/errors/RouterNotInstalledError.md"
+      },
+      {
+        "text": "UseRouteInvalidError",
+        "link": "/api/errors/UseRouteInvalidError.md"
+      }
+    ]
+  },
+  {
+    "text": "Interfaces",
+    "collapsed": true,
+    "items": [
+      {
+        "text": "Register",
+        "link": "/api/interfaces/Register.md"
+      }
+    ]
+  },
+  {
+    "text": "Type Guards",
+    "collapsed": true,
+    "items": [
+      {
+        "text": "isRoute",
+        "link": "/api/type-guards/isRoute.md"
+      },
+      {
+        "text": "isUrl",
+        "link": "/api/type-guards/isUrl.md"
+      }
+    ]
+  },
+  {
+    "text": "Functions",
+    "collapsed": true,
+    "items": [
+      {
+        "text": "asUrl",
+        "link": "/api/functions/asUrl.md"
+      },
+      {
+        "text": "createExternalRoute",
+        "link": "/api/functions/createExternalRoute.md"
+      },
+      {
+        "text": "createParam",
+        "link": "/api/functions/createParam.md"
+      },
+      {
+        "text": "createRoute",
+        "link": "/api/functions/createRoute.md"
+      },
+      {
+        "text": "createRouter",
+        "link": "/api/functions/createRouter.md"
+      },
+      {
+        "text": "path",
+        "link": "/api/functions/path.md"
+      },
+      {
+        "text": "query",
+        "link": "/api/functions/query.md"
+      },
+      {
+        "text": "withDefault",
+        "link": "/api/functions/withDefault.md"
+      }
+    ]
+  },
+  {
+    "text": "Hooks",
+    "collapsed": true,
+    "items": [
+      {
+        "text": "onAfterRouteEnter",
+        "link": "/api/hooks/onAfterRouteEnter.md"
+      },
+      {
+        "text": "onAfterRouteLeave",
+        "link": "/api/hooks/onAfterRouteLeave.md"
+      },
+      {
+        "text": "onAfterRouteUpdate",
+        "link": "/api/hooks/onAfterRouteUpdate.md"
+      },
+      {
+        "text": "onBeforeRouteLeave",
+        "link": "/api/hooks/onBeforeRouteLeave.md"
+      },
+      {
+        "text": "onBeforeRouteUpdate",
+        "link": "/api/hooks/onBeforeRouteUpdate.md"
+      }
+    ]
+  },
+  {
+    "text": "Types",
+    "collapsed": true,
+    "items": [
+      {
+        "text": "AddAfterRouteHook",
+        "link": "/api/types/AddAfterRouteHook.md"
+      },
+      {
+        "text": "AddBeforeRouteHook",
+        "link": "/api/types/AddBeforeRouteHook.md"
+      },
+      {
+        "text": "AfterRouteHook",
+        "link": "/api/types/AfterRouteHook.md"
+      },
+      {
+        "text": "AfterRouteHookContext",
+        "link": "/api/types/AfterRouteHookContext.md"
+      },
+      {
+        "text": "AfterRouteHookLifecycle",
+        "link": "/api/types/AfterRouteHookLifecycle.md"
+      },
+      {
+        "text": "AfterRouteHookResponse",
+        "link": "/api/types/AfterRouteHookResponse.md"
+      },
+      {
+        "text": "BeforeRouteHook",
+        "link": "/api/types/BeforeRouteHook.md"
+      },
+      {
+        "text": "BeforeRouteHookContext",
+        "link": "/api/types/BeforeRouteHookContext.md"
+      },
+      {
+        "text": "BeforeRouteHookLifecycle",
+        "link": "/api/types/BeforeRouteHookLifecycle.md"
+      },
+      {
+        "text": "BeforeRouteHookResponse",
+        "link": "/api/types/BeforeRouteHookResponse.md"
+      },
+      {
+        "text": "CreateRouteOptions",
+        "link": "/api/types/CreateRouteOptions.md"
+      },
+      {
+        "text": "Param",
+        "link": "/api/types/Param.md"
+      },
+      {
+        "text": "ParamExtras",
+        "link": "/api/types/ParamExtras.md"
+      },
+      {
+        "text": "ParamGetSet",
+        "link": "/api/types/ParamGetSet.md"
+      },
+      {
+        "text": "ParamGetter",
+        "link": "/api/types/ParamGetter.md"
+      },
+      {
+        "text": "ParamSetter",
+        "link": "/api/types/ParamSetter.md"
+      },
+      {
+        "text": "RegisteredRejectionType",
+        "link": "/api/types/RegisteredRejectionType.md"
+      },
+      {
+        "text": "RegisteredRouteMap",
+        "link": "/api/types/RegisteredRouteMap.md"
+      },
+      {
+        "text": "RegisteredRouter",
+        "link": "/api/types/RegisteredRouter.md"
+      },
+      {
+        "text": "RegisteredRouterPush",
+        "link": "/api/types/RegisteredRouterPush.md"
+      },
+      {
+        "text": "RegisteredRouterReject",
+        "link": "/api/types/RegisteredRouterReject.md"
+      },
+      {
+        "text": "RegisteredRouterReplace",
+        "link": "/api/types/RegisteredRouterReplace.md"
+      },
+      {
+        "text": "RegisteredRouterRoute",
+        "link": "/api/types/RegisteredRouterRoute.md"
+      },
+      {
+        "text": "RegisteredRoutes",
+        "link": "/api/types/RegisteredRoutes.md"
+      },
+      {
+        "text": "RegisteredRoutesName",
+        "link": "/api/types/RegisteredRoutesName.md"
+      },
+      {
+        "text": "ResolvedRoute",
+        "link": "/api/types/ResolvedRoute.md"
+      },
+      {
+        "text": "Route",
+        "link": "/api/types/Route.md"
+      },
+      {
+        "text": "RouteHook",
+        "link": "/api/types/RouteHook.md"
+      },
+      {
+        "text": "RouteHookLifecycle",
+        "link": "/api/types/RouteHookLifecycle.md"
+      },
+      {
+        "text": "RouteHookRemove",
+        "link": "/api/types/RouteHookRemove.md"
+      },
+      {
+        "text": "RouteHookResponse",
+        "link": "/api/types/RouteHookResponse.md"
+      },
+      {
+        "text": "RouteMeta",
+        "link": "/api/types/RouteMeta.md"
+      },
+      {
+        "text": "Router",
+        "link": "/api/types/Router.md"
+      },
+      {
+        "text": "RouterOptions",
+        "link": "/api/types/RouterOptions.md"
+      },
+      {
+        "text": "RouterReject",
+        "link": "/api/types/RouterReject.md"
+      },
+      {
+        "text": "RouterRoutes",
+        "link": "/api/types/RouterRoutes.md"
+      },
+      {
+        "text": "Routes",
+        "link": "/api/types/Routes.md"
+      },
+      {
+        "text": "Url",
+        "link": "/api/types/Url.md"
+      },
+      {
+        "text": "UrlParts",
+        "link": "/api/types/UrlParts.md"
+      },
+      {
+        "text": "UseLink",
+        "link": "/api/types/UseLink.md"
+      },
+      {
+        "text": "UseLinkOptions",
+        "link": "/api/types/UseLinkOptions.md"
+      }
+    ]
+  }
+]

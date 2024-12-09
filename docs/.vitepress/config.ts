@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitepress'
+import typedocSidebar from '../api/typedoc-sidebar.json';
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
@@ -24,98 +25,7 @@ export default defineConfig({
     },
 
     sidebar: {
-      '/api/': [
-        {
-          text: 'Components',
-          items: [
-            { text: 'RouterLink', link: '/api/components/RouterLink' },
-            { text: 'RouterView', link: '/api/components/RouterView' },
-          ],
-        },
-        {
-          text: 'Composables',
-          items: [
-            { text: 'onAfterRouteEnter', link: '/api/composables/onAfterRouteEnter' },
-            { text: 'onAfterRouteLeave', link: '/api/composables/onAfterRouteLeave' },
-            { text: 'onAfterRouteUpdate', link: '/api/composables/onAfterRouteUpdate' },
-            { text: 'onBeforeRouteLeave', link: '/api/composables/onBeforeRouteLeave' },
-            { text: 'onBeforeRouteUpdate', link: '/api/composables/onBeforeRouteUpdate' },
-            { text: 'useRejection', link: '/api/composables/useRejection' },
-            { text: 'useRoute', link: '/api/composables/useRoute' },
-            { text: 'useRouter', link: '/api/composables/useRouter' },
-          ],
-        },
-        {
-          text: 'Errors',
-          items: [
-            { text: 'DuplicateParamsError', link: '/api/errors/DuplicateParamsError' },
-            { text: 'RouterNotInstalledError', link: '/api/errors/RouterNotInstalledError' },
-            { text: 'UseRouteInvalidError', link: '/api/errors/UseRouteInvalidError' },
-          ],
-        },
-        {
-          text: 'Functions',
-          items: [
-            { text: 'createRouter', link: '/api/functions/createRouter' },
-            { text: 'createRoute', link: '/api/functions/createRoute' },
-            { text: 'createExternalRoute', link: '/api/functions/createExternalRoute' },
-            { text: 'path', link: '/api/functions/path' },
-            { text: 'query', link: '/api/functions/query' },
-            { text: 'host', link: '/api/functions/host' },
-          ],
-        },
-        {
-          text: 'Type Guards',
-          items: [
-            { text: 'isRoute', link: '/api/guards/isRoute' }
-          ]
-        },
-        {
-          text: 'Interfaces',
-          items: [
-            { text: 'Register', link: '/api/interfaces/Register' },
-          ],
-        },
-        {
-          text: 'Types',
-          items: [
-            { text: 'AddAfterRouteHook', link: '/api/types/AddAfterRouteHook' },
-            { text: 'AddBeforeRouteHook', link: '/api/types/AddBeforeRouteHook' },
-            { text: 'AfterRouteHook', link: '/api/types/AfterRouteHook' },
-            { text: 'AfterRouteHookContext', link: '/api/types/AfterRouteHookContext' },
-            { text: 'AfterRouteHookLifecycle', link: '/api/types/AfterRouteHookLifecycle' },
-            { text: 'AfterRouteHookResponse', link: '/api/types/AfterRouteHookResponse' },
-            { text: 'BeforeRouteHook', link: '/api/types/BeforeRouteHook' },
-            { text: 'BeforeRouteHookContext', link: '/api/types/BeforeRouteHookContext' },
-            { text: 'BeforeRouteHookLifecycle', link: '/api/types/BeforeRouteHookLifecycle' },
-            { text: 'BeforeRouteHookResponse', link: '/api/types/BeforeRouteHookResponse' },
-            { text: 'CreateRouteOptions', link: '/api/types/CreateRouteOptions' },
-            { text: 'Param', link: '/api/types/Param' },
-            { text: 'ParamExtras', link: '/api/types/ParamExtras' },
-            { text: 'ParamGetSet', link: '/api/types/ParamGetSet' },
-            { text: 'ParamGetter', link: '/api/types/ParamGetter' },
-            { text: 'ParamSetter', link: '/api/types/ParamSetter' },
-            { text: 'PrefetchConfigOptions', link: '/api/types/PrefetchConfigOptions' },
-            { text: 'ResolvedRoute', link: '/api/types/ResolvedRoute' },
-            { text: 'Route', link: '/api/types/Route' },
-            { text: 'RouteHook', link: '/api/types/RouteHook' },
-            { text: 'RouteHookAbort', link: '/api/types/RouteHookAbort' },
-            { text: 'RouteHookLifecycle', link: '/api/types/RouteHookLifecycle' },
-            { text: 'RouteHookRemove', link: '/api/types/RouteHookRemove' },
-            { text: 'RouteHookResponse', link: '/api/types/RouteHookResponse' },
-            { text: 'Router', link: '/api/types/Router' },
-            { text: 'RouterFind', link: '/api/types/RouterFind' },
-            { text: 'RouterOptions', link: '/api/types/RouterOptions' },
-            { text: 'RouterPush', link: '/api/types/RouterPush' },
-            { text: 'RouterReject', link: '/api/types/RouterReject' },
-            { text: 'RouterReplace', link: '/api/types/RouterReplace' },
-            { text: 'RouterResolve', link: '/api/types/RouterResolve' },
-            { text: 'Routes', link: '/api/types/Routes' },
-            { text: 'QuerySource', link: '/api/types/QuerySource' },
-            { text: 'Url', link: '/api/types/Url' },
-          ],
-        },
-      ],
+      '/api/': typedocSidebar,
       '/': [
         {
           text: 'Introduction',

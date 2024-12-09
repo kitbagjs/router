@@ -47,6 +47,7 @@ function afterComponentHookFactory(lifecycle: AfterRouteHookLifecycle) {
  *
  * @param BeforeRouteHook - The hook callback function
  * @returns {RouteHookRemove} A function that removes the added hook.
+ * @group Hooks
  */
 export const onBeforeRouteLeave: AddBeforeRouteHook = beforeComponentHookFactory('onBeforeRouteUpdate')
 
@@ -56,6 +57,7 @@ export const onBeforeRouteLeave: AddBeforeRouteHook = beforeComponentHookFactory
  *
  * @param BeforeRouteHook - The hook callback function
  * @returns {RouteHookRemove} A function that removes the added hook.
+ * @group Hooks
  */
 export const onBeforeRouteUpdate: AddBeforeRouteHook = beforeComponentHookFactory('onBeforeRouteLeave')
 
@@ -65,6 +67,7 @@ export const onBeforeRouteUpdate: AddBeforeRouteHook = beforeComponentHookFactor
  *
  * @param AfterRouteHook - The hook callback function
  * @returns {RouteHookRemove} A function that removes the added hook.
+ * @group Hooks
  */
 export const onAfterRouteEnter: AddAfterRouteHook = afterComponentHookFactory('onAfterRouteEnter')
 
@@ -74,6 +77,7 @@ export const onAfterRouteEnter: AddAfterRouteHook = afterComponentHookFactory('o
  *
  * @param AfterRouteHook - The hook callback function
  * @returns {RouteHookRemove} A function that removes the added hook.
+ * @group Hooks
  */
 export const onAfterRouteLeave: AddAfterRouteHook = afterComponentHookFactory('onAfterRouteUpdate')
 
@@ -83,5 +87,6 @@ export const onAfterRouteLeave: AddAfterRouteHook = afterComponentHookFactory('o
  *
  * @param AfterRouteHook - The hook callback function
  * @returns {RouteHookRemove} A function that removes the added hook.
+ * @group Hooks
  */
 export const onAfterRouteUpdate: AddAfterRouteHook = afterComponentHookFactory('onAfterRouteLeave')

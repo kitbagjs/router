@@ -1,4 +1,4 @@
-# onAfterRouteLeave
+# Hooks: onAfterRouteLeave()
 
 ```ts
 function onAfterRouteLeave(hook): RouteHookRemove
@@ -10,11 +10,11 @@ This can be used for cleanup actions after the component is no longer active, en
 ## Parameters
 
 | Parameter | Type |
-| :------ | :------ |
-| `hook` | [`AfterRouteHook`](../types/AfterRouteHook) |
+| ------ | ------ |
+| `hook` | [`AfterRouteHook`](../types/AfterRouteHook.md) |
 
 ## Returns
 
-[`RouteHookRemove`](../types/RouteHookRemove)
+[`RouteHookRemove`](../types/RouteHookRemove.md)
 
 A function that removes the added hook.

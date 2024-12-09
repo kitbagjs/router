@@ -1,4 +1,4 @@
-# onAfterRouteUpdate
+# Hooks: onAfterRouteUpdate()
 
 ```ts
 function onAfterRouteUpdate(hook): RouteHookRemove
@@ -10,11 +10,11 @@ This is ideal for responding to updates within the same route, such as parameter
 ## Parameters
 
 | Parameter | Type |
-| :------ | :------ |
-| `hook` | [`AfterRouteHook`](../types/AfterRouteHook) |
+| ------ | ------ |
+| `hook` | [`AfterRouteHook`](../types/AfterRouteHook.md) |
 
 ## Returns
 
-[`RouteHookRemove`](../types/RouteHookRemove)
+[`RouteHookRemove`](../types/RouteHookRemove.md)
 
 A function that removes the added hook.

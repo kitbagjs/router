@@ -1,8 +1,7 @@
-# AfterRouteHookContext
+# Types: AfterRouteHookContext
 
-| Property | Description |
-| ---- | ---- |
-| from | [`ResolvedRoute`](/api/types/ResolvedRoute) \| `null` |
-| push | [`RouterPush`](/api/types/RouterPush) |
-| replace | [`RouterReplace`](/api/types/RouterReplace) |
-| reject | [`RouterReject`](/api/types/RouterReject) |
+```ts
+type AfterRouteHookContext: RouteHookContext;
+```
+
+Context provided to route hooks, containing context of previous route and functions for triggering rejections and push/replace to another route.

@@ -1,4 +1,4 @@
-import { ParamWithDefault } from '@/services'
+import { ParamWithDefault } from '@/services/withDefault'
 import { Param, ParamGetSet, ParamGetter } from '@/types/paramTypes'
 import { Identity } from '@/types/utilities'
 import { MakeOptional } from '@/utilities/makeOptional'

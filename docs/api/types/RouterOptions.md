@@ -1,12 +1,21 @@
-# RouterOptions
+# Types: RouterOptions
 
 ```ts
-type RouterOptions: object & RouterRejectionComponents;
+type RouterOptions: object;
 ```
 
-Options to initialize a [Router](Router) instance.
+Options to initialize a [Router](Router.md) instance.
 
 ## Type declaration
+
+### base?
+
+```ts
+optional base: string;
+```
+
+Base path to be prepended to any URL. Can be used for Vue applications that run in nested folder for domain.
+For example having `base` of `/foo` would assume all routes should start with `your.domain.com/foo`.
 
 ### historyMode?
 
@@ -14,7 +23,13 @@ Options to initialize a [Router](Router) instance.
 optional historyMode: RouterHistoryMode;
 ```
 
-Specifies the history mode for the router, such as 'hash', 'history', or 'abstract'.
+Specifies the history mode for the router, such as "browser", "memory", or "hash".
+
+#### Default
+
+```ts
+"auto"
+```
 
 ### initialUrl?
 
@@ -22,7 +37,7 @@ Specifies the history mode for the router, such as 'hash', 'history', or 'abstra
 optional initialUrl: string;
 ```
 
-Initial URL for the router to use. Required if using Node environment.  If host is included, the router will use validate that changes to route are within the same host.
+Initial URL for the router to use. Required if using Node environment. Defaults to window.location when using browser.
 
 #### Default
 
@@ -30,10 +45,18 @@ Initial URL for the router to use. Required if using Node environment.  If host 
 window.location.toString()
 ```
 
-### Base?
+### prefetch?
 
 ```ts
-optional base: string;
+optional prefetch: PrefetchConfig;
 ```
 
-Base path to be prepended to any URL. Can be used for Vue applications that run in nested folder for domain. For example having `base` of `/foo` would assume all routes should start with `your.domain.com/foo`.
+Determines what assets are prefetched when router-link is rendered for a specific route
+
+### rejections?
+
+```ts
+optional rejections: Partial<Record<string, Component>>;
+```
+
+Components assigned to each type of rejection your router supports.

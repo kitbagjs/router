@@ -1,4 +1,4 @@
-# onAfterRouteEnter
+# Hooks: onAfterRouteEnter()
 
 ```ts
 function onAfterRouteEnter(hook): RouteHookRemove
@@ -10,11 +10,11 @@ This allows performing actions right after the component becomes active, such as
 ## Parameters
 
 | Parameter | Type |
-| :------ | :------ |
-| `hook` | [`AfterRouteHook`](../types/AfterRouteHook) |
+| ------ | ------ |
+| `hook` | [`AfterRouteHook`](../types/AfterRouteHook.md) |
 
 ## Returns
 
-[`RouteHookRemove`](../types/RouteHookRemove)
+[`RouteHookRemove`](../types/RouteHookRemove.md)
 
 A function that removes the added hook.

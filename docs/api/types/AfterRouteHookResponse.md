@@ -1,13 +1,11 @@
-# AfterRouteHookResponse
+# Types: AfterRouteHookResponse
 
 ```ts
-type AfterRouteHookResponse<TRoutes>: RouteHookSuccessResponse | RouteHookPushResponse<TRoutes> | RouteHookRejectResponse;
+type AfterRouteHookResponse: CallbackSuccessResponse | CallbackPushResponse | CallbackRejectResponse;
 ```
 
 Type for responses from an after route hook, which may indicate different outcomes such as success, push, or reject.
 
-## Type parameters
+## Template
 
-| Type parameter | Description |
-| :------ | :------ |
-| `TRoutes` *extends* [`Routes`](Routes) | The type of the routes configuration. |
+The type of the routes configuration.

@@ -1,13 +1,11 @@
-# RouteHookResponse
+# Types: RouteHookResponse
 
 ```ts
-type RouteHookResponse<TRoutes>: BeforeRouteHookResponse<TRoutes> | AfterRouteHookResponse<TRoutes>;
+type RouteHookResponse: BeforeRouteHookResponse | AfterRouteHookResponse;
 ```
 
 Union type for all possible route hook responses, covering both before and after scenarios.
 
-## Type parameters
+## Template
 
-| Type parameter | Description |
-| :------ | :------ |
-| `TRoutes` *extends* [`Routes`](Routes) | The type of the routes configuration. |
+The type of the routes configuration.

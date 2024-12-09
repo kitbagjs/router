@@ -6,6 +6,12 @@
   </template>
 </template>
 
+<script lang="ts">
+/**
+ * @ignore
+ */
+</script>
+
 <script lang="ts" setup>
   import { Component, UnwrapRef, VNode, computed, provide, resolveComponent } from 'vue'
   import { usePropStore } from '@/compositions/usePropStore'

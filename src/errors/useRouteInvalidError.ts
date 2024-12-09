@@ -1,5 +1,6 @@
 /**
  * An error thrown when there is a mismatch between an expected route and the one actually used.
+ * @group Errors
  */
 export class UseRouteInvalidError extends Error {
   /**

@@ -1,9 +1,16 @@
-# BeforeRouteHookContext
+# Types: BeforeRouteHookContext
 
-| Property | Description |
-| ---- | ---- |
-| from | [`ResolvedRoute`](/api/types/ResolvedRoute) \| `null` |
-| push | [`RouterPush`](/api/types/RouterPush) |
-| replace | [`RouterReplace`](/api/types/RouterReplace) |
-| reject | [`RouterReject`](/api/types/RouterReject) |
-| abort | [`RouteHookAbort`](/api/types/RouteHookAbort) |
+```ts
+type BeforeRouteHookContext: RouteHookContext & object;
+```
+
+Context provided to route hooks, containing context of previous route and functions for triggering rejections, push/replace to another route,
+as well as aborting current route change.
+
+## Type declaration
+
+### abort
+
+```ts
+abort: CallbackContextAbort;
+```

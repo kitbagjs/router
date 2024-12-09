@@ -1,43 +1,40 @@
-# query
+# Functions: query()
 
 ```ts
-function query<TQuery, TParams>(query, params): Query<TQuery, TParams>
+function query<TQuery, TParams>(value, params): Query<TQuery, TParams>
 ```
 
 Constructs a Query object, which enables assigning types for params.
 
-## Type parameters
+## Type Parameters
 
-| Type parameter | Description |
-| :------ | :------ |
+| Type Parameter | Description |
+| ------ | ------ |
 | `TQuery` *extends* `string` | The string literal type that represents the query. |
-| `TParams` *extends* `QueryParams`\<`TQuery`\> | The type of the query parameters associated with the query. |
+| `TParams` *extends* `QueryParamsWithParamNameExtracted`\<`TQuery`\> | The type of the query parameters associated with the query. |
 
 ## Parameters
 
 | Parameter | Type | Description |
-| :------ | :------ | :------ |
-| `query` | `TQuery` | The query string. |
+| ------ | ------ | ------ |
+| `value` | `TQuery` | The query string. |
 | `params` | `Identity`\<`TParams`\> | The parameters associated with the query, typically as key-value pairs. |
 
 ## Returns
 
 `Query`\<`TQuery`, `TParams`\>
 
-An object representing the query which includes the query string, its parameters, and a toString method for getting the query as a string.
+An object representing the query which includes the query string, its parameters,
+         and a toString method for getting the query as a string.
 
 ## Example
 
 ```ts
 import { createRoute, query } from '@kitbag/router'
 
-export const home = createRoute({
+export const routes = createRoute({
   name: 'home',
   query: query('bar=[bar]', { bar: Boolean }),
   component: Home
 })
 ```
-
-## Custom Params
-
-Param types is customizable with [`ParamGetter`](/api/types/ParamGetter), [`ParamSetter`](/api/types/ParamSetter), and [`ParamGetSet`](/api/types/ParamGetSet). Read more about [custom params](/core-concepts/route-params#custom-param).

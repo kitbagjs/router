@@ -1,4 +1,4 @@
-# onBeforeRouteUpdate
+# Hooks: onBeforeRouteUpdate()
 
 ```ts
 function onBeforeRouteUpdate(hook): RouteHookRemove
@@ -10,11 +10,11 @@ This is particularly useful for handling changes in route parameters or query wh
 ## Parameters
 
 | Parameter | Type |
-| :------ | :------ |
-| `hook` | [`BeforeRouteHook`](../types/BeforeRouteHook) |
+| ------ | ------ |
+| `hook` | [`BeforeRouteHook`](../types/BeforeRouteHook.md) |
 
 ## Returns
 
-[`RouteHookRemove`](../types/RouteHookRemove)
+[`RouteHookRemove`](../types/RouteHookRemove.md)
 
 A function that removes the added hook.

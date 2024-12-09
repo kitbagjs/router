@@ -1,4 +1,4 @@
-# Param
+# Types: Param
 
 ```ts
 type Param: 
@@ -8,5 +8,6 @@ type Param:
   | BooleanConstructor
   | NumberConstructor
   | StringConstructor
-  | DateConstructor;
+  | DateConstructor
+  | JSON;
 ```

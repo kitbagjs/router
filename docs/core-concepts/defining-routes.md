@@ -2,7 +2,7 @@
 
 ## Basics
 
-Kitbag Router provides `createRoute`, which creates the `Route` types you'll use when creating your router.
+Kitbag Router provides [`createRoute`](/api/functions/createRoute), which creates the `Route` types you'll use when creating your router.
 
 ```ts
 import { createRoute } from '@kitbag/router'
