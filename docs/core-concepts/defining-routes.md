@@ -10,7 +10,7 @@ import { createRoute } from '@kitbag/router'
 const routes = [
   createRoute({ name: 'home', path: '/', component: Home }),
   createRoute({ name: 'path', path: '/about', component: About }),
-]
+] as const
 
 const router = createRouter(routes)
 ```
@@ -105,7 +105,7 @@ const routerApiDocs = createExternalRoute({
   path: '/api/[topic]',
 })
 
-export const documentationRoutes = [routerDocs, routerApiDocs]
+export const documentationRoutes = [routerDocs, routerApiDocs] as const
 ```
 
 Now we can include these routes with all of the internal routes your app already uses.
@@ -122,7 +122,7 @@ export const routes = [
     component: defineAsyncComponent(() => import('@/views/HomeView.vue')),
   }),
   ...
-])
+] as const
 
 export const router = createRouter([routes, documentationRoutes])
 ```
