@@ -3,19 +3,15 @@
 It may be useful to store state for a given route to improve your user's experience. In situations like a form that a user might fill out, it might be useful to store form values in the [browser state](https://developer.mozilla.org/en-US/docs/Web/API/History/state) so that if the user navigates unexpectedly the values can be restored when going back. Kitbag Router extends this functionality by offering the same [param experience](/core-concepts/route-params#param-types) on `path`, `query`, etc on state as well.
 
 ```ts
-import { createRoute, createRouter } from '@kitbag/router'
+import { createRoute } from '@kitbag/router'
 
-const routes = [
-  createRoute({ 
-    name: 'example-form',
-    state: {
-      email: String,
-      active: Boolean,
-    }
-  }),
-]
-
-const router = createRouter(routes)
+const route = createRoute({ 
+  name: 'example-form',
+  state: {
+    email: String,
+    active: Boolean,
+  }
+})
 ```
 
 ## Always Optional
@@ -23,16 +19,14 @@ const router = createRouter(routes)
 State properties are always expected to be optional. The only exception to this is when your state property is defined with the `withDefault` utility.
 
 ```ts
-const routes = [
-  createRoute({ 
-    name: 'example-form',
-    state: {
-      email: String,
-      active: Boolean, // [!code --]
-      active: withDefault(Boolean, false), // [!code ++]
-    }
-  }),
-]
+const route = createRoute({ 
+  name: 'example-form',
+  state: {
+    email: String,
+    active: Boolean, // [!code --]
+    active: withDefault(Boolean, false), // [!code ++]
+  }
+})
 ```
 
 ## Reading State

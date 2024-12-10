@@ -98,18 +98,17 @@ const router = createRouter({
 If you want to enable or disable prefetching for specific routes, you can do so by adding a prefetch property to your route definition.
 
 ```ts
-const routes = [
-  {
-    path: '/about',
-    component: () => import('./About.vue'),
-    prefetch: true, // enable prefetching for this route
-  },
-  {
-    path: '/contact',
-    component: () => import('./Contact.vue'),
-    prefetch: false, // disable prefetching for this route
-  },
-];
+const about = createRoute({
+  path: '/about',
+  component: () => import('./About.vue'),
+  prefetch: true, // enable prefetching for this route
+})
+
+const contact = createRoute({
+  path: '/contact',
+  component: () => import('./Contact.vue'),
+  prefetch: false, // disable prefetching for this route
+})
 ```
 
 ### Per-Link Configuration
