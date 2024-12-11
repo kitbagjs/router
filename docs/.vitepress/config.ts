@@ -28,19 +28,15 @@ export default defineConfig({
       '/api/': typedocSidebar,
       '/': [
         {
-          text: 'Introduction',
+          text: 'Getting Started',
           items: [
-            {
-              text: 'Show Me',
-              link: '/show-me',
-            },
             {
               text: 'Introduction',
               link: '/introduction',
             },
             {
-              text: 'Getting Started',
-              link: '/getting-started',
+              text: 'Quick Start',
+              link: '/quick-start',
             },
           ],
         },
