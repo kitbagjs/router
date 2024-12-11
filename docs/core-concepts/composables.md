@@ -2,7 +2,7 @@
 
 ## useRouter
 
-Returns the router, with types provided by [the `Register` interface](/getting-started#update-registered-router).
+Returns the router, with types provided by [the `Register` interface](/quick-start#update-registered-router).
 
 ```ts
 import { useRouter } from '@kitbag/router'

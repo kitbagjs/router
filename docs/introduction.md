@@ -4,6 +4,12 @@ Kitbag Router introduces a fresh, developer-centric approach to routing in Vue.j
 
 At the heart of Kitbag Router lies a commitment to enhancing the developer experience.  First and foremost that means **type safety**, but also **better parameter experience**, **support for query**, **rejection handling**, simple intuitive syntax, and an extensible design written with modern Typescript.
 
+## Show Me
+
+[Kitbag Router: New TYPE SAFE Router for VUE
+![Kitbag Router: New TYPE SAFE Router for VUE](https://img.youtube.com/vi/p1WI9hAYmJ4/0.jpg)
+](https://youtu.be/p1WI9hAYmJ4)
+
 ## Type Safety
 
 You already know what routes exist, so why are we using magic strings and hoping it works out? With Kitbag Router, the routes that are available to you couldn't be clearer. If the routes change, Typescript will tell you the links that need to be updated.

@@ -18,7 +18,7 @@ export const router = createRouter(routes, {
 ```
 
 ::: info Updating Registered Router
-Be sure you've [updated the registered router](/getting-started#update-registered-router), this is ensures Typescript knows about your additional rejection types.
+Be sure you've [updated the registered router](/quick-start#update-registered-router), this is ensures Typescript knows about your additional rejection types.
 :::
 
 ## Rejection Type
