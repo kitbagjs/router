@@ -272,6 +272,10 @@
         "link": "/api/types/RouterReject.md"
       },
       {
+        "text": "RouterRoute",
+        "link": "/api/types/RouterRoute.md"
+      },
+      {
         "text": "RouterRoutes",
         "link": "/api/types/RouterRoutes.md"
       },

@@ -78,6 +78,7 @@
 - [Router](types/Router.md)
 - [RouterOptions](types/RouterOptions.md)
 - [RouterReject](types/RouterReject.md)
+- [RouterRoute](types/RouterRoute.md)
 - [RouterRoutes](types/RouterRoutes.md)
 - [Routes](types/Routes.md)
 - [Url](types/Url.md)
