@@ -9,6 +9,7 @@ import { PrefetchConfig, getPrefetchConfigValue } from '@/types/prefetch'
 import { component } from '@/utilities/testHelpers'
 import { visibilityObserverKey } from '@/compositions/useVisibilityObserver'
 import { VisibilityObserver } from '@/services/createVisibilityObserver'
+import { Url } from '@/types/url'
 
 test('renders an anchor tag with the correct href and slot content', () => {
   const path = '/path/[paramName]'
@@ -124,7 +125,11 @@ test('to prop as string renders and routes correctly', () => {
   expect(arg1).toBe('/route')
 })
 
-test('when current route matches descendant, parent has "match" class', async () => {
+test.each<{ to: Url, match: boolean, exactMatch: boolean }>([
+  { to: '/parent-route', match: true, exactMatch: false },
+  { to: '/parent-route/child-route', match: true, exactMatch: true},
+  { to: '/other-route', match: false, exactMatch: false },
+])('isMatch and isExactMatch classes and slot props works as expected', async ({ to, match, exactMatch }) => {
   const parentRoute = createRoute({
     name: 'parent-route',
     path: '/parent-route',
@@ -137,16 +142,22 @@ test('when current route matches descendant, parent has "match" class', async ()
     component,
   })
 
-  const router = createRouter([parentRoute, childRoute], {
+  const otherRoute = createRoute({
+    name: 'other',
+    path: '/other',
+    component,
+  })
+
+  const router = createRouter([parentRoute, childRoute, otherRoute], {
     initialUrl: '/parent-route/child-route',
   })
 
   const wrapper = mount(routerLink, {
     props: {
-      to: '/parent-route',
+      to,
     },
     slots: {
-      default: 'parent-route',
+      default: '{{ params.isMatch }} {{ params.isExactMatch }}',
     },
     global: {
       plugins: [router],
@@ -156,44 +167,20 @@ test('when current route matches descendant, parent has "match" class', async ()
   await router.start()
 
   const anchor = wrapper.find('a')
-  expect(anchor.classes()).toContain('router-link--match')
-  expect(anchor.classes()).not.toContain('router-link--exact-match')
-})
 
-test('when current route matches to prop, parent has "match" and "exact-match" classes', async () => {
-  const parentRoute = createRoute({
-    name: 'parent-route',
-    path: '/parent-route',
-  })
+  expect(anchor.text()).toBe(`${match} ${exactMatch}`)
 
-  const childRoute = createRoute({
-    parent: parentRoute,
-    name: 'child-route',
-    path: '/child-route',
-    component,
-  })
+  if (match) {
+    expect(anchor.classes()).toContain('router-link--match')
+  } else {
+    expect(anchor.classes()).not.toContain('router-link--match')
+  }
 
-  const router = createRouter([parentRoute, childRoute], {
-    initialUrl: '/parent-route',
-  })
-
-  const wrapper = mount(routerLink, {
-    props: {
-      to: '/parent-route',
-    },
-    slots: {
-      default: 'parent-route',
-    },
-    global: {
-      plugins: [router],
-    },
-  })
-
-  await router.start()
-
-  const anchor = wrapper.find('a')
-  expect(anchor.classes()).toContain('router-link--match')
-  expect(anchor.classes()).toContain('router-link--exact-match')
+  if (exactMatch) {
+    expect(anchor.classes()).toContain('router-link--exact-match')
+  } else {
+    expect(anchor.classes()).not.toContain('router-link--exact-match')
+  }
 })
 
 test.each([
@@ -231,9 +218,8 @@ test.each([
   await router.start()
 
   const anchor = wrapper.find('a')
-  const element = anchor.element as HTMLAnchorElement
 
-  expect(isExternal.toString()).toBe(element.innerHTML)
+  expect(anchor.text()).toBe(isExternal.toString())
 })
 
 describe('prefetch components', () => {

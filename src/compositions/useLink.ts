@@ -11,6 +11,7 @@ import { RouterReplaceOptions } from '@/types/routerReplace'
 import { RouteParamsByKey } from '@/types/routeWithParams'
 import { Url, isUrl } from '@/types/url'
 import { AllPropertiesAreOptional } from '@/types/utilities'
+import { isRoute } from '@/guards/routes'
 
 export type UseLink = {
   /**
@@ -102,8 +103,8 @@ export function useLink(
   })
 
   const route = computed(() => router.find(href.value, optionsRef.value))
-  const isMatch = computed(() => !!route.value && router.route.matches.includes(route.value.matched))
-  const isExactMatch = computed(() => !!route.value && router.route.matched === route.value.matched)
+  const isMatch = computed(() => isRoute(router.route) && router.route.matches.some(match => match.id === route.value?.id))
+  const isExactMatch = computed(() => router.route.id === route.value?.id)
   const isExternal = computed(() => router.isExternal(href.value))
 
   const { element, commit } = usePrefetching(() => ({
