@@ -96,13 +96,13 @@ function prefetchComponentsForRoute(strategy: PrefetchStrategy, route: ResolvedR
     }
 
     if (isWithComponent(route) && isAsyncComponent(route.component)) {
-      route.component.setup()
+      route.component.__asyncLoader()
     }
 
     if (isWithComponents(route)) {
       Object.values(route.components).forEach((component) => {
         if (isAsyncComponent(component)) {
-          component.setup()
+          component.__asyncLoader()
         }
       })
     }
