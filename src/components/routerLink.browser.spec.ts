@@ -647,4 +647,62 @@ describe('prefetch props', () => {
 
     expect(callback).toHaveBeenCalled()
   })
+
+  test('components are not prefetched until link is visible when prefetch is lazy', async () => {
+    let loaded = false
+
+    const routeA = createRoute({
+      name: 'routeA',
+      path: '/routeA',
+      component: () => h(routerLink, { to: (resolve) => resolve('routeB') }),
+    })
+
+    const routeB = createRoute({
+      name: 'routeB',
+      path: '/routeB',
+      prefetch: { components: 'lazy' },
+      component: defineAsyncComponent(() => {
+        return new Promise((resolve) => {
+          loaded = true
+          resolve({ default: { template: 'foo' } })
+        })
+      }),
+    })
+
+    const router = createRouter([routeA, routeB], {
+      initialUrl: '/routeA',
+    })
+
+    await router.start()
+
+    const visible = ref(false)
+    
+    const root = {
+      template: '<RouterView />',
+      provide: {
+        [visibilityObserverKey]: {
+          observe: vi.fn(),
+          unobserve: vi.fn(),
+          disconnect: vi.fn(),
+          isElementVisible: () => visible.value,
+        } satisfies VisibilityObserver,
+      },
+    }
+
+    mount(root, {
+      global: {
+        plugins: [router],
+      },
+    })
+
+    expect(loaded).toBe(false)
+
+    visible.value = true
+    
+    await nextTick()
+
+    expect(loaded).toBe(true)
+  })
 })
+
+
