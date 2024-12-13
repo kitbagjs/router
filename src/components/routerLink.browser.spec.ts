@@ -218,9 +218,8 @@ test.each([
   await router.start()
 
   const anchor = wrapper.find('a')
-  const element = anchor.element as HTMLAnchorElement
 
-  expect(isExternal.toString()).toBe(element.innerHTML)
+  expect(anchor.text()).toBe(isExternal.toString())
 })
 
 describe('prefetch components', () => {
