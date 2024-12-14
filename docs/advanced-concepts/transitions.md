@@ -7,7 +7,7 @@ The `RouterView` component provides a default slot to support layering in a [Vue
   <template #default={ component }>
     <transition name="fade">
       <component :is="Component" />
-    </transition>G
+    </transition>
   </template>
 </router-view>
 ```G
