@@ -2,6 +2,7 @@ import { ExtractRouteParamTypes } from '@/types/params'
 import { ResolvedRouteQuery } from '@/types/resolvedQuery'
 import { Route } from '@/types/route'
 import { ExtractRouteStateParamsAsOptional } from '@/types/state'
+import { Url } from '@/types/url'
 
 /**
  * Represents a route that the router has matched to current browser location.
@@ -41,4 +42,8 @@ export type ResolvedRoute<TRoute extends Route = Route> = Readonly<{
    * Type for additional data intended to be stored in history state.
    */
   state: ExtractRouteStateParamsAsOptional<TRoute['state']>,
+  /**
+   * String value of the resolved URL.
+   */
+  href: Url,
 }>
