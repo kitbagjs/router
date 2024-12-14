@@ -14,6 +14,7 @@ export type RouterRoute<TRoute extends ResolvedRoute = ResolvedRoute> = {
   readonly matches: TRoute['matches'],
   readonly hash: TRoute['hash'],
   readonly update: RouteUpdate<TRoute>,
+  readonly href: TRoute['href'],
 
   params: TRoute['params'],
   state: TRoute['state'],
@@ -66,7 +67,7 @@ export function createRouterRoute<TRoute extends ResolvedRoute>(route: TRoute, p
     update({}, { query })
   }
 
-  const { id, matched, matches, name, hash } = toRefs(route)
+  const { id, matched, matches, name, hash, href } = toRefs(route)
 
   const params = computed({
     get() {
@@ -129,6 +130,7 @@ export function createRouterRoute<TRoute extends ResolvedRoute>(route: TRoute, p
     hash,
     params,
     name,
+    href,
     update,
     [isRouterRouteSymbol]: true,
   })

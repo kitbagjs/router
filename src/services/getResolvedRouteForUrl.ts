@@ -7,6 +7,7 @@ import { getStateValues } from '@/services/state'
 import { ResolvedRoute } from '@/types/resolved'
 import { Routes } from '@/types/route'
 import { RouteMatchRule } from '@/types/routeMatchRule'
+import { asUrl } from '@/types'
 
 const rules: RouteMatchRule[] = [
   isNamedRoute,
@@ -39,5 +40,6 @@ export function getResolvedRouteForUrl(routes: Routes, url: string, state?: unkn
     params: getRouteParamValues(route, url),
     state: getStateValues(route.state, state),
     hash,
+    href: asUrl(url)
   }
 }
