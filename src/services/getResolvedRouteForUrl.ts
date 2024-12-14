@@ -1,13 +1,10 @@
-import { parseUrl } from '@/services/urlParser'
-import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
-import { getRouteParamValues, routeParamsAreValid } from '@/services/paramValidation'
+import { routeParamsAreValid } from '@/services/paramValidation'
 import { isNamedRoute, routePathMatches, routeQueryMatches, routeHashMatches } from '@/services/routeMatchRules'
 import { getRouteScoreSortMethod } from '@/services/routeMatchScore'
-import { getStateValues } from '@/services/state'
 import { ResolvedRoute } from '@/types/resolved'
 import { Routes } from '@/types/route'
 import { RouteMatchRule } from '@/types/routeMatchRule'
-import { asUrl } from '@/types'
+import { createResolvedRoute } from './createResolvedRoute'
 
 const rules: RouteMatchRule[] = [
   isNamedRoute,
@@ -29,17 +26,6 @@ export function getResolvedRouteForUrl(routes: Routes, url: string, state?: unkn
   }
 
   const [route] = matches
-  const { search, hash } = parseUrl(url)
 
-  return {
-    id: route.id,
-    matched: route.matched,
-    matches: route.matches,
-    name: route.name,
-    query: createResolvedRouteQuery(search),
-    params: getRouteParamValues(route, url),
-    state: getStateValues(route.state, state),
-    hash,
-    href: asUrl(url)
-  }
+  return createResolvedRoute(route, url, {state})
 }
