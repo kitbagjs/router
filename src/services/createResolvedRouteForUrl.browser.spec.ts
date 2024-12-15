@@ -1,6 +1,6 @@
 import { afterEach, expect, test, vi } from 'vitest'
 import { createRoute } from '@/services/createRoute'
-import { getResolvedRouteForUrl } from '@/services/getResolvedRouteForUrl'
+import { createResolvedRouteForUrl } from '@/services/createResolvedRouteForUrl'
 import * as utilities from '@/services/routeMatchScore'
 import { Route } from '@/types'
 import { component } from '@/utilities/testHelpers'
@@ -30,7 +30,7 @@ test('given path WITHOUT params, returns match', () => {
 
   const routes = [parent, child, grandchild]
 
-  const match = getResolvedRouteForUrl(routes, '/parent/child/grandchild')
+  const match = createResolvedRouteForUrl(routes, '/parent/child/grandchild')
 
   expect(match?.name).toBe('parent.child.grandchild')
   expect(match?.matched.name).toBe('parent.child.grandchild')
@@ -54,7 +54,7 @@ test('given path to unnamed parent, without option to get to leaf, returns undef
 
   const routes = [unnamedParent, unnamedChild, namedGrandchild]
 
-  const match = getResolvedRouteForUrl(routes, '/unnamed')
+  const match = createResolvedRouteForUrl(routes, '/unnamed')
 
   expect(match).toBeUndefined()
 })
@@ -71,7 +71,7 @@ test('given path to unnamed  parent, with option to get to leaf, returns availab
   })
 
   const routes = [unnamedChildRoot, unnamedParent]
-  const match = getResolvedRouteForUrl(routes, '/unnamed')
+  const match = createResolvedRouteForUrl(routes, '/unnamed')
 
   expect(match?.name).toBe('child-root')
 })
@@ -94,7 +94,7 @@ test('given path that includes named parent and path to leaf, return first match
   })
 
   const routes = [namedParent, namedChild, namedGrandchild]
-  const match = getResolvedRouteForUrl(routes, '/named-parent')
+  const match = createResolvedRouteForUrl(routes, '/named-parent')
 
   expect(match?.name).toBe('namedParent.namedChild.namedGrandchild')
   expect(match?.matched.name).toBe('namedParent.namedChild.namedGrandchild')
@@ -106,7 +106,7 @@ test('given route with simple string param WITHOUT value present, returns undefi
     path: '/simple/[simple]',
     component,
   })
-  const response = getResolvedRouteForUrl([route], '/simple/')
+  const response = createResolvedRouteForUrl([route], '/simple/')
 
   expect(response).toBeUndefined()
 })
@@ -118,7 +118,7 @@ test('given route with simple string query param WITHOUT value present, returns 
     query: 'simple=[simple]',
     component,
   })
-  const response = getResolvedRouteForUrl([route], '/missing?without=params')
+  const response = createResolvedRouteForUrl([route], '/missing?without=params')
 
   expect(response).toBeUndefined()
 })
@@ -148,7 +148,7 @@ test('given route with equal matches, returns route with highest score', () => {
     }),
   ]
 
-  const response = getResolvedRouteForUrl(routes, '/')
+  const response = createResolvedRouteForUrl(routes, '/')
 
   expect(response?.name).toBe('second-route')
 })
@@ -159,7 +159,7 @@ test('given a route without params or query returns an empty params and query', 
     path: '/',
     component,
   })
-  const response = getResolvedRouteForUrl([route], '/')
+  const response = createResolvedRouteForUrl([route], '/')
 
   expect(response?.params).toMatchObject({})
   expect(response?.query).toMatchObject({})
@@ -171,7 +171,7 @@ test('given a url with a query returns all query values', () => {
     path: '/',
     component,
   })
-  const response = getResolvedRouteForUrl([route], '/?foo=foo1&foo=foo2&bar=bar&baz')
+  const response = createResolvedRouteForUrl([route], '/?foo=foo1&foo=foo2&bar=bar&baz')
 
   expect(response?.query.get('foo')).toBe('foo1')
   expect(response?.query.getAll('foo')).toMatchObject(['foo1', 'foo2'])
@@ -190,7 +190,7 @@ test('given a route with params returns all params', () => {
     query: 'paramB=[paramB]',
     component,
   })
-  const response = getResolvedRouteForUrl([route], '/A?paramB=B')
+  const response = createResolvedRouteForUrl([route], '/A?paramB=B')
 
   expect(response?.params).toMatchObject({
     paramA: 'A',
@@ -214,7 +214,7 @@ test('given state that matches state params, returns state', () => {
 
   const routes = [parent, child] as const
 
-  const response = getResolvedRouteForUrl(routes, '/foo', { foo: 'true', bar: 'abc' })
+  const response = createResolvedRouteForUrl(routes, '/foo', { foo: 'true', bar: 'abc' })
 
   expect(response?.state).toMatchObject({ foo: true, bar: 'abc' })
 })
@@ -225,7 +225,7 @@ test('given a url with hash, returns hash property', () => {
     path: '/foo',
     component,
   })
-  const response = getResolvedRouteForUrl([route], '/foo#bar')
+  const response = createResolvedRouteForUrl([route], '/foo#bar')
 
   expect(response?.hash).toBe('#bar')
 })
@@ -249,7 +249,7 @@ test('given a route with hash, matches url with same hash', () => {
     hash: 'foo',
   })
 
-  const response = getResolvedRouteForUrl([noHashRoute, matchingRoute, differentHashRoute], '/foo#foo')
+  const response = createResolvedRouteForUrl([noHashRoute, matchingRoute, differentHashRoute], '/foo#foo')
 
   expect(response?.name).toBe('matching-route')
 })

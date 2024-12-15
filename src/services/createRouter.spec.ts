@@ -7,7 +7,6 @@ import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
 import * as createRouterHistoryUtilities from '@/services/createRouterHistory'
 import { component, routes } from '@/utilities/testHelpers'
-import { RouteNotFoundError } from '@/errors/routeNotFoundError'
 import { createExternalRoute } from './createExternalRoute'
 
 test('initial route is set', async () => {
@@ -463,9 +462,9 @@ describe('router.resolve', () => {
   test('when given a name that does not match a route returns undefined', () => {
     const router = createRouter(routes, { initialUrl: '/' })
   
-    const action: () => void = () => router.resolve('parentD' as any)
+    const route = router.resolve('parentD' as any)
   
-    expect(action).toThrow(RouteNotFoundError)
+    expect(route).toBeUndefined()
   })
   
   test('when given a url that does not match a route returns undefined', () => {
@@ -515,12 +514,12 @@ describe('router.resolve', () => {
     })
   })
   
-  test('given a route name with params cannot be matched, throws RouteNotFoundError', () => {
+  test('given a route name with params cannot be matched, returns undefined', () => {
     const router = createRouter(routes, { initialUrl: '/' })
   
-    const action: () => void = () => router.resolve({ route: 'foo' } as any)
+    const route = router.resolve({ route: 'foo' } as any)
   
-    expect(action).toThrow(RouteNotFoundError)
+    expect(route).toBeUndefined()
   })
   
   test('given a param with a dash or underscore resolves the correct url', () => {

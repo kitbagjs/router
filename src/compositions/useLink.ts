@@ -24,7 +24,7 @@ export type UseLink = {
   /**
    * Resolved URL with params interpolated and query applied. Same value as `router.resolve`.
    */
-  href: ComputedRef<string>,
+  href: ComputedRef<Url | undefined>,
   /**
    * True if route matches current URL or is ancestor of route that matches current URL
    */
@@ -71,9 +71,10 @@ type UseLinkArgs<
  */
 export function useLink<TRouteKey extends RegisteredRoutesName>(name: MaybeRefOrGetter<TRouteKey>, ...args: UseLinkArgs<TRouteKey>): UseLink
 export function useLink(url: MaybeRefOrGetter<Url>, options?: MaybeRefOrGetter<UseLinkOptions>): UseLink
-export function useLink(resolvedRoute: MaybeRefOrGetter<ResolvedRoute>, options?: MaybeRefOrGetter<UseLinkOptions>): UseLink
+export function useLink(resolvedRoute: MaybeRefOrGetter<ResolvedRoute | undefined>, options?: MaybeRefOrGetter<UseLinkOptions>): UseLink
+export function useLink(source: MaybeRefOrGetter<string | ResolvedRoute | undefined>, paramsOrOptions?: MaybeRefOrGetter<Record<PropertyKey, unknown> | UseLinkOptions>, maybeOptions?: MaybeRefOrGetter<UseLinkOptions>): UseLink
 export function useLink(
-  source: MaybeRefOrGetter<string | ResolvedRoute>,
+  source: MaybeRefOrGetter<string | ResolvedRoute | undefined>,
   paramsOrOptions: MaybeRefOrGetter<Record<PropertyKey, unknown> | UseLinkOptions> = {},
   maybeOptions: MaybeRefOrGetter<UseLinkOptions> = {},
 ): UseLink {
@@ -85,11 +86,7 @@ export function useLink(
       return sourceValue
     }
 
-    try {
-      return router.resolve(sourceValue, toValue(paramsOrOptions), toValue(maybeOptions))
-    } catch {
-      throw new Error('Failed to resolve route in RouterLink.')
-    }
+    return router.resolve(sourceValue, toValue(paramsOrOptions), toValue(maybeOptions))
   })
 
   const href = computed(() => {
@@ -102,12 +99,12 @@ export function useLink(
       return sourceValue
     }
 
-    throw new Error('Failed to resolve route in RouterLink.')
+    console.error(new Error('Failed to resolve route in RouterLink.'))
   })
   
   const isMatch = computed(() => isRoute(router.route) && router.route.matches.some(match => match.id === route.value?.id))
   const isExactMatch = computed(() => router.route.id === route.value?.id)
-  const isExternal = computed(() => router.isExternal(href.value))
+  const isExternal = computed(() => !!href.value && router.isExternal(href.value))
 
   const linkOptions = computed<UseLinkOptions>(() => {
     const sourceValue = toValue(source)

@@ -11,7 +11,7 @@ import { createRouterHistory } from '@/services/createRouterHistory'
 import { routeHookStoreKey, createRouterHooks } from '@/services/createRouterHooks'
 import { createRouterReject } from '@/services/createRouterReject'
 import { getInitialUrl } from '@/services/getInitialUrl'
-import { getResolvedRouteForUrl } from '@/services/getResolvedRouteForUrl'
+import { createResolvedRouteForUrl } from '@/services/createResolvedRouteForUrl'
 import { createRouteHookRunners } from '@/services/hooks'
 import { insertBaseRoute } from '@/services/insertBaseRoute'
 import { setStateValues } from '@/services/state'
@@ -100,7 +100,7 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
       return
     }
 
-    const to = getResolvedRouteForUrl(routes, url, options.state) ?? getRejectionRoute('NotFound')
+    const to = createResolvedRouteForUrl(routes, url, options.state) ?? getRejectionRoute('NotFound')
     const from = { ...currentRoute }
 
     const beforeResponse = await runBeforeRouteHooks({ to, from, hooks })
@@ -192,7 +192,7 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
       const match = routes.find((route) => route.name === source)
 
       if (!match) {
-        throw new RouteNotFoundError(String(source))
+        return undefined
       }
 
       return createResolvedRoute(match, params, options)
@@ -205,7 +205,7 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
     const options: RouterPushOptions = {...paramsOrOptions}
     const url = appendQuery(source, options.query)
 
-    return getResolvedRouteForUrl(routes, url)
+    return createResolvedRouteForUrl(routes, url)
   }
 
   const push: RouterPush<TRoutes> = (source: Url | RoutesName<TRoutes>, paramsOrOptions?: Record<string, unknown> | RouterPushOptions, maybeOptions?: RouterPushOptions) => {

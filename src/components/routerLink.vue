@@ -18,15 +18,15 @@
   import { Url, isUrl } from '@/types/url'
   import { ResolvedRoute } from '@/types/resolved'
   import { useRouter } from '@/compositions/useRouter'
-  import { UseLink, useLink } from '@/compositions/useLink'
+  import { useLink } from '@/compositions/useLink'
 
-  type ToCallback = (resolve: RegisteredRouter['resolve']) => ResolvedRoute | undefined
+  export type ToCallback = (resolve: RegisteredRouter['resolve']) => ResolvedRoute | Url | undefined
 
-  type RouterLinkProps = {
+  type RouterLinkProps = { 
     /**
      * The url string to navigate to or a callback that returns a url string
      */
-    to: Url | ToCallback,
+    to: Url | ResolvedRoute | ToCallback,
     /**
      * Determines what assets are prefetched when router-link is rendered for this route. Overrides route level prefetch.
      */
@@ -50,21 +50,9 @@
 
   const router = useRouter()
 
-  const route = computed(() => {
-    return isUrl(props.to) ? router.resolve(props.to) : props.to(router.resolve)
-  })
+  const route = computed<ResolvedRoute | undefined>(() => getResolvedRoute(props.to))
 
-  const href = computed(() => {
-    if (route.value) {
-      return route.value.href
-    }
-
-    if(isUrl(props.to)){
-      return props.to
-    }
-
-    throw new Error('Failed to resolve route in RouterLink.')
-  })
+  const href = computed<Url | undefined>(() => getHref(props.to))
 
   const options = computed(() => {
     const { to, ...options } = props
@@ -72,23 +60,41 @@
     return options
   })
 
-  const { element, isMatch, isExactMatch, isExternal, push } = createUseLink()
+  const { element, isMatch, isExactMatch, isExternal, push } = useLink(() => {
+    if(typeof props.to === 'function'){
+      return props.to(router.resolve)
+    }
+
+    return props.to
+  }, options)
 
   const classes = computed(() => ({
     'router-link--match': isMatch.value,
     'router-link--exact-match': isExactMatch.value,
   }))
+  
+  function getResolvedRoute(to: Url | ResolvedRoute | ToCallback | undefined): ResolvedRoute | undefined {
+    if(typeof to === 'function'){
+      const callbackValue = to(router.resolve)
 
-  function createUseLink(): UseLink {
-    if (route.value) {
-      return useLink(route.value, options)
+      return getResolvedRoute(callbackValue)
     }
 
-    if (isUrl(props.to)) {
-      return useLink(props.to, options)
+    return isUrl(to) ? router.resolve(to) : to
+  }
+
+  function getHref(to: Url | ResolvedRoute | ToCallback | undefined): Url | undefined {
+    if(typeof to === 'function'){
+      const callbackValue = to(router.resolve)
+
+      return getHref(callbackValue)
     }
 
-    throw new Error('Failed to resolve route in RouterLink.')
+    if(isUrl(to)){
+      return to
+    }
+
+    return to?.href
   }
 
   function onClick(event: MouseEvent): void {

@@ -5,20 +5,22 @@ import { Url } from '@/types/url'
 import { AllPropertiesAreOptional } from '@/types/utilities'
 import { QuerySource } from '@/types/query'
 import { ResolvedRoute } from '@/types'
+import { RouteStateByName } from '@/types/state'
 
-export type RouterResolveOptions = {
+export type RouterResolveOptions<
+  TState = unknown
+> = {
   query?: QuerySource,
   hash?: string,
-  state?: unknown,
+  state?: Partial<TState>,
 }
 
 type RouterResolveArgs<
   TRoutes extends Routes,
   TSource extends RoutesName<TRoutes>,
-  TParams = RouteParamsByKey<TRoutes, TSource>
-> = AllPropertiesAreOptional<TParams> extends true
-  ? [params?: TParams, options?: RouterResolveOptions]
-  : [params: TParams, options?: RouterResolveOptions]
+> = AllPropertiesAreOptional<RouteParamsByKey<TRoutes, TSource>> extends true
+  ? [params?: RouteParamsByKey<TRoutes, TSource>, options?: RouterResolveOptions<RouteStateByName<TRoutes, TSource>>]
+  : [params: RouteParamsByKey<TRoutes, TSource>, options?: RouterResolveOptions<RouteStateByName<TRoutes, TSource>>]
 
 export type RouterResolve<
   TRoutes extends Routes
