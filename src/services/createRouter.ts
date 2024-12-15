@@ -10,14 +10,12 @@ import { createPropStore, propStoreKey } from '@/services/createPropStore'
 import { createRouterHistory } from '@/services/createRouterHistory'
 import { routeHookStoreKey, createRouterHooks } from '@/services/createRouterHooks'
 import { createRouterReject } from '@/services/createRouterReject'
-import { createRouterResolve } from '@/services/createRouterResolve'
 import { getInitialUrl } from '@/services/getInitialUrl'
-import { getResolvedRouteForUrl } from '@/services/getResolvedRouteForUrl'
+import { createResolvedRouteForUrl } from '@/services/createResolvedRouteForUrl'
 import { createRouteHookRunners } from '@/services/hooks'
 import { insertBaseRoute } from '@/services/insertBaseRoute'
 import { setStateValues } from '@/services/state'
-import { ResolvedRoute } from '@/types/resolved'
-import { Route, Routes } from '@/types/route'
+import { Routes } from '@/types/route'
 import { Router, RouterOptions, RouterReject } from '@/types/router'
 import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { RouterReplace, RouterReplaceOptions } from '@/types/routerReplace'
@@ -25,9 +23,13 @@ import { RoutesName } from '@/types/routesMap'
 import { Url, isUrl } from '@/types/url'
 import { checkDuplicateNames } from '@/utilities/checkDuplicateNames'
 import { isNestedArray } from '@/utilities/guards'
-import { createUniqueIdSequence } from './createUniqueIdSequence'
+import { createUniqueIdSequence } from '@/services/createUniqueIdSequence'
 import { createVisibilityObserver } from './createVisibilityObserver'
 import { visibilityObserverKey } from '@/compositions/useVisibilityObserver'
+import { RouterResolve, RouterResolveOptions } from '../types/RouterResolve'
+import { RouteNotFoundError } from '@/errors/routeNotFoundError'
+import { appendQuery } from '@/utilities/urlSearchParams'
+import { createResolvedRoute } from '@/services/createResolvedRoute'
 
 type RouterUpdateOptions = {
   replace?: boolean,
@@ -68,7 +70,6 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
   const getNavigationId = createUniqueIdSequence()
   const propStore = createPropStore()
   const visibilityObserver = createVisibilityObserver()
-  const resolve = createRouterResolve(routes)
   const history = createRouterHistory({
     mode: options?.historyMode,
     listener: ({ location }) => {
@@ -99,7 +100,7 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
       return
     }
 
-    const to = getResolvedRouteForUrl(routes, url, options.state) ?? getRejectionRoute('NotFound')
+    const to = createResolvedRouteForUrl(routes, url, options.state) ?? getRejectionRoute('NotFound')
     const from = { ...currentRoute }
 
     const beforeResponse = await runBeforeRouteHooks({ to, from, hooks })
@@ -180,59 +181,77 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
     history.startListening()
   }
 
+  const resolve: RouterResolve<TRoutes> = (
+    source: Url | RoutesName<TRoutes>,
+    paramsOrOptions?: Record<string, unknown>,
+    maybeOptions?: RouterResolveOptions,
+  ) => {
+    if (!isUrl(source)) {
+      const params = paramsOrOptions ?? {}
+      const options: RouterResolveOptions = maybeOptions ?? {}
+      const match = routes.find((route) => route.name === source)
+
+      if (!match) {
+        return undefined
+      }
+
+      return createResolvedRoute(match, params, options)
+    }
+    
+    if (isExternal(source)) {
+      return undefined
+    }
+
+    const options: RouterPushOptions = {...paramsOrOptions}
+    const url = appendQuery(source, options.query)
+
+    return createResolvedRouteForUrl(routes, url)
+  }
+
   const push: RouterPush<TRoutes> = (source: Url | RoutesName<TRoutes>, paramsOrOptions?: Record<string, unknown> | RouterPushOptions, maybeOptions?: RouterPushOptions) => {
     if (isUrl(source)) {
-      const options: RouterPushOptions = { ...paramsOrOptions }
-      const url = resolve(source, options)
+      const options: RouterPushOptions = {...paramsOrOptions}
+      const url = appendQuery(source, options.query)
 
       return set(url, options)
     }
 
-    const options: RouterPushOptions = { ...maybeOptions }
-    const params: any = paramsOrOptions ?? {}
-    const url = resolve(source, params, options)
-    const route = getRoute(source)
-    const state = setStateValues(route?.state ?? {}, options.state)
+    const options: RouterPushOptions = {...maybeOptions}
+    const params: any = {...paramsOrOptions}
+    const resolved = resolve(source, params, options)
 
-    return set(url, { ...options, state })
+    if(!resolved) {
+      throw new RouteNotFoundError(String(source))
+    }
+
+    const state = setStateValues({...resolved.state}, options.state)
+
+    return set(resolved.href, { ...options, state })
   }
 
   const replace: RouterReplace<TRoutes> = (source: Url | RoutesName<TRoutes>, paramsOrOptions?: Record<string, unknown> | RouterReplaceOptions, maybeOptions?: RouterReplaceOptions) => {
     if (isUrl(source)) {
       const options: RouterPushOptions = { ...paramsOrOptions, replace: true }
-      const url = resolve(source, options)
+      const url = appendQuery(source, options.query)
 
       return set(url, options)
     }
 
     const options: RouterPushOptions = { ...maybeOptions, replace: true }
-    const params: any = paramsOrOptions ?? {}
-    const url = resolve(source, params, options)
-    const route = getRoute(source)
-    const state = setStateValues(route?.state ?? {}, options.state)
+    const params: any = {...paramsOrOptions}
+    const resolved = resolve(source, params, options)
 
-    return set(url, { ...options, state })
+    if(!resolved) {
+      throw new RouteNotFoundError(String(source))
+    }
+
+    const state = setStateValues({...resolved.state}, options.state)
+
+    return set(resolved.href, { ...options, state })
   }
 
   const reject: RouterReject = (type) => {
     setRejection(type)
-  }
-
-  const find = (
-    source: Url | RoutesName<TRoutes>,
-    params: Record<PropertyKey, unknown> = {},
-  ): ResolvedRoute | undefined => {
-    if (!isUrl(source)) {
-      const url = resolve(source, params as any)
-
-      return getResolvedRouteForUrl(routes, url)
-    }
-
-    if (isExternal(source)) {
-      return undefined
-    }
-
-    return getResolvedRouteForUrl(routes, source)
   }
 
   const { setRejection, rejection, getRejectionRoute } = createRouterReject(options ?? {})
@@ -258,10 +277,6 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
     initialized = true
   }
 
-  function getRoute(name: string): Route | undefined {
-    return routes.find((route) => route.name === name)
-  }
-
   function install(app: App): void {
     app.component('RouterView', RouterView)
     app.component('RouterLink', RouterLink)
@@ -283,7 +298,6 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
     push,
     replace,
     reject,
-    find,
     refresh: history.refresh,
     forward: history.forward,
     back: history.back,

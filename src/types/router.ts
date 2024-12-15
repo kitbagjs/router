@@ -1,15 +1,14 @@
 import { Component, Plugin } from 'vue'
 import { RouterHistoryMode } from '@/services/createRouterHistory'
-import { RouterResolve } from '@/services/createRouterResolve'
 import { RouterRoute } from '@/services/createRouterRoute'
 import { AddAfterRouteHook, AddBeforeRouteHook } from '@/types/hooks'
 import { PrefetchConfig } from '@/types/prefetch'
 import { RegisteredRejectionType } from '@/types/register'
 import { ResolvedRoute } from '@/types/resolved'
 import { Routes } from '@/types/route'
-import { RouterFind } from '@/types/routerFind'
 import { RouterPush } from '@/types/routerPush'
 import { RouterReplace } from '@/types/routerReplace'
+import { RouterResolve } from '@/types/RouterResolve'
 
 export type RouterReject = (type: RegisteredRejectionType) => void
 
@@ -65,10 +64,6 @@ export type Router<
    * Replaces the current entry in the history stack with a new one.
    */
   replace: RouterReplace<TRoutes>,
-  /**
-   * Finds a route object based on the provided lookup parameters.
-   */
-  find: RouterFind<TRoutes>,
   /**
    * Handles route rejection based on a specified rejection type.
    */

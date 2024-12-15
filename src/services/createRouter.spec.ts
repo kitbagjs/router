@@ -1,13 +1,13 @@
 import { flushPromises } from '@vue/test-utils'
 import { Location } from 'history'
-import { expect, test, vi } from 'vitest'
+import { describe, expect, test, vi } from 'vitest'
 import { computed, toRefs } from 'vue'
 import { DuplicateNamesError } from '@/errors/duplicateNamesError'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
 import * as createRouterHistoryUtilities from '@/services/createRouterHistory'
-import * as resolveUtilities from '@/services/createRouterResolve'
-import { component } from '@/utilities/testHelpers'
+import { component, routes } from '@/utilities/testHelpers'
+import { createExternalRoute } from './createExternalRoute'
 
 test('initial route is set', async () => {
   const foo = createRoute({
@@ -406,28 +406,6 @@ test('query.values is reactive', async () => {
   expect(values.value).toMatchObject(['foo1', 'bar1', 'foo2'])
 })
 
-test('given an array of Routes, combines into single routes collection', () => {
-  const aRoutes = [
-    createRoute({ name: 'a-route-1', path: '/a-route-1', component }),
-    createRoute({ name: 'a-route-2', path: '/a-route-2', component }),
-  ]
-  const bRoutes = [
-    createRoute({ name: 'b-route-1', path: '/b-route-1', component }),
-    createRoute({ name: 'b-route-2', path: '/b-route-2', component }),
-  ]
-
-  const spy = vi.spyOn(resolveUtilities, 'createRouterResolve')
-
-  createRouter([aRoutes, bRoutes], {
-    initialUrl: '/',
-  })
-
-  expect(spy).toHaveBeenLastCalledWith([
-    ...aRoutes,
-    ...bRoutes,
-  ])
-})
-
 test('given an array of Routes with duplicate names, throws DuplicateNamesError', () => {
   const aRoutes = [
     createRoute({ name: 'foo', component }),
@@ -461,4 +439,172 @@ test('initial route is not set until the router is started', async () => {
   await router.start()
 
   expect(router.route.name).toBe('root')
+})
+
+describe('router.resolve', () => {
+  test('when given a name that matches a route return that route', () => {
+    const router = createRouter(routes, { initialUrl: '/' })
+  
+    const route = router.resolve('parentB')
+  
+    expect(route).toBeDefined()
+    expect(route?.name).toBe('parentB')
+  })
+  
+  test('when given a url that matches a route returns that route', () => {
+    const router = createRouter(routes, { initialUrl: '/' })
+    const route = router.resolve('/parentB')
+  
+    expect(route).toBeDefined()
+    expect(route?.name).toBe('parentB')
+  })
+  
+  test('when given a name that does not match a route returns undefined', () => {
+    const router = createRouter(routes, { initialUrl: '/' })
+  
+    const route = router.resolve('parentD' as any)
+  
+    expect(route).toBeUndefined()
+  })
+  
+  test('when given a url that does not match a route returns undefined', () => {
+    const router = createRouter(routes, { initialUrl: '/' })
+    const route = router.resolve('/parentC')
+  
+    expect(route).toBeUndefined()
+  })
+  
+  test('when given a url that does not match a route returns undefined', () => {
+    const router = createRouter(routes, { initialUrl: '/' })
+    const route = router.resolve('/does-not-exist')
+  
+    expect(route).toBeUndefined()
+  })
+  
+  test('when given an external url that does not match a route returns undefined', () => {
+    const router = createRouter(routes, { initialUrl: '/' })
+    const route = router.resolve('https://example.com')
+  
+    expect(route).toBeUndefined()
+  })  
+  
+  test('given a route name with params, interpolates param values', () => {
+    const router = createRouter(routes, { initialUrl: '/' })
+    const route = router.resolve('parentA', { paramA: 'bar' })
+  
+    expect(route).toMatchObject({
+      name: 'parentA',
+      params: {
+        paramA: 'bar',
+      },
+      href: '/parentA/bar'
+    })
+  })
+  
+  test('given a route name with query, interpolates param values', () => {
+    const router = createRouter(routes, { initialUrl: '/' })
+    const route = router.resolve('parentA', { paramA: 'bar' }, { query: { foo: 'foo' } })
+  
+    expect(route).toMatchObject({
+      name: 'parentA',
+      params: {
+        paramA: 'bar',
+      },
+      href: '/parentA/bar?foo=foo',
+    })
+  })
+  
+  test('given a route name with params cannot be matched, returns undefined', () => {
+    const router = createRouter(routes, { initialUrl: '/' })
+  
+    const route = router.resolve({ route: 'foo' } as any)
+  
+    expect(route).toBeUndefined()
+  })
+  
+  test('given a param with a dash or underscore resolves the correct url', () => {
+    const routes = [
+      createRoute({
+        name: 'kebab',
+        path: '/[test-param]',
+        component,
+      }),
+      createRoute({
+        name: 'snake',
+        path: '/[test_param]',
+        component,
+      }),
+    ]
+  
+    const router = createRouter(routes, { initialUrl: '/' })
+  
+    const kebab = router.resolve('kebab', { 'test-param': 'foo'})
+  
+    expect(kebab).toMatchObject({
+      name: 'kebab',
+      params: {
+        'test-param': 'foo',
+      },
+      href: '/foo',
+    })
+  
+    const snake = router.resolve('snake', { test_param: 'foo' })
+  
+    expect(snake).toMatchObject({
+      name: 'snake',
+      params: {
+        test_param: 'foo',
+      },
+      href: '/foo',
+    })
+  })
+  
+  test('when given an external route returns a fully qualified url', () => {
+    const routes = [createExternalRoute({
+      host: 'https://kitbag.dev',
+      name: 'external',
+      path: '/',
+    })]
+  
+    const router = createRouter(routes, { initialUrl: '/' })
+  
+    const route = router.resolve('external')
+  
+    expect(route).toMatchObject({
+      name: 'external',
+      href: 'https://kitbag.dev/',
+    })
+  })
+  
+  test('when given an external route with params in host, interpolates param values', () => {
+    const routes = [createExternalRoute({
+      host: 'https://[subdomain].kitbag.dev',
+      name: 'external',
+      path: '/',
+    })]
+  
+    const router = createRouter(routes, { initialUrl: '/' })
+  
+    const route = router.resolve('external', { subdomain: 'router' })
+  
+    expect(route).toMatchObject({
+      name: 'external',
+      href: 'https://router.kitbag.dev/',
+    })
+  })
+  
+  test('given a route with hash, interpolates hash value', () => {
+    const router = createRouter(routes, { initialUrl: '/' })
+  
+    const route = router.resolve('parentA', { paramA: 'bar' }, { hash: 'foo' })
+  
+    expect(route).toMatchObject({
+      name: 'parentA',
+      params: {
+        paramA: 'bar',
+      },
+      hash: '#foo',
+      href: '/parentA/bar#foo',
+    })
+  })
 })

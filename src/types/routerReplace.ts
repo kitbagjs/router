@@ -17,10 +17,9 @@ export type RouterReplaceOptions<
 type RouterReplaceArgs<
   TRoutes extends Routes,
   TSource extends RoutesName<TRoutes>,
-  TParams = RouteParamsByKey<TRoutes, TSource>
-> = AllPropertiesAreOptional<TParams> extends true
-  ? [params?: TParams, options?: RouterReplaceOptions<RouteStateByName<TRoutes, TSource>>]
-  : [params: TParams, options?: RouterReplaceOptions<RouteStateByName<TRoutes, TSource>>]
+> = AllPropertiesAreOptional<RouteParamsByKey<TRoutes, TSource>> extends true
+  ? [params?: RouteParamsByKey<TRoutes, TSource>, options?: RouterReplaceOptions<RouteStateByName<TRoutes, TSource>>]
+  : [params: RouteParamsByKey<TRoutes, TSource>, options?: RouterReplaceOptions<RouteStateByName<TRoutes, TSource>>]
 
 export type RouterReplace<
   TRoutes extends Routes

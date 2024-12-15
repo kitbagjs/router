@@ -1,6 +1,6 @@
 <template>
-  <a ref="element" :href="resolved" class="router-link" :class="classes" @click="onClick">
-    <slot v-bind="{ resolved, isMatch, isExactMatch, isExternal }" />
+  <a ref="element" :href="href" class="router-link" :class="classes" @click="onClick">
+    <slot v-bind="{ route, isMatch, isExactMatch, isExternal }" />
   </a>
 </template>
 
@@ -12,19 +12,21 @@
 
 <script setup lang="ts">
   import { computed } from 'vue'
-  import { useRouter, useLink } from '@/compositions'
   import { PrefetchConfig } from '@/types/prefetch'
   import { RegisteredRouter } from '@/types/register'
   import { RouterPushOptions } from '@/types/routerPush'
   import { Url, isUrl } from '@/types/url'
+  import { ResolvedRoute } from '@/types/resolved'
+  import { useRouter } from '@/compositions/useRouter'
+  import { useLink } from '@/compositions/useLink'
 
-  type ToCallback = (resolve: RegisteredRouter['resolve']) => Url
+  export type ToCallback = (resolve: RegisteredRouter['resolve']) => ResolvedRoute | Url | undefined
 
-  type RouterLinkProps = {
+  type RouterLinkProps = { 
     /**
      * The url string to navigate to or a callback that returns a url string
      */
-    to: Url | ToCallback,
+    to: Url | ResolvedRoute | ToCallback,
     /**
      * Determines what assets are prefetched when router-link is rendered for this route. Overrides route level prefetch.
      */
@@ -39,7 +41,7 @@
 
   defineSlots<{
     default?: (props: {
-      resolved: string,
+      route: ResolvedRoute | undefined,
       isMatch: boolean,
       isExactMatch: boolean,
       isExternal: boolean,
@@ -48,9 +50,9 @@
 
   const router = useRouter()
 
-  const resolved = computed(() => {
-    return isUrl(props.to) ? props.to : props.to(router.resolve)
-  })
+  const route = computed<ResolvedRoute | undefined>(() => getResolvedRoute(props.to))
+
+  const href = computed<Url | undefined>(() => getHref(props.to))
 
   const options = computed(() => {
     const { to, ...options } = props
@@ -58,12 +60,42 @@
     return options
   })
 
-  const { element, isMatch, isExactMatch, isExternal, push } = useLink(resolved, options)
+  const { element, isMatch, isExactMatch, isExternal, push } = useLink(() => {
+    if(typeof props.to === 'function'){
+      return props.to(router.resolve)
+    }
+
+    return props.to
+  }, options)
 
   const classes = computed(() => ({
     'router-link--match': isMatch.value,
     'router-link--exact-match': isExactMatch.value,
   }))
+  
+  function getResolvedRoute(to: Url | ResolvedRoute | ToCallback | undefined): ResolvedRoute | undefined {
+    if(typeof to === 'function'){
+      const callbackValue = to(router.resolve)
+
+      return getResolvedRoute(callbackValue)
+    }
+
+    return isUrl(to) ? router.resolve(to) : to
+  }
+
+  function getHref(to: Url | ResolvedRoute | ToCallback | undefined): Url | undefined {
+    if(typeof to === 'function'){
+      const callbackValue = to(router.resolve)
+
+      return getHref(callbackValue)
+    }
+
+    if(isUrl(to)){
+      return to
+    }
+
+    return to?.href
+  }
 
   function onClick(event: MouseEvent): void {
     event.preventDefault()
