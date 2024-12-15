@@ -1,4 +1,4 @@
-import { MaybeRefOrGetter, onBeforeUnmount, onMounted, ref, Ref, toValue, watch } from 'vue'
+import { MaybeRefOrGetter, ref, Ref, toValue, watch } from 'vue'
 import { usePropStore } from '@/compositions/usePropStore'
 import { isWithComponent, isWithComponents } from '@/types/createRouteOptions'
 import { getPrefetchOption, PrefetchConfigs, PrefetchStrategy } from '@/types/prefetch'
