@@ -183,6 +183,48 @@ test.each<{ to: Url, match: boolean, exactMatch: boolean }>([
   }
 })
 
+test('isMatch correctly matches parent when sibling has the same url', async () => {
+  const parentRoute = createRoute({
+    name: 'parent',
+    path: '/parent',
+  });
+
+  const siblingRoute = createRoute({
+    parent: parentRoute,
+    name: 'sibling',
+    component,
+  });
+
+  const childRoute = createRoute({
+    parent: parentRoute,
+    name: 'child',
+    path: '/child',
+    component: () => h(routerLink, { to: (resolve) => resolve('parent') }, 'parent'),
+  });
+
+  const router = createRouter([parentRoute, siblingRoute, childRoute], {
+    initialUrl: '/parent/child',
+  });
+
+  const root = {
+    template: '<RouterView />',
+  }
+
+  const app = mount(root, {
+    global: {
+      plugins: [router],
+    },
+  });
+
+  await router.start()
+
+  const link = app.find('a')
+
+  expect(link.classes()).toContain('router-link--match')
+  expect(link.classes()).not.toContain('router-link--exact-match')
+});
+
+
 test.each([
   [true],
   [false],
@@ -704,5 +746,3 @@ describe('prefetch props', () => {
     expect(loaded).toBe(true)
   })
 })
-
-
