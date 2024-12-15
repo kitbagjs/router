@@ -20,7 +20,7 @@ export function usePrefetching(config: MaybeRefOrGetter<UsePrefetchingConfig>): 
   const element = ref<HTMLElement>()
 
   const { getPrefetchProps, setPrefetchProps } = usePropStore()
-  const { observe, unobserve, isElementVisible } = useVisibilityObserver()
+  const { isElementVisible } = useVisibilityObserver(element)
 
   const commit: UsePrefetching['commit'] = () => {
     const props = Array.from(prefetchedProps.values()).reduce((accumulator, value) => {
@@ -32,23 +32,6 @@ export function usePrefetching(config: MaybeRefOrGetter<UsePrefetchingConfig>): 
     setPrefetchProps(props)
   }
 
-  onMounted(() => {
-    if (!element.value) {
-      console.warn('The usePrefetching composition will not work correctly if the element ref is not bound.')
-      return
-    }
-
-    observe(element.value)
-  })
-
-  onBeforeUnmount(() => {
-    if (!element.value) {
-      return
-    }
-
-    unobserve(element.value)
-  })
-
   watch(() => toValue(config), ({ route, ...configs }) => {
     prefetchedProps.clear()
 
@@ -59,7 +42,7 @@ export function usePrefetching(config: MaybeRefOrGetter<UsePrefetchingConfig>): 
     doPrefetchingForStrategy('eager', route, configs)
   }, { immediate: true })
 
-  watch(() => Boolean(element.value && isElementVisible(element.value)), (isVisible) => {
+  watch(isElementVisible, (isVisible) => {
     const { route, ...configs } = toValue(config)
 
     if (!route || !isVisible) {
