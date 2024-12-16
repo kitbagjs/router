@@ -10,6 +10,7 @@ import { component } from '@/utilities/testHelpers'
 import { visibilityObserverKey } from '@/compositions/useVisibilityObserver'
 import { VisibilityObserver } from '@/services/createVisibilityObserver'
 import { Url } from '@/types/url'
+import { RouterPushOptions } from '@/types/routerPush'
 
 test('renders an anchor tag with the correct href and slot content', () => {
   const path = '/path/[paramName]'
@@ -46,15 +47,23 @@ test('renders an anchor tag with the correct href and slot content', () => {
   expect(element.innerHTML).toBe(content)
 })
 
-test.each([
-  true,
-  false,
-])('calls router.push with url and replace %s', async (replace) => {
+test('calls router.push with url and resolve options from props', async () => {
+  const propOptions: RouterPushOptions = {
+    replace: true,
+    query: {
+      foo: 'bar',
+    },
+    hash: 'hash',
+    state: {
+      zoo: 'jar',
+    },
+  }
+
   const router = createRouter([
     createRoute({
       name: 'routeA',
       path: '/routeA',
-      component: { render: () => h(routerLink, { to: (resolve) => resolve('routeB'), replace }) },
+      component: { render: () => h(routerLink, { to: (resolve) => resolve('routeB'), ...propOptions }) },
     }),
     createRoute({
       name: 'routeB',
@@ -81,9 +90,65 @@ test.each([
 
   app.find('a').trigger('click')
 
-  const [, options] = spy.mock.lastCall ?? []
+  const [, pushOptions] = spy.mock.lastCall ?? []
 
-  expect(options).toMatchObject({ replace })
+  expect(pushOptions).toMatchObject(propOptions)
+})
+
+test.only('calls router.push with url and resolve options from resolve callback', async () => {
+  const resolveOptions: RouterPushOptions = {
+    query: {
+      foo: 'bar',
+    },
+    hash: 'hash',
+    state: {
+      zoo: 'jar',
+    },
+  }
+
+  const router = createRouter([
+    createRoute({
+      name: 'routeA',
+      path: '/routeA',
+      component: { render: () => h(routerLink, { to: (resolve) => resolve('routeB', {}, resolveOptions) }) },
+    }),
+    createRoute({
+      name: 'routeB',
+      path: '/routeB',
+      state: {
+        zoo: String,
+      },
+      component,
+    }),
+  ], {
+    initialUrl: '/routeA',
+  })
+
+  await router.start()
+
+  const spy = vi.spyOn(router, 'push')
+
+  const root = {
+    template: '<RouterView />',
+  }
+
+  const app = mount(root, {
+    global: {
+      plugins: [router],
+    },
+  })
+
+  app.find('a').trigger('click')
+
+  const [, pushOptions] = spy.mock.lastCall ?? []
+
+  expect(pushOptions).toMatchObject({
+    query: 'foo=bar',
+    hash: '#hash',
+    state: {
+      zoo: 'jar',
+    },
+  })
 })
 
 test('to prop as string renders and routes correctly', () => {
