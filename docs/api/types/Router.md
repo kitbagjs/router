@@ -18,14 +18,6 @@ Navigates to the previous entry in the browser's history stack.
 
 `void`
 
-### find
-
-```ts
-find: RouterFind<TRoutes>;
-```
-
-Finds a route object based on the provided lookup parameters.
-
 ### forward()
 
 ```ts

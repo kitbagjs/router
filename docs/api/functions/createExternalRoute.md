@@ -30,7 +30,7 @@ function createExternalRoute<THost, TName, TPath, TQuery, THash, TMeta>(options)
 ## Call Signature
 
 ```ts
-function createExternalRoute<TParent, TName, TPath, TQuery, THash, TMeta>(options): Route<ToName<TName>, Host<"", object>, CombinePath<TParent["path"], ToPath<TPath>>, CombineQuery<TParent["query"], ToQuery<TQuery>>, CombineHash<TParent["hash"], ToHash<THash>>, CombineMeta<TMeta, TParent["meta"]>>
+function createExternalRoute<TParent, TName, TPath, TQuery, THash, TMeta>(options): Route<ToName<TName>, Host<"", {}>, CombinePath<TParent["path"], ToPath<TPath>>, CombineQuery<TParent["query"], ToQuery<TQuery>>, CombineHash<TParent["hash"], ToHash<THash>>, CombineMeta<TMeta, TParent["meta"]>>
 ```
 
 ### Type Parameters
@@ -52,4 +52,4 @@ function createExternalRoute<TParent, TName, TPath, TQuery, THash, TMeta>(option
 
 ### Returns
 
-[`Route`](../types/Route.md)\<`ToName`\<`TName`\>, `Host`\<`""`, `object`\>, `CombinePath`\<`TParent`\[`"path"`\], `ToPath`\<`TPath`\>\>, `CombineQuery`\<`TParent`\[`"query"`\], `ToQuery`\<`TQuery`\>\>, `CombineHash`\<`TParent`\[`"hash"`\], `ToHash`\<`THash`\>\>, `CombineMeta`\<`TMeta`, `TParent`\[`"meta"`\]\>\>
+[`Route`](../types/Route.md)\<`ToName`\<`TName`\>, `Host`\<`""`, \{\}\>, `CombinePath`\<`TParent`\[`"path"`\], `ToPath`\<`TPath`\>\>, `CombineQuery`\<`TParent`\[`"query"`\], `ToQuery`\<`TQuery`\>\>, `CombineHash`\<`TParent`\[`"hash"`\], `ToHash`\<`THash`\>\>, `CombineMeta`\<`TMeta`, `TParent`\[`"meta"`\]\>\>

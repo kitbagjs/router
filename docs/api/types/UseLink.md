@@ -17,7 +17,7 @@ A template ref to bind to the dom for automatic prefetching
 ### href
 
 ```ts
-href: ComputedRef<string>;
+href: ComputedRef<Url | undefined>;
 ```
 
 Resolved URL with params interpolated and query applied. Same value as `router.resolve`.
