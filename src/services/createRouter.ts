@@ -54,7 +54,7 @@ type RouterUpdateOptions = {
  * export const routes = [
  *   createRoute({ name: 'home', path: '/', component: Home }),
  *   createRoute({ name: 'path', path: '/about', component: About }),
- * ]
+ * ] as const
  *
  * const router = createRouter(routes)
  * ```
