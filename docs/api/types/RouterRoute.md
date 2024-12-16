@@ -18,6 +18,12 @@ type RouterRoute<TRoute>: object;
 readonly hash: TRoute["hash"];
 ```
 
+### href
+
+```ts
+readonly href: TRoute["href"];
+```
+
 ### id
 
 ```ts
