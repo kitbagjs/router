@@ -112,6 +112,12 @@ export function useLink(
     return typeof sourceValue !== 'string' || isUrl(sourceValue) ? toValue(paramsOrOptions) : toValue(maybeOptions)
   })
 
+  const resolveOptions = computed<UseLinkOptions>(() => ({
+    query: route.value?.query?.toString(),
+    hash: route.value?.hash,
+    state: route.value?.state,
+  }))
+
   const { element, commit } = usePrefetching(() => ({
     route: route.value,
     routerPrefetch: router.prefetch,
@@ -121,7 +127,7 @@ export function useLink(
   const push: UseLink['push'] = (options) => {
     commit()
 
-    return router.push(href.value, { ...linkOptions.value, ...options })
+    return router.push(href.value, { ...linkOptions.value, ...resolveOptions.value, ...options })
   }
 
   const replace: UseLink['replace'] = (options) => {
