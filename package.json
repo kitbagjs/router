@@ -38,7 +38,7 @@
     "eslint": "^9.16.0",
     "globals": "^15.13.0",
     "happy-dom": "^15.11.7",
-    "typedoc": "^0.27.3",
+    "typedoc": "^0.27.5",
     "typedoc-plugin-markdown": "^4.3.2",
     "typedoc-vitepress-theme": "^1.1.1",
     "typescript": "^5.6.3",

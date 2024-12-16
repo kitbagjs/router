@@ -3,7 +3,7 @@
 ## Call Signature
 
 ```ts
-function createRoute<TName, TPath, TQuery, THash, TMeta, TState>(options): Route<ToName<TName>, Host<"", object>, ToPath<TPath>, ToQuery<TQuery>, ToHash<THash>, TMeta, TState, TName>
+function createRoute<TName, TPath, TQuery, THash, TMeta, TState>(options): Route<ToName<TName>, Host<"", {}>, ToPath<TPath>, ToQuery<TQuery>, ToHash<THash>, TMeta, TState, TName>
 ```
 
 ### Type Parameters
@@ -25,12 +25,12 @@ function createRoute<TName, TPath, TQuery, THash, TMeta, TState>(options): Route
 
 ### Returns
 
-[`Route`](../types/Route.md)\<`ToName`\<`TName`\>, `Host`\<`""`, `object`\>, `ToPath`\<`TPath`\>, `ToQuery`\<`TQuery`\>, `ToHash`\<`THash`\>, `TMeta`, `TState`, `TName`\>
+[`Route`](../types/Route.md)\<`ToName`\<`TName`\>, `Host`\<`""`, \{\}\>, `ToPath`\<`TPath`\>, `ToQuery`\<`TQuery`\>, `ToHash`\<`THash`\>, `TMeta`, `TState`, `TName`\>
 
 ## Call Signature
 
 ```ts
-function createRoute<TParent, TName, TPath, TQuery, THash, TMeta, TState>(options): Route<ToName<TName>, Host<"", object>, CombinePath<TParent["path"], ToPath<TPath>>, CombineQuery<TParent["query"], ToQuery<TQuery>>, CombineHash<TParent["hash"], ToHash<THash>>, CombineMeta<TMeta, TParent["meta"]>, CombineState<TState, TParent["state"]>, TName | TParent["matches"][number]["name"]>
+function createRoute<TParent, TName, TPath, TQuery, THash, TMeta, TState>(options): Route<ToName<TName>, Host<"", {}>, CombinePath<TParent["path"], ToPath<TPath>>, CombineQuery<TParent["query"], ToQuery<TQuery>>, CombineHash<TParent["hash"], ToHash<THash>>, CombineMeta<TMeta, TParent["meta"]>, CombineState<TState, TParent["state"]>, TName | TParent["matches"][number]["name"]>
 ```
 
 ### Type Parameters
@@ -53,12 +53,12 @@ function createRoute<TParent, TName, TPath, TQuery, THash, TMeta, TState>(option
 
 ### Returns
 
-[`Route`](../types/Route.md)\<`ToName`\<`TName`\>, `Host`\<`""`, `object`\>, `CombinePath`\<`TParent`\[`"path"`\], `ToPath`\<`TPath`\>\>, `CombineQuery`\<`TParent`\[`"query"`\], `ToQuery`\<`TQuery`\>\>, `CombineHash`\<`TParent`\[`"hash"`\], `ToHash`\<`THash`\>\>, `CombineMeta`\<`TMeta`, `TParent`\[`"meta"`\]\>, `CombineState`\<`TState`, `TParent`\[`"state"`\]\>, `TName` \| `TParent`\[`"matches"`\]\[`number`\]\[`"name"`\]\>
+[`Route`](../types/Route.md)\<`ToName`\<`TName`\>, `Host`\<`""`, \{\}\>, `CombinePath`\<`TParent`\[`"path"`\], `ToPath`\<`TPath`\>\>, `CombineQuery`\<`TParent`\[`"query"`\], `ToQuery`\<`TQuery`\>\>, `CombineHash`\<`TParent`\[`"hash"`\], `ToHash`\<`THash`\>\>, `CombineMeta`\<`TMeta`, `TParent`\[`"meta"`\]\>, `CombineState`\<`TState`, `TParent`\[`"state"`\]\>, `TName` \| `TParent`\[`"matches"`\]\[`number`\]\[`"name"`\]\>
 
 ## Call Signature
 
 ```ts
-function createRoute<TComponent, TName, TPath, TQuery, THash, TMeta, TState>(options): Route<ToName<TName>, Host<"", object>, ToPath<TPath>, ToQuery<TQuery>, ToHash<THash>, TMeta, TState, TName>
+function createRoute<TComponent, TName, TPath, TQuery, THash, TMeta, TState>(options): Route<ToName<TName>, Host<"", {}>, ToPath<TPath>, ToQuery<TQuery>, ToHash<THash>, TMeta, TState, TName>
 ```
 
 ### Type Parameters
@@ -81,12 +81,12 @@ function createRoute<TComponent, TName, TPath, TQuery, THash, TMeta, TState>(opt
 
 ### Returns
 
-[`Route`](../types/Route.md)\<`ToName`\<`TName`\>, `Host`\<`""`, `object`\>, `ToPath`\<`TPath`\>, `ToQuery`\<`TQuery`\>, `ToHash`\<`THash`\>, `TMeta`, `TState`, `TName`\>
+[`Route`](../types/Route.md)\<`ToName`\<`TName`\>, `Host`\<`""`, \{\}\>, `ToPath`\<`TPath`\>, `ToQuery`\<`TQuery`\>, `ToHash`\<`THash`\>, `TMeta`, `TState`, `TName`\>
 
 ## Call Signature
 
 ```ts
-function createRoute<TComponent, TParent, TName, TPath, TQuery, THash, TMeta, TState>(options): Route<ToName<TName>, Host<"", object>, CombinePath<TParent["path"], ToPath<TPath>>, CombineQuery<TParent["query"], ToQuery<TQuery>>, CombineHash<TParent["hash"], ToHash<THash>>, CombineMeta<TMeta, TParent["meta"]>, CombineState<TState, TParent["state"]>, TName | TParent["matches"][number]["name"]>
+function createRoute<TComponent, TParent, TName, TPath, TQuery, THash, TMeta, TState>(options): Route<ToName<TName>, Host<"", {}>, CombinePath<TParent["path"], ToPath<TPath>>, CombineQuery<TParent["query"], ToQuery<TQuery>>, CombineHash<TParent["hash"], ToHash<THash>>, CombineMeta<TMeta, TParent["meta"]>, CombineState<TState, TParent["state"]>, TName | TParent["matches"][number]["name"]>
 ```
 
 ### Type Parameters
@@ -110,12 +110,12 @@ function createRoute<TComponent, TParent, TName, TPath, TQuery, THash, TMeta, TS
 
 ### Returns
 
-[`Route`](../types/Route.md)\<`ToName`\<`TName`\>, `Host`\<`""`, `object`\>, `CombinePath`\<`TParent`\[`"path"`\], `ToPath`\<`TPath`\>\>, `CombineQuery`\<`TParent`\[`"query"`\], `ToQuery`\<`TQuery`\>\>, `CombineHash`\<`TParent`\[`"hash"`\], `ToHash`\<`THash`\>\>, `CombineMeta`\<`TMeta`, `TParent`\[`"meta"`\]\>, `CombineState`\<`TState`, `TParent`\[`"state"`\]\>, `TName` \| `TParent`\[`"matches"`\]\[`number`\]\[`"name"`\]\>
+[`Route`](../types/Route.md)\<`ToName`\<`TName`\>, `Host`\<`""`, \{\}\>, `CombinePath`\<`TParent`\[`"path"`\], `ToPath`\<`TPath`\>\>, `CombineQuery`\<`TParent`\[`"query"`\], `ToQuery`\<`TQuery`\>\>, `CombineHash`\<`TParent`\[`"hash"`\], `ToHash`\<`THash`\>\>, `CombineMeta`\<`TMeta`, `TParent`\[`"meta"`\]\>, `CombineState`\<`TState`, `TParent`\[`"state"`\]\>, `TName` \| `TParent`\[`"matches"`\]\[`number`\]\[`"name"`\]\>
 
 ## Call Signature
 
 ```ts
-function createRoute<TComponents, TName, TPath, TQuery, THash, TMeta, TState>(options): Route<ToName<TName>, Host<"", object>, ToPath<TPath>, ToQuery<TQuery>, ToHash<THash>, TMeta, TState, TName>
+function createRoute<TComponents, TName, TPath, TQuery, THash, TMeta, TState>(options): Route<ToName<TName>, Host<"", {}>, ToPath<TPath>, ToQuery<TQuery>, ToHash<THash>, TMeta, TState, TName>
 ```
 
 ### Type Parameters
@@ -138,12 +138,12 @@ function createRoute<TComponents, TName, TPath, TQuery, THash, TMeta, TState>(op
 
 ### Returns
 
-[`Route`](../types/Route.md)\<`ToName`\<`TName`\>, `Host`\<`""`, `object`\>, `ToPath`\<`TPath`\>, `ToQuery`\<`TQuery`\>, `ToHash`\<`THash`\>, `TMeta`, `TState`, `TName`\>
+[`Route`](../types/Route.md)\<`ToName`\<`TName`\>, `Host`\<`""`, \{\}\>, `ToPath`\<`TPath`\>, `ToQuery`\<`TQuery`\>, `ToHash`\<`THash`\>, `TMeta`, `TState`, `TName`\>
 
 ## Call Signature
 
 ```ts
-function createRoute<TComponents, TParent, TName, TPath, TQuery, THash, TMeta, TState>(options): Route<ToName<TName>, Host<"", object>, CombinePath<TParent["path"], ToPath<TPath>>, CombineQuery<TParent["query"], ToQuery<TQuery>>, CombineHash<TParent["hash"], ToHash<THash>>, CombineMeta<TMeta, TParent["meta"]>, CombineState<TState, TParent["state"]>, TName | TParent["matches"][number]["name"]>
+function createRoute<TComponents, TParent, TName, TPath, TQuery, THash, TMeta, TState>(options): Route<ToName<TName>, Host<"", {}>, CombinePath<TParent["path"], ToPath<TPath>>, CombineQuery<TParent["query"], ToQuery<TQuery>>, CombineHash<TParent["hash"], ToHash<THash>>, CombineMeta<TMeta, TParent["meta"]>, CombineState<TState, TParent["state"]>, TName | TParent["matches"][number]["name"]>
 ```
 
 ### Type Parameters
@@ -167,4 +167,4 @@ function createRoute<TComponents, TParent, TName, TPath, TQuery, THash, TMeta, T
 
 ### Returns
 
-[`Route`](../types/Route.md)\<`ToName`\<`TName`\>, `Host`\<`""`, `object`\>, `CombinePath`\<`TParent`\[`"path"`\], `ToPath`\<`TPath`\>\>, `CombineQuery`\<`TParent`\[`"query"`\], `ToQuery`\<`TQuery`\>\>, `CombineHash`\<`TParent`\[`"hash"`\], `ToHash`\<`THash`\>\>, `CombineMeta`\<`TMeta`, `TParent`\[`"meta"`\]\>, `CombineState`\<`TState`, `TParent`\[`"state"`\]\>, `TName` \| `TParent`\[`"matches"`\]\[`number`\]\[`"name"`\]\>
+[`Route`](../types/Route.md)\<`ToName`\<`TName`\>, `Host`\<`""`, \{\}\>, `CombinePath`\<`TParent`\[`"path"`\], `ToPath`\<`TPath`\>\>, `CombineQuery`\<`TParent`\[`"query"`\], `ToQuery`\<`TQuery`\>\>, `CombineHash`\<`TParent`\[`"hash"`\], `ToHash`\<`THash`\>\>, `CombineMeta`\<`TMeta`, `TParent`\[`"meta"`\]\>, `CombineState`\<`TState`, `TParent`\[`"state"`\]\>, `TName` \| `TParent`\[`"matches"`\]\[`number`\]\[`"name"`\]\>
