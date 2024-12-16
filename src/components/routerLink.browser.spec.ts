@@ -95,7 +95,7 @@ test('calls router.push with url and resolve options from props', async () => {
   expect(pushOptions).toMatchObject(propOptions)
 })
 
-test.only('calls router.push with url and resolve options from resolve callback', async () => {
+test('calls router.push with url and resolve options from resolve callback', async () => {
   const resolveOptions: RouterPushOptions = {
     query: {
       foo: 'bar',

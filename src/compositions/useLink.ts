@@ -47,7 +47,7 @@ export type UseLink = {
   replace: (options?: RouterReplaceOptions) => Promise<void>,
 }
 
-export type UseLinkOptions = RouterResolveOptions & {
+export type UseLinkOptions = RouterPushOptions & {
   prefetch?: PrefetchConfig,
 }
 
@@ -124,14 +124,21 @@ export function useLink(
     linkPrefetch: linkOptions.value.prefetch,
   }))
 
-  const push: UseLink['push'] = (options) => {
+  const push: UseLink['push'] = (pushOptions) => {
     commit()
 
-    return router.push(href.value, { ...linkOptions.value, ...resolveOptions.value, ...options })
+    const options: RouterPushOptions = {
+      replace: pushOptions?.replace ?? linkOptions.value.replace,
+      query: pushOptions?.query ?? linkOptions.value.query ?? resolveOptions.value.query,
+      hash: pushOptions?.hash ?? linkOptions.value.hash ?? resolveOptions.value.hash,
+      state: pushOptions?.state ?? linkOptions.value.state ?? resolveOptions.value.state,
+    }
+
+    return router.push(href.value, options)
   }
 
   const replace: UseLink['replace'] = (options) => {
-    return push(options)
+    return push({...options, replace: true})
   }
 
   return {
