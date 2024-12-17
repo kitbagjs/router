@@ -47,7 +47,7 @@ test('renders an anchor tag with the correct href and slot content', () => {
   expect(element.innerHTML).toBe(content)
 })
 
-test('calls router.push with url and resolve options from props', async () => {
+test('calls router.push with url and push options from props', async () => {
   const propOptions: RouterPushOptions = {
     replace: true,
     query: {
@@ -92,10 +92,19 @@ test('calls router.push with url and resolve options from props', async () => {
 
   const [, pushOptions] = spy.mock.lastCall ?? []
 
-  expect(pushOptions).toMatchObject(propOptions)
+  expect(pushOptions).toMatchObject({
+    replace: true,
+    query: new URLSearchParams({
+      foo: 'bar',
+    }),
+    hash: 'hash',
+    state: {
+      zoo: 'jar',
+    },
+  })
 })
 
-test('calls router.push with url and resolve options from resolve callback', async () => {
+test('calls router.push with url and push options from resolve callback', async () => {
   const resolveOptions: RouterPushOptions = {
     query: {
       foo: 'bar',
@@ -143,10 +152,83 @@ test('calls router.push with url and resolve options from resolve callback', asy
   const [, pushOptions] = spy.mock.lastCall ?? []
 
   expect(pushOptions).toMatchObject({
-    query: 'foo=bar',
+    query: new URLSearchParams({
+      foo: 'bar',
+    }),
     hash: '#hash',
     state: {
       zoo: 'jar',
+    },
+  })
+})
+
+test('given push options from both resolve callback and props, combines query and state, overrides hash and replace', async () => {
+  const propOptions: RouterPushOptions = {
+    query: {
+      prop: 'foo',
+    },
+    hash: 'propHash',
+    state: {
+      prop: 'jar',
+    },
+  }
+
+  const resolveOptions: RouterPushOptions = {
+    query: {
+      resolve: 'foo',
+    },
+    hash: 'resolveHash',
+    state: {
+      resolve: 'jar',
+    },
+  }
+
+  const router = createRouter([
+    createRoute({
+      name: 'routeA',
+      path: '/routeA',
+      component: { render: () => h(routerLink, { to: (resolve) => resolve('routeB', {}, resolveOptions), ...propOptions }) },
+    }),
+    createRoute({
+      name: 'routeB',
+      path: '/routeB',
+      state: {
+        prop: String,
+        resolve: String,
+      },
+      component,
+    }),
+  ], {
+    initialUrl: '/routeA',
+  })
+
+  await router.start()
+
+  const spy = vi.spyOn(router, 'push')
+
+  const root = {
+    template: '<RouterView />',
+  }
+
+  const app = mount(root, {
+    global: {
+      plugins: [router],
+    },
+  })
+
+  app.find('a').trigger('click')
+
+  const [, pushOptions] = spy.mock.lastCall ?? []
+
+  expect(pushOptions).toMatchObject({
+    query: new URLSearchParams({
+      resolve: 'foo',
+      prop: 'foo',
+    }),
+    hash: 'propHash',
+    state: {
+      resolve: 'jar',
+      prop: 'jar',
     },
   })
 })
@@ -192,7 +274,7 @@ test('to prop as string renders and routes correctly', () => {
 
 test.each<{ to: Url, match: boolean, exactMatch: boolean }>([
   { to: '/parent-route', match: true, exactMatch: false },
-  { to: '/parent-route/child-route', match: true, exactMatch: true},
+  { to: '/parent-route/child-route', match: true, exactMatch: true },
   { to: '/other-route', match: false, exactMatch: false },
 ])('isMatch and isExactMatch classes and slot props works as expected', async ({ to, match, exactMatch }) => {
   const parentRoute = createRoute({
@@ -252,24 +334,24 @@ test('isMatch correctly matches parent when sibling has the same url', async () 
   const parentRoute = createRoute({
     name: 'parent',
     path: '/parent',
-  });
+  })
 
   const siblingRoute = createRoute({
     parent: parentRoute,
     name: 'sibling',
     component,
-  });
+  })
 
   const childRoute = createRoute({
     parent: parentRoute,
     name: 'child',
     path: '/child',
     component: () => h(routerLink, { to: (resolve) => resolve('parent') }, 'parent'),
-  });
+  })
 
   const router = createRouter([parentRoute, siblingRoute, childRoute], {
     initialUrl: '/parent/child',
-  });
+  })
 
   const root = {
     template: '<RouterView />',
@@ -279,7 +361,7 @@ test('isMatch correctly matches parent when sibling has the same url', async () 
     global: {
       plugins: [router],
     },
-  });
+  })
 
   await router.start()
 
@@ -287,8 +369,7 @@ test('isMatch correctly matches parent when sibling has the same url', async () 
 
   expect(link.classes()).toContain('router-link--match')
   expect(link.classes()).not.toContain('router-link--exact-match')
-});
-
+})
 
 test.each([
   [true],
@@ -727,7 +808,7 @@ describe('prefetch props', () => {
     await router.start()
 
     const visible = ref(false)
-    
+
     const root = {
       template: '<RouterView />',
       provide: {
@@ -749,7 +830,7 @@ describe('prefetch props', () => {
     expect(callback).not.toHaveBeenCalled()
 
     visible.value = true
-    
+
     await nextTick()
 
     expect(callback).toHaveBeenCalled()
@@ -783,7 +864,7 @@ describe('prefetch props', () => {
     await router.start()
 
     const visible = ref(false)
-    
+
     const root = {
       template: '<RouterView />',
       provide: {
@@ -805,7 +886,7 @@ describe('prefetch props', () => {
     expect(loaded).toBe(false)
 
     visible.value = true
-    
+
     await nextTick()
 
     expect(loaded).toBe(true)
