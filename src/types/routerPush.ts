@@ -5,6 +5,7 @@ import { RouteStateByName } from '@/types/state'
 import { Url } from '@/types/url'
 import { AllPropertiesAreOptional } from '@/types/utilities'
 import { QuerySource } from '@/types/query'
+import { ResolvedRoute } from '@/types/resolved'
 
 export type RouterPushOptions<
   TState = unknown
@@ -27,4 +28,5 @@ export type RouterPush<
 > = {
   <TSource extends RoutesName<TRoutes>>(name: TSource, ...args: RouterPushArgs<TRoutes, TSource>): Promise<void>,
   (url: Url, options?: RouterPushOptions): Promise<void>,
+  (route: ResolvedRoute | undefined, options?: RouterPushOptions): Promise<void>,
 }

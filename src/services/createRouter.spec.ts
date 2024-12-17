@@ -444,67 +444,67 @@ test('initial route is not set until the router is started', async () => {
 describe('router.resolve', () => {
   test('when given a name that matches a route return that route', () => {
     const router = createRouter(routes, { initialUrl: '/' })
-  
+
     const route = router.resolve('parentB')
-  
+
     expect(route).toBeDefined()
     expect(route?.name).toBe('parentB')
   })
-  
+
   test('when given a url that matches a route returns that route', () => {
     const router = createRouter(routes, { initialUrl: '/' })
     const route = router.resolve('/parentB')
-  
+
     expect(route).toBeDefined()
     expect(route?.name).toBe('parentB')
   })
-  
+
   test('when given a name that does not match a route returns undefined', () => {
     const router = createRouter(routes, { initialUrl: '/' })
-  
+
     const route = router.resolve('parentD' as any)
-  
+
     expect(route).toBeUndefined()
   })
-  
+
   test('when given a url that does not match a route returns undefined', () => {
     const router = createRouter(routes, { initialUrl: '/' })
     const route = router.resolve('/parentC')
-  
+
     expect(route).toBeUndefined()
   })
-  
+
   test('when given a url that does not match a route returns undefined', () => {
     const router = createRouter(routes, { initialUrl: '/' })
     const route = router.resolve('/does-not-exist')
-  
+
     expect(route).toBeUndefined()
   })
-  
+
   test('when given an external url that does not match a route returns undefined', () => {
     const router = createRouter(routes, { initialUrl: '/' })
     const route = router.resolve('https://example.com')
-  
+
     expect(route).toBeUndefined()
-  })  
-  
+  })
+
   test('given a route name with params, interpolates param values', () => {
     const router = createRouter(routes, { initialUrl: '/' })
     const route = router.resolve('parentA', { paramA: 'bar' })
-  
+
     expect(route).toMatchObject({
       name: 'parentA',
       params: {
         paramA: 'bar',
       },
-      href: '/parentA/bar'
+      href: '/parentA/bar',
     })
   })
-  
+
   test('given a route name with query, interpolates param values', () => {
     const router = createRouter(routes, { initialUrl: '/' })
     const route = router.resolve('parentA', { paramA: 'bar' }, { query: { foo: 'foo' } })
-  
+
     expect(route).toMatchObject({
       name: 'parentA',
       params: {
@@ -513,15 +513,15 @@ describe('router.resolve', () => {
       href: '/parentA/bar?foo=foo',
     })
   })
-  
+
   test('given a route name with params cannot be matched, returns undefined', () => {
     const router = createRouter(routes, { initialUrl: '/' })
-  
+
     const route = router.resolve({ route: 'foo' } as any)
-  
+
     expect(route).toBeUndefined()
   })
-  
+
   test('given a param with a dash or underscore resolves the correct url', () => {
     const routes = [
       createRoute({
@@ -535,11 +535,11 @@ describe('router.resolve', () => {
         component,
       }),
     ]
-  
+
     const router = createRouter(routes, { initialUrl: '/' })
-  
-    const kebab = router.resolve('kebab', { 'test-param': 'foo'})
-  
+
+    const kebab = router.resolve('kebab', { 'test-param': 'foo' })
+
     expect(kebab).toMatchObject({
       name: 'kebab',
       params: {
@@ -547,9 +547,9 @@ describe('router.resolve', () => {
       },
       href: '/foo',
     })
-  
+
     const snake = router.resolve('snake', { test_param: 'foo' })
-  
+
     expect(snake).toMatchObject({
       name: 'snake',
       params: {
@@ -558,46 +558,46 @@ describe('router.resolve', () => {
       href: '/foo',
     })
   })
-  
+
   test('when given an external route returns a fully qualified url', () => {
     const routes = [createExternalRoute({
       host: 'https://kitbag.dev',
       name: 'external',
       path: '/',
     })]
-  
+
     const router = createRouter(routes, { initialUrl: '/' })
-  
+
     const route = router.resolve('external')
-  
+
     expect(route).toMatchObject({
       name: 'external',
       href: 'https://kitbag.dev/',
     })
   })
-  
+
   test('when given an external route with params in host, interpolates param values', () => {
     const routes = [createExternalRoute({
       host: 'https://[subdomain].kitbag.dev',
       name: 'external',
       path: '/',
     })]
-  
+
     const router = createRouter(routes, { initialUrl: '/' })
-  
+
     const route = router.resolve('external', { subdomain: 'router' })
-  
+
     expect(route).toMatchObject({
       name: 'external',
       href: 'https://router.kitbag.dev/',
     })
   })
-  
+
   test('given a route with hash, interpolates hash value', () => {
     const router = createRouter(routes, { initialUrl: '/' })
-  
+
     const route = router.resolve('parentA', { paramA: 'bar' }, { hash: 'foo' })
-  
+
     expect(route).toMatchObject({
       name: 'parentA',
       params: {
@@ -606,5 +606,95 @@ describe('router.resolve', () => {
       hash: '#foo',
       href: '/parentA/bar#foo',
     })
+  })
+})
+
+describe('router.push', () => {
+  test('given a resolved route, pushes the route', async () => {
+    const router = createRouter(routes, { initialUrl: '/' })
+    const route = router.resolve('parentA', { paramA: 'bar' })
+
+    await router.push(route)
+
+    expect(router.route.href).toBe('/parentA/bar')
+  })
+
+  test('given a route name, pushes the route', async () => {
+    const router = createRouter(routes, { initialUrl: '/' })
+
+    await router.push('parentA', { paramA: 'bar' })
+
+    expect(router.route.href).toBe('/parentA/bar')
+  })
+
+  test('given an internal Url, pushes the route', async () => {
+    const router = createRouter(routes, { initialUrl: '/' })
+
+    await router.push('/parentA/bar')
+
+    expect(router.route).toMatchObject({
+      name: 'parentA',
+      params: {
+        paramA: 'bar',
+      },
+    })
+  })
+
+  test('given a resolved route with state inside, pushes state', async () => {
+    const routeWithState = createRoute({
+      name: 'route-with-state',
+      component,
+      path: '/route-with-state',
+      state: { zoo: Number },
+    })
+    const router = createRouter([routeWithState], { initialUrl: '/' })
+    const route = router.resolve('route-with-state', { paramA: 'bar' }, { state: { zoo: 123 } })
+
+    await router.push(route)
+
+    expect(router.route.state).toMatchObject({ zoo: 123 })
+  })
+
+  test('given a resolved route with state in options, pushes state', async () => {
+    const routeWithState = createRoute({
+      name: 'route-with-state',
+      component,
+      path: '/route-with-state',
+      state: { zoo: Number },
+    })
+    const router = createRouter([routeWithState], { initialUrl: '/' })
+    const route = router.resolve('route-with-state', { paramA: 'bar' })
+
+    await router.push(route, { state: { zoo: 123 } })
+
+    expect(router.route.state).toMatchObject({ zoo: 123 })
+  })
+
+  test('given a route name with state in options, pushes state', async () => {
+    const routeWithState = createRoute({
+      name: 'route-with-state',
+      component,
+      path: '/route-with-state',
+      state: { zoo: Number },
+    })
+    const router = createRouter([routeWithState], { initialUrl: '/' })
+
+    await router.push('route-with-state', { paramA: 'bar' }, { state: { zoo: 123 } })
+
+    expect(router.route.state).toMatchObject({ zoo: 123 })
+  })
+
+  test('given an internal Url with state in options, pushes state', async () => {
+    const routeWithState = createRoute({
+      name: 'route-with-state',
+      component,
+      path: '/route-with-state',
+      state: { zoo: Number },
+    })
+    const router = createRouter([routeWithState], { initialUrl: '/' })
+
+    await router.push('/route-with-state', { state: { zoo: 123 } })
+
+    expect(router.route.state).toMatchObject({ zoo: 123 })
   })
 })
