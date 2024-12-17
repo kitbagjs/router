@@ -196,6 +196,18 @@
         "link": "/api/types/ParamSetter.md"
       },
       {
+        "text": "PrefetchConfig",
+        "link": "/api/types/PrefetchConfig.md"
+      },
+      {
+        "text": "PrefetchStrategy",
+        "link": "/api/types/PrefetchStrategy.md"
+      },
+      {
+        "text": "QuerySource",
+        "link": "/api/types/QuerySource.md"
+      },
+      {
         "text": "RegisteredRejectionType",
         "link": "/api/types/RegisteredRejectionType.md"
       },
@@ -282,6 +294,10 @@
       {
         "text": "Routes",
         "link": "/api/types/Routes.md"
+      },
+      {
+        "text": "ToCallback",
+        "link": "/api/types/ToCallback.md"
       },
       {
         "text": "Url",
