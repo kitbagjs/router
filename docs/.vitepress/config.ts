@@ -53,8 +53,8 @@ export default defineConfig({
         {
           text: 'Components',
           items: [
-            { text: 'routerView', link: '/components/routerView' },
-            { text: 'routerLink', link: '/components/routerLink' },
+            { text: 'RouterView', link: '/components/RouterView' },
+            { text: 'RouterLink', link: '/components/RouterLink' },
           ],
         },
         {
