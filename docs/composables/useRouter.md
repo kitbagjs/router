@@ -6,8 +6,6 @@ Returns the installed router instance. See ['Router'](/api/types/Router) for mor
 import { useRouter } from '@kitbag/router'
 
 const router = useRouter()
-
-router.push('profile', { userId: 123 })
 ```
 
 :::tip
