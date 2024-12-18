@@ -1,9 +1,7 @@
-import { ResolvedRouteQuery } from '@/types/resolvedQuery'
-
 /**
  * Creates a dumb wrapper around URLSearchParams because URLSearchParams cannot be correctly be proxied to support writing params to the RouterRoute
  */
-export function createResolvedRouteQuery(query?: string): ResolvedRouteQuery {
+export function createResolvedRouteQuery(query?: string): URLSearchParams {
   const params = new URLSearchParams(query)
 
   return {
@@ -26,5 +24,10 @@ export function createResolvedRouteQuery(query?: string): ResolvedRouteQuery {
     keys: (...args) => params.keys(...args),
     values: (...args) => params.values(...args),
     has: (...args) => params.has(...args),
+    size: params.size,
+    sort: () => {
+      params.sort()
+    },
+    [Symbol.iterator]: () => params[Symbol.iterator](),
   }
 }

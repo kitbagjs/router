@@ -1,6 +1,5 @@
 import { computed, reactive, toRefs } from 'vue'
 import { ResolvedRoute } from '@/types/resolved'
-import { ResolvedRouteQuery } from '@/types/resolvedQuery'
 import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { RouteUpdate } from '@/types/routeUpdate'
 import { QuerySource } from '@/types/query'
@@ -19,8 +18,7 @@ export type RouterRoute<TRoute extends ResolvedRoute = ResolvedRoute> = {
   params: TRoute['params'],
   state: TRoute['state'],
 
-  // eslint-disable-next-line @typescript-eslint/related-getter-setter-pairs
-  get query(): ResolvedRouteQuery,
+  get query(): URLSearchParams,
   set query(value: QuerySource),
 }
 
@@ -87,7 +85,7 @@ export function createRouterRoute<TRoute extends ResolvedRoute>(route: TRoute, p
 
   const query = computed({
     get() {
-      return new Proxy<ResolvedRouteQuery>(route.query, {
+      return new Proxy<URLSearchParams>(route.query, {
         get(target, property, receiver) {
           switch (property) {
             case 'append':
