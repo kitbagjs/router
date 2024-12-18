@@ -17,7 +17,7 @@ export type RouterResolveOptions<
 
 type RouterResolveArgs<
   TRoutes extends Routes,
-  TSource extends RoutesName<TRoutes>,
+  TSource extends RoutesName<TRoutes>
 > = AllPropertiesAreOptional<RouteParamsByKey<TRoutes, TSource>> extends true
   ? [params?: RouteParamsByKey<TRoutes, TSource>, options?: RouterResolveOptions<RouteStateByName<TRoutes, TSource>>]
   : [params: RouteParamsByKey<TRoutes, TSource>, options?: RouterResolveOptions<RouteStateByName<TRoutes, TSource>>]

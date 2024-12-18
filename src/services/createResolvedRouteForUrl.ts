@@ -40,6 +40,6 @@ export function createResolvedRouteForUrl(routes: Routes, url: string, state?: u
     params: getRouteParamValues(route, url),
     state: getStateValues(route.state, state),
     hash,
-    href: asUrl(url)
+    href: asUrl(url),
   }
 }
