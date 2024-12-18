@@ -1,4 +1,4 @@
-import { CallbackContext } from "@/services/createCallbackContext";
+import { CallbackContext } from '@/services/createCallbackContext'
 
 /**
  * Context provided to props callback functions

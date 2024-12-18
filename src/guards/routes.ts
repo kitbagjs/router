@@ -32,7 +32,7 @@ export function isRoute(route: unknown): route is RouterRoute
 export function isRoute<
   TRoute extends RouterRoute,
   TRouteName extends TRoute['name']
->(route: TRoute, routeName: TRouteName, options: IsRouteOptions & { exact: true }): route is TRoute & {name: TRouteName}
+>(route: TRoute, routeName: TRouteName, options: IsRouteOptions & { exact: true }): route is TRoute & { name: TRouteName }
 
 /**
  * A type guard for determining if a value is a valid RouterRoute with a partial match.

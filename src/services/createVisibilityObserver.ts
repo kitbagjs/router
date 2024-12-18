@@ -1,5 +1,5 @@
-import { isBrowser } from "@/utilities/isBrowser"
-import { reactive } from "vue"
+import { isBrowser } from '@/utilities/isBrowser'
+import { reactive } from 'vue'
 
 export type VisibilityObserver = {
   observe: (element: Element) => void,

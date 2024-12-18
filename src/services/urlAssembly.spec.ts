@@ -233,14 +233,14 @@ describe('query params', () => {
 
   test('given route with multiple empty and optional query params, removes both from url', () => {
     const parent = createRoute({
-      query: 'search=[?search]'
+      query: 'search=[?search]',
     })
 
     const route = createRoute({
       parent,
       name: 'simple',
       path: '/',
-      query: query('sort=[?sort]', {sort: Boolean}),
+      query: query('sort=[?sort]', { sort: Boolean }),
       component,
     })
 

@@ -19,6 +19,7 @@ export type RouterRoute<TRoute extends ResolvedRoute = ResolvedRoute> = {
   params: TRoute['params'],
   state: TRoute['state'],
 
+  // eslint-disable-next-line @typescript-eslint/related-getter-setter-pairs
   get query(): ResolvedRouteQuery,
   set query(value: QuerySource),
 }
