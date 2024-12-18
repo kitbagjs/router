@@ -1,5 +1,4 @@
 import { ExtractRouteParamTypes } from '@/types/params'
-import { ResolvedRouteQuery } from '@/types/resolvedQuery'
 import { Route } from '@/types/route'
 import { ExtractRouteStateParamsAsOptional } from '@/types/state'
 import { Url } from '@/types/url'
@@ -29,7 +28,7 @@ export type ResolvedRoute<TRoute extends Route = Route> = Readonly<{
   /**
    * Accessor for query string values from user in the current browser location.
   */
-  query: ResolvedRouteQuery,
+  query: URLSearchParams,
   /**
    * Hash value of the route.
   */
