@@ -1,7 +1,7 @@
 import { InjectionKey, reactive } from 'vue'
 import { isWithComponent, isWithComponents } from '@/types/createRouteOptions'
 import { getPrefetchOption, PrefetchConfigs, PrefetchStrategy } from '@/types/prefetch'
-import { ResolvedRoute } from '@/types/resolved'  
+import { ResolvedRoute } from '@/types/resolved'
 import { Route } from '@/types/route'
 import { CallbackPushResponse, CallbackRejectResponse, CallbackSuccessResponse, createCallbackContext } from './createCallbackContext'
 import { CallbackContextPushError } from '@/errors/callbackContextPushError'
@@ -24,7 +24,7 @@ export type PropStore = {
 
 export function createPropStore(): PropStore {
   const store: Map<string, unknown> = reactive(new Map())
-  const { push, replace, reject} = createCallbackContext()
+  const { push, replace, reject } = createCallbackContext()
 
   const getPrefetchProps: PropStore['getPrefetchProps'] = (strategy, route, prefetch) => {
     return route.matches

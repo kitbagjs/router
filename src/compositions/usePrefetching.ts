@@ -25,7 +25,7 @@ export function usePrefetching(config: MaybeRefOrGetter<UsePrefetchingConfig>): 
   const commit: UsePrefetching['commit'] = () => {
     const props = Array.from(prefetchedProps.values()).reduce((accumulator, value) => {
       Object.assign(accumulator, value)
-      
+
       return accumulator
     }, {})
 
@@ -67,8 +67,7 @@ export function usePrefetching(config: MaybeRefOrGetter<UsePrefetchingConfig>): 
 }
 
 function prefetchComponentsForRoute(strategy: PrefetchStrategy, route: ResolvedRoute, configs: PrefetchConfigs): void {
-
-  route.matches.forEach(route => {
+  route.matches.forEach((route) => {
     const routeStrategy = getPrefetchOption({
       ...configs,
       routePrefetch: route.prefetch,

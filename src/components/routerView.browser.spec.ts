@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-confusing-void-expression */
+/* eslint-disable @typescript-eslint/only-throw-error */
 import { mount, flushPromises } from '@vue/test-utils'
 import { expect, test } from 'vitest'
 import { defineAsyncComponent, h } from 'vue'
@@ -384,7 +386,6 @@ test('Updates props and attrs when route params change', async () => {
 })
 
 test('Props from route can trigger push', async () => {
-
   const routeA = createRoute({
     name: 'routeA',
     path: '/routeA',
@@ -502,11 +503,11 @@ test('prefetched props trigger push when navigation is initiated', async () => {
   })
 
   expect(app.text()).toBe('routeB')
-  
+
   app.find('a').trigger('click')
 
   await flushPromises()
-  
+
   expect(app.text()).toBe('routeC')
 })
 
@@ -553,10 +554,10 @@ test('prefetched async props trigger push when navigation is initiated', async (
   })
 
   expect(app.text()).toBe('routeB')
-  
+
   app.find('a').trigger('click')
 
   await flushPromises()
-  
+
   expect(app.text()).toBe('routeC')
 })

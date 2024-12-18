@@ -1,9 +1,9 @@
-import { RouterNotInstalledError } from "@/errors/routerNotInstalledError"
-import { VisibilityObserver } from "@/services/createVisibilityObserver"
-import { computed, inject, InjectionKey, Ref, watch } from "vue"
+import { RouterNotInstalledError } from '@/errors/routerNotInstalledError'
+import { VisibilityObserver } from '@/services/createVisibilityObserver'
+import { computed, inject, InjectionKey, Ref, watch } from 'vue'
 
 type UseVisibilityObserver = {
-  isElementVisible: Ref<boolean>
+  isElementVisible: Ref<boolean>,
 }
 
 export const visibilityObserverKey: InjectionKey<VisibilityObserver> = Symbol('visibilityObserver')
