@@ -10,7 +10,7 @@ import { RouteParamsByKey } from '@/types/routeWithParams'
 import { Url, isUrl } from '@/types/url'
 import { AllPropertiesAreOptional } from '@/types/utilities'
 import { isRoute } from '@/guards/routes'
-import { RouterResolveOptions } from '@/types/RouterResolve'
+import { combineUrlSearchParams } from '@/utilities/urlSearchParams'
 
 export type UseLink = {
   /**
@@ -47,7 +47,7 @@ export type UseLink = {
   replace: (options?: RouterReplaceOptions) => Promise<void>,
 }
 
-export type UseLinkOptions = RouterResolveOptions & {
+export type UseLinkOptions = RouterPushOptions & {
   prefetch?: PrefetchConfig,
 }
 
@@ -95,14 +95,16 @@ export function useLink(
     }
 
     const sourceValue = toValue(source)
-    if(isUrl(sourceValue)){
+    if (isUrl(sourceValue)) {
       return sourceValue
     }
 
     console.error(new Error('Failed to resolve route in RouterLink.'))
+
+    return undefined
   })
-  
-  const isMatch = computed(() => isRoute(router.route) && router.route.matches.some(match => match.id === route.value?.id))
+
+  const isMatch = computed(() => isRoute(router.route) && router.route.matches.some((match) => match.id === route.value?.id))
   const isExactMatch = computed(() => router.route.id === route.value?.id)
   const isExternal = computed(() => !!href.value && router.isExternal(href.value))
 
@@ -112,20 +114,33 @@ export function useLink(
     return typeof sourceValue !== 'string' || isUrl(sourceValue) ? toValue(paramsOrOptions) : toValue(maybeOptions)
   })
 
+  const resolveOptions = computed<UseLinkOptions>(() => ({
+    query: route.value?.query.toString(),
+    hash: route.value?.hash,
+    state: route.value?.state,
+  }))
+
   const { element, commit } = usePrefetching(() => ({
     route: route.value,
     routerPrefetch: router.prefetch,
     linkPrefetch: linkOptions.value.prefetch,
   }))
 
-  const push: UseLink['push'] = (options) => {
+  const push: UseLink['push'] = (pushOptions) => {
     commit()
 
-    return router.push(href.value, { ...linkOptions.value, ...options })
+    const options: RouterPushOptions = {
+      replace: pushOptions?.replace ?? linkOptions.value.replace,
+      query: combineUrlSearchParams(resolveOptions.value.query, linkOptions.value.query, pushOptions?.query),
+      hash: pushOptions?.hash ?? linkOptions.value.hash ?? resolveOptions.value.hash,
+      state: { ...resolveOptions.value.state, ...linkOptions.value.state, ...pushOptions?.state },
+    }
+
+    return router.push(href.value, options)
   }
 
   const replace: UseLink['replace'] = (options) => {
-    return push(options)
+    return push({ ...options, replace: true })
   }
 
   return {

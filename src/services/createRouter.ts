@@ -30,6 +30,7 @@ import { RouterResolve, RouterResolveOptions } from '../types/RouterResolve'
 import { RouteNotFoundError } from '@/errors/routeNotFoundError'
 import { appendQuery } from '@/utilities/urlSearchParams'
 import { createResolvedRoute } from '@/services/createResolvedRoute'
+import { ResolvedRoute } from '@/types/resolved'
 
 type RouterUpdateOptions = {
   replace?: boolean,
@@ -197,57 +198,82 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
 
       return createResolvedRoute(match, params, options)
     }
-    
+
     if (isExternal(source)) {
       return undefined
     }
 
-    const options: RouterPushOptions = {...paramsOrOptions}
+    const options: RouterPushOptions = { ...paramsOrOptions }
     const url = appendQuery(source, options.query)
 
     return createResolvedRouteForUrl(routes, url)
   }
 
-  const push: RouterPush<TRoutes> = (source: Url | RoutesName<TRoutes>, paramsOrOptions?: Record<string, unknown> | RouterPushOptions, maybeOptions?: RouterPushOptions) => {
+  const push: RouterPush<TRoutes> = (source: Url | RoutesName<TRoutes> | ResolvedRoute | undefined, paramsOrOptions?: Record<string, unknown> | RouterPushOptions, maybeOptions?: RouterPushOptions) => {
     if (isUrl(source)) {
-      const options: RouterPushOptions = {...paramsOrOptions}
+      const options: RouterPushOptions = { ...paramsOrOptions }
       const url = appendQuery(source, options.query)
+      const resolved = resolve(url, options)
+      const mightBeExternal = resolved === undefined
 
-      return set(url, options)
+      if (mightBeExternal) {
+        const url = appendQuery(source, options.query)
+
+        return set(url, options)
+      }
+
+      return push(resolved, options)
     }
 
-    const options: RouterPushOptions = {...maybeOptions}
-    const params: any = {...paramsOrOptions}
-    const resolved = resolve(source, params, options)
+    if (typeof source === 'string') {
+      const options: RouterPushOptions = { ...maybeOptions }
+      const params: any = { ...paramsOrOptions }
+      const resolved = resolve(source, params, options)
 
-    if(!resolved) {
+      return push(resolved, options)
+    }
+
+    if (!source) {
       throw new RouteNotFoundError(String(source))
     }
 
-    const state = setStateValues({...resolved.state}, options.state)
+    const options: RouterPushOptions = { ...paramsOrOptions }
+    const state = setStateValues({ ...source.matched.state }, { ...source.state, ...options.state })
 
-    return set(resolved.href, { ...options, state })
+    return set(source.href, { ...options, state })
   }
 
-  const replace: RouterReplace<TRoutes> = (source: Url | RoutesName<TRoutes>, paramsOrOptions?: Record<string, unknown> | RouterReplaceOptions, maybeOptions?: RouterReplaceOptions) => {
+  const replace: RouterReplace<TRoutes> = (source: Url | RoutesName<TRoutes> | ResolvedRoute | undefined, paramsOrOptions?: Record<string, unknown> | RouterReplaceOptions, maybeOptions?: RouterReplaceOptions) => {
     if (isUrl(source)) {
       const options: RouterPushOptions = { ...paramsOrOptions, replace: true }
-      const url = appendQuery(source, options.query)
+      const resolved = resolve(source, options)
+      const mightBeExternal = resolved === undefined
 
-      return set(url, options)
+      if (mightBeExternal) {
+        const url = appendQuery(source, options.query)
+
+        return set(url, options)
+      }
+
+      return replace(resolved, options)
     }
 
-    const options: RouterPushOptions = { ...maybeOptions, replace: true }
-    const params: any = {...paramsOrOptions}
-    const resolved = resolve(source, params, options)
+    if (typeof source === 'string') {
+      const options: RouterPushOptions = { ...maybeOptions, replace: true }
+      const params: any = { ...paramsOrOptions }
+      const resolved = resolve(source, params, options)
 
-    if(!resolved) {
+      return replace(resolved, options)
+    }
+
+    if (!source) {
       throw new RouteNotFoundError(String(source))
     }
 
-    const state = setStateValues({...resolved.state}, options.state)
+    const options: RouterPushOptions = { ...paramsOrOptions, replace: true }
+    const state = setStateValues({ ...source.matched.state }, { ...options.state })
 
-    return set(resolved.href, { ...options, state })
+    return set(source.href, { ...options, state })
   }
 
   const reject: RouterReject = (type) => {
