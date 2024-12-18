@@ -1,4 +1,4 @@
-import { ResolvedRouteQuery } from '@/types/resolvedQuery'
+import { isResolvedRouteQuerySymbol, ResolvedRouteQuery } from '@/types/resolvedQuery'
 
 /**
  * Creates a dumb wrapper around URLSearchParams because URLSearchParams cannot be correctly be proxied to support writing params to the RouterRoute
@@ -26,5 +26,6 @@ export function createResolvedRouteQuery(query?: string): ResolvedRouteQuery {
     keys: (...args) => params.keys(...args),
     values: (...args) => params.values(...args),
     has: (...args) => params.has(...args),
+    [isResolvedRouteQuerySymbol]: true,
   }
 }

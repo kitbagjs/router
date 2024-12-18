@@ -3,8 +3,9 @@ import { ExtractParamName, ExtractPathParamType, ParamEnd, ParamStart } from '@/
 import { Param } from '@/types/paramTypes'
 import { Identity } from '@/types/utilities'
 import { isRecord } from '@/utilities/guards'
+import { ResolvedRouteQuery } from '@/types/resolvedQuery'
 
-export type QuerySource = ConstructorParameters<typeof URLSearchParams>[0]
+export type QuerySource = ConstructorParameters<typeof URLSearchParams>[0] | ResolvedRouteQuery
 
 type ExtractQueryParamsFromQueryString<
   TQuery extends string,
