@@ -4,9 +4,7 @@ import echo from '@/components/echo'
 import { component } from '@/services/component'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
-import { h } from 'vue'
-import { defineComponent } from 'vue'
-import { getCurrentInstance } from 'vue'
+import { h, defineComponent, getCurrentInstance } from 'vue'
 
 test('renders component with sync props', async () => {
   const route = createRoute({
@@ -72,14 +70,13 @@ test('renders component with async props', async () => {
 test('component instance has suspense property when suspense is used', async () => {
   const testComponent = defineComponent({
     setup() {
-      // there isn't a way to check if suspense is used in the component without accessing a private property
-      // @ts-expect-error
+      // @ts-expect-error there isn't a way to check if suspense is used in the component without accessing a private property
       const hasSuspense = Boolean(getCurrentInstance()?.suspense)
 
       return () => h('span', hasSuspense)
     },
   })
-  
+
   const appWithSuspenseRoot = {
     template: '<Suspense><test-component/></Suspense>',
     components: {

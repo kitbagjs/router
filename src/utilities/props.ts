@@ -1,4 +1,4 @@
-import { isPromise } from "./promises"
+import { isPromise } from './promises'
 
 /**
  * Takes a props callback and returns a value
@@ -10,7 +10,7 @@ export function getPropsValue(callback: () => unknown): unknown {
     const value = callback()
 
     if (isPromise(value)) {
-      return value.catch((error) => error)
+      return value.catch((error: unknown) => error)
     }
 
     return value

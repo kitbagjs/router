@@ -2,7 +2,6 @@ import { describe, expect, test } from 'vitest'
 import { DEFAULT_PREFETCH_STRATEGY, getPrefetchConfigValue, getPrefetchOption } from '@/types/prefetch'
 
 describe('getPrefetchOptions', () => {
-
   test.each([
     [undefined, 'lazy', false, 'lazy'],
     [true, false, false, DEFAULT_PREFETCH_STRATEGY],
@@ -19,11 +18,9 @@ describe('getPrefetchOptions', () => {
 
     expect(value).toBe(expected)
   })
-
 })
 
 describe('getPrefetchConfigValue', () => {
-
   test.each([
     [false, false],
     [true, true],
@@ -38,5 +35,4 @@ describe('getPrefetchConfigValue', () => {
 
     expect(value).toBe(expected)
   })
-
 })

@@ -22,7 +22,7 @@
 
   export type ToCallback = (resolve: RegisteredRouter['resolve']) => ResolvedRoute | Url | undefined
 
-  type RouterLinkProps = { 
+  type RouterLinkProps = {
     /**
      * The url string to navigate to or a callback that returns a url string
      */
@@ -61,7 +61,7 @@
   })
 
   const { element, isMatch, isExactMatch, isExternal, push } = useLink(() => {
-    if(typeof props.to === 'function'){
+    if (typeof props.to === 'function') {
       return props.to(router.resolve)
     }
 
@@ -72,9 +72,9 @@
     'router-link--match': isMatch.value,
     'router-link--exact-match': isExactMatch.value,
   }))
-  
+
   function getResolvedRoute(to: Url | ResolvedRoute | ToCallback | undefined): ResolvedRoute | undefined {
-    if(typeof to === 'function'){
+    if (typeof to === 'function') {
       const callbackValue = to(router.resolve)
 
       return getResolvedRoute(callbackValue)
@@ -84,13 +84,13 @@
   }
 
   function getHref(to: Url | ResolvedRoute | ToCallback | undefined): Url | undefined {
-    if(typeof to === 'function'){
+    if (typeof to === 'function') {
       const callbackValue = to(router.resolve)
 
       return getHref(callbackValue)
     }
 
-    if(isUrl(to)){
+    if (isUrl(to)) {
       return to
     }
 
