@@ -1,3 +1,4 @@
+/* eslint-disable vue/one-component-per-file */
 import { AsyncComponentLoader, Component, FunctionalComponent, defineComponent, getCurrentInstance, h, ref } from 'vue'
 import { MaybePromise } from '@/types/utilities'
 import { isPromise } from '@/utilities/promises'
@@ -31,13 +32,12 @@ export function component<TComponent extends Component>(component: TComponent, p
 
       return () => {
         if (values instanceof Error) {
-          return '' 
+          return ''
         }
 
         if (isPromise(values)) {
-          // there isn't a way to check if suspense is used in the component without accessing a private property
-          // @ts-expect-error
-          if(instance?.suspense) {
+          // @ts-expect-error there isn't a way to check if suspense is used in the component without accessing a private property
+          if (instance?.suspense) {
             return h(suspenseAsyncPropsWrapper(component, values))
           }
 
@@ -90,6 +90,6 @@ function suspenseAsyncPropsWrapper<TComponent extends Component>(component: TCom
       const values = await props
 
       return () => h(component, values)
-    }
+    },
   })
 }
