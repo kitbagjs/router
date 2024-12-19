@@ -55,6 +55,7 @@ export function createRouterReject({
       params: {},
       state: {},
       href: '/',
+      hash: '',
       [isRejectionRouteSymbol]: true,
     }
   }
