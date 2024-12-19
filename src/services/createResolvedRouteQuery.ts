@@ -1,7 +1,9 @@
+import { QuerySource } from '@/types/query'
+
 /**
  * Creates a dumb wrapper around URLSearchParams because URLSearchParams cannot be correctly be proxied to support writing params to the RouterRoute
  */
-export function createResolvedRouteQuery(query?: string): URLSearchParams {
+export function createResolvedRouteQuery(query?: QuerySource): URLSearchParams {
   const params = new URLSearchParams(query)
 
   return {
