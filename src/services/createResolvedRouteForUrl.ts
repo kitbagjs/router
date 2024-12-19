@@ -1,44 +1,31 @@
-import { getRouteParamValues, routeParamsAreValid } from '@/services/paramValidation'
-import { isNamedRoute, routePathMatches, routeQueryMatches, routeHashMatches } from '@/services/routeMatchRules'
-import { getRouteScoreSortMethod } from '@/services/routeMatchScore'
 import { ResolvedRoute } from '@/types/resolved'
+import { RouterResolveOptions } from '@/types/RouterResolve'
+import { getMatchesForUrl } from '@/services/getMatchesForUrl'
+import { getRouteParamValues } from '@/services/paramValidation'
 import { Routes } from '@/types/route'
-import { RouteMatchRule } from '@/types/routeMatchRule'
-import { parseUrl } from './urlParser'
-import { createResolvedRouteQuery } from './createResolvedRouteQuery'
-import { getStateValues } from './state'
-import { asUrl } from '@/types'
+import { parseUrl } from '@/services/urlParser'
+import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
+import { getStateValues } from '@/services/state'
+import { asUrl } from '@/types/url'
 
-const rules: RouteMatchRule[] = [
-  isNamedRoute,
-  routePathMatches,
-  routeQueryMatches,
-  routeHashMatches,
-  routeParamsAreValid,
-]
+export function createResolvedRouteForUrl(routes: Routes, url: string, options: RouterResolveOptions = {}): ResolvedRoute | undefined {
+  const matches = getMatchesForUrl(routes, url)
 
-export function createResolvedRouteForUrl(routes: Routes, url: string, state?: unknown): ResolvedRoute | undefined {
-  const sortByRouteScore = getRouteScoreSortMethod(url)
-
-  const matches = routes
-    .filter((route) => rules.every((test) => test(route, url)))
-    .sort(sortByRouteScore)
-
-  if (matches.length === 0) {
+  if (!matches.length) {
     return undefined
   }
 
   const [route] = matches
-  const { search, hash } = parseUrl(url)
+  const { searchParams, hash } = parseUrl(url)
 
   return {
     id: route.id,
     matched: route.matched,
     matches: route.matches,
     name: route.name,
-    query: createResolvedRouteQuery(search),
+    query: createResolvedRouteQuery(searchParams),
     params: getRouteParamValues(route, url),
-    state: getStateValues(route.state, state),
+    state: getStateValues(route.state, options.state),
     hash,
     href: asUrl(url),
   }

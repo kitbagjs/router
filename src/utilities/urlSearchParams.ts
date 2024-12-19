@@ -1,7 +1,4 @@
-import { createUrl } from '@/services/urlCreator'
-import { parseUrl } from '@/services/urlParser'
 import { QuerySource } from '@/types/query'
-import { Url } from '@/types/url'
 
 export function combineUrlSearchParams(...paramGroups: (URLSearchParams | QuerySource)[]): URLSearchParams {
   const combinedParams = new URLSearchParams()
@@ -15,10 +12,4 @@ export function combineUrlSearchParams(...paramGroups: (URLSearchParams | QueryS
   }
 
   return combinedParams
-}
-
-export function appendQuery(url: Url, query: QuerySource): Url {
-  const { searchParams, ...parts } = parseUrl(url)
-
-  return createUrl({ ...parts, searchParams: combineUrlSearchParams(searchParams, query) })
 }

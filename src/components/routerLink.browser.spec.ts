@@ -82,13 +82,13 @@ test('calls router.push with url and push options from props', async () => {
     template: '<RouterView />',
   }
 
-  const app = mount(root, {
+  const wrapper = mount(root, {
     global: {
       plugins: [router],
     },
   })
 
-  app.find('a').trigger('click')
+  wrapper.find('a').trigger('click')
 
   const [, pushOptions] = spy.mock.lastCall ?? []
 
@@ -135,31 +135,23 @@ test('calls router.push with url and push options from resolve callback', async 
 
   await router.start()
 
-  const spy = vi.spyOn(router, 'push')
-
   const root = {
     template: '<RouterView />',
   }
 
-  const app = mount(root, {
+  const wrapper = mount(root, {
     global: {
       plugins: [router],
     },
   })
 
-  app.find('a').trigger('click')
+  wrapper.find('a').trigger('click')
 
-  const [, pushOptions] = spy.mock.lastCall ?? []
+  await flushPromises()
 
-  expect(pushOptions).toMatchObject({
-    query: new URLSearchParams({
-      foo: 'bar',
-    }),
-    hash: '#hash',
-    state: {
-      zoo: 'jar',
-    },
-  })
+  expect(router.route.query.toString()).toBe('foo=bar')
+  expect(router.route.hash).toBe('#hash')
+  expect(router.route.state).toMatchObject({ zoo: 'jar' })
 })
 
 test('given push options from both resolve callback and props, combines query and state, overrides hash and replace', async () => {
@@ -204,36 +196,29 @@ test('given push options from both resolve callback and props, combines query an
 
   await router.start()
 
-  const spy = vi.spyOn(router, 'push')
-
   const root = {
     template: '<RouterView />',
   }
 
-  const app = mount(root, {
+  const wrapper = mount(root, {
     global: {
       plugins: [router],
     },
   })
 
-  app.find('a').trigger('click')
+  wrapper.find('a').trigger('click')
 
-  const [, pushOptions] = spy.mock.lastCall ?? []
+  await flushPromises()
 
-  expect(pushOptions).toMatchObject({
-    query: new URLSearchParams({
-      resolve: 'foo',
-      prop: 'foo',
-    }),
-    hash: 'propHash',
-    state: {
-      resolve: 'jar',
-      prop: 'jar',
-    },
+  expect(router.route.query.toString()).toBe('prop=foo&resolve=foo')
+  expect(router.route.hash).toBe('#propHash')
+  expect(router.route.state).toMatchObject({
+    resolve: 'jar',
+    prop: 'jar',
   })
 })
 
-test('to prop as string renders and routes correctly', () => {
+test('to prop as Url renders and routes correctly', async () => {
   const route = createRoute({
     name: 'route',
     path: '/route',
@@ -244,8 +229,6 @@ test('to prop as string renders and routes correctly', () => {
   const router = createRouter([route], {
     initialUrl: '/route',
   })
-
-  const spy = vi.spyOn(router, 'push')
 
   const wrapper = mount(routerLink, {
     props: {
@@ -265,11 +248,11 @@ test('to prop as string renders and routes correctly', () => {
   expect(element.href).toBe(href.toString())
   expect(element.innerHTML).toBe('route')
 
-  anchor.trigger('click')
+  wrapper.find('a').trigger('click')
 
-  const [arg1] = spy.mock.lastCall ?? []
+  await flushPromises()
 
-  expect(arg1).toBe('/route')
+  expect(router.route.name).toBe('route')
 })
 
 test.each<{ to: Url, match: boolean, exactMatch: boolean }>([
@@ -357,7 +340,7 @@ test('isMatch correctly matches parent when sibling has the same url', async () 
     template: '<RouterView />',
   }
 
-  const app = mount(root, {
+  const wrapper = mount(root, {
     global: {
       plugins: [router],
     },
@@ -365,7 +348,7 @@ test('isMatch correctly matches parent when sibling has the same url', async () 
 
   await router.start()
 
-  const link = app.find('a')
+  const link = wrapper.find('a')
 
   expect(link.classes()).toContain('router-link--match')
   expect(link.classes()).not.toContain('router-link--exact-match')
@@ -720,7 +703,7 @@ describe('prefetch props', () => {
       template: '<RouterView />',
     }
 
-    const app = mount(root, {
+    const wrapper = mount(root, {
       global: {
         plugins: [router],
       },
@@ -728,13 +711,13 @@ describe('prefetch props', () => {
 
     expect(props).toHaveBeenCalledOnce()
 
-    await app.find('a').trigger('click')
+    wrapper.find('a').trigger('click')
 
     await flushPromises()
 
     expect(router.route.name).toBe('echo')
     expect(props).toHaveBeenCalledOnce()
-    expect(app.text()).toBe(value)
+    expect(wrapper.text()).toBe(value)
   })
 
   test('parent routes that should not prefetch props are not prefetched', async () => {

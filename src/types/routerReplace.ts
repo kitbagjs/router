@@ -27,5 +27,5 @@ export type RouterReplace<
 > = {
   <TSource extends RoutesName<TRoutes>>(name: TSource, ...args: RouterReplaceArgs<TRoutes, TSource>): Promise<void>,
   (url: Url, options?: RouterReplaceOptions): Promise<void>,
-  (route: ResolvedRoute | undefined, options?: RouterReplaceOptions): Promise<void>,
+  (route: ResolvedRoute, options?: RouterReplaceOptions): Promise<void>,
 }

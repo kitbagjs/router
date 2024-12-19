@@ -28,13 +28,13 @@ test('renders component for initial route', async () => {
     template: '<RouterView/>',
   }
 
-  const app = mount(root, {
+  const wrapper = mount(root, {
     global: {
       plugins: [router],
     },
   })
 
-  expect(app.html()).toBe('hello world')
+  expect(wrapper.html()).toBe('hello world')
 })
 
 test('renders components for initial route', async () => {
@@ -60,13 +60,13 @@ test('renders components for initial route', async () => {
     template: '<RouterView />',
   }
 
-  const app = mount(root, {
+  const wrapper = mount(root, {
     global: {
       plugins: [router],
     },
   })
 
-  expect(app.html()).toBe('Child')
+  expect(wrapper.html()).toBe('Child')
 })
 
 test('updates components when route changes', async () => {
@@ -96,7 +96,7 @@ test('updates components when route changes', async () => {
     template: '<RouterView />',
   }
 
-  const app = mount(root, {
+  const wrapper = mount(root, {
     global: {
       plugins: [router],
     },
@@ -104,19 +104,19 @@ test('updates components when route changes', async () => {
 
   await router.start()
 
-  expect(app.html()).toBe('Foo')
+  expect(wrapper.html()).toBe('Foo')
 
   await router.push('/bar')
 
-  expect(app.html()).toBe('Bar')
+  expect(wrapper.html()).toBe('Bar')
 
   await router.push('/zoo')
 
-  expect(app.html()).toBe('Zoo')
+  expect(wrapper.html()).toBe('Zoo')
 
   await router.push('/foo')
 
-  expect(app.html()).toBe('Foo')
+  expect(wrapper.html()).toBe('Foo')
 })
 
 test('resolves async components', async () => {
@@ -134,7 +134,7 @@ test('resolves async components', async () => {
     template: '<RouterView/>',
   }
 
-  const app = mount(root, {
+  const wrapper = mount(root, {
     global: {
       plugins: [router],
     },
@@ -143,7 +143,7 @@ test('resolves async components', async () => {
   await router.start()
   await flushPromises()
 
-  expect(app.html()).toBe(helloWorld.template)
+  expect(wrapper.html()).toBe(helloWorld.template)
 })
 
 test('Renders the genericRejection component when the initialUrl does not match', async () => {
@@ -157,13 +157,13 @@ test('Renders the genericRejection component when the initialUrl does not match'
     template: '<RouterView/>',
   }
 
-  const app = mount(root, {
+  const wrapper = mount(root, {
     global: {
       plugins: [router],
     },
   })
 
-  expect(app.text()).toBe('NotFound')
+  expect(wrapper.text()).toBe('NotFound')
 })
 
 test('Renders custom genericRejection component when the initialUrl does not match', async () => {
@@ -181,7 +181,7 @@ test('Renders custom genericRejection component when the initialUrl does not mat
     template: '<RouterView/>',
   }
 
-  const app = mount(root, {
+  const wrapper = mount(root, {
     global: {
       plugins: [router],
     },
@@ -193,7 +193,7 @@ test('Renders custom genericRejection component when the initialUrl does not mat
 
   const route = mount(router.route.matched.component)
 
-  expect(app.text()).toBe(NotFound.template)
+  expect(wrapper.text()).toBe(NotFound.template)
   expect(route.text()).toBe(NotFound.template)
 })
 
@@ -214,7 +214,7 @@ test('Renders the NotFound component when the router.push does not match', async
     template: '<RouterView/>',
   }
 
-  const app = mount(root, {
+  const wrapper = mount(root, {
     global: {
       plugins: [router],
     },
@@ -222,7 +222,7 @@ test('Renders the NotFound component when the router.push does not match', async
 
   await router.push('/does-not-exist')
 
-  expect(app.text()).toBe('NotFound')
+  expect(wrapper.text()).toBe('NotFound')
 })
 
 test('Renders the route component when the router.push does match after a rejection', async () => {
@@ -242,17 +242,17 @@ test('Renders the route component when the router.push does match after a reject
     template: '<RouterView/>',
   }
 
-  const app = mount(root, {
+  const wrapper = mount(root, {
     global: {
       plugins: [router],
     },
   })
 
-  expect(app.text()).toBe('NotFound')
+  expect(wrapper.text()).toBe('NotFound')
 
   await router.push('/')
 
-  expect(app.text()).toBe('hello world')
+  expect(wrapper.text()).toBe('hello world')
 })
 
 test('Renders the multiple components when using named route views', async () => {
@@ -280,13 +280,13 @@ test('Renders the multiple components when using named route views', async () =>
     `,
   }
 
-  const app = mount(root, {
+  const wrapper = mount(root, {
     global: {
       plugins: [router],
     },
   })
 
-  expect(app.text()).toBe('_one__default__two_')
+  expect(wrapper.text()).toBe('_one__default__two_')
 })
 
 test('Binds props and attrs from route', async () => {
@@ -316,7 +316,7 @@ test('Binds props and attrs from route', async () => {
     template: '<RouterView/>',
   }
 
-  const app = mount(root, {
+  const wrapper = mount(root, {
     global: {
       plugins: [router],
     },
@@ -324,11 +324,11 @@ test('Binds props and attrs from route', async () => {
 
   await router.push('/routeA/hello')
 
-  expect(app.html()).toBe('hello')
+  expect(wrapper.html()).toBe('hello')
 
   await router.push('/routeB/world')
 
-  expect(app.html()).toBe('world')
+  expect(wrapper.html()).toBe('world')
 })
 
 test('Updates props and attrs when route params change', async () => {
@@ -358,7 +358,7 @@ test('Updates props and attrs when route params change', async () => {
     template: '<RouterView/>',
   }
 
-  const app = mount(root, {
+  const wrapper = mount(root, {
     global: {
       plugins: [router],
     },
@@ -366,23 +366,23 @@ test('Updates props and attrs when route params change', async () => {
 
   await router.push('sync', { param: 'foo' })
 
-  expect(app.html()).toBe('foo')
+  expect(wrapper.html()).toBe('foo')
 
   await router.push('sync', { param: 'bar' })
 
-  expect(app.html()).toBe('bar')
+  expect(wrapper.html()).toBe('bar')
 
   await router.push('async', { param: 'async-foo' })
 
   await flushPromises()
 
-  expect(app.html()).toBe('async-foo')
+  expect(wrapper.html()).toBe('async-foo')
 
   await router.push('async', { param: 'async-bar' })
 
   await flushPromises()
 
-  expect(app.html()).toBe('async-bar')
+  expect(wrapper.html()).toBe('async-bar')
 })
 
 test('Props from route can trigger push', async () => {
@@ -414,7 +414,7 @@ test('Props from route can trigger push', async () => {
     template: '<RouterView/>',
   }
 
-  const app = mount(root, {
+  const wrapper = mount(root, {
     global: {
       plugins: [router],
     },
@@ -424,7 +424,7 @@ test('Props from route can trigger push', async () => {
 
   await flushPromises()
 
-  expect(app.html()).toBe('routeB')
+  expect(wrapper.html()).toBe('routeB')
 })
 
 test('Props from route can trigger reject', async () => {
@@ -447,7 +447,7 @@ test('Props from route can trigger reject', async () => {
     template: '<RouterView/>',
   }
 
-  const app = mount(root, {
+  const wrapper = mount(root, {
     global: {
       plugins: [router],
     },
@@ -457,7 +457,7 @@ test('Props from route can trigger reject', async () => {
 
   await flushPromises()
 
-  expect(app.html()).toBe('<h1>NotFound</h1>')
+  expect(wrapper.html()).toBe('<h1>NotFound</h1>')
 })
 
 test('prefetched props trigger push when navigation is initiated', async () => {
@@ -496,19 +496,19 @@ test('prefetched props trigger push when navigation is initiated', async () => {
     template: '<RouterView/>',
   }
 
-  const app = mount(root, {
+  const wrapper = mount(root, {
     global: {
       plugins: [router],
     },
   })
 
-  expect(app.text()).toBe('routeB')
+  expect(wrapper.text()).toBe('routeB')
 
-  app.find('a').trigger('click')
+  wrapper.find('a').trigger('click')
 
   await flushPromises()
 
-  expect(app.text()).toBe('routeC')
+  expect(wrapper.text()).toBe('routeC')
 })
 
 test('prefetched async props trigger push when navigation is initiated', async () => {
@@ -547,17 +547,17 @@ test('prefetched async props trigger push when navigation is initiated', async (
     template: '<RouterView/>',
   }
 
-  const app = mount(root, {
+  const wrapper = mount(root, {
     global: {
       plugins: [router],
     },
   })
 
-  expect(app.text()).toBe('routeB')
+  expect(wrapper.text()).toBe('routeB')
 
-  app.find('a').trigger('click')
+  wrapper.find('a').trigger('click')
 
   await flushPromises()
 
-  expect(app.text()).toBe('routeC')
+  expect(wrapper.text()).toBe('routeC')
 })
