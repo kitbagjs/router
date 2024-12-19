@@ -73,13 +73,13 @@ test.each([
     template: '<RouterView />',
   }
 
-  const app = mount(root, {
+  const wrapper = mount(root, {
     global: {
       plugins: [router],
     },
   })
 
-  app.find('a').trigger('click')
+  wrapper.find('a').trigger('click')
 
   const [, options] = spy.mock.lastCall ?? []
 
@@ -127,7 +127,7 @@ test('to prop as string renders and routes correctly', () => {
 
 test.each<{ to: Url, match: boolean, exactMatch: boolean }>([
   { to: '/parent-route', match: true, exactMatch: false },
-  { to: '/parent-route/child-route', match: true, exactMatch: true},
+  { to: '/parent-route/child-route', match: true, exactMatch: true },
   { to: '/other-route', match: false, exactMatch: false },
 ])('isMatch and isExactMatch classes and slot props works as expected', async ({ to, match, exactMatch }) => {
   const parentRoute = createRoute({
@@ -187,43 +187,42 @@ test('isMatch correctly matches parent when sibling has the same url', async () 
   const parentRoute = createRoute({
     name: 'parent',
     path: '/parent',
-  });
+  })
 
   const siblingRoute = createRoute({
     parent: parentRoute,
     name: 'sibling',
     component,
-  });
+  })
 
   const childRoute = createRoute({
     parent: parentRoute,
     name: 'child',
     path: '/child',
     component: () => h(routerLink, { to: (resolve) => resolve('parent') }, 'parent'),
-  });
+  })
 
   const router = createRouter([parentRoute, siblingRoute, childRoute], {
     initialUrl: '/parent/child',
-  });
+  })
 
   const root = {
     template: '<RouterView />',
   }
 
-  const app = mount(root, {
+  const wrapper = mount(root, {
     global: {
       plugins: [router],
     },
-  });
+  })
 
   await router.start()
 
-  const link = app.find('a')
+  const link = wrapper.find('a')
 
   expect(link.classes()).toContain('router-link--match')
   expect(link.classes()).not.toContain('router-link--exact-match')
-});
-
+})
 
 test.each([
   [true],
@@ -574,7 +573,7 @@ describe('prefetch props', () => {
       template: '<RouterView />',
     }
 
-    const app = mount(root, {
+    const wrapper = mount(root, {
       global: {
         plugins: [router],
       },
@@ -582,13 +581,13 @@ describe('prefetch props', () => {
 
     expect(props).toHaveBeenCalledOnce()
 
-    await app.find('a').trigger('click')
+    await wrapper.find('a').trigger('click')
 
     await flushPromises()
 
     expect(router.route.name).toBe('echo')
     expect(props).toHaveBeenCalledOnce()
-    expect(app.text()).toBe(value)
+    expect(wrapper.text()).toBe(value)
   })
 
   test('parent routes that should not prefetch props are not prefetched', async () => {
@@ -662,7 +661,7 @@ describe('prefetch props', () => {
     await router.start()
 
     const visible = ref(false)
-    
+
     const root = {
       template: '<RouterView />',
       provide: {
@@ -684,7 +683,7 @@ describe('prefetch props', () => {
     expect(callback).not.toHaveBeenCalled()
 
     visible.value = true
-    
+
     await nextTick()
 
     expect(callback).toHaveBeenCalled()
@@ -718,7 +717,7 @@ describe('prefetch props', () => {
     await router.start()
 
     const visible = ref(false)
-    
+
     const root = {
       template: '<RouterView />',
       provide: {
@@ -740,7 +739,7 @@ describe('prefetch props', () => {
     expect(loaded).toBe(false)
 
     visible.value = true
-    
+
     await nextTick()
 
     expect(loaded).toBe(true)
