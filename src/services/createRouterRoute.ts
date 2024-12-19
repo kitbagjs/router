@@ -46,21 +46,21 @@ export function createRouterRoute<TRoute extends ResolvedRoute>(route: TRoute, p
   }
 
   const querySet: URLSearchParams['set'] = (...parameters) => {
-    const query = new URLSearchParams(route.query.toString())
+    const query = new URLSearchParams(route.query)
     query.set(...parameters)
 
     update({}, { query })
   }
 
   const queryAppend: URLSearchParams['append'] = (...parameters) => {
-    const query = new URLSearchParams(route.query.toString())
+    const query = new URLSearchParams(route.query)
     query.append(...parameters)
 
     update({}, { query })
   }
 
   const queryDelete: URLSearchParams['delete'] = (...parameters) => {
-    const query = new URLSearchParams(route.query.toString())
+    const query = new URLSearchParams(route.query)
     query.delete(...parameters)
 
     update({}, { query })

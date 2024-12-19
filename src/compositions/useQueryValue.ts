@@ -49,7 +49,7 @@ export function useQueryValue(
         .filter((value) => value !== null)
     },
     set(values) {
-      const query = new URLSearchParams(route.query.toString())
+      const query = new URLSearchParams(route.query)
 
       query.delete(toValue(key))
 
