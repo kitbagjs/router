@@ -95,14 +95,16 @@ export function useLink(
     }
 
     const sourceValue = toValue(source)
-    if(isUrl(sourceValue)){
+    if (isUrl(sourceValue)) {
       return sourceValue
     }
 
     console.error(new Error('Failed to resolve route in RouterLink.'))
+
+    return undefined
   })
-  
-  const isMatch = computed(() => isRoute(router.route) && router.route.matches.some(match => match.id === route.value?.id))
+
+  const isMatch = computed(() => isRoute(router.route) && router.route.matches.some((match) => match.id === route.value?.id))
   const isExactMatch = computed(() => router.route.id === route.value?.id)
   const isExternal = computed(() => !!href.value && router.isExternal(href.value))
 

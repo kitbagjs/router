@@ -197,12 +197,12 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
 
       return createResolvedRoute(match, params, options)
     }
-    
+
     if (isExternal(source)) {
       return undefined
     }
 
-    const options: RouterPushOptions = {...paramsOrOptions}
+    const options: RouterPushOptions = { ...paramsOrOptions }
     const url = appendQuery(source, options.query)
 
     return createResolvedRouteForUrl(routes, url)
@@ -210,21 +210,21 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
 
   const push: RouterPush<TRoutes> = (source: Url | RoutesName<TRoutes>, paramsOrOptions?: Record<string, unknown> | RouterPushOptions, maybeOptions?: RouterPushOptions) => {
     if (isUrl(source)) {
-      const options: RouterPushOptions = {...paramsOrOptions}
+      const options: RouterPushOptions = { ...paramsOrOptions }
       const url = appendQuery(source, options.query)
 
       return set(url, options)
     }
 
-    const options: RouterPushOptions = {...maybeOptions}
-    const params: any = {...paramsOrOptions}
+    const options: RouterPushOptions = { ...maybeOptions }
+    const params: any = { ...paramsOrOptions }
     const resolved = resolve(source, params, options)
 
-    if(!resolved) {
+    if (!resolved) {
       throw new RouteNotFoundError(String(source))
     }
 
-    const state = setStateValues({...resolved.state}, options.state)
+    const state = setStateValues({ ...resolved.state }, options.state)
 
     return set(resolved.href, { ...options, state })
   }
@@ -238,14 +238,14 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
     }
 
     const options: RouterPushOptions = { ...maybeOptions, replace: true }
-    const params: any = {...paramsOrOptions}
+    const params: any = { ...paramsOrOptions }
     const resolved = resolve(source, params, options)
 
-    if(!resolved) {
+    if (!resolved) {
       throw new RouteNotFoundError(String(source))
     }
 
-    const state = setStateValues({...resolved.state}, options.state)
+    const state = setStateValues({ ...resolved.state }, options.state)
 
     return set(resolved.href, { ...options, state })
   }
