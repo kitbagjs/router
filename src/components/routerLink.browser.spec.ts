@@ -127,7 +127,7 @@ test('to prop as string renders and routes correctly', () => {
 
 test.each<{ to: Url, match: boolean, exactMatch: boolean }>([
   { to: '/parent-route', match: true, exactMatch: false },
-  { to: '/parent-route/child-route', match: true, exactMatch: true},
+  { to: '/parent-route/child-route', match: true, exactMatch: true },
   { to: '/other-route', match: false, exactMatch: false },
 ])('isMatch and isExactMatch classes and slot props works as expected', async ({ to, match, exactMatch }) => {
   const parentRoute = createRoute({
@@ -187,24 +187,24 @@ test('isMatch correctly matches parent when sibling has the same url', async () 
   const parentRoute = createRoute({
     name: 'parent',
     path: '/parent',
-  });
+  })
 
   const siblingRoute = createRoute({
     parent: parentRoute,
     name: 'sibling',
     component,
-  });
+  })
 
   const childRoute = createRoute({
     parent: parentRoute,
     name: 'child',
     path: '/child',
     component: () => h(routerLink, { to: (resolve) => resolve('parent') }, 'parent'),
-  });
+  })
 
   const router = createRouter([parentRoute, siblingRoute, childRoute], {
     initialUrl: '/parent/child',
-  });
+  })
 
   const root = {
     template: '<RouterView />',
@@ -214,7 +214,7 @@ test('isMatch correctly matches parent when sibling has the same url', async () 
     global: {
       plugins: [router],
     },
-  });
+  })
 
   await router.start()
 
@@ -222,8 +222,7 @@ test('isMatch correctly matches parent when sibling has the same url', async () 
 
   expect(link.classes()).toContain('router-link--match')
   expect(link.classes()).not.toContain('router-link--exact-match')
-});
-
+})
 
 test.each([
   [true],
@@ -662,7 +661,7 @@ describe('prefetch props', () => {
     await router.start()
 
     const visible = ref(false)
-    
+
     const root = {
       template: '<RouterView />',
       provide: {
@@ -684,7 +683,7 @@ describe('prefetch props', () => {
     expect(callback).not.toHaveBeenCalled()
 
     visible.value = true
-    
+
     await nextTick()
 
     expect(callback).toHaveBeenCalled()
@@ -718,7 +717,7 @@ describe('prefetch props', () => {
     await router.start()
 
     const visible = ref(false)
-    
+
     const root = {
       template: '<RouterView />',
       provide: {
@@ -740,7 +739,7 @@ describe('prefetch props', () => {
     expect(loaded).toBe(false)
 
     visible.value = true
-    
+
     await nextTick()
 
     expect(loaded).toBe(true)
