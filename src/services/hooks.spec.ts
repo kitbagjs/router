@@ -29,6 +29,7 @@ test('calls hook with correct routes', () => {
     params: {},
     state: {},
     href: '/',
+    hash: '',
   }
 
   const fromOptions = {
@@ -48,6 +49,7 @@ test('calls hook with correct routes', () => {
     params: {},
     state: {},
     href: '/',
+    hash: '',
   }
 
   runBeforeRouteHooks({
@@ -101,6 +103,7 @@ test.each<{ type: string, status: string, hook: BeforeRouteHook }>([
     params: {},
     state: {},
     href: '/',
+    hash: '',
   }
 
   const fromOptions = {
@@ -120,6 +123,7 @@ test.each<{ type: string, status: string, hook: BeforeRouteHook }>([
     params: {},
     state: {},
     href: '/',
+    hash: '',
   }
 
   const response = await runBeforeRouteHooks({
@@ -156,6 +160,7 @@ test('hook is called in order', async () => {
     params: {},
     state: {},
     href: '/',
+    hash: '',
   }
 
   const fromOptions = {
@@ -175,6 +180,7 @@ test('hook is called in order', async () => {
     params: {},
     state: {},
     href: '/',
+    hash: '',
   }
 
   await runBeforeRouteHooks({

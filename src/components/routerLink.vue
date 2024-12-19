@@ -80,7 +80,7 @@
       return getResolvedRoute(callbackValue)
     }
 
-    return isUrl(to) ? router.resolve(to) : to
+    return isUrl(to) ? router.find(to) : to
   }
 
   function getHref(to: Url | ResolvedRoute | ToCallback | undefined): Url | undefined {

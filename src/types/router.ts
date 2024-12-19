@@ -8,7 +8,7 @@ import { ResolvedRoute } from '@/types/resolved'
 import { Routes } from '@/types/route'
 import { RouterPush } from '@/types/routerPush'
 import { RouterReplace } from '@/types/routerReplace'
-import { RouterResolve } from '@/types/RouterResolve'
+import { RouterResolve, RouterResolveOptions } from '@/types/RouterResolve'
 
 export type RouterReject = (type: RegisteredRejectionType) => void
 
@@ -53,9 +53,13 @@ export type Router<
   */
   route: RouterRoutes<TRoutes>,
   /**
-   * Resolves a URL to a route object.
+   * Creates a ResolvedRoute record for a given route name and params.
    */
   resolve: RouterResolve<TRoutes>,
+  /**
+   * Creates a ResolvedRoute record for a given URL.
+   */
+  find: (url: string, options?: RouterResolveOptions) => ResolvedRoute | undefined,
   /**
    * Navigates to a specified path or route object in the history stack, adding a new entry.
    */

@@ -95,5 +95,6 @@ export function mockResolvedRoute(matched: ResolvedRoute['matched'], matches: Re
     params: {},
     state: {},
     href: '/',
+    hash: '',
   }
 }
