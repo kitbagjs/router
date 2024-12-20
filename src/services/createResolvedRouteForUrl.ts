@@ -1,5 +1,4 @@
 import { ResolvedRoute } from '@/types/resolved'
-import { RouterResolveOptions } from '@/types/RouterResolve'
 import { getMatchesForUrl } from '@/services/getMatchesForUrl'
 import { getRouteParamValues } from '@/services/paramValidation'
 import { Routes } from '@/types/route'
@@ -8,7 +7,7 @@ import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
 import { getStateValues } from '@/services/state'
 import { asUrl } from '@/types/url'
 
-export function createResolvedRouteForUrl(routes: Routes, url: string, options: RouterResolveOptions = {}): ResolvedRoute | undefined {
+export function createResolvedRouteForUrl(routes: Routes, url: string, state?: Partial<unknown>): ResolvedRoute | undefined {
   const matches = getMatchesForUrl(routes, url)
 
   if (!matches.length) {
@@ -25,7 +24,7 @@ export function createResolvedRouteForUrl(routes: Routes, url: string, options: 
     name: route.name,
     query: createResolvedRouteQuery(searchParams),
     params: getRouteParamValues(route, url),
-    state: getStateValues(route.state, options.state),
+    state: getStateValues(route.state, state),
     hash,
     href: asUrl(url),
   }

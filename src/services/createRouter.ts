@@ -92,7 +92,7 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
   } = createRouterHooks()
 
   function find(url: string, options: RouterResolveOptions = {}): ResolvedRoute | undefined {
-    return createResolvedRouteForUrl(routes, url, options)
+    return createResolvedRouteForUrl(routes, url, options.state)
   }
 
   async function set(url: string, options: RouterUpdateOptions = {}): Promise<void> {
@@ -207,39 +207,31 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
   ) => {
     if (isUrl(source)) {
       const options: RouterPushOptions = { ...paramsOrOptions }
-      const resolved = find(source, options)
-      const mightBeExternal = resolved === undefined
+      const url = combineUrl(source, {
+        searchParams: options.query,
+        hash: options.hash,
+      })
 
-      if (mightBeExternal) {
-        const url = combineUrl(source, {
-          searchParams: new URLSearchParams(options.query),
-          hash: options.hash,
-        })
-
-        return set(url, options)
-      }
-
-      const { replace, state } = options
-
-      return push(resolved, { replace, state })
+      return set(url, options)
     }
 
     if (typeof source === 'string') {
-      const options: RouterPushOptions = { ...maybeOptions }
+      const { replace, ...options }: RouterPushOptions = { ...maybeOptions }
       const params: any = { ...paramsOrOptions }
       const resolved = resolve(source, params, options)
-      const { replace, state } = options
+      const state = setStateValues({ ...resolved.matched.state }, { ...resolved.state, ...options.state })
 
-      return push(resolved, { replace, state })
+      return set(resolved.href, { replace, state })
     }
 
     const { replace, ...options }: RouterPushOptions = { ...paramsOrOptions }
     const state = setStateValues({ ...source.matched.state }, { ...source.state, ...options.state })
 
     const url = combineUrl(source.href, {
-      searchParams: new URLSearchParams(options.query),
+      searchParams: options.query,
       hash: options.hash,
     })
+
     return set(url, { replace, state })
   }
 

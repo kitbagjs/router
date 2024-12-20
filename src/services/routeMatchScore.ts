@@ -2,6 +2,7 @@ import { parseUrl } from '@/services/urlParser'
 import { getParamValueFromUrl } from '@/services/paramsFinder'
 import { Route } from '@/types/route'
 import { routeHashMatches } from '@/services/routeMatchRules'
+import { QuerySource } from '@/types/query'
 
 type RouteSortMethod = (aRoute: Route, bRoute: Route) => number
 
@@ -51,7 +52,8 @@ export function countExpectedPathParams(route: Route, actualPath: string): numbe
   return optionalParams.length - missing.length
 }
 
-export function countExpectedQueryParams(route: Route, actualQuery: URLSearchParams): number {
+export function countExpectedQueryParams(route: Route, actual: QuerySource): number {
+  const actualQuery = new URLSearchParams(actual)
   const expectedQuery = new URLSearchParams(route.query.value)
   const expectedQueryKeys = Array.from(expectedQuery.keys())
 

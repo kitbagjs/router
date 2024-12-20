@@ -52,7 +52,7 @@ test('given state that matches state params, returns state', () => {
 
   const routes = [parent, child] as const
 
-  const response = createResolvedRouteForUrl(routes, '/foo', { state: { foo: 'true', bar: 'abc' } })
+  const response = createResolvedRouteForUrl(routes, '/foo', { foo: 'true', bar: 'abc' })
 
   expect(response?.state).toMatchObject({ foo: true, bar: 'abc' })
 })

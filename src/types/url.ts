@@ -1,10 +1,12 @@
+import { QuerySource } from './query'
+
 export type Url = `http://${string}` | `https://${string}` | `/${string}`
 
 export type UrlParts = {
   protocol?: string,
   host?: string,
   pathname: string,
-  searchParams: URLSearchParams,
+  searchParams: QuerySource,
   search: string,
   hash: string,
 }

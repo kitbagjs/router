@@ -16,7 +16,7 @@ export function createUrl({ protocol, host, pathname, search, searchParams, hash
   }
 
   if (searchParams) {
-    url.search = searchParams.toString()
+    url.search = new URLSearchParams(searchParams).toString()
   } else if (search) {
     url.search = search
   }
