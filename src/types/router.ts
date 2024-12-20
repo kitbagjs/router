@@ -1,4 +1,4 @@
-import { Component, Plugin } from 'vue'
+import { App, Component } from 'vue'
 import { RouterHistoryMode } from '@/services/createRouterHistory'
 import { RouterRoute } from '@/services/createRouterRoute'
 import { AddAfterRouteHook, AddBeforeRouteHook } from '@/types/hooks'
@@ -47,7 +47,8 @@ export type Router<
   TRoutes extends Routes = any,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   __TOptions extends RouterOptions = any
-> = Plugin & {
+> = {
+  install: (app: App) => void,
   /**
    * Manages the current route state.
   */
