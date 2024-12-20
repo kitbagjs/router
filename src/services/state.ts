@@ -21,6 +21,9 @@ export function getStateValue(state: unknown, key: string, param: Param): unknow
   return getParamValue(undefined, param, isOptional)
 }
 
+/**
+ * This function is used to get the values inside the state converted from string values into the correct type.
+ */
 export function getStateValues(params: Record<string, Param>, state: unknown): Record<string, unknown> {
   const values: Record<string, unknown> = {}
 

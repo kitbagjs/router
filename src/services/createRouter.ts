@@ -11,7 +11,6 @@ import { createRouterHistory } from '@/services/createRouterHistory'
 import { routeHookStoreKey, createRouterHooks } from '@/services/createRouterHooks'
 import { createRouterReject } from '@/services/createRouterReject'
 import { getInitialUrl } from '@/services/getInitialUrl'
-import { createResolvedRouteForUrl } from '@/services/createResolvedRouteForUrl'
 import { createRouteHookRunners } from '@/services/hooks'
 import { insertBaseRoute } from '@/services/insertBaseRoute'
 import { setStateValues } from '@/services/state'
@@ -28,12 +27,14 @@ import { createVisibilityObserver } from './createVisibilityObserver'
 import { visibilityObserverKey } from '@/compositions/useVisibilityObserver'
 import { RouterResolve, RouterResolveOptions } from '../types/RouterResolve'
 import { RouteNotFoundError } from '@/errors/routeNotFoundError'
-import { appendQuery } from '@/utilities/urlSearchParams'
 import { createResolvedRoute } from '@/services/createResolvedRoute'
+import { ResolvedRoute } from '@/types/resolved'
+import { createResolvedRouteForUrl } from '@/services/createResolvedRouteForUrl'
+import { combineUrl } from '@/services/urlCombine'
 
 type RouterUpdateOptions = {
   replace?: boolean,
-  state?: unknown,
+  state?: any,
 }
 
 /**
@@ -90,6 +91,10 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
     onAfterRouteLeave,
   } = createRouterHooks()
 
+  function find(url: string, options: RouterResolveOptions = {}): ResolvedRoute | undefined {
+    return createResolvedRouteForUrl(routes, url, options.state)
+  }
+
   async function set(url: string, options: RouterUpdateOptions = {}): Promise<void> {
     const navigationId = getNavigationId()
 
@@ -100,7 +105,7 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
       return
     }
 
-    const to = createResolvedRouteForUrl(routes, url, options.state) ?? getRejectionRoute('NotFound')
+    const to = find(url, options) ?? getRejectionRoute('NotFound')
     const from = { ...currentRoute }
 
     const beforeResponse = await runBeforeRouteHooks({ to, from, hooks })
@@ -182,72 +187,71 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
   }
 
   const resolve: RouterResolve<TRoutes> = (
-    source: Url | RoutesName<TRoutes>,
-    paramsOrOptions?: Record<string, unknown>,
-    maybeOptions?: RouterResolveOptions,
+    source: RoutesName<TRoutes>,
+    params: Record<string, unknown> = {},
+    options: RouterResolveOptions = {},
   ) => {
-    if (!isUrl(source)) {
-      const params = paramsOrOptions ?? {}
-      const options: RouterResolveOptions = maybeOptions ?? {}
-      const match = routes.find((route) => route.name === source)
+    const match = routes.find((route) => route.name === source)
 
-      if (!match) {
-        return undefined
-      }
-
-      return createResolvedRoute(match, params, options)
+    if (!match) {
+      throw new RouteNotFoundError(String(source))
     }
 
-    if (isExternal(source)) {
-      return undefined
-    }
-
-    const options: RouterPushOptions = { ...paramsOrOptions }
-    const url = appendQuery(source, options.query)
-
-    return createResolvedRouteForUrl(routes, url)
+    return createResolvedRoute(match, params, options)
   }
 
-  const push: RouterPush<TRoutes> = (source: Url | RoutesName<TRoutes>, paramsOrOptions?: Record<string, unknown> | RouterPushOptions, maybeOptions?: RouterPushOptions) => {
+  const push: RouterPush<TRoutes> = (
+    source: Url | RoutesName<TRoutes> | ResolvedRoute,
+    paramsOrOptions?: Record<string, unknown> | RouterPushOptions,
+    maybeOptions?: RouterPushOptions,
+  ) => {
     if (isUrl(source)) {
       const options: RouterPushOptions = { ...paramsOrOptions }
-      const url = appendQuery(source, options.query)
+      const url = combineUrl(source, {
+        searchParams: options.query,
+        hash: options.hash,
+      })
 
       return set(url, options)
     }
 
-    const options: RouterPushOptions = { ...maybeOptions }
-    const params: any = { ...paramsOrOptions }
-    const resolved = resolve(source, params, options)
+    if (typeof source === 'string') {
+      const { replace, ...options }: RouterPushOptions = { ...maybeOptions }
+      const params: any = { ...paramsOrOptions }
+      const resolved = resolve(source, params, options)
+      const state = setStateValues({ ...resolved.matched.state }, { ...resolved.state, ...options.state })
 
-    if (!resolved) {
-      throw new RouteNotFoundError(String(source))
+      return set(resolved.href, { replace, state })
     }
 
-    const state = setStateValues({ ...resolved.state }, options.state)
+    const { replace, ...options }: RouterPushOptions = { ...paramsOrOptions }
+    const state = setStateValues({ ...source.matched.state }, { ...source.state, ...options.state })
 
-    return set(resolved.href, { ...options, state })
+    const url = combineUrl(source.href, {
+      searchParams: options.query,
+      hash: options.hash,
+    })
+
+    return set(url, { replace, state })
   }
 
-  const replace: RouterReplace<TRoutes> = (source: Url | RoutesName<TRoutes>, paramsOrOptions?: Record<string, unknown> | RouterReplaceOptions, maybeOptions?: RouterReplaceOptions) => {
+  const replace: RouterReplace<TRoutes> = (source: Url | RoutesName<TRoutes> | ResolvedRoute, paramsOrOptions?: Record<string, unknown> | RouterReplaceOptions, maybeOptions?: RouterReplaceOptions) => {
     if (isUrl(source)) {
       const options: RouterPushOptions = { ...paramsOrOptions, replace: true }
-      const url = appendQuery(source, options.query)
 
-      return set(url, options)
+      return push(source, options)
     }
 
-    const options: RouterPushOptions = { ...maybeOptions, replace: true }
-    const params: any = { ...paramsOrOptions }
-    const resolved = resolve(source, params, options)
+    if (typeof source === 'string') {
+      const options: RouterPushOptions = { ...maybeOptions, replace: true }
+      const params: any = { ...paramsOrOptions }
 
-    if (!resolved) {
-      throw new RouteNotFoundError(String(source))
+      return push(source, params, options)
     }
 
-    const state = setStateValues({ ...resolved.state }, options.state)
+    const options: RouterPushOptions = { ...paramsOrOptions, replace: true }
 
-    return set(resolved.href, { ...options, state })
+    return push(source, options)
   }
 
   const reject: RouterReject = (type) => {
@@ -295,6 +299,7 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
   const router: Router<TRoutes> = {
     route: routerRoute,
     resolve,
+    find,
     push,
     replace,
     reject,

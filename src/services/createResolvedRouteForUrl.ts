@@ -1,16 +1,16 @@
-import { getRouteParamValues } from '@/services/paramValidation'
 import { ResolvedRoute } from '@/types/resolved'
+import { getMatchesForUrl } from '@/services/getMatchesForUrl'
+import { getRouteParamValues } from '@/services/paramValidation'
 import { Routes } from '@/types/route'
-import { parseUrl } from './urlParser'
-import { createResolvedRouteQuery } from './createResolvedRouteQuery'
-import { getStateValues } from './state'
-import { asUrl } from '@/types'
-import { getMatchesForUrl } from './getMatchesForUrl'
+import { parseUrl } from '@/services/urlParser'
+import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
+import { getStateValues } from '@/services/state'
+import { asUrl } from '@/types/url'
 
-export function createResolvedRouteForUrl(routes: Routes, url: string, state?: unknown): ResolvedRoute | undefined {
+export function createResolvedRouteForUrl(routes: Routes, url: string, state?: Partial<unknown>): ResolvedRoute | undefined {
   const matches = getMatchesForUrl(routes, url)
 
-  if (matches.length === 0) {
+  if (!matches.length) {
     return undefined
   }
 

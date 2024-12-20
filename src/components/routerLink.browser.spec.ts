@@ -10,6 +10,7 @@ import { component } from '@/utilities/testHelpers'
 import { visibilityObserverKey } from '@/compositions/useVisibilityObserver'
 import { VisibilityObserver } from '@/services/createVisibilityObserver'
 import { Url } from '@/types/url'
+import { RouterPushOptions } from '@/types/routerPush'
 
 test('renders an anchor tag with the correct href and slot content', () => {
   const path = '/path/[paramName]'
@@ -46,15 +47,23 @@ test('renders an anchor tag with the correct href and slot content', () => {
   expect(element.innerHTML).toBe(content)
 })
 
-test.each([
-  true,
-  false,
-])('calls router.push with url and replace %s', async (replace) => {
+test('calls router.push with url and push options from props', async () => {
+  const propOptions: RouterPushOptions = {
+    replace: true,
+    query: {
+      foo: 'bar',
+    },
+    hash: 'hash',
+    state: {
+      zoo: 'jar',
+    },
+  }
+
   const router = createRouter([
     createRoute({
       name: 'routeA',
       path: '/routeA',
-      component: { render: () => h(routerLink, { to: (resolve) => resolve('routeB'), replace }) },
+      component: { render: () => h(routerLink, { to: (resolve) => resolve('routeB'), ...propOptions }) },
     }),
     createRoute({
       name: 'routeB',
@@ -81,12 +90,135 @@ test.each([
 
   wrapper.find('a').trigger('click')
 
-  const [, options] = spy.mock.lastCall ?? []
+  const [, pushOptions] = spy.mock.lastCall ?? []
 
-  expect(options).toMatchObject({ replace })
+  expect(pushOptions).toMatchObject({
+    replace: true,
+    query: new URLSearchParams({
+      foo: 'bar',
+    }),
+    hash: 'hash',
+    state: {
+      zoo: 'jar',
+    },
+  })
 })
 
-test('to prop as string renders and routes correctly', () => {
+test('calls router.push with url and push options from resolve callback', async () => {
+  const resolveOptions: RouterPushOptions = {
+    query: {
+      foo: 'bar',
+    },
+    hash: 'hash',
+    state: {
+      zoo: 'jar',
+    },
+  }
+
+  const router = createRouter([
+    createRoute({
+      name: 'routeA',
+      path: '/routeA',
+      component: { render: () => h(routerLink, { to: (resolve) => resolve('routeB', {}, resolveOptions) }) },
+    }),
+    createRoute({
+      name: 'routeB',
+      path: '/routeB',
+      state: {
+        zoo: String,
+      },
+      component,
+    }),
+  ], {
+    initialUrl: '/routeA',
+  })
+
+  await router.start()
+
+  const root = {
+    template: '<RouterView />',
+  }
+
+  const wrapper = mount(root, {
+    global: {
+      plugins: [router],
+    },
+  })
+
+  wrapper.find('a').trigger('click')
+
+  await flushPromises()
+
+  expect(router.route.query.toString()).toBe('foo=bar')
+  expect(router.route.hash).toBe('#hash')
+  expect(router.route.state).toMatchObject({ zoo: 'jar' })
+})
+
+test('given push options from both resolve callback and props, combines query and state, overrides hash and replace', async () => {
+  const propOptions: RouterPushOptions = {
+    query: {
+      prop: 'foo',
+    },
+    hash: 'propHash',
+    state: {
+      prop: 'jar',
+    },
+  }
+
+  const resolveOptions: RouterPushOptions = {
+    query: {
+      resolve: 'foo',
+    },
+    hash: 'resolveHash',
+    state: {
+      resolve: 'jar',
+    },
+  }
+
+  const router = createRouter([
+    createRoute({
+      name: 'routeA',
+      path: '/routeA',
+      component: { render: () => h(routerLink, { to: (resolve) => resolve('routeB', {}, resolveOptions), ...propOptions }) },
+    }),
+    createRoute({
+      name: 'routeB',
+      path: '/routeB',
+      state: {
+        prop: String,
+        resolve: String,
+      },
+      component,
+    }),
+  ], {
+    initialUrl: '/routeA',
+  })
+
+  await router.start()
+
+  const root = {
+    template: '<RouterView />',
+  }
+
+  const wrapper = mount(root, {
+    global: {
+      plugins: [router],
+    },
+  })
+
+  wrapper.find('a').trigger('click')
+
+  await flushPromises()
+
+  expect(router.route.query.toString()).toBe('prop=foo&resolve=foo')
+  expect(router.route.hash).toBe('#propHash')
+  expect(router.route.state).toMatchObject({
+    resolve: 'jar',
+    prop: 'jar',
+  })
+})
+
+test('to prop as Url renders and routes correctly', async () => {
   const route = createRoute({
     name: 'route',
     path: '/route',
@@ -97,8 +229,6 @@ test('to prop as string renders and routes correctly', () => {
   const router = createRouter([route], {
     initialUrl: '/route',
   })
-
-  const spy = vi.spyOn(router, 'push')
 
   const wrapper = mount(routerLink, {
     props: {
@@ -118,11 +248,11 @@ test('to prop as string renders and routes correctly', () => {
   expect(element.href).toBe(href.toString())
   expect(element.innerHTML).toBe('route')
 
-  anchor.trigger('click')
+  wrapper.find('a').trigger('click')
 
-  const [arg1] = spy.mock.lastCall ?? []
+  await flushPromises()
 
-  expect(arg1).toBe('/route')
+  expect(router.route.name).toBe('route')
 })
 
 test.each<{ to: Url, match: boolean, exactMatch: boolean }>([
@@ -581,7 +711,7 @@ describe('prefetch props', () => {
 
     expect(props).toHaveBeenCalledOnce()
 
-    await wrapper.find('a').trigger('click')
+    wrapper.find('a').trigger('click')
 
     await flushPromises()
 

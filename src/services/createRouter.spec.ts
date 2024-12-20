@@ -8,6 +8,8 @@ import { createRouter } from '@/services/createRouter'
 import * as createRouterHistoryUtilities from '@/services/createRouterHistory'
 import { component, routes } from '@/utilities/testHelpers'
 import { createExternalRoute } from './createExternalRoute'
+import { RouteNotFoundError } from '@/errors/routeNotFoundError'
+import { InvalidRouteParamValueError } from '@/errors/invalidRouteParamValueError'
 
 test('initial route is set', async () => {
   const foo = createRoute({
@@ -448,44 +450,15 @@ describe('router.resolve', () => {
     const route = router.resolve('parentB')
 
     expect(route).toBeDefined()
-    expect(route?.name).toBe('parentB')
+    expect(route.name).toBe('parentB')
   })
 
-  test('when given a url that matches a route returns that route', () => {
-    const router = createRouter(routes, { initialUrl: '/' })
-    const route = router.resolve('/parentB')
-
-    expect(route).toBeDefined()
-    expect(route?.name).toBe('parentB')
-  })
-
-  test('when given a name that does not match a route returns undefined', () => {
+  test('when given a name that does not match a route throws RouteNotFoundError', () => {
     const router = createRouter(routes, { initialUrl: '/' })
 
-    const route = router.resolve('parentD' as any)
+    const action: () => void = () => router.resolve('parentD' as any)
 
-    expect(route).toBeUndefined()
-  })
-
-  test('when given a url that does not match a route returns undefined', () => {
-    const router = createRouter(routes, { initialUrl: '/' })
-    const route = router.resolve('/parentC')
-
-    expect(route).toBeUndefined()
-  })
-
-  test('when given a url that does not match a route returns undefined', () => {
-    const router = createRouter(routes, { initialUrl: '/' })
-    const route = router.resolve('/does-not-exist')
-
-    expect(route).toBeUndefined()
-  })
-
-  test('when given an external url that does not match a route returns undefined', () => {
-    const router = createRouter(routes, { initialUrl: '/' })
-    const route = router.resolve('https://example.com')
-
-    expect(route).toBeUndefined()
+    expect(action).toThrow(RouteNotFoundError)
   })
 
   test('given a route name with params, interpolates param values', () => {
@@ -514,12 +487,12 @@ describe('router.resolve', () => {
     })
   })
 
-  test('given a route name with params cannot be matched, returns undefined', () => {
+  test('given a route name with params cannot be matched, throws InvalidRouteParamValueError', () => {
     const router = createRouter(routes, { initialUrl: '/' })
 
-    const route = router.resolve({ route: 'foo' } as any)
+    const action: () => void = () => router.resolve('parentA', { missing: 'foo' } as any)
 
-    expect(route).toBeUndefined()
+    expect(action).toThrow(InvalidRouteParamValueError)
   })
 
   test('given a param with a dash or underscore resolves the correct url', () => {
@@ -606,5 +579,95 @@ describe('router.resolve', () => {
       hash: '#foo',
       href: '/parentA/bar#foo',
     })
+  })
+})
+
+describe('router.push', () => {
+  test('given a resolved route, pushes the route', async () => {
+    const router = createRouter(routes, { initialUrl: '/' })
+    const route = router.resolve('parentA', { paramA: 'bar' })
+
+    await router.push(route)
+
+    expect(router.route.href).toBe('/parentA/bar')
+  })
+
+  test('given a route name, pushes the route', async () => {
+    const router = createRouter(routes, { initialUrl: '/' })
+
+    await router.push('parentA', { paramA: 'bar' })
+
+    expect(router.route.href).toBe('/parentA/bar')
+  })
+
+  test('given an internal Url, pushes the route', async () => {
+    const router = createRouter(routes, { initialUrl: '/' })
+
+    await router.push('/parentA/bar')
+
+    expect(router.route).toMatchObject({
+      name: 'parentA',
+      params: {
+        paramA: 'bar',
+      },
+    })
+  })
+
+  test('given a resolved route with state inside, pushes state', async () => {
+    const routeWithState = createRoute({
+      name: 'route-with-state',
+      component,
+      path: '/route-with-state',
+      state: { zoo: Number },
+    })
+    const router = createRouter([routeWithState], { initialUrl: '/' })
+    const route = router.resolve('route-with-state', { paramA: 'bar' }, { state: { zoo: 123 } })
+
+    await router.push(route)
+
+    expect(router.route.state).toMatchObject({ zoo: 123 })
+  })
+
+  test('given a resolved route with state in options, pushes state', async () => {
+    const routeWithState = createRoute({
+      name: 'route-with-state',
+      component,
+      path: '/route-with-state',
+      state: { zoo: Number },
+    })
+    const router = createRouter([routeWithState], { initialUrl: '/' })
+    const route = router.resolve('route-with-state', { paramA: 'bar' })
+
+    await router.push(route, { state: { zoo: 123 } })
+
+    expect(router.route.state).toMatchObject({ zoo: 123 })
+  })
+
+  test('given a route name with state in options, pushes state', async () => {
+    const routeWithState = createRoute({
+      name: 'route-with-state',
+      component,
+      path: '/route-with-state',
+      state: { zoo: Number },
+    })
+    const router = createRouter([routeWithState], { initialUrl: '/' })
+
+    await router.push('route-with-state', { paramA: 'bar' }, { state: { zoo: 123 } })
+
+    expect(router.route.state).toMatchObject({ zoo: 123 })
+  })
+
+  test('given an internal Url with state in options, pushes state', async () => {
+    const routeWithState = createRoute({
+      name: 'route-with-state',
+      component,
+      path: '/route-with-state',
+      state: { zoo: Number },
+    })
+    const router = createRouter([routeWithState], { initialUrl: '/' })
+
+    await router.push('/route-with-state', { state: { zoo: 123 } })
+
+    expect(router.route.state).toMatchObject({ zoo: 123 })
   })
 })

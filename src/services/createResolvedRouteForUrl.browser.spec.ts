@@ -63,6 +63,7 @@ test('given a url with hash, returns hash property', () => {
     path: '/foo',
     component,
   })
+
   const response = createResolvedRouteForUrl([route], '/foo#bar')
 
   expect(response?.hash).toBe('#bar')

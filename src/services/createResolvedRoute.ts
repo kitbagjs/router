@@ -4,10 +4,10 @@ import { parseUrl } from '@/services/urlParser'
 import { assembleUrl } from '@/services/urlAssembly'
 import { RouterResolveOptions } from '@/types/RouterResolve'
 import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
-import { getRouteParamValues } from '@/services/paramValidation'
 import { getStateValues } from '@/services/state'
+import { getRouteParamValues } from './paramValidation'
 
-export function createResolvedRoute(route: Route, params: Record<string, unknown> = {}, options: RouterResolveOptions = {}): ResolvedRoute | undefined {
+export function createResolvedRoute(route: Route, params: Record<string, unknown> = {}, options: RouterResolveOptions = {}): ResolvedRoute {
   const href = assembleUrl(route, {
     params: params,
     query: options.query,

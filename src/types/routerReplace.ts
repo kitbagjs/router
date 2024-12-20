@@ -5,6 +5,7 @@ import { RouteStateByName } from '@/types/state'
 import { Url } from '@/types/url'
 import { AllPropertiesAreOptional } from '@/types/utilities'
 import { QuerySource } from '@/types/query'
+import { ResolvedRoute } from '@/types/resolved'
 
 export type RouterReplaceOptions<
   TState = unknown
@@ -25,5 +26,6 @@ export type RouterReplace<
   TRoutes extends Routes
 > = {
   <TSource extends RoutesName<TRoutes>>(name: TSource, ...args: RouterReplaceArgs<TRoutes, TSource>): Promise<void>,
+  (route: ResolvedRoute, options?: RouterReplaceOptions): Promise<void>,
   (url: Url, options?: RouterReplaceOptions): Promise<void>,
 }
