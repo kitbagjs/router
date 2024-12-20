@@ -37,7 +37,7 @@ export function getStateValues(params: Record<string, Param>, state: unknown): R
 }
 
 /**
- * This function is used to set the values inside the state to have string values, stored in history.
+ * This function is used to get the values inside the state converted from string values into the correct type.
  */
 export function setStateValue(state: unknown, key: string, param: Param): string | undefined {
   if (stateIsRecord(state) && key in state) {
@@ -49,6 +49,9 @@ export function setStateValue(state: unknown, key: string, param: Param): string
   return setParamValue(undefined, param, isOptional)
 }
 
+/**
+ * This function is used to set the values inside the state to have string values, stored in history.
+ */
 export const setStateValues = (params: Record<string, Param>, state: unknown): Record<string, string | undefined> => {
   const values: Record<string, string | undefined> = {}
 
