@@ -32,7 +32,7 @@ export type ResolvedRoute<TRoute extends Route = Route> = Readonly<{
   /**
    * Hash value of the route.
   */
-  hash?: string,
+  hash: string,
   /**
    * Key value pair for route params, values will be the user provided value from current browser location.
   */
