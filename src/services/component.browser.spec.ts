@@ -23,7 +23,7 @@ test('renders component with sync props', async () => {
     template: '<RouterView/>',
   }
 
-  const app = mount(root, {
+  const wrapper = mount(root, {
     global: {
       plugins: [router],
     },
@@ -31,7 +31,7 @@ test('renders component with sync props', async () => {
 
   await router.push('echo')
 
-  expect(app.html()).toBe('echo')
+  expect(wrapper.html()).toBe('echo')
 })
 
 test('renders component with async props', async () => {
@@ -53,7 +53,7 @@ test('renders component with async props', async () => {
     template: '<RouterView/>',
   }
 
-  const app = mount(root, {
+  const wrapper = mount(root, {
     global: {
       plugins: [router],
     },
@@ -64,7 +64,7 @@ test('renders component with async props', async () => {
   // needed for async props
   await flushPromises()
 
-  expect(app.html()).toBe('echo')
+  expect(wrapper.html()).toBe('echo')
 })
 
 test('component instance has suspense property when suspense is used', async () => {
@@ -129,7 +129,7 @@ test('renders component with async props using suspense', async () => {
     `,
   }
 
-  const app = mount(root, {
+  const wrapper = mount(root, {
     global: {
       plugins: [router],
     },
@@ -137,11 +137,11 @@ test('renders component with async props using suspense', async () => {
 
   await router.push('home')
 
-  expect(app.text()).toBe(fallback)
+  expect(wrapper.text()).toBe(fallback)
 
   resolve({ value: 'hello world' })
 
   await flushPromises()
 
-  expect(app.html()).toBe('hello world')
+  expect(wrapper.html()).toBe('hello world')
 })
