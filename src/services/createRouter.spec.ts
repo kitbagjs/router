@@ -583,14 +583,14 @@ describe('router.resolve', () => {
 })
 
 describe('router.push', () => {
-  // test('given a resolved route, pushes the route', async () => {
-  //   const router = createRouter(routes, { initialUrl: '/' })
-  //   const route = router.resolve('parentA', { paramA: 'bar' })
+  test('given a resolved route, pushes the route', async () => {
+    const router = createRouter(routes, { initialUrl: '/' })
+    const route = router.resolve('parentA', { paramA: 'bar' })
 
-  //   await router.push(route)
+    await router.push(route)
 
-  //   expect(router.route.href).toBe('/parentA/bar')
-  // })
+    expect(router.route.href).toBe('/parentA/bar')
+  })
 
   test('given a route name, pushes the route', async () => {
     const router = createRouter(routes, { initialUrl: '/' })
@@ -613,35 +613,35 @@ describe('router.push', () => {
     })
   })
 
-  // test('given a resolved route with state inside, pushes state', async () => {
-  //   const routeWithState = createRoute({
-  //     name: 'route-with-state',
-  //     component,
-  //     path: '/route-with-state',
-  //     state: { zoo: Number },
-  //   })
-  //   const router = createRouter([routeWithState], { initialUrl: '/' })
-  //   const route = router.resolve('route-with-state', { paramA: 'bar' }, { state: { zoo: 123 } })
+  test('given a resolved route with state inside, pushes state', async () => {
+    const routeWithState = createRoute({
+      name: 'route-with-state',
+      component,
+      path: '/route-with-state',
+      state: { zoo: Number },
+    })
+    const router = createRouter([routeWithState], { initialUrl: '/' })
+    const route = router.resolve('route-with-state', { paramA: 'bar' }, { state: { zoo: 123 } })
 
-  //   await router.push(route)
+    await router.push(route)
 
-  //   expect(router.route.state).toMatchObject({ zoo: 123 })
-  // })
+    expect(router.route.state).toMatchObject({ zoo: 123 })
+  })
 
-  // test('given a resolved route with state in options, pushes state', async () => {
-  //   const routeWithState = createRoute({
-  //     name: 'route-with-state',
-  //     component,
-  //     path: '/route-with-state',
-  //     state: { zoo: Number },
-  //   })
-  //   const router = createRouter([routeWithState], { initialUrl: '/' })
-  //   const route = router.resolve('route-with-state', { paramA: 'bar' })
+  test('given a resolved route with state in options, pushes state', async () => {
+    const routeWithState = createRoute({
+      name: 'route-with-state',
+      component,
+      path: '/route-with-state',
+      state: { zoo: Number },
+    })
+    const router = createRouter([routeWithState], { initialUrl: '/' })
+    const route = router.resolve('route-with-state', { paramA: 'bar' })
 
-  //   await router.push(route, { state: { zoo: 123 } })
+    await router.push(route, { state: { zoo: 123 } })
 
-  //   expect(router.route.state).toMatchObject({ zoo: 123 })
-  // })
+    expect(router.route.state).toMatchObject({ zoo: 123 })
+  })
 
   test('given a route name with state in options, pushes state', async () => {
     const routeWithState = createRoute({
