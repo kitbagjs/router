@@ -24,28 +24,28 @@ export interface Register {}
 /**
  * Represents the Router property within {@link Register}
  */
-export type RegisteredRouter = Register extends { router: infer TRouter }
+export type RegisteredRouter<T = Register> = T extends { router: infer TRouter }
   ? TRouter
   : Router
 
 /**
  * Represents the Router routes property within {@link Register}
  */
-export type RegisteredRoutes = Register extends { router: Router<infer TRoutes extends Routes> }
+export type RegisteredRoutes<T = Register> = T extends { router: Router<infer TRoutes extends Routes> }
   ? TRoutes
   : Route[]
 
 /**
  * Represents the possible Rejections registered within {@link Register}
  */
-export type RegisteredRejectionType = Register extends { router: Router<infer __TRoutes extends Routes, infer TOptions extends RouterOptions> }
+export type RegisteredRejectionType<T = Register> = T extends { router: Router<Routes, infer TOptions extends RouterOptions> }
   ? keyof TOptions['rejections'] | BuiltInRejectionType
   : BuiltInRejectionType
 
 /**
  * Represents additional metadata associated with a route, customizable via declaration merging.
  */
-export type RouteMeta = Register extends { routeMeta: infer RouteMeta extends Record<string, unknown> }
+export type RouteMeta<T = Register> = T extends { routeMeta: infer RouteMeta extends Record<string, unknown> }
   ? RouteMeta
   : Record<string, unknown>
 
