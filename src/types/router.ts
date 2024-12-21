@@ -48,6 +48,10 @@ export type Router<
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   __TOptions extends RouterOptions = any
 > = {
+  /**
+   * Installs the router into a Vue application instance.
+   * @param app The Vue application instance to install the router into
+   */
   install: (app: App) => void,
   /**
    * Manages the current route state.
