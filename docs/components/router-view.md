@@ -16,7 +16,7 @@ The `name` prop is used to specify the name of the component to render. Multiple
 | --- | --- | --- |
 | route | [`ResolvedRoute`](/api/types/ResolvedRoute) | The resolved route object for the current route |
 | component | `Component` | The component to render |
-| rejection | [`RouterRejection`](/api/types/RouterRejection) | The rejection object for the current route |
+| rejection | `RouterRejection` | The rejection object for the current route |
 
 ## Transitions
 The default slot can be used to layer in a [Vue transition](https://vuejs.org/guide/built-ins/transition.html) if desired.

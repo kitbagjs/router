@@ -1,6 +1,6 @@
 # useLink
 
-Used to create a link to a route. Generally the [`RouterLink`](/components/routerLink) component should be used instead of this composable. See the ['UseLink'](/api/types/UseLink) api reference for more information on the return type.
+Used to create a link to a route. Generally the [`RouterLink`](/components/router-link) component should be used instead of this composable. See the ['UseLink'](/api/types/UseLink) api reference for more information on the return type.
 
 ```ts
 import { useLink } from '@kitbag/router'
