@@ -66,7 +66,7 @@ for navigating.
 
 | Parameter | Type | Description |
 | ------ | ------ | ------ |
-| `resolvedRoute` | `MaybeRefOrGetter`\<`undefined` \| `Readonly`\<\{ `hash`: `string`; `href`: [`Url`](../types/Url.md); `id`: `string`; `matched`: `CreateRouteOptionsMatched`\<`string`\>; `matches`: `CreateRouteOptionsMatched`\<`undefined` \| `string`\>[]; `name`: `string`; `params`: \{\}; `query`: `ResolvedRouteQuery`; `state`: \{\}; \}\>\> | - |
+| `resolvedRoute` | `MaybeRefOrGetter`\<`undefined` \| `Readonly`\<\{ `hash`: `string`; `href`: [`Url`](../types/Url.md); `id`: `string`; `matched`: `CreateRouteOptionsMatched`\<`string`\>; `matches`: `CreateRouteOptionsMatched`\<`undefined` \| `string`\>[]; `name`: `string`; `params`: \{\}; `query`: `URLSearchParams`; `state`: \{\}; \}\>\> | - |
 | `options`? | `MaybeRefOrGetter`\<[`UseLinkOptions`](../types/UseLinkOptions.md)\> | RouterResolveOptions Same options as router resolve. |
 
 ### Returns
@@ -92,7 +92,7 @@ for navigating.
 
 | Parameter | Type | Description |
 | ------ | ------ | ------ |
-| `source` | `MaybeRefOrGetter`\<`undefined` \| `string` \| `Readonly`\<\{ `hash`: `string`; `href`: [`Url`](../types/Url.md); `id`: `string`; `matched`: `CreateRouteOptionsMatched`\<`string`\>; `matches`: `CreateRouteOptionsMatched`\<`undefined` \| `string`\>[]; `name`: `string`; `params`: \{\}; `query`: `ResolvedRouteQuery`; `state`: \{\}; \}\>\> | The name of the route or a valid URL. |
+| `source` | `MaybeRefOrGetter`\<`undefined` \| `string` \| `Readonly`\<\{ `hash`: `string`; `href`: [`Url`](../types/Url.md); `id`: `string`; `matched`: `CreateRouteOptionsMatched`\<`string`\>; `matches`: `CreateRouteOptionsMatched`\<`undefined` \| `string`\>[]; `name`: `string`; `params`: \{\}; `query`: `URLSearchParams`; `state`: \{\}; \}\>\> | The name of the route or a valid URL. |
 | `paramsOrOptions`? | `MaybeRefOrGetter`\<`Record`\<`PropertyKey`, `unknown`\> \| [`UseLinkOptions`](../types/UseLinkOptions.md)\> | - |
 | `maybeOptions`? | `MaybeRefOrGetter`\<[`UseLinkOptions`](../types/UseLinkOptions.md)\> | - |
 

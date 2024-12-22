@@ -9,7 +9,7 @@ type ResolvedRoute<TRoute>: Readonly<{
   matches: TRoute["matches"];
   name: TRoute["name"];
   params: ExtractRouteParamTypes<TRoute>;
-  query: ResolvedRouteQuery;
+  query: URLSearchParams;
   state: ExtractRouteStateParamsAsOptional<TRoute["state"]>;
 }>;
 ```

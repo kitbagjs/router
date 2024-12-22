@@ -71,12 +71,12 @@ readonly update: RouteUpdate<TRoute>;
 #### Get Signature
 
 ```ts
-get query(): ResolvedRouteQuery
+get query(): URLSearchParams
 ```
 
 ##### Returns
 
-`ResolvedRouteQuery`
+`URLSearchParams`
 
 #### Set Signature
 
@@ -88,7 +88,7 @@ set query(value): void
 
 | Parameter | Type |
 | ------ | ------ |
-| `value` | \| `undefined` \| `string` \| `string`[][] \| `Record`\<`string`, `string`\> \| `URLSearchParams` |
+| `value` | \| `undefined` \| `string` \| `URLSearchParams` \| `string`[][] \| `Record`\<`string`, `string`\> |
 
 ##### Returns
 

@@ -1,7 +1,7 @@
 # Types: UseLinkOptions
 
 ```ts
-type UseLinkOptions: RouterResolveOptions & object;
+type UseLinkOptions: RouterPushOptions & object;
 ```
 
 ## Type declaration
