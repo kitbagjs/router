@@ -53,8 +53,8 @@ export default defineConfig({
         {
           text: 'Components',
           items: [
-            { text: 'RouterView', link: '/components/RouterView' },
-            { text: 'RouterLink', link: '/components/RouterLink' },
+            { text: 'RouterView', link: '/components/router-view' },
+            { text: 'RouterLink', link: '/components/router-link' },
           ],
         },
         {
@@ -74,7 +74,6 @@ export default defineConfig({
             { text: 'Hooks', link: '/advanced-concepts/hooks' },
             { text: 'Route Meta', link: '/advanced-concepts/route-meta' },
             { text: 'Route State', link: '/advanced-concepts/route-state' },
-            { text: 'Transitions', link: '/advanced-concepts/transitions' },
             { text: 'Prefetching', link: '/advanced-concepts/prefetching' },
           ],
         },

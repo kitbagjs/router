@@ -1,9 +1,7 @@
 # RouterLink
-
 The router link component is a wrapper around the anchor element. It is registered globally by the [router plugin](/quick-start#vue-plugin). 
 
 ## Props
-
 | Prop | Required | Type | Description |
 | --- | --- | --- | --- |
 | to | true | [`Url`](/api/types/Url), [`ResolvedRoute`](/api/types/ResolvedRoute), or [`ToCallback`](/api/types/ToCallback) | The location to navigate to when clicked |
@@ -13,8 +11,7 @@ The router link component is a wrapper around the anchor element. It is register
 | hash | false | `string` | URL hash fragment to append |
 | state | false | `unknown` | State object to associate with the history entry |
 
-
-## The `to` prop
+### The `to` prop
 The `to` prop determines the the href attribute of the anchor element. The `to` prop can be a [Url](/api/types/Url), a [ResolvedRoute](/api/types/ResolvedRoute), or a getter that returns either type. 
 
 ### Using a [ResolvedRoute](/api/types/ResolvedRoute)
@@ -47,13 +44,8 @@ As a convenience, you can also use a [Url](/api/types/Url) for the `to` prop. Th
 You can define [external routes](/core-concepts/defining-routes#external-routes) in your router configuration for a type safe way to navigate to external urls.
 :::
 
-## Classes
-
-The `routerLink` component will automatically add the `router-link--match` class to the anchor element when the current route matches the route specified in the `to` prop. It will also add the `router-link--exact-match` class when the current route matches the route specified in the `to` prop exactly.
-
-## Default Slot
-The default slot is used to render the link text. But it also exposes the following slot scopes.
-
+## Slots
+`RouterLink` provides a default slot to render the link text. But it also exposes the following slot scopes.
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -67,3 +59,6 @@ The default slot is used to render the link text. But it also exposes the follow
   ...
 </router-link>
 ```
+
+## Classes
+The `RouterLink` component will automatically add the `router-link--match` class to the anchor element when the current route matches the route specified in the `to` prop. It will also add the `router-link--exact-match` class when the current route matches the route specified in the `to` prop exactly.
