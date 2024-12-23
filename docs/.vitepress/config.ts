@@ -28,19 +28,15 @@ export default defineConfig({
       '/api/': typedocSidebar,
       '/': [
         {
-          text: 'Introduction',
+          text: 'Getting Started',
           items: [
-            {
-              text: 'Show Me',
-              link: '/show-me',
-            },
             {
               text: 'Introduction',
               link: '/introduction',
             },
             {
-              text: 'Getting Started',
-              link: '/getting-started',
+              text: 'Quick Start',
+              link: '/quick-start',
             },
           ],
         },
@@ -52,7 +48,21 @@ export default defineConfig({
             { text: 'Query Params', link: '/core-concepts/query-params' },
             { text: 'Component Props', link: '/core-concepts/component-props' },
             { text: 'Navigating', link: '/core-concepts/navigating' },
-            { text: 'Composables', link: '/core-concepts/composables' },
+          ],
+        },
+        {
+          text: 'Components',
+          items: [
+            { text: 'RouterView', link: '/components/router-view' },
+            { text: 'RouterLink', link: '/components/router-link' },
+          ],
+        },
+        {
+          text: 'Composables',
+          items: [
+            { text: 'useRoute', link: '/composables/useRoute' },
+            { text: 'useRouter', link: '/composables/useRouter' },
+            { text: 'useLink', link: '/composables/useLink' },
           ],
         },
         {
@@ -64,7 +74,6 @@ export default defineConfig({
             { text: 'Hooks', link: '/advanced-concepts/hooks' },
             { text: 'Route Meta', link: '/advanced-concepts/route-meta' },
             { text: 'Route State', link: '/advanced-concepts/route-state' },
-            { text: 'Transitions', link: '/advanced-concepts/transitions' },
             { text: 'Prefetching', link: '/advanced-concepts/prefetching' },
           ],
         },

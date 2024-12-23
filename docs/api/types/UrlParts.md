@@ -39,5 +39,5 @@ search: string;
 ### searchParams
 
 ```ts
-searchParams: URLSearchParams;
+searchParams: QuerySource;
 ```

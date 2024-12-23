@@ -10,7 +10,7 @@ hero:
   actions:
     - theme: brand
       text: Get Started
-      link: /show-me
+      link: /introduction
     - theme: alt
       text: Documentation
       link: /core-concepts/defining-routes
