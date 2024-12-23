@@ -329,7 +329,7 @@ test('isMatch correctly matches parent when sibling has the same url', async () 
     parent: parentRoute,
     name: 'child',
     path: '/child',
-    component: () => h(routerLink, { to: (resolve) => resolve('parent') }, 'parent'),
+    component: () => h(routerLink, { to: (resolve) => resolve('parent') }, () => 'parent'),
   })
 
   const router = createRouter([parentRoute, siblingRoute, childRoute], {
