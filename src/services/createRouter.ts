@@ -269,16 +269,19 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
   const { host } = parseUrl(initialUrl)
   const isExternal = createIsExternal(host)
 
-  let initialized = false
+  let initializing = false
+  const { promise: initialize, resolve: initialized } = Promise.withResolvers<void>()
 
   async function start(): Promise<void> {
-    if (initialized) {
-      return
+    if (initializing) {
+      return initialize
     }
+
+    initializing = true
 
     await set(initialUrl, { replace: true, state: initialState })
 
-    initialized = true
+    initialized()
   }
 
   function install(app: App): void {
