@@ -1,6 +1,6 @@
 import { RouterNotInstalledError } from '@/errors/routerNotInstalledError'
 import { VisibilityObserver } from '@/services/createVisibilityObserver'
-import { computed, inject, InjectionKey, Ref, watch } from 'vue'
+import { computed, inject, InjectionKey, onUnmounted, Ref, watch } from 'vue'
 
 type UseVisibilityObserver = {
   isElementVisible: Ref<boolean>,
@@ -24,6 +24,12 @@ export function useVisibilityObserver(element: Ref<Element | undefined>): UseVis
       observer.unobserve(previousElement)
     }
   }, { immediate: true })
+
+  onUnmounted(() => {
+    if (element.value) {
+      observer.unobserve(element.value)
+    }
+  })
 
   const isElementVisible = computed(() => {
     if (!element.value) {
