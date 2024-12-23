@@ -5,6 +5,7 @@ import { getPrefetchOption, PrefetchConfigs, PrefetchStrategy } from '@/types/pr
 import { ResolvedRoute } from '@/types/resolved'
 import { isAsyncComponent } from '@/utilities/components'
 import { useVisibilityObserver } from './useVisibilityObserver'
+import { useEventListener } from './useEventListener'
 
 type UsePrefetchingConfig = PrefetchConfigs & {
   route: ResolvedRoute | undefined,
@@ -51,6 +52,19 @@ export function usePrefetching(config: MaybeRefOrGetter<UsePrefetchingConfig>): 
 
     doPrefetchingForStrategy('lazy', route, configs)
   }, { immediate: true })
+
+  useEventListener(element, 'focusin', handleIntentEvent)
+  useEventListener(element, 'mouseover', handleIntentEvent)
+
+  function handleIntentEvent(): void {
+    const { route, ...configs } = toValue(config)
+
+    if (!route) {
+      return
+    }
+
+    doPrefetchingForStrategy('intent', route, configs)
+  }
 
   function doPrefetchingForStrategy(strategy: PrefetchStrategy, route: ResolvedRoute, configs: PrefetchConfigs): void {
     prefetchComponentsForRoute(strategy, route, configs)

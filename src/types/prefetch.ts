@@ -12,10 +12,10 @@ const DEFAULT_PREFETCH_CONFIG: Required<PrefetchConfigOptions> = {
  * eager: Fetched immediately
  * lazy: Fetched when visible
  */
-export type PrefetchStrategy = 'eager' | 'lazy'
+export type PrefetchStrategy = 'eager' | 'lazy' | 'intent'
 
 function isPrefetchStrategy(value: any): value is PrefetchStrategy {
-  return ['eager', 'lazy'].includes(value)
+  return ['eager', 'lazy', 'intent'].includes(value)
 }
 
 export type PrefetchConfigOptions = {

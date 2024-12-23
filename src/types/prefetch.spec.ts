@@ -9,6 +9,10 @@ describe('getPrefetchOptions', () => {
     [{ components: true }, 'eager', false, 'eager'],
     [false, 'eager', true, false],
     [{ components: false }, 'lazy', true, false],
+    [{ components: true }, 'intent', true, 'intent'],
+    [{ components: 'intent' }, 'lazy', true, 'intent'],
+    [false, 'intent', true, false],
+    [undefined, 'intent', true, 'intent'],
   ] as const)('when given [`%s`, `%s`, `%s`] returns `%s`', (linkPrefetch, routePrefetch, routerPrefetch, expected) => {
     const value = getPrefetchOption({
       linkPrefetch,
