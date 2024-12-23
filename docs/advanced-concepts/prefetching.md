@@ -45,6 +45,7 @@ The following prefetch strategies are supported:
 
 - `eager` - Prefetch immediately when the link is rendered.
 - `lazy` - Prefetch when the link is visible in the viewport.
+- `intent` - Prefetch when the link is focused or hovered.
 
 ## Configuration
 
