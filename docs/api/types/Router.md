@@ -1,8 +1,15 @@
 # Types: Router\<TRoutes, __TOptions\>
 
 ```ts
-type Router<TRoutes, __TOptions>: Plugin_2 & object;
+type Router<TRoutes, __TOptions>: object;
 ```
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `TRoutes` *extends* [`Routes`](Routes.md) | `any` |
+| `__TOptions` *extends* [`RouterOptions`](RouterOptions.md) | `any` |
 
 ## Type declaration
 
@@ -17,6 +24,25 @@ Navigates to the previous entry in the browser's history stack.
 #### Returns
 
 `void`
+
+### find()
+
+```ts
+find: (url, options?) => ResolvedRoute | undefined;
+```
+
+Creates a ResolvedRoute record for a given URL.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `url` | `string` |
+| `options`? | `RouterResolveOptions` |
+
+#### Returns
+
+[`ResolvedRoute`](ResolvedRoute.md) \| `undefined`
 
 ### forward()
 
@@ -43,6 +69,24 @@ Moves the current history entry to a specific point in the history stack.
 | Parameter | Type |
 | ------ | ------ |
 | `delta` | `number` |
+
+#### Returns
+
+`void`
+
+### install()
+
+```ts
+install: (app) => void;
+```
+
+Installs the router into a Vue application instance.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `app` | `App` | The Vue application instance to install the router into |
 
 #### Returns
 
@@ -164,7 +208,7 @@ Replaces the current entry in the history stack with a new one.
 resolve: RouterResolve<TRoutes>;
 ```
 
-Resolves a URL to a route object.
+Creates a ResolvedRoute record for a given route name and params.
 
 ### route
 
@@ -185,10 +229,3 @@ Initializes the router based on the initial route. Automatically called when the
 #### Returns
 
 `Promise`\<`void`\>
-
-## Type Parameters
-
-| Type Parameter | Default type |
-| ------ | ------ |
-| `TRoutes` *extends* [`Routes`](Routes.md) | `any` |
-| `__TOptions` *extends* [`RouterOptions`](RouterOptions.md) | `any` |

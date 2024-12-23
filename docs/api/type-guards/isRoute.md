@@ -3,7 +3,7 @@
 ## Call Signature
 
 ```ts
-function isRoute(route): route is RouterRoute<Readonly<{ hash?: string; href: Url; id: string; matched: CreateRouteOptionsMatched<string>; matches: CreateRouteOptionsMatched<undefined | string>[]; name: string; params: { (key: string): any; (key: number): any }; query: ResolvedRouteQuery; state: { (key: string): any; (key: number): any } }>>
+function isRoute(route): route is RouterRoute<Readonly<{ hash: string; href: Url; id: string; matched: CreateRouteOptionsMatched<string>; matches: CreateRouteOptionsMatched<undefined | string>[]; name: string; params: { (key: string): any; (key: number): any }; query: URLSearchParams; state: { (key: string): any; (key: number): any } }>>
 ```
 
 A type guard for determining if a value is a valid RouterRoute.
@@ -16,7 +16,7 @@ A type guard for determining if a value is a valid RouterRoute.
 
 ### Returns
 
-route is RouterRoute\<Readonly\<\{ hash?: string; href: Url; id: string; matched: CreateRouteOptionsMatched\<string\>; matches: CreateRouteOptionsMatched\<undefined \| string\>\[\]; name: string; params: \{ (key: string): any; (key: number): any \}; query: ResolvedRouteQuery; state: \{ (key: string): any; (key: number): any \} \}\>\>
+route is RouterRoute\<Readonly\<\{ hash: string; href: Url; id: string; matched: CreateRouteOptionsMatched\<string\>; matches: CreateRouteOptionsMatched\<undefined \| string\>\[\]; name: string; params: \{ (key: string): any; (key: number): any \}; query: URLSearchParams; state: \{ (key: string): any; (key: number): any \} \}\>\>
 
 `true` if the value is a valid RouterRoute, otherwise `false`.
 
@@ -35,7 +35,7 @@ A type guard for determining if a value is a valid RouterRoute with an exact mat
 
 | Type Parameter |
 | ------ |
-| `TRoute` *extends* `RouterRoute`\<`Readonly`\<\{ `hash`: `string`; `href`: [`Url`](../types/Url.md); `id`: `string`; `matched`: `CreateRouteOptionsMatched`\<`string`\>; `matches`: `CreateRouteOptionsMatched`\<`undefined` \| `string`\>[]; `name`: `string`; `params`: \{\}; `query`: `ResolvedRouteQuery`; `state`: \{\}; \}\>\> |
+| `TRoute` *extends* [`RouterRoute`](../types/RouterRoute.md)\<`Readonly`\<\{ `hash`: `string`; `href`: [`Url`](../types/Url.md); `id`: `string`; `matched`: `CreateRouteOptionsMatched`\<`string`\>; `matches`: `CreateRouteOptionsMatched`\<`undefined` \| `string`\>[]; `name`: `string`; `params`: \{\}; `query`: `URLSearchParams`; `state`: \{\}; \}\>\> |
 | `TRouteName` *extends* `string` |
 
 ### Parameters
@@ -67,7 +67,7 @@ A type guard for determining if a value is a valid RouterRoute with a partial ma
 
 | Type Parameter |
 | ------ |
-| `TRoute` *extends* `RouterRoute`\<`Readonly`\<\{ `hash`: `string`; `href`: [`Url`](../types/Url.md); `id`: `string`; `matched`: `CreateRouteOptionsMatched`\<`string`\>; `matches`: `CreateRouteOptionsMatched`\<`undefined` \| `string`\>[]; `name`: `string`; `params`: \{\}; `query`: `ResolvedRouteQuery`; `state`: \{\}; \}\>\> |
+| `TRoute` *extends* [`RouterRoute`](../types/RouterRoute.md)\<`Readonly`\<\{ `hash`: `string`; `href`: [`Url`](../types/Url.md); `id`: `string`; `matched`: `CreateRouteOptionsMatched`\<`string`\>; `matches`: `CreateRouteOptionsMatched`\<`undefined` \| `string`\>[]; `name`: `string`; `params`: \{\}; `query`: `URLSearchParams`; `state`: \{\}; \}\>\> |
 | `TRouteName` *extends* `string` |
 
 ### Parameters
@@ -90,7 +90,7 @@ A type guard for determining if a value is a valid RouterRoute with a partial ma
 function isRoute<TRouteName>(
    route, 
    routeName, 
-options): route is RouterRoute<Readonly<{ hash?: string; href: Url; id: any; matched: any; matches: any; name: any; params: {} | { (key: string): any; (key: number): any }; query: ResolvedRouteQuery; state: { (key: string): any; (key: number): any } }>> & { name: TRouteName }
+options): route is RouterRoute<Readonly<{ hash: string; href: Url; id: any; matched: any; matches: any; name: any; params: {} | { (key: string): any; (key: number): any }; query: URLSearchParams; state: { (key: string): any; (key: number): any } }>> & { name: TRouteName }
 ```
 
 A type guard for determining if a value is a valid RegisteredRouterRoute with an exact match.
@@ -111,7 +111,7 @@ A type guard for determining if a value is a valid RegisteredRouterRoute with an
 
 ### Returns
 
-route is RouterRoute\<Readonly\<\{ hash?: string; href: Url; id: any; matched: any; matches: any; name: any; params: \{\} \| \{ (key: string): any; (key: number): any \}; query: ResolvedRouteQuery; state: \{ (key: string): any; (key: number): any \} \}\>\> & \{ name: TRouteName \}
+route is RouterRoute\<Readonly\<\{ hash: string; href: Url; id: any; matched: any; matches: any; name: any; params: \{\} \| \{ (key: string): any; (key: number): any \}; query: URLSearchParams; state: \{ (key: string): any; (key: number): any \} \}\>\> & \{ name: TRouteName \}
 
 `true` if the value is a valid RegisteredRouterRoute with an exact match, otherwise `false`.
 
@@ -121,7 +121,7 @@ route is RouterRoute\<Readonly\<\{ hash?: string; href: Url; id: any; matched: a
 function isRoute<TRouteName>(
    route, 
    routeName, 
-   options?): route is TRouteName extends any ? RouterRoute<Readonly<{ hash?: string; href: Url; id: any; matched: any; matches: any; name: any; params: {} | { (key: string): any; (key: number): any }; query: ResolvedRouteQuery; state: { (key: string): any; (key: number): any } }>> : never
+   options?): route is TRouteName extends any ? RouterRoute<Readonly<{ hash: string; href: Url; id: any; matched: any; matches: any; name: any; params: {} | { (key: string): any; (key: number): any }; query: URLSearchParams; state: { (key: string): any; (key: number): any } }>> : never
 ```
 
 A type guard for determining if a value is a valid RegisteredRouterRoute with a partial match.
@@ -142,7 +142,7 @@ A type guard for determining if a value is a valid RegisteredRouterRoute with a 
 
 ### Returns
 
-route is TRouteName extends any ? RouterRoute\<Readonly\<\{ hash?: string; href: Url; id: any; matched: any; matches: any; name: any; params: \{\} \| \{ (key: string): any; (key: number): any \}; query: ResolvedRouteQuery; state: \{ (key: string): any; (key: number): any \} \}\>\> : never
+route is TRouteName extends any ? RouterRoute\<Readonly\<\{ hash: string; href: Url; id: any; matched: any; matches: any; name: any; params: \{\} \| \{ (key: string): any; (key: number): any \}; query: URLSearchParams; state: \{ (key: string): any; (key: number): any \} \}\>\> : never
 
 `true` if the value is a valid RegisteredRouterRoute with a partial match, otherwise `false`.
 
