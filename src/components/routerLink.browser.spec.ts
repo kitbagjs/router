@@ -874,4 +874,99 @@ describe('prefetch props', () => {
 
     expect(loaded).toBe(true)
   })
+  
+  test('props are not prefetched until link is focused when prefetch is intent', async () => {
+    const callback = vi.fn()
+
+    const routeA = createRoute({
+      name: 'routeA',
+      path: '/routeA',
+      component: () => h(routerLink, { to: (resolve) => resolve('routeB') }),
+    })
+
+    const routeB = createRoute({
+      name: 'routeB',
+      path: '/routeB',
+      component: echo,
+      prefetch: { props: 'intent' },
+      props: callback,
+    })
+
+    const router = createRouter([routeA, routeB], {
+      initialUrl: '/routeA',
+    })
+
+    await router.start()
+
+
+    const root = {
+      template: '<RouterView />',
+    }
+
+    const wrapper = mount(root, {
+      global: {
+        plugins: [router],
+      },
+    })
+
+    await nextTick()
+
+    expect(callback).not.toHaveBeenCalled()
+
+    const link = wrapper.find('a')
+
+    link.trigger('focusin')
+
+    await nextTick()
+
+    expect(callback).toHaveBeenCalled()
+  })
+
+  test('components are not prefetched until link is focused when prefetch is intent', async () => {
+    let loaded = false
+
+    const routeA = createRoute({
+      name: 'routeA',
+      path: '/routeA',
+      component: () => h(routerLink, { to: (resolve) => resolve('routeB') }, () => 'routeB'),
+    })
+
+    const routeB = createRoute({
+      name: 'routeB',
+      path: '/routeB',
+      prefetch: { components: 'intent' },
+      component: defineAsyncComponent(() => {
+        return new Promise((resolve) => {
+          loaded = true
+          resolve({ template: 'bar' })
+        })
+      }),
+    })
+
+    const router = createRouter([routeA, routeB], {
+      initialUrl: '/routeA',
+    })
+
+    await router.start()
+
+    const root = {
+      template: '<RouterView />',
+    }
+
+    const wrapper = mount(root, {
+      global: {
+        plugins: [router],
+      },
+    })
+    
+    await nextTick()
+
+    expect(loaded).toBe(false)
+
+    wrapper.find('a').trigger('focusin')
+
+    await nextTick()
+
+    expect(loaded).toBe(true)
+  })
 })
