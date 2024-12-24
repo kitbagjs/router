@@ -13,7 +13,7 @@ hero:
       link: /introduction
     - theme: alt
       text: Documentation
-      link: /core-concepts/defining-routes
+      link: /core-concepts/routes
     - theme: alt stackblitz
       text: StackBlitz
       link: https://stackblitz.com/~/github.com/kitbagjs/router-preview
