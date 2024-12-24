@@ -161,3 +161,17 @@ const home = createRoute({
   },
 })
 ```
+
+## Prefetching
+Routes can be prefetched to improve performance. See the [Prefetching](/advanced-concepts/prefetching) documentation for more information.
+
+```ts
+const home = createRoute({
+  name: 'home',
+  path: '/',
+  prefetch: {
+    components: 'lazy',
+    props: 'intent'
+  },
+})
+```
