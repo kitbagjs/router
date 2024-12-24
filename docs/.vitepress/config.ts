@@ -43,11 +43,9 @@ export default defineConfig({
         {
           text: 'Core Concepts',
           items: [
-            { text: 'Defining Routes', link: '/core-concepts/defining-routes' },
-            { text: 'Route Params', link: '/core-concepts/route-params' },
-            { text: 'Query Params', link: '/core-concepts/query-params' },
-            { text: 'Component Props', link: '/core-concepts/component-props' },
-            { text: 'Navigating', link: '/core-concepts/navigating' },
+            { text: 'Routes', link: '/core-concepts/routes' },
+            { text: 'External Routes', link: '/core-concepts/external-routes' },
+            { text: 'Params', link: '/core-concepts/params' },
           ],
         },
         {

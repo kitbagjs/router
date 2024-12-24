@@ -91,4 +91,4 @@ Use RouterLink for navigating between routes.
 
 ### Type Safety in RouterLink
 
-The `to` prop accepts a callback function or a [`Url`](/api/types/Url) string. When using a callback function, the router will provide a `resolve` function that is a type safe way to create a url from from your pre-defined routes. 
+The `to` prop accepts a callback function or a [`Url`](/api/types/Url) string. When using a callback function, the router will provide a `resolve` function that is a type safe way to create link for your pre-defined routes. 
