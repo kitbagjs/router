@@ -263,8 +263,6 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
   const notFoundRoute = getRejectionRoute('NotFound')
   const { currentRoute, routerRoute, updateRoute } = createCurrentRoute<TRoutes>(notFoundRoute, push)
 
-  history.startListening()
-
   const initialUrl = getInitialUrl(options?.initialUrl)
   const initialState = history.location.state
   const { host } = parseUrl(initialUrl)
@@ -282,7 +280,13 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
 
     await set(initialUrl, { replace: true, state: initialState })
 
+    history.startListening()
+
     initialized()
+  }
+
+  function stop(): void {
+    history.stopListening()
   }
 
   function install(app: App): void {
@@ -321,6 +325,7 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
     onAfterRouteLeave,
     prefetch: options?.prefetch,
     start,
+    stop,
   }
 
   return router

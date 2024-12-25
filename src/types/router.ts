@@ -126,6 +126,10 @@ export type Router<
    * Initializes the router based on the initial route. Automatically called when the router is installed. Calling this more than once has no effect.
    */
   start: () => Promise<void>,
+  /**
+   * Stops the router and teardown any listeners.
+   */
+  stop: () => void,
 }
 
 /**
