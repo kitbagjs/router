@@ -35,10 +35,12 @@ const blogPost = createRoute({
 The name of the route is available on the `name` property. This can be used to identify the current route. It can also be used to type narrow the route similar to how you could use the [isRoute](/api/type-guards/isRoute.md) type guard.
 
 ```ts
-const route = useRoute() // { name: 'home', ... } | { name: 'blog', ... } | { name: 'blogPost', ... }
+const route = useRoute() 
+//     ^ ? { name: 'home', ... } | { name: 'blog', ... } | { name: 'blogPost', ... }
 
 if (route.name === 'home') {
-  // types within this block will be narrowed to the home route
+  route
+  // ^ { name: 'home', ... }
 }
 ```
 
@@ -93,7 +95,7 @@ The router route and its params are type safe. So you might need to narrow the r
 :::
 
 ## Query
-The `query` property is the [URLSearchParams](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) of the current router location. This will reflect the current browser [location](https://developer.mozilla.org/en-US/docs/Web/API/Location). If the location is `/blog?page=1`, the `query` property will be `URLSearchParams { 'page' => '1' }`.
+The `query` property is the [search](https://developer.mozilla.org/en-US/docs/Web/API/Location/search) of the current router location. If the location is `/blog?page=1`, the `query` property will be `URLSearchParams { 'page' => '1' }`.
 
 ```ts
 const page = route.query.get('page')
