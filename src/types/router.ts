@@ -3,14 +3,12 @@ import { RouterHistoryMode } from '@/services/createRouterHistory'
 import { RouterRoute } from '@/services/createRouterRoute'
 import { AddAfterRouteHook, AddBeforeRouteHook } from '@/types/hooks'
 import { PrefetchConfig } from '@/types/prefetch'
-import { RegisteredRejectionType } from '@/types/register'
 import { ResolvedRoute } from '@/types/resolved'
 import { Routes } from '@/types/route'
 import { RouterPush } from '@/types/routerPush'
 import { RouterReplace } from '@/types/routerReplace'
 import { RouterResolve, RouterResolveOptions } from '@/types/RouterResolve'
-
-export type RouterReject = (type: RegisteredRejectionType) => void
+import { RouterReject } from './routerReject'
 
 /**
  * Options to initialize a {@link Router} instance.
@@ -45,8 +43,7 @@ export type RouterOptions = {
 
 export type Router<
   TRoutes extends Routes = any,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  __TOptions extends RouterOptions = any
+  TOptions extends RouterOptions = any
 > = {
   /**
    * Installs the router into a Vue application instance.
@@ -76,7 +73,7 @@ export type Router<
   /**
    * Handles route rejection based on a specified rejection type.
    */
-  reject: RouterReject,
+  reject: RouterReject<keyof TOptions['rejections']>,
   /**
    * Forces the router to re-evaluate the current route.
    */
