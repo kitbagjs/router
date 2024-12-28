@@ -18,7 +18,6 @@ const home = createRoute({
 })
 
 const blog = createRoute({
-  parent: home,
   name: 'blog',
   path: '/blog',
 })
