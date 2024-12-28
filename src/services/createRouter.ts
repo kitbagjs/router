@@ -15,7 +15,7 @@ import { createRouteHookRunners } from '@/services/hooks'
 import { insertBaseRoute } from '@/services/insertBaseRoute'
 import { setStateValues } from '@/services/state'
 import { Routes } from '@/types/route'
-import { Router, RouterOptions, RouterReject } from '@/types/router'
+import { Router, RouterOptions } from '@/types/router'
 import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { RouterReplace, RouterReplaceOptions } from '@/types/routerReplace'
 import { RoutesName } from '@/types/routesMap'
@@ -31,6 +31,7 @@ import { createResolvedRoute } from '@/services/createResolvedRoute'
 import { ResolvedRoute } from '@/types/resolved'
 import { createResolvedRouteForUrl } from '@/services/createResolvedRouteForUrl'
 import { combineUrl } from '@/services/urlCombine'
+import { RouterReject } from '@/types/routerReject'
 
 type RouterUpdateOptions = {
   replace?: boolean,
@@ -254,7 +255,7 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
     return push(source, options)
   }
 
-  const reject: RouterReject = (type) => {
+  const reject: RouterReject<keyof TOptions['rejections']> = (type) => {
     setRejection(type)
   }
 
@@ -299,7 +300,7 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
     start()
   }
 
-  const router: Router<TRoutes> = {
+  const router: Router<TRoutes, TOptions> = {
     route: routerRoute,
     resolve,
     find,

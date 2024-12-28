@@ -3,17 +3,16 @@ import { genericRejection } from '@/components/rejection'
 import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
 import { createRouteId } from '@/services/createRouteId'
 import { isRejectionRouteSymbol } from '@/services/isRejectionRoute'
-import { RegisteredRejectionType } from '@/types/register'
 import { ResolvedRoute } from '@/types/resolved'
 
 export const builtInRejections: ['NotFound'] = ['NotFound']
 export type BuiltInRejectionType = typeof builtInRejections[number]
 
-export type RouterSetReject = (type: RegisteredRejectionType | null) => void
+export type RouterSetReject = (type: string | null) => void
 
-type GetRejectionRoute = (type: RegisteredRejectionType) => ResolvedRoute
+type GetRejectionRoute = (type: string) => ResolvedRoute
 
-export type RouterRejection = Ref<null | { type: RegisteredRejectionType, component: Component }>
+export type RouterRejection = Ref<null | { type: string, component: Component }>
 
 type CreateRouterRejectContext = {
   rejections?: Partial<Record<string, Component>>,
@@ -28,7 +27,7 @@ export type CreateRouterReject = {
 export function createRouterReject({
   rejections: customRejectionComponents,
 }: CreateRouterRejectContext): CreateRouterReject {
-  const getRejectionComponent = (type: RegisteredRejectionType): Component => {
+  const getRejectionComponent = (type: string): Component => {
     const components = {
       ...customRejectionComponents,
     }
