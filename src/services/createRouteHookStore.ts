@@ -1,19 +1,19 @@
 import { RouteHooks } from '@/models/RouteHooks'
 import { getRouteHookCondition } from '@/services/hooks'
-import { AfterRouteHook, BeforeRouteHook, RouteHookRemove } from '@/types/hooks'
+import { AfterRouteHook, AfterRouteHookLifecycle, BeforeRouteHook, BeforeRouteHookLifecycle, RouteHookRemove } from '@/types/hooks'
 
 type RouteHookTiming = 'global' | 'component'
 
 type BeforeRouteHookRegistration = {
   timing: RouteHookTiming,
-  lifecycle: 'onBeforeRouteEnter' | 'onBeforeRouteUpdate' | 'onBeforeRouteLeave',
+  lifecycle: BeforeRouteHookLifecycle,
   hook: BeforeRouteHook,
   depth: number,
 }
 
 type AfterRouteHookRegistration = {
   timing: RouteHookTiming,
-  lifecycle: 'onAfterRouteEnter' | 'onAfterRouteUpdate' | 'onAfterRouteLeave',
+  lifecycle: AfterRouteHookLifecycle,
   hook: AfterRouteHook,
   depth: number,
 }

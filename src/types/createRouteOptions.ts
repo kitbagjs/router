@@ -25,9 +25,11 @@ export type WithHooks = {
   onBeforeRouteEnter?: MaybeArray<BeforeRouteHook>,
   onBeforeRouteUpdate?: MaybeArray<BeforeRouteHook>,
   onBeforeRouteLeave?: MaybeArray<BeforeRouteHook>,
+  onBeforeRouteChange?: MaybeArray<BeforeRouteHook>,
   onAfterRouteEnter?: MaybeArray<AfterRouteHook>,
   onAfterRouteUpdate?: MaybeArray<AfterRouteHook>,
   onAfterRouteLeave?: MaybeArray<AfterRouteHook>,
+  onAfterRouteChange?: MaybeArray<AfterRouteHook>,
 }
 
 export type WithHost<THost extends string | Host = string | Host> = {

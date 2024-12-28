@@ -106,6 +106,10 @@ export type Router<
    */
   onBeforeRouteUpdate: AddBeforeRouteHook,
   /**
+   * Registers a hook to be called before a route is entered or updated.
+   */
+  onBeforeRouteChange: AddBeforeRouteHook,
+  /**
    * Registers a hook to be called after a route is entered.
    */
   onAfterRouteEnter: AddAfterRouteHook,
@@ -117,6 +121,10 @@ export type Router<
    * Registers a hook to be called after a route is updated.
    */
   onAfterRouteUpdate: AddAfterRouteHook,
+  /**
+   * Registers a hook to be called after a route is entered or updated.
+   */
+  onAfterRouteChange: AddAfterRouteHook,
   /**
   * Given a URL, returns true if host does not match host stored on router instance
   */

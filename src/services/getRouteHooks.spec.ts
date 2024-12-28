@@ -16,5 +16,6 @@ test('given two ResolvedRoutes returns before timing hooks in correct order', ()
 
   expect(Array.from(hooks.onBeforeRouteEnter)).toMatchObject([childA.onBeforeRouteEnter, grandchildA.onBeforeRouteEnter])
   expect(Array.from(hooks.onBeforeRouteUpdate)).toMatchObject([parent.onBeforeRouteUpdate])
+  expect(Array.from(hooks.onBeforeRouteChange)).toMatchObject([parent.onBeforeRouteChange, childA.onBeforeRouteChange, grandchildA.onBeforeRouteChange])
   expect(Array.from(hooks.onBeforeRouteLeave)).toMatchObject([childB.onBeforeRouteLeave, grandchildB.onBeforeRouteLeave])
 })
