@@ -104,7 +104,7 @@ router.go(1)
 ```
 
 ### Reject
-Handles route rejection based on a specified rejection type. See [Rejections](/core-concepts/rejections) for more information.
+Handles route rejection based on a specified rejection type. See [Rejections](/advanced-concepts/rejections) for more information.
 
 ```ts
 router.reject('NotFound')

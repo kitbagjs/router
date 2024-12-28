@@ -1,7 +1,7 @@
 # Router Route
 The current route is represented by the "Router Route". See the [RouterRoute](/api/types/RouterRoute.md) type for more information.
 
-The route can be accessed using the [useRoute](/api/composables/useRoute.md) composable within your components. It is also available on the router instance as the `route` property.
+The route can be accessed using the [useRoute](/composables/useRoute.md) composable within your components. It is also available on the router instance as the `route` property.
 
 ```ts
 import { useRoute } from '@kitbag/router'
@@ -32,7 +32,7 @@ const blogPost = createRoute({
 ```
 
 ## Name
-The name of the route is available on the `name` property. This can be used to identify the current route. It can also be used to type narrow the route similar to how you could use the [isRoute](/api/types/isRoute.md) type guard.
+The name of the route is available on the `name` property. This can be used to identify the current route. It can also be used to type narrow the route similar to how you could use the [isRoute](/api/type-guards/isRoute.md) type guard.
 
 ```ts
 const route = useRoute() // { name: 'home', ... } | { name: 'blog', ... } | { name: 'blogPost', ... }
