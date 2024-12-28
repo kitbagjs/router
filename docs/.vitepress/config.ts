@@ -61,9 +61,10 @@ export default defineConfig({
         {
           text: 'Composables',
           items: [
+            { text: 'useLink', link: '/composables/useLink' },
+            { text: 'useQueryValue', link: '/composables/useQueryValue' },
             { text: 'useRoute', link: '/composables/useRoute' },
             { text: 'useRouter', link: '/composables/useRouter' },
-            { text: 'useLink', link: '/composables/useLink' },
           ],
         },
         {
