@@ -1,7 +1,7 @@
-# Types: Router\<TRoutes, __TOptions\>
+# Types: Router\<TRoutes, TOptions\>
 
 ```ts
-type Router<TRoutes, __TOptions>: object;
+type Router<TRoutes, TOptions>: object;
 ```
 
 ## Type Parameters
@@ -9,7 +9,7 @@ type Router<TRoutes, __TOptions>: object;
 | Type Parameter | Default type |
 | ------ | ------ |
 | `TRoutes` *extends* [`Routes`](Routes.md) | `any` |
-| `__TOptions` *extends* [`RouterOptions`](RouterOptions.md) | `any` |
+| `TOptions` *extends* [`RouterOptions`](RouterOptions.md) | `any` |
 
 ## Type declaration
 
@@ -189,7 +189,7 @@ Forces the router to re-evaluate the current route.
 ### reject
 
 ```ts
-reject: RouterReject;
+reject: RouterReject<keyof TOptions["rejections"]>;
 ```
 
 Handles route rejection based on a specified rejection type.
