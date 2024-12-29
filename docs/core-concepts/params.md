@@ -1,5 +1,5 @@
 # Params
-Params are used to define the dynamic parts of a route. Params can be used in the `path` and `query` properties when defining a route.
+Params are used to define the dynamic parts of a route. Params can be used in the `path`, `query`, and `host` properties when defining a route.
 
 ## Param Names
 Param names are defined using square brackets. What is inside the brackets is the name of the param and is used when accessing the param value and when providing the param value when navigating to the route.
