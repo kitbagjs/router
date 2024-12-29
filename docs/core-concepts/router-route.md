@@ -1,7 +1,7 @@
 # Router Route
 The current route is represented by the [RouterRoute](/api/types/RouterRoute.md).
 
-The route can be accessed using the [useRoute](/composables/useRoute.md) composable within your components. It is also available on the router instance as the `route` property.
+This current route is accessed using the [useRoute](/composables/useRoute.md) composable within your components. It is also available on the router instance as the `route` property.
 
 ```ts
 import { useRoute } from '@kitbag/router'
