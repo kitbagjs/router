@@ -68,14 +68,14 @@ Using custom param types you can define more complex validation rules. For examp
 ```ts {3-11,17}
 import { createParam, createRoute, path } from '@kitbag/router'
 
-const months = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'] as const
+const months = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december']
 
 const monthParam = createParam((value, { invalid }) => {
-  if (months.includes(value as any)) {
+  if (months.includes(value)) {
     return value
   }
 
-  invalid(`Invalid month: ${value}`)
+  throw invalid(`Invalid month: ${value}`)
 })
 
 const events = createRoute({
