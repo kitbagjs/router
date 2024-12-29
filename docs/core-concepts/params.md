@@ -12,7 +12,7 @@ const events = createRoute({
 ```
 
 :::warning
-Param names must be unique across the `path` and `query` properties and parent routes.
+Param names must be unique. This includes all properties that have params as well as between a child route and it's parent route.
 :::
 
 ## Optional Params
