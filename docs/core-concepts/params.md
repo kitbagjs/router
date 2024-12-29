@@ -153,7 +153,7 @@ const monthParamWithDefault = withDefault(monthParam, 'january')
 ```
 
 ## Query Params
-So far we have only looked at params in the `path` property. But params can also be used in the `query` property. When using params in the `query` the param goes where you expect the value to be in the url's search string.
+So far the examples have only used params in the `path` property. When using params in the `query`, the param goes where you expect the value to be in the url's search string.
 
 ```ts {3}
 const events = createRoute({
