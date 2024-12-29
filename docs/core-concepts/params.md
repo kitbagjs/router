@@ -26,7 +26,9 @@ const events = createRoute({
 ```
 
 ## Param Types
-By default all params are strings. But you can define a specific type for a param by using the `path` or `query` utilities. Now the `year` param will have the type `number` when being accessed.
+By default all params are strings. However, using the `path`, `query`, and `host` utilities you can assign different param types.
+
+Now the `year` param will have the type `number` when being accessed.
 
 ```ts {1,5-7}
 import { path } from '@kitbag/router'
