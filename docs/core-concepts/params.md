@@ -59,7 +59,7 @@ Kitbag Router comes with a few built-in param types:
 
 ## Custom Param Types
 You can define your own param types using the `createParam` utility. This serves three purposes:
-1. Define the type of the param.
+1. Define the type for the param in Typescript when accessing the param.
 2. Define how the param should be serialized and deserialized.
 3. Determine if a value is valid.
 
