@@ -42,7 +42,7 @@ const events = createRoute({
 ```
 
 :::info Route Matching
-When using a param type, if the url cannot be parsed as the specified type it will not be matched. For example if the url was `/events/two-thousand-and-twenty-four/september` it would not be matched because `two-thousand-and-twenty-four` is not a number.
+When using a param type, if the url cannot be parsed as the specified type it will not be matched. For example if the url was `/events/two-thousand-and-twenty-four/september` it would not be matched because `two-thousand-and-twenty-four` is not a number. See [route matching](/advanced-concepts/route-matching) for more information.
 :::
 
 ### Built-in Param Types
