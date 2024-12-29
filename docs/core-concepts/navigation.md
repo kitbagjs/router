@@ -22,12 +22,12 @@ All navigation methods accept a route name or a url. Using a route name is the r
 
 ::: code-group
 ```ts [Router]
-// type safe
+// type safe ✅
 router.push('blogPost', {
   blogPostId: 1,
 })
 
-// not type safe
+// not type safe ⚠️
 router.push('/blogPost/1')
 ```
 
