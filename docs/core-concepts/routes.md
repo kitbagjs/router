@@ -82,7 +82,7 @@ const home = createRoute({
 ```
 
 ## Components
-The `components` property is used to define multiple components for named views.
+The `components` property is used to define multiple components for named views. This is used instead of the `component` property.
 
 ```ts {7-10}
 import HomeView from './components/HomeView.vue'
