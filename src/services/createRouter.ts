@@ -33,6 +33,7 @@ import { createResolvedRouteForUrl } from '@/services/createResolvedRouteForUrl'
 import { combineUrl } from '@/services/urlCombine'
 import { RouterReject } from '@/types/routerReject'
 import { EmptyRouterPlugin, RouterPlugin } from '@/types/routerPlugin'
+import { addRouterPluginHooks } from './createRouterPlugin'
 
 type RouterUpdateOptions = {
   replace?: boolean,
@@ -78,9 +79,9 @@ export function createRouter<
   const TRoutes extends Routes,
   const TOptions extends RouterOptions,
   const TPlugin extends RouterPlugin = EmptyRouterPlugin
->(routesOrArrayOfRoutes: TRoutes | TRoutes[], options?: TOptions, plugins?: TPlugin[]): Router<TRoutes, TOptions, TPlugin> {
-  const flattenedRoutes = isNestedArray(routesOrArrayOfRoutes) ? routesOrArrayOfRoutes.flat() : routesOrArrayOfRoutes
-  const routes = insertBaseRoute(flattenedRoutes, options?.base)
+>(routesOrArrayOfRoutes: TRoutes | TRoutes[], options?: TOptions, plugins: TPlugin[] = []): Router<TRoutes, TOptions, TPlugin> {
+  const pluginRoutes = plugins.map((plugin) => plugin.routes)
+  const routes = insertBaseRoute([...routesOrArrayOfRoutes, ...pluginRoutes].flat(), options?.base)
 
   checkDuplicateNames(routes)
 
@@ -278,7 +279,11 @@ export function createRouter<
     setRejection(type)
   }
 
-  const { setRejection, rejection, getRejectionRoute } = createRouterReject(options ?? {})
+  const { setRejection, rejection, getRejectionRoute } = createRouterReject({
+    ...plugins.reduce((rejections, plugin) => ({ ...rejections, ...plugin.rejections }), {}),
+    ...options?.rejections,
+  })
+
   const notFoundRoute = getRejectionRoute('NotFound')
   const { currentRoute, routerRoute, updateRoute } = createCurrentRoute<TRoutes | TPlugin['routes']>(notFoundRoute, push)
 
@@ -346,6 +351,8 @@ export function createRouter<
     start,
     stop,
   }
+
+  plugins.forEach(plugin => addRouterPluginHooks(router, plugin))
 
   return router
 }
