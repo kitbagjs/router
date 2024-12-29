@@ -1,5 +1,7 @@
 # External Routes
-You can also define external routes. External routes are just like normal routes except they must be provided a `host` and they can only have the `name`, `host`, `path`, `query`, and `hash` properties. An external route's host can be provided by a parent. When navigating to an external route, the router will simply push the url to the browser's history.
+External routes allow you to define routes for things outside of your application. External routes have all the same functionality of normal routes, including [params](/core-concepts/params). When navigating to an external route, the router will simply push the url to the browsers history. 
+
+When defining an external route a `host` must be provided, or it can be inherited from a `parent`.
 
 ```ts
 import { createExternalRoute } from '@kitbag/router'
