@@ -53,7 +53,7 @@ const contact = createRoute({
 ```
 
 ## Parent
-The `parent` property is used to create nested routes. The `blogPost` route's path is combined with the `blog` route's path to form the full url. A route inherits all of its parent's properties.
+The `parent` property is used to create nested routes. In this example, `blogPost` route's path is combined with the `blog` route's path to form the full url. A route inherits many of its parent's properties. Specifically, `path`, `query`, `meta`, `state`, and `hash` are all combined.
 
 ```ts {7}
 const blog = createRoute({
