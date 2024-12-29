@@ -61,6 +61,7 @@
 - [ParamSetter](types/ParamSetter.md)
 - [PrefetchConfig](types/PrefetchConfig.md)
 - [PrefetchStrategy](types/PrefetchStrategy.md)
+- [PropsCallbackContext](types/PropsCallbackContext.md)
 - [QuerySource](types/QuerySource.md)
 - [RegisteredRejectionType](types/RegisteredRejectionType.md)
 - [RegisteredRouteMap](types/RegisteredRouteMap.md)

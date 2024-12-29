@@ -204,6 +204,10 @@
         "link": "/api/types/PrefetchStrategy.md"
       },
       {
+        "text": "PropsCallbackContext",
+        "link": "/api/types/PropsCallbackContext.md"
+      },
+      {
         "text": "QuerySource",
         "link": "/api/types/QuerySource.md"
       },

@@ -114,6 +114,17 @@ const home = createRoute({
 })
 ```
 
+### Arguments
+The props callback receives two arguments:
+
+| Argument | Description |
+| -------- | ----------- |
+| params | An object containing the values of any params from the route. See [Params](/core-concepts/params) for more details. |
+| context | An object containing helper methods for navigation (`push`, `replace`, `reject`). See [PropsCallbackContext](/api/types/PropsCallbackContext) for more details. |
+
+### Return Type
+The props callback must return an object or a promise that resolves to an object. The object must satisfy the props for the component.
+
 ## Meta
 The `meta` property is used to define metadata for the route. Meta is optional and can be used to define static metadata for the route.
 
