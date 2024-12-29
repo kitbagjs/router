@@ -162,7 +162,7 @@ const events = createRoute({
 })
 ```
 
-The param name and the search key do not have to be the same. In this example the url search string would like like `?highlight=hello` and the param would have the value `hello`. But the param's name is `term`. 
+The param name and the search key do not have to be the same. In this example the url search string might be `?highlight=hello`, which has a `term` param with the value `hello`.
 
 ```ts {2}
 const events = createRoute({
