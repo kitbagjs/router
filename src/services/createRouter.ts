@@ -32,6 +32,7 @@ import { ResolvedRoute } from '@/types/resolved'
 import { createResolvedRouteForUrl } from '@/services/createResolvedRouteForUrl'
 import { combineUrl } from '@/services/urlCombine'
 import { RouterReject } from '@/types/routerReject'
+import { EmptyRouterPlugin, RouterPlugin } from '@/types/routerPlugin'
 
 type RouterUpdateOptions = {
   replace?: boolean,
@@ -61,9 +62,23 @@ type RouterUpdateOptions = {
  * const router = createRouter(routes)
  * ```
  */
-export function createRouter<const TRoutes extends Routes, const TOptions extends RouterOptions>(routes: TRoutes, options?: TOptions): Router<TRoutes, TOptions>
-export function createRouter<const TRoutes extends Routes, const TOptions extends RouterOptions>(arrayOfRoutes: TRoutes[], options?: TOptions): Router<TRoutes, TOptions>
-export function createRouter<const TRoutes extends Routes, const TOptions extends RouterOptions>(routesOrArrayOfRoutes: TRoutes | TRoutes[], options?: TOptions): Router<TRoutes, TOptions> {
+export function createRouter<
+  const TRoutes extends Routes, 
+  const TOptions extends RouterOptions, 
+  const TPlugin extends RouterPlugin = EmptyRouterPlugin
+  >(routes: TRoutes, options?: TOptions, plugins?: TPlugin[]): Router<TRoutes, TOptions, TPlugin>
+  
+  export function createRouter<
+  const TRoutes extends Routes,
+  const TOptions extends RouterOptions,
+  const TPlugin extends RouterPlugin = EmptyRouterPlugin
+>(arrayOfRoutes: TRoutes[], options?: TOptions, plugins?: TPlugin[]): Router<TRoutes, TOptions, TPlugin>
+
+export function createRouter<
+  const TRoutes extends Routes,
+  const TOptions extends RouterOptions,
+  const TPlugin extends RouterPlugin = EmptyRouterPlugin
+>(routesOrArrayOfRoutes: TRoutes | TRoutes[], options?: TOptions, plugins?: TPlugin[]): Router<TRoutes, TOptions, TPlugin> {
   const flattenedRoutes = isNestedArray(routesOrArrayOfRoutes) ? routesOrArrayOfRoutes.flat() : routesOrArrayOfRoutes
   const routes = insertBaseRoute(flattenedRoutes, options?.base)
 
@@ -187,8 +202,8 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
     history.startListening()
   }
 
-  const resolve: RouterResolve<TRoutes> = (
-    source: RoutesName<TRoutes>,
+  const resolve: RouterResolve<TRoutes | TPlugin['routes']> = (
+    source: RoutesName<TRoutes | TPlugin['routes']>,
     params: Record<string, unknown> = {},
     options: RouterResolveOptions = {},
   ) => {
@@ -201,8 +216,8 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
     return createResolvedRoute(match, params, options)
   }
 
-  const push: RouterPush<TRoutes> = (
-    source: Url | RoutesName<TRoutes> | ResolvedRoute,
+  const push: RouterPush<TRoutes | TPlugin['routes']> = (
+    source: Url | RoutesName<TRoutes | TPlugin['routes']> | ResolvedRoute,
     paramsOrOptions?: Record<string, unknown> | RouterPushOptions,
     maybeOptions?: RouterPushOptions,
   ) => {
@@ -236,7 +251,11 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
     return set(url, { replace, state })
   }
 
-  const replace: RouterReplace<TRoutes> = (source: Url | RoutesName<TRoutes> | ResolvedRoute, paramsOrOptions?: Record<string, unknown> | RouterReplaceOptions, maybeOptions?: RouterReplaceOptions) => {
+  const replace: RouterReplace<TRoutes | TPlugin['routes']> = (
+    source: Url | RoutesName<TRoutes | TPlugin['routes']> | ResolvedRoute,
+    paramsOrOptions?: Record<string, unknown> | RouterReplaceOptions,
+    maybeOptions?: RouterReplaceOptions
+  ) => {
     if (isUrl(source)) {
       const options: RouterPushOptions = { ...paramsOrOptions, replace: true }
 
@@ -255,13 +274,13 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
     return push(source, options)
   }
 
-  const reject: RouterReject<keyof TOptions['rejections']> = (type) => {
+  const reject: RouterReject<keyof TOptions['rejections'] | keyof TPlugin['rejections']> = (type) => {
     setRejection(type)
   }
 
   const { setRejection, rejection, getRejectionRoute } = createRouterReject(options ?? {})
   const notFoundRoute = getRejectionRoute('NotFound')
-  const { currentRoute, routerRoute, updateRoute } = createCurrentRoute<TRoutes>(notFoundRoute, push)
+  const { currentRoute, routerRoute, updateRoute } = createCurrentRoute<TRoutes | TPlugin['routes']>(notFoundRoute, push)
 
   const initialUrl = getInitialUrl(options?.initialUrl)
   const initialState = history.location.state
@@ -304,7 +323,7 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
     start()
   }
 
-  const router: Router<TRoutes, TOptions> = {
+  const router: Router<TRoutes, TOptions, TPlugin> = {
     route: routerRoute,
     resolve,
     find,
