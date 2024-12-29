@@ -1,4 +1,4 @@
-name: notify-stars
+name: Stars Notification to Discord
 
 on:
   watch:
