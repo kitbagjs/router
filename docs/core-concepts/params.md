@@ -89,20 +89,21 @@ const events = createRoute({
 
 By default custom params will use `toString` when serializing. But you can use a Get/Set param to define how the param should be serialized and deserialized. For example we can make the month param capitalized when parsing and lowercase when serializing.
 
-```ts
+```ts {2,8,17}
 import { createParam } from '@kitbag/router'
+import { capitalize } from '@/utilities'
 
-const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'] as const
+const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 
 const monthParam = createParam({
   get: (value, { invalid }) => {
-    const month = value.charAt(0).toUpperCase() + value.slice(1)
+    const month = capitalize(value)
 
-    if (months.includes(month as any)) {
+    if (months.includes(month)) {
       return month
     }
 
-    invalid(`Invalid month: ${month}`)
+    throw invalid(`Invalid month: ${month}`)
   },
   set: (value) => {
     return value.toLowerCase()
