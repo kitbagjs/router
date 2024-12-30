@@ -1,5 +1,5 @@
 # Types: Url
 
 ```ts
-type Url: `http://${string}` | `https://${string}` | `/${string}`;
+type Url = `http://${string}` | `https://${string}` | `/${string}`;
 ```

@@ -1,7 +1,7 @@
 # Types: UseLinkOptions
 
 ```ts
-type UseLinkOptions: RouterPushOptions & object;
+type UseLinkOptions = RouterPushOptions & object;
 ```
 
 ## Type declaration

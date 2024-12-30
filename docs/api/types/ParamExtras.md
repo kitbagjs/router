@@ -1,7 +1,7 @@
 # Types: ParamExtras
 
 ```ts
-type ParamExtras: object;
+type ParamExtras = object;
 ```
 
 ## Type declaration

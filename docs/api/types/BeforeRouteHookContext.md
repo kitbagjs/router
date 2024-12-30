@@ -1,7 +1,7 @@
 # Types: BeforeRouteHookContext
 
 ```ts
-type BeforeRouteHookContext: RouteHookContext & object;
+type BeforeRouteHookContext = RouteHookContext & object;
 ```
 
 Context provided to route hooks, containing context of previous route and functions for triggering rejections, push/replace to another route,

@@ -1,7 +1,7 @@
 # Types: PrefetchStrategy
 
 ```ts
-type PrefetchStrategy: "eager" | "lazy" | "intent";
+type PrefetchStrategy = "eager" | "lazy" | "intent";
 ```
 
 Determines when assets are prefetched.
