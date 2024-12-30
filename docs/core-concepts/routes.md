@@ -126,7 +126,7 @@ The props callback receives two arguments:
 The props callback must return an object or a promise that resolves to an object. The object must satisfy the props for the component.
 
 ## Meta
-The `meta` property is used to define metadata for the route. Meta is optional and can be used to define static metadata for the route.
+The `meta` property is used to define metadata for the route. Meta is optional and can be used to define static metadata for the route to reference in the [router route](/core-concepts/router-route) or in [hooks](/advance-concepts/hooks)
 
 ```ts {7-9}
 import HomeView from './components/HomeView.vue'
