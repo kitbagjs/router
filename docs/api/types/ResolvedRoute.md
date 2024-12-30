@@ -1,7 +1,7 @@
 # Types: ResolvedRoute\<TRoute\>
 
 ```ts
-type ResolvedRoute<TRoute>: Readonly<{
+type ResolvedRoute<TRoute> = Readonly<{
   hash: string;
   href: Url;
   id: TRoute["id"];

@@ -1,7 +1,7 @@
 # Types: Router\<TRoutes, TOptions\>
 
 ```ts
-type Router<TRoutes, TOptions>: object;
+type Router<TRoutes, TOptions> = object;
 ```
 
 ## Type Parameters

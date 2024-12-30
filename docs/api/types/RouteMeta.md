@@ -1,7 +1,7 @@
 # Types: RouteMeta\<T\>
 
 ```ts
-type RouteMeta<T>: T extends object ? RouteMeta : Record<string, unknown>;
+type RouteMeta<T> = T extends object ? RouteMeta : Record<string, unknown>;
 ```
 
 Represents additional metadata associated with a route, customizable via declaration merging.

@@ -1,7 +1,7 @@
 # Types: ParamGetSet\<T\>
 
 ```ts
-type ParamGetSet<T>: object;
+type ParamGetSet<T> = object;
 ```
 
 ## Type Parameters

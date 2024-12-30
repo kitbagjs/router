@@ -1,7 +1,7 @@
 # Types: UseLink
 
 ```ts
-type UseLink: object;
+type UseLink = object;
 ```
 
 ## Type declaration

@@ -1,7 +1,7 @@
 # Types: AfterRouteHook()
 
 ```ts
-type AfterRouteHook: (to, context) => MaybePromise<void>;
+type AfterRouteHook = (to, context) => MaybePromise<void>;
 ```
 
 Represents a function called after a route change has occurred.

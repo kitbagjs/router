@@ -1,7 +1,7 @@
 # Types: RouterRoute\<TRoute\>
 
 ```ts
-type RouterRoute<TRoute>: object;
+type RouterRoute<TRoute> = object;
 ```
 
 ## Type Parameters
