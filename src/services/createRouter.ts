@@ -32,6 +32,7 @@ import { ResolvedRoute } from '@/types/resolved'
 import { createResolvedRouteForUrl } from '@/services/createResolvedRouteForUrl'
 import { combineUrl } from '@/services/urlCombine'
 import { RouterReject } from '@/types/routerReject'
+import { setupDevtools } from '@/devtools'
 
 type RouterUpdateOptions = {
   replace?: boolean,
@@ -296,6 +297,10 @@ export function createRouter<const TRoutes extends Routes, const TOptions extend
     // We cant technically guarantee that the user registered the same router that they installed
     // So we're making an assumption here that when installing a router its the same as the RegisteredRouter
     app.provide(routerInjectionKey, router as any)
+
+    if (process.env.NODE_ENV === 'development') {
+      setupDevtools({ app, router, routes });
+    }
 
     start()
   }
