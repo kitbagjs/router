@@ -31,5 +31,4 @@ export type AllPropertiesAreOptional<T> = Record<string, unknown> extends T
   ? true
   : IsEmptyObject<OnlyRequiredProperties<T>>
 
-
 export type AsString<T> = T extends string ? T : never

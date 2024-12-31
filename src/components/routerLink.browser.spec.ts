@@ -874,7 +874,7 @@ describe('prefetch props', () => {
 
     expect(loaded).toBe(true)
   })
-  
+
   test('props are not prefetched until link is focused when prefetch is intent', async () => {
     const callback = vi.fn()
 
@@ -897,7 +897,6 @@ describe('prefetch props', () => {
     })
 
     await router.start()
-
 
     const root = {
       template: '<RouterView />',
@@ -958,7 +957,7 @@ describe('prefetch props', () => {
         plugins: [router],
       },
     })
-    
+
     await nextTick()
 
     expect(loaded).toBe(false)
