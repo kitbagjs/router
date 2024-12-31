@@ -31,7 +31,6 @@ export type AllPropertiesAreOptional<T> = Record<string, unknown> extends T
   ? true
   : IsEmptyObject<OnlyRequiredProperties<T>>
 
-
 /**
  * Converts a type to a string if it is a string, otherwise returns never.
  * Specifically useful when using keyof T to produce a union of strings
@@ -39,8 +38,7 @@ export type AllPropertiesAreOptional<T> = Record<string, unknown> extends T
  */
 export type AsString<T> = T extends string ? T : never
 
-
 /**
  * Extracts the keys of a union type.
  */
-export type KeysOfUnion<T> = T extends T ? keyof T: never
+export type KeysOfUnion<T> = T extends T ? keyof T : never

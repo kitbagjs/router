@@ -1,7 +1,7 @@
-import { Component } from "vue";
-import { BeforeRouteHook, AfterRouteHook } from "./hooks";
-import { Routes } from "./route";
-import { MaybeArray } from "./utilities";
+import { Component } from 'vue'
+import { BeforeRouteHook, AfterRouteHook } from './hooks'
+import { Routes } from './route'
+import { MaybeArray } from './utilities'
 
 export type EmptyRouterPlugin = {
   routes: [],

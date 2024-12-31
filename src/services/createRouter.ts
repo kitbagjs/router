@@ -63,12 +63,12 @@ type RouterUpdateOptions = {
  * ```
  */
 export function createRouter<
-  const TRoutes extends Routes, 
-  const TOptions extends RouterOptions, 
+  const TRoutes extends Routes,
+  const TOptions extends RouterOptions,
   const TPlugin extends RouterPlugin = EmptyRouterPlugin
-  >(routes: TRoutes, options?: TOptions, plugins?: TPlugin[]): Router<TRoutes, TOptions, TPlugin>
-  
-  export function createRouter<
+>(routes: TRoutes, options?: TOptions, plugins?: TPlugin[]): Router<TRoutes, TOptions, TPlugin>
+
+export function createRouter<
   const TRoutes extends Routes,
   const TOptions extends RouterOptions,
   const TPlugin extends RouterPlugin = EmptyRouterPlugin
@@ -254,7 +254,7 @@ export function createRouter<
   const replace: RouterReplace<TRoutes | TPlugin['routes']> = (
     source: Url | RoutesName<TRoutes | TPlugin['routes']> | ResolvedRoute,
     paramsOrOptions?: Record<string, unknown> | RouterReplaceOptions,
-    maybeOptions?: RouterReplaceOptions
+    maybeOptions?: RouterReplaceOptions,
   ) => {
     if (isUrl(source)) {
       const options: RouterPushOptions = { ...paramsOrOptions, replace: true }
@@ -351,7 +351,9 @@ export function createRouter<
     stop,
   }
 
-  plugins.forEach(plugin => addRouterPluginHooks(router, plugin))
+  plugins.forEach((plugin) => {
+    addRouterPluginHooks(router, plugin)
+  })
 
   return router
 }

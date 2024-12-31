@@ -1,16 +1,16 @@
-import { test, expect, vi } from "vitest"
-import { createRoute } from "./createRoute"
-import { createRouter } from "./createRouter"
-import { createRouterPlugin } from "./createRouterPlugin"
-import { component, routes } from "@/utilities/testHelpers"
-import { flushPromises } from "@vue/test-utils"
-import { mount } from "@vue/test-utils"
+import { test, expect, vi } from 'vitest'
+import { createRoute } from './createRoute'
+import { createRouter } from './createRouter'
+import { createRouterPlugin } from './createRouterPlugin'
+import { component, routes } from '@/utilities/testHelpers'
+import { flushPromises } from '@vue/test-utils'
+import { mount } from '@vue/test-utils'
 
 test('given a plugin, adds the routes to the router', async () => {
   const plugin = createRouterPlugin({
     routes: [createRoute({ name: 'plugin', path: '/plugin', component })],
     rejections: {
-      'plugin': component,
+      plugin: component,
     },
   })
 
@@ -24,7 +24,7 @@ test('given a plugin, adds the routes to the router', async () => {
 test('given a plugin, adds the rejections to the router', async () => {
   const plugin = createRouterPlugin({
     rejections: {
-      'plugin': { template: '<div>This is a plugin rejection</div>' },
+      plugin: { template: '<div>This is a plugin rejection</div>' },
     },
   })
 
@@ -76,7 +76,7 @@ test('given a plugin, adds the hooks to the router', async () => {
   expect(plugin.onAfterRouteLeave).toHaveBeenCalledTimes(1)
   expect(plugin.onAfterRouteUpdate).toHaveBeenCalledTimes(0)
   expect(plugin.onAfterRouteEnter).toHaveBeenCalledTimes(1)
-  
+
   await router.push('parentA.childA', { paramA: 'valueA', paramB: 'valueB' })
 
   expect(plugin.onBeforeRouteEnter).toHaveBeenCalledTimes(1)
@@ -85,7 +85,7 @@ test('given a plugin, adds the hooks to the router', async () => {
   expect(plugin.onAfterRouteLeave).toHaveBeenCalledTimes(1)
   expect(plugin.onAfterRouteUpdate).toHaveBeenCalledTimes(1)
   expect(plugin.onAfterRouteEnter).toHaveBeenCalledTimes(1)
-  
+
   await router.push('parentA.childB', { paramA: 'valueB', paramD: 'valueD' })
 
   expect(plugin.onBeforeRouteEnter).toHaveBeenCalledTimes(1)
@@ -94,7 +94,7 @@ test('given a plugin, adds the hooks to the router', async () => {
   expect(plugin.onAfterRouteLeave).toHaveBeenCalledTimes(1)
   expect(plugin.onAfterRouteUpdate).toHaveBeenCalledTimes(2)
   expect(plugin.onAfterRouteEnter).toHaveBeenCalledTimes(1)
-  
+
   await router.push('parentB')
 
   expect(plugin.onBeforeRouteEnter).toHaveBeenCalledTimes(2)
