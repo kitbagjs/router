@@ -1,7 +1,7 @@
 # Types: CreateRouteOptions\<TName, TPath, TQuery, THash, TMeta\>
 
 ```ts
-type CreateRouteOptions<TName, TPath, TQuery, THash, TMeta>: object;
+type CreateRouteOptions<TName, TPath, TQuery, THash, TMeta> = object;
 ```
 
 ## Type Parameters

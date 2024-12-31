@@ -1,7 +1,7 @@
 # Types: BeforeRouteHook()
 
 ```ts
-type BeforeRouteHook: (to, context) => MaybePromise<void>;
+type BeforeRouteHook = (to, context) => MaybePromise<void>;
 ```
 
 Represents a function called before a route change, potentially altering the routing operation.

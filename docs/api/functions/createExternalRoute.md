@@ -10,10 +10,10 @@ function createExternalRoute<THost, TName, TPath, TQuery, THash, TMeta>(options)
 
 | Type Parameter | Default type |
 | ------ | ------ |
-| `THost` *extends* `string` \| `Host`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\> | - |
+| `THost` *extends* \| `string` \| `Host`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\> | - |
 | `TName` *extends* `undefined` \| `string` | `undefined` |
-| `TPath` *extends* `undefined` \| `string` \| `Path`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\> | `undefined` |
-| `TQuery` *extends* `undefined` \| `string` \| `Query`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\> | `undefined` |
+| `TPath` *extends* \| `undefined` \| `string` \| `Path`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\> | `undefined` |
+| `TQuery` *extends* \| `undefined` \| `string` \| `Query`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\> | `undefined` |
 | `THash` *extends* `undefined` \| `string` \| `Hash`\<`undefined` \| `string`\> | `undefined` |
 | `TMeta` *extends* `Record`\<`string`, `unknown`\> | `Record`\<`string`, `unknown`\> |
 
@@ -39,8 +39,8 @@ function createExternalRoute<TParent, TName, TPath, TQuery, THash, TMeta>(option
 | ------ | ------ |
 | `TParent` *extends* [`Route`](../types/Route.md)\<`string`, `Host`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\>, `Path`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\>, `Query`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\>, `Hash`\<`undefined` \| `string`\>, `Record`\<`string`, `unknown`\>, `Record`\<`string`, [`Param`](../types/Param.md)\>, `undefined` \| `string`\> | - |
 | `TName` *extends* `undefined` \| `string` | `undefined` |
-| `TPath` *extends* `undefined` \| `string` \| `Path`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\> | `undefined` |
-| `TQuery` *extends* `undefined` \| `string` \| `Query`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\> | `undefined` |
+| `TPath` *extends* \| `undefined` \| `string` \| `Path`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\> | `undefined` |
+| `TQuery` *extends* \| `undefined` \| `string` \| `Query`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\> | `undefined` |
 | `THash` *extends* `undefined` \| `string` \| `Hash`\<`undefined` \| `string`\> | `undefined` |
 | `TMeta` *extends* `Record`\<`string`, `unknown`\> | `Record`\<`string`, `unknown`\> |
 

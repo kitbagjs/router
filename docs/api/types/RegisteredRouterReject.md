@@ -1,7 +1,7 @@
 # Types: RegisteredRouterReject()
 
 ```ts
-type RegisteredRouterReject: (type) => void;
+type RegisteredRouterReject = (type) => void;
 ```
 
 Type for Router Reject method. Triggers rejections registered within [Register](../interfaces/Register.md)

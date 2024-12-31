@@ -1,7 +1,7 @@
 # Types: Param
 
 ```ts
-type Param: 
+type Param = 
   | ParamGetter
   | ParamGetSet
   | RegExp
