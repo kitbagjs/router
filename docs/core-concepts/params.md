@@ -114,21 +114,7 @@ const monthParam = createParam({
 ```
 
 ## Default Values
-You can define a default value for a param type when creating it. This value will be used when the param is optional and not provided in the url. An optional param of type `String` will have the type `string | undefined` when being accessed. But when a default value is provided it will have the type `string`, even if the value is missing from the url.
-
-```ts {8}
-const monthParam = createParam({
-  get: (value, { invalid }) => {
-    ...
-  },
-  set: (value) => {
-    ...
-  },
-  defaultValue: 'january',
-})
-```
-
-You can also define a default value for a individual param using the `withDefault` utility.
+Define a default value when creating a param or by using the `withDefault` utility. This value will be used when the param is optional and not provided in the url. An optional param of type `String` will have the type `string | undefined` when being accessed. But when a default value is provided it will have the type `string`, even if the value is missing from the url.
 
 ```ts {7}
 import { createRoute, path, withDefault } from '@kitbag/router'
@@ -140,18 +126,6 @@ const events = createRoute({
     month: withDefault(monthParam, 'january'),
   }),
 })
-```
-
-Or create a new param type with a default value from an existing param type.
-
-```ts {7}
-import { createParam, withDefault } from '@kitbag/router'
-
-const monthParam = createParam((value, { invalid }) => {
-  ...
-})
-
-const monthParamWithDefault = withDefault(monthParam, 'january')
 ```
 
 ## Query Params
