@@ -692,21 +692,36 @@ test('global hooks are called correctly', async () => {
   await router.start()
 
   expect(onBeforeRouteEnter).toHaveBeenCalledTimes(1)
+  expect(onBeforeRouteUpdate).toHaveBeenCalledTimes(0)
+  expect(onBeforeRouteLeave).toHaveBeenCalledTimes(1)
+  expect(onAfterRouteLeave).toHaveBeenCalledTimes(1)
+  expect(onAfterRouteUpdate).toHaveBeenCalledTimes(0)
   expect(onAfterRouteEnter).toHaveBeenCalledTimes(1)
   
   await router.push('parentA.childA', { paramA: 'valueA', paramB: 'valueB' })
-  
-  expect(onBeforeRouteEnter).toHaveBeenCalledTimes(2)
+
+  expect(onBeforeRouteEnter).toHaveBeenCalledTimes(1)
   expect(onBeforeRouteUpdate).toHaveBeenCalledTimes(1)
+  expect(onBeforeRouteLeave).toHaveBeenCalledTimes(1)
+  expect(onAfterRouteLeave).toHaveBeenCalledTimes(1)
   expect(onAfterRouteUpdate).toHaveBeenCalledTimes(1)
-  expect(onAfterRouteEnter).toHaveBeenCalledTimes(2)
+  expect(onAfterRouteEnter).toHaveBeenCalledTimes(1)
   
   await router.push('parentA.childB', { paramA: 'valueB', paramD: 'valueD' })
 
-  expect(onBeforeRouteEnter).toHaveBeenCalledTimes(3)
+  expect(onBeforeRouteEnter).toHaveBeenCalledTimes(1)
   expect(onBeforeRouteUpdate).toHaveBeenCalledTimes(2)
   expect(onBeforeRouteLeave).toHaveBeenCalledTimes(1)
   expect(onAfterRouteLeave).toHaveBeenCalledTimes(1)
   expect(onAfterRouteUpdate).toHaveBeenCalledTimes(2)
-  expect(onAfterRouteEnter).toHaveBeenCalledTimes(3)
+  expect(onAfterRouteEnter).toHaveBeenCalledTimes(1)
+  
+  await router.push('parentB')
+
+  expect(onBeforeRouteEnter).toHaveBeenCalledTimes(2)
+  expect(onBeforeRouteUpdate).toHaveBeenCalledTimes(2)
+  expect(onBeforeRouteLeave).toHaveBeenCalledTimes(2)
+  expect(onAfterRouteLeave).toHaveBeenCalledTimes(2)
+  expect(onAfterRouteUpdate).toHaveBeenCalledTimes(2)
+  expect(onAfterRouteEnter).toHaveBeenCalledTimes(2)
 })
