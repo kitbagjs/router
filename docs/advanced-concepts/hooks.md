@@ -24,7 +24,7 @@ onAfterRouteEnter: (to, context) => {
 
 ## Context
 
-The router provides `to` and a `context` argument to your hook callback. The context will always include: 
+The router provides `to` and a `context` argument to your hook callback. The context will always include:
 
 | Property | Description |
 | ---- | ---- |

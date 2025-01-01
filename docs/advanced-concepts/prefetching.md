@@ -1,6 +1,6 @@
 # Prefetching
 
-Prefetching is a powerful feature in Kitbag Router that allows your application to start loading dependencies before users navigate, improving user experience by reducing the wait time when navigating. 
+Prefetching is a powerful feature in Kitbag Router that allows your application to start loading dependencies before users navigate, improving user experience by reducing the wait time when navigating.
 
 ## Prefetching Components
 
@@ -31,6 +31,7 @@ const user = createRoute({
   }) // [!code focus]
 })
 ```
+
 ::: info
 Props for routes and any parent routes are collected concurrently while components are being mounted. This avoids a waterfall from happening for async props.
 :::
@@ -60,6 +61,7 @@ This means that if prefetching is enabled globally, but disabled for a specific 
 Prefetching can be configured with a `boolean`, a `PrefetchStrategy`, or a `PrefetchConfigOptions` object.
 
 ::: code-group
+
 ```ts [boolean]
 prefetch: true
 ```
@@ -74,6 +76,7 @@ prefetch: {
   props: false,
 }
 ```
+
 :::
 
 ::: info

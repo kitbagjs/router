@@ -1,4 +1,5 @@
 # useQueryValue
+
 Returns the value of a specific key in the query string. The query can be accessed using the Router Route's [query property](/api/types/RouterRoute#query) but this composable allows using [param types](/core-concepts/params#param-types) to ensure type safety. This is useful when you need to interact with the query but without defining a [query param](/core-concepts/params#query-params).
 
 ## Arguments
@@ -31,6 +32,7 @@ const { values: userIds } = useQueryValue('selectedUserIds')
 ```
 
 ## Param Types
+
 The param type can be passed in to ensure the type of the value is correct.
 
 ```ts
