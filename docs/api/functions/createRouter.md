@@ -3,17 +3,21 @@
 ## Call Signature
 
 ```ts
-function createRouter<TRoutes, TOptions>(routes, options?): Router<TRoutes, TOptions>
+function createRouter<TRoutes, TOptions, TPlugin>(
+   routes, 
+   options?, 
+plugins?): Router<TRoutes, TOptions, TPlugin>
 ```
 
 Creates a router instance for a Vue application, equipped with methods for route handling, lifecycle hooks, and state management.
 
 ### Type Parameters
 
-| Type Parameter |
-| ------ |
-| `TRoutes` *extends* [`Routes`](../types/Routes.md) |
-| `TOptions` *extends* [`RouterOptions`](../types/RouterOptions.md) |
+| Type Parameter | Default type |
+| ------ | ------ |
+| `TRoutes` *extends* [`Routes`](../types/Routes.md) | - |
+| `TOptions` *extends* [`RouterOptions`](../types/RouterOptions.md) | - |
+| `TPlugin` *extends* [`RouterPlugin`](../types/RouterPlugin.md)\<[`Routes`](../types/Routes.md), `Record`\<`string`, `Component`\>\> | `EmptyRouterPlugin` |
 
 ### Parameters
 
@@ -21,10 +25,11 @@ Creates a router instance for a Vue application, equipped with methods for route
 | ------ | ------ | ------ |
 | `routes` | `TRoutes` | [Routes](../types/Routes.md) An array of route definitions specifying the configuration of routes in the application. Use createRoute method to create the route definitions. |
 | `options`? | `TOptions` | [RouterOptions](../types/RouterOptions.md) for the router, including history mode and initial URL settings. |
+| `plugins`? | `TPlugin`[] | - |
 
 ### Returns
 
-[`Router`](../types/Router.md)\<`TRoutes`, `TOptions`\>
+[`Router`](../types/Router.md)\<`TRoutes`, `TOptions`, `TPlugin`\>
 
 Router instance
 
@@ -47,17 +52,21 @@ const router = createRouter(routes)
 ## Call Signature
 
 ```ts
-function createRouter<TRoutes, TOptions>(arrayOfRoutes, options?): Router<TRoutes, TOptions>
+function createRouter<TRoutes, TOptions, TPlugin>(
+   arrayOfRoutes, 
+   options?, 
+plugins?): Router<TRoutes, TOptions, TPlugin>
 ```
 
 Creates a router instance for a Vue application, equipped with methods for route handling, lifecycle hooks, and state management.
 
 ### Type Parameters
 
-| Type Parameter |
-| ------ |
-| `TRoutes` *extends* [`Routes`](../types/Routes.md) |
-| `TOptions` *extends* [`RouterOptions`](../types/RouterOptions.md) |
+| Type Parameter | Default type |
+| ------ | ------ |
+| `TRoutes` *extends* [`Routes`](../types/Routes.md) | - |
+| `TOptions` *extends* [`RouterOptions`](../types/RouterOptions.md) | - |
+| `TPlugin` *extends* [`RouterPlugin`](../types/RouterPlugin.md)\<[`Routes`](../types/Routes.md), `Record`\<`string`, `Component`\>\> | `EmptyRouterPlugin` |
 
 ### Parameters
 
@@ -65,10 +74,11 @@ Creates a router instance for a Vue application, equipped with methods for route
 | ------ | ------ | ------ |
 | `arrayOfRoutes` | `TRoutes`[] | - |
 | `options`? | `TOptions` | [RouterOptions](../types/RouterOptions.md) for the router, including history mode and initial URL settings. |
+| `plugins`? | `TPlugin`[] | - |
 
 ### Returns
 
-[`Router`](../types/Router.md)\<`TRoutes`, `TOptions`\>
+[`Router`](../types/Router.md)\<`TRoutes`, `TOptions`, `TPlugin`\>
 
 Router instance
 

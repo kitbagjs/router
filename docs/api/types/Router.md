@@ -1,7 +1,7 @@
-# Types: Router\<TRoutes, TOptions\>
+# Types: Router\<TRoutes, TOptions, TPlugin\>
 
 ```ts
-type Router<TRoutes, TOptions> = object;
+type Router<TRoutes, TOptions, TPlugin> = object;
 ```
 
 ## Type Parameters
@@ -10,6 +10,7 @@ type Router<TRoutes, TOptions> = object;
 | ------ | ------ |
 | `TRoutes` *extends* [`Routes`](Routes.md) | `any` |
 | `TOptions` *extends* [`RouterOptions`](RouterOptions.md) | `any` |
+| `TPlugin` *extends* [`RouterPlugin`](RouterPlugin.md) | `any` |
 
 ## Type declaration
 
@@ -169,7 +170,7 @@ Determines what assets are prefetched.
 ### push
 
 ```ts
-push: RouterPush<TRoutes>;
+push: RouterPush<TRoutes | TPlugin["routes"]>;
 ```
 
 Navigates to a specified path or route object in the history stack, adding a new entry.
@@ -189,7 +190,9 @@ Forces the router to re-evaluate the current route.
 ### reject
 
 ```ts
-reject: RouterReject<keyof TOptions["rejections"]>;
+reject: RouterReject<
+  | keyof TOptions["rejections"]
+| KeysOfUnion<TPlugin["rejections"]>>;
 ```
 
 Handles route rejection based on a specified rejection type.
@@ -197,7 +200,7 @@ Handles route rejection based on a specified rejection type.
 ### replace
 
 ```ts
-replace: RouterReplace<TRoutes>;
+replace: RouterReplace<TRoutes | TPlugin["routes"]>;
 ```
 
 Replaces the current entry in the history stack with a new one.
@@ -205,7 +208,7 @@ Replaces the current entry in the history stack with a new one.
 ### resolve
 
 ```ts
-resolve: RouterResolve<TRoutes>;
+resolve: RouterResolve<TRoutes | TPlugin["routes"]>;
 ```
 
 Creates a ResolvedRoute record for a given route name and params.
@@ -213,7 +216,9 @@ Creates a ResolvedRoute record for a given route name and params.
 ### route
 
 ```ts
-route: RouterRoutes<TRoutes>;
+route: 
+  | RouterRoutes<TRoutes>
+| RouterRoutes<TPlugin["routes"]>;
 ```
 
 Manages the current route state.
@@ -229,3 +234,15 @@ Initializes the router based on the initial route. Automatically called when the
 #### Returns
 
 `Promise`\<`void`\>
+
+### stop()
+
+```ts
+stop: () => void;
+```
+
+Stops the router and teardown any listeners.
+
+#### Returns
+
+`void`
