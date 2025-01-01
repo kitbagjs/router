@@ -17,8 +17,50 @@ const blogPost = createRoute({
 })
 ```
 
+## Using a link
+The router link component makes it easy to create links to routes, external routes, or any url. See the [RouterLink](/components/router-link) docs for more info.
+
+```vue
+<router-link to="(resolve) => resolve('blogPost', { blogPostId: 1 })">Blog Post One</router-link>
+```
+
+## Programmatic Navigation
+Using [`router.push`](/core-concepts/router#push), [`router.replace`](/core-concepts/router#replace), or [`route.update`](/core-concepts/router-route#update) you can do programmatic navigation.
+
+
+::: code-group
+
+```ts [Push]
+import { useRouter } from '@kitbag/router'
+
+const router = useRouter()
+
+router.push('blogPost', {
+  blogPostId: 1,
+})
+```
+
+```ts [Replace]
+import { useRouter } from '@kitbag/router'
+
+const router = useRouter()
+
+router.replace('blogPost', {
+  blogPostId: 1,
+})
+```
+
+```ts [Update]
+import { useRoute } from '@kitbag/router'
+
+const route = useRoute('blogPost')
+
+route.update({ blogPostId: 1 })
+```
+:::
+
 ## Routes vs Urls
-All navigation methods accept a route name or a url. Using a route name is the recommended because it is type safe. But sometimes necessary to use a url. These examples are all the same functionally.
+All navigation methods accept a route or a url. Using a route is the recommended because it is type safe. But sometimes it is necessary to use a url. These examples are all the same functionally.
 
 ::: code-group
 ```ts [Router]
@@ -32,10 +74,10 @@ router.push('/blogPost/1')
 ```
 
 ```vue [Router Link]
-<!-- type safe -->
+<!-- type safe ✅ -->
 <router-link to="(resolve) => resolve('blogPost', { blogPostId: 1 })">Blog Post One</router-link>
 
-<!-- not type safe -->
+<!-- not type safe ⚠️ -->
 <router-link to="/blogPost/1">Blog Post One</router-link>
 ```
 :::

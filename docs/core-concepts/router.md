@@ -62,14 +62,18 @@ const router = useRouter()
 ## Router Methods
 
 ### Push
-Navigates to a specific route and adds a new history entry.
+Navigates to a specific route and adds a new history entry. Push accepts a route name, a resolved route, or a url. When using a route name, params can be passed as the second argument. The last argument is always the push options. See [RouterPushOptions](/api/types/RouterPushOptions.md) for more information.
 
 ```ts
-router.push('home')
+router.push('blogPost', { blogPostId: 1 }, {
+  query: {
+    highlight: 'search term',
+  },
+})
 ```
 
 ### Replace
-Replaces the current history entry with a new one.
+Replaces is exactly the same as push except it hard codes the `replace` option to `true`. See [Push vs Replace](/core-concepts/navigation#push-vs-replace) for more information.
 
 ```ts
 router.replace('home')
@@ -118,7 +122,9 @@ router.find('users', { id: 1 })
 ```
 
 ### Resolve
-Creates a ResolvedRoute record for a given route name and params.
+Creates a ResolvedRoute record for a given route.
+
+A [ResolvedRoute](/api/types/ResolvedRoute) is the base of what makes up the [Router Route](/core-concepts/router-route). It represents a [route](/core-concepts/routes) that has been matched to a specific location. It includes any params, state, query, and hash values for that location. Resolved routes are how Kitbag Router ensures type safety when navigating.
 
 ```ts
 router.resolve('users', { id: 1 })
