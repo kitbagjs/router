@@ -88,6 +88,10 @@
         "link": "/api/functions/createRouter.md"
       },
       {
+        "text": "createRouterPlugin",
+        "link": "/api/functions/createRouterPlugin.md"
+      },
+      {
         "text": "path",
         "link": "/api/functions/path.md"
       },
@@ -204,6 +208,10 @@
         "link": "/api/types/PrefetchStrategy.md"
       },
       {
+        "text": "PropsCallbackContext",
+        "link": "/api/types/PropsCallbackContext.md"
+      },
+      {
         "text": "QuerySource",
         "link": "/api/types/QuerySource.md"
       },
@@ -278,6 +286,14 @@
       {
         "text": "RouterOptions",
         "link": "/api/types/RouterOptions.md"
+      },
+      {
+        "text": "RouterPlugin",
+        "link": "/api/types/RouterPlugin.md"
+      },
+      {
+        "text": "RouterPushOptions",
+        "link": "/api/types/RouterPushOptions.md"
       },
       {
         "text": "RouterRoute",

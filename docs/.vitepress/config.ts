@@ -43,11 +43,12 @@ export default defineConfig({
         {
           text: 'Core Concepts',
           items: [
-            { text: 'Defining Routes', link: '/core-concepts/defining-routes' },
-            { text: 'Route Params', link: '/core-concepts/route-params' },
-            { text: 'Query Params', link: '/core-concepts/query-params' },
-            { text: 'Component Props', link: '/core-concepts/component-props' },
-            { text: 'Navigating', link: '/core-concepts/navigating' },
+            { text: 'Routes', link: '/core-concepts/routes' },
+            { text: 'External Routes', link: '/core-concepts/external-routes' },
+            { text: 'Params', link: '/core-concepts/params' },
+            { text: 'Router', link: '/core-concepts/router' },
+            { text: 'Router Route', link: '/core-concepts/router-route' },
+            { text: 'Navigation', link: '/core-concepts/navigation' },
           ],
         },
         {
@@ -60,9 +61,10 @@ export default defineConfig({
         {
           text: 'Composables',
           items: [
+            { text: 'useLink', link: '/composables/useLink' },
+            { text: 'useQueryValue', link: '/composables/useQueryValue' },
             { text: 'useRoute', link: '/composables/useRoute' },
             { text: 'useRouter', link: '/composables/useRouter' },
-            { text: 'useLink', link: '/composables/useLink' },
           ],
         },
         {

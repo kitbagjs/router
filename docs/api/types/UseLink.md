@@ -56,7 +56,7 @@ Convenience method for executing `router.push` with route context passed in.
 
 | Parameter | Type |
 | ------ | ------ |
-| `options`? | `RouterPushOptions` |
+| `options`? | [`RouterPushOptions`](RouterPushOptions.md) |
 
 #### Returns
 

@@ -41,7 +41,7 @@ As a convenience, you can also use a [Url](/api/types/Url) for the `to` prop. Th
 <router-link to="https://example.com">External Link</router-link>
 ```
 ::: info External Routes
-You can define [external routes](/core-concepts/defining-routes#external-routes) in your router configuration for a type safe way to navigate to external urls.
+You can define [external routes](/core-concepts/external-routes) in your router configuration for a type safe way to navigate to external urls.
 :::
 
 ## Slots

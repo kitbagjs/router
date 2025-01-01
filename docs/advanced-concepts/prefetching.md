@@ -89,7 +89,7 @@ import { createRouter } from 'kitbag-router';
 
 const router = createRouter({
   options: {
-    prefetch: false, // all prefetching is disabled globally
+    prefetch: false, // all prefetching is disabled by default
   },
 });
 ```

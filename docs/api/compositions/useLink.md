@@ -21,7 +21,7 @@ for navigating.
 | Parameter | Type |
 | ------ | ------ |
 | `name` | `MaybeRefOrGetter`\<`TRouteKey`\> |
-| ...`args` | [`MaybeRefOrGetter`\<\{\}\>, `MaybeRefOrGetter`\<[`UseLinkOptions`](../types/UseLinkOptions.md)\>] |
+| ...`args` | \[`MaybeRefOrGetter`\<\{\}\>, `MaybeRefOrGetter`\<[`UseLinkOptions`](../types/UseLinkOptions.md)\>\] |
 
 ### Returns
 

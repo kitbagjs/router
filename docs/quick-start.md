@@ -15,7 +15,7 @@ npm install @kitbag/router
 
 ## Define Routes
 
-Routes are created individually using the [`createRoute`](/api/functions/createRoute) utility. Learn more about [defining routes](/core-concepts/defining-routes).
+Routes are created individually using the [`createRoute`](/api/functions/createRoute) utility. Learn more about [defining routes](/core-concepts/routes).
 
 ```ts
 import { createRoute } from '@kitbag/router'
@@ -77,7 +77,7 @@ Give your route components a place to be mounted
 </div>
 ```
 
-This component can be mounted anywhere you want route components to be mounted. Nested routes can also have a nested `RouterView` which would be responsible for rendering any children that route may have. Read more about [nested routes](/core-concepts/defining-routes#nested-routes).
+This component can be mounted anywhere you want route components to be mounted. Nested routes can also have a nested `RouterView` which would be responsible for rendering any children that route may have. Read more about [nested routes](/core-concepts/routes#parent).
 
 ## RouterLink
 
@@ -91,4 +91,4 @@ Use RouterLink for navigating between routes.
 
 ### Type Safety in RouterLink
 
-The `to` prop accepts a callback function or a [`Url`](/api/types/Url) string. When using a callback function, the router will provide a `resolve` function that is a type safe way to create a url from from your pre-defined routes. 
+The `to` prop accepts a callback function or a [`Url`](/api/types/Url) string. When using a callback function, the router will provide a `resolve` function that is a type safe way to create link for your pre-defined routes. 

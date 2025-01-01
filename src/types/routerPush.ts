@@ -10,9 +10,21 @@ import { ResolvedRoute } from '@/types/resolved'
 export type RouterPushOptions<
   TState = unknown
 > = {
+  /**
+   * The query string to add to the url.
+   */
   query?: QuerySource,
+  /**
+   * The hash to append to the url.
+   */
   hash?: string,
+  /**
+   * Whether to replace the current history entry.
+   */
   replace?: boolean,
+  /**
+   * State values to pass to the route.
+   */
   state?: Partial<TState>,
 }
 
