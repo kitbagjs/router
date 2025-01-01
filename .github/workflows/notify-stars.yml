@@ -1,0 +1,19 @@
+name: Stars Notification to Discord
+
+on:
+  watch:
+    types: [started]
+
+jobs:
+  notify:
+    name: Notify Discord
+    runs-on: ubuntu-latest
+    steps:
+      - uses: kitbagjs/actions-notify-stars@main
+        with:
+          DISCORD_WEBHOOK_URL: ${{secrets.DISCORD_WEBHOOK_URL}}
+          GITHUB_REPOSITORY: ${{github.event.repository.name}}
+          GITHUB_REPOSITORY_STARS: ${{github.event.repository.stargazers_count}}
+          GITHUB_SENDER_LOGIN: ${{github.event.sender.login}}
+          GITHUB_SENDER_AVATAR_URL: ${{github.event.sender.avatar_url}}
+          GITHUB_SENDER_HTML_URL: ${{github.event.sender.html_url}}

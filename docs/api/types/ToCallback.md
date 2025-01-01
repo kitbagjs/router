@@ -1,7 +1,7 @@
 # Types: ToCallback()
 
 ```ts
-type ToCallback: (resolve) => ResolvedRoute | Url | undefined;
+type ToCallback = (resolve) => ResolvedRoute | Url | undefined;
 ```
 
 ## Parameters

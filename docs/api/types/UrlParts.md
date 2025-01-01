@@ -1,7 +1,7 @@
 # Types: UrlParts
 
 ```ts
-type UrlParts: object;
+type UrlParts = object;
 ```
 
 ## Type declaration

@@ -1,7 +1,7 @@
 # Types: AddBeforeRouteHook()
 
 ```ts
-type AddBeforeRouteHook: (hook) => RouteHookRemove;
+type AddBeforeRouteHook = (hook) => RouteHookRemove;
 ```
 
 Adds a hook that is called before a route change. Returns a function to remove the hook.

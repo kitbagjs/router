@@ -1,7 +1,7 @@
 # Types: RegisteredRoutes\<T\>
 
 ```ts
-type RegisteredRoutes<T>: T extends object ? TRoutes : Route[];
+type RegisteredRoutes<T> = T extends object ? TRoutes : Route[];
 ```
 
 Represents the Router routes property within [Register](../interfaces/Register.md)

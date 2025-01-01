@@ -3,14 +3,14 @@ import { RouterHistoryMode } from '@/services/createRouterHistory'
 import { RouterRoute } from '@/services/createRouterRoute'
 import { AddAfterRouteHook, AddBeforeRouteHook } from '@/types/hooks'
 import { PrefetchConfig } from '@/types/prefetch'
-import { RegisteredRejectionType } from '@/types/register'
 import { ResolvedRoute } from '@/types/resolved'
 import { Routes } from '@/types/route'
 import { RouterPush } from '@/types/routerPush'
 import { RouterReplace } from '@/types/routerReplace'
 import { RouterResolve, RouterResolveOptions } from '@/types/RouterResolve'
-
-export type RouterReject = (type: RegisteredRejectionType) => void
+import { RouterReject } from './routerReject'
+import { RouterPlugin } from './routerPlugin'
+import { KeysOfUnion } from './utilities'
 
 /**
  * Options to initialize a {@link Router} instance.
@@ -45,8 +45,8 @@ export type RouterOptions = {
 
 export type Router<
   TRoutes extends Routes = any,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  __TOptions extends RouterOptions = any
+  TOptions extends RouterOptions = any,
+  TPlugin extends RouterPlugin = any
 > = {
   /**
    * Installs the router into a Vue application instance.
@@ -56,11 +56,11 @@ export type Router<
   /**
    * Manages the current route state.
   */
-  route: RouterRoutes<TRoutes>,
+  route: RouterRoutes<TRoutes> | RouterRoutes<TPlugin['routes']>,
   /**
    * Creates a ResolvedRoute record for a given route name and params.
    */
-  resolve: RouterResolve<TRoutes>,
+  resolve: RouterResolve<TRoutes | TPlugin['routes']>,
   /**
    * Creates a ResolvedRoute record for a given URL.
    */
@@ -68,15 +68,15 @@ export type Router<
   /**
    * Navigates to a specified path or route object in the history stack, adding a new entry.
    */
-  push: RouterPush<TRoutes>,
+  push: RouterPush<TRoutes | TPlugin['routes']>,
   /**
    * Replaces the current entry in the history stack with a new one.
    */
-  replace: RouterReplace<TRoutes>,
+  replace: RouterReplace<TRoutes | TPlugin['routes']>,
   /**
    * Handles route rejection based on a specified rejection type.
    */
-  reject: RouterReject,
+  reject: RouterReject<keyof TOptions['rejections'] | KeysOfUnion<TPlugin['rejections']>>,
   /**
    * Forces the router to re-evaluate the current route.
    */
@@ -129,6 +129,10 @@ export type Router<
    * Initializes the router based on the initial route. Automatically called when the router is installed. Calling this more than once has no effect.
    */
   start: () => Promise<void>,
+  /**
+   * Stops the router and teardown any listeners.
+   */
+  stop: () => void,
 }
 
 /**

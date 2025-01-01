@@ -1,7 +1,7 @@
 # Types: Route\<TName, THost, TPath, TQuery, THash, TMeta, TState, TMatchNames\>
 
 ```ts
-type Route<TName, THost, TPath, TQuery, THash, TMeta, TState, TMatchNames>: object;
+type Route<TName, THost, TPath, TQuery, THash, TMeta, TState, TMatchNames> = object;
 ```
 
 Represents the structure of a route within the application. Return value of `createRoute`
