@@ -8,7 +8,7 @@ import { CallbackContextPushError } from '@/errors/callbackContextPushError'
 import { CallbackContextRejectionError } from '@/errors/callbackContextRejectionError'
 import { CallbackContextAbortError } from '@/errors/callbackContextAbortError'
 
-export const routeHookStoreKey: InjectionKey<RouterHooks> = Symbol()
+export const routerHooksKey: InjectionKey<RouterHooks> = Symbol()
 
 export type RouterHooks = {
   runBeforeRouteHooks: RouteHookBeforeRunner,

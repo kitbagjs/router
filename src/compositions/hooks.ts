@@ -1,11 +1,11 @@
 import { inject, onUnmounted } from 'vue'
 import { useRouterDepth } from '@/compositions/useRouterDepth'
 import { RouterNotInstalledError } from '@/errors'
-import { routeHookStoreKey, RouterHooks } from '@/services/createRouterHooks'
+import { routerHooksKey, RouterHooks } from '@/services/createRouterHooks'
 import { AddAfterRouteHook, AddBeforeRouteHook, AfterRouteHook, AfterRouteHookLifecycle, BeforeRouteHook, BeforeRouteHookLifecycle } from '@/types/hooks'
 
-function useRouteHookStore(): RouterHooks {
-  const hooks = inject(routeHookStoreKey)
+function useRouterHooks(): RouterHooks {
+  const hooks = inject(routerHooksKey)
 
   if (!hooks) {
     throw new RouterNotInstalledError()
@@ -17,7 +17,7 @@ function useRouteHookStore(): RouterHooks {
 function beforeComponentHookFactory(lifecycle: BeforeRouteHookLifecycle) {
   return (hook: BeforeRouteHook) => {
     const depth = useRouterDepth()
-    const store = useRouteHookStore()
+    const store = useRouterHooks()
 
     const remove = store.addBeforeRouteHook({ lifecycle, hook, depth, timing: 'component' })
 
@@ -30,7 +30,7 @@ function beforeComponentHookFactory(lifecycle: BeforeRouteHookLifecycle) {
 function afterComponentHookFactory(lifecycle: AfterRouteHookLifecycle) {
   return (hook: AfterRouteHook) => {
     const depth = useRouterDepth()
-    const store = useRouteHookStore()
+    const store = useRouterHooks()
 
     const remove = store.addAfterRouteHook({ lifecycle, hook, depth, timing: 'component' })
 

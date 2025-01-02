@@ -8,7 +8,7 @@ import { createIsExternal } from '@/services/createIsExternal'
 import { parseUrl } from '@/services/urlParser'
 import { createPropStore, propStoreKey } from '@/services/createPropStore'
 import { createRouterHistory } from '@/services/createRouterHistory'
-import { routeHookStoreKey, createRouterHooks } from '@/services/createRouterHooks'
+import { routerHooksKey, createRouterHooks } from '@/services/createRouterHooks'
 import { createRouterReject } from '@/services/createRouterReject'
 import { getInitialUrl } from '@/services/getInitialUrl'
 import { setStateValues } from '@/services/state'
@@ -306,7 +306,7 @@ export function createRouter<
     app.component('RouterView', RouterView)
     app.component('RouterLink', RouterLink)
     app.provide(routerRejectionKey, rejection)
-    app.provide(routeHookStoreKey, hooks)
+    app.provide(routerHooksKey, hooks)
     app.provide(propStoreKey, propStore)
     app.provide(visibilityObserverKey, visibilityObserver)
 
