@@ -1,15 +1,7 @@
+import { RouteHooks } from '@/models/RouteHooks'
 import { CallbackAbortResponse, CallbackContext, CallbackContextAbort, CallbackPushResponse, CallbackRejectResponse, CallbackSuccessResponse } from '@/services/createCallbackContext'
 import { ResolvedRoute } from '@/types/resolved'
 import { MaybeArray, MaybePromise } from '@/types/utilities'
-
-export type Hooks = {
-  onBeforeRouteEnter: BeforeRouteHook[],
-  onBeforeRouteUpdate: BeforeRouteHook[],
-  onBeforeRouteLeave: BeforeRouteHook[],
-  onAfterRouteEnter: AfterRouteHook[],
-  onAfterRouteUpdate: AfterRouteHook[],
-  onAfterRouteLeave: AfterRouteHook[],
-}
 
 /**
  * Defines route hooks that can be applied before entering, updating, or leaving a route, as well as after these events.
@@ -55,7 +47,7 @@ export type AfterRouteHookRegistration = {
 
 export type RegisterComponentAfterRouteHook = (hook: AfterRouteHookRegistration) => RouteHookRemove
 
-export type RegisterGlobalRouteHooks = (hooks: Hooks) => void
+export type RegisterGlobalRouteHooks = (hooks: RouteHooks) => void
 
 /**
  * Adds a hook that is called before a route change. Returns a function to remove the hook.
