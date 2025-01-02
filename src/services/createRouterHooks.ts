@@ -1,5 +1,5 @@
 import { InjectionKey } from 'vue'
-import { AddAfterRouteHook, AddBeforeRouteHook, AddRouteHooks, AfterHookContext, AfterRouteHook, AfterRouteHookResponse, BeforeHookContext, BeforeRouteHook, BeforeRouteHookResponse, Hooks, RegisterAfterRouteHook, RegisterBeforeRouteHook, RouteHookAfterRunner, RouteHookBeforeRunner } from '@/types/hooks'
+import { AddAfterRouteHook, AddBeforeRouteHook, AddRouteHooks, AfterHookContext, AfterRouteHook, AfterRouteHookResponse, BeforeHookContext, BeforeRouteHook, BeforeRouteHookResponse, RegisterAfterRouteHook, RegisterBeforeRouteHook, RouteHookAfterRunner, RouteHookBeforeRunner } from '@/types/hooks'
 import { createCallbackContext } from './createCallbackContext'
 import { RouteHooks } from '@/models/RouteHooks'
 import { getRouteHookCondition } from './hooks'
