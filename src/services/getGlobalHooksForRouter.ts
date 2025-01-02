@@ -15,5 +15,10 @@ export function getGlobalHooksForRouter(options: RouterOptions = {}, plugins: Ro
 }
 
 function getHooksForLifecycle<T extends BeforeRouteHookLifecycle | AfterRouteHookLifecycle>(lifecycle: T, options: RouterOptions, plugins: RouterPlugin[]): AsArray<Hooks[T]> {
-  return [options[lifecycle], ...plugins.map((plugin) => plugin[lifecycle])].flat().filter((hook) => hook !== undefined) as AsArray<Hooks[T]>
+  const hooks = [
+    options[lifecycle],
+    ...plugins.map((plugin) => plugin[lifecycle]),
+  ].flat().filter((hook) => hook !== undefined)
+
+  return hooks as AsArray<Hooks[T]>
 }
