@@ -6,7 +6,7 @@ import { Path } from '@/types/path'
 import { PrefetchConfig } from '@/types/prefetch'
 import { Query } from '@/types/query'
 import { RouteMeta } from '@/types/register'
-import { WithHooks } from './hooks'
+import { WithHooks } from '@/types/hooks'
 
 /**
  * Represents an immutable array of Route instances. Return value of `createRoute`, expected param for `createRouter`.
