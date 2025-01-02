@@ -1,5 +1,6 @@
-import { RouterPlugin, Routes } from '@/types'
-import { insertBaseRoute } from './insertBaseRoute'
+import { Routes } from '@/types/route'
+import { RouterPlugin } from '@/types/routerPlugin'
+import { insertBaseRoute } from '@/services/insertBaseRoute'
 import { checkDuplicateNames } from '@/utilities/checkDuplicateNames'
 
 /**
