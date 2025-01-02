@@ -8,11 +8,9 @@ import { createIsExternal } from '@/services/createIsExternal'
 import { parseUrl } from '@/services/urlParser'
 import { createPropStore, propStoreKey } from '@/services/createPropStore'
 import { createRouterHistory } from '@/services/createRouterHistory'
-import { routeHookStoreKey, createRouterHooks } from '@/services/createRouterHooks'
+import { routerHooksKey, createRouterHooks } from '@/services/createRouterHooks'
 import { createRouterReject } from '@/services/createRouterReject'
 import { getInitialUrl } from '@/services/getInitialUrl'
-import { createRouteHookRunners } from '@/services/hooks'
-import { insertBaseRoute } from '@/services/insertBaseRoute'
 import { setStateValues } from '@/services/state'
 import { Routes } from '@/types/route'
 import { Router, RouterOptions } from '@/types/router'
@@ -20,7 +18,6 @@ import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { RouterReplace, RouterReplaceOptions } from '@/types/routerReplace'
 import { RoutesName } from '@/types/routesMap'
 import { Url, isUrl } from '@/types/url'
-import { checkDuplicateNames } from '@/utilities/checkDuplicateNames'
 import { createUniqueIdSequence } from '@/services/createUniqueIdSequence'
 import { createVisibilityObserver } from './createVisibilityObserver'
 import { visibilityObserverKey } from '@/compositions/useVisibilityObserver'
@@ -32,7 +29,8 @@ import { createResolvedRouteForUrl } from '@/services/createResolvedRouteForUrl'
 import { combineUrl } from '@/services/urlCombine'
 import { RouterReject } from '@/types/routerReject'
 import { EmptyRouterPlugin, RouterPlugin } from '@/types/routerPlugin'
-import { addRouterPluginHooks } from './createRouterPlugin'
+import { getRoutesForRouter } from './getRoutesForRouter'
+import { getGlobalHooksForRouter } from './getGlobalHooksForRouter'
 
 type RouterUpdateOptions = {
   replace?: boolean,
@@ -72,17 +70,17 @@ export function createRouter<
   const TRoutes extends Routes,
   const TOptions extends RouterOptions,
   const TPlugin extends RouterPlugin = EmptyRouterPlugin
->(arrayOfRoutes: TRoutes[], options?: TOptions, plugins?: TPlugin[]): Router<TRoutes, TOptions, TPlugin>
+>(routes: TRoutes[], options?: TOptions, plugins?: TPlugin[]): Router<TRoutes, TOptions, TPlugin>
 
 export function createRouter<
   const TRoutes extends Routes,
   const TOptions extends RouterOptions,
   const TPlugin extends RouterPlugin = EmptyRouterPlugin
 >(routesOrArrayOfRoutes: TRoutes | TRoutes[], options?: TOptions, plugins: TPlugin[] = []): Router<TRoutes, TOptions, TPlugin> {
-  const pluginRoutes = plugins.map((plugin) => plugin.routes)
-  const routes = insertBaseRoute([...routesOrArrayOfRoutes, ...pluginRoutes].flat(), options?.base)
+  const routes = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options?.base)
+  const hooks = createRouterHooks()
 
-  checkDuplicateNames(routes)
+  hooks.addRouteHooks(getGlobalHooksForRouter(options, plugins))
 
   const getNavigationId = createUniqueIdSequence()
   const propStore = createPropStore()
@@ -95,17 +93,6 @@ export function createRouter<
       set(url, { state: location.state, replace: true })
     },
   })
-
-  const { runBeforeRouteHooks, runAfterRouteHooks } = createRouteHookRunners()
-  const {
-    hooks,
-    onBeforeRouteEnter,
-    onAfterRouteUpdate,
-    onBeforeRouteLeave,
-    onAfterRouteEnter,
-    onBeforeRouteUpdate,
-    onAfterRouteLeave,
-  } = createRouterHooks()
 
   function find(url: string, options: RouterResolveOptions = {}): ResolvedRoute | undefined {
     return createResolvedRouteForUrl(routes, url, options.state)
@@ -124,7 +111,7 @@ export function createRouter<
     const to = find(url, options) ?? getRejectionRoute('NotFound')
     const from = { ...currentRoute }
 
-    const beforeResponse = await runBeforeRouteHooks({ to, from, hooks })
+    const beforeResponse = await hooks.runBeforeRouteHooks({ to, from })
 
     switch (beforeResponse.status) {
       // On abort do nothing
@@ -180,7 +167,7 @@ export function createRouter<
 
     updateRoute(to)
 
-    const afterResponse = await runAfterRouteHooks({ to, from, hooks })
+    const afterResponse = await hooks.runAfterRouteHooks({ to, from })
 
     switch (afterResponse.status) {
       case 'PUSH':
@@ -319,7 +306,7 @@ export function createRouter<
     app.component('RouterView', RouterView)
     app.component('RouterLink', RouterLink)
     app.provide(routerRejectionKey, rejection)
-    app.provide(routeHookStoreKey, hooks)
+    app.provide(routerHooksKey, hooks)
     app.provide(propStoreKey, propStore)
     app.provide(visibilityObserverKey, visibilityObserver)
 
@@ -343,20 +330,16 @@ export function createRouter<
     go: history.go,
     install,
     isExternal,
-    onBeforeRouteEnter,
-    onAfterRouteUpdate,
-    onBeforeRouteLeave,
-    onAfterRouteEnter,
-    onBeforeRouteUpdate,
-    onAfterRouteLeave,
+    onBeforeRouteEnter: hooks.onBeforeRouteEnter,
+    onBeforeRouteUpdate: hooks.onBeforeRouteUpdate,
+    onBeforeRouteLeave: hooks.onBeforeRouteLeave,
+    onAfterRouteEnter: hooks.onAfterRouteEnter,
+    onAfterRouteUpdate: hooks.onAfterRouteUpdate,
+    onAfterRouteLeave: hooks.onAfterRouteLeave,
     prefetch: options?.prefetch,
     start,
     stop,
   }
-
-  plugins.forEach((plugin) => {
-    addRouterPluginHooks(router, plugin)
-  })
 
   return router
 }
