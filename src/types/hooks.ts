@@ -40,38 +40,36 @@ export type RouteHookAfterRunner = (context: AfterHookContext) => Promise<AfterR
 export type RouteHookTiming = 'global' | 'component'
 
 export type BeforeRouteHookRegistration = {
-  timing: RouteHookTiming,
   lifecycle: 'onBeforeRouteEnter' | 'onBeforeRouteUpdate' | 'onBeforeRouteLeave',
   hook: BeforeRouteHook,
   depth: number,
 }
 
-export type RegisterBeforeRouteHook = (hook: BeforeRouteHookRegistration) => RouteHookRemove
+export type RegisterComponentBeforeRouteHook = (hook: BeforeRouteHookRegistration) => RouteHookRemove
 
 export type AfterRouteHookRegistration = {
-  timing: RouteHookTiming,
   lifecycle: 'onAfterRouteEnter' | 'onAfterRouteUpdate' | 'onAfterRouteLeave',
   hook: AfterRouteHook,
   depth: number,
 }
 
-export type RegisterAfterRouteHook = (hook: AfterRouteHookRegistration) => RouteHookRemove
+export type RegisterComponentAfterRouteHook = (hook: AfterRouteHookRegistration) => RouteHookRemove
 
-export type AddRouteHooks = (hooks: Hooks) => void
+export type RegisterGlobalRouteHooks = (hooks: Hooks) => void
 
 /**
  * Adds a hook that is called before a route change. Returns a function to remove the hook.
  * @param hook - {@link BeforeRouteHook} The hook function to add.
  * @returns {RouteHookRemove} A function that removes the added hook.
  */
-export type AddBeforeRouteHook = (hook: BeforeRouteHook) => RouteHookRemove
+export type RegisterBeforeRouteHook = (hook: BeforeRouteHook) => RouteHookRemove
 
 /**
  * Adds a hook that is called after a route change. Returns a function to remove the hook.
  * @param hook - {@link AfterRouteHook} The hook function to add.
  * @returns {RouteHookRemove} A function that removes the added hook.
  */
-export type AddAfterRouteHook = (hook: AfterRouteHook) => RouteHookRemove
+export type RegisterAfterRouteHook = (hook: AfterRouteHook) => RouteHookRemove
 
 /**
  * Context provided to route hooks, containing context of previous route and functions for triggering rejections and push/replace to another route.

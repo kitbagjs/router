@@ -3,8 +3,7 @@ import { createRoute } from './createRoute'
 import { createRouter } from './createRouter'
 import { createRouterPlugin } from './createRouterPlugin'
 import { component, routes } from '@/utilities/testHelpers'
-import { flushPromises } from '@vue/test-utils'
-import { mount } from '@vue/test-utils'
+import { mount, flushPromises } from '@vue/test-utils'
 
 test('given a plugin, adds the routes to the router', async () => {
   const plugin = createRouterPlugin({
@@ -42,7 +41,7 @@ test('given a plugin, adds the rejections to the router', async () => {
     },
   })
 
-  await router.reject('plugin')
+  router.reject('plugin')
 
   await flushPromises()
 
@@ -79,28 +78,28 @@ test('given a plugin, adds the hooks to the router', async () => {
 
   await router.push('parentA.childA', { paramA: 'valueA', paramB: 'valueB' })
 
-  expect(plugin.onBeforeRouteEnter).toHaveBeenCalledTimes(1)
+  expect(plugin.onBeforeRouteEnter).toHaveBeenCalledTimes(2)
   expect(plugin.onBeforeRouteUpdate).toHaveBeenCalledTimes(1)
   expect(plugin.onBeforeRouteLeave).toHaveBeenCalledTimes(1)
   expect(plugin.onAfterRouteLeave).toHaveBeenCalledTimes(1)
   expect(plugin.onAfterRouteUpdate).toHaveBeenCalledTimes(1)
-  expect(plugin.onAfterRouteEnter).toHaveBeenCalledTimes(1)
+  expect(plugin.onAfterRouteEnter).toHaveBeenCalledTimes(2)
 
   await router.push('parentA.childB', { paramA: 'valueB', paramD: 'valueD' })
 
-  expect(plugin.onBeforeRouteEnter).toHaveBeenCalledTimes(1)
-  expect(plugin.onBeforeRouteUpdate).toHaveBeenCalledTimes(2)
-  expect(plugin.onBeforeRouteLeave).toHaveBeenCalledTimes(1)
-  expect(plugin.onAfterRouteLeave).toHaveBeenCalledTimes(1)
-  expect(plugin.onAfterRouteUpdate).toHaveBeenCalledTimes(2)
-  expect(plugin.onAfterRouteEnter).toHaveBeenCalledTimes(1)
-
-  await router.push('parentB')
-
-  expect(plugin.onBeforeRouteEnter).toHaveBeenCalledTimes(2)
+  expect(plugin.onBeforeRouteEnter).toHaveBeenCalledTimes(3)
   expect(plugin.onBeforeRouteUpdate).toHaveBeenCalledTimes(2)
   expect(plugin.onBeforeRouteLeave).toHaveBeenCalledTimes(2)
   expect(plugin.onAfterRouteLeave).toHaveBeenCalledTimes(2)
   expect(plugin.onAfterRouteUpdate).toHaveBeenCalledTimes(2)
-  expect(plugin.onAfterRouteEnter).toHaveBeenCalledTimes(2)
+  expect(plugin.onAfterRouteEnter).toHaveBeenCalledTimes(3)
+
+  await router.push('parentB')
+
+  expect(plugin.onBeforeRouteEnter).toHaveBeenCalledTimes(4)
+  expect(plugin.onBeforeRouteUpdate).toHaveBeenCalledTimes(2)
+  expect(plugin.onBeforeRouteLeave).toHaveBeenCalledTimes(3)
+  expect(plugin.onAfterRouteLeave).toHaveBeenCalledTimes(3)
+  expect(plugin.onAfterRouteUpdate).toHaveBeenCalledTimes(2)
+  expect(plugin.onAfterRouteEnter).toHaveBeenCalledTimes(4)
 })
