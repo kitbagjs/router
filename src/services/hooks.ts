@@ -41,6 +41,9 @@ export function createRouteHookRunners(): RouteHookRunners {
       ...global.onBeforeRouteUpdate,
       ...route.onBeforeRouteUpdate,
       ...component.onBeforeRouteUpdate,
+      ...global.onBeforeRouteChange,
+      ...route.onBeforeRouteChange,
+      ...component.onBeforeRouteChange,
       ...global.onBeforeRouteLeave,
       ...route.onBeforeRouteLeave,
       ...component.onBeforeRouteLeave,
@@ -88,6 +91,9 @@ export function createRouteHookRunners(): RouteHookRunners {
       ...component.onAfterRouteUpdate,
       ...route.onAfterRouteUpdate,
       ...global.onAfterRouteUpdate,
+      ...component.onAfterRouteChange,
+      ...route.onAfterRouteChange,
+      ...global.onAfterRouteChange,
       ...component.onAfterRouteEnter,
       ...route.onAfterRouteEnter,
       ...global.onAfterRouteEnter,
@@ -145,6 +151,10 @@ export const isRouteUpdate: RouteHookCondition = (to, from, depth) => {
   return to.matches[depth].id === from?.matches[depth]?.id
 }
 
+export const isRouteChange: RouteHookCondition = (to, from, depth) => {
+  return isRouteEnter(to, from, depth) || isRouteUpdate(to, from, depth)
+}
+
 export function getRouteHookCondition(lifecycle: RouteHookLifecycle): RouteHookCondition {
   switch (lifecycle) {
     case 'onBeforeRouteEnter':
@@ -156,6 +166,9 @@ export function getRouteHookCondition(lifecycle: RouteHookLifecycle): RouteHookC
     case 'onBeforeRouteLeave':
     case 'onAfterRouteLeave':
       return isRouteLeave
+    case 'onBeforeRouteChange':
+    case 'onAfterRouteChange':
+      return isRouteChange
     default:
       throw new Error(`Switch is not exhaustive for lifecycle: ${lifecycle satisfies never}`)
   }

@@ -76,6 +76,7 @@ export function mockRoute(name: string): ResolvedRoute['matched'] {
     onBeforeRouteEnter: vi.fn(),
     onBeforeRouteUpdate: vi.fn(),
     onBeforeRouteLeave: vi.fn(),
+    onBeforeRouteChange: vi.fn(),
     meta: {},
     state: {},
   }

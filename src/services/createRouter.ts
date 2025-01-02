@@ -105,6 +105,8 @@ export function createRouter<
     onAfterRouteEnter,
     onBeforeRouteUpdate,
     onAfterRouteLeave,
+    onBeforeRouteChange,
+    onAfterRouteChange,
   } = createRouterHooks()
 
   function find(url: string, options: RouterResolveOptions = {}): ResolvedRoute | undefined {
@@ -349,6 +351,8 @@ export function createRouter<
     onAfterRouteEnter,
     onBeforeRouteUpdate,
     onAfterRouteLeave,
+    onBeforeRouteChange,
+    onAfterRouteChange,
     prefetch: options?.prefetch,
     start,
     stop,

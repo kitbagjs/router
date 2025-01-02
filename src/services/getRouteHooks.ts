@@ -1,5 +1,5 @@
 import { RouteHooks } from '@/models/RouteHooks'
-import { isRouteEnter, isRouteLeave, isRouteUpdate } from '@/services/hooks'
+import { isRouteChange, isRouteEnter, isRouteLeave, isRouteUpdate } from '@/services/hooks'
 import { ResolvedRoute } from '@/types/resolved'
 import { asArray } from '@/utilities/array'
 
@@ -13,6 +13,10 @@ export function getBeforeRouteHooksFromRoutes(to: ResolvedRoute, from: ResolvedR
 
     if (route.onBeforeRouteUpdate && isRouteUpdate(to, from, depth)) {
       asArray(route.onBeforeRouteUpdate).forEach((hook) => hooks.onBeforeRouteUpdate.add(hook))
+    }
+
+    if (route.onBeforeRouteChange && isRouteChange(to, from, depth)) {
+      asArray(route.onBeforeRouteChange).forEach((hook) => hooks.onBeforeRouteChange.add(hook))
     }
   })
 
@@ -35,6 +39,10 @@ export function getAfterRouteHooksFromRoutes(to: ResolvedRoute, from: ResolvedRo
 
     if (route.onAfterRouteUpdate && isRouteUpdate(to, from, depth)) {
       asArray(route.onAfterRouteUpdate).forEach((hook) => hooks.onAfterRouteUpdate.add(hook))
+    }
+
+    if (route.onAfterRouteChange && isRouteChange(to, from, depth)) {
+      asArray(route.onAfterRouteChange).forEach((hook) => hooks.onAfterRouteChange.add(hook))
     }
   })
 

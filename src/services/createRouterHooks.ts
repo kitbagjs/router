@@ -8,9 +8,11 @@ export type RouterHooks = {
   onBeforeRouteEnter: AddBeforeRouteHook,
   onBeforeRouteUpdate: AddBeforeRouteHook,
   onBeforeRouteLeave: AddBeforeRouteHook,
+  onBeforeRouteChange: AddBeforeRouteHook,
   onAfterRouteEnter: AddAfterRouteHook,
   onAfterRouteUpdate: AddAfterRouteHook,
   onAfterRouteLeave: AddAfterRouteHook,
+  onAfterRouteChange: AddAfterRouteHook,
   hooks: RouteHookStore,
 }
 
@@ -25,6 +27,10 @@ export function createRouterHooks(): RouterHooks {
     return hooks.addBeforeRouteHook({ lifecycle: 'onBeforeRouteUpdate', hook, timing: 'global', depth: 0 })
   }
 
+  const onBeforeRouteChange: AddBeforeRouteHook = (hook) => {
+    return hooks.addBeforeRouteHook({ lifecycle: 'onBeforeRouteChange', hook, timing: 'global', depth: 0 })
+  }
+
   const onBeforeRouteLeave: AddBeforeRouteHook = (hook) => {
     return hooks.addBeforeRouteHook({ lifecycle: 'onBeforeRouteLeave', hook, timing: 'global', depth: 0 })
   }
@@ -37,6 +43,10 @@ export function createRouterHooks(): RouterHooks {
     return hooks.addAfterRouteHook({ lifecycle: 'onAfterRouteUpdate', hook, timing: 'global', depth: 0 })
   }
 
+  const onAfterRouteChange: AddAfterRouteHook = (hook) => {
+    return hooks.addAfterRouteHook({ lifecycle: 'onAfterRouteChange', hook, timing: 'global', depth: 0 })
+  }
+
   const onAfterRouteLeave: AddAfterRouteHook = (hook) => {
     return hooks.addAfterRouteHook({ lifecycle: 'onAfterRouteLeave', hook, timing: 'global', depth: 0 })
   }
@@ -45,9 +55,11 @@ export function createRouterHooks(): RouterHooks {
     onBeforeRouteEnter,
     onBeforeRouteUpdate,
     onBeforeRouteLeave,
+    onBeforeRouteChange,
     onAfterRouteEnter,
     onAfterRouteUpdate,
     onAfterRouteLeave,
+    onAfterRouteChange,
     hooks,
   }
 }
