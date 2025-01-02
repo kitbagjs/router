@@ -1,15 +1,13 @@
 import { expect, test, vi } from 'vitest'
 import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
 import { createRouterHooks } from '@/services/createRouterHooks'
-import { createRouteHookRunners } from '@/services/hooks'
 import { BeforeRouteHook } from '@/types'
 import { ResolvedRoute } from '@/types/resolved'
 import { component } from '@/utilities/testHelpers'
 
 test('calls hook with correct routes', () => {
   const hook = vi.fn()
-  const { hooks } = createRouterHooks()
-  const { runBeforeRouteHooks } = createRouteHookRunners()
+  const { runBeforeRouteHooks } = createRouterHooks()
 
   const toOptions = {
     id: Math.random().toString(),
@@ -53,7 +51,6 @@ test('calls hook with correct routes', () => {
   }
 
   runBeforeRouteHooks({
-    hooks,
     to: toRoute,
     from: fromRoute,
   })
@@ -83,8 +80,7 @@ test.each<{ type: string, status: string, hook: BeforeRouteHook }>([
     },
   },
 ])('Returns correct status when hook is called', async ({ status, hook }) => {
-  const { runBeforeRouteHooks } = createRouteHookRunners()
-  const { hooks } = createRouterHooks()
+  const { runBeforeRouteHooks } = createRouterHooks()
   const toOptions = {
     id: Math.random().toString(),
     name: 'routeA',
@@ -129,7 +125,6 @@ test.each<{ type: string, status: string, hook: BeforeRouteHook }>([
   const response = await runBeforeRouteHooks({
     to,
     from,
-    hooks,
   })
 
   expect(response.status).toBe(status)
@@ -139,8 +134,7 @@ test('hook is called in order', async () => {
   const hookA = vi.fn()
   const hookB = vi.fn()
   const hookC = vi.fn()
-  const { hooks } = createRouterHooks()
-  const { runBeforeRouteHooks } = createRouteHookRunners()
+  const { runBeforeRouteHooks } = createRouterHooks()
 
   const toOptions = {
     id: Math.random().toString(),
@@ -184,7 +178,6 @@ test('hook is called in order', async () => {
   }
 
   await runBeforeRouteHooks({
-    hooks,
     to,
     from,
   })

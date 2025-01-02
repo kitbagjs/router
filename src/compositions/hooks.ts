@@ -1,11 +1,10 @@
 import { inject, onUnmounted } from 'vue'
 import { useRouterDepth } from '@/compositions/useRouterDepth'
 import { RouterNotInstalledError } from '@/errors'
-import { RouteHookStore } from '@/services/createRouteHookStore'
-import { routeHookStoreKey } from '@/services/createRouterHooks'
+import { routeHookStoreKey, RouterHooks } from '@/services/createRouterHooks'
 import { AddAfterRouteHook, AddBeforeRouteHook, AfterRouteHook, AfterRouteHookLifecycle, BeforeRouteHook, BeforeRouteHookLifecycle } from '@/types/hooks'
 
-function useRouteHookStore(): RouteHookStore {
+function useRouteHookStore(): RouterHooks {
   const hooks = inject(routeHookStoreKey)
 
   if (!hooks) {

@@ -1,7 +1,7 @@
 import { App, Component } from 'vue'
 import { RouterHistoryMode } from '@/services/createRouterHistory'
 import { RouterRoute } from '@/services/createRouterRoute'
-import { AddAfterRouteHook, AddBeforeRouteHook } from '@/types/hooks'
+import { AddAfterRouteHook, AddBeforeRouteHook, WithHooks } from '@/types/hooks'
 import { PrefetchConfig } from '@/types/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
 import { Routes } from '@/types/route'
@@ -15,7 +15,7 @@ import { KeysOfUnion } from './utilities'
 /**
  * Options to initialize a {@link Router} instance.
  */
-export type RouterOptions = {
+export type RouterOptions = WithHooks & {
   /**
    * Initial URL for the router to use. Required if using Node environment. Defaults to window.location when using browser.
    *

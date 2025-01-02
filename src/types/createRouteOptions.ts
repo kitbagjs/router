@@ -6,7 +6,6 @@ import { combineQuery } from '@/services/combineQuery'
 import { combineState } from '@/services/combineState'
 import { ComponentProps } from '@/services/component'
 import { Hash } from '@/types/hash'
-import { AfterRouteHook, BeforeRouteHook } from '@/types/hooks'
 import { Host } from '@/types/host'
 import { Param } from '@/types/paramTypes'
 import { Path } from '@/types/path'
@@ -14,21 +13,9 @@ import { PrefetchConfig } from '@/types/prefetch'
 import { Query } from '@/types/query'
 import { RouteMeta } from '@/types/register'
 import { Route } from '@/types/route'
-import { MaybeArray, MaybePromise } from '@/types/utilities'
+import { MaybePromise } from '@/types/utilities'
 import { ResolvedRoute } from './resolved'
 import { PropsCallbackContext } from './props'
-
-/**
- * Defines route hooks that can be applied before entering, updating, or leaving a route, as well as after these events.
- */
-export type WithHooks = {
-  onBeforeRouteEnter?: MaybeArray<BeforeRouteHook>,
-  onBeforeRouteUpdate?: MaybeArray<BeforeRouteHook>,
-  onBeforeRouteLeave?: MaybeArray<BeforeRouteHook>,
-  onAfterRouteEnter?: MaybeArray<AfterRouteHook>,
-  onAfterRouteUpdate?: MaybeArray<AfterRouteHook>,
-  onAfterRouteLeave?: MaybeArray<AfterRouteHook>,
-}
 
 export type WithHost<THost extends string | Host = string | Host> = {
   /**

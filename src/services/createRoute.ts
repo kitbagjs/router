@@ -6,7 +6,7 @@ import { CombineQuery } from '@/services/combineQuery'
 import { CombineState } from '@/services/combineState'
 import { createRouteId } from '@/services/createRouteId'
 import { host } from '@/services/host'
-import { CreateRouteOptions, WithComponent, WithComponents, WithHooks, WithParent, WithState, WithoutComponents, WithoutParent, WithoutState, combineRoutes, isWithParent, isWithState } from '@/types/createRouteOptions'
+import { CreateRouteOptions, WithComponent, WithComponents, WithParent, WithState, WithoutComponents, WithoutParent, WithoutState, combineRoutes, isWithParent, isWithState } from '@/types/createRouteOptions'
 import { Hash, toHash, ToHash } from '@/types/hash'
 import { Host } from '@/types/host'
 import { toName, ToName } from '@/types/name'
@@ -16,6 +16,7 @@ import { Query, ToQuery, toQuery } from '@/types/query'
 import { RouteMeta } from '@/types/register'
 import { Route } from '@/types/route'
 import { checkDuplicateParams } from '@/utilities/checkDuplicateKeys'
+import { WithHooks } from '@/types/hooks'
 
 export function createRoute<
   const TName extends string | undefined = undefined,
