@@ -139,4 +139,4 @@ If there are more than 1 routes that pass the rules then we sort the results by 
 
 1. **Route Depth:** prioritize routes that are more deeply nested
 1. **Optional Params:** prioritize routes that match the greater number of optional path and query params
-2. **Matching Hash:** prioritize routes that match have a static hash that matches the URL hash.
+1. **Matching Hash:** prioritize routes that match have a static hash that matches the URL hash.

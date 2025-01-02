@@ -7,8 +7,7 @@ At the heart of Kitbag Router lies a commitment to enhancing the developer exper
 ## Show Me
 
 [Kitbag Router: New TYPE SAFE Router for VUE
-![Kitbag Router: New TYPE SAFE Router for VUE](https://img.youtube.com/vi/p1WI9hAYmJ4/0.jpg)
-](https://youtu.be/p1WI9hAYmJ4)
+![Kitbag Router: New TYPE SAFE Router for VUE](https://img.youtube.com/vi/p1WI9hAYmJ4/0.jpg)](https://youtu.be/p1WI9hAYmJ4)
 
 ## Type Safety
 

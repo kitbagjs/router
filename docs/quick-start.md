@@ -28,11 +28,13 @@ const routes = [
   createRoute({ name: 'path', path: '/about', component: About }),
 ] as const
 ```
+
 ::: info Type Safety
 Using `as const` when defining routes is important as it ensures the types are correctly inferred.
 :::
 
 ## Create Router
+
 A router is created using the [`createRouter`](/api/functions/createRouter) utility and passing in the routes.
 
 ```ts
@@ -91,4 +93,4 @@ Use RouterLink for navigating between routes.
 
 ### Type Safety in RouterLink
 
-The `to` prop accepts a callback function or a [`Url`](/api/types/Url) string. When using a callback function, the router will provide a `resolve` function that is a type safe way to create link for your pre-defined routes. 
+The `to` prop accepts a callback function or a [`Url`](/api/types/Url) string. When using a callback function, the router will provide a `resolve` function that is a type safe way to create link for your pre-defined routes.

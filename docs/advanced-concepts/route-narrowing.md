@@ -57,7 +57,7 @@ if(isRoute(router.route, 'user', { exact: true })) {
 }
 ```
 
-The `isRoute` type guard offers more flexibility with the optional `exact` argument, which defaults to `false` and will return narrow to the target route or any of it's descendants. 
+The `isRoute` type guard offers more flexibility with the optional `exact` argument, which defaults to `false` and will return narrow to the target route or any of it's descendants.
 
 ```ts
 import { isRoute } from '@kitbag/router'

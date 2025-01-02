@@ -46,7 +46,7 @@ const user = createRoute({
 
 ## Context
 
-The router provides a second `context` argument to your props callback. The context will always include: 
+The router provides a second `context` argument to your props callback. The context will always include:
 
 | Property | Description |
 | ---- | ---- |
