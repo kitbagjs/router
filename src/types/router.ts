@@ -1,7 +1,7 @@
 import { App, Component } from 'vue'
 import { RouterHistoryMode } from '@/services/createRouterHistory'
 import { RouterRoute } from '@/services/createRouterRoute'
-import { RegisterAfterRouteHook, RegisterBeforeRouteHook, WithHooks } from '@/types/hooks'
+import { AddAfterRouteHook, AddBeforeRouteHook, WithHooks } from '@/types/hooks'
 import { PrefetchConfig } from '@/types/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
 import { Routes } from '@/types/route'
@@ -96,27 +96,27 @@ export type Router<
   /**
    * Registers a hook to be called before a route is entered.
    */
-  onBeforeRouteEnter: RegisterBeforeRouteHook,
+  onBeforeRouteEnter: AddBeforeRouteHook,
   /**
    * Registers a hook to be called before a route is left.
    */
-  onBeforeRouteLeave: RegisterBeforeRouteHook,
+  onBeforeRouteLeave: AddBeforeRouteHook,
   /**
    * Registers a hook to be called before a route is updated.
    */
-  onBeforeRouteUpdate: RegisterBeforeRouteHook,
+  onBeforeRouteUpdate: AddBeforeRouteHook,
   /**
    * Registers a hook to be called after a route is entered.
    */
-  onAfterRouteEnter: RegisterAfterRouteHook,
+  onAfterRouteEnter: AddAfterRouteHook,
   /**
    * Registers a hook to be called after a route is left.
    */
-  onAfterRouteLeave: RegisterAfterRouteHook,
+  onAfterRouteLeave: AddAfterRouteHook,
   /**
    * Registers a hook to be called after a route is updated.
    */
-  onAfterRouteUpdate: RegisterAfterRouteHook,
+  onAfterRouteUpdate: AddAfterRouteHook,
   /**
   * Given a URL, returns true if host does not match host stored on router instance
   */

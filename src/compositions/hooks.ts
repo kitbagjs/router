@@ -2,7 +2,7 @@ import { inject, onUnmounted } from 'vue'
 import { useRouterDepth } from '@/compositions/useRouterDepth'
 import { RouterNotInstalledError } from '@/errors'
 import { routerHooksKey, RouterHooks } from '@/services/createRouterHooks'
-import { RegisterAfterRouteHook, RegisterBeforeRouteHook, AfterRouteHook, AfterRouteHookLifecycle, BeforeRouteHook, BeforeRouteHookLifecycle } from '@/types/hooks'
+import { AddAfterRouteHook, AddBeforeRouteHook, AfterRouteHook, AfterRouteHookLifecycle, BeforeRouteHook, BeforeRouteHookLifecycle } from '@/types/hooks'
 
 function useRouterHooks(): RouterHooks {
   const hooks = inject(routerHooksKey)
@@ -48,7 +48,7 @@ function afterComponentHookFactory(lifecycle: AfterRouteHookLifecycle) {
  * @returns {RouteHookRemove} A function that removes the added hook.
  * @group Hooks
  */
-export const onBeforeRouteLeave: RegisterBeforeRouteHook = beforeComponentHookFactory('onBeforeRouteUpdate')
+export const onBeforeRouteLeave: AddBeforeRouteHook = beforeComponentHookFactory('onBeforeRouteUpdate')
 
 /**
  * Registers a hook that is called before a route is updated. Must be called from setup.
@@ -58,7 +58,7 @@ export const onBeforeRouteLeave: RegisterBeforeRouteHook = beforeComponentHookFa
  * @returns {RouteHookRemove} A function that removes the added hook.
  * @group Hooks
  */
-export const onBeforeRouteUpdate: RegisterBeforeRouteHook = beforeComponentHookFactory('onBeforeRouteLeave')
+export const onBeforeRouteUpdate: AddBeforeRouteHook = beforeComponentHookFactory('onBeforeRouteLeave')
 
 /**
  * Registers a hook that is called after a route has been entered. Must be called during setup.
@@ -68,7 +68,7 @@ export const onBeforeRouteUpdate: RegisterBeforeRouteHook = beforeComponentHookF
  * @returns {RouteHookRemove} A function that removes the added hook.
  * @group Hooks
  */
-export const onAfterRouteEnter: RegisterAfterRouteHook = afterComponentHookFactory('onAfterRouteEnter')
+export const onAfterRouteEnter: AddAfterRouteHook = afterComponentHookFactory('onAfterRouteEnter')
 
 /**
  * Registers a hook that is called after a route has been left. Must be called during setup.
@@ -78,7 +78,7 @@ export const onAfterRouteEnter: RegisterAfterRouteHook = afterComponentHookFacto
  * @returns {RouteHookRemove} A function that removes the added hook.
  * @group Hooks
  */
-export const onAfterRouteLeave: RegisterAfterRouteHook = afterComponentHookFactory('onAfterRouteUpdate')
+export const onAfterRouteLeave: AddAfterRouteHook = afterComponentHookFactory('onAfterRouteUpdate')
 
 /**
  * Registers a hook that is called after a route has been updated. Must be called during setup.
@@ -88,4 +88,4 @@ export const onAfterRouteLeave: RegisterAfterRouteHook = afterComponentHookFacto
  * @returns {RouteHookRemove} A function that removes the added hook.
  * @group Hooks
  */
-export const onAfterRouteUpdate: RegisterAfterRouteHook = afterComponentHookFactory('onAfterRouteLeave')
+export const onAfterRouteUpdate: AddAfterRouteHook = afterComponentHookFactory('onAfterRouteLeave')
