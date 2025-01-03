@@ -1,5 +1,5 @@
 import { InjectionKey } from 'vue'
-import { AddAfterRouteHook, AddBeforeRouteHook, AddGlobalRouteHooks, AfterHookContext, AfterRouteHook, AfterRouteHookResponse, BeforeHookContext, BeforeRouteHook, BeforeRouteHookResponse, AddComponentAfterRouteHook, ComponentBeforeRouteHook, RouteHookAfterRunner, RouteHookBeforeRunner } from '@/types/hooks'
+import { AddAfterRouteHook, AddBeforeRouteHook, AddGlobalRouteHooks, AfterHookContext, AfterRouteHook, AfterRouteHookResponse, BeforeHookContext, BeforeRouteHook, BeforeRouteHookResponse, AddComponentAfterRouteHook, AddComponentBeforeRouteHook, RouteHookAfterRunner, RouteHookBeforeRunner } from '@/types/hooks'
 import { createCallbackContext } from './createCallbackContext'
 import { RouteHooks } from '@/models/RouteHooks'
 import { getRouteHookCondition } from './hooks'
@@ -14,7 +14,7 @@ export const routerHooksKey: InjectionKey<RouterHooks> = Symbol()
 export type RouterHooks = {
   runBeforeRouteHooks: RouteHookBeforeRunner,
   runAfterRouteHooks: RouteHookAfterRunner,
-  addComponentBeforeRouteHook: ComponentBeforeRouteHook,
+  addComponentBeforeRouteHook: AddComponentBeforeRouteHook,
   addComponentAfterRouteHook: AddComponentAfterRouteHook,
   addGlobalRouteHooks: AddGlobalRouteHooks,
   onBeforeRouteEnter: AddBeforeRouteHook,
@@ -159,7 +159,7 @@ export function createRouterHooks(): RouterHooks {
     }
   }
 
-  const addComponentBeforeRouteHook: ComponentBeforeRouteHook = ({ lifecycle, depth, hook }) => {
+  const addComponentBeforeRouteHook: AddComponentBeforeRouteHook = ({ lifecycle, depth, hook }) => {
     const condition = getRouteHookCondition(lifecycle)
     const hooks = store.component[lifecycle]
 

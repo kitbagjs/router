@@ -37,7 +37,7 @@ export type BeforeRouteHookRegistration = {
   depth: number,
 }
 
-export type ComponentBeforeRouteHook = (hook: BeforeRouteHookRegistration) => RouteHookRemove
+export type AddComponentBeforeRouteHook = (hook: BeforeRouteHookRegistration) => RouteHookRemove
 
 export type AfterRouteHookRegistration = {
   lifecycle: 'onAfterRouteEnter' | 'onAfterRouteUpdate' | 'onAfterRouteLeave',
