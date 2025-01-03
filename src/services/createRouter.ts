@@ -18,7 +18,7 @@ import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { RouterReplace, RouterReplaceOptions } from '@/types/routerReplace'
 import { RoutesName } from '@/types/routesMap'
 import { Url, isUrl } from '@/types/url'
-import { createUniqueIdSequence } from '@/services/createUniqueIdSequence'
+import { createUniqueIdSequence, isFirstUniqueSequenceId } from '@/services/createUniqueIdSequence'
 import { createVisibilityObserver } from './createVisibilityObserver'
 import { visibilityObserverKey } from '@/compositions/useVisibilityObserver'
 import { RouterResolve, RouterResolveOptions } from '../types/RouterResolve'
@@ -109,7 +109,7 @@ export function createRouter<
     }
 
     const to = find(url, options) ?? getRejectionRoute('NotFound')
-    const from = { ...currentRoute }
+    const from = getFromRouteForHooks(navigationId)
 
     const beforeResponse = await hooks.runBeforeRouteHooks({ to, from })
 
@@ -300,6 +300,10 @@ export function createRouter<
 
   function stop(): void {
     history.stopListening()
+  }
+
+  function getFromRouteForHooks(navigationId: string): ResolvedRoute | null {
+    return isFirstUniqueSequenceId(navigationId) ? null : { ...currentRoute }
   }
 
   function install(app: App): void {

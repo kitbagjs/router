@@ -17,14 +17,14 @@ export type WithHooks = {
 
 export type BeforeHookContext = {
   to: ResolvedRoute,
-  from: ResolvedRoute,
+  from: ResolvedRoute | null,
 }
 
 export type RouteHookBeforeRunner = (context: BeforeHookContext) => Promise<BeforeRouteHookResponse>
 
 export type AfterHookContext = {
   to: ResolvedRoute,
-  from: ResolvedRoute,
+  from: ResolvedRoute | null,
 }
 
 export type RouteHookAfterRunner = (context: AfterHookContext) => Promise<AfterRouteHookResponse>

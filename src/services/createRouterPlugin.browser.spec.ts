@@ -71,8 +71,8 @@ test('given a plugin, adds the hooks to the router', async () => {
 
   expect(plugin.onBeforeRouteEnter).toHaveBeenCalledTimes(1)
   expect(plugin.onBeforeRouteUpdate).toHaveBeenCalledTimes(0)
-  expect(plugin.onBeforeRouteLeave).toHaveBeenCalledTimes(1)
-  expect(plugin.onAfterRouteLeave).toHaveBeenCalledTimes(1)
+  expect(plugin.onBeforeRouteLeave).toHaveBeenCalledTimes(0)
+  expect(plugin.onAfterRouteLeave).toHaveBeenCalledTimes(0)
   expect(plugin.onAfterRouteUpdate).toHaveBeenCalledTimes(0)
   expect(plugin.onAfterRouteEnter).toHaveBeenCalledTimes(1)
 
@@ -80,8 +80,8 @@ test('given a plugin, adds the hooks to the router', async () => {
 
   expect(plugin.onBeforeRouteEnter).toHaveBeenCalledTimes(2)
   expect(plugin.onBeforeRouteUpdate).toHaveBeenCalledTimes(1)
-  expect(plugin.onBeforeRouteLeave).toHaveBeenCalledTimes(1)
-  expect(plugin.onAfterRouteLeave).toHaveBeenCalledTimes(1)
+  expect(plugin.onBeforeRouteLeave).toHaveBeenCalledTimes(0)
+  expect(plugin.onAfterRouteLeave).toHaveBeenCalledTimes(0)
   expect(plugin.onAfterRouteUpdate).toHaveBeenCalledTimes(1)
   expect(plugin.onAfterRouteEnter).toHaveBeenCalledTimes(2)
 
@@ -89,8 +89,8 @@ test('given a plugin, adds the hooks to the router', async () => {
 
   expect(plugin.onBeforeRouteEnter).toHaveBeenCalledTimes(3)
   expect(plugin.onBeforeRouteUpdate).toHaveBeenCalledTimes(2)
-  expect(plugin.onBeforeRouteLeave).toHaveBeenCalledTimes(2)
-  expect(plugin.onAfterRouteLeave).toHaveBeenCalledTimes(2)
+  expect(plugin.onBeforeRouteLeave).toHaveBeenCalledTimes(1)
+  expect(plugin.onAfterRouteLeave).toHaveBeenCalledTimes(1)
   expect(plugin.onAfterRouteUpdate).toHaveBeenCalledTimes(2)
   expect(plugin.onAfterRouteEnter).toHaveBeenCalledTimes(3)
 
@@ -98,8 +98,8 @@ test('given a plugin, adds the hooks to the router', async () => {
 
   expect(plugin.onBeforeRouteEnter).toHaveBeenCalledTimes(4)
   expect(plugin.onBeforeRouteUpdate).toHaveBeenCalledTimes(2)
-  expect(plugin.onBeforeRouteLeave).toHaveBeenCalledTimes(3)
-  expect(plugin.onAfterRouteLeave).toHaveBeenCalledTimes(3)
+  expect(plugin.onBeforeRouteLeave).toHaveBeenCalledTimes(2)
+  expect(plugin.onAfterRouteLeave).toHaveBeenCalledTimes(2)
   expect(plugin.onAfterRouteUpdate).toHaveBeenCalledTimes(2)
   expect(plugin.onAfterRouteEnter).toHaveBeenCalledTimes(4)
 })

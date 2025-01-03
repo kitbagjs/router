@@ -2,7 +2,7 @@ import { RouteHooks } from '@/models/RouteHooks'
 import { ResolvedRoute } from '@/types/resolved'
 import { isRouteEnter, isRouteLeave, isRouteUpdate } from './hooks'
 
-export function getGlobalBeforeRouteHooks(to: ResolvedRoute, from: ResolvedRoute, globalHooks: RouteHooks): RouteHooks {
+export function getGlobalBeforeRouteHooks(to: ResolvedRoute, from: ResolvedRoute | null, globalHooks: RouteHooks): RouteHooks {
   const hooks = new RouteHooks()
 
   to.matches.forEach((_route, depth) => {
@@ -15,7 +15,7 @@ export function getGlobalBeforeRouteHooks(to: ResolvedRoute, from: ResolvedRoute
     }
   })
 
-  from.matches.forEach((_route, depth) => {
+  from?.matches.forEach((_route, depth) => {
     if (isRouteLeave(to, from, depth)) {
       globalHooks.onBeforeRouteLeave.forEach((hook) => hooks.onBeforeRouteLeave.add(hook))
     }
@@ -24,7 +24,7 @@ export function getGlobalBeforeRouteHooks(to: ResolvedRoute, from: ResolvedRoute
   return hooks
 }
 
-export function getGlobalAfterRouteHooks(to: ResolvedRoute, from: ResolvedRoute, globalHooks: RouteHooks): RouteHooks {
+export function getGlobalAfterRouteHooks(to: ResolvedRoute, from: ResolvedRoute | null, globalHooks: RouteHooks): RouteHooks {
   const hooks = new RouteHooks()
 
   to.matches.forEach((_route, depth) => {
@@ -37,7 +37,7 @@ export function getGlobalAfterRouteHooks(to: ResolvedRoute, from: ResolvedRoute,
     }
   })
 
-  from.matches.forEach((_route, depth) => {
+  from?.matches.forEach((_route, depth) => {
     if (isRouteLeave(to, from, depth)) {
       globalHooks.onAfterRouteLeave.forEach((hook) => hooks.onAfterRouteLeave.add(hook))
     }

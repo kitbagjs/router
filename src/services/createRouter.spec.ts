@@ -695,8 +695,8 @@ describe('hooks', () => {
 
     expect(onBeforeRouteEnter).toHaveBeenCalledTimes(1)
     expect(onBeforeRouteUpdate).toHaveBeenCalledTimes(0)
-    expect(onBeforeRouteLeave).toHaveBeenCalledTimes(1)
-    expect(onAfterRouteLeave).toHaveBeenCalledTimes(1)
+    expect(onBeforeRouteLeave).toHaveBeenCalledTimes(0)
+    expect(onAfterRouteLeave).toHaveBeenCalledTimes(0)
     expect(onAfterRouteUpdate).toHaveBeenCalledTimes(0)
     expect(onAfterRouteEnter).toHaveBeenCalledTimes(1)
 
@@ -704,8 +704,8 @@ describe('hooks', () => {
 
     expect(onBeforeRouteEnter).toHaveBeenCalledTimes(2)
     expect(onBeforeRouteUpdate).toHaveBeenCalledTimes(1)
-    expect(onBeforeRouteLeave).toHaveBeenCalledTimes(1)
-    expect(onAfterRouteLeave).toHaveBeenCalledTimes(1)
+    expect(onBeforeRouteLeave).toHaveBeenCalledTimes(0)
+    expect(onAfterRouteLeave).toHaveBeenCalledTimes(0)
     expect(onAfterRouteUpdate).toHaveBeenCalledTimes(1)
     expect(onAfterRouteEnter).toHaveBeenCalledTimes(2)
 
@@ -713,8 +713,8 @@ describe('hooks', () => {
 
     expect(onBeforeRouteEnter).toHaveBeenCalledTimes(3)
     expect(onBeforeRouteUpdate).toHaveBeenCalledTimes(2)
-    expect(onBeforeRouteLeave).toHaveBeenCalledTimes(2)
-    expect(onAfterRouteLeave).toHaveBeenCalledTimes(2)
+    expect(onBeforeRouteLeave).toHaveBeenCalledTimes(1)
+    expect(onAfterRouteLeave).toHaveBeenCalledTimes(1)
     expect(onAfterRouteUpdate).toHaveBeenCalledTimes(2)
     expect(onAfterRouteEnter).toHaveBeenCalledTimes(3)
 
@@ -722,8 +722,8 @@ describe('hooks', () => {
 
     expect(onBeforeRouteEnter).toHaveBeenCalledTimes(4)
     expect(onBeforeRouteUpdate).toHaveBeenCalledTimes(2)
-    expect(onBeforeRouteLeave).toHaveBeenCalledTimes(3)
-    expect(onAfterRouteLeave).toHaveBeenCalledTimes(3)
+    expect(onBeforeRouteLeave).toHaveBeenCalledTimes(2)
+    expect(onAfterRouteLeave).toHaveBeenCalledTimes(2)
     expect(onAfterRouteUpdate).toHaveBeenCalledTimes(2)
     expect(onAfterRouteEnter).toHaveBeenCalledTimes(4)
   })
@@ -749,8 +749,8 @@ describe('hooks', () => {
 
     expect(onBeforeRouteEnter).toHaveBeenCalledTimes(1)
     expect(onBeforeRouteUpdate).toHaveBeenCalledTimes(0)
-    expect(onBeforeRouteLeave).toHaveBeenCalledTimes(1)
-    expect(onAfterRouteLeave).toHaveBeenCalledTimes(1)
+    expect(onBeforeRouteLeave).toHaveBeenCalledTimes(0)
+    expect(onAfterRouteLeave).toHaveBeenCalledTimes(0)
     expect(onAfterRouteUpdate).toHaveBeenCalledTimes(0)
     expect(onAfterRouteEnter).toHaveBeenCalledTimes(1)
 
@@ -758,8 +758,8 @@ describe('hooks', () => {
 
     expect(onBeforeRouteEnter).toHaveBeenCalledTimes(2)
     expect(onBeforeRouteUpdate).toHaveBeenCalledTimes(1)
-    expect(onBeforeRouteLeave).toHaveBeenCalledTimes(1)
-    expect(onAfterRouteLeave).toHaveBeenCalledTimes(1)
+    expect(onBeforeRouteLeave).toHaveBeenCalledTimes(0)
+    expect(onAfterRouteLeave).toHaveBeenCalledTimes(0)
     expect(onAfterRouteUpdate).toHaveBeenCalledTimes(1)
     expect(onAfterRouteEnter).toHaveBeenCalledTimes(2)
 
@@ -767,8 +767,8 @@ describe('hooks', () => {
 
     expect(onBeforeRouteEnter).toHaveBeenCalledTimes(3)
     expect(onBeforeRouteUpdate).toHaveBeenCalledTimes(2)
-    expect(onBeforeRouteLeave).toHaveBeenCalledTimes(2)
-    expect(onAfterRouteLeave).toHaveBeenCalledTimes(2)
+    expect(onBeforeRouteLeave).toHaveBeenCalledTimes(1)
+    expect(onAfterRouteLeave).toHaveBeenCalledTimes(1)
     expect(onAfterRouteUpdate).toHaveBeenCalledTimes(2)
     expect(onAfterRouteEnter).toHaveBeenCalledTimes(3)
 
@@ -776,8 +776,8 @@ describe('hooks', () => {
 
     expect(onBeforeRouteEnter).toHaveBeenCalledTimes(4)
     expect(onBeforeRouteUpdate).toHaveBeenCalledTimes(2)
-    expect(onBeforeRouteLeave).toHaveBeenCalledTimes(3)
-    expect(onAfterRouteLeave).toHaveBeenCalledTimes(3)
+    expect(onBeforeRouteLeave).toHaveBeenCalledTimes(2)
+    expect(onAfterRouteLeave).toHaveBeenCalledTimes(2)
     expect(onAfterRouteUpdate).toHaveBeenCalledTimes(2)
     expect(onAfterRouteEnter).toHaveBeenCalledTimes(4)
   })
