@@ -1,15 +1,7 @@
+import { RouteHooks } from '@/models/RouteHooks'
 import { CallbackAbortResponse, CallbackContext, CallbackContextAbort, CallbackPushResponse, CallbackRejectResponse, CallbackSuccessResponse } from '@/services/createCallbackContext'
 import { ResolvedRoute } from '@/types/resolved'
 import { MaybeArray, MaybePromise } from '@/types/utilities'
-
-export type Hooks = {
-  onBeforeRouteEnter: BeforeRouteHook[],
-  onBeforeRouteUpdate: BeforeRouteHook[],
-  onBeforeRouteLeave: BeforeRouteHook[],
-  onAfterRouteEnter: AfterRouteHook[],
-  onAfterRouteUpdate: AfterRouteHook[],
-  onAfterRouteLeave: AfterRouteHook[],
-}
 
 /**
  * Defines route hooks that can be applied before entering, updating, or leaving a route, as well as after these events.
@@ -25,14 +17,14 @@ export type WithHooks = {
 
 export type BeforeHookContext = {
   to: ResolvedRoute,
-  from: ResolvedRoute,
+  from: ResolvedRoute | null,
 }
 
 export type RouteHookBeforeRunner = (context: BeforeHookContext) => Promise<BeforeRouteHookResponse>
 
 export type AfterHookContext = {
   to: ResolvedRoute,
-  from: ResolvedRoute,
+  from: ResolvedRoute | null,
 }
 
 export type RouteHookAfterRunner = (context: AfterHookContext) => Promise<AfterRouteHookResponse>
@@ -40,24 +32,22 @@ export type RouteHookAfterRunner = (context: AfterHookContext) => Promise<AfterR
 export type RouteHookTiming = 'global' | 'component'
 
 export type BeforeRouteHookRegistration = {
-  timing: RouteHookTiming,
   lifecycle: 'onBeforeRouteEnter' | 'onBeforeRouteUpdate' | 'onBeforeRouteLeave',
   hook: BeforeRouteHook,
   depth: number,
 }
 
-export type RegisterBeforeRouteHook = (hook: BeforeRouteHookRegistration) => RouteHookRemove
+export type AddComponentBeforeRouteHook = (hook: BeforeRouteHookRegistration) => RouteHookRemove
 
 export type AfterRouteHookRegistration = {
-  timing: RouteHookTiming,
   lifecycle: 'onAfterRouteEnter' | 'onAfterRouteUpdate' | 'onAfterRouteLeave',
   hook: AfterRouteHook,
   depth: number,
 }
 
-export type RegisterAfterRouteHook = (hook: AfterRouteHookRegistration) => RouteHookRemove
+export type AddComponentAfterRouteHook = (hook: AfterRouteHookRegistration) => RouteHookRemove
 
-export type AddRouteHooks = (hooks: Hooks) => void
+export type AddGlobalRouteHooks = (hooks: RouteHooks) => void
 
 /**
  * Adds a hook that is called before a route change. Returns a function to remove the hook.

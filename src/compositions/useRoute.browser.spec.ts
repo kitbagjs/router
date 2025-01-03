@@ -57,7 +57,7 @@ test('when given a routeKey that matches the current route returns the router ro
 
 test('when given a routeKey that matches exactly the current route returns the router route', async () => {
   const router = createRouter(routes, {
-    initialUrl: '/parentA/parentAParam/childAParam',
+    initialUrl: '/parentA/parentAParam/childA/childAParam',
   })
 
   await router.start()
@@ -109,7 +109,7 @@ test('when given a routeKey that does not match the current route, throws UseRou
 
 test('when given a routeKey that does not match exactly the current route, throws UseRouteInvalidError', async () => {
   const router = createRouter(routes, {
-    initialUrl: '/parentA/parentAParam/childAParam',
+    initialUrl: '/parentA/parentAParam/childA/childAParam',
   })
 
   await router.start()
