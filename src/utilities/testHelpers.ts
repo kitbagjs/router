@@ -33,13 +33,13 @@ const parentA = createRoute({
 const childA = createRoute({
   parent: parentA,
   name: 'parentA.childA',
-  path: '/[?paramB]',
+  path: '/childA/[?paramB]',
 })
 
 const childB = createRoute({
   parent: parentA,
   name: 'parentA.childB',
-  path: '/[paramD]',
+  path: '/childB/[paramD]',
   component,
 })
 
