@@ -6,7 +6,7 @@ import { CombineQuery } from '@/services/combineQuery'
 import { CombineState } from '@/services/combineState'
 import { createRouteId } from '@/services/createRouteId'
 import { host } from '@/services/host'
-import { CreateRouteOptions, WithComponent, WithComponents, WithParent, WithState, WithoutComponents, WithoutParent, WithoutState, combineRoutes, isWithParent, isWithState } from '@/types/createRouteOptions'
+import { CreateRouteOptions, WithComponent, WithComponents, WithParent, WithoutComponents, WithoutParent, combineRoutes, isWithParent, isWithState } from '@/types/createRouteOptions'
 import { Hash, toHash, ToHash } from '@/types/hash'
 import { Host } from '@/types/host'
 import { toName, ToName } from '@/types/name'
@@ -16,7 +16,6 @@ import { Query, ToQuery, toQuery } from '@/types/query'
 import { RouteMeta } from '@/types/register'
 import { Route } from '@/types/route'
 import { checkDuplicateParams } from '@/utilities/checkDuplicateKeys'
-import { WithHooks } from '@/types/hooks'
 
 export function createRoute<
   const TName extends string | undefined = undefined,
@@ -26,10 +25,8 @@ export function createRoute<
   const TMeta extends RouteMeta = RouteMeta,
   const TState extends Record<string, Param> = Record<string, Param>
 >(options: CreateRouteOptions<TName, TPath, TQuery, THash, TMeta>
-  & WithHooks
   & WithoutComponents
-  & WithoutParent
-  & (WithState<TState> | WithoutState)):
+  & WithoutParent):
 Route<
   ToName<TName>,
   Host<'', {}>,
@@ -51,10 +48,8 @@ export function createRoute<
   const TMeta extends RouteMeta = RouteMeta,
   const TState extends Record<string, Param> = Record<string, Param>
 >(options: CreateRouteOptions<TName, TPath, TQuery, THash, TMeta>
-  & WithHooks
   & WithoutComponents
-  & WithParent<TParent>
-  & (WithState<TState> | WithoutState)):
+  & WithParent<TParent>):
 Route<
   ToName<TName>,
   Host<'', {}>,
@@ -76,10 +71,8 @@ export function createRoute<
   const TMeta extends RouteMeta = RouteMeta,
   const TState extends Record<string, Param> = Record<string, Param>
 >(options: CreateRouteOptions<TName, TPath, TQuery, THash, TMeta>
-  & WithHooks
   & WithComponent<TComponent, Route<ToName<TName>, Host<'', {}>, ToPath<TPath>, ToQuery<TQuery>, ToHash<THash>, TMeta, TState>>
-  & WithoutParent
-  & (WithState<TState> | WithoutState)):
+  & WithoutParent):
 Route<
   ToName<TName>,
   Host<'', {}>,
@@ -102,10 +95,8 @@ export function createRoute<
   const TMeta extends RouteMeta = RouteMeta,
   const TState extends Record<string, Param> = Record<string, Param>
 >(options: CreateRouteOptions<TName, TPath, TQuery, THash, TMeta>
-  & WithHooks
   & WithComponent<TComponent, Route<ToName<TName>, Host<'', {}>, CombinePath<TParent['path'], ToPath<TPath>>, CombineQuery<TParent['query'], ToQuery<TQuery>>, CombineHash<TParent['hash'], ToHash<THash>>, CombineMeta<TMeta, TParent['meta']>, CombineState<TState, TParent['state']>, TParent>>
-  & WithParent<TParent>
-  & (WithState<TState> | WithoutState)):
+  & WithParent<TParent>):
 Route<
   ToName<TName>,
   Host<'', {}>,
@@ -127,10 +118,8 @@ export function createRoute<
   const TMeta extends RouteMeta = RouteMeta,
   const TState extends Record<string, Param> = Record<string, Param>
 >(options: CreateRouteOptions<TName, TPath, TQuery, THash, TMeta>
-  & WithHooks
   & WithComponents<TComponents, Route<ToName<TName>, Host<'', {}>, ToPath<TPath>, ToQuery<TQuery>, ToHash<THash>, TMeta, TState>>
-  & WithoutParent
-  & (WithState<TState> | WithoutState)):
+  & WithoutParent):
 Route<
   ToName<TName>,
   Host<'', {}>,
@@ -153,10 +142,8 @@ export function createRoute<
   const TMeta extends RouteMeta = RouteMeta,
   const TState extends Record<string, Param> = Record<string, Param>
 >(options: CreateRouteOptions<TName, TPath, TQuery, THash, TMeta>
-  & WithHooks
   & WithComponents<TComponents, Route<ToName<TName>, Host<'', {}>, CombinePath<TParent['path'], ToPath<TPath>>, CombineQuery<TParent['query'], ToQuery<TQuery>>, CombineHash<TParent['hash'], ToHash<THash>>, CombineMeta<TMeta, TParent['meta']>, CombineState<TState, TParent['state']>, TParent>>
-  & WithParent<TParent>
-  & (WithState<TState> | WithoutState)):
+  & WithParent<TParent>):
 Route<
   ToName<TName>,
   Host<'', {}>,

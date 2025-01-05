@@ -14,8 +14,9 @@ import { Query } from '@/types/query'
 import { RouteMeta } from '@/types/register'
 import { Route } from '@/types/route'
 import { MaybePromise } from '@/types/utilities'
-import { ResolvedRoute } from './resolved'
-import { PropsCallbackContext } from './props'
+import { ResolvedRoute } from '@/types/resolved'
+import { PropsCallbackContext } from '@/types/props'
+import { WithHooks } from '@/types/hooks'
 
 export type WithHost<THost extends string | Host = string | Host> = {
   /**
@@ -102,7 +103,8 @@ export type CreateRouteOptions<
   TPath extends string | Path | undefined = string | Path | undefined,
   TQuery extends string | Query | undefined = string | Query | undefined,
   THash extends string | Hash | undefined = string | Hash | undefined,
-  TMeta extends RouteMeta = RouteMeta
+  TMeta extends RouteMeta = RouteMeta,
+  TState extends Record<string, Param> = Record<string, Param>
 > = {
   /**
    * Name for route, used to create route keys and in navigation.
@@ -129,6 +131,8 @@ export type CreateRouteOptions<
    */
   prefetch?: PrefetchConfig,
 }
+& WithHooks
+& (WithState<TState> | WithoutState)
 
 export function combineRoutes(parent: Route, child: Route): Route {
   return {
