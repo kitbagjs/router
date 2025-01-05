@@ -6,12 +6,14 @@ import { Query } from '@/types/query'
 import { Route } from '@/types/route'
 import { RouteGetByKey } from '@/types/routeWithParams'
 import { routes } from '@/utilities/testHelpers'
-import { RouteMeta } from './register'
-import { Param } from './paramTypes'
+import { RouteMeta } from '@/types/register'
+import { Param } from '@/types/paramTypes'
+import { CreateRouteOptions } from '@/types/createRouteOptions'
 
 test('RouteGetByName works as expected', () => {
   type Source = RouteGetByKey<typeof routes, 'parentA'>
-  type Expect = Route<'parentA', Host<'', {}>, Path<'/parentA/[paramA]', {}>, Query<'', {}>, Hash<''>, RouteMeta, Record<string, Param>, 'parentA'>
+  type Matched = CreateRouteOptions<'parentA', '/parentA/[paramA]', undefined, undefined>
+  type Expect = Route<'parentA', Host<'', {}>, Path<'/parentA/[paramA]', {}>, Query<'', {}>, Hash<''>, RouteMeta, Record<string, Param>, Matched, [Matched]>
 
   expectTypeOf<Source>().toEqualTypeOf<Expect>()
 })
