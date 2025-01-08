@@ -7,6 +7,7 @@ import { PrefetchConfig } from '@/types/prefetch'
 import { Query } from '@/types/query'
 import { RouteMeta } from '@/types/register'
 import { Component } from 'vue'
+import { LastInArray } from './utilities'
 
 /**
  * Represents an immutable array of Route instances. Return value of `createRoute`, expected param for `createRouter`.
@@ -45,7 +46,7 @@ export type Route<
   /**
    * The specific route properties that were matched in the current route.
   */
-  matched: TMatches extends [...any[], infer Last extends CreatedRouteOptions] ? Last : CreatedRouteOptions,
+  matched: LastInArray<TMatches, CreatedRouteOptions>,
   /**
    * The specific route properties that were matched in the current route, including any ancestors.
    * Order of routes will be from greatest ancestor to narrowest matched.
