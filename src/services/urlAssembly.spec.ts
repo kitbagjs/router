@@ -232,7 +232,7 @@ describe('query params', () => {
     expect(url).toBe('/?simple=ABC')
   })
 
-  test.only('given route with optional custom param, finds and uses param to set value', () => {
+  test('given route with optional custom param, finds and uses param to set value', () => {
     const randomValue = Math.floor(Math.random() * 1000)
     const get = vi.fn()
     const set = vi.fn().mockReturnValue(randomValue.toString())
