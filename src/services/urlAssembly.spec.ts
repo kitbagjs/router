@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest'
+import { describe, expect, test, vi } from 'vitest'
 import { InvalidRouteParamValueError } from '@/errors/invalidRouteParamValueError'
 import { createExternalRoute } from '@/services/createExternalRoute'
 import { createRoute } from '@/services/createRoute'
@@ -8,6 +8,7 @@ import { query } from '@/services/query'
 import { assembleUrl } from '@/services/urlAssembly'
 import { withDefault } from '@/services/withDefault'
 import { component } from '@/utilities/testHelpers'
+import { createParam } from './createParam'
 
 describe('path params', () => {
   test.each([
@@ -229,6 +230,24 @@ describe('query params', () => {
     })
 
     expect(url).toBe('/?simple=ABC')
+  })
+
+  test('given route with optional custom param, finds and uses param to set value', () => {
+    const randomValue = Math.floor(Math.random() * 1000)
+    const get = vi.fn()
+    const set = vi.fn().mockReturnValue(randomValue.toString())
+    const myParam = createParam({ get, set })
+
+    const route = createRoute({
+      name: 'simple',
+      path: '/',
+      query: query('sort=[?sort]', { sort: myParam }),
+      component,
+    })
+
+    const url = assembleUrl(route, { params: { sort: 'irrelevant' } })
+
+    expect(url).toBe(`/?sort=${randomValue}`)
   })
 
   test('given route with multiple empty and optional query params, removes both from url', () => {
