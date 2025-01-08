@@ -14,7 +14,7 @@ import { Param } from '@/types/paramTypes'
 import { Path, ToPath, toPath } from '@/types/path'
 import { Query, ToQuery, toQuery } from '@/types/query'
 import { RouteMeta } from '@/types/register'
-import { Route, ToMeta, ToState } from '@/types/route'
+import { CreatedRouteOptions, Route, ToMeta, ToState } from '@/types/route'
 import { checkDuplicateParams } from '@/utilities/checkDuplicateKeys'
 
 export function createRoute<
@@ -29,7 +29,16 @@ TOptions extends CreateRouteOptions<
   infer THash extends Hash | string | undefined,
   infer TMeta extends RouteMeta,
   infer TState extends Record<string, Param>
-> ? Route<ToName<TName>, Host<'', {}>, ToPath<TPath>, ToQuery<TQuery>, ToHash<THash>, ToMeta<TMeta>, ToState<TState>> : never
+> ? Route<
+    ToName<TName>,
+    Host<'', {}>,
+    ToPath<TPath>,
+    ToQuery<TQuery>,
+    ToHash<THash>,
+    ToMeta<TMeta>,
+    ToState<TState>,
+    [CreatedRouteOptions & TOptions]
+  > : never
 
 export function createRoute<
   const TParent extends Route,
@@ -51,7 +60,8 @@ TOptions extends CreateRouteOptions<
     CombineQuery<TParent['query'], ToQuery<TQuery>>,
     CombineHash<TParent['hash'], ToHash<THash>>,
     CombineMeta<ToMeta<TMeta>, TParent['meta']>,
-    CombineState<ToState<TState>, TParent['state']>
+    CombineState<ToState<TState>, TParent['state']>,
+    [...TParent['matches'], CreatedRouteOptions & TOptions]
   > : never
 
 export function createRoute<
@@ -74,7 +84,8 @@ TOptions extends CreateRouteOptions<
     ToQuery<TQuery>,
     ToHash<THash>,
     ToMeta<TMeta>,
-    ToState<TState>
+    ToState<TState>,
+    [CreatedRouteOptions & TOptions & WithComponent<TComponent>]
   > : never
 
 export function createRoute<
@@ -98,7 +109,8 @@ TOptions extends CreateRouteOptions<
     CombineQuery<TParent['query'], ToQuery<TQuery>>,
     CombineHash<TParent['hash'], ToHash<THash>>,
     CombineMeta<ToMeta<TMeta>, TParent['meta']>,
-    CombineState<ToState<TState>, TParent['state']>
+    CombineState<ToState<TState>, TParent['state']>,
+    [...TParent['matches'], CreatedRouteOptions & TOptions & WithComponent<TComponent>]
   > : never
 
 export function createRoute<
@@ -121,7 +133,8 @@ TOptions extends CreateRouteOptions<
     ToQuery<TQuery>,
     ToHash<THash>,
     ToMeta<TMeta>,
-    ToState<TState>
+    ToState<TState>,
+    [CreatedRouteOptions & TOptions & WithComponents<TComponents>]
   > : never
 
 export function createRoute<
@@ -145,7 +158,8 @@ TOptions extends CreateRouteOptions<
     CombineQuery<TParent['query'], ToQuery<TQuery>>,
     CombineHash<TParent['hash'], ToHash<THash>>,
     CombineMeta<ToMeta<TMeta>, TParent['meta']>,
-    CombineState<ToState<TState>, TParent['state']>
+    CombineState<ToState<TState>, TParent['state']>,
+    [...TParent['matches'], CreatedRouteOptions & TOptions & WithComponents<TComponents>]
   > : never
 
 export function createRoute(options: CreateRouteOptions): Route {
