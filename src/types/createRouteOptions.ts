@@ -83,21 +83,6 @@ export function isWithComponents(options: CreateRouteOptions): options is Create
   return 'components' in options && Boolean(options.components)
 }
 
-export type WithState<TState extends Record<string, Param> = Record<string, Param>> = {
-  /**
-   * Type params for additional data intended to be stored in history state, all keys will be optional unless a default is provided.
-   */
-  state: TState,
-}
-
-export function isWithState(options: CreateRouteOptions): options is CreateRouteOptions & WithState {
-  return 'state' in options && Boolean(options.state)
-}
-
-export type WithoutState = {
-  state?: never,
-}
-
 export type CreateRouteOptions<
   TName extends string | undefined = string | undefined,
   TPath extends string | Path | undefined = string | Path | undefined,
@@ -130,9 +115,12 @@ export type CreateRouteOptions<
    * Determines what assets are prefetched when router-link is rendered for this route. Overrides router level prefetch.
    */
   prefetch?: PrefetchConfig,
+  /**
+   * Type params for additional data intended to be stored in history state, all keys will be optional unless a default is provided.
+   */
+  state?: TState,
 }
 & WithHooks
-& (WithState<TState> | WithoutState)
 
 export function combineRoutes(parent: Route, child: Route): Route {
   return {

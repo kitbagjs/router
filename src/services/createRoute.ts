@@ -6,7 +6,7 @@ import { CombineQuery } from '@/services/combineQuery'
 import { CombineState } from '@/services/combineState'
 import { createRouteId } from '@/services/createRouteId'
 import { host } from '@/services/host'
-import { CreateRouteOptions, WithComponent, WithComponents, WithParent, WithoutComponents, WithoutParent, combineRoutes, isWithParent, isWithState } from '@/types/createRouteOptions'
+import { CreateRouteOptions, WithComponent, WithComponents, WithParent, WithoutComponents, WithoutParent, combineRoutes, isWithParent } from '@/types/createRouteOptions'
 import { Hash, toHash, ToHash } from '@/types/hash'
 import { Host } from '@/types/host'
 import { toName, ToName } from '@/types/name'
@@ -169,7 +169,7 @@ export function createRoute(options: CreateRouteOptions): Route {
   const query = toQuery(options.query)
   const hash = toHash(options.hash)
   const meta = options.meta ?? {}
-  const state = isWithState(options) ? options.state : {}
+  const state = options.state ?? {}
   const rawRoute = markRaw({ id, meta: {}, state: {}, ...options })
 
   const route = {
