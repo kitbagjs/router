@@ -30,6 +30,8 @@ const parentA = createRoute({
   path: '/parentA/[paramA]',
 })
 
+export type T1 = typeof parentA['path']
+
 const childA = createRoute({
   parent: parentA,
   name: 'parentA.childA',

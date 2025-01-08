@@ -11,28 +11,50 @@ import { toName, ToName } from '@/types/name'
 import { Path, toPath, ToPath } from '@/types/path'
 import { Query, toQuery, ToQuery } from '@/types/query'
 import { RouteMeta } from '@/types/register'
-import { Route } from '@/types/route'
+import { CreatedRouteOptions, Route } from '@/types/route'
 import { checkDuplicateParams } from '@/utilities/checkDuplicateKeys'
 
 export function createExternalRoute<
   const THost extends string | Host,
-  const TName extends string | undefined = undefined,
-  const TPath extends string | Path | undefined = undefined,
-  const TQuery extends string | Query | undefined = undefined,
-  const THash extends string | Hash | undefined = undefined,
-  const TMeta extends RouteMeta = RouteMeta
->(options: CreateRouteOptions<TName, TPath, TQuery> & WithHost<THost> & WithoutParent):
-Route<ToName<TName>, ToHost<THost>, ToPath<TPath>, ToQuery<TQuery>, ToHash<THash>, TMeta>
+  const TOptions extends CreateRouteOptions
+>(options: TOptions & WithHost<THost> & WithoutParent):
+TOptions extends CreateRouteOptions<
+  infer TName extends string | undefined,
+  infer TPath extends string | Path | undefined,
+  infer TQuery extends string | Query | undefined,
+  infer THash extends string | Hash | undefined,
+  infer TMeta extends RouteMeta
+> ? Route<
+    ToName<TName>,
+    ToHost<THost>,
+    ToPath<TPath>,
+    ToQuery<TQuery>,
+    ToHash<THash>,
+    TMeta,
+    {},
+    [CreatedRouteOptions & TOptions]
+  > : never
 
 export function createExternalRoute<
   const TParent extends Route,
-  const TName extends string | undefined = undefined,
-  const TPath extends string | Path | undefined = undefined,
-  const TQuery extends string | Query | undefined = undefined,
-  const THash extends string | Hash | undefined = undefined,
-  const TMeta extends RouteMeta = RouteMeta
->(options: CreateRouteOptions<TName, TPath, TQuery> & WithoutHost & WithParent<TParent>):
-Route<ToName<TName>, Host<'', {}>, CombinePath<TParent['path'], ToPath<TPath>>, CombineQuery<TParent['query'], ToQuery<TQuery>>, CombineHash<TParent['hash'], ToHash<THash>>, CombineMeta<TMeta, TParent['meta']>>
+  const TOptions extends CreateRouteOptions
+>(options: TOptions & WithoutHost & WithParent<TParent>):
+TOptions extends CreateRouteOptions<
+  infer TName extends string | undefined,
+  infer TPath extends string | Path | undefined,
+  infer TQuery extends string | Query | undefined,
+  infer THash extends string | Hash | undefined,
+  infer TMeta extends RouteMeta
+> ? Route<
+    ToName<TName>,
+    Host<'', {}>,
+    CombinePath<TParent['path'], ToPath<TPath>>,
+    CombineQuery<TParent['query'], ToQuery<TQuery>>,
+    CombineHash<TParent['hash'], ToHash<THash>>,
+    CombineMeta<TMeta, TParent['meta']>,
+    {},
+    [CreatedRouteOptions & TOptions]
+  > : never
 
 export function createExternalRoute(options: CreateRouteOptions): Route {
   const id = createRouteId()

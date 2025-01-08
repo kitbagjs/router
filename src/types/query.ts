@@ -29,13 +29,15 @@ export type Query<
   params: string extends TQuery ? Record<string, Param> : Identity<ExtractQueryParamsFromQueryString<TQuery, TQueryParams>>,
 }
 
-export type ToQuery<T extends string | Query | undefined> = T extends string
-  ? Query<T, {}>
-  : T extends undefined
-    ? Query<'', {}>
-    : unknown extends T
-      ? Query<'', {}>
-      : T
+export type ToQuery<T extends string | Query | undefined> =
+  [Query | string | undefined] extends [T] ? Query<'', {}> :
+    T extends string
+      ? Query<T, {}>
+      : T extends undefined
+        ? Query<'', {}>
+        : unknown extends T
+          ? Query<'', {}>
+          : T
 
 function isQuery(maybeQuery: unknown): maybeQuery is Query {
   return isRecord(maybeQuery) && typeof maybeQuery.value === 'string'

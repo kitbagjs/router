@@ -26,13 +26,15 @@ export type Path<
   value: TPath,
   params: string extends TPath ? Record<string, Param> : Identity<ExtractParamsFromPathString<TPath, TParams>>,
 }
-export type ToPath<T extends string | Path | undefined> = T extends string
-  ? Path<T, {}>
-  : T extends undefined
-    ? Path<'', {}>
-    : unknown extends T
-      ? Path<'', {}>
-      : T
+export type ToPath<T extends string | Path | undefined> =
+  [Path | string | undefined] extends [T] ? Path<'', {}> :
+    T extends string
+      ? Path<T, {}>
+      : T extends undefined
+        ? Path<'', {}>
+        : unknown extends T
+          ? Path<'', {}>
+          : T
 
 function isPath(maybePath: unknown): maybePath is Path {
   return isRecord(maybePath) && typeof maybePath.value === 'string'

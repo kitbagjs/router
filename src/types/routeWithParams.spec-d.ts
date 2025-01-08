@@ -16,7 +16,7 @@ test('RouteGetByName works as expected', () => {
     readonly path: '/parentA/[paramA]',
   }
   type Expect = Route<'parentA', Host<'', {}>, Path<'/parentA/[paramA]', {}>, Query<'', {}>, Hash<''>, RouteMeta, Record<string, Param>, [Matched]>
-  expectTypeOf<Source['matches']>().toEqualTypeOf<Expect['matches']>()
+  expectTypeOf<Source['path']>().toEqualTypeOf<Expect['path']>()
 
   expectTypeOf<Source>().toEqualTypeOf<Expect>()
 })

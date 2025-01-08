@@ -6,13 +6,15 @@ export type Hash<
 > = {
   value: THash,
 }
-export type ToHash<T extends string | Hash | undefined> = T extends string
-  ? Hash<T>
-  : T extends undefined
-    ? Hash<''>
-    : unknown extends T
-      ? Hash<''>
-      : T
+export type ToHash<T extends string | Hash | undefined> =
+  [Hash | string | undefined] extends [T] ? Hash<''> :
+    T extends string
+      ? Hash<T>
+      : T extends undefined
+        ? Hash<''>
+        : unknown extends T
+          ? Hash<''>
+          : T
 
 function isHash(value: unknown): value is Hash {
   return isRecord(value) && typeof value.hash === 'string'

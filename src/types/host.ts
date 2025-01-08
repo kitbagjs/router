@@ -27,13 +27,16 @@ export type Host<
   params: string extends THost ? Record<string, Param> : Identity<ExtractParamsFromHostString<THost, TParams>>,
 }
 
-export type ToHost<T extends string | Host | undefined> = T extends string
-  ? Host<T, {}>
-  : T extends undefined
+export type ToHost<T extends string | Host | undefined> =
+  [string | undefined] extends [T]
     ? Host<'', {}>
-    : unknown extends T
-      ? Host<'', {}>
-      : T
+    : T extends string
+      ? Host<T, {}>
+      : T extends undefined
+        ? Host<'', {}>
+        : unknown extends T
+          ? Host<'', {}>
+          : T
 
 function isHost(maybeHost: unknown): maybeHost is Host {
   return isRecord(maybeHost) && typeof maybeHost.value === 'string'

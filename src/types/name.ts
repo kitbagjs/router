@@ -1,4 +1,8 @@
-export type ToName<T extends string | undefined> = T extends string ? T : ''
+export type ToName<T extends string | undefined> = [string | undefined] extends [T]
+  ? ''
+  : T extends string
+    ? T
+    : ''
 
 export function toName<T extends string | undefined>(value: T): ToName<T>
 export function toName<T extends string | undefined>(value: T): string {
