@@ -46,14 +46,13 @@ export type WithoutParent = {
 }
 
 export type WithComponent<
-  TComponent extends Component = Component,
-  TProps extends (route: ResolvedRoute, context: PropsCallbackContext) => MaybePromise<ComponentProps<TComponent>> = (route: ResolvedRoute, context: PropsCallbackContext) => MaybePromise<ComponentProps<TComponent>>
+  TComponent extends Component = Component
 > = {
   /**
    * A Vue component, which can be either synchronous or asynchronous components.
    */
   component: TComponent,
-  props?: TProps,
+  props?: (route: ResolvedRoute, context: PropsCallbackContext) => ComponentProps<TComponent>,
 }
 
 export function isWithComponent(options: CreateRouteOptions): options is CreateRouteOptions & WithComponent {
