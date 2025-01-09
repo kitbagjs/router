@@ -267,6 +267,18 @@ describe('query params', () => {
 
     expect(url).toBe('/')
   })
+
+  test('given route with query params with different param names than query keys, still works as expected', () => {
+    const route = createRoute({
+      name: 'query-keys',
+      path: '/',
+      query: 's=[?search]',
+    })
+
+    const url = assembleUrl(route, { params: { search: 'foo' } })
+
+    expect(url).toBe('/?s=foo')
+  })
 })
 
 describe('static query', () => {

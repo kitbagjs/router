@@ -5,6 +5,7 @@ import { Path } from '@/types/path'
 import { Query } from '@/types/query'
 import { Route } from '@/types/route'
 import { RouteMatchRule } from '@/types/routeMatchRule'
+import { getParamName, isOptionalParamSyntax } from '@/services/routeRegex'
 
 export const routeParamsAreValid: RouteMatchRule = (route, url) => {
   try {
@@ -43,13 +44,21 @@ function getPathParams(path: Path, url: string): Record<string, unknown> {
 
 function getQueryParams(query: Query, url: string): Record<string, unknown> {
   const values: Record<string, unknown> = {}
+  const routeSearch = new URLSearchParams(query.value)
   const actualSearch = new URLSearchParams(url)
 
-  for (const [key, param] of Object.entries(query.params)) {
-    const isOptional = key.startsWith('?')
-    const paramName = isOptional ? key.slice(1) : key
-    const valueOnUrl = actualSearch.get(paramName) ?? undefined
-    const paramValue = getParamValue(valueOnUrl, param, isOptional)
+  for (const [key, value] of Array.from(routeSearch.entries())) {
+    const paramName = getParamName(value)
+    const isNotParam = !paramName
+
+    if (isNotParam) {
+      continue
+    }
+
+    const isOptional = isOptionalParamSyntax(value)
+    const paramKey = isOptional ? `?${paramName}` : paramName
+    const valueOnUrl = actualSearch.get(key) ?? undefined
+    const paramValue = getParamValue(valueOnUrl, query.params[paramKey], isOptional)
 
     values[paramName] = paramValue
   }
