@@ -14,8 +14,8 @@ import { LastInArray } from './utilities'
  */
 export type Routes = readonly Route[]
 
-export type ToMeta<TMeta extends RouteMeta | undefined> = TMeta extends undefined ? {} : TMeta
-export type ToState<TState extends Record<string, Param> | undefined> = TState extends undefined ? Record<string, Param> : TState
+export type ToMeta<TMeta extends RouteMeta | undefined> = TMeta extends undefined ? {} : unknown extends TMeta ? {} : TMeta
+export type ToState<TState extends Record<string, Param> | undefined> = TState extends undefined ? Record<string, Param> : unknown extends TState ? {} : TState
 
 export type CreatedRouteOptions = CreateRouteOptions & {
   id: string,

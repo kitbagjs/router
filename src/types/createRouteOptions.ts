@@ -47,13 +47,13 @@ export type WithoutParent = {
 
 export type WithComponent<
   TComponent extends Component = Component,
-  TRoute extends Route = Route
+  TProps extends (route: ResolvedRoute, context: PropsCallbackContext) => MaybePromise<ComponentProps<TComponent>> = (route: ResolvedRoute, context: PropsCallbackContext) => MaybePromise<ComponentProps<TComponent>>
 > = {
   /**
    * A Vue component, which can be either synchronous or asynchronous components.
    */
   component: TComponent,
-  props?: (route: ResolvedRoute<TRoute>, context: PropsCallbackContext) => TComponent extends Component ? MaybePromise<ComponentProps<TComponent>> : {},
+  props?: TProps,
 }
 
 export function isWithComponent(options: CreateRouteOptions): options is CreateRouteOptions & WithComponent {
@@ -83,56 +83,37 @@ export function isWithComponents(options: CreateRouteOptions): options is Create
   return 'components' in options && Boolean(options.components)
 }
 
-export type WithState<TState extends Record<string, Param> = Record<string, Param>> = {
-  /**
-   * Type params for additional data intended to be stored in history state, all keys will be optional unless a default is provided.
-   */
-  state: TState,
-}
-
-export function isWithState(options: CreateRouteOptions): options is CreateRouteOptions & WithState {
-  return 'state' in options && Boolean(options.state)
-}
-
-export type WithoutState = {
-  state?: never,
-}
-
-export type CreateRouteOptions<
-  TName extends string | undefined = string | undefined,
-  TPath extends string | Path | undefined = string | Path | undefined,
-  TQuery extends string | Query | undefined = string | Query | undefined,
-  THash extends string | Hash | undefined = string | Hash | undefined,
-  TMeta extends RouteMeta = RouteMeta,
-  TState extends Record<string, Param> = Record<string, Param>
-> = {
+export type CreateRouteOptions = {
   /**
    * Name for route, used to create route keys and in navigation.
    */
-  name?: TName,
+  name?: string | undefined,
   /**
    * Path part of URL.
    */
-  path?: TPath,
+  path?: string | Path | undefined,
   /**
    * Query (aka search) part of URL.
    */
-  query?: TQuery,
+  query?: string | Query | undefined,
   /**
    * Hash part of URL.
    */
-  hash?: THash,
+  hash?: string | Hash | undefined,
   /**
    * Represents additional metadata associated with a route, customizable via declaration merging.
    */
-  meta?: TMeta,
+  meta?: RouteMeta,
   /**
    * Determines what assets are prefetched when router-link is rendered for this route. Overrides router level prefetch.
    */
   prefetch?: PrefetchConfig,
+  /**
+   * Type params for additional data intended to be stored in history state, all keys will be optional unless a default is provided.
+   */
+  state?: Record<string, Param>,
 }
 & WithHooks
-& (WithState<TState> | WithoutState)
 
 export function combineRoutes(parent: Route, child: Route): Route {
   return {
