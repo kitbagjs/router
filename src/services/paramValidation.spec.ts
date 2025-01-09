@@ -195,4 +195,17 @@ describe('getRouteParamValues', () => {
     expect(response.inPath).toBe(output)
     expect(response.inQuery).toBe(output)
   })
+
+  test('given route with query param that has a different param name than query key, still works as expected', () => {
+    const route = createRoute({
+      name: 'test',
+      path: '/',
+      query: 's=[?search]',
+      component,
+    })
+
+    const response = getRouteParamValues(route, '/?s=foo')
+
+    expect(response.search).toBe('foo')
+  })
 })
