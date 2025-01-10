@@ -52,7 +52,7 @@ export type WithComponent<
    * A Vue component, which can be either synchronous or asynchronous components.
    */
   component: TComponent,
-  props?: (route: ResolvedRoute, context: PropsCallbackContext) => ComponentProps<TComponent>,
+  props?: (route: ResolvedRoute, context: PropsCallbackContext) => MaybePromise<ComponentProps<TComponent>>,
 }
 
 export function isWithComponent(options: CreateRouteOptions): options is CreateRouteOptions & WithComponent {
@@ -60,15 +60,14 @@ export function isWithComponent(options: CreateRouteOptions): options is CreateR
 }
 
 export type WithComponents<
-  TComponents extends Record<string, Component> = Record<string, Component>,
-  TRoute extends Route = Route
+  TComponents extends Record<string, Component> = Record<string, Component>
 > = {
   /**
    * Multiple components for named views, which can be either synchronous or asynchronous components.
    */
   components: TComponents,
   props?: {
-    [TKey in keyof TComponents]?: (route: ResolvedRoute<TRoute>, context: PropsCallbackContext) => TComponents[TKey] extends Component ? MaybePromise<ComponentProps<TComponents[TKey]>> : {}
+    [TKey in keyof TComponents]?: (route: ResolvedRoute, context: PropsCallbackContext) => TComponents[TKey] extends Component ? MaybePromise<ComponentProps<TComponents[TKey]>> : {}
   },
 }
 
