@@ -19,7 +19,7 @@ function beforeComponentHookFactory(lifecycle: BeforeRouteHookLifecycle) {
     const depth = useRouterDepth()
     const hooks = useRouterHooks()
 
-    const remove = hooks.addComponentBeforeRouteHook({ lifecycle, hook, depth })
+    const remove = hooks.addComponentBeforeRouteHook({ lifecycle, hook, depth: depth - 1 })
 
     onUnmounted(remove)
 
@@ -32,7 +32,7 @@ function afterComponentHookFactory(lifecycle: AfterRouteHookLifecycle) {
     const depth = useRouterDepth()
     const store = useRouterHooks()
 
-    const remove = store.addComponentAfterRouteHook({ lifecycle, hook, depth })
+    const remove = store.addComponentAfterRouteHook({ lifecycle, hook, depth: depth - 1 })
 
     onUnmounted(remove)
 
