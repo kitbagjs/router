@@ -48,7 +48,7 @@ function afterComponentHookFactory(lifecycle: AfterRouteHookLifecycle) {
  * @returns {RouteHookRemove} A function that removes the added hook.
  * @group Hooks
  */
-export const onBeforeRouteLeave: AddBeforeRouteHook = beforeComponentHookFactory('onBeforeRouteUpdate')
+export const onBeforeRouteLeave: AddBeforeRouteHook = beforeComponentHookFactory('onBeforeRouteLeave')
 
 /**
  * Registers a hook that is called before a route is updated. Must be called from setup.
@@ -58,17 +58,7 @@ export const onBeforeRouteLeave: AddBeforeRouteHook = beforeComponentHookFactory
  * @returns {RouteHookRemove} A function that removes the added hook.
  * @group Hooks
  */
-export const onBeforeRouteUpdate: AddBeforeRouteHook = beforeComponentHookFactory('onBeforeRouteLeave')
-
-/**
- * Registers a hook that is called after a route has been entered. Must be called during setup.
- * This allows performing actions right after the component becomes active, such as fetching data or setting up event listeners.
- *
- * @param AfterRouteHook - The hook callback function
- * @returns {RouteHookRemove} A function that removes the added hook.
- * @group Hooks
- */
-export const onAfterRouteEnter: AddAfterRouteHook = afterComponentHookFactory('onAfterRouteEnter')
+export const onBeforeRouteUpdate: AddBeforeRouteHook = beforeComponentHookFactory('onBeforeRouteUpdate')
 
 /**
  * Registers a hook that is called after a route has been left. Must be called during setup.
@@ -78,7 +68,7 @@ export const onAfterRouteEnter: AddAfterRouteHook = afterComponentHookFactory('o
  * @returns {RouteHookRemove} A function that removes the added hook.
  * @group Hooks
  */
-export const onAfterRouteLeave: AddAfterRouteHook = afterComponentHookFactory('onAfterRouteUpdate')
+export const onAfterRouteLeave: AddAfterRouteHook = afterComponentHookFactory('onAfterRouteLeave')
 
 /**
  * Registers a hook that is called after a route has been updated. Must be called during setup.
@@ -88,4 +78,4 @@ export const onAfterRouteLeave: AddAfterRouteHook = afterComponentHookFactory('o
  * @returns {RouteHookRemove} A function that removes the added hook.
  * @group Hooks
  */
-export const onAfterRouteUpdate: AddAfterRouteHook = afterComponentHookFactory('onAfterRouteLeave')
+export const onAfterRouteUpdate: AddAfterRouteHook = afterComponentHookFactory('onAfterRouteUpdate')
