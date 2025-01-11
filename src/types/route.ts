@@ -1,4 +1,4 @@
-import { CreateRouteOptions } from '@/types/createRouteOptions'
+import { ComponentContext, CreateRouteOptions } from '@/types/createRouteOptions'
 import { Hash } from '@/types/hash'
 import { Host } from '@/types/host'
 import { Param } from '@/types/paramTypes'
@@ -6,8 +6,8 @@ import { Path } from '@/types/path'
 import { PrefetchConfig } from '@/types/prefetch'
 import { Query } from '@/types/query'
 import { RouteMeta } from '@/types/register'
-import { Component } from 'vue'
 import { LastInArray } from './utilities'
+import { Component } from 'vue'
 
 /**
  * Represents an immutable array of Route instances. Return value of `createRoute`, expected param for `createRouter`.
@@ -17,11 +17,12 @@ export type Routes = readonly Route[]
 export type ToMeta<TMeta extends RouteMeta | undefined> = TMeta extends undefined ? {} : unknown extends TMeta ? {} : TMeta
 export type ToState<TState extends Record<string, Param> | undefined> = TState extends undefined ? Record<string, Param> : unknown extends TState ? {} : TState
 
-export type CreatedRouteOptions = CreateRouteOptions & {
+export type CreatedRouteOptions<
+  TOptions extends CreateRouteOptions = CreateRouteOptions,
+  TComponentContext extends Component | ComponentContext<TOptions> | ComponentContext<TOptions>[] = Component | ComponentContext<TOptions> | ComponentContext<TOptions>[]
+> = TOptions & {
   id: string,
-  component?: Component,
-  components?: Record<string, Component>,
-}
+} & Component | ComponentContext<TOptions> | ComponentContext<TOptions>[] extends TComponentContext ? {} : TComponentContext
 
 /**
  * Represents the structure of a route within the application. Return value of `createRoute`

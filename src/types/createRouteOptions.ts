@@ -14,7 +14,6 @@ import { Query } from '@/types/query'
 import { RouteMeta } from '@/types/register'
 import { Route } from '@/types/route'
 import { MaybePromise } from '@/types/utilities'
-import { ResolvedRoute } from '@/types/resolved'
 import { PropsCallbackContext } from '@/types/props'
 import { WithHooks } from '@/types/hooks'
 
@@ -45,40 +44,15 @@ export type WithoutParent = {
   parent?: never,
 }
 
-export type WithComponent<
+export type ComponentContext<
+  TRoute extends CreateRouteOptions = CreateRouteOptions,
   TComponent extends Component = Component
 > = {
   /**
    * A Vue component, which can be either synchronous or asynchronous components.
    */
   component: TComponent,
-  props?: (route: ResolvedRoute, context: PropsCallbackContext) => MaybePromise<ComponentProps<TComponent>>,
-}
-
-export function isWithComponent(options: CreateRouteOptions): options is CreateRouteOptions & WithComponent {
-  return 'component' in options && Boolean(options.component)
-}
-
-export type WithComponents<
-  TComponents extends Record<string, Component> = Record<string, Component>
-> = {
-  /**
-   * Multiple components for named views, which can be either synchronous or asynchronous components.
-   */
-  components: TComponents,
-  props?: {
-    [TKey in keyof TComponents]?: (route: ResolvedRoute, context: PropsCallbackContext) => TComponents[TKey] extends Component ? MaybePromise<ComponentProps<TComponents[TKey]>> : {}
-  },
-}
-
-export type WithoutComponents = {
-  component?: never,
-  components?: never,
-  props?: never,
-}
-
-export function isWithComponents(options: CreateRouteOptions): options is CreateRouteOptions & WithComponents {
-  return 'components' in options && Boolean(options.components)
+  props?: (route: TRoute, context: PropsCallbackContext) => MaybePromise<ComponentProps<TComponent>>,
 }
 
 export type CreateRouteOptions = {
@@ -110,6 +84,14 @@ export type CreateRouteOptions = {
    * Type params for additional data intended to be stored in history state, all keys will be optional unless a default is provided.
    */
   state?: Record<string, Param>,
+  /**
+   * This property is moved to the `ComponentContext` (2nd argument of `createRoute`).
+   */
+  component?: never,
+  /**
+   * This property is moved to the `ComponentContext` (2nd argument of `createRoute`).
+   */
+  components?: never,
 }
 & WithHooks
 

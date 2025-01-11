@@ -6,173 +6,47 @@ import { CombineQuery } from '@/services/combineQuery'
 import { CombineState } from '@/services/combineState'
 import { createRouteId } from '@/services/createRouteId'
 import { host } from '@/services/host'
-import { CreateRouteOptions, WithComponent, WithComponents, WithParent, WithoutComponents, WithoutParent, combineRoutes, isWithParent } from '@/types/createRouteOptions'
+import { CreateRouteOptions, ComponentContext, WithParent, WithoutParent, combineRoutes, isWithParent } from '@/types/createRouteOptions'
 import { toHash, ToHash } from '@/types/hash'
 import { Host } from '@/types/host'
 import { toName, ToName } from '@/types/name'
 import { ToPath, toPath } from '@/types/path'
 import { ToQuery, toQuery } from '@/types/query'
-import { Route, ToMeta, ToState } from '@/types/route'
+import { CreatedRouteOptions, Route, ToMeta, ToState } from '@/types/route'
 import { checkDuplicateParams } from '@/utilities/checkDuplicateKeys'
 
 export function createRoute<
-  const TOptions
->(options: TOptions & CreateRouteOptions & WithoutComponents & WithoutParent):
-TOptions extends CreateRouteOptions
-  ? Route<
-    ToName<TOptions['name']>,
-    Host<'', {}>,
-    ToPath<TOptions['path']>,
-    ToQuery<TOptions['query']>,
-    ToHash<TOptions['hash']>,
-    ToMeta<TOptions['meta']>,
-    ToState<TOptions['state']>,
-    [TOptions & { id: string }]
-  >
-  : Route<
-    ToName<undefined>,
-    Host<'', {}>,
-    ToPath<undefined>,
-    ToQuery<undefined>,
-    ToHash<undefined>,
-    ToMeta<undefined>,
-    ToState<undefined>,
-    [TOptions & { id: string }]
-  >
+  const TOptions extends CreateRouteOptions,
+  const TComponentContext extends Component | ComponentContext<TOptions> | ComponentContext<TOptions>[]
+>(options: TOptions & WithoutParent, componentContext?: TComponentContext):
+Route<
+  ToName<TOptions['name']>,
+  Host<'', {}>,
+  ToPath<TOptions['path']>,
+  ToQuery<TOptions['query']>,
+  ToHash<TOptions['hash']>,
+  ToMeta<TOptions['meta']>,
+  ToState<TOptions['state']>,
+  [CreatedRouteOptions<TOptions, TComponentContext>]
+>
 
 export function createRoute<
-  const TOptions,
-  const TParent extends Route
->(options: TOptions & CreateRouteOptions & WithoutComponents & WithParent<TParent>):
-TOptions extends CreateRouteOptions
-  ? Route<
-    ToName<TOptions['name']>,
-    Host<'', {}>,
-    CombinePath<TParent['path'], ToPath<TOptions['path']>>,
-    CombineQuery<TParent['query'], ToQuery<TOptions['query']>>,
-    CombineHash<TParent['hash'], ToHash<TOptions['hash']>>,
-    CombineMeta<ToMeta<TOptions['meta']>, TParent['meta']>,
-    CombineState<ToState<TOptions['state']>, TParent['state']>,
-    [...TParent['matches'], TOptions & { id: string }]
-  >
-  : Route<
-    TParent['name'],
-    Host<'', {}>,
-    TParent['path'],
-    TParent['query'],
-    TParent['hash'],
-    TParent['meta'],
-    TParent['state'],
-    [TOptions & { id: string }]
-  >
-
-export function createRoute<
-  const TOptions,
-  TComponent extends Component
->(options: TOptions & CreateRouteOptions & WithoutParent & WithComponent<TComponent>):
-TOptions extends CreateRouteOptions
-  ? Route<
-    ToName<TOptions['name']>,
-    Host<'', {}>,
-    ToPath<TOptions['path']>,
-    ToQuery<TOptions['query']>,
-    ToHash<TOptions['hash']>,
-    ToMeta<TOptions['meta']>,
-    ToState<TOptions['state']>,
-    [TOptions & { id: string }]
-  >
-  : Route<
-    ToName<undefined>,
-    Host<'', {}>,
-    ToPath<undefined>,
-    ToQuery<undefined>,
-    ToHash<undefined>,
-    ToMeta<undefined>,
-    ToState<undefined>,
-    [TOptions & { id: string }]
-  >
-
-export function createRoute<
-  const TOptions,
   const TParent extends Route,
-  const TComponent extends Component
->(options: TOptions & CreateRouteOptions & WithComponent<TComponent> & WithParent<TParent>):
-TOptions extends CreateRouteOptions
-  ? Route<
-    ToName<TOptions['name']>,
-    Host<'', {}>,
-    CombinePath<TParent['path'], ToPath<TOptions['path']>>,
-    CombineQuery<TParent['query'], ToQuery<TOptions['query']>>,
-    CombineHash<TParent['hash'], ToHash<TOptions['hash']>>,
-    CombineMeta<ToMeta<TOptions['meta']>, TParent['meta']>,
-    CombineState<ToState<TOptions['state']>, TParent['state']>,
-    [...TParent['matches'], TOptions & { id: string }]
-  >
-  : Route<
-    TParent['name'],
-    Host<'', {}>,
-    TParent['path'],
-    TParent['query'],
-    TParent['hash'],
-    TParent['meta'],
-    TParent['state'],
-    [TOptions & { id: string }]
-  >
+  const TOptions extends CreateRouteOptions,
+  const TComponentContext extends Component | ComponentContext<TOptions> | ComponentContext<TOptions>[]
+>(options: TOptions & WithParent<TParent>, componentContext?: TComponentContext):
+Route<
+  ToName<TOptions['name']>,
+  Host<'', {}>,
+  CombinePath<TParent['path'], ToPath<TOptions['path']>>,
+  CombineQuery<TParent['query'], ToQuery<TOptions['query']>>,
+  CombineHash<TParent['hash'], ToHash<TOptions['hash']>>,
+  CombineMeta<ToMeta<TOptions['meta']>, TParent['meta']>,
+  CombineState<ToState<TOptions['state']>, TParent['state']>,
+  [...TParent['matches'], CreatedRouteOptions<TOptions, TComponentContext>]
+>
 
-export function createRoute<
-  const TOptions,
-  const TComponents extends Record<string, Component>
->(options: TOptions & CreateRouteOptions & WithComponents<TComponents> & WithoutParent):
-TOptions extends CreateRouteOptions
-  ? Route<
-    ToName<TOptions['name']>,
-    Host<'', {}>,
-    ToPath<TOptions['path']>,
-    ToQuery<TOptions['query']>,
-    ToHash<TOptions['hash']>,
-    ToMeta<TOptions['meta']>,
-    ToState<TOptions['state']>,
-    [TOptions & { id: string }]
-  >
-  : Route<
-    ToName<undefined>,
-    Host<'', {}>,
-    ToPath<undefined>,
-    ToQuery<undefined>,
-    ToHash<undefined>,
-    ToMeta<undefined>,
-    ToState<undefined>,
-    [TOptions & { id: string }]
-  >
-
-export function createRoute<
-  const TOptions,
-  const TParent extends Route,
-  const TComponents extends Record<string, Component>
->(options: TOptions & CreateRouteOptions & WithComponents<TComponents> & WithParent<TParent>):
-TOptions extends CreateRouteOptions
-  ? Route<
-    ToName<TOptions['name']>,
-    Host<'', {}>,
-    CombinePath<TParent['path'], ToPath<TOptions['path']>>,
-    CombineQuery<TParent['query'], ToQuery<TOptions['query']>>,
-    CombineHash<TParent['hash'], ToHash<TOptions['hash']>>,
-    CombineMeta<ToMeta<TOptions['meta']>, TParent['meta']>,
-    CombineState<ToState<TOptions['state']>, TParent['state']>,
-    [...TParent['matches'], TOptions & { id: string }]
-  >
-  : Route<
-    TParent['name'],
-    Host<'', {}>,
-    TParent['path'],
-    TParent['query'],
-    TParent['hash'],
-    TParent['meta'],
-    TParent['state'],
-    [TOptions & { id: string }]
-  >
-
-export function createRoute(options: CreateRouteOptions): Route {
+export function createRoute(options: CreateRouteOptions, componentContext?: Component | ComponentContext | ComponentContext[]): Route {
   const id = createRouteId()
   const name = toName(options.name)
   const path = toPath(options.path)
