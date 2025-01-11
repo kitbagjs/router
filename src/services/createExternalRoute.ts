@@ -25,7 +25,7 @@ Route<
   ToHash<TOptions['hash']>,
   ToMeta<TOptions['meta']>,
   {},
-  [CreatedRouteOptions & TOptions]
+  [CreatedRouteOptions<TOptions>]
 >
 
 export function createExternalRoute<
@@ -40,7 +40,7 @@ Route<
   CombineHash<TParent['hash'], ToHash<TOptions['hash']>>,
   CombineMeta<ToMeta<TOptions['meta']>, TParent['meta']>,
   {},
-  [CreatedRouteOptions & TOptions]
+  [CreatedRouteOptions<TOptions>]
 >
 
 export function createExternalRoute(options: CreateRouteOptions): Route {

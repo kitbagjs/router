@@ -1,4 +1,3 @@
-import { CreateRouteOptions } from '@/types/createRouteOptions'
 import { Hash } from '@/types/hash'
 import { Host } from '@/types/host'
 import { Param } from '@/types/paramTypes'
@@ -6,7 +5,6 @@ import { Path } from '@/types/path'
 import { PrefetchConfig } from '@/types/prefetch'
 import { Query } from '@/types/query'
 import { RouteMeta } from '@/types/register'
-import { Component } from 'vue'
 import { LastInArray } from './utilities'
 
 /**
@@ -17,10 +15,16 @@ export type Routes = readonly Route[]
 export type ToMeta<TMeta extends RouteMeta | undefined> = TMeta extends undefined ? {} : unknown extends TMeta ? {} : TMeta
 export type ToState<TState extends Record<string, Param> | undefined> = TState extends undefined ? Record<string, Param> : unknown extends TState ? {} : TState
 
-export type CreatedRouteOptions = CreateRouteOptions & {
+export type CreatedRouteOptions = {
   id: string,
-  component?: Component,
-  components?: Record<string, Component>,
+  name?: string,
+  host?: Host | string | undefined,
+  path?: Path | string | undefined,
+  query?: Query | string | undefined,
+  hash?: Hash | string | undefined,
+  meta?: RouteMeta,
+  state?: Record<string, Param>,
+  prefetch?: PrefetchConfig,
 }
 
 /**

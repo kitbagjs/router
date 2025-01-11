@@ -5,18 +5,19 @@ import { combinePath } from '@/services/combinePath'
 import { combineQuery } from '@/services/combineQuery'
 import { combineState } from '@/services/combineState'
 import { ComponentProps } from '@/services/component'
-import { Hash } from '@/types/hash'
+import { Hash, ToHash } from '@/types/hash'
 import { Host } from '@/types/host'
 import { Param } from '@/types/paramTypes'
-import { Path } from '@/types/path'
+import { Path, ToPath } from '@/types/path'
 import { PrefetchConfig } from '@/types/prefetch'
-import { Query } from '@/types/query'
+import { Query, ToQuery } from '@/types/query'
 import { RouteMeta } from '@/types/register'
-import { Route } from '@/types/route'
+import { Route, ToMeta, ToState } from '@/types/route'
 import { MaybePromise } from '@/types/utilities'
 import { ResolvedRoute } from '@/types/resolved'
 import { PropsCallbackContext } from '@/types/props'
 import { WithHooks } from '@/types/hooks'
+import { ToName } from '@/types/name'
 
 export type WithHost<THost extends string | Host = string | Host> = {
   /**
@@ -52,8 +53,9 @@ export type WithComponent<
    * A Vue component, which can be either synchronous or asynchronous components.
    */
   component: TComponent,
-  props?: (route: ResolvedRoute, context: PropsCallbackContext) => MaybePromise<ComponentProps<TComponent>>,
 }
+
+export type WithComponentProps<TRoute extends CreateRouteOptions, TComponent extends Component> = (route: ResolvedRoute<ToRoute<TRoute>>, context: PropsCallbackContext) => MaybePromise<ComponentProps<TComponent>>
 
 export function isWithComponent(options: CreateRouteOptions): options is CreateRouteOptions & WithComponent {
   return 'component' in options && Boolean(options.component)
@@ -66,9 +68,10 @@ export type WithComponents<
    * Multiple components for named views, which can be either synchronous or asynchronous components.
    */
   components: TComponents,
-  props?: {
-    [TKey in keyof TComponents]?: (route: ResolvedRoute, context: PropsCallbackContext) => TComponents[TKey] extends Component ? MaybePromise<ComponentProps<TComponents[TKey]>> : {}
-  },
+}
+
+export type WithComponentsProps<TRoute extends CreateRouteOptions, TComponents extends Record<string, Component> = Record<string, Component>> = {
+  [TKey in keyof TComponents]?: (route: ResolvedRoute<ToRoute<TRoute>>, context: PropsCallbackContext) => TComponents[TKey] extends Component ? MaybePromise<ComponentProps<TComponents[TKey]>> : {}
 }
 
 export type WithoutComponents = {
@@ -112,6 +115,16 @@ export type CreateRouteOptions = {
   state?: Record<string, Param>,
 }
 & WithHooks
+
+type ToRoute<TOptions extends CreateRouteOptions> = Route<
+  ToName<TOptions['name']>,
+  Host<'', {}>,
+  ToPath<TOptions['path']>,
+  ToQuery<TOptions['query']>,
+  ToHash<TOptions['hash']>,
+  ToMeta<TOptions['meta']>,
+  ToState<TOptions['state']>
+>
 
 export function combineRoutes(parent: Route, child: Route): Route {
   return {
