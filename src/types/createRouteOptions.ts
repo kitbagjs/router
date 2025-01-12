@@ -20,6 +20,7 @@ import { RouterView } from '@/components'
 import { ToMeta } from './meta'
 import { ToState } from './state'
 import { ToName } from './name'
+import { WithHooks } from './hooks'
 
 export type WithHost<THost extends string | Host = string | Host> = {
   /**
@@ -48,15 +49,15 @@ export type WithoutParent = {
   parent?: never,
 }
 
-export function isWithComponent(options: CreateRouteOptions): options is CreateRouteOptions & { component: Component } {
+export function isWithComponent<T extends Record<string, unknown>>(options: T): options is T & { component: Component } {
   return 'component' in options && Boolean(options.component)
 }
 
-export function isWithComponents(options: CreateRouteOptions): options is CreateRouteOptions & { components: Record<string, Component> } {
+export function isWithComponents<T extends Record<string, unknown>>(options: T): options is T & { components: Record<string, Component> } {
   return 'components' in options && Boolean(options.components)
 }
 
-export function isWithState(options: CreateRouteOptions): options is CreateRouteOptions & { state: Record<string, Param> } {
+export function isWithState<T extends Record<string, unknown>>(options: T): options is T & { state: Record<string, Param> } {
   return 'state' in options && Boolean(options.state)
 }
 
@@ -66,7 +67,7 @@ export type CreateRouteOptions<
   TQuery extends string | Query | undefined = string | Query | undefined,
   THash extends string | Hash | undefined = string | Hash | undefined,
   TMeta extends RouteMeta = RouteMeta
-> = {
+> = WithHooks & {
   /**
    * Name for route, used to create route keys and in navigation.
    */

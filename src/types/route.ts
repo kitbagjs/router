@@ -7,6 +7,7 @@ import { Query } from '@/types/query'
 import { RouteMeta } from '@/types/register'
 import { LastInArray } from './utilities'
 import { CreateRouteOptions } from './createRouteOptions'
+import { WithHooks } from './hooks'
 
 /**
  * Represents an immutable array of Route instances. Return value of `createRoute`, expected param for `createRouter`.
@@ -16,8 +17,9 @@ export type Routes = readonly Route[]
 /**
  * The Route properties originally provided to `createRoute`. The only change is normalizing meta to always default to an empty object.
  */
-export type CreatedRouteOptions = Omit<CreateRouteOptions, 'props'> & {
+export type CreatedRouteOptions = Omit<CreateRouteOptions, 'props'> & WithHooks & {
   id: string,
+  props: unknown,
 }
 /**
  * Represents the structure of a route within the application. Return value of `createRoute`
