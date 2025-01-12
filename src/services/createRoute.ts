@@ -27,7 +27,7 @@ export type ToState<TState extends Record<string, Param> | undefined> = TState e
 
 type ToMatch<
   TOptions extends CreateRouteOptions,
-  TProps extends AnyFunction | undefined
+  TProps extends RouteProps<TOptions> | undefined
 > = Route<
   ToName<TOptions['name']>,
   Host<'', {}>,
@@ -40,16 +40,14 @@ type ToMatch<
 
 type Matches<
   TOptions extends CreateRouteOptions,
-  TProps extends AnyFunction | undefined
+  TProps extends RouteProps<TOptions> | undefined
 > = TOptions extends { parent: infer TParent extends Route }
   ? [...TParent['matches'], ToMatch<TOptions, TProps>]
   : [ToMatch<TOptions, TProps>]
 
-type AnyFunction = (...args: any[]) => any
-
 type ToRoute<
   TOptions extends CreateRouteOptions,
-  TProps extends AnyFunction | undefined
+  TProps extends RouteProps<TOptions> | undefined
 > = TOptions extends { parent: infer TParent extends Route }
   ? Route<
     ToName<TOptions['name']>,
@@ -77,25 +75,43 @@ type PropsGetter<
   TComopnent extends Component
 > = (route: ResolvedRoute<ToRoute<TOptions, undefined>>, context: PropsCallbackContext) => MaybePromise<ComponentProps<TComopnent>>
 
-type ToComponent<
-  TComponent extends Component | undefined
-> = TComponent extends Component
-  ? TComponent
-  : typeof RouterView
+type ComponentPropsAreOptional<
+  TComponent extends Component
+> = Partial<ComponentProps<TComponent>> extends ComponentProps<TComponent>
+  ? true
+  : false
+
+type RoutePropsRecord<
+  TOptions extends CreateRouteOptions,
+  TComponents extends Record<string, Component>
+> = { [K in keyof TComponents as ComponentPropsAreOptional<TComponents[K]> extends true ? K : never]?: PropsGetter<TOptions, TComponents[K]> }
+& { [K in keyof TComponents as ComponentPropsAreOptional<TComponents[K]> extends false ? K : never]: PropsGetter<TOptions, TComponents[K]> }
+
+type RouteProps<
+  TOptions extends CreateRouteOptions
+> = TOptions['component'] extends Component
+  ? PropsGetter<TOptions, TOptions['component']>
+  : TOptions['components'] extends Record<string, Component>
+    ? RoutePropsRecord<TOptions, TOptions['components']>
+    : PropsGetter<TOptions, typeof RouterView>
 
 type WithProps<
   TOptions extends CreateRouteOptions,
-  TPropsGetter extends PropsGetter<TOptions, ToComponent<TOptions['component']>>
-> = Partial<ReturnType<TPropsGetter>> extends ReturnType<TPropsGetter>
-  ? [ props?: TPropsGetter ]
-  : [ props: TPropsGetter ]
+  TProps extends RouteProps<TOptions>
+> = TProps extends PropsGetter<TOptions, Component>
+  ? Partial<ReturnType<TProps>> extends ReturnType<TProps>
+    ? [ props?: TProps ]
+    : [ props: TProps ]
+  : Partial<TProps> extends TProps
+    ? [ props?: TProps ]
+    : [ props: TProps ]
 
 export function createRoute<
   const TOptions extends CreateRouteOptions,
-  const TPropsGetter extends PropsGetter<TOptions, ToComponent<TOptions['component']>>
->(options: TOptions, ...args: WithProps<TOptions, TPropsGetter>): ToRoute<TOptions, TPropsGetter>
+  const TProps extends RouteProps<TOptions>
+>(options: TOptions, ...args: WithProps<TOptions, TProps>): ToRoute<TOptions, TProps>
 
-export function createRoute(options: CreateRouteOptions): Route {
+export function createRoute(options: CreateRouteOptions, props?: unknown): Route {
   const id = createRouteId()
   const name = toName(options.name)
   const path = toPath(options.path)

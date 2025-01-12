@@ -133,13 +133,19 @@ export type CreateRouteOptions<
    */
   state?: Record<string, Param>,
   /**
-   * An optional parent route.
+   * An optional parent route to nest this route under.
    */
   parent?: Route,
   /**
    * An optional component to render when this route is matched.
+   *
+   * @default RouterView
    */
   component?: Component,
+  /**
+   * An object of named components to render using named views
+   */
+  components?: Record<string, Component>,
 }
 
 export function combineRoutes(parent: Route, child: Route): Route {
