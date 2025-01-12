@@ -128,6 +128,18 @@ export type CreateRouteOptions<
    * Determines what assets are prefetched when router-link is rendered for this route. Overrides router level prefetch.
    */
   prefetch?: PrefetchConfig,
+  /**
+   * Type params for additional data intended to be stored in history state, all keys will be optional unless a default is provided.
+   */
+  state?: Record<string, Param>,
+  /**
+   * An optional parent route.
+   */
+  parent?: Route,
+  /**
+   * An optional component to render when this route is matched.
+   */
+  component?: Component,
 }
 
 export function combineRoutes(parent: Route, child: Route): Route {
