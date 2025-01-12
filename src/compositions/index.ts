@@ -4,7 +4,6 @@ export { useRouter } from './useRouter'
 export {
   onBeforeRouteLeave,
   onBeforeRouteUpdate,
-  onAfterRouteEnter,
   onAfterRouteLeave,
   onAfterRouteUpdate
 } from './hooks'
