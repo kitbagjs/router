@@ -6,6 +6,7 @@ import { PrefetchConfig } from '@/types/prefetch'
 import { Query } from '@/types/query'
 import { RouteMeta } from '@/types/register'
 import { LastInArray } from './utilities'
+import { CreateRouteOptions } from './createRouteOptions'
 
 /**
  * Represents an immutable array of Route instances. Return value of `createRoute`, expected param for `createRouter`.
@@ -15,16 +16,8 @@ export type Routes = readonly Route[]
 /**
  * The Route properties originally provided to `createRoute`. The only change is normalizing meta to always default to an empty object.
  */
-export type CreatedRouteOptions = {
+export type CreatedRouteOptions = CreateRouteOptions & {
   id: string,
-  name?: string,
-  host?: Host | string | undefined,
-  path?: Path | string | undefined,
-  query?: Query | string | undefined,
-  hash?: Hash | string | undefined,
-  meta?: RouteMeta,
-  state?: Record<string, Param>,
-  prefetch?: PrefetchConfig,
 }
 /**
  * Represents the structure of a route within the application. Return value of `createRoute`
