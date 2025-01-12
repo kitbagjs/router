@@ -19,7 +19,7 @@ export type Routes = readonly Route[]
  */
 export type CreatedRouteOptions = Omit<CreateRouteOptions, 'props'> & WithHooks & {
   id: string,
-  props: unknown,
+  props?: unknown,
 }
 /**
  * Represents the structure of a route within the application. Return value of `createRoute`
