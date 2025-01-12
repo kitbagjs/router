@@ -75,7 +75,7 @@ function assembleQueryParamValues(query: Query, paramValues: Record<string, unkn
     const isOptional = isOptionalParamSyntax(value)
     const paramKey = isOptional ? `?${paramName}` : paramName
     const paramValue = setParamValue(paramValues[paramName], query.params[paramKey], isOptional)
-    const valueNotProvidedAndNoDefaultUsed = paramValues[paramName] === undefined && paramValue === ''
+    const valueNotProvidedAndNoDefaultUsed = (paramValues[paramName] === undefined || paramValues[paramName] === null) && paramValue === ''
     const shouldLeaveEmptyValueOut = isOptional && valueNotProvidedAndNoDefaultUsed
 
     if (shouldLeaveEmptyValueOut) {

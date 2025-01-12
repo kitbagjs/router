@@ -136,6 +136,28 @@ const events = createRoute({
 })
 ```
 
+## Nullable
+
+Make any param also support `null` with the `nullable` utility. When using this utility, the param will not be required when navigating. This utility can be coupled with optional syntax to make the param type accept both `null` and `undefined`.
+
+| Param | Accepts |
+| ----- | ------- |
+| `path('[id]', { id: Number })` | `number` |
+| `path('[id]', { id: nullable(Number) })` | `number \| null` |
+| `path('[?id]', { id: nullable(Number) })` | `number \| null \| undefined` |
+
+```ts {7}
+import { createRoute, path, nullable } from '@kitbag/router'
+
+const events = createRoute({
+  name: 'events',
+  path: path('/events/[year]/[month]', {
+    year: Number,
+    month: nullable(Number),
+  }),
+})
+```
+
 ## Query Params
 
 So far the examples have only used params in the `path` property. When using params in the `query`, the param goes where you expect the value to be in the url's search string.
