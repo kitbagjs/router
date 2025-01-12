@@ -85,5 +85,5 @@ onAfterRouteEnter((to, context) => {
 ```
 
 :::warning
-You cannot register `onBeforeRouteEnter` from within a component, since the component must have been mounted to discover the hook.
+You cannot register `onBeforeRouteEnter` or `onAfterRouteEnter` hooks from within a component, since the component must have been mounted to discover the hook.
 :::
