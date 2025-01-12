@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-confusing-void-expression */
-/* eslint-disable @typescript-eslint/only-throw-error */
 import { mount, flushPromises } from '@vue/test-utils'
 import { expect, test } from 'vitest'
 import { defineAsyncComponent, h } from 'vue'
@@ -256,15 +254,19 @@ test('Renders the route component when the router.push does match after a reject
 })
 
 test('Renders the multiple components when using named route views', async () => {
-  const route = createRoute({
-    name: 'foo',
-    path: '/',
-    components: {
-      default: { template: '_default_' },
-      one: { template: '_one_' },
-      two: { template: '_two_' },
-    },
+  const parent = createRoute({
+    name: 'parent',
+    path: '/parent/[param]',
   })
+
+  const route = createRoute({
+    parent,
+    name: 'child',
+    path: '/child',
+    component: echo,
+  }, ({ params, name }) => ({ value: params.param, extra: name }))
+
+  type T = ReturnType<typeof route['matched']['props']>
 
   const router = createRouter([route], {
     initialUrl: '/',
@@ -432,9 +434,8 @@ test('Props from route can trigger reject', async () => {
     name: 'routeA',
     path: '/routeA',
     component: echo,
-    props: (__, context) => {
-      throw context.reject('NotFound')
-    },
+  }, (__, context) => {
+    throw context.reject('NotFound')
   })
 
   const router = createRouter([routeA], {
