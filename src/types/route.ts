@@ -16,7 +16,7 @@ export type Routes = readonly Route[]
 /**
  * The Route properties originally provided to `createRoute`. The only change is normalizing meta to always default to an empty object.
  */
-export type CreatedRouteOptions = CreateRouteOptions & {
+export type CreatedRouteOptions = Omit<CreateRouteOptions, 'props'> & {
   id: string,
 }
 /**

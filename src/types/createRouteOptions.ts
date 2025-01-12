@@ -1,21 +1,25 @@
 import { Component } from 'vue'
-import { combineHash } from '@/services/combineHash'
-import { combineMeta } from '@/services/combineMeta'
-import { combinePath } from '@/services/combinePath'
-import { combineQuery } from '@/services/combineQuery'
-import { combineState } from '@/services/combineState'
-import { ComponentProps } from '@/services/component'
-import { Hash } from '@/types/hash'
+import { CombineHash, combineHash } from '@/services/combineHash'
+import { CombineMeta, combineMeta } from '@/services/combineMeta'
+import { CombinePath, combinePath } from '@/services/combinePath'
+import { CombineQuery, combineQuery } from '@/services/combineQuery'
+import { CombineState, combineState } from '@/services/combineState'
+import { Hash, ToHash } from '@/types/hash'
 import { Host } from '@/types/host'
 import { Param } from '@/types/paramTypes'
-import { Path } from '@/types/path'
+import { Path, ToPath } from '@/types/path'
 import { PrefetchConfig } from '@/types/prefetch'
-import { Query } from '@/types/query'
+import { Query, ToQuery } from '@/types/query'
 import { RouteMeta } from '@/types/register'
 import { Route } from '@/types/route'
-import { MaybePromise } from '@/types/utilities'
 import { ResolvedRoute } from './resolved'
+import { ComponentProps } from '@/services/component'
 import { PropsCallbackContext } from './props'
+import { MaybePromise } from './utilities'
+import { RouterView } from '@/components'
+import { ToMeta } from './meta'
+import { ToState } from './state'
+import { ToName } from './name'
 
 export type WithHost<THost extends string | Host = string | Host> = {
   /**
@@ -44,57 +48,16 @@ export type WithoutParent = {
   parent?: never,
 }
 
-export type WithComponent<
-  TComponent extends Component = Component,
-  TRoute extends Route = Route
-> = {
-  /**
-   * A Vue component, which can be either synchronous or asynchronous components.
-   */
-  component: TComponent,
-  props?: (route: ResolvedRoute<TRoute>, context: PropsCallbackContext) => TComponent extends Component ? MaybePromise<ComponentProps<TComponent>> : {},
-}
-
-export function isWithComponent(options: CreateRouteOptions): options is CreateRouteOptions & WithComponent {
+export function isWithComponent(options: CreateRouteOptions): options is CreateRouteOptions & { component: Component } {
   return 'component' in options && Boolean(options.component)
 }
 
-export type WithComponents<
-  TComponents extends Record<string, Component> = Record<string, Component>,
-  TRoute extends Route = Route
-> = {
-  /**
-   * Multiple components for named views, which can be either synchronous or asynchronous components.
-   */
-  components: TComponents,
-  props?: {
-    [TKey in keyof TComponents]?: (route: ResolvedRoute<TRoute>, context: PropsCallbackContext) => TComponents[TKey] extends Component ? MaybePromise<ComponentProps<TComponents[TKey]>> : {}
-  },
-}
-
-export type WithoutComponents = {
-  component?: never,
-  components?: never,
-  props?: never,
-}
-
-export function isWithComponents(options: CreateRouteOptions): options is CreateRouteOptions & WithComponents {
+export function isWithComponents(options: CreateRouteOptions): options is CreateRouteOptions & { components: Record<string, Component> } {
   return 'components' in options && Boolean(options.components)
 }
 
-export type WithState<TState extends Record<string, Param> = Record<string, Param>> = {
-  /**
-   * Type params for additional data intended to be stored in history state, all keys will be optional unless a default is provided.
-   */
-  state: TState,
-}
-
-export function isWithState(options: CreateRouteOptions): options is CreateRouteOptions & WithState {
+export function isWithState(options: CreateRouteOptions): options is CreateRouteOptions & { state: Record<string, Param> } {
   return 'state' in options && Boolean(options.state)
-}
-
-export type WithoutState = {
-  state?: never,
 }
 
 export type CreateRouteOptions<
@@ -146,7 +109,83 @@ export type CreateRouteOptions<
    * An object of named components to render using named views
    */
   components?: Record<string, Component>,
+  /**
+   * Props have been moved to the second argument of `createRoute`. This property can no longer be used.
+   *
+   * @deprecated
+   */
+  props?: never,
 }
+
+export type PropsGetter<
+  TOptions extends CreateRouteOptions,
+  TComopnent extends Component
+> = (route: ResolvedRoute<ToRoute<TOptions, undefined>>, context: PropsCallbackContext) => MaybePromise<ComponentProps<TComopnent>>
+
+type ComponentPropsAreOptional<
+  TComponent extends Component
+> = Partial<ComponentProps<TComponent>> extends ComponentProps<TComponent>
+  ? true
+  : false
+
+type RoutePropsRecord<
+  TOptions extends CreateRouteOptions,
+  TComponents extends Record<string, Component>
+> = { [K in keyof TComponents as ComponentPropsAreOptional<TComponents[K]> extends true ? K : never]?: PropsGetter<TOptions, TComponents[K]> }
+& { [K in keyof TComponents as ComponentPropsAreOptional<TComponents[K]> extends false ? K : never]: PropsGetter<TOptions, TComponents[K]> }
+
+export type RouteProps<
+  TOptions extends CreateRouteOptions
+> = TOptions['component'] extends Component
+  ? PropsGetter<TOptions, TOptions['component']>
+  : TOptions['components'] extends Record<string, Component>
+    ? RoutePropsRecord<TOptions, TOptions['components']>
+    : PropsGetter<TOptions, typeof RouterView>
+
+type ToMatch<
+  TOptions extends CreateRouteOptions,
+  TProps extends RouteProps<TOptions> | undefined
+> = Route<
+  ToName<TOptions['name']>,
+  Host<'', {}>,
+  ToPath<TOptions['path']>,
+  ToQuery<TOptions['query']>,
+  ToHash<TOptions['hash']>,
+  ToMeta<TOptions['meta']>,
+  ToState<TOptions['state']>
+> & { props: TProps }
+
+type ToMatches<
+  TOptions extends CreateRouteOptions,
+  TProps extends RouteProps<TOptions> | undefined
+> = TOptions extends { parent: infer TParent extends Route }
+  ? [...TParent['matches'], ToMatch<TOptions, TProps>]
+  : [ToMatch<TOptions, TProps>]
+
+export type ToRoute<
+  TOptions extends CreateRouteOptions,
+  TProps extends RouteProps<TOptions> | undefined
+> = TOptions extends { parent: infer TParent extends Route }
+  ? Route<
+    ToName<TOptions['name']>,
+    Host<'', {}>,
+    CombinePath<ToPath<TOptions['path']>, ToPath<TParent['path']>>,
+    CombineQuery<ToQuery<TOptions['query']>, ToQuery<TParent['query']>>,
+    CombineHash<ToHash<TOptions['hash']>, ToHash<TParent['hash']>>,
+    CombineMeta<ToMeta<TOptions['meta']>, ToMeta<TParent['meta']>>,
+    CombineState<ToState<TOptions['state']>, ToState<TParent['state']>>,
+    ToMatches<TOptions, TProps>
+  >
+  : Route<
+    ToName<TOptions['name']>,
+    Host<'', {}>,
+    ToPath<TOptions['path']>,
+    ToQuery<TOptions['query']>,
+    ToHash<TOptions['hash']>,
+    ToMeta<TOptions['meta']>,
+    ToState<TOptions['state']>,
+    ToMatches<TOptions, TProps>
+  >
 
 export function combineRoutes(parent: Route, child: Route): Route {
   return {
