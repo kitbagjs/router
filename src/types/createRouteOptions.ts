@@ -154,15 +154,7 @@ export type CreateRouteProps<
 type ToMatch<
   TOptions extends CreateRouteOptions,
   TProps extends CreateRouteProps<TOptions> | undefined
-> = Route<
-  ToName<TOptions['name']>,
-  Host<'', {}>,
-  ToPath<TOptions['path']>,
-  ToQuery<TOptions['query']>,
-  ToHash<TOptions['hash']>,
-  ToMeta<TOptions['meta']>,
-  ToState<TOptions['state']>
-> & { props: TProps }
+> = Omit<TOptions, 'props'> & { id: string, props?: TProps }
 
 type ToMatches<
   TOptions extends CreateRouteOptions,
