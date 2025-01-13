@@ -178,11 +178,11 @@ export type ToRoute<
   ? Route<
     ToName<TOptions['name']>,
     Host<'', {}>,
-    CombinePath<ToPath<TOptions['path']>, ToPath<TParent['path']>>,
-    CombineQuery<ToQuery<TOptions['query']>, ToQuery<TParent['query']>>,
-    CombineHash<ToHash<TOptions['hash']>, ToHash<TParent['hash']>>,
-    CombineMeta<ToMeta<TOptions['meta']>, ToMeta<TParent['meta']>>,
-    CombineState<ToState<TOptions['state']>, ToState<TParent['state']>>,
+    CombinePath<ToPath<TParent['path']>, ToPath<TOptions['path']>>,
+    CombineQuery<ToQuery<TParent['query']>, ToQuery<TOptions['query']>>,
+    CombineHash<ToHash<TParent['hash']>, ToHash<TOptions['hash']>>,
+    CombineMeta<ToMeta<TParent['meta']>, ToMeta<TOptions['meta']>>,
+    CombineState<ToState<TParent['state']>, ToState<TOptions['state']>>,
     ToMatches<TOptions, TProps>
   >
   : Route<
