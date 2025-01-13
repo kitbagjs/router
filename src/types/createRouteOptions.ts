@@ -154,7 +154,7 @@ export type CreateRouteProps<
 type ToMatch<
   TOptions extends CreateRouteOptions,
   TProps extends CreateRouteProps<TOptions> | undefined
-> = Omit<TOptions, 'props'> & { id: string, props?: TProps }
+> = Omit<TOptions, 'props'> & { id: string, props: TProps }
 
 type ToMatches<
   TOptions extends CreateRouteOptions,
@@ -166,27 +166,29 @@ type ToMatches<
 export type ToRoute<
   TOptions extends CreateRouteOptions,
   TProps extends CreateRouteProps<TOptions> | undefined
-> = TOptions extends { parent: infer TParent extends Route }
-  ? Route<
-    ToName<TOptions['name']>,
-    Host<'', {}>,
-    CombinePath<ToPath<TParent['path']>, ToPath<TOptions['path']>>,
-    CombineQuery<ToQuery<TParent['query']>, ToQuery<TOptions['query']>>,
-    CombineHash<ToHash<TParent['hash']>, ToHash<TOptions['hash']>>,
-    CombineMeta<ToMeta<TParent['meta']>, ToMeta<TOptions['meta']>>,
-    CombineState<ToState<TParent['state']>, ToState<TOptions['state']>>,
-    ToMatches<TOptions, TProps>
-  >
-  : Route<
-    ToName<TOptions['name']>,
-    Host<'', {}>,
-    ToPath<TOptions['path']>,
-    ToQuery<TOptions['query']>,
-    ToHash<TOptions['hash']>,
-    ToMeta<TOptions['meta']>,
-    ToState<TOptions['state']>,
-    ToMatches<TOptions, TProps>
-  >
+> = CreateRouteOptions extends TOptions
+  ? Route
+  : TOptions extends { parent: infer TParent extends Route }
+    ? Route<
+      ToName<TOptions['name']>,
+      Host<'', {}>,
+      CombinePath<ToPath<TParent['path']>, ToPath<TOptions['path']>>,
+      CombineQuery<ToQuery<TParent['query']>, ToQuery<TOptions['query']>>,
+      CombineHash<ToHash<TParent['hash']>, ToHash<TOptions['hash']>>,
+      CombineMeta<ToMeta<TParent['meta']>, ToMeta<TOptions['meta']>>,
+      CombineState<ToState<TParent['state']>, ToState<TOptions['state']>>,
+      ToMatches<TOptions, TProps>
+    >
+    : Route<
+      ToName<TOptions['name']>,
+      Host<'', {}>,
+      ToPath<TOptions['path']>,
+      ToQuery<TOptions['query']>,
+      ToHash<TOptions['hash']>,
+      ToMeta<TOptions['meta']>,
+      ToState<TOptions['state']>,
+      ToMatches<TOptions, TProps>
+    >
 
 export function combineRoutes(parent: Route, child: Route): Route {
   return {

@@ -1,4 +1,4 @@
-import { Component, markRaw } from 'vue'
+import { markRaw } from 'vue'
 import { createRouteId } from '@/services/createRouteId'
 import { host } from '@/services/host'
 import { CreateRouteOptions, PropsGetter, CreateRouteProps, ToRoute, combineRoutes, isWithParent, isWithState } from '@/types/createRouteOptions'
@@ -12,7 +12,7 @@ import { checkDuplicateParams } from '@/utilities/checkDuplicateKeys'
 type CreateRouteWithProps<
   TOptions extends CreateRouteOptions,
   TProps extends CreateRouteProps<TOptions>
-> = TProps extends PropsGetter<TOptions, Component>
+> = TProps extends PropsGetter<TOptions>
   ? Partial<ReturnType<TProps>> extends ReturnType<TProps>
     ? [ props?: TProps ]
     : [ props: TProps ]
