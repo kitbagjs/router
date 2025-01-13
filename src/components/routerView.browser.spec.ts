@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-confusing-void-expression */
+/* eslint-disable @typescript-eslint/only-throw-error */
 import { mount, flushPromises } from '@vue/test-utils'
 import { expect, test } from 'vitest'
 import { defineAsyncComponent, h } from 'vue'
@@ -254,19 +256,15 @@ test('Renders the route component when the router.push does match after a reject
 })
 
 test('Renders the multiple components when using named route views', async () => {
-  const parent = createRoute({
-    name: 'parent',
-    path: '/parent/[param]',
-  })
-
   const route = createRoute({
-    parent,
-    name: 'child',
-    path: '/child',
-    component: echo,
-  }, ({ params, name }) => ({ value: params.param, extra: name }))
-
-  type T = ReturnType<typeof route['matched']['props']>
+    name: 'foo',
+    path: '/',
+    components: {
+      default: { template: '_default_' },
+      one: { template: '_one_' },
+      two: { template: '_two_' },
+    },
+  })
 
   const router = createRouter([route], {
     initialUrl: '/',
@@ -296,17 +294,13 @@ test('Binds props and attrs from route', async () => {
     name: 'routeA',
     path: '/routeA/[param]',
     component: echo,
-    props: (route) => ({ value: route.params.param }),
-  })
+  }, (route) => ({ value: route.params.param }))
 
   const routeB = createRoute({
     name: 'routeB',
     path: '/routeB/[param]',
     component: echo,
-    props: (route) => {
-      return { value: route.params.param }
-    },
-  })
+  }, (route) => ({ value: route.params.param }))
 
   const router = createRouter([routeA, routeB], {
     initialUrl: '/',
@@ -338,17 +332,13 @@ test('Updates props and attrs when route params change', async () => {
     name: 'sync',
     path: '/sync/[param]',
     component: echo,
-    props: (route) => ({ value: route.params.param }),
-  })
+  }, (route) => ({ value: route.params.param }))
 
   const asyncProps = createRoute({
     name: 'async',
     path: '/async/[param]',
     component: echo,
-    props: async (route) => {
-      return { value: route.params.param }
-    },
-  })
+  }, async (route) => ({ value: route.params.param }))
 
   const router = createRouter([syncProps, asyncProps], {
     initialUrl: '/',
@@ -392,19 +382,17 @@ test('Props from route can trigger push', async () => {
     name: 'routeA',
     path: '/routeA',
     component: echo,
-    props: (__, context) => {
-      throw context.push('routeB')
-    },
+  }, (__, context) => {
+    throw context.push('routeB')
   })
 
   const routeB = createRoute({
     name: 'routeB',
     path: '/routeB',
     component: echo,
-    props: () => ({
-      value: 'routeB',
-    }),
-  })
+  }, () => ({
+    value: 'routeB',
+  }))
 
   const router = createRouter([routeA, routeB], {
     initialUrl: '/',
@@ -473,19 +461,17 @@ test('prefetched props trigger push when navigation is initiated', async () => {
     path: '/routeB',
     component: echo,
     prefetch: { props: true },
-    props: (__, { push }) => {
-      throw push('routeC')
-    },
+  }, (__, { push }) => {
+    throw push('routeC')
   })
 
   const routeC = createRoute({
     name: 'routeC',
     path: '/routeC',
     component: echo,
-    props: () => ({
-      value: 'routeC',
-    }),
-  })
+  }, () => ({
+    value: 'routeC',
+  }))
 
   const router = createRouter([routeA, routeB, routeC], {
     initialUrl: '/routeA',
@@ -524,19 +510,17 @@ test('prefetched async props trigger push when navigation is initiated', async (
     path: '/routeB',
     component,
     prefetch: { props: true },
-    props: async (__, { push }) => {
-      throw push('routeC')
-    },
+  }, (__, { push }) => {
+    throw push('routeC')
   })
 
   const routeC = createRoute({
     name: 'routeC',
     path: '/routeC',
     component: echo,
-    props: () => ({
-      value: 'routeC',
-    }),
-  })
+  }, () => ({
+    value: 'routeC',
+  }))
 
   const router = createRouter([routeA, routeB, routeC], {
     initialUrl: '/routeA',
