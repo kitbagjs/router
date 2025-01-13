@@ -53,8 +53,16 @@ export function isWithComponent<T extends Record<string, unknown>>(options: T): 
   return 'component' in options && Boolean(options.component)
 }
 
+export function isWithComopnentProps<T extends Record<string, unknown>>(options: T): options is T & { props: PropsGetter } {
+  return 'props' in options && typeof options.props === 'function'
+}
+
 export function isWithComponents<T extends Record<string, unknown>>(options: T): options is T & { components: Record<string, Component> } {
   return 'components' in options && Boolean(options.components)
+}
+
+export function isWithComponentPropsRecord<T extends Record<string, unknown>>(options: T): options is T & { props: RoutePropsRecord } {
+  return 'props' in options && typeof options.props === 'object'
 }
 
 export function isWithState<T extends Record<string, unknown>>(options: T): options is T & { state: Record<string, Param> } {
@@ -119,8 +127,8 @@ export type CreateRouteOptions<
 }
 
 export type PropsGetter<
-  TOptions extends CreateRouteOptions,
-  TComopnent extends Component
+  TOptions extends CreateRouteOptions = CreateRouteOptions,
+  TComopnent extends Component = Component
 > = (route: ResolvedRoute<ToRoute<TOptions, undefined>>, context: PropsCallbackContext) => MaybePromise<ComponentProps<TComopnent>>
 
 type ComponentPropsAreOptional<
@@ -130,13 +138,13 @@ type ComponentPropsAreOptional<
   : false
 
 type RoutePropsRecord<
-  TOptions extends CreateRouteOptions,
-  TComponents extends Record<string, Component>
+  TOptions extends CreateRouteOptions = CreateRouteOptions,
+  TComponents extends Record<string, Component> = Record<string, Component>
 > = { [K in keyof TComponents as ComponentPropsAreOptional<TComponents[K]> extends true ? K : never]?: PropsGetter<TOptions, TComponents[K]> }
 & { [K in keyof TComponents as ComponentPropsAreOptional<TComponents[K]> extends false ? K : never]: PropsGetter<TOptions, TComponents[K]> }
 
-export type RouteProps<
-  TOptions extends CreateRouteOptions
+export type CreateRouteProps<
+  TOptions extends CreateRouteOptions = CreateRouteOptions
 > = TOptions['component'] extends Component
   ? PropsGetter<TOptions, TOptions['component']>
   : TOptions['components'] extends Record<string, Component>
@@ -145,7 +153,7 @@ export type RouteProps<
 
 type ToMatch<
   TOptions extends CreateRouteOptions,
-  TProps extends RouteProps<TOptions> | undefined
+  TProps extends CreateRouteProps<TOptions> | undefined
 > = Route<
   ToName<TOptions['name']>,
   Host<'', {}>,
@@ -158,14 +166,14 @@ type ToMatch<
 
 type ToMatches<
   TOptions extends CreateRouteOptions,
-  TProps extends RouteProps<TOptions> | undefined
+  TProps extends CreateRouteProps<TOptions> | undefined
 > = TOptions extends { parent: infer TParent extends Route }
   ? [...TParent['matches'], ToMatch<TOptions, TProps>]
   : [ToMatch<TOptions, TProps>]
 
 export type ToRoute<
   TOptions extends CreateRouteOptions,
-  TProps extends RouteProps<TOptions> | undefined
+  TProps extends CreateRouteProps<TOptions> | undefined
 > = TOptions extends { parent: infer TParent extends Route }
   ? Route<
     ToName<TOptions['name']>,

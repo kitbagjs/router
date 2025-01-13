@@ -1,7 +1,7 @@
 import { Component, markRaw } from 'vue'
 import { createRouteId } from '@/services/createRouteId'
 import { host } from '@/services/host'
-import { CreateRouteOptions, PropsGetter, RouteProps, ToRoute, combineRoutes, isWithParent, isWithState } from '@/types/createRouteOptions'
+import { CreateRouteOptions, PropsGetter, CreateRouteProps, ToRoute, combineRoutes, isWithParent, isWithState } from '@/types/createRouteOptions'
 import { toHash } from '@/types/hash'
 import { toName } from '@/types/name'
 import { toPath } from '@/types/path'
@@ -11,7 +11,7 @@ import { checkDuplicateParams } from '@/utilities/checkDuplicateKeys'
 
 type CreateRouteWithProps<
   TOptions extends CreateRouteOptions,
-  TProps extends RouteProps<TOptions>
+  TProps extends CreateRouteProps<TOptions>
 > = TProps extends PropsGetter<TOptions, Component>
   ? Partial<ReturnType<TProps>> extends ReturnType<TProps>
     ? [ props?: TProps ]
@@ -22,10 +22,10 @@ type CreateRouteWithProps<
 
 export function createRoute<
   const TOptions extends CreateRouteOptions,
-  const TProps extends RouteProps<TOptions>
+  const TProps extends CreateRouteProps<TOptions>
 >(options: TOptions, ...args: CreateRouteWithProps<TOptions, TProps>): ToRoute<TOptions, TProps>
 
-export function createRoute(options: CreateRouteOptions, props?: unknown): Route {
+export function createRoute(options: CreateRouteOptions, props?: CreateRouteProps): Route {
   const id = createRouteId()
   const name = toName(options.name)
   const path = toPath(options.path)

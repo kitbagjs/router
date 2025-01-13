@@ -1,5 +1,5 @@
 import { InjectionKey, reactive } from 'vue'
-import { isWithComponent, isWithComponents } from '@/types/createRouteOptions'
+import { isWithComopnentProps, isWithComponentPropsRecord, PropsGetter } from '@/types/createRouteOptions'
 import { getPrefetchOption, PrefetchConfigs, PrefetchStrategy } from '@/types/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
 import { Route } from '@/types/route'
@@ -7,11 +7,10 @@ import { CallbackPushResponse, CallbackRejectResponse, CallbackSuccessResponse, 
 import { CallbackContextPushError } from '@/errors/callbackContextPushError'
 import { CallbackContextRejectionError } from '@/errors/callbackContextRejectionError'
 import { getPropsValue } from '@/utilities/props'
-import { PropsCallbackContext } from '@/types/props'
 
 export const propStoreKey: InjectionKey<PropStore> = Symbol()
 
-type ComponentProps = { id: string, name: string, props?: (params: ResolvedRoute, context: PropsCallbackContext) => unknown }
+type ComponentProps = { id: string, name: string, props?: PropsGetter }
 
 type SetPropsResponse = CallbackSuccessResponse | CallbackPushResponse | CallbackRejectResponse
 
@@ -117,11 +116,7 @@ export function createPropStore(): PropStore {
   }
 
   function getComponentProps(options: Route['matched']): ComponentProps[] {
-    if (isWithComponents(options)) {
-      return Object.entries(options.props ?? {}).map(([name, props]) => ({ id: options.id, name, props }))
-    }
-
-    if (isWithComponent(options)) {
+    if (isWithComopnentProps(options)) {
       return [
         {
           id: options.id,
@@ -129,6 +124,10 @@ export function createPropStore(): PropStore {
           props: options.props,
         },
       ]
+    }
+
+    if (isWithComponentPropsRecord(options)) {
+      return Object.entries(options.props).map(([name, props]) => ({ id: options.id, name, props }))
     }
 
     return []
