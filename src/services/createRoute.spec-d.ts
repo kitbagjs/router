@@ -321,3 +321,78 @@ test('options with component and required props with second argument with incorr
 
   expectTypeOf<Source>().toEqualTypeOf<Expect>()
 })
+
+test('options with components and optional props without second argument', () => {
+  const route = createRoute({
+    components: {
+      component,
+    },
+  })
+
+  type Source = typeof route['matched']['props']
+  type Expect = undefined
+
+  expectTypeOf<Source>().toEqualTypeOf<Expect>()
+})
+
+test('options with components and optional props with second argument', () => {
+  const route = createRoute({
+    components: {
+      default: component,
+    },
+  }, {
+    default: () => ({ foo: 'bar' }),
+  })
+
+  type Source = typeof route['matched']['props']
+  type Expect = { default: () => { foo: string } }
+
+  expectTypeOf<Source>().toEqualTypeOf<Expect>()
+})
+
+test('options with components and required props missing second argument', () => {
+  // @ts-expect-error should require second argument
+  const route = createRoute({
+    components: {
+      default: echo,
+    },
+  })
+
+  type Source = typeof route['matched']['props']
+  type Expect = undefined
+
+  expectTypeOf<Source>().toEqualTypeOf<Expect>()
+})
+
+test('options with components and required props with second argument ', () => {
+  const route = createRoute({
+    components: {
+      default: echo,
+    },
+  }, {
+    default: () => ({ value: 'bar', extra: true }),
+  })
+
+  type Source = typeof route['matched']['props']
+  type Expect = { default: () => { value: string, extra: boolean } }
+
+  expectTypeOf<Source>().toEqualTypeOf<Expect>()
+})
+
+test('options with components and required props with second argument with incorrect type', () => {
+  const route = createRoute({
+    components: {
+      default: echo,
+    },
+  }, {
+    // @ts-expect-error should not accept incorrect type
+    default: () => ({ value: true, foo: 'bar' }),
+  })
+
+  type Source = typeof route['matched']['props']
+  type Expect = {
+    default: () => { value: boolean, foo: string },
+  }
+
+  expectTypeOf<Source>().toEqualTypeOf<Expect>()
+})
