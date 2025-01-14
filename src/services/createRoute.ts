@@ -11,18 +11,18 @@ import { checkDuplicateParams } from '@/utilities/checkDuplicateKeys'
 
 type CreateRouteWithProps<
   TOptions extends CreateRouteOptions,
-  TProps extends CreateRouteProps<TOptions>
-> = TProps extends PropsGetter<TOptions>
-  ? Partial<ReturnType<TProps>> extends ReturnType<TProps>
+  TProps extends CreateRouteProps<TOptions> | undefined
+> = CreateRouteProps<TOptions> extends PropsGetter<TOptions>
+  ? Partial<ReturnType<CreateRouteProps<TOptions>>> extends ReturnType<CreateRouteProps<TOptions>>
     ? [ props?: TProps ]
     : [ props: TProps ]
-  : Partial<TProps> extends TProps
+  : Partial<CreateRouteProps<TOptions>> extends CreateRouteProps<TOptions>
     ? [ props?: TProps ]
     : [ props: TProps ]
 
 export function createRoute<
   const TOptions extends CreateRouteOptions,
-  const TProps extends CreateRouteProps<TOptions>
+  const TProps extends CreateRouteProps<TOptions> | undefined = undefined
 >(options: TOptions, ...args: CreateRouteWithProps<TOptions, TProps>): ToRoute<TOptions, TProps>
 
 export function createRoute(options: CreateRouteOptions, props?: CreateRouteProps): Route {
