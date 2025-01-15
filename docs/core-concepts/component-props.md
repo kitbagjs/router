@@ -2,15 +2,12 @@
 
 With Kitbag Router, you can define a `props` callback on your route. Your callback is given the [`ResolvedRoute`](/api/types/ResolvedRoute) for the route and what it returns will be bound to the component when the component gets mounted inside the `<router-view />`
 
-```ts
+```ts {5}
 const user = createRoute({
   name: 'user',
   path: '/user/[id]',
   component: UserComponent,
-  props: (route) => {
-    return { userId: route.params.id }
-  }
-})
+}, (route) => ({ userId: route.params.id }))
 ```
 
 This is obviously useful for assigning static values or route params down to your view components props but it also gives you
@@ -31,16 +28,15 @@ Your callback will throw a Typescript error if it returns anything other than th
 
 The props call back supports promises. This means you can do much more than just forward values from params or insert static values. For example, we can take an id route param and fetch the `User` before mounting the component.
 
-```ts
+```ts {5-9}
 const user = createRoute({
   name: 'user',
   path: '/user/[id]',
   component: UserComponent,
-  props: async (route) => {
-    const user = await userStore.getById(route.params.id)
+}, async (route) => {
+  const user = await userStore.getById(route.params.id)
 
-    return { user }
-  })
+  return { user }
 })
 ```
 
@@ -63,14 +59,13 @@ const user = createRoute({
   name: 'user',
   path: '/user/[id]',
   component: UserComponent,
-  props: async (route, { reject }) => {
-    try {
-      const user = await userStore.getById(route.params.id)
+}, async (route, { reject }) => {
+  try {
+    const user = await userStore.getById(route.params.id)
 
-      return { user }
-    } catch (error) {
-      reject('NotFound')
-    }
-  })
-})
+    return { user }
+  } catch (error) {
+    reject('NotFound')
+  }
+}))
 ```
