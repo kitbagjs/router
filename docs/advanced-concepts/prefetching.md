@@ -20,15 +20,14 @@ const user = createRoute({
 
 When your route uses the [props callback](/core-concepts/component-props), Kitbag Router can start fetching your component props before they are needed.
 
-```ts
+```ts {5-9}
 const user = createRoute({
   name: 'user',
   path: '/user/[id]',
   component: defineAsyncComponent(() => import('./UserPage.vue')),
-  props: async (({ id }) => { // [!code focus]
-    const user = await userStore.getById(id) // [!code focus]
-    return { user } // [!code focus]
-  }) // [!code focus]
+}, async (({ id }) => {
+  const user = await userStore.getById(id)
+  return { user }
 })
 ```
 
