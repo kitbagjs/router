@@ -22,8 +22,8 @@ type CreateRouteWithProps<
 
 export function createRoute<
   const TOptions extends CreateRouteOptions,
-  const TProps extends CreateRouteProps<TOptions> | undefined = undefined
->(options: TOptions, ...args: CreateRouteWithProps<TOptions, TProps>): ToRoute<TOptions, TProps>
+  const TProps extends CreateRouteProps<TOptions>
+>(options: TOptions, ...args: CreateRouteWithProps<TOptions, TProps>): ToRoute<TOptions, CreateRouteProps<TOptions> extends TProps ? undefined : TProps>
 
 export function createRoute(options: CreateRouteOptions, props?: CreateRouteProps): Route {
   const id = createRouteId()

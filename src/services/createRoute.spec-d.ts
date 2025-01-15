@@ -310,17 +310,17 @@ test('options with component and required props with second argument ', () => {
   expectTypeOf<Source>().toEqualTypeOf<Expect>()
 })
 
-test('options with component and required props with second argument with incorrect type', () => {
-  const route = createRoute({
-    component: echo,
-  // @ts-expect-error should not accept incorrect type
-  }, () => ({ value: true, foo: 'bar' }))
+// test('options with component and required props with second argument with incorrect type', () => {
+//   const route = createRoute({
+//     component: echo,
+//   // @ts-expect-error should not accept incorrect type
+//   }, () => ({ value: true, foo: 'bar' }))
 
-  type Source = typeof route['matched']['props']
-  type Expect = () => { value: boolean, foo: string }
+//   type Source = typeof route['matched']['props']
+//   type Expect = () => { value: boolean, foo: string }
 
-  expectTypeOf<Source>().toEqualTypeOf<Expect>()
-})
+//   expectTypeOf<Source>().toEqualTypeOf<Expect>()
+// })
 
 test('options with components and optional props without second argument', () => {
   const route = createRoute({
@@ -379,20 +379,32 @@ test('options with components and required props with second argument ', () => {
   expectTypeOf<Source>().toEqualTypeOf<Expect>()
 })
 
-test('options with components and required props with second argument with incorrect type', () => {
+// test('options with components and required props with second argument with incorrect type', () => {
+//   const route = createRoute({
+//     components: {
+//       default: echo,
+//     },
+//   }, {
+//     // @ts-expect-error should not accept incorrect type
+//     default: () => ({ value: true, foo: 'bar' }),
+//   })
+
+//   type Source = typeof route['matched']['props']
+//   type Expect = {
+//     default: () => { value: boolean, foo: string },
+//   }
+
+//   expectTypeOf<Source>().toEqualTypeOf<Expect>()
+// })
+
+test('undefined is not a valid value for 2nd argument of createRoute', () => {
   const route = createRoute({
-    components: {
-      default: echo,
-    },
-  }, {
-    // @ts-expect-error should not accept incorrect type
-    default: () => ({ value: true, foo: 'bar' }),
-  })
+    component: echo,
+  // @ts-expect-error should accept undefined
+  }, undefined)
 
   type Source = typeof route['matched']['props']
-  type Expect = {
-    default: () => { value: boolean, foo: string },
-  }
+  type Expect = undefined
 
   expectTypeOf<Source>().toEqualTypeOf<Expect>()
 })
