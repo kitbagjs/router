@@ -14,6 +14,8 @@ export type MaybeArray<T> = T | T[]
 
 export type AsArray<T> = T extends MaybeArray<infer U> ? U[] : T
 
+export type LastInArray<T, TFallback = never> = T extends [...any[], infer Last] ? Last : TFallback
+
 export type MaybePromise<T> = T | Promise<T>
 
 // Copied and modified from [type-fest](https://github.com/sindresorhus/type-fest/blob/main/source/replace.d.ts)

@@ -560,8 +560,7 @@ describe('prefetch props', () => {
       name: 'route',
       path: '/route',
       component: echo,
-      props: callback,
-    })
+    }, callback)
 
     const router = createRouter([route], {
       initialUrl: '/',
@@ -604,8 +603,7 @@ describe('prefetch props', () => {
       path: '/route',
       component: echo,
       prefetch,
-      props: callback,
-    })
+    }, callback)
 
     const router = createRouter([route], {
       initialUrl: '/',
@@ -646,8 +644,7 @@ describe('prefetch props', () => {
       name: 'route',
       path: '/route',
       component: echo,
-      props: callback,
-    })
+    }, callback)
 
     const router = createRouter([route], {
       initialUrl: '/',
@@ -690,8 +687,7 @@ describe('prefetch props', () => {
       path: '/echo',
       component: echo,
       prefetch: { props: 'eager' },
-      props,
-    })
+    }, props)
 
     const router = createRouter([home, route], {
       initialUrl: '/',
@@ -735,8 +731,7 @@ describe('prefetch props', () => {
       path: '/parent',
       component: echo,
       prefetch: { props: false },
-      props: parentProps,
-    })
+    }, parentProps)
 
     const child = createRoute({
       parent,
@@ -744,8 +739,7 @@ describe('prefetch props', () => {
       path: '/child',
       component: echo,
       prefetch: { props: 'eager' },
-      props: childProps,
-    })
+    }, childProps)
 
     const router = createRouter([home, child], {
       initialUrl: '/',
@@ -781,8 +775,7 @@ describe('prefetch props', () => {
       path: '/routeB',
       component: echo,
       prefetch: { props: 'lazy' },
-      props: callback,
-    })
+    }, callback)
 
     const router = createRouter([routeA, routeB], {
       initialUrl: '/routeA',
@@ -889,8 +882,7 @@ describe('prefetch props', () => {
       path: '/routeB',
       component: echo,
       prefetch: { props: 'intent' },
-      props: callback,
-    })
+    }, callback)
 
     const router = createRouter([routeA, routeB], {
       initialUrl: '/routeA',

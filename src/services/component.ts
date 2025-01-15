@@ -11,7 +11,7 @@ export type ComponentProps<TComponent extends Component> = TComponent extends Co
     ? ComponentProps<T>
     : TComponent extends FunctionalComponent<infer T>
       ? T
-      : never
+      : {}
 
 type ComponentPropsGetter<TComponent extends Component> = () => MaybePromise<ComponentProps<TComponent>>
 

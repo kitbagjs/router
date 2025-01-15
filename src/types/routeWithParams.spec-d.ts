@@ -1,17 +1,23 @@
 import { expectTypeOf, test } from 'vitest'
-import { Hash } from '@/types/hash'
-import { Host } from '@/types/host'
-import { Path } from '@/types/path'
-import { Query } from '@/types/query'
-import { Route } from '@/types/route'
 import { RouteGetByKey } from '@/types/routeWithParams'
-import { routes } from '@/utilities/testHelpers'
-import { RouteMeta } from './register'
-import { Param } from './paramTypes'
+import { createRoute } from '@/services/createRoute'
 
 test('RouteGetByName works as expected', () => {
-  type Source = RouteGetByKey<typeof routes, 'parentA'>
-  type Expect = Route<'parentA', Host<'', {}>, Path<'/parentA/[paramA]', {}>, Query<'', {}>, Hash<''>, RouteMeta, Record<string, Param>, 'parentA'>
+  const parentA = createRoute({
+    name: 'parentA',
+    path: '/parentA/[paramA]',
+  })
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const childA = createRoute({
+    parent: parentA,
+    name: 'parentA.childA',
+    path: '/childA/[?paramB]',
+  })
+
+  type Routes = [typeof parentA, typeof childA]
+  type Source = RouteGetByKey<Routes, 'parentA.childA'>
+  type Expect = typeof childA
 
   expectTypeOf<Source>().toEqualTypeOf<Expect>()
 })
