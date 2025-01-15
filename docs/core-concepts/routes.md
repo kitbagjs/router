@@ -110,17 +110,14 @@ const home = createRoute({
 
 The `props` property is used to define props for route components. It must be a callback function that returns an object. Everything returned from the callback will be bound to the component.
 
-```ts {7-9}
+```ts {7}
 import HomeView from './components/HomeView.vue'
 
 const home = createRoute({
   name: 'home',
   path: '/',
   component: HomeView,
-  props: () => ({
-    userId: 1,
-  }),
-})
+}, () => ({ userId: 1 }))
 ```
 
 ### Arguments
