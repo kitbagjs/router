@@ -1,5 +1,5 @@
 import { InjectionKey, reactive } from 'vue'
-import { isWithComopnentProps, isWithComponentPropsRecord, PropsGetter } from '@/types/createRouteOptions'
+import { isWithComponentProps, isWithComponentPropsRecord, PropsGetter } from '@/types/createRouteOptions'
 import { getPrefetchOption, PrefetchConfigs, PrefetchStrategy } from '@/types/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
 import { Route } from '@/types/route'
@@ -116,7 +116,7 @@ export function createPropStore(): PropStore {
   }
 
   function getComponentProps(options: Route['matched']): ComponentProps[] {
-    if (isWithComopnentProps(options)) {
+    if (isWithComponentProps(options)) {
       return [
         {
           id: options.id,

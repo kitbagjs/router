@@ -53,7 +53,7 @@ export function isWithComponent<T extends Record<string, unknown>>(options: T): 
   return 'component' in options && Boolean(options.component)
 }
 
-export function isWithComopnentProps<T extends Record<string, unknown>>(options: T): options is T & { props: PropsGetter } {
+export function isWithComponentProps<T extends Record<string, unknown>>(options: T): options is T & { props: PropsGetter } {
   return 'props' in options && typeof options.props === 'function'
 }
 
@@ -128,8 +128,8 @@ export type CreateRouteOptions<
 
 export type PropsGetter<
   TOptions extends CreateRouteOptions = CreateRouteOptions,
-  TComopnent extends Component = Component
-> = (route: ResolvedRoute<ToRoute<TOptions, undefined>>, context: PropsCallbackContext) => MaybePromise<ComponentProps<TComopnent>>
+  TComponent extends Component = Component
+> = (route: ResolvedRoute<ToRoute<TOptions, undefined>>, context: PropsCallbackContext) => MaybePromise<ComponentProps<TComponent>>
 
 type ComponentPropsAreOptional<
   TComponent extends Component
