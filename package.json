@@ -5,6 +5,7 @@
   "bugs": {
     "url": "https://github.com/kitbagjs/router/issues"
   },
+  "keywords": ["typescript", "router", "vue", "vue-router", "types", "typed"],
   "homepage": "https://github.com/kitbagjs/router#readme",
   "scripts": {
     "build": "vite build",
