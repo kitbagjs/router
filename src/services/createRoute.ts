@@ -11,7 +11,7 @@ import { checkDuplicateParams } from '@/utilities/checkDuplicateKeys'
 
 type CreateRouteWithProps<
   TOptions extends CreateRouteOptions,
-  TProps extends CreateRouteProps<TOptions> | undefined
+  TProps extends CreateRouteProps<TOptions>
 > = CreateRouteProps<TOptions> extends PropsGetter<TOptions>
   ? Partial<ReturnType<CreateRouteProps<TOptions>>> extends ReturnType<CreateRouteProps<TOptions>>
     ? [ props?: TProps ]
