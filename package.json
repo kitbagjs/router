@@ -1,11 +1,18 @@
 {
   "name": "@kitbag/router",
   "private": false,
-  "version": "0.16.0",
+  "version": "0.16.1",
   "bugs": {
     "url": "https://github.com/kitbagjs/router/issues"
   },
-  "keywords": ["typescript", "router", "vue", "vue-router", "types", "typed"],
+  "keywords": [
+    "typescript",
+    "router",
+    "vue",
+    "vue-router",
+    "types",
+    "typed"
+  ],
   "homepage": "https://github.com/kitbagjs/router#readme",
   "scripts": {
     "build": "vite build",
