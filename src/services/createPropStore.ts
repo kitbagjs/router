@@ -134,7 +134,7 @@ export function createPropStore(): PropStore {
   }
 
   function clearUnusedStoreEntries(keysToKeep: string[]): void {
-    for (const key in store.keys()) {
+    for (const key of store.keys()) {
       if (keysToKeep.includes(key)) {
         continue
       }
