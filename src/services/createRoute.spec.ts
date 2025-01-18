@@ -1,7 +1,8 @@
-import { expect, test } from 'vitest'
+import { expect, expectTypeOf, test } from 'vitest'
 import { createRoute } from '@/services/createRoute'
 import { path } from '@/services/path'
 import { query } from '@/services/query'
+import { component } from '@/utilities/testHelpers'
 
 test('given parent, path is combined', () => {
   const parent = createRoute({
@@ -108,5 +109,91 @@ test('given parent and child without meta, meta matches parent', () => {
 
   expect(child.meta).toMatchObject({
     foo: 123,
+  })
+})
+
+test('sync parent props are passed to child props', () => {
+  const parent = createRoute({
+    name: 'parent',
+  }, () => ({ foo: 123 }))
+
+  createRoute({
+    name: 'child',
+    parent: parent,
+  }, (__, { parent }) => {
+    expectTypeOf(parent.props).toEqualTypeOf<{ foo: number }>()
+    expectTypeOf(parent.name).toEqualTypeOf<'parent'>()
+
+    return {}
+  })
+})
+
+test('async parent props are passed to child props', () => {
+  const parent = createRoute({
+    name: 'parent',
+  }, async () => ({ foo: 123 }))
+
+  createRoute({
+    name: 'child',
+    parent: parent,
+  }, (__, { parent }) => {
+    expectTypeOf(parent.props).toEqualTypeOf<Promise<{ foo: number }>>()
+    expectTypeOf(parent.name).toEqualTypeOf<'parent'>()
+
+    return {}
+  })
+})
+
+test('parent props are passed to child props when multiple parent components are used', () => {
+  const parent = createRoute({
+    name: 'parent',
+    components: {
+      one: component,
+      two: component,
+    },
+  }, {
+    one: () => ({ foo: 123 }),
+    two: async () => ({ foo: 456 }),
+  })
+
+  createRoute({
+    name: 'child',
+    parent: parent,
+  }, (__, { parent }) => {
+    expectTypeOf(parent.props).toEqualTypeOf<{
+      one: { foo: number },
+      two: Promise<{ foo: number }>,
+    }>()
+    expectTypeOf(parent.name).toEqualTypeOf<'parent'>()
+
+    return {}
+  })
+})
+
+test('parent props are passed to child props when multiple child components are used', () => {
+  const parent = createRoute({
+    name: 'parent',
+  }, async () => ({ foo: 123 }))
+
+  createRoute({
+    name: 'child',
+    parent: parent,
+    components: {
+      one: component,
+      two: component,
+    },
+  }, {
+    one: (__, { parent }) => {
+      expectTypeOf(parent.props).toEqualTypeOf<Promise<{ foo: number }>>()
+      expectTypeOf(parent.name).toEqualTypeOf<'parent'>()
+
+      return {}
+    },
+    two: (__, { parent }) => {
+      expectTypeOf(parent.props).toEqualTypeOf<Promise<{ foo: number }>>()
+      expectTypeOf(parent.name).toEqualTypeOf<'parent'>()
+
+      return {}
+    },
   })
 })
