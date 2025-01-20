@@ -35,13 +35,12 @@ export function createPropStore(): PropStore {
           return response
         }
 
-        const parent = route.matches.at(-2)
         const key = getPropKey(id, name, route)
         const value = getPropsValue(() => props(route, {
           push,
           replace,
           reject,
-          parent: getParentContext(parent, route, true),
+          parent: getParentContext(route, true),
         }))
 
         response[key] = value
@@ -71,12 +70,11 @@ export function createPropStore(): PropStore {
       keys.push(key)
 
       if (!store.has(key)) {
-        const parent = route.matches.at(-2)
         const value = getPropsValue(() => props(route, {
           push,
           replace,
           reject,
-          parent: getParentContext(parent, route),
+          parent: getParentContext(route),
         }))
 
         store.set(key, value)
@@ -116,7 +114,9 @@ export function createPropStore(): PropStore {
     return store.get(key)
   }
 
-  function getParentContext(parent: Route['matched'] | undefined, route: ResolvedRoute, prefetch: boolean = false): PropsCallbackParent {
+  function getParentContext(route: ResolvedRoute, prefetch: boolean = false): PropsCallbackParent {
+    const parent = route.matches.at(-2)
+
     if (!parent) {
       return
     }
