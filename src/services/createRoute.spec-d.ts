@@ -406,3 +406,89 @@ test('undefined is not a valid value for 2nd argument of createRoute', () => {
 
   expectTypeOf<Source>().toEqualTypeOf<Expect>()
 })
+
+test('sync parent props are passed to child props', () => {
+  const parent = createRoute({
+    name: 'parent',
+  }, () => ({ foo: 123 }))
+
+  createRoute({
+    name: 'child',
+    parent: parent,
+  }, (__, { parent }) => {
+    expectTypeOf(parent.props).toEqualTypeOf<{ foo: number }>()
+    expectTypeOf(parent.name).toEqualTypeOf<'parent'>()
+
+    return {}
+  })
+})
+
+test('async parent props are passed to child props', () => {
+  const parent = createRoute({
+    name: 'parent',
+  }, async () => ({ foo: 123 }))
+
+  createRoute({
+    name: 'child',
+    parent: parent,
+  }, (__, { parent }) => {
+    expectTypeOf(parent.props).toEqualTypeOf<Promise<{ foo: number }>>()
+    expectTypeOf(parent.name).toEqualTypeOf<'parent'>()
+
+    return {}
+  })
+})
+
+test('parent props are passed to child props when multiple parent components are used', () => {
+  const parent = createRoute({
+    name: 'parent',
+    components: {
+      one: component,
+      two: component,
+    },
+  }, {
+    one: () => ({ foo: 123 }),
+    two: async () => ({ foo: 456 }),
+  })
+
+  createRoute({
+    name: 'child',
+    parent: parent,
+  }, (__, { parent }) => {
+    expectTypeOf(parent.props).toEqualTypeOf<{
+      one: { foo: number },
+      two: Promise<{ foo: number }>,
+    }>()
+    expectTypeOf(parent.name).toEqualTypeOf<'parent'>()
+
+    return {}
+  })
+})
+
+test('parent props are passed to child props when multiple child components are used', () => {
+  const parent = createRoute({
+    name: 'parent',
+  }, async () => ({ foo: 123 }))
+
+  createRoute({
+    name: 'child',
+    parent: parent,
+    components: {
+      one: component,
+      two: component,
+    },
+  }, {
+    one: (__, { parent }) => {
+      expectTypeOf(parent.props).toEqualTypeOf<Promise<{ foo: number }>>()
+      expectTypeOf(parent.name).toEqualTypeOf<'parent'>()
+
+      return {}
+    },
+    two: (__, { parent }) => {
+      expectTypeOf(parent.props).toEqualTypeOf<Promise<{ foo: number }>>()
+      expectTypeOf(parent.name).toEqualTypeOf<'parent'>()
+
+      return {}
+    },
+  })
+})

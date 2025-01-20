@@ -15,7 +15,7 @@ export type PropsCallbackContext<
 }
 
 export type PropsCallbackParent<
-  TParent extends Route | undefined = undefined
+  TParent extends Route | undefined = Route | undefined
 > = TParent extends Route ? {
   name: TParent['name'],
   props: GetParentPropsReturnType<TParent>,
