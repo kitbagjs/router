@@ -22,11 +22,11 @@ export type PropsCallbackParent<
 } : undefined
 
 type GetParentPropsReturnType<
-  TParent extends Route | undefined = undefined
+  TParent extends Route | undefined = Route | undefined
 > = TParent extends Route
   ? TParent['matched']['props'] extends PropsGetter
     ? ReturnType<TParent['matched']['props']>
     : TParent['matched']['props'] extends Record<string, PropsGetter>
       ? { [K in keyof TParent['matched']['props']]: ReturnType<TParent['matched']['props'][K]> }
-      : never
-  : never
+      : undefined
+  : undefined
