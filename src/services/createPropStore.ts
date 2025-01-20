@@ -116,7 +116,6 @@ export function createPropStore(): PropStore {
     return store.get(key)
   }
 
-  // todo: account for prefetching
   function getParentContext(parent: Route['matched'] | undefined, route: ResolvedRoute, prefetch: boolean = false): PropsCallbackParent {
     if (!parent) {
       return
@@ -146,7 +145,10 @@ export function createPropStore(): PropStore {
       }
     }
 
-    return
+    return {
+      name: parent.name ?? '',
+      props: undefined,
+    }
   }
 
   function getParentProps(parent: Route['matched'], name: string, route: ResolvedRoute, prefetch: boolean = false): unknown {

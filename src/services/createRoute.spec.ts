@@ -3,7 +3,6 @@ import { createRoute } from '@/services/createRoute'
 import { path } from '@/services/path'
 import { query } from '@/services/query'
 import { createRouter } from '@/main'
-import echo from '@/components/echo'
 import { component } from '@/utilities/testHelpers'
 
 test('given parent, path is combined', () => {
@@ -112,6 +111,29 @@ test('given parent and child without meta, meta matches parent', () => {
   expect(child.meta).toMatchObject({
     foo: 123,
   })
+})
+
+test('parent context is passed to child props', async () => {
+  const spy = vi.fn()
+  const parent = createRoute({
+    name: 'parent',
+  })
+
+  const child = createRoute({
+    name: 'child',
+    parent: parent,
+    path: '/child',
+  }, (_, { parent }) => {
+    return spy(parent)
+  })
+
+  const router = createRouter([parent, child], {
+    initialUrl: '/child',
+  })
+
+  await router.start()
+
+  expect(spy).toHaveBeenCalledWith({ name: 'parent', props: undefined })
 })
 
 test('sync parent props are passed to child props', async () => {
