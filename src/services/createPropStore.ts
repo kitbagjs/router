@@ -127,13 +127,13 @@ export function createPropStore(): PropStore {
         get props() {
           return getParentProps(parent, 'default', route, prefetch)
         },
-      } as PropsCallbackParent
+      }
     }
 
     if (isWithComponentPropsRecord(parent)) {
       return {
         name: parent.name ?? '',
-        props: new Proxy({} as any, {
+        props: new Proxy({}, {
           get(target, name) {
             if (typeof name !== 'string') {
               return Reflect.get(target, name)

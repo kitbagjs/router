@@ -28,5 +28,5 @@ type GetParentPropsReturnType<
     ? ReturnType<TParent['matched']['props']>
     : TParent['matched']['props'] extends Record<string, PropsGetter>
       ? { [K in keyof TParent['matched']['props']]: ReturnType<TParent['matched']['props'][K]> }
-      : undefined
+      : unknown
   : undefined
