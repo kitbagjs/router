@@ -407,6 +407,22 @@ test('undefined is not a valid value for 2nd argument of createRoute', () => {
   expectTypeOf<Source>().toEqualTypeOf<Expect>()
 })
 
+test('parent props are undefined when parent has no props', () => {
+  const parent = createRoute({
+    name: 'parent',
+  })
+
+  createRoute({
+    name: 'child',
+    parent: parent,
+  }, (__, { parent }) => {
+    expectTypeOf(parent.props).toEqualTypeOf<undefined>()
+    expectTypeOf(parent.name).toEqualTypeOf<'parent'>()
+
+    return {}
+  })
+})
+
 test('sync parent props are passed to child props', () => {
   const parent = createRoute({
     name: 'parent',
