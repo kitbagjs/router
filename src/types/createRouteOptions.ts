@@ -129,7 +129,7 @@ export type CreateRouteOptions<
 export type PropsGetter<
   TOptions extends CreateRouteOptions = CreateRouteOptions,
   TComponent extends Component = Component
-> = (route: ResolvedRoute<ToRoute<TOptions, undefined>>, context: PropsCallbackContext) => MaybePromise<ComponentProps<TComponent>>
+> = (route: ResolvedRoute<ToRoute<TOptions, undefined>>, context: PropsCallbackContext<TOptions['parent']>) => MaybePromise<ComponentProps<TComponent>>
 
 type ComponentPropsAreOptional<
   TComponent extends Component

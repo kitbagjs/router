@@ -1,7 +1,9 @@
-import { expect, test } from 'vitest'
+import { expect, test, vi } from 'vitest'
 import { createRoute } from '@/services/createRoute'
 import { path } from '@/services/path'
 import { query } from '@/services/query'
+import { createRouter } from '@/main'
+import { component } from '@/utilities/testHelpers'
 
 test('given parent, path is combined', () => {
   const parent = createRoute({
@@ -109,4 +111,157 @@ test('given parent and child without meta, meta matches parent', () => {
   expect(child.meta).toMatchObject({
     foo: 123,
   })
+})
+
+test('parent context is passed to child props', async () => {
+  const spy = vi.fn()
+  const parent = createRoute({
+    name: 'parent',
+  })
+
+  const child = createRoute({
+    name: 'child',
+    parent: parent,
+    path: '/child',
+  }, (_, { parent }) => {
+    return spy(parent)
+  })
+
+  const router = createRouter([parent, child], {
+    initialUrl: '/child',
+  })
+
+  await router.start()
+
+  expect(spy).toHaveBeenCalledWith({ name: 'parent', props: undefined })
+})
+
+test('sync parent props are passed to child props', async () => {
+  const spy = vi.fn()
+
+  const parent = createRoute({
+    name: 'parent',
+  }, () => ({ foo: 123 }))
+
+  const child = createRoute({
+    name: 'child',
+    parent: parent,
+    path: '/child',
+  }, (__, { parent }) => {
+    return spy({ value: parent.props.foo })
+  })
+
+  const router = createRouter([parent, child], {
+    initialUrl: '/child',
+  })
+
+  await router.start()
+
+  expect(spy).toHaveBeenCalledWith({ value: 123 })
+})
+
+test('async parent props are passed to child props', async () => {
+  const spy = vi.fn()
+
+  const parent = createRoute({
+    name: 'parent',
+  }, async () => ({ foo: 123 }))
+
+  const child = createRoute({
+    name: 'child',
+    parent: parent,
+    path: '/child',
+  }, async (__, { parent }) => {
+    expect(parent.props).toBeDefined()
+    expect(parent.props).toBeInstanceOf(Promise)
+
+    const { foo: value } = await parent.props
+
+    return spy({ value })
+  })
+
+  const router = createRouter([parent, child], {
+    initialUrl: '/child',
+  })
+
+  await router.start()
+
+  expect(spy).toHaveBeenCalledWith({ value: 123 })
+})
+
+test('sync parent props with multiple views are passed to child props', async () => {
+  const spy = vi.fn()
+
+  const parent = createRoute({
+    name: 'parent',
+    components: {
+      one: component,
+      two: component,
+      three: component,
+    },
+  }, {
+    one: () => ({ foo: 123 }),
+    two: () => ({ bar: 456 }),
+  })
+
+  const child = createRoute({
+    name: 'child',
+    parent: parent,
+    path: '/child',
+  }, (__, { parent }) => {
+    return spy({
+      value1: parent.props.one.foo,
+      value2: parent.props.two.bar,
+    })
+  })
+
+  const router = createRouter([parent, child], {
+    initialUrl: '/child',
+  })
+
+  await router.start()
+
+  expect(spy).toHaveBeenCalledWith({ value1: 123, value2: 456 })
+})
+
+test('async parent props with multiple views are passed to child props', async () => {
+  const spy = vi.fn()
+
+  const parent = createRoute({
+    name: 'parent',
+    components: {
+      one: component,
+      two: component,
+      three: component,
+    },
+  }, {
+    one: async () => ({ foo: 123 }),
+    two: async () => ({ bar: 456 }),
+  })
+
+  const child = createRoute({
+    name: 'child',
+    parent: parent,
+    path: '/child',
+  }, async (__, { parent }) => {
+    expect(parent.props).toBeDefined()
+    expect(parent.props.one).toBeInstanceOf(Promise)
+    expect(parent.props.two).toBeInstanceOf(Promise)
+
+    const { foo: value1 } = await parent.props.one
+    const { bar: value2 } = await parent.props.two
+
+    return spy({
+      value1,
+      value2,
+    })
+  })
+
+  const router = createRouter([parent, child], {
+    initialUrl: '/child',
+  })
+
+  await router.start()
+
+  expect(spy).toHaveBeenCalledWith({ value1: 123, value2: 456 })
 })

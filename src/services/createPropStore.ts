@@ -7,6 +7,7 @@ import { CallbackPushResponse, CallbackRejectResponse, CallbackSuccessResponse, 
 import { CallbackContextPushError } from '@/errors/callbackContextPushError'
 import { CallbackContextRejectionError } from '@/errors/callbackContextRejectionError'
 import { getPropsValue } from '@/utilities/props'
+import { PropsCallbackParent } from '@/types/props'
 
 export const propStoreKey: InjectionKey<PropStore> = Symbol()
 
@@ -39,6 +40,7 @@ export function createPropStore(): PropStore {
           push,
           replace,
           reject,
+          parent: getParentContext(route, true),
         }))
 
         response[key] = value
@@ -72,6 +74,7 @@ export function createPropStore(): PropStore {
           push,
           replace,
           reject,
+          parent: getParentContext(route),
         }))
 
         store.set(key, value)
@@ -109,6 +112,59 @@ export function createPropStore(): PropStore {
     const key = getPropKey(id, name, route)
 
     return store.get(key)
+  }
+
+  function getParentContext(route: ResolvedRoute, prefetch: boolean = false): PropsCallbackParent {
+    const parent = route.matches.at(-2)
+
+    if (!parent) {
+      return
+    }
+
+    if (isWithComponentProps(parent)) {
+      return {
+        name: parent.name ?? '',
+        get props() {
+          return getParentProps(parent, 'default', route, prefetch)
+        },
+      }
+    }
+
+    if (isWithComponentPropsRecord(parent)) {
+      return {
+        name: parent.name ?? '',
+        props: new Proxy({}, {
+          get(target, name) {
+            if (typeof name !== 'string') {
+              return Reflect.get(target, name)
+            }
+
+            return getParentProps(parent, name, route, prefetch)
+          },
+        }),
+      }
+    }
+
+    return {
+      name: parent.name ?? '',
+      props: undefined,
+    }
+  }
+
+  function getParentProps(parent: Route['matched'], name: string, route: ResolvedRoute, prefetch: boolean = false): unknown {
+    const value = getProps(parent.id, name, route)
+
+    if (prefetch && !value) {
+      const parentName = parent.name ?? 'unknown'
+      const routeName = route.name || 'unknown'
+
+      console.warn(`
+        Unable to access parent props "${name}" from route "${parentName}" while prefetching props for route "${routeName}".
+        This may occur if the parent route's props were not also prefetched.
+      `)
+    }
+
+    return value
   }
 
   function getPropKey(id: string, name: string, route: ResolvedRoute): string {
