@@ -21,7 +21,7 @@ function createExternalRoute<THost, TName, TPath, TQuery, THash, TMeta>(options)
 
 | Parameter | Type |
 | ------ | ------ |
-| `options` | [`CreateRouteOptions`](../types/CreateRouteOptions.md)\<`TName`, `TPath`, `TQuery`, `undefined` \| `string` \| `Hash`\<`undefined` \| `string`\>, `Record`\<`string`, `unknown`\>\> & `WithHost`\<`THost`\> & `WithoutParent` |
+| `options` | [`WithHooks`](../types/WithHooks.md) & `object` & `WithHost`\<`THost`\> & `WithoutParent` |
 
 ### Returns
 
@@ -37,7 +37,7 @@ function createExternalRoute<TParent, TName, TPath, TQuery, THash, TMeta>(option
 
 | Type Parameter | Default type |
 | ------ | ------ |
-| `TParent` *extends* [`Route`](../types/Route.md)\<`string`, `Host`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\>, `Path`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\>, `Query`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\>, `Hash`\<`undefined` \| `string`\>, `Record`\<`string`, `unknown`\>, `Record`\<`string`, [`Param`](../types/Param.md)\>, `undefined` \| `string`\> | - |
+| `TParent` *extends* [`Route`](../types/Route.md)\<`string`, `Host`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\>, `Path`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\>, `Query`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\>, `Hash`\<`undefined` \| `string`\>, `Record`\<`string`, `unknown`\>, `Record`\<`string`, [`Param`](../types/Param.md)\>, [`CreatedRouteOptions`](../types/CreatedRouteOptions.md)[]\> | - |
 | `TName` *extends* `undefined` \| `string` | `undefined` |
 | `TPath` *extends* \| `undefined` \| `string` \| `Path`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\> | `undefined` |
 | `TQuery` *extends* \| `undefined` \| `string` \| `Query`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\> | `undefined` |
@@ -48,7 +48,7 @@ function createExternalRoute<TParent, TName, TPath, TQuery, THash, TMeta>(option
 
 | Parameter | Type |
 | ------ | ------ |
-| `options` | [`CreateRouteOptions`](../types/CreateRouteOptions.md)\<`TName`, `TPath`, `TQuery`, `undefined` \| `string` \| `Hash`\<`undefined` \| `string`\>, `Record`\<`string`, `unknown`\>\> & `WithoutHost` & `WithParent`\<`TParent`\> |
+| `options` | [`WithHooks`](../types/WithHooks.md) & `object` & `WithoutHost` & `WithParent`\<`TParent`\> |
 
 ### Returns
 

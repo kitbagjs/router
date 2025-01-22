@@ -3,7 +3,7 @@
 ## Call Signature
 
 ```ts
-function isRoute(route): route is RouterRoute<Readonly<{ hash: string; href: Url; id: string; matched: CreateRouteOptionsMatched<string>; matches: CreateRouteOptionsMatched<undefined | string>[]; name: string; params: { (key: string): any; (key: number): any }; query: URLSearchParams; state: { (key: string): any; (key: number): any } }>>
+function isRoute(route): route is RouterRoute<Readonly<{ hash: string; href: Url; id: string; matched: CreatedRouteOptions; matches: CreatedRouteOptions[]; name: string; params: { (key: string): any; (key: number): any }; query: URLSearchParams; state: { (key: string): any; (key: number): any } }>>
 ```
 
 A type guard for determining if a value is a valid RouterRoute.
@@ -16,7 +16,7 @@ A type guard for determining if a value is a valid RouterRoute.
 
 ### Returns
 
-route is RouterRoute\<Readonly\<\{ hash: string; href: Url; id: string; matched: CreateRouteOptionsMatched\<string\>; matches: CreateRouteOptionsMatched\<undefined \| string\>\[\]; name: string; params: \{ (key: string): any; (key: number): any \}; query: URLSearchParams; state: \{ (key: string): any; (key: number): any \} \}\>\>
+`route is RouterRoute<Readonly<{ hash: string; href: Url; id: string; matched: CreatedRouteOptions; matches: CreatedRouteOptions[]; name: string; params: { (key: string): any; (key: number): any }; query: URLSearchParams; state: { (key: string): any; (key: number): any } }>>`
 
 `true` if the value is a valid RouterRoute, otherwise `false`.
 
@@ -35,7 +35,7 @@ A type guard for determining if a value is a valid RouterRoute with an exact mat
 
 | Type Parameter |
 | ------ |
-| `TRoute` *extends* [`RouterRoute`](../types/RouterRoute.md)\<`Readonly`\<\{ `hash`: `string`; `href`: [`Url`](../types/Url.md); `id`: `string`; `matched`: `CreateRouteOptionsMatched`\<`string`\>; `matches`: `CreateRouteOptionsMatched`\<`undefined` \| `string`\>[]; `name`: `string`; `params`: \{\}; `query`: `URLSearchParams`; `state`: \{\}; \}\>\> |
+| `TRoute` *extends* [`RouterRoute`](../types/RouterRoute.md)\<`Readonly`\<\{ `hash`: `string`; `href`: [`Url`](../types/Url.md); `id`: `string`; `matched`: [`CreatedRouteOptions`](../types/CreatedRouteOptions.md); `matches`: [`CreatedRouteOptions`](../types/CreatedRouteOptions.md)[]; `name`: `string`; `params`: \{\}; `query`: `URLSearchParams`; `state`: \{\}; \}\>\> |
 | `TRouteName` *extends* `string` |
 
 ### Parameters
@@ -67,7 +67,7 @@ A type guard for determining if a value is a valid RouterRoute with a partial ma
 
 | Type Parameter |
 | ------ |
-| `TRoute` *extends* [`RouterRoute`](../types/RouterRoute.md)\<`Readonly`\<\{ `hash`: `string`; `href`: [`Url`](../types/Url.md); `id`: `string`; `matched`: `CreateRouteOptionsMatched`\<`string`\>; `matches`: `CreateRouteOptionsMatched`\<`undefined` \| `string`\>[]; `name`: `string`; `params`: \{\}; `query`: `URLSearchParams`; `state`: \{\}; \}\>\> |
+| `TRoute` *extends* [`RouterRoute`](../types/RouterRoute.md)\<`Readonly`\<\{ `hash`: `string`; `href`: [`Url`](../types/Url.md); `id`: `string`; `matched`: [`CreatedRouteOptions`](../types/CreatedRouteOptions.md); `matches`: [`CreatedRouteOptions`](../types/CreatedRouteOptions.md)[]; `name`: `string`; `params`: \{\}; `query`: `URLSearchParams`; `state`: \{\}; \}\>\> |
 | `TRouteName` *extends* `string` |
 
 ### Parameters
