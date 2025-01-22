@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/only-throw-error */
 import { InvalidRouteParamValueError } from '@/errors/invalidRouteParamValueError'
 import { isParamWithDefault } from '@/services/withDefault'
-import { ExtractParamType, isParamGetSet, isParamGetter } from '@/types/params'
-import { Param, ParamExtras, ParamGetSet } from '@/types/paramTypes'
+import { ExtractParamType, isLiteralParam, isParamGetSet, isParamGetter } from '@/types/params'
+import { LiteralParam, Param, ParamExtras, ParamGetSet } from '@/types/paramTypes'
 import { stringHasValue } from '@/utilities/guards'
 
 export function getParam(params: Record<string, Param | undefined>, paramName: string): Param {
@@ -104,6 +104,26 @@ const jsonParam: ParamGetSet<unknown> = {
   },
 }
 
+function validateLiteralParamStringValue(value: string, param: LiteralParam): boolean {
+  // eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
+  switch (typeof param) {
+    case 'string':
+      const stringValue = stringParam.get(value, extras)
+
+      return stringValue === param
+    case 'number':
+      const numberValue = numberParam.get(value, extras)
+
+      return numberValue === param
+    case 'boolean':
+      const booleanValue = booleanParam.get(value, extras)
+
+      return booleanValue === param
+    default:
+      return false
+  }
+}
+
 export function getParamValue<T extends Param>(value: string | undefined, param: T, isOptional?: boolean): ExtractParamType<T>
 export function getParamValue<T extends Param>(value: string | undefined, param: T, isOptional = false): unknown {
   if (value === undefined || !stringHasValue(value)) {
@@ -154,6 +174,14 @@ export function getParamValue<T extends Param>(value: string | undefined, param:
     throw new InvalidRouteParamValueError()
   }
 
+  if (isLiteralParam(param)) {
+    if (validateLiteralParamStringValue(value, param)) {
+      return param
+    }
+
+    throw new InvalidRouteParamValueError()
+  }
+
   return value
 }
 
@@ -195,6 +223,14 @@ export function setParamValue(value: unknown, param: Param, isOptional = false):
 
   if (isParamGetSet(param)) {
     return param.set(value, extras)
+  }
+
+  if (isLiteralParam(param)) {
+    if (param !== value) {
+      throw new InvalidRouteParamValueError()
+    }
+
+    return (value as LiteralParam).toString()
   }
 
   try {

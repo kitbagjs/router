@@ -1,7 +1,6 @@
 import { getParamsForString } from '@/services/getParamsForString'
 import { Param } from '@/types/paramTypes'
 import { Path, PathParamsWithParamNameExtracted } from '@/types/path'
-import { Identity } from '@/types/utilities'
 
 /**
  * Constructs a Path object, which enables assigning types for params.
@@ -24,7 +23,10 @@ import { Identity } from '@/types/utilities'
  * })
  * ```
  */
-export function path<TPath extends string, TParams extends PathParamsWithParamNameExtracted<TPath>>(value: TPath, params: Identity<TParams>): Path<TPath, TParams>
+export function path<
+  const TPath extends string,
+  const TParams extends PathParamsWithParamNameExtracted<TPath>
+>(value: TPath, params: TParams): Path<TPath, TParams>
 export function path(value: string, params: Record<string, Param | undefined>): Path {
   return {
     value,

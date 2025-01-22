@@ -11,4 +11,15 @@ export type ParamGetSet<T = any> = {
   defaultValue?: T,
 }
 
-export type Param = ParamGetter | ParamGetSet | RegExp | BooleanConstructor | NumberConstructor | StringConstructor | DateConstructor | JSON
+export type LiteralParam = string | number | boolean
+
+export type Param =
+  | ParamGetter
+  | ParamGetSet
+  | RegExp
+  | BooleanConstructor
+  | NumberConstructor
+  | StringConstructor
+  | DateConstructor
+  | JSON
+  | LiteralParam

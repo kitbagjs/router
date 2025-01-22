@@ -1,5 +1,5 @@
 import { ExtractParamName } from '@/types/params'
-import { Param, ParamGetSet, ParamGetter } from '@/types/paramTypes'
+import { LiteralParam, Param, ParamGetSet, ParamGetter } from '@/types/paramTypes'
 import { Routes } from '@/types/route'
 import { RoutesName, RoutesMap } from '@/types/routesMap'
 import { Identity } from '@/types/utilities'
@@ -24,14 +24,19 @@ type ExtractParamTypesWithoutLosingOptional<TParams extends Record<string, Param
   [K in keyof TParams as ExtractParamName<K>]: ExtractParamTypeWithoutLosingOptional<TParams[K], K>
 }>>
 
-type ExtractParamTypeWithoutLosingOptional<TParam extends Param, TParamKey extends PropertyKey> = TParam extends ParamGetSet<infer Type>
-  ? TParamKey extends `?${string}`
-    ? Type | undefined
-    : Type
-  : TParam extends ParamGetter
+type ExtractParamTypeWithoutLosingOptional<TParam extends Param, TParamKey extends PropertyKey> =
+  TParam extends ParamGetSet<infer Type>
     ? TParamKey extends `?${string}`
-      ? ReturnType<TParam> | undefined
-      : ReturnType<TParam>
-    : TParamKey extends `?${string}`
-      ? string | undefined
-      : string
+      ? Type | undefined
+      : Type
+    : TParam extends ParamGetter
+      ? TParamKey extends `?${string}`
+        ? ReturnType<TParam> | undefined
+        : ReturnType<TParam>
+      : TParam extends LiteralParam
+        ? TParamKey extends `?${string}`
+          ? TParam | undefined
+          : TParam
+        : TParamKey extends `?${string}`
+          ? string | undefined
+          : string

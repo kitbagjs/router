@@ -1,7 +1,6 @@
 import { getParamsForString } from '@/services/getParamsForString'
 import { Param } from '@/types/paramTypes'
 import { Query, QueryParamsWithParamNameExtracted } from '@/types/query'
-import { Identity } from '@/types/utilities'
 
 /**
  * Constructs a Query object, which enables assigning types for params.
@@ -24,7 +23,10 @@ import { Identity } from '@/types/utilities'
  * })
  * ```
  */
-export function query<TQuery extends string, TParams extends QueryParamsWithParamNameExtracted<TQuery>>(value: TQuery, params: Identity<TParams>): Query<TQuery, TParams>
+export function query<
+  const TQuery extends string,
+  const TParams extends QueryParamsWithParamNameExtracted<TQuery>
+>(value: TQuery, params: TParams): Query<TQuery, TParams>
 export function query(value: string, params: Record<string, Param | undefined>): Query {
   return {
     value,
