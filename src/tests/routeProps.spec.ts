@@ -1,6 +1,6 @@
 import { expect, test, vi } from 'vitest'
-import { createRoute } from './services/createRoute'
-import { createRouter } from './services/createRouter'
+import { createRoute } from '@/services/createRoute'
+import { createRouter } from '@/services/createRouter'
 
 test('props are called each time the route is matched', async () => {
   const props = vi.fn()

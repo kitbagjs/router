@@ -1,5 +1,5 @@
 import { ParamWithDefault } from '@/services/withDefault'
-import { Param, ParamGetSet, ParamGetter } from '@/types/paramTypes'
+import { LiteralParam, Param, ParamGetSet, ParamGetter } from '@/types/paramTypes'
 import { Identity } from '@/types/utilities'
 import { MakeOptional } from '@/utilities/makeOptional'
 
@@ -37,6 +37,15 @@ export function isParamGetSet(value: Param): value is ParamGetSet {
     && typeof value.get === 'function'
     && 'set' in value
     && typeof value.set === 'function'
+}
+
+/**
+ * Type guard to check if a value conforms to the LiteralParam type.
+ * @param value - The value to check.
+ * @returns True if the value is a string, number, or boolean.
+ */
+export function isLiteralParam(value: Param): value is LiteralParam {
+  return typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean'
 }
 
 /**

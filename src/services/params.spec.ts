@@ -36,6 +36,18 @@ describe('getParamValue', () => {
     expect(() => getParamValue('foo', param)).toThrow(InvalidRouteParamValueError)
   })
 
+  test('given  Literal Param, with matching value, returns value', () => {
+    expect(getParamValue('foo', 'foo')).toBe('foo')
+    expect(getParamValue('1', 1)).toBe(1)
+    expect(getParamValue('true', true)).toBe(true)
+  })
+
+  test('given Literal Param, with non-matching value, throws InvalidRouteParamValueError', () => {
+    expect(() => getParamValue('foo', 'bar')).toThrow(InvalidRouteParamValueError)
+    expect(() => getParamValue('1', 2)).toThrow(InvalidRouteParamValueError)
+    expect(() => getParamValue('true', false)).toThrow(InvalidRouteParamValueError)
+  })
+
   test.each([
     [undefined],
     [''],
@@ -122,6 +134,18 @@ describe('setParamValue', () => {
     const param = /yes/
 
     expect(setParamValue('yes', param)).toBe('yes')
+  })
+
+  test('Given Literal Param, with matching value, returns value', () => {
+    expect(setParamValue('foo', 'foo')).toBe('foo')
+    expect(setParamValue(1, 1)).toBe('1')
+    expect(setParamValue(true, true)).toBe('true')
+  })
+
+  test('Given Literal Param, with non-matching value, throws InvalidRouteParamValueError', () => {
+    expect(() => setParamValue('foo', 'bar')).toThrow(InvalidRouteParamValueError)
+    expect(() => setParamValue(1, 2)).toThrow(InvalidRouteParamValueError)
+    expect(() => setParamValue(true, false)).toThrow(InvalidRouteParamValueError)
   })
 
   test('Given Optional Param and value undefined, assigns empty string', () => {

@@ -1,7 +1,6 @@
 import { getParamsForString } from '@/services/getParamsForString'
 import { Host, HostParamsWithParamNameExtracted } from '@/types/host'
 import { Param } from '@/types/paramTypes'
-import { Identity } from '@/types/utilities'
 
 /**
  * Constructs a Host object, which enables assigning types for params. Note, the host should not include protocol.
@@ -24,7 +23,10 @@ import { Identity } from '@/types/utilities'
  * })
  * ```
  */
-export function host<THost extends string, TParams extends HostParamsWithParamNameExtracted<THost>>(value: THost, params: Identity<TParams>): Host<THost, TParams>
+export function host<
+  const THost extends string,
+  const TParams extends HostParamsWithParamNameExtracted<THost>
+>(value: THost, params: TParams): Host<THost, TParams>
 export function host(value: string, params: Record<string, Param | undefined>): Host {
   return {
     value,
