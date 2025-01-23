@@ -18,7 +18,7 @@ export function tupleOf<const T extends Param[]>(...params: T): ParamGetSet<Tupl
       }
 
       if (value.length !== params.length) {
-        throw invalid(`Expected tuple with ${params.length} values`)
+        throw invalid(`Expected tuple with ${params.length} values but received ${value.length} values`)
       }
 
       return params.map((param, index) => setParamValue(value.at(index), param)).join(',')
