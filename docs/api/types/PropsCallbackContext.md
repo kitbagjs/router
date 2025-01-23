@@ -1,12 +1,24 @@
-# Types: PropsCallbackContext
+# Types: PropsCallbackContext\<TParent\>
 
 ```ts
-type PropsCallbackContext = object;
+type PropsCallbackContext<TParent> = object;
 ```
 
 Context provided to props callback functions
 
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `TParent` *extends* [`Route`](Route.md) \| `undefined` | [`Route`](Route.md) \| `undefined` |
+
 ## Type declaration
+
+### parent
+
+```ts
+parent: PropsCallbackParent<TParent>;
+```
 
 ### push
 
