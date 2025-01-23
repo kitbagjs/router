@@ -143,14 +143,75 @@ So far the examples have only used params in the `path` property. When using par
 ```ts {3}
 const events = createRoute({
   name: 'events',
-  query: 'highlight=[?highlight]',
+  query: 'category=[?category]',
 })
 ```
 
-The param name and the search key do not have to be the same. In this example the url search string might be `?highlight=hello`, which has a `term` param with the value `hello`.
+The param name and the search key do not have to be the same. In this example the url search string might be `?category=hello`, which has a `term` param with the value `hello`.
 
 ```ts {2}
 const events = createRoute({
-  query: 'highlight=[?term]',
+  query: 'category=[?term]',
+})
+```
+
+## Literal Types
+
+Params can be defined as a literal value. This can be useful when an optional param can only have a single value when it is present.
+
+```ts
+import { unionOf } from '@kitbag/router'
+
+const events = createRoute({
+  query: query('enabled=[?enabled]', {
+    enabled: true,
+  }),
+})
+```
+
+Literal value params can be even more useful when coupled with utilities like [unionOf](/core-concepts/params#unions), [tupleOf](/core-concepts/params#tuples), [arrayOf](/core-concepts/params#arrays) which can very easily define more complex params.
+
+## Unions
+
+The `unionOf` utility can be used to define a param as a union of any number of [Param](/api/types/Param) arguments.
+
+```ts
+import { unionOf } from '@kitbag/router'
+
+const events = createRoute({
+  name: 'events',
+  query: query('category=[?category]', {
+    category: unionOf('music', 'sports', 'art'),
+  }),
+})
+```
+
+## Arrays
+
+The `arrayOf` utility can be used to define a param as an array of any number of [Param](/api/types/Param) arguments.
+
+```ts
+import { arrayOf } from '@kitbag/router'
+
+const events = createRoute({
+  name: 'events',
+  query: query('category=[?category]', {
+    category: unionOf('music', 'sports', 'art'),
+  }),
+})
+```
+
+## Tuples
+
+The `tupleOf` utility can be used to define a param as a tuple of any number of [Param](/api/types/Param) arguments.
+
+```ts
+import { tupleOf } from '@kitbag/router'
+
+const events = createRoute({
+  name: 'events',
+  query: query('location=[?location]', {
+    location: tupleOf(Number, Number),
+  }),
 })
 ```

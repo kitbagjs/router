@@ -24,6 +24,7 @@
 
 ## Functions
 
+- [arrayOf](functions/arrayOf.md)
 - [asUrl](functions/asUrl.md)
 - [createExternalRoute](functions/createExternalRoute.md)
 - [createParam](functions/createParam.md)
@@ -32,6 +33,8 @@
 - [createRouterPlugin](functions/createRouterPlugin.md)
 - [path](functions/path.md)
 - [query](functions/query.md)
+- [tupleOf](functions/tupleOf.md)
+- [unionOf](functions/unionOf.md)
 - [withDefault](functions/withDefault.md)
 
 ## Hooks
@@ -62,6 +65,7 @@
 - [BeforeRouteHookResponse](types/BeforeRouteHookResponse.md)
 - [CreatedRouteOptions](types/CreatedRouteOptions.md)
 - [CreateRouteOptions](types/CreateRouteOptions.md)
+- [LiteralParam](types/LiteralParam.md)
 - [Param](types/Param.md)
 - [ParamExtras](types/ParamExtras.md)
 - [ParamGetSet](types/ParamGetSet.md)

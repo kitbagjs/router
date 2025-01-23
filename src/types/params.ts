@@ -109,19 +109,24 @@ export type ExtractParamTypes<TParams extends Record<string, Param>> = Identity<
  * @template TParam - The parameter type.
  * @returns The extracted type, or 'string' as a fallback.
  */
-export type ExtractParamType<TParam extends Param, TParamKey extends PropertyKey = string> = TParam extends ParamGetSet<infer Type>
-  ? TParamKey extends `?${string}`
-    ? TParam extends ParamWithDefault
-      ? Type
-      : Type | undefined
-    : Type
-  : TParam extends ParamGetter
+export type ExtractParamType<TParam extends Param, TParamKey extends PropertyKey = string> =
+  TParam extends ParamGetSet<infer Type>
     ? TParamKey extends `?${string}`
-      ? ReturnType<TParam> | undefined
-      : ReturnType<TParam>
-    : TParamKey extends `?${string}`
-      ? string | undefined
-      : string
+      ? TParam extends ParamWithDefault
+        ? Type
+        : Type | undefined
+      : Type
+    : TParam extends ParamGetter
+      ? TParamKey extends `?${string}`
+        ? ReturnType<TParam> | undefined
+        : ReturnType<TParam>
+      : TParam extends LiteralParam
+        ? TParamKey extends `?${string}`
+          ? TParam | undefined
+          : TParam
+        : TParamKey extends `?${string}`
+          ? string | undefined
+          : string
 
 type RemoveLeadingQuestionMark<T extends PropertyKey> = T extends `?${infer TRest extends string}` ? TRest : T
 export type RemoveLeadingQuestionMarkFromKeys<T extends Record<string, unknown>> = {

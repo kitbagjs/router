@@ -68,6 +68,10 @@
     "collapsed": true,
     "items": [
       {
+        "text": "arrayOf",
+        "link": "/api/functions/arrayOf.md"
+      },
+      {
         "text": "asUrl",
         "link": "/api/functions/asUrl.md"
       },
@@ -98,6 +102,14 @@
       {
         "text": "query",
         "link": "/api/functions/query.md"
+      },
+      {
+        "text": "tupleOf",
+        "link": "/api/functions/tupleOf.md"
+      },
+      {
+        "text": "unionOf",
+        "link": "/api/functions/unionOf.md"
       },
       {
         "text": "withDefault",
@@ -206,6 +218,10 @@
       {
         "text": "CreateRouteOptions",
         "link": "/api/types/CreateRouteOptions.md"
+      },
+      {
+        "text": "LiteralParam",
+        "link": "/api/types/LiteralParam.md"
       },
       {
         "text": "Param",

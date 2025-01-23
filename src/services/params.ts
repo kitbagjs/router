@@ -196,6 +196,17 @@ export function safeGetParamValue<T extends Param>(value: string | undefined, pa
   }
 }
 
+export function safeSetParamValue(value: unknown, param: Param, isOptional = false): string | undefined {
+  try {
+    return setParamValue(value, param, isOptional)
+  } catch (error) {
+    if (error instanceof InvalidRouteParamValueError) {
+      return undefined
+    }
+    throw error
+  }
+}
+
 export function setParamValue(value: unknown, param: Param, isOptional = false): string {
   if (value === undefined) {
     if (isOptional) {

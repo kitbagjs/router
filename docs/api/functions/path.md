@@ -18,7 +18,7 @@ Constructs a Path object, which enables assigning types for params.
 | Parameter | Type | Description |
 | ------ | ------ | ------ |
 | `value` | `TPath` | The path string. |
-| `params` | `Identity`\<`TParams`\> | The parameters associated with the path, typically as key-value pairs. |
+| `params` | `TParams` | The parameters associated with the path, typically as key-value pairs. |
 
 ## Returns
 
