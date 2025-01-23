@@ -1,7 +1,7 @@
 # Types: RouterOptions
 
 ```ts
-type RouterOptions = object;
+type RouterOptions = WithHooks & object;
 ```
 
 Options to initialize a [Router](Router.md) instance.
