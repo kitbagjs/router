@@ -9,5 +9,6 @@ type Param =
   | NumberConstructor
   | StringConstructor
   | DateConstructor
-  | JSON;
+  | JSON
+  | LiteralParam;
 ```

@@ -18,7 +18,7 @@ Constructs a Query object, which enables assigning types for params.
 | Parameter | Type | Description |
 | ------ | ------ | ------ |
 | `value` | `TQuery` | The query string. |
-| `params` | `Identity`\<`TParams`\> | The parameters associated with the query, typically as key-value pairs. |
+| `params` | `TParams` | The parameters associated with the query, typically as key-value pairs. |
 
 ## Returns
 
