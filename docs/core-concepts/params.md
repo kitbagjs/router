@@ -143,14 +143,45 @@ So far the examples have only used params in the `path` property. When using par
 ```ts {3}
 const events = createRoute({
   name: 'events',
-  query: 'highlight=[?highlight]',
+  query: 'category=[?category]',
 })
 ```
 
-The param name and the search key do not have to be the same. In this example the url search string might be `?highlight=hello`, which has a `term` param with the value `hello`.
+The param name and the search key do not have to be the same. In this example the url search string might be `?category=hello`, which has a `term` param with the value `hello`.
 
 ```ts {2}
 const events = createRoute({
-  query: 'highlight=[?term]',
+  query: 'category=[?term]',
+})
+```
+
+## Unions and Literal Types
+
+Technically, params can also be defined as a literal value. By itself, that doesn't add much value since the whole point of params is to encapsulate a dynamic part of the url. However, when coupled with utilities like `unionOf` which takes any number of [Param](/api/types/Param) arguments, you can very easily define a param as a union of literal values.
+
+```ts
+import { unionOf } from '@kitbag/router'
+
+const events = createRoute({
+  name: 'events',
+  query: query('category=[?category]', {
+    category: unionOf('music', 'sports', 'art'),
+  }),
+})
+```
+
+## Arrays and Tuples
+
+Similarly, there are utilities `arrayOf` and `tupleOf` to create an array or tuple params.
+
+```ts
+import { tupleOf } from '@kitbag/router'
+
+const events = createRoute({
+  name: 'events',
+  query: query('category=[?category]&location=[?location]', {
+    category: unionOf('music', 'sports', 'art'),
+    location: tupleOf(Number, Number),
+  }),
 })
 ```
