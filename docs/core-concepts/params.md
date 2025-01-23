@@ -155,9 +155,25 @@ const events = createRoute({
 })
 ```
 
-## Unions and Literal Types
+## Literal Types
 
-Technically, params can also be defined as a literal value. By itself, that doesn't add much value since the whole point of params is to encapsulate a dynamic part of the url. However, when coupled with utilities like `unionOf` which takes any number of [Param](/api/types/Param) arguments, you can very easily define a param as a union of literal values.
+Params can be defined as a literal value. This can be useful when an optional param can only have a single value when it is present.
+
+```ts
+import { unionOf } from '@kitbag/router'
+
+const events = createRoute({
+  query: query('enabled=[?enabled]', {
+    enabled: true,
+  }),
+})
+```
+
+Literal value params can be even more useful when coupled with utilities like [unionOf](/core-concepts/params#unions), [tupleOf](/core-concepts/params#tuples), [arrayOf](/core-concepts/params#arrays) which can very easily define more complex params.
+
+## Unions
+
+The `unionOf` utility can be used to define a param as a union of any number of [Param](/api/types/Param) arguments.
 
 ```ts
 import { unionOf } from '@kitbag/router'
@@ -170,17 +186,31 @@ const events = createRoute({
 })
 ```
 
-## Arrays and Tuples
+## Arrays
 
-Similarly, there are utilities `arrayOf` and `tupleOf` to create an array or tuple params.
+The `arrayOf` utility can be used to define a param as an array of any number of [Param](/api/types/Param) arguments.
+
+```ts
+import { arrayOf } from '@kitbag/router'
+
+const events = createRoute({
+  name: 'events',
+  query: query('category=[?category]', {
+    category: unionOf('music', 'sports', 'art'),
+  }),
+})
+```
+
+## Tuples
+
+The `tupleOf` utility can be used to define a param as a tuple of any number of [Param](/api/types/Param) arguments.
 
 ```ts
 import { tupleOf } from '@kitbag/router'
 
 const events = createRoute({
   name: 'events',
-  query: query('category=[?category]&location=[?location]', {
-    category: unionOf('music', 'sports', 'art'),
+  query: query('location=[?location]', {
     location: tupleOf(Number, Number),
   }),
 })
