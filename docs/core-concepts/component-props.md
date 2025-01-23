@@ -40,6 +40,42 @@ const user = createRoute({
 })
 ```
 
+## Parent Props
+
+The [callback context](/core-concepts/component-props#context) includes a `parent` property which contains the name and props of the parent route. This can be useful for passing down data to child components.
+
+```ts
+const blogPost = createRoute({
+  name: 'blog',
+  path: '/blog/[blogPostId]'
+}, async (route) => {
+  const post = await getBlockPostById(route.params.blogPostId)
+
+  return {
+    post
+  }
+})
+
+const blogPostTabs = createRoute({
+  parent: blogPost,
+  name: 'tabs',
+  query: '?tab=[tab]'
+  component: PostTabs,
+}, async (route, { parent }) => {
+  const tab = route.query.tab
+  const { post } = await parent.props
+
+  return { 
+    tab,
+    post
+  }
+})
+```
+
+:::warning
+Awaiting parent props will create a waterfall of async operations which can make your app feel sluggish.
+:::
+
 ## Context
 
 The router provides a second `context` argument to your props callback. The context will always include:
@@ -47,6 +83,7 @@ The router provides a second `context` argument to your props callback. The cont
 | Property | Description |
 | ---- | ---- |
 | push | Convenient way to move the user from wherever they were to a new route. |
+| parent | And object containing the name and props of the parent route. |
 | replace | Same as push, but with `options: { replace: true }`. |
 | reject | Trigger a [rejection](/advanced-concepts/rejections) for the router to handle |
 
