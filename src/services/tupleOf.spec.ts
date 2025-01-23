@@ -21,7 +21,7 @@ test.each([
 
   const action: () => void = () => setParamValue(value, array)
 
-  expect(action).toThrow('Expected an array')
+  expect(action).toThrow('Expected a tuple')
 })
 
 test('given value with too few values, throws InvalidRouteParamValueError', () => {
