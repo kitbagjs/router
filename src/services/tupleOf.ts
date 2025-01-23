@@ -14,7 +14,7 @@ export function tupleOf<const T extends Param[]>(...params: T): ParamGetSet<Tupl
     },
     set: (value, { invalid }) => {
       if (!Array.isArray(value)) {
-        throw invalid('Expected an array')
+        throw invalid('Expected a tuple')
       }
 
       if (value.length !== params.length) {
