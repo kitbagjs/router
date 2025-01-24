@@ -24,7 +24,7 @@ type ExtractParamTypesWithoutLosingOptional<TParams extends Record<string, Param
   [K in keyof TParams as ExtractParamName<K>]: ExtractParamTypeWithoutLosingOptional<TParams[K], K>
 }>>
 
-type ExtractParamTypeWithoutLosingOptional<TParam extends Param, TParamKey extends PropertyKey> =
+export type ExtractParamTypeWithoutLosingOptional<TParam extends Param, TParamKey extends PropertyKey> =
   TParam extends ParamGetSet<infer Type>
     ? TParamKey extends `?${string}`
       ? Type | undefined
