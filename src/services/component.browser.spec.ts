@@ -1,7 +1,6 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { expect, test } from 'vitest'
 import echo from '@/components/echo'
-import { component } from '@/services/component'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
 import { h, defineComponent, getCurrentInstance } from 'vue'
@@ -10,8 +9,8 @@ test('renders component with sync props', async () => {
   const route = createRoute({
     name: 'echo',
     path: '/echo',
-    component: component(echo, () => ({ value: 'echo' })),
-  })
+    component: echo,
+  }, () => ({ value: 'echo' }))
 
   const router = createRouter([route], {
     initialUrl: '/',
@@ -38,9 +37,9 @@ test('renders component with async props', async () => {
   const route = createRoute({
     name: 'echo',
     path: '/echo',
-    component: component(echo, async () => {
-      return { value: 'echo' }
-    }),
+    component: echo,
+  }, async () => {
+    return { value: 'echo' }
   })
 
   const router = createRouter([route], {
@@ -109,8 +108,8 @@ test('renders component with async props using suspense', async () => {
   const route = createRoute({
     name: 'home',
     path: '/',
-    component: component(echo, () => promise),
-  })
+    component: echo,
+  }, () => promise)
 
   const router = createRouter([route], {
     initialUrl: '/',
