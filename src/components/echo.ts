@@ -1,7 +1,7 @@
 import { defineComponent } from 'vue'
 
-export default defineComponent(({ value }) => {
-  return () => value
+export default defineComponent((props) => {
+  return () => props.value
 }, {
   props: {
     value: {

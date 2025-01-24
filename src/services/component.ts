@@ -1,6 +1,6 @@
+/* eslint-disable vue/require-prop-types */
 /* eslint-disable vue/one-component-per-file */
-import { AsyncComponentLoader, Component, FunctionalComponent, defineComponent, getCurrentInstance, h, ref } from 'vue'
-import { MaybePromise } from '@/types/utilities'
+import { AsyncComponentLoader, Component, FunctionalComponent, defineComponent, getCurrentInstance, h, ref, watch } from 'vue'
 import { isPromise } from '@/utilities/promises'
 
 type Constructor = new (...args: any) => any
@@ -13,8 +13,6 @@ export type ComponentProps<TComponent extends Component> = TComponent extends Co
       ? T
       : {}
 
-type ComponentPropsGetter<TComponent extends Component> = () => MaybePromise<ComponentProps<TComponent>>
-
 /**
  * Creates a component wrapper which has no props itself but mounts another component within while binding its props
  *
@@ -22,74 +20,68 @@ type ComponentPropsGetter<TComponent extends Component> = () => MaybePromise<Com
  * @param props A callback that returns the props or attributes to bind to the component
  * @returns A component
  */
-export function component<TComponent extends Component>(component: TComponent, props: ComponentPropsGetter<TComponent>): Component {
-  return defineComponent({
-    name: 'PropsWrapper',
-    expose: [],
-    setup() {
-      const values = props()
-      const instance = getCurrentInstance()
 
-      return () => {
-        if (values instanceof Error) {
-          return ''
-        }
+export const ComponentPropsWrapper = defineComponent((input: { component: Component, props: unknown }) => {
+  const instance = getCurrentInstance()
 
-        if (isPromise(values)) {
-          // @ts-expect-error there isn't a way to check if suspense is used in the component without accessing a private property
-          if (instance?.suspense) {
-            return h(suspenseAsyncPropsWrapper(component, values))
-          }
+  return () => {
+    if (input.props instanceof Error) {
+      return ''
+    }
 
-          return h(asyncPropsWrapper(component, values))
-        }
-
-        return h(component, values)
+    if (isPromise(input.props)) {
+      // @ts-expect-error there isn't a way to check if suspense is used in the component without accessing a private property
+      if (instance?.suspense) {
+        return h(SuspenseAsyncComponentPropsWrapper, { component: input.component, props: input.props })
       }
-    },
-  })
-}
 
-/**
- * Creates a component wrapper that binds async props which does not require suspense
- */
-function asyncPropsWrapper<TComponent extends Component>(component: TComponent, props: Promise<ComponentProps<TComponent>>): Component {
-  return defineComponent({
-    name: 'AsyncPropsWrapper',
-    expose: [],
-    setup() {
-      const values = ref()
+      return h(AsyncComponentPropsWrapper, { component: input.component, props: input.props })
+    }
 
-      ;(async () => {
-        values.value = await props
-      })()
+    return h(input.component, input.props)
+  }
+}, {
+  props: ['component', 'props'],
+})
 
-      return () => {
-        if (values.value instanceof Error) {
-          return ''
-        }
+const AsyncComponentPropsWrapper = defineComponent((input: { component: Component, props: unknown }) => {
+  const values = ref()
 
-        if (values.value) {
-          return h(component, values.value)
-        }
+  watch(() => input.props, async (props) => {
+    values.value = await props
+  }, { immediate: true, deep: true })
 
-        return ''
-      }
-    },
-  })
-}
+  return () => {
+    if (values.value instanceof Error) {
+      return ''
+    }
 
-/**
- * Creates a component wrapper that binds async props which requires suspense
- */
-function suspenseAsyncPropsWrapper<TComponent extends Component>(component: TComponent, props: Promise<ComponentProps<TComponent>>): Component {
-  return defineComponent({
-    name: 'SuspenseAsyncPropsWrapper',
-    expose: [],
-    async setup() {
-      const values = await props
+    if (values.value) {
+      return h(input.component, values.value)
+    }
 
-      return () => h(component, values)
-    },
-  })
-}
+    return ''
+  }
+}, {
+  props: ['component', 'props'],
+})
+
+const SuspenseAsyncComponentPropsWrapper = defineComponent(async (input: { component: Component, props: unknown }) => {
+  const values = ref()
+
+  values.value = await input.props
+
+  watch(() => values.value, async (props) => {
+    values.value = await props
+  }, { deep: true })
+
+  return () => {
+    if (values.value) {
+      return h(input.component, values.value)
+    }
+
+    return ''
+  }
+}, {
+  props: ['component', 'props'],
+})
