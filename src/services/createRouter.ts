@@ -31,6 +31,7 @@ import { RouterReject } from '@/types/routerReject'
 import { EmptyRouterPlugin, RouterPlugin } from '@/types/routerPlugin'
 import { getRoutesForRouter } from './getRoutesForRouter'
 import { getGlobalHooksForRouter } from './getGlobalHooksForRouter'
+import { componentsStoreKey, createComponentsStore } from './createComponentsStore'
 
 type RouterUpdateOptions = {
   replace?: boolean,
@@ -84,6 +85,7 @@ export function createRouter<
 
   const getNavigationId = createUniqueIdSequence()
   const propStore = createPropStore()
+  const componentsStore = createComponentsStore()
   const visibilityObserver = createVisibilityObserver()
   const history = createRouterHistory({
     mode: options?.historyMode,
@@ -312,6 +314,7 @@ export function createRouter<
     app.provide(routerRejectionKey, rejection)
     app.provide(routerHooksKey, hooks)
     app.provide(propStoreKey, propStore)
+    app.provide(componentsStoreKey, componentsStore)
     app.provide(visibilityObserverKey, visibilityObserver)
 
     // We cant technically guarantee that the user registered the same router that they installed
