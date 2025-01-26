@@ -16,12 +16,6 @@ export type ComponentProps<TComponent extends Component> = TComponent extends Co
       ? T
       : {}
 
-/**
- * Creates a component wrapper which has no props itself but mounts another component within while binding its props
- *
- * @param component The component to mount
- * @returns A component that expects `props` to be passed in as a single prop value
- */
 export function createComponentPropsWrapper(match: CreatedRouteOptions, name: string, component: Component): Component {
   return defineComponent({
     name: 'PropsWrapper',
