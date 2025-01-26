@@ -3,27 +3,29 @@ import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
 import { defineComponent, h } from 'vue'
 import { mount } from '@vue/test-utils'
+import { component } from '@/utilities/testHelpers'
 
 test('components are not remounted when props change', async () => {
-  const props = vi.fn().mockImplementation(() => ({ prop: 'foo' }))
   const setup = vi.fn()
 
-  const route = createRoute({
-    name: 'test',
+  const routeA = createRoute({
+    name: 'routeA',
     path: '/[param]',
     component: defineComponent({
-      setup() {
-        setup()
-
-        return { props }
-      },
+      setup,
       render() {
         return h('div', {}, 'test')
       },
     }),
-  }, props)
+  })
 
-  const router = createRouter([route], {
+  const routeB = createRoute({
+    name: 'routeB',
+    path: '/routeB',
+    component,
+  })
+
+  const router = createRouter([routeA, routeB], {
     initialUrl: '/bar',
   })
 
@@ -50,4 +52,9 @@ test('components are not remounted when props change', async () => {
   await router.route.update({ param: 'foo' })
 
   expect(setup).toHaveBeenCalledTimes(1)
+
+  await router.push('routeB')
+  await router.push('routeA', { param: 'foo' })
+
+  expect(setup).toHaveBeenCalledTimes(2)
 })
