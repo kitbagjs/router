@@ -1,4 +1,4 @@
-import { QuerySource } from './query'
+import { QuerySource } from './querySource'
 
 export type Url = `http://${string}` | `https://${string}` | `/${string}`
 

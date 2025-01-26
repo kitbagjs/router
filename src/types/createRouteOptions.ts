@@ -5,11 +5,8 @@ import { CombinePath, combinePath } from '@/services/combinePath'
 import { CombineQuery, combineQuery } from '@/services/combineQuery'
 import { CombineState, combineState } from '@/services/combineState'
 import { Hash, ToHash } from '@/types/hash'
-import { Host } from '@/types/host'
 import { Param } from '@/types/paramTypes'
-import { Path, ToPath } from '@/types/path'
 import { PrefetchConfig } from '@/types/prefetch'
-import { Query, ToQuery } from '@/types/query'
 import { RouteMeta } from '@/types/register'
 import { Route } from '@/types/route'
 import { ResolvedRoute } from './resolved'
@@ -21,8 +18,9 @@ import { ToMeta } from './meta'
 import { ToState } from './state'
 import { ToName } from './name'
 import { WithHooks } from './hooks'
+import { EmptyWithParams, ToWithParams, WithParams } from '@/services/withParams'
 
-export type WithHost<THost extends string | Host = string | Host> = {
+export type WithHost<THost extends string | WithParams = string | WithParams> = {
   /**
    * Host part of URL.
    */
@@ -71,8 +69,8 @@ export function isWithState<T extends Record<string, unknown>>(options: T): opti
 
 export type CreateRouteOptions<
   TName extends string | undefined = string | undefined,
-  TPath extends string | Path | undefined = string | Path | undefined,
-  TQuery extends string | Query | undefined = string | Query | undefined,
+  TPath extends string | WithParams | undefined = string | WithParams | undefined,
+  TQuery extends string | WithParams | undefined = string | WithParams | undefined,
   THash extends string | Hash | undefined = string | Hash | undefined,
   TMeta extends RouteMeta = RouteMeta
 > = WithHooks & {
@@ -171,9 +169,9 @@ export type ToRoute<
   : TOptions extends { parent: infer TParent extends Route }
     ? Route<
       ToName<TOptions['name']>,
-      Host<'', {}>,
-      CombinePath<ToPath<TParent['path']>, ToPath<TOptions['path']>>,
-      CombineQuery<ToQuery<TParent['query']>, ToQuery<TOptions['query']>>,
+      EmptyWithParams,
+      CombinePath<ToWithParams<TParent['path']>, ToWithParams<TOptions['path']>>,
+      CombineQuery<ToWithParams<TParent['query']>, ToWithParams<TOptions['query']>>,
       CombineHash<ToHash<TParent['hash']>, ToHash<TOptions['hash']>>,
       CombineMeta<ToMeta<TParent['meta']>, ToMeta<TOptions['meta']>>,
       CombineState<ToState<TParent['state']>, ToState<TOptions['state']>>,
@@ -181,9 +179,9 @@ export type ToRoute<
     >
     : Route<
       ToName<TOptions['name']>,
-      Host<'', {}>,
-      ToPath<TOptions['path']>,
-      ToQuery<TOptions['query']>,
+      EmptyWithParams,
+      ToWithParams<TOptions['path']>,
+      ToWithParams<TOptions['query']>,
       ToHash<TOptions['hash']>,
       ToMeta<TOptions['meta']>,
       ToState<TOptions['state']>,

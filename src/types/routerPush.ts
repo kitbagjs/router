@@ -4,7 +4,7 @@ import { RouteParamsByKey } from '@/types/routeWithParams'
 import { RouteStateByName } from '@/types/state'
 import { Url } from '@/types/url'
 import { AllPropertiesAreOptional } from '@/types/utilities'
-import { QuerySource } from '@/types/query'
+import { QuerySource } from '@/types/querySource'
 import { ResolvedRoute } from '@/types/resolved'
 
 export type RouterPushOptions<

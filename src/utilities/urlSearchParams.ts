@@ -1,4 +1,4 @@
-import { QuerySource } from '@/types/query'
+import { QuerySource } from '@/types/querySource'
 
 export function combineUrlSearchParams(...paramGroups: (URLSearchParams | QuerySource)[]): URLSearchParams {
   const combinedParams = new URLSearchParams()

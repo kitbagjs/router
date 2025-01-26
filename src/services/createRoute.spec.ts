@@ -1,8 +1,6 @@
 import { expect, test, vi } from 'vitest'
 import { createRoute } from '@/services/createRoute'
-import { path } from '@/services/path'
-import { query } from '@/services/query'
-import { createRouter } from '@/main'
+import { createRouter, withParams } from '@/main'
 import { component } from '@/utilities/testHelpers'
 
 test('given parent, path is combined', () => {
@@ -12,7 +10,7 @@ test('given parent, path is combined', () => {
 
   const child = createRoute({
     parent: parent,
-    path: path('/child/[id]', { id: Number }),
+    path: withParams('/child/[id]', { id: Number }),
   })
 
   expect(child.path).toMatchObject({
@@ -30,7 +28,7 @@ test('given parent, query is combined', () => {
 
   const child = createRoute({
     parent: parent,
-    query: query('sort=[sort]', { sort: Boolean }),
+    query: withParams('sort=[sort]', { sort: Boolean }),
   })
 
   expect(child.query).toMatchObject({

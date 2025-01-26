@@ -1,14 +1,12 @@
 import { expectTypeOf, test } from 'vitest'
 import { createRoute } from '@/services/createRoute'
-import { Host } from '@/types/host'
-import { Path } from '@/types/path'
-import { Query } from '@/types/query'
 import { Route } from '@/types/route'
 import { RoutesMap } from '@/types/routesMap'
 import { component } from '@/utilities/testHelpers'
+import { EmptyWithParams } from '@/services/withParams'
 
 test('RoutesMap given generic routes, returns generic string', () => {
-  type Map = RoutesMap<Route<string, Host, Path<'', {}>, Query<'', {}>>[]>
+  type Map = RoutesMap<Route<string, EmptyWithParams, EmptyWithParams, EmptyWithParams>[]>
 
   type Source = Map[keyof Map]['name']
   type Expect = string

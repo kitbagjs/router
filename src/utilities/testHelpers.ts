@@ -1,5 +1,5 @@
 import { vi } from 'vitest'
-import { path } from '@/services'
+import { withParams } from '@/services/withParams'
 import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
 import { createRoute } from '@/services/createRoute'
 import { ResolvedRoute } from '@/types/resolved'
@@ -71,7 +71,7 @@ export function mockRoute(name: string): ResolvedRoute['matched'] {
   return {
     id: Math.random().toString(),
     name,
-    path: path(`/${name}`, {}),
+    path: withParams(`/${name}`, {}),
     component,
     onBeforeRouteEnter: vi.fn(),
     onBeforeRouteUpdate: vi.fn(),

@@ -1,13 +1,11 @@
 import { markRaw } from 'vue'
 import { createRouteId } from '@/services/createRouteId'
-import { host } from '@/services/host'
 import { CreateRouteOptions, PropsGetter, CreateRouteProps, ToRoute, combineRoutes, isWithParent, isWithState } from '@/types/createRouteOptions'
 import { toHash } from '@/types/hash'
 import { toName } from '@/types/name'
-import { toPath } from '@/types/path'
-import { toQuery } from '@/types/query'
 import { Route } from '@/types/route'
 import { checkDuplicateParams } from '@/utilities/checkDuplicateKeys'
+import { toWithParams, withParams } from './withParams'
 
 type CreateRouteWithProps<
   TOptions extends CreateRouteOptions,
@@ -28,8 +26,8 @@ export function createRoute<
 export function createRoute(options: CreateRouteOptions, props?: CreateRouteProps): Route {
   const id = createRouteId()
   const name = toName(options.name)
-  const path = toPath(options.path)
-  const query = toQuery(options.query)
+  const path = toWithParams(options.path)
+  const query = toWithParams(options.query)
   const hash = toHash(options.hash)
   const meta = options.meta ?? {}
   const state = isWithState(options) ? options.state : {}
@@ -46,7 +44,7 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
     meta,
     state,
     depth: 1,
-    host: host('', {}),
+    host: withParams('', {}),
     prefetch: options.prefetch,
   } satisfies Route
 

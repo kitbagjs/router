@@ -3,9 +3,9 @@ import { DuplicateParamsError } from '@/errors/duplicateParamsError'
 import { createExternalRoute } from '@/services/createExternalRoute'
 import { createRoute } from '@/services/createRoute'
 import { getRouteParamValues, routeParamsAreValid } from '@/services/paramValidation'
-import { path } from '@/services/path'
 import { withDefault } from '@/services/withDefault'
 import { component } from '@/utilities/testHelpers'
+import { withParams } from '@/services/withParams'
 
 describe('routeParamsAreValid', () => {
   test('given route WITHOUT params, always return true', () => {
@@ -47,7 +47,7 @@ describe('routeParamsAreValid', () => {
   test('given route with DEFAULT string param WITHOUT value present, returns true', () => {
     const route = createRoute({
       name: 'simple-params',
-      path: path('/simple/[?simple]', { simple: withDefault(String, 'abc') }),
+      path: withParams('/simple/[?simple]', { simple: withDefault(String, 'abc') }),
       component,
     })
 
@@ -59,7 +59,7 @@ describe('routeParamsAreValid', () => {
   test('given route with non-string param with value that satisfies, returns true', () => {
     const route = createRoute({
       name: 'simple-params',
-      path: path('/simple/[simple]', {
+      path: withParams('/simple/[simple]', {
         simple: Number,
       }),
       component,
@@ -73,7 +73,7 @@ describe('routeParamsAreValid', () => {
   test('given route with non-string param with value that does NOT satisfy, returns false', () => {
     const route = createRoute({
       name: 'simple-params',
-      path: path('/simple/[simple]', {
+      path: withParams('/simple/[simple]', {
         simple: Number,
       }),
       component,
@@ -87,7 +87,7 @@ describe('routeParamsAreValid', () => {
   test('given route with OPTIONAL non-string param with value that does NOT satisfy, returns false', () => {
     const route = createRoute({
       name: 'simple-params',
-      path: path('/simple/[?simple]', {
+      path: withParams('/simple/[?simple]', {
         simple: Number,
       }),
       component,
@@ -101,7 +101,7 @@ describe('routeParamsAreValid', () => {
   test('given route with DEFAULT non-string param with value that does NOT satisfy, returns false', () => {
     const route = createRoute({
       name: 'simple-params',
-      path: path('/simple/[?simple]', {
+      path: withParams('/simple/[?simple]', {
         simple: withDefault(Number, 42),
       }),
       component,
@@ -115,7 +115,7 @@ describe('routeParamsAreValid', () => {
   test('given route with regex param that expects forward slashes, will match', () => {
     const route = createRoute({
       name: 'support-slashes',
-      path: path('/supports/[slashes]/bookmarked', { slashes: /first\/second\/third/g }),
+      path: withParams('/supports/[slashes]/bookmarked', { slashes: /first\/second\/third/g }),
       component,
     })
 
@@ -127,7 +127,7 @@ describe('routeParamsAreValid', () => {
   test.each([
     ['/[sameId]/[SameId]/[SAMEID]'],
     [
-      path('/[sameId]/[SameId]/[SAMEID]', {
+      withParams('/[sameId]/[SameId]/[SAMEID]', {
         sameId: String,
         SameId: Number,
         SAMEID: Boolean,

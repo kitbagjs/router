@@ -1,11 +1,10 @@
 import { parseUrl } from '@/services/urlParser'
 import { getParamValue } from '@/services/params'
 import { getParamValueFromUrl } from '@/services/paramsFinder'
-import { Path } from '@/types/path'
-import { Query } from '@/types/query'
 import { Route } from '@/types/route'
 import { RouteMatchRule } from '@/types/routeMatchRule'
 import { getParamName, isOptionalParamSyntax } from '@/services/routeRegex'
+import { WithParams } from '@/services/withParams'
 
 export const routeParamsAreValid: RouteMatchRule = (route, url) => {
   try {
@@ -26,7 +25,7 @@ export const getRouteParamValues = (route: Route, url: string): Record<string, u
   }
 }
 
-function getPathParams(path: Path, url: string): Record<string, unknown> {
+function getPathParams(path: WithParams, url: string): Record<string, unknown> {
   const values: Record<string, unknown> = {}
   const decodedValueFromUrl = decodeURIComponent(url)
 
@@ -42,7 +41,7 @@ function getPathParams(path: Path, url: string): Record<string, unknown> {
   return values
 }
 
-function getQueryParams(query: Query, url: string): Record<string, unknown> {
+function getQueryParams(query: WithParams, url: string): Record<string, unknown> {
   const values: Record<string, unknown> = {}
   const routeSearch = new URLSearchParams(query.value)
   const actualSearch = new URLSearchParams(url)
