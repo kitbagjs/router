@@ -34,18 +34,18 @@ export function createComponentsStore(): ComponentsStore {
 
 function getAllComponentsForMatch(options: CreatedRouteOptions): Record<string, Component> {
   if (isWithComponents(options)) {
-    return wrapAllComponents(options.components)
+    return wrapAllComponents(options, options.components)
   }
 
   if (isWithComponent(options)) {
-    return wrapAllComponents({ default: options.component })
+    return wrapAllComponents(options, { default: options.component })
   }
 
   return { default: RouterView }
 }
 
-function wrapAllComponents(components: Record<string, Component>): Record<string, Component> {
+function wrapAllComponents(match: CreatedRouteOptions, components: Record<string, Component>): Record<string, Component> {
   return Object.fromEntries(
-    Object.entries(components).map(([name, component]) => [name, createComponentPropsWrapper(component)]),
+    Object.entries(components).map(([name, component]) => [name, createComponentPropsWrapper(match, name, component)]),
   )
 }

@@ -2,6 +2,9 @@
 /* eslint-disable vue/one-component-per-file */
 import { AsyncComponentLoader, Component, FunctionalComponent, defineComponent, getCurrentInstance, h, ref, watch } from 'vue'
 import { isPromise } from '@/utilities/promises'
+import { CreatedRouteOptions } from '@/types/route'
+import { usePropStore } from '@/compositions/usePropStore'
+import { useRoute } from '@/compositions/useRoute'
 
 type Constructor = new (...args: any) => any
 
@@ -19,29 +22,32 @@ export type ComponentProps<TComponent extends Component> = TComponent extends Co
  * @param component The component to mount
  * @returns A component that expects `props` to be passed in as a single prop value
  */
-export function createComponentPropsWrapper(component: Component): Component {
+export function createComponentPropsWrapper(match: CreatedRouteOptions, name: string, component: Component): Component {
   return defineComponent({
     name: 'PropsWrapper',
     expose: [],
-    props: ['props'],
-    setup(props: { props: unknown }) {
+    setup() {
       const instance = getCurrentInstance()
+      const store = usePropStore()
+      const route = useRoute()
 
       return () => {
-        if (props.props instanceof Error) {
+        const props = store.getProps(match.id, name, route)
+
+        if (props instanceof Error) {
           return ''
         }
 
-        if (isPromise(props.props)) {
+        if (isPromise(props)) {
           // @ts-expect-error there isn't a way to check if suspense is used in the component without accessing a private property
           if (instance?.suspense) {
-            return h(SuspenseAsyncComponentPropsWrapper, { component, props: props.props })
+            return h(SuspenseAsyncComponentPropsWrapper, { component, props })
           }
 
-          return h(AsyncComponentPropsWrapper, { component, props: props.props })
+          return h(AsyncComponentPropsWrapper, { component, props })
         }
 
-        return h(component, props.props)
+        return h(component, props)
       }
     },
   })
