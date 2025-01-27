@@ -47,14 +47,14 @@ export function countExpectedPathParams(route: Route, actualPath: string): numbe
     .filter((key) => key.startsWith('?'))
     .map((key) => key)
 
-  const missing = optionalParams.filter((expected) => getParamValueFromUrl(actualPath, route.path.value, expected) === undefined)
+  const missing = optionalParams.filter((expected) => getParamValueFromUrl(actualPath, route.path.toString(), expected) === undefined)
 
   return optionalParams.length - missing.length
 }
 
 export function countExpectedQueryParams(route: Route, actual: QuerySource): number {
   const actualQuery = new URLSearchParams(actual)
-  const expectedQuery = new URLSearchParams(route.query.value)
+  const expectedQuery = new URLSearchParams(route.query.toString())
   const expectedQueryKeys = Array.from(expectedQuery.keys())
 
   const missing = expectedQueryKeys.filter((expected) => !actualQuery.has(expected))

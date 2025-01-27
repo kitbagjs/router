@@ -1,16 +1,12 @@
-import { hash } from '@/services/hash'
-import { Hash, ToHash } from '@/types/hash'
+import { WithParams } from '@/services/withParams'
+import { combinePath, CombinePath } from '@/services/combinePath'
 
 export type CombineHash<
-  TParent extends Hash,
-  TChild extends Hash
-> = ToHash<TParent> extends { value: infer TParentHash extends string }
-  ? ToHash<TChild> extends { value: infer ChildHash extends string }
-    ? Hash<`${TParentHash}${ChildHash}`>
-    : TParent
-  : Hash
+  TParent extends WithParams,
+  TChild extends WithParams
+> = CombinePath<TParent, TChild>
 
-export function combineHash<TParentHash extends Hash, TChildHash extends Hash>(parentHash: TParentHash, childHash: TChildHash): CombineHash<TParentHash, TChildHash>
-export function combineHash(parentHash: Hash, childHash: Hash): Hash {
-  return hash(`${parentHash.value ?? ''}${childHash.value ?? ''}`)
+export function combineHash<TParentHash extends WithParams, TChildHash extends WithParams>(parentHash: TParentHash, childHash: TChildHash): CombineHash<TParentHash, TChildHash>
+export function combineHash(parentHash: WithParams, childHash: WithParams): WithParams {
+  return combinePath(parentHash, childHash)
 }

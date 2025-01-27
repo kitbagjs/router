@@ -1,4 +1,3 @@
-import { Hash } from '@/types/hash'
 import { Param } from '@/types/paramTypes'
 import { PrefetchConfig } from '@/types/prefetch'
 import { RouteMeta } from '@/types/register'
@@ -31,7 +30,7 @@ export type Route<
   THost extends WithParams = WithParams,
   TPath extends WithParams = WithParams,
   TQuery extends WithParams = WithParams,
-  THash extends Hash = Hash,
+  THash extends WithParams = WithParams,
   TMeta extends RouteMeta = RouteMeta,
   TState extends Record<string, Param> = Record<string, Param>,
   TMatches extends CreatedRouteOptions[] = CreatedRouteOptions[]

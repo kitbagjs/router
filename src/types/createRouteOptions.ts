@@ -4,7 +4,6 @@ import { CombineMeta, combineMeta } from '@/services/combineMeta'
 import { CombinePath, combinePath } from '@/services/combinePath'
 import { CombineQuery, combineQuery } from '@/services/combineQuery'
 import { CombineState, combineState } from '@/services/combineState'
-import { Hash, ToHash } from '@/types/hash'
 import { Param } from '@/types/paramTypes'
 import { PrefetchConfig } from '@/types/prefetch'
 import { RouteMeta } from '@/types/register'
@@ -71,7 +70,7 @@ export type CreateRouteOptions<
   TName extends string | undefined = string | undefined,
   TPath extends string | WithParams | undefined = string | WithParams | undefined,
   TQuery extends string | WithParams | undefined = string | WithParams | undefined,
-  THash extends string | Hash | undefined = string | Hash | undefined,
+  THash extends string | WithParams | undefined = string | WithParams | undefined,
   TMeta extends RouteMeta = RouteMeta
 > = WithHooks & {
   /**
@@ -172,7 +171,7 @@ export type ToRoute<
       EmptyWithParams,
       CombinePath<ToWithParams<TParent['path']>, ToWithParams<TOptions['path']>>,
       CombineQuery<ToWithParams<TParent['query']>, ToWithParams<TOptions['query']>>,
-      CombineHash<ToHash<TParent['hash']>, ToHash<TOptions['hash']>>,
+      CombineHash<ToWithParams<TParent['hash']>, ToWithParams<TOptions['hash']>>,
       CombineMeta<ToMeta<TParent['meta']>, ToMeta<TOptions['meta']>>,
       CombineState<ToState<TParent['state']>, ToState<TOptions['state']>>,
       ToMatches<TOptions, TProps>
@@ -182,7 +181,7 @@ export type ToRoute<
       EmptyWithParams,
       ToWithParams<TOptions['path']>,
       ToWithParams<TOptions['query']>,
-      ToHash<TOptions['hash']>,
+      ToWithParams<TOptions['hash']>,
       ToMeta<TOptions['meta']>,
       ToState<TOptions['state']>,
       ToMatches<TOptions, TProps>

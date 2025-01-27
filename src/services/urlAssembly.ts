@@ -1,4 +1,3 @@
-import { hash as createHash } from '@/services/hash'
 import { setParamValue } from '@/services/params'
 import { setParamValueOnUrl } from '@/services/paramsFinder'
 import { getParamName, isOptionalParamSyntax } from '@/services/routeRegex'
@@ -9,7 +8,7 @@ import { createUrl } from '@/services/urlCreator'
 import { parseUrl } from '@/services/urlParser'
 import { combineUrlSearchParams } from '@/utilities/urlSearchParams'
 import { QuerySource } from '@/types/querySource'
-import { WithParams } from './withParams'
+import { WithParams } from '@/services/withParams'
 
 type AssembleUrlOptions = {
   params?: Record<string, unknown>,
@@ -22,7 +21,7 @@ export function assembleUrl(route: Route, options: AssembleUrlOptions = {}): Url
   const routeQuery = assembleQueryParamValues(route.query, paramValues)
   const searchParams = combineUrlSearchParams(routeQuery, queryValues)
   const pathname = assemblePathParamValues(route.path, paramValues)
-  const hash = createHash(route.hash.value ?? options.hash).value
+  const hash = route.hash.value ?? options.hash
 
   const hostWithParamsSet = assembleHostParamValues(route.host, paramValues)
   const { protocol, host } = parseUrl(hostWithParamsSet)
@@ -31,7 +30,7 @@ export function assembleUrl(route: Route, options: AssembleUrlOptions = {}): Url
 }
 
 function assembleHostParamValues(host: WithParams, paramValues: Record<string, unknown>): string {
-  const hostWithProtocol = !!host.value && !host.value.startsWith('http') ? `https://${host.value}` : host.value
+  const hostWithProtocol = !!host.value && !host.value.startsWith('http') ? `https://${host.value}` : host.toString()
 
   return Object.entries(host.params).reduce((url, [name, param]) => {
     const paramName = getParamName(`${paramStart}${name}${paramEnd}`)
@@ -53,11 +52,11 @@ function assemblePathParamValues(path: WithParams, paramValues: Record<string, u
     }
 
     return setParamValueOnUrl(url, { name, param, value: paramValues[paramName] })
-  }, path.value)
+  }, path.toString())
 }
 
 function assembleQueryParamValues(query: WithParams, paramValues: Record<string, unknown>): URLSearchParams {
-  const search = new URLSearchParams(query.value)
+  const search = new URLSearchParams(query.toString())
 
   if (!query.value) {
     return search

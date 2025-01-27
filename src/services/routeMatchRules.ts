@@ -24,5 +24,11 @@ export const routeHashMatches: RouteMatchRule = (route, url) => {
   const { hash } = parseUrl(url)
   const { value } = route.hash
 
-  return value === undefined || `#${value.toLowerCase()}` === hash.toLowerCase()
+  if (value === undefined) {
+    return true
+  }
+
+  const cleanHash = `#${value.replace(/^#*/, '')}`
+
+  return cleanHash.toLowerCase() === hash.toLowerCase()
 }
