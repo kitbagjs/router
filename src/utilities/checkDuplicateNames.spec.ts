@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest'
 import { DuplicateNamesError } from '@/errors/duplicateNamesError'
-import { createRoute } from '@/main'
 import { checkDuplicateNames } from '@/utilities/checkDuplicateNames'
+import { createRoute } from '@/services/createRoute'
 
 test('given a single array without duplicates, does nothing', () => {
   const routes = [

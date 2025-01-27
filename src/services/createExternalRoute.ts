@@ -57,7 +57,7 @@ export function createExternalRoute(options: CreateRouteOptions): Route {
 
   const merged = isWithParent(options) ? combineRoutes(options.parent, route) : route
 
-  checkDuplicateParams(merged.path.params, merged.query.params, merged.host.params)
+  checkDuplicateParams(merged.path.params, merged.query.params, merged.host.params, merged.hash.params)
 
   return merged
 }

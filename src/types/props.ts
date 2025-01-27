@@ -1,6 +1,6 @@
-import { Route } from '@/main'
 import { CallbackContext } from '@/services/createCallbackContext'
-import { PropsGetter } from './createRouteOptions'
+import { PropsGetter } from '@/types/createRouteOptions'
+import { Route } from '@/types/route'
 
 /**
  * Context provided to props callback functions

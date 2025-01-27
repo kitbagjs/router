@@ -1,7 +1,9 @@
 import { expect, test, vi } from 'vitest'
 import { createRoute } from '@/services/createRoute'
-import { createRouter, withParams } from '@/main'
 import { component } from '@/utilities/testHelpers'
+import { createRouter } from '@/services/createRouter'
+import { DuplicateParamsError } from '@/errors/duplicateParamsError'
+import { withParams } from '@/services/withParams'
 
 test('given parent, path is combined', () => {
   const parent = createRoute({
@@ -262,4 +264,18 @@ test('async parent props with multiple views are passed to child props', async (
   await router.start()
 
   expect(spy).toHaveBeenCalledWith({ value1: 123, value2: 456 })
+})
+
+test.each([
+  ['/[foo]', 'foo=[foo]', '[bar]'],
+  ['/[foo]', 'foo=[bar]', '[foo]'],
+  ['/[bar]', 'foo=[foo]', '[foo]'],
+])('given duplicate params across different parts of the route, throws DuplicateParamsError', (path, query, hash) => {
+  const action: () => void = () => createRoute({
+    path,
+    query,
+    hash,
+  })
+
+  expect(action).toThrow(DuplicateParamsError)
 })
