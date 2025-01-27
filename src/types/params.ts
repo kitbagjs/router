@@ -69,7 +69,7 @@ export type ExtractParamName<
  * @template TParams - The record object mapping parameter names to their types.
  * @returns The type associated with the parameter, or StringConstructor if unspecified; may be undefined for optional parameters.
  */
-export type ExtractPathParamType<
+export type ExtractWithParamsParamType<
   TParam extends string,
   TParams extends Record<string, Param | undefined>
 > = TParam extends `?${infer OptionalParam}`

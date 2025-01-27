@@ -32,7 +32,7 @@ function getPathParams(path: WithParams, url: string): Record<string, unknown> {
   for (const [key, param] of Object.entries(path.params)) {
     const isOptional = key.startsWith('?')
     const paramName = isOptional ? key.slice(1) : key
-    const stringValue = getParamValueFromUrl(decodedValueFromUrl, path.value, key)
+    const stringValue = getParamValueFromUrl(decodedValueFromUrl, path.toString(), key)
     const paramValue = getParamValue(stringValue, param, isOptional)
 
     values[paramName] = paramValue
@@ -43,7 +43,7 @@ function getPathParams(path: WithParams, url: string): Record<string, unknown> {
 
 function getQueryParams(query: WithParams, url: string): Record<string, unknown> {
   const values: Record<string, unknown> = {}
-  const routeSearch = new URLSearchParams(query.value)
+  const routeSearch = new URLSearchParams(query.toString())
   const actualSearch = new URLSearchParams(url)
 
   for (const [key, value] of Array.from(routeSearch.entries())) {

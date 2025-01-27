@@ -36,5 +36,5 @@ test('given value for base, returns routes with base prefixed', () => {
 
   const response = insertBaseRoute(routes, base)
 
-  expect(response.every((route) => route.path.value.startsWith('/kitbag'))).toBe(true)
+  expect(response.every((route) => route.path.toString().startsWith('/kitbag'))).toBe(true)
 })

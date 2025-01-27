@@ -37,13 +37,13 @@ export function splitByMatches(string: string, regexp: RegExp): string[] {
 }
 
 export function generateRoutePathRegexPattern(route: Route): RegExp {
-  const pathRegex = replaceParamSyntaxWithCatchAllsAndEscapeRest(route.path.value)
+  const pathRegex = replaceParamSyntaxWithCatchAllsAndEscapeRest(route.path.toString())
 
   return new RegExp(`^${pathRegex}$`, 'i')
 }
 
 export function generateRouteQueryRegexPatterns(route: Route): RegExp[] {
-  const queryParams = new URLSearchParams(route.query.value)
+  const queryParams = new URLSearchParams(route.query.toString())
 
   return Array
     .from(queryParams.entries())

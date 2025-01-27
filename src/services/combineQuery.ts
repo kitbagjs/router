@@ -1,13 +1,14 @@
 import { RemoveLeadingQuestionMarkFromKeys } from '@/types/params'
 import { checkDuplicateParams } from '@/utilities/checkDuplicateKeys'
 import { StringHasValue, stringHasValue } from '@/utilities/guards'
-import { EmptyWithParams, ParamsWithParamNameExtracted, ToWithParams, WithParams } from '@/services/withParams'
+import { EmptyWithParams, ParamsWithParamNameExtracted, ToWithParams, withParams, WithParams } from '@/services/withParams'
 
-type CombineQueryString<TParent extends string | undefined, TChild extends string | undefined> = StringHasValue<TParent> extends true
-  ? StringHasValue<TChild> extends true
-    ? `${TParent}&${TChild}`
-    : TParent
-  : TChild
+type CombineQueryString<TParent extends string | undefined, TChild extends string | undefined> =
+  StringHasValue<TParent> extends true
+    ? StringHasValue<TChild> extends true
+      ? `${TParent}&${TChild}`
+      : TParent
+    : TChild
 
 export type CombineQuery<
   TParent extends WithParams,
@@ -28,8 +29,5 @@ export function combineQuery(parentQuery: WithParams, childQuery: WithParams): W
     .filter(stringHasValue)
     .join('&')
 
-  return {
-    value: newQueryString,
-    params: { ...parentQuery.params, ...childQuery.params },
-  }
+  return withParams(newQueryString, { ...parentQuery.params, ...childQuery.params })
 }

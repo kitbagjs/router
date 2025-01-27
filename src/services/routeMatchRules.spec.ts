@@ -3,7 +3,7 @@ import { createRoute } from '@/services/createRoute'
 import { routeHashMatches, routePathMatches, routeQueryMatches } from '@/services/routeMatchRules'
 import { withDefault } from '@/services/withDefault'
 import { component } from '@/utilities/testHelpers'
-import { withParams } from './withParams'
+import { withParams } from '@/services/withParams'
 
 describe('routePathMatches', () => {
   test.each([

@@ -5,8 +5,8 @@ import { createRoute } from '@/services/createRoute'
 import { assembleUrl } from '@/services/urlAssembly'
 import { withDefault } from '@/services/withDefault'
 import { component } from '@/utilities/testHelpers'
-import { createParam } from './createParam'
-import { withParams } from './withParams'
+import { createParam } from '@/services/createParam'
+import { withParams } from '@/services/withParams'
 
 describe('path params', () => {
   test.each([

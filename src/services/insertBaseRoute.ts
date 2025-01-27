@@ -1,6 +1,6 @@
 import { Routes } from '@/types'
 import { stringHasValue } from '@/utilities/guards'
-import { withParams } from './withParams'
+import { withParams } from '@/services/withParams'
 
 export function insertBaseRoute(routes: Routes, base?: string): Routes {
   if (!stringHasValue(base)) {
@@ -8,7 +8,7 @@ export function insertBaseRoute(routes: Routes, base?: string): Routes {
   }
 
   return routes.map((route) => {
-    const value = `${base}${route.path.value}`
+    const value = `${base}${route.path}`
 
     return {
       ...route,
