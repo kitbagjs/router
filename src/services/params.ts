@@ -5,6 +5,7 @@ import { ExtractParamType, isLiteralParam, isParamGetSet, isParamGetter } from '
 import { LiteralParam, Param, ParamExtras, ParamGetSet } from '@/types/paramTypes'
 import { stringHasValue } from '@/utilities/guards'
 import { ZodSchema } from 'zod'
+import { createZodParam } from './zod'
 
 export function getParam(params: Record<string, Param | undefined>, paramName: string): Param {
   return params[paramName] ?? String
@@ -122,44 +123,6 @@ function validateLiteralParamStringValue(value: string, param: LiteralParam): bo
       return booleanValue === param
     default:
       return false
-  }
-}
-
-function isJson(value: string): boolean {
-  try {
-    JSON.parse(value)
-    return true
-  } catch {
-    return false
-  }
-}
-
-function createZodParam<T>(schema: ZodSchema<T>): ParamGetSet<T> {
-  return {
-    get: (value, { invalid }) => {
-      try {
-        if (isJson(value)) {
-          return schema.parse(JSON.parse(value))
-        }
-
-        return schema.parse(value)
-      } catch {
-        throw invalid()
-      }
-    },
-    set: (value, { invalid }) => {
-      try {
-        const parsed = schema.parse(value)
-
-        if (typeof parsed === 'string') {
-          return parsed
-        }
-
-        return JSON.stringify(parsed)
-      } catch {
-        throw invalid()
-      }
-    },
   }
 }
 

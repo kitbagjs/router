@@ -31,7 +31,7 @@ export default defineConfig({
       fileName: 'kitbag-router',
     },
     rollupOptions: {
-      external: ['vue'],
+      external: ['vue', 'zod'],
       output: {
         globals: {
           vue: 'Vue',

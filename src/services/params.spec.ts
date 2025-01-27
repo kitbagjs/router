@@ -3,7 +3,6 @@ import { InvalidRouteParamValueError } from '@/errors/invalidRouteParamValueErro
 import { getParamValue, setParamValue } from '@/services/params'
 import { withDefault } from '@/services/withDefault'
 import { ParamGetSet, ParamGetter } from '@/types/paramTypes'
-import { z } from 'zod'
 
 describe('getParamValue', () => {
   test('given Boolean constructor Param, returns for correct value for Boolean', () => {
@@ -47,17 +46,6 @@ describe('getParamValue', () => {
     expect(() => getParamValue('foo', 'bar')).toThrow(InvalidRouteParamValueError)
     expect(() => getParamValue('1', 2)).toThrow(InvalidRouteParamValueError)
     expect(() => getParamValue('true', false)).toThrow(InvalidRouteParamValueError)
-  })
-
-  test('given ZodParam, returns correct value for ZodSchema', () => {
-    expect(getParamValue('foo', z.string())).toBe('foo')
-    expect(getParamValue('foo', z.enum(['foo', 'bar']))).toBe('foo')
-    expect(getParamValue('1', z.number())).toBe(1)
-    expect(getParamValue('true', z.boolean())).toBe(true)
-    expect(getParamValue('2024-05-16', z.string().date())).toBe('2024-05-16')
-    expect(getParamValue('2022-01-12T00:00:00.000Z', z.date())).toMatchObject(new Date('2022-01-12T00:00:00.000Z'))
-    expect(getParamValue('2022-01-12T00:00:00.000Z', z.coerce.date())).toMatchObject(new Date('2022-01-12T00:00:00.000Z'))
-    expect(getParamValue('{"foo": "bar"}', z.object({ foo: z.string() }))).toMatchObject({ foo: 'bar' })
   })
 
   test.each([
