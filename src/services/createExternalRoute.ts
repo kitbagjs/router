@@ -9,7 +9,7 @@ import { toName, ToName } from '@/types/name'
 import { RouteMeta } from '@/types/register'
 import { Route } from '@/types/route'
 import { checkDuplicateParams } from '@/utilities/checkDuplicateKeys'
-import { EmptyWithParams, toWithParams, ToWithParams, withParams, WithParams } from '@/services/withParams'
+import { toWithParams, ToWithParams, withParams, WithParams } from '@/services/withParams'
 
 export function createExternalRoute<
   const THost extends string | WithParams,
@@ -29,7 +29,7 @@ export function createExternalRoute<
   const THash extends string | WithParams | undefined = undefined,
   const TMeta extends RouteMeta = RouteMeta
 >(options: CreateRouteOptions<TName, TPath, TQuery> & WithoutHost & WithParent<TParent>):
-Route<ToName<TName>, EmptyWithParams, CombinePath<TParent['path'], ToWithParams<TPath>>, CombineQuery<TParent['query'], ToWithParams<TQuery>>, CombineHash<TParent['hash'], ToWithParams<THash>>, CombineMeta<TMeta, TParent['meta']>>
+Route<ToName<TName>, WithParams<undefined, {}>, CombinePath<TParent['path'], ToWithParams<TPath>>, CombineQuery<TParent['query'], ToWithParams<TQuery>>, CombineHash<TParent['hash'], ToWithParams<THash>>, CombineMeta<TMeta, TParent['meta']>>
 
 export function createExternalRoute(options: CreateRouteOptions): Route {
   const id = createRouteId()

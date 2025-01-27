@@ -1,6 +1,6 @@
 import { RemoveLeadingQuestionMarkFromKeys } from '@/types/params'
 import { checkDuplicateParams } from '@/utilities/checkDuplicateKeys'
-import { EmptyWithParams, ParamsWithParamNameExtracted, ToWithParams, withParams, WithParams } from '@/services/withParams'
+import { ParamsWithParamNameExtracted, ToWithParams, withParams, WithParams } from '@/services/withParams'
 import { StringHasValue } from '@/utilities/guards'
 
 type CombinePathString<TParent extends string | undefined, TChild extends string | undefined> =
@@ -17,9 +17,9 @@ export type CombinePath<
   ? ToWithParams<TChild> extends { value: infer TChildPath extends string | undefined, params: infer TChildParams extends Record<string, unknown> }
     ? RemoveLeadingQuestionMarkFromKeys<TParentParams> & RemoveLeadingQuestionMarkFromKeys<TChildParams> extends ParamsWithParamNameExtracted<CombinePathString<TParentPath, TChildPath>>
       ? WithParams<CombinePathString<TParentPath, TChildPath>, RemoveLeadingQuestionMarkFromKeys<TParentParams> & RemoveLeadingQuestionMarkFromKeys<TChildParams>>
-      : EmptyWithParams
-    : EmptyWithParams
-  : EmptyWithParams
+      : WithParams<undefined, {}>
+    : WithParams<undefined, {}>
+  : WithParams<undefined, {}>
 
 export function combinePath<TParentPath extends WithParams, TChildPath extends WithParams>(parentPath: TParentPath, childPath: TChildPath): CombinePath<TParentPath, TChildPath>
 export function combinePath(parentPath: WithParams, childPath: WithParams): WithParams {

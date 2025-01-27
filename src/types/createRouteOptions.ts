@@ -17,7 +17,7 @@ import { ToMeta } from './meta'
 import { ToState } from './state'
 import { ToName } from './name'
 import { WithHooks } from './hooks'
-import { EmptyWithParams, ToWithParams, WithParams } from '@/services/withParams'
+import { ToWithParams, WithParams } from '@/services/withParams'
 
 export type WithHost<THost extends string | WithParams = string | WithParams> = {
   /**
@@ -168,7 +168,7 @@ export type ToRoute<
   : TOptions extends { parent: infer TParent extends Route }
     ? Route<
       ToName<TOptions['name']>,
-      EmptyWithParams,
+      WithParams<undefined, {}>,
       CombinePath<ToWithParams<TParent['path']>, ToWithParams<TOptions['path']>>,
       CombineQuery<ToWithParams<TParent['query']>, ToWithParams<TOptions['query']>>,
       CombineHash<ToWithParams<TParent['hash']>, ToWithParams<TOptions['hash']>>,
@@ -178,7 +178,7 @@ export type ToRoute<
     >
     : Route<
       ToName<TOptions['name']>,
-      EmptyWithParams,
+      WithParams<undefined, {}>,
       ToWithParams<TOptions['path']>,
       ToWithParams<TOptions['query']>,
       ToWithParams<TOptions['hash']>,

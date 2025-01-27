@@ -24,14 +24,12 @@ export type WithParams<
   toString: () => string,
 }
 
-export type EmptyWithParams = WithParams<'', {}>
-
 export type ToWithParams<T extends string | WithParams | undefined> = T extends string
   ? WithParams<T, {}>
   : T extends undefined
-    ? EmptyWithParams
+    ? WithParams<undefined, {}>
     : unknown extends T
-      ? EmptyWithParams
+      ? WithParams<undefined, {}>
       : T
 
 function isWithParams(maybeWithParams: unknown): maybeWithParams is WithParams {
@@ -55,7 +53,7 @@ export function withParams<
   const TValue extends string,
   const TParams extends ParamsWithParamNameExtracted<TValue>
 >(value: TValue, params: TParams): WithParams<TValue, TParams>
-export function withParams(): EmptyWithParams
+export function withParams(): WithParams<undefined, {}>
 export function withParams(value?: string, params?: Record<string, Param | undefined>): WithParams {
   return {
     value: stringHasValue(value) ? value : undefined,

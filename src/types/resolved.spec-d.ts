@@ -2,10 +2,10 @@ import { expectTypeOf, test } from 'vitest'
 import { RouterRoute } from '@/services/createRouterRoute'
 import { ResolvedRoute } from '@/types/resolved'
 import { Route } from '@/types/route'
-import { EmptyWithParams, WithParams } from '@/services/withParams'
+import { WithParams } from '@/services/withParams'
 
 test('given a specific Route, params are narrow', () => {
-    type TestRoute = Route<'parentA', EmptyWithParams, WithParams<'/[paramA]', {}>, WithParams<'foo=[paramB]&bar=[?paramC]', { paramB: BooleanConstructor }>>
+    type TestRoute = Route<'parentA', WithParams<undefined, {}>, WithParams<'/[paramA]', {}>, WithParams<'foo=[paramB]&bar=[?paramC]', { paramB: BooleanConstructor }>>
 
     type Source = RouterRoute<ResolvedRoute<TestRoute>>['params']
     type Expect = { paramA: string, paramB: boolean, paramC?: string | undefined }
