@@ -17,11 +17,13 @@ export const routeParamsAreValid: RouteMatchRule = (route, url) => {
 }
 
 export const getRouteParamValues = (route: Route, url: string): Record<string, unknown> => {
-  const { pathname, search } = parseUrl(url)
+  const { protocol, host, pathname, search, hash } = parseUrl(url)
 
   return {
+    ...getPathParams(route.host, `${protocol}//${host}`),
     ...getPathParams(route.path, pathname),
     ...getQueryParams(route.query, search),
+    ...getPathParams(route.hash, hash),
   }
 }
 

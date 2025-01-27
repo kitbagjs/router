@@ -90,8 +90,9 @@ export type ExtractRouteParamTypes<TRoute> = TRoute extends {
   path: { params: infer PathParams extends Record<string, Param> },
   query: { params: infer QueryParams extends Record<string, Param> },
   host: { params: infer HostParams extends Record<string, Param> },
+  hash: { params: infer HashParams extends Record<string, Param> },
 }
-  ? ExtractParamTypes<HostParams & PathParams & QueryParams>
+  ? ExtractParamTypes<HostParams & PathParams & QueryParams & HashParams>
   : {}
 
 /**

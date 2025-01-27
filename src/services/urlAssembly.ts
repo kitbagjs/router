@@ -21,7 +21,7 @@ export function assembleUrl(route: Route, options: AssembleUrlOptions = {}): Url
   const routeQuery = assembleQueryParamValues(route.query, paramValues)
   const searchParams = combineUrlSearchParams(routeQuery, queryValues)
   const pathname = assemblePathParamValues(route.path, paramValues)
-  const hash = route.hash.value ?? options.hash
+  const hash = route.hash.value ? assemblePathParamValues(route.hash, paramValues) : options.hash
 
   const hostWithParamsSet = assembleHostParamValues(route.host, paramValues)
   const { protocol, host } = parseUrl(hostWithParamsSet)

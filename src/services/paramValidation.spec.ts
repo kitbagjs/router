@@ -161,6 +161,18 @@ describe('routeParamsAreValid', () => {
 })
 
 describe('getRouteParamValues', () => {
+  test('given params in each part of the URL, extracts them', () => {
+    const input = 'foo'
+
+    const route = createExternalRoute({ name: 'test', host: 'https://[inHost].dev', path: '/[inPath]', query: 'inQuery=[inQuery]', hash: '[inHash]' })
+    const response = getRouteParamValues(route, `https://${input}.dev/${input}?inQuery=${input}#${input}`)
+
+    expect(response.inHost).toBe(input)
+    expect(response.inPath).toBe(input)
+    expect(response.inQuery).toBe(input)
+    expect(response.inHash).toBe(`#${input}`)
+  })
+
   test('given value with encoded URL characters, decodes those characters', () => {
     const escapeCodes = [
       { decoded: ' ', encoded: '%20' },
@@ -189,11 +201,12 @@ describe('getRouteParamValues', () => {
     const input = escapeCodes.map((code) => code.encoded).join('')
     const output = escapeCodes.map((code) => code.decoded).join('')
 
-    const route = createRoute({ name: 'test', path: '/[inPath]', query: 'inQuery=[inQuery]', component })
-    const response = getRouteParamValues(route, `/${input}?inQuery=${input}`)
+    const route = createRoute({ name: 'test', path: '/[inPath]', query: 'inQuery=[inQuery]', hash: '[inHash]' })
+    const response = getRouteParamValues(route, `/${input}?inQuery=${input}#${input}`)
 
     expect(response.inPath).toBe(output)
     expect(response.inQuery).toBe(output)
+    expect(response.inHash).toBe(`#${output}`)
   })
 
   test('given route with query param that has a different param name than query key, still works as expected', () => {

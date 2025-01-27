@@ -404,6 +404,100 @@ describe('host params', () => {
   })
 })
 
+describe('hash params', () => {
+  test.each([
+    ['foo'],
+    [withParams('foo', {})],
+  ])('given simple route with string hash and without params, returns route hash', (hash) => {
+    const route = createRoute({
+      name: 'simple',
+      path: '/',
+      hash,
+    })
+
+    const url = assembleUrl(route)
+
+    expect(url).toBe('/#foo')
+  })
+
+  test.each([
+    ['foo[?bar]'],
+    [withParams('foo[?bar]', { bar: String })],
+    [withParams('foo[?bar]', { bar: withDefault(String, 'abc') })],
+  ])('given route with optional param NOT provided, returns route hash with string without values interpolated', (hash) => {
+    const route = createRoute({
+      name: 'simple',
+      path: '/',
+      hash,
+    })
+
+    const url = assembleUrl(route)
+
+    expect(url).toBe('/#foo')
+  })
+
+  test.each([
+    ['foo[?bar]'],
+    [withParams('foo[?bar]', { bar: String })],
+  ])('given route with optional string param provided, returns route Hash with string with values interpolated', (hash) => {
+    const route = createRoute({
+      name: 'simple',
+      path: '/',
+      hash,
+    })
+
+    const url = assembleUrl(route, {
+      params: { bar: 'ABC.' },
+    })
+
+    expect(url).toBe('/#fooABC.')
+  })
+
+  test('given route with default string param provided, returns route Hash with string with values interpolated', () => {
+    const route = createRoute({
+      name: 'simple',
+      path: '/',
+      hash: withParams('foo[?bar]', { bar: withDefault(String, 'abc.') }),
+    })
+
+    const url = assembleUrl(route, {
+      params: { bar: 'DEF.' },
+    })
+
+    expect(url).toBe('/#fooDEF.')
+  })
+
+  test.each([
+    ['foo[bar]'],
+    [withParams('foo[bar]', { bar: String })],
+  ])('given route with required string param NOT provided, throws InvalidRouteParamValueError', (hash) => {
+    const route = createRoute({
+      name: 'simple',
+      path: '/',
+      hash,
+    })
+
+    expect(() => assembleUrl(route)).toThrowError(InvalidRouteParamValueError)
+  })
+
+  test.each([
+    ['foo[bar]'],
+    [withParams('foo[bar]', { bar: String })],
+  ])('given route with required string param provided, returns route Hash with string with values interpolated', (hash) => {
+    const route = createRoute({
+      name: 'simple',
+      path: '/',
+      hash,
+    })
+
+    const url = assembleUrl(route, {
+      params: { bar: 'ABC' },
+    })
+
+    expect(url).toBe('/#fooABC')
+  })
+})
+
 test('given route with hash, returns url with hash value interpolated', () => {
   const route = createRoute({
     name: 'simple',
