@@ -10,12 +10,35 @@ export { tupleOf } from './tupleOf'
 
 // backwards compatible withParams
 import { withParams, WithParams, toWithParams } from './withParams'
+/**
+ * @deprecated use `toWithParams` instead
+ */
 export const toPath = toWithParams
+/**
+ * @deprecated use `withParams` instead
+ */
 export const path = withParams
+/**
+ * @deprecated use `WithParams` instead
+ */
 export type Path = WithParams
+/**
+ * @deprecated use `toWithParams` instead
+ */
 export const toHost = toWithParams
+/**
+ * @deprecated use `withParams` instead
+ */
 export const host = withParams
-export type Host = WithParams
+/**
+ * @deprecated use `toWithParams` instead
+ */
 export const toQuery = toWithParams
+/**
+ * @deprecated use `withParams` instead
+ */
 export const query = withParams
+/**
+ * @deprecated use `WithParams` instead
+ */
 export type Query = WithParams

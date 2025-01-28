@@ -1,6 +1,6 @@
 # Params
 
-Params are used to define the dynamic parts of a route. Params can be used in the `path`, `query`, and `host` properties when defining a route.
+Params are used to define the dynamic parts of a route. Params can be used in the `path`, `query`, `hash`, and `host` properties when defining a route.
 
 ## Param Names
 
@@ -30,16 +30,16 @@ const events = createRoute({
 
 ## Param Types
 
-By default all params are strings. However, using the `path`, `query`, and `host` utilities you can assign different param types.
+By default all params are strings. However, using the `withParams` utility, you can assign different param types.
 
 Now the `year` param will have the type `number` when being accessed.
 
 ```ts {1,5-7}
-import { path } from '@kitbag/router'
+import { withParams } from '@kitbag/router'
 
 const events = createRoute({
   name: 'events',
-  path: path('/events/[year]/[?month]', {
+  path: withParams('/events/[year]/[?month]', {
     year: Number,
   }),
 })
@@ -75,7 +75,7 @@ This serves three purposes:
 Using custom param types you can define more complex validation rules. For example, this month param must be a valid month name. If it is not, the route will not match.
 
 ```ts {3-11,17}
-import { createParam, createRoute, path } from '@kitbag/router'
+import { createParam, createRoute, withParams } from '@kitbag/router'
 
 const months = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december']
 
@@ -89,7 +89,7 @@ const monthParam = createParam((value, { invalid }) => {
 
 const events = createRoute({
   name: 'events',
-  path: path('/events/[year]/[?month]', {
+  path: withParams('/events/[year]/[?month]', {
     year: Number,
     month: monthParam,
   }),
@@ -125,11 +125,11 @@ const monthParam = createParam({
 Define a default value when creating a param or by using the `withDefault` utility. This value will be used when the param is optional and not provided in the url. An optional param of type `String` will have the type `string | undefined` when being accessed. But when a default value is provided it will have the type `string`, even if the value is missing from the url.
 
 ```ts {7}
-import { createRoute, path, withDefault } from '@kitbag/router'
+import { createRoute, withParams, withDefault } from '@kitbag/router'
 
 const events = createRoute({
   name: 'events',
-  path: path('/events/[year]/[?month]', {
+  path: withParams('/events/[year]/[?month]', {
     year: Number,
     month: withDefault(monthParam, 'january'),
   }),
@@ -160,10 +160,10 @@ const events = createRoute({
 Params can be defined as a literal value. This can be useful when an optional param can only have a single value when it is present.
 
 ```ts
-import { unionOf } from '@kitbag/router'
+import { withParams } from '@kitbag/router'
 
 const events = createRoute({
-  query: query('enabled=[?enabled]', {
+  query: withParams('enabled=[?enabled]', {
     enabled: true,
   }),
 })
@@ -176,11 +176,11 @@ Literal value params can be even more useful when coupled with utilities like [u
 The `unionOf` utility can be used to define a param as a union of any number of [Param](/api/types/Param) arguments.
 
 ```ts
-import { unionOf } from '@kitbag/router'
+import { unionOf, withParams } from '@kitbag/router'
 
 const events = createRoute({
   name: 'events',
-  query: query('category=[?category]', {
+  query: withParams('category=[?category]', {
     category: unionOf('music', 'sports', 'art'),
   }),
 })
@@ -191,11 +191,11 @@ const events = createRoute({
 The `arrayOf` utility can be used to define a param as an array of any number of [Param](/api/types/Param) arguments.
 
 ```ts
-import { arrayOf } from '@kitbag/router'
+import { arrayOf withParams } from '@kitbag/router'
 
 const events = createRoute({
   name: 'events',
-  query: query('category=[?category]', {
+  query: withParams('category=[?category]', {
     category: unionOf('music', 'sports', 'art'),
   }),
 })
@@ -206,11 +206,11 @@ const events = createRoute({
 The `tupleOf` utility can be used to define a param as a tuple of any number of [Param](/api/types/Param) arguments.
 
 ```ts
-import { tupleOf } from '@kitbag/router'
+import { tupleOf, withParams } from '@kitbag/router'
 
 const events = createRoute({
   name: 'events',
-  query: query('location=[?location]', {
+  query: withParams('location=[?location]', {
     location: tupleOf(Number, Number),
   }),
 })

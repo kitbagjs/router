@@ -24,9 +24,11 @@ With vue-router you can bind all the route params to the component automatically
 Kitbag Router support FULL regex pattern matching in both the path and query. The only caveat is that your regex must be encapsulated by a param.
 
 ```ts
-import { path } from '@kitbag/router'
+import { createRoute, withParams } from '@kitbag/router'
 
-path('/[pattern]', { pattern: /\d{2}-\d{2}-\d{4}/g })
+const route = createRoute({
+  path: withParams('/[pattern]', { pattern: /\d{2}-\d{2}-\d{4}/g })
+})
 ```
 
 The param will be used to verify any potential matches from the URL, regardless of if you actually use the param value stored on `route.params`.
@@ -63,12 +65,12 @@ const stringArrayParam: ParamGetSet<string[]> = {
 }
 ```
 
-Which is applied to the route with `path`.
+Which is applied to the route with `withParams`.
 
 ```ts
 {
   name: 'repeated-params',
-  path: path('/[chapters]', { chapters: stringArrayParam }),// [!code focus]
+  path: withParams('/[chapters]', { chapters: stringArrayParam }),// [!code focus]
   component: ...
 },
 ```

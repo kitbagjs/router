@@ -110,7 +110,7 @@ const route {
 ```ts
 const route {
   ...
-  path: path('/parent/[id]', { id: Number })
+  path: withParams('/parent/[id]', { id: Number })
   query: 'tab=[?tab]'
 }
 ```
@@ -123,8 +123,8 @@ const route {
 ```ts
 const route {
   ...
-  path: path('/parent/[id]', { id: Number })
-  query: query('tab=[?tab]', { tab: Boolean })
+  path: withParams('/parent/[id]', { id: Number })
+  query: withParams('tab=[?tab]', { tab: Boolean })
 }
 ```
 

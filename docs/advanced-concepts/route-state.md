@@ -1,6 +1,6 @@
 # Route State
 
-It may be useful to store state for a given route to improve your user's experience. In situations like a form that a user might fill out, it might be useful to store form values in the [browser state](https://developer.mozilla.org/en-US/docs/Web/API/History/state) so that if the user navigates unexpectedly the values can be restored when going back. Kitbag Router extends this functionality by offering the same [param experience](/core-concepts/params#param-types) on `path`, `query`, etc on state as well.
+It may be useful to store state for a given route to improve your user's experience. In situations like a form that a user might fill out, it might be useful to store form values in the [browser state](https://developer.mozilla.org/en-US/docs/Web/API/History/state) so that if the user navigates unexpectedly the values can be restored when going back. Kitbag Router extends this functionality by offering the same [param experience](/core-concepts/params#param-types) on state as well.
 
 ```ts
 import { createRoute } from '@kitbag/router'
