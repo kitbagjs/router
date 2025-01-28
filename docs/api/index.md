@@ -31,11 +31,10 @@
 - [createRoute](functions/createRoute.md)
 - [createRouter](functions/createRouter.md)
 - [createRouterPlugin](functions/createRouterPlugin.md)
-- [path](functions/path.md)
-- [query](functions/query.md)
 - [tupleOf](functions/tupleOf.md)
 - [unionOf](functions/unionOf.md)
 - [withDefault](functions/withDefault.md)
+- [withParams](functions/withParams.md)
 
 ## Hooks
 

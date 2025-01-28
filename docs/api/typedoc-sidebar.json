@@ -96,14 +96,6 @@
         "link": "/api/functions/createRouterPlugin.md"
       },
       {
-        "text": "path",
-        "link": "/api/functions/path.md"
-      },
-      {
-        "text": "query",
-        "link": "/api/functions/query.md"
-      },
-      {
         "text": "tupleOf",
         "link": "/api/functions/tupleOf.md"
       },
@@ -114,6 +106,10 @@
       {
         "text": "withDefault",
         "link": "/api/functions/withDefault.md"
+      },
+      {
+        "text": "withParams",
+        "link": "/api/functions/withParams.md"
       }
     ]
   },
