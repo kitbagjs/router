@@ -215,3 +215,22 @@ const events = createRoute({
   }),
 })
 ```
+
+## Zod Param Types
+
+[Zod](https://zod.dev/) schemas can be used as param types rather than defining a custom param type. Some zod schemas are not supported such as `z.promise`, `z.function`, and `z.intersection`, but most schemas are supported.
+
+```ts
+import { z } from 'zod'
+
+const events = createRoute({
+  name: 'events',
+  query: query('category=[?category]', {
+    category: z.enum(['music', 'sports', 'art']),
+  }),
+})
+```
+
+:::warning
+Zod param types are experimental and may change or be removed in the future.
+:::

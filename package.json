@@ -57,7 +57,13 @@
     "vue-tsc": "^2.2.0"
   },
   "peerDependencies": {
-    "vue": "^3.5.0"
+    "vue": "^3.5.0",
+    "zod": "^3.24.1"
+  },
+  "peerDependenciesMeta": {
+    "zod": {
+      "optional": true
+    }
   },
   "dependencies": {
     "history": "^5.3.0"
