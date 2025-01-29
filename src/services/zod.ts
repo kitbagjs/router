@@ -41,7 +41,6 @@ export function createZodParam<T>(schema: ZodSchema<T>): ParamGetSet<T> {
   }
 }
 
-// regex for an iso date string
 const isoDateRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
 
 function reviver(_key: string, value: any): any {
