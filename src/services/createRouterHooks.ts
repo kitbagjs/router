@@ -1,4 +1,4 @@
-import { App, InjectionKey } from 'vue'
+import { InjectionKey } from 'vue'
 import { AddAfterRouteHook, AddBeforeRouteHook, AddGlobalRouteHooks, AfterHookContext, AfterRouteHook, AfterRouteHookResponse, BeforeHookContext, BeforeRouteHook, BeforeRouteHookResponse, AddComponentAfterRouteHook, AddComponentBeforeRouteHook, RouteHookAfterRunner, RouteHookBeforeRunner } from '@/types/hooks'
 import { createCallbackContext } from './createCallbackContext'
 import { RouteHooks } from '@/models/RouteHooks'
