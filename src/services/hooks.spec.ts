@@ -53,6 +53,7 @@ test('calls hook with correct routes', () => {
   runBeforeRouteHooks({
     to: toRoute,
     from: fromRoute,
+    app: null,
   })
 
   expect(hook).toHaveBeenCalledOnce()
@@ -125,6 +126,7 @@ test.each<{ type: string, status: string, hook: BeforeRouteHook }>([
   const response = await runBeforeRouteHooks({
     to,
     from,
+    app: null,
   })
 
   expect(response.status).toBe(status)
@@ -180,6 +182,7 @@ test('hook is called in order', async () => {
   await runBeforeRouteHooks({
     to,
     from,
+    app: null,
   })
 
   const [orderA] = hookA.mock.invocationCallOrder

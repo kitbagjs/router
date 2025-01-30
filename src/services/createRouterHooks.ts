@@ -1,4 +1,4 @@
-import { InjectionKey } from 'vue'
+import { App, InjectionKey } from 'vue'
 import { AddAfterRouteHook, AddBeforeRouteHook, AddGlobalRouteHooks, AfterHookContext, AfterRouteHook, AfterRouteHookResponse, BeforeHookContext, BeforeRouteHook, BeforeRouteHookResponse, AddComponentAfterRouteHook, AddComponentBeforeRouteHook, RouteHookAfterRunner, RouteHookBeforeRunner } from '@/types/hooks'
 import { createCallbackContext } from './createCallbackContext'
 import { RouteHooks } from '@/models/RouteHooks'
@@ -69,7 +69,7 @@ export function createRouterHooks(): RouterHooks {
     return () => store.global.onAfterRouteLeave.delete(hook)
   }
 
-  async function runBeforeRouteHooks({ to, from }: BeforeHookContext): Promise<BeforeRouteHookResponse> {
+  async function runBeforeRouteHooks({ to, from, app }: BeforeHookContext): Promise<BeforeRouteHookResponse> {
     const { global, component } = store
     const route = getBeforeRouteHooksFromRoutes(to, from)
     const globalHooks = getGlobalBeforeRouteHooks(to, from, global)
@@ -86,13 +86,17 @@ export function createRouterHooks(): RouterHooks {
     ]
 
     try {
-      const results = allHooks.map((callback) => callback(to, {
-        from,
-        reject,
-        push,
-        replace,
-        abort,
-      }))
+      const results = allHooks.map((callback) => {
+        const fn = () => callback(to, {
+          from,
+          reject,
+          push,
+          replace,
+          abort,
+        })
+
+        return runWithContext(fn, app)
+      })
 
       await Promise.all(results)
     } catch (error) {
@@ -116,7 +120,7 @@ export function createRouterHooks(): RouterHooks {
     }
   }
 
-  async function runAfterRouteHooks({ to, from }: AfterHookContext): Promise<AfterRouteHookResponse> {
+  async function runAfterRouteHooks({ to, from, app }: AfterHookContext): Promise<AfterRouteHookResponse> {
     const { global, component } = store
     const route = getAfterRouteHooksFromRoutes(to, from)
     const globalHooks = getGlobalAfterRouteHooks(to, from, global)
@@ -134,12 +138,16 @@ export function createRouterHooks(): RouterHooks {
     ]
 
     try {
-      const results = allHooks.map((callback) => callback(to, {
-        from,
-        reject,
-        push,
-        replace,
-      }))
+      const results = allHooks.map((callback) => {
+        const fn = () => callback(to, {
+          from,
+          reject,
+          push,
+          replace,
+        })
+
+        return runWithContext(fn, app)
+      })
 
       await Promise.all(results)
     } catch (error) {
@@ -200,6 +208,14 @@ export function createRouterHooks(): RouterHooks {
     hooks.onAfterRouteEnter.forEach((hook) => onAfterRouteEnter(hook))
     hooks.onAfterRouteUpdate.forEach((hook) => onAfterRouteUpdate(hook))
     hooks.onAfterRouteLeave.forEach((hook) => onAfterRouteLeave(hook))
+  }
+
+  function runWithContext(callback: (...args: any[]) => any, app: App | null) {
+    if (!app) {
+      return callback()
+    }
+
+    return app.runWithContext(callback)
   }
 
   return {
