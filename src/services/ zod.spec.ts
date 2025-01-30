@@ -1,6 +1,7 @@
 import { safeGetParamValue, safeSetParamValue } from './params'
 import { z } from 'zod'
 import { test, expect } from 'vitest'
+import { initZod } from './zod'
 
 enum Fruits {
   Apple = 0,
@@ -40,7 +41,9 @@ test.each([
   { schema: z.record(z.string(), z.object({ foo: z.string() })), string: '{"one":{"foo":"bar"}}', parsed: { one: { foo: 'bar' } } },
   { schema: z.map(z.string(), z.number()), string: '[["one",1]]', parsed: new Map([['one', 1]]) },
   { schema: z.set(z.number()), string: '[1,2,3]', parsed: new Set([1, 2, 3]) },
-])('given $schema, returns $parsed for $string', ({ schema, string, parsed }) => {
+])('given $schema, returns $parsed for $string', async ({ schema, string, parsed }) => {
+  await initZod()
+
   if (typeof parsed === 'string' || typeof parsed === 'number' || typeof parsed === 'boolean') {
     expect(safeGetParamValue(string, schema)).toBe(parsed)
     expect(safeSetParamValue(parsed, schema)).toBe(string)
