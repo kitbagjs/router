@@ -10,5 +10,6 @@ type Param =
   | StringConstructor
   | DateConstructor
   | JSON
+  | ZodSchema
   | LiteralParam;
 ```

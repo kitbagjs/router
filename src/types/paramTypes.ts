@@ -1,3 +1,5 @@
+import { ZodSchema } from 'zod'
+
 export type ParamExtras = {
   invalid: (message?: string) => never,
 }
@@ -22,4 +24,5 @@ export type Param =
   | StringConstructor
   | DateConstructor
   | JSON
+  | ZodSchema
   | LiteralParam

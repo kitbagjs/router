@@ -27,9 +27,9 @@ function withParams<TValue, TParams>(value, params): WithParams<TValue, TParams>
 ## Call Signature
 
 ```ts
-function withParams(): WithParams<undefined, {}>
+function withParams(): WithParams<"", {}>
 ```
 
 ### Returns
 
-`WithParams`\<`undefined`, \{\}\>
+`WithParams`\<`""`, \{\}\>
