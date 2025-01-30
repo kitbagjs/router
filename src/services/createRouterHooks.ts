@@ -8,6 +8,7 @@ import { CallbackContextPushError } from '@/errors/callbackContextPushError'
 import { CallbackContextRejectionError } from '@/errors/callbackContextRejectionError'
 import { CallbackContextAbortError } from '@/errors/callbackContextAbortError'
 import { getGlobalAfterRouteHooks, getGlobalBeforeRouteHooks } from './getGlobalRouteHooks'
+import { runWithContext } from '@/utilities/runWithContext'
 
 export const routerHooksKey: InjectionKey<RouterHooks> = Symbol()
 
@@ -208,14 +209,6 @@ export function createRouterHooks(): RouterHooks {
     hooks.onAfterRouteEnter.forEach((hook) => onAfterRouteEnter(hook))
     hooks.onAfterRouteUpdate.forEach((hook) => onAfterRouteUpdate(hook))
     hooks.onAfterRouteLeave.forEach((hook) => onAfterRouteLeave(hook))
-  }
-
-  function runWithContext(callback: (...args: any[]) => any, app: App | null) {
-    if (!app) {
-      return callback()
-    }
-
-    return app.runWithContext(callback)
   }
 
   return {
