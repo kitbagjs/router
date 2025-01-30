@@ -17,8 +17,9 @@ type ExtractRouteParamTypesWithoutLosingOptional<TRoute> = TRoute extends {
   host: { params: infer HostParams extends Record<string, Param> },
   path: { params: infer PathParams extends Record<string, Param> },
   query: { params: infer QueryParams extends Record<string, Param> },
+  hash: { params: infer HashParams extends Record<string, Param> },
 }
-  ? ExtractParamTypesWithoutLosingOptional<HostParams & PathParams & QueryParams>
+  ? ExtractParamTypesWithoutLosingOptional<HostParams & PathParams & QueryParams & HashParams>
   : Record<string, unknown>
 
 type ExtractParamTypesWithoutLosingOptional<TParams extends Record<string, Param>> = Identity<MakeOptional<{

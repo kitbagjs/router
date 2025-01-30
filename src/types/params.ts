@@ -69,7 +69,7 @@ export type ExtractParamName<
  * @template TParams - The record object mapping parameter names to their types.
  * @returns The type associated with the parameter, or StringConstructor if unspecified; may be undefined for optional parameters.
  */
-export type ExtractPathParamType<
+export type ExtractWithParamsParamType<
   TParam extends string,
   TParams extends Record<string, Param | undefined>
 > = TParam extends `?${infer OptionalParam}`
@@ -90,8 +90,9 @@ export type ExtractRouteParamTypes<TRoute> = TRoute extends {
   path: { params: infer PathParams extends Record<string, Param> },
   query: { params: infer QueryParams extends Record<string, Param> },
   host: { params: infer HostParams extends Record<string, Param> },
+  hash: { params: infer HashParams extends Record<string, Param> },
 }
-  ? ExtractParamTypes<HostParams & PathParams & QueryParams>
+  ? ExtractParamTypes<HostParams & PathParams & QueryParams & HashParams>
   : {}
 
 /**

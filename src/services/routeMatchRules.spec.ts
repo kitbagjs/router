@@ -1,9 +1,9 @@
 import { describe, expect, test } from 'vitest'
 import { createRoute } from '@/services/createRoute'
-import { query } from '@/services/query'
 import { routeHashMatches, routePathMatches, routeQueryMatches } from '@/services/routeMatchRules'
 import { withDefault } from '@/services/withDefault'
 import { component } from '@/utilities/testHelpers'
+import { withParams } from '@/services/withParams'
 
 describe('routePathMatches', () => {
   test.each([
@@ -158,7 +158,7 @@ describe('routeQueryMatches', () => {
   ])('given url and route.query with default params that does match, returns true', (url) => {
     const route = createRoute({
       name: 'default-params',
-      query: query('default=[?default]', { default: withDefault(String, 'abc') }),
+      query: withParams('default=[?default]', { default: withDefault(String, 'abc') }),
       component,
     })
 

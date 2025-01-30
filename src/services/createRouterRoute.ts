@@ -2,7 +2,7 @@ import { computed, reactive, toRefs } from 'vue'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { RouteUpdate } from '@/types/routeUpdate'
-import { QuerySource } from '@/types/query'
+import { QuerySource } from '@/types/querySource'
 
 const isRouterRouteSymbol = Symbol('isRouterRouteSymbol')
 

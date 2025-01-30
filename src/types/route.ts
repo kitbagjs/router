@@ -1,13 +1,10 @@
-import { Hash } from '@/types/hash'
-import { Host } from '@/types/host'
 import { Param } from '@/types/paramTypes'
-import { Path } from '@/types/path'
 import { PrefetchConfig } from '@/types/prefetch'
-import { Query } from '@/types/query'
 import { RouteMeta } from '@/types/register'
 import { LastInArray } from './utilities'
 import { CreateRouteOptions } from './createRouteOptions'
 import { WithHooks } from './hooks'
+import { WithParams } from '@/services/withParams'
 
 /**
  * Represents an immutable array of Route instances. Return value of `createRoute`, expected param for `createRouter`.
@@ -30,10 +27,10 @@ export type CreatedRouteOptions = Omit<CreateRouteOptions, 'props'> & WithHooks 
  */
 export type Route<
   TName extends string = string,
-  THost extends Host = Host,
-  TPath extends Path = Path,
-  TQuery extends Query = Query,
-  THash extends Hash = Hash,
+  THost extends WithParams = WithParams,
+  TPath extends WithParams = WithParams,
+  TQuery extends WithParams = WithParams,
+  THash extends WithParams = WithParams,
   TMeta extends RouteMeta = RouteMeta,
   TState extends Record<string, Param> = Record<string, Param>,
   TMatches extends CreatedRouteOptions[] = CreatedRouteOptions[]

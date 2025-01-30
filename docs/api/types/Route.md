@@ -11,10 +11,10 @@ Represents the structure of a route within the application. Return value of `cre
 | Type Parameter | Default type | Description |
 | ------ | ------ | ------ |
 | `TName` *extends* `string` | `string` | Represents the unique name identifying the route, typically a string. |
-| `THost` *extends* `Host` | `Host` | - |
-| `TPath` *extends* `Path` | `Path` | The type or structure of the route's path. |
-| `TQuery` *extends* `Query` | `Query` | The type or structure of the query parameters associated with the route. |
-| `THash` *extends* `Hash` | `Hash` | - |
+| `THost` *extends* `WithParams` | `WithParams` | - |
+| `TPath` *extends* `WithParams` | `WithParams` | The type or structure of the route's path. |
+| `TQuery` *extends* `WithParams` | `WithParams` | The type or structure of the query parameters associated with the route. |
+| `THash` *extends* `WithParams` | `WithParams` | - |
 | `TMeta` *extends* [`RouteMeta`](RouteMeta.md) | [`RouteMeta`](RouteMeta.md) | - |
 | `TState` *extends* `Record`\<`string`, [`Param`](Param.md)\> | `Record`\<`string`, [`Param`](Param.md)\> | - |
 | `TMatches` *extends* [`CreatedRouteOptions`](CreatedRouteOptions.md)[] | [`CreatedRouteOptions`](CreatedRouteOptions.md)[] | - |

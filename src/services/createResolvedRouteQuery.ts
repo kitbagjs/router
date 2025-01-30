@@ -1,4 +1,4 @@
-import { QuerySource } from '@/types/query'
+import { QuerySource } from '@/types/querySource'
 
 /**
  * Creates a dumb wrapper around URLSearchParams because URLSearchParams cannot be correctly be proxied to support writing params to the RouterRoute

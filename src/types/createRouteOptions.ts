@@ -4,12 +4,8 @@ import { CombineMeta, combineMeta } from '@/services/combineMeta'
 import { CombinePath, combinePath } from '@/services/combinePath'
 import { CombineQuery, combineQuery } from '@/services/combineQuery'
 import { CombineState, combineState } from '@/services/combineState'
-import { Hash, ToHash } from '@/types/hash'
-import { Host } from '@/types/host'
 import { Param } from '@/types/paramTypes'
-import { Path, ToPath } from '@/types/path'
 import { PrefetchConfig } from '@/types/prefetch'
-import { Query, ToQuery } from '@/types/query'
 import { RouteMeta } from '@/types/register'
 import { Route } from '@/types/route'
 import { ResolvedRoute } from './resolved'
@@ -21,16 +17,13 @@ import { ToMeta } from './meta'
 import { ToState } from './state'
 import { ToName } from './name'
 import { WithHooks } from './hooks'
+import { ToWithParams, WithParams } from '@/services/withParams'
 
-export type WithHost<THost extends string | Host = string | Host> = {
+export type WithHost<THost extends string | WithParams = string | WithParams> = {
   /**
    * Host part of URL.
    */
   host: THost,
-}
-
-export function isWithHost(options: CreateRouteOptions): options is CreateRouteOptions & WithHost {
-  return 'host' in options && Boolean(options.host)
 }
 
 export type WithoutHost = {
@@ -65,15 +58,11 @@ export function isWithComponentPropsRecord<T extends Record<string, unknown>>(op
   return 'props' in options && typeof options.props === 'object'
 }
 
-export function isWithState<T extends Record<string, unknown>>(options: T): options is T & { state: Record<string, Param> } {
-  return 'state' in options && Boolean(options.state)
-}
-
 export type CreateRouteOptions<
   TName extends string | undefined = string | undefined,
-  TPath extends string | Path | undefined = string | Path | undefined,
-  TQuery extends string | Query | undefined = string | Query | undefined,
-  THash extends string | Hash | undefined = string | Hash | undefined,
+  TPath extends string | WithParams | undefined = string | WithParams | undefined,
+  TQuery extends string | WithParams | undefined = string | WithParams | undefined,
+  THash extends string | WithParams | undefined = string | WithParams | undefined,
   TMeta extends RouteMeta = RouteMeta
 > = WithHooks & {
   /**
@@ -171,20 +160,20 @@ export type ToRoute<
   : TOptions extends { parent: infer TParent extends Route }
     ? Route<
       ToName<TOptions['name']>,
-      Host<'', {}>,
-      CombinePath<ToPath<TParent['path']>, ToPath<TOptions['path']>>,
-      CombineQuery<ToQuery<TParent['query']>, ToQuery<TOptions['query']>>,
-      CombineHash<ToHash<TParent['hash']>, ToHash<TOptions['hash']>>,
+      WithParams<'', {}>,
+      CombinePath<ToWithParams<TParent['path']>, ToWithParams<TOptions['path']>>,
+      CombineQuery<ToWithParams<TParent['query']>, ToWithParams<TOptions['query']>>,
+      CombineHash<ToWithParams<TParent['hash']>, ToWithParams<TOptions['hash']>>,
       CombineMeta<ToMeta<TParent['meta']>, ToMeta<TOptions['meta']>>,
       CombineState<ToState<TParent['state']>, ToState<TOptions['state']>>,
       ToMatches<TOptions, TProps>
     >
     : Route<
       ToName<TOptions['name']>,
-      Host<'', {}>,
-      ToPath<TOptions['path']>,
-      ToQuery<TOptions['query']>,
-      ToHash<TOptions['hash']>,
+      WithParams<'', {}>,
+      ToWithParams<TOptions['path']>,
+      ToWithParams<TOptions['query']>,
+      ToWithParams<TOptions['hash']>,
       ToMeta<TOptions['meta']>,
       ToState<TOptions['state']>,
       ToMatches<TOptions, TProps>

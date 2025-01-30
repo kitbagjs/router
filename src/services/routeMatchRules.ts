@@ -1,6 +1,7 @@
 import { parseUrl } from '@/services/urlParser'
 import { generateRoutePathRegexPattern, generateRouteQueryRegexPatterns } from '@/services/routeRegex'
 import { RouteMatchRule } from '@/types/routeMatchRule'
+import { stringHasValue } from '@/utilities'
 
 export const isNamedRoute: RouteMatchRule = (route) => {
   return 'name' in route.matched && !!route.matched.name
@@ -24,5 +25,11 @@ export const routeHashMatches: RouteMatchRule = (route, url) => {
   const { hash } = parseUrl(url)
   const { value } = route.hash
 
-  return value === undefined || `#${value.toLowerCase()}` === hash.toLowerCase()
+  if (!stringHasValue(value)) {
+    return true
+  }
+
+  const cleanHash = `#${value.replace(/^#*/, '')}`
+
+  return cleanHash.toLowerCase() === hash.toLowerCase()
 }

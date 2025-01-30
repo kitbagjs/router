@@ -1,11 +1,11 @@
 import { expect, test } from 'vitest'
 import { DuplicateParamsError } from '@/errors/duplicateParamsError'
 import { combinePath } from '@/services/combinePath'
-import { path } from '@/services/path'
+import { withParams } from '@/services/withParams'
 
 test('given 2 paths, returns new Path joined together', () => {
-  const aPath = path('/foo', {})
-  const bPath = path('/bar', {})
+  const aPath = withParams('/foo', {})
+  const bPath = withParams('/bar', {})
 
   const response = combinePath(aPath, bPath)
 
@@ -13,8 +13,8 @@ test('given 2 paths, returns new Path joined together', () => {
 })
 
 test('given 2 paths with params, returns new Path joined together with params', () => {
-  const aPath = path('/[foz]', { foz: String })
-  const bPath = path('/[?baz]', { baz: Number })
+  const aPath = withParams('/[foz]', { foz: String })
+  const bPath = withParams('/[?baz]', { baz: Number })
 
   const response = combinePath(aPath, bPath)
 
@@ -23,8 +23,8 @@ test('given 2 paths with params, returns new Path joined together with params', 
 })
 
 test('given 2 paths with params that include duplicates, throws DuplicateParamsError', () => {
-  const aPath = path('/[foz]', { foz: String })
-  const bPath = path('/[foz]', { foz: String })
+  const aPath = withParams('/[foz]', { foz: String })
+  const bPath = withParams('/[foz]', { foz: String })
 
   const action: () => void = () => combinePath(aPath, bPath)
 

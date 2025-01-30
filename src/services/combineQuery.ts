@@ -1,35 +1,33 @@
 import { RemoveLeadingQuestionMarkFromKeys } from '@/types/params'
-import { Query, QueryParamsWithParamNameExtracted, ToQuery } from '@/types/query'
 import { checkDuplicateParams } from '@/utilities/checkDuplicateKeys'
 import { StringHasValue, stringHasValue } from '@/utilities/guards'
+import { ParamsWithParamNameExtracted, ToWithParams, withParams, WithParams } from '@/services/withParams'
 
-type CombineQueryString<TParent extends string | undefined, TChild extends string | undefined> = StringHasValue<TParent> extends true
-  ? StringHasValue<TChild> extends true
-    ? `${TParent}&${TChild}`
-    : TParent
-  : TChild
+type CombineQueryString<TParent extends string | undefined, TChild extends string | undefined> =
+  StringHasValue<TParent> extends true
+    ? StringHasValue<TChild> extends true
+      ? `${TParent}&${TChild}`
+      : TParent
+    : TChild
 
 export type CombineQuery<
-  TParent extends Query,
-  TChild extends Query
-> = ToQuery<TParent> extends { value: infer TParentQuery extends string, params: infer TParentParams extends Record<string, unknown> }
-  ? ToQuery<TChild> extends { value: infer TChildQuery extends string, params: infer TChildParams extends Record<string, unknown> }
-    ? RemoveLeadingQuestionMarkFromKeys<TParentParams> & RemoveLeadingQuestionMarkFromKeys<TChildParams> extends QueryParamsWithParamNameExtracted<CombineQueryString<TParentQuery, TChildQuery>>
-      ? Query<CombineQueryString<TParentQuery, TChildQuery>, RemoveLeadingQuestionMarkFromKeys<TParentParams> & RemoveLeadingQuestionMarkFromKeys<TChildParams>>
-      : Query<'', {}>
-    : Query<'', {}>
-  : Query<'', {}>
+  TParent extends WithParams,
+  TChild extends WithParams
+> = ToWithParams<TParent> extends { value: infer TParentQuery extends string, params: infer TParentParams extends Record<string, unknown> }
+  ? ToWithParams<TChild> extends { value: infer TChildQuery extends string, params: infer TChildParams extends Record<string, unknown> }
+    ? RemoveLeadingQuestionMarkFromKeys<TParentParams> & RemoveLeadingQuestionMarkFromKeys<TChildParams> extends ParamsWithParamNameExtracted<CombineQueryString<TParentQuery, TChildQuery>>
+      ? WithParams<CombineQueryString<TParentQuery, TChildQuery>, RemoveLeadingQuestionMarkFromKeys<TParentParams> & RemoveLeadingQuestionMarkFromKeys<TChildParams>>
+      : WithParams<'', {}>
+    : WithParams<'', {}>
+  : WithParams<'', {}>
 
-export function combineQuery<TParentQuery extends Query, TChildQuery extends Query>(parentQuery: TParentQuery, childQuery: TChildQuery): CombineQuery<TParentQuery, TChildQuery>
-export function combineQuery(parentQuery: Query, childQuery: Query): Query {
+export function combineQuery<TParentQuery extends WithParams, TChildQuery extends WithParams>(parentQuery: TParentQuery, childQuery: TChildQuery): CombineQuery<TParentQuery, TChildQuery>
+export function combineQuery(parentQuery: WithParams, childQuery: WithParams): WithParams {
   checkDuplicateParams(parentQuery.params, childQuery.params)
 
   const newQueryString = [parentQuery.value, childQuery.value]
     .filter(stringHasValue)
     .join('&')
 
-  return {
-    value: newQueryString,
-    params: { ...parentQuery.params, ...childQuery.params },
-  }
+  return withParams(newQueryString, { ...parentQuery.params, ...childQuery.params })
 }

@@ -107,7 +107,7 @@ Type params for additional data intended to be stored in history state, all keys
 | Type Parameter | Default type |
 | ------ | ------ |
 | `TName` *extends* `string` \| `undefined` | `string` \| `undefined` |
-| `TPath` *extends* `string` \| `Path` \| `undefined` | `string` \| `Path` \| `undefined` |
-| `TQuery` *extends* `string` \| `Query` \| `undefined` | `string` \| `Query` \| `undefined` |
-| `THash` *extends* `string` \| `Hash` \| `undefined` | `string` \| `Hash` \| `undefined` |
+| `TPath` *extends* `string` \| `WithParams` \| `undefined` | `string` \| `WithParams` \| `undefined` |
+| `TQuery` *extends* `string` \| `WithParams` \| `undefined` | `string` \| `WithParams` \| `undefined` |
+| `THash` *extends* `string` \| `WithParams` \| `undefined` | `string` \| `WithParams` \| `undefined` |
 | `TMeta` *extends* [`RouteMeta`](RouteMeta.md) | [`RouteMeta`](RouteMeta.md) |

@@ -1,9 +1,9 @@
 import { expect, test, vi } from 'vitest'
 import { createRoute } from '@/services/createRoute'
-import { path } from '@/services/path'
-import { query } from '@/services/query'
-import { createRouter } from '@/main'
 import { component } from '@/utilities/testHelpers'
+import { createRouter } from '@/services/createRouter'
+import { DuplicateParamsError } from '@/errors/duplicateParamsError'
+import { withParams } from '@/services/withParams'
 
 test('given parent, path is combined', () => {
   const parent = createRoute({
@@ -12,7 +12,7 @@ test('given parent, path is combined', () => {
 
   const child = createRoute({
     parent: parent,
-    path: path('/child/[id]', { id: Number }),
+    path: withParams('/child/[id]', { id: Number }),
   })
 
   expect(child.path).toMatchObject({
@@ -30,7 +30,7 @@ test('given parent, query is combined', () => {
 
   const child = createRoute({
     parent: parent,
-    query: query('sort=[sort]', { sort: Boolean }),
+    query: withParams('sort=[sort]', { sort: Boolean }),
   })
 
   expect(child.query).toMatchObject({
@@ -264,4 +264,18 @@ test('async parent props with multiple views are passed to child props', async (
   await router.start()
 
   expect(spy).toHaveBeenCalledWith({ value1: 123, value2: 456 })
+})
+
+test.each([
+  ['/[foo]', 'foo=[foo]', '[bar]'],
+  ['/[foo]', 'foo=[bar]', '[foo]'],
+  ['/[bar]', 'foo=[foo]', '[foo]'],
+])('given duplicate params across different parts of the route, throws DuplicateParamsError', (path, query, hash) => {
+  const action: () => void = () => createRoute({
+    path,
+    query,
+    hash,
+  })
+
+  expect(action).toThrow(DuplicateParamsError)
 })
