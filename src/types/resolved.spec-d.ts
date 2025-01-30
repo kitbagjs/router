@@ -5,7 +5,7 @@ import { Route } from '@/types/route'
 import { WithParams } from '@/services/withParams'
 
 test('given a specific Route, params are narrow', () => {
-    type TestRoute = Route<'parentA', WithParams<undefined, {}>, WithParams<'/[paramA]', {}>, WithParams<'foo=[paramB]&bar=[?paramC]', { paramB: BooleanConstructor }>>
+    type TestRoute = Route<'parentA', WithParams<'', {}>, WithParams<'/[paramA]', {}>, WithParams<'foo=[paramB]&bar=[?paramC]', { paramB: BooleanConstructor }>>
 
     type Source = RouterRoute<ResolvedRoute<TestRoute>>['params']
     type Expect = { paramA: string, paramB: boolean, paramC?: string | undefined }

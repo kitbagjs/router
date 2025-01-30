@@ -3,7 +3,6 @@ import { getParamValue } from '@/services/params'
 import { getParamValueFromUrl } from '@/services/paramsFinder'
 import { Route } from '@/types/route'
 import { RouteMatchRule } from '@/types/routeMatchRule'
-import { getParamName, isOptionalParamSyntax } from '@/services/routeRegex'
 import { WithParams } from '@/services/withParams'
 
 export const routeParamsAreValid: RouteMatchRule = (route, url) => {
@@ -20,46 +19,22 @@ export const getRouteParamValues = (route: Route, url: string): Record<string, u
   const { protocol, host, pathname, search, hash } = parseUrl(url)
 
   return {
-    ...getPathParams(route.host, `${protocol}//${host}`),
-    ...getPathParams(route.path, pathname),
-    ...getQueryParams(route.query, search),
-    ...getPathParams(route.hash, hash),
+    ...getParams(route.host, `${protocol}//${host}`),
+    ...getParams(route.path, pathname),
+    ...getParams(route.query, search),
+    ...getParams(route.hash, hash),
   }
 }
 
-function getPathParams(path: WithParams, url: string): Record<string, unknown> {
+function getParams(path: WithParams, url: string): Record<string, unknown> {
   const values: Record<string, unknown> = {}
   const decodedValueFromUrl = decodeURIComponent(url)
 
   for (const [key, param] of Object.entries(path.params)) {
     const isOptional = key.startsWith('?')
     const paramName = isOptional ? key.slice(1) : key
-    const stringValue = getParamValueFromUrl(decodedValueFromUrl, path.toString(), key)
+    const stringValue = getParamValueFromUrl(decodedValueFromUrl, path.value, key)
     const paramValue = getParamValue(stringValue, param, isOptional)
-
-    values[paramName] = paramValue
-  }
-
-  return values
-}
-
-function getQueryParams(query: WithParams, url: string): Record<string, unknown> {
-  const values: Record<string, unknown> = {}
-  const routeSearch = new URLSearchParams(query.toString())
-  const actualSearch = new URLSearchParams(url)
-
-  for (const [key, value] of Array.from(routeSearch.entries())) {
-    const paramName = getParamName(value)
-    const isNotParam = !paramName
-
-    if (isNotParam) {
-      continue
-    }
-
-    const isOptional = isOptionalParamSyntax(value)
-    const paramKey = isOptional ? `?${paramName}` : paramName
-    const valueOnUrl = actualSearch.get(key) ?? undefined
-    const paramValue = getParamValue(valueOnUrl, query.params[paramKey], isOptional)
 
     values[paramName] = paramValue
   }

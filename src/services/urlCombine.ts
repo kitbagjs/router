@@ -2,7 +2,7 @@ import { Url, UrlParts } from '@/types/url'
 import { parseUrl } from '@/services/urlParser'
 import { createUrl } from '@/services/urlCreator'
 import { combineUrlSearchParams } from '@/utilities/urlSearchParams'
-import { stringHasValue } from '@/utilities'
+import { stringHasValue } from '@/utilities/guards'
 
 export function combineUrl(previous: Url | Partial<UrlParts>, updated: Url | Partial<UrlParts>): Url {
   const previousUrlParts = typeof previous === 'string' ? parseUrl(previous) : previous

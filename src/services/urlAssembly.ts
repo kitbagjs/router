@@ -30,7 +30,7 @@ export function assembleUrl(route: Route, options: AssembleUrlOptions = {}): Url
 }
 
 function assembleHostParamValues(host: WithParams, paramValues: Record<string, unknown>): string {
-  const hostWithProtocol = !!host.value && !host.value.startsWith('http') ? `https://${host.value}` : host.toString()
+  const hostWithProtocol = !!host.value && !host.value.startsWith('http') ? `https://${host.value}` : host.value
 
   return Object.entries(host.params).reduce((url, [name, param]) => {
     const paramName = getParamName(`${paramStart}${name}${paramEnd}`)
@@ -52,11 +52,11 @@ function assemblePathParamValues(path: WithParams, paramValues: Record<string, u
     }
 
     return setParamValueOnUrl(url, { name, param, value: paramValues[paramName] })
-  }, path.toString())
+  }, path.value)
 }
 
 function assembleQueryParamValues(query: WithParams, paramValues: Record<string, unknown>): URLSearchParams {
-  const search = new URLSearchParams(query.toString())
+  const search = new URLSearchParams(query.value)
 
   if (!query.value) {
     return search

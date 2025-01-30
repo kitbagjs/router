@@ -29,7 +29,7 @@ export function createExternalRoute<
   const THash extends string | WithParams | undefined = undefined,
   const TMeta extends RouteMeta = RouteMeta
 >(options: CreateRouteOptions<TName, TPath, TQuery> & WithoutHost & WithParent<TParent>):
-Route<ToName<TName>, WithParams<undefined, {}>, CombinePath<TParent['path'], ToWithParams<TPath>>, CombineQuery<TParent['query'], ToWithParams<TQuery>>, CombineHash<TParent['hash'], ToWithParams<THash>>, CombineMeta<TMeta, TParent['meta']>>
+Route<ToName<TName>, WithParams<'', {}>, CombinePath<TParent['path'], ToWithParams<TPath>>, CombineQuery<TParent['query'], ToWithParams<TQuery>>, CombineHash<TParent['hash'], ToWithParams<THash>>, CombineMeta<TMeta, TParent['meta']>>
 
 export function createExternalRoute(options: CreateRouteOptions & (WithoutHost | WithHost)): Route {
   const id = createRouteId()

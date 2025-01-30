@@ -17,9 +17,9 @@ export type CombineQuery<
   ? ToWithParams<TChild> extends { value: infer TChildQuery extends string, params: infer TChildParams extends Record<string, unknown> }
     ? RemoveLeadingQuestionMarkFromKeys<TParentParams> & RemoveLeadingQuestionMarkFromKeys<TChildParams> extends ParamsWithParamNameExtracted<CombineQueryString<TParentQuery, TChildQuery>>
       ? WithParams<CombineQueryString<TParentQuery, TChildQuery>, RemoveLeadingQuestionMarkFromKeys<TParentParams> & RemoveLeadingQuestionMarkFromKeys<TChildParams>>
-      : WithParams<undefined, {}>
-    : WithParams<undefined, {}>
-  : WithParams<undefined, {}>
+      : WithParams<'', {}>
+    : WithParams<'', {}>
+  : WithParams<'', {}>
 
 export function combineQuery<TParentQuery extends WithParams, TChildQuery extends WithParams>(parentQuery: TParentQuery, childQuery: TChildQuery): CombineQuery<TParentQuery, TChildQuery>
 export function combineQuery(parentQuery: WithParams, childQuery: WithParams): WithParams {

@@ -2,7 +2,7 @@ import { getParam } from '@/services/params'
 import { getParamName } from '@/services/routeRegex'
 import { paramEnd, paramStart } from '@/types/params'
 import { Param } from '@/types/paramTypes'
-import { stringHasValue } from '@/utilities'
+import { stringHasValue } from '@/utilities/guards'
 import { checkDuplicateParams } from '@/utilities/checkDuplicateKeys'
 
 export function getParamsForString(string: string = '', params: Record<string, Param | undefined> = {}): Record<string, Param> {
