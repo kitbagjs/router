@@ -32,6 +32,7 @@ import { EmptyRouterPlugin, RouterPlugin } from '@/types/routerPlugin'
 import { getRoutesForRouter } from './getRoutesForRouter'
 import { getGlobalHooksForRouter } from './getGlobalHooksForRouter'
 import { componentsStoreKey, createComponentsStore } from './createComponentsStore'
+import { initZod, zotParamsDetected } from './zod'
 
 type RouterUpdateOptions = {
   replace?: boolean,
@@ -289,6 +290,12 @@ export function createRouter<
   async function start(): Promise<void> {
     if (initializing) {
       return initialize
+    }
+
+    const shouldInitZod = zotParamsDetected(routes)
+
+    if (shouldInitZod) {
+      await initZod()
     }
 
     initializing = true

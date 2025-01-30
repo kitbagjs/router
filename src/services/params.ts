@@ -4,8 +4,7 @@ import { isParamWithDefault } from '@/services/withDefault'
 import { ExtractParamType, isLiteralParam, isParamGetSet, isParamGetter } from '@/types/params'
 import { LiteralParam, Param, ParamExtras, ParamGetSet } from '@/types/paramTypes'
 import { stringHasValue } from '@/utilities/guards'
-import { ZodSchema } from 'zod'
-import { createZodParam } from './zod'
+import { createZodParam, isZodParam } from './zod'
 
 export function getParam(params: Record<string, Param | undefined>, paramName: string): Param {
   return params[paramName] ?? String
@@ -184,7 +183,7 @@ export function getParamValue<T extends Param>(value: string | undefined, param:
     throw new InvalidRouteParamValueError()
   }
 
-  if (param instanceof ZodSchema) {
+  if (isZodParam(param)) {
     return createZodParam(param).get(value, extras)
   }
 
@@ -250,7 +249,7 @@ export function setParamValue(value: unknown, param: Param, isOptional = false):
     return (value as LiteralParam).toString()
   }
 
-  if (param instanceof ZodSchema) {
+  if (isZodParam(param)) {
     return createZodParam(param).set(value, extras)
   }
 

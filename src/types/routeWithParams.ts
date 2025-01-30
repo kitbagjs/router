@@ -4,7 +4,7 @@ import { Routes } from '@/types/route'
 import { RoutesName, RoutesMap } from '@/types/routesMap'
 import { Identity } from '@/types/utilities'
 import { MakeOptional } from '@/utilities/makeOptional'
-import { ZodSchema } from 'zod'
+import type { ZodSchema } from 'zod'
 
 export type RouteGetByKey<TRoutes extends Routes, TKey extends RoutesName<TRoutes>> = RoutesMap<TRoutes>[TKey]
 

@@ -1,4 +1,4 @@
-import { ZodSchema } from 'zod'
+import type { ZodSchema } from 'zod'
 
 export type ParamExtras = {
   invalid: (message?: string) => never,
