@@ -1,6 +1,6 @@
 import { markRaw } from 'vue'
 import { createRouteId } from '@/services/createRouteId'
-import { CreateRouteOptions, PropsGetter, CreateRouteProps, ToRoute, combineRoutes, isWithParent, isWithState } from '@/types/createRouteOptions'
+import { CreateRouteOptions, PropsGetter, CreateRouteProps, ToRoute, combineRoutes, isWithParent } from '@/types/createRouteOptions'
 import { toName } from '@/types/name'
 import { Route } from '@/types/route'
 import { checkDuplicateParams } from '@/utilities/checkDuplicateKeys'
@@ -29,8 +29,8 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
   const query = toWithParams(options.query)
   const hash = toWithParams(options.hash)
   const meta = options.meta ?? {}
-  const state = isWithState(options) ? options.state : {}
-  const rawRoute = markRaw({ id, meta: {}, state: {}, ...options, props })
+  const state = options.state ?? {}
+  const rawRoute = markRaw({ id, meta, state, ...options, props })
 
   const route = {
     id,

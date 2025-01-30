@@ -26,10 +26,6 @@ export type WithHost<THost extends string | WithParams = string | WithParams> = 
   host: THost,
 }
 
-export function isWithHost(options: CreateRouteOptions): options is CreateRouteOptions & WithHost {
-  return 'host' in options && Boolean(options.host)
-}
-
 export type WithoutHost = {
   host?: never,
 }
@@ -60,10 +56,6 @@ export function isWithComponents<T extends Record<string, unknown>>(options: T):
 
 export function isWithComponentPropsRecord<T extends Record<string, unknown>>(options: T): options is T & { props: RoutePropsRecord } {
   return 'props' in options && typeof options.props === 'object'
-}
-
-export function isWithState<T extends Record<string, unknown>>(options: T): options is T & { state: Record<string, Param> } {
-  return 'state' in options && Boolean(options.state)
 }
 
 export type CreateRouteOptions<

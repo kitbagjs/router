@@ -2,9 +2,14 @@ import { getParam } from '@/services/params'
 import { getParamName } from '@/services/routeRegex'
 import { paramEnd, paramStart } from '@/types/params'
 import { Param } from '@/types/paramTypes'
+import { stringHasValue } from '@/utilities'
 import { checkDuplicateParams } from '@/utilities/checkDuplicateKeys'
 
-export function getParamsForString(string: string, params: Record<string, Param | undefined>): Record<string, Param> {
+export function getParamsForString(string: string = '', params: Record<string, Param | undefined> = {}): Record<string, Param> {
+  if (!stringHasValue(string)) {
+    return {}
+  }
+
   const paramPattern = new RegExp(`\\${paramStart}(\\??[\\w-_]+)\\${paramEnd}`, 'g')
   const matches = Array.from(string.matchAll(paramPattern))
 

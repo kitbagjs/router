@@ -4,12 +4,12 @@ import { CombineMeta } from '@/services/combineMeta'
 import { CombinePath } from '@/services/combinePath'
 import { CombineQuery } from '@/services/combineQuery'
 import { createRouteId } from '@/services/createRouteId'
-import { combineRoutes, CreateRouteOptions, isWithHost, isWithParent, WithHost, WithoutHost, WithoutParent, WithParent } from '@/types/createRouteOptions'
+import { combineRoutes, CreateRouteOptions, isWithParent, WithHost, WithoutHost, WithoutParent, WithParent } from '@/types/createRouteOptions'
 import { toName, ToName } from '@/types/name'
 import { RouteMeta } from '@/types/register'
 import { Route } from '@/types/route'
 import { checkDuplicateParams } from '@/utilities/checkDuplicateKeys'
-import { toWithParams, ToWithParams, withParams, WithParams } from '@/services/withParams'
+import { toWithParams, ToWithParams, WithParams } from '@/services/withParams'
 
 export function createExternalRoute<
   const THost extends string | WithParams,
@@ -31,14 +31,14 @@ export function createExternalRoute<
 >(options: CreateRouteOptions<TName, TPath, TQuery> & WithoutHost & WithParent<TParent>):
 Route<ToName<TName>, WithParams<undefined, {}>, CombinePath<TParent['path'], ToWithParams<TPath>>, CombineQuery<TParent['query'], ToWithParams<TQuery>>, CombineHash<TParent['hash'], ToWithParams<THash>>, CombineMeta<TMeta, TParent['meta']>>
 
-export function createExternalRoute(options: CreateRouteOptions): Route {
+export function createExternalRoute(options: CreateRouteOptions & (WithoutHost | WithHost)): Route {
   const id = createRouteId()
   const name = toName(options.name)
   const path = toWithParams(options.path)
   const query = toWithParams(options.query)
   const hash = toWithParams(options.hash)
   const meta = options.meta ?? {}
-  const host = isWithHost(options) ? toWithParams(options.host) : withParams()
+  const host = toWithParams(options.host)
   const rawRoute = markRaw({ id, meta: {}, state: {}, ...options })
 
   const route = {

@@ -57,7 +57,7 @@ export function withParams(): WithParams<undefined, {}>
 export function withParams(value?: string, params?: Record<string, Param | undefined>): WithParams {
   return {
     value: stringHasValue(value) ? value : undefined,
-    params: value ? getParamsForString(value, params ?? {}) : {},
+    params: getParamsForString(value, params),
     toString: () => value ?? '',
   }
 }
