@@ -116,7 +116,7 @@ import { inject } from 'vue'
 
 const route = createRoute({
   ...
-}, async (route) => {
+}, async () => {
   const value = inject('global')
 
   return { value }

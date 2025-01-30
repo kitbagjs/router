@@ -95,7 +95,7 @@ Hooks are run within the context of the Vue app the router is installed. This me
 ```ts
 import { inject } from 'vue'
 
-router.onAfterRouteEnter((to, context) => {
+router.onAfterRouteEnter(() => {
   const value = inject('global')
 
   ...
