@@ -196,7 +196,7 @@ import { arrayOf withParams } from '@kitbag/router'
 const events = createRoute({
   name: 'events',
   query: withParams('category=[?category]', {
-    category: unionOf('music', 'sports', 'art'),
+    category: arrayOf('music', 'sports', 'art'),
   }),
 })
 ```
