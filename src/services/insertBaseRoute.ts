@@ -8,7 +8,7 @@ export function insertBaseRoute(routes: Routes, base?: string): Routes {
   }
 
   return routes.map((route) => {
-    const value = `${base}${route.path}`
+    const value = `${base}${route.path.value}`
 
     return {
       ...route,
