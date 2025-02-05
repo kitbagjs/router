@@ -2,6 +2,7 @@ import { safeGetParamValue, safeSetParamValue } from './params'
 import { z } from 'zod'
 import { test, expect } from 'vitest'
 import { initZod } from './zod'
+import { withParams } from './withParams'
 
 enum Fruits {
   Apple = 0,

@@ -3,6 +3,10 @@ import { Param, ParamGetSet } from '@/types/paramTypes'
 import { Routes } from '@/types/route'
 import type { ZodSchema } from 'zod'
 
+export type ZodSchemaLike<TOutput = any> = {
+  parse: (input: any) => TOutput
+}
+
 let zod: ZodSchemas | null = null
 
 async function getZodInstances() {
@@ -55,13 +59,13 @@ type ZodSchemas = Awaited<ReturnType<typeof getZodInstances>>
 
 export function zotParamsDetected(routes: Routes): boolean {
   return Object.values(routes).some(route => {
-    return Object.values(route.host.params).some(param => paramLooksLikeZodParam(param))
-      || Object.values(route.path.params).some(param => paramLooksLikeZodParam(param))
-      || Object.values(route.query.params).some(param => paramLooksLikeZodParam(param))
+    return Object.values(route.host.params).some(param => isZodSchemaLike(param))
+      || Object.values(route.path.params).some(param => isZodSchemaLike(param))
+      || Object.values(route.query.params).some(param => isZodSchemaLike(param))
   })
 }
 
-function paramLooksLikeZodParam(param: Param): boolean {
+function isZodSchemaLike(param: Param): param is ZodSchemaLike {
   return typeof param === 'object' && 'parse' in param && typeof param.parse === 'function'
 }
 

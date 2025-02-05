@@ -1,10 +1,10 @@
+import { ZodSchemaLike } from '@/services/zod'
 import { ExtractParamName } from '@/types/params'
 import { LiteralParam, Param, ParamGetSet, ParamGetter } from '@/types/paramTypes'
 import { Routes } from '@/types/route'
 import { RoutesName, RoutesMap } from '@/types/routesMap'
 import { Identity } from '@/types/utilities'
 import { MakeOptional } from '@/utilities/makeOptional'
-import type { ZodSchema } from 'zod'
 
 export type RouteGetByKey<TRoutes extends Routes, TKey extends RoutesName<TRoutes>> = RoutesMap<TRoutes>[TKey]
 
@@ -35,7 +35,7 @@ export type ExtractParamTypeWithoutLosingOptional<TParam extends Param, TParamKe
       ? TParamKey extends `?${string}`
         ? ReturnType<TParam> | undefined
         : ReturnType<TParam>
-      : TParam extends ZodSchema<infer Type>
+      : TParam extends ZodSchemaLike<infer Type>
         ? TParamKey extends `?${string}`
           ? Type | undefined
           : Type
