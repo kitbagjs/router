@@ -1,7 +1,7 @@
+import { ZodSchemaLike } from '@/services/zod'
 import { LiteralParam, Param, ParamGetSet, ParamGetter } from '@/types/paramTypes'
 import { Identity } from '@/types/utilities'
 import { MakeOptional } from '@/utilities/makeOptional'
-import { ZodSchema } from 'zod'
 
 export const paramStart = '['
 export type ParamStart = typeof paramStart
@@ -142,7 +142,7 @@ export type ExtractParamType<TParam extends Param> =
     ? Type
     : TParam extends ParamGetter
       ? ReturnType<TParam>
-      : TParam extends ZodSchema<infer Type>
+      : TParam extends ZodSchemaLike<infer Type>
         ? Type
         : TParam extends LiteralParam
           ? TParam
