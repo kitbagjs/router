@@ -1,4 +1,4 @@
-import { ZodSchemaLike } from "@/services/zod"
+import { ZodSchemaLike } from '@/services/zod'
 
 export type ParamExtras = {
   invalid: (message?: string) => never,
