@@ -1,7 +1,7 @@
 import { LiteralParam, Param, ParamGetSet, ParamGetter } from '@/types/paramTypes'
 import { Identity } from '@/types/utilities'
 import { MakeOptional } from '@/utilities/makeOptional'
-import { ExtractParamTypeWithoutLosingOptional } from '@/types/routeWithParams'
+import { ZodSchema } from 'zod'
 
 export const paramStart = '['
 export type ParamStart = typeof paramStart
@@ -87,13 +87,28 @@ export type ExtractWithParamsParamType<
  * @returns A record of parameter names to their respective types, extracted and merged from both path and query parameters.
  */
 export type ExtractRouteParamTypes<TRoute> = TRoute extends {
+  host: { params: infer HostParams extends Record<string, Param> },
   path: { params: infer PathParams extends Record<string, Param> },
   query: { params: infer QueryParams extends Record<string, Param> },
-  host: { params: infer HostParams extends Record<string, Param> },
   hash: { params: infer HashParams extends Record<string, Param> },
 }
   ? ExtractParamTypes<HostParams & PathParams & QueryParams & HashParams>
-  : {}
+  : Record<string, unknown>
+
+/**
+ * Extracts combined types of path and query parameters for a given route, creating a unified parameter object.
+ * This parameter object type represents the expected type when accessing params from router.route or useRoute.
+ * @template TRoute - The route type from which to extract and merge parameter types.
+ * @returns A record of parameter names to their respective types, extracted and merged from both path and query parameters.
+ */
+export type ExtractRouteParamTypesWithOptional<TRoute> = TRoute extends {
+  host: { params: infer HostParams extends Record<string, Param> },
+  path: { params: infer PathParams extends Record<string, Param> },
+  query: { params: infer QueryParams extends Record<string, Param> },
+  hash: { params: infer HashParams extends Record<string, Param> },
+}
+  ? ExtractParamTypesWithOptional<HostParams & PathParams & QueryParams & HashParams>
+  : Record<string, unknown>
 
 /**
  * Transforms a record of parameter types into a type with optional properties where the original type allows undefined.
@@ -101,19 +116,37 @@ export type ExtractRouteParamTypes<TRoute> = TRoute extends {
  * @returns A new type with the appropriate properties marked as optional.
  */
 export type ExtractParamTypes<TParams extends Record<string, Param>> = Identity<MakeOptional<{
-  [K in keyof TParams as ExtractParamName<K>]: ExtractParamType<TParams[K], K>
+  [K in keyof TParams as ExtractParamName<K>]: ExtractParamType<TParams[K]>
 }>>
 
 /**
- * Extracts the actual type from a parameter type, handling getters, setters, and potential undefined values.
- * This type also is responsible for narrowing possibly undefined values when the param has a default value.
+ * Transforms a record of parameter types into a type with optional properties where the original type allows undefined.
+ * @template TParams - The record of parameter types, possibly including undefined.
+ * @returns A new type with the appropriate properties marked as optional.
+ */
+export type ExtractParamTypesWithOptional<TParams extends Record<string, Param>> = Identity<MakeOptional<{
+  [K in keyof TParams as ExtractParamName<K>]: K extends `?${string}`
+    ? TParams[K] extends Required<ParamGetSet>
+      ? ExtractParamType<TParams[K]>
+      : ExtractParamType<TParams[K]> | undefined
+    : ExtractParamType<TParams[K]>
+}>>
+
+/**
+ * Extracts the actual type from a parameter type, handling getters and setters.
  * @template TParam - The parameter type.
  * @returns The extracted type, or 'string' as a fallback.
  */
-export type ExtractParamType<TParam extends Param, TParamKey extends PropertyKey = string> =
-TParam extends Required<ParamGetSet>
-  ? Exclude<ExtractParamTypeWithoutLosingOptional<TParam, TParamKey>, undefined>
-  : ExtractParamTypeWithoutLosingOptional<TParam, TParamKey>
+export type ExtractParamType<TParam extends Param> =
+  TParam extends ParamGetSet<infer Type>
+    ? Type
+    : TParam extends ParamGetter
+      ? ReturnType<TParam>
+      : TParam extends ZodSchema<infer Type>
+        ? Type
+        : TParam extends LiteralParam
+          ? TParam
+          : string
 
 type RemoveLeadingQuestionMark<T extends PropertyKey> = T extends `?${infer TRest extends string}` ? TRest : T
 export type RemoveLeadingQuestionMarkFromKeys<T extends Record<string, unknown>> = {
