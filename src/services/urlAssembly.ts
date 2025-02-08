@@ -1,7 +1,6 @@
 import { setParamValue } from '@/services/params'
 import { setParamValueOnUrl } from '@/services/paramsFinder'
 import { getParamName, isOptionalParamSyntax } from '@/services/routeRegex'
-import { paramEnd, paramStart } from '@/types/params'
 import { Route } from '@/types/route'
 import { Url } from '@/types/url'
 import { createUrl } from '@/services/urlCreator'
@@ -32,26 +31,14 @@ export function assembleUrl(route: Route, options: AssembleUrlOptions = {}): Url
 function assembleHostParamValues(host: WithParams, paramValues: Record<string, unknown>): string {
   const hostWithProtocol = !!host.value && !host.value.startsWith('http') ? `https://${host.value}` : host.value
 
-  return Object.entries(host.params).reduce((url, [name, param]) => {
-    const paramName = getParamName(`${paramStart}${name}${paramEnd}`)
-
-    if (!paramName) {
-      return url
-    }
-
-    return setParamValueOnUrl(url, { name, param, value: paramValues[paramName] })
+  return Object.keys(host.params).reduce((url, name) => {
+    return setParamValueOnUrl(url, host, name, paramValues[name])
   }, hostWithProtocol)
 }
 
 function assemblePathParamValues(path: WithParams, paramValues: Record<string, unknown>): string {
-  return Object.entries(path.params).reduce((url, [name, param]) => {
-    const paramName = getParamName(`${paramStart}${name}${paramEnd}`)
-
-    if (!paramName) {
-      return url
-    }
-
-    return setParamValueOnUrl(url, { name, param, value: paramValues[paramName] })
+  return Object.keys(path.params).reduce((url, name) => {
+    return setParamValueOnUrl(url, path, name, paramValues[name])
   }, path.value)
 }
 
@@ -71,8 +58,7 @@ function assembleQueryParamValues(query: WithParams, paramValues: Record<string,
     }
 
     const isOptional = isOptionalParamSyntax(value)
-    const paramKey = isOptional ? `?${paramName}` : paramName
-    const paramValue = setParamValue(paramValues[paramName], query.params[paramKey], isOptional)
+    const paramValue = setParamValue(paramValues[paramName], query.params[paramName], isOptional)
     const valueNotProvidedAndNoDefaultUsed = paramValues[paramName] === undefined && paramValue === ''
     const shouldLeaveEmptyValueOut = isOptional && valueNotProvidedAndNoDefaultUsed
 

@@ -40,7 +40,7 @@ describe('generateRoutePathRegexPattern', () => {
 
     const result = generateRoutePathRegexPattern(route)
 
-    const catchAll = '.*'
+    const catchAll = '.+'
     const expected = new RegExp(`^parent/child/${catchAll}/grand-child/${catchAll}$`, 'i')
     expect(result.toString()).toBe(expected.toString())
   })

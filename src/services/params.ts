@@ -7,7 +7,7 @@ import { stringHasValue } from '@/utilities/guards'
 import { createZodParam, isZodParam } from './zod'
 
 export function getParam(params: Record<string, Param | undefined>, paramName: string): Param {
-  return params[paramName] ?? params[`?${paramName}`] ?? String
+  return params[paramName] ?? String
 }
 
 const extras: ParamExtras = {

@@ -4,7 +4,7 @@ import { getParamValueFromUrl } from '@/services/paramsFinder'
 import { Route } from '@/types/route'
 import { RouteMatchRule } from '@/types/routeMatchRule'
 import { WithParams } from '@/services/withParams'
-import { getParamName, isOptionalParamSyntax } from '@/services/routeRegex'
+import { getParamName, isOptionalParamSyntax, paramIsOptional } from '@/services/routeRegex'
 
 export const routeParamsAreValid: RouteMatchRule = (route, url) => {
   try {
@@ -31,13 +31,12 @@ function getParams(path: WithParams, url: string): Record<string, unknown> {
   const values: Record<string, unknown> = {}
   const decodedValueFromUrl = decodeURIComponent(url)
 
-  for (const [key, param] of Object.entries(path.params)) {
-    const isOptional = key.startsWith('?')
-    const paramName = isOptional ? key.slice(1) : key
-    const stringValue = getParamValueFromUrl(decodedValueFromUrl, path.value, key)
+  for (const [name, param] of Object.entries(path.params)) {
+    const stringValue = getParamValueFromUrl(decodedValueFromUrl, path, name)
+    const isOptional = paramIsOptional(path, name)
     const paramValue = getParamValue(stringValue, param, isOptional)
 
-    values[paramName] = paramValue
+    values[name] = paramValue
   }
 
   return values
@@ -61,9 +60,8 @@ function getQueryParams(query: WithParams, url: string): Record<string, unknown>
       continue
     }
     const isOptional = isOptionalParamSyntax(value)
-    const paramKey = isOptional ? `?${paramName}` : paramName
     const valueOnUrl = actualSearch.get(key) ?? undefined
-    const paramValue = getParamValue(valueOnUrl, query.params[paramKey], isOptional)
+    const paramValue = getParamValue(valueOnUrl, query.params[paramName], isOptional)
     values[paramName] = paramValue
   }
   return values

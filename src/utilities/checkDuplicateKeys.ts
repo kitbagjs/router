@@ -3,7 +3,7 @@ import { getCount } from '@/utilities/array'
 
 export function checkDuplicateParams(...withParams: (Record<string, unknown> | string[])[]): void {
   const paramNames = withParams.flatMap((params) => {
-    return Array.isArray(params) ? params : Object.keys(params).map(removeLeadingQuestionMark)
+    return Array.isArray(params) ? params : Object.keys(params)
   })
 
   for (const paramName of paramNames) {
@@ -11,12 +11,4 @@ export function checkDuplicateParams(...withParams: (Record<string, unknown> | s
       throw new DuplicateParamsError(paramName)
     }
   }
-}
-
-function removeLeadingQuestionMark(value: string): string {
-  if (value.startsWith('?')) {
-    return value.slice(1)
-  }
-
-  return value
 }
