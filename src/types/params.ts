@@ -102,12 +102,12 @@ export type ExtractRouteParamTypes<TRoute> = TRoute extends {
  * @returns A record of parameter names to their respective types, extracted and merged from both path and query parameters.
  */
 export type ExtractRouteParamTypesOptionalReading<TRoute> = TRoute extends {
-  host: { value: infer Host extends string, params: infer HostParams extends Record<string, Param> },
-  path: { value: infer Path extends string, params: infer PathParams extends Record<string, Param> },
-  query: { value: infer Query extends string, params: infer QueryParams extends Record<string, Param> },
-  hash: { value: infer Hash extends string, params: infer HashParams extends Record<string, Param> },
+  host: { params: infer HostParams extends Record<string, Param> },
+  path: { params: infer PathParams extends Record<string, Param> },
+  query: { params: infer QueryParams extends Record<string, Param> },
+  hash: { params: infer HashParams extends Record<string, Param> },
 }
-  ? Identity<MakeOptional<ExtractParamTypesOptionalReading<Host, HostParams> & ExtractParamTypesOptionalReading<Path, PathParams> & ExtractParamTypesOptionalReading<Query, QueryParams> & ExtractParamTypesOptionalReading<Hash, HashParams>>>
+  ? Identity<MakeOptional<ExtractParamTypesOptionalReading<HostParams> & ExtractParamTypesOptionalReading<PathParams> & ExtractParamTypesOptionalReading<QueryParams> & ExtractParamTypesOptionalReading<HashParams>>>
   : Record<string, unknown>
 
 /**
@@ -117,12 +117,12 @@ export type ExtractRouteParamTypesOptionalReading<TRoute> = TRoute extends {
  * @returns A record of parameter names to their respective types, extracted and merged from both path and query parameters.
  */
 export type ExtractRouteParamTypesOptionalWriting<TRoute> = TRoute extends {
-  host: { value: infer Host extends string, params: infer HostParams extends Record<string, Param> },
-  path: { value: infer Path extends string, params: infer PathParams extends Record<string, Param> },
-  query: { value: infer Query extends string, params: infer QueryParams extends Record<string, Param> },
-  hash: { value: infer Hash extends string, params: infer HashParams extends Record<string, Param> },
+  host: { params: infer HostParams extends Record<string, Param> },
+  path: { params: infer PathParams extends Record<string, Param> },
+  query: { params: infer QueryParams extends Record<string, Param> },
+  hash: { params: infer HashParams extends Record<string, Param> },
 }
-  ? Identity<MakeOptional<ExtractParamTypesOptionalWriting<Host, HostParams> & ExtractParamTypesOptionalWriting<Path, PathParams> & ExtractParamTypesOptionalWriting<Query, QueryParams> & ExtractParamTypesOptionalWriting<Hash, HashParams>>>
+  ? Identity<MakeOptional<ExtractParamTypesOptionalWriting<HostParams> & ExtractParamTypesOptionalWriting<PathParams> & ExtractParamTypesOptionalWriting<QueryParams> & ExtractParamTypesOptionalWriting<HashParams>>>
   : Record<string, unknown>
 
 /**
@@ -140,8 +140,8 @@ export type ExtractParamTypes<TParams extends Record<string, Param>> = Identity<
  * @template TParams - The record of parameter types, possibly including undefined.
  * @returns A new type with the appropriate properties marked as optional.
  */
-export type ExtractParamTypesOptionalReading<TValue extends string, TParams extends Record<string, Param>> = {
-  [K in keyof TParams as ExtractParamName<K>]: TValue extends `${string}${ParamStart}?${K & string}${ParamEnd}${string}`
+export type ExtractParamTypesOptionalReading<TParams extends Record<string, Param>> = {
+  [K in keyof TParams as ExtractParamName<K>]: K extends `?${string}`
     ? TParams[K] extends Required<ParamGetSet>
       ? ExtractParamType<TParams[K]>
       : ExtractParamType<TParams[K]> | undefined
@@ -154,8 +154,8 @@ export type ExtractParamTypesOptionalReading<TValue extends string, TParams exte
  * @template TParams - The record of parameter types, possibly including undefined.
  * @returns A new type with the appropriate properties marked as optional.
  */
-export type ExtractParamTypesOptionalWriting<TValue extends string, TParams extends Record<string, Param>> = {
-  [K in keyof TParams as ExtractParamName<K>]: TValue extends `${string}${ParamStart}?${K & string}${ParamEnd}${string}`
+export type ExtractParamTypesOptionalWriting<TParams extends Record<string, Param>> = {
+  [K in keyof TParams as ExtractParamName<K>]: K extends `?${string}`
     ? ExtractParamType<TParams[K]> | undefined
     : ExtractParamType<TParams[K]>
 }
