@@ -3,6 +3,7 @@ import { ExtractParamName, ExtractWithParamsParamType, ParamEnd, ParamStart } fr
 import { Param } from '@/types/paramTypes'
 import { Identity } from '@/types/utilities'
 import { isRecord } from '@/utilities/guards'
+import { MakeOptional } from '@/utilities/makeOptional'
 
 type AssignableParamsFromString<
   TValue extends string
@@ -14,7 +15,7 @@ type ExtractParamsFromString<
   TValue extends string,
   TParams extends Record<string, Param | undefined> = Record<never, never>
 > = TValue extends `${string}${ParamStart}${infer TParam}${ParamEnd}${infer Rest}`
-  ? Record<ExtractParamName<TParam>, ExtractWithParamsParamType<TParam, TParams>> & ExtractParamsFromString<Rest, TParams>
+  ? Record<TParam, ExtractWithParamsParamType<TParam, TParams>> & ExtractParamsFromString<Rest, TParams>
   : {}
 
 export type WithParams<
@@ -52,7 +53,7 @@ export function toWithParams<T extends string | WithParams | undefined>(value: T
 
 export function withParams<
   const TValue extends string,
-  const TParams extends AssignableParamsFromString<TValue>
+  const TParams extends MakeOptional<AssignableParamsFromString<TValue>>
 >(value: TValue, params: TParams): WithParams<TValue, TParams>
 export function withParams(): WithParams<'', {}>
 export function withParams(value?: string, params?: Record<string, Param | undefined>): WithParams {

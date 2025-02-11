@@ -177,6 +177,6 @@ export type ExtractParamType<TParam extends Param> =
           : string
 
 type RemoveLeadingQuestionMark<T extends PropertyKey> = T extends `?${infer TRest extends string}` ? TRest : T
-export type RemoveLeadingQuestionMarkFromKeys<T extends Record<string, unknown>> = {
+export type RemoveLeadingQuestionMarkFromKeys<T> = {
   [K in keyof T as RemoveLeadingQuestionMark<K>]: T[K]
 }
