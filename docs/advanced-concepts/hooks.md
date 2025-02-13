@@ -87,3 +87,17 @@ onAfterRouteEnter((to, context) => {
 :::warning
 You cannot register `onBeforeRouteEnter` or `onAfterRouteEnter` hooks from within a component, since the component must have been mounted to discover the hook.
 :::
+
+## Global Injection
+
+Hooks are run within the context of the Vue app the router is installed. This means you can use vue's `inject` function to access global values.
+
+```ts
+import { inject } from 'vue'
+
+router.onAfterRouteEnter(() => {
+  const value = inject('global')
+
+  ...
+})
+```

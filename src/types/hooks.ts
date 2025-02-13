@@ -2,6 +2,7 @@ import { RouteHooks } from '@/models/RouteHooks'
 import { CallbackAbortResponse, CallbackContext, CallbackContextAbort, CallbackPushResponse, CallbackRejectResponse, CallbackSuccessResponse } from '@/services/createCallbackContext'
 import { ResolvedRoute } from '@/types/resolved'
 import { MaybeArray, MaybePromise } from '@/types/utilities'
+import { App } from 'vue'
 
 /**
  * Defines route hooks that can be applied before entering, updating, or leaving a route, as well as after these events.
@@ -18,6 +19,7 @@ export type WithHooks = {
 export type BeforeHookContext = {
   to: ResolvedRoute,
   from: ResolvedRoute | null,
+  app: App | null,
 }
 
 export type RouteHookBeforeRunner = (context: BeforeHookContext) => Promise<BeforeRouteHookResponse>
@@ -25,6 +27,7 @@ export type RouteHookBeforeRunner = (context: BeforeHookContext) => Promise<Befo
 export type AfterHookContext = {
   to: ResolvedRoute,
   from: ResolvedRoute | null,
+  app: App | null,
 }
 
 export type RouteHookAfterRunner = (context: AfterHookContext) => Promise<AfterRouteHookResponse>

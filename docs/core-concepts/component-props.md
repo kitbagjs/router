@@ -106,3 +106,19 @@ const user = createRoute({
   }
 }))
 ```
+
+## Global Injection
+
+Props are run within the context of the Vue app the router is installed. This means you can use vue's `inject` function to access global values.
+
+```ts
+import { inject } from 'vue'
+
+const route = createRoute({
+  ...
+}, async () => {
+  const value = inject('global')
+
+  return { value }
+})
+```

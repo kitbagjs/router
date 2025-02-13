@@ -1,4 +1,4 @@
-import { InjectionKey, reactive } from 'vue'
+import { App, InjectionKey, reactive } from 'vue'
 import { isWithComponentProps, isWithComponentPropsRecord, PropsGetter } from '@/types/createRouteOptions'
 import { getPrefetchOption, PrefetchConfigs, PrefetchStrategy } from '@/types/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
@@ -20,9 +20,12 @@ export type PropStore = {
   setPrefetchProps: (props: Record<string, unknown>) => void,
   setProps: (route: ResolvedRoute) => Promise<SetPropsResponse>,
   getProps: (id: string, name: string, route: ResolvedRoute) => unknown,
+  setVueApp: (app: App) => void,
 }
 
 export function createPropStore(): PropStore {
+  let vueApp: App | null = null
+
   const store: Map<string, unknown> = reactive(new Map())
   const { push, replace, reject } = createCallbackContext()
 
@@ -41,7 +44,7 @@ export function createPropStore(): PropStore {
           replace,
           reject,
           parent: getParentContext(route, true),
-        }))
+        }), vueApp)
 
         response[key] = value
 
@@ -75,7 +78,7 @@ export function createPropStore(): PropStore {
           replace,
           reject,
           parent: getParentContext(route),
-        }))
+        }), vueApp)
 
         store.set(key, value)
       }
@@ -112,6 +115,10 @@ export function createPropStore(): PropStore {
     const key = getPropKey(id, name, route)
 
     return store.get(key)
+  }
+
+  const setVueApp: PropStore['setVueApp'] = (app) => {
+    vueApp = app
   }
 
   function getParentContext(route: ResolvedRoute, prefetch: boolean = false): PropsCallbackParent {
@@ -204,5 +211,6 @@ export function createPropStore(): PropStore {
     setPrefetchProps,
     getProps,
     setProps,
+    setVueApp,
   }
 }
