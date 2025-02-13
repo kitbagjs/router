@@ -79,6 +79,8 @@ export function createRouter<
   const TOptions extends RouterOptions,
   const TPlugin extends RouterPlugin = EmptyRouterPlugin
 >(routesOrArrayOfRoutes: TRoutes | TRoutes[], options?: TOptions, plugins: TPlugin[] = []): Router<TRoutes, TOptions, TPlugin> {
+  let vueApp: App | null = null
+
   const routes = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options?.base)
   const hooks = createRouterHooks()
 
@@ -114,7 +116,7 @@ export function createRouter<
     const to = find(url, options) ?? getRejectionRoute('NotFound')
     const from = getFromRouteForHooks(navigationId)
 
-    const beforeResponse = await hooks.runBeforeRouteHooks({ to, from })
+    const beforeResponse = await hooks.runBeforeRouteHooks({ to, from, app: vueApp })
 
     switch (beforeResponse.status) {
       // On abort do nothing
@@ -170,7 +172,7 @@ export function createRouter<
 
     updateRoute(to)
 
-    const afterResponse = await hooks.runAfterRouteHooks({ to, from })
+    const afterResponse = await hooks.runAfterRouteHooks({ to, from, app: vueApp })
 
     switch (afterResponse.status) {
       case 'PUSH':
@@ -316,6 +318,10 @@ export function createRouter<
   }
 
   function install(app: App): void {
+    vueApp = app
+
+    propStore.setVueApp(app)
+
     app.component('RouterView', RouterView)
     app.component('RouterLink', RouterLink)
     app.provide(routerRejectionKey, rejection)
