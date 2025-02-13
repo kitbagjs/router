@@ -1,5 +1,5 @@
 import { ExtractRouteParamTypesOptionalWriting } from '@/types/params'
-import { Routes } from '@/types/route'
+import { Route, Routes } from '@/types/route'
 import { RoutesName, RoutesMap } from '@/types/routesMap'
 
 export type RouteGetByKey<TRoutes extends Routes, TKey extends RoutesName<TRoutes>> = RoutesMap<TRoutes>[TKey]
@@ -7,4 +7,6 @@ export type RouteGetByKey<TRoutes extends Routes, TKey extends RoutesName<TRoute
 export type RouteParamsByKey<
   TRoutes extends Routes,
   TKey extends string
-> = ExtractRouteParamTypesOptionalWriting<RouteGetByKey<TRoutes, TKey>>
+> = RouteGetByKey<TRoutes, TKey> extends Route
+  ? ExtractRouteParamTypesOptionalWriting<RouteGetByKey<TRoutes, TKey>>
+  : Record<string, unknown>

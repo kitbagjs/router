@@ -2,6 +2,7 @@ import { ZodSchemaLike } from '@/services/zod'
 import { LiteralParam, Param, ParamGetSet, ParamGetter } from '@/types/paramTypes'
 import { Identity } from '@/types/utilities'
 import { MakeOptional } from '@/utilities/makeOptional'
+import { Route } from './route'
 
 export const paramStart = '['
 export type ParamStart = typeof paramStart
@@ -86,14 +87,8 @@ export type ExtractWithParamsParamType<
  * @template TRoute - The route type from which to extract and merge parameter types.
  * @returns A record of parameter names to their respective types, extracted and merged from both path and query parameters.
  */
-export type ExtractRouteParamTypes<TRoute> = TRoute extends {
-  host: { params: infer HostParams extends Record<string, Param> },
-  path: { params: infer PathParams extends Record<string, Param> },
-  query: { params: infer QueryParams extends Record<string, Param> },
-  hash: { params: infer HashParams extends Record<string, Param> },
-}
-  ? ExtractParamTypes<HostParams & PathParams & QueryParams & HashParams>
-  : Record<string, unknown>
+export type ExtractRouteParamTypes<TRoute extends Route> =
+  ExtractParamTypes<TRoute['host']['params'] & TRoute['path']['params'] & TRoute['query']['params'] & TRoute['hash']['params']>
 
 /**
  * Does everything that ExtractRouteParamTypes does, but takes into consideration optional properties.
@@ -101,14 +96,8 @@ export type ExtractRouteParamTypes<TRoute> = TRoute extends {
  * @template TRoute - The route type from which to extract and merge parameter types.
  * @returns A record of parameter names to their respective types, extracted and merged from both path and query parameters.
  */
-export type ExtractRouteParamTypesOptionalReading<TRoute> = TRoute extends {
-  host: { params: infer HostParams extends Record<string, Param> },
-  path: { params: infer PathParams extends Record<string, Param> },
-  query: { params: infer QueryParams extends Record<string, Param> },
-  hash: { params: infer HashParams extends Record<string, Param> },
-}
-  ? Identity<MakeOptional<ExtractParamTypesOptionalReading<HostParams> & ExtractParamTypesOptionalReading<PathParams> & ExtractParamTypesOptionalReading<QueryParams> & ExtractParamTypesOptionalReading<HashParams>>>
-  : Record<string, unknown>
+export type ExtractRouteParamTypesOptionalReading<TRoute extends Route> =
+  Identity<MakeOptional<ExtractParamTypesOptionalReading<TRoute['host']['params']> & ExtractParamTypesOptionalReading<TRoute['path']['params']> & ExtractParamTypesOptionalReading<TRoute['query']['params']> & ExtractParamTypesOptionalReading<TRoute['hash']['params']>>>
 
 /**
  * Does everything that ExtractRouteParamTypes does, but takes into consideration optional properties.
@@ -116,14 +105,8 @@ export type ExtractRouteParamTypesOptionalReading<TRoute> = TRoute extends {
  * @template TRoute - The route type from which to extract and merge parameter types.
  * @returns A record of parameter names to their respective types, extracted and merged from both path and query parameters.
  */
-export type ExtractRouteParamTypesOptionalWriting<TRoute> = TRoute extends {
-  host: { params: infer HostParams extends Record<string, Param> },
-  path: { params: infer PathParams extends Record<string, Param> },
-  query: { params: infer QueryParams extends Record<string, Param> },
-  hash: { params: infer HashParams extends Record<string, Param> },
-}
-  ? Identity<MakeOptional<ExtractParamTypesOptionalWriting<HostParams> & ExtractParamTypesOptionalWriting<PathParams> & ExtractParamTypesOptionalWriting<QueryParams> & ExtractParamTypesOptionalWriting<HashParams>>>
-  : Record<string, unknown>
+export type ExtractRouteParamTypesOptionalWriting<TRoute extends Route> =
+  Identity<MakeOptional<ExtractParamTypesOptionalWriting<TRoute['host']['params']> & ExtractParamTypesOptionalWriting<TRoute['path']['params']> & ExtractParamTypesOptionalWriting<TRoute['query']['params']> & ExtractParamTypesOptionalWriting<TRoute['hash']['params']>>>
 
 /**
  * Transforms a record of parameter types into a type with optional properties where the original type allows undefined.
@@ -177,6 +160,6 @@ export type ExtractParamType<TParam extends Param> =
           : string
 
 type RemoveLeadingQuestionMark<T extends PropertyKey> = T extends `?${infer TRest extends string}` ? TRest : T
-export type RemoveLeadingQuestionMarkFromKeys<T> = {
+export type RemoveLeadingQuestionMarkFromKeys<T extends Record<string, unknown>> = {
   [K in keyof T as RemoveLeadingQuestionMark<K>]: T[K]
 }
