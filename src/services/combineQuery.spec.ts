@@ -19,7 +19,10 @@ test('given 2 queries with params, returns new Query joined together with params
   const response = combineQuery(aQuery, bQuery)
 
   expect(response.value).toBe('foo=[foz]&bar=[baz]')
-  expect(Object.entries(response.params)).toMatchObject([['foz', Boolean], ['baz', Number]])
+  expect(response.params).toMatchObject({
+    foz: Boolean,
+    baz: Number,
+  })
 })
 
 test('given 2 queries with optional params, returns new Query joined together with params', () => {
@@ -29,7 +32,10 @@ test('given 2 queries with optional params, returns new Query joined together wi
   const response = combineQuery(aQuery, bQuery)
 
   expect(response.value).toBe('foo=[?foz]&bar=[?baz]')
-  expect(Object.entries(response.params)).toMatchObject([['?foz', Boolean], ['?baz', Number]])
+  expect(response.params).toMatchObject({
+    foz: Boolean,
+    baz: Number,
+  })
 })
 
 test('given 2 queries with params that include duplicates, throws DuplicateParamsError', () => {

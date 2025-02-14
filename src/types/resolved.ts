@@ -1,4 +1,4 @@
-import { ExtractRouteParamTypesOptionalReading } from '@/types/params'
+import { ExtractRouteParamTypesReading } from '@/types/params'
 import { Route } from '@/types/route'
 import { ExtractRouteStateParamsAsOptional } from '@/types/state'
 import { Url } from '@/types/url'
@@ -36,7 +36,7 @@ export type ResolvedRoute<TRoute extends Route = Route> = Readonly<{
   /**
    * Key value pair for route params, values will be the user provided value from current browser location.
   */
-  params: ExtractRouteParamTypesOptionalReading<TRoute>,
+  params: ExtractRouteParamTypesReading<TRoute>,
   /**
    * Type for additional data intended to be stored in history state.
    */

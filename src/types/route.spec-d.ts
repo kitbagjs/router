@@ -1,15 +1,26 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { describe, expectTypeOf, test } from 'vitest'
-import { ExtractRouteParamTypesOptionalWriting, ExtractRouteParamTypesOptionalReading } from '@/types/params'
-import { Route } from '@/types/route'
-import { WithParams } from '@/services/withParams'
-import { ParamGetSet } from './paramTypes'
+import { ExtractRouteParamTypesWriting, ExtractRouteParamTypesReading } from '@/types/params'
+import { withParams } from '@/services/withParams'
+import { withDefault } from '@/services/withDefault'
+import { createRoute } from '@/services/createRoute'
+import { createExternalRoute } from '@/services/createExternalRoute'
 
 describe('ExtractRouteParamTypes', () => {
   test('when reading/writing params, given routes with different params, some optional, no defaults, combines into expected args', () => {
-    type TestRoute = Route<'parentA', WithParams<'https://[inHost].dev', {}>, WithParams<'/[inPath]', {}>, WithParams<'foo=[inQuery]&bar=[?paramC]', { inQuery: BooleanConstructor }>, WithParams<'[inHash]', {}>>
+    const testRoute = createExternalRoute({
+      name: 'parentA',
+      host: 'https://[inHost].dev',
+      path: '/[inPath]',
+      query: withParams('foo=[inQuery]&bar=[?paramC]', {
+        inQuery: Boolean,
+      }),
+      hash: '[inHash]',
+    })
+    type TestRoute = typeof testRoute
 
-    type SourceWriting = ExtractRouteParamTypesOptionalWriting<TestRoute>
-    type SourceReading = ExtractRouteParamTypesOptionalReading<TestRoute>
+    type SourceWriting = ExtractRouteParamTypesWriting<TestRoute>
+    type SourceReading = ExtractRouteParamTypesReading<TestRoute>
     type Expect = { inHost: string, inPath: string, paramC?: string, inQuery: boolean, inHash: string }
 
     expectTypeOf<SourceWriting>().toEqualTypeOf<Expect>()
@@ -17,10 +28,19 @@ describe('ExtractRouteParamTypes', () => {
   })
 
   test('when optional params have defaults, Reading and Writing change', () => {
-    type TestRoute = Route<'parentA', WithParams<'https://kitbag.dev', {}>, WithParams<'/', {}>, WithParams<'foo=[required]&bar=[?optional]', { required: BooleanConstructor, optional: Required<ParamGetSet<string>> }>, WithParams<'', {}>>
+    const testRoute = createRoute({
+      name: 'parentA',
+      host: 'https://kitbag.dev',
+      path: '/',
+      query: withParams('foo=[required]&bar=[?optional]', {
+        required: Boolean,
+        optional: withDefault(String, 'ABC'),
+      }),
+    })
+    type TestRoute = typeof testRoute
 
-    type SourceWriting = ExtractRouteParamTypesOptionalWriting<TestRoute>
-    type SourceReading = ExtractRouteParamTypesOptionalReading<TestRoute>
+    type SourceWriting = ExtractRouteParamTypesWriting<TestRoute>
+    type SourceReading = ExtractRouteParamTypesReading<TestRoute>
 
     expectTypeOf<SourceWriting>().toEqualTypeOf<{ required: boolean, optional?: string | undefined }>()
     expectTypeOf<SourceReading>().toEqualTypeOf<{ required: boolean, optional: string }>()

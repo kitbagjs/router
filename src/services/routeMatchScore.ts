@@ -3,6 +3,7 @@ import { getParamValueFromUrl } from '@/services/paramsFinder'
 import { Route } from '@/types/route'
 import { routeHashMatches } from '@/services/routeMatchRules'
 import { QuerySource } from '@/types/querySource'
+import { paramIsOptional } from '@/services/routeRegex'
 
 type RouteSortMethod = (aRoute: Route, bRoute: Route) => number
 
@@ -44,10 +45,10 @@ export function getRouteScoreSortMethod(url: string): RouteSortMethod {
 
 export function countExpectedPathParams(route: Route, actualPath: string): number {
   const optionalParams = Object.keys(route.path.params)
-    .filter((key) => key.startsWith('?'))
+    .filter((key) => paramIsOptional(route.path, key))
     .map((key) => key)
 
-  const missing = optionalParams.filter((expected) => getParamValueFromUrl(actualPath, route.path.value, expected) === undefined)
+  const missing = optionalParams.filter((expected) => getParamValueFromUrl(actualPath, route.path, expected) === undefined)
 
   return optionalParams.length - missing.length
 }

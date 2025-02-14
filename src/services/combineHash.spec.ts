@@ -19,7 +19,10 @@ test('given 2 hash with params, returns new Hash joined together with params', (
   const response = combineHash(aHash, bHash)
 
   expect(response.value).toBe('/[foz]/[baz]')
-  expect(Object.entries(response.params)).toMatchObject([['foz', Boolean], ['baz', Number]])
+  expect(response.params).toMatchObject({
+    foz: Boolean,
+    baz: Number,
+  })
 })
 
 test('given 2 hash with optional params, returns new Hash joined together with params', () => {
@@ -29,7 +32,10 @@ test('given 2 hash with optional params, returns new Hash joined together with p
   const response = combineHash(aHash, bHash)
 
   expect(response.value).toBe('/[?foz]/[?baz]')
-  expect(Object.entries(response.params)).toMatchObject([['?foz', Boolean], ['?baz', Number]])
+  expect(response.params).toMatchObject({
+    foz: Boolean,
+    baz: Number,
+  })
 })
 
 test('given 2 hash with params that include duplicates, throws DuplicateParamsError', () => {

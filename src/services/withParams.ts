@@ -1,5 +1,5 @@
 import { getParamsForString } from '@/services/getParamsForString'
-import { ExtractParamName, ExtractWithParamsParamType, ParamEnd, ParamStart } from '@/types/params'
+import { ExtractParamName, ParamEnd, ParamStart } from '@/types/params'
 import { Param } from '@/types/paramTypes'
 import { Identity } from '@/types/utilities'
 import { isRecord } from '@/utilities/guards'
@@ -15,7 +15,9 @@ type WithParamsParamsOutput<
   TValue extends string,
   TParams extends Record<string, Param | undefined> = Record<never, never>
 > = TValue extends `${string}${ParamStart}${infer TParam}${ParamEnd}${infer Rest}`
-  ? Record<TParam, ExtractWithParamsParamType<TParam, TParams>> & WithParamsParamsOutput<Rest, TParams>
+  ? ExtractParamName<TParam> extends keyof TParams
+    ? Record<ExtractParamName<TParam>, TParams[ExtractParamName<TParam>]> & WithParamsParamsOutput<Rest, TParams>
+    : Record<ExtractParamName<TParam>, StringConstructor> & WithParamsParamsOutput<Rest, TParams>
   : {}
 
 export type WithParams<
