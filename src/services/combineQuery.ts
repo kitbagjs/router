@@ -1,7 +1,8 @@
 import { RemoveLeadingQuestionMarkFromKeys } from '@/types/params'
 import { checkDuplicateParams } from '@/utilities/checkDuplicateKeys'
 import { StringHasValue, stringHasValue } from '@/utilities/guards'
-import { ParamsWithParamNameExtracted, ToWithParams, withParams, WithParams } from '@/services/withParams'
+import { ToWithParams, withParams, WithParams } from '@/services/withParams'
+import { Param } from '@/types/paramTypes'
 
 type CombineQueryString<TParent extends string | undefined, TChild extends string | undefined> =
   StringHasValue<TParent> extends true
@@ -15,9 +16,9 @@ export type CombineQuery<
   TChild extends WithParams
 > = ToWithParams<TParent> extends { value: infer TParentQuery extends string, params: infer TParentParams extends Record<string, unknown> }
   ? ToWithParams<TChild> extends { value: infer TChildQuery extends string, params: infer TChildParams extends Record<string, unknown> }
-    ? RemoveLeadingQuestionMarkFromKeys<TParentParams> & RemoveLeadingQuestionMarkFromKeys<TChildParams> extends ParamsWithParamNameExtracted<CombineQueryString<TParentQuery, TChildQuery>>
+    ? RemoveLeadingQuestionMarkFromKeys<TParentParams> & RemoveLeadingQuestionMarkFromKeys<TChildParams> extends Record<string, Param | undefined>
       ? WithParams<CombineQueryString<TParentQuery, TChildQuery>, RemoveLeadingQuestionMarkFromKeys<TParentParams> & RemoveLeadingQuestionMarkFromKeys<TChildParams>>
-      : WithParams<'', {}>
+      : WithParams<CombineQueryString<TParentQuery, TChildQuery>, {}>
     : WithParams<'', {}>
   : WithParams<'', {}>
 
