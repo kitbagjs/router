@@ -1,7 +1,9 @@
-import { ExtractParamTypes, ExtractParamType } from '@/types/params'
+import { ExtractParamName, ExtractParamType } from '@/types/params'
 import { Param } from '@/types/paramTypes'
 import { Routes } from '@/types/route'
 import { RouteGetByKey } from '@/types/routeWithParams'
+import { MakeOptional } from '@/utilities/makeOptional'
+import { Identity } from '@/types/utilities'
 
 export type ToState<TState extends Record<string, Param> | undefined> = TState extends undefined ? Record<string, Param> : unknown extends TState ? {} : TState
 
@@ -19,3 +21,7 @@ type ExtractStateParams<TRoute> = TRoute extends {
 }
   ? ExtractParamTypes<TState>
   : Record<string, unknown>
+
+type ExtractParamTypes<TParams extends Record<string, Param>> = Identity<MakeOptional<{
+  [K in keyof TParams as ExtractParamName<K>]: ExtractParamType<TParams[K]>
+}>>
