@@ -18,7 +18,7 @@ export function createExternalRoute<
   const TQuery extends string | WithParams | undefined = undefined,
   const THash extends string | WithParams | undefined = undefined,
   const TMeta extends RouteMeta = RouteMeta
->(options: CreateRouteOptions<TName, TPath, TQuery> & WithHost<THost> & WithoutParent):
+>(options: CreateRouteOptions<TName, TPath, TQuery, THash, TMeta> & WithHost<THost> & WithoutParent):
 Route<ToName<TName>, ToWithParams<THost>, ToWithParams<TPath>, ToWithParams<TQuery>, ToWithParams<THash>, TMeta>
 
 export function createExternalRoute<
@@ -28,7 +28,7 @@ export function createExternalRoute<
   const TQuery extends string | WithParams | undefined = undefined,
   const THash extends string | WithParams | undefined = undefined,
   const TMeta extends RouteMeta = RouteMeta
->(options: CreateRouteOptions<TName, TPath, TQuery> & WithoutHost & WithParent<TParent>):
+>(options: CreateRouteOptions<TName, TPath, TQuery, THash, TMeta> & WithoutHost & WithParent<TParent>):
 Route<ToName<TName>, WithParams<'', {}>, CombinePath<TParent['path'], ToWithParams<TPath>>, CombineQuery<TParent['query'], ToWithParams<TQuery>>, CombineHash<TParent['hash'], ToWithParams<THash>>, CombineMeta<TMeta, TParent['meta']>>
 
 export function createExternalRoute(options: CreateRouteOptions & (WithoutHost | WithHost)): Route {
