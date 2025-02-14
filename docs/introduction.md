@@ -4,6 +4,19 @@ Kitbag Router introduces a fresh, developer-centric approach to routing in Vue.j
 
 At the heart of Kitbag Router lies a commitment to enhancing the developer experience.  First and foremost that means **type safety**, but also **better parameter experience**, **support for query**, **rejection handling**, simple intuitive syntax, and an extensible design written with modern Typescript.
 
+## Why Does Vue Need a New Router?
+
+Vue router has served us well for the **many** years it's been around. However, there are some unfortunate aspects that all of us have just become accustomed to.
+
+| Vue Router | Kitbag Router |
+| -- | -- |
+| :x: Not type safe | :white_check_mark: Types safety **everywhere** |
+| :x: Weak params | :white_check_mark: Params can be **any type**, **reactive**, and **writable** |
+| :x: Only params in path | :white_check_mark: Params can be **anywhere** |
+| :x: No rejection handling | :white_check_mark: Built in rejection handling that's customizable |
+| :x: Not intuitive | :white_check_mark: No magic, url is assembled exactly how you'd expect |
+| :x: Old and bloated | :white_check_mark: 128kB, 1 dependency, written with modern Typescript |
+
 ## Show Me
 
 [Kitbag Router: New TYPE SAFE Router for VUE

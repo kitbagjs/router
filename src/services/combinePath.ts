@@ -1,6 +1,7 @@
 import { RemoveLeadingQuestionMarkFromKeys } from '@/types/params'
 import { checkDuplicateParams } from '@/utilities/checkDuplicateKeys'
-import { ParamsWithParamNameExtracted, ToWithParams, withParams, WithParams } from '@/services/withParams'
+import { ToWithParams, withParams, WithParams } from '@/services/withParams'
+import { Param } from '@/types/paramTypes'
 
 type CombinePathString<TParent extends string, TChild extends string> = `${TParent}${TChild}`
 
@@ -9,9 +10,9 @@ export type CombinePath<
   TChild extends WithParams
 > = ToWithParams<TParent> extends { value: infer TParentPath extends string, params: infer TParentParams extends Record<string, unknown> }
   ? ToWithParams<TChild> extends { value: infer TChildPath extends string, params: infer TChildParams extends Record<string, unknown> }
-    ? RemoveLeadingQuestionMarkFromKeys<TParentParams> & RemoveLeadingQuestionMarkFromKeys<TChildParams> extends ParamsWithParamNameExtracted<CombinePathString<TParentPath, TChildPath>>
+    ? RemoveLeadingQuestionMarkFromKeys<TParentParams> & RemoveLeadingQuestionMarkFromKeys<TChildParams> extends Record<string, Param | undefined>
       ? WithParams<CombinePathString<TParentPath, TChildPath>, RemoveLeadingQuestionMarkFromKeys<TParentParams> & RemoveLeadingQuestionMarkFromKeys<TChildParams>>
-      : WithParams<'', {}>
+      : WithParams<CombinePathString<TParentPath, TChildPath>, {}>
     : WithParams<'', {}>
   : WithParams<'', {}>
 

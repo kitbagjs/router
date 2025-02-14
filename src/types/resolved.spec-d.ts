@@ -1,11 +1,18 @@
 import { expectTypeOf, test } from 'vitest'
 import { RouterRoute } from '@/services/createRouterRoute'
 import { ResolvedRoute } from '@/types/resolved'
-import { Route } from '@/types/route'
-import { WithParams } from '@/services/withParams'
+import { withParams } from '@/services/withParams'
+import { createRoute } from '@/services/createRoute'
 
 test('given a specific Route, params are narrow', () => {
-    type TestRoute = Route<'parentA', WithParams<'', {}>, WithParams<'/[paramA]', {}>, WithParams<'foo=[paramB]&bar=[?paramC]', { paramB: BooleanConstructor }>>
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const testRoute = createRoute({
+    name: 'parentA',
+    path: '/parentA/[paramA]',
+    query: withParams('foo=[paramB]&bar=[?paramC]', { paramB: Boolean }),
+  })
+
+    type TestRoute = typeof testRoute
 
     type Source = RouterRoute<ResolvedRoute<TestRoute>>['params']
     type Expect = { paramA: string, paramB: boolean, paramC?: string | undefined }

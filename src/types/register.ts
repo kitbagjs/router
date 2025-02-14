@@ -38,7 +38,7 @@ export type RegisteredRoutes<T = Register> = T extends { router: Router<infer TR
 /**
  * Represents the possible Rejections registered within {@link Register}
  */
-export type RegisteredRejectionType<T = Register> = T extends { router: Router<Routes, infer TOptions extends RouterOptions> }
+export type RegisteredRejectionType<T = Register> = T extends { router: Router<any, infer TOptions extends RouterOptions> }
   ? keyof TOptions['rejections'] | BuiltInRejectionType
   : BuiltInRejectionType
 

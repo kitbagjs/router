@@ -2,6 +2,7 @@ import { ZodSchemaLike } from '@/services/zod'
 import { LiteralParam, Param, ParamGetSet, ParamGetter } from '@/types/paramTypes'
 import { Identity } from '@/types/utilities'
 import { MakeOptional } from '@/utilities/makeOptional'
+import { Route } from './route'
 
 export const paramStart = '['
 export type ParamStart = typeof paramStart
@@ -86,29 +87,26 @@ export type ExtractWithParamsParamType<
  * @template TRoute - The route type from which to extract and merge parameter types.
  * @returns A record of parameter names to their respective types, extracted and merged from both path and query parameters.
  */
-export type ExtractRouteParamTypes<TRoute> = TRoute extends {
-  host: { params: infer HostParams extends Record<string, Param> },
-  path: { params: infer PathParams extends Record<string, Param> },
-  query: { params: infer QueryParams extends Record<string, Param> },
-  hash: { params: infer HashParams extends Record<string, Param> },
-}
-  ? ExtractParamTypes<HostParams & PathParams & QueryParams & HashParams>
-  : Record<string, unknown>
+export type ExtractRouteParamTypes<TRoute extends Route> =
+  ExtractParamTypes<TRoute['host']['params'] & TRoute['path']['params'] & TRoute['query']['params'] & TRoute['hash']['params']>
 
 /**
- * Extracts combined types of path and query parameters for a given route, creating a unified parameter object.
- * This parameter object type represents the expected type when accessing params from router.route or useRoute.
+ * Does everything that ExtractRouteParamTypes does, but takes into consideration optional properties.
+ * Differs from ExtractRouteParamTypes in that it also reads the string `value` from WithParams to determine what should be optional.
  * @template TRoute - The route type from which to extract and merge parameter types.
  * @returns A record of parameter names to their respective types, extracted and merged from both path and query parameters.
  */
-export type ExtractRouteParamTypesWithOptional<TRoute> = TRoute extends {
-  host: { params: infer HostParams extends Record<string, Param> },
-  path: { params: infer PathParams extends Record<string, Param> },
-  query: { params: infer QueryParams extends Record<string, Param> },
-  hash: { params: infer HashParams extends Record<string, Param> },
-}
-  ? ExtractParamTypesWithOptional<HostParams & PathParams & QueryParams & HashParams>
-  : Record<string, unknown>
+export type ExtractRouteParamTypesOptionalReading<TRoute extends Route> =
+  Identity<MakeOptional<ExtractParamTypesOptionalReading<TRoute['host']['params']> & ExtractParamTypesOptionalReading<TRoute['path']['params']> & ExtractParamTypesOptionalReading<TRoute['query']['params']> & ExtractParamTypesOptionalReading<TRoute['hash']['params']>>>
+
+/**
+ * Does everything that ExtractRouteParamTypes does, but takes into consideration optional properties.
+ * Differs from ExtractRouteParamTypesOptionalReading in that optional params with defaults will remain optional.
+ * @template TRoute - The route type from which to extract and merge parameter types.
+ * @returns A record of parameter names to their respective types, extracted and merged from both path and query parameters.
+ */
+export type ExtractRouteParamTypesOptionalWriting<TRoute extends Route> =
+  Identity<MakeOptional<ExtractParamTypesOptionalWriting<TRoute['host']['params']> & ExtractParamTypesOptionalWriting<TRoute['path']['params']> & ExtractParamTypesOptionalWriting<TRoute['query']['params']> & ExtractParamTypesOptionalWriting<TRoute['hash']['params']>>>
 
 /**
  * Transforms a record of parameter types into a type with optional properties where the original type allows undefined.
@@ -120,17 +118,30 @@ export type ExtractParamTypes<TParams extends Record<string, Param>> = Identity<
 }>>
 
 /**
- * Transforms a record of parameter types into a type with optional properties where the original type allows undefined.
+ * Does everything that ExtractParamTypes does, but takes into consideration optional properties.
+ * Differs from ExtractParamTypes in that it also reads the string `value` from WithParams to determine what should be optional.
  * @template TParams - The record of parameter types, possibly including undefined.
  * @returns A new type with the appropriate properties marked as optional.
  */
-export type ExtractParamTypesWithOptional<TParams extends Record<string, Param>> = Identity<MakeOptional<{
+export type ExtractParamTypesOptionalReading<TParams extends Record<string, Param>> = {
   [K in keyof TParams as ExtractParamName<K>]: K extends `?${string}`
     ? TParams[K] extends Required<ParamGetSet>
       ? ExtractParamType<TParams[K]>
       : ExtractParamType<TParams[K]> | undefined
     : ExtractParamType<TParams[K]>
-}>>
+}
+
+/**
+ * Does everything that ExtractParamTypes does, but takes into consideration optional properties.
+ * Differs from ExtractParamTypesOptionalReading in that optional params with defaults will remain optional.
+ * @template TParams - The record of parameter types, possibly including undefined.
+ * @returns A new type with the appropriate properties marked as optional.
+ */
+export type ExtractParamTypesOptionalWriting<TParams extends Record<string, Param>> = {
+  [K in keyof TParams as ExtractParamName<K>]: K extends `?${string}`
+    ? ExtractParamType<TParams[K]> | undefined
+    : ExtractParamType<TParams[K]>
+}
 
 /**
  * Extracts the actual type from a parameter type, handling getters and setters.
