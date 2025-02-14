@@ -57,13 +57,15 @@ export function isLiteralParam(value: Param): value is LiteralParam {
  */
 export type ExtractParamName<
   TParam extends PropertyKey
-> = TParam extends `?${infer Param}`
-  ? Param extends ''
-    ? never
-    : Param
-  : TParam extends ''
-    ? never
-    : TParam
+> = TParam extends string
+  ? TParam extends `?${infer Param}`
+    ? Param extends ''
+      ? never
+      : Param
+    : TParam extends ''
+      ? never
+      : TParam
+  : never
 
 /**
  * Extracts combined types of path and query parameters for a given route, creating a unified parameter object.
@@ -88,7 +90,7 @@ export type ExtractRouteParamTypesWriting<TRoute extends Route> =
  * @returns A new type with the appropriate properties marked as optional.
  */
 export type ExtractParamTypesReading<TWithParams extends WithParams> = {
-  [K in keyof TWithParams['params'] as ExtractParamName<K>]: TWithParams['value'] extends `${string}${ParamStart}?${K & string}${ParamEnd}${string}`
+  [K in keyof TWithParams['params']]: TWithParams['value'] extends `${string}${ParamStart}?${K & string}${ParamEnd}${string}`
     ? TWithParams['params'][K] extends Required<ParamGetSet>
       ? ExtractParamType<TWithParams['params'][K]>
       : ExtractParamType<TWithParams['params'][K]> | undefined
@@ -102,7 +104,7 @@ export type ExtractParamTypesReading<TWithParams extends WithParams> = {
  * @returns A new type with the appropriate properties marked as optional.
  */
 export type ExtractParamTypesWriting<TWithParams extends WithParams> = {
-  [K in keyof TWithParams['params'] as ExtractParamName<K>]: TWithParams['value'] extends `${string}${ParamStart}?${K & string}${ParamEnd}${string}`
+  [K in keyof TWithParams['params']]: TWithParams['value'] extends `${string}${ParamStart}?${K & string}${ParamEnd}${string}`
     ? ExtractParamType<TWithParams['params'][K]> | undefined
     : ExtractParamType<TWithParams['params'][K]>
 }
