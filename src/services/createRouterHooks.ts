@@ -8,11 +8,11 @@ import { CallbackContextPushError } from '@/errors/callbackContextPushError'
 import { CallbackContextRejectionError } from '@/errors/callbackContextRejectionError'
 import { CallbackContextAbortError } from '@/errors/callbackContextAbortError'
 import { getGlobalAfterRouteHooks, getGlobalBeforeRouteHooks } from './getGlobalRouteHooks'
-import { createVueAppStore, HasVueAppStore } from '@/services/createVueAppStore'
+import { runWithContext } from '@/utilities/runWithContext'
 
 export const routerHooksKey: InjectionKey<RouterHooks> = Symbol()
 
-export type RouterHooks = HasVueAppStore & {
+export type RouterHooks = {
   runBeforeRouteHooks: RouteHookBeforeRunner,
   runAfterRouteHooks: RouteHookAfterRunner,
   addComponentBeforeRouteHook: AddComponentBeforeRouteHook,
@@ -27,7 +27,6 @@ export type RouterHooks = HasVueAppStore & {
 }
 
 export function createRouterHooks(): RouterHooks {
-  const { setVueApp, runWithContext } = createVueAppStore()
   const store = {
     global: new RouteHooks(),
     component: new RouteHooks(),
@@ -71,7 +70,7 @@ export function createRouterHooks(): RouterHooks {
     return () => store.global.onAfterRouteLeave.delete(hook)
   }
 
-  async function runBeforeRouteHooks({ to, from }: BeforeHookContext): Promise<BeforeRouteHookResponse> {
+  async function runBeforeRouteHooks({ to, from, app }: BeforeHookContext): Promise<BeforeRouteHookResponse> {
     const { global, component } = store
     const route = getBeforeRouteHooksFromRoutes(to, from)
     const globalHooks = getGlobalBeforeRouteHooks(to, from, global)
@@ -89,13 +88,15 @@ export function createRouterHooks(): RouterHooks {
 
     try {
       const results = allHooks.map((callback) => {
-        return runWithContext(() => callback(to, {
+        const fn = () => callback(to, {
           from,
           reject,
           push,
           replace,
           abort,
-        }))
+        })
+
+        return runWithContext(fn, app)
       })
 
       await Promise.all(results)
@@ -120,7 +121,7 @@ export function createRouterHooks(): RouterHooks {
     }
   }
 
-  async function runAfterRouteHooks({ to, from }: AfterHookContext): Promise<AfterRouteHookResponse> {
+  async function runAfterRouteHooks({ to, from, app }: AfterHookContext): Promise<AfterRouteHookResponse> {
     const { global, component } = store
     const route = getAfterRouteHooksFromRoutes(to, from)
     const globalHooks = getGlobalAfterRouteHooks(to, from, global)
@@ -139,12 +140,14 @@ export function createRouterHooks(): RouterHooks {
 
     try {
       const results = allHooks.map((callback) => {
-        return runWithContext(() => callback(to, {
+        const fn = () => callback(to, {
           from,
           reject,
           push,
           replace,
-        }))
+        })
+
+        return runWithContext(fn, app)
       })
 
       await Promise.all(results)
@@ -220,6 +223,5 @@ export function createRouterHooks(): RouterHooks {
     onAfterRouteEnter,
     onAfterRouteUpdate,
     onAfterRouteLeave,
-    setVueApp,
   }
 }

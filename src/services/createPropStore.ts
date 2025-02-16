@@ -1,4 +1,4 @@
-import { InjectionKey, reactive } from 'vue'
+import { App, InjectionKey, reactive } from 'vue'
 import { isWithComponentProps, isWithComponentPropsRecord, PropsGetter } from '@/types/createRouteOptions'
 import { getPrefetchOption, PrefetchConfigs, PrefetchStrategy } from '@/types/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
@@ -8,7 +8,6 @@ import { CallbackContextPushError } from '@/errors/callbackContextPushError'
 import { CallbackContextRejectionError } from '@/errors/callbackContextRejectionError'
 import { getPropsValue } from '@/utilities/props'
 import { PropsCallbackParent } from '@/types/props'
-import { createVueAppStore, HasVueAppStore } from './createVueAppStore'
 
 export const propStoreKey: InjectionKey<PropStore> = Symbol()
 
@@ -16,15 +15,17 @@ type ComponentProps = { id: string, name: string, props?: PropsGetter }
 
 type SetPropsResponse = CallbackSuccessResponse | CallbackPushResponse | CallbackRejectResponse
 
-export type PropStore = HasVueAppStore & {
+export type PropStore = {
   getPrefetchProps: (strategy: PrefetchStrategy, route: ResolvedRoute, configs: PrefetchConfigs) => Record<string, unknown>,
   setPrefetchProps: (props: Record<string, unknown>) => void,
   setProps: (route: ResolvedRoute) => Promise<SetPropsResponse>,
   getProps: (id: string, name: string, route: ResolvedRoute) => unknown,
+  setVueApp: (app: App) => void,
 }
 
 export function createPropStore(): PropStore {
-  const { setVueApp, runWithContext } = createVueAppStore()
+  let vueApp: App | null = null
+
   const store: Map<string, unknown> = reactive(new Map())
   const { push, replace, reject } = createCallbackContext()
 
@@ -38,12 +39,12 @@ export function createPropStore(): PropStore {
         }
 
         const key = getPropKey(id, name, route)
-        const value = runWithContext(() => getPropsValue(() => props(route, {
+        const value = getPropsValue(() => props(route, {
           push,
           replace,
           reject,
           parent: getParentContext(route, true),
-        })))
+        }), vueApp)
 
         response[key] = value
 
@@ -72,12 +73,12 @@ export function createPropStore(): PropStore {
       keys.push(key)
 
       if (!store.has(key)) {
-        const value = runWithContext(() => getPropsValue(() => props(route, {
+        const value = getPropsValue(() => props(route, {
           push,
           replace,
           reject,
           parent: getParentContext(route),
-        })))
+        }), vueApp)
 
         store.set(key, value)
       }
@@ -114,6 +115,10 @@ export function createPropStore(): PropStore {
     const key = getPropKey(id, name, route)
 
     return store.get(key)
+  }
+
+  const setVueApp: PropStore['setVueApp'] = (app) => {
+    vueApp = app
   }
 
   function getParentContext(route: ResolvedRoute, prefetch: boolean = false): PropsCallbackParent {

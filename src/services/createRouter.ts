@@ -79,10 +79,12 @@ export function createRouter<
   const TOptions extends RouterOptions,
   const TPlugin extends RouterPlugin = EmptyRouterPlugin
 >(routesOrArrayOfRoutes: TRoutes | TRoutes[], options?: TOptions, plugins: TPlugin[] = []): Router<TRoutes, TOptions, TPlugin> {
-  const routes = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options?.base)
-  const hookStore = createRouterHooks()
+  let vueApp: App | null = null
 
-  hookStore.addGlobalRouteHooks(getGlobalHooksForRouter(options, plugins))
+  const routes = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options?.base)
+  const hooks = createRouterHooks()
+
+  hooks.addGlobalRouteHooks(getGlobalHooksForRouter(options, plugins))
 
   const getNavigationId = createUniqueIdSequence()
   const propStore = createPropStore()
@@ -114,7 +116,7 @@ export function createRouter<
     const to = find(url, options) ?? getRejectionRoute('NotFound')
     const from = getFromRouteForHooks(navigationId)
 
-    const beforeResponse = await hookStore.runBeforeRouteHooks({ to, from })
+    const beforeResponse = await hooks.runBeforeRouteHooks({ to, from, app: vueApp })
 
     switch (beforeResponse.status) {
       // On abort do nothing
@@ -170,7 +172,7 @@ export function createRouter<
 
     updateRoute(to)
 
-    const afterResponse = await hookStore.runAfterRouteHooks({ to, from })
+    const afterResponse = await hooks.runAfterRouteHooks({ to, from, app: vueApp })
 
     switch (afterResponse.status) {
       case 'PUSH':
@@ -316,13 +318,14 @@ export function createRouter<
   }
 
   function install(app: App): void {
-    hookStore.setVueApp(app)
+    vueApp = app
+
     propStore.setVueApp(app)
 
     app.component('RouterView', RouterView)
     app.component('RouterLink', RouterLink)
     app.provide(routerRejectionKey, rejection)
-    app.provide(routerHooksKey, hookStore)
+    app.provide(routerHooksKey, hooks)
     app.provide(propStoreKey, propStore)
     app.provide(componentsStoreKey, componentsStore)
     app.provide(visibilityObserverKey, visibilityObserver)
@@ -347,12 +350,12 @@ export function createRouter<
     go: history.go,
     install,
     isExternal,
-    onBeforeRouteEnter: hookStore.onBeforeRouteEnter,
-    onBeforeRouteUpdate: hookStore.onBeforeRouteUpdate,
-    onBeforeRouteLeave: hookStore.onBeforeRouteLeave,
-    onAfterRouteEnter: hookStore.onAfterRouteEnter,
-    onAfterRouteUpdate: hookStore.onAfterRouteUpdate,
-    onAfterRouteLeave: hookStore.onAfterRouteLeave,
+    onBeforeRouteEnter: hooks.onBeforeRouteEnter,
+    onBeforeRouteUpdate: hooks.onBeforeRouteUpdate,
+    onBeforeRouteLeave: hooks.onBeforeRouteLeave,
+    onAfterRouteEnter: hooks.onAfterRouteEnter,
+    onAfterRouteUpdate: hooks.onAfterRouteUpdate,
+    onAfterRouteLeave: hooks.onAfterRouteLeave,
     prefetch: options?.prefetch,
     start,
     stop,
