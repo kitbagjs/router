@@ -318,7 +318,6 @@ export function createRouter<
 
   function install(app: App): void {
     vueAppStore.setApp(app)
-    propStore.setVueApp(app)
 
     app.component('RouterView', RouterView)
     app.component('RouterLink', RouterLink)
