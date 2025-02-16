@@ -1,8 +1,10 @@
-import { expect, test, vi } from 'vitest'
+import { beforeEach, expect, test, vi } from 'vitest'
 import { createRouterHistory } from '@/services/createRouterHistory'
 import { random } from '@/utilities/testHelpers'
 
 function noop(): void {}
+
+beforeEach(() => vi.resetAllMocks())
 
 test('when go is called, forwards call to window history', () => {
   vi.spyOn(window.history, 'go')
