@@ -15,7 +15,7 @@ test('given several params, calls each until one returns a value', () => {
   const cParam = vi.fn().mockImplementationOnce(() => 'works!')
   const dParam = vi.fn().mockImplementationOnce(() => 'also works!')
 
-  const union = unionOf(aParam, bParam, cParam, dParam)
+  const union = unionOf([aParam, bParam, cParam, dParam])
 
   const result = getParamValue('foo', union)
 
@@ -33,7 +33,7 @@ test('given no param returns value, throws InvalidRouteParamValueError', () => {
   const cParam = vi.fn().mockImplementationOnce(throwsInvalidRouteParamValueError())
   const dParam = vi.fn().mockImplementationOnce(throwsInvalidRouteParamValueError())
 
-  const union = unionOf(aParam, bParam, cParam, dParam)
+  const union = unionOf([aParam, bParam, cParam, dParam])
 
   const action: () => void = () => getParamValue('foo', union)
 
@@ -49,7 +49,7 @@ test('given a param that throws something other than InvalidRouteParamValueError
     throw new Error('Something went wrong')
   })
 
-  const union = unionOf(param)
+  const union = unionOf([param])
 
   const action: () => void = () => getParamValue('foo', union)
 
@@ -64,7 +64,7 @@ test.each([
   [/foo/, 'foo', 'foo'],
   [String, 'foo', 'foo'],
 ])('works with param of built-in type %s', (param, input, output) => {
-  const union = unionOf(param)
+  const union = unionOf([param])
 
   const result = getParamValue(input, union)
 
@@ -78,7 +78,7 @@ test.each([
 test.each([
   23, 'foo', true,
 ])('works with literal param of type %s', (value) => {
-  const union = unionOf(value)
+  const union = unionOf([value])
 
   const result = getParamValue(value.toString(), union)
 
