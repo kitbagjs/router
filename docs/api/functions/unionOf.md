@@ -1,7 +1,7 @@
 # Functions: unionOf()
 
 ```ts
-function unionOf<T>(...params): ParamGetSet<ExtractParamType<T[number]>>
+function unionOf<T>(params): ParamGetSet<ExtractParamType<T[number]>>
 ```
 
 ## Type Parameters
@@ -14,7 +14,7 @@ function unionOf<T>(...params): ParamGetSet<ExtractParamType<T[number]>>
 
 | Parameter | Type |
 | ------ | ------ |
-| ...`params` | `T` |
+| `params` | `T` |
 
 ## Returns
 

@@ -1,7 +1,7 @@
 # Functions: tupleOf()
 
 ```ts
-function tupleOf<T>(...params): ParamGetSet<TupleOf<T>>
+function tupleOf<T>(params, options?): ParamGetSet<TupleOf<T>>
 ```
 
 ## Type Parameters
@@ -14,7 +14,8 @@ function tupleOf<T>(...params): ParamGetSet<TupleOf<T>>
 
 | Parameter | Type |
 | ------ | ------ |
-| ...`params` | `T` |
+| `params` | `T` |
+| `options`? | `TupleOfOptions` |
 
 ## Returns
 
