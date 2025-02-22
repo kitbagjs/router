@@ -11,7 +11,7 @@ function withParams<TValue, TParams>(value, params): WithParams<TValue, TParams>
 | Type Parameter |
 | ------ |
 | `TValue` *extends* `string` |
-| `TParams` *extends* `ParamsWithParamNameExtracted`\<`TValue`\> |
+| `TParams` *extends* `MakeOptional`\<`WithParamsParamsInput`\<`TValue`\>\> |
 
 ### Parameters
 
