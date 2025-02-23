@@ -181,7 +181,7 @@ import { unionOf, withParams } from '@kitbag/router'
 const events = createRoute({
   name: 'events',
   query: withParams('category=[?category]', {
-    category: unionOf('music', 'sports', 'art'),
+    category: unionOf(['music', 'sports', 'art']),
   }),
 })
 ```
@@ -196,14 +196,22 @@ import { arrayOf withParams } from '@kitbag/router'
 const events = createRoute({
   name: 'events',
   query: withParams('category=[?category]', {
-    category: arrayOf('music', 'sports', 'art'),
+    category: arrayOf(['music', 'sports', 'art']),
   }),
 })
 ```
 
+### Array Options
+
+Optionally pass in options to specify a separator. The default separator is a comma.
+
+```ts
+{ separator?: string }
+```
+
 ## Tuples
 
-The `tupleOf` utility can be used to define a param as a tuple of any number of [Param](/api/types/Param) arguments.
+The `tupleOf` utility can be used to define a param as a tuple of any number of [Param](/api/types/Param) arguments. Note the `tupleOf` utility also takes the same [options](/core-concepts/params#array-options) as the `arrayOf` utility.
 
 ```ts
 import { tupleOf, withParams } from '@kitbag/router'
@@ -211,7 +219,7 @@ import { tupleOf, withParams } from '@kitbag/router'
 const events = createRoute({
   name: 'events',
   query: withParams('location=[?location]', {
-    location: tupleOf(Number, Number),
+    location: tupleOf([Number, Number]),
   }),
 })
 ```
