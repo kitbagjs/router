@@ -28,7 +28,7 @@ export type WithParams<
   params: string extends TValue ? Record<string, Param> : Identity<WithParamsParamsOutput<TValue, TParams>>,
 }
 
-export type ToWithParams<T extends string | WithParams | undefined> = T extends string
+export type ToWithParams<T> = T extends string
   ? WithParams<T, {}>
   : T extends undefined
     ? WithParams<'', {}>

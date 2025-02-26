@@ -160,7 +160,7 @@ export type ToRoute<
   : TOptions extends { parent: infer TParent extends Route }
     ? Route<
       ToName<TOptions['name']>,
-      WithParams<'', {}>,
+      ToWithParams<TParent['host']>,
       CombinePath<ToWithParams<TParent['path']>, ToWithParams<TOptions['path']>>,
       CombineQuery<ToWithParams<TParent['query']>, ToWithParams<TOptions['query']>>,
       CombineHash<ToWithParams<TParent['hash']>, ToWithParams<TOptions['hash']>>,
@@ -170,7 +170,7 @@ export type ToRoute<
     >
     : Route<
       ToName<TOptions['name']>,
-      WithParams<'', {}>,
+      TOptions extends { host: string | WithParams } ? ToWithParams<TOptions['host']> : WithParams<'', {}>,
       ToWithParams<TOptions['path']>,
       ToWithParams<TOptions['query']>,
       ToWithParams<TOptions['hash']>,
