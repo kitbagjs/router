@@ -5,7 +5,54 @@
 
 version: 2
 updates:
-  - package-ecosystem: "npm" # See documentation for possible values
-    directory: "/" # Location of package manifests
+
+  # Build tools
+  - package-ecosystem: "npm"
+    directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      build-tools:
+        patterns:
+          - "vite"
+          - "vite-plugin-dts"
+          - "@vitejs/plugin-vue"
+          - "typescript"
+          - "vue-tsc"
+
+  # Testing tools
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      test-tools:
+        patterns:
+          - "vitest"
+          - "@vue/test-utils"
+          - "happy-dom"
+
+  # Documentation tools
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      docs-tools:
+        patterns:
+          - "vitepress"
+          - "typedoc"
+          - "typedoc-plugin-markdown"
+          - "typedoc-vitepress-theme"
+
+  # Linting and code quality
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      linting:
+        patterns:
+          - "eslint"
+          - "@kitbag/eslint-config"
+          - "globals"
