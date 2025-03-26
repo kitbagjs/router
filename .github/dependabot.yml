@@ -5,8 +5,6 @@
 
 version: 2
 updates:
-
-  # Build tools
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
@@ -19,38 +17,17 @@ updates:
           - "@vitejs/plugin-vue"
           - "typescript"
           - "vue-tsc"
-
-  # Testing tools
-  - package-ecosystem: "npm"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-    groups:
-      test-tools:
+      testing:
         patterns:
           - "vitest"
           - "@vue/test-utils"
           - "happy-dom"
-
-  # Documentation tools
-  - package-ecosystem: "npm"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-    groups:
-      docs-tools:
+      docs:
         patterns:
           - "vitepress"
           - "typedoc"
           - "typedoc-plugin-markdown"
           - "typedoc-vitepress-theme"
-
-  # Linting and code quality
-  - package-ecosystem: "npm"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-    groups:
       linting:
         patterns:
           - "eslint"
