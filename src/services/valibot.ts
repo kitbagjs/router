@@ -1,9 +1,9 @@
 import { Param, ParamGetSet } from '@/types/paramTypes'
 import { isRecord } from '@/utilities/guards'
 import { isPromise } from '@/utilities/promises'
-import type { BaseIssue, BaseSchema } from 'valibot'
+import type { BaseIssue, BaseSchema, UnionOptions, UnionSchema, VariantSchema } from 'valibot'
 
-export type ValibotSchemaLike = BaseSchema<unknown, unknown, BaseIssue<unknown>>
+export type ValibotSchemaLike = BaseSchema<unknown, unknown, BaseIssue<unknown>> | UnionSchema<UnionOptions, any> | VariantSchema<any, any, any>
 
 function parse(schema: ValibotSchemaLike, value: unknown) {
     const result = schema['~standard'].validate(value)
@@ -128,18 +128,17 @@ function parseValibotValue(value: string, schema: ValibotSchemaLike): unknown {
     return parse(schema, JSON.parse(value, reviver))
   }
 
-  if (schema.type === 'union' && schema.options) {
-    const schemas = Array
-      .from(schema.options)
+  if (schema.type === 'union' && 'options' in schema) {
+    schema
+    const schemas = (schema.options as ValibotSchemaLike[])
       .sort(sortValibotSchemas)
       .map((schema) => () => parseValibotValue(value, schema))
 
     return tryAll(schemas)
   }
 
-  if (schema.type === 'variant' && schema.options) {
-    const schemas = Array
-      .from(schema.options)
+  if (schema.type === 'variant' && 'options' in schema) {
+    const schemas = (schema.options as ValibotSchemaLike[])
       .sort(sortValibotSchemas)
       .map((schema) => () => parseValibotValue(value, schema))
 
@@ -215,18 +214,16 @@ function stringifyValibotValue(value: unknown, schema: ValibotSchemaLike): strin
     return JSON.stringify(parse(schema, value))
   }
 
-  if (schema.type === 'union' && schema.options) {
-    const schemas = Array
-      .from(schema.options)
+  if (schema.type === 'union' && 'options' in schema) {
+    const schemas = (schema.options as ValibotSchemaLike[])
       .sort(sortValibotSchemas)
       .map((schema) => () => stringifyValibotValue(value, schema))
 
     return tryAll(schemas)
   }
 
-  if (schema.type === 'variant' && schema.options) {
-    const schemas = Array
-      .from(schema.options)
+  if (schema.type === 'variant' && 'options' in schema) {
+    const schemas = (schema.options as ValibotSchemaLike[])
       .sort(sortValibotSchemas)
       .map((schema) => () => stringifyValibotValue(value, schema))
 
