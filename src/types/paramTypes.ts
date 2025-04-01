@@ -1,3 +1,4 @@
+import { ValibotSchemaLike } from '@/services/valibot'
 import { ZodSchemaLike } from '@/services/zod'
 
 export type ParamExtras = {
@@ -25,4 +26,5 @@ export type Param =
   | DateConstructor
   | JSON
   | ZodSchemaLike
+  | ValibotSchemaLike
   | LiteralParam
