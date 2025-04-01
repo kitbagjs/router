@@ -57,11 +57,15 @@
     "vue-tsc": "^2.2.8"
   },
   "peerDependencies": {
+    "valibot": "^1.0.0",
     "vue": "^3.5.0",
     "zod": "^3.24.1"
   },
   "peerDependenciesMeta": {
     "zod": {
+      "optional": true
+    },
+    "valibot": {
       "optional": true
     }
   },
