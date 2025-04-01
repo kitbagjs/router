@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/only-throw-error */
 import { Param, ParamGetSet } from '@/types/paramTypes'
 import { isRecord } from '@/utilities/guards'
 import { isPromise } from '@/utilities/promises'
@@ -5,20 +6,21 @@ import type { BaseIssue, BaseSchema, UnionOptions, UnionSchema, VariantSchema } 
 
 export type ValibotSchemaLike = BaseSchema<unknown, unknown, BaseIssue<unknown>> | UnionSchema<UnionOptions, any> | VariantSchema<any, any, any>
 
+// inferring the return type is preferred for this function
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 function parse(schema: ValibotSchemaLike, value: unknown) {
-    const result = schema['~standard'].validate(value)
+  const result = schema['~standard'].validate(value)
 
-    if(isPromise(result)) {
-        throw new Error('Promise schemas are not supported')
-    }
-
-    if(result.issues) {
-        throw new Error('Validation failed')
-    }
-
-    return result.value
+  if (isPromise(result)) {
+    throw new Error('Promise schemas are not supported')
   }
 
+  if (result.issues) {
+    throw new Error('Validation failed')
+  }
+
+  return result.value
+}
 
 function isValibotSchemaLike(param: Param): param is ValibotSchemaLike {
   return isRecord(param)
@@ -87,8 +89,7 @@ function sortValibotSchemas(schemaA: ValibotSchemaLike, schemaB: ValibotSchemaLi
 }
 
 function parseValibotValue(value: string, schema: ValibotSchemaLike): unknown {
-
-    if (schema.type === 'boolean') {
+  if (schema.type === 'boolean') {
     return parse(schema, Boolean(value))
   }
 
@@ -129,7 +130,6 @@ function parseValibotValue(value: string, schema: ValibotSchemaLike): unknown {
   }
 
   if (schema.type === 'union' && 'options' in schema) {
-    schema
     const schemas = (schema.options as ValibotSchemaLike[])
       .sort(sortValibotSchemas)
       .map((schema) => () => parseValibotValue(value, schema))
@@ -173,7 +173,6 @@ function parseValibotValue(value: string, schema: ValibotSchemaLike): unknown {
 }
 
 function stringifyValibotValue(value: unknown, schema: ValibotSchemaLike): string {
-
   if (schema.type === 'string') {
     return parse(schema, value).toString()
   }

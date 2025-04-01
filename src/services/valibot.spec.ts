@@ -35,13 +35,11 @@ test.each([
   { schema: v.map(v.string(), v.number()), string: '[["one",1]]', parsed: new Map([['one', 1]]) },
   { schema: v.set(v.number()), string: '[1,2,3]', parsed: new Set([1, 2, 3]) },
 ])('given $schema.type, returns $parsed for $string', async ({ schema, string, parsed }) => {
-
-    if (typeof parsed === 'string' || typeof parsed === 'number' || typeof parsed === 'boolean') {
-      expect(safeGetParamValue(string, schema)).toBe(parsed)
-      expect(safeSetParamValue(parsed, schema)).toBe(string)
-    } else {
-      expect(safeGetParamValue(string, schema)).toMatchObject(parsed)
-      expect(safeSetParamValue(parsed, schema)).toBe(string)
-    }
-
+  if (typeof parsed === 'string' || typeof parsed === 'number' || typeof parsed === 'boolean') {
+    expect(safeGetParamValue(string, schema)).toBe(parsed)
+    expect(safeSetParamValue(parsed, schema)).toBe(string)
+  } else {
+    expect(safeGetParamValue(string, schema)).toMatchObject(parsed)
+    expect(safeSetParamValue(parsed, schema)).toBe(string)
+  }
 })
