@@ -252,7 +252,7 @@ import * as v from 'valibot'
 const events = createRoute({
   name: 'events',
   query: query('category=[?category]', {
-    category: v.enum(['music', 'sports', 'art']),
+    category: v.picklist(['music', 'sports', 'art']),
   }),
 })
 ```
