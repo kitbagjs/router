@@ -120,10 +120,8 @@ export type ExtractParamType<TParam extends Param> =
     ? Type
     : TParam extends ParamGetter
       ? ReturnType<TParam>
-      : TParam extends ZodSchemaLike<infer Type>
-        ? Type
-        : TParam extends StandardSchemaV1
-          ? StandardSchemaV1.InferOutput<TParam>
-          : TParam extends LiteralParam
-            ? TParam
-            : string
+      : TParam extends StandardSchemaV1
+        ? StandardSchemaV1.InferOutput<TParam>
+        : TParam extends LiteralParam
+          ? TParam
+          : string
