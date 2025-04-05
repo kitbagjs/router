@@ -1,10 +1,12 @@
 /* eslint-disable @typescript-eslint/only-throw-error */
 import { Param, ParamGetSet } from '@/types/paramTypes'
 import { Routes } from '@/types/route'
+import { isRecord } from '@/utilities/guards'
+import { StandardSchemaV1 } from '@standard-schema/spec'
 import type { ZodSchema } from 'zod'
 
-export type ZodSchemaLike<TOutput = any> = {
-  parse: (input: any) => TOutput,
+export interface ZodSchemaLike extends StandardSchemaV1<any> {
+  parse: (input: any) => any  
 }
 
 let zod: ZodSchemas | null = null
@@ -68,7 +70,13 @@ export function zotParamsDetected(routes: Routes): boolean {
 }
 
 function isZodSchemaLike(param: Param): param is ZodSchemaLike {
-  return typeof param === 'object' && 'parse' in param && typeof param.parse === 'function'
+  return isRecord(param)
+    && 'parse' in param
+    && typeof param.parse === 'function'
+    && '~standard' in param
+    && isRecord(param['~standard'])
+    && 'vendor' in param['~standard']
+    && param['~standard'].vendor === 'zod'
 }
 
 export async function initZod(): Promise<void> {

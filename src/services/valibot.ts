@@ -2,9 +2,11 @@
 import { Param, ParamGetSet } from '@/types/paramTypes'
 import { isRecord } from '@/utilities/guards'
 import { isPromise } from '@/utilities/promises'
-import type { BaseIssue, BaseSchema, UnionOptions, UnionSchema, VariantSchema } from 'valibot'
+import { StandardSchemaV1 } from '@standard-schema/spec'
 
-export type ValibotSchemaLike = BaseSchema<unknown, unknown, BaseIssue<unknown>> | UnionSchema<UnionOptions, any> | VariantSchema<any, any, any>
+export interface ValibotSchemaLike extends StandardSchemaV1<any> {
+  type: string;
+}
 
 // inferring the return type is preferred for this function
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
