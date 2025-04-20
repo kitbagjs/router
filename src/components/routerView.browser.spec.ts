@@ -69,6 +69,34 @@ test('renders components for initial route', async () => {
   expect(wrapper.html()).toBe('Child')
 })
 
+test('does not render component when router is not started', async () => {
+  const route = createRoute({
+    name: 'foo',
+    path: '/',
+    component: { template: 'hello world' },
+  })
+
+  const router = createRouter([route], {
+    initialUrl: '/',
+  })
+
+  const root = {
+    template: '<RouterView/>',
+  }
+
+  const wrapper = mount(root, {
+    global: {
+      plugins: [router],
+    },
+  })
+
+  expect(wrapper.text()).toBe('')
+
+  await router.start()
+
+  expect(wrapper.text()).toBe('hello world')
+})
+
 test('updates components when route changes', async () => {
   const routes = [
     createRoute({
