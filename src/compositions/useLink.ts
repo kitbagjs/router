@@ -11,6 +11,7 @@ import { Url, isUrl } from '@/types/url'
 import { AllPropertiesAreOptional } from '@/types/utilities'
 import { isRoute } from '@/guards/routes'
 import { combineUrlSearchParams } from '@/utilities/urlSearchParams'
+import { isDefined } from '@/utilities/guards'
 
 export type UseLink = {
   /**
@@ -33,6 +34,14 @@ export type UseLink = {
    * True if route matches current URL. Route is the same as what's currently stored at `router.route`.
    */
   isExactMatch: ComputedRef<boolean>,
+  /**
+   * True if route matches current URL, or is a parent route that matches the parent of the current URL.
+   */
+  isActive: ComputedRef<boolean>,
+  /**
+   * True if route matches current URL exactly.
+   */
+  isExactActive: ComputedRef<boolean>,
   /**
    *
    */
@@ -110,6 +119,8 @@ export function useLink(
 
   const isMatch = computed(() => isRoute(router.route) && router.route.matches.some((match) => match.id === route.value?.id))
   const isExactMatch = computed(() => router.route.id === route.value?.id)
+  const isActive = computed(() => isRoute(router.route) && isDefined(route.value) && router.route.href.startsWith(route.value.href))
+  const isExactActive = computed(() => router.route.href === route.value?.href)
   const isExternal = computed(() => !!href.value && router.isExternal(href.value))
 
   const linkOptions = computed<UseLinkOptions>(() => {
@@ -152,6 +163,8 @@ export function useLink(
     href,
     isMatch,
     isExactMatch,
+    isActive,
+    isExactActive,
     isExternal,
     push,
     replace,
