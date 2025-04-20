@@ -1,4 +1,4 @@
-import { App, Component } from 'vue'
+import { App, Component, Ref } from 'vue'
 import { RouterHistoryMode } from '@/services/createRouterHistory'
 import { RouterRoute } from '@/services/createRouterRoute'
 import { AddAfterRouteHook, AddBeforeRouteHook, WithHooks } from '@/types/hooks'
@@ -129,6 +129,10 @@ export type Router<
    * Initializes the router based on the initial route. Automatically called when the router is installed. Calling this more than once has no effect.
    */
   start: () => Promise<void>,
+  /**
+   * Returns true if the router has been started.
+   */
+  started: Ref<boolean>,
   /**
    * Stops the router and teardown any listeners.
    */
