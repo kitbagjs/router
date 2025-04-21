@@ -1,5 +1,5 @@
 import { createPath } from 'history'
-import { App } from 'vue'
+import { App, ref } from 'vue'
 import { RouterLink, RouterView } from '@/components'
 import { routerRejectionKey } from '@/compositions/useRejection'
 import { routerInjectionKey } from '@/compositions/useRouter'
@@ -281,16 +281,19 @@ export function createRouter<
   const { host } = parseUrl(initialUrl)
   const isExternal = createIsExternal(host)
 
-  let initializing = false
+  let starting = false
+  const started = ref(false)
 
   // eslint is just incorrect here
   // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
   const { promise: initialize, resolve: initialized } = Promise.withResolvers<void>()
 
   async function start(): Promise<void> {
-    if (initializing) {
+    if (starting) {
       return initialize
     }
+
+    starting = true
 
     const shouldInitZod = zotParamsDetected(routes)
 
@@ -298,13 +301,12 @@ export function createRouter<
       await initZod()
     }
 
-    initializing = true
-
     await set(initialUrl, { replace: true, state: initialState })
 
     history.startListening()
 
     initialized()
+    started.value = true
   }
 
   function stop(): void {
@@ -355,6 +357,7 @@ export function createRouter<
     onAfterRouteLeave: hookStore.onAfterRouteLeave,
     prefetch: options?.prefetch,
     start,
+    started,
     stop,
   }
 

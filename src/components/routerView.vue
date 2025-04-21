@@ -15,12 +15,14 @@
   import { RouterRoute } from '@/services/createRouterRoute'
   import { depthInjectionKey } from '@/types/injectionDepth'
   import { useComponentsStore } from '@/compositions/useComponentsStore'
+  import { useRouter } from '@/compositions/useRouter'
 
   const { name = 'default' } = defineProps<{
     name?: string,
   }>()
 
   const route = useRoute()
+  const { started } = useRouter()
   const rejection = useRejection()
   const depth = useRouterDepth()
 
@@ -37,6 +39,10 @@
   provide(depthInjectionKey, depth + 1)
 
   const component = computed(() => {
+    if (!started.value) {
+      return null
+    }
+
     if (rejection.value) {
       return rejection.value.component
     }
