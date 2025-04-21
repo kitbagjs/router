@@ -1,6 +1,6 @@
 <template>
   <a ref="element" :href="href" class="router-link" :class="classes" @click="onClick">
-    <slot v-bind="{ route, isMatch, isExactMatch, isExternal }" />
+    <slot v-bind="{ route, isMatch, isExactMatch, isActive, isExactActive, isExternal }" />
   </a>
 </template>
 
@@ -44,6 +44,8 @@
       route: ResolvedRoute | undefined,
       isMatch: boolean,
       isExactMatch: boolean,
+      isActive: boolean,
+      isExactActive: boolean,
       isExternal: boolean,
     }) => unknown,
   }>()
@@ -60,7 +62,7 @@
     return options
   })
 
-  const { element, isMatch, isExactMatch, isExternal, push } = useLink(() => {
+  const { element, isMatch, isExactMatch, isActive, isExactActive, isExternal, push } = useLink(() => {
     if (typeof props.to === 'function') {
       return props.to(router.resolve)
     }
@@ -71,6 +73,8 @@
   const classes = computed(() => ({
     'router-link--match': isMatch.value,
     'router-link--exact-match': isExactMatch.value,
+    'router-link--active': isActive.value,
+    'router-link--exact-active': isExactActive.value,
   }))
 
   function getResolvedRoute(to: Url | ResolvedRoute | ToCallback | undefined): ResolvedRoute | undefined {

@@ -258,7 +258,7 @@ test('to prop as Url renders and routes correctly', async () => {
 test.each<{ to: Url, match: boolean, exactMatch: boolean }>([
   { to: '/parent-route', match: true, exactMatch: false },
   { to: '/parent-route/child-route', match: true, exactMatch: true },
-  { to: '/other-route', match: false, exactMatch: false },
+  { to: '/other', match: false, exactMatch: false },
 ])('isMatch and isExactMatch classes and slot props works as expected', async ({ to, match, exactMatch }) => {
   const parentRoute = createRoute({
     name: 'parent-route',
@@ -352,6 +352,65 @@ test('isMatch correctly matches parent when sibling has the same url', async () 
 
   expect(link.classes()).toContain('router-link--match')
   expect(link.classes()).not.toContain('router-link--exact-match')
+})
+
+test.each<{ to: Url, active: boolean, exactActive: boolean }>([
+  { to: '/parent-route', active: true, exactActive: false },
+  { to: '/parent-route/child-route/pass', active: true, exactActive: true },
+  { to: '/parent-route/child-route/fail', active: false, exactActive: false },
+  { to: '/other', active: false, exactActive: false },
+])('isActive and isExactActive classes and slot props work as expected', async ({ to, active, exactActive }) => {
+  const parentRoute = createRoute({
+    name: 'parent-route',
+    path: '/parent-route',
+  })
+
+  const childRoute = createRoute({
+    parent: parentRoute,
+    name: 'child-route',
+    path: '/child-route/[param]',
+    component,
+  })
+
+  const otherRoute = createRoute({
+    name: 'other',
+    path: '/other',
+    component,
+  })
+
+  const router = createRouter([parentRoute, childRoute, otherRoute], {
+    initialUrl: '/parent-route/child-route/pass',
+  })
+
+  const wrapper = mount(routerLink, {
+    props: {
+      to,
+    },
+    slots: {
+      default: '{{ params.isActive }} {{ params.isExactActive }}',
+    },
+    global: {
+      plugins: [router],
+    },
+  })
+
+  await router.start()
+
+  const anchor = wrapper.find('a')
+
+  expect(anchor.text()).toBe(`${active} ${exactActive}`)
+
+  if (active) {
+    expect(anchor.classes()).toContain('router-link--active')
+  } else {
+    expect(anchor.classes()).not.toContain('router-link--active')
+  }
+
+  if (exactActive) {
+    expect(anchor.classes()).toContain('router-link--exact-active')
+  } else {
+    expect(anchor.classes()).not.toContain('router-link--exact-active')
+  }
 })
 
 test.each([
