@@ -1,4 +1,4 @@
-export default{
+export default {
   $schema: "https://typedoc.org/schema.json",
   entryPoints: ["./dist/kitbag-router.d.ts"],
   plugin: [
@@ -21,14 +21,11 @@ export default{
     "Errors",
     "Interfaces",
     "Type Guards",
-    "Types",
+    "Type Aliases",
     "Utilities",
     "*",
   ],
-  sidebar: {
-    pretty: true,
-  },
   pageTitleTemplates: {
     member: (args) => `${args.group}: ${args.name}`,
-  }
+  },
 }

@@ -24,7 +24,7 @@
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
-    "docs:generate": "vite build && typedoc && sleep 5 && node ./scripts/api.js"
+    "docs:generate": "vite build && typedoc"
   },
   "type": "module",
   "files": [

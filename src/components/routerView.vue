@@ -6,6 +6,15 @@
   </template>
 </template>
 
+<script lang="ts">
+  /**
+   * @hidden we don't want the criptic component types showing up in the api docs
+   */
+  export default {
+    name: 'RouterView',
+  }
+</script>
+
 <script lang="ts" setup>
   import { Component, UnwrapRef, VNode, computed, provide } from 'vue'
   import { useRejection } from '@/compositions/useRejection'
