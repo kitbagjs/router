@@ -10,22 +10,10 @@ type ParamGetSet<T> = object;
 | ------ | ------ |
 | `T` | `any` |
 
-## Type declaration
+## Properties
 
-### defaultValue?
-
-```ts
-optional defaultValue: T;
-```
-
-### get
-
-```ts
-get: ParamGetter<T>;
-```
-
-### set
-
-```ts
-set: ParamSetter<T>;
-```
+| Property | Type |
+| ------ | ------ |
+| <a id="defaultvalue"></a> `defaultValue?` | `T` |
+| <a id="get"></a> `get` | [`ParamGetter`](ParamGetter.md)\<`T`\> |
+| <a id="set"></a> `set` | [`ParamSetter`](ParamSetter.md)\<`T`\> |

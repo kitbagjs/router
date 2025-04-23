@@ -3,7 +3,7 @@
 ## Call Signature
 
 ```ts
-function createParam<TParam>(param): TParam
+function createParam<TParam>(param): TParam;
 ```
 
 ### Type Parameters
@@ -25,7 +25,7 @@ function createParam<TParam>(param): TParam
 ## Call Signature
 
 ```ts
-function createParam<TParam>(param): ParamGetSet<ExtractParamType<TParam>>
+function createParam<TParam>(param): ParamGetSet<ExtractParamType<TParam>>;
 ```
 
 ### Type Parameters
@@ -47,7 +47,7 @@ function createParam<TParam>(param): ParamGetSet<ExtractParamType<TParam>>
 ## Call Signature
 
 ```ts
-function createParam<TParam>(param, defaultValue): Required<ParamGetSet<ExtractParamType<TParam>>>
+function createParam<TParam>(param, defaultValue): Required<ParamGetSet<ExtractParamType<TParam>>>;
 ```
 
 ### Type Parameters

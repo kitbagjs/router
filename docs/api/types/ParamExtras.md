@@ -4,20 +4,8 @@
 type ParamExtras = object;
 ```
 
-## Type declaration
+## Properties
 
-### invalid()
-
-```ts
-invalid: (message?) => never;
-```
-
-#### Parameters
-
-| Parameter | Type |
+| Property | Type |
 | ------ | ------ |
-| `message`? | `string` |
-
-#### Returns
-
-`never`
+| <a id="invalid"></a> `invalid` | (`message?`) => `never` |

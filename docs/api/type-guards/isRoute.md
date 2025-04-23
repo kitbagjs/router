@@ -3,7 +3,7 @@
 ## Call Signature
 
 ```ts
-function isRoute(route): route is RouterRoute<Readonly<{ hash: string; href: Url; id: string; matched: CreatedRouteOptions; matches: CreatedRouteOptions[]; name: string; params: (key: string) => any; query: URLSearchParams; state: ExtractRouteStateParamsAsOptional<Record<string, Param>> }>>
+function isRoute(route): route is RouterRoute<Readonly<{ hash: string; href: Url; id: string; matched: CreatedRouteOptions; matches: CreatedRouteOptions[]; name: string; params: { [key: string]: any }; query: URLSearchParams; state: ExtractRouteStateParamsAsOptional<Record<string, Param>> }>>;
 ```
 
 A type guard for determining if a value is a valid RouterRoute.
@@ -16,7 +16,7 @@ A type guard for determining if a value is a valid RouterRoute.
 
 ### Returns
 
-`route is RouterRoute<Readonly<{ hash: string; href: Url; id: string; matched: CreatedRouteOptions; matches: CreatedRouteOptions[]; name: string; params: (key: string) => any; query: URLSearchParams; state: ExtractRouteStateParamsAsOptional<Record<string, Param>> }>>`
+`route is RouterRoute<Readonly<{ hash: string; href: Url; id: string; matched: CreatedRouteOptions; matches: CreatedRouteOptions[]; name: string; params: { [key: string]: any }; query: URLSearchParams; state: ExtractRouteStateParamsAsOptional<Record<string, Param>> }>>`
 
 `true` if the value is a valid RouterRoute, otherwise `false`.
 
@@ -26,7 +26,7 @@ A type guard for determining if a value is a valid RouterRoute.
 function isRoute<TRoute, TRouteName>(
    route, 
    routeName, 
-   options): route is TRoute & { name: TRouteName }
+   options): route is TRoute & { name: TRouteName };
 ```
 
 A type guard for determining if a value is a valid RouterRoute with an exact match.
@@ -35,7 +35,7 @@ A type guard for determining if a value is a valid RouterRoute with an exact mat
 
 | Type Parameter |
 | ------ |
-| `TRoute` *extends* [`RouterRoute`](../types/RouterRoute.md)\<`Readonly`\<\{ `hash`: `string`; `href`: [`Url`](../types/Url.md); `id`: `string`; `matched`: [`CreatedRouteOptions`](../types/CreatedRouteOptions.md); `matches`: [`CreatedRouteOptions`](../types/CreatedRouteOptions.md)[]; `name`: `string`; `params`: \{\}; `query`: `URLSearchParams`; `state`: `ExtractRouteStateParamsAsOptional`\<`Record`\<`string`, [`Param`](../types/Param.md)\>\>; \}\>\> |
+| `TRoute` *extends* [`RouterRoute`](../types/RouterRoute.md)\<`Readonly`\<\{ `hash`: `string`; `href`: [`Url`](../types/Url.md); `id`: `string`; `matched`: [`CreatedRouteOptions`](../types/CreatedRouteOptions.md); `matches`: [`CreatedRouteOptions`](../types/CreatedRouteOptions.md)[]; `name`: `string`; `params`: \{ [`key`: `string`]: `any`; \}; `query`: `URLSearchParams`; `state`: `ExtractRouteStateParamsAsOptional`\<`Record`\<`string`, [`Param`](../types/Param.md)\>\>; \}\>\> |
 | `TRouteName` *extends* `string` |
 
 ### Parameters
@@ -58,7 +58,7 @@ A type guard for determining if a value is a valid RouterRoute with an exact mat
 function isRoute<TRoute, TRouteName>(
    route, 
    routeName, 
-   options?): route is RouteWithMatch<TRoute, TRouteName>
+   options?): route is RouteWithMatch<TRoute, TRouteName>;
 ```
 
 A type guard for determining if a value is a valid RouterRoute with a partial match.
@@ -67,7 +67,7 @@ A type guard for determining if a value is a valid RouterRoute with a partial ma
 
 | Type Parameter |
 | ------ |
-| `TRoute` *extends* [`RouterRoute`](../types/RouterRoute.md)\<`Readonly`\<\{ `hash`: `string`; `href`: [`Url`](../types/Url.md); `id`: `string`; `matched`: [`CreatedRouteOptions`](../types/CreatedRouteOptions.md); `matches`: [`CreatedRouteOptions`](../types/CreatedRouteOptions.md)[]; `name`: `string`; `params`: \{\}; `query`: `URLSearchParams`; `state`: `ExtractRouteStateParamsAsOptional`\<`Record`\<`string`, [`Param`](../types/Param.md)\>\>; \}\>\> |
+| `TRoute` *extends* [`RouterRoute`](../types/RouterRoute.md)\<`Readonly`\<\{ `hash`: `string`; `href`: [`Url`](../types/Url.md); `id`: `string`; `matched`: [`CreatedRouteOptions`](../types/CreatedRouteOptions.md); `matches`: [`CreatedRouteOptions`](../types/CreatedRouteOptions.md)[]; `name`: `string`; `params`: \{ [`key`: `string`]: `any`; \}; `query`: `URLSearchParams`; `state`: `ExtractRouteStateParamsAsOptional`\<`Record`\<`string`, [`Param`](../types/Param.md)\>\>; \}\>\> |
 | `TRouteName` *extends* `string` |
 
 ### Parameters
@@ -76,7 +76,7 @@ A type guard for determining if a value is a valid RouterRoute with a partial ma
 | ------ | ------ | ------ |
 | `route` | `TRoute` | The value to check. |
 | `routeName` | `TRouteName` | The expected route name. |
-| `options`? | `IsRouteOptions` | - |
+| `options?` | `IsRouteOptions` | - |
 
 ### Returns
 
@@ -90,7 +90,7 @@ A type guard for determining if a value is a valid RouterRoute with a partial ma
 function isRoute<TRouteName>(
    route, 
    routeName, 
-   options): route is RouterRoute<Readonly<{ hash: string; href: Url; id: any; matched: any; matches: any; name: any; params: { (key: string): any; (key: number): any; (key: symbol): any }; query: URLSearchParams; state: ExtractRouteStateParamsAsOptional<any> }>> & { name: TRouteName }
+   options): route is RouterRoute<Readonly<{ hash: string; href: Url; id: any; matched: any; matches: any; name: any; params: { [key: string]: any; [key: number]: any; [key: symbol]: any }; query: URLSearchParams; state: ExtractRouteStateParamsAsOptional<any> }>> & { name: TRouteName };
 ```
 
 A type guard for determining if a value is a valid RegisteredRouterRoute with an exact match.
@@ -111,7 +111,7 @@ A type guard for determining if a value is a valid RegisteredRouterRoute with an
 
 ### Returns
 
-`route is RouterRoute<Readonly<{ hash: string; href: Url; id: any; matched: any; matches: any; name: any; params: { (key: string): any; (key: number): any; (key: symbol): any }; query: URLSearchParams; state: ExtractRouteStateParamsAsOptional<any> }>> & { name: TRouteName }`
+`route is RouterRoute<Readonly<{ hash: string; href: Url; id: any; matched: any; matches: any; name: any; params: { [key: string]: any; [key: number]: any; [key: symbol]: any }; query: URLSearchParams; state: ExtractRouteStateParamsAsOptional<any> }>> & { name: TRouteName }`
 
 `true` if the value is a valid RegisteredRouterRoute with an exact match, otherwise `false`.
 
@@ -121,7 +121,7 @@ A type guard for determining if a value is a valid RegisteredRouterRoute with an
 function isRoute<TRouteName>(
    route, 
    routeName, 
-   options?): route is TRouteName extends any ? RouterRoute<Readonly<{ hash: string; href: Url; id: any; matched: any; matches: any; name: any; params: { (key: string): any; (key: number): any; (key: symbol): any }; query: URLSearchParams; state: ExtractRouteStateParamsAsOptional<any> }>> : never
+   options?): route is TRouteName extends any ? RouterRoute<Readonly<{ hash: string; href: Url; id: any; matched: any; matches: any; name: any; params: { [key: string]: any; [key: number]: any; [key: symbol]: any }; query: URLSearchParams; state: ExtractRouteStateParamsAsOptional<any> }>> : never;
 ```
 
 A type guard for determining if a value is a valid RegisteredRouterRoute with a partial match.
@@ -138,11 +138,11 @@ A type guard for determining if a value is a valid RegisteredRouterRoute with a 
 | ------ | ------ | ------ |
 | `route` | `unknown` | The value to check. |
 | `routeName` | `TRouteName` | The expected route name. |
-| `options`? | `IsRouteOptions` | - |
+| `options?` | `IsRouteOptions` | - |
 
 ### Returns
 
-`route is TRouteName extends any ? RouterRoute<Readonly<{ hash: string; href: Url; id: any; matched: any; matches: any; name: any; params: { (key: string): any; (key: number): any; (key: symbol): any }; query: URLSearchParams; state: ExtractRouteStateParamsAsOptional<any> }>> : never`
+`route is TRouteName extends any ? RouterRoute<Readonly<{ hash: string; href: Url; id: any; matched: any; matches: any; name: any; params: { [key: string]: any; [key: number]: any; [key: symbol]: any }; query: URLSearchParams; state: ExtractRouteStateParamsAsOptional<any> }>> : never`
 
 `true` if the value is a valid RegisteredRouterRoute with a partial match, otherwise `false`.
 
@@ -152,7 +152,7 @@ A type guard for determining if a value is a valid RegisteredRouterRoute with a 
 function isRoute(
    route, 
    routeName?, 
-   options?): boolean
+   options?): boolean;
 ```
 
 A type guard for determining if a value is a valid RouterRoute.
@@ -162,8 +162,8 @@ A type guard for determining if a value is a valid RouterRoute.
 | Parameter | Type | Description |
 | ------ | ------ | ------ |
 | `route` | `unknown` | The value to check. |
-| `routeName`? | `string` | The expected route name. |
-| `options`? | `IsRouteOptions` | - |
+| `routeName?` | `string` | The expected route name. |
+| `options?` | `IsRouteOptions` | - |
 
 ### Returns
 

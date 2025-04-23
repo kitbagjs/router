@@ -6,7 +6,7 @@
 function createRouter<TRoutes, TOptions, TPlugin>(
    routes, 
    options?, 
-plugins?): Router<TRoutes, TOptions, TPlugin>
+plugins?): Router<TRoutes, TOptions, TPlugin>;
 ```
 
 Creates a router instance for a Vue application, equipped with methods for route handling, lifecycle hooks, and state management.
@@ -24,8 +24,8 @@ Creates a router instance for a Vue application, equipped with methods for route
 | Parameter | Type | Description |
 | ------ | ------ | ------ |
 | `routes` | `TRoutes` | [Routes](../types/Routes.md) An array of route definitions specifying the configuration of routes in the application. Use createRoute method to create the route definitions. |
-| `options`? | `TOptions` | [RouterOptions](../types/RouterOptions.md) for the router, including history mode and initial URL settings. |
-| `plugins`? | `TPlugin`[] | - |
+| `options?` | `TOptions` | [RouterOptions](../types/RouterOptions.md) for the router, including history mode and initial URL settings. |
+| `plugins?` | `TPlugin`[] | - |
 
 ### Returns
 
@@ -55,7 +55,7 @@ const router = createRouter(routes)
 function createRouter<TRoutes, TOptions, TPlugin>(
    routes, 
    options?, 
-plugins?): Router<TRoutes, TOptions, TPlugin>
+plugins?): Router<TRoutes, TOptions, TPlugin>;
 ```
 
 Creates a router instance for a Vue application, equipped with methods for route handling, lifecycle hooks, and state management.
@@ -73,8 +73,8 @@ Creates a router instance for a Vue application, equipped with methods for route
 | Parameter | Type | Description |
 | ------ | ------ | ------ |
 | `routes` | `TRoutes`[] | [Routes](../types/Routes.md) An array of route definitions specifying the configuration of routes in the application. Use createRoute method to create the route definitions. |
-| `options`? | `TOptions` | [RouterOptions](../types/RouterOptions.md) for the router, including history mode and initial URL settings. |
-| `plugins`? | `TPlugin`[] | - |
+| `options?` | `TOptions` | [RouterOptions](../types/RouterOptions.md) for the router, including history mode and initial URL settings. |
+| `plugins?` | `TPlugin`[] | - |
 
 ### Returns
 

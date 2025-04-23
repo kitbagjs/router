@@ -3,53 +3,43 @@
 ## Call Signature
 
 ```ts
-function createExternalRoute<THost, TName, TPath, TQuery, THash, TMeta>(options): Route<ToName<TName>, ToWithParams<THost>, ToWithParams<TPath>, ToWithParams<TQuery>, ToWithParams<THash>, TMeta>
+function createExternalRoute<TOptions>(options): ToRoute<TOptions, undefined>;
 ```
 
 ### Type Parameters
 
-| Type Parameter | Default type |
-| ------ | ------ |
-| `THost` *extends* \| `string` \| `WithParams`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\> | - |
-| `TName` *extends* `undefined` \| `string` | `undefined` |
-| `TPath` *extends* \| `undefined` \| `string` \| `WithParams`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\> | `undefined` |
-| `TQuery` *extends* \| `undefined` \| `string` \| `WithParams`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\> | `undefined` |
-| `THash` *extends* \| `undefined` \| `string` \| `WithParams`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\> | `undefined` |
-| `TMeta` *extends* `Record`\<`string`, `unknown`\> | `Record`\<`string`, `unknown`\> |
+| Type Parameter |
+| ------ |
+| `TOptions` *extends* [`WithHooks`](../types/WithHooks.md) & `object` & `WithHost`\< \| `string` \| `WithParams`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\>\> & `WithoutParent` |
 
 ### Parameters
 
 | Parameter | Type |
 | ------ | ------ |
-| `options` | [`WithHooks`](../types/WithHooks.md) & `object` & `WithHost`\<`THost`\> & `WithoutParent` |
+| `options` | `TOptions` |
 
 ### Returns
 
-[`Route`](../types/Route.md)\<`ToName`\<`TName`\>, `ToWithParams`\<`THost`\>, `ToWithParams`\<`TPath`\>, `ToWithParams`\<`TQuery`\>, `ToWithParams`\<`THash`\>, `TMeta`\>
+`ToRoute`\<`TOptions`, `undefined`\>
 
 ## Call Signature
 
 ```ts
-function createExternalRoute<TParent, TName, TPath, TQuery, THash, TMeta>(options): Route<ToName<TName>, WithParams<"", {}>, CombinePath<TParent["path"], ToWithParams<TPath>>, CombineQuery<TParent["query"], ToWithParams<TQuery>>, CombinePath<TParent["hash"], ToWithParams<THash>>, CombineMeta<TMeta, TParent["meta"]>>
+function createExternalRoute<TOptions>(options): ToRoute<TOptions, undefined>;
 ```
 
 ### Type Parameters
 
-| Type Parameter | Default type |
-| ------ | ------ |
-| `TParent` *extends* [`Route`](../types/Route.md)\<`string`, `WithParams`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\>, `WithParams`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\>, `WithParams`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\>, `WithParams`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\>, `Record`\<`string`, `unknown`\>, `Record`\<`string`, [`Param`](../types/Param.md)\>, [`CreatedRouteOptions`](../types/CreatedRouteOptions.md)[]\> | - |
-| `TName` *extends* `undefined` \| `string` | `undefined` |
-| `TPath` *extends* \| `undefined` \| `string` \| `WithParams`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\> | `undefined` |
-| `TQuery` *extends* \| `undefined` \| `string` \| `WithParams`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\> | `undefined` |
-| `THash` *extends* \| `undefined` \| `string` \| `WithParams`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\> | `undefined` |
-| `TMeta` *extends* `Record`\<`string`, `unknown`\> | `Record`\<`string`, `unknown`\> |
+| Type Parameter |
+| ------ |
+| `TOptions` *extends* [`WithHooks`](../types/WithHooks.md) & `object` & `WithoutHost` & `WithParent`\<[`Route`](../types/Route.md)\<`string`, `WithParams`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\>, `WithParams`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\>, `WithParams`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\>, `WithParams`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\>, `Record`\<`string`, `unknown`\>, `Record`\<`string`, [`Param`](../types/Param.md)\>, [`CreatedRouteOptions`](../types/CreatedRouteOptions.md)[]\>\> |
 
 ### Parameters
 
 | Parameter | Type |
 | ------ | ------ |
-| `options` | [`WithHooks`](../types/WithHooks.md) & `object` & `WithoutHost` & `WithParent`\<`TParent`\> |
+| `options` | `TOptions` |
 
 ### Returns
 
-[`Route`](../types/Route.md)\<`ToName`\<`TName`\>, `WithParams`\<`""`, \{\}\>, `CombinePath`\<`TParent`\[`"path"`\], `ToWithParams`\<`TPath`\>\>, `CombineQuery`\<`TParent`\[`"query"`\], `ToWithParams`\<`TQuery`\>\>, `CombinePath`\<`TParent`\[`"hash"`\], `ToWithParams`\<`THash`\>\>, `CombineMeta`\<`TMeta`, `TParent`\[`"meta"`\]\>\>
+`ToRoute`\<`TOptions`, `undefined`\>

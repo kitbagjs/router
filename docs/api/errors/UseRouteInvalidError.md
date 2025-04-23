@@ -8,10 +8,10 @@ An error thrown when there is a mismatch between an expected route and the one a
 
 ## Constructors
 
-### new UseRouteInvalidError()
+### Constructor
 
 ```ts
-new UseRouteInvalidError(routeName, actualRouteName): UseRouteInvalidError
+new UseRouteInvalidError(routeName, actualRouteName): UseRouteInvalidError;
 ```
 
 Constructs a new UseRouteInvalidError instance with a message that specifies both the given and expected route names.
@@ -26,7 +26,7 @@ This detailed error message aids in quickly identifying and resolving mismatches
 
 #### Returns
 
-[`UseRouteInvalidError`](UseRouteInvalidError.md)
+`UseRouteInvalidError`
 
 #### Overrides
 

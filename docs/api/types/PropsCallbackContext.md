@@ -12,28 +12,11 @@ Context provided to props callback functions
 | ------ | ------ |
 | `TParent` *extends* [`Route`](Route.md) \| `undefined` | [`Route`](Route.md) \| `undefined` |
 
-## Type declaration
+## Properties
 
-### parent
-
-```ts
-parent: PropsCallbackParent<TParent>;
-```
-
-### push
-
-```ts
-push: CallbackContext["push"];
-```
-
-### reject
-
-```ts
-reject: CallbackContext["reject"];
-```
-
-### replace
-
-```ts
-replace: CallbackContext["replace"];
-```
+| Property | Type |
+| ------ | ------ |
+| <a id="parent"></a> `parent` | `PropsCallbackParent`\<`TParent`\> |
+| <a id="push"></a> `push` | `CallbackContext`\[`"push"`\] |
+| <a id="reject"></a> `reject` | `CallbackContext`\[`"reject"`\] |
+| <a id="replace"></a> `replace` | `CallbackContext`\[`"replace"`\] |

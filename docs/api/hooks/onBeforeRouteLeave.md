@@ -1,20 +1,16 @@
-# Hooks: onBeforeRouteLeave()
+# Hooks: onBeforeRouteLeave
 
 ```ts
-function onBeforeRouteLeave(hook): RouteHookRemove
+const onBeforeRouteLeave: AddBeforeRouteHook;
 ```
 
 Registers a hook that is called before a route is left. Must be called from setup.
 This is useful for performing actions or cleanups before navigating away from a route component.
 
-## Parameters
+## Param
 
-| Parameter | Type |
-| ------ | ------ |
-| `hook` | [`BeforeRouteHook`](../types/BeforeRouteHook.md) |
+The hook callback function
 
 ## Returns
-
-[`RouteHookRemove`](../types/RouteHookRemove.md)
 
 A function that removes the added hook.

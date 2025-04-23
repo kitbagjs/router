@@ -10,36 +10,11 @@ type RouterPushOptions<TState> = object;
 | ------ | ------ |
 | `TState` | `unknown` |
 
-## Type declaration
+## Properties
 
-### hash?
-
-```ts
-optional hash: string;
-```
-
-The hash to append to the url.
-
-### query?
-
-```ts
-optional query: QuerySource;
-```
-
-The query string to add to the url.
-
-### replace?
-
-```ts
-optional replace: boolean;
-```
-
-Whether to replace the current history entry.
-
-### state?
-
-```ts
-optional state: Partial<TState>;
-```
-
-State values to pass to the route.
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="hash"></a> `hash?` | `string` | The hash to append to the url. |
+| <a id="query"></a> `query?` | [`QuerySource`](QuerySource.md) | The query string to add to the url. |
+| <a id="replace"></a> `replace?` | `boolean` | Whether to replace the current history entry. |
+| <a id="state"></a> `state?` | `Partial`\<`TState`\> | State values to pass to the route. |

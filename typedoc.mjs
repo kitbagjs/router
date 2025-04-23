@@ -1,4 +1,4 @@
-export default{
+export default {
   $schema: "https://typedoc.org/schema.json",
   entryPoints: ["./dist/kitbag-router.d.ts"],
   plugin: [

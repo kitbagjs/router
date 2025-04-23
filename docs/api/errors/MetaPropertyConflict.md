@@ -9,21 +9,21 @@ A child's meta can override properties of the parent, however the types must mat
 
 ## Constructors
 
-### new MetaPropertyConflict()
+### Constructor
 
 ```ts
-new MetaPropertyConflict(property?): MetaPropertyConflict
+new MetaPropertyConflict(property?): MetaPropertyConflict;
 ```
 
 #### Parameters
 
 | Parameter | Type |
 | ------ | ------ |
-| `property`? | `string` |
+| `property?` | `string` |
 
 #### Returns
 
-[`MetaPropertyConflict`](MetaPropertyConflict.md)
+`MetaPropertyConflict`
 
 #### Overrides
 

@@ -10,10 +10,10 @@ parent and params defined in the query.
 
 ## Constructors
 
-### new DuplicateParamsError()
+### Constructor
 
 ```ts
-new DuplicateParamsError(paramName): DuplicateParamsError
+new DuplicateParamsError(paramName): DuplicateParamsError;
 ```
 
 Constructs a new DuplicateParamsError instance with a message indicating the problematic parameter.
@@ -26,7 +26,7 @@ Constructs a new DuplicateParamsError instance with a message indicating the pro
 
 #### Returns
 
-[`DuplicateParamsError`](DuplicateParamsError.md)
+`DuplicateParamsError`
 
 #### Overrides
 

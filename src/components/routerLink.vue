@@ -5,9 +5,12 @@
 </template>
 
 <script lang="ts">
-/**
- * @ignore
- */
+  /**
+   * @hidden we don't want the criptic component types showing up in the api docs
+   */
+  export default {
+    name: 'RouterLink',
+  }
 </script>
 
 <script setup lang="ts">
