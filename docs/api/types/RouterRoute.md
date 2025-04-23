@@ -10,68 +10,14 @@ type RouterRoute<TRoute> = object;
 | ------ | ------ |
 | `TRoute` *extends* [`ResolvedRoute`](ResolvedRoute.md) | [`ResolvedRoute`](ResolvedRoute.md) |
 
-## Type declaration
-
-### hash
-
-```ts
-readonly hash: TRoute["hash"];
-```
-
-### href
-
-```ts
-readonly href: TRoute["href"];
-```
-
-### id
-
-```ts
-readonly id: TRoute["id"];
-```
-
-### matched
-
-```ts
-readonly matched: TRoute["matched"];
-```
-
-### matches
-
-```ts
-readonly matches: TRoute["matches"];
-```
-
-### name
-
-```ts
-readonly name: TRoute["name"];
-```
-
-### params
-
-```ts
-params: TRoute["params"];
-```
-
-### state
-
-```ts
-state: TRoute["state"];
-```
-
-### update
-
-```ts
-readonly update: RouteUpdate<TRoute>;
-```
+## Accessors
 
 ### query
 
 #### Get Signature
 
 ```ts
-get query(): URLSearchParams
+get query(): URLSearchParams;
 ```
 
 ##### Returns
@@ -81,7 +27,7 @@ get query(): URLSearchParams
 #### Set Signature
 
 ```ts
-set query(value): void
+set query(value): void;
 ```
 
 ##### Parameters
@@ -93,3 +39,17 @@ set query(value): void
 ##### Returns
 
 `void`
+
+## Properties
+
+| Property | Modifier | Type |
+| ------ | ------ | ------ |
+| <a id="hash"></a> `hash` | `readonly` | `TRoute`\[`"hash"`\] |
+| <a id="href"></a> `href` | `readonly` | `TRoute`\[`"href"`\] |
+| <a id="id"></a> `id` | `readonly` | `TRoute`\[`"id"`\] |
+| <a id="matched"></a> `matched` | `readonly` | `TRoute`\[`"matched"`\] |
+| <a id="matches"></a> `matches` | `readonly` | `TRoute`\[`"matches"`\] |
+| <a id="name"></a> `name` | `readonly` | `TRoute`\[`"name"`\] |
+| <a id="params"></a> `params` | `public` | `TRoute`\[`"params"`\] |
+| <a id="state"></a> `state` | `public` | `TRoute`\[`"state"`\] |
+| <a id="update"></a> `update` | `readonly` | `RouteUpdate`\<`TRoute`\> |

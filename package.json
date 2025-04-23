@@ -24,7 +24,7 @@
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
-    "docs:generate": "vite build && typedoc"
+    "docs:generate": "vite build && typedoc && sleep 5 && node ./scripts/api.js"
   },
   "type": "module",
   "files": [
@@ -47,7 +47,7 @@
     "globals": "^16.0.0",
     "happy-dom": "^17.4.4",
     "typedoc": "^0.28.3",
-    "typedoc-plugin-markdown": "^4.6.2",
+    "typedoc-plugin-markdown": "^4.6.3",
     "typedoc-vitepress-theme": "^1.1.2",
     "typescript": "^5.8.3",
     "valibot": "^1.0.0",

@@ -3,7 +3,7 @@
 ## Call Signature
 
 ```ts
-function useRoute(): RouterRoute
+function useRoute(): RouterRoute;
 ```
 
 A composition to access the current route or verify a specific route name within a Vue component.
@@ -34,10 +34,14 @@ function useRoute<TRouteName>(routeName, options): RouterRoute<Readonly<{
   matched: any;
   matches: any;
   name: any;
-  params: {};
+  params: {
+   [key: string]: any;
+   [key: number]: any;
+   [key: symbol]: any;
+  };
   query: URLSearchParams;
   state: ExtractRouteStateParamsAsOptional<any>;
- }>> & object
+}>> & object;
 ```
 
 A composition to access the current route or verify a specific route name within a Vue component.
@@ -70,10 +74,14 @@ if provided, throwing an error if the validation fails at any point during the c
   `matched`: `any`;
   `matches`: `any`;
   `name`: `any`;
-  `params`: \{\};
+  `params`: \{
+   [`key`: `string`]: `any`;
+   [`key`: `number`]: `any`;
+   [`key`: `symbol`]: `any`;
+  \};
   `query`: `URLSearchParams`;
   `state`: `ExtractRouteStateParamsAsOptional`\<`any`\>;
- \}\>\> & `object`
+\}\>\> & `object`
 
 The current router route. If a route name is provided, it validates the route name first.
 
@@ -91,10 +99,14 @@ function useRoute<TRouteName>(routeName, options?): RouterRoute<Readonly<{
   matched: any;
   matches: any;
   name: any;
-  params: {};
+  params: {
+   [key: string]: any;
+   [key: number]: any;
+   [key: symbol]: any;
+  };
   query: URLSearchParams;
   state: ExtractRouteStateParamsAsOptional<any>;
- }>> & object
+}>> & object;
 ```
 
 A composition to access the current route or verify a specific route name within a Vue component.
@@ -116,7 +128,7 @@ if provided, throwing an error if the validation fails at any point during the c
 | Parameter | Type | Description |
 | ------ | ------ | ------ |
 | `routeName` | `TRouteName` | Optional. The name of the route to validate against the current active routes. |
-| `options`? | `IsRouteOptions` | - |
+| `options?` | `IsRouteOptions` | - |
 
 ### Returns
 
@@ -127,10 +139,14 @@ if provided, throwing an error if the validation fails at any point during the c
   `matched`: `any`;
   `matches`: `any`;
   `name`: `any`;
-  `params`: \{\};
+  `params`: \{
+   [`key`: `string`]: `any`;
+   [`key`: `number`]: `any`;
+   [`key`: `symbol`]: `any`;
+  \};
   `query`: `URLSearchParams`;
   `state`: `ExtractRouteStateParamsAsOptional`\<`any`\>;
- \}\>\> & `object`
+\}\>\> & `object`
 
 The current router route. If a route name is provided, it validates the route name first.
 

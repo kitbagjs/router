@@ -1,7 +1,7 @@
 # Type Guards: isUrl()
 
 ```ts
-function isUrl(value): value is Url
+function isUrl(value): value is Url;
 ```
 
 A type guard for determining if a value is a valid URL.

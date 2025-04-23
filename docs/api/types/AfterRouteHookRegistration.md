@@ -4,22 +4,10 @@
 type AfterRouteHookRegistration = object;
 ```
 
-## Type declaration
+## Properties
 
-### depth
-
-```ts
-depth: number;
-```
-
-### hook
-
-```ts
-hook: AfterRouteHook;
-```
-
-### lifecycle
-
-```ts
-lifecycle: "onAfterRouteEnter" | "onAfterRouteUpdate" | "onAfterRouteLeave";
-```
+| Property | Type |
+| ------ | ------ |
+| <a id="depth"></a> `depth` | `number` |
+| <a id="hook"></a> `hook` | [`AfterRouteHook`](AfterRouteHook.md) |
+| <a id="lifecycle"></a> `lifecycle` | `"onAfterRouteEnter"` \| `"onAfterRouteUpdate"` \| `"onAfterRouteLeave"` |

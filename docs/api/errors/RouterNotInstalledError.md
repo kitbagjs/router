@@ -8,15 +8,15 @@ An error thrown when an attempt is made to use routing functionality before the 
 
 ## Constructors
 
-### new RouterNotInstalledError()
+### Constructor
 
 ```ts
-new RouterNotInstalledError(): RouterNotInstalledError
+new RouterNotInstalledError(): RouterNotInstalledError;
 ```
 
 #### Returns
 
-[`RouterNotInstalledError`](RouterNotInstalledError.md)
+`RouterNotInstalledError`
 
 #### Overrides
 

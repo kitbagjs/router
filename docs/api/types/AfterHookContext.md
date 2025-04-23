@@ -4,16 +4,9 @@
 type AfterHookContext = object;
 ```
 
-## Type declaration
+## Properties
 
-### from
-
-```ts
-from: ResolvedRoute | null;
-```
-
-### to
-
-```ts
-to: ResolvedRoute;
-```
+| Property | Type |
+| ------ | ------ |
+| <a id="from"></a> `from` | [`ResolvedRoute`](ResolvedRoute.md) \| `null` |
+| <a id="to"></a> `to` | [`ResolvedRoute`](ResolvedRoute.md) |

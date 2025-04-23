@@ -3,7 +3,7 @@
 ## Call Signature
 
 ```ts
-function withParams<TValue, TParams>(value, params): WithParams<TValue, TParams>
+function withParams<TValue, TParams>(value, params): WithParams<TValue, TParams>;
 ```
 
 ### Type Parameters
@@ -27,9 +27,11 @@ function withParams<TValue, TParams>(value, params): WithParams<TValue, TParams>
 ## Call Signature
 
 ```ts
-function withParams(): WithParams<"", {}>
+function withParams(): WithParams<"", {
+}>;
 ```
 
 ### Returns
 
-`WithParams`\<`""`, \{\}\>
+`WithParams`\<`""`, \{
+\}\>

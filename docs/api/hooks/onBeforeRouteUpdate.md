@@ -1,20 +1,16 @@
-# Hooks: onBeforeRouteUpdate()
+# Hooks: onBeforeRouteUpdate
 
 ```ts
-function onBeforeRouteUpdate(hook): RouteHookRemove
+const onBeforeRouteUpdate: AddBeforeRouteHook;
 ```
 
 Registers a hook that is called before a route is updated. Must be called from setup.
 This is particularly useful for handling changes in route parameters or query while staying within the same component.
 
-## Parameters
+## Param
 
-| Parameter | Type |
-| ------ | ------ |
-| `hook` | [`BeforeRouteHook`](../types/BeforeRouteHook.md) |
+The hook callback function
 
 ## Returns
-
-[`RouteHookRemove`](../types/RouteHookRemove.md)
 
 A function that removes the added hook.

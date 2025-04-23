@@ -11,5 +11,6 @@ type Param =
   | DateConstructor
   | JSON
   | ZodSchemaLike
+  | ValibotSchemaLike
   | LiteralParam;
 ```

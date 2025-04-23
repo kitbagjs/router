@@ -21,11 +21,14 @@ export default {
     "Errors",
     "Interfaces",
     "Type Guards",
-    "Type Aliases",
+    "Types",
     "Utilities",
     "*",
   ],
+  sidebar: {
+    pretty: true,
+  },
   pageTitleTemplates: {
     member: (args) => `${args.group}: ${args.name}`,
-  },
+  }
 }

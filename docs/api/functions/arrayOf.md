@@ -1,7 +1,7 @@
 # Functions: arrayOf()
 
 ```ts
-function arrayOf<T>(params, options?): ParamGetSet<ExtractParamType<T[number]>[]>
+function arrayOf<T>(params, options?): ParamGetSet<ExtractParamType<T[number]>[]>;
 ```
 
 ## Type Parameters
@@ -15,7 +15,7 @@ function arrayOf<T>(params, options?): ParamGetSet<ExtractParamType<T[number]>[]
 | Parameter | Type |
 | ------ | ------ |
 | `params` | `T` |
-| `options`? | `ArrayOfOptions` |
+| `options?` | `ArrayOfOptions` |
 
 ## Returns
 

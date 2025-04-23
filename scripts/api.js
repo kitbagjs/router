@@ -113,4 +113,4 @@ async function organizeFilesByGroup() {
 await renameTypeAliasesFolderToTypes()
 await updateReferences('type-aliases', 'types')
 await updateReferences('Type Aliases', 'Types')
-// await organizeFilesByGroup();
+await organizeFilesByGroup()

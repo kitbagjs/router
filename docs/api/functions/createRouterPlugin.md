@@ -1,7 +1,7 @@
 # Functions: createRouterPlugin()
 
 ```ts
-function createRouterPlugin<TRoutes, TRejections>(plugin): RouterPlugin<TRoutes, TRejections>
+function createRouterPlugin<TRoutes, TRejections>(plugin): RouterPlugin<TRoutes, TRejections>;
 ```
 
 ## Type Parameters

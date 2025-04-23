@@ -1,7 +1,7 @@
 # Functions: asUrl()
 
 ```ts
-function asUrl(value): Url
+function asUrl(value): Url;
 ```
 
 Converts a string to a valid URL.

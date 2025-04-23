@@ -12,13 +12,16 @@ export { tupleOf } from './tupleOf'
 import { withParams } from './withParams'
 /**
  * @deprecated use `withParams` instead
+ * @hidden we don't want to expose this in the api docs
  */
 export const path = withParams
 /**
  * @deprecated use `withParams` instead
- */
+ * @hidden we don't want to expose this in the api docs
+*/
 export const host = withParams
 /**
  * @deprecated use `withParams` instead
+ * @hidden we don't want to expose this in the api docs
  */
 export const query = withParams

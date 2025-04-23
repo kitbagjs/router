@@ -4,22 +4,10 @@
 type BeforeRouteHookRegistration = object;
 ```
 
-## Type declaration
+## Properties
 
-### depth
-
-```ts
-depth: number;
-```
-
-### hook
-
-```ts
-hook: BeforeRouteHook;
-```
-
-### lifecycle
-
-```ts
-lifecycle: "onBeforeRouteEnter" | "onBeforeRouteUpdate" | "onBeforeRouteLeave";
-```
+| Property | Type |
+| ------ | ------ |
+| <a id="depth"></a> `depth` | `number` |
+| <a id="hook"></a> `hook` | [`BeforeRouteHook`](BeforeRouteHook.md) |
+| <a id="lifecycle"></a> `lifecycle` | `"onBeforeRouteEnter"` \| `"onBeforeRouteUpdate"` \| `"onBeforeRouteLeave"` |
