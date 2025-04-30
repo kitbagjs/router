@@ -16,7 +16,7 @@
 </script>
 
 <script lang="ts" setup>
-  import { Component, UnwrapRef, VNode, computed, provide } from 'vue'
+  import { Component, UnwrapRef, VNode, computed, provide, onServerPrefetch } from 'vue'
   import { useRejection } from '@/compositions/useRejection'
   import { useRoute } from '@/compositions/useRoute'
   import { useRouterDepth } from '@/compositions/useRouterDepth'
@@ -31,9 +31,13 @@
   }>()
 
   const route = useRoute()
-  const { started } = useRouter()
+  const router = useRouter()
   const rejection = useRejection()
   const depth = useRouterDepth()
+
+  onServerPrefetch(async () => {
+    await router.start()
+  })
 
   const { getRouteComponents } = useComponentsStore()
 
@@ -48,7 +52,7 @@
   provide(depthInjectionKey, depth + 1)
 
   const component = computed(() => {
-    if (!started.value) {
+    if (!router.started.value) {
       return null
     }
 
