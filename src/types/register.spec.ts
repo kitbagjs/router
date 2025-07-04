@@ -9,7 +9,7 @@ test('given routes, RegisteredRoutes is correct', () => {
 
   type Routes = RegisteredRoutes<{ router: typeof router }>
 
-  expectTypeOf<Routes>().toMatchTypeOf<typeof routes>()
+  expectTypeOf<Routes>().toEqualTypeOf<typeof routes>()
 })
 
 test('given rejections in router options, RegisteredRejectionType is correct', () => {
@@ -23,11 +23,11 @@ test('given rejections in router options, RegisteredRejectionType is correct', (
 
   type Rejections = RegisteredRejectionType<{ router: typeof router }>
 
-  expectTypeOf<Rejections>().toMatchTypeOf<'AuthNeeded' | 'NotFound'>()
+  expectTypeOf<Rejections>().toEqualTypeOf<'AuthNeeded' | 'NotFound'>()
 })
 
 test('given route meta in router options, RouteMeta is correct', () => {
   type Meta = RouteMeta<{ routeMeta: { zoo: number } }>
 
-  expectTypeOf<Meta>().toMatchTypeOf<{ zoo: number }>()
+  expectTypeOf<Meta>().toEqualTypeOf<{ zoo: number }>()
 })
