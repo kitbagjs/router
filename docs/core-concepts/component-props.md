@@ -16,6 +16,23 @@ This is obviously useful for assigning static values or route params down to you
 - Correct type for return type.
 - Support for async prop fetching.
 
+## Named Views
+When using the [`components`](/core-concepts/routes.html#components) property the `props` argument must be an object. Each component can have its own props callback.
+
+```ts {5-6,9-10}
+const user = createRoute({
+  name: 'user',
+  path: '/user/[id]',
+  components: {
+    defailt: UserComponent,
+    sidebar: UserSidebarComponent,
+  }
+}, {
+  default: (route) => ({ userId: route.params.id }),
+  sidebar: (route) => ({ userId: route.params.id })
+})
+```
+
 ## Params Type
 
 The params passed to your callback has all of the type context including params from parents and any defaults applied.
