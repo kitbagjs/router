@@ -31,49 +31,49 @@ test('router route can be narrowed', () => {
 
   const { route } = createRouter(routes)
 
-  expectTypeOf<typeof route.name>().toMatchTypeOf<'parentA' | 'parentB' | 'childA'>()
+  expectTypeOf<typeof route.name>().toEqualTypeOf<'parentA' | 'parentB' | 'childA'>()
 
   if (route.name === 'parentA') {
-    expectTypeOf<typeof route.name>().toMatchTypeOf<'parentA'>()
+    expectTypeOf<typeof route.name>().toEqualTypeOf<'parentA'>()
   }
 
   if (isRoute(route, 'parentA', { exact: true })) {
-    expectTypeOf<typeof route.name>().toMatchTypeOf<'parentA'>()
+    expectTypeOf<typeof route.name>().toEqualTypeOf<'parentA'>()
   }
 
   if (isRoute(route, 'parentB', { exact: true })) {
-    expectTypeOf<typeof route.name>().toMatchTypeOf<'parentB'>()
+    expectTypeOf<typeof route.name>().toEqualTypeOf<'parentB'>()
   }
 
   if (isRoute(route, 'parentA', { exact: false })) {
-    expectTypeOf<typeof route.name>().toMatchTypeOf<'parentA' | 'childA'>()
+    expectTypeOf<typeof route.name>().toEqualTypeOf<'parentA' | 'childA'>()
   }
 
   if (isRoute(route, 'parentB', { exact: false })) {
-    expectTypeOf<typeof route.name>().toMatchTypeOf<'parentB'>()
+    expectTypeOf<typeof route.name>().toEqualTypeOf<'parentB'>()
   }
 
   if (isRoute(route, 'parentA')) {
-    expectTypeOf<typeof route.name>().toMatchTypeOf<'parentA' | 'childA'>()
+    expectTypeOf<typeof route.name>().toEqualTypeOf<'parentA' | 'childA'>()
   }
 
   if (route.name === 'parentA') {
-    expectTypeOf<typeof route.params>().toMatchTypeOf<{}>()
+    expectTypeOf<typeof route.params>().toEqualTypeOf<{}>()
   }
 
   if (isRoute(route, 'parentA', { exact: true })) {
-    expectTypeOf<typeof route.params>().toMatchTypeOf<{}>()
+    expectTypeOf<typeof route.params>().toEqualTypeOf<{}>()
   }
 
   if (isRoute(route, 'parentA', { exact: false })) {
-    expectTypeOf<typeof route.params>().toMatchTypeOf<{
+    expectTypeOf<typeof route.params>().toEqualTypeOf<{} | {
       foo?: string | undefined,
       bar?: boolean | undefined,
     }>()
   }
 
   if (isRoute(route, 'parentA')) {
-    expectTypeOf<typeof route.params>().toMatchTypeOf<{
+    expectTypeOf<typeof route.params>().toEqualTypeOf<{} | {
       foo?: string | undefined,
       bar?: boolean | undefined,
     }>()

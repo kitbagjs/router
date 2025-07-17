@@ -17,12 +17,12 @@ test('given a specific Route, params are narrow', () => {
     type Source = RouterRoute<ResolvedRoute<TestRoute>>['params']
     type Expect = { paramA: string, paramB: boolean, paramC?: string | undefined }
 
-    expectTypeOf<Expect>().toMatchTypeOf<Source>()
+    expectTypeOf<Expect>().toEqualTypeOf<Source>()
 })
 
 test('without a specific Route, params are Record<string, unknown>', () => {
   type Source = RouterRoute['params']
-  type Expect = Record<string, Readonly<unknown>>
+  type Expect = Record<string, unknown>
 
-  expectTypeOf<Expect>().toMatchTypeOf<Source>()
+  expectTypeOf<Expect>().toEqualTypeOf<Source>()
 })
