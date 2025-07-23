@@ -22,7 +22,41 @@ const blogPost = createRoute({
 The router link component makes it easy to create links to routes, external routes, or any url. See the [RouterLink](/components/router-link) docs for more info.
 
 ```vue
-<router-link to="(resolve) => resolve('blogPost', { blogPostId: 1 })">Blog Post One</router-link>
+<!-- BlogNavigation.vue -->
+<template>
+  <nav class="blog-navigation">
+    <router-link 
+      :to="(resolve) => resolve('blog')"
+      class="nav-link"
+    >
+      All Posts
+    </router-link>
+    
+    <router-link 
+      :to="(resolve) => resolve('blogPost', { blogPostId: 1 })"
+      class="nav-link"
+    >
+      Featured Post
+    </router-link>
+  </nav>
+</template>
+
+<style>
+.blog-navigation {
+  display: flex;
+  gap: 1rem;
+}
+
+.nav-link {
+  padding: 0.5rem 1rem;
+  text-decoration: none;
+  color: #333;
+}
+
+.nav-link:hover {
+  background-color: #f0f0f0;
+}
+</style>
 ```
 
 ## Programmatic Navigation
@@ -31,32 +65,98 @@ Using [`router.push`](/core-concepts/router#push), [`router.replace`](/core-conc
 
 ::: code-group
 
-```ts [Push]
+```vue [Push Example]
+<!-- BlogPost.vue -->
+<template>
+  <article>
+    <h1>{{ post.title }}</h1>
+    <p>{{ post.content }}</p>
+    
+    <div class="navigation">
+      <button @click="goToNextPost" :disabled="!hasNextPost">
+        Next Post
+      </button>
+      <button @click="goToBlog">
+        Back to Blog
+      </button>
+    </div>
+  </article>
+</template>
+
+<script setup>
 import { useRouter } from '@kitbag/router'
 
 const router = useRouter()
+const props = defineProps<{ blogPostId: number }>()
 
-router.push('blogPost', {
-  blogPostId: 1,
-})
+function goToNextPost() {
+  router.push('blogPost', {
+    blogPostId: props.blogPostId + 1,
+  })
+}
+
+function goToBlog() {
+  router.push('blog')
+}
+</script>
 ```
 
-```ts [Replace]
+```vue [Replace Example]
+<!-- LoginForm.vue -->
+<template>
+  <form @submit.prevent="handleLogin">
+    <input v-model="credentials.username" placeholder="Username" />
+    <input v-model="credentials.password" type="password" placeholder="Password" />
+    <button type="submit" :disabled="isLoading">Login</button>
+  </form>
+</template>
+
+<script setup>
 import { useRouter } from '@kitbag/router'
 
 const router = useRouter()
+const credentials = reactive({ username: '', password: '' })
+const isLoading = ref(false)
 
-router.replace('blogPost', {
-  blogPostId: 1,
-})
+async function handleLogin() {
+  isLoading.value = true
+  try {
+    await login(credentials)
+    // Replace history so user can't go back to login
+    router.replace('dashboard')
+  } catch (error) {
+    console.error('Login failed:', error)
+  } finally {
+    isLoading.value = false
+  }
+}
+</script>
 ```
 
-```ts [Update]
+```vue [Update Example]
+<!-- BlogPost.vue -->
+<template>
+  <article>
+    <h1>{{ route.params.blogPostId }}</h1>
+    <select @change="updatePost" v-model="selectedPostId">
+      <option v-for="post in posts" :key="post.id" :value="post.id">
+        {{ post.title }}
+      </option>
+    </select>
+  </article>
+</template>
+
+<script setup>
 import { useRoute } from '@kitbag/router'
 
 const route = useRoute('blogPost')
+const selectedPostId = ref(route.params.blogPostId)
 
-route.update({ blogPostId: 1 })
+function updatePost() {
+  // Update current route with new params
+  route.update({ blogPostId: selectedPostId.value })
+}
+</script>
 ```
 
 :::
@@ -78,11 +178,33 @@ router.push('/blogPost/1')
 ```
 
 ```vue [Router Link]
-<!-- type safe ✅ -->
-<router-link to="(resolve) => resolve('blogPost', { blogPostId: 1 })">Blog Post One</router-link>
+<!-- SearchPage.vue -->
+<template>
+  <div>
+    <!-- type safe ✅ -->
+    <router-link 
+      :to="(resolve) => resolve('blogPost', { blogPostId: 1 })"
+      class="post-link"
+    >
+      Featured Post
+    </router-link>
 
-<!-- not type safe ⚠️ -->
-<router-link to="/blogPost/1">Blog Post One</router-link>
+    <!-- not type safe ⚠️ -->
+    <router-link to="/blogPost/1" class="post-link">
+      Direct URL Link
+    </router-link>
+  </div>
+</template>
+
+<style>
+.post-link {
+  display: block;
+  padding: 1rem;
+  border: 1px solid #ddd;
+  margin: 0.5rem 0;
+  text-decoration: none;
+}
+</style>
 ```
 
 :::

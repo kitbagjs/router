@@ -37,3 +37,49 @@ Defining a query on routes can control route matching, just like it does with th
 ## Rejection Handling
 
 Virtually every app that needs a router will eventually need to handle URLs without a match (404), routes protected by auth (401) but the solution is on you to figure out. With Kitbag Router you have this functionality out of the box.
+
+## Common Setup Issues
+
+### TypeScript Configuration
+
+Ensure your `tsconfig.json` includes proper module resolution:
+
+```json
+{
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true
+  }
+}
+```
+
+### Route Registration
+
+Always use `as const` when defining your routes array to preserve type literals:
+
+```ts
+// ✅ Correct - enables type safety
+const routes = [
+  createRoute({ name: 'home', path: '/' })
+] as const
+
+// ❌ Wrong - loses type information
+const routes = [
+  createRoute({ name: 'home', path: '/' })
+]
+```
+
+### Declaration Merging
+
+Don't forget to register your router type for full TypeScript support:
+
+```ts
+declare module '@kitbag/router' {
+  interface Register {
+    router: typeof router
+  }
+}
+```
+
+If you're getting type errors, make sure this declaration is in a `.d.ts` file or at the top level of your router module.
