@@ -11,7 +11,7 @@ Type safe router for Vue.js
 
 ## Getting Started
 
-Get Started with our [documentation](https://kitbag-router.netlify.app/) or our [intro video](https://kitbag-router.netlify.app/)
+Get started with our [documentation](https://kitbag-router.netlify.app/) or watch our [intro video](https://kitbag-router.netlify.app/)
 
 ## Installation
 
@@ -37,7 +37,7 @@ const About = { template: '<div>About</div>' }
 
 export const routes = [
   createRoute({ name: 'home', path: '/', component: Home }),
-  createRoute({ name: 'path', path: '/about', component: About }),
+  createRoute({ name: 'about', path: '/about', component: About }),
 ] as const
 ```
 
@@ -48,7 +48,7 @@ Create a router instance and pass it to the app as a plugin
 ```ts
 import { createApp } from 'vue'
 import { createRouter } from '@kitbag/router'
-import { routes } from '/routes'
+import { routes } from './routes'
 import App from './App.vue'
 
 const router = createRouter(routes)
@@ -98,7 +98,7 @@ const settings = createRoute({
   component: defineAsyncComponent(() => import('./SettingsPage.vue')),
 })
 
-const router = useRouter([user, profile, settings])
+const router = useRouter()
 
 router.push('settings')
 ```
@@ -110,7 +110,7 @@ router.push('/user/settings')
 router.push('https://github.com/kitbagjs/router')
 ```
 
-This `source` argument is type safe, expecting either a [`Url`](/api/types/Url) or a valid route [`name`](/api/types/Route#name). URL is any string that starts with "http", "https", or a forward slash "/". Additionally if using the route name, push will require params be passed in if there are any.
+The `source` argument is type safe, expecting either a URL string or a valid route name. URLs are strings that start with "http", "https", or a forward slash "/". When using route names, push will require params if the route has any.
 
 ## Update
 
@@ -133,13 +133,14 @@ router.route.update({
 
 Give your route components a place to be mounted
 
-```html {4-5}
+```html
 <!-- App.vue -->
-<div class="app">
-  ...
-  <!-- matched route.component gets rendered here -->
-  <router-view />
-</div>
+<template>
+  <div class="app">
+    <!-- matched route.component gets rendered here -->
+    <router-view />
+  </div>
+</template>
 ```
 
 This component can be mounted anywhere you want route components to be mounted. Nested routes can also have a nested `RouterView` which would be responsible for rendering any children that route may have. Read more about [nested routes](https://kitbag-router.netlify.app/core-concepts/defining-routes#nested-routes).
@@ -148,11 +149,10 @@ This component can be mounted anywhere you want route components to be mounted. 
 
 Use RouterLink for navigating between routes.
 
-```html {3-4}
+```html
 <template>
-  ...
   <!-- router-link renders as <a> with href -->
-  <router-link :to="(resolve) => resolve('home')">Go somewhere</router-link>
+  <router-link :to="(resolve) => resolve('home')">Go Home</router-link>
 </template>
 ```
 
