@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { createRoute } from '@/services/createRoute'
-import { generateRoutePathRegexPattern, generateRouteQueryRegexPatterns, getParamName, splitByMatches } from '@/services/routeRegex'
+import { generateRoutePathRegexPattern, generateRouteQueryRegexPatterns, getParamName, regexCaptureAll, regexCatchAll, splitByMatches } from '@/services/routeRegex'
 import { component } from '@/utilities/testHelpers'
 
 describe('generateRoutePathRegexPattern', () => {
@@ -26,8 +26,7 @@ describe('generateRoutePathRegexPattern', () => {
 
     const result = generateRoutePathRegexPattern(route)
 
-    const catchAll = '.+'
-    const expected = new RegExp(`^parent/child/${catchAll}/grand-child/${catchAll}$`, 'i')
+    const expected = new RegExp(`^parent/child/${regexCatchAll}/grand-child/${regexCatchAll}$`, 'i')
     expect(result.toString()).toBe(expected.toString())
   })
 
@@ -40,8 +39,7 @@ describe('generateRoutePathRegexPattern', () => {
 
     const result = generateRoutePathRegexPattern(route)
 
-    const catchAll = '.+'
-    const expected = new RegExp(`^parent/child/${catchAll}/grand-child/${catchAll}$`, 'i')
+    const expected = new RegExp(`^parent/child/${regexCatchAll}/grand-child/${regexCatchAll}$`, 'i')
     expect(result.toString()).toBe(expected.toString())
   })
 
@@ -82,8 +80,7 @@ describe('generateRouteQueryRegexPatterns', () => {
 
     const result = generateRouteQueryRegexPatterns(route)
 
-    const catchAll = '([^/]+)'
-    expect(result).toMatchObject([new RegExp(`dynamic=${catchAll}`), new RegExp('static=params'), new RegExp(`dynamic=${catchAll}`)])
+    expect(result).toMatchObject([new RegExp(`dynamic=${regexCaptureAll}`), new RegExp('static=params'), new RegExp(`dynamic=${regexCaptureAll}`)])
   })
 
   test('given query with optional params, returns value without params', () => {
@@ -111,7 +108,7 @@ describe('generateRouteQueryRegexPatterns', () => {
 
     expect(result.map((pattern) => pattern.toString())).toMatchObject([
       '/query=\\$with(&|$)/i',
-      '/normal=.+(&|$)/i',
+      `/normal=${regexCatchAll}(&|$)/i`,
       '/regex\\*chars=\\)throughout\\[(&|$)/i',
     ])
   })

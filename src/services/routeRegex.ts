@@ -67,17 +67,17 @@ export function replaceParamSyntaxWithCatchAllsAndEscapeRest(value: string): str
 }
 
 export function replaceParamSyntaxWithCatchAlls(value: string): string {
-  return value.replace(new RegExp(paramRegex, 'g'), '.+')
+  return value.replace(new RegExp(paramRegex, 'g'), regexCatchAll)
 }
 
 export function replaceParamSyntaxWithCaptureGroups(value: string): string {
-  return value.replace(new RegExp(paramRegex, 'g'), '(.*)')
+  return value.replace(new RegExp(paramRegex, 'g'), regexCaptureAll)
 }
 
 export function replaceIndividualParamWithCaptureGroup(path: string, paramName: string): string {
   const paramRegex = getParamRegexPattern(paramName)
 
-  return path.replace(paramRegex, '(.*)')
+  return path.replace(paramRegex, regexCaptureAll)
 }
 
 export function paramIsOptional(path: WithParams, paramName: string): boolean {
@@ -97,6 +97,8 @@ export function isRequiredParamSyntax(value: string): boolean {
 export const paramRegex = `\\${paramStart}\\??([\\w-_]+)\\${paramEnd}`
 export const optionalParamRegex = `\\${paramStart}\\?([\\w-_]+)\\${paramEnd}`
 export const requiredParamRegex = `\\${paramStart}([\\w-_]+)\\${paramEnd}`
+export const regexCatchAll = '.*'
+export const regexCaptureAll = '(.*)'
 
 export function getParamName(value: string): string | undefined {
   const [paramName] = getCaptureGroups(value, new RegExp(paramRegex, 'g'))

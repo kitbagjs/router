@@ -38,6 +38,13 @@ describe('getParamValueFromUrl', () => {
 
     expect(response).toBe('123')
   })
+
+  test('given multiple params, where optional params are omitted from path, still finds the required param', () => {
+    const path = withParams('/[required]/[?optional]', {})
+    const response = getParamValueFromUrl('/ABC/', path, 'required')
+
+    expect(response).toBe('ABC')
+  })
 })
 
 describe('setParamValueOnUrl', () => {
