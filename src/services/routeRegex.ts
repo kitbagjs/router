@@ -67,7 +67,7 @@ export function replaceParamSyntaxWithCatchAllsAndEscapeRest(value: string): str
 }
 
 export function replaceParamSyntaxWithCatchAlls(value: string): string {
-  return value.replace(new RegExp(paramRegex, 'g'), '.+')
+  return value.replace(new RegExp(paramRegex, 'g'), '.*')
 }
 
 export function replaceParamSyntaxWithCaptureGroups(value: string): string {
