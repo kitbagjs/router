@@ -1,6 +1,6 @@
 import { InjectionKey, inject } from 'vue'
 import { RouterNotInstalledError } from '@/errors'
-import { RegisteredRouter } from '@/types'
+import { RegisteredRouter, Router } from '@/types'
 
 export const routerInjectionKey: InjectionKey<RegisteredRouter> = Symbol()
 
@@ -12,12 +12,16 @@ export const routerInjectionKey: InjectionKey<RegisteredRouter> = Symbol()
  *         ensuring the component does not operate without routing functionality.
  * @group Compositions
  */
-export function useRouter(): RegisteredRouter {
-  const router = inject(routerInjectionKey)
+export const useRouter = createUseRouter(routerInjectionKey)
 
-  if (!router) {
-    throw new RouterNotInstalledError()
+export function createUseRouter<T extends Router>(key: InjectionKey<T>): () => T {
+  return () => {
+    const router = inject(key)
+
+    if (!router) {
+      throw new RouterNotInstalledError()
+    }
+
+    return router
   }
-
-  return router
 }
