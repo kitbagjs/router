@@ -11,6 +11,7 @@ import { RouterResolve, RouterResolveOptions } from '@/types/RouterResolve'
 import { RouterReject } from './routerReject'
 import { RouterPlugin } from './routerPlugin'
 import { KeysOfUnion } from './utilities'
+import { RouterPreloadErrorHook } from '@/services/createRouterPreloadErrorRefresh'
 
 /**
  * Options to initialize a {@link Router} instance.
@@ -41,6 +42,10 @@ export type RouterOptions = WithHooks & {
    * Components assigned to each type of rejection your router supports.
    */
   rejections?: Partial<Record<string, Component>>,
+  /**
+   * Whether to refresh the router when a vite preload error occurs.
+   */
+  refreshOnPreloadError?: boolean,
 }
 
 export type Router<
@@ -117,6 +122,10 @@ export type Router<
    * Registers a hook to be called after a route is updated.
    */
   onAfterRouteUpdate: AddAfterRouteHook,
+  /**
+   * Registers a hook to be called before a preload error occurs.
+   */
+  onBeforePreloadErrorRefresh: (hook: RouterPreloadErrorHook) => void,
   /**
   * Given a URL, returns true if host does not match host stored on router instance
   */

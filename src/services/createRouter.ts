@@ -33,6 +33,7 @@ import { getRoutesForRouter } from './getRoutesForRouter'
 import { getGlobalHooksForRouter } from './getGlobalHooksForRouter'
 import { componentsStoreKey, createComponentsStore } from './createComponentsStore'
 import { initZod, zotParamsDetected } from './zod'
+import { createRouterPreloadErrorRefresh } from './createRouterPreloadErrorRefresh'
 
 type RouterUpdateOptions = {
   replace?: boolean,
@@ -81,6 +82,7 @@ export function createRouter<
 >(routesOrArrayOfRoutes: TRoutes | TRoutes[], options?: TOptions, plugins: TPlugin[] = []): Router<TRoutes, TOptions, TPlugin> {
   const routes = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options?.base)
   const hookStore = createRouterHooks()
+  const preloadErrorRefresh = createRouterPreloadErrorRefresh({ refreshOnPreloadError: options?.refreshOnPreloadError })
 
   hookStore.addGlobalRouteHooks(getGlobalHooksForRouter(options, plugins))
 
@@ -333,6 +335,8 @@ export function createRouter<
     // So we're making an assumption here that when installing a router its the same as the RegisteredRouter
     app.provide(routerInjectionKey, router as any)
 
+    preloadErrorRefresh.initialize()
+
     start()
   }
 
@@ -355,6 +359,7 @@ export function createRouter<
     onAfterRouteEnter: hookStore.onAfterRouteEnter,
     onAfterRouteUpdate: hookStore.onAfterRouteUpdate,
     onAfterRouteLeave: hookStore.onAfterRouteLeave,
+    onBeforePreloadErrorRefresh: preloadErrorRefresh.onBeforePreloadErrorRefresh,
     prefetch: options?.prefetch,
     start,
     started,
