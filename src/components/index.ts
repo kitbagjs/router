@@ -1,5 +1,5 @@
 import { RouterLink } from '@/components/routerLink'
-import RouterView from '@/components/routerView.vue'
+import { RouterView } from '@/components/routerView'
 export type { RouterLinkProps, ToCallback } from '@/components/routerLink'
 
 export { RouterView, RouterLink }
