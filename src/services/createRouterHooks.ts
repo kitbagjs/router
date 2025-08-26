@@ -1,4 +1,3 @@
-import { InjectionKey } from 'vue'
 import { AddAfterRouteHook, AddBeforeRouteHook, AddGlobalRouteHooks, AfterHookContext, AfterRouteHook, AfterRouteHookResponse, BeforeHookContext, BeforeRouteHook, BeforeRouteHookResponse, AddComponentAfterRouteHook, AddComponentBeforeRouteHook, RouteHookAfterRunner, RouteHookBeforeRunner } from '@/types/hooks'
 import { createCallbackContext } from './createCallbackContext'
 import { RouteHooks } from '@/models/RouteHooks'
@@ -9,8 +8,12 @@ import { CallbackContextRejectionError } from '@/errors/callbackContextRejection
 import { CallbackContextAbortError } from '@/errors/callbackContextAbortError'
 import { getGlobalAfterRouteHooks, getGlobalBeforeRouteHooks } from './getGlobalRouteHooks'
 import { createVueAppStore, HasVueAppStore } from '@/services/createVueAppStore'
+import { createRouterKeyStore } from './createRouterKeyStore'
+import { routerInjectionKey } from '@/compositions/useRouter'
 
-export const routerHooksKey: InjectionKey<RouterHooks> = Symbol()
+export const getRouterHooksKey = createRouterKeyStore<RouterHooks>()
+
+export const routerHooksKey = getRouterHooksKey(routerInjectionKey)
 
 export type RouterHooks = HasVueAppStore & {
   runBeforeRouteHooks: RouteHookBeforeRunner,
@@ -28,6 +31,7 @@ export type RouterHooks = HasVueAppStore & {
 
 export function createRouterHooks(): RouterHooks {
   const { setVueApp, runWithContext } = createVueAppStore()
+
   const store = {
     global: new RouteHooks(),
     component: new RouteHooks(),

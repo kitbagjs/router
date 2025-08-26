@@ -2,12 +2,11 @@ import { useComponentsStore } from '@/compositions/useComponentsStore'
 import { useRejection } from '@/compositions/useRejection'
 import { useRoute } from '@/compositions/useRoute'
 import { createUseRouter, routerInjectionKey } from '@/compositions/useRouter'
-import { useRouterDepth } from '@/compositions/useRouterDepth'
+import { createUseRouterDepth } from '@/compositions/useRouterDepth'
 import { RouterRejection } from '@/services/createRouterReject'
 import { RouterRoute } from '@/services/createRouterRoute'
-import { depthInjectionKey } from '@/types/injectionDepth'
 import { Router } from '@/types/router'
-import { Component, computed, defineComponent, EmitsOptions, h, InjectionKey, onServerPrefetch, provide, SetupContext, SlotsType, UnwrapRef, VNode } from 'vue'
+import { Component, computed, defineComponent, EmitsOptions, h, InjectionKey, onServerPrefetch, SetupContext, SlotsType, UnwrapRef, VNode } from 'vue'
 
 export type RouterViewProps = {
   name?: string,
@@ -25,20 +24,19 @@ type RouterViewSlots = {
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export function createRouterView<TRouter extends Router>(key: InjectionKey<TRouter>) {
   const useRouter = createUseRouter(key)
+  const useRouterDepth = createUseRouterDepth(key)
 
   return defineComponent((props: RouterViewProps, context: SetupContext<EmitsOptions, SlotsType<RouterViewSlots>>) => {
     const route = useRoute()
     const router = useRouter()
     const rejection = useRejection()
-    const depth = useRouterDepth()
+    const depth = useRouterDepth({ increment: true })
 
     onServerPrefetch(async () => {
       await router.start()
     })
 
     const { getRouteComponents } = useComponentsStore()
-
-    provide(depthInjectionKey, depth + 1)
 
     const component = computed(() => {
       if (!router.started.value) {
