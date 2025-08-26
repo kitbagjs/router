@@ -4,7 +4,7 @@ import { createRouter } from './createRouter'
 import { h } from 'vue'
 import { RouterView } from '@/components/routerView'
 import { mount } from '@vue/test-utils'
-import { onBeforeRouteLeave, onBeforeRouteUpdate, onAfterRouteLeave, onAfterRouteUpdate } from '@/compositions/hooks'
+import { onBeforeRouteLeave, onBeforeRouteUpdate, onAfterRouteLeave, onAfterRouteUpdate } from '@/main'
 import { routes } from '@/utilities/testHelpers'
 
 test('global hooks passed as options are called correctly', async () => {
