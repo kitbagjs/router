@@ -1,4 +1,4 @@
-import { useComponentsStore } from '@/compositions/useComponentsStore'
+import { createUseComponentsStore } from '@/compositions/useComponentsStore'
 import { useRejection } from '@/compositions/useRejection'
 import { useRoute } from '@/compositions/useRoute'
 import { createUseRouter, routerInjectionKey } from '@/compositions/useRouter'
@@ -25,6 +25,7 @@ type RouterViewSlots = {
 export function createRouterView<TRouter extends Router>(key: InjectionKey<TRouter>) {
   const useRouter = createUseRouter(key)
   const useRouterDepth = createUseRouterDepth(key)
+  const useComponentsStore = createUseComponentsStore(key)
 
   return defineComponent((props: RouterViewProps, context: SetupContext<EmitsOptions, SlotsType<RouterViewSlots>>) => {
     const route = useRoute()

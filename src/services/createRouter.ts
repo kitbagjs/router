@@ -31,8 +31,9 @@ import { RouterReject } from '@/types/routerReject'
 import { EmptyRouterPlugin, RouterPlugin } from '@/types/routerPlugin'
 import { getRoutesForRouter } from './getRoutesForRouter'
 import { getGlobalHooksForRouter } from './getGlobalHooksForRouter'
-import { componentsStoreKey, createComponentsStore } from './createComponentsStore'
+import { createComponentsStore } from './createComponentsStore'
 import { initZod, zotParamsDetected } from './zod'
+import { componentsStoreKey } from '@/compositions/useComponentsStore'
 
 type RouterUpdateOptions = {
   replace?: boolean,
@@ -321,6 +322,7 @@ export function createRouter<
     hooks.setVueApp(app)
     propStore.setVueApp(app)
 
+    // todo: will need to create a custom key per router instance and inject values based on that key
     app.component('RouterView', RouterView)
     app.component('RouterLink', RouterLink)
     app.provide(routerRejectionKey, rejection)

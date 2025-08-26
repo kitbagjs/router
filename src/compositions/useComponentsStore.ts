@@ -1,13 +1,26 @@
-import { inject } from 'vue'
+import { inject, InjectionKey } from 'vue'
 import { RouterNotInstalledError } from '@/errors/routerNotInstalledError'
-import { ComponentsStore, componentsStoreKey } from '@/services/createComponentsStore'
+import { ComponentsStore } from '@/services/createComponentsStore'
+import { createRouterKeyStore } from '@/services/createRouterKeyStore'
+import { routerInjectionKey } from './useRouter'
+import { Router } from '@/types/router'
 
-export function useComponentsStore(): ComponentsStore {
-  const store = inject(componentsStoreKey)
+export const getComponentsStoreKey = createRouterKeyStore<ComponentsStore>()
 
-  if (!store) {
-    throw new RouterNotInstalledError()
+export const componentsStoreKey = getComponentsStoreKey(routerInjectionKey)
+
+export function createUseComponentsStore<TRouter extends Router>(key: InjectionKey<TRouter>) {
+  const componentsStoreKey = getComponentsStoreKey(key)
+
+  return () => {
+    const store = inject(componentsStoreKey)
+
+    if (!store) {
+      throw new RouterNotInstalledError()
+    }
+
+    return store
   }
-
-  return store
 }
+
+export const useComponentsStore = createUseComponentsStore(routerInjectionKey)

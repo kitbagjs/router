@@ -1,4 +1,4 @@
-import { Component, InjectionKey } from 'vue'
+import { Component } from 'vue'
 import { createComponentPropsWrapper } from './component'
 import { CreatedRouteOptions } from '@/types/route'
 import { isWithComponent, isWithComponents } from '@/types/createRouteOptions'
@@ -7,8 +7,6 @@ import { RouterView } from '@/components/routerView'
 export type ComponentsStore = {
   getRouteComponents: (match: CreatedRouteOptions) => Record<string, Component>,
 }
-
-export const componentsStoreKey: InjectionKey<ComponentsStore> = Symbol()
 
 export function createComponentsStore(): ComponentsStore {
   const store = new Map<string, Record<string, Component>>()
