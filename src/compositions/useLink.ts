@@ -1,8 +1,7 @@
-import { ComputedRef, MaybeRefOrGetter, Ref, computed, toValue } from 'vue'
+import { ComputedRef, InjectionKey, MaybeRefOrGetter, Ref, computed, toValue } from 'vue'
 import { usePrefetching } from '@/compositions/usePrefetching'
-import { useRouter } from '@/compositions/useRouter'
+import { createUseRouter, routerInjectionKey } from '@/compositions/useRouter'
 import { PrefetchConfig } from '@/types/prefetch'
-import { RegisteredRoutes, RegisteredRoutesName } from '@/types/register'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouterPushOptions } from '@/types/routerPush'
 import { RouterReplaceOptions } from '@/types/routerReplace'
@@ -12,6 +11,7 @@ import { AllPropertiesAreOptional } from '@/types/utilities'
 import { isRoute } from '@/guards/routes'
 import { combineUrlSearchParams } from '@/utilities/urlSearchParams'
 import { isDefined } from '@/utilities/guards'
+import { Router, RouterRouteNames, RouterRoutes } from '@/types/router'
 
 export type UseLink = {
   /**
@@ -61,11 +61,114 @@ export type UseLinkOptions = RouterPushOptions & {
 }
 
 type UseLinkArgs<
-  TSource extends RegisteredRoutesName,
-  TParams = RouteParamsByKey<RegisteredRoutes, TSource>
+  TRouter extends Router,
+  TSource extends RouterRouteNames<TRouter>,
+  TParams = RouteParamsByKey<RouterRoutes<TRouter>, TSource>
 > = AllPropertiesAreOptional<TParams> extends true
   ? [params?: MaybeRefOrGetter<TParams>, options?: MaybeRefOrGetter<UseLinkOptions>]
   : [params: MaybeRefOrGetter<TParams>, options?: MaybeRefOrGetter<UseLinkOptions>]
+
+type UseLinkFunction<TRouter extends Router> = {
+  <TRouteKey extends RouterRouteNames<TRouter>>(name: MaybeRefOrGetter<TRouteKey>, ...args: UseLinkArgs<TRouter, TRouteKey>): UseLink,
+  (url: MaybeRefOrGetter<Url>, options?: MaybeRefOrGetter<UseLinkOptions>): UseLink,
+  (resolvedRoute: MaybeRefOrGetter<ResolvedRoute | undefined>, options?: MaybeRefOrGetter<UseLinkOptions>): UseLink,
+  (source: MaybeRefOrGetter<string | ResolvedRoute | undefined>, paramsOrOptions?: MaybeRefOrGetter<Record<PropertyKey, unknown> | UseLinkOptions>, maybeOptions?: MaybeRefOrGetter<UseLinkOptions>): UseLink,
+}
+
+export function createUseLink<TRouter extends Router>(key: InjectionKey<TRouter>): UseLinkFunction<TRouter> {
+  const useRouter = createUseRouter(key)
+
+  const useLink: UseLinkFunction<TRouter> = (
+    source: MaybeRefOrGetter<string | ResolvedRoute | undefined>,
+    paramsOrOptions: MaybeRefOrGetter<Record<PropertyKey, unknown> | UseLinkOptions> = {},
+    maybeOptions: MaybeRefOrGetter<UseLinkOptions> = {},
+  ) => {
+    const router = useRouter()
+
+    const route = computed(() => {
+      const sourceValue = toValue(source)
+      if (typeof sourceValue !== 'string') {
+        return sourceValue
+      }
+
+      if (isUrl(sourceValue)) {
+        return router.find(sourceValue, toValue(maybeOptions))
+      }
+
+      return router.resolve(sourceValue, toValue(paramsOrOptions), toValue(maybeOptions))
+    })
+
+    const href = computed(() => {
+      if (route.value) {
+        return route.value.href
+      }
+
+      const sourceValue = toValue(source)
+      if (isUrl(sourceValue)) {
+        return sourceValue
+      }
+
+      console.error(new Error('Failed to resolve route in RouterLink.'))
+
+      return undefined
+    })
+
+    const isMatch = computed(() => isRoute(router.route) && router.route.matches.some((match) => match.id === route.value?.id))
+    const isExactMatch = computed(() => router.route.id === route.value?.id)
+    const isActive = computed(() => isRoute(router.route) && isDefined(route.value) && router.route.href.startsWith(route.value.href))
+    const isExactActive = computed(() => router.route.href === route.value?.href)
+    const isExternal = computed(() => !!href.value && router.isExternal(href.value))
+
+    const linkOptions = computed<UseLinkOptions>(() => {
+      const sourceValue = toValue(source)
+
+      return typeof sourceValue !== 'string' || isUrl(sourceValue) ? toValue(paramsOrOptions) : toValue(maybeOptions)
+    })
+
+    const { element, commit } = usePrefetching(() => ({
+      route: route.value,
+      routerPrefetch: router.prefetch,
+      linkPrefetch: linkOptions.value.prefetch,
+    }))
+
+    const push: UseLink['push'] = (pushOptions) => {
+      commit()
+
+      const options: RouterPushOptions = {
+        replace: pushOptions?.replace ?? linkOptions.value.replace,
+        query: combineUrlSearchParams(linkOptions.value.query, pushOptions?.query),
+        hash: pushOptions?.hash ?? linkOptions.value.hash,
+        state: { ...linkOptions.value.state, ...pushOptions?.state },
+      }
+
+      const sourceValue = toValue(source)
+      if (isUrl(sourceValue) || typeof sourceValue === 'object') {
+        return router.push(sourceValue, options)
+      }
+
+      return router.push(sourceValue, toValue(paramsOrOptions), options)
+    }
+
+    const replace: UseLink['replace'] = (options) => {
+      return push({ ...options, replace: true })
+    }
+
+    return {
+      element,
+      route,
+      href,
+      isMatch,
+      isExactMatch,
+      isActive,
+      isExactActive,
+      isExternal,
+      push,
+      replace,
+    }
+  }
+
+  return useLink
+}
 
 /**
  * A composition to export much of the functionality that drives RouterLink component. Can be given route details to discover resolved URL,
@@ -78,95 +181,4 @@ type UseLinkArgs<
  * @returns {UseLink} Reactive context values for as well as navigation methods.
  * @group Compositions
  */
-export function useLink<TRouteKey extends RegisteredRoutesName>(name: MaybeRefOrGetter<TRouteKey>, ...args: UseLinkArgs<TRouteKey>): UseLink
-export function useLink(url: MaybeRefOrGetter<Url>, options?: MaybeRefOrGetter<UseLinkOptions>): UseLink
-export function useLink(resolvedRoute: MaybeRefOrGetter<ResolvedRoute | undefined>, options?: MaybeRefOrGetter<UseLinkOptions>): UseLink
-export function useLink(source: MaybeRefOrGetter<string | ResolvedRoute | undefined>, paramsOrOptions?: MaybeRefOrGetter<Record<PropertyKey, unknown> | UseLinkOptions>, maybeOptions?: MaybeRefOrGetter<UseLinkOptions>): UseLink
-export function useLink(
-  source: MaybeRefOrGetter<string | ResolvedRoute | undefined>,
-  paramsOrOptions: MaybeRefOrGetter<Record<PropertyKey, unknown> | UseLinkOptions> = {},
-  maybeOptions: MaybeRefOrGetter<UseLinkOptions> = {},
-): UseLink {
-  const router = useRouter()
-
-  const route = computed(() => {
-    const sourceValue = toValue(source)
-    if (typeof sourceValue !== 'string') {
-      return sourceValue
-    }
-
-    if (isUrl(sourceValue)) {
-      return router.find(sourceValue, toValue(maybeOptions))
-    }
-
-    return router.resolve(sourceValue, toValue(paramsOrOptions), toValue(maybeOptions))
-  })
-
-  const href = computed(() => {
-    if (route.value) {
-      return route.value.href
-    }
-
-    const sourceValue = toValue(source)
-    if (isUrl(sourceValue)) {
-      return sourceValue
-    }
-
-    console.error(new Error('Failed to resolve route in RouterLink.'))
-
-    return undefined
-  })
-
-  const isMatch = computed(() => isRoute(router.route) && router.route.matches.some((match) => match.id === route.value?.id))
-  const isExactMatch = computed(() => router.route.id === route.value?.id)
-  const isActive = computed(() => isRoute(router.route) && isDefined(route.value) && router.route.href.startsWith(route.value.href))
-  const isExactActive = computed(() => router.route.href === route.value?.href)
-  const isExternal = computed(() => !!href.value && router.isExternal(href.value))
-
-  const linkOptions = computed<UseLinkOptions>(() => {
-    const sourceValue = toValue(source)
-
-    return typeof sourceValue !== 'string' || isUrl(sourceValue) ? toValue(paramsOrOptions) : toValue(maybeOptions)
-  })
-
-  const { element, commit } = usePrefetching(() => ({
-    route: route.value,
-    routerPrefetch: router.prefetch,
-    linkPrefetch: linkOptions.value.prefetch,
-  }))
-
-  const push: UseLink['push'] = (pushOptions) => {
-    commit()
-
-    const options: RouterPushOptions = {
-      replace: pushOptions?.replace ?? linkOptions.value.replace,
-      query: combineUrlSearchParams(linkOptions.value.query, pushOptions?.query),
-      hash: pushOptions?.hash ?? linkOptions.value.hash,
-      state: { ...linkOptions.value.state, ...pushOptions?.state },
-    }
-
-    const sourceValue = toValue(source)
-    if (isUrl(sourceValue) || typeof sourceValue === 'object') {
-      return router.push(sourceValue, options)
-    }
-
-    return router.push(sourceValue, toValue(paramsOrOptions), options)
-  }
-
-  const replace: UseLink['replace'] = (options) => {
-    return push({ ...options, replace: true })
-  }
-
-  return {
-    element,
-    route,
-    href,
-    isMatch,
-    isExactMatch,
-    isActive,
-    isExactActive,
-    isExternal,
-    push,
-    replace,
-  }
-}
+export const useLink = createUseLink(routerInjectionKey)

@@ -1,7 +1,7 @@
 import { reactive } from 'vue'
 import { createRouterRoute } from '@/services/createRouterRoute'
 import { isRejectionRouteSymbol } from '@/services/isRejectionRoute'
-import { RouterRoutes } from '@/types'
+import { RouterRouteUnion } from '@/types'
 import { ResolvedRoute } from '@/types/resolved'
 import { Routes } from '@/types/route'
 import { RouterPush } from '@/types/routerPush'
@@ -10,7 +10,7 @@ type ResolvedRouteUpdate = (route: ResolvedRoute) => void
 
 type CurrentRouteContext<TRoutes extends Routes = Routes> = {
   currentRoute: ResolvedRoute,
-  routerRoute: RouterRoutes<TRoutes>,
+  routerRoute: RouterRouteUnion<TRoutes>,
   updateRoute: ResolvedRouteUpdate,
 }
 

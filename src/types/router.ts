@@ -4,13 +4,14 @@ import { RouterRoute } from '@/services/createRouterRoute'
 import { AddAfterRouteHook, AddBeforeRouteHook, WithHooks } from '@/types/hooks'
 import { PrefetchConfig } from '@/types/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
-import { Routes } from '@/types/route'
+import { Route, Routes } from '@/types/route'
 import { RouterPush } from '@/types/routerPush'
 import { RouterReplace } from '@/types/routerReplace'
 import { RouterResolve, RouterResolveOptions } from '@/types/RouterResolve'
 import { RouterReject } from './routerReject'
 import { RouterPlugin } from './routerPlugin'
 import { KeysOfUnion } from './utilities'
+import { RoutesName } from './routesMap'
 
 /**
  * Options to initialize a {@link Router} instance.
@@ -56,7 +57,7 @@ export type Router<
   /**
    * Manages the current route state.
   */
-  route: RouterRoutes<TRoutes> | RouterRoutes<TPlugin['routes']>,
+  route: RouterRouteUnion<TRoutes> | RouterRouteUnion<TPlugin['routes']>,
   /**
    * Creates a ResolvedRoute record for a given route name and params.
    */
@@ -142,6 +143,14 @@ export type Router<
 /**
  * This type is the same as `RouterRoute<ResolvedRoute<TRoutes[number]>>` while remaining distributive
  */
-export type RouterRoutes<TRoutes extends Routes> = {
+export type RouterRouteUnion<TRoutes extends Routes> = {
   [K in keyof TRoutes]: RouterRoute<ResolvedRoute<TRoutes[K]>>
 }[number]
+
+export type RouterRoutes<TRouter extends Router> = TRouter extends Router<infer TRoutes extends Routes>
+  ? TRoutes
+  : Routes
+
+export type RouterRouteNames<TRouter extends Router> = TRouter extends Router<infer TRoutes extends Routes>
+  ? RoutesName<TRoutes>
+  : RoutesName<Route[]>
