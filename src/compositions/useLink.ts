@@ -8,10 +8,10 @@ import { RouterReplaceOptions } from '@/types/routerReplace'
 import { RouteParamsByKey } from '@/types/routeWithParams'
 import { Url, isUrl } from '@/types/url'
 import { AllPropertiesAreOptional } from '@/types/utilities'
-import { isRoute } from '@/guards/routes'
+import { createIsRoute } from '@/guards/routes'
 import { combineUrlSearchParams } from '@/utilities/urlSearchParams'
 import { isDefined } from '@/utilities/guards'
-import { Router, RouterRouteNames, RouterRoutes } from '@/types/router'
+import { Router, RouterRouteName, RouterRoutes } from '@/types/router'
 
 export type UseLink = {
   /**
@@ -62,14 +62,14 @@ export type UseLinkOptions = RouterPushOptions & {
 
 type UseLinkArgs<
   TRouter extends Router,
-  TSource extends RouterRouteNames<TRouter>,
+  TSource extends RouterRouteName<TRouter>,
   TParams = RouteParamsByKey<RouterRoutes<TRouter>, TSource>
 > = AllPropertiesAreOptional<TParams> extends true
   ? [params?: MaybeRefOrGetter<TParams>, options?: MaybeRefOrGetter<UseLinkOptions>]
   : [params: MaybeRefOrGetter<TParams>, options?: MaybeRefOrGetter<UseLinkOptions>]
 
 type UseLinkFunction<TRouter extends Router> = {
-  <TRouteKey extends RouterRouteNames<TRouter>>(name: MaybeRefOrGetter<TRouteKey>, ...args: UseLinkArgs<TRouter, TRouteKey>): UseLink,
+  <TRouteKey extends RouterRouteName<TRouter>>(name: MaybeRefOrGetter<TRouteKey>, ...args: UseLinkArgs<TRouter, TRouteKey>): UseLink,
   (url: MaybeRefOrGetter<Url>, options?: MaybeRefOrGetter<UseLinkOptions>): UseLink,
   (resolvedRoute: MaybeRefOrGetter<ResolvedRoute | undefined>, options?: MaybeRefOrGetter<UseLinkOptions>): UseLink,
 }
@@ -77,6 +77,7 @@ type UseLinkFunction<TRouter extends Router> = {
 export function createUseLink<TRouter extends Router>(key: InjectionKey<TRouter>): UseLinkFunction<TRouter> {
   const useRouter = createUseRouter(key)
   const usePrefetching = createUsePrefetching(key)
+  const isRoute = createIsRoute(key)
 
   const useLink: UseLinkFunction<TRouter> = (
     source: MaybeRefOrGetter<string | ResolvedRoute | undefined>,

@@ -151,6 +151,6 @@ export type RouterRoutes<TRouter extends Router> = TRouter extends Router<infer 
   ? TRoutes
   : Routes
 
-export type RouterRouteNames<TRouter extends Router> = TRouter extends Router<infer TRoutes extends Routes>
+export type RouterRouteName<TRouter extends Router> = TRouter extends Router<infer TRoutes extends Routes>
   ? RoutesName<TRoutes>
   : RoutesName<Route[]>
