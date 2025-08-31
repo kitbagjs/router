@@ -1,5 +1,5 @@
 import { createUseComponentsStore } from '@/compositions/useComponentsStore'
-import { useRejection } from '@/compositions/useRejection'
+import { createUseRejection } from '@/compositions/useRejection'
 import { useRoute } from '@/compositions/useRoute'
 import { createUseRouter, routerInjectionKey } from '@/compositions/useRouter'
 import { createUseRouterDepth } from '@/compositions/useRouterDepth'
@@ -24,6 +24,7 @@ type RouterViewSlots = {
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export function createRouterView<TRouter extends Router>(key: InjectionKey<TRouter>) {
   const useRouter = createUseRouter(key)
+  const useRejection = createUseRejection(key)
   const useRouterDepth = createUseRouterDepth(key)
   const useComponentsStore = createUseComponentsStore(key)
 

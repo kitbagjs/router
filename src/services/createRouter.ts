@@ -1,7 +1,6 @@
 import { createPath } from 'history'
 import { App, ref } from 'vue'
 import { RouterLink, RouterView } from '@/components'
-import { routerRejectionKey } from '@/compositions/useRejection'
 import { routerInjectionKey } from '@/compositions/useRouter'
 import { createCurrentRoute } from '@/services/createCurrentRoute'
 import { createIsExternal } from '@/services/createIsExternal'
@@ -35,6 +34,7 @@ import { createComponentsStore } from './createComponentsStore'
 import { initZod, zotParamsDetected } from './zod'
 import { componentsStoreKey } from '@/compositions/useComponentsStore'
 import { getPropStoreInjectionKey } from '@/compositions/usePropStore'
+import { getRouterRejectionInjectionKey } from '@/compositions/useRejection'
 
 type RouterUpdateOptions = {
   replace?: boolean,
@@ -326,7 +326,7 @@ export function createRouter<
     // todo: will need to create a custom key per router instance and inject values based on that key
     app.component('RouterView', RouterView)
     app.component('RouterLink', RouterLink)
-    app.provide(routerRejectionKey, rejection)
+    app.provide(getRouterRejectionInjectionKey(routerInjectionKey), rejection)
     app.provide(routerHooksKey, hooks)
     app.provide(getPropStoreInjectionKey(routerInjectionKey), propStore)
     app.provide(componentsStoreKey, componentsStore)
