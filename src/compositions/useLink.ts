@@ -1,5 +1,5 @@
 import { ComputedRef, InjectionKey, MaybeRefOrGetter, Ref, computed, toValue } from 'vue'
-import { usePrefetching } from '@/compositions/usePrefetching'
+import { createUsePrefetching } from '@/compositions/usePrefetching'
 import { createUseRouter, routerInjectionKey } from '@/compositions/useRouter'
 import { PrefetchConfig } from '@/types/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
@@ -76,6 +76,7 @@ type UseLinkFunction<TRouter extends Router> = {
 
 export function createUseLink<TRouter extends Router>(key: InjectionKey<TRouter>): UseLinkFunction<TRouter> {
   const useRouter = createUseRouter(key)
+  const usePrefetching = createUsePrefetching(key)
 
   const useLink: UseLinkFunction<TRouter> = (
     source: MaybeRefOrGetter<string | ResolvedRoute | undefined>,

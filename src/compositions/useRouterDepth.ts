@@ -8,7 +8,9 @@ type UseRouterDepthProps = {
   increment?: boolean,
 }
 
-export function createUseRouterDepth<TRouter extends Router>(key: InjectionKey<TRouter>) {
+type UseRouterDepthFunction = (props?: UseRouterDepthProps) => number
+
+export function createUseRouterDepth<TRouter extends Router>(key: InjectionKey<TRouter>): UseRouterDepthFunction {
   const depthKey = getDepthInjectionKey(key)
 
   return ({ increment = false }: UseRouterDepthProps = {}): number => {

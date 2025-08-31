@@ -6,7 +6,7 @@ import { routerInjectionKey } from '@/compositions/useRouter'
 import { createCurrentRoute } from '@/services/createCurrentRoute'
 import { createIsExternal } from '@/services/createIsExternal'
 import { parseUrl } from '@/services/urlParser'
-import { createPropStore, propStoreKey } from '@/services/createPropStore'
+import { createPropStore } from '@/services/createPropStore'
 import { createRouterHistory } from '@/services/createRouterHistory'
 import { routerHooksKey, createRouterHooks } from '@/services/createRouterHooks'
 import { createRouterReject } from '@/services/createRouterReject'
@@ -34,6 +34,7 @@ import { getGlobalHooksForRouter } from './getGlobalHooksForRouter'
 import { createComponentsStore } from './createComponentsStore'
 import { initZod, zotParamsDetected } from './zod'
 import { componentsStoreKey } from '@/compositions/useComponentsStore'
+import { getPropStoreInjectionKey } from '@/compositions/usePropStore'
 
 type RouterUpdateOptions = {
   replace?: boolean,
@@ -87,7 +88,7 @@ export function createRouter<
 
   const getNavigationId = createUniqueIdSequence()
   const propStore = createPropStore()
-  const componentsStore = createComponentsStore()
+  const componentsStore = createComponentsStore(routerInjectionKey)
   const visibilityObserver = createVisibilityObserver()
   const history = createRouterHistory({
     mode: options?.historyMode,
@@ -327,7 +328,7 @@ export function createRouter<
     app.component('RouterLink', RouterLink)
     app.provide(routerRejectionKey, rejection)
     app.provide(routerHooksKey, hooks)
-    app.provide(propStoreKey, propStore)
+    app.provide(getPropStoreInjectionKey(routerInjectionKey), propStore)
     app.provide(componentsStoreKey, componentsStore)
     app.provide(visibilityObserverKey, visibilityObserver)
 

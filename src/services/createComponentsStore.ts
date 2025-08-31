@@ -1,14 +1,15 @@
-import { Component } from 'vue'
+import { Component, InjectionKey } from 'vue'
 import { createComponentPropsWrapper } from './component'
 import { CreatedRouteOptions } from '@/types/route'
 import { isWithComponent, isWithComponents } from '@/types/createRouteOptions'
 import { RouterView } from '@/components/routerView'
+import { Router } from '@/types/router'
 
 export type ComponentsStore = {
   getRouteComponents: (match: CreatedRouteOptions) => Record<string, Component>,
 }
 
-export function createComponentsStore(): ComponentsStore {
+export function createComponentsStore<TRouter extends Router>(routerKey: InjectionKey<TRouter>): ComponentsStore {
   const store = new Map<string, Record<string, Component>>()
 
   const getRouteComponents: ComponentsStore['getRouteComponents'] = (match) => {
@@ -18,7 +19,7 @@ export function createComponentsStore(): ComponentsStore {
       return existing
     }
 
-    const components = getAllComponentsForMatch(match)
+    const components = getAllComponentsForMatch(routerKey, match)
 
     store.set(match.id, components)
 
@@ -30,20 +31,20 @@ export function createComponentsStore(): ComponentsStore {
   }
 }
 
-function getAllComponentsForMatch(options: CreatedRouteOptions): Record<string, Component> {
+function getAllComponentsForMatch(routerKey: InjectionKey<Router>, options: CreatedRouteOptions): Record<string, Component> {
   if (isWithComponents(options)) {
-    return wrapAllComponents(options, options.components)
+    return wrapAllComponents(routerKey, options, options.components)
   }
 
   if (isWithComponent(options)) {
-    return wrapAllComponents(options, { default: options.component })
+    return wrapAllComponents(routerKey, options, { default: options.component })
   }
 
   return { default: RouterView }
 }
 
-function wrapAllComponents(match: CreatedRouteOptions, components: Record<string, Component>): Record<string, Component> {
+function wrapAllComponents(routerKey: InjectionKey<Router>, match: CreatedRouteOptions, components: Record<string, Component>): Record<string, Component> {
   return Object.fromEntries(
-    Object.entries(components).map(([name, component]) => [name, createComponentPropsWrapper(match, name, component)]),
+    Object.entries(components).map(([name, component]) => [name, createComponentPropsWrapper(routerKey, { match, name, component })]),
   )
 }

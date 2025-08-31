@@ -1,11 +1,12 @@
-import { MaybeRefOrGetter, ref, Ref, toValue, watch } from 'vue'
-import { usePropStore } from '@/compositions/usePropStore'
+import { InjectionKey, MaybeRefOrGetter, ref, Ref, toValue, watch } from 'vue'
+import { createUsePropStore } from '@/compositions/usePropStore'
 import { isWithComponent, isWithComponents } from '@/types/createRouteOptions'
 import { getPrefetchOption, PrefetchConfigs, PrefetchStrategy } from '@/types/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
 import { isAsyncComponent } from '@/utilities/components'
 import { useVisibilityObserver } from './useVisibilityObserver'
 import { useEventListener } from './useEventListener'
+import { Router } from '@/types/router'
 
 type UsePrefetchingConfig = PrefetchConfigs & {
   route: ResolvedRoute | undefined,
@@ -16,67 +17,73 @@ type UsePrefetching = {
   commit: () => void,
 }
 
-export function usePrefetching(config: MaybeRefOrGetter<UsePrefetchingConfig>): UsePrefetching {
-  const prefetchedProps = new Map<PrefetchStrategy, Record<string, unknown>>()
-  const element = ref<HTMLElement>()
+type UsePrefetchingFunction = (config: MaybeRefOrGetter<UsePrefetchingConfig>) => UsePrefetching
 
-  const { getPrefetchProps, setPrefetchProps } = usePropStore()
-  const { isElementVisible } = useVisibilityObserver(element)
+export function createUsePrefetching<TRouter extends Router>(key: InjectionKey<TRouter>): UsePrefetchingFunction {
+  const usePropStore = createUsePropStore(key)
 
-  const commit: UsePrefetching['commit'] = () => {
-    const props = Array.from(prefetchedProps.values()).reduce((accumulator, value) => {
-      Object.assign(accumulator, value)
+  return (config) => {
+    const prefetchedProps = new Map<PrefetchStrategy, Record<string, unknown>>()
+    const element = ref<HTMLElement>()
 
-      return accumulator
-    }, {})
+    const { getPrefetchProps, setPrefetchProps } = usePropStore()
+    const { isElementVisible } = useVisibilityObserver(element)
 
-    setPrefetchProps(props)
-  }
+    const commit: UsePrefetching['commit'] = () => {
+      const props = Array.from(prefetchedProps.values()).reduce((accumulator, value) => {
+        Object.assign(accumulator, value)
 
-  watch(() => toValue(config), ({ route, ...configs }) => {
-    prefetchedProps.clear()
+        return accumulator
+      }, {})
 
-    if (!route) {
-      return
+      setPrefetchProps(props)
     }
 
-    doPrefetchingForStrategy('eager', route, configs)
-  }, { immediate: true })
+    watch(() => toValue(config), ({ route, ...configs }) => {
+      prefetchedProps.clear()
 
-  watch(isElementVisible, (isVisible) => {
-    const { route, ...configs } = toValue(config)
+      if (!route) {
+        return
+      }
 
-    if (!route || !isVisible) {
-      return
+      doPrefetchingForStrategy('eager', route, configs)
+    }, { immediate: true })
+
+    watch(isElementVisible, (isVisible) => {
+      const { route, ...configs } = toValue(config)
+
+      if (!route || !isVisible) {
+        return
+      }
+
+      doPrefetchingForStrategy('lazy', route, configs)
+    }, { immediate: true })
+
+    useEventListener(element, 'focusin', handleIntentEvent)
+    useEventListener(element, 'mouseover', handleIntentEvent)
+
+    function handleIntentEvent(): void {
+      const { route, ...configs } = toValue(config)
+
+      if (!route) {
+        return
+      }
+
+      doPrefetchingForStrategy('intent', route, configs)
     }
 
-    doPrefetchingForStrategy('lazy', route, configs)
-  }, { immediate: true })
+    function doPrefetchingForStrategy(strategy: PrefetchStrategy, route: ResolvedRoute, configs: PrefetchConfigs): void {
+      prefetchComponentsForRoute(strategy, route, configs)
 
-  useEventListener(element, 'focusin', handleIntentEvent)
-  useEventListener(element, 'mouseover', handleIntentEvent)
-
-  function handleIntentEvent(): void {
-    const { route, ...configs } = toValue(config)
-
-    if (!route) {
-      return
+      if (!prefetchedProps.has(strategy)) {
+        prefetchedProps.set(strategy, getPrefetchProps(strategy, route, configs))
+      }
     }
 
-    doPrefetchingForStrategy('intent', route, configs)
-  }
-
-  function doPrefetchingForStrategy(strategy: PrefetchStrategy, route: ResolvedRoute, configs: PrefetchConfigs): void {
-    prefetchComponentsForRoute(strategy, route, configs)
-
-    if (!prefetchedProps.has(strategy)) {
-      prefetchedProps.set(strategy, getPrefetchProps(strategy, route, configs))
+    return {
+      element,
+      commit,
     }
-  }
-
-  return {
-    element,
-    commit,
   }
 }
 
