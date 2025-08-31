@@ -1,16 +1,15 @@
 import { PrefetchConfig } from '@/types/prefetch'
 import { isUrl, Url } from '@/types/url'
 import { ResolvedRoute } from '@/types/resolved'
-import { RegisteredRouter } from '@/types/register'
 import { computed, defineComponent, EmitsOptions, h, InjectionKey, SetupContext, SlotsType, VNode } from 'vue'
 import { createUseRouter, routerInjectionKey } from '@/compositions/useRouter'
 import { Router } from '@/types/router'
 import { useLink } from '@/compositions'
 import { RouterPushOptions } from '@/types/routerPush'
 
-export type ToCallback<TRouter extends Router = RegisteredRouter> = (resolve: TRouter['resolve']) => ResolvedRoute | Url | undefined
+export type ToCallback<TRouter extends Router> = (resolve: TRouter['resolve']) => ResolvedRoute | Url | undefined
 
-export type RouterLinkProps<TRouter extends Router = RegisteredRouter> = RouterPushOptions & {
+export type RouterLinkProps<TRouter extends Router> = RouterPushOptions & {
   /**
    * The url string to navigate to or a callback that returns a url string
    */
