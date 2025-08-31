@@ -359,7 +359,6 @@ export function createRouter<
     onAfterRouteEnter: hookStore.onAfterRouteEnter,
     onAfterRouteUpdate: hookStore.onAfterRouteUpdate,
     onAfterRouteLeave: hookStore.onAfterRouteLeave,
-    onBeforePreloadErrorRefresh: preloadErrorRefresh.onBeforePreloadErrorRefresh,
     prefetch: options?.prefetch,
     start,
     started,
