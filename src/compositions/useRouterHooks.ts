@@ -2,7 +2,6 @@ import { RouterNotInstalledError } from '@/errors/routerNotInstalledError'
 import { getRouterHooksKey, RouterHooks } from '@/services/createRouterHooks'
 import { Router } from '@/types/router'
 import { inject, InjectionKey } from 'vue'
-import { routerInjectionKey } from './useRouter'
 
 export function createUseRouterHooks<TRouter extends Router>(key: InjectionKey<TRouter>) {
   const routerHooksKey = getRouterHooksKey(key)
@@ -17,5 +16,3 @@ export function createUseRouterHooks<TRouter extends Router>(key: InjectionKey<T
     return hooks
   }
 }
-
-export const useRouterHooks = createUseRouterHooks(routerInjectionKey)
