@@ -1,8 +1,43 @@
-import { watch } from 'vue'
-import { useRouter } from '@/compositions/useRouter'
+import { InjectionKey, watch } from 'vue'
+import { createUseRouter, routerInjectionKey } from '@/compositions/useRouter'
 import { UseRouteInvalidError } from '@/errors'
 import { IsRouteOptions, isRoute } from '@/guards/routes'
-import { RegisteredRouterRoute, RegisteredRoutesName } from '@/types/register'
+import { RegisteredRoutesName } from '@/types/register'
+import { Router } from '@/types/router'
+
+type UseRouteFunction<TRouter extends Router> = {
+  (): TRouter['route'],
+  <
+    TRouteName extends RegisteredRoutesName
+  >(routeName: TRouteName, options: IsRouteOptions & { exact: true }): TRouter['route'] & { name: TRouteName },
+  <
+    TRouteName extends RegisteredRoutesName
+  >(routeName: TRouteName, options?: IsRouteOptions): TRouter['route'] & { name: `${TRouteName}${string}` },
+}
+
+export function createUseRoute<TRouter extends Router>(key: InjectionKey<TRouter>): UseRouteFunction<TRouter> {
+  const useRouter = createUseRouter(key)
+
+  return (routeName?: string, options?: IsRouteOptions): TRouter['route'] => {
+    const router = useRouter()
+
+    function checkRouteNameIsValid(): void {
+      if (!routeName) {
+        return
+      }
+
+      const routeNameIsValid = isRoute(router.route, routeName, options)
+
+      if (!routeNameIsValid) {
+        throw new UseRouteInvalidError(routeName, router.route.name)
+      }
+    }
+
+    watch(router.route, checkRouteNameIsValid, { immediate: true, deep: true })
+
+    return router.route
+  }
+}
 
 /**
  * A composition to access the current route or verify a specific route name within a Vue component.
@@ -19,32 +54,4 @@ import { RegisteredRouterRoute, RegisteredRoutesName } from '@/types/register'
  * @throws {UseRouteInvalidError} Throws an error if the provided route name is not valid or does not match the current route.
  * @group Compositions
  */
-export function useRoute(): RegisteredRouterRoute
-
-export function useRoute<
-  TRouteName extends RegisteredRoutesName
->(routeName: TRouteName, options: IsRouteOptions & { exact: true }): RegisteredRouterRoute & { name: TRouteName }
-
-export function useRoute<
-  TRouteName extends RegisteredRoutesName
->(routeName: TRouteName, options?: IsRouteOptions): RegisteredRouterRoute & { name: `${TRouteName}${string}` }
-
-export function useRoute(routeName?: string, options?: IsRouteOptions): RegisteredRouterRoute {
-  const router = useRouter()
-
-  function checkRouteNameIsValid(): void {
-    if (!routeName) {
-      return
-    }
-
-    const routeNameIsValid = isRoute(router.route, routeName, options)
-
-    if (!routeNameIsValid) {
-      throw new UseRouteInvalidError(routeName, router.route.name)
-    }
-  }
-
-  watch(router.route, checkRouteNameIsValid, { immediate: true, deep: true })
-
-  return router.route
-}
+export const useRoute = createUseRoute(routerInjectionKey)
