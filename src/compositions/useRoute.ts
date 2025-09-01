@@ -2,16 +2,15 @@ import { InjectionKey, watch } from 'vue'
 import { createUseRouter, routerInjectionKey } from '@/compositions/useRouter'
 import { UseRouteInvalidError } from '@/errors'
 import { IsRouteOptions, isRoute } from '@/guards/routes'
-import { RegisteredRoutesName } from '@/types/register'
-import { Router } from '@/types/router'
+import { Router, RouterRouteName } from '@/types/router'
 
 type UseRouteFunction<TRouter extends Router> = {
   (): TRouter['route'],
   <
-    TRouteName extends RegisteredRoutesName
+    TRouteName extends RouterRouteName<TRouter>
   >(routeName: TRouteName, options: IsRouteOptions & { exact: true }): TRouter['route'] & { name: TRouteName },
   <
-    TRouteName extends RegisteredRoutesName
+    TRouteName extends RouterRouteName<TRouter>
   >(routeName: TRouteName, options?: IsRouteOptions): TRouter['route'] & { name: `${TRouteName}${string}` },
 }
 
