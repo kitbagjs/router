@@ -276,7 +276,7 @@ export function createRouter<
   })
 
   const notFoundRoute = getRejectionRoute('NotFound')
-  const { currentRoute, routerRoute, updateRoute } = createCurrentRoute<TRoutes | TPlugin['routes']>(notFoundRoute, push)
+  const { currentRoute, routerRoute, updateRoute } = createCurrentRoute<TRoutes | TPlugin['routes']>(routerInjectionKey, notFoundRoute, push)
 
   const initialUrl = getInitialUrl(options?.initialUrl)
   const initialState = history.location.state

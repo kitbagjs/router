@@ -59,9 +59,9 @@ type IsRouteFunction<TRouter extends Router> = {
   (route: unknown, routeName?: string, options?: IsRouteOptions): boolean,
 }
 
-export function createIsRoute<TRouter extends Router>(_key: InjectionKey<TRouter>): IsRouteFunction<TRouter> {
+export function createIsRoute<TRouter extends Router>(routerKey: InjectionKey<TRouter>): IsRouteFunction<TRouter> {
   return (route: unknown, routeName?: string, { exact }: IsRouteOptions = {}): route is any => {
-    if (!isRouterRoute(route)) {
+    if (!isRouterRoute(routerKey, route)) {
       return false
     }
 

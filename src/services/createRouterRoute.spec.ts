@@ -6,18 +6,20 @@ import { mockResolvedRoute, mockRoute } from '@/utilities/testHelpers'
 test('isRouterRoute returns correct response', () => {
   const resolved = mockResolvedRoute(mockRoute('isRouterRoute'), [])
   const push = vi.fn()
+  const routerKey = Symbol()
 
-  const route = createRouterRoute(reactive(resolved), push)
+  const route = createRouterRoute(routerKey, reactive(resolved), push)
 
-  expect(isRouterRoute(route)).toBe(true)
-  expect(isRouterRoute({})).toBe(false)
+  expect(isRouterRoute(routerKey, route)).toBe(true)
+  expect(isRouterRoute(routerKey, {})).toBe(false)
 })
 
 test('sending state, includes state in push options', () => {
   const resolved = mockResolvedRoute(mockRoute('state'), [])
   const push = vi.fn()
+  const routerKey = Symbol()
 
-  const route = createRouterRoute(reactive(resolved), push)
+  const route = createRouterRoute(routerKey, reactive(resolved), push)
 
   route.update({}, { state: { foo: 'foo' } })
 
