@@ -1,65 +1,25 @@
 import { isBrowser } from '@/utilities/isBrowser'
-import { onUnmounted } from 'vue'
 
 type RouterPreloadErrorOptions = {
   refreshOnPreloadError?: boolean,
 }
 
-type RouterPreloadError = {
+type RouterPreloadErrorRefresh = {
   initialize: () => void,
-  onBeforePreloadErrorRefresh: (hook: RouterPreloadErrorHook) => void,
 }
 
-type RouterPreloadErrorHookParameters = {
-  event: Event,
-  abort: () => void,
-}
-
-export type RouterPreloadErrorHook = (parameters: RouterPreloadErrorHookParameters) => void
-
-export function createRouterPreloadErrorRefresh({ refreshOnPreloadError = true }: RouterPreloadErrorOptions): RouterPreloadError {
-  const hooks = new Set<RouterPreloadErrorHook>()
-
+export function createRouterPreloadErrorRefresh({ refreshOnPreloadError = true }: RouterPreloadErrorOptions): RouterPreloadErrorRefresh {
   function initialize(): void {
-    if (isBrowser() && refreshOnPreloadError) {
-      window.addEventListener('vite:preloadError', (event) => {
-        try {
-          hooks.forEach((hook) => {
-            hook({ event, abort })
-          })
-
-          window.location.reload()
-        } catch (error) {
-          if (error instanceof RouterPreloadErrorAbort) {
-            return
-          }
-
-          throw error
-        }
-      })
+    if (!isBrowser() || !refreshOnPreloadError) {
+      return
     }
-  }
 
-  function onBeforePreloadErrorRefresh(hook: RouterPreloadErrorHook): void {
-    hooks.add(hook)
-
-    onUnmounted(() => {
-      hooks.delete(hook)
+    window.addEventListener('vite:preloadError', () => {
+      window.location.reload()
     })
-  }
-
-  function abort(): void {
-    throw new RouterPreloadErrorAbort()
   }
 
   return {
     initialize,
-    onBeforePreloadErrorRefresh,
-  }
-}
-
-class RouterPreloadErrorAbort extends Error {
-  public constructor() {
-    super('Router preload error aborted')
   }
 }
