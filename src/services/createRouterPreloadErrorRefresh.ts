@@ -1,4 +1,3 @@
-import { RouterPreloadErrorAbort } from '@/errors/routerPreloadErrorAbortError'
 import { isBrowser } from '@/utilities/isBrowser'
 
 type RouterPreloadErrorOptions = {
@@ -16,16 +15,7 @@ export function createRouterPreloadErrorRefresh({ refreshOnPreloadError = true }
     }
 
     window.addEventListener('vite:preloadError', () => {
-      try {
-        console.log('vite:preloadError REFRESHING!')
-        window.location.reload()
-      } catch (error) {
-        if (error instanceof RouterPreloadErrorAbort) {
-          return
-        }
-
-        throw error
-      }
+      window.location.reload()
     })
   }
 
