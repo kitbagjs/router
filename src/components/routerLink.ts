@@ -2,10 +2,10 @@ import { PrefetchConfig } from '@/types/prefetch'
 import { isUrl, Url } from '@/types/url'
 import { ResolvedRoute } from '@/types/resolved'
 import { computed, defineComponent, EmitsOptions, h, InjectionKey, SetupContext, SlotsType, VNode } from 'vue'
-import { createUseRouter, routerInjectionKey } from '@/compositions/useRouter'
+import { createUseRouter } from '@/compositions/useRouter'
 import { Router } from '@/types/router'
-import { useLink } from '@/compositions'
 import { RouterPushOptions } from '@/types/routerPush'
+import { createUseLink } from '@/compositions/useLink'
 
 export type ToCallback<TRouter extends Router> = (resolve: TRouter['resolve']) => ResolvedRoute | Url | undefined
 
@@ -33,8 +33,9 @@ type RouterLinkSlots = {
 
 // Infering the return type of the component is more accurate than defining it manually
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-export function createRouterLink<TRouter extends Router>(key: InjectionKey<TRouter>) {
-  const useRouter = createUseRouter(key)
+export function createRouterLink<TRouter extends Router>(routerKey: InjectionKey<TRouter>) {
+  const useRouter = createUseRouter(routerKey)
+  const useLink = createUseLink(routerKey)
 
   return defineComponent((props: RouterLinkProps<TRouter>, context: SetupContext<EmitsOptions, SlotsType<RouterLinkSlots>>) => {
     const router = useRouter()
@@ -117,5 +118,3 @@ export function createRouterLink<TRouter extends Router>(key: InjectionKey<TRout
     props: ['to', 'prefetch', 'query', 'hash', 'replace', 'state'],
   })
 }
-
-export const RouterLink = createRouterLink(routerInjectionKey)

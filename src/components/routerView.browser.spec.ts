@@ -9,7 +9,7 @@ import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
 import { isWithComponent } from '@/types/createRouteOptions'
 import { component, routes } from '@/utilities/testHelpers'
-import { RouterLink } from '@/components/routerLink'
+import { RouterLink } from '@/main'
 
 test('renders component for initial route', async () => {
   const route = createRoute({

@@ -19,8 +19,8 @@ type UsePrefetching = {
 
 type UsePrefetchingFunction = (config: MaybeRefOrGetter<UsePrefetchingConfig>) => UsePrefetching
 
-export function createUsePrefetching<TRouter extends Router>(key: InjectionKey<TRouter>): UsePrefetchingFunction {
-  const usePropStore = createUsePropStore(key)
+export function createUsePrefetching<TRouter extends Router>(routerKey: InjectionKey<TRouter>): UsePrefetchingFunction {
+  const usePropStore = createUsePropStore(routerKey)
 
   return (config) => {
     const prefetchedProps = new Map<PrefetchStrategy, Record<string, unknown>>()

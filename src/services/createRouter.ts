@@ -1,13 +1,12 @@
 import { createPath } from 'history'
 import { App, ref } from 'vue'
-import { RouterLink, RouterView } from '@/components'
-import { routerInjectionKey } from '@/compositions/useRouter'
+import { RouterLink, RouterView } from '@/main'
 import { createCurrentRoute } from '@/services/createCurrentRoute'
 import { createIsExternal } from '@/services/createIsExternal'
 import { parseUrl } from '@/services/urlParser'
 import { createPropStore } from '@/services/createPropStore'
 import { createRouterHistory } from '@/services/createRouterHistory'
-import { routerHooksKey, createRouterHooks } from '@/services/createRouterHooks'
+import { createRouterHooks, getRouterHooksKey } from '@/services/createRouterHooks'
 import { createRouterReject } from '@/services/createRouterReject'
 import { getInitialUrl } from '@/services/getInitialUrl'
 import { setStateValues } from '@/services/state'
@@ -32,9 +31,10 @@ import { getRoutesForRouter } from './getRoutesForRouter'
 import { getGlobalHooksForRouter } from './getGlobalHooksForRouter'
 import { createComponentsStore } from './createComponentsStore'
 import { initZod, zotParamsDetected } from './zod'
-import { componentsStoreKey } from '@/compositions/useComponentsStore'
+import { getComponentsStoreKey } from '@/compositions/useComponentsStore'
 import { getPropStoreInjectionKey } from '@/compositions/usePropStore'
 import { getRouterRejectionInjectionKey } from '@/compositions/useRejection'
+import { routerInjectionKey } from '@/keys'
 
 type RouterUpdateOptions = {
   replace?: boolean,
@@ -327,9 +327,9 @@ export function createRouter<
     app.component('RouterView', RouterView)
     app.component('RouterLink', RouterLink)
     app.provide(getRouterRejectionInjectionKey(routerInjectionKey), rejection)
-    app.provide(routerHooksKey, hooks)
+    app.provide(getRouterHooksKey(routerInjectionKey), hooks)
     app.provide(getPropStoreInjectionKey(routerInjectionKey), propStore)
-    app.provide(componentsStoreKey, componentsStore)
+    app.provide(getComponentsStoreKey(routerInjectionKey), componentsStore)
     app.provide(visibilityObserverKey, visibilityObserver)
 
     // We cant technically guarantee that the user registered the same router that they installed

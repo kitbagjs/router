@@ -8,8 +8,8 @@ export const getPropStoreInjectionKey = createRouterKeyStore<PropStore>()
 
 type UsePropStore = () => PropStore
 
-export function createUsePropStore<TRouter extends Router>(key: InjectionKey<TRouter>): UsePropStore {
-  const propStoreKey = getPropStoreInjectionKey(key)
+export function createUsePropStore<TRouter extends Router>(routerKey: InjectionKey<TRouter>): UsePropStore {
+  const propStoreKey = getPropStoreInjectionKey(routerKey)
 
   return (): PropStore => {
     const store = inject(propStoreKey)

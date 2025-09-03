@@ -1,21 +1,33 @@
-export * from './components'
-export * from './compositions'
 export * from './errors'
 export * from './services'
 export * from './types'
+export type { RouterLinkProps, ToCallback } from '@/components/routerLink'
+export type { UseLink, UseLinkOptions } from './compositions/useLink'
 
-// todo: eventually, this key should be defined here
-import { routerInjectionKey } from './compositions/useRouter'
-import { createComponentHooks } from '@/services/createComponentHooks'
+import { routerInjectionKey } from './keys'
+import { createRouterAssets } from './services/createRouterAssets'
 
 export const {
   onBeforeRouteLeave,
   onBeforeRouteUpdate,
   onAfterRouteLeave,
   onAfterRouteUpdate,
-} = createComponentHooks(routerInjectionKey)
+  isRoute,
+  RouterView,
+  RouterLink,
+  useRoute,
+  useRouter,
+  useQueryValue,
+  useLink,
+} = createRouterAssets(routerInjectionKey)
 
 export type { CreateRouteOptions } from './types/createRouteOptions'
-export { isRoute } from './guards/routes'
 export { createRoute } from './services/createRoute'
 export { createExternalRoute } from './services/createExternalRoute'
+
+declare module 'vue' {
+  export interface GlobalComponents {
+    RouterView: typeof RouterView,
+    RouterLink: typeof RouterLink,
+  }
+}

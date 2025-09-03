@@ -4,8 +4,8 @@ import { AsyncComponentLoader, Component, FunctionalComponent, InjectionKey, def
 import { isPromise } from '@/utilities/promises'
 import { CreatedRouteOptions } from '@/types/route'
 import { createUsePropStore } from '@/compositions/usePropStore'
-import { useRoute } from '@/compositions/useRoute'
 import { Router } from '@/types/router'
+import { createUseRoute } from '@/compositions/useRoute'
 
 type Constructor = new (...args: any) => any
 
@@ -25,6 +25,7 @@ type CreateComponentWrapperConfig = {
 
 export function createComponentPropsWrapper(routerKey: InjectionKey<Router>, { match, name, component }: CreateComponentWrapperConfig): Component {
   const usePropStore = createUsePropStore(routerKey)
+  const useRoute = createUseRoute(routerKey)
 
   return defineComponent({
     name: 'PropsWrapper',

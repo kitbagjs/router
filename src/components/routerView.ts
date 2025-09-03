@@ -1,7 +1,7 @@
 import { createUseComponentsStore } from '@/compositions/useComponentsStore'
 import { createUseRejection } from '@/compositions/useRejection'
-import { useRoute } from '@/compositions/useRoute'
-import { createUseRouter, routerInjectionKey } from '@/compositions/useRouter'
+import { createUseRoute } from '@/compositions/useRoute'
+import { createUseRouter } from '@/compositions/useRouter'
 import { createUseRouterDepth } from '@/compositions/useRouterDepth'
 import { RouterRejection } from '@/services/createRouterReject'
 import { RouterRoute } from '@/services/createRouterRoute'
@@ -22,11 +22,12 @@ type RouterViewSlots = {
 
 // Infering the return type of the component is more accurate than defining it manually
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-export function createRouterView<TRouter extends Router>(key: InjectionKey<TRouter>) {
-  const useRouter = createUseRouter(key)
-  const useRejection = createUseRejection(key)
-  const useRouterDepth = createUseRouterDepth(key)
-  const useComponentsStore = createUseComponentsStore(key)
+export function createRouterView<TRouter extends Router>(routerKey: InjectionKey<TRouter>) {
+  const useRoute = createUseRoute(routerKey)
+  const useRouter = createUseRouter(routerKey)
+  const useRejection = createUseRejection(routerKey)
+  const useRouterDepth = createUseRouterDepth(routerKey)
+  const useComponentsStore = createUseComponentsStore(routerKey)
 
   return defineComponent((props: RouterViewProps, context: SetupContext<EmitsOptions, SlotsType<RouterViewSlots>>) => {
     const route = useRoute()
@@ -83,5 +84,3 @@ export function createRouterView<TRouter extends Router>(key: InjectionKey<TRout
     props: ['name'],
   })
 }
-
-export const RouterView = createRouterView(routerInjectionKey)

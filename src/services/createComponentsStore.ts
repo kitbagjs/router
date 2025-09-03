@@ -2,8 +2,8 @@ import { Component, InjectionKey } from 'vue'
 import { createComponentPropsWrapper } from './component'
 import { CreatedRouteOptions } from '@/types/route'
 import { isWithComponent, isWithComponents } from '@/types/createRouteOptions'
-import { RouterView } from '@/components/routerView'
 import { Router } from '@/types/router'
+import { createRouterView } from '@/components/routerView'
 
 export type ComponentsStore = {
   getRouteComponents: (match: CreatedRouteOptions) => Record<string, Component>,
@@ -32,6 +32,8 @@ export function createComponentsStore<TRouter extends Router>(routerKey: Injecti
 }
 
 function getAllComponentsForMatch(routerKey: InjectionKey<Router>, options: CreatedRouteOptions): Record<string, Component> {
+  const RouterView = createRouterView(routerKey)
+
   if (isWithComponents(options)) {
     return wrapAllComponents(routerKey, options, options.components)
   }

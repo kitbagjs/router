@@ -1,4 +1,3 @@
-import { routerInjectionKey } from '@/compositions/useRouter'
 import { RouterRoute, isRouterRoute } from '@/services/createRouterRoute'
 import { Router, RouterRouteName } from '@/types/router'
 import { InjectionKey } from 'vue'
@@ -76,5 +75,3 @@ export function createIsRoute<TRouter extends Router>(routerKey: InjectionKey<TR
     return route.matches.map((route) => route.name).includes(routeName)
   }
 }
-
-export const isRoute = createIsRoute(routerInjectionKey)

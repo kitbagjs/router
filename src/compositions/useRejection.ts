@@ -8,8 +8,8 @@ export const getRouterRejectionInjectionKey = createRouterKeyStore<RouterRejecti
 
 type UseRejectionFunction = () => RouterRejection
 
-export function createUseRejection(key: InjectionKey<Router>): UseRejectionFunction {
-  const routerRejectionKey = getRouterRejectionInjectionKey(key)
+export function createUseRejection(routerKey: InjectionKey<Router>): UseRejectionFunction {
+  const routerRejectionKey = getRouterRejectionInjectionKey(routerKey)
 
   return (): RouterRejection => {
     const rejection = inject(routerRejectionKey)

@@ -9,11 +9,8 @@ import { CallbackContextAbortError } from '@/errors/callbackContextAbortError'
 import { getGlobalAfterRouteHooks, getGlobalBeforeRouteHooks } from './getGlobalRouteHooks'
 import { createVueAppStore, HasVueAppStore } from '@/services/createVueAppStore'
 import { createRouterKeyStore } from './createRouterKeyStore'
-import { routerInjectionKey } from '@/compositions/useRouter'
 
 export const getRouterHooksKey = createRouterKeyStore<RouterHooks>()
-
-export const routerHooksKey = getRouterHooksKey(routerInjectionKey)
 
 export type RouterHooks = HasVueAppStore & {
   runBeforeRouteHooks: RouteHookBeforeRunner,

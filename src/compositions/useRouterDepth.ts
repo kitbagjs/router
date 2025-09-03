@@ -10,8 +10,8 @@ type UseRouterDepthProps = {
 
 type UseRouterDepthFunction = (props?: UseRouterDepthProps) => number
 
-export function createUseRouterDepth<TRouter extends Router>(key: InjectionKey<TRouter>): UseRouterDepthFunction {
-  const depthKey = getDepthInjectionKey(key)
+export function createUseRouterDepth<TRouter extends Router>(routerKey: InjectionKey<TRouter>): UseRouterDepthFunction {
+  const depthKey = getDepthInjectionKey(routerKey)
 
   return ({ increment = false }: UseRouterDepthProps = {}): number => {
     const depth = inject(depthKey, 0)

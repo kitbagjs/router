@@ -1,6 +1,6 @@
 import { ComputedRef, InjectionKey, MaybeRefOrGetter, Ref, computed, toValue } from 'vue'
 import { createUsePrefetching } from '@/compositions/usePrefetching'
-import { createUseRouter, routerInjectionKey } from '@/compositions/useRouter'
+import { createUseRouter } from '@/compositions/useRouter'
 import { PrefetchConfig } from '@/types/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouterPushOptions } from '@/types/routerPush'
@@ -74,10 +74,10 @@ type UseLinkFunction<TRouter extends Router> = {
   (resolvedRoute: MaybeRefOrGetter<ResolvedRoute | undefined>, options?: MaybeRefOrGetter<UseLinkOptions>): UseLink,
 }
 
-export function createUseLink<TRouter extends Router>(key: InjectionKey<TRouter>): UseLinkFunction<TRouter> {
-  const useRouter = createUseRouter(key)
-  const usePrefetching = createUsePrefetching(key)
-  const isRoute = createIsRoute(key)
+export function createUseLink<TRouter extends Router>(routerKey: InjectionKey<TRouter>): UseLinkFunction<TRouter> {
+  const useRouter = createUseRouter(routerKey)
+  const usePrefetching = createUsePrefetching(routerKey)
+  const isRoute = createIsRoute(routerKey)
 
   const useLink: UseLinkFunction<TRouter> = (
     source: MaybeRefOrGetter<string | ResolvedRoute | undefined>,
@@ -170,16 +170,3 @@ export function createUseLink<TRouter extends Router>(key: InjectionKey<TRouter>
 
   return useLink
 }
-
-/**
- * A composition to export much of the functionality that drives RouterLink component. Can be given route details to discover resolved URL,
- * or resolved URL to discover route details. Also exports some useful context about routes relationship to current URL and convenience methods
- * for navigating.
- *
- * @param source - The name of the route or a valid URL.
- * @param params - If providing route name, this argument will expect corresponding params.
- * @param options - {@link RouterResolveOptions} Same options as router resolve.
- * @returns {UseLink} Reactive context values for as well as navigation methods.
- * @group Compositions
- */
-export const useLink = createUseLink(routerInjectionKey)
