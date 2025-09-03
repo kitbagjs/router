@@ -67,7 +67,7 @@ type RouterAssets<TRouter extends Router> = {
   useLink: ReturnType<typeof createUseLink<TRouter>>,
 }
 
-export function createRouterAssets(routerKey: InjectionKey<Router>): RouterAssets<Router> {
+export function createRouterAssets<TRouter extends Router>(routerKey: InjectionKey<TRouter>): RouterAssets<TRouter> {
   const {
     onBeforeRouteLeave,
     onBeforeRouteUpdate,

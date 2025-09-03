@@ -79,7 +79,7 @@ export function createUseLink<TRouter extends Router>(routerKey: InjectionKey<TR
   const usePrefetching = createUsePrefetching(routerKey)
   const isRoute = createIsRoute(routerKey)
 
-  const useLink: UseLinkFunction<TRouter> = (
+  return (
     source: MaybeRefOrGetter<string | ResolvedRoute | undefined>,
     paramsOrOptions: MaybeRefOrGetter<Record<PropertyKey, unknown> | UseLinkOptions> = {},
     maybeOptions: MaybeRefOrGetter<UseLinkOptions> = {},
@@ -167,6 +167,4 @@ export function createUseLink<TRouter extends Router>(routerKey: InjectionKey<TR
       replace,
     }
   }
-
-  return useLink
 }
