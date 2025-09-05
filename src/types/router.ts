@@ -1,4 +1,4 @@
-import { App, Component, Ref } from 'vue'
+import { App, Component, InjectionKey, Ref } from 'vue'
 import { RouterHistoryMode } from '@/services/createRouterHistory'
 import { RouterRoute } from '@/services/createRouterRoute'
 import { AddAfterRouteHook, AddBeforeRouteHook, WithHooks } from '@/types/hooks'
@@ -42,6 +42,14 @@ export type RouterOptions = WithHooks & {
    * Components assigned to each type of rejection your router supports.
    */
   rejections?: Partial<Record<string, Component>>,
+
+  /**
+   * When false, createRouterAssets must be used for component and hooks. Assets exported by the library
+   * will not work with the created router instance.
+   *
+   * @default true
+   */
+  isGlobalRouter?: boolean,
 }
 
 export type Router<
@@ -138,6 +146,12 @@ export type Router<
    * Stops the router and teardown any listeners.
    */
   stop: () => void,
+  /**
+   * Returns the key of the router.
+   *
+   * @private
+   */
+  key: InjectionKey<Router<TRoutes, TOptions, TPlugin>>,
 }
 
 /**

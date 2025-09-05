@@ -1,6 +1,5 @@
 import { createPath } from 'history'
 import { App, ref } from 'vue'
-import { RouterLink, RouterView } from '@/main'
 import { createCurrentRoute } from '@/services/createCurrentRoute'
 import { createIsExternal } from '@/services/createIsExternal'
 import { parseUrl } from '@/services/urlParser'
@@ -35,6 +34,8 @@ import { getComponentsStoreKey } from '@/compositions/useComponentsStore'
 import { getPropStoreInjectionKey } from '@/compositions/usePropStore'
 import { getRouterRejectionInjectionKey } from '@/compositions/useRejection'
 import { routerInjectionKey } from '@/keys'
+import { createRouterView } from '@/components/routerView'
+import { createRouterLink } from '@/components/routerLink'
 
 type RouterUpdateOptions = {
   replace?: boolean,
@@ -81,6 +82,8 @@ export function createRouter<
   const TOptions extends RouterOptions,
   const TPlugin extends RouterPlugin = EmptyRouterPlugin
 >(routesOrArrayOfRoutes: TRoutes | TRoutes[], options?: TOptions, plugins: TPlugin[] = []): Router<TRoutes, TOptions, TPlugin> {
+  const isGlobalRouter = options?.isGlobalRouter ?? true
+  const routerKey = isGlobalRouter ? routerInjectionKey : Symbol()
   const routes = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options?.base)
   const hooks = createRouterHooks()
 
@@ -88,7 +91,7 @@ export function createRouter<
 
   const getNavigationId = createUniqueIdSequence()
   const propStore = createPropStore()
-  const componentsStore = createComponentsStore(routerInjectionKey)
+  const componentsStore = createComponentsStore(routerKey)
   const visibilityObserver = createVisibilityObserver()
   const history = createRouterHistory({
     mode: options?.historyMode,
@@ -276,7 +279,7 @@ export function createRouter<
   })
 
   const notFoundRoute = getRejectionRoute('NotFound')
-  const { currentRoute, routerRoute, updateRoute } = createCurrentRoute<TRoutes | TPlugin['routes']>(routerInjectionKey, notFoundRoute, push)
+  const { currentRoute, routerRoute, updateRoute } = createCurrentRoute<TRoutes | TPlugin['routes']>(routerKey, notFoundRoute, push)
 
   const initialUrl = getInitialUrl(options?.initialUrl)
   const initialState = history.location.state
@@ -323,18 +326,18 @@ export function createRouter<
     hooks.setVueApp(app)
     propStore.setVueApp(app)
 
-    // todo: will need to create a custom key per router instance and inject values based on that key
-    app.component('RouterView', RouterView)
-    app.component('RouterLink', RouterLink)
-    app.provide(getRouterRejectionInjectionKey(routerInjectionKey), rejection)
-    app.provide(getRouterHooksKey(routerInjectionKey), hooks)
-    app.provide(getPropStoreInjectionKey(routerInjectionKey), propStore)
-    app.provide(getComponentsStoreKey(routerInjectionKey), componentsStore)
+    const routerView = createRouterView(routerKey)
+    const routerLink = createRouterLink(routerKey)
+
+    app.component('RouterView', routerView)
+    app.component('RouterLink', routerLink)
+    app.provide(getRouterRejectionInjectionKey(routerKey), rejection)
+    app.provide(getRouterHooksKey(routerKey), hooks)
+    app.provide(getPropStoreInjectionKey(routerKey), propStore)
+    app.provide(getComponentsStoreKey(routerKey), componentsStore)
     app.provide(visibilityObserverKey, visibilityObserver)
 
-    // We cant technically guarantee that the user registered the same router that they installed
-    // So we're making an assumption here that when installing a router its the same as the RegisteredRouter
-    app.provide(routerInjectionKey, router as any)
+    app.provide(routerKey, router)
 
     start()
   }
@@ -362,6 +365,7 @@ export function createRouter<
     start,
     started,
     stop,
+    key: routerKey,
   }
 
   return router
