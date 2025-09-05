@@ -24,6 +24,7 @@ export const {
 export type { CreateRouteOptions } from './types/createRouteOptions'
 export { createRoute } from './services/createRoute'
 export { createExternalRoute } from './services/createExternalRoute'
+export { createRouterAssets } from './services/createRouterAssets'
 
 declare module 'vue' {
   export interface GlobalComponents {
