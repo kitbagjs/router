@@ -73,7 +73,14 @@ export type ExtractParamName<
  * @returns A record of parameter names to their respective types, extracted and merged from both path and query parameters.
  */
 export type ExtractRouteParamTypesReading<TRoute extends Route> =
-  Identity<MakeOptional<ExtractParamTypesReading<TRoute['host']> & ExtractParamTypesReading<TRoute['path']> & ExtractParamTypesReading<TRoute['query']> & ExtractParamTypesReading<TRoute['hash']>>>
+  Identity<
+    MakeOptional<
+      ExtractParamTypesReading<TRoute['host']> &
+      ExtractParamTypesReading<TRoute['path']> &
+      ExtractParamTypesReading<TRoute['query']> &
+      ExtractParamTypesReading<TRoute['hash']>
+    >
+  >
 
 /**
  * Extracts combined types of path and query parameters for a given route, creating a unified parameter object.
@@ -115,12 +122,14 @@ export type ExtractParamTypesWriting<TWithParams extends WithParams> = {
  * @returns The extracted type, or 'string' as a fallback.
  */
 export type ExtractParamType<TParam extends Param> =
-  TParam extends ParamGetSet<infer Type>
-    ? Type
-    : TParam extends ParamGetter
-      ? ReturnType<TParam>
-      : TParam extends StandardSchemaV1
-        ? StandardSchemaV1.InferOutput<TParam>
-        : TParam extends LiteralParam
-          ? TParam
-          : string
+  Param extends TParam
+    ? unknown
+    : TParam extends ParamGetSet<infer Type>
+      ? Type
+      : TParam extends ParamGetter
+        ? ReturnType<TParam>
+        : TParam extends StandardSchemaV1
+          ? StandardSchemaV1.InferOutput<TParam>
+          : TParam extends LiteralParam
+            ? TParam
+            : string

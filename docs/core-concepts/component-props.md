@@ -24,7 +24,7 @@ const user = createRoute({
   name: 'user',
   path: '/user/[id]',
   components: {
-    defailt: UserComponent,
+    default: UserComponent,
     sidebar: UserSidebarComponent,
   }
 }, {

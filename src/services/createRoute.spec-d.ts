@@ -40,7 +40,7 @@ test('options with path', () => {
   type Source = typeof route['path']
   type Expect = { value: '/foo', params: {} }
 
-  expectTypeOf<Source>().toMatchTypeOf<Expect>()
+  expectTypeOf<Source>().toEqualTypeOf<Expect>()
 })
 
 test('options with path and parent', () => {
@@ -53,7 +53,7 @@ test('options with path and parent', () => {
   type Source = typeof route['path']
   type Expect = { value: '/foo/bar', params: {} }
 
-  expectTypeOf<Source>().toMatchTypeOf<Expect>()
+  expectTypeOf<Source>().toEqualTypeOf<Expect>()
 })
 
 test('options with path with params', () => {
@@ -61,7 +61,7 @@ test('options with path with params', () => {
   type Source = typeof route['path']
   type Expect = { value: '/foo/[bar]', params: { bar: StringConstructor } }
 
-  expectTypeOf<Source>().toMatchTypeOf<Expect>()
+  expectTypeOf<Source>().toEqualTypeOf<Expect>()
 })
 
 test('options with path with params and parent', () => {
@@ -83,7 +83,7 @@ test('options with path with params and parent', () => {
     },
   }
 
-  expectTypeOf<Source>().toMatchTypeOf<Expect>()
+  expectTypeOf<Source>().toEqualTypeOf<Expect>()
 })
 
 test('options with path with params with custom param types', () => {
@@ -97,7 +97,7 @@ test('options with path with params with custom param types', () => {
     params: { bar: NumberConstructor },
   }
 
-  expectTypeOf<Source>().toMatchTypeOf<Expect>()
+  expectTypeOf<Source>().toEqualTypeOf<Expect>()
 })
 
 test('options with path with params with custom param types and parent', () => {
@@ -119,7 +119,7 @@ test('options with path with params with custom param types and parent', () => {
     },
   }
 
-  expectTypeOf<Source>().toMatchTypeOf<Expect>()
+  expectTypeOf<Source>().toEqualTypeOf<Expect>()
 })
 
 test('options with query', () => {
@@ -130,7 +130,7 @@ test('options with query', () => {
   type Source = typeof route['query']
   type Expect = { value: 'foo=bar', params: {} }
 
-  expectTypeOf<Source>().toMatchTypeOf<Expect>()
+  expectTypeOf<Source>().toEqualTypeOf<Expect>()
 })
 
 test('options with query and parent', () => {
@@ -146,7 +146,7 @@ test('options with query and parent', () => {
   type Source = typeof route['query']
   type Expect = { value: 'parent=parent&child=child', params: {} }
 
-  expectTypeOf<Source>().toMatchTypeOf<Expect>()
+  expectTypeOf<Source>().toEqualTypeOf<Expect>()
 })
 
 test('options with query with params', () => {
@@ -154,7 +154,7 @@ test('options with query with params', () => {
   type Source = typeof route['query']
   type Expect = { value: 'foo=[bar]', params: { bar: StringConstructor } }
 
-  expectTypeOf<Source>().toMatchTypeOf<Expect>()
+  expectTypeOf<Source>().toEqualTypeOf<Expect>()
 })
 
 test('options with query with params and parent', () => {
@@ -176,7 +176,7 @@ test('options with query with params and parent', () => {
     },
   }
 
-  expectTypeOf<Source>().toMatchTypeOf<Expect>()
+  expectTypeOf<Source>().toEqualTypeOf<Expect>()
 })
 
 test('options with query with params with custom param types', () => {
@@ -184,7 +184,7 @@ test('options with query with params with custom param types', () => {
   type Source = typeof route['query']
   type Expect = { value: 'foo=[bar]', params: { bar: NumberConstructor } }
 
-  expectTypeOf<Source>().toMatchTypeOf<Expect>()
+  expectTypeOf<Source>().toEqualTypeOf<Expect>()
 })
 
 test('options with query with params with custom param types and parent', () => {
@@ -206,7 +206,7 @@ test('options with query with params with custom param types and parent', () => 
     },
   }
 
-  expectTypeOf<Source>().toMatchTypeOf<Expect>()
+  expectTypeOf<Source>().toEqualTypeOf<Expect>()
 })
 
 test('options with hash', () => {
@@ -215,7 +215,7 @@ test('options with hash', () => {
   type Source = typeof route['hash']
   type Expect = { value: 'foo' }
 
-  expectTypeOf<Source>().toMatchTypeOf<Expect>()
+  expectTypeOf<Source>().toExtend<Expect>()
 })
 
 test('options with hash and parent', () => {
@@ -225,7 +225,7 @@ test('options with hash and parent', () => {
   type Source = typeof route['hash']
   type Expect = { value: 'parentchild' }
 
-  expectTypeOf<Source>().toMatchTypeOf<Expect>()
+  expectTypeOf<Source>().toExtend<Expect>()
 })
 
 test('options with meta', () => {

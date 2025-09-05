@@ -4,7 +4,6 @@ import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
 import { component } from '@/utilities/testHelpers'
 import { withParams } from '@/services/withParams'
-import { InjectionKey } from 'vue'
 
 test('router route can be narrowed', () => {
   const parentA = createRoute({
@@ -30,54 +29,52 @@ test('router route can be narrowed', () => {
     }),
   ] as const
 
-  const router = createRouter(routes)
-
-  expectTypeOf<typeof router.route.name>().toMatchTypeOf<'parentA' | 'parentB' | 'childA'>()
-  const key: InjectionKey<typeof router> = Symbol()
-
+  const { route, key } = createRouter(routes)
   const isRoute = createIsRoute(key)
 
-  if (router.route.name === 'parentA') {
-    expectTypeOf<typeof router.route.name>().toMatchTypeOf<'parentA'>()
+  expectTypeOf<typeof route.name>().toEqualTypeOf<'parentA' | 'parentB' | 'childA'>()
+
+  if (route.name === 'parentA') {
+    expectTypeOf<typeof route.name>().toEqualTypeOf<'parentA'>()
   }
 
-  if (isRoute(router.route, 'parentA', { exact: true })) {
-    expectTypeOf<typeof router.route.name>().toMatchTypeOf<'parentA'>()
+  if (isRoute(route, 'parentA', { exact: true })) {
+    expectTypeOf<typeof route.name>().toEqualTypeOf<'parentA'>()
   }
 
-  if (isRoute(router.route, 'parentB', { exact: true })) {
-    expectTypeOf<typeof router.route.name>().toMatchTypeOf<'parentB'>()
+  if (isRoute(route, 'parentB', { exact: true })) {
+    expectTypeOf<typeof route.name>().toEqualTypeOf<'parentB'>()
   }
 
-  if (isRoute(router.route, 'parentA', { exact: false })) {
-    expectTypeOf<typeof router.route.name>().toMatchTypeOf<'parentA' | 'childA'>()
+  if (isRoute(route, 'parentA', { exact: false })) {
+    expectTypeOf<typeof route.name>().toEqualTypeOf<'parentA' | 'childA'>()
   }
 
-  if (isRoute(router.route, 'parentB', { exact: false })) {
-    expectTypeOf<typeof router.route.name>().toMatchTypeOf<'parentB'>()
+  if (isRoute(route, 'parentB', { exact: false })) {
+    expectTypeOf<typeof route.name>().toEqualTypeOf<'parentB'>()
   }
 
-  if (isRoute(router.route, 'parentA')) {
-    expectTypeOf<typeof router.route.name>().toMatchTypeOf<'parentA' | 'childA'>()
+  if (isRoute(route, 'parentA')) {
+    expectTypeOf<typeof route.name>().toEqualTypeOf<'parentA' | 'childA'>()
   }
 
-  if (router.route.name === 'parentA') {
-    expectTypeOf<typeof router.route.params>().toMatchTypeOf<{}>()
+  if (route.name === 'parentA') {
+    expectTypeOf<typeof route.params>().toEqualTypeOf<{}>()
   }
 
-  if (isRoute(router.route, 'parentA', { exact: true })) {
-    expectTypeOf<typeof router.route.params>().toMatchTypeOf<{}>()
+  if (isRoute(route, 'parentA', { exact: true })) {
+    expectTypeOf<typeof route.params>().toEqualTypeOf<{}>()
   }
 
-  if (isRoute(router.route, 'parentA', { exact: false })) {
-    expectTypeOf<typeof router.route.params>().toMatchTypeOf<{
+  if (isRoute(route, 'parentA', { exact: false })) {
+    expectTypeOf<typeof route.params>().toEqualTypeOf<{} | {
       foo?: string | undefined,
       bar?: boolean | undefined,
     }>()
   }
 
-  if (isRoute(router.route, 'parentA')) {
-    expectTypeOf<typeof router.route.params>().toMatchTypeOf<{
+  if (isRoute(route, 'parentA')) {
+    expectTypeOf<typeof route.params>().toEqualTypeOf<{} | {
       foo?: string | undefined,
       bar?: boolean | undefined,
     }>()
