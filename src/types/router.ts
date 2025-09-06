@@ -1,16 +1,17 @@
-import { App, Component, Ref } from 'vue'
+import { App, Component, InjectionKey, Ref } from 'vue'
 import { RouterHistoryMode } from '@/services/createRouterHistory'
 import { RouterRoute } from '@/services/createRouterRoute'
 import { AddAfterRouteHook, AddBeforeRouteHook, WithHooks } from '@/types/hooks'
 import { PrefetchConfig } from '@/types/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
-import { Routes } from '@/types/route'
+import { Route, Routes } from '@/types/route'
 import { RouterPush } from '@/types/routerPush'
 import { RouterReplace } from '@/types/routerReplace'
 import { RouterResolve, RouterResolveOptions } from '@/types/RouterResolve'
 import { RouterReject } from './routerReject'
 import { RouterPlugin } from './routerPlugin'
 import { KeysOfUnion } from './utilities'
+import { RoutesName } from './routesMap'
 
 /**
  * Options to initialize a {@link Router} instance.
@@ -41,6 +42,14 @@ export type RouterOptions = WithHooks & {
    * Components assigned to each type of rejection your router supports.
    */
   rejections?: Partial<Record<string, Component>>,
+
+  /**
+   * When false, createRouterAssets must be used for component and hooks. Assets exported by the library
+   * will not work with the created router instance.
+   *
+   * @default true
+   */
+  isGlobalRouter?: boolean,
 }
 
 export type Router<
@@ -56,7 +65,7 @@ export type Router<
   /**
    * Manages the current route state.
   */
-  route: RouterRoutes<TRoutes> | RouterRoutes<TPlugin['routes']>,
+  route: RouterRouteUnion<TRoutes> | RouterRouteUnion<TPlugin['routes']>,
   /**
    * Creates a ResolvedRoute record for a given route name and params.
    */
@@ -137,11 +146,25 @@ export type Router<
    * Stops the router and teardown any listeners.
    */
   stop: () => void,
+  /**
+   * Returns the key of the router.
+   *
+   * @private
+   */
+  key: InjectionKey<Router<TRoutes, TOptions, TPlugin>>,
 }
 
 /**
  * This type is the same as `RouterRoute<ResolvedRoute<TRoutes[number]>>` while remaining distributive
  */
-export type RouterRoutes<TRoutes extends Routes> = {
+export type RouterRouteUnion<TRoutes extends Routes> = {
   [K in keyof TRoutes]: RouterRoute<ResolvedRoute<TRoutes[K]>>
 }[number]
+
+export type RouterRoutes<TRouter extends Router> = TRouter extends Router<infer TRoutes extends Routes>
+  ? TRoutes
+  : Routes
+
+export type RouterRouteName<TRouter extends Router> = TRouter extends Router<infer TRoutes extends Routes>
+  ? RoutesName<TRoutes>
+  : RoutesName<Route[]>

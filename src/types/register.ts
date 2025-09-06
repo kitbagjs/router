@@ -3,7 +3,6 @@ import { Route, Routes } from '@/types/route'
 import { Router, RouterOptions } from '@/types/router'
 import { RouterPush } from '@/types/routerPush'
 import { RouterReplace } from '@/types/routerReplace'
-import { RoutesName, RoutesMap } from '@/types/routesMap'
 
 /**
  * Represents the state of currently registered router, and route meta. Used to provide correct type context for
@@ -48,21 +47,6 @@ export type RegisteredRejectionType<T = Register> = T extends { router: Router<a
 export type RouteMeta<T = Register> = T extends { routeMeta: infer RouteMeta extends Record<string, unknown> }
   ? RouteMeta
   : Record<string, unknown>
-
-/**
- * Represents the Router property within {@link Register}
- */
-export type RegisteredRouterRoute = RegisteredRouter['route']
-
-/**
- * Represents the a map of all possible route names with corresponding Route registered within {@link Register}
- */
-export type RegisteredRouteMap = RoutesMap<RegisteredRoutes>
-
-/**
- * Represents the union of all possible route names registered within {@link Register}
- */
-export type RegisteredRoutesName = RoutesName<RegisteredRoutes>
 
 /**
  * Represents the type for router `push`, with types for routes registered within {@link Register}

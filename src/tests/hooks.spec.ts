@@ -1,9 +1,9 @@
-import echo from "@/components/echo";
-import { createRoute } from "@/services/createRoute";
-import { createRouter } from "@/services/createRouter";
-import { component } from "@/utilities";
-import { expect, test, vi } from "vitest";
-import { createApp, inject } from "vue";
+import echo from '@/components/echo'
+import { createRoute } from '@/services/createRoute'
+import { createRouter } from '@/services/createRouter'
+import { component } from '@/utilities'
+import { expect, test, vi } from 'vitest'
+import { createApp, inject } from 'vue'
 
 test('hooks are run with the correct context', async () => {
   const beforeRouteHook = vi.fn()
@@ -24,7 +24,7 @@ test('hooks are run with the correct context', async () => {
       const value = inject('global')
 
       afterRouteHook(value)
-    }
+    },
   }, () => ({ value: 'hello' }))
 
   const router = createRouter([route], {
@@ -38,7 +38,7 @@ test('hooks are run with the correct context', async () => {
       const value = inject('global')
 
       afterGlobalHook(value)
-    }
+    },
   })
 
   const app = createApp(component)

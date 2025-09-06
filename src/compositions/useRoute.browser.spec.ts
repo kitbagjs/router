@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils'
 import { expect, test } from 'vitest'
-import { useRoute } from '@/compositions/useRoute'
+import { useRoute } from '@/main'
 import { UseRouteInvalidError } from '@/errors/useRouteInvalidError'
 import { createRouter } from '@/services/createRouter'
 import { getError, routes } from '@/utilities/testHelpers'

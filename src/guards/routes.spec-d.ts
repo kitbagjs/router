@@ -1,5 +1,5 @@
 import { expectTypeOf, test } from 'vitest'
-import { isRoute } from '@/guards/routes'
+import { createIsRoute } from '@/guards/routes'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
 import { component } from '@/utilities/testHelpers'
@@ -29,7 +29,8 @@ test('router route can be narrowed', () => {
     }),
   ] as const
 
-  const { route } = createRouter(routes)
+  const { route, key } = createRouter(routes)
+  const isRoute = createIsRoute(key)
 
   expectTypeOf<typeof route.name>().toEqualTypeOf<'parentA' | 'parentB' | 'childA'>()
 
