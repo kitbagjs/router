@@ -5,7 +5,7 @@ import { isPromise } from '@/utilities/promises'
 import { StandardSchemaV1 } from '@standard-schema/spec'
 
 export interface ValibotSchemaLike extends StandardSchemaV1<any> {
-  type: string;
+  type: string,
 }
 
 // inferring the return type is preferred for this function
