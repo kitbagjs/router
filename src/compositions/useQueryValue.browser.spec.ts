@@ -1,8 +1,8 @@
 import { createRouter } from '@/services'
 import { createRoute } from '@/services/createRoute'
 import { expect, test } from 'vitest'
-import { useQueryValue } from './useQueryValue'
 import { flushPromises, mount } from '@vue/test-utils'
+import { useQueryValue } from '@/main'
 
 test('returns correct value and values when key does not exist', async () => {
   const root = createRoute({

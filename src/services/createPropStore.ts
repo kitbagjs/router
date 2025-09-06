@@ -1,4 +1,4 @@
-import { InjectionKey, reactive } from 'vue'
+import { reactive } from 'vue'
 import { isWithComponentProps, isWithComponentPropsRecord, PropsGetter } from '@/types/createRouteOptions'
 import { getPrefetchOption, PrefetchConfigs, PrefetchStrategy } from '@/types/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
@@ -9,8 +9,6 @@ import { CallbackContextRejectionError } from '@/errors/callbackContextRejection
 import { getPropsValue } from '@/utilities/props'
 import { PropsCallbackParent } from '@/types/props'
 import { createVueAppStore, HasVueAppStore } from './createVueAppStore'
-
-export const propStoreKey: InjectionKey<PropStore> = Symbol()
 
 type ComponentProps = { id: string, name: string, props?: PropsGetter }
 

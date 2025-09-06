@@ -1,8 +1,9 @@
-import { computed, reactive, toRefs } from 'vue'
+import { computed, InjectionKey, reactive, toRefs } from 'vue'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { RouteUpdate } from '@/types/routeUpdate'
 import { QuerySource } from '@/types/querySource'
+import { Router } from '@/types/router'
 
 const isRouterRouteSymbol = Symbol('isRouterRouteSymbol')
 
@@ -22,11 +23,11 @@ export type RouterRoute<TRoute extends ResolvedRoute = ResolvedRoute> = {
   set query(value: QuerySource),
 }
 
-export function isRouterRoute(value: unknown): value is RouterRoute {
-  return typeof value === 'object' && value !== null && isRouterRouteSymbol in value
+export function isRouterRoute(routerKey: InjectionKey<Router>, value: unknown): value is RouterRoute {
+  return typeof value === 'object' && value !== null && isRouterRouteSymbol in value && routerKey in value
 }
 
-export function createRouterRoute<TRoute extends ResolvedRoute>(route: TRoute, push: RouterPush): RouterRoute<TRoute> {
+export function createRouterRoute<TRoute extends ResolvedRoute>(routerKey: InjectionKey<Router>, route: TRoute, push: RouterPush): RouterRoute<TRoute> {
   function update(nameOrParams: PropertyKey | Partial<ResolvedRoute['params']>, valueOrOptions?: any, maybeOptions?: RouterPushOptions): Promise<void> {
     if (typeof nameOrParams === 'object') {
       const params = {
@@ -132,6 +133,7 @@ export function createRouterRoute<TRoute extends ResolvedRoute>(route: TRoute, p
     href,
     update,
     [isRouterRouteSymbol]: true,
+    [routerKey]: true,
   })
 
   return routerRoute

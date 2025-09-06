@@ -24,6 +24,6 @@ describe('SSR', () => {
 
     const html = await renderToString(app)
 
-    expect(html).toMatchInlineSnapshot('"<!--[-->hello world<!--]-->"')
+    expect(html).toMatchInlineSnapshot('"hello world"')
   })
 })

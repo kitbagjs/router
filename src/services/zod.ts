@@ -6,7 +6,7 @@ import { StandardSchemaV1 } from '@standard-schema/spec'
 import type { ZodSchema } from 'zod'
 
 export interface ZodSchemaLike extends StandardSchemaV1<any> {
-  parse: (input: any) => any  
+  parse: (input: any) => any,
 }
 
 let zod: ZodSchemas | null = null

@@ -1,13 +1,23 @@
-import { inject } from 'vue'
+import { inject, InjectionKey } from 'vue'
 import { RouterNotInstalledError } from '@/errors/routerNotInstalledError'
-import { PropStore, propStoreKey } from '@/services/createPropStore'
+import { PropStore } from '@/services/createPropStore'
+import { createRouterKeyStore } from '@/services/createRouterKeyStore'
+import { Router } from '@/types/router'
 
-export function usePropStore(): PropStore {
-  const store = inject(propStoreKey)
+export const getPropStoreInjectionKey = createRouterKeyStore<PropStore>()
 
-  if (!store) {
-    throw new RouterNotInstalledError()
+type UsePropStore = () => PropStore
+
+export function createUsePropStore<TRouter extends Router>(routerKey: InjectionKey<TRouter>): UsePropStore {
+  const propStoreKey = getPropStoreInjectionKey(routerKey)
+
+  return (): PropStore => {
+    const store = inject(propStoreKey)
+
+    if (!store) {
+      throw new RouterNotInstalledError()
+    }
+
+    return store
   }
-
-  return store
 }

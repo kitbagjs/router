@@ -1,10 +1,11 @@
 /* eslint-disable vue/require-prop-types */
 /* eslint-disable vue/one-component-per-file */
-import { AsyncComponentLoader, Component, FunctionalComponent, defineComponent, getCurrentInstance, h, ref, watch } from 'vue'
+import { AsyncComponentLoader, Component, FunctionalComponent, InjectionKey, defineComponent, getCurrentInstance, h, ref, watch } from 'vue'
 import { isPromise } from '@/utilities/promises'
 import { CreatedRouteOptions } from '@/types/route'
-import { usePropStore } from '@/compositions/usePropStore'
-import { useRoute } from '@/compositions/useRoute'
+import { createUsePropStore } from '@/compositions/usePropStore'
+import { Router } from '@/types/router'
+import { createUseRoute } from '@/compositions/useRoute'
 
 type Constructor = new (...args: any) => any
 
@@ -16,7 +17,16 @@ export type ComponentProps<TComponent extends Component> = TComponent extends Co
       ? T
       : {}
 
-export function createComponentPropsWrapper(match: CreatedRouteOptions, name: string, component: Component): Component {
+type CreateComponentWrapperConfig = {
+  match: CreatedRouteOptions,
+  name: string,
+  component: Component,
+}
+
+export function createComponentPropsWrapper(routerKey: InjectionKey<Router>, { match, name, component }: CreateComponentWrapperConfig): Component {
+  const usePropStore = createUsePropStore(routerKey)
+  const useRoute = createUseRoute(routerKey)
+
   return defineComponent({
     name: 'PropsWrapper',
     expose: [],

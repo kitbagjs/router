@@ -1,14 +1,11 @@
 import { createPath } from 'history'
 import { App, ref } from 'vue'
-import { RouterLink, RouterView } from '@/components'
-import { routerRejectionKey } from '@/compositions/useRejection'
-import { routerInjectionKey } from '@/compositions/useRouter'
 import { createCurrentRoute } from '@/services/createCurrentRoute'
 import { createIsExternal } from '@/services/createIsExternal'
 import { parseUrl } from '@/services/urlParser'
-import { createPropStore, propStoreKey } from '@/services/createPropStore'
+import { createPropStore } from '@/services/createPropStore'
 import { createRouterHistory } from '@/services/createRouterHistory'
-import { routerHooksKey, createRouterHooks } from '@/services/createRouterHooks'
+import { createRouterHooks, getRouterHooksKey } from '@/services/createRouterHooks'
 import { createRouterReject } from '@/services/createRouterReject'
 import { getInitialUrl } from '@/services/getInitialUrl'
 import { setStateValues } from '@/services/state'
@@ -31,8 +28,14 @@ import { RouterReject } from '@/types/routerReject'
 import { EmptyRouterPlugin, RouterPlugin } from '@/types/routerPlugin'
 import { getRoutesForRouter } from './getRoutesForRouter'
 import { getGlobalHooksForRouter } from './getGlobalHooksForRouter'
-import { componentsStoreKey, createComponentsStore } from './createComponentsStore'
+import { createComponentsStore } from './createComponentsStore'
 import { initZod, zotParamsDetected } from './zod'
+import { getComponentsStoreKey } from '@/compositions/useComponentsStore'
+import { getPropStoreInjectionKey } from '@/compositions/usePropStore'
+import { getRouterRejectionInjectionKey } from '@/compositions/useRejection'
+import { routerInjectionKey } from '@/keys'
+import { createRouterView } from '@/components/routerView'
+import { createRouterLink } from '@/components/routerLink'
 
 type RouterUpdateOptions = {
   replace?: boolean,
@@ -79,14 +82,16 @@ export function createRouter<
   const TOptions extends RouterOptions,
   const TPlugin extends RouterPlugin = EmptyRouterPlugin
 >(routesOrArrayOfRoutes: TRoutes | TRoutes[], options?: TOptions, plugins: TPlugin[] = []): Router<TRoutes, TOptions, TPlugin> {
+  const isGlobalRouter = options?.isGlobalRouter ?? true
+  const routerKey = isGlobalRouter ? routerInjectionKey : Symbol()
   const routes = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options?.base)
-  const hookStore = createRouterHooks()
+  const hooks = createRouterHooks()
 
-  hookStore.addGlobalRouteHooks(getGlobalHooksForRouter(options, plugins))
+  hooks.addGlobalRouteHooks(getGlobalHooksForRouter(options, plugins))
 
   const getNavigationId = createUniqueIdSequence()
   const propStore = createPropStore()
-  const componentsStore = createComponentsStore()
+  const componentsStore = createComponentsStore(routerKey)
   const visibilityObserver = createVisibilityObserver()
   const history = createRouterHistory({
     mode: options?.historyMode,
@@ -114,7 +119,7 @@ export function createRouter<
     const to = find(url, options) ?? getRejectionRoute('NotFound')
     const from = getFromRouteForHooks(navigationId)
 
-    const beforeResponse = await hookStore.runBeforeRouteHooks({ to, from })
+    const beforeResponse = await hooks.runBeforeRouteHooks({ to, from })
 
     switch (beforeResponse.status) {
       // On abort do nothing
@@ -170,7 +175,7 @@ export function createRouter<
 
     updateRoute(to)
 
-    const afterResponse = await hookStore.runAfterRouteHooks({ to, from })
+    const afterResponse = await hooks.runAfterRouteHooks({ to, from })
 
     switch (afterResponse.status) {
       case 'PUSH':
@@ -274,7 +279,7 @@ export function createRouter<
   })
 
   const notFoundRoute = getRejectionRoute('NotFound')
-  const { currentRoute, routerRoute, updateRoute } = createCurrentRoute<TRoutes | TPlugin['routes']>(notFoundRoute, push)
+  const { currentRoute, routerRoute, updateRoute } = createCurrentRoute<TRoutes | TPlugin['routes']>(routerKey, notFoundRoute, push)
 
   const initialUrl = getInitialUrl(options?.initialUrl)
   const initialState = history.location.state
@@ -318,20 +323,21 @@ export function createRouter<
   }
 
   function install(app: App): void {
-    hookStore.setVueApp(app)
+    hooks.setVueApp(app)
     propStore.setVueApp(app)
 
-    app.component('RouterView', RouterView)
-    app.component('RouterLink', RouterLink)
-    app.provide(routerRejectionKey, rejection)
-    app.provide(routerHooksKey, hookStore)
-    app.provide(propStoreKey, propStore)
-    app.provide(componentsStoreKey, componentsStore)
+    const routerView = createRouterView(routerKey)
+    const routerLink = createRouterLink(routerKey)
+
+    app.component('RouterView', routerView)
+    app.component('RouterLink', routerLink)
+    app.provide(getRouterRejectionInjectionKey(routerKey), rejection)
+    app.provide(getRouterHooksKey(routerKey), hooks)
+    app.provide(getPropStoreInjectionKey(routerKey), propStore)
+    app.provide(getComponentsStoreKey(routerKey), componentsStore)
     app.provide(visibilityObserverKey, visibilityObserver)
 
-    // We cant technically guarantee that the user registered the same router that they installed
-    // So we're making an assumption here that when installing a router its the same as the RegisteredRouter
-    app.provide(routerInjectionKey, router as any)
+    app.provide(routerKey, router)
 
     start()
   }
@@ -349,16 +355,17 @@ export function createRouter<
     go: history.go,
     install,
     isExternal,
-    onBeforeRouteEnter: hookStore.onBeforeRouteEnter,
-    onBeforeRouteUpdate: hookStore.onBeforeRouteUpdate,
-    onBeforeRouteLeave: hookStore.onBeforeRouteLeave,
-    onAfterRouteEnter: hookStore.onAfterRouteEnter,
-    onAfterRouteUpdate: hookStore.onAfterRouteUpdate,
-    onAfterRouteLeave: hookStore.onAfterRouteLeave,
+    onBeforeRouteEnter: hooks.onBeforeRouteEnter,
+    onBeforeRouteUpdate: hooks.onBeforeRouteUpdate,
+    onBeforeRouteLeave: hooks.onBeforeRouteLeave,
+    onAfterRouteEnter: hooks.onAfterRouteEnter,
+    onAfterRouteUpdate: hooks.onAfterRouteUpdate,
+    onAfterRouteLeave: hooks.onAfterRouteLeave,
     prefetch: options?.prefetch,
     start,
     started,
     stop,
+    key: routerKey,
   }
 
   return router

@@ -2,7 +2,6 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { describe, expect, test, vi } from 'vitest'
 import { defineAsyncComponent, h, nextTick, ref } from 'vue'
 import echo from '@/components/echo'
-import routerLink from '@/components/routerLink.vue'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
 import { PrefetchConfig, getPrefetchConfigValue } from '@/types/prefetch'
@@ -11,6 +10,7 @@ import { visibilityObserverKey } from '@/compositions/useVisibilityObserver'
 import { VisibilityObserver } from '@/services/createVisibilityObserver'
 import { Url } from '@/types/url'
 import { RouterPushOptions } from '@/types/routerPush'
+import { RouterLink } from '@/main'
 
 test('renders an anchor tag with the correct href and slot content', () => {
   const path = '/path/[paramName]'
@@ -28,7 +28,7 @@ test('renders an anchor tag with the correct href and slot content', () => {
     initialUrl: path,
   })
 
-  const wrapper = mount(routerLink, {
+  const wrapper = mount(RouterLink, {
     props: {
       to: (resolve) => resolve('parent', { paramName: paramValue }),
     },
@@ -63,7 +63,7 @@ test('calls router.push with url and push options from props', async () => {
     createRoute({
       name: 'routeA',
       path: '/routeA',
-      component: { render: () => h(routerLink, { to: (resolve) => resolve('routeB'), ...propOptions }) },
+      component: { render: () => h(RouterLink, { to: (resolve) => resolve('routeB'), ...propOptions }) },
     }),
     createRoute({
       name: 'routeB',
@@ -119,7 +119,7 @@ test('calls router.push with url and push options from resolve callback', async 
     createRoute({
       name: 'routeA',
       path: '/routeA',
-      component: { render: () => h(routerLink, { to: (resolve) => resolve('routeB', {}, resolveOptions) }) },
+      component: { render: () => h(RouterLink, { to: (resolve) => resolve('routeB', {}, resolveOptions) }) },
     }),
     createRoute({
       name: 'routeB',
@@ -179,7 +179,7 @@ test('given push options from both resolve callback and props, combines query an
     createRoute({
       name: 'routeA',
       path: '/routeA',
-      component: { render: () => h(routerLink, { to: (resolve) => resolve('routeB', {}, resolveOptions), ...propOptions }) },
+      component: { render: () => h(RouterLink, { to: (resolve) => resolve('routeB', {}, resolveOptions), ...propOptions }) },
     }),
     createRoute({
       name: 'routeB',
@@ -230,7 +230,7 @@ test('to prop as Url renders and routes correctly', async () => {
     initialUrl: '/route',
   })
 
-  const wrapper = mount(routerLink, {
+  const wrapper = mount(RouterLink, {
     props: {
       to: '/route',
     },
@@ -282,7 +282,7 @@ test.each<{ to: Url, match: boolean, exactMatch: boolean }>([
     initialUrl: '/parent-route/child-route',
   })
 
-  const wrapper = mount(routerLink, {
+  const wrapper = mount(RouterLink, {
     props: {
       to,
     },
@@ -329,7 +329,7 @@ test('isMatch correctly matches parent when sibling has the same url', async () 
     parent: parentRoute,
     name: 'child',
     path: '/child',
-    component: () => h(routerLink, { to: (resolve) => resolve('parent') }, () => 'parent'),
+    component: () => h(RouterLink, { to: (resolve) => resolve('parent') }, () => 'parent'),
   })
 
   const router = createRouter([parentRoute, siblingRoute, childRoute], {
@@ -382,7 +382,7 @@ test.each<{ to: Url, active: boolean, exactActive: boolean }>([
     initialUrl: '/parent-route/child-route/pass',
   })
 
-  const wrapper = mount(routerLink, {
+  const wrapper = mount(RouterLink, {
     props: {
       to,
     },
@@ -433,7 +433,7 @@ test.each([
     initialUrl: '/parent-route',
   })
 
-  const wrapper = mount(routerLink, {
+  const wrapper = mount(RouterLink, {
     props: {
       to: isExternal ? 'https://vuejs.org/' : '/parent-route',
     },
@@ -482,7 +482,7 @@ describe('prefetch components', () => {
       prefetch,
     })
 
-    mount(routerLink, {
+    mount(RouterLink, {
       props: {
         to: '/route',
       },
@@ -531,7 +531,7 @@ describe('prefetch components', () => {
       initialUrl: '/',
     })
 
-    mount(routerLink, {
+    mount(RouterLink, {
       props: {
         to: '/route',
       },
@@ -579,7 +579,7 @@ describe('prefetch components', () => {
       initialUrl: '/',
     })
 
-    mount(routerLink, {
+    mount(RouterLink, {
       props: {
         to: '/route',
         prefetch,
@@ -626,7 +626,7 @@ describe('prefetch props', () => {
       prefetch,
     })
 
-    mount(routerLink, {
+    mount(RouterLink, {
       props: {
         to: '/route',
       },
@@ -668,7 +668,7 @@ describe('prefetch props', () => {
       initialUrl: '/',
     })
 
-    mount(routerLink, {
+    mount(RouterLink, {
       props: {
         to: '/route',
       },
@@ -709,7 +709,7 @@ describe('prefetch props', () => {
       initialUrl: '/',
     })
 
-    mount(routerLink, {
+    mount(RouterLink, {
       props: {
         to: '/route',
         prefetch,
@@ -738,7 +738,7 @@ describe('prefetch props', () => {
     const home = createRoute({
       name: 'home',
       path: '/',
-      component: () => h(routerLink, { to: (resolve) => resolve('echo') }),
+      component: () => h(RouterLink, { to: (resolve) => resolve('echo') }),
     })
 
     const route = createRoute({
@@ -782,7 +782,7 @@ describe('prefetch props', () => {
     const home = createRoute({
       name: 'home',
       path: '/',
-      component: () => h(routerLink, { to: (resolve) => resolve('child') }),
+      component: () => h(RouterLink, { to: (resolve) => resolve('child') }),
     })
 
     const parent = createRoute({
@@ -826,7 +826,7 @@ describe('prefetch props', () => {
     const routeA = createRoute({
       name: 'routeA',
       path: '/routeA',
-      component: () => h(routerLink, { to: (resolve) => resolve('routeB') }),
+      component: () => h(RouterLink, { to: (resolve) => resolve('routeB') }),
     })
 
     const routeB = createRoute({
@@ -877,7 +877,7 @@ describe('prefetch props', () => {
     const routeA = createRoute({
       name: 'routeA',
       path: '/routeA',
-      component: () => h(routerLink, { to: (resolve) => resolve('routeB') }),
+      component: () => h(RouterLink, { to: (resolve) => resolve('routeB') }),
     })
 
     const routeB = createRoute({
@@ -933,7 +933,7 @@ describe('prefetch props', () => {
     const routeA = createRoute({
       name: 'routeA',
       path: '/routeA',
-      component: () => h(routerLink, { to: (resolve) => resolve('routeB') }),
+      component: () => h(RouterLink, { to: (resolve) => resolve('routeB') }),
     })
 
     const routeB = createRoute({
@@ -978,7 +978,7 @@ describe('prefetch props', () => {
     const routeA = createRoute({
       name: 'routeA',
       path: '/routeA',
-      component: () => h(routerLink, { to: (resolve) => resolve('routeB') }, () => 'routeB'),
+      component: () => h(RouterLink, { to: (resolve) => resolve('routeB') }, () => 'routeB'),
     })
 
     const routeB = createRoute({
