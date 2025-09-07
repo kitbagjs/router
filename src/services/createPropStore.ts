@@ -1,6 +1,7 @@
 import { reactive } from 'vue'
 import { isWithComponentProps, isWithComponentPropsRecord, PropsGetter } from '@/types/createRouteOptions'
-import { getPrefetchOption, PrefetchConfigs, PrefetchStrategy } from '@/types/prefetch'
+import type { PrefetchConfigs, PrefetchStrategy } from '@/types/prefetch'
+import { getPrefetchOption } from '@/utilities/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
 import { Route } from '@/types/route'
 import { CallbackPushResponse, CallbackRejectResponse, CallbackSuccessResponse, createCallbackContext } from './createCallbackContext'
