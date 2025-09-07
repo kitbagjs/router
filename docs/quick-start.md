@@ -18,15 +18,17 @@ npm install @kitbag/router
 Routes are created individually using the [`createRoute`](/api/functions/createRoute) utility. Learn more about [defining routes](/core-concepts/routes).
 
 ```ts
+// routes.ts
 import { createRoute } from '@kitbag/router'
-
-const Home = { template: '<div>Home</div>' }
-const About = { template: '<div>About</div>' }
+import Home from './components/Home.vue'
+import About from './components/About.vue'
 
 const routes = [
   createRoute({ name: 'home', path: '/', component: Home }),
-  createRoute({ name: 'path', path: '/about', component: About }),
+  createRoute({ name: 'about', path: '/about', component: About }),
 ] as const
+
+export { routes }
 ```
 
 ::: info Type Safety
@@ -38,18 +40,24 @@ Using `as const` when defining routes is important as it ensures the types are c
 A router is created using the [`createRouter`](/api/functions/createRouter) utility and passing in the routes.
 
 ```ts
+// router.ts
 import { createRouter } from '@kitbag/router'
+import { routes } from './routes'
 
 const router = createRouter(routes)
+
+export { router }
 ```
 
 ## Vue Plugin
 
 Create a router instance and pass it to the app as a plugin
 
-```ts {6}
+```ts
+// main.ts
 import { createApp } from 'vue'
 import App from './App.vue'
+import { router } from './router'
 
 const app = createApp(App)
 
@@ -59,24 +67,43 @@ app.mount('#app')
 
 ## Type Safety
 
-Kitbag Router utilizes [declaration merging](https://www.typescriptlang.org/docs/handbook/declaration-merging.html) to provide the internal types to match the actual router you're using.
+Kitbag Router utilizes [declaration merging](https://www.typescriptlang.org/docs/handbook/declaration-merging.html) to provide the internal types to match the actual router you're using. Add this to your router file:
 
 ```ts
+// router.ts
+import { createRouter } from '@kitbag/router'
+import { routes } from './routes'
+
+const router = createRouter(routes)
+
+// Enable type safety
 declare module '@kitbag/router' {
   interface Register {
     router: typeof router
   }
 }
+
+export { router }
 ```
 
 ## RouterView
 
-Give your route components a place to be mounted
+Give your route components a place to be mounted in your main App component:
 
-```html
-<div class="app">
-  <router-view />
-</div>
+```vue
+<!-- App.vue -->
+<template>
+  <div class="app">
+    <nav>
+      <router-link :to="(resolve) => resolve('home')">Home</router-link>
+      <router-link :to="(resolve) => resolve('about')">About</router-link>
+    </nav>
+    
+    <main>
+      <router-view />
+    </main>
+  </div>
+</template>
 ```
 
 This component can be mounted anywhere you want route components to be mounted. Nested routes can also have a nested `RouterView` which would be responsible for rendering any children that route may have. Read more about [nested routes](/core-concepts/routes#parent).
