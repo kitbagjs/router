@@ -1,14 +1,20 @@
-# Types: ToCallback()
+# Types: ToCallback()\<TRouter\>
 
 ```ts
-type ToCallback = (resolve) => ResolvedRoute | Url | undefined;
+type ToCallback<TRouter> = (resolve) => ResolvedRoute | Url | undefined;
 ```
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `TRouter` *extends* [`Router`](Router.md) |
 
 ## Parameters
 
 | Parameter | Type |
 | ------ | ------ |
-| `resolve` | [`RegisteredRouter`](RegisteredRouter.md)\[`"resolve"`\] |
+| `resolve` | `TRouter`\[`"resolve"`\] |
 
 ## Returns
 

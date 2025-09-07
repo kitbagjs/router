@@ -1,13 +1,11 @@
-# Types: RouterRoutes\<TRoutes\>
+# Types: RouterRoutes\<TRouter\>
 
 ```ts
-type RouterRoutes<TRoutes> = { [K in keyof TRoutes]: RouterRoute<ResolvedRoute<TRoutes[K]>> }[number];
+type RouterRoutes<TRouter> = TRouter extends Router<infer TRoutes> ? TRoutes : Routes;
 ```
-
-This type is the same as `RouterRoute<ResolvedRoute<TRoutes[number]>>` while remaining distributive
 
 ## Type Parameters
 
 | Type Parameter |
 | ------ |
-| `TRoutes` *extends* [`Routes`](Routes.md) |
+| `TRouter` *extends* [`Router`](Router.md) |

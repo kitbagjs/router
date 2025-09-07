@@ -45,6 +45,21 @@ Initial URL for the router to use. Required if using Node environment. Defaults 
 window.location.toString()
 ```
 
+### isGlobalRouter?
+
+```ts
+optional isGlobalRouter: boolean;
+```
+
+When false, createRouterAssets must be used for component and hooks. Assets exported by the library
+will not work with the created router instance.
+
+#### Default
+
+```ts
+true
+```
+
 ### prefetch?
 
 ```ts

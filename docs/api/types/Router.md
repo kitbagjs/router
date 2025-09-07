@@ -34,7 +34,7 @@ type Router<TRoutes, TOptions, TPlugin> = object;
 | <a id="reject"></a> `reject` | `RouterReject`\< \| keyof `TOptions`\[`"rejections"`\] \| `KeysOfUnion`\<`TPlugin`\[`"rejections"`\]\>\> | Handles route rejection based on a specified rejection type. |
 | <a id="replace"></a> `replace` | `RouterReplace`\<`TRoutes` \| `TPlugin`\[`"routes"`\]\> | Replaces the current entry in the history stack with a new one. |
 | <a id="resolve"></a> `resolve` | `RouterResolve`\<`TRoutes` \| `TPlugin`\[`"routes"`\]\> | Creates a ResolvedRoute record for a given route name and params. |
-| <a id="route"></a> `route` | \| [`RouterRoutes`](RouterRoutes.md)\<`TRoutes`\> \| [`RouterRoutes`](RouterRoutes.md)\<`TPlugin`\[`"routes"`\]\> | Manages the current route state. |
+| <a id="route"></a> `route` | \| [`RouterRouteUnion`](RouterRouteUnion.md)\<`TRoutes`\> \| [`RouterRouteUnion`](RouterRouteUnion.md)\<`TPlugin`\[`"routes"`\]\> | Manages the current route state. |
 | <a id="start"></a> `start` | () => `Promise`\<`void`\> | Initializes the router based on the initial route. Automatically called when the router is installed. Calling this more than once has no effect. |
 | <a id="started"></a> `started` | `Ref`\<`boolean`\> | Returns true if the router has been started. |
 | <a id="stop"></a> `stop` | () => `void` | Stops the router and teardown any listeners. |
