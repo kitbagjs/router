@@ -29,11 +29,11 @@ type Router<TRoutes, TOptions, TPlugin> = object;
 | <a id="onbeforerouteleave"></a> `onBeforeRouteLeave` | [`AddBeforeRouteHook`](AddBeforeRouteHook.md) | Registers a hook to be called before a route is left. |
 | <a id="onbeforerouteupdate"></a> `onBeforeRouteUpdate` | [`AddBeforeRouteHook`](AddBeforeRouteHook.md) | Registers a hook to be called before a route is updated. |
 | <a id="prefetch"></a> `prefetch?` | [`PrefetchConfig`](PrefetchConfig.md) | Determines what assets are prefetched. |
-| <a id="push"></a> `push` | `RouterPush`\<`TRoutes` \| `TPlugin`\[`"routes"`\]\> | Navigates to a specified path or route object in the history stack, adding a new entry. |
+| <a id="push"></a> `push` | [`RouterPush`](RouterPush.md)\<`TRoutes` \| `TPlugin`\[`"routes"`\]\> | Navigates to a specified path or route object in the history stack, adding a new entry. |
 | <a id="refresh"></a> `refresh` | () => `void` | Forces the router to re-evaluate the current route. |
-| <a id="reject"></a> `reject` | `RouterReject`\< \| keyof `TOptions`\[`"rejections"`\] \| `KeysOfUnion`\<`TPlugin`\[`"rejections"`\]\>\> | Handles route rejection based on a specified rejection type. |
-| <a id="replace"></a> `replace` | `RouterReplace`\<`TRoutes` \| `TPlugin`\[`"routes"`\]\> | Replaces the current entry in the history stack with a new one. |
-| <a id="resolve"></a> `resolve` | `RouterResolve`\<`TRoutes` \| `TPlugin`\[`"routes"`\]\> | Creates a ResolvedRoute record for a given route name and params. |
+| <a id="reject"></a> `reject` | [`RouterReject`](RouterReject.md)\< \| keyof `TOptions`\[`"rejections"`\] \| `KeysOfUnion`\<`TPlugin`\[`"rejections"`\]\>\> | Handles route rejection based on a specified rejection type. |
+| <a id="replace"></a> `replace` | [`RouterReplace`](RouterReplace.md)\<`TRoutes` \| `TPlugin`\[`"routes"`\]\> | Replaces the current entry in the history stack with a new one. |
+| <a id="resolve"></a> `resolve` | [`RouterResolve`](RouterResolve.md)\<`TRoutes` \| `TPlugin`\[`"routes"`\]\> | Creates a ResolvedRoute record for a given route name and params. |
 | <a id="route"></a> `route` | \| [`RouterRouteUnion`](RouterRouteUnion.md)\<`TRoutes`\> \| [`RouterRouteUnion`](RouterRouteUnion.md)\<`TPlugin`\[`"routes"`\]\> | Manages the current route state. |
 | <a id="start"></a> `start` | () => `Promise`\<`void`\> | Initializes the router based on the initial route. Automatically called when the router is installed. Calling this more than once has no effect. |
 | <a id="started"></a> `started` | `Ref`\<`boolean`\> | Returns true if the router has been started. |

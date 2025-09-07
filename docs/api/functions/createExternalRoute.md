@@ -10,7 +10,7 @@ function createExternalRoute<TOptions>(options): ToRoute<TOptions, undefined>;
 
 | Type Parameter |
 | ------ |
-| `TOptions` *extends* [`WithHooks`](../types/WithHooks.md) & `object` & `WithHost`\< \| `string` \| `WithParams`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\>\> & `WithoutParent` |
+| `TOptions` *extends* [`WithHooks`](../types/WithHooks.md) & `object` & [`WithHost`](../types/WithHost.md) & [`WithoutParent`](../types/WithoutParent.md) |
 
 ### Parameters
 
@@ -20,7 +20,7 @@ function createExternalRoute<TOptions>(options): ToRoute<TOptions, undefined>;
 
 ### Returns
 
-`ToRoute`\<`TOptions`, `undefined`\>
+[`ToRoute`](../types/ToRoute.md)\<`TOptions`, `undefined`\>
 
 ## Call Signature
 
@@ -32,7 +32,7 @@ function createExternalRoute<TOptions>(options): ToRoute<TOptions, undefined>;
 
 | Type Parameter |
 | ------ |
-| `TOptions` *extends* [`WithHooks`](../types/WithHooks.md) & `object` & `WithoutHost` & `WithParent`\<[`Route`](../types/Route.md)\<`string`, `WithParams`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\>, `WithParams`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\>, `WithParams`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\>, `WithParams`\<`string`, `Record`\<`string`, `undefined` \| [`Param`](../types/Param.md)\>\>, `Record`\<`string`, `unknown`\>, `Record`\<`string`, [`Param`](../types/Param.md)\>, [`CreatedRouteOptions`](../types/CreatedRouteOptions.md)[]\>\> |
+| `TOptions` *extends* [`WithHooks`](../types/WithHooks.md) & `object` & [`WithoutHost`](../types/WithoutHost.md) & [`WithParent`](../types/WithParent.md) |
 
 ### Parameters
 
@@ -42,4 +42,4 @@ function createExternalRoute<TOptions>(options): ToRoute<TOptions, undefined>;
 
 ### Returns
 
-`ToRoute`\<`TOptions`, `undefined`\>
+[`ToRoute`](../types/ToRoute.md)\<`TOptions`, `undefined`\>

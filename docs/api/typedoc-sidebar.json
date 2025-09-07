@@ -8,6 +8,10 @@
         "link": "/api/compositions/useLink.md"
       },
       {
+        "text": "useQueryValue",
+        "link": "/api/compositions/useQueryValue.md"
+      },
+      {
         "text": "useRoute",
         "link": "/api/compositions/useRoute.md"
       },
@@ -64,6 +68,20 @@
     ]
   },
   {
+    "text": "Components",
+    "collapsed": true,
+    "items": [
+      {
+        "text": "RouterLink",
+        "link": "/api/components/RouterLink.md"
+      },
+      {
+        "text": "RouterView",
+        "link": "/api/components/RouterView.md"
+      }
+    ]
+  },
+  {
     "text": "Functions",
     "collapsed": true,
     "items": [
@@ -74,6 +92,10 @@
       {
         "text": "asUrl",
         "link": "/api/functions/asUrl.md"
+      },
+      {
+        "text": "combineRoutes",
+        "link": "/api/functions/combineRoutes.md"
       },
       {
         "text": "createExternalRoute",
@@ -92,8 +114,32 @@
         "link": "/api/functions/createRouter.md"
       },
       {
+        "text": "createRouterAssets",
+        "link": "/api/functions/createRouterAssets.md"
+      },
+      {
         "text": "createRouterPlugin",
         "link": "/api/functions/createRouterPlugin.md"
+      },
+      {
+        "text": "isWithComponent",
+        "link": "/api/functions/isWithComponent.md"
+      },
+      {
+        "text": "isWithComponentProps",
+        "link": "/api/functions/isWithComponentProps.md"
+      },
+      {
+        "text": "isWithComponentPropsRecord",
+        "link": "/api/functions/isWithComponentPropsRecord.md"
+      },
+      {
+        "text": "isWithComponents",
+        "link": "/api/functions/isWithComponents.md"
+      },
+      {
+        "text": "isWithParent",
+        "link": "/api/functions/isWithParent.md"
       },
       {
         "text": "tupleOf",
@@ -216,6 +262,14 @@
         "link": "/api/types/CreateRouteOptions.md"
       },
       {
+        "text": "CreateRouteProps",
+        "link": "/api/types/CreateRouteProps.md"
+      },
+      {
+        "text": "EmptyRouterPlugin",
+        "link": "/api/types/EmptyRouterPlugin.md"
+      },
+      {
         "text": "LiteralParam",
         "link": "/api/types/LiteralParam.md"
       },
@@ -244,6 +298,14 @@
         "link": "/api/types/PrefetchConfig.md"
       },
       {
+        "text": "PrefetchConfigOptions",
+        "link": "/api/types/PrefetchConfigOptions.md"
+      },
+      {
+        "text": "PrefetchConfigs",
+        "link": "/api/types/PrefetchConfigs.md"
+      },
+      {
         "text": "PrefetchStrategy",
         "link": "/api/types/PrefetchStrategy.md"
       },
@@ -252,16 +314,20 @@
         "link": "/api/types/PropsCallbackContext.md"
       },
       {
+        "text": "PropsCallbackParent",
+        "link": "/api/types/PropsCallbackParent.md"
+      },
+      {
+        "text": "PropsGetter",
+        "link": "/api/types/PropsGetter.md"
+      },
+      {
         "text": "QuerySource",
         "link": "/api/types/QuerySource.md"
       },
       {
         "text": "RegisteredRejectionType",
         "link": "/api/types/RegisteredRejectionType.md"
-      },
-      {
-        "text": "RegisteredRouteMap",
-        "link": "/api/types/RegisteredRouteMap.md"
       },
       {
         "text": "RegisteredRouter",
@@ -280,16 +346,8 @@
         "link": "/api/types/RegisteredRouterReplace.md"
       },
       {
-        "text": "RegisteredRouterRoute",
-        "link": "/api/types/RegisteredRouterRoute.md"
-      },
-      {
         "text": "RegisteredRoutes",
         "link": "/api/types/RegisteredRoutes.md"
-      },
-      {
-        "text": "RegisteredRoutesName",
-        "link": "/api/types/RegisteredRoutesName.md"
       },
       {
         "text": "ResolvedRoute",
@@ -336,6 +394,10 @@
         "link": "/api/types/Router.md"
       },
       {
+        "text": "RouterLinkProps",
+        "link": "/api/types/RouterLinkProps.md"
+      },
+      {
         "text": "RouterOptions",
         "link": "/api/types/RouterOptions.md"
       },
@@ -344,16 +406,48 @@
         "link": "/api/types/RouterPlugin.md"
       },
       {
+        "text": "RouterPush",
+        "link": "/api/types/RouterPush.md"
+      },
+      {
         "text": "RouterPushOptions",
         "link": "/api/types/RouterPushOptions.md"
+      },
+      {
+        "text": "RouterReject",
+        "link": "/api/types/RouterReject.md"
+      },
+      {
+        "text": "RouterReplace",
+        "link": "/api/types/RouterReplace.md"
+      },
+      {
+        "text": "RouterReplaceOptions",
+        "link": "/api/types/RouterReplaceOptions.md"
+      },
+      {
+        "text": "RouterResolve",
+        "link": "/api/types/RouterResolve.md"
+      },
+      {
+        "text": "RouterResolveOptions",
+        "link": "/api/types/RouterResolveOptions.md"
       },
       {
         "text": "RouterRoute",
         "link": "/api/types/RouterRoute.md"
       },
       {
+        "text": "RouterRouteName",
+        "link": "/api/types/RouterRouteName.md"
+      },
+      {
         "text": "RouterRoutes",
         "link": "/api/types/RouterRoutes.md"
+      },
+      {
+        "text": "RouterRouteUnion",
+        "link": "/api/types/RouterRouteUnion.md"
       },
       {
         "text": "Routes",
@@ -362,6 +456,10 @@
       {
         "text": "ToCallback",
         "link": "/api/types/ToCallback.md"
+      },
+      {
+        "text": "ToRoute",
+        "link": "/api/types/ToRoute.md"
       },
       {
         "text": "Url",
@@ -382,6 +480,22 @@
       {
         "text": "WithHooks",
         "link": "/api/types/WithHooks.md"
+      },
+      {
+        "text": "WithHost",
+        "link": "/api/types/WithHost.md"
+      },
+      {
+        "text": "WithoutHost",
+        "link": "/api/types/WithoutHost.md"
+      },
+      {
+        "text": "WithoutParent",
+        "link": "/api/types/WithoutParent.md"
+      },
+      {
+        "text": "WithParent",
+        "link": "/api/types/WithParent.md"
       }
     ]
   }
