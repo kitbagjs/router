@@ -2,7 +2,7 @@ import { afterEach, expect, test, vi } from 'vitest'
 import { createRoute } from '@/services/createRoute'
 import { getMatchesForUrl } from '@/services/getMatchesForUrl'
 import * as utilities from '@/services/routeMatchScore'
-import { Route } from '@/types'
+import { Route } from '@/types/route'
 import { component } from '@/utilities/testHelpers'
 
 afterEach(() => {

@@ -4,7 +4,7 @@ import { createUseRoute } from '@/compositions/useRoute'
 import { createUseRouter } from '@/compositions/useRouter'
 import { createUseRouterDepth } from '@/compositions/useRouterDepth'
 import { RouterRejection } from '@/services/createRouterReject'
-import { RouterRoute } from '@/services/createRouterRoute'
+import { RouterRoute } from '@/types/routerRoute'
 import { Router } from '@/types/router'
 import { Component, computed, defineComponent, EmitsOptions, h, InjectionKey, onServerPrefetch, SetupContext, SlotsType, UnwrapRef, VNode } from 'vue'
 

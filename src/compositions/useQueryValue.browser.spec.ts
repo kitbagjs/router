@@ -1,4 +1,4 @@
-import { createRouter } from '@/services'
+import { createRouter } from '@/services/createRouter'
 import { createRoute } from '@/services/createRoute'
 import { expect, test } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'

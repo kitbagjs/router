@@ -1,5 +1,5 @@
 import { expectTypeOf, test } from 'vitest'
-import { RouterRoute } from '@/services/createRouterRoute'
+import { RouterRoute } from '@/types/routerRoute'
 import { ResolvedRoute } from '@/types/resolved'
 import { withParams } from '@/services/withParams'
 import { createRoute } from '@/services/createRoute'

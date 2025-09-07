@@ -1,4 +1,4 @@
-import { Routes } from '@/types'
+import { Routes } from '@/types/route'
 import { stringHasValue } from '@/utilities/guards'
 import { withParams } from '@/services/withParams'
 

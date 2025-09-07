@@ -1,6 +1,7 @@
 import { computed, Ref, MaybeRefOrGetter, toValue, InjectionKey } from 'vue'
 import { createUseRoute } from './useRoute'
-import { Param, Router } from '@/types'
+import { Router } from '@/types/router'
+import { Param } from '@/types/paramTypes'
 import { ExtractParamType } from '@/types/params'
 import { safeGetParamValue, setParamValue } from '@/services/params'
 

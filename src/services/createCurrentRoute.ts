@@ -1,7 +1,7 @@
 import { InjectionKey, reactive } from 'vue'
 import { createRouterRoute } from '@/services/createRouterRoute'
 import { isRejectionRouteSymbol } from '@/services/isRejectionRoute'
-import { Router, RouterRouteUnion } from '@/types'
+import { Router, RouterRouteUnion } from '@/types/router'
 import { ResolvedRoute } from '@/types/resolved'
 import { Routes } from '@/types/route'
 import { RouterPush } from '@/types/routerPush'

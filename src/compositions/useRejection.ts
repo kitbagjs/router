@@ -1,5 +1,5 @@
 import { InjectionKey, inject } from 'vue'
-import { RouterNotInstalledError } from '@/errors'
+import { RouterNotInstalledError } from '@/errors/routerNotInstalledError'
 import { RouterRejection } from '@/services/createRouterReject'
 import { createRouterKeyStore } from '@/services/createRouterKeyStore'
 import { Router } from '@/types/router'

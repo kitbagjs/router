@@ -1,4 +1,5 @@
-import { RouterRoute, isRouterRoute } from '@/services/createRouterRoute'
+import { isRouterRoute } from '@/services/createRouterRoute'
+import type { RouterRoute } from '@/types/routerRoute'
 import { Router, RouterRouteName } from '@/types/router'
 import { InjectionKey } from 'vue'
 
