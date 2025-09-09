@@ -1,6 +1,6 @@
 import { InjectionKey, watch } from 'vue'
 import { createUseRouter } from '@/compositions/useRouter'
-import { UseRouteInvalidError } from '@/errors'
+import { UseRouteInvalidError } from '@/errors/useRouteInvalidError'
 import { IsRouteOptions, createIsRoute } from '@/guards/routes'
 import { Router, RouterRouteName } from '@/types/router'
 

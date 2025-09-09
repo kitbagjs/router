@@ -10,7 +10,7 @@ function createParam<TParam>(param): TParam;
 
 | Type Parameter |
 | ------ |
-| `TParam` *extends* `Required`\<[`ParamGetSet`](../types/ParamGetSet.md)\<`any`\>\> |
+| `TParam` *extends* `Required`\<[`ParamGetSet`](../types/ParamGetSet.md)\<`unknown`\>\> |
 
 ### Parameters
 
@@ -47,7 +47,7 @@ function createParam<TParam>(param): ParamGetSet<ExtractParamType<TParam>>;
 ## Call Signature
 
 ```ts
-function createParam<TParam>(param, defaultValue): Required<ParamGetSet<ExtractParamType<TParam>>>;
+function createParam<TParam>(param, defaultValue): ParamWithDefault<TParam>;
 ```
 
 ### Type Parameters
@@ -65,4 +65,4 @@ function createParam<TParam>(param, defaultValue): Required<ParamGetSet<ExtractP
 
 ### Returns
 
-`Required`\<[`ParamGetSet`](../types/ParamGetSet.md)\<`ExtractParamType`\<`TParam`\>\>\>
+`ParamWithDefault`\<`TParam`\>

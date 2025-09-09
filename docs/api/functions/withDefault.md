@@ -1,7 +1,7 @@
 # Functions: withDefault()
 
 ```ts
-function withDefault<TParam>(param, defaultValue): Required<ParamGetSet<ExtractParamType<TParam>>>;
+function withDefault<TParam>(param, defaultValue): ParamWithDefault<TParam>;
 ```
 
 ## Type Parameters
@@ -19,4 +19,4 @@ function withDefault<TParam>(param, defaultValue): Required<ParamGetSet<ExtractP
 
 ## Returns
 
-`Required`\<[`ParamGetSet`](../types/ParamGetSet.md)\<`ExtractParamType`\<`TParam`\>\>\>
+`ParamWithDefault`\<`TParam`\>

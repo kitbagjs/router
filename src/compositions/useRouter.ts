@@ -1,6 +1,6 @@
 import { InjectionKey, inject } from 'vue'
-import { RouterNotInstalledError } from '@/errors'
-import { Router } from '@/types'
+import { RouterNotInstalledError } from '@/errors/routerNotInstalledError'
+import { Router } from '@/types/router'
 
 export function createUseRouter<TRouter extends Router>(routerKey: InjectionKey<TRouter>): () => TRouter {
   return () => {

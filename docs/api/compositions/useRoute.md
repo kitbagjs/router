@@ -1,33 +1,8 @@
 # Compositions: useRoute()
 
-## Call Signature
-
 ```ts
-function useRoute(): RouterRoute;
-```
-
-A composition to access the current route or verify a specific route name within a Vue component.
-This function provides two overloads:
-1. When called without arguments, it returns the current route from the router without types.
-2. When called with a route name, it checks if the current active route includes the specified route name.
-
-The function also sets up a reactive watcher on the route object from the router to continually check the validity of the route name
-if provided, throwing an error if the validation fails at any point during the component's lifecycle.
-
-### Returns
-
-[`RouterRoute`](../types/RouterRoute.md)
-
-The current router route. If a route name is provided, it validates the route name first.
-
-### Throws
-
-Throws an error if the provided route name is not valid or does not match the current route.
-
-## Call Signature
-
-```ts
-function useRoute<TRouteName>(routeName, options): RouterRoute<Readonly<{
+const useRoute: {
+  (): RouterRoute<Readonly<{
   hash: string;
   href: Url;
   id: any;
@@ -35,13 +10,44 @@ function useRoute<TRouteName>(routeName, options): RouterRoute<Readonly<{
   matches: any;
   name: any;
   params: {
-   [key: string]: any;
-   [key: number]: any;
-   [key: symbol]: any;
+   [x: string]: unknown;
+   [x: number]: unknown;
+   [x: symbol]: unknown;
   };
   query: URLSearchParams;
-  state: ExtractRouteStateParamsAsOptional<any>;
+  state: ExtractRouteStateParamsAsOptional;
+}>>;
+<TRouteName>  (routeName, options): RouterRoute<Readonly<{
+  hash: string;
+  href: Url;
+  id: any;
+  matched: any;
+  matches: any;
+  name: any;
+  params: {
+   [x: string]: unknown;
+   [x: number]: unknown;
+   [x: symbol]: unknown;
+  };
+  query: URLSearchParams;
+  state: ExtractRouteStateParamsAsOptional;
 }>> & object;
+<TRouteName>  (routeName, options?): RouterRoute<Readonly<{
+  hash: string;
+  href: Url;
+  id: any;
+  matched: any;
+  matches: any;
+  name: any;
+  params: {
+   [x: string]: unknown;
+   [x: number]: unknown;
+   [x: symbol]: unknown;
+  };
+  query: URLSearchParams;
+  state: ExtractRouteStateParamsAsOptional;
+}>> & object;
+};
 ```
 
 A composition to access the current route or verify a specific route name within a Vue component.
@@ -52,18 +58,25 @@ This function provides two overloads:
 The function also sets up a reactive watcher on the route object from the router to continually check the validity of the route name
 if provided, throwing an error if the validation fails at any point during the component's lifecycle.
 
-### Type Parameters
+## Call Signature
 
-| Type Parameter | Description |
-| ------ | ------ |
-| `TRouteName` *extends* `string` | A string type that should match route name of RegisteredRouteMap, ensuring the route name exists. |
-
-### Parameters
-
-| Parameter | Type | Description |
-| ------ | ------ | ------ |
-| `routeName` | `TRouteName` | Optional. The name of the route to validate against the current active routes. |
-| `options` | `IsRouteOptions` & `object` | - |
+```ts
+(): RouterRoute<Readonly<{
+  hash: string;
+  href: Url;
+  id: any;
+  matched: any;
+  matches: any;
+  name: any;
+  params: {
+   [x: string]: unknown;
+   [x: number]: unknown;
+   [x: symbol]: unknown;
+  };
+  query: URLSearchParams;
+  state: ExtractRouteStateParamsAsOptional;
+}>>;
+```
 
 ### Returns
 
@@ -75,24 +88,18 @@ if provided, throwing an error if the validation fails at any point during the c
   `matches`: `any`;
   `name`: `any`;
   `params`: \{
-   [`key`: `string`]: `any`;
-   [`key`: `number`]: `any`;
-   [`key`: `symbol`]: `any`;
+   [`x`: `string`]: `unknown`;
+   [`x`: `number`]: `unknown`;
+   [`x`: `symbol`]: `unknown`;
   \};
   `query`: `URLSearchParams`;
-  `state`: `ExtractRouteStateParamsAsOptional`\<`any`\>;
-\}\>\> & `object`
-
-The current router route. If a route name is provided, it validates the route name first.
-
-### Throws
-
-Throws an error if the provided route name is not valid or does not match the current route.
+  `state`: `ExtractRouteStateParamsAsOptional`;
+\}\>\>
 
 ## Call Signature
 
 ```ts
-function useRoute<TRouteName>(routeName, options?): RouterRoute<Readonly<{
+<TRouteName>(routeName, options): RouterRoute<Readonly<{
   hash: string;
   href: Url;
   id: any;
@@ -100,35 +107,27 @@ function useRoute<TRouteName>(routeName, options?): RouterRoute<Readonly<{
   matches: any;
   name: any;
   params: {
-   [key: string]: any;
-   [key: number]: any;
-   [key: symbol]: any;
+   [x: string]: unknown;
+   [x: number]: unknown;
+   [x: symbol]: unknown;
   };
   query: URLSearchParams;
-  state: ExtractRouteStateParamsAsOptional<any>;
+  state: ExtractRouteStateParamsAsOptional;
 }>> & object;
 ```
 
-A composition to access the current route or verify a specific route name within a Vue component.
-This function provides two overloads:
-1. When called without arguments, it returns the current route from the router without types.
-2. When called with a route name, it checks if the current active route includes the specified route name.
-
-The function also sets up a reactive watcher on the route object from the router to continually check the validity of the route name
-if provided, throwing an error if the validation fails at any point during the component's lifecycle.
-
 ### Type Parameters
 
-| Type Parameter | Description |
-| ------ | ------ |
-| `TRouteName` *extends* `string` | A string type that should match route name of RegisteredRouteMap, ensuring the route name exists. |
+| Type Parameter |
+| ------ |
+| `TRouteName` *extends* `unknown` |
 
 ### Parameters
 
-| Parameter | Type | Description |
-| ------ | ------ | ------ |
-| `routeName` | `TRouteName` | Optional. The name of the route to validate against the current active routes. |
-| `options?` | `IsRouteOptions` | - |
+| Parameter | Type |
+| ------ | ------ |
+| `routeName` | `TRouteName` |
+| `options` | `IsRouteOptions` & `object` |
 
 ### Returns
 
@@ -140,16 +139,77 @@ if provided, throwing an error if the validation fails at any point during the c
   `matches`: `any`;
   `name`: `any`;
   `params`: \{
-   [`key`: `string`]: `any`;
-   [`key`: `number`]: `any`;
-   [`key`: `symbol`]: `any`;
+   [`x`: `string`]: `unknown`;
+   [`x`: `number`]: `unknown`;
+   [`x`: `symbol`]: `unknown`;
   \};
   `query`: `URLSearchParams`;
-  `state`: `ExtractRouteStateParamsAsOptional`\<`any`\>;
+  `state`: `ExtractRouteStateParamsAsOptional`;
 \}\>\> & `object`
+
+## Call Signature
+
+```ts
+<TRouteName>(routeName, options?): RouterRoute<Readonly<{
+  hash: string;
+  href: Url;
+  id: any;
+  matched: any;
+  matches: any;
+  name: any;
+  params: {
+   [x: string]: unknown;
+   [x: number]: unknown;
+   [x: symbol]: unknown;
+  };
+  query: URLSearchParams;
+  state: ExtractRouteStateParamsAsOptional;
+}>> & object;
+```
+
+### Type Parameters
+
+| Type Parameter |
+| ------ |
+| `TRouteName` *extends* `unknown` |
+
+### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `routeName` | `TRouteName` |
+| `options?` | `IsRouteOptions` |
+
+### Returns
+
+[`RouterRoute`](../types/RouterRoute.md)\<`Readonly`\<\{
+  `hash`: `string`;
+  `href`: [`Url`](../types/Url.md);
+  `id`: `any`;
+  `matched`: `any`;
+  `matches`: `any`;
+  `name`: `any`;
+  `params`: \{
+   [`x`: `string`]: `unknown`;
+   [`x`: `number`]: `unknown`;
+   [`x`: `symbol`]: `unknown`;
+  \};
+  `query`: `URLSearchParams`;
+  `state`: `ExtractRouteStateParamsAsOptional`;
+\}\>\> & `object`
+
+## Template
+
+A string type that should match route name of the registered router, ensuring the route name exists.
+
+## Param
+
+Optional. The name of the route to validate against the current active routes.
+
+## Returns
 
 The current router route. If a route name is provided, it validates the route name first.
 
-### Throws
+## Throws
 
 Throws an error if the provided route name is not valid or does not match the current route.

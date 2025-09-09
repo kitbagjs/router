@@ -42,7 +42,7 @@ export default defineConfig({
   plugins: [
     vue(),
     dts({
-      rollupTypes: true,
+      insertTypesEntry: true,
     }),
   ],
 })

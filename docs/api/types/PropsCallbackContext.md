@@ -16,7 +16,7 @@ Context provided to props callback functions
 
 | Property | Type |
 | ------ | ------ |
-| <a id="parent"></a> `parent` | `PropsCallbackParent`\<`TParent`\> |
+| <a id="parent"></a> `parent` | [`PropsCallbackParent`](PropsCallbackParent.md)\<`TParent`\> |
 | <a id="push"></a> `push` | `CallbackContext`\[`"push"`\] |
 | <a id="reject"></a> `reject` | `CallbackContext`\[`"reject"`\] |
 | <a id="replace"></a> `replace` | `CallbackContext`\[`"replace"`\] |

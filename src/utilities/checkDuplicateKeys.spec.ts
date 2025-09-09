@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { DuplicateParamsError } from '@/errors'
+import { DuplicateParamsError } from '@/errors/duplicateParamsError'
 import { checkDuplicateParams } from '@/utilities/checkDuplicateKeys'
 
 test('given a single array without duplicates, does nothing', () => {

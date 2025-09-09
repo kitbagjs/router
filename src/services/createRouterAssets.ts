@@ -1,4 +1,5 @@
-import { AddAfterRouteHook, AddBeforeRouteHook, Router } from '@/types'
+import { Router } from '@/types/router'
+import { AddAfterRouteHook, AddBeforeRouteHook } from '@/types/hooks'
 import { InjectionKey } from 'vue'
 import { createComponentHooks } from './createComponentHooks'
 import { createRouterView } from '@/components/routerView'
@@ -19,6 +20,7 @@ type RouterAssets<TRouter extends Router> = {
    * @group Hooks
    */
   onBeforeRouteLeave: AddBeforeRouteHook,
+
   /**
    * Registers a hook that is called before a route is updated. Must be called from setup.
    * This is particularly useful for handling changes in route parameters or query while staying within the same component.
@@ -28,6 +30,7 @@ type RouterAssets<TRouter extends Router> = {
    * @group Hooks
    */
   onBeforeRouteUpdate: AddBeforeRouteHook,
+
   /**
    * Registers a hook that is called after a route has been left. Must be called during setup.
    * This can be used for cleanup actions after the component is no longer active, ensuring proper resource management.
@@ -37,6 +40,7 @@ type RouterAssets<TRouter extends Router> = {
    * @group Hooks
    */
   onAfterRouteLeave: AddAfterRouteHook,
+
   /**
    * Registers a hook that is called after a route has been updated. Must be called during setup.
    * This is ideal for responding to updates within the same route, such as parameter changes, without full component reloads.
@@ -46,8 +50,32 @@ type RouterAssets<TRouter extends Router> = {
    * @group Hooks
    */
   onAfterRouteUpdate: AddAfterRouteHook,
+
+  /**
+   * A guard to verify if a route or unknown value matches a given route name.
+   *
+   * @param routeName - The name of the route to check against the current route.
+   * @returns True if the current route matches the given route name, false otherwise.
+   * @group Guards
+   */
   isRoute: ReturnType<typeof createIsRoute<TRouter>>,
+
+  /**
+   * A component to render the current route's component.
+   *
+   * @param props - The props to pass to the router view component.
+   * @returns The router view component.
+   * @group Components
+   */
   RouterView: ReturnType<typeof createRouterView<TRouter>>,
+
+  /**
+   * A component to render a link to a route or any url.
+   *
+   * @param props - The props to pass to the router link component.
+   * @returns The router link component.
+   * @group Components
+   */
   RouterLink: ReturnType<typeof createRouterLink<TRouter>>,
 
   /**
@@ -59,7 +87,7 @@ type RouterAssets<TRouter extends Router> = {
    * The function also sets up a reactive watcher on the route object from the router to continually check the validity of the route name
    * if provided, throwing an error if the validation fails at any point during the component's lifecycle.
    *
-   * @template TRouteName - A string type that should match route name of RegisteredRouteMap, ensuring the route name exists.
+   * @template TRouteName - A string type that should match route name of RouterRouteName<TRouter>, ensuring the route name exists.
    * @param routeName - Optional. The name of the route to validate against the current active routes.
    * @returns The current router route. If a route name is provided, it validates the route name first.
    * @throws {UseRouteInvalidError} Throws an error if the provided route name is not valid or does not match the current route.
@@ -68,9 +96,9 @@ type RouterAssets<TRouter extends Router> = {
   useRoute: ReturnType<typeof createUseRoute<TRouter>>,
 
   /**
-   * A composition to access the registered router instance within a Vue component.
+   * A composition to access the installed router instance within a Vue component.
    *
-   * @returns The registered router instance.
+   * @returns The installed router instance.
    * @throws {RouterNotInstalledError} Throws an error if the router has not been installed,
    *         ensuring the component does not operate without routing functionality.
    * @group Compositions
@@ -86,8 +114,8 @@ type RouterAssets<TRouter extends Router> = {
   useQueryValue: ReturnType<typeof createUseQueryValue<TRouter>>,
 
   /**
-   * A composition to export much of the functionality that drives RouterLink component. Can be given route details to discover resolved URL,
-   * or resolved URL to discover route details. Also exports some useful context about routes relationship to current URL and convenience methods
+   * A composition to export much of the functionality that drives RouterLink component.
+   * Also exports some useful context about routes relationship to current URL and convenience methods
    * for navigating.
    *
    * @param source - The name of the route or a valid URL.

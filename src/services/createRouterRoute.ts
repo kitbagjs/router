@@ -1,27 +1,11 @@
 import { computed, InjectionKey, reactive, toRefs } from 'vue'
 import { ResolvedRoute } from '@/types/resolved'
+import { RouterRoute } from '@/types/routerRoute'
 import { RouterPush, RouterPushOptions } from '@/types/routerPush'
-import { RouteUpdate } from '@/types/routeUpdate'
 import { QuerySource } from '@/types/querySource'
 import { Router } from '@/types/router'
 
 const isRouterRouteSymbol = Symbol('isRouterRouteSymbol')
-
-export type RouterRoute<TRoute extends ResolvedRoute = ResolvedRoute> = {
-  readonly id: TRoute['id'],
-  readonly name: TRoute['name'],
-  readonly matched: TRoute['matched'],
-  readonly matches: TRoute['matches'],
-  readonly hash: TRoute['hash'],
-  readonly update: RouteUpdate<TRoute>,
-  readonly href: TRoute['href'],
-
-  params: TRoute['params'],
-  state: TRoute['state'],
-
-  get query(): URLSearchParams,
-  set query(value: QuerySource),
-}
 
 export function isRouterRoute(routerKey: InjectionKey<Router>, value: unknown): value is RouterRoute {
   return typeof value === 'object' && value !== null && isRouterRouteSymbol in value && routerKey in value
