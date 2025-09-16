@@ -10,7 +10,7 @@ type RouteSortMethod = (aRoute: Route, bRoute: Route) => number
 export function getRouteScoreSortMethod(url: string): RouteSortMethod {
   const { searchParams: actualQuery, pathname: actualPath } = parseUrl(url)
   const sortBefore = -1
-  const sortAfter = +1
+  const sortAfter = 1
 
   return (aRoute, bRoute) => {
     const aRouteQueryScore = countExpectedQueryParams(aRoute, actualQuery)

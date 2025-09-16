@@ -1,13 +1,13 @@
 import { getParamValue, setParamValue } from '@/services/params'
 import { Param } from '@/types/paramTypes'
 
-export function stateIsRecord(state: unknown): state is Record<string, unknown> {
+function stateIsRecord(state: unknown): state is Record<string, unknown> {
   return !!state && typeof state === 'object'
 }
 
 const isOptional = true
 
-export function getStateValue(state: unknown, key: string, param: Param): unknown {
+function getStateValue(state: unknown, key: string, param: Param): unknown {
   if (stateIsRecord(state) && key in state) {
     const value = state[key]
 
@@ -39,7 +39,7 @@ export function getStateValues(params: Record<string, Param>, state: unknown): R
 /**
  * This function is used to get the values inside the state converted from string values into the correct type.
  */
-export function setStateValue(state: unknown, key: string, param: Param): string | undefined {
+function setStateValue(state: unknown, key: string, param: Param): string | undefined {
   if (stateIsRecord(state) && key in state) {
     const value = state[key]
 

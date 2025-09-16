@@ -1,7 +1,7 @@
 import { RouteHookLifecycle } from '@/types/hooks'
 import { ResolvedRoute } from '@/types/resolved'
 
-export type RouteHookCondition = (to: ResolvedRoute, from: ResolvedRoute | null, depth: number) => boolean
+type RouteHookCondition = (to: ResolvedRoute, from: ResolvedRoute | null, depth: number) => boolean
 
 export const isRouteEnter: RouteHookCondition = (to, from, depth) => {
   const toMatches = to.matches

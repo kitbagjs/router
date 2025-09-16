@@ -2,7 +2,6 @@ import { Ref, markRaw, ref, Component } from 'vue'
 import { genericRejection } from '@/components/rejection'
 import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
 import { createRouteId } from '@/services/createRouteId'
-import { isRejectionRouteSymbol } from '@/services/isRejectionRoute'
 import { ResolvedRoute } from '@/types/resolved'
 
 export type BuiltInRejectionType = 'NotFound'
@@ -44,7 +43,6 @@ export function createRouterReject(rejections: Partial<Record<string, Component>
       state: {},
       href: '/',
       hash: '',
-      [isRejectionRouteSymbol]: true,
     }
   }
 
