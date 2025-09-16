@@ -126,7 +126,7 @@ test('given route with simple string query param WITHOUT value present, returns 
 test('given route with equal matches, returns route with highest score', () => {
   vi.spyOn(utilities, 'getRouteScoreSortMethod').mockImplementation(() => {
     return (route: Route) => {
-      return route.name === 'second-route' ? -1 : +1
+      return route.name === 'second-route' ? -1 : 1
     }
   })
 

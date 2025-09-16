@@ -205,7 +205,7 @@ export function createRouter<
     const match = routes.find((route) => route.name === source)
 
     if (!match) {
-      throw new RouteNotFoundError(String(source))
+      throw new RouteNotFoundError(source)
     }
 
     return createResolvedRoute(match, params, options)
