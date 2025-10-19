@@ -1,5 +1,5 @@
 import { createPath } from 'history'
-import { App, InjectionKey, ref } from 'vue'
+import { App, ref } from 'vue'
 import { createCurrentRoute } from '@/services/createCurrentRoute'
 import { createIsExternal } from '@/services/createIsExternal'
 import { parseUrl } from '@/services/urlParser'
