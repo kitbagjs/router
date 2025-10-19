@@ -52,20 +52,6 @@ export type AddComponentAfterRouteHook<TRoutes extends Routes> = (hook: AfterRou
 export type AddGlobalRouteHooks<TRoutes extends Routes> = (hooks: RouterRouteHooks<TRoutes>) => void
 
 /**
- * Adds a hook that is called before a route change. Returns a function to remove the hook.
- * @param hook - {@link BeforeRouteHook} The hook function to add.
- * @returns {RouteHookRemove} A function that removes the added hook.
- */
-export type AddBeforeRouteHook = (hook: BeforeRouteHook) => RouteHookRemove
-
-/**
- * Adds a hook that is called after a route change. Returns a function to remove the hook.
- * @param hook - {@link AfterRouteHook} The hook function to add.
- * @returns {RouteHookRemove} A function that removes the added hook.
- */
-export type AddAfterRouteHook = (hook: AfterRouteHook) => RouteHookRemove
-
-/**
  * Context provided to route hooks, containing context of previous route and functions for triggering rejections and push/replace to another route.
  */
 type RouteHookContext = {
