@@ -65,7 +65,7 @@ export const routes = [
     path: '/',
     component,
   }),
-]
+] as const
 
 export function mockRoute(name: string): ResolvedRoute['matched'] {
   return {
