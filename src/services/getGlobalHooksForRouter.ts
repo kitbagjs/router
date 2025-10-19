@@ -1,10 +1,10 @@
-import { RouteHooks } from '@/models/RouteHooks'
+import { RouterRouteHooks } from '@/models/RouterRouteHooks'
 import { AfterRouteHookLifecycle, BeforeRouteHookLifecycle } from '@/types/hooks'
 import { RouterOptions } from '@/types/router'
 import { RouterPlugin } from '@/types/routerPlugin'
 
-export function getGlobalHooksForRouter(options: RouterOptions = {}, plugins: RouterPlugin[] = []): RouteHooks {
-  const hooks = new RouteHooks()
+export function getGlobalHooksForRouter(options: RouterOptions = {}, plugins: RouterPlugin[] = []): RouterRouteHooks {
+  const hooks = new RouterRouteHooks()
 
   getHooksForLifecycle('onBeforeRouteEnter', options, plugins).forEach((hook) => hooks.onBeforeRouteEnter.add(hook))
   getHooksForLifecycle('onBeforeRouteUpdate', options, plugins).forEach((hook) => hooks.onBeforeRouteUpdate.add(hook))

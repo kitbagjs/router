@@ -1,7 +1,9 @@
-import { RouteHooks } from '@/models/RouteHooks'
+import { RouterRouteHooks } from '@/models/RouterRouteHooks'
 import { CallbackAbortResponse, CallbackContext, CallbackContextAbort, CallbackPushResponse, CallbackRejectResponse, CallbackSuccessResponse } from '@/services/createCallbackContext'
 import { ResolvedRoute } from '@/types/resolved'
 import { MaybeArray, MaybePromise } from '@/types/utilities'
+import { Routes } from './route'
+import { RouterAfterRouteHook, RouterBeforeRouteHook } from './router'
 
 /**
  * Defines route hooks that can be applied before entering, updating, or leaving a route, as well as after these events.
@@ -31,23 +33,23 @@ export type RouteHookAfterRunner = (context: AfterHookContext) => Promise<AfterR
 
 export type RouteHookTiming = 'global' | 'component'
 
-export type BeforeRouteHookRegistration = {
+export type BeforeRouteHookRegistration<TRoutes extends Routes> = {
   lifecycle: 'onBeforeRouteEnter' | 'onBeforeRouteUpdate' | 'onBeforeRouteLeave',
-  hook: BeforeRouteHook,
+  hook: RouterBeforeRouteHook<TRoutes>,
   depth: number,
 }
 
-export type AddComponentBeforeRouteHook = (hook: BeforeRouteHookRegistration) => RouteHookRemove
+export type AddComponentBeforeRouteHook<TRoutes extends Routes> = (hook: BeforeRouteHookRegistration<TRoutes>) => RouteHookRemove
 
-export type AfterRouteHookRegistration = {
+export type AfterRouteHookRegistration<TRoutes extends Routes> = {
   lifecycle: 'onAfterRouteEnter' | 'onAfterRouteUpdate' | 'onAfterRouteLeave',
-  hook: AfterRouteHook,
+  hook: RouterAfterRouteHook<TRoutes>,
   depth: number,
 }
 
-export type AddComponentAfterRouteHook = (hook: AfterRouteHookRegistration) => RouteHookRemove
+export type AddComponentAfterRouteHook<TRoutes extends Routes> = (hook: AfterRouteHookRegistration<TRoutes>) => RouteHookRemove
 
-export type AddGlobalRouteHooks = (hooks: RouteHooks) => void
+export type AddGlobalRouteHooks<TRoutes extends Routes> = (hooks: RouterRouteHooks<TRoutes>) => void
 
 /**
  * Adds a hook that is called before a route change. Returns a function to remove the hook.

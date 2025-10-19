@@ -12,7 +12,7 @@ import { RouterReject } from './routerReject'
 import { RouterPlugin } from './routerPlugin'
 import { KeysOfUnion, MaybePromise } from './utilities'
 import { RoutesName } from './routesMap'
-import { RegisteredRouterReject } from '@/main'
+import { AfterRouteHookResponse, BeforeRouteHookResponse, RegisteredRouterReject } from '@/main'
 import { CallbackContextAbort } from '@/services/createCallbackContext'
 
 /**
@@ -167,6 +167,11 @@ type RouterBeforeRouteHookContext<TRoutes extends Routes> = RouterHookContext<TR
   abort: CallbackContextAbort,
 }
 
+export type HookContext<TRoutes extends Routes> = {
+  to: RouterResolvedRouteUnion<TRoutes>,
+  from: RouterResolvedRouteUnion<TRoutes> | null,
+}
+
 export type RouterBeforeRouteHook<TRoutes extends Routes> = (to: RouterResolvedRouteUnion<TRoutes>, context: RouterBeforeRouteHookContext<TRoutes>) => MaybePromise<void>
 export type AddRouterBeforeRouteHook<TRoutes extends Routes> = (hook: RouterBeforeRouteHook<TRoutes>) => RouteHookRemove
 
@@ -174,6 +179,9 @@ type RouterAfterRouteHookContext<TRoutes extends Routes> = RouterHookContext<TRo
 
 export type RouterAfterRouteHook<TRoutes extends Routes> = (to: RouterResolvedRouteUnion<TRoutes>, context: RouterAfterRouteHookContext<TRoutes>) => MaybePromise<void>
 export type AddRouterAfterRouteHook<TRoutes extends Routes> = (hook: RouterAfterRouteHook<TRoutes>) => RouteHookRemove
+
+export type RouterRouteHookBeforeRunner<TRoutes extends Routes> = (context: HookContext<TRoutes>) => Promise<BeforeRouteHookResponse>
+export type RouterRouteHookAfterRunner<TRoutes extends Routes> = (context: HookContext<TRoutes>) => Promise<AfterRouteHookResponse>
 
 /**
  * This type is the same as `RouterRoute<ResolvedRoute<TRoutes[number]>>` while remaining distributive

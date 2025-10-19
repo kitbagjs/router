@@ -1,5 +1,5 @@
 import { createPath } from 'history'
-import { App, ref } from 'vue'
+import { App, InjectionKey, ref } from 'vue'
 import { createCurrentRoute } from '@/services/createCurrentRoute'
 import { createIsExternal } from '@/services/createIsExternal'
 import { parseUrl } from '@/services/urlParser'
@@ -85,7 +85,7 @@ export function createRouter<
   const isGlobalRouter = options?.isGlobalRouter ?? true
   const routerKey = isGlobalRouter ? routerInjectionKey : Symbol()
   const routes = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options?.base)
-  const hooks = createRouterHooks()
+  const hooks = createRouterHooks(routerKey)
 
   hooks.addGlobalRouteHooks(getGlobalHooksForRouter(options, plugins))
 

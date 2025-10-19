@@ -4,10 +4,12 @@ import { createRouterHooks } from '@/services/createRouterHooks'
 import { BeforeRouteHook } from '@/types/hooks'
 import { ResolvedRoute } from '@/types/resolved'
 import { component } from '@/utilities/testHelpers'
+import { Router } from '@/types/router'
+import { InjectionKey } from 'vue'
 
 test('calls hook with correct routes', () => {
   const hook = vi.fn()
-  const { runBeforeRouteHooks } = createRouterHooks()
+  const { runBeforeRouteHooks } = createRouterHooks(Symbol() as InjectionKey<Router>)
 
   const toOptions = {
     id: Math.random().toString(),
@@ -80,7 +82,8 @@ test.each<{ type: string, status: string, hook: BeforeRouteHook }>([
     },
   },
 ])('Returns correct status when hook is called', async ({ status, hook }) => {
-  const { runBeforeRouteHooks } = createRouterHooks()
+  const { runBeforeRouteHooks } = createRouterHooks(Symbol() as InjectionKey<Router>)
+
   const toOptions = {
     id: Math.random().toString(),
     name: 'routeA',
@@ -134,7 +137,7 @@ test('hook is called in order', async () => {
   const hookA = vi.fn()
   const hookB = vi.fn()
   const hookC = vi.fn()
-  const { runBeforeRouteHooks } = createRouterHooks()
+  const { runBeforeRouteHooks } = createRouterHooks(Symbol() as InjectionKey<Router>)
 
   const toOptions = {
     id: Math.random().toString(),
