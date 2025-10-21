@@ -1,5 +1,4 @@
-import { Router } from '@/types/router'
-import { AddAfterRouteHook, AddBeforeRouteHook } from '@/types/hooks'
+import { Router, RouterRoutes, AddRouterBeforeRouteHook, AddRouterAfterRouteHook } from '@/types/router'
 import { InjectionKey } from 'vue'
 import { createComponentHooks } from './createComponentHooks'
 import { createRouterView } from '@/components/routerView'
@@ -19,7 +18,7 @@ type RouterAssets<TRouter extends Router> = {
    * @returns {RouteHookRemove} A function that removes the added hook.
    * @group Hooks
    */
-  onBeforeRouteLeave: AddBeforeRouteHook,
+  onBeforeRouteLeave: AddRouterBeforeRouteHook<RouterRoutes<TRouter>>,
 
   /**
    * Registers a hook that is called before a route is updated. Must be called from setup.
@@ -29,7 +28,7 @@ type RouterAssets<TRouter extends Router> = {
    * @returns {RouteHookRemove} A function that removes the added hook.
    * @group Hooks
    */
-  onBeforeRouteUpdate: AddBeforeRouteHook,
+  onBeforeRouteUpdate: AddRouterBeforeRouteHook<RouterRoutes<TRouter>>,
 
   /**
    * Registers a hook that is called after a route has been left. Must be called during setup.
@@ -39,7 +38,7 @@ type RouterAssets<TRouter extends Router> = {
    * @returns {RouteHookRemove} A function that removes the added hook.
    * @group Hooks
    */
-  onAfterRouteLeave: AddAfterRouteHook,
+  onAfterRouteLeave: AddRouterAfterRouteHook<RouterRoutes<TRouter>>,
 
   /**
    * Registers a hook that is called after a route has been updated. Must be called during setup.
@@ -49,7 +48,7 @@ type RouterAssets<TRouter extends Router> = {
    * @returns {RouteHookRemove} A function that removes the added hook.
    * @group Hooks
    */
-  onAfterRouteUpdate: AddAfterRouteHook,
+  onAfterRouteUpdate: AddRouterAfterRouteHook<RouterRoutes<TRouter>>,
 
   /**
    * A guard to verify if a route or unknown value matches a given route name.
@@ -130,7 +129,7 @@ type RouterAssets<TRouter extends Router> = {
 export function createRouterAssets<TRouter extends Router>(router: TRouter): RouterAssets<TRouter>
 export function createRouterAssets<TRouter extends Router>(routerKey: InjectionKey<TRouter>): RouterAssets<TRouter>
 export function createRouterAssets<TRouter extends Router>(routerOrRouterKey: TRouter | InjectionKey<TRouter>): RouterAssets<TRouter> {
-  const routerKey = typeof routerOrRouterKey === 'object' ? routerOrRouterKey.key : routerOrRouterKey
+  const routerKey: InjectionKey<TRouter> = typeof routerOrRouterKey === 'object' ? routerOrRouterKey.key : routerOrRouterKey
 
   const {
     onBeforeRouteLeave,

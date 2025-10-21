@@ -1,7 +1,7 @@
 # Hooks: onAfterRouteLeave
 
 ```ts
-const onAfterRouteLeave: AddAfterRouteHook;
+const onAfterRouteLeave: AddRouterAfterRouteHook;
 ```
 
 Registers a hook that is called after a route has been left. Must be called during setup.

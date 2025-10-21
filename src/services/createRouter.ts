@@ -85,7 +85,7 @@ export function createRouter<
   const isGlobalRouter = options?.isGlobalRouter ?? true
   const routerKey = isGlobalRouter ? routerInjectionKey : Symbol()
   const routes = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options?.base)
-  const hooks = createRouterHooks()
+  const hooks = createRouterHooks(routerKey)
 
   hooks.addGlobalRouteHooks(getGlobalHooksForRouter(options, plugins))
 

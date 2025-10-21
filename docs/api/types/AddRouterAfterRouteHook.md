@@ -1,7 +1,7 @@
-# Types: AddComponentAfterRouteHook()\<TRoutes\>
+# Types: AddRouterAfterRouteHook()\<TRoutes\>
 
 ```ts
-type AddComponentAfterRouteHook<TRoutes> = (hook) => RouteHookRemove;
+type AddRouterAfterRouteHook<TRoutes> = (hook) => RouteHookRemove;
 ```
 
 ## Type Parameters
@@ -14,7 +14,7 @@ type AddComponentAfterRouteHook<TRoutes> = (hook) => RouteHookRemove;
 
 | Parameter | Type |
 | ------ | ------ |
-| `hook` | [`AfterRouteHookRegistration`](AfterRouteHookRegistration.md)\<`TRoutes`\> |
+| `hook` | [`RouterAfterRouteHook`](RouterAfterRouteHook.md)\<`TRoutes`\> |
 
 ## Returns
 

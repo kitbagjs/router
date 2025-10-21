@@ -1,7 +1,7 @@
 import { App, Component, InjectionKey, Ref } from 'vue'
 import { RouterHistoryMode } from '@/services/createRouterHistory'
 import { RouterRoute } from '@/types/routerRoute'
-import { AddAfterRouteHook, AddBeforeRouteHook, WithHooks } from '@/types/hooks'
+import { RouteHookRemove, WithHooks } from '@/types/hooks'
 import { PrefetchConfig } from '@/types/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
 import { Route, Routes } from '@/types/route'
@@ -10,8 +10,10 @@ import { RouterReplace } from '@/types/routerReplace'
 import { RouterResolve, RouterResolveOptions } from '@/types/routerResolve'
 import { RouterReject } from './routerReject'
 import { RouterPlugin } from './routerPlugin'
-import { KeysOfUnion } from './utilities'
+import { KeysOfUnion, MaybePromise } from './utilities'
 import { RoutesName } from './routesMap'
+import { AfterRouteHookResponse, BeforeRouteHookResponse, RegisteredRouterReject } from '@/main'
+import { CallbackContextAbort } from '@/services/createCallbackContext'
 
 /**
  * Options to initialize a {@link Router} instance.
@@ -105,27 +107,27 @@ export type Router<
   /**
    * Registers a hook to be called before a route is entered.
    */
-  onBeforeRouteEnter: AddBeforeRouteHook,
+  onBeforeRouteEnter: AddRouterBeforeRouteHook<TRoutes | TPlugin['routes']>,
   /**
    * Registers a hook to be called before a route is left.
    */
-  onBeforeRouteLeave: AddBeforeRouteHook,
+  onBeforeRouteLeave: AddRouterBeforeRouteHook<TRoutes | TPlugin['routes']>,
   /**
    * Registers a hook to be called before a route is updated.
    */
-  onBeforeRouteUpdate: AddBeforeRouteHook,
+  onBeforeRouteUpdate: AddRouterBeforeRouteHook<TRoutes | TPlugin['routes']>,
   /**
    * Registers a hook to be called after a route is entered.
    */
-  onAfterRouteEnter: AddAfterRouteHook,
+  onAfterRouteEnter: AddRouterAfterRouteHook<TRoutes | TPlugin['routes']>,
   /**
    * Registers a hook to be called after a route is left.
    */
-  onAfterRouteLeave: AddAfterRouteHook,
+  onAfterRouteLeave: AddRouterAfterRouteHook<TRoutes | TPlugin['routes']>,
   /**
    * Registers a hook to be called after a route is updated.
    */
-  onAfterRouteUpdate: AddAfterRouteHook,
+  onAfterRouteUpdate: AddRouterAfterRouteHook<TRoutes | TPlugin['routes']>,
   /**
   * Given a URL, returns true if host does not match host stored on router instance
   */
@@ -154,11 +156,45 @@ export type Router<
   key: InjectionKey<Router<TRoutes, TOptions, TPlugin>>,
 }
 
+type RouterHookContext<TRoutes extends Routes> = {
+  from: RouterResolvedRouteUnion<TRoutes> | null,
+  reject: RegisteredRouterReject,
+  push: RouterPush<TRoutes>,
+  replace: RouterReplace<TRoutes>,
+}
+
+type RouterBeforeRouteHookContext<TRoutes extends Routes> = RouterHookContext<TRoutes> & {
+  abort: CallbackContextAbort,
+}
+
+export type HookContext<TRoutes extends Routes> = {
+  to: RouterResolvedRouteUnion<TRoutes>,
+  from: RouterResolvedRouteUnion<TRoutes> | null,
+}
+
+export type RouterBeforeRouteHook<TRoutes extends Routes> = (to: RouterResolvedRouteUnion<TRoutes>, context: RouterBeforeRouteHookContext<TRoutes>) => MaybePromise<void>
+export type AddRouterBeforeRouteHook<TRoutes extends Routes> = (hook: RouterBeforeRouteHook<TRoutes>) => RouteHookRemove
+
+type RouterAfterRouteHookContext<TRoutes extends Routes> = RouterHookContext<TRoutes>
+
+export type RouterAfterRouteHook<TRoutes extends Routes> = (to: RouterResolvedRouteUnion<TRoutes>, context: RouterAfterRouteHookContext<TRoutes>) => MaybePromise<void>
+export type AddRouterAfterRouteHook<TRoutes extends Routes> = (hook: RouterAfterRouteHook<TRoutes>) => RouteHookRemove
+
+export type RouterRouteHookBeforeRunner<TRoutes extends Routes> = (context: HookContext<TRoutes>) => Promise<BeforeRouteHookResponse>
+export type RouterRouteHookAfterRunner<TRoutes extends Routes> = (context: HookContext<TRoutes>) => Promise<AfterRouteHookResponse>
+
 /**
  * This type is the same as `RouterRoute<ResolvedRoute<TRoutes[number]>>` while remaining distributive
  */
 export type RouterRouteUnion<TRoutes extends Routes> = {
   [K in keyof TRoutes]: RouterRoute<ResolvedRoute<TRoutes[K]>>
+}[number]
+
+/**
+ * This type is the same as `ResolvedRoute<TRoutes[number]>` while remaining distributive
+ */
+type RouterResolvedRouteUnion<TRoutes extends Routes> = {
+  [K in keyof TRoutes]: ResolvedRoute<TRoutes[K]>
 }[number]
 
 export type RouterRoutes<TRouter extends Router> = TRouter extends Router<infer TRoutes extends Routes>

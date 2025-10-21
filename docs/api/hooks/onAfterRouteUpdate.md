@@ -1,7 +1,7 @@
 # Hooks: onAfterRouteUpdate
 
 ```ts
-const onAfterRouteUpdate: AddAfterRouteHook;
+const onAfterRouteUpdate: AddRouterAfterRouteHook;
 ```
 
 Registers a hook that is called after a route has been updated. Must be called during setup.
