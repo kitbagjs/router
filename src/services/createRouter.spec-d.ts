@@ -6,7 +6,7 @@ import { AddRouterAfterRouteHook, AddRouterBeforeRouteHook } from '@/types/route
 import { createRouterPlugin } from './createRouterPlugin'
 import { CallbackContextAbort } from './createCallbackContext'
 
-describe('createRouter', () => {
+describe('hooks', () => {
   const parent = createRoute({
     name: 'parent',
     path: '/parent/[parentParam]',
@@ -38,7 +38,7 @@ describe('createRouter', () => {
 
   type Routes = typeof routes | typeof pluginRoutes
 
-  test('hook functions are correctly typed', () => {
+  test('functions are correctly typed', () => {
     expectTypeOf(router.onBeforeRouteEnter).toEqualTypeOf<AddRouterBeforeRouteHook<Routes>>()
     expectTypeOf(router.onBeforeRouteLeave).toEqualTypeOf<AddRouterBeforeRouteHook<Routes>>()
     expectTypeOf(router.onBeforeRouteUpdate).toEqualTypeOf<AddRouterBeforeRouteHook<Routes>>()
