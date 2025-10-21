@@ -1,4 +1,5 @@
-import { RouterAfterRouteHook, RouterBeforeRouteHook, Routes } from '@/main'
+import { Routes } from '@/types/route'
+import { RouterAfterRouteHook, RouterBeforeRouteHook } from '@/types/router'
 
 export class RouterRouteHooks<TRoutes extends Routes = Routes> {
   public onBeforeRouteEnter = new Set<RouterBeforeRouteHook<TRoutes>>()
