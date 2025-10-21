@@ -22,12 +22,12 @@ type Router<TRoutes, TOptions, TPlugin> = object;
 | <a id="go"></a> `go` | (`delta`) => `void` | Moves the current history entry to a specific point in the history stack. |
 | <a id="install"></a> `install` | (`app`) => `void` | Installs the router into a Vue application instance. |
 | <a id="isexternal"></a> `isExternal` | (`url`) => `boolean` | Given a URL, returns true if host does not match host stored on router instance |
-| <a id="onafterrouteenter"></a> `onAfterRouteEnter` | [`AddAfterRouteHook`](AddAfterRouteHook.md) | Registers a hook to be called after a route is entered. |
-| <a id="onafterrouteleave"></a> `onAfterRouteLeave` | [`AddAfterRouteHook`](AddAfterRouteHook.md) | Registers a hook to be called after a route is left. |
-| <a id="onafterrouteupdate"></a> `onAfterRouteUpdate` | [`AddAfterRouteHook`](AddAfterRouteHook.md) | Registers a hook to be called after a route is updated. |
-| <a id="onbeforerouteenter"></a> `onBeforeRouteEnter` | [`AddBeforeRouteHook`](AddBeforeRouteHook.md) | Registers a hook to be called before a route is entered. |
-| <a id="onbeforerouteleave"></a> `onBeforeRouteLeave` | [`AddBeforeRouteHook`](AddBeforeRouteHook.md) | Registers a hook to be called before a route is left. |
-| <a id="onbeforerouteupdate"></a> `onBeforeRouteUpdate` | [`AddBeforeRouteHook`](AddBeforeRouteHook.md) | Registers a hook to be called before a route is updated. |
+| <a id="onafterrouteenter"></a> `onAfterRouteEnter` | [`AddRouterAfterRouteHook`](AddRouterAfterRouteHook.md)\<`TRoutes` \| `TPlugin`\[`"routes"`\]\> | Registers a hook to be called after a route is entered. |
+| <a id="onafterrouteleave"></a> `onAfterRouteLeave` | [`AddRouterAfterRouteHook`](AddRouterAfterRouteHook.md)\<`TRoutes` \| `TPlugin`\[`"routes"`\]\> | Registers a hook to be called after a route is left. |
+| <a id="onafterrouteupdate"></a> `onAfterRouteUpdate` | [`AddRouterAfterRouteHook`](AddRouterAfterRouteHook.md)\<`TRoutes` \| `TPlugin`\[`"routes"`\]\> | Registers a hook to be called after a route is updated. |
+| <a id="onbeforerouteenter"></a> `onBeforeRouteEnter` | [`AddRouterBeforeRouteHook`](AddRouterBeforeRouteHook.md)\<`TRoutes` \| `TPlugin`\[`"routes"`\]\> | Registers a hook to be called before a route is entered. |
+| <a id="onbeforerouteleave"></a> `onBeforeRouteLeave` | [`AddRouterBeforeRouteHook`](AddRouterBeforeRouteHook.md)\<`TRoutes` \| `TPlugin`\[`"routes"`\]\> | Registers a hook to be called before a route is left. |
+| <a id="onbeforerouteupdate"></a> `onBeforeRouteUpdate` | [`AddRouterBeforeRouteHook`](AddRouterBeforeRouteHook.md)\<`TRoutes` \| `TPlugin`\[`"routes"`\]\> | Registers a hook to be called before a route is updated. |
 | <a id="prefetch"></a> `prefetch?` | [`PrefetchConfig`](PrefetchConfig.md) | Determines what assets are prefetched. |
 | <a id="push"></a> `push` | [`RouterPush`](RouterPush.md)\<`TRoutes` \| `TPlugin`\[`"routes"`\]\> | Navigates to a specified path or route object in the history stack, adding a new entry. |
 | <a id="refresh"></a> `refresh` | () => `void` | Forces the router to re-evaluate the current route. |

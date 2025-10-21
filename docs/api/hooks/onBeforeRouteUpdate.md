@@ -1,7 +1,7 @@
 # Hooks: onBeforeRouteUpdate
 
 ```ts
-const onBeforeRouteUpdate: AddBeforeRouteHook;
+const onBeforeRouteUpdate: AddRouterBeforeRouteHook;
 ```
 
 Registers a hook that is called before a route is updated. Must be called from setup.

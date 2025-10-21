@@ -1,14 +1,20 @@
-# Types: AddComponentBeforeRouteHook()
+# Types: AddComponentBeforeRouteHook()\<TRoutes\>
 
 ```ts
-type AddComponentBeforeRouteHook = (hook) => RouteHookRemove;
+type AddComponentBeforeRouteHook<TRoutes> = (hook) => RouteHookRemove;
 ```
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `TRoutes` *extends* [`Routes`](Routes.md) |
 
 ## Parameters
 
 | Parameter | Type |
 | ------ | ------ |
-| `hook` | [`BeforeRouteHookRegistration`](BeforeRouteHookRegistration.md) |
+| `hook` | [`BeforeRouteHookRegistration`](BeforeRouteHookRegistration.md)\<`TRoutes`\> |
 
 ## Returns
 
