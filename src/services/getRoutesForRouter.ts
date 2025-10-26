@@ -2,6 +2,7 @@ import { Routes } from '@/types/route'
 import { RouterPlugin } from '@/types/routerPlugin'
 import { insertBaseRoute } from '@/services/insertBaseRoute'
 import { checkDuplicateNames } from '@/utilities/checkDuplicateNames'
+import { stringHasValue } from '@/utilities/guards'
 
 /**
  * Takes in routes and plugins and returns a list of routes with the base route inserted if provided.
@@ -13,7 +14,7 @@ export function getRoutesForRouter(routes: Routes | Routes[], plugins: RouterPlu
   const allRoutes = [
     ...routes,
     ...plugins.map((plugin) => plugin.routes),
-  ].flat()
+  ].flat().filter((route) => stringHasValue(route.name))
 
   checkDuplicateNames(allRoutes)
 
