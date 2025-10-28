@@ -4,7 +4,7 @@ There are several rules Kitbag Router uses to determine which of your routes cor
 
 ## Named
 
-Routes without a [name](/core-concepts/routes#name) property cannot be a direct match.
+Routes without a [name](/core-concepts/routes#name) property cannot be matched.
 
 ## Path Matches
 

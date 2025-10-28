@@ -13,7 +13,7 @@ const home = createRoute({
 
 ## Name
 
-The `name` property is used to identify the route. Name is optional but a route without a name cannot be navigated to directly. Each route mush have a unique name.
+The `name` property is used to identify the route. Each route mush have a unique name.
 
 ```ts {2}
 const home = createRoute({
@@ -21,6 +21,15 @@ const home = createRoute({
   path: '/',
 })
 ```
+
+### Routes without names
+
+The name property is optional, but a route without a name cannot be navigated to. It can be useful to have unnamed routes for organizing related routes under a shared unnamed parent. Even though the parent can't be navigated to, this still ensures
+
+- the parents properties are merged with the child (`path`, `query`, `meta`, and `hash`)
+- any hooks defined on the parent run when the child id matched
+- the parents [state](/advanced-concepts/route-state#route-state) is merged with the child
+- child will have a greater depth, used in [route matching](/advanced-concepts/route-matching#ranking)
 
 ## Path
 
