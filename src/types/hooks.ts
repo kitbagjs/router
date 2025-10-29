@@ -33,23 +33,38 @@ export type RouteHookAfterRunner = (context: AfterHookContext) => Promise<AfterR
 
 export type RouteHookTiming = 'global' | 'component'
 
-export type BeforeRouteHookRegistration<TRoutes extends Routes> = {
+type BeforeRouteHookRegistration<
+  TRoutes extends Routes,
+  TRejections extends PropertyKey
+> = {
   lifecycle: 'onBeforeRouteEnter' | 'onBeforeRouteUpdate' | 'onBeforeRouteLeave',
-  hook: RouterBeforeRouteHook<TRoutes>,
+  hook: RouterBeforeRouteHook<TRoutes, TRejections>,
   depth: number,
 }
 
-export type AddComponentBeforeRouteHook<TRoutes extends Routes> = (hook: BeforeRouteHookRegistration<TRoutes>) => RouteHookRemove
+export type AddComponentBeforeRouteHook<
+  TRoutes extends Routes,
+  TRejections extends PropertyKey
+> = (hook: BeforeRouteHookRegistration<TRoutes, TRejections>) => RouteHookRemove
 
-export type AfterRouteHookRegistration<TRoutes extends Routes> = {
+type AfterRouteHookRegistration<
+  TRoutes extends Routes,
+  TRejections extends PropertyKey
+> = {
   lifecycle: 'onAfterRouteEnter' | 'onAfterRouteUpdate' | 'onAfterRouteLeave',
-  hook: RouterAfterRouteHook<TRoutes>,
+  hook: RouterAfterRouteHook<TRoutes, TRejections>,
   depth: number,
 }
 
-export type AddComponentAfterRouteHook<TRoutes extends Routes> = (hook: AfterRouteHookRegistration<TRoutes>) => RouteHookRemove
+export type AddComponentAfterRouteHook<
+  TRoutes extends Routes,
+  TRejections extends PropertyKey
+> = (hook: AfterRouteHookRegistration<TRoutes, TRejections>) => RouteHookRemove
 
-export type AddGlobalRouteHooks<TRoutes extends Routes> = (hooks: RouterRouteHooks<TRoutes>) => void
+export type AddGlobalRouteHooks<
+  TRoutes extends Routes,
+  TRejections extends PropertyKey
+> = (hooks: RouterRouteHooks<TRoutes, TRejections>) => void
 
 /**
  * Context provided to route hooks, containing context of previous route and functions for triggering rejections and push/replace to another route.

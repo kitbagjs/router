@@ -224,6 +224,10 @@ export type RouterRoutes<TRouter extends Router> = TRouter extends Router<infer 
   ? TRoutes
   : Routes
 
+export type RouterRejections<TRouter extends Router> = TRouter extends Router<any, infer TOptions extends RouterOptions, infer TPlugins extends RouterPlugin>
+  ? keyof TOptions['rejections'] | KeysOfUnion<TPlugins['rejections']>
+  : PropertyKey
+
 export type RouterRouteName<TRouter extends Router> = TRouter extends Router<infer TRoutes extends Routes>
   ? RoutesName<TRoutes>
   : RoutesName<Route[]>
