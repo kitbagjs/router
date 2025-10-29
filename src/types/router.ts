@@ -12,7 +12,7 @@ import { RouterReject } from './routerReject'
 import { RouterPlugin } from './routerPlugin'
 import { KeysOfUnion, MaybePromise } from './utilities'
 import { RoutesName } from './routesMap'
-import { AfterRouteHookResponse, BeforeRouteHookResponse, RegisteredRouterReject } from '@/main'
+import { AfterRouteHookResponse, BeforeRouteHookResponse } from '@/main'
 import { CallbackContextAbort } from '@/services/createCallbackContext'
 
 /**
@@ -107,27 +107,27 @@ export type Router<
   /**
    * Registers a hook to be called before a route is entered.
    */
-  onBeforeRouteEnter: AddRouterBeforeRouteHook<TRoutes | TPlugin['routes']>,
+  onBeforeRouteEnter: AddRouterBeforeRouteHook<TRoutes | TPlugin['routes'], keyof TOptions['rejections'] | KeysOfUnion<TPlugin['rejections']>>,
   /**
    * Registers a hook to be called before a route is left.
    */
-  onBeforeRouteLeave: AddRouterBeforeRouteHook<TRoutes | TPlugin['routes']>,
+  onBeforeRouteLeave: AddRouterBeforeRouteHook<TRoutes | TPlugin['routes'], keyof TOptions['rejections'] | KeysOfUnion<TPlugin['rejections']>>,
   /**
    * Registers a hook to be called before a route is updated.
    */
-  onBeforeRouteUpdate: AddRouterBeforeRouteHook<TRoutes | TPlugin['routes']>,
+  onBeforeRouteUpdate: AddRouterBeforeRouteHook<TRoutes | TPlugin['routes'], keyof TOptions['rejections'] | KeysOfUnion<TPlugin['rejections']>>,
   /**
    * Registers a hook to be called after a route is entered.
    */
-  onAfterRouteEnter: AddRouterAfterRouteHook<TRoutes | TPlugin['routes']>,
+  onAfterRouteEnter: AddRouterAfterRouteHook<TRoutes | TPlugin['routes'], keyof TOptions['rejections'] | KeysOfUnion<TPlugin['rejections']>>,
   /**
    * Registers a hook to be called after a route is left.
    */
-  onAfterRouteLeave: AddRouterAfterRouteHook<TRoutes | TPlugin['routes']>,
+  onAfterRouteLeave: AddRouterAfterRouteHook<TRoutes | TPlugin['routes'], keyof TOptions['rejections'] | KeysOfUnion<TPlugin['rejections']>>,
   /**
    * Registers a hook to be called after a route is updated.
    */
-  onAfterRouteUpdate: AddRouterAfterRouteHook<TRoutes | TPlugin['routes']>,
+  onAfterRouteUpdate: AddRouterAfterRouteHook<TRoutes | TPlugin['routes'], keyof TOptions['rejections'] | KeysOfUnion<TPlugin['rejections']>>,
   /**
   * Given a URL, returns true if host does not match host stored on router instance
   */
@@ -156,14 +156,20 @@ export type Router<
   key: InjectionKey<Router<TRoutes, TOptions, TPlugin>>,
 }
 
-type RouterHookContext<TRoutes extends Routes> = {
+type RouterHookContext<
+  TRoutes extends Routes,
+  TRejections extends PropertyKey
+> = {
   from: RouterResolvedRouteUnion<TRoutes> | null,
-  reject: RegisteredRouterReject,
+  reject: RouterReject<TRejections>,
   push: RouterPush<TRoutes>,
   replace: RouterReplace<TRoutes>,
 }
 
-type RouterBeforeRouteHookContext<TRoutes extends Routes> = RouterHookContext<TRoutes> & {
+type RouterBeforeRouteHookContext<
+  TRoutes extends Routes,
+  TRejections extends PropertyKey
+> = RouterHookContext<TRoutes, TRejections> & {
   abort: CallbackContextAbort,
 }
 
@@ -172,13 +178,30 @@ export type HookContext<TRoutes extends Routes> = {
   from: RouterResolvedRouteUnion<TRoutes> | null,
 }
 
-export type RouterBeforeRouteHook<TRoutes extends Routes> = (to: RouterResolvedRouteUnion<TRoutes>, context: RouterBeforeRouteHookContext<TRoutes>) => MaybePromise<void>
-export type AddRouterBeforeRouteHook<TRoutes extends Routes> = (hook: RouterBeforeRouteHook<TRoutes>) => RouteHookRemove
+export type RouterBeforeRouteHook<
+  TRoutes extends Routes,
+  TRejections extends PropertyKey
+> = (to: RouterResolvedRouteUnion<TRoutes>, context: RouterBeforeRouteHookContext<TRoutes, TRejections>) => MaybePromise<void>
 
-type RouterAfterRouteHookContext<TRoutes extends Routes> = RouterHookContext<TRoutes>
+export type AddRouterBeforeRouteHook<
+  TRoutes extends Routes,
+  TRejections extends PropertyKey
+> = (hook: RouterBeforeRouteHook<TRoutes, TRejections>) => RouteHookRemove
 
-export type RouterAfterRouteHook<TRoutes extends Routes> = (to: RouterResolvedRouteUnion<TRoutes>, context: RouterAfterRouteHookContext<TRoutes>) => MaybePromise<void>
-export type AddRouterAfterRouteHook<TRoutes extends Routes> = (hook: RouterAfterRouteHook<TRoutes>) => RouteHookRemove
+type RouterAfterRouteHookContext<
+  TRoutes extends Routes,
+  TRejections extends PropertyKey
+> = RouterHookContext<TRoutes, TRejections>
+
+export type RouterAfterRouteHook<
+  TRoutes extends Routes,
+  TRejections extends PropertyKey
+> = (to: RouterResolvedRouteUnion<TRoutes>, context: RouterAfterRouteHookContext<TRoutes, TRejections>) => MaybePromise<void>
+
+export type AddRouterAfterRouteHook<
+  TRoutes extends Routes,
+  TRejections extends PropertyKey
+> = (hook: RouterAfterRouteHook<TRoutes, TRejections>) => RouteHookRemove
 
 export type RouterRouteHookBeforeRunner<TRoutes extends Routes> = (context: HookContext<TRoutes>) => Promise<BeforeRouteHookResponse>
 export type RouterRouteHookAfterRunner<TRoutes extends Routes> = (context: HookContext<TRoutes>) => Promise<AfterRouteHookResponse>
