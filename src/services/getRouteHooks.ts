@@ -3,6 +3,9 @@ import { isRouteEnter, isRouteLeave, isRouteUpdate } from '@/services/hooks'
 import { ResolvedRoute } from '@/types/resolved'
 import { asArray } from '@/utilities/array'
 
+/**
+ * @deprecated will be removed in a future version
+ */
 export function getBeforeRouteHooksFromRoutes(to: ResolvedRoute, from: ResolvedRoute | null): RouteHooks {
   const hooks = new RouteHooks()
 
@@ -40,6 +43,9 @@ export function getBeforeRouteHooksFromRoutes(to: ResolvedRoute, from: ResolvedR
   return hooks
 }
 
+/**
+ * @deprecated will be removed in a future version
+ */
 export function getAfterRouteHooksFromRoutes(to: ResolvedRoute, from: ResolvedRoute | null): RouteHooks {
   const hooks = new RouteHooks()
 
