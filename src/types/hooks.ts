@@ -9,11 +9,29 @@ import { RouterAfterRouteHook, RouterBeforeRouteHook } from './router'
  * Defines route hooks that can be applied before entering, updating, or leaving a route, as well as after these events.
  */
 export type WithHooks = {
+  /**
+   * @deprecated Use router.onBeforeRouteEnter instead
+   */
   onBeforeRouteEnter?: MaybeArray<BeforeRouteHook>,
+  /**
+   * @deprecated Use router.onBeforeRouteUpdate instead
+   */
   onBeforeRouteUpdate?: MaybeArray<BeforeRouteHook>,
+  /**
+   * @deprecated Use router.onBeforeRouteLeave instead
+   */
   onBeforeRouteLeave?: MaybeArray<BeforeRouteHook>,
+  /**
+   * @deprecated Use router.onAfterRouteEnter instead
+   */
   onAfterRouteEnter?: MaybeArray<AfterRouteHook>,
+  /**
+   * @deprecated Use router.onAfterRouteUpdate instead
+   */
   onAfterRouteUpdate?: MaybeArray<AfterRouteHook>,
+  /**
+   * @deprecated Use router.onAfterRouteLeave instead
+   */
   onAfterRouteLeave?: MaybeArray<AfterRouteHook>,
 }
 
