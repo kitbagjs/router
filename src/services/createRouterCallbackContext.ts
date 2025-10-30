@@ -1,38 +1,44 @@
 import { CallbackContextAbortError } from '@/errors/callbackContextAbortError'
 import { CallbackContextPushError } from '@/errors/callbackContextPushError'
 import { CallbackContextRejectionError } from '@/errors/callbackContextRejectionError'
-import { RegisteredRejectionType, RegisteredRouterPush, RegisteredRouterReject, RegisteredRouterReplace } from '@/types/register'
-import { RouterPushOptions } from '@/types/routerPush'
+import { Router, RouterRejections, RouterRoutes } from '@/types/router'
+import { RouterPush, RouterPushOptions } from '@/types/routerPush'
+import { RouterReject } from '@/types/routerReject'
+import { RouterReplace } from '@/types/routerReplace'
 import { isUrl } from '@/types/url'
+import { InjectionKey } from 'vue'
+import { BuiltInRejectionType } from './createRouterReject'
+import { AsString } from '@/types/utilities'
+import { Routes } from '@/types/route'
 
 /**
  * Defines the structure of a successful callback response.
  */
-export type CallbackSuccessResponse = {
+export type RouterCallbackSuccessResponse = {
   status: 'SUCCESS',
 }
 
 /**
  * Defines the structure of an aborted callback response.
  */
-export type CallbackAbortResponse = {
+export type RouterCallbackAbortResponse = {
   status: 'ABORT',
 }
 
 /**
  * Defines the structure of a callback response that results in a push to a new route.
  */
-export type CallbackPushResponse = {
+export type RouterCallbackPushResponse<TRoutes extends Routes> = {
   status: 'PUSH',
-  to: Parameters<RegisteredRouterPush>,
+  to: Parameters<RouterPush<TRoutes>>,
 }
 
 /**
  * Defines the structure of a callback response that results in the rejection of a route transition.
  */
-export type CallbackRejectResponse = {
+export type RouterCallbackRejectResponse<TRejections extends PropertyKey> = {
   status: 'REJECT',
-  type: RegisteredRejectionType,
+  type: AsString<TRejections> | BuiltInRejectionType,
 }
 
 /**
@@ -40,29 +46,26 @@ export type CallbackRejectResponse = {
  */
 export type CallbackContextAbort = () => void
 
-/**
- * @deprecated Use `RouterCallbackContext` instead.
- */
-export type CallbackContext = {
-  reject: RegisteredRouterReject,
-  push: RegisteredRouterPush,
-  replace: RegisteredRouterReplace,
+export type RouterCallbackContext<TRouter extends Router> = {
+  reject: RouterReject<RouterRejections<TRouter>>,
+  push: RouterPush<RouterRoutes<TRouter>>,
+  replace: RouterReplace<RouterRoutes<TRouter>>,
   abort: CallbackContextAbort,
 }
 
-/**
- * @deprecated Use `createRouterCallbackContext` instead.
- */
-export function createCallbackContext(): CallbackContext {
-  const reject: RegisteredRouterReject = (type) => {
+export function createRouterCallbackContext<TRouter extends Router>(_routerKey: InjectionKey<TRouter>): RouterCallbackContext<TRouter> {
+  type TRoutes = RouterRoutes<TRouter>
+  type TRejections = RouterRejections<TRouter>
+
+  const reject: RouterReject<TRejections> = (type: any) => {
     throw new CallbackContextRejectionError(type)
   }
 
-  const push: RegisteredRouterPush = (...parameters: any[]) => {
+  const push: RouterPush<TRoutes> = (...parameters: any[]) => {
     throw new CallbackContextPushError(parameters)
   }
 
-  const replace: RegisteredRouterPush = (source: any, paramsOrOptions?: any, maybeOptions?: any) => {
+  const replace: RouterReplace<TRoutes> = (source: any, paramsOrOptions?: any, maybeOptions?: any) => {
     if (isUrl(source)) {
       const options: RouterPushOptions = paramsOrOptions ?? {}
       throw new CallbackContextPushError([source, { ...options, replace: true }])

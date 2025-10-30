@@ -5,6 +5,7 @@ import { describe, test, expectTypeOf } from 'vitest'
 import { AddRouterAfterRouteHook, AddRouterBeforeRouteHook } from '@/types/router'
 import { createRouterPlugin } from './createRouterPlugin'
 import { CallbackContextAbort } from './createCallbackContext'
+import { BuiltInRejectionType } from './createRouterReject'
 
 describe('hooks', () => {
   const parent = createRoute({
@@ -39,12 +40,12 @@ describe('hooks', () => {
   type Routes = typeof routes | typeof pluginRoutes
 
   test('functions are correctly typed', () => {
-    expectTypeOf(router.onBeforeRouteEnter).toEqualTypeOf<AddRouterBeforeRouteHook<Routes>>()
-    expectTypeOf(router.onBeforeRouteLeave).toEqualTypeOf<AddRouterBeforeRouteHook<Routes>>()
-    expectTypeOf(router.onBeforeRouteUpdate).toEqualTypeOf<AddRouterBeforeRouteHook<Routes>>()
-    expectTypeOf(router.onAfterRouteEnter).toEqualTypeOf<AddRouterAfterRouteHook<Routes>>()
-    expectTypeOf(router.onAfterRouteLeave).toEqualTypeOf<AddRouterAfterRouteHook<Routes>>()
-    expectTypeOf(router.onAfterRouteUpdate).toEqualTypeOf<AddRouterAfterRouteHook<Routes>>()
+    expectTypeOf(router.onBeforeRouteEnter).toEqualTypeOf<AddRouterBeforeRouteHook<Routes, never>>()
+    expectTypeOf(router.onBeforeRouteLeave).toEqualTypeOf<AddRouterBeforeRouteHook<Routes, never>>()
+    expectTypeOf(router.onBeforeRouteUpdate).toEqualTypeOf<AddRouterBeforeRouteHook<Routes, never>>()
+    expectTypeOf(router.onAfterRouteEnter).toEqualTypeOf<AddRouterAfterRouteHook<Routes, never>>()
+    expectTypeOf(router.onAfterRouteLeave).toEqualTypeOf<AddRouterAfterRouteHook<Routes, never>>()
+    expectTypeOf(router.onAfterRouteUpdate).toEqualTypeOf<AddRouterAfterRouteHook<Routes, never>>()
   })
 
   test('to and from can be narrowed', () => {
@@ -96,5 +97,42 @@ describe('hooks', () => {
     router.onBeforeRouteEnter((_to, context) => {
       expectTypeOf(context.abort).toEqualTypeOf<CallbackContextAbort>()
     })
+  })
+})
+
+describe('rejections', () => {
+  test('built in rejections are valid', () => {
+    const _router = createRouter([])
+    type Source = Parameters<typeof _router.reject>[0]
+    type Expect = BuiltInRejectionType
+
+    expectTypeOf<Source>().toEqualTypeOf<Expect>()
+  })
+
+  test('custom rejections are valid', () => {
+    const _router = createRouter([], {
+      rejections: {
+        MyCustomRejection: component,
+      },
+    })
+    type Source = Parameters<typeof _router.reject>[0]
+    type Expect = BuiltInRejectionType | 'MyCustomRejection'
+
+    expectTypeOf<Source>().toEqualTypeOf<Expect>()
+  })
+
+  test('custom rejectsion from plugins are valid', () => {
+    const plugin = createRouterPlugin({
+      rejections: {
+        MyPluginRejection: component,
+      },
+    })
+
+    const _router = createRouter([], {}, [plugin])
+
+    type Source = Parameters<typeof _router.reject>[0]
+    type Expect = BuiltInRejectionType | 'MyPluginRejection'
+
+    expectTypeOf<Source>().toEqualTypeOf<Expect>()
   })
 })
