@@ -4,23 +4,38 @@ import vue from '@vitejs/plugin-vue'
 import dts from 'vite-plugin-dts'
 
 export default defineConfig({
+  resolve: {
+    alias: [
+      {
+        find: '@',
+        replacement: resolve(__dirname, 'src'),
+      },
+    ],
+  },
   test: {
     typecheck: {
       checker: 'vue-tsc',
       ignoreSourceErrors: true,
       include: ['src/**/*.spec-d.ts'],
     },
-    include: ['src/**/*.spec.ts'],
-    environmentMatchGlobs: [
-      ['**\/*.browser.spec.ts', 'happy-dom'],
-      ['**\/*.spec.ts', 'node'],
-    ],
-  },
-  resolve: {
-    alias: [
+    projects: [
       {
-        find: '@',
-        replacement: resolve(__dirname, 'src'),
+        extends: true,
+        test: {
+          name: 'browser-tests',
+          environment: 'happy-dom',
+          include: ['src/**/*.browser.spec.ts'],
+          exclude: ['src/**/*.spec.ts'],
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: 'node-tests',
+          environment: 'node',
+          include: ['src/**/*.spec.ts'],
+          exclude: ['src/**/*.browser.spec.ts'],
+        },
       },
     ],
   },
