@@ -1,4 +1,4 @@
-import { Router, RouterRoutes, AddRouterBeforeRouteHook, AddRouterAfterRouteHook } from '@/types/router'
+import { Router, RouterRoutes, AddRouterBeforeRouteHook, AddRouterAfterRouteHook, RouterRejections } from '@/types/router'
 import { InjectionKey } from 'vue'
 import { createComponentHooks } from './createComponentHooks'
 import { createRouterView } from '@/components/routerView'
@@ -18,7 +18,7 @@ type RouterAssets<TRouter extends Router> = {
    * @returns {RouteHookRemove} A function that removes the added hook.
    * @group Hooks
    */
-  onBeforeRouteLeave: AddRouterBeforeRouteHook<RouterRoutes<TRouter>>,
+  onBeforeRouteLeave: AddRouterBeforeRouteHook<RouterRoutes<TRouter>, RouterRejections<TRouter>>,
 
   /**
    * Registers a hook that is called before a route is updated. Must be called from setup.
@@ -28,7 +28,7 @@ type RouterAssets<TRouter extends Router> = {
    * @returns {RouteHookRemove} A function that removes the added hook.
    * @group Hooks
    */
-  onBeforeRouteUpdate: AddRouterBeforeRouteHook<RouterRoutes<TRouter>>,
+  onBeforeRouteUpdate: AddRouterBeforeRouteHook<RouterRoutes<TRouter>, RouterRejections<TRouter>>,
 
   /**
    * Registers a hook that is called after a route has been left. Must be called during setup.
@@ -38,7 +38,7 @@ type RouterAssets<TRouter extends Router> = {
    * @returns {RouteHookRemove} A function that removes the added hook.
    * @group Hooks
    */
-  onAfterRouteLeave: AddRouterAfterRouteHook<RouterRoutes<TRouter>>,
+  onAfterRouteLeave: AddRouterAfterRouteHook<RouterRoutes<TRouter>, RouterRejections<TRouter>>,
 
   /**
    * Registers a hook that is called after a route has been updated. Must be called during setup.
@@ -48,7 +48,7 @@ type RouterAssets<TRouter extends Router> = {
    * @returns {RouteHookRemove} A function that removes the added hook.
    * @group Hooks
    */
-  onAfterRouteUpdate: AddRouterAfterRouteHook<RouterRoutes<TRouter>>,
+  onAfterRouteUpdate: AddRouterAfterRouteHook<RouterRoutes<TRouter>, RouterRejections<TRouter>>,
 
   /**
    * A guard to verify if a route or unknown value matches a given route name.
