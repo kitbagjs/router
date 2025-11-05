@@ -1,7 +1,7 @@
 {
   "name": "@kitbag/router",
   "private": false,
-  "version": "0.20.7",
+  "version": "0.20.8",
   "bugs": {
     "url": "https://github.com/kitbagjs/router/issues"
   },
