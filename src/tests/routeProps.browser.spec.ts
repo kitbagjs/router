@@ -1,18 +1,33 @@
+/* eslint-disable vue/one-component-per-file */
 import { vi, test, expect } from 'vitest'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
 import { defineComponent, h } from 'vue'
 import { mount } from '@vue/test-utils'
 import { component } from '@/utilities/testHelpers'
+import { RouterView } from '@/main'
 
 test('components are not remounted when props change', async () => {
-  const setup = vi.fn()
+  const setupParent = vi.fn()
+  const setupChild = vi.fn()
 
   const routeA = createRoute({
     name: 'routeA',
-    path: '/[param]',
+    path: '/[parentParam]',
     component: defineComponent({
-      setup,
+      setup: setupParent,
+      render() {
+        return h(RouterView)
+      },
+    }),
+  })
+
+  const routeAChild = createRoute({
+    parent: routeA,
+    name: 'routeA.child',
+    path: '/[childParam]',
+    component: defineComponent({
+      setup: setupChild,
       render() {
         return h('div', {}, 'test')
       },
@@ -25,7 +40,7 @@ test('components are not remounted when props change', async () => {
     component,
   })
 
-  const router = createRouter([routeA, routeB], {
+  const router = createRouter([routeA, routeAChild, routeB], {
     initialUrl: '/bar',
   })
 
@@ -41,20 +56,35 @@ test('components are not remounted when props change', async () => {
 
   await router.start()
 
-  await router.route.update({ param: 'foo' })
+  expect(setupParent).toHaveBeenCalledTimes(1)
 
-  expect(setup).toHaveBeenCalledTimes(1)
+  // updating the current route should not remount
+  await router.route.update({ parentParam: 'foo' })
 
-  await router.route.update({ param: 'bar' })
+  expect(setupParent).toHaveBeenCalledTimes(1)
 
-  expect(setup).toHaveBeenCalledTimes(1)
+  await router.route.update({ parentParam: 'bar' })
 
-  await router.route.update({ param: 'foo' })
-
-  expect(setup).toHaveBeenCalledTimes(1)
-
+  // navigating away and back should not remount
   await router.push('routeB')
-  await router.push('routeA', { param: 'foo' })
+  await router.push('routeA', { parentParam: 'foo' })
 
-  expect(setup).toHaveBeenCalledTimes(2)
+  expect(setupParent).toHaveBeenCalledTimes(2)
+
+  // navigating to the same route with different props should not remount
+  await router.push('routeA', { parentParam: 'bar' })
+
+  expect(setupParent).toHaveBeenCalledTimes(2)
+
+  // navigating to a child route should not remount
+  await router.push('routeA.child', { parentParam: 'foo', childParam: 'foo' })
+
+  expect(setupParent).toHaveBeenCalledTimes(2)
+  expect(setupChild).toHaveBeenCalledTimes(1)
+
+  // updating parent param should not remount parent or child
+  await router.route.update({ parentParam: 'bar' })
+
+  expect(setupParent).toHaveBeenCalledTimes(2)
+  expect(setupChild).toHaveBeenCalledTimes(1)
 })
