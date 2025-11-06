@@ -170,6 +170,7 @@ test('resolves async components', async () => {
 
   await router.start()
   await flushPromises()
+  await flushPromises()
 
   expect(wrapper.html()).toBe(helloWorld.template)
 })

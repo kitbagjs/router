@@ -17,7 +17,7 @@
   "scripts": {
     "build": "vite build",
     "build:watch": "vite build --watch --minify=false",
-    "test": "vitest --typecheck",
+    "test": "vitest",
     "lint": "eslint ./src",
     "lint:fix": "eslint ./src --fix",
     "types": "vue-tsc --noEmit",
