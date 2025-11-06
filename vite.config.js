@@ -13,28 +13,29 @@ export default defineConfig({
     ],
   },
   test: {
-    typecheck: {
-      checker: 'vue-tsc',
-      ignoreSourceErrors: true,
-      include: ['src/**/*.spec-d.ts'],
-    },
     projects: [
       {
         extends: true,
         test: {
-          name: 'browser-tests',
+          name: 'browser',
           environment: 'happy-dom',
           include: ['src/**/*.browser.spec.ts'],
-          exclude: ['src/**/*.spec.ts'],
         },
       },
       {
         extends: true,
         test: {
-          name: 'node-tests',
+          name: 'node',
           environment: 'node',
           include: ['src/**/*.spec.ts'],
           exclude: ['src/**/*.browser.spec.ts'],
+          typecheck: {
+            enabled: true,
+            checker: 'vue-tsc',
+            ignoreSourceErrors: true,
+            tsconfig: './tsconfig.json',
+            include: ['src/**/*.spec-d.ts'],
+          },
         },
       },
     ],
