@@ -3,9 +3,10 @@ import { vi, test, expect } from 'vitest'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
 import { defineComponent, h } from 'vue'
-import { flushPromises, mount } from '@vue/test-utils'
+import { mount } from '@vue/test-utils'
 import { component } from '@/utilities/testHelpers'
 import { RouterView } from '@/main'
+import echo from '@/components/echo'
 
 test('components are not remounted when props change', async () => {
   const setupParent = vi.fn()
@@ -15,14 +16,20 @@ test('components are not remounted when props change', async () => {
     name: 'routeA',
     path: '/[parentParam]',
     component: defineComponent({
+      props: {
+        value: {
+          type: String,
+          required: true,
+        },
+      },
       setup: setupParent,
-      render() {
-        return h(RouterView)
+      render(props: { value: string }) {
+        return h('div', {}, [h(echo, { value: props.value }), h(RouterView)])
       },
     }),
   }, (route) => {
     return {
-      parentParam: route.params.parentParam,
+      value: route.params.parentParam,
     }
   })
 
@@ -32,8 +39,8 @@ test('components are not remounted when props change', async () => {
     path: '/[childParam]',
     component: defineComponent({
       setup: setupChild,
-      render() {
-        return h(RouterView)
+      render(props: { value: string }) {
+        return h(echo, { value: props.value })
       },
     }),
   }, (route) => {
@@ -56,7 +63,7 @@ test('components are not remounted when props change', async () => {
     template: '<RouterView />',
   }
 
-  mount(root, {
+  const wrapper = mount(root, {
     global: {
       plugins: [router],
     },
@@ -64,7 +71,11 @@ test('components are not remounted when props change', async () => {
 
   await router.start()
 
+  // the initial render should call the parent setup function
   expect(setupParent).toHaveBeenCalledTimes(1)
+
+  // validate that the initial route was rendered
+  expect(wrapper.text()).toBe('bar')
 
   // updating the current route should not remount
   await router.route.update({ parentParam: 'foo' })
@@ -95,4 +106,7 @@ test('components are not remounted when props change', async () => {
 
   expect(setupParent).toHaveBeenCalledTimes(2)
   expect(setupChild).toHaveBeenCalledTimes(1)
+
+  // validate that the components were rendered
+  expect(wrapper.text()).toBe('barfoo')
 })
