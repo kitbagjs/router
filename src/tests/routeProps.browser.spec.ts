@@ -3,7 +3,7 @@ import { vi, test, expect } from 'vitest'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
 import { defineComponent, h } from 'vue'
-import { mount } from '@vue/test-utils'
+import { flushPromises, mount } from '@vue/test-utils'
 import { component } from '@/utilities/testHelpers'
 import { RouterView } from '@/main'
 
@@ -20,6 +20,10 @@ test('components are not remounted when props change', async () => {
         return h(RouterView)
       },
     }),
+  }, (route) => {
+    return {
+      parentParam: route.params.parentParam,
+    }
   })
 
   const routeAChild = createRoute({
@@ -29,9 +33,13 @@ test('components are not remounted when props change', async () => {
     component: defineComponent({
       setup: setupChild,
       render() {
-        return h('div', {}, 'test')
+        return h(RouterView)
       },
     }),
+  }, (route) => {
+    return {
+      value: route.params.childParam,
+    }
   })
 
   const routeB = createRoute({
