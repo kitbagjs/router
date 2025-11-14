@@ -9,7 +9,7 @@ import { createUseQueryValue } from '@/compositions/useQueryValue'
 import { createUseLink } from '@/compositions/useLink'
 import { createIsRoute } from '@/guards/routes'
 
-type RouterAssets<TRouter extends Router> = {
+export type RouterAssets<TRouter extends Router> = {
   /**
    * Registers a hook that is called before a route is left. Must be called from setup.
    * This is useful for performing actions or cleanups before navigating away from a route component.
