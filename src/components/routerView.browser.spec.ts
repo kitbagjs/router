@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-confusing-void-expression */
-/* eslint-disable @typescript-eslint/only-throw-error */
 import { mount, flushPromises } from '@vue/test-utils'
 import { expect, test } from 'vitest'
 import { defineAsyncComponent, h } from 'vue'
@@ -169,6 +167,7 @@ test('resolves async components', async () => {
   })
 
   await router.start()
+  await flushPromises()
   await flushPromises()
   await flushPromises()
 

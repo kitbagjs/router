@@ -73,9 +73,9 @@ export function mockRoute(name: string): ResolvedRoute['matched'] {
     name,
     path: withParams(`/${name}`, {}),
     component,
-    onBeforeRouteEnter: vi.fn(),
-    onBeforeRouteUpdate: vi.fn(),
-    onBeforeRouteLeave: vi.fn(),
+    onBeforeRouteEnter: [vi.fn()],
+    onBeforeRouteUpdate: [vi.fn()],
+    onBeforeRouteLeave: [vi.fn()],
     meta: {},
     state: {},
   }

@@ -49,57 +49,64 @@ test('given a plugin, adds the rejections to the router', async () => {
 })
 
 test('given a plugin, adds the hooks to the router', async () => {
+  const onBeforeRouteEnterMock = vi.fn()
+  const onBeforeRouteUpdateMock = vi.fn()
+  const onBeforeRouteLeaveMock = vi.fn()
+  const onAfterRouteEnterMock = vi.fn()
+  const onAfterRouteUpdateMock = vi.fn()
+  const onAfterRouteLeaveMock = vi.fn()
+
   const plugin = createRouterPlugin({
-    onBeforeRouteEnter: vi.fn(),
-    onBeforeRouteUpdate: vi.fn(),
-    onBeforeRouteLeave: vi.fn(),
-    onAfterRouteEnter: vi.fn(),
-    onAfterRouteUpdate: vi.fn(),
-    onAfterRouteLeave: vi.fn(),
+    onBeforeRouteEnter: [onBeforeRouteEnterMock],
+    onBeforeRouteUpdate: [onBeforeRouteUpdateMock],
+    onBeforeRouteLeave: [onBeforeRouteLeaveMock],
+    onAfterRouteEnter: [onAfterRouteEnterMock],
+    onAfterRouteUpdate: [onAfterRouteUpdateMock],
+    onAfterRouteLeave: [onAfterRouteLeaveMock],
   })
 
   const router = createRouter(routes, { initialUrl: '/parentA/valueA' }, [plugin])
 
-  expect(plugin.onBeforeRouteEnter).toHaveBeenCalledTimes(0)
-  expect(plugin.onBeforeRouteUpdate).toHaveBeenCalledTimes(0)
-  expect(plugin.onBeforeRouteLeave).toHaveBeenCalledTimes(0)
-  expect(plugin.onAfterRouteLeave).toHaveBeenCalledTimes(0)
-  expect(plugin.onAfterRouteUpdate).toHaveBeenCalledTimes(0)
-  expect(plugin.onAfterRouteEnter).toHaveBeenCalledTimes(0)
+  expect(onBeforeRouteEnterMock).toHaveBeenCalledTimes(0)
+  expect(onBeforeRouteUpdateMock).toHaveBeenCalledTimes(0)
+  expect(onBeforeRouteLeaveMock).toHaveBeenCalledTimes(0)
+  expect(onAfterRouteLeaveMock).toHaveBeenCalledTimes(0)
+  expect(onAfterRouteUpdateMock).toHaveBeenCalledTimes(0)
+  expect(onAfterRouteEnterMock).toHaveBeenCalledTimes(0)
 
   await router.start()
 
-  expect(plugin.onBeforeRouteEnter).toHaveBeenCalledTimes(1)
-  expect(plugin.onBeforeRouteUpdate).toHaveBeenCalledTimes(0)
-  expect(plugin.onBeforeRouteLeave).toHaveBeenCalledTimes(0)
-  expect(plugin.onAfterRouteLeave).toHaveBeenCalledTimes(0)
-  expect(plugin.onAfterRouteUpdate).toHaveBeenCalledTimes(0)
-  expect(plugin.onAfterRouteEnter).toHaveBeenCalledTimes(1)
+  expect(onBeforeRouteEnterMock).toHaveBeenCalledTimes(1)
+  expect(onBeforeRouteUpdateMock).toHaveBeenCalledTimes(0)
+  expect(onBeforeRouteLeaveMock).toHaveBeenCalledTimes(0)
+  expect(onAfterRouteLeaveMock).toHaveBeenCalledTimes(0)
+  expect(onAfterRouteUpdateMock).toHaveBeenCalledTimes(0)
+  expect(onAfterRouteEnterMock).toHaveBeenCalledTimes(1)
 
   await router.push('parentA.childA', { paramA: 'valueA', paramB: 'valueB' })
 
-  expect(plugin.onBeforeRouteEnter).toHaveBeenCalledTimes(2)
-  expect(plugin.onBeforeRouteUpdate).toHaveBeenCalledTimes(1)
-  expect(plugin.onBeforeRouteLeave).toHaveBeenCalledTimes(0)
-  expect(plugin.onAfterRouteLeave).toHaveBeenCalledTimes(0)
-  expect(plugin.onAfterRouteUpdate).toHaveBeenCalledTimes(1)
-  expect(plugin.onAfterRouteEnter).toHaveBeenCalledTimes(2)
+  expect(onBeforeRouteEnterMock).toHaveBeenCalledTimes(2)
+  expect(onBeforeRouteUpdateMock).toHaveBeenCalledTimes(1)
+  expect(onBeforeRouteLeaveMock).toHaveBeenCalledTimes(0)
+  expect(onAfterRouteLeaveMock).toHaveBeenCalledTimes(0)
+  expect(onAfterRouteUpdateMock).toHaveBeenCalledTimes(1)
+  expect(onAfterRouteEnterMock).toHaveBeenCalledTimes(2)
 
   await router.push('parentA.childB', { paramA: 'valueB', paramD: 'valueD' })
 
-  expect(plugin.onBeforeRouteEnter).toHaveBeenCalledTimes(3)
-  expect(plugin.onBeforeRouteUpdate).toHaveBeenCalledTimes(2)
-  expect(plugin.onBeforeRouteLeave).toHaveBeenCalledTimes(1)
-  expect(plugin.onAfterRouteLeave).toHaveBeenCalledTimes(1)
-  expect(plugin.onAfterRouteUpdate).toHaveBeenCalledTimes(2)
-  expect(plugin.onAfterRouteEnter).toHaveBeenCalledTimes(3)
+  expect(onBeforeRouteEnterMock).toHaveBeenCalledTimes(3)
+  expect(onBeforeRouteUpdateMock).toHaveBeenCalledTimes(2)
+  expect(onBeforeRouteLeaveMock).toHaveBeenCalledTimes(1)
+  expect(onAfterRouteLeaveMock).toHaveBeenCalledTimes(1)
+  expect(onAfterRouteUpdateMock).toHaveBeenCalledTimes(2)
+  expect(onAfterRouteEnterMock).toHaveBeenCalledTimes(3)
 
   await router.push('parentB')
 
-  expect(plugin.onBeforeRouteEnter).toHaveBeenCalledTimes(4)
-  expect(plugin.onBeforeRouteUpdate).toHaveBeenCalledTimes(2)
-  expect(plugin.onBeforeRouteLeave).toHaveBeenCalledTimes(2)
-  expect(plugin.onAfterRouteLeave).toHaveBeenCalledTimes(2)
-  expect(plugin.onAfterRouteUpdate).toHaveBeenCalledTimes(2)
-  expect(plugin.onAfterRouteEnter).toHaveBeenCalledTimes(4)
+  expect(onBeforeRouteEnterMock).toHaveBeenCalledTimes(4)
+  expect(onBeforeRouteUpdateMock).toHaveBeenCalledTimes(2)
+  expect(onBeforeRouteLeaveMock).toHaveBeenCalledTimes(2)
+  expect(onAfterRouteLeaveMock).toHaveBeenCalledTimes(2)
+  expect(onAfterRouteUpdateMock).toHaveBeenCalledTimes(2)
+  expect(onAfterRouteEnterMock).toHaveBeenCalledTimes(4)
 })
