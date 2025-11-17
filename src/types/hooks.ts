@@ -6,6 +6,7 @@ import { Routes } from './route'
 import { RouterAfterRouteHook, RouterBeforeRouteHook } from './router'
 
 /**
+ * @deprecated
  * Defines route hooks that can be applied before entering, updating, or leaving a route, as well as after these events.
  */
 export type WithHooks = {

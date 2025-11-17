@@ -7,7 +7,7 @@ import { CombineState, combineState } from '@/services/combineState'
 import { Param } from '@/types/paramTypes'
 import { PrefetchConfig } from '@/types/prefetch'
 import { RouteMeta } from '@/types/register'
-import { Route } from '@/types/route'
+import { Route, RouteContext } from '@/types/route'
 import { ResolvedRoute } from './resolved'
 import { ComponentProps } from '@/services/component'
 import { PropsCallbackContext } from './props'
@@ -16,8 +16,11 @@ import { RouterView } from '@/main'
 import { ToMeta } from './meta'
 import { ToState } from './state'
 import { ToName } from './name'
-import { WithHooks } from './hooks'
 import { ToWithParams, WithParams } from '@/services/withParams'
+import { CallbackContextAbort } from '@/services/createCallbackContext'
+import { RouterResolvedRouteUnion } from './router'
+import { RouterPush } from '@/types/routerPush'
+import { RouterReplace } from '@/types/routerReplace'
 
 export type WithHost<THost extends string | WithParams = string | WithParams> = {
   /**
@@ -63,8 +66,9 @@ export type CreateRouteOptions<
   TPath extends string | WithParams | undefined = string | WithParams | undefined,
   TQuery extends string | WithParams | undefined = string | WithParams | undefined,
   THash extends string | WithParams | undefined = string | WithParams | undefined,
-  TMeta extends RouteMeta = RouteMeta
-> = WithHooks & {
+  TMeta extends RouteMeta = RouteMeta,
+  TContext extends RouteContext[] | undefined = RouteContext[] | undefined
+> = {
   /**
    * Name for route, used to create route keys and in navigation.
    */
@@ -113,7 +117,45 @@ export type CreateRouteOptions<
    * @deprecated
    */
   props?: never,
+  /**
+   * An optional context to provide for hook and prop callbacks. This allows for other routes to be navigated to from within a hook or prop callback.
+   */
+  context?: TContext,
+  /**
+   * An optional hook to call before the route is entered.
+   */
+  onBeforeRouteEnter?: RouterBeforeRouteHook<TContext extends RouteContext[] ? TContext : []>,
+  /**
+   * An optional hook to call after the route is entered.
+   */
+  onAfterRouteEnter?: RouterAfterRouteHook<TContext extends RouteContext[] ? TContext : []>,
 }
+
+type RouteHookContext<
+  TRoutes extends RouteContext[]
+> = {
+  from: ResolvedRoute | null,
+  push: RouterPush<TRoutes>,
+  replace: RouterReplace<TRoutes>,
+}
+
+type RouteAfterRouteHookContext<
+  TRoutes extends RouteContext[]
+> = RouteHookContext<TRoutes>
+
+type RouteBeforeRouteHookContext<
+  TRoutes extends RouteContext[]
+> = RouteHookContext<TRoutes> & {
+  abort: CallbackContextAbort,
+}
+
+export type RouterBeforeRouteHook<
+  TRoutes extends RouteContext[]
+> = (to: unknown, context: RouteBeforeRouteHookContext<TRoutes>) => MaybePromise<void>
+
+export type RouterAfterRouteHook<
+  TRoutes extends RouteContext[]
+> = (to: unknown, context: RouteAfterRouteHookContext<TRoutes>) => MaybePromise<void>
 
 export type PropsGetter<
   TOptions extends CreateRouteOptions = CreateRouteOptions,

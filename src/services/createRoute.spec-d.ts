@@ -507,3 +507,17 @@ test('parent props are passed to child props when multiple child components are 
     },
   })
 })
+
+test('hooks', () => {
+  const referencedRoute = createRoute({
+    name: 'referenced',
+  })
+
+  const route = createRoute({
+    name: 'parent',
+    context: [referencedRoute],
+    onBeforeRouteEnter: (to, context) => {
+      context.push()
+    },
+  })
+})

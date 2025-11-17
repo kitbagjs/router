@@ -3,7 +3,6 @@ import { PrefetchConfig } from '@/types/prefetch'
 import { RouteMeta } from '@/types/register'
 import { LastInArray } from './utilities'
 import { CreateRouteOptions } from './createRouteOptions'
-import { WithHooks } from './hooks'
 import { WithParams } from '@/services/withParams'
 
 /**
@@ -14,7 +13,7 @@ export type Routes = readonly Route[]
 /**
  * The Route properties originally provided to `createRoute`. The only change is normalizing meta to always default to an empty object.
  */
-export type CreatedRouteOptions = Omit<CreateRouteOptions, 'props'> & WithHooks & {
+export type CreatedRouteOptions = Omit<CreateRouteOptions, 'props'> & {
   id: string,
   // todo: this should not be optional
   props?: unknown,
@@ -84,5 +83,20 @@ export type Route<
   * A value that represents how many parents a route has. Used for route matching
   * @internal
   */
+  depth: number,
+}
+
+export type RouteContext = {
+  id: string,
+  name: string,
+  host: WithParams,
+  matched: CreatedRouteOptions,
+  matches: CreatedRouteOptions[],
+  path: WithParams,
+  query: WithParams,
+  hash: WithParams,
+  meta: RouteMeta,
+  state: Record<string, Param>,
+  prefetch?: PrefetchConfig,
   depth: number,
 }
