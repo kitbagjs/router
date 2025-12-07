@@ -129,6 +129,11 @@ export type Router<
    */
   onAfterRouteUpdate: AddRouterAfterRouteHook<TRoutes | TPlugin['routes'], keyof TOptions['rejections'] | KeysOfUnion<TPlugin['rejections']>>,
   /**
+   * Registers a hook to be called when an error occurs.
+   * If the hook returns true, the error is considered handled and the other hooks are not run. If all hooks return false the error is rethrown
+   */
+  onError: AddRouterErrorHook<TRoutes | TPlugin['routes'], keyof TOptions['rejections'] | KeysOfUnion<TPlugin['rejections']>>,
+  /**
   * Given a URL, returns true if host does not match host stored on router instance
   */
   isExternal: (url: string) => boolean,
@@ -205,6 +210,36 @@ export type AddRouterAfterRouteHook<
 
 export type RouterRouteHookBeforeRunner<TRoutes extends Routes> = (context: HookContext<TRoutes>) => Promise<BeforeRouteHookResponse>
 export type RouterRouteHookAfterRunner<TRoutes extends Routes> = (context: HookContext<TRoutes>) => Promise<AfterRouteHookResponse>
+
+export type RouterErrorHookContext<
+  TRoutes extends Routes,
+  TRejections extends PropertyKey
+> = {
+  to: RouterResolvedRouteUnion<TRoutes>,
+  from: RouterResolvedRouteUnion<TRoutes> | null,
+  source: 'props' | 'hook' | 'component',
+  reject: RouterReject<TRejections>,
+  push: RouterPush<TRoutes>,
+  replace: RouterReplace<TRoutes>,
+}
+
+export type RouterErrorHook<
+  TRoutes extends Routes,
+  TRejections extends PropertyKey
+> = (error: unknown, context: RouterErrorHookContext<TRoutes, TRejections>) => boolean
+
+export type AddRouterErrorHook<
+  TRoutes extends Routes,
+  TRejections extends PropertyKey
+> = (hook: RouterErrorHook<TRoutes, TRejections>) => RouteHookRemove
+
+export type RouterRouteHookErrorRunnerContext<TRoutes extends Routes> = {
+  to: RouterResolvedRouteUnion<TRoutes>,
+  from: RouterResolvedRouteUnion<TRoutes> | null,
+  source: 'props' | 'hook',
+}
+
+export type RouterRouteHookErrorRunner<TRoutes extends Routes> = (error: unknown, context: RouterRouteHookErrorRunnerContext<TRoutes>) => void
 
 /**
  * This type is the same as `RouterRoute<ResolvedRoute<TRoutes[number]>>` while remaining distributive

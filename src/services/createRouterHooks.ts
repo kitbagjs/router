@@ -7,7 +7,7 @@ import { CallbackContextAbortError } from '@/errors/callbackContextAbortError'
 import { getGlobalAfterRouteHooks, getGlobalBeforeRouteHooks } from './getGlobalRouteHooks'
 import { createVueAppStore, HasVueAppStore } from '@/services/createVueAppStore'
 import { createRouterKeyStore } from './createRouterKeyStore'
-import { AddRouterAfterRouteHook, AddRouterBeforeRouteHook, Router, RouterAfterRouteHook, RouterBeforeRouteHook, HookContext, RouterRoutes, RouterRouteHookBeforeRunner, RouterRouteHookAfterRunner, RouterRejections } from '@/types/router'
+import { AddRouterAfterRouteHook, AddRouterBeforeRouteHook, Router, RouterAfterRouteHook, RouterBeforeRouteHook, HookContext, RouterRoutes, RouterRouteHookBeforeRunner, RouterRouteHookAfterRunner, RouterRejections, AddRouterErrorHook, RouterRouteHookErrorRunner, RouterRouteHookErrorRunnerContext } from '@/types/router'
 import { Routes } from '@/types/route'
 import { InjectionKey } from 'vue'
 import { RouterRouteHooks } from '@/models/RouterRouteHooks'
@@ -21,6 +21,7 @@ export type RouterHooks<
 > = HasVueAppStore & {
   runBeforeRouteHooks: RouterRouteHookBeforeRunner<TRoutes>,
   runAfterRouteHooks: RouterRouteHookAfterRunner<TRoutes>,
+  runErrorHooks: RouterRouteHookErrorRunner<TRoutes>,
   addComponentBeforeRouteHook: AddComponentBeforeRouteHook<TRoutes, TRejections>,
   addComponentAfterRouteHook: AddComponentAfterRouteHook<TRoutes, TRejections>,
   addGlobalRouteHooks: AddGlobalRouteHooks<TRoutes, TRejections>,
@@ -30,6 +31,7 @@ export type RouterHooks<
   onAfterRouteEnter: AddRouterAfterRouteHook<TRoutes, TRejections>,
   onAfterRouteUpdate: AddRouterAfterRouteHook<TRoutes, TRejections>,
   onAfterRouteLeave: AddRouterAfterRouteHook<TRoutes, TRejections>,
+  onError: AddRouterErrorHook<TRoutes, TRejections>,
 }
 
 export function createRouterHooks<TRouter extends Router>(_routerKey: InjectionKey<TRouter>): RouterHooks<RouterRoutes<TRouter>, RouterRejections<TRouter>> {
@@ -81,6 +83,12 @@ export function createRouterHooks<TRouter extends Router>(_routerKey: InjectionK
     return () => store.global.onAfterRouteLeave.delete(hook)
   }
 
+  const onError: AddRouterErrorHook<TRoutes, TRejections> = (hook) => {
+    store.global.onError.add(hook)
+
+    return () => store.global.onError.delete(hook)
+  }
+
   async function runBeforeRouteHooks({ to, from }: HookContext<TRoutes>): Promise<BeforeRouteHookResponse> {
     const { global, component } = store
     const route = getBeforeRouteHooksFromRoutes(to, from)
@@ -124,7 +132,19 @@ export function createRouterHooks<TRouter extends Router>(_routerKey: InjectionK
         return error.response
       }
 
-      throw error
+      try {
+        runErrorHooks(error, { to, from, source: 'hook' })
+      } catch (error) {
+        if (error instanceof CallbackContextPushError) {
+          return error.response
+        }
+
+        if (error instanceof CallbackContextRejectionError) {
+          return error.response
+        }
+
+        throw error
+      }
     }
 
     return {
@@ -171,11 +191,48 @@ export function createRouterHooks<TRouter extends Router>(_routerKey: InjectionK
         return error.response
       }
 
-      throw error
+      try {
+        runErrorHooks(error, { to, from, source: 'hook' })
+      } catch (error) {
+        if (error instanceof CallbackContextPushError) {
+          return error.response
+        }
+
+        if (error instanceof CallbackContextRejectionError) {
+          return error.response
+        }
+
+        throw error
+      }
     }
 
     return {
       status: 'SUCCESS',
+    }
+  }
+
+  /**
+   * Returns true if the error was handled by a hook, false if the error was not handled and should be rethrown
+   */
+  function runErrorHooks(error: unknown, { to, from, source }: RouterRouteHookErrorRunnerContext<TRoutes>): void {
+    for (const hook of store.global.onError) {
+      try {
+        const handled = hook(error, { to, from, source, reject, push, replace })
+
+        if (handled) {
+          return
+        }
+      } catch (error) {
+        if (error instanceof CallbackContextPushError) {
+          throw error
+        }
+
+        if (error instanceof CallbackContextRejectionError) {
+          throw error
+        }
+
+        throw error
+      }
     }
   }
 
@@ -220,11 +277,13 @@ export function createRouterHooks<TRouter extends Router>(_routerKey: InjectionK
     hooks.onAfterRouteEnter.forEach((hook) => onAfterRouteEnter(hook))
     hooks.onAfterRouteUpdate.forEach((hook) => onAfterRouteUpdate(hook))
     hooks.onAfterRouteLeave.forEach((hook) => onAfterRouteLeave(hook))
+    hooks.onError.forEach((hook) => onError(hook))
   }
 
   return {
     runBeforeRouteHooks,
     runAfterRouteHooks,
+    runErrorHooks,
     addComponentBeforeRouteHook,
     addComponentAfterRouteHook,
     addGlobalRouteHooks,
@@ -234,6 +293,7 @@ export function createRouterHooks<TRouter extends Router>(_routerKey: InjectionK
     onAfterRouteEnter,
     onAfterRouteUpdate,
     onAfterRouteLeave,
+    onError,
     setVueApp,
   }
 }

@@ -36,6 +36,8 @@ import { getRouterRejectionInjectionKey } from '@/compositions/useRejection'
 import { routerInjectionKey } from '@/keys'
 import { createRouterView } from '@/components/routerView'
 import { createRouterLink } from '@/components/routerLink'
+import { CallbackContextPushError } from '@/errors/callbackContextPushError'
+import { CallbackContextRejectionError } from '@/errors/callbackContextRejectionError'
 
 type RouterUpdateOptions = {
   replace?: boolean,
@@ -150,28 +152,46 @@ export function createRouter<
 
     const currentNavigationId = navigationId
 
-    propStore.setProps(to).then((response) => {
-      if (currentNavigationId !== navigationId) {
-        return
-      }
+    propStore.setProps(to)
+      .then((response) => {
+        if (currentNavigationId !== navigationId) {
+          return
+        }
 
-      switch (response.status) {
-        case 'SUCCESS':
-          break
+        switch (response.status) {
+          case 'SUCCESS':
+            break
 
-        case 'PUSH':
-          push(...response.to)
-          break
+          case 'PUSH':
+            push(...response.to)
+            break
 
-        case 'REJECT':
-          setRejection(response.type)
-          break
+          case 'REJECT':
+            setRejection(response.type)
+            break
 
-        default:
-          const exhaustive: never = response
-          throw new Error(`Switch is not exhaustive for prop store response status: ${JSON.stringify(exhaustive)}`)
-      }
-    })
+          default:
+            const exhaustive: never = response
+            throw new Error(`Switch is not exhaustive for prop store response status: ${JSON.stringify(exhaustive)}`)
+        }
+      })
+      .catch((error: unknown) => {
+        try {
+          hooks.runErrorHooks(error, { to, from, source: 'props' })
+        } catch (error) {
+          if (error instanceof CallbackContextPushError) {
+            push(...error.response.to)
+            return
+          }
+
+          if (error instanceof CallbackContextRejectionError) {
+            setRejection(error.response.type)
+            return
+          }
+
+          throw error
+        }
+      })
 
     updateRoute(to)
 
@@ -361,6 +381,7 @@ export function createRouter<
     onAfterRouteEnter: hooks.onAfterRouteEnter,
     onAfterRouteUpdate: hooks.onAfterRouteUpdate,
     onAfterRouteLeave: hooks.onAfterRouteLeave,
+    onError: hooks.onError,
     prefetch: options?.prefetch,
     start,
     started,

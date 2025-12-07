@@ -1,5 +1,5 @@
 import { Routes } from '@/types/route'
-import { RouterAfterRouteHook, RouterBeforeRouteHook } from '@/types/router'
+import { RouterAfterRouteHook, RouterBeforeRouteHook, RouterErrorHook } from '@/types/router'
 
 export class RouterRouteHooks<
   TRoutes extends Routes = Routes,
@@ -11,4 +11,5 @@ export class RouterRouteHooks<
   public onAfterRouteEnter = new Set<RouterAfterRouteHook<TRoutes, TRejections>>()
   public onAfterRouteUpdate = new Set<RouterAfterRouteHook<TRoutes, TRejections>>()
   public onAfterRouteLeave = new Set<RouterAfterRouteHook<TRoutes, TRejections>>()
+  public onError = new Set<RouterErrorHook<TRoutes, TRejections>>()
 }
