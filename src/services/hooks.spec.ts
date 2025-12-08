@@ -3,7 +3,7 @@ import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
 import { createRouterHooks } from '@/services/createRouterHooks'
 import { BeforeRouteHook } from '@/types/hooks'
 import { ResolvedRoute } from '@/types/resolved'
-import { component, mockResolvedRoute, mockRoute } from '@/utilities/testHelpers'
+import { component } from '@/utilities/testHelpers'
 import { Router } from '@/types/router'
 import { InjectionKey } from 'vue'
 
