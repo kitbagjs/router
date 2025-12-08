@@ -216,22 +216,10 @@ export function createRouterHooks<TRouter extends Router>(_routerKey: InjectionK
    */
   function runErrorHooks(error: unknown, { to, from, source }: RouterRouteHookErrorRunnerContext<TRoutes>): void {
     for (const hook of store.global.onError) {
-      try {
-        const handled = hook(error, { to, from, source, reject, push, replace })
+      const handled = hook(error, { to, from, source, reject, push, replace })
 
-        if (handled) {
-          return
-        }
-      } catch (error) {
-        if (error instanceof CallbackContextPushError) {
-          throw error
-        }
-
-        if (error instanceof CallbackContextRejectionError) {
-          throw error
-        }
-
-        throw error
+      if (handled) {
+        return
       }
     }
   }

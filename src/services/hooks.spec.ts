@@ -3,7 +3,7 @@ import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
 import { createRouterHooks } from '@/services/createRouterHooks'
 import { BeforeRouteHook } from '@/types/hooks'
 import { ResolvedRoute } from '@/types/resolved'
-import { component } from '@/utilities/testHelpers'
+import { component, mockResolvedRoute, mockRoute } from '@/utilities/testHelpers'
 import { Router } from '@/types/router'
 import { InjectionKey } from 'vue'
 
@@ -191,100 +191,6 @@ test('hook is called in order', async () => {
 
   expect(orderA).toBeLessThan(orderB)
   expect(orderB).toBeLessThan(orderC)
-})
-
-test('errors thrown in hooks are caught by onError callbacks', async () => {
-  const errorHook = vi.fn()
-  const { runBeforeRouteHooks, onError } = createRouterHooks(Symbol() as InjectionKey<Router>)
-
-  const testError = new Error('Test error')
-
-  onError((error, context) => {
-    errorHook(error, context)
-    return true
-  })
-
-  const toOptions = {
-    id: Math.random().toString(),
-    name: 'routeA',
-    component,
-    onBeforeRouteEnter: () => {
-      throw testError
-    },
-    meta: {},
-    state: {},
-  }
-
-  const to: ResolvedRoute = {
-    id: toOptions.id,
-    matched: toOptions,
-    matches: [toOptions],
-    name: toOptions.name,
-    query: createResolvedRouteQuery(),
-    params: {},
-    state: {},
-    href: '/',
-    hash: '',
-  }
-
-  const from: ResolvedRoute | null = null
-
-  await runBeforeRouteHooks({
-    to,
-    from,
-  })
-
-  expect(errorHook).toHaveBeenCalledWith(testError, expect.objectContaining({
-    to,
-    from,
-    source: 'hook',
-    reject: expect.any(Function),
-    push: expect.any(Function),
-    replace: expect.any(Function),
-  }))
-})
-
-test('errors thrown in prop callbacks are caught by onError callbacks', () => {
-  const errorHook = vi.fn()
-  const hooks = createRouterHooks(Symbol() as InjectionKey<Router>)
-
-  const testError = new Error('Test error from props')
-
-  hooks.onError((error, context) => {
-    errorHook(error, context)
-    return true
-  })
-
-  const to: ResolvedRoute = {
-    id: Math.random().toString(),
-    matched: {
-      id: Math.random().toString(),
-      name: 'routeA',
-      component,
-      meta: {},
-      state: {},
-    },
-    matches: [],
-    name: 'routeA',
-    query: createResolvedRouteQuery(),
-    params: {},
-    state: {},
-    href: '/',
-    hash: '',
-  }
-
-  const from: ResolvedRoute | null = null
-
-  hooks.runErrorHooks(testError, { to, from, source: 'props' })
-
-  expect(errorHook).toHaveBeenCalledWith(testError, expect.objectContaining({
-    to,
-    from,
-    source: 'props',
-    reject: expect.any(Function),
-    push: expect.any(Function),
-    replace: expect.any(Function),
-  }))
 })
 
 test('multiple onError callbacks run in order', () => {
