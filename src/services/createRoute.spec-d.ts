@@ -508,6 +508,48 @@ test('parent props are passed to child props when multiple child components are 
   })
 })
 
+describe('meta', () => {
+  test('is always defined', () => {
+    const route = createRoute({
+      name: 'route',
+    })
+
+    expectTypeOf(route.meta).toEqualTypeOf<Readonly<{}>>()
+  })
+
+  test('preserves provided values', () => {
+    const route = createRoute({
+      name: 'route',
+      meta: {
+        foo: 'bar',
+      },
+    })
+
+    expectTypeOf(route.meta).toEqualTypeOf<Readonly<{ foo: 'bar' }>>()
+  })
+
+  test('preserves provided values with parent', () => {
+    const parent = createRoute({
+      name: 'parent',
+      meta: {
+        foo: 'bar',
+      },
+    })
+
+    const route = createRoute({
+      name: 'child',
+      parent: parent,
+      meta: {
+        bar: 'baz',
+      },
+    })
+
+    expectTypeOf(parent.meta).toExtend<{}>()
+    expectTypeOf(route.meta.bar).toEqualTypeOf<'baz'>()
+    expectTypeOf(route.meta.foo).toEqualTypeOf<'bar'>()
+  })
+})
+
 describe('matched.meta', () => {
   test('is always defined', () => {
     const route = createRoute({
