@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { expectTypeOf, test } from 'vitest'
+import { describe, expectTypeOf, test } from 'vitest'
 import { createRoute } from './createRoute'
 import { Route } from '@/types/route'
 import { Identity } from '@/types/utilities'
@@ -505,5 +505,47 @@ test('parent props are passed to child props when multiple child components are 
 
       return {}
     },
+  })
+})
+
+describe('matched.meta', () => {
+  test('is always defined', () => {
+    const route = createRoute({
+      name: 'route',
+    })
+
+    expectTypeOf(route.matched.meta).toEqualTypeOf<Readonly<{}>>()
+  })
+
+  test('preserves provided values', () => {
+    const route = createRoute({
+      name: 'route',
+      meta: {
+        foo: 'bar',
+      },
+    })
+
+    expectTypeOf(route.matched.meta).toEqualTypeOf<Readonly<{ foo: 'bar' }>>()
+  })
+})
+
+describe('matches[number].meta', () => {
+  test('is always defined', () => {
+    const route = createRoute({
+      name: 'route',
+    })
+
+    expectTypeOf(route.matches[0].meta).toEqualTypeOf<Readonly<{}>>()
+  })
+
+  test('preserves provided values', () => {
+    const route = createRoute({
+      name: 'route',
+      meta: {
+        foo: 'bar',
+      },
+    })
+
+    expectTypeOf(route.matches[0].meta).toEqualTypeOf<Readonly<{ foo: 'bar' }>>()
   })
 })

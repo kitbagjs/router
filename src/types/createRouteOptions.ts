@@ -143,7 +143,14 @@ export type CreateRouteProps<
 type ToMatch<
   TOptions extends CreateRouteOptions,
   TProps extends CreateRouteProps<TOptions> | undefined
-> = Omit<TOptions, 'props'> & { id: string, props: TProps }
+> = Omit<TOptions, 'props' | 'meta'> & {
+  id: string,
+  props: TProps,
+  /**
+   * Represents additional metadata associated with a route. Always present, defaults to empty object.
+   */
+  meta: ToMeta<TOptions['meta']>,
+}
 
 type ToMatches<
   TOptions extends CreateRouteOptions,

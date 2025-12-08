@@ -1,3 +1,9 @@
 import { RouteMeta } from './register'
 
-export type ToMeta<TMeta extends RouteMeta | undefined> = TMeta extends undefined ? {} : unknown extends TMeta ? {} : TMeta
+type EmptyMeta = Readonly<{}>
+
+export type ToMeta<TMeta extends RouteMeta | undefined> = TMeta extends undefined
+  ? EmptyMeta
+  : unknown extends TMeta
+    ? EmptyMeta
+    : TMeta
