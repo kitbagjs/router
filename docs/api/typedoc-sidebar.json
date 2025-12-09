@@ -222,10 +222,6 @@
         "link": "/api/types/AfterRouteHookLifecycle.md"
       },
       {
-        "text": "AfterRouteHookRegistration",
-        "link": "/api/types/AfterRouteHookRegistration.md"
-      },
-      {
         "text": "AfterRouteHookResponse",
         "link": "/api/types/AfterRouteHookResponse.md"
       },
@@ -244,10 +240,6 @@
       {
         "text": "BeforeRouteHookLifecycle",
         "link": "/api/types/BeforeRouteHookLifecycle.md"
-      },
-      {
-        "text": "BeforeRouteHookRegistration",
-        "link": "/api/types/BeforeRouteHookRegistration.md"
       },
       {
         "text": "BeforeRouteHookResponse",
@@ -331,7 +323,7 @@
       },
       {
         "text": "RegisteredRejectionType",
-        "link": "/api/types/RegisteredRejectionType.md"
+        "link": "/api/~~types/RegisteredRejectionType.md"
       },
       {
         "text": "RegisteredRouter",
@@ -339,19 +331,23 @@
       },
       {
         "text": "RegisteredRouterPush",
-        "link": "/api/types/RegisteredRouterPush.md"
+        "link": "/api/~~types/RegisteredRouterPush.md"
       },
       {
         "text": "RegisteredRouterReject",
-        "link": "/api/types/RegisteredRouterReject.md"
+        "link": "/api/~~types/RegisteredRouterReject.md"
       },
       {
         "text": "RegisteredRouterReplace",
-        "link": "/api/types/RegisteredRouterReplace.md"
+        "link": "/api/~~types/RegisteredRouterReplace.md"
       },
       {
         "text": "RegisteredRoutes",
-        "link": "/api/types/RegisteredRoutes.md"
+        "link": "/api/~~types/RegisteredRoutes.md"
+      },
+      {
+        "text": "RegisteredRoutesName",
+        "link": "/api/~~types/RegisteredRoutesName.md"
       },
       {
         "text": "ResolvedRoute",
@@ -402,6 +398,10 @@
         "link": "/api/types/RouterAfterRouteHook.md"
       },
       {
+        "text": "RouterAssets",
+        "link": "/api/types/RouterAssets.md"
+      },
+      {
         "text": "RouterBeforeRouteHook",
         "link": "/api/types/RouterBeforeRouteHook.md"
       },
@@ -428,6 +428,10 @@
       {
         "text": "RouterReject",
         "link": "/api/types/RouterReject.md"
+      },
+      {
+        "text": "RouterRejections",
+        "link": "/api/types/RouterRejections.md"
       },
       {
         "text": "RouterReplace",

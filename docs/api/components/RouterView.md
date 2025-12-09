@@ -1,7 +1,7 @@
 # Components: RouterView
 
 ```ts
-const RouterView: DefineSetupFnComponent;
+const RouterView: RouterAssets<RegisteredRouter>["RouterView"];
 ```
 
 A component to render the current route's component.

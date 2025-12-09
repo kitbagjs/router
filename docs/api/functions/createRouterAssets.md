@@ -20,7 +20,7 @@ function createRouterAssets<TRouter>(router): RouterAssets<TRouter>;
 
 ### Returns
 
-`RouterAssets`\<`TRouter`\>
+[`RouterAssets`](../types/RouterAssets.md)\<`TRouter`\>
 
 ## Call Signature
 
@@ -42,4 +42,4 @@ function createRouterAssets<TRouter>(routerKey): RouterAssets<TRouter>;
 
 ### Returns
 
-`RouterAssets`\<`TRouter`\>
+[`RouterAssets`](../types/RouterAssets.md)\<`TRouter`\>

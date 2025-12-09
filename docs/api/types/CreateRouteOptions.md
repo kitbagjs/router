@@ -4,7 +4,7 @@
 type CreateRouteOptions<TName, TPath, TQuery, THash, TMeta> = WithHooks & object;
 ```
 
-## Type declaration
+## Type Declaration
 
 ### component?
 

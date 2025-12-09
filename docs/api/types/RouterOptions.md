@@ -6,7 +6,7 @@ type RouterOptions = WithHooks & object;
 
 Options to initialize a [Router](Router.md) instance.
 
-## Type declaration
+## Type Declaration
 
 ### base?
 

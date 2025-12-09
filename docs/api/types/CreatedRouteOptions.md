@@ -6,7 +6,7 @@ type CreatedRouteOptions = Omit<CreateRouteOptions, "props"> & WithHooks & objec
 
 The Route properties originally provided to `createRoute`. The only change is normalizing meta to always default to an empty object.
 
-## Type declaration
+## Type Declaration
 
 ### id
 

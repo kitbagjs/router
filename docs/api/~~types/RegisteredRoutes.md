@@ -1,4 +1,4 @@
-# Types: RegisteredRoutes\<T\>
+# ~~Types: RegisteredRoutes\<T\>~~
 
 ```ts
 type RegisteredRoutes<T> = T extends object ? TRoutes : Route[];
@@ -11,3 +11,7 @@ Represents the Router routes property within [Register](../interfaces/Register.m
 | Type Parameter | Default type |
 | ------ | ------ |
 | `T` | [`Register`](../interfaces/Register.md) |
+
+## Deprecated
+
+will be removed in a future version

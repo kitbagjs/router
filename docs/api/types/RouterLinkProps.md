@@ -4,7 +4,7 @@
 type RouterLinkProps<TRouter> = RouterPushOptions & object;
 ```
 
-## Type declaration
+## Type Declaration
 
 ### prefetch?
 
