@@ -136,3 +136,55 @@ describe('rejections', () => {
     expectTypeOf<Source>().toEqualTypeOf<Expect>()
   })
 })
+
+describe('route.matchedmeta', () => {
+  test('is always defined', () => {
+    const routeA = createRoute({
+      name: 'routeA',
+    })
+
+    const router = createRouter([routeA])
+
+    expectTypeOf(router.route.matched.meta).toEqualTypeOf<Readonly<{}>>()
+  })
+
+  test('union type is preserved', () => {
+    const routeA = createRoute({
+      name: 'routeA',
+    })
+
+    const routeB = createRoute({
+      name: 'routeB',
+      meta: { public: true },
+    })
+
+    const router = createRouter([routeA, routeB])
+
+    expectTypeOf(router.route.matched.meta).toEqualTypeOf<Readonly<{}> | Readonly<{ public: true }>>()
+  })
+
+  test('union type can be narrowed', () => {
+    const routeA = createRoute({
+      name: 'routeA',
+    })
+
+    const routeB = createRoute({
+      name: 'routeB',
+      meta: { public: true },
+    })
+
+    const router = createRouter([routeA, routeB])
+
+    if (router.route.matched.name === 'routeA') {
+      expectTypeOf(router.route.matched.meta).toEqualTypeOf<Readonly<{}>>()
+    }
+
+    if (router.route.matched.name === 'routeB') {
+      expectTypeOf(router.route.matched.meta).toEqualTypeOf<Readonly<{ public: true }>>()
+    }
+
+    if ('public' in router.route.matched.meta) {
+      expectTypeOf(router.route.matched.meta.public).toEqualTypeOf<true>()
+    }
+  })
+})
