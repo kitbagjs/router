@@ -1,6 +1,6 @@
 import { RegisteredRouterPush } from '@/types/register'
 import { CallbackPushResponse } from '@/services/createCallbackContext'
-import { ContextError } from './ContextError'
+import { ContextError } from './contextError'
 
 export class ContextPushError extends ContextError {
   public response: CallbackPushResponse

@@ -1,5 +1,5 @@
 import { CallbackAbortResponse } from '@/services/createCallbackContext'
-import { ContextError } from './ContextError'
+import { ContextError } from './contextError'
 
 export class ContextAbortError extends ContextError {
   public response: CallbackAbortResponse
