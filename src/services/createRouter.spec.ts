@@ -671,3 +671,128 @@ describe('router.push', () => {
     expect(router.route.state).toMatchObject({ zoo: 123 })
   })
 })
+
+describe('router.onError', () => {
+  test.each([
+    { hook: 'onBeforeRouteEnter' },
+    { hook: 'onAfterRouteEnter' },
+  ] as const)('given an error thrown in $hook, calls the onError callback with the correct context', async ({ hook }) => {
+    const error = new Error('Test error')
+    const onError = vi.fn()
+
+    const route = createRoute({
+      name: 'route-with-error',
+      component,
+      path: '/',
+    })
+
+    const router = createRouter([route], { initialUrl: '/' })
+
+    router[hook](() => {
+      throw error
+    })
+
+    router.onError(onError)
+
+    await router.push('route-with-error')
+
+    expect(onError).toHaveBeenCalledWith(error, expect.objectContaining({
+      source: 'hook',
+    }))
+  })
+
+  test.each([
+    { hook: 'onBeforeRouteUpdate' },
+    { hook: 'onAfterRouteUpdate' },
+  ] as const)('given an error thrown in $hook, calls the onError callback with the correct context', async ({ hook }) => {
+    const error = new Error('Test error')
+    const onError = vi.fn()
+
+    const route = createRoute({
+      name: 'route-with-error',
+      component,
+      path: '/[param]',
+    })
+
+    const router = createRouter([route], { initialUrl: '/' })
+    await router.start()
+
+    router[hook](() => {
+      throw error
+    })
+
+    router.onError(onError)
+
+    // Navigate to the route first
+    await router.push('route-with-error', { param: 'bar' })
+    // Then navigate to the same route again to trigger update
+    await router.push('route-with-error', { param: 'foo' })
+
+    expect(onError).toHaveBeenCalledWith(error, expect.objectContaining({
+      source: 'hook',
+    }))
+  })
+
+  test.each([
+    { hook: 'onBeforeRouteLeave' },
+    { hook: 'onAfterRouteLeave' },
+  ] as const)('given an error thrown in $hook, calls the onError callback with the correct context', async ({ hook }) => {
+    const error = new Error('Test error')
+    const onError = vi.fn()
+
+    const route1 = createRoute({
+      name: 'route-1',
+      component,
+      path: '/route-1',
+    })
+
+    const route2 = createRoute({
+      name: 'route-2',
+      component,
+      path: '/route-2',
+    })
+
+    const router = createRouter([route1, route2], { initialUrl: '/' })
+    await router.start()
+
+    router[hook](() => {
+      throw error
+    })
+
+    router.onError(onError)
+
+    // Navigate to route-1 first
+    await router.push('route-1')
+    // Then navigate to route-2 to trigger leave
+    await router.push('route-2')
+
+    expect(onError).toHaveBeenCalledWith(error, expect.objectContaining({
+      source: 'hook',
+    }))
+  })
+
+  test('given an error thrown in a props callback, calls the onError callback with the correct context', async () => {
+    const error = new Error('Test error')
+    const onError = vi.fn()
+
+    const routeWithError = createRoute({
+      name: 'route-with-error',
+      component,
+      path: '/route-with-error',
+    }, () => {
+      throw error
+    })
+
+    const router = createRouter([routeWithError], { initialUrl: '/' })
+    await router.start()
+
+    router.onError(onError)
+
+    await router.push('route-with-error')
+    await flushPromises()
+
+    expect(onError).toHaveBeenCalledWith(error, expect.objectContaining({
+      source: 'props',
+    }))
+  })
+})

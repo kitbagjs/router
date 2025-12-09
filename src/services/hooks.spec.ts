@@ -192,3 +192,178 @@ test('hook is called in order', async () => {
   expect(orderA).toBeLessThan(orderB)
   expect(orderB).toBeLessThan(orderC)
 })
+
+test('multiple onError callbacks run in order', () => {
+  const errorHook1 = vi.fn((error) => {
+    throw error
+  })
+  const errorHook2 = vi.fn()
+  const errorHook3 = vi.fn()
+
+  const { runErrorHooks, onError } = createRouterHooks(Symbol() as InjectionKey<Router>)
+
+  onError(errorHook1)
+  onError(errorHook2)
+  onError(errorHook3)
+
+  const testError = new Error('Test error')
+  const to: ResolvedRoute = {
+    id: Math.random().toString(),
+    matched: {
+      id: Math.random().toString(),
+      name: 'routeA',
+      component,
+      meta: {},
+      state: {},
+    },
+    matches: [],
+    name: 'routeA',
+    query: createResolvedRouteQuery(),
+    params: {},
+    state: {},
+    href: '/',
+    hash: '',
+  }
+
+  const from: ResolvedRoute | null = null
+
+  runErrorHooks(testError, { to, from, source: 'hook' })
+
+  expect(errorHook1).toHaveBeenCalledOnce()
+  expect(errorHook2).toHaveBeenCalledOnce()
+  expect(errorHook3).not.toHaveBeenCalled()
+
+  const [order1] = errorHook1.mock.invocationCallOrder
+  const [order2] = errorHook2.mock.invocationCallOrder
+
+  expect(order1).toBeLessThan(order2)
+})
+
+test('when onError callback calls reject, other onError callbacks do not run', () => {
+  const errorHook1 = vi.fn((_error, { reject }) => {
+    reject('NotFound')
+    return true
+  })
+  const errorHook2 = vi.fn(() => false)
+  const errorHook3 = vi.fn(() => false)
+  const { runErrorHooks, onError } = createRouterHooks(Symbol() as InjectionKey<Router>)
+
+  onError(errorHook1)
+  onError(errorHook2)
+  onError(errorHook3)
+
+  const testError = new Error('Test error')
+  const to: ResolvedRoute = {
+    id: Math.random().toString(),
+    matched: {
+      id: Math.random().toString(),
+      name: 'routeA',
+      component,
+      meta: {},
+      state: {},
+    },
+    matches: [],
+    name: 'routeA',
+    query: createResolvedRouteQuery(),
+    params: {},
+    state: {},
+    href: '/',
+    hash: '',
+  }
+
+  const from: ResolvedRoute | null = null
+
+  expect(() => {
+    runErrorHooks(testError, { to, from, source: 'hook' })
+  }).toThrow()
+
+  expect(errorHook1).toHaveBeenCalledOnce()
+  expect(errorHook2).not.toHaveBeenCalled()
+  expect(errorHook3).not.toHaveBeenCalled()
+})
+
+test('when onError callback calls push, other onError callbacks do not run', () => {
+  const errorHook1 = vi.fn((_error, { push }) => {
+    push('/other')
+    return true
+  })
+  const errorHook2 = vi.fn(() => false)
+  const errorHook3 = vi.fn(() => false)
+  const { runErrorHooks, onError } = createRouterHooks(Symbol() as InjectionKey<Router>)
+
+  onError(errorHook1)
+  onError(errorHook2)
+  onError(errorHook3)
+
+  const testError = new Error('Test error')
+  const to: ResolvedRoute = {
+    id: Math.random().toString(),
+    matched: {
+      id: Math.random().toString(),
+      name: 'routeA',
+      component,
+      meta: {},
+      state: {},
+    },
+    matches: [],
+    name: 'routeA',
+    query: createResolvedRouteQuery(),
+    params: {},
+    state: {},
+    href: '/',
+    hash: '',
+  }
+
+  const from: ResolvedRoute | null = null
+
+  expect(() => {
+    runErrorHooks(testError, { to, from, source: 'hook' })
+  }).toThrow()
+
+  expect(errorHook1).toHaveBeenCalledOnce()
+  expect(errorHook2).not.toHaveBeenCalled()
+  expect(errorHook3).not.toHaveBeenCalled()
+})
+
+test('when onError callback calls replace, other onError callbacks do not run', () => {
+  const errorHook1 = vi.fn((_error, { replace }) => {
+    replace('/other')
+    return true
+  })
+  const errorHook2 = vi.fn(() => false)
+  const errorHook3 = vi.fn(() => false)
+  const { runErrorHooks, onError } = createRouterHooks(Symbol() as InjectionKey<Router>)
+
+  onError(errorHook1)
+  onError(errorHook2)
+  onError(errorHook3)
+
+  const testError = new Error('Test error')
+  const to: ResolvedRoute = {
+    id: Math.random().toString(),
+    matched: {
+      id: Math.random().toString(),
+      name: 'routeA',
+      component,
+      meta: {},
+      state: {},
+    },
+    matches: [],
+    name: 'routeA',
+    query: createResolvedRouteQuery(),
+    params: {},
+    state: {},
+    href: '/',
+    hash: '',
+  }
+
+  const from: ResolvedRoute | null = null
+
+  expect(() => {
+    runErrorHooks(testError, { to, from, source: 'hook' })
+  }).toThrow()
+
+  expect(errorHook1).toHaveBeenCalledOnce()
+  expect(errorHook2).not.toHaveBeenCalled()
+  expect(errorHook3).not.toHaveBeenCalled()
+})

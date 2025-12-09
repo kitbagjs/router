@@ -1,6 +1,6 @@
-import { CallbackContextAbortError } from '@/errors/callbackContextAbortError'
-import { CallbackContextPushError } from '@/errors/callbackContextPushError'
-import { CallbackContextRejectionError } from '@/errors/callbackContextRejectionError'
+import { ContextAbortError } from '@/errors/contextAbortError'
+import { ContextPushError } from '@/errors/contextPushError'
+import { ContextRejectionError } from '@/errors/contextRejectionError'
 import { RegisteredRejectionType, RegisteredRouterPush, RegisteredRouterReject, RegisteredRouterReplace } from '@/types/register'
 import { RouterPushOptions } from '@/types/routerPush'
 import { isUrl } from '@/types/url'
@@ -55,26 +55,26 @@ export type CallbackContext = {
  */
 export function createCallbackContext(): CallbackContext {
   const reject: RegisteredRouterReject = (type) => {
-    throw new CallbackContextRejectionError(type)
+    throw new ContextRejectionError(type)
   }
 
   const push: RegisteredRouterPush = (...parameters: any[]) => {
-    throw new CallbackContextPushError(parameters)
+    throw new ContextPushError(parameters)
   }
 
   const replace: RegisteredRouterPush = (source: any, paramsOrOptions?: any, maybeOptions?: any) => {
     if (isUrl(source)) {
       const options: RouterPushOptions = paramsOrOptions ?? {}
-      throw new CallbackContextPushError([source, { ...options, replace: true }])
+      throw new ContextPushError([source, { ...options, replace: true }])
     }
 
     const params = paramsOrOptions
     const options: RouterPushOptions = maybeOptions ?? {}
-    throw new CallbackContextPushError([source, params, { ...options, replace: true }])
+    throw new ContextPushError([source, params, { ...options, replace: true }])
   }
 
   const abort: CallbackContextAbort = () => {
-    throw new CallbackContextAbortError()
+    throw new ContextAbortError()
   }
 
   return { reject, push, replace, abort }

@@ -5,8 +5,8 @@ import { getPrefetchOption } from '@/utilities/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
 import { Route } from '@/types/route'
 import { CallbackPushResponse, CallbackRejectResponse, CallbackSuccessResponse, createCallbackContext } from './createCallbackContext'
-import { CallbackContextPushError } from '@/errors/callbackContextPushError'
-import { CallbackContextRejectionError } from '@/errors/callbackContextRejectionError'
+import { ContextPushError } from '@/errors/contextPushError'
+import { ContextRejectionError } from '@/errors/contextRejectionError'
 import { getPropsValue } from '@/utilities/props'
 import { PropsCallbackParent } from '@/types/props'
 import { createVueAppStore, HasVueAppStore } from './createVueAppStore'
@@ -97,11 +97,11 @@ export function createPropStore(): PropStore {
 
       return { status: 'SUCCESS' }
     } catch (error) {
-      if (error instanceof CallbackContextPushError) {
+      if (error instanceof ContextPushError) {
         return error.response
       }
 
-      if (error instanceof CallbackContextRejectionError) {
+      if (error instanceof ContextRejectionError) {
         return error.response
       }
 
