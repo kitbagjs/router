@@ -31,7 +31,7 @@ export { UseRouteInvalidError } from './errors/useRouteInvalidError'
 // Services
 export { createRoute } from './services/createRoute'
 export { createExternalRoute } from './services/createExternalRoute'
-export { createRouterAssets } from './services/createRouterAssets'
+export { createRouterAssets, type RouterAssets } from './services/createRouterAssets'
 export { withParams } from './services/withParams'
 export { withDefault } from './services/withDefault'
 export { createRouterPlugin } from './services/createRouterPlugin'

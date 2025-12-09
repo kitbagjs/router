@@ -9,7 +9,7 @@ function createRoute<TOptions, TProps>(options, ...args): ToRoute<TOptions, Crea
 | Type Parameter |
 | ------ |
 | `TOptions` *extends* [`CreateRouteOptions`](../types/CreateRouteOptions.md) |
-| `TProps` *extends* \| [`PropsGetter`](../types/PropsGetter.md)\<`TOptions`, `any`\[`any`\]\> \| `RoutePropsRecord`\<`TOptions`, `any`\[`any`\]\> \| [`PropsGetter`](../types/PropsGetter.md)\<`TOptions`, `DefineSetupFnComponent`\<`RouterViewProps`, `EmitsOptions`, `SlotsType`\<\{ `default?`: (`props`) => `VNode`\<`RendererNode`, `RendererElement`, \{ [`key`: `string`]: `any`; \}\>; \}\>, `RouterViewProps` & \| \{ [`x`: `` `on${Capitalize<string>}` ``]: `undefined` \| (...`args`) => `any`; \} \| \{ [`x`: `` `on${Capitalize<string>}` ``]: `undefined` \| (...`args`) => `any`; \}, `PublicProps`\>\> |
+| `TProps` *extends* \| [`PropsGetter`](../types/PropsGetter.md)\<`TOptions`, `any`\[`any`\]\> \| `RoutePropsRecord`\<`TOptions`, `any`\[`any`\]\> \| [`PropsGetter`](../types/PropsGetter.md)\<`TOptions`, `DefineSetupFnComponent`\<`RouterViewProps`, `EmitsOptions`, `SlotsType`\<`RouterViewSlots`\>, `RouterViewProps` & \| \{ \[`x`: `` `on${Capitalize<string>}` ``\]: (...`args`) => `any` \| `undefined`; \} \| \{ \[`x`: `` `on${Capitalize<string>}` ``\]: (...`args`) => `any` \| `undefined`; \}, `PublicProps`\>\> |
 
 ## Parameters
 

@@ -1,7 +1,7 @@
-# Types: RouterBeforeRouteHook()\<TRoutes\>
+# Types: RouterBeforeRouteHook()\<TRoutes, TRejections\>
 
 ```ts
-type RouterBeforeRouteHook<TRoutes> = (to, context) => MaybePromise<void>;
+type RouterBeforeRouteHook<TRoutes, TRejections> = (to, context) => MaybePromise<void>;
 ```
 
 ## Type Parameters
@@ -9,13 +9,14 @@ type RouterBeforeRouteHook<TRoutes> = (to, context) => MaybePromise<void>;
 | Type Parameter |
 | ------ |
 | `TRoutes` *extends* [`Routes`](Routes.md) |
+| `TRejections` *extends* `PropertyKey` |
 
 ## Parameters
 
 | Parameter | Type |
 | ------ | ------ |
 | `to` | `RouterResolvedRouteUnion`\<`TRoutes`\> |
-| `context` | `RouterBeforeRouteHookContext`\<`TRoutes`\> |
+| `context` | `RouterBeforeRouteHookContext`\<`TRoutes`, `TRejections`\> |
 
 ## Returns
 

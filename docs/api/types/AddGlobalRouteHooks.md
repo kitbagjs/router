@@ -1,7 +1,7 @@
-# Types: AddGlobalRouteHooks()\<TRoutes\>
+# Types: AddGlobalRouteHooks()\<TRoutes, TRejections\>
 
 ```ts
-type AddGlobalRouteHooks<TRoutes> = (hooks) => void;
+type AddGlobalRouteHooks<TRoutes, TRejections> = (hooks) => void;
 ```
 
 ## Type Parameters
@@ -9,12 +9,13 @@ type AddGlobalRouteHooks<TRoutes> = (hooks) => void;
 | Type Parameter |
 | ------ |
 | `TRoutes` *extends* [`Routes`](Routes.md) |
+| `TRejections` *extends* `PropertyKey` |
 
 ## Parameters
 
 | Parameter | Type |
 | ------ | ------ |
-| `hooks` | `RouterRouteHooks`\<`TRoutes`\> |
+| `hooks` | `RouterRouteHooks`\<`TRoutes`, `TRejections`\> |
 
 ## Returns
 

@@ -34,7 +34,7 @@ set query(value): void;
 
 | Parameter | Type |
 | ------ | ------ |
-| `value` | \| `undefined` \| `string` \| `URLSearchParams` \| `string`[][] \| `Record`\<`string`, `string`\> |
+| `value` | \| `string` \| `URLSearchParams` \| `string`[][] \| `Record`\<`string`, `string`\> \| `undefined` |
 
 ##### Returns
 

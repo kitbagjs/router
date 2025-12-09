@@ -105,6 +105,32 @@ Error.captureStackTrace
 
 ***
 
+### isError()
+
+```ts
+static isError(error): error is Error;
+```
+
+Indicates whether the argument provided is a built-in Error instance or not.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `error` | `unknown` |
+
+#### Returns
+
+`error is Error`
+
+#### Inherited from
+
+```ts
+Error.isError
+```
+
+***
+
 ### prepareStackTrace()
 
 ```ts

@@ -4,7 +4,7 @@
 type UseLinkOptions = RouterPushOptions & object;
 ```
 
-## Type declaration
+## Type Declaration
 
 ### prefetch?
 

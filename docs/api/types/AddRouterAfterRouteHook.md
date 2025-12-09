@@ -1,7 +1,7 @@
-# Types: AddRouterAfterRouteHook()\<TRoutes\>
+# Types: AddRouterAfterRouteHook()\<TRoutes, TRejections\>
 
 ```ts
-type AddRouterAfterRouteHook<TRoutes> = (hook) => RouteHookRemove;
+type AddRouterAfterRouteHook<TRoutes, TRejections> = (hook) => RouteHookRemove;
 ```
 
 ## Type Parameters
@@ -9,12 +9,13 @@ type AddRouterAfterRouteHook<TRoutes> = (hook) => RouteHookRemove;
 | Type Parameter |
 | ------ |
 | `TRoutes` *extends* [`Routes`](Routes.md) |
+| `TRejections` *extends* `PropertyKey` |
 
 ## Parameters
 
 | Parameter | Type |
 | ------ | ------ |
-| `hook` | [`RouterAfterRouteHook`](RouterAfterRouteHook.md)\<`TRoutes`\> |
+| `hook` | [`RouterAfterRouteHook`](RouterAfterRouteHook.md)\<`TRoutes`, `TRejections`\> |
 
 ## Returns
 

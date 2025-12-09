@@ -1,7 +1,7 @@
-# Types: AddComponentBeforeRouteHook()\<TRoutes\>
+# Types: AddComponentBeforeRouteHook()\<TRoutes, TRejections\>
 
 ```ts
-type AddComponentBeforeRouteHook<TRoutes> = (hook) => RouteHookRemove;
+type AddComponentBeforeRouteHook<TRoutes, TRejections> = (hook) => RouteHookRemove;
 ```
 
 ## Type Parameters
@@ -9,12 +9,13 @@ type AddComponentBeforeRouteHook<TRoutes> = (hook) => RouteHookRemove;
 | Type Parameter |
 | ------ |
 | `TRoutes` *extends* [`Routes`](Routes.md) |
+| `TRejections` *extends* `PropertyKey` |
 
 ## Parameters
 
 | Parameter | Type |
 | ------ | ------ |
-| `hook` | [`BeforeRouteHookRegistration`](BeforeRouteHookRegistration.md)\<`TRoutes`\> |
+| `hook` | `BeforeRouteHookRegistration`\<`TRoutes`, `TRejections`\> |
 
 ## Returns
 

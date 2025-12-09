@@ -1,14 +1,12 @@
-# Compositions: useRouter()
+# Compositions: useRouter
 
 ```ts
-const useRouter: () => Router;
+const useRouter: RouterAssets<RegisteredRouter>["useRouter"];
 ```
 
 A composition to access the installed router instance within a Vue component.
 
 ## Returns
-
-[`Router`](../types/Router.md)
 
 The installed router instance.
 
