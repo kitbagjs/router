@@ -45,7 +45,7 @@
     "@vue/test-utils": "^2.4.6",
     "eslint": "^9.39.1",
     "globals": "^16.5.0",
-    "happy-dom": "^20.0.10",
+    "happy-dom": "^20.0.11",
     "typedoc": "^0.28.14",
     "typedoc-plugin-markdown": "^4.9.0",
     "typedoc-vitepress-theme": "^1.1.2",
@@ -54,7 +54,7 @@
     "vite": "^7.2.4",
     "vite-plugin-dts": "^4.5.4",
     "vitepress": "^1.6.4",
-    "vitest": "^4.0.13",
+    "vitest": "^4.0.15",
     "vue-tsc": "^3.1.5",
     "zod": "^3.24.1"
   },
