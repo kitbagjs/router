@@ -1,9 +1,9 @@
 import { AddGlobalRouteHooks, AfterRouteHook, AfterRouteHookResponse, BeforeRouteHook, BeforeRouteHookResponse, AddComponentAfterRouteHook, AddComponentBeforeRouteHook } from '@/types/hooks'
 import { getRouteHookCondition } from './hooks'
 import { getAfterRouteHooksFromRoutes, getBeforeRouteHooksFromRoutes } from './getRouteHooks'
-import { CallbackContextPushError } from '@/errors/callbackContextPushError'
-import { CallbackContextRejectionError } from '@/errors/callbackContextRejectionError'
-import { CallbackContextAbortError } from '@/errors/callbackContextAbortError'
+import { ContextPushError } from '@/errors/contextPushError'
+import { ContextRejectionError } from '@/errors/contextRejectionError'
+import { ContextAbortError } from '@/errors/contextAbortError'
 import { getGlobalAfterRouteHooks, getGlobalBeforeRouteHooks } from './getGlobalRouteHooks'
 import { createVueAppStore, HasVueAppStore } from '@/services/createVueAppStore'
 import { createRouterKeyStore } from './createRouterKeyStore'
@@ -12,6 +12,7 @@ import { Routes } from '@/types/route'
 import { InjectionKey } from 'vue'
 import { RouterRouteHooks } from '@/models/RouterRouteHooks'
 import { createRouterCallbackContext } from './createRouterCallbackContext'
+import { ContextError } from '@/errors/contextError'
 
 export const getRouterHooksKey = createRouterKeyStore<RouterHooks<any, any>>()
 
@@ -120,26 +121,26 @@ export function createRouterHooks<TRouter extends Router>(_routerKey: InjectionK
 
       await Promise.all(results)
     } catch (error) {
-      if (error instanceof CallbackContextPushError) {
+      if (error instanceof ContextPushError) {
         return error.response
       }
 
-      if (error instanceof CallbackContextRejectionError) {
+      if (error instanceof ContextRejectionError) {
         return error.response
       }
 
-      if (error instanceof CallbackContextAbortError) {
+      if (error instanceof ContextAbortError) {
         return error.response
       }
 
       try {
         runErrorHooks(error, { to, from, source: 'hook' })
       } catch (error) {
-        if (error instanceof CallbackContextPushError) {
+        if (error instanceof ContextPushError) {
           return error.response
         }
 
-        if (error instanceof CallbackContextRejectionError) {
+        if (error instanceof ContextRejectionError) {
           return error.response
         }
 
@@ -183,22 +184,22 @@ export function createRouterHooks<TRouter extends Router>(_routerKey: InjectionK
 
       await Promise.all(results)
     } catch (error) {
-      if (error instanceof CallbackContextPushError) {
+      if (error instanceof ContextPushError) {
         return error.response
       }
 
-      if (error instanceof CallbackContextRejectionError) {
+      if (error instanceof ContextRejectionError) {
         return error.response
       }
 
       try {
         runErrorHooks(error, { to, from, source: 'hook' })
       } catch (error) {
-        if (error instanceof CallbackContextPushError) {
+        if (error instanceof ContextPushError) {
           return error.response
         }
 
-        if (error instanceof CallbackContextRejectionError) {
+        if (error instanceof ContextRejectionError) {
           return error.response
         }
 
@@ -212,14 +213,25 @@ export function createRouterHooks<TRouter extends Router>(_routerKey: InjectionK
   }
 
   /**
-   * Returns true if the error was handled by a hook, false if the error was not handled and should be rethrown
+   * T
    */
   function runErrorHooks(error: unknown, { to, from, source }: RouterRouteHookErrorRunnerContext<TRoutes>): void {
     for (const hook of store.global.onError) {
-      const handled = hook(error, { to, from, source, reject, push, replace })
+      try {
+        hook(error, { to, from, source, reject, push, replace })
 
-      if (handled) {
         return
+      } catch (hookError) {
+        if (hookError instanceof ContextError) {
+          throw hookError
+        }
+
+        if (hookError === error) {
+          // Hook rethrew the same error, continue to next hook
+          continue
+        }
+
+        throw hookError
       }
     }
   }

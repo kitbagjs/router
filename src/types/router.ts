@@ -226,7 +226,7 @@ export type RouterErrorHookContext<
 export type RouterErrorHook<
   TRoutes extends Routes,
   TRejections extends PropertyKey
-> = (error: unknown, context: RouterErrorHookContext<TRoutes, TRejections>) => boolean
+> = (error: unknown, context: RouterErrorHookContext<TRoutes, TRejections>) => void
 
 export type AddRouterErrorHook<
   TRoutes extends Routes,

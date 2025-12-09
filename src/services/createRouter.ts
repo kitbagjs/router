@@ -36,8 +36,8 @@ import { getRouterRejectionInjectionKey } from '@/compositions/useRejection'
 import { routerInjectionKey } from '@/keys'
 import { createRouterView } from '@/components/routerView'
 import { createRouterLink } from '@/components/routerLink'
-import { CallbackContextPushError } from '@/errors/callbackContextPushError'
-import { CallbackContextRejectionError } from '@/errors/callbackContextRejectionError'
+import { ContextPushError } from '@/errors/contextPushError'
+import { ContextRejectionError } from '@/errors/contextRejectionError'
 
 type RouterUpdateOptions = {
   replace?: boolean,
@@ -179,12 +179,12 @@ export function createRouter<
         try {
           hooks.runErrorHooks(error, { to, from, source: 'props' })
         } catch (error) {
-          if (error instanceof CallbackContextPushError) {
+          if (error instanceof ContextPushError) {
             push(...error.response.to)
             return
           }
 
-          if (error instanceof CallbackContextRejectionError) {
+          if (error instanceof ContextRejectionError) {
             setRejection(error.response.type)
             return
           }

@@ -194,9 +194,12 @@ test('hook is called in order', async () => {
 })
 
 test('multiple onError callbacks run in order', () => {
-  const errorHook1 = vi.fn(() => false)
-  const errorHook2 = vi.fn(() => false)
-  const errorHook3 = vi.fn(() => false)
+  const errorHook1 = vi.fn((error) => {
+    throw error
+  })
+  const errorHook2 = vi.fn()
+  const errorHook3 = vi.fn()
+
   const { runErrorHooks, onError } = createRouterHooks(Symbol() as InjectionKey<Router>)
 
   onError(errorHook1)
@@ -228,14 +231,12 @@ test('multiple onError callbacks run in order', () => {
 
   expect(errorHook1).toHaveBeenCalledOnce()
   expect(errorHook2).toHaveBeenCalledOnce()
-  expect(errorHook3).toHaveBeenCalledOnce()
+  expect(errorHook3).not.toHaveBeenCalled()
 
   const [order1] = errorHook1.mock.invocationCallOrder
   const [order2] = errorHook2.mock.invocationCallOrder
-  const [order3] = errorHook3.mock.invocationCallOrder
 
   expect(order1).toBeLessThan(order2)
-  expect(order2).toBeLessThan(order3)
 })
 
 test('when onError callback calls reject, other onError callbacks do not run', () => {
