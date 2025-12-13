@@ -28,7 +28,7 @@ export type RouterCallbackAbortResponse = {
 /**
  * Defines the structure of a callback response that results in a push to a new route.
  */
-export type RouterCallbackPushResponse<TRoutes extends Routes> = {
+export type RouterCallbackPushResponse<TRoutes extends Routes = Routes> = {
   status: 'PUSH',
   to: Parameters<RouterPush<TRoutes>>,
 }
@@ -36,23 +36,27 @@ export type RouterCallbackPushResponse<TRoutes extends Routes> = {
 /**
  * Defines the structure of a callback response that results in the rejection of a route transition.
  */
-export type RouterCallbackRejectResponse<TRejections extends PropertyKey> = {
+export type RouterCallbackRejectResponse<TRejections extends PropertyKey = PropertyKey> = {
   status: 'REJECT',
   type: AsString<TRejections> | BuiltInRejectionType,
 }
+
+export type BeforeHookResponse = RouterCallbackSuccessResponse | RouterCallbackPushResponse | RouterCallbackRejectResponse | RouterCallbackAbortResponse
+export type AfterHookResponse = RouterCallbackSuccessResponse | RouterCallbackPushResponse | RouterCallbackRejectResponse
 
 /**
  * A function that can be called to abort a routing operation.
  */
 export type CallbackContextAbort = () => void
 
-export type RouterCallbackContext<TRouter extends Router> = {
+export type RouterCallbackContext<TRouter extends Router = Router> = {
   reject: RouterReject<RouterRejections<TRouter>>,
   push: RouterPush<RouterRoutes<TRouter>>,
   replace: RouterReplace<RouterRoutes<TRouter>>,
   abort: CallbackContextAbort,
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function createRouterCallbackContext<TRouter extends Router>(_routerKey: InjectionKey<TRouter>): RouterCallbackContext<TRouter> {
   type TRoutes = RouterRoutes<TRouter>
   type TRejections = RouterRejections<TRouter>

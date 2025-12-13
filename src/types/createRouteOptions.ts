@@ -6,17 +6,14 @@ import { CombineQuery, combineQuery } from '@/services/combineQuery'
 import { CombineState, combineState } from '@/services/combineState'
 import { Param } from '@/types/paramTypes'
 import { PrefetchConfig } from '@/types/prefetch'
-import { RouteMeta } from '@/types/register'
 import { Route } from '@/types/route'
 import { ResolvedRoute } from './resolved'
 import { ComponentProps } from '@/services/component'
 import { PropsCallbackContext } from './props'
 import { MaybePromise } from './utilities'
-import { RouterView } from '@/main'
 import { ToMeta } from './meta'
 import { ToState } from './state'
 import { ToName } from './name'
-import { WithHooks } from './hooks'
 import { ToWithParams, WithParams } from '@/services/withParams'
 
 export type WithHost<THost extends string | WithParams = string | WithParams> = {
@@ -63,8 +60,8 @@ export type CreateRouteOptions<
   TPath extends string | WithParams | undefined = string | WithParams | undefined,
   TQuery extends string | WithParams | undefined = string | WithParams | undefined,
   THash extends string | WithParams | undefined = string | WithParams | undefined,
-  TMeta extends RouteMeta = RouteMeta
-> = WithHooks & {
+  TMeta extends Record<string, unknown> = Record<string, unknown>
+> = {
   /**
    * Name for route, used to create route keys and in navigation.
    */
@@ -138,7 +135,7 @@ export type CreateRouteProps<
   ? PropsGetter<TOptions, TOptions['component']>
   : TOptions['components'] extends Record<string, Component>
     ? RoutePropsRecord<TOptions, TOptions['components']>
-    : PropsGetter<TOptions, typeof RouterView>
+    : unknown
 
 type ToMatch<
   TOptions extends CreateRouteOptions,

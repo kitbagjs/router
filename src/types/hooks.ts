@@ -1,39 +1,9 @@
 import { RouterRouteHooks } from '@/models/RouterRouteHooks'
-import { CallbackAbortResponse, CallbackContext, CallbackContextAbort, CallbackPushResponse, CallbackRejectResponse, CallbackSuccessResponse } from '@/services/createCallbackContext'
 import { ResolvedRoute } from '@/types/resolved'
-import { MaybeArray, MaybePromise } from '@/types/utilities'
+import { MaybePromise } from '@/types/utilities'
 import { Routes } from './route'
 import { RouterAfterRouteHook, RouterBeforeRouteHook } from './router'
-
-/**
- * Defines route hooks that can be applied before entering, updating, or leaving a route, as well as after these events.
- */
-export type WithHooks = {
-  /**
-   * @deprecated Use router.onBeforeRouteEnter instead
-   */
-  onBeforeRouteEnter?: MaybeArray<BeforeRouteHook>,
-  /**
-   * @deprecated Use router.onBeforeRouteUpdate instead
-   */
-  onBeforeRouteUpdate?: MaybeArray<BeforeRouteHook>,
-  /**
-   * @deprecated Use router.onBeforeRouteLeave instead
-   */
-  onBeforeRouteLeave?: MaybeArray<BeforeRouteHook>,
-  /**
-   * @deprecated Use router.onAfterRouteEnter instead
-   */
-  onAfterRouteEnter?: MaybeArray<AfterRouteHook>,
-  /**
-   * @deprecated Use router.onAfterRouteUpdate instead
-   */
-  onAfterRouteUpdate?: MaybeArray<AfterRouteHook>,
-  /**
-   * @deprecated Use router.onAfterRouteLeave instead
-   */
-  onAfterRouteLeave?: MaybeArray<AfterRouteHook>,
-}
+import { CallbackContextAbort, RouterCallbackAbortResponse, RouterCallbackContext, RouterCallbackPushResponse, RouterCallbackRejectResponse, RouterCallbackSuccessResponse } from '@/services/createRouterCallbackContext'
 
 export type BeforeHookContext = {
   to: ResolvedRoute,
@@ -89,9 +59,9 @@ export type AddGlobalRouteHooks<
  */
 type RouteHookContext = {
   from: ResolvedRoute | null,
-  reject: CallbackContext['reject'],
-  push: CallbackContext['push'],
-  replace: CallbackContext['replace'],
+  reject: RouterCallbackContext['reject'],
+  push: RouterCallbackContext['push'],
+  replace: RouterCallbackContext['replace'],
 }
 
 /**
@@ -152,13 +122,13 @@ export type RouteHookLifecycle = BeforeRouteHookLifecycle | AfterRouteHookLifecy
  * Type for responses from a before route hook, which may indicate different outcomes such as success, push, reject, or abort.
  * @template TRoutes - The type of the routes configuration.
  */
-export type BeforeRouteHookResponse = CallbackSuccessResponse | CallbackPushResponse | CallbackRejectResponse | CallbackAbortResponse
+export type BeforeRouteHookResponse = RouterCallbackSuccessResponse | RouterCallbackPushResponse | RouterCallbackRejectResponse | RouterCallbackAbortResponse
 
 /**
  * Type for responses from an after route hook, which may indicate different outcomes such as success, push, or reject.
  * @template TRoutes - The type of the routes configuration.
  */
-export type AfterRouteHookResponse = CallbackSuccessResponse | CallbackPushResponse | CallbackRejectResponse
+export type AfterRouteHookResponse = RouterCallbackSuccessResponse | RouterCallbackPushResponse | RouterCallbackRejectResponse
 
 /**
  * Union type for all possible route hook responses, covering both before and after scenarios.

@@ -3,8 +3,8 @@ import { createRoute } from './createRoute'
 import { createRouter } from './createRouter'
 import { h } from 'vue'
 import { mount } from '@vue/test-utils'
-import { RouterView, onBeforeRouteLeave, onBeforeRouteUpdate, onAfterRouteLeave, onAfterRouteUpdate } from '@/main'
 import { routes } from '@/utilities/testHelpers'
+import { createRouterAssets } from './createRouterAssets'
 
 test('global hooks passed as options are called correctly', async () => {
   const onBeforeRouteEnter = vi.fn()
@@ -211,12 +211,12 @@ test('component hooks are called correctly', async () => {
     path: '/parentA',
     component: {
       setup: () => {
-        onBeforeRouteUpdate(() => parentHooks.beforeUpdate())
-        onBeforeRouteLeave(() => parentHooks.beforeLeave())
-        onAfterRouteLeave(() => parentHooks.afterLeave())
-        onAfterRouteUpdate(() => parentHooks.afterUpdate())
+        assets.onBeforeRouteUpdate(() => parentHooks.beforeUpdate())
+        assets.onBeforeRouteLeave(() => parentHooks.beforeLeave())
+        assets.onAfterRouteLeave(() => parentHooks.afterLeave())
+        assets.onAfterRouteUpdate(() => parentHooks.afterUpdate())
       },
-      render: () => h(RouterView),
+      render: () => h(assets.RouterView),
     },
   })
 
@@ -234,6 +234,8 @@ test('component hooks are called correctly', async () => {
   const router = createRouter([parentA, parentB, child], {
     initialUrl: '/parentA',
   })
+
+  const assets = createRouterAssets(router)
 
   const root = {
     template: '<RouterView />',

@@ -20,7 +20,7 @@ type RouterViewSlots = {
   }) => VNode,
 }
 
-// Infering the return type of the component is more accurate than defining it manually
+// Inferring the return type of the component is more accurate than defining it manually
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export function createRouterView<TRouter extends Router>(routerKey: InjectionKey<TRouter>) {
   const useRoute = createUseRoute(routerKey)

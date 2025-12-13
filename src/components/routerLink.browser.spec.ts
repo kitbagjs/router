@@ -1,6 +1,6 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { describe, expect, test, vi } from 'vitest'
-import { defineAsyncComponent, h, nextTick, ref } from 'vue'
+import { Component, defineAsyncComponent, h, nextTick, ref } from 'vue'
 import echo from '@/components/echo'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
@@ -11,7 +11,7 @@ import { visibilityObserverKey } from '@/compositions/useVisibilityObserver'
 import { VisibilityObserver } from '@/services/createVisibilityObserver'
 import { Url } from '@/types/url'
 import { RouterPushOptions } from '@/types/routerPush'
-import { RouterLink } from '@/main'
+import { createRouterAssets } from '@/services/createRouterAssets'
 
 test('renders an anchor tag with the correct href and slot content', () => {
   const path = '/path/[paramName]'
@@ -28,6 +28,8 @@ test('renders an anchor tag with the correct href and slot content', () => {
   const router = createRouter([route], {
     initialUrl: path,
   })
+
+  const { RouterLink } = createRouterAssets(router)
 
   const wrapper = mount(RouterLink, {
     props: {
@@ -74,6 +76,8 @@ test('calls router.push with url and push options from props', async () => {
   ], {
     initialUrl: '/routeA',
   })
+
+  const { RouterLink } = createRouterAssets(router)
 
   await router.start()
 
@@ -133,6 +137,8 @@ test('calls router.push with url and push options from resolve callback', async 
   ], {
     initialUrl: '/routeA',
   })
+
+  const { RouterLink } = createRouterAssets(router)
 
   await router.start()
 
@@ -195,6 +201,8 @@ test('given push options from both resolve callback and props, combines query an
     initialUrl: '/routeA',
   })
 
+  const { RouterLink } = createRouterAssets(router)
+
   await router.start()
 
   const root = {
@@ -230,6 +238,8 @@ test('to prop as Url renders and routes correctly', async () => {
   const router = createRouter([route], {
     initialUrl: '/route',
   })
+
+  const { RouterLink } = createRouterAssets(router)
 
   const wrapper = mount(RouterLink, {
     props: {
@@ -283,6 +293,8 @@ test.each<{ to: Url, match: boolean, exactMatch: boolean }>([
     initialUrl: '/parent-route/child-route',
   })
 
+  const { RouterLink } = createRouterAssets(router)
+
   const wrapper = mount(RouterLink, {
     props: {
       to,
@@ -326,16 +338,22 @@ test('isMatch correctly matches parent when sibling has the same url', async () 
     component,
   })
 
+  let linkComponent: Component | undefined = undefined
+
   const childRoute = createRoute({
     parent: parentRoute,
     name: 'child',
     path: '/child',
-    component: () => h(RouterLink, { to: (resolve) => resolve('parent') }, () => 'parent'),
+    component: () => linkComponent,
   })
 
   const router = createRouter([parentRoute, siblingRoute, childRoute], {
     initialUrl: '/parent/child',
   })
+
+  const { RouterLink } = createRouterAssets(router)
+
+  linkComponent = h(RouterLink, { to: (resolve) => resolve('parent') }, () => 'parent')
 
   const root = {
     template: '<RouterView />',
@@ -382,6 +400,8 @@ test.each<{ to: Url, active: boolean, exactActive: boolean }>([
   const router = createRouter([parentRoute, childRoute, otherRoute], {
     initialUrl: '/parent-route/child-route/pass',
   })
+
+  const { RouterLink } = createRouterAssets(router)
 
   const wrapper = mount(RouterLink, {
     props: {
@@ -434,6 +454,8 @@ test.each([
     initialUrl: '/parent-route',
   })
 
+  const { RouterLink } = createRouterAssets(router)
+
   const wrapper = mount(RouterLink, {
     props: {
       to: isExternal ? 'https://vuejs.org/' : '/parent-route',
@@ -482,6 +504,8 @@ describe('prefetch components', () => {
       initialUrl: '/',
       prefetch,
     })
+
+    const { RouterLink } = createRouterAssets(router)
 
     mount(RouterLink, {
       props: {
@@ -532,6 +556,8 @@ describe('prefetch components', () => {
       initialUrl: '/',
     })
 
+    const { RouterLink } = createRouterAssets(router)
+
     mount(RouterLink, {
       props: {
         to: '/route',
@@ -580,6 +606,8 @@ describe('prefetch components', () => {
       initialUrl: '/',
     })
 
+    const { RouterLink } = createRouterAssets(router)
+
     mount(RouterLink, {
       props: {
         to: '/route',
@@ -627,6 +655,8 @@ describe('prefetch props', () => {
       prefetch,
     })
 
+    const { RouterLink } = createRouterAssets(router)
+
     mount(RouterLink, {
       props: {
         to: '/route',
@@ -669,6 +699,8 @@ describe('prefetch props', () => {
       initialUrl: '/',
     })
 
+    const { RouterLink } = createRouterAssets(router)
+
     mount(RouterLink, {
       props: {
         to: '/route',
@@ -710,6 +742,8 @@ describe('prefetch props', () => {
       initialUrl: '/',
     })
 
+    const { RouterLink } = createRouterAssets(router)
+
     mount(RouterLink, {
       props: {
         to: '/route',
@@ -736,10 +770,12 @@ describe('prefetch props', () => {
       value,
     }))
 
+    let linkComponent: Component | undefined = undefined
+
     const home = createRoute({
       name: 'home',
       path: '/',
-      component: () => h(RouterLink, { to: (resolve) => resolve('echo') }),
+      component: () => linkComponent,
     })
 
     const route = createRoute({
@@ -752,6 +788,10 @@ describe('prefetch props', () => {
     const router = createRouter([home, route], {
       initialUrl: '/',
     })
+
+    const { RouterLink } = createRouterAssets(router)
+
+    linkComponent = h(RouterLink, { to: (resolve) => resolve('echo') })
 
     await router.start()
 
@@ -780,10 +820,12 @@ describe('prefetch props', () => {
     const parentProps = vi.fn()
     const childProps = vi.fn()
 
+    let linkComponent: Component | undefined = undefined
+
     const home = createRoute({
       name: 'home',
       path: '/',
-      component: () => h(RouterLink, { to: (resolve) => resolve('child') }),
+      component: () => linkComponent,
     })
 
     const parent = createRoute({
@@ -805,6 +847,10 @@ describe('prefetch props', () => {
       initialUrl: '/',
     })
 
+    const { RouterLink } = createRouterAssets(router)
+
+    linkComponent = h(RouterLink, { to: (resolve) => resolve('child') })
+
     await router.start()
 
     const root = {
@@ -824,10 +870,12 @@ describe('prefetch props', () => {
   test('props are not prefetched until link is visible when prefetch is lazy', async () => {
     const callback = vi.fn()
 
+    let linkComponent: Component | undefined = undefined
+
     const routeA = createRoute({
       name: 'routeA',
       path: '/routeA',
-      component: () => h(RouterLink, { to: (resolve) => resolve('routeB') }),
+      component: () => linkComponent,
     })
 
     const routeB = createRoute({
@@ -840,6 +888,10 @@ describe('prefetch props', () => {
     const router = createRouter([routeA, routeB], {
       initialUrl: '/routeA',
     })
+
+    const { RouterLink } = createRouterAssets(router)
+
+    linkComponent = h(RouterLink, { to: (resolve) => resolve('routeB') })
 
     await router.start()
 
@@ -875,10 +927,12 @@ describe('prefetch props', () => {
   test('components are not prefetched until link is visible when prefetch is lazy', async () => {
     let loaded = false
 
+    let linkComponent: Component | undefined = undefined
+
     const routeA = createRoute({
       name: 'routeA',
       path: '/routeA',
-      component: () => h(RouterLink, { to: (resolve) => resolve('routeB') }),
+      component: () => linkComponent,
     })
 
     const routeB = createRoute({
@@ -896,6 +950,10 @@ describe('prefetch props', () => {
     const router = createRouter([routeA, routeB], {
       initialUrl: '/routeA',
     })
+
+    const { RouterLink } = createRouterAssets(router)
+
+    linkComponent = h(RouterLink, { to: (resolve) => resolve('routeB') })
 
     await router.start()
 
@@ -931,10 +989,12 @@ describe('prefetch props', () => {
   test('props are not prefetched until link is focused when prefetch is intent', async () => {
     const callback = vi.fn()
 
+    let linkComponent: Component | undefined = undefined
+
     const routeA = createRoute({
       name: 'routeA',
       path: '/routeA',
-      component: () => h(RouterLink, { to: (resolve) => resolve('routeB') }),
+      component: () => linkComponent,
     })
 
     const routeB = createRoute({
@@ -947,6 +1007,10 @@ describe('prefetch props', () => {
     const router = createRouter([routeA, routeB], {
       initialUrl: '/routeA',
     })
+
+    const { RouterLink } = createRouterAssets(router)
+
+    linkComponent = h(RouterLink, { to: (resolve) => resolve('routeB') })
 
     await router.start()
 
@@ -976,10 +1040,12 @@ describe('prefetch props', () => {
   test('components are not prefetched until link is focused when prefetch is intent', async () => {
     let loaded = false
 
+    let linkComponent: Component | undefined = undefined
+
     const routeA = createRoute({
       name: 'routeA',
       path: '/routeA',
-      component: () => h(RouterLink, { to: (resolve) => resolve('routeB') }, () => 'routeB'),
+      component: () => linkComponent,
     })
 
     const routeB = createRoute({
@@ -997,6 +1063,10 @@ describe('prefetch props', () => {
     const router = createRouter([routeA, routeB], {
       initialUrl: '/routeA',
     })
+
+    const { RouterLink } = createRouterAssets(router)
+
+    linkComponent = h(RouterLink, { to: (resolve) => resolve('routeB') })
 
     await router.start()
 

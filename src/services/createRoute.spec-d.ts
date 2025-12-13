@@ -414,6 +414,7 @@ test('parent props are undefined when parent has no props', () => {
   createRoute({
     name: 'child',
     parent: parent,
+    component,
   }, (__, { parent }) => {
     expectTypeOf(parent.props).toEqualTypeOf<undefined>()
     expectTypeOf(parent.name).toEqualTypeOf<'parent'>()
@@ -430,6 +431,7 @@ test('sync parent props are passed to child props', () => {
   createRoute({
     name: 'child',
     parent: parent,
+    component,
   }, (__, { parent }) => {
     expectTypeOf(parent.props).toEqualTypeOf<{ foo: number }>()
     expectTypeOf(parent.name).toEqualTypeOf<'parent'>()
@@ -446,6 +448,7 @@ test('async parent props are passed to child props', () => {
   createRoute({
     name: 'child',
     parent: parent,
+    component,
   }, (__, { parent }) => {
     expectTypeOf(parent.props).toEqualTypeOf<Promise<{ foo: number }>>()
     expectTypeOf(parent.name).toEqualTypeOf<'parent'>()
@@ -469,6 +472,7 @@ test('parent props are passed to child props when multiple parent components are
   createRoute({
     name: 'child',
     parent: parent,
+    component,
   }, (__, { parent }) => {
     expectTypeOf(parent.props).toEqualTypeOf<{
       one: { foo: number },

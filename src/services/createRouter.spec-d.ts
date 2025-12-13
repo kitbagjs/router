@@ -4,7 +4,7 @@ import { component } from '@/utilities/testHelpers'
 import { describe, test, expectTypeOf } from 'vitest'
 import { AddRouterAfterRouteHook, AddRouterBeforeRouteHook } from '@/types/router'
 import { createRouterPlugin } from './createRouterPlugin'
-import { CallbackContextAbort } from './createCallbackContext'
+import { CallbackContextAbort } from './createRouterCallbackContext'
 import { BuiltInRejectionType } from './createRouterReject'
 
 describe('hooks', () => {

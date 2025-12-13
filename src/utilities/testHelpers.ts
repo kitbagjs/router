@@ -1,4 +1,3 @@
-import { vi } from 'vitest'
 import { withParams } from '@/services/withParams'
 import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
 import { createRoute } from '@/services/createRoute'
@@ -73,9 +72,6 @@ export function mockRoute(name: string): ResolvedRoute['matched'] {
     name,
     path: withParams(`/${name}`, {}),
     component,
-    onBeforeRouteEnter: [vi.fn()],
-    onBeforeRouteUpdate: [vi.fn()],
-    onBeforeRouteLeave: [vi.fn()],
     meta: {},
     state: {},
   }

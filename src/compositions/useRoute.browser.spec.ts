@@ -1,14 +1,16 @@
 import { mount } from '@vue/test-utils'
 import { expect, test } from 'vitest'
-import { useRoute } from '@/main'
 import { UseRouteInvalidError } from '@/errors/useRouteInvalidError'
 import { createRouter } from '@/services/createRouter'
 import { getError, routes } from '@/utilities/testHelpers'
+import { createRouterAssets } from '@/services/createRouterAssets'
 
 test('when given no routeKey returns the router route', async () => {
   const router = createRouter(routes, {
     initialUrl: '/routeA',
   })
+
+  const { useRoute } = createRouterAssets(router)
 
   await router.start()
 
@@ -35,6 +37,8 @@ test('when given a routeKey that matches the current route returns the router ro
     initialUrl: '/parentB',
   })
 
+  const { useRoute } = createRouterAssets(router)
+
   await router.start()
 
   const component = {
@@ -60,6 +64,8 @@ test('when given a routeKey that matches exactly the current route returns the r
     initialUrl: '/parentA/parentAParam/childA/childAParam',
   })
 
+  const { useRoute } = createRouterAssets(router)
+
   await router.start()
 
   const component = {
@@ -84,6 +90,8 @@ test('when given a routeKey that does not match the current route, throws UseRou
   const router = createRouter(routes, {
     initialUrl: '/parentB',
   })
+
+  const { useRoute } = createRouterAssets(router)
 
   await router.start()
 
@@ -111,6 +119,8 @@ test('when given a routeKey that does not match exactly the current route, throw
   const router = createRouter(routes, {
     initialUrl: '/parentA/parentAParam/childA/childAParam',
   })
+
+  const { useRoute } = createRouterAssets(router)
 
   await router.start()
 

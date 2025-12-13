@@ -1,24 +1,23 @@
 import { App, Component, InjectionKey, Ref } from 'vue'
 import { RouterHistoryMode } from '@/services/createRouterHistory'
 import { RouterRoute } from '@/types/routerRoute'
-import { RouteHookRemove, WithHooks } from '@/types/hooks'
 import { PrefetchConfig } from '@/types/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
 import { Route, Routes } from '@/types/route'
 import { RouterPush } from '@/types/routerPush'
 import { RouterReplace } from '@/types/routerReplace'
 import { RouterResolve, RouterResolveOptions } from '@/types/routerResolve'
-import { RouterReject } from './routerReject'
-import { RouterPlugin } from './routerPlugin'
-import { KeysOfUnion, MaybePromise } from './utilities'
-import { RoutesName } from './routesMap'
-import { AfterRouteHookResponse, BeforeRouteHookResponse } from '@/main'
-import { CallbackContextAbort } from '@/services/createCallbackContext'
+import { RouterReject } from '@/types/routerReject'
+import { RouterPlugin } from '@/types/routerPlugin'
+import { KeysOfUnion, MaybePromise } from '@/types/utilities'
+import { RoutesName } from '@/types/routesMap'
+import { CallbackContextAbort, BeforeHookResponse, AfterHookResponse } from '@/services/createRouterCallbackContext'
+import { RouteHookRemove } from '@/types/hooks'
 
 /**
  * Options to initialize a {@link Router} instance.
  */
-export type RouterOptions = WithHooks & {
+export type RouterOptions = {
   /**
    * Initial URL for the router to use. Required if using Node environment. Defaults to window.location when using browser.
    *
@@ -208,8 +207,8 @@ export type AddRouterAfterRouteHook<
   TRejections extends PropertyKey
 > = (hook: RouterAfterRouteHook<TRoutes, TRejections>) => RouteHookRemove
 
-export type RouterRouteHookBeforeRunner<TRoutes extends Routes> = (context: HookContext<TRoutes>) => Promise<BeforeRouteHookResponse>
-export type RouterRouteHookAfterRunner<TRoutes extends Routes> = (context: HookContext<TRoutes>) => Promise<AfterRouteHookResponse>
+export type RouterRouteHookBeforeRunner<TRoutes extends Routes> = (context: HookContext<TRoutes>) => Promise<BeforeHookResponse>
+export type RouterRouteHookAfterRunner<TRoutes extends Routes> = (context: HookContext<TRoutes>) => Promise<AfterHookResponse>
 
 export type RouterErrorHookContext<
   TRoutes extends Routes,

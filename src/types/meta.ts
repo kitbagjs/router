@@ -1,8 +1,6 @@
-import { RouteMeta } from './register'
-
 type EmptyMeta = Readonly<{}>
 
-export type ToMeta<TMeta extends RouteMeta | undefined> = TMeta extends undefined
+export type ToMeta<TMeta extends Record<string, unknown> | undefined> = TMeta extends undefined
   ? EmptyMeta
   : unknown extends TMeta
     ? EmptyMeta
