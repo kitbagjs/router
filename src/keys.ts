@@ -1,4 +1,4 @@
 import { InjectionKey } from 'vue'
-import { RegisteredRouter } from './types/register'
+import { Router } from './types/router'
 
-export const routerInjectionKey: InjectionKey<RegisteredRouter> = Symbol()
+export const routerInjectionKey: InjectionKey<Router> = Symbol()

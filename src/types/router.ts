@@ -1,7 +1,7 @@
 import { App, InjectionKey, Ref } from 'vue'
 import { RouterHistoryMode } from '@/services/createRouterHistory'
 import { RouterRoute } from '@/types/routerRoute'
-import { AddRouterAfterRouteHook, AddRouterBeforeRouteHook, AddRouterErrorHook, WithHooks } from '@/types/hooks'
+import { AddRouterAfterRouteHook, AddRouterBeforeRouteHook, AddRouterErrorHook } from '@/types/hooks'
 import { PrefetchConfig } from '@/types/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
 import { Route, Routes } from '@/types/route'
@@ -10,13 +10,13 @@ import { RouterReplace } from '@/types/routerReplace'
 import { RouterResolve, RouterResolveOptions } from '@/types/routerResolve'
 import { RouterReject } from '@/types/routerReject'
 import { RouterPlugin } from '@/types/routerPlugin'
-import { RoutesName } from '@/types/routesMap'
 import { Rejection, RejectionType } from '@/types/rejection'
+import { RoutesName } from '@/types/routesMap'
 
 /**
  * Options to initialize a {@link Router} instance.
  */
-export type RouterOptions = WithHooks & {
+export type RouterOptions = {
   /**
    * Initial URL for the router to use. Required if using Node environment. Defaults to window.location when using browser.
    *

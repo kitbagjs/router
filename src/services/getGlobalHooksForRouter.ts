@@ -18,8 +18,9 @@ export function getGlobalHooksForRouter(options: RouterOptions = {}, plugins: Ro
 
 // This is more accurate to just let typescript infer the type
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-function getHooksForLifecycle<T extends BeforeRouteHookLifecycle | AfterRouteHookLifecycle>(lifecycle: T, options: RouterOptions, plugins: RouterPlugin[]) {
+function getHooksForLifecycle(lifecycle: (BeforeRouteHookLifecycle | AfterRouteHookLifecycle), options: RouterOptions, plugins: RouterPlugin[]) {
   const hooks = [
+    // @ts-expect-error - lifecycle is a valid key of RouterOptions
     options[lifecycle],
     ...plugins.map((plugin) => plugin[lifecycle]),
   ].flat().filter((hook) => hook !== undefined)

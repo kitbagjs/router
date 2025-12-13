@@ -123,6 +123,7 @@ test('parent context is passed to child props', async () => {
     name: 'child',
     parent: parent,
     path: '/child',
+    component,
   }, (_, { parent }) => {
     return spy(parent)
   })
@@ -147,6 +148,7 @@ test('sync parent props are passed to child props', async () => {
     name: 'child',
     parent: parent,
     path: '/child',
+    component,
   }, (__, { parent }) => {
     return spy({ value: parent.props.foo })
   })
@@ -171,6 +173,7 @@ test('async parent props are passed to child props', async () => {
     name: 'child',
     parent: parent,
     path: '/child',
+    component,
   }, async (__, { parent }) => {
     expect(parent.props).toBeDefined()
     expect(parent.props).toBeInstanceOf(Promise)
@@ -208,6 +211,7 @@ test('sync parent props with multiple views are passed to child props', async ()
     name: 'child',
     parent: parent,
     path: '/child',
+    component,
   }, (__, { parent }) => {
     return spy({
       value1: parent.props.one.foo,
@@ -243,6 +247,7 @@ test('async parent props with multiple views are passed to child props', async (
     name: 'child',
     parent: parent,
     path: '/child',
+    component,
   }, async (__, { parent }) => {
     expect(parent.props).toBeDefined()
     expect(parent.props.one).toBeInstanceOf(Promise)

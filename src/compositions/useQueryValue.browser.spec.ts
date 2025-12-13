@@ -2,7 +2,7 @@ import { createRouter } from '@/services/createRouter'
 import { createRoute } from '@/services/createRoute'
 import { expect, test } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
-import { useQueryValue } from '@/main'
+import { createRouterAssets } from '@/services/createRouterAssets'
 
 test('returns correct value and values when key does not exist', async () => {
   const root = createRoute({
@@ -13,6 +13,8 @@ test('returns correct value and values when key does not exist', async () => {
   const router = createRouter([root], {
     initialUrl: '/',
   })
+
+  const { useQueryValue } = createRouterAssets(router)
 
   await router.start()
 
@@ -43,6 +45,8 @@ test('returns correct value and values when key does exist', async () => {
     initialUrl: '/?foo=1&foo=2',
   })
 
+  const { useQueryValue } = createRouterAssets(router)
+
   await router.start()
 
   const component = {
@@ -72,6 +76,8 @@ test('returns correct value and values when a param is used', async () => {
     initialUrl: '/?foo=1&foo=2',
   })
 
+  const { useQueryValue } = createRouterAssets(router)
+
   await router.start()
 
   const component = {
@@ -100,6 +106,8 @@ test('updates value and values when the query string changes', async () => {
   const router = createRouter([root], {
     initialUrl: '/?foo=1&foo=2',
   })
+
+  const { useQueryValue } = createRouterAssets(router)
 
   await router.start()
 
@@ -135,6 +143,8 @@ test('updates the query string when the value is set', async () => {
     initialUrl: '/?foo=1&foo=2',
   })
 
+  const { useQueryValue } = createRouterAssets(router)
+
   await router.start()
 
   const component = {
@@ -167,6 +177,8 @@ test('updates the query string when the values is set', async () => {
     initialUrl: '/?foo=1&foo=2',
   })
 
+  const { useQueryValue } = createRouterAssets(router)
+
   await router.start()
 
   const component = {
@@ -198,6 +210,8 @@ test('removes the query string when the remove method is called', async () => {
   const router = createRouter([root], {
     initialUrl: '/?foo=1&foo=2',
   })
+
+  const { useQueryValue } = createRouterAssets(router)
 
   await router.start()
 

@@ -28,7 +28,7 @@ export type RouterCallbackAbortResponse = {
 /**
  * Defines the structure of a callback response that results in a push to a new route.
  */
-export type RouterCallbackPushResponse<TRoutes extends Routes> = {
+export type RouterCallbackPushResponse<TRoutes extends Routes = Routes> = {
   status: 'PUSH',
   to: Parameters<RouterPush<TRoutes>>,
 }
@@ -36,17 +36,20 @@ export type RouterCallbackPushResponse<TRoutes extends Routes> = {
 /**
  * Defines the structure of a callback response that results in the rejection of a route transition.
  */
-export type RouterCallbackRejectResponse<TRejections extends string> = {
+export type RouterCallbackRejectResponse<TRejections extends string = string> = {
   status: 'REJECT',
   type: AsString<TRejections> | BuiltInRejectionType,
 }
+
+export type BeforeHookResponse = RouterCallbackSuccessResponse | RouterCallbackPushResponse | RouterCallbackRejectResponse | RouterCallbackAbortResponse
+export type AfterHookResponse = RouterCallbackSuccessResponse | RouterCallbackPushResponse | RouterCallbackRejectResponse
 
 /**
  * A function that can be called to abort a routing operation.
  */
 export type CallbackContextAbort = () => void
 
-export type RouterCallbackContext<TRouter extends Router> = {
+export type RouterCallbackContext<TRouter extends Router = Router> = {
   reject: RouterReject<RouterRejections<TRouter>>,
   push: RouterPush<RouterRoutes<TRouter>>,
   replace: RouterReplace<RouterRoutes<TRouter>>,

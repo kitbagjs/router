@@ -1,9 +1,7 @@
 import { Param } from '@/types/paramTypes'
 import { PrefetchConfig } from '@/types/prefetch'
-import { RouteMeta } from '@/types/register'
 import { LastInArray } from './utilities'
 import { CreateRouteOptions } from './createRouteOptions'
-import { WithHooks } from './hooks'
 import { WithParams } from '@/services/withParams'
 
 /**
@@ -14,7 +12,7 @@ export type Routes = readonly Route[]
 /**
  * The Route properties originally provided to `createRoute`. The only change is normalizing meta to always default to an empty object.
  */
-export type CreatedRouteOptions = Omit<CreateRouteOptions, 'props'> & WithHooks & {
+export type CreatedRouteOptions = Omit<CreateRouteOptions, 'props'> & {
   id: string,
   // todo: this should not be optional
   props?: unknown,
@@ -31,7 +29,7 @@ export type Route<
   TPath extends WithParams = WithParams,
   TQuery extends WithParams = WithParams,
   THash extends WithParams = WithParams,
-  TMeta extends RouteMeta = RouteMeta,
+  TMeta extends Record<string, unknown> = Record<string, unknown>,
   TState extends Record<string, Param> = Record<string, Param>,
   TMatches extends CreatedRouteOptions[] = CreatedRouteOptions[]
 > = {

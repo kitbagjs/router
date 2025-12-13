@@ -1,6 +1,5 @@
-import { AddGlobalRouteHooks, AfterRouteHook, AfterRouteHookResponse, BeforeRouteHook, BeforeRouteHookResponse, AddComponentAfterRouteHook, AddComponentBeforeRouteHook, RouterRouteHookAfterRunner, RouterRouteHookErrorRunner, RouterRouteHookBeforeRunner, AddRouterBeforeRouteHook, AddRouterAfterRouteHook, AddRouterErrorHook, HookContext, RouterBeforeRouteHook, RouterAfterRouteHook, RouterRouteHookErrorRunnerContext } from '@/types/hooks'
+import { AddGlobalRouteHooks, AfterRouteHookResponse, BeforeRouteHookResponse, AddComponentAfterRouteHook, AddComponentBeforeRouteHook, RouterRouteHookAfterRunner, RouterRouteHookErrorRunner, RouterRouteHookBeforeRunner, AddRouterBeforeRouteHook, AddRouterAfterRouteHook, AddRouterErrorHook, HookContext, RouterBeforeRouteHook, RouterAfterRouteHook, RouterRouteHookErrorRunnerContext } from '@/types/hooks'
 import { getRouteHookCondition } from './hooks'
-import { getAfterRouteHooksFromRoutes, getBeforeRouteHooksFromRoutes } from './getRouteHooks'
 import { ContextPushError } from '@/errors/contextPushError'
 import { ContextRejectionError } from '@/errors/contextRejectionError'
 import { ContextAbortError } from '@/errors/contextAbortError'
@@ -92,17 +91,13 @@ export function createRouterHooks<TRouter extends Router>(_routerKey: InjectionK
 
   async function runBeforeRouteHooks({ to, from }: HookContext<TRoutes>): Promise<BeforeRouteHookResponse> {
     const { global, component } = store
-    const route = getBeforeRouteHooksFromRoutes(to, from)
     const globalHooks = getGlobalBeforeRouteHooks<TRoutes, TRejections>(to, from, global)
 
-    const allHooks: (RouterBeforeRouteHook<TRoutes, TRejections> | BeforeRouteHook)[] = [
+    const allHooks: (RouterBeforeRouteHook<TRoutes, TRejections>)[] = [
       ...globalHooks.onBeforeRouteEnter,
-      ...route.onBeforeRouteEnter,
       ...globalHooks.onBeforeRouteUpdate,
-      ...route.onBeforeRouteUpdate,
       ...component.onBeforeRouteUpdate,
       ...globalHooks.onBeforeRouteLeave,
-      ...route.onBeforeRouteLeave,
       ...component.onBeforeRouteLeave,
     ]
 
@@ -111,9 +106,7 @@ export function createRouterHooks<TRouter extends Router>(_routerKey: InjectionK
         return runWithContext(() => callback(to, {
           from,
           reject,
-          // @ts-expect-error - This will stop erroring once route level hooks are removed
           push,
-          // @ts-expect-error - This will stop erroring once route level hooks are removed
           replace,
           abort,
         }))
@@ -155,18 +148,14 @@ export function createRouterHooks<TRouter extends Router>(_routerKey: InjectionK
 
   async function runAfterRouteHooks({ to, from }: HookContext<TRoutes>): Promise<AfterRouteHookResponse> {
     const { global, component } = store
-    const route = getAfterRouteHooksFromRoutes(to, from)
     const globalHooks = getGlobalAfterRouteHooks<TRoutes, TRejections>(to, from, global)
 
-    const allHooks: (RouterAfterRouteHook<TRoutes, TRejections> | AfterRouteHook)[] = [
+    const allHooks: (RouterAfterRouteHook<TRoutes, TRejections>)[] = [
       ...component.onAfterRouteLeave,
-      ...route.onAfterRouteLeave,
       ...globalHooks.onAfterRouteLeave,
       ...component.onAfterRouteUpdate,
-      ...route.onAfterRouteUpdate,
       ...globalHooks.onAfterRouteUpdate,
       ...component.onAfterRouteEnter,
-      ...route.onAfterRouteEnter,
       ...globalHooks.onAfterRouteEnter,
     ]
 
@@ -175,9 +164,7 @@ export function createRouterHooks<TRouter extends Router>(_routerKey: InjectionK
         return runWithContext(() => callback(to, {
           from,
           reject,
-          // @ts-expect-error - This will stop erroring once route level hooks are removed
           push,
-          // @ts-expect-error - This will stop erroring once route level hooks are removed
           replace,
         }))
       })
@@ -227,7 +214,7 @@ export function createRouterHooks<TRouter extends Router>(_routerKey: InjectionK
         }
 
         if (hookError === error) {
-          // Hook rethrew the same error, continue to next hook
+          // Hook re-threw the same error, continue to next hook
           continue
         }
 

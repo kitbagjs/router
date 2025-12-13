@@ -1,31 +1,30 @@
-import { reactive } from 'vue'
+import { InjectionKey, reactive } from 'vue'
+import { AfterHookResponse, createRouterCallbackContext } from '@/services/createRouterCallbackContext'
+import { createVueAppStore, HasVueAppStore } from '@/services/createVueAppStore'
 import { isWithComponentProps, isWithComponentPropsRecord, PropsGetter } from '@/types/createRouteOptions'
 import type { PrefetchConfigs, PrefetchStrategy } from '@/types/prefetch'
 import { getPrefetchOption } from '@/utilities/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
+import { PropsCallbackParent } from '@/types/props'
+import { Router } from '@/types/router'
 import { Route } from '@/types/route'
-import { CallbackPushResponse, CallbackRejectResponse, CallbackSuccessResponse, createCallbackContext } from './createCallbackContext'
 import { ContextPushError } from '@/errors/contextPushError'
 import { ContextRejectionError } from '@/errors/contextRejectionError'
 import { getPropsValue } from '@/utilities/props'
-import { PropsCallbackParent } from '@/types/props'
-import { createVueAppStore, HasVueAppStore } from './createVueAppStore'
 
 type ComponentProps = { id: string, name: string, props?: PropsGetter }
-
-type SetPropsResponse = CallbackSuccessResponse | CallbackPushResponse | CallbackRejectResponse
 
 export type PropStore = HasVueAppStore & {
   getPrefetchProps: (strategy: PrefetchStrategy, route: ResolvedRoute, configs: PrefetchConfigs) => Record<string, unknown>,
   setPrefetchProps: (props: Record<string, unknown>) => void,
-  setProps: (route: ResolvedRoute) => Promise<SetPropsResponse>,
+  setProps: (route: ResolvedRoute) => Promise<AfterHookResponse>,
   getProps: (id: string, name: string, route: ResolvedRoute) => unknown,
 }
 
-export function createPropStore(): PropStore {
+export function createPropStore(routerKey: InjectionKey<Router>): PropStore {
   const { setVueApp, runWithContext } = createVueAppStore()
   const store: Map<string, unknown> = reactive(new Map())
-  const { push, replace, reject } = createCallbackContext()
+  const { push, replace, reject } = createRouterCallbackContext(routerKey)
 
   const getPrefetchProps: PropStore['getPrefetchProps'] = (strategy, route, prefetch) => {
     return route.matches

@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-confusing-void-expression */
-/* eslint-disable @typescript-eslint/only-throw-error */
 import { mount, flushPromises } from '@vue/test-utils'
 import { expect, test } from 'vitest'
 import { defineAsyncComponent, h } from 'vue'
@@ -9,8 +7,8 @@ import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
 import { isWithComponent } from '@/types/createRouteOptions'
 import { component, routes } from '@/utilities/testHelpers'
-import { RouterLink } from '@/main'
 import { createRejection } from '@/services/createRejection'
+import { createRouterAssets } from '@/services/createRouterAssets'
 
 test('renders component for initial route', async () => {
   const route = createRoute({
@@ -511,6 +509,8 @@ test('prefetched props trigger push when navigation is initiated', async () => {
     initialUrl: '/routeA',
   })
 
+  const { RouterLink } = createRouterAssets(router)
+
   await router.start()
 
   const root = {
@@ -559,6 +559,8 @@ test('prefetched async props trigger push when navigation is initiated', async (
   const router = createRouter([routeA, routeB, routeC], {
     initialUrl: '/routeA',
   })
+
+  const { RouterLink } = createRouterAssets(router)
 
   await router.start()
 

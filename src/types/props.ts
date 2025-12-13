@@ -1,4 +1,4 @@
-import { CallbackContext } from '@/services/createCallbackContext'
+import { RouterCallbackContext } from '@/services/createRouterCallbackContext'
 import { PropsGetter } from '@/types/createRouteOptions'
 import { Route } from '@/types/route'
 
@@ -8,9 +8,9 @@ import { Route } from '@/types/route'
 export type PropsCallbackContext<
   TParent extends Route | undefined = Route | undefined
 > = {
-  push: CallbackContext['push'],
-  replace: CallbackContext['replace'],
-  reject: CallbackContext['reject'],
+  push: RouterCallbackContext['push'],
+  replace: RouterCallbackContext['replace'],
+  reject: RouterCallbackContext['reject'],
   parent: PropsCallbackParent<TParent>,
 }
 
