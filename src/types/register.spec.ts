@@ -2,6 +2,7 @@ import { expectTypeOf, test } from 'vitest'
 import { createRouter } from '@/services/createRouter'
 import { component, routes } from '@/utilities'
 import { RegisteredRejectionType, RegisteredRoutes, RouteMeta } from './register'
+import { createRejection } from '@/services/createRejection'
 
 test('given routes, RegisteredRoutes is correct', () => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -13,12 +14,12 @@ test('given routes, RegisteredRoutes is correct', () => {
 })
 
 test('given rejections in router options, RegisteredRejectionType is correct', () => {
+  const authNeededRejection = createRejection('AuthNeeded', component)
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const router = createRouter([], {
     initialUrl: '/',
-    rejections: {
-      AuthNeeded: component,
-    },
+    rejections: [authNeededRejection],
   })
 
   type Rejections = RegisteredRejectionType<{ router: typeof router }>

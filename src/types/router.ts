@@ -1,19 +1,17 @@
-import { App, Component, InjectionKey, Ref } from 'vue'
+import { App, InjectionKey, Ref } from 'vue'
 import { RouterHistoryMode } from '@/services/createRouterHistory'
 import { RouterRoute } from '@/types/routerRoute'
-import { RouteHookRemove, WithHooks } from '@/types/hooks'
+import { AddRouterAfterRouteHook, AddRouterBeforeRouteHook, AddRouterErrorHook, WithHooks } from '@/types/hooks'
 import { PrefetchConfig } from '@/types/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
 import { Route, Routes } from '@/types/route'
 import { RouterPush } from '@/types/routerPush'
 import { RouterReplace } from '@/types/routerReplace'
 import { RouterResolve, RouterResolveOptions } from '@/types/routerResolve'
-import { RouterReject } from './routerReject'
-import { RouterPlugin } from './routerPlugin'
-import { KeysOfUnion, MaybePromise } from './utilities'
-import { RoutesName } from './routesMap'
-import { AfterRouteHookResponse, BeforeRouteHookResponse } from '@/main'
-import { CallbackContextAbort } from '@/services/createCallbackContext'
+import { RouterReject } from '@/types/routerReject'
+import { RouterPlugin } from '@/types/routerPlugin'
+import { RoutesName } from '@/types/routesMap'
+import { Rejection, RejectionType } from '@/types/rejection'
 
 /**
  * Options to initialize a {@link Router} instance.
@@ -43,7 +41,7 @@ export type RouterOptions = WithHooks & {
   /**
    * Components assigned to each type of rejection your router supports.
    */
-  rejections?: Partial<Record<string, Component>>,
+  rejections?: Rejection[],
 
   /**
    * When false, createRouterAssets must be used for component and hooks. Assets exported by the library
@@ -87,7 +85,7 @@ export type Router<
   /**
    * Handles route rejection based on a specified rejection type.
    */
-  reject: RouterReject<keyof TOptions['rejections'] | KeysOfUnion<TPlugin['rejections']>>,
+  reject: RouterReject<RejectionType<TOptions['rejections']> | RejectionType<TPlugin['rejections']>>,
   /**
    * Forces the router to re-evaluate the current route.
    */
@@ -107,32 +105,32 @@ export type Router<
   /**
    * Registers a hook to be called before a route is entered.
    */
-  onBeforeRouteEnter: AddRouterBeforeRouteHook<TRoutes | TPlugin['routes'], keyof TOptions['rejections'] | KeysOfUnion<TPlugin['rejections']>>,
+  onBeforeRouteEnter: AddRouterBeforeRouteHook<TRoutes | TPlugin['routes'], RejectionType<TOptions['rejections']> | RejectionType<TPlugin['rejections']>>,
   /**
    * Registers a hook to be called before a route is left.
    */
-  onBeforeRouteLeave: AddRouterBeforeRouteHook<TRoutes | TPlugin['routes'], keyof TOptions['rejections'] | KeysOfUnion<TPlugin['rejections']>>,
+  onBeforeRouteLeave: AddRouterBeforeRouteHook<TRoutes | TPlugin['routes'], RejectionType<TOptions['rejections']> | RejectionType<TPlugin['rejections']>>,
   /**
    * Registers a hook to be called before a route is updated.
    */
-  onBeforeRouteUpdate: AddRouterBeforeRouteHook<TRoutes | TPlugin['routes'], keyof TOptions['rejections'] | KeysOfUnion<TPlugin['rejections']>>,
+  onBeforeRouteUpdate: AddRouterBeforeRouteHook<TRoutes | TPlugin['routes'], RejectionType<TOptions['rejections']> | RejectionType<TPlugin['rejections']>>,
   /**
    * Registers a hook to be called after a route is entered.
    */
-  onAfterRouteEnter: AddRouterAfterRouteHook<TRoutes | TPlugin['routes'], keyof TOptions['rejections'] | KeysOfUnion<TPlugin['rejections']>>,
+  onAfterRouteEnter: AddRouterAfterRouteHook<TRoutes | TPlugin['routes'], RejectionType<TOptions['rejections']> | RejectionType<TPlugin['rejections']>>,
   /**
    * Registers a hook to be called after a route is left.
    */
-  onAfterRouteLeave: AddRouterAfterRouteHook<TRoutes | TPlugin['routes'], keyof TOptions['rejections'] | KeysOfUnion<TPlugin['rejections']>>,
+  onAfterRouteLeave: AddRouterAfterRouteHook<TRoutes | TPlugin['routes'], RejectionType<TOptions['rejections']> | RejectionType<TPlugin['rejections']>>,
   /**
    * Registers a hook to be called after a route is updated.
    */
-  onAfterRouteUpdate: AddRouterAfterRouteHook<TRoutes | TPlugin['routes'], keyof TOptions['rejections'] | KeysOfUnion<TPlugin['rejections']>>,
+  onAfterRouteUpdate: AddRouterAfterRouteHook<TRoutes | TPlugin['routes'], RejectionType<TOptions['rejections']> | RejectionType<TPlugin['rejections']>>,
   /**
    * Registers a hook to be called when an error occurs.
    * If the hook returns true, the error is considered handled and the other hooks are not run. If all hooks return false the error is rethrown
    */
-  onError: AddRouterErrorHook<TRoutes | TPlugin['routes'], keyof TOptions['rejections'] | KeysOfUnion<TPlugin['rejections']>>,
+  onError: AddRouterErrorHook<TRoutes | TPlugin['routes'], RejectionType<TOptions['rejections']> | RejectionType<TPlugin['rejections']>>,
   /**
   * Given a URL, returns true if host does not match host stored on router instance
   */
@@ -161,86 +159,6 @@ export type Router<
   key: InjectionKey<Router<TRoutes, TOptions, TPlugin>>,
 }
 
-type RouterHookContext<
-  TRoutes extends Routes,
-  TRejections extends PropertyKey
-> = {
-  from: RouterResolvedRouteUnion<TRoutes> | null,
-  reject: RouterReject<TRejections>,
-  push: RouterPush<TRoutes>,
-  replace: RouterReplace<TRoutes>,
-}
-
-type RouterBeforeRouteHookContext<
-  TRoutes extends Routes,
-  TRejections extends PropertyKey
-> = RouterHookContext<TRoutes, TRejections> & {
-  abort: CallbackContextAbort,
-}
-
-export type HookContext<TRoutes extends Routes> = {
-  to: RouterResolvedRouteUnion<TRoutes>,
-  from: RouterResolvedRouteUnion<TRoutes> | null,
-}
-
-export type RouterBeforeRouteHook<
-  TRoutes extends Routes,
-  TRejections extends PropertyKey
-> = (to: RouterResolvedRouteUnion<TRoutes>, context: RouterBeforeRouteHookContext<TRoutes, TRejections>) => MaybePromise<void>
-
-export type AddRouterBeforeRouteHook<
-  TRoutes extends Routes,
-  TRejections extends PropertyKey
-> = (hook: RouterBeforeRouteHook<TRoutes, TRejections>) => RouteHookRemove
-
-type RouterAfterRouteHookContext<
-  TRoutes extends Routes,
-  TRejections extends PropertyKey
-> = RouterHookContext<TRoutes, TRejections>
-
-export type RouterAfterRouteHook<
-  TRoutes extends Routes,
-  TRejections extends PropertyKey
-> = (to: RouterResolvedRouteUnion<TRoutes>, context: RouterAfterRouteHookContext<TRoutes, TRejections>) => MaybePromise<void>
-
-export type AddRouterAfterRouteHook<
-  TRoutes extends Routes,
-  TRejections extends PropertyKey
-> = (hook: RouterAfterRouteHook<TRoutes, TRejections>) => RouteHookRemove
-
-export type RouterRouteHookBeforeRunner<TRoutes extends Routes> = (context: HookContext<TRoutes>) => Promise<BeforeRouteHookResponse>
-export type RouterRouteHookAfterRunner<TRoutes extends Routes> = (context: HookContext<TRoutes>) => Promise<AfterRouteHookResponse>
-
-export type RouterErrorHookContext<
-  TRoutes extends Routes,
-  TRejections extends PropertyKey
-> = {
-  to: RouterResolvedRouteUnion<TRoutes>,
-  from: RouterResolvedRouteUnion<TRoutes> | null,
-  source: 'props' | 'hook' | 'component',
-  reject: RouterReject<TRejections>,
-  push: RouterPush<TRoutes>,
-  replace: RouterReplace<TRoutes>,
-}
-
-export type RouterErrorHook<
-  TRoutes extends Routes,
-  TRejections extends PropertyKey
-> = (error: unknown, context: RouterErrorHookContext<TRoutes, TRejections>) => void
-
-export type AddRouterErrorHook<
-  TRoutes extends Routes,
-  TRejections extends PropertyKey
-> = (hook: RouterErrorHook<TRoutes, TRejections>) => RouteHookRemove
-
-export type RouterRouteHookErrorRunnerContext<TRoutes extends Routes> = {
-  to: RouterResolvedRouteUnion<TRoutes>,
-  from: RouterResolvedRouteUnion<TRoutes> | null,
-  source: 'props' | 'hook',
-}
-
-export type RouterRouteHookErrorRunner<TRoutes extends Routes> = (error: unknown, context: RouterRouteHookErrorRunnerContext<TRoutes>) => void
-
 /**
  * This type is the same as `RouterRoute<ResolvedRoute<TRoutes[number]>>` while remaining distributive
  */
@@ -248,20 +166,13 @@ export type RouterRouteUnion<TRoutes extends Routes> = {
   [K in keyof TRoutes]: RouterRoute<ResolvedRoute<TRoutes[K]>>
 }[number]
 
-/**
- * This type is the same as `ResolvedRoute<TRoutes[number]>` while remaining distributive
- */
-type RouterResolvedRouteUnion<TRoutes extends Routes> = {
-  [K in keyof TRoutes]: ResolvedRoute<TRoutes[K]>
-}[number]
-
 export type RouterRoutes<TRouter extends Router> = TRouter extends Router<infer TRoutes extends Routes>
   ? TRoutes
   : Routes
 
 export type RouterRejections<TRouter extends Router> = TRouter extends Router<any, infer TOptions extends RouterOptions, infer TPlugins extends RouterPlugin>
-  ? keyof TOptions['rejections'] | KeysOfUnion<TPlugins['rejections']>
-  : PropertyKey
+  ? RejectionType<TOptions['rejections']> | RejectionType<TPlugins['rejections']>
+  : never
 
 export type RouterRouteName<TRouter extends Router> = TRouter extends Router<infer TRoutes extends Routes>
   ? RoutesName<TRoutes>

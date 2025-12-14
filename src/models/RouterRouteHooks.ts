@@ -1,9 +1,9 @@
+import { RouterAfterRouteHook, RouterBeforeRouteHook, RouterErrorHook } from '@/types/hooks'
 import { Routes } from '@/types/route'
-import { RouterAfterRouteHook, RouterBeforeRouteHook, RouterErrorHook } from '@/types/router'
 
 export class RouterRouteHooks<
   TRoutes extends Routes = Routes,
-  TRejections extends PropertyKey = PropertyKey
+  TRejections extends string = string
 > {
   public onBeforeRouteEnter = new Set<RouterBeforeRouteHook<TRoutes, TRejections>>()
   public onBeforeRouteUpdate = new Set<RouterBeforeRouteHook<TRoutes, TRejections>>()

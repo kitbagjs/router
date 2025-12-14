@@ -36,7 +36,7 @@ export type RouterCallbackPushResponse<TRoutes extends Routes> = {
 /**
  * Defines the structure of a callback response that results in the rejection of a route transition.
  */
-export type RouterCallbackRejectResponse<TRejections extends PropertyKey> = {
+export type RouterCallbackRejectResponse<TRejections extends string> = {
   status: 'REJECT',
   type: AsString<TRejections> | BuiltInRejectionType,
 }

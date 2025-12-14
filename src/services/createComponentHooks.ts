@@ -1,9 +1,9 @@
 import { InjectionKey, onUnmounted } from 'vue'
 import { createUseRouterDepth } from '@/compositions/useRouterDepth'
 import { createUseRouterHooks } from '@/compositions/useRouterHooks'
-import { AddRouterAfterRouteHook, AddRouterBeforeRouteHook, Router, RouterAfterRouteHook, RouterBeforeRouteHook, RouterRejections, RouterRoutes } from '@/types/router'
-import { AfterRouteHookLifecycle, BeforeRouteHookLifecycle } from '@/types/hooks'
+import { AddRouterAfterRouteHook, AddRouterBeforeRouteHook, AfterRouteHookLifecycle, BeforeRouteHookLifecycle, RouterAfterRouteHook, RouterBeforeRouteHook } from '@/types/hooks'
 import { Routes } from '@/types/route'
+import { Router, RouterRejections, RouterRoutes } from '@/types/router'
 
 function createComponentBeforeHook<TRouter extends Router>(routerKey: InjectionKey<TRouter>, lifecycle: BeforeRouteHookLifecycle): AddRouterBeforeRouteHook<RouterRoutes<TRouter>, RouterRejections<TRouter>> {
   const useRouterDepth = createUseRouterDepth(routerKey)
@@ -39,7 +39,7 @@ function createComponentAfterHook<TRouter extends Router>(routerKey: InjectionKe
 
 type ComponentHooks<
   TRoutes extends Routes,
-  TRejections extends PropertyKey
+  TRejections extends string
 > = {
   onBeforeRouteLeave: AddRouterBeforeRouteHook<TRoutes, TRejections>,
   onBeforeRouteUpdate: AddRouterBeforeRouteHook<TRoutes, TRejections>,

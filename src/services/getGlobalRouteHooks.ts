@@ -5,7 +5,7 @@ import { Routes } from '@/main'
 
 export function getGlobalBeforeRouteHooks<
   TRoutes extends Routes,
-  TRejections extends PropertyKey
+  TRejections extends string
 >(to: ResolvedRoute, from: ResolvedRoute | null, globalHooks: RouterRouteHooks<TRoutes, TRejections>): RouterRouteHooks<TRoutes, TRejections> {
   const hooks = new RouterRouteHooks<TRoutes, TRejections>()
 
@@ -30,7 +30,7 @@ export function getGlobalBeforeRouteHooks<
 
 export function getGlobalAfterRouteHooks<
   TRoutes extends Routes,
-  TRejections extends PropertyKey
+  TRejections extends string
 >(to: ResolvedRoute, from: ResolvedRoute | null, globalHooks: RouterRouteHooks<TRoutes, TRejections>): RouterRouteHooks<TRoutes, TRejections> {
   const hooks = new RouterRouteHooks<TRoutes, TRejections>()
 

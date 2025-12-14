@@ -1,5 +1,5 @@
 import { ExtractRouteParamTypesReading } from '@/types/params'
-import { Route } from '@/types/route'
+import { Route, Routes } from '@/types/route'
 import { ExtractRouteStateParamsAsOptional } from '@/types/state'
 import { Url } from '@/types/url'
 
@@ -46,3 +46,10 @@ export type ResolvedRoute<TRoute extends Route = Route> = Readonly<{
    */
   href: Url,
 }>
+
+/**
+ * This type is the same as `ResolvedRoute<TRoutes[number]>` while remaining distributive
+ */
+export type RouterResolvedRouteUnion<TRoutes extends Routes> = {
+  [K in keyof TRoutes]: ResolvedRoute<TRoutes[K]>
+}[number]

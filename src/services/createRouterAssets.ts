@@ -1,4 +1,4 @@
-import { Router, RouterRoutes, AddRouterBeforeRouteHook, AddRouterAfterRouteHook, RouterRejections } from '@/types/router'
+import { Router, RouterRoutes, RouterRejections } from '@/types/router'
 import { InjectionKey } from 'vue'
 import { createComponentHooks } from './createComponentHooks'
 import { createRouterView } from '@/components/routerView'
@@ -8,6 +8,7 @@ import { createUseRouter } from '@/compositions/useRouter'
 import { createUseQueryValue } from '@/compositions/useQueryValue'
 import { createUseLink } from '@/compositions/useLink'
 import { createIsRoute } from '@/guards/routes'
+import { AddRouterAfterRouteHook, AddRouterBeforeRouteHook } from '@/types/hooks'
 
 export type RouterAssets<TRouter extends Router> = {
   /**
