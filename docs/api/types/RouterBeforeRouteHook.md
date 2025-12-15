@@ -9,13 +9,13 @@ type RouterBeforeRouteHook<TRoutes, TRejections> = (to, context) => MaybePromise
 | Type Parameter |
 | ------ |
 | `TRoutes` *extends* [`Routes`](Routes.md) |
-| `TRejections` *extends* `PropertyKey` |
+| `TRejections` *extends* `string` |
 
 ## Parameters
 
 | Parameter | Type |
 | ------ | ------ |
-| `to` | `RouterResolvedRouteUnion`\<`TRoutes`\> |
+| `to` | [`RouterResolvedRouteUnion`](RouterResolvedRouteUnion.md)\<`TRoutes`\> |
 | `context` | `RouterBeforeRouteHookContext`\<`TRoutes`, `TRejections`\> |
 
 ## Returns

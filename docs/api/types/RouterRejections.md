@@ -2,8 +2,8 @@
 
 ```ts
 type RouterRejections<TRouter> = TRouter extends Router<any, infer TOptions, infer TPlugins> ? 
-  | keyof TOptions["rejections"]
-  | KeysOfUnion<TPlugins["rejections"]> : PropertyKey;
+  | RejectionType<TOptions["rejections"]>
+  | RejectionType<TPlugins["rejections"]> : never;
 ```
 
 ## Type Parameters

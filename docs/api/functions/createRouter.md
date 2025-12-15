@@ -16,7 +16,7 @@ Creates a router instance for a Vue application, equipped with methods for route
 | Type Parameter | Default type |
 | ------ | ------ |
 | `TRoutes` *extends* [`Routes`](../types/Routes.md) | - |
-| `TOptions` *extends* [`RouterOptions`](../types/RouterOptions.md) | - |
+| `TOptions` *extends* [`RouterOptions`](../types/RouterOptions.md) | `object` |
 | `TPlugin` *extends* [`RouterPlugin`](../types/RouterPlugin.md) | [`EmptyRouterPlugin`](../types/EmptyRouterPlugin.md) |
 
 ### Parameters
@@ -65,7 +65,7 @@ Creates a router instance for a Vue application, equipped with methods for route
 | Type Parameter | Default type |
 | ------ | ------ |
 | `TRoutes` *extends* [`Routes`](../types/Routes.md) | - |
-| `TOptions` *extends* [`RouterOptions`](../types/RouterOptions.md) | - |
+| `TOptions` *extends* [`RouterOptions`](../types/RouterOptions.md) | `object` |
 | `TPlugin` *extends* [`RouterPlugin`](../types/RouterPlugin.md) | [`EmptyRouterPlugin`](../types/EmptyRouterPlugin.md) |
 
 ### Parameters

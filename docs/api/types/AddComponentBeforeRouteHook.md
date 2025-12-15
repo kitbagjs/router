@@ -9,7 +9,7 @@ type AddComponentBeforeRouteHook<TRoutes, TRejections> = (hook) => RouteHookRemo
 | Type Parameter |
 | ------ |
 | `TRoutes` *extends* [`Routes`](Routes.md) |
-| `TRejections` *extends* `PropertyKey` |
+| `TRejections` *extends* `string` |
 
 ## Parameters
 

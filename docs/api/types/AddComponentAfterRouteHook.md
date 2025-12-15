@@ -9,7 +9,7 @@ type AddComponentAfterRouteHook<TRoutes, TRejections> = (hook) => RouteHookRemov
 | Type Parameter |
 | ------ |
 | `TRoutes` *extends* [`Routes`](Routes.md) |
-| `TRejections` *extends* `PropertyKey` |
+| `TRejections` *extends* `string` |
 
 ## Parameters
 

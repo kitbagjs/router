@@ -106,6 +106,10 @@
         "link": "/api/functions/createParam.md"
       },
       {
+        "text": "createRejection",
+        "link": "/api/functions/createRejection.md"
+      },
+      {
         "text": "createRoute",
         "link": "/api/functions/createRoute.md"
       },
@@ -204,6 +208,10 @@
       {
         "text": "AddRouterBeforeRouteHook",
         "link": "/api/types/AddRouterBeforeRouteHook.md"
+      },
+      {
+        "text": "AddRouterErrorHook",
+        "link": "/api/types/AddRouterErrorHook.md"
       },
       {
         "text": "AfterHookContext",
@@ -406,6 +414,14 @@
         "link": "/api/types/RouterBeforeRouteHook.md"
       },
       {
+        "text": "RouterErrorHook",
+        "link": "/api/types/RouterErrorHook.md"
+      },
+      {
+        "text": "RouterErrorHookContext",
+        "link": "/api/types/RouterErrorHookContext.md"
+      },
+      {
         "text": "RouterLinkProps",
         "link": "/api/types/RouterLinkProps.md"
       },
@@ -446,6 +462,10 @@
         "link": "/api/types/RouterResolve.md"
       },
       {
+        "text": "RouterResolvedRouteUnion",
+        "link": "/api/types/RouterResolvedRouteUnion.md"
+      },
+      {
         "text": "RouterResolveOptions",
         "link": "/api/types/RouterResolveOptions.md"
       },
@@ -460,6 +480,14 @@
       {
         "text": "RouterRouteHookBeforeRunner",
         "link": "/api/types/RouterRouteHookBeforeRunner.md"
+      },
+      {
+        "text": "RouterRouteHookErrorRunner",
+        "link": "/api/types/RouterRouteHookErrorRunner.md"
+      },
+      {
+        "text": "RouterRouteHookErrorRunnerContext",
+        "link": "/api/types/RouterRouteHookErrorRunnerContext.md"
       },
       {
         "text": "RouterRouteName",

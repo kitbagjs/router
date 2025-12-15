@@ -9,7 +9,7 @@ type AddRouterAfterRouteHook<TRoutes, TRejections> = (hook) => RouteHookRemove;
 | Type Parameter |
 | ------ |
 | `TRoutes` *extends* [`Routes`](Routes.md) |
-| `TRejections` *extends* `PropertyKey` |
+| `TRejections` *extends* `string` |
 
 ## Parameters
 
