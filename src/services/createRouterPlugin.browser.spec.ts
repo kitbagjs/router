@@ -7,7 +7,10 @@ import { mount, flushPromises } from '@vue/test-utils'
 import { createRejection } from './createRejection'
 
 test('given a plugin, adds the routes to the router', async () => {
-  const pluginRejection = createRejection('plugin', component)
+  const pluginRejection = createRejection({
+    type: 'plugin',
+    component,
+  })
 
   const plugin = createRouterPlugin({
     routes: [createRoute({ name: 'plugin', path: '/plugin', component })],
@@ -22,7 +25,10 @@ test('given a plugin, adds the routes to the router', async () => {
 })
 
 test('given a plugin, adds the rejections to the router', async () => {
-  const pluginRejection = createRejection('plugin', { template: '<div>This is a plugin rejection</div>' })
+  const pluginRejection = createRejection({
+    type: 'plugin',
+    component: { template: '<div>This is a plugin rejection</div>' },
+  })
 
   const plugin = createRouterPlugin({
     rejections: [pluginRejection],

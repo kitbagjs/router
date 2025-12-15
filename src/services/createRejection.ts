@@ -2,9 +2,13 @@ import { genericRejection } from '@/components/rejection'
 import { Rejection } from '@/types/rejection'
 import { Component } from 'vue'
 
-export function createRejection<TType extends string>(type: TType, component?: Component): Rejection<TType> {
+export function createRejection<TType extends string>(options: {
+  type: TType, component?: Component,
+}): Rejection<TType> {
+  const component = options.component ?? genericRejection(options.type)
+
   return {
-    type,
-    component: component ?? genericRejection(type),
+    type: options.type,
+    component,
   }
 }

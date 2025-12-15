@@ -112,7 +112,10 @@ describe('rejections', () => {
   })
 
   test('custom rejections are valid', () => {
-    const myCustomRejection = createRejection('MyCustomRejection', component)
+    const myCustomRejection = createRejection({
+      type: 'MyCustomRejection',
+      component,
+    })
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const _router = createRouter([], {
@@ -126,7 +129,10 @@ describe('rejections', () => {
   })
 
   test('custom rejections from plugins are valid', () => {
-    const myPluginRejection = createRejection('MyPluginRejection', component)
+    const myPluginRejection = createRejection({
+      type: 'MyPluginRejection',
+      component,
+    })
     const plugin = createRouterPlugin({
       rejections: [myPluginRejection],
     })

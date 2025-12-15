@@ -199,7 +199,10 @@ test('Renders the genericRejection component when the initialUrl does not match'
 
 test('Renders custom genericRejection component when the initialUrl does not match', async () => {
   const NotFound = { template: 'Custom Not Found' }
-  const notFoundRejection = createRejection('NotFound', NotFound)
+  const notFoundRejection = createRejection({
+    type: 'NotFound',
+    component: NotFound,
+  })
 
   const router = createRouter(routes, {
     initialUrl: '/does-not-exist',

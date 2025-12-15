@@ -14,7 +14,10 @@ test('given routes, RegisteredRoutes is correct', () => {
 })
 
 test('given rejections in router options, RegisteredRejectionType is correct', () => {
-  const authNeededRejection = createRejection('AuthNeeded', component)
+  const authNeededRejection = createRejection({
+    type: 'AuthNeeded',
+    component,
+  })
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const router = createRouter([], {
