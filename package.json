@@ -18,7 +18,7 @@
     "build": "vite build",
     "build:watch": "vite build --watch --minify=false",
     "test": "vitest",
-    "lint": "eslint ./src",
+    "lint": "eslint ./src --max-warnings 0",
     "lint:fix": "eslint ./src --fix",
     "types": "vue-tsc --noEmit",
     "docs:dev": "vitepress dev docs",

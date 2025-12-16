@@ -15,6 +15,18 @@ jobs:
       - name: Run tests
         run: npm run test
 
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup
+        id: setup
+        uses: kitbagjs/actions-setup-project@main
+
+      - name: Run lint
+        run: npm run lint
+
   types:
     name: Types
     runs-on: ubuntu-latest
