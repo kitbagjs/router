@@ -9,7 +9,7 @@ type AddGlobalRouteHooks<TRoutes, TRejections> = (hooks) => void;
 | Type Parameter |
 | ------ |
 | `TRoutes` *extends* [`Routes`](Routes.md) |
-| `TRejections` *extends* `PropertyKey` |
+| `TRejections` *extends* `string` |
 
 ## Parameters
 

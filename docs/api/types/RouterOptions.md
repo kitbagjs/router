@@ -71,7 +71,7 @@ Determines what assets are prefetched when router-link is rendered for a specifi
 ### rejections?
 
 ```ts
-optional rejections: Partial<Record<string, Component>>;
+optional rejections: Rejection[];
 ```
 
 Components assigned to each type of rejection your router supports.

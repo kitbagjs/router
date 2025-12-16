@@ -1,7 +1,7 @@
-# Types: HookContext\<TRoutes\>
+# Types: RouterRouteHookErrorRunnerContext\<TRoutes\>
 
 ```ts
-type HookContext<TRoutes> = object;
+type RouterRouteHookErrorRunnerContext<TRoutes> = object;
 ```
 
 ## Type Parameters
@@ -15,4 +15,5 @@ type HookContext<TRoutes> = object;
 | Property | Type |
 | ------ | ------ |
 | <a id="from"></a> `from` | \| [`RouterResolvedRouteUnion`](RouterResolvedRouteUnion.md)\<`TRoutes`\> \| `null` |
+| <a id="source"></a> `source` | `"props"` \| `"hook"` |
 | <a id="to"></a> `to` | [`RouterResolvedRouteUnion`](RouterResolvedRouteUnion.md)\<`TRoutes`\> |

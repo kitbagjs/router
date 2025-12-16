@@ -22,6 +22,10 @@ onAfterRouteEnter: (to, context) => {
 - **onAfterRouteUpdate:** Triggered after a route changes. Specifically when the route changed but that parent or child didn’t.
 - **onAfterRouteEnter:** Triggered after a route is mounted
 
+### On Error
+
+- **onError** Triggered whenever an unexpected error is thrown. If the hook returns true, the error is considered handled and the other hooks are not run. If all hooks return false the error is rethrown
+
 ## Context
 
 The router provides `to` and a `context` argument to your hook callback. The context will always include:
@@ -42,6 +46,15 @@ If the hooks lifecycle is a [before](/advanced-concepts/hooks#before-hooks) hook
 | abort | Stops the router from continuing with route change |
 
 See [BeforeRouteHookContext](/api/types/BeforeRouteHookContext)
+
+If the hook is `onError`, you'll also have access to the following properties in your context:
+
+| Property | Description |
+| ---- | ---- |
+| to | What was the destination route prior to the error being thrown |
+| source | String value indicating where the error occurred. Possible values are `'props'`, `'hook'`, and `'component'` |
+
+See [RouterErrorHookContext](/api/types/RouterErrorHookContext)
 
 ## Levels
 

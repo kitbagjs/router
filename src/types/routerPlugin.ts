@@ -1,19 +1,19 @@
-import { Component } from 'vue'
 import { BeforeRouteHook, AfterRouteHook } from './hooks'
 import { Routes } from './route'
 import { MaybeArray } from './utilities'
+import { Rejection } from './rejection'
 
 export type EmptyRouterPlugin = {
   routes: [],
-  rejections: {},
+  rejections: [],
 }
 
 export type RouterPlugin<
   TRoutes extends Routes = Routes,
-  TRejections extends Record<string, Component> = Record<string, Component>
+  TRejections extends Rejection[] = Rejection[]
 > = {
   routes: TRoutes,
-  rejections: TRejections,
+  rejections?: TRejections,
   onBeforeRouteEnter?: MaybeArray<BeforeRouteHook>,
   onAfterRouteEnter?: MaybeArray<AfterRouteHook>,
   onBeforeRouteUpdate?: MaybeArray<BeforeRouteHook>,

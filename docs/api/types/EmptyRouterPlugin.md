@@ -8,5 +8,5 @@ type EmptyRouterPlugin = object;
 
 | Property | Type |
 | ------ | ------ |
-| <a id="rejections"></a> `rejections` | `object` |
+| <a id="rejections"></a> `rejections` | \[\] |
 | <a id="routes"></a> `routes` | \[\] |

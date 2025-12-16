@@ -25,6 +25,7 @@ import { ResolvedRoute } from '@/types/resolved'
 import { createResolvedRouteForUrl } from '@/services/createResolvedRouteForUrl'
 import { combineUrl } from '@/services/urlCombine'
 import { RouterReject } from '@/types/routerReject'
+import { RejectionType } from '@/types/rejection'
 import { EmptyRouterPlugin, RouterPlugin } from '@/types/routerPlugin'
 import { getRoutesForRouter } from './getRoutesForRouter'
 import { getGlobalHooksForRouter } from './getGlobalHooksForRouter'
@@ -69,19 +70,19 @@ type RouterUpdateOptions = {
  */
 export function createRouter<
   const TRoutes extends Routes,
-  const TOptions extends RouterOptions,
+  const TOptions extends RouterOptions = {},
   const TPlugin extends RouterPlugin = EmptyRouterPlugin
 >(routes: TRoutes, options?: TOptions, plugins?: TPlugin[]): Router<TRoutes, TOptions, TPlugin>
 
 export function createRouter<
   const TRoutes extends Routes,
-  const TOptions extends RouterOptions,
+  const TOptions extends RouterOptions = {},
   const TPlugin extends RouterPlugin = EmptyRouterPlugin
 >(routes: TRoutes[], options?: TOptions, plugins?: TPlugin[]): Router<TRoutes, TOptions, TPlugin>
 
 export function createRouter<
   const TRoutes extends Routes,
-  const TOptions extends RouterOptions,
+  const TOptions extends RouterOptions = {},
   const TPlugin extends RouterPlugin = EmptyRouterPlugin
 >(routesOrArrayOfRoutes: TRoutes | TRoutes[], options?: TOptions, plugins: TPlugin[] = []): Router<TRoutes, TOptions, TPlugin> {
   const isGlobalRouter = options?.isGlobalRouter ?? true
@@ -289,14 +290,14 @@ export function createRouter<
     return push(source, options)
   }
 
-  const reject: RouterReject<keyof TOptions['rejections'] | keyof TPlugin['rejections']> = (type) => {
+  const reject: RouterReject<RejectionType<TOptions['rejections']> | RejectionType<TPlugin['rejections']>> = (type) => {
     setRejection(type)
   }
 
-  const { setRejection, rejection, getRejectionRoute } = createRouterReject({
-    ...plugins.reduce((rejections, plugin) => ({ ...rejections, ...plugin.rejections }), {}),
-    ...options?.rejections,
-  })
+  const { setRejection, rejection, getRejectionRoute } = createRouterReject([
+    ...plugins.flatMap((plugin) => plugin.rejections ?? []),
+    ...options?.rejections ?? [],
+  ])
 
   const notFoundRoute = getRejectionRoute('NotFound')
   const { currentRoute, routerRoute, updateRoute } = createCurrentRoute<TRoutes | TPlugin['routes']>(routerKey, notFoundRoute, push)

@@ -8,7 +8,7 @@ type RouterReject<TRejectionType> = (type) => void;
 
 | Type Parameter |
 | ------ |
-| `TRejectionType` *extends* `PropertyKey` |
+| `TRejectionType` *extends* `string` |
 
 ## Parameters
 

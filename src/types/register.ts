@@ -4,6 +4,7 @@ import { Router, RouterOptions } from '@/types/router'
 import { RouterPush } from '@/types/routerPush'
 import { RouterReplace } from '@/types/routerReplace'
 import { RoutesName } from './routesMap'
+import { RejectionType } from './rejection'
 
 /**
  * Represents the state of currently registered router, and route meta. Used to provide correct type context for
@@ -41,7 +42,7 @@ export type RegisteredRoutes<T = Register> = T extends { router: Router<infer TR
  * @deprecated use `createRouter(..., { rejections: {}}) instead
  */
 export type RegisteredRejectionType<T = Register> = T extends { router: Router<any, infer TOptions extends RouterOptions> }
-  ? keyof TOptions['rejections'] | BuiltInRejectionType
+  ? RejectionType<TOptions['rejections']> | BuiltInRejectionType
   : BuiltInRejectionType
 
 /**

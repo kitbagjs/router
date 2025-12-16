@@ -2,10 +2,11 @@ import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
 import { component } from '@/utilities/testHelpers'
 import { describe, test, expectTypeOf } from 'vitest'
-import { AddRouterAfterRouteHook, AddRouterBeforeRouteHook } from '@/types/router'
 import { createRouterPlugin } from './createRouterPlugin'
 import { CallbackContextAbort } from './createCallbackContext'
 import { BuiltInRejectionType } from './createRouterReject'
+import { createRejection } from './createRejection'
+import { AddRouterAfterRouteHook, AddRouterBeforeRouteHook } from '@/types/hooks'
 
 describe('hooks', () => {
   const parent = createRoute({
@@ -111,23 +112,29 @@ describe('rejections', () => {
   })
 
   test('custom rejections are valid', () => {
+    const myCustomRejection = createRejection({
+      type: 'MyCustomRejection',
+      component,
+    })
+
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const _router = createRouter([], {
-      rejections: {
-        MyCustomRejection: component,
-      },
+      rejections: [myCustomRejection],
     })
+
     type Source = Parameters<typeof _router.reject>[0]
     type Expect = BuiltInRejectionType | 'MyCustomRejection'
 
     expectTypeOf<Source>().toEqualTypeOf<Expect>()
   })
 
-  test('custom rejectsion from plugins are valid', () => {
+  test('custom rejections from plugins are valid', () => {
+    const myPluginRejection = createRejection({
+      type: 'MyPluginRejection',
+      component,
+    })
     const plugin = createRouterPlugin({
-      rejections: {
-        MyPluginRejection: component,
-      },
+      rejections: [myPluginRejection],
     })
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -140,7 +147,7 @@ describe('rejections', () => {
   })
 })
 
-describe('route.matchedmeta', () => {
+describe('route.matched.meta', () => {
   test('is always defined', () => {
     const routeA = createRoute({
       name: 'routeA',

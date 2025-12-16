@@ -1,7 +1,7 @@
-# Types: AddRouterBeforeRouteHook()\<TRoutes, TRejections\>
+# Types: AddRouterErrorHook()\<TRoutes, TRejections\>
 
 ```ts
-type AddRouterBeforeRouteHook<TRoutes, TRejections> = (hook) => RouteHookRemove;
+type AddRouterErrorHook<TRoutes, TRejections> = (hook) => RouteHookRemove;
 ```
 
 ## Type Parameters
@@ -15,7 +15,7 @@ type AddRouterBeforeRouteHook<TRoutes, TRejections> = (hook) => RouteHookRemove;
 
 | Parameter | Type |
 | ------ | ------ |
-| `hook` | [`RouterBeforeRouteHook`](RouterBeforeRouteHook.md)\<`TRoutes`, `TRejections`\> |
+| `hook` | [`RouterErrorHook`](RouterErrorHook.md)\<`TRoutes`, `TRejections`\> |
 
 ## Returns
 

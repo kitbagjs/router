@@ -1,4 +1,4 @@
-import { AddGlobalRouteHooks, AfterRouteHook, AfterRouteHookResponse, BeforeRouteHook, BeforeRouteHookResponse, AddComponentAfterRouteHook, AddComponentBeforeRouteHook } from '@/types/hooks'
+import { AddGlobalRouteHooks, AfterRouteHook, AfterRouteHookResponse, BeforeRouteHook, BeforeRouteHookResponse, AddComponentAfterRouteHook, AddComponentBeforeRouteHook, RouterRouteHookAfterRunner, RouterRouteHookErrorRunner, RouterRouteHookBeforeRunner, AddRouterBeforeRouteHook, AddRouterAfterRouteHook, AddRouterErrorHook, HookContext, RouterBeforeRouteHook, RouterAfterRouteHook, RouterRouteHookErrorRunnerContext } from '@/types/hooks'
 import { getRouteHookCondition } from './hooks'
 import { getAfterRouteHooksFromRoutes, getBeforeRouteHooksFromRoutes } from './getRouteHooks'
 import { ContextPushError } from '@/errors/contextPushError'
@@ -7,18 +7,18 @@ import { ContextAbortError } from '@/errors/contextAbortError'
 import { getGlobalAfterRouteHooks, getGlobalBeforeRouteHooks } from './getGlobalRouteHooks'
 import { createVueAppStore, HasVueAppStore } from '@/services/createVueAppStore'
 import { createRouterKeyStore } from './createRouterKeyStore'
-import { AddRouterAfterRouteHook, AddRouterBeforeRouteHook, Router, RouterAfterRouteHook, RouterBeforeRouteHook, HookContext, RouterRoutes, RouterRouteHookBeforeRunner, RouterRouteHookAfterRunner, RouterRejections, AddRouterErrorHook, RouterRouteHookErrorRunner, RouterRouteHookErrorRunnerContext } from '@/types/router'
 import { Routes } from '@/types/route'
 import { InjectionKey } from 'vue'
 import { RouterRouteHooks } from '@/models/RouterRouteHooks'
 import { createRouterCallbackContext } from './createRouterCallbackContext'
 import { ContextError } from '@/errors/contextError'
+import { Router, RouterRejections, RouterRoutes } from '@/types/router'
 
 export const getRouterHooksKey = createRouterKeyStore<RouterHooks<any, any>>()
 
 export type RouterHooks<
   TRoutes extends Routes,
-  TRejections extends PropertyKey
+  TRejections extends string
 > = HasVueAppStore & {
   runBeforeRouteHooks: RouterRouteHookBeforeRunner<TRoutes>,
   runAfterRouteHooks: RouterRouteHookAfterRunner<TRoutes>,
