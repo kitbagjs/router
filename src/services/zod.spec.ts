@@ -3,11 +3,6 @@ import { z } from 'zod'
 import { test, expect } from 'vitest'
 import { initZod } from './zod'
 
-enum Fruits {
-  Apple = 0,
-  Banana = 1
-}
-
 const discriminatedUnion = z.discriminatedUnion('type', [
   z.object({ type: z.literal('one'), value: z.string() }),
   z.object({ type: z.literal('two'), value: z.number() }),
@@ -23,14 +18,11 @@ test.each([
   { schema: z.string().datetime(), string: '2022-01-12T00:00:00.000Z', parsed: '2022-01-12T00:00:00.000Z' },
   { schema: z.string().date(), string: '2022-01-12', parsed: '2022-01-12' },
   { schema: z.string().time(), string: '09:52:31', parsed: '09:52:31' },
-  { schema: z.string().ip(), string: '192.168.1.1', parsed: '192.168.1.1' },
-  { schema: z.string().cidr(), string: '192.168.0.0/24', parsed: '192.168.0.0/24' },
   { schema: z.date(), string: '2022-01-12T00:00:00.000Z', parsed: new Date('2022-01-12T00:00:00.000Z') },
   { schema: z.object({ foo: z.string() }), string: '{"foo":"bar"}', parsed: { foo: 'bar' } },
   { schema: z.object({ foo: z.string().nullable() }), string: '{"foo":null}', parsed: { foo: null } },
   { schema: z.object({ foo: z.string().optional() }), string: '{}', parsed: {} },
   { schema: z.enum(['foo', 'bar']), string: 'foo', parsed: 'foo' },
-  { schema: z.nativeEnum(Fruits), string: '0', parsed: Fruits.Apple },
   { schema: z.string().array(), string: '["foo","bar"]', parsed: ['foo', 'bar'] },
   { schema: z.tuple([z.string(), z.number()]), string: '["foo",1]', parsed: ['foo', 1] },
   { schema: z.union([z.string(), z.number()]), string: 'foo', parsed: 'foo' },

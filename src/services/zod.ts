@@ -14,7 +14,6 @@ let zod: ZodSchemas | null = null
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 async function getZodInstances() {
   const {
-    ZodSchema,
     ZodString,
     ZodBoolean,
     ZodDate,
@@ -22,7 +21,6 @@ async function getZodInstances() {
     ZodLiteral,
     ZodObject,
     ZodEnum,
-    ZodNativeEnum,
     ZodArray,
     ZodTuple,
     ZodUnion,
@@ -36,7 +34,6 @@ async function getZodInstances() {
   } = await import('zod')
 
   return {
-    ZodSchema,
     ZodString,
     ZodBoolean,
     ZodDate,
@@ -44,7 +41,6 @@ async function getZodInstances() {
     ZodLiteral,
     ZodObject,
     ZodEnum,
-    ZodNativeEnum,
     ZodArray,
     ZodTuple,
     ZodUnion,
@@ -91,7 +87,24 @@ export function isZodParam(value: unknown): value is ZodSchema {
     return false
   }
 
-  return value instanceof zod.ZodSchema
+  // Check if value is an instance of any Zod type
+  return value instanceof zod.ZodString
+    || value instanceof zod.ZodBoolean
+    || value instanceof zod.ZodDate
+    || value instanceof zod.ZodNumber
+    || value instanceof zod.ZodLiteral
+    || value instanceof zod.ZodObject
+    || value instanceof zod.ZodEnum
+    || value instanceof zod.ZodArray
+    || value instanceof zod.ZodTuple
+    || value instanceof zod.ZodUnion
+    || value instanceof zod.ZodDiscriminatedUnion
+    || value instanceof zod.ZodRecord
+    || value instanceof zod.ZodMap
+    || value instanceof zod.ZodSet
+    || value instanceof zod.ZodIntersection
+    || value instanceof zod.ZodPromise
+    || value instanceof zod.ZodFunction
 }
 
 export function createZodParam<T>(schema: ZodSchema<T>): ParamGetSet<T> {
@@ -183,13 +196,6 @@ function parseZodValue(value: string, schema: ZodSchema): unknown {
     return schema.parse(value)
   }
 
-  if (schema instanceof zod.ZodNativeEnum) {
-    return tryAll([
-      () => schema.parse(Number(value)),
-      () => schema.parse(value),
-    ])
-  }
-
   if (schema instanceof zod.ZodArray) {
     return schema.parse(JSON.parse(value, reviver))
   }
@@ -265,7 +271,8 @@ function stringifyZodValue(value: unknown, schema: ZodSchema): string {
   }
 
   if (schema instanceof zod.ZodLiteral) {
-    return schema.parse(value).toString()
+    const parsed = schema.parse(value)
+    return parsed != null ? parsed.toString() : String(parsed)
   }
 
   if (schema instanceof zod.ZodObject) {
@@ -273,11 +280,8 @@ function stringifyZodValue(value: unknown, schema: ZodSchema): string {
   }
 
   if (schema instanceof zod.ZodEnum) {
-    return schema.parse(value)
-  }
-
-  if (schema instanceof zod.ZodNativeEnum) {
-    return schema.parse(value).toString()
+    const parsed = schema.parse(value)
+    return typeof parsed === 'string' ? parsed : String(parsed)
   }
 
   if (schema instanceof zod.ZodArray) {
