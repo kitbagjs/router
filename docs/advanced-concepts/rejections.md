@@ -56,7 +56,7 @@ export const router = createRouter(routes, {
 
 ## Trigger Rejection
 
-Any of the [hooks](/advanced-concepts/hooks) will provided a `reject` function in the context argument. The [async prop function](core-concepts/component-props#async-prop-fetching) argument of `createRoute` also will provide a `reject` function.
+Any of the [hooks](/advanced-concepts/hooks) will provided a `reject` function in the context argument. The [async prop function](/core-concepts/component-props#async-prop-fetching) argument of `createRoute` also will provide a `reject` function.
 
 ```ts
 const route = {
