@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/only-throw-error */
 import { Param, ParamGetSet } from '@/types/paramTypes'
 import { ExtractParamType } from '@/types/params'
 import { getParamValue, setParamValue } from '@/services/params'

@@ -53,6 +53,7 @@ export type RouterCallbackContext<TRouter extends Router> = {
   abort: CallbackContextAbort,
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function createRouterCallbackContext<TRouter extends Router>(_routerKey: InjectionKey<TRouter>): RouterCallbackContext<TRouter> {
   type TRoutes = RouterRoutes<TRouter>
   type TRejections = RouterRejections<TRouter>
