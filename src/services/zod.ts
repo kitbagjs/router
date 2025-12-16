@@ -30,7 +30,6 @@ async function getZodInstances() {
     ZodSet,
     ZodIntersection,
     ZodPromise,
-    ZodFunction,
   } = await import('zod')
 
   return {
@@ -50,7 +49,6 @@ async function getZodInstances() {
     ZodSet,
     ZodIntersection,
     ZodPromise,
-    ZodFunction,
   }
 }
 
@@ -104,7 +102,6 @@ export function isZodParam(value: unknown): value is ZodSchema {
     || value instanceof zod.ZodSet
     || value instanceof zod.ZodIntersection
     || value instanceof zod.ZodPromise
-    || value instanceof zod.ZodFunction
 }
 
 export function createZodParam<T>(schema: ZodSchema<T>): ParamGetSet<T> {
@@ -242,10 +239,6 @@ function parseZodValue(value: string, schema: ZodSchema): unknown {
     throw new Error('Promise schemas are not supported')
   }
 
-  if (schema instanceof zod.ZodFunction) {
-    throw new Error('Function schemas are not supported')
-  }
-
   return schema.parse(value)
 }
 
@@ -332,10 +325,6 @@ function stringifyZodValue(value: unknown, schema: ZodSchema): string {
 
   if (schema instanceof zod.ZodPromise) {
     throw new Error('Promise schemas are not supported')
-  }
-
-  if (schema instanceof zod.ZodFunction) {
-    throw new Error('Function schemas are not supported')
   }
 
   return JSON.stringify(schema.parse(value))
