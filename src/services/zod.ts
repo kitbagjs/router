@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/only-throw-error */
 import { Param, ParamGetSet } from '@/types/paramTypes'
 import { Routes } from '@/types/route'
 import { isRecord } from '@/utilities/guards'
