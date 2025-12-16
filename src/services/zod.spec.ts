@@ -13,7 +13,7 @@ enum Fruits {
   Banana = '1'
 }
 
-test.only.each([
+test.each([
   { schema: z.literal('foo'), string: 'foo', parsed: 'foo' },
   { schema: z.literal(1), string: '1', parsed: 1 },
   { schema: z.literal(true), string: 'true', parsed: true },
