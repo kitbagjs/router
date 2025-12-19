@@ -15,7 +15,7 @@ export type RouteHooks<
   onAfterRouteUpdate: AddRouterAfterRouteHook<TRoutes, TRejections>,
   onAfterRouteLeave: AddRouterAfterRouteHook<TRoutes, TRejections>,
   onError: AddRouterErrorHook<TRoutes, TRejections>,
-  store: RouterRouteHooks<TRoutes, TRejections>,
+  store: RouterRouteHooks,
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -26,7 +26,7 @@ export function createRouteHooks<TContext extends RouteContext[]>(_context: TCon
   type TRoutes = RouteContextToRoute<TContext>
   type TRejections = RouteContextToRejection<TContext>
 
-  const store = new RouterRouteHooks<TRoutes, TRejections>()
+  const store = new RouterRouteHooks()
 
   const onBeforeRouteEnter: AddRouterBeforeRouteHook<TRoutes, TRejections> = (hook) => {
     store.onBeforeRouteEnter.add(hook)
