@@ -88,7 +88,7 @@ export function createRouter<
   const isGlobalRouter = options?.isGlobalRouter ?? true
   const routerKey = isGlobalRouter ? routerInjectionKey : Symbol()
   const routes = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options?.base)
-  const hooks = createRouterHooks(routerKey)
+  const hooks = createRouterHooks()
 
   hooks.addGlobalRouteHooks(getGlobalHooksForRouter(options, plugins))
 
@@ -114,11 +114,6 @@ export function createRouter<
 
     history.stopListening()
 
-    if (isExternal(url)) {
-      history.update(url, options)
-      return
-    }
-
     const to = find(url, options) ?? getRejectionRoute('NotFound')
     const from = getFromRouteForHooks(navigationId)
 
@@ -132,6 +127,9 @@ export function createRouter<
       // On push update the history, and push new route, and return
       case 'PUSH':
         history.update(url, options)
+        if (isExternal(url)) {
+          return
+        }
         await push(...beforeResponse.to)
         return
 
