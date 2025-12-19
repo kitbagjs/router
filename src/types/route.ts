@@ -4,8 +4,8 @@ import { PrefetchConfig } from '@/types/prefetch'
 import { RouteMeta } from '@/types/register'
 import { LastInArray } from '@/types/utilities'
 import { CreateRouteOptions } from '@/types/createRouteOptions'
-import { AddRouterAfterRouteHook, AddRouterBeforeRouteHook, AddRouterErrorHook, WithHooks } from '@/types/hooks'
-import { RouteContext, RouteContextToRejection, RouteContextToRoute } from './routeContext'
+import { WithHooks } from '@/types/hooks'
+import { RouteContext } from './routeContext'
 import { RouterRouteHooks } from '@/models/RouterRouteHooks'
 
 /**
@@ -87,35 +87,6 @@ export type Route<
    * Related routes and rejections for the route. The context is exposed to the hooks and props callback functions for this route.
    */
   context: TContext,
-  /**
-   * Registers a hook to be called before a route is entered.
-   */
-  onBeforeRouteEnter: AddRouterBeforeRouteHook<RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
-  /**
-   * Registers a hook to be called before a route is left.
-   */
-  onBeforeRouteLeave: AddRouterBeforeRouteHook<RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
-  /**
-   * Registers a hook to be called before a route is updated.
-   */
-  onBeforeRouteUpdate: AddRouterBeforeRouteHook<RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
-  /**
-   * Registers a hook to be called after a route is entered.
-   */
-  onAfterRouteEnter: AddRouterAfterRouteHook<RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
-  /**
-   * Registers a hook to be called after a route is left.
-   */
-  onAfterRouteLeave: AddRouterAfterRouteHook<RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
-  /**
-   * Registers a hook to be called after a route is updated.
-   */
-  onAfterRouteUpdate: AddRouterAfterRouteHook<RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
-  /**
-   * Registers a hook to be called when an error occurs.
-   * If the hook returns true, the error is considered handled and the other hooks are not run. If all hooks return false the error is rethrown
-   */
-  onError: AddRouterErrorHook<RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
   /**
   * A value that represents how many parents a route has. Used for route matching
   * @internal

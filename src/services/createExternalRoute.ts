@@ -6,14 +6,17 @@ import { Route } from '@/types/route'
 import { checkDuplicateParams } from '@/utilities/checkDuplicateKeys'
 import { toWithParams } from '@/services/withParams'
 import { createRouteHooks } from './createRouteHooks'
+import { ExternalRouteHooks } from '@/types/hooks'
 
 export function createExternalRoute<
   const TOptions extends CreateRouteOptions & WithHost & WithoutParent
 >(options: TOptions): ToRoute<TOptions, undefined>
+  & ExternalRouteHooks<TOptions['context']>
 
 export function createExternalRoute<
   const TOptions extends CreateRouteOptions & WithoutHost & WithParent
 >(options: TOptions): ToRoute<TOptions, undefined>
+  & ExternalRouteHooks<TOptions['context']>
 
 export function createExternalRoute(options: CreateRouteOptions & (WithoutHost | WithHost)): Route {
   const id = createRouteId()
