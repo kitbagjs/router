@@ -2,10 +2,11 @@ import { ResolvedRoute } from '@/types/resolved'
 import { isRouteEnter, isRouteLeave, isRouteUpdate } from './hooks'
 import { RouterRouteHooks } from '@/models/RouterRouteHooks'
 import { Routes } from '@/main'
+import { Rejection } from '@/types/rejection'
 
 export function getGlobalBeforeRouteHooks<
   TRoutes extends Routes,
-  TRejections extends string
+  TRejections extends Rejection[]
 >(to: ResolvedRoute, from: ResolvedRoute | null, globalHooks: RouterRouteHooks<TRoutes, TRejections>): RouterRouteHooks<TRoutes, TRejections> {
   const hooks = new RouterRouteHooks<TRoutes, TRejections>()
 
@@ -30,7 +31,7 @@ export function getGlobalBeforeRouteHooks<
 
 export function getGlobalAfterRouteHooks<
   TRoutes extends Routes,
-  TRejections extends string
+  TRejections extends Rejection[]
 >(to: ResolvedRoute, from: ResolvedRoute | null, globalHooks: RouterRouteHooks<TRoutes, TRejections>): RouterRouteHooks<TRoutes, TRejections> {
   const hooks = new RouterRouteHooks<TRoutes, TRejections>()
 
