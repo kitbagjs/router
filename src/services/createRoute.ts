@@ -5,6 +5,7 @@ import { toName } from '@/types/name'
 import { Route } from '@/types/route'
 import { checkDuplicateParams } from '@/utilities/checkDuplicateKeys'
 import { toWithParams, withParams } from '@/services/withParams'
+import { createRouteHooks } from '@/services/createRouteHooks'
 
 type CreateRouteWithProps<
   TOptions extends CreateRouteOptions,
@@ -30,6 +31,8 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
   const hash = toWithParams(options.hash)
   const meta = options.meta ?? {}
   const state = options.state ?? {}
+  const context = options.context ?? []
+  const hooks = createRouteHooks(context)
   const rawRoute = markRaw({ id, meta, state, ...options, props })
 
   const route = {
@@ -42,9 +45,11 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
     hash,
     meta,
     state,
+    context,
     depth: 1,
     host: withParams(),
     prefetch: options.prefetch,
+    ...hooks,
   } satisfies Route
 
   const merged = isWithParent(options) ? combineRoutes(options.parent, route) : route

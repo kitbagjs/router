@@ -5,6 +5,7 @@ import { toName } from '@/types/name'
 import { Route } from '@/types/route'
 import { checkDuplicateParams } from '@/utilities/checkDuplicateKeys'
 import { toWithParams } from '@/services/withParams'
+import { createRouteHooks } from './createRouteHooks'
 
 export function createExternalRoute<
   const TOptions extends CreateRouteOptions & WithHost & WithoutParent
@@ -22,6 +23,8 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
   const hash = toWithParams(options.hash)
   const meta = options.meta ?? {}
   const host = toWithParams(options.host)
+  const context = options.context ?? []
+  const hooks = createRouteHooks(context)
   const rawRoute = markRaw({ id, meta: {}, state: {}, ...options })
 
   const route = {
@@ -36,7 +39,9 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
     meta,
     depth: 1,
     state: {},
-  }
+    context,
+    ...hooks,
+  } satisfies Route
 
   const merged = isWithParent(options) ? combineRoutes(options.parent, route) : route
 
