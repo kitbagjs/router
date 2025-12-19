@@ -295,7 +295,7 @@ export function createRouter<
   }
 
   const { setRejection, rejection, getRejectionRoute } = createRouterReject([
-    ...plugins.flatMap((plugin) => plugin.rejections ?? []),
+    ...plugins.flatMap((plugin) => plugin.rejections),
     ...options?.rejections ?? [],
   ])
 

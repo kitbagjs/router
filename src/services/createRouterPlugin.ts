@@ -1,14 +1,17 @@
-import { Rejection } from '@/types/rejection'
-import { Routes } from '@/types/route'
-import { RouterPlugin } from '@/types/routerPlugin'
+import { CreateRouterPluginOptions, RouterPlugin, ToRouterPlugin } from '@/types/routerPlugin'
+import { asArray } from '@/utilities/array'
 
-export function createRouterPlugin<
-  TRoutes extends Routes = [],
-  TRejections extends Rejection[] = []
->(plugin: Partial<RouterPlugin<TRoutes, TRejections>>): RouterPlugin<TRoutes, TRejections> {
+export function createRouterPlugin<TPlugin extends CreateRouterPluginOptions>(plugin: TPlugin): ToRouterPlugin<TPlugin>
+
+export function createRouterPlugin(plugin: CreateRouterPluginOptions): RouterPlugin {
   return {
-    routes: plugin.routes ?? [] as unknown as TRoutes,
-    rejections: plugin.rejections ?? {} as TRejections,
-    ...plugin,
+    routes: plugin.routes ?? [],
+    rejections: plugin.rejections ?? [],
+    onBeforeRouteEnter: asArray(plugin.onBeforeRouteEnter ?? []),
+    onAfterRouteEnter: asArray(plugin.onAfterRouteEnter ?? []),
+    onBeforeRouteUpdate: asArray(plugin.onBeforeRouteUpdate ?? []),
+    onAfterRouteUpdate: asArray(plugin.onAfterRouteUpdate ?? []),
+    onBeforeRouteLeave: asArray(plugin.onBeforeRouteLeave ?? []),
+    onAfterRouteLeave: asArray(plugin.onAfterRouteLeave ?? []),
   }
 }
