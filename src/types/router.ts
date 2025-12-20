@@ -11,7 +11,7 @@ import { RouterResolve, RouterResolveOptions } from '@/types/routerResolve'
 import { RouterReject } from '@/types/routerReject'
 import { RouterPlugin } from '@/types/routerPlugin'
 import { RoutesName } from '@/types/routesMap'
-import { Rejection, RejectionType } from '@/types/rejection'
+import { Rejection } from '@/types/rejection'
 import { ToRouteContext } from '@/types/routeContext'
 
 /**
@@ -86,7 +86,7 @@ export type Router<
   /**
    * Handles route rejection based on a specified rejection type.
    */
-  reject: RouterReject<RejectionType<TOptions['rejections']> | RejectionType<TPlugin['rejections']>>,
+  reject: RouterReject<[...(TOptions['rejections'] extends Rejection[] ? TOptions['rejections'] : []), ...(TPlugin['rejections'] extends Rejection[] ? TPlugin['rejections'] : [])]>,
   /**
    * Forces the router to re-evaluate the current route.
    */

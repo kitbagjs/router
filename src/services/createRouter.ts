@@ -25,7 +25,6 @@ import { ResolvedRoute } from '@/types/resolved'
 import { createResolvedRouteForUrl } from '@/services/createResolvedRouteForUrl'
 import { combineUrl } from '@/services/urlCombine'
 import { RouterReject } from '@/types/routerReject'
-import { RejectionType } from '@/types/rejection'
 import { EmptyRouterPlugin, RouterPlugin } from '@/types/routerPlugin'
 import { getRoutesForRouter } from './getRoutesForRouter'
 import { getGlobalHooksForRouter } from './getGlobalHooksForRouter'
@@ -288,7 +287,7 @@ export function createRouter<
     return push(source, options)
   }
 
-  const reject: RouterReject<RejectionType<TOptions['rejections']> | RejectionType<TPlugin['rejections']>> = (type) => {
+  const reject: RouterReject<TOptions['rejections'] | TPlugin['rejections']> = (type) => {
     setRejection(type)
   }
 

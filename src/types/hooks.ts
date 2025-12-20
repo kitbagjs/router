@@ -6,7 +6,7 @@ import { Routes } from './route'
 import { RouterReject } from './routerReject'
 import { RouterPush } from './routerPush'
 import { RouterReplace } from './routerReplace'
-import { Rejection, RejectionType } from './rejection'
+import { Rejection } from './rejection'
 import { RouteContext, RouteContextToRejection, RouteContextToRoute } from './routeContext'
 
 /**
@@ -211,7 +211,7 @@ type RouterHookContext<
   TRejections extends Rejection[]
 > = {
   from: RouterResolvedRouteUnion<TRoutes> | null,
-  reject: RouterReject<RejectionType<TRejections>>,
+  reject: RouterReject<TRejections>,
   push: RouterPush<TRoutes>,
   replace: RouterReplace<TRoutes>,
 }
@@ -263,7 +263,7 @@ export type RouterErrorHookContext<
   to: RouterResolvedRouteUnion<TRoutes>,
   from: RouterResolvedRouteUnion<TRoutes> | null,
   source: 'props' | 'hook' | 'component',
-  reject: RouterReject<RejectionType<TRejections>>,
+  reject: RouterReject<TRejections>,
   push: RouterPush<TRoutes>,
   replace: RouterReplace<TRoutes>,
 }
