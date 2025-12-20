@@ -126,9 +126,6 @@ export function createRouter<
       // On push update the history, and push new route, and return
       case 'PUSH':
         history.update(url, options)
-        if (isExternal(url)) {
-          return
-        }
         await push(...beforeResponse.to)
         return
 
@@ -146,6 +143,10 @@ export function createRouter<
 
       default:
         throw new Error(`Switch is not exhaustive for before hook response status: ${JSON.stringify(beforeResponse satisfies never)}`)
+    }
+
+    if (isExternal(url)) {
+      return
     }
 
     const currentNavigationId = navigationId

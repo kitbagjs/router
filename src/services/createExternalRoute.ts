@@ -27,13 +27,14 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
   const meta = options.meta ?? {}
   const host = toWithParams(options.host)
   const context = options.context ?? []
-  const hooks = createRouteHooks(context)
+  const { store, ...hooks } = createRouteHooks(context)
   const rawRoute = markRaw({ id, meta: {}, state: {}, ...options })
 
   const route = {
     id,
     matched: rawRoute,
     matches: [rawRoute],
+    hooks: [store],
     name,
     host,
     path,

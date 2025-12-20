@@ -34,13 +34,14 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
   const meta = options.meta ?? {}
   const state = options.state ?? {}
   const context = options.context ?? []
-  const hooks = createRouteHooks(context)
+  const { store, ...hooks } = createRouteHooks(context)
   const rawRoute = markRaw({ id, meta, state, ...options, props })
 
   const route = {
     id,
     matched: rawRoute,
     matches: [rawRoute],
+    hooks: [store],
     name,
     path,
     query,

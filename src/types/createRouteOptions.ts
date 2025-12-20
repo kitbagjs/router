@@ -19,7 +19,6 @@ import { ToName } from './name'
 import { WithHooks } from './hooks'
 import { ToWithParams, WithParams } from '@/services/withParams'
 import { RouteContext, ToRouteContext } from './routeContext'
-import { combineRouteHooks } from '@/services/combineRouteHooks'
 
 export type WithHost<THost extends string | WithParams = string | WithParams> = {
   /**
@@ -202,7 +201,7 @@ export function combineRoutes(parent: Route, child: Route): Route {
     meta: combineMeta(parent.meta, child.meta),
     state: combineState(parent.state, child.state),
     hash: combineHash(parent.hash, child.hash),
-    store: combineRouteHooks(parent.store, child.store),
+    hooks: [...parent.hooks, ...child.hooks],
     matches: [...parent.matches, child.matched],
     context: [...parent.context, ...child.context],
     host: parent.host,

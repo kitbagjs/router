@@ -7,6 +7,7 @@ export type RouterRoute<TRoute extends ResolvedRoute = ResolvedRoute> = {
   readonly name: TRoute['name'],
   readonly matched: TRoute['matched'],
   readonly matches: TRoute['matches'],
+  readonly hooks: TRoute['hooks'],
   readonly hash: TRoute['hash'],
   readonly update: RouteUpdate<TRoute>,
   readonly href: TRoute['href'],

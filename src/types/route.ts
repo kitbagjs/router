@@ -88,15 +88,15 @@ export type Route<
    */
   context: TContext,
   /**
+   * The stores for routes including ancestors.
+   * Order of routes will be from greatest ancestor to narrowest matched.
+   */
+  hooks: RouterRouteHooks[],
+  /**
   * A value that represents how many parents a route has. Used for route matching
   * @internal
   */
   depth: number,
-  /**
-  * A value that represents how many parents a route has. Used for route matching
-   * @internal
-   */
-  store: RouterRouteHooks,
 }
 
 export type GenericRoute = {

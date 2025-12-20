@@ -40,6 +40,7 @@ export function createRouterReject(rejections: Rejection[]): CreateRouterReject 
       id: route.id,
       matched: route,
       matches: [route],
+      hooks: [],
       name: type,
       query: createResolvedRouteQuery(''),
       params: {},
