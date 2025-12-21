@@ -1,11 +1,12 @@
 import { routeParamsAreValid } from '@/services/paramValidation'
-import { isNamedRoute, routePathMatches, routeQueryMatches, routeHashMatches } from '@/services/routeMatchRules'
+import { isNamedRoute, routeHostMatches, routePathMatches, routeQueryMatches, routeHashMatches } from '@/services/routeMatchRules'
 import { getRouteScoreSortMethod } from '@/services/routeMatchScore'
 import { Route, Routes } from '@/types/route'
 import { RouteMatchRule } from '@/types/routeMatchRule'
 
 const rules: RouteMatchRule[] = [
   isNamedRoute,
+  routeHostMatches,
   routePathMatches,
   routeQueryMatches,
   routeHashMatches,

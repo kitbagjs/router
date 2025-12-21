@@ -37,6 +37,12 @@ export function splitByMatches(string: string, regexp: RegExp): string[] {
   return slices
 }
 
+export function generateRouteHostRegexPattern(route: Route): RegExp {
+  const hostRegex = replaceParamSyntaxWithCatchAllsAndEscapeRest(route.host.value)
+
+  return new RegExp(`^(?:https?://)?${hostRegex}$`, 'i')
+}
+
 export function generateRoutePathRegexPattern(route: Route): RegExp {
   const pathRegex = replaceParamSyntaxWithCatchAllsAndEscapeRest(route.path.value)
 

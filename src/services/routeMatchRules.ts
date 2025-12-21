@@ -1,10 +1,21 @@
 import { parseUrl } from '@/services/urlParser'
-import { generateRoutePathRegexPattern, generateRouteQueryRegexPatterns } from '@/services/routeRegex'
+import { generateRouteHostRegexPattern, generateRoutePathRegexPattern, generateRouteQueryRegexPatterns } from '@/services/routeRegex'
 import { RouteMatchRule } from '@/types/routeMatchRule'
 import { stringHasValue } from '@/utilities'
 
 export const isNamedRoute: RouteMatchRule = (route) => {
   return 'name' in route.matched && !!route.matched.name
+}
+
+export const routeHostMatches: RouteMatchRule = (route, url) => {
+  const { host } = parseUrl(url)
+  const hostPattern = generateRouteHostRegexPattern(route)
+
+  if (!host || !route.host.value) {
+    return true
+  }
+
+  return hostPattern.test(host)
 }
 
 export const routePathMatches: RouteMatchRule = (route, url) => {

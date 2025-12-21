@@ -1,9 +1,67 @@
 import { describe, expect, test } from 'vitest'
 import { createRoute } from '@/services/createRoute'
-import { routeHashMatches, routePathMatches, routeQueryMatches } from '@/services/routeMatchRules'
+import { routeHashMatches, routeHostMatches, routePathMatches, routeQueryMatches } from '@/services/routeMatchRules'
 import { withDefault } from '@/services/withDefault'
 import { component } from '@/utilities/testHelpers'
 import { withParams } from '@/services/withParams'
+import { createExternalRoute } from '@/services/createExternalRoute'
+
+describe('routeHostMatches', () => {
+  test('given url without host, returns true', () => {
+    const urlWithoutHost = '/somewhere?with=query'
+    const route = createExternalRoute({
+      name: 'with-host',
+      host: 'www.kitbag.io',
+    })
+
+    const response = routeHostMatches(route, urlWithoutHost)
+
+    expect(response).toBe(true)
+  })
+
+  test('given route.host without host, returns true', () => {
+    const route = createRoute({
+      name: 'without-host',
+    })
+
+    const response = routeHostMatches(route, 'http://www.kitbag.io/')
+
+    expect(response).toBe(true)
+  })
+
+  test.each([
+    ['http://www.kitbag.io'],
+    ['http://www.kitbag.io/'],
+    ['http://www.kitbag.io/is/empty'],
+    ['http://www.kitbag.io/is/empty?with=query'],
+  ])('given url and route.host that does NOT match, returns false', (url) => {
+    const route = createExternalRoute({
+      name: 'not-matches',
+      host: 'www.vuejs.org',
+    })
+
+    const response = routeHostMatches(route, url)
+
+    expect(response).toBe(false)
+  })
+
+  test.each([
+    ['http://www.kitbag.io'],
+    ['http://www.kitbag.io/'],
+    ['https://www.kitbag.io/'],
+    ['https://www.kitbag.io/is/empty'],
+    ['https://www.kitbag.io/is/empty?with=query'],
+  ])('given url and route.host that does match, returns true', (url) => {
+    const route = createExternalRoute({
+      name: 'host-matches',
+      host: 'www.kitbag.io',
+    })
+
+    const response = routeHostMatches(route, url)
+
+    expect(response).toBe(true)
+  })
+})
 
 describe('routePathMatches', () => {
   test.each([
