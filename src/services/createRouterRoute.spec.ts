@@ -1,27 +1,30 @@
 import { expect, test, vi } from 'vitest'
 import { reactive } from 'vue'
 import { createRouterRoute, isRouterRoute } from '@/services/createRouterRoute'
-import { mockResolvedRoute, mockRoute } from '@/utilities/testHelpers'
+import { createRoute } from './createRoute'
+import { createResolvedRoute } from './createResolvedRoute'
 
 test('isRouterRoute returns correct response', () => {
-  const resolved = mockResolvedRoute(mockRoute('isRouterRoute'), [])
+  const route = createRoute({ name: 'isRouterRoute' })
+  const resolved = createResolvedRoute(route, {})
   const push = vi.fn()
   const routerKey = Symbol()
 
-  const route = createRouterRoute(routerKey, reactive(resolved), push)
+  const routerRoute = createRouterRoute(routerKey, reactive(resolved), push)
 
-  expect(isRouterRoute(routerKey, route)).toBe(true)
+  expect(isRouterRoute(routerKey, routerRoute)).toBe(true)
   expect(isRouterRoute(routerKey, {})).toBe(false)
 })
 
 test('sending state, includes state in push options', () => {
-  const resolved = mockResolvedRoute(mockRoute('state'), [])
+  const route = createRoute({ name: 'state' })
+  const resolved = createResolvedRoute(route, {})
   const push = vi.fn()
   const routerKey = Symbol()
 
-  const route = createRouterRoute(routerKey, reactive(resolved), push)
+  const routerRoute = createRouterRoute(routerKey, reactive(resolved), push)
 
-  route.update({}, { state: { foo: 'foo' } })
+  routerRoute.update({}, { state: { foo: 'foo' } })
 
   expect(push).toBeCalledWith(
     'state',
@@ -29,7 +32,7 @@ test('sending state, includes state in push options', () => {
     { state: { foo: 'foo' } },
   )
 
-  route.update('param', 123, { state: { bar: 'bar' } })
+  routerRoute.update('param', 123, { state: { bar: 'bar' } })
 
   expect(push).toBeCalledWith(
     'state',
