@@ -173,8 +173,8 @@ export type RouterRoutes<TRouter extends Router> = TRouter extends Router<infer 
   : Routes
 
 export type RouterRejections<TRouter extends Router> = TRouter extends Router<any, infer TOptions extends RouterOptions, infer TPlugins extends RouterPlugin>
-  ? [...TOptions['rejections'] extends Rejection[] ? TOptions['rejections'] : [], ...TPlugins['rejections'] extends Rejection[] ? TPlugins['rejections'] : []]
-  : never
+  ? ExtractRejections<TOptions> | ExtractRejections<TPlugins>
+  : []
 
 export type RouterRouteName<TRouter extends Router> = TRouter extends Router<infer TRoutes extends Routes>
   ? RoutesName<TRoutes>
