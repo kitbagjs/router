@@ -2,7 +2,7 @@ import { Param, ParamGetSet } from '@/types/paramTypes'
 import { Routes } from '@/types/route'
 import { isRecord } from '@/utilities/guards'
 import { StandardSchemaV1 } from '@standard-schema/spec'
-import type { ZodSchema } from 'zod'
+import { type ZodType } from 'zod'
 
 export interface ZodSchemaLike extends StandardSchemaV1<any> {
   parse: (input: any) => any,
@@ -14,15 +14,31 @@ let zod: ZodSchemas | null = null
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 async function getZodInstances() {
   const {
-    ZodSchema,
+    ZodType,
     ZodString,
+    ZodIPv4,
+    ZodIPv6,
+    ZodCIDRv4,
+    ZodCIDRv6,
+    ZodURL,
+    ZodEmail,
+    ZodUUID,
+    ZodBase64,
+    ZodCUID,
+    ZodCUID2,
+    ZodULID,
+    ZodJWT,
+    ZodBigInt,
+    ZodNaN,
     ZodBoolean,
     ZodDate,
+    ZodISODateTime,
+    ZodISODate,
+    ZodISOTime,
     ZodNumber,
     ZodLiteral,
     ZodObject,
     ZodEnum,
-    ZodNativeEnum,
     ZodArray,
     ZodTuple,
     ZodUnion,
@@ -32,19 +48,34 @@ async function getZodInstances() {
     ZodSet,
     ZodIntersection,
     ZodPromise,
-    ZodFunction,
   } = await import('zod')
 
   return {
-    ZodSchema,
+    ZodType,
     ZodString,
+    ZodIPv4,
+    ZodIPv6,
+    ZodCIDRv4,
+    ZodCIDRv6,
+    ZodURL,
+    ZodEmail,
+    ZodUUID,
+    ZodBase64,
+    ZodCUID,
+    ZodCUID2,
+    ZodULID,
+    ZodJWT,
+    ZodBigInt,
+    ZodNaN,
     ZodBoolean,
     ZodDate,
+    ZodISODateTime,
+    ZodISODate,
+    ZodISOTime,
     ZodNumber,
     ZodLiteral,
     ZodObject,
     ZodEnum,
-    ZodNativeEnum,
     ZodArray,
     ZodTuple,
     ZodUnion,
@@ -54,7 +85,6 @@ async function getZodInstances() {
     ZodSet,
     ZodIntersection,
     ZodPromise,
-    ZodFunction,
   }
 }
 
@@ -86,15 +116,15 @@ export async function initZod(): Promise<void> {
   }
 }
 
-export function isZodParam(value: unknown): value is ZodSchema {
+export function isZodParam(value: unknown): value is ZodType {
   if (!zod) {
     return false
   }
 
-  return value instanceof zod.ZodSchema
+  return value instanceof zod.ZodType
 }
 
-export function createZodParam<T>(schema: ZodSchema<T>): ParamGetSet<T> {
+export function createZodParam<T>(schema: ZodType<T>): ParamGetSet<T> {
   return {
     get: (value, { invalid }) => {
       try {
@@ -142,11 +172,11 @@ function tryAll<T>(fns: (() => T)[]): T {
 }
 
 // Sorts string schemas last
-function sortZodSchemas(schemaA: ZodSchema, schemaB: ZodSchema): number {
+function sortZodSchemas(schemaA: ZodType, schemaB: ZodType): number {
   return zod?.ZodString && schemaA instanceof zod.ZodString ? 1 : zod?.ZodString && schemaB instanceof zod.ZodString ? -1 : 0
 }
 
-function parseZodValue(value: string, schema: ZodSchema): unknown {
+function parseZodValue(value: string, schema: ZodType): unknown {
   if (!zod) {
     throw new Error('Zod is not initialized')
   }
@@ -167,6 +197,14 @@ function parseZodValue(value: string, schema: ZodSchema): unknown {
     return schema.parse(Number(value))
   }
 
+  if (schema instanceof zod.ZodBigInt) {
+    return schema.parse(BigInt(value))
+  }
+
+  if (schema instanceof zod.ZodNaN) {
+    return schema.parse(Number(value))
+  }
+
   if (schema instanceof zod.ZodLiteral) {
     return tryAll([
       () => schema.parse(Number(value)),
@@ -183,13 +221,6 @@ function parseZodValue(value: string, schema: ZodSchema): unknown {
     return schema.parse(value)
   }
 
-  if (schema instanceof zod.ZodNativeEnum) {
-    return tryAll([
-      () => schema.parse(Number(value)),
-      () => schema.parse(value),
-    ])
-  }
-
   if (schema instanceof zod.ZodArray) {
     return schema.parse(JSON.parse(value, reviver))
   }
@@ -200,18 +231,18 @@ function parseZodValue(value: string, schema: ZodSchema): unknown {
 
   if (schema instanceof zod.ZodUnion) {
     const schemas = Array
-      .from(schema._def.options as ZodSchema[])
+      .from(schema.def.options as ZodType[])
       .sort(sortZodSchemas)
-      .map((schema: ZodSchema) => () => parseZodValue(value, schema))
+      .map((schema: ZodType) => () => parseZodValue(value, schema))
 
     return tryAll(schemas)
   }
 
   if (schema instanceof zod.ZodDiscriminatedUnion) {
     const schemas = Array
-      .from(schema.options as ZodSchema[])
+      .from(schema.options as ZodType[])
       .sort(sortZodSchemas)
-      .map((schema: ZodSchema) => () => parseZodValue(value, schema))
+      .map((schema: ZodType) => () => parseZodValue(value, schema))
 
     return tryAll(schemas)
   }
@@ -236,19 +267,75 @@ function parseZodValue(value: string, schema: ZodSchema): unknown {
     throw new Error('Promise schemas are not supported')
   }
 
-  if (schema instanceof zod.ZodFunction) {
-    throw new Error('Function schemas are not supported')
-  }
-
   return schema.parse(value)
 }
 
-function stringifyZodValue(value: unknown, schema: ZodSchema): string {
+function stringifyZodValue(value: unknown, schema: ZodType): string {
   if (!zod) {
     throw new Error('Zod is not initialized')
   }
 
   if (schema instanceof zod.ZodString) {
+    return schema.parse(value)
+  }
+
+  if (schema instanceof zod.ZodISODateTime) {
+    return schema.parse(value)
+  }
+
+  if (schema instanceof zod.ZodISODate) {
+    return schema.parse(value)
+  }
+
+  if (schema instanceof zod.ZodISOTime) {
+    return schema.parse(value)
+  }
+
+  if (schema instanceof zod.ZodIPv4) {
+    return schema.parse(value)
+  }
+
+  if (schema instanceof zod.ZodIPv6) {
+    return schema.parse(value)
+  }
+
+  if (schema instanceof zod.ZodCIDRv4) {
+    return schema.parse(value)
+  }
+
+  if (schema instanceof zod.ZodCIDRv6) {
+    return schema.parse(value)
+  }
+
+  if (schema instanceof zod.ZodURL) {
+    return schema.parse(value)
+  }
+
+  if (schema instanceof zod.ZodEmail) {
+    return schema.parse(value)
+  }
+
+  if (schema instanceof zod.ZodUUID) {
+    return schema.parse(value)
+  }
+
+  if (schema instanceof zod.ZodBase64) {
+    return schema.parse(value)
+  }
+
+  if (schema instanceof zod.ZodCUID) {
+    return schema.parse(value)
+  }
+
+  if (schema instanceof zod.ZodCUID2) {
+    return schema.parse(value)
+  }
+
+  if (schema instanceof zod.ZodULID) {
+    return schema.parse(value)
+  }
+
+  if (schema instanceof zod.ZodJWT) {
     return schema.parse(value)
   }
 
@@ -264,8 +351,17 @@ function stringifyZodValue(value: unknown, schema: ZodSchema): string {
     return schema.parse(Number(value)).toString()
   }
 
-  if (schema instanceof zod.ZodLiteral) {
+  if (schema instanceof zod.ZodBigInt) {
+    return schema.parse(BigInt(String(value))).toString()
+  }
+
+  if (schema instanceof zod.ZodNaN) {
     return schema.parse(value).toString()
+  }
+
+  if (schema instanceof zod.ZodLiteral) {
+    const parsed = schema.parse(value)
+    return parsed != null ? parsed.toString() : String(parsed)
   }
 
   if (schema instanceof zod.ZodObject) {
@@ -273,11 +369,8 @@ function stringifyZodValue(value: unknown, schema: ZodSchema): string {
   }
 
   if (schema instanceof zod.ZodEnum) {
-    return schema.parse(value)
-  }
-
-  if (schema instanceof zod.ZodNativeEnum) {
-    return schema.parse(value).toString()
+    const parsed = schema.parse(value)
+    return typeof parsed === 'string' ? parsed : String(parsed)
   }
 
   if (schema instanceof zod.ZodArray) {
@@ -290,18 +383,18 @@ function stringifyZodValue(value: unknown, schema: ZodSchema): string {
 
   if (schema instanceof zod.ZodUnion) {
     const schemas = Array
-      .from(schema._def.options as ZodSchema[])
+      .from(schema.def.options as ZodType[])
       .sort(sortZodSchemas)
-      .map((schema: ZodSchema) => () => stringifyZodValue(value, schema))
+      .map((schema: ZodType) => () => stringifyZodValue(value, schema))
 
     return tryAll(schemas)
   }
 
   if (schema instanceof zod.ZodDiscriminatedUnion) {
     const schemas = Array
-      .from(schema.options as ZodSchema[])
+      .from(schema.options as ZodType[])
       .sort(sortZodSchemas)
-      .map((schema: ZodSchema) => () => stringifyZodValue(value, schema))
+      .map((schema: ZodType) => () => stringifyZodValue(value, schema))
 
     return tryAll(schemas)
   }
@@ -328,10 +421,6 @@ function stringifyZodValue(value: unknown, schema: ZodSchema): string {
 
   if (schema instanceof zod.ZodPromise) {
     throw new Error('Promise schemas are not supported')
-  }
-
-  if (schema instanceof zod.ZodFunction) {
-    throw new Error('Function schemas are not supported')
   }
 
   return JSON.stringify(schema.parse(value))
