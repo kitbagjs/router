@@ -25,7 +25,6 @@ import { ResolvedRoute } from '@/types/resolved'
 import { createResolvedRouteForUrl } from '@/services/createResolvedRouteForUrl'
 import { combineUrl } from '@/services/urlCombine'
 import { RouterReject } from '@/types/routerReject'
-import { RejectionType } from '@/types/rejection'
 import { EmptyRouterPlugin, RouterPlugin } from '@/types/routerPlugin'
 import { getRoutesForRouter } from './getRoutesForRouter'
 import { getGlobalHooksForRouter } from './getGlobalHooksForRouter'
@@ -88,7 +87,7 @@ export function createRouter<
   const isGlobalRouter = options?.isGlobalRouter ?? true
   const routerKey = isGlobalRouter ? routerInjectionKey : Symbol()
   const routes = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options?.base)
-  const hooks = createRouterHooks(routerKey)
+  const hooks = createRouterHooks()
 
   hooks.addGlobalRouteHooks(getGlobalHooksForRouter(options, plugins))
 
@@ -290,12 +289,12 @@ export function createRouter<
     return push(source, options)
   }
 
-  const reject: RouterReject<RejectionType<TOptions['rejections']> | RejectionType<TPlugin['rejections']>> = (type) => {
+  const reject: RouterReject<TOptions['rejections'] | TPlugin['rejections']> = (type) => {
     setRejection(type)
   }
 
   const { setRejection, rejection, getRejectionRoute } = createRouterReject([
-    ...plugins.flatMap((plugin) => plugin.rejections ?? []),
+    ...plugins.flatMap((plugin) => plugin.rejections),
     ...options?.rejections ?? [],
   ])
 

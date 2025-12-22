@@ -4,12 +4,10 @@ import { createRouterHooks } from '@/services/createRouterHooks'
 import { BeforeRouteHook } from '@/types/hooks'
 import { ResolvedRoute } from '@/types/resolved'
 import { component } from '@/utilities/testHelpers'
-import { Router } from '@/types/router'
-import { InjectionKey } from 'vue'
 
 test('calls hook with correct routes', () => {
   const hook = vi.fn()
-  const { runBeforeRouteHooks } = createRouterHooks(Symbol() as InjectionKey<Router>)
+  const { runBeforeRouteHooks } = createRouterHooks()
 
   const toOptions = {
     id: Math.random().toString(),
@@ -82,7 +80,7 @@ test.each<{ type: string, status: string, hook: BeforeRouteHook }>([
     },
   },
 ])('Returns correct status when hook is called', async ({ status, hook }) => {
-  const { runBeforeRouteHooks } = createRouterHooks(Symbol() as InjectionKey<Router>)
+  const { runBeforeRouteHooks } = createRouterHooks()
 
   const toOptions = {
     id: Math.random().toString(),
@@ -137,7 +135,7 @@ test('hook is called in order', async () => {
   const hookA = vi.fn()
   const hookB = vi.fn()
   const hookC = vi.fn()
-  const { runBeforeRouteHooks } = createRouterHooks(Symbol() as InjectionKey<Router>)
+  const { runBeforeRouteHooks } = createRouterHooks()
 
   const toOptions = {
     id: Math.random().toString(),
@@ -200,7 +198,7 @@ test('multiple onError callbacks run in order', () => {
   const errorHook2 = vi.fn()
   const errorHook3 = vi.fn()
 
-  const { runErrorHooks, onError } = createRouterHooks(Symbol() as InjectionKey<Router>)
+  const { runErrorHooks, onError } = createRouterHooks()
 
   onError(errorHook1)
   onError(errorHook2)
@@ -246,7 +244,7 @@ test('when onError callback calls reject, other onError callbacks do not run', (
   })
   const errorHook2 = vi.fn(() => false)
   const errorHook3 = vi.fn(() => false)
-  const { runErrorHooks, onError } = createRouterHooks(Symbol() as InjectionKey<Router>)
+  const { runErrorHooks, onError } = createRouterHooks()
 
   onError(errorHook1)
   onError(errorHook2)
@@ -289,7 +287,7 @@ test('when onError callback calls push, other onError callbacks do not run', () 
   })
   const errorHook2 = vi.fn(() => false)
   const errorHook3 = vi.fn(() => false)
-  const { runErrorHooks, onError } = createRouterHooks(Symbol() as InjectionKey<Router>)
+  const { runErrorHooks, onError } = createRouterHooks()
 
   onError(errorHook1)
   onError(errorHook2)
@@ -332,7 +330,7 @@ test('when onError callback calls replace, other onError callbacks do not run', 
   })
   const errorHook2 = vi.fn(() => false)
   const errorHook3 = vi.fn(() => false)
-  const { runErrorHooks, onError } = createRouterHooks(Symbol() as InjectionKey<Router>)
+  const { runErrorHooks, onError } = createRouterHooks()
 
   onError(errorHook1)
   onError(errorHook2)

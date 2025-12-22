@@ -1,6 +1,5 @@
 import { BuiltInRejectionType } from '@/services/createRouterReject'
-import { AsString } from './utilities'
+import { Rejection, RejectionType } from '@/types/rejection'
 
-export type RouterReject<
-  TRejectionType extends string
-> = (type: AsString<TRejectionType> | BuiltInRejectionType) => void
+export type RouterReject<TRejections extends Rejection[] | undefined> =
+<TSource extends (RejectionType<TRejections> | BuiltInRejectionType)>(type: TSource) => void

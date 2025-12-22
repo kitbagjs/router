@@ -10,6 +10,7 @@ import { InjectionKey } from 'vue'
 import { BuiltInRejectionType } from './createRouterReject'
 import { AsString } from '@/types/utilities'
 import { Routes } from '@/types/route'
+import { Rejection } from '@/types/rejection'
 
 /**
  * Defines the structure of a successful callback response.
@@ -46,27 +47,36 @@ export type RouterCallbackRejectResponse<TRejections extends string> = {
  */
 export type CallbackContextAbort = () => void
 
-export type RouterCallbackContext<TRouter extends Router> = {
-  reject: RouterReject<RouterRejections<TRouter>>,
-  push: RouterPush<RouterRoutes<TRouter>>,
-  replace: RouterReplace<RouterRoutes<TRouter>>,
+export type RouterCallbackContext<
+  TRoutes extends Routes = Routes,
+  TRejections extends Rejection[] = Rejection[]
+> = {
+  reject: RouterReject<TRejections>,
+  push: RouterPush<TRoutes>,
+  replace: RouterReplace<TRoutes>,
   abort: CallbackContextAbort,
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function createRouterCallbackContext<TRouter extends Router>(_routerKey: InjectionKey<TRouter>): RouterCallbackContext<TRouter> {
-  type TRoutes = RouterRoutes<TRouter>
-  type TRejections = RouterRejections<TRouter>
+export function createRouterCallbackContext<TRouter extends Router>(_routerKey: InjectionKey<TRouter>): RouterCallbackContext<
+  RouterRoutes<TRouter>,
+  RouterRejections<TRouter>
+>
 
-  const reject: RouterReject<TRejections> = (type: any) => {
+export function createRouterCallbackContext<
+  TRoutes extends Routes,
+  TRejections extends Rejection[]
+>(): RouterCallbackContext<TRoutes, TRejections>
+
+export function createRouterCallbackContext(): RouterCallbackContext {
+  const reject: RouterCallbackContext['reject'] = (type) => {
     throw new ContextRejectionError(type)
   }
 
-  const push: RouterPush<TRoutes> = (...parameters: any[]) => {
+  const push: RouterCallbackContext['push'] = (...parameters: any[]) => {
     throw new ContextPushError(parameters)
   }
 
-  const replace: RouterReplace<TRoutes> = (source: any, paramsOrOptions?: any, maybeOptions?: any) => {
+  const replace: RouterCallbackContext['replace'] = (source: any, paramsOrOptions?: any, maybeOptions?: any) => {
     if (isUrl(source)) {
       const options: RouterPushOptions = paramsOrOptions ?? {}
       throw new ContextPushError([source, { ...options, replace: true }])
