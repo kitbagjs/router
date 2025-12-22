@@ -13,7 +13,7 @@ describe('generateRouteHostRegexPattern', () => {
 
     const result = generateRouteHostRegexPattern(route)
 
-    const expected = new RegExp('^(?:https?://)?www\\.kitbag\\.io$', 'i')
+    const expected = new RegExp('^www\\.kitbag\\.io$', 'i')
     expect(result.toString()).toBe(expected.toString())
   })
 
@@ -25,7 +25,7 @@ describe('generateRouteHostRegexPattern', () => {
 
     const result = generateRouteHostRegexPattern(route)
 
-    const expected = new RegExp(`^(?:https?:\/\/)?${regexCatchAll}\\.kitbag\\.io$`, 'i')
+    const expected = new RegExp(`^${regexCatchAll}\\.kitbag\\.io$`, 'i')
     expect(result.toString()).toBe(expected.toString())
   })
 
@@ -38,7 +38,7 @@ describe('generateRouteHostRegexPattern', () => {
 
     const result = generateRouteHostRegexPattern(route)
 
-    const expected = new RegExp(`^(?:https?:\/\/)?${regexCatchAll}\\.kitbag\\.io$`, 'i')
+    const expected = new RegExp(`^${regexCatchAll}\\.kitbag\\.io$`, 'i')
     expect(result.toString()).toBe(expected.toString())
   })
 
@@ -51,7 +51,7 @@ describe('generateRouteHostRegexPattern', () => {
 
     const result = generateRouteHostRegexPattern(route)
 
-    const expected = new RegExp('^(?:https?:\/\/)?www\\.with\\$\\]regex\\[params\\*$', 'i')
+    const expected = new RegExp('^www\\.with\\$\\]regex\\[params\\*$', 'i')
     expect(result.toString()).toBe(expected.toString())
   })
 })

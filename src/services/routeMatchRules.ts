@@ -8,14 +8,17 @@ export const isNamedRoute: RouteMatchRule = (route) => {
 }
 
 export const routeHostMatches: RouteMatchRule = (route, url) => {
-  const { host } = parseUrl(url)
-  const hostPattern = generateRouteHostRegexPattern(route)
+  const { protocol, host } = parseUrl(url)
+  const urlIsRelative = !host
+  const routeIsRelative = !route.host.value
 
-  if (!host || !route.host.value) {
-    return true
+  if (urlIsRelative) {
+    return routeIsRelative
   }
 
-  return hostPattern.test(host)
+  const hostPattern = generateRouteHostRegexPattern(route)
+
+  return hostPattern.test(`${protocol}//${host}`)
 }
 
 export const routePathMatches: RouteMatchRule = (route, url) => {
