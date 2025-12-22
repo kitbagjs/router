@@ -56,11 +56,11 @@
     "vitepress": "^1.6.4",
     "vitest": "^4.0.16",
     "vue-tsc": "^3.2.0",
-    "zod": "4.0.0"
+    "zod": "4.2.1"
   },
   "peerDependencies": {
     "vue": "^3.5.0",
-    "zod": "4.0.0"
+    "zod": "4.2.1"
   },
   "peerDependenciesMeta": {
     "zod": {
