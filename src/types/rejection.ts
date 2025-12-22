@@ -21,3 +21,5 @@ unknown extends TRejections
       : TRejections extends Rejection[]
         ? TRejections[number]['type']
         : never
+
+export type ExtractRejections<T> = T extends { rejections: infer TRejections extends Rejection[] } ? TRejections : []

@@ -11,7 +11,7 @@ import { RouterResolve, RouterResolveOptions } from '@/types/routerResolve'
 import { RouterReject } from '@/types/routerReject'
 import { RouterPlugin } from '@/types/routerPlugin'
 import { RoutesName } from '@/types/routesMap'
-import { Rejection } from '@/types/rejection'
+import { ExtractRejections, Rejection } from '@/types/rejection'
 
 /**
  * Options to initialize a {@link Router} instance.
@@ -51,8 +51,6 @@ export type RouterOptions = WithHooks & {
    */
   isGlobalRouter?: boolean,
 }
-
-type ExtractRejections<T> = T extends { rejections: infer TRejections extends Rejection[] } ? TRejections : []
 
 export type Router<
   TRoutes extends Routes = any,
