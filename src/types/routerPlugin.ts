@@ -1,17 +1,13 @@
 import { BeforeRouteHook, AfterRouteHook } from './hooks'
 import { Routes } from './route'
 import { MaybeArray } from './utilities'
-import { Rejection } from './rejection'
+import { Rejection, ExtractRejections } from './rejection'
 
 export type EmptyRouterPlugin = RouterPlugin<[], []>
 
 export type ToRouterPlugin<TPlugin extends CreateRouterPluginOptions> = TPlugin extends { routes: infer TRoutes extends Routes }
-  ? TPlugin extends { rejections: infer TRejections extends Rejection[] }
-    ? RouterPlugin<TRoutes, TRejections>
-    : RouterPlugin<TRoutes, []>
-  : TPlugin extends { rejections: infer TRejections extends Rejection[] }
-    ? RouterPlugin<[], TRejections>
-    : RouterPlugin<[], []>
+  ? RouterPlugin<TRoutes, ExtractRejections<TPlugin>>
+  : RouterPlugin<[], ExtractRejections<TPlugin>>
 
 export type CreateRouterPluginOptions = {
   routes?: Routes,

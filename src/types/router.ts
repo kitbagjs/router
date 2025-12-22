@@ -11,8 +11,8 @@ import { RouterResolve, RouterResolveOptions } from '@/types/routerResolve'
 import { RouterReject } from '@/types/routerReject'
 import { RouterPlugin } from '@/types/routerPlugin'
 import { RoutesName } from '@/types/routesMap'
-import { Rejection } from '@/types/rejection'
 import { ToRouteContext } from '@/types/routeContext'
+import { ExtractRejections, Rejection } from '@/types/rejection'
 
 /**
  * Options to initialize a {@link Router} instance.
@@ -86,7 +86,7 @@ export type Router<
   /**
    * Handles route rejection based on a specified rejection type.
    */
-  reject: RouterReject<[...(TOptions['rejections'] extends Rejection[] ? TOptions['rejections'] : []), ...(TPlugin['rejections'] extends Rejection[] ? TPlugin['rejections'] : [])]>,
+  reject: RouterReject<[...ExtractRejections<TOptions>, ...ExtractRejections<TPlugin>]>,
   /**
    * Forces the router to re-evaluate the current route.
    */
@@ -172,8 +172,8 @@ export type RouterRoutes<TRouter extends Router> = TRouter extends Router<infer 
   : Routes
 
 export type RouterRejections<TRouter extends Router> = TRouter extends Router<any, infer TOptions extends RouterOptions, infer TPlugins extends RouterPlugin>
-  ? [...TOptions['rejections'] extends Rejection[] ? TOptions['rejections'] : [], ...TPlugins['rejections'] extends Rejection[] ? TPlugins['rejections'] : []]
-  : never
+  ? ExtractRejections<TOptions> | ExtractRejections<TPlugins>
+  : []
 
 export type RouterRouteName<TRouter extends Router> = TRouter extends Router<infer TRoutes extends Routes>
   ? RoutesName<TRoutes>
