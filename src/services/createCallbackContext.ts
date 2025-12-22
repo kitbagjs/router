@@ -1,7 +1,7 @@
 import { ContextAbortError } from '@/errors/contextAbortError'
 import { ContextPushError } from '@/errors/contextPushError'
 import { ContextRejectionError } from '@/errors/contextRejectionError'
-import { RegisteredRejectionType, RegisteredRouterPush, RegisteredRouterReject, RegisteredRouterReplace } from '@/types/register'
+import { RegisteredRouterPush, RegisteredRouterReject, RegisteredRouterReplace } from '@/types/register'
 import { RouterPushOptions } from '@/types/routerPush'
 import { isUrl } from '@/types/url'
 
@@ -32,7 +32,7 @@ export type CallbackPushResponse = {
  */
 export type CallbackRejectResponse = {
   status: 'REJECT',
-  type: RegisteredRejectionType,
+  type: string,
 }
 
 /**

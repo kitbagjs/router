@@ -11,4 +11,13 @@ export type Rejection<TType extends string = string> = {
   component: Component,
 }
 
-export type RejectionType<TRejections extends Rejection[] | undefined> = TRejections extends Rejection[] ? TRejections[number]['type'] : never
+export type RejectionType<TRejections extends Rejection[] | undefined> =
+unknown extends TRejections
+  ? never
+  : Rejection[] extends TRejections
+    ? string
+    : undefined extends TRejections
+      ? string
+      : TRejections extends Rejection[]
+        ? TRejections[number]['type']
+        : never

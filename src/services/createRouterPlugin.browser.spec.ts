@@ -26,7 +26,7 @@ test('given a plugin, adds the routes to the router', async () => {
 
 test('given a plugin, adds the rejections to the router', async () => {
   const pluginRejection = createRejection({
-    type: 'plugin',
+    type: 'from-plugin',
     component: { template: '<div>This is a plugin rejection</div>' },
   })
 
@@ -48,7 +48,7 @@ test('given a plugin, adds the rejections to the router', async () => {
     },
   })
 
-  router.reject('plugin')
+  router.reject('from-plugin')
 
   await flushPromises()
 
