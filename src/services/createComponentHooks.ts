@@ -4,12 +4,14 @@ import { createUseRouterHooks } from '@/compositions/useRouterHooks'
 import { AddRouterAfterRouteHook, AddRouterBeforeRouteHook, AfterRouteHookLifecycle, BeforeRouteHookLifecycle, RouterAfterRouteHook, RouterBeforeRouteHook } from '@/types/hooks'
 import { Routes } from '@/types/route'
 import { Router, RouterRejections, RouterRoutes } from '@/types/router'
+import { Rejection } from '@/types/rejection'
 
-function createComponentBeforeHook<TRouter extends Router>(routerKey: InjectionKey<TRouter>, lifecycle: BeforeRouteHookLifecycle): AddRouterBeforeRouteHook<RouterRoutes<TRouter>, RouterRejections<TRouter>> {
+function createComponentBeforeHook<TRouter extends Router>(routerKey: InjectionKey<TRouter>, lifecycle: BeforeRouteHookLifecycle): AddRouterBeforeRouteHook<RouterRoutes<TRouter>, RouterRejections<TRouter>>
+function createComponentBeforeHook(routerKey: symbol, lifecycle: BeforeRouteHookLifecycle): AddRouterBeforeRouteHook {
   const useRouterDepth = createUseRouterDepth(routerKey)
   const useRouterHooks = createUseRouterHooks(routerKey)
 
-  return (hook: RouterBeforeRouteHook<RouterRoutes<TRouter>, RouterRejections<TRouter>>) => {
+  return (hook: RouterBeforeRouteHook) => {
     const depth = useRouterDepth()
     const hooks = useRouterHooks()
 
@@ -21,11 +23,12 @@ function createComponentBeforeHook<TRouter extends Router>(routerKey: InjectionK
   }
 }
 
-function createComponentAfterHook<TRouter extends Router>(routerKey: InjectionKey<TRouter>, lifecycle: AfterRouteHookLifecycle): AddRouterAfterRouteHook<RouterRoutes<TRouter>, RouterRejections<TRouter>> {
+function createComponentAfterHook<TRouter extends Router>(routerKey: InjectionKey<TRouter>, lifecycle: AfterRouteHookLifecycle): AddRouterAfterRouteHook<RouterRoutes<TRouter>, RouterRejections<TRouter>>
+function createComponentAfterHook(routerKey: symbol, lifecycle: AfterRouteHookLifecycle): AddRouterAfterRouteHook {
   const useRouterDepth = createUseRouterDepth(routerKey)
   const useRouterHooks = createUseRouterHooks(routerKey)
 
-  return (hook: RouterAfterRouteHook<RouterRoutes<TRouter>, RouterRejections<TRouter>>) => {
+  return (hook: RouterAfterRouteHook) => {
     const depth = useRouterDepth()
     const hooks = useRouterHooks()
 
@@ -39,7 +42,7 @@ function createComponentAfterHook<TRouter extends Router>(routerKey: InjectionKe
 
 type ComponentHooks<
   TRoutes extends Routes,
-  TRejections extends string
+  TRejections extends Rejection[]
 > = {
   onBeforeRouteLeave: AddRouterBeforeRouteHook<TRoutes, TRejections>,
   onBeforeRouteUpdate: AddRouterBeforeRouteHook<TRoutes, TRejections>,
