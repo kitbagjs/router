@@ -21,6 +21,7 @@ export function createResolvedRoute(route: Route, params: Record<string, unknown
     matched: route.matched,
     matches: route.matches,
     name: route.name,
+    hooks: route.hooks,
     query: createResolvedRouteQuery(search),
     params: getRouteParamValues(route, href),
     state: getStateValues(route.state, options.state),

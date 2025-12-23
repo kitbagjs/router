@@ -22,6 +22,7 @@ export function createResolvedRouteForUrl(routes: Routes, url: string, state?: P
     matched: route.matched,
     matches: route.matches,
     name: route.name,
+    hooks: route.hooks,
     query: createResolvedRouteQuery(searchParams),
     params: getRouteParamValues(route, url),
     state: getStateValues(route.state, state),

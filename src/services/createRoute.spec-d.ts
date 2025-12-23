@@ -6,11 +6,14 @@ import { Identity } from '@/types/utilities'
 import echo from '@/components/echo'
 import { component } from '@/utilities/testHelpers'
 import { withParams } from '@/services/withParams'
+import { InternalRouteHooks } from '@/types/hooks'
 
 test('empty options returns an empty route', () => {
   const route = createRoute({})
 
-  expectTypeOf<typeof route>().toEqualTypeOf<Route>()
+  type RouteWithHooks = Route & InternalRouteHooks<undefined>
+
+  expectTypeOf<typeof route>().toEqualTypeOf<RouteWithHooks>()
 })
 
 test('options with name', () => {

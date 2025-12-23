@@ -2,57 +2,56 @@ import { expect, test, vi } from 'vitest'
 import { getBeforeRouteHooksFromRoutes } from '@/services/getRouteHooks'
 import { createRoute } from './createRoute'
 import { createResolvedRoute } from './createResolvedRoute'
-import { asArray } from '@/utilities/array'
 
 test('given two ResolvedRoutes returns before timing hooks in correct order', () => {
-  const parent = {
+  const parent = createRoute({
     name: 'parentA',
-    onBeforeRouteUpdate: [vi.fn()],
-  }
-  const routeParent = createRoute(parent)
+  })
 
-  const childA = {
+  parent.onBeforeRouteUpdate(vi.fn())
+
+  const childA = createRoute({
     name: 'childA',
-    parent: routeParent,
-    onBeforeRouteEnter: [vi.fn()],
-    onBeforeRouteUpdate: [vi.fn()],
-    onBeforeRouteLeave: [vi.fn()],
-  }
-  const routeChildA = createRoute(childA)
+    parent: parent,
+  })
 
-  const grandchildA = {
+  childA.onBeforeRouteEnter(vi.fn())
+  childA.onBeforeRouteUpdate(vi.fn())
+  childA.onBeforeRouteLeave(vi.fn())
+
+  const grandchildA = createRoute({
     name: 'grandchildA',
-    parent: routeChildA,
-    onBeforeRouteEnter: [vi.fn()],
-    onBeforeRouteUpdate: [vi.fn()],
-    onBeforeRouteLeave: [vi.fn()],
-  }
-  const routeGrandchildA = createRoute(grandchildA)
+    parent: childA,
+  })
 
-  const childB = {
+  grandchildA.onBeforeRouteEnter(vi.fn())
+  grandchildA.onBeforeRouteUpdate(vi.fn())
+  grandchildA.onBeforeRouteLeave(vi.fn())
+
+  const childB = createRoute({
     name: 'childB',
-    parent: routeParent,
-    onBeforeRouteEnter: [vi.fn()],
-    onBeforeRouteUpdate: [vi.fn()],
-    onBeforeRouteLeave: [vi.fn()],
-  }
-  const routeChildB = createRoute(childB)
+    parent: parent,
+  })
 
-  const grandchildB = {
+  childB.onBeforeRouteEnter(vi.fn())
+  childB.onBeforeRouteUpdate(vi.fn())
+  childB.onBeforeRouteLeave(vi.fn())
+
+  const grandchildB = createRoute({
     name: 'grandchildB',
-    parent: routeChildB,
-    onBeforeRouteEnter: [vi.fn()],
-    onBeforeRouteUpdate: [vi.fn()],
-    onBeforeRouteLeave: [vi.fn()],
-  }
-  const routeGrandchildB = createRoute(grandchildB)
+    parent: childB,
+  })
 
-  const to = createResolvedRoute(routeGrandchildA, {})
-  const from = createResolvedRoute(routeGrandchildB, {})
+  grandchildB.onBeforeRouteEnter(vi.fn())
+  grandchildB.onBeforeRouteUpdate(vi.fn())
+  grandchildB.onBeforeRouteLeave(vi.fn())
+
+  const to = createResolvedRoute(grandchildA, {})
+  const from = createResolvedRoute(grandchildB, {})
 
   const hooks = getBeforeRouteHooksFromRoutes(to, from)
 
-  expect(Array.from(hooks.onBeforeRouteEnter)).toMatchObject([...asArray(childA.onBeforeRouteEnter), ...asArray(grandchildA.onBeforeRouteEnter)])
-  expect(Array.from(hooks.onBeforeRouteUpdate)).toMatchObject([...asArray(parent.onBeforeRouteUpdate)])
-  expect(Array.from(hooks.onBeforeRouteLeave)).toMatchObject([...asArray(childB.onBeforeRouteLeave), ...asArray(grandchildB.onBeforeRouteLeave)])
+  expect(Array.from(hooks.onBeforeRouteEnter)).toMatchObject([...Array.from(childA.hooks.at(-1)?.onBeforeRouteEnter ?? []), ...Array.from(grandchildA.hooks.at(-1)?.onBeforeRouteEnter ?? [])])
+  expect(Array.from(hooks.onBeforeRouteUpdate)).toMatchObject([...Array.from(parent.hooks.at(-1)?.onBeforeRouteUpdate ?? [])])
+  expect(Array.from(hooks.onBeforeRouteLeave)).toMatchObject([...Array.from(childB.hooks.at(-1)?.onBeforeRouteLeave ?? []), ...Array.from(grandchildB.hooks.at(-1)?.onBeforeRouteLeave ?? [])])
 })

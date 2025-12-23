@@ -1,3 +1,4 @@
+import { RouterRouteHooks } from '@/models/RouterRouteHooks'
 import { ExtractRouteParamTypesReading } from '@/types/params'
 import { Route, Routes } from '@/types/route'
 import { ExtractRouteStateParamsAsOptional } from '@/types/state'
@@ -45,6 +46,12 @@ export type ResolvedRoute<TRoute extends Route = Route> = Readonly<{
    * String value of the resolved URL.
    */
   href: Url,
+  /**
+   * The stores for routes including ancestors.
+   * Order of routes will be from greatest ancestor to narrowest matched.
+   * @internal
+   */
+  hooks: RouterRouteHooks[],
 }>
 
 /**

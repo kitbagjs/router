@@ -1,5 +1,8 @@
 import { AfterRouteHook, BeforeRouteHook } from '@/types/hooks'
 
+/**
+ * @deprecated will be removed in a future version
+ */
 export class RouteHooks {
   public onBeforeRouteEnter = new Set<BeforeRouteHook>()
   public onBeforeRouteUpdate = new Set<BeforeRouteHook>()

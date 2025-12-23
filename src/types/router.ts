@@ -11,6 +11,7 @@ import { RouterResolve, RouterResolveOptions } from '@/types/routerResolve'
 import { RouterReject } from '@/types/routerReject'
 import { RouterPlugin } from '@/types/routerPlugin'
 import { RoutesName } from '@/types/routesMap'
+import { ToRouteContext } from '@/types/routeContext'
 import { ExtractRejections, Rejection } from '@/types/rejection'
 
 /**
@@ -105,32 +106,32 @@ export type Router<
   /**
    * Registers a hook to be called before a route is entered.
    */
-  onBeforeRouteEnter: AddRouterBeforeRouteHook<TRoutes | TPlugin['routes'], [...ExtractRejections<TOptions>, ...ExtractRejections<TPlugin>]>,
+  onBeforeRouteEnter: AddRouterBeforeRouteHook<TRoutes | TPlugin['routes'], ToRouteContext<TOptions['rejections']> | ToRouteContext<TPlugin['rejections']>>,
   /**
    * Registers a hook to be called before a route is left.
    */
-  onBeforeRouteLeave: AddRouterBeforeRouteHook<TRoutes | TPlugin['routes'], [...ExtractRejections<TOptions>, ...ExtractRejections<TPlugin>]>,
+  onBeforeRouteLeave: AddRouterBeforeRouteHook<TRoutes | TPlugin['routes'], ToRouteContext<TOptions['rejections']> | ToRouteContext<TPlugin['rejections']>>,
   /**
    * Registers a hook to be called before a route is updated.
    */
-  onBeforeRouteUpdate: AddRouterBeforeRouteHook<TRoutes | TPlugin['routes'], [...ExtractRejections<TOptions>, ...ExtractRejections<TPlugin>]>,
+  onBeforeRouteUpdate: AddRouterBeforeRouteHook<TRoutes | TPlugin['routes'], ToRouteContext<TOptions['rejections']> | ToRouteContext<TPlugin['rejections']>>,
   /**
    * Registers a hook to be called after a route is entered.
    */
-  onAfterRouteEnter: AddRouterAfterRouteHook<TRoutes | TPlugin['routes'], [...ExtractRejections<TOptions>, ...ExtractRejections<TPlugin>]>,
+  onAfterRouteEnter: AddRouterAfterRouteHook<TRoutes | TPlugin['routes'], ToRouteContext<TOptions['rejections']> | ToRouteContext<TPlugin['rejections']>>,
   /**
    * Registers a hook to be called after a route is left.
    */
-  onAfterRouteLeave: AddRouterAfterRouteHook<TRoutes | TPlugin['routes'], [...ExtractRejections<TOptions>, ...ExtractRejections<TPlugin>]>,
+  onAfterRouteLeave: AddRouterAfterRouteHook<TRoutes | TPlugin['routes'], ToRouteContext<TOptions['rejections']> | ToRouteContext<TPlugin['rejections']>>,
   /**
    * Registers a hook to be called after a route is updated.
    */
-  onAfterRouteUpdate: AddRouterAfterRouteHook<TRoutes | TPlugin['routes'], [...ExtractRejections<TOptions>, ...ExtractRejections<TPlugin>]>,
+  onAfterRouteUpdate: AddRouterAfterRouteHook<TRoutes | TPlugin['routes'], ToRouteContext<TOptions['rejections']> | ToRouteContext<TPlugin['rejections']>>,
   /**
    * Registers a hook to be called when an error occurs.
    * If the hook returns true, the error is considered handled and the other hooks are not run. If all hooks return false the error is rethrown
    */
-  onError: AddRouterErrorHook<TRoutes | TPlugin['routes'], [...ExtractRejections<TOptions>, ...ExtractRejections<TPlugin>]>,
+  onError: AddRouterErrorHook<TRoutes | TPlugin['routes'], ToRouteContext<TOptions['rejections']> | ToRouteContext<TPlugin['rejections']>>,
   /**
   * Given a URL, returns true if host does not match host stored on router instance
   */

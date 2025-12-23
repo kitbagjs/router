@@ -7,6 +7,7 @@ import { RouterReject } from './routerReject'
 import { RouterPush } from './routerPush'
 import { RouterReplace } from './routerReplace'
 import { Rejection } from './rejection'
+import { RouteContext, RouteContextToRejection, RouteContextToRoute } from './routeContext'
 
 /**
  * Defines route hooks that can be applied before entering, updating, or leaving a route, as well as after these events.
@@ -36,6 +37,40 @@ export type WithHooks = {
    * @deprecated Use router.onAfterRouteLeave instead
    */
   onAfterRouteLeave?: MaybeArray<AfterRouteHook>,
+}
+
+export type InternalRouteHooks<TContext extends RouteContext[] | undefined = undefined> = {
+  /**
+   * Registers a hook to be called before a route is entered.
+   */
+  onBeforeRouteEnter: AddRouterBeforeRouteHook<RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
+  /**
+   * Registers a hook to be called before a route is left.
+   */
+  onBeforeRouteLeave: AddRouterBeforeRouteHook<RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
+  /**
+   * Registers a hook to be called before a route is updated.
+   */
+  onBeforeRouteUpdate: AddRouterBeforeRouteHook<RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
+  /**
+   * Registers a hook to be called after a route is entered.
+   */
+  onAfterRouteEnter: AddRouterAfterRouteHook<RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
+  /**
+   * Registers a hook to be called after a route is left.
+   */
+  onAfterRouteLeave: AddRouterAfterRouteHook<RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
+  /**
+   * Registers a hook to be called after a route is updated.
+   */
+  onAfterRouteUpdate: AddRouterAfterRouteHook<RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
+}
+
+export type ExternalRouteHooks<TContext extends RouteContext[] | undefined = undefined> = {
+  /**
+   * Registers a hook to be called before a route is entered.
+   */
+  onBeforeRouteEnter: AddRouterBeforeRouteHook<RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
 }
 
 export type BeforeHookContext = {

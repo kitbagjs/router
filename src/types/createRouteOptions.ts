@@ -18,6 +18,7 @@ import { ToState } from './state'
 import { ToName } from './name'
 import { WithHooks } from './hooks'
 import { ToWithParams, WithParams } from '@/services/withParams'
+import { RouteContext, ToRouteContext } from './routeContext'
 
 export type WithHost<THost extends string | WithParams = string | WithParams> = {
   /**
@@ -108,6 +109,10 @@ export type CreateRouteOptions<
    */
   components?: Record<string, Component>,
   /**
+   * Related routes and rejections for the route. The context is exposed to the hooks and props callback functions for this route.
+   */
+  context?: RouteContext[],
+  /**
    * Props have been moved to the second argument of `createRoute`. This property can no longer be used.
    *
    * @deprecated
@@ -173,7 +178,8 @@ export type ToRoute<
       CombineHash<ToWithParams<TParent['hash']>, ToWithParams<TOptions['hash']>>,
       CombineMeta<ToMeta<TParent['meta']>, ToMeta<TOptions['meta']>>,
       CombineState<ToState<TParent['state']>, ToState<TOptions['state']>>,
-      ToMatches<TOptions, TProps>
+      ToMatches<TOptions, TProps>,
+      [...ToRouteContext<TParent['context']>, ...ToRouteContext<TOptions['context']>]
     >
     : Route<
       ToName<TOptions['name']>,
@@ -183,7 +189,8 @@ export type ToRoute<
       ToWithParams<TOptions['hash']>,
       ToMeta<TOptions['meta']>,
       ToState<TOptions['state']>,
-      ToMatches<TOptions, TProps>
+      ToMatches<TOptions, TProps>,
+      ToRouteContext<TOptions['context']>
     >
 
 export function combineRoutes(parent: Route, child: Route): Route {
@@ -194,7 +201,9 @@ export function combineRoutes(parent: Route, child: Route): Route {
     meta: combineMeta(parent.meta, child.meta),
     state: combineState(parent.state, child.state),
     hash: combineHash(parent.hash, child.hash),
+    hooks: [...parent.hooks, ...child.hooks],
     matches: [...parent.matches, child.matched],
+    context: [...parent.context, ...child.context],
     host: parent.host,
     depth: parent.depth + 1,
   }

@@ -51,7 +51,7 @@ export function createRouterRoute<TRoute extends ResolvedRoute>(routerKey: Injec
     update({}, { query })
   }
 
-  const { id, matched, matches, name, hash, href } = toRefs(route)
+  const { id, matched, matches, hooks, name, hash, href } = toRefs(route)
 
   const params = computed({
     get() {
@@ -109,6 +109,7 @@ export function createRouterRoute<TRoute extends ResolvedRoute>(routerKey: Injec
     id,
     matched,
     matches,
+    hooks,
     state,
     query,
     hash,

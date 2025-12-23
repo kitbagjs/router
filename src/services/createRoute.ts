@@ -5,6 +5,8 @@ import { toName } from '@/types/name'
 import { Route } from '@/types/route'
 import { checkDuplicateParams } from '@/utilities/checkDuplicateKeys'
 import { toWithParams, withParams } from '@/services/withParams'
+import { createRouteHooks } from '@/services/createRouteHooks'
+import { InternalRouteHooks } from '@/types/hooks'
 
 type CreateRouteWithProps<
   TOptions extends CreateRouteOptions,
@@ -21,6 +23,7 @@ export function createRoute<
   const TOptions extends CreateRouteOptions,
   const TProps extends CreateRouteProps<TOptions>
 >(options: TOptions, ...args: CreateRouteWithProps<TOptions, TProps>): ToRoute<TOptions, CreateRouteProps<TOptions> extends TProps ? undefined : TProps>
+  & InternalRouteHooks<TOptions['context']>
 
 export function createRoute(options: CreateRouteOptions, props?: CreateRouteProps): Route {
   const id = createRouteId()
@@ -30,22 +33,27 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
   const hash = toWithParams(options.hash)
   const meta = options.meta ?? {}
   const state = options.state ?? {}
+  const context = options.context ?? []
+  const { store, ...hooks } = createRouteHooks()
   const rawRoute = markRaw({ id, meta, state, ...options, props })
 
   const route = {
     id,
     matched: rawRoute,
     matches: [rawRoute],
+    hooks: [store],
     name,
     path,
     query,
     hash,
     meta,
     state,
+    context,
     depth: 1,
     host: withParams(),
     prefetch: options.prefetch,
-  } satisfies Route
+    ...hooks,
+  } satisfies Route & InternalRouteHooks
 
   const merged = isWithParent(options) ? combineRoutes(options.parent, route) : route
 

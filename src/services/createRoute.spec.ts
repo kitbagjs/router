@@ -4,6 +4,7 @@ import { component } from '@/utilities/testHelpers'
 import { createRouter } from '@/services/createRouter'
 import { DuplicateParamsError } from '@/errors/duplicateParamsError'
 import { withParams } from '@/services/withParams'
+import { createRejection } from './createRejection'
 
 test('given parent, path is combined', () => {
   const parent = createRoute({
@@ -95,6 +96,28 @@ test('given parent, meta is combined', () => {
     foo: 123,
     bar: 'zoo',
   })
+})
+
+test('given parent, context is combined', () => {
+  const parentRejection = createRejection({ type: 'aRejection' })
+  const childRelated = createRoute({ name: 'bRoute' })
+
+  const parent = createRoute({
+    meta: {
+      foo: 123,
+    },
+    context: [parentRejection],
+  })
+
+  const child = createRoute({
+    parent,
+    context: [childRelated],
+    meta: {
+      bar: 'zoo',
+    },
+  })
+
+  expect(child.context).toMatchObject([parentRejection, childRelated])
 })
 
 test('given parent and child without meta, meta matches parent', () => {
