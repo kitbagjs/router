@@ -16,13 +16,14 @@ test('global hooks passed as options are called correctly', async () => {
 
   const router = createRouter(routes, {
     initialUrl: '/parentA/valueA',
-    onBeforeRouteEnter,
-    onBeforeRouteUpdate,
-    onBeforeRouteLeave,
-    onAfterRouteEnter,
-    onAfterRouteUpdate,
-    onAfterRouteLeave,
   })
+
+  router.onBeforeRouteEnter(onBeforeRouteEnter)
+  router.onBeforeRouteUpdate(onBeforeRouteUpdate)
+  router.onBeforeRouteLeave(onBeforeRouteLeave)
+  router.onAfterRouteEnter(onAfterRouteEnter)
+  router.onAfterRouteUpdate(onAfterRouteUpdate)
+  router.onAfterRouteLeave(onAfterRouteLeave)
 
   await router.start()
 
@@ -128,13 +129,14 @@ test('route hooks are called correctly', async () => {
   const parentA = createRoute({
     name: 'parentA',
     path: '/parentA',
-    onBeforeRouteEnter: () => parentHooks.beforeEnter(),
-    onBeforeRouteLeave: () => parentHooks.beforeLeave(),
-    onBeforeRouteUpdate: () => parentHooks.beforeUpdate(),
-    onAfterRouteEnter: () => parentHooks.afterEnter(),
-    onAfterRouteLeave: () => parentHooks.afterLeave(),
-    onAfterRouteUpdate: () => parentHooks.afterUpdate(),
   })
+
+  parentA.onBeforeRouteEnter(() => parentHooks.beforeEnter())
+  parentA.onBeforeRouteLeave(() => parentHooks.beforeLeave())
+  parentA.onBeforeRouteUpdate(() => parentHooks.beforeUpdate())
+  parentA.onAfterRouteEnter(() => parentHooks.afterEnter())
+  parentA.onAfterRouteLeave(() => parentHooks.afterLeave())
+  parentA.onAfterRouteUpdate(() => parentHooks.afterUpdate())
 
   const parentB = createRoute({
     name: 'parentB',
