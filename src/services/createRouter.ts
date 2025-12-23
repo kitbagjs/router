@@ -86,6 +86,10 @@ export function createRouter<
 >(routesOrArrayOfRoutes: TRoutes | TRoutes[], options?: TOptions, plugins: TPlugin[] = []): Router<TRoutes, TOptions, TPlugin> {
   const isGlobalRouter = options?.isGlobalRouter ?? true
   const routerKey = isGlobalRouter ? routerInjectionKey : Symbol()
+  const rejections = [
+    ...plugins.flatMap((plugin) => plugin.rejections),
+    ...options?.rejections ?? [],
+  ]
   const routes = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options?.base)
   const hooks = createRouterHooks()
 
@@ -294,10 +298,7 @@ export function createRouter<
     setRejection(type)
   }
 
-  const { setRejection, rejection, getRejectionRoute } = createRouterReject([
-    ...plugins.flatMap((plugin) => plugin.rejections),
-    ...options?.rejections ?? [],
-  ])
+  const { setRejection, rejection, getRejectionRoute } = createRouterReject(rejections)
 
   const notFoundRoute = getRejectionRoute('NotFound')
   const { currentRoute, routerRoute, updateRoute } = createCurrentRoute<TRoutes | TPlugin['routes']>(routerKey, notFoundRoute, push)
