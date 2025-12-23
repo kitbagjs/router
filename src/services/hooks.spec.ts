@@ -1,5 +1,4 @@
 import { expect, test, vi } from 'vitest'
-import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
 import { createRouterHooks } from '@/services/createRouterHooks'
 import { BeforeRouteHook } from '@/types/hooks'
 import { ResolvedRoute } from '@/types/resolved'
