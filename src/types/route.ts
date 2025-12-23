@@ -90,6 +90,7 @@ export type Route<
   /**
    * The stores for routes including ancestors.
    * Order of routes will be from greatest ancestor to narrowest matched.
+   * @internal
    */
   hooks: RouterRouteHooks[],
   /**

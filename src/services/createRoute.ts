@@ -34,7 +34,7 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
   const meta = options.meta ?? {}
   const state = options.state ?? {}
   const context = options.context ?? []
-  const { store, ...hooks } = createRouteHooks(context)
+  const { store, ...hooks } = createRouteHooks()
   const rawRoute = markRaw({ id, meta, state, ...options, props })
 
   const route = {
@@ -53,7 +53,7 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
     host: withParams(),
     prefetch: options.prefetch,
     ...hooks,
-  } satisfies Route
+  } satisfies Route & InternalRouteHooks
 
   const merged = isWithParent(options) ? combineRoutes(options.parent, route) : route
 

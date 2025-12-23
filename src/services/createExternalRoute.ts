@@ -27,7 +27,7 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
   const meta = options.meta ?? {}
   const host = toWithParams(options.host)
   const context = options.context ?? []
-  const { store, onBeforeRouteLeave } = createRouteHooks(context)
+  const { store, onBeforeRouteEnter } = createRouteHooks()
   const rawRoute = markRaw({ id, meta: {}, state: {}, ...options })
 
   const route = {
@@ -44,8 +44,8 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
     depth: 1,
     state: {},
     context,
-    ...hooks,
-  } satisfies Route
+    onBeforeRouteEnter,
+  } satisfies Route & ExternalRouteHooks
 
   const merged = isWithParent(options) ? combineRoutes(options.parent, route) : route
 

@@ -39,7 +39,7 @@ export type WithHooks = {
   onAfterRouteLeave?: MaybeArray<AfterRouteHook>,
 }
 
-export type InternalRouteHooks<TContext extends RouteContext[] | undefined> = {
+export type InternalRouteHooks<TContext extends RouteContext[] | undefined = undefined> = {
   /**
    * Registers a hook to be called before a route is entered.
    */
@@ -71,7 +71,7 @@ export type InternalRouteHooks<TContext extends RouteContext[] | undefined> = {
   onError: AddRouterErrorHook<RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
 }
 
-export type ExternalRouteHooks<TContext extends RouteContext[] | undefined> = {
+export type ExternalRouteHooks<TContext extends RouteContext[] | undefined = undefined> = {
   /**
    * Registers a hook to be called before a route is entered.
    */

@@ -145,10 +145,33 @@ export function createRouter<
         throw new Error(`Switch is not exhaustive for before hook response status: ${JSON.stringify(beforeResponse satisfies never)}`)
     }
 
-    if (isExternal(url)) {
-      return
+    if (!isExternal(url)) {
+      setPropsAndUpdateRoute(navigationId, to, from)
     }
 
+    const afterResponse = await hooks.runAfterRouteHooks({ to, from })
+
+    switch (afterResponse.status) {
+      case 'PUSH':
+        await push(...afterResponse.to)
+        break
+
+      case 'REJECT':
+        setRejection(afterResponse.type)
+        break
+
+      case 'SUCCESS':
+        break
+
+      default:
+        const exhaustive: never = afterResponse
+        throw new Error(`Switch is not exhaustive for after hook response status: ${JSON.stringify(exhaustive)}`)
+    }
+
+    history.startListening()
+  }
+
+  function setPropsAndUpdateRoute(navigationId: string, to: ResolvedRoute, from: ResolvedRoute | null): void {
     const currentNavigationId = navigationId
 
     propStore.setProps(to)
@@ -193,27 +216,6 @@ export function createRouter<
       })
 
     updateRoute(to)
-
-    const afterResponse = await hooks.runAfterRouteHooks({ to, from })
-
-    switch (afterResponse.status) {
-      case 'PUSH':
-        await push(...afterResponse.to)
-        break
-
-      case 'REJECT':
-        setRejection(afterResponse.type)
-        break
-
-      case 'SUCCESS':
-        break
-
-      default:
-        const exhaustive: never = afterResponse
-        throw new Error(`Switch is not exhaustive for after hook response status: ${JSON.stringify(exhaustive)}`)
-    }
-
-    history.startListening()
   }
 
   const resolve: RouterResolve<TRoutes | TPlugin['routes']> = (

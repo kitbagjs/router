@@ -1,12 +1,11 @@
 import { AddRouterBeforeRouteHook, AddRouterAfterRouteHook, AddRouterErrorHook } from '@/types/hooks'
 import { Routes } from '@/types/route'
 import { RouterRouteHooks } from '@/models/RouterRouteHooks'
-import { RouteContext, RouteContextToRejection, RouteContextToRoute } from '@/types/routeContext'
 import { Rejection } from '@/types/rejection'
 
 export type RouteHooks<
-  TRoutes extends Routes,
-  TRejections extends Rejection[]
+  TRoutes extends Routes = Routes,
+  TRejections extends Rejection[] = Rejection[]
 > = {
   onBeforeRouteEnter: AddRouterBeforeRouteHook<TRoutes, TRejections>,
   onBeforeRouteUpdate: AddRouterBeforeRouteHook<TRoutes, TRejections>,
@@ -18,53 +17,46 @@ export type RouteHooks<
   store: RouterRouteHooks,
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function createRouteHooks<TContext extends RouteContext[]>(_context: TContext): RouteHooks<
-  RouteContextToRoute<TContext>,
-  RouteContextToRejection<TContext>
-> {
-  type TRoutes = RouteContextToRoute<TContext>
-  type TRejections = RouteContextToRejection<TContext>
-
+export function createRouteHooks(): RouteHooks {
   const store = new RouterRouteHooks()
 
-  const onBeforeRouteEnter: AddRouterBeforeRouteHook<TRoutes, TRejections> = (hook) => {
+  const onBeforeRouteEnter: AddRouterBeforeRouteHook = (hook) => {
     store.onBeforeRouteEnter.add(hook)
 
     return () => store.onBeforeRouteEnter.delete(hook)
   }
 
-  const onBeforeRouteUpdate: AddRouterBeforeRouteHook<TRoutes, TRejections> = (hook) => {
+  const onBeforeRouteUpdate: AddRouterBeforeRouteHook = (hook) => {
     store.onBeforeRouteUpdate.add(hook)
 
     return () => store.onBeforeRouteUpdate.delete(hook)
   }
 
-  const onBeforeRouteLeave: AddRouterBeforeRouteHook<TRoutes, TRejections> = (hook) => {
+  const onBeforeRouteLeave: AddRouterBeforeRouteHook = (hook) => {
     store.onBeforeRouteLeave.add(hook)
 
     return () => store.onBeforeRouteLeave.delete(hook)
   }
 
-  const onAfterRouteEnter: AddRouterAfterRouteHook<TRoutes, TRejections> = (hook) => {
+  const onAfterRouteEnter: AddRouterAfterRouteHook = (hook) => {
     store.onAfterRouteEnter.add(hook)
 
     return () => store.onAfterRouteEnter.delete(hook)
   }
 
-  const onAfterRouteUpdate: AddRouterAfterRouteHook<TRoutes, TRejections> = (hook) => {
+  const onAfterRouteUpdate: AddRouterAfterRouteHook = (hook) => {
     store.onAfterRouteUpdate.add(hook)
 
     return () => store.onAfterRouteUpdate.delete(hook)
   }
 
-  const onAfterRouteLeave: AddRouterAfterRouteHook<TRoutes, TRejections> = (hook) => {
+  const onAfterRouteLeave: AddRouterAfterRouteHook = (hook) => {
     store.onAfterRouteLeave.add(hook)
 
     return () => store.onAfterRouteLeave.delete(hook)
   }
 
-  const onError: AddRouterErrorHook<TRoutes, TRejections> = (hook) => {
+  const onError: AddRouterErrorHook = (hook) => {
     store.onError.add(hook)
 
     return () => store.onError.delete(hook)
