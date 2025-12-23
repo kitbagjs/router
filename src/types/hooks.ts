@@ -64,11 +64,6 @@ export type InternalRouteHooks<TContext extends RouteContext[] | undefined = und
    * Registers a hook to be called after a route is updated.
    */
   onAfterRouteUpdate: AddRouterAfterRouteHook<RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
-  /**
-   * Registers a hook to be called when an error occurs.
-   * If the hook returns true, the error is considered handled and the other hooks are not run. If all hooks return false the error is rethrown
-   */
-  onError: AddRouterErrorHook<RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
 }
 
 export type ExternalRouteHooks<TContext extends RouteContext[] | undefined = undefined> = {

@@ -3,7 +3,7 @@ import { createRoute } from './createRoute'
 import { createRouter } from './createRouter'
 import { h } from 'vue'
 import { mount } from '@vue/test-utils'
-import { RouterView, onBeforeRouteLeave, onBeforeRouteUpdate, onAfterRouteLeave, onAfterRouteUpdate } from '@/main'
+import { RouterView, onBeforeRouteLeave, onBeforeRouteUpdate, onAfterRouteLeave, onAfterRouteUpdate, createExternalRoute } from '@/main'
 import { routes } from '@/utilities/testHelpers'
 
 test('global hooks passed as options are called correctly', async () => {
@@ -198,6 +198,75 @@ test('route hooks are called correctly', async () => {
   expect(parentHooks.afterLeave).toHaveBeenCalledTimes(1)
   expect(parentHooks.afterUpdate).toHaveBeenCalledTimes(2)
   expect(parentHooks.afterEnter).toHaveBeenCalledTimes(1)
+})
+
+test('external route hooks are called correctly', async () => {
+  const internalHooks = {
+    beforeEnter: vi.fn(),
+    beforeLeave: vi.fn(),
+    beforeUpdate: vi.fn(),
+    afterEnter: vi.fn(),
+    afterLeave: vi.fn(),
+    afterUpdate: vi.fn(),
+  }
+
+  const internal = createRoute({
+    name: 'internal',
+    path: '/',
+  })
+
+  internal.onBeforeRouteEnter(() => internalHooks.beforeEnter())
+  internal.onBeforeRouteLeave(() => internalHooks.beforeLeave())
+  internal.onBeforeRouteUpdate(() => internalHooks.beforeUpdate())
+  internal.onAfterRouteEnter(() => internalHooks.afterEnter())
+  internal.onAfterRouteLeave(() => internalHooks.afterLeave())
+  internal.onAfterRouteUpdate(() => internalHooks.afterUpdate())
+
+  const externalHooks = {
+    beforeEnter: vi.fn(),
+  }
+
+  const external = createExternalRoute({
+    name: 'external',
+    host: 'https://kitbag.dev',
+    path: '/',
+  })
+
+  external.onBeforeRouteEnter(() => externalHooks.beforeEnter())
+
+  const router = createRouter([internal, external], {
+    initialUrl: '/',
+  })
+
+  const root = {
+    template: '<RouterView />',
+  }
+
+  mount(root, {
+    global: {
+      plugins: [router],
+    },
+  })
+
+  await router.start()
+
+  expect(internalHooks.beforeEnter).toHaveBeenCalledTimes(1)
+  expect(internalHooks.beforeUpdate).toHaveBeenCalledTimes(0)
+  expect(internalHooks.beforeLeave).toHaveBeenCalledTimes(0)
+  expect(internalHooks.afterLeave).toHaveBeenCalledTimes(0)
+  expect(internalHooks.afterUpdate).toHaveBeenCalledTimes(0)
+  expect(internalHooks.afterEnter).toHaveBeenCalledTimes(1)
+  expect(externalHooks.beforeEnter).toHaveBeenCalledTimes(0)
+
+  await router.push('external', { param: 'param2' })
+
+  expect(internalHooks.beforeEnter).toHaveBeenCalledTimes(1)
+  expect(internalHooks.beforeUpdate).toHaveBeenCalledTimes(0)
+  expect(internalHooks.beforeLeave).toHaveBeenCalledTimes(1)
+  expect(internalHooks.afterLeave).toHaveBeenCalledTimes(1)
+  expect(internalHooks.afterUpdate).toHaveBeenCalledTimes(0)
+  expect(internalHooks.afterEnter).toHaveBeenCalledTimes(1)
+  expect(externalHooks.beforeEnter).toHaveBeenCalledTimes(1)
 })
 
 test('component hooks are called correctly', async () => {
