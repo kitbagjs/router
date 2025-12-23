@@ -17,10 +17,10 @@ const route {
 }
 ```
 
-:white_check_mark: parent/anything/child  
-:x: parent/123/child  
-:x: parent//child  
-:x: parent/child  
+:white_check_mark: `parent/anything/child`  
+:x: `parent/123/child`  
+:x: `parent//child`  
+:x: `parent/child`  
 
 ```ts
 const route {
@@ -29,10 +29,10 @@ const route {
 }
 ```
 
-:white_check_mark: parent/anything/child  
-:white_check_mark: parent/123/child  
-:x: parent//child  
-:x: parent/child  
+:white_check_mark: `parent/anything/child`  
+:white_check_mark: `parent/123/child`  
+:x: `parent//child`  
+:x: `parent/child`  
 
 ```ts
 const route {
@@ -41,10 +41,10 @@ const route {
 }
 ```
 
-:white_check_mark: parent/anything/child  
-:white_check_mark: parent/123/child  
-:white_check_mark: parent//child  
-:x: parent/child  
+:white_check_mark: `parent/anything/child`  
+:white_check_mark: `parent/123/child`  
+:white_check_mark: `parent//child`  
+:x: `parent/child`  
 
 ## Query Matches
 
@@ -57,10 +57,10 @@ const route {
 }
 ```
 
-:white_check_mark: ?foo=bar  
-:white_check_mark: ?kitbag=cat&foo=bar  
-:x: ?foo=123  
-:x: ?foo  
+:white_check_mark: `?foo=bar`  
+:white_check_mark: `?kitbag=cat&foo=bar`  
+:x: `?foo=123`  
+:x: `?foo`  
 
 ```ts
 const route {
@@ -69,10 +69,10 @@ const route {
 }
 ```
 
-:white_check_mark: ?foo=bar  
-:white_check_mark: ?kitbag=cat&foo=bar  
-:white_check_mark: ?foo=123  
-:x: ?foo  
+:white_check_mark: `?foo=bar`  
+:white_check_mark: `?kitbag=cat&foo=bar`  
+:white_check_mark: `?foo=123`  
+:x: `?foo`  
 
 ```ts
 const route {
@@ -81,14 +81,28 @@ const route {
 }
 ```
 
-:white_check_mark: ?foo=bar  
-:white_check_mark: ?kitbag=cat&foo=bar  
-:white_check_mark: ?foo=123  
-:white_check_mark: ?foo  
+:white_check_mark: `?foo=bar`  
+:white_check_mark: `?kitbag=cat&foo=bar`  
+:white_check_mark: `?foo=123`  
+:white_check_mark: `?foo`  
 
 ::: tip
 when your query param is optional, the entire property can be missing and the route will still match. For the example above with query `foo=[?bar]`, the url might be `/my-route` without any query, or it might have an unrelated query `/my-route?other=value`, and still be a match because the entire foo param is optional.
 :::
+
+## Host Matches
+
+When dealing with [external routes](/core-concepts/external-routes), the Route's `host` property must match the structure of the URL host.
+
+```ts
+const route {
+  ...
+  host: 'https://router.kitbag.dev'
+}
+```
+
+:white_check_mark: `https://router.kitbag.dev`  
+:x: ``https://www.vuejs.org``  
 
 ## Params Are Valid
 
@@ -102,10 +116,10 @@ const route {
 }
 ```
 
-:white_check_mark: parent/123  
-:white_check_mark: parent/123?tab=true  
-:white_check_mark: parent/123?tab=github  
-:white_check_mark: parent/ABC?tab=true  
+:white_check_mark: `parent/123`  
+:white_check_mark: `parent/123?tab=true`  
+:white_check_mark: `parent/123?tab=github`  
+:white_check_mark: `parent/ABC?tab=true`  
 
 ```ts
 const route {
@@ -115,10 +129,10 @@ const route {
 }
 ```
 
-:white_check_mark: parent/123  
-:white_check_mark: parent/123?tab=true  
-:white_check_mark: parent/123?tab=github  
-:x: parent/ABC?tab=true  
+:white_check_mark: `parent/123`  
+:white_check_mark: `parent/123?tab=true`  
+:white_check_mark: `parent/123?tab=github`  
+:x: `parent/ABC?tab=true`  
 
 ```ts
 const route {
@@ -128,10 +142,10 @@ const route {
 }
 ```
 
-:white_check_mark: parent/123  
-:white_check_mark: parent/123?tab=true  
-:x: parent/123?tab=github  
-:x: parent/ABC?tab=true  
+:white_check_mark: `parent/123`  
+:white_check_mark: `parent/123?tab=true`  
+:x: `parent/123?tab=github`  
+:x: `parent/ABC?tab=true`  
 
 ## Ranking
 

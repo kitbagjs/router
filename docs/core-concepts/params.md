@@ -244,6 +244,7 @@ Zod param types are experimental and may change or be removed in the future.
 :::
 
 ## Valibot Param Types
+
 [Valibot](https://valibot.dev/) schemas can be used as param types rather than defining a custom param type. Some zod schemas are not supported such as `v.promise`, `v.function`, and `v.intersection`, but most schemas are supported.
 
 ```ts
