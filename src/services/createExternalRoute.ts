@@ -27,7 +27,7 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
   const meta = options.meta ?? {}
   const host = toWithParams(options.host)
   const context = options.context ?? []
-  const { store, ...hooks } = createRouteHooks(context)
+  const { store, onBeforeRouteLeave } = createRouteHooks(context)
   const rawRoute = markRaw({ id, meta: {}, state: {}, ...options })
 
   const route = {
