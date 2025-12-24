@@ -415,7 +415,7 @@ test('Props from route can trigger push', async () => {
     path: '/routeA',
     component: echo,
   }, (__, context) => {
-    throw context.push('routeB')
+    throw context.push('/routeB')
   })
 
   const routeB = createRoute({
@@ -494,7 +494,7 @@ test('prefetched props trigger push when navigation is initiated', async () => {
     component: echo,
     prefetch: { props: true },
   }, (__, { push }) => {
-    throw push('routeC')
+    throw push('/routeC')
   })
 
   const routeC = createRoute({
@@ -543,7 +543,7 @@ test('prefetched async props trigger push when navigation is initiated', async (
     component,
     prefetch: { props: true },
   }, (__, { push }) => {
-    throw push('routeC')
+    throw push('/routeC')
   })
 
   const routeC = createRoute({

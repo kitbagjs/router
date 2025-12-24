@@ -7,11 +7,13 @@ import echo from '@/components/echo'
 import { component } from '@/utilities/testHelpers'
 import { withParams } from '@/services/withParams'
 import { InternalRouteHooks } from '@/types/hooks'
+import { BuiltInRejectionType } from './createRouterReject'
+import { createRejection } from './createRejection'
 
 test('empty options returns an empty route', () => {
   const route = createRoute({})
 
-  type RouteWithHooks = Route & InternalRouteHooks<undefined>
+  type RouteWithHooks = Route & InternalRouteHooks
 
   expectTypeOf<typeof route>().toEqualTypeOf<RouteWithHooks>()
 })
@@ -267,247 +269,364 @@ test('options with state and parent', () => {
   expectTypeOf<Source>().toEqualTypeOf<Expect>()
 })
 
-test('options with component and optional props without second argument', () => {
-  const route = createRoute({
-    component,
-  })
+describe('props', () => {
+  test('options with component and optional props without second argument', () => {
+    const route = createRoute({
+      component,
+    })
 
   type Source = typeof route['matched']['props']
   type Expect = undefined
 
   expectTypeOf<Source>().toEqualTypeOf<Expect>()
-})
+  })
 
-test('options with component and optional props with second argument', () => {
-  const route = createRoute({
-    component,
-  }, () => ({ foo: 'bar' }))
+  test('options with component and optional props with second argument', () => {
+    const route = createRoute({
+      component,
+    }, () => ({ foo: 'bar' }))
 
   type Source = typeof route['matched']['props']
   type Expect = () => { foo: string }
 
   expectTypeOf<Source>().toEqualTypeOf<Expect>()
-})
-
-test('options with component and required props missing second argument', () => {
-  // @ts-expect-error should require second argument
-  const route = createRoute({
-    component: echo,
   })
+
+  test('options with component and required props missing second argument', () => {
+  // @ts-expect-error should require second argument
+    const route = createRoute({
+      component: echo,
+    })
 
   type Source = typeof route['matched']['props']
   type Expect = undefined
 
   expectTypeOf<Source>().toEqualTypeOf<Expect>()
-})
+  })
 
-test('options with component and required props with second argument ', () => {
-  const route = createRoute({
-    component: echo,
-  }, () => ({ value: 'bar', extra: true }))
+  test('options with component and required props with second argument ', () => {
+    const route = createRoute({
+      component: echo,
+    }, () => ({ value: 'bar', extra: true }))
 
   type Source = typeof route['matched']['props']
   type Expect = () => { value: string, extra: boolean }
 
   expectTypeOf<Source>().toEqualTypeOf<Expect>()
-})
+  })
 
-test('options with component and required props with second argument with incorrect type', () => {
-  const route = createRoute({
-    component: echo,
-  // @ts-expect-error should not accept incorrect type
-  }, () => ({ value: true, foo: 'bar' }))
+  test('options with component and required props with second argument with incorrect type', () => {
+    const route = createRoute({
+      component: echo,
+      // @ts-expect-error should not accept incorrect type
+    }, () => ({ value: true, foo: 'bar' }))
 
   type Source = typeof route['matched']['props']
   type Expect = undefined
 
   expectTypeOf<Source>().toEqualTypeOf<Expect>()
-})
-
-test('options with components and optional props without second argument', () => {
-  const route = createRoute({
-    components: {
-      component,
-    },
   })
+
+  test('options with components and optional props without second argument', () => {
+    const route = createRoute({
+      components: {
+        component,
+      },
+    })
 
   type Source = typeof route['matched']['props']
   type Expect = undefined
 
   expectTypeOf<Source>().toEqualTypeOf<Expect>()
-})
-
-test('options with components and optional props with second argument', () => {
-  const route = createRoute({
-    components: {
-      default: component,
-    },
-  }, {
-    default: () => ({ foo: 'bar' }),
   })
+
+  test('options with components and optional props with second argument', () => {
+    const route = createRoute({
+      components: {
+        default: component,
+      },
+    }, {
+      default: () => ({ foo: 'bar' }),
+    })
 
   type Source = typeof route['matched']['props']
   type Expect = { default: () => { foo: string } }
 
   expectTypeOf<Source>().toEqualTypeOf<Expect>()
-})
-
-test('options with components and required props missing second argument', () => {
-  // @ts-expect-error should require second argument
-  const route = createRoute({
-    components: {
-      default: echo,
-    },
   })
+
+  test('options with components and required props missing second argument', () => {
+  // @ts-expect-error should require second argument
+    const route = createRoute({
+      components: {
+        default: echo,
+      },
+    })
 
   type Source = typeof route['matched']['props']
   type Expect = undefined
 
   expectTypeOf<Source>().toEqualTypeOf<Expect>()
-})
-
-test('options with components and required props with second argument ', () => {
-  const route = createRoute({
-    components: {
-      default: echo,
-    },
-  }, {
-    default: () => ({ value: 'bar', extra: true }),
   })
+
+  test('options with components and required props with second argument ', () => {
+    const route = createRoute({
+      components: {
+        default: echo,
+      },
+    }, {
+      default: () => ({ value: 'bar', extra: true }),
+    })
 
   type Source = typeof route['matched']['props']
   type Expect = { default: () => { value: string, extra: boolean } }
 
   expectTypeOf<Source>().toEqualTypeOf<Expect>()
-})
+  })
 
-test('options with components and required props with second argument with incorrect type', () => {
-  const route = createRoute({
-    components: {
-      default: echo,
-    },
-  }, {
+  test('options with components and required props with second argument with incorrect type', () => {
+    const route = createRoute({
+      components: {
+        default: echo,
+      },
+    }, {
     // @ts-expect-error should not accept incorrect type
-    default: () => ({ value: true, foo: 'bar' }),
-  })
+      default: () => ({ value: true, foo: 'bar' }),
+    })
 
   type Source = typeof route['matched']['props']
   type Expect = undefined
 
   expectTypeOf<Source>().toEqualTypeOf<Expect>()
-})
+  })
 
-test('undefined is not a valid value for 2nd argument of createRoute', () => {
-  const route = createRoute({
-    component: echo,
-  // @ts-expect-error should not accept undefined
-  }, undefined)
+  test('undefined is not a valid value for 2nd argument of createRoute', () => {
+    const route = createRoute({
+      component: echo,
+      // @ts-expect-error should not accept undefined
+    }, undefined)
 
   type Source = typeof route['matched']['props']
   type Expect = undefined
 
   expectTypeOf<Source>().toEqualTypeOf<Expect>()
-})
-
-test('parent props are undefined when parent has no props', () => {
-  const parent = createRoute({
-    name: 'parent',
   })
 
-  createRoute({
-    name: 'child',
-    parent: parent,
-  }, (__, { parent }) => {
-    expectTypeOf(parent.props).toEqualTypeOf<undefined>()
-    expectTypeOf(parent.name).toEqualTypeOf<'parent'>()
+  test('parent props are undefined when parent has no props', () => {
+    const parent = createRoute({
+      name: 'parent',
+    })
 
-    return {}
-  })
-})
+    createRoute({
+      name: 'child',
+      parent: parent,
+    }, (__, { parent }) => {
+      expectTypeOf(parent.props).toEqualTypeOf<undefined>()
+      expectTypeOf(parent.name).toEqualTypeOf<'parent'>()
 
-test('sync parent props are passed to child props', () => {
-  const parent = createRoute({
-    name: 'parent',
-  }, () => ({ foo: 123 }))
-
-  createRoute({
-    name: 'child',
-    parent: parent,
-  }, (__, { parent }) => {
-    expectTypeOf(parent.props).toEqualTypeOf<{ foo: number }>()
-    expectTypeOf(parent.name).toEqualTypeOf<'parent'>()
-
-    return {}
-  })
-})
-
-test('async parent props are passed to child props', () => {
-  const parent = createRoute({
-    name: 'parent',
-  }, async () => ({ foo: 123 }))
-
-  createRoute({
-    name: 'child',
-    parent: parent,
-  }, (__, { parent }) => {
-    expectTypeOf(parent.props).toEqualTypeOf<Promise<{ foo: number }>>()
-    expectTypeOf(parent.name).toEqualTypeOf<'parent'>()
-
-    return {}
-  })
-})
-
-test('parent props are passed to child props when multiple parent components are used', () => {
-  const parent = createRoute({
-    name: 'parent',
-    components: {
-      one: component,
-      two: component,
-    },
-  }, {
-    one: () => ({ foo: 123 }),
-    two: async () => ({ foo: 456 }),
+      return {}
+    })
   })
 
-  createRoute({
-    name: 'child',
-    parent: parent,
-  }, (__, { parent }) => {
-    expectTypeOf(parent.props).toEqualTypeOf<{
-      one: { foo: number },
-      two: Promise<{ foo: number }>,
-    }>()
-    expectTypeOf(parent.name).toEqualTypeOf<'parent'>()
+  test('sync parent props are passed to child props', () => {
+    const parent = createRoute({
+      name: 'parent',
+    }, () => ({ foo: 123 }))
 
-    return {}
+    createRoute({
+      name: 'child',
+      parent: parent,
+    }, (__, { parent }) => {
+      expectTypeOf(parent.props).toEqualTypeOf<{ foo: number }>()
+      expectTypeOf(parent.name).toEqualTypeOf<'parent'>()
+
+      return {}
+    })
   })
-})
 
-test('parent props are passed to child props when multiple child components are used', () => {
-  const parent = createRoute({
-    name: 'parent',
-  }, async () => ({ foo: 123 }))
+  test('async parent props are passed to child props', () => {
+    const parent = createRoute({
+      name: 'parent',
+    }, async () => ({ foo: 123 }))
 
-  createRoute({
-    name: 'child',
-    parent: parent,
-    components: {
-      one: component,
-      two: component,
-    },
-  }, {
-    one: (__, { parent }) => {
+    createRoute({
+      name: 'child',
+      parent: parent,
+    }, (__, { parent }) => {
       expectTypeOf(parent.props).toEqualTypeOf<Promise<{ foo: number }>>()
       expectTypeOf(parent.name).toEqualTypeOf<'parent'>()
 
       return {}
-    },
-    two: (__, { parent }) => {
-      expectTypeOf(parent.props).toEqualTypeOf<Promise<{ foo: number }>>()
+    })
+  })
+
+  test('parent props are passed to child props when multiple parent components are used', () => {
+    const parent = createRoute({
+      name: 'parent',
+      components: {
+        one: component,
+        two: component,
+      },
+    }, {
+      one: () => ({ foo: 123 }),
+      two: async () => ({ foo: 456 }),
+    })
+
+    createRoute({
+      name: 'child',
+      parent: parent,
+    }, (__, { parent }) => {
+      expectTypeOf(parent.props).toEqualTypeOf<{
+        one: { foo: number },
+        two: Promise<{ foo: number }>,
+      }>()
       expectTypeOf(parent.name).toEqualTypeOf<'parent'>()
 
       return {}
-    },
+    })
+  })
+
+  test('parent props are passed to child props when multiple child components are used', () => {
+    const parent = createRoute({
+      name: 'parent',
+    }, async () => ({ foo: 123 }))
+
+    createRoute({
+      name: 'child',
+      parent: parent,
+      components: {
+        one: component,
+        two: component,
+      },
+    }, {
+      one: (__, { parent }) => {
+        expectTypeOf(parent.props).toEqualTypeOf<Promise<{ foo: number }>>()
+        expectTypeOf(parent.name).toEqualTypeOf<'parent'>()
+
+        return {}
+      },
+      two: (__, { parent }) => {
+        expectTypeOf(parent.props).toEqualTypeOf<Promise<{ foo: number }>>()
+        expectTypeOf(parent.name).toEqualTypeOf<'parent'>()
+
+        return {}
+      },
+    })
+  })
+
+  describe('reject', () => {
+    test('accepts built in rejections when no context is provided', () => {
+      createRoute({
+        name: 'route',
+        component: echo,
+      }, (__, context) => {
+        type Source = Parameters<typeof context.reject>[0]
+        type Expect = BuiltInRejectionType
+
+        expectTypeOf<Source>().toEqualTypeOf<Expect>()
+
+        return { value: 'foo' }
+      })
+    })
+
+    test('accepts built in rejections and custom rejections when context is provided', () => {
+      const rejection = createRejection({
+        type: 'NotAuthorized',
+      })
+
+      createRoute({
+        name: 'route',
+        component: echo,
+        context: [rejection],
+      }, (__, context) => {
+        type Source = Parameters<typeof context.reject>[0]
+        type Expect = 'NotAuthorized' | BuiltInRejectionType
+
+        expectTypeOf<Source>().toEqualTypeOf<Expect>()
+
+        return { value: 'foo' }
+      })
+    })
+  })
+
+  describe('push', () => {
+    test('accepts url when no context is provided', () => {
+      createRoute({
+        name: 'route',
+        component: echo,
+      }, (__, context) => {
+        // should accept a url
+        context.push('/')
+
+        // @ts-expect-error should not accept an invalid url
+        context.push('foo')
+
+        return { value: 'foo' }
+      })
+    })
+
+    test('accepts url and routes when context is provided', () => {
+      const route = createRoute({
+        name: 'route',
+      })
+
+      createRoute({
+        name: 'route',
+        component: echo,
+        context: [route],
+      }, (__, context) => {
+        // valid
+        context.push('route')
+
+        // @ts-expect-error should not accept an invalid route name
+        context.push('foo')
+
+        // should accept a url
+        context.push('/')
+
+        return { value: 'foo' }
+      })
+    })
+  })
+
+  describe('replace', () => {
+    test('accepts url when no context is provided', () => {
+      createRoute({
+        name: 'route',
+        component: echo,
+      }, (__, context) => {
+        // should accept a url
+        context.replace('/')
+
+        // @ts-expect-error should not accept an invalid url
+        context.replace('foo')
+
+        return { value: 'foo' }
+      })
+    })
+
+    test('accepts url and routes when context is provided', () => {
+      const route = createRoute({
+        name: 'route',
+      })
+
+      createRoute({
+        name: 'route',
+        component: echo,
+        context: [route],
+      }, (__, context) => {
+        // valid
+        context.replace('route')
+
+        // @ts-expect-error should not accept an invalid route name
+        context.replace('foo')
+
+        // should accept a url
+        context.replace('/')
+
+        return { value: 'foo' }
+      })
+    })
   })
 })
 
