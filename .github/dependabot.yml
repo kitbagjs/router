@@ -12,6 +12,8 @@ updates:
     ignore:
       - dependency-name: "@standard-schema/spec"
         update-types: ["version-update:semver-minor", "version-update:semver-patch"]
+      - dependency-name: "zod"
+        update-types: ["version-update:semver-minor", "version-update:semver-patch"]
     groups:
       build-tools:
         patterns:
