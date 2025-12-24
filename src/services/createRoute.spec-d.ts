@@ -9,7 +9,6 @@ import { withParams } from '@/services/withParams'
 import { InternalRouteHooks } from '@/types/hooks'
 import { BuiltInRejectionType } from './createRouterReject'
 import { createRejection } from './createRejection'
-import { Url } from '@/types/url'
 
 test('empty options returns an empty route', () => {
   const route = createRoute({})
