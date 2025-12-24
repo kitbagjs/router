@@ -3,12 +3,13 @@ import { Route, Routes } from '@/types/route'
 import { RouteContext } from '@/types/routeContext'
 
 export function checkMissingContext(routes: Routes): void {
+  const routeIds = new Set(routes.map(route => route.id)
   const routeIdsFromContext = routes
     .flatMap((route) => route.context)
     .filter(contextIsRoute)
 
   for (const route of routeIdsFromContext) {
-    if (routes.every(({ id }) => route.id !== id)) {
+    if (!routeIds.has(route.id) {
       throw new MissingRouteContextError(route.name)
     }
   }
