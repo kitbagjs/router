@@ -118,7 +118,7 @@ test('given a plugin, adds the hooks from options to the router', async () => {
   expect(onAfterRouteEnterMock).toHaveBeenCalledTimes(4)
 })
 
-test('given a plugin, adds the hooks  to the router', async () => {
+test('given a plugin, adds the hooks to the router', async () => {
   const onBeforeRouteEnterMock = vi.fn()
   const onBeforeRouteUpdateMock = vi.fn()
   const onBeforeRouteLeaveMock = vi.fn()
