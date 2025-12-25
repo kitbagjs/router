@@ -1,7 +1,7 @@
 import { BeforeRouteHook, AfterRouteHook, RouteHookRemove } from './hooks'
 import { Routes } from './route'
 import { MaybeArray, MaybePromise } from './utilities'
-import { Rejection, ExtractRejections } from './rejection'
+import { Rejection } from './rejection'
 import { RouterRouteHooks } from '@/models/RouterRouteHooks'
 import { ResolvedRoute } from './resolved'
 import { RouterReject } from './routerReject'
@@ -11,13 +11,12 @@ import { CallbackContextAbort } from '@/services/createRouterCallbackContext'
 
 export type EmptyRouterPlugin = RouterPlugin<[], []>
 
-export type ToRouterPlugin<TPlugin extends CreateRouterPluginOptions> = TPlugin extends { routes: infer TRoutes extends Routes }
-  ? RouterPlugin<TRoutes, ExtractRejections<TPlugin>>
-  : RouterPlugin<[], ExtractRejections<TPlugin>>
-
-export type CreateRouterPluginOptions = {
-  routes?: Routes,
-  rejections?: Rejection[],
+export type CreateRouterPluginOptions<
+  TRoutes extends Routes = Routes,
+  TRejections extends Rejection[] = Rejection[]
+> = {
+  routes?: TRoutes,
+  rejections?: TRejections,
   /**
    * @deprecated use plugin.onBeforeRouteEnter instead
    */
@@ -128,44 +127,36 @@ export type AddPluginErrorHook<
   TRejections extends Rejection[] = Rejection[]
 > = (hook: PluginErrorHook<TRoutes, TRejections>) => RouteHookRemove
 
-type ToRoutes<TRoutes extends Routes | undefined = undefined> = TRoutes extends Routes
-  ? TRoutes
-  : []
-
-type ToRejections<TRejections extends Rejection[] | undefined = undefined> = TRejections extends Rejection[]
-  ? TRejections
-  : []
-
 export type PluginRouteHooks<
-  TRoutes extends Routes | undefined = undefined,
-  TRejections extends Rejection[] | undefined = undefined
+  TRoutes extends Routes = Routes,
+  TRejections extends Rejection[] = Rejection[]
 > = {
   /**
    * Registers a global hook to be called before a route is entered.
    */
-  onBeforeRouteEnter: AddPluginBeforeRouteHook<ToRoutes<TRoutes>, ToRejections<TRejections>>,
+  onBeforeRouteEnter: AddPluginBeforeRouteHook<TRoutes, TRejections>,
   /**
    * Registers a global hook to be called before a route is left.
    */
-  onBeforeRouteLeave: AddPluginBeforeRouteHook<ToRoutes<TRoutes>, ToRejections<TRejections>>,
+  onBeforeRouteLeave: AddPluginBeforeRouteHook<TRoutes, TRejections>,
   /**
    * Registers a global hook to be called before a route is updated.
    */
-  onBeforeRouteUpdate: AddPluginBeforeRouteHook<ToRoutes<TRoutes>, ToRejections<TRejections>>,
+  onBeforeRouteUpdate: AddPluginBeforeRouteHook<TRoutes, TRejections>,
   /**
    * Registers a global hook to be called after a route is entered.
    */
-  onAfterRouteEnter: AddPluginAfterRouteHook<ToRoutes<TRoutes>, ToRejections<TRejections>>,
+  onAfterRouteEnter: AddPluginAfterRouteHook<TRoutes, TRejections>,
   /**
    * Registers a global hook to be called after a route is left.
    */
-  onAfterRouteLeave: AddPluginAfterRouteHook<ToRoutes<TRoutes>, ToRejections<TRejections>>,
+  onAfterRouteLeave: AddPluginAfterRouteHook<TRoutes, TRejections>,
   /**
    * Registers a global hook to be called after a route is updated.
    */
-  onAfterRouteUpdate: AddPluginAfterRouteHook<ToRoutes<TRoutes>, ToRejections<TRejections>>,
+  onAfterRouteUpdate: AddPluginAfterRouteHook<TRoutes, TRejections>,
   /**
    * Registers a global hook to be called when an error occurs.
    */
-  onError: AddPluginErrorHook<ToRoutes<TRoutes>, ToRejections<TRejections>>,
+  onError: AddPluginErrorHook<TRoutes, TRejections>,
 }

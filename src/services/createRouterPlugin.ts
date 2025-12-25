@@ -1,8 +1,13 @@
-import { CreateRouterPluginOptions, RouterPlugin, ToRouterPlugin, PluginRouteHooks } from '@/types/routerPlugin'
+import { CreateRouterPluginOptions, RouterPlugin, PluginRouteHooks } from '@/types/routerPlugin'
 import { createRouteHooks } from './createRouteHooks'
 import { asArray } from '@/utilities'
+import { Rejection } from '@/types/rejection'
+import { Routes } from '@/types/route'
 
-export function createRouterPlugin<TPlugin extends CreateRouterPluginOptions>(plugin: TPlugin): ToRouterPlugin<TPlugin> & PluginRouteHooks<TPlugin['routes'], TPlugin['rejections']>
+export function createRouterPlugin<
+  TRoutes extends Routes = Routes,
+  TRejections extends Rejection[] = Rejection[]
+>(plugin: CreateRouterPluginOptions<TRoutes, TRejections>): RouterPlugin<TRoutes, TRejections> & PluginRouteHooks<TRoutes, TRejections>
 
 export function createRouterPlugin(plugin: CreateRouterPluginOptions): RouterPlugin {
   const { store, ...hooks } = createRouteHooks()
