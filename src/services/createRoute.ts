@@ -53,7 +53,7 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
     host: withParams(),
     prefetch: options.prefetch,
     ...hooks,
-  }
+  } satisfies Route & InternalRouteHooks
 
   const merged = isWithParent(options) ? combineRoutes(options.parent, route) : route
 
