@@ -41,34 +41,34 @@ export type WithHooks = {
 
 export type InternalRouteHooks<TContext extends RouteContext[] | undefined = undefined> = {
   /**
-   * Registers a hook to be called before a route is entered.
+   * Registers a route hook to be called before the route is entered.
    */
   onBeforeRouteEnter: AddRouterBeforeRouteHook<RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
   /**
-   * Registers a hook to be called before a route is left.
+   * Registers a route hook to be called before the route is left.
    */
   onBeforeRouteLeave: AddRouterBeforeRouteHook<RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
   /**
-   * Registers a hook to be called before a route is updated.
+   * Registers a route hook to be called before the route is updated.
    */
   onBeforeRouteUpdate: AddRouterBeforeRouteHook<RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
   /**
-   * Registers a hook to be called after a route is entered.
+   * Registers a route hook to be called after the route is entered.
    */
   onAfterRouteEnter: AddRouterAfterRouteHook<RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
   /**
-   * Registers a hook to be called after a route is left.
+   * Registers a route hook to be called after the route is left.
    */
   onAfterRouteLeave: AddRouterAfterRouteHook<RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
   /**
-   * Registers a hook to be called after a route is updated.
+   * Registers a route hook to be called after the route is updated.
    */
   onAfterRouteUpdate: AddRouterAfterRouteHook<RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
 }
 
 export type ExternalRouteHooks<TContext extends RouteContext[] | undefined = undefined> = {
   /**
-   * Registers a hook to be called before a route is entered.
+   * Registers a route hook to be called before the route is entered.
    */
   onBeforeRouteEnter: AddRouterBeforeRouteHook<RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
 }
