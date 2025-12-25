@@ -1,6 +1,6 @@
-import { BeforeRouteHook, AfterRouteHook, RouteHookRemove } from './hooks'
+import { RouteHookRemove } from './hooks'
 import { Routes } from './route'
-import { MaybeArray, MaybePromise } from './utilities'
+import { MaybePromise } from './utilities'
 import { Rejection } from './rejection'
 import { RouterRouteHooks } from '@/models/RouterRouteHooks'
 import { ResolvedRoute } from './resolved'
@@ -17,30 +17,6 @@ export type CreateRouterPluginOptions<
 > = {
   routes?: TRoutes,
   rejections?: TRejections,
-  /**
-   * @deprecated use plugin.onBeforeRouteEnter instead
-   */
-  onBeforeRouteEnter?: MaybeArray<BeforeRouteHook>,
-  /**
-   * @deprecated use plugin.onAfterRouteEnter instead
-   */
-  onAfterRouteEnter?: MaybeArray<AfterRouteHook>,
-  /**
-   * @deprecated use plugin.onBeforeRouteUpdate instead
-   */
-  onBeforeRouteUpdate?: MaybeArray<BeforeRouteHook>,
-  /**
-   * @deprecated use plugin.onAfterRouteUpdate instead
-   */
-  onAfterRouteUpdate?: MaybeArray<AfterRouteHook>,
-  /**
-   * @deprecated use plugin.onBeforeRouteLeave instead
-   */
-  onBeforeRouteLeave?: MaybeArray<BeforeRouteHook>,
-  /**
-   * @deprecated use plugin.onAfterRouteLeave instead
-   */
-  onAfterRouteLeave?: MaybeArray<AfterRouteHook>,
 }
 
 export type RouterPlugin<

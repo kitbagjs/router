@@ -1,6 +1,5 @@
 import { CreateRouterPluginOptions, RouterPlugin, PluginRouteHooks } from '@/types/routerPlugin'
 import { createRouteHooks } from './createRouteHooks'
-import { asArray } from '@/utilities'
 import { Rejection } from '@/types/rejection'
 import { Routes } from '@/types/route'
 
@@ -11,30 +10,6 @@ export function createRouterPlugin<
 
 export function createRouterPlugin(plugin: CreateRouterPluginOptions): RouterPlugin {
   const { store, ...hooks } = createRouteHooks()
-
-  asArray(plugin.onBeforeRouteEnter ?? []).forEach((hook) => {
-    hooks.onBeforeRouteEnter(hook)
-  })
-
-  asArray(plugin.onAfterRouteEnter ?? []).forEach((hook) => {
-    hooks.onAfterRouteEnter(hook)
-  })
-
-  asArray(plugin.onBeforeRouteUpdate ?? []).forEach((hook) => {
-    hooks.onBeforeRouteUpdate(hook)
-  })
-
-  asArray(plugin.onAfterRouteUpdate ?? []).forEach((hook) => {
-    hooks.onAfterRouteUpdate(hook)
-  })
-
-  asArray(plugin.onBeforeRouteLeave ?? []).forEach((hook) => {
-    hooks.onBeforeRouteLeave(hook)
-  })
-
-  asArray(plugin.onAfterRouteLeave ?? []).forEach((hook) => {
-    hooks.onAfterRouteLeave(hook)
-  })
 
   return {
     routes: plugin.routes ?? [],

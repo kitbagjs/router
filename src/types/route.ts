@@ -4,7 +4,6 @@ import { PrefetchConfig } from '@/types/prefetch'
 import { RouteMeta } from '@/types/register'
 import { LastInArray } from '@/types/utilities'
 import { CreateRouteOptions } from '@/types/createRouteOptions'
-import { WithHooks } from '@/types/hooks'
 import { RouteContext } from './routeContext'
 import { RouterRouteHooks } from '@/models/RouterRouteHooks'
 
@@ -16,7 +15,7 @@ export type Routes = readonly Route[]
 /**
  * The Route properties originally provided to `createRoute`. The only change is normalizing meta to always default to an empty object.
  */
-export type CreatedRouteOptions = Omit<CreateRouteOptions, 'props'> & WithHooks & {
+export type CreatedRouteOptions = Omit<CreateRouteOptions, 'props'> & {
   id: string,
   // todo: this should not be optional
   props?: unknown,

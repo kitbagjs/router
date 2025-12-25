@@ -3,10 +3,10 @@ import { createRouter } from '@/services/createRouter'
 import { component } from '@/utilities/testHelpers'
 import { describe, test, expectTypeOf } from 'vitest'
 import { createRouterPlugin } from './createRouterPlugin'
-import { CallbackContextAbort } from './createCallbackContext'
 import { BuiltInRejectionType } from './createRouterReject'
 import { createRejection } from './createRejection'
 import { AddRouterAfterRouteHook, AddRouterBeforeRouteHook } from '@/types/hooks'
+import { RouterAbort } from '@/types/routerAbort'
 
 describe('hooks', () => {
   const parent = createRoute({
@@ -96,7 +96,7 @@ describe('hooks', () => {
 
   test('context.abort', () => {
     router.onBeforeRouteEnter((_to, context) => {
-      expectTypeOf(context.abort).toEqualTypeOf<CallbackContextAbort>()
+      expectTypeOf(context.abort).toEqualTypeOf<RouterAbort>()
     })
   })
 })
