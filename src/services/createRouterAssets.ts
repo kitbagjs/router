@@ -9,7 +9,6 @@ import { createUseQueryValue } from '@/compositions/useQueryValue'
 import { createUseLink } from '@/compositions/useLink'
 import { createIsRoute } from '@/guards/routes'
 import { AddRouterAfterRouteHook, AddRouterBeforeRouteHook } from '@/types/hooks'
-import { routerInjectionKey } from '@/keys'
 
 export type RouterAssets<TRouter extends Router> = {
   /**
@@ -130,8 +129,8 @@ export type RouterAssets<TRouter extends Router> = {
 
 export function createRouterAssets<TRouter extends Router>(router: TRouter): RouterAssets<TRouter>
 export function createRouterAssets<TRouter extends Router>(routerKey: InjectionKey<TRouter>): RouterAssets<TRouter>
-export function createRouterAssets<TRouter extends Router>(routerOrRouterKey?: TRouter | InjectionKey<TRouter>): RouterAssets<TRouter> {
-  const routerKey: InjectionKey<TRouter> = typeof routerOrRouterKey === 'object' ? routerOrRouterKey.key : routerOrRouterKey ?? routerInjectionKey
+export function createRouterAssets<TRouter extends Router>(routerOrRouterKey: TRouter | InjectionKey<TRouter>): RouterAssets<TRouter> {
+  const routerKey: InjectionKey<TRouter> = typeof routerOrRouterKey === 'object' ? routerOrRouterKey.key : routerOrRouterKey
 
   const {
     onBeforeRouteLeave,
