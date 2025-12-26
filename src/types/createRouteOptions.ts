@@ -12,12 +12,12 @@ import { ResolvedRoute } from './resolved'
 import { ComponentProps } from '@/services/component'
 import { PropsCallbackContext } from './props'
 import { MaybePromise } from './utilities'
-import { RouterView } from '@/main'
 import { ToMeta } from './meta'
 import { ToState } from './state'
 import { ToName } from './name'
 import { ToWithParams, WithParams } from '@/services/withParams'
 import { RouteContext, ToRouteContext } from './routeContext'
+import { RouterViewProps } from '@/components/routerView'
 
 export type WithHost<THost extends string | WithParams = string | WithParams> = {
   /**
@@ -124,6 +124,10 @@ export type PropsGetter<
   TComponent extends Component = Component
 > = (route: ResolvedRoute<ToRoute<TOptions, undefined>>, context: PropsCallbackContext<TOptions>) => MaybePromise<ComponentProps<TComponent>>
 
+export type RouterViewPropsGetter<
+  TOptions extends CreateRouteOptions = CreateRouteOptions
+> = (route: ResolvedRoute<ToRoute<TOptions, undefined>>, context: PropsCallbackContext<TOptions>) => MaybePromise<RouterViewProps & Record<string, unknown>>
+
 type ComponentPropsAreOptional<
   TComponent extends Component
 > = Partial<ComponentProps<TComponent>> extends ComponentProps<TComponent>
@@ -142,7 +146,7 @@ export type CreateRouteProps<
   ? PropsGetter<TOptions, TOptions['component']>
   : TOptions['components'] extends Record<string, Component>
     ? RoutePropsRecord<TOptions, TOptions['components']>
-    : PropsGetter<TOptions, typeof RouterView>
+    : RouterViewPropsGetter<TOptions>
 
 type ToMatch<
   TOptions extends CreateRouteOptions,

@@ -10,7 +10,7 @@ import { InjectionKey } from 'vue'
 import { BuiltInRejectionType } from './createRouterReject'
 import { AsString } from '@/types/utilities'
 import { Routes } from '@/types/route'
-import { Rejection } from '@/types/rejection'
+import { Rejections } from '@/types/rejection'
 
 /**
  * Defines the structure of a successful callback response.
@@ -49,7 +49,7 @@ export type CallbackContextAbort = () => void
 
 export type RouterCallbackContext<
   TRoutes extends Routes = Routes,
-  TRejections extends Rejection[] = Rejection[]
+  TRejections extends Rejections = Rejections
 > = {
   reject: RouterReject<TRejections>,
   push: RouterPush<TRoutes>,
@@ -64,7 +64,7 @@ export function createRouterCallbackContext<TRouter extends Router>(_routerKey: 
 
 export function createRouterCallbackContext<
   TRoutes extends Routes,
-  TRejections extends Rejection[]
+  TRejections extends Rejections
 >(): RouterCallbackContext<TRoutes, TRejections>
 
 export function createRouterCallbackContext(): RouterCallbackContext {

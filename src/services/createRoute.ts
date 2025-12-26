@@ -1,6 +1,6 @@
 import { markRaw } from 'vue'
 import { createRouteId } from '@/services/createRouteId'
-import { CreateRouteOptions, PropsGetter, CreateRouteProps, ToRoute, combineRoutes, isWithParent } from '@/types/createRouteOptions'
+import { CreateRouteOptions, PropsGetter, CreateRouteProps, ToRoute, combineRoutes, isWithParent, RouterViewPropsGetter } from '@/types/createRouteOptions'
 import { toName } from '@/types/name'
 import { Route } from '@/types/route'
 import { checkDuplicateParams } from '@/utilities/checkDuplicateKeys'
@@ -11,13 +11,15 @@ import { InternalRouteHooks } from '@/types/hooks'
 type CreateRouteWithProps<
   TOptions extends CreateRouteOptions,
   TProps extends CreateRouteProps<TOptions>
-> = CreateRouteProps<TOptions> extends PropsGetter<TOptions>
-  ? Partial<ReturnType<CreateRouteProps<TOptions>>> extends ReturnType<CreateRouteProps<TOptions>>
-    ? [ props?: TProps ]
-    : [ props: TProps ]
-  : Partial<CreateRouteProps<TOptions>> extends CreateRouteProps<TOptions>
-    ? [ props?: TProps ]
-    : [ props: TProps ]
+> = CreateRouteProps<TOptions> extends RouterViewPropsGetter<TOptions>
+  ? [ props?: RouterViewPropsGetter<TOptions> ]
+  : CreateRouteProps<TOptions> extends PropsGetter<TOptions>
+    ? Partial<ReturnType<CreateRouteProps<TOptions>>> extends ReturnType<CreateRouteProps<TOptions>>
+      ? [ props?: TProps ]
+      : [ props: TProps ]
+    : Partial<CreateRouteProps<TOptions>> extends CreateRouteProps<TOptions>
+      ? [ props?: TProps ]
+      : [ props: TProps ]
 
 export function createRoute<
   const TOptions extends CreateRouteOptions,
@@ -53,7 +55,7 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
     host: withParams(),
     prefetch: options.prefetch,
     ...hooks,
-  }
+  } satisfies Route & InternalRouteHooks
 
   const merged = isWithParent(options) ? combineRoutes(options.parent, route) : route
 

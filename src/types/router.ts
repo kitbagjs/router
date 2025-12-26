@@ -12,7 +12,7 @@ import { RouterReject } from '@/types/routerReject'
 import { RouterPlugin } from '@/types/routerPlugin'
 import { RoutesName } from '@/types/routesMap'
 import { ToRouteContext } from '@/types/routeContext'
-import { ExtractRejections, Rejection } from '@/types/rejection'
+import { ExtractRejections, Rejections } from '@/types/rejection'
 
 /**
  * Options to initialize a {@link Router} instance.
@@ -42,7 +42,7 @@ export type RouterOptions = {
   /**
    * Components assigned to each type of rejection your router supports.
    */
-  rejections?: Rejection[],
+  rejections?: Rejections,
 
   /**
    * When false, createRouterAssets must be used for component and hooks. Assets exported by the library

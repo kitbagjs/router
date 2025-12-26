@@ -3,7 +3,7 @@ import { Route } from '@/types/route'
 import { RouterReject } from './routerReject'
 import { RouterPush } from './routerPush'
 import { RouterReplace } from './routerReplace'
-import { RouteContextToRejection, RouteContextToRoute } from './routeContext'
+import { RouteContext, RouteContextToRejection, RouteContextToRoute } from './routeContext'
 
 /**
  * Context provided to props callback functions
@@ -11,11 +11,17 @@ import { RouteContextToRejection, RouteContextToRoute } from './routeContext'
 export type PropsCallbackContext<
   TOptions extends CreateRouteOptions = CreateRouteOptions
 > = {
-  reject: RouterReject<RouteContextToRejection<TOptions['context']>>,
-  push: RouterPush<RouteContextToRoute<TOptions['context']>>,
-  replace: RouterReplace<RouteContextToRoute<TOptions['context']>>,
+  reject: RouterReject<RouteContextToRejection<ExtractRouteContext<TOptions>>>,
+  push: RouterPush<RouteContextToRoute<ExtractRouteContext<TOptions>>>,
+  replace: RouterReplace<RouteContextToRoute<ExtractRouteContext<TOptions>>>,
   parent: PropsCallbackParent<TOptions['parent']>,
 }
+
+type ExtractRouteContext<
+  TOptions extends CreateRouteOptions
+> = TOptions extends { context: infer TContext extends RouteContext[] }
+  ? TContext
+  : []
 
 export type PropsCallbackParent<
   TParent extends Route | undefined = Route | undefined

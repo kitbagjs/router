@@ -1,21 +1,15 @@
-# Types: RouterRouteHookErrorRunner()\<TRoutes\>
+# Types: RouterRouteHookErrorRunner()
 
 ```ts
-type RouterRouteHookErrorRunner<TRoutes> = (error, context) => void;
+type RouterRouteHookErrorRunner = (error, context) => void;
 ```
-
-## Type Parameters
-
-| Type Parameter |
-| ------ |
-| `TRoutes` *extends* [`Routes`](Routes.md) |
 
 ## Parameters
 
 | Parameter | Type |
 | ------ | ------ |
 | `error` | `unknown` |
-| `context` | [`RouterRouteHookErrorRunnerContext`](RouterRouteHookErrorRunnerContext.md)\<`TRoutes`\> |
+| `context` | [`RouterRouteHookErrorRunnerContext`](RouterRouteHookErrorRunnerContext.md) |
 
 ## Returns
 

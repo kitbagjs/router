@@ -4,7 +4,7 @@ import { createUseRouterHooks } from '@/compositions/useRouterHooks'
 import { AddRouterAfterRouteHook, AddRouterBeforeRouteHook, AfterRouteHookLifecycle, BeforeRouteHookLifecycle, RouterAfterRouteHook, RouterBeforeRouteHook } from '@/types/hooks'
 import { Routes } from '@/types/route'
 import { Router, RouterRejections, RouterRoutes } from '@/types/router'
-import { Rejection } from '@/types/rejection'
+import { Rejections } from '@/types/rejection'
 
 function createComponentBeforeHook<TRouter extends Router>(routerKey: InjectionKey<TRouter>, lifecycle: BeforeRouteHookLifecycle): AddRouterBeforeRouteHook<RouterRoutes<TRouter>, RouterRejections<TRouter>>
 function createComponentBeforeHook(routerKey: symbol, lifecycle: BeforeRouteHookLifecycle): AddRouterBeforeRouteHook {
@@ -42,7 +42,7 @@ function createComponentAfterHook(routerKey: symbol, lifecycle: AfterRouteHookLi
 
 type ComponentHooks<
   TRoutes extends Routes,
-  TRejections extends Rejection[]
+  TRejections extends Rejections
 > = {
   onBeforeRouteLeave: AddRouterBeforeRouteHook<TRoutes, TRejections>,
   onBeforeRouteUpdate: AddRouterBeforeRouteHook<TRoutes, TRejections>,

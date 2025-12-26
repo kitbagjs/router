@@ -45,7 +45,7 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
     state: {},
     context,
     onBeforeRouteEnter,
-  }
+  } satisfies Route & ExternalRouteHooks
 
   const merged = isWithParent(options) ? combineRoutes(options.parent, route) : route
 

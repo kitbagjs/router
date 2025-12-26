@@ -1,7 +1,7 @@
-# Types: RouterErrorHookContext\<TRoutes, TRejections\>
+# Types: PluginErrorHookContext\<TRoutes, TRejections\>
 
 ```ts
-type RouterErrorHookContext<TRoutes, TRejections> = object;
+type PluginErrorHookContext<TRoutes, TRejections> = object;
 ```
 
 ## Type Parameters
@@ -15,9 +15,9 @@ type RouterErrorHookContext<TRoutes, TRejections> = object;
 
 | Property | Type |
 | ------ | ------ |
-| <a id="from"></a> `from` | \| [`RouterResolvedRouteUnion`](RouterResolvedRouteUnion.md)\<`TRoutes`\> \| `null` |
+| <a id="from"></a> `from` | [`ResolvedRoute`](ResolvedRoute.md) \| `null` |
 | <a id="push"></a> `push` | [`RouterPush`](RouterPush.md)\<`TRoutes`\> |
 | <a id="reject"></a> `reject` | [`RouterReject`](RouterReject.md)\<`TRejections`\> |
 | <a id="replace"></a> `replace` | [`RouterReplace`](RouterReplace.md)\<`TRoutes`\> |
 | <a id="source"></a> `source` | `"props"` \| `"hook"` \| `"component"` |
-| <a id="to"></a> `to` | [`RouterResolvedRouteUnion`](RouterResolvedRouteUnion.md)\<`TRoutes`\> |
+| <a id="to"></a> `to` | [`ResolvedRoute`](ResolvedRoute.md) |
