@@ -7,6 +7,7 @@ import { RouterReject } from './routerReject'
 import { RouterPush } from './routerPush'
 import { RouterReplace } from './routerReplace'
 import { CallbackContextAbort } from '@/services/createRouterCallbackContext'
+import { MaybePromise } from './utilities'
 
 export type EmptyRouterPlugin = RouterPlugin<[], []>
 
