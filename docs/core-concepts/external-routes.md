@@ -12,3 +12,20 @@ const docs = createExternalRoute({
   host: 'https://router.kitbag.dev',
 })
 ```
+
+## Hooks
+
+External routes can also define hooks but since by definition they will navigate the user away from your application, the only hook that is available is `onBeforeRouteEnter`. See [Hooks](/advanced-concepts/hooks) for more information about hooks.
+
+```ts
+import { createExternalRoute } from '@kitbag/router'
+
+const docs = createExternalRoute({
+  name: 'docs',
+  host: 'https://router.kitbag.dev',
+})
+
+docs.onBeforeRouteEnter(() => {
+  console.log('before route enter')
+})
+```

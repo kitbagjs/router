@@ -82,44 +82,53 @@ If you make the param optional, it will also match just a slash `/`, the param v
 In order to setup redirects for your routes, you'll have to use route [hooks](/advanced-concepts/hooks).
 
 ```ts
-{
-  name: 'old-route',
-  path: '/old',
-  onBeforeRouteEnter: (to, { replace }) => {
-    replace('new-route')
-  }
-},
-{
+const newRoute = createRoute({
   name: 'new-route',
   path: '/new',
   component: ...
-}
+})
+
+const oldRoute = createRoute({
+  name: 'old-route',
+  path: '/old',
+  context: [newRoute],
+})
+
+oldRoute.onBeforeRouteEnter((to, { replace }) => {
+  replace('new-route')
+})
 ```
 
 ## Alias
 
-If you need additional routes that ultimately result in another route being loaded, for now you'll need to define those routes and have them redirect.
+If you need additional routes that ultimately result in another route being loaded, for now you'll need to define those routes and have them redirect with route [hooks](/advanced-concepts/hooks).
 
 ```ts
-{
+const actualRoute = createRoute({
   name: 'actual-route',
   path: '/new',
   component: ...
-},
-{
+})
+
+const aliasRouteA = createRoute({
   name: 'alias-route-a',
   path: '/alias-a',
-  onBeforeRouteEnter: (to, { replace }) => {
-    replace('actual-route')
-  }
-},
-{
+  context: [actualRoute],
+})
+
+const aliasRouteB = createRoute({
   name: 'alias-route-b',
   path: '/alias-b',
-  onBeforeRouteEnter: (to, { replace }) => {
-    replace('actual-route')
-  }
-},
+  context: [actualRoute],
+})
+
+aliasRouteA.onBeforeRouteEnter((to, { replace }) => {
+  replace('actual-route')
+})
+
+aliasRouteB.onBeforeRouteEnter((to, { replace }) => {
+  replace('actual-route')
+})
 ```
 
 ## Named Route

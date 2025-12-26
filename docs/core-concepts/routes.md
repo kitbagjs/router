@@ -68,7 +68,7 @@ const contact = createRoute({
 
 ## Parent
 
-The `parent` property is used to create nested routes. In this example, `blogPost` route's path is combined with the `blog` route's path to form the full url. A route inherits many of its parent's properties. Specifically, `path`, `query`, `meta`, `state`, and `hash` are all combined.
+The `parent` property is used to create nested routes. In this example, `blogPost` route's path is combined with the `blog` route's path to form the full url. A route inherits many of its parent's properties. Specifically, `path`, `query`, `meta`, `state`, `context`, and `hash` are all combined.
 
 ```ts {7}
 const blog = createRoute({
@@ -180,18 +180,48 @@ const home = createRoute({
 
 Hooks can be defined on a individual route. Each hook can be a function or an array of functions. See [Hooks](/advanced-concepts/hooks) for more information about hooks.
 
-```ts {7-9}
+```ts
 import HomeView from './components/HomeView.vue'
 
 const home = createRoute({
   name: 'home',
   path: '/',
   component: HomeView,
-  onBeforeRouteEnter: () => {
-    console.log('before route enter')
-  },
+})
+
+home.onBeforeRouteEnter(() => {
+  console.log('before route enter')
 })
 ```
+
+## Context
+
+The context for a route is the collection of routes and rejections that are associated with the route. The context you provide to this route will be available to the hooks and props callback functions for this route.
+
+```ts
+const newHomePage = createRoute({
+  name: 'new-home',
+  path: '/',
+  component: NewHomePage,
+})
+
+const home = createRoute({
+  name: 'home',
+  path: '/',
+  context: [newHomePage],
+})
+
+home.onBeforeRouteEnter((to, { replace }) => {
+  if(user.isCanary) {
+    // TS knows about 'new-home' because it's in the context
+    replace('new-home')
+  }
+})
+```
+
+### Missing Context
+
+When creating a router, the router will validate that all routes in the context are actually part of the router. If a route is not part of the router, it will throw a `MissingRouteContextError`.
 
 ## Prefetching
 

@@ -1,7 +1,7 @@
-# Types: RouterBeforeRouteHook()\<TRoutes, TRejections\>
+# Types: PluginAfterRouteHook()\<TRoutes, TRejections\>
 
 ```ts
-type RouterBeforeRouteHook<TRoutes, TRejections> = (to, context) => MaybePromise<void>;
+type PluginAfterRouteHook<TRoutes, TRejections> = (to, context) => MaybePromise<void>;
 ```
 
 ## Type Parameters
@@ -15,8 +15,8 @@ type RouterBeforeRouteHook<TRoutes, TRejections> = (to, context) => MaybePromise
 
 | Parameter | Type |
 | ------ | ------ |
-| `to` | [`RouterResolvedRouteUnion`](RouterResolvedRouteUnion.md)\<`TRoutes`\> |
-| `context` | `RouterBeforeRouteHookContext`\<`TRoutes`, `TRejections`\> |
+| `to` | [`ResolvedRoute`](ResolvedRoute.md) |
+| `context` | `PluginAfterRouteHookContext`\<`TRoutes`, `TRejections`\> |
 
 ## Returns
 

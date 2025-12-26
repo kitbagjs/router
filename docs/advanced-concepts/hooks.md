@@ -77,11 +77,8 @@ router.onAfterRouteEnter((to, context) => {
 ### Route
 
 ```ts
-createRoute({
-  name: 'Home',
-  onAfterRouteEnter: (to, context) => {
-    ...
-  }
+route.onAfterRouteEnter((to, context) => {
+  ...
 })
 ```
 

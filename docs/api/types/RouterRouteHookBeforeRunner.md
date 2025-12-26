@@ -1,20 +1,14 @@
-# Types: RouterRouteHookBeforeRunner()\<TRoutes\>
+# Types: RouterRouteHookBeforeRunner()
 
 ```ts
-type RouterRouteHookBeforeRunner<TRoutes> = (context) => Promise<BeforeRouteHookResponse>;
+type RouterRouteHookBeforeRunner = (context) => Promise<BeforeRouteHookResponse>;
 ```
-
-## Type Parameters
-
-| Type Parameter |
-| ------ |
-| `TRoutes` *extends* [`Routes`](Routes.md) |
 
 ## Parameters
 
 | Parameter | Type |
 | ------ | ------ |
-| `context` | [`HookContext`](HookContext.md)\<`TRoutes`\> |
+| `context` | [`HookContext`](HookContext.md) |
 
 ## Returns
 
