@@ -75,6 +75,7 @@ export default defineConfig({
             { text: 'Route Narrowing', link: '/advanced-concepts/route-narrowing' },
             { text: 'Rejections', link: '/advanced-concepts/rejections' },
             { text: 'Hooks', link: '/advanced-concepts/hooks' },
+            { text: 'Plugins', link: '/advanced-concepts/plugins' },
             { text: 'Route Meta', link: '/advanced-concepts/route-meta' },
             { text: 'Route State', link: '/advanced-concepts/route-state' },
             { text: 'Prefetching', link: '/advanced-concepts/prefetching' },
