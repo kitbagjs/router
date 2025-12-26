@@ -28,6 +28,14 @@ optional components: Record<string, Component>;
 
 An object of named components to render using named views
 
+### context?
+
+```ts
+optional context: RouteContext[];
+```
+
+Related routes and rejections for the route. The context is exposed to the hooks and props callback functions for this route.
+
 ### hash?
 
 ```ts

@@ -6,10 +6,10 @@ type AddComponentBeforeRouteHook<TRoutes, TRejections> = (hook) => RouteHookRemo
 
 ## Type Parameters
 
-| Type Parameter |
-| ------ |
-| `TRoutes` *extends* [`Routes`](Routes.md) |
-| `TRejections` *extends* `string` |
+| Type Parameter | Default type |
+| ------ | ------ |
+| `TRoutes` *extends* [`Routes`](Routes.md) | [`Routes`](Routes.md) |
+| `TRejections` *extends* `Rejection`[] | `Rejection`[] |
 
 ## Parameters
 

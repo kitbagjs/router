@@ -6,9 +6,9 @@ type RouterRouteHookErrorRunnerContext<TRoutes> = object;
 
 ## Type Parameters
 
-| Type Parameter |
-| ------ |
-| `TRoutes` *extends* [`Routes`](Routes.md) |
+| Type Parameter | Default type |
+| ------ | ------ |
+| `TRoutes` *extends* [`Routes`](Routes.md) | [`Routes`](Routes.md) |
 
 ## Properties
 

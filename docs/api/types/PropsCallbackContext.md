@@ -1,7 +1,7 @@
-# Types: PropsCallbackContext\<TParent\>
+# Types: PropsCallbackContext\<TOptions\>
 
 ```ts
-type PropsCallbackContext<TParent> = object;
+type PropsCallbackContext<TOptions> = object;
 ```
 
 Context provided to props callback functions
@@ -10,13 +10,13 @@ Context provided to props callback functions
 
 | Type Parameter | Default type |
 | ------ | ------ |
-| `TParent` *extends* [`Route`](Route.md) \| `undefined` | [`Route`](Route.md) \| `undefined` |
+| `TOptions` *extends* [`CreateRouteOptions`](CreateRouteOptions.md) | [`CreateRouteOptions`](CreateRouteOptions.md) |
 
 ## Properties
 
 | Property | Type |
 | ------ | ------ |
-| <a id="parent"></a> `parent` | [`PropsCallbackParent`](PropsCallbackParent.md)\<`TParent`\> |
-| <a id="push"></a> `push` | `CallbackContext`\[`"push"`\] |
-| <a id="reject"></a> `reject` | `CallbackContext`\[`"reject"`\] |
-| <a id="replace"></a> `replace` | `CallbackContext`\[`"replace"`\] |
+| <a id="parent"></a> `parent` | [`PropsCallbackParent`](PropsCallbackParent.md)\<`TOptions`\[`"parent"`\]\> |
+| <a id="push"></a> `push` | [`RouterPush`](RouterPush.md)\<`RouteContextToRoute`\<`ExtractRouteContext`\<`TOptions`\>\>\> |
+| <a id="reject"></a> `reject` | [`RouterReject`](RouterReject.md)\<`RouteContextToRejection`\<`ExtractRouteContext`\<`TOptions`\>\>\> |
+| <a id="replace"></a> `replace` | [`RouterReplace`](RouterReplace.md)\<`RouteContextToRoute`\<`ExtractRouteContext`\<`TOptions`\>\>\> |

@@ -202,6 +202,10 @@
         "link": "/api/types/AddGlobalRouteHooks.md"
       },
       {
+        "text": "AddPluginErrorHook",
+        "link": "/api/types/AddPluginErrorHook.md"
+      },
+      {
         "text": "AddRouterAfterRouteHook",
         "link": "/api/types/AddRouterAfterRouteHook.md"
       },
@@ -266,12 +270,28 @@
         "link": "/api/types/CreateRouteProps.md"
       },
       {
+        "text": "CreateRouterPluginOptions",
+        "link": "/api/types/CreateRouterPluginOptions.md"
+      },
+      {
         "text": "EmptyRouterPlugin",
         "link": "/api/types/EmptyRouterPlugin.md"
       },
       {
+        "text": "ExternalRouteHooks",
+        "link": "/api/types/ExternalRouteHooks.md"
+      },
+      {
+        "text": "GenericRoute",
+        "link": "/api/types/GenericRoute.md"
+      },
+      {
         "text": "HookContext",
         "link": "/api/types/HookContext.md"
+      },
+      {
+        "text": "InternalRouteHooks",
+        "link": "/api/types/InternalRouteHooks.md"
       },
       {
         "text": "LiteralParam",
@@ -296,6 +316,26 @@
       {
         "text": "ParamSetter",
         "link": "/api/types/ParamSetter.md"
+      },
+      {
+        "text": "PluginAfterRouteHook",
+        "link": "/api/types/PluginAfterRouteHook.md"
+      },
+      {
+        "text": "PluginBeforeRouteHook",
+        "link": "/api/types/PluginBeforeRouteHook.md"
+      },
+      {
+        "text": "PluginErrorHook",
+        "link": "/api/types/PluginErrorHook.md"
+      },
+      {
+        "text": "PluginErrorHookContext",
+        "link": "/api/types/PluginErrorHookContext.md"
+      },
+      {
+        "text": "PluginRouteHooks",
+        "link": "/api/types/PluginRouteHooks.md"
       },
       {
         "text": "PrefetchConfig",
@@ -500,6 +540,10 @@
       {
         "text": "RouterRouteUnion",
         "link": "/api/types/RouterRouteUnion.md"
+      },
+      {
+        "text": "RouterViewPropsGetter",
+        "link": "/api/types/RouterViewPropsGetter.md"
       },
       {
         "text": "Routes",

@@ -1,7 +1,7 @@
-# Types: PropsGetter()\<TOptions, TComponent\>
+# Types: RouterViewPropsGetter()\<TOptions\>
 
 ```ts
-type PropsGetter<TOptions, TComponent> = (route, context) => MaybePromise<ComponentProps<TComponent>>;
+type RouterViewPropsGetter<TOptions> = (route, context) => MaybePromise<RouterViewProps & Record<string, unknown>>;
 ```
 
 ## Type Parameters
@@ -9,7 +9,6 @@ type PropsGetter<TOptions, TComponent> = (route, context) => MaybePromise<Compon
 | Type Parameter | Default type |
 | ------ | ------ |
 | `TOptions` *extends* [`CreateRouteOptions`](CreateRouteOptions.md) | [`CreateRouteOptions`](CreateRouteOptions.md) |
-| `TComponent` *extends* `Component` | `Component` |
 
 ## Parameters
 
@@ -20,4 +19,4 @@ type PropsGetter<TOptions, TComponent> = (route, context) => MaybePromise<Compon
 
 ## Returns
 
-`MaybePromise`\<`ComponentProps`\<`TComponent`\>\>
+`MaybePromise`\<`RouterViewProps` & `Record`\<`string`, `unknown`\>\>
