@@ -86,7 +86,7 @@ export const {
   onAfterRouteLeave,
   onAfterRouteUpdate,
   isRoute,
-} = createRouterAssets(routerInjectionKey)
+} = createRouterAssets(router)
 ```
 
 ## RouterView
