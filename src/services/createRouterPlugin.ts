@@ -1,12 +1,12 @@
 import { CreateRouterPluginOptions, RouterPlugin, PluginRouteHooks } from '@/types/routerPlugin'
 import { createRouteHooks } from './createRouteHooks'
 import { asArray } from '@/utilities'
-import { Rejection } from '@/types/rejection'
+import { Rejections } from '@/types/rejection'
 import { Routes } from '@/types/route'
 
 export function createRouterPlugin<
   TRoutes extends Routes = Routes,
-  TRejections extends Rejection[] = Rejection[]
+  TRejections extends Rejections = Rejections
 >(plugin: CreateRouterPluginOptions<TRoutes, TRejections>): RouterPlugin<TRoutes, TRejections> & PluginRouteHooks<TRoutes, TRejections>
 
 export function createRouterPlugin(plugin: CreateRouterPluginOptions): RouterPlugin {
