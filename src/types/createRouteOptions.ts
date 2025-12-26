@@ -111,12 +111,6 @@ export type CreateRouteOptions<
    * Related routes and rejections for the route. The context is exposed to the hooks and props callback functions for this route.
    */
   context?: RouteContext[],
-  /**
-   * Props have been moved to the second argument of `createRoute`. This property can no longer be used.
-   *
-   * @deprecated
-   */
-  props?: never,
 }
 
 export type PropsGetter<

@@ -42,24 +42,6 @@ export { tupleOf } from './services/tupleOf'
 export { createParam } from './services/createParam'
 export { createRouter } from './services/createRouter'
 
-// backwards compatible withParams
-import { withParams } from './services/withParams'
-/**
- * @deprecated use `withParams` instead
- * @hidden we don't want to expose this in the api docs
- */
-export const path = withParams
-/**
- * @deprecated use `withParams` instead
- * @hidden we don't want to expose this in the api docs
-*/
-export const host = withParams
-/**
- * @deprecated use `withParams` instead
- * @hidden we don't want to expose this in the api docs
- */
-export const query = withParams
-
 // Assets
 import { routerInjectionKey } from './keys'
 import { createRouterAssets, RouterAssets } from './services/createRouterAssets'
