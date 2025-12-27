@@ -192,10 +192,9 @@ test('when onError callback calls reject, other onError callbacks do not run', (
 test('when onError callback calls push, other onError callbacks do not run', () => {
   const errorHook1 = vi.fn((_error, { push }) => {
     push('/other')
-    return true
   })
-  const errorHook2 = vi.fn(() => false)
-  const errorHook3 = vi.fn(() => false)
+  const errorHook2 = vi.fn()
+  const errorHook3 = vi.fn()
   const { runErrorHooks, onError } = createRouterHooks()
 
   onError(errorHook1)
@@ -226,10 +225,9 @@ test('when onError callback calls push, other onError callbacks do not run', () 
 test('when onError callback calls replace, other onError callbacks do not run', () => {
   const errorHook1 = vi.fn((_error, { replace }) => {
     replace('/other')
-    return true
   })
-  const errorHook2 = vi.fn(() => false)
-  const errorHook3 = vi.fn(() => false)
+  const errorHook2 = vi.fn()
+  const errorHook3 = vi.fn()
   const { runErrorHooks, onError } = createRouterHooks()
 
   onError(errorHook1)

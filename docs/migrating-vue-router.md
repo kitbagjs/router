@@ -130,7 +130,3 @@ aliasRouteB.onBeforeRouteEnter((to, { replace }) => {
   replace('actual-route')
 })
 ```
-
-## Named Route
-
-Currently Kitbag Router has a 1:1 relationship between a route and a component. However, support for a feature like Named Routes is planned and tracked by [this issue](https://github.com/kitbagjs/router/issues/174).

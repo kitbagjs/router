@@ -129,17 +129,17 @@ router.reject('NotFound')
 
 ### Find
 
-Creates a URL for a given route and params.
+Returens a resolved route for a url or `undefined` if the url does not match any route.
 
 ```ts
-router.find('users', { id: 1 })
+router.find('/users/1')
 ```
 
 ### Resolve
 
 Creates a ResolvedRoute record for a given route.
 
-A [ResolvedRoute](/api/types/ResolvedRoute) is the base of what makes up the [Router Route](/core-concepts/router-route). It represents a [route](/core-concepts/routes) that has been matched to a specific location. It includes any params, state, query, and hash values for that location. Resolved routes are how Kitbag Router ensures type safety when navigating.
+A [ResolvedRoute](/api/types/ResolvedRoute) is the base of what makes up the [Router Route](/core-concepts/router-route). It represents a [route](/core-concepts/routes) that has been matched to a specific url. It includes any params, state, query, and hash values for that location. Resolved routes are how Kitbag Router ensures type safety when navigating.
 
 ```ts
 router.resolve('users', { id: 1 })
@@ -163,7 +163,7 @@ router.install(app)
 
 ### Start
 
-Initializes the router based on the initial route. Automatically called when the router is installed. Calling this more than once has no effect.
+Initializes the router based on the initial route. Automatically called when the router is installed as a vue plugin. Calling this more than once has no effect.
 
 ```ts
 router.start()

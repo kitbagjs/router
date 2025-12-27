@@ -24,7 +24,7 @@ onAfterRouteEnter: (to, context) => {
 
 ### On Error
 
-- **onError** Triggered whenever an unexpected error is thrown. If the hook returns true, the error is considered handled and the other hooks are not run. If all hooks return false the error is rethrown
+- **onError** Triggered whenever an unexpected error is thrown. Error hooks are run in the order they were registered.
 
 ## Context
 
@@ -58,13 +58,16 @@ See [RouterErrorHookContext](/api/types/RouterErrorHookContext)
 
 ## Levels
 
-Hooks can be registered **globally**, on your **route**, or from within a **component**. This is useful for both providing the most convenient dx, but also can be a useful tool for ensuring proper execution order of your business logic.
+Hooks can be registered **globally**, on your **route**, or from within a **component**. This is useful for both providing the most convenient devx, but also can be a useful tool for ensuring proper execution order of your business logic.
 
 ### Execution Order
 
-1. Global hooks
-1. Route hooks
-1. Component Hooks
+1. Global before hooks 
+2. Route before hooks
+3. Component before hooks
+4. Component after hooks
+5. Route after hooks
+6. Global after hooks
 
 ### Global
 

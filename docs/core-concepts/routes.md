@@ -27,9 +27,8 @@ const home = createRoute({
 The name property is optional, but a route without a name cannot be navigated to. It can be useful to have unnamed routes for organizing related routes under a shared unnamed parent. Even though the parent can't be navigated to, this still ensures
 
 - the parents properties are merged with the child (`path`, `query`, `meta`, and `hash`)
-- any hooks defined on the parent run when the child id matched
+- any hooks defined on the parent run when the child is matched
 - the parents [state](/advanced-concepts/route-state#route-state) is merged with the child
-- child will have a greater depth, used in [route matching](/advanced-concepts/route-matching#ranking)
 
 ## Path
 
@@ -117,7 +116,7 @@ const home = createRoute({
 
 ## Props
 
-The `props` property is used to define props for route components. It must be a callback function that returns an object. Everything returned from the callback will be bound to the component.
+The `props` argument is used to provide props for route components. It must be a callback function that returns an object. Everything returned from the callback will be bound to the component.
 
 ```ts {7}
 import HomeView from './components/HomeView.vue'
@@ -164,21 +163,23 @@ const home = createRoute({
 The `state` property is used to define optional data that can stored on the route in the browser's history. State is always optional, but it can be used to pass data to the route when navigating or to preserve state when navigating away from the route.
 
 ```ts {7-11}
-import HomeView from './components/HomeView.vue'
+import ContactView from './components/HomeView.vue'
 
-const home = createRoute({
-  name: 'home',
+const contact = createRoute({
+  name: 'contact',
   path: '/',
-  component: HomeView,
+  component: ContactView,
   state: {
-    userId: Number
+    firstName: String,
+    lastName: String,
+    message: String,
   },
 })
 ```
 
 ## Hooks
 
-Hooks can be defined on a individual route. Each hook can be a function or an array of functions. See [Hooks](/advanced-concepts/hooks) for more information about hooks.
+Hooks can be defined for a individual route. See [Hooks](/advanced-concepts/hooks) for more information about hooks.
 
 ```ts
 import HomeView from './components/HomeView.vue'
