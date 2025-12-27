@@ -93,7 +93,7 @@ export function createRouter<
   const routes = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options?.base)
   const hooks = createRouterHooks()
 
-  hooks.addGlobalRouteHooks(getGlobalHooksForRouter(options, plugins))
+  hooks.addGlobalRouteHooks(getGlobalHooksForRouter(plugins))
 
   const getNavigationId = createUniqueIdSequence()
   const propStore = createPropStore()

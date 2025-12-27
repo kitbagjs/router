@@ -4,16 +4,17 @@ import type { PrefetchConfigs, PrefetchStrategy } from '@/types/prefetch'
 import { getPrefetchOption } from '@/utilities/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
 import { Route } from '@/types/route'
-import { CallbackPushResponse, CallbackRejectResponse, CallbackSuccessResponse, createCallbackContext } from './createCallbackContext'
 import { ContextPushError } from '@/errors/contextPushError'
 import { ContextRejectionError } from '@/errors/contextRejectionError'
 import { getPropsValue } from '@/utilities/props'
 import { PropsCallbackParent } from '@/types/props'
 import { createVueAppStore, HasVueAppStore } from './createVueAppStore'
+import { CallbackContextPush, CallbackContextReject, CallbackContextSuccess } from '@/types/callbackContext'
+import { createRouterCallbackContext } from './createRouterCallbackContext'
 
 type ComponentProps = { id: string, name: string, props?: PropsGetter }
 
-type SetPropsResponse = CallbackSuccessResponse | CallbackPushResponse | CallbackRejectResponse
+type SetPropsResponse = CallbackContextSuccess | CallbackContextPush | CallbackContextReject
 
 export type PropStore = HasVueAppStore & {
   getPrefetchProps: (strategy: PrefetchStrategy, route: ResolvedRoute, configs: PrefetchConfigs) => Record<string, unknown>,
@@ -25,7 +26,7 @@ export type PropStore = HasVueAppStore & {
 export function createPropStore(): PropStore {
   const { setVueApp, runWithContext } = createVueAppStore()
   const store: Map<string, unknown> = reactive(new Map())
-  const { push, replace, reject } = createCallbackContext()
+  const { push, replace, reject } = createRouterCallbackContext()
 
   const getPrefetchProps: PropStore['getPrefetchProps'] = (strategy, route, prefetch) => {
     return route.matches

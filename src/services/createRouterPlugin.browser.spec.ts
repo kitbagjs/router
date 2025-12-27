@@ -55,69 +55,6 @@ test('given a plugin, adds the rejections to the router', async () => {
   expect(wrapper.html()).toBe('<div>This is a plugin rejection</div>')
 })
 
-test('given a plugin, adds the hooks from options to the router', async () => {
-  const onBeforeRouteEnterMock = vi.fn()
-  const onBeforeRouteUpdateMock = vi.fn()
-  const onBeforeRouteLeaveMock = vi.fn()
-  const onAfterRouteEnterMock = vi.fn()
-  const onAfterRouteUpdateMock = vi.fn()
-  const onAfterRouteLeaveMock = vi.fn()
-
-  const plugin = createRouterPlugin({
-    onBeforeRouteEnter: [onBeforeRouteEnterMock],
-    onBeforeRouteUpdate: [onBeforeRouteUpdateMock],
-    onBeforeRouteLeave: [onBeforeRouteLeaveMock],
-    onAfterRouteEnter: [onAfterRouteEnterMock],
-    onAfterRouteUpdate: [onAfterRouteUpdateMock],
-    onAfterRouteLeave: [onAfterRouteLeaveMock],
-  })
-
-  const router = createRouter(routes, { initialUrl: '/parentA/valueA' }, [plugin])
-
-  expect(onBeforeRouteEnterMock).toHaveBeenCalledTimes(0)
-  expect(onBeforeRouteUpdateMock).toHaveBeenCalledTimes(0)
-  expect(onBeforeRouteLeaveMock).toHaveBeenCalledTimes(0)
-  expect(onAfterRouteLeaveMock).toHaveBeenCalledTimes(0)
-  expect(onAfterRouteUpdateMock).toHaveBeenCalledTimes(0)
-  expect(onAfterRouteEnterMock).toHaveBeenCalledTimes(0)
-
-  await router.start()
-
-  expect(onBeforeRouteEnterMock).toHaveBeenCalledTimes(1)
-  expect(onBeforeRouteUpdateMock).toHaveBeenCalledTimes(0)
-  expect(onBeforeRouteLeaveMock).toHaveBeenCalledTimes(0)
-  expect(onAfterRouteLeaveMock).toHaveBeenCalledTimes(0)
-  expect(onAfterRouteUpdateMock).toHaveBeenCalledTimes(0)
-  expect(onAfterRouteEnterMock).toHaveBeenCalledTimes(1)
-
-  await router.push('parentA.childA', { paramA: 'valueA', paramB: 'valueB' })
-
-  expect(onBeforeRouteEnterMock).toHaveBeenCalledTimes(2)
-  expect(onBeforeRouteUpdateMock).toHaveBeenCalledTimes(1)
-  expect(onBeforeRouteLeaveMock).toHaveBeenCalledTimes(0)
-  expect(onAfterRouteLeaveMock).toHaveBeenCalledTimes(0)
-  expect(onAfterRouteUpdateMock).toHaveBeenCalledTimes(1)
-  expect(onAfterRouteEnterMock).toHaveBeenCalledTimes(2)
-
-  await router.push('parentA.childB', { paramA: 'valueB', paramD: 'valueD' })
-
-  expect(onBeforeRouteEnterMock).toHaveBeenCalledTimes(3)
-  expect(onBeforeRouteUpdateMock).toHaveBeenCalledTimes(2)
-  expect(onBeforeRouteLeaveMock).toHaveBeenCalledTimes(1)
-  expect(onAfterRouteLeaveMock).toHaveBeenCalledTimes(1)
-  expect(onAfterRouteUpdateMock).toHaveBeenCalledTimes(2)
-  expect(onAfterRouteEnterMock).toHaveBeenCalledTimes(3)
-
-  await router.push('parentB')
-
-  expect(onBeforeRouteEnterMock).toHaveBeenCalledTimes(4)
-  expect(onBeforeRouteUpdateMock).toHaveBeenCalledTimes(2)
-  expect(onBeforeRouteLeaveMock).toHaveBeenCalledTimes(2)
-  expect(onAfterRouteLeaveMock).toHaveBeenCalledTimes(2)
-  expect(onAfterRouteUpdateMock).toHaveBeenCalledTimes(2)
-  expect(onAfterRouteEnterMock).toHaveBeenCalledTimes(4)
-})
-
 test('given a plugin, adds the hooks to the router', async () => {
   const onBeforeRouteEnterMock = vi.fn()
   const onBeforeRouteUpdateMock = vi.fn()

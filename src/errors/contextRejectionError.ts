@@ -1,8 +1,8 @@
-import { CallbackRejectResponse } from '@/services/createCallbackContext'
+import { CallbackContextReject } from '@/types/callbackContext'
 import { ContextError } from './contextError'
 
 export class ContextRejectionError extends ContextError {
-  public response: CallbackRejectResponse
+  public response: CallbackContextReject
 
   public constructor(type: string) {
     super('Uncaught ContextRejectionError')

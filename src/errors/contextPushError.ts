@@ -1,13 +1,13 @@
-import { RegisteredRouterPush } from '@/types/register'
-import { CallbackPushResponse } from '@/services/createCallbackContext'
+import { CallbackContextPush } from '@/types/callbackContext'
 import { ContextError } from './contextError'
+import { RouterPush } from '@/main'
 
 export class ContextPushError extends ContextError {
-  public response: CallbackPushResponse
+  public response: CallbackContextPush
 
   public constructor(to: unknown[]) {
     super('Uncaught ContextPushError')
 
-    this.response = { status: 'PUSH', to: to as Parameters<RegisteredRouterPush> }
+    this.response = { status: 'PUSH', to: to as Parameters<RouterPush> }
   }
 }

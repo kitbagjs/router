@@ -15,7 +15,6 @@ import { MaybePromise } from './utilities'
 import { ToMeta } from './meta'
 import { ToState } from './state'
 import { ToName } from './name'
-import { WithHooks } from './hooks'
 import { ToWithParams, WithParams } from '@/services/withParams'
 import { RouteContext, ToRouteContext } from './routeContext'
 import { RouterViewProps } from '@/components/routerView'
@@ -65,7 +64,7 @@ export type CreateRouteOptions<
   TQuery extends string | WithParams | undefined = string | WithParams | undefined,
   THash extends string | WithParams | undefined = string | WithParams | undefined,
   TMeta extends RouteMeta = RouteMeta
-> = WithHooks & {
+> = {
   /**
    * Name for route, used to create route keys and in navigation.
    */

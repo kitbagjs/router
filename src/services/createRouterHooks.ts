@@ -1,6 +1,5 @@
-import { AddGlobalRouteHooks, AfterRouteHook, AfterRouteHookResponse, BeforeRouteHook, BeforeRouteHookResponse, AddComponentAfterRouteHook, AddComponentBeforeRouteHook, RouterRouteHookAfterRunner, RouterRouteHookErrorRunner, RouterRouteHookBeforeRunner, AddRouterBeforeRouteHook, AddRouterAfterRouteHook, AddRouterErrorHook, HookContext, RouterBeforeRouteHook, RouterAfterRouteHook, RouterRouteHookErrorRunnerContext } from '@/types/hooks'
+import { AddGlobalRouteHooks, AddComponentAfterRouteHook, AddComponentBeforeRouteHook, RouterRouteHookAfterRunner, RouterRouteHookErrorRunner, RouterRouteHookBeforeRunner, AddRouterBeforeRouteHook, AddRouterAfterRouteHook, AddRouterErrorHook, HookContext, RouterBeforeRouteHook, RouterAfterRouteHook, RouterRouteHookErrorRunnerContext, BeforeRouteHookResponse, AfterRouteHookResponse } from '@/types/hooks'
 import { getRouteHookCondition } from './hooks'
-import { getAfterRouteHooksFromRoutesDeprecated, getBeforeRouteHooksFromRoutesDeprecated } from './getRouteHooksDeprecated'
 import { getAfterRouteHooksFromRoutes, getBeforeRouteHooksFromRoutes } from './getRouteHooks'
 import { ContextPushError } from '@/errors/contextPushError'
 import { ContextRejectionError } from '@/errors/contextRejectionError'
@@ -84,20 +83,16 @@ export function createRouterHooks(): RouterHooks {
 
   async function runBeforeRouteHooks({ to, from }: HookContext): Promise<BeforeRouteHookResponse> {
     const { global, component } = store
-    const deprecatedRouteHooks = getBeforeRouteHooksFromRoutesDeprecated(to, from)
     const routeHooks = getBeforeRouteHooksFromRoutes(to, from)
     const globalHooks = getGlobalBeforeRouteHooks(to, from, global)
 
-    const allHooks: (RouterBeforeRouteHook | BeforeRouteHook)[] = [
+    const allHooks: RouterBeforeRouteHook[] = [
       ...globalHooks.onBeforeRouteEnter,
-      ...deprecatedRouteHooks.onBeforeRouteEnter,
       ...routeHooks.onBeforeRouteEnter,
       ...globalHooks.onBeforeRouteUpdate,
-      ...deprecatedRouteHooks.onBeforeRouteUpdate,
       ...routeHooks.onBeforeRouteUpdate,
       ...component.onBeforeRouteUpdate,
       ...globalHooks.onBeforeRouteLeave,
-      ...deprecatedRouteHooks.onBeforeRouteLeave,
       ...routeHooks.onBeforeRouteLeave,
       ...component.onBeforeRouteLeave,
     ]
@@ -149,21 +144,17 @@ export function createRouterHooks(): RouterHooks {
 
   async function runAfterRouteHooks({ to, from }: HookContext): Promise<AfterRouteHookResponse> {
     const { global, component } = store
-    const deprecatedRouteHooks = getAfterRouteHooksFromRoutesDeprecated(to, from)
     const routeHooks = getAfterRouteHooksFromRoutes(to, from)
     const globalHooks = getGlobalAfterRouteHooks(to, from, global)
 
-    const allHooks: (RouterAfterRouteHook | AfterRouteHook)[] = [
+    const allHooks: RouterAfterRouteHook[] = [
       ...component.onAfterRouteLeave,
-      ...deprecatedRouteHooks.onAfterRouteLeave,
       ...routeHooks.onAfterRouteLeave,
       ...globalHooks.onAfterRouteLeave,
       ...component.onAfterRouteUpdate,
-      ...deprecatedRouteHooks.onAfterRouteUpdate,
       ...routeHooks.onAfterRouteUpdate,
       ...globalHooks.onAfterRouteUpdate,
       ...component.onAfterRouteEnter,
-      ...deprecatedRouteHooks.onAfterRouteEnter,
       ...routeHooks.onAfterRouteEnter,
       ...globalHooks.onAfterRouteEnter,
     ]
