@@ -628,6 +628,24 @@ describe('props', () => {
       })
     })
   })
+
+  // describe('update', () => {
+  //   test('accepts params when no context is provided', () => {
+  //     const route = createRoute({
+  //       name: 'route',
+  //       path: '/[paramName]',
+  //       component,
+  //     }, (__, context) => {
+  //       context.update()
+
+  //       return {}
+  //     })
+
+  //     route.onAfterRouteEnter((to, context) => {
+  //       context.update()
+  //     })
+  //   })
+  // })
 })
 
 describe('meta', () => {

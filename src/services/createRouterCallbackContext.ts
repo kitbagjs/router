@@ -1,16 +1,16 @@
 import { ContextAbortError } from '@/errors/contextAbortError'
 import { ContextPushError } from '@/errors/contextPushError'
 import { ContextRejectionError } from '@/errors/contextRejectionError'
-import { Router, RouterRejections, RouterRoutes } from '@/types/router'
 import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { RouterReject } from '@/types/routerReject'
 import { RouterReplace } from '@/types/routerReplace'
 import { isUrl } from '@/types/url'
-import { InjectionKey } from 'vue'
 import { BuiltInRejectionType } from './createRouterReject'
 import { AsString } from '@/types/utilities'
 import { Routes } from '@/types/route'
 import { Rejections } from '@/types/rejection'
+import { RouteUpdate } from '@/types/routeUpdate'
+import { ResolvedRoute } from '@/types/resolved'
 
 /**
  * Defines the structure of a successful callback response.
@@ -54,20 +54,16 @@ export type RouterCallbackContext<
   reject: RouterReject<TRejections>,
   push: RouterPush<TRoutes>,
   replace: RouterReplace<TRoutes>,
+  update: RouteUpdate<ResolvedRoute<TRoutes[number]>>,
   abort: CallbackContextAbort,
 }
-
-export function createRouterCallbackContext<TRouter extends Router>(_routerKey: InjectionKey<TRouter>): RouterCallbackContext<
-  RouterRoutes<TRouter>,
-  RouterRejections<TRouter>
->
 
 export function createRouterCallbackContext<
   TRoutes extends Routes,
   TRejections extends Rejections
->(): RouterCallbackContext<TRoutes, TRejections>
+>({ to }: { to: ResolvedRoute }): RouterCallbackContext<TRoutes, TRejections>
 
-export function createRouterCallbackContext(): RouterCallbackContext {
+export function createRouterCallbackContext({ to }: { to: ResolvedRoute }): RouterCallbackContext {
   const reject: RouterCallbackContext['reject'] = (type) => {
     throw new ContextRejectionError(type)
   }
@@ -87,9 +83,27 @@ export function createRouterCallbackContext(): RouterCallbackContext {
     throw new ContextPushError([source, params, { ...options, replace: true }])
   }
 
+  const update: RouterCallbackContext['update'] = (nameOrParams: PropertyKey | Partial<ResolvedRoute['params']>, valueOrOptions?: any, maybeOptions?: RouterPushOptions) => {
+    if (typeof nameOrParams === 'object') {
+      const params = {
+        ...to.params,
+        ...nameOrParams,
+      }
+
+      return push(to.name, params, valueOrOptions)
+    }
+
+    const params = {
+      ...to.params,
+      [nameOrParams]: valueOrOptions,
+    }
+
+    return push(to.name, params, maybeOptions)
+  }
+
   const abort: CallbackContextAbort = () => {
     throw new ContextAbortError()
   }
 
-  return { reject, push, replace, abort }
+  return { reject, push, replace, update, abort }
 }

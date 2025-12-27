@@ -4,16 +4,20 @@ import { RouterReject } from './routerReject'
 import { RouterPush } from './routerPush'
 import { RouterReplace } from './routerReplace'
 import { RouteContext, RouteContextToRejection, RouteContextToRoute } from './routeContext'
+import { ResolvedRoute } from './resolved'
+import { RouteUpdate } from './routeUpdate'
 
 /**
  * Context provided to props callback functions
  */
 export type PropsCallbackContext<
+  TRoute extends Route = Route,
   TOptions extends CreateRouteOptions = CreateRouteOptions
 > = {
   reject: RouterReject<RouteContextToRejection<ExtractRouteContext<TOptions>>>,
   push: RouterPush<RouteContextToRoute<ExtractRouteContext<TOptions>>>,
   replace: RouterReplace<RouteContextToRoute<ExtractRouteContext<TOptions>>>,
+  update: RouteUpdate<ResolvedRoute<TRoute>>,
   parent: PropsCallbackParent<TOptions['parent']>,
 }
 

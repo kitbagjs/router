@@ -19,7 +19,7 @@ export type RouterAssets<TRouter extends Router> = {
    * @returns {RouteHookRemove} A function that removes the added hook.
    * @group Hooks
    */
-  onBeforeRouteLeave: AddBeforeHook<RouterRoutes<TRouter>, RouterRejections<TRouter>>,
+  onBeforeRouteLeave: AddBeforeHook<RouterRoutes<TRouter>[number], RouterRoutes<TRouter>, RouterRejections<TRouter>>,
 
   /**
    * Registers a hook that is called before a route is updated. Must be called from setup.
@@ -29,7 +29,7 @@ export type RouterAssets<TRouter extends Router> = {
    * @returns {RouteHookRemove} A function that removes the added hook.
    * @group Hooks
    */
-  onBeforeRouteUpdate: AddBeforeHook<RouterRoutes<TRouter>, RouterRejections<TRouter>>,
+  onBeforeRouteUpdate: AddBeforeHook<RouterRoutes<TRouter>[number], RouterRoutes<TRouter>, RouterRejections<TRouter>>,
 
   /**
    * Registers a hook that is called after a route has been left. Must be called during setup.
@@ -39,7 +39,7 @@ export type RouterAssets<TRouter extends Router> = {
    * @returns {RouteHookRemove} A function that removes the added hook.
    * @group Hooks
    */
-  onAfterRouteLeave: AddAfterHook<RouterRoutes<TRouter>, RouterRejections<TRouter>>,
+  onAfterRouteLeave: AddAfterHook<RouterRoutes<TRouter>[number], RouterRoutes<TRouter>, RouterRejections<TRouter>>,
 
   /**
    * Registers a hook that is called after a route has been updated. Must be called during setup.
@@ -49,7 +49,7 @@ export type RouterAssets<TRouter extends Router> = {
    * @returns {RouteHookRemove} A function that removes the added hook.
    * @group Hooks
    */
-  onAfterRouteUpdate: AddAfterHook<RouterRoutes<TRouter>, RouterRejections<TRouter>>,
+  onAfterRouteUpdate: AddAfterHook<RouterRoutes<TRouter>[number], RouterRoutes<TRouter>, RouterRejections<TRouter>>,
 
   /**
    * A guard to verify if a route or unknown value matches a given route name.

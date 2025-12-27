@@ -116,11 +116,11 @@ export type CreateRouteOptions<
 export type PropsGetter<
   TOptions extends CreateRouteOptions = CreateRouteOptions,
   TComponent extends Component = Component
-> = (route: ResolvedRoute<ToRoute<TOptions, undefined>>, context: PropsCallbackContext<TOptions>) => MaybePromise<ComponentProps<TComponent>>
+> = (route: ResolvedRoute<ToRoute<TOptions>>, context: PropsCallbackContext<ToRoute<TOptions>, TOptions>) => MaybePromise<ComponentProps<TComponent>>
 
 export type RouterViewPropsGetter<
   TOptions extends CreateRouteOptions = CreateRouteOptions
-> = (route: ResolvedRoute<ToRoute<TOptions, undefined>>, context: PropsCallbackContext<TOptions>) => MaybePromise<RouterViewProps & Record<string, unknown>>
+> = (route: ResolvedRoute<ToRoute<TOptions>>, context: PropsCallbackContext<ToRoute<TOptions>, TOptions>) => MaybePromise<RouterViewProps & Record<string, unknown>>
 
 type ComponentPropsAreOptional<
   TComponent extends Component
@@ -163,7 +163,7 @@ type ToMatches<
 
 export type ToRoute<
   TOptions extends CreateRouteOptions,
-  TProps extends CreateRouteProps<TOptions> | undefined
+  TProps extends CreateRouteProps<TOptions> | undefined = undefined
 > = CreateRouteOptions extends TOptions
   ? Route
   : TOptions extends { parent: infer TParent extends Route }
@@ -175,7 +175,7 @@ export type ToRoute<
       CombineHash<ToWithParams<TParent['hash']>, ToWithParams<TOptions['hash']>>,
       CombineMeta<ToMeta<TParent['meta']>, ToMeta<TOptions['meta']>>,
       CombineState<ToState<TParent['state']>, ToState<TOptions['state']>>,
-      ToMatches<TOptions, TProps>,
+      ToMatches<TOptions, CreateRouteProps<TOptions> extends TProps ? undefined : TProps>,
       [...ToRouteContext<TParent['context']>, ...ToRouteContext<TOptions['context']>]
     >
     : Route<
@@ -186,7 +186,7 @@ export type ToRoute<
       ToWithParams<TOptions['hash']>,
       ToMeta<TOptions['meta']>,
       ToState<TOptions['state']>,
-      ToMatches<TOptions, TProps>,
+      ToMatches<TOptions, CreateRouteProps<TOptions> extends TProps ? undefined : TProps>,
       ToRouteContext<TOptions['context']>
     >
 
