@@ -129,7 +129,7 @@ router.reject('NotFound')
 
 ### Find
 
-Returens a resolved route for a url or `undefined` if the url does not match any route.
+Returns a resolved route for a url or `undefined` if the url does not match any route.
 
 ```ts
 router.find('/users/1')
