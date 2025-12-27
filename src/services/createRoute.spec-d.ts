@@ -7,8 +7,8 @@ import echo from '@/components/echo'
 import { component } from '@/utilities/testHelpers'
 import { withParams } from '@/services/withParams'
 import { InternalRouteHooks } from '@/types/hooks'
-import { BuiltInRejectionType } from './createRouterReject'
-import { createRejection } from './createRejection'
+import { BuiltInRejectionType } from '@/services/createRouterReject'
+import { createRejection } from '@/services/createRejection'
 
 test('empty options returns an empty route', () => {
   const route = createRoute({})

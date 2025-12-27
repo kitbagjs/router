@@ -1,7 +1,7 @@
-import { RouteHookRemove } from './hooks'
+import { HookRemove } from './hooks'
 import { Routes } from './route'
 import { Rejections } from './rejection'
-import { RouterRouteHooks } from '@/models/RouterRouteHooks'
+import { Hooks } from '@/models/hooks'
 import { ResolvedRoute } from './resolved'
 import { RouterReject } from './routerReject'
 import { RouterPush } from './routerPush'
@@ -37,7 +37,7 @@ export type RouterPlugin<
    * The hooks supplied by the plugin.
    * @internal
    */
-  hooks: RouterRouteHooks,
+  hooks: Hooks,
 }
 
 type PluginBeforeRouteHookContext<
@@ -74,12 +74,12 @@ export type PluginAfterRouteHook<
 type AddPluginBeforeRouteHook<
   TRoutes extends Routes,
   TRejections extends Rejections
-> = (hook: PluginBeforeRouteHook<TRoutes, TRejections>) => RouteHookRemove
+> = (hook: PluginBeforeRouteHook<TRoutes, TRejections>) => HookRemove
 
 type AddPluginAfterRouteHook<
   TRoutes extends Routes,
   TRejections extends Rejections
-> = (hook: PluginAfterRouteHook<TRoutes, TRejections>) => RouteHookRemove
+> = (hook: PluginAfterRouteHook<TRoutes, TRejections>) => HookRemove
 
 export type PluginErrorHookContext<
   TRoutes extends Routes = Routes,
@@ -101,7 +101,7 @@ export type PluginErrorHook<
 export type AddPluginErrorHook<
   TRoutes extends Routes = Routes,
   TRejections extends Rejections = Rejections
-> = (hook: PluginErrorHook<TRoutes, TRejections>) => RouteHookRemove
+> = (hook: PluginErrorHook<TRoutes, TRejections>) => HookRemove
 
 export type PluginRouteHooks<
   TRoutes extends Routes = Routes,

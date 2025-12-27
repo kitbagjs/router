@@ -1,5 +1,5 @@
 import { expect, test, vi } from 'vitest'
-import { getBeforeRouteHooksFromRoutes } from '@/services/getRouteHooks'
+import { getBeforeHooksFromRoutes } from '@/services/getRouteHooks'
 import { createRoute } from './createRoute'
 import { createResolvedRoute } from './createResolvedRoute'
 
@@ -49,7 +49,7 @@ test('given two ResolvedRoutes returns before timing hooks in correct order', ()
   const to = createResolvedRoute(grandchildA, {})
   const from = createResolvedRoute(grandchildB, {})
 
-  const hooks = getBeforeRouteHooksFromRoutes(to, from)
+  const hooks = getBeforeHooksFromRoutes(to, from)
 
   expect(Array.from(hooks.onBeforeRouteEnter)).toMatchObject([...Array.from(childA.hooks.at(-1)?.onBeforeRouteEnter ?? []), ...Array.from(grandchildA.hooks.at(-1)?.onBeforeRouteEnter ?? [])])
   expect(Array.from(hooks.onBeforeRouteUpdate)).toMatchObject([...Array.from(parent.hooks.at(-1)?.onBeforeRouteUpdate ?? [])])

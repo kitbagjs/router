@@ -5,7 +5,7 @@ import { toName } from '@/types/name'
 import { Route } from '@/types/route'
 import { checkDuplicateParams } from '@/utilities/checkDuplicateKeys'
 import { toWithParams, withParams } from '@/services/withParams'
-import { createRouteHooks } from '@/services/createRouteHooks'
+import { createHooksFactory } from '@/services/createHooksFactory'
 import { InternalRouteHooks } from '@/types/hooks'
 
 type CreateRouteWithProps<
@@ -36,7 +36,7 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
   const meta = options.meta ?? {}
   const state = options.state ?? {}
   const context = options.context ?? []
-  const { store, ...hooks } = createRouteHooks()
+  const { store, ...hooks } = createHooksFactory()
   const rawRoute = markRaw({ id, meta, state, ...options, props })
 
   const route = {

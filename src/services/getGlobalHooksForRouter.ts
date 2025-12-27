@@ -1,8 +1,8 @@
-import { RouterRouteHooks } from '@/models/RouterRouteHooks'
+import { Hooks } from '@/models/hooks'
 import { RouterPlugin } from '@/types/routerPlugin'
 
-export function getGlobalHooksForRouter(plugins: RouterPlugin[] = []): RouterRouteHooks {
-  const hooks = new RouterRouteHooks()
+export function getGlobalHooksForRouter(plugins: RouterPlugin[] = []): Hooks {
+  const hooks = new Hooks()
 
   plugins.forEach((plugin) => {
     plugin.hooks.onBeforeRouteEnter.forEach((hook) => hooks.onBeforeRouteEnter.add(hook))

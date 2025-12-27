@@ -5,7 +5,7 @@ import { RouteMeta } from '@/types/register'
 import { LastInArray } from '@/types/utilities'
 import { CreateRouteOptions } from '@/types/createRouteOptions'
 import { RouteContext } from './routeContext'
-import { RouterRouteHooks } from '@/models/RouterRouteHooks'
+import { Hooks } from '@/models/hooks'
 
 /**
  * Represents an immutable array of Route instances. Return value of `createRoute`, expected param for `createRouter`.
@@ -91,7 +91,7 @@ export type Route<
    * Order of routes will be from greatest ancestor to narrowest matched.
    * @internal
    */
-  hooks: RouterRouteHooks[],
+  hooks: Hooks[],
   /**
   * A value that represents how many parents a route has. Used for route matching
   * @internal

@@ -1,4 +1,4 @@
-import { RouteHookLifecycle } from '@/types/hooks'
+import { HookLifecycle } from '@/types/hooks'
 import { ResolvedRoute } from '@/types/resolved'
 
 type RouteHookCondition = (to: ResolvedRoute, from: ResolvedRoute | null, depth: number) => boolean
@@ -21,7 +21,7 @@ export const isRouteUpdate: RouteHookCondition = (to, from, depth) => {
   return to.matches.at(depth)?.id === from?.matches.at(depth)?.id
 }
 
-export function getRouteHookCondition(lifecycle: RouteHookLifecycle): RouteHookCondition {
+export function getRouteHookCondition(lifecycle: HookLifecycle): RouteHookCondition {
   switch (lifecycle) {
     case 'onBeforeRouteEnter':
     case 'onAfterRouteEnter':
