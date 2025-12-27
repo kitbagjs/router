@@ -120,7 +120,7 @@ export function createRouter<
     const to = find(url, options) ?? getRejectionRoute('NotFound')
     const from = getFromRouteForHooks(navigationId)
 
-    const beforeResponse = await hooks.runBeforeRouteHooks(to, from)
+    const beforeResponse = await hooks.runBeforeRouteHooks({ to, from })
 
     switch (beforeResponse.status) {
       // On abort do nothing
@@ -153,7 +153,7 @@ export function createRouter<
       setPropsAndUpdateRoute(navigationId, to, from)
     }
 
-    const afterResponse = await hooks.runAfterRouteHooks(to, from)
+    const afterResponse = await hooks.runAfterRouteHooks({ to, from })
 
     switch (afterResponse.status) {
       case 'PUSH':

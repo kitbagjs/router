@@ -1,5 +1,5 @@
 import { Hooks } from '@/models/hooks'
-import { ResolvedRoute, RouterResolvedRouteUnion } from '@/types/resolved'
+import { RouterResolvedRouteUnion } from '@/types/resolved'
 import { MaybePromise } from '@/types/utilities'
 import { Routes } from './route'
 import { RouterReject } from './routerReject'
@@ -43,9 +43,6 @@ export type ExternalRouteHooks<TContext extends RouteContext[] | undefined = und
    */
   onBeforeRouteEnter: AddBeforeHook<RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
 }
-
-export type HookBeforeRunner = (to: ResolvedRoute, from: ResolvedRoute | null) => Promise<BeforeHookResponse>
-export type HookAfterRunner = (to: ResolvedRoute, from: ResolvedRoute | null) => Promise<AfterHookResponse>
 
 export type HookTiming = 'global' | 'component'
 
@@ -144,8 +141,8 @@ export type AddAfterHook<
 export type BeforeHookResponse = CallbackContextSuccess | CallbackContextPush | CallbackContextReject | CallbackContextAbort
 export type AfterHookResponse = CallbackContextSuccess | CallbackContextPush | CallbackContextReject
 
-export type BeforeHookRunner = <TRoutes extends Routes>(to: RouterResolvedRouteUnion<TRoutes>, from: RouterResolvedRouteUnion<TRoutes> | null) => Promise<BeforeHookResponse>
-export type AfterHookRunner = <TRoutes extends Routes>(to: RouterResolvedRouteUnion<TRoutes>, from: RouterResolvedRouteUnion<TRoutes> | null) => Promise<AfterHookResponse>
+export type BeforeHookRunner = <TRoutes extends Routes>(context: { to: RouterResolvedRouteUnion<TRoutes>, from: RouterResolvedRouteUnion<TRoutes> | null }) => Promise<BeforeHookResponse>
+export type AfterHookRunner = <TRoutes extends Routes>(context: { to: RouterResolvedRouteUnion<TRoutes>, from: RouterResolvedRouteUnion<TRoutes> | null }) => Promise<AfterHookResponse>
 
 export type ErrorHookContext<
   TRoutes extends Routes = Routes,
