@@ -5,7 +5,7 @@ import { describe, test, expectTypeOf } from 'vitest'
 import { createRouterPlugin } from './createRouterPlugin'
 import { BuiltInRejectionType } from './createRouterReject'
 import { createRejection } from './createRejection'
-import { AddRouterAfterRouteHook, AddRouterBeforeRouteHook } from '@/types/hooks'
+import { AddAfterHook, AddBeforeHook } from '@/types/hooks'
 import { RouterAbort } from '@/types/routerAbort'
 
 describe('hooks', () => {
@@ -41,12 +41,12 @@ describe('hooks', () => {
   type Routes = typeof routes | typeof pluginRoutes
 
   test('functions are correctly typed', () => {
-    expectTypeOf(router.onBeforeRouteEnter).toEqualTypeOf<AddRouterBeforeRouteHook<Routes, never>>()
-    expectTypeOf(router.onBeforeRouteLeave).toEqualTypeOf<AddRouterBeforeRouteHook<Routes, never>>()
-    expectTypeOf(router.onBeforeRouteUpdate).toEqualTypeOf<AddRouterBeforeRouteHook<Routes, never>>()
-    expectTypeOf(router.onAfterRouteEnter).toEqualTypeOf<AddRouterAfterRouteHook<Routes, never>>()
-    expectTypeOf(router.onAfterRouteLeave).toEqualTypeOf<AddRouterAfterRouteHook<Routes, never>>()
-    expectTypeOf(router.onAfterRouteUpdate).toEqualTypeOf<AddRouterAfterRouteHook<Routes, never>>()
+    expectTypeOf(router.onBeforeRouteEnter).toEqualTypeOf<AddBeforeHook<Routes, never>>()
+    expectTypeOf(router.onBeforeRouteLeave).toEqualTypeOf<AddBeforeHook<Routes, never>>()
+    expectTypeOf(router.onBeforeRouteUpdate).toEqualTypeOf<AddBeforeHook<Routes, never>>()
+    expectTypeOf(router.onAfterRouteEnter).toEqualTypeOf<AddAfterHook<Routes, never>>()
+    expectTypeOf(router.onAfterRouteLeave).toEqualTypeOf<AddAfterHook<Routes, never>>()
+    expectTypeOf(router.onAfterRouteUpdate).toEqualTypeOf<AddAfterHook<Routes, never>>()
   })
 
   test('to and from can be narrowed', () => {

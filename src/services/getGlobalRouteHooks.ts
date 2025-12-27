@@ -1,9 +1,9 @@
 import { ResolvedRoute } from '@/types/resolved'
 import { isRouteEnter, isRouteLeave, isRouteUpdate } from './hooks'
-import { RouterRouteHooks } from '@/models/RouterRouteHooks'
+import { Hooks } from '@/models/hooks'
 
-export function getGlobalBeforeRouteHooks(to: ResolvedRoute, from: ResolvedRoute | null, globalHooks: RouterRouteHooks): RouterRouteHooks {
-  const hooks = new RouterRouteHooks()
+export function getGlobalBeforeHooks(to: ResolvedRoute, from: ResolvedRoute | null, globalHooks: Hooks): Hooks {
+  const hooks = new Hooks()
 
   to.matches.forEach((_route, depth) => {
     if (isRouteEnter(to, from, depth)) {
@@ -24,8 +24,8 @@ export function getGlobalBeforeRouteHooks(to: ResolvedRoute, from: ResolvedRoute
   return hooks
 }
 
-export function getGlobalAfterRouteHooks(to: ResolvedRoute, from: ResolvedRoute | null, globalHooks: RouterRouteHooks): RouterRouteHooks {
-  const hooks = new RouterRouteHooks()
+export function getGlobalAfterHooks(to: ResolvedRoute, from: ResolvedRoute | null, globalHooks: Hooks): Hooks {
+  const hooks = new Hooks()
 
   to.matches.forEach((_route, depth) => {
     if (isRouteEnter(to, from, depth)) {
