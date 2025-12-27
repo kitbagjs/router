@@ -41,12 +41,12 @@ describe('hooks', () => {
   type Routes = typeof routes | typeof pluginRoutes
 
   test('functions are correctly typed', () => {
-    expectTypeOf(router.onBeforeRouteEnter).toEqualTypeOf<AddBeforeHook<Routes, never>>()
-    expectTypeOf(router.onBeforeRouteLeave).toEqualTypeOf<AddBeforeHook<Routes, never>>()
-    expectTypeOf(router.onBeforeRouteUpdate).toEqualTypeOf<AddBeforeHook<Routes, never>>()
-    expectTypeOf(router.onAfterRouteEnter).toEqualTypeOf<AddAfterHook<Routes, never>>()
-    expectTypeOf(router.onAfterRouteLeave).toEqualTypeOf<AddAfterHook<Routes, never>>()
-    expectTypeOf(router.onAfterRouteUpdate).toEqualTypeOf<AddAfterHook<Routes, never>>()
+    expectTypeOf(router.onBeforeRouteEnter).toEqualTypeOf<AddBeforeHook<Routes[number], Routes, never>>()
+    expectTypeOf(router.onBeforeRouteLeave).toEqualTypeOf<AddBeforeHook<Routes[number], Routes, never>>()
+    expectTypeOf(router.onBeforeRouteUpdate).toEqualTypeOf<AddBeforeHook<Routes[number], Routes, never>>()
+    expectTypeOf(router.onAfterRouteEnter).toEqualTypeOf<AddAfterHook<Routes[number], Routes, never>>()
+    expectTypeOf(router.onAfterRouteLeave).toEqualTypeOf<AddAfterHook<Routes[number], Routes, never>>()
+    expectTypeOf(router.onAfterRouteUpdate).toEqualTypeOf<AddAfterHook<Routes[number], Routes, never>>()
   })
 
   test('to and from can be narrowed', () => {
