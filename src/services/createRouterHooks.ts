@@ -1,100 +1,56 @@
-import { AddGlobalRouteHooks, AddComponentAfterRouteHook, AddComponentBeforeRouteHook, RouterRouteHookAfterRunner, RouterRouteHookErrorRunner, RouterRouteHookBeforeRunner, AddRouterBeforeRouteHook, AddRouterAfterRouteHook, AddRouterErrorHook, HookContext, RouterBeforeRouteHook, RouterAfterRouteHook, RouterRouteHookErrorRunnerContext, BeforeRouteHookResponse, AfterRouteHookResponse } from '@/types/hooks'
+import { AddGlobalHooks, AddComponentAfterHook, AddComponentBeforeHook, AfterHookRunner, BeforeHookRunner, AddBeforeHook, AddAfterHook, BeforeHook, ErrorHookRunner, AddErrorHook, AfterHook } from '@/types/hooks'
 import { getRouteHookCondition } from './hooks'
-import { getAfterRouteHooksFromRoutes, getBeforeRouteHooksFromRoutes } from './getRouteHooks'
+import { getAfterHooksFromRoutes, getBeforeHooksFromRoutes } from './getRouteHooks'
 import { ContextPushError } from '@/errors/contextPushError'
 import { ContextRejectionError } from '@/errors/contextRejectionError'
 import { ContextAbortError } from '@/errors/contextAbortError'
-import { getGlobalAfterRouteHooks, getGlobalBeforeRouteHooks } from './getGlobalRouteHooks'
+import { getGlobalAfterHooks, getGlobalBeforeHooks } from './getGlobalRouteHooks'
 import { createVueAppStore, HasVueAppStore } from '@/services/createVueAppStore'
 import { createRouterKeyStore } from './createRouterKeyStore'
-import { RouterRouteHooks } from '@/models/RouterRouteHooks'
+import { Hooks } from '@/models/hooks'
 import { createRouterCallbackContext } from './createRouterCallbackContext'
 import { ContextError } from '@/errors/contextError'
+import { createHooksFactory } from './createHooksFactory'
 
 export const getRouterHooksKey = createRouterKeyStore<RouterHooks>()
 
 export type RouterHooks = HasVueAppStore & {
-  runBeforeRouteHooks: RouterRouteHookBeforeRunner,
-  runAfterRouteHooks: RouterRouteHookAfterRunner,
-  runErrorHooks: RouterRouteHookErrorRunner,
-  addComponentBeforeRouteHook: AddComponentBeforeRouteHook,
-  addComponentAfterRouteHook: AddComponentAfterRouteHook,
-  addGlobalRouteHooks: AddGlobalRouteHooks,
-  onBeforeRouteEnter: AddRouterBeforeRouteHook,
-  onBeforeRouteUpdate: AddRouterBeforeRouteHook,
-  onBeforeRouteLeave: AddRouterBeforeRouteHook,
-  onAfterRouteEnter: AddRouterAfterRouteHook,
-  onAfterRouteUpdate: AddRouterAfterRouteHook,
-  onAfterRouteLeave: AddRouterAfterRouteHook,
-  onError: AddRouterErrorHook,
+  runBeforeRouteHooks: BeforeHookRunner,
+  runAfterRouteHooks: AfterHookRunner,
+  runErrorHooks: ErrorHookRunner,
+  addComponentBeforeRouteHook: AddComponentBeforeHook,
+  addComponentAfterRouteHook: AddComponentAfterHook,
+  addGlobalRouteHooks: AddGlobalHooks,
+  onBeforeRouteEnter: AddBeforeHook,
+  onBeforeRouteUpdate: AddBeforeHook,
+  onBeforeRouteLeave: AddBeforeHook,
+  onAfterRouteEnter: AddAfterHook,
+  onAfterRouteUpdate: AddAfterHook,
+  onAfterRouteLeave: AddAfterHook,
+  onError: AddErrorHook,
 }
 
 export function createRouterHooks(): RouterHooks {
   const { setVueApp, runWithContext } = createVueAppStore()
+  const { store: globalStore, ...globalHooks } = createHooksFactory()
 
-  const store = {
-    global: new RouterRouteHooks(),
-    component: new RouterRouteHooks(),
-  }
+  const componentStore = new Hooks()
 
   const { reject, push, replace, abort } = createRouterCallbackContext()
 
-  const onBeforeRouteEnter: AddRouterBeforeRouteHook = (hook) => {
-    store.global.onBeforeRouteEnter.add(hook)
+  const runBeforeRouteHooks: BeforeHookRunner = async ({ to, from }) => {
+    const routeHooks = getBeforeHooksFromRoutes(to, from)
+    const globalHooks = getGlobalBeforeHooks(to, from, globalStore)
 
-    return () => store.global.onBeforeRouteEnter.delete(hook)
-  }
-
-  const onBeforeRouteUpdate: AddRouterBeforeRouteHook = (hook) => {
-    store.global.onBeforeRouteUpdate.add(hook)
-
-    return () => store.global.onBeforeRouteUpdate.delete(hook)
-  }
-
-  const onBeforeRouteLeave: AddRouterBeforeRouteHook = (hook) => {
-    store.global.onBeforeRouteLeave.add(hook)
-
-    return () => store.global.onBeforeRouteLeave.delete(hook)
-  }
-
-  const onAfterRouteEnter: AddRouterAfterRouteHook = (hook) => {
-    store.global.onAfterRouteEnter.add(hook)
-
-    return () => store.global.onAfterRouteEnter.delete(hook)
-  }
-
-  const onAfterRouteUpdate: AddRouterAfterRouteHook = (hook) => {
-    store.global.onAfterRouteUpdate.add(hook)
-
-    return () => store.global.onAfterRouteUpdate.delete(hook)
-  }
-
-  const onAfterRouteLeave: AddRouterAfterRouteHook = (hook) => {
-    store.global.onAfterRouteLeave.add(hook)
-
-    return () => store.global.onAfterRouteLeave.delete(hook)
-  }
-
-  const onError: AddRouterErrorHook = (hook) => {
-    store.global.onError.add(hook)
-
-    return () => store.global.onError.delete(hook)
-  }
-
-  async function runBeforeRouteHooks({ to, from }: HookContext): Promise<BeforeRouteHookResponse> {
-    const { global, component } = store
-    const routeHooks = getBeforeRouteHooksFromRoutes(to, from)
-    const globalHooks = getGlobalBeforeRouteHooks(to, from, global)
-
-    const allHooks: RouterBeforeRouteHook[] = [
+    const allHooks: BeforeHook[] = [
       ...globalHooks.onBeforeRouteEnter,
       ...routeHooks.onBeforeRouteEnter,
       ...globalHooks.onBeforeRouteUpdate,
       ...routeHooks.onBeforeRouteUpdate,
-      ...component.onBeforeRouteUpdate,
+      ...componentStore.onBeforeRouteUpdate,
       ...globalHooks.onBeforeRouteLeave,
       ...routeHooks.onBeforeRouteLeave,
-      ...component.onBeforeRouteLeave,
+      ...componentStore.onBeforeRouteLeave,
     ]
 
     try {
@@ -142,19 +98,18 @@ export function createRouterHooks(): RouterHooks {
     }
   }
 
-  async function runAfterRouteHooks({ to, from }: HookContext): Promise<AfterRouteHookResponse> {
-    const { global, component } = store
-    const routeHooks = getAfterRouteHooksFromRoutes(to, from)
-    const globalHooks = getGlobalAfterRouteHooks(to, from, global)
+  const runAfterRouteHooks: AfterHookRunner = async ({ to, from }) => {
+    const routeHooks = getAfterHooksFromRoutes(to, from)
+    const globalHooks = getGlobalAfterHooks(to, from, globalStore)
 
-    const allHooks: RouterAfterRouteHook[] = [
-      ...component.onAfterRouteLeave,
+    const allHooks: AfterHook[] = [
+      ...componentStore.onAfterRouteLeave,
       ...routeHooks.onAfterRouteLeave,
       ...globalHooks.onAfterRouteLeave,
-      ...component.onAfterRouteUpdate,
+      ...componentStore.onAfterRouteUpdate,
       ...routeHooks.onAfterRouteUpdate,
       ...globalHooks.onAfterRouteUpdate,
-      ...component.onAfterRouteEnter,
+      ...componentStore.onAfterRouteEnter,
       ...routeHooks.onAfterRouteEnter,
       ...globalHooks.onAfterRouteEnter,
     ]
@@ -199,11 +154,8 @@ export function createRouterHooks(): RouterHooks {
     }
   }
 
-  /**
-   * T
-   */
-  function runErrorHooks(error: unknown, { to, from, source }: RouterRouteHookErrorRunnerContext): void {
-    for (const hook of store.global.onError) {
+  const runErrorHooks: ErrorHookRunner = (error, { to, from, source }) => {
+    for (const hook of globalStore.onError) {
       try {
         hook(error, { to, from, source, reject, push, replace })
 
@@ -223,11 +175,11 @@ export function createRouterHooks(): RouterHooks {
     }
   }
 
-  const addComponentBeforeRouteHook: AddComponentBeforeRouteHook = ({ lifecycle, depth, hook }) => {
+  const addComponentBeforeRouteHook: AddComponentBeforeHook = ({ lifecycle, depth, hook }) => {
     const condition = getRouteHookCondition(lifecycle)
-    const hooks = store.component[lifecycle]
+    const hooks = componentStore[lifecycle]
 
-    const wrapped: RouterBeforeRouteHook = (to, context) => {
+    const wrapped: BeforeHook = (to, context) => {
       if (!condition(to, context.from, depth)) {
         return
       }
@@ -240,11 +192,11 @@ export function createRouterHooks(): RouterHooks {
     return () => hooks.delete(wrapped)
   }
 
-  const addComponentAfterRouteHook: AddComponentAfterRouteHook = ({ lifecycle, depth, hook }) => {
+  const addComponentAfterRouteHook: AddComponentAfterHook = ({ lifecycle, depth, hook }) => {
     const condition = getRouteHookCondition(lifecycle)
-    const hooks = store.component[lifecycle]
+    const hooks = componentStore[lifecycle]
 
-    const wrapped: RouterAfterRouteHook = (to, context) => {
+    const wrapped: AfterHook = (to, context) => {
       if (!condition(to, context.from, depth)) {
         return
       }
@@ -257,14 +209,14 @@ export function createRouterHooks(): RouterHooks {
     return () => hooks.delete(wrapped)
   }
 
-  const addGlobalRouteHooks: AddGlobalRouteHooks = (hooks) => {
-    hooks.onBeforeRouteEnter.forEach((hook) => onBeforeRouteEnter(hook))
-    hooks.onBeforeRouteUpdate.forEach((hook) => onBeforeRouteUpdate(hook))
-    hooks.onBeforeRouteLeave.forEach((hook) => onBeforeRouteLeave(hook))
-    hooks.onAfterRouteEnter.forEach((hook) => onAfterRouteEnter(hook))
-    hooks.onAfterRouteUpdate.forEach((hook) => onAfterRouteUpdate(hook))
-    hooks.onAfterRouteLeave.forEach((hook) => onAfterRouteLeave(hook))
-    hooks.onError.forEach((hook) => onError(hook))
+  const addGlobalRouteHooks: AddGlobalHooks = (hooks) => {
+    hooks.onBeforeRouteEnter.forEach((hook) => globalHooks.onBeforeRouteEnter(hook))
+    hooks.onBeforeRouteUpdate.forEach((hook) => globalHooks.onBeforeRouteUpdate(hook))
+    hooks.onBeforeRouteLeave.forEach((hook) => globalHooks.onBeforeRouteLeave(hook))
+    hooks.onAfterRouteEnter.forEach((hook) => globalHooks.onAfterRouteEnter(hook))
+    hooks.onAfterRouteUpdate.forEach((hook) => globalHooks.onAfterRouteUpdate(hook))
+    hooks.onAfterRouteLeave.forEach((hook) => globalHooks.onAfterRouteLeave(hook))
+    hooks.onError.forEach((hook) => globalHooks.onError(hook))
   }
 
   return {
@@ -274,13 +226,7 @@ export function createRouterHooks(): RouterHooks {
     addComponentBeforeRouteHook,
     addComponentAfterRouteHook,
     addGlobalRouteHooks,
-    onBeforeRouteEnter,
-    onBeforeRouteUpdate,
-    onBeforeRouteLeave,
-    onAfterRouteEnter,
-    onAfterRouteUpdate,
-    onAfterRouteLeave,
-    onError,
     setVueApp,
+    ...globalHooks,
   }
 }

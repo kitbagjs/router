@@ -1,6 +1,6 @@
 import { expect, test, vi } from 'vitest'
 import { createRouterHooks } from '@/services/createRouterHooks'
-import { RouterBeforeRouteHook } from '@/types/hooks'
+import { BeforeHook } from '@/types/hooks'
 import { ResolvedRoute } from '@/types/resolved'
 import { component } from '@/utilities/testHelpers'
 import { createRoute } from './createRoute'
@@ -27,15 +27,12 @@ test('calls hook with correct routes', () => {
   const to = createResolvedRoute(toRoute, {})
   const from = createResolvedRoute(fromRoute, {})
 
-  runBeforeRouteHooks({
-    to,
-    from,
-  })
+  runBeforeRouteHooks({ to, from })
 
   expect(hook).toHaveBeenCalledOnce()
 })
 
-test.each<{ type: string, status: string, hook: RouterBeforeRouteHook }>([
+test.each<{ type: string, status: string, hook: BeforeHook }>([
   {
     type: 'reject',
     status: 'REJECT',
@@ -74,10 +71,7 @@ test.each<{ type: string, status: string, hook: RouterBeforeRouteHook }>([
   const to = createResolvedRoute(toRoute, {})
   const from = createResolvedRoute(fromRoute, {})
 
-  const response = await runBeforeRouteHooks({
-    to,
-    from,
-  })
+  const response = await runBeforeRouteHooks({ to, from })
 
   expect(response.status).toBe(status)
 })
@@ -107,10 +101,7 @@ test('hook is called in order', async () => {
   const to = createResolvedRoute(toRoute, {})
   const from = createResolvedRoute(fromRoute, {})
 
-  await runBeforeRouteHooks({
-    to,
-    from,
-  })
+  await runBeforeRouteHooks({ to, from })
 
   const [orderA] = hookA.mock.invocationCallOrder
   const [orderB] = hookB.mock.invocationCallOrder
