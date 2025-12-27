@@ -69,25 +69,7 @@ declare module '@kitbag/router' {
 }
 ```
 
-Alternatively, you can create your own router assets by using the [`createRouterAssets`](/api/functions/createRouterAssets) utility. This approach is especially useful for projects that use multiple routers.
-
-```ts
-import { createRouterAssets } from '@kitbag/router'
-
-export const {
-  RouterLink,
-  RouterView,
-  useRoute,
-  useRouter,
-  useQueryValue,
-  useLink,
-  onBeforeRouteLeave,
-  onBeforeRouteUpdate,
-  onAfterRouteLeave,
-  onAfterRouteUpdate,
-  isRoute,
-} = createRouterAssets(router)
-```
+This means then when you import a component, composition, or hook from `@kitbag/router` it will be correctly typed. Alternatively, you can create your own typed router assets by using the [`createRouterAssets`](/api/functions/createRouterAssets) utility. This approach is especially useful for projects that use multiple routers.
 
 ## RouterView
 

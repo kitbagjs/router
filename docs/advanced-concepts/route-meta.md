@@ -1,6 +1,6 @@
 # Route Meta
 
-It may be useful to store additional context on your route to be used in a hook, or within a component. Meta data might be useful for authorization, analytics, and much more. For example, below we will use route meta to configure the document title per route.
+It may be useful to store additional information about your route to be used in a hook, or within a component. Meta data might be useful for authorization, analytics, and much more. For example, below we will use route meta to configure the document title per route.
 
 ```ts
 import { createRoute, createRouter } from '@kitbag/router'

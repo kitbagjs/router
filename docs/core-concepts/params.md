@@ -32,7 +32,7 @@ const events = createRoute({
 
 By default all params are strings. However, using the `withParams` utility, you can assign different param types.
 
-Now the `year` param will have the type `number` when being accessed.
+Now the `year` param must be a valid number. The router will not match the route if it is not a number, it will have the type `number` when being accessed, and the type `number` will be enforced when navigating and providing a value for the param. 
 
 ```ts {1,5-7}
 import { withParams } from '@kitbag/router'
@@ -206,7 +206,9 @@ const events = createRoute({
 Optionally pass in options to specify a separator. The default separator is a comma.
 
 ```ts
-{ separator?: string }
+arrayOf(['mustic', 'sports', 'art'], {
+  separator: '|' 
+})
 ```
 
 ## Tuples

@@ -42,7 +42,7 @@ const route = useRoute()
 
 if (route.name === 'home') {
   route
-  // ^ { name: 'home', ... }
+  // ^? { name: 'home', ... }
 }
 ```
 
@@ -132,7 +132,7 @@ const state = route.state
 
 ## Update
 
-The `update` method is used to update the route and the router location. This is the same as using the router's [push](/core-concepts/router#push) method and the options are the same.
+The `update` method is used to update the route and the router location. This is the same as using the router's [push](/core-concepts/router#push) method but you don't have to provide the route name and you don't have to provide a value for all params. All the options are the same.
 
 ```ts
 route.update({ blogPostId: 456 }, options)
