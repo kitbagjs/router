@@ -28,7 +28,7 @@ npm install @kitbag/router
 
 ## Define Routes
 
-Routes are created individually using the [`createRoute`](/api/functions/createRoute) utility. Learn more about [defining routes](/core-concepts/routes).
+Routes are created individually using the [`createRoute`](https://kitbag-router.netlify.app/api/functions/createRoute) utility. Learn more about [defining routes](https://kitbag-router.netlify.app/core-concepts/routes).
 
 ```ts
 import { createRoute } from '@kitbag/router'
@@ -42,13 +42,12 @@ const routes = [
 ] as const
 ```
 
-::: info Type Safety
-Using `as const` when defining routes is important as it ensures the types are correctly inferred.
-:::
+> [!NOTE] Type Safety
+> Using `as const` when defining routes is important as it ensures the types are correctly inferred.
 
 ## Create Router
 
-A router is created using the [`createRouter`](/api/functions/createRouter) utility and passing in the routes.
+A router is created using the [`createRouter`](https://kitbag-router.netlify.app/api/functions/createRouter) utility and passing in the routes.
 
 ```ts
 import { createRouter } from '@kitbag/router'
@@ -82,7 +81,7 @@ declare module '@kitbag/router' {
 }
 ```
 
-This means then when you import a component, composition, or hook from `@kitbag/router` it will be correctly typed. Alternatively, you can create your own typed router assets by using the [`createRouterAssets`](/api/functions/createRouterAssets) utility. This approach is especially useful for projects that use multiple routers.
+This means then when you import a component, composition, or hook from `@kitbag/router` it will be correctly typed. Alternatively, you can create your own typed router assets by using the [`createRouterAssets`](https://kitbag-router.netlify.app/api/functions/createRouterAssets) utility. This approach is especially useful for projects that use multiple routers.
 
 ## RouterView
 
@@ -94,7 +93,7 @@ Give your route components a place to be mounted
 </div>
 ```
 
-This component can be mounted anywhere you want route components to be mounted. Nested routes can also have a nested `RouterView` which would be responsible for rendering any children that route may have. Read more about [nested routes](/core-concepts/routes#parent).
+This component can be mounted anywhere you want route components to be mounted. Nested routes can also have a nested `RouterView` which would be responsible for rendering any children that route may have. Read more about [nested routes](https://kitbag-router.netlify.app/core-concepts/routes#parent).
 
 ## RouterLink
 
@@ -108,4 +107,4 @@ Use RouterLink for navigating between routes.
 
 ### Type Safety in RouterLink
 
-The `to` prop accepts a callback function or a [`Url`](/api/types/Url) string. When using a callback function, the router will provide a `resolve` function that is a type safe way to create link for your pre-defined routes.
+The `to` prop accepts a callback function or a [`Url`](https://kitbag-router.netlify.app/api/types/Url) string. When using a callback function, the router will provide a `resolve` function that is a type safe way to create link for your pre-defined routes.
