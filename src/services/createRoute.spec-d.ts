@@ -629,23 +629,32 @@ describe('props', () => {
     })
   })
 
-  // describe('update', () => {
-  //   test('accepts params when no context is provided', () => {
-  //     const route = createRoute({
-  //       name: 'route',
-  //       path: '/[paramName]',
-  //       component,
-  //     }, (__, context) => {
-  //       context.update()
+  describe('update', () => {
+    test('accepts params when no context is provided', () => {
+      createRoute({
+        name: 'route',
+        path: '/[paramName]',
+        component,
+      }, (__, context) => {
+        context.update('paramName', 'value')
 
-  //       return {}
-  //     })
+        // @ts-expect-error should not accept invalid param name
+        context.update('invalidParamName', 'value')
 
-  //     route.onAfterRouteEnter((to, context) => {
-  //       context.update()
-  //     })
-  //   })
-  // })
+        context.update({ paramName: 'value' })
+
+        // @ts-expect-error should not accept invalid params
+        context.update({ invalidParamName: 'value' })
+
+        context.update({ paramName: 'value' }, { replace: true })
+
+        // @ts-expect-error should not accept invalid options
+        context.update({ paramName: 'value' }, { invalid: true })
+
+        return {}
+      })
+    })
+  })
 })
 
 describe('meta', () => {

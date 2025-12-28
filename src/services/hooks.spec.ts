@@ -42,6 +42,7 @@ test.each<{ type: string, status: string, hook: BeforeHook }>([
   },
   { type: 'push', status: 'PUSH', hook: (_to, { push }) => push('/') },
   { type: 'replace', status: 'PUSH', hook: (_to, { replace }) => replace('/') },
+  { type: 'update', status: 'PUSH', hook: (_to, { update }) => update('paramName', 'value') },
   {
     type: 'abort',
     status: 'ABORT',
