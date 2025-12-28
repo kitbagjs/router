@@ -107,7 +107,7 @@ export type AfterHookLifecycle = 'onAfterRouteEnter' | 'onAfterRouteUpdate' | 'o
  */
 export type HookLifecycle = BeforeHookLifecycle | AfterHookLifecycle
 
-type HookContext<
+type AfterHookContext<
   TRoute extends Route,
   TRoutes extends Routes,
   TRejections extends Rejections
@@ -123,7 +123,12 @@ type BeforeHookContext<
   TRoute extends Route,
   TRoutes extends Routes,
   TRejections extends Rejections
-> = HookContext<TRoute, TRoutes, TRejections> & {
+> = {
+  from: RouterResolvedRouteUnion<TRoutes> | null,
+  reject: RouterReject<TRejections>,
+  push: RouterPush<TRoutes>,
+  replace: RouterReplace<TRoutes>,
+  update: RouteUpdate<ResolvedRoute<TRoute>>,
   abort: RouterAbort,
 }
 
@@ -138,12 +143,6 @@ export type AddBeforeHook<
   TRoutes extends Routes = Routes,
   TRejections extends Rejections = Rejections
 > = (hook: BeforeHook<TRoute, TRoutes, TRejections>) => HookRemove
-
-type AfterHookContext<
-  TRoute extends Route = Route,
-  TRoutes extends Routes = Routes,
-  TRejections extends Rejections = Rejections
-> = HookContext<TRoute, TRoutes, TRejections>
 
 export type AfterHook<
   TRoute extends Route = Route,
