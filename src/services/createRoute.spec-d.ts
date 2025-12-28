@@ -740,3 +740,30 @@ describe('matches[number].meta', () => {
     expectTypeOf(route.matches[0].meta).toEqualTypeOf<Readonly<{ foo: 'bar' }>>()
   })
 })
+
+describe('hooks', () => {
+  test('context.update', () => {
+    const route = createRoute({
+      name: 'route',
+      path: '/[paramName]',
+      component,
+    })
+
+    route.onBeforeRouteEnter((_to, context) => {
+      context.update('paramName', 'value')
+
+      // @ts-expect-error should not accept invalid param name
+      context.update('invalidParamName', 'value')
+
+      context.update({ paramName: 'value' })
+
+      // @ts-expect-error should not accept invalid params
+      context.update({ invalidParamName: 'value' })
+
+      context.update({ paramName: 'value' }, { replace: true })
+
+      // @ts-expect-error should not accept invalid options
+      context.update({ paramName: 'value' }, { invalid: true })
+    })
+  })
+})
