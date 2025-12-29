@@ -36,9 +36,8 @@ export function createRouterHooks(): RouterHooks {
 
   const componentStore = new Hooks()
 
-  const { reject, push, replace, abort } = createRouterCallbackContext()
-
   const runBeforeRouteHooks: BeforeHookRunner = async ({ to, from }) => {
+    const { reject, push, replace, update, abort } = createRouterCallbackContext({ to })
     const routeHooks = getBeforeHooksFromRoutes(to, from)
     const globalHooks = getGlobalBeforeHooks(to, from, globalStore)
 
@@ -60,6 +59,7 @@ export function createRouterHooks(): RouterHooks {
           reject,
           push,
           replace,
+          update,
           abort,
         }))
       })
@@ -99,6 +99,7 @@ export function createRouterHooks(): RouterHooks {
   }
 
   const runAfterRouteHooks: AfterHookRunner = async ({ to, from }) => {
+    const { reject, push, replace, update } = createRouterCallbackContext({ to })
     const routeHooks = getAfterHooksFromRoutes(to, from)
     const globalHooks = getGlobalAfterHooks(to, from, globalStore)
 
@@ -121,6 +122,7 @@ export function createRouterHooks(): RouterHooks {
           reject,
           push,
           replace,
+          update,
         }))
       })
 
@@ -155,9 +157,11 @@ export function createRouterHooks(): RouterHooks {
   }
 
   const runErrorHooks: ErrorHookRunner = (error, { to, from, source }) => {
+    const { reject, push, replace, update } = createRouterCallbackContext({ to })
+
     for (const hook of globalStore.onError) {
       try {
-        hook(error, { to, from, source, reject, push, replace })
+        hook(error, { to, from, source, reject, push, replace, update })
 
         return
       } catch (hookError) {

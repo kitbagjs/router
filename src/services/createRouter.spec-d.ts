@@ -5,8 +5,10 @@ import { describe, test, expectTypeOf } from 'vitest'
 import { createRouterPlugin } from './createRouterPlugin'
 import { BuiltInRejectionType } from './createRouterReject'
 import { createRejection } from './createRejection'
-import { AddAfterHook, AddBeforeHook } from '@/types/hooks'
+import { AddAfterHook, AddBeforeHook, AddErrorHook } from '@/types/hooks'
 import { RouterAbort } from '@/types/routerAbort'
+import { RouteUpdate } from '@/types/routeUpdate'
+import { ResolvedRoute } from '@/types/resolved'
 
 describe('hooks', () => {
   const parent = createRoute({
@@ -41,12 +43,13 @@ describe('hooks', () => {
   type Routes = typeof routes | typeof pluginRoutes
 
   test('functions are correctly typed', () => {
-    expectTypeOf(router.onBeforeRouteEnter).toEqualTypeOf<AddBeforeHook<Routes, never>>()
-    expectTypeOf(router.onBeforeRouteLeave).toEqualTypeOf<AddBeforeHook<Routes, never>>()
-    expectTypeOf(router.onBeforeRouteUpdate).toEqualTypeOf<AddBeforeHook<Routes, never>>()
-    expectTypeOf(router.onAfterRouteEnter).toEqualTypeOf<AddAfterHook<Routes, never>>()
-    expectTypeOf(router.onAfterRouteLeave).toEqualTypeOf<AddAfterHook<Routes, never>>()
-    expectTypeOf(router.onAfterRouteUpdate).toEqualTypeOf<AddAfterHook<Routes, never>>()
+    expectTypeOf(router.onBeforeRouteEnter).toEqualTypeOf<AddBeforeHook<Routes[number], Routes, never>>()
+    expectTypeOf(router.onBeforeRouteLeave).toEqualTypeOf<AddBeforeHook<Routes[number], Routes, never>>()
+    expectTypeOf(router.onBeforeRouteUpdate).toEqualTypeOf<AddBeforeHook<Routes[number], Routes, never>>()
+    expectTypeOf(router.onAfterRouteEnter).toEqualTypeOf<AddAfterHook<Routes[number], Routes, never>>()
+    expectTypeOf(router.onAfterRouteLeave).toEqualTypeOf<AddAfterHook<Routes[number], Routes, never>>()
+    expectTypeOf(router.onAfterRouteUpdate).toEqualTypeOf<AddAfterHook<Routes[number], Routes, never>>()
+    expectTypeOf(router.onError).toEqualTypeOf<AddErrorHook<Routes[number], Routes, never>>()
   })
 
   test('to and from can be narrowed', () => {
@@ -91,6 +94,12 @@ describe('hooks', () => {
   test('context.reject', () => {
     router.onBeforeRouteEnter((_to, context) => {
       expectTypeOf(context.reject).toEqualTypeOf(router.reject)
+    })
+  })
+
+  test('context.update', () => {
+    router.onBeforeRouteEnter((_to, context) => {
+      expectTypeOf(context.update).toEqualTypeOf<RouteUpdate<ResolvedRoute<Routes[number]>>>()
     })
   })
 

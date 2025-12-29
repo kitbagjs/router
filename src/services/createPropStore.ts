@@ -26,9 +26,10 @@ export type PropStore = HasVueAppStore & {
 export function createPropStore(): PropStore {
   const { setVueApp, runWithContext } = createVueAppStore()
   const store: Map<string, unknown> = reactive(new Map())
-  const { push, replace, reject } = createRouterCallbackContext()
 
   const getPrefetchProps: PropStore['getPrefetchProps'] = (strategy, route, prefetch) => {
+    const { push, replace, reject, update } = createRouterCallbackContext({ to: route })
+
     return route.matches
       .filter((match) => getPrefetchOption({ ...prefetch, routePrefetch: match.prefetch }, 'props') === strategy)
       .flatMap((match) => getComponentProps(match))
@@ -42,6 +43,7 @@ export function createPropStore(): PropStore {
           push,
           replace,
           reject,
+          update,
           parent: getParentContext(route, true),
         })))
 
@@ -58,6 +60,7 @@ export function createPropStore(): PropStore {
   }
 
   const setProps: PropStore['setProps'] = async (route) => {
+    const { push, replace, reject, update } = createRouterCallbackContext({ to: route })
     const componentProps = route.matches.flatMap(getComponentProps)
     const keys: string[] = []
     const promises: Promise<unknown>[] = []
@@ -76,6 +79,7 @@ export function createPropStore(): PropStore {
           push,
           replace,
           reject,
+          update,
           parent: getParentContext(route),
         })))
 
