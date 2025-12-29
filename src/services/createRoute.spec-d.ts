@@ -630,7 +630,7 @@ describe('props', () => {
   })
 
   describe('update', () => {
-    test('accepts params when no context is provided', () => {
+    test('accepts params based on the current route', () => {
       createRoute({
         name: 'route',
         path: '/[paramName]',
