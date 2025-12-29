@@ -244,3 +244,52 @@ test('when onError callback calls replace, other onError callbacks do not run', 
   expect(errorHook2).not.toHaveBeenCalled()
   expect(errorHook3).not.toHaveBeenCalled()
 })
+
+test('onError hooks on routes only called when that route hooks error', () => {
+  const errorHook = vi.fn()
+
+  const routeWithErrorHook = createRoute({
+    name: 'route-with-hook',
+  })
+
+  const routeWithoutErrorInHook = createRoute({
+    name: 'route-without-hook',
+  })
+
+  routeWithErrorHook.onBeforeRouteEnter(() => {
+    throw new Error('Test error')
+  })
+
+  routeWithErrorHook.onBeforeRouteLeave(() => {
+    throw new Error('Test error')
+  })
+
+  routeWithoutErrorInHook.onBeforeRouteEnter(() => {
+    throw new Error('Test error')
+  })
+
+  routeWithErrorHook.onError(() => errorHook())
+
+  const { runBeforeRouteHooks } = createRouterHooks()
+
+  // neither route has error hook
+  runBeforeRouteHooks({
+    to: createResolvedRoute(routeWithoutErrorInHook, {}),
+    from: null,
+  })
+  expect(errorHook).not.toHaveBeenCalled()
+
+  // to route has error hook
+  runBeforeRouteHooks({
+    to: createResolvedRoute(routeWithErrorHook, {}),
+    from: null,
+  })
+  expect(errorHook).toHaveBeenCalledTimes(1)
+
+  // from route has error hook
+  runBeforeRouteHooks({
+    to: createResolvedRoute(createRoute({ name: 'random-route' }), {}),
+    from: createResolvedRoute(routeWithErrorHook, {}),
+  })
+  expect(errorHook).toHaveBeenCalledTimes(2)
+})
