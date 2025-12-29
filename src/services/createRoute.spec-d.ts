@@ -13,7 +13,7 @@ import { createRejection } from '@/services/createRejection'
 test('empty options returns an empty route', () => {
   const route = createRoute({})
 
-  type RouteWithHooks = Route & InternalRouteHooks
+  type RouteWithHooks = Route & InternalRouteHooks<typeof route, []>
 
   expectTypeOf<typeof route>().toEqualTypeOf<RouteWithHooks>()
 })
@@ -565,9 +565,20 @@ describe('props', () => {
       })
     })
 
+    test('accepts current route when no context is provided', () => {
+      createRoute({
+        name: 'route',
+        path: '/[paramName]',
+      }, (__, context) => {
+        context.push('route', { paramName: 'value' })
+
+        return {}
+      })
+    })
+
     test('accepts url and routes when context is provided', () => {
       const route = createRoute({
-        name: 'route',
+        name: 'contextRoute',
       })
 
       createRoute({
@@ -577,6 +588,9 @@ describe('props', () => {
       }, (__, context) => {
         // valid
         context.push('route')
+
+        // valid
+        context.push('contextRoute')
 
         // @ts-expect-error should not accept an invalid route name
         context.push('foo')
@@ -742,6 +756,33 @@ describe('matches[number].meta', () => {
 })
 
 describe('hooks', () => {
+  test('context.push', () => {
+    const contextRoute = createRoute({
+      name: 'contextRoute',
+      component,
+    })
+
+    const route = createRoute({
+      context: [contextRoute],
+      name: 'route',
+      path: '/[paramName]',
+      component,
+    })
+
+    route.onBeforeRouteEnter((_to, context) => {
+      // valid - current route
+      context.push('route', { paramName: 'value' })
+
+      // valid - context route
+      context.push('contextRoute')
+
+      // @ts-expect-error should not accept an invalid route name
+      context.push('foo')
+
+      // @ts-expect-error should not accept an invalid param
+      context.push('route', { invalidParamName: 'value' })
+    })
+  })
   test('context.update', () => {
     const route = createRoute({
       name: 'route',

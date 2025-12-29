@@ -7,6 +7,7 @@ import { checkDuplicateParams } from '@/utilities/checkDuplicateKeys'
 import { toWithParams, withParams } from '@/services/withParams'
 import { createHooksFactory } from '@/services/createHooksFactory'
 import { InternalRouteHooks } from '@/types/hooks'
+import { ExtractRouteContext } from '@/types/routeContext'
 
 type CreateRouteWithProps<
   TOptions extends CreateRouteOptions,
@@ -25,7 +26,7 @@ export function createRoute<
   const TOptions extends CreateRouteOptions,
   const TProps extends CreateRouteProps<TOptions>
 >(options: TOptions, ...args: CreateRouteWithProps<TOptions, TProps>): ToRoute<TOptions, TProps>
-  & InternalRouteHooks<ToRoute<TOptions>, TOptions['context']>
+  & InternalRouteHooks<ToRoute<TOptions>, ExtractRouteContext<TOptions>>
 
 export function createRoute(options: CreateRouteOptions, props?: CreateRouteProps): Route {
   const id = createRouteId()

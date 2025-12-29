@@ -18,27 +18,27 @@ export type InternalRouteHooks<
   /**
    * Registers a route hook to be called before the route is entered.
    */
-  onBeforeRouteEnter: AddBeforeHook<TRoute, RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
+  onBeforeRouteEnter: AddBeforeHook<TRoute, [TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
   /**
    * Registers a route hook to be called before the route is left.
    */
-  onBeforeRouteLeave: AddBeforeHook<TRoute, RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
+  onBeforeRouteLeave: AddBeforeHook<TRoute, [TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
   /**
    * Registers a route hook to be called before the route is updated.
    */
-  onBeforeRouteUpdate: AddBeforeHook<TRoute, RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
+  onBeforeRouteUpdate: AddBeforeHook<TRoute, [TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
   /**
    * Registers a route hook to be called after the route is entered.
    */
-  onAfterRouteEnter: AddAfterHook<TRoute, RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
+  onAfterRouteEnter: AddAfterHook<TRoute, [TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
   /**
    * Registers a route hook to be called after the route is left.
    */
-  onAfterRouteLeave: AddAfterHook<TRoute, RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
+  onAfterRouteLeave: AddAfterHook<TRoute, [TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
   /**
    * Registers a route hook to be called after the route is updated.
    */
-  onAfterRouteUpdate: AddAfterHook<TRoute, RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
+  onAfterRouteUpdate: AddAfterHook<TRoute, [TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
 }
 
 export type ExternalRouteHooks<
@@ -48,7 +48,7 @@ export type ExternalRouteHooks<
   /**
    * Registers a route hook to be called before the route is entered.
    */
-  onBeforeRouteEnter: AddBeforeHook<TRoute, RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
+  onBeforeRouteEnter: AddBeforeHook<TRoute, [TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
 }
 
 export type HookTiming = 'global' | 'component'
