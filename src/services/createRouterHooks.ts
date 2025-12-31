@@ -42,27 +42,22 @@ export function createRouterHooks(): RouterHooks {
     const routeHooks = getBeforeHooksFromRoutes(to, from)
     const globalHooks = getGlobalBeforeHooks(to, from, globalStore)
 
-    const enterHooks: BeforeEnterHook[] = [
+    const allHooks: (BeforeEnterHook | BeforeUpdateHook | BeforeLeaveHook)[] = [
       ...globalHooks.onBeforeRouteEnter,
       ...routeHooks.onBeforeRouteEnter,
-    ]
-
-    const updateHooks: BeforeUpdateHook[] = [
       ...globalHooks.onBeforeRouteUpdate,
       ...routeHooks.onBeforeRouteUpdate,
       ...componentStore.onBeforeRouteUpdate,
-    ]
-
-    const leaveHooks: BeforeLeaveHook[] = [
       ...globalHooks.onBeforeRouteLeave,
       ...routeHooks.onBeforeRouteLeave,
       ...componentStore.onBeforeRouteLeave,
     ]
 
     try {
-      const enterResults = enterHooks.map((callback) => {
+      const results = allHooks.map((callback) => {
         return runWithContext(() => callback(to, {
-          from,
+          // From could be null but leave hooks require that from is not null. If from is null there will be no leave hooks so this cast is purely to satisfy the type checker.
+          from: from as ResolvedRoute,
           reject,
           push,
           replace,
@@ -71,34 +66,7 @@ export function createRouterHooks(): RouterHooks {
         }))
       })
 
-      const updateResults = updateHooks.map((callback) => {
-        return runWithContext(() => callback(to, {
-          from,
-          reject,
-          push,
-          replace,
-          update,
-          abort,
-        }))
-      })
-
-      const leaveResults = leaveHooks.map((callback) => {
-        // there will be no leave hooks when from is null, this condition is purely for type safety
-        if (from === null) {
-          return
-        }
-
-        return runWithContext(() => callback(to, {
-          from,
-          reject,
-          push,
-          replace,
-          update,
-          abort,
-        }))
-      })
-
-      await Promise.all([...enterResults, ...updateResults, ...leaveResults])
+      await Promise.all(results)
     } catch (error) {
       if (error instanceof ContextPushError) {
         return error.response
@@ -137,33 +105,23 @@ export function createRouterHooks(): RouterHooks {
     const routeHooks = getAfterHooksFromRoutes(to, from)
     const globalHooks = getGlobalAfterHooks(to, from, globalStore)
 
-    const leaveHooks: AfterLeaveHook[] = [
+    const allHooks: (AfterLeaveHook | AfterUpdateHook | AfterEnterHook)[] = [
       ...componentStore.onAfterRouteLeave,
       ...routeHooks.onAfterRouteLeave,
       ...globalHooks.onAfterRouteLeave,
-    ]
-
-    const updateHooks: AfterUpdateHook[] = [
       ...componentStore.onAfterRouteUpdate,
       ...routeHooks.onAfterRouteUpdate,
       ...globalHooks.onAfterRouteUpdate,
-    ]
-
-    const enterHooks: AfterEnterHook[] = [
       ...componentStore.onAfterRouteEnter,
       ...routeHooks.onAfterRouteEnter,
       ...globalHooks.onAfterRouteEnter,
     ]
 
     try {
-      const leaveResults = leaveHooks.map((callback) => {
-        // there will be no leave hooks when from is null, this condition is purely for type safety
-        if (from === null) {
-          return
-        }
-
+      const results = allHooks.map((callback) => {
         return runWithContext(() => callback(to, {
-          from,
+          // From could be null but leave hooks require that from is not null. If from is null there will be no leave hooks so this cast is purely to satisfy the type checker.
+          from: from as ResolvedRoute,
           reject,
           push,
           replace,
@@ -171,27 +129,7 @@ export function createRouterHooks(): RouterHooks {
         }))
       })
 
-      const updateResults = updateHooks.map((callback) => {
-        return runWithContext(() => callback(to, {
-          from,
-          reject,
-          push,
-          replace,
-          update,
-        }))
-      })
-
-      const enterResults = enterHooks.map((callback) => {
-        return runWithContext(() => callback(to, {
-          from,
-          reject,
-          push,
-          replace,
-          update,
-        }))
-      })
-
-      await Promise.all([...leaveResults, ...updateResults, ...enterResults])
+      await Promise.all(results)
     } catch (error) {
       if (error instanceof ContextPushError) {
         return error.response
