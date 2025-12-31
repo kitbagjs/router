@@ -82,20 +82,19 @@ export function createRouterHooks(): RouterHooks {
       })
 
       const leaveResults = leaveHooks.map((callback) => {
-        return runWithContext(() => {
-          if (from === null) {
-            return
-          }
+        // there will be no leave hooks when from is null, this condition is purely for type safety
+        if (from === null) {
+          return
+        }
 
-          return callback(to, {
-            from,
-            reject,
-            push,
-            replace,
-            update,
-            abort,
-          })
-        })
+        return runWithContext(() => callback(to, {
+          from,
+          reject,
+          push,
+          replace,
+          update,
+          abort,
+        }))
       })
 
       await Promise.all([...enterResults, ...updateResults, ...leaveResults])
@@ -157,19 +156,18 @@ export function createRouterHooks(): RouterHooks {
 
     try {
       const leaveResults = leaveHooks.map((callback) => {
-        return runWithContext(() => {
-          if (from === null) {
-            return
-          }
+        // there will be no leave hooks when from is null, this condition is purely for type safety
+        if (from === null) {
+          return
+        }
 
-          return callback(to, {
-            from,
-            reject,
-            push,
-            replace,
-            update,
-          })
-        })
+        return runWithContext(() => callback(to, {
+          from,
+          reject,
+          push,
+          replace,
+          update,
+        }))
       })
 
       const updateResults = updateHooks.map((callback) => {
