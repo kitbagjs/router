@@ -1,4 +1,4 @@
-import { AddGlobalHooks, AddComponentAfterHook, AddComponentBeforeHook, AfterHookRunner, BeforeHookRunner, AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, ErrorHookRunner, AddErrorHook, BeforeEnterHook, BeforeUpdateHook, BeforeLeaveHook, AfterEnterHook, AfterUpdateHook, AfterLeaveHook } from '@/types/hooks'
+import { AddGlobalHooks, AddComponentHook, AfterHookRunner, BeforeHookRunner, AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, ErrorHookRunner, AddErrorHook, BeforeEnterHook, BeforeUpdateHook, BeforeLeaveHook, AfterEnterHook, AfterUpdateHook, AfterLeaveHook } from '@/types/hooks'
 import { getRouteHookCondition } from './hooks'
 import { getAfterHooksFromRoutes, getBeforeHooksFromRoutes } from './getRouteHooks'
 import { ContextPushError } from '@/errors/contextPushError'
@@ -11,6 +11,8 @@ import { Hooks } from '@/models/hooks'
 import { createRouterCallbackContext } from './createRouterCallbackContext'
 import { ContextError } from '@/errors/contextError'
 import { createHooksFactory } from './createHooksFactory'
+import { ResolvedRoute } from '@/types/resolved'
+import { MaybePromise } from '@/types/utilities'
 
 export const getRouterHooksKey = createRouterKeyStore<RouterHooks>()
 
@@ -18,8 +20,7 @@ export type RouterHooks = HasVueAppStore & {
   runBeforeRouteHooks: BeforeHookRunner,
   runAfterRouteHooks: AfterHookRunner,
   runErrorHooks: ErrorHookRunner,
-  addComponentBeforeRouteHook: AddComponentBeforeHook,
-  addComponentAfterRouteHook: AddComponentAfterHook,
+  addComponentHook: AddComponentHook,
   addGlobalRouteHooks: AddGlobalHooks,
   onBeforeRouteEnter: AddBeforeEnterHook,
   onBeforeRouteUpdate: AddBeforeUpdateHook,
@@ -243,84 +244,22 @@ export function createRouterHooks(): RouterHooks {
     }
   }
 
-  const addComponentBeforeRouteHook: AddComponentBeforeHook = ({ lifecycle, depth, hook }) => {
+  const addComponentHook: AddComponentHook = ({ lifecycle, depth, hook }) => {
     const condition = getRouteHookCondition(lifecycle)
     const hooks = componentStore[lifecycle]
 
-    if (lifecycle === 'onBeforeRouteEnter') {
-      const wrapped = hook as BeforeEnterHook
-      const checked: BeforeEnterHook = (to, context) => {
-        if (!condition(to, context.from, depth)) {
-          return
-        }
-        return wrapped(to, context)
-      }
-      hooks.add(checked)
-      return () => hooks.delete(checked)
-    }
-
-    if (lifecycle === 'onBeforeRouteUpdate') {
-      const wrapped = hook as BeforeUpdateHook
-      const checked: BeforeUpdateHook = (to, context) => {
-        if (!condition(to, context.from, depth)) {
-          return
-        }
-        return wrapped(to, context)
-      }
-      hooks.add(checked)
-      return () => hooks.delete(checked)
-    }
-
-    // lifecycle === 'onBeforeRouteLeave'
-    const wrapped = hook as BeforeLeaveHook
-    const checked = ((to: any, context: any) => {
+    // Using `any` here for context because its just passed through to the hook and typing it is more complex than it's worth
+    const wrapped = (to: ResolvedRoute, context: any): MaybePromise<void> => {
       if (!condition(to, context.from, depth)) {
         return
       }
-      return wrapped(to, context)
-    }) as BeforeLeaveHook
-    ;(hooks as Set<BeforeLeaveHook>).add(checked)
-    return () => (hooks as Set<BeforeLeaveHook>).delete(checked)
-  }
 
-  const addComponentAfterRouteHook: AddComponentAfterHook = ({ lifecycle, depth, hook }) => {
-    const condition = getRouteHookCondition(lifecycle)
-    const hooks = componentStore[lifecycle]
-
-    if (lifecycle === 'onAfterRouteEnter') {
-      const wrapped = hook as AfterEnterHook
-      const checked: AfterEnterHook = (to, context) => {
-        if (!condition(to, context.from, depth)) {
-          return
-        }
-        return wrapped(to, context)
-      }
-      hooks.add(checked)
-      return () => hooks.delete(checked)
+      return hook(to, context)
     }
 
-    if (lifecycle === 'onAfterRouteUpdate') {
-      const wrapped = hook as AfterUpdateHook
-      const checked: AfterUpdateHook = (to, context) => {
-        if (!condition(to, context.from, depth)) {
-          return
-        }
-        return wrapped(to, context)
-      }
-      hooks.add(checked)
-      return () => hooks.delete(checked)
-    }
+    hooks.add(wrapped)
 
-    // lifecycle === 'onAfterRouteLeave'
-    const wrapped = hook as AfterLeaveHook
-    const checked = ((to: any, context: any) => {
-      if (!condition(to, context.from, depth)) {
-        return
-      }
-      return wrapped(to, context)
-    }) as AfterLeaveHook
-    ;(hooks as Set<AfterLeaveHook>).add(checked)
-    return () => (hooks as Set<AfterLeaveHook>).delete(checked)
+    return () => hooks.delete(wrapped)
   }
 
   const addGlobalRouteHooks: AddGlobalHooks = (hooks) => {
@@ -337,8 +276,7 @@ export function createRouterHooks(): RouterHooks {
     runBeforeRouteHooks,
     runAfterRouteHooks,
     runErrorHooks,
-    addComponentBeforeRouteHook,
-    addComponentAfterRouteHook,
+    addComponentHook,
     addGlobalRouteHooks,
     setVueApp,
     ...globalHooks,

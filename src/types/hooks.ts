@@ -53,11 +53,31 @@ export type ExternalRouteHooks<
 
 export type HookTiming = 'global' | 'component'
 
-type BeforeHookRegistration<
-  TRouteTo extends Route,
-  TRouteFrom extends Route,
-  TRoutes extends Routes,
-  TRejections extends Rejections
+/**
+ * Union type for all component route hooks.
+ */
+export type ComponentHook = BeforeEnterHook | BeforeUpdateHook | BeforeLeaveHook | AfterEnterHook | AfterUpdateHook | AfterLeaveHook
+
+/**
+ * Registration object for adding a component route hook.
+ */
+export type ComponentHookRegistration = {
+  lifecycle: HookLifecycle,
+  hook: ComponentHook,
+  depth: number,
+}
+
+/**
+ * Function to add a component route hook with depth-based condition checking.
+ */
+export type AddComponentHook = (registration: ComponentHookRegistration) => HookRemove
+
+// Legacy types kept for backward compatibility - deprecated, use AddComponentHook instead
+export type BeforeHookRegistration<
+  TRouteTo extends Route = Route,
+  TRouteFrom extends Route = Route,
+  TRoutes extends Routes = Routes,
+  TRejections extends Rejections = Rejections
 > =
   | {
     lifecycle: 'onBeforeRouteEnter',
@@ -75,6 +95,7 @@ type BeforeHookRegistration<
     depth: number,
   }
 
+/** @deprecated Use AddComponentHook instead */
 export type AddComponentBeforeHook<
   TRouteTo extends Route = Route,
   TRouteFrom extends Route = Route,
@@ -82,11 +103,11 @@ export type AddComponentBeforeHook<
   TRejections extends Rejections = Rejections
 > = (hook: BeforeHookRegistration<TRouteTo, TRouteFrom, TRoutes, TRejections>) => HookRemove
 
-type AfterHookRegistration<
-  TRouteTo extends Route,
-  TRouteFrom extends Route,
-  TRoutes extends Routes,
-  TRejections extends Rejections
+export type AfterHookRegistration<
+  TRouteTo extends Route = Route,
+  TRouteFrom extends Route = Route,
+  TRoutes extends Routes = Routes,
+  TRejections extends Rejections = Rejections
 > =
   | {
     lifecycle: 'onAfterRouteEnter',
@@ -104,6 +125,7 @@ type AfterHookRegistration<
     depth: number,
   }
 
+/** @deprecated Use AddComponentHook instead */
 export type AddComponentAfterHook<
   TRouteTo extends Route = Route,
   TRouteFrom extends Route = Route,
