@@ -72,67 +72,6 @@ export type ComponentHookRegistration = {
  */
 export type AddComponentHook = (registration: ComponentHookRegistration) => HookRemove
 
-// Legacy types kept for backward compatibility - deprecated, use AddComponentHook instead
-export type BeforeHookRegistration<
-  TRouteTo extends Route = Route,
-  TRouteFrom extends Route = Route,
-  TRoutes extends Routes = Routes,
-  TRejections extends Rejections = Rejections
-> =
-  | {
-    lifecycle: 'onBeforeRouteEnter',
-    hook: BeforeEnterHook<TRouteTo, TRouteFrom, TRoutes, TRejections>,
-    depth: number,
-  }
-  | {
-    lifecycle: 'onBeforeRouteUpdate',
-    hook: BeforeUpdateHook<TRouteTo, TRouteFrom, TRoutes, TRejections>,
-    depth: number,
-  }
-  | {
-    lifecycle: 'onBeforeRouteLeave',
-    hook: BeforeLeaveHook<TRouteTo, TRouteFrom, TRoutes, TRejections>,
-    depth: number,
-  }
-
-/** @deprecated Use AddComponentHook instead */
-export type AddComponentBeforeHook<
-  TRouteTo extends Route = Route,
-  TRouteFrom extends Route = Route,
-  TRoutes extends Routes = Routes,
-  TRejections extends Rejections = Rejections
-> = (hook: BeforeHookRegistration<TRouteTo, TRouteFrom, TRoutes, TRejections>) => HookRemove
-
-export type AfterHookRegistration<
-  TRouteTo extends Route = Route,
-  TRouteFrom extends Route = Route,
-  TRoutes extends Routes = Routes,
-  TRejections extends Rejections = Rejections
-> =
-  | {
-    lifecycle: 'onAfterRouteEnter',
-    hook: AfterEnterHook<TRouteTo, TRouteFrom, TRoutes, TRejections>,
-    depth: number,
-  }
-  | {
-    lifecycle: 'onAfterRouteUpdate',
-    hook: AfterUpdateHook<TRouteTo, TRouteFrom, TRoutes, TRejections>,
-    depth: number,
-  }
-  | {
-    lifecycle: 'onAfterRouteLeave',
-    hook: AfterLeaveHook<TRouteTo, TRouteFrom, TRoutes, TRejections>,
-    depth: number,
-  }
-
-/** @deprecated Use AddComponentHook instead */
-export type AddComponentAfterHook<
-  TRouteTo extends Route = Route,
-  TRouteFrom extends Route = Route,
-  TRoutes extends Routes = Routes,
-  TRejections extends Rejections = Rejections
-> = (hook: AfterHookRegistration<TRouteTo, TRouteFrom, TRoutes, TRejections>) => HookRemove
-
 export type AddGlobalHooks = (hooks: Hooks) => void
 
 /**
