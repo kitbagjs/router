@@ -1,5 +1,5 @@
 import { Hooks } from '@/models/hooks'
-import { ResolvedRoute, RouterResolvedRouteUnion } from '@/types/resolved'
+import { ResolvedRoute, RouterResolvedRouteUnion, ResolvedRouteUnion } from '@/types/resolved'
 import { MaybePromise } from '@/types/utilities'
 import { Route, Routes } from './route'
 import { RouterReject } from './routerReject'
@@ -18,27 +18,27 @@ export type InternalRouteHooks<
   /**
    * Registers a route hook to be called before the route is entered.
    */
-  onBeforeRouteEnter: AddBeforeHook<TRoute, [TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
+  onBeforeRouteEnter: AddBeforeEnterHook<TRoute, Route, [TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
   /**
    * Registers a route hook to be called before the route is left.
    */
-  onBeforeRouteLeave: AddBeforeHook<TRoute, [TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
+  onBeforeRouteLeave: AddBeforeLeaveHook<Route, TRoute, [TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
   /**
    * Registers a route hook to be called before the route is updated.
    */
-  onBeforeRouteUpdate: AddBeforeHook<TRoute, [TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
+  onBeforeRouteUpdate: AddBeforeUpdateHook<TRoute, Route, [TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
   /**
    * Registers a route hook to be called after the route is entered.
    */
-  onAfterRouteEnter: AddAfterHook<TRoute, [TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
+  onAfterRouteEnter: AddAfterEnterHook<TRoute, Route, [TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
   /**
    * Registers a route hook to be called after the route is left.
    */
-  onAfterRouteLeave: AddAfterHook<TRoute, [TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
+  onAfterRouteLeave: AddAfterLeaveHook<Route, TRoute, [TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
   /**
    * Registers a route hook to be called after the route is updated.
    */
-  onAfterRouteUpdate: AddAfterHook<TRoute, [TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
+  onAfterRouteUpdate: AddAfterUpdateHook<TRoute, Route, [TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
 }
 
 export type ExternalRouteHooks<
@@ -48,42 +48,68 @@ export type ExternalRouteHooks<
   /**
    * Registers a route hook to be called before the route is entered.
    */
-  onBeforeRouteEnter: AddBeforeHook<TRoute, [TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
+  onBeforeRouteEnter: AddBeforeEnterHook<TRoute, Route, [TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>>,
 }
 
 export type HookTiming = 'global' | 'component'
 
 type BeforeHookRegistration<
-  TRoute extends Route,
+  TRouteTo extends Route,
+  TRouteFrom extends Route,
   TRoutes extends Routes,
   TRejections extends Rejections
-> = {
-  lifecycle: 'onBeforeRouteEnter' | 'onBeforeRouteUpdate' | 'onBeforeRouteLeave',
-  hook: BeforeHook<TRoute, TRoutes, TRejections>,
-  depth: number,
-}
+> =
+  | {
+    lifecycle: 'onBeforeRouteEnter',
+    hook: BeforeEnterHook<TRouteTo, TRouteFrom, TRoutes, TRejections>,
+    depth: number,
+  }
+  | {
+    lifecycle: 'onBeforeRouteUpdate',
+    hook: BeforeUpdateHook<TRouteTo, TRouteFrom, TRoutes, TRejections>,
+    depth: number,
+  }
+  | {
+    lifecycle: 'onBeforeRouteLeave',
+    hook: BeforeLeaveHook<TRouteTo, TRouteFrom, TRoutes, TRejections>,
+    depth: number,
+  }
 
 export type AddComponentBeforeHook<
-  TRoute extends Route = Route,
+  TRouteTo extends Route = Route,
+  TRouteFrom extends Route = Route,
   TRoutes extends Routes = Routes,
   TRejections extends Rejections = Rejections
-> = (hook: BeforeHookRegistration<TRoute, TRoutes, TRejections>) => HookRemove
+> = (hook: BeforeHookRegistration<TRouteTo, TRouteFrom, TRoutes, TRejections>) => HookRemove
 
 type AfterHookRegistration<
-  TRoute extends Route = Route,
-  TRoutes extends Routes = Routes,
-  TRejections extends Rejections = Rejections
-> = {
-  lifecycle: 'onAfterRouteEnter' | 'onAfterRouteUpdate' | 'onAfterRouteLeave',
-  hook: AfterHook<TRoute, TRoutes, TRejections>,
-  depth: number,
-}
+  TRouteTo extends Route,
+  TRouteFrom extends Route,
+  TRoutes extends Routes,
+  TRejections extends Rejections
+> =
+  | {
+    lifecycle: 'onAfterRouteEnter',
+    hook: AfterEnterHook<TRouteTo, TRouteFrom, TRoutes, TRejections>,
+    depth: number,
+  }
+  | {
+    lifecycle: 'onAfterRouteUpdate',
+    hook: AfterUpdateHook<TRouteTo, TRouteFrom, TRoutes, TRejections>,
+    depth: number,
+  }
+  | {
+    lifecycle: 'onAfterRouteLeave',
+    hook: AfterLeaveHook<TRouteTo, TRouteFrom, TRoutes, TRejections>,
+    depth: number,
+  }
 
 export type AddComponentAfterHook<
-  TRoute extends Route = Route,
+  TRouteTo extends Route = Route,
+  TRouteFrom extends Route = Route,
   TRoutes extends Routes = Routes,
   TRejections extends Rejections = Rejections
-> = (hook: AfterHookRegistration<TRoute, TRoutes, TRejections>) => HookRemove
+> = (hook: AfterHookRegistration<TRouteTo, TRouteFrom, TRoutes, TRejections>) => HookRemove
 
 export type AddGlobalHooks = (hooks: Hooks) => void
 
@@ -112,49 +138,175 @@ type AfterHookContext<
   TRoutes extends Routes,
   TRejections extends Rejections
 > = {
-  from: RouterResolvedRouteUnion<TRoutes> | null,
   reject: RouterReject<TRejections>,
   push: RouterPush<TRoutes>,
   replace: RouterReplace<TRoutes>,
-  update: RouteUpdate<ResolvedRoute<TRoute>>,
+  update: RouteUpdate<ResolvedRouteUnion<TRoute>>,
 }
 
 type BeforeHookContext<
-  TRoute extends Route,
+  TRouteTo extends Route,
   TRoutes extends Routes,
   TRejections extends Rejections
 > = {
-  from: RouterResolvedRouteUnion<TRoutes> | null,
   reject: RouterReject<TRejections>,
   push: RouterPush<TRoutes>,
   replace: RouterReplace<TRoutes>,
-  update: RouteUpdate<ResolvedRoute<TRoute>>,
+  update: RouteUpdate<ResolvedRouteUnion<TRouteTo>>,
   abort: RouterAbort,
 }
 
-export type BeforeHook<
-  TRoute extends Route = Route,
+export type BeforeEnterHookContext<
+  TRouteTo extends Route = Route,
+  TRouteFrom extends Route = Route,
   TRoutes extends Routes = Routes,
   TRejections extends Rejections = Rejections
-> = (to: RouterResolvedRouteUnion<TRoutes>, context: BeforeHookContext<TRoute, TRoutes, TRejections>) => MaybePromise<void>
+> = BeforeHookContext<TRouteTo, TRoutes, TRejections> & {
+  from: ResolvedRouteUnion<TRouteFrom> | null,
+}
+
+export type BeforeEnterHook<
+  TRouteTo extends Route = Route,
+  TRouteFrom extends Route = Route,
+  TRoutes extends Routes = Routes,
+  TRejections extends Rejections = Rejections
+> = (to: ResolvedRouteUnion<TRouteTo>, context: BeforeEnterHookContext<TRouteTo, TRouteFrom, TRoutes, TRejections>) => MaybePromise<void>
+
+export type AddBeforeEnterHook<
+  TRouteTo extends Route = Route,
+  TRouteFrom extends Route = Route,
+  TRoutes extends Routes = Routes,
+  TRejections extends Rejections = Rejections
+> = (hook: BeforeEnterHook<TRouteTo, TRouteFrom, TRoutes, TRejections>) => HookRemove
+
+export type BeforeUpdateHookContext<
+  TRouteTo extends Route = Route,
+  TRouteFrom extends Route = Route,
+  TRoutes extends Routes = Routes,
+  TRejections extends Rejections = Rejections
+> = BeforeHookContext<TRouteTo, TRoutes, TRejections> & {
+  from: ResolvedRouteUnion<TRouteFrom> | null,
+}
+
+export type BeforeUpdateHook<
+  TRouteTo extends Route = Route,
+  TRouteFrom extends Route = Route,
+  TRoutes extends Routes = Routes,
+  TRejections extends Rejections = Rejections
+> = (to: ResolvedRouteUnion<TRouteTo>, context: BeforeUpdateHookContext<TRouteTo, TRouteFrom, TRoutes, TRejections>) => MaybePromise<void>
+
+export type AddBeforeUpdateHook<
+  TRouteTo extends Route = Route,
+  TRouteFrom extends Route = Route,
+  TRoutes extends Routes = Routes,
+  TRejections extends Rejections = Rejections
+> = (hook: BeforeUpdateHook<TRouteTo, TRouteFrom, TRoutes, TRejections>) => HookRemove
+
+export type BeforeLeaveHookContext<
+  TRouteTo extends Route = Route,
+  TRouteFrom extends Route = Route,
+  TRoutes extends Routes = Routes,
+  TRejections extends Rejections = Rejections
+> = BeforeHookContext<TRouteTo, TRoutes, TRejections> & {
+  from: ResolvedRouteUnion<TRouteFrom>,
+}
+
+export type BeforeLeaveHook<
+  TRouteTo extends Route = Route,
+  TRouteFrom extends Route = Route,
+  TRoutes extends Routes = Routes,
+  TRejections extends Rejections = Rejections
+> = (to: ResolvedRouteUnion<TRouteTo>, context: BeforeLeaveHookContext<TRouteTo, TRouteFrom, TRoutes, TRejections>) => MaybePromise<void>
+
+export type AddBeforeLeaveHook<
+  TRouteTo extends Route = Route,
+  TRouteFrom extends Route = Route,
+  TRoutes extends Routes = Routes,
+  TRejections extends Rejections = Rejections
+> = (hook: BeforeLeaveHook<TRouteTo, TRouteFrom, TRoutes, TRejections>) => HookRemove
+
+export type AfterEnterHookContext<
+  TRouteTo extends Route = Route,
+  TRouteFrom extends Route = Route,
+  TRoutes extends Routes = Routes,
+  TRejections extends Rejections = Rejections
+> = AfterHookContext<TRouteTo, TRoutes, TRejections> & {
+  from: ResolvedRouteUnion<TRouteFrom> | null,
+}
+
+export type AfterEnterHook<
+  TRouteTo extends Route = Route,
+  TRouteFrom extends Route = Route,
+  TRoutes extends Routes = Routes,
+  TRejections extends Rejections = Rejections
+> = (to: ResolvedRouteUnion<TRouteTo>, context: AfterEnterHookContext<TRouteTo, TRouteFrom, TRoutes, TRejections>) => MaybePromise<void>
+
+export type AddAfterEnterHook<
+  TRouteTo extends Route = Route,
+  TRouteFrom extends Route = Route,
+  TRoutes extends Routes = Routes,
+  TRejections extends Rejections = Rejections
+> = (hook: AfterEnterHook<TRouteTo, TRouteFrom, TRoutes, TRejections>) => HookRemove
+
+export type AfterUpdateHookContext<
+  TRouteTo extends Route = Route,
+  TRouteFrom extends Route = Route,
+  TRoutes extends Routes = Routes,
+  TRejections extends Rejections = Rejections
+> = AfterHookContext<TRouteTo, TRoutes, TRejections> & {
+  from: ResolvedRouteUnion<TRouteFrom> | null,
+}
+
+export type AfterUpdateHook<
+  TRouteTo extends Route = Route,
+  TRouteFrom extends Route = Route,
+  TRoutes extends Routes = Routes,
+  TRejections extends Rejections = Rejections
+> = (to: ResolvedRouteUnion<TRouteTo>, context: AfterUpdateHookContext<TRouteTo, TRouteFrom, TRoutes, TRejections>) => MaybePromise<void>
+
+export type AddAfterUpdateHook<
+  TRouteTo extends Route = Route,
+  TRouteFrom extends Route = Route,
+  TRoutes extends Routes = Routes,
+  TRejections extends Rejections = Rejections
+> = (hook: AfterUpdateHook<TRouteTo, TRouteFrom, TRoutes, TRejections>) => HookRemove
+
+export type AfterLeaveHookContext<
+  TRouteTo extends Route = Route,
+  TRouteFrom extends Route = Route,
+  TRoutes extends Routes = Routes,
+  TRejections extends Rejections = Rejections
+> = AfterHookContext<TRouteTo, TRoutes, TRejections> & {
+  from: ResolvedRouteUnion<TRouteFrom>,
+}
+
+export type AfterLeaveHook<
+  TRouteTo extends Route = Route,
+  TRouteFrom extends Route = Route,
+  TRoutes extends Routes = Routes,
+  TRejections extends Rejections = Rejections
+> = (to: ResolvedRouteUnion<TRouteTo>, context: AfterLeaveHookContext<TRouteTo, TRouteFrom, TRoutes, TRejections>) => MaybePromise<void>
+
+export type AddAfterLeaveHook<
+  TRouteTo extends Route = Route,
+  TRouteFrom extends Route = Route,
+  TRoutes extends Routes = Routes,
+  TRejections extends Rejections = Rejections
+> = (hook: AfterLeaveHook<TRouteTo, TRouteFrom, TRoutes, TRejections>) => HookRemove
 
 export type AddBeforeHook<
-  TRoute extends Route = Route,
+  TRouteTo extends Route = Route,
+  TRouteFrom extends Route = Route,
   TRoutes extends Routes = Routes,
   TRejections extends Rejections = Rejections
-> = (hook: BeforeHook<TRoute, TRoutes, TRejections>) => HookRemove
-
-export type AfterHook<
-  TRoute extends Route = Route,
-  TRoutes extends Routes = Routes,
-  TRejections extends Rejections = Rejections
-> = (to: RouterResolvedRouteUnion<TRoutes>, context: AfterHookContext<TRoute, TRoutes, TRejections>) => MaybePromise<void>
+> = (hook: BeforeEnterHook<TRouteTo, TRouteFrom, TRoutes, TRejections> | BeforeUpdateHook<TRouteTo, TRouteFrom, TRoutes, TRejections> | BeforeLeaveHook<TRouteTo, TRouteFrom, TRoutes, TRejections>) => HookRemove
 
 export type AddAfterHook<
-  TRoute extends Route = Route,
+  TRouteTo extends Route = Route,
+  TRouteFrom extends Route = Route,
   TRoutes extends Routes = Routes,
   TRejections extends Rejections = Rejections
-> = (hook: AfterHook<TRoute, TRoutes, TRejections>) => HookRemove
+> = (hook: AfterEnterHook<TRouteTo, TRouteFrom, TRoutes, TRejections> | AfterUpdateHook<TRouteTo, TRouteFrom, TRoutes, TRejections> | AfterLeaveHook<TRouteTo, TRouteFrom, TRoutes, TRejections>) => HookRemove
 
 export type BeforeHookResponse = CallbackContextSuccess | CallbackContextPush | CallbackContextReject | CallbackContextAbort
 export type AfterHookResponse = CallbackContextSuccess | CallbackContextPush | CallbackContextReject

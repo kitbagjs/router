@@ -1,11 +1,11 @@
-import { AfterHook, BeforeHook, ErrorHook } from '@/types/hooks'
+import { AfterEnterHook, AfterLeaveHook, AfterUpdateHook, BeforeEnterHook, BeforeLeaveHook, BeforeUpdateHook, ErrorHook } from '@/types/hooks'
 
 export class Hooks {
-  public onBeforeRouteEnter = new Set<BeforeHook>()
-  public onBeforeRouteUpdate = new Set<BeforeHook>()
-  public onBeforeRouteLeave = new Set<BeforeHook>()
-  public onAfterRouteEnter = new Set<AfterHook>()
-  public onAfterRouteUpdate = new Set<AfterHook>()
-  public onAfterRouteLeave = new Set<AfterHook>()
+  public onBeforeRouteEnter = new Set<BeforeEnterHook>()
+  public onBeforeRouteUpdate = new Set<BeforeUpdateHook>()
+  public onBeforeRouteLeave = new Set<BeforeLeaveHook>()
+  public onAfterRouteEnter = new Set<AfterEnterHook>()
+  public onAfterRouteUpdate = new Set<AfterUpdateHook>()
+  public onAfterRouteLeave = new Set<AfterLeaveHook>()
   public onError = new Set<ErrorHook>()
 }

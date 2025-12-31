@@ -1,7 +1,7 @@
 import { App, InjectionKey, Ref } from 'vue'
 import { RouterHistoryMode } from '@/services/createRouterHistory'
 import { RouterRoute } from '@/types/routerRoute'
-import { AddAfterHook, AddBeforeHook, AddErrorHook } from '@/types/hooks'
+import { AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, AddErrorHook } from '@/types/hooks'
 import { PrefetchConfig } from '@/types/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
 import { Route, Routes } from '@/types/route'
@@ -106,27 +106,27 @@ export type Router<
   /**
    * Registers a hook to be called before a route is entered.
    */
-  onBeforeRouteEnter: AddBeforeHook<TRoutes[number] | TPlugin['routes'][number], TRoutes | TPlugin['routes'], ToRouteContext<TOptions['rejections']> | ToRouteContext<TPlugin['rejections']>>,
+  onBeforeRouteEnter: AddBeforeEnterHook<TRoutes[number] | TPlugin['routes'][number], TRoutes[number] | TPlugin['routes'][number], TRoutes | TPlugin['routes'], ToRouteContext<TOptions['rejections']> | ToRouteContext<TPlugin['rejections']>>,
   /**
    * Registers a hook to be called before a route is left.
    */
-  onBeforeRouteLeave: AddBeforeHook<TRoutes[number] | TPlugin['routes'][number], TRoutes | TPlugin['routes'], ToRouteContext<TOptions['rejections']> | ToRouteContext<TPlugin['rejections']>>,
+  onBeforeRouteLeave: AddBeforeLeaveHook<TRoutes[number] | TPlugin['routes'][number], TRoutes[number] | TPlugin['routes'][number], TRoutes | TPlugin['routes'], ToRouteContext<TOptions['rejections']> | ToRouteContext<TPlugin['rejections']>>,
   /**
    * Registers a hook to be called before a route is updated.
    */
-  onBeforeRouteUpdate: AddBeforeHook<TRoutes[number] | TPlugin['routes'][number], TRoutes | TPlugin['routes'], ToRouteContext<TOptions['rejections']> | ToRouteContext<TPlugin['rejections']>>,
+  onBeforeRouteUpdate: AddBeforeUpdateHook<TRoutes[number] | TPlugin['routes'][number], TRoutes[number] | TPlugin['routes'][number], TRoutes | TPlugin['routes'], ToRouteContext<TOptions['rejections']> | ToRouteContext<TPlugin['rejections']>>,
   /**
    * Registers a hook to be called after a route is entered.
    */
-  onAfterRouteEnter: AddAfterHook<TRoutes[number] | TPlugin['routes'][number], TRoutes | TPlugin['routes'], ToRouteContext<TOptions['rejections']> | ToRouteContext<TPlugin['rejections']>>,
+  onAfterRouteEnter: AddAfterEnterHook<TRoutes[number] | TPlugin['routes'][number], TRoutes[number] | TPlugin['routes'][number], TRoutes | TPlugin['routes'], ToRouteContext<TOptions['rejections']> | ToRouteContext<TPlugin['rejections']>>,
   /**
    * Registers a hook to be called after a route is left.
    */
-  onAfterRouteLeave: AddAfterHook<TRoutes[number] | TPlugin['routes'][number], TRoutes | TPlugin['routes'], ToRouteContext<TOptions['rejections']> | ToRouteContext<TPlugin['rejections']>>,
+  onAfterRouteLeave: AddAfterLeaveHook<TRoutes[number] | TPlugin['routes'][number], TRoutes[number] | TPlugin['routes'][number], TRoutes | TPlugin['routes'], ToRouteContext<TOptions['rejections']> | ToRouteContext<TPlugin['rejections']>>,
   /**
    * Registers a hook to be called after a route is updated.
    */
-  onAfterRouteUpdate: AddAfterHook<TRoutes[number] | TPlugin['routes'][number], TRoutes | TPlugin['routes'], ToRouteContext<TOptions['rejections']> | ToRouteContext<TPlugin['rejections']>>,
+  onAfterRouteUpdate: AddAfterUpdateHook<TRoutes[number] | TPlugin['routes'][number], TRoutes[number] | TPlugin['routes'][number], TRoutes | TPlugin['routes'], ToRouteContext<TOptions['rejections']> | ToRouteContext<TPlugin['rejections']>>,
   /**
    * Registers a hook to be called when an error occurs.
    * If the hook returns true, the error is considered handled and the other hooks are not run. If all hooks return false the error is rethrown

@@ -9,6 +9,7 @@ import { withParams } from '@/services/withParams'
 import { InternalRouteHooks } from '@/types/hooks'
 import { BuiltInRejectionType } from '@/services/createRouterReject'
 import { createRejection } from '@/services/createRejection'
+import { ResolvedRoute } from '@/types/resolved'
 
 test('empty options returns an empty route', () => {
   const route = createRoute({})
@@ -756,6 +757,44 @@ describe('matches[number].meta', () => {
 })
 
 describe('hooks', () => {
+  test('to and from are typed correctly', () => {
+    const route = createRoute({
+      name: 'route',
+      path: '/[paramName]',
+      component,
+    })
+
+    route.onBeforeRouteEnter((to, { from }) => {
+      expectTypeOf(to).toEqualTypeOf<ResolvedRoute<typeof route>>()
+      expectTypeOf(from).toEqualTypeOf<ResolvedRoute | null>()
+    })
+
+    route.onBeforeRouteUpdate((to, { from }) => {
+      expectTypeOf(to).toEqualTypeOf<ResolvedRoute<typeof route>>()
+      expectTypeOf(from).toEqualTypeOf<ResolvedRoute | null>()
+    })
+
+    route.onBeforeRouteLeave((to, { from }) => {
+      expectTypeOf(to).toEqualTypeOf<ResolvedRoute>()
+      expectTypeOf(from).toEqualTypeOf<ResolvedRoute<typeof route>>()
+    })
+
+    route.onAfterRouteEnter((to, { from }) => {
+      expectTypeOf(to).toEqualTypeOf<ResolvedRoute<typeof route>>()
+      expectTypeOf(from).toEqualTypeOf<ResolvedRoute | null>()
+    })
+
+    route.onAfterRouteUpdate((to, { from }) => {
+      expectTypeOf(to).toEqualTypeOf<ResolvedRoute<typeof route>>()
+      expectTypeOf(from).toEqualTypeOf<ResolvedRoute | null>()
+    })
+
+    route.onAfterRouteLeave((to, { from }) => {
+      expectTypeOf(to).toEqualTypeOf<ResolvedRoute>()
+      expectTypeOf(from).toEqualTypeOf<ResolvedRoute<typeof route>>()
+    })
+  })
+
   test('context.push', () => {
     const contextRoute = createRoute({
       name: 'contextRoute',
