@@ -86,6 +86,7 @@ export function createRouterHooks(): RouterHooks {
           if (from === null) {
             return
           }
+
           return callback(to, {
             from,
             reject,
@@ -160,6 +161,7 @@ export function createRouterHooks(): RouterHooks {
           if (from === null) {
             return
           }
+
           return callback(to, {
             from,
             reject,
