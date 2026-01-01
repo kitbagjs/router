@@ -7,12 +7,12 @@ export type RouteHooks<
   TRoutes extends Routes = Routes,
   TRejections extends Rejection[] = Rejection[]
 > = {
-  onBeforeRouteEnter: AddBeforeEnterHook<TRoutes[number], TRoutes[number], TRoutes, TRejections>,
-  onBeforeRouteUpdate: AddBeforeUpdateHook<TRoutes[number], TRoutes[number], TRoutes, TRejections>,
-  onBeforeRouteLeave: AddBeforeLeaveHook<TRoutes[number], TRoutes[number], TRoutes, TRejections>,
-  onAfterRouteEnter: AddAfterEnterHook<TRoutes[number], TRoutes[number], TRoutes, TRejections>,
-  onAfterRouteUpdate: AddAfterUpdateHook<TRoutes[number], TRoutes[number], TRoutes, TRejections>,
-  onAfterRouteLeave: AddAfterLeaveHook<TRoutes[number], TRoutes[number], TRoutes, TRejections>,
+  onBeforeRouteEnter: AddBeforeEnterHook<TRoutes, TRejections>,
+  onBeforeRouteUpdate: AddBeforeUpdateHook<TRoutes, TRejections>,
+  onBeforeRouteLeave: AddBeforeLeaveHook<TRoutes, TRejections>,
+  onAfterRouteEnter: AddAfterEnterHook<TRoutes, TRejections>,
+  onAfterRouteUpdate: AddAfterUpdateHook<TRoutes, TRejections>,
+  onAfterRouteLeave: AddAfterLeaveHook<TRoutes, TRejections>,
   onError: AddErrorHook<TRoutes[number], TRoutes, TRejections>,
   store: Hooks,
 }

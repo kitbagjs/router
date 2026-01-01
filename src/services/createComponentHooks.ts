@@ -6,12 +6,12 @@ import { Routes } from '@/types/route'
 import { Router, RouterRejections, RouterRoutes } from '@/types/router'
 import { Rejections } from '@/types/rejection'
 
-function createComponentHook<TRouter extends Router>(routerKey: InjectionKey<TRouter>, lifecycle: 'onBeforeRouteEnter'): AddBeforeEnterHook<RouterRoutes<TRouter>[number], RouterRoutes<TRouter>[number], RouterRoutes<TRouter>, RouterRejections<TRouter>>
-function createComponentHook<TRouter extends Router>(routerKey: InjectionKey<TRouter>, lifecycle: 'onBeforeRouteUpdate'): AddBeforeUpdateHook<RouterRoutes<TRouter>[number], RouterRoutes<TRouter>[number], RouterRoutes<TRouter>, RouterRejections<TRouter>>
-function createComponentHook<TRouter extends Router>(routerKey: InjectionKey<TRouter>, lifecycle: 'onBeforeRouteLeave'): AddBeforeLeaveHook<RouterRoutes<TRouter>[number], RouterRoutes<TRouter>[number], RouterRoutes<TRouter>, RouterRejections<TRouter>>
-function createComponentHook<TRouter extends Router>(routerKey: InjectionKey<TRouter>, lifecycle: 'onAfterRouteEnter'): AddAfterEnterHook<RouterRoutes<TRouter>[number], RouterRoutes<TRouter>[number], RouterRoutes<TRouter>, RouterRejections<TRouter>>
-function createComponentHook<TRouter extends Router>(routerKey: InjectionKey<TRouter>, lifecycle: 'onAfterRouteUpdate'): AddAfterUpdateHook<RouterRoutes<TRouter>[number], RouterRoutes<TRouter>[number], RouterRoutes<TRouter>, RouterRejections<TRouter>>
-function createComponentHook<TRouter extends Router>(routerKey: InjectionKey<TRouter>, lifecycle: 'onAfterRouteLeave'): AddAfterLeaveHook<RouterRoutes<TRouter>[number], RouterRoutes<TRouter>[number], RouterRoutes<TRouter>, RouterRejections<TRouter>>
+function createComponentHook<TRouter extends Router>(routerKey: InjectionKey<TRouter>, lifecycle: 'onBeforeRouteEnter'): AddBeforeEnterHook<RouterRoutes<TRouter>, RouterRejections<TRouter>>
+function createComponentHook<TRouter extends Router>(routerKey: InjectionKey<TRouter>, lifecycle: 'onBeforeRouteUpdate'): AddBeforeUpdateHook<RouterRoutes<TRouter>, RouterRejections<TRouter>>
+function createComponentHook<TRouter extends Router>(routerKey: InjectionKey<TRouter>, lifecycle: 'onBeforeRouteLeave'): AddBeforeLeaveHook<RouterRoutes<TRouter>, RouterRejections<TRouter>>
+function createComponentHook<TRouter extends Router>(routerKey: InjectionKey<TRouter>, lifecycle: 'onAfterRouteEnter'): AddAfterEnterHook<RouterRoutes<TRouter>, RouterRejections<TRouter>>
+function createComponentHook<TRouter extends Router>(routerKey: InjectionKey<TRouter>, lifecycle: 'onAfterRouteUpdate'): AddAfterUpdateHook<RouterRoutes<TRouter>, RouterRejections<TRouter>>
+function createComponentHook<TRouter extends Router>(routerKey: InjectionKey<TRouter>, lifecycle: 'onAfterRouteLeave'): AddAfterLeaveHook<RouterRoutes<TRouter>, RouterRejections<TRouter>>
 function createComponentHook(routerKey: symbol, lifecycle: HookLifecycle): (hook: ComponentHook) => HookRemove {
   const useRouterDepth = createUseRouterDepth(routerKey)
   const useRouterHooks = createUseRouterHooks(routerKey)
@@ -32,10 +32,10 @@ type ComponentHooks<
   TRoutes extends Routes,
   TRejections extends Rejections
 > = {
-  onBeforeRouteLeave: AddBeforeLeaveHook<TRoutes[number], TRoutes[number], TRoutes, TRejections>,
-  onBeforeRouteUpdate: AddBeforeUpdateHook<TRoutes[number], TRoutes[number], TRoutes, TRejections>,
-  onAfterRouteLeave: AddAfterLeaveHook<TRoutes[number], TRoutes[number], TRoutes, TRejections>,
-  onAfterRouteUpdate: AddAfterUpdateHook<TRoutes[number], TRoutes[number], TRoutes, TRejections>,
+  onBeforeRouteLeave: AddBeforeLeaveHook<TRoutes, TRejections>,
+  onBeforeRouteUpdate: AddBeforeUpdateHook<TRoutes, TRejections>,
+  onAfterRouteLeave: AddAfterLeaveHook<TRoutes, TRejections>,
+  onAfterRouteUpdate: AddAfterUpdateHook<TRoutes, TRejections>,
 }
 
 export function createComponentHooks<TRouter extends Router>(routerKey: InjectionKey<TRouter>): ComponentHooks<RouterRoutes<TRouter>, RouterRejections<TRouter>> {
