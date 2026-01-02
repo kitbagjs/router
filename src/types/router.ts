@@ -158,6 +158,11 @@ export type Router<
    * @private
    */
   key: InjectionKey<Router<TRoutes, TOptions, TPlugin>>,
+  /**
+   * Returns true if the router's devtools plugin has been installed
+   * @private
+   */
+  hasDevtools: boolean,
 }
 
 /**
