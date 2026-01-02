@@ -90,20 +90,6 @@ const route {
 when your query param is optional, the entire property can be missing and the route will still match. For the example above with query `foo=[?bar]`, the url might be `/my-route` without any query, or it might have an unrelated query `/my-route?other=value`, and still be a match because the entire foo param is optional.
 :::
 
-## Host Matches
-
-When dealing with [external routes](/core-concepts/external-routes), the Route's `host` property must match the structure of the URL host.
-
-```ts
-const route {
-  ...
-  host: 'https://router.kitbag.dev'
-}
-```
-
-:white_check_mark: `https://router.kitbag.dev`  
-:x: ``https://www.vuejs.org``  
-
 ## Params Are Valid
 
 Assuming a route's path and query match the structure of the URL, the last test is to make sure that values provided by the URL pass the Param parsing. By default params are assumed to be strings, so by default if structure matches, parsing will pass as well since the URL is a string. However, if you define your params with `Boolean`, `Number`, `Date`, `JSON`, or a custom `Param` the value will be need to pass the param's `get` function.
@@ -153,4 +139,5 @@ If there are more than 1 routes that pass the rules then we sort the results by 
 
 1. **Route Depth:** prioritize routes that are more deeply nested
 1. **Optional Params:** prioritize routes that match the greater number of optional path and query params
+1. **Matching Host:** prioritize routes that match have a static host that matches the URL host.
 1. **Matching Hash:** prioritize routes that match have a static hash that matches the URL hash.
