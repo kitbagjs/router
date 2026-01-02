@@ -43,12 +43,12 @@ describe('hooks', () => {
   type Routes = typeof routes | typeof pluginRoutes
 
   test('functions are correctly typed', () => {
-    expectTypeOf(router.onBeforeRouteEnter).toEqualTypeOf<AddBeforeEnterHook<Routes[number], Routes[number], Routes, never>>()
-    expectTypeOf(router.onBeforeRouteLeave).toEqualTypeOf<AddBeforeLeaveHook<Routes[number], Routes[number], Routes, never>>()
-    expectTypeOf(router.onBeforeRouteUpdate).toEqualTypeOf<AddBeforeUpdateHook<Routes[number], Routes[number], Routes, never>>()
-    expectTypeOf(router.onAfterRouteEnter).toEqualTypeOf<AddAfterEnterHook<Routes[number], Routes[number], Routes, never>>()
-    expectTypeOf(router.onAfterRouteLeave).toEqualTypeOf<AddAfterLeaveHook<Routes[number], Routes[number], Routes, never>>()
-    expectTypeOf(router.onAfterRouteUpdate).toEqualTypeOf<AddAfterUpdateHook<Routes[number], Routes[number], Routes, never>>()
+    expectTypeOf(router.onBeforeRouteEnter).toEqualTypeOf<AddBeforeEnterHook<Routes, never>>()
+    expectTypeOf(router.onBeforeRouteLeave).toEqualTypeOf<AddBeforeLeaveHook<Routes, never>>()
+    expectTypeOf(router.onBeforeRouteUpdate).toEqualTypeOf<AddBeforeUpdateHook<Routes, never>>()
+    expectTypeOf(router.onAfterRouteEnter).toEqualTypeOf<AddAfterEnterHook<Routes, never>>()
+    expectTypeOf(router.onAfterRouteLeave).toEqualTypeOf<AddAfterLeaveHook<Routes, never>>()
+    expectTypeOf(router.onAfterRouteUpdate).toEqualTypeOf<AddAfterUpdateHook<Routes, never>>()
     expectTypeOf(router.onError).toEqualTypeOf<AddErrorHook<Routes[number], Routes, never>>()
   })
 
