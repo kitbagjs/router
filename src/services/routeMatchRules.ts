@@ -12,8 +12,8 @@ export const routeHostMatches: RouteMatchRule = (route, url) => {
   const urlIsRelative = !host
   const routeIsRelative = !route.host.value
 
-  if (urlIsRelative) {
-    return routeIsRelative
+  if (routeIsRelative) {
+    return urlIsRelative
   }
 
   const hostPattern = generateRouteHostRegexPattern(route)
