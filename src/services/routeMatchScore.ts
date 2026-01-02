@@ -1,7 +1,7 @@
 import { parseUrl } from '@/services/urlParser'
 import { getParamValueFromUrl } from '@/services/paramsFinder'
 import { Route } from '@/types/route'
-import { routeHashMatches } from '@/services/routeMatchRules'
+import { routeHashMatches, routeHostMatches } from '@/services/routeMatchRules'
 import { QuerySource } from '@/types/querySource'
 import { paramIsOptional } from '@/services/routeRegex'
 
@@ -32,9 +32,18 @@ export function getRouteScoreSortMethod(url: string): RouteSortMethod {
       return sortAfter
     }
 
+    if (routeHostMatches(aRoute, url)) {
+      return sortBefore
+    }
+
+    if (routeHostMatches(bRoute, url)) {
+      return sortAfter
+    }
+
     if (routeHashMatches(aRoute, url)) {
       return sortBefore
     }
+
     if (routeHashMatches(bRoute, url)) {
       return sortAfter
     }

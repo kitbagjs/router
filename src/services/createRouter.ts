@@ -118,6 +118,7 @@ export function createRouter<
     history.stopListening()
 
     const to = find(url, options) ?? getRejectionRoute('NotFound')
+
     const from = getFromRouteForHooks(navigationId)
 
     const beforeResponse = await hooks.runBeforeRouteHooks({ to, from })

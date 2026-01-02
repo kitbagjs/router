@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest'
 import { createRoute } from '@/services/createRoute'
 import { countExpectedQueryParams, getRouteScoreSortMethod } from '@/services/routeMatchScore'
 import { component } from '@/utilities/testHelpers'
+import { createExternalRoute } from './createExternalRoute'
 
 describe('countExpectedQueryKeys', () => {
   test('given route without query, returns 0', () => {
@@ -122,6 +123,44 @@ describe('getRouteScoreSortMethod', () => {
     })
 
     const sortByRouteScore = getRouteScoreSortMethod('/?color=red&id=1&extra=ok')
+    const response = [aRoute, bRoute].sort(sortByRouteScore)
+
+    expect(response).toMatchObject([bRoute, aRoute])
+  })
+
+  test('given routes that are otherwise equal, prefers routes with matching host', () => {
+    const aRoute = createRoute({
+      name: 'implicit-host',
+      path: '/same-path',
+      component,
+    })
+
+    const bRoute = createExternalRoute({
+      name: 'explicit-host',
+      host: 'https://kitbag.dev',
+      path: '/same-path',
+    })
+
+    const sortByRouteScore = getRouteScoreSortMethod('https://kitbag.dev/same-path')
+    const response = [aRoute, bRoute].sort(sortByRouteScore)
+
+    expect(response).toMatchObject([bRoute, aRoute])
+  })
+
+  test('given routes that are otherwise equal, prefers routes with matching hash', () => {
+    const aRoute = createRoute({
+      name: 'implicit-hash',
+      path: '/same-path',
+      component,
+    })
+
+    const bRoute = createRoute({
+      name: 'explicit-hash',
+      path: '/same-path',
+      hash: '#123',
+    })
+
+    const sortByRouteScore = getRouteScoreSortMethod('/same-path#123')
     const response = [aRoute, bRoute].sort(sortByRouteScore)
 
     expect(response).toMatchObject([bRoute, aRoute])
