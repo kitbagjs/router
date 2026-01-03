@@ -1,5 +1,5 @@
 import { setupDevtoolsPlugin } from '@vue/devtools-api'
-import { App } from 'vue'
+import { App, watch } from 'vue'
 import { Router } from '@/types/router'
 import { Routes, Route } from '@/types/route'
 import { createUniqueIdSequence } from '@/services/createUniqueIdSequence'
@@ -9,8 +9,10 @@ import { getDevtoolsLabel } from './getDevtoolsLabel'
 // Support multiple router instances
 const getRouterId = createUniqueIdSequence()
 
-// Color scheme following Vue Router
+// Colors for route tags
 const CYAN_400 = 0x22d3ee
+const GREEN_500 = 0x22c55e
+const GREEN_600 = 0x16a34a
 
 // Extract types from DevTools API by inferring from the callback parameter
 type ExtractAPIFromCallback = Parameters<Parameters<typeof setupDevtoolsPlugin>[1]>[0]
@@ -24,11 +26,17 @@ type CustomInspectorNode = ExtractInspectorTreePayload['rootNodes'][number]
 type InspectorNodeTag = NonNullable<CustomInspectorNode['tags']>[number]
 type CustomInspectorState = ExtractInspectorStatePayload['state']
 
+type RouteMatchOptions = {
+  match: boolean,
+  exactMatch: boolean,
+}
+
 /**
  * Formats a route for the inspector tree.
  */
 function getInspectorNodeForRoute(
   route: Route,
+  options: RouteMatchOptions = { match: false, exactMatch: false },
 ): CustomInspectorNode {
   const tags: InspectorNodeTag[] = []
 
@@ -41,11 +49,44 @@ function getInspectorNodeForRoute(
     })
   }
 
+  if (options.match) {
+    tags.push({
+      label: 'match',
+      textColor: 0,
+      backgroundColor: GREEN_500,
+    })
+  }
+
+  if (options.exactMatch) {
+    tags.push({
+      label: 'exact-match',
+      textColor: 0,
+      backgroundColor: GREEN_600,
+    })
+  }
+
   return {
     id: route.id,
     label: route.path.value || route.name,
     tags,
   }
+}
+
+/**
+ * Calculates match status for a route based on the current route.
+ */
+function getRouteMatchStatus(
+  route: Route,
+  currentRoute: Router['route'] | undefined,
+): RouteMatchOptions {
+  if (!currentRoute || !('id' in currentRoute) || !('matches' in currentRoute)) {
+    return { match: false, exactMatch: false }
+  }
+
+  const exactMatch = currentRoute.id === route.id
+  const match = currentRoute.matches.some((match: { id: string }) => match.id === route.id)
+
+  return { match, exactMatch }
 }
 
 /**
@@ -147,9 +188,23 @@ export function setupRouterDevtools({ router, app, routes: routesArray }: Router
         // Filter routes that have names
         const namedRoutes = routesArray.filter((route) => route.name)
 
-        // Format routes for inspector
-        payload.rootNodes = namedRoutes.map((route) => getInspectorNodeForRoute(route))
+        // Format routes for inspector with match status
+        payload.rootNodes = namedRoutes.map((route) => {
+          const matchStatus = getRouteMatchStatus(route, router.route)
+
+          return getInspectorNodeForRoute(route, matchStatus)
+        })
       })
+
+      // Watch router.route and update inspector tree reactively
+      watch(
+        () => router.route,
+        () => {
+          // Send updated tree to devtools (this will trigger getInspectorTree handler)
+          api.sendInspectorTree(routerInspectorId)
+        },
+        { deep: true, immediate: false },
+      )
 
       // Handle inspector state (individual route details)
       api.on.getInspectorState((payload) => {
