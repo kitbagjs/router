@@ -1,6 +1,6 @@
 import { expect, test, vi } from 'vitest'
 import { createRouterHooks } from '@/services/createRouterHooks'
-import { BeforeHook } from '@/types/hooks'
+import { BeforeEnterHook } from '@/types/hooks'
 import { ResolvedRoute } from '@/types/resolved'
 import { component } from '@/utilities/testHelpers'
 import { createRoute } from './createRoute'
@@ -32,7 +32,7 @@ test('calls hook with correct routes', () => {
   expect(hook).toHaveBeenCalledOnce()
 })
 
-test.each<{ type: string, status: string, hook: BeforeHook }>([
+test.each<{ type: string, status: string, hook: BeforeEnterHook }>([
   {
     type: 'reject',
     status: 'REJECT',

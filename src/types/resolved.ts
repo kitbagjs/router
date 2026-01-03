@@ -60,3 +60,17 @@ export type ResolvedRoute<TRoute extends Route = Route> = Readonly<{
 export type RouterResolvedRouteUnion<TRoutes extends Routes> = {
   [K in keyof TRoutes]: ResolvedRoute<TRoutes[K]>
 }[number]
+
+/**
+ * Converts a union of Route types to a union of ResolvedRoute types while preserving the discriminated union structure for narrowing.
+ * This is useful when you have a Route union (like `TRoutes[number]`) and need it to narrow properly.
+ * Uses a distributive conditional type to ensure unions are properly distributed.
+ *
+ * @example
+ * type RouteUnion = RouteA | RouteB
+ * type ResolvedUnion = ResolvedRouteUnion<RouteUnion> // ResolvedRoute<RouteA> | ResolvedRoute<RouteB>
+ */
+export type ResolvedRouteUnion<TRoute extends Route> =
+  TRoute extends Route
+    ? ResolvedRoute<TRoute>
+    : never

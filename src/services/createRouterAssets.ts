@@ -8,7 +8,7 @@ import { createUseRouter } from '@/compositions/useRouter'
 import { createUseQueryValue } from '@/compositions/useQueryValue'
 import { createUseLink } from '@/compositions/useLink'
 import { createIsRoute } from '@/guards/routes'
-import { AddAfterHook, AddBeforeHook } from '@/types/hooks'
+import { AddBeforeLeaveHook, AddBeforeUpdateHook, AddAfterLeaveHook, AddAfterUpdateHook } from '@/types/hooks'
 
 export type RouterAssets<TRouter extends Router> = {
   /**
@@ -19,7 +19,7 @@ export type RouterAssets<TRouter extends Router> = {
    * @returns {RouteHookRemove} A function that removes the added hook.
    * @group Hooks
    */
-  onBeforeRouteLeave: AddBeforeHook<RouterRoutes<TRouter>[number], RouterRoutes<TRouter>, RouterRejections<TRouter>>,
+  onBeforeRouteLeave: AddBeforeLeaveHook<RouterRoutes<TRouter>, RouterRejections<TRouter>>,
 
   /**
    * Registers a hook that is called before a route is updated. Must be called from setup.
@@ -29,7 +29,7 @@ export type RouterAssets<TRouter extends Router> = {
    * @returns {RouteHookRemove} A function that removes the added hook.
    * @group Hooks
    */
-  onBeforeRouteUpdate: AddBeforeHook<RouterRoutes<TRouter>[number], RouterRoutes<TRouter>, RouterRejections<TRouter>>,
+  onBeforeRouteUpdate: AddBeforeUpdateHook<RouterRoutes<TRouter>, RouterRejections<TRouter>>,
 
   /**
    * Registers a hook that is called after a route has been left. Must be called during setup.
@@ -39,7 +39,7 @@ export type RouterAssets<TRouter extends Router> = {
    * @returns {RouteHookRemove} A function that removes the added hook.
    * @group Hooks
    */
-  onAfterRouteLeave: AddAfterHook<RouterRoutes<TRouter>[number], RouterRoutes<TRouter>, RouterRejections<TRouter>>,
+  onAfterRouteLeave: AddAfterLeaveHook<RouterRoutes<TRouter>, RouterRejections<TRouter>>,
 
   /**
    * Registers a hook that is called after a route has been updated. Must be called during setup.
@@ -49,7 +49,7 @@ export type RouterAssets<TRouter extends Router> = {
    * @returns {RouteHookRemove} A function that removes the added hook.
    * @group Hooks
    */
-  onAfterRouteUpdate: AddAfterHook<RouterRoutes<TRouter>[number], RouterRoutes<TRouter>, RouterRejections<TRouter>>,
+  onAfterRouteUpdate: AddAfterUpdateHook<RouterRoutes<TRouter>, RouterRejections<TRouter>>,
 
   /**
    * A guard to verify if a route or unknown value matches a given route name.
