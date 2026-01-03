@@ -38,6 +38,7 @@ import { createRouterView } from '@/components/routerView'
 import { createRouterLink } from '@/components/routerLink'
 import { ContextPushError } from '@/errors/contextPushError'
 import { ContextRejectionError } from '@/errors/contextRejectionError'
+import { setupRouterDevtools } from '@/devtools/createRouterDevtools'
 
 type RouterUpdateOptions = {
   replace?: boolean,
@@ -362,6 +363,9 @@ export function createRouter<
 
     app.provide(routerKey, router)
 
+    // Setup DevTools integration
+    setupRouterDevtools({ router, app, routes })
+
     start()
   }
 
@@ -390,6 +394,7 @@ export function createRouter<
     started,
     stop,
     key: routerKey,
+    hasDevtools: false,
   }
 
   return router
