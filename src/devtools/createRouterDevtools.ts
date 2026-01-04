@@ -5,6 +5,8 @@ import { Routes, Route } from '@/types/route'
 import { createUniqueIdSequence } from '@/services/createUniqueIdSequence'
 import { isBrowser } from '@/utilities'
 import { getDevtoolsLabel } from './getDevtoolsLabel'
+import { CustomInspectorNode, CustomInspectorState, InspectorNodeTag } from './types'
+import { shouldShowRoute } from './filters'
 
 // Support multiple router instances
 const getRouterId = createUniqueIdSequence()
@@ -13,18 +15,6 @@ const getRouterId = createUniqueIdSequence()
 const CYAN_400 = 0x22d3ee
 const GREEN_500 = 0x22c55e
 const GREEN_600 = 0x16a34a
-
-// Extract types from DevTools API by inferring from the callback parameter
-type ExtractAPIFromCallback = Parameters<Parameters<typeof setupDevtoolsPlugin>[1]>[0]
-type ExtractInspectorTreeHandler = Parameters<ExtractAPIFromCallback['on']['getInspectorTree']>[0]
-type ExtractInspectorStateHandler = Parameters<ExtractAPIFromCallback['on']['getInspectorState']>[0]
-type ExtractInspectorTreePayload = Parameters<ExtractInspectorTreeHandler>[0]
-type ExtractInspectorStatePayload = Parameters<ExtractInspectorStateHandler>[0]
-
-// Type definitions for the inspector
-type CustomInspectorNode = ExtractInspectorTreePayload['rootNodes'][number]
-type InspectorNodeTag = NonNullable<CustomInspectorNode['tags']>[number]
-type CustomInspectorState = ExtractInspectorStatePayload['state']
 
 type RouteMatchOptions = {
   match: boolean,
@@ -185,15 +175,13 @@ export function setupRouterDevtools({ router, app, routes: routesArray }: Router
           return
         }
 
-        // Filter routes that have names
-        const namedRoutes = routesArray.filter((route) => route.name)
+        payload.rootNodes = routesArray
+          .filter((route) => shouldShowRoute({ route, payload }))
+          .map((route) => {
+            const matchStatus = getRouteMatchStatus(route, router.route)
 
-        // Format routes for inspector with match status
-        payload.rootNodes = namedRoutes.map((route) => {
-          const matchStatus = getRouteMatchStatus(route, router.route)
-
-          return getInspectorNodeForRoute(route, matchStatus)
-        })
+            return getInspectorNodeForRoute(route, matchStatus)
+          })
       })
 
       // Watch router.route and update inspector tree reactively
