@@ -1,13 +1,14 @@
-# Types: AddPluginErrorHook()\<TRoutes, TRejections\>
+# Types: AddErrorHook()\<TRoute, TRoutes, TRejections\>
 
 ```ts
-type AddPluginErrorHook<TRoutes, TRejections> = (hook) => HookRemove;
+type AddErrorHook<TRoute, TRoutes, TRejections> = (hook) => HookRemove;
 ```
 
 ## Type Parameters
 
 | Type Parameter | Default type |
 | ------ | ------ |
+| `TRoute` *extends* [`Route`](Route.md) | [`Route`](Route.md) |
 | `TRoutes` *extends* [`Routes`](Routes.md) | [`Routes`](Routes.md) |
 | `TRejections` *extends* `Rejections` | `Rejections` |
 
@@ -15,7 +16,7 @@ type AddPluginErrorHook<TRoutes, TRejections> = (hook) => HookRemove;
 
 | Parameter | Type |
 | ------ | ------ |
-| `hook` | [`PluginErrorHook`](PluginErrorHook.md)\<`TRoutes`, `TRejections`\> |
+| `hook` | [`ErrorHook`](ErrorHook.md)\<`TRoute`, `TRoutes`, `TRejections`\> |
 
 ## Returns
 

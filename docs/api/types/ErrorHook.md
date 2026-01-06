@@ -1,13 +1,14 @@
-# Types: PluginErrorHook()\<TRoutes, TRejections\>
+# Types: ErrorHook()\<TRoute, TRoutes, TRejections\>
 
 ```ts
-type PluginErrorHook<TRoutes, TRejections> = (error, context) => void;
+type ErrorHook<TRoute, TRoutes, TRejections> = (error, context) => void;
 ```
 
 ## Type Parameters
 
 | Type Parameter | Default type |
 | ------ | ------ |
+| `TRoute` *extends* [`Route`](Route.md) | [`Route`](Route.md) |
 | `TRoutes` *extends* [`Routes`](Routes.md) | [`Routes`](Routes.md) |
 | `TRejections` *extends* `Rejections` | `Rejections` |
 
@@ -16,7 +17,7 @@ type PluginErrorHook<TRoutes, TRejections> = (error, context) => void;
 | Parameter | Type |
 | ------ | ------ |
 | `error` | `unknown` |
-| `context` | [`PluginErrorHookContext`](PluginErrorHookContext.md)\<`TRoutes`, `TRejections`\> |
+| `context` | [`ErrorHookContext`](ErrorHookContext.md)\<`TRoute`, `TRoutes`, `TRejections`\> |
 
 ## Returns
 

@@ -3,14 +3,14 @@
 ## Call Signature
 
 ```ts
-function createExternalRoute<TOptions>(options): ToRoute<TOptions, undefined> & ExternalRouteHooks<TOptions["context"]>;
+function createExternalRoute<TOptions>(options): ToRoute<TOptions> & ExternalRouteHooks<ToRoute<TOptions>, TOptions["context"]>;
 ```
 
 ### Type Parameters
 
 | Type Parameter |
 | ------ |
-| `TOptions` *extends* [`WithHooks`](../types/WithHooks.md) & `object` & [`WithHost`](../types/WithHost.md) & [`WithoutParent`](../types/WithoutParent.md) |
+| `TOptions` *extends* [`CreateRouteOptions`](../types/CreateRouteOptions.md) & [`WithHost`](../types/WithHost.md) & [`WithoutParent`](../types/WithoutParent.md) |
 
 ### Parameters
 
@@ -20,19 +20,19 @@ function createExternalRoute<TOptions>(options): ToRoute<TOptions, undefined> & 
 
 ### Returns
 
-[`ToRoute`](../types/ToRoute.md)\<`TOptions`, `undefined`\> & [`ExternalRouteHooks`](../types/ExternalRouteHooks.md)\<`TOptions`\[`"context"`\]\>
+[`ToRoute`](../types/ToRoute.md)\<`TOptions`\> & [`ExternalRouteHooks`](../types/ExternalRouteHooks.md)\<[`ToRoute`](../types/ToRoute.md)\<`TOptions`\>, `TOptions`\[`"context"`\]\>
 
 ## Call Signature
 
 ```ts
-function createExternalRoute<TOptions>(options): ToRoute<TOptions, undefined> & ExternalRouteHooks<TOptions["context"]>;
+function createExternalRoute<TOptions>(options): ToRoute<TOptions> & ExternalRouteHooks<ToRoute<TOptions>, ExtractRouteContext<TOptions>>;
 ```
 
 ### Type Parameters
 
 | Type Parameter |
 | ------ |
-| `TOptions` *extends* [`WithHooks`](../types/WithHooks.md) & `object` & [`WithoutHost`](../types/WithoutHost.md) & [`WithParent`](../types/WithParent.md) |
+| `TOptions` *extends* [`CreateRouteOptions`](../types/CreateRouteOptions.md) & [`WithoutHost`](../types/WithoutHost.md) & [`WithParent`](../types/WithParent.md) |
 
 ### Parameters
 
@@ -42,4 +42,4 @@ function createExternalRoute<TOptions>(options): ToRoute<TOptions, undefined> & 
 
 ### Returns
 
-[`ToRoute`](../types/ToRoute.md)\<`TOptions`, `undefined`\> & [`ExternalRouteHooks`](../types/ExternalRouteHooks.md)\<`TOptions`\[`"context"`\]\>
+[`ToRoute`](../types/ToRoute.md)\<`TOptions`\> & [`ExternalRouteHooks`](../types/ExternalRouteHooks.md)\<[`ToRoute`](../types/ToRoute.md)\<`TOptions`\>, `ExtractRouteContext`\<`TOptions`\>\>
