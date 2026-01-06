@@ -6,6 +6,10 @@ on:
       - 'v*' # Trigger on version tags (v0.20.11, v1.0.0, etc.)
   workflow_dispatch: # Allow manual trigger
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   generate-docs:
     name: Generate Documentation
