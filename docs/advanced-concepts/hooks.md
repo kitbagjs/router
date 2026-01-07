@@ -37,15 +37,11 @@ The router provides `to` and a `context` argument to your hook callback. The con
 | replace | Same as push, but with `options: { replace: true }`. |
 | reject | Trigger a [rejection](/advanced-concepts/rejections) for the router to handle |
 
-See [AfterRouteHookContext](/api/types/AfterRouteHookContext)
-
 If the hooks lifecycle is a [before](/advanced-concepts/hooks#before-hooks) hook, you'll also have access to the following property in your context:
 
 | Property | Description |
 | ---- | ---- |
 | abort | Stops the router from continuing with route change |
-
-See [BeforeRouteHookContext](/api/types/BeforeRouteHookContext)
 
 If the hook is `onError`, you'll also have access to the following properties in your context:
 
@@ -53,8 +49,6 @@ If the hook is `onError`, you'll also have access to the following properties in
 | ---- | ---- |
 | to | What was the destination route prior to the error being thrown |
 | source | String value indicating where the error occurred. Possible values are `'props'`, `'hook'`, and `'component'` |
-
-See [RouterErrorHookContext](/api/types/RouterErrorHookContext)
 
 ## Levels
 
