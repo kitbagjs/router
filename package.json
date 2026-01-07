@@ -1,7 +1,7 @@
 {
   "name": "@kitbag/router",
   "private": false,
-  "version": "0.20.11",
+  "version": "0.21.0",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/kitbagjs/router/issues"
