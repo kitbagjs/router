@@ -8,7 +8,7 @@ type RouterReject<TRejections> = <TSource>(type) => void;
 
 | Type Parameter |
 | ------ |
-| `TRejections` *extends* `Rejection`[] \| `undefined` |
+| `TRejections` *extends* `Rejections` \| `undefined` |
 
 ## Type Parameters
 

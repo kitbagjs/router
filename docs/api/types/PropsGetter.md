@@ -15,8 +15,8 @@ type PropsGetter<TOptions, TComponent> = (route, context) => MaybePromise<Compon
 
 | Parameter | Type |
 | ------ | ------ |
-| `route` | [`ResolvedRoute`](ResolvedRoute.md)\<[`ToRoute`](ToRoute.md)\<`TOptions`, `undefined`\>\> |
-| `context` | [`PropsCallbackContext`](PropsCallbackContext.md)\<`TOptions`\> |
+| `route` | [`ResolvedRoute`](ResolvedRoute.md)\<[`ToRoute`](ToRoute.md)\<`TOptions`\>\> |
+| `context` | [`PropsCallbackContext`](PropsCallbackContext.md)\<[`ToRoute`](ToRoute.md)\<`TOptions`\>, `TOptions`\> |
 
 ## Returns
 

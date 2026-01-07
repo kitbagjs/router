@@ -9,7 +9,7 @@ function createRouterPlugin<TRoutes, TRejections>(plugin): RouterPlugin<TRoutes,
 | Type Parameter | Default type |
 | ------ | ------ |
 | `TRoutes` *extends* [`Routes`](../types/Routes.md) | [`Routes`](../types/Routes.md) |
-| `TRejections` *extends* `Rejection`[] | `Rejection`[] |
+| `TRejections` *extends* `Rejections` | `Rejections` |
 
 ## Parameters
 

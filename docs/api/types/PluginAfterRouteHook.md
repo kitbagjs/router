@@ -9,7 +9,7 @@ type PluginAfterRouteHook<TRoutes, TRejections> = (to, context) => MaybePromise<
 | Type Parameter | Default type |
 | ------ | ------ |
 | `TRoutes` *extends* [`Routes`](Routes.md) | [`Routes`](Routes.md) |
-| `TRejections` *extends* `Rejection`[] | `Rejection`[] |
+| `TRejections` *extends* `Rejections` | `Rejections` |
 
 ## Parameters
 
