@@ -18,7 +18,11 @@ export function getRoutesForRouter(routes: Routes | Routes[], plugins: RouterPlu
   ].flat().filter((route) => stringHasValue(route.name))
 
   checkDuplicateNames(allRoutes)
-  checkMissingContext(allRoutes)
 
-  return insertBaseRoute(allRoutes, base)
+  const missingRoutes = checkMissingContext(allRoutes)
+
+  return insertBaseRoute([
+    ...allRoutes,
+    ...missingRoutes,
+  ], base)
 }

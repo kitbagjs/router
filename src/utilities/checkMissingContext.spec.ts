@@ -3,6 +3,7 @@ import { MissingRouteContextError } from '@/errors/missingRouteContextError'
 import { checkMissingContext } from '@/utilities/checkMissingContext'
 import { createRoute } from '@/services/createRoute'
 import { createRejection } from '@/services/createRejection'
+import { createDiscoveredRoute } from '@/services/createDiscoveredRoute'
 
 test('given all routes without context, does nothing', () => {
   const routes = [
@@ -47,7 +48,7 @@ test('given routes with context that are routes but routes are supplied, does no
   expect(action).not.toThrow()
 })
 
-test('given routes with context that are routes where routes are NOT supplied, throws MissingRouteContextError', () => {
+test('given routes with context that are routes where routes are NOT supplied, return ProtectedRoutes for each missing route', () => {
   const relatedRoute = createRoute({ name: 'related' })
   const routes = [
     createRoute({ name: 'foo', context: [relatedRoute] }),
@@ -55,9 +56,9 @@ test('given routes with context that are routes where routes are NOT supplied, t
     createRoute({ name: 'zoo', context: [relatedRoute] }),
   ]
 
-  const action: () => void = () => {
-    checkMissingContext(routes)
-  }
+  const missingRoutes = checkMissingContext(routes)
 
-  expect(action).toThrow(MissingRouteContextError)
+  expect(missingRoutes).toMatchObject([
+    createDiscoveredRoute(relatedRoute),
+  ])
 })

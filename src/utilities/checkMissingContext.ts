@@ -1,18 +1,21 @@
-import { MissingRouteContextError } from '@/errors/missingRouteContextError'
+import { createDiscoveredRoute, ProtectedRoute } from '@/services/createDiscoveredRoute'
 import { Route, Routes } from '@/types/route'
 import { RouteContext } from '@/types/routeContext'
 
-export function checkMissingContext(routes: Routes): void {
+export function checkMissingContext(routes: Routes): ProtectedRoute[] {
   const routeIds = new Set(routes.map((route) => route.id))
-  const routeIdsFromContext = routes
+  const missingRoutes = routes
     .flatMap((route) => route.context)
     .filter(contextIsRoute)
+    .filter((route) => !routeIds.has(route.id))
 
-  for (const route of routeIdsFromContext) {
-    if (!routeIds.has(route.id)) {
-      throw new MissingRouteContextError(route.name)
+  return missingRoutes.reduce<ProtectedRoute[]>((unique, route) => {
+    if (unique.every(({ id }) => id !== route.id)) {
+      unique.push(createDiscoveredRoute(route))
     }
-  }
+
+    return unique
+  }, [])
 }
 
 function contextIsRoute(context: RouteContext): context is Route {

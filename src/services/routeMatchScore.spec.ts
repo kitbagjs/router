@@ -2,7 +2,8 @@ import { describe, expect, test } from 'vitest'
 import { createRoute } from '@/services/createRoute'
 import { countExpectedQueryParams, getRouteScoreSortMethod } from '@/services/routeMatchScore'
 import { component } from '@/utilities/testHelpers'
-import { createExternalRoute } from './createExternalRoute'
+import { createExternalRoute } from '@/services/createExternalRoute'
+import { createDiscoveredRoute } from '@/services/createDiscoveredRoute'
 
 describe('countExpectedQueryKeys', () => {
   test('given route without query, returns 0', () => {
@@ -128,6 +129,25 @@ describe('getRouteScoreSortMethod', () => {
 
     expect([aRoute, bRoute].sort(sortByRouteScore)).toMatchObject(expected)
     expect([bRoute, aRoute].sort(sortByRouteScore)).toMatchObject(expected)
+  })
+
+  test('given routes that are otherwise equal, prefers non-protected routes', () => {
+    const aRoute = createDiscoveredRoute(createRoute({
+      name: 'protected',
+      path: '/same-path',
+      component,
+    }))
+
+    const bRoute = createRoute({
+      name: 'non-protected',
+      path: '/same-path',
+      component,
+    })
+
+    const sortByRouteScore = getRouteScoreSortMethod('/same-path')
+    const response = [aRoute, bRoute].sort(sortByRouteScore)
+
+    expect(response).toMatchObject([bRoute, aRoute])
   })
 
   test('given routes that are otherwise equal, prefers routes with matching host', () => {
