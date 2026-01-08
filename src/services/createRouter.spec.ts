@@ -440,6 +440,18 @@ test('given an array of Routes with missing context, can still match missing rou
   expect(router.route.name).toBe('missing')
 })
 
+test('given an array of Routes with missing context with duplicate route names, does NOT throw DuplicateNamesError', async () => {
+  const missingRoute = createRoute({ name: 'foo', component })
+
+  const action: () => void = () => createRouter([
+    createRoute({ name: 'foo', component, context: [missingRoute] }),
+  ], {
+    initialUrl: '/missing',
+  })
+
+  expect(action).not.toThrowError()
+})
+
 test('initial route is not set until the router is started', async () => {
   const route = createRoute({
     name: 'root',
