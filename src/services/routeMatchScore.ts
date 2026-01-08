@@ -19,11 +19,6 @@ export function getRouteScoreSortMethod(url: string): RouteSortMethod {
       return preferLowerDepth
     }
 
-    const preferMoreOptionalParamsFulfilled = sortPreferMoreOptionalParamsFulfilled(aRoute, bRoute, actualQuery, actualPath)
-    if (preferMoreOptionalParamsFulfilled !== 0) {
-      return preferMoreOptionalParamsFulfilled
-    }
-
     const preferMoreExplicitHost = sortPreferMatchingHost(aRoute, bRoute)
     if (preferMoreExplicitHost !== 0) {
       return preferMoreExplicitHost
@@ -32,6 +27,11 @@ export function getRouteScoreSortMethod(url: string): RouteSortMethod {
     const preferMoreExplicitHash = sortPreferMatchingHash(aRoute, bRoute)
     if (preferMoreExplicitHash !== 0) {
       return preferMoreExplicitHash
+    }
+
+    const preferMoreOptionalParamsFulfilled = sortPreferMoreOptionalParamsFulfilled(aRoute, bRoute, actualQuery, actualPath)
+    if (preferMoreOptionalParamsFulfilled !== 0) {
+      return preferMoreOptionalParamsFulfilled
     }
 
     return 0
