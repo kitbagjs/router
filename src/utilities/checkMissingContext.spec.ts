@@ -1,5 +1,4 @@
 import { expect, test } from 'vitest'
-import { MissingRouteContextError } from '@/errors/missingRouteContextError'
 import { checkMissingContext } from '@/utilities/checkMissingContext'
 import { createRoute } from '@/services/createRoute'
 import { createRejection } from '@/services/createRejection'
