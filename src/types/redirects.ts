@@ -2,7 +2,7 @@ import { ExtractRouteParamTypesReading, ExtractRouteParamTypesWriting } from './
 import { Route } from './route'
 
 export type InternalRouteRedirects<
-  TRoute extends Route
+  TRoute extends Route = Route
 > = {
   redirectTo: RouteRedirectTo<TRoute>,
   redirectFrom: RouteRedirectFrom<TRoute>,
