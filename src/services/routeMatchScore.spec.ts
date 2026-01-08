@@ -75,9 +75,10 @@ describe('getRouteScoreSortMethod', () => {
     })
 
     const sortByRouteScore = getRouteScoreSortMethod('/red/123')
-    const response = [aRoute, bRoute].sort(sortByRouteScore)
+    const expected = [bRoute, aRoute]
 
-    expect(response).toMatchObject([bRoute, aRoute])
+    expect([aRoute, bRoute].sort(sortByRouteScore)).toMatchObject(expected)
+    expect([bRoute, aRoute].sort(sortByRouteScore)).toMatchObject(expected)
   })
 
   test('given routes with equal path scores, returns them sorted by route depth descending', () => {
@@ -123,28 +124,29 @@ describe('getRouteScoreSortMethod', () => {
     })
 
     const sortByRouteScore = getRouteScoreSortMethod('/?color=red&id=1&extra=ok')
-    const response = [aRoute, bRoute].sort(sortByRouteScore)
+    const expected = [bRoute, aRoute]
 
-    expect(response).toMatchObject([bRoute, aRoute])
+    expect([aRoute, bRoute].sort(sortByRouteScore)).toMatchObject(expected)
+    expect([bRoute, aRoute].sort(sortByRouteScore)).toMatchObject(expected)
   })
 
   test('given routes that are otherwise equal, prefers routes with matching host', () => {
-    const aRoute = createRoute({
-      name: 'implicit-host',
+    const externalRoute = createExternalRoute({
+      name: 'external',
       path: '/same-path',
-      component,
+      host: 'https://kitbag.dev',
     })
 
-    const bRoute = createExternalRoute({
-      name: 'explicit-host',
-      host: 'https://kitbag.dev',
+    const internalRoute = createRoute({
+      name: 'internal',
       path: '/same-path',
     })
 
     const sortByRouteScore = getRouteScoreSortMethod('https://kitbag.dev/same-path')
-    const response = [aRoute, bRoute].sort(sortByRouteScore)
+    const expected = [externalRoute, internalRoute]
 
-    expect(response).toMatchObject([bRoute, aRoute])
+    expect([externalRoute, internalRoute].sort(sortByRouteScore)).toMatchObject(expected)
+    expect([internalRoute, externalRoute].sort(sortByRouteScore)).toMatchObject(expected)
   })
 
   test('given routes that are otherwise equal, prefers routes with matching hash', () => {
@@ -161,9 +163,10 @@ describe('getRouteScoreSortMethod', () => {
     })
 
     const sortByRouteScore = getRouteScoreSortMethod('/same-path#123')
-    const response = [aRoute, bRoute].sort(sortByRouteScore)
+    const expected = [bRoute, aRoute]
 
-    expect(response).toMatchObject([bRoute, aRoute])
+    expect([aRoute, bRoute].sort(sortByRouteScore)).toMatchObject(expected)
+    expect([bRoute, aRoute].sort(sortByRouteScore)).toMatchObject(expected)
   })
 
   test('given routes with equal query scores, returns them sorted by route depth descending', () => {

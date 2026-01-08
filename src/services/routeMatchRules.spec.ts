@@ -281,6 +281,25 @@ describe('routeHashMatches', () => {
     ['http://www.kitbag.io/empty'],
     ['http://www.kitbag.io/empty#'],
     ['http://www.kitbag.io/empty#bar'],
+  ])('given a route with no hash, returns true', (url) => {
+    const route = createRoute({
+      name: 'no-hash',
+      path: '/',
+      component,
+    })
+
+    const response = routeHashMatches(route, url)
+
+    expect(response).toBe(true)
+  })
+
+  test.each([
+    ['we*23mf#0'],
+    ['http://www.kitbag.io'],
+    ['http://www.kitbag.io/'],
+    ['http://www.kitbag.io/empty'],
+    ['http://www.kitbag.io/empty#'],
+    ['http://www.kitbag.io/empty#bar'],
   ])('given url (%s) and route.hash that does NOT match, returns false', (url) => {
     const route = createRoute({
       name: 'not-matches',
@@ -295,9 +314,25 @@ describe('routeHashMatches', () => {
   })
 
   test.each([
+    ['http://www.kitbag.io/#'],
+    ['http://www.kitbag.io/#bar'],
+  ])('given url (%s) and route.hash with params that does match, returns true', (url) => {
+    const route = createRoute({
+      name: 'no-params',
+      path: '/',
+      hash: '#[param]',
+      component,
+    })
+
+    const response = routePathMatches(route, url)
+
+    expect(response).toBe(true)
+  })
+
+  test.each([
     ['/#foo'],
     ['http://www.kitbag.io/#foo'],
-  ])('given url (%s) and route.path WITHOUT params that does match, returns true', (url) => {
+  ])('given url (%s) and route.hash WITHOUT params that does match, returns true', (url) => {
     const route = createRoute({
       name: 'hash-matches',
       path: '/',

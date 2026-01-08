@@ -1,6 +1,5 @@
 import { afterEach, expect, test, vi } from 'vitest'
 import { createRoute } from '@/services/createRoute'
-import { createExternalRoute } from '@/services/createExternalRoute'
 import { getMatchesForUrl } from '@/services/getMatchesForUrl'
 import * as utilities from '@/services/routeMatchScore'
 import { Route } from '@/types/route'
@@ -152,26 +151,4 @@ test('given route with equal matches, returns route with highest score', () => {
   const [match] = getMatchesForUrl(routes, '/')
 
   expect(match.name).toBe('second-route')
-})
-
-test.each([
-  ['/same-path', 'internal'],
-  ['https://kitbag.dev/same-path', 'external'],
-])('given two routes with the same path but different host, returns the route with matching host', (url, expectedMatchName) => {
-  const externalRoute = createExternalRoute({
-    name: 'external',
-    path: '/same-path',
-    host: 'https://kitbag.dev',
-  })
-
-  const internalRoute = createRoute({
-    name: 'internal',
-    path: '/same-path',
-  })
-
-  const [match] = getMatchesForUrl([externalRoute, internalRoute], url)
-  const [reversedMatch] = getMatchesForUrl([internalRoute, externalRoute], url)
-
-  expect(match.name).toBe(expectedMatchName)
-  expect(reversedMatch.name).toBe(expectedMatchName)
 })

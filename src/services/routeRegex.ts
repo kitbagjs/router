@@ -49,6 +49,13 @@ export function generateRoutePathRegexPattern(route: Route): RegExp {
   return new RegExp(`^${pathRegex}$`, 'i')
 }
 
+export function generateRouteHashRegexPattern(route: Route): RegExp {
+  const cleanValue = route.hash.value.replace(/^#*/, '')
+  const hashRegex = replaceParamSyntaxWithCatchAllsAndEscapeRest(cleanValue)
+
+  return new RegExp(`^#?${hashRegex || '.*'}$`, 'i')
+}
+
 export function generateRouteQueryRegexPatterns(route: Route): RegExp[] {
   const queryParams = new URLSearchParams(route.query.value)
 
