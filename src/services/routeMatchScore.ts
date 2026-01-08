@@ -1,7 +1,6 @@
 import { parseUrl } from '@/services/urlParser'
 import { getParamValueFromUrl } from '@/services/paramsFinder'
 import { Route } from '@/types/route'
-import { routeHashMatches, routeHostMatches } from '@/services/routeMatchRules'
 import { QuerySource } from '@/types/querySource'
 import { paramIsOptional } from '@/services/routeRegex'
 import { stringHasValue } from '@/utilities/guards'
@@ -25,12 +24,12 @@ export function getRouteScoreSortMethod(url: string): RouteSortMethod {
       return preferMoreOptionalParamsFulfilled
     }
 
-    const preferMoreExplicitHost = sortPreferMatchingHost(aRoute, bRoute, url)
+    const preferMoreExplicitHost = sortPreferMatchingHost(aRoute, bRoute)
     if (preferMoreExplicitHost !== 0) {
       return preferMoreExplicitHost
     }
 
-    const preferMoreExplicitHash = sortPreferMatchingHash(aRoute, bRoute, url)
+    const preferMoreExplicitHash = sortPreferMatchingHash(aRoute, bRoute)
     if (preferMoreExplicitHash !== 0) {
       return preferMoreExplicitHash
     }
@@ -67,9 +66,9 @@ function sortPreferMoreOptionalParamsFulfilled(aRoute: Route, bRoute: Route, act
   return 0
 }
 
-function sortPreferMatchingHost(aRoute: Route, bRoute: Route, url: string): number {
-  const aHasExplicitHost = stringHasValue(aRoute.host.value) && routeHostMatches(aRoute, url)
-  const bHasExplicitHost = stringHasValue(bRoute.host.value) && routeHostMatches(bRoute, url)
+function sortPreferMatchingHost(aRoute: Route, bRoute: Route): number {
+  const aHasExplicitHost = stringHasValue(aRoute.host.value)
+  const bHasExplicitHost = stringHasValue(bRoute.host.value)
 
   if (aHasExplicitHost && !bHasExplicitHost) {
     return SORT_BEFORE
@@ -82,9 +81,9 @@ function sortPreferMatchingHost(aRoute: Route, bRoute: Route, url: string): numb
   return 0
 }
 
-function sortPreferMatchingHash(aRoute: Route, bRoute: Route, url: string): number {
-  const aHasExplicitHash = stringHasValue(aRoute.hash.value) && routeHashMatches(aRoute, url)
-  const bHasExplicitHash = stringHasValue(bRoute.hash.value) && routeHashMatches(bRoute, url)
+function sortPreferMatchingHash(aRoute: Route, bRoute: Route): number {
+  const aHasExplicitHash = stringHasValue(aRoute.hash.value)
+  const bHasExplicitHash = stringHasValue(bRoute.hash.value)
 
   if (aHasExplicitHash && !bHasExplicitHash) {
     return SORT_BEFORE

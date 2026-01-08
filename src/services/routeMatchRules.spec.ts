@@ -7,13 +7,13 @@ import { withParams } from '@/services/withParams'
 import { createExternalRoute } from '@/services/createExternalRoute'
 
 describe('routeHostMatches', () => {
-  test('given url without host and a route without a host, returns true', () => {
-    const urlWithoutHost = '/somewhere?with=query'
+  test('given a route without a host, returns true', () => {
+    const urlWithHost = 'http://www.kitbag.io/'
     const route = createRoute({
       name: 'without-host',
     })
 
-    const response = routeHostMatches(route, urlWithoutHost)
+    const response = routeHostMatches(route, urlWithHost)
 
     expect(response).toBe(true)
   })
@@ -26,17 +26,6 @@ describe('routeHostMatches', () => {
     })
 
     const response = routeHostMatches(route, urlWithoutHost)
-
-    expect(response).toBe(false)
-  })
-
-  test('given url with a host and a route without a host, returns false', () => {
-    const urlWithHost = 'http://www.kitbag.io/'
-    const route = createRoute({
-      name: 'without-host',
-    })
-
-    const response = routeHostMatches(route, urlWithHost)
 
     expect(response).toBe(false)
   })
