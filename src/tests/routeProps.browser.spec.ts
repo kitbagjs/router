@@ -40,7 +40,6 @@ test('components are not remounted when props change', async () => {
   })
 
   await router.start()
-  console.log('After start, current route:', router.route.name, router.route.href, 'id:', router.route.id)
 
   await router.route.update({ param: 'foo' })
 
@@ -55,10 +54,8 @@ test('components are not remounted when props change', async () => {
   expect(setup).toHaveBeenCalledTimes(1)
 
   await router.push('routeB')
-  console.log('After push to routeB, current route:', router.route.name, router.route.href, 'id:', router.route.id)
 
   await router.push('routeA', { param: 'foo' })
-  console.log('After push to routeA, current route:', router.route.name, router.route.href, 'id:', router.route.id, 'setup count:', setup.mock.calls.length)
 
   expect(setup).toHaveBeenCalledTimes(2)
 })
