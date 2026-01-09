@@ -10,7 +10,7 @@ test('components are not remounted when props change', async () => {
 
   const routeA = createRoute({
     name: 'routeA',
-    path: '/[param]',
+    path: '/routeA/[param]',
     component: defineComponent({
       setup,
       render() {
@@ -26,7 +26,7 @@ test('components are not remounted when props change', async () => {
   })
 
   const router = createRouter([routeA, routeB], {
-    initialUrl: '/bar',
+    initialUrl: '/routeA/bar',
   })
 
   const root = {
@@ -54,6 +54,7 @@ test('components are not remounted when props change', async () => {
   expect(setup).toHaveBeenCalledTimes(1)
 
   await router.push('routeB')
+
   await router.push('routeA', { param: 'foo' })
 
   expect(setup).toHaveBeenCalledTimes(2)
