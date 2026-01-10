@@ -1,8 +1,8 @@
 import { expect, test } from 'vitest'
-import { MissingRouteContextError } from '@/errors/missingRouteContextError'
-import { checkMissingContext } from '@/utilities/checkMissingContext'
+import { discoverMissingRoutes } from '@/utilities/discoverMissingRoutes'
 import { createRoute } from '@/services/createRoute'
 import { createRejection } from '@/services/createRejection'
+import { createDiscoveredRoute } from '@/services/createDiscoveredRoute'
 
 test('given all routes without context, does nothing', () => {
   const routes = [
@@ -12,7 +12,7 @@ test('given all routes without context, does nothing', () => {
   ]
 
   const action: () => void = () => {
-    checkMissingContext(routes)
+    discoverMissingRoutes(routes)
   }
 
   expect(action).not.toThrow()
@@ -26,7 +26,7 @@ test('given routes with context that is only rejections, does nothing', () => {
   ]
 
   const action: () => void = () => {
-    checkMissingContext(routes)
+    discoverMissingRoutes(routes)
   }
 
   expect(action).not.toThrow()
@@ -41,13 +41,13 @@ test('given routes with context that are routes but routes are supplied, does no
   ]
 
   const action: () => void = () => {
-    checkMissingContext([...routes, relatedRoute])
+    discoverMissingRoutes([...routes, relatedRoute])
   }
 
   expect(action).not.toThrow()
 })
 
-test('given routes with context that are routes where routes are NOT supplied, throws MissingRouteContextError', () => {
+test('given routes with context that are routes where routes are NOT supplied, return DiscoveredRoutes for each missing route', () => {
   const relatedRoute = createRoute({ name: 'related' })
   const routes = [
     createRoute({ name: 'foo', context: [relatedRoute] }),
@@ -55,9 +55,9 @@ test('given routes with context that are routes where routes are NOT supplied, t
     createRoute({ name: 'zoo', context: [relatedRoute] }),
   ]
 
-  const action: () => void = () => {
-    checkMissingContext(routes)
-  }
+  const missingRoutes = discoverMissingRoutes(routes)
 
-  expect(action).toThrow(MissingRouteContextError)
+  expect(missingRoutes).toMatchObject([
+    createDiscoveredRoute(relatedRoute),
+  ])
 })

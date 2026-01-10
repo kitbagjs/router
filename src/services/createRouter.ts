@@ -24,6 +24,7 @@ import { createResolvedRoute } from '@/services/createResolvedRoute'
 import { ResolvedRoute } from '@/types/resolved'
 import { createResolvedRouteForUrl } from '@/services/createResolvedRouteForUrl'
 import { combineUrl } from '@/services/urlCombine'
+import { isDiscoveredRoute } from '@/services/createDiscoveredRoute'
 import { RouterReject } from '@/types/routerReject'
 import { EmptyRouterPlugin, RouterPlugin } from '@/types/routerPlugin'
 import { getRoutesForRouter } from './getRoutesForRouter'
@@ -229,7 +230,9 @@ export function createRouter<
     params: Record<string, unknown> = {},
     options: RouterResolveOptions = {},
   ) => {
-    const match = routes.find((route) => route.name === source)
+    const match = routes
+      .filter((route) => !isDiscoveredRoute(route))
+      .find((route) => route.name === source)
 
     if (!match) {
       throw new RouteNotFoundError(source)
