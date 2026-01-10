@@ -3,7 +3,6 @@ import { createRoute } from '@/services/createRoute'
 import { countExpectedQueryParams, getRouteScoreSortMethod } from '@/services/routeMatchScore'
 import { component } from '@/utilities/testHelpers'
 import { createExternalRoute } from '@/services/createExternalRoute'
-import { createDiscoveredRoute } from '@/services/createDiscoveredRoute'
 
 describe('countExpectedQueryKeys', () => {
   test('given route without query, returns 0', () => {
