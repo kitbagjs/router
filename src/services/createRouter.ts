@@ -24,6 +24,7 @@ import { createResolvedRoute } from '@/services/createResolvedRoute'
 import { ResolvedRoute } from '@/types/resolved'
 import { createResolvedRouteForUrl } from '@/services/createResolvedRouteForUrl'
 import { combineUrl } from '@/services/urlCombine'
+import { isDiscoveredRoute } from '@/services/createDiscoveredRoute'
 import { RouterReject } from '@/types/routerReject'
 import { EmptyRouterPlugin, RouterPlugin } from '@/types/routerPlugin'
 import { getRoutesForRouter } from './getRoutesForRouter'
@@ -39,7 +40,6 @@ import { createRouterLink } from '@/components/routerLink'
 import { ContextPushError } from '@/errors/contextPushError'
 import { ContextRejectionError } from '@/errors/contextRejectionError'
 import { setupRouterDevtools } from '@/devtools/createRouterDevtools'
-import { sortPreferNonProtectedRoutes } from '@/services/routeMatchScore'
 
 type RouterUpdateOptions = {
   replace?: boolean,
@@ -230,11 +230,10 @@ export function createRouter<
     params: Record<string, unknown> = {},
     options: RouterResolveOptions = {},
   ) => {
-    const [match] = routes
-      .filter((route) => route.name === source)
-      .sort(sortPreferNonProtectedRoutes)
+    const match = routes
+      .filter((route) => !isDiscoveredRoute(route))
+      .find((route) => route.name === source)
 
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!match) {
       throw new RouteNotFoundError(source)
     }

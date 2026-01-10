@@ -2,7 +2,7 @@ import { Routes } from '@/types/route'
 import { RouterPlugin } from '@/types/routerPlugin'
 import { insertBaseRoute } from '@/services/insertBaseRoute'
 import { checkDuplicateNames } from '@/utilities/checkDuplicateNames'
-import { checkMissingContext } from '@/utilities/checkMissingContext'
+import { discoverMissingRoutes } from '@/utilities/discoverMissingRoutes'
 import { stringHasValue } from '@/utilities/guards'
 
 /**
@@ -19,7 +19,7 @@ export function getRoutesForRouter(routes: Routes | Routes[], plugins: RouterPlu
 
   checkDuplicateNames(allRoutes)
 
-  const missingRoutes = checkMissingContext(allRoutes)
+  const missingRoutes = discoverMissingRoutes(allRoutes)
 
   return insertBaseRoute([
     ...allRoutes,

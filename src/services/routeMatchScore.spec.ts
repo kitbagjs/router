@@ -131,25 +131,6 @@ describe('getRouteScoreSortMethod', () => {
     expect([bRoute, aRoute].sort(sortByRouteScore)).toMatchObject(expected)
   })
 
-  test('given routes that are otherwise equal, prefers non-protected routes', () => {
-    const aRoute = createDiscoveredRoute(createRoute({
-      name: 'protected',
-      path: '/same-path',
-      component,
-    }))
-
-    const bRoute = createRoute({
-      name: 'non-protected',
-      path: '/same-path',
-      component,
-    })
-
-    const sortByRouteScore = getRouteScoreSortMethod('/same-path')
-    const response = [aRoute, bRoute].sort(sortByRouteScore)
-
-    expect(response).toMatchObject([bRoute, aRoute])
-  })
-
   test('given routes that are otherwise equal, prefers routes with matching host', () => {
     const externalRoute = createExternalRoute({
       name: 'external',
