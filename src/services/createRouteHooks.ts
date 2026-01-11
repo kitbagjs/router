@@ -1,12 +1,14 @@
-import { AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, AddErrorHook } from '@/types/hooks'
+import { AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, AddErrorHook, AddRedirectHook } from '@/types/hooks'
 import { Routes } from '@/types/route'
 import { Hooks } from '@/models/hooks'
 import { Rejection } from '@/types/rejection'
+import { DuplicateRouteRedirectError } from '@/errors/duplicateRouteRedirect'
 
 export type RouteHooks<
   TRoutes extends Routes = Routes,
   TRejections extends Rejection[] = Rejection[]
 > = {
+  redirect: AddRedirectHook<TRoutes>,
   onBeforeRouteEnter: AddBeforeEnterHook<TRoutes, TRejections>,
   onBeforeRouteUpdate: AddBeforeUpdateHook<TRoutes, TRejections>,
   onBeforeRouteLeave: AddBeforeLeaveHook<TRoutes, TRejections>,
@@ -17,8 +19,18 @@ export type RouteHooks<
   store: Hooks,
 }
 
-export function createHooksFactory(): RouteHooks {
+export function createRouteHooks(): RouteHooks {
   const store = new Hooks()
+
+  const redirect: AddRedirectHook = (hook) => {
+    if (store.redirects.has(hook)) {
+      throw new DuplicateRouteRedirectError(hook)
+    }
+
+    store.redirects.add(hook)
+
+    return () => store.redirects.delete(hook)
+  }
 
   const onBeforeRouteEnter: AddBeforeEnterHook = (hook) => {
     store.onBeforeRouteEnter.add(hook)
@@ -63,6 +75,7 @@ export function createHooksFactory(): RouteHooks {
   }
 
   return {
+    redirect,
     onBeforeRouteEnter,
     onBeforeRouteUpdate,
     onBeforeRouteLeave,

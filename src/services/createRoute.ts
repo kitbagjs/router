@@ -5,10 +5,11 @@ import { toName } from '@/types/name'
 import { Route } from '@/types/route'
 import { checkDuplicateParams } from '@/utilities/checkDuplicateKeys'
 import { toWithParams, withParams } from '@/services/withParams'
-import { createHooksFactory } from '@/services/createHooksFactory'
+import { createRouteHooks } from '@/services/createRouteHooks'
 import { InternalRouteHooks } from '@/types/hooks'
 import { ExtractRouteContext } from '@/types/routeContext'
 import { InternalRouteRedirects } from '@/types/redirects'
+import { createRedirects } from './createRedirects'
 
 type CreateRouteWithProps<
   TOptions extends CreateRouteOptions,
@@ -39,8 +40,9 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
   const meta = options.meta ?? {}
   const state = options.state ?? {}
   const context = options.context ?? []
-  const { store, ...hooks } = createHooksFactory()
+  const { store, ...hooks } = createRouteHooks()
   const rawRoute = markRaw({ id, meta, state, ...options, props })
+  const redirects = createRedirects({ routeToName: name, addRedirectHook: hooks.redirect })
 
   const route = {
     id,
@@ -57,6 +59,7 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
     depth: 1,
     host: withParams(),
     prefetch: options.prefetch,
+    ...redirects,
     ...hooks,
   } satisfies Route & InternalRouteHooks & InternalRouteRedirects
 

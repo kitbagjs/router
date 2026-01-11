@@ -5,7 +5,7 @@ import { toName } from '@/types/name'
 import { Route } from '@/types/route'
 import { checkDuplicateParams } from '@/utilities/checkDuplicateKeys'
 import { toWithParams } from '@/services/withParams'
-import { createHooksFactory } from '@/services/createHooksFactory'
+import { createRouteHooks } from '@/services/createRouteHooks'
 import { ExternalRouteHooks } from '@/types/hooks'
 import { ExtractRouteContext } from '@/types/routeContext'
 
@@ -28,7 +28,7 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
   const meta = options.meta ?? {}
   const host = toWithParams(options.host)
   const context = options.context ?? []
-  const { store, onBeforeRouteEnter } = createHooksFactory()
+  const { store, onBeforeRouteEnter } = createRouteHooks()
   const rawRoute = markRaw({ id, meta: {}, state: {}, ...options })
 
   const route = {
