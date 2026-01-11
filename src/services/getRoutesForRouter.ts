@@ -1,9 +1,9 @@
-import { Routes } from '@/types/route'
+import { Route, Routes } from '@/types/route'
 import { RouterPlugin } from '@/types/routerPlugin'
 import { insertBaseRoute } from '@/services/insertBaseRoute'
-import { checkDuplicateNames } from '@/utilities/checkDuplicateNames'
-import { discoverMissingRoutes } from '@/utilities/discoverMissingRoutes'
 import { isNamedRoute } from '@/utilities/isNamedRoute'
+import { DuplicateNamesError } from '@/errors/duplicateNamesError'
+import { RouteContext } from '@/types/routeContext'
 
 /**
  * Takes in routes and plugins and returns a list of routes with the base route inserted if provided.
@@ -12,17 +12,36 @@ import { isNamedRoute } from '@/utilities/isNamedRoute'
  * @throws {DuplicateNamesError} If there are duplicate names in the routes.
  */
 export function getRoutesForRouter(routes: Routes | Routes[], plugins: RouterPlugin[] = [], base?: string): Routes {
-  const allProvidedRoutes = [
-    ...routes,
-    ...plugins.map((plugin) => plugin.routes),
-  ].flat().filter(isNamedRoute)
+  const providedRoutes = routes.flat()
+  const missingRoutes = providedRoutes.flatMap((route) => route.context).filter(contextIsRoute)
+  const pluginRoutes = plugins.flatMap((plugin) => plugin.routes)
+  const missingPluginRoutes = pluginRoutes.flatMap((route) => route.context).filter(contextIsRoute)
 
-  const allRoutes = [
-    ...allProvidedRoutes,
-    ...discoverMissingRoutes(allProvidedRoutes),
+  return Array.from([
+    ...providedRoutes,
+    ...missingRoutes,
+    ...pluginRoutes,
+    ...missingPluginRoutes,
   ]
+    .filter(isNamedRoute)
+    .reduce((routesMap, route) => {
+      if (!routesMap.has(route.name)) {
+        routesMap.set(route.name, insertBaseRoute(route, base))
 
-  checkDuplicateNames(allRoutes)
+        return routesMap
+      }
 
-  return insertBaseRoute(allRoutes, base)
+      const existingRoute = routesMap.get(route.name)
+      if (existingRoute?.id !== route.id) {
+        throw new DuplicateNamesError(route.name)
+      }
+
+      return routesMap
+    }, new Map<string, Route>())
+    .values(),
+  )
+}
+
+function contextIsRoute(context: RouteContext): context is Route {
+  return 'id' in context
 }
