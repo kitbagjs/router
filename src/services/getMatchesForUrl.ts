@@ -1,5 +1,6 @@
 import { routeParamsAreValid } from '@/services/paramValidation'
-import { isNamedRoute, routeHostMatches, routePathMatches, routeQueryMatches, routeHashMatches } from '@/services/routeMatchRules'
+import { routeHostMatches, routePathMatches, routeQueryMatches, routeHashMatches } from '@/services/routeMatchRules'
+import { isNamedRoute } from '@/utilities/isNamedRoute'
 import { getRouteScoreSortMethod } from '@/services/routeMatchScore'
 import { Route, Routes } from '@/types/route'
 import { RouteMatchRule } from '@/types/routeMatchRule'
