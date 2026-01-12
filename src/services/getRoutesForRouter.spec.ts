@@ -39,10 +39,13 @@ test('given named routes inside plugins, includes them in the response', () => {
 
 test('given named routes inside route context, includes them in the response', () => {
   const relatedRoute = createRoute({ name: 'related' })
+  const fooRoute = createRoute({ name: 'foo', context: [relatedRoute] })
+  const barRoute = createRoute({ name: 'bar', context: [relatedRoute] })
+  const zooRoute = createRoute({ name: 'zoo', context: [relatedRoute] })
   const routes = [
-    createRoute({ name: 'foo', context: [relatedRoute] }),
-    createRoute({ name: 'bar', context: [relatedRoute] }),
-    createRoute({ name: 'zoo', context: [relatedRoute] }),
+    fooRoute,
+    barRoute,
+    zooRoute,
   ]
   const plugins = [
     createRouterPlugin({
@@ -53,23 +56,30 @@ test('given named routes inside route context, includes them in the response', (
   const response = getRoutesForRouter([], plugins)
 
   expect(response).toMatchObject([
-    ...routes,
+    fooRoute,
     relatedRoute,
+    barRoute,
+    zooRoute,
   ])
 })
 
 test('given named routes inside route context of plugin routes, includes them in the response', () => {
   const relatedRoute = createRoute({ name: 'related' })
+  const fooRoute = createRoute({ name: 'foo', context: [relatedRoute] })
+  const barRoute = createRoute({ name: 'bar', context: [relatedRoute] })
+  const zooRoute = createRoute({ name: 'zoo', context: [relatedRoute] })
   const routes = [
-    createRoute({ name: 'foo', context: [relatedRoute] }),
-    createRoute({ name: 'bar', context: [relatedRoute] }),
-    createRoute({ name: 'zoo', context: [relatedRoute] }),
+    fooRoute,
+    barRoute,
+    zooRoute,
   ]
 
   const response = getRoutesForRouter(routes)
 
   expect(response).toMatchObject([
-    ...routes,
+    fooRoute,
     relatedRoute,
+    barRoute,
+    zooRoute,
   ])
 })
