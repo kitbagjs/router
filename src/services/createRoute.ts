@@ -9,7 +9,7 @@ import { createRouteHooks } from '@/services/createRouteHooks'
 import { InternalRouteHooks } from '@/types/hooks'
 import { ExtractRouteContext } from '@/types/routeContext'
 import { InternalRouteRedirects } from '@/types/redirects'
-import { createRedirects } from './createRedirects'
+import { createRouteRedirects } from './createRouteRedirects'
 
 type CreateRouteWithProps<
   TOptions extends CreateRouteOptions,
@@ -42,7 +42,10 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
   const context = options.context ?? []
   const { store, ...hooks } = createRouteHooks()
   const rawRoute = markRaw({ id, meta, state, ...options, props })
-  const redirects = createRedirects({ routeToName: name, addRedirectHook: hooks.redirect })
+
+  const redirects = createRouteRedirects({
+    getRoute: () => route,
+  })
 
   const route = {
     id,

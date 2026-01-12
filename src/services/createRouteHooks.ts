@@ -2,7 +2,6 @@ import { AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEn
 import { Routes } from '@/types/route'
 import { Hooks } from '@/models/hooks'
 import { Rejection } from '@/types/rejection'
-import { DuplicateRouteRedirectError } from '@/errors/duplicateRouteRedirect'
 
 export type RouteHooks<
   TRoutes extends Routes = Routes,
@@ -23,10 +22,6 @@ export function createRouteHooks(): RouteHooks {
   const store = new Hooks()
 
   const redirect: AddRedirectHook = (hook) => {
-    if (store.redirects.has(hook)) {
-      throw new DuplicateRouteRedirectError(hook)
-    }
-
     store.redirects.add(hook)
 
     return () => store.redirects.delete(hook)
