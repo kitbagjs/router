@@ -23,20 +23,20 @@ export function insertBaseRoute(route: Route, base?: string): Route {
  * @throws {DuplicateNamesError} If there are duplicate names in the routes.
  */
 export function getRoutesForRouter(routes: Routes | Routes[], plugins: RouterPlugin[] = [], base?: string): Routes {
+  // Map of route name to route
+  const routerRoutes = new Map<string, Route>()
+
   const allRoutes = [
     ...routes,
     ...plugins.map((plugin) => plugin.routes),
   ]
-
-  const routeIdsToRoutes = new Map<string, Route>()
-  const routeNamesToRoutes = new Map<string, Route>()
 
   function addRoute(route: Route): void {
     if (!isNamedRoute(route)) {
       return
     }
 
-    const existingRouteByName = routeNamesToRoutes.get(route.name)
+    const existingRouteByName = routerRoutes.get(route.name)
 
     if (existingRouteByName && existingRouteByName.id !== route.id) {
       throw new DuplicateNamesError(route.name)
@@ -44,8 +44,7 @@ export function getRoutesForRouter(routes: Routes | Routes[], plugins: RouterPlu
 
     insertBaseRoute(route, base)
 
-    routeIdsToRoutes.set(route.id, route)
-    routeNamesToRoutes.set(route.name, route)
+    routerRoutes.set(route.name, route)
 
     for (const context of route.context) {
       if (contextIsRoute(context)) {
@@ -69,7 +68,7 @@ export function getRoutesForRouter(routes: Routes | Routes[], plugins: RouterPlu
     addRoute(route)
   }
 
-  return Array.from(routeIdsToRoutes.values())
+  return Array.from(routerRoutes.values())
 }
 
 function contextIsRoute(context: RouteContext): context is Route {
