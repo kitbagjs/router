@@ -1,20 +1,9 @@
 import { Route, Routes } from '@/types/route'
 import { RouterPlugin } from '@/types/routerPlugin'
-import { stringHasValue } from '@/utilities/guards'
 import { DuplicateNamesError } from '@/errors/duplicateNamesError'
-import { withParams } from './withParams'
 import { isNamedRoute } from '@/utilities/isNamedRoute'
 import { RouteContext } from '@/types/routeContext'
-
-export function insertBaseRoute(route: Route, base?: string): Route {
-  if (!stringHasValue(base)) {
-    return route
-  }
-  return {
-    ...route,
-    path: withParams(`${base}${route.path.value}`, route.path.params),
-  }
-}
+import { insertBaseRoute } from './insertBaseRoute'
 
 /**
  * Takes in routes and plugins and returns a list of routes with the base route inserted if provided.
