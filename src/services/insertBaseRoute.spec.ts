@@ -5,36 +5,20 @@ import { insertBaseRoute } from '@/services/insertBaseRoute'
 test.each([
   [undefined],
   [''],
-])('given empty or undefined base, returns routes unmodified', (base) => {
-  const parent = createRoute({ name: 'c', path: '/c' })
-  const routes = [
-    createRoute({ name: 'a', path: '/a' }),
-    createRoute({ name: 'b', path: '/b' }),
-    parent,
-    createRoute({ parent, name: 'd', path: '/d' }),
-    createRoute({ parent, name: 'e', path: '/e' }),
-    createRoute({ parent, name: 'f', path: '/f' }),
-  ]
+])('given empty or undefined base, returns route unmodified', (base) => {
+  const route = createRoute({ name: 'foo', path: '/foo' })
 
-  const response = insertBaseRoute(routes, base)
+  const response = insertBaseRoute(route, base)
 
-  expect(response).toMatchObject(routes)
+  expect(response).toMatchObject(route)
 })
 
-test('given value for base, returns routes with base prefixed', () => {
+test('given value for base, returns route with base prefixed', () => {
   const base = '/kitbag'
 
-  const parent = createRoute({ name: 'c', path: '/c' })
-  const routes = [
-    createRoute({ name: 'a', path: '/a' }),
-    createRoute({ name: 'b', path: '/b' }),
-    parent,
-    createRoute({ parent, name: 'd', path: '/d' }),
-    createRoute({ parent, name: 'e', path: '/e' }),
-    createRoute({ parent, name: 'f', path: '/f' }),
-  ]
+  const route = createRoute({ name: 'foo', path: '/foo' })
 
-  const response = insertBaseRoute(routes, base)
+  const response = insertBaseRoute(route, base)
 
-  expect(response.every((route) => route.path.value.startsWith('/kitbag'))).toBe(true)
+  expect(response.path.value).toBe('/kitbag/foo')
 })

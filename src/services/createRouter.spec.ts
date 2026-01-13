@@ -10,7 +10,6 @@ import { component, routes } from '@/utilities/testHelpers'
 import { createExternalRoute } from '@/services/createExternalRoute'
 import { RouteNotFoundError } from '@/errors/routeNotFoundError'
 import { InvalidRouteParamValueError } from '@/errors/invalidRouteParamValueError'
-import { MissingRouteContextError } from '@/errors/missingRouteContextError'
 
 test('initial route is set', async () => {
   const foo = createRoute({
@@ -426,17 +425,31 @@ test('given an array of Routes with duplicate names, throws DuplicateNamesError'
   expect(action).toThrow(DuplicateNamesError)
 })
 
-test('given an array of Routes with missing context, throws MissingContextError', () => {
-  const missingRoute = createRoute({ name: 'missing', component })
+test('given an array of Routes with missing context, can still match missing routes', async () => {
+  const missingRoute = createRoute({ name: 'missing', path: '/missing', component })
+
+  const router = createRouter([
+    createRoute({ name: 'foo', path: '/foo', component, context: [missingRoute] }),
+    createRoute({ name: 'bar', path: '/bar', component }),
+  ], {
+    initialUrl: '/missing',
+  })
+
+  await router.start()
+
+  expect(router.route.name).toBe('missing')
+})
+
+test('given an array of Routes with missing context with duplicate route names, throws DuplicateNamesError', async () => {
+  const missingRoute = createRoute({ name: 'foo', component })
 
   const action: () => void = () => createRouter([
     createRoute({ name: 'foo', component, context: [missingRoute] }),
-    createRoute({ name: 'bar', component }),
   ], {
-    initialUrl: '/',
+    initialUrl: '/missing',
   })
 
-  expect(action).toThrow(MissingRouteContextError)
+  expect(action).toThrow(DuplicateNamesError)
 })
 
 test('initial route is not set until the router is started', async () => {

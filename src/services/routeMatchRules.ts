@@ -2,10 +2,6 @@ import { parseUrl } from '@/services/urlParser'
 import { generateRouteHashRegexPattern, generateRouteHostRegexPattern, generateRoutePathRegexPattern, generateRouteQueryRegexPatterns } from '@/services/routeRegex'
 import { RouteMatchRule } from '@/types/routeMatchRule'
 
-export const isNamedRoute: RouteMatchRule = (route) => {
-  return 'name' in route.matched && !!route.matched.name
-}
-
 export const routeHostMatches: RouteMatchRule = (route, url) => {
   const { protocol, host } = parseUrl(url)
   const hostPattern = generateRouteHostRegexPattern(route)

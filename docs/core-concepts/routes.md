@@ -220,10 +220,6 @@ home.onBeforeRouteEnter((to, { replace }) => {
 })
 ```
 
-### Missing Context
-
-When creating a router, the router will validate that all routes in the context are actually part of the router. If a route is not part of the router, it will throw a `MissingRouteContextError`.
-
 ## Prefetching
 
 Routes can be prefetched to improve performance. See the [Prefetching](/advanced-concepts/prefetching) documentation for more information.
