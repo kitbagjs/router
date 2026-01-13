@@ -2,7 +2,7 @@ import { Hooks } from '@/models/hooks'
 import { ExtractRouteParamTypesReading } from '@/types/params'
 import { Route, Routes } from '@/types/route'
 import { ExtractRouteStateParamsAsOptional } from '@/types/state'
-import { Url } from '@/types/url'
+import { UrlString } from '@/types/urlString'
 
 /**
  * Represents a route that the router has matched to current browser location.
@@ -45,7 +45,7 @@ export type ResolvedRoute<TRoute extends Route = Route> = Readonly<{
   /**
    * String value of the resolved URL.
    */
-  href: Url,
+  href: UrlString,
   /**
    * The stores for routes including ancestors.
    * Order of routes will be from greatest ancestor to narrowest matched.

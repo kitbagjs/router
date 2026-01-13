@@ -1,6 +1,6 @@
 import { QuerySource } from './querySource'
 
-export type Url = `http://${string}` | `https://${string}` | `/${string}`
+export type UrlString = `http://${string}` | `https://${string}` | `/${string}`
 
 export type UrlParts = {
   protocol?: string,
@@ -17,7 +17,7 @@ export type UrlParts = {
  * @returns `true` if the value is a valid URL, otherwise `false`.
  * @group Type Guards
  */
-export function isUrl(value: unknown): value is Url {
+export function isUrlString(value: unknown): value is UrlString {
   if (typeof value !== 'string') {
     return false
   }
@@ -32,8 +32,8 @@ export function isUrl(value: unknown): value is Url {
  * @param value - The string to convert.
  * @returns The valid URL.
  */
-export function asUrl(value: string): Url {
-  if (isUrl(value)) {
+export function asUrlString(value: string): UrlString {
+  if (isUrlString(value)) {
     return value
   }
 

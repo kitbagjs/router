@@ -1,4 +1,4 @@
-import { UrlParts } from '@/types/url'
+import { UrlParts } from '@/types/urlString'
 
 export function parseUrl(value: string): UrlParts {
   const isRelative = !value.startsWith('http')
