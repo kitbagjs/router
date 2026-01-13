@@ -19,7 +19,7 @@ export * from './types/routerReplace'
 export * from './types/routerResolve'
 export * from './types/routerResolve'
 export * from './types/routerRoute'
-export * from './types/url'
+export * from './types/urlString'
 export * from './types/useLink'
 
 // Errors

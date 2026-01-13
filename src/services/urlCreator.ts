@@ -1,6 +1,6 @@
-import { asUrl, Url, UrlParts } from '@/types/url'
+import { asUrlString, UrlString, UrlParts } from '@/types/urlString'
 
-export function createUrl({ protocol, host, pathname, search, searchParams, hash }: Partial<UrlParts>): Url {
+export function createUrl({ protocol, host, pathname, search, searchParams, hash }: Partial<UrlParts>): UrlString {
   const url = new URL('https://localhost')
 
   if (protocol) {
@@ -27,5 +27,5 @@ export function createUrl({ protocol, host, pathname, search, searchParams, hash
 
   const value = url.toString().replace(/^https:\/\/localhost\/*/, '/')
 
-  return asUrl(value)
+  return asUrlString(value)
 }
