@@ -18,6 +18,8 @@ import { ToName } from './name'
 import { ToWithParams, WithParams } from '@/services/withParams'
 import { RouteContext, ToRouteContext } from './routeContext'
 import { RouterViewProps } from '@/components/routerView'
+import { createUrl, CreateUrlOptions } from '@/services/createUrl'
+import { Url } from '@/types/url'
 
 export type WithHost<THost extends string | WithParams = string | WithParams> = {
   /**
@@ -60,27 +62,12 @@ export function isWithComponentPropsRecord<T extends Record<string, unknown>>(op
 
 export type CreateRouteOptions<
   TName extends string | undefined = string | undefined,
-  TPath extends string | WithParams | undefined = string | WithParams | undefined,
-  TQuery extends string | WithParams | undefined = string | WithParams | undefined,
-  THash extends string | WithParams | undefined = string | WithParams | undefined,
   TMeta extends RouteMeta = RouteMeta
-> = {
+> = CreateUrlOptions & {
   /**
    * Name for route, used to create route keys and in navigation.
    */
   name?: TName,
-  /**
-   * Path part of URL.
-   */
-  path?: TPath,
-  /**
-   * Query (aka search) part of URL.
-   */
-  query?: TQuery,
-  /**
-   * Hash part of URL.
-   */
-  hash?: THash,
   /**
    * Represents additional metadata associated with a route, customizable via declaration merging.
    */
@@ -161,6 +148,16 @@ type ToMatches<
   ? [...TParent['matches'], ToMatch<TOptions, TProps>]
   : [ToMatch<TOptions, TProps>]
 
+type ExtractRouteUrlGenerics<T extends Url> =
+  T extends Url<
+    infer THost,
+    infer TPath,
+    infer TQuery,
+    infer THash
+  >
+    ? { host: THost, path: TPath, query: TQuery, hash: THash }
+    : never
+
 export type ToRoute<
   TOptions extends CreateRouteOptions,
   TProps extends CreateRouteProps<TOptions> | undefined = undefined
@@ -169,10 +166,10 @@ export type ToRoute<
   : TOptions extends { parent: infer TParent extends Route }
     ? Route<
       ToName<TOptions['name']>,
-      ToWithParams<TParent['host']>,
-      CombinePath<ToWithParams<TParent['path']>, ToWithParams<TOptions['path']>>,
-      CombineQuery<ToWithParams<TParent['query']>, ToWithParams<TOptions['query']>>,
-      CombineHash<ToWithParams<TParent['hash']>, ToWithParams<TOptions['hash']>>,
+      ExtractRouteUrlGenerics<TParent>['host'],
+      CombinePath<ExtractRouteUrlGenerics<TParent>['path'], ToWithParams<TOptions['path']>>,
+      CombineQuery<ExtractRouteUrlGenerics<TParent>['query'], ToWithParams<TOptions['query']>>,
+      CombineHash<ExtractRouteUrlGenerics<TParent>['hash'], ToWithParams<TOptions['hash']>>,
       CombineMeta<ToMeta<TParent['meta']>, ToMeta<TOptions['meta']>>,
       CombineState<ToState<TParent['state']>, ToState<TOptions['state']>>,
       ToMatches<TOptions, CreateRouteProps<TOptions> extends TProps ? undefined : TProps>,
@@ -191,17 +188,21 @@ export type ToRoute<
     >
 
 export function combineRoutes(parent: Route, child: Route): Route {
+  const url = createUrl({
+    host: parent.host.schema,
+    path: combinePath(parent.path.schema, child.path.schema),
+    query: combineQuery(parent.query.schema, child.query.schema),
+    hash: combineHash(parent.hash.schema, child.hash.schema),
+  })
+
   return {
     ...child,
-    path: combinePath(parent.path, child.path),
-    query: combineQuery(parent.query, child.query),
+    ...url,
     meta: combineMeta(parent.meta, child.meta),
     state: combineState(parent.state, child.state),
-    hash: combineHash(parent.hash, child.hash),
     hooks: [...parent.hooks, ...child.hooks],
     matches: [...parent.matches, child.matched],
     context: [...parent.context, ...child.context],
-    host: parent.host,
     depth: parent.depth + 1,
   }
 }

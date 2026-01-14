@@ -1,20 +1,22 @@
 import { ResolvedRoute } from '@/types/resolved'
 import { Route } from '@/types/route'
-import { parseUrl } from '@/services/urlParser'
-import { assembleUrl } from '@/services/urlAssembly'
 import { RouterResolveOptions } from '@/types/routerResolve'
 import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
 import { getStateValues } from '@/services/state'
-import { getRouteParamValues } from './paramValidation'
+import { createUrl } from '@/services/createUrl'
+import { combineUrlSearchParams } from '@/utilities/urlSearchParams'
 
 export function createResolvedRoute(route: Route, params: Record<string, unknown> = {}, options: RouterResolveOptions = {}): ResolvedRoute {
-  const href = assembleUrl(route, {
-    params: params,
-    query: options.query,
-    hash: options.hash,
+  const updatedRoute = createUrl({
+    host: route.host.toString(params),
+    path: route.path.toString(params),
+    query: combineUrlSearchParams(route.query.toString(params), options.query).toString(),
+    hash: route.hash.schema.value ? route.hash.toString(params) : options.hash,
   })
 
-  const { search, hash } = parseUrl(href)
+  const query = createResolvedRouteQuery(updatedRoute.query.toString(params))
+  const href = updatedRoute.toString()
+  const hash = updatedRoute.hash.toString()
 
   return {
     id: route.id,
@@ -22,9 +24,9 @@ export function createResolvedRoute(route: Route, params: Record<string, unknown
     matches: route.matches,
     name: route.name,
     hooks: route.hooks,
-    query: createResolvedRouteQuery(search),
-    params: getRouteParamValues(route, href),
+    params: route.parse(href),
     state: getStateValues(route.state, options.state),
+    query,
     hash,
     href,
   }

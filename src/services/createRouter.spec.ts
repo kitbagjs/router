@@ -603,7 +603,7 @@ describe('router.resolve', () => {
       params: {
         paramA: 'bar',
       },
-      hash: '#foo',
+      hash: 'foo',
       href: '/parentA/bar#foo',
     })
   })
