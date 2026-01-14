@@ -172,26 +172,3 @@ function getQueryParams(query: WithParams, url: string): Record<string, unknown>
   }
   return values
 }
-
-// const hasParams = createComputedUrl({
-//   host: 'https://kitbag.dev',
-//   pathname: '/[id]',
-//   query: 'color=red',
-//   hash: '#[page]',
-// })
-
-// // can call toString on the whole url, any params will be required
-// hasParams.toString({ id: '14', page: '123' })
-// //  https://kitbag.dev/14?color=red#123
-
-// // can also call toString on individual parts
-// hasParams.host.toString()
-// //  https://kitbag.dev
-
-// // if "part" requires params, it'll be requires by toString
-// hasParams.path.toString({ id: '14' })
-// //  /14
-
-// // retain access to the WithParams object
-// const hostParams = hasParams.host.schema.params
-// //     ^?
