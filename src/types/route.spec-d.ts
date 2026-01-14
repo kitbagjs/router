@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { describe, expectTypeOf, test } from 'vitest'
-import { ExtractRouteParamTypesWriting, ExtractRouteParamTypesReading } from '@/types/params'
+import { ExtractUrlParamTypesWriting, ExtractUrlParamTypesReading } from '@/types/params'
 import { withParams } from '@/services/withParams'
 import { withDefault } from '@/services/withDefault'
 import { createRoute } from '@/services/createRoute'
@@ -19,8 +19,8 @@ describe('ExtractRouteParamTypes', () => {
     })
     type TestRoute = typeof testRoute
 
-    type SourceWriting = ExtractRouteParamTypesWriting<TestRoute>
-    type SourceReading = ExtractRouteParamTypesReading<TestRoute>
+    type SourceWriting = ExtractUrlParamTypesWriting<TestRoute>
+    type SourceReading = ExtractUrlParamTypesReading<TestRoute>
     type Expect = { inHost: string, inPath: string, paramC?: string, inQuery: boolean, inHash: string }
 
     expectTypeOf<SourceWriting>().toEqualTypeOf<Expect>()
@@ -39,8 +39,8 @@ describe('ExtractRouteParamTypes', () => {
     })
     type TestRoute = typeof testRoute
 
-    type SourceWriting = ExtractRouteParamTypesWriting<TestRoute>
-    type SourceReading = ExtractRouteParamTypesReading<TestRoute>
+    type SourceWriting = ExtractUrlParamTypesWriting<TestRoute>
+    type SourceReading = ExtractUrlParamTypesReading<TestRoute>
 
     expectTypeOf<SourceWriting>().toEqualTypeOf<{ required: boolean, optional?: string | undefined }>()
     expectTypeOf<SourceReading>().toEqualTypeOf<{ required: boolean, optional: string }>()

@@ -1,5 +1,5 @@
 import { WithParams } from '@/services/withParams'
-import { ExtractRouteParamTypesReading, ExtractRouteParamTypesWriting } from '@/types/params'
+import { ExtractRecordParamTypesReading, ExtractRecordParamTypesWriting } from '@/types/params'
 import { AllPropertiesAreOptional } from '@/types/utilities'
 import { QuerySource } from '@/types/querySource'
 import { UrlString } from '@/types/urlString'
@@ -48,7 +48,7 @@ export type Url<
   /**
    * Parses the url supplied and returns any params found.
    */
-  parse: (url: string) => ExtractRouteParamTypesReading<{ host: THost, path: TPath, query: TQuery, hash: THash }>,
+  parse: (url: string) => ExtractRecordParamTypesReading<{ host: THost, path: TPath, query: TQuery, hash: THash }>,
 }
 
 export type ToStringOptions = {
@@ -58,8 +58,8 @@ export type ToStringOptions = {
 
 type UrlParamsArgs<
   TParts extends Record<string, unknown> = Record<string, unknown>
-> = ExtractRouteParamTypesWriting<TParts> extends Record<string, unknown>
+> = ExtractRecordParamTypesWriting<TParts> extends Record<string, unknown>
   ? [params?: Record<string, unknown>, options?: ToStringOptions]
-  : AllPropertiesAreOptional<ExtractRouteParamTypesWriting<TParts>> extends true
-    ? [params?: ExtractRouteParamTypesWriting<TParts>, options?: ToStringOptions]
-    : [params: ExtractRouteParamTypesWriting<TParts>, options?: ToStringOptions]
+  : AllPropertiesAreOptional<ExtractRecordParamTypesWriting<TParts>> extends true
+    ? [params?: ExtractRecordParamTypesWriting<TParts>, options?: ToStringOptions]
+    : [params: ExtractRecordParamTypesWriting<TParts>, options?: ToStringOptions]
