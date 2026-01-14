@@ -94,8 +94,8 @@ export function createUrl(urlOrOptions: CreateUrlOptions | string): Url {
 }
 
 function assembleParamValues(part: WithParams, paramValues: Record<string, unknown>): string {
-  return Object.keys(part.params).reduce((url, name) => {
-    return setParamValueOnUrl(url, part, name, paramValues[name])
+  return Object.entries(part.params).reduce((url, [name, value]) => {
+    return setParamValueOnUrl(url, part, name, value)
   }, part.value)
 }
 
