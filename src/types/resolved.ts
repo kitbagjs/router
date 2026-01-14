@@ -1,5 +1,5 @@
 import { Hooks } from '@/models/hooks'
-import { ExtractRouteParamTypesReading } from '@/types/params'
+import { ExtractUrlParamTypesReading } from '@/types/params'
 import { Route, Routes } from '@/types/route'
 import { ExtractRouteStateParamsAsOptional } from '@/types/state'
 import { UrlString } from '@/types/urlString'
@@ -37,7 +37,7 @@ export type ResolvedRoute<TRoute extends Route = Route> = Readonly<{
   /**
    * Key value pair for route params, values will be the user provided value from current browser location.
   */
-  params: ExtractRouteParamTypesReading<TRoute>,
+  params: ExtractUrlParamTypesReading<TRoute>,
   /**
    * Type for additional data intended to be stored in history state.
    */

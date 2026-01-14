@@ -72,40 +72,51 @@ type ExtractWithParams<TParts extends Record<string, unknown>> = {
 }
 
 /**
- * Extracts combined types of path and query parameters for a given route, creating a unified parameter object.
+ * Extracts combined types for any properties that are WithParams, creating a unified parameter object.
  * @template Parts - The route from which to extract and merge parameter types.
  * @returns A record of parameter names to their respective types, extracted and merged from both path and query parameters.
  */
-export type ExtractRouteParamTypesReading<TParts extends Record<PropertyKey, unknown> | Url> =
-  TParts extends Url
-    ? ExtractRouteParamTypesReading<{ host: TParts['host']['schema'], path: TParts['path']['schema'], query: TParts['query']['schema'], hash: TParts['hash']['schema'] }>
-    : Identity<
-      MakeOptional<
-        UnionToIntersection<
-          { [K in keyof ExtractWithParams<TParts>]: ExtractParamTypesReading<ExtractWithParams<TParts>[K]> }[keyof ExtractWithParams<TParts>]
-        >
+export type ExtractRecordParamTypesReading<TParts extends Record<PropertyKey, unknown>> =
+  Identity<
+    MakeOptional<
+      UnionToIntersection<
+        { [K in keyof ExtractWithParams<TParts>]: ExtractParamTypesReading<ExtractWithParams<TParts>[K]> }[keyof ExtractWithParams<TParts>]
       >
     >
+  >
 
 /**
- * Extracts combined types of path and query parameters for a given route, creating a unified parameter object.
+ * Extracts combined types of path and query parameters for a given url, creating a unified parameter object.
+ * @template TParts - The url from which to extract and merge parameter types.
+ * @returns A record of parameter names to their respective types, extracted and merged from both path and query parameters.
+ */
+export type ExtractUrlParamTypesReading<TParts extends Url> = ExtractRecordParamTypesReading<{ host: TParts['host']['schema'], path: TParts['path']['schema'], query: TParts['query']['schema'], hash: TParts['hash']['schema'] }>
+
+/**
+ * Extracts combined types for any properties that are WithParams, creating a unified parameter object.
  * Differs from ExtractRouteParamTypesReading in that optional params with defaults will remain optional.
  * @template TRoute - The route type from which to extract and merge parameter types.
  * @returns A record of parameter names to their respective types, extracted and merged from both path and query parameters.
  */
-export type ExtractRouteParamTypesWriting<TParts extends Record<string, unknown> | Url> =
-  TParts extends Url
-    ? ExtractRouteParamTypesWriting<{ host: TParts['host']['schema'], path: TParts['path']['schema'], query: TParts['query']['schema'], hash: TParts['hash']['schema'] }>
-    : Identity<
-      MakeOptional<
-        UnionToIntersection<
-          { [K in keyof ExtractWithParams<TParts>]: ExtractParamTypesWriting<ExtractWithParams<TParts>[K]> }[keyof ExtractWithParams<TParts>]
-        >
+export type ExtractRecordParamTypesWriting<TParts extends Record<string, unknown>> =
+  Identity<
+    MakeOptional<
+      UnionToIntersection<
+        { [K in keyof ExtractWithParams<TParts>]: ExtractParamTypesWriting<ExtractWithParams<TParts>[K]> }[keyof ExtractWithParams<TParts>]
       >
     >
+  >
 
 /**
- * Extracts combined types of path and query parameters for a given route, creating a unified parameter object.
+ * Extracts combined types of path and query parameters for a given url, creating a unified parameter object.
+ * Differs from ExtractUrlParamTypesReading in that optional params with defaults will remain optional.
+ * @template TParts - The url from which to extract and merge parameter types.
+ * @returns A record of parameter names to their respective types, extracted and merged from both path and query parameters.
+ */
+export type ExtractUrlParamTypesWriting<TParts extends Url> = ExtractRecordParamTypesWriting<{ host: TParts['host']['schema'], path: TParts['path']['schema'], query: TParts['query']['schema'], hash: TParts['hash']['schema'] }>
+
+/**
+ * Extracts combined types for any properties that are WithParams, creating a unified parameter object.
  * @template TParams - The record of parameter types, possibly including undefined.
  * @returns A new type with the appropriate properties marked as optional.
  */
