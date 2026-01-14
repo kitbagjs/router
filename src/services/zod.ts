@@ -92,9 +92,9 @@ type ZodSchemas = Awaited<ReturnType<typeof getZodInstances>>
 
 export function zotParamsDetected(routes: Routes): boolean {
   return Object.values(routes).some((route) => {
-    return Object.values(route.host.params).some((param) => isZodSchemaLike(param))
-      || Object.values(route.path.params).some((param) => isZodSchemaLike(param))
-      || Object.values(route.query.params).some((param) => isZodSchemaLike(param))
+    return Object.values(route.host.schema.params).some((param) => isZodSchemaLike(param))
+      || Object.values(route.path.schema.params).some((param) => isZodSchemaLike(param))
+      || Object.values(route.query.schema.params).some((param) => isZodSchemaLike(param))
   })
 }
 

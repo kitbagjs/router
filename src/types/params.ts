@@ -1,9 +1,9 @@
-import { LiteralParam, Param, ParamGetSet, ParamGetter } from '@/types/paramTypes'
-import { Identity } from '@/types/utilities'
-import { MakeOptional } from '@/utilities/makeOptional'
-import { Route } from './route'
 import { WithParams } from '@/services/withParams'
 import { StandardSchemaV1 } from '@standard-schema/spec'
+import { LiteralParam, Param, ParamGetSet, ParamGetter } from '@/types/paramTypes'
+import { MakeOptional, UnionToIntersection } from '@/utilities/makeOptional'
+import { Identity } from '@/types/utilities'
+import { Url } from '@/types/url'
 
 export const paramStart = '['
 export type ParamStart = typeof paramStart
@@ -67,20 +67,25 @@ export type ExtractParamName<
       : TParam
   : never
 
+type ExtractWithParams<TParts extends Record<string, unknown>> = {
+  [K in keyof TParts as TParts[K] extends WithParams ? K : never]: TParts[K] extends WithParams ? TParts[K] : never
+}
+
 /**
  * Extracts combined types of path and query parameters for a given route, creating a unified parameter object.
- * @template TRoute - The route type from which to extract and merge parameter types.
+ * @template Parts - The route from which to extract and merge parameter types.
  * @returns A record of parameter names to their respective types, extracted and merged from both path and query parameters.
  */
-export type ExtractRouteParamTypesReading<TRoute extends Route> =
-  Identity<
-    MakeOptional<
-      ExtractParamTypesReading<TRoute['host']> &
-      ExtractParamTypesReading<TRoute['path']> &
-      ExtractParamTypesReading<TRoute['query']> &
-      ExtractParamTypesReading<TRoute['hash']>
+export type ExtractRouteParamTypesReading<TParts extends Record<PropertyKey, unknown> | Url> =
+  TParts extends Url
+    ? ExtractRouteParamTypesReading<{ host: TParts['host']['schema'], path: TParts['path']['schema'], query: TParts['query']['schema'], hash: TParts['hash']['schema'] }>
+    : Identity<
+      MakeOptional<
+        UnionToIntersection<
+          { [K in keyof ExtractWithParams<TParts>]: ExtractParamTypesReading<ExtractWithParams<TParts>[K]> }[keyof ExtractWithParams<TParts>]
+        >
+      >
     >
-  >
 
 /**
  * Extracts combined types of path and query parameters for a given route, creating a unified parameter object.
@@ -88,15 +93,23 @@ export type ExtractRouteParamTypesReading<TRoute extends Route> =
  * @template TRoute - The route type from which to extract and merge parameter types.
  * @returns A record of parameter names to their respective types, extracted and merged from both path and query parameters.
  */
-export type ExtractRouteParamTypesWriting<TRoute extends Route> =
-  Identity<MakeOptional<ExtractParamTypesWriting<TRoute['host']> & ExtractParamTypesWriting<TRoute['path']> & ExtractParamTypesWriting<TRoute['query']> & ExtractParamTypesWriting<TRoute['hash']>>>
+export type ExtractRouteParamTypesWriting<TParts extends Record<string, unknown> | Url> =
+  TParts extends Url
+    ? ExtractRouteParamTypesWriting<{ host: TParts['host']['schema'], path: TParts['path']['schema'], query: TParts['query']['schema'], hash: TParts['hash']['schema'] }>
+    : Identity<
+      MakeOptional<
+        UnionToIntersection<
+          { [K in keyof ExtractWithParams<TParts>]: ExtractParamTypesWriting<ExtractWithParams<TParts>[K]> }[keyof ExtractWithParams<TParts>]
+        >
+      >
+    >
 
 /**
  * Extracts combined types of path and query parameters for a given route, creating a unified parameter object.
  * @template TParams - The record of parameter types, possibly including undefined.
  * @returns A new type with the appropriate properties marked as optional.
  */
-type ExtractParamTypesReading<TWithParams extends WithParams> = {
+type ExtractParamTypesReading<TWithParams extends { value: string, params: Record<string, Param> }> = {
   [K in keyof TWithParams['params']]: TWithParams['value'] extends `${string}${ParamStart}?${K & string}${ParamEnd}${string}`
     ? TWithParams['params'][K] extends Required<ParamGetSet>
       ? ExtractParamType<TWithParams['params'][K]>
@@ -110,7 +123,7 @@ type ExtractParamTypesReading<TWithParams extends WithParams> = {
  * @template TParams - The record of parameter types, possibly including undefined.
  * @returns A new type with the appropriate properties marked as optional.
  */
-type ExtractParamTypesWriting<TWithParams extends WithParams> = {
+type ExtractParamTypesWriting<TWithParams extends { value: string, params: Record<string, Param> }> = {
   [K in keyof TWithParams['params']]: TWithParams['value'] extends `${string}${ParamStart}?${K & string}${ParamEnd}${string}`
     ? ExtractParamType<TWithParams['params'][K]> | undefined
     : ExtractParamType<TWithParams['params'][K]>

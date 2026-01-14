@@ -6,6 +6,7 @@ import { Route } from '@/types/route'
 import { checkDuplicateParams } from '@/utilities/checkDuplicateParams'
 import { toWithParams, withParams } from '@/services/withParams'
 import { createHooksFactory } from '@/services/createHooksFactory'
+import { createUrl } from '@/services/createUrl'
 import { InternalRouteHooks } from '@/types/hooks'
 import { ExtractRouteContext } from '@/types/routeContext'
 
@@ -40,27 +41,31 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
   const { store, ...hooks } = createHooksFactory()
   const rawRoute = markRaw({ id, meta, state, ...options, props })
 
+  const url = createUrl({
+    host: withParams(),
+    path,
+    query,
+    hash,
+  })
+
   const route = {
     id,
     matched: rawRoute,
     matches: [rawRoute],
     hooks: [store],
     name,
-    path,
-    query,
-    hash,
     meta,
     state,
     context,
     depth: 1,
-    host: withParams(),
     prefetch: options.prefetch,
+    ...url,
     ...hooks,
   } satisfies Route & InternalRouteHooks
 
   const merged = isWithParent(options) ? combineRoutes(options.parent, route) : route
 
-  checkDuplicateParams(merged.path.params, merged.query.params, merged.hash.params)
+  checkDuplicateParams(merged.path.schema.params, merged.query.schema.params, merged.hash.schema.params)
 
   return merged
 }

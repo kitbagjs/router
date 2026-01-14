@@ -1,9 +1,9 @@
-import { parseUrl } from '@/services/urlParser'
+import { createUrl } from '@/services/createUrl'
 
 export function createIsExternal(host: string | undefined): (url: string) => boolean {
   return (url: string) => {
-    const { host: targetHost } = parseUrl(url)
-    if (targetHost === undefined || targetHost === host) {
+    const { host: targetHost } = createUrl(url)
+    if (targetHost.toString() === host) {
       return false
     }
 

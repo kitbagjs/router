@@ -1,10 +1,9 @@
 import { ResolvedRoute } from '@/types/resolved'
 import { getMatchesForUrl } from '@/services/getMatchesForUrl'
-import { getRouteParamValues } from '@/services/paramValidation'
 import { Routes } from '@/types/route'
-import { parseUrl } from '@/services/urlParser'
 import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
 import { getStateValues } from '@/services/state'
+import { createUrl } from '@/services/createUrl'
 import { asUrlString } from '@/types/urlString'
 
 export function createResolvedRouteForUrl(routes: Routes, url: string, state?: Partial<unknown>): ResolvedRoute | undefined {
@@ -15,7 +14,7 @@ export function createResolvedRouteForUrl(routes: Routes, url: string, state?: P
   }
 
   const [route] = matches
-  const { searchParams, hash } = parseUrl(url)
+  const { query, hash } = createUrl(url)
 
   return {
     id: route.id,
@@ -23,10 +22,10 @@ export function createResolvedRouteForUrl(routes: Routes, url: string, state?: P
     matches: route.matches,
     name: route.name,
     hooks: route.hooks,
-    query: createResolvedRouteQuery(searchParams),
-    params: getRouteParamValues(route, url),
+    query: createResolvedRouteQuery(query.toString()),
+    params: route.parse(url),
     state: getStateValues(route.state, state),
-    hash,
+    hash: hash.toString(),
     href: asUrlString(url),
   }
 }

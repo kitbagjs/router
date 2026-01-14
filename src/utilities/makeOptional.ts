@@ -7,3 +7,6 @@ export type MakeOptional<T> = {
 } & {
   [P in Exclude<keyof T, WithOptionalProperties<T>>]: T[P];
 }
+
+export type UnionToIntersection<U> =
+(U extends any ? (k: U) => void : never) extends ((k: infer I) => void) ? I : never

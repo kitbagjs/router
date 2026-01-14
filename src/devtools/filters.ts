@@ -32,7 +32,7 @@ const routeMatchesFilter: RouteFilter = ({ route, payload }) => {
   }
 
   // Check route path
-  if (route.path.value.toLowerCase().includes(filterLower)) {
+  if (route.path.schema.value.toLowerCase().includes(filterLower)) {
     return true
   }
 

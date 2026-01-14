@@ -16,7 +16,7 @@ test('given parent, path is combined', () => {
     path: withParams('/child/[id]', { id: Number }),
   })
 
-  expect(child.path).toMatchObject({
+  expect(child.path.schema).toMatchObject({
     value: '/parent/child/[id]',
     params: {
       id: Number,
@@ -34,7 +34,7 @@ test('given parent, query is combined', () => {
     query: withParams('sort=[sort]', { sort: Boolean }),
   })
 
-  expect(child.query).toMatchObject({
+  expect(child.query.schema).toMatchObject({
     value: 'static=123&sort=[sort]',
     params: {
       sort: Boolean,

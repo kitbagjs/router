@@ -1,16 +1,20 @@
 import { Route } from '@/types/route'
 import { stringHasValue } from '@/utilities/guards'
 import { withParams } from '@/services/withParams'
+import { createUrl } from '@/services/createUrl'
 
 export function insertBaseRoute(route: Route, base?: string): Route {
   if (!stringHasValue(base)) {
     return route
   }
 
-  const value = `${base}${route.path.value}`
+  const { schema } = route.path
+  const { path } = createUrl({
+    path: withParams(`${base}${schema.value}`, schema.params),
+  })
 
   return {
     ...route,
-    path: withParams(value, route.path.params),
+    path,
   }
 }
