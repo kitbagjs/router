@@ -57,7 +57,7 @@ function getInspectorNodeForRoute(
 
   return {
     id: route.id,
-    label: route.path.schema.value || route.name,
+    label: route.path.value || route.name,
     tags,
   }
 }
@@ -97,21 +97,21 @@ function getInspectorStateOptionsForRoute(route: Route): CustomInspectorState[st
   fields.push({
     editable: false,
     key: 'path',
-    value: route.path.schema.value,
+    value: route.path.value,
   })
 
   // Route query
   fields.push({
     editable: false,
     key: 'query',
-    value: route.query.schema.value,
+    value: route.query.value,
   })
 
   // Route hash
   fields.push({
     editable: false,
     key: 'hash',
-    value: route.hash.schema.value,
+    value: route.hash.value,
   })
 
   // Route meta

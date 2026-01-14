@@ -90,7 +90,7 @@ export type ExtractRecordParamTypesReading<TParts extends Record<PropertyKey, un
  * @template TParts - The url from which to extract and merge parameter types.
  * @returns A record of parameter names to their respective types, extracted and merged from both path and query parameters.
  */
-export type ExtractUrlParamTypesReading<TParts extends Url> = ExtractRecordParamTypesReading<{ host: TParts['host']['schema'], path: TParts['path']['schema'], query: TParts['query']['schema'], hash: TParts['hash']['schema'] }>
+export type ExtractUrlParamTypesReading<TParts extends Url> = ExtractRecordParamTypesReading<{ host: TParts['host'], path: TParts['path'], query: TParts['query'], hash: TParts['hash'] }>
 
 /**
  * Extracts combined types for any properties that are WithParams, creating a unified parameter object.
@@ -113,7 +113,7 @@ export type ExtractRecordParamTypesWriting<TParts extends Record<string, unknown
  * @template TParts - The url from which to extract and merge parameter types.
  * @returns A record of parameter names to their respective types, extracted and merged from both path and query parameters.
  */
-export type ExtractUrlParamTypesWriting<TParts extends Url> = ExtractRecordParamTypesWriting<{ host: TParts['host']['schema'], path: TParts['path']['schema'], query: TParts['query']['schema'], hash: TParts['hash']['schema'] }>
+export type ExtractUrlParamTypesWriting<TParts extends Url> = ExtractRecordParamTypesWriting<{ host: TParts['host'], path: TParts['path'], query: TParts['query'], hash: TParts['hash'] }>
 
 /**
  * Extracts combined types for any properties that are WithParams, creating a unified parameter object.
