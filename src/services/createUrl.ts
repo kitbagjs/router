@@ -2,9 +2,7 @@ import { toWithParams, ToWithParams, WithParams } from '@/services/withParams'
 import { getParamValueFromUrl, setParamValueOnUrl } from '@/services/paramsFinder'
 import { getParamName, isOptionalParamSyntax, paramIsOptional } from '@/services/routeRegex'
 import { getParamValue, setParamValue } from '@/services/params'
-import { combineUrlSearchParams } from '@/utilities/urlSearchParams'
-import { stringHasValue } from '@/utilities/guards'
-import { Url, ToStringOptions } from '@/types/url'
+import { Url } from '@/types/url'
 import { asUrlString, UrlString } from '@/types/urlString'
 
 export type CreateUrlOptions = {
@@ -71,14 +69,12 @@ export function createUrl(urlOrOptions: CreateUrlOptions | string): Url {
     },
   }
 
-  function toString(params: Record<string, unknown> = {}, options: ToStringOptions = {}): UrlString {
+  function toString(params: Record<string, unknown> = {}): UrlString {
     const url = new URL(host.toString(params), FALLBACK_HOST)
-    const combinedQuery = combineUrlSearchParams(query.toString(params), options.query)
-    const hashWithFallback = stringHasValue(hash.value) ? hash.toString(params) : options.hash
 
     url.pathname = path.toString(params)
-    url.search = combinedQuery.toString()
-    url.hash = hashWithFallback ?? ''
+    url.search = query.toString(params)
+    url.hash = hash.toString(params)
 
     return asUrlString(url.toString().replace(new RegExp(`^${FALLBACK_HOST}/*`), '/'))
   }

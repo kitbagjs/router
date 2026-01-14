@@ -1,7 +1,6 @@
 import { WithParams } from '@/services/withParams'
 import { ExtractRecordParamTypesReading, ExtractRecordParamTypesWriting } from '@/types/params'
 import { AllPropertiesAreOptional } from '@/types/utilities'
-import { QuerySource } from '@/types/querySource'
 import { UrlString } from '@/types/urlString'
 
 /**
@@ -47,15 +46,10 @@ export type Url<
   parse: (url: string) => ExtractRecordParamTypesReading<{ host: THost, path: TPath, query: TQuery, hash: THash }>,
 }
 
-export type ToStringOptions = {
-  query?: QuerySource,
-  hash?: string,
-}
-
 type UrlParamsArgs<
   TParts extends Record<string, unknown> = Record<string, unknown>
 > = ExtractRecordParamTypesWriting<TParts> extends Record<string, unknown>
-  ? [params?: Record<string, unknown>, options?: ToStringOptions]
+  ? [params?: Record<string, unknown>] // generic URL without generics uses this
   : AllPropertiesAreOptional<ExtractRecordParamTypesWriting<TParts>> extends true
-    ? [params?: ExtractRecordParamTypesWriting<TParts>, options?: ToStringOptions]
-    : [params: ExtractRecordParamTypesWriting<TParts>, options?: ToStringOptions]
+    ? [params?: ExtractRecordParamTypesWriting<TParts>]
+    : [params: ExtractRecordParamTypesWriting<TParts>]
