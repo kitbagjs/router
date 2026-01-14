@@ -109,8 +109,8 @@ function cleanQuery(query: WithParams): WithParams {
 }
 
 function assembleParamValues(part: WithParams, paramValues: Record<string, unknown>): string {
-  return Object.entries(part.params).reduce((url, [name, value]) => {
-    return setParamValueOnUrl(url, part, name, value)
+  return Object.keys(part.params).reduce((url, name) => {
+    return setParamValueOnUrl(url, part, name, paramValues[name])
   }, part.value)
 }
 
