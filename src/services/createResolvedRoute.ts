@@ -11,7 +11,7 @@ export function createResolvedRoute(route: Route, params: Record<string, unknown
     host: route.host.toString(params),
     path: route.path.toString(params),
     query: combineUrlSearchParams(route.query.toString(params), options.query).toString(),
-    hash: route.hash.schema.value ? route.hash.toString(params) : options.hash,
+    hash: route.hash.value ? route.hash.toString(params) : options.hash,
   })
 
   const query = createResolvedRouteQuery(updatedRoute.query.toString(params))

@@ -8,9 +8,8 @@ export function insertBaseRoute(route: Route, base?: string): Route {
     return route
   }
 
-  const { schema } = route.path
   const { path } = createUrl({
-    path: withParams(`${base}${schema.value}`, schema.params),
+    path: withParams(`${base}${route.path.value}`, route.path.params),
   })
 
   return {

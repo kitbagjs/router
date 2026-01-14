@@ -16,29 +16,25 @@ export type Url<
   /**
    * Represents the host for this route. Used for external routes.
   */
-  host: {
-    schema: THost,
+  host: THost & {
     toString: (...params: UrlParamsArgs<{ host: THost }>) => string,
   },
   /**
    * Represents the structured path of the route, including path params.
   */
-  path: {
-    schema: TPath,
+  path: TPath & {
     toString: (...params: UrlParamsArgs<{ path: TPath }>) => string,
   },
   /**
    * Represents the structured query of the route, including query params.
   */
-  query: {
-    schema: TQuery,
+  query: TQuery & {
     toString: (...params: UrlParamsArgs<{ query: TQuery }>) => string,
   },
   /**
    * Represents the hash of the route.
    */
-  hash: {
-    schema: THash,
+  hash: THash & {
     toString: (...params: UrlParamsArgs<{ hash: THash }>) => string,
   },
   /**

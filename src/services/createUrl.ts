@@ -44,29 +44,29 @@ export function createUrl(urlOrOptions: CreateUrlOptions | string): Url {
   }
 
   const host: Url['host'] = {
-    schema: options.host,
-    toString(params = {}) {
+    ...options.host,
+    toString(params: Record<string, unknown> = {}): string {
       return assembleParamValues(options.host, params)
     },
   }
 
   const path: Url['path'] = {
-    schema: options.path,
-    toString(params = {}) {
+    ...options.path,
+    toString(params: Record<string, unknown> = {}): string {
       return assembleParamValues(options.path, params)
     },
   }
 
   const query: Url['query'] = {
-    schema: options.query,
-    toString(params = {}) {
+    ...options.query,
+    toString(params: Record<string, unknown> = {}): string {
       return assembleQueryParamValues(options.query, params).toString()
     },
   }
 
   const hash: Url['hash'] = {
-    schema: options.hash,
-    toString(params = {}) {
+    ...options.hash,
+    toString(params: Record<string, unknown> = {}): string {
       return assembleParamValues(options.hash, params)
     },
   }
@@ -74,7 +74,7 @@ export function createUrl(urlOrOptions: CreateUrlOptions | string): Url {
   function toString(params: Record<string, unknown> = {}, options: ToStringOptions = {}): UrlString {
     const url = new URL(host.toString(params), FALLBACK_HOST)
     const combinedQuery = combineUrlSearchParams(query.toString(params), options.query)
-    const hashWithFallback = stringHasValue(hash.schema.value) ? hash.toString(params) : options.hash
+    const hashWithFallback = stringHasValue(hash.value) ? hash.toString(params) : options.hash
 
     url.pathname = path.toString(params)
     url.search = combinedQuery.toString()
@@ -87,10 +87,10 @@ export function createUrl(urlOrOptions: CreateUrlOptions | string): Url {
     const parts = new URL(url, FALLBACK_HOST)
 
     return {
-      ...getParams(host.schema, `${parts.protocol}//${parts.host}`),
-      ...getParams(path.schema, parts.pathname),
-      ...getQueryParams(query.schema, parts.search),
-      ...getParams(hash.schema, parts.hash),
+      ...getParams(host, `${parts.protocol}//${parts.host}`),
+      ...getParams(path, parts.pathname),
+      ...getQueryParams(query, parts.search),
+      ...getParams(hash, parts.hash),
     }
   }
 
