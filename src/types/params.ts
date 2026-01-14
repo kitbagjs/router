@@ -120,7 +120,7 @@ export type ExtractUrlParamTypesWriting<TParts extends Url> = ExtractRecordParam
  * @template TParams - The record of parameter types, possibly including undefined.
  * @returns A new type with the appropriate properties marked as optional.
  */
-type ExtractParamTypesReading<TWithParams extends { value: string, params: Record<string, Param> }> = {
+type ExtractParamTypesReading<TWithParams extends WithParams> = {
   [K in keyof TWithParams['params']]: TWithParams['value'] extends `${string}${ParamStart}?${K & string}${ParamEnd}${string}`
     ? TWithParams['params'][K] extends Required<ParamGetSet>
       ? ExtractParamType<TWithParams['params'][K]>
@@ -134,7 +134,7 @@ type ExtractParamTypesReading<TWithParams extends { value: string, params: Recor
  * @template TParams - The record of parameter types, possibly including undefined.
  * @returns A new type with the appropriate properties marked as optional.
  */
-type ExtractParamTypesWriting<TWithParams extends { value: string, params: Record<string, Param> }> = {
+type ExtractParamTypesWriting<TWithParams extends WithParams> = {
   [K in keyof TWithParams['params']]: TWithParams['value'] extends `${string}${ParamStart}?${K & string}${ParamEnd}${string}`
     ? ExtractParamType<TWithParams['params'][K]> | undefined
     : ExtractParamType<TWithParams['params'][K]>
