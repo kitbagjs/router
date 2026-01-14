@@ -71,8 +71,8 @@ function sortPreferMoreOptionalParamsFulfilled(aRoute: Route, bRoute: Route, act
 }
 
 function sortPreferMatchingHost(aRoute: Route, bRoute: Route): number {
-  const aHasExplicitHost = stringHasValue(aRoute.host.toString())
-  const bHasExplicitHost = stringHasValue(bRoute.host.toString())
+  const aHasExplicitHost = stringHasValue(aRoute.host.schema.value)
+  const bHasExplicitHost = stringHasValue(bRoute.host.schema.value)
 
   if (aHasExplicitHost && !bHasExplicitHost) {
     return SORT_BEFORE
@@ -86,8 +86,8 @@ function sortPreferMatchingHost(aRoute: Route, bRoute: Route): number {
 }
 
 function sortPreferMatchingHash(aRoute: Route, bRoute: Route): number {
-  const aHasExplicitHash = stringHasValue(aRoute.hash.toString())
-  const bHasExplicitHash = stringHasValue(bRoute.hash.toString())
+  const aHasExplicitHash = stringHasValue(aRoute.hash.schema.value)
+  const bHasExplicitHash = stringHasValue(bRoute.hash.schema.value)
 
   if (aHasExplicitHash && !bHasExplicitHash) {
     return SORT_BEFORE
@@ -112,7 +112,7 @@ export function countExpectedPathParams(route: Route, actualPath: string): numbe
 
 export function countExpectedQueryParams(route: Route, actualQuery: QuerySource): number {
   const actualQueryParams = new URLSearchParams(actualQuery)
-  const expectedQuery = new URLSearchParams(route.query.toString())
+  const expectedQuery = new URLSearchParams(route.query.schema.value)
   const expectedQueryKeys = Array.from(expectedQuery.keys())
 
   const missing = expectedQueryKeys.filter((expected) => !actualQueryParams.has(expected))
