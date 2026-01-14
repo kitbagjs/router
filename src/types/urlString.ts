@@ -1,15 +1,4 @@
-import { QuerySource } from './querySource'
-
 export type UrlString = `http://${string}` | `https://${string}` | `/${string}`
-
-export type UrlParts = {
-  protocol?: string,
-  host?: string,
-  pathname: string,
-  searchParams: QuerySource,
-  search: string,
-  hash: string,
-}
 
 /**
  * A type guard for determining if a value is a valid URL.

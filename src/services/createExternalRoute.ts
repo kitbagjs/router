@@ -6,6 +6,7 @@ import { Route } from '@/types/route'
 import { checkDuplicateParams } from '@/utilities/checkDuplicateParams'
 import { toWithParams } from '@/services/withParams'
 import { createRouteHooks } from '@/services/createRouteHooks'
+import { createUrl } from '@/services/createUrl'
 import { ExternalRouteHooks } from '@/types/hooks'
 import { ExtractRouteContext } from '@/types/routeContext'
 import { RouteRedirects } from '@/types/redirects'
@@ -38,27 +39,31 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
   })
   const rawRoute = markRaw({ id, meta: {}, state: {}, ...options })
 
+  const url = createUrl({
+    host,
+    path,
+    query,
+    hash,
+  })
+
   const route = {
     id,
     matched: rawRoute,
     matches: [rawRoute],
     hooks: [store],
     name,
-    host,
-    path,
-    query,
-    hash,
     meta,
     depth: 1,
     state: {},
     context,
     ...hooks,
     ...redirects,
+    ...url,
   } satisfies Route & ExternalRouteHooks & RouteRedirects
 
   const merged = isWithParent(options) ? combineRoutes(options.parent, route) : route
 
-  checkDuplicateParams(merged.path.params, merged.query.params, merged.host.params, merged.hash.params)
+  checkDuplicateParams(merged.path.schema.params, merged.query.schema.params, merged.host.schema.params, merged.hash.schema.params)
 
   return merged
 }

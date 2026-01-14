@@ -1,21 +1,29 @@
-import { UrlString, UrlParts } from '@/types/urlString'
-import { parseUrl } from '@/services/urlParser'
-import { createUrl } from '@/services/urlCreator'
+import { Url } from '@/types/url'
+import { UrlString } from '@/types/urlString'
 import { combineUrlSearchParams } from '@/utilities/urlSearchParams'
 import { stringHasValue } from '@/utilities/guards'
+import { createUrl, CreateUrlOptions } from '@/services/createUrl'
 
-export function combineUrl(previous: UrlString | Partial<UrlParts>, updated: UrlString | Partial<UrlParts>): UrlString {
-  const previousUrlParts = typeof previous === 'string' ? parseUrl(previous) : previous
-  const updatedUrlParts = typeof updated === 'string' ? parseUrl(updated) : updated
+export function combineUrl(previous: UrlString | CreateUrlOptions, updated: UrlString | CreateUrlOptions): Url {
+  const previousUrlParts = createUrl(previous)
+  const updatedUrlParts = createUrl(updated)
 
-  const previousParams = previousUrlParts.searchParams ?? new URLSearchParams(previousUrlParts.search)
-  const updatedParams = updatedUrlParts.searchParams ?? new URLSearchParams(updatedUrlParts.search)
+  const previousQuery = new URLSearchParams(previousUrlParts.query.toString())
+  const updatedQuery = new URLSearchParams(updatedUrlParts.query.toString())
+
+  const previousHost = previousUrlParts.host.toString()
+  const updatedHost = updatedUrlParts.host.toString()
+
+  const previousPath = previousUrlParts.path.toString()
+  const updatedPath = updatedUrlParts.path.toString()
+
+  const previousHash = previousUrlParts.hash.toString()
+  const updatedHash = updatedUrlParts.hash.toString()
 
   return createUrl({
-    protocol: stringHasValue(updatedUrlParts.protocol) ? updatedUrlParts.protocol : previousUrlParts.protocol,
-    host: stringHasValue(updatedUrlParts.host) ? updatedUrlParts.host : previousUrlParts.host,
-    pathname: stringHasValue(updatedUrlParts.pathname) ? updatedUrlParts.pathname : previousUrlParts.pathname,
-    searchParams: combineUrlSearchParams(updatedParams, previousParams),
-    hash: stringHasValue(updatedUrlParts.hash) ? updatedUrlParts.hash : previousUrlParts.hash,
+    host: stringHasValue(updatedHost) ? updatedHost : previousHost,
+    path: stringHasValue(updatedPath) ? updatedPath : previousPath,
+    query: combineUrlSearchParams(updatedQuery, previousQuery).toString(),
+    hash: stringHasValue(updatedHash) ? updatedHash : previousHash,
   })
 }

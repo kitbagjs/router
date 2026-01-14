@@ -1,10 +1,11 @@
 import { describe, expect, test } from 'vitest'
 import { createRoute } from '@/services/createRoute'
-import { routeHashMatches, routeHostMatches, routePathMatches, routeQueryMatches } from '@/services/routeMatchRules'
+import { routeHashMatches, routeHostMatches, routeParamsAreValid, routePathMatches, routeQueryMatches } from '@/services/routeMatchRules'
 import { withDefault } from '@/services/withDefault'
 import { component } from '@/utilities/testHelpers'
 import { withParams } from '@/services/withParams'
 import { createExternalRoute } from '@/services/createExternalRoute'
+import { DuplicateParamsError } from '@/errors/duplicateParamsError'
 
 describe('routeHostMatches', () => {
   test('given a route without a host, returns true', () => {
@@ -345,5 +346,158 @@ describe('routeHashMatches', () => {
     const response = routeHashMatches(route, '/#FOO')
 
     expect(response).toBe(true)
+  })
+})
+
+describe('routeParamsAreValid', () => {
+  test('given route WITHOUT params, always return true', () => {
+    const route = createRoute({
+      name: 'no-params',
+      path: '/no-params',
+      component,
+    })
+
+    const response = routeParamsAreValid(route, '/no-params')
+
+    expect(response).toBe(true)
+  })
+
+  test('given route with simple string param and value present, returns true', () => {
+    const route = createRoute({
+      name: 'simple-params',
+      path: '/simple/[simple]',
+      component,
+    })
+
+    const response = routeParamsAreValid(route, '/simple/ABC')
+
+    expect(response).toBe(true)
+  })
+
+  test('given route with OPTIONAL string param WITHOUT value present, returns true', () => {
+    const route = createRoute({
+      name: 'simple-params',
+      path: '/simple/[?simple]',
+      component,
+    })
+
+    const response = routeParamsAreValid(route, '/simple/')
+
+    expect(response).toBe(true)
+  })
+
+  test('given route with DEFAULT string param WITHOUT value present, returns true', () => {
+    const route = createRoute({
+      name: 'simple-params',
+      path: withParams('/simple/[?simple]', { simple: withDefault(String, 'abc') }),
+      component,
+    })
+
+    const response = routeParamsAreValid(route, '/simple/')
+
+    expect(response).toBe(true)
+  })
+
+  test('given route with non-string param with value that satisfies, returns true', () => {
+    const route = createRoute({
+      name: 'simple-params',
+      path: withParams('/simple/[simple]', {
+        simple: Number,
+      }),
+      component,
+    })
+
+    const response = routeParamsAreValid(route, '/simple/123')
+
+    expect(response).toBe(true)
+  })
+
+  test('given route with non-string param with value that does NOT satisfy, returns false', () => {
+    const route = createRoute({
+      name: 'simple-params',
+      path: withParams('/simple/[simple]', {
+        simple: Number,
+      }),
+      component,
+    })
+
+    const response = routeParamsAreValid(route, '/simple/fail')
+
+    expect(response).toBe(false)
+  })
+
+  test('given route with OPTIONAL non-string param with value that does NOT satisfy, returns false', () => {
+    const route = createRoute({
+      name: 'simple-params',
+      path: withParams('/simple/[?simple]', {
+        simple: Number,
+      }),
+      component,
+    })
+
+    const response = routeParamsAreValid(route, '/simple/fail')
+
+    expect(response).toBe(false)
+  })
+
+  test('given route with DEFAULT non-string param with value that does NOT satisfy, returns false', () => {
+    const route = createRoute({
+      name: 'simple-params',
+      path: withParams('/simple/[?simple]', {
+        simple: withDefault(Number, 42),
+      }),
+      component,
+    })
+
+    const response = routeParamsAreValid(route, '/simple/fail')
+
+    expect(response).toBe(false)
+  })
+
+  test('given route with regex param that expects forward slashes, will match', () => {
+    const route = createRoute({
+      name: 'support-slashes',
+      path: withParams('/supports/[slashes]/bookmarked', { slashes: /first\/second\/third/g }),
+      component,
+    })
+
+    const response = routeParamsAreValid(route, '/supports/first/second/third/bookmarked')
+
+    expect(response).toBe(true)
+  })
+
+  test.each([
+    ['/[sameId]/[SameId]/[SAMEID]'],
+    [
+      withParams('/[sameId]/[SameId]/[SAMEID]', {
+        sameId: String,
+        SameId: Number,
+        SAMEID: Boolean,
+      }),
+    ],
+  ])('given route with the same param name of different casing, treats params separately', (path) => {
+    const route = createRoute({
+      name: 'different-cased-params',
+      path,
+      component,
+    })
+
+    const response = routeParamsAreValid(route, '/ABC/123/true')
+
+    expect(response).toBe(true)
+  })
+
+  test.each([
+    { path: '/duplicate/[foo]', host: 'https://router.kitbag.dev', query: 'params=[?foo]' },
+    { path: '/duplicate/[foo]', host: 'https://[foo].kitbag.dev' },
+    { path: '/', host: 'https://[?foo].kitbag.dev', query: 'params=[?foo]' },
+    { path: '/duplicate/[foo]', host: 'https://[foo].kitbag.dev', query: 'params=[foo]' },
+  ])('given route with duplicate param names across path and query, throws DuplicateParamsError', (route) => {
+    const action: () => void = () => createExternalRoute({
+      name: 'different-cased-params',
+      ...route,
+    })
+
+    expect(action).toThrowError(DuplicateParamsError)
   })
 })
