@@ -393,36 +393,6 @@ describe('url assembly', () => {
     })
   })
 
-  // this was all moved to createResolvedRoute
-  describe('static query', () => {
-    test('given a static query returns route with query values added', () => {
-      const url = createUrl({
-        name: 'simple',
-        path: '/',
-      })
-
-      const response = url.toString({}, {
-        query: { simple: 'ABC' },
-      })
-
-      expect(response).toBe('/?simple=ABC')
-    })
-
-    test('given a route with a query and a static query returns route with query values added', () => {
-      const url = createUrl({
-        name: 'simple',
-        path: '/',
-        query: 'foo=foo',
-      })
-
-      const response = url.toString({}, {
-        query: { simple: 'ABC' },
-      })
-
-      expect(response).toBe('/?foo=foo&simple=ABC')
-    })
-  })
-
   describe('host params', () => {
     test.each([
       ['https://kitbag.dev'],
@@ -609,18 +579,6 @@ describe('url assembly', () => {
 
       expect(response).toBe('/#fooABC')
     })
-  })
-
-  // this used to be part of URL Assembly, now part of createResolvedRoute
-  test('given route with hash, returns url with hash value interpolated', () => {
-    const url = createUrl({
-      name: 'simple',
-      path: '/',
-    })
-
-    const response = url.toString({}, { hash: 'foo' })
-
-    expect(response).toBe('/#foo')
   })
 
   test('given route without host that does not start with a forward slash, returns url with forward slash', () => {
