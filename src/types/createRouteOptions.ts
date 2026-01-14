@@ -189,10 +189,10 @@ export type ToRoute<
 
 export function combineRoutes(parent: Route, child: Route): Route {
   const url = createUrl({
-    host: parent.host.schema,
-    path: combinePath(parent.path.schema, child.path.schema),
-    query: combineQuery(parent.query.schema, child.query.schema),
-    hash: combineHash(parent.hash.schema, child.hash.schema),
+    host: parent.host,
+    path: combinePath(parent.path, child.path),
+    query: combineQuery(parent.query, child.query),
+    hash: combineHash(parent.hash, child.hash),
   })
 
   return {

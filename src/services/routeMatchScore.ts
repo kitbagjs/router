@@ -71,8 +71,8 @@ function sortPreferMoreOptionalParamsFulfilled(aRoute: Route, bRoute: Route, act
 }
 
 function sortPreferMatchingHost(aRoute: Route, bRoute: Route): number {
-  const aHasExplicitHost = stringHasValue(aRoute.host.schema.value)
-  const bHasExplicitHost = stringHasValue(bRoute.host.schema.value)
+  const aHasExplicitHost = stringHasValue(aRoute.host.value)
+  const bHasExplicitHost = stringHasValue(bRoute.host.value)
 
   if (aHasExplicitHost && !bHasExplicitHost) {
     return SORT_BEFORE
@@ -86,8 +86,8 @@ function sortPreferMatchingHost(aRoute: Route, bRoute: Route): number {
 }
 
 function sortPreferMatchingHash(aRoute: Route, bRoute: Route): number {
-  const aHasExplicitHash = stringHasValue(aRoute.hash.schema.value)
-  const bHasExplicitHash = stringHasValue(bRoute.hash.schema.value)
+  const aHasExplicitHash = stringHasValue(aRoute.hash.value)
+  const bHasExplicitHash = stringHasValue(bRoute.hash.value)
 
   if (aHasExplicitHash && !bHasExplicitHash) {
     return SORT_BEFORE
@@ -101,18 +101,18 @@ function sortPreferMatchingHash(aRoute: Route, bRoute: Route): number {
 }
 
 export function countExpectedPathParams(route: Route, actualPath: string): number {
-  const optionalParams = Object.keys(route.path.schema.params)
-    .filter((key) => paramIsOptional(route.path.schema, key))
+  const optionalParams = Object.keys(route.path.params)
+    .filter((key) => paramIsOptional(route.path, key))
     .map((key) => key)
 
-  const missing = optionalParams.filter((expected) => getParamValueFromUrl(actualPath, route.path.schema, expected) === undefined)
+  const missing = optionalParams.filter((expected) => getParamValueFromUrl(actualPath, route.path, expected) === undefined)
 
   return optionalParams.length - missing.length
 }
 
 export function countExpectedQueryParams(route: Route, actualQuery: QuerySource): number {
   const actualQueryParams = new URLSearchParams(actualQuery)
-  const expectedQuery = new URLSearchParams(route.query.schema.value)
+  const expectedQuery = new URLSearchParams(route.query.value)
   const expectedQueryKeys = Array.from(expectedQuery.keys())
 
   const missing = expectedQueryKeys.filter((expected) => !actualQueryParams.has(expected))
