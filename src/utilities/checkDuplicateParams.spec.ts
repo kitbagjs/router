@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 import { DuplicateParamsError } from '@/errors/duplicateParamsError'
-import { checkDuplicateParams } from '@/utilities/checkDuplicateKeys'
+import { checkDuplicateParams } from '@/utilities/checkDuplicateParams'
 
 test('given a single array without duplicates, does nothing', () => {
   const input = ['foo', 'bar', 'zoo']

@@ -1,5 +1,5 @@
 export * from './array'
-export * from './checkDuplicateKeys'
+export * from './checkDuplicateParams'
 export * from './guards'
 export * from './isBrowser'
 export * from './makeOptional'

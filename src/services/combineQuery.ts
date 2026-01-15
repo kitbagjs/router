@@ -1,4 +1,4 @@
-import { checkDuplicateParams } from '@/utilities/checkDuplicateKeys'
+import { checkDuplicateParams } from '@/utilities/checkDuplicateParams'
 import { StringHasValue, stringHasValue } from '@/utilities/guards'
 import { ToWithParams, withParams, WithParams } from '@/services/withParams'
 import { Param } from '@/types/paramTypes'
