@@ -148,16 +148,6 @@ type ToMatches<
   ? [...TParent['matches'], ToMatch<TOptions, TProps>]
   : [ToMatch<TOptions, TProps>]
 
-type ExtractRouteUrlGenerics<T extends Url> =
-  T extends Url<
-    infer THost,
-    infer TPath,
-    infer TQuery,
-    infer THash
-  >
-    ? { host: THost, path: TPath, query: TQuery, hash: THash }
-    : never
-
 export type ToRoute<
   TOptions extends CreateRouteOptions,
   TProps extends CreateRouteProps<TOptions> | undefined = undefined
@@ -166,10 +156,10 @@ export type ToRoute<
   : TOptions extends { parent: infer TParent extends Route }
     ? Route<
       ToName<TOptions['name']>,
-      ExtractRouteUrlGenerics<TParent>['host'],
-      CombinePath<ExtractRouteUrlGenerics<TParent>['path'], ToWithParams<TOptions['path']>>,
-      CombineQuery<ExtractRouteUrlGenerics<TParent>['query'], ToWithParams<TOptions['query']>>,
-      CombineHash<ExtractRouteUrlGenerics<TParent>['hash'], ToWithParams<TOptions['hash']>>,
+      TParent['host'],
+      CombinePath<TParent['path'], ToWithParams<TOptions['path']>>,
+      CombineQuery<TParent['query'], ToWithParams<TOptions['query']>>,
+      CombineHash<TParent['hash'], ToWithParams<TOptions['hash']>>,
       CombineMeta<ToMeta<TParent['meta']>, ToMeta<TOptions['meta']>>,
       CombineState<ToState<TParent['state']>, ToState<TOptions['state']>>,
       ToMatches<TOptions, CreateRouteProps<TOptions> extends TProps ? undefined : TProps>,
