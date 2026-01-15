@@ -98,7 +98,7 @@ export type ExtractRouteParamTypesReading<TUrl extends {
 
 /**
  * Extracts combined types of path and query parameters for a given url, creating a unified parameter object.
- * Differs from ExtractUrlParamTypesReading in that optional params with defaults will remain optional.
+ * Differs from ExtractRouteParamTypesReading in that optional params with defaults will remain optional.
  * @template TUrl - The url type from which to extract and merge parameter types.
  * @returns A record of parameter names to their respective types, extracted and merged from both path and query parameters.
  */
