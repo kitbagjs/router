@@ -71,7 +71,7 @@ export type ExtractParamName<
  * @template TUrl - The url type from which to extract and merge parameter types.
  * @returns A record of parameter names to their respective types, extracted and merged from both path and query parameters.
  */
-export type ExtractUrlParamTypesReading<TUrl extends {
+export type ExtractRouteParamTypesReading<TUrl extends {
   host?: WithParams,
   path?: WithParams,
   query?: WithParams,
@@ -92,7 +92,7 @@ export type ExtractUrlParamTypesReading<TUrl extends {
  * @template TUrl - The url type from which to extract and merge parameter types.
  * @returns A record of parameter names to their respective types, extracted and merged from both path and query parameters.
  */
-export type ExtractUrlParamTypesWriting<TUrl extends {
+export type ExtractRouteParamTypesWriting<TUrl extends {
   host?: WithParams,
   path?: WithParams,
   query?: WithParams,

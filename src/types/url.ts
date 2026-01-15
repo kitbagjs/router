@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/method-signature-style */
 import { WithParams } from '@/services/withParams'
-import { ExtractUrlParamTypesReading, ExtractUrlParamTypesWriting } from '@/types/params'
+import { ExtractRouteParamTypesReading, ExtractRouteParamTypesWriting } from '@/types/params'
 import { AllPropertiesAreOptional } from '@/types/utilities'
 import { UrlString } from '@/types/urlString'
 
@@ -44,7 +44,7 @@ export type Url<
   /**
    * Parses the url supplied and returns any params found.
    */
-  parse(url: string): ExtractUrlParamTypesReading<{ host: THost, path: TPath, query: TQuery, hash: THash }>,
+  parse(url: string): ExtractRouteParamTypesReading<{ host: THost, path: TPath, query: TQuery, hash: THash }>,
 }
 
 type UrlParamsArgs<
@@ -54,6 +54,6 @@ type UrlParamsArgs<
     query?: WithParams,
     hash?: WithParams,
   }
-> = AllPropertiesAreOptional<ExtractUrlParamTypesWriting<TUrl>> extends true
-  ? [params?: ExtractUrlParamTypesWriting<TUrl>]
-  : [params: ExtractUrlParamTypesWriting<TUrl>]
+> = AllPropertiesAreOptional<ExtractRouteParamTypesWriting<TUrl>> extends true
+  ? [params?: ExtractRouteParamTypesWriting<TUrl>]
+  : [params: ExtractRouteParamTypesWriting<TUrl>]
