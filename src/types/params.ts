@@ -1,9 +1,8 @@
+import { LiteralParam, Param, ParamGetSet, ParamGetter } from '@/types/paramTypes'
+import { Identity } from '@/types/utilities'
+import { MakeOptional } from '@/utilities/makeOptional'
 import { WithParams } from '@/services/withParams'
 import { StandardSchemaV1 } from '@standard-schema/spec'
-import { LiteralParam, Param, ParamGetSet, ParamGetter } from '@/types/paramTypes'
-import { MakeOptional, UnionToIntersection } from '@/utilities/makeOptional'
-import { Identity } from '@/types/utilities'
-import { Url } from '@/types/url'
 
 export const paramStart = '['
 export type ParamStart = typeof paramStart
@@ -67,56 +66,49 @@ export type ExtractParamName<
       : TParam
   : never
 
-type ExtractWithParams<TParts extends Record<string, unknown>> = {
-  [K in keyof TParts as TParts[K] extends WithParams ? K : never]: TParts[K] extends WithParams ? TParts[K] : never
-}
-
-/**
- * Extracts combined types for any properties that are WithParams, creating a unified parameter object.
- * @template Parts - The route from which to extract and merge parameter types.
- * @returns A record of parameter names to their respective types, extracted and merged from both path and query parameters.
- */
-export type ExtractRecordParamTypesReading<TParts extends Record<PropertyKey, unknown>> =
-  Identity<
-    MakeOptional<
-      UnionToIntersection<
-        { [K in keyof ExtractWithParams<TParts>]: ExtractParamTypesReading<ExtractWithParams<TParts>[K]> }[keyof ExtractWithParams<TParts>]
-      >
-    >
-  >
-
 /**
  * Extracts combined types of path and query parameters for a given url, creating a unified parameter object.
- * @template TParts - The url from which to extract and merge parameter types.
+ * @template TUrl - The url type from which to extract and merge parameter types.
  * @returns A record of parameter names to their respective types, extracted and merged from both path and query parameters.
  */
-export type ExtractUrlParamTypesReading<TParts extends Url> = ExtractRecordParamTypesReading<{ host: TParts['host'], path: TParts['path'], query: TParts['query'], hash: TParts['hash'] }>
-
-/**
- * Extracts combined types for any properties that are WithParams, creating a unified parameter object.
- * Differs from ExtractRouteParamTypesReading in that optional params with defaults will remain optional.
- * @template TRoute - The route type from which to extract and merge parameter types.
- * @returns A record of parameter names to their respective types, extracted and merged from both path and query parameters.
- */
-export type ExtractRecordParamTypesWriting<TParts extends Record<string, unknown>> =
+export type ExtractUrlParamTypesReading<TUrl extends {
+  host?: WithParams,
+  path?: WithParams,
+  query?: WithParams,
+  hash?: WithParams,
+}> =
   Identity<
     MakeOptional<
-      UnionToIntersection<
-        { [K in keyof ExtractWithParams<TParts>]: ExtractParamTypesWriting<ExtractWithParams<TParts>[K]> }[keyof ExtractWithParams<TParts>]
-      >
+      & ExtractParamTypesReading<TUrl['host'] extends WithParams ? TUrl['host'] : never>
+      & ExtractParamTypesReading<TUrl['path'] extends WithParams ? TUrl['path'] : never>
+      & ExtractParamTypesReading<TUrl['query'] extends WithParams ? TUrl['query'] : never>
+      & ExtractParamTypesReading<TUrl['hash'] extends WithParams ? TUrl['hash'] : never>
     >
   >
 
 /**
  * Extracts combined types of path and query parameters for a given url, creating a unified parameter object.
  * Differs from ExtractUrlParamTypesReading in that optional params with defaults will remain optional.
- * @template TParts - The url from which to extract and merge parameter types.
+ * @template TUrl - The url type from which to extract and merge parameter types.
  * @returns A record of parameter names to their respective types, extracted and merged from both path and query parameters.
  */
-export type ExtractUrlParamTypesWriting<TParts extends Url> = ExtractRecordParamTypesWriting<{ host: TParts['host'], path: TParts['path'], query: TParts['query'], hash: TParts['hash'] }>
+export type ExtractUrlParamTypesWriting<TUrl extends {
+  host?: WithParams,
+  path?: WithParams,
+  query?: WithParams,
+  hash?: WithParams,
+}> =
+  Identity<
+    MakeOptional<
+      & ExtractParamTypesWriting<TUrl['host'] extends WithParams ? TUrl['host'] : never>
+      & ExtractParamTypesWriting<TUrl['path'] extends WithParams ? TUrl['path'] : never>
+      & ExtractParamTypesWriting<TUrl['query'] extends WithParams ? TUrl['query'] : never>
+      & ExtractParamTypesWriting<TUrl['hash'] extends WithParams ? TUrl['hash'] : never>
+    >
+  >
 
 /**
- * Extracts combined types for any properties that are WithParams, creating a unified parameter object.
+ * Extracts combined types of path and query parameters for a given url, creating a unified parameter object.
  * @template TParams - The record of parameter types, possibly including undefined.
  * @returns A new type with the appropriate properties marked as optional.
  */
@@ -129,7 +121,7 @@ type ExtractParamTypesReading<TWithParams extends WithParams> = {
 }
 
 /**
- * Extracts combined types of path and query parameters for a given route, creating a unified parameter object.
+ * Extracts combined types of path and query parameters for a given url, creating a unified parameter object.
  * Differs from ExtractParamTypesReading in that optional params with defaults will remain optional.
  * @template TParams - The record of parameter types, possibly including undefined.
  * @returns A new type with the appropriate properties marked as optional.
