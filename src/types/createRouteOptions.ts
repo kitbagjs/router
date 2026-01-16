@@ -19,7 +19,6 @@ import { ToWithParams, WithParams } from '@/services/withParams'
 import { RouteContext, ToRouteContext } from './routeContext'
 import { RouterViewProps } from '@/components/routerView'
 import { createUrl, CreateUrlOptions } from '@/services/createUrl'
-import { Url } from '@/types/url'
 
 export type WithHost<THost extends string | WithParams = string | WithParams> = {
   /**
