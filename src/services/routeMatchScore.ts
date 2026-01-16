@@ -1,9 +1,10 @@
-import { parseUrl } from '@/services/urlParser'
 import { getParamValueFromUrl } from '@/services/paramsFinder'
+import { paramIsOptional } from '@/services/routeRegex'
+import { createUrl } from '@/services/createUrl'
 import { Route } from '@/types/route'
 import { QuerySource } from '@/types/querySource'
-import { paramIsOptional } from '@/services/routeRegex'
 import { stringHasValue } from '@/utilities/guards'
+import { Url } from '@/types/url'
 
 type RouteSortMethod = (aRoute: Route, bRoute: Route) => number
 
@@ -11,7 +12,7 @@ const SORT_BEFORE = -1
 const SORT_AFTER = 1
 
 export function getRouteScoreSortMethod(url: string): RouteSortMethod {
-  const { searchParams: actualQuery, pathname: actualPath } = parseUrl(url)
+  const actualUrl = createUrl(url)
 
   return (aRoute, bRoute) => {
     const preferLowerDepth = sortPreferLowerDepth(aRoute, bRoute)
@@ -29,7 +30,7 @@ export function getRouteScoreSortMethod(url: string): RouteSortMethod {
       return preferMoreExplicitHash
     }
 
-    const preferMoreOptionalParamsFulfilled = sortPreferMoreOptionalParamsFulfilled(aRoute, bRoute, actualQuery, actualPath)
+    const preferMoreOptionalParamsFulfilled = sortPreferMoreOptionalParamsFulfilled(aRoute, bRoute, actualUrl)
     if (preferMoreOptionalParamsFulfilled !== 0) {
       return preferMoreOptionalParamsFulfilled
     }
@@ -50,7 +51,10 @@ function sortPreferLowerDepth(aRoute: Route, bRoute: Route): number {
   return 0
 }
 
-function sortPreferMoreOptionalParamsFulfilled(aRoute: Route, bRoute: Route, actualQuery: QuerySource, actualPath: string): number {
+function sortPreferMoreOptionalParamsFulfilled(aRoute: Route, bRoute: Route, actualUrl: Url): number {
+  const actualQuery = actualUrl.query.toString()
+  const actualPath = actualUrl.path.toString()
+
   const aRouteQueryScore = countExpectedQueryParams(aRoute, actualQuery)
   const aRoutePathScore = countExpectedPathParams(aRoute, actualPath)
   const bRouteQueryScore = countExpectedQueryParams(bRoute, actualQuery)

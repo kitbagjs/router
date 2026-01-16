@@ -2,51 +2,41 @@ import { expect, test } from 'vitest'
 import { combineUrl } from '@/services/urlCombine'
 
 test.each([
-  [{ protocol: 'https', host: 'kitbag.com' }, { host: 'kitbag.dev' }],
-  [{ protocol: 'https', host: 'kitbag.dev' }, { host: '' }],
-  [{ protocol: 'https', host: 'kitbag.dev' }, { host: undefined }],
-])('given updated host with value, replaces previous host, else uses previous', (previous, updated) => {
+  [{ host: 'https://kitbag.com' }, { host: 'https://kitbag.dev' }],
+  [{ host: 'https://kitbag.dev' }, { host: '' }],
+  [{ host: 'https://kitbag.dev' }, { host: undefined }],
+])('given previous host (%s) and updated host (%s), returns updated host', (previous, updated) => {
   const url = combineUrl(previous, updated)
 
-  expect(url).toBe('https://kitbag.dev/')
+  expect(url.toString()).toBe('https://kitbag.dev/')
 })
 
 test.each([
-  [{ pathname: '/bar' }, { pathname: '/foo' }],
-  [{ pathname: '/foo' }, { pathname: '' }],
-  [{ pathname: '/foo' }, { pathname: undefined }],
-])('given updated pathname with value, replaces previous pathname, else uses previous', (previous, updated) => {
+  [{ path: '/bar' }, { path: '/foo' }],
+  [{ path: '/foo' }, { path: '' }],
+  [{ path: '/foo' }, { path: undefined }],
+])('given previous path (%s) and updated path (%s), returns updated path', (previous, updated) => {
   const url = combineUrl(previous, updated)
 
-  expect(url).toBe('/foo')
+  expect(url.toString()).toBe('/foo')
 })
 
 test.each([
-  [{ search: '?foo=456' }, { search: '?bar=123' }],
-  [{ search: '?bar=123&foo=456' }, { search: '' }],
-  [{ search: '?bar=123&foo=456' }, { search: undefined }],
-])('given updated search with value, combines previous search, else uses previous', (previous, updated) => {
+  [{ query: '?foo=456' }, { query: '?bar=123' }],
+  [{ query: '?bar=123&foo=456' }, { query: '' }],
+  [{ query: '?bar=123&foo=456' }, { query: undefined }],
+])('given previous query (%s) and updated query (%s), returns updated query', (previous, updated) => {
   const url = combineUrl(previous, updated)
 
-  expect(url).toBe('/?bar=123&foo=456')
-})
-
-test.each([
-  [{ searchParams: new URLSearchParams('?foo=456') }, { searchParams: new URLSearchParams('?bar=123') }],
-  [{ searchParams: new URLSearchParams('?bar=123&foo=456') }, { searchParams: new URLSearchParams('') }],
-  [{ searchParams: new URLSearchParams('?bar=123&foo=456') }, { searchParams: undefined }],
-])('given updated searchParams with value, combines previous search, else uses previous', (previous, updated) => {
-  const url = combineUrl(previous, updated)
-
-  expect(url).toBe('/?bar=123&foo=456')
+  expect(url.toString()).toBe('/?bar=123&foo=456')
 })
 
 test.each([
   [{ hash: 'bar' }, { hash: 'foo' }],
   [{ hash: 'foo' }, { hash: '' }],
   [{ hash: 'foo' }, { hash: undefined }],
-])('given updated hash with value, replaces previous hash, else uses previous', (previous, updated) => {
+])('given previous hash (%s) and updated hash (%s), returns updated hash', (previous, updated) => {
   const url = combineUrl(previous, updated)
 
-  expect(url).toBe('/#foo')
+  expect(url.toString()).toBe('/#foo')
 })

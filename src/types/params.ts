@@ -1,7 +1,6 @@
 import { LiteralParam, Param, ParamGetSet, ParamGetter } from '@/types/paramTypes'
 import { Identity } from '@/types/utilities'
 import { MakeOptional } from '@/utilities/makeOptional'
-import { Route } from './route'
 import { WithParams } from '@/services/withParams'
 import { StandardSchemaV1 } from '@standard-schema/spec'
 
@@ -68,31 +67,48 @@ export type ExtractParamName<
   : never
 
 /**
- * Extracts combined types of path and query parameters for a given route, creating a unified parameter object.
- * @template TRoute - The route type from which to extract and merge parameter types.
+ * Extracts combined types of path and query parameters for a given url, creating a unified parameter object.
+ * @template TUrl - The url type from which to extract and merge parameter types.
  * @returns A record of parameter names to their respective types, extracted and merged from both path and query parameters.
  */
-export type ExtractRouteParamTypesReading<TRoute extends Route> =
+export type ExtractRouteParamTypesReading<TUrl extends {
+  host?: WithParams,
+  path?: WithParams,
+  query?: WithParams,
+  hash?: WithParams,
+}> =
   Identity<
     MakeOptional<
-      ExtractParamTypesReading<TRoute['host']> &
-      ExtractParamTypesReading<TRoute['path']> &
-      ExtractParamTypesReading<TRoute['query']> &
-      ExtractParamTypesReading<TRoute['hash']>
+      & ExtractParamTypesReading<TUrl['host'] extends WithParams ? TUrl['host'] : never>
+      & ExtractParamTypesReading<TUrl['path'] extends WithParams ? TUrl['path'] : never>
+      & ExtractParamTypesReading<TUrl['query'] extends WithParams ? TUrl['query'] : never>
+      & ExtractParamTypesReading<TUrl['hash'] extends WithParams ? TUrl['hash'] : never>
     >
   >
 
 /**
- * Extracts combined types of path and query parameters for a given route, creating a unified parameter object.
+ * Extracts combined types of path and query parameters for a given url, creating a unified parameter object.
  * Differs from ExtractRouteParamTypesReading in that optional params with defaults will remain optional.
- * @template TRoute - The route type from which to extract and merge parameter types.
+ * @template TUrl - The url type from which to extract and merge parameter types.
  * @returns A record of parameter names to their respective types, extracted and merged from both path and query parameters.
  */
-export type ExtractRouteParamTypesWriting<TRoute extends Route> =
-  Identity<MakeOptional<ExtractParamTypesWriting<TRoute['host']> & ExtractParamTypesWriting<TRoute['path']> & ExtractParamTypesWriting<TRoute['query']> & ExtractParamTypesWriting<TRoute['hash']>>>
+export type ExtractRouteParamTypesWriting<TUrl extends {
+  host?: WithParams,
+  path?: WithParams,
+  query?: WithParams,
+  hash?: WithParams,
+}> =
+  Identity<
+    MakeOptional<
+      & ExtractParamTypesWriting<TUrl['host'] extends WithParams ? TUrl['host'] : never>
+      & ExtractParamTypesWriting<TUrl['path'] extends WithParams ? TUrl['path'] : never>
+      & ExtractParamTypesWriting<TUrl['query'] extends WithParams ? TUrl['query'] : never>
+      & ExtractParamTypesWriting<TUrl['hash'] extends WithParams ? TUrl['hash'] : never>
+    >
+  >
 
 /**
- * Extracts combined types of path and query parameters for a given route, creating a unified parameter object.
+ * Extracts combined types of path and query parameters for a given url, creating a unified parameter object.
  * @template TParams - The record of parameter types, possibly including undefined.
  * @returns A new type with the appropriate properties marked as optional.
  */
@@ -105,7 +121,7 @@ type ExtractParamTypesReading<TWithParams extends WithParams> = {
 }
 
 /**
- * Extracts combined types of path and query parameters for a given route, creating a unified parameter object.
+ * Extracts combined types of path and query parameters for a given url, creating a unified parameter object.
  * Differs from ExtractParamTypesReading in that optional params with defaults will remain optional.
  * @template TParams - The record of parameter types, possibly including undefined.
  * @returns A new type with the appropriate properties marked as optional.

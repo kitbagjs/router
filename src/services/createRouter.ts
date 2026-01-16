@@ -2,7 +2,6 @@ import { createPath } from 'history'
 import { App, ref } from 'vue'
 import { createCurrentRoute } from '@/services/createCurrentRoute'
 import { createIsExternal } from '@/services/createIsExternal'
-import { parseUrl } from '@/services/urlParser'
 import { createPropStore } from '@/services/createPropStore'
 import { createRouterHistory } from '@/services/createRouterHistory'
 import { createRouterHooks, getRouterHooksKey } from '@/services/createRouterHooks'
@@ -24,12 +23,13 @@ import { createResolvedRoute } from '@/services/createResolvedRoute'
 import { ResolvedRoute } from '@/types/resolved'
 import { createResolvedRouteForUrl } from '@/services/createResolvedRouteForUrl'
 import { combineUrl } from '@/services/urlCombine'
+import { createUrl } from '@/services/createUrl'
 import { RouterReject } from '@/types/routerReject'
 import { EmptyRouterPlugin, RouterPlugin } from '@/types/routerPlugin'
-import { getRoutesForRouter } from './getRoutesForRouter'
-import { getGlobalHooksForRouter } from './getGlobalHooksForRouter'
-import { createComponentsStore } from './createComponentsStore'
-import { initZod, zotParamsDetected } from './zod'
+import { getRoutesForRouter } from '@/services/getRoutesForRouter'
+import { getGlobalHooksForRouter } from '@/services/getGlobalHooksForRouter'
+import { createComponentsStore } from '@/services/createComponentsStore'
+import { initZod, zotParamsDetected } from '@/services/zod'
 import { getComponentsStoreKey } from '@/compositions/useComponentsStore'
 import { getPropStoreInjectionKey } from '@/compositions/usePropStore'
 import { getRouterRejectionInjectionKey } from '@/compositions/useRejection'
@@ -246,11 +246,11 @@ export function createRouter<
     if (isUrlString(source)) {
       const options: RouterPushOptions = { ...paramsOrOptions }
       const url = combineUrl(source, {
-        searchParams: options.query,
+        query: new URLSearchParams(options.query).toString(),
         hash: options.hash,
       })
 
-      return set(url, options)
+      return set(url.toString(), options)
     }
 
     if (typeof source === 'string') {
@@ -266,11 +266,11 @@ export function createRouter<
     const state = setStateValues({ ...source.matched.state }, { ...source.state, ...options.state })
 
     const url = combineUrl(source.href, {
-      searchParams: options.query,
+      query: new URLSearchParams(options.query).toString(),
       hash: options.hash,
     })
 
-    return set(url, { replace, state })
+    return set(url.toString(), { replace, state })
   }
 
   const replace: RouterReplace<TRoutes | TPlugin['routes']> = (
@@ -307,8 +307,8 @@ export function createRouter<
 
   const initialUrl = getInitialUrl(options?.initialUrl)
   const initialState = history.location.state
-  const { host } = parseUrl(initialUrl)
-  const isExternal = createIsExternal(host)
+  const { host } = createUrl(initialUrl)
+  const isExternal = createIsExternal(host.toString())
 
   let starting = false
   const started = ref(false)
