@@ -6,6 +6,7 @@ import { LastInArray } from '@/types/utilities'
 import { CreateRouteOptions } from '@/types/createRouteOptions'
 import { RouteContext } from './routeContext'
 import { Hooks } from '@/models/hooks'
+import { RouteRedirect } from '@/models/redirect'
 
 /**
  * Represents an immutable array of Route instances. Return value of `createRoute`, expected param for `createRouter`.

@@ -1,5 +1,5 @@
 import { CreateRouterPluginOptions, RouterPlugin, PluginRouteHooks } from '@/types/routerPlugin'
-import { createHooksFactory } from '@/services/createHooksFactory'
+import { createRouteHooks } from '@/services/createRouteHooks'
 import { Rejections } from '@/types/rejection'
 import { Routes } from '@/types/route'
 
@@ -9,7 +9,7 @@ export function createRouterPlugin<
 >(plugin: CreateRouterPluginOptions<TRoutes, TRejections>): RouterPlugin<TRoutes, TRejections> & PluginRouteHooks<TRoutes, TRejections>
 
 export function createRouterPlugin(plugin: CreateRouterPluginOptions): RouterPlugin {
-  const { store, ...hooks } = createHooksFactory()
+  const { store, ...hooks } = createRouteHooks()
 
   return {
     routes: plugin.routes ?? [],
