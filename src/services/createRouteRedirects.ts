@@ -1,5 +1,5 @@
 import { InvalidRouteRedirectError } from '@/errors/invalidRouteRedirectError'
-import { RouteRedirects, isRouteWithRedirect, RouteRedirectFrom, RouteRedirectTo, RedirectToArgs, RedirectFromArgs } from '@/types/redirects'
+import { RouteRedirects, isRouteWithRedirect, RouteRedirectFrom, RouteRedirectTo, RedirectToArgs } from '@/types/redirects'
 import { Route } from '@/types/route'
 
 type CreateRouteRedirectsContext = {
