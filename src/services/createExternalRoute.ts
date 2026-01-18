@@ -15,6 +15,7 @@ export function createExternalRoute<
   const TOptions extends CreateRouteOptions & WithHost & WithoutParent
 >(options: TOptions): ToRoute<TOptions>
   & ExternalRouteHooks<ToRoute<TOptions>, TOptions['context']>
+  & RouteRedirects<ToRoute<TOptions>>
 
 export function createExternalRoute<
   const TOptions extends CreateRouteOptions & WithoutHost & WithParent
@@ -31,7 +32,7 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
   const meta = options.meta ?? {}
   const host = toWithParams(options.host)
   const context = options.context ?? []
-  const { store, onBeforeRouteEnter } = createRouteHooks()
+  const { store, ...hooks } = createRouteHooks()
   const redirects = createRouteRedirects({
     getRoute: () => route,
   })
@@ -51,7 +52,7 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
     depth: 1,
     state: {},
     context,
-    onBeforeRouteEnter,
+    ...hooks,
     ...redirects,
   } satisfies Route & ExternalRouteHooks & RouteRedirects
 
