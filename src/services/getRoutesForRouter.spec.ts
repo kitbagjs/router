@@ -83,3 +83,14 @@ test('given named routes inside route context of plugin routes, includes them in
     zooRoute,
   ])
 })
+
+test('circular context is ignored', () => {
+  const routeA = createRoute({ name: 'a' })
+  const routeB = createRoute({ name: 'b', context: [routeA] })
+
+  // @ts-expect-error - you cannot actually do this
+  routeA.context.push(routeB)
+  routeB.context.push(routeA)
+
+  expect(() => getRoutesForRouter([routeA, routeB])).not.toThrow()
+})

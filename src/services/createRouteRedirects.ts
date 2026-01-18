@@ -17,6 +17,9 @@ export function createRouteRedirects({ getRoute }: CreateRouteRedirectsContext):
       throw new InvalidRouteRedirectError(from.name)
     }
 
+    to.context.push(from)
+    from.context.push(to)
+
     from.redirect(to, convertParams)
   }
 
@@ -26,6 +29,9 @@ export function createRouteRedirects({ getRoute }: CreateRouteRedirectsContext):
     if (!isRouteWithRedirect(from)) {
       throw new InvalidRouteRedirectError(from.name)
     }
+
+    to.context.push(from)
+    from.context.push(to)
 
     from.redirect(to, convertParams)
   }

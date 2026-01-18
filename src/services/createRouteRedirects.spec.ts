@@ -114,3 +114,43 @@ test('throws MultipleRouteRedirectsError when a route has multiple redirects', (
   expect(() => to.redirectFrom(from)).toThrow(MultipleRouteRedirectsError)
   expect(() => from.redirectTo(to)).toThrow(MultipleRouteRedirectsError)
 })
+
+test('from does not need to be passed into the route for redirect to work', async () => {
+  const to = createRoute({
+    name: 'to',
+    path: '/to',
+  })
+
+  const from = createRoute({
+    name: 'from',
+    path: '/from',
+  })
+
+  to.redirectFrom(from)
+
+  const router = createRouter([to], { initialUrl: '/from' })
+
+  await router.start()
+
+  expect(router.route.href).toBe('/to')
+})
+
+test('to does not need to be passed into the route for redirect to work', async () => {
+  const to = createRoute({
+    name: 'to',
+    path: '/to',
+  })
+
+  const from = createRoute({
+    name: 'from',
+    path: '/from',
+  })
+
+  to.redirectTo(from)
+
+  const router = createRouter([from], { initialUrl: '/to' })
+
+  await router.start()
+
+  expect(router.route.href).toBe('/from')
+})
