@@ -1,13 +1,15 @@
-import { AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, AddErrorHook, AddRedirectHook } from '@/types/hooks'
+import { AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, AddErrorHook } from '@/types/hooks'
 import { Routes } from '@/types/route'
 import { Hooks } from '@/models/hooks'
 import { Rejection } from '@/types/rejection'
+import { RedirectHook, RouteRedirect } from '@/types/redirects'
+import { MultipleRouteRedirectsError } from '@/errors/multipleRouteRedirectsError'
 
 export type RouteHooks<
   TRoutes extends Routes = Routes,
   TRejections extends Rejection[] = Rejection[]
 > = {
-  redirect: AddRedirectHook<TRoutes>,
+  redirect: RouteRedirect,
   onBeforeRouteEnter: AddBeforeEnterHook<TRoutes, TRejections>,
   onBeforeRouteUpdate: AddBeforeUpdateHook<TRoutes, TRejections>,
   onBeforeRouteLeave: AddBeforeLeaveHook<TRoutes, TRejections>,
@@ -21,7 +23,15 @@ export type RouteHooks<
 export function createRouteHooks(): RouteHooks {
   const store = new Hooks()
 
-  const redirect: AddRedirectHook = (hook) => {
+  const redirect: RouteRedirect = (to, convertParams) => {
+    if (store.redirects.size > 0) {
+      throw new MultipleRouteRedirectsError(to.name)
+    }
+
+    const hook: RedirectHook = (from, { replace }) => {
+      replace(to.name, convertParams?.(from.params))
+    }
+
     store.redirects.add(hook)
 
     return () => store.redirects.delete(hook)

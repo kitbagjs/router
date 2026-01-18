@@ -13,7 +13,7 @@ import { RouteUpdate } from './routeUpdate'
 
 export type InternalRouteHooks<
   TRoute extends Route = Route,
-  TContext extends RouteContext[] | undefined = undefined
+  TContext extends RouteContext[] = []
 > = {
   /**
    * Registers a route hook to be called before the route is entered.
@@ -116,22 +116,6 @@ type BeforeHookContext<
   update: RouteUpdate<ResolvedRouteUnion<TRouteTo>>,
   abort: RouterAbort,
 }
-
-type RedirectHookContext<
-  TRoutes extends Routes
-> = {
-  replace: RouterReplace<TRoutes>,
-}
-
-export type RedirectHook<
-  TRoutes extends Routes = Routes,
-  TRouteTo extends Route = TRoutes[number]
-> = (to: ResolvedRouteUnion<TRouteTo>, context: RedirectHookContext<TRoutes>) => MaybePromise<void>
-
-export type AddRedirectHook<
-  TRoutes extends Routes = Routes,
-  TRouteTo extends Route = TRoutes[number]
-> = (hook: RedirectHook<TRoutes, TRouteTo>) => HookRemove
 
 export type BeforeEnterHookContext<
   TRoutes extends Routes = Routes,

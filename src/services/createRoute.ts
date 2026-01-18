@@ -8,7 +8,7 @@ import { toWithParams, withParams } from '@/services/withParams'
 import { createRouteHooks } from '@/services/createRouteHooks'
 import { InternalRouteHooks } from '@/types/hooks'
 import { ExtractRouteContext } from '@/types/routeContext'
-import { InternalRouteRedirects } from '@/types/redirects'
+import { RouteRedirects } from '@/types/redirects'
 import { createRouteRedirects } from './createRouteRedirects'
 
 type CreateRouteWithProps<
@@ -29,7 +29,7 @@ export function createRoute<
   const TProps extends CreateRouteProps<TOptions>
 >(options: TOptions, ...args: CreateRouteWithProps<TOptions, TProps>): ToRoute<TOptions, TProps>
   & InternalRouteHooks<ToRoute<TOptions>, ExtractRouteContext<TOptions>>
-  & InternalRouteRedirects<ToRoute<TOptions>>
+  & RouteRedirects<ToRoute<TOptions>>
 
 export function createRoute(options: CreateRouteOptions, props?: CreateRouteProps): Route {
   const id = createRouteId()
@@ -64,7 +64,7 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
     prefetch: options.prefetch,
     ...redirects,
     ...hooks,
-  } satisfies Route & InternalRouteHooks & InternalRouteRedirects
+  } satisfies Route & InternalRouteHooks & RouteRedirects
 
   const merged = isWithParent(options) ? combineRoutes(options.parent, route) : route
 

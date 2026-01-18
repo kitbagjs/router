@@ -1,49 +1,33 @@
-import { InternalRouteRedirects, RouteRedirectFrom, RouteRedirectTo } from '@/types/redirects'
-import { MultipleRouteRedirectsError } from '@/errors/multipleRouteRedirectsError'
+import { InvalidRouteRedirectError } from '@/errors/invalidRouteRedirectError'
+import { RouteRedirects, isRouteWithRedirect, RouteRedirectFrom, RouteRedirectTo, RedirectToArgs, RedirectFromArgs } from '@/types/redirects'
 import { Route } from '@/types/route'
 
 type CreateRouteRedirectsContext = {
   /**
-   * The name of the route that that is being redirected to in the redirectFrom callback.
+   * The to route for the redirectFrom callback and the from route for the redirectTo callback.
    */
-  getRoute: () => Route & InternalRouteRedirects,
+  getRoute: () => Route,
 }
 
-export function createRouteRedirects({ getRoute }: CreateRouteRedirectsContext): InternalRouteRedirects {
-  const redirectTo: RouteRedirectTo = (to, convertParams) => {
+export function createRouteRedirects({ getRoute }: CreateRouteRedirectsContext): RouteRedirects {
+  const redirectTo: RouteRedirectTo = (...[to, convertParams]: RedirectToArgs) => {
     const from = getRoute()
 
-    const redirects = from.hooks.at(-1)?.redirects
-
-    if (!redirects) {
-      throw new Error('Route hooks not found')
+    if (!isRouteWithRedirect(from)) {
+      throw new InvalidRouteRedirectError(from.name)
     }
 
-    if (redirects.size > 0) {
-      throw new MultipleRouteRedirectsError(from.name)
-    }
-
-    redirects.add((from, { replace }) => {
-      replace(to.name, convertParams(from.params))
-    })
+    from.redirect(to, convertParams)
   }
 
   const redirectFrom: RouteRedirectFrom = (from, convertParams) => {
     const to = getRoute()
 
-    const redirects = from.hooks.at(-1)?.redirects
-
-    if (!redirects) {
-      throw new Error('Route hooks not found')
+    if (!isRouteWithRedirect(from)) {
+      throw new InvalidRouteRedirectError(from.name)
     }
 
-    if (redirects.size > 0) {
-      throw new MultipleRouteRedirectsError(from.name)
-    }
-
-    redirects.add((from, { replace }) => {
-      replace(to.name, convertParams(from.params))
-    })
+    from.redirect(to, convertParams)
   }
 
   return {

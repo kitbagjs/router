@@ -1,88 +1,80 @@
 import { createRoute } from '@/services/createRoute'
-import { describe, expectTypeOf, test, vi } from 'vitest'
-import { RouteRedirectCallback, RouteRedirectFrom, RouteRedirectTo } from './redirects'
+import { describe, expectTypeOf, test } from 'vitest'
 
-const to = createRoute({
-  name: 'route',
-  path: '/route/[toPathParam]',
+const toWithoutParams = createRoute({
+  name: 'to',
+  path: '/to',
+})
+
+const fromWithoutParams = createRoute({
+  name: 'from',
+  path: '/from',
+})
+
+const toWithParams = createRoute({
+  name: 'to',
+  path: '/to/[toPathParam]',
   query: 'to=[toQueryParam]',
 })
 
-const from = createRoute({
+const fromWithParams = createRoute({
   name: 'from',
   path: '/from/[fromPathParam]',
   query: 'from=[fromQueryParam]',
 })
 
-describe('RouteRedirectCallback', () => {
-  type Callback = RouteRedirectCallback<typeof to, typeof from>
-
-  test('parameters are correctly typed', () => {
-    type Source = Parameters<Callback>[0]
-    type Expect = { fromPathParam: string, fromQueryParam: string }
-
-    expectTypeOf<Source>().toEqualTypeOf<Expect>()
-  })
-
-  test('return type is correctly typed', () => {
-    type Source = ReturnType<Callback>
-    type Expect = { toPathParam: string, toQueryParam: string }
-
-    expectTypeOf<Source>().toEqualTypeOf<Expect>()
-  })
-})
-
-describe('RouteRedirectTo', () => {
-  const redirectTo: RouteRedirectTo<typeof from> = vi.fn()
-
-  test('return type is void', () => {
-    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-    expectTypeOf<ReturnType<typeof redirectTo>>().toEqualTypeOf<void>()
+describe('redirectTo', () => {
+  test('no params are correctly typed', () => {
+    fromWithoutParams.redirectTo(toWithoutParams)
   })
 
   test('callback params are correctly typed', () => {
-    redirectTo(from, (params) => {
+    fromWithParams.redirectTo(toWithParams, (params) => {
       expectTypeOf(params).toEqualTypeOf<{ fromPathParam: string, fromQueryParam: string }>()
 
-      return { fromPathParam: 'string', fromQueryParam: 'string' }
+      return { toPathParam: 'string', toQueryParam: 'string' }
     })
   })
 
-  test('callback type errors if return type is not valid', () => {
-    // @ts-expect-error - invalid return type
-    redirectTo(from, () => {
-      return { fromPathParam: true, fromQueryParam: 'string' }
+  test('does not accept missing params', () => {
+    // @ts-expect-error - missing params
+    fromWithParams.redirectTo(toWithParams, () => {
+      return { toQueryParam: 'string' }
+    })
+  })
+
+  test('does not accept invalid to params', () => {
+    // @ts-expect-error - invalid params
+    fromWithParams.redirectTo(toWithParams, () => {
+      return { toPathParam: true, toQueryParam: 'string' }
     })
   })
 })
 
-describe('RouteRedirectFrom', () => {
-  const redirectFrom: RouteRedirectFrom<typeof to> = vi.fn()
-  const validResponse = { toPathParam: 'string', toQueryParam: 'string' }
-
-  test('return type is void', () => {
-  // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-    expectTypeOf<ReturnType<typeof redirectFrom>>().toEqualTypeOf<void>()
-  })
-
-  test('callback return type is correctly typed', () => {
-    redirectFrom(from, () => {
-      return validResponse
-    })
+describe('redirectFrom', () => {
+  test('no params are correctly typed', () => {
+    toWithoutParams.redirectFrom(fromWithoutParams)
   })
 
   test('callback params are correctly typed', () => {
-    redirectFrom(from, (params) => {
+    toWithParams.redirectFrom(fromWithParams, (params) => {
       expectTypeOf(params).toEqualTypeOf<{ fromPathParam: string, fromQueryParam: string }>()
 
-      return validResponse
+      return { toPathParam: 'string', toQueryParam: 'string' }
     })
   })
 
-  test('callback type errors if return type is not valid', () => {
-    // @ts-expect-error - invalid return type
-    redirectFrom(to, () => {
-      return { fromPathParam: true, fromQueryParam: 'string' }
+  test('does not accept missing params', () => {
+    // @ts-expect-error - missing params
+    toWithParams.redirectFrom(fromWithParams, () => {
+      return { toQueryParam: 'string' }
+    })
+  })
+
+  test('does not accept invalid to params', () => {
+    // @ts-expect-error - invalid params
+    toWithParams.redirectFrom(fromWithParams, () => {
+      return { toPathParam: true, toQueryParam: 'string' }
     })
   })
 })

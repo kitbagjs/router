@@ -1,4 +1,4 @@
-import { AddGlobalHooks, AddComponentHook, AfterHookRunner, BeforeHookRunner, AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, ErrorHookRunner, AddErrorHook, BeforeEnterHook, BeforeUpdateHook, BeforeLeaveHook, AfterEnterHook, AfterUpdateHook, AfterLeaveHook, RedirectHook } from '@/types/hooks'
+import { AddGlobalHooks, AddComponentHook, AfterHookRunner, BeforeHookRunner, AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, ErrorHookRunner, AddErrorHook, BeforeEnterHook, BeforeUpdateHook, BeforeLeaveHook, AfterEnterHook, AfterUpdateHook, AfterLeaveHook } from '@/types/hooks'
 import { getRouteHookCondition } from './hooks'
 import { getAfterHooksFromRoutes, getBeforeHooksFromRoutes } from './getRouteHooks'
 import { ContextPushError } from '@/errors/contextPushError'
@@ -13,6 +13,7 @@ import { ContextError } from '@/errors/contextError'
 import { createRouteHooks } from './createRouteHooks'
 import { ResolvedRoute } from '@/types/resolved'
 import { MaybePromise } from '@/types/utilities'
+import { RedirectHook } from '@/types/redirects'
 
 export const getRouterHooksKey = createRouterKeyStore<RouterHooks>()
 
@@ -44,7 +45,6 @@ export function createRouterHooks(): RouterHooks {
 
     const allHooks: (RedirectHook | BeforeEnterHook | BeforeUpdateHook | BeforeLeaveHook)[] = [
       ...routeHooks.redirects,
-      ...globalHooks.redirects,
       ...globalHooks.onBeforeRouteEnter,
       ...routeHooks.onBeforeRouteEnter,
       ...globalHooks.onBeforeRouteUpdate,
