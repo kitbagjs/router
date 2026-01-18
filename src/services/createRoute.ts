@@ -5,9 +5,11 @@ import { toName } from '@/types/name'
 import { Route } from '@/types/route'
 import { checkDuplicateParams } from '@/utilities/checkDuplicateParams'
 import { toWithParams, withParams } from '@/services/withParams'
-import { createHooksFactory } from '@/services/createHooksFactory'
+import { createRouteHooks } from '@/services/createRouteHooks'
 import { InternalRouteHooks } from '@/types/hooks'
 import { ExtractRouteContext } from '@/types/routeContext'
+import { RouteRedirects } from '@/types/redirects'
+import { createRouteRedirects } from './createRouteRedirects'
 
 type CreateRouteWithProps<
   TOptions extends CreateRouteOptions,
@@ -27,6 +29,7 @@ export function createRoute<
   const TProps extends CreateRouteProps<TOptions>
 >(options: TOptions, ...args: CreateRouteWithProps<TOptions, TProps>): ToRoute<TOptions, TProps>
   & InternalRouteHooks<ToRoute<TOptions>, ExtractRouteContext<TOptions>>
+  & RouteRedirects<ToRoute<TOptions>>
 
 export function createRoute(options: CreateRouteOptions, props?: CreateRouteProps): Route {
   const id = createRouteId()
@@ -37,8 +40,12 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
   const meta = options.meta ?? {}
   const state = options.state ?? {}
   const context = options.context ?? []
-  const { store, ...hooks } = createHooksFactory()
+  const { store, ...hooks } = createRouteHooks()
   const rawRoute = markRaw({ id, meta, state, ...options, props })
+
+  const redirects = createRouteRedirects({
+    getRoute: () => route,
+  })
 
   const route = {
     id,
@@ -55,8 +62,9 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
     depth: 1,
     host: withParams(),
     prefetch: options.prefetch,
+    ...redirects,
     ...hooks,
-  } satisfies Route & InternalRouteHooks
+  } satisfies Route & InternalRouteHooks & RouteRedirects
 
   const merged = isWithParent(options) ? combineRoutes(options.parent, route) : route
 

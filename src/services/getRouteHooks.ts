@@ -6,6 +6,8 @@ export function getBeforeHooksFromRoutes(to: ResolvedRoute, from: ResolvedRoute 
   const hooks = new Hooks()
 
   to.hooks.forEach((store, depth) => {
+    store.redirects.forEach((hook) => hooks.redirects.add(hook))
+
     if (isRouteEnter(to, from, depth)) {
       return store.onBeforeRouteEnter.forEach((hook) => hooks.onBeforeRouteEnter.add(hook))
     }

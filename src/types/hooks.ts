@@ -13,7 +13,7 @@ import { RouteUpdate } from './routeUpdate'
 
 export type InternalRouteHooks<
   TRoute extends Route = Route,
-  TContext extends RouteContext[] | undefined = undefined
+  TContext extends RouteContext[] = []
 > = {
   /**
    * Registers a route hook to be called before the route is entered.

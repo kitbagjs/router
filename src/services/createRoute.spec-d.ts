@@ -10,11 +10,12 @@ import { InternalRouteHooks } from '@/types/hooks'
 import { BuiltInRejectionType } from '@/services/createRouterReject'
 import { createRejection } from '@/services/createRejection'
 import { ResolvedRoute } from '@/types/resolved'
+import { RouteRedirects } from '@/types/redirects'
 
 test('empty options returns an empty route', () => {
   const route = createRoute({})
 
-  type RouteWithHooks = Route & InternalRouteHooks<typeof route, []>
+  type RouteWithHooks = Route & InternalRouteHooks<typeof route, []> & RouteRedirects<typeof route>
 
   expectTypeOf<typeof route>().toEqualTypeOf<RouteWithHooks>()
 })

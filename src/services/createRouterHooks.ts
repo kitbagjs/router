@@ -10,9 +10,10 @@ import { createRouterKeyStore } from './createRouterKeyStore'
 import { Hooks } from '@/models/hooks'
 import { createRouterCallbackContext } from './createRouterCallbackContext'
 import { ContextError } from '@/errors/contextError'
-import { createHooksFactory } from './createHooksFactory'
+import { createRouteHooks } from './createRouteHooks'
 import { ResolvedRoute } from '@/types/resolved'
 import { MaybePromise } from '@/types/utilities'
+import { RedirectHook } from '@/types/redirects'
 
 export const getRouterHooksKey = createRouterKeyStore<RouterHooks>()
 
@@ -33,7 +34,7 @@ export type RouterHooks = HasVueAppStore & {
 
 export function createRouterHooks(): RouterHooks {
   const { setVueApp, runWithContext } = createVueAppStore()
-  const { store: globalStore, ...globalHooks } = createHooksFactory()
+  const { store: globalStore, ...globalHooks } = createRouteHooks()
 
   const componentStore = new Hooks()
 
@@ -42,7 +43,8 @@ export function createRouterHooks(): RouterHooks {
     const routeHooks = getBeforeHooksFromRoutes(to, from)
     const globalHooks = getGlobalBeforeHooks(to, from, globalStore)
 
-    const allHooks: (BeforeEnterHook | BeforeUpdateHook | BeforeLeaveHook)[] = [
+    const allHooks: (RedirectHook | BeforeEnterHook | BeforeUpdateHook | BeforeLeaveHook)[] = [
+      ...routeHooks.redirects,
       ...globalHooks.onBeforeRouteEnter,
       ...routeHooks.onBeforeRouteEnter,
       ...globalHooks.onBeforeRouteUpdate,

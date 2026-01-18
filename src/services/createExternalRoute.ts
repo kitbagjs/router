@@ -5,19 +5,23 @@ import { toName } from '@/types/name'
 import { Route } from '@/types/route'
 import { checkDuplicateParams } from '@/utilities/checkDuplicateParams'
 import { toWithParams } from '@/services/withParams'
-import { createHooksFactory } from '@/services/createHooksFactory'
+import { createRouteHooks } from '@/services/createRouteHooks'
 import { ExternalRouteHooks } from '@/types/hooks'
 import { ExtractRouteContext } from '@/types/routeContext'
+import { RouteRedirects } from '@/types/redirects'
+import { createRouteRedirects } from './createRouteRedirects'
 
 export function createExternalRoute<
   const TOptions extends CreateRouteOptions & WithHost & WithoutParent
 >(options: TOptions): ToRoute<TOptions>
   & ExternalRouteHooks<ToRoute<TOptions>, TOptions['context']>
+  & RouteRedirects<ToRoute<TOptions>>
 
 export function createExternalRoute<
   const TOptions extends CreateRouteOptions & WithoutHost & WithParent
 >(options: TOptions): ToRoute<TOptions>
   & ExternalRouteHooks<ToRoute<TOptions>, ExtractRouteContext<TOptions>>
+  & RouteRedirects<ToRoute<TOptions>>
 
 export function createExternalRoute(options: CreateRouteOptions & (WithoutHost | WithHost)): Route {
   const id = createRouteId()
@@ -28,7 +32,10 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
   const meta = options.meta ?? {}
   const host = toWithParams(options.host)
   const context = options.context ?? []
-  const { store, onBeforeRouteEnter } = createHooksFactory()
+  const { store, ...hooks } = createRouteHooks()
+  const redirects = createRouteRedirects({
+    getRoute: () => route,
+  })
   const rawRoute = markRaw({ id, meta: {}, state: {}, ...options })
 
   const route = {
@@ -45,8 +52,9 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
     depth: 1,
     state: {},
     context,
-    onBeforeRouteEnter,
-  } satisfies Route & ExternalRouteHooks
+    ...hooks,
+    ...redirects,
+  } satisfies Route & ExternalRouteHooks & RouteRedirects
 
   const merged = isWithParent(options) ? combineRoutes(options.parent, route) : route
 
