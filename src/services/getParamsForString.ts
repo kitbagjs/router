@@ -2,7 +2,7 @@ import { getParam } from '@/services/params'
 import { getParamName, paramRegex } from '@/services/routeRegex'
 import { Param } from '@/types/paramTypes'
 import { stringHasValue } from '@/utilities/guards'
-import { checkDuplicateParams } from '@/utilities/checkDuplicateKeys'
+import { checkDuplicateParams } from '@/utilities/checkDuplicateParams'
 
 export function getParamsForString(string: string = '', params: Record<string, Param | undefined> = {}): Record<string, Param> {
   if (!stringHasValue(string)) {

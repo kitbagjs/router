@@ -3,7 +3,7 @@ import { PrefetchConfig } from '@/types/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouterPushOptions } from '@/types/routerPush'
 import { RouterReplaceOptions } from '@/types/routerReplace'
-import { Url } from '@/types/url'
+import { UrlString } from '@/types/urlString'
 
 export type UseLink = {
   /**
@@ -17,7 +17,7 @@ export type UseLink = {
   /**
    * Resolved URL with params interpolated and query applied. Same value as `router.resolve`.
    */
-  href: ComputedRef<Url | undefined>,
+  href: ComputedRef<UrlString | undefined>,
   /**
    * True if route matches current URL or is ancestor of route that matches current URL
    */

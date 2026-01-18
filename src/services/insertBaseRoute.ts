@@ -1,18 +1,16 @@
-import { Routes } from '@/types/route'
+import { Route } from '@/types/route'
 import { stringHasValue } from '@/utilities/guards'
 import { withParams } from '@/services/withParams'
 
-export function insertBaseRoute(routes: Routes, base?: string): Routes {
+export function insertBaseRoute(route: Route, base?: string): Route {
   if (!stringHasValue(base)) {
-    return routes
+    return route
   }
 
-  return routes.map((route) => {
-    const value = `${base}${route.path.value}`
+  const value = `${base}${route.path.value}`
 
-    return {
-      ...route,
-      path: withParams(value, route.path.params),
-    }
-  })
+  return {
+    ...route,
+    path: withParams(value, route.path.params),
+  }
 }

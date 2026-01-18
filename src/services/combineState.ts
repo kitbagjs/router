@@ -1,5 +1,5 @@
 import { Param } from '@/types/paramTypes'
-import { checkDuplicateParams } from '@/utilities/checkDuplicateKeys'
+import { checkDuplicateParams } from '@/utilities/checkDuplicateParams'
 
 export type CombineState<
   TParent extends Record<string, Param>,

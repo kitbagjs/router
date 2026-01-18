@@ -3,7 +3,7 @@
 ```ts
 type ResolvedRoute<TRoute> = Readonly<{
   hash: string;
-  hooks: RouterRouteHooks[];
+  hooks: Hooks[];
   href: Url;
   id: TRoute["id"];
   matched: TRoute["matched"];

@@ -83,7 +83,7 @@ function getRouteMatchStatus(
  * Formats a Route definition for the inspector.
  * Shows the route definition properties (path pattern, name, meta, etc.)
  */
-function getIspectorStateOptionsForRoute(route: Route): CustomInspectorState[string] {
+function getInspectorStateOptionsForRoute(route: Route): CustomInspectorState[string] {
   const fields: CustomInspectorState[string] = []
 
   // Route name
@@ -133,7 +133,7 @@ type RouterDevtoolsProps = {
 /**
  * Sets up Vue DevTools integration for Kitbag Router.
  */
-export function setupRouterDevtools({ router, app, routes: routesArray }: RouterDevtoolsProps): void {
+export function setupRouterDevtools({ router, app, routes }: RouterDevtoolsProps): void {
   if (!isBrowser()) {
     return
   }
@@ -147,7 +147,7 @@ export function setupRouterDevtools({ router, app, routes: routesArray }: Router
 
   // Support multiple router instances
   const id = getRouterId()
-  const routesMap = new Map(routesArray.map((route) => [route.id, route]))
+  const routesIdMap = new Map(routes.map((route) => [route.id, route]))
   const routerInspectorId = `kitbag-router-routes.${id}` as const
   const pluginId = `kitbag-router.${id}` as const
 
@@ -175,7 +175,7 @@ export function setupRouterDevtools({ router, app, routes: routesArray }: Router
           return
         }
 
-        payload.rootNodes = routesArray
+        payload.rootNodes = routes
           .filter((route) => shouldShowRoute({ route, payload }))
           .map((route) => {
             const matchStatus = getRouteMatchStatus(route, router.route)
@@ -201,14 +201,14 @@ export function setupRouterDevtools({ router, app, routes: routesArray }: Router
         }
 
         // Find route by ID
-        const route = routesMap.get(payload.nodeId)
+        const route = routesIdMap.get(payload.nodeId)
 
         if (!route) {
           return
         }
 
         payload.state = {
-          options: getIspectorStateOptionsForRoute(route),
+          options: getInspectorStateOptionsForRoute(route),
         }
       })
 

@@ -4,7 +4,7 @@ import { createUseRouter } from '@/compositions/useRouter'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouterPushOptions } from '@/types/routerPush'
 import { RouteParamsByKey } from '@/types/routeWithParams'
-import { Url, isUrl } from '@/types/url'
+import { UrlString, isUrlString } from '@/types/urlString'
 import { AllPropertiesAreOptional } from '@/types/utilities'
 import { createIsRoute } from '@/guards/routes'
 import { combineUrlSearchParams } from '@/utilities/urlSearchParams'
@@ -22,7 +22,7 @@ type UseLinkArgs<
 
 type UseLinkFunction<TRouter extends Router> = {
   <TRouteKey extends RouterRouteName<TRouter>>(name: MaybeRefOrGetter<TRouteKey>, ...args: UseLinkArgs<TRouter, TRouteKey>): UseLink,
-  (url: MaybeRefOrGetter<Url>, options?: MaybeRefOrGetter<UseLinkOptions>): UseLink,
+  (url: MaybeRefOrGetter<UrlString>, options?: MaybeRefOrGetter<UseLinkOptions>): UseLink,
   (resolvedRoute: MaybeRefOrGetter<ResolvedRoute | undefined>, options?: MaybeRefOrGetter<UseLinkOptions>): UseLink,
   (source: MaybeRefOrGetter<string | ResolvedRoute | undefined>, paramsOrOptions?: MaybeRefOrGetter<Record<PropertyKey, unknown> | UseLinkOptions>, maybeOptions?: MaybeRefOrGetter<UseLinkOptions>): UseLink,
 }
@@ -45,7 +45,7 @@ export function createUseLink<TRouter extends Router>(routerKey: InjectionKey<TR
         return sourceValue
       }
 
-      if (isUrl(sourceValue)) {
+      if (isUrlString(sourceValue)) {
         return router.find(sourceValue, toValue(maybeOptions))
       }
 
@@ -58,7 +58,7 @@ export function createUseLink<TRouter extends Router>(routerKey: InjectionKey<TR
       }
 
       const sourceValue = toValue(source)
-      if (isUrl(sourceValue)) {
+      if (isUrlString(sourceValue)) {
         return sourceValue
       }
 
@@ -76,7 +76,7 @@ export function createUseLink<TRouter extends Router>(routerKey: InjectionKey<TR
     const linkOptions = computed<UseLinkOptions>(() => {
       const sourceValue = toValue(source)
 
-      return typeof sourceValue !== 'string' || isUrl(sourceValue) ? toValue(paramsOrOptions) : toValue(maybeOptions)
+      return typeof sourceValue !== 'string' || isUrlString(sourceValue) ? toValue(paramsOrOptions) : toValue(maybeOptions)
     })
 
     const { element, commit } = usePrefetching(() => ({
@@ -96,7 +96,7 @@ export function createUseLink<TRouter extends Router>(routerKey: InjectionKey<TR
       }
 
       const sourceValue = toValue(source)
-      if (isUrl(sourceValue) || typeof sourceValue === 'object') {
+      if (isUrlString(sourceValue) || typeof sourceValue === 'object') {
         return router.push(sourceValue, options)
       }
 

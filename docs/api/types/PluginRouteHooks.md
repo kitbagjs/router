@@ -9,7 +9,7 @@ type PluginRouteHooks<TRoutes, TRejections> = object;
 | Type Parameter | Default type |
 | ------ | ------ |
 | `TRoutes` *extends* [`Routes`](Routes.md) | [`Routes`](Routes.md) |
-| `TRejections` *extends* `Rejection`[] | `Rejection`[] |
+| `TRejections` *extends* `Rejections` | `Rejections` |
 
 ## Properties
 

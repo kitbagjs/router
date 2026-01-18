@@ -1,13 +1,19 @@
 import { DuplicateNamesError } from '@/errors/duplicateNamesError'
-import { Routes } from '@/types/route'
-import { getCount } from '@/utilities/array'
+import { Route, Routes } from '@/types/route'
 
 export function checkDuplicateNames(routes: Routes): void {
-  const names = routes.map(({ name }) => name)
+  routes.reduce((grouped, route) => {
+    if (!grouped.has(route.name)) {
+      grouped.set(route.name, route)
 
-  for (const name of names) {
-    if (getCount(names, name) > 1) {
-      throw new DuplicateNamesError(name)
+      return grouped
     }
-  }
+
+    const existingRoute = grouped.get(route.name)
+    if (existingRoute?.id !== route.id) {
+      throw new DuplicateNamesError(route.name)
+    }
+
+    return grouped
+  }, new Map<string, Route>())
 }

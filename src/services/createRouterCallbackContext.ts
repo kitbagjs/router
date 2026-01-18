@@ -4,7 +4,7 @@ import { ContextRejectionError } from '@/errors/contextRejectionError'
 import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { RouterReject } from '@/types/routerReject'
 import { RouterReplace } from '@/types/routerReplace'
-import { isUrl } from '@/types/url'
+import { isUrlString } from '@/types/urlString'
 import { BuiltInRejectionType } from './createRouterReject'
 import { AsString } from '@/types/utilities'
 import { Routes } from '@/types/route'
@@ -73,7 +73,7 @@ export function createRouterCallbackContext({ to }: { to: ResolvedRoute }): Rout
   }
 
   const replace: RouterCallbackContext['replace'] = (source: any, paramsOrOptions?: any, maybeOptions?: any) => {
-    if (isUrl(source)) {
+    if (isUrlString(source)) {
       const options: RouterPushOptions = paramsOrOptions ?? {}
       throw new ContextPushError([source, { ...options, replace: true }])
     }

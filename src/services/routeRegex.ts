@@ -40,13 +40,20 @@ export function splitByMatches(string: string, regexp: RegExp): string[] {
 export function generateRouteHostRegexPattern(route: Route): RegExp {
   const hostRegex = replaceParamSyntaxWithCatchAllsAndEscapeRest(route.host.value)
 
-  return new RegExp(`^${hostRegex}$`, 'i')
+  return new RegExp(`^${hostRegex || '.*'}$`, 'i')
 }
 
 export function generateRoutePathRegexPattern(route: Route): RegExp {
   const pathRegex = replaceParamSyntaxWithCatchAllsAndEscapeRest(route.path.value)
 
   return new RegExp(`^${pathRegex}$`, 'i')
+}
+
+export function generateRouteHashRegexPattern(route: Route): RegExp {
+  const cleanValue = route.hash.value.replace(/^#*/, '')
+  const hashRegex = replaceParamSyntaxWithCatchAllsAndEscapeRest(cleanValue)
+
+  return new RegExp(`^#?${hashRegex || '.*'}$`, 'i')
 }
 
 export function generateRouteQueryRegexPatterns(route: Route): RegExp[] {

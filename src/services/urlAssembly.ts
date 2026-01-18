@@ -2,7 +2,7 @@ import { setParamValue } from '@/services/params'
 import { setParamValueOnUrl } from '@/services/paramsFinder'
 import { getParamName, isOptionalParamSyntax } from '@/services/routeRegex'
 import { Route } from '@/types/route'
-import { Url } from '@/types/url'
+import { UrlString } from '@/types/urlString'
 import { createUrl } from '@/services/urlCreator'
 import { parseUrl } from '@/services/urlParser'
 import { combineUrlSearchParams } from '@/utilities/urlSearchParams'
@@ -15,7 +15,7 @@ type AssembleUrlOptions = {
   hash?: string,
 }
 
-export function assembleUrl(route: Route, options: AssembleUrlOptions = {}): Url {
+export function assembleUrl(route: Route, options: AssembleUrlOptions = {}): UrlString {
   const { params: paramValues = {}, query: queryValues } = options
   const routeQuery = assembleQueryParamValues(route.query, paramValues)
   const searchParams = combineUrlSearchParams(routeQuery, queryValues)

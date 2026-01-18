@@ -9,7 +9,7 @@ import { getPrefetchConfigValue } from '@/utilities/prefetch'
 import { component } from '@/utilities/testHelpers'
 import { visibilityObserverKey } from '@/compositions/useVisibilityObserver'
 import { VisibilityObserver } from '@/services/createVisibilityObserver'
-import { Url } from '@/types/url'
+import { UrlString } from '@/types/urlString'
 import { RouterPushOptions } from '@/types/routerPush'
 import { RouterLink } from '@/main'
 
@@ -256,7 +256,7 @@ test('to prop as Url renders and routes correctly', async () => {
   expect(router.route.name).toBe('route')
 })
 
-test.each<{ to: Url, match: boolean, exactMatch: boolean }>([
+test.each<{ to: UrlString, match: boolean, exactMatch: boolean }>([
   { to: '/parent-route', match: true, exactMatch: false },
   { to: '/parent-route/child-route', match: true, exactMatch: true },
   { to: '/other', match: false, exactMatch: false },
@@ -355,7 +355,7 @@ test('isMatch correctly matches parent when sibling has the same url', async () 
   expect(link.classes()).not.toContain('router-link--exact-match')
 })
 
-test.each<{ to: Url, active: boolean, exactActive: boolean }>([
+test.each<{ to: UrlString, active: boolean, exactActive: boolean }>([
   { to: '/parent-route', active: true, exactActive: false },
   { to: '/parent-route/child-route/pass', active: true, exactActive: true },
   { to: '/parent-route/child-route/fail', active: false, exactActive: false },

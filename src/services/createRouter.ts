@@ -14,7 +14,7 @@ import { Router, RouterOptions } from '@/types/router'
 import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { RouterReplace, RouterReplaceOptions } from '@/types/routerReplace'
 import { RoutesName } from '@/types/routesMap'
-import { Url, isUrl } from '@/types/url'
+import { UrlString, isUrlString } from '@/types/urlString'
 import { createUniqueIdSequence, isFirstUniqueSequenceId } from '@/services/createUniqueIdSequence'
 import { createVisibilityObserver } from './createVisibilityObserver'
 import { visibilityObserverKey } from '@/compositions/useVisibilityObserver'
@@ -239,11 +239,11 @@ export function createRouter<
   }
 
   const push: RouterPush<TRoutes | TPlugin['routes']> = (
-    source: Url | RoutesName<TRoutes | TPlugin['routes']> | ResolvedRoute,
+    source: UrlString | RoutesName<TRoutes | TPlugin['routes']> | ResolvedRoute,
     paramsOrOptions?: Record<string, unknown> | RouterPushOptions,
     maybeOptions?: RouterPushOptions,
   ) => {
-    if (isUrl(source)) {
+    if (isUrlString(source)) {
       const options: RouterPushOptions = { ...paramsOrOptions }
       const url = combineUrl(source, {
         searchParams: options.query,
@@ -274,11 +274,11 @@ export function createRouter<
   }
 
   const replace: RouterReplace<TRoutes | TPlugin['routes']> = (
-    source: Url | RoutesName<TRoutes | TPlugin['routes']> | ResolvedRoute,
+    source: UrlString | RoutesName<TRoutes | TPlugin['routes']> | ResolvedRoute,
     paramsOrOptions?: Record<string, unknown> | RouterReplaceOptions,
     maybeOptions?: RouterReplaceOptions,
   ) => {
-    if (isUrl(source)) {
+    if (isUrlString(source)) {
       const options: RouterPushOptions = { ...paramsOrOptions, replace: true }
 
       return push(source, options)
