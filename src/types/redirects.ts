@@ -47,7 +47,7 @@ export type RouteRedirectCallback<
 > = (params: ExtractRouteParamTypesReading<TRouteFrom>) => ExtractRouteParamTypesWriting<TRouteTo>
 
 /**
- * This type is purposely wide to prevent type errors in RouteRedirectFrom where the TRotueTo generic cannot be inferred.
+ * This type is purposely wide to prevent type errors in RouteRedirectFrom where the TRouteTo generic cannot be inferred.
  */
 export type RouteRedirect = (to: Route, callback?: (params: any) => any) => void
 
