@@ -11,7 +11,7 @@ export default defineConfig({
     [
       'script',
       {
-        src: 'https://media.bitterbrains.com/main.js?from=kitbag&type=top',
+        src: 'https://media.bitterbrains.com/main.js?from=KITBAG&type=top',
         // @ts-expect-error: vitepress bug
         async: true,
         type: 'text/javascript',
