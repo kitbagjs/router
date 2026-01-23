@@ -50,7 +50,7 @@ const notFoundRejection = createRejection({
 })
 
 export const router = createRouter(routes, {
-  rejections: [authNeededRejection]
+  rejections: [notFoundRejection]
 })
 ```
 
