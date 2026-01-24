@@ -1,8 +1,8 @@
 import { Hooks } from '@/models/hooks'
-import { ExtractRouteParamTypesReading } from '@/types/params'
 import { Route, Routes } from '@/types/route'
 import { ExtractRouteStateParamsAsOptional } from '@/types/state'
 import { UrlString } from '@/types/urlString'
+import { UrlParamsReading } from '@/types/url'
 
 /**
  * Represents a route that the router has matched to current browser location.
@@ -27,17 +27,9 @@ export type ResolvedRoute<TRoute extends Route = Route> = Readonly<{
   */
   name: TRoute['name'],
   /**
-   * Accessor for query string values from user in the current browser location.
-  */
-  query: URLSearchParams,
-  /**
-   * Hash value of the route.
-  */
-  hash: string,
-  /**
    * Key value pair for route params, values will be the user provided value from current browser location.
   */
-  params: ExtractRouteParamTypesReading<TRoute>,
+  params: UrlParamsReading<TRoute>,
   /**
    * Type for additional data intended to be stored in history state.
    */

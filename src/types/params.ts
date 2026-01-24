@@ -1,7 +1,4 @@
 import { LiteralParam, Param, ParamGetSet, ParamGetter } from '@/types/paramTypes'
-import { Identity } from '@/types/utilities'
-import { MakeOptional } from '@/utilities/makeOptional'
-import { WithParams } from '@/services/withParams'
 import { StandardSchemaV1 } from '@standard-schema/spec'
 
 export const paramStart = '['
@@ -148,14 +145,14 @@ type ExtractParamTypesWriting<TWithParams extends WithParams> = {
  * @returns The extracted type, or 'string' as a fallback.
  */
 export type ExtractParamType<TParam extends Param> =
-  Param extends TParam
-    ? unknown
-    : TParam extends ParamGetSet<infer Type>
-      ? Type
-      : TParam extends ParamGetter
-        ? ReturnType<TParam>
-        : TParam extends StandardSchemaV1
-          ? StandardSchemaV1.InferOutput<TParam>
-          : TParam extends LiteralParam
-            ? TParam
-            : string
+Param extends TParam
+  ? unknown
+  : TParam extends ParamGetSet<infer Type>
+    ? Type
+    : TParam extends ParamGetter
+      ? ReturnType<TParam>
+      : TParam extends StandardSchemaV1
+        ? StandardSchemaV1.InferOutput<TParam>
+        : TParam extends LiteralParam
+          ? TParam
+          : string

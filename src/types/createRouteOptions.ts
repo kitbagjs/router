@@ -1,8 +1,5 @@
 import { Component } from 'vue'
-import { CombineHash, combineHash } from '@/services/combineHash'
 import { CombineMeta, combineMeta } from '@/services/combineMeta'
-import { CombinePath, combinePath } from '@/services/combinePath'
-import { CombineQuery, combineQuery } from '@/services/combineQuery'
 import { CombineState, combineState } from '@/services/combineState'
 import { Param } from '@/types/paramTypes'
 import { PrefetchConfig } from '@/types/prefetch'
@@ -15,10 +12,11 @@ import { MaybePromise } from './utilities'
 import { ToMeta } from './meta'
 import { ToState } from './state'
 import { ToName } from './name'
-import { ToWithParams, WithParams } from '@/services/withParams'
+import { WithParams } from '@/services/withParams'
 import { RouteContext, ToRouteContext } from './routeContext'
 import { RouterViewProps } from '@/components/routerView'
-import { createUrl, CreateUrlOptions } from '@/services/createUrl'
+import { CreateUrlOptions, ToUrl, Url } from '@/types/url'
+import { CombineUrl } from '@/services/combineUrl'
 
 export type WithHost<THost extends string | WithParams = string | WithParams> = {
   /**
@@ -155,10 +153,7 @@ export type ToRoute<
   : TOptions extends { parent: infer TParent extends Route }
     ? Route<
       ToName<TOptions['name']>,
-      TParent['host'],
-      CombinePath<TParent['path'], ToWithParams<TOptions['path']>>,
-      CombineQuery<TParent['query'], ToWithParams<TOptions['query']>>,
-      CombineHash<TParent['hash'], ToWithParams<TOptions['hash']>>,
+      CombineUrl<TParent, ToUrl<TOptions>>,
       CombineMeta<ToMeta<TParent['meta']>, ToMeta<TOptions['meta']>>,
       CombineState<ToState<TParent['state']>, ToState<TOptions['state']>>,
       ToMatches<TOptions, CreateRouteProps<TOptions> extends TProps ? undefined : TProps>,
@@ -166,10 +161,7 @@ export type ToRoute<
     >
     : Route<
       ToName<TOptions['name']>,
-      TOptions extends { host: string | WithParams } ? ToWithParams<TOptions['host']> : WithParams<'', {}>,
-      ToWithParams<TOptions['path']>,
-      ToWithParams<TOptions['query']>,
-      ToWithParams<TOptions['hash']>,
+      ToUrl<TOptions>,
       ToMeta<TOptions['meta']>,
       ToState<TOptions['state']>,
       ToMatches<TOptions, CreateRouteProps<TOptions> extends TProps ? undefined : TProps>,
@@ -177,16 +169,8 @@ export type ToRoute<
     >
 
 export function combineRoutes(parent: Route, child: Route): Route {
-  const url = createUrl({
-    host: parent.host,
-    path: combinePath(parent.path, child.path),
-    query: combineQuery(parent.query, child.query),
-    hash: combineHash(parent.hash, child.hash),
-  })
-
   return {
     ...child,
-    ...url,
     meta: combineMeta(parent.meta, child.meta),
     state: combineState(parent.state, child.state),
     hooks: [...parent.hooks, ...child.hooks],
