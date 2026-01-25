@@ -11,7 +11,6 @@ const FALLBACK_HOST = 'https://internal.invalid'
 
 export function createUrl<const T extends CreateUrlOptions>(options: T): ToUrl<T>
 export function createUrl(url: string): Url
-export function createUrl(url: string | CreateUrlOptions): Url
 export function createUrl(urlOrOptions: CreateUrlOptions | string): Url {
   if (typeof urlOrOptions === 'string') {
     const url = new URL(urlOrOptions, FALLBACK_HOST)
