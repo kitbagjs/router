@@ -33,7 +33,7 @@ export function createUrl(urlOrOptions: CreateUrlOptions | string): Url {
   const host = {
     ...options.host,
     regexp: replaceParamSyntaxWithCatchAllsAndEscapeRest(options.host.value),
-    toString(params: Record<string, unknown> = {}): string {
+    stringify(params: Record<string, unknown> = {}): string {
       return assembleParamValues(options.host, params)
     },
   }
@@ -41,7 +41,7 @@ export function createUrl(urlOrOptions: CreateUrlOptions | string): Url {
   const path = {
     ...options.path,
     regexp: replaceParamSyntaxWithCatchAllsAndEscapeRest(options.path.value),
-    toString(params: Record<string, unknown> = {}): string {
+    stringify(params: Record<string, unknown> = {}): string {
       return assembleParamValues(options.path, params)
     },
   }
@@ -49,7 +49,7 @@ export function createUrl(urlOrOptions: CreateUrlOptions | string): Url {
   const query = {
     ...options.query,
     regexp: generateQueryRegexPatterns(options.query.value),
-    toString(params: Record<string, unknown> = {}): string {
+    stringify(params: Record<string, unknown> = {}): string {
       return assembleQueryParamValues(options.query, params).toString()
     },
   }
@@ -57,17 +57,17 @@ export function createUrl(urlOrOptions: CreateUrlOptions | string): Url {
   const hash = {
     ...options.hash,
     regexp: replaceParamSyntaxWithCatchAllsAndEscapeRest(options.hash.value),
-    toString(params: Record<string, unknown> = {}): string {
+    stringify(params: Record<string, unknown> = {}): string {
       return assembleParamValues(options.hash, params)
     },
   }
 
   function stringify(params: Record<string, unknown> = {}): UrlString {
-    const url = new URL(host.toString(params), FALLBACK_HOST)
+    const url = new URL(host.stringify(params), FALLBACK_HOST)
 
-    url.pathname = path.toString(params)
-    url.search = query.toString(params)
-    url.hash = hash.toString(params)
+    url.pathname = path.stringify(params)
+    url.search = query.stringify(params)
+    url.hash = hash.stringify(params)
 
     return asUrlString(url.toString().replace(new RegExp(`^${FALLBACK_HOST}/*`), '/'))
   }
