@@ -47,7 +47,7 @@ export function isUrlWithSchema(url: unknown): url is Url & { schema: Record<str
 export type Url<TParams extends UrlParams = UrlParams> = {
   /**
    * @internal
-   * The parameters type for the url.
+   * The parameters type for the url. Non functional and undefined at runtime. 
    */
   params: TParams,
   /**
