@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/method-signature-style */
 import { ToWithParams, WithParams } from '@/services/withParams'
-import { ExtractParamType, ParamStart, ParamEnd } from '@/types/params'
+import { ExtractParamType, IsOptionalParamTemplate } from '@/types/params'
 import { AllPropertiesAreOptional, Identity } from '@/types/utilities'
 import { UrlString } from '@/types/urlString'
-import { Param, ParamGetSet } from './paramTypes'
+import { Param } from './paramTypes'
 import { MakeOptional } from '@/utilities/makeOptional'
+import { ParamWithDefault } from '@/services/withDefault'
 
 export type CreateUrlOptions = {
   host?: string | WithParams | undefined,
@@ -22,12 +23,12 @@ export type ToUrl<
   & ToUrlParams<ToWithParams<TOptions['hash']>>
 >
 
-type UrlParams = Record<string, [param: Param, isOptional: boolean]>
+type OptionalParam<TParam extends Param = Param> = [param: TParam, isOptional: true]
+type RequiredParam<TParam extends Param = Param> = [param: TParam, isOptional: false]
+type UrlParams = Record<string, OptionalParam | RequiredParam>
 
 type ToUrlParams<TWithParams extends WithParams> = {
-  [K in keyof TWithParams['params']]: TWithParams['value'] extends `${string}${ParamStart}?${K & string}${ParamEnd}${string}`
-    ? [TWithParams['params'][K], true]
-    : [TWithParams['params'][K], false]
+  [K in keyof TWithParams['params']]: [TWithParams['params'][K], IsOptionalParamTemplate<K & string, TWithParams['value']>]
 }
 
 /**
@@ -76,11 +77,11 @@ type ToUrlParamsReading<
 > =
 Identity<
   MakeOptional<{
-    [K in keyof TParams]: TParams[K] extends [infer TParam extends Param, true]
-      ? TParam extends Required<ParamGetSet>
+    [K in keyof TParams]: TParams[K] extends OptionalParam<infer TParam>
+      ? TParam extends ParamWithDefault
         ? ExtractParamType<TParam>
         : ExtractParamType<TParam> | undefined
-      : TParams[K] extends [infer TParam extends Param, false]
+      : TParams[K] extends RequiredParam<infer TParam>
         ? ExtractParamType<TParam>
         : never
   }>
@@ -99,9 +100,9 @@ type ToUrlParamsWriting<
 > =
 Identity<
   MakeOptional<{
-    [K in keyof TParams]: TParams[K] extends [infer TParam extends Param, true]
+    [K in keyof TParams]: TParams[K] extends OptionalParam<infer TParam>
       ? ExtractParamType<TParam> | undefined
-      : TParams[K] extends [infer TParam extends Param, false]
+      : TParams[K] extends RequiredParam<infer TParam>
         ? ExtractParamType<TParam>
         : never
   }>
