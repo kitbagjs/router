@@ -9,7 +9,7 @@ describe('parseUrl', () => {
   test('given parts without host, protocol, or path, returns forward slash to satisfy Url', () => {
     const url = createUrl({})
 
-    expect(url.toString()).toBe('/')
+    expect(url.stringify()).toBe('/')
   })
 
   test.each(['foo', '/foo'])('given parts with path, returns value with path', (path) => {
@@ -20,7 +20,7 @@ describe('parseUrl', () => {
 
     const url = createUrl(parts)
 
-    expect(url.toString()).toBe('https://kitbag.dev/foo')
+    expect(url.stringify()).toBe('https://kitbag.dev/foo')
   })
 
   test.each(['?bar=123', 'bar=123'])('given parts with query, returns value with query', (query) => {
@@ -31,7 +31,7 @@ describe('parseUrl', () => {
 
     const url = createUrl(parts)
 
-    expect(url.toString()).toBe('https://kitbag.dev/?bar=123')
+    expect(url.stringify()).toBe('https://kitbag.dev/?bar=123')
   })
 
   test.each(['bar', '#bar'])('given parts with hash, returns value with hash', (hash) => {
@@ -42,7 +42,7 @@ describe('parseUrl', () => {
 
     const url = createUrl(parts)
 
-    expect(url.toString()).toBe('https://kitbag.dev/#bar')
+    expect(url.stringify()).toBe('https://kitbag.dev/#bar')
   })
 
   test('given parts without host, returns url starting with forward slash', () => {
@@ -53,7 +53,7 @@ describe('parseUrl', () => {
 
     const url = createUrl(parts)
 
-    expect(url.toString()).toBe('/foo?bar=123')
+    expect(url.stringify()).toBe('/foo?bar=123')
   })
 
   test.each([
@@ -62,7 +62,7 @@ describe('parseUrl', () => {
   ])('given parts with host, returns value that satisfies Url', (parts) => {
     const url = createUrl(parts)
 
-    expect(url.toString()).toBe(`${parts.host}/`)
+    expect(url.stringify()).toBe(`${parts.host}/`)
   })
 })
 
@@ -147,7 +147,7 @@ describe('url assembly', () => {
         path,
       })
 
-      const response = url.toString()
+      const response = url.stringify()
 
       expect(response).toBe('/simple')
     })
@@ -162,7 +162,7 @@ describe('url assembly', () => {
         path,
       })
 
-      const response = url.toString()
+      const response = url.stringify()
 
       expect(response).toBe('/simple/')
     })
@@ -176,7 +176,7 @@ describe('url assembly', () => {
         path,
       })
 
-      const response = url.toString({
+      const response = url.stringify({
         simple: 'ABC',
       })
 
@@ -189,7 +189,7 @@ describe('url assembly', () => {
         path: withParams('/simple/[simple]', { simple: withDefault(String, 'abc') }),
       })
 
-      const response = url.toString({
+      const response = url.stringify({
         simple: 'DEF',
       })
 
@@ -205,7 +205,7 @@ describe('url assembly', () => {
         path,
       })
 
-      expect(() => url.toString()).toThrowError(InvalidRouteParamValueError)
+      expect(() => url.stringify()).toThrowError(InvalidRouteParamValueError)
     })
 
     test.each([
@@ -217,7 +217,7 @@ describe('url assembly', () => {
         path,
       })
 
-      const response = url.toString({
+      const response = url.stringify({
         simple: 'ABC',
       })
 
@@ -236,7 +236,7 @@ describe('url assembly', () => {
         query,
       })
 
-      const response = url.toString()
+      const response = url.stringify()
 
       expect(response).toBe('/?simple=abc')
     })
@@ -252,7 +252,7 @@ describe('url assembly', () => {
         query,
       })
 
-      const response = url.toString()
+      const response = url.stringify()
 
       expect(response).toBe('/')
     })
@@ -267,7 +267,7 @@ describe('url assembly', () => {
         query,
       })
 
-      const response = url.toString({ simple: '' })
+      const response = url.stringify({ simple: '' })
 
       expect(response).toBe('/?simple=')
     })
@@ -279,7 +279,7 @@ describe('url assembly', () => {
         query: withParams('simple=[simple]', { simple: withDefault(String, 'abc') }),
       })
 
-      const response = url.toString({ simple: '' })
+      const response = url.stringify({ simple: '' })
 
       expect(response).toBe('/?simple=')
     })
@@ -294,7 +294,7 @@ describe('url assembly', () => {
         query,
       })
 
-      const response = url.toString({
+      const response = url.stringify({
         simple: 'ABC',
       })
 
@@ -308,7 +308,7 @@ describe('url assembly', () => {
         query: withParams('simple=[simple]', { simple: withDefault(String, 'abc') }),
       })
 
-      const response = url.toString({
+      const response = url.stringify({
         simple: 'DEF',
       })
 
@@ -325,7 +325,7 @@ describe('url assembly', () => {
         query,
       })
 
-      expect(() => url.toString()).toThrowError(InvalidRouteParamValueError)
+      expect(() => url.stringify()).toThrowError(InvalidRouteParamValueError)
     })
 
     test.each([
@@ -338,7 +338,7 @@ describe('url assembly', () => {
         query,
       })
 
-      const response = url.toString({
+      const response = url.stringify({
         simple: 'ABC',
       })
 
@@ -357,7 +357,7 @@ describe('url assembly', () => {
         query: withParams('sort=[?sort]', { sort: myParam }),
       })
 
-      const response = url.toString({ sort: 'irrelevant' })
+      const response = url.stringify({ sort: 'irrelevant' })
 
       expect(response).toBe(`/?sort=${randomValue}`)
     })
@@ -369,7 +369,7 @@ describe('url assembly', () => {
         query: 's=[?search]',
       })
 
-      const response = url.toString({ search: 'foo' })
+      const response = url.stringify({ search: 'foo' })
 
       expect(response).toBe('/?s=foo')
     })
@@ -386,7 +386,7 @@ describe('url assembly', () => {
         host,
       })
 
-      const response = url.toString()
+      const response = url.stringify()
 
       expect(response).toBe('https://kitbag.dev/')
     })
@@ -402,7 +402,7 @@ describe('url assembly', () => {
         host,
       })
 
-      const response = url.toString()
+      const response = url.stringify()
 
       expect(response).toBe('https://kitbag.dev/')
     })
@@ -417,7 +417,7 @@ describe('url assembly', () => {
         host,
       })
 
-      const response = url.toString({
+      const response = url.stringify({
         subdomain: 'ABC.',
       })
 
@@ -431,7 +431,7 @@ describe('url assembly', () => {
         host: withParams('https://[?subdomain]kitbag.dev', { subdomain: withDefault(String, 'abc.') }),
       })
 
-      const response = url.toString({
+      const response = url.stringify({
         subdomain: 'DEF.',
       })
 
@@ -448,7 +448,7 @@ describe('url assembly', () => {
         host,
       })
 
-      expect(() => url.toString()).toThrowError(InvalidRouteParamValueError)
+      expect(() => url.stringify()).toThrowError(InvalidRouteParamValueError)
     })
 
     test.each([
@@ -461,7 +461,7 @@ describe('url assembly', () => {
         host,
       })
 
-      const response = url.toString({
+      const response = url.stringify({
         subdomain: 'ABC.',
       })
 
@@ -480,7 +480,7 @@ describe('url assembly', () => {
         hash,
       })
 
-      const response = url.toString()
+      const response = url.stringify()
 
       expect(response).toBe('/#foo')
     })
@@ -496,7 +496,7 @@ describe('url assembly', () => {
         hash,
       })
 
-      const response = url.toString()
+      const response = url.stringify()
 
       expect(response).toBe('/#foo')
     })
@@ -511,7 +511,7 @@ describe('url assembly', () => {
         hash,
       })
 
-      const response = url.toString({
+      const response = url.stringify({
         bar: 'ABC.',
       })
 
@@ -525,7 +525,7 @@ describe('url assembly', () => {
         hash: withParams('foo[?bar]', { bar: withDefault(String, 'abc.') }),
       })
 
-      const response = url.toString({
+      const response = url.stringify({
         bar: 'DEF.',
       })
 
@@ -542,7 +542,7 @@ describe('url assembly', () => {
         hash,
       })
 
-      expect(() => url.toString()).toThrowError(InvalidRouteParamValueError)
+      expect(() => url.stringify()).toThrowError(InvalidRouteParamValueError)
     })
 
     test.each([
@@ -555,7 +555,7 @@ describe('url assembly', () => {
         hash,
       })
 
-      const response = url.toString({
+      const response = url.stringify({
         bar: 'ABC',
       })
 
@@ -569,7 +569,7 @@ describe('url assembly', () => {
       path: 'foo',
     })
 
-    const response = url.toString()
+    const response = url.stringify()
 
     expect(response).toBe('/foo')
   })
@@ -581,7 +581,7 @@ describe('url assembly', () => {
       host: 'https://kitbag.dev',
     })
 
-    const response = url.toString()
+    const response = url.stringify()
 
     expect(response).toBe('https://kitbag.dev/foo')
   })
@@ -593,7 +593,7 @@ describe('url assembly', () => {
       host: 'https://kitbag.dev/',
     })
 
-    const response = url.toString()
+    const response = url.stringify()
 
     expect(response).toBe('https://kitbag.dev/foo')
   })

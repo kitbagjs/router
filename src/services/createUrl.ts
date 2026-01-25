@@ -62,29 +62,14 @@ export function createUrl(urlOrOptions: CreateUrlOptions | string): Url {
     },
   }
 
-  function toString(params: Record<string, unknown> = {}): UrlString {
-    const url = assembleUrl({
-      host: host.toString(params),
-      path: path.toString(params),
-      query: query.toString(params),
-      hash: hash.toString(params),
-    })
+  function stringify(params: Record<string, unknown> = {}): UrlString {
+    const url = new URL(host.toString(params), FALLBACK_HOST)
+
+    url.pathname = path.toString(params)
+    url.search = query.toString(params)
+    url.hash = hash.toString(params)
 
     return asUrlString(url.toString().replace(new RegExp(`^${FALLBACK_HOST}/*`), '/'))
-  }
-
-  function assembleUrl({ host, path, query, hash }: { host: string, path: string, query: string, hash: string }): URL {
-    const url = new URL(host, FALLBACK_HOST)
-
-    url.pathname = path
-    url.search = query
-    url.hash = hash
-
-    return url
-  }
-
-  function toUrl(params: Record<string, unknown> = {}): URL {
-    return new URL(toString(params), FALLBACK_HOST)
   }
 
   function parse(url: string): Record<string, unknown> {
@@ -107,7 +92,7 @@ export function createUrl(urlOrOptions: CreateUrlOptions | string): Url {
     _params: {},
   }
 
-  return { ...internal, toUrl, toString, parse, match }
+  return { ...internal, stringify, parse, match }
 }
 
 function assembleParamValues(part: WithParams, paramValues: Record<string, unknown>): string {

@@ -47,12 +47,7 @@ export type Url<TParams extends UrlParams = UrlParams> = {
   /**
    * Converts the url parts to a full url.
    */
-  toString(...params: UrlParamsArgs<TParams>): UrlString,
-  /**
-   * Converts the url parts to a URL object. Convenience wrapper around new URL().
-   * https://developer.mozilla.org/en-US/docs/Web/API/URL
-   */
-  toUrl(...params: UrlParamsArgs<TParams>): URL,
+  stringify(...params: UrlParamsArgs<TParams>): UrlString,
   /**
    * Parses the url supplied and returns any params found.
    */
