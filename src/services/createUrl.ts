@@ -88,8 +88,8 @@ export function createUrl(urlOrOptions: CreateUrlOptions | string): Url {
   }
 
   const internal = {
-    _schema: { host, path, query, hash },
-    _params: {},
+    schema: { host, path, query, hash },
+    params: {},
   }
 
   return { ...internal, stringify, parse, match }

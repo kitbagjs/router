@@ -32,19 +32,22 @@ type ToUrlParams<TWithParams extends WithParams> = {
 }
 
 /**
+ * Type guard to assert that a url has a schema.
+ * @internal
+ */
+export function isUrlWithSchema(url: unknown): url is Url & { schema: Record<string, WithParams> } {
+  return typeof url === 'object' && url !== null && 'schema' in url
+}
+
+/**
  * Represents the structure of a url parts. Can be used to create a url with support for params.
  */
 export type Url<TParams extends UrlParams = UrlParams> = {
   /**
    * @internal
-   * The underlying value of the url.
-   */
-  _schema: Record<string, WithParams>,
-  /**
-   * @internal
    * The parameters type for the url.
    */
-  _params: TParams,
+  params: TParams,
   /**
    * Converts the url parts to a full url.
    */
@@ -70,7 +73,7 @@ type UrlParamsArgs<
 * @template TUrl - The url type from which to extract and merge parameter types.
 * @returns A record of parameter names to their respective types, extracted and merged from both path and query parameters.
 */
-export type UrlParamsReading<TUrl extends Url> = ToUrlParamsReading<TUrl['_params']>
+export type UrlParamsReading<TUrl extends Url> = ToUrlParamsReading<TUrl['params']>
 
 type ToUrlParamsReading<
   TParams extends UrlParams
@@ -93,7 +96,7 @@ Identity<
 * @template TUrl - The url type from which to extract and merge parameter types.
 * @returns A record of parameter names to their respective types, extracted and merged from both path and query parameters.
 */
-export type UrlParamsWriting<TUrl extends Url> = ToUrlParamsWriting<TUrl['_params']>
+export type UrlParamsWriting<TUrl extends Url> = ToUrlParamsWriting<TUrl['params']>
 
 type ToUrlParamsWriting<
   TParams extends UrlParams
