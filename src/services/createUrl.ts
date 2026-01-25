@@ -24,8 +24,8 @@ export function createUrl(urlOrOptions: CreateUrlOptions | string): Url {
   const options = {
     host: toWithParams(urlOrOptions.host),
     path: toWithParams(urlOrOptions.path),
-    query: toWithParams(urlOrOptions.query),
-    hash: toWithParams(urlOrOptions.hash),
+    query: cleanQuery(toWithParams(urlOrOptions.query)),
+    hash: cleanHash(toWithParams(urlOrOptions.hash)),
   }
 
   checkDuplicateParams(options.path.params, options.query.params, options.host.params, options.hash.params)
@@ -101,6 +101,20 @@ export function createUrl(urlOrOptions: CreateUrlOptions | string): Url {
   }
 
   return { ...internal, stringify, parse, tryParse, match }
+}
+
+function cleanHash(hash: WithParams): WithParams {
+  return {
+    ...hash,
+    value: hash.value.replace(/^#/, ''),
+  }
+}
+
+function cleanQuery(query: WithParams): WithParams {
+  return {
+    ...query,
+    value: query.value.replace(/^\?/, ''),
+  }
 }
 
 function assembleParamValues(part: WithParams, paramValues: Record<string, unknown>): string {

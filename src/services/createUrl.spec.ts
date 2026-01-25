@@ -5,6 +5,17 @@ import { withDefault } from './withDefault'
 import { InvalidRouteParamValueError } from '@/errors/invalidRouteParamValueError'
 import { createParam } from './createParam'
 
+test('given a query that starts with "?", strips the leading "?"', () => {
+  const url = createUrl({ query: '?foo=123' })
+
+  expect(url.stringify()).toBe('/?foo=123')
+})
+
+test('given a hash that starts with "#", strips the leading "#"', () => {
+  const url = createUrl({ hash: '#foo' })
+  expect(url.stringify()).toBe('/#foo')
+})
+
 describe('parseUrl', () => {
   test('given parts without host, protocol, or path, returns forward slash to satisfy Url', () => {
     const url = createUrl({})
