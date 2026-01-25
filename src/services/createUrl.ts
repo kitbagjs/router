@@ -2,7 +2,7 @@ import { toWithParams, WithParams } from '@/services/withParams'
 import { getParamValueFromUrl, setParamValueOnUrl } from '@/services/paramsFinder'
 import { getParamName, isOptionalParamSyntax, paramIsOptional, replaceParamSyntaxWithCatchAllsAndEscapeRest, escapeRegExp } from '@/services/routeRegex'
 import { getParamValue, setParamValue } from '@/services/params'
-import { CreateUrlOptions, ToUrl, Url } from '@/types/url'
+import { IS_URL_SYMBOL, CreateUrlOptions, ToUrl, Url } from '@/types/url'
 import { asUrlString, UrlString } from '@/types/urlString'
 import { checkDuplicateParams } from '@/utilities/checkDuplicateParams'
 
@@ -98,7 +98,8 @@ export function createUrl(urlOrOptions: CreateUrlOptions | string): Url {
   const internal = {
     schema: { host, path, query, hash },
     params: {},
-  }
+    [IS_URL_SYMBOL]: true,
+  } as const
 
   return { ...internal, stringify, parse, tryParse, match }
 }

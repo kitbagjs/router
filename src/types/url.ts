@@ -7,6 +7,8 @@ import { Param } from './paramTypes'
 import { MakeOptional } from '@/utilities/makeOptional'
 import { ParamWithDefault } from '@/services/withDefault'
 
+export const IS_URL_SYMBOL = Symbol('IS_URL_SYMBOL')
+
 export type CreateUrlOptions = {
   host?: string | WithParams | undefined,
   path?: string | WithParams | undefined,
@@ -36,7 +38,7 @@ type ToUrlParams<TWithParams extends WithParams> = {
  * @internal
  */
 export function isUrlWithSchema(url: unknown): url is Url & { schema: Record<string, WithParams> } {
-  return typeof url === 'object' && url !== null && 'schema' in url
+  return typeof url === 'object' && url !== null && IS_URL_SYMBOL in url
 }
 
 /**
@@ -65,6 +67,11 @@ export type Url<TParams extends UrlParams = UrlParams> = {
    * Checks if the supplied url matches this url. Any value above 0 is a match. Can be used to compare to other partial matches. Max score is 100.
    */
   match(url: string): { score: number, params: ToUrlParamsReading<TParams> },
+  /**
+   * @internal
+   * Symbol to identify if the url is a valid url.
+   */
+  [IS_URL_SYMBOL]: true,
 }
 
 type UrlParamsArgs<
