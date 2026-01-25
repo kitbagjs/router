@@ -1,7 +1,7 @@
-# Type Guards: isUrl()
+# Type Guards: isUrlString()
 
 ```ts
-function isUrl(value): value is Url;
+function isUrlString(value): value is UrlString;
 ```
 
 A type guard for determining if a value is a valid URL.
@@ -14,6 +14,6 @@ A type guard for determining if a value is a valid URL.
 
 ## Returns
 
-`value is Url`
+`value is UrlString`
 
 `true` if the value is a valid URL, otherwise `false`.

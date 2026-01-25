@@ -64,7 +64,7 @@ type RouterReplace<TRoutes> = {
 
 | Parameter | Type |
 | ------ | ------ |
-| `url` | [`Url`](Url.md) |
+| `url` | [`UrlString`](UrlString.md) |
 | `options?` | [`RouterReplaceOptions`](RouterReplaceOptions.md)\<`unknown`\> |
 
 ### Returns

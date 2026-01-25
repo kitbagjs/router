@@ -62,8 +62,8 @@
         "link": "/api/type-guards/isRoute.md"
       },
       {
-        "text": "isUrl",
-        "link": "/api/type-guards/isUrl.md"
+        "text": "isUrlString",
+        "link": "/api/type-guards/isUrlString.md"
       }
     ]
   },
@@ -90,8 +90,8 @@
         "link": "/api/functions/arrayOf.md"
       },
       {
-        "text": "asUrl",
-        "link": "/api/functions/asUrl.md"
+        "text": "asUrlString",
+        "link": "/api/functions/asUrlString.md"
       },
       {
         "text": "combineRoutes",
@@ -554,12 +554,12 @@
         "link": "/api/types/ToRoute.md"
       },
       {
-        "text": "Url",
-        "link": "/api/types/Url.md"
-      },
-      {
         "text": "UrlParts",
         "link": "/api/types/UrlParts.md"
+      },
+      {
+        "text": "UrlString",
+        "link": "/api/types/UrlString.md"
       },
       {
         "text": "UseLink",

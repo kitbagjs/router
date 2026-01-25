@@ -9,7 +9,7 @@ type UseLink = object;
 | Property | Type | Description |
 | ------ | ------ | ------ |
 | <a id="element"></a> `element` | `Ref`\<`HTMLElement` \| `undefined`\> | A template ref to bind to the dom for automatic prefetching |
-| <a id="href"></a> `href` | `ComputedRef`\<[`Url`](Url.md) \| `undefined`\> | Resolved URL with params interpolated and query applied. Same value as `router.resolve`. |
+| <a id="href"></a> `href` | `ComputedRef`\<[`UrlString`](UrlString.md) \| `undefined`\> | Resolved URL with params interpolated and query applied. Same value as `router.resolve`. |
 | <a id="isactive"></a> `isActive` | `ComputedRef`\<`boolean`\> | True if route matches current URL, or is a parent route that matches the parent of the current URL. |
 | <a id="isexactactive"></a> `isExactActive` | `ComputedRef`\<`boolean`\> | True if route matches current URL exactly. |
 | <a id="isexactmatch"></a> `isExactMatch` | `ComputedRef`\<`boolean`\> | True if route matches current URL. Route is the same as what's currently stored at `router.route`. |

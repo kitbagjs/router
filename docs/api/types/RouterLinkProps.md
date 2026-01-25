@@ -18,7 +18,7 @@ Determines what assets are prefetched when router-link is rendered for this rout
 
 ```ts
 to: 
-  | Url
+  | UrlString
   | ResolvedRoute
 | ToCallback<TRouter>;
 ```
