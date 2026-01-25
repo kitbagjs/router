@@ -83,8 +83,16 @@ export function createUrl(urlOrOptions: CreateUrlOptions | string): Url {
     }
   }
 
-  function match(_url: string): number {
-    return 0
+  function tryParse(url: string): { success: true, params: Record<string, unknown> } | { success: false, error: Error } {
+    try {
+      return { success: true, params: parse(url) }
+    } catch (error) {
+      return { success: false, error: error as Error }
+    }
+  }
+
+  function match(_url: string): { score: number, params: Record<string, unknown> } {
+    throw new Error('Not implemented')
   }
 
   const internal = {
@@ -92,7 +100,7 @@ export function createUrl(urlOrOptions: CreateUrlOptions | string): Url {
     params: {},
   }
 
-  return { ...internal, stringify, parse, match }
+  return { ...internal, stringify, parse, tryParse, match }
 }
 
 function assembleParamValues(part: WithParams, paramValues: Record<string, unknown>): string {
