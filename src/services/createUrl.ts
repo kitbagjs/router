@@ -62,20 +62,6 @@ export function createUrl(urlOrOptions: CreateUrlOptions): Url {
     return asUrlString(url.toString().replace(new RegExp(`^${FALLBACK_HOST}/*`), '/'))
   }
 
-  function assembleUrl({ host, path, query, hash }: { host: string, path: string, query: string, hash: string }): URL {
-    const url = new URL(host, FALLBACK_HOST)
-
-    url.pathname = path
-    url.search = query
-    url.hash = hash
-
-    return url
-  }
-
-  function toUrl(params: Record<string, unknown> = {}): URL {
-    return new URL(toString(params), FALLBACK_HOST)
-  }
-
   function parse(url: string): Record<string, unknown> {
     const parts = new URL(url, FALLBACK_HOST)
 
