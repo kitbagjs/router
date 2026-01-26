@@ -75,6 +75,9 @@ export function createRouterView<TRouter extends Router>(routerKey: InjectionKey
         return null
       }
 
+      // Don't use a key - let Vue handle component reuse/remounting naturally
+      // Components will remount when navigating to different routes,
+      // but will be reused when only params change on the same route
       return h(component.value)
     }
   }, {
