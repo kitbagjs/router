@@ -10,16 +10,7 @@ import { checkDuplicateParams } from '@/utilities/checkDuplicateParams'
 const FALLBACK_HOST = 'https://internal.invalid'
 
 export function createUrl<const T extends CreateUrlOptions>(options: T): ToUrl<T>
-export function createUrl(url: string): Url
-export function createUrl(urlOrOptions: CreateUrlOptions | string): Url {
-  if (typeof urlOrOptions === 'string') {
-    const url = new URL(urlOrOptions, FALLBACK_HOST)
-    const includesHost = urlOrOptions.startsWith('http')
-    const host = includesHost ? `${url.protocol}//${url.host}` : undefined
-
-    return createUrl({ host, path: url.pathname, query: url.search, hash: url.hash })
-  }
-
+export function createUrl(urlOrOptions: CreateUrlOptions): Url {
   const options = {
     host: toWithParams(urlOrOptions.host),
     path: toWithParams(urlOrOptions.path),
@@ -85,8 +76,8 @@ export function createUrl(urlOrOptions: CreateUrlOptions | string): Url {
   function tryParse(url: string): { success: true, params: Record<string, unknown> } | { success: false, error: Error } {
     try {
       return { success: true, params: parse(url) }
-    } catch (error) {
-      return { success: false, error: error as Error }
+    } catch (cause) {
+      return { success: false, error: new Error('Failed to parse url', { cause }) }
     }
   }
 
