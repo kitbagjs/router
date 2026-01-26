@@ -4,7 +4,7 @@
 type ResolvedRoute<TRoute> = Readonly<{
   hash: string;
   hooks: Hooks[];
-  href: Url;
+  href: UrlString;
   id: TRoute["id"];
   matched: TRoute["matched"];
   matches: TRoute["matches"];

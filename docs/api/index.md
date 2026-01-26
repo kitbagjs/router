@@ -21,7 +21,7 @@
 ## Type Guards
 
 - [isRoute](type-guards/isRoute.md)
-- [isUrl](type-guards/isUrl.md)
+- [isUrlString](type-guards/isUrlString.md)
 
 ## Components
 
@@ -31,7 +31,7 @@
 ## Functions
 
 - [arrayOf](functions/arrayOf.md)
-- [asUrl](functions/asUrl.md)
+- [asUrlString](functions/asUrlString.md)
 - [combineRoutes](functions/combineRoutes.md)
 - [createExternalRoute](functions/createExternalRoute.md)
 - [createParam](functions/createParam.md)
@@ -150,8 +150,8 @@
 - [Routes](types/Routes.md)
 - [ToCallback](types/ToCallback.md)
 - [ToRoute](types/ToRoute.md)
-- [Url](types/Url.md)
 - [UrlParts](types/UrlParts.md)
+- [UrlString](types/UrlString.md)
 - [UseLink](types/UseLink.md)
 - [UseLinkOptions](types/UseLinkOptions.md)
 - [WithHost](types/WithHost.md)

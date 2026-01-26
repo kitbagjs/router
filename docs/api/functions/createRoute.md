@@ -1,7 +1,7 @@
 # Functions: createRoute()
 
 ```ts
-function createRoute<TOptions, TProps>(options, ...args): ToRoute<TOptions, TProps> & InternalRouteHooks<ToRoute<TOptions>, ExtractRouteContext<TOptions>>;
+function createRoute<TOptions, TProps>(options, ...args): ToRoute<TOptions, TProps> & InternalRouteHooks<ToRoute<TOptions>, ExtractRouteContext<TOptions>> & RouteRedirects<ToRoute<TOptions>>;
 ```
 
 ## Type Parameters
@@ -20,4 +20,4 @@ function createRoute<TOptions, TProps>(options, ...args): ToRoute<TOptions, TPro
 
 ## Returns
 
-[`ToRoute`](../types/ToRoute.md)\<`TOptions`, `TProps`\> & [`InternalRouteHooks`](../types/InternalRouteHooks.md)\<[`ToRoute`](../types/ToRoute.md)\<`TOptions`\>, `ExtractRouteContext`\<`TOptions`\>\>
+[`ToRoute`](../types/ToRoute.md)\<`TOptions`, `TProps`\> & [`InternalRouteHooks`](../types/InternalRouteHooks.md)\<[`ToRoute`](../types/ToRoute.md)\<`TOptions`\>, `ExtractRouteContext`\<`TOptions`\>\> & `RouteRedirects`\<[`ToRoute`](../types/ToRoute.md)\<`TOptions`\>\>
