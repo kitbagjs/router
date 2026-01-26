@@ -9,17 +9,12 @@ type RouterPlugin<TRoutes, TRejections> = object;
 | Type Parameter | Default type |
 | ------ | ------ |
 | `TRoutes` *extends* [`Routes`](Routes.md) | [`Routes`](Routes.md) |
-| `TRejections` *extends* `Record`\<`string`, `Component`\> | `Record`\<`string`, `Component`\> |
+| `TRejections` *extends* `Rejections` | `Rejections` |
 
 ## Properties
 
-| Property | Type |
-| ------ | ------ |
-| <a id="onafterrouteenter"></a> `onAfterRouteEnter?` | `MaybeArray`\<[`AfterRouteHook`](AfterRouteHook.md)\> |
-| <a id="onafterrouteleave"></a> `onAfterRouteLeave?` | `MaybeArray`\<[`AfterRouteHook`](AfterRouteHook.md)\> |
-| <a id="onafterrouteupdate"></a> `onAfterRouteUpdate?` | `MaybeArray`\<[`AfterRouteHook`](AfterRouteHook.md)\> |
-| <a id="onbeforerouteenter"></a> `onBeforeRouteEnter?` | `MaybeArray`\<[`BeforeRouteHook`](BeforeRouteHook.md)\> |
-| <a id="onbeforerouteleave"></a> `onBeforeRouteLeave?` | `MaybeArray`\<[`BeforeRouteHook`](BeforeRouteHook.md)\> |
-| <a id="onbeforerouteupdate"></a> `onBeforeRouteUpdate?` | `MaybeArray`\<[`BeforeRouteHook`](BeforeRouteHook.md)\> |
-| <a id="rejections"></a> `rejections` | `TRejections` |
-| <a id="routes"></a> `routes` | `TRoutes` |
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="hooks"></a> `hooks` | `Hooks` | **`Internal`** The hooks supplied by the plugin. |
+| <a id="rejections"></a> `rejections` | `TRejections` | **`Internal`** The rejections supplied by the plugin. * |
+| <a id="routes"></a> `routes` | `TRoutes` | **`Internal`** The routes supplied by the plugin. |

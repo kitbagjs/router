@@ -1,4 +1,4 @@
-import { Router, RouterRoutes, AddRouterBeforeRouteHook, AddRouterAfterRouteHook, RouterRejections } from '@/types/router'
+import { Router, RouterRoutes, RouterRejections } from '@/types/router'
 import { InjectionKey } from 'vue'
 import { createComponentHooks } from './createComponentHooks'
 import { createRouterView } from '@/components/routerView'
@@ -8,8 +8,9 @@ import { createUseRouter } from '@/compositions/useRouter'
 import { createUseQueryValue } from '@/compositions/useQueryValue'
 import { createUseLink } from '@/compositions/useLink'
 import { createIsRoute } from '@/guards/routes'
+import { AddBeforeLeaveHook, AddBeforeUpdateHook, AddAfterLeaveHook, AddAfterUpdateHook } from '@/types/hooks'
 
-type RouterAssets<TRouter extends Router> = {
+export type RouterAssets<TRouter extends Router> = {
   /**
    * Registers a hook that is called before a route is left. Must be called from setup.
    * This is useful for performing actions or cleanups before navigating away from a route component.
@@ -18,7 +19,7 @@ type RouterAssets<TRouter extends Router> = {
    * @returns {RouteHookRemove} A function that removes the added hook.
    * @group Hooks
    */
-  onBeforeRouteLeave: AddRouterBeforeRouteHook<RouterRoutes<TRouter>, RouterRejections<TRouter>>,
+  onBeforeRouteLeave: AddBeforeLeaveHook<RouterRoutes<TRouter>, RouterRejections<TRouter>>,
 
   /**
    * Registers a hook that is called before a route is updated. Must be called from setup.
@@ -28,7 +29,7 @@ type RouterAssets<TRouter extends Router> = {
    * @returns {RouteHookRemove} A function that removes the added hook.
    * @group Hooks
    */
-  onBeforeRouteUpdate: AddRouterBeforeRouteHook<RouterRoutes<TRouter>, RouterRejections<TRouter>>,
+  onBeforeRouteUpdate: AddBeforeUpdateHook<RouterRoutes<TRouter>, RouterRejections<TRouter>>,
 
   /**
    * Registers a hook that is called after a route has been left. Must be called during setup.
@@ -38,7 +39,7 @@ type RouterAssets<TRouter extends Router> = {
    * @returns {RouteHookRemove} A function that removes the added hook.
    * @group Hooks
    */
-  onAfterRouteLeave: AddRouterAfterRouteHook<RouterRoutes<TRouter>, RouterRejections<TRouter>>,
+  onAfterRouteLeave: AddAfterLeaveHook<RouterRoutes<TRouter>, RouterRejections<TRouter>>,
 
   /**
    * Registers a hook that is called after a route has been updated. Must be called during setup.
@@ -48,7 +49,7 @@ type RouterAssets<TRouter extends Router> = {
    * @returns {RouteHookRemove} A function that removes the added hook.
    * @group Hooks
    */
-  onAfterRouteUpdate: AddRouterAfterRouteHook<RouterRoutes<TRouter>, RouterRejections<TRouter>>,
+  onAfterRouteUpdate: AddAfterUpdateHook<RouterRoutes<TRouter>, RouterRejections<TRouter>>,
 
   /**
    * A guard to verify if a route or unknown value matches a given route name.
@@ -86,7 +87,7 @@ type RouterAssets<TRouter extends Router> = {
    * The function also sets up a reactive watcher on the route object from the router to continually check the validity of the route name
    * if provided, throwing an error if the validation fails at any point during the component's lifecycle.
    *
-   * @template TRouteName - A string type that should match route name of RouterRouteName<TRouter>, ensuring the route name exists.
+   * @template TRouteName - A string type that should match route name of `RouterRouteName<TRouter>`, ensuring the route name exists.
    * @param routeName - Optional. The name of the route to validate against the current active routes.
    * @returns The current router route. If a route name is provided, it validates the route name first.
    * @throws {UseRouteInvalidError} Throws an error if the provided route name is not valid or does not match the current route.

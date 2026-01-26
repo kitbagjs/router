@@ -1,7 +1,7 @@
 # Functions: createRoute()
 
 ```ts
-function createRoute<TOptions, TProps>(options, ...args): ToRoute<TOptions, CreateRouteProps<TOptions> extends TProps ? undefined : TProps>;
+function createRoute<TOptions, TProps>(options, ...args): ToRoute<TOptions, TProps> & InternalRouteHooks<ToRoute<TOptions>, ExtractRouteContext<TOptions>>;
 ```
 
 ## Type Parameters
@@ -9,7 +9,7 @@ function createRoute<TOptions, TProps>(options, ...args): ToRoute<TOptions, Crea
 | Type Parameter |
 | ------ |
 | `TOptions` *extends* [`CreateRouteOptions`](../types/CreateRouteOptions.md) |
-| `TProps` *extends* \| [`PropsGetter`](../types/PropsGetter.md)\<`TOptions`, `any`\[`any`\]\> \| `RoutePropsRecord`\<`TOptions`, `any`\[`any`\]\> \| [`PropsGetter`](../types/PropsGetter.md)\<`TOptions`, `DefineSetupFnComponent`\<`RouterViewProps`, `EmitsOptions`, `SlotsType`\<\{ `default?`: (`props`) => `VNode`\<`RendererNode`, `RendererElement`, \{ [`key`: `string`]: `any`; \}\>; \}\>, `RouterViewProps` & \| \{ [`x`: `` `on${Capitalize<string>}` ``]: `undefined` \| (...`args`) => `any`; \} \| \{ [`x`: `` `on${Capitalize<string>}` ``]: `undefined` \| (...`args`) => `any`; \}, `PublicProps`\>\> |
+| `TProps` *extends* \| [`PropsGetter`](../types/PropsGetter.md)\<`TOptions`, `any`\[`any`\]\> \| `RoutePropsRecord`\<`TOptions`, `any`\[`any`\]\> \| [`RouterViewPropsGetter`](../types/RouterViewPropsGetter.md)\<`TOptions`\> |
 
 ## Parameters
 
@@ -20,4 +20,4 @@ function createRoute<TOptions, TProps>(options, ...args): ToRoute<TOptions, Crea
 
 ## Returns
 
-[`ToRoute`](../types/ToRoute.md)\<`TOptions`, [`CreateRouteProps`](../types/CreateRouteProps.md)\<`TOptions`\> *extends* `TProps` ? `undefined` : `TProps`\>
+[`ToRoute`](../types/ToRoute.md)\<`TOptions`, `TProps`\> & [`InternalRouteHooks`](../types/InternalRouteHooks.md)\<[`ToRoute`](../types/ToRoute.md)\<`TOptions`\>, `ExtractRouteContext`\<`TOptions`\>\>

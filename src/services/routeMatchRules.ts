@@ -1,10 +1,12 @@
 import { parseUrl } from '@/services/urlParser'
-import { generateRoutePathRegexPattern, generateRouteQueryRegexPatterns } from '@/services/routeRegex'
+import { generateRouteHashRegexPattern, generateRouteHostRegexPattern, generateRoutePathRegexPattern, generateRouteQueryRegexPatterns } from '@/services/routeRegex'
 import { RouteMatchRule } from '@/types/routeMatchRule'
-import { stringHasValue } from '@/utilities'
 
-export const isNamedRoute: RouteMatchRule = (route) => {
-  return 'name' in route.matched && !!route.matched.name
+export const routeHostMatches: RouteMatchRule = (route, url) => {
+  const { protocol, host } = parseUrl(url)
+  const hostPattern = generateRouteHostRegexPattern(route)
+
+  return hostPattern.test(`${protocol}//${host}`)
 }
 
 export const routePathMatches: RouteMatchRule = (route, url) => {
@@ -23,13 +25,7 @@ export const routeQueryMatches: RouteMatchRule = (route, url) => {
 
 export const routeHashMatches: RouteMatchRule = (route, url) => {
   const { hash } = parseUrl(url)
-  const { value } = route.hash
+  const hashPattern = generateRouteHashRegexPattern(route)
 
-  if (!stringHasValue(value)) {
-    return true
-  }
-
-  const cleanHash = `#${value.replace(/^#*/, '')}`
-
-  return cleanHash.toLowerCase() === hash.toLowerCase()
+  return hashPattern.test(hash)
 }

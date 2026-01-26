@@ -14,7 +14,7 @@ import { Router, RouterOptions } from '@/types/router'
 import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { RouterReplace, RouterReplaceOptions } from '@/types/routerReplace'
 import { RoutesName } from '@/types/routesMap'
-import { Url, isUrl } from '@/types/url'
+import { UrlString, isUrlString } from '@/types/urlString'
 import { createUniqueIdSequence, isFirstUniqueSequenceId } from '@/services/createUniqueIdSequence'
 import { createVisibilityObserver } from './createVisibilityObserver'
 import { visibilityObserverKey } from '@/compositions/useVisibilityObserver'
@@ -36,6 +36,9 @@ import { getRouterRejectionInjectionKey } from '@/compositions/useRejection'
 import { routerInjectionKey } from '@/keys'
 import { createRouterView } from '@/components/routerView'
 import { createRouterLink } from '@/components/routerLink'
+import { ContextPushError } from '@/errors/contextPushError'
+import { ContextRejectionError } from '@/errors/contextRejectionError'
+import { setupRouterDevtools } from '@/devtools/createRouterDevtools'
 
 type RouterUpdateOptions = {
   replace?: boolean,
@@ -67,27 +70,31 @@ type RouterUpdateOptions = {
  */
 export function createRouter<
   const TRoutes extends Routes,
-  const TOptions extends RouterOptions,
+  const TOptions extends RouterOptions = {},
   const TPlugin extends RouterPlugin = EmptyRouterPlugin
 >(routes: TRoutes, options?: TOptions, plugins?: TPlugin[]): Router<TRoutes, TOptions, TPlugin>
 
 export function createRouter<
   const TRoutes extends Routes,
-  const TOptions extends RouterOptions,
+  const TOptions extends RouterOptions = {},
   const TPlugin extends RouterPlugin = EmptyRouterPlugin
 >(routes: TRoutes[], options?: TOptions, plugins?: TPlugin[]): Router<TRoutes, TOptions, TPlugin>
 
 export function createRouter<
   const TRoutes extends Routes,
-  const TOptions extends RouterOptions,
+  const TOptions extends RouterOptions = {},
   const TPlugin extends RouterPlugin = EmptyRouterPlugin
 >(routesOrArrayOfRoutes: TRoutes | TRoutes[], options?: TOptions, plugins: TPlugin[] = []): Router<TRoutes, TOptions, TPlugin> {
   const isGlobalRouter = options?.isGlobalRouter ?? true
   const routerKey = isGlobalRouter ? routerInjectionKey : Symbol()
+  const rejections = [
+    ...plugins.flatMap((plugin) => plugin.rejections),
+    ...options?.rejections ?? [],
+  ]
   const routes = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options?.base)
-  const hooks = createRouterHooks(routerKey)
+  const hooks = createRouterHooks()
 
-  hooks.addGlobalRouteHooks(getGlobalHooksForRouter(options, plugins))
+  hooks.addGlobalRouteHooks(getGlobalHooksForRouter(plugins))
 
   const getNavigationId = createUniqueIdSequence()
   const propStore = createPropStore()
@@ -111,12 +118,8 @@ export function createRouter<
 
     history.stopListening()
 
-    if (isExternal(url)) {
-      history.update(url, options)
-      return
-    }
-
     const to = find(url, options) ?? getRejectionRoute('NotFound')
+
     const from = getFromRouteForHooks(navigationId)
 
     const beforeResponse = await hooks.runBeforeRouteHooks({ to, from })
@@ -148,32 +151,9 @@ export function createRouter<
         throw new Error(`Switch is not exhaustive for before hook response status: ${JSON.stringify(beforeResponse satisfies never)}`)
     }
 
-    const currentNavigationId = navigationId
-
-    propStore.setProps(to).then((response) => {
-      if (currentNavigationId !== navigationId) {
-        return
-      }
-
-      switch (response.status) {
-        case 'SUCCESS':
-          break
-
-        case 'PUSH':
-          push(...response.to)
-          break
-
-        case 'REJECT':
-          setRejection(response.type)
-          break
-
-        default:
-          const exhaustive: never = response
-          throw new Error(`Switch is not exhaustive for prop store response status: ${JSON.stringify(exhaustive)}`)
-      }
-    })
-
-    updateRoute(to)
+    if (!isExternal(url)) {
+      setPropsAndUpdateRoute(navigationId, to, from)
+    }
 
     const afterResponse = await hooks.runAfterRouteHooks({ to, from })
 
@@ -197,6 +177,53 @@ export function createRouter<
     history.startListening()
   }
 
+  function setPropsAndUpdateRoute(navigationId: string, to: ResolvedRoute, from: ResolvedRoute | null): void {
+    const currentNavigationId = navigationId
+
+    propStore.setProps(to)
+      .then((response) => {
+        if (currentNavigationId !== navigationId) {
+          return
+        }
+
+        switch (response.status) {
+          case 'SUCCESS':
+            break
+
+          case 'PUSH':
+            push(...response.to)
+            break
+
+          case 'REJECT':
+            setRejection(response.type)
+            break
+
+          default:
+            const exhaustive: never = response
+            throw new Error(`Switch is not exhaustive for prop store response status: ${JSON.stringify(exhaustive)}`)
+        }
+      })
+      .catch((error: unknown) => {
+        try {
+          hooks.runErrorHooks(error, { to, from, source: 'props' })
+        } catch (error) {
+          if (error instanceof ContextPushError) {
+            push(...error.response.to)
+            return
+          }
+
+          if (error instanceof ContextRejectionError) {
+            setRejection(error.response.type)
+            return
+          }
+
+          throw error
+        }
+      })
+
+    updateRoute(to)
+  }
+
   const resolve: RouterResolve<TRoutes | TPlugin['routes']> = (
     source: RoutesName<TRoutes | TPlugin['routes']>,
     params: Record<string, unknown> = {},
@@ -212,11 +239,11 @@ export function createRouter<
   }
 
   const push: RouterPush<TRoutes | TPlugin['routes']> = (
-    source: Url | RoutesName<TRoutes | TPlugin['routes']> | ResolvedRoute,
+    source: UrlString | RoutesName<TRoutes | TPlugin['routes']> | ResolvedRoute,
     paramsOrOptions?: Record<string, unknown> | RouterPushOptions,
     maybeOptions?: RouterPushOptions,
   ) => {
-    if (isUrl(source)) {
+    if (isUrlString(source)) {
       const options: RouterPushOptions = { ...paramsOrOptions }
       const url = combineUrl(source, {
         searchParams: options.query,
@@ -247,11 +274,11 @@ export function createRouter<
   }
 
   const replace: RouterReplace<TRoutes | TPlugin['routes']> = (
-    source: Url | RoutesName<TRoutes | TPlugin['routes']> | ResolvedRoute,
+    source: UrlString | RoutesName<TRoutes | TPlugin['routes']> | ResolvedRoute,
     paramsOrOptions?: Record<string, unknown> | RouterReplaceOptions,
     maybeOptions?: RouterReplaceOptions,
   ) => {
-    if (isUrl(source)) {
+    if (isUrlString(source)) {
       const options: RouterPushOptions = { ...paramsOrOptions, replace: true }
 
       return push(source, options)
@@ -269,14 +296,11 @@ export function createRouter<
     return push(source, options)
   }
 
-  const reject: RouterReject<keyof TOptions['rejections'] | keyof TPlugin['rejections']> = (type) => {
+  const reject: RouterReject<TOptions['rejections'] | TPlugin['rejections']> = (type) => {
     setRejection(type)
   }
 
-  const { setRejection, rejection, getRejectionRoute } = createRouterReject({
-    ...plugins.reduce((rejections, plugin) => ({ ...rejections, ...plugin.rejections }), {}),
-    ...options?.rejections,
-  })
+  const { setRejection, rejection, getRejectionRoute } = createRouterReject(rejections)
 
   const notFoundRoute = getRejectionRoute('NotFound')
   const { currentRoute, routerRoute, updateRoute } = createCurrentRoute<TRoutes | TPlugin['routes']>(routerKey, notFoundRoute, push)
@@ -339,6 +363,9 @@ export function createRouter<
 
     app.provide(routerKey, router)
 
+    // Setup DevTools integration
+    setupRouterDevtools({ router, app, routes })
+
     start()
   }
 
@@ -361,11 +388,13 @@ export function createRouter<
     onAfterRouteEnter: hooks.onAfterRouteEnter,
     onAfterRouteUpdate: hooks.onAfterRouteUpdate,
     onAfterRouteLeave: hooks.onAfterRouteLeave,
+    onError: hooks.onError,
     prefetch: options?.prefetch,
     start,
     started,
     stop,
     key: routerKey,
+    hasDevtools: false,
   }
 
   return router

@@ -12,12 +12,12 @@ import { ResolvedRoute } from './resolved'
 import { ComponentProps } from '@/services/component'
 import { PropsCallbackContext } from './props'
 import { MaybePromise } from './utilities'
-import { RouterView } from '@/main'
 import { ToMeta } from './meta'
 import { ToState } from './state'
 import { ToName } from './name'
-import { WithHooks } from './hooks'
 import { ToWithParams, WithParams } from '@/services/withParams'
+import { RouteContext, ToRouteContext } from './routeContext'
+import { RouterViewProps } from '@/components/routerView'
 
 export type WithHost<THost extends string | WithParams = string | WithParams> = {
   /**
@@ -64,7 +64,7 @@ export type CreateRouteOptions<
   TQuery extends string | WithParams | undefined = string | WithParams | undefined,
   THash extends string | WithParams | undefined = string | WithParams | undefined,
   TMeta extends RouteMeta = RouteMeta
-> = WithHooks & {
+> = {
   /**
    * Name for route, used to create route keys and in navigation.
    */
@@ -108,17 +108,19 @@ export type CreateRouteOptions<
    */
   components?: Record<string, Component>,
   /**
-   * Props have been moved to the second argument of `createRoute`. This property can no longer be used.
-   *
-   * @deprecated
+   * Related routes and rejections for the route. The context is exposed to the hooks and props callback functions for this route.
    */
-  props?: never,
+  context?: RouteContext[],
 }
 
 export type PropsGetter<
   TOptions extends CreateRouteOptions = CreateRouteOptions,
   TComponent extends Component = Component
-> = (route: ResolvedRoute<ToRoute<TOptions, undefined>>, context: PropsCallbackContext<TOptions['parent']>) => MaybePromise<ComponentProps<TComponent>>
+> = (route: ResolvedRoute<ToRoute<TOptions>>, context: PropsCallbackContext<ToRoute<TOptions>, TOptions>) => MaybePromise<ComponentProps<TComponent>>
+
+export type RouterViewPropsGetter<
+  TOptions extends CreateRouteOptions = CreateRouteOptions
+> = (route: ResolvedRoute<ToRoute<TOptions>>, context: PropsCallbackContext<ToRoute<TOptions>, TOptions>) => MaybePromise<RouterViewProps & Record<string, unknown>>
 
 type ComponentPropsAreOptional<
   TComponent extends Component
@@ -138,12 +140,19 @@ export type CreateRouteProps<
   ? PropsGetter<TOptions, TOptions['component']>
   : TOptions['components'] extends Record<string, Component>
     ? RoutePropsRecord<TOptions, TOptions['components']>
-    : PropsGetter<TOptions, typeof RouterView>
+    : RouterViewPropsGetter<TOptions>
 
 type ToMatch<
   TOptions extends CreateRouteOptions,
   TProps extends CreateRouteProps<TOptions> | undefined
-> = Omit<TOptions, 'props'> & { id: string, props: TProps }
+> = Omit<TOptions, 'props' | 'meta'> & {
+  id: string,
+  props: TProps,
+  /**
+   * Represents additional metadata associated with a route. Always present, defaults to empty object.
+   */
+  meta: ToMeta<TOptions['meta']>,
+}
 
 type ToMatches<
   TOptions extends CreateRouteOptions,
@@ -154,7 +163,7 @@ type ToMatches<
 
 export type ToRoute<
   TOptions extends CreateRouteOptions,
-  TProps extends CreateRouteProps<TOptions> | undefined
+  TProps extends CreateRouteProps<TOptions> | undefined = undefined
 > = CreateRouteOptions extends TOptions
   ? Route
   : TOptions extends { parent: infer TParent extends Route }
@@ -166,7 +175,8 @@ export type ToRoute<
       CombineHash<ToWithParams<TParent['hash']>, ToWithParams<TOptions['hash']>>,
       CombineMeta<ToMeta<TParent['meta']>, ToMeta<TOptions['meta']>>,
       CombineState<ToState<TParent['state']>, ToState<TOptions['state']>>,
-      ToMatches<TOptions, TProps>
+      ToMatches<TOptions, CreateRouteProps<TOptions> extends TProps ? undefined : TProps>,
+      [...ToRouteContext<TParent['context']>, ...ToRouteContext<TOptions['context']>]
     >
     : Route<
       ToName<TOptions['name']>,
@@ -176,7 +186,8 @@ export type ToRoute<
       ToWithParams<TOptions['hash']>,
       ToMeta<TOptions['meta']>,
       ToState<TOptions['state']>,
-      ToMatches<TOptions, TProps>
+      ToMatches<TOptions, CreateRouteProps<TOptions> extends TProps ? undefined : TProps>,
+      ToRouteContext<TOptions['context']>
     >
 
 export function combineRoutes(parent: Route, child: Route): Route {
@@ -187,7 +198,9 @@ export function combineRoutes(parent: Route, child: Route): Route {
     meta: combineMeta(parent.meta, child.meta),
     state: combineState(parent.state, child.state),
     hash: combineHash(parent.hash, child.hash),
+    hooks: [...parent.hooks, ...child.hooks],
     matches: [...parent.matches, child.matched],
+    context: [...parent.context, ...child.context],
     host: parent.host,
     depth: parent.depth + 1,
   }

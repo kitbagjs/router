@@ -118,7 +118,7 @@ router.push('blog', { replace: true })
 
 ## Resolved Routes
 
-A [ResolvedRoute](/api/types/ResolvedRoute) is the base of what makes up the [Router Route](/core-concepts/router-route). It represents a [route](/core-concepts/routes) that has been matched to a specific location. It includes any params, state, query, and hash values for that location. Resolved routes are how Kitbag Router ensures type safety when navigating. There are a few ways to get a resolved route.
+A [ResolvedRoute](/api/types/ResolvedRoute) is the base of what makes up the [Router Route](/core-concepts/router-route). It represents a [route](/core-concepts/routes) that has been matched to a specific url. It includes any params, state, query, and hash values for that url. Resolved routes are how Kitbag Router ensures type safety when navigating. There are a few ways to get a resolved route.
 
 ::: code-group
 

@@ -15,30 +15,34 @@ test('hooks are run with the correct context', async () => {
     path: '/',
     name: 'route',
     component: echo,
-    onBeforeRouteEnter: () => {
-      const value = inject('global')
-
-      beforeRouteHook(value)
-    },
-    onAfterRouteEnter: () => {
-      const value = inject('global')
-
-      afterRouteHook(value)
-    },
   }, () => ({ value: 'hello' }))
+
+  route.onBeforeRouteEnter(() => {
+    const value = inject('global')
+
+    beforeRouteHook(value)
+  })
+
+  route.onAfterRouteEnter(() => {
+    const value = inject('global')
+
+    afterRouteHook(value)
+  })
 
   const router = createRouter([route], {
     initialUrl: '/',
-    onBeforeRouteEnter: () => {
-      const value = inject('global')
+  })
 
-      beforeGlobalHook(value)
-    },
-    onAfterRouteEnter: () => {
-      const value = inject('global')
+  router.onBeforeRouteEnter(() => {
+    const value = inject('global')
 
-      afterGlobalHook(value)
-    },
+    beforeGlobalHook(value)
+  })
+
+  router.onAfterRouteEnter(() => {
+    const value = inject('global')
+
+    afterGlobalHook(value)
   })
 
   const app = createApp(component)

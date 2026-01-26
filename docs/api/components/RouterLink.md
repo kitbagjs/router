@@ -1,7 +1,7 @@
 # Components: RouterLink
 
 ```ts
-const RouterLink: DefineSetupFnComponent;
+const RouterLink: RouterAssets<RegisteredRouter>["RouterLink"];
 ```
 
 A component to render a link to a route or any url.

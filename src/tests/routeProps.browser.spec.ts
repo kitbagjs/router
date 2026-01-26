@@ -14,7 +14,7 @@ test('components are not remounted when props change', async () => {
 
   const routeA = createRoute({
     name: 'routeA',
-    path: '/[parentParam]',
+    path: '/routeA/[parentParam]',
     component: defineComponent({
       props: {
         value: {
@@ -36,7 +36,7 @@ test('components are not remounted when props change', async () => {
   const routeAChild = createRoute({
     parent: routeA,
     name: 'routeA.child',
-    path: '/[childParam]',
+    path: '/childA/[childParam]',
     component: defineComponent({
       setup: setupChild,
       render(props: { value: string }) {
@@ -56,7 +56,7 @@ test('components are not remounted when props change', async () => {
   })
 
   const router = createRouter([routeA, routeAChild, routeB], {
-    initialUrl: '/bar',
+    initialUrl: '/routeA/bar',
   })
 
   const root = {
@@ -84,7 +84,7 @@ test('components are not remounted when props change', async () => {
 
   await router.route.update({ parentParam: 'bar' })
 
-  // navigating away and back should not remount
+  // navigating away and back should remount
   await router.push('routeB')
   await router.push('routeA', { parentParam: 'foo' })
 

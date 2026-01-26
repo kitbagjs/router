@@ -106,6 +106,10 @@
         "link": "/api/functions/createParam.md"
       },
       {
+        "text": "createRejection",
+        "link": "/api/functions/createRejection.md"
+      },
+      {
         "text": "createRoute",
         "link": "/api/functions/createRoute.md"
       },
@@ -186,72 +190,124 @@
     "collapsed": true,
     "items": [
       {
-        "text": "AddComponentAfterRouteHook",
-        "link": "/api/types/AddComponentAfterRouteHook.md"
+        "text": "AddAfterEnterHook",
+        "link": "/api/types/AddAfterEnterHook.md"
       },
       {
-        "text": "AddComponentBeforeRouteHook",
-        "link": "/api/types/AddComponentBeforeRouteHook.md"
+        "text": "AddAfterLeaveHook",
+        "link": "/api/types/AddAfterLeaveHook.md"
       },
       {
-        "text": "AddGlobalRouteHooks",
-        "link": "/api/types/AddGlobalRouteHooks.md"
+        "text": "AddAfterUpdateHook",
+        "link": "/api/types/AddAfterUpdateHook.md"
       },
       {
-        "text": "AddRouterAfterRouteHook",
-        "link": "/api/types/AddRouterAfterRouteHook.md"
+        "text": "AddBeforeEnterHook",
+        "link": "/api/types/AddBeforeEnterHook.md"
       },
       {
-        "text": "AddRouterBeforeRouteHook",
-        "link": "/api/types/AddRouterBeforeRouteHook.md"
+        "text": "AddBeforeLeaveHook",
+        "link": "/api/types/AddBeforeLeaveHook.md"
       },
       {
-        "text": "AfterHookContext",
-        "link": "/api/types/AfterHookContext.md"
+        "text": "AddBeforeUpdateHook",
+        "link": "/api/types/AddBeforeUpdateHook.md"
       },
       {
-        "text": "AfterRouteHook",
-        "link": "/api/types/AfterRouteHook.md"
+        "text": "AddComponentHook",
+        "link": "/api/types/AddComponentHook.md"
       },
       {
-        "text": "AfterRouteHookContext",
-        "link": "/api/types/AfterRouteHookContext.md"
+        "text": "AddErrorHook",
+        "link": "/api/types/AddErrorHook.md"
       },
       {
-        "text": "AfterRouteHookLifecycle",
-        "link": "/api/types/AfterRouteHookLifecycle.md"
+        "text": "AddGlobalHooks",
+        "link": "/api/types/AddGlobalHooks.md"
       },
       {
-        "text": "AfterRouteHookRegistration",
-        "link": "/api/types/AfterRouteHookRegistration.md"
+        "text": "AddPluginErrorHook",
+        "link": "/api/types/AddPluginErrorHook.md"
       },
       {
-        "text": "AfterRouteHookResponse",
-        "link": "/api/types/AfterRouteHookResponse.md"
+        "text": "AfterEnterHook",
+        "link": "/api/types/AfterEnterHook.md"
       },
       {
-        "text": "BeforeHookContext",
-        "link": "/api/types/BeforeHookContext.md"
+        "text": "AfterEnterHookContext",
+        "link": "/api/types/AfterEnterHookContext.md"
       },
       {
-        "text": "BeforeRouteHook",
-        "link": "/api/types/BeforeRouteHook.md"
+        "text": "AfterHookLifecycle",
+        "link": "/api/types/AfterHookLifecycle.md"
       },
       {
-        "text": "BeforeRouteHookContext",
-        "link": "/api/types/BeforeRouteHookContext.md"
+        "text": "AfterHookResponse",
+        "link": "/api/types/AfterHookResponse.md"
       },
       {
-        "text": "BeforeRouteHookLifecycle",
-        "link": "/api/types/BeforeRouteHookLifecycle.md"
+        "text": "AfterHookRunner",
+        "link": "/api/types/AfterHookRunner.md"
       },
       {
-        "text": "BeforeRouteHookRegistration",
-        "link": "/api/types/BeforeRouteHookRegistration.md"
+        "text": "AfterLeaveHook",
+        "link": "/api/types/AfterLeaveHook.md"
       },
       {
-        "text": "BeforeRouteHookResponse",
-        "link": "/api/types/BeforeRouteHookResponse.md"
+        "text": "AfterLeaveHookContext",
+        "link": "/api/types/AfterLeaveHookContext.md"
+      },
+      {
+        "text": "AfterUpdateHook",
+        "link": "/api/types/AfterUpdateHook.md"
+      },
+      {
+        "text": "AfterUpdateHookContext",
+        "link": "/api/types/AfterUpdateHookContext.md"
+      },
+      {
+        "text": "BeforeEnterHook",
+        "link": "/api/types/BeforeEnterHook.md"
+      },
+      {
+        "text": "BeforeEnterHookContext",
+        "link": "/api/types/BeforeEnterHookContext.md"
+      },
+      {
+        "text": "BeforeHookLifecycle",
+        "link": "/api/types/BeforeHookLifecycle.md"
+      },
+      {
+        "text": "BeforeHookResponse",
+        "link": "/api/types/BeforeHookResponse.md"
+      },
+      {
+        "text": "BeforeHookRunner",
+        "link": "/api/types/BeforeHookRunner.md"
+      },
+      {
+        "text": "BeforeLeaveHook",
+        "link": "/api/types/BeforeLeaveHook.md"
+      },
+      {
+        "text": "BeforeLeaveHookContext",
+        "link": "/api/types/BeforeLeaveHookContext.md"
+      },
+      {
+        "text": "BeforeUpdateHook",
+        "link": "/api/types/BeforeUpdateHook.md"
+      },
+      {
+        "text": "BeforeUpdateHookContext",
+        "link": "/api/types/BeforeUpdateHookContext.md"
+      },
+      {
+        "text": "ComponentHook",
+        "link": "/api/types/ComponentHook.md"
+      },
+      {
+        "text": "ComponentHookRegistration",
+        "link": "/api/types/ComponentHookRegistration.md"
       },
       {
         "text": "CreatedRouteOptions",
@@ -266,12 +322,52 @@
         "link": "/api/types/CreateRouteProps.md"
       },
       {
+        "text": "CreateRouterPluginOptions",
+        "link": "/api/types/CreateRouterPluginOptions.md"
+      },
+      {
         "text": "EmptyRouterPlugin",
         "link": "/api/types/EmptyRouterPlugin.md"
       },
       {
-        "text": "HookContext",
-        "link": "/api/types/HookContext.md"
+        "text": "ErrorHook",
+        "link": "/api/types/ErrorHook.md"
+      },
+      {
+        "text": "ErrorHookContext",
+        "link": "/api/types/ErrorHookContext.md"
+      },
+      {
+        "text": "ErrorHookRunner",
+        "link": "/api/types/ErrorHookRunner.md"
+      },
+      {
+        "text": "ErrorHookRunnerContext",
+        "link": "/api/types/ErrorHookRunnerContext.md"
+      },
+      {
+        "text": "ExternalRouteHooks",
+        "link": "/api/types/ExternalRouteHooks.md"
+      },
+      {
+        "text": "GenericRoute",
+        "link": "/api/types/GenericRoute.md"
+      },
+      {
+        "text": "HookLifecycle",
+        "link": "/api/types/HookLifecycle.md"
+      },
+      {
+        "text": "HookRemove",
+        "link": "/api/types/HookRemove.md"
+      },
+      {
+        "text": "HookTiming",
+        "link": "/api/types/HookTiming.md"
+      },
+      {
+        "text": "InternalRouteHooks",
+        "link": "/api/types/InternalRouteHooks.md"
       },
       {
         "text": "LiteralParam",
@@ -296,6 +392,26 @@
       {
         "text": "ParamSetter",
         "link": "/api/types/ParamSetter.md"
+      },
+      {
+        "text": "PluginAfterRouteHook",
+        "link": "/api/types/PluginAfterRouteHook.md"
+      },
+      {
+        "text": "PluginBeforeRouteHook",
+        "link": "/api/types/PluginBeforeRouteHook.md"
+      },
+      {
+        "text": "PluginErrorHook",
+        "link": "/api/types/PluginErrorHook.md"
+      },
+      {
+        "text": "PluginErrorHookContext",
+        "link": "/api/types/PluginErrorHookContext.md"
+      },
+      {
+        "text": "PluginRouteHooks",
+        "link": "/api/types/PluginRouteHooks.md"
       },
       {
         "text": "PrefetchConfig",
@@ -330,64 +446,20 @@
         "link": "/api/types/QuerySource.md"
       },
       {
-        "text": "RegisteredRejectionType",
-        "link": "/api/types/RegisteredRejectionType.md"
-      },
-      {
         "text": "RegisteredRouter",
         "link": "/api/types/RegisteredRouter.md"
-      },
-      {
-        "text": "RegisteredRouterPush",
-        "link": "/api/types/RegisteredRouterPush.md"
-      },
-      {
-        "text": "RegisteredRouterReject",
-        "link": "/api/types/RegisteredRouterReject.md"
-      },
-      {
-        "text": "RegisteredRouterReplace",
-        "link": "/api/types/RegisteredRouterReplace.md"
-      },
-      {
-        "text": "RegisteredRoutes",
-        "link": "/api/types/RegisteredRoutes.md"
       },
       {
         "text": "ResolvedRoute",
         "link": "/api/types/ResolvedRoute.md"
       },
       {
+        "text": "ResolvedRouteUnion",
+        "link": "/api/types/ResolvedRouteUnion.md"
+      },
+      {
         "text": "Route",
         "link": "/api/types/Route.md"
-      },
-      {
-        "text": "RouteHook",
-        "link": "/api/types/RouteHook.md"
-      },
-      {
-        "text": "RouteHookAfterRunner",
-        "link": "/api/types/RouteHookAfterRunner.md"
-      },
-      {
-        "text": "RouteHookBeforeRunner",
-        "link": "/api/types/RouteHookBeforeRunner.md"
-      },
-      {
-        "text": "RouteHookLifecycle",
-        "link": "/api/types/RouteHookLifecycle.md"
-      },
-      {
-        "text": "RouteHookRemove",
-        "link": "/api/types/RouteHookRemove.md"
-      },
-      {
-        "text": "RouteHookResponse",
-        "link": "/api/types/RouteHookResponse.md"
-      },
-      {
-        "text": "RouteHookTiming",
-        "link": "/api/types/RouteHookTiming.md"
       },
       {
         "text": "RouteMeta",
@@ -398,12 +470,8 @@
         "link": "/api/types/Router.md"
       },
       {
-        "text": "RouterAfterRouteHook",
-        "link": "/api/types/RouterAfterRouteHook.md"
-      },
-      {
-        "text": "RouterBeforeRouteHook",
-        "link": "/api/types/RouterBeforeRouteHook.md"
+        "text": "RouterAssets",
+        "link": "/api/types/RouterAssets.md"
       },
       {
         "text": "RouterLinkProps",
@@ -430,6 +498,10 @@
         "link": "/api/types/RouterReject.md"
       },
       {
+        "text": "RouterRejections",
+        "link": "/api/types/RouterRejections.md"
+      },
+      {
         "text": "RouterReplace",
         "link": "/api/types/RouterReplace.md"
       },
@@ -442,20 +514,16 @@
         "link": "/api/types/RouterResolve.md"
       },
       {
+        "text": "RouterResolvedRouteUnion",
+        "link": "/api/types/RouterResolvedRouteUnion.md"
+      },
+      {
         "text": "RouterResolveOptions",
         "link": "/api/types/RouterResolveOptions.md"
       },
       {
         "text": "RouterRoute",
         "link": "/api/types/RouterRoute.md"
-      },
-      {
-        "text": "RouterRouteHookAfterRunner",
-        "link": "/api/types/RouterRouteHookAfterRunner.md"
-      },
-      {
-        "text": "RouterRouteHookBeforeRunner",
-        "link": "/api/types/RouterRouteHookBeforeRunner.md"
       },
       {
         "text": "RouterRouteName",
@@ -468,6 +536,10 @@
       {
         "text": "RouterRouteUnion",
         "link": "/api/types/RouterRouteUnion.md"
+      },
+      {
+        "text": "RouterViewPropsGetter",
+        "link": "/api/types/RouterViewPropsGetter.md"
       },
       {
         "text": "Routes",
@@ -496,10 +568,6 @@
       {
         "text": "UseLinkOptions",
         "link": "/api/types/UseLinkOptions.md"
-      },
-      {
-        "text": "WithHooks",
-        "link": "/api/types/WithHooks.md"
       },
       {
         "text": "WithHost",

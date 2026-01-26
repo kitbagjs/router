@@ -4,16 +4,17 @@ import type { PrefetchConfigs, PrefetchStrategy } from '@/types/prefetch'
 import { getPrefetchOption } from '@/utilities/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
 import { Route } from '@/types/route'
-import { CallbackPushResponse, CallbackRejectResponse, CallbackSuccessResponse, createCallbackContext } from './createCallbackContext'
-import { CallbackContextPushError } from '@/errors/callbackContextPushError'
-import { CallbackContextRejectionError } from '@/errors/callbackContextRejectionError'
+import { ContextPushError } from '@/errors/contextPushError'
+import { ContextRejectionError } from '@/errors/contextRejectionError'
 import { getPropsValue } from '@/utilities/props'
 import { PropsCallbackParent } from '@/types/props'
 import { createVueAppStore, HasVueAppStore } from './createVueAppStore'
+import { CallbackContextPush, CallbackContextReject, CallbackContextSuccess } from '@/types/callbackContext'
+import { createRouterCallbackContext } from './createRouterCallbackContext'
 
 type ComponentProps = { id: string, name: string, props?: PropsGetter }
 
-type SetPropsResponse = CallbackSuccessResponse | CallbackPushResponse | CallbackRejectResponse
+type SetPropsResponse = CallbackContextSuccess | CallbackContextPush | CallbackContextReject
 
 export type PropStore = HasVueAppStore & {
   getPrefetchProps: (strategy: PrefetchStrategy, route: ResolvedRoute, configs: PrefetchConfigs) => Record<string, unknown>,
@@ -25,9 +26,10 @@ export type PropStore = HasVueAppStore & {
 export function createPropStore(): PropStore {
   const { setVueApp, runWithContext } = createVueAppStore()
   const store: Map<string, unknown> = reactive(new Map())
-  const { push, replace, reject } = createCallbackContext()
 
   const getPrefetchProps: PropStore['getPrefetchProps'] = (strategy, route, prefetch) => {
+    const { push, replace, reject, update } = createRouterCallbackContext({ to: route })
+
     return route.matches
       .filter((match) => getPrefetchOption({ ...prefetch, routePrefetch: match.prefetch }, 'props') === strategy)
       .flatMap((match) => getComponentProps(match))
@@ -41,6 +43,7 @@ export function createPropStore(): PropStore {
           push,
           replace,
           reject,
+          update,
           parent: getParentContext(route, true),
         })))
 
@@ -57,6 +60,7 @@ export function createPropStore(): PropStore {
   }
 
   const setProps: PropStore['setProps'] = async (route) => {
+    const { push, replace, reject, update } = createRouterCallbackContext({ to: route })
     const componentProps = route.matches.flatMap(getComponentProps)
     const keys: string[] = []
     const promises: Promise<unknown>[] = []
@@ -75,6 +79,7 @@ export function createPropStore(): PropStore {
           push,
           replace,
           reject,
+          update,
           parent: getParentContext(route),
         })))
 
@@ -97,11 +102,11 @@ export function createPropStore(): PropStore {
 
       return { status: 'SUCCESS' }
     } catch (error) {
-      if (error instanceof CallbackContextPushError) {
+      if (error instanceof ContextPushError) {
         return error.response
       }
 
-      if (error instanceof CallbackContextRejectionError) {
+      if (error instanceof ContextRejectionError) {
         return error.response
       }
 

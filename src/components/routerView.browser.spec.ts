@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-confusing-void-expression */
-/* eslint-disable @typescript-eslint/only-throw-error */
 import { mount, flushPromises } from '@vue/test-utils'
 import { expect, test } from 'vitest'
 import { defineAsyncComponent, h } from 'vue'
@@ -10,6 +8,7 @@ import { createRouter } from '@/services/createRouter'
 import { isWithComponent } from '@/types/createRouteOptions'
 import { component, routes } from '@/utilities/testHelpers'
 import { RouterLink } from '@/main'
+import { createRejection } from '@/services/createRejection'
 
 test('renders component for initial route', async () => {
   const route = createRoute({
@@ -170,6 +169,8 @@ test('resolves async components', async () => {
 
   await router.start()
   await flushPromises()
+  await flushPromises()
+  await flushPromises()
 
   expect(wrapper.html()).toBe(helloWorld.template)
 })
@@ -196,11 +197,14 @@ test('Renders the genericRejection component when the initialUrl does not match'
 
 test('Renders custom genericRejection component when the initialUrl does not match', async () => {
   const NotFound = { template: 'Custom Not Found' }
+  const notFoundRejection = createRejection({
+    type: 'NotFound',
+    component: NotFound,
+  })
+
   const router = createRouter(routes, {
     initialUrl: '/does-not-exist',
-    rejections: {
-      NotFound,
-    },
+    rejections: [notFoundRejection],
   })
 
   await router.start()
@@ -411,7 +415,7 @@ test('Props from route can trigger push', async () => {
     path: '/routeA',
     component: echo,
   }, (__, context) => {
-    throw context.push('routeB')
+    throw context.push('/routeB')
   })
 
   const routeB = createRoute({
@@ -490,7 +494,7 @@ test('prefetched props trigger push when navigation is initiated', async () => {
     component: echo,
     prefetch: { props: true },
   }, (__, { push }) => {
-    throw push('routeC')
+    throw push('/routeC')
   })
 
   const routeC = createRoute({
@@ -539,7 +543,7 @@ test('prefetched async props trigger push when navigation is initiated', async (
     component,
     prefetch: { props: true },
   }, (__, { push }) => {
-    throw push('routeC')
+    throw push('/routeC')
   })
 
   const routeC = createRoute({

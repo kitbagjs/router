@@ -1,12 +1,5 @@
 # Types: EmptyRouterPlugin
 
 ```ts
-type EmptyRouterPlugin = object;
+type EmptyRouterPlugin = RouterPlugin<[], []>;
 ```
-
-## Properties
-
-| Property | Type |
-| ------ | ------ |
-| <a id="rejections"></a> `rejections` | `object` |
-| <a id="routes"></a> `routes` | \[\] |

@@ -28,8 +28,3 @@ export type AllPropertiesAreOptional<T> = Record<string, unknown> extends T
  * rather than string | number | symbol.
  */
 export type AsString<T> = T extends string ? T : never
-
-/**
- * Extracts the keys of a union type.
- */
-export type KeysOfUnion<T> = T extends T ? keyof T : never

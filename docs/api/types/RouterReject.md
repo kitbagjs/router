@@ -1,20 +1,26 @@
-# Types: RouterReject()\<TRejectionType\>
+# Types: RouterReject()\<TRejections\>
 
 ```ts
-type RouterReject<TRejectionType> = (type) => void;
+type RouterReject<TRejections> = <TSource>(type) => void;
 ```
 
 ## Type Parameters
 
 | Type Parameter |
 | ------ |
-| `TRejectionType` *extends* `PropertyKey` |
+| `TRejections` *extends* `Rejections` \| `undefined` |
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `TSource` *extends* `RejectionType`\<`TRejections`\> \| `BuiltInRejectionType` |
 
 ## Parameters
 
 | Parameter | Type |
 | ------ | ------ |
-| `type` | `AsString`\<`TRejectionType`\> \| `BuiltInRejectionType` |
+| `type` | `TSource` |
 
 ## Returns
 

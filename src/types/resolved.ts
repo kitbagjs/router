@@ -1,7 +1,8 @@
+import { Hooks } from '@/models/hooks'
 import { ExtractRouteParamTypesReading } from '@/types/params'
-import { Route } from '@/types/route'
+import { Route, Routes } from '@/types/route'
 import { ExtractRouteStateParamsAsOptional } from '@/types/state'
-import { Url } from '@/types/url'
+import { UrlString } from '@/types/urlString'
 
 /**
  * Represents a route that the router has matched to current browser location.
@@ -44,5 +45,32 @@ export type ResolvedRoute<TRoute extends Route = Route> = Readonly<{
   /**
    * String value of the resolved URL.
    */
-  href: Url,
+  href: UrlString,
+  /**
+   * The stores for routes including ancestors.
+   * Order of routes will be from greatest ancestor to narrowest matched.
+   * @internal
+   */
+  hooks: Hooks[],
 }>
+
+/**
+ * This type is the same as `ResolvedRoute<TRoutes[number]>` while remaining distributive
+ */
+export type RouterResolvedRouteUnion<TRoutes extends Routes> = {
+  [K in keyof TRoutes]: ResolvedRoute<TRoutes[K]>
+}[number]
+
+/**
+ * Converts a union of Route types to a union of ResolvedRoute types while preserving the discriminated union structure for narrowing.
+ * This is useful when you have a Route union (like `TRoutes[number]`) and need it to narrow properly.
+ * Uses a distributive conditional type to ensure unions are properly distributed.
+ *
+ * @example
+ * type RouteUnion = RouteA | RouteB
+ * type ResolvedUnion = ResolvedRouteUnion<RouteUnion> // ResolvedRoute<RouteA> | ResolvedRoute<RouteB>
+ */
+export type ResolvedRouteUnion<TRoute extends Route> =
+  TRoute extends Route
+    ? ResolvedRoute<TRoute>
+    : never

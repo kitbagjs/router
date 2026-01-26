@@ -2,10 +2,13 @@ import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
 import { component } from '@/utilities/testHelpers'
 import { describe, test, expectTypeOf } from 'vitest'
-import { AddRouterAfterRouteHook, AddRouterBeforeRouteHook } from '@/types/router'
 import { createRouterPlugin } from './createRouterPlugin'
-import { CallbackContextAbort } from './createCallbackContext'
 import { BuiltInRejectionType } from './createRouterReject'
+import { createRejection } from './createRejection'
+import { AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, AddErrorHook } from '@/types/hooks'
+import { RouterAbort } from '@/types/routerAbort'
+import { RouteUpdate } from '@/types/routeUpdate'
+import { ResolvedRouteUnion } from '@/types/resolved'
 
 describe('hooks', () => {
   const parent = createRoute({
@@ -40,12 +43,13 @@ describe('hooks', () => {
   type Routes = typeof routes | typeof pluginRoutes
 
   test('functions are correctly typed', () => {
-    expectTypeOf(router.onBeforeRouteEnter).toEqualTypeOf<AddRouterBeforeRouteHook<Routes, never>>()
-    expectTypeOf(router.onBeforeRouteLeave).toEqualTypeOf<AddRouterBeforeRouteHook<Routes, never>>()
-    expectTypeOf(router.onBeforeRouteUpdate).toEqualTypeOf<AddRouterBeforeRouteHook<Routes, never>>()
-    expectTypeOf(router.onAfterRouteEnter).toEqualTypeOf<AddRouterAfterRouteHook<Routes, never>>()
-    expectTypeOf(router.onAfterRouteLeave).toEqualTypeOf<AddRouterAfterRouteHook<Routes, never>>()
-    expectTypeOf(router.onAfterRouteUpdate).toEqualTypeOf<AddRouterAfterRouteHook<Routes, never>>()
+    expectTypeOf(router.onBeforeRouteEnter).toEqualTypeOf<AddBeforeEnterHook<Routes, never>>()
+    expectTypeOf(router.onBeforeRouteLeave).toEqualTypeOf<AddBeforeLeaveHook<Routes, never>>()
+    expectTypeOf(router.onBeforeRouteUpdate).toEqualTypeOf<AddBeforeUpdateHook<Routes, never>>()
+    expectTypeOf(router.onAfterRouteEnter).toEqualTypeOf<AddAfterEnterHook<Routes, never>>()
+    expectTypeOf(router.onAfterRouteLeave).toEqualTypeOf<AddAfterLeaveHook<Routes, never>>()
+    expectTypeOf(router.onAfterRouteUpdate).toEqualTypeOf<AddAfterUpdateHook<Routes, never>>()
+    expectTypeOf(router.onError).toEqualTypeOf<AddErrorHook<Routes[number], Routes, never>>()
   })
 
   test('to and from can be narrowed', () => {
@@ -93,15 +97,22 @@ describe('hooks', () => {
     })
   })
 
+  test('context.update', () => {
+    router.onBeforeRouteEnter((_to, context) => {
+      expectTypeOf(context.update).toEqualTypeOf<RouteUpdate<ResolvedRouteUnion<Routes[number]>>>()
+    })
+  })
+
   test('context.abort', () => {
     router.onBeforeRouteEnter((_to, context) => {
-      expectTypeOf(context.abort).toEqualTypeOf<CallbackContextAbort>()
+      expectTypeOf(context.abort).toEqualTypeOf<RouterAbort>()
     })
   })
 })
 
 describe('rejections', () => {
   test('built in rejections are valid', () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const _router = createRouter([])
     type Source = Parameters<typeof _router.reject>[0]
     type Expect = BuiltInRejectionType
@@ -110,29 +121,89 @@ describe('rejections', () => {
   })
 
   test('custom rejections are valid', () => {
-    const _router = createRouter([], {
-      rejections: {
-        MyCustomRejection: component,
-      },
+    const myCustomRejection = createRejection({
+      type: 'MyCustomRejection',
+      component,
     })
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const _router = createRouter([], {
+      rejections: [myCustomRejection],
+    })
+
     type Source = Parameters<typeof _router.reject>[0]
     type Expect = BuiltInRejectionType | 'MyCustomRejection'
 
     expectTypeOf<Source>().toEqualTypeOf<Expect>()
   })
 
-  test('custom rejectsion from plugins are valid', () => {
+  test('custom rejections from plugins are valid', () => {
+    const myPluginRejection = createRejection({
+      type: 'MyPluginRejection',
+      component,
+    })
     const plugin = createRouterPlugin({
-      rejections: {
-        MyPluginRejection: component,
-      },
+      rejections: [myPluginRejection],
     })
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const _router = createRouter([], {}, [plugin])
 
     type Source = Parameters<typeof _router.reject>[0]
     type Expect = BuiltInRejectionType | 'MyPluginRejection'
 
     expectTypeOf<Source>().toEqualTypeOf<Expect>()
+  })
+})
+
+describe('route.matched.meta', () => {
+  test('is always defined', () => {
+    const routeA = createRoute({
+      name: 'routeA',
+    })
+
+    const router = createRouter([routeA])
+
+    expectTypeOf(router.route.matched.meta).toEqualTypeOf<Readonly<{}>>()
+  })
+
+  test('union type is preserved', () => {
+    const routeA = createRoute({
+      name: 'routeA',
+    })
+
+    const routeB = createRoute({
+      name: 'routeB',
+      meta: { public: true },
+    })
+
+    const router = createRouter([routeA, routeB])
+
+    expectTypeOf(router.route.matched.meta).toEqualTypeOf<Readonly<{}> | Readonly<{ public: true }>>()
+  })
+
+  test('union type can be narrowed', () => {
+    const routeA = createRoute({
+      name: 'routeA',
+    })
+
+    const routeB = createRoute({
+      name: 'routeB',
+      meta: { public: true },
+    })
+
+    const router = createRouter([routeA, routeB])
+
+    if (router.route.matched.name === 'routeA') {
+      expectTypeOf(router.route.matched.meta).toEqualTypeOf<Readonly<{}>>()
+    }
+
+    if (router.route.matched.name === 'routeB') {
+      expectTypeOf(router.route.matched.meta).toEqualTypeOf<Readonly<{ public: true }>>()
+    }
+
+    if ('public' in router.route.matched.meta) {
+      expectTypeOf(router.route.matched.meta.public).toEqualTypeOf<true>()
+    }
   })
 })

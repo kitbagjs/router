@@ -20,7 +20,7 @@ type RouterViewSlots = {
   }) => VNode,
 }
 
-// Infering the return type of the component is more accurate than defining it manually
+// Inferring the return type of the component is more accurate than defining it manually
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export function createRouterView<TRouter extends Router>(routerKey: InjectionKey<TRouter>) {
   const useRoute = createUseRoute(routerKey)
@@ -75,6 +75,9 @@ export function createRouterView<TRouter extends Router>(routerKey: InjectionKey
         return null
       }
 
+      // Don't use a key - let Vue handle component reuse/remounting naturally
+      // Components will remount when navigating to different routes,
+      // but will be reused when only params change on the same route
       return h(component.value)
     }
   }, {

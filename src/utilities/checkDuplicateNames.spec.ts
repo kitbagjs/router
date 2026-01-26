@@ -3,7 +3,7 @@ import { DuplicateNamesError } from '@/errors/duplicateNamesError'
 import { checkDuplicateNames } from '@/utilities/checkDuplicateNames'
 import { createRoute } from '@/services/createRoute'
 
-test('given a single array without duplicates, does nothing', () => {
+test('given routes with all unique names, does nothing', () => {
   const routes = [
     createRoute({ name: 'foo' }),
     createRoute({ name: 'bar' }),
@@ -17,7 +17,25 @@ test('given a single array without duplicates, does nothing', () => {
   expect(action).not.toThrow()
 })
 
-test('given a multiple arrays with duplicates, throws DuplicateNamesError', () => {
+test('given routes with duplicate names but same id, does nothing', () => {
+  const duplicate = createRoute({ name: 'duplicate' })
+
+  const routes = [
+    createRoute({ name: 'foo' }),
+    duplicate,
+    createRoute({ name: 'bar' }),
+    duplicate,
+    createRoute({ name: 'zoo' }),
+  ]
+
+  const action: () => void = () => {
+    checkDuplicateNames(routes)
+  }
+
+  expect(action).not.toThrow()
+})
+
+test('given routes with duplicate , throws DuplicateNamesError', () => {
   const routes = [
     createRoute({ name: 'foo' }),
     createRoute({ name: 'bar' }),

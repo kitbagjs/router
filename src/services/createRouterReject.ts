@@ -3,6 +3,7 @@ import { genericRejection } from '@/components/rejection'
 import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
 import { createRouteId } from '@/services/createRouteId'
 import { ResolvedRoute } from '@/types/resolved'
+import { Rejection } from '@/types/rejection'
 
 export type BuiltInRejectionType = 'NotFound'
 
@@ -10,7 +11,7 @@ export type RouterSetReject = (type: string | null) => void
 
 type GetRejectionRoute = (type: string) => ResolvedRoute
 
-export type RouterRejection = Ref<null | { type: string, component: Component }>
+export type RouterRejection = Ref<Rejection | null>
 
 export type CreateRouterReject = {
   setRejection: RouterSetReject,
@@ -18,9 +19,11 @@ export type CreateRouterReject = {
   getRejectionRoute: GetRejectionRoute,
 }
 
-export function createRouterReject(rejections: Partial<Record<string, Component>>): CreateRouterReject {
+export function createRouterReject(rejections: Rejection[]): CreateRouterReject {
   const getRejectionComponent = (type: string): Component => {
-    return markRaw(rejections[type] ?? genericRejection(type))
+    const rejection = rejections.find((rejection) => rejection.type === type)
+
+    return markRaw(rejection?.component ?? genericRejection(type))
   }
 
   const getRejectionRoute: GetRejectionRoute = (type) => {
@@ -37,6 +40,7 @@ export function createRouterReject(rejections: Partial<Record<string, Component>
       id: route.id,
       matched: route,
       matches: [route],
+      hooks: [],
       name: type,
       query: createResolvedRouteQuery(''),
       params: {},

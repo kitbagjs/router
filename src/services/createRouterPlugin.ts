@@ -1,14 +1,20 @@
+import { CreateRouterPluginOptions, RouterPlugin, PluginRouteHooks } from '@/types/routerPlugin'
+import { createRouteHooks } from '@/services/createRouteHooks'
+import { Rejections } from '@/types/rejection'
 import { Routes } from '@/types/route'
-import { RouterPlugin } from '@/types/routerPlugin'
-import { Component } from 'vue'
 
 export function createRouterPlugin<
-  TRoutes extends Routes = [],
-  TRejections extends Record<string, Component> = {}
->(plugin: Partial<RouterPlugin<TRoutes, TRejections>>): RouterPlugin<TRoutes, TRejections> {
+  TRoutes extends Routes = Routes,
+  TRejections extends Rejections = Rejections
+>(plugin: CreateRouterPluginOptions<TRoutes, TRejections>): RouterPlugin<TRoutes, TRejections> & PluginRouteHooks<TRoutes, TRejections>
+
+export function createRouterPlugin(plugin: CreateRouterPluginOptions): RouterPlugin {
+  const { store, ...hooks } = createRouteHooks()
+
   return {
-    routes: plugin.routes ?? [] as unknown as TRoutes,
-    rejections: plugin.rejections ?? {} as TRejections,
-    ...plugin,
+    routes: plugin.routes ?? [],
+    rejections: plugin.rejections ?? [],
+    hooks: store,
+    ...hooks,
   }
 }

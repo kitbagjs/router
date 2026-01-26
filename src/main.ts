@@ -19,7 +19,7 @@ export * from './types/routerReplace'
 export * from './types/routerResolve'
 export * from './types/routerResolve'
 export * from './types/routerRoute'
-export * from './types/url'
+export * from './types/urlString'
 export * from './types/useLink'
 
 // Errors
@@ -30,8 +30,9 @@ export { UseRouteInvalidError } from './errors/useRouteInvalidError'
 
 // Services
 export { createRoute } from './services/createRoute'
+export { createRejection } from './services/createRejection'
 export { createExternalRoute } from './services/createExternalRoute'
-export { createRouterAssets } from './services/createRouterAssets'
+export { createRouterAssets, type RouterAssets } from './services/createRouterAssets'
 export { withParams } from './services/withParams'
 export { withDefault } from './services/withDefault'
 export { createRouterPlugin } from './services/createRouterPlugin'
@@ -41,27 +42,10 @@ export { tupleOf } from './services/tupleOf'
 export { createParam } from './services/createParam'
 export { createRouter } from './services/createRouter'
 
-// backwards compatible withParams
-import { withParams } from './services/withParams'
-/**
- * @deprecated use `withParams` instead
- * @hidden we don't want to expose this in the api docs
- */
-export const path = withParams
-/**
- * @deprecated use `withParams` instead
- * @hidden we don't want to expose this in the api docs
-*/
-export const host = withParams
-/**
- * @deprecated use `withParams` instead
- * @hidden we don't want to expose this in the api docs
- */
-export const query = withParams
-
 // Assets
 import { routerInjectionKey } from './keys'
-import { createRouterAssets } from './services/createRouterAssets'
+import { createRouterAssets, RouterAssets } from './services/createRouterAssets'
+import { RegisteredRouter } from './types/register'
 
 const routerAssets = createRouterAssets(routerInjectionKey)
 
@@ -73,7 +57,7 @@ const routerAssets = createRouterAssets(routerInjectionKey)
  * @returns {RouteHookRemove} A function that removes the added hook.
  * @group Hooks
  */
-export const onBeforeRouteLeave = routerAssets.onBeforeRouteLeave
+export const onBeforeRouteLeave: RouterAssets<RegisteredRouter>['onBeforeRouteLeave'] = routerAssets.onBeforeRouteLeave
 
 /**
  * Registers a hook that is called before a route is updated. Must be called from setup.
@@ -83,7 +67,7 @@ export const onBeforeRouteLeave = routerAssets.onBeforeRouteLeave
  * @returns {RouteHookRemove} A function that removes the added hook.
  * @group Hooks
  */
-export const onBeforeRouteUpdate = routerAssets.onBeforeRouteUpdate
+export const onBeforeRouteUpdate: RouterAssets<RegisteredRouter>['onBeforeRouteUpdate'] = routerAssets.onBeforeRouteUpdate
 
 /**
  * Registers a hook that is called after a route has been left. Must be called during setup.
@@ -93,7 +77,7 @@ export const onBeforeRouteUpdate = routerAssets.onBeforeRouteUpdate
  * @returns {RouteHookRemove} A function that removes the added hook.
  * @group Hooks
  */
-export const onAfterRouteLeave = routerAssets.onAfterRouteLeave
+export const onAfterRouteLeave: RouterAssets<RegisteredRouter>['onAfterRouteLeave'] = routerAssets.onAfterRouteLeave
 
 /**
  * Registers a hook that is called after a route has been updated. Must be called during setup.
@@ -103,7 +87,7 @@ export const onAfterRouteLeave = routerAssets.onAfterRouteLeave
  * @returns {RouteHookRemove} A function that removes the added hook.
  * @group Hooks
  */
-export const onAfterRouteUpdate = routerAssets.onAfterRouteUpdate
+export const onAfterRouteUpdate: RouterAssets<RegisteredRouter>['onAfterRouteUpdate'] = routerAssets.onAfterRouteUpdate
 
 /**
  * A guard to verify if a route or unknown value matches a given route name.
@@ -112,7 +96,7 @@ export const onAfterRouteUpdate = routerAssets.onAfterRouteUpdate
  * @returns True if the current route matches the given route name, false otherwise.
  * @group Type Guards
  */
-export const isRoute = routerAssets.isRoute
+export const isRoute: RouterAssets<RegisteredRouter>['isRoute'] = routerAssets.isRoute
 
 /**
  * A component to render the current route's component.
@@ -121,7 +105,7 @@ export const isRoute = routerAssets.isRoute
  * @returns The router view component.
  * @group Components
  */
-export const RouterView = routerAssets.RouterView
+export const RouterView: RouterAssets<RegisteredRouter>['RouterView'] = routerAssets.RouterView
 
 /**
  * A component to render a link to a route or any url.
@@ -130,7 +114,7 @@ export const RouterView = routerAssets.RouterView
  * @returns The router link component.
  * @group Components
  */
-export const RouterLink = routerAssets.RouterLink
+export const RouterLink: RouterAssets<RegisteredRouter>['RouterLink'] = routerAssets.RouterLink
 
 /**
  * A composition to access the current route or verify a specific route name within a Vue component.
@@ -147,7 +131,7 @@ export const RouterLink = routerAssets.RouterLink
  * @throws {UseRouteInvalidError} Throws an error if the provided route name is not valid or does not match the current route.
  * @group Compositions
  */
-export const useRoute = routerAssets.useRoute
+export const useRoute: RouterAssets<RegisteredRouter>['useRoute'] = routerAssets.useRoute
 
 /**
  * A composition to access the installed router instance within a Vue component.
@@ -157,7 +141,7 @@ export const useRoute = routerAssets.useRoute
  *         ensuring the component does not operate without routing functionality.
  * @group Compositions
  */
-export const useRouter = routerAssets.useRouter
+export const useRouter: RouterAssets<RegisteredRouter>['useRouter'] = routerAssets.useRouter
 
 /**
  * A composition to access a specific query value from the current route.
@@ -165,7 +149,7 @@ export const useRouter = routerAssets.useRouter
  * @returns The query value from the router.
  * @group Compositions
  */
-export const useQueryValue = routerAssets.useQueryValue
+export const useQueryValue: RouterAssets<RegisteredRouter>['useQueryValue'] = routerAssets.useQueryValue
 
 /**
  * A composition to export much of the functionality that drives RouterLink component.
@@ -178,7 +162,7 @@ export const useQueryValue = routerAssets.useQueryValue
  * @returns {UseLink} Reactive context values for as well as navigation methods.
  * @group Compositions
  */
-export const useLink = routerAssets.useLink
+export const useLink: RouterAssets<RegisteredRouter>['useLink'] = routerAssets.useLink
 
 declare module 'vue' {
   export interface GlobalComponents {

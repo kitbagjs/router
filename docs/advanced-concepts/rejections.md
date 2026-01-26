@@ -2,53 +2,66 @@
 
 Kitbag Router ships with built in support for rejection handling. Each rejection type you need is registered with a corresponding view, if rejections happen at any point in the router lifecycle the router will handle it.
 
-## Rejection Component
+## Rejection Types
 
-When a rejection happens, Kitbag router mounts whatever component is registered for the type of rejection. Assign your rejection components wherever you call [`createRouter`](/api/functions/createRouter).
+Creating custom rejections is extremely easily with the [`createRejection`](/api/functions/createRejection) utility. For example, we can add a custom rejection for "AuthNeeded".
 
 ```ts
-import { createRouter } from "@kitbag/router";
-import MyNotFound from "@/components/MyNotFound.vue";
+import { createRejection, createRouter } from '@kitbag/router'
+
+const authNeededRejection = createRejection({
+  type: 'AuthNeeded',
+})
 
 export const router = createRouter(routes, {
-  rejections: {
-    NotFound: MyNotFound,
-  }
+  rejections: [authNeededRejection]
 })
 ```
 
-::: info Updating Registered Router
-Be sure you've [updated the registered router](/quick-start#update-registered-router), this is ensures Typescript knows about your additional rejection types.
-:::
+## Rejection Component
 
-## Rejection Type
+When a rejection happens, Kitbag router mounts whatever component you passed in to the `component` property. If no component was assigned, Kitbag router will use the default rejection component that ships with Kitbag Router.
 
-By default the only registered rejection type is `NotFound`. Creating custom rejection types is as easy as defining them when you assign [rejection components](/advanced-concepts/rejections#rejection-component). For example, we can add a custom rejection for "AuthNeeded".
+```ts {1,5}
+import LoginView from '@/views/LoginView.vue'
+
+const authNeededRejection = createRejection({
+  type: 'AuthNeeded',
+  component: LoginView,
+})
+```
+
+Now if your `AuthNeeded` rejection is triggered, the `LoginView` component will be mounted.
+
+## Built-In Rejections
+
+Every new router has a `NotFound` rejection by default. This enables the default behavior of the router when it's given a URL that doesn't match any of your routes. Instead of the user having to define a 404/catch-all route, Kitbag router solves this problem for you.
+
+### Overriding Built-In Rejection Components
+
+You'll probably want to provide your own component to display to users when they end up somewhere unexpected. To override the default behavior, simply create a new rejection with the same name that includes your desired component.
 
 ```ts
-import { createRouter } from "@kitbag/router";
-import MyNotFound from "@/components/MyNotFound.vue";
-import MyAuthNeeded from "@/components/MyAuthNeeded.vue"; // [!code ++]
+import NotFoundPage from '@/components/NotFoundPage.vue'
+
+const notFoundRejection = createRejection({
+  type: 'NotFound',
+  component: NotFoundPage,
+})
 
 export const router = createRouter(routes, {
-  rejections: {
-    NotFound: MyNotFound,
-    AuthNeeded: MyAuthNeeded, // [!code ++]
-  }
+  rejections: [notFoundRejection]
 })
 ```
 
 ## Trigger Rejection
 
-Any of the [hooks](/advanced-concepts/hooks) will provided a `reject` function in the context argument.
+Any of the [hooks](/advanced-concepts/hooks) will provided a `reject` function in the context argument. The [async prop function](/core-concepts/component-props#async-prop-fetching) argument of `createRoute` also will provide a `reject` function.
 
 ```ts
-const route = {
-  ...
-  onBeforeRouteEnter: (to, { reject }) => {
-    reject('AuthNeeded')
-  },
-}
+route.onBeforeRouteEnter((to, { reject }) => {
+  reject('AuthNeeded')
+})
 ```
 
 Alternatively, you can always trigger a rejection from `router.reject`.
@@ -66,7 +79,7 @@ function maybeAuthNeeded() {
 
 ### Get Rejection
 
-Your rejection components have access to the current rejection with `useRejection`.
+Though it's uncommon, your rejection components could access to the current rejection with `useRejection` if you need it.
 
 ```ts
 import { useRejection } from '@kitbag/router'

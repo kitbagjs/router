@@ -1,7 +1,7 @@
 # Hooks: onBeforeRouteLeave
 
 ```ts
-const onBeforeRouteLeave: AddRouterBeforeRouteHook;
+const onBeforeRouteLeave: RouterAssets<RegisteredRouter>["onBeforeRouteLeave"];
 ```
 
 Registers a hook that is called before a route is left. Must be called from setup.

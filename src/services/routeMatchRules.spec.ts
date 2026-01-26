@@ -1,9 +1,79 @@
 import { describe, expect, test } from 'vitest'
 import { createRoute } from '@/services/createRoute'
-import { routeHashMatches, routePathMatches, routeQueryMatches } from '@/services/routeMatchRules'
+import { routeHashMatches, routeHostMatches, routePathMatches, routeQueryMatches } from '@/services/routeMatchRules'
 import { withDefault } from '@/services/withDefault'
 import { component } from '@/utilities/testHelpers'
 import { withParams } from '@/services/withParams'
+import { createExternalRoute } from '@/services/createExternalRoute'
+
+describe('routeHostMatches', () => {
+  test('given a route without a host, returns true', () => {
+    const urlWithHost = 'http://www.kitbag.io/'
+    const route = createRoute({
+      name: 'without-host',
+    })
+
+    const response = routeHostMatches(route, urlWithHost)
+
+    expect(response).toBe(true)
+  })
+
+  test('given url without host and a route with a host, returns false', () => {
+    const urlWithoutHost = '/somewhere?with=query'
+    const route = createExternalRoute({
+      name: 'with-host',
+      host: 'https://www.kitbag.io',
+    })
+
+    const response = routeHostMatches(route, urlWithoutHost)
+
+    expect(response).toBe(false)
+  })
+
+  test.each([
+    ['https://www.kitbag.io'],
+    ['https://www.kitbag.io/'],
+    ['https://www.kitbag.io/is/empty'],
+    ['https://www.kitbag.io/is/empty?with=query'],
+  ])('given url (%s) and route.host that does NOT match, returns false', (url) => {
+    const route = createExternalRoute({
+      name: 'not-matches',
+      host: 'https://www.vuejs.org',
+    })
+
+    const response = routeHostMatches(route, url)
+
+    expect(response).toBe(false)
+  })
+
+  test.each([
+    ['https://www.kitbag.io'],
+    ['https://www.kitbag.io/'],
+    ['https://www.kitbag.io/is/empty'],
+    ['https://www.kitbag.io/is/empty?with=query'],
+  ])('given url (%s) and route.host that does match, returns true', (url) => {
+    const route = createExternalRoute({
+      name: 'host-matches',
+      host: 'https://www.kitbag.io',
+    })
+
+    const response = routeHostMatches(route, url)
+
+    expect(response).toBe(true)
+  })
+
+  test('given url with matching host but different protocol, returns false', () => {
+    const urlWithInsecureProtocol = 'http://www.kitbag.io'
+    const route = createExternalRoute({
+      name: 'secure-protocol',
+      host: 'https://www.kitbag.io',
+    })
+
+    const response = routeHostMatches(route, urlWithInsecureProtocol)
+
+    expect(response).toBe(false)
+  })
+})
 
 describe('routePathMatches', () => {
   test.each([
@@ -12,7 +82,7 @@ describe('routePathMatches', () => {
     ['http://www.kitbag.io/'],
     ['http://www.kitbag.io/is/empty'],
     ['http://www.kitbag.io/is/empty?with=query'],
-  ])('given url and route.path that does NOT match, returns false', (url) => {
+  ])('given url (%s) and route.path that does NOT match, returns false', (url) => {
     const route = createRoute({
       name: 'not-matches',
       path: '/not/empty',
@@ -27,7 +97,7 @@ describe('routePathMatches', () => {
   test.each([
     ['/without/params'],
     ['http://www.kitbag.io/without/params'],
-  ])('given url and route.path WITHOUT params that does match, returns true', (url) => {
+  ])('given url (%s) and route.path WITHOUT params that does match, returns true', (url) => {
     const route = createRoute({
       name: 'no-params',
       path: '/without/params',
@@ -55,7 +125,7 @@ describe('routePathMatches', () => {
     ['/with/true/params/true'],
     ['/with/%/params/%'],
     ['http://www.kitbag.io/with/a/params/b'],
-  ])('given url and route.path with params that does match, returns true', (url) => {
+  ])('given url (%s) and route.path with params that does match, returns true', (url) => {
     const route = createRoute({
       name: 'no-params',
       path: '/with/[some]/params/[inPath]',
@@ -87,7 +157,7 @@ describe('routeQueryMatches', () => {
     ['http://www.kitbag.io/empty'],
     ['http://www.kitbag.io/empty?with=query'],
     ['http://www.kitbag.io/empty?not=emptyish'],
-  ])('given url and route.query that does NOT match, returns false', (url) => {
+  ])('given url (%s) and route.query that does NOT match, returns false', (url) => {
     const route = createRoute({
       name: 'not-matches',
       query: 'not=empty',
@@ -102,7 +172,7 @@ describe('routeQueryMatches', () => {
   test.each([
     ['?without=params&static=true'],
     ['http://www.kitbag.io?without=params&static=true'],
-  ])('given url and route.query WITHOUT params that does match, returns true', (url) => {
+  ])('given url (%s) and route.query WITHOUT params that does match, returns true', (url) => {
     const route = createRoute({
       name: 'no-params',
       query: 'without=params&static=true',
@@ -119,7 +189,7 @@ describe('routeQueryMatches', () => {
     ['?with=%20&static=%20'],
     ['http://www.kitbag.io?with=a&static=b'],
     ['http://www.kitbag.io/some/path?with=a&static=b'],
-  ])('given url and route.query with params that does match, returns true', (url) => {
+  ])('given url (%s) and route.query with params that does match, returns true', (url) => {
     const route = createRoute({
       name: 'no-params',
       query: 'with=[params]&static=[dynamic]',
@@ -136,7 +206,7 @@ describe('routeQueryMatches', () => {
     ['?optional='],
     ['?optional=true'],
     ['http://www.kitbag.io?extra=params&optional=provided'],
-  ])('given url and route.query with optional params that does match, returns true', (url) => {
+  ])('given url (%s) and route.query with optional params that does match, returns true', (url) => {
     const route = createRoute({
       name: 'optional-params',
       query: 'optional=[?optional]',
@@ -155,7 +225,7 @@ describe('routeQueryMatches', () => {
     ['?default='],
     ['?default=true'],
     ['http://www.kitbag.io?extra=params&default=provided'],
-  ])('given url and route.query with default params that does match, returns true', (url) => {
+  ])('given url (%s) and route.query with default params that does match, returns true', (url) => {
     const route = createRoute({
       name: 'default-params',
       query: withParams('default=[?default]', { default: withDefault(String, 'abc') }),
@@ -200,7 +270,26 @@ describe('routeHashMatches', () => {
     ['http://www.kitbag.io/empty'],
     ['http://www.kitbag.io/empty#'],
     ['http://www.kitbag.io/empty#bar'],
-  ])('given %s and route.hash that does NOT match, returns false', (url) => {
+  ])('given a route with no hash, returns true', (url) => {
+    const route = createRoute({
+      name: 'no-hash',
+      path: '/',
+      component,
+    })
+
+    const response = routeHashMatches(route, url)
+
+    expect(response).toBe(true)
+  })
+
+  test.each([
+    ['we*23mf#0'],
+    ['http://www.kitbag.io'],
+    ['http://www.kitbag.io/'],
+    ['http://www.kitbag.io/empty'],
+    ['http://www.kitbag.io/empty#'],
+    ['http://www.kitbag.io/empty#bar'],
+  ])('given url (%s) and route.hash that does NOT match, returns false', (url) => {
     const route = createRoute({
       name: 'not-matches',
       path: '/',
@@ -214,9 +303,25 @@ describe('routeHashMatches', () => {
   })
 
   test.each([
+    ['http://www.kitbag.io/#'],
+    ['http://www.kitbag.io/#bar'],
+  ])('given url (%s) and route.hash with params that does match, returns true', (url) => {
+    const route = createRoute({
+      name: 'no-params',
+      path: '/',
+      hash: '#[param]',
+      component,
+    })
+
+    const response = routePathMatches(route, url)
+
+    expect(response).toBe(true)
+  })
+
+  test.each([
     ['/#foo'],
     ['http://www.kitbag.io/#foo'],
-  ])('given url and route.path WITHOUT params that does match, returns true', (url) => {
+  ])('given url (%s) and route.hash WITHOUT params that does match, returns true', (url) => {
     const route = createRoute({
       name: 'hash-matches',
       path: '/',

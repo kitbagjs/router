@@ -1,17 +1,24 @@
-import { CallbackContext } from '@/services/createCallbackContext'
-import { PropsGetter } from '@/types/createRouteOptions'
+import { CreateRouteOptions, PropsGetter } from '@/types/createRouteOptions'
 import { Route } from '@/types/route'
+import { RouterReject } from './routerReject'
+import { RouterPush } from './routerPush'
+import { RouterReplace } from './routerReplace'
+import { ExtractRouteContextRejections, ExtractRouteContextRoutes } from './routeContext'
+import { ResolvedRoute } from './resolved'
+import { RouteUpdate } from './routeUpdate'
 
 /**
  * Context provided to props callback functions
  */
 export type PropsCallbackContext<
-  TParent extends Route | undefined = Route | undefined
+  TRoute extends Route = Route,
+  TOptions extends CreateRouteOptions = CreateRouteOptions
 > = {
-  push: CallbackContext['push'],
-  replace: CallbackContext['replace'],
-  reject: CallbackContext['reject'],
-  parent: PropsCallbackParent<TParent>,
+  reject: RouterReject<ExtractRouteContextRejections<TOptions>>,
+  push: RouterPush<[TRoute] | ExtractRouteContextRoutes<TOptions>>,
+  replace: RouterReplace<[TRoute] | ExtractRouteContextRoutes<TOptions>>,
+  update: RouteUpdate<ResolvedRoute<TRoute>>,
+  parent: PropsCallbackParent<TOptions['parent']>,
 }
 
 export type PropsCallbackParent<
