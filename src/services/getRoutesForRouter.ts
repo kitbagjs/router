@@ -5,13 +5,18 @@ import { isNamedRoute } from '@/utilities/isNamedRoute'
 import { RouteContext } from '@/types/routeContext'
 import { insertBaseRoute } from './insertBaseRoute'
 
+type RouterRoutes = {
+  routes: Routes,
+  getRouteByName: (name: string) => Route | undefined,
+}
+
 /**
  * Takes in routes and plugins and returns a list of routes with the base route inserted if provided.
  * Also checks for duplicate names in the routes.
  *
  * @throws {DuplicateNamesError} If there are duplicate names in the routes.
  */
-export function getRoutesForRouter(routes: Routes | Routes[], plugins: RouterPlugin[] = [], base?: string): Routes {
+export function getRoutesForRouter(routes: Routes | Routes[], plugins: RouterPlugin[] = [], base?: string): RouterRoutes {
   // Map of route name to route
   const routerRoutes = new Map<string, Route>()
 
@@ -61,7 +66,10 @@ export function getRoutesForRouter(routes: Routes | Routes[], plugins: RouterPlu
     addRoute(route)
   }
 
-  return Array.from(routerRoutes.values())
+  return {
+    routes: Array.from(routerRoutes.values()),
+    getRouteByName: (name: string) => routerRoutes.get(name),
+  }
 }
 
 function contextIsRoute(context: RouteContext): context is Route {
