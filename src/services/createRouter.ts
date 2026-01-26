@@ -91,7 +91,7 @@ export function createRouter<
     ...plugins.flatMap((plugin) => plugin.rejections),
     ...options?.rejections ?? [],
   ]
-  const routes = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options?.base)
+  const { routes, getRouteByName } = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options?.base)
   const hooks = createRouterHooks()
 
   hooks.addGlobalRouteHooks(getGlobalHooksForRouter(plugins))
@@ -229,7 +229,7 @@ export function createRouter<
     params: Record<string, unknown> = {},
     options: RouterResolveOptions = {},
   ) => {
-    const match = routes.find((route) => route.name === source)
+    const match = getRouteByName(source)
 
     if (!match) {
       throw new RouteNotFoundError(source)
