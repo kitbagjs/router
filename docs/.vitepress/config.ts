@@ -5,7 +5,19 @@ import typedocSidebar from '../api/typedoc-sidebar.json';
 export default defineConfig({
   title: "Kitbag Router | Type safe router for Vue.js",
   description: "Type safe router for Vue.js",
-  head: [['link', { rel: 'icon', href: '/favicon.ico' }]],
+  head: [
+    ['link', { rel: 'icon', href: '/favicon.ico' }],
+    // Vue School Top banner
+    [
+      'script',
+      {
+        src: 'https://media.bitterbrains.com/main.js?from=KITBAG&type=top',
+        // @ts-expect-error: vitepress bug
+        async: true,
+        type: 'text/javascript',
+      },
+    ],
+  ],
   themeConfig: {
     logo: '/kitbag-logo-circle.svg',
     siteTitle: 'Kitbag Router',
