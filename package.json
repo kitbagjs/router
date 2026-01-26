@@ -45,7 +45,7 @@
     "@vitejs/plugin-vue": "^6.0.3",
     "@vue/test-utils": "^2.4.6",
     "eslint": "^9.39.2",
-    "globals": "^17.0.0",
+    "globals": "^17.1.0",
     "happy-dom": "^20.3.3",
     "typedoc": "^0.28.16",
     "typedoc-plugin-markdown": "^4.9.0",
