@@ -1,0 +1,198 @@
+import { toWithParams, WithParams } from '@/services/withParams'
+import { getParamValueFromUrl, setParamValueOnUrl } from '@/services/paramsFinder'
+import { getParamName, isOptionalParamSyntax, paramIsOptional, replaceParamSyntaxWithCatchAllsAndEscapeRest, escapeRegExp } from '@/services/routeRegex'
+import { getParamValue, setParamValue } from '@/services/params'
+import { IS_URL_SYMBOL, CreateUrlOptions, ToUrl, Url } from '@/types/url'
+import { asUrlString, UrlString } from '@/types/urlString'
+import { checkDuplicateParams } from '@/utilities/checkDuplicateParams'
+
+// https://en.wikipedia.org/wiki/.invalid
+const FALLBACK_HOST = 'https://internal.invalid'
+
+export function createUrl<const T extends CreateUrlOptions>(options: T): ToUrl<T>
+export function createUrl(urlOrOptions: CreateUrlOptions): Url {
+  const options = {
+    host: toWithParams(urlOrOptions.host),
+    path: toWithParams(urlOrOptions.path),
+    query: cleanQuery(toWithParams(urlOrOptions.query)),
+    hash: cleanHash(toWithParams(urlOrOptions.hash)),
+  }
+
+  checkDuplicateParams(options.path.params, options.query.params, options.host.params, options.hash.params)
+
+  const host = {
+    ...options.host,
+    regexp: replaceParamSyntaxWithCatchAllsAndEscapeRest(options.host.value),
+    stringify(params: Record<string, unknown> = {}): string {
+      return assembleParamValues(options.host, params)
+    },
+  }
+
+  const path = {
+    ...options.path,
+    regexp: replaceParamSyntaxWithCatchAllsAndEscapeRest(options.path.value),
+    stringify(params: Record<string, unknown> = {}): string {
+      return assembleParamValues(options.path, params)
+    },
+  }
+
+  const query = {
+    ...options.query,
+    regexp: generateQueryRegexPatterns(options.query.value),
+    stringify(params: Record<string, unknown> = {}): string {
+      return assembleQueryParamValues(options.query, params).toString()
+    },
+  }
+
+  const hash = {
+    ...options.hash,
+    regexp: replaceParamSyntaxWithCatchAllsAndEscapeRest(options.hash.value),
+    stringify(params: Record<string, unknown> = {}): string {
+      return assembleParamValues(options.hash, params)
+    },
+  }
+
+  function stringify(params: Record<string, unknown> = {}): UrlString {
+    const url = new URL(host.stringify(params), FALLBACK_HOST)
+
+    url.pathname = path.stringify(params)
+    url.search = query.stringify(params)
+    url.hash = hash.stringify(params)
+
+    return asUrlString(url.toString().replace(new RegExp(`^${FALLBACK_HOST}/*`), '/'))
+  }
+
+  function parse(url: string): Record<string, unknown> {
+    const parts = new URL(url, FALLBACK_HOST)
+
+    return {
+      ...getParams(host, `${parts.protocol}//${parts.host}`),
+      ...getParams(path, parts.pathname),
+      ...getQueryParams(query, parts.search),
+      ...getParams(hash, parts.hash),
+    }
+  }
+
+  function tryParse(url: string): { success: true, params: Record<string, unknown> } | { success: false, error: Error } {
+    try {
+      return { success: true, params: parse(url) }
+    } catch (cause) {
+      return { success: false, error: new Error('Failed to parse url', { cause }) }
+    }
+  }
+
+  function match(_url: string): { score: number, params: Record<string, unknown> } {
+    throw new Error('Not implemented')
+  }
+
+  const internal = {
+    schema: { host, path, query, hash },
+    params: {},
+    [IS_URL_SYMBOL]: true,
+  } as const
+
+  return { ...internal, stringify, parse, tryParse, match }
+}
+
+function cleanHash(hash: WithParams): WithParams {
+  return {
+    ...hash,
+    value: hash.value.replace(/^#/, ''),
+  }
+}
+
+function cleanQuery(query: WithParams): WithParams {
+  return {
+    ...query,
+    value: query.value.replace(/^\?/, ''),
+  }
+}
+
+function assembleParamValues(part: WithParams, paramValues: Record<string, unknown>): string {
+  return Object.keys(part.params).reduce((url, name) => {
+    return setParamValueOnUrl(url, part, name, paramValues[name])
+  }, part.value)
+}
+
+function assembleQueryParamValues(query: WithParams, paramValues: Record<string, unknown>): URLSearchParams {
+  const search = new URLSearchParams(query.value)
+
+  if (!query.value) {
+    return search
+  }
+
+  for (const [key, value] of Array.from(search.entries())) {
+    const paramName = getParamName(value)
+    const isNotParam = !paramName
+
+    if (isNotParam) {
+      continue
+    }
+
+    const isOptional = isOptionalParamSyntax(value)
+    const paramValue = setParamValue(paramValues[paramName], query.params[paramName], isOptional)
+    const valueNotProvidedAndNoDefaultUsed = paramValues[paramName] === undefined && paramValue === ''
+    const shouldLeaveEmptyValueOut = isOptional && valueNotProvidedAndNoDefaultUsed
+
+    if (shouldLeaveEmptyValueOut) {
+      search.delete(key, value)
+    } else {
+      search.set(key, paramValue)
+    }
+  }
+
+  return search
+}
+
+function getParams(path: WithParams, url: string): Record<string, unknown> {
+  const values: Record<string, unknown> = {}
+  const decodedValueFromUrl = decodeURIComponent(url)
+
+  for (const [name, param] of Object.entries(path.params)) {
+    const stringValue = getParamValueFromUrl(decodedValueFromUrl, path, name)
+    const isOptional = paramIsOptional(path, name)
+    const paramValue = getParamValue(stringValue, param, isOptional)
+
+    values[name] = paramValue
+  }
+
+  return values
+}
+
+/**
+ * This function has unique responsibilities not accounted for by getParams thanks to URLSearchParams
+ *
+ * 1. Find query values when other query params are omitted or in a different order
+ * 2. Find query values based on the url search key, which might not match the param name
+ */
+function getQueryParams(query: WithParams, url: string): Record<string, unknown> {
+  const values: Record<string, unknown> = {}
+  const routeSearch = new URLSearchParams(query.value)
+  const actualSearch = new URLSearchParams(url)
+
+  for (const [key, value] of Array.from(routeSearch.entries())) {
+    const paramName = getParamName(value)
+    const isNotParam = !paramName
+    if (isNotParam) {
+      continue
+    }
+    const isOptional = isOptionalParamSyntax(value)
+    const valueOnUrl = actualSearch.get(key) ?? undefined
+    const paramValue = getParamValue(valueOnUrl, query.params[paramName], isOptional)
+    values[paramName] = paramValue
+  }
+  return values
+}
+
+function generateQueryRegexPatterns(value: string): RegExp[] {
+  const queryParams = new URLSearchParams(value)
+
+  return Array
+    .from(queryParams.entries())
+    .filter(([, value]) => !isOptionalParamSyntax(value))
+    .map(([key, value]) => {
+      const valueRegex = replaceParamSyntaxWithCatchAllsAndEscapeRest(value)
+
+      return new RegExp(`${escapeRegExp(key)}=${valueRegex}(&|$)`, 'i')
+    })
+}

@@ -3,7 +3,7 @@ import { Route } from '@/types/route'
 import { stringHasValue } from '@/utilities/guards'
 import { WithParams } from '@/services/withParams'
 
-function escapeRegExp(string: string): string {
+export function escapeRegExp(string: string): string {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
@@ -69,7 +69,7 @@ export function generateRouteQueryRegexPatterns(route: Route): RegExp[] {
     })
 }
 
-function replaceParamSyntaxWithCatchAllsAndEscapeRest(value: string): string {
+export function replaceParamSyntaxWithCatchAllsAndEscapeRest(value: string): string {
   return splitByMatches(value, new RegExp(paramRegex, 'g'))
     .map((slice) => {
       const isParam = slice.startsWith(paramStart)

@@ -51,6 +51,16 @@ export function isLiteralParam(value: Param): value is LiteralParam {
 }
 
 /**
+ * Determines if a given value is an optional parameter template.
+ * @template TKey - The key of the parameter.
+ * @template TValue - The value of the parameter.
+ * @returns True if the value is an optional parameter template.
+ */
+export type IsOptionalParamTemplate<TKey extends string, TValue extends string> = TValue extends `${string}${ParamStart}?${TKey}${ParamEnd}${string}`
+  ? true
+  : false
+
+/**
  * Extracts the parameter name from a string, handling optional parameters denoted by a leading '?'.
  * @template TParam - The string from which to extract the parameter name.
  * @returns The extracted parameter name, or never if the parameter string is empty.
@@ -97,7 +107,7 @@ export type ExtractRouteParamTypesWriting<TRoute extends Route> =
  * @returns A new type with the appropriate properties marked as optional.
  */
 type ExtractParamTypesReading<TWithParams extends WithParams> = {
-  [K in keyof TWithParams['params']]: TWithParams['value'] extends `${string}${ParamStart}?${K & string}${ParamEnd}${string}`
+  [K in keyof TWithParams['params']]: IsOptionalParamTemplate<K & string, TWithParams['value']> extends true
     ? TWithParams['params'][K] extends Required<ParamGetSet>
       ? ExtractParamType<TWithParams['params'][K]>
       : ExtractParamType<TWithParams['params'][K]> | undefined
@@ -111,7 +121,7 @@ type ExtractParamTypesReading<TWithParams extends WithParams> = {
  * @returns A new type with the appropriate properties marked as optional.
  */
 type ExtractParamTypesWriting<TWithParams extends WithParams> = {
-  [K in keyof TWithParams['params']]: TWithParams['value'] extends `${string}${ParamStart}?${K & string}${ParamEnd}${string}`
+  [K in keyof TWithParams['params']]: IsOptionalParamTemplate<K & string, TWithParams['value']> extends true
     ? ExtractParamType<TWithParams['params'][K]> | undefined
     : ExtractParamType<TWithParams['params'][K]>
 }
