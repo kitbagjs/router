@@ -3,7 +3,6 @@ import { getMatchesForUrl } from '@/services/getMatchesForUrl'
 import { Routes } from '@/types/route'
 import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
 import { getStateValues } from '@/services/state'
-import { createUrl } from '@/services/createUrl'
 import { asUrlString } from '@/types/urlString'
 
 export function createResolvedRouteForUrl(routes: Routes, url: string, state?: Partial<unknown>): ResolvedRoute | undefined {
@@ -14,7 +13,7 @@ export function createResolvedRouteForUrl(routes: Routes, url: string, state?: P
   }
 
   const [route] = matches
-  const { query, hash } = createUrl(url)
+  const asUrl = new URL(url)
 
   return {
     id: route.id,
@@ -22,10 +21,10 @@ export function createResolvedRouteForUrl(routes: Routes, url: string, state?: P
     matches: route.matches,
     name: route.name,
     hooks: route.hooks,
-    query: createResolvedRouteQuery(query.toString()),
+    query: createResolvedRouteQuery(asUrl.searchParams),
     params: route.parse(url),
     state: getStateValues(route.state, state),
-    hash: hash.toString(),
+    hash: asUrl.hash,
     href: asUrlString(url),
   }
 }

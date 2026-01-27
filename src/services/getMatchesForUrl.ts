@@ -1,22 +1,28 @@
-import { routeHostMatches, routePathMatches, routeQueryMatches, routeHashMatches, routeParamsAreValid } from '@/services/routeMatchRules'
 import { isNamedRoute } from '@/utilities/isNamedRoute'
-import { getRouteScoreSortMethod } from '@/services/routeMatchScore'
 import { Route, Routes } from '@/types/route'
-import { RouteMatchRule } from '@/types/routeMatchRule'
 
-const rules: RouteMatchRule[] = [
-  isNamedRoute,
-  routeHostMatches,
-  routePathMatches,
-  routeQueryMatches,
-  routeHashMatches,
-  routeParamsAreValid,
-]
+type Match = {
+  score: number,
+  route: Route,
+}
 
 export function getMatchesForUrl(routes: Routes, url: string): Route[] {
-  const sortByRouteScore = getRouteScoreSortMethod(url)
+  return routes.reduce<Match[]>((matches, route) => {
+    if (!isNamedRoute(route)) {
+      return matches
+    }
 
-  return routes
-    .filter((route) => rules.every((test) => test(route, url)))
+    const score = route.match(url).score
+    if (score > 0) {
+      matches.push({ score, route })
+    }
+
+    return matches
+  }, [])
     .sort(sortByRouteScore)
+    .map(({ route }) => route)
+}
+
+function sortByRouteScore(aRoute: Match, bRoute: Match): number {
+  return bRoute.score - aRoute.score
 }

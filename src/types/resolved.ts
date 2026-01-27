@@ -39,6 +39,14 @@ export type ResolvedRoute<TRoute extends Route = Route> = Readonly<{
    */
   href: UrlString,
   /**
+   * Query value of the route.
+   */
+  query: URLSearchParams,
+  /**
+   * Hash value of the route.
+   */
+  hash: string,
+  /**
    * The stores for routes including ancestors.
    * Order of routes will be from greatest ancestor to narrowest matched.
    * @internal
