@@ -3,9 +3,8 @@ import { ToWithParams, WithParams } from '@/services/withParams'
 import { ExtractParamType, IsOptionalParamTemplate } from '@/types/params'
 import { AllPropertiesAreOptional, Identity } from '@/types/utilities'
 import { UrlString } from '@/types/urlString'
-import { Param } from './paramTypes'
+import { Param, ParamGetSet } from './paramTypes'
 import { MakeOptional } from '@/utilities/makeOptional'
-import { ParamWithDefault } from '@/services/withDefault'
 
 export const IS_URL_SYMBOL = Symbol('IS_URL_SYMBOL')
 
@@ -47,7 +46,7 @@ export function isUrlWithSchema(url: unknown): url is Url & { schema: Record<str
 export type Url<TParams extends UrlParams = UrlParams> = {
   /**
    * @internal
-   * The parameters type for the url. Non functional and undefined at runtime. 
+   * The parameters type for the url. Non functional and undefined at runtime.
    */
   params: TParams,
   /**
@@ -93,7 +92,7 @@ type ToUrlParamsReading<
 Identity<
   MakeOptional<{
     [K in keyof TParams]: TParams[K] extends OptionalParam<infer TParam>
-      ? TParam extends ParamWithDefault
+      ? TParam extends Required<ParamGetSet>
         ? ExtractParamType<TParam>
         : ExtractParamType<TParam> | undefined
       : TParams[K] extends RequiredParam<infer TParam>

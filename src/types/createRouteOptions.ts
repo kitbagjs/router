@@ -15,7 +15,7 @@ import { ToName } from './name'
 import { WithParams } from '@/services/withParams'
 import { RouteContext, ToRouteContext } from './routeContext'
 import { RouterViewProps } from '@/components/routerView'
-import { CreateUrlOptions, ToUrl, Url } from '@/types/url'
+import { CreateUrlOptions, ToUrl } from '@/types/url'
 import { CombineUrl } from '@/services/combineUrl'
 
 export type WithHost<THost extends string | WithParams = string | WithParams> = {
@@ -60,7 +60,7 @@ export function isWithComponentPropsRecord<T extends Record<string, unknown>>(op
 export type CreateRouteOptions<
   TName extends string | undefined = string | undefined,
   TMeta extends RouteMeta = RouteMeta
-> = CreateUrlOptions & {
+> = Exclude<CreateUrlOptions, 'host'> & {
   /**
    * Name for route, used to create route keys and in navigation.
    */

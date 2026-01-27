@@ -2,12 +2,10 @@ import { toWithParams, WithParams } from '@/services/withParams'
 import { getParamValueFromUrl, setParamValueOnUrl } from '@/services/paramsFinder'
 import { getParamName, isOptionalParamSyntax, paramIsOptional, replaceParamSyntaxWithCatchAllsAndEscapeRest, escapeRegExp } from '@/services/routeRegex'
 import { getParamValue, setParamValue } from '@/services/params'
+import { parseUrl, stringifyUrl } from '@/services/urlParser'
 import { IS_URL_SYMBOL, CreateUrlOptions, ToUrl, Url } from '@/types/url'
-import { asUrlString, UrlString } from '@/types/urlString'
+import { UrlString } from '@/types/urlString'
 import { checkDuplicateParams } from '@/utilities/checkDuplicateParams'
-
-// https://en.wikipedia.org/wiki/.invalid
-const FALLBACK_HOST = 'https://internal.invalid'
 
 export function createUrl<const T extends CreateUrlOptions>(options: T): ToUrl<T>
 export function createUrl(urlOrOptions: CreateUrlOptions): Url {
@@ -53,22 +51,21 @@ export function createUrl(urlOrOptions: CreateUrlOptions): Url {
   }
 
   function stringify(params: Record<string, unknown> = {}): UrlString {
-    const url = new URL(host.stringify(params), FALLBACK_HOST)
-
-    url.pathname = path.stringify(params)
-    url.search = query.stringify(params)
-    url.hash = hash.stringify(params)
-
-    return asUrlString(url.toString().replace(new RegExp(`^${FALLBACK_HOST}/*`), '/'))
+    return stringifyUrl({
+      host: host.stringify(params),
+      path: path.stringify(params),
+      query: query.stringify(params),
+      hash: hash.stringify(params),
+    })
   }
 
   function parse(url: string): Record<string, unknown> {
-    const parts = new URL(url, FALLBACK_HOST)
+    const parts = parseUrl(url)
 
     return {
-      ...getParams(host, `${parts.protocol}//${parts.host}`),
-      ...getParams(path, parts.pathname),
-      ...getQueryParams(query, parts.search),
+      ...getParams(host, parts.host ?? ''),
+      ...getParams(path, parts.path),
+      ...getQueryParams(query, parts.query.toString()),
       ...getParams(hash, parts.hash),
     }
   }

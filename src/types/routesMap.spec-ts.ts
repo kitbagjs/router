@@ -3,10 +3,9 @@ import { createRoute } from '@/services/createRoute'
 import { Route } from '@/types/route'
 import { RoutesMap } from '@/types/routesMap'
 import { component } from '@/utilities/testHelpers'
-import { WithParams } from '@/services/withParams'
 
 test('RoutesMap given generic routes, returns generic string', () => {
-  type Map = RoutesMap<Route<string, WithParams<'', {}>, WithParams<'', {}>, WithParams<'', {}>>[]>
+  type Map = RoutesMap<Route[]>
 
   type Source = Map[keyof Map]['name']
   type Expect = string

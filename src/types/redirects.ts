@@ -1,7 +1,7 @@
-import { ExtractRouteParamTypesReading, ExtractRouteParamTypesWriting } from './params'
 import { ResolvedRouteUnion } from './resolved'
 import { Route, Routes } from './route'
 import { RouterReplace } from './routerReplace'
+import { UrlParamsReading, UrlParamsWriting } from './url'
 import { AllPropertiesAreOptional, MaybePromise } from './utilities'
 
 /**
@@ -44,7 +44,7 @@ export type RedirectHook<
 export type RouteRedirectCallback<
   TRouteTo extends Route = Route,
   TRouteFrom extends Route = Route
-> = (params: ExtractRouteParamTypesReading<TRouteFrom>) => ExtractRouteParamTypesWriting<TRouteTo>
+> = (params: UrlParamsReading<TRouteFrom>) => UrlParamsWriting<TRouteTo>
 
 /**
  * This type is purposely wide to prevent type errors in RouteRedirectFrom where the TRouteTo generic cannot be inferred.
@@ -54,7 +54,7 @@ export type RouteRedirect = (to: Route, callback?: (params: any) => any) => void
 export type RedirectToArgs<
   TRouteTo extends Route = Route,
   TRouteFrom extends Route = Route
-> = AllPropertiesAreOptional<ExtractRouteParamTypesWriting<TRouteTo>> extends true
+> = AllPropertiesAreOptional<UrlParamsWriting<TRouteTo>> extends true
   ? [to: TRouteTo, params?: RouteRedirectCallback<TRouteTo, TRouteFrom>]
   : [to: TRouteTo, params: RouteRedirectCallback<TRouteTo, TRouteFrom>]
 
@@ -65,7 +65,7 @@ export type RouteRedirectTo<
 export type RedirectFromArgs<
   TRouteTo extends Route = Route,
   TRouteFrom extends Route = Route
-> = AllPropertiesAreOptional<ExtractRouteParamTypesWriting<TRouteTo>> extends true
+> = AllPropertiesAreOptional<UrlParamsWriting<TRouteTo>> extends true
   ? [from: TRouteFrom, params?: RouteRedirectCallback<TRouteTo, TRouteFrom>]
   : [from: TRouteFrom, params: RouteRedirectCallback<TRouteTo, TRouteFrom>]
 

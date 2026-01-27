@@ -29,7 +29,7 @@ import { EmptyRouterPlugin, RouterPlugin } from '@/types/routerPlugin'
 import { getRoutesForRouter } from '@/services/getRoutesForRouter'
 import { getGlobalHooksForRouter } from '@/services/getGlobalHooksForRouter'
 import { createComponentsStore } from '@/services/createComponentsStore'
-import { initZod, zotParamsDetected } from '@/services/zod'
+import { initZod, zodParamsDetected } from '@/services/zod'
 import { getComponentsStoreKey } from '@/compositions/useComponentsStore'
 import { getPropStoreInjectionKey } from '@/compositions/usePropStore'
 import { getRouterRejectionInjectionKey } from '@/compositions/useRejection'
@@ -324,7 +324,7 @@ export function createRouter<
 
     starting = true
 
-    const shouldInitZod = zotParamsDetected(routes)
+    const shouldInitZod = zodParamsDetected(routes)
 
     if (shouldInitZod) {
       await initZod()
