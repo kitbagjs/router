@@ -22,8 +22,7 @@ import { RouteNotFoundError } from '@/errors/routeNotFoundError'
 import { createResolvedRoute } from '@/services/createResolvedRoute'
 import { ResolvedRoute } from '@/types/resolved'
 import { createResolvedRouteForUrl } from '@/services/createResolvedRouteForUrl'
-import { combineUrl } from '@/services/combineUrl'
-import { createUrl } from '@/services/createUrl'
+import { parseUrl, updateUrl } from '@/services/urlParser'
 import { RouterReject } from '@/types/routerReject'
 import { EmptyRouterPlugin, RouterPlugin } from '@/types/routerPlugin'
 import { getRoutesForRouter } from '@/services/getRoutesForRouter'
@@ -245,12 +244,12 @@ export function createRouter<
   ) => {
     if (isUrlString(source)) {
       const options: RouterPushOptions = { ...paramsOrOptions }
-      const url = combineUrl(source, {
+      const url = updateUrl(source, {
         query: new URLSearchParams(options.query).toString(),
         hash: options.hash,
       })
 
-      return set(url.toString(), options)
+      return set(url, options)
     }
 
     if (typeof source === 'string') {
@@ -265,12 +264,12 @@ export function createRouter<
     const { replace, ...options }: RouterPushOptions = { ...paramsOrOptions }
     const state = setStateValues({ ...source.matched.state }, { ...source.state, ...options.state })
 
-    const url = combineUrl(source.href, {
+    const url = updateUrl(source.href, {
       query: new URLSearchParams(options.query).toString(),
       hash: options.hash,
     })
 
-    return set(url.toString(), { replace, state })
+    return set(url, { replace, state })
   }
 
   const replace: RouterReplace<TRoutes | TPlugin['routes']> = (
@@ -307,8 +306,8 @@ export function createRouter<
 
   const initialUrl = getInitialUrl(options?.initialUrl)
   const initialState = history.location.state
-  const { host } = createUrl(initialUrl)
-  const isExternal = createIsExternal(host.toString())
+  const { host } = parseUrl(initialUrl)
+  const isExternal = createIsExternal(host)
 
   let starting = false
   const started = ref(false)

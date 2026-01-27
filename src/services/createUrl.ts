@@ -1,6 +1,6 @@
 import { toWithParams, WithParams } from '@/services/withParams'
 import { getParamValueFromUrl, setParamValueOnUrl } from '@/services/paramsFinder'
-import { getParamName, isOptionalParamSyntax, paramIsOptional, replaceParamSyntaxWithCatchAllsAndEscapeRest, escapeRegExp } from '@/services/routeRegex'
+import { getParamName, isOptionalParamSyntax, paramIsOptional, replaceParamSyntaxWithCatchAllsAndEscapeRest, generateQueryRegexPatterns } from '@/services/routeRegex'
 import { getParamValue, setParamValue } from '@/services/params'
 import { parseUrl, stringifyUrl } from '@/services/urlParser'
 import { IS_URL_SYMBOL, CreateUrlOptions, ToUrl, Url } from '@/types/url'
@@ -179,17 +179,4 @@ function getQueryParams(query: WithParams, url: string): Record<string, unknown>
     values[paramName] = paramValue
   }
   return values
-}
-
-function generateQueryRegexPatterns(value: string): RegExp[] {
-  const queryParams = new URLSearchParams(value)
-
-  return Array
-    .from(queryParams.entries())
-    .filter(([, value]) => !isOptionalParamSyntax(value))
-    .map(([key, value]) => {
-      const valueRegex = replaceParamSyntaxWithCatchAllsAndEscapeRest(value)
-
-      return new RegExp(`${escapeRegExp(key)}=${valueRegex}(&|$)`, 'i')
-    })
 }

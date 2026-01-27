@@ -1,5 +1,4 @@
 import { paramEnd, paramStart } from '@/types/params'
-import { Route } from '@/types/route'
 import { stringHasValue } from '@/utilities/guards'
 import { WithParams } from '@/services/withParams'
 
@@ -35,6 +34,19 @@ export function splitByMatches(string: string, regexp: RegExp): string[] {
   }
 
   return slices
+}
+
+export function generateQueryRegexPatterns(value: string): RegExp[] {
+  const queryParams = new URLSearchParams(value)
+
+  return Array
+    .from(queryParams.entries())
+    .filter(([, value]) => !isOptionalParamSyntax(value))
+    .map(([key, value]) => {
+      const valueRegex = replaceParamSyntaxWithCatchAllsAndEscapeRest(value)
+
+      return new RegExp(`${escapeRegExp(key)}=${valueRegex}(&|$)`, 'i')
+    })
 }
 
 export function generateRouteQueryRegexPatterns(value: string): RegExp[] {

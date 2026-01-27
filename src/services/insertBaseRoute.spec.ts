@@ -20,5 +20,5 @@ test('given value for base, returns route with base prefixed', () => {
 
   const response = insertBaseRoute(route, base)
 
-  expect(response.path.value).toBe('/kitbag/foo')
+  expect(response.stringify()).toBe('/kitbag/foo')
 })
