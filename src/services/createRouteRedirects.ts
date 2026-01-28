@@ -10,7 +10,7 @@ type CreateRouteRedirectsContext = {
 }
 
 export function createRouteRedirects({ getRoute }: CreateRouteRedirectsContext): RouteRedirects {
-  const redirectTo: RouteRedirectTo = (...[to, convertParams]: RedirectToArgs) => {
+  const redirectTo: RouteRedirectTo = (...[to, convertParams]) => {
     const from = getRoute()
 
     if (!isRouteWithRedirect(from)) {

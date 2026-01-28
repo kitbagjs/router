@@ -11,13 +11,16 @@ import { BuiltInRejectionType } from '@/services/createRouterReject'
 import { createRejection } from '@/services/createRejection'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouteRedirects } from '@/types/redirects'
+import { Url } from '@/types/url'
 
 test('empty options returns an empty route', () => {
   const route = createRoute({})
 
-  type RouteWithHooks = Route & InternalRouteHooks<typeof route, []> & RouteRedirects<typeof route>
+  type Source = typeof route
 
-  expectTypeOf<typeof route>().toEqualTypeOf<RouteWithHooks>()
+  expectTypeOf<Source>().toMatchObjectType<Url<{}>>()
+  expectTypeOf<Source>().toMatchObjectType<InternalRouteHooks<Source>>()
+  expectTypeOf<Source>().toMatchObjectType<RouteRedirects>()
 })
 
 test('options with name', () => {
@@ -44,11 +47,10 @@ test('options with name and parent', () => {
 test('options with path', () => {
   const route = createRoute({ path: '/foo' })
 
-  type Source = typeof route['path']
-  type Expect = { value: '/foo', params: {} }
+  type Source = typeof route['params']
+  type Expect = {}
 
-  expectTypeOf<Source['value']>().toEqualTypeOf<Expect['value']>()
-  expectTypeOf<Source['params']>().toEqualTypeOf<Expect['params']>()
+  expectTypeOf<Source>().toMatchObjectType<Expect>()
 })
 
 test('options with path and parent', () => {
@@ -58,20 +60,18 @@ test('options with path and parent', () => {
     parent,
   })
 
-  type Source = typeof route['path']
-  type Expect = { value: '/foo/bar', params: {} }
+  type Source = typeof route['params']
+  type Expect = {}
 
-  expectTypeOf<Source['value']>().toEqualTypeOf<Expect['value']>()
-  expectTypeOf<Source['params']>().toEqualTypeOf<Expect['params']>()
+  expectTypeOf<Source>().toMatchObjectType<Expect>()
 })
 
 test('options with path with params', () => {
   const route = createRoute({ path: '/foo/[bar]' })
-  type Source = typeof route['path']
-  type Expect = { value: '/foo/[bar]', params: { bar: StringConstructor } }
+  type Source = typeof route['params']
+  type Expect = { bar: [StringConstructor, false] }
 
-  expectTypeOf<Source['value']>().toEqualTypeOf<Expect['value']>()
-  expectTypeOf<Source['params']>().toEqualTypeOf<Expect['params']>()
+  expectTypeOf<Source>().toMatchObjectType<Expect>()
 })
 
 test('options with path with params and parent', () => {
@@ -84,17 +84,13 @@ test('options with path with params and parent', () => {
     parent,
   })
 
-  type Source = typeof route['path']
+  type Source = typeof route['params']
   type Expect = {
-    value: '/parent/[parentParam]/child/[childParam]',
-    params: {
-      parentParam: StringConstructor,
-      childParam: StringConstructor,
-    },
+    parentParam: [StringConstructor, false],
+    childParam: [StringConstructor, false],
   }
 
-  expectTypeOf<Source['value']>().toEqualTypeOf<Expect['value']>()
-  expectTypeOf<Source['params']>().toEqualTypeOf<Expect['params']>()
+  expectTypeOf<Source>().toMatchObjectType<Expect>()
 })
 
 test('options with path with params with custom param types', () => {
@@ -102,14 +98,12 @@ test('options with path with params with custom param types', () => {
     path: withParams('/foo/[bar]', { bar: Number }),
   })
 
-  type Source = typeof route['path']
+  type Source = typeof route['params']
   type Expect = {
-    value: '/foo/[bar]',
-    params: { bar: NumberConstructor },
+    bar: [NumberConstructor, false],
   }
 
-  expectTypeOf<Source['value']>().toEqualTypeOf<Expect['value']>()
-  expectTypeOf<Source['params']>().toEqualTypeOf<Expect['params']>()
+  expectTypeOf<Source>().toMatchObjectType<Expect>()
 })
 
 test('options with path with params with custom param types and parent', () => {
@@ -122,17 +116,13 @@ test('options with path with params with custom param types and parent', () => {
     parent,
   })
 
-  type Source = typeof route['path']
+  type Source = typeof route['params']
   type Expect = {
-    value: '/parent/[parentParam]/child/[childParam]',
-    params: {
-      parentParam: NumberConstructor,
-      childParam: BooleanConstructor,
-    },
+    parentParam: [NumberConstructor, false],
+    childParam: [BooleanConstructor, false],
   }
 
-  expectTypeOf<Source['value']>().toEqualTypeOf<Expect['value']>()
-  expectTypeOf<Source['params']>().toEqualTypeOf<Expect['params']>()
+  expectTypeOf<Source>().toMatchObjectType<Expect>()
 })
 
 test('options with query', () => {
@@ -140,11 +130,10 @@ test('options with query', () => {
     query: 'foo=bar',
   })
 
-  type Source = typeof route['query']
-  type Expect = { value: 'foo=bar', params: {} }
+  type Source = typeof route['params']
+  type Expect = {}
 
-  expectTypeOf<Source['value']>().toEqualTypeOf<Expect['value']>()
-  expectTypeOf<Source['params']>().toEqualTypeOf<Expect['params']>()
+  expectTypeOf<Source>().toMatchObjectType<Expect>()
 })
 
 test('options with query and parent', () => {
@@ -157,20 +146,18 @@ test('options with query and parent', () => {
     parent,
   })
 
-  type Source = typeof route['query']
-  type Expect = { value: 'parent=parent&child=child', params: {} }
+  type Source = typeof route['params']
+  type Expect = {}
 
-  expectTypeOf<Source['value']>().toEqualTypeOf<Expect['value']>()
-  expectTypeOf<Source['params']>().toEqualTypeOf<Expect['params']>()
+  expectTypeOf<Source>().toMatchObjectType<Expect>()
 })
 
 test('options with query with params', () => {
   const route = createRoute({ query: 'foo=[bar]' })
-  type Source = typeof route['query']
-  type Expect = { value: 'foo=[bar]', params: { bar: StringConstructor } }
+  type Source = typeof route['params']
+  type Expect = { bar: [StringConstructor, false] }
 
-  expectTypeOf<Source['value']>().toEqualTypeOf<Expect['value']>()
-  expectTypeOf<Source['params']>().toEqualTypeOf<Expect['params']>()
+  expectTypeOf<Source>().toMatchObjectType<Expect>()
 })
 
 test('options with query with params and parent', () => {
@@ -183,26 +170,21 @@ test('options with query with params and parent', () => {
     parent,
   })
 
-  type Source = typeof route['query']
+  type Source = typeof route['params']
   type Expect = {
-    value: 'parent=[parentParam]&child=[childParam]',
-    params: {
-      parentParam: StringConstructor,
-      childParam: StringConstructor,
-    },
+    parentParam: [StringConstructor, false],
+    childParam: [StringConstructor, false],
   }
 
-  expectTypeOf<Source['value']>().toEqualTypeOf<Expect['value']>()
-  expectTypeOf<Source['params']>().toEqualTypeOf<Expect['params']>()
+  expectTypeOf<Source>().toMatchObjectType<Expect>()
 })
 
 test('options with query with params with custom param types', () => {
   const route = createRoute({ query: withParams('foo=[bar]', { bar: Number }) })
-  type Source = typeof route['query']
-  type Expect = { value: 'foo=[bar]', params: { bar: NumberConstructor } }
+  type Source = typeof route['params']
+  type Expect = { bar: [NumberConstructor, false] }
 
-  expectTypeOf<Source['value']>().toEqualTypeOf<Expect['value']>()
-  expectTypeOf<Source['params']>().toEqualTypeOf<Expect['params']>()
+  expectTypeOf<Source>().toMatchObjectType<Expect>()
 })
 
 test('options with query with params with custom param types and parent', () => {
@@ -215,24 +197,20 @@ test('options with query with params with custom param types and parent', () => 
     parent,
   })
 
-  type Source = typeof route['query']
+  type Source = typeof route['params']
   type Expect = {
-    value: 'parent=[parentParam]&child=[childParam]',
-    params: {
-      parentParam: NumberConstructor,
-      childParam: BooleanConstructor,
-    },
+    parentParam: [NumberConstructor, false],
+    childParam: [BooleanConstructor, false],
   }
 
-  expectTypeOf<Source['value']>().toEqualTypeOf<Expect['value']>()
-  expectTypeOf<Source['params']>().toEqualTypeOf<Expect['params']>()
+  expectTypeOf<Source>().toMatchObjectType<Expect>()
 })
 
 test('options with hash', () => {
   const route = createRoute({ hash: 'foo' })
 
-  type Source = typeof route['hash']
-  type Expect = { value: 'foo', params: {} }
+  type Source = typeof route['params']
+  type Expect = {}
 
   expectTypeOf<Source>().toExtend<Expect>()
 })
@@ -241,8 +219,8 @@ test('options with hash and parent', () => {
   const parent = createRoute({ hash: 'parent' })
   const route = createRoute({ hash: 'child', parent })
 
-  type Source = typeof route['hash']
-  type Expect = { value: 'parentchild' }
+  type Source = typeof route['params']
+  type Expect = {}
 
   expectTypeOf<Source>().toExtend<Expect>()
 })

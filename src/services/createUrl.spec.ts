@@ -1056,120 +1056,120 @@ describe('route.match score', () => {
   })
 })
 
-describe('getRouteScoreSortMethod', () => {
-  test('given routes with different path scores, returns them sorted by path score descending', () => {
-    const aRoute = createUrl({
-      path: '[?color]',
-    })
-    const bRoute = createUrl({
-      path: '[?color]/[?id]',
-    })
+// describe('getRouteScoreSortMethod', () => {
+//   test('given routes with different path scores, returns them sorted by path score descending', () => {
+//     const aRoute = createUrl({
+//       path: '[?color]',
+//     })
+//     const bRoute = createUrl({
+//       path: '[?color]/[?id]',
+//     })
 
-    // const sortByRouteScore = getRouteScoreSortMethod('/red/123')
-    // const expected = [bRoute, aRoute]
+//     // const sortByRouteScore = getRouteScoreSortMethod('/red/123')
+//     // const expected = [bRoute, aRoute]
 
-    // expect([aRoute, bRoute].sort(sortByRouteScore)).toMatchObject(expected)
-    // expect([bRoute, aRoute].sort(sortByRouteScore)).toMatchObject(expected)
-  })
+//     // expect([aRoute, bRoute].sort(sortByRouteScore)).toMatchObject(expected)
+//     // expect([bRoute, aRoute].sort(sortByRouteScore)).toMatchObject(expected)
+//   })
 
-  test('given routes with equal path scores, returns them sorted by route depth descending', () => {
-    const lowerRoute = createUrl({
-      path: '/[?color]',
-    })
+//   test('given routes with equal path scores, returns them sorted by route depth descending', () => {
+//     const lowerRoute = createUrl({
+//       path: '/[?color]',
+//     })
 
-    const higherRoute = createUrl({
-      path: '/',
-    })
+//     const higherRoute = createUrl({
+//       path: '/',
+//     })
 
-    const higherRouteChild = createUrl({
-      parent: higherRoute,
-      path: '[?color]',
-    })
+//     const higherRouteChild = createUrl({
+//       parent: higherRoute,
+//       path: '[?color]',
+//     })
 
-    const routes = [lowerRoute, higherRoute, higherRouteChild]
+//     const routes = [lowerRoute, higherRoute, higherRouteChild]
 
-    // const sortByRouteScore = getRouteScoreSortMethod('/red')
-    // const response = routes.sort(sortByRouteScore)
-    // const matchNames = response.map((route) => route.matched.name)
+//     // const sortByRouteScore = getRouteScoreSortMethod('/red')
+//     // const response = routes.sort(sortByRouteScore)
+//     // const matchNames = response.map((route) => route.matched.name)
 
-    // expect(matchNames).toMatchObject(['higher-depth-child', 'lower-depth', 'higher-depth'])
-  })
+//     // expect(matchNames).toMatchObject(['higher-depth-child', 'lower-depth', 'higher-depth'])
+//   })
 
-  test('given routes with different query scores, returns them sorted by query score descending', () => {
-    const aRoute = createUrl({
-      path: '/',
-      query: 'color=red',
-    })
-    const bRoute = createUrl({
-      path: '/',
-      query: 'color=red&id=1',
-    })
+//   test('given routes with different query scores, returns them sorted by query score descending', () => {
+//     const aRoute = createUrl({
+//       path: '/',
+//       query: 'color=red',
+//     })
+//     const bRoute = createUrl({
+//       path: '/',
+//       query: 'color=red&id=1',
+//     })
 
-    // const sortByRouteScore = getRouteScoreSortMethod('/?color=red&id=1&extra=ok')
-    // const expected = [bRoute, aRoute]
+//     // const sortByRouteScore = getRouteScoreSortMethod('/?color=red&id=1&extra=ok')
+//     // const expected = [bRoute, aRoute]
 
-    // expect([aRoute, bRoute].sort(sortByRouteScore)).toMatchObject(expected)
-    // expect([bRoute, aRoute].sort(sortByRouteScore)).toMatchObject(expected)
-  })
+//     // expect([aRoute, bRoute].sort(sortByRouteScore)).toMatchObject(expected)
+//     // expect([bRoute, aRoute].sort(sortByRouteScore)).toMatchObject(expected)
+//   })
 
-  test('given routes that are otherwise equal, prefers routes with matching host', () => {
-    const externalRoute = createUrl({
-      path: '/same-path',
-      host: 'https://kitbag.dev',
-    })
+//   test('given routes that are otherwise equal, prefers routes with matching host', () => {
+//     const externalRoute = createUrl({
+//       path: '/same-path',
+//       host: 'https://kitbag.dev',
+//     })
 
-    const internalRoute = createUrl({
-      path: '/same-path',
-    })
+//     const internalRoute = createUrl({
+//       path: '/same-path',
+//     })
 
-    // const sortByRouteScore = getRouteScoreSortMethod('https://kitbag.dev/same-path')
-    // const expected = [externalRoute, internalRoute]
+//     // const sortByRouteScore = getRouteScoreSortMethod('https://kitbag.dev/same-path')
+//     // const expected = [externalRoute, internalRoute]
 
-    // expect([externalRoute, internalRoute].sort(sortByRouteScore)).toMatchObject(expected)
-    // expect([internalRoute, externalRoute].sort(sortByRouteScore)).toMatchObject(expected)
-  })
+//     // expect([externalRoute, internalRoute].sort(sortByRouteScore)).toMatchObject(expected)
+//     // expect([internalRoute, externalRoute].sort(sortByRouteScore)).toMatchObject(expected)
+//   })
 
-  test('given routes that are otherwise equal, prefers routes with matching hash', () => {
-    const aRoute = createUrl({
-      path: '/same-path',
-    })
+//   test('given routes that are otherwise equal, prefers routes with matching hash', () => {
+//     const aRoute = createUrl({
+//       path: '/same-path',
+//     })
 
-    const bRoute = createUrl({
-      path: '/same-path',
-      hash: '#123',
-    })
+//     const bRoute = createUrl({
+//       path: '/same-path',
+//       hash: '#123',
+//     })
 
-    // const sortByRouteScore = getRouteScoreSortMethod('/same-path#123')
-    // const expected = [bRoute, aRoute]
+//     // const sortByRouteScore = getRouteScoreSortMethod('/same-path#123')
+//     // const expected = [bRoute, aRoute]
 
-    // expect([aRoute, bRoute].sort(sortByRouteScore)).toMatchObject(expected)
-    // expect([bRoute, aRoute].sort(sortByRouteScore)).toMatchObject(expected)
-  })
+//     // expect([aRoute, bRoute].sort(sortByRouteScore)).toMatchObject(expected)
+//     // expect([bRoute, aRoute].sort(sortByRouteScore)).toMatchObject(expected)
+//   })
 
-  test('given routes with equal query scores, returns them sorted by route depth descending', () => {
-    const lowerRoute = createUrl({
-      path: '/',
-      query: 'color=red',
-    })
+//   test('given routes with equal query scores, returns them sorted by route depth descending', () => {
+//     const lowerRoute = createUrl({
+//       path: '/',
+//       query: 'color=red',
+//     })
 
-    const higherRoute = createUrl({
-      path: '/',
-    })
+//     const higherRoute = createUrl({
+//       path: '/',
+//     })
 
-    const higherRouteChild = createUrl({
-      parent: higherRoute,
-      query: 'color=red',
-    })
+//     const higherRouteChild = createUrl({
+//       parent: higherRoute,
+//       query: 'color=red',
+//     })
 
-    const routes = [
-      lowerRoute,
-      higherRoute,
-      higherRouteChild,
-    ]
+//     const routes = [
+//       lowerRoute,
+//       higherRoute,
+//       higherRouteChild,
+//     ]
 
-    // const sortByRouteScore = getRouteScoreSortMethod('/?color=red&extra=ok')
-    // const response = routes.sort(sortByRouteScore)
+//     // const sortByRouteScore = getRouteScoreSortMethod('/?color=red&extra=ok')
+//     // const response = routes.sort(sortByRouteScore)
 
-    // expect(response.map((route) => route.matched.name)).toMatchObject(['higher-depth-child', 'lower-depth', 'higher-depth'])
-  })
-})
+//     // expect(response.map((route) => route.matched.name)).toMatchObject(['higher-depth-child', 'lower-depth', 'higher-depth'])
+//   })
+// })

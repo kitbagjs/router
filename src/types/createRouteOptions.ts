@@ -60,7 +60,7 @@ export function isWithComponentPropsRecord<T extends Record<string, unknown>>(op
 export type CreateRouteOptions<
   TName extends string | undefined = string | undefined,
   TMeta extends RouteMeta = RouteMeta
-> = Exclude<CreateUrlOptions, 'host'> & {
+> = Omit<CreateUrlOptions, 'host'> & {
   /**
    * Name for route, used to create route keys and in navigation.
    */

@@ -85,7 +85,7 @@ type UrlParamsArgs<
 * @returns A record of parameter names to their respective types, extracted and merged from both path and query parameters.
 */
 export type UrlParamsReading<TUrl extends Url> = UrlParams extends TUrl['params']
-  ? Record<string, unknown>
+  ? {}
   : ToUrlParamsReading<TUrl['params']>
 
 type ToUrlParamsReading<
