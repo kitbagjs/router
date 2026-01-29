@@ -1,20 +1,18 @@
 import { ResolvedRoute } from '@/types/resolved'
 import { Route } from '@/types/route'
-import { parseUrl } from '@/services/urlParser'
-import { assembleUrl } from '@/services/urlAssembly'
 import { RouterResolveOptions } from '@/types/routerResolve'
-import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
 import { getStateValues } from '@/services/state'
-import { getRouteParamValues } from './paramValidation'
+import { combineUrl } from '@/services/combineUrl'
+import { parseUrl } from '@/services/urlParser'
 
 export function createResolvedRoute(route: Route, params: Record<string, unknown> = {}, options: RouterResolveOptions = {}): ResolvedRoute {
-  const href = assembleUrl(route, {
-    params: params,
-    query: options.query,
+  const updatedRoute = combineUrl(route, {
+    query: new URLSearchParams(options.query).toString(),
     hash: options.hash,
   })
 
-  const { search, hash } = parseUrl(href)
+  const href = updatedRoute.stringify(params)
+  const { query, hash } = parseUrl(href)
 
   return {
     id: route.id,
@@ -22,9 +20,9 @@ export function createResolvedRoute(route: Route, params: Record<string, unknown
     matches: route.matches,
     name: route.name,
     hooks: route.hooks,
-    query: createResolvedRouteQuery(search),
-    params: getRouteParamValues(route, href),
+    params: route.parse(href),
     state: getStateValues(route.state, options.state),
+    query,
     hash,
     href,
   }

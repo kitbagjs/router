@@ -1,5 +1,5 @@
 import { InvalidRouteRedirectError } from '@/errors/invalidRouteRedirectError'
-import { RouteRedirects, isRouteWithRedirect, RouteRedirectFrom, RouteRedirectTo, RedirectToArgs } from '@/types/redirects'
+import { RouteRedirects, isRouteWithRedirect, RouteRedirectFrom, RouteRedirectTo } from '@/types/redirects'
 import { Route } from '@/types/route'
 
 type CreateRouteRedirectsContext = {
@@ -10,7 +10,7 @@ type CreateRouteRedirectsContext = {
 }
 
 export function createRouteRedirects({ getRoute }: CreateRouteRedirectsContext): RouteRedirects {
-  const redirectTo: RouteRedirectTo = (...[to, convertParams]: RedirectToArgs) => {
+  const redirectTo: RouteRedirectTo = (...[to, convertParams]) => {
     const from = getRoute()
 
     if (!isRouteWithRedirect(from)) {

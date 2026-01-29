@@ -28,7 +28,7 @@ export type RouterRoute<TRoute extends ResolvedRoute = ResolvedRoute> = {
   /**
    * Hash value of the route.
    */
-  readonly hash: TRoute['hash'],
+  readonly hash: string,
   /**
    * Update the route.
    */

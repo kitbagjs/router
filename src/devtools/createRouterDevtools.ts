@@ -7,6 +7,7 @@ import { isBrowser } from '@/utilities'
 import { getDevtoolsLabel } from './getDevtoolsLabel'
 import { CustomInspectorNode, CustomInspectorState, InspectorNodeTag } from './types'
 import { shouldShowRoute } from './filters'
+import { isUrlWithSchema } from '@/main'
 
 // Support multiple router instances
 const getRouterId = createUniqueIdSequence()
@@ -57,7 +58,7 @@ function getInspectorNodeForRoute(
 
   return {
     id: route.id,
-    label: route.path.value || route.name,
+    label: route.name,
     tags,
   }
 }
@@ -86,6 +87,10 @@ function getRouteMatchStatus(
 function getInspectorStateOptionsForRoute(route: Route): CustomInspectorState[string] {
   const fields: CustomInspectorState[string] = []
 
+  if (!isUrlWithSchema(route)) {
+    return fields
+  }
+
   // Route name
   fields.push({
     editable: false,
@@ -97,21 +102,21 @@ function getInspectorStateOptionsForRoute(route: Route): CustomInspectorState[st
   fields.push({
     editable: false,
     key: 'path',
-    value: route.path.value,
+    value: route.schema.path.value,
   })
 
   // Route query
   fields.push({
     editable: false,
     key: 'query',
-    value: route.query.value,
+    value: route.schema.query.value,
   })
 
   // Route hash
   fields.push({
     editable: false,
     key: 'hash',
-    value: route.hash.value,
+    value: route.schema.hash.value,
   })
 
   // Route meta

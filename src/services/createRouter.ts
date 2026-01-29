@@ -2,7 +2,6 @@ import { createPath } from 'history'
 import { App, ref } from 'vue'
 import { createCurrentRoute } from '@/services/createCurrentRoute'
 import { createIsExternal } from '@/services/createIsExternal'
-import { parseUrl } from '@/services/urlParser'
 import { createPropStore } from '@/services/createPropStore'
 import { createRouterHistory } from '@/services/createRouterHistory'
 import { createRouterHooks, getRouterHooksKey } from '@/services/createRouterHooks'
@@ -23,13 +22,13 @@ import { RouteNotFoundError } from '@/errors/routeNotFoundError'
 import { createResolvedRoute } from '@/services/createResolvedRoute'
 import { ResolvedRoute } from '@/types/resolved'
 import { createResolvedRouteForUrl } from '@/services/createResolvedRouteForUrl'
-import { combineUrl } from '@/services/urlCombine'
+import { parseUrl, updateUrl } from '@/services/urlParser'
 import { RouterReject } from '@/types/routerReject'
 import { EmptyRouterPlugin, RouterPlugin } from '@/types/routerPlugin'
-import { getRoutesForRouter } from './getRoutesForRouter'
-import { getGlobalHooksForRouter } from './getGlobalHooksForRouter'
-import { createComponentsStore } from './createComponentsStore'
-import { initZod, zotParamsDetected } from './zod'
+import { getRoutesForRouter } from '@/services/getRoutesForRouter'
+import { getGlobalHooksForRouter } from '@/services/getGlobalHooksForRouter'
+import { createComponentsStore } from '@/services/createComponentsStore'
+import { initZod, zodParamsDetected } from '@/services/zod'
 import { getComponentsStoreKey } from '@/compositions/useComponentsStore'
 import { getPropStoreInjectionKey } from '@/compositions/usePropStore'
 import { getRouterRejectionInjectionKey } from '@/compositions/useRejection'
@@ -245,8 +244,8 @@ export function createRouter<
   ) => {
     if (isUrlString(source)) {
       const options: RouterPushOptions = { ...paramsOrOptions }
-      const url = combineUrl(source, {
-        searchParams: options.query,
+      const url = updateUrl(source, {
+        query: new URLSearchParams(options.query).toString(),
         hash: options.hash,
       })
 
@@ -265,8 +264,8 @@ export function createRouter<
     const { replace, ...options }: RouterPushOptions = { ...paramsOrOptions }
     const state = setStateValues({ ...source.matched.state }, { ...source.state, ...options.state })
 
-    const url = combineUrl(source.href, {
-      searchParams: options.query,
+    const url = updateUrl(source.href, {
+      query: new URLSearchParams(options.query).toString(),
       hash: options.hash,
     })
 
@@ -324,7 +323,7 @@ export function createRouter<
 
     starting = true
 
-    const shouldInitZod = zotParamsDetected(routes)
+    const shouldInitZod = zodParamsDetected(routes)
 
     if (shouldInitZod) {
       await initZod()

@@ -1,5 +1,4 @@
 import { paramEnd, paramStart } from '@/types/params'
-import { Route } from '@/types/route'
 import { stringHasValue } from '@/utilities/guards'
 import { WithParams } from '@/services/withParams'
 
@@ -37,27 +36,21 @@ export function splitByMatches(string: string, regexp: RegExp): string[] {
   return slices
 }
 
-export function generateRouteHostRegexPattern(route: Route): RegExp {
-  const hostRegex = replaceParamSyntaxWithCatchAllsAndEscapeRest(route.host.value)
+export function generateQueryRegexPatterns(value: string): RegExp[] {
+  const queryParams = new URLSearchParams(value)
 
-  return new RegExp(`^${hostRegex || '.*'}$`, 'i')
+  return Array
+    .from(queryParams.entries())
+    .filter(([, value]) => !isOptionalParamSyntax(value))
+    .map(([key, value]) => {
+      const valueRegex = replaceParamSyntaxWithCatchAllsAndEscapeRest(value)
+
+      return new RegExp(`${escapeRegExp(key)}=${valueRegex}(&|$)`, 'i')
+    })
 }
 
-export function generateRoutePathRegexPattern(route: Route): RegExp {
-  const pathRegex = replaceParamSyntaxWithCatchAllsAndEscapeRest(route.path.value)
-
-  return new RegExp(`^${pathRegex}$`, 'i')
-}
-
-export function generateRouteHashRegexPattern(route: Route): RegExp {
-  const cleanValue = route.hash.value.replace(/^#*/, '')
-  const hashRegex = replaceParamSyntaxWithCatchAllsAndEscapeRest(cleanValue)
-
-  return new RegExp(`^#?${hashRegex || '.*'}$`, 'i')
-}
-
-export function generateRouteQueryRegexPatterns(route: Route): RegExp[] {
-  const queryParams = new URLSearchParams(route.query.value)
+export function generateRouteQueryRegexPatterns(value: string): RegExp[] {
+  const queryParams = new URLSearchParams(value)
 
   return Array
     .from(queryParams.entries())

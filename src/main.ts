@@ -20,6 +20,7 @@ export * from './types/routerResolve'
 export * from './types/routerResolve'
 export * from './types/routerRoute'
 export * from './types/urlString'
+export * from './types/url'
 export * from './types/useLink'
 
 // Errors
@@ -41,6 +42,7 @@ export { arrayOf } from './services/arrayOf'
 export { tupleOf } from './services/tupleOf'
 export { createParam } from './services/createParam'
 export { createRouter } from './services/createRouter'
+export { createUrl } from './services/createUrl'
 
 // Assets
 import { routerInjectionKey } from './keys'

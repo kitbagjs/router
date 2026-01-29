@@ -1,5 +1,6 @@
 import { Route } from '@/types/route'
 import { InspectorTreePayload } from './types'
+import { isUrlWithSchema } from '@/types/url'
 
 type RouteFilterOptions = {
   route: Route,
@@ -24,6 +25,10 @@ const routeMatchesFilter: RouteFilter = ({ route, payload }) => {
     return true
   }
 
+  if (!isUrlWithSchema(route)) {
+    return false
+  }
+
   const filterLower = payload.filter.toLowerCase()
 
   // Check route name
@@ -32,7 +37,7 @@ const routeMatchesFilter: RouteFilter = ({ route, payload }) => {
   }
 
   // Check route path
-  if (route.path.value.toLowerCase().includes(filterLower)) {
+  if (route.schema.path.value.toLowerCase().includes(filterLower)) {
     return true
   }
 

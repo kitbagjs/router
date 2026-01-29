@@ -219,7 +219,7 @@ test('setting an unknown param does not add its value to the route', async () =>
       component,
       path: '/',
     }),
-  ]
+  ] as const
   const { route, start } = createRouter(routes, {
     initialUrl: '/',
   })
@@ -603,7 +603,7 @@ describe('router.resolve', () => {
       params: {
         paramA: 'bar',
       },
-      hash: '#foo',
+      hash: 'foo',
       href: '/parentA/bar#foo',
     })
   })

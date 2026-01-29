@@ -1,8 +1,6 @@
 import { ResolvedRoute } from '@/types/resolved'
 import { getMatchesForUrl } from '@/services/getMatchesForUrl'
-import { getRouteParamValues } from '@/services/paramValidation'
 import { Routes } from '@/types/route'
-import { parseUrl } from '@/services/urlParser'
 import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
 import { getStateValues } from '@/services/state'
 import { asUrlString } from '@/types/urlString'
@@ -15,7 +13,7 @@ export function createResolvedRouteForUrl(routes: Routes, url: string, state?: P
   }
 
   const [route] = matches
-  const { searchParams, hash } = parseUrl(url)
+  const asUrl = new URL(url)
 
   return {
     id: route.id,
@@ -23,10 +21,10 @@ export function createResolvedRouteForUrl(routes: Routes, url: string, state?: P
     matches: route.matches,
     name: route.name,
     hooks: route.hooks,
-    query: createResolvedRouteQuery(searchParams),
-    params: getRouteParamValues(route, url),
+    query: createResolvedRouteQuery(asUrl.searchParams),
+    params: route.parse(url),
     state: getStateValues(route.state, state),
-    hash,
+    hash: asUrl.hash,
     href: asUrlString(url),
   }
 }
