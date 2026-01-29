@@ -3,24 +3,24 @@ import { generateRouteHashRegexPattern, generateRouteHostRegexPattern, generateR
 import { RouteMatchRule } from '@/types/routeMatchRule'
 
 export const routeHostMatches: RouteMatchRule = (route, url) => {
-  const { protocol, host } = parseUrl(url)
+  const { host } = parseUrl(url)
   const hostPattern = generateRouteHostRegexPattern(route)
 
-  return hostPattern.test(`${protocol}//${host}`)
+  return hostPattern.test(host ?? '')
 }
 
 export const routePathMatches: RouteMatchRule = (route, url) => {
-  const { pathname } = parseUrl(url)
+  const { path } = parseUrl(url)
   const pathPattern = generateRoutePathRegexPattern(route)
 
-  return pathPattern.test(pathname)
+  return pathPattern.test(path)
 }
 
 export const routeQueryMatches: RouteMatchRule = (route, url) => {
-  const { search } = parseUrl(url)
+  const { query } = parseUrl(url)
   const queryPatterns = generateRouteQueryRegexPatterns(route)
 
-  return queryPatterns.every((pattern) => pattern.test(search))
+  return queryPatterns.every((pattern) => pattern.test(query.toString()))
 }
 
 export const routeHashMatches: RouteMatchRule = (route, url) => {

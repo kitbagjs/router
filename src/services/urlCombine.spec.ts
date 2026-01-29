@@ -2,9 +2,9 @@ import { expect, test } from 'vitest'
 import { combineUrl } from '@/services/urlCombine'
 
 test.each([
-  [{ protocol: 'https', host: 'kitbag.com' }, { host: 'kitbag.dev' }],
-  [{ protocol: 'https', host: 'kitbag.dev' }, { host: '' }],
-  [{ protocol: 'https', host: 'kitbag.dev' }, { host: undefined }],
+  [{ host: 'https://kitbag.com' }, { host: 'https://kitbag.dev' }],
+  [{ host: 'https://kitbag.dev' }, { host: '' }],
+  [{ host: 'https://kitbag.dev' }, { host: undefined }],
 ])('given updated host with value, replaces previous host, else uses previous', (previous, updated) => {
   const url = combineUrl(previous, updated)
 
@@ -12,9 +12,9 @@ test.each([
 })
 
 test.each([
-  [{ pathname: '/bar' }, { pathname: '/foo' }],
-  [{ pathname: '/foo' }, { pathname: '' }],
-  [{ pathname: '/foo' }, { pathname: undefined }],
+  [{ path: '/bar' }, { path: '/foo' }],
+  [{ path: '/foo' }, { path: '' }],
+  [{ path: '/foo' }, { path: undefined }],
 ])('given updated pathname with value, replaces previous pathname, else uses previous', (previous, updated) => {
   const url = combineUrl(previous, updated)
 
@@ -22,9 +22,9 @@ test.each([
 })
 
 test.each([
-  [{ search: '?foo=456' }, { search: '?bar=123' }],
-  [{ search: '?bar=123&foo=456' }, { search: '' }],
-  [{ search: '?bar=123&foo=456' }, { search: undefined }],
+  [{ query: '?foo=456' }, { query: '?bar=123' }],
+  [{ query: '?bar=123&foo=456' }, { query: '' }],
+  [{ query: '?bar=123&foo=456' }, { query: undefined }],
 ])('given updated search with value, combines previous search, else uses previous', (previous, updated) => {
   const url = combineUrl(previous, updated)
 
@@ -32,9 +32,9 @@ test.each([
 })
 
 test.each([
-  [{ searchParams: new URLSearchParams('?foo=456') }, { searchParams: new URLSearchParams('?bar=123') }],
-  [{ searchParams: new URLSearchParams('?bar=123&foo=456') }, { searchParams: new URLSearchParams('') }],
-  [{ searchParams: new URLSearchParams('?bar=123&foo=456') }, { searchParams: undefined }],
+  [{ query: new URLSearchParams('?foo=456') }, { query: new URLSearchParams('?bar=123') }],
+  [{ query: new URLSearchParams('?bar=123&foo=456') }, { query: new URLSearchParams('') }],
+  [{ query: new URLSearchParams('?bar=123&foo=456') }, { query: undefined }],
 ])('given updated searchParams with value, combines previous search, else uses previous', (previous, updated) => {
   const url = combineUrl(previous, updated)
 

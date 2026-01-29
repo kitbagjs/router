@@ -246,7 +246,7 @@ export function createRouter<
     if (isUrlString(source)) {
       const options: RouterPushOptions = { ...paramsOrOptions }
       const url = combineUrl(source, {
-        searchParams: options.query,
+        query: options.query,
         hash: options.hash,
       })
 
@@ -266,7 +266,7 @@ export function createRouter<
     const state = setStateValues({ ...source.matched.state }, { ...source.state, ...options.state })
 
     const url = combineUrl(source.href, {
-      searchParams: options.query,
+      query: options.query,
       hash: options.hash,
     })
 

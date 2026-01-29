@@ -17,12 +17,12 @@ export const routeParamsAreValid: RouteMatchRule = (route, url) => {
 }
 
 export const getRouteParamValues = (route: Route, url: string): Record<string, unknown> => {
-  const { protocol, host, pathname, search, hash } = parseUrl(url)
+  const { host, path, query, hash } = parseUrl(url)
 
   return {
-    ...getParams(route.host, `${protocol}//${host}`),
-    ...getParams(route.path, pathname),
-    ...getQueryParams(route.query, search),
+    ...host ? getParams(route.host, host) : {},
+    ...getParams(route.path, path),
+    ...getQueryParams(route.query, query),
     ...getParams(route.hash, hash),
   }
 }
@@ -48,10 +48,9 @@ function getParams(path: WithParams, url: string): Record<string, unknown> {
  * 1. Find query values when other query params are omitted or in a different order
  * 2. Find query values based on the url search key, which might not match the param name
  */
-function getQueryParams(query: WithParams, url: string): Record<string, unknown> {
+function getQueryParams(query: WithParams, actualSearch: URLSearchParams): Record<string, unknown> {
   const values: Record<string, unknown> = {}
   const routeSearch = new URLSearchParams(query.value)
-  const actualSearch = new URLSearchParams(url)
 
   for (const [key, value] of Array.from(routeSearch.entries())) {
     const paramName = getParamName(value)

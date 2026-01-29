@@ -1,21 +1,19 @@
-import { UrlString, UrlParts } from '@/types/urlString'
-import { parseUrl } from '@/services/urlParser'
-import { createUrl } from '@/services/urlCreator'
+import { UrlString } from '@/types/urlString'
+import { parseUrl, stringifyUrl, UrlPartsInput } from '@/services/urlParser'
 import { combineUrlSearchParams } from '@/utilities/urlSearchParams'
 import { stringHasValue } from '@/utilities/guards'
 
-export function combineUrl(previous: UrlString | Partial<UrlParts>, updated: UrlString | Partial<UrlParts>): UrlString {
+export function combineUrl(previous: UrlString | UrlPartsInput, updated: UrlString | UrlPartsInput): UrlString {
   const previousUrlParts = typeof previous === 'string' ? parseUrl(previous) : previous
   const updatedUrlParts = typeof updated === 'string' ? parseUrl(updated) : updated
 
-  const previousParams = previousUrlParts.searchParams ?? new URLSearchParams(previousUrlParts.search)
-  const updatedParams = updatedUrlParts.searchParams ?? new URLSearchParams(updatedUrlParts.search)
+  const previousQuery = previousUrlParts.query ?? new URLSearchParams(previousUrlParts.query)
+  const updatedQuery = updatedUrlParts.query ?? new URLSearchParams(updatedUrlParts.query)
 
-  return createUrl({
-    protocol: stringHasValue(updatedUrlParts.protocol) ? updatedUrlParts.protocol : previousUrlParts.protocol,
+  return stringifyUrl({
     host: stringHasValue(updatedUrlParts.host) ? updatedUrlParts.host : previousUrlParts.host,
-    pathname: stringHasValue(updatedUrlParts.pathname) ? updatedUrlParts.pathname : previousUrlParts.pathname,
-    searchParams: combineUrlSearchParams(updatedParams, previousParams),
+    path: stringHasValue(updatedUrlParts.path) ? updatedUrlParts.path : previousUrlParts.path,
+    query: combineUrlSearchParams(updatedQuery, previousQuery),
     hash: stringHasValue(updatedUrlParts.hash) ? updatedUrlParts.hash : previousUrlParts.hash,
   })
 }

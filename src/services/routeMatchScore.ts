@@ -11,7 +11,7 @@ const SORT_BEFORE = -1
 const SORT_AFTER = 1
 
 export function getRouteScoreSortMethod(url: string): RouteSortMethod {
-  const { searchParams: actualQuery, pathname: actualPath } = parseUrl(url)
+  const { query: actualQuery, path: actualPath } = parseUrl(url)
 
   return (aRoute, bRoute) => {
     const preferLowerDepth = sortPreferLowerDepth(aRoute, bRoute)

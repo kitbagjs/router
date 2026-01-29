@@ -14,7 +14,7 @@ export function createResolvedRoute(route: Route, params: Record<string, unknown
     hash: options.hash,
   })
 
-  const { search, hash } = parseUrl(href)
+  const { query, hash } = parseUrl(href)
 
   return {
     id: route.id,
@@ -22,7 +22,7 @@ export function createResolvedRoute(route: Route, params: Record<string, unknown
     matches: route.matches,
     name: route.name,
     hooks: route.hooks,
-    query: createResolvedRouteQuery(search),
+    query: createResolvedRouteQuery(query),
     params: getRouteParamValues(route, href),
     state: getStateValues(route.state, options.state),
     hash,
