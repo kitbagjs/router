@@ -84,9 +84,7 @@ type UrlParamsArgs<
 * @template TUrl - The url type from which to extract and merge parameter types.
 * @returns A record of parameter names to their respective types, extracted and merged from both path and query parameters.
 */
-export type UrlParamsReading<TUrl extends Url> = UrlParams extends TUrl['params']
-  ? {}
-  : ToUrlParamsReading<TUrl['params']>
+export type UrlParamsReading<TUrl extends Url> = ToUrlParamsReading<TUrl['params']>
 
 type ToUrlParamsReading<
   TParams extends UrlParams
@@ -99,7 +97,7 @@ Identity<
         : ExtractParamType<TParam> | undefined
       : TParams[K] extends RequiredParam<infer TParam>
         ? ExtractParamType<TParam>
-        : never
+        : unknown
   }>
 >
 
@@ -109,9 +107,7 @@ Identity<
 * @template TUrl - The url type from which to extract and merge parameter types.
 * @returns A record of parameter names to their respective types, extracted and merged from both path and query parameters.
 */
-export type UrlParamsWriting<TUrl extends Url> = UrlParams extends TUrl['params']
-  ? Record<string, unknown>
-  : ToUrlParamsWriting<TUrl['params']>
+export type UrlParamsWriting<TUrl extends Url> = ToUrlParamsWriting<TUrl['params']>
 
 type ToUrlParamsWriting<
   TParams extends UrlParams
@@ -122,6 +118,6 @@ Identity<
       ? ExtractParamType<TParam> | undefined
       : TParams[K] extends RequiredParam<infer TParam>
         ? ExtractParamType<TParam>
-        : never
+        : unknown
   }>
 >

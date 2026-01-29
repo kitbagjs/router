@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { describe, expectTypeOf, test } from 'vitest'
 import { createRoute } from './createRoute'
-import { Route } from '@/types/route'
 import { Identity } from '@/types/utilities'
 import echo from '@/components/echo'
 import { component } from '@/utilities/testHelpers'
@@ -18,7 +17,7 @@ test('empty options returns an empty route', () => {
 
   type Source = typeof route
 
-  expectTypeOf<Source>().toMatchObjectType<Url<{}>>()
+  expectTypeOf<Source>().toMatchObjectType<Url>()
   expectTypeOf<Source>().toMatchObjectType<InternalRouteHooks<Source>>()
   expectTypeOf<Source>().toMatchObjectType<RouteRedirects>()
 })
