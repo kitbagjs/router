@@ -35,9 +35,9 @@ export function getRouteScore(route: Route, url: string): number {
     return 0
   }
 
-  const { host, path, query, hash } = parseUrl(url)
+  const { host, query, hash } = parseUrl(url)
 
-  const pathScore = getPathScore(route.path.value, path)
+  const pathScore = getPathScore(route.path.value)
   const hostScore = getHostScore(route.host.value, host)
   const hashScore = getHashScore(route.hash.value, hash)
   const queryScore = getQueryScore(route.query.value, query)
@@ -46,7 +46,7 @@ export function getRouteScore(route: Route, url: string): number {
   return BASE_SCORE + pathScore + hostScore + hashScore + queryScore - optionalParamPenalty
 }
 
-function getPathScore(routePath: string, urlPath: string): number {
+function getPathScore(routePath: string): number {
   const staticChars = countStaticChars(routePath)
   return calculateLogScore(staticChars, PATH_MAX_POINTS, PATH_LOG_MAX)
 }

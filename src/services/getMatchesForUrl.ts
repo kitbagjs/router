@@ -1,23 +1,23 @@
-import { routeParamsAreValid } from '@/services/paramValidation'
-import { routeHostMatches, routePathMatches, routeQueryMatches, routeHashMatches } from '@/services/routeMatchRules'
-import { isNamedRoute } from '@/utilities/isNamedRoute'
-import { getRouteScoreSortMethod } from '@/services/routeMatchScore'
 import { Route, Routes } from '@/types/route'
-import { RouteMatchRule } from '@/types/routeMatchRule'
-
-const rules: RouteMatchRule[] = [
-  isNamedRoute,
-  routeHostMatches,
-  routePathMatches,
-  routeQueryMatches,
-  routeHashMatches,
-  routeParamsAreValid,
-]
+import { getRouteScore } from '@/services/getRouteScore'
 
 export function getMatchesForUrl(routes: Routes, url: string): Route[] {
-  const sortByRouteScore = getRouteScoreSortMethod(url)
-
   return routes
-    .filter((route) => rules.every((test) => test(route, url)))
-    .sort(sortByRouteScore)
+    .reduce<[route: Route, score: number][]>((matches, route) => {
+      const score = getRouteScore(route, url)
+      if (score > 0) {
+        matches.push([route, score])
+      }
+      return matches
+    }, [])
+    .sort(sortByScoreThenDepth)
+    .map(([route]) => route)
+}
+
+function sortByScoreThenDepth([aRoute, aScore]: [route: Route, score: number], [bRoute, bScore]: [route: Route, score: number]): number {
+  if (aScore === bScore) {
+    return bRoute.depth - aRoute.depth
+  }
+
+  return bScore - aScore
 }

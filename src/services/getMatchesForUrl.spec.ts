@@ -1,13 +1,7 @@
-import { afterEach, expect, test, vi } from 'vitest'
+import { expect, test } from 'vitest'
 import { createRoute } from '@/services/createRoute'
 import { getMatchesForUrl } from '@/services/getMatchesForUrl'
-import * as utilities from '@/services/routeMatchScore'
-import { Route } from '@/types/route'
 import { component } from '@/utilities/testHelpers'
-
-afterEach(() => {
-  vi.restoreAllMocks()
-})
 
 test('given path WITHOUT params, returns match', () => {
   const parent = createRoute({
@@ -123,32 +117,30 @@ test('given route with simple string query param WITHOUT value present, returns 
   expect(response).toMatchObject([])
 })
 
-test('given route with equal matches, returns route with highest score', () => {
-  vi.spyOn(utilities, 'getRouteScoreSortMethod').mockImplementation(() => {
-    return (route: Route) => {
-      return route.name === 'second-route' ? -1 : 1
-    }
+test('given route with equal matches, returns route with higher depth', () => {
+  const firstRoute = createRoute({
+    name: 'first-route',
+    path: '/',
+    component,
   })
 
-  const routes = [
-    createRoute({
-      name: 'first-route',
-      path: '/',
-      component,
-    }),
-    createRoute({
-      name: 'second-route',
-      path: '/',
-      component,
-    }),
-    createRoute({
-      name: 'third-route',
-      path: '/',
-      component,
-    }),
-  ]
+  const secondRoute = createRoute({
+    parent: firstRoute,
+    name: 'second-route',
+    component,
+  })
 
-  const [match] = getMatchesForUrl(routes, '/')
+  const thirdRoute = createRoute({
+    name: 'third-route',
+    path: '/',
+    component,
+  })
+
+  const [match] = getMatchesForUrl([
+    firstRoute,
+    secondRoute,
+    thirdRoute,
+  ], '/')
 
   expect(match.name).toBe('second-route')
 })
