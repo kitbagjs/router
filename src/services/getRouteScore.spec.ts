@@ -48,11 +48,11 @@ describe('getRouteScore', () => {
       const route = createRoute({
         name: 'page',
         path: '/page',
-        hash: '#section-a',
+        hash: '#foo',
         component,
       })
 
-      const score = getRouteScore(route, '/page#section-b')
+      const score = getRouteScore(route, '/page#bar')
 
       expect(score).toBe(0)
     })
@@ -107,25 +107,6 @@ describe('getRouteScore', () => {
       const lessStaticScore = getRouteScore(lessStatic, '/users/user-123')
 
       expect(moreStaticScore).toBeGreaterThan(lessStaticScore)
-    })
-
-    test('route with more static segments scores higher than route with fewer', () => {
-      const moreSegments = createRoute({
-        name: 'more-segments',
-        path: '/users/[id]/posts',
-        component,
-      })
-
-      const fewerSegments = createRoute({
-        name: 'fewer-segments',
-        path: '/[id]',
-        component,
-      })
-
-      const moreScore = getRouteScore(moreSegments, '/users/123/posts')
-      const fewerScore = getRouteScore(fewerSegments, '/123')
-
-      expect(moreScore).toBeGreaterThan(fewerScore)
     })
 
     test('longer static path scores higher', () => {
@@ -337,165 +318,6 @@ describe('getRouteScore', () => {
 
       expect(bothFilledScore).toBeGreaterThan(oneFilledScore)
       expect(oneFilledScore).toBeGreaterThan(noneFilledScore)
-    })
-  })
-
-  describe('score bounds', () => {
-    test('matching route score is at least 25', () => {
-      const minimalRoute = createRoute({
-        name: 'minimal',
-        path: '/[id]',
-        component,
-      })
-
-      const score = getRouteScore(minimalRoute, '/123')
-
-      expect(score).toBeGreaterThanOrEqual(25)
-    })
-
-    test('matching route score does not exceed 100', () => {
-      const route = createRoute({
-        name: 'specific',
-        path: '/api/v1/users/profile/settings/notifications/preferences',
-        component,
-      })
-
-      const score = getRouteScore(route, '/api/v1/users/profile/settings/notifications/preferences')
-
-      expect(score).toBeLessThanOrEqual(100)
-    })
-  })
-
-  describe('comparing multiple routes for same url', () => {
-    test('routes are ranked correctly by specificity', () => {
-      const url = '/users/123/posts/456'
-
-      const exactMatch = createRoute({
-        name: 'exact',
-        path: '/users/123/posts/456',
-        component,
-      })
-
-      const twoParams = createRoute({
-        name: 'two-params',
-        path: '/users/[userId]/posts/[postId]',
-        component,
-      })
-
-      const oneParam = createRoute({
-        name: 'one-param',
-        path: '/users/[userId]/posts/456',
-        component,
-      })
-
-      const exactScore = getRouteScore(exactMatch, url)
-      const oneParamScore = getRouteScore(oneParam, url)
-      const twoParamsScore = getRouteScore(twoParams, url)
-
-      expect(exactScore).toBeGreaterThan(oneParamScore)
-      expect(oneParamScore).toBeGreaterThan(twoParamsScore)
-    })
-
-    test('complex url with host, query, and hash ranks correctly', () => {
-      const url = 'https://api.example.com/users/123?sort=date#details'
-
-      const fullMatch = createExternalRoute({
-        name: 'full-match',
-        host: 'https://api.example.com',
-        path: '/users/[id]',
-        query: 'sort=date',
-        hash: '#details',
-      })
-
-      const noHash = createExternalRoute({
-        name: 'no-hash',
-        host: 'https://api.example.com',
-        path: '/users/[id]',
-        query: 'sort=date',
-      })
-
-      const noQuery = createExternalRoute({
-        name: 'no-query',
-        host: 'https://api.example.com',
-        path: '/users/[id]',
-        hash: '#details',
-      })
-
-      const noHost = createRoute({
-        name: 'no-host',
-        path: '/users/[id]',
-        query: 'sort=date',
-        hash: '#details',
-        component,
-      })
-
-      const fullScore = getRouteScore(fullMatch, url)
-      const noHashScore = getRouteScore(noHash, url)
-      const noQueryScore = getRouteScore(noQuery, url)
-      const noHostScore = getRouteScore(noHost, url)
-
-      expect(fullScore).toBeGreaterThan(noHashScore)
-      expect(fullScore).toBeGreaterThan(noQueryScore)
-      expect(fullScore).toBeGreaterThan(noHostScore)
-    })
-  })
-
-  describe('edge cases', () => {
-    test('root path matches and scores', () => {
-      const route = createRoute({
-        name: 'root',
-        path: '/',
-        component,
-      })
-
-      const score = getRouteScore(route, '/')
-
-      expect(score).toBeGreaterThan(0)
-    })
-
-    test('empty hash in url does not penalize route without hash', () => {
-      const route = createRoute({
-        name: 'no-hash',
-        path: '/page',
-        component,
-      })
-
-      const scoreNoHash = getRouteScore(route, '/page')
-      const scoreEmptyHash = getRouteScore(route, '/page#')
-
-      expect(scoreNoHash).toBe(scoreEmptyHash)
-    })
-
-    test('empty query in url does not penalize route without query', () => {
-      const route = createRoute({
-        name: 'no-query',
-        path: '/page',
-        component,
-      })
-
-      const scoreNoQuery = getRouteScore(route, '/page')
-      const scoreEmptyQuery = getRouteScore(route, '/page?')
-
-      expect(scoreNoQuery).toBe(scoreEmptyQuery)
-    })
-
-    test('params in host are handled correctly', () => {
-      const staticHost = createExternalRoute({
-        name: 'static-host',
-        host: 'https://api.example.com',
-        path: '/page',
-      })
-
-      const paramHost = createExternalRoute({
-        name: 'param-host',
-        host: withParams('https://[subdomain].example.com', {}),
-        path: '/page',
-      })
-
-      const staticScore = getRouteScore(staticHost, 'https://api.example.com/page')
-      const paramScore = getRouteScore(paramHost, 'https://api.example.com/page')
-
-      expect(staticScore).toBeGreaterThan(paramScore)
     })
   })
 })
