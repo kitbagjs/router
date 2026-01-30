@@ -1,11 +1,12 @@
 import { parseUrl } from '@/services/urlParser'
-import { paramRegex, paramIsOptional } from '@/services/routeRegex'
+import { replaceParamSyntax, optionalParamRegex, getCaptureGroups } from '@/services/routeRegex'
 import { Route } from '@/types/route'
 import { stringHasValue } from '@/utilities/guards'
 import { RouteMatchRule } from '@/types/routeMatchRule'
 import { isNamedRoute } from '@/utilities/isNamedRoute'
 import { routeHostMatches, routePathMatches, routeQueryMatches, routeHashMatches } from '@/services/routeMatchRules'
 import { routeParamsAreValid } from '@/services/paramValidation'
+import { getParamValueFromUrl } from '@/services/paramsFinder'
 
 const BASE_SCORE = 35
 const PATH_MAX_POINTS = 35
@@ -47,7 +48,8 @@ export function getRouteScore(route: Route, url: string): number {
 }
 
 function getPathScore(routePath: string): number {
-  const staticChars = countStaticChars(routePath)
+  const staticChars = replaceParamSyntax(routePath, '').length
+
   return calculateLogScore(staticChars, PATH_MAX_POINTS, PATH_LOG_MAX)
 }
 
@@ -63,7 +65,7 @@ function getHostScore(routeHost: string, urlHost: string | undefined): number {
     return 0
   }
 
-  const staticChars = countStaticChars(routeHost)
+  const staticChars = replaceParamSyntax(routeHost, '').length
   return calculateLogScore(staticChars, HOST_MAX_POINTS, HOST_LOG_MAX)
 }
 
@@ -79,7 +81,7 @@ function getHashScore(routeHash: string, urlHash: string): number {
     return 0
   }
 
-  const staticChars = countStaticChars(routeHash)
+  const staticChars = replaceParamSyntax(routeHash, '').length
   return calculateLogScore(staticChars, HASH_MAX_POINTS, HASH_LOG_MAX)
 }
 
@@ -95,127 +97,47 @@ function getQueryScore(routeQuery: string, urlSearch: URLSearchParams): number {
     return 0
   }
 
-  const staticChars = countStaticChars(routeQuery)
+  const staticChars = replaceParamSyntax(routeQuery, '').length
   return calculateLogScore(staticChars, QUERY_MAX_POINTS, QUERY_LOG_MAX)
 }
 
 function getOptionalParamPenalty(route: Route, url: string): number {
-  const { path, query, hash } = parseUrl(url)
+  const { host, path, query, hash } = parseUrl(url)
+  const hostMissingRatio = host ? getMissingRatioOfOptionalParams(route.host.value, host) : 0
+  const pathMissingRatio = getMissingRatioOfOptionalParams(route.path.value, path)
+  const queryMissingRatio = getMissingRatioOfOptionalQueryParams(route.query.value, query)
+  const hashMissingRatio = getMissingRatioOfOptionalParams(route.hash.value, hash)
+  const missingRatio = hostMissingRatio + pathMissingRatio + queryMissingRatio + hashMissingRatio / 4
 
-  const optionalParams = collectOptionalParams(route)
+  return OPTIONAL_PARAM_MAX_PENALTY * missingRatio
+}
+
+function getMissingRatioOfOptionalParams(value: string, url: string): number {
+  const optionalParams = getCaptureGroups(value, new RegExp(optionalParamRegex, 'g'))
+
   if (optionalParams.length === 0) {
     return 0
   }
 
-  const unfilledCount = countUnfilledOptionalParams(route, optionalParams, path, query, hash)
-  const unfilledRatio = unfilledCount / optionalParams.length
+  const missing = optionalParams.filter((param) => {
+    return !!param && !getParamValueFromUrl(url, { value, params: {} }, param)
+  })
 
-  return OPTIONAL_PARAM_MAX_PENALTY * unfilledRatio
+  return missing.length / optionalParams.length
 }
 
-function collectOptionalParams(route: Route): { name: string, source: 'path' | 'query' | 'hash' | 'host' }[] {
-  const params: { name: string, source: 'path' | 'query' | 'hash' | 'host' }[] = []
+function getMissingRatioOfOptionalQueryParams(value: string, url: URLSearchParams): number {
+  const optionalParams = Array.from(new URLSearchParams(value).entries())
+    .filter(([, value]) => getCaptureGroups(value, new RegExp(optionalParamRegex, 'g')).length > 0)
+    .map(([key]) => key)
 
-  for (const name of Object.keys(route.path.params)) {
-    if (paramIsOptional(route.path, name)) {
-      params.push({ name, source: 'path' })
-    }
+  if (optionalParams.length === 0) {
+    return 0
   }
 
-  for (const name of Object.keys(route.query.params)) {
-    if (paramIsOptional(route.query, name)) {
-      params.push({ name, source: 'query' })
-    }
-  }
+  const missing = optionalParams.filter((param) => !url.has(param))
 
-  for (const name of Object.keys(route.hash.params)) {
-    if (paramIsOptional(route.hash, name)) {
-      params.push({ name, source: 'hash' })
-    }
-  }
-
-  for (const name of Object.keys(route.host.params)) {
-    if (paramIsOptional(route.host, name)) {
-      params.push({ name, source: 'host' })
-    }
-  }
-
-  return params
-}
-
-function countUnfilledOptionalParams(
-  route: Route,
-  optionalParams: { name: string, source: 'path' | 'query' | 'hash' | 'host' }[],
-  path: string,
-  query: URLSearchParams,
-  hash: string,
-): number {
-  let unfilled = 0
-
-  for (const { name, source } of optionalParams) {
-    const isFilled = isOptionalParamFilled(route, name, source, path, query, hash)
-    if (!isFilled) {
-      unfilled++
-    }
-  }
-
-  return unfilled
-}
-
-function isOptionalParamFilled(
-  route: Route,
-  paramName: string,
-  source: 'path' | 'query' | 'hash' | 'host',
-  path: string,
-  query: URLSearchParams,
-  hash: string,
-): boolean {
-  if (source === 'query') {
-    const routeQuery = new URLSearchParams(route.query.value)
-    const urlQuery = new URLSearchParams(query)
-
-    for (const [key, value] of routeQuery.entries()) {
-      if (value.includes(`[?${paramName}]`)) {
-        return urlQuery.has(key) && stringHasValue(urlQuery.get(key) ?? '')
-      }
-    }
-    return false
-  }
-
-  if (source === 'path') {
-    const pattern = route.path.value.replace(new RegExp(paramRegex, 'g'), '(.*)')
-    const regex = new RegExp(`^${pattern}$`, 'i')
-    const match = path.match(regex)
-    if (!match) {
-      return false
-    }
-
-    const paramMatches = Array.from(route.path.value.matchAll(new RegExp(paramRegex, 'g')))
-    const paramIndex = paramMatches.findIndex((m) => m[0].includes(paramName))
-    return paramIndex !== -1 && stringHasValue(match[paramIndex + 1])
-  }
-
-  if (source === 'hash') {
-    const cleanHash = hash.replace(/^#/, '')
-    const cleanRouteHash = route.hash.value.replace(/^#/, '')
-    const pattern = cleanRouteHash.replace(new RegExp(paramRegex, 'g'), '(.*)')
-    const regex = new RegExp(`^${pattern}$`, 'i')
-    const match = cleanHash.match(regex)
-    if (!match) {
-      return false
-    }
-
-    const paramMatches = Array.from(cleanRouteHash.matchAll(new RegExp(paramRegex, 'g')))
-    const paramIndex = paramMatches.findIndex((m) => m[0].includes(paramName))
-    return paramIndex !== -1 && stringHasValue(match[paramIndex + 1])
-  }
-
-  return true
-}
-
-function countStaticChars(pattern: string): number {
-  const withoutParams = pattern.replace(new RegExp(paramRegex, 'g'), '')
-  return withoutParams.length
+  return missing.length / optionalParams.length
 }
 
 function calculateLogScore(staticChars: number, maxPoints: number, logMax: number): number {
@@ -224,5 +146,6 @@ function calculateLogScore(staticChars: number, maxPoints: number, logMax: numbe
   }
 
   const score = maxPoints * (Math.log(staticChars + 1) / Math.log(logMax))
+
   return Math.min(maxPoints, score)
 }
