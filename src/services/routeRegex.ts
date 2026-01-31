@@ -80,11 +80,7 @@ export function replaceParamSyntaxWithCatchAllsAndEscapeRest(value: string): str
 }
 
 export function replaceParamSyntaxWithCatchAlls(value: string): string {
-  return replaceParamSyntax(value, regexCatchAll)
-}
-
-export function replaceParamSyntax(value: string, replacement: string): string {
-  return value.replace(new RegExp(paramRegex, 'g'), replacement)
+  return value.replace(new RegExp(paramRegex, 'g'), regexCatchAll)
 }
 
 export function replaceIndividualParamWithCaptureGroup(path: string, paramName: string): string {
