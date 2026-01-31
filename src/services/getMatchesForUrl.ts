@@ -4,21 +4,17 @@ import { routePathMatches, routeHostMatches, routeQueryMatches, routeHashMatches
 import { routeParamsAreValid } from '@/services/paramValidation'
 import { isNamedRoute } from '@/utilities/isNamedRoute'
 
+const rules: RouteMatchRule[] = [
+  isNamedRoute,
+  routeHostMatches,
+  routePathMatches,
+  routeQueryMatches,
+  routeHashMatches,
+  routeParamsAreValid,
+]
+
 export function getMatchForUrl(routes: Routes, url: string, isExternal: boolean = false): Route | undefined {
   return routes
     .filter((route) => !!route.host.value === isExternal)
-    .find((route) => routeMatches(route, url))
-}
-
-function routeMatches(route: Route, url: string): boolean {
-  const matchRules: RouteMatchRule[] = [
-    isNamedRoute,
-    routeHostMatches,
-    routePathMatches,
-    routeQueryMatches,
-    routeHashMatches,
-    routeParamsAreValid,
-  ]
-
-  return matchRules.every((rule) => rule(route, url))
+    .find((route) => rules.every((rule) => rule(route, url)))
 }
