@@ -1,13 +1,8 @@
-import { afterEach, expect, test, vi } from 'vitest'
+import { expect, test } from 'vitest'
 import { createRoute } from '@/services/createRoute'
-import { getMatchesForUrl } from '@/services/getMatchesForUrl'
-import * as utilities from '@/services/routeMatchScore'
-import { Route } from '@/types/route'
+import { getMatchForUrl } from '@/services/getMatchesForUrl'
+import { createExternalRoute } from '@/services/createExternalRoute'
 import { component } from '@/utilities/testHelpers'
-
-afterEach(() => {
-  vi.restoreAllMocks()
-})
 
 test('given path WITHOUT params, returns match', () => {
   const parent = createRoute({
@@ -30,10 +25,11 @@ test('given path WITHOUT params, returns match', () => {
 
   const routes = [parent, child, grandchild]
 
-  const [match] = getMatchesForUrl(routes, '/parent/child/grandchild')
+  const match = getMatchForUrl(routes, '/parent/child/grandchild')
 
-  expect(match.name).toBe('parent.child.grandchild')
-  expect(match.matched.name).toBe('parent.child.grandchild')
+  expect(match).toBeDefined()
+  expect(match?.name).toBe('parent.child.grandchild')
+  expect(match?.matched.name).toBe('parent.child.grandchild')
 })
 
 test('given path to unnamed parent, without option to get to leaf, returns no matches', () => {
@@ -54,9 +50,9 @@ test('given path to unnamed parent, without option to get to leaf, returns no ma
 
   const routes = [unnamedParent, unnamedChild, namedGrandchild]
 
-  const match = getMatchesForUrl(routes, '/unnamed')
+  const match = getMatchForUrl(routes, '/unnamed')
 
-  expect(match).toMatchObject([])
+  expect(match).toBeUndefined()
 })
 
 test('given path to unnamed  parent, with option to get to leaf, returns available leaf', () => {
@@ -71,33 +67,10 @@ test('given path to unnamed  parent, with option to get to leaf, returns availab
   })
 
   const routes = [unnamedChildRoot, unnamedParent]
-  const [match] = getMatchesForUrl(routes, '/unnamed')
+  const match = getMatchForUrl(routes, '/unnamed')
 
-  expect(match.name).toBe('child-root')
-})
-
-test('given path that includes named parent and path to leaf, return first match', () => {
-  const namedParent = createRoute({
-    name: 'namedParent',
-    path: '/named-parent',
-  })
-
-  const namedChild = createRoute({
-    parent: namedParent,
-    name: 'namedParent.namedChild',
-  })
-
-  const namedGrandchild = createRoute({
-    parent: namedChild,
-    name: 'namedParent.namedChild.namedGrandchild',
-    component,
-  })
-
-  const routes = [namedParent, namedChild, namedGrandchild]
-  const [match] = getMatchesForUrl(routes, '/named-parent')
-
-  expect(match.name).toBe('namedParent.namedChild.namedGrandchild')
-  expect(match.matched.name).toBe('namedParent.namedChild.namedGrandchild')
+  expect(match).toBeDefined()
+  expect(match?.name).toBe('child-root')
 })
 
 test('given route with simple string param WITHOUT value present, returns no matches', () => {
@@ -106,9 +79,9 @@ test('given route with simple string param WITHOUT value present, returns no mat
     path: '/simple/[simple]',
     component,
   })
-  const response = getMatchesForUrl([route], '/simple/')
+  const response = getMatchForUrl([route], '/simple/')
 
-  expect(response).toMatchObject([])
+  expect(response).toBeUndefined()
 })
 
 test('given route with simple string query param WITHOUT value present, returns no matches', () => {
@@ -118,37 +91,56 @@ test('given route with simple string query param WITHOUT value present, returns 
     query: 'simple=[simple]',
     component,
   })
-  const response = getMatchesForUrl([route], '/missing?without=params')
+  const response = getMatchForUrl([route], '/missing?without=params')
 
-  expect(response).toMatchObject([])
+  expect(response).toBeUndefined()
 })
 
-test('given route with equal matches, returns route with highest score', () => {
-  vi.spyOn(utilities, 'getRouteScoreSortMethod').mockImplementation(() => {
-    return (route: Route) => {
-      return route.name === 'second-route' ? -1 : 1
-    }
+test('given route with equal matches, returns first match', () => {
+  const firstRoute = createRoute({
+    name: 'first-route',
+    path: '/',
+    component,
   })
 
-  const routes = [
-    createRoute({
-      name: 'first-route',
-      path: '/',
-      component,
-    }),
-    createRoute({
-      name: 'second-route',
-      path: '/',
-      component,
-    }),
-    createRoute({
-      name: 'third-route',
-      path: '/',
-      component,
-    }),
-  ]
+  const secondRoute = createRoute({
+    parent: firstRoute,
+    name: 'second-route',
+    component,
+  })
 
-  const [match] = getMatchesForUrl(routes, '/')
+  const thirdRoute = createRoute({
+    name: 'third-route',
+    path: '/',
+    component,
+  })
 
-  expect(match.name).toBe('second-route')
+  const match = getMatchForUrl([
+    firstRoute,
+    secondRoute,
+    thirdRoute,
+  ], '/')
+
+  expect(match).toBeDefined()
+  expect(match?.name).toBe('first-route')
+})
+
+test('given isExternal true, only sends external routes to be matched', () => {
+  const externalRoute = createExternalRoute({
+    name: 'external',
+    path: '/',
+    host: 'https://example.com',
+  })
+
+  const internalRoute = createRoute({
+    name: 'internal',
+    path: '/',
+  })
+
+  const routes = [externalRoute, internalRoute]
+  const isExternalMatch = getMatchForUrl(routes, 'https://example.com/', true)
+  const isInternalMatch = getMatchForUrl(routes, 'https://example.com/', false)
+
+  expect(isExternalMatch?.name).toBe('external')
+  expect(isInternalMatch?.name).toBe('internal')
 })

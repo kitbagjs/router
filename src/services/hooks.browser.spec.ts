@@ -202,7 +202,7 @@ test('external route hooks are called correctly', async () => {
   expect(internalHooks.afterEnter).toHaveBeenCalledTimes(1)
   expect(externalHooks.beforeEnter).toHaveBeenCalledTimes(0)
 
-  await router.push('external', { param: 'param2' })
+  await router.push('external')
 
   expect(internalHooks.beforeEnter).toHaveBeenCalledTimes(1)
   expect(internalHooks.beforeUpdate).toHaveBeenCalledTimes(0)

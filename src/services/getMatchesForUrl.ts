@@ -1,9 +1,8 @@
-import { routeParamsAreValid } from '@/services/paramValidation'
-import { routeHostMatches, routePathMatches, routeQueryMatches, routeHashMatches } from '@/services/routeMatchRules'
-import { isNamedRoute } from '@/utilities/isNamedRoute'
-import { getRouteScoreSortMethod } from '@/services/routeMatchScore'
 import { Route, Routes } from '@/types/route'
 import { RouteMatchRule } from '@/types/routeMatchRule'
+import { routePathMatches, routeHostMatches, routeQueryMatches, routeHashMatches } from '@/services/routeMatchRules'
+import { routeParamsAreValid } from '@/services/paramValidation'
+import { isNamedRoute } from '@/utilities/isNamedRoute'
 
 const rules: RouteMatchRule[] = [
   isNamedRoute,
@@ -14,10 +13,8 @@ const rules: RouteMatchRule[] = [
   routeParamsAreValid,
 ]
 
-export function getMatchesForUrl(routes: Routes, url: string): Route[] {
-  const sortByRouteScore = getRouteScoreSortMethod(url)
-
+export function getMatchForUrl(routes: Routes, url: string, isExternal: boolean = false): Route | undefined {
   return routes
-    .filter((route) => rules.every((test) => test(route, url)))
-    .sort(sortByRouteScore)
+    .filter((route) => !!route.host.value === isExternal)
+    .find((route) => rules.every((rule) => rule(route, url)))
 }

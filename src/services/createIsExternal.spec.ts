@@ -12,7 +12,7 @@ test('given undefined host, returns true', () => {
 })
 
 test('given host with url that matches, returns false', () => {
-  const host = 'router.kitbag.dev'
+  const host = 'https://router.kitbag.dev'
   const url = 'https://router.kitbag.dev/introduction.html#introduction'
 
   const isExternal = createIsExternal(host)
@@ -22,7 +22,7 @@ test('given host with url that matches, returns false', () => {
 })
 
 test('given host with url that does NOT match, returns true', () => {
-  const host = 'github.com'
+  const host = 'https://github.com'
   const url = 'https://router.kitbag.dev/introduction.html#introduction'
 
   const isExternal = createIsExternal(host)

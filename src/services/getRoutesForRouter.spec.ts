@@ -1,4 +1,4 @@
-import { expect, test } from 'vitest'
+import { describe, expect, test } from 'vitest'
 import { createRoute } from '@/services/createRoute'
 import { getRoutesForRouter } from '@/services/getRoutesForRouter'
 import { component } from '@/utilities'
@@ -80,26 +80,46 @@ test('given named routes inside route context of plugin routes, includes them in
   ])
 })
 
-test('circular context is ignored', () => {
+test('return routes sorted by depth', () => {
   const routeA = createRoute({ name: 'a' })
-  const routeB = createRoute({ name: 'b', context: [routeA] })
+  const routeB = createRoute({ name: 'b', parent: routeA })
+  const routeC = createRoute({ name: 'c', parent: routeB })
+  const routeD = createRoute({ name: 'd', parent: routeA })
+  const routeE = createRoute({ name: 'e' })
 
-  // @ts-expect-error - you cannot actually do this
-  routeA.context.push(routeB)
-  routeB.context.push(routeA)
+  const { routes } = getRoutesForRouter([routeA, routeB, routeC, routeD, routeE])
 
-  expect(() => getRoutesForRouter([routeA, routeB])).not.toThrow()
+  expect(routes.map((route) => route.name)).toMatchObject([
+    'c',
+    'b',
+    'd',
+    'a',
+    'e',
+  ])
 })
 
-test('getRouteByName returns the route by name', () => {
-  const route = createRoute({ name: 'foo' })
-  const { getRouteByName } = getRoutesForRouter([route])
+describe('getRouteByName', () => {
+  test('circular context is ignored', () => {
+    const routeA = createRoute({ name: 'a' })
+    const routeB = createRoute({ name: 'b', context: [routeA] })
 
-  expect(getRouteByName('foo')).toBe(route)
-})
+    // @ts-expect-error - you cannot actually do this
+    routeA.context.push(routeB)
+    routeB.context.push(routeA)
 
-test('getRouteByName returns undefined if the route is not found', () => {
-  const { getRouteByName } = getRoutesForRouter([])
+    expect(() => getRoutesForRouter([routeA, routeB])).not.toThrow()
+  })
 
-  expect(getRouteByName('foo')).toBeUndefined()
+  test('returns the route by name', () => {
+    const route = createRoute({ name: 'foo' })
+    const { getRouteByName } = getRoutesForRouter([route])
+
+    expect(getRouteByName('foo')).toBe(route)
+  })
+
+  test('getRouteByName returns undefined if the route is not found', () => {
+    const { getRouteByName } = getRoutesForRouter([])
+
+    expect(getRouteByName('foo')).toBeUndefined()
+  })
 })

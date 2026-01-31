@@ -2,7 +2,7 @@ import { createPath } from 'history'
 import { App, ref } from 'vue'
 import { createCurrentRoute } from '@/services/createCurrentRoute'
 import { createIsExternal } from '@/services/createIsExternal'
-import { parseUrl } from '@/services/urlParser'
+import { parseUrl, updateUrl } from '@/services/urlParser'
 import { createPropStore } from '@/services/createPropStore'
 import { createRouterHistory } from '@/services/createRouterHistory'
 import { createRouterHooks, getRouterHooksKey } from '@/services/createRouterHooks'
@@ -14,7 +14,7 @@ import { Router, RouterOptions } from '@/types/router'
 import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { RouterReplace, RouterReplaceOptions } from '@/types/routerReplace'
 import { RoutesName } from '@/types/routesMap'
-import { UrlString, isUrlString } from '@/types/urlString'
+import { UrlString, asUrlString, isUrlString } from '@/types/urlString'
 import { createUniqueIdSequence, isFirstUniqueSequenceId } from '@/services/createUniqueIdSequence'
 import { createVisibilityObserver } from './createVisibilityObserver'
 import { visibilityObserverKey } from '@/compositions/useVisibilityObserver'
@@ -22,8 +22,6 @@ import { RouterResolve, RouterResolveOptions } from '@/types/routerResolve'
 import { RouteNotFoundError } from '@/errors/routeNotFoundError'
 import { createResolvedRoute } from '@/services/createResolvedRoute'
 import { ResolvedRoute } from '@/types/resolved'
-import { createResolvedRouteForUrl } from '@/services/createResolvedRouteForUrl'
-import { combineUrl } from '@/services/urlCombine'
 import { RouterReject } from '@/types/routerReject'
 import { EmptyRouterPlugin, RouterPlugin } from '@/types/routerPlugin'
 import { getRoutesForRouter } from './getRoutesForRouter'
@@ -39,6 +37,7 @@ import { createRouterLink } from '@/components/routerLink'
 import { ContextPushError } from '@/errors/contextPushError'
 import { ContextRejectionError } from '@/errors/contextRejectionError'
 import { setupRouterDevtools } from '@/devtools/createRouterDevtools'
+import { getMatchForUrl } from './getMatchesForUrl'
 
 type RouterUpdateOptions = {
   replace?: boolean,
@@ -110,7 +109,13 @@ export function createRouter<
   })
 
   function find(url: string, options: RouterResolveOptions = {}): ResolvedRoute | undefined {
-    return createResolvedRouteForUrl(routes, url, options.state)
+    const match = getMatchForUrl(routes, url, isExternal(url))
+
+    if (!match) {
+      return undefined
+    }
+
+    return createResolvedRoute(match, asUrlString(url), options)
   }
 
   async function set(url: string, options: RouterUpdateOptions = {}): Promise<void> {
@@ -245,8 +250,8 @@ export function createRouter<
   ) => {
     if (isUrlString(source)) {
       const options: RouterPushOptions = { ...paramsOrOptions }
-      const url = combineUrl(source, {
-        searchParams: options.query,
+      const url = updateUrl(source, {
+        query: options.query,
         hash: options.hash,
       })
 
@@ -265,8 +270,8 @@ export function createRouter<
     const { replace, ...options }: RouterPushOptions = { ...paramsOrOptions }
     const state = setStateValues({ ...source.matched.state }, { ...source.state, ...options.state })
 
-    const url = combineUrl(source.href, {
-      searchParams: options.query,
+    const url = updateUrl(source.href, {
+      query: options.query,
       hash: options.hash,
     })
 

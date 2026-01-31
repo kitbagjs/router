@@ -1,20 +1,29 @@
-import { ResolvedRoute } from '@/types/resolved'
-import { Route } from '@/types/route'
 import { parseUrl } from '@/services/urlParser'
 import { assembleUrl } from '@/services/urlAssembly'
-import { RouterResolveOptions } from '@/types/routerResolve'
 import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
 import { getStateValues } from '@/services/state'
-import { getRouteParamValues } from './paramValidation'
+import { getRouteParamValues } from '@/services/paramValidation'
+import { RouterResolveOptions } from '@/types/routerResolve'
+import { UrlString } from '@/types/urlString'
+import { ResolvedRoute } from '@/types/resolved'
+import { Route } from '@/types/route'
 
-export function createResolvedRoute(route: Route, params: Record<string, unknown> = {}, options: RouterResolveOptions = {}): ResolvedRoute {
-  const href = assembleUrl(route, {
-    params: params,
-    query: options.query,
-    hash: options.hash,
-  })
+export function createResolvedRoute(route: Route, url: UrlString, options?: RouterResolveOptions): ResolvedRoute
+export function createResolvedRoute(route: Route, params?: Record<string, unknown>, options?: RouterResolveOptions): ResolvedRoute
+export function createResolvedRoute(route: Route, ulrOrParams: UrlString | Record<string, unknown> = {}, options: RouterResolveOptions = {}): ResolvedRoute {
+  if (typeof ulrOrParams !== 'string') {
+    const href = assembleUrl(route, {
+      params: ulrOrParams,
+      query: options.query,
+      hash: options.hash,
+    })
 
-  const { search, hash } = parseUrl(href)
+    return createResolvedRoute(route, href, options)
+  }
+
+  const href = ulrOrParams
+  const params = getRouteParamValues(route, href)
+  const { query, hash } = parseUrl(href)
 
   return {
     id: route.id,
@@ -22,10 +31,10 @@ export function createResolvedRoute(route: Route, params: Record<string, unknown
     matches: route.matches,
     name: route.name,
     hooks: route.hooks,
-    query: createResolvedRouteQuery(search),
-    params: getRouteParamValues(route, href),
+    query: createResolvedRouteQuery(query),
     state: getStateValues(route.state, options.state),
     hash,
+    params,
     href,
   }
 }

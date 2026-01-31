@@ -3,8 +3,7 @@ import { setParamValueOnUrl } from '@/services/paramsFinder'
 import { getParamName, isOptionalParamSyntax } from '@/services/routeRegex'
 import { Route } from '@/types/route'
 import { UrlString } from '@/types/urlString'
-import { createUrl } from '@/services/urlCreator'
-import { parseUrl } from '@/services/urlParser'
+import { parseUrl, stringifyUrl } from '@/services/urlParser'
 import { combineUrlSearchParams } from '@/utilities/urlSearchParams'
 import { QuerySource } from '@/types/querySource'
 import { WithParams } from '@/services/withParams'
@@ -18,14 +17,14 @@ type AssembleUrlOptions = {
 export function assembleUrl(route: Route, options: AssembleUrlOptions = {}): UrlString {
   const { params: paramValues = {}, query: queryValues } = options
   const routeQuery = assembleQueryParamValues(route.query, paramValues)
-  const searchParams = combineUrlSearchParams(routeQuery, queryValues)
-  const pathname = assemblePathParamValues(route.path, paramValues)
+  const query = combineUrlSearchParams(routeQuery, queryValues)
+  const path = assemblePathParamValues(route.path, paramValues)
   const hash = route.hash.value ? assemblePathParamValues(route.hash, paramValues) : options.hash
 
   const hostWithParamsSet = assembleHostParamValues(route.host, paramValues)
-  const { protocol, host } = parseUrl(hostWithParamsSet)
+  const { host } = parseUrl(hostWithParamsSet)
 
-  return createUrl({ protocol, host, pathname, searchParams, hash })
+  return stringifyUrl({ host, path, query, hash })
 }
 
 function assembleHostParamValues(host: WithParams, paramValues: Record<string, unknown>): string {
