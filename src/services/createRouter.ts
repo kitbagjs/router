@@ -2,7 +2,7 @@ import { createPath } from 'history'
 import { App, ref } from 'vue'
 import { createCurrentRoute } from '@/services/createCurrentRoute'
 import { createIsExternal } from '@/services/createIsExternal'
-import { parseUrl } from '@/services/urlParser'
+import { parseUrl, updateUrl } from '@/services/urlParser'
 import { createPropStore } from '@/services/createPropStore'
 import { createRouterHistory } from '@/services/createRouterHistory'
 import { createRouterHooks, getRouterHooksKey } from '@/services/createRouterHooks'
@@ -22,7 +22,6 @@ import { RouterResolve, RouterResolveOptions } from '@/types/routerResolve'
 import { RouteNotFoundError } from '@/errors/routeNotFoundError'
 import { createResolvedRoute } from '@/services/createResolvedRoute'
 import { ResolvedRoute } from '@/types/resolved'
-import { combineUrl } from '@/services/urlCombine'
 import { RouterReject } from '@/types/routerReject'
 import { EmptyRouterPlugin, RouterPlugin } from '@/types/routerPlugin'
 import { getRoutesForRouter } from './getRoutesForRouter'
@@ -251,7 +250,7 @@ export function createRouter<
   ) => {
     if (isUrlString(source)) {
       const options: RouterPushOptions = { ...paramsOrOptions }
-      const url = combineUrl(source, {
+      const url = updateUrl(source, {
         query: options.query,
         hash: options.hash,
       })
@@ -271,7 +270,7 @@ export function createRouter<
     const { replace, ...options }: RouterPushOptions = { ...paramsOrOptions }
     const state = setStateValues({ ...source.matched.state }, { ...source.state, ...options.state })
 
-    const url = combineUrl(source.href, {
+    const url = updateUrl(source.href, {
       query: options.query,
       hash: options.hash,
     })
