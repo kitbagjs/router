@@ -1,19 +1,21 @@
 import { parseUrl, stringifyUrl } from '@/services/urlParser'
 
 /**
- * Removes any trailing slashes from the path of a URL, preserving a single leading slash when the path would otherwise become empty (e.g. `/` → `/`).
- * Parses the URL into parts, trims the pathname only, then reassembles. Works for both path-only URLs (`/foo/bar/`) and full URLs (`https://kitbag.dev/foo/`).
+ * Path that starts with / and has one or more trailing slashes (excludes bare `/`). Capture group is path without trailing slashes.
+ * */
+const trailingSlashesRegex = /^(\/.+?)\/+$/
+
+/**
+ * Removes any trailing slashes from the path of a URL (e.g. `/foo/bar/` → `/foo/bar`). Path `/` is unchanged.
+ * Parses the URL into parts, trims the pathname only, then reassembles. Works for both path-only URLs and full URLs.
  */
 export function removeTrailingSlashesFromPath(url: string): string {
   const { path, ...parts } = parseUrl(url)
 
-  const trimmed = path.replace(/\/+$/, '')
-
-  if (trimmed === '' && path.startsWith('/')) {
-    return stringifyUrl({ ...parts, path: '/' })
-  }
-
-  return stringifyUrl({ ...parts, path: trimmed })
+  return stringifyUrl({
+    ...parts,
+    path: path.replace(trailingSlashesRegex, '$1'),
+  })
 }
 
 /**
@@ -23,5 +25,5 @@ export function removeTrailingSlashesFromPath(url: string): string {
 export function pathHasTrailingSlash(url: string): boolean {
   const { path } = parseUrl(url)
 
-  return path.endsWith('/') && path !== '/'
+  return trailingSlashesRegex.test(path)
 }
