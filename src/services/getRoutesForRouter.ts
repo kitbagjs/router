@@ -67,7 +67,7 @@ export function getRoutesForRouter(routes: Routes | Routes[], plugins: RouterPlu
   }
 
   return {
-    routes: Array.from(routerRoutes.values()),
+    routes: Array.from(routerRoutes.values()).sort(sortByDepthDescending),
     getRouteByName: (name: string) => routerRoutes.get(name),
   }
 }
@@ -78,4 +78,8 @@ function contextIsRoute(context: RouteContext): context is Route {
 
 function isRoutes(routes: Routes | Route): routes is Routes {
   return Array.isArray(routes)
+}
+
+function sortByDepthDescending(aRoute: Route, bRoute: Route): number {
+  return bRoute.depth - aRoute.depth
 }
