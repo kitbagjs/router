@@ -823,3 +823,65 @@ describe('router.onError', () => {
     }))
   })
 })
+
+describe('options.removeTrailingSlashes', () => {
+  const foo = createRoute({
+    name: 'foo',
+    component,
+    path: '/foo',
+  })
+
+  const fooWithTrailingSlash = createRoute({
+    name: 'fooWithTrailingSlash',
+    component,
+    path: '/foo/',
+  })
+
+  const bar = createRoute({
+    name: 'bar',
+    component,
+    path: '/bar',
+  })
+
+  test('when true, removes trailing slashes from the path', async () => {
+    const router = createRouter([foo, fooWithTrailingSlash, bar], {
+      initialUrl: '/foo/',
+      removeTrailingSlashes: true,
+    })
+
+    await router.start()
+
+    // trims the trailing slash from the initial url
+    expect(router.route.href).toBe('/foo')
+
+    await router.push('/bar/')
+
+    // trims the trailing slash from the path
+    expect(router.route.href).toBe('/bar')
+
+    await router.push('fooWithTrailingSlash')
+
+    // trims the trailing slash from the path
+    expect(router.route.href).toBe('/foo')
+  })
+
+  test('when false, does not remove trailing slashes from the path', async () => {
+    const router = createRouter([foo, fooWithTrailingSlash, bar], {
+      initialUrl: '/foo/',
+      removeTrailingSlashes: false,
+    })
+
+    await router.start()
+
+    expect(router.route.href).toBe('/foo/')
+
+    await router.push('fooWithTrailingSlash')
+
+    expect(router.route.href).toBe('/foo/')
+
+    await router.push('/bar/')
+
+    // rejects so has an empty path
+    expect(router.route.href).toBe('/')
+  })
+})

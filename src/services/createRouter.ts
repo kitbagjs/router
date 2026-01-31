@@ -38,6 +38,7 @@ import { ContextPushError } from '@/errors/contextPushError'
 import { ContextRejectionError } from '@/errors/contextRejectionError'
 import { setupRouterDevtools } from '@/devtools/createRouterDevtools'
 import { getMatchForUrl } from './getMatchesForUrl'
+import { pathHasTrailingSlash, removeTrailingSlashesFromPath } from '@/utilities/trailingSlashes'
 
 type RouterUpdateOptions = {
   replace?: boolean,
@@ -90,6 +91,7 @@ export function createRouter<
     ...plugins.flatMap((plugin) => plugin.rejections),
     ...options?.rejections ?? [],
   ]
+  const shouldRemoveTrailingSlashes = options?.removeTrailingSlashes ?? true
   const { routes, getRouteByName } = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options?.base)
   const hooks = createRouterHooks()
 
@@ -119,6 +121,14 @@ export function createRouter<
   }
 
   async function set(url: string, options: RouterUpdateOptions = {}): Promise<void> {
+    if (pathHasTrailingSlash(url) && shouldRemoveTrailingSlashes) {
+      const cleanedUrl = removeTrailingSlashesFromPath(url)
+
+      if (isUrlString(cleanedUrl)) {
+        return replace(cleanedUrl, options)
+      }
+    }
+
     const navigationId = getNavigationId()
 
     history.stopListening()
