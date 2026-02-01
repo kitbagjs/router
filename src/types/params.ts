@@ -56,9 +56,12 @@ export function isLiteralParam(value: Param): value is LiteralParam {
  * @template TValue - The value of the parameter.
  * @returns True if the value is an optional parameter template.
  */
-export type IsOptionalParamTemplate<TKey extends string, TValue extends string> = TValue extends `${string}${ParamStart}?${TKey}${ParamEnd}${string}`
-  ? true
-  : false
+export type IsOptionalParamTemplate<TKey extends string, TValue extends string> =
+  TValue extends `${string}${ParamStart}?${TKey}${ParamEnd}${string}`
+    ? true
+    : TValue extends `${string}${ParamStart}?${TKey}*${ParamEnd}${string}`
+      ? true
+      : false
 
 /**
  * Extracts the parameter name from a string, handling optional parameters denoted by a leading '?'.
@@ -71,10 +74,14 @@ export type ExtractParamName<
   ? TParam extends `?${infer Param}`
     ? Param extends ''
       ? never
-      : Param
+      : Param extends `${infer Name}*`
+        ? Name
+        : Param
     : TParam extends ''
       ? never
-      : TParam
+      : TParam extends `${infer Name}*`
+        ? Name
+        : TParam
   : never
 
 /**

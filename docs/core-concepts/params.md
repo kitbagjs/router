@@ -28,6 +28,20 @@ const events = createRoute({
 })
 ```
 
+## Eager Params
+
+By default, a path param matches only up to the next `/` (a single path segment). For example, the path `/photos/[date]` matches `/photos/2026` (param is `"2026"`) but not `/photos/2026/01`.
+
+An **eager param** matches across one or more path segments (including `/`). Add a `*` after the param name: `[param*]` or `[?param*]`. The path `/photos/[date*]` then matches both `/photos/2026` (param is `"2026"`) and `/photos/2026/01` (param is `"2026/01`).
+
+```ts {3}
+const route = createRoute({
+  name: 'photos',
+  path: '/photos/[date*]',
+})
+
+Use eager params when a param value can contain slashes (e.g. file paths or encoded segments).
+
 ## Param Types
 
 By default all params are strings. However, using the `withParams` utility, you can assign different param types.

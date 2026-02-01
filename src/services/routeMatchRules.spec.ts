@@ -137,10 +137,21 @@ describe('routePathMatches', () => {
     expect(response).toBe(true)
   })
 
-  test('given route with extra slashes in param value, does match', () => {
+  test('given route with extra slashes in param value, does not match', () => {
     const route = createRoute({
       name: 'support-slashes',
       path: '/supports/[slashes]/bookmarked',
+      component,
+    })
+    const response = routePathMatches(route, '/supports/first/second/third/bookmarked')
+
+    expect(response).toBe(false)
+  })
+
+  test('given route with extra slashes in eager param value, does match', () => {
+    const route = createRoute({
+      name: 'support-slashes',
+      path: '/supports/[slashes*]/bookmarked',
       component,
     })
     const response = routePathMatches(route, '/supports/first/second/third/bookmarked')
