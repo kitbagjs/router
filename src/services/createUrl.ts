@@ -150,7 +150,7 @@ function getParams(path: WithParams, url: string): Record<string, unknown> {
 
   for (const [name, param] of Object.entries(path.params)) {
     const stringValue = getParamValueFromUrl(decodedValueFromUrl, path, name)
-    const isOptional = paramIsOptional(path, name)
+    const isOptional = paramIsOptional(path.value, name)
     const paramValue = getParamValue(stringValue, param, isOptional)
 
     values[name] = paramValue

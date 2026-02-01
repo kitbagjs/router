@@ -3,7 +3,7 @@ import { getCaptureGroups, getParamRegexPattern, paramIsOptional, replaceIndivid
 import { WithParams } from './withParams'
 
 export function getParamValueFromUrl(url: string, path: WithParams, paramName: string): string | undefined {
-  const paramNameCaptureGroup = replaceIndividualParamWithCaptureGroup(path, paramName)
+  const paramNameCaptureGroup = replaceIndividualParamWithCaptureGroup(path.value, paramName)
   const otherParamsCatchAll = replaceParamSyntaxWithCatchAlls(paramNameCaptureGroup)
 
   const [paramValue] = getCaptureGroups(url, new RegExp(otherParamsCatchAll, 'g'))
@@ -12,7 +12,7 @@ export function getParamValueFromUrl(url: string, path: WithParams, paramName: s
 }
 
 export function setParamValueOnUrl(url: string, path: WithParams, paramName: string, value: unknown): string {
-  const isOptional = paramIsOptional(path, paramName)
+  const isOptional = paramIsOptional(path.value, paramName)
   const paramValue = setParamValue(value, path.params[paramName], isOptional)
 
   return url.replace(getParamRegexPattern(paramName), paramValue)
