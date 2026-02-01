@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest'
 import { createRoute } from '@/services/createRoute'
-import { generateRouteHostRegexPattern, generateRoutePathRegexPattern, generateRouteQueryRegexPatterns, getParamName, regexCaptureAll, regexCatchAll, splitByMatches } from '@/services/routeRegex'
+import { generateRouteHostRegexPattern, generateRoutePathRegexPattern, generateRouteQueryRegexPatterns, getParamName, paramIsEager, regexCaptureAll, regexCatchAll, regexEagerCatchAll, regexEagerCaptureAll, replaceIndividualParamWithCaptureGroup, splitByMatches } from '@/services/routeRegex'
+import { withParams } from '@/services/withParams'
 import { component } from '@/utilities/testHelpers'
 import { createExternalRoute } from '@/services/createExternalRoute'
 
@@ -108,6 +109,19 @@ describe('generateRoutePathRegexPattern', () => {
     const expected = new RegExp('^path\\.with\\$\\]regex\\[params\\*$', 'i')
     expect(result.toString()).toBe(expected.toString())
   })
+
+  test('given path with eager param, uses eager catch-all for that segment', () => {
+    const route = createRoute({
+      name: 'path-with-eager-param',
+      path: 'parent/[a]/[b*]/[c]',
+      component,
+    })
+
+    const result = generateRoutePathRegexPattern(route)
+
+    const expected = new RegExp(`^parent/${regexCatchAll}/${regexEagerCatchAll}/${regexCatchAll}$`, 'i')
+    expect(result.toString()).toBe(expected.toString())
+  })
 })
 
 describe('generateRouteQueryRegexPatterns', () => {
@@ -184,6 +198,18 @@ describe('getParamName', () => {
     expect(response).toBe(paramName)
   })
 
+  test('given string with eager param name syntax, returns base param name', () => {
+    const response = getParamName('[foo*]')
+
+    expect(response).toBe('foo')
+  })
+
+  test('given string with optional eager param name syntax, returns base param name', () => {
+    const response = getParamName('[?foo*]')
+
+    expect(response).toBe('foo')
+  })
+
   test.each([
     ['foo'],
     ['?foo'],
@@ -192,6 +218,50 @@ describe('getParamName', () => {
     const response = getParamName(paramName)
 
     expect(response).toBe(undefined)
+  })
+})
+
+describe('paramIsEager', () => {
+  test('given path with eager param syntax, returns true for that param', () => {
+    const path = withParams('/foo/[bar*]/baz', {})
+
+    expect(paramIsEager(path, 'bar')).toBe(true)
+  })
+
+  test('given path with optional eager param syntax, returns true for that param', () => {
+    const path = withParams('/foo/[?bar*]/baz', {})
+
+    expect(paramIsEager(path, 'bar')).toBe(true)
+  })
+
+  test('given path with normal param syntax, returns false for that param', () => {
+    const path = withParams('/foo/[bar]/baz', {})
+
+    expect(paramIsEager(path, 'bar')).toBe(false)
+  })
+
+  test('given path with optional param syntax, returns false for that param', () => {
+    const path = withParams('/foo/[?bar]/baz', {})
+
+    expect(paramIsEager(path, 'bar')).toBe(false)
+  })
+})
+
+describe('replaceIndividualParamWithCaptureGroup', () => {
+  test('given normal param, replaces with segment capture pattern', () => {
+    const path = withParams('/[id]/suffix', {})
+
+    const result = replaceIndividualParamWithCaptureGroup(path, 'id')
+
+    expect(result).toBe(`/${regexCaptureAll}/suffix`)
+  })
+
+  test('given eager param, replaces with eager capture pattern', () => {
+    const path = withParams('/[rest*]/suffix', {})
+
+    const result = replaceIndividualParamWithCaptureGroup(path, 'rest')
+
+    expect(result).toBe(`/${regexEagerCaptureAll}/suffix`)
   })
 })
 

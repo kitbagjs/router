@@ -45,6 +45,13 @@ describe('getParamValueFromUrl', () => {
 
     expect(response).toBe('ABC')
   })
+
+  test('given path with eager param, extracts multi-segment value for eager param', () => {
+    const path = withParams('/[id]/[rest*]/suffix', {})
+
+    expect(getParamValueFromUrl('/1/a/b/c/suffix', path, 'rest')).toBe('a/b/c')
+    expect(getParamValueFromUrl('/1/a/b/c/suffix', path, 'id')).toBe('1')
+  })
 })
 
 describe('setParamValueOnUrl', () => {
