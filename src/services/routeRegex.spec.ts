@@ -1,7 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { createRoute } from '@/services/createRoute'
 import { generateRouteHostRegexPattern, generateRoutePathRegexPattern, generateRouteQueryRegexPatterns, getParamName, paramIsEager, regexCaptureAll, regexCatchAll, regexEagerCatchAll, regexEagerCaptureAll, replaceIndividualParamWithCaptureGroup, splitByMatches } from '@/services/routeRegex'
-import { withParams } from '@/services/withParams'
 import { component } from '@/utilities/testHelpers'
 import { createExternalRoute } from '@/services/createExternalRoute'
 
@@ -223,25 +222,25 @@ describe('getParamName', () => {
 
 describe('paramIsEager', () => {
   test('given path with eager param syntax, returns true for that param', () => {
-    const path = withParams('/foo/[bar*]/baz', {})
+    const path = '/foo/[bar*]/baz'
 
     expect(paramIsEager(path, 'bar')).toBe(true)
   })
 
   test('given path with optional eager param syntax, returns true for that param', () => {
-    const path = withParams('/foo/[?bar*]/baz', {})
+    const path = '/foo/[?bar*]/baz'
 
     expect(paramIsEager(path, 'bar')).toBe(true)
   })
 
   test('given path with normal param syntax, returns false for that param', () => {
-    const path = withParams('/foo/[bar]/baz', {})
+    const path = '/foo/[bar]/baz'
 
     expect(paramIsEager(path, 'bar')).toBe(false)
   })
 
   test('given path with optional param syntax, returns false for that param', () => {
-    const path = withParams('/foo/[?bar]/baz', {})
+    const path = '/foo/[?bar]/baz'
 
     expect(paramIsEager(path, 'bar')).toBe(false)
   })
@@ -249,7 +248,7 @@ describe('paramIsEager', () => {
 
 describe('replaceIndividualParamWithCaptureGroup', () => {
   test('given normal param, replaces with segment capture pattern', () => {
-    const path = withParams('/[id]/suffix', {})
+    const path = '/[id]/suffix'
 
     const result = replaceIndividualParamWithCaptureGroup(path, 'id')
 
@@ -257,7 +256,7 @@ describe('replaceIndividualParamWithCaptureGroup', () => {
   })
 
   test('given eager param, replaces with eager capture pattern', () => {
-    const path = withParams('/[rest*]/suffix', {})
+    const path = '/[rest*]/suffix'
 
     const result = replaceIndividualParamWithCaptureGroup(path, 'rest')
 

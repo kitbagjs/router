@@ -1,11 +1,11 @@
 import { paramEnd, paramStart } from '@/types/params'
 import { Route } from '@/types/route'
 import { stringHasValue } from '@/utilities/guards'
-import { WithParams } from '@/services/withParams'
 
-export const paramRegex = `\\${paramStart}\\??([\\w-_]+)(\\*?)\\${paramEnd}`
+export const paramRegex = `\\${paramStart}\\??([\\w-_]+)\\*?\\${paramEnd}`
 export const optionalParamRegex = `\\${paramStart}\\?([\\w-_]+)\\*?\\${paramEnd}`
 export const requiredParamRegex = `\\${paramStart}([\\w-_]+)\\*?\\${paramEnd}`
+export const eagerParamRegex = `\\${paramStart}\\??([\\w-_]+)\\*\\${paramEnd}`
 export const regexCatchAll = '[^/]*'
 export const regexEagerCatchAll = '.*'
 export const regexCaptureAll = '([^/]*)'
@@ -88,22 +88,28 @@ export function replaceParamSyntaxWithCatchAllsAndEscapeRest(value: string): str
 }
 
 export function replaceParamSyntaxWithCatchAlls(value: string): string {
-  return value.replace(new RegExp(paramRegex, 'g'), (_match, _name, eagerStar) => {
-    return eagerStar ? regexEagerCatchAll : regexCatchAll
+  return value.replace(new RegExp(paramRegex, 'g'), (match) => {
+    return isEagerParamSyntax(match) ? regexEagerCatchAll : regexCatchAll
   })
 }
 
-export function replaceIndividualParamWithCaptureGroup(path: WithParams, paramName: string): string {
+export function replaceIndividualParamWithCaptureGroup(path: string, paramName: string): string {
   const pattern = getParamRegexPattern(paramName)
   const capturePattern = paramIsEager(path, paramName) ? regexEagerCaptureAll : regexCaptureAll
 
-  return path.value.replace(pattern, capturePattern)
+  return path.replace(pattern, capturePattern)
 }
 
-export function paramIsOptional(path: WithParams, paramName: string): boolean {
+export function paramIsOptional(path: string, paramName: string): boolean {
   const paramRegex = getOptionalParamRegexPattern(paramName)
 
-  return paramRegex.test(path.value)
+  return paramRegex.test(path)
+}
+
+export function paramIsEager(path: string, paramName: string): boolean {
+  const eagerPattern = getEagerParamRegexPattern(paramName)
+
+  return eagerPattern.test(path)
 }
 
 export function isOptionalParamSyntax(value: string): boolean {
@@ -112,6 +118,10 @@ export function isOptionalParamSyntax(value: string): boolean {
 
 export function isRequiredParamSyntax(value: string): boolean {
   return new RegExp(requiredParamRegex, 'g').test(value)
+}
+
+export function isEagerParamSyntax(value: string): boolean {
+  return new RegExp(eagerParamRegex, 'g').test(value)
 }
 
 export function getParamName(value: string): string | undefined {
@@ -128,10 +138,8 @@ function getOptionalParamRegexPattern(paramName: string): RegExp {
   return new RegExp(`\\${paramStart}\\?${paramName}\\*?\\${paramEnd}`, 'g')
 }
 
-export function paramIsEager(path: WithParams, paramName: string): boolean {
-  const eagerPattern = new RegExp(`\\${paramStart}\\??${paramName}\\*\\${paramEnd}`)
-
-  return eagerPattern.test(path.value)
+function getEagerParamRegexPattern(paramName: string): RegExp {
+  return new RegExp(`\\${paramStart}\\??${paramName}\\*\\${paramEnd}`, 'g')
 }
 
 export function getCaptureGroups(value: string, pattern: RegExp): (string | undefined)[] {
