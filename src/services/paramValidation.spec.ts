@@ -124,7 +124,7 @@ describe('routeParamsAreValid', () => {
     expect(response).toBe(false)
   })
 
-  test('given route with regex eager param that expects forward slashes, will match', () => {
+  test('given route with regex greedy param that expects forward slashes, will match', () => {
     const route = createRoute({
       name: 'support-slashes',
       path: withParams('/supports/[slashes*]/bookmarked', { slashes: /first\/second\/third/g }),

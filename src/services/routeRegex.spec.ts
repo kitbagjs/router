@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { createRoute } from '@/services/createRoute'
-import { generateRouteHostRegexPattern, generateRoutePathRegexPattern, generateRouteQueryRegexPatterns, getParamName, paramIsEager, regexCaptureAll, regexCatchAll, regexEagerCatchAll, regexEagerCaptureAll, replaceIndividualParamWithCaptureGroup, splitByMatches } from '@/services/routeRegex'
+import { generateRouteHostRegexPattern, generateRoutePathRegexPattern, generateRouteQueryRegexPatterns, getParamName, paramIsGreedy, regexCaptureAll, regexCatchAll, regexGreedyCatchAll, regexGreedyCaptureAll, replaceIndividualParamWithCaptureGroup, splitByMatches } from '@/services/routeRegex'
 import { component } from '@/utilities/testHelpers'
 import { createExternalRoute } from '@/services/createExternalRoute'
 
@@ -109,16 +109,16 @@ describe('generateRoutePathRegexPattern', () => {
     expect(result.toString()).toBe(expected.toString())
   })
 
-  test('given path with eager param, uses eager catch-all for that segment', () => {
+  test('given path with greedy param, uses greedy catch-all for that segment', () => {
     const route = createRoute({
-      name: 'path-with-eager-param',
+      name: 'path-with-greedy-param',
       path: 'parent/[a]/[b*]/[c]',
       component,
     })
 
     const result = generateRoutePathRegexPattern(route)
 
-    const expected = new RegExp(`^parent/${regexCatchAll}/${regexEagerCatchAll}/${regexCatchAll}$`, 'i')
+    const expected = new RegExp(`^parent/${regexCatchAll}/${regexGreedyCatchAll}/${regexCatchAll}$`, 'i')
     expect(result.toString()).toBe(expected.toString())
   })
 })
@@ -197,13 +197,13 @@ describe('getParamName', () => {
     expect(response).toBe(paramName)
   })
 
-  test('given string with eager param name syntax, returns base param name', () => {
+  test('given string with greedy param name syntax, returns base param name', () => {
     const response = getParamName('[foo*]')
 
     expect(response).toBe('foo')
   })
 
-  test('given string with optional eager param name syntax, returns base param name', () => {
+  test('given string with optional greedy param name syntax, returns base param name', () => {
     const response = getParamName('[?foo*]')
 
     expect(response).toBe('foo')
@@ -220,29 +220,29 @@ describe('getParamName', () => {
   })
 })
 
-describe('paramIsEager', () => {
-  test('given path with eager param syntax, returns true for that param', () => {
+describe('paramIsGreedy', () => {
+  test('given path with greedy param syntax, returns true for that param', () => {
     const path = '/foo/[bar*]/baz'
 
-    expect(paramIsEager(path, 'bar')).toBe(true)
+    expect(paramIsGreedy(path, 'bar')).toBe(true)
   })
 
-  test('given path with optional eager param syntax, returns true for that param', () => {
+  test('given path with optional greedy param syntax, returns true for that param', () => {
     const path = '/foo/[?bar*]/baz'
 
-    expect(paramIsEager(path, 'bar')).toBe(true)
+    expect(paramIsGreedy(path, 'bar')).toBe(true)
   })
 
   test('given path with normal param syntax, returns false for that param', () => {
     const path = '/foo/[bar]/baz'
 
-    expect(paramIsEager(path, 'bar')).toBe(false)
+    expect(paramIsGreedy(path, 'bar')).toBe(false)
   })
 
   test('given path with optional param syntax, returns false for that param', () => {
     const path = '/foo/[?bar]/baz'
 
-    expect(paramIsEager(path, 'bar')).toBe(false)
+    expect(paramIsGreedy(path, 'bar')).toBe(false)
   })
 })
 
@@ -255,12 +255,12 @@ describe('replaceIndividualParamWithCaptureGroup', () => {
     expect(result).toBe(`/${regexCaptureAll}/suffix`)
   })
 
-  test('given eager param, replaces with eager capture pattern', () => {
+  test('given greedy param, replaces with greedy capture pattern', () => {
     const path = '/[rest*]/suffix'
 
     const result = replaceIndividualParamWithCaptureGroup(path, 'rest')
 
-    expect(result).toBe(`/${regexEagerCaptureAll}/suffix`)
+    expect(result).toBe(`/${regexGreedyCaptureAll}/suffix`)
   })
 })
 

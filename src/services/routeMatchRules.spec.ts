@@ -148,7 +148,7 @@ describe('routePathMatches', () => {
     expect(response).toBe(false)
   })
 
-  test('given route with extra slashes in eager param value, does match', () => {
+  test('given route with extra slashes in greedy param value, does match', () => {
     const route = createRoute({
       name: 'support-slashes',
       path: '/supports/[slashes*]/bookmarked',

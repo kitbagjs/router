@@ -46,7 +46,7 @@ describe('getParamValueFromUrl', () => {
     expect(response).toBe('ABC')
   })
 
-  test('given path with eager param, extracts multi-segment value for eager param', () => {
+  test('given path with greedy param, extracts multi-segment value for greedy param', () => {
     const path = withParams('/[id]/[rest*]/suffix', {})
 
     expect(getParamValueFromUrl('/1/a/b/c/suffix', path, 'rest')).toBe('a/b/c')
