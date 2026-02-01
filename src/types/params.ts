@@ -58,10 +58,10 @@ export function isLiteralParam(value: Param): value is LiteralParam {
  */
 export type IsOptionalParamTemplate<TKey extends string, TValue extends string> =
   TValue extends `${string}${ParamStart}?${TKey}${ParamEnd}${string}`
-  ? true
-  : TValue extends `${string}${ParamStart}?${TKey}*${ParamEnd}${string}`
     ? true
-    : false
+    : TValue extends `${string}${ParamStart}?${TKey}*${ParamEnd}${string}`
+      ? true
+      : false
 
 /**
  * Extracts the parameter name from a string, handling optional parameters denoted by a leading '?'.
