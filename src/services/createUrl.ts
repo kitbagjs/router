@@ -79,30 +79,30 @@ export function createUrl(urlOrOptions: CreateUrlOptions): Url {
     }
   }
 
-  function match(url: string): { isMatch: true, params: Record<string, unknown> } | { isMatch: false } {
+  function match(url: string): { isMatch: true, params: Record<string, unknown> } | { isMatch: false, params: {} } {
     const parts = parseUrl(url)
 
     if (!host.regexp.test(parts.host ?? '')) {
-      return { isMatch: false }
+      return { isMatch: false, params: {} }
     }
 
     if (!path.regexp.test(parts.path)) {
-      return { isMatch: false }
+      return { isMatch: false, params: {} }
     }
 
     const queryString = parts.query.toString()
     if (!query.regexp.every((pattern) => pattern.test(queryString))) {
-      return { isMatch: false }
+      return { isMatch: false, params: {} }
     }
 
     if (!hash.regexp.test(parts.hash)) {
-      return { isMatch: false }
+      return { isMatch: false, params: {} }
     }
 
     const result = tryParse(url)
 
     if (!result.success) {
-      return { isMatch: false }
+      return { isMatch: false, params: {} }
     }
 
     return { isMatch: true, params: result.params }
