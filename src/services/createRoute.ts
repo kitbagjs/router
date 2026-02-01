@@ -3,13 +3,14 @@ import { createRouteId } from '@/services/createRouteId'
 import { CreateRouteOptions, PropsGetter, CreateRouteProps, ToRoute, combineRoutes, isWithParent, RouterViewPropsGetter } from '@/types/createRouteOptions'
 import { toName } from '@/types/name'
 import { Route } from '@/types/route'
-import { checkDuplicateParams } from '@/utilities/checkDuplicateParams'
-import { toWithParams, withParams } from '@/services/withParams'
 import { createRouteHooks } from '@/services/createRouteHooks'
+import { toWithParams } from '@/services/withParams'
+import { createUrl } from '@/services/createUrl'
+import { createRouteRedirects } from '@/services/createRouteRedirects'
+import { combineUrl } from '@/services/combineUrl'
 import { InternalRouteHooks } from '@/types/hooks'
 import { ExtractRouteContext } from '@/types/routeContext'
 import { RouteRedirects } from '@/types/redirects'
-import { createRouteRedirects } from './createRouteRedirects'
 
 type CreateRouteWithProps<
   TOptions extends CreateRouteOptions,
@@ -47,28 +48,41 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
     getRoute: () => route,
   })
 
+  const url = createUrl({
+    path,
+    query,
+    hash,
+  })
+
   const route = {
     id,
     matched: rawRoute,
     matches: [rawRoute],
     hooks: [store],
     name,
-    path,
-    query,
-    hash,
     meta,
     state,
     context,
     depth: 1,
-    host: withParams(),
     prefetch: options.prefetch,
     ...redirects,
+    ...url,
     ...hooks,
   } satisfies Route & InternalRouteHooks & RouteRedirects
 
-  const merged = isWithParent(options) ? combineRoutes(options.parent, route) : route
+  if (isWithParent(options)) {
+    const merged = combineRoutes(options.parent, route)
+    const url = combineUrl(options.parent, {
+      path,
+      query,
+      hash,
+    })
 
-  checkDuplicateParams(merged.path.params, merged.query.params, merged.hash.params)
+    return {
+      ...merged,
+      ...url,
+    }
+  }
 
-  return merged
+  return route
 }

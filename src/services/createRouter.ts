@@ -14,7 +14,7 @@ import { Router, RouterOptions } from '@/types/router'
 import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { RouterReplace, RouterReplaceOptions } from '@/types/routerReplace'
 import { RoutesName } from '@/types/routesMap'
-import { UrlString, asUrlString, isUrlString } from '@/types/urlString'
+import { UrlString, isUrlString } from '@/types/urlString'
 import { createUniqueIdSequence, isFirstUniqueSequenceId } from '@/services/createUniqueIdSequence'
 import { createVisibilityObserver } from './createVisibilityObserver'
 import { visibilityObserverKey } from '@/compositions/useVisibilityObserver'
@@ -27,7 +27,7 @@ import { EmptyRouterPlugin, RouterPlugin } from '@/types/routerPlugin'
 import { getRoutesForRouter } from './getRoutesForRouter'
 import { getGlobalHooksForRouter } from './getGlobalHooksForRouter'
 import { createComponentsStore } from './createComponentsStore'
-import { initZod, zotParamsDetected } from './zod'
+import { initZod, zodParamsDetected } from './zod'
 import { getComponentsStoreKey } from '@/compositions/useComponentsStore'
 import { getPropStoreInjectionKey } from '@/compositions/usePropStore'
 import { getRouterRejectionInjectionKey } from '@/compositions/useRejection'
@@ -111,13 +111,10 @@ export function createRouter<
   })
 
   function find(url: string, options: RouterResolveOptions = {}): ResolvedRoute | undefined {
-    const match = getMatchForUrl(routes, url, isExternal(url))
+    const urlIsRelative = !isExternal(url)
+    const filteredRoutes = routes.filter((route) => route.isRelative === urlIsRelative)
 
-    if (!match) {
-      return undefined
-    }
-
-    return createResolvedRoute(match, asUrlString(url), options)
+    return getMatchForUrl(filteredRoutes, url, options)
   }
 
   async function set(url: string, options: RouterUpdateOptions = {}): Promise<void> {
@@ -339,7 +336,7 @@ export function createRouter<
 
     starting = true
 
-    const shouldInitZod = zotParamsDetected(routes)
+    const shouldInitZod = zodParamsDetected(routes)
 
     if (shouldInitZod) {
       await initZod()

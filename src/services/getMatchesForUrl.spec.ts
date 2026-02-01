@@ -1,7 +1,6 @@
 import { expect, test } from 'vitest'
 import { createRoute } from '@/services/createRoute'
 import { getMatchForUrl } from '@/services/getMatchesForUrl'
-import { createExternalRoute } from '@/services/createExternalRoute'
 import { component } from '@/utilities/testHelpers'
 
 test('given path WITHOUT params, returns match', () => {
@@ -91,6 +90,7 @@ test('given route with simple string query param WITHOUT value present, returns 
     query: 'simple=[simple]',
     component,
   })
+
   const response = getMatchForUrl([route], '/missing?without=params')
 
   expect(response).toBeUndefined()
@@ -123,24 +123,4 @@ test('given route with equal matches, returns first match', () => {
 
   expect(match).toBeDefined()
   expect(match?.name).toBe('first-route')
-})
-
-test('given isExternal true, only sends external routes to be matched', () => {
-  const externalRoute = createExternalRoute({
-    name: 'external',
-    path: '/',
-    host: 'https://example.com',
-  })
-
-  const internalRoute = createRoute({
-    name: 'internal',
-    path: '/',
-  })
-
-  const routes = [externalRoute, internalRoute]
-  const isExternalMatch = getMatchForUrl(routes, 'https://example.com/', true)
-  const isInternalMatch = getMatchForUrl(routes, 'https://example.com/', false)
-
-  expect(isExternalMatch?.name).toBe('external')
-  expect(isInternalMatch?.name).toBe('internal')
 })

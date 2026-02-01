@@ -1,8 +1,5 @@
 import { Component } from 'vue'
-import { CombineHash, combineHash } from '@/services/combineHash'
 import { CombineMeta, combineMeta } from '@/services/combineMeta'
-import { CombinePath, combinePath } from '@/services/combinePath'
-import { CombineQuery, combineQuery } from '@/services/combineQuery'
 import { CombineState, combineState } from '@/services/combineState'
 import { Param } from '@/types/paramTypes'
 import { PrefetchConfig } from '@/types/prefetch'
@@ -15,9 +12,11 @@ import { MaybePromise } from './utilities'
 import { ToMeta } from './meta'
 import { ToState } from './state'
 import { ToName } from './name'
-import { ToWithParams, WithParams } from '@/services/withParams'
+import { WithParams } from '@/services/withParams'
 import { RouteContext, ToRouteContext } from './routeContext'
 import { RouterViewProps } from '@/components/routerView'
+import { CreateUrlOptions, ToUrl } from '@/types/url'
+import { CombineUrl } from '@/services/combineUrl'
 
 export type WithHost<THost extends string | WithParams = string | WithParams> = {
   /**
@@ -60,27 +59,12 @@ export function isWithComponentPropsRecord<T extends Record<string, unknown>>(op
 
 export type CreateRouteOptions<
   TName extends string | undefined = string | undefined,
-  TPath extends string | WithParams | undefined = string | WithParams | undefined,
-  TQuery extends string | WithParams | undefined = string | WithParams | undefined,
-  THash extends string | WithParams | undefined = string | WithParams | undefined,
   TMeta extends RouteMeta = RouteMeta
-> = {
+> = Omit<CreateUrlOptions, 'host'> & {
   /**
    * Name for route, used to create route keys and in navigation.
    */
   name?: TName,
-  /**
-   * Path part of URL.
-   */
-  path?: TPath,
-  /**
-   * Query (aka search) part of URL.
-   */
-  query?: TQuery,
-  /**
-   * Hash part of URL.
-   */
-  hash?: THash,
   /**
    * Represents additional metadata associated with a route, customizable via declaration merging.
    */
@@ -169,10 +153,7 @@ export type ToRoute<
   : TOptions extends { parent: infer TParent extends Route }
     ? Route<
       ToName<TOptions['name']>,
-      ToWithParams<TParent['host']>,
-      CombinePath<ToWithParams<TParent['path']>, ToWithParams<TOptions['path']>>,
-      CombineQuery<ToWithParams<TParent['query']>, ToWithParams<TOptions['query']>>,
-      CombineHash<ToWithParams<TParent['hash']>, ToWithParams<TOptions['hash']>>,
+      CombineUrl<TParent, ToUrl<TOptions>>,
       CombineMeta<ToMeta<TParent['meta']>, ToMeta<TOptions['meta']>>,
       CombineState<ToState<TParent['state']>, ToState<TOptions['state']>>,
       ToMatches<TOptions, CreateRouteProps<TOptions> extends TProps ? undefined : TProps>,
@@ -180,10 +161,7 @@ export type ToRoute<
     >
     : Route<
       ToName<TOptions['name']>,
-      TOptions extends { host: string | WithParams } ? ToWithParams<TOptions['host']> : WithParams<'', {}>,
-      ToWithParams<TOptions['path']>,
-      ToWithParams<TOptions['query']>,
-      ToWithParams<TOptions['hash']>,
+      ToUrl<TOptions>,
       ToMeta<TOptions['meta']>,
       ToState<TOptions['state']>,
       ToMatches<TOptions, CreateRouteProps<TOptions> extends TProps ? undefined : TProps>,
@@ -193,15 +171,11 @@ export type ToRoute<
 export function combineRoutes(parent: Route, child: Route): Route {
   return {
     ...child,
-    path: combinePath(parent.path, child.path),
-    query: combineQuery(parent.query, child.query),
     meta: combineMeta(parent.meta, child.meta),
     state: combineState(parent.state, child.state),
-    hash: combineHash(parent.hash, child.hash),
     hooks: [...parent.hooks, ...child.hooks],
     matches: [...parent.matches, child.matched],
     context: [...parent.context, ...child.context],
-    host: parent.host,
     depth: parent.depth + 1,
   }
 }

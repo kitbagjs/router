@@ -1,8 +1,4 @@
 import { LiteralParam, Param, ParamGetSet, ParamGetter } from '@/types/paramTypes'
-import { Identity } from '@/types/utilities'
-import { MakeOptional } from '@/utilities/makeOptional'
-import { Route } from './route'
-import { WithParams } from '@/services/withParams'
 import { StandardSchemaV1 } from '@standard-schema/spec'
 
 export const paramStart = '['
@@ -85,68 +81,19 @@ export type ExtractParamName<
   : never
 
 /**
- * Extracts combined types of path and query parameters for a given route, creating a unified parameter object.
- * @template TRoute - The route type from which to extract and merge parameter types.
- * @returns A record of parameter names to their respective types, extracted and merged from both path and query parameters.
- */
-export type ExtractRouteParamTypesReading<TRoute extends Route> =
-  Identity<
-    MakeOptional<
-      ExtractParamTypesReading<TRoute['host']> &
-      ExtractParamTypesReading<TRoute['path']> &
-      ExtractParamTypesReading<TRoute['query']> &
-      ExtractParamTypesReading<TRoute['hash']>
-    >
-  >
-
-/**
- * Extracts combined types of path and query parameters for a given route, creating a unified parameter object.
- * Differs from ExtractRouteParamTypesReading in that optional params with defaults will remain optional.
- * @template TRoute - The route type from which to extract and merge parameter types.
- * @returns A record of parameter names to their respective types, extracted and merged from both path and query parameters.
- */
-export type ExtractRouteParamTypesWriting<TRoute extends Route> =
-  Identity<MakeOptional<ExtractParamTypesWriting<TRoute['host']> & ExtractParamTypesWriting<TRoute['path']> & ExtractParamTypesWriting<TRoute['query']> & ExtractParamTypesWriting<TRoute['hash']>>>
-
-/**
- * Extracts combined types of path and query parameters for a given route, creating a unified parameter object.
- * @template TParams - The record of parameter types, possibly including undefined.
- * @returns A new type with the appropriate properties marked as optional.
- */
-type ExtractParamTypesReading<TWithParams extends WithParams> = {
-  [K in keyof TWithParams['params']]: IsOptionalParamTemplate<K & string, TWithParams['value']> extends true
-    ? TWithParams['params'][K] extends Required<ParamGetSet>
-      ? ExtractParamType<TWithParams['params'][K]>
-      : ExtractParamType<TWithParams['params'][K]> | undefined
-    : ExtractParamType<TWithParams['params'][K]>
-}
-
-/**
- * Extracts combined types of path and query parameters for a given route, creating a unified parameter object.
- * Differs from ExtractParamTypesReading in that optional params with defaults will remain optional.
- * @template TParams - The record of parameter types, possibly including undefined.
- * @returns A new type with the appropriate properties marked as optional.
- */
-type ExtractParamTypesWriting<TWithParams extends WithParams> = {
-  [K in keyof TWithParams['params']]: IsOptionalParamTemplate<K & string, TWithParams['value']> extends true
-    ? ExtractParamType<TWithParams['params'][K]> | undefined
-    : ExtractParamType<TWithParams['params'][K]>
-}
-
-/**
  * Extracts the actual type from a parameter type, handling getters and setters.
  * @template TParam - The parameter type.
  * @returns The extracted type, or 'string' as a fallback.
  */
 export type ExtractParamType<TParam extends Param> =
-  Param extends TParam
-    ? unknown
-    : TParam extends ParamGetSet<infer Type>
-      ? Type
-      : TParam extends ParamGetter
-        ? ReturnType<TParam>
-        : TParam extends StandardSchemaV1
-          ? StandardSchemaV1.InferOutput<TParam>
-          : TParam extends LiteralParam
-            ? TParam
-            : string
+Param extends TParam
+  ? unknown
+  : TParam extends ParamGetSet<infer Type>
+    ? Type
+    : TParam extends ParamGetter
+      ? ReturnType<TParam>
+      : TParam extends StandardSchemaV1
+        ? StandardSchemaV1.InferOutput<TParam>
+        : TParam extends LiteralParam
+          ? TParam
+          : string
