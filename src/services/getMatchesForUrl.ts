@@ -13,9 +13,9 @@ export function getMatchForUrl(routes: Routes, url: string, options: RouterResol
       continue
     }
 
-    const { isMatch, params } = route.match(url)
+    const { success, params } = route.tryParse(url)
 
-    if (isMatch) {
+    if (success) {
       return createResolvedRoute(route, params, { ...options, query, hash })
     }
   }

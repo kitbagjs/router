@@ -71,41 +71,31 @@ export function createUrl(urlOrOptions: CreateUrlOptions): Url {
     }
   }
 
-  function tryParse(url: string): { success: true, params: Record<string, unknown> } | { success: false, error: Error } {
-    try {
-      return { success: true, params: parse(url) }
-    } catch (cause) {
-      return { success: false, error: new Error('Failed to parse url', { cause }) }
-    }
-  }
-
-  function match(url: string): { isMatch: true, params: Record<string, unknown> } | { isMatch: false, params: {} } {
+  function tryParse(url: string): { success: true, params: Record<string, unknown> } | { success: false, params: {}, error: Error } {
     const parts = parseUrl(url)
 
     if (!host.regexp.test(parts.host ?? '')) {
-      return { isMatch: false, params: {} }
+      return { success: false, params: {}, error: new Error('Host does not match') }
     }
 
     if (!path.regexp.test(parts.path)) {
-      return { isMatch: false, params: {} }
+      return { success: false, params: {}, error: new Error('Path does not match') }
     }
 
     const queryString = parts.query.toString()
     if (!query.regexp.every((pattern) => pattern.test(queryString))) {
-      return { isMatch: false, params: {} }
+      return { success: false, params: {}, error: new Error('Query does not match') }
     }
 
     if (!hash.regexp.test(parts.hash)) {
-      return { isMatch: false, params: {} }
+      return { success: false, params: {}, error: new Error('Hash does not match') }
     }
 
-    const result = tryParse(url)
-
-    if (!result.success) {
-      return { isMatch: false, params: {} }
+    try {
+      return { success: true, params: parse(url) }
+    } catch (cause) {
+      return { success: false, params: {}, error: new Error('Failed to parse url', { cause }) }
     }
-
-    return { isMatch: true, params: result.params }
   }
 
   const internal = {
@@ -120,7 +110,6 @@ export function createUrl(urlOrOptions: CreateUrlOptions): Url {
     stringify,
     parse,
     tryParse,
-    match,
   }
 }
 

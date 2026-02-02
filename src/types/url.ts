@@ -60,12 +60,7 @@ export type Url<TParams extends UrlParams = UrlParams> = {
   /**
    * Parses the url supplied and returns any params found.
    */
-  tryParse(url: string): { success: true, params: ToUrlParamsReading<TParams> } | { success: false, error: Error },
-  /**
-   * @internal
-   * Checks if the supplied url matches this url. Any value above 0 is a match. Can be used to compare to other partial matches. Max score is 100.
-   */
-  match(url: string): { isMatch: true, params: ToUrlParamsReading<TParams> } | { isMatch: false, params: {} },
+  tryParse(url: string): { success: true, params: ToUrlParamsReading<TParams> } | { success: false, params: {}, error: Error },
   /**
    * True if the url is relative. False if the url is absolute.
    */

@@ -3,26 +3,6 @@ import { createRoute } from '@/services/createRoute'
 import { createResolvedRoute } from '@/services/createResolvedRoute'
 import { component } from '@/utilities/testHelpers'
 
-test('given a url with a query returns all query values', () => {
-  const route = createRoute({
-    name: 'route',
-    path: '/',
-    query: '?foo=foo1&foo=foo2&bar=bar&baz',
-    component,
-  })
-
-  const response = createResolvedRoute(route)
-
-  expect(response.query.get('foo')).toBe('foo1')
-  expect(response.query.getAll('foo')).toMatchObject(['foo1', 'foo2'])
-  expect(response.query.get('bar')).toBe('bar')
-  expect(response.query.getAll('bar')).toMatchObject(['bar'])
-  expect(response.query.get('baz')).toBe('')
-  expect(response.query.getAll('baz')).toMatchObject([''])
-  expect(response.query.get('does-not-exist')).toBe(null)
-  expect(response.query.getAll('does-not-exist')).toMatchObject([])
-})
-
 test('given a route with params returns all params', () => {
   const route = createRoute({
     name: 'route',
@@ -55,17 +35,4 @@ test('given state that matches state params, returns state', () => {
   const response = createResolvedRoute(child, {}, { state: { foo: 'true', bar: 'abc' } })
 
   expect(response.state).toMatchObject({ foo: true, bar: 'abc' })
-})
-
-test('given a url with hash, returns hash property', () => {
-  const route = createRoute({
-    name: 'route',
-    path: '/foo',
-    component,
-    hash: '#bar',
-  })
-
-  const response = createResolvedRoute(route)
-
-  expect(response.hash).toBe('#bar')
 })

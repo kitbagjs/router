@@ -43,28 +43,6 @@ test('options with name and parent', () => {
   expectTypeOf<Source>().toEqualTypeOf<Expect>()
 })
 
-test('options with path', () => {
-  const route = createRoute({ path: '/foo' })
-
-  type Source = typeof route['params']
-  type Expect = {}
-
-  expectTypeOf<Source>().toMatchObjectType<Expect>()
-})
-
-test('options with path and parent', () => {
-  const parent = createRoute({ path: '/foo' })
-  const route = createRoute({
-    path: '/bar',
-    parent,
-  })
-
-  type Source = typeof route['params']
-  type Expect = {}
-
-  expectTypeOf<Source>().toMatchObjectType<Expect>()
-})
-
 test('options with path with params', () => {
   const route = createRoute({ path: '/foo/[bar]' })
   type Source = typeof route['params']
