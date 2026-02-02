@@ -1,4 +1,4 @@
-import { InvalidRouteParamValueError } from '@/errors/invalidRouteParamValueError'
+import { InvalidRouteParamValueError, InvalidRouteParamValueErrorContext } from '@/errors/invalidRouteParamValueError'
 import { isParamWithDefault } from '@/services/withDefault'
 import { ExtractParamType, isLiteralParam, isParamGetSet, isParamGetter } from '@/types/params'
 import { LiteralParam, Param, ParamExtras, ParamGetSet } from '@/types/paramTypes'
@@ -10,10 +10,12 @@ export function getParam(params: Record<string, Param | undefined>, paramName: s
   return params[paramName] ?? String
 }
 
-const extras: ParamExtras = {
-  invalid: (message?: string) => {
-    throw new InvalidRouteParamValueError(message)
-  },
+function getParamExtras(seed: InvalidRouteParamValueErrorContext): ParamExtras {
+  return {
+    invalid: (message?: string) => {
+      throw new InvalidRouteParamValueError({ ...seed, message })
+    },
+  }
 }
 
 const stringParam: ParamGetSet<string> = {
@@ -22,7 +24,7 @@ const stringParam: ParamGetSet<string> = {
   },
   set: (value, { invalid }) => {
     if (typeof value !== 'string') {
-      throw invalid()
+      throw invalid(`Expected string value, received ${JSON.stringify(value)}`)
     }
 
     return value
@@ -39,11 +41,11 @@ const booleanParam: ParamGetSet<boolean> = {
       return false
     }
 
-    throw invalid()
+    throw invalid(`Expected boolean value, received ${JSON.stringify(value)}`)
   },
   set: (value, { invalid }) => {
     if (typeof value !== 'boolean') {
-      throw invalid()
+      throw invalid(`Expected boolean value, received ${JSON.stringify(value)}`)
     }
 
     return value.toString()
@@ -55,14 +57,14 @@ const numberParam: ParamGetSet<number> = {
     const number = Number(value)
 
     if (isNaN(number)) {
-      throw invalid()
+      throw invalid(`Expected number value, received ${JSON.stringify(value)}`)
     }
 
     return number
   },
   set: (value, { invalid }) => {
     if (typeof value !== 'number') {
-      throw invalid()
+      throw invalid(`Expected number value, received ${JSON.stringify(value)}`)
     }
 
     return value.toString()
@@ -74,14 +76,14 @@ const dateParam: ParamGetSet<Date> = {
     const date = new Date(value)
 
     if (isNaN(date.getTime())) {
-      throw invalid()
+      throw invalid(`Expected date value, received ${JSON.stringify(value)}`)
     }
 
     return date
   },
   set: (value, { invalid }) => {
     if (typeof value !== 'object' || !(value instanceof Date)) {
-      throw invalid()
+      throw invalid(`Expected date value, received ${JSON.stringify(value)}`)
     }
 
     return value.toISOString()
@@ -93,19 +95,19 @@ const jsonParam: ParamGetSet<unknown> = {
     try {
       return JSON.parse(value)
     } catch {
-      throw invalid()
+      throw invalid(`Expected JSON value, received "${value}"`)
     }
   },
   set: (value, { invalid }) => {
     try {
       return JSON.stringify(value)
     } catch {
-      throw invalid()
+      throw invalid(`Expected JSON value, received "${value}"`)
     }
   },
 }
 
-function validateLiteralParamStringValue(value: string, param: LiteralParam): boolean {
+function validateLiteralParamStringValue(value: string, param: LiteralParam, extras: ParamExtras): boolean {
   // eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
   switch (typeof param) {
     case 'string':
@@ -127,6 +129,7 @@ function validateLiteralParamStringValue(value: string, param: LiteralParam): bo
 
 export function getParamValue<T extends Param>(value: string | undefined, param: T, isOptional?: boolean): ExtractParamType<T>
 export function getParamValue<T extends Param>(value: string | undefined, param: T, isOptional = false): unknown {
+  const extras = getParamExtras({ param, value, isGetter: true })
   if (value === undefined || !stringHasValue(value)) {
     if (isParamWithDefault(param)) {
       return param.defaultValue
@@ -136,7 +139,7 @@ export function getParamValue<T extends Param>(value: string | undefined, param:
       return undefined
     }
 
-    throw new InvalidRouteParamValueError()
+    throw extras.invalid(`Param is not optional, received ${JSON.stringify(value)}`)
   }
 
   if (param === String) {
@@ -172,15 +175,15 @@ export function getParamValue<T extends Param>(value: string | undefined, param:
       return value
     }
 
-    throw new InvalidRouteParamValueError()
+    throw extras.invalid(`Expected value to match regex ${param.toString()}, received ${JSON.stringify(value)}`)
   }
 
   if (isLiteralParam(param)) {
-    if (validateLiteralParamStringValue(value, param)) {
+    if (validateLiteralParamStringValue(value, param, extras)) {
       return param
     }
 
-    throw new InvalidRouteParamValueError()
+    throw extras.invalid(`Expected value to be ${param}, received ${JSON.stringify(value)}`)
   }
 
   if (isZodParam(param)) {
@@ -217,12 +220,13 @@ export function safeSetParamValue(value: unknown, param: Param, isOptional = fal
 }
 
 export function setParamValue(value: unknown, param: Param, isOptional = false): string {
+  const extras = getParamExtras({ param, value, isSetter: true })
   if (value === undefined) {
     if (isOptional) {
       return ''
     }
 
-    throw new InvalidRouteParamValueError()
+    throw extras.invalid(`Param is not optional, received ${JSON.stringify(value)}`)
   }
 
   if (param === Boolean) {
@@ -247,7 +251,7 @@ export function setParamValue(value: unknown, param: Param, isOptional = false):
 
   if (isLiteralParam(param)) {
     if (param !== value) {
-      throw new InvalidRouteParamValueError()
+      throw extras.invalid(`Expected value to be literal ${param}, received ${JSON.stringify(value)}`)
     }
 
     return (value as LiteralParam).toString()
@@ -264,6 +268,6 @@ export function setParamValue(value: unknown, param: Param, isOptional = false):
   try {
     return (value as any).toString()
   } catch {
-    throw new InvalidRouteParamValueError()
+    throw extras.invalid(`Unable to set param value, received ${JSON.stringify(value)}`)
   }
 }
