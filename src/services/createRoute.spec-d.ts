@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { describe, expectTypeOf, test } from 'vitest'
 import { createRoute } from './createRoute'
 import { Identity } from '@/types/utilities'

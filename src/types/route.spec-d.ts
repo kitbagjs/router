@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { describe, expectTypeOf, test } from 'vitest'
 import { withParams } from '@/services/withParams'
 import { withDefault } from '@/services/withDefault'

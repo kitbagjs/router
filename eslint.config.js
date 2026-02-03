@@ -10,4 +10,10 @@ export default [
       '@typescript-eslint/no-explicit-any': ['off'],
     },
   },
+  {
+    files: ['**/*.spec-d.ts'],
+    rules: {
+      '@typescript-eslint/no-unused-vars': ['off'],
+    },
+  },
 ]

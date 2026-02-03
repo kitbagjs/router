@@ -112,7 +112,6 @@ describe('hooks', () => {
 
 describe('rejections', () => {
   test('built in rejections are valid', () => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const _router = createRouter([])
     type Source = Parameters<typeof _router.reject>[0]
     type Expect = BuiltInRejectionType
@@ -126,7 +125,6 @@ describe('rejections', () => {
       component,
     })
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const _router = createRouter([], {
       rejections: [myCustomRejection],
     })
@@ -146,7 +144,6 @@ describe('rejections', () => {
       rejections: [myPluginRejection],
     })
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const _router = createRouter([], {}, [plugin])
 
     type Source = Parameters<typeof _router.reject>[0]

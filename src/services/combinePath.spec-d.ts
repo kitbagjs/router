@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { expectTypeOf, test } from 'vitest'
 import { withParams, WithParams } from '@/services/withParams'
 import { combinePath } from './combinePath'
