@@ -17,7 +17,6 @@ type RouterRoutes = {
  * @throws {DuplicateNamesError} If there are duplicate names in the routes.
  */
 export function getRoutesForRouter(routes: Routes | Routes[], plugins: RouterPlugin[] = [], base?: string): RouterRoutes {
-  // Map of route name to route
   const routerRoutes = new Map<string, Route>()
 
   const allRoutes = [
@@ -40,9 +39,7 @@ export function getRoutesForRouter(routes: Routes | Routes[], plugins: RouterPlu
       return
     }
 
-    insertBaseRoute(route, base)
-
-    routerRoutes.set(route.name, route)
+    routerRoutes.set(route.name, insertBaseRoute(route, base))
 
     for (const context of route.context) {
       if (contextIsRoute(context)) {

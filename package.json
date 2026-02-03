@@ -17,6 +17,7 @@
   "homepage": "https://github.com/kitbagjs/router#readme",
   "scripts": {
     "build": "vite build",
+    "build:watch": "vite build --watch --minify=false",
     "dev": "vite build --watch --minify=false",
     "test": "vitest",
     "lint": "eslint ./src",
