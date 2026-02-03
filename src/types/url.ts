@@ -3,9 +3,8 @@ import { ToWithParams, WithParams } from '@/services/withParams'
 import { ExtractParamType, IsOptionalParamTemplate } from '@/types/params'
 import { AllPropertiesAreOptional, Identity } from '@/types/utilities'
 import { UrlString } from '@/types/urlString'
-import { Param } from './paramTypes'
+import { Param, ParamGetSet } from './paramTypes'
 import { MakeOptional } from '@/utilities/makeOptional'
-import { ParamWithDefault } from '@/services/withDefault'
 
 export const IS_URL_SYMBOL = Symbol('IS_URL_SYMBOL')
 
@@ -47,7 +46,7 @@ export function isUrlWithSchema(url: unknown): url is Url & { schema: Record<str
 export type Url<TParams extends UrlParams = UrlParams> = {
   /**
    * @internal
-   * The parameters type for the url. Non functional and undefined at runtime. 
+   * The parameters type for the url. Non functional and undefined at runtime.
    */
   params: TParams,
   /**
@@ -61,12 +60,11 @@ export type Url<TParams extends UrlParams = UrlParams> = {
   /**
    * Parses the url supplied and returns any params found.
    */
-  tryParse(url: string): { success: true, params: ToUrlParamsReading<TParams> } | { success: false, error: Error },
+  tryParse(url: string): { success: true, params: ToUrlParamsReading<TParams> } | { success: false, params: {}, error: Error },
   /**
-   * @internal
-   * Checks if the supplied url matches this url. Any value above 0 is a match. Can be used to compare to other partial matches. Max score is 100.
+   * True if the url is relative. False if the url is absolute.
    */
-  match(url: string): { score: number, params: ToUrlParamsReading<TParams> },
+  isRelative: boolean,
   /**
    * @internal
    * Symbol to identify if the url is a valid url.
@@ -93,12 +91,12 @@ type ToUrlParamsReading<
 Identity<
   MakeOptional<{
     [K in keyof TParams]: TParams[K] extends OptionalParam<infer TParam>
-      ? TParam extends ParamWithDefault
+      ? TParam extends Required<ParamGetSet>
         ? ExtractParamType<TParam>
         : ExtractParamType<TParam> | undefined
       : TParams[K] extends RequiredParam<infer TParam>
         ? ExtractParamType<TParam>
-        : never
+        : unknown
   }>
 >
 
@@ -119,6 +117,6 @@ Identity<
       ? ExtractParamType<TParam> | undefined
       : TParams[K] extends RequiredParam<infer TParam>
         ? ExtractParamType<TParam>
-        : never
+        : unknown
   }>
 >

@@ -1,13 +1,12 @@
 import { toWithParams, WithParams } from '@/services/withParams'
 import { getParamValueFromUrl, setParamValueOnUrl } from '@/services/paramsFinder'
-import { getParamName, isOptionalParamSyntax, paramIsOptional, replaceParamSyntaxWithCatchAllsAndEscapeRest, escapeRegExp } from '@/services/routeRegex'
+import { getParamName, isOptionalParamSyntax, paramIsOptional, generateRouteHostRegexPattern, generateRoutePathRegexPattern, generateRouteQueryRegexPatterns, generateRouteHashRegexPattern } from '@/services/routeRegex'
 import { getParamValue, setParamValue } from '@/services/params'
+import { parseUrl, stringifyUrl } from '@/services/urlParser'
 import { IS_URL_SYMBOL, CreateUrlOptions, ToUrl, Url } from '@/types/url'
-import { asUrlString, UrlString } from '@/types/urlString'
+import { UrlString } from '@/types/urlString'
 import { checkDuplicateParams } from '@/utilities/checkDuplicateParams'
-
-// https://en.wikipedia.org/wiki/.invalid
-const FALLBACK_HOST = 'https://internal.invalid'
+import { stringHasValue } from '@/utilities/guards'
 
 export function createUrl<const T extends CreateUrlOptions>(options: T): ToUrl<T>
 export function createUrl(urlOrOptions: CreateUrlOptions): Url {
@@ -22,7 +21,7 @@ export function createUrl(urlOrOptions: CreateUrlOptions): Url {
 
   const host = {
     ...options.host,
-    regexp: replaceParamSyntaxWithCatchAllsAndEscapeRest(options.host.value),
+    regexp: generateRouteHostRegexPattern(options.host.value),
     stringify(params: Record<string, unknown> = {}): string {
       return assembleParamValues(options.host, params)
     },
@@ -30,7 +29,7 @@ export function createUrl(urlOrOptions: CreateUrlOptions): Url {
 
   const path = {
     ...options.path,
-    regexp: replaceParamSyntaxWithCatchAllsAndEscapeRest(options.path.value),
+    regexp: generateRoutePathRegexPattern(options.path.value),
     stringify(params: Record<string, unknown> = {}): string {
       return assembleParamValues(options.path, params)
     },
@@ -38,7 +37,7 @@ export function createUrl(urlOrOptions: CreateUrlOptions): Url {
 
   const query = {
     ...options.query,
-    regexp: generateQueryRegexPatterns(options.query.value),
+    regexp: generateRouteQueryRegexPatterns(options.query.value),
     stringify(params: Record<string, unknown> = {}): string {
       return assembleQueryParamValues(options.query, params).toString()
     },
@@ -46,43 +45,57 @@ export function createUrl(urlOrOptions: CreateUrlOptions): Url {
 
   const hash = {
     ...options.hash,
-    regexp: replaceParamSyntaxWithCatchAllsAndEscapeRest(options.hash.value),
+    regexp: generateRouteHashRegexPattern(options.hash.value),
     stringify(params: Record<string, unknown> = {}): string {
       return assembleParamValues(options.hash, params)
     },
   }
 
   function stringify(params: Record<string, unknown> = {}): UrlString {
-    const url = new URL(host.stringify(params), FALLBACK_HOST)
-
-    url.pathname = path.stringify(params)
-    url.search = query.stringify(params)
-    url.hash = hash.stringify(params)
-
-    return asUrlString(url.toString().replace(new RegExp(`^${FALLBACK_HOST}/*`), '/'))
+    return stringifyUrl({
+      host: host.stringify(params),
+      path: path.stringify(params),
+      query: query.stringify(params),
+      hash: hash.stringify(params),
+    })
   }
 
   function parse(url: string): Record<string, unknown> {
-    const parts = new URL(url, FALLBACK_HOST)
+    const parts = parseUrl(url)
 
     return {
-      ...getParams(host, `${parts.protocol}//${parts.host}`),
-      ...getParams(path, parts.pathname),
-      ...getQueryParams(query, parts.search),
+      ...getParams(host, parts.host ?? ''),
+      ...getParams(path, parts.path),
+      ...getQueryParams(query, parts.query.toString()),
       ...getParams(hash, parts.hash),
     }
   }
 
-  function tryParse(url: string): { success: true, params: Record<string, unknown> } | { success: false, error: Error } {
+  function tryParse(url: string): { success: true, params: Record<string, unknown> } | { success: false, params: {}, error: Error } {
+    const parts = parseUrl(url)
+
+    if (!host.regexp.test(parts.host ?? '')) {
+      return { success: false, params: {}, error: new Error('Host does not match') }
+    }
+
+    if (!path.regexp.test(parts.path)) {
+      return { success: false, params: {}, error: new Error('Path does not match') }
+    }
+
+    const queryString = parts.query.toString()
+    if (!query.regexp.every((pattern) => pattern.test(queryString))) {
+      return { success: false, params: {}, error: new Error('Query does not match') }
+    }
+
+    if (!hash.regexp.test(parts.hash)) {
+      return { success: false, params: {}, error: new Error('Hash does not match') }
+    }
+
     try {
       return { success: true, params: parse(url) }
     } catch (cause) {
-      return { success: false, error: new Error('Failed to parse url', { cause }) }
+      return { success: false, params: {}, error: new Error('Failed to parse url', { cause }) }
     }
-  }
-
-  function match(_url: string): { score: number, params: Record<string, unknown> } {
-    throw new Error('Not implemented')
   }
 
   const internal = {
@@ -91,7 +104,13 @@ export function createUrl(urlOrOptions: CreateUrlOptions): Url {
     [IS_URL_SYMBOL]: true,
   } as const
 
-  return { ...internal, stringify, parse, tryParse, match }
+  return {
+    ...internal,
+    isRelative: !stringHasValue(options.host.value),
+    stringify,
+    parse,
+    tryParse,
+  }
 }
 
 function cleanHash(hash: WithParams): WithParams {
@@ -182,17 +201,4 @@ function getQueryParams(query: WithParams, url: string): Record<string, unknown>
     values[paramName] = paramValue
   }
   return values
-}
-
-function generateQueryRegexPatterns(value: string): RegExp[] {
-  const queryParams = new URLSearchParams(value)
-
-  return Array
-    .from(queryParams.entries())
-    .filter(([, value]) => !isOptionalParamSyntax(value))
-    .map(([key, value]) => {
-      const valueRegex = replaceParamSyntaxWithCatchAllsAndEscapeRest(value)
-
-      return new RegExp(`${escapeRegExp(key)}=${valueRegex}(&|$)`, 'i')
-    })
 }

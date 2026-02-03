@@ -1,5 +1,6 @@
 import { Param, ParamGetSet } from '@/types/paramTypes'
 import { Routes } from '@/types/route'
+import { isUrlWithSchema } from '@/types/url'
 import { isRecord } from '@/utilities/guards'
 import { StandardSchemaV1 } from '@standard-schema/spec'
 import { type ZodType } from 'zod'
@@ -90,11 +91,15 @@ async function getZodInstances() {
 
 type ZodSchemas = Awaited<ReturnType<typeof getZodInstances>>
 
-export function zotParamsDetected(routes: Routes): boolean {
+export function zodParamsDetected(routes: Routes): boolean {
   return Object.values(routes).some((route) => {
-    return Object.values(route.host.params).some((param) => isZodSchemaLike(param))
-      || Object.values(route.path.params).some((param) => isZodSchemaLike(param))
-      || Object.values(route.query.params).some((param) => isZodSchemaLike(param))
+    if (!isUrlWithSchema(route)) {
+      return false
+    }
+
+    return Object.values(route.schema.host.params).some((param) => isZodSchemaLike(param))
+      || Object.values(route.schema.path.params).some((param) => isZodSchemaLike(param))
+      || Object.values(route.schema.query.params).some((param) => isZodSchemaLike(param))
   })
 }
 

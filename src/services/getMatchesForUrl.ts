@@ -1,20 +1,22 @@
-import { Route, Routes } from '@/types/route'
-import { RouteMatchRule } from '@/types/routeMatchRule'
-import { routePathMatches, routeHostMatches, routeQueryMatches, routeHashMatches } from '@/services/routeMatchRules'
-import { routeParamsAreValid } from '@/services/paramValidation'
+import { createResolvedRoute } from '@/services/createResolvedRoute'
+import { parseUrl, updateUrl } from '@/services/urlParser'
+import { ResolvedRoute } from '@/types/resolved'
+import { Routes } from '@/types/route'
+import { RouterResolveOptions } from '@/types/routerResolve'
 import { isNamedRoute } from '@/utilities/isNamedRoute'
 
-const rules: RouteMatchRule[] = [
-  isNamedRoute,
-  routeHostMatches,
-  routePathMatches,
-  routeQueryMatches,
-  routeHashMatches,
-  routeParamsAreValid,
-]
+export function getMatchForUrl(routes: Routes, url: string, options: RouterResolveOptions = {}): ResolvedRoute | undefined {
+  const { query, hash } = parseUrl(updateUrl(url, options))
 
-export function getMatchForUrl(routes: Routes, url: string, isExternal: boolean = false): Route | undefined {
-  return routes
-    .filter((route) => !!route.host.value === isExternal)
-    .find((route) => rules.every((rule) => rule(route, url)))
+  for (const route of routes) {
+    if (!isNamedRoute(route)) {
+      continue
+    }
+
+    const { success, params } = route.tryParse(url)
+
+    if (success) {
+      return createResolvedRoute(route, params, { ...options, query, hash })
+    }
+  }
 }

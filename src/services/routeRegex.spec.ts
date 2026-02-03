@@ -1,122 +1,85 @@
 import { describe, expect, test } from 'vitest'
-import { createRoute } from '@/services/createRoute'
 import { generateRouteHostRegexPattern, generateRoutePathRegexPattern, generateRouteQueryRegexPatterns, getParamName, paramIsGreedy, regexCaptureAll, regexCatchAll, regexGreedyCatchAll, regexGreedyCaptureAll, replaceIndividualParamWithCaptureGroup, splitByMatches } from '@/services/routeRegex'
-import { component } from '@/utilities/testHelpers'
-import { createExternalRoute } from '@/services/createExternalRoute'
 
 describe('generateRouteHostRegexPattern', () => {
   test('given host without params, returns unmodified value with start and end markers', () => {
-    const route = createExternalRoute({
-      name: 'host-without-params',
-      host: 'www.kitbag.io',
-    })
+    const host = 'https://www.kitbag.io'
 
-    const result = generateRouteHostRegexPattern(route)
+    const result = generateRouteHostRegexPattern(host)
 
-    const expected = new RegExp('^www\\.kitbag\\.io$', 'i')
+    const expected = new RegExp('^https://www\\.kitbag\\.io$', 'i')
     expect(result.toString()).toBe(expected.toString())
   })
 
   test('given host with params, returns value with params replaced with catchall', () => {
-    const route = createExternalRoute({
-      name: 'host-with-params',
-      host: '[subdomain].kitbag.io',
-    })
+    const host = 'https://[subdomain].kitbag.io'
 
-    const result = generateRouteHostRegexPattern(route)
+    const result = generateRouteHostRegexPattern(host)
 
-    const expected = new RegExp(`^${regexCatchAll}\\.kitbag\\.io$`, 'i')
+    const expected = new RegExp(`^https://${regexCatchAll}\\.kitbag\\.io$`, 'i')
     expect(result.toString()).toBe(expected.toString())
   })
 
   test('given host with optional params, returns value with params replaced with catchall', () => {
-    const route = createExternalRoute({
-      name: 'host-with-optional-params',
-      host: '[?subdomain].kitbag.io',
-      component,
-    })
+    const host = 'https://[?subdomain].kitbag.io'
 
-    const result = generateRouteHostRegexPattern(route)
+    const result = generateRouteHostRegexPattern(host)
 
-    const expected = new RegExp(`^${regexCatchAll}\\.kitbag\\.io$`, 'i')
+    const expected = new RegExp(`^https://${regexCatchAll}\\.kitbag\\.io$`, 'i')
     expect(result.toString()).toBe(expected.toString())
   })
 
   test('given host with regex characters outside of params, escapes regex characters', () => {
-    const route = createExternalRoute({
-      name: 'host-with-regex-chars',
-      host: 'www.with$]regex[params*',
-      component,
-    })
+    const host = 'https://www.with$]regex[params*'
 
-    const result = generateRouteHostRegexPattern(route)
+    const result = generateRouteHostRegexPattern(host)
 
-    const expected = new RegExp('^www\\.with\\$\\]regex\\[params\\*$', 'i')
+    const expected = new RegExp('^https://www\\.with\\$\\]regex\\[params\\*$', 'i')
     expect(result.toString()).toBe(expected.toString())
   })
 })
 
 describe('generateRoutePathRegexPattern', () => {
   test('given path without params, returns unmodified value with start and end markers', () => {
-    const route = createRoute({
-      name: 'path-without-params',
-      path: 'parent/child/grandchild',
-      component,
-    })
+    const path = 'parent/child/grandchild'
 
-    const result = generateRoutePathRegexPattern(route)
+    const result = generateRoutePathRegexPattern(path)
 
-    const expected = new RegExp(`^${route.path.value}$`, 'i')
+    const expected = new RegExp('^parent/child/grandchild$', 'i')
     expect(result.toString()).toBe(expected.toString())
   })
 
   test('given path with params, returns value with params replaced with catchall', () => {
-    const route = createRoute({
-      name: 'path-with-params',
-      path: 'parent/child/[childParam]/grand-child/[grandChild123]',
-      component,
-    })
+    const path = 'parent/child/[childParam]/grand-child/[grandChild123]'
 
-    const result = generateRoutePathRegexPattern(route)
+    const result = generateRoutePathRegexPattern(path)
 
     const expected = new RegExp(`^parent/child/${regexCatchAll}/grand-child/${regexCatchAll}$`, 'i')
     expect(result.toString()).toBe(expected.toString())
   })
 
   test('given path with optional params, returns value with params replaced with catchall', () => {
-    const route = createRoute({
-      name: 'path-with-optional-params',
-      path: 'parent/child/[?childParam]/grand-child/[?grandChild123]',
-      component,
-    })
+    const path = 'parent/child/[?childParam]/grand-child/[?grandChild123]'
 
-    const result = generateRoutePathRegexPattern(route)
+    const result = generateRoutePathRegexPattern(path)
 
     const expected = new RegExp(`^parent/child/${regexCatchAll}/grand-child/${regexCatchAll}$`, 'i')
     expect(result.toString()).toBe(expected.toString())
   })
 
   test('given path with regex characters outside of params, escapes regex characters', () => {
-    const route = createRoute({
-      name: 'path-with-regex-chars',
-      path: 'path.with$]regex[params*',
-      component,
-    })
+    const path = 'path.with$]regex[params*'
 
-    const result = generateRoutePathRegexPattern(route)
+    const result = generateRoutePathRegexPattern(path)
 
     const expected = new RegExp('^path\\.with\\$\\]regex\\[params\\*$', 'i')
     expect(result.toString()).toBe(expected.toString())
   })
 
   test('given path with greedy param, uses greedy catch-all for that segment', () => {
-    const route = createRoute({
-      name: 'path-with-greedy-param',
-      path: 'parent/[a]/[b*]/[c]',
-      component,
-    })
+    const path = 'parent/[a]/[b*]/[c]'
 
-    const result = generateRoutePathRegexPattern(route)
+    const result = generateRoutePathRegexPattern(path)
 
     const expected = new RegExp(`^parent/${regexCatchAll}/${regexGreedyCatchAll}/${regexCatchAll}$`, 'i')
     expect(result.toString()).toBe(expected.toString())
@@ -125,52 +88,31 @@ describe('generateRoutePathRegexPattern', () => {
 
 describe('generateRouteQueryRegexPatterns', () => {
   test('given query without params, returns unmodified value with start and end markers', () => {
-    const route = createRoute({
-      name: 'query-without-params',
-      path: 'query',
-      component,
-    })
-
-    const result = generateRouteQueryRegexPatterns(route)
+    const result = generateRouteQueryRegexPatterns('')
 
     expect(result).toMatchObject([])
   })
 
   test('given query with required params, returns value with params replaced with catchall', () => {
-    const route = createRoute({
-      name: 'query-with-params',
-      path: 'query',
-      query: 'dynamic=[first]&static=params&another=[second]',
-      component,
-    })
+    const query = 'dynamic=[first]&static=params&another=[second]'
 
-    const result = generateRouteQueryRegexPatterns(route)
+    const result = generateRouteQueryRegexPatterns(query)
 
-    expect(result).toMatchObject([new RegExp(`dynamic=${regexCaptureAll}`), new RegExp('static=params'), new RegExp(`dynamic=${regexCaptureAll}`)])
+    expect(result).toMatchObject([new RegExp(`dynamic=${regexCaptureAll}`), new RegExp('static=params'), new RegExp(`another=${regexCaptureAll}`)])
   })
 
   test('given query with optional params, returns value without params', () => {
-    const route = createRoute({
-      name: 'query-with-optional-params',
-      path: 'query',
-      query: 'dynamic=[?first]&static=params&another=[?second]',
-      component,
-    })
+    const query = 'dynamic=[?first]&static=params&another=[?second]'
 
-    const result = generateRouteQueryRegexPatterns(route)
+    const result = generateRouteQueryRegexPatterns(query)
 
     expect(result).toMatchObject([new RegExp('static=params')])
   })
 
   test('given query with regex characters outside of params, escapes regex characters', () => {
-    const route = createRoute({
-      name: 'query-with-regex-chars',
-      path: 'query',
-      query: 'query=$with&normal=[param]&regex*chars=)throughout[&',
-      component,
-    })
+    const query = 'query=$with&normal=[param]&regex*chars=)throughout[&'
 
-    const result = generateRouteQueryRegexPatterns(route)
+    const result = generateRouteQueryRegexPatterns(query)
 
     expect(result.map((pattern) => pattern.toString())).toMatchObject([
       '/query=\\$with(&|$)/i',
