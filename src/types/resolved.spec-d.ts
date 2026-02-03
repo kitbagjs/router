@@ -5,7 +5,6 @@ import { withParams } from '@/services/withParams'
 import { createRoute } from '@/services/createRoute'
 
 test('given a specific Route, params are narrow', () => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const testRoute = createRoute({
     name: 'parentA',
     path: '/parentA/[paramA]',

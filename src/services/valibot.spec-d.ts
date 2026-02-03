@@ -11,7 +11,6 @@ test('withParams accepts valibot schemas', () => {
 })
 
 test('ExtractParamType returns the correct type for valibot params', () => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const param = boolean()
   type Input = ExtractParamType<typeof param>
 

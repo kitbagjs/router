@@ -8,7 +8,6 @@ test('RouteGetByName works as expected', () => {
     path: '/parentA/[paramA]',
   })
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const childA = createRoute({
     parent: parentA,
     name: 'parentA.childA',

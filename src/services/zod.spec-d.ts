@@ -11,7 +11,6 @@ test('withParams accepts zod schemas', () => {
 })
 
 test('ExtractParamType returns the correct type for zod params', () => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const param = z.boolean()
   type Input = ExtractParamType<typeof param>
 
