@@ -62,8 +62,8 @@
         "link": "/api/type-guards/isRoute.md"
       },
       {
-        "text": "isUrl",
-        "link": "/api/type-guards/isUrl.md"
+        "text": "isUrlString",
+        "link": "/api/type-guards/isUrlString.md"
       }
     ]
   },
@@ -90,8 +90,8 @@
         "link": "/api/functions/arrayOf.md"
       },
       {
-        "text": "asUrl",
-        "link": "/api/functions/asUrl.md"
+        "text": "asUrlString",
+        "link": "/api/functions/asUrlString.md"
       },
       {
         "text": "combineRoutes",
@@ -124,6 +124,14 @@
       {
         "text": "createRouterPlugin",
         "link": "/api/functions/createRouterPlugin.md"
+      },
+      {
+        "text": "createUrl",
+        "link": "/api/functions/createUrl.md"
+      },
+      {
+        "text": "isUrlWithSchema",
+        "link": "/api/functions/isUrlWithSchema.md"
       },
       {
         "text": "isWithComponent",
@@ -324,6 +332,10 @@
       {
         "text": "CreateRouterPluginOptions",
         "link": "/api/types/CreateRouterPluginOptions.md"
+      },
+      {
+        "text": "CreateUrlOptions",
+        "link": "/api/types/CreateUrlOptions.md"
       },
       {
         "text": "EmptyRouterPlugin",
@@ -554,12 +566,24 @@
         "link": "/api/types/ToRoute.md"
       },
       {
+        "text": "ToUrl",
+        "link": "/api/types/ToUrl.md"
+      },
+      {
         "text": "Url",
         "link": "/api/types/Url.md"
       },
       {
-        "text": "UrlParts",
-        "link": "/api/types/UrlParts.md"
+        "text": "UrlParamsReading",
+        "link": "/api/types/UrlParamsReading.md"
+      },
+      {
+        "text": "UrlParamsWriting",
+        "link": "/api/types/UrlParamsWriting.md"
+      },
+      {
+        "text": "UrlString",
+        "link": "/api/types/UrlString.md"
       },
       {
         "text": "UseLink",
@@ -584,6 +608,16 @@
       {
         "text": "WithParent",
         "link": "/api/types/WithParent.md"
+      }
+    ]
+  },
+  {
+    "text": "Variables",
+    "collapsed": true,
+    "items": [
+      {
+        "text": "IS_URL_SYMBOL",
+        "link": "/api/variables/IS_URL_SYMBOL.md"
       }
     ]
   }
