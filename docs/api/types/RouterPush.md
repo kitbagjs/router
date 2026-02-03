@@ -64,7 +64,7 @@ type RouterPush<TRoutes> = {
 
 | Parameter | Type |
 | ------ | ------ |
-| `url` | [`Url`](Url.md) |
+| `url` | [`UrlString`](UrlString.md) |
 | `options?` | [`RouterPushOptions`](RouterPushOptions.md)\<`unknown`\> |
 
 ### Returns

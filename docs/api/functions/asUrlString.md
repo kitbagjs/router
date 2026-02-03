@@ -1,7 +1,7 @@
-# Functions: asUrl()
+# Functions: asUrlString()
 
 ```ts
-function asUrl(value): Url;
+function asUrlString(value): UrlString;
 ```
 
 Converts a string to a valid URL.
@@ -14,6 +14,6 @@ Converts a string to a valid URL.
 
 ## Returns
 
-[`Url`](../types/Url.md)
+[`UrlString`](../types/UrlString.md)
 
 The valid URL.

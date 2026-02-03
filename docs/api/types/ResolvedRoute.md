@@ -4,12 +4,12 @@
 type ResolvedRoute<TRoute> = Readonly<{
   hash: string;
   hooks: Hooks[];
-  href: Url;
+  href: UrlString;
   id: TRoute["id"];
   matched: TRoute["matched"];
   matches: TRoute["matches"];
   name: TRoute["name"];
-  params: ExtractRouteParamTypesReading<TRoute>;
+  params: UrlParamsReading<TRoute>;
   query: URLSearchParams;
   state: ExtractRouteStateParamsAsOptional<TRoute["state"]>;
 }>;

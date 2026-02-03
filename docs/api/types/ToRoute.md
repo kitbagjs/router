@@ -1,8 +1,7 @@
 # Types: ToRoute\<TOptions, TProps\>
 
 ```ts
-type ToRoute<TOptions, TProps> = CreateRouteOptions extends TOptions ? Route : TOptions extends object ? Route<ToName<TOptions["name"]>, ToWithParams<TParent["host"]>, CombinePath<ToWithParams<TParent["path"]>, ToWithParams<TOptions["path"]>>, CombineQuery<ToWithParams<TParent["query"]>, ToWithParams<TOptions["query"]>>, CombineHash<ToWithParams<TParent["hash"]>, ToWithParams<TOptions["hash"]>>, CombineMeta<ToMeta<TParent["meta"]>, ToMeta<TOptions["meta"]>>, CombineState<ToState<TParent["state"]>, ToState<TOptions["state"]>>, ToMatches<TOptions, CreateRouteProps<TOptions> extends TProps ? undefined : TProps>, [...ToRouteContext<TParent["context"]>, ...ToRouteContext<TOptions["context"]>]> : Route<ToName<TOptions["name"]>, TOptions extends object ? ToWithParams<TOptions["host"]> : WithParams<"", {
-}>, ToWithParams<TOptions["path"]>, ToWithParams<TOptions["query"]>, ToWithParams<TOptions["hash"]>, ToMeta<TOptions["meta"]>, ToState<TOptions["state"]>, ToMatches<TOptions, CreateRouteProps<TOptions> extends TProps ? undefined : TProps>, ToRouteContext<TOptions["context"]>>;
+type ToRoute<TOptions, TProps> = CreateRouteOptions extends TOptions ? Route : TOptions extends object ? Route<ToName<TOptions["name"]>, CombineUrl<TParent, ToUrl<TOptions>>, CombineMeta<ToMeta<TParent["meta"]>, ToMeta<TOptions["meta"]>>, CombineState<ToState<TParent["state"]>, ToState<TOptions["state"]>>, ToMatches<TOptions, CreateRouteProps<TOptions> extends TProps ? undefined : TProps>, [...ToRouteContext<TParent["context"]>, ...ToRouteContext<TOptions["context"]>]> : Route<ToName<TOptions["name"]>, ToUrl<TOptions>, ToMeta<TOptions["meta"]>, ToState<TOptions["state"]>, ToMatches<TOptions, CreateRouteProps<TOptions> extends TProps ? undefined : TProps>, ToRouteContext<TOptions["context"]>>;
 ```
 
 ## Type Parameters

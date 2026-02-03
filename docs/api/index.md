@@ -21,7 +21,7 @@
 ## Type Guards
 
 - [isRoute](type-guards/isRoute.md)
-- [isUrl](type-guards/isUrl.md)
+- [isUrlString](type-guards/isUrlString.md)
 
 ## Components
 
@@ -31,7 +31,7 @@
 ## Functions
 
 - [arrayOf](functions/arrayOf.md)
-- [asUrl](functions/asUrl.md)
+- [asUrlString](functions/asUrlString.md)
 - [combineRoutes](functions/combineRoutes.md)
 - [createExternalRoute](functions/createExternalRoute.md)
 - [createParam](functions/createParam.md)
@@ -40,6 +40,8 @@
 - [createRouter](functions/createRouter.md)
 - [createRouterAssets](functions/createRouterAssets.md)
 - [createRouterPlugin](functions/createRouterPlugin.md)
+- [createUrl](functions/createUrl.md)
+- [isUrlWithSchema](functions/isUrlWithSchema.md)
 - [isWithComponent](functions/isWithComponent.md)
 - [isWithComponentProps](functions/isWithComponentProps.md)
 - [isWithComponentPropsRecord](functions/isWithComponentPropsRecord.md)
@@ -93,6 +95,7 @@
 - [CreateRouteOptions](types/CreateRouteOptions.md)
 - [CreateRouteProps](types/CreateRouteProps.md)
 - [CreateRouterPluginOptions](types/CreateRouterPluginOptions.md)
+- [CreateUrlOptions](types/CreateUrlOptions.md)
 - [EmptyRouterPlugin](types/EmptyRouterPlugin.md)
 - [ErrorHook](types/ErrorHook.md)
 - [ErrorHookContext](types/ErrorHookContext.md)
@@ -150,11 +153,18 @@
 - [Routes](types/Routes.md)
 - [ToCallback](types/ToCallback.md)
 - [ToRoute](types/ToRoute.md)
+- [ToUrl](types/ToUrl.md)
 - [Url](types/Url.md)
-- [UrlParts](types/UrlParts.md)
+- [UrlParamsReading](types/UrlParamsReading.md)
+- [UrlParamsWriting](types/UrlParamsWriting.md)
+- [UrlString](types/UrlString.md)
 - [UseLink](types/UseLink.md)
 - [UseLinkOptions](types/UseLinkOptions.md)
 - [WithHost](types/WithHost.md)
 - [WithoutHost](types/WithoutHost.md)
 - [WithoutParent](types/WithoutParent.md)
 - [WithParent](types/WithParent.md)
+
+## Variables
+
+- [IS\_URL\_SYMBOL](variables/IS_URL_SYMBOL.md)
