@@ -16,7 +16,7 @@ test('given a hash that starts with "#", strips the leading "#"', () => {
   expect(url.stringify()).toBe('/#foo')
 })
 
-describe('parseUrl', () => {
+describe('stringify', () => {
   test('given parts without host, protocol, or path, returns forward slash to satisfy Url', () => {
     const url = createUrl({})
 
@@ -77,7 +77,23 @@ describe('parseUrl', () => {
   })
 })
 
-describe('param validation', () => {
+describe('parse', () => {
+  test.each([
+    ['/[foo]', '/', 'Param is not optional, received ""'],
+    [withParams('/[foo]', { foo: Number }), '/abc', 'Expected number value, received "abc"'],
+    [withParams('/[foo]', { foo: Boolean }), '/abc', 'Expected boolean value, received "abc"'],
+    [withParams('/[foo]', { foo: Date }), '/abc', 'Expected date value, received "abc"'],
+    [withParams('/[foo]', { foo: JSON }), '/abc', 'Expected JSON value, received "abc"'],
+    [withParams('/[foo]', { foo: /[\d{3}]/ }), '/abc', 'Expected value to match regex /[\\d{3}]/, received "abc"'],
+    [withParams('/[foo]', { foo: 'def' }), '/abc', 'Expected value to be def, received "abc"'],
+  ])('given invalid url $1, throws InvalidRouteParamValueError with useful error message $2', (path, input, output) => {
+    const url = createUrl({
+      path,
+    })
+
+    expect(() => url.parse(input)).toThrowError(output)
+  })
+
   test('given params in each part of the URL, extracts them', () => {
     const input = 'foo'
 

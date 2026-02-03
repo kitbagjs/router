@@ -37,7 +37,7 @@ test('given no param returns value, throws InvalidRouteParamValueError', () => {
 
   const action: () => void = () => getParamValue('foo', union)
 
-  expect(action).toThrow('Value foo does not satisfy any of the possible values')
+  expect(action).toThrow('Value "foo" does not satisfy any of the possible values')
   expect(aParam).toHaveBeenCalledTimes(1)
   expect(bParam).toHaveBeenCalledTimes(1)
   expect(cParam).toHaveBeenCalledTimes(1)

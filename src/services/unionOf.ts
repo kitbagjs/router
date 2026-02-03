@@ -14,7 +14,7 @@ export function unionOf(params: Param[]): ParamGetSet {
         }
       }
 
-      throw invalid(`Value ${value} does not satisfy any of the possible values`)
+      throw invalid(`Value "${value}" does not satisfy any of the possible values`)
     },
     set: (value, { invalid }) => {
       for (const param of params) {
@@ -25,7 +25,7 @@ export function unionOf(params: Param[]): ParamGetSet {
         }
       }
 
-      throw invalid(`Value ${value} does not satisfy any of the possible values`)
+      throw invalid(`Value "${value}" does not satisfy any of the possible values`)
     },
   }
 }
