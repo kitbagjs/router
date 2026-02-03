@@ -37,3 +37,12 @@ a.alt.stackblitz::after {
   content: '';
   background-image: url('/stackblitz.svg');
 }
+
+/* BitterBrains banner offset */
+html.has-bb-banner.bb-type-top {
+  --vp-layout-top-height: 72px;
+}
+
+html.has-bb-banner.bb-type-top.bb-banner-hidden {
+  --vp-layout-top-height: 0px;
+}
