@@ -75,3 +75,22 @@ describe('options.rejections', () => {
     expect(wrapper.html()).toBe('<div>This is a custom rejection</div>')
   })
 })
+
+test('when false AND router has removeTrailingSlashes option set to false AND router has base option set, does not end up with accidental trailing slash for root route', async () => {
+  const rootRoute = createRoute({
+    name: 'root',
+    component,
+    path: '/',
+  })
+
+  const router = createRouter([rootRoute], {
+    removeTrailingSlashes: false,
+    base: '/kitbag',
+  })
+
+  await router.start()
+
+  await router.push('root')
+
+  expect(window.location.pathname).toBe('/kitbag')
+})
