@@ -6,24 +6,20 @@ import { RouterResolveOptions } from '@/types/routerResolve'
 import { ParseUrlOptions } from '@/types/url'
 import { isNamedRoute } from '@/utilities/isNamedRoute'
 
-type MatchOptions = {
-  url: string,
-  parseOptions?: ParseUrlOptions,
-  resolveOptions?: RouterResolveOptions,
-}
+type MatchOptions = RouterResolveOptions & ParseUrlOptions
 
-export function getMatchForUrl(routes: Routes, { url, parseOptions = {}, resolveOptions = {} }: MatchOptions): ResolvedRoute | undefined {
-  const { query, hash } = parseUrl(updateUrl(url, resolveOptions))
+export function getMatchForUrl(routes: Routes, url: string, options: MatchOptions = {}): ResolvedRoute | undefined {
+  const { query, hash } = parseUrl(updateUrl(url, options))
 
   for (const route of routes) {
     if (!isNamedRoute(route)) {
       continue
     }
 
-    const { success, params } = route.tryParse(url, parseOptions)
+    const { success, params } = route.tryParse(url, options)
 
     if (success) {
-      return createResolvedRoute(route, params, { ...resolveOptions, query, hash })
+      return createResolvedRoute(route, params, { ...options, query, hash })
     }
   }
 }

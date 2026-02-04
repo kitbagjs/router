@@ -24,7 +24,7 @@ test('given path WITHOUT params, returns match', () => {
 
   const routes = [parent, child, grandchild]
 
-  const match = getMatchForUrl(routes, { url: '/parent/child/grandchild' })
+  const match = getMatchForUrl(routes, '/parent/child/grandchild')
 
   expect(match).toBeDefined()
   expect(match?.name).toBe('parent.child.grandchild')
@@ -49,7 +49,7 @@ test('given path to unnamed parent, without option to get to leaf, returns no ma
 
   const routes = [unnamedParent, unnamedChild, namedGrandchild]
 
-  const match = getMatchForUrl(routes, { url: '/unnamed' })
+  const match = getMatchForUrl(routes, '/unnamed')
 
   expect(match).toBeUndefined()
 })
@@ -66,7 +66,7 @@ test('given path to unnamed  parent, with option to get to leaf, returns availab
   })
 
   const routes = [unnamedChildRoot, unnamedParent]
-  const match = getMatchForUrl(routes, { url: '/unnamed' })
+  const match = getMatchForUrl(routes, '/unnamed')
 
   expect(match).toBeDefined()
   expect(match?.name).toBe('child-root')
@@ -78,7 +78,7 @@ test('given route with simple string param WITHOUT value present, returns no mat
     path: '/simple/[simple]',
     component,
   })
-  const response = getMatchForUrl([route], { url: '/simple/' })
+  const response = getMatchForUrl([route], '/simple/')
 
   expect(response).toBeUndefined()
 })
@@ -91,7 +91,7 @@ test('given route with simple string query param WITHOUT value present, returns 
     component,
   })
 
-  const response = getMatchForUrl([route], { url: '/missing?without=params' })
+  const response = getMatchForUrl([route], '/missing?without=params')
 
   expect(response).toBeUndefined()
 })
@@ -119,7 +119,7 @@ test('given route with equal matches, returns first match', () => {
     firstRoute,
     secondRoute,
     thirdRoute,
-  ], { url: '/' })
+  ], '/')
 
   expect(match).toBeDefined()
   expect(match?.name).toBe('first-route')
@@ -133,7 +133,7 @@ describe('trailing slashes', () => {
       component,
     })
 
-    const match = getMatchForUrl([route], { url: '/parent/child/' })
+    const match = getMatchForUrl([route], '/parent/child/')
 
     expect(match).toBeUndefined()
   })
@@ -145,7 +145,7 @@ describe('trailing slashes', () => {
       component,
     })
 
-    const match = getMatchForUrl([route], { url: '/parent/child' })
+    const match = getMatchForUrl([route], '/parent/child')
 
     expect(match).toBeDefined()
     expect(match?.name).toBe('with-trailing-slash')
