@@ -40,6 +40,14 @@ export function isUrlWithSchema(url: unknown): url is Url & { schema: Record<str
   return typeof url === 'object' && url !== null && IS_URL_SYMBOL in url
 }
 
+export type ParseUrlOptions = {
+  /**
+   * Whether to remove trailing slashes from the path. When true, trailing slashes will be removed from the path.
+   * @default true
+   */
+  removeTrailingSlashes?: boolean,
+}
+
 /**
  * Represents the structure of a url parts. Can be used to create a url with support for params.
  */
@@ -56,11 +64,11 @@ export type Url<TParams extends UrlParams = UrlParams> = {
   /**
    * Parses the url supplied and returns any params found.
    */
-  parse(url: string): ToUrlParamsReading<TParams>,
+  parse(url: string, options?: ParseUrlOptions): ToUrlParamsReading<TParams>,
   /**
    * Parses the url supplied and returns any params found.
    */
-  tryParse(url: string): { success: true, params: ToUrlParamsReading<TParams> } | { success: false, params: {}, error: Error },
+  tryParse(url: string, options?: ParseUrlOptions): { success: true, params: ToUrlParamsReading<TParams> } | { success: false, params: {}, error: Error },
   /**
    * True if the url is relative. False if the url is absolute.
    */

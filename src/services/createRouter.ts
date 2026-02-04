@@ -110,11 +110,12 @@ export function createRouter<
     },
   })
 
-  function find(url: string, options: RouterResolveOptions = {}): ResolvedRoute | undefined {
+  function find(url: string, resolveOptions: RouterResolveOptions = {}): ResolvedRoute | undefined {
     const urlIsRelative = !isExternal(url)
     const filteredRoutes = routes.filter((route) => route.isRelative === urlIsRelative)
+    const parseOptions = { removeTrailingSlashes: shouldRemoveTrailingSlashes }
 
-    return getMatchForUrl(filteredRoutes, url, options)
+    return getMatchForUrl(filteredRoutes, { url, resolveOptions, parseOptions })
   }
 
   async function set(url: string, options: RouterUpdateOptions = {}): Promise<void> {
