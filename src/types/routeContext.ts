@@ -1,6 +1,6 @@
 import { CreateRouteOptions } from './createRouteOptions'
 import { Rejection, Rejections } from './rejection'
-import { GenericRoute, Routes } from './route'
+import { GenericRoute, Route, Routes } from './route'
 
 export type RouteContext = GenericRoute | Rejection
 
@@ -11,8 +11,12 @@ export type ToRouteContext<TContext extends RouteContext[] | readonly RouteConte
 export type ExtractRouteContext<
   TOptions extends CreateRouteOptions
 > = TOptions extends { context: infer TContext extends RouteContext[] }
-  ? TContext
-  : []
+  ? TOptions extends { parent: infer TParent extends Route }
+    ? [...ToRouteContext<TParent['context']>, ...TContext]
+    : TContext
+  : TOptions extends { parent: infer TParent extends Route }
+    ? ToRouteContext<TParent['context']>
+    : []
 
 export type ExtractRouteContextRoutes<
   TOptions extends CreateRouteOptions

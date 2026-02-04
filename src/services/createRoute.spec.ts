@@ -107,6 +107,19 @@ test('given parent, context is combined', () => {
     },
   })
 
+  child.onAfterRouteEnter((_to, { push, reject }) => {
+    // ok
+    push('bRoute')
+    // @ts-expect-error should not accept an invalid route name
+    push('fakeRoute')
+    // ok
+    reject('aRejection')
+    // ok
+    reject('NotFound')
+    // @ts-expect-error should not accept an invalid rejection type
+    reject('fakeRejection')
+  })
+
   expect(child.context).toMatchObject([parentRejection, childRelated])
 })
 
