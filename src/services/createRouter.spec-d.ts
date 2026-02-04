@@ -171,10 +171,13 @@ describe('options.rejections in hooks', () => {
       rejections: [customRejection],
     })
 
-    route.onBeforeRouteUpdate((_to, { reject }) => {
-      type RejectParam = Parameters<typeof reject>[0]
+    route.onBeforeRouteUpdate((_to, { reject, push }) => {
+      expectTypeOf(reject).parameters.toEqualTypeOf<[BuiltInRejectionType]>()
 
-      expectTypeOf<RejectParam>().toEqualTypeOf<BuiltInRejectionType>()
+      // ok
+      push('root')
+      // @ts-expect-error does not know about routes outside of context
+      push('fakeRoute')
     })
   })
 
@@ -195,10 +198,13 @@ describe('options.rejections in hooks', () => {
       rejections: [customRejection],
     })
 
-    router.onBeforeRouteUpdate((_to, { reject }) => {
-      type RejectParam = Parameters<typeof reject>[0]
+    router.onBeforeRouteUpdate((_to, { reject, push }) => {
+      expectTypeOf(reject).parameters.toEqualTypeOf<[BuiltInRejectionType | 'CustomRejection']>()
 
-      expectTypeOf<RejectParam>().toEqualTypeOf<BuiltInRejectionType | 'CustomRejection'>()
+      // ok
+      push('root')
+      // @ts-expect-error does not know about routes outside of router
+      push('fakeRoute')
     })
   })
 })

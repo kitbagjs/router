@@ -51,20 +51,6 @@ describe('options.rejections', () => {
       rejections: [customRejection],
     })
 
-    route.onBeforeRouteUpdate((_to, { push }) => {
-      // ok
-      push('root')
-      // @ts-expect-error does not know about routes outside of context
-      push('fakeRoute')
-    })
-
-    router.onBeforeRouteUpdate((_to, { push }) => {
-      // ok
-      push('root')
-      // @ts-expect-error does not know about routes outside of router
-      push('fakeRoute')
-    })
-
     const root = {
       template: '<RouterView/>',
     }
