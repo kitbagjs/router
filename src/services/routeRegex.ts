@@ -53,10 +53,8 @@ export function generateRouteHostRegexPattern(host: string): RegExp {
 
 export function generateRoutePathRegexPattern(path: string): RegExp {
   const pathRegex = replaceParamSyntaxWithCatchAllsAndEscapeRest(path)
-  const hasTrailingSlash = path.endsWith('/')
-  const normalizedRegex = hasTrailingSlash ? pathRegex.replace(/\/$/, '') + '\\/?' : pathRegex
 
-  return new RegExp(`^${normalizedRegex}$`, 'i')
+  return new RegExp(`^${pathRegex}$`, 'i')
 }
 
 export function generateRouteHashRegexPattern(hash: string): RegExp {

@@ -85,15 +85,6 @@ describe('generateRoutePathRegexPattern', () => {
     const expected = new RegExp(`^parent/${regexCatchAll}/${regexGreedyCatchAll}/${regexCatchAll}$`, 'i')
     expect(result.toString()).toBe(expected.toString())
   })
-
-  test('given path with trailing slash, returns pattern with optional trailing slash', () => {
-    const path = 'parent/child/'
-
-    const result = generateRoutePathRegexPattern(path)
-
-    const expected = new RegExp('^parent/child\\/?$', 'i')
-    expect(result.toString()).toBe(expected.toString())
-  })
 })
 
 describe('generateRouteQueryRegexPatterns', () => {

@@ -3,7 +3,7 @@ import { getParamValueFromUrl, setParamValueOnUrl } from '@/services/paramsFinde
 import { getParamName, generateRouteHostRegexPattern, generateRoutePathRegexPattern, generateRouteQueryRegexPatterns, generateRouteHashRegexPattern } from '@/services/routeRegex'
 import { getParamValue, setParamValue } from '@/services/params'
 import { parseUrl, stringifyUrl } from '@/services/urlParser'
-import { IS_URL_SYMBOL, CreateUrlOptions, ToUrl, Url } from '@/types/url'
+import { IS_URL_SYMBOL, CreateUrlOptions, ToUrl, Url, ParseUrlOptions } from '@/types/url'
 import { UrlString } from '@/types/urlString'
 import { checkDuplicateParams } from '@/utilities/checkDuplicateParams'
 import { stringHasValue } from '@/utilities/guards'
@@ -29,7 +29,10 @@ export function createUrl(urlOrOptions: CreateUrlOptions): Url {
 
   const path = {
     ...options.path,
-    regexp: generateRoutePathRegexPattern(options.path.value),
+    regexp: {
+      trailingSlashIgnored: generateRoutePathRegexPattern(options.path.value),
+      trailingSlashRemoved: generateRoutePathRegexPattern(options.path.value.replace(/^(.+)\/$/, '$1')),
+    },
     stringify(params: Record<string, unknown> = {}): string {
       return assembleParamValues(options.path, params)
     },
@@ -60,7 +63,32 @@ export function createUrl(urlOrOptions: CreateUrlOptions): Url {
     })
   }
 
-  function parse(url: string): Record<string, unknown> {
+  function checkMatchesRegex(url: string, options: ParseUrlOptions = {}): void {
+    const parts = parseUrl(url)
+    const shouldRemoveTrailingSlashes = options.removeTrailingSlashes ?? true
+
+    if (!host.regexp.test(parts.host ?? '')) {
+      throw new Error('Host does not match')
+    }
+
+    const pathRegex = shouldRemoveTrailingSlashes ? path.regexp.trailingSlashRemoved : path.regexp.trailingSlashIgnored
+    if (!pathRegex.test(parts.path)) {
+      throw new Error('Path does not match')
+    }
+
+    const queryString = parts.query.toString()
+    if (!query.regexp.every((pattern) => pattern.test(queryString))) {
+      throw new Error('Query does not match')
+    }
+
+    if (!hash.regexp.test(parts.hash)) {
+      throw new Error('Hash does not match')
+    }
+  }
+
+  function parse(url: string, options: ParseUrlOptions = {}): Record<string, unknown> {
+    checkMatchesRegex(url, options)
+
     const parts = parseUrl(url)
 
     return {
@@ -71,28 +99,9 @@ export function createUrl(urlOrOptions: CreateUrlOptions): Url {
     }
   }
 
-  function tryParse(url: string): { success: true, params: Record<string, unknown> } | { success: false, params: {}, error: Error } {
-    const parts = parseUrl(url)
-
-    if (!host.regexp.test(parts.host ?? '')) {
-      return { success: false, params: {}, error: new Error('Host does not match') }
-    }
-
-    if (!path.regexp.test(parts.path)) {
-      return { success: false, params: {}, error: new Error('Path does not match') }
-    }
-
-    const queryString = parts.query.toString()
-    if (!query.regexp.every((pattern) => pattern.test(queryString))) {
-      return { success: false, params: {}, error: new Error('Query does not match') }
-    }
-
-    if (!hash.regexp.test(parts.hash)) {
-      return { success: false, params: {}, error: new Error('Hash does not match') }
-    }
-
+  function tryParse(url: string, options: ParseUrlOptions = {}): { success: true, params: Record<string, unknown> } | { success: false, params: {}, error: Error } {
     try {
-      return { success: true, params: parse(url) }
+      return { success: true, params: parse(url, options) }
     } catch (cause) {
       return { success: false, params: {}, error: new Error('Failed to parse url', { cause }) }
     }
