@@ -22,3 +22,13 @@ test('given value for base, returns route with base prefixed', () => {
 
   expect(response.stringify()).toBe('/kitbag/foo')
 })
+
+test('given route with path "/" and base, returns route without trailing slash', () => {
+  const base = '/kitbag'
+
+  const route = createRoute({ name: 'foo', path: '/' })
+
+  const response = insertBaseRoute(route, base)
+
+  expect(response.stringify()).toBe('/kitbag')
+})
