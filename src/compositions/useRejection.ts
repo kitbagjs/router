@@ -1,14 +1,13 @@
 import { InjectionKey, inject } from 'vue'
 import { RouterNotInstalledError } from '@/errors/routerNotInstalledError'
-import { RouterRejection } from '@/services/createRouterReject'
+import { RouterRejection, RouterRejections } from '@/services/createRouterReject'
 import { createRouterKeyStore } from '@/services/createRouterKeyStore'
 import { Router } from '@/types/router'
 
 export const getRouterRejectionInjectionKey = createRouterKeyStore<RouterRejection>()
 
-type UseRejectionFunction = () => RouterRejection
-
-export function createUseRejection(routerKey: InjectionKey<Router>): UseRejectionFunction {
+export function createUseRejection<TRouter extends Router>(routerKey: InjectionKey<TRouter>): () => RouterRejection<RouterRejections<TRouter>>
+export function createUseRejection(routerKey: InjectionKey<Router>): () => RouterRejection {
   const routerRejectionKey = getRouterRejectionInjectionKey(routerKey)
 
   return (): RouterRejection => {

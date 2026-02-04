@@ -9,6 +9,7 @@ import { createUseQueryValue } from '@/compositions/useQueryValue'
 import { createUseLink } from '@/compositions/useLink'
 import { createIsRoute } from '@/guards/routes'
 import { AddBeforeLeaveHook, AddBeforeUpdateHook, AddAfterLeaveHook, AddAfterUpdateHook } from '@/types/hooks'
+import { createUseRejection } from '@/compositions/useRejection'
 
 export type RouterAssets<TRouter extends Router> = {
   /**
@@ -125,6 +126,14 @@ export type RouterAssets<TRouter extends Router> = {
    * @group Compositions
    */
   useLink: ReturnType<typeof createUseLink<TRouter>>,
+
+  /**
+   * A composition to access the rejection from the router.
+   *
+   * @returns The rejection from the router.
+   * @group Compositions
+   */
+  useRejection: ReturnType<typeof createUseRejection<TRouter>>,
 }
 
 export function createRouterAssets<TRouter extends Router>(router: TRouter): RouterAssets<TRouter>
@@ -148,6 +157,7 @@ export function createRouterAssets<TRouter extends Router>(routerOrRouterKey: TR
   const useRouter = createUseRouter(routerKey)
   const useQueryValue = createUseQueryValue(routerKey)
   const useLink = createUseLink(routerKey)
+  const useRejection = createUseRejection(routerKey)
 
   return {
     onBeforeRouteLeave,
@@ -161,5 +171,6 @@ export function createRouterAssets<TRouter extends Router>(routerOrRouterKey: TR
     useRouter,
     useQueryValue,
     useLink,
+    useRejection,
   }
 }

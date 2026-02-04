@@ -4,6 +4,8 @@ import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
 import { createRouteId } from '@/services/createRouteId'
 import { ResolvedRoute } from '@/types/resolved'
 import { Rejection } from '@/types/rejection'
+import { Router } from '@/types/router'
+import { RouterReject } from '@/types/routerReject'
 
 export type BuiltInRejectionType = 'NotFound'
 
@@ -11,7 +13,8 @@ export type RouterSetReject = (type: string | null) => void
 
 type GetRejectionRoute = (type: string) => ResolvedRoute
 
-export type RouterRejection = Ref<Rejection | null>
+export type RouterRejection<T extends Rejection = Rejection> = Ref<T | null>
+export type RouterRejections<TRouter extends Router> = TRouter['reject'] extends RouterReject<infer TRejections extends Rejection[]> ? TRejections[number] : never
 
 export type CreateRouterReject = {
   setRejection: RouterSetReject,

@@ -166,6 +166,14 @@ export const useQueryValue: RouterAssets<RegisteredRouter>['useQueryValue'] = ro
  */
 export const useLink: RouterAssets<RegisteredRouter>['useLink'] = routerAssets.useLink
 
+/**
+ * A composition to access the rejection from the router.
+ *
+ * @returns The rejection from the router.
+ * @group Compositions
+ */
+export const useRejection: RouterAssets<RegisteredRouter>['useRejection'] = routerAssets.useRejection
+
 declare module 'vue' {
   export interface GlobalComponents {
     RouterView: typeof RouterView,
