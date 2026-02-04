@@ -115,7 +115,7 @@ export function createRouter<
     const filteredRoutes = routes.filter((route) => route.isRelative === urlIsRelative)
     const parseOptions = { removeTrailingSlashes: shouldRemoveTrailingSlashes }
 
-    return getMatchForUrl(filteredRoutes, { url, resolveOptions, parseOptions })
+    return getMatchForUrl(filteredRoutes, url, { ...resolveOptions, ...parseOptions })
   }
 
   async function set(url: string, options: RouterUpdateOptions = {}): Promise<void> {
