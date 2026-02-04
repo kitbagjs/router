@@ -814,3 +814,32 @@ describe('hooks', () => {
     })
   })
 })
+
+test('given parent, context is combined', () => {
+  const parentRejection = createRejection({ type: 'aRejection' })
+  const childRelated = createRoute({ name: 'bRoute' })
+
+  const parent = createRoute({
+    meta: {
+      foo: 123,
+    },
+    context: [parentRejection],
+  })
+
+  const child = createRoute({
+    parent,
+    context: [childRelated],
+    meta: {
+      bar: 'zoo',
+    },
+  })
+
+  child.onAfterRouteEnter((_to, { push, reject }) => {
+    expectTypeOf(reject).parameters.toEqualTypeOf<['NotFound' | 'aRejection']>()
+
+    // ok
+    push('bRoute')
+    // @ts-expect-error should not accept an invalid route name
+    push('fakeRoute')
+  })
+})

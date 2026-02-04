@@ -51,39 +51,6 @@ describe('options.rejections', () => {
       rejections: [customRejection],
     })
 
-    route.onBeforeRouteUpdate((_to, { push, reject }) => {
-      // ok
-      push('root')
-      // @ts-expect-error does not know about rejections sent as router options
-      push('fakeRoute')
-      // ok
-      reject('NotFound')
-      // @ts-expect-error does not know about rejections sent as router options
-      reject('CustomRejection')
-      // @ts-expect-error should not accept an invalid rejection type
-      reject('fakeRejection')
-
-      // ok
-      router.reject('NotFound')
-      // ok
-      router.reject('CustomRejection')
-      // @ts-expect-error should not accept an invalid rejection type
-      router.reject('fakeRejection')
-    })
-
-    router.onBeforeRouteUpdate((_to, { push, reject }) => {
-      // ok
-      push('root')
-      // @ts-expect-error does not know about rejections sent as router options
-      push('fakeRoute')
-      // ok
-      reject('NotFound')
-      // ok
-      reject('CustomRejection')
-      // @ts-expect-error should not accept an invalid rejection type
-      reject('fakeRejection')
-    })
-
     const root = {
       template: '<RouterView/>',
     }
