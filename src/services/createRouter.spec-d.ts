@@ -153,6 +153,56 @@ describe('rejections', () => {
   })
 })
 
+describe('options.rejections in hooks', () => {
+  test('route hooks do not have access to router-level rejections', () => {
+    const route = createRoute({
+      name: 'root',
+      path: '/',
+      component,
+    })
+
+    const customRejection = createRejection({
+      type: 'CustomRejection',
+      component: { template: '<div>This is a custom rejection</div>' },
+    })
+
+    createRouter([route], {
+      initialUrl: '/',
+      rejections: [customRejection],
+    })
+
+    route.onBeforeRouteUpdate((_to, { reject }) => {
+      type RejectParam = Parameters<typeof reject>[0]
+
+      expectTypeOf<RejectParam>().toEqualTypeOf<BuiltInRejectionType>()
+    })
+  })
+
+  test('router hooks have access to router-level rejections', () => {
+    const route = createRoute({
+      name: 'root',
+      path: '/',
+      component,
+    })
+
+    const customRejection = createRejection({
+      type: 'CustomRejection',
+      component: { template: '<div>This is a custom rejection</div>' },
+    })
+
+    const router = createRouter([route], {
+      initialUrl: '/',
+      rejections: [customRejection],
+    })
+
+    router.onBeforeRouteUpdate((_to, { reject }) => {
+      type RejectParam = Parameters<typeof reject>[0]
+
+      expectTypeOf<RejectParam>().toEqualTypeOf<BuiltInRejectionType | 'CustomRejection'>()
+    })
+  })
+})
+
 describe('route.matched.meta', () => {
   test('is always defined', () => {
     const routeA = createRoute({
