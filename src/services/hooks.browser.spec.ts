@@ -300,10 +300,13 @@ test('async beforeEnter hook with reject prevents navigation after awaiting', as
     },
   })
 
+  const targetSetup = vi.fn()
+
   const target = createRoute({
     name: 'target',
     path: '/target',
     component: {
+      setup: targetSetup,
       template: '<h1>Target</h1>',
     },
   })
@@ -335,4 +338,5 @@ test('async beforeEnter hook with reject prevents navigation after awaiting', as
 
   expect(router.route.name).toBe('home')
   expect(wrapper.html()).toBe('<h1>NotFound</h1>')
+  expect(targetSetup).not.toHaveBeenCalled()
 })
