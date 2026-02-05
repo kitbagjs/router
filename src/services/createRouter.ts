@@ -151,7 +151,7 @@ export function createRouter<
       case 'REJECT':
         history.update(url, options)
         setRejection(beforeResponse.type)
-        break
+        return
 
       // On success update history, set the route, and clear the rejection
       case 'SUCCESS':

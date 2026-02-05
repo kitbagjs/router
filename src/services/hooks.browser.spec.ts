@@ -288,3 +288,45 @@ test('component hooks are called correctly', async () => {
   expect(parentHooks.afterLeave).toHaveBeenCalledTimes(1)
   expect(parentHooks.afterUpdate).toHaveBeenCalledTimes(2)
 })
+
+test.only('async beforeEnter hook with reject prevents navigation after awaiting', async () => {
+  const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms))
+
+  const home = createRoute({
+    name: 'home',
+    path: '/',
+  })
+
+  const target = createRoute({
+    name: 'target',
+    path: '/target',
+  })
+
+  target.onBeforeRouteEnter(async (_to, { reject }) => {
+    await sleep(50)
+    reject('NotFound')
+  })
+
+  const router = createRouter([home, target], {
+    initialUrl: '/',
+  })
+
+  const root = {
+    template: '<RouterView />',
+  }
+
+  const wrapper = mount(root, {
+    global: {
+      plugins: [router],
+    },
+  })
+
+  await router.start()
+
+  expect(router.route.name).toBe('home')
+
+  await router.push('target')
+
+  expect(router.route.name).toBe('home')
+  expect(wrapper.html()).toBe('<h1>NotFound</h1>')
+})
