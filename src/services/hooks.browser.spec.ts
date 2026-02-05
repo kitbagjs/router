@@ -289,17 +289,23 @@ test('component hooks are called correctly', async () => {
   expect(parentHooks.afterUpdate).toHaveBeenCalledTimes(2)
 })
 
-test.only('async beforeEnter hook with reject prevents navigation after awaiting', async () => {
+test('async beforeEnter hook with reject prevents navigation after awaiting', async () => {
   const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms))
 
   const home = createRoute({
     name: 'home',
     path: '/',
+    component: {
+      template: '<h1>Home</h1><RouterView/>',
+    },
   })
 
   const target = createRoute({
     name: 'target',
     path: '/target',
+    component: {
+      template: '<h1>Target</h1>',
+    },
   })
 
   target.onBeforeRouteEnter(async (_to, { reject }) => {
