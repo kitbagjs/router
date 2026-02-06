@@ -15,7 +15,7 @@ export type RouterViewProps = {
 type RouterViewSlots = {
   default?: (props: {
     route: RouterRoute,
-    component: Component,
+    component: Component | null,
     rejection: UnwrapRef<RouterRejection>,
   }) => VNode,
 }
@@ -66,7 +66,7 @@ export function createRouterView<TRouter extends Router>(routerKey: InjectionKey
       if (context.slots.default) {
         return context.slots.default({
           route,
-          component,
+          component: component.value,
           rejection: rejection.value,
         })
       }
