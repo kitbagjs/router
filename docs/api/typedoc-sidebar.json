@@ -12,6 +12,10 @@
         "link": "/api/compositions/useQueryValue.md"
       },
       {
+        "text": "useRejection",
+        "link": "/api/compositions/useRejection.md"
+      },
+      {
         "text": "useRoute",
         "link": "/api/compositions/useRoute.md"
       },
