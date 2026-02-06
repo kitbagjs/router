@@ -4,6 +4,7 @@
 
 - [useLink](compositions/useLink.md)
 - [useQueryValue](compositions/useQueryValue.md)
+- [useRejection](compositions/useRejection.md)
 - [useRoute](compositions/useRoute.md)
 - [useRouter](compositions/useRouter.md)
 
