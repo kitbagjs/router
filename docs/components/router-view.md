@@ -28,7 +28,7 @@ The default slot can be used to layer in a [Vue transition](https://vuejs.org/gu
 
 ```html
 <router-view>
-  <template #default={ component }>
+  <template #default="{ component }">
     <transition name="fade">
       <component :is="component" />
     </transition>
@@ -42,7 +42,7 @@ Vue will reuse components if a route change ends up rendering the same underlyin
 
 ```html{3}
 <router-view>
-  <template #default={ component, route }>
+  <template #default="{ component, route }">
     <transition name="fade" :key="route.href">
       <component :is="component" />
     </transition>
