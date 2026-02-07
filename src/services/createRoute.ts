@@ -4,7 +4,7 @@ import { CreateRouteOptions, PropsGetter, CreateRouteProps, ToRoute, combineRout
 import { toName } from '@/types/name'
 import { Route } from '@/types/route'
 import { createRouteHooks } from '@/services/createRouteHooks'
-import { toWithParams } from '@/services/withParams'
+import { toUrlPart } from '@/services/withParams'
 import { createUrl } from '@/services/createUrl'
 import { createRouteRedirects } from '@/services/createRouteRedirects'
 import { combineUrl } from '@/services/combineUrl'
@@ -35,9 +35,9 @@ export function createRoute<
 export function createRoute(options: CreateRouteOptions, props?: CreateRouteProps): Route {
   const id = createRouteId()
   const name = toName(options.name)
-  const path = toWithParams(options.path)
-  const query = toWithParams(options.query)
-  const hash = toWithParams(options.hash)
+  const path = toUrlPart(options.path)
+  const query = toUrlPart(options.query)
+  const hash = toUrlPart(options.hash)
   const meta = options.meta ?? {}
   const state = options.state ?? {}
   const context = options.context ?? []

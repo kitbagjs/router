@@ -57,11 +57,11 @@ test.each([
   await initZod()
 
   if (typeof parsed === 'string' || typeof parsed === 'number' || typeof parsed === 'boolean' || typeof parsed === 'bigint') {
-    expect(safeGetParamValue(string, schema)).toBe(parsed)
-    expect(safeSetParamValue(parsed, schema)).toBe(string)
+    expect(safeGetParamValue(string, [schema])).toBe(parsed)
+    expect(safeSetParamValue(parsed, [schema])).toBe(string)
   } else {
-    expect(safeGetParamValue(string, schema)).toMatchObject(parsed)
-    expect(safeSetParamValue(parsed, schema)).toBe(string)
+    expect(safeGetParamValue(string, [schema])).toMatchObject(parsed)
+    expect(safeSetParamValue(parsed, [schema])).toBe(string)
   }
 })
 
@@ -71,6 +71,6 @@ test.each([
 ])('$type schemas are not supported', async ({ schema }) => {
   await initZod()
 
-  expect(safeGetParamValue('test', schema)).toBeUndefined()
-  expect(safeSetParamValue('test', schema)).toBeUndefined()
+  expect(safeGetParamValue('test', [schema])).toBeUndefined()
+  expect(safeSetParamValue('test', [schema])).toBeUndefined()
 })

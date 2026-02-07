@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest'
-import { generateRouteHostRegexPattern, generateRoutePathRegexPattern, generateRouteQueryRegexPatterns, getParamName, paramIsGreedy, regexCaptureAll, regexCatchAll, regexGreedyCatchAll, regexGreedyCaptureAll, replaceIndividualParamWithCaptureGroup, splitByMatches } from '@/services/routeRegex'
+import { generateRouteHostRegexPattern, generateRoutePathRegexPattern, generateRouteQueryRegexPatterns, getParamName, regexCaptureAll, regexCatchAll, regexGreedyCatchAll, regexGreedyCaptureAll, replaceIndividualParamWithCaptureGroup, splitByMatches } from '@/services/routeRegex'
+import { withParams } from './withParams'
 
 describe('generateRouteHostRegexPattern', () => {
   test('given host without params, returns unmodified value with start and end markers', () => {
@@ -162,35 +163,9 @@ describe('getParamName', () => {
   })
 })
 
-describe('paramIsGreedy', () => {
-  test('given path with greedy param syntax, returns true for that param', () => {
-    const path = '/foo/[bar*]/baz'
-
-    expect(paramIsGreedy(path, 'bar')).toBe(true)
-  })
-
-  test('given path with optional greedy param syntax, returns true for that param', () => {
-    const path = '/foo/[?bar*]/baz'
-
-    expect(paramIsGreedy(path, 'bar')).toBe(true)
-  })
-
-  test('given path with normal param syntax, returns false for that param', () => {
-    const path = '/foo/[bar]/baz'
-
-    expect(paramIsGreedy(path, 'bar')).toBe(false)
-  })
-
-  test('given path with optional param syntax, returns false for that param', () => {
-    const path = '/foo/[?bar]/baz'
-
-    expect(paramIsGreedy(path, 'bar')).toBe(false)
-  })
-})
-
 describe('replaceIndividualParamWithCaptureGroup', () => {
   test('given normal param, replaces with segment capture pattern', () => {
-    const path = '/[id]/suffix'
+    const path = withParams('/[id]/suffix', { id: String })
 
     const result = replaceIndividualParamWithCaptureGroup(path, 'id')
 
@@ -198,7 +173,7 @@ describe('replaceIndividualParamWithCaptureGroup', () => {
   })
 
   test('given greedy param, replaces with greedy capture pattern', () => {
-    const path = '/[rest*]/suffix'
+    const path = withParams('/[rest*]/suffix', { rest: String })
 
     const result = replaceIndividualParamWithCaptureGroup(path, 'rest')
 

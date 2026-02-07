@@ -1,12 +1,12 @@
-import { WithParams } from '@/services/withParams'
+import { UrlPart } from '@/services/withParams'
 import { combinePath, CombinePath } from '@/services/combinePath'
 
-export type CombineHash<
-  TParent extends WithParams,
-  TChild extends WithParams
+type CombineHash<
+  TParent extends UrlPart,
+  TChild extends UrlPart
 > = CombinePath<TParent, TChild>
 
-export function combineHash<TParentHash extends WithParams, TChildHash extends WithParams>(parentHash: TParentHash, childHash: TChildHash): CombineHash<TParentHash, TChildHash>
-export function combineHash(parentHash: WithParams, childHash: WithParams): WithParams {
+export function combineHash<TParentHash extends UrlPart, TChildHash extends UrlPart>(parentHash: TParentHash, childHash: TChildHash): CombineHash<TParentHash, TChildHash>
+export function combineHash(parentHash: UrlPart, childHash: UrlPart): UrlPart {
   return combinePath(parentHash, childHash)
 }

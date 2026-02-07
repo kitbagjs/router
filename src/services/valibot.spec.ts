@@ -36,10 +36,10 @@ test.each([
   { schema: v.set(v.number()), string: '[1,2,3]', parsed: new Set([1, 2, 3]) },
 ])('given $schema.type, returns $parsed for $string', async ({ schema, string, parsed }) => {
   if (typeof parsed === 'string' || typeof parsed === 'number' || typeof parsed === 'boolean') {
-    expect(safeGetParamValue(string, schema)).toBe(parsed)
-    expect(safeSetParamValue(parsed, schema)).toBe(string)
+    expect(safeGetParamValue(string, [schema])).toBe(parsed)
+    expect(safeSetParamValue(parsed, [schema])).toBe(string)
   } else {
-    expect(safeGetParamValue(string, schema)).toMatchObject(parsed)
-    expect(safeSetParamValue(parsed, schema)).toBe(string)
+    expect(safeGetParamValue(string, [schema])).toMatchObject(parsed)
+    expect(safeSetParamValue(parsed, [schema])).toBe(string)
   }
 })

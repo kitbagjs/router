@@ -8,8 +8,6 @@ export type Identity<T> = T extends object ? {} & {
 
 type IsEmptyObject<T> = T extends Record<string, never> ? (keyof T extends never ? true : false) : false
 
-export type MaybeArray<T> = T | T[]
-
 export type LastInArray<T, TFallback = never> = T extends [...any[], infer Last] ? Last : TFallback
 
 export type MaybePromise<T> = T | Promise<T>

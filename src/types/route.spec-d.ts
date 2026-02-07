@@ -16,6 +16,7 @@ describe('ExtractRouteParamTypes', () => {
       }),
       hash: '[inHash]',
     })
+
     type TestRoute = typeof testRoute
 
     type SourceWriting = UrlParamsWriting<TestRoute>
