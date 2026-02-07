@@ -400,6 +400,55 @@ describe('url assembly', () => {
 
       expect(response).toBe('/?s=foo')
     })
+
+    test('given route with query params defined in a record, returns route Query with string with values interpolated', () => {
+      const url = createUrl({
+        name: 'simple',
+        path: '/',
+        query: { s: 'ABC' },
+      })
+
+      const response = url.stringify()
+
+      expect(response).toBe('/?s=ABC')
+    })
+
+    // todo withDefault doesn't work type-wise
+    test('given route with query params defined in a record, returns route Query with string with values interpolated', () => {
+      const url = createUrl({
+        name: 'simple',
+        path: '/',
+        query: { s: Boolean },
+      })
+
+      const response = url.stringify({ s: true })
+
+      expect(response).toBe('/?s=true')
+    })
+
+    test('given route with query params defined in a array, returns route Query with string with values interpolated', () => {
+      const url = createUrl({
+        name: 'simple',
+        path: '/',
+        query: [['s', 'ABC']],
+      })
+
+      const response = url.stringify()
+
+      expect(response).toBe('/?s=ABC')
+    })
+
+    test('given route with query params defined in a array, returns route Query with string with values interpolated', () => {
+      const url = createUrl({
+        name: 'simple',
+        path: '/',
+        query: [['s', Boolean]],
+      })
+
+      const response = url.stringify({ s: true })
+
+      expect(response).toBe('/?s=true')
+    })
   })
 
   describe('host params', () => {

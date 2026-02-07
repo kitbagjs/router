@@ -26,3 +26,16 @@ export type AllPropertiesAreOptional<T> = Record<string, unknown> extends T
  * rather than string | number | symbol.
  */
 export type AsString<T> = T extends string ? T : never
+
+export type Entries<T> = {
+  [K in keyof T]: [K, T[K]]
+}[keyof T]
+
+export type UnionToIntersection<U> =
+  (U extends any ? (k: U) => void : never) extends ((k: infer I) => void) ? I : never
+
+export type LastOf<T> =
+  UnionToIntersection<T extends any ? () => T : never> extends () => infer R ? R : never
+
+export type UnionToTuple<T, L = LastOf<T>, N = [T] extends [never] ? true : false> =
+  true extends N ? [] : [...UnionToTuple<Exclude<T, L>>, L]
