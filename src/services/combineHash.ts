@@ -1,7 +1,7 @@
 import { UrlPart } from '@/services/withParams'
 import { combinePath, CombinePath } from '@/services/combinePath'
 
-export type CombineHash<
+type CombineHash<
   TParent extends UrlPart,
   TChild extends UrlPart
 > = CombinePath<TParent, TChild>

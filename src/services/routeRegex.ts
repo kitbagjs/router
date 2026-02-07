@@ -11,7 +11,7 @@ export const regexGreedyCatchAll = '.*'
 export const regexCaptureAll = '([^/]*)'
 export const regexGreedyCaptureAll = '(.*)'
 
-export function escapeRegExp(string: string): string {
+function escapeRegExp(string: string): string {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
@@ -77,7 +77,7 @@ export function generateRouteQueryRegexPatterns(query: string): RegExp[] {
     })
 }
 
-export function replaceParamSyntaxWithCatchAllsAndEscapeRest(value: string): string {
+function replaceParamSyntaxWithCatchAllsAndEscapeRest(value: string): string {
   return splitByMatches(value, new RegExp(paramRegex, 'g'))
     .map((slice) => {
       const isParam = slice.startsWith(paramStart)

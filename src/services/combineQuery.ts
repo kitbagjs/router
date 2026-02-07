@@ -2,7 +2,7 @@ import { checkDuplicateParams } from '@/utilities/checkDuplicateParams'
 import { stringHasValue } from '@/utilities/guards'
 import { ToUrlPart, UrlPart, UrlParams } from '@/services/withParams'
 
-export type CombineQuery<
+type CombineQuery<
   TParent extends UrlPart,
   TChild extends UrlPart
 > = ToUrlPart<TParent> extends { params: infer TParentParams extends UrlParams }
