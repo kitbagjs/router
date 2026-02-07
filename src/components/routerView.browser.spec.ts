@@ -578,3 +578,63 @@ test('prefetched async props trigger push when navigation is initiated', async (
 
   expect(wrapper.text()).toBe('routeC')
 })
+
+test('Renders correct component when using default slot', async () => {
+  const myRejection = createRejection({
+    type: 'myRejection',
+    component: {
+      template: 'My Rejection',
+    },
+  })
+
+  const foo = createRoute({
+    name: 'foo',
+    path: '/foo',
+    component: {
+      template: 'Foo',
+    },
+  })
+
+  const bar = createRoute({
+    name: 'bar',
+    path: '/bar',
+    component: {
+      template: 'Bar',
+    },
+  })
+
+  const router = createRouter([foo, bar], {
+    initialUrl: '/foo',
+    rejections: [myRejection],
+  })
+
+  await router.start()
+
+  const wrapper = mount({
+    template: `
+      <router-view>
+        <template #default="{ component }">
+          <transition name="fade">
+            <component :is="component" />
+          </transition>
+        </template>
+      </router-view>
+      `,
+  }, {
+    global: {
+      plugins: [router],
+    },
+  })
+
+  expect(wrapper.text()).toBe('Foo')
+
+  await router.push('bar')
+
+  expect(wrapper.text()).toBe('Bar')
+
+  router.reject('myRejection')
+
+  await flushPromises()
+
+  expect(wrapper.text()).toBe('My Rejection')
+})
