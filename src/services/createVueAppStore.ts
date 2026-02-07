@@ -4,7 +4,7 @@ export type HasVueAppStore = {
   setVueApp: (app: App) => void,
 }
 
-export type VueAppStore = HasVueAppStore & {
+type VueAppStore = HasVueAppStore & {
   runWithContext: <T>(callback: () => T) => T,
 }
 

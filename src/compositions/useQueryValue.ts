@@ -5,7 +5,7 @@ import { Param } from '@/types/paramTypes'
 import { ExtractParamType } from '@/types/params'
 import { safeGetParamValue, setParamValue } from '@/services/params'
 
-export type UseQueryValue<T> = {
+type UseQueryValue<T> = {
   value: Ref<T | null>,
   values: Ref<T[]>,
   remove: () => void,
