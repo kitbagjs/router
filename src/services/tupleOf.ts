@@ -19,7 +19,7 @@ export function tupleOf<const T extends Param[]>(params: T, options: TupleOfOpti
     get: (value) => {
       const values = value.split(separator)
 
-      return params.map((param, index) => getParamValue(values.at(index), param)) as TupleOf<T>
+      return params.map((param, index) => getParamValue(values.at(index), [param])) as TupleOf<T>
     },
     set: (value, { invalid }) => {
       if (!Array.isArray(value)) {
@@ -30,7 +30,7 @@ export function tupleOf<const T extends Param[]>(params: T, options: TupleOfOpti
         throw invalid(`Expected tuple with ${params.length} values but received ${value.length} values`)
       }
 
-      return params.map((param, index) => setParamValue(value.at(index), param)).join(separator)
+      return params.map((param, index) => setParamValue(value.at(index), [param])).join(separator)
     },
   }
 }

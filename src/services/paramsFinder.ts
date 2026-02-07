@@ -1,8 +1,8 @@
 import { setParamValue } from '@/services/params'
-import { getCaptureGroups, getParamRegexPattern, paramIsOptional, replaceIndividualParamWithCaptureGroup, replaceParamSyntaxWithCatchAlls } from '@/services/routeRegex'
-import { WithParams } from './withParams'
+import { getCaptureGroups, getParamRegexPattern, replaceIndividualParamWithCaptureGroup, replaceParamSyntaxWithCatchAlls } from '@/services/routeRegex'
+import { UrlPart } from './withParams'
 
-export function getParamValueFromUrl(url: string, path: WithParams, paramName: string): string | undefined {
+export function getParamValueFromUrl(url: string, path: UrlPart, paramName: string): string | undefined {
   const paramNameCaptureGroup = replaceIndividualParamWithCaptureGroup(path.value, paramName)
   const otherParamsCatchAll = replaceParamSyntaxWithCatchAlls(paramNameCaptureGroup)
 
@@ -11,9 +11,8 @@ export function getParamValueFromUrl(url: string, path: WithParams, paramName: s
   return paramValue
 }
 
-export function setParamValueOnUrl(url: string, path: WithParams, paramName: string, value: unknown): string {
-  const isOptional = paramIsOptional(path.value, paramName)
-  const paramValue = setParamValue(value, path.params[paramName], isOptional)
+export function setParamValueOnUrl(url: string, path: UrlPart, paramName: string, value: unknown): string {
+  const paramValue = setParamValue(value, path.params[paramName] ?? [String])
 
   return url.replace(getParamRegexPattern(paramName), paramValue)
 }

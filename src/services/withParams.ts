@@ -1,6 +1,6 @@
 import { getParamsForString } from '@/services/getParamsForString'
-import { ExtractParamName, ParamEnd, ParamStart } from '@/types/params'
-import { Param } from '@/types/paramTypes'
+import { ExtractParamName, ParamEnd, ParamIsGreedy, ParamIsOptional, ParamStart } from '@/types/params'
+import { Param, ParamOptions } from '@/types/paramTypes'
 import { Identity } from '@/types/utilities'
 import { isRecord } from '@/utilities/guards'
 import { MakeOptional } from '@/utilities/makeOptional'
@@ -16,37 +16,46 @@ type WithParamsParamsOutput<
   TParams extends Record<string, Param | undefined> = Record<never, never>
 > = TValue extends `${string}${ParamStart}${infer TParam}${ParamEnd}${infer Rest}`
   ? ExtractParamName<TParam> extends keyof TParams
-    ? Record<ExtractParamName<TParam>, TParams[ExtractParamName<TParam>]> & WithParamsParamsOutput<Rest, TParams>
-    : Record<ExtractParamName<TParam>, StringConstructor> & WithParamsParamsOutput<Rest, TParams>
+    ? TParams[ExtractParamName<TParam>] extends Param
+      ? Record<ExtractParamName<TParam>, [TParams[ExtractParamName<TParam>], ExtractParamOptions<TParam>]> & WithParamsParamsOutput<Rest, TParams>
+      : Record<ExtractParamName<TParam>, [StringConstructor, ExtractParamOptions<TParam>]> & WithParamsParamsOutput<Rest, TParams>
+    : Record<ExtractParamName<TParam>, [StringConstructor, ExtractParamOptions<TParam>]> & WithParamsParamsOutput<Rest, TParams>
   : {}
 
-export type WithParams<
-  TValue extends string = string,
-  TParams extends Record<string, Param | undefined> = Record<string, Param | undefined>
-> = {
-  value: TValue,
-  params: string extends TValue ? Record<string, Param> : Identity<WithParamsParamsOutput<TValue, TParams>>,
+type ExtractParamOptions<TParam extends string> = Identity<{
+  isOptional: ParamIsOptional<TParam>,
+  isGreedy: ParamIsGreedy<TParam>,
+}>
+
+const UrlPartsWithParamsSymbol = Symbol('UrlPartsWithParams')
+
+export type UrlParams = Record<string, [Param, ParamOptions]>
+
+export type UrlPart<TParams extends UrlParams = UrlParams> = {
+  value: string,
+  params: Identity<TParams>,
+  [UrlPartsWithParamsSymbol]: true,
 }
 
-export type ToWithParams<T extends string | WithParams | undefined> = T extends string
-  ? WithParams<T, {}>
+export type ToUrlPart<T extends string | UrlPart | undefined> = T extends string
+  ? UrlPart<WithParamsParamsOutput<T>>
   : T extends undefined
-    ? WithParams<'', {}>
+    ? UrlPart<{}>
     : unknown extends T
-      ? WithParams<'', {}>
+      ? UrlPart<{}>
       : T
 
-function isWithParams(maybeWithParams: unknown): maybeWithParams is WithParams {
-  return isRecord(maybeWithParams) && typeof maybeWithParams.value === 'string'
+function isUrlPartsWithParams(maybeUrlPartsWithParams: unknown): maybeUrlPartsWithParams is UrlPart {
+  return isRecord(maybeUrlPartsWithParams) && maybeUrlPartsWithParams[UrlPartsWithParamsSymbol] === true
 }
 
-export function toWithParams<T extends string | WithParams | undefined>(value: T): ToWithParams<T>
-export function toWithParams<T extends string | WithParams | undefined>(value: T): WithParams {
+export function toUrlPart<T extends string | UrlPart | undefined>(value: T): ToUrlPart<T>
+export function toUrlPart<T extends string | UrlPart | undefined>(value: T): UrlPart {
   if (value === undefined) {
     return withParams()
   }
 
-  if (isWithParams(value)) {
+  if (isUrlPartsWithParams(value)) {
     return value
   }
 
@@ -56,11 +65,12 @@ export function toWithParams<T extends string | WithParams | undefined>(value: T
 export function withParams<
   const TValue extends string,
   const TParams extends MakeOptional<WithParamsParamsInput<TValue>>
->(value: TValue, params: TParams): WithParams<TValue, TParams>
-export function withParams(): WithParams<'', {}>
-export function withParams(value?: string, params?: Record<string, Param | undefined>): WithParams {
+>(value: TValue, params: TParams): UrlPart<WithParamsParamsOutput<TValue, TParams>>
+export function withParams(): UrlPart<{}>
+export function withParams(value?: string, params?: Record<string, Param | undefined>): UrlPart {
   return {
     value: value ?? '',
     params: getParamsForString(value, params),
+    [UrlPartsWithParamsSymbol]: true,
   }
 }

@@ -20,8 +20,8 @@ test('given 2 paths with params, returns new Path joined together with params', 
 
   expect(response.value).toBe('/[foz]/[baz]')
   expect(response.params).toMatchObject({
-    foz: Boolean,
-    baz: Number,
+    foz: [Boolean, { isOptional: false, isGreedy: false }],
+    baz: [Number, { isOptional: false, isGreedy: false }],
   })
 })
 
@@ -33,8 +33,8 @@ test('given 2 paths with optional params, returns new Path joined together with 
 
   expect(response.value).toBe('/[?foz]/[?baz]')
   expect(response.params).toMatchObject({
-    foz: Boolean,
-    baz: Number,
+    foz: [Boolean, { isOptional: true, isGreedy: false }],
+    baz: [Number, { isOptional: true, isGreedy: false }],
   })
 })
 

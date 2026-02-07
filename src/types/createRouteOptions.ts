@@ -12,13 +12,13 @@ import { MaybePromise } from './utilities'
 import { ToMeta } from './meta'
 import { ToState } from './state'
 import { ToName } from './name'
-import { WithParams } from '@/services/withParams'
+import { UrlPart } from '@/services/withParams'
 import { RouteContext, ToRouteContext } from './routeContext'
 import { RouterViewProps } from '@/components/routerView'
 import { ToUrl } from '@/types/url'
 import { CombineUrl } from '@/services/combineUrl'
 
-export type WithHost<THost extends string | WithParams = string | WithParams> = {
+export type WithHost<THost extends string | UrlPart = string | UrlPart> = {
   /**
    * Host part of URL.
    */
@@ -68,15 +68,15 @@ export type CreateRouteOptions<
   /**
    * Path part of URL.
    */
-  path?: string | WithParams | undefined,
+  path?: string | UrlPart | undefined,
   /**
    * Query (aka search) part of URL.
    */
-  query?: string | WithParams | undefined,
+  query?: string | UrlPart | undefined,
   /**
    * Hash part of URL.
    */
-  hash?: string | WithParams | undefined,
+  hash?: string | UrlPart | undefined,
   /**
    * Represents additional metadata associated with a route, customizable via declaration merging.
    */

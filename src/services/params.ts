@@ -1,7 +1,7 @@
 import { InvalidRouteParamValueError, InvalidRouteParamValueErrorContext } from '@/errors/invalidRouteParamValueError'
 import { isParamWithDefault } from '@/services/withDefault'
 import { ExtractParamType, isLiteralParam, isParamGetSet, isParamGetter } from '@/types/params'
-import { LiteralParam, Param, ParamExtras, ParamGetSet } from '@/types/paramTypes'
+import { LiteralParam, Param, ParamExtras, ParamGetSet, ParamOptions } from '@/types/paramTypes'
 import { stringHasValue } from '@/utilities/guards'
 import { createZodParam, isZodParam } from './zod'
 import { createValibotParam, isValibotParam } from './valibot'
@@ -127,8 +127,10 @@ function validateLiteralParamStringValue(value: string, param: LiteralParam, ext
   }
 }
 
-export function getParamValue<T extends Param>(value: string | undefined, param: T, isOptional?: boolean): ExtractParamType<T>
-export function getParamValue<T extends Param>(value: string | undefined, param: T, isOptional = false): unknown {
+export function getParamValue<T extends Param>(value: string | undefined, [param, options]: [T, ParamOptions | undefined] | [T]): ExtractParamType<T>
+export function getParamValue(value: string | undefined, [param, options]: [Param, ParamOptions | undefined] | [Param]): unknown {
+  const { isOptional } = options ?? { isOptional: false }
+
   const extras = getParamExtras({ param, value, isGetter: true })
   if (value === undefined || !stringHasValue(value)) {
     if (isParamWithDefault(param)) {
@@ -197,9 +199,9 @@ export function getParamValue<T extends Param>(value: string | undefined, param:
   return value
 }
 
-export function safeGetParamValue<T extends Param>(value: string | undefined, param: T, isOptional = false): ExtractParamType<T> | undefined {
+export function safeGetParamValue<T extends Param>(value: string | undefined, [param, options]: [T, ParamOptions | undefined] | [T]): ExtractParamType<T> | undefined {
   try {
-    return getParamValue(value, param, isOptional)
+    return getParamValue(value, [param, options])
   } catch (error) {
     if (error instanceof InvalidRouteParamValueError) {
       return undefined
@@ -208,9 +210,9 @@ export function safeGetParamValue<T extends Param>(value: string | undefined, pa
   }
 }
 
-export function safeSetParamValue(value: unknown, param: Param, isOptional = false): string | undefined {
+export function safeSetParamValue(value: unknown, [param, options]: [Param, ParamOptions | undefined] | [Param]): string | undefined {
   try {
-    return setParamValue(value, param, isOptional)
+    return setParamValue(value, [param, options])
   } catch (error) {
     if (error instanceof InvalidRouteParamValueError) {
       return undefined
@@ -219,7 +221,9 @@ export function safeSetParamValue(value: unknown, param: Param, isOptional = fal
   }
 }
 
-export function setParamValue(value: unknown, param: Param, isOptional = false): string {
+export function setParamValue(value: unknown, [param, options]: [Param, ParamOptions | undefined] | [Param]): string {
+  const { isOptional } = options ?? { isOptional: false }
+
   const extras = getParamExtras({ param, value, isSetter: true })
   if (value === undefined) {
     if (isOptional) {

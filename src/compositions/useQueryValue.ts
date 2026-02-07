@@ -32,10 +32,10 @@ export function createUseQueryValue<TRouter extends Router>(key: InjectionKey<TR
           return null
         }
 
-        return safeGetParamValue(value, param)
+        return safeGetParamValue(value, [param])
       },
       set(value) {
-        route.query.set(toValue(key), setParamValue(value, param))
+        route.query.set(toValue(key), setParamValue(value, [param]))
       },
     })
 
@@ -44,7 +44,7 @@ export function createUseQueryValue<TRouter extends Router>(key: InjectionKey<TR
         const values = route.query.getAll(toValue(key))
 
         return values
-          .map((value) => safeGetParamValue(value, param))
+          .map((value) => safeGetParamValue(value, [param]))
           .filter((value) => value !== null)
       },
       set(values) {
@@ -53,7 +53,7 @@ export function createUseQueryValue<TRouter extends Router>(key: InjectionKey<TR
         query.delete(toValue(key))
 
         values.forEach((value) => {
-          query.append(toValue(key), setParamValue(value, param))
+          query.append(toValue(key), setParamValue(value, [param]))
         })
 
         route.query = query

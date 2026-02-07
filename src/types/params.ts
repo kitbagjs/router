@@ -97,3 +97,6 @@ Param extends TParam
         : TParam extends LiteralParam
           ? TParam
           : string
+
+export type ParamIsOptional<TParam extends string> = TParam extends `?${string}` ? true : false
+export type ParamIsGreedy<TParam extends string> = TParam extends `${string}*` ? true : false
