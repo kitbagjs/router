@@ -5,7 +5,7 @@ import { Rejection } from '@/types/rejection'
 import { RedirectHook, RouteRedirect } from '@/types/redirects'
 import { MultipleRouteRedirectsError } from '@/errors/multipleRouteRedirectsError'
 
-export type RouteHooks<
+type RouteHooks<
   TRoutes extends Routes = Routes,
   TRejections extends Rejection[] = Rejection[]
 > = {
