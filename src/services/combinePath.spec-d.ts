@@ -22,7 +22,7 @@ test('given withParams with unassigned params on parent, combines value, has sin
 
   type Source = typeof response
   type Expect = UrlPart<{
-    param: [StringConstructor, { isOptional: false, isGreedy: false }],
+    param: { param: StringConstructor, isOptional: false, isGreedy: false },
   }>
 
   expectTypeOf<Source>().toEqualTypeOf<Expect>()
@@ -36,7 +36,7 @@ test('given withParams with optional unassigned params on parent, combines value
 
   type Source = typeof response
   type Expect = UrlPart<{
-    param: [StringConstructor, { isOptional: true, isGreedy: false }],
+    param: { param: StringConstructor, isOptional: true, isGreedy: false },
   }>
 
   expectTypeOf<Source>().toEqualTypeOf<Expect>()
@@ -50,7 +50,7 @@ test('given withParams with params on parent, combines value, has single param f
 
   type Source = typeof response
   type Expect = UrlPart<{
-    param: [BooleanConstructor, { isOptional: false, isGreedy: false }],
+    param: { param: BooleanConstructor, isOptional: false, isGreedy: false },
   }>
 
   expectTypeOf<Source>().toEqualTypeOf<Expect>()
@@ -64,7 +64,7 @@ test('given withParams with optional params on parent, combines value, has singl
 
   type Source = typeof response
   type Expect = UrlPart<{
-    param: [BooleanConstructor, { isOptional: true, isGreedy: false }],
+    param: { param: BooleanConstructor, isOptional: true, isGreedy: false },
   }>
 
   expectTypeOf<Source>().toEqualTypeOf<Expect>()
@@ -78,8 +78,8 @@ test('given withParams with params on both, combines value, has single param fro
 
   type Source = typeof response
   type Expect = UrlPart<{
-    param: [BooleanConstructor, { isOptional: false, isGreedy: false }],
-    something: [NumberConstructor, { isOptional: false, isGreedy: false }],
+    param: { param: BooleanConstructor, isOptional: false, isGreedy: false },
+    something: { param: NumberConstructor, isOptional: false, isGreedy: false },
   }>
 
   expectTypeOf<Source>().toEqualTypeOf<Expect>()

@@ -82,11 +82,11 @@ type ToUrlParamsReading<
 > =
 Identity<
   MakeOptional<{
-    [K in keyof TParams]: TParams[K] extends [infer TParam extends Param, { isOptional: true }]
+    [K in keyof TParams]: TParams[K] extends { param: infer TParam extends Param, isOptional: true }
       ? TParam extends Required<ParamGetSet>
         ? ExtractParamType<TParam>
         : ExtractParamType<TParam> | undefined
-      : TParams[K] extends [infer TParam extends Param, { isOptional: false }]
+      : TParams[K] extends { param: infer TParam extends Param, isOptional: false }
         ? ExtractParamType<TParam>
         : unknown
   }>
@@ -105,9 +105,9 @@ type ToUrlParamsWriting<
 > =
 Identity<
   MakeOptional<{
-    [K in keyof TParams]: TParams[K] extends [infer TParam extends Param, { isOptional: true }]
+    [K in keyof TParams]: TParams[K] extends { param: infer TParam extends Param, isOptional: true }
       ? ExtractParamType<TParam> | undefined
-      : TParams[K] extends [infer TParam extends Param, { isOptional: false }]
+      : TParams[K] extends { param: infer TParam extends Param, isOptional: false }
         ? ExtractParamType<TParam>
         : unknown
   }>

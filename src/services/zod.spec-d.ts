@@ -7,7 +7,7 @@ test('withParams accepts zod schemas', () => {
   const schema = z.string()
   const { params } = withParams('/[foo]', { foo: schema })
 
-  expectTypeOf(params.foo).toEqualTypeOf<[typeof schema, { isOptional: false, isGreedy: false }]>()
+  expectTypeOf(params.foo).toEqualTypeOf<{ param: typeof schema, isOptional: false, isGreedy: false }>()
 })
 
 test('ExtractParamType returns the correct type for zod params', () => {

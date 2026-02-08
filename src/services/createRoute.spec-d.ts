@@ -16,7 +16,7 @@ test('empty options returns an empty route', () => {
 
   type Source = typeof route
 
-  expectTypeOf<Source>().toMatchObjectType<Url>()
+  expectTypeOf<Source>().toExtend<Url>()
   expectTypeOf<Source>().toMatchObjectType<InternalRouteHooks<Source>>()
   expectTypeOf<Source>().toMatchObjectType<RouteRedirects>()
 })
@@ -45,7 +45,7 @@ test('options with name and parent', () => {
 test('options with path with params', () => {
   const route = createRoute({ path: '/foo/[bar]' })
   type Source = typeof route['params']
-  type Expect = { bar: [StringConstructor, { isOptional: false, isGreedy: false }] }
+  type Expect = { bar: { param: StringConstructor, isOptional: false, isGreedy: false } }
 
   expectTypeOf<Source>().toMatchObjectType<Expect>()
 })
@@ -62,8 +62,8 @@ test('options with path with params and parent', () => {
 
   type Source = typeof route['params']
   type Expect = {
-    parentParam: [StringConstructor, { isOptional: false, isGreedy: false }],
-    childParam: [StringConstructor, { isOptional: false, isGreedy: false }],
+    parentParam: { param: StringConstructor, isOptional: false, isGreedy: false },
+    childParam: { param: StringConstructor, isOptional: false, isGreedy: false },
   }
 
   expectTypeOf<Source>().toMatchObjectType<Expect>()
@@ -76,7 +76,7 @@ test('options with path with params with custom param types', () => {
 
   type Source = typeof route['params']
   type Expect = {
-    bar: [NumberConstructor, { isOptional: false, isGreedy: false }],
+    bar: { param: NumberConstructor, isOptional: false, isGreedy: false },
   }
 
   expectTypeOf<Source>().toMatchObjectType<Expect>()
@@ -94,8 +94,8 @@ test('options with path with params with custom param types and parent', () => {
 
   type Source = typeof route['params']
   type Expect = {
-    parentParam: [NumberConstructor, { isOptional: false, isGreedy: false }],
-    childParam: [BooleanConstructor, { isOptional: false, isGreedy: false }],
+    parentParam: { param: NumberConstructor, isOptional: false, isGreedy: false },
+    childParam: { param: BooleanConstructor, isOptional: false, isGreedy: false },
   }
 
   expectTypeOf<Source>().toMatchObjectType<Expect>()
@@ -131,7 +131,7 @@ test('options with query and parent', () => {
 test('options with query with params', () => {
   const route = createRoute({ query: 'foo=[bar]' })
   type Source = typeof route['params']
-  type Expect = { bar: [StringConstructor, { isOptional: false, isGreedy: false }] }
+  type Expect = { bar: { param: StringConstructor, isOptional: false, isGreedy: false } }
 
   expectTypeOf<Source>().toMatchObjectType<Expect>()
 })
@@ -148,8 +148,8 @@ test('options with query with params and parent', () => {
 
   type Source = typeof route['params']
   type Expect = {
-    parentParam: [StringConstructor, { isOptional: false, isGreedy: false }],
-    childParam: [StringConstructor, { isOptional: false, isGreedy: false }],
+    parentParam: { param: StringConstructor, isOptional: false, isGreedy: false },
+    childParam: { param: StringConstructor, isOptional: false, isGreedy: false },
   }
 
   expectTypeOf<Source>().toMatchObjectType<Expect>()
@@ -158,7 +158,7 @@ test('options with query with params and parent', () => {
 test('options with query with params with custom param types', () => {
   const route = createRoute({ query: withParams('foo=[bar]', { bar: Number }) })
   type Source = typeof route['params']
-  type Expect = { bar: [NumberConstructor, { isOptional: false, isGreedy: false }] }
+  type Expect = { bar: { param: NumberConstructor, isOptional: false, isGreedy: false } }
 
   expectTypeOf<Source>().toMatchObjectType<Expect>()
 })
@@ -175,8 +175,8 @@ test('options with query with params with custom param types and parent', () => 
 
   type Source = typeof route['params']
   type Expect = {
-    parentParam: [NumberConstructor, { isOptional: false, isGreedy: false }],
-    childParam: [BooleanConstructor, { isOptional: false, isGreedy: false }],
+    parentParam: { param: NumberConstructor, isOptional: false, isGreedy: false },
+    childParam: { param: BooleanConstructor, isOptional: false, isGreedy: false },
   }
 
   expectTypeOf<Source>().toMatchObjectType<Expect>()

@@ -12,8 +12,8 @@ test('given value with simple params, returns each param name as type String', (
   const response = withParams('[parentId]-[childId]', {})
 
   expect(response.params).toMatchObject({
-    parentId: [String, { isOptional: false, isGreedy: false }],
-    childId: [String, { isOptional: false, isGreedy: false }],
+    parentId: { param: String, isOptional: false, isGreedy: false },
+    childId: { param: String, isOptional: false, isGreedy: false },
   })
 })
 
@@ -21,8 +21,8 @@ test('given value with optional params, returns each param name as type String',
   const response = withParams('[?parentId]-[?childId]', {})
 
   expect(JSON.stringify(response.params)).toMatch(JSON.stringify({
-    parentId: [String, { isOptional: true, isGreedy: false }],
-    childId: [String, { isOptional: true, isGreedy: false }],
+    parentId: { param: String, isOptional: true, isGreedy: false },
+    childId: { param: String, isOptional: true, isGreedy: false },
   }))
 })
 
@@ -32,8 +32,8 @@ test('given value with param types, returns each param with corresponding param'
   })
 
   expect(response.params).toMatchObject({
-    parentId: [Boolean, { isOptional: false, isGreedy: false }],
-    childId: [String, { isOptional: false, isGreedy: false }],
+    parentId: { param: Boolean, isOptional: false, isGreedy: false },
+    childId: { param: String, isOptional: false, isGreedy: false },
   })
 })
 

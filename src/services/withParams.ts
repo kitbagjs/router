@@ -1,6 +1,6 @@
 import { getParamsForString } from '@/services/getParamsForString'
 import { ExtractParamName, ParamEnd, ParamIsGreedy, ParamIsOptional, ParamStart } from '@/types/params'
-import { Param, ParamOptions } from '@/types/paramTypes'
+import { Param } from '@/types/paramTypes'
 import { Identity } from '@/types/utilities'
 import { isRecord } from '@/utilities/guards'
 import { MakeOptional } from '@/utilities/makeOptional'
@@ -17,19 +17,20 @@ type WithParamsParamsOutput<
 > = TValue extends `${string}${ParamStart}${infer TParam}${ParamEnd}${infer Rest}`
   ? ExtractParamName<TParam> extends keyof TParams
     ? TParams[ExtractParamName<TParam>] extends Param
-      ? Record<ExtractParamName<TParam>, [TParams[ExtractParamName<TParam>], ExtractParamOptions<TParam>]> & WithParamsParamsOutput<Rest, TParams>
-      : Record<ExtractParamName<TParam>, [StringConstructor, ExtractParamOptions<TParam>]> & WithParamsParamsOutput<Rest, TParams>
-    : Record<ExtractParamName<TParam>, [StringConstructor, ExtractParamOptions<TParam>]> & WithParamsParamsOutput<Rest, TParams>
+      ? Record<ExtractParamName<TParam>, Identity<{ param: TParams[ExtractParamName<TParam>] } & ExtractParamOptions<TParam>>> & WithParamsParamsOutput<Rest, TParams>
+      : Record<ExtractParamName<TParam>, Identity<{ param: StringConstructor } & ExtractParamOptions<TParam>>> & WithParamsParamsOutput<Rest, TParams>
+    : Record<ExtractParamName<TParam>, Identity<{ param: StringConstructor } & ExtractParamOptions<TParam>>> & WithParamsParamsOutput<Rest, TParams>
   : {}
 
-type ExtractParamOptions<TParam extends string> = Identity<{
+type ExtractParamOptions<TParam extends string> = {
   isOptional: ParamIsOptional<TParam>,
   isGreedy: ParamIsGreedy<TParam>,
-}>
+}
 
 const UrlPartsWithParamsSymbol = Symbol('UrlPartsWithParams')
 
-export type UrlParams = Record<string, [Param, ParamOptions]>
+export type UrlParam<TParam extends Param = Param> = { param: TParam, isOptional: boolean, isGreedy: boolean }
+export type UrlParams = Record<string, UrlParam>
 
 export type UrlPart<TParams extends UrlParams = UrlParams> = {
   value: string,
@@ -65,7 +66,7 @@ export function toUrlPart<T extends string | UrlPart | undefined>(value: T): Url
 export function withParams<
   const TValue extends string,
   const TParams extends MakeOptional<WithParamsParamsInput<TValue>>
->(value: TValue, params: TParams): UrlPart<WithParamsParamsOutput<TValue, TParams>>
+>(value: TValue, params: TParams): WithParamsParamsOutput<TValue, TParams> extends UrlParams ? UrlPart<WithParamsParamsOutput<TValue, TParams>> : never
 export function withParams(): UrlPart<{}>
 export function withParams(value?: string, params?: Record<string, Param | undefined>): UrlPart {
   return {

@@ -12,13 +12,13 @@ function getStateValue(state: unknown, key: string, param: Param): unknown {
     const value = state[key]
 
     if (typeof value === 'string') {
-      return getParamValue(value, [param, paramOptions])
+      return getParamValue(value, { param, ...paramOptions })
     }
 
     return value
   }
 
-  return getParamValue(undefined, [param, paramOptions])
+  return getParamValue(undefined, { param, ...paramOptions })
 }
 
 /**
@@ -43,10 +43,10 @@ function setStateValue(state: unknown, key: string, param: Param): string | unde
   if (stateIsRecord(state) && key in state) {
     const value = state[key]
 
-    return setParamValue(value, [param, paramOptions])
+    return setParamValue(value, { param, ...paramOptions })
   }
 
-  return setParamValue(undefined, [param, paramOptions])
+  return setParamValue(undefined, { param, ...paramOptions })
 }
 
 /**

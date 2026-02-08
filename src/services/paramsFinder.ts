@@ -12,7 +12,7 @@ export function getParamValueFromUrl(url: string, path: UrlPart, paramName: stri
 }
 
 export function setParamValueOnUrl(url: string, path: UrlPart, paramName: string, value: unknown): string {
-  const paramValue = setParamValue(value, path.params[paramName] ?? [String])
+  const paramValue = setParamValue(value, path.params[paramName])
 
   return url.replace(getParamRegexPattern(paramName), paramValue)
 }

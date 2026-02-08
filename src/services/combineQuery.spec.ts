@@ -20,8 +20,8 @@ test('given 2 queries with params, returns new Query joined together with params
 
   expect(response.value).toBe('foo=[foz]&bar=[baz]')
   expect(response.params).toMatchObject({
-    foz: [Boolean, { isOptional: false, isGreedy: false }],
-    baz: [Number, { isOptional: false, isGreedy: false }],
+    foz: { param: Boolean, isOptional: false, isGreedy: false },
+    baz: { param: Number, isOptional: false, isGreedy: false },
   })
 })
 
@@ -33,8 +33,8 @@ test('given 2 queries with optional params, returns new Query joined together wi
 
   expect(response.value).toBe('foo=[?foz]&bar=[?baz]')
   expect(response.params).toMatchObject({
-    foz: [Boolean, { isOptional: true, isGreedy: false }],
-    baz: [Number, { isOptional: true, isGreedy: false }],
+    foz: { param: Boolean, isOptional: true, isGreedy: false },
+    baz: { param: Number, isOptional: true, isGreedy: false },
   })
 })
 

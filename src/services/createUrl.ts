@@ -148,10 +148,9 @@ function assembleQueryParamValues(query: UrlPart, paramValues: Record<string, un
       continue
     }
 
-    const [param, paramOptions] = query.params[paramName]
-    const paramValue = setParamValue(paramValues[paramName], [param, paramOptions])
+    const paramValue = setParamValue(paramValues[paramName], query.params[paramName])
     const valueNotProvidedAndNoDefaultUsed = paramValues[paramName] === undefined && paramValue === ''
-    const shouldLeaveEmptyValueOut = paramOptions.isOptional && valueNotProvidedAndNoDefaultUsed
+    const shouldLeaveEmptyValueOut = query.params[paramName].isOptional && valueNotProvidedAndNoDefaultUsed
 
     if (shouldLeaveEmptyValueOut) {
       search.delete(key, value)

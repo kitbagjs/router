@@ -14,7 +14,7 @@ test('given a string with required params NOT assigned, uses string constructor'
   const source = withParams('/something-with-[param]', {})
 
   type Source = typeof source
-  type Expect = UrlPart<{ param: [StringConstructor, { isOptional: false, isGreedy: false }] }>
+  type Expect = UrlPart<{ param: { param: StringConstructor, isOptional: false, isGreedy: false } }>
 
   expectTypeOf<Source>().toEqualTypeOf<Expect>()
 })
@@ -23,7 +23,7 @@ test('given a string with required params assigned, uses passed in Type', () => 
   const source = withParams('/something-with-[param]', { param: Boolean })
 
   type Source = typeof source
-  type Expect = UrlPart<{ param: [BooleanConstructor, { isOptional: false, isGreedy: false }] }>
+  type Expect = UrlPart<{ param: { param: BooleanConstructor, isOptional: false, isGreedy: false } }>
 
   expectTypeOf<Source>().toEqualTypeOf<Expect>()
 })
@@ -44,8 +44,8 @@ describe('ToUrlPart', () => {
   })
 
   test('given a ToUrlPart type, returns the same type', () => {
-    type Source = ToUrlPart<UrlPart<{ foo: [NumberConstructor, { isOptional: false, isGreedy: false }] }>>
-    type Expect = UrlPart<{ foo: [NumberConstructor, { isOptional: false, isGreedy: false }] }>
+    type Source = ToUrlPart<UrlPart<{ foo: { param: NumberConstructor, isOptional: false, isGreedy: false } }>>
+    type Expect = UrlPart<{ foo: { param: NumberConstructor, isOptional: false, isGreedy: false } }>
 
     expectTypeOf<Source>().toEqualTypeOf<Expect>()
   })

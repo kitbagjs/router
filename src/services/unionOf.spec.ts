@@ -17,7 +17,7 @@ test('given several params, calls each until one returns a value', () => {
 
   const union = unionOf([aParam, bParam, cParam, dParam])
 
-  const result = getParamValue('foo', [union, { isOptional: false, isGreedy: false }])
+  const result = getParamValue('foo', { param: union, isOptional: false, isGreedy: false })
 
   expect(aParam).toHaveBeenCalledTimes(1)
   expect(bParam).toHaveBeenCalledTimes(1)
@@ -35,7 +35,7 @@ test('given no param returns value, throws InvalidRouteParamValueError', () => {
 
   const union = unionOf([aParam, bParam, cParam, dParam])
 
-  const action: () => void = () => getParamValue('foo', [union, { isOptional: false, isGreedy: false }])
+  const action: () => void = () => getParamValue('foo', { param: union, isOptional: false, isGreedy: false })
 
   expect(action).toThrow('Value "foo" does not satisfy any of the possible values')
   expect(aParam).toHaveBeenCalledTimes(1)
@@ -51,7 +51,7 @@ test('given a param that throws something other than InvalidRouteParamValueError
 
   const union = unionOf([param])
 
-  const action: () => void = () => getParamValue('foo', [union, { isOptional: false, isGreedy: false }])
+  const action: () => void = () => getParamValue('foo', { param: union, isOptional: false, isGreedy: false })
 
   expect(action).toThrow('Something went wrong')
 })
@@ -66,7 +66,7 @@ test.each([
 ])('works with param of built-in type %s', (param, input, output) => {
   const union = unionOf([param])
 
-  const result = getParamValue(input, [union, { isOptional: false, isGreedy: false }])
+  const result = getParamValue(input, { param: union, isOptional: false, isGreedy: false })
 
   if (typeof output === 'object') {
     expect(result).toEqual(output)
@@ -80,7 +80,7 @@ test.each([
 ])('works with literal param of type %s', (value) => {
   const union = unionOf([value])
 
-  const result = getParamValue(value.toString(), [union, { isOptional: false, isGreedy: false }])
+  const result = getParamValue(value.toString(), { param: union, isOptional: false, isGreedy: false })
 
   expect(result).toBe(value)
 })

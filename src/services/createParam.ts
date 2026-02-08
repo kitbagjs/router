@@ -12,8 +12,8 @@ export function createParam<TParam extends Param>(param: TParam, defaultValue?: 
   }
 
   return {
-    get: (value) => getParamValue(value, [param]),
-    set: (value) => setParamValue(value, [param]),
+    get: (value) => getParamValue(value, { param }),
+    set: (value) => setParamValue(value, { param }),
     defaultValue,
   }
 }
