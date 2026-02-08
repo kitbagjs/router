@@ -1,5 +1,6 @@
 import { paramEnd, paramStart } from '@/types/params'
 import { stringHasValue } from '@/utilities/guards'
+import { UrlPart } from '@/services/withParams'
 
 export const paramRegex = `\\${paramStart}\\??([\\w-_]+)\\*?\\${paramEnd}`
 export const optionalParamRegex = `\\${paramStart}\\?([\\w-_]+)\\*?\\${paramEnd}`
@@ -10,7 +11,7 @@ export const regexGreedyCatchAll = '.*'
 export const regexCaptureAll = '([^/]*)'
 export const regexGreedyCaptureAll = '(.*)'
 
-export function escapeRegExp(string: string): string {
+function escapeRegExp(string: string): string {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
@@ -76,7 +77,7 @@ export function generateRouteQueryRegexPatterns(query: string): RegExp[] {
     })
 }
 
-export function replaceParamSyntaxWithCatchAllsAndEscapeRest(value: string): string {
+function replaceParamSyntaxWithCatchAllsAndEscapeRest(value: string): string {
   return splitByMatches(value, new RegExp(paramRegex, 'g'))
     .map((slice) => {
       const isParam = slice.startsWith(paramStart)
@@ -92,23 +93,12 @@ export function replaceParamSyntaxWithCatchAlls(value: string): string {
   })
 }
 
-export function replaceIndividualParamWithCaptureGroup(path: string, paramName: string): string {
+export function replaceIndividualParamWithCaptureGroup(path: UrlPart, paramName: string): string {
   const pattern = getParamRegexPattern(paramName)
-  const capturePattern = paramIsGreedy(path, paramName) ? regexGreedyCaptureAll : regexCaptureAll
+  const { isGreedy = false } = path.params[paramName] ?? {}
+  const capturePattern = isGreedy ? regexGreedyCaptureAll : regexCaptureAll
 
-  return path.replace(pattern, capturePattern)
-}
-
-export function paramIsOptional(path: string, paramName: string): boolean {
-  const paramRegex = getOptionalParamRegexPattern(paramName)
-
-  return paramRegex.test(path)
-}
-
-export function paramIsGreedy(path: string, paramName: string): boolean {
-  const greedyPattern = getGreedyParamRegexPattern(paramName)
-
-  return greedyPattern.test(path)
+  return path.value.replace(pattern, capturePattern)
 }
 
 export function isOptionalParamSyntax(value: string): boolean {
@@ -131,14 +121,6 @@ export function getParamName(value: string): string | undefined {
 
 export function getParamRegexPattern(paramName: string): RegExp {
   return new RegExp(`\\${paramStart}\\??${paramName}\\*?\\${paramEnd}`, 'g')
-}
-
-function getOptionalParamRegexPattern(paramName: string): RegExp {
-  return new RegExp(`\\${paramStart}\\?${paramName}\\*?\\${paramEnd}`, 'g')
-}
-
-function getGreedyParamRegexPattern(paramName: string): RegExp {
-  return new RegExp(`\\${paramStart}\\??${paramName}\\*\\${paramEnd}`, 'g')
 }
 
 export function getCaptureGroups(value: string, pattern: RegExp): (string | undefined)[] {

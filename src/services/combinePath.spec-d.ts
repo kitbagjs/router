@@ -1,5 +1,5 @@
 import { expectTypeOf, test } from 'vitest'
-import { withParams, WithParams } from '@/services/withParams'
+import { withParams, UrlPart } from '@/services/withParams'
 import { combinePath } from './combinePath'
 
 test('given withParams without params, combines value, leaves params empty', () => {
@@ -9,7 +9,7 @@ test('given withParams without params, combines value, leaves params empty', () 
   const response = combinePath(parent, child)
 
   type Source = typeof response
-  type Expect = WithParams<'/parent-without-params/child-without-params', {}>
+  type Expect = UrlPart<{}>
 
   expectTypeOf<Source>().toEqualTypeOf<Expect>()
 })
@@ -21,8 +21,8 @@ test('given withParams with unassigned params on parent, combines value, has sin
   const response = combinePath(parent, child)
 
   type Source = typeof response
-  type Expect = WithParams<'/parent-with-[param]/child-without-params', {
-    param: StringConstructor,
+  type Expect = UrlPart<{
+    param: { param: StringConstructor, isOptional: false, isGreedy: false },
   }>
 
   expectTypeOf<Source>().toEqualTypeOf<Expect>()
@@ -35,8 +35,8 @@ test('given withParams with optional unassigned params on parent, combines value
   const response = combinePath(parent, child)
 
   type Source = typeof response
-  type Expect = WithParams<'/parent-with-[?param]/child-without-params', {
-    param: StringConstructor,
+  type Expect = UrlPart<{
+    param: { param: StringConstructor, isOptional: true, isGreedy: false },
   }>
 
   expectTypeOf<Source>().toEqualTypeOf<Expect>()
@@ -49,8 +49,8 @@ test('given withParams with params on parent, combines value, has single param f
   const response = combinePath(parent, child)
 
   type Source = typeof response
-  type Expect = WithParams<'/parent-with-[param]/child-without-params', {
-    param: BooleanConstructor,
+  type Expect = UrlPart<{
+    param: { param: BooleanConstructor, isOptional: false, isGreedy: false },
   }>
 
   expectTypeOf<Source>().toEqualTypeOf<Expect>()
@@ -63,8 +63,8 @@ test('given withParams with optional params on parent, combines value, has singl
   const response = combinePath(parent, child)
 
   type Source = typeof response
-  type Expect = WithParams<'/parent-with-[?param]/child-without-params', {
-    param: BooleanConstructor,
+  type Expect = UrlPart<{
+    param: { param: BooleanConstructor, isOptional: true, isGreedy: false },
   }>
 
   expectTypeOf<Source>().toEqualTypeOf<Expect>()
@@ -77,9 +77,9 @@ test('given withParams with params on both, combines value, has single param fro
   const response = combinePath(parent, child)
 
   type Source = typeof response
-  type Expect = WithParams<'/parent-with-[param]/child-with-[something]', {
-    param: BooleanConstructor,
-    something: NumberConstructor,
+  type Expect = UrlPart<{
+    param: { param: BooleanConstructor, isOptional: false, isGreedy: false },
+    something: { param: NumberConstructor, isOptional: false, isGreedy: false },
   }>
 
   expectTypeOf<Source>().toEqualTypeOf<Expect>()

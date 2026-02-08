@@ -2,15 +2,16 @@ import { createUrl } from '@/services/createUrl'
 import { combinePath } from '@/services/combinePath'
 import { combineQuery } from '@/services/combineQuery'
 import { combineHash } from '@/services/combineHash'
-import { toWithParams } from '@/services/withParams'
+import { toUrlPart } from '@/services/withParams'
 import { CreateUrlOptions, isUrlWithSchema, ToUrl, Url } from '@/types/url'
+import { Identity } from '@/types/utilities'
 
 export type CombineUrl<
   TParent extends Url,
   TChild extends Url
 > = TParent extends Url<infer TParentParams>
   ? TChild extends Url<infer TChildParams>
-    ? Url<TParentParams & TChildParams>
+    ? Url<Identity<TParentParams & TChildParams>>
     : never
   : never
 
@@ -24,9 +25,9 @@ export function combineUrl(parent: Url, child: Url | CreateUrlOptions): Url {
   if (!isUrl(child)) {
     return createUrl({
       host: parent.schema.host,
-      path: combinePath(parent.schema.path, toWithParams(child.path)),
-      query: combineQuery(parent.schema.query, toWithParams(child.query)),
-      hash: combineHash(parent.schema.hash, toWithParams(child.hash)),
+      path: combinePath(parent.schema.path, toUrlPart(child.path)),
+      query: combineQuery(parent.schema.query, toUrlPart(child.query)),
+      hash: combineHash(parent.schema.hash, toUrlPart(child.hash)),
     })
   }
 

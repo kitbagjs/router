@@ -97,9 +97,9 @@ export function zodParamsDetected(routes: Routes): boolean {
       return false
     }
 
-    return Object.values(route.schema.host.params).some((param) => isZodSchemaLike(param))
-      || Object.values(route.schema.path.params).some((param) => isZodSchemaLike(param))
-      || Object.values(route.schema.query.params).some((param) => isZodSchemaLike(param))
+    return Object.values(route.schema.host.params).some(({ param }) => isZodSchemaLike(param))
+      || Object.values(route.schema.path.params).some(({ param }) => isZodSchemaLike(param))
+      || Object.values(route.schema.query.params).some(({ param }) => isZodSchemaLike(param))
   })
 }
 

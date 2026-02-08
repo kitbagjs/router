@@ -7,7 +7,7 @@ test('withParams accepts valibot schemas', () => {
   const schema = string()
   const { params } = withParams('/[foo]', { foo: schema })
 
-  expectTypeOf(params.foo).toEqualTypeOf(schema)
+  expectTypeOf(params.foo).toEqualTypeOf<{ param: typeof schema, isOptional: false, isGreedy: false }>()
 })
 
 test('ExtractParamType returns the correct type for valibot params', () => {

@@ -7,7 +7,7 @@ export function unionOf(params: Param[]): ParamGetSet {
   return {
     get: (value, { invalid }) => {
       for (const param of params) {
-        const result = safeGetParamValue(value, param)
+        const result = safeGetParamValue(value, { param, isOptional: false, isGreedy: false })
 
         if (result !== undefined) {
           return result
@@ -18,7 +18,7 @@ export function unionOf(params: Param[]): ParamGetSet {
     },
     set: (value, { invalid }) => {
       for (const param of params) {
-        const result = safeSetParamValue(value, param)
+        const result = safeSetParamValue(value, { param, isOptional: false, isGreedy: false })
 
         if (result !== undefined) {
           return result

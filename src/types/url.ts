@@ -1,42 +1,34 @@
 /* eslint-disable @typescript-eslint/method-signature-style */
-import { ToWithParams, WithParams } from '@/services/withParams'
-import { ExtractParamType, IsOptionalParamTemplate } from '@/types/params'
+import { OptionalUrlParam, RequiredUrlParam, ToUrlPart, UrlParams, UrlPart } from '@/services/withParams'
+import { ExtractParamType } from '@/types/params'
 import { AllPropertiesAreOptional, Identity } from '@/types/utilities'
 import { UrlString } from '@/types/urlString'
-import { Param, ParamGetSet } from './paramTypes'
+import { ParamGetSet } from '@/types/paramTypes'
 import { MakeOptional } from '@/utilities/makeOptional'
 
 export const IS_URL_SYMBOL = Symbol('IS_URL_SYMBOL')
 
 export type CreateUrlOptions = {
-  host?: string | WithParams | undefined,
-  path?: string | WithParams | undefined,
-  query?: string | WithParams | undefined,
-  hash?: string | WithParams | undefined,
+  host?: string | UrlPart | undefined,
+  path?: string | UrlPart | undefined,
+  query?: string | UrlPart | undefined,
+  hash?: string | UrlPart | undefined,
 }
 
 export type ToUrl<
   TOptions extends CreateUrlOptions
-> = Url<
-  & ToUrlParams<ToWithParams<TOptions['host']>>
-  & ToUrlParams<ToWithParams<TOptions['path']>>
-  & ToUrlParams<ToWithParams<TOptions['query']>>
-  & ToUrlParams<ToWithParams<TOptions['hash']>>
->
-
-type OptionalParam<TParam extends Param = Param> = [param: TParam, isOptional: true]
-type RequiredParam<TParam extends Param = Param> = [param: TParam, isOptional: false]
-type UrlParams = Record<string, OptionalParam | RequiredParam>
-
-type ToUrlParams<TWithParams extends WithParams> = {
-  [K in keyof TWithParams['params']]: [TWithParams['params'][K], IsOptionalParamTemplate<K & string, TWithParams['value']>]
-}
+> = Url<Identity<
+  & ToUrlPart<TOptions['host']>['params']
+  & ToUrlPart<TOptions['path']>['params']
+  & ToUrlPart<TOptions['query']>['params']
+  & ToUrlPart<TOptions['hash']>['params']
+>>
 
 /**
  * Type guard to assert that a url has a schema.
  * @internal
  */
-export function isUrlWithSchema(url: unknown): url is Url & { schema: Record<string, WithParams> } {
+export function isUrlWithSchema(url: unknown): url is Url & { schema: Record<string, UrlPart> } {
   return typeof url === 'object' && url !== null && IS_URL_SYMBOL in url
 }
 
@@ -90,11 +82,11 @@ type ToUrlParamsReading<
 > =
 Identity<
   MakeOptional<{
-    [K in keyof TParams]: TParams[K] extends OptionalParam<infer TParam>
+    [K in keyof TParams]: TParams[K] extends OptionalUrlParam<infer TParam>
       ? TParam extends Required<ParamGetSet>
         ? ExtractParamType<TParam>
         : ExtractParamType<TParam> | undefined
-      : TParams[K] extends RequiredParam<infer TParam>
+      : TParams[K] extends RequiredUrlParam<infer TParam>
         ? ExtractParamType<TParam>
         : unknown
   }>
@@ -113,9 +105,9 @@ type ToUrlParamsWriting<
 > =
 Identity<
   MakeOptional<{
-    [K in keyof TParams]: TParams[K] extends OptionalParam<infer TParam>
+    [K in keyof TParams]: TParams[K] extends OptionalUrlParam<infer TParam>
       ? ExtractParamType<TParam> | undefined
-      : TParams[K] extends RequiredParam<infer TParam>
+      : TParams[K] extends RequiredUrlParam<infer TParam>
         ? ExtractParamType<TParam>
         : unknown
   }>

@@ -5,20 +5,20 @@ function stateIsRecord(state: unknown): state is Record<string, unknown> {
   return !!state && typeof state === 'object'
 }
 
-const isOptional = true
+const paramOptions = { isOptional: true, isGreedy: false }
 
 function getStateValue(state: unknown, key: string, param: Param): unknown {
   if (stateIsRecord(state) && key in state) {
     const value = state[key]
 
     if (typeof value === 'string') {
-      return getParamValue(value, param, isOptional)
+      return getParamValue(value, { param, ...paramOptions })
     }
 
     return value
   }
 
-  return getParamValue(undefined, param, isOptional)
+  return getParamValue(undefined, { param, ...paramOptions })
 }
 
 /**
@@ -43,10 +43,10 @@ function setStateValue(state: unknown, key: string, param: Param): string | unde
   if (stateIsRecord(state) && key in state) {
     const value = state[key]
 
-    return setParamValue(value, param, isOptional)
+    return setParamValue(value, { param, ...paramOptions })
   }
 
-  return setParamValue(undefined, param, isOptional)
+  return setParamValue(undefined, { param, ...paramOptions })
 }
 
 /**

@@ -1,5 +1,6 @@
 import { InvalidRouteParamValueError, InvalidRouteParamValueErrorContext } from '@/errors/invalidRouteParamValueError'
 import { isParamWithDefault } from '@/services/withDefault'
+import { UrlParam } from '@/services/withParams'
 import { ExtractParamType, isLiteralParam, isParamGetSet, isParamGetter } from '@/types/params'
 import { LiteralParam, Param, ParamExtras, ParamGetSet } from '@/types/paramTypes'
 import { stringHasValue } from '@/utilities/guards'
@@ -127,8 +128,8 @@ function validateLiteralParamStringValue(value: string, param: LiteralParam, ext
   }
 }
 
-export function getParamValue<T extends Param>(value: string | undefined, param: T, isOptional?: boolean): ExtractParamType<T>
-export function getParamValue<T extends Param>(value: string | undefined, param: T, isOptional = false): unknown {
+export function getParamValue<T extends Param>(value: string | undefined, param: Partial<UrlParam<T>>): ExtractParamType<T>
+export function getParamValue(value: string | undefined, { param = String, isOptional = false }: Partial<UrlParam> = {}): unknown {
   const extras = getParamExtras({ param, value, isGetter: true })
   if (value === undefined || !stringHasValue(value)) {
     if (isParamWithDefault(param)) {
@@ -197,9 +198,9 @@ export function getParamValue<T extends Param>(value: string | undefined, param:
   return value
 }
 
-export function safeGetParamValue<T extends Param>(value: string | undefined, param: T, isOptional = false): ExtractParamType<T> | undefined {
+export function safeGetParamValue<T extends Param>(value: string | undefined, param: Partial<UrlParam<T>>): ExtractParamType<T> | undefined {
   try {
-    return getParamValue(value, param, isOptional)
+    return getParamValue(value, param)
   } catch (error) {
     if (error instanceof InvalidRouteParamValueError) {
       return undefined
@@ -208,9 +209,9 @@ export function safeGetParamValue<T extends Param>(value: string | undefined, pa
   }
 }
 
-export function safeSetParamValue(value: unknown, param: Param, isOptional = false): string | undefined {
+export function safeSetParamValue(value: unknown, param: Partial<UrlParam>): string | undefined {
   try {
-    return setParamValue(value, param, isOptional)
+    return setParamValue(value, param)
   } catch (error) {
     if (error instanceof InvalidRouteParamValueError) {
       return undefined
@@ -219,7 +220,7 @@ export function safeSetParamValue(value: unknown, param: Param, isOptional = fal
   }
 }
 
-export function setParamValue(value: unknown, param: Param, isOptional = false): string {
+export function setParamValue(value: unknown, { param = String, isOptional = false }: Partial<UrlParam> = {}): string {
   const extras = getParamExtras({ param, value, isSetter: true })
   if (value === undefined) {
     if (isOptional) {
