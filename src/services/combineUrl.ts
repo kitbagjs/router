@@ -4,13 +4,14 @@ import { combineQuery } from '@/services/combineQuery'
 import { combineHash } from '@/services/combineHash'
 import { toUrlPart } from '@/services/withParams'
 import { CreateUrlOptions, isUrlWithSchema, ToUrl, Url } from '@/types/url'
+import { Identity } from '@/types/utilities'
 
 export type CombineUrl<
   TParent extends Url,
   TChild extends Url
 > = TParent extends Url<infer TParentParams>
   ? TChild extends Url<infer TChildParams>
-    ? Url<TParentParams & TChildParams>
+    ? Url<Identity<TParentParams & TChildParams>>
     : never
   : never
 
