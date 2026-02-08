@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/method-signature-style */
-import { ToUrlPart, UrlParams, UrlPart } from '@/services/withParams'
+import { OptionalUrlParam, RequiredUrlParam, ToUrlPart, UrlParams, UrlPart } from '@/services/withParams'
 import { ExtractParamType } from '@/types/params'
 import { AllPropertiesAreOptional, Identity } from '@/types/utilities'
 import { UrlString } from '@/types/urlString'
-import { Param, ParamGetSet } from '@/types/paramTypes'
+import { ParamGetSet } from '@/types/paramTypes'
 import { MakeOptional } from '@/utilities/makeOptional'
 
 export const IS_URL_SYMBOL = Symbol('IS_URL_SYMBOL')
@@ -82,11 +82,11 @@ type ToUrlParamsReading<
 > =
 Identity<
   MakeOptional<{
-    [K in keyof TParams]: TParams[K] extends { param: infer TParam extends Param, isOptional: true }
+    [K in keyof TParams]: TParams[K] extends OptionalUrlParam<infer TParam>
       ? TParam extends Required<ParamGetSet>
         ? ExtractParamType<TParam>
         : ExtractParamType<TParam> | undefined
-      : TParams[K] extends { param: infer TParam extends Param, isOptional: false }
+      : TParams[K] extends RequiredUrlParam<infer TParam>
         ? ExtractParamType<TParam>
         : unknown
   }>
@@ -105,9 +105,9 @@ type ToUrlParamsWriting<
 > =
 Identity<
   MakeOptional<{
-    [K in keyof TParams]: TParams[K] extends { param: infer TParam extends Param, isOptional: true }
+    [K in keyof TParams]: TParams[K] extends OptionalUrlParam<infer TParam>
       ? ExtractParamType<TParam> | undefined
-      : TParams[K] extends { param: infer TParam extends Param, isOptional: false }
+      : TParams[K] extends RequiredUrlParam<infer TParam>
         ? ExtractParamType<TParam>
         : unknown
   }>

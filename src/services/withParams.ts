@@ -24,6 +24,8 @@ type WithParamsParamsOutput<
 const UrlPartsWithParamsSymbol = Symbol('UrlPartsWithParams')
 
 export type UrlParam<TParam extends Param = Param> = { param: TParam, isOptional: boolean, isGreedy: boolean }
+export type RequiredUrlParam<TParam extends Param = Param> = { param: TParam, isOptional: false, isGreedy: false }
+export type OptionalUrlParam<TParam extends Param = Param> = { param: TParam, isOptional: true, isGreedy: false }
 export type UrlParams = Record<string, UrlParam>
 
 export type UrlPart<TParams extends UrlParams = UrlParams> = {
