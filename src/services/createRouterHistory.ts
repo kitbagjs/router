@@ -9,7 +9,7 @@ type NavigationPushOptions = {
 type NavigationUpdate = (url: string, options?: NavigationPushOptions) => void
 type NavigationRefresh = () => void
 
-export type RouterHistory = History & {
+type RouterHistory = History & {
   update: NavigationUpdate,
   refresh: NavigationRefresh,
   startListening: () => void,

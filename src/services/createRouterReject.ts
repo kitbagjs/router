@@ -9,14 +9,14 @@ import { RouterReject } from '@/types/routerReject'
 
 export type BuiltInRejectionType = 'NotFound'
 
-export type RouterSetReject = (type: string | null) => void
+type RouterSetReject = (type: string | null) => void
 
 type GetRejectionRoute = (type: string) => ResolvedRoute
 
 export type RouterRejection<T extends Rejection = Rejection> = Ref<T | null>
 export type RouterRejections<TRouter extends Router> = TRouter['reject'] extends RouterReject<infer TRejections extends Rejection[]> ? TRejections[number] : never
 
-export type CreateRouterReject = {
+type CreateRouterReject = {
   setRejection: RouterSetReject,
   rejection: RouterRejection,
   getRejectionRoute: GetRejectionRoute,
