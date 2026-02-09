@@ -64,7 +64,7 @@ describe('toUrlPart', () => {
   })
 })
 
-describe('querySourceToUrlPart', () => {
+describe('toUrlQueryPart', () => {
   test('given a string, returns UrlPartWithParams with that value', () => {
     const response = toUrlQueryPart('foo=bar')
 

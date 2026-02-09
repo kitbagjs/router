@@ -51,7 +51,7 @@ describe('ToUrlPart', () => {
   })
 })
 
-describe('QuerySourceToUrlPart', () => {
+describe('ToUrlQueryPart', () => {
   test('given a string, returns UrlPart with that string', () => {
     type Source = ToUrlQueryPart<'foo=bar'>
     type Expect = UrlPart<{}>
