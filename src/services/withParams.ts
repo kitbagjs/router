@@ -1,7 +1,6 @@
 import { getParamsForString } from '@/services/getParamsForString'
 import { ExtractParamName, ParamEnd, ParamIsGreedy, ParamIsOptional, ParamStart } from '@/types/params'
 import { Param } from '@/types/paramTypes'
-import { QuerySource } from '@/types/querySource'
 import { Identity } from '@/types/utilities'
 import { isRecord } from '@/utilities/guards'
 import { MakeOptional } from '@/utilities/makeOptional'
@@ -84,8 +83,8 @@ export function withParams(value?: string, params?: Record<string, Param | undef
  * { query: { foo: Param } }
  * { query: [[ 'foo', Param ]] }
 */
-export type QuerySourceOrUrlPart = QuerySource | UrlPart | undefined | Record<string, Param> | [string, Param][]
-export type QuerySourceToUrlPart<T extends QuerySourceOrUrlPart> = T extends string
+export type UrlQueryPart = UrlPart | Record<string, Param> | [string, Param][]
+export type QuerySourceToUrlPart<T extends UrlQueryPart | string | undefined> = T extends string
   ? UrlPart<WithParamsParamsOutput<T>>
   : T extends UrlPart
     ? T
@@ -98,19 +97,19 @@ export type QuerySourceToUrlPart<T extends QuerySourceOrUrlPart> = T extends str
           : UrlPart<{}>
 
 type QueryRecordToUrlPart<T extends Record<string, Param>> = {
-  [K in keyof T as T[K] extends string ? never : K]: { param: T[K], isOptional: false, isGreedy: false }
+  [K in keyof T as T[K] extends string ? never : ExtractParamName<K & string>]: { param: T[K], isOptional: ParamIsOptional<K & string>, isGreedy: false }
 }
 
 type QueryArrayToUrlPart<T extends [string, string | Param][]> = T extends [infer First extends [string, string | Param], ...infer Rest extends [string, string | Param][]]
   ? First extends [string, string]
     ? {}
     : First extends [infer TKey extends string, infer TValue extends Param]
-      ? Identity<Record<TKey, { param: TValue, isOptional: false, isGreedy: false }> & QueryArrayToUrlPart<Rest>>
+      ? Identity<Record<ExtractParamName<TKey>, { param: TValue, isOptional: ParamIsOptional<TKey>, isGreedy: false }> & QueryArrayToUrlPart<Rest>>
       : never
   : {}
 
-export function querySourceToUrlPart<T extends QuerySourceOrUrlPart>(querySource: T): QuerySourceToUrlPart<T>
-export function querySourceToUrlPart(querySource: QuerySourceOrUrlPart): UrlPart {
+export function querySourceToUrlPart<T extends UrlQueryPart | string | undefined>(querySource: T): QuerySourceToUrlPart<T>
+export function querySourceToUrlPart(querySource: UrlQueryPart): UrlPart {
   if (typeof querySource === 'string' || typeof querySource === 'undefined' || isUrlPart(querySource)) {
     return toUrlPart(querySource)
   }

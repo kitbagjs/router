@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/method-signature-style */
-import { OptionalUrlParam, QuerySourceOrUrlPart, QuerySourceToUrlPart, RequiredUrlParam, ToUrlPart, UrlParams, UrlPart } from '@/services/withParams'
+import { OptionalUrlParam, UrlQueryPart, QuerySourceToUrlPart, RequiredUrlParam, ToUrlPart, UrlParams, UrlPart } from '@/services/withParams'
 import { ExtractParamType } from '@/types/params'
 import { AllPropertiesAreOptional, Identity } from '@/types/utilities'
 import { UrlString } from '@/types/urlString'
@@ -11,7 +11,7 @@ export const IS_URL_SYMBOL = Symbol('IS_URL_SYMBOL')
 export type CreateUrlOptions = {
   host?: string | UrlPart | undefined,
   path?: string | UrlPart | undefined,
-  query?: QuerySourceOrUrlPart,
+  query?: string | UrlQueryPart | undefined,
   hash?: string | UrlPart | undefined,
 }
 
