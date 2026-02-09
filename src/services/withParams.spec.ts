@@ -101,6 +101,16 @@ describe('toUrlQueryPart', () => {
     })
   })
 
+  test('given a record with Param values and optional key, converts to parameterized query string', () => {
+    const response = toUrlQueryPart({ 'foo': Number, '?baz': Boolean, '?zoo': 'zoo' })
+
+    expect(response.value).toBe('foo=[foo]&baz=[?baz]&?zoo=zoo')
+    expect(response.params).toMatchObject({
+      foo: { param: Number, isOptional: false, isGreedy: false },
+      baz: { param: Boolean, isOptional: true, isGreedy: false },
+    })
+  })
+
   test('given an array with string values, converts to query string', () => {
     const response = toUrlQueryPart([['foo', 'bar'], ['baz', 'qux']])
 
@@ -115,6 +125,16 @@ describe('toUrlQueryPart', () => {
     expect(response.params).toMatchObject({
       foo: { param: Number, isOptional: false, isGreedy: false },
       baz: { param: Boolean, isOptional: false, isGreedy: false },
+    })
+  })
+
+  test('given a record with Param values and greedy key, converts to parameterized query string', () => {
+    const response = toUrlQueryPart({ 'foo': Number, '?baz': Boolean, '?zoo': 'zoo' })
+
+    expect(response.value).toBe('foo=[foo]&baz=[?baz]&?zoo=zoo')
+    expect(response.params).toMatchObject({
+      foo: { param: Number, isOptional: false, isGreedy: false },
+      baz: { param: Boolean, isOptional: true, isGreedy: false },
     })
   })
 

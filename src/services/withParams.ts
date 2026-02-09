@@ -1,4 +1,5 @@
 import { getParamsForString } from '@/services/getParamsForString'
+import { getParamName } from '@/services/routeRegex'
 import { ExtractParamName, ParamEnd, ParamIsGreedy, ParamIsOptional, ParamStart } from '@/types/params'
 import { Param } from '@/types/paramTypes'
 import { Identity } from '@/types/utilities'
@@ -122,8 +123,14 @@ export function toUrlQueryPart(querySource: UrlQueryPart): UrlPart {
     if (typeof value === 'string') {
       source.push(`${key}=${value}`)
     } else {
-      params[key] = value
-      source.push(`${key}=[${key}]`)
+      const paramKey = `[${key}]`
+      const paramName = getParamName(paramKey)
+
+      if (paramName) {
+        params[paramName] = value
+      }
+
+      source.push(`${paramName}=${paramKey}`)
     }
   }
 
