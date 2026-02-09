@@ -27,7 +27,9 @@ test('given value with optional params, returns each param name as type String',
 })
 
 test('given value with param types, returns each param with corresponding param', () => {
-  const response = withParams('[parentId]-[childId]', { parentId: Boolean, childId: String })
+  const response = withParams('[parentId]-[childId]', {
+    parentId: Boolean,
+  })
 
   expect(response.params).toMatchObject({
     parentId: { param: Boolean, isOptional: false, isGreedy: false },
