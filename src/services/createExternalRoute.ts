@@ -3,7 +3,7 @@ import { createRouteId } from '@/services/createRouteId'
 import { combineRoutes, CreateRouteOptions, isWithParent, ToRoute, WithHost, WithoutHost, WithoutParent, WithParent } from '@/types/createRouteOptions'
 import { toName } from '@/types/name'
 import { Route } from '@/types/route'
-import { toUrlPart, querySourceToUrlPart } from '@/services/withParams'
+import { toUrlPart, toUrlQueryPart } from '@/services/withParams'
 import { createRouteHooks } from '@/services/createRouteHooks'
 import { createUrl } from '@/services/createUrl'
 import { createRouteRedirects } from '@/services/createRouteRedirects'
@@ -28,7 +28,7 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
   const id = createRouteId()
   const name = toName(options.name)
   const path = toUrlPart(options.path)
-  const query = querySourceToUrlPart(options.query)
+  const query = toUrlQueryPart(options.query)
   const hash = toUrlPart(options.hash)
   const meta = options.meta ?? {}
   const host = toUrlPart(options.host)

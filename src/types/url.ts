@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/method-signature-style */
-import { OptionalUrlParam, UrlQueryPart, QuerySourceToUrlPart, RequiredUrlParam, ToUrlPart, UrlParams, UrlPart } from '@/services/withParams'
+import { OptionalUrlParam, UrlQueryPart, ToUrlQueryPart, RequiredUrlParam, ToUrlPart, UrlParams, UrlPart } from '@/services/withParams'
 import { ExtractParamType } from '@/types/params'
 import { AllPropertiesAreOptional, Identity } from '@/types/utilities'
 import { UrlString } from '@/types/urlString'
@@ -20,7 +20,7 @@ export type ToUrl<
 > = Url<Identity<
   & ToUrlPart<TOptions['host']>['params']
   & ToUrlPart<TOptions['path']>['params']
-  & QuerySourceToUrlPart<TOptions['query']>['params']
+  & ToUrlQueryPart<TOptions['query']>['params']
   & ToUrlPart<TOptions['hash']>['params']
 >>
 

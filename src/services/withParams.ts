@@ -84,7 +84,7 @@ export function withParams(value?: string, params?: Record<string, Param | undef
  * { query: [[ 'foo', Param ]] }
 */
 export type UrlQueryPart = UrlPart | Record<string, Param> | [string, Param][]
-export type QuerySourceToUrlPart<T extends UrlQueryPart | string | undefined> = T extends string
+export type ToUrlQueryPart<T extends UrlQueryPart | string | undefined> = T extends string
   ? UrlPart<WithParamsParamsOutput<T>>
   : T extends UrlPart
     ? T
@@ -108,8 +108,8 @@ type QueryArrayToUrlPart<T extends [string, string | Param][]> = T extends [infe
       : never
   : {}
 
-export function querySourceToUrlPart<T extends UrlQueryPart | string | undefined>(querySource: T): QuerySourceToUrlPart<T>
-export function querySourceToUrlPart(querySource: UrlQueryPart): UrlPart {
+export function toUrlQueryPart<T extends UrlQueryPart | string | undefined>(querySource: T): ToUrlQueryPart<T>
+export function toUrlQueryPart(querySource: UrlQueryPart): UrlPart {
   if (typeof querySource === 'string' || typeof querySource === 'undefined' || isUrlPart(querySource)) {
     return toUrlPart(querySource)
   }

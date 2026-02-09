@@ -1,6 +1,6 @@
 import { expect, test, describe } from 'vitest'
 import { DuplicateParamsError } from '@/errors/duplicateParamsError'
-import { querySourceToUrlPart, toUrlPart, withParams } from '@/services/withParams'
+import { toUrlQueryPart, toUrlPart, withParams } from '@/services/withParams'
 
 test('given value without params, returns empty object', () => {
   const response = withParams('example-without-params', {})
@@ -66,33 +66,33 @@ describe('toUrlPart', () => {
 
 describe('querySourceToUrlPart', () => {
   test('given a string, returns UrlPartWithParams with that value', () => {
-    const response = querySourceToUrlPart('foo=bar')
+    const response = toUrlQueryPart('foo=bar')
 
     expect(response.value).toBe('foo=bar')
   })
 
   test('given undefined, returns UrlPartWithParams with empty value', () => {
-    const response = querySourceToUrlPart(undefined)
+    const response = toUrlQueryPart(undefined)
 
     expect(response.value).toBe('')
   })
 
   test('given a UrlPartWithParams object, returns same object', () => {
     const original = withParams('test', {})
-    const response = querySourceToUrlPart(original)
+    const response = toUrlQueryPart(original)
 
     expect(response).toBe(original)
   })
 
   test('given a record with string values, converts to query string', () => {
-    const response = querySourceToUrlPart({ foo: 'bar', baz: 'qux' })
+    const response = toUrlQueryPart({ foo: 'bar', baz: 'qux' })
 
     expect(response.value).toBe('foo=bar&baz=qux')
     expect(response.params).toMatchObject({})
   })
 
   test('given a record with Param values, converts to parameterized query string', () => {
-    const response = querySourceToUrlPart({ foo: Number, baz: Boolean })
+    const response = toUrlQueryPart({ foo: Number, baz: Boolean })
 
     expect(response.value).toBe('foo=[foo]&baz=[baz]')
     expect(response.params).toMatchObject({
@@ -102,14 +102,14 @@ describe('querySourceToUrlPart', () => {
   })
 
   test('given an array with string values, converts to query string', () => {
-    const response = querySourceToUrlPart([['foo', 'bar'], ['baz', 'qux']])
+    const response = toUrlQueryPart([['foo', 'bar'], ['baz', 'qux']])
 
     expect(response.value).toBe('foo=bar&baz=qux')
     expect(response.params).toMatchObject({})
   })
 
   test('given an array with Param values, converts to parameterized query string', () => {
-    const response = querySourceToUrlPart([['foo', Number], ['baz', Boolean]])
+    const response = toUrlQueryPart([['foo', Number], ['baz', Boolean]])
 
     expect(response.value).toBe('foo=[foo]&baz=[baz]')
     expect(response.params).toMatchObject({
@@ -119,7 +119,7 @@ describe('querySourceToUrlPart', () => {
   })
 
   test('given a mixed record with string and Param values, handles both correctly', () => {
-    const response = querySourceToUrlPart({ foo: 'bar', baz: Number })
+    const response = toUrlQueryPart({ foo: 'bar', baz: Number })
 
     expect(response.value).toBe('foo=bar&baz=[baz]')
     expect(response.params).toMatchObject({ baz: { param: Number, isOptional: false, isGreedy: false } })

@@ -1,4 +1,4 @@
-import { querySourceToUrlPart, toUrlPart, UrlPart } from '@/services/withParams'
+import { toUrlQueryPart, toUrlPart, UrlPart } from '@/services/withParams'
 import { getParamValueFromUrl, setParamValueOnUrl } from '@/services/paramsFinder'
 import { getParamName, generateRouteHostRegexPattern, generateRoutePathRegexPattern, generateRouteQueryRegexPatterns, generateRouteHashRegexPattern } from '@/services/routeRegex'
 import { getParamValue, setParamValue } from '@/services/params'
@@ -13,7 +13,7 @@ export function createUrl(urlOrOptions: CreateUrlOptions): Url {
   const options = {
     host: toUrlPart(urlOrOptions.host),
     path: toUrlPart(urlOrOptions.path),
-    query: cleanQuery(querySourceToUrlPart(urlOrOptions.query)),
+    query: cleanQuery(toUrlQueryPart(urlOrOptions.query)),
     hash: cleanHash(toUrlPart(urlOrOptions.hash)),
   }
 
