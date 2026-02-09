@@ -111,7 +111,7 @@ type QueryArrayToUrlPart<T extends [string, string | Param][]> = T extends [infe
 
 export function querySourceToUrlPart<T extends QuerySourceOrUrlPart>(querySource: T): QuerySourceToUrlPart<T>
 export function querySourceToUrlPart(querySource: QuerySourceOrUrlPart): UrlPart {
-  if (typeof querySource === 'string' || typeof querySource === 'undefined' || isUrlPartsWithParams(querySource)) {
+  if (typeof querySource === 'string' || typeof querySource === 'undefined' || isUrlPart(querySource)) {
     return toUrlPart(querySource)
   }
 
