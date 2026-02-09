@@ -107,6 +107,10 @@ export type CreateRouteOptions<
    * Related routes and rejections for the route. The context is exposed to the hooks and props callback functions for this route.
    */
   context?: RouteContext[],
+  /**
+   * The string value to be assigned to the document title when the route is matched.
+   */
+  title?: string | ((parent: string | null) => string),
 }
 
 export type PropsGetter<

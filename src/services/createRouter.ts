@@ -9,6 +9,7 @@ import { createRouterHooks, getRouterHooksKey } from '@/services/createRouterHoo
 import { createRouterReject } from '@/services/createRouterReject'
 import { getInitialUrl } from '@/services/getInitialUrl'
 import { setStateValues } from '@/services/state'
+import { setDocumentTitle } from '@/services/setDocumentTitle'
 import { Routes } from '@/types/route'
 import { Router, RouterOptions } from '@/types/router'
 import { RouterPush, RouterPushOptions } from '@/types/routerPush'
@@ -165,6 +166,7 @@ export function createRouter<
 
     if (!isExternal(url)) {
       setPropsAndUpdateRoute(navigationId, to, from)
+      setDocumentTitle(to)
     }
 
     const afterResponse = await hooks.runAfterRouteHooks({ to, from })
