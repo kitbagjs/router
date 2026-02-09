@@ -5,11 +5,6 @@ export type ParamExtras = {
   invalid: (message?: string) => never,
 }
 
-export type ParamOptions = {
-  isOptional?: boolean,
-  isGreedy?: boolean,
-}
-
 export type ParamGetter<T = any> = (value: string, extras: ParamExtras) => T
 export type ParamSetter<T = any> = (value: T, extras: ParamExtras) => string
 
