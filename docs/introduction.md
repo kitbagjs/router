@@ -17,11 +17,6 @@ Vue router has served us well for the **many** years it's been around. However, 
 | :x: Not intuitive | :white_check_mark: No magic, url is assembled exactly how you'd expect |
 | :x: Old and bloated | :white_check_mark: 128kB, 1 dependency, written with modern Typescript |
 
-## Show Me
-
-[Kitbag Router: New TYPE SAFE Router for VUE
-![Kitbag Router: New TYPE SAFE Router for VUE](https://img.youtube.com/vi/p1WI9hAYmJ4/0.jpg)](https://youtu.be/p1WI9hAYmJ4)
-
 ## Type Safety
 
 You already know what routes exist, so why are we using magic strings and hoping it works out? With Kitbag Router, the routes that are available to you couldn't be clearer. If the routes change, Typescript will tell you the links that need to be updated.
