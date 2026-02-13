@@ -11,7 +11,7 @@ const route = useRoute()
 This composable can also be used to narrow the type of the route by passing in the name of the expected route. It works the same way as the [`isRoute`](/api/type-guards/isRoute.html) type guard. However if the current route does not match the expected route, a [`UseRouteInvalidRouteError`](/api/errors/UseRouteInvalidError.html) will be thrown.
 
 ```ts
-const route = useRoute('blog')
+const route = useRoute('profile')
 ```
 
 ## Exact
