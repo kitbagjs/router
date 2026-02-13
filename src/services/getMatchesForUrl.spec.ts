@@ -1,4 +1,4 @@
-import { expect, test } from 'vitest'
+import { describe, expect, test } from 'vitest'
 import { createRoute } from '@/services/createRoute'
 import { getMatchForUrl } from '@/services/getMatchesForUrl'
 import { component } from '@/utilities/testHelpers'
@@ -123,4 +123,31 @@ test('given route with equal matches, returns first match', () => {
 
   expect(match).toBeDefined()
   expect(match?.name).toBe('first-route')
+})
+
+describe('trailing slashes', () => {
+  test('given route without trailing slash, does not match url with trailing slash', () => {
+    const route = createRoute({
+      name: 'no-trailing-slash',
+      path: '/parent/child',
+      component,
+    })
+
+    const match = getMatchForUrl([route], '/parent/child/')
+
+    expect(match).toBeUndefined()
+  })
+
+  test('given route with trailing slash, matches url without trailing slash', () => {
+    const route = createRoute({
+      name: 'with-trailing-slash',
+      path: '/parent/child/',
+      component,
+    })
+
+    const match = getMatchForUrl([route], '/parent/child')
+
+    expect(match).toBeDefined()
+    expect(match?.name).toBe('with-trailing-slash')
+  })
 })
