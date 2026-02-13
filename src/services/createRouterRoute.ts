@@ -53,15 +53,26 @@ export function createRouterRoute<TRoute extends ResolvedRoute>(routerKey: Injec
 
   const { id, matched, matches, hooks, name, hash, href } = toRefs(route)
 
+  const paramsProxy = new Proxy({}, {
+    get(_target, property, receiver) {
+      return Reflect.get(route.params, property, receiver)
+    },
+    set(_target, property, value) {
+      update(property, value)
+
+      return true
+    },
+    ownKeys() {
+      return Reflect.ownKeys(route.params)
+    },
+    getOwnPropertyDescriptor(_target, prop) {
+      return Reflect.getOwnPropertyDescriptor(route.params, prop)
+    },
+  })
+
   const params = computed({
     get() {
-      return new Proxy(route.params, {
-        set(_target, property, value) {
-          update(property, value)
-
-          return true
-        },
-      })
+      return paramsProxy
     },
     set(params) {
       update(params)
