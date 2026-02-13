@@ -1,7 +1,7 @@
 # Functions: isUrlWithSchema()
 
 ```ts
-function isUrlWithSchema(url): url is Url<UrlParams> & { schema: Record<string, WithParams> };
+function isUrlWithSchema(url): url is Url<UrlParams> & { schema: Record<string, UrlPart> };
 ```
 
 **`Internal`**
@@ -16,4 +16,4 @@ Type guard to assert that a url has a schema.
 
 ## Returns
 
-`url is Url<UrlParams> & { schema: Record<string, WithParams> }`
+`url is Url<UrlParams> & { schema: Record<string, UrlPart> }`
