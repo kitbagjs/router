@@ -7,7 +7,7 @@ export type IsRouteOptions = {
   exact?: boolean,
 }
 
-type RouteWithMatch<
+export type RouteWithMatch<
   TRoute extends RouterRoute,
   TRouteName extends TRoute['name']
 > = TRoute extends RouterRoute
