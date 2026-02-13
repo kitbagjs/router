@@ -8,7 +8,7 @@ type WithHost<THost> = object;
 
 | Type Parameter | Default type |
 | ------ | ------ |
-| `THost` *extends* `string` \| `WithParams` | `string` \| `WithParams` |
+| `THost` *extends* `string` \| `UrlPart` | `string` \| `UrlPart` |
 
 ## Properties
 

@@ -8,7 +8,7 @@ type CreateUrlOptions = object;
 
 | Property | Type |
 | ------ | ------ |
-| <a id="hash"></a> `hash?` | `string` \| `WithParams` |
-| <a id="host"></a> `host?` | `string` \| `WithParams` |
-| <a id="path"></a> `path?` | `string` \| `WithParams` |
-| <a id="query"></a> `query?` | `string` \| `WithParams` |
+| <a id="hash"></a> `hash?` | `string` \| `UrlPart` |
+| <a id="host"></a> `host?` | `string` \| `UrlPart` |
+| <a id="path"></a> `path?` | `string` \| `UrlPart` |
+| <a id="query"></a> `query?` | `string` \| `UrlQueryPart` |
