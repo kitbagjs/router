@@ -182,7 +182,7 @@ describe('url assembly', () => {
     test.each([
       ['/simple/[?simple]'],
       [withParams('/simple/[?simple]', { simple: String })],
-      [withParams('/simple/[?simple]', { simple: withDefault(String, 'abc') })],
+      [withParams('/simple/[simple]', { simple: withDefault(String, 'abc') })],
     ])('given route with optional string param NOT provided, returns route Path with string without values interpolated', (path) => {
       const url = createUrl({
         name: 'simple',
@@ -271,7 +271,7 @@ describe('url assembly', () => {
     test.each([
       ['simple=[?simple]'],
       [withParams('simple=[?simple]', { simple: String })],
-      [withParams('simple=[?simple]', { simple: withDefault(String, 'abc') })],
+      [withParams('simple=[simple]', { simple: withDefault(String, 'abc') })],
     ])('given route with optional param NOT provided, leaves entire key off', (query) => {
       const url = createUrl({
         name: 'simple',
@@ -564,7 +564,7 @@ describe('url assembly', () => {
     test.each([
       ['foo[?bar]'],
       [withParams('foo[?bar]', { bar: String })],
-      [withParams('foo[?bar]', { bar: withDefault(String, 'abc') })],
+      [withParams('foo[bar]', { bar: withDefault(String, 'abc') })],
     ])('given route with optional param NOT provided, returns route hash with string without values interpolated', (hash) => {
       const url = createUrl({
         name: 'simple',
@@ -598,7 +598,7 @@ describe('url assembly', () => {
       const url = createUrl({
         name: 'simple',
         path: '/',
-        hash: withParams('foo[?bar]', { bar: withDefault(String, 'abc.') }),
+        hash: withParams('foo[bar]', { bar: withDefault(String, 'abc.') }),
       })
 
       const response = url.stringify({
