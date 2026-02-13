@@ -32,13 +32,14 @@ const events = createRoute({
 
 By default, a path param matches only up to the next `/` (a single path segment). For example, the path `/photos/[date]` matches `/photos/2026` (param is `"2026"`) but not `/photos/2026/01`.
 
-An **greedy param** matches across one or more path segments (including `/`). Add a `*` after the param name: `[param*]` or `[?param*]`. The path `/photos/[date*]` then matches both `/photos/2026` (param is `"2026"`) and `/photos/2026/01` (param is `"2026/01`).
+A **greedy param** matches across one or more path segments (including `/`). Add a `*` after the param name: `[param*]` or `[?param*]`. The path `/photos/[date*]` then matches both `/photos/2026` (param is `"2026"`) and `/photos/2026/01` (param is `"2026/01`).
 
 ```ts {3}
 const route = createRoute({
   name: 'photos',
   path: '/photos/[date*]',
 })
+```
 
 Use greedy params when a param value can contain slashes (e.g. file paths or encoded segments).
 
@@ -136,7 +137,7 @@ const monthParam = createParam({
 
 ## Default Values
 
-Define a default value when creating a param or by using the `withDefault` utility. This value will be used when the param is optional and not provided in the url. An optional param of type `String` will have the type `string | undefined` when being accessed. But when a default value is provided it will have the type `string`, even if the value is missing from the url.
+Define a default value when creating a param or by using the `withDefault` utility. This value will be used when the param is not provided in the url. An optional param of type `String` will have the type `string | undefined` when being accessed. But when a default value is provided it will have the type `string`, even if the value is missing from the url.
 
 ```ts {7}
 import { createRoute, withParams, withDefault } from '@kitbag/router'

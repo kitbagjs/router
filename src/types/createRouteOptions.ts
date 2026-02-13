@@ -12,7 +12,7 @@ import { MaybePromise } from './utilities'
 import { ToMeta } from './meta'
 import { ToState } from './state'
 import { ToName } from './name'
-import { UrlPart } from '@/services/withParams'
+import { UrlPart, UrlQueryPart } from '@/services/withParams'
 import { RouteContext, ToRouteContext } from './routeContext'
 import { RouterViewProps } from '@/components/routerView'
 import { ToUrl } from '@/types/url'
@@ -72,7 +72,7 @@ export type CreateRouteOptions<
   /**
    * Query (aka search) part of URL.
    */
-  query?: string | UrlPart | undefined,
+  query?: string | UrlQueryPart | undefined,
   /**
    * Hash part of URL.
    */

@@ -20,7 +20,7 @@ Type safe router for Vue.js
 
 ## Getting Started
 
-Get Started with our [documentation](https://kitbag-router.netlify.app/) or our [intro video](https://kitbag-router.netlify.app/)
+Get Started with our [documentation](https://kitbag-router.netlify.app/).
 
 ## Installation
 

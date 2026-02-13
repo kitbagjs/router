@@ -87,3 +87,10 @@ Param extends TParam
 
 export type ParamIsOptional<TParam extends string> = TParam extends `?${string}` ? true : false
 export type ParamIsGreedy<TParam extends string> = TParam extends `${string}*` ? true : false
+
+export type ParamIsOptionalOrHasDefault<TParamName extends string, TParam extends Param | undefined> =
+  ParamIsOptional<TParamName> extends true
+    ? true
+    : TParam extends Required<ParamGetSet>
+      ? true
+      : false

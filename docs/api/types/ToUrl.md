@@ -1,7 +1,7 @@
 # Types: ToUrl\<TOptions\>
 
 ```ts
-type ToUrl<TOptions> = Url<ToUrlParams<ToWithParams<TOptions["host"]>> & ToUrlParams<ToWithParams<TOptions["path"]>> & ToUrlParams<ToWithParams<TOptions["query"]>> & ToUrlParams<ToWithParams<TOptions["hash"]>>>;
+type ToUrl<TOptions> = Url<Identity<ToUrlPart<TOptions["host"]>["params"] & ToUrlPart<TOptions["path"]>["params"] & ToUrlQueryPart<TOptions["query"]>["params"] & ToUrlPart<TOptions["hash"]>["params"]>>;
 ```
 
 ## Type Parameters

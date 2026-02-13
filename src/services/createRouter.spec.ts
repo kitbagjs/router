@@ -283,6 +283,36 @@ test('params are writable', async () => {
   })
 })
 
+test('params can be destructured', async () => {
+  const root = createRoute({
+    name: 'root',
+    component,
+    path: '/[paramA]/[paramB]',
+  })
+
+  const { route, start, push } = createRouter([root], {
+    initialUrl: '/one/two',
+  })
+
+  await start()
+
+  const { paramA, paramB } = toRefs(route.params)
+
+  expect(paramA.value).toBe('one')
+  expect(paramB.value).toBe('two')
+
+  await push('root', { paramA: 'three', paramB: 'four' })
+
+  expect(paramA.value).toBe('three')
+  expect(paramB.value).toBe('four')
+
+  paramA.value = 'five'
+
+  await flushPromises()
+
+  expect(route.params.paramA).toBe('five')
+})
+
 test('query is writable', async () => {
   const root = createRoute({
     name: 'root',

@@ -3,7 +3,7 @@
 ## Call Signature
 
 ```ts
-function withParams<TValue, TParams>(value, params): WithParams<TValue, TParams>;
+function withParams<TValue, TParams>(value, params): UrlPart<WithParamsParamsOutput<TValue, TParams>>;
 ```
 
 ### Type Parameters
@@ -22,16 +22,16 @@ function withParams<TValue, TParams>(value, params): WithParams<TValue, TParams>
 
 ### Returns
 
-`WithParams`\<`TValue`, `TParams`\>
+`UrlPart`\<`WithParamsParamsOutput`\<`TValue`, `TParams`\>\>
 
 ## Call Signature
 
 ```ts
-function withParams(): WithParams<"", {
+function withParams(): UrlPart<{
 }>;
 ```
 
 ### Returns
 
-`WithParams`\<`""`, \{
+`UrlPart`\<\{
 \}\>

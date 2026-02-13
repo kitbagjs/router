@@ -1,6 +1,8 @@
 import { getParamsForString } from '@/services/getParamsForString'
-import { ExtractParamName, ParamEnd, ParamIsGreedy, ParamIsOptional, ParamStart } from '@/types/params'
+import { getParamName } from '@/services/routeRegex'
+import { ExtractParamName, ParamEnd, ParamIsGreedy, ParamIsOptionalOrHasDefault, ParamStart } from '@/types/params'
 import { Param } from '@/types/paramTypes'
+import { Identity } from '@/types/utilities'
 import { isRecord } from '@/utilities/guards'
 import { MakeOptional } from '@/utilities/makeOptional'
 
@@ -16,9 +18,9 @@ type WithParamsParamsOutput<
 > = TValue extends `${string}${ParamStart}${infer TParam}${ParamEnd}${infer Rest}`
   ? ExtractParamName<TParam> extends keyof TParams
     ? TParams[ExtractParamName<TParam>] extends Param
-      ? Record<ExtractParamName<TParam>, { param: TParams[ExtractParamName<TParam>], isOptional: ParamIsOptional<TParam>, isGreedy: ParamIsGreedy<TParam> }> & WithParamsParamsOutput<Rest, TParams>
-      : Record<ExtractParamName<TParam>, { param: StringConstructor, isOptional: ParamIsOptional<TParam>, isGreedy: ParamIsGreedy<TParam> }> & WithParamsParamsOutput<Rest, TParams>
-    : Record<ExtractParamName<TParam>, { param: StringConstructor, isOptional: ParamIsOptional<TParam>, isGreedy: ParamIsGreedy<TParam> }> & WithParamsParamsOutput<Rest, TParams>
+      ? Record<ExtractParamName<TParam>, { param: TParams[ExtractParamName<TParam>], isOptional: ParamIsOptionalOrHasDefault<TParam, TParams[ExtractParamName<TParam>]>, isGreedy: ParamIsGreedy<TParam> }> & WithParamsParamsOutput<Rest, TParams>
+      : Record<ExtractParamName<TParam>, { param: StringConstructor, isOptional: ParamIsOptionalOrHasDefault<TParam, TParams[ExtractParamName<TParam>]>, isGreedy: ParamIsGreedy<TParam> }> & WithParamsParamsOutput<Rest, TParams>
+    : Record<ExtractParamName<TParam>, { param: StringConstructor, isOptional: ParamIsOptionalOrHasDefault<TParam, TParams[ExtractParamName<TParam>]>, isGreedy: ParamIsGreedy<TParam> }> & WithParamsParamsOutput<Rest, TParams>
   : {}
 
 const UrlPartsWithParamsSymbol = Symbol('UrlPartsWithParams')
@@ -42,7 +44,7 @@ export type ToUrlPart<T extends string | UrlPart | undefined> = T extends string
       ? UrlPart<{}>
       : T
 
-function isUrlPartsWithParams(maybeUrlPartsWithParams: unknown): maybeUrlPartsWithParams is UrlPart {
+function isUrlPart(maybeUrlPartsWithParams: unknown): maybeUrlPartsWithParams is UrlPart {
   return isRecord(maybeUrlPartsWithParams) && maybeUrlPartsWithParams[UrlPartsWithParamsSymbol] === true
 }
 
@@ -52,7 +54,7 @@ export function toUrlPart<T extends string | UrlPart | undefined>(value: T): Url
     return withParams()
   }
 
-  if (isUrlPartsWithParams(value)) {
+  if (isUrlPart(value)) {
     return value
   }
 
@@ -70,4 +72,67 @@ export function withParams(value?: string, params?: Record<string, Param | undef
     params: getParamsForString(value, params),
     [UrlPartsWithParamsSymbol]: true,
   }
+}
+
+/**
+ * Type for query source that can be converted to a UrlPart object.
+ * Supports
+ * { query: 'foo=bar' }
+ * { query: 'foo=[bar]' }
+ * { query: { foo: 'bar' } }
+ * { query: [['foo', 'bar']] }
+ * { query: { foo: Param } }
+ * { query: [[ 'foo', Param ]] }
+*/
+export type UrlQueryPart = UrlPart | Record<string, Param> | [string, Param][]
+export type ToUrlQueryPart<T extends UrlQueryPart | string | undefined> = T extends string
+  ? UrlPart<WithParamsParamsOutput<T>>
+  : T extends UrlPart
+    ? T
+    : T extends undefined
+      ? UrlPart<{}>
+      : T extends Record<string, string | Param>
+        ? UrlPart<QueryRecordToUrlPart<T>>
+        : T extends [string, string | Param][]
+          ? UrlPart<QueryArrayToUrlPart<T>>
+          : UrlPart<{}>
+
+type QueryRecordToUrlPart<T extends Record<string, Param>> = {
+  [K in keyof T as T[K] extends string ? never : ExtractParamName<K & string>]: { param: T[K], isOptional: ParamIsOptionalOrHasDefault<K & string, T[K]>, isGreedy: false }
+}
+
+type QueryArrayToUrlPart<T extends [string, string | Param][]> = T extends [infer First extends [string, string | Param], ...infer Rest extends [string, string | Param][]]
+  ? First extends [string, string]
+    ? {}
+    : First extends [infer TKey extends string, infer TValue extends Param]
+      ? Identity<Record<ExtractParamName<TKey>, { param: TValue, isOptional: ParamIsOptionalOrHasDefault<TKey, TValue>, isGreedy: false }> & QueryArrayToUrlPart<Rest>>
+      : never
+  : {}
+
+export function toUrlQueryPart<T extends UrlQueryPart | string | undefined>(querySource: T): ToUrlQueryPart<T>
+export function toUrlQueryPart(querySource: UrlQueryPart): UrlPart {
+  if (typeof querySource === 'string' || typeof querySource === 'undefined' || isUrlPart(querySource)) {
+    return toUrlPart(querySource)
+  }
+
+  const entries = Array.isArray(querySource) ? querySource : Object.entries(querySource)
+  const source: string[] = []
+  const params: Record<string, Param> = {}
+
+  for (const [key, value] of entries) {
+    if (typeof value === 'string') {
+      source.push(`${key}=${value}`)
+    } else {
+      const paramKey = `[${key}]`
+      const paramName = getParamName(paramKey)
+
+      if (paramName) {
+        params[paramName] = value
+      }
+
+      source.push(`${paramName}=${paramKey}`)
+    }
+  }
+
+  return withParams(source.join('&'), params)
 }
