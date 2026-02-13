@@ -75,3 +75,40 @@ describe('options.rejections', () => {
     expect(wrapper.html()).toBe('<div>This is a custom rejection</div>')
   })
 })
+
+test('document title is set', async () => {
+  const root = createRoute({
+    name: 'root',
+    component,
+    path: '/',
+    title: 'Root Title',
+  })
+
+  const routeWithTitle = createRoute({
+    name: 'parent',
+    component,
+    path: '/parent',
+    title: 'Parent Title',
+  })
+
+  const routeWithTitleFunction = createRoute({
+    parent: routeWithTitle,
+    name: 'child',
+    component,
+    path: '/child',
+    title: (parent) => `${parent} + Child Title`,
+  })
+
+  const router = createRouter([root, routeWithTitle, routeWithTitleFunction], { initialUrl: '/' })
+  await router.start()
+
+  expect(document.title).toBe('Root Title')
+
+  await router.push('parent')
+
+  expect(document.title).toBe('Parent Title')
+
+  await router.push('child')
+
+  expect(document.title).toBe('Parent Title + Child Title')
+})
