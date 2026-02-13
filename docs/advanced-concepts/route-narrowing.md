@@ -1,6 +1,6 @@
 # Route Narrowing
 
-When accessing the current route, by default the type is a union of all possible routes.
+When accessing the current route or using the `useRoute` composable, by default the type is a union of all possible routes.
 
 ```ts
 import { createRoute, createRouter } from '@kitbag/router'
@@ -65,3 +65,5 @@ import { isRoute } from '@kitbag/router'
 if(isRoute(router.route, 'user', { exact: false })) {
   router.route.name // "user" | "user.profile" | "user.settings"
   router.route.params // { userId: string } | { userId: string, tab: string }
+}
+```

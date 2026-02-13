@@ -1,6 +1,7 @@
 import { expect, test, describe } from 'vitest'
 import { DuplicateParamsError } from '@/errors/duplicateParamsError'
-import { toUrlPart, withParams } from '@/services/withParams'
+import { withDefault } from '@/services/withDefault'
+import { toUrlQueryPart, toUrlPart, withParams } from '@/services/withParams'
 
 test('given value without params, returns empty object', () => {
   const response = withParams('example-without-params', {})
@@ -61,5 +62,100 @@ describe('toUrlPart', () => {
     const response = toUrlPart(original)
 
     expect(response).toBe(original)
+  })
+})
+
+describe('toUrlQueryPart', () => {
+  test('given a string, returns UrlPartWithParams with that value', () => {
+    const response = toUrlQueryPart('foo=bar')
+
+    expect(response.value).toBe('foo=bar')
+  })
+
+  test('given undefined, returns UrlPartWithParams with empty value', () => {
+    const response = toUrlQueryPart(undefined)
+
+    expect(response.value).toBe('')
+  })
+
+  test('given a UrlPartWithParams object, returns same object', () => {
+    const original = withParams('test', {})
+    const response = toUrlQueryPart(original)
+
+    expect(response).toBe(original)
+  })
+
+  test('given a record with string values, converts to query string', () => {
+    const response = toUrlQueryPart({ foo: 'bar', baz: 'qux' })
+
+    expect(response.value).toBe('foo=bar&baz=qux')
+    expect(response.params).toMatchObject({})
+  })
+
+  test('given a record with Param values, converts to parameterized query string', () => {
+    const response = toUrlQueryPart({ foo: Number, baz: Boolean })
+
+    expect(response.value).toBe('foo=[foo]&baz=[baz]')
+    expect(response.params).toMatchObject({
+      foo: { param: Number, isOptional: false, isGreedy: false },
+      baz: { param: Boolean, isOptional: false, isGreedy: false },
+    })
+  })
+
+  test('given a record with Param values and optional key, converts to parameterized query string', () => {
+    const response = toUrlQueryPart({ 'foo': Number, '?baz': Boolean, '?zoo': 'zoo' })
+
+    expect(response.value).toBe('foo=[foo]&baz=[?baz]&?zoo=zoo')
+    expect(response.params).toMatchObject({
+      foo: { param: Number, isOptional: false, isGreedy: false },
+      baz: { param: Boolean, isOptional: true, isGreedy: false },
+    })
+  })
+
+  test('given a record with Param values and Param with default value, converts to parameterized query string', () => {
+    const response = toUrlQueryPart({ foo: Number, baz: withDefault(Boolean, true) })
+
+    expect(response.value).toBe('foo=[foo]&baz=[baz]')
+    expect(response.params).toMatchObject({
+      foo: { isOptional: false, isGreedy: false },
+      baz: { isOptional: true, isGreedy: false },
+    })
+  })
+
+  test('given an array with string values, converts to query string', () => {
+    const response = toUrlQueryPart([['foo', 'bar'], ['baz', 'qux']])
+
+    expect(response.value).toBe('foo=bar&baz=qux')
+    expect(response.params).toMatchObject({})
+  })
+
+  test('given an array with Param values, converts to parameterized query string', () => {
+    const response = toUrlQueryPart([['foo', Number], ['baz', Boolean], ['zoo', 'zoo']])
+
+    expect(response.value).toBe('foo=[foo]&baz=[baz]&zoo=zoo')
+    expect(response.params).toMatchObject({
+      foo: { param: Number, isOptional: false, isGreedy: false },
+      baz: { param: Boolean, isOptional: false, isGreedy: false },
+    })
+  })
+
+  test('given an array with Param values and optional key, converts to parameterized query string', () => {
+    const response = toUrlQueryPart([['foo', Number], ['?baz', Boolean], ['?zoo', 'zoo']])
+
+    expect(response.value).toBe('foo=[foo]&baz=[?baz]&?zoo=zoo')
+    expect(response.params).toMatchObject({
+      foo: { param: Number, isOptional: false, isGreedy: false },
+      baz: { param: Boolean, isOptional: true, isGreedy: false },
+    })
+  })
+
+  test('given an array with Param values and Param with default value, converts to parameterized query string', () => {
+    const response = toUrlQueryPart([['foo', Number], ['baz', withDefault(Boolean, true)]])
+
+    expect(response.value).toBe('foo=[foo]&baz=[baz]')
+    expect(response.params).toMatchObject({
+      foo: { isOptional: false, isGreedy: false },
+      baz: { isOptional: true, isGreedy: false },
+    })
   })
 })

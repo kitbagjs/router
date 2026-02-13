@@ -2,7 +2,7 @@ import { createUrl } from '@/services/createUrl'
 import { combinePath } from '@/services/combinePath'
 import { combineQuery } from '@/services/combineQuery'
 import { combineHash } from '@/services/combineHash'
-import { toUrlPart } from '@/services/withParams'
+import { toUrlPart, toUrlQueryPart } from '@/services/withParams'
 import { CreateUrlOptions, isUrlWithSchema, ToUrl, Url } from '@/types/url'
 import { Identity } from '@/types/utilities'
 
@@ -26,7 +26,7 @@ export function combineUrl(parent: Url, child: Url | CreateUrlOptions): Url {
     return createUrl({
       host: parent.schema.host,
       path: combinePath(parent.schema.path, toUrlPart(child.path)),
-      query: combineQuery(parent.schema.query, toUrlPart(child.query)),
+      query: combineQuery(parent.schema.query, toUrlQueryPart(child.query)),
       hash: combineHash(parent.schema.hash, toUrlPart(child.hash)),
     })
   }
