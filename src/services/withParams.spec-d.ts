@@ -1,5 +1,6 @@
 import { expectTypeOf, test, describe } from 'vitest'
 import { ToUrlQueryPart, ToUrlPart, UrlPart, withParams } from '@/services/withParams'
+import { ParamWithDefault } from './withDefault'
 
 test('given a string without params, expects no params', () => {
   const source = withParams('/something-without-params', {})
@@ -101,6 +102,16 @@ describe('ToUrlQueryPart', () => {
     expectTypeOf<Source>().toEqualTypeOf<Expect>()
   })
 
+  test('given a record with Param values with a param that has a default value, returns record of parameterized UrlPart', () => {
+    type Source = ToUrlQueryPart<{ foo: NumberConstructor, baz: ParamWithDefault<BooleanConstructor> }>
+    type Expect = {
+      foo: { isOptional: false, isGreedy: false },
+      baz: { isOptional: true, isGreedy: false },
+    }
+
+    expectTypeOf<Source['params']>().toMatchObjectType<Expect>()
+  })
+
   test('given an array with string tuples, each element maps to UrlPart', () => {
     type Source = ToUrlQueryPart<[['foo', 'bar'], ['baz', 'qux']]>
     type Expect = UrlPart<{}>
@@ -118,13 +129,23 @@ describe('ToUrlQueryPart', () => {
     expectTypeOf<Source>().toEqualTypeOf<Expect>()
   })
 
-  test('given a record with Param values and greedy key, returns record of parameterized UrlPart', () => {
-    type Source = ToUrlQueryPart<{ 'foo': NumberConstructor, '?baz': BooleanConstructor, '?zoo': '14' }>
+  test('given an array with Param tuples and optional key, each element maps to parameterized UrlPart', () => {
+    type Source = ToUrlQueryPart<[['foo', NumberConstructor], ['?baz', BooleanConstructor], ['?zoo', '14']]>
     type Expect = UrlPart<{
       foo: { param: NumberConstructor, isOptional: false, isGreedy: false },
       baz: { param: BooleanConstructor, isOptional: true, isGreedy: false },
     }>
 
     expectTypeOf<Source>().toEqualTypeOf<Expect>()
+  })
+
+  test('given an array with Param tuples and Param with default value, each element maps to parameterized UrlPart', () => {
+    type Source = ToUrlQueryPart<[['foo', NumberConstructor], ['baz', ParamWithDefault<BooleanConstructor>]]>
+    type Expect = {
+      foo: { isOptional: false, isGreedy: false },
+      baz: { isOptional: true, isGreedy: false },
+    }
+
+    expectTypeOf<Source['params']>().toMatchObjectType<Expect>()
   })
 })
