@@ -12,7 +12,7 @@ If a route is defined as [external](/core-concepts/external-routes), it will onl
 
 ## Depth
 
-A route’s depth is determined by the number of parent routes it has. The deeper the route, the higher the priority it has when matching. Kitbag Router pre‑sorts routes by depth in descending order and then returns the first route that matches all rules.
+A route’s depth is determined by the number of parent routes it has. The deeper the route, the higher the priority it has when matching.
 
 ```ts
 const external = createExternalRoute({
@@ -31,7 +31,7 @@ const external = createExternalRoute({
 Routes `path` must match the structure of the URL pathname.
 
 ```ts
-const route createRoute({
+const route = createRoute({
   ...
   path: '/parent/anything/child'
 })
@@ -43,7 +43,7 @@ const route createRoute({
 :x: `parent/child`  
 
 ```ts
-const route createRoute({
+const route = createRoute({
   ...
   path: '/parent/[myParam]/child'
 })
@@ -55,7 +55,7 @@ const route createRoute({
 :x: `parent/child`  
 
 ```ts
-const route createRoute({
+const route = createRoute({
   ...
   path: '/parent/[?myParam]/child'
 })
@@ -71,7 +71,7 @@ const route createRoute({
 Routes `query` must match the structure of the URL search.
 
 ```ts
-const route createRoute({
+const route = createRoute({
   ...
   query: {
     foo: 'bar',
@@ -85,7 +85,7 @@ const route createRoute({
 :x: `?foo`  
 
 ```ts
-const route createRoute({
+const route = createRoute({
   ...
   query: {
     foo: String,
@@ -99,7 +99,7 @@ const route createRoute({
 :x: `?foo`  
 
 ```ts
-const route createRoute({
+const route = createRoute({
   ...
   query: {
     '?foo': String,
@@ -121,7 +121,7 @@ when your query param is optional, the entire property can be missing and the ro
 Assuming a route's path and query match the structure of the URL, the last test is to make sure that values provided by the URL pass the Param parsing. By default params are assumed to be strings, so by default if structure matches, parsing will pass as well since the URL is a string. However, if you define your params with `Boolean`, `Number`, `Date`, `JSON`, or a custom `Param` the value will be need to pass the param's `get` function.
 
 ```ts
-const route createRoute({
+const route = createRoute({
   ...
   path: '/parent/[id]'
   query: {
@@ -136,7 +136,7 @@ const route createRoute({
 :white_check_mark: `parent/ABC?tab=true`  
 
 ```ts
-const route createRoute({
+const route = createRoute({
   ...
   path: withParams('/parent/[id]', { id: Number })
   query: {
@@ -151,7 +151,7 @@ const route createRoute({
 :x: `parent/ABC?tab=true`  
 
 ```ts
-const route createRoute({
+const route = createRoute({
   ...
   path: withParams('/parent/[id]', { id: Number })
   query: withParams('tab=[?tab]', { tab: Boolean })
