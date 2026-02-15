@@ -49,7 +49,9 @@ The `query` property is used to define the [search](https://developer.mozilla.or
 const homeAddCampaign = createRoute({
   name: 'home.black-friday',
   path: '/',
-  query: 'campaign=black-friday',
+  query: {
+    campaign: 'black-friday',
+  },
 })
 ```
 
