@@ -6,15 +6,35 @@ There are several rules Kitbag Router uses to determine which of your routes cor
 
 Routes without a [name](/core-concepts/routes#name) property cannot be matched.
 
+## External Routes
+
+If a route is defined as [external](/core-concepts/external-routes), it will only be matched when the url is also external.
+
+## Depth
+
+A route’s depth is determined by the number of parent routes it has. The deeper the route, the higher the priority it has when matching. Kitbag Router pre‑sorts routes by depth in descending order and then returns the first route that matches all rules.
+
+```ts
+const external = createExternalRoute({
+  name: 'external',
+  host: 'https://kitbag.dev',
+  path: '/about-us'
+})
+```
+
+:white_check_mark: `https://kitbag.dev/about-us`  
+:x: `https://example.com/about-us`  
+:x: `/about-us`  
+
 ## Path Matches
 
 Routes `path` must match the structure of the URL pathname.
 
 ```ts
-const route {
+const route createRoute({
   ...
   path: '/parent/anything/child'
-}
+})
 ```
 
 :white_check_mark: `parent/anything/child`  
@@ -23,10 +43,10 @@ const route {
 :x: `parent/child`  
 
 ```ts
-const route {
+const route createRoute({
   ...
   path: '/parent/[myParam]/child'
-}
+})
 ```
 
 :white_check_mark: `parent/anything/child`  
@@ -35,10 +55,10 @@ const route {
 :x: `parent/child`  
 
 ```ts
-const route {
+const route createRoute({
   ...
   path: '/parent/[?myParam]/child'
-}
+})
 ```
 
 :white_check_mark: `parent/anything/child`  
@@ -51,10 +71,12 @@ const route {
 Routes `query` must match the structure of the URL search.
 
 ```ts
-const route {
+const route createRoute({
   ...
-  query: 'foo=bar'
-}
+  query: {
+    foo: 'bar',
+  },
+})
 ```
 
 :white_check_mark: `?foo=bar`  
@@ -63,10 +85,12 @@ const route {
 :x: `?foo`  
 
 ```ts
-const route {
+const route createRoute({
   ...
-  query: 'foo=[bar]'
-}
+  query: {
+    foo: String,
+  },
+})
 ```
 
 :white_check_mark: `?foo=bar`  
@@ -75,10 +99,12 @@ const route {
 :x: `?foo`  
 
 ```ts
-const route {
+const route createRoute({
   ...
-  query: 'foo=[?bar]'
-}
+  query: {
+    '?foo': String,
+  },
+})
 ```
 
 :white_check_mark: `?foo=bar`  
@@ -95,11 +121,13 @@ when your query param is optional, the entire property can be missing and the ro
 Assuming a route's path and query match the structure of the URL, the last test is to make sure that values provided by the URL pass the Param parsing. By default params are assumed to be strings, so by default if structure matches, parsing will pass as well since the URL is a string. However, if you define your params with `Boolean`, `Number`, `Date`, `JSON`, or a custom `Param` the value will be need to pass the param's `get` function.
 
 ```ts
-const route {
+const route createRoute({
   ...
   path: '/parent/[id]'
-  query: 'tab=[?tab]'
-}
+  query: {
+    '?tab': String,
+  },
+})
 ```
 
 :white_check_mark: `parent/123`  
@@ -108,11 +136,13 @@ const route {
 :white_check_mark: `parent/ABC?tab=true`  
 
 ```ts
-const route {
+const route createRoute({
   ...
   path: withParams('/parent/[id]', { id: Number })
-  query: 'tab=[?tab]'
-}
+  query: {
+    '?tab': String,
+  },
+})
 ```
 
 :white_check_mark: `parent/123`  
@@ -121,23 +151,14 @@ const route {
 :x: `parent/ABC?tab=true`  
 
 ```ts
-const route {
+const route createRoute({
   ...
   path: withParams('/parent/[id]', { id: Number })
   query: withParams('tab=[?tab]', { tab: Boolean })
-}
+})
 ```
 
 :white_check_mark: `parent/123`  
 :white_check_mark: `parent/123?tab=true`  
 :x: `parent/123?tab=github`  
 :x: `parent/ABC?tab=true`  
-
-## Ranking
-
-If there are more than 1 routes that pass the rules then we sort the results by the following.
-
-1. **Route Depth:** prioritize routes that are more deeply nested
-1. **Optional Params:** prioritize routes that match the greater number of optional path and query params
-1. **Matching Host:** prioritize routes that match have a static host that matches the URL host.
-1. **Matching Hash:** prioritize routes that match have a static hash that matches the URL hash.

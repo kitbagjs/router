@@ -120,9 +120,7 @@ router.push('blog', { replace: true })
 
 A [ResolvedRoute](/api/types/ResolvedRoute) is the base of what makes up the [Router Route](/core-concepts/router-route). It represents a [route](/core-concepts/routes) that has been matched to a specific url. It includes any params, state, query, and hash values for that url. Resolved routes are how Kitbag Router ensures type safety when navigating. There are a few ways to get a resolved route.
 
-::: code-group
-
-```ts [Router]
+```ts
 /**
  * This is the most explicit way to get a resolved route. 
  * It takes a route name and will ensure any required params are provided.
@@ -132,24 +130,34 @@ const resolvedBlockPostRoute = router.resolve('blogPost', {
 })
 ```
 
-```ts [Router Push]
-/**
- * Router push accepts the same arguments as router.resolve and creates a resolved route internally.
- */
-router.push('blogPost', {
-  blogPostId: 1,
+Resolved routes add some useful properties to the route.
+
+- `href`: The full url of the route.
+- `query`: The query parameters of the route.
+- `hash`: The hash of the route.
+- `params`: The parameters of the route.
+- `state`: The state of the route.
+
+## Create Url
+
+Kitbag Router also exports the `createUrl` function, which exposes all of the utility of defining a URL with params outside of a route definition.
+
+```ts
+import { createUrl, withDefault } from '@kitbag/router'
+
+const getUser = createUrl({
+  host: 'https://api.kitbag.dev',
+  path: '/users/[userId]',
+  query: {
+    version: withDefault(Number, 1),
+  },
 })
 
-// or
-router.push(resolvedBlockPostRoute)
+const href = getUser.stringify({ userId: 'PAOP4KAW' })
+// 'https://api.kitbag.dev/users/PAOP4KAW?version=1'
+
+const params = getUser.parse('https://api.kitbag.dev/users/L969HD9Z?version=4')
+// { userId: 'L969HD9Z', version: 4 }
 ```
 
-```vue [Router Link]
-<!-- Router Link accepts callback that returns a resolved route. The router's resolved method is passed automatically for ease of use. -->
-<router-link to="(resolve) => resolve('blogPost', { blogPostId: 1 })">Blog Post</router-link>
-
-<!-- or -->
-<router-link :to="resolvedBlockPostRoute">Blog Post</router-link>
-```
-
-:::
+The `createUrl` function returns a [Url](/api/types/Url) object.

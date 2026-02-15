@@ -153,7 +153,7 @@ const events = createRoute({
 
 ## Query Params
 
-So far the examples have only used params in the `path` property. When using params in the `query`, the param goes where you expect the value to be in the url's search string.
+So far the examples have only used params in the `path` property. When using params in the `query`, the param goes where you expect the value to be in the url's search string. Defining params in the query can be done with the same syntax as other parts of the URL.
 
 ```ts {3}
 const events = createRoute({
@@ -162,11 +162,41 @@ const events = createRoute({
 })
 ```
 
-The param name and the search key do not have to be the same. In this example the url search string might be `?category=hello`, which has a `term` param with the value `hello`.
+When defining params this way, the param name and the search key do not have to be the same. In this example the url search string might be `?category=hello`, which has a `term` param with the value `hello`.
 
 ```ts {2}
 const events = createRoute({
   query: 'category=[?term]',
+})
+```
+
+Params can also be defined as a record or tuple of key-value pairs where the value is either a literal string or a [Param](/api/types/Param) argument.
+
+```ts
+const events = createRoute({
+  query: {
+    category: String,
+  },
+})
+```
+
+When defining params in a record or tuple, the param name is the search key. So to define a param as optional, you can use the `?` prefix on the search key.
+
+```ts {3}
+const events = createRoute({
+  query: {
+    '?category': String,
+  },
+})
+```
+
+Alternatively, you can use the `withDefault` utility to define a default value for the param, which also makes the param optional.
+
+```ts {3}
+const events = createRoute({
+  query: {
+    category: withDefault(String, 'music'),
+  },
 })
 ```
 
@@ -195,9 +225,9 @@ import { unionOf, withParams } from '@kitbag/router'
 
 const events = createRoute({
   name: 'events',
-  query: withParams('category=[?category]', {
+  query: {
     category: unionOf(['music', 'sports', 'art']),
-  }),
+  },
 })
 ```
 
@@ -210,9 +240,9 @@ import { arrayOf withParams } from '@kitbag/router'
 
 const events = createRoute({
   name: 'events',
-  query: withParams('category=[?category]', {
+  query: {
     category: arrayOf(['music', 'sports', 'art']),
-  }),
+  },
 })
 ```
 
@@ -221,7 +251,7 @@ const events = createRoute({
 Optionally pass in options to specify a separator. The default separator is a comma.
 
 ```ts
-arrayOf(['mustic', 'sports', 'art'], {
+arrayOf(['music', 'sports', 'art'], {
   separator: '|' 
 })
 ```
@@ -235,9 +265,9 @@ import { tupleOf, withParams } from '@kitbag/router'
 
 const events = createRoute({
   name: 'events',
-  query: withParams('location=[?location]', {
+  query: {
     location: tupleOf([Number, Number]),
-  }),
+  },
 })
 ```
 
@@ -250,9 +280,9 @@ import { z } from 'zod'
 
 const events = createRoute({
   name: 'events',
-  query: query('category=[?category]', {
+  query: {
     category: z.enum(['music', 'sports', 'art']),
-  }),
+  },
 })
 ```
 
@@ -269,9 +299,9 @@ import * as v from 'valibot'
 
 const events = createRoute({
   name: 'events',
-  query: query('category=[?category]', {
+  query: {
     category: v.picklist(['music', 'sports', 'art']),
-  }),
+  },
 })
 ```
 
