@@ -39,6 +39,7 @@ import { ContextRejectionError } from '@/errors/contextRejectionError'
 import { setupRouterDevtools } from '@/devtools/createRouterDevtools'
 import { getMatchForUrl } from './getMatchesForUrl'
 import { pathHasTrailingSlash, removeTrailingSlashesFromPath } from '@/utilities/trailingSlashes'
+import { setDocumentTitle } from '@/utilities/setDocumentTitle'
 
 type RouterUpdateOptions = {
   replace?: boolean,
@@ -185,6 +186,9 @@ export function createRouter<
         const exhaustive: never = afterResponse
         throw new Error(`Switch is not exhaustive for after hook response status: ${JSON.stringify(exhaustive)}`)
     }
+
+    const title = await hooks.runTitleHooks({ to, from })
+    setDocumentTitle(title)
 
     history.startListening()
   }
@@ -394,17 +398,11 @@ export function createRouter<
     go: history.go,
     install,
     isExternal,
-    onBeforeRouteEnter: hooks.onBeforeRouteEnter,
-    onBeforeRouteUpdate: hooks.onBeforeRouteUpdate,
-    onBeforeRouteLeave: hooks.onBeforeRouteLeave,
-    onAfterRouteEnter: hooks.onAfterRouteEnter,
-    onAfterRouteUpdate: hooks.onAfterRouteUpdate,
-    onAfterRouteLeave: hooks.onAfterRouteLeave,
-    onError: hooks.onError,
     prefetch: options?.prefetch,
     start,
     started,
     stop,
+    ...hooks,
     key: routerKey,
     hasDevtools: false,
   }

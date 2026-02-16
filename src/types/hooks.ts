@@ -10,6 +10,7 @@ import { RouteContext, RouteContextToRejection, RouteContextToRoute } from './ro
 import { RouterAbort } from './routerAbort'
 import { CallbackContextAbort, CallbackContextPush, CallbackContextReject, CallbackContextSuccess } from './callbackContext'
 import { RouteUpdate } from './routeUpdate'
+import { RedirectHook } from './redirects'
 
 export type InternalRouteHooks<
   TRoute extends Route = Route,
@@ -39,6 +40,10 @@ export type InternalRouteHooks<
    * Registers a route hook to be called after the route is updated.
    */
   onAfterRouteUpdate: AddAfterUpdateHook<[TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>, TRoute, Route>,
+  /**
+   * Registers a route hook to set the document title.
+   */
+  setTitle: AddTitleHook<[TRoute] | RouteContextToRoute<TContext>, Route>,
 }
 
 export type ExternalRouteHooks<
@@ -255,7 +260,10 @@ export type AddAfterLeaveHook<
   TRouteFrom extends Route = TRoutes[number]
 > = (hook: AfterLeaveHook<TRoutes, TRejections, TRouteTo, TRouteFrom>) => HookRemove
 
+export type BeforeHook = BeforeEnterHook | BeforeUpdateHook | BeforeLeaveHook | RedirectHook
 export type BeforeHookResponse = CallbackContextSuccess | CallbackContextPush | CallbackContextReject | CallbackContextAbort
+
+export type AfterHook = AfterEnterHook | AfterUpdateHook | AfterLeaveHook
 export type AfterHookResponse = CallbackContextSuccess | CallbackContextPush | CallbackContextReject
 
 export type BeforeHookRunner = <TRoutes extends Routes>(context: { to: RouterResolvedRouteUnion<TRoutes>, from: RouterResolvedRouteUnion<TRoutes> | null }) => Promise<BeforeHookResponse>
@@ -294,3 +302,27 @@ export type ErrorHookRunnerContext<TRoutes extends Routes = Routes> = {
 }
 
 export type ErrorHookRunner = (error: unknown, context: ErrorHookRunnerContext) => void
+
+export type TitleHookResponse = string | undefined
+
+export type TitleHook<
+  TRoutes extends Routes = Routes,
+  TRouteTo extends Route = TRoutes[number],
+  TRouteFrom extends Route = TRoutes[number]
+> = (to: ResolvedRouteUnion<TRouteTo>, context: SetTitleHookContext<TRoutes, TRouteFrom>) => MaybePromise<TitleHookResponse>
+
+export type AddTitleHook<
+  TRoutes extends Routes = Routes,
+  TRouteTo extends Route = TRoutes[number],
+  TRouteFrom extends Route = TRoutes[number]
+> = (hook: TitleHook<TRoutes, TRouteTo, TRouteFrom>) => HookRemove
+
+export type SetTitleHookContext<
+  TRoutes extends Routes = Routes,
+  TRouteFrom extends Route = TRoutes[number]
+> = {
+  title: TitleHookResponse,
+  from: ResolvedRouteUnion<TRouteFrom> | null,
+}
+
+export type TitleHookRunner = <TRoutes extends Routes = Routes>({ to, from }: { to: RouterResolvedRouteUnion<TRoutes>, from: RouterResolvedRouteUnion<TRoutes> | null }) => Promise<TitleHookResponse>
