@@ -322,7 +322,7 @@ describe('setTitle hook', () => {
       name: 'parentA',
       component,
     })
-    parentRoute.setTitle((to, { title }) => [to.name, title].filter(Boolean).join('<'))
+    parentRoute.setTitle((_to, { title }) => ['parentA', title].filter(Boolean).join('<'))
 
     const toRoute = createRoute({
       parent: parentRoute,
