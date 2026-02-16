@@ -9,6 +9,7 @@ import { AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEn
 import { RouterAbort } from '@/types/routerAbort'
 import { RouteUpdate } from '@/types/routeUpdate'
 import { ResolvedRouteUnion } from '@/types/resolved'
+import { RouterRouteUnion } from '@/types/router'
 
 describe('hooks', () => {
   const parent = createRoute({
@@ -206,6 +207,47 @@ describe('options.rejections in hooks', () => {
       // @ts-expect-error does not know about routes outside of router
       push('fakeRoute')
     })
+  })
+})
+
+describe('route', () => {
+  test('route is never if there are no named routes', () => {
+    const route = createRoute({
+      component,
+    })
+
+    expectTypeOf(route.name).toEqualTypeOf<''>()
+
+    const router = createRouter([route])
+
+    expectTypeOf(router.route).toEqualTypeOf<never>()
+  })
+
+  test('route union does not include routes without a name', () => {
+    // does not include routes without a name
+    const routeA = createRoute({
+      component,
+    })
+
+    // does not include routes with an empty name
+    const routeB = createRoute({
+      name: '',
+      component,
+    })
+
+    const routeC = createRoute({
+      name: 'routeC',
+      component,
+    })
+
+    const routeD = createRoute({
+      name: 'routeD',
+      component,
+    })
+
+    const router = createRouter([routeA, routeB, routeC, routeD])
+
+    expectTypeOf(router.route).toEqualTypeOf<RouterRouteUnion<[typeof routeC, typeof routeD]>>()
   })
 })
 

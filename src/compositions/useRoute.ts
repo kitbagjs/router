@@ -8,10 +8,10 @@ import { RouterRoute } from '@/types/routerRoute'
 type UseRouteFunction<TRouter extends Router> = {
   (): TRouter['route'],
   <
-    TRouteName extends RouterRouteName<TRouter>
+    const TRouteName extends RouterRouteName<TRouter>
   >(routeName: TRouteName, options: IsRouteOptions & { exact: true }): TRouter['route'] & { name: TRouteName },
   <
-    TRouteName extends RouterRouteName<TRouter>
+    const TRouteName extends RouterRouteName<TRouter>
   >(routeName: TRouteName, options?: IsRouteOptions): RouteWithMatch<TRouter['route'], TRouteName>,
 }
 

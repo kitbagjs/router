@@ -7,6 +7,9 @@ export type IsRouteOptions = {
   exact?: boolean,
 }
 
+/**
+ * Filters route union to routes whose match chain contains TRouteName (self or ancestor).
+ */
 export type RouteWithMatch<
   TRoute extends RouterRoute,
   TRouteName extends TRoute['name']
@@ -60,7 +63,7 @@ type IsRouteFunction<TRouter extends Router> = {
 }
 
 export function createIsRoute<TRouter extends Router>(routerKey: InjectionKey<TRouter>): IsRouteFunction<TRouter> {
-  return (route: unknown, routeName?: string, { exact }: IsRouteOptions = {}): route is any => {
+  return ((route: unknown, routeName?: string, { exact }: IsRouteOptions = {}): route is any => {
     if (!isRouterRoute(routerKey, route)) {
       return false
     }
@@ -74,5 +77,5 @@ export function createIsRoute<TRouter extends Router>(routerKey: InjectionKey<TR
     }
 
     return route.matches.map((route) => route.name).includes(routeName)
-  }
+  }) as IsRouteFunction<TRouter>
 }
