@@ -85,11 +85,10 @@ describe('without exact', () => {
   })
 })
 
-test('discord', () => {
+test('siblings are not matched when an unnamed parent is present', () => {
   const parent = createRoute({
     path: '/',
     component,
-    // name: 'parent', // no name causes the issue, if there is a name then it narrows the route correctly
   })
 
   const childA = createRoute({
