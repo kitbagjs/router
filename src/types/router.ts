@@ -176,10 +176,11 @@ export type Router<
 }
 
 /**
- * This type is the same as `RouterRoute<ResolvedRoute<TRoutes[number]>>` while remaining distributive
+ * This type is the same as `RouterRoute<ResolvedRoute<TRoutes[number]>>` while remaining distributive.
+ * Routes without a name (empty string) are excluded so that router.route.name is never ''.
  */
 export type RouterRouteUnion<TRoutes extends Routes> = {
-  [K in keyof TRoutes]: RouterRoute<ResolvedRoute<TRoutes[K]>>
+  [K in keyof TRoutes]: TRoutes[K]['name'] extends '' ? never : RouterRoute<ResolvedRoute<TRoutes[K]>>
 }[number]
 
 export type RouterRoutes<TRouter extends Router> = TRouter extends Router<infer TRoutes extends Routes>

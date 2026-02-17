@@ -84,3 +84,54 @@ describe('without exact', () => {
     expectTypeOf<typeof route.name>().toEqualTypeOf<'parentA' | 'childA'>()
   })
 })
+
+test('siblings are not matched when an unnamed parent is present', () => {
+  const parent = createRoute({
+    path: '/',
+    component,
+  })
+
+  const childA = createRoute({
+    parent: parent,
+    name: 'childA',
+    component,
+  })
+
+  const childB = createRoute({
+    parent: parent,
+    name: 'childB',
+    component,
+  })
+
+  const grandChild = createRoute({
+    parent: childA,
+    name: 'grandChild',
+    component,
+  })
+
+  const routes = [
+    parent,
+    childA,
+    childB,
+    grandChild,
+  ] as const
+
+  const { key } = createRouter(routes)
+  const useRoute = createUseRoute(key)
+
+  const anyRoute = useRoute()
+
+  expectTypeOf<typeof anyRoute.name>().toEqualTypeOf<'childA' | 'childB' | 'grandChild'>()
+
+  const childARoute = useRoute('childA')
+
+  expectTypeOf<typeof childARoute.name>().toEqualTypeOf<'childA' | 'grandChild'>()
+
+  const childBRoute = useRoute('childB')
+
+  expectTypeOf<typeof childBRoute.name>().toEqualTypeOf<'childB'>()
+
+  const grandChildRoute = useRoute('grandChild')
+
+  expectTypeOf<typeof grandChildRoute.name>().toEqualTypeOf<'grandChild'>()
+})
