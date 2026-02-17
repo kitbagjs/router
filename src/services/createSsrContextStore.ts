@@ -3,12 +3,13 @@ export type SsrContextStore = {
   addSsrContext: (key: string, value: unknown) => void,
 }
 
+const DEFAULT_CONTEXT: Record<string, unknown> = {}
+
 export function createSsrContextStore(): SsrContextStore {
-  const emptyContext: Record<string, unknown> = {}
-  let context: Record<string, unknown> = emptyContext
+  let context: Record<string, unknown> = DEFAULT_CONTEXT
 
   function setSsrContext(ctx: Record<string, unknown> | undefined): void {
-    context = ctx ?? emptyContext
+    context = ctx ?? DEFAULT_CONTEXT
   }
 
   function addSsrContext(key: string, value: unknown): void {
