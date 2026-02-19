@@ -2,7 +2,7 @@ import { createRouter } from '@/services/createRouter'
 import { createRoute } from '@/services/createRoute'
 import { expect, test } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
-import { useQueryValue } from '@/main'
+import { useQueryValue, withDefault } from '@/main'
 
 test('returns correct value and values when key does not exist', async () => {
   const root = createRoute({
@@ -129,6 +129,9 @@ test('updates the query string when the value is set', async () => {
   const root = createRoute({
     name: 'root',
     path: '/',
+    query: {
+      '?tab': withDefault(Number, 1),
+    },
   })
 
   const router = createRouter([root], {
@@ -154,7 +157,7 @@ test('updates the query string when the value is set', async () => {
 
   await flushPromises()
 
-  expect(router.route.query.toString()).toBe('foo=3')
+  expect(location.search).toBe('?foo=3&tab=1')
 })
 
 test('updates the query string when the values is set', async () => {
