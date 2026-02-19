@@ -1,9 +1,11 @@
 import { computed, InjectionKey, reactive, toRefs } from 'vue'
+import { parseUrl, stringifyUrl, updateUrl } from '@/services/urlParser'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouterRoute } from '@/types/routerRoute'
 import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { QuerySource } from '@/types/querySource'
 import { Router } from '@/types/router'
+import { isPropertyKey } from '@/utilities/guards'
 
 const isRouterRouteSymbol = Symbol('isRouterRouteSymbol')
 
@@ -12,43 +14,50 @@ export function isRouterRoute(routerKey: InjectionKey<Router>, value: unknown): 
 }
 
 export function createRouterRoute<TRoute extends ResolvedRoute>(routerKey: InjectionKey<Router>, route: TRoute, push: RouterPush): RouterRoute<TRoute> {
-  function update(nameOrParams: PropertyKey | Partial<ResolvedRoute['params']>, valueOrOptions?: any, maybeOptions?: RouterPushOptions): Promise<void> {
-    if (typeof nameOrParams === 'object') {
-      const params = {
-        ...route.params,
-        ...nameOrParams,
-      }
+  function updateQuery(query: QuerySource): void {
+    const routeWithoutQuery = stringifyUrl({
+      ...parseUrl(route.href),
+      query: undefined,
+    })
+    const updatedHref = updateUrl(routeWithoutQuery, { query })
 
-      return push(route.name, params, valueOrOptions)
+    push(updatedHref)
+  }
+
+  function update(individualParamNameOrAllParams: PropertyKey | Partial<ResolvedRoute['params']>, valueOrOptions?: any, maybeOptions?: RouterPushOptions): Promise<void> {
+    if (isPropertyKey(individualParamNameOrAllParams)) {
+      return update({ [individualParamNameOrAllParams]: valueOrOptions }, maybeOptions)
     }
 
+    const paramUpdates = individualParamNameOrAllParams
+    const options = valueOrOptions
     const params = {
       ...route.params,
-      [nameOrParams]: valueOrOptions,
+      ...paramUpdates,
     }
 
-    return push(route.name, params, maybeOptions)
+    return push(route.name, params, options)
   }
 
   const querySet: URLSearchParams['set'] = (...parameters) => {
     const query = new URLSearchParams(route.query)
     query.set(...parameters)
 
-    update({}, { query })
+    updateQuery(query)
   }
 
   const queryAppend: URLSearchParams['append'] = (...parameters) => {
     const query = new URLSearchParams(route.query)
     query.append(...parameters)
 
-    update({}, { query })
+    updateQuery(query)
   }
 
   const queryDelete: URLSearchParams['delete'] = (...parameters) => {
     const query = new URLSearchParams(route.query)
     query.delete(...parameters)
 
-    update({}, { query })
+    updateQuery(query)
   }
 
   const { id, matched, matches, hooks, name, hash, href } = toRefs(route)
@@ -97,7 +106,7 @@ export function createRouterRoute<TRoute extends ResolvedRoute>(routerKey: Injec
       })
     },
     set(query: QuerySource) {
-      update({}, { query })
+      updateQuery(query)
     },
   })
 

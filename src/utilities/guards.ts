@@ -6,6 +6,10 @@ export function isRecord(value: unknown): value is Record<PropertyKey, unknown> 
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
+export function isPropertyKey(value: unknown): value is PropertyKey {
+  return typeof value === 'string' || typeof value === 'number' || typeof value === 'symbol'
+}
+
 export function hasProperty<
   TSource extends Record<PropertyKey, unknown>,
   TProperty extends PropertyKey,
