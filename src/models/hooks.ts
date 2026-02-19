@@ -1,4 +1,4 @@
-import { AfterEnterHook, AfterLeaveHook, AfterUpdateHook, BeforeEnterHook, BeforeLeaveHook, BeforeUpdateHook, ErrorHook } from '@/types/hooks'
+import { AfterEnterHook, AfterLeaveHook, AfterUpdateHook, BeforeEnterHook, BeforeLeaveHook, BeforeUpdateHook, ErrorHook, TitleHook } from '@/types/hooks'
 import { RedirectHook } from '@/types/redirects'
 
 export class Hooks {
@@ -9,5 +9,6 @@ export class Hooks {
   public onAfterRouteEnter = new Set<AfterEnterHook>()
   public onAfterRouteUpdate = new Set<AfterUpdateHook>()
   public onAfterRouteLeave = new Set<AfterLeaveHook>()
+  public setTitle = new Set<TitleHook>()
   public onError = new Set<ErrorHook>()
 }

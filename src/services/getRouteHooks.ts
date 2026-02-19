@@ -47,3 +47,13 @@ export function getAfterHooksFromRoutes(to: ResolvedRoute, from: ResolvedRoute |
 
   return hooks
 }
+
+export function getTitleHooksFromRoutes(to: ResolvedRoute): Hooks {
+  const hooks = new Hooks()
+
+  to.hooks.forEach((store) => {
+    return store.setTitle.forEach((hook) => hooks.setTitle.add(hook))
+  })
+
+  return hooks
+}

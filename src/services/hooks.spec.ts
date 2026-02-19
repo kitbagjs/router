@@ -1,4 +1,4 @@
-import { expect, test, vi } from 'vitest'
+import { describe, expect, test, vi } from 'vitest'
 import { createRouterHooks } from '@/services/createRouterHooks'
 import { BeforeEnterHook } from '@/types/hooks'
 import { ResolvedRoute } from '@/types/resolved'
@@ -112,136 +112,233 @@ test('hook is called in order', async () => {
   expect(orderB).toBeLessThan(orderC)
 })
 
-test('multiple onError callbacks run in order', () => {
-  const errorHook1 = vi.fn((error) => {
-    throw error
+describe('onError hook', () => {
+  test('multiple callbacks run in order', () => {
+    const errorHook1 = vi.fn((error) => {
+      throw error
+    })
+    const errorHook2 = vi.fn()
+    const errorHook3 = vi.fn()
+
+    const { runErrorHooks, onError } = createRouterHooks()
+
+    onError(errorHook1)
+    onError(errorHook2)
+    onError(errorHook3)
+
+    const testError = new Error('Test error')
+    const toRoute = createRoute({
+      name: 'routeA',
+      component,
+      href: '/',
+      hash: '',
+    })
+
+    const to = createResolvedRoute(toRoute, {})
+    const from: ResolvedRoute | null = null
+
+    runErrorHooks(testError, { to, from, source: 'hook' })
+
+    expect(errorHook1).toHaveBeenCalledOnce()
+    expect(errorHook2).toHaveBeenCalledOnce()
+    expect(errorHook3).not.toHaveBeenCalled()
+
+    const [order1] = errorHook1.mock.invocationCallOrder
+    const [order2] = errorHook2.mock.invocationCallOrder
+
+    expect(order1).toBeLessThan(order2)
   })
-  const errorHook2 = vi.fn()
-  const errorHook3 = vi.fn()
 
-  const { runErrorHooks, onError } = createRouterHooks()
+  test('when callback calls reject, other onError callbacks do not run', () => {
+    const errorHook1 = vi.fn((_error, { reject }) => {
+      reject('NotFound')
+      return true
+    })
+    const errorHook2 = vi.fn(() => false)
+    const errorHook3 = vi.fn(() => false)
+    const { runErrorHooks, onError } = createRouterHooks()
 
-  onError(errorHook1)
-  onError(errorHook2)
-  onError(errorHook3)
+    onError(errorHook1)
+    onError(errorHook2)
+    onError(errorHook3)
 
-  const testError = new Error('Test error')
-  const toRoute = createRoute({
-    name: 'routeA',
-    component,
-    href: '/',
-    hash: '',
+    const testError = new Error('Test error')
+    const toRoute = createRoute({
+      name: 'routeA',
+      component,
+      href: '/',
+      hash: '',
+    })
+
+    const to = createResolvedRoute(toRoute, {})
+    const from: ResolvedRoute | null = null
+
+    expect(() => {
+      runErrorHooks(testError, { to, from, source: 'hook' })
+    }).toThrow()
+
+    expect(errorHook1).toHaveBeenCalledOnce()
+    expect(errorHook2).not.toHaveBeenCalled()
+    expect(errorHook3).not.toHaveBeenCalled()
   })
 
-  const to = createResolvedRoute(toRoute, {})
-  const from: ResolvedRoute | null = null
+  test('when callback calls push, other onError callbacks do not run', () => {
+    const errorHook1 = vi.fn((_error, { push }) => {
+      push('/other')
+    })
+    const errorHook2 = vi.fn()
+    const errorHook3 = vi.fn()
+    const { runErrorHooks, onError } = createRouterHooks()
 
-  runErrorHooks(testError, { to, from, source: 'hook' })
+    onError(errorHook1)
+    onError(errorHook2)
+    onError(errorHook3)
 
-  expect(errorHook1).toHaveBeenCalledOnce()
-  expect(errorHook2).toHaveBeenCalledOnce()
-  expect(errorHook3).not.toHaveBeenCalled()
+    const testError = new Error('Test error')
+    const toRoute = createRoute({
+      id: Math.random().toString(),
+      name: 'routeA',
+      component,
+      href: '/',
+      hash: '',
+    })
 
-  const [order1] = errorHook1.mock.invocationCallOrder
-  const [order2] = errorHook2.mock.invocationCallOrder
+    const to = createResolvedRoute(toRoute, {})
+    const from: ResolvedRoute | null = null
 
-  expect(order1).toBeLessThan(order2)
+    expect(() => {
+      runErrorHooks(testError, { to, from, source: 'hook' })
+    }).toThrow()
+
+    expect(errorHook1).toHaveBeenCalledOnce()
+    expect(errorHook2).not.toHaveBeenCalled()
+    expect(errorHook3).not.toHaveBeenCalled()
+  })
+
+  test('when callback calls replace, other onError callbacks do not run', () => {
+    const errorHook1 = vi.fn((_error, { replace }) => {
+      replace('/other')
+    })
+    const errorHook2 = vi.fn()
+    const errorHook3 = vi.fn()
+    const { runErrorHooks, onError } = createRouterHooks()
+
+    onError(errorHook1)
+    onError(errorHook2)
+    onError(errorHook3)
+
+    const testError = new Error('Test error')
+    const toRoute = createRoute({
+      name: 'routeA',
+      component,
+      href: '/',
+      hash: '',
+    })
+
+    const to = createResolvedRoute(toRoute, {})
+    const from: ResolvedRoute | null = null
+
+    expect(() => {
+      runErrorHooks(testError, { to, from, source: 'hook' })
+    }).toThrow()
+
+    expect(errorHook1).toHaveBeenCalledOnce()
+    expect(errorHook2).not.toHaveBeenCalled()
+    expect(errorHook3).not.toHaveBeenCalled()
+  })
 })
 
-test('when onError callback calls reject, other onError callbacks do not run', () => {
-  const errorHook1 = vi.fn((_error, { reject }) => {
-    reject('NotFound')
-    return true
-  })
-  const errorHook2 = vi.fn(() => false)
-  const errorHook3 = vi.fn(() => false)
-  const { runErrorHooks, onError } = createRouterHooks()
+describe('setTitle hook', () => {
+  test('setTitle hook is called with correct context', async () => {
+    const { runTitleHooks } = createRouterHooks()
 
-  onError(errorHook1)
-  onError(errorHook2)
-  onError(errorHook3)
+    const toRouteSetTitle = vi.fn()
+    const toRoute = createRoute({
+      name: 'routeA',
+      component,
+    })
 
-  const testError = new Error('Test error')
-  const toRoute = createRoute({
-    name: 'routeA',
-    component,
-    href: '/',
-    hash: '',
+    toRoute.setTitle(toRouteSetTitle)
+    const to = createResolvedRoute(toRoute, {})
+
+    await runTitleHooks({ to, from: null })
+
+    expect(toRouteSetTitle).toHaveBeenCalledOnce()
   })
 
-  const to = createResolvedRoute(toRoute, {})
-  const from: ResolvedRoute | null = null
+  test('setTitle hook is called in order', async () => {
+    const { runTitleHooks, setTitle } = createRouterHooks()
 
-  expect(() => {
-    runErrorHooks(testError, { to, from, source: 'hook' })
-  }).toThrow()
+    const globalSetTitle = vi.fn()
 
-  expect(errorHook1).toHaveBeenCalledOnce()
-  expect(errorHook2).not.toHaveBeenCalled()
-  expect(errorHook3).not.toHaveBeenCalled()
-})
+    setTitle(globalSetTitle)
 
-test('when onError callback calls push, other onError callbacks do not run', () => {
-  const errorHook1 = vi.fn((_error, { push }) => {
-    push('/other')
-  })
-  const errorHook2 = vi.fn()
-  const errorHook3 = vi.fn()
-  const { runErrorHooks, onError } = createRouterHooks()
+    const parentRouteSetTitle = vi.fn()
+    const parentRoute = createRoute({
+      name: 'parentA',
+      component,
+    })
+    parentRoute.setTitle(parentRouteSetTitle)
 
-  onError(errorHook1)
-  onError(errorHook2)
-  onError(errorHook3)
+    const childRouteSetTitle = vi.fn()
+    const childRoute = createRoute({
+      name: 'childA',
+      component,
+      parent: parentRoute,
+    })
+    childRoute.setTitle(childRouteSetTitle)
 
-  const testError = new Error('Test error')
-  const toRoute = createRoute({
-    id: Math.random().toString(),
-    name: 'routeA',
-    component,
-    href: '/',
-    hash: '',
-  })
+    const fromRouteSetTitle = vi.fn()
+    const fromRoute = createRoute({
+      name: 'fromA',
+      component,
+      parent: parentRoute,
+    })
+    fromRoute.setTitle(fromRouteSetTitle)
 
-  const to = createResolvedRoute(toRoute, {})
-  const from: ResolvedRoute | null = null
+    const to = createResolvedRoute(childRoute, {})
+    const from = createResolvedRoute(fromRoute, {})
 
-  expect(() => {
-    runErrorHooks(testError, { to, from, source: 'hook' })
-  }).toThrow()
+    await runTitleHooks({ to, from })
 
-  expect(errorHook1).toHaveBeenCalledOnce()
-  expect(errorHook2).not.toHaveBeenCalled()
-  expect(errorHook3).not.toHaveBeenCalled()
-})
+    const [orderParent] = parentRouteSetTitle.mock.invocationCallOrder
+    const [orderChild] = childRouteSetTitle.mock.invocationCallOrder
 
-test('when onError callback calls replace, other onError callbacks do not run', () => {
-  const errorHook1 = vi.fn((_error, { replace }) => {
-    replace('/other')
-  })
-  const errorHook2 = vi.fn()
-  const errorHook3 = vi.fn()
-  const { runErrorHooks, onError } = createRouterHooks()
-
-  onError(errorHook1)
-  onError(errorHook2)
-  onError(errorHook3)
-
-  const testError = new Error('Test error')
-  const toRoute = createRoute({
-    name: 'routeA',
-    component,
-    href: '/',
-    hash: '',
+    expect(orderParent).toBeLessThan(orderChild)
+    expect(fromRouteSetTitle).not.toHaveBeenCalled()
   })
 
-  const to = createResolvedRoute(toRoute, {})
-  const from: ResolvedRoute | null = null
+  test('setTitle hook updates the document title', async () => {
+    const { runTitleHooks, setTitle } = createRouterHooks()
 
-  expect(() => {
-    runErrorHooks(testError, { to, from, source: 'hook' })
-  }).toThrow()
+    setTitle(() => 'global')
 
-  expect(errorHook1).toHaveBeenCalledOnce()
-  expect(errorHook2).not.toHaveBeenCalled()
-  expect(errorHook3).not.toHaveBeenCalled()
+    const fromRoute = createRoute({
+      name: 'fromA',
+      component,
+    })
+
+    const parentRoute = createRoute({
+      name: 'parentA',
+      component,
+    })
+    parentRoute.setTitle((_to, { title }) => ['parentA', title].filter(Boolean).join('<'))
+
+    const toRoute = createRoute({
+      parent: parentRoute,
+      name: 'routeA',
+      query: { foo: Number },
+      component,
+    })
+    toRoute.setTitle((to, { from, title }) => {
+      return [to.name, to.params.foo, from?.name, title].filter(Boolean).join('<')
+    })
+
+    const to = createResolvedRoute(toRoute, { foo: 42 })
+    const from = createResolvedRoute(fromRoute, {})
+
+    const title = await runTitleHooks({ to, from })
+
+    expect(title).toBe('routeA<42<fromA<parentA<global')
+  })
 })
