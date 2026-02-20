@@ -1,4 +1,4 @@
-import { createPath } from 'history'
+import { createPath } from '@/services/history'
 import { App, ref } from 'vue'
 import { createCurrentRoute } from '@/services/createCurrentRoute'
 import { createIsExternal } from '@/services/createIsExternal'

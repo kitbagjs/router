@@ -1,4 +1,4 @@
-import { createBrowserHistory, createHashHistory, createMemoryHistory, createPath, History, Listener } from 'history'
+import { createBrowserHistory, createHashHistory, createMemoryHistory, createPath, History, Listener } from '@/services/history'
 import { isBrowser } from '@/utilities/isBrowser'
 
 type NavigationPushOptions = {
