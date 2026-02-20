@@ -165,7 +165,7 @@ export function createBrowserHistory(options: BrowserHistoryOptions = {}): Brows
         search,
         hash,
         state: state.usr ?? null,
-        key: state.key || 'default',
+        key: state.key ?? 'default',
       }),
     ]
   }
@@ -210,7 +210,7 @@ export function createBrowserHistory(options: BrowserHistoryOptions = {}): Brows
 
   if (index == null) {
     index = 0
-    globalHistory.replaceState({ ...globalHistory.state, idx: index }, '')
+    globalHistory.replaceState({ ...globalHistory.state, idx: index }, '', createHref(location))
   }
 
   function createHref(to: To): string {
@@ -337,7 +337,7 @@ export function createHashHistory(options: HashHistoryOptions = {}): HashHistory
 
   function getIndexAndLocation(): [number | null, Location] {
     const { pathname = '/', search = '', hash = '' } = parsePath(win.location.hash.slice(1))
-    const state = globalHistory.state || {}
+    const state = globalHistory.state ?? {}
     return [
       state.idx,
       readOnly({
