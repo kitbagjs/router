@@ -1,5 +1,5 @@
 import { flushPromises } from '@vue/test-utils'
-import { Location } from 'history'
+import { Location } from '@/services/history'
 import { describe, expect, test, vi } from 'vitest'
 import { computed, toRefs } from 'vue'
 import { DuplicateNamesError } from '@/errors/duplicateNamesError'
