@@ -114,6 +114,7 @@
 - [ParamGetSet](types/ParamGetSet.md)
 - [ParamGetter](types/ParamGetter.md)
 - [ParamSetter](types/ParamSetter.md)
+- [ParseUrlOptions](types/ParseUrlOptions.md)
 - [PluginAfterRouteHook](types/PluginAfterRouteHook.md)
 - [PluginBeforeRouteHook](types/PluginBeforeRouteHook.md)
 - [PluginErrorHook](types/PluginErrorHook.md)
