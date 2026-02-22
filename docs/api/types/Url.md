@@ -17,7 +17,7 @@ Represents the structure of a url parts. Can be used to create a url with suppor
 ### parse()
 
 ```ts
-parse(url): Identity<MakeOptional<{ [K in string | number | symbol]: TParams[K] extends OptionalUrlParam<TParam> ? TParam extends Required<ParamGetSet> ? ExtractParamType<TParam> : ExtractParamType<TParam> | undefined : TParams[K] extends RequiredUrlParam<TParam> ? ExtractParamType<TParam> : unknown }>>;
+parse(url, options?): Identity<MakeOptional<{ [K in string | number | symbol]: TParams[K] extends OptionalUrlParam<TParam> ? TParam extends Required<ParamGetSet> ? ExtractParamType<TParam> : ExtractParamType<TParam> | undefined : TParams[K] extends RequiredUrlParam<TParam> ? ExtractParamType<TParam> : unknown }>>;
 ```
 
 Parses the url supplied and returns any params found.
@@ -27,6 +27,7 @@ Parses the url supplied and returns any params found.
 | Parameter | Type |
 | ------ | ------ |
 | `url` | `string` |
+| `options?` | [`ParseUrlOptions`](ParseUrlOptions.md) |
 
 #### Returns
 
@@ -57,7 +58,7 @@ Converts the url parts to a full url.
 ### tryParse()
 
 ```ts
-tryParse(url): 
+tryParse(url, options?): 
   | {
   params: ToUrlParamsReading<TParams>;
   success: true;
@@ -77,6 +78,7 @@ Parses the url supplied and returns any params found.
 | Parameter | Type |
 | ------ | ------ |
 | `url` | `string` |
+| `options?` | [`ParseUrlOptions`](ParseUrlOptions.md) |
 
 #### Returns
 

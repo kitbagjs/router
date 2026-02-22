@@ -410,6 +410,10 @@
         "link": "/api/types/ParamSetter.md"
       },
       {
+        "text": "ParseUrlOptions",
+        "link": "/api/types/ParseUrlOptions.md"
+      },
+      {
         "text": "PluginAfterRouteHook",
         "link": "/api/types/PluginAfterRouteHook.md"
       },
