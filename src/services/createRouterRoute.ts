@@ -61,7 +61,7 @@ export function createRouterRoute<TRoute extends ResolvedRoute>(routerKey: Injec
     updateQuery(query)
   }
 
-  const { id, matched, matches, name, hash, href } = toRefs(route)
+  const { id, matched, matches, name, hash, href, getTitle } = toRefs(route)
 
   const paramsProxy = new Proxy({}, {
     get(_target, property, receiver) {
@@ -136,6 +136,7 @@ export function createRouterRoute<TRoute extends ResolvedRoute>(routerKey: Injec
     params,
     name,
     href,
+    getTitle,
     update,
     hooks: getHooks(route),
     [isRouterRouteSymbol]: true,
