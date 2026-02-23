@@ -98,7 +98,7 @@ test('route with title and parent with title does call parent getTitle when call
     parent,
   })
 
-  const childGetTitle = vi.fn(async (to, { getParentTitle }) => {
+  const childGetTitle = vi.fn(async (_to, { getParentTitle }) => {
     const parentTitle = await getParentTitle()
     return `${parentTitle} - child`
   })
@@ -140,7 +140,7 @@ test('route with title and parent with title does call parent getTitle when call
     parent: child,
   })
 
-  const grandchildGetTitle = vi.fn(async (to, { getParentTitle }) => {
+  const grandchildGetTitle = vi.fn(async (_to, { getParentTitle }) => {
     const parentTitle = await getParentTitle()
     return `${parentTitle} - grandchild`
   })
