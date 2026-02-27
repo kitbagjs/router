@@ -16,14 +16,18 @@ describe('SSR', () => {
       initialUrl: '/',
     })
 
+    const ctx = { foo: 'bar' }
+
     const app = createSSRApp({
       template: '<RouterView/>',
     })
 
     app.use(router)
 
-    const html = await renderToString(app)
+    const html = await renderToString(app, ctx)
 
     expect(html).toMatchInlineSnapshot('"hello world"')
+
+    expect(ctx).toEqual({ foo: 'bar', title: 'hello world' })
   })
 })

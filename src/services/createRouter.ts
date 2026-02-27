@@ -27,9 +27,11 @@ import { EmptyRouterPlugin, RouterPlugin } from '@/types/routerPlugin'
 import { getRoutesForRouter } from './getRoutesForRouter'
 import { getGlobalHooksForRouter } from './getGlobalHooksForRouter'
 import { createComponentsStore } from './createComponentsStore'
+import { createSsrContextStore } from './createSsrContextStore'
 import { initZod, zodParamsDetected } from './zod'
 import { getComponentsStoreKey } from '@/compositions/useComponentsStore'
 import { getPropStoreInjectionKey } from '@/compositions/usePropStore'
+import { getSsrContextStoreInjectionKey } from '@/compositions/useRouterSsrContext'
 import { getRouterRejectionInjectionKey } from '@/compositions/useRejection'
 import { routerInjectionKey } from '@/keys'
 import { createRouterView } from '@/components/routerView'
@@ -100,6 +102,7 @@ export function createRouter<
   const getNavigationId = createUniqueIdSequence()
   const propStore = createPropStore()
   const componentsStore = createComponentsStore(routerKey)
+  const ssrContextStore = createSsrContextStore()
   const visibilityObserver = createVisibilityObserver()
   const history = createRouterHistory({
     mode: options?.historyMode,
@@ -233,6 +236,8 @@ export function createRouter<
           throw error
         }
       })
+
+    ssrContextStore.addSsrContext('title', 'hello world')
 
     updateRoute(to)
   }
@@ -372,6 +377,7 @@ export function createRouter<
     app.provide(getRouterHooksKey(routerKey), hooks)
     app.provide(getPropStoreInjectionKey(routerKey), propStore)
     app.provide(getComponentsStoreKey(routerKey), componentsStore)
+    app.provide(getSsrContextStoreInjectionKey(routerKey), ssrContextStore)
     app.provide(visibilityObserverKey, visibilityObserver)
 
     app.provide(routerKey, router)
