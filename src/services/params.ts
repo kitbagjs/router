@@ -6,6 +6,7 @@ import { LiteralParam, Param, ParamExtras, ParamGetSet } from '@/types/paramType
 import { stringHasValue } from '@/utilities/guards'
 import { createZodParam, isZodParam } from './zod'
 import { createValibotParam, isValibotParam } from './valibot'
+import { literal } from './literal'
 
 export function getParam(params: Record<string, Param | undefined>, paramName: string): Param {
   return params[paramName] ?? String
@@ -108,26 +109,6 @@ const jsonParam: ParamGetSet<unknown> = {
   },
 }
 
-function validateLiteralParamStringValue(value: string, param: LiteralParam, extras: ParamExtras): boolean {
-  // eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
-  switch (typeof param) {
-    case 'string':
-      const stringValue = stringParam.get(value, extras)
-
-      return stringValue === param
-    case 'number':
-      const numberValue = numberParam.get(value, extras)
-
-      return numberValue === param
-    case 'boolean':
-      const booleanValue = booleanParam.get(value, extras)
-
-      return booleanValue === param
-    default:
-      return false
-  }
-}
-
 export function getParamValue<T extends Param>(value: string | undefined, param: Partial<UrlParam<T>>): ExtractParamType<T>
 export function getParamValue(value: string | undefined, { param = String, isOptional = false }: Partial<UrlParam> = {}): unknown {
   const extras = getParamExtras({ param, value, isGetter: true })
@@ -179,12 +160,8 @@ export function getParamValue(value: string | undefined, { param = String, isOpt
     throw extras.invalid(`Expected value to match regex ${param.toString()}, received ${JSON.stringify(value)}`)
   }
 
-  if (isLiteralParam(param)) {
-    if (validateLiteralParamStringValue(value, param, extras)) {
-      return param
-    }
-
-    throw extras.invalid(`Expected value to be ${param}, received ${JSON.stringify(value)}`)
+  if( isLiteralParam(param)){
+    return literal(param).get(value, extras)
   }
 
   if (isZodParam(param)) {
@@ -251,11 +228,7 @@ export function setParamValue(value: unknown, { param = String, isOptional = fal
   }
 
   if (isLiteralParam(param)) {
-    if (param !== value) {
-      throw extras.invalid(`Expected value to be literal ${param}, received ${JSON.stringify(value)}`)
-    }
-
-    return (value as LiteralParam).toString()
+    return literal(param).set(value as LiteralParam, extras)
   }
 
   if (isZodParam(param)) {
