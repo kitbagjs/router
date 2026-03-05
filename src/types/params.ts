@@ -77,13 +77,17 @@ Param extends TParam
   ? unknown
   : TParam extends ParamGetSet<infer Type>
     ? Type
-    : TParam extends ParamGetter
-      ? ReturnType<TParam>
-      : TParam extends StandardSchemaV1
-        ? StandardSchemaV1.InferOutput<TParam>
-        : TParam extends LiteralParam
-          ? TParam
-          : string
+    : TParam extends DateConstructor
+      ? Date
+      : TParam extends JSON
+        ? unknown
+        : TParam extends ParamGetter
+          ? ReturnType<TParam>
+          : TParam extends StandardSchemaV1
+            ? StandardSchemaV1.InferOutput<TParam>
+            : TParam extends LiteralParam
+              ? TParam
+              : string
 
 export type ParamIsOptional<TParam extends string> = TParam extends `?${string}` ? true : false
 export type ParamIsGreedy<TParam extends string> = TParam extends `${string}*` ? true : false
