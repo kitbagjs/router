@@ -2,6 +2,7 @@ import { beforeEach, expect, test, vi } from 'vitest'
 import { createRoute } from '@/services/createRoute'
 import { component } from '@/utilities/testHelpers'
 import { createRouter } from '@/main'
+import { flushPromises } from '@vue/test-utils'
 
 const setDocumentTitle = vi.hoisted(() => vi.fn())
 
@@ -29,26 +30,12 @@ test('route with title updates document title', async () => {
     initialUrl: '/',
   })
 
-  await router.start()
+  router.start()
+
+  await flushPromises()
 
   expect(callback).toHaveBeenCalledTimes(1)
   expect(setDocumentTitle).toHaveBeenCalledWith(title)
-})
-
-test('route without title does not update document title', async () => {
-  const route = createRoute({
-    name: 'root',
-    path: '/',
-    component,
-  })
-
-  const router = createRouter([route], {
-    initialUrl: '/',
-  })
-
-  await router.start()
-
-  expect(setDocumentTitle).not.toHaveBeenCalled()
 })
 
 test('route with title and parent with title does not call parent getTitle', async () => {
@@ -74,7 +61,9 @@ test('route with title and parent with title does not call parent getTitle', asy
     initialUrl: '/parent/child',
   })
 
-  await router.start()
+  router.start()
+
+  await flushPromises()
 
   expect(parentGetTitle).not.toHaveBeenCalled()
   expect(childGetTitle).toHaveBeenCalledTimes(1)
@@ -109,7 +98,9 @@ test('route with title and parent with title does call parent getTitle when call
     initialUrl: '/parent/child',
   })
 
-  await router.start()
+  router.start()
+
+  await flushPromises()
 
   expect(parentGetTitle).toHaveBeenCalledTimes(1)
   expect(childGetTitle).toHaveBeenCalledTimes(1)
@@ -151,7 +142,9 @@ test('route with title and parent with title does call parent getTitle when call
     initialUrl: '/parent/child/grandchild',
   })
 
-  await router.start()
+  router.start()
+
+  await flushPromises()
 
   expect(parentGetTitle).toHaveBeenCalledTimes(1)
   expect(grandchildGetTitle).toHaveBeenCalledTimes(1)
@@ -178,7 +171,9 @@ test('route without title and parent with title updates document title', async (
     initialUrl: '/parent/child',
   })
 
-  await router.start()
+  router.start()
+
+  await flushPromises()
 
   expect(setDocumentTitle).toHaveBeenCalledWith('parent')
 })

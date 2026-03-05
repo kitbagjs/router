@@ -14,7 +14,7 @@ export function createResolvedRoute(route: Route, params: Record<string, unknown
   })
   const { query, hash } = parseUrl(href)
 
-  const getTitle: GetTitle = (to) => {
+  const getTitle: GetTitle = async (to) => {
     if (isRouteWithTitle(route)) {
       return route.getTitle(to)
     }

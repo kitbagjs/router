@@ -8,7 +8,7 @@ export type SetTitleContext = {
 }
 
 export type SetTitleCallback<TRoute extends Route = Route> = (to: ResolvedRouteUnion<TRoute>, context: SetTitleContext) => MaybePromise<string>
-export type GetTitle<TRoute extends Route = Route> = (to: ResolvedRouteUnion<TRoute>) => MaybePromise<string | undefined>
+export type GetTitle<TRoute extends Route = Route> = (to: ResolvedRouteUnion<TRoute>) => Promise<string | undefined>
 export type SetTitle<TRoute extends Route = Route> = (callback: SetTitleCallback<TRoute>) => void
 
 export type RouteTitle<TRoute extends Route = Route> = {
@@ -36,7 +36,7 @@ export function createRouteTitle(parent: Route | undefined): RouteTitle {
     setTitleCallback = callback
   }
 
-  const getTitle: GetTitle = (to) => {
+  const getTitle: GetTitle = async (to) => {
     const getParentTitle = async (): Promise<string | undefined> => {
       if (parent && isRouteWithTitle(parent)) {
         return parent.getTitle(to)

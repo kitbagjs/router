@@ -1,7 +1,10 @@
 import { isBrowser } from '@/utilities/isBrowser'
 
+let defaultTitle: string
+
 export function setDocumentTitle(title: string | undefined): void {
-  if (isBrowser() && title !== undefined) {
-    document.title = title
+  if (isBrowser()) {
+    defaultTitle ??= document.title
+    document.title = title ?? defaultTitle
   }
 }
