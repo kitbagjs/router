@@ -50,7 +50,7 @@ export function createRouterReject(rejections: Rejection[]): CreateRouterReject 
       state: {},
       href: '/',
       hash: '',
-      getTitle: () => undefined,
+      getTitle: async () => undefined,
     }
   }
 

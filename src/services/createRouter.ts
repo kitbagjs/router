@@ -188,11 +188,7 @@ export function createRouter<
         throw new Error(`Switch is not exhaustive for after hook response status: ${JSON.stringify(exhaustive)}`)
     }
 
-    const title = await to.getTitle(to)
-
-    if (title) {
-      setDocumentTitle(title)
-    }
+    to.getTitle(to).then(setDocumentTitle)
 
     history.startListening()
   }
