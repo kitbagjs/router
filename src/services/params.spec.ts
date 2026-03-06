@@ -11,7 +11,7 @@ describe('getParamValue', () => {
     expect(() => getParamValue('foo', { param: Boolean })).toThrow(InvalidRouteParamValueError)
   })
 
-  test('given  Number constructor Param, returns for correct value for Number', () => {
+  test('given Number constructor Param, returns for correct value for Number', () => {
     expect(getParamValue('1', { param: Number })).toBe(1)
     expect(getParamValue('1.5', { param: Number })).toBe(1.5)
     expect(() => getParamValue('foo', { param: Number })).toThrow(InvalidRouteParamValueError)
@@ -23,7 +23,7 @@ describe('getParamValue', () => {
     expect(() => getParamValue('foo', { param: JSON })).toThrow(InvalidRouteParamValueError)
   })
 
-  test('given  Date constructor Param, returns for correct value for Date', () => {
+  test('given Date constructor Param, returns for correct value for Date', () => {
     expect(getParamValue('2024-05-16T21:13:56.842Z', { param: Date })).toMatchObject(new Date('2024-05-16T21:13:56.842Z'))
     expect(() => getParamValue('foo', { param: Date })).toThrow(InvalidRouteParamValueError)
   })
@@ -36,7 +36,7 @@ describe('getParamValue', () => {
     expect(() => getParamValue('foo', { param })).toThrow(InvalidRouteParamValueError)
   })
 
-  test('given  Literal Param, with matching value, returns value', () => {
+  test('given Literal Param, with matching value, returns value', () => {
     expect(getParamValue('foo', { param: 'foo' })).toBe('foo')
     expect(getParamValue('1', { param: 1 })).toBe(1)
     expect(getParamValue('true', { param: true })).toBe(true)
