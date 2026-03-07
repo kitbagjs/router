@@ -8,7 +8,7 @@ import { toUrlPart, toUrlQueryPart } from '@/services/withParams'
 import { createUrl } from '@/services/createUrl'
 import { createRouteRedirects } from '@/services/createRouteRedirects'
 import { combineUrl } from '@/services/combineUrl'
-import { InternalRouteHooks } from '@/types/hooks'
+import { InternalRouteHooks, WithHooks } from '@/types/hooks'
 import { ExtractRouteContext } from '@/types/routeContext'
 import { RouteRedirects } from '@/types/redirects'
 
@@ -68,10 +68,11 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
     ...redirects,
     ...url,
     ...hooks,
-  } satisfies Route & InternalRouteHooks & RouteRedirects
+  } satisfies Route & WithHooks & InternalRouteHooks & RouteRedirects
 
   if (isWithParent(options)) {
     const merged = combineRoutes(options.parent, route)
+
     const url = combineUrl(options.parent, {
       path,
       query,

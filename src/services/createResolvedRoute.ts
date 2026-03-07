@@ -4,8 +4,9 @@ import { getStateValues } from '@/services/state'
 import { RouterResolveOptions } from '@/types/routerResolve'
 import { ResolvedRoute } from '@/types/resolved'
 import { Route } from '@/types/route'
+import { isWithHooks, WithHooks } from '@/types/hooks'
 
-export function createResolvedRoute(route: Route, params: Record<string, unknown> = {}, options: RouterResolveOptions = {}): ResolvedRoute {
+export function createResolvedRoute(route: Route, params: Record<string, unknown> = {}, options: RouterResolveOptions = {}): ResolvedRoute & WithHooks {
   const routeUrl = route.stringify(params)
   const href = updateUrl(routeUrl, {
     query: new URLSearchParams(options.query),
@@ -18,7 +19,7 @@ export function createResolvedRoute(route: Route, params: Record<string, unknown
     matched: route.matched,
     matches: route.matches,
     name: route.name,
-    hooks: route.hooks,
+    hooks: isWithHooks(route) ? route.hooks : [],
     query: createResolvedRouteQuery(query),
     state: getStateValues(route.state, options.state),
     hash,

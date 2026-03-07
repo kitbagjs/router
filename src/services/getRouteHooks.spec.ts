@@ -2,6 +2,7 @@ import { expect, test, vi } from 'vitest'
 import { getBeforeHooksFromRoutes } from '@/services/getRouteHooks'
 import { createRoute } from './createRoute'
 import { createResolvedRoute } from './createResolvedRoute'
+import { isWithHooks } from '@/types/hooks'
 
 test('given two ResolvedRoutes returns before timing hooks in correct order', () => {
   const parent = createRoute({
@@ -50,6 +51,10 @@ test('given two ResolvedRoutes returns before timing hooks in correct order', ()
   const from = createResolvedRoute(grandchildB, {})
 
   const hooks = getBeforeHooksFromRoutes(to, from)
+
+  if (!isWithHooks(childA) || !isWithHooks(grandchildA) || !isWithHooks(childB) || !isWithHooks(grandchildB) || !isWithHooks(parent)) {
+    throw new Error('Route is not a RouteWithHooks')
+  }
 
   expect(Array.from(hooks.onBeforeRouteEnter)).toMatchObject([...Array.from(childA.hooks.at(-1)?.onBeforeRouteEnter ?? []), ...Array.from(grandchildA.hooks.at(-1)?.onBeforeRouteEnter ?? [])])
   expect(Array.from(hooks.onBeforeRouteUpdate)).toMatchObject([...Array.from(parent.hooks.at(-1)?.onBeforeRouteUpdate ?? [])])
