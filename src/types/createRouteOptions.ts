@@ -8,7 +8,7 @@ import { Route } from '@/types/route'
 import { ResolvedRoute } from './resolved'
 import { ComponentProps } from '@/services/component'
 import { PropsCallbackContext } from './props'
-import { MaybePromise } from './utilities'
+import { Identity, MaybePromise } from './utilities'
 import { ToMeta } from './meta'
 import { ToState } from './state'
 import { ToName } from './name'
@@ -40,6 +40,12 @@ export function isWithParent<T extends Record<string, unknown>>(options: T): opt
 export type WithoutParent = {
   parent?: never,
 }
+
+/**
+ * This type is used to strip the component and components properties from the options object
+ * when creating a Route to simplify and minimize the output type.
+ */
+type WithoutComponents = { component: never, components: never }
 
 export function isWithComponent<T extends Record<string, unknown>>(options: T): options is T & { component: Component } {
   return 'component' in options && Boolean(options.component)
@@ -140,7 +146,7 @@ export type CreateRouteProps<
 
 type ToMatch<
   TOptions extends CreateRouteOptions,
-  TProps extends CreateRouteProps<TOptions> | undefined
+  TProps
 > = Omit<TOptions, 'props' | 'meta' | 'name'> & {
   id: string,
   name: ToName<TOptions['name']>,
@@ -156,7 +162,7 @@ type ToMatches<
   TProps extends CreateRouteProps<TOptions> | undefined
 > = TOptions extends { parent: infer TParent extends Route }
   ? [...TParent['matches'], ToMatch<TOptions, TProps>]
-  : [ToMatch<TOptions, TProps>]
+  : [ToMatch<Identity<TOptions & WithoutComponents>, TProps>]
 
 export type ToRoute<
   TOptions extends CreateRouteOptions,
@@ -166,7 +172,7 @@ export type ToRoute<
   : TOptions extends { parent: infer TParent extends Route }
     ? Route<
       ToName<TOptions['name']>,
-      CombineUrl<TParent, ToUrl<TOptions>>,
+      CombineUrl<TParent, ToUrl<TOptions & WithoutComponents>>,
       CombineMeta<ToMeta<TParent['meta']>, ToMeta<TOptions['meta']>>,
       CombineState<ToState<TParent['state']>, ToState<TOptions['state']>>,
       ToMatches<TOptions, CreateRouteProps<TOptions> extends TProps ? undefined : TProps>,
@@ -174,7 +180,7 @@ export type ToRoute<
     >
     : Route<
       ToName<TOptions['name']>,
-      ToUrl<TOptions>,
+      ToUrl<Identity<TOptions & WithoutComponents>>,
       ToMeta<TOptions['meta']>,
       ToState<TOptions['state']>,
       ToMatches<TOptions, CreateRouteProps<TOptions> extends TProps ? undefined : TProps>,
