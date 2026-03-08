@@ -48,6 +48,7 @@
 - [isWithComponentPropsRecord](functions/isWithComponentPropsRecord.md)
 - [isWithComponents](functions/isWithComponents.md)
 - [isWithParent](functions/isWithParent.md)
+- [literal](functions/literal.md)
 - [tupleOf](functions/tupleOf.md)
 - [unionOf](functions/unionOf.md)
 - [withDefault](functions/withDefault.md)
