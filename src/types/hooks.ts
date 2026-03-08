@@ -28,8 +28,12 @@ export function isWithHooks<T extends Record<string, unknown>>(route: T): route 
   return 'hooks' in route
 }
 
+export function getHooks(route: Record<string, unknown> | undefined | null): Hooks[] {
+  return !!route && isWithHooks(route) ? route.hooks : []
+}
+
 export function combineHooks(parent: Route, child: Route): Hooks[] {
-  return [...isWithHooks(parent) ? parent.hooks : [], ...isWithHooks(child) ? child.hooks : []]
+  return [...getHooks(parent), ...getHooks(child)]
 }
 
 export type InternalRouteHooks<

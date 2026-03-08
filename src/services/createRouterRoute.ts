@@ -6,7 +6,7 @@ import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { QuerySource } from '@/types/querySource'
 import { Router } from '@/types/router'
 import { isPropertyKey } from '@/utilities/guards'
-import { isWithHooks } from '@/types/hooks'
+import { getHooks } from '@/types/hooks'
 
 const isRouterRouteSymbol = Symbol('isRouterRouteSymbol')
 
@@ -137,7 +137,7 @@ export function createRouterRoute<TRoute extends ResolvedRoute>(routerKey: Injec
     name,
     href,
     update,
-    hooks: isWithHooks(route) ? route.hooks : [],
+    hooks: getHooks(route),
     [isRouterRouteSymbol]: true,
     [routerKey]: true,
   })
