@@ -158,6 +158,10 @@
         "link": "/api/functions/isWithParent.md"
       },
       {
+        "text": "literal",
+        "link": "/api/functions/literal.md"
+      },
+      {
         "text": "tupleOf",
         "link": "/api/functions/tupleOf.md"
       },
