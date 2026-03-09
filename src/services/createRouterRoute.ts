@@ -6,6 +6,7 @@ import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { QuerySource } from '@/types/querySource'
 import { Router } from '@/types/router'
 import { isPropertyKey } from '@/utilities/guards'
+import { getHooks } from '@/types/hooks'
 
 const isRouterRouteSymbol = Symbol('isRouterRouteSymbol')
 
@@ -60,7 +61,7 @@ export function createRouterRoute<TRoute extends ResolvedRoute>(routerKey: Injec
     updateQuery(query)
   }
 
-  const { id, matched, matches, hooks, name, hash, href } = toRefs(route)
+  const { id, matched, matches, name, hash, href } = toRefs(route)
 
   const paramsProxy = new Proxy({}, {
     get(_target, property, receiver) {
@@ -129,7 +130,6 @@ export function createRouterRoute<TRoute extends ResolvedRoute>(routerKey: Injec
     id,
     matched,
     matches,
-    hooks,
     state,
     query,
     hash,
@@ -137,6 +137,7 @@ export function createRouterRoute<TRoute extends ResolvedRoute>(routerKey: Injec
     name,
     href,
     update,
+    hooks: getHooks(route),
     [isRouterRouteSymbol]: true,
     [routerKey]: true,
   })

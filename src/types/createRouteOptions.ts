@@ -1,19 +1,20 @@
 import { Component } from 'vue'
 import { CombineMeta, combineMeta } from '@/services/combineMeta'
 import { CombineState, combineState } from '@/services/combineState'
+import { combineHooks, WithHooks } from '@/types/hooks'
 import { Param } from '@/types/paramTypes'
 import { PrefetchConfig } from '@/types/prefetch'
 import { RouteMeta } from '@/types/register'
 import { Route } from '@/types/route'
 import { ResolvedRoute } from './resolved'
 import { ComponentProps } from '@/services/component'
-import { PropsCallbackContext } from './props'
-import { Identity, MaybePromise } from './utilities'
-import { ToMeta } from './meta'
-import { ToState } from './state'
-import { ToName } from './name'
+import { PropsCallbackContext } from '@/types/props'
+import { Identity, MaybePromise } from '@/types/utilities'
+import { ToMeta } from '@/types/meta'
+import { ToState } from '@/types/state'
+import { ToName } from '@/types/name'
 import { UrlPart, UrlQueryPart } from '@/services/withParams'
-import { RouteContext, ToRouteContext } from './routeContext'
+import { RouteContext, ToRouteContext } from '@/types/routeContext'
 import { RouterViewProps } from '@/components/routerView'
 import { ToUrl } from '@/types/url'
 import { CombineUrl } from '@/services/combineUrl'
@@ -187,12 +188,12 @@ export type ToRoute<
       ToRouteContext<TOptions['context']>
     >
 
-export function combineRoutes(parent: Route, child: Route): Route {
+export function combineRoutes(parent: Route, child: Route): Route & WithHooks {
   return {
     ...child,
     meta: combineMeta(parent.meta, child.meta),
     state: combineState(parent.state, child.state),
-    hooks: [...parent.hooks, ...child.hooks],
+    hooks: combineHooks(parent, child),
     matches: [...parent.matches, child.matched],
     context: [...parent.context, ...child.context],
     depth: parent.depth + 1,

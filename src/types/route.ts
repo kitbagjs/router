@@ -3,7 +3,6 @@ import { PrefetchConfig } from '@/types/prefetch'
 import { RouteMeta } from '@/types/register'
 import { LastInArray } from '@/types/utilities'
 import { CreateRouteOptions } from '@/types/createRouteOptions'
-import { Hooks } from '@/models/hooks'
 import { RouteContext } from '@/types/routeContext'
 import { Url } from '@/types/url'
 
@@ -67,12 +66,6 @@ export type Route<
    * Related routes and rejections for the route. The context is exposed to the hooks and props callback functions for this route.
    */
   context: TContext,
-  /**
-   * The stores for routes including ancestors.
-   * Order of routes will be from greatest ancestor to narrowest matched.
-   * @internal
-   */
-  hooks: Hooks[],
   /**
   * A value that represents how many parents a route has. Used for route matching
   * @internal
