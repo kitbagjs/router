@@ -4,10 +4,9 @@ import { getStateValues } from '@/services/state'
 import { RouterResolveOptions } from '@/types/routerResolve'
 import { ResolvedRoute } from '@/types/resolved'
 import { Route } from '@/types/route'
-import { getHooks, WithHooks } from '@/types/hooks'
-import { GetTitle, isRouteWithTitle } from '@/types/titles'
+import { GetTitle, isRouteWithTitleGetter } from '@/types/titles'
 
-export function createResolvedRoute(route: Route, params: Record<string, unknown> = {}, options: RouterResolveOptions = {}): ResolvedRoute & WithHooks {
+export function createResolvedRoute(route: Route, params: Record<string, unknown> = {}, options: RouterResolveOptions = {}): ResolvedRoute {
   const routeUrl = route.stringify(params)
   const href = updateUrl(routeUrl, {
     query: new URLSearchParams(options.query),
@@ -16,19 +15,15 @@ export function createResolvedRoute(route: Route, params: Record<string, unknown
   const { query, hash } = parseUrl(href)
 
   const getTitle: GetTitle = async (to) => {
-    if (isRouteWithTitle(route)) {
+    if (isRouteWithTitleGetter(route)) {
       return route.getTitle(to)
     }
 
     return undefined
   }
 
-  return {
-    id: route.id,
-    matched: route.matched,
-    matches: route.matches,
-    name: route.name,
-    hooks: getHooks(route),
+  const resolvedRoute = {
+    ...route,
     query: createResolvedRouteQuery(query),
     state: getStateValues(route.state, options.state),
     hash,
@@ -36,4 +31,6 @@ export function createResolvedRoute(route: Route, params: Record<string, unknown
     href,
     getTitle,
   }
+
+  return resolvedRoute
 }

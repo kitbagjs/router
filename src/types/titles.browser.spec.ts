@@ -1,18 +1,8 @@
-import { beforeEach, expect, test, vi } from 'vitest'
+import { expect, test, vi } from 'vitest'
 import { createRoute } from '@/services/createRoute'
 import { component } from '@/utilities/testHelpers'
 import { createRouter } from '@/main'
 import { flushPromises } from '@vue/test-utils'
-
-const setDocumentTitle = vi.hoisted(() => vi.fn())
-
-vi.mock('@/utilities/setDocumentTitle', () => ({
-  setDocumentTitle,
-}))
-
-beforeEach(() => {
-  vi.clearAllMocks()
-})
 
 test('route with title updates document title', async () => {
   const route = createRoute({
@@ -35,7 +25,7 @@ test('route with title updates document title', async () => {
   await flushPromises()
 
   expect(callback).toHaveBeenCalledTimes(1)
-  expect(setDocumentTitle).toHaveBeenCalledWith(title)
+  expect(document.title).toBe(title)
 })
 
 test('route with title and parent with title does not call parent getTitle', async () => {
@@ -67,7 +57,7 @@ test('route with title and parent with title does not call parent getTitle', asy
 
   expect(parentGetTitle).not.toHaveBeenCalled()
   expect(childGetTitle).toHaveBeenCalledTimes(1)
-  expect(setDocumentTitle).toHaveBeenCalledWith('child')
+  expect(document.title).toBe('child')
 })
 
 test('route with title and parent with title does call parent getTitle when called directly', async () => {
@@ -104,7 +94,7 @@ test('route with title and parent with title does call parent getTitle when call
 
   expect(parentGetTitle).toHaveBeenCalledTimes(1)
   expect(childGetTitle).toHaveBeenCalledTimes(1)
-  expect(setDocumentTitle).toHaveBeenCalledWith('parent - child')
+  expect(document.title).toBe('parent - child')
 })
 
 test('route with title and parent with title does call parent getTitle when called directly', async () => {
@@ -148,7 +138,7 @@ test('route with title and parent with title does call parent getTitle when call
 
   expect(parentGetTitle).toHaveBeenCalledTimes(1)
   expect(grandchildGetTitle).toHaveBeenCalledTimes(1)
-  expect(setDocumentTitle).toHaveBeenCalledWith('parent - grandchild')
+  expect(document.title).toBe('parent - grandchild')
 })
 
 test('route without title and parent with title updates document title', async () => {
@@ -175,5 +165,5 @@ test('route without title and parent with title updates document title', async (
 
   await flushPromises()
 
-  expect(setDocumentTitle).toHaveBeenCalledWith('parent')
+  expect(document.title).toBe('parent')
 })

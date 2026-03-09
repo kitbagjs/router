@@ -11,25 +11,30 @@ export type SetTitleCallback<TRoute extends Route = Route> = (to: ResolvedRouteU
 export type GetTitle<TRoute extends Route = Route> = (to: ResolvedRouteUnion<TRoute>) => Promise<string | undefined>
 export type SetTitle<TRoute extends Route = Route> = (callback: SetTitleCallback<TRoute>) => void
 
-export type RouteTitle<TRoute extends Route = Route> = {
+export type RouteSetTitle<TRoute extends Route = Route> = {
   /**
-   * Adds a callback to set the title for the route.
+   * Adds a callback to set the document title for the route.
    */
   setTitle: SetTitle<TRoute>,
+}
+
+export type RouteGetTitle<TRoute extends Route = Route> = {
   /**
-   * Gets the title for the route.
    * @internal
+   * Gets the title for the route.
    */
   getTitle: GetTitle<TRoute>,
 }
 
-export type RouteWithTitle<TRoute extends Route = Route> = TRoute & RouteTitle<TRoute>
-
-export function isRouteWithTitle(route: Route): route is RouteWithTitle {
-  return 'setTitle' in route && 'getTitle' in route
+export function isRouteWithTitleSetter<T extends Route | ResolvedRoute>(route: T): route is T & RouteSetTitle {
+  return 'setTitle' in route
 }
 
-export function createRouteTitle(parent: Route | undefined): RouteTitle {
+export function isRouteWithTitleGetter<T extends Route | ResolvedRoute>(route: T): route is T & RouteGetTitle {
+  return 'getTitle' in route
+}
+
+export function createRouteTitle(parent: Route | undefined): RouteGetTitle & RouteSetTitle {
   let setTitleCallback: SetTitleCallback | undefined
 
   const setTitle: SetTitle = (callback) => {
@@ -38,12 +43,13 @@ export function createRouteTitle(parent: Route | undefined): RouteTitle {
 
   const getTitle: GetTitle = async (to) => {
     const getParentTitle = async (): Promise<string | undefined> => {
-      if (parent && isRouteWithTitle(parent)) {
+      if (parent && isRouteWithTitleGetter(parent)) {
         return parent.getTitle(to)
       }
 
       return undefined
     }
+
     if (!setTitleCallback) {
       return getParentTitle()
     }

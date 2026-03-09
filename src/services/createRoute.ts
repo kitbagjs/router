@@ -11,7 +11,7 @@ import { combineUrl } from '@/services/combineUrl'
 import { InternalRouteHooks, WithHooks } from '@/types/hooks'
 import { ExtractRouteContext } from '@/types/routeContext'
 import { RouteRedirects } from '@/types/redirects'
-import { createRouteTitle, RouteTitle } from '@/types/titles'
+import { createRouteTitle, RouteSetTitle } from '@/types/titles'
 
 type CreateRouteWithProps<
   TOptions extends CreateRouteOptions,
@@ -32,7 +32,7 @@ export function createRoute<
 >(options: TOptions, ...args: CreateRouteWithProps<TOptions, TProps>): ToRoute<TOptions, TProps>
   & InternalRouteHooks<ToRoute<TOptions>, ExtractRouteContext<TOptions>>
   & RouteRedirects<ToRoute<TOptions>>
-  & RouteTitle<ToRoute<TOptions>>
+  & RouteSetTitle<ToRoute<TOptions>>
 
 export function createRoute(options: CreateRouteOptions, props?: CreateRouteProps): Route {
   const id = createRouteId()
@@ -72,7 +72,7 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
     ...url,
     ...hooks,
     ...title,
-  } satisfies Route & InternalRouteHooks & RouteRedirects & WithHooks & RouteTitle
+  } satisfies Route & InternalRouteHooks & RouteRedirects & WithHooks & RouteSetTitle
 
   if (isWithParent(options)) {
     const merged = combineRoutes(options.parent, route)

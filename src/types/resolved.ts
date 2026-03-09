@@ -2,7 +2,6 @@ import { Route, Routes } from '@/types/route'
 import { ExtractRouteStateParamsAsOptional } from '@/types/state'
 import { UrlString } from '@/types/urlString'
 import { UrlParamsReading } from '@/types/url'
-import { GetTitle } from './titles'
 
 /**
  * Represents a route that the router has matched to current browser location.
@@ -46,11 +45,6 @@ export type ResolvedRoute<TRoute extends Route = Route> = Readonly<{
    * Hash value of the route.
    */
   hash: string,
-  /**
-   * Gets the title for the route.
-   * @internal
-   */
-  getTitle: GetTitle,
 }>
 
 /**
