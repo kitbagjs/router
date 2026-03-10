@@ -39,6 +39,7 @@ import { ContextRejectionError } from '@/errors/contextRejectionError'
 import { setupRouterDevtools } from '@/devtools/createRouterDevtools'
 import { getMatchForUrl } from './getMatchesForUrl'
 import { pathHasTrailingSlash, removeTrailingSlashesFromPath } from '@/utilities/trailingSlashes'
+import { setDocumentTitle } from '@/utilities/setDocumentTitle'
 
 type RouterUpdateOptions = {
   replace?: boolean,
@@ -186,6 +187,8 @@ export function createRouter<
         const exhaustive: never = afterResponse
         throw new Error(`Switch is not exhaustive for after hook response status: ${JSON.stringify(exhaustive)}`)
     }
+
+    setDocumentTitle(to)
 
     history.startListening()
   }
