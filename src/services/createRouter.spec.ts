@@ -388,7 +388,6 @@ test('query.set does not duplicate existing params when updating one param', asy
 
   await flushPromises()
 
-  // Setting one param must not duplicate route-defined param: param=value&foo=2, NOT param=value&param=value&foo=2
   expect(route.query.toString()).toBe('param=value&foo=2')
 })
 
