@@ -13,7 +13,7 @@ test.each([
   ])
 })
 
-test('given duplicate keys, appends new entry', () => {
+test('given duplicate keys, first group wins', () => {
   const aParams = new URLSearchParams({ foo: 'foo' })
   const bParams = new URLSearchParams({ foo: 'bar' })
 
@@ -21,6 +21,17 @@ test('given duplicate keys, appends new entry', () => {
 
   expect(Array.from(response.entries())).toMatchObject([
     ['foo', 'foo'],
-    ['foo', 'bar'],
+  ])
+})
+
+test('given non-overlapping keys, includes both', () => {
+  const aParams = new URLSearchParams({ foo: 'foo' })
+  const bParams = new URLSearchParams({ bar: 'bar' })
+
+  const response = combineUrlSearchParams(aParams, bParams)
+
+  expect(Array.from(response.entries())).toMatchObject([
+    ['foo', 'foo'],
+    ['bar', 'bar'],
   ])
 })
