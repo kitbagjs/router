@@ -125,6 +125,20 @@ test('given route with equal matches, returns first match', () => {
   expect(match?.name).toBe('first-route')
 })
 
+test('given url with query params that include params and extra values, retains extra query params', () => {
+  const route = createRoute({
+    name: 'query-params',
+    path: '/',
+    query: 'foo=[param]',
+    component,
+  })
+
+  const match = getMatchForUrl([route], '/?extra=42&foo=1')
+
+  expect(match).toBeDefined()
+  expect(match?.query.toString()).toBe('foo=1&extra=42')
+})
+
 describe('trailing slashes', () => {
   test('given route without trailing slash, does not match url with trailing slash', () => {
     const route = createRoute({

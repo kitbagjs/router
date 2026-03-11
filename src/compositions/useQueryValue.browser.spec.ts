@@ -220,7 +220,7 @@ test('updates the query string when the value is set', async () => {
 
   await flushPromises()
 
-  expect(location.search).toBe('?foo=3&tab=1')
+  expect(location.search).toBe('?tab=1&foo=3')
 })
 
 test('updates the query string when the values is set', async () => {
