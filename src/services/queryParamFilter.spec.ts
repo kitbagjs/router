@@ -27,3 +27,12 @@ test('given exclude with same key and value, returns source without duplicates',
 
   expect(response.toString()).toBe('bar=456')
 })
+
+test('given source with multiple values for same key, only removes matching value', () => {
+  const source = new URLSearchParams('foo=123&foo=456')
+  const exclude = new URLSearchParams('foo=123')
+
+  const response = filterQueryParams(source, exclude)
+
+  expect(response.toString()).toBe('foo=456')
+})
