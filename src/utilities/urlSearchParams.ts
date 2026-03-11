@@ -5,16 +5,25 @@ import { QuerySource } from '@/types/querySource'
  * keys that are not already in base. Avoids duplicating keys when the same
  * param appears in both (e.g. route-defined query and URL query).
  */
-export function combineUrlSearchParams(base: URLSearchParams | QuerySource, additional: URLSearchParams | QuerySource): URLSearchParams {
-  const baseParams = new URLSearchParams(base)
-  const additionalParams = new URLSearchParams(additional)
-  const keysInBase = new Set(baseParams.keys())
+export function combineUrlSearchParams(...paramGroups: (URLSearchParams | QuerySource)[]): URLSearchParams {
+  const combinedParams = new URLSearchParams()
 
-  for (const [key, value] of additionalParams.entries()) {
-    if (!keysInBase.has(key)) {
-      baseParams.append(key, value)
+  for (const params of paramGroups) {
+    const paramsToAdd = new URLSearchParams(params)
+    const keysToAddFromThisGroup = new Set<string>()
+
+    for (const key of paramsToAdd.keys()) {
+      if (!combinedParams.has(key)) {
+        keysToAddFromThisGroup.add(key)
+      }
+    }
+
+    for (const [key, value] of paramsToAdd.entries()) {
+      if (keysToAddFromThisGroup.has(key)) {
+        combinedParams.append(key, value)
+      }
     }
   }
 
-  return baseParams
+  return combinedParams
 }
