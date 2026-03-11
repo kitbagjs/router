@@ -392,6 +392,27 @@ test('query.set does not duplicate existing params when updating one param', asy
   expect(route.query.toString()).toBe('param=value&foo=2')
 })
 
+test('query.set can change the value of a param that is already set', async () => {
+  const root = createRoute({
+    name: 'root',
+    component,
+    query: 'param=[param]',
+    path: '/',
+  })
+
+  const { route, start } = createRouter([root], {
+    initialUrl: '/?param=foo&notAParam=1',
+  })
+
+  await start()
+
+  route.query.set('param', 'bar')
+
+  await flushPromises()
+
+  expect(route.query.toString()).toBe('param=bar&notAParam=1')
+})
+
 test('query.append updates the route', async () => {
   const root = createRoute({
     name: 'root',
