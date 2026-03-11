@@ -1,7 +1,7 @@
-# Functions: combineRoutes()
+# Functions: combineHooks()
 
 ```ts
-function combineRoutes(parent, child): Url & object & WithHooks;
+function combineHooks(parent, child): Hooks[];
 ```
 
 ## Parameters
@@ -12,3 +12,5 @@ function combineRoutes(parent, child): Url & object & WithHooks;
 | `child` | [`Route`](../types/Route.md) |
 
 ## Returns
+
+`Hooks`[]

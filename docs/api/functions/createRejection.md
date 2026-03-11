@@ -20,4 +20,4 @@ function createRejection<TType>(options): Rejection<TType>;
 
 ## Returns
 
-`Rejection`\<`TType`\>
+[`Rejection`](../types/Rejection.md)\<`TType`\>

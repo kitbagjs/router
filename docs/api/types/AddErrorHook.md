@@ -10,7 +10,7 @@ type AddErrorHook<TRoute, TRoutes, TRejections> = (hook) => HookRemove;
 | ------ | ------ |
 | `TRoute` *extends* [`Route`](Route.md) | [`Route`](Route.md) |
 | `TRoutes` *extends* [`Routes`](Routes.md) | [`Routes`](Routes.md) |
-| `TRejections` *extends* `Rejections` | `Rejections` |
+| `TRejections` *extends* [`Rejections`](Rejections.md) | [`Rejections`](Rejections.md) |
 
 ## Parameters
 

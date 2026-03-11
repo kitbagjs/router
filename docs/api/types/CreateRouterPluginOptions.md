@@ -9,7 +9,7 @@ type CreateRouterPluginOptions<TRoutes, TRejections> = object;
 | Type Parameter | Default type |
 | ------ | ------ |
 | `TRoutes` *extends* [`Routes`](Routes.md) | [`Routes`](Routes.md) |
-| `TRejections` *extends* `Rejections` | `Rejections` |
+| `TRejections` *extends* [`Rejections`](Rejections.md) | [`Rejections`](Rejections.md) |
 
 ## Properties
 

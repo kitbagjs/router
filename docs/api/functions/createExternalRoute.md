@@ -20,7 +20,7 @@ function createExternalRoute<TOptions>(options): ToRoute<TOptions> & ExternalRou
 
 ### Returns
 
-[`ToRoute`](../types/ToRoute.md)\<`TOptions`\> & [`ExternalRouteHooks`](../types/ExternalRouteHooks.md)\<[`ToRoute`](../types/ToRoute.md)\<`TOptions`\>, `TOptions`\[`"context"`\]\> & `RouteRedirects`\<[`ToRoute`](../types/ToRoute.md)\<`TOptions`\>\>
+[`ToRoute`](../types/ToRoute.md)\<`TOptions`\> & [`ExternalRouteHooks`](../types/ExternalRouteHooks.md)\<[`ToRoute`](../types/ToRoute.md)\<`TOptions`\>, `TOptions`\[`"context"`\]\> & [`RouteRedirects`](../types/RouteRedirects.md)\<[`ToRoute`](../types/ToRoute.md)\<`TOptions`\>\>
 
 ## Call Signature
 
@@ -42,4 +42,4 @@ function createExternalRoute<TOptions>(options): ToRoute<TOptions> & ExternalRou
 
 ### Returns
 
-[`ToRoute`](../types/ToRoute.md)\<`TOptions`\> & [`ExternalRouteHooks`](../types/ExternalRouteHooks.md)\<[`ToRoute`](../types/ToRoute.md)\<`TOptions`\>, `ExtractRouteContext`\<`TOptions`\>\> & `RouteRedirects`\<[`ToRoute`](../types/ToRoute.md)\<`TOptions`\>\>
+[`ToRoute`](../types/ToRoute.md)\<`TOptions`\> & [`ExternalRouteHooks`](../types/ExternalRouteHooks.md)\<[`ToRoute`](../types/ToRoute.md)\<`TOptions`\>, `ExtractRouteContext`\<`TOptions`\>\> & [`RouteRedirects`](../types/RouteRedirects.md)\<[`ToRoute`](../types/ToRoute.md)\<`TOptions`\>\>
