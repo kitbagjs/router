@@ -211,7 +211,7 @@ test('given push options from both resolve callback and props, combines query an
 
   await flushPromises()
 
-  expect(router.route.query.toString()).toBe('prop=foo&resolve=foo')
+  expect(router.route.query.toString()).toBe('resolve=foo&prop=foo')
   expect(router.route.hash).toBe('#propHash')
   expect(router.route.state).toMatchObject({
     resolve: 'jar',

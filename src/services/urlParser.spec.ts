@@ -81,8 +81,8 @@ describe('updateUrl', () => {
   })
 
   test.each([
-    [{ query: new URLSearchParams('?bar=123') }, { query: new URLSearchParams('?foo=456') }],
-    [{ query: new URLSearchParams('?bar=123') }, { query: '?foo=456' }],
+    [{ query: new URLSearchParams('?foo=456') }, { query: new URLSearchParams('?bar=123') }],
+    [{ query: new URLSearchParams('?foo=456') }, { query: '?bar=123' }],
     [{ query: new URLSearchParams('?foo=456&bar=123') }, { query: '' }],
     [{ query: new URLSearchParams('?foo=456&bar=123') }, { query: undefined }],
   ])('given previous query (%s) and updated query (%s), returns updated query', (previous, updated) => {
