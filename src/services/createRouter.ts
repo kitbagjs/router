@@ -42,6 +42,7 @@ import { setupRouterDevtools } from '@/devtools/createRouterDevtools'
 import { getMatchForUrl } from './getMatchesForUrl'
 import { pathHasTrailingSlash, removeTrailingSlashesFromPath } from '@/utilities/trailingSlashes'
 import { setDocumentTitle } from '@/utilities/setDocumentTitle'
+import { getRouteTitle } from '@/utilities/getRouteTitle'
 
 type RouterUpdateOptions = {
   replace?: boolean,
@@ -169,7 +170,15 @@ export function createRouter<
     }
 
     if (!isExternal(url)) {
-      setPropsAndUpdateRoute(navigationId, to, from)
+      setRouteProps(navigationId, to, from)
+
+      updateRoute(to)
+
+      getRouteTitle(to).then((title) => {
+        setDocumentTitle(title)
+
+        ssrContextStore.addSsrContext('title', title)
+      })
     }
 
     const afterResponse = await hooks.runAfterRouteHooks({ to, from })
@@ -191,12 +200,10 @@ export function createRouter<
         throw new Error(`Switch is not exhaustive for after hook response status: ${JSON.stringify(exhaustive)}`)
     }
 
-    setDocumentTitle(to)
-
     history.startListening()
   }
 
-  function setPropsAndUpdateRoute(navigationId: string, to: ResolvedRoute, from: ResolvedRoute | null): void {
+  function setRouteProps(navigationId: string, to: ResolvedRoute, from: ResolvedRoute | null): void {
     const currentNavigationId = navigationId
 
     propStore.setProps(to)
@@ -239,10 +246,6 @@ export function createRouter<
           throw error
         }
       })
-
-    ssrContextStore.addSsrContext('title', 'hello world')
-
-    updateRoute(to)
   }
 
   const resolve: RouterResolve<TRoutes | TPlugin['routes']> = (
