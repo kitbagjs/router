@@ -1,6 +1,6 @@
 import { getParamsForString } from '@/services/getParamsForString'
 import { getParamName } from '@/services/routeRegex'
-import { ExtractParamName, ParamEnd, ParamIsGreedy, ParamIsOptionalOrHasDefault, ParamStart } from '@/types/params'
+import { ExtractParamName, isLiteralParam, ParamEnd, ParamIsGreedy, ParamIsOptionalOrHasDefault, ParamStart } from '@/types/params'
 import { Param } from '@/types/paramTypes'
 import { Identity } from '@/types/utilities'
 import { isRecord } from '@/utilities/guards'
@@ -120,7 +120,7 @@ export function toUrlQueryPart(querySource: UrlQueryPart): UrlPart {
   const params: Record<string, Param> = {}
 
   for (const [key, value] of entries) {
-    if (typeof value === 'string') {
+    if (isLiteralParam(value)) {
       source.push(`${key}=${value}`)
     } else {
       const paramKey = `[${key}]`

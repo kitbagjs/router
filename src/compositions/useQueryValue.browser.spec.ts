@@ -2,7 +2,7 @@ import { createRouter } from '@/services/createRouter'
 import { createRoute } from '@/services/createRoute'
 import { expect, test } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
-import { useQueryValue } from '@/main'
+import { useQueryValue, withDefault } from '@/main'
 
 test('returns correct value and values when key does not exist', async () => {
   const root = createRoute({
@@ -91,6 +91,35 @@ test('returns correct value and values when a param is used', async () => {
   expect(wrapper.vm.values).toEqual([1, 2])
 })
 
+test('returns correct value and values when a param is used that has a default value', async () => {
+  const root = createRoute({
+    name: 'root',
+    path: '/',
+  })
+
+  const router = createRouter([root], {
+    initialUrl: '/',
+  })
+
+  await router.start()
+
+  const component = {
+    template: 'empty',
+    setup() {
+      return useQueryValue('foo', withDefault(Number, 3))
+    },
+  }
+
+  const wrapper = mount(component, {
+    global: {
+      plugins: [router],
+    },
+  })
+
+  expect(wrapper.vm.value).toBe(3)
+  expect(wrapper.vm.values).toEqual([3])
+})
+
 test('updates value and values when the query string changes', async () => {
   const root = createRoute({
     name: 'root',
@@ -125,10 +154,47 @@ test('updates value and values when the query string changes', async () => {
   expect(wrapper.vm.values).toEqual([3])
 })
 
+test('updates value and values when a param is used that has a default value', async () => {
+  const root = createRoute({
+    name: 'root',
+    path: '/',
+  })
+
+  const router = createRouter([root], {
+    initialUrl: '/',
+  })
+
+  await router.start()
+
+  const component = {
+    template: 'empty',
+    setup() {
+      return useQueryValue('foo', withDefault(Number, 3))
+    },
+  }
+
+  const wrapper = mount(component, {
+    global: {
+      plugins: [router],
+    },
+  })
+
+  expect(wrapper.vm.value).toBe(3)
+  expect(wrapper.vm.values).toEqual([3])
+
+  await router.push('/?foo=4')
+
+  expect(wrapper.vm.value).toBe(4)
+  expect(wrapper.vm.values).toEqual([4])
+})
+
 test('updates the query string when the value is set', async () => {
   const root = createRoute({
     name: 'root',
     path: '/',
+    query: {
+      '?tab': withDefault(Number, 1),
+    },
   })
 
   const router = createRouter([root], {
@@ -154,7 +220,7 @@ test('updates the query string when the value is set', async () => {
 
   await flushPromises()
 
-  expect(router.route.query.toString()).toBe('foo=3')
+  expect(location.search).toBe('?tab=1&foo=3')
 })
 
 test('updates the query string when the values is set', async () => {

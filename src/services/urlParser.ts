@@ -50,7 +50,7 @@ export function updateUrl(url: string | Partial<UrlParts>, updates: UrlPartsInpu
   return {
     host: stringHasValue(updates.host) ? updates.host : url.host,
     path: stringHasValue(updates.path) ? updates.path : url.path ?? '',
-    query: combineUrlSearchParams(updatedQuery, url.query),
+    query: combineUrlSearchParams(url.query, updatedQuery),
     hash: stringHasValue(updates.hash) ? updates.hash : url.hash ?? '',
   }
 }

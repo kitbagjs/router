@@ -1,21 +1,25 @@
 import { computed, Ref, MaybeRefOrGetter, toValue, InjectionKey } from 'vue'
 import { createUseRoute } from './useRoute'
 import { Router } from '@/types/router'
-import { Param } from '@/types/paramTypes'
+import { Param, ParamGetSet } from '@/types/paramTypes'
 import { ExtractParamType } from '@/types/params'
 import { safeGetParamValue, setParamValue } from '@/services/params'
+import { isParamWithDefault } from '@/services/withDefault'
 
 type UseQueryValue<T> = {
-  value: Ref<T | null>,
-  values: Ref<T[]>,
+  value: Ref<T>,
+  values: Ref<NonNullable<T>[]>,
   remove: () => void,
 }
 
 type UseQueryValueFunction = {
-  (key: MaybeRefOrGetter<string>): UseQueryValue<string>,
-  <
-    TParam extends Param
-  >(key: MaybeRefOrGetter<string>, param: TParam): UseQueryValue<ExtractParamType<TParam>>,
+  (key: MaybeRefOrGetter<string>): UseQueryValue<string | null>,
+  <TParam extends Param>(
+    key: MaybeRefOrGetter<string>,
+    param: TParam,
+  ): TParam extends Required<ParamGetSet<ExtractParamType<TParam>>>
+    ? UseQueryValue<ExtractParamType<TParam>>
+    : UseQueryValue<ExtractParamType<TParam> | null>,
 }
 
 export function createUseQueryValue<TRouter extends Router>(key: InjectionKey<TRouter>): UseQueryValueFunction {
@@ -29,6 +33,9 @@ export function createUseQueryValue<TRouter extends Router>(key: InjectionKey<TR
         const value = route.query.get(toValue(key))
 
         if (value === null) {
+          if (isParamWithDefault(param)) {
+            return param.defaultValue
+          }
           return null
         }
 
@@ -42,6 +49,10 @@ export function createUseQueryValue<TRouter extends Router>(key: InjectionKey<TR
     const values = computed({
       get() {
         const values = route.query.getAll(toValue(key))
+
+        if (values.length === 0 && isParamWithDefault(param)) {
+          return [param.defaultValue]
+        }
 
         return values
           .map((value) => safeGetParamValue(value, { param }))

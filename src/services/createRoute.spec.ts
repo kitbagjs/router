@@ -19,6 +19,27 @@ test('given parent, path is combined', () => {
   expect(child.stringify({ id: 123 })).toBe('/parent/child/123')
 })
 
+test('given undefined path, path is combined', () => {
+  const parent = createRoute({
+    path: '/parent',
+  })
+
+  const child = createRoute({
+    parent: parent,
+  })
+
+  const grandChild = createRoute({
+    parent: child,
+    path: '/grand-child',
+  })
+
+  const kinless = createRoute({})
+
+  expect(kinless.stringify()).toBe('/')
+  expect(child.stringify()).toBe('/parent')
+  expect(grandChild.stringify()).toBe('/parent/grand-child')
+})
+
 test('given parent, query is combined', () => {
   const parent = createRoute({
     query: 'static=123',

@@ -1,4 +1,4 @@
-import { createPath } from 'history'
+import { createPath } from '@/services/history'
 import { App, ref } from 'vue'
 import { createCurrentRoute } from '@/services/createCurrentRoute'
 import { createIsExternal } from '@/services/createIsExternal'
@@ -41,6 +41,7 @@ import { ContextRejectionError } from '@/errors/contextRejectionError'
 import { setupRouterDevtools } from '@/devtools/createRouterDevtools'
 import { getMatchForUrl } from './getMatchesForUrl'
 import { pathHasTrailingSlash, removeTrailingSlashesFromPath } from '@/utilities/trailingSlashes'
+import { setDocumentTitle } from '@/utilities/setDocumentTitle'
 
 type RouterUpdateOptions = {
   replace?: boolean,
@@ -113,11 +114,12 @@ export function createRouter<
     },
   })
 
-  function find(url: string, options: RouterResolveOptions = {}): ResolvedRoute | undefined {
+  function find(url: string, resolveOptions: RouterResolveOptions = {}): ResolvedRoute | undefined {
     const urlIsRelative = !isExternal(url)
     const filteredRoutes = routes.filter((route) => route.isRelative === urlIsRelative)
+    const parseOptions = { removeTrailingSlashes: shouldRemoveTrailingSlashes }
 
-    return getMatchForUrl(filteredRoutes, url, options)
+    return getMatchForUrl(filteredRoutes, url, { ...resolveOptions, ...parseOptions })
   }
 
   async function set(url: string, options: RouterUpdateOptions = {}): Promise<void> {
@@ -188,6 +190,8 @@ export function createRouter<
         const exhaustive: never = afterResponse
         throw new Error(`Switch is not exhaustive for after hook response status: ${JSON.stringify(exhaustive)}`)
     }
+
+    setDocumentTitle(to)
 
     history.startListening()
   }

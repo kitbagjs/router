@@ -158,6 +158,10 @@
         "link": "/api/functions/isWithParent.md"
       },
       {
+        "text": "literal",
+        "link": "/api/functions/literal.md"
+      },
+      {
         "text": "tupleOf",
         "link": "/api/functions/tupleOf.md"
       },
@@ -408,6 +412,10 @@
       {
         "text": "ParamSetter",
         "link": "/api/types/ParamSetter.md"
+      },
+      {
+        "text": "ParseUrlOptions",
+        "link": "/api/types/ParseUrlOptions.md"
       },
       {
         "text": "PluginAfterRouteHook",

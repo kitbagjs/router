@@ -21,11 +21,6 @@ export type RouterRoute<TRoute extends ResolvedRoute = ResolvedRoute> = {
    */
   readonly matches: TRoute['matches'],
   /**
-   * The stores for routes including ancestors.
-   * @internal
-   */
-  readonly hooks: TRoute['hooks'],
-  /**
    * Hash value of the route.
    */
   readonly hash: string,

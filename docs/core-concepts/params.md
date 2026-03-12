@@ -170,7 +170,7 @@ const events = createRoute({
 })
 ```
 
-Params can also be defined as a record or tuple of key-value pairs where the value is either a literal string or a [Param](/api/types/Param) argument.
+Params can also be defined as a record or tuple of key-value pairs.
 
 ```ts
 const events = createRoute({
@@ -199,22 +199,6 @@ const events = createRoute({
   },
 })
 ```
-
-## Literal Types
-
-Params can be defined as a literal value. This can be useful when an optional param can only have a single value when it is present.
-
-```ts
-import { withParams } from '@kitbag/router'
-
-const events = createRoute({
-  query: withParams('enabled=[?enabled]', {
-    enabled: true,
-  }),
-})
-```
-
-Literal value params can be even more useful when coupled with utilities like [unionOf](/core-concepts/params#unions), [tupleOf](/core-concepts/params#tuples), [arrayOf](/core-concepts/params#arrays) which can very easily define more complex params.
 
 ## Unions
 

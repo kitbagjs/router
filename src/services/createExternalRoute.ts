@@ -8,7 +8,7 @@ import { createRouteHooks } from '@/services/createRouteHooks'
 import { createUrl } from '@/services/createUrl'
 import { createRouteRedirects } from '@/services/createRouteRedirects'
 import { combineUrl } from '@/services/combineUrl'
-import { ExternalRouteHooks } from '@/types/hooks'
+import { ExternalRouteHooks, WithHooks } from '@/types/hooks'
 import { ExtractRouteContext } from '@/types/routeContext'
 import { RouteRedirects } from '@/types/redirects'
 
@@ -59,7 +59,7 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
     ...hooks,
     ...redirects,
     ...url,
-  } satisfies Route & ExternalRouteHooks & RouteRedirects
+  } satisfies Route & WithHooks & ExternalRouteHooks & RouteRedirects
 
   if (isWithParent(options)) {
     const merged = combineRoutes(options.parent, route)

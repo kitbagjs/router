@@ -1,11 +1,12 @@
 import { ResolvedRoute } from '@/types/resolved'
 import { isRouteEnter, isRouteLeave, isRouteUpdate } from '@/services/hooks'
 import { Hooks } from '@/models/hooks'
+import { getHooks } from '@/types/hooks'
 
 export function getBeforeHooksFromRoutes(to: ResolvedRoute, from: ResolvedRoute | null): Hooks {
   const hooks = new Hooks()
 
-  to.hooks.forEach((store, depth) => {
+  getHooks(to).forEach((store, depth) => {
     store.redirects.forEach((hook) => hooks.redirects.add(hook))
 
     if (isRouteEnter(to, from, depth)) {
@@ -17,7 +18,7 @@ export function getBeforeHooksFromRoutes(to: ResolvedRoute, from: ResolvedRoute 
     }
   })
 
-  from?.hooks.forEach((store, depth) => {
+  getHooks(from).forEach((store, depth) => {
     if (isRouteLeave(to, from, depth)) {
       return store.onBeforeRouteLeave.forEach((hook) => hooks.onBeforeRouteLeave.add(hook))
     }
@@ -29,7 +30,7 @@ export function getBeforeHooksFromRoutes(to: ResolvedRoute, from: ResolvedRoute 
 export function getAfterHooksFromRoutes(to: ResolvedRoute, from: ResolvedRoute | null): Hooks {
   const hooks = new Hooks()
 
-  to.hooks.forEach((store, depth) => {
+  getHooks(to).forEach((store, depth) => {
     if (isRouteEnter(to, from, depth)) {
       return store.onAfterRouteEnter.forEach((hook) => hooks.onAfterRouteEnter.add(hook))
     }
@@ -39,7 +40,7 @@ export function getAfterHooksFromRoutes(to: ResolvedRoute, from: ResolvedRoute |
     }
   })
 
-  from?.hooks.forEach((store, depth) => {
+  getHooks(from).forEach((store, depth) => {
     if (isRouteLeave(to, from, depth)) {
       return store.onAfterRouteLeave.forEach((hook) => hooks.onAfterRouteLeave.add(hook))
     }

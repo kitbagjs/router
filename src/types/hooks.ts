@@ -1,15 +1,40 @@
 import { Hooks } from '@/models/hooks'
 import { ResolvedRoute, RouterResolvedRouteUnion, ResolvedRouteUnion } from '@/types/resolved'
 import { MaybePromise } from '@/types/utilities'
-import { Route, Routes } from './route'
-import { RouterReject } from './routerReject'
-import { RouterPush } from './routerPush'
-import { RouterReplace } from './routerReplace'
-import { Rejections } from './rejection'
-import { RouteContext, RouteContextToRejection, RouteContextToRoute } from './routeContext'
-import { RouterAbort } from './routerAbort'
-import { CallbackContextAbort, CallbackContextPush, CallbackContextReject, CallbackContextSuccess } from './callbackContext'
-import { RouteUpdate } from './routeUpdate'
+import { Route, Routes } from '@/types/route'
+import { RouterReject } from '@/types/routerReject'
+import { RouterPush } from '@/types/routerPush'
+import { RouterReplace } from '@/types/routerReplace'
+import { Rejections } from '@/types/rejection'
+import { RouteContext, RouteContextToRejection, RouteContextToRoute } from '@/types/routeContext'
+import { RouterAbort } from '@/types/routerAbort'
+import { CallbackContextAbort, CallbackContextPush, CallbackContextReject, CallbackContextSuccess } from '@/types/callbackContext'
+import { RouteUpdate } from '@/types/routeUpdate'
+
+/**
+ * The stores for routes including ancestors.
+ * Order of routes will be from greatest ancestor to narrowest matched.
+ * @internal
+ */
+export type WithHooks = {
+  hooks: Hooks[],
+}
+
+/**
+ * Type guard to assert that a route has hooks.
+ * @internal
+ */
+export function isWithHooks<T extends Record<string, unknown>>(route: T): route is T & WithHooks {
+  return 'hooks' in route
+}
+
+export function getHooks(route: Record<string, unknown> | undefined | null): Hooks[] {
+  return !!route && isWithHooks(route) ? route.hooks : []
+}
+
+export function combineHooks(parent: Route, child: Route): Hooks[] {
+  return [...getHooks(parent), ...getHooks(child)]
+}
 
 export type InternalRouteHooks<
   TRoute extends Route = Route,

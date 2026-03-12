@@ -8,9 +8,10 @@ import { toUrlPart, toUrlQueryPart } from '@/services/withParams'
 import { createUrl } from '@/services/createUrl'
 import { createRouteRedirects } from '@/services/createRouteRedirects'
 import { combineUrl } from '@/services/combineUrl'
-import { InternalRouteHooks } from '@/types/hooks'
+import { InternalRouteHooks, WithHooks } from '@/types/hooks'
 import { ExtractRouteContext } from '@/types/routeContext'
 import { RouteRedirects } from '@/types/redirects'
+import { createRouteTitle, RouteSetTitle } from '@/types/titles'
 
 type CreateRouteWithProps<
   TOptions extends CreateRouteOptions,
@@ -31,6 +32,7 @@ export function createRoute<
 >(options: TOptions, ...args: CreateRouteWithProps<TOptions, TProps>): ToRoute<TOptions, TProps>
   & InternalRouteHooks<ToRoute<TOptions>, ExtractRouteContext<TOptions>>
   & RouteRedirects<ToRoute<TOptions>>
+  & RouteSetTitle<ToRoute<TOptions>>
 
 export function createRoute(options: CreateRouteOptions, props?: CreateRouteProps): Route {
   const id = createRouteId()
@@ -42,6 +44,7 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
   const state = options.state ?? {}
   const context = options.context ?? []
   const { store, ...hooks } = createRouteHooks()
+  const title = createRouteTitle(options.parent)
   const rawRoute = markRaw({ ...options, id, meta, state, props, name })
 
   const redirects = createRouteRedirects({
@@ -68,10 +71,12 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
     ...redirects,
     ...url,
     ...hooks,
-  } satisfies Route & InternalRouteHooks & RouteRedirects
+    ...title,
+  } satisfies Route & InternalRouteHooks & RouteRedirects & WithHooks & RouteSetTitle
 
   if (isWithParent(options)) {
     const merged = combineRoutes(options.parent, route)
+
     const url = combineUrl(options.parent, {
       path,
       query,
