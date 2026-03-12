@@ -38,13 +38,13 @@ The default slot can be used to layer in a [Vue transition](https://vuejs.org/gu
 
 ## Component Reuse
 
-Vue will reuse components if a route change ends up rendering the same underlying component. This has advantages but can simetimes cause issues. You can avoid this by [using the `key` attribute](https://vuejs.org/api/built-in-special-attributes.html#key). Using the `route.href` property is a good way to generate a unique key for each route.
+Vue will reuse components if a route change ends up rendering the same underlying component. This has advantages but can sometimes cause issues. You can avoid this by [using the `key` attribute](https://vuejs.org/api/built-in-special-attributes.html#key). Using the `route.href` property is a good way to generate a unique key for each route.
 
 ```html{3}
 <router-view>
   <template #default="{ component, route }">
-    <transition name="fade" :key="route.href">
-      <component :is="component" />
+    <transition name="fade">
+      <component :is="component" :key="route.href" />
     </transition>
   </template>
 </router-view>
