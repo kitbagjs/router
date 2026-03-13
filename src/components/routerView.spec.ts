@@ -5,16 +5,22 @@ import { createRouter } from '@/services/createRouter'
 import { renderToString } from 'vue/server-renderer'
 
 describe('SSR', () => {
-  it('should render the route', async () => {
+  it('should render the route and set ssr context', async () => {
+    const title = 'hello world'
+
     const route = createRoute({
       name: 'foo',
       path: '/',
       component: { template: 'hello world' },
     })
 
+    route.setTitle(async () => Promise.resolve(title))
+
     const router = createRouter([route], {
       initialUrl: '/',
     })
+
+    const ctx = { foo: 'bar' }
 
     const app = createSSRApp({
       template: '<RouterView/>',
@@ -22,8 +28,10 @@ describe('SSR', () => {
 
     app.use(router)
 
-    const html = await renderToString(app)
+    const html = await renderToString(app, ctx)
 
     expect(html).toMatchInlineSnapshot('"hello world"')
+
+    expect(ctx).toEqual({ foo: 'bar', title })
   })
 })

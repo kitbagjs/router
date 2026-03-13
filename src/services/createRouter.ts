@@ -27,9 +27,11 @@ import { EmptyRouterPlugin, RouterPlugin } from '@/types/routerPlugin'
 import { getRoutesForRouter } from './getRoutesForRouter'
 import { getGlobalHooksForRouter } from './getGlobalHooksForRouter'
 import { createComponentsStore } from './createComponentsStore'
+import { createSsrContextStore } from './createSsrContextStore'
 import { initZod, zodParamsDetected } from './zod'
 import { getComponentsStoreKey } from '@/compositions/useComponentsStore'
 import { getPropStoreInjectionKey } from '@/compositions/usePropStore'
+import { getSsrContextStoreInjectionKey } from '@/compositions/useRouterSsrContext'
 import { getRouterRejectionInjectionKey } from '@/compositions/useRejection'
 import { routerInjectionKey } from '@/keys'
 import { createRouterView } from '@/components/routerView'
@@ -40,6 +42,7 @@ import { setupRouterDevtools } from '@/devtools/createRouterDevtools'
 import { getMatchForUrl } from './getMatchesForUrl'
 import { pathHasTrailingSlash, removeTrailingSlashesFromPath } from '@/utilities/trailingSlashes'
 import { setDocumentTitle } from '@/utilities/setDocumentTitle'
+import { getRouteTitle } from '@/utilities/getRouteTitle'
 
 type RouterUpdateOptions = {
   replace?: boolean,
@@ -101,6 +104,7 @@ export function createRouter<
   const getNavigationId = createUniqueIdSequence()
   const propStore = createPropStore()
   const componentsStore = createComponentsStore(routerKey)
+  const ssrContextStore = createSsrContextStore()
   const visibilityObserver = createVisibilityObserver()
   const history = createRouterHistory({
     mode: options?.historyMode,
@@ -166,7 +170,15 @@ export function createRouter<
     }
 
     if (!isExternal(url)) {
-      setPropsAndUpdateRoute(navigationId, to, from)
+      setRouteProps(navigationId, to, from)
+
+      updateRoute(to)
+
+      getRouteTitle(to).then((title) => {
+        setDocumentTitle(title)
+
+        ssrContextStore.addSsrContext('title', title)
+      })
     }
 
     const afterResponse = await hooks.runAfterRouteHooks({ to, from })
@@ -188,12 +200,10 @@ export function createRouter<
         throw new Error(`Switch is not exhaustive for after hook response status: ${JSON.stringify(exhaustive)}`)
     }
 
-    setDocumentTitle(to)
-
     history.startListening()
   }
 
-  function setPropsAndUpdateRoute(navigationId: string, to: ResolvedRoute, from: ResolvedRoute | null): void {
+  function setRouteProps(navigationId: string, to: ResolvedRoute, from: ResolvedRoute | null): void {
     const currentNavigationId = navigationId
 
     propStore.setProps(to)
@@ -236,8 +246,6 @@ export function createRouter<
           throw error
         }
       })
-
-    updateRoute(to)
   }
 
   const resolve: RouterResolve<TRoutes | TPlugin['routes']> = (
@@ -375,6 +383,7 @@ export function createRouter<
     app.provide(getRouterHooksKey(routerKey), hooks)
     app.provide(getPropStoreInjectionKey(routerKey), propStore)
     app.provide(getComponentsStoreKey(routerKey), componentsStore)
+    app.provide(getSsrContextStoreInjectionKey(routerKey), ssrContextStore)
     app.provide(visibilityObserverKey, visibilityObserver)
 
     app.provide(routerKey, router)
