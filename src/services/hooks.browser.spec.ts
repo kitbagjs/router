@@ -3,8 +3,10 @@ import { createRoute } from './createRoute'
 import { createRouter } from './createRouter'
 import { h } from 'vue'
 import { mount } from '@vue/test-utils'
-import { RouterView, onBeforeRouteLeave, onBeforeRouteUpdate, onAfterRouteLeave, onAfterRouteUpdate, createExternalRoute } from '@/main'
 import { routes } from '@/utilities/testHelpers'
+import { createExternalRoute } from './createExternalRoute'
+import { createRejection } from './createRejection'
+import { onAfterRouteLeave, onAfterRouteUpdate, onBeforeRouteLeave, onBeforeRouteUpdate, RouterView } from '@/main'
 
 test('global hooks are called correctly', async () => {
   const router = createRouter(routes, { initialUrl: '/parentA/valueA' })
@@ -15,6 +17,8 @@ test('global hooks are called correctly', async () => {
   const onAfterRouteEnter = vi.fn()
   const onAfterRouteUpdate = vi.fn()
   const onAfterRouteLeave = vi.fn()
+  const onError = vi.fn()
+  const onRejection = vi.fn()
 
   router.onBeforeRouteEnter(onBeforeRouteEnter)
   router.onAfterRouteEnter(onAfterRouteEnter)
@@ -22,6 +26,8 @@ test('global hooks are called correctly', async () => {
   router.onAfterRouteUpdate(onAfterRouteUpdate)
   router.onBeforeRouteLeave(onBeforeRouteLeave)
   router.onAfterRouteLeave(onAfterRouteLeave)
+  router.onError(onError)
+  router.onRejection(onRejection)
 
   await router.start()
 
@@ -31,6 +37,8 @@ test('global hooks are called correctly', async () => {
   expect(onAfterRouteLeave).toHaveBeenCalledTimes(0)
   expect(onAfterRouteUpdate).toHaveBeenCalledTimes(0)
   expect(onAfterRouteEnter).toHaveBeenCalledTimes(1)
+  expect(onError).toHaveBeenCalledTimes(0)
+  expect(onRejection).toHaveBeenCalledTimes(0)
 
   await router.push('parentA.childA', { paramA: 'valueA', paramB: 'valueB' })
 
@@ -40,6 +48,8 @@ test('global hooks are called correctly', async () => {
   expect(onAfterRouteLeave).toHaveBeenCalledTimes(0)
   expect(onAfterRouteUpdate).toHaveBeenCalledTimes(1)
   expect(onAfterRouteEnter).toHaveBeenCalledTimes(2)
+  expect(onError).toHaveBeenCalledTimes(0)
+  expect(onRejection).toHaveBeenCalledTimes(0)
 
   await router.push('parentA.childB', { paramA: 'valueB', paramD: 'valueD' })
 
@@ -48,7 +58,9 @@ test('global hooks are called correctly', async () => {
   expect(onBeforeRouteLeave).toHaveBeenCalledTimes(1)
   expect(onAfterRouteLeave).toHaveBeenCalledTimes(1)
   expect(onAfterRouteUpdate).toHaveBeenCalledTimes(2)
-  expect(onAfterRouteEnter).toHaveBeenCalledTimes(3)
+  expect(onAfterRouteEnter).toHaveBeenCalledTimes(3)  
+  expect(onError).toHaveBeenCalledTimes(0)
+  expect(onRejection).toHaveBeenCalledTimes(0)
 
   await router.push('parentB')
 
@@ -57,7 +69,20 @@ test('global hooks are called correctly', async () => {
   expect(onBeforeRouteLeave).toHaveBeenCalledTimes(2)
   expect(onAfterRouteLeave).toHaveBeenCalledTimes(2)
   expect(onAfterRouteUpdate).toHaveBeenCalledTimes(2)
-  expect(onAfterRouteEnter).toHaveBeenCalledTimes(4)
+  expect(onAfterRouteEnter).toHaveBeenCalledTimes(4)  
+  expect(onError).toHaveBeenCalledTimes(0)
+  expect(onRejection).toHaveBeenCalledTimes(0)
+
+  router.reject('NotFound')
+
+  expect(onBeforeRouteEnter).toHaveBeenCalledTimes(4)
+  expect(onBeforeRouteUpdate).toHaveBeenCalledTimes(2)
+  expect(onBeforeRouteLeave).toHaveBeenCalledTimes(2)
+  expect(onAfterRouteLeave).toHaveBeenCalledTimes(2)
+  expect(onAfterRouteUpdate).toHaveBeenCalledTimes(2)
+  expect(onAfterRouteEnter).toHaveBeenCalledTimes(4)  
+  expect(onError).toHaveBeenCalledTimes(0)
+  expect(onRejection).toHaveBeenCalledTimes(1)
 })
 
 test('route hooks are called correctly', async () => {
@@ -123,7 +148,7 @@ test('route hooks are called correctly', async () => {
   expect(parentHooks.beforeLeave).toHaveBeenCalledTimes(0)
   expect(parentHooks.afterLeave).toHaveBeenCalledTimes(0)
   expect(parentHooks.afterUpdate).toHaveBeenCalledTimes(1)
-  expect(parentHooks.afterEnter).toHaveBeenCalledTimes(1)
+  expect(parentHooks.afterEnter).toHaveBeenCalledTimes(1) 
 
   await router.push('parentA')
 
@@ -152,6 +177,7 @@ test('external route hooks are called correctly', async () => {
     afterEnter: vi.fn(),
     afterLeave: vi.fn(),
     afterUpdate: vi.fn(),
+    onRejection: vi.fn(),
   }
 
   const internal = createRoute({
@@ -201,6 +227,7 @@ test('external route hooks are called correctly', async () => {
   expect(internalHooks.afterUpdate).toHaveBeenCalledTimes(0)
   expect(internalHooks.afterEnter).toHaveBeenCalledTimes(1)
   expect(externalHooks.beforeEnter).toHaveBeenCalledTimes(0)
+  expect(internalHooks.onRejection).toHaveBeenCalledTimes(0)
 
   await router.push('external')
 
@@ -211,6 +238,31 @@ test('external route hooks are called correctly', async () => {
   expect(internalHooks.afterUpdate).toHaveBeenCalledTimes(0)
   expect(internalHooks.afterEnter).toHaveBeenCalledTimes(1)
   expect(externalHooks.beforeEnter).toHaveBeenCalledTimes(1)
+  expect(internalHooks.onRejection).toHaveBeenCalledTimes(0)
+})
+
+test('rejection hooks are called correctly', async () => {
+  const onRejection = vi.fn()
+
+  const rejection = createRejection({
+    type: 'CustomRejection',
+  })
+
+  rejection.onRejection((type, { to, from }) => onRejection(type, { to, from }))
+
+  const router = createRouter(routes, { initialUrl: '/', rejections: [rejection] })
+  
+  await router.start()
+
+  expect(onRejection).toHaveBeenCalledTimes(0)
+
+  router.reject('CustomRejection')
+
+  expect(onRejection).toHaveBeenCalledTimes(1)
+  expect(onRejection).toHaveBeenCalledWith('CustomRejection', expect.objectContaining({
+    to: null,
+    from: null,
+  }))
 })
 
 test('component hooks are called correctly', async () => {

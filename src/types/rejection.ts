@@ -28,3 +28,4 @@ unknown extends TRejections
         : never
 
 export type ExtractRejections<T> = T extends { rejections: infer TRejections extends Rejections } ? TRejections : []
+export type ExtractRejectionTypes<T extends Rejections> = T[number]['type'] extends string ? T[number]['type'] : never
