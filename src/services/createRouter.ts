@@ -152,13 +152,13 @@ export function createRouter<
       // On reject update the history, the route, and set the rejection type
       case 'REJECT':
         history.update(url, options)
-        setRejection(beforeResponse.type)
+        setRejection(beforeResponse.type, to, from)
         break
 
       // On success update history, set the route, and clear the rejection
       case 'SUCCESS':
         history.update(url, options)
-        setRejection(null)
+        clearRejection()
         break
 
       default:
@@ -177,7 +177,7 @@ export function createRouter<
         break
 
       case 'REJECT':
-        setRejection(afterResponse.type)
+        setRejection(afterResponse.type, to, from)
         break
 
       case 'SUCCESS':
@@ -211,7 +211,7 @@ export function createRouter<
             break
 
           case 'REJECT':
-            setRejection(response.type)
+            setRejection(response.type, to, from)
             break
 
           default:
@@ -229,7 +229,7 @@ export function createRouter<
           }
 
           if (error instanceof ContextRejectionError) {
-            setRejection(error.response.type)
+            setRejection(error.response.type, to, from)
             return
           }
 
@@ -312,11 +312,20 @@ export function createRouter<
     return push(source, options)
   }
 
+  function setRejection(type: string, to: ResolvedRoute | null = null, from: ResolvedRoute | null = null): void {
+    hooks.runRejectionHooks(getRejection(type), { to, from })
+    updateRejection(type)
+  }
+
+  function clearRejection(): void {
+    updateRejection(null)
+  }
+
   const reject: RouterReject<TOptions['rejections'] | TPlugin['rejections']> = (type) => {
     setRejection(type)
   }
 
-  const { setRejection, rejection, getRejectionRoute } = createRouterReject(rejections)
+  const { setRejection: updateRejection, rejection, getRejectionRoute, getRejection } = createRouterReject(rejections)
 
   const notFoundRoute = getRejectionRoute('NotFound')
   const { currentRoute, routerRoute, updateRoute } = createCurrentRoute<TRoutes | TPlugin['routes']>(routerKey, notFoundRoute, push)
@@ -405,6 +414,7 @@ export function createRouter<
     onAfterRouteUpdate: hooks.onAfterRouteUpdate,
     onAfterRouteLeave: hooks.onAfterRouteLeave,
     onError: hooks.onError,
+    onRejection: hooks.onRejection,
     prefetch: options?.prefetch,
     start,
     started,

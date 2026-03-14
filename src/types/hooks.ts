@@ -5,7 +5,7 @@ import { Route, Routes } from '@/types/route'
 import { RouterReject } from '@/types/routerReject'
 import { RouterPush } from '@/types/routerPush'
 import { RouterReplace } from '@/types/routerReplace'
-import { Rejections } from '@/types/rejection'
+import { Rejection, Rejections } from '@/types/rejection'
 import { RouteContext, RouteContextToRejection, RouteContextToRoute } from '@/types/routeContext'
 import { RouterAbort } from '@/types/routerAbort'
 import { CallbackContextAbort, CallbackContextPush, CallbackContextReject, CallbackContextSuccess } from '@/types/callbackContext'
@@ -24,7 +24,7 @@ export type WithHooks = {
  * Type guard to assert that a route has hooks.
  * @internal
  */
-export function isWithHooks<T extends Record<string, unknown>>(route: T): route is T & WithHooks {
+function isWithHooks<T extends Record<string, unknown>>(route: T): route is T & WithHooks {
   return 'hooks' in route
 }
 
@@ -38,7 +38,7 @@ export function combineHooks(parent: Route, child: Route): Hooks[] {
 
 export type InternalRouteHooks<
   TRoute extends Route = Route,
-  TContext extends RouteContext[] = []
+  TContext extends RouteContext[] | undefined = undefined
 > = {
   /**
    * Registers a route hook to be called before the route is entered.
@@ -74,6 +74,15 @@ export type ExternalRouteHooks<
    * Registers a route hook to be called before the route is entered.
    */
   onBeforeRouteEnter: AddBeforeEnterHook<[TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>, TRoute, Route>,
+}
+
+export type RejectionHooks<
+  TRejections extends string = string
+> = {
+  /**
+   * Registers a route hook to be called when a rejection occurs.
+   */
+  onRejection: AddRejectionHook<TRejections>,
 }
 
 export type HookTiming = 'global' | 'component'
@@ -283,8 +292,41 @@ export type AddAfterLeaveHook<
 export type BeforeHookResponse = CallbackContextSuccess | CallbackContextPush | CallbackContextReject | CallbackContextAbort
 export type AfterHookResponse = CallbackContextSuccess | CallbackContextPush | CallbackContextReject
 
-export type BeforeHookRunner = <TRoutes extends Routes>(context: { to: RouterResolvedRouteUnion<TRoutes>, from: RouterResolvedRouteUnion<TRoutes> | null }) => Promise<BeforeHookResponse>
-export type AfterHookRunner = <TRoutes extends Routes>(context: { to: RouterResolvedRouteUnion<TRoutes>, from: RouterResolvedRouteUnion<TRoutes> | null }) => Promise<AfterHookResponse>
+export type BeforeHookRunner = <TRoutes extends Routes>(
+  context: { to: RouterResolvedRouteUnion<TRoutes>, from: RouterResolvedRouteUnion<TRoutes> | null }
+) => Promise<BeforeHookResponse>
+
+export type AfterHookRunner = <TRoutes extends Routes>(
+  context: { to: RouterResolvedRouteUnion<TRoutes>, from: RouterResolvedRouteUnion<TRoutes> | null }
+) => Promise<AfterHookResponse>
+
+export type RejectionHookContext<
+  TRoutes extends Routes = Routes,
+  TRouteTo extends Route = TRoutes[number],
+  TRouteFrom extends Route = TRoutes[number]
+> = {
+  to: ResolvedRouteUnion<TRouteTo> | null,
+  from: ResolvedRouteUnion<TRouteFrom> | null
+}
+
+export type RejectionHook<
+  TRejection extends string = string,
+  TRoutes extends Routes = Routes,
+  TRouteTo extends Route = TRoutes[number],
+  TRouteFrom extends Route = TRoutes[number]
+> = (rejection: TRejection, context: RejectionHookContext<TRoutes, TRouteTo, TRouteFrom>) => MaybePromise<void>
+
+export type AddRejectionHook<
+  TRejections extends string = string,
+  TRoutes extends Routes = Routes,
+  TRouteTo extends Route = TRoutes[number],
+  TRouteFrom extends Route = TRoutes[number]
+> = (hook: RejectionHook<TRejections, TRoutes, TRouteTo, TRouteFrom>) => HookRemove
+
+export type RejectionHookRunner<TRejection extends Rejection = Rejection, TRoutes extends Routes = Routes> = (
+  rejection: TRejection, 
+  context: { to: RouterResolvedRouteUnion<TRoutes> | null, from: RouterResolvedRouteUnion<TRoutes> | null }
+) => void
 
 export type ErrorHookContext<
   TRoute extends Route = Route,
@@ -318,4 +360,7 @@ export type ErrorHookRunnerContext<TRoutes extends Routes = Routes> = {
   source: 'props' | 'hook',
 }
 
-export type ErrorHookRunner = (error: unknown, context: ErrorHookRunnerContext) => void
+export type ErrorHookRunner = (
+  error: unknown, 
+  context: ErrorHookRunnerContext
+) => void
