@@ -98,6 +98,10 @@
         "link": "/api/functions/asUrlString.md"
       },
       {
+        "text": "combineHooks",
+        "link": "/api/functions/combineHooks.md"
+      },
+      {
         "text": "combineRoutes",
         "link": "/api/functions/combineRoutes.md"
       },
@@ -134,6 +138,10 @@
         "link": "/api/functions/createUrl.md"
       },
       {
+        "text": "getHooks",
+        "link": "/api/functions/getHooks.md"
+      },
+      {
         "text": "isUrlWithSchema",
         "link": "/api/functions/isUrlWithSchema.md"
       },
@@ -152,6 +160,10 @@
       {
         "text": "isWithComponents",
         "link": "/api/functions/isWithComponents.md"
+      },
+      {
+        "text": "isWithHooks",
+        "link": "/api/functions/isWithHooks.md"
       },
       {
         "text": "isWithParent",
@@ -474,6 +486,18 @@
         "link": "/api/types/RegisteredRouter.md"
       },
       {
+        "text": "Rejection",
+        "link": "/api/types/Rejection.md"
+      },
+      {
+        "text": "Rejections",
+        "link": "/api/types/Rejections.md"
+      },
+      {
+        "text": "RejectionType",
+        "link": "/api/types/RejectionType.md"
+      },
+      {
         "text": "ResolvedRoute",
         "link": "/api/types/ResolvedRoute.md"
       },
@@ -496,6 +520,10 @@
       {
         "text": "RouterAssets",
         "link": "/api/types/RouterAssets.md"
+      },
+      {
+        "text": "RouteRedirects",
+        "link": "/api/types/RouteRedirects.md"
       },
       {
         "text": "RouterLinkProps",
@@ -604,6 +632,10 @@
       {
         "text": "UseLinkOptions",
         "link": "/api/types/UseLinkOptions.md"
+      },
+      {
+        "text": "WithHooks",
+        "link": "/api/types/WithHooks.md"
       },
       {
         "text": "WithHost",

@@ -26,17 +26,6 @@ depth: number;
 
 A value that represents how many parents a route has. Used for route matching
 
-### hooks
-
-```ts
-hooks: Hooks[];
-```
-
-**`Internal`**
-
-The stores for routes including ancestors.
-Order of routes will be from greatest ancestor to narrowest matched.
-
 ### id
 
 ```ts
