@@ -1,7 +1,7 @@
 import { App, InjectionKey, Ref } from 'vue'
 import { RouterHistoryMode } from '@/services/createRouterHistory'
 import { RouterRoute } from '@/types/routerRoute'
-import { AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, AddErrorHook } from '@/types/hooks'
+import { AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, AddErrorHook, AddRejectionHook } from '@/types/hooks'
 import { PrefetchConfig } from '@/types/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
 import { Route, Routes } from '@/types/route'
@@ -11,7 +11,8 @@ import { RouterResolve, RouterResolveOptions } from '@/types/routerResolve'
 import { RouterReject } from '@/types/routerReject'
 import { RouterPlugin } from '@/types/routerPlugin'
 import { RoutesName } from '@/types/routesMap'
-import { ExtractRejections, Rejections } from '@/types/rejection'
+import { ExtractRejections, ExtractRejectionTypes, Rejections } from '@/types/rejection'
+import { BuiltInRejectionType } from '@/services/createRouterReject'
 
 /**
  * Options to initialize a {@link Router} instance.
@@ -142,6 +143,10 @@ export type Router<
    * If the hook returns true, the error is considered handled and the other hooks are not run. If all hooks return false the error is rethrown
    */
   onError: AddErrorHook<TRoutes[number] | TPlugin['routes'][number], TRoutes | TPlugin['routes'], ExtractRejections<TOptions> | ExtractRejections<TPlugin>>,
+  /**
+   * Registers a hook to be called when a rejection occurs.
+   */
+  onRejection: AddRejectionHook<ExtractRejectionTypes<ExtractRejections<TOptions>> | ExtractRejectionTypes<ExtractRejections<TPlugin>> | BuiltInRejectionType, TRoutes | TPlugin['routes']>,
   /**
   * Given a URL, returns true if host does not match host stored on router instance
   */

@@ -6,18 +6,20 @@ import { ResolvedRoute } from '@/types/resolved'
 import { Rejection } from '@/types/rejection'
 import { Router } from '@/types/router'
 import { RouterReject } from '@/types/routerReject'
+import { createRejection } from './createRejection'
 
 export type BuiltInRejectionType = 'NotFound'
 
-type RouterSetReject = (type: string | null) => void
-
+type GetRejection = (type: string) => Rejection
+type SetRejection = (type: string | null) => void
 type GetRejectionRoute = (type: string) => ResolvedRoute
 
 export type RouterRejection<T extends Rejection = Rejection> = Ref<T | null>
 export type RouterRejections<TRouter extends Router> = TRouter['reject'] extends RouterReject<infer TRejections extends Rejection[]> ? TRejections[number] : never
 
 type CreateRouterReject = {
-  setRejection: RouterSetReject,
+  getRejection: GetRejection,
+  setRejection: SetRejection,
   rejection: RouterRejection,
   getRejectionRoute: GetRejectionRoute,
 }
@@ -54,7 +56,11 @@ export function createRouterReject(rejections: Rejection[]): CreateRouterReject 
     }
   }
 
-  const setRejection: RouterSetReject = (type) => {
+  const getRejection: GetRejection = (type) => {
+    return rejections.find((rejection) => rejection.type === type) ?? createRejection({ type })
+  }
+
+  const setRejection: SetRejection = (type) => {
     if (!type) {
       rejection.value = null
       return
@@ -68,6 +74,7 @@ export function createRouterReject(rejections: Rejection[]): CreateRouterReject 
   const rejection: RouterRejection = ref(null)
 
   return {
+    getRejection,
     setRejection,
     rejection,
     getRejectionRoute,

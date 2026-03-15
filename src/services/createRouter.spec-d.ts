@@ -5,7 +5,7 @@ import { describe, test, expectTypeOf } from 'vitest'
 import { createRouterPlugin } from './createRouterPlugin'
 import { BuiltInRejectionType } from './createRouterReject'
 import { createRejection } from './createRejection'
-import { AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, AddErrorHook } from '@/types/hooks'
+import { AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, AddErrorHook, AddRejectionHook } from '@/types/hooks'
 import { RouterAbort } from '@/types/routerAbort'
 import { RouteUpdate } from '@/types/routeUpdate'
 import { ResolvedRouteUnion } from '@/types/resolved'
@@ -51,6 +51,7 @@ describe('hooks', () => {
     expectTypeOf(router.onAfterRouteLeave).toEqualTypeOf<AddAfterLeaveHook<Routes, never>>()
     expectTypeOf(router.onAfterRouteUpdate).toEqualTypeOf<AddAfterUpdateHook<Routes, never>>()
     expectTypeOf(router.onError).toEqualTypeOf<AddErrorHook<Routes[number], Routes, never>>()
+    expectTypeOf(router.onRejection).toEqualTypeOf<AddRejectionHook<BuiltInRejectionType, Routes>>()
   })
 
   test('to and from can be narrowed', () => {

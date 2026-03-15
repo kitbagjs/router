@@ -10,6 +10,7 @@ import { component, routes } from '@/utilities/testHelpers'
 import { createExternalRoute } from '@/services/createExternalRoute'
 import { RouteNotFoundError } from '@/errors/routeNotFoundError'
 import { InvalidRouteParamValueError } from '@/errors/invalidRouteParamValueError'
+import { createRejection } from './createRejection'
 
 test('initial route is set', async () => {
   const foo = createRoute({
@@ -895,6 +896,63 @@ describe('router.onError', () => {
     expect(onError).toHaveBeenCalledWith(error, expect.objectContaining({
       source: 'props',
     }))
+  })
+})
+  
+describe('router.onRejection', () => {
+  test('given router itself triggers a rejection, calls the onRejection callback with the correct context', async () => {
+    const onRejection = vi.fn()
+
+    const rejection = createRejection({
+      type: 'CustomRejection',
+      component: { template: '<div>This is a custom rejection</div>' },
+    })
+
+    const route = createRoute({
+      name: 'route',
+      component,
+      path: '/',
+    })
+
+    const router = createRouter([route], { initialUrl: '/', rejections: [rejection] })
+
+    router.onRejection(onRejection)
+     
+    await router.start()
+
+    router.reject('CustomRejection')
+
+    expect(onRejection).toHaveBeenCalledWith('CustomRejection', {
+      to: null,
+      from: null,
+    })
+  })
+
+  test('given route hooks that trigger a rejection, calls the onRejection callback with the correct context', async () => {
+    const onRejection = vi.fn()
+
+    const route = createRoute({
+      name: 'route-with-rejection',
+      component,
+      path: '/',
+    })
+
+    route.onBeforeRouteEnter((_to, { reject }) => {
+      reject('NotFound')
+    })
+
+    const router = createRouter([route], { initialUrl: '/' })
+
+    router.onRejection(onRejection)
+
+    await router.start()
+
+    expect(onRejection).toHaveBeenCalledWith('NotFound', {
+      to: expect.objectContaining({
+        name: 'route-with-rejection',
+      }),
+      from: null,
+    })
   })
 })
 
