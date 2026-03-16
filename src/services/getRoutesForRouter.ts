@@ -2,7 +2,7 @@ import { Route, Routes } from '@/types/route'
 import { RouterPlugin } from '@/types/routerPlugin'
 import { DuplicateNamesError } from '@/errors/duplicateNamesError'
 import { isNamedRoute } from '@/utilities/isNamedRoute'
-import { contextIsRoute, RouteContext } from '@/types/routeContext'
+import { contextIsRoute } from '@/types/routeContext'
 import { insertBaseRoute } from './insertBaseRoute'
 
 type RouterRoutes = {
