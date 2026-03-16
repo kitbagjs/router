@@ -2,7 +2,7 @@ import { Route, Routes } from '@/types/route'
 import { RouterPlugin } from '@/types/routerPlugin'
 import { DuplicateNamesError } from '@/errors/duplicateNamesError'
 import { isNamedRoute } from '@/utilities/isNamedRoute'
-import { RouteContext } from '@/types/routeContext'
+import { contextIsRoute, RouteContext } from '@/types/routeContext'
 import { insertBaseRoute } from './insertBaseRoute'
 
 type RouterRoutes = {
@@ -67,10 +67,6 @@ export function getRoutesForRouter(routes: Routes | Routes[], plugins: RouterPlu
     routes: Array.from(routerRoutes.values()).sort(sortByDepthDescending),
     getRouteByName: (name: string) => routerRoutes.get(name),
   }
-}
-
-function contextIsRoute(context: RouteContext): context is Route {
-  return 'id' in context
 }
 
 function isRoutes(routes: Routes | Route): routes is Routes {
