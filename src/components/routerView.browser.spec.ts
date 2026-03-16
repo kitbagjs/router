@@ -638,3 +638,44 @@ test('Renders correct component when using default slot', async () => {
 
   expect(wrapper.text()).toBe('My Rejection')
 })
+
+test('Renders the rejection component when the rejection is not registered on the router', async () => {
+  const rejectionText = 'Rejection content to render'
+  const myRejection = createRejection({
+    type: 'myRejection',
+    component: {
+      template: rejectionText
+    },
+  })
+
+  const route = createRoute({
+    name: 'foo',
+    path: '/',
+    context: [myRejection],
+    component: { template: 'Should not be rendered' },
+  })
+
+  route.onBeforeRouteEnter((_to, { reject }) => {
+    throw reject('myRejection')
+  })
+
+  const router = createRouter([route], {
+    initialUrl: '/',
+  })
+
+  await router.start()
+
+  const root = {
+    template: '<RouterView/>',
+  }
+
+  const wrapper = mount(root, {
+    global: {
+      plugins: [router],
+    },
+  })
+
+  await flushPromises()
+
+  expect(wrapper.text()).toBe(rejectionText)
+})
