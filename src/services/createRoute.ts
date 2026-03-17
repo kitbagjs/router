@@ -2,7 +2,7 @@ import { markRaw } from 'vue'
 import { createRouteId } from '@/services/createRouteId'
 import { CreateRouteOptions, PropsGetter, CreateRouteProps, ToRoute, combineRoutes, isWithParent, RouterViewPropsGetter } from '@/types/createRouteOptions'
 import { toName } from '@/types/name'
-import { Route } from '@/types/route'
+import { IS_ROUTE_SYMBOL, Route, RouteInternal } from '@/types/route'
 import { createRouteHooks } from '@/services/createRouteHooks'
 import { toUrlPart, toUrlQueryPart } from '@/services/withParams'
 import { createUrl } from '@/services/createUrl'
@@ -57,6 +57,10 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
     hash,
   })
 
+  const internal = {
+    [IS_ROUTE_SYMBOL]: true,
+  } satisfies RouteInternal
+
   const route = {
     id,
     matched: rawRoute,
@@ -72,6 +76,7 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
     ...url,
     ...hooks,
     ...title,
+    ...internal,
   } satisfies Route & InternalRouteHooks & RouteRedirects & WithHooks & RouteSetTitle
 
   if (isWithParent(options)) {

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/method-signature-style */
 import { OptionalUrlParam, UrlQueryPart, ToUrlQueryPart, RequiredUrlParam, ToUrlPart, UrlParams, UrlPart } from '@/services/withParams'
 import { ExtractParamType } from '@/types/params'
 import { AllPropertiesAreOptional, Identity } from '@/types/utilities'
@@ -7,6 +6,12 @@ import { ParamGetSet } from '@/types/paramTypes'
 import { MakeOptional } from '@/utilities/makeOptional'
 
 export const IS_URL_SYMBOL = Symbol('IS_URL_SYMBOL')
+
+export type UrlInternal = {
+  schema: Record<string, UrlPart>,
+  params: {},
+  [IS_URL_SYMBOL]: true,
+}
 
 export type CreateUrlOptions = {
   host?: string | UrlPart | undefined,
@@ -28,7 +33,7 @@ export type ToUrl<
  * Type guard to assert that a url has a schema.
  * @internal
  */
-export function isUrlWithSchema(url: unknown): url is Url & { schema: Record<string, UrlPart> } {
+export function isUrl(url: unknown): url is Url & UrlInternal {
   return typeof url === 'object' && url !== null && IS_URL_SYMBOL in url
 }
 

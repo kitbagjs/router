@@ -4,14 +4,6 @@ import { GenericRoute, Route, Routes } from './route'
 
 export type RouteContext = GenericRoute | Rejection
 
-export function contextIsRoute(context: RouteContext): context is Route {
-  return 'id' in context
-}
-
-export function contextIsRejection(context: RouteContext): context is Rejection {
-  return !contextIsRoute(context)
-}
-
 export type ToRouteContext<TContext extends RouteContext[] | readonly RouteContext[] | undefined> = TContext extends RouteContext[]
   ? TContext
   : []

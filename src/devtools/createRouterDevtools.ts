@@ -7,7 +7,7 @@ import { isBrowser } from '@/utilities'
 import { getDevtoolsLabel } from './getDevtoolsLabel'
 import { CustomInspectorNode, CustomInspectorState, InspectorNodeTag } from './types'
 import { shouldShowRoute } from './filters'
-import { isUrlWithSchema } from '@/main'
+import { isUrl } from '@/types/url'
 
 // Support multiple router instances
 const getRouterId = createUniqueIdSequence()
@@ -87,7 +87,7 @@ function getRouteMatchStatus(
 function getInspectorStateOptionsForRoute(route: Route): CustomInspectorState[string] {
   const fields: CustomInspectorState[string] = []
 
-  if (!isUrlWithSchema(route)) {
+  if (!isUrl(route)) {
     return fields
   }
 

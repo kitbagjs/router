@@ -6,6 +6,16 @@ import { CreateRouteOptions } from '@/types/createRouteOptions'
 import { RouteContext } from '@/types/routeContext'
 import { Url } from '@/types/url'
 
+export const IS_ROUTE_SYMBOL = Symbol('IS_ROUTE_SYMBOL')
+
+export function isRoute(value: unknown): value is Route & RouteInternal {
+  return typeof value === 'object' && value !== null && IS_ROUTE_SYMBOL in value
+}
+
+export type RouteInternal = {
+  [IS_ROUTE_SYMBOL]: true,
+}
+
 /**
  * Represents an immutable array of Route instances. Return value of `createRoute`, expected param for `createRouter`.
  */

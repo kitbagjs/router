@@ -23,7 +23,7 @@ export function createResolvedRoute(route: Route, params: Record<string, unknown
     params,
     href,
     title,
-  }
+  } satisfies ResolvedRoute
 
   getRouteTitle(resolvedRoute).then(resolveTitle)
 

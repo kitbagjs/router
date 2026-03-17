@@ -12,7 +12,7 @@ import { RouterReject } from '@/types/routerReject'
 import { RouterPlugin } from '@/types/routerPlugin'
 import { RoutesName } from '@/types/routesMap'
 import { ExtractRejections, ExtractRejectionTypes, Rejections } from '@/types/rejection'
-import { BuiltInRejectionType } from '@/services/createRouterReject'
+import { BuiltInRejectionType } from '@/types/rejection'
 
 /**
  * Options to initialize a {@link Router} instance.
