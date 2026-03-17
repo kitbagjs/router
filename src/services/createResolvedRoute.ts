@@ -4,7 +4,7 @@ import { getStateValues } from '@/services/state'
 import { RouterResolveOptions } from '@/types/routerResolve'
 import { ResolvedRoute } from '@/types/resolved'
 import { Route } from '@/types/route'
-import { GetTitle, isRouteWithTitleGetter } from '@/types/titles'
+import { isRouteWithTitleGetter } from '@/types/titles'
 
 export function createResolvedRoute(route: Route, params: Record<string, unknown> = {}, options: RouterResolveOptions = {}): ResolvedRoute {
   const routeUrl = route.stringify(params)
@@ -14,14 +14,6 @@ export function createResolvedRoute(route: Route, params: Record<string, unknown
   })
   const { query, hash } = parseUrl(href)
 
-  const getTitle: GetTitle = async (to) => {
-    if (isRouteWithTitleGetter(route)) {
-      return route.getTitle(to)
-    }
-
-    return undefined
-  }
-
   const resolvedRoute = {
     ...route,
     query: createResolvedRouteQuery(query),
@@ -29,8 +21,17 @@ export function createResolvedRoute(route: Route, params: Record<string, unknown
     hash,
     params,
     href,
-    getTitle,
+    title: Promise.resolve(undefined),
   }
 
-  return resolvedRoute
+  return {
+    ...resolvedRoute,
+    title: new Promise<string | undefined>((resolve) => {
+      if (isRouteWithTitleGetter(route)) {
+        resolve(route.getTitle(resolvedRoute))
+      }
+
+      resolve(undefined)
+    }),
+  }
 }
