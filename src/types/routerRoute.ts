@@ -32,7 +32,11 @@ export type RouterRoute<TRoute extends ResolvedRoute = ResolvedRoute> = {
    * String value of the resolved URL.
    */
   readonly href: TRoute['href'],
-
+  /**
+   * Title of the route.
+   */
+  readonly title: TRoute['title'],
+  
   params: TRoute['params'],
   state: TRoute['state'],
 

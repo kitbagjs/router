@@ -45,6 +45,10 @@ export type ResolvedRoute<TRoute extends Route = Route> = Readonly<{
    * Hash value of the route.
    */
   hash: string,
+  /**
+   * Title of the route.
+   */
+  title: Promise<string | undefined>,
 }>
 
 /**

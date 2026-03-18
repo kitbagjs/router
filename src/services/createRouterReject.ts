@@ -52,7 +52,7 @@ export function createRouterReject(rejections: Rejection[]): CreateRouterReject 
       state: {},
       href: '/',
       hash: '',
-      getTitle: async () => undefined,
+      title: Promise.resolve(undefined),
     }
   }
 

@@ -11,7 +11,7 @@ export function setDocumentTitle(to: ResolvedRoute): void {
 
   defaultTitle ??= document.title
 
-  to.getTitle(to).then((value) => {
+  to.title.then((value) => {
     document.title = value ?? defaultTitle ?? ''
   })
 }
