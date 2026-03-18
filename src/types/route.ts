@@ -5,6 +5,7 @@ import { LastInArray } from '@/types/utilities'
 import { CreateRouteOptions } from '@/types/createRouteOptions'
 import { RouteContext } from '@/types/routeContext'
 import { Url } from '@/types/url'
+import { GetTitle } from '@/types/titles'
 
 export const IS_ROUTE_SYMBOL = Symbol('IS_ROUTE_SYMBOL')
 
@@ -14,11 +15,8 @@ export function isRoute(value: unknown): value is Route & RouteInternal {
 
 export type RouteInternal = {
   [IS_ROUTE_SYMBOL]: true,
-  /**
-  * A value that represents how many parents a route has. Used for route matching
-  * @internal
-  */
   depth: number,
+  getTitle: GetTitle,
 }
 
 /**

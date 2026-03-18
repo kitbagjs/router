@@ -11,6 +11,7 @@ import { combineUrl } from '@/services/combineUrl'
 import { ExternalRouteHooks, WithHooks } from '@/types/hooks'
 import { ExtractRouteContext } from '@/types/routeContext'
 import { RouteRedirects } from '@/types/redirects'
+import { createRouteTitle, RouteSetTitle } from '@/types/titles'
 
 export function createExternalRoute<
   const TOptions extends CreateRouteOptions & WithHost & WithoutParent
@@ -34,6 +35,7 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
   const host = toUrlPart(options.host)
   const context = options.context ?? []
   const { store, ...hooks } = createRouteHooks()
+  const { getTitle, setTitle } = createRouteTitle(options.parent)
   const redirects = createRouteRedirects({
     getRoute: () => route,
   })
@@ -49,6 +51,7 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
   const internal = {
     [IS_ROUTE_SYMBOL]: true,
     depth: 1,
+    getTitle,
   } satisfies RouteInternal
 
   const route = {
@@ -60,11 +63,12 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
     meta,
     state: {},
     context,
+    setTitle,
     ...hooks,
     ...redirects,
     ...url,
     ...internal,
-  } satisfies Route & RouteInternal & WithHooks & ExternalRouteHooks & RouteRedirects
+  } satisfies Route & RouteInternal & WithHooks & ExternalRouteHooks & RouteRedirects & RouteSetTitle
 
   if (isWithParent(options)) {
     const merged = combineRoutes(options.parent, route)

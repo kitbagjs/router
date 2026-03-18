@@ -44,7 +44,7 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
   const state = options.state ?? {}
   const context = options.context ?? []
   const { store, ...hooks } = createRouteHooks()
-  const title = createRouteTitle(options.parent)
+  const { setTitle, getTitle } = createRouteTitle(options.parent)
   const rawRoute = markRaw({ ...options, id, meta, state, props, name })
 
   const redirects = createRouteRedirects({
@@ -60,6 +60,7 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
   const internal = {
     [IS_ROUTE_SYMBOL]: true,
     depth: 1,
+    getTitle,
   } satisfies RouteInternal
 
   const route = {
@@ -72,10 +73,10 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
     state,
     context,
     prefetch: options.prefetch,
+    setTitle,
     ...redirects,
     ...url,
     ...hooks,
-    ...title,
     ...internal,
   } satisfies Route & RouteInternal & InternalRouteHooks & RouteRedirects & WithHooks & RouteSetTitle
 
