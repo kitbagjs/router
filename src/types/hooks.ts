@@ -1,35 +1,18 @@
 import { Hooks } from '@/models/hooks'
 import { ResolvedRoute, RouterResolvedRouteUnion, ResolvedRouteUnion } from '@/types/resolved'
 import { MaybePromise } from '@/types/utilities'
-import { Route, Routes } from '@/types/route'
+import { isRoute, Route, Routes } from '@/types/route'
 import { RouterReject } from '@/types/routerReject'
 import { RouterPush } from '@/types/routerPush'
 import { RouterReplace } from '@/types/routerReplace'
-import { Rejection, Rejections } from '@/types/rejection'
+import { isRejection, Rejection, Rejections } from '@/types/rejection'
 import { RouteContext, RouteContextToRejection, RouteContextToRoute } from '@/types/routeContext'
 import { RouterAbort } from '@/types/routerAbort'
 import { CallbackContextAbort, CallbackContextPush, CallbackContextReject, CallbackContextSuccess } from '@/types/callbackContext'
 import { RouteUpdate } from '@/types/routeUpdate'
 
-/**
- * The stores for routes including ancestors.
- * Order of routes will be from greatest ancestor to narrowest matched.
- * @internal
- */
-export type WithHooks = {
-  hooks: Hooks[],
-}
-
-/**
- * Type guard to assert that a route has hooks.
- * @internal
- */
-function isWithHooks<T extends Record<string, unknown>>(route: T): route is T & WithHooks {
-  return 'hooks' in route
-}
-
-export function getHooks(route: Record<string, unknown> | undefined | null): Hooks[] {
-  return !!route && isWithHooks(route) ? route.hooks : []
+export function getHooks(value: Record<string, unknown> | undefined | null): Hooks[] {
+  return !!value && (isRoute(value) || isRejection(value)) ? value.hooks : []
 }
 
 export function combineHooks(parent: Route, child: Route): Hooks[] {

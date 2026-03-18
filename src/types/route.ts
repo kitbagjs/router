@@ -6,6 +6,7 @@ import { CreateRouteOptions } from '@/types/createRouteOptions'
 import { RouteContext } from '@/types/routeContext'
 import { Url } from '@/types/url'
 import { GetTitle } from '@/types/titles'
+import { Hooks } from '@/models/hooks'
 
 export const IS_ROUTE_SYMBOL = Symbol('IS_ROUTE_SYMBOL')
 
@@ -16,6 +17,7 @@ export function isRoute(value: unknown): value is Route & RouteInternal {
 export type RouteInternal = {
   [IS_ROUTE_SYMBOL]: true,
   depth: number,
+  hooks: Hooks[],
   getTitle: GetTitle,
 }
 

@@ -8,7 +8,7 @@ import { toUrlPart, toUrlQueryPart } from '@/services/withParams'
 import { createUrl } from '@/services/createUrl'
 import { createRouteRedirects } from '@/services/createRouteRedirects'
 import { combineUrl } from '@/services/combineUrl'
-import { InternalRouteHooks, WithHooks } from '@/types/hooks'
+import { InternalRouteHooks } from '@/types/hooks'
 import { ExtractRouteContext } from '@/types/routeContext'
 import { RouteRedirects } from '@/types/redirects'
 import { createRouteTitle, RouteSetTitle } from '@/types/titles'
@@ -60,6 +60,7 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
   const internal = {
     [IS_ROUTE_SYMBOL]: true,
     depth: 1,
+    hooks: [store],
     getTitle,
   } satisfies RouteInternal
 
@@ -67,7 +68,6 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
     id,
     matched: rawRoute,
     matches: [rawRoute],
-    hooks: [store],
     name,
     meta,
     state,
@@ -78,7 +78,7 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
     ...url,
     ...hooks,
     ...internal,
-  } satisfies Route & RouteInternal & InternalRouteHooks & RouteRedirects & WithHooks & RouteSetTitle
+  } satisfies Route & RouteInternal & InternalRouteHooks & RouteRedirects & RouteSetTitle
 
   if (isWithParent(options)) {
     const merged = combineRoutes(options.parent, route)

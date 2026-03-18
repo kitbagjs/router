@@ -2,6 +2,7 @@ import { Component, Ref } from 'vue'
 import { ResolvedRoute } from '@/types/resolved'
 import { Router } from '@/types/router'
 import { RouterReject } from '@/types/routerReject'
+import { Hooks } from '@/models/hooks'
 
 export const BUILT_IN_REJECTION_TYPES = ['NotFound'] as const
 export type BuiltInRejectionType = (typeof BUILT_IN_REJECTION_TYPES)[number]
@@ -16,8 +17,9 @@ export function isRejection(value: unknown): value is Rejection & RejectionInter
 }
 
 export type RejectionInternal = {
-  route: ResolvedRoute,
   [IS_REJECTION_SYMBOL]: true,
+  route: ResolvedRoute,
+  hooks: Hooks[],
 }
 
 /**

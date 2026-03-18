@@ -8,7 +8,7 @@ import { createRouteHooks } from '@/services/createRouteHooks'
 import { createUrl } from '@/services/createUrl'
 import { createRouteRedirects } from '@/services/createRouteRedirects'
 import { combineUrl } from '@/services/combineUrl'
-import { ExternalRouteHooks, WithHooks } from '@/types/hooks'
+import { ExternalRouteHooks } from '@/types/hooks'
 import { ExtractRouteContext } from '@/types/routeContext'
 import { RouteRedirects } from '@/types/redirects'
 import { createRouteTitle, RouteSetTitle } from '@/types/titles'
@@ -51,6 +51,7 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
   const internal = {
     [IS_ROUTE_SYMBOL]: true,
     depth: 1,
+    hooks: [store],
     getTitle,
   } satisfies RouteInternal
 
@@ -58,7 +59,6 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
     id,
     matched: rawRoute,
     matches: [rawRoute],
-    hooks: [store],
     name,
     meta,
     state: {},
@@ -68,7 +68,7 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
     ...redirects,
     ...url,
     ...internal,
-  } satisfies Route & RouteInternal & WithHooks & ExternalRouteHooks & RouteRedirects & RouteSetTitle
+  } satisfies Route & RouteInternal & ExternalRouteHooks & RouteRedirects & RouteSetTitle
 
   if (isWithParent(options)) {
     const merged = combineRoutes(options.parent, route)

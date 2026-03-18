@@ -1,7 +1,7 @@
 import { Component } from 'vue'
 import { CombineMeta, combineMeta } from '@/services/combineMeta'
 import { CombineState, combineState } from '@/services/combineState'
-import { combineHooks, WithHooks } from '@/types/hooks'
+import { combineHooks } from '@/types/hooks'
 import { Param } from '@/types/paramTypes'
 import { PrefetchConfig } from '@/types/prefetch'
 import { RouteMeta } from '@/types/register'
@@ -201,7 +201,7 @@ export function combineRoutes(parent: Route, child: Route): Route {
     matches: [...parent.matches, child.matched],
     context: [...parent.context, ...child.context],
     depth: parent.depth + 1,
-  } satisfies Route & RouteInternal & WithHooks
+  } satisfies Route & RouteInternal
 
   return route
 }

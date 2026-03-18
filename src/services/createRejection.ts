@@ -1,6 +1,6 @@
 import { createRejectionHooks } from '@/services/createRejectionHooks'
 import { genericRejection } from '@/components/rejection'
-import { RejectionHooks, WithHooks } from '@/types/hooks'
+import { RejectionHooks } from '@/types/hooks'
 import { IS_REJECTION_SYMBOL, Rejection, RejectionInternal } from '@/types/rejection'
 import { Component, markRaw } from 'vue'
 import { ResolvedRoute } from '@/types/resolved'
@@ -19,17 +19,17 @@ export function createRejection(options: { type: string, component?: Component }
   const { store, ...hooks } = createRejectionHooks()
 
   const internal = {
-    route,
     [IS_REJECTION_SYMBOL]: true,
+    route,
+    hooks: [store],
   } satisfies RejectionInternal
 
   const rejection = {
     type: options.type,
-    hooks: [store],
     component,
     ...hooks,
     ...internal,
-  } satisfies Rejection & RejectionInternal & WithHooks & RejectionHooks
+  } satisfies Rejection & RejectionInternal & RejectionHooks
 
   return rejection
 }
