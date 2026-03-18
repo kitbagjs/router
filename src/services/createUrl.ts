@@ -108,9 +108,9 @@ export function createUrl(urlOrOptions: CreateUrlOptions): Url {
   }
 
   const internal = {
+    [IS_URL_SYMBOL]: true,
     schema: { host, path, query, hash },
     params: {},
-    [IS_URL_SYMBOL]: true,
   } as const satisfies UrlInternal
 
   const url = {
