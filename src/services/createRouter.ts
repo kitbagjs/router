@@ -40,6 +40,7 @@ import { setupRouterDevtools } from '@/devtools/createRouterDevtools'
 import { getMatchForUrl } from './getMatchesForUrl'
 import { pathHasTrailingSlash, removeTrailingSlashesFromPath } from '@/utilities/trailingSlashes'
 import { setDocumentTitle } from '@/utilities/setDocumentTitle'
+import { contextIsRejection } from '@/types/routeContext'
 
 type RouterUpdateOptions = {
   replace?: boolean,
@@ -88,12 +89,13 @@ export function createRouter<
 >(routesOrArrayOfRoutes: TRoutes | TRoutes[], options?: TOptions, plugins: TPlugin[] = []): Router<TRoutes, TOptions, TPlugin> {
   const isGlobalRouter = options?.isGlobalRouter ?? true
   const routerKey = isGlobalRouter ? routerInjectionKey : Symbol()
+  const shouldRemoveTrailingSlashes = options?.removeTrailingSlashes ?? true
+  const { routes, getRouteByName } = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options?.base)
   const rejections = [
+    ...routes.flatMap((route) => route.context).filter(contextIsRejection),
     ...plugins.flatMap((plugin) => plugin.rejections),
     ...options?.rejections ?? [],
   ]
-  const shouldRemoveTrailingSlashes = options?.removeTrailingSlashes ?? true
-  const { routes, getRouteByName } = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options?.base)
   const hooks = createRouterHooks()
 
   hooks.addGlobalRouteHooks(getGlobalHooksForRouter(plugins))
