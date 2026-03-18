@@ -4,18 +4,6 @@ import { RouterReplace } from './routerReplace'
 import { UrlParamsReading, UrlParamsWriting } from './url'
 import { AllPropertiesAreOptional, MaybePromise } from './utilities'
 
-/**
- * redirect is returned by createRouteHooks but is not part of the Route type, so we use this type to assert that it exists.
- */
-type RouteWithRedirect<TRoute extends Route = Route> = TRoute & { redirect: RouteRedirect }
-
-/**
- * Type guard to assert that a route has a redirect hook.
- * @internal
- */
-export function isRouteWithRedirect(route: Route): route is RouteWithRedirect {
-  return 'redirect' in route
-}
 
 export type RouteRedirects<
   TRoute extends Route = Route

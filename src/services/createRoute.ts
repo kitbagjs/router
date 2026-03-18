@@ -43,7 +43,7 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
   const meta = options.meta ?? {}
   const state = options.state ?? {}
   const context = options.context ?? []
-  const { store, ...hooks } = createRouteHooks()
+  const { store, redirect, ...hooks } = createRouteHooks()
   const { setTitle, getTitle } = createRouteTitle(options.parent)
   const rawRoute = markRaw({ ...options, id, meta, state, props, name })
 
@@ -62,6 +62,7 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
     depth: 1,
     hooks: [store],
     getTitle,
+    redirect,
   } satisfies RouteInternal
 
   const route = {

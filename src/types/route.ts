@@ -7,6 +7,7 @@ import { RouteContext } from '@/types/routeContext'
 import { Url } from '@/types/url'
 import { GetTitle } from '@/types/titles'
 import { Hooks } from '@/models/hooks'
+import { RouteRedirect } from './redirects'
 
 export const IS_ROUTE_SYMBOL = Symbol('IS_ROUTE_SYMBOL')
 
@@ -18,6 +19,7 @@ export type RouteInternal = {
   [IS_ROUTE_SYMBOL]: true,
   depth: number,
   hooks: Hooks[],
+  redirect: RouteRedirect,
   getTitle: GetTitle,
 }
 

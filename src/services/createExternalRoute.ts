@@ -34,7 +34,7 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
   const meta = options.meta ?? {}
   const host = toUrlPart(options.host)
   const context = options.context ?? []
-  const { store, ...hooks } = createRouteHooks()
+  const { store, redirect, ...hooks } = createRouteHooks()
   const { getTitle, setTitle } = createRouteTitle(options.parent)
   const redirects = createRouteRedirects({
     getRoute: () => route,
@@ -53,6 +53,7 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
     depth: 1,
     hooks: [store],
     getTitle,
+    redirect,
   } satisfies RouteInternal
 
   const route = {
