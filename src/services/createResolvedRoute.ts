@@ -13,6 +13,7 @@ export function createResolvedRoute(route: Route, params: Record<string, unknown
     hash: options.hash,
   })
   const { query, hash } = parseUrl(href)
+  const { promise: title, resolve: resolveTitle } = Promise.withResolvers<string | undefined>()
 
   const resolvedRoute = {
     ...route,
@@ -21,17 +22,18 @@ export function createResolvedRoute(route: Route, params: Record<string, unknown
     hash,
     params,
     href,
-    title: Promise.resolve(undefined),
+    title,
   }
 
-  return {
-    ...resolvedRoute,
-    title: new Promise<string | undefined>((resolve) => {
-      if (isRouteWithTitleGetter(route)) {
-        resolve(route.getTitle(resolvedRoute))
-      }
+  getRouteTitle(resolvedRoute).then(resolveTitle)
 
-      resolve(undefined)
-    }),
+  return resolvedRoute
+}
+
+async function getRouteTitle(route: ResolvedRoute): Promise<string | undefined> {
+  if (isRouteWithTitleGetter(route)) {
+    return route.getTitle(route)
   }
+
+  return undefined
 }
