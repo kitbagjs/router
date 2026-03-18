@@ -1,4 +1,4 @@
-import { isRoute, Route, Routes } from '@/types/route'
+import { isRoute, Route, RouteInternal, Routes } from '@/types/route'
 import { RouterPlugin } from '@/types/routerPlugin'
 import { DuplicateNamesError } from '@/errors/duplicateNamesError'
 import { isNamedRoute } from '@/utilities/isNamedRoute'
@@ -15,7 +15,7 @@ import { createRejection } from '@/services/createRejection'
  */
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export function getRoutesForRouter(routes: Routes | Routes[], plugins: RouterPlugin[] = [], options: RouterOptions = {}) {
-  const routerRoutes = new Map<string, Route>()
+  const routerRoutes = new Map<string, Route & RouteInternal>()
   const routerRejections = new Map<string, (Rejection & RejectionInternal)>()
 
   const allRoutes = [
@@ -30,7 +30,7 @@ export function getRoutesForRouter(routes: Routes | Routes[], plugins: RouterPlu
   ]
 
   function addRoute(route: Route): void {
-    if (!isNamedRoute(route)) {
+    if (!isRoute(route) || !isNamedRoute(route)) {
       return
     }
 
@@ -121,6 +121,6 @@ function isRejections(rejections: Rejections | Rejection): rejections is Rejecti
   return Array.isArray(rejections)
 }
 
-function sortByDepthDescending(aRoute: Route, bRoute: Route): number {
+function sortByDepthDescending(aRoute: Route & RouteInternal, bRoute: Route & RouteInternal): number {
   return bRoute.depth - aRoute.depth
 }

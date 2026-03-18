@@ -59,6 +59,7 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
 
   const internal = {
     [IS_ROUTE_SYMBOL]: true,
+    depth: 1,
   } satisfies RouteInternal
 
   const route = {
@@ -70,14 +71,13 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
     meta,
     state,
     context,
-    depth: 1,
     prefetch: options.prefetch,
     ...redirects,
     ...url,
     ...hooks,
     ...title,
     ...internal,
-  } satisfies Route & InternalRouteHooks & RouteRedirects & WithHooks & RouteSetTitle
+  } satisfies Route & RouteInternal & InternalRouteHooks & RouteRedirects & WithHooks & RouteSetTitle
 
   if (isWithParent(options)) {
     const merged = combineRoutes(options.parent, route)

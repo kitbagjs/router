@@ -6,7 +6,6 @@ import { Component, markRaw } from 'vue'
 import { ResolvedRoute } from '@/types/resolved'
 import { createRouteId } from './createRouteId'
 import { createResolvedRouteQuery } from './createResolvedRouteQuery'
-import { RouteGetTitle } from '@/types/titles'
 
 export function createRejection<TType extends string>(options: {
   type: TType,
@@ -30,7 +29,7 @@ export function createRejection(options: { type: string, component?: Component }
     component,
     ...hooks,
     ...internal,
-  } satisfies Rejection & WithHooks & RejectionHooks
+  } satisfies Rejection & RejectionInternal & WithHooks & RejectionHooks
 
   return rejection
 }
@@ -53,8 +52,8 @@ function getRejectionRoute(type: string, component: Component): ResolvedRoute {
     state: {},
     href: '/',
     hash: '',
-    getTitle: async () => undefined,
-  } satisfies ResolvedRoute & RouteGetTitle
+    title: Promise.resolve(undefined),
+  } satisfies ResolvedRoute
 
   return resolved
 }

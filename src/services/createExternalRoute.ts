@@ -2,7 +2,7 @@ import { markRaw } from 'vue'
 import { createRouteId } from '@/services/createRouteId'
 import { combineRoutes, CreateRouteOptions, isWithParent, ToRoute, WithHost, WithoutHost, WithoutParent, WithParent } from '@/types/createRouteOptions'
 import { toName } from '@/types/name'
-import { Route } from '@/types/route'
+import { IS_ROUTE_SYMBOL, Route, RouteInternal } from '@/types/route'
 import { toUrlPart, toUrlQueryPart } from '@/services/withParams'
 import { createRouteHooks } from '@/services/createRouteHooks'
 import { createUrl } from '@/services/createUrl'
@@ -46,6 +46,11 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
     hash,
   })
 
+  const internal = {
+    [IS_ROUTE_SYMBOL]: true,
+    depth: 1,
+  } satisfies RouteInternal
+
   const route = {
     id,
     matched: rawRoute,
@@ -53,13 +58,13 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
     hooks: [store],
     name,
     meta,
-    depth: 1,
     state: {},
     context,
     ...hooks,
     ...redirects,
     ...url,
-  } satisfies Route & WithHooks & ExternalRouteHooks & RouteRedirects
+    ...internal,
+  } satisfies Route & RouteInternal & WithHooks & ExternalRouteHooks & RouteRedirects
 
   if (isWithParent(options)) {
     const merged = combineRoutes(options.parent, route)

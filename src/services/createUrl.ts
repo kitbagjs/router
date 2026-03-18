@@ -113,13 +113,15 @@ export function createUrl(urlOrOptions: CreateUrlOptions): Url {
     [IS_URL_SYMBOL]: true,
   } as const satisfies UrlInternal
 
-  return {
+  const url = {
     ...internal,
     isRelative: !stringHasValue(options.host.value),
     stringify,
     parse,
     tryParse,
-  }
+  } satisfies Url & UrlInternal
+
+  return url
 }
 
 function cleanHash(hash: UrlPart): UrlPart {

@@ -3,7 +3,7 @@ import { stringHasValue } from '@/utilities/guards'
 import { createUrl } from '@/services/createUrl'
 import { combineUrl } from '@/services/combineUrl'
 
-export function insertBaseRoute(route: Route, base?: string): Route {
+export function insertBaseRoute<T extends Route>(route: T, base?: string): T {
   if (!stringHasValue(base)) {
     return route
   }

@@ -14,6 +14,11 @@ export function isRoute(value: unknown): value is Route & RouteInternal {
 
 export type RouteInternal = {
   [IS_ROUTE_SYMBOL]: true,
+  /**
+  * A value that represents how many parents a route has. Used for route matching
+  * @internal
+  */
+  depth: number,
 }
 
 /**
@@ -76,11 +81,6 @@ export type Route<
    * Related routes and rejections for the route. The context is exposed to the hooks and props callback functions for this route.
    */
   context: TContext,
-  /**
-  * A value that represents how many parents a route has. Used for route matching
-  * @internal
-  */
-  depth: number,
 }
 
 export type GenericRoute = Url & {
@@ -91,5 +91,4 @@ export type GenericRoute = Url & {
   meta: RouteMeta,
   state: Record<string, Param>,
   prefetch?: PrefetchConfig,
-  depth: number,
 }
