@@ -294,6 +294,41 @@ test('does not call router.push when middle mouse button is clicked', async () =
   expect(spy).not.toHaveBeenCalled()
 })
 
+test('does not call router.push when anchor has target="_blank"', async () => {
+  const router = createRouter([
+    createRoute({
+      name: 'routeA',
+      path: '/routeA',
+      component: { render: () => h(RouterLink, { to: (resolve) => resolve('routeB'), target: '_blank' }) },
+    }),
+    createRoute({
+      name: 'routeB',
+      path: '/routeB',
+      component,
+    }),
+  ], {
+    initialUrl: '/routeA',
+  })
+
+  await router.start()
+
+  const spy = vi.spyOn(router, 'push')
+
+  const root = {
+    template: '<RouterView />',
+  }
+
+  const wrapper = mount(root, {
+    global: {
+      plugins: [router],
+    },
+  })
+
+  wrapper.find('a').trigger('click')
+
+  expect(spy).not.toHaveBeenCalled()
+})
+
 test('to prop as Url renders and routes correctly', async () => {
   const route = createRoute({
     name: 'route',

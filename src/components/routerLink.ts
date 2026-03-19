@@ -76,7 +76,7 @@ export function createRouterLink<TRouter extends Router>(routerKey: InjectionKey
     }
 
     function onClick(event: MouseEvent): void {
-      if (shouldAllowDefault(event)) {
+      if (shouldAllowDefault(event, element.value)) {
         return
       }
 
@@ -108,6 +108,12 @@ export function createRouterLink<TRouter extends Router>(routerKey: InjectionKey
   })
 }
 
-function shouldAllowDefault(event: MouseEvent): boolean {
-  return event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey
+function shouldAllowDefault(event: MouseEvent, element: HTMLElement | undefined): boolean {
+  if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+    return true
+  }
+
+  const target = element?.getAttribute('target')
+
+  return !!target && /\b_blank\b/i.test(target)
 }
