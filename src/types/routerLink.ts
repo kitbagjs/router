@@ -16,7 +16,7 @@ export type RouterLinkProps<TRouter extends Router> = RouterPushOptions & {
    */
   prefetch?: PrefetchConfig,
   /**
-   * The target attribute for the anchor element. When set to "_blank".
+   * The target attribute for the anchor element.
    */
   target?: string,
 }
