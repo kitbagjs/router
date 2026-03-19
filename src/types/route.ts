@@ -5,6 +5,23 @@ import { LastInArray } from '@/types/utilities'
 import { CreateRouteOptions } from '@/types/createRouteOptions'
 import { RouteContext } from '@/types/routeContext'
 import { Url } from '@/types/url'
+import { GetTitle } from '@/types/titles'
+import { Hooks } from '@/models/hooks'
+import { RouteRedirect } from './redirects'
+
+export const IS_ROUTE_SYMBOL = Symbol('IS_ROUTE_SYMBOL')
+
+export function isRoute(value: unknown): value is Route & RouteInternal {
+  return typeof value === 'object' && value !== null && IS_ROUTE_SYMBOL in value
+}
+
+export type RouteInternal = {
+  [IS_ROUTE_SYMBOL]: true,
+  depth: number,
+  hooks: Hooks[],
+  redirect: RouteRedirect,
+  getTitle: GetTitle,
+}
 
 /**
  * Represents an immutable array of Route instances. Return value of `createRoute`, expected param for `createRouter`.
@@ -66,11 +83,6 @@ export type Route<
    * Related routes and rejections for the route. The context is exposed to the hooks and props callback functions for this route.
    */
   context: TContext,
-  /**
-  * A value that represents how many parents a route has. Used for route matching
-  * @internal
-  */
-  depth: number,
 }
 
 export type GenericRoute = Url & {
@@ -81,5 +93,4 @@ export type GenericRoute = Url & {
   meta: RouteMeta,
   state: Record<string, Param>,
   prefetch?: PrefetchConfig,
-  depth: number,
 }

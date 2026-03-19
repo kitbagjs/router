@@ -1,5 +1,5 @@
-import { ResolvedRoute, ResolvedRouteUnion } from './resolved'
-import { Route } from './route'
+import { ResolvedRoute, ResolvedRouteUnion } from '@/types/resolved'
+import { isRoute, Route } from './route'
 import { MaybePromise } from './utilities'
 
 export type SetTitleContext = {
@@ -18,23 +18,12 @@ export type RouteSetTitle<TRoute extends Route = Route> = {
   setTitle: SetTitle<TRoute>,
 }
 
-export type RouteGetTitle<TRoute extends Route = Route> = {
-  /**
-   * @internal
-   * Gets the title for the route.
-   */
-  getTitle: GetTitle<TRoute>,
+type CreateRouteTitle = {
+  setTitle: SetTitle,
+  getTitle: GetTitle,
 }
 
-export function isRouteWithTitleSetter<T extends Route | ResolvedRoute>(route: T): route is T & RouteSetTitle {
-  return 'setTitle' in route
-}
-
-export function isRouteWithTitleGetter<T extends Route | ResolvedRoute>(route: T): route is T & RouteGetTitle {
-  return 'getTitle' in route
-}
-
-export function createRouteTitle(parent: Route | undefined): RouteGetTitle & RouteSetTitle {
+export function createRouteTitle(parent: Route | undefined): CreateRouteTitle {
   let setTitleCallback: SetTitleCallback | undefined
 
   const setTitle: SetTitle = (callback) => {
@@ -43,7 +32,7 @@ export function createRouteTitle(parent: Route | undefined): RouteGetTitle & Rou
 
   const getTitle: GetTitle = async (to) => {
     const getParentTitle = async (): Promise<string | undefined> => {
-      if (parent && isRouteWithTitleGetter(parent)) {
+      if (parent && isRoute(parent)) {
         return parent.getTitle(to)
       }
 

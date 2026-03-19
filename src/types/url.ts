@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/method-signature-style */
 import { OptionalUrlParam, UrlQueryPart, ToUrlQueryPart, RequiredUrlParam, ToUrlPart, UrlParams, UrlPart } from '@/services/withParams'
 import { ExtractParamType } from '@/types/params'
 import { AllPropertiesAreOptional, Identity } from '@/types/utilities'
@@ -7,6 +6,12 @@ import { ParamGetSet } from '@/types/paramTypes'
 import { MakeOptional } from '@/utilities/makeOptional'
 
 export const IS_URL_SYMBOL = Symbol('IS_URL_SYMBOL')
+
+export type UrlInternal = {
+  [IS_URL_SYMBOL]: true,
+  schema: Record<string, UrlPart>,
+  params: {},
+}
 
 export type CreateUrlOptions = {
   host?: string | UrlPart | undefined,
@@ -24,11 +29,7 @@ export type ToUrl<
   & ToUrlPart<TOptions['hash']>['params']
 >>
 
-/**
- * Type guard to assert that a url has a schema.
- * @internal
- */
-export function isUrlWithSchema(url: unknown): url is Url & { schema: Record<string, UrlPart> } {
+export function isUrl(url: unknown): url is Url & UrlInternal {
   return typeof url === 'object' && url !== null && IS_URL_SYMBOL in url
 }
 
@@ -65,11 +66,6 @@ export type Url<TParams extends UrlParams = UrlParams> = {
    * True if the url is relative. False if the url is absolute.
    */
   isRelative: boolean,
-  /**
-   * @internal
-   * Symbol to identify if the url is a valid url.
-   */
-  [IS_URL_SYMBOL]: true,
 }
 
 type UrlParamsArgs<

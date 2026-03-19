@@ -11,6 +11,17 @@ import { MaybePromise } from './utilities'
 
 export type EmptyRouterPlugin = RouterPlugin<[], []>
 
+export const IS_ROUTER_PLUGIN_SYMBOL = Symbol('IS_ROUTER_PLUGIN_SYMBOL')
+
+export function isRouterPlugin(value: unknown): value is RouterPlugin & RouterPluginInternal {
+  return typeof value === 'object' && value !== null && IS_ROUTER_PLUGIN_SYMBOL in value
+}
+
+export type RouterPluginInternal = {
+  [IS_ROUTER_PLUGIN_SYMBOL]: true,
+  hooks: Hooks,
+}
+
 export type CreateRouterPluginOptions<
   TRoutes extends Routes = Routes,
   TRejections extends Rejections = Rejections
@@ -25,19 +36,12 @@ export type RouterPlugin<
 > = {
   /**
    * The routes supplied by the plugin.
-   * @internal
   */
   routes: TRoutes,
   /**
   * The rejections supplied by the plugin.
-   * @internal
-   */
+  */
   rejections: TRejections,
-  /**
-   * The hooks supplied by the plugin.
-   * @internal
-   */
-  hooks: Hooks,
 }
 
 type PluginBeforeRouteHookContext<

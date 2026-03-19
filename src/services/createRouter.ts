@@ -6,7 +6,6 @@ import { parseUrl, updateUrl } from '@/services/urlParser'
 import { createPropStore } from '@/services/createPropStore'
 import { createRouterHistory } from '@/services/createRouterHistory'
 import { createRouterHooks, getRouterHooksKey } from '@/services/createRouterHooks'
-import { createRouterReject } from '@/services/createRouterReject'
 import { getInitialUrl } from '@/services/getInitialUrl'
 import { setStateValues } from '@/services/state'
 import { Routes } from '@/types/route'
@@ -40,7 +39,7 @@ import { setupRouterDevtools } from '@/devtools/createRouterDevtools'
 import { getMatchForUrl } from './getMatchesForUrl'
 import { pathHasTrailingSlash, removeTrailingSlashesFromPath } from '@/utilities/trailingSlashes'
 import { setDocumentTitle } from '@/utilities/setDocumentTitle'
-import { contextIsRejection } from '@/types/routeContext'
+import { createCurrentRejection } from '@/services/createCurrentRejection'
 
 type RouterUpdateOptions = {
   replace?: boolean,
@@ -90,12 +89,9 @@ export function createRouter<
   const isGlobalRouter = options?.isGlobalRouter ?? true
   const routerKey = isGlobalRouter ? routerInjectionKey : Symbol()
   const shouldRemoveTrailingSlashes = options?.removeTrailingSlashes ?? true
-  const { routes, getRouteByName } = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options?.base)
-  const rejections = [
-    ...routes.flatMap((route) => route.context).filter(contextIsRejection),
-    ...plugins.flatMap((plugin) => plugin.rejections),
-    ...options?.rejections ?? [],
-  ]
+  const { routes, getRouteByName, getRejectionByType } = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options)
+  const notFoundRejection = getRejectionByType('NotFound')
+
   const hooks = createRouterHooks()
 
   hooks.addGlobalRouteHooks(getGlobalHooksForRouter(plugins))
@@ -134,7 +130,7 @@ export function createRouter<
 
     history.stopListening()
 
-    const to = find(url, options) ?? getRejectionRoute('NotFound')
+    const to = find(url, options) ?? notFoundRejection.route
 
     const from = getFromRouteForHooks(navigationId)
 
@@ -315,22 +311,22 @@ export function createRouter<
   }
 
   function setRejection(type: string, to: ResolvedRoute | null = null, from: ResolvedRoute | null = null): void {
-    hooks.runRejectionHooks(getRejection(type), { to, from })
-    updateRejection(type)
-  }
+    const rejection = getRejectionByType(type)
 
-  function clearRejection(): void {
-    updateRejection(null)
+    if (!rejection) {
+      return
+    }
+
+    hooks.runRejectionHooks(rejection, { to, from })
+    updateRejection(rejection)
   }
 
   const reject: RouterReject<TOptions['rejections'] | TPlugin['rejections']> = (type) => {
     setRejection(type)
   }
 
-  const { setRejection: updateRejection, rejection, getRejectionRoute, getRejection } = createRouterReject(rejections)
-
-  const notFoundRoute = getRejectionRoute('NotFound')
-  const { currentRoute, routerRoute, updateRoute } = createCurrentRoute<TRoutes | TPlugin['routes']>(routerKey, notFoundRoute, push)
+  const { currentRejection, updateRejection, clearRejection } = createCurrentRejection()
+  const { currentRoute, routerRoute, updateRoute } = createCurrentRoute<TRoutes | TPlugin['routes']>(routerKey, notFoundRejection.route, push)
 
   const initialUrl = getInitialUrl(options?.initialUrl)
   const initialState = history.location.state
@@ -382,7 +378,7 @@ export function createRouter<
 
     app.component('RouterView', routerView)
     app.component('RouterLink', routerLink)
-    app.provide(getRouterRejectionInjectionKey(routerKey), rejection)
+    app.provide(getRouterRejectionInjectionKey(routerKey), currentRejection)
     app.provide(getRouterHooksKey(routerKey), hooks)
     app.provide(getPropStoreInjectionKey(routerKey), propStore)
     app.provide(getComponentsStoreKey(routerKey), componentsStore)

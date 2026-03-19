@@ -1,11 +1,11 @@
 import { Component } from 'vue'
 import { CombineMeta, combineMeta } from '@/services/combineMeta'
 import { CombineState, combineState } from '@/services/combineState'
-import { combineHooks, WithHooks } from '@/types/hooks'
+import { combineHooks } from '@/types/hooks'
 import { Param } from '@/types/paramTypes'
 import { PrefetchConfig } from '@/types/prefetch'
 import { RouteMeta } from '@/types/register'
-import { Route } from '@/types/route'
+import { isRoute, Route, RouteInternal } from '@/types/route'
 import { ResolvedRoute } from './resolved'
 import { ComponentProps } from '@/services/component'
 import { PropsCallbackContext } from '@/types/props'
@@ -188,8 +188,12 @@ export type ToRoute<
       ToRouteContext<TOptions['context']>
     >
 
-export function combineRoutes(parent: Route, child: Route): Route & WithHooks {
-  return {
+export function combineRoutes(parent: Route, child: Route): Route {
+  if(!isRoute(parent) || !isRoute(child)) {
+    throw new Error('combineRoutes called with invalid route arguments')
+  }
+
+  const route = {
     ...child,
     meta: combineMeta(parent.meta, child.meta),
     state: combineState(parent.state, child.state),
@@ -197,5 +201,7 @@ export function combineRoutes(parent: Route, child: Route): Route & WithHooks {
     matches: [...parent.matches, child.matched],
     context: [...parent.context, ...child.context],
     depth: parent.depth + 1,
-  }
+  } satisfies Route & RouteInternal
+
+  return route
 }

@@ -3,7 +3,7 @@ import { getParamValueFromUrl, setParamValueOnUrl } from '@/services/paramsFinde
 import { getParamName, generateRouteHostRegexPattern, generateRoutePathRegexPattern, generateRouteQueryRegexPatterns, generateRouteHashRegexPattern } from '@/services/routeRegex'
 import { getParamValue, setParamValue } from '@/services/params'
 import { parseUrl, stringifyUrl } from '@/services/urlParser'
-import { IS_URL_SYMBOL, CreateUrlOptions, ToUrl, Url, ParseUrlOptions } from '@/types/url'
+import { IS_URL_SYMBOL, CreateUrlOptions, ToUrl, Url, ParseUrlOptions, UrlInternal } from '@/types/url'
 import { UrlString } from '@/types/urlString'
 import { checkDuplicateParams } from '@/utilities/checkDuplicateParams'
 import { stringHasValue } from '@/utilities/guards'
@@ -108,18 +108,20 @@ export function createUrl(urlOrOptions: CreateUrlOptions): Url {
   }
 
   const internal = {
+    [IS_URL_SYMBOL]: true,
     schema: { host, path, query, hash },
     params: {},
-    [IS_URL_SYMBOL]: true,
-  } as const
+  } as const satisfies UrlInternal
 
-  return {
+  const url = {
     ...internal,
     isRelative: !stringHasValue(options.host.value),
     stringify,
     parse,
     tryParse,
-  }
+  } satisfies Url & UrlInternal
+
+  return url
 }
 
 function cleanHash(hash: UrlPart): UrlPart {

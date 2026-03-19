@@ -3,7 +3,7 @@ import { combinePath } from '@/services/combinePath'
 import { combineQuery } from '@/services/combineQuery'
 import { combineHash } from '@/services/combineHash'
 import { toUrlPart, toUrlQueryPart } from '@/services/withParams'
-import { CreateUrlOptions, isUrlWithSchema, ToUrl, Url } from '@/types/url'
+import { CreateUrlOptions, isUrl, ToUrl, Url, UrlInternal } from '@/types/url'
 import { Identity } from '@/types/utilities'
 
 export type CombineUrl<
@@ -17,8 +17,8 @@ export type CombineUrl<
 
 export function combineUrl<const TParent extends Url, const TChild extends Url>(parent: TParent, child: TChild): CombineUrl<TParent, TChild>
 export function combineUrl<const TParent extends Url, const TChild extends CreateUrlOptions>(parent: TParent, child: TChild): CombineUrl<TParent, ToUrl<TChild>>
-export function combineUrl(parent: Url, child: Url | CreateUrlOptions): Url {
-  if (!isUrlWithSchema(parent)) {
+export function combineUrl(parent: Url & UrlInternal, child: Url & UrlInternal | CreateUrlOptions): Url {
+  if (!isUrl(parent)) {
     throw new Error('Parent is not a valid url')
   }
 
@@ -31,7 +31,7 @@ export function combineUrl(parent: Url, child: Url | CreateUrlOptions): Url {
     })
   }
 
-  if (!isUrlWithSchema(child)) {
+  if (!isUrl(child)) {
     throw new Error('Child is not a valid url')
   }
 
@@ -41,8 +41,4 @@ export function combineUrl(parent: Url, child: Url | CreateUrlOptions): Url {
     query: combineQuery(parent.schema.query, child.schema.query),
     hash: combineHash(parent.schema.hash, child.schema.hash),
   })
-}
-
-function isUrl(url: unknown): url is Url {
-  return isUrlWithSchema(url)
 }

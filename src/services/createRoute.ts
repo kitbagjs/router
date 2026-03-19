@@ -2,13 +2,13 @@ import { markRaw } from 'vue'
 import { createRouteId } from '@/services/createRouteId'
 import { CreateRouteOptions, PropsGetter, CreateRouteProps, ToRoute, combineRoutes, isWithParent, RouterViewPropsGetter } from '@/types/createRouteOptions'
 import { toName } from '@/types/name'
-import { Route } from '@/types/route'
+import { IS_ROUTE_SYMBOL, Route, RouteInternal } from '@/types/route'
 import { createRouteHooks } from '@/services/createRouteHooks'
 import { toUrlPart, toUrlQueryPart } from '@/services/withParams'
 import { createUrl } from '@/services/createUrl'
 import { createRouteRedirects } from '@/services/createRouteRedirects'
 import { combineUrl } from '@/services/combineUrl'
-import { InternalRouteHooks, WithHooks } from '@/types/hooks'
+import { InternalRouteHooks } from '@/types/hooks'
 import { ExtractRouteContext } from '@/types/routeContext'
 import { RouteRedirects } from '@/types/redirects'
 import { createRouteTitle, RouteSetTitle } from '@/types/titles'
@@ -43,8 +43,8 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
   const meta = options.meta ?? {}
   const state = options.state ?? {}
   const context = options.context ?? []
-  const { store, ...hooks } = createRouteHooks()
-  const title = createRouteTitle(options.parent)
+  const { store, redirect, ...hooks } = createRouteHooks()
+  const { setTitle, getTitle } = createRouteTitle(options.parent)
   const rawRoute = markRaw({ ...options, id, meta, state, props, name })
 
   const redirects = createRouteRedirects({
@@ -57,22 +57,29 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
     hash,
   })
 
+  const internal = {
+    [IS_ROUTE_SYMBOL]: true,
+    depth: 1,
+    hooks: [store],
+    getTitle,
+    redirect,
+  } satisfies RouteInternal
+
   const route = {
     id,
     matched: rawRoute,
     matches: [rawRoute],
-    hooks: [store],
     name,
     meta,
     state,
     context,
-    depth: 1,
     prefetch: options.prefetch,
+    setTitle,
     ...redirects,
     ...url,
     ...hooks,
-    ...title,
-  } satisfies Route & InternalRouteHooks & RouteRedirects & WithHooks & RouteSetTitle
+    ...internal,
+  } satisfies Route & RouteInternal & InternalRouteHooks & RouteRedirects & RouteSetTitle
 
   if (isWithParent(options)) {
     const merged = combineRoutes(options.parent, route)
