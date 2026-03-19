@@ -98,6 +98,10 @@
         "link": "/api/functions/asUrlString.md"
       },
       {
+        "text": "combineHooks",
+        "link": "/api/functions/combineHooks.md"
+      },
+      {
         "text": "combineRoutes",
         "link": "/api/functions/combineRoutes.md"
       },
@@ -134,8 +138,8 @@
         "link": "/api/functions/createUrl.md"
       },
       {
-        "text": "isUrlWithSchema",
-        "link": "/api/functions/isUrlWithSchema.md"
+        "text": "getHooks",
+        "link": "/api/functions/getHooks.md"
       },
       {
         "text": "isWithComponent",
@@ -242,8 +246,8 @@
         "link": "/api/types/AddGlobalHooks.md"
       },
       {
-        "text": "AddPluginErrorHook",
-        "link": "/api/types/AddPluginErrorHook.md"
+        "text": "AddRejectionHook",
+        "link": "/api/types/AddRejectionHook.md"
       },
       {
         "text": "AfterEnterHook",
@@ -346,10 +350,6 @@
         "link": "/api/types/CreateUrlOptions.md"
       },
       {
-        "text": "EmptyRouterPlugin",
-        "link": "/api/types/EmptyRouterPlugin.md"
-      },
-      {
         "text": "ErrorHook",
         "link": "/api/types/ErrorHook.md"
       },
@@ -368,10 +368,6 @@
       {
         "text": "ExternalRouteHooks",
         "link": "/api/types/ExternalRouteHooks.md"
-      },
-      {
-        "text": "GenericRoute",
-        "link": "/api/types/GenericRoute.md"
       },
       {
         "text": "HookLifecycle",
@@ -418,26 +414,6 @@
         "link": "/api/types/ParseUrlOptions.md"
       },
       {
-        "text": "PluginAfterRouteHook",
-        "link": "/api/types/PluginAfterRouteHook.md"
-      },
-      {
-        "text": "PluginBeforeRouteHook",
-        "link": "/api/types/PluginBeforeRouteHook.md"
-      },
-      {
-        "text": "PluginErrorHook",
-        "link": "/api/types/PluginErrorHook.md"
-      },
-      {
-        "text": "PluginErrorHookContext",
-        "link": "/api/types/PluginErrorHookContext.md"
-      },
-      {
-        "text": "PluginRouteHooks",
-        "link": "/api/types/PluginRouteHooks.md"
-      },
-      {
         "text": "PrefetchConfig",
         "link": "/api/types/PrefetchConfig.md"
       },
@@ -474,6 +450,34 @@
         "link": "/api/types/RegisteredRouter.md"
       },
       {
+        "text": "Rejection",
+        "link": "/api/types/Rejection.md"
+      },
+      {
+        "text": "RejectionHook",
+        "link": "/api/types/RejectionHook.md"
+      },
+      {
+        "text": "RejectionHookContext",
+        "link": "/api/types/RejectionHookContext.md"
+      },
+      {
+        "text": "RejectionHookRunner",
+        "link": "/api/types/RejectionHookRunner.md"
+      },
+      {
+        "text": "RejectionHooks",
+        "link": "/api/types/RejectionHooks.md"
+      },
+      {
+        "text": "Rejections",
+        "link": "/api/types/Rejections.md"
+      },
+      {
+        "text": "RejectionType",
+        "link": "/api/types/RejectionType.md"
+      },
+      {
         "text": "ResolvedRoute",
         "link": "/api/types/ResolvedRoute.md"
       },
@@ -496,6 +500,10 @@
       {
         "text": "RouterAssets",
         "link": "/api/types/RouterAssets.md"
+      },
+      {
+        "text": "RouteRedirects",
+        "link": "/api/types/RouteRedirects.md"
       },
       {
         "text": "RouterLinkProps",
@@ -566,10 +574,6 @@
         "link": "/api/types/RouterViewPropsGetter.md"
       },
       {
-        "text": "Routes",
-        "link": "/api/types/Routes.md"
-      },
-      {
         "text": "ToCallback",
         "link": "/api/types/ToCallback.md"
       },
@@ -578,20 +582,8 @@
         "link": "/api/types/ToRoute.md"
       },
       {
-        "text": "ToUrl",
-        "link": "/api/types/ToUrl.md"
-      },
-      {
         "text": "Url",
         "link": "/api/types/Url.md"
-      },
-      {
-        "text": "UrlParamsReading",
-        "link": "/api/types/UrlParamsReading.md"
-      },
-      {
-        "text": "UrlParamsWriting",
-        "link": "/api/types/UrlParamsWriting.md"
       },
       {
         "text": "UrlString",
@@ -620,16 +612,6 @@
       {
         "text": "WithParent",
         "link": "/api/types/WithParent.md"
-      }
-    ]
-  },
-  {
-    "text": "Variables",
-    "collapsed": true,
-    "items": [
-      {
-        "text": "IS_URL_SYMBOL",
-        "link": "/api/variables/IS_URL_SYMBOL.md"
       }
     ]
   }

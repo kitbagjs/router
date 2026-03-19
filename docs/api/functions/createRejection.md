@@ -1,7 +1,7 @@
 # Functions: createRejection()
 
 ```ts
-function createRejection<TType>(options): Rejection<TType>;
+function createRejection<TType>(options): Rejection<TType> & RejectionHooks<TType>;
 ```
 
 ## Type Parameters
@@ -20,4 +20,4 @@ function createRejection<TType>(options): Rejection<TType>;
 
 ## Returns
 
-`Rejection`\<`TType`\>
+[`Rejection`](../types/Rejection.md)\<`TType`\> & [`RejectionHooks`](../types/RejectionHooks.md)\<`TType`\>

@@ -8,7 +8,7 @@ type ErrorHookRunnerContext<TRoutes> = object;
 
 | Type Parameter | Default type |
 | ------ | ------ |
-| `TRoutes` *extends* [`Routes`](Routes.md) | [`Routes`](Routes.md) |
+| `TRoutes` *extends* `Routes` | `Routes` |
 
 ## Properties
 

@@ -10,4 +10,4 @@ This type is the same as `ResolvedRoute<TRoutes[number]>` while remaining distri
 
 | Type Parameter |
 | ------ |
-| `TRoutes` *extends* [`Routes`](Routes.md) |
+| `TRoutes` *extends* `Routes` |

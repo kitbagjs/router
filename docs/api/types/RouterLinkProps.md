@@ -14,6 +14,14 @@ optional prefetch: PrefetchConfig;
 
 Determines what assets are prefetched when router-link is rendered for this route. Overrides route level prefetch.
 
+### target?
+
+```ts
+optional target: string;
+```
+
+The target attribute for the anchor element.
+
 ### to
 
 ```ts

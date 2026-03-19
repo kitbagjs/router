@@ -8,7 +8,7 @@ type BeforeHookRunner = <TRoutes>(context) => Promise<BeforeHookResponse>;
 
 | Type Parameter |
 | ------ |
-| `TRoutes` *extends* [`Routes`](Routes.md) |
+| `TRoutes` *extends* `Routes` |
 
 ## Parameters
 

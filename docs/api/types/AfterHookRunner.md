@@ -8,7 +8,7 @@ type AfterHookRunner = <TRoutes>(context) => Promise<AfterHookResponse>;
 
 | Type Parameter |
 | ------ |
-| `TRoutes` *extends* [`Routes`](Routes.md) |
+| `TRoutes` *extends* `Routes` |
 
 ## Parameters
 

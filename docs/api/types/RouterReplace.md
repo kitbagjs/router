@@ -12,7 +12,7 @@ type RouterReplace<TRoutes> = {
 
 | Type Parameter |
 | ------ |
-| `TRoutes` *extends* [`Routes`](Routes.md) |
+| `TRoutes` *extends* `Routes` |
 
 ## Call Signature
 

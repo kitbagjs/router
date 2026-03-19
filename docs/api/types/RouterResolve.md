@@ -8,7 +8,7 @@ type RouterResolve<TRoutes> = <TSource>(name, ...args) => ResolvedRoute;
 
 | Type Parameter |
 | ------ |
-| `TRoutes` *extends* [`Routes`](Routes.md) |
+| `TRoutes` *extends* `Routes` |
 
 ## Type Parameters
 

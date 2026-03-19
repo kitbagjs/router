@@ -8,7 +8,7 @@ type Router<TRoutes, TOptions, TPlugin> = object;
 
 | Type Parameter | Default type |
 | ------ | ------ |
-| `TRoutes` *extends* [`Routes`](Routes.md) | `any` |
+| `TRoutes` *extends* `Routes` | `any` |
 | `TOptions` *extends* [`RouterOptions`](RouterOptions.md) | `any` |
 | `TPlugin` *extends* [`RouterPlugin`](RouterPlugin.md) | `any` |
 
@@ -29,6 +29,7 @@ type Router<TRoutes, TOptions, TPlugin> = object;
 | <a id="onbeforerouteleave"></a> `onBeforeRouteLeave` | [`AddBeforeLeaveHook`](AddBeforeLeaveHook.md)\<`TRoutes` \| `TPlugin`\[`"routes"`\], `ExtractRejections`\<`TOptions`\> \| `ExtractRejections`\<`TPlugin`\>\> | Registers a hook to be called before a route is left. |
 | <a id="onbeforerouteupdate"></a> `onBeforeRouteUpdate` | [`AddBeforeUpdateHook`](AddBeforeUpdateHook.md)\<`TRoutes` \| `TPlugin`\[`"routes"`\], `ExtractRejections`\<`TOptions`\> \| `ExtractRejections`\<`TPlugin`\>\> | Registers a hook to be called before a route is updated. |
 | <a id="onerror"></a> `onError` | [`AddErrorHook`](AddErrorHook.md)\<`TRoutes`\[`number`\] \| `TPlugin`\[`"routes"`\]\[`number`\], `TRoutes` \| `TPlugin`\[`"routes"`\], `ExtractRejections`\<`TOptions`\> \| `ExtractRejections`\<`TPlugin`\>\> | Registers a hook to be called when an error occurs. If the hook returns true, the error is considered handled and the other hooks are not run. If all hooks return false the error is rethrown |
+| <a id="onrejection"></a> `onRejection` | [`AddRejectionHook`](AddRejectionHook.md)\< \| `ExtractRejectionTypes`\<`ExtractRejections`\<`TOptions`\>\> \| `ExtractRejectionTypes`\<`ExtractRejections`\<`TPlugin`\>\> \| `BuiltInRejectionType`, `TRoutes` \| `TPlugin`\[`"routes"`\]\> | Registers a hook to be called when a rejection occurs. |
 | <a id="prefetch"></a> `prefetch?` | [`PrefetchConfig`](PrefetchConfig.md) | Determines what assets are prefetched. |
 | <a id="push"></a> `push` | [`RouterPush`](RouterPush.md)\<`TRoutes` \| `TPlugin`\[`"routes"`\]\> | Navigates to a specified path or route object in the history stack, adding a new entry. |
 | <a id="refresh"></a> `refresh` | () => `void` | Forces the router to re-evaluate the current route. |

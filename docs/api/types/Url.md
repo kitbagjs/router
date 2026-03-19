@@ -97,6 +97,5 @@ Parses the url supplied and returns any params found.
 
 | Property | Type | Description |
 | ------ | ------ | ------ |
-| <a id="is_url_symbol"></a> `[IS_URL_SYMBOL]` | `true` | **`Internal`** Symbol to identify if the url is a valid url. |
 | <a id="isrelative"></a> `isRelative` | `boolean` | True if the url is relative. False if the url is absolute. |
 | <a id="params"></a> `params` | `TParams` | **`Internal`** The parameters type for the url. Non functional and undefined at runtime. |

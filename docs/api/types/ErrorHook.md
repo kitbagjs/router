@@ -9,8 +9,8 @@ type ErrorHook<TRoute, TRoutes, TRejections> = (error, context) => void;
 | Type Parameter | Default type |
 | ------ | ------ |
 | `TRoute` *extends* [`Route`](Route.md) | [`Route`](Route.md) |
-| `TRoutes` *extends* [`Routes`](Routes.md) | [`Routes`](Routes.md) |
-| `TRejections` *extends* `Rejections` | `Rejections` |
+| `TRoutes` *extends* `Routes` | `Routes` |
+| `TRejections` *extends* [`Rejections`](Rejections.md) | [`Rejections`](Rejections.md) |
 
 ## Parameters
 

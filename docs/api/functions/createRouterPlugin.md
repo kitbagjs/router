@@ -8,8 +8,8 @@ function createRouterPlugin<TRoutes, TRejections>(plugin): RouterPlugin<TRoutes,
 
 | Type Parameter | Default type |
 | ------ | ------ |
-| `TRoutes` *extends* [`Routes`](../types/Routes.md) | [`Routes`](../types/Routes.md) |
-| `TRejections` *extends* `Rejections` | `Rejections` |
+| `TRoutes` *extends* `Routes` | \[\] |
+| `TRejections` *extends* [`Rejections`](../types/Rejections.md) | \[\] |
 
 ## Parameters
 
@@ -19,4 +19,4 @@ function createRouterPlugin<TRoutes, TRejections>(plugin): RouterPlugin<TRoutes,
 
 ## Returns
 
-[`RouterPlugin`](../types/RouterPlugin.md)\<`TRoutes`, `TRejections`\> & [`PluginRouteHooks`](../types/PluginRouteHooks.md)\<`TRoutes`, `TRejections`\>
+[`RouterPlugin`](../types/RouterPlugin.md)\<`TRoutes`, `TRejections`\> & `PluginRouteHooks`\<`TRoutes`, `TRejections`\>

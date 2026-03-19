@@ -12,7 +12,7 @@ type RouterPush<TRoutes> = {
 
 | Type Parameter | Default type |
 | ------ | ------ |
-| `TRoutes` *extends* [`Routes`](Routes.md) | `any` |
+| `TRoutes` *extends* `Routes` | `any` |
 
 ## Call Signature
 

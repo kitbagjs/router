@@ -9,7 +9,7 @@ type InternalRouteHooks<TRoute, TContext> = object;
 | Type Parameter | Default type |
 | ------ | ------ |
 | `TRoute` *extends* [`Route`](Route.md) | [`Route`](Route.md) |
-| `TContext` *extends* `RouteContext`[] | \[\] |
+| `TContext` *extends* `RouteContext`[] \| `undefined` | `undefined` |
 
 ## Properties
 

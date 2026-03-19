@@ -16,27 +16,6 @@ context: TContext;
 
 Related routes and rejections for the route. The context is exposed to the hooks and props callback functions for this route.
 
-### depth
-
-```ts
-depth: number;
-```
-
-**`Internal`**
-
-A value that represents how many parents a route has. Used for route matching
-
-### hooks
-
-```ts
-hooks: Hooks[];
-```
-
-**`Internal`**
-
-The stores for routes including ancestors.
-Order of routes will be from greatest ancestor to narrowest matched.
-
 ### id
 
 ```ts
