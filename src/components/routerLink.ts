@@ -27,8 +27,8 @@ export function createRouterLink<TRouter extends Router>(routerKey: InjectionKey
     const router = useRouter()
 
     const route = computed<ResolvedRoute | undefined>(() => getResolvedRoute(props.to))
-
     const href = computed<UrlString | undefined>(() => getHref(props.to))
+    const targetSelf = computed<boolean>(() => !props.target || props.target === '_self')
 
     const options = computed(() => {
       const { to, ...options } = props
@@ -75,6 +75,16 @@ export function createRouterLink<TRouter extends Router>(routerKey: InjectionKey
       return to?.href
     }
 
+    function shouldAllowDefault(event: MouseEvent): boolean {
+      return event.defaultPrevented 
+        || event.button !== 0 
+        || event.metaKey 
+        || event.ctrlKey 
+        || event.shiftKey 
+        || event.altKey 
+        || !targetSelf.value
+    }
+
     function onClick(event: MouseEvent): void {
       if (shouldAllowDefault(event)) {
         return
@@ -87,6 +97,7 @@ export function createRouterLink<TRouter extends Router>(routerKey: InjectionKey
     return () => {
       return h('a', {
         href: href.value,
+        target: props.target,
         class: ['router-link', classes.value],
         ref: element,
         onClick,
@@ -104,10 +115,6 @@ export function createRouterLink<TRouter extends Router>(routerKey: InjectionKey
     name: 'RouterLink',
     // The prop types are defined above. Vue requires manually defining the prop names themselves here to distinguish from attrs
     // eslint-disable-next-line vue/require-prop-types
-    props: ['to', 'prefetch', 'query', 'hash', 'replace', 'state'],
+    props: ['to', 'prefetch', 'query', 'hash', 'replace', 'state', 'target'],
   })
-}
-
-function shouldAllowDefault(event: MouseEvent): boolean {
-  return event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey
 }

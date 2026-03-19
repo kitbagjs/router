@@ -15,4 +15,8 @@ export type RouterLinkProps<TRouter extends Router> = RouterPushOptions & {
    * Determines what assets are prefetched when router-link is rendered for this route. Overrides route level prefetch.
    */
   prefetch?: PrefetchConfig,
+  /**
+   * The target attribute for the anchor element.
+   */
+  target?: string,
 }
