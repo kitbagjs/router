@@ -219,6 +219,81 @@ test('given push options from both resolve callback and props, combines query an
   })
 })
 
+test.each([
+  { name: 'metaKey', triggerOptions: { metaKey: true } },
+  { name: 'ctrlKey', triggerOptions: { ctrlKey: true } },
+  { name: 'shiftKey', triggerOptions: { shiftKey: true } },
+  { name: 'altKey', triggerOptions: { altKey: true } },
+])('does not call router.push when $name is held during click', async ({ triggerOptions }) => {
+  const router = createRouter([
+    createRoute({
+      name: 'routeA',
+      path: '/routeA',
+      component: { render: () => h(RouterLink, { to: (resolve) => resolve('routeB') }) },
+    }),
+    createRoute({
+      name: 'routeB',
+      path: '/routeB',
+      component,
+    }),
+  ], {
+    initialUrl: '/routeA',
+  })
+
+  await router.start()
+
+  const spy = vi.spyOn(router, 'push')
+
+  const root = {
+    template: '<RouterView />',
+  }
+
+  const wrapper = mount(root, {
+    global: {
+      plugins: [router],
+    },
+  })
+
+  wrapper.find('a').trigger('click', triggerOptions)
+
+  expect(spy).not.toHaveBeenCalled()
+})
+
+test('does not call router.push when middle mouse button is clicked', async () => {
+  const router = createRouter([
+    createRoute({
+      name: 'routeA',
+      path: '/routeA',
+      component: { render: () => h(RouterLink, { to: (resolve) => resolve('routeB') }) },
+    }),
+    createRoute({
+      name: 'routeB',
+      path: '/routeB',
+      component,
+    }),
+  ], {
+    initialUrl: '/routeA',
+  })
+
+  await router.start()
+
+  const spy = vi.spyOn(router, 'push')
+
+  const root = {
+    template: '<RouterView />',
+  }
+
+  const wrapper = mount(root, {
+    global: {
+      plugins: [router],
+    },
+  })
+
+  wrapper.find('a').trigger('click', { button: 1 })
+
+  expect(spy).not.toHaveBeenCalled()
+})
+
 test('to prop as Url renders and routes correctly', async () => {
   const route = createRoute({
     name: 'route',

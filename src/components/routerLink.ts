@@ -76,8 +76,11 @@ export function createRouterLink<TRouter extends Router>(routerKey: InjectionKey
     }
 
     function onClick(event: MouseEvent): void {
-      event.preventDefault()
+      if (shouldAllowDefault(event)) {
+        return
+      }
 
+      event.preventDefault()
       push()
     }
 
@@ -103,4 +106,8 @@ export function createRouterLink<TRouter extends Router>(routerKey: InjectionKey
     // eslint-disable-next-line vue/require-prop-types
     props: ['to', 'prefetch', 'query', 'hash', 'replace', 'state'],
   })
+}
+
+function shouldAllowDefault(event: MouseEvent): boolean {
+  return event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey
 }
