@@ -28,7 +28,7 @@ export function createRouterLink<TRouter extends Router>(routerKey: InjectionKey
 
     const route = computed<ResolvedRoute | undefined>(() => getResolvedRoute(props.to))
     const href = computed<UrlString | undefined>(() => getHref(props.to))
-    const targetBlank = computed<boolean>(() => !!props.target && /\b_blank\b/i.test(props.target))
+    const targetSelf = computed<boolean>(() => !props.target || props.target === '_self')
 
     const options = computed(() => {
       const { to, ...options } = props
@@ -82,7 +82,7 @@ export function createRouterLink<TRouter extends Router>(routerKey: InjectionKey
         || event.ctrlKey 
         || event.shiftKey 
         || event.altKey 
-        || targetBlank.value
+        || !targetSelf.value
     }
 
     function onClick(event: MouseEvent): void {
