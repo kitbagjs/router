@@ -1,6 +1,46 @@
 // Types
-export * from './types/createRouteOptions'
-export * from './types/hooks'
+export type {
+  WithHost,
+  WithoutHost,
+  WithParent,
+  WithoutParent,
+  CreateRouteOptions,
+  PropsGetter,
+  RouterViewPropsGetter,
+  CreateRouteProps,
+  ToRoute,
+} from './types/createRouteOptions'
+export type {
+  RejectionHooks,
+  HookRemove,
+  BeforeHookLifecycle,
+  AfterHookLifecycle,
+  HookLifecycle,
+  BeforeEnterHookContext,
+  BeforeEnterHook,
+  AddBeforeEnterHook,
+  BeforeUpdateHookContext,
+  BeforeUpdateHook,
+  AddBeforeUpdateHook,
+  BeforeLeaveHookContext,
+  BeforeLeaveHook,
+  AddBeforeLeaveHook,
+  AfterEnterHookContext,
+  AfterEnterHook,
+  AddAfterEnterHook,
+  AfterUpdateHookContext,
+  AfterUpdateHook,
+  AddAfterUpdateHook,
+  AfterLeaveHookContext,
+  AfterLeaveHook,
+  AddAfterLeaveHook,
+  RejectionHookContext,
+  RejectionHook,
+  AddRejectionHook,
+  ErrorHookContext,
+  ErrorHook,
+  AddErrorHook,
+} from './types/hooks'
 export * from './types/paramTypes'
 export * from './types/prefetch'
 export * from './types/props'
