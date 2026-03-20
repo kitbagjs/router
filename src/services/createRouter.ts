@@ -186,7 +186,7 @@ export function createRouter<
         throw new Error(`Switch is not exhaustive for after hook response status: ${JSON.stringify(exhaustive)}`)
     }
 
-    setDocumentTitle(to)
+    setDocumentTitle({ to, from, rejection: currentRejection.value })
 
     history.startListening()
   }
@@ -318,11 +318,13 @@ export function createRouter<
     }
 
     hooks.runRejectionHooks(rejection, { to, from })
+
     updateRejection(rejection)
   }
 
   const reject: RouterReject<TOptions['rejections'] | TPlugin['rejections']> = (type) => {
     setRejection(type)
+    setDocumentTitle({ rejection: currentRejection.value })
   }
 
   const { currentRejection, updateRejection, clearRejection } = createCurrentRejection()
