@@ -4,32 +4,36 @@ import { RejectionHooks } from '@/types/hooks'
 import { IS_REJECTION_SYMBOL, Rejection, RejectionInternal } from '@/types/rejection'
 import { Component, markRaw } from 'vue'
 import { ResolvedRoute } from '@/types/resolved'
-import { createRouteId } from './createRouteId'
-import { createResolvedRouteQuery } from './createResolvedRouteQuery'
+import { createRouteId } from '@/services/createRouteId'
+import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
+import { createRejectionTitle, RejectionSetTitle } from '@/types/rejectionTitle'
 
 export function createRejection<TType extends string>(options: {
   type: TType,
   component?: Component,
-}): Rejection<TType> & RejectionHooks<TType>
+}): Rejection<TType> & RejectionHooks<TType> & RejectionSetTitle
 
-export function createRejection(options: { type: string, component?: Component }): Rejection & RejectionHooks {
+export function createRejection(options: { type: string, component?: Component }): Rejection {
   const component = markRaw(options.component ?? genericRejection(options.type))
   const route = getRejectionRoute(options.type, component)
 
   const { store, ...hooks } = createRejectionHooks()
+  const { setTitle, getTitle } = createRejectionTitle()
 
   const internal = {
     [IS_REJECTION_SYMBOL]: true,
     route,
     hooks: [store],
+    getTitle,
   } satisfies RejectionInternal
 
   const rejection = {
     type: options.type,
     component,
+    setTitle,
     ...hooks,
     ...internal,
-  } satisfies Rejection & RejectionInternal & RejectionHooks
+  } satisfies Rejection & RejectionInternal & RejectionHooks & RejectionSetTitle
 
   return rejection
 }
