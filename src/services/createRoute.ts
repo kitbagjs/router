@@ -84,6 +84,10 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
   if (isWithParent(options)) {
     const merged = combineRoutes(options.parent, route)
 
+    if (options.hoist) {
+      return merged
+    }
+
     const url = combineUrl(options.parent, {
       path,
       query,

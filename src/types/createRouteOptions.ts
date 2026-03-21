@@ -114,6 +114,10 @@ export type CreateRouteOptions<
    * Related routes and rejections for the route. The context is exposed to the hooks and props callback functions for this route.
    */
   context?: RouteContext[],
+  /**
+   * When true, the route will be hoisted to the top of the route tree. The route will continue to inherit meta, state, hooks, matches, and context from it's parent, but not the "url" properties.
+   */
+  hoist?: boolean,
 }
 
 export type PropsGetter<
@@ -173,7 +177,7 @@ export type ToRoute<
   : TOptions extends { parent: infer TParent extends Route }
     ? Route<
       ToName<TOptions['name']>,
-      CombineUrl<TParent, ToUrl<TOptions & WithoutComponents>>,
+      TOptions['hoist'] extends true ? ToUrl<TOptions & WithoutComponents> : CombineUrl<TParent, ToUrl<TOptions & WithoutComponents>>,
       CombineMeta<ToMeta<TParent['meta']>, ToMeta<TOptions['meta']>>,
       CombineState<ToState<TParent['state']>, ToState<TOptions['state']>>,
       ToMatches<TOptions, CreateRouteProps<TOptions> extends TProps ? undefined : TProps>,
@@ -189,7 +193,7 @@ export type ToRoute<
     >
 
 export function combineRoutes(parent: Route, child: Route): Route {
-  if(!isRoute(parent) || !isRoute(child)) {
+  if (!isRoute(parent) || !isRoute(child)) {
     throw new Error('combineRoutes called with invalid route arguments')
   }
 
