@@ -23,7 +23,7 @@ type CreateRouteTitle = {
   getTitle: GetRouteTitle,
 }
 
-export function createRouteTitle(parent: Route | undefined): CreateRouteTitle {
+export function createRouteTitle(parent?: Route): CreateRouteTitle {
   let setTitleCallback: SetRouteTitleCallback | undefined
 
   const setTitle: SetRouteTitle = (callback) => {
