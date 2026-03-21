@@ -75,3 +75,42 @@ describe('options.rejections', () => {
     expect(wrapper.html()).toBe('<div>This is a custom rejection</div>')
   })
 })
+
+test('given child has hoist, keeps parent context and components without parent url', async () => {
+  const parent = createRoute({
+    name: 'parent',
+    path: '/parent',
+    component: { template: '<div class="parent"><RouterView/></div>' },
+  })
+
+  const child = createRoute({
+    name: 'child',
+    parent,
+    hoist: true,
+    path: '/child/[?child]',
+    component: { template: '<i class="child" />' },
+  })
+
+  const router = createRouter([child], { initialUrl: '/' })
+
+  const root = {
+    template: '<RouterView/>',
+  }
+
+  const wrapper = mount(root, {
+    global: {
+      plugins: [router],
+    },
+  })
+
+  await router.start()
+
+  await router.push('child', { child: '42' })
+
+  expect(router.route).toMatchObject(expect.objectContaining({
+    name: 'child',
+    href: '/child/42',
+  }))
+
+  expect(wrapper.html()).toBe('<div class="parent"><i class="child"></i></div>')
+})
