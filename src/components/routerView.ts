@@ -3,7 +3,7 @@ import { createUseRejection } from '@/compositions/useRejection'
 import { createUseRoute } from '@/compositions/useRoute'
 import { createUseRouter } from '@/compositions/useRouter'
 import { createUseRouterDepth } from '@/compositions/useRouterDepth'
-import { RouterRejection } from '@/types/rejection'
+import { isRejection, RouterRejection } from '@/types/rejection'
 import { RouterRoute } from '@/types/routerRoute'
 import { Router } from '@/types/router'
 import { Component, computed, defineComponent, EmitsOptions, h, InjectionKey, onServerPrefetch, SetupContext, SlotsType, UnwrapRef, VNode } from 'vue'
@@ -46,8 +46,8 @@ export function createRouterView<TRouter extends Router>(routerKey: InjectionKey
         return null
       }
 
-      if (rejection.value) {
-        return rejection.value.component
+      if (isRejection(rejection.value) && !!rejection.value.route.matched.component) {
+        return rejection.value.route.matched.component
       }
 
       const match = route.matches.at(depth)

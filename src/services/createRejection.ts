@@ -11,13 +11,12 @@ export function createRejection<TType extends string>(options: {
   component?: Component,
 }): Rejection<TType> & RejectionHooks<TType> & RouteSetTitle
 
-export function createRejection(options: { type: string, component?: Component }): Rejection {
+export function createRejection({ type, component }: { type: string, component?: Component }): Rejection {
   const { store, ...hooks } = createRejectionHooks()
 
-  const component = markRaw(options.component ?? genericRejection(options.type))
   const route = createRoute({
-    name: options.type,
-    component,
+    name: type,
+    component: markRaw(component ?? genericRejection(type)),
   })
 
   const { setTitle } = route
@@ -29,8 +28,7 @@ export function createRejection(options: { type: string, component?: Component }
   } satisfies RejectionInternal
 
   const rejection = {
-    type: options.type,
-    component,
+    type,
     setTitle,
     ...hooks,
     ...internal,
