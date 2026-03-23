@@ -49,7 +49,7 @@
     "globals": "^17.4.0",
     "happy-dom": "^20.8.4",
     "typedoc": "^0.28.17",
-    "typedoc-plugin-markdown": "^4.10.0",
+    "typedoc-plugin-markdown": "^4.11.0",
     "typedoc-vitepress-theme": "^1.1.2",
     "typescript": "^5.9.3",
     "valibot": "^1.0.0",
