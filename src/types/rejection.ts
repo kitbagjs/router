@@ -1,4 +1,4 @@
-import { Component, Ref } from 'vue'
+import { Ref } from 'vue'
 import { Route } from '@/types/route'
 import { Router } from '@/types/router'
 import { RouterReject } from '@/types/routerReject'
@@ -32,10 +32,6 @@ export type Rejection<TType extends string = string> = {
    * The type of rejection.
    */
   type: TType,
-  /**
-   * The component to render when the rejection occurs.
-   */
-  component: Component,
 }
 
 export type RejectionType<TRejections extends Rejections | undefined> =
