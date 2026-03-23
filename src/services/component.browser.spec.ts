@@ -1,119 +1,128 @@
-import { flushPromises, mount } from '@vue/test-utils'
-import { expect, test } from 'vitest'
-import echo from '@/components/echo'
-import { createRoute } from '@/services/createRoute'
-import { createRouter } from '@/services/createRouter'
-import { h, defineComponent, getCurrentInstance } from 'vue'
+import { flushPromises, mount } from "@vue/test-utils";
+import { expect, test } from "vite-plus/test";
+import echo from "@/components/echo";
+import { createRoute } from "@/services/createRoute";
+import { createRouter } from "@/services/createRouter";
+import { h, defineComponent, getCurrentInstance } from "vue";
 
-test('renders component with sync props', async () => {
-  const route = createRoute({
-    name: 'echo',
-    path: '/echo',
-    component: echo,
-  }, () => ({ value: 'echo' }))
+test("renders component with sync props", async () => {
+  const route = createRoute(
+    {
+      name: "echo",
+      path: "/echo",
+      component: echo,
+    },
+    () => ({ value: "echo" }),
+  );
 
   const router = createRouter([route], {
-    initialUrl: '/',
-  })
+    initialUrl: "/",
+  });
 
-  await router.start()
+  await router.start();
 
   const root = {
-    template: '<RouterView/>',
-  }
+    template: "<RouterView/>",
+  };
 
   const wrapper = mount(root, {
     global: {
       plugins: [router],
     },
-  })
+  });
 
-  await router.push('echo')
+  await router.push("echo");
 
-  expect(wrapper.html()).toBe('echo')
-})
+  expect(wrapper.html()).toBe("echo");
+});
 
-test('renders component with async props', async () => {
-  const route = createRoute({
-    name: 'echo',
-    path: '/echo',
-    component: echo,
-  }, async () => ({ value: 'echo' }))
+test("renders component with async props", async () => {
+  const route = createRoute(
+    {
+      name: "echo",
+      path: "/echo",
+      component: echo,
+    },
+    async () => ({ value: "echo" }),
+  );
 
   const router = createRouter([route], {
-    initialUrl: '/',
-  })
+    initialUrl: "/",
+  });
 
-  await router.start()
+  await router.start();
 
   const root = {
-    template: '<RouterView/>',
-  }
+    template: "<RouterView/>",
+  };
 
   const wrapper = mount(root, {
     global: {
       plugins: [router],
     },
-  })
+  });
 
-  await router.push('echo')
+  await router.push("echo");
 
   // needed for async props
-  await flushPromises()
+  await flushPromises();
 
-  expect(wrapper.html()).toBe('echo')
-})
+  expect(wrapper.html()).toBe("echo");
+});
 
-test('component instance has suspense property when suspense is used', async () => {
+test("component instance has suspense property when suspense is used", async () => {
   const testComponent = defineComponent({
     setup() {
       // @ts-expect-error there isn't a way to check if suspense is used in the component without accessing a private property
-      const hasSuspense = Boolean(getCurrentInstance()?.suspense)
+      const hasSuspense = Boolean(getCurrentInstance()?.suspense);
 
-      return () => h('span', hasSuspense)
+      return () => h("span", hasSuspense);
     },
-  })
+  });
 
   const appWithSuspenseRoot = {
-    template: '<Suspense><test-component/></Suspense>',
+    template: "<Suspense><test-component/></Suspense>",
     components: {
       testComponent,
     },
-  }
+  };
 
-  const appWithSuspense = mount(appWithSuspenseRoot)
+  const appWithSuspense = mount(appWithSuspenseRoot);
 
-  await flushPromises()
+  await flushPromises();
 
-  expect(appWithSuspense.text()).toBe('true')
+  expect(appWithSuspense.text()).toBe("true");
 
   const appWithoutSuspenseRoot = {
-    template: '<test-component/>',
+    template: "<test-component/>",
     components: {
       testComponent,
     },
-  }
+  };
 
-  const appWithoutSuspense = mount(appWithoutSuspenseRoot)
+  const appWithoutSuspense = mount(appWithoutSuspenseRoot);
 
-  expect(appWithoutSuspense.text()).toBe('false')
-})
+  expect(appWithoutSuspense.text()).toBe("false");
+});
 
-test('renders component with async props using suspense', async () => {
-  const { promise, resolve } = Promise.withResolvers<{ value: string }>()
-  const fallback = 'Loading...'
+test("renders component with async props using suspense", async () => {
+  const { promise, resolve } = Promise.withResolvers<{ value: string }>();
+  const fallback = "Loading...";
 
-  const route = createRoute({
-    name: 'home',
-    path: '/',
-    component: echo,
-  }, () => promise)
+  const route = createRoute(
+    {
+      name: "home",
+      path: "/",
+      component: echo,
+    },
+    () => promise,
+  );
 
   const router = createRouter([route], {
-    initialUrl: '/',
-  })
+    initialUrl: "/",
+  });
 
-  await router.start()
+  await router.start();
 
   const root = {
     template: `
@@ -124,21 +133,21 @@ test('renders component with async props using suspense', async () => {
         <RouterView/>
       </Suspense>
     `,
-  }
+  };
 
   const wrapper = mount(root, {
     global: {
       plugins: [router],
     },
-  })
+  });
 
-  await router.push('home')
+  await router.push("home");
 
-  expect(wrapper.text()).toBe(fallback)
+  expect(wrapper.text()).toBe(fallback);
 
-  resolve({ value: 'hello world' })
+  resolve({ value: "hello world" });
 
-  await flushPromises()
+  await flushPromises();
 
-  expect(wrapper.html()).toBe('hello world')
-})
+  expect(wrapper.html()).toBe("hello world");
+});

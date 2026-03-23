@@ -1,167 +1,163 @@
-import { describe, expect, test } from 'vitest'
-import { createRoute } from '@/services/createRoute'
-import { getMatchForUrl } from '@/services/getMatchesForUrl'
-import { component } from '@/utilities/testHelpers'
+import { describe, expect, test } from "vite-plus/test";
+import { createRoute } from "@/services/createRoute";
+import { getMatchForUrl } from "@/services/getMatchesForUrl";
+import { component } from "@/utilities/testHelpers";
 
-test('given path WITHOUT params, returns match', () => {
+test("given path WITHOUT params, returns match", () => {
   const parent = createRoute({
-    name: 'parent',
-    path: '/parent',
-  })
+    name: "parent",
+    path: "/parent",
+  });
 
   const child = createRoute({
     parent: parent,
-    name: 'parent.child',
-    path: '/child',
-  })
+    name: "parent.child",
+    path: "/child",
+  });
 
   const grandchild = createRoute({
     parent: child,
-    name: 'parent.child.grandchild',
-    path: '/grandchild',
+    name: "parent.child.grandchild",
+    path: "/grandchild",
     component,
-  })
+  });
 
-  const routes = [parent, child, grandchild]
+  const routes = [parent, child, grandchild];
 
-  const match = getMatchForUrl(routes, '/parent/child/grandchild')
+  const match = getMatchForUrl(routes, "/parent/child/grandchild");
 
-  expect(match).toBeDefined()
-  expect(match?.name).toBe('parent.child.grandchild')
-  expect(match?.matched.name).toBe('parent.child.grandchild')
-})
+  expect(match).toBeDefined();
+  expect(match?.name).toBe("parent.child.grandchild");
+  expect(match?.matched.name).toBe("parent.child.grandchild");
+});
 
-test('given path to unnamed parent, without option to get to leaf, returns no matches', () => {
+test("given path to unnamed parent, without option to get to leaf, returns no matches", () => {
   const unnamedParent = createRoute({
-    path: '/unnamed',
-  })
+    path: "/unnamed",
+  });
 
   const unnamedChild = createRoute({
     parent: unnamedParent,
-    path: '/unnamed-child/[child-id]',
-  })
+    path: "/unnamed-child/[child-id]",
+  });
 
   const namedGrandchild = createRoute({
     parent: unnamedChild,
-    path: '/named-grandchild',
+    path: "/named-grandchild",
     component,
-  })
+  });
 
-  const routes = [unnamedParent, unnamedChild, namedGrandchild]
+  const routes = [unnamedParent, unnamedChild, namedGrandchild];
 
-  const match = getMatchForUrl(routes, '/unnamed')
+  const match = getMatchForUrl(routes, "/unnamed");
 
-  expect(match).toBeUndefined()
-})
+  expect(match).toBeUndefined();
+});
 
-test('given path to unnamed  parent, with option to get to leaf, returns available leaf', () => {
+test("given path to unnamed  parent, with option to get to leaf, returns available leaf", () => {
   const unnamedParent = createRoute({
-    path: '/unnamed',
-  })
+    path: "/unnamed",
+  });
 
   const unnamedChildRoot = createRoute({
     parent: unnamedParent,
-    name: 'child-root',
+    name: "child-root",
     component,
-  })
+  });
 
-  const routes = [unnamedChildRoot, unnamedParent]
-  const match = getMatchForUrl(routes, '/unnamed')
+  const routes = [unnamedChildRoot, unnamedParent];
+  const match = getMatchForUrl(routes, "/unnamed");
 
-  expect(match).toBeDefined()
-  expect(match?.name).toBe('child-root')
-})
+  expect(match).toBeDefined();
+  expect(match?.name).toBe("child-root");
+});
 
-test('given route with simple string param WITHOUT value present, returns no matches', () => {
+test("given route with simple string param WITHOUT value present, returns no matches", () => {
   const route = createRoute({
-    name: 'simple-params',
-    path: '/simple/[simple]',
+    name: "simple-params",
+    path: "/simple/[simple]",
     component,
-  })
-  const response = getMatchForUrl([route], '/simple/')
+  });
+  const response = getMatchForUrl([route], "/simple/");
 
-  expect(response).toBeUndefined()
-})
+  expect(response).toBeUndefined();
+});
 
-test('given route with simple string query param WITHOUT value present, returns no matches', () => {
+test("given route with simple string query param WITHOUT value present, returns no matches", () => {
   const route = createRoute({
-    name: 'simple-params',
-    path: '/missing',
-    query: 'simple=[simple]',
+    name: "simple-params",
+    path: "/missing",
+    query: "simple=[simple]",
     component,
-  })
+  });
 
-  const response = getMatchForUrl([route], '/missing?without=params')
+  const response = getMatchForUrl([route], "/missing?without=params");
 
-  expect(response).toBeUndefined()
-})
+  expect(response).toBeUndefined();
+});
 
-test('given route with equal matches, returns first match', () => {
+test("given route with equal matches, returns first match", () => {
   const firstRoute = createRoute({
-    name: 'first-route',
-    path: '/',
+    name: "first-route",
+    path: "/",
     component,
-  })
+  });
 
   const secondRoute = createRoute({
     parent: firstRoute,
-    name: 'second-route',
+    name: "second-route",
     component,
-  })
+  });
 
   const thirdRoute = createRoute({
-    name: 'third-route',
-    path: '/',
+    name: "third-route",
+    path: "/",
     component,
-  })
+  });
 
-  const match = getMatchForUrl([
-    firstRoute,
-    secondRoute,
-    thirdRoute,
-  ], '/')
+  const match = getMatchForUrl([firstRoute, secondRoute, thirdRoute], "/");
 
-  expect(match).toBeDefined()
-  expect(match?.name).toBe('first-route')
-})
+  expect(match).toBeDefined();
+  expect(match?.name).toBe("first-route");
+});
 
-test('given url with query params that include params and extra values, retains extra query params', () => {
+test("given url with query params that include params and extra values, retains extra query params", () => {
   const route = createRoute({
-    name: 'query-params',
-    path: '/',
-    query: 'foo=[param]',
+    name: "query-params",
+    path: "/",
+    query: "foo=[param]",
     component,
-  })
+  });
 
-  const match = getMatchForUrl([route], '/?extra=42&foo=1')
+  const match = getMatchForUrl([route], "/?extra=42&foo=1");
 
-  expect(match).toBeDefined()
-  expect(match?.query.toString()).toBe('foo=1&extra=42')
-})
+  expect(match).toBeDefined();
+  expect(match?.query.toString()).toBe("foo=1&extra=42");
+});
 
-describe('trailing slashes', () => {
-  test('given route without trailing slash, does not match url with trailing slash', () => {
+describe("trailing slashes", () => {
+  test("given route without trailing slash, does not match url with trailing slash", () => {
     const route = createRoute({
-      name: 'no-trailing-slash',
-      path: '/parent/child',
+      name: "no-trailing-slash",
+      path: "/parent/child",
       component,
-    })
+    });
 
-    const match = getMatchForUrl([route], '/parent/child/')
+    const match = getMatchForUrl([route], "/parent/child/");
 
-    expect(match).toBeUndefined()
-  })
+    expect(match).toBeUndefined();
+  });
 
-  test('given route with trailing slash, matches url without trailing slash', () => {
+  test("given route with trailing slash, matches url without trailing slash", () => {
     const route = createRoute({
-      name: 'with-trailing-slash',
-      path: '/parent/child/',
+      name: "with-trailing-slash",
+      path: "/parent/child/",
       component,
-    })
+    });
 
-    const match = getMatchForUrl([route], '/parent/child')
+    const match = getMatchForUrl([route], "/parent/child");
 
-    expect(match).toBeDefined()
-    expect(match?.name).toBe('with-trailing-slash')
-  })
-})
+    expect(match).toBeDefined();
+    expect(match?.name).toBe("with-trailing-slash");
+  });
+});

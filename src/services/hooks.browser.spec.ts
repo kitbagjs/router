@@ -1,91 +1,97 @@
-import { expect, test, vi } from 'vitest'
-import { createRoute } from './createRoute'
-import { createRouter } from './createRouter'
-import { h } from 'vue'
-import { mount } from '@vue/test-utils'
-import { routes } from '@/utilities/testHelpers'
-import { createExternalRoute } from './createExternalRoute'
-import { createRejection } from './createRejection'
-import { onAfterRouteLeave, onAfterRouteUpdate, onBeforeRouteLeave, onBeforeRouteUpdate, RouterView } from '@/main'
+import { expect, test, vi } from "vite-plus/test";
+import { createRoute } from "./createRoute";
+import { createRouter } from "./createRouter";
+import { h } from "vue";
+import { mount } from "@vue/test-utils";
+import { routes } from "@/utilities/testHelpers";
+import { createExternalRoute } from "./createExternalRoute";
+import { createRejection } from "./createRejection";
+import {
+  onAfterRouteLeave,
+  onAfterRouteUpdate,
+  onBeforeRouteLeave,
+  onBeforeRouteUpdate,
+  RouterView,
+} from "@/main";
 
-test('global hooks are called correctly', async () => {
-  const router = createRouter(routes, { initialUrl: '/parentA/valueA' })
+test("global hooks are called correctly", async () => {
+  const router = createRouter(routes, { initialUrl: "/parentA/valueA" });
 
-  const onBeforeRouteEnter = vi.fn()
-  const onBeforeRouteUpdate = vi.fn()
-  const onBeforeRouteLeave = vi.fn()
-  const onAfterRouteEnter = vi.fn()
-  const onAfterRouteUpdate = vi.fn()
-  const onAfterRouteLeave = vi.fn()
-  const onError = vi.fn()
-  const onRejection = vi.fn()
+  const onBeforeRouteEnter = vi.fn();
+  const onBeforeRouteUpdate = vi.fn();
+  const onBeforeRouteLeave = vi.fn();
+  const onAfterRouteEnter = vi.fn();
+  const onAfterRouteUpdate = vi.fn();
+  const onAfterRouteLeave = vi.fn();
+  const onError = vi.fn();
+  const onRejection = vi.fn();
 
-  router.onBeforeRouteEnter(onBeforeRouteEnter)
-  router.onAfterRouteEnter(onAfterRouteEnter)
-  router.onBeforeRouteUpdate(onBeforeRouteUpdate)
-  router.onAfterRouteUpdate(onAfterRouteUpdate)
-  router.onBeforeRouteLeave(onBeforeRouteLeave)
-  router.onAfterRouteLeave(onAfterRouteLeave)
-  router.onError(onError)
-  router.onRejection(onRejection)
+  router.onBeforeRouteEnter(onBeforeRouteEnter);
+  router.onAfterRouteEnter(onAfterRouteEnter);
+  router.onBeforeRouteUpdate(onBeforeRouteUpdate);
+  router.onAfterRouteUpdate(onAfterRouteUpdate);
+  router.onBeforeRouteLeave(onBeforeRouteLeave);
+  router.onAfterRouteLeave(onAfterRouteLeave);
+  router.onError(onError);
+  router.onRejection(onRejection);
 
-  await router.start()
+  await router.start();
 
-  expect(onBeforeRouteEnter).toHaveBeenCalledTimes(1)
-  expect(onBeforeRouteUpdate).toHaveBeenCalledTimes(0)
-  expect(onBeforeRouteLeave).toHaveBeenCalledTimes(0)
-  expect(onAfterRouteLeave).toHaveBeenCalledTimes(0)
-  expect(onAfterRouteUpdate).toHaveBeenCalledTimes(0)
-  expect(onAfterRouteEnter).toHaveBeenCalledTimes(1)
-  expect(onError).toHaveBeenCalledTimes(0)
-  expect(onRejection).toHaveBeenCalledTimes(0)
+  expect(onBeforeRouteEnter).toHaveBeenCalledTimes(1);
+  expect(onBeforeRouteUpdate).toHaveBeenCalledTimes(0);
+  expect(onBeforeRouteLeave).toHaveBeenCalledTimes(0);
+  expect(onAfterRouteLeave).toHaveBeenCalledTimes(0);
+  expect(onAfterRouteUpdate).toHaveBeenCalledTimes(0);
+  expect(onAfterRouteEnter).toHaveBeenCalledTimes(1);
+  expect(onError).toHaveBeenCalledTimes(0);
+  expect(onRejection).toHaveBeenCalledTimes(0);
 
-  await router.push('parentA.childA', { paramA: 'valueA', paramB: 'valueB' })
+  await router.push("parentA.childA", { paramA: "valueA", paramB: "valueB" });
 
-  expect(onBeforeRouteEnter).toHaveBeenCalledTimes(2)
-  expect(onBeforeRouteUpdate).toHaveBeenCalledTimes(1)
-  expect(onBeforeRouteLeave).toHaveBeenCalledTimes(0)
-  expect(onAfterRouteLeave).toHaveBeenCalledTimes(0)
-  expect(onAfterRouteUpdate).toHaveBeenCalledTimes(1)
-  expect(onAfterRouteEnter).toHaveBeenCalledTimes(2)
-  expect(onError).toHaveBeenCalledTimes(0)
-  expect(onRejection).toHaveBeenCalledTimes(0)
+  expect(onBeforeRouteEnter).toHaveBeenCalledTimes(2);
+  expect(onBeforeRouteUpdate).toHaveBeenCalledTimes(1);
+  expect(onBeforeRouteLeave).toHaveBeenCalledTimes(0);
+  expect(onAfterRouteLeave).toHaveBeenCalledTimes(0);
+  expect(onAfterRouteUpdate).toHaveBeenCalledTimes(1);
+  expect(onAfterRouteEnter).toHaveBeenCalledTimes(2);
+  expect(onError).toHaveBeenCalledTimes(0);
+  expect(onRejection).toHaveBeenCalledTimes(0);
 
-  await router.push('parentA.childB', { paramA: 'valueB', paramD: 'valueD' })
+  await router.push("parentA.childB", { paramA: "valueB", paramD: "valueD" });
 
-  expect(onBeforeRouteEnter).toHaveBeenCalledTimes(3)
-  expect(onBeforeRouteUpdate).toHaveBeenCalledTimes(2)
-  expect(onBeforeRouteLeave).toHaveBeenCalledTimes(1)
-  expect(onAfterRouteLeave).toHaveBeenCalledTimes(1)
-  expect(onAfterRouteUpdate).toHaveBeenCalledTimes(2)
-  expect(onAfterRouteEnter).toHaveBeenCalledTimes(3)  
-  expect(onError).toHaveBeenCalledTimes(0)
-  expect(onRejection).toHaveBeenCalledTimes(0)
+  expect(onBeforeRouteEnter).toHaveBeenCalledTimes(3);
+  expect(onBeforeRouteUpdate).toHaveBeenCalledTimes(2);
+  expect(onBeforeRouteLeave).toHaveBeenCalledTimes(1);
+  expect(onAfterRouteLeave).toHaveBeenCalledTimes(1);
+  expect(onAfterRouteUpdate).toHaveBeenCalledTimes(2);
+  expect(onAfterRouteEnter).toHaveBeenCalledTimes(3);
+  expect(onError).toHaveBeenCalledTimes(0);
+  expect(onRejection).toHaveBeenCalledTimes(0);
 
-  await router.push('parentB')
+  await router.push("parentB");
 
-  expect(onBeforeRouteEnter).toHaveBeenCalledTimes(4)
-  expect(onBeforeRouteUpdate).toHaveBeenCalledTimes(2)
-  expect(onBeforeRouteLeave).toHaveBeenCalledTimes(2)
-  expect(onAfterRouteLeave).toHaveBeenCalledTimes(2)
-  expect(onAfterRouteUpdate).toHaveBeenCalledTimes(2)
-  expect(onAfterRouteEnter).toHaveBeenCalledTimes(4)  
-  expect(onError).toHaveBeenCalledTimes(0)
-  expect(onRejection).toHaveBeenCalledTimes(0)
+  expect(onBeforeRouteEnter).toHaveBeenCalledTimes(4);
+  expect(onBeforeRouteUpdate).toHaveBeenCalledTimes(2);
+  expect(onBeforeRouteLeave).toHaveBeenCalledTimes(2);
+  expect(onAfterRouteLeave).toHaveBeenCalledTimes(2);
+  expect(onAfterRouteUpdate).toHaveBeenCalledTimes(2);
+  expect(onAfterRouteEnter).toHaveBeenCalledTimes(4);
+  expect(onError).toHaveBeenCalledTimes(0);
+  expect(onRejection).toHaveBeenCalledTimes(0);
 
-  router.reject('NotFound')
+  router.reject("NotFound");
 
-  expect(onBeforeRouteEnter).toHaveBeenCalledTimes(4)
-  expect(onBeforeRouteUpdate).toHaveBeenCalledTimes(2)
-  expect(onBeforeRouteLeave).toHaveBeenCalledTimes(2)
-  expect(onAfterRouteLeave).toHaveBeenCalledTimes(2)
-  expect(onAfterRouteUpdate).toHaveBeenCalledTimes(2)
-  expect(onAfterRouteEnter).toHaveBeenCalledTimes(4)  
-  expect(onError).toHaveBeenCalledTimes(0)
-  expect(onRejection).toHaveBeenCalledTimes(1)
-})
+  expect(onBeforeRouteEnter).toHaveBeenCalledTimes(4);
+  expect(onBeforeRouteUpdate).toHaveBeenCalledTimes(2);
+  expect(onBeforeRouteLeave).toHaveBeenCalledTimes(2);
+  expect(onAfterRouteLeave).toHaveBeenCalledTimes(2);
+  expect(onAfterRouteUpdate).toHaveBeenCalledTimes(2);
+  expect(onAfterRouteEnter).toHaveBeenCalledTimes(4);
+  expect(onError).toHaveBeenCalledTimes(0);
+  expect(onRejection).toHaveBeenCalledTimes(1);
+});
 
-test('route hooks are called correctly', async () => {
+test("route hooks are called correctly", async () => {
   const parentHooks = {
     beforeEnter: vi.fn(),
     beforeLeave: vi.fn(),
@@ -93,83 +99,83 @@ test('route hooks are called correctly', async () => {
     afterEnter: vi.fn(),
     afterLeave: vi.fn(),
     afterUpdate: vi.fn(),
-  }
+  };
 
   const parentA = createRoute({
-    name: 'parentA',
-    path: '/parentA',
-  })
+    name: "parentA",
+    path: "/parentA",
+  });
 
-  parentA.onBeforeRouteEnter(() => parentHooks.beforeEnter())
-  parentA.onBeforeRouteLeave(() => parentHooks.beforeLeave())
-  parentA.onBeforeRouteUpdate(() => parentHooks.beforeUpdate())
-  parentA.onAfterRouteEnter(() => parentHooks.afterEnter())
-  parentA.onAfterRouteLeave(() => parentHooks.afterLeave())
-  parentA.onAfterRouteUpdate(() => parentHooks.afterUpdate())
+  parentA.onBeforeRouteEnter(() => parentHooks.beforeEnter());
+  parentA.onBeforeRouteLeave(() => parentHooks.beforeLeave());
+  parentA.onBeforeRouteUpdate(() => parentHooks.beforeUpdate());
+  parentA.onAfterRouteEnter(() => parentHooks.afterEnter());
+  parentA.onAfterRouteLeave(() => parentHooks.afterLeave());
+  parentA.onAfterRouteUpdate(() => parentHooks.afterUpdate());
 
   const parentB = createRoute({
-    name: 'parentB',
-    path: '/parentB',
-  })
+    name: "parentB",
+    path: "/parentB",
+  });
 
   const child = createRoute({
-    name: 'child',
-    path: '/child/[param]',
+    name: "child",
+    path: "/child/[param]",
     parent: parentA,
-  })
+  });
 
   const router = createRouter([parentA, parentB, child], {
-    initialUrl: '/parentA',
-  })
+    initialUrl: "/parentA",
+  });
 
   const root = {
-    template: '<RouterView />',
-  }
+    template: "<RouterView />",
+  };
 
   mount(root, {
     global: {
       plugins: [router],
     },
-  })
+  });
 
-  await router.start()
+  await router.start();
 
-  expect(parentHooks.beforeEnter).toHaveBeenCalledTimes(1)
-  expect(parentHooks.beforeUpdate).toHaveBeenCalledTimes(0)
-  expect(parentHooks.beforeLeave).toHaveBeenCalledTimes(0)
-  expect(parentHooks.afterLeave).toHaveBeenCalledTimes(0)
-  expect(parentHooks.afterUpdate).toHaveBeenCalledTimes(0)
-  expect(parentHooks.afterEnter).toHaveBeenCalledTimes(1)
+  expect(parentHooks.beforeEnter).toHaveBeenCalledTimes(1);
+  expect(parentHooks.beforeUpdate).toHaveBeenCalledTimes(0);
+  expect(parentHooks.beforeLeave).toHaveBeenCalledTimes(0);
+  expect(parentHooks.afterLeave).toHaveBeenCalledTimes(0);
+  expect(parentHooks.afterUpdate).toHaveBeenCalledTimes(0);
+  expect(parentHooks.afterEnter).toHaveBeenCalledTimes(1);
 
-  await router.push('child', { param: 'param2' })
+  await router.push("child", { param: "param2" });
 
-  expect(parentHooks.beforeEnter).toHaveBeenCalledTimes(1)
-  expect(parentHooks.beforeUpdate).toHaveBeenCalledTimes(1)
-  expect(parentHooks.beforeLeave).toHaveBeenCalledTimes(0)
-  expect(parentHooks.afterLeave).toHaveBeenCalledTimes(0)
-  expect(parentHooks.afterUpdate).toHaveBeenCalledTimes(1)
-  expect(parentHooks.afterEnter).toHaveBeenCalledTimes(1) 
+  expect(parentHooks.beforeEnter).toHaveBeenCalledTimes(1);
+  expect(parentHooks.beforeUpdate).toHaveBeenCalledTimes(1);
+  expect(parentHooks.beforeLeave).toHaveBeenCalledTimes(0);
+  expect(parentHooks.afterLeave).toHaveBeenCalledTimes(0);
+  expect(parentHooks.afterUpdate).toHaveBeenCalledTimes(1);
+  expect(parentHooks.afterEnter).toHaveBeenCalledTimes(1);
 
-  await router.push('parentA')
+  await router.push("parentA");
 
-  expect(parentHooks.beforeEnter).toHaveBeenCalledTimes(1)
-  expect(parentHooks.beforeUpdate).toHaveBeenCalledTimes(2)
-  expect(parentHooks.beforeLeave).toHaveBeenCalledTimes(0)
-  expect(parentHooks.afterLeave).toHaveBeenCalledTimes(0)
-  expect(parentHooks.afterUpdate).toHaveBeenCalledTimes(2)
-  expect(parentHooks.afterEnter).toHaveBeenCalledTimes(1)
+  expect(parentHooks.beforeEnter).toHaveBeenCalledTimes(1);
+  expect(parentHooks.beforeUpdate).toHaveBeenCalledTimes(2);
+  expect(parentHooks.beforeLeave).toHaveBeenCalledTimes(0);
+  expect(parentHooks.afterLeave).toHaveBeenCalledTimes(0);
+  expect(parentHooks.afterUpdate).toHaveBeenCalledTimes(2);
+  expect(parentHooks.afterEnter).toHaveBeenCalledTimes(1);
 
-  await router.push('parentB')
+  await router.push("parentB");
 
-  expect(parentHooks.beforeEnter).toHaveBeenCalledTimes(1)
-  expect(parentHooks.beforeUpdate).toHaveBeenCalledTimes(2)
-  expect(parentHooks.beforeLeave).toHaveBeenCalledTimes(1)
-  expect(parentHooks.afterLeave).toHaveBeenCalledTimes(1)
-  expect(parentHooks.afterUpdate).toHaveBeenCalledTimes(2)
-  expect(parentHooks.afterEnter).toHaveBeenCalledTimes(1)
-})
+  expect(parentHooks.beforeEnter).toHaveBeenCalledTimes(1);
+  expect(parentHooks.beforeUpdate).toHaveBeenCalledTimes(2);
+  expect(parentHooks.beforeLeave).toHaveBeenCalledTimes(1);
+  expect(parentHooks.afterLeave).toHaveBeenCalledTimes(1);
+  expect(parentHooks.afterUpdate).toHaveBeenCalledTimes(2);
+  expect(parentHooks.afterEnter).toHaveBeenCalledTimes(1);
+});
 
-test('external route hooks are called correctly', async () => {
+test("external route hooks are called correctly", async () => {
   const internalHooks = {
     beforeEnter: vi.fn(),
     beforeLeave: vi.fn(),
@@ -178,165 +184,168 @@ test('external route hooks are called correctly', async () => {
     afterLeave: vi.fn(),
     afterUpdate: vi.fn(),
     onRejection: vi.fn(),
-  }
+  };
 
   const internal = createRoute({
-    name: 'internal',
-    path: '/',
-  })
+    name: "internal",
+    path: "/",
+  });
 
-  internal.onBeforeRouteEnter(() => internalHooks.beforeEnter())
-  internal.onBeforeRouteLeave(() => internalHooks.beforeLeave())
-  internal.onBeforeRouteUpdate(() => internalHooks.beforeUpdate())
-  internal.onAfterRouteEnter(() => internalHooks.afterEnter())
-  internal.onAfterRouteLeave(() => internalHooks.afterLeave())
-  internal.onAfterRouteUpdate(() => internalHooks.afterUpdate())
+  internal.onBeforeRouteEnter(() => internalHooks.beforeEnter());
+  internal.onBeforeRouteLeave(() => internalHooks.beforeLeave());
+  internal.onBeforeRouteUpdate(() => internalHooks.beforeUpdate());
+  internal.onAfterRouteEnter(() => internalHooks.afterEnter());
+  internal.onAfterRouteLeave(() => internalHooks.afterLeave());
+  internal.onAfterRouteUpdate(() => internalHooks.afterUpdate());
 
   const externalHooks = {
     beforeEnter: vi.fn(),
-  }
+  };
 
   const external = createExternalRoute({
-    name: 'external',
-    host: 'https://kitbag.dev',
-    path: '/',
-  })
+    name: "external",
+    host: "https://kitbag.dev",
+    path: "/",
+  });
 
-  external.onBeforeRouteEnter(() => externalHooks.beforeEnter())
+  external.onBeforeRouteEnter(() => externalHooks.beforeEnter());
 
   const router = createRouter([internal, external], {
-    initialUrl: '/',
-  })
+    initialUrl: "/",
+  });
 
   const root = {
-    template: '<RouterView />',
-  }
+    template: "<RouterView />",
+  };
 
   mount(root, {
     global: {
       plugins: [router],
     },
-  })
+  });
 
-  await router.start()
+  await router.start();
 
-  expect(internalHooks.beforeEnter).toHaveBeenCalledTimes(1)
-  expect(internalHooks.beforeUpdate).toHaveBeenCalledTimes(0)
-  expect(internalHooks.beforeLeave).toHaveBeenCalledTimes(0)
-  expect(internalHooks.afterLeave).toHaveBeenCalledTimes(0)
-  expect(internalHooks.afterUpdate).toHaveBeenCalledTimes(0)
-  expect(internalHooks.afterEnter).toHaveBeenCalledTimes(1)
-  expect(externalHooks.beforeEnter).toHaveBeenCalledTimes(0)
-  expect(internalHooks.onRejection).toHaveBeenCalledTimes(0)
+  expect(internalHooks.beforeEnter).toHaveBeenCalledTimes(1);
+  expect(internalHooks.beforeUpdate).toHaveBeenCalledTimes(0);
+  expect(internalHooks.beforeLeave).toHaveBeenCalledTimes(0);
+  expect(internalHooks.afterLeave).toHaveBeenCalledTimes(0);
+  expect(internalHooks.afterUpdate).toHaveBeenCalledTimes(0);
+  expect(internalHooks.afterEnter).toHaveBeenCalledTimes(1);
+  expect(externalHooks.beforeEnter).toHaveBeenCalledTimes(0);
+  expect(internalHooks.onRejection).toHaveBeenCalledTimes(0);
 
-  await router.push('external')
+  await router.push("external");
 
-  expect(internalHooks.beforeEnter).toHaveBeenCalledTimes(1)
-  expect(internalHooks.beforeUpdate).toHaveBeenCalledTimes(0)
-  expect(internalHooks.beforeLeave).toHaveBeenCalledTimes(1)
-  expect(internalHooks.afterLeave).toHaveBeenCalledTimes(1)
-  expect(internalHooks.afterUpdate).toHaveBeenCalledTimes(0)
-  expect(internalHooks.afterEnter).toHaveBeenCalledTimes(1)
-  expect(externalHooks.beforeEnter).toHaveBeenCalledTimes(1)
-  expect(internalHooks.onRejection).toHaveBeenCalledTimes(0)
-})
+  expect(internalHooks.beforeEnter).toHaveBeenCalledTimes(1);
+  expect(internalHooks.beforeUpdate).toHaveBeenCalledTimes(0);
+  expect(internalHooks.beforeLeave).toHaveBeenCalledTimes(1);
+  expect(internalHooks.afterLeave).toHaveBeenCalledTimes(1);
+  expect(internalHooks.afterUpdate).toHaveBeenCalledTimes(0);
+  expect(internalHooks.afterEnter).toHaveBeenCalledTimes(1);
+  expect(externalHooks.beforeEnter).toHaveBeenCalledTimes(1);
+  expect(internalHooks.onRejection).toHaveBeenCalledTimes(0);
+});
 
-test('rejection hooks are called correctly', async () => {
-  const onRejection = vi.fn()
+test("rejection hooks are called correctly", async () => {
+  const onRejection = vi.fn();
 
   const rejection = createRejection({
-    type: 'CustomRejection',
-  })
+    type: "CustomRejection",
+  });
 
-  rejection.onRejection((type, { to, from }) => onRejection(type, { to, from }))
+  rejection.onRejection((type, { to, from }) => onRejection(type, { to, from }));
 
-  const router = createRouter(routes, { initialUrl: '/', rejections: [rejection] })
-  
-  await router.start()
+  const router = createRouter(routes, { initialUrl: "/", rejections: [rejection] });
 
-  expect(onRejection).toHaveBeenCalledTimes(0)
+  await router.start();
 
-  router.reject('CustomRejection')
+  expect(onRejection).toHaveBeenCalledTimes(0);
 
-  expect(onRejection).toHaveBeenCalledTimes(1)
-  expect(onRejection).toHaveBeenCalledWith('CustomRejection', expect.objectContaining({
-    to: null,
-    from: null,
-  }))
-})
+  router.reject("CustomRejection");
 
-test('component hooks are called correctly', async () => {
+  expect(onRejection).toHaveBeenCalledTimes(1);
+  expect(onRejection).toHaveBeenCalledWith(
+    "CustomRejection",
+    expect.objectContaining({
+      to: null,
+      from: null,
+    }),
+  );
+});
+
+test("component hooks are called correctly", async () => {
   const parentHooks = {
     beforeUpdate: vi.fn(),
     beforeLeave: vi.fn(),
     afterLeave: vi.fn(),
     afterUpdate: vi.fn(),
-  }
+  };
 
   const parentA = createRoute({
-    name: 'parentA',
-    path: '/parentA',
+    name: "parentA",
+    path: "/parentA",
     component: {
       setup: () => {
-        onBeforeRouteUpdate(() => parentHooks.beforeUpdate())
-        onBeforeRouteLeave(() => parentHooks.beforeLeave())
-        onAfterRouteLeave(() => parentHooks.afterLeave())
-        onAfterRouteUpdate(() => parentHooks.afterUpdate())
+        onBeforeRouteUpdate(() => parentHooks.beforeUpdate());
+        onBeforeRouteLeave(() => parentHooks.beforeLeave());
+        onAfterRouteLeave(() => parentHooks.afterLeave());
+        onAfterRouteUpdate(() => parentHooks.afterUpdate());
       },
       render: () => h(RouterView),
     },
-  })
+  });
 
   const parentB = createRoute({
-    name: 'parentB',
-    path: '/parentB',
-  })
+    name: "parentB",
+    path: "/parentB",
+  });
 
   const child = createRoute({
-    name: 'child',
-    path: '/child/[param]',
+    name: "child",
+    path: "/child/[param]",
     parent: parentA,
-  })
+  });
 
   const router = createRouter([parentA, parentB, child], {
-    initialUrl: '/parentA',
-  })
+    initialUrl: "/parentA",
+  });
 
   const root = {
-    template: '<RouterView />',
-  }
+    template: "<RouterView />",
+  };
 
   mount(root, {
     global: {
       plugins: [router],
     },
-  })
+  });
 
-  await router.start()
+  await router.start();
 
-  expect(parentHooks.beforeUpdate).toHaveBeenCalledTimes(0)
-  expect(parentHooks.beforeLeave).toHaveBeenCalledTimes(0)
-  expect(parentHooks.afterLeave).toHaveBeenCalledTimes(0)
-  expect(parentHooks.afterUpdate).toHaveBeenCalledTimes(0)
+  expect(parentHooks.beforeUpdate).toHaveBeenCalledTimes(0);
+  expect(parentHooks.beforeLeave).toHaveBeenCalledTimes(0);
+  expect(parentHooks.afterLeave).toHaveBeenCalledTimes(0);
+  expect(parentHooks.afterUpdate).toHaveBeenCalledTimes(0);
 
-  await router.push('child', { param: 'param2' })
+  await router.push("child", { param: "param2" });
 
-  expect(parentHooks.beforeUpdate).toHaveBeenCalledTimes(1)
-  expect(parentHooks.beforeLeave).toHaveBeenCalledTimes(0)
-  expect(parentHooks.afterLeave).toHaveBeenCalledTimes(0)
-  expect(parentHooks.afterUpdate).toHaveBeenCalledTimes(1)
+  expect(parentHooks.beforeUpdate).toHaveBeenCalledTimes(1);
+  expect(parentHooks.beforeLeave).toHaveBeenCalledTimes(0);
+  expect(parentHooks.afterLeave).toHaveBeenCalledTimes(0);
+  expect(parentHooks.afterUpdate).toHaveBeenCalledTimes(1);
 
-  await router.push('parentA', {})
+  await router.push("parentA", {});
 
-  expect(parentHooks.beforeUpdate).toHaveBeenCalledTimes(2)
-  expect(parentHooks.beforeLeave).toHaveBeenCalledTimes(0)
-  expect(parentHooks.afterLeave).toHaveBeenCalledTimes(0)
-  expect(parentHooks.afterUpdate).toHaveBeenCalledTimes(2)
+  expect(parentHooks.beforeUpdate).toHaveBeenCalledTimes(2);
+  expect(parentHooks.beforeLeave).toHaveBeenCalledTimes(0);
+  expect(parentHooks.afterLeave).toHaveBeenCalledTimes(0);
+  expect(parentHooks.afterUpdate).toHaveBeenCalledTimes(2);
 
-  await router.push('parentB')
+  await router.push("parentB");
 
-  expect(parentHooks.beforeUpdate).toHaveBeenCalledTimes(2)
-  expect(parentHooks.beforeLeave).toHaveBeenCalledTimes(1)
-  expect(parentHooks.afterLeave).toHaveBeenCalledTimes(1)
-  expect(parentHooks.afterUpdate).toHaveBeenCalledTimes(2)
-})
+  expect(parentHooks.beforeUpdate).toHaveBeenCalledTimes(2);
+  expect(parentHooks.beforeLeave).toHaveBeenCalledTimes(1);
+  expect(parentHooks.afterLeave).toHaveBeenCalledTimes(1);
+  expect(parentHooks.afterUpdate).toHaveBeenCalledTimes(2);
+});

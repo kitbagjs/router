@@ -1,22 +1,22 @@
-import { expectTypeOf, test } from 'vitest'
-import { RouteGetByKey } from '@/types/routeWithParams'
-import { createRoute } from '@/services/createRoute'
+import { expectTypeOf, test } from "vite-plus/test";
+import { RouteGetByKey } from "@/types/routeWithParams";
+import { createRoute } from "@/services/createRoute";
 
-test('RouteGetByName works as expected', () => {
+test("RouteGetByName works as expected", () => {
   const parentA = createRoute({
-    name: 'parentA',
-    path: '/parentA/[paramA]',
-  })
+    name: "parentA",
+    path: "/parentA/[paramA]",
+  });
 
   const childA = createRoute({
     parent: parentA,
-    name: 'parentA.childA',
-    path: '/childA/[?paramB]',
-  })
+    name: "parentA.childA",
+    path: "/childA/[?paramB]",
+  });
 
-  type Routes = [typeof parentA, typeof childA]
-  type Source = RouteGetByKey<Routes, 'parentA.childA'>
-  type Expect = typeof childA
+  type Routes = [typeof parentA, typeof childA];
+  type Source = RouteGetByKey<Routes, "parentA.childA">;
+  type Expect = typeof childA;
 
-  expectTypeOf<Source>().toEqualTypeOf<Expect>()
-})
+  expectTypeOf<Source>().toEqualTypeOf<Expect>();
+});

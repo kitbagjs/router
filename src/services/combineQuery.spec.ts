@@ -1,48 +1,48 @@
-import { expect, test } from 'vitest'
-import { DuplicateParamsError } from '@/errors/duplicateParamsError'
-import { combineQuery } from '@/services/combineQuery'
-import { withParams } from '@/services/withParams'
+import { expect, test } from "vite-plus/test";
+import { DuplicateParamsError } from "@/errors/duplicateParamsError";
+import { combineQuery } from "@/services/combineQuery";
+import { withParams } from "@/services/withParams";
 
-test('given 2 queries, returns new Query joined together', () => {
-  const aQuery = withParams('foo=ABC', {})
-  const bQuery = withParams('bar=123', {})
+test("given 2 queries, returns new Query joined together", () => {
+  const aQuery = withParams("foo=ABC", {});
+  const bQuery = withParams("bar=123", {});
 
-  const response = combineQuery(aQuery, bQuery)
+  const response = combineQuery(aQuery, bQuery);
 
-  expect(response.value).toBe('foo=ABC&bar=123')
-})
+  expect(response.value).toBe("foo=ABC&bar=123");
+});
 
-test('given 2 queries with params, returns new Query joined together with params', () => {
-  const aQuery = withParams('foo=[foz]', { foz: Boolean })
-  const bQuery = withParams('bar=[baz]', { baz: Number })
+test("given 2 queries with params, returns new Query joined together with params", () => {
+  const aQuery = withParams("foo=[foz]", { foz: Boolean });
+  const bQuery = withParams("bar=[baz]", { baz: Number });
 
-  const response = combineQuery(aQuery, bQuery)
+  const response = combineQuery(aQuery, bQuery);
 
-  expect(response.value).toBe('foo=[foz]&bar=[baz]')
+  expect(response.value).toBe("foo=[foz]&bar=[baz]");
   expect(response.params).toMatchObject({
     foz: { param: Boolean, isOptional: false, isGreedy: false },
     baz: { param: Number, isOptional: false, isGreedy: false },
-  })
-})
+  });
+});
 
-test('given 2 queries with optional params, returns new Query joined together with params', () => {
-  const aQuery = withParams('foo=[?foz]', { foz: Boolean })
-  const bQuery = withParams('bar=[?baz]', { baz: Number })
+test("given 2 queries with optional params, returns new Query joined together with params", () => {
+  const aQuery = withParams("foo=[?foz]", { foz: Boolean });
+  const bQuery = withParams("bar=[?baz]", { baz: Number });
 
-  const response = combineQuery(aQuery, bQuery)
+  const response = combineQuery(aQuery, bQuery);
 
-  expect(response.value).toBe('foo=[?foz]&bar=[?baz]')
+  expect(response.value).toBe("foo=[?foz]&bar=[?baz]");
   expect(response.params).toMatchObject({
     foz: { param: Boolean, isOptional: true, isGreedy: false },
     baz: { param: Number, isOptional: true, isGreedy: false },
-  })
-})
+  });
+});
 
-test('given 2 queries with params that include duplicates, throws DuplicateParamsError', () => {
-  const aQuery = withParams('foo=[foz]', { foz: String })
-  const bQuery = withParams('foo=[foz]', { foz: String })
+test("given 2 queries with params that include duplicates, throws DuplicateParamsError", () => {
+  const aQuery = withParams("foo=[foz]", { foz: String });
+  const bQuery = withParams("foo=[foz]", { foz: String });
 
-  const action: () => void = () => combineQuery(aQuery, bQuery)
+  const action: () => void = () => combineQuery(aQuery, bQuery);
 
-  expect(action).toThrow(DuplicateParamsError)
-})
+  expect(action).toThrow(DuplicateParamsError);
+});

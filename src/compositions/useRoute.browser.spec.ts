@@ -1,135 +1,135 @@
-import { mount } from '@vue/test-utils'
-import { expect, test } from 'vitest'
-import { useRoute } from '@/main'
-import { UseRouteInvalidError } from '@/errors/useRouteInvalidError'
-import { createRouter } from '@/services/createRouter'
-import { getError, routes } from '@/utilities/testHelpers'
+import { mount } from "@vue/test-utils";
+import { expect, test } from "vite-plus/test";
+import { useRoute } from "@/main";
+import { UseRouteInvalidError } from "@/errors/useRouteInvalidError";
+import { createRouter } from "@/services/createRouter";
+import { getError, routes } from "@/utilities/testHelpers";
 
-test('when given no routeKey returns the router route', async () => {
+test("when given no routeKey returns the router route", async () => {
   const router = createRouter(routes, {
-    initialUrl: '/routeA',
-  })
+    initialUrl: "/routeA",
+  });
 
-  await router.start()
+  await router.start();
 
   const component = {
-    template: 'foo',
+    template: "foo",
     setup() {
-      const route = useRoute()
+      const route = useRoute();
 
-      return { route }
+      return { route };
     },
-  }
+  };
 
   const wrapper = mount(component, {
     global: {
       plugins: [router],
     },
-  })
+  });
 
-  expect(wrapper.vm.route).toBe(router.route)
-})
+  expect(wrapper.vm.route).toBe(router.route);
+});
 
-test('when given a routeKey that matches the current route returns the router route', async () => {
+test("when given a routeKey that matches the current route returns the router route", async () => {
   const router = createRouter(routes, {
-    initialUrl: '/parentB',
-  })
+    initialUrl: "/parentB",
+  });
 
-  await router.start()
+  await router.start();
 
   const component = {
-    template: 'foo',
+    template: "foo",
     setup() {
-      const route = useRoute('parentB')
+      const route = useRoute("parentB");
 
-      return { route }
+      return { route };
     },
-  }
+  };
 
   const wrapper = mount(component, {
     global: {
       plugins: [router],
     },
-  })
+  });
 
-  expect(wrapper.vm.route).toBe(router.route)
-})
+  expect(wrapper.vm.route).toBe(router.route);
+});
 
-test('when given a routeKey that matches exactly the current route returns the router route', async () => {
+test("when given a routeKey that matches exactly the current route returns the router route", async () => {
   const router = createRouter(routes, {
-    initialUrl: '/parentA/parentAParam/childA/childAParam',
-  })
+    initialUrl: "/parentA/parentAParam/childA/childAParam",
+  });
 
-  await router.start()
+  await router.start();
 
   const component = {
-    template: 'foo',
+    template: "foo",
     setup() {
-      const route = useRoute('parentA.childA')
+      const route = useRoute("parentA.childA");
 
-      return { route }
+      return { route };
     },
-  }
+  };
 
   const wrapper = mount(component, {
     global: {
       plugins: [router],
     },
-  })
+  });
 
-  expect(wrapper.vm.route).toBe(router.route)
-})
+  expect(wrapper.vm.route).toBe(router.route);
+});
 
-test('when given a routeKey that does not match the current route, throws UseRouteInvalidError', async () => {
+test("when given a routeKey that does not match the current route, throws UseRouteInvalidError", async () => {
   const router = createRouter(routes, {
-    initialUrl: '/parentB',
-  })
+    initialUrl: "/parentB",
+  });
 
-  await router.start()
+  await router.start();
 
   const component = {
-    template: 'foo',
+    template: "foo",
     setup() {
-      const route = useRoute('parentC')
+      const route = useRoute("parentC");
 
-      return { route }
+      return { route };
     },
-  }
+  };
 
   const error = getError(() => {
     mount(component, {
       global: {
         plugins: [router],
       },
-    })
-  })
+    });
+  });
 
-  expect(error).toBeInstanceOf(UseRouteInvalidError)
-})
+  expect(error).toBeInstanceOf(UseRouteInvalidError);
+});
 
-test('when given a routeKey that does not match exactly the current route, throws UseRouteInvalidError', async () => {
+test("when given a routeKey that does not match exactly the current route, throws UseRouteInvalidError", async () => {
   const router = createRouter(routes, {
-    initialUrl: '/parentA/parentAParam/childA/childAParam',
-  })
+    initialUrl: "/parentA/parentAParam/childA/childAParam",
+  });
 
-  await router.start()
+  await router.start();
 
   const component = {
-    template: 'foo',
+    template: "foo",
     setup() {
-      const route = useRoute('parentA', { exact: true })
+      const route = useRoute("parentA", { exact: true });
 
-      return { route }
+      return { route };
     },
-  }
+  };
 
   const error = getError(() => {
     mount(component, {
       global: {
         plugins: [router],
       },
-    })
-  })
+    });
+  });
 
-  expect(error).toBeInstanceOf(UseRouteInvalidError)
-})
+  expect(error).toBeInstanceOf(UseRouteInvalidError);
+});

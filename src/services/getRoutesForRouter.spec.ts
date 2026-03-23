@@ -1,125 +1,101 @@
-import { describe, expect, test } from 'vitest'
-import { createRoute } from '@/services/createRoute'
-import { getRoutesForRouter } from '@/services/getRoutesForRouter'
-import { component } from '@/utilities'
-import { createRouterPlugin } from '@/services/createRouterPlugin'
+import { describe, expect, test } from "vite-plus/test";
+import { createRoute } from "@/services/createRoute";
+import { getRoutesForRouter } from "@/services/getRoutesForRouter";
+import { component } from "@/utilities";
+import { createRouterPlugin } from "@/services/createRouterPlugin";
 
-test('given routes without names, removes routes from response', () => {
-  const foo = createRoute({ name: 'foo' })
+test("given routes without names, removes routes from response", () => {
+  const foo = createRoute({ name: "foo" });
 
   const { routes } = getRoutesForRouter([
     foo,
-    createRoute({ component, name: '' }),
+    createRoute({ component, name: "" }),
     createRoute({ component, name: undefined }),
     createRoute({ component }),
-  ])
+  ]);
 
-  expect(routes).toMatchObject([foo])
-})
+  expect(routes).toMatchObject([foo]);
+});
 
-test('given named routes inside plugins, includes them in the response', () => {
-  const pluginFoo = createRoute({ name: 'plugin-foo' })
+test("given named routes inside plugins, includes them in the response", () => {
+  const pluginFoo = createRoute({ name: "plugin-foo" });
   const plugins = [
     createRouterPlugin({
       routes: [
         pluginFoo,
-        createRoute({ name: '' }),
+        createRoute({ name: "" }),
         createRoute({ name: undefined }),
         createRoute({ component }),
       ],
     }),
-  ]
+  ];
 
-  const { routes } = getRoutesForRouter([], plugins)
+  const { routes } = getRoutesForRouter([], plugins);
 
-  expect(routes).toMatchObject([pluginFoo])
-})
+  expect(routes).toMatchObject([pluginFoo]);
+});
 
-test('given named routes inside route context, includes them in the response', () => {
-  const relatedRoute = createRoute({ name: 'related' })
-  const fooRoute = createRoute({ name: 'foo', context: [relatedRoute] })
-  const barRoute = createRoute({ name: 'bar', context: [relatedRoute] })
-  const zooRoute = createRoute({ name: 'zoo', context: [relatedRoute] })
+test("given named routes inside route context, includes them in the response", () => {
+  const relatedRoute = createRoute({ name: "related" });
+  const fooRoute = createRoute({ name: "foo", context: [relatedRoute] });
+  const barRoute = createRoute({ name: "bar", context: [relatedRoute] });
+  const zooRoute = createRoute({ name: "zoo", context: [relatedRoute] });
   const plugins = [
     createRouterPlugin({
-      routes: [
-        fooRoute,
-        barRoute,
-        zooRoute,
-      ],
+      routes: [fooRoute, barRoute, zooRoute],
     }),
-  ]
+  ];
 
-  const { routes } = getRoutesForRouter([], plugins)
+  const { routes } = getRoutesForRouter([], plugins);
 
-  expect(routes).toMatchObject([
-    fooRoute,
-    relatedRoute,
-    barRoute,
-    zooRoute,
-  ])
-})
+  expect(routes).toMatchObject([fooRoute, relatedRoute, barRoute, zooRoute]);
+});
 
-test('given named routes inside route context of plugin routes, includes them in the response', () => {
-  const relatedRoute = createRoute({ name: 'related' })
-  const fooRoute = createRoute({ name: 'foo', context: [relatedRoute] })
-  const barRoute = createRoute({ name: 'bar', context: [relatedRoute] })
-  const zooRoute = createRoute({ name: 'zoo', context: [relatedRoute] })
+test("given named routes inside route context of plugin routes, includes them in the response", () => {
+  const relatedRoute = createRoute({ name: "related" });
+  const fooRoute = createRoute({ name: "foo", context: [relatedRoute] });
+  const barRoute = createRoute({ name: "bar", context: [relatedRoute] });
+  const zooRoute = createRoute({ name: "zoo", context: [relatedRoute] });
 
-  const { routes } = getRoutesForRouter([
-    fooRoute,
-    barRoute,
-    zooRoute,
-  ])
+  const { routes } = getRoutesForRouter([fooRoute, barRoute, zooRoute]);
 
-  expect(routes).toMatchObject([
-    fooRoute,
-    relatedRoute,
-    barRoute,
-    zooRoute,
-  ])
-})
+  expect(routes).toMatchObject([fooRoute, relatedRoute, barRoute, zooRoute]);
+});
 
-test('return routes sorted by depth', () => {
-  const routeA = createRoute({ name: 'a' })
-  const routeB = createRoute({ name: 'b', parent: routeA })
-  const routeC = createRoute({ name: 'c', parent: routeB })
-  const routeD = createRoute({ name: 'd', parent: routeA })
-  const routeE = createRoute({ name: 'e' })
+test("return routes sorted by depth", () => {
+  const routeA = createRoute({ name: "a" });
+  const routeB = createRoute({ name: "b", parent: routeA });
+  const routeC = createRoute({ name: "c", parent: routeB });
+  const routeD = createRoute({ name: "d", parent: routeA });
+  const routeE = createRoute({ name: "e" });
 
-  const { routes } = getRoutesForRouter([routeA, routeB, routeC, routeD, routeE])
+  const { routes } = getRoutesForRouter([routeA, routeB, routeC, routeD, routeE]);
 
-  expect(routes.map((route) => route.name)).toMatchObject([
-    'c',
-    'b',
-    'd',
-    'a',
-    'e',
-  ])
-})
+  expect(routes.map((route) => route.name)).toMatchObject(["c", "b", "d", "a", "e"]);
+});
 
-describe('getRouteByName', () => {
-  test('circular context is ignored', () => {
-    const routeA = createRoute({ name: 'a' })
-    const routeB = createRoute({ name: 'b', context: [routeA] })
+describe("getRouteByName", () => {
+  test("circular context is ignored", () => {
+    const routeA = createRoute({ name: "a" });
+    const routeB = createRoute({ name: "b", context: [routeA] });
 
     // @ts-expect-error - you cannot actually do this
-    routeA.context.push(routeB)
-    routeB.context.push(routeA)
+    routeA.context.push(routeB);
+    routeB.context.push(routeA);
 
-    expect(() => getRoutesForRouter([routeA, routeB])).not.toThrow()
-  })
+    expect(() => getRoutesForRouter([routeA, routeB])).not.toThrow();
+  });
 
-  test('returns the route by name', () => {
-    const route = createRoute({ name: 'foo' })
-    const { getRouteByName } = getRoutesForRouter([route])
+  test("returns the route by name", () => {
+    const route = createRoute({ name: "foo" });
+    const { getRouteByName } = getRoutesForRouter([route]);
 
-    expect(getRouteByName('foo')).toBe(route)
-  })
+    expect(getRouteByName("foo")).toBe(route);
+  });
 
-  test('getRouteByName returns undefined if the route is not found', () => {
-    const { getRouteByName } = getRoutesForRouter([])
+  test("getRouteByName returns undefined if the route is not found", () => {
+    const { getRouteByName } = getRoutesForRouter([]);
 
-    expect(getRouteByName('foo')).toBeUndefined()
-  })
-})
+    expect(getRouteByName("foo")).toBeUndefined();
+  });
+});

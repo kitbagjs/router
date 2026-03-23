@@ -1,38 +1,38 @@
-import { beforeEach, expect, test, vi } from 'vitest'
-import { createRouterHistory } from '@/services/createRouterHistory'
-import { random } from '@/utilities/testHelpers'
+import { beforeEach, expect, test, vi } from "vite-plus/test";
+import { createRouterHistory } from "@/services/createRouterHistory";
+import { random } from "@/utilities/testHelpers";
 
 function noop(): void {}
 
-beforeEach(() => vi.resetAllMocks())
+beforeEach(() => vi.resetAllMocks());
 
-test('when go is called, forwards call to window history', () => {
-  vi.spyOn(window.history, 'go')
+test("when go is called, forwards call to window history", () => {
+  vi.spyOn(window.history, "go");
 
-  const delta = random.number({ min: 0, max: 100 })
-  const history = createRouterHistory({ listener: noop })
+  const delta = random.number({ min: 0, max: 100 });
+  const history = createRouterHistory({ listener: noop });
 
-  history.go(delta)
+  history.go(delta);
 
-  expect(window.history.go).toHaveBeenCalledWith(delta)
-})
+  expect(window.history.go).toHaveBeenCalledWith(delta);
+});
 
-test('when back is called, forwards call to window history', () => {
-  vi.spyOn(window.history, 'go')
+test("when back is called, forwards call to window history", () => {
+  vi.spyOn(window.history, "go");
 
-  const history = createRouterHistory({ listener: noop })
+  const history = createRouterHistory({ listener: noop });
 
-  history.back()
+  history.back();
 
-  expect(window.history.go).toHaveBeenCalledOnce()
-})
+  expect(window.history.go).toHaveBeenCalledOnce();
+});
 
-test('when forward is called, forwards call to window history', () => {
-  vi.spyOn(window.history, 'go')
+test("when forward is called, forwards call to window history", () => {
+  vi.spyOn(window.history, "go");
 
-  const history = createRouterHistory({ listener: noop })
+  const history = createRouterHistory({ listener: noop });
 
-  history.forward()
+  history.forward();
 
-  expect(window.history.go).toHaveBeenCalledOnce()
-})
+  expect(window.history.go).toHaveBeenCalledOnce();
+});

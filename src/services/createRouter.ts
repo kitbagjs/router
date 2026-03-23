@@ -1,50 +1,50 @@
-import { createPath } from '@/services/history'
-import { App, ref } from 'vue'
-import { createCurrentRoute } from '@/services/createCurrentRoute'
-import { createIsExternal } from '@/services/createIsExternal'
-import { parseUrl, updateUrl } from '@/services/urlParser'
-import { createPropStore } from '@/services/createPropStore'
-import { createRouterHistory } from '@/services/createRouterHistory'
-import { createRouterHooks, getRouterHooksKey } from '@/services/createRouterHooks'
-import { getInitialUrl } from '@/services/getInitialUrl'
-import { setStateValues } from '@/services/state'
-import { Routes } from '@/types/route'
-import { Router, RouterOptions } from '@/types/router'
-import { RouterPush, RouterPushOptions } from '@/types/routerPush'
-import { RouterReplace, RouterReplaceOptions } from '@/types/routerReplace'
-import { RoutesName } from '@/types/routesMap'
-import { UrlString, isUrlString } from '@/types/urlString'
-import { createUniqueIdSequence, isFirstUniqueSequenceId } from '@/services/createUniqueIdSequence'
-import { createVisibilityObserver } from './createVisibilityObserver'
-import { visibilityObserverKey } from '@/compositions/useVisibilityObserver'
-import { RouterResolve, RouterResolveOptions } from '@/types/routerResolve'
-import { RouteNotFoundError } from '@/errors/routeNotFoundError'
-import { createResolvedRoute } from '@/services/createResolvedRoute'
-import { ResolvedRoute } from '@/types/resolved'
-import { RouterReject } from '@/types/routerReject'
-import { EmptyRouterPlugin, RouterPlugin } from '@/types/routerPlugin'
-import { getRoutesForRouter } from './getRoutesForRouter'
-import { getGlobalHooksForRouter } from './getGlobalHooksForRouter'
-import { createComponentsStore } from './createComponentsStore'
-import { initZod, zodParamsDetected } from './zod'
-import { getComponentsStoreKey } from '@/compositions/useComponentsStore'
-import { getPropStoreInjectionKey } from '@/compositions/usePropStore'
-import { getRouterRejectionInjectionKey } from '@/compositions/useRejection'
-import { routerInjectionKey } from '@/keys'
-import { createRouterView } from '@/components/routerView'
-import { createRouterLink } from '@/components/routerLink'
-import { ContextPushError } from '@/errors/contextPushError'
-import { ContextRejectionError } from '@/errors/contextRejectionError'
-import { setupRouterDevtools } from '@/devtools/createRouterDevtools'
-import { getMatchForUrl } from './getMatchesForUrl'
-import { pathHasTrailingSlash, removeTrailingSlashesFromPath } from '@/utilities/trailingSlashes'
-import { setDocumentTitle } from '@/utilities/setDocumentTitle'
-import { createCurrentRejection } from '@/services/createCurrentRejection'
+import { createPath } from "@/services/history";
+import { App, ref } from "vue";
+import { createCurrentRoute } from "@/services/createCurrentRoute";
+import { createIsExternal } from "@/services/createIsExternal";
+import { parseUrl, updateUrl } from "@/services/urlParser";
+import { createPropStore } from "@/services/createPropStore";
+import { createRouterHistory } from "@/services/createRouterHistory";
+import { createRouterHooks, getRouterHooksKey } from "@/services/createRouterHooks";
+import { getInitialUrl } from "@/services/getInitialUrl";
+import { setStateValues } from "@/services/state";
+import { Routes } from "@/types/route";
+import { Router, RouterOptions } from "@/types/router";
+import { RouterPush, RouterPushOptions } from "@/types/routerPush";
+import { RouterReplace, RouterReplaceOptions } from "@/types/routerReplace";
+import { RoutesName } from "@/types/routesMap";
+import { UrlString, isUrlString } from "@/types/urlString";
+import { createUniqueIdSequence, isFirstUniqueSequenceId } from "@/services/createUniqueIdSequence";
+import { createVisibilityObserver } from "./createVisibilityObserver";
+import { visibilityObserverKey } from "@/compositions/useVisibilityObserver";
+import { RouterResolve, RouterResolveOptions } from "@/types/routerResolve";
+import { RouteNotFoundError } from "@/errors/routeNotFoundError";
+import { createResolvedRoute } from "@/services/createResolvedRoute";
+import { ResolvedRoute } from "@/types/resolved";
+import { RouterReject } from "@/types/routerReject";
+import { EmptyRouterPlugin, RouterPlugin } from "@/types/routerPlugin";
+import { getRoutesForRouter } from "./getRoutesForRouter";
+import { getGlobalHooksForRouter } from "./getGlobalHooksForRouter";
+import { createComponentsStore } from "./createComponentsStore";
+import { initZod, zodParamsDetected } from "./zod";
+import { getComponentsStoreKey } from "@/compositions/useComponentsStore";
+import { getPropStoreInjectionKey } from "@/compositions/usePropStore";
+import { getRouterRejectionInjectionKey } from "@/compositions/useRejection";
+import { routerInjectionKey } from "@/keys";
+import { createRouterView } from "@/components/routerView";
+import { createRouterLink } from "@/components/routerLink";
+import { ContextPushError } from "@/errors/contextPushError";
+import { ContextRejectionError } from "@/errors/contextRejectionError";
+import { setupRouterDevtools } from "@/devtools/createRouterDevtools";
+import { getMatchForUrl } from "./getMatchesForUrl";
+import { pathHasTrailingSlash, removeTrailingSlashesFromPath } from "@/utilities/trailingSlashes";
+import { setDocumentTitle } from "@/utilities/setDocumentTitle";
+import { createCurrentRejection } from "@/services/createCurrentRejection";
 
 type RouterUpdateOptions = {
-  replace?: boolean,
-  state?: any,
-}
+  replace?: boolean;
+  state?: any;
+};
 
 /**
  * Creates a router instance for a Vue application, equipped with methods for route handling, lifecycle hooks, and state management.
@@ -72,327 +72,359 @@ type RouterUpdateOptions = {
 export function createRouter<
   const TRoutes extends Routes,
   const TOptions extends RouterOptions = {},
-  const TPlugin extends RouterPlugin = EmptyRouterPlugin
->(routes: TRoutes, options?: TOptions, plugins?: TPlugin[]): Router<TRoutes, TOptions, TPlugin>
+  const TPlugin extends RouterPlugin = EmptyRouterPlugin,
+>(routes: TRoutes, options?: TOptions, plugins?: TPlugin[]): Router<TRoutes, TOptions, TPlugin>;
 
 export function createRouter<
   const TRoutes extends Routes,
   const TOptions extends RouterOptions = {},
-  const TPlugin extends RouterPlugin = EmptyRouterPlugin
->(routes: TRoutes[], options?: TOptions, plugins?: TPlugin[]): Router<TRoutes, TOptions, TPlugin>
+  const TPlugin extends RouterPlugin = EmptyRouterPlugin,
+>(routes: TRoutes[], options?: TOptions, plugins?: TPlugin[]): Router<TRoutes, TOptions, TPlugin>;
 
 export function createRouter<
   const TRoutes extends Routes,
   const TOptions extends RouterOptions = {},
-  const TPlugin extends RouterPlugin = EmptyRouterPlugin
->(routesOrArrayOfRoutes: TRoutes | TRoutes[], options?: TOptions, plugins: TPlugin[] = []): Router<TRoutes, TOptions, TPlugin> {
-  const isGlobalRouter = options?.isGlobalRouter ?? true
-  const routerKey = isGlobalRouter ? routerInjectionKey : Symbol()
-  const shouldRemoveTrailingSlashes = options?.removeTrailingSlashes ?? true
-  const { routes, getRouteByName, getRejectionByType } = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options)
-  const notFoundRejection = getRejectionByType('NotFound')
-  const notFoundRoute = createResolvedRoute(notFoundRejection.route)
+  const TPlugin extends RouterPlugin = EmptyRouterPlugin,
+>(
+  routesOrArrayOfRoutes: TRoutes | TRoutes[],
+  options?: TOptions,
+  plugins: TPlugin[] = [],
+): Router<TRoutes, TOptions, TPlugin> {
+  const isGlobalRouter = options?.isGlobalRouter ?? true;
+  const routerKey = isGlobalRouter ? routerInjectionKey : Symbol();
+  const shouldRemoveTrailingSlashes = options?.removeTrailingSlashes ?? true;
+  const { routes, getRouteByName, getRejectionByType } = getRoutesForRouter(
+    routesOrArrayOfRoutes,
+    plugins,
+    options,
+  );
+  const notFoundRejection = getRejectionByType("NotFound");
+  const notFoundRoute = createResolvedRoute(notFoundRejection.route);
 
-  const hooks = createRouterHooks()
+  const hooks = createRouterHooks();
 
-  hooks.addGlobalRouteHooks(getGlobalHooksForRouter(plugins))
+  hooks.addGlobalRouteHooks(getGlobalHooksForRouter(plugins));
 
-  const getNavigationId = createUniqueIdSequence()
-  const propStore = createPropStore()
-  const componentsStore = createComponentsStore(routerKey)
-  const visibilityObserver = createVisibilityObserver()
+  const getNavigationId = createUniqueIdSequence();
+  const propStore = createPropStore();
+  const componentsStore = createComponentsStore(routerKey);
+  const visibilityObserver = createVisibilityObserver();
   const history = createRouterHistory({
     mode: options?.historyMode,
     listener: ({ location }) => {
-      const url = createPath(location)
+      const url = createPath(location);
 
-      set(url, { state: location.state, replace: true })
+      set(url, { state: location.state, replace: true });
     },
-  })
+  });
 
   function find(url: string, resolveOptions: RouterResolveOptions = {}): ResolvedRoute | undefined {
-    const urlIsRelative = !isExternal(url)
-    const filteredRoutes = routes.filter((route) => route.isRelative === urlIsRelative)
-    const parseOptions = { removeTrailingSlashes: shouldRemoveTrailingSlashes }
+    const urlIsRelative = !isExternal(url);
+    const filteredRoutes = routes.filter((route) => route.isRelative === urlIsRelative);
+    const parseOptions = { removeTrailingSlashes: shouldRemoveTrailingSlashes };
 
-    return getMatchForUrl(filteredRoutes, url, { ...resolveOptions, ...parseOptions })
+    return getMatchForUrl(filteredRoutes, url, { ...resolveOptions, ...parseOptions });
   }
 
   async function set(url: string, options: RouterUpdateOptions = {}): Promise<void> {
     if (pathHasTrailingSlash(url) && shouldRemoveTrailingSlashes) {
-      const cleanedUrl = removeTrailingSlashesFromPath(url)
+      const cleanedUrl = removeTrailingSlashesFromPath(url);
 
       if (isUrlString(cleanedUrl)) {
-        return replace(cleanedUrl, options)
+        return replace(cleanedUrl, options);
       }
     }
 
-    const navigationId = getNavigationId()
+    const navigationId = getNavigationId();
 
-    history.stopListening()
+    history.stopListening();
 
-    const to = find(url, options) ?? notFoundRoute
+    const to = find(url, options) ?? notFoundRoute;
 
-    const from = getFromRouteForHooks(navigationId)
+    const from = getFromRouteForHooks(navigationId);
 
-    const beforeResponse = await hooks.runBeforeRouteHooks({ to, from })
+    const beforeResponse = await hooks.runBeforeRouteHooks({ to, from });
 
     switch (beforeResponse.status) {
       // On abort do nothing
-      case 'ABORT':
-        return
+      case "ABORT":
+        return;
 
       // On push update the history, and push new route, and return
-      case 'PUSH':
-        history.update(url, options)
-        await push(...beforeResponse.to)
-        return
+      case "PUSH":
+        history.update(url, options);
+        await push(...beforeResponse.to);
+        return;
 
       // On reject update the history, the route, and set the rejection type
-      case 'REJECT':
-        history.update(url, options)
-        setRejection(beforeResponse.type, to, from)
-        break
+      case "REJECT":
+        history.update(url, options);
+        setRejection(beforeResponse.type, to, from);
+        break;
 
       // On success update history, set the route, and clear the rejection
-      case 'SUCCESS':
-        history.update(url, options)
-        clearRejection()
-        break
+      case "SUCCESS":
+        history.update(url, options);
+        clearRejection();
+        break;
 
       default:
-        throw new Error(`Switch is not exhaustive for before hook response status: ${JSON.stringify(beforeResponse satisfies never)}`)
+        throw new Error(
+          `Switch is not exhaustive for before hook response status: ${JSON.stringify(beforeResponse satisfies never)}`,
+        );
     }
 
     if (!isExternal(url)) {
-      setPropsAndUpdateRoute(navigationId, to, from)
+      setPropsAndUpdateRoute(navigationId, to, from);
     }
 
-    const afterResponse = await hooks.runAfterRouteHooks({ to, from })
+    const afterResponse = await hooks.runAfterRouteHooks({ to, from });
 
     switch (afterResponse.status) {
-      case 'PUSH':
-        await push(...afterResponse.to)
-        break
+      case "PUSH":
+        await push(...afterResponse.to);
+        break;
 
-      case 'REJECT':
-        setRejection(afterResponse.type, to, from)
-        break
+      case "REJECT":
+        setRejection(afterResponse.type, to, from);
+        break;
 
-      case 'SUCCESS':
-        break
+      case "SUCCESS":
+        break;
 
       default:
-        const exhaustive: never = afterResponse
-        throw new Error(`Switch is not exhaustive for after hook response status: ${JSON.stringify(exhaustive)}`)
+        const exhaustive: never = afterResponse;
+        throw new Error(
+          `Switch is not exhaustive for after hook response status: ${JSON.stringify(exhaustive)}`,
+        );
     }
 
-    setDocumentTitle(currentRejectionRoute.value ?? to)
+    setDocumentTitle(currentRejectionRoute.value ?? to);
 
-    history.startListening()
+    history.startListening();
   }
 
-  function setPropsAndUpdateRoute(navigationId: string, to: ResolvedRoute, from: ResolvedRoute | null): void {
-    const currentNavigationId = navigationId
+  function setPropsAndUpdateRoute(
+    navigationId: string,
+    to: ResolvedRoute,
+    from: ResolvedRoute | null,
+  ): void {
+    const currentNavigationId = navigationId;
 
-    propStore.setProps(to)
+    propStore
+      .setProps(to)
       .then((response) => {
         if (currentNavigationId !== navigationId) {
-          return
+          return;
         }
 
         switch (response.status) {
-          case 'SUCCESS':
-            break
+          case "SUCCESS":
+            break;
 
-          case 'PUSH':
-            push(...response.to)
-            break
+          case "PUSH":
+            push(...response.to);
+            break;
 
-          case 'REJECT':
-            setRejection(response.type, to, from)
-            break
+          case "REJECT":
+            setRejection(response.type, to, from);
+            break;
 
           default:
-            const exhaustive: never = response
-            throw new Error(`Switch is not exhaustive for prop store response status: ${JSON.stringify(exhaustive)}`)
+            const exhaustive: never = response;
+            throw new Error(
+              `Switch is not exhaustive for prop store response status: ${JSON.stringify(exhaustive)}`,
+            );
         }
       })
       .catch((error: unknown) => {
         try {
-          hooks.runErrorHooks(error, { to, from, source: 'props' })
+          hooks.runErrorHooks(error, { to, from, source: "props" });
         } catch (error) {
           if (error instanceof ContextPushError) {
-            push(...error.response.to)
-            return
+            push(...error.response.to);
+            return;
           }
 
           if (error instanceof ContextRejectionError) {
-            setRejection(error.response.type, to, from)
-            return
+            setRejection(error.response.type, to, from);
+            return;
           }
 
-          throw error
+          throw error;
         }
-      })
+      });
 
-    updateRoute(to)
+    updateRoute(to);
   }
 
-  const resolve: RouterResolve<TRoutes | TPlugin['routes']> = (
-    source: RoutesName<TRoutes | TPlugin['routes']>,
+  const resolve: RouterResolve<TRoutes | TPlugin["routes"]> = (
+    source: RoutesName<TRoutes | TPlugin["routes"]>,
     params: Record<string, unknown> = {},
     options: RouterResolveOptions = {},
   ) => {
-    const match = getRouteByName(source)
+    const match = getRouteByName(source);
 
     if (!match) {
-      throw new RouteNotFoundError(source)
+      throw new RouteNotFoundError(source);
     }
 
-    return createResolvedRoute(match, params, options)
-  }
+    return createResolvedRoute(match, params, options);
+  };
 
-  const push: RouterPush<TRoutes | TPlugin['routes']> = (
-    source: UrlString | RoutesName<TRoutes | TPlugin['routes']> | ResolvedRoute,
+  const push: RouterPush<TRoutes | TPlugin["routes"]> = (
+    source: UrlString | RoutesName<TRoutes | TPlugin["routes"]> | ResolvedRoute,
     paramsOrOptions?: Record<string, unknown> | RouterPushOptions,
     maybeOptions?: RouterPushOptions,
   ) => {
     if (isUrlString(source)) {
-      const options: RouterPushOptions = { ...paramsOrOptions }
+      const options: RouterPushOptions = { ...paramsOrOptions };
       const url = updateUrl(source, {
         query: options.query,
         hash: options.hash,
-      })
+      });
 
-      return set(url, options)
+      return set(url, options);
     }
 
-    if (typeof source === 'string') {
-      const { replace, ...options }: RouterPushOptions = { ...maybeOptions }
-      const params: any = { ...paramsOrOptions }
-      const resolved = resolve(source, params, options)
-      const state = setStateValues({ ...resolved.matched.state }, { ...resolved.state, ...options.state })
+    if (typeof source === "string") {
+      const { replace, ...options }: RouterPushOptions = { ...maybeOptions };
+      const params: any = { ...paramsOrOptions };
+      const resolved = resolve(source, params, options);
+      const state = setStateValues(
+        { ...resolved.matched.state },
+        { ...resolved.state, ...options.state },
+      );
 
-      return set(resolved.href, { replace, state })
+      return set(resolved.href, { replace, state });
     }
 
-    const { replace, ...options }: RouterPushOptions = { ...paramsOrOptions }
-    const state = setStateValues({ ...source.matched.state }, { ...source.state, ...options.state })
+    const { replace, ...options }: RouterPushOptions = { ...paramsOrOptions };
+    const state = setStateValues(
+      { ...source.matched.state },
+      { ...source.state, ...options.state },
+    );
 
     const url = updateUrl(source.href, {
       query: options.query,
       hash: options.hash,
-    })
+    });
 
-    return set(url, { replace, state })
-  }
+    return set(url, { replace, state });
+  };
 
-  const replace: RouterReplace<TRoutes | TPlugin['routes']> = (
-    source: UrlString | RoutesName<TRoutes | TPlugin['routes']> | ResolvedRoute,
+  const replace: RouterReplace<TRoutes | TPlugin["routes"]> = (
+    source: UrlString | RoutesName<TRoutes | TPlugin["routes"]> | ResolvedRoute,
     paramsOrOptions?: Record<string, unknown> | RouterReplaceOptions,
     maybeOptions?: RouterReplaceOptions,
   ) => {
     if (isUrlString(source)) {
-      const options: RouterPushOptions = { ...paramsOrOptions, replace: true }
+      const options: RouterPushOptions = { ...paramsOrOptions, replace: true };
 
-      return push(source, options)
+      return push(source, options);
     }
 
-    if (typeof source === 'string') {
-      const options: RouterPushOptions = { ...maybeOptions, replace: true }
-      const params: any = { ...paramsOrOptions }
+    if (typeof source === "string") {
+      const options: RouterPushOptions = { ...maybeOptions, replace: true };
+      const params: any = { ...paramsOrOptions };
 
-      return push(source, params, options)
+      return push(source, params, options);
     }
 
-    const options: RouterPushOptions = { ...paramsOrOptions, replace: true }
+    const options: RouterPushOptions = { ...paramsOrOptions, replace: true };
 
-    return push(source, options)
-  }
+    return push(source, options);
+  };
 
-  function setRejection(type: string, to: ResolvedRoute | null = null, from: ResolvedRoute | null = null): void {
-    const rejection = getRejectionByType(type)
+  function setRejection(
+    type: string,
+    to: ResolvedRoute | null = null,
+    from: ResolvedRoute | null = null,
+  ): void {
+    const rejection = getRejectionByType(type);
 
     if (!rejection) {
-      return
+      return;
     }
 
-    hooks.runRejectionHooks(rejection, { to, from })
+    hooks.runRejectionHooks(rejection, { to, from });
 
-    updateRejection(rejection)
+    updateRejection(rejection);
   }
 
-  const reject: RouterReject<TOptions['rejections'] | TPlugin['rejections']> = (type) => {
-    setRejection(type)
-    setDocumentTitle(currentRejectionRoute.value)
-  }
+  const reject: RouterReject<TOptions["rejections"] | TPlugin["rejections"]> = (type) => {
+    setRejection(type);
+    setDocumentTitle(currentRejectionRoute.value);
+  };
 
-  const { currentRejection, currentRejectionRoute, updateRejection, clearRejection } = createCurrentRejection()
-  const { currentRoute, routerRoute, updateRoute } = createCurrentRoute<TRoutes | TPlugin['routes']>(routerKey, notFoundRoute, push)
+  const { currentRejection, currentRejectionRoute, updateRejection, clearRejection } =
+    createCurrentRejection();
+  const { currentRoute, routerRoute, updateRoute } = createCurrentRoute<
+    TRoutes | TPlugin["routes"]
+  >(routerKey, notFoundRoute, push);
 
-  const initialUrl = getInitialUrl(options?.initialUrl)
-  const initialState = history.location.state
-  const { host } = parseUrl(initialUrl)
-  const isExternal = createIsExternal(host)
+  const initialUrl = getInitialUrl(options?.initialUrl);
+  const initialState = history.location.state;
+  const { host } = parseUrl(initialUrl);
+  const isExternal = createIsExternal(host);
 
-  let starting = false
-  const started = ref(false)
+  let starting = false;
+  const started = ref(false);
 
   // eslint is just incorrect here
-  // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-  const { promise: initialize, resolve: initialized } = Promise.withResolvers<void>()
+  // oxlint-disable-next-line @typescript-eslint/no-invalid-void-type
+  const { promise: initialize, resolve: initialized } = Promise.withResolvers<void>();
 
   async function start(): Promise<void> {
     if (starting) {
-      return initialize
+      return initialize;
     }
 
-    starting = true
+    starting = true;
 
-    const shouldInitZod = zodParamsDetected(routes)
+    const shouldInitZod = zodParamsDetected(routes);
 
     if (shouldInitZod) {
-      await initZod()
+      await initZod();
     }
 
-    await set(initialUrl, { replace: true, state: initialState })
+    await set(initialUrl, { replace: true, state: initialState });
 
-    history.startListening()
+    history.startListening();
 
-    initialized()
-    started.value = true
+    initialized();
+    started.value = true;
   }
 
   function stop(): void {
-    history.stopListening()
+    history.stopListening();
   }
 
   function getFromRouteForHooks(navigationId: string): ResolvedRoute | null {
-    return isFirstUniqueSequenceId(navigationId) ? null : { ...currentRoute }
+    return isFirstUniqueSequenceId(navigationId) ? null : { ...currentRoute };
   }
 
   function install(app: App): void {
-    hooks.setVueApp(app)
-    propStore.setVueApp(app)
+    hooks.setVueApp(app);
+    propStore.setVueApp(app);
 
-    const routerView = createRouterView(routerKey)
-    const routerLink = createRouterLink(routerKey)
+    const routerView = createRouterView(routerKey);
+    const routerLink = createRouterLink(routerKey);
 
-    app.component('RouterView', routerView)
-    app.component('RouterLink', routerLink)
-    app.provide(getRouterRejectionInjectionKey(routerKey), currentRejection)
-    app.provide(getRouterHooksKey(routerKey), hooks)
-    app.provide(getPropStoreInjectionKey(routerKey), propStore)
-    app.provide(getComponentsStoreKey(routerKey), componentsStore)
-    app.provide(visibilityObserverKey, visibilityObserver)
+    app.component("RouterView", routerView);
+    app.component("RouterLink", routerLink);
+    app.provide(getRouterRejectionInjectionKey(routerKey), currentRejection);
+    app.provide(getRouterHooksKey(routerKey), hooks);
+    app.provide(getPropStoreInjectionKey(routerKey), propStore);
+    app.provide(getComponentsStoreKey(routerKey), componentsStore);
+    app.provide(visibilityObserverKey, visibilityObserver);
 
-    app.provide(routerKey, router)
+    app.provide(routerKey, router);
 
     // Setup DevTools integration
-    setupRouterDevtools({ router, app, routes })
+    setupRouterDevtools({ router, app, routes });
 
-    start()
+    start();
   }
 
   const router: Router<TRoutes, TOptions, TPlugin> = {
@@ -422,7 +454,7 @@ export function createRouter<
     stop,
     key: routerKey,
     hasDevtools: false,
-  }
+  };
 
-  return router
+  return router;
 }

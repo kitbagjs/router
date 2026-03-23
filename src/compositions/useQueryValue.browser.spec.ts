@@ -1,288 +1,288 @@
-import { createRouter } from '@/services/createRouter'
-import { createRoute } from '@/services/createRoute'
-import { expect, test } from 'vitest'
-import { flushPromises, mount } from '@vue/test-utils'
-import { useQueryValue, withDefault } from '@/main'
+import { createRouter } from "@/services/createRouter";
+import { createRoute } from "@/services/createRoute";
+import { expect, test } from "vite-plus/test";
+import { flushPromises, mount } from "@vue/test-utils";
+import { useQueryValue, withDefault } from "@/main";
 
-test('returns correct value and values when key does not exist', async () => {
+test("returns correct value and values when key does not exist", async () => {
   const root = createRoute({
-    name: 'root',
-    path: '/',
-  })
+    name: "root",
+    path: "/",
+  });
 
   const router = createRouter([root], {
-    initialUrl: '/',
-  })
+    initialUrl: "/",
+  });
 
-  await router.start()
+  await router.start();
 
   const component = {
-    template: 'empty',
+    template: "empty",
     setup() {
-      return useQueryValue('foo')
+      return useQueryValue("foo");
     },
-  }
+  };
 
   const wrapper = mount(component, {
     global: {
       plugins: [router],
     },
-  })
+  });
 
-  expect(wrapper.vm.value).toBe(null)
-  expect(wrapper.vm.values).toEqual([])
-})
+  expect(wrapper.vm.value).toBe(null);
+  expect(wrapper.vm.values).toEqual([]);
+});
 
-test('returns correct value and values when key does exist', async () => {
+test("returns correct value and values when key does exist", async () => {
   const root = createRoute({
-    name: 'root',
-    path: '/',
-  })
+    name: "root",
+    path: "/",
+  });
 
   const router = createRouter([root], {
-    initialUrl: '/?foo=1&foo=2',
-  })
+    initialUrl: "/?foo=1&foo=2",
+  });
 
-  await router.start()
+  await router.start();
 
   const component = {
-    template: 'empty',
+    template: "empty",
     setup() {
-      return useQueryValue('foo')
+      return useQueryValue("foo");
     },
-  }
+  };
 
   const wrapper = mount(component, {
     global: {
       plugins: [router],
     },
-  })
+  });
 
-  expect(wrapper.vm.value).toBe('1')
-  expect(wrapper.vm.values).toEqual(['1', '2'])
-})
+  expect(wrapper.vm.value).toBe("1");
+  expect(wrapper.vm.values).toEqual(["1", "2"]);
+});
 
-test('returns correct value and values when a param is used', async () => {
+test("returns correct value and values when a param is used", async () => {
   const root = createRoute({
-    name: 'root',
-    path: '/',
-  })
+    name: "root",
+    path: "/",
+  });
 
   const router = createRouter([root], {
-    initialUrl: '/?foo=1&foo=2',
-  })
+    initialUrl: "/?foo=1&foo=2",
+  });
 
-  await router.start()
+  await router.start();
 
   const component = {
-    template: 'empty',
+    template: "empty",
     setup() {
-      return useQueryValue('foo', Number)
+      return useQueryValue("foo", Number);
     },
-  }
+  };
 
   const wrapper = mount(component, {
     global: {
       plugins: [router],
     },
-  })
+  });
 
-  expect(wrapper.vm.value).toBe(1)
-  expect(wrapper.vm.values).toEqual([1, 2])
-})
+  expect(wrapper.vm.value).toBe(1);
+  expect(wrapper.vm.values).toEqual([1, 2]);
+});
 
-test('returns correct value and values when a param is used that has a default value', async () => {
+test("returns correct value and values when a param is used that has a default value", async () => {
   const root = createRoute({
-    name: 'root',
-    path: '/',
-  })
+    name: "root",
+    path: "/",
+  });
 
   const router = createRouter([root], {
-    initialUrl: '/',
-  })
+    initialUrl: "/",
+  });
 
-  await router.start()
+  await router.start();
 
   const component = {
-    template: 'empty',
+    template: "empty",
     setup() {
-      return useQueryValue('foo', withDefault(Number, 3))
+      return useQueryValue("foo", withDefault(Number, 3));
     },
-  }
+  };
 
   const wrapper = mount(component, {
     global: {
       plugins: [router],
     },
-  })
+  });
 
-  expect(wrapper.vm.value).toBe(3)
-  expect(wrapper.vm.values).toEqual([3])
-})
+  expect(wrapper.vm.value).toBe(3);
+  expect(wrapper.vm.values).toEqual([3]);
+});
 
-test('updates value and values when the query string changes', async () => {
+test("updates value and values when the query string changes", async () => {
   const root = createRoute({
-    name: 'root',
-    path: '/',
-  })
+    name: "root",
+    path: "/",
+  });
 
   const router = createRouter([root], {
-    initialUrl: '/?foo=1&foo=2',
-  })
+    initialUrl: "/?foo=1&foo=2",
+  });
 
-  await router.start()
+  await router.start();
 
   const component = {
-    template: 'empty',
+    template: "empty",
     setup() {
-      return useQueryValue('foo', Number)
+      return useQueryValue("foo", Number);
     },
-  }
+  };
 
   const wrapper = mount(component, {
     global: {
       plugins: [router],
     },
-  })
+  });
 
-  expect(wrapper.vm.value).toBe(1)
-  expect(wrapper.vm.values).toEqual([1, 2])
+  expect(wrapper.vm.value).toBe(1);
+  expect(wrapper.vm.values).toEqual([1, 2]);
 
-  await router.push('/?foo=3')
+  await router.push("/?foo=3");
 
-  expect(wrapper.vm.value).toBe(3)
-  expect(wrapper.vm.values).toEqual([3])
-})
+  expect(wrapper.vm.value).toBe(3);
+  expect(wrapper.vm.values).toEqual([3]);
+});
 
-test('updates value and values when a param is used that has a default value', async () => {
+test("updates value and values when a param is used that has a default value", async () => {
   const root = createRoute({
-    name: 'root',
-    path: '/',
-  })
+    name: "root",
+    path: "/",
+  });
 
   const router = createRouter([root], {
-    initialUrl: '/',
-  })
+    initialUrl: "/",
+  });
 
-  await router.start()
+  await router.start();
 
   const component = {
-    template: 'empty',
+    template: "empty",
     setup() {
-      return useQueryValue('foo', withDefault(Number, 3))
+      return useQueryValue("foo", withDefault(Number, 3));
     },
-  }
+  };
 
   const wrapper = mount(component, {
     global: {
       plugins: [router],
     },
-  })
+  });
 
-  expect(wrapper.vm.value).toBe(3)
-  expect(wrapper.vm.values).toEqual([3])
+  expect(wrapper.vm.value).toBe(3);
+  expect(wrapper.vm.values).toEqual([3]);
 
-  await router.push('/?foo=4')
+  await router.push("/?foo=4");
 
-  expect(wrapper.vm.value).toBe(4)
-  expect(wrapper.vm.values).toEqual([4])
-})
+  expect(wrapper.vm.value).toBe(4);
+  expect(wrapper.vm.values).toEqual([4]);
+});
 
-test('updates the query string when the value is set', async () => {
+test("updates the query string when the value is set", async () => {
   const root = createRoute({
-    name: 'root',
-    path: '/',
+    name: "root",
+    path: "/",
     query: {
-      '?tab': withDefault(Number, 1),
+      "?tab": withDefault(Number, 1),
     },
-  })
+  });
 
   const router = createRouter([root], {
-    initialUrl: '/?foo=1&foo=2',
-  })
+    initialUrl: "/?foo=1&foo=2",
+  });
 
-  await router.start()
+  await router.start();
 
   const component = {
-    template: 'empty',
+    template: "empty",
     setup() {
-      const { value } = useQueryValue('foo', Number)
+      const { value } = useQueryValue("foo", Number);
 
-      value.value = 3
+      value.value = 3;
     },
-  }
+  };
 
   mount(component, {
     global: {
       plugins: [router],
     },
-  })
+  });
 
-  await flushPromises()
+  await flushPromises();
 
-  expect(location.search).toBe('?tab=1&foo=3')
-})
+  expect(location.search).toBe("?tab=1&foo=3");
+});
 
-test('updates the query string when the values is set', async () => {
+test("updates the query string when the values is set", async () => {
   const root = createRoute({
-    name: 'root',
-    path: '/',
-  })
+    name: "root",
+    path: "/",
+  });
 
   const router = createRouter([root], {
-    initialUrl: '/?foo=1&foo=2',
-  })
+    initialUrl: "/?foo=1&foo=2",
+  });
 
-  await router.start()
+  await router.start();
 
   const component = {
-    template: 'empty',
+    template: "empty",
     setup() {
-      const { values } = useQueryValue('foo', Number)
+      const { values } = useQueryValue("foo", Number);
 
-      values.value = [3, 4]
+      values.value = [3, 4];
     },
-  }
+  };
 
   mount(component, {
     global: {
       plugins: [router],
     },
-  })
+  });
 
-  await flushPromises()
+  await flushPromises();
 
-  expect(router.route.query.toString()).toBe('foo=3&foo=4')
-})
+  expect(router.route.query.toString()).toBe("foo=3&foo=4");
+});
 
-test('removes the query string when the remove method is called', async () => {
+test("removes the query string when the remove method is called", async () => {
   const root = createRoute({
-    name: 'root',
-    path: '/',
-  })
+    name: "root",
+    path: "/",
+  });
 
   const router = createRouter([root], {
-    initialUrl: '/?foo=1&foo=2',
-  })
+    initialUrl: "/?foo=1&foo=2",
+  });
 
-  await router.start()
+  await router.start();
 
   const component = {
-    template: 'empty',
+    template: "empty",
     setup() {
-      const { remove } = useQueryValue('foo')
+      const { remove } = useQueryValue("foo");
 
-      remove()
+      remove();
     },
-  }
+  };
 
   mount(component, {
     global: {
       plugins: [router],
     },
-  })
+  });
 
-  await flushPromises()
+  await flushPromises();
 
-  expect(router.route.query.toString()).toBe('')
-})
+  expect(router.route.query.toString()).toBe("");
+});

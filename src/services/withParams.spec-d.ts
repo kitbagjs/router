@@ -1,151 +1,174 @@
-import { expectTypeOf, test, describe } from 'vitest'
-import { ToUrlQueryPart, ToUrlPart, UrlPart, withParams } from '@/services/withParams'
-import { ParamWithDefault } from './withDefault'
+import { expectTypeOf, test, describe } from "vite-plus/test";
+import { ToUrlQueryPart, ToUrlPart, UrlPart, withParams } from "@/services/withParams";
+import { ParamWithDefault } from "./withDefault";
 
-test('given a string without params, expects no params', () => {
-  const source = withParams('/something-without-params', {})
+test("given a string without params, expects no params", () => {
+  const source = withParams("/something-without-params", {});
 
-  type Source = typeof source
-  type Expect = UrlPart<{}>
+  type Source = typeof source;
+  type Expect = UrlPart<{}>;
 
-  expectTypeOf<Source>().toEqualTypeOf<Expect>()
-})
+  expectTypeOf<Source>().toEqualTypeOf<Expect>();
+});
 
-test('given a string with required params NOT assigned, uses string constructor', () => {
-  const source = withParams('/something-with-[param]', {})
+test("given a string with required params NOT assigned, uses string constructor", () => {
+  const source = withParams("/something-with-[param]", {});
 
-  type Source = typeof source
-  type Expect = UrlPart<{ param: { param: StringConstructor, isOptional: false, isGreedy: false } }>
+  type Source = typeof source;
+  type Expect = UrlPart<{
+    param: { param: StringConstructor; isOptional: false; isGreedy: false };
+  }>;
 
-  expectTypeOf<Source>().toEqualTypeOf<Expect>()
-})
+  expectTypeOf<Source>().toEqualTypeOf<Expect>();
+});
 
-test('given a string with required params assigned, uses passed in Type', () => {
-  const source = withParams('/something-with-[param]', { param: Boolean })
+test("given a string with required params assigned, uses passed in Type", () => {
+  const source = withParams("/something-with-[param]", { param: Boolean });
 
-  type Source = typeof source
-  type Expect = UrlPart<{ param: { param: BooleanConstructor, isOptional: false, isGreedy: false } }>
+  type Source = typeof source;
+  type Expect = UrlPart<{
+    param: { param: BooleanConstructor; isOptional: false; isGreedy: false };
+  }>;
 
-  expectTypeOf<Source>().toEqualTypeOf<Expect>()
-})
+  expectTypeOf<Source>().toEqualTypeOf<Expect>();
+});
 
-describe('ToUrlPart', () => {
-  test('given a string, returns ToUrlPart with that string and empty params', () => {
-    type Source = ToUrlPart<'test'>
-    type Expect = UrlPart<{}>
+describe("ToUrlPart", () => {
+  test("given a string, returns ToUrlPart with that string and empty params", () => {
+    type Source = ToUrlPart<"test">;
+    type Expect = UrlPart<{}>;
 
-    expectTypeOf<Source>().toEqualTypeOf<Expect>()
-  })
+    expectTypeOf<Source>().toEqualTypeOf<Expect>();
+  });
 
-  test('given undefined, returns ToUrlPart with empty string', () => {
-    type Source = ToUrlPart<undefined>
-    type Expect = UrlPart<{}>
+  test("given undefined, returns ToUrlPart with empty string", () => {
+    type Source = ToUrlPart<undefined>;
+    type Expect = UrlPart<{}>;
 
-    expectTypeOf<Source>().toEqualTypeOf<Expect>()
-  })
+    expectTypeOf<Source>().toEqualTypeOf<Expect>();
+  });
 
-  test('given a ToUrlPart type, returns the same type', () => {
-    type Source = ToUrlPart<UrlPart<{ foo: { param: NumberConstructor, isOptional: false, isGreedy: false } }>>
-    type Expect = UrlPart<{ foo: { param: NumberConstructor, isOptional: false, isGreedy: false } }>
-
-    expectTypeOf<Source>().toEqualTypeOf<Expect>()
-  })
-})
-
-describe('ToUrlQueryPart', () => {
-  test('given a string, returns UrlPart with that string', () => {
-    type Source = ToUrlQueryPart<'foo=bar'>
-    type Expect = UrlPart<{}>
-
-    expectTypeOf<Source>().toEqualTypeOf<Expect>()
-  })
-
-  test('given undefined, returns UrlPart with empty string', () => {
-    type Source = ToUrlQueryPart<undefined>
-    type Expect = UrlPart<{}>
-
-    expectTypeOf<Source>().toEqualTypeOf<Expect>()
-  })
-
-  test('given a UrlPart type, returns the same type', () => {
-    const query = withParams('foo=[foo]', { foo: Number })
-    type Source = ToUrlQueryPart<typeof query>
-    type Expect = UrlPart<{ foo: { param: NumberConstructor, isOptional: false, isGreedy: false } }>
-
-    expectTypeOf<Source>().toEqualTypeOf<Expect>()
-  })
-
-  test('given a record with string values, returns record of UrlPart', () => {
-    type Source = ToUrlQueryPart<{ foo: 'bar', baz: 'qux' }>
-    type Expect = UrlPart<{}>
-
-    expectTypeOf<Source>().toEqualTypeOf<Expect>()
-  })
-
-  test('given a record with Param values, returns record of parameterized UrlPart', () => {
-    type Source = ToUrlQueryPart<{ foo: NumberConstructor, baz: BooleanConstructor, zoo: '14' }>
+  test("given a ToUrlPart type, returns the same type", () => {
+    type Source = ToUrlPart<
+      UrlPart<{ foo: { param: NumberConstructor; isOptional: false; isGreedy: false } }>
+    >;
     type Expect = UrlPart<{
-      foo: { param: NumberConstructor, isOptional: false, isGreedy: false },
-      baz: { param: BooleanConstructor, isOptional: false, isGreedy: false },
-    }>
+      foo: { param: NumberConstructor; isOptional: false; isGreedy: false };
+    }>;
 
-    expectTypeOf<Source>().toEqualTypeOf<Expect>()
-  })
+    expectTypeOf<Source>().toEqualTypeOf<Expect>();
+  });
+});
 
-  test('given a record with Param values and optional key, returns record of parameterized UrlPart', () => {
-    type Source = ToUrlQueryPart<{ 'foo': NumberConstructor, '?baz': BooleanConstructor, '?zoo': '14' }>
+describe("ToUrlQueryPart", () => {
+  test("given a string, returns UrlPart with that string", () => {
+    type Source = ToUrlQueryPart<"foo=bar">;
+    type Expect = UrlPart<{}>;
+
+    expectTypeOf<Source>().toEqualTypeOf<Expect>();
+  });
+
+  test("given undefined, returns UrlPart with empty string", () => {
+    type Source = ToUrlQueryPart<undefined>;
+    type Expect = UrlPart<{}>;
+
+    expectTypeOf<Source>().toEqualTypeOf<Expect>();
+  });
+
+  test("given a UrlPart type, returns the same type", () => {
+    const query = withParams("foo=[foo]", { foo: Number });
+    type Source = ToUrlQueryPart<typeof query>;
     type Expect = UrlPart<{
-      foo: { param: NumberConstructor, isOptional: false, isGreedy: false },
-      baz: { param: BooleanConstructor, isOptional: true, isGreedy: false },
-    }>
+      foo: { param: NumberConstructor; isOptional: false; isGreedy: false };
+    }>;
 
-    expectTypeOf<Source>().toEqualTypeOf<Expect>()
-  })
+    expectTypeOf<Source>().toEqualTypeOf<Expect>();
+  });
 
-  test('given a record with Param values with a param that has a default value, returns record of parameterized UrlPart', () => {
-    type Source = ToUrlQueryPart<{ foo: NumberConstructor, baz: ParamWithDefault<BooleanConstructor> }>
+  test("given a record with string values, returns record of UrlPart", () => {
+    type Source = ToUrlQueryPart<{ foo: "bar"; baz: "qux" }>;
+    type Expect = UrlPart<{}>;
+
+    expectTypeOf<Source>().toEqualTypeOf<Expect>();
+  });
+
+  test("given a record with Param values, returns record of parameterized UrlPart", () => {
+    type Source = ToUrlQueryPart<{ foo: NumberConstructor; baz: BooleanConstructor; zoo: "14" }>;
+    type Expect = UrlPart<{
+      foo: { param: NumberConstructor; isOptional: false; isGreedy: false };
+      baz: { param: BooleanConstructor; isOptional: false; isGreedy: false };
+    }>;
+
+    expectTypeOf<Source>().toEqualTypeOf<Expect>();
+  });
+
+  test("given a record with Param values and optional key, returns record of parameterized UrlPart", () => {
+    type Source = ToUrlQueryPart<{
+      foo: NumberConstructor;
+      "?baz": BooleanConstructor;
+      "?zoo": "14";
+    }>;
+    type Expect = UrlPart<{
+      foo: { param: NumberConstructor; isOptional: false; isGreedy: false };
+      baz: { param: BooleanConstructor; isOptional: true; isGreedy: false };
+    }>;
+
+    expectTypeOf<Source>().toEqualTypeOf<Expect>();
+  });
+
+  test("given a record with Param values with a param that has a default value, returns record of parameterized UrlPart", () => {
+    type Source = ToUrlQueryPart<{
+      foo: NumberConstructor;
+      baz: ParamWithDefault<BooleanConstructor>;
+    }>;
     type Expect = {
-      foo: { isOptional: false, isGreedy: false },
-      baz: { isOptional: true, isGreedy: false },
-    }
+      foo: { isOptional: false; isGreedy: false };
+      baz: { isOptional: true; isGreedy: false };
+    };
 
-    expectTypeOf<Source['params']>().toMatchObjectType<Expect>()
-  })
+    expectTypeOf<Source["params"]>().toMatchObjectType<Expect>();
+  });
 
-  test('given an array with string tuples, each element maps to UrlPart', () => {
-    type Source = ToUrlQueryPart<[['foo', 'bar'], ['baz', 'qux']]>
-    type Expect = UrlPart<{}>
+  test("given an array with string tuples, each element maps to UrlPart", () => {
+    type Source = ToUrlQueryPart<[["foo", "bar"], ["baz", "qux"]]>;
+    type Expect = UrlPart<{}>;
 
-    expectTypeOf<Source>().toEqualTypeOf<Expect>()
-  })
+    expectTypeOf<Source>().toEqualTypeOf<Expect>();
+  });
 
-  test('given an array with Param tuples, each element maps to parameterized UrlPart', () => {
-    type Source = ToUrlQueryPart<[['foo', NumberConstructor], ['baz', BooleanConstructor], ['zoo', '14']]>
+  test("given an array with Param tuples, each element maps to parameterized UrlPart", () => {
+    type Source = ToUrlQueryPart<
+      [["foo", NumberConstructor], ["baz", BooleanConstructor], ["zoo", "14"]]
+    >;
     type Expect = UrlPart<{
-      foo: { param: NumberConstructor, isOptional: false, isGreedy: false },
-      baz: { param: BooleanConstructor, isOptional: false, isGreedy: false },
-    }>
+      foo: { param: NumberConstructor; isOptional: false; isGreedy: false };
+      baz: { param: BooleanConstructor; isOptional: false; isGreedy: false };
+    }>;
 
-    expectTypeOf<Source>().toEqualTypeOf<Expect>()
-  })
+    expectTypeOf<Source>().toEqualTypeOf<Expect>();
+  });
 
-  test('given an array with Param tuples and optional key, each element maps to parameterized UrlPart', () => {
-    type Source = ToUrlQueryPart<[['foo', NumberConstructor], ['?baz', BooleanConstructor], ['?zoo', '14']]>
+  test("given an array with Param tuples and optional key, each element maps to parameterized UrlPart", () => {
+    type Source = ToUrlQueryPart<
+      [["foo", NumberConstructor], ["?baz", BooleanConstructor], ["?zoo", "14"]]
+    >;
     type Expect = UrlPart<{
-      foo: { param: NumberConstructor, isOptional: false, isGreedy: false },
-      baz: { param: BooleanConstructor, isOptional: true, isGreedy: false },
-    }>
+      foo: { param: NumberConstructor; isOptional: false; isGreedy: false };
+      baz: { param: BooleanConstructor; isOptional: true; isGreedy: false };
+    }>;
 
-    expectTypeOf<Source>().toEqualTypeOf<Expect>()
-  })
+    expectTypeOf<Source>().toEqualTypeOf<Expect>();
+  });
 
-  test('given an array with Param tuples and Param with default value, each element maps to parameterized UrlPart', () => {
-    type Source = ToUrlQueryPart<[['foo', NumberConstructor], ['baz', ParamWithDefault<BooleanConstructor>]]>
+  test("given an array with Param tuples and Param with default value, each element maps to parameterized UrlPart", () => {
+    type Source = ToUrlQueryPart<
+      [["foo", NumberConstructor], ["baz", ParamWithDefault<BooleanConstructor>]]
+    >;
     type Expect = {
-      foo: { isOptional: false, isGreedy: false },
-      baz: { isOptional: true, isGreedy: false },
-    }
+      foo: { isOptional: false; isGreedy: false };
+      baz: { isOptional: true; isGreedy: false };
+    };
 
-    expectTypeOf<Source['params']>().toMatchObjectType<Expect>()
-  })
-})
+    expectTypeOf<Source["params"]>().toMatchObjectType<Expect>();
+  });
+});

@@ -1,65 +1,69 @@
-import { expect, test } from 'vitest'
-import { createExternalRoute } from '@/services/createExternalRoute'
-import { DuplicateParamsError } from '@/errors/duplicateParamsError'
-import { withParams } from '@/services/withParams'
+import { expect, test } from "vite-plus/test";
+import { createExternalRoute } from "@/services/createExternalRoute";
+import { DuplicateParamsError } from "@/errors/duplicateParamsError";
+import { withParams } from "@/services/withParams";
 
-test('given parent, path is combined', () => {
+test("given parent, path is combined", () => {
   const parent = createExternalRoute({
-    host: 'https://kitbag.dev',
-    path: '/parent',
-  })
+    host: "https://kitbag.dev",
+    path: "/parent",
+  });
 
   const child = createExternalRoute({
     parent: parent,
-    path: withParams('/child/[id]', { id: Number }),
-  })
+    path: withParams("/child/[id]", { id: Number }),
+  });
 
-  expect(child.stringify({ id: 123 })).toBe('https://kitbag.dev/parent/child/123')
-})
+  expect(child.stringify({ id: 123 })).toBe("https://kitbag.dev/parent/child/123");
+});
 
-test('given parent, query is combined', () => {
+test("given parent, query is combined", () => {
   const parent = createExternalRoute({
-    host: 'https://kitbag.dev',
-    query: 'static=123',
-  })
+    host: "https://kitbag.dev",
+    query: "static=123",
+  });
 
   const child = createExternalRoute({
     parent: parent,
-    query: withParams('sort=[sort]', { sort: Boolean }),
-  })
+    query: withParams("sort=[sort]", { sort: Boolean }),
+  });
 
-  expect(child.stringify({ sort: true })).toBe('https://kitbag.dev/?static=123&sort=true')
-})
+  expect(child.stringify({ sort: true })).toBe("https://kitbag.dev/?static=123&sort=true");
+});
 
-test('given parent and child without meta, meta matches parent', () => {
+test("given parent and child without meta, meta matches parent", () => {
   const parent = createExternalRoute({
-    host: 'https://kitbag.dev',
+    host: "https://kitbag.dev",
     meta: {
       foo: 123,
     },
-  })
+  });
 
   const child = createExternalRoute({
     parent: parent,
-  })
+  });
 
   expect(child.meta).toMatchObject({
     foo: 123,
-  })
-})
+  });
+});
 
 test.each([
-  ['https://[foo].dev', '/[foo]', 'foo=[zoo]', '[bar]'],
-  ['https://[zoo].dev', '/[foo]', 'foo=[bar]', '[foo]'],
-  ['https://[zoo].dev', '/[bar]', 'foo=[foo]', '[foo]'],
-  ['https://[zoo].dev', '/[bar]', 'foo=[foo]', '[foo]'],
-])('given duplicate params across different parts of the route, throws DuplicateParamsError', (host, path, query, hash) => {
-  const action: () => void = () => createExternalRoute({
-    host,
-    path,
-    query,
-    hash,
-  })
+  ["https://[foo].dev", "/[foo]", "foo=[zoo]", "[bar]"],
+  ["https://[zoo].dev", "/[foo]", "foo=[bar]", "[foo]"],
+  ["https://[zoo].dev", "/[bar]", "foo=[foo]", "[foo]"],
+  ["https://[zoo].dev", "/[bar]", "foo=[foo]", "[foo]"],
+])(
+  "given duplicate params across different parts of the route, throws DuplicateParamsError",
+  (host, path, query, hash) => {
+    const action: () => void = () =>
+      createExternalRoute({
+        host,
+        path,
+        query,
+        hash,
+      });
 
-  expect(action).toThrow(DuplicateParamsError)
-})
+    expect(action).toThrow(DuplicateParamsError);
+  },
+);

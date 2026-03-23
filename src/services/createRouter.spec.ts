@@ -1,1019 +1,1040 @@
-import { flushPromises } from '@vue/test-utils'
-import { Location } from '@/services/history'
-import { describe, expect, test, vi } from 'vitest'
-import { computed, toRefs } from 'vue'
-import { DuplicateNamesError } from '@/errors/duplicateNamesError'
-import { createRoute } from '@/services/createRoute'
-import { createRouter } from '@/services/createRouter'
-import * as createRouterHistoryUtilities from '@/services/createRouterHistory'
-import { component, routes } from '@/utilities/testHelpers'
-import { createExternalRoute } from '@/services/createExternalRoute'
-import { RouteNotFoundError } from '@/errors/routeNotFoundError'
-import { InvalidRouteParamValueError } from '@/errors/invalidRouteParamValueError'
-import { createRejection } from './createRejection'
+import { flushPromises } from "@vue/test-utils";
+import { Location } from "@/services/history";
+import { describe, expect, test, vi } from "vite-plus/test";
+import { computed, toRefs } from "vue";
+import { DuplicateNamesError } from "@/errors/duplicateNamesError";
+import { createRoute } from "@/services/createRoute";
+import { createRouter } from "@/services/createRouter";
+import * as createRouterHistoryUtilities from "@/services/createRouterHistory";
+import { component, routes } from "@/utilities/testHelpers";
+import { createExternalRoute } from "@/services/createExternalRoute";
+import { RouteNotFoundError } from "@/errors/routeNotFoundError";
+import { InvalidRouteParamValueError } from "@/errors/invalidRouteParamValueError";
+import { createRejection } from "./createRejection";
 
-test('initial route is set', async () => {
+test("initial route is set", async () => {
   const foo = createRoute({
-    name: 'root',
+    name: "root",
     component,
-    path: '/',
-  })
+    path: "/",
+  });
 
   const { route, start } = createRouter([foo], {
-    initialUrl: '/',
-  })
+    initialUrl: "/",
+  });
 
-  await start()
+  await start();
 
-  expect(route.matched.name).toBe('root')
-})
+  expect(route.matched.name).toBe("root");
+});
 
-test('initial state is set', async () => {
+test("initial state is set", async () => {
   const location: Location = {
-    key: 'foo',
-    pathname: '/',
-    search: '',
-    hash: '',
-    state: { zoo: '123' },
-  }
+    key: "foo",
+    pathname: "/",
+    search: "",
+    hash: "",
+    state: { zoo: "123" },
+  };
 
-  const actual = createRouterHistoryUtilities.createRouterHistory({ listener: () => {} })
-  vi.spyOn(createRouterHistoryUtilities, 'createRouterHistory').mockImplementation(() => ({
+  const actual = createRouterHistoryUtilities.createRouterHistory({ listener: () => {} });
+  vi.spyOn(createRouterHistoryUtilities, "createRouterHistory").mockImplementation(() => ({
     ...actual,
     location,
-  }))
+  }));
 
   const foo = createRoute({
-    name: 'root',
+    name: "root",
     component,
-    path: '/',
+    path: "/",
     state: { zoo: Number },
-  })
+  });
 
   const { route, start } = createRouter([foo], {
-    initialUrl: '/',
-  })
+    initialUrl: "/",
+  });
 
-  await start()
+  await start();
 
-  expect(route.state).toMatchObject({ zoo: 123 })
-})
+  expect(route.state).toMatchObject({ zoo: 123 });
+});
 
-test('updates the route when navigating', async () => {
+test("updates the route when navigating", async () => {
   const theRoute = createRoute({
-    name: 'first',
+    name: "first",
     component,
-    path: '/first',
-  })
+    path: "/first",
+  });
 
   const routes = [
     theRoute,
     createRoute({
-      name: 'second',
+      name: "second",
       component,
-      path: '/second',
+      path: "/second",
     }),
     createRoute({
-      name: 'third',
+      name: "third",
       component,
-      path: '/third/[id]',
+      path: "/third/[id]",
     }),
-  ]
+  ];
 
   const { push, route, start } = createRouter(routes, {
-    initialUrl: '/first',
-  })
+    initialUrl: "/first",
+  });
 
-  await start()
+  await start();
 
-  await push('first', {}, { state: { foo: 123 } })
+  await push("first", {}, { state: { foo: 123 } });
 
-  expect(route.matched.name).toBe('first')
+  expect(route.matched.name).toBe("first");
 
-  await push('/second')
+  await push("/second");
 
-  expect(route.matched.name).toBe('second')
-})
+  expect(route.matched.name).toBe("second");
+});
 
-test('route update updates the current route', async () => {
-  const route = createRoute(
-    {
-      name: 'root',
-      component,
-      path: '/[param]',
-    })
+test("route update updates the current route", async () => {
+  const route = createRoute({
+    name: "root",
+    component,
+    path: "/[param]",
+  });
 
   const router = createRouter([route], {
-    initialUrl: '/one',
-  })
+    initialUrl: "/one",
+  });
 
-  await router.start()
+  await router.start();
 
-  await router.route.update('param', 'two')
+  await router.route.update("param", "two");
 
-  expect(router.route.params.param).toBe('two')
+  expect(router.route.params.param).toBe("two");
 
   await router.route.update({
-    param: 'three',
-  })
+    param: "three",
+  });
 
-  expect(router.route.params.param).toBe('three')
-})
+  expect(router.route.params.param).toBe("three");
+});
 
-test.fails('route is readonly except for individual params', async () => {
+test.fails("route is readonly except for individual params", async () => {
   const routes = [
     createRoute({
-      name: 'root',
+      name: "root",
       component,
-      path: '/',
+      path: "/",
     }),
-  ]
+  ];
 
   const { route, start } = createRouter(routes, {
-    initialUrl: '/',
-  })
+    initialUrl: "/",
+  });
 
-  await start()
-
-  // @ts-expect-error value is immutable
-  route.name = 'child'
-  expect(route.name).toBe('root')
+  await start();
 
   // @ts-expect-error value is immutable
-  route.matched = 'match'
-  expect(route.matched).toMatchObject(routes[0].matched)
+  route.name = "child";
+  expect(route.name).toBe("root");
 
   // @ts-expect-error value is immutable
-  route.matches = 'matches'
-  expect(route.matches).toMatchObject(routes[0].matches)
+  route.matched = "match";
+  expect(route.matched).toMatchObject(routes[0].matched);
 
-  route.params = { foo: 'bar' }
-  expect(route.params).toMatchObject({})
-})
+  // @ts-expect-error value is immutable
+  route.matches = "matches";
+  expect(route.matches).toMatchObject(routes[0].matches);
 
-test('individual params are writable', async () => {
+  route.params = { foo: "bar" };
+  expect(route.params).toMatchObject({});
+});
+
+test("individual params are writable", async () => {
   const routes = [
     createRoute({
-      name: 'root',
+      name: "root",
       component,
-      path: '/[param]',
+      path: "/[param]",
     }),
-  ]
+  ];
 
   const { route, start } = createRouter(routes, {
-    initialUrl: '/one',
-  })
+    initialUrl: "/one",
+  });
 
-  await start()
+  await start();
 
-  route.params.param = 'goodbye'
+  route.params.param = "goodbye";
 
-  await flushPromises()
+  await flushPromises();
 
-  expect(route.params.param).toBe('goodbye')
+  expect(route.params.param).toBe("goodbye");
 
-  const { param } = toRefs(route.params)
+  const { param } = toRefs(route.params);
 
-  param.value = 'again'
+  param.value = "again";
 
-  await flushPromises()
+  await flushPromises();
 
-  expect(route.params.param).toBe('again')
-
-  // @ts-expect-error value is immutable
-  route.params.nothing = 'nothing'
-
-  await flushPromises()
+  expect(route.params.param).toBe("again");
 
   // @ts-expect-error value is immutable
-  expect(route.params.nothing).toBeUndefined()
-})
+  route.params.nothing = "nothing";
 
-test('individual params are writable when using toRefs', async () => {
+  await flushPromises();
+
+  // @ts-expect-error value is immutable
+  expect(route.params.nothing).toBeUndefined();
+});
+
+test("individual params are writable when using toRefs", async () => {
   const routes = [
     createRoute({
-      name: 'root',
+      name: "root",
       component,
-      path: '/[param]',
+      path: "/[param]",
     }),
-  ]
+  ];
 
   const { route, start } = createRouter(routes, {
-    initialUrl: '/one',
-  })
+    initialUrl: "/one",
+  });
 
-  await start()
+  await start();
 
-  const { param } = toRefs(route.params)
+  const { param } = toRefs(route.params);
 
-  param.value = 'two'
+  param.value = "two";
 
-  await flushPromises()
+  await flushPromises();
 
-  expect(route.params.param).toBe('two')
-})
+  expect(route.params.param).toBe("two");
+});
 
-test('setting an unknown param does not add its value to the route', async () => {
+test("setting an unknown param does not add its value to the route", async () => {
   const routes = [
     createRoute({
-      name: 'root',
+      name: "root",
       component,
-      path: '/',
+      path: "/",
     }),
-  ]
+  ];
   const { route, start } = createRouter(routes, {
-    initialUrl: '/',
-  })
+    initialUrl: "/",
+  });
 
-  await start()
-
-  // @ts-expect-error value is immutable
-  route.params.nothing = 'nothing'
-
-  await flushPromises()
+  await start();
 
   // @ts-expect-error value is immutable
-  expect(route.params.nothing).toBeUndefined()
-})
+  route.params.nothing = "nothing";
 
-test('params are writable', async () => {
+  await flushPromises();
+
+  // @ts-expect-error value is immutable
+  expect(route.params.nothing).toBeUndefined();
+});
+
+test("params are writable", async () => {
   const routes = [
     createRoute({
-      name: 'root',
+      name: "root",
       component,
-      path: '/[paramA]/[paramB]/[?paramC]',
+      path: "/[paramA]/[paramB]/[?paramC]",
     }),
-  ]
+  ];
 
   const { route, start } = createRouter(routes, {
-    initialUrl: '/one/two/three',
-  })
+    initialUrl: "/one/two/three",
+  });
 
-  await start()
+  await start();
 
   expect(route.params).toMatchObject({
-    paramA: 'one',
-    paramB: 'two',
-    paramC: 'three',
-  })
+    paramA: "one",
+    paramB: "two",
+    paramC: "three",
+  });
 
   route.params = {
-    paramA: 'four',
-    paramB: 'five',
-  }
+    paramA: "four",
+    paramB: "five",
+  };
 
-  await flushPromises()
+  await flushPromises();
 
   expect(route.params).toMatchObject({
-    paramA: 'four',
-    paramB: 'five',
-  })
+    paramA: "four",
+    paramB: "five",
+  });
 
-  const { params } = toRefs(route)
+  const { params } = toRefs(route);
 
   params.value = {
-    paramA: 'six',
-    paramB: 'seven',
-  }
+    paramA: "six",
+    paramB: "seven",
+  };
 
-  await flushPromises()
+  await flushPromises();
 
   expect(route.params).toMatchObject({
-    paramA: 'six',
-    paramB: 'seven',
-  })
-})
+    paramA: "six",
+    paramB: "seven",
+  });
+});
 
-test('params can be destructured', async () => {
+test("params can be destructured", async () => {
   const root = createRoute({
-    name: 'root',
+    name: "root",
     component,
-    path: '/[paramA]/[paramB]',
-  })
+    path: "/[paramA]/[paramB]",
+  });
 
   const { route, start, push } = createRouter([root], {
-    initialUrl: '/one/two',
-  })
+    initialUrl: "/one/two",
+  });
 
-  await start()
+  await start();
 
-  const { paramA, paramB } = toRefs(route.params)
+  const { paramA, paramB } = toRefs(route.params);
 
-  expect(paramA.value).toBe('one')
-  expect(paramB.value).toBe('two')
+  expect(paramA.value).toBe("one");
+  expect(paramB.value).toBe("two");
 
-  await push('root', { paramA: 'three', paramB: 'four' })
+  await push("root", { paramA: "three", paramB: "four" });
 
-  expect(paramA.value).toBe('three')
-  expect(paramB.value).toBe('four')
+  expect(paramA.value).toBe("three");
+  expect(paramB.value).toBe("four");
 
-  paramA.value = 'five'
+  paramA.value = "five";
 
-  await flushPromises()
+  await flushPromises();
 
-  expect(route.params.paramA).toBe('five')
-})
+  expect(route.params.paramA).toBe("five");
+});
 
-test('query is writable', async () => {
+test("query is writable", async () => {
   const root = createRoute({
-    name: 'root',
+    name: "root",
     component,
-    path: '/',
-  })
+    path: "/",
+  });
 
   const { route, start } = createRouter([root], {
-    initialUrl: '/?foo=bar&fiz=buz',
-  })
+    initialUrl: "/?foo=bar&fiz=buz",
+  });
 
-  await start()
+  await start();
 
-  route.query = 'foo=bar&foo=baz'
+  route.query = "foo=bar&foo=baz";
 
-  await flushPromises()
+  await flushPromises();
 
-  expect(route.query.toString()).toBe('foo=bar&foo=baz')
+  expect(route.query.toString()).toBe("foo=bar&foo=baz");
 
-  const { query } = toRefs(route)
+  const { query } = toRefs(route);
 
   // @ts-expect-error vue's `reactive` utility loses the type information for computed setters but we do expect this to work
-  query.value = 'foo2=bar2&foo2=baz2'
+  query.value = "foo2=bar2&foo2=baz2";
 
-  await flushPromises()
+  await flushPromises();
 
-  expect(route.query.toString()).toBe('foo2=bar2&foo2=baz2')
-})
+  expect(route.query.toString()).toBe("foo2=bar2&foo2=baz2");
+});
 
-test('query.set updates the route', async () => {
+test("query.set updates the route", async () => {
   const root = createRoute({
-    name: 'root',
+    name: "root",
     component,
-    path: '/',
-  })
+    path: "/",
+  });
 
   const { route, start } = createRouter([root], {
-    initialUrl: '/',
-  })
+    initialUrl: "/",
+  });
 
-  await start()
+  await start();
 
-  route.query.set('foo', 'bar')
+  route.query.set("foo", "bar");
 
-  await flushPromises()
+  await flushPromises();
 
-  expect(route.query.toString()).toBe('foo=bar')
+  expect(route.query.toString()).toBe("foo=bar");
 
-  route.query.set('fuz', 'buz')
+  route.query.set("fuz", "buz");
 
-  await flushPromises()
+  await flushPromises();
 
-  expect(route.query.toString()).toBe('foo=bar&fuz=buz')
-})
+  expect(route.query.toString()).toBe("foo=bar&fuz=buz");
+});
 
-test('query.set does not duplicate existing params when updating one param', async () => {
+test("query.set does not duplicate existing params when updating one param", async () => {
   const root = createRoute({
-    name: 'root',
+    name: "root",
     component,
-    path: '/',
-    query: 'param=[param]',
-  })
+    path: "/",
+    query: "param=[param]",
+  });
 
   const { route, start } = createRouter([root], {
-    initialUrl: '/?param=value&foo=1',
-  })
+    initialUrl: "/?param=value&foo=1",
+  });
 
-  await start()
+  await start();
 
-  expect(route.query.toString()).toBe('param=value&foo=1')
+  expect(route.query.toString()).toBe("param=value&foo=1");
 
-  route.query.set('foo', '2')
+  route.query.set("foo", "2");
 
-  await flushPromises()
+  await flushPromises();
 
-  expect(route.query.toString()).toBe('param=value&foo=2')
-})
+  expect(route.query.toString()).toBe("param=value&foo=2");
+});
 
-test('query.set can change the value of a param that is already set', async () => {
+test("query.set can change the value of a param that is already set", async () => {
   const root = createRoute({
-    name: 'root',
+    name: "root",
     component,
-    query: 'param=[param]',
-    path: '/',
-  })
+    query: "param=[param]",
+    path: "/",
+  });
 
   const { route, start } = createRouter([root], {
-    initialUrl: '/?param=foo&notAParam=1',
-  })
+    initialUrl: "/?param=foo&notAParam=1",
+  });
 
-  await start()
+  await start();
 
-  route.query.set('param', 'bar')
+  route.query.set("param", "bar");
 
-  await flushPromises()
+  await flushPromises();
 
-  expect(route.query.toString()).toBe('param=bar&notAParam=1')
-})
+  expect(route.query.toString()).toBe("param=bar&notAParam=1");
+});
 
-test('query.append updates the route', async () => {
+test("query.append updates the route", async () => {
   const root = createRoute({
-    name: 'root',
+    name: "root",
     component,
-    path: '/',
-  })
+    path: "/",
+  });
 
   const { route, start } = createRouter([root], {
-    initialUrl: '/',
-  })
+    initialUrl: "/",
+  });
 
-  await start()
+  await start();
 
-  route.query.append('foo', 'bar')
+  route.query.append("foo", "bar");
 
-  await flushPromises()
+  await flushPromises();
 
-  expect(route.query.toString()).toBe('foo=bar')
+  expect(route.query.toString()).toBe("foo=bar");
 
-  route.query.append('fuz', 'buz')
+  route.query.append("fuz", "buz");
 
-  await flushPromises()
+  await flushPromises();
 
-  expect(route.query.toString()).toBe('foo=bar&fuz=buz')
-})
+  expect(route.query.toString()).toBe("foo=bar&fuz=buz");
+});
 
-test('query.delete updates the route', async () => {
+test("query.delete updates the route", async () => {
   const root = createRoute({
-    name: 'root',
+    name: "root",
     component,
-    path: '/',
-  })
+    path: "/",
+  });
 
   const { route, start } = createRouter([root], {
-    initialUrl: '/?foo=bar&fiz=buz',
-  })
+    initialUrl: "/?foo=bar&fiz=buz",
+  });
 
-  await start()
+  await start();
 
-  route.query.delete('foo')
+  route.query.delete("foo");
 
-  await flushPromises()
+  await flushPromises();
 
-  expect(route.query.toString()).toBe('fiz=buz')
-})
+  expect(route.query.toString()).toBe("fiz=buz");
+});
 
-test('query.values is reactive', async () => {
+test("query.values is reactive", async () => {
   const root = createRoute({
-    name: 'root',
+    name: "root",
     component,
-    path: '/',
-  })
+    path: "/",
+  });
 
   const { route, start } = createRouter([root], {
-    initialUrl: '/?foo=foo1&bar=bar1',
-  })
+    initialUrl: "/?foo=foo1&bar=bar1",
+  });
 
-  await start()
+  await start();
 
-  const values = computed(() => Array.from(route.query.values()))
+  const values = computed(() => Array.from(route.query.values()));
 
-  expect(values.value).toMatchObject(['foo1', 'bar1'])
+  expect(values.value).toMatchObject(["foo1", "bar1"]);
 
-  route.query.append('foo', 'foo2')
+  route.query.append("foo", "foo2");
 
-  await flushPromises()
+  await flushPromises();
 
-  expect(values.value).toMatchObject(['foo1', 'bar1', 'foo2'])
-})
+  expect(values.value).toMatchObject(["foo1", "bar1", "foo2"]);
+});
 
-test('given an array of Routes with duplicate names, throws DuplicateNamesError', () => {
+test("given an array of Routes with duplicate names, throws DuplicateNamesError", () => {
   const aRoutes = [
-    createRoute({ name: 'foo', component }),
-    createRoute({ name: 'bar', component }),
-  ]
+    createRoute({ name: "foo", component }),
+    createRoute({ name: "bar", component }),
+  ];
   const bRoutes = [
-    createRoute({ name: 'zoo', component }),
-    createRoute({ name: 'bar', component }),
-  ]
+    createRoute({ name: "zoo", component }),
+    createRoute({ name: "bar", component }),
+  ];
 
-  const action: () => void = () => createRouter([aRoutes, bRoutes], {
-    initialUrl: '/',
-  })
+  const action: () => void = () =>
+    createRouter([aRoutes, bRoutes], {
+      initialUrl: "/",
+    });
 
-  expect(action).toThrow(DuplicateNamesError)
-})
+  expect(action).toThrow(DuplicateNamesError);
+});
 
-test('given an array of Routes with missing context, can still match missing routes', async () => {
-  const missingRoute = createRoute({ name: 'missing', path: '/missing', component })
+test("given an array of Routes with missing context, can still match missing routes", async () => {
+  const missingRoute = createRoute({ name: "missing", path: "/missing", component });
 
-  const router = createRouter([
-    createRoute({ name: 'foo', path: '/foo', component, context: [missingRoute] }),
-    createRoute({ name: 'bar', path: '/bar', component }),
-  ], {
-    initialUrl: '/missing',
-  })
+  const router = createRouter(
+    [
+      createRoute({ name: "foo", path: "/foo", component, context: [missingRoute] }),
+      createRoute({ name: "bar", path: "/bar", component }),
+    ],
+    {
+      initialUrl: "/missing",
+    },
+  );
 
-  await router.start()
+  await router.start();
 
-  expect(router.route.name).toBe('missing')
-})
+  expect(router.route.name).toBe("missing");
+});
 
-test('given an array of Routes with missing context with duplicate route names, throws DuplicateNamesError', async () => {
-  const missingRoute = createRoute({ name: 'foo', component })
+test("given an array of Routes with missing context with duplicate route names, throws DuplicateNamesError", async () => {
+  const missingRoute = createRoute({ name: "foo", component });
 
-  const action: () => void = () => createRouter([
-    createRoute({ name: 'foo', component, context: [missingRoute] }),
-  ], {
-    initialUrl: '/missing',
-  })
+  const action: () => void = () =>
+    createRouter([createRoute({ name: "foo", component, context: [missingRoute] })], {
+      initialUrl: "/missing",
+    });
 
-  expect(action).toThrow(DuplicateNamesError)
-})
+  expect(action).toThrow(DuplicateNamesError);
+});
 
-test('initial route is not set until the router is started', async () => {
+test("initial route is not set until the router is started", async () => {
   const route = createRoute({
-    name: 'root',
-    path: '/',
+    name: "root",
+    path: "/",
     component,
-  })
+  });
 
   const router = createRouter([route], {
-    initialUrl: '/',
-  })
+    initialUrl: "/",
+  });
 
-  expect(router.route.name).toBe('NotFound')
+  expect(router.route.name).toBe("NotFound");
 
-  await router.start()
+  await router.start();
 
-  expect(router.route.name).toBe('root')
-})
+  expect(router.route.name).toBe("root");
+});
 
-describe('router.resolve', () => {
-  test('when given a name that matches a route return that route', () => {
-    const router = createRouter(routes, { initialUrl: '/' })
+describe("router.resolve", () => {
+  test("when given a name that matches a route return that route", () => {
+    const router = createRouter(routes, { initialUrl: "/" });
 
-    const route = router.resolve('parentB')
+    const route = router.resolve("parentB");
 
-    expect(route).toBeDefined()
-    expect(route.name).toBe('parentB')
-  })
+    expect(route).toBeDefined();
+    expect(route.name).toBe("parentB");
+  });
 
-  test('when given a name that does not match a route throws RouteNotFoundError', () => {
-    const router = createRouter(routes, { initialUrl: '/' })
+  test("when given a name that does not match a route throws RouteNotFoundError", () => {
+    const router = createRouter(routes, { initialUrl: "/" });
 
-    const action: () => void = () => router.resolve('parentD' as any)
+    const action: () => void = () => router.resolve("parentD" as any);
 
-    expect(action).toThrow(RouteNotFoundError)
-  })
+    expect(action).toThrow(RouteNotFoundError);
+  });
 
-  test('given a route name with params, interpolates param values', () => {
-    const router = createRouter(routes, { initialUrl: '/' })
-    const route = router.resolve('parentA', { paramA: 'bar' })
-
-    expect(route).toMatchObject({
-      name: 'parentA',
-      params: {
-        paramA: 'bar',
-      },
-      href: '/parentA/bar',
-    })
-  })
-
-  test('given a route name with query, interpolates param values', () => {
-    const router = createRouter(routes, { initialUrl: '/' })
-    const route = router.resolve('parentA', { paramA: 'bar' }, { query: { foo: 'foo' } })
+  test("given a route name with params, interpolates param values", () => {
+    const router = createRouter(routes, { initialUrl: "/" });
+    const route = router.resolve("parentA", { paramA: "bar" });
 
     expect(route).toMatchObject({
-      name: 'parentA',
+      name: "parentA",
       params: {
-        paramA: 'bar',
+        paramA: "bar",
       },
-      href: '/parentA/bar?foo=foo',
-    })
-  })
+      href: "/parentA/bar",
+    });
+  });
 
-  test('given a route name with params cannot be matched, throws InvalidRouteParamValueError', () => {
-    const router = createRouter(routes, { initialUrl: '/' })
+  test("given a route name with query, interpolates param values", () => {
+    const router = createRouter(routes, { initialUrl: "/" });
+    const route = router.resolve("parentA", { paramA: "bar" }, { query: { foo: "foo" } });
 
-    const action: () => void = () => router.resolve('parentA', { missing: 'foo' } as any)
+    expect(route).toMatchObject({
+      name: "parentA",
+      params: {
+        paramA: "bar",
+      },
+      href: "/parentA/bar?foo=foo",
+    });
+  });
 
-    expect(action).toThrow(InvalidRouteParamValueError)
-  })
+  test("given a route name with params cannot be matched, throws InvalidRouteParamValueError", () => {
+    const router = createRouter(routes, { initialUrl: "/" });
 
-  test('given a param with a dash or underscore resolves the correct url', () => {
+    const action: () => void = () => router.resolve("parentA", { missing: "foo" } as any);
+
+    expect(action).toThrow(InvalidRouteParamValueError);
+  });
+
+  test("given a param with a dash or underscore resolves the correct url", () => {
     const routes = [
       createRoute({
-        name: 'kebab',
-        path: '/[test-param]',
+        name: "kebab",
+        path: "/[test-param]",
         component,
       }),
       createRoute({
-        name: 'snake',
-        path: '/[test_param]',
+        name: "snake",
+        path: "/[test_param]",
         component,
       }),
-    ]
+    ];
 
-    const router = createRouter(routes, { initialUrl: '/' })
+    const router = createRouter(routes, { initialUrl: "/" });
 
-    const kebab = router.resolve('kebab', { 'test-param': 'foo' })
+    const kebab = router.resolve("kebab", { "test-param": "foo" });
 
     expect(kebab).toMatchObject({
-      name: 'kebab',
+      name: "kebab",
       params: {
-        'test-param': 'foo',
+        "test-param": "foo",
       },
-      href: '/foo',
-    })
+      href: "/foo",
+    });
 
-    const snake = router.resolve('snake', { test_param: 'foo' })
+    const snake = router.resolve("snake", { test_param: "foo" });
 
     expect(snake).toMatchObject({
-      name: 'snake',
+      name: "snake",
       params: {
-        test_param: 'foo',
+        test_param: "foo",
       },
-      href: '/foo',
-    })
-  })
+      href: "/foo",
+    });
+  });
 
-  test('when given an external route returns a fully qualified url', () => {
-    const routes = [createExternalRoute({
-      host: 'https://kitbag.dev',
-      name: 'external',
-      path: '/',
-    })]
+  test("when given an external route returns a fully qualified url", () => {
+    const routes = [
+      createExternalRoute({
+        host: "https://kitbag.dev",
+        name: "external",
+        path: "/",
+      }),
+    ];
 
-    const router = createRouter(routes, { initialUrl: '/' })
+    const router = createRouter(routes, { initialUrl: "/" });
 
-    const route = router.resolve('external')
-
-    expect(route).toMatchObject({
-      name: 'external',
-      href: 'https://kitbag.dev/',
-    })
-  })
-
-  test('when given an external route with params in host, interpolates param values', () => {
-    const routes = [createExternalRoute({
-      host: 'https://[subdomain].kitbag.dev',
-      name: 'external',
-      path: '/',
-    })]
-
-    const router = createRouter(routes, { initialUrl: '/' })
-
-    const route = router.resolve('external', { subdomain: 'router' })
+    const route = router.resolve("external");
 
     expect(route).toMatchObject({
-      name: 'external',
-      href: 'https://router.kitbag.dev/',
-    })
-  })
+      name: "external",
+      href: "https://kitbag.dev/",
+    });
+  });
 
-  test('given a route with hash, interpolates hash value', () => {
-    const router = createRouter(routes, { initialUrl: '/' })
+  test("when given an external route with params in host, interpolates param values", () => {
+    const routes = [
+      createExternalRoute({
+        host: "https://[subdomain].kitbag.dev",
+        name: "external",
+        path: "/",
+      }),
+    ];
 
-    const route = router.resolve('parentA', { paramA: 'bar' }, { hash: 'foo' })
+    const router = createRouter(routes, { initialUrl: "/" });
+
+    const route = router.resolve("external", { subdomain: "router" });
 
     expect(route).toMatchObject({
-      name: 'parentA',
+      name: "external",
+      href: "https://router.kitbag.dev/",
+    });
+  });
+
+  test("given a route with hash, interpolates hash value", () => {
+    const router = createRouter(routes, { initialUrl: "/" });
+
+    const route = router.resolve("parentA", { paramA: "bar" }, { hash: "foo" });
+
+    expect(route).toMatchObject({
+      name: "parentA",
       params: {
-        paramA: 'bar',
+        paramA: "bar",
       },
-      hash: '#foo',
-      href: '/parentA/bar#foo',
-    })
-  })
-})
+      hash: "#foo",
+      href: "/parentA/bar#foo",
+    });
+  });
+});
 
-describe('router.push', () => {
-  test('given a resolved route, pushes the route', async () => {
-    const router = createRouter(routes, { initialUrl: '/' })
-    const route = router.resolve('parentA', { paramA: 'bar' })
+describe("router.push", () => {
+  test("given a resolved route, pushes the route", async () => {
+    const router = createRouter(routes, { initialUrl: "/" });
+    const route = router.resolve("parentA", { paramA: "bar" });
 
-    await router.push(route)
+    await router.push(route);
 
-    expect(router.route.href).toBe('/parentA/bar')
-  })
+    expect(router.route.href).toBe("/parentA/bar");
+  });
 
-  test('given a route name, pushes the route', async () => {
-    const router = createRouter(routes, { initialUrl: '/' })
+  test("given a route name, pushes the route", async () => {
+    const router = createRouter(routes, { initialUrl: "/" });
 
-    await router.push('parentA', { paramA: 'bar' })
+    await router.push("parentA", { paramA: "bar" });
 
-    expect(router.route.href).toBe('/parentA/bar')
-  })
+    expect(router.route.href).toBe("/parentA/bar");
+  });
 
-  test('given an internal Url, pushes the route', async () => {
-    const router = createRouter(routes, { initialUrl: '/' })
+  test("given an internal Url, pushes the route", async () => {
+    const router = createRouter(routes, { initialUrl: "/" });
 
-    await router.push('/parentA/bar')
+    await router.push("/parentA/bar");
 
     expect(router.route).toMatchObject({
-      name: 'parentA',
+      name: "parentA",
       params: {
-        paramA: 'bar',
+        paramA: "bar",
       },
-    })
-  })
+    });
+  });
 
-  test('given a resolved route with state inside, pushes state', async () => {
+  test("given a resolved route with state inside, pushes state", async () => {
     const routeWithState = createRoute({
-      name: 'route-with-state',
+      name: "route-with-state",
       component,
-      path: '/route-with-state',
+      path: "/route-with-state",
       state: { zoo: Number },
-    })
-    const router = createRouter([routeWithState], { initialUrl: '/' })
-    const route = router.resolve('route-with-state', { paramA: 'bar' }, { state: { zoo: 123 } })
+    });
+    const router = createRouter([routeWithState], { initialUrl: "/" });
+    const route = router.resolve("route-with-state", { paramA: "bar" }, { state: { zoo: 123 } });
 
-    await router.push(route)
+    await router.push(route);
 
-    expect(router.route.state).toMatchObject({ zoo: 123 })
-  })
+    expect(router.route.state).toMatchObject({ zoo: 123 });
+  });
 
-  test('given a resolved route with state in options, pushes state', async () => {
+  test("given a resolved route with state in options, pushes state", async () => {
     const routeWithState = createRoute({
-      name: 'route-with-state',
+      name: "route-with-state",
       component,
-      path: '/route-with-state',
+      path: "/route-with-state",
       state: { zoo: Number },
-    })
-    const router = createRouter([routeWithState], { initialUrl: '/' })
-    const route = router.resolve('route-with-state', { paramA: 'bar' })
+    });
+    const router = createRouter([routeWithState], { initialUrl: "/" });
+    const route = router.resolve("route-with-state", { paramA: "bar" });
 
-    await router.push(route, { state: { zoo: 123 } })
+    await router.push(route, { state: { zoo: 123 } });
 
-    expect(router.route.state).toMatchObject({ zoo: 123 })
-  })
+    expect(router.route.state).toMatchObject({ zoo: 123 });
+  });
 
-  test('given a route name with state in options, pushes state', async () => {
+  test("given a route name with state in options, pushes state", async () => {
     const routeWithState = createRoute({
-      name: 'route-with-state',
+      name: "route-with-state",
       component,
-      path: '/route-with-state',
+      path: "/route-with-state",
       state: { zoo: Number },
-    })
-    const router = createRouter([routeWithState], { initialUrl: '/' })
+    });
+    const router = createRouter([routeWithState], { initialUrl: "/" });
 
-    await router.push('route-with-state', { paramA: 'bar' }, { state: { zoo: 123 } })
+    await router.push("route-with-state", { paramA: "bar" }, { state: { zoo: 123 } });
 
-    expect(router.route.state).toMatchObject({ zoo: 123 })
-  })
+    expect(router.route.state).toMatchObject({ zoo: 123 });
+  });
 
-  test('given an internal Url with state in options, pushes state', async () => {
+  test("given an internal Url with state in options, pushes state", async () => {
     const routeWithState = createRoute({
-      name: 'route-with-state',
+      name: "route-with-state",
       component,
-      path: '/route-with-state',
+      path: "/route-with-state",
       state: { zoo: Number },
-    })
-    const router = createRouter([routeWithState], { initialUrl: '/' })
+    });
+    const router = createRouter([routeWithState], { initialUrl: "/" });
 
-    await router.push('/route-with-state', { state: { zoo: 123 } })
+    await router.push("/route-with-state", { state: { zoo: 123 } });
 
-    expect(router.route.state).toMatchObject({ zoo: 123 })
-  })
-})
+    expect(router.route.state).toMatchObject({ zoo: 123 });
+  });
+});
 
-describe('router.onError', () => {
-  test.each([
-    { hook: 'onBeforeRouteEnter' },
-    { hook: 'onAfterRouteEnter' },
-  ] as const)('given an error thrown in $hook, calls the onError callback with the correct context', async ({ hook }) => {
-    const error = new Error('Test error')
-    const onError = vi.fn()
+describe("router.onError", () => {
+  test.each([{ hook: "onBeforeRouteEnter" }, { hook: "onAfterRouteEnter" }] as const)(
+    "given an error thrown in $hook, calls the onError callback with the correct context",
+    async ({ hook }) => {
+      const error = new Error("Test error");
+      const onError = vi.fn();
 
-    const route = createRoute({
-      name: 'route-with-error',
-      component,
-      path: '/',
-    })
+      const route = createRoute({
+        name: "route-with-error",
+        component,
+        path: "/",
+      });
 
-    const router = createRouter([route], { initialUrl: '/' })
+      const router = createRouter([route], { initialUrl: "/" });
 
-    router[hook](() => {
-      throw error
-    })
+      router[hook](() => {
+        throw error;
+      });
 
-    router.onError(onError)
+      router.onError(onError);
 
-    await router.push('route-with-error')
+      await router.push("route-with-error");
 
-    expect(onError).toHaveBeenCalledWith(error, expect.objectContaining({
-      source: 'hook',
-    }))
-  })
+      expect(onError).toHaveBeenCalledWith(
+        error,
+        expect.objectContaining({
+          source: "hook",
+        }),
+      );
+    },
+  );
 
-  test.each([
-    { hook: 'onBeforeRouteUpdate' },
-    { hook: 'onAfterRouteUpdate' },
-  ] as const)('given an error thrown in $hook, calls the onError callback with the correct context', async ({ hook }) => {
-    const error = new Error('Test error')
-    const onError = vi.fn()
+  test.each([{ hook: "onBeforeRouteUpdate" }, { hook: "onAfterRouteUpdate" }] as const)(
+    "given an error thrown in $hook, calls the onError callback with the correct context",
+    async ({ hook }) => {
+      const error = new Error("Test error");
+      const onError = vi.fn();
 
-    const route = createRoute({
-      name: 'route-with-error',
-      component,
-      path: '/[param]',
-    })
+      const route = createRoute({
+        name: "route-with-error",
+        component,
+        path: "/[param]",
+      });
 
-    const router = createRouter([route], { initialUrl: '/' })
-    await router.start()
+      const router = createRouter([route], { initialUrl: "/" });
+      await router.start();
 
-    router[hook](() => {
-      throw error
-    })
+      router[hook](() => {
+        throw error;
+      });
 
-    router.onError(onError)
+      router.onError(onError);
 
-    // Navigate to the route first
-    await router.push('route-with-error', { param: 'bar' })
-    // Then navigate to the same route again to trigger update
-    await router.push('route-with-error', { param: 'foo' })
+      // Navigate to the route first
+      await router.push("route-with-error", { param: "bar" });
+      // Then navigate to the same route again to trigger update
+      await router.push("route-with-error", { param: "foo" });
 
-    expect(onError).toHaveBeenCalledWith(error, expect.objectContaining({
-      source: 'hook',
-    }))
-  })
+      expect(onError).toHaveBeenCalledWith(
+        error,
+        expect.objectContaining({
+          source: "hook",
+        }),
+      );
+    },
+  );
 
-  test.each([
-    { hook: 'onBeforeRouteLeave' },
-    { hook: 'onAfterRouteLeave' },
-  ] as const)('given an error thrown in $hook, calls the onError callback with the correct context', async ({ hook }) => {
-    const error = new Error('Test error')
-    const onError = vi.fn()
+  test.each([{ hook: "onBeforeRouteLeave" }, { hook: "onAfterRouteLeave" }] as const)(
+    "given an error thrown in $hook, calls the onError callback with the correct context",
+    async ({ hook }) => {
+      const error = new Error("Test error");
+      const onError = vi.fn();
 
-    const route1 = createRoute({
-      name: 'route-1',
-      component,
-      path: '/route-1',
-    })
+      const route1 = createRoute({
+        name: "route-1",
+        component,
+        path: "/route-1",
+      });
 
-    const route2 = createRoute({
-      name: 'route-2',
-      component,
-      path: '/route-2',
-    })
+      const route2 = createRoute({
+        name: "route-2",
+        component,
+        path: "/route-2",
+      });
 
-    const router = createRouter([route1, route2], { initialUrl: '/' })
-    await router.start()
+      const router = createRouter([route1, route2], { initialUrl: "/" });
+      await router.start();
 
-    router[hook](() => {
-      throw error
-    })
+      router[hook](() => {
+        throw error;
+      });
 
-    router.onError(onError)
+      router.onError(onError);
 
-    // Navigate to route-1 first
-    await router.push('route-1')
-    // Then navigate to route-2 to trigger leave
-    await router.push('route-2')
+      // Navigate to route-1 first
+      await router.push("route-1");
+      // Then navigate to route-2 to trigger leave
+      await router.push("route-2");
 
-    expect(onError).toHaveBeenCalledWith(error, expect.objectContaining({
-      source: 'hook',
-    }))
-  })
+      expect(onError).toHaveBeenCalledWith(
+        error,
+        expect.objectContaining({
+          source: "hook",
+        }),
+      );
+    },
+  );
 
-  test('given an error thrown in a props callback, calls the onError callback with the correct context', async () => {
-    const error = new Error('Test error')
-    const onError = vi.fn()
+  test("given an error thrown in a props callback, calls the onError callback with the correct context", async () => {
+    const error = new Error("Test error");
+    const onError = vi.fn();
 
-    const routeWithError = createRoute({
-      name: 'route-with-error',
-      component,
-      path: '/route-with-error',
-    }, () => {
-      throw error
-    })
+    const routeWithError = createRoute(
+      {
+        name: "route-with-error",
+        component,
+        path: "/route-with-error",
+      },
+      () => {
+        throw error;
+      },
+    );
 
-    const router = createRouter([routeWithError], { initialUrl: '/' })
-    await router.start()
+    const router = createRouter([routeWithError], { initialUrl: "/" });
+    await router.start();
 
-    router.onError(onError)
+    router.onError(onError);
 
-    await router.push('route-with-error')
-    await flushPromises()
+    await router.push("route-with-error");
+    await flushPromises();
 
-    expect(onError).toHaveBeenCalledWith(error, expect.objectContaining({
-      source: 'props',
-    }))
-  })
-})
-  
-describe('router.onRejection', () => {
-  test('given router itself triggers a rejection, calls the onRejection callback with the correct context', async () => {
-    const onRejection = vi.fn()
+    expect(onError).toHaveBeenCalledWith(
+      error,
+      expect.objectContaining({
+        source: "props",
+      }),
+    );
+  });
+});
+
+describe("router.onRejection", () => {
+  test("given router itself triggers a rejection, calls the onRejection callback with the correct context", async () => {
+    const onRejection = vi.fn();
 
     const rejection = createRejection({
-      type: 'CustomRejection',
-      component: { template: '<div>This is a custom rejection</div>' },
-    })
+      type: "CustomRejection",
+      component: { template: "<div>This is a custom rejection</div>" },
+    });
 
     const route = createRoute({
-      name: 'route',
+      name: "route",
       component,
-      path: '/',
-    })
+      path: "/",
+    });
 
-    const router = createRouter([route], { initialUrl: '/', rejections: [rejection] })
+    const router = createRouter([route], { initialUrl: "/", rejections: [rejection] });
 
-    router.onRejection(onRejection)
-     
-    await router.start()
+    router.onRejection(onRejection);
 
-    router.reject('CustomRejection')
+    await router.start();
 
-    expect(onRejection).toHaveBeenCalledWith('CustomRejection', {
+    router.reject("CustomRejection");
+
+    expect(onRejection).toHaveBeenCalledWith("CustomRejection", {
       to: null,
       from: null,
-    })
-  })
+    });
+  });
 
-  test('given route hooks that trigger a rejection, calls the onRejection callback with the correct context', async () => {
-    const onRejection = vi.fn()
+  test("given route hooks that trigger a rejection, calls the onRejection callback with the correct context", async () => {
+    const onRejection = vi.fn();
 
     const route = createRoute({
-      name: 'route-with-rejection',
+      name: "route-with-rejection",
       component,
-      path: '/',
-    })
+      path: "/",
+    });
 
     route.onBeforeRouteEnter((_to, { reject }) => {
-      reject('NotFound')
-    })
+      reject("NotFound");
+    });
 
-    const router = createRouter([route], { initialUrl: '/' })
+    const router = createRouter([route], { initialUrl: "/" });
 
-    router.onRejection(onRejection)
+    router.onRejection(onRejection);
 
-    await router.start()
+    await router.start();
 
-    expect(onRejection).toHaveBeenCalledWith('NotFound', {
+    expect(onRejection).toHaveBeenCalledWith("NotFound", {
       to: expect.objectContaining({
-        name: 'route-with-rejection',
+        name: "route-with-rejection",
       }),
       from: null,
-    })
-  })
-})
+    });
+  });
+});
 
-describe('options.removeTrailingSlashes', () => {
+describe("options.removeTrailingSlashes", () => {
   const foo = createRoute({
-    name: 'foo',
+    name: "foo",
     component,
-    path: '/foo',
-  })
+    path: "/foo",
+  });
 
   const fooWithTrailingSlash = createRoute({
-    name: 'fooWithTrailingSlash',
+    name: "fooWithTrailingSlash",
     component,
-    path: '/foo/',
-  })
+    path: "/foo/",
+  });
 
   const bar = createRoute({
-    name: 'bar',
+    name: "bar",
     component,
-    path: '/bar',
-  })
+    path: "/bar",
+  });
 
-  test('when true, removes trailing slashes from the path', async () => {
+  test("when true, removes trailing slashes from the path", async () => {
     const router = createRouter([foo, fooWithTrailingSlash, bar], {
-      initialUrl: '/foo/',
+      initialUrl: "/foo/",
       removeTrailingSlashes: true,
-    })
+    });
 
-    await router.start()
+    await router.start();
 
     // trims the trailing slash from the initial url
-    expect(router.route.href).toBe('/foo')
+    expect(router.route.href).toBe("/foo");
 
-    await router.push('/bar/')
-
-    // trims the trailing slash from the path
-    expect(router.route.href).toBe('/bar')
-
-    await router.push('fooWithTrailingSlash')
+    await router.push("/bar/");
 
     // trims the trailing slash from the path
-    expect(router.route.href).toBe('/foo')
-  })
+    expect(router.route.href).toBe("/bar");
 
-  test('when false, does not remove trailing slashes from the path', async () => {
+    await router.push("fooWithTrailingSlash");
+
+    // trims the trailing slash from the path
+    expect(router.route.href).toBe("/foo");
+  });
+
+  test("when false, does not remove trailing slashes from the path", async () => {
     const router = createRouter([foo, fooWithTrailingSlash, bar], {
-      initialUrl: '/foo/',
+      initialUrl: "/foo/",
       removeTrailingSlashes: false,
-    })
+    });
 
-    await router.start()
+    await router.start();
 
-    expect(router.route.href).toBe('/foo/')
+    expect(router.route.href).toBe("/foo/");
 
-    await router.push('fooWithTrailingSlash')
+    await router.push("fooWithTrailingSlash");
 
-    expect(router.route.href).toBe('/foo/')
+    expect(router.route.href).toBe("/foo/");
 
-    await router.push('/bar/')
+    await router.push("/bar/");
 
     // rejects so has an empty path
-    expect(router.route.href).toBe('/')
-  })
-})
+    expect(router.route.href).toBe("/");
+  });
+});

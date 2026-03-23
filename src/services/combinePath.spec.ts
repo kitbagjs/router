@@ -1,48 +1,48 @@
-import { expect, test } from 'vitest'
-import { DuplicateParamsError } from '@/errors/duplicateParamsError'
-import { combinePath } from '@/services/combinePath'
-import { withParams } from '@/services/withParams'
+import { expect, test } from "vite-plus/test";
+import { DuplicateParamsError } from "@/errors/duplicateParamsError";
+import { combinePath } from "@/services/combinePath";
+import { withParams } from "@/services/withParams";
 
-test('given 2 paths, returns new Path joined together', () => {
-  const aPath = withParams('/foo', {})
-  const bPath = withParams('/bar', {})
+test("given 2 paths, returns new Path joined together", () => {
+  const aPath = withParams("/foo", {});
+  const bPath = withParams("/bar", {});
 
-  const response = combinePath(aPath, bPath)
+  const response = combinePath(aPath, bPath);
 
-  expect(response.value).toBe('/foo/bar')
-})
+  expect(response.value).toBe("/foo/bar");
+});
 
-test('given 2 paths with params, returns new Path joined together with params', () => {
-  const aPath = withParams('/[foz]', { foz: Boolean })
-  const bPath = withParams('/[baz]', { baz: Number })
+test("given 2 paths with params, returns new Path joined together with params", () => {
+  const aPath = withParams("/[foz]", { foz: Boolean });
+  const bPath = withParams("/[baz]", { baz: Number });
 
-  const response = combinePath(aPath, bPath)
+  const response = combinePath(aPath, bPath);
 
-  expect(response.value).toBe('/[foz]/[baz]')
+  expect(response.value).toBe("/[foz]/[baz]");
   expect(response.params).toMatchObject({
     foz: { param: Boolean, isOptional: false, isGreedy: false },
     baz: { param: Number, isOptional: false, isGreedy: false },
-  })
-})
+  });
+});
 
-test('given 2 paths with optional params, returns new Path joined together with params', () => {
-  const aPath = withParams('/[?foz]', { foz: Boolean })
-  const bPath = withParams('/[?baz]', { baz: Number })
+test("given 2 paths with optional params, returns new Path joined together with params", () => {
+  const aPath = withParams("/[?foz]", { foz: Boolean });
+  const bPath = withParams("/[?baz]", { baz: Number });
 
-  const response = combinePath(aPath, bPath)
+  const response = combinePath(aPath, bPath);
 
-  expect(response.value).toBe('/[?foz]/[?baz]')
+  expect(response.value).toBe("/[?foz]/[?baz]");
   expect(response.params).toMatchObject({
     foz: { param: Boolean, isOptional: true, isGreedy: false },
     baz: { param: Number, isOptional: true, isGreedy: false },
-  })
-})
+  });
+});
 
-test('given 2 paths with params that include duplicates, throws DuplicateParamsError', () => {
-  const aPath = withParams('/[foz]', { foz: String })
-  const bPath = withParams('/[foz]', { foz: String })
+test("given 2 paths with params that include duplicates, throws DuplicateParamsError", () => {
+  const aPath = withParams("/[foz]", { foz: String });
+  const bPath = withParams("/[foz]", { foz: String });
 
-  const action: () => void = () => combinePath(aPath, bPath)
+  const action: () => void = () => combinePath(aPath, bPath);
 
-  expect(action).toThrow(DuplicateParamsError)
-})
+  expect(action).toThrow(DuplicateParamsError);
+});

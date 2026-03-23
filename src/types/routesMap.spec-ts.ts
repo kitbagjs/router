@@ -1,53 +1,47 @@
-import { expectTypeOf, test } from 'vitest'
-import { createRoute } from '@/services/createRoute'
-import { Route } from '@/types/route'
-import { RoutesMap } from '@/types/routesMap'
-import { component } from '@/utilities/testHelpers'
+import { expectTypeOf, test } from "vite-plus/test";
+import { createRoute } from "@/services/createRoute";
+import { Route } from "@/types/route";
+import { RoutesMap } from "@/types/routesMap";
+import { component } from "@/utilities/testHelpers";
 
-test('RoutesMap given generic routes, returns generic string', () => {
-  type Map = RoutesMap<Route[]>
+test("RoutesMap given generic routes, returns generic string", () => {
+  type Map = RoutesMap<Route[]>;
 
-  type Source = Map[keyof Map]['name']
-  type Expect = string
+  type Source = Map[keyof Map]["name"];
+  type Expect = string;
 
-  expectTypeOf<Source>().toEqualTypeOf<Expect>()
-})
+  expectTypeOf<Source>().toEqualTypeOf<Expect>();
+});
 
-test('RoutesMap given unnamed parents, removes them from return value and children names', () => {
+test("RoutesMap given unnamed parents, removes them from return value and children names", () => {
   const root = createRoute({
-    path: '/',
-  })
+    path: "/",
+  });
 
   const foo = createRoute({
     parent: root,
-    name: 'foo',
-    path: '/foo',
+    name: "foo",
+    path: "/foo",
     component,
-  })
+  });
 
-  const zooFoo = createRoute({ name: 'zoofoo', path: '/zoofoo', component, parent: foo })
+  const zooFoo = createRoute({ name: "zoofoo", path: "/zoofoo", component, parent: foo });
 
   const bar = createRoute({
     parent: root,
-    path: '/bar',
+    path: "/bar",
     component,
-  })
+  });
 
-  const zooBar = createRoute({ name: 'zoo', path: '/zoo', component, parent: bar })
+  const zooBar = createRoute({ name: "zoo", path: "/zoo", component, parent: bar });
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const routes = [
-    root,
-    foo,
-    zooFoo,
-    bar,
-    zooBar,
-  ]
+  // oxlint-disable-next-line @typescript-eslint/no-unused-vars
+  const routes = [root, foo, zooFoo, bar, zooBar];
 
-  type Map = RoutesMap<typeof routes>
+  type Map = RoutesMap<typeof routes>;
 
-  type Source = keyof Map
-  type Expect = 'foo' | 'zoofoo' | 'zoo'
+  type Source = keyof Map;
+  type Expect = "foo" | "zoofoo" | "zoo";
 
-  expectTypeOf<Source>().toEqualTypeOf<Expect>()
-})
+  expectTypeOf<Source>().toEqualTypeOf<Expect>();
+});
