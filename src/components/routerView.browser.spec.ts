@@ -644,7 +644,7 @@ test('Renders the rejection component when the rejection is not registered on th
   const myRejection = createRejection({
     type: 'myRejection',
     component: {
-      template: rejectionText
+      template: rejectionText,
     },
   })
 

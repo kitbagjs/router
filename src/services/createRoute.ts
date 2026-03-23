@@ -11,7 +11,7 @@ import { combineUrl } from '@/services/combineUrl'
 import { InternalRouteHooks } from '@/types/hooks'
 import { ExtractRouteContext } from '@/types/routeContext'
 import { RouteRedirects } from '@/types/redirects'
-import { createRouteTitle, RouteSetTitle } from '@/types/titles'
+import { createRouteTitle, RouteSetTitle } from '@/types/routeTitle'
 
 type CreateRouteWithProps<
   TOptions extends CreateRouteOptions,

@@ -4,7 +4,7 @@ import { isBrowser } from '@/utilities/isBrowser'
 
 let defaultTitle: string | undefined
 
-export function setDocumentTitle(to: ResolvedRoute): void {
+export function setDocumentTitle(to: ResolvedRoute | null): void {
   if (!isRoute(to) || !isBrowser()) {
     return
   }

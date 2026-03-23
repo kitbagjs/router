@@ -91,6 +91,7 @@ export function createRouter<
   const shouldRemoveTrailingSlashes = options?.removeTrailingSlashes ?? true
   const { routes, getRouteByName, getRejectionByType } = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options)
   const notFoundRejection = getRejectionByType('NotFound')
+  const notFoundRoute = createResolvedRoute(notFoundRejection.route)
 
   const hooks = createRouterHooks()
 
@@ -130,7 +131,7 @@ export function createRouter<
 
     history.stopListening()
 
-    const to = find(url, options) ?? notFoundRejection.route
+    const to = find(url, options) ?? notFoundRoute
 
     const from = getFromRouteForHooks(navigationId)
 
@@ -186,7 +187,7 @@ export function createRouter<
         throw new Error(`Switch is not exhaustive for after hook response status: ${JSON.stringify(exhaustive)}`)
     }
 
-    setDocumentTitle(to)
+    setDocumentTitle(currentRejectionRoute.value ?? to)
 
     history.startListening()
   }
@@ -318,15 +319,17 @@ export function createRouter<
     }
 
     hooks.runRejectionHooks(rejection, { to, from })
+
     updateRejection(rejection)
   }
 
   const reject: RouterReject<TOptions['rejections'] | TPlugin['rejections']> = (type) => {
     setRejection(type)
+    setDocumentTitle(currentRejectionRoute.value)
   }
 
-  const { currentRejection, updateRejection, clearRejection } = createCurrentRejection()
-  const { currentRoute, routerRoute, updateRoute } = createCurrentRoute<TRoutes | TPlugin['routes']>(routerKey, notFoundRejection.route, push)
+  const { currentRejection, currentRejectionRoute, updateRejection, clearRejection } = createCurrentRejection()
+  const { currentRoute, routerRoute, updateRoute } = createCurrentRoute<TRoutes | TPlugin['routes']>(routerKey, notFoundRoute, push)
 
   const initialUrl = getInitialUrl(options?.initialUrl)
   const initialState = history.location.state

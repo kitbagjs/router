@@ -1,5 +1,5 @@
-import { Component, Ref } from 'vue'
-import { ResolvedRoute } from '@/types/resolved'
+import { Ref } from 'vue'
+import { Route } from '@/types/route'
 import { Router } from '@/types/router'
 import { RouterReject } from '@/types/routerReject'
 import { Hooks } from '@/models/hooks'
@@ -18,7 +18,7 @@ export function isRejection(value: unknown): value is Rejection & RejectionInter
 
 export type RejectionInternal = {
   [IS_REJECTION_SYMBOL]: true,
-  route: ResolvedRoute,
+  route: Route,
   hooks: Hooks[],
 }
 
@@ -32,10 +32,6 @@ export type Rejection<TType extends string = string> = {
    * The type of rejection.
    */
   type: TType,
-  /**
-   * The component to render when the rejection occurs.
-   */
-  component: Component,
 }
 
 export type RejectionType<TRejections extends Rejections | undefined> =

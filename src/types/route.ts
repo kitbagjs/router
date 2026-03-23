@@ -5,7 +5,7 @@ import { LastInArray } from '@/types/utilities'
 import { CreateRouteOptions } from '@/types/createRouteOptions'
 import { RouteContext } from '@/types/routeContext'
 import { Url } from '@/types/url'
-import { GetTitle } from '@/types/titles'
+import { GetRouteTitle } from '@/types/routeTitle'
 import { Hooks } from '@/models/hooks'
 import { RouteRedirect } from './redirects'
 
@@ -20,7 +20,7 @@ export type RouteInternal = {
   depth: number,
   hooks: Hooks[],
   redirect: RouteRedirect,
-  getTitle: GetTitle,
+  getTitle: GetRouteTitle,
 }
 
 /**

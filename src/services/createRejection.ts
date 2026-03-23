@@ -3,20 +3,23 @@ import { genericRejection } from '@/components/rejection'
 import { RejectionHooks } from '@/types/hooks'
 import { IS_REJECTION_SYMBOL, Rejection, RejectionInternal } from '@/types/rejection'
 import { Component, markRaw } from 'vue'
-import { ResolvedRoute } from '@/types/resolved'
-import { createRouteId } from './createRouteId'
-import { createResolvedRouteQuery } from './createResolvedRouteQuery'
+import { createRoute } from '@/services/createRoute'
+import { RouteSetTitle } from '@/types/routeTitle'
 
 export function createRejection<TType extends string>(options: {
   type: TType,
   component?: Component,
-}): Rejection<TType> & RejectionHooks<TType>
+}): Rejection<TType> & RejectionHooks<TType> & RouteSetTitle
 
-export function createRejection(options: { type: string, component?: Component }): Rejection & RejectionHooks {
-  const component = markRaw(options.component ?? genericRejection(options.type))
-  const route = getRejectionRoute(options.type, component)
-
+export function createRejection({ type, component }: { type: string, component?: Component }): Rejection {
   const { store, ...hooks } = createRejectionHooks()
+
+  const route = createRoute({
+    name: type,
+    component: markRaw(component ?? genericRejection(type)),
+  })
+
+  const { setTitle } = route
 
   const internal = {
     [IS_REJECTION_SYMBOL]: true,
@@ -25,35 +28,11 @@ export function createRejection(options: { type: string, component?: Component }
   } satisfies RejectionInternal
 
   const rejection = {
-    type: options.type,
-    component,
+    type,
+    setTitle,
     ...hooks,
     ...internal,
-  } satisfies Rejection & RejectionInternal & RejectionHooks
+  } satisfies Rejection & RejectionInternal & RejectionHooks & RouteSetTitle
 
   return rejection
-}
-
-function getRejectionRoute(type: string, component: Component): ResolvedRoute {
-  const route = {
-    id: createRouteId(),
-    component,
-    meta: {},
-    state: {},
-  }
-
-  const resolved = {
-    id: route.id,
-    matched: route,
-    matches: [route],
-    name: type,
-    query: createResolvedRouteQuery(''),
-    params: {},
-    state: {},
-    href: '/',
-    hash: '',
-    title: Promise.resolve(undefined),
-  } satisfies ResolvedRoute
-
-  return resolved
 }

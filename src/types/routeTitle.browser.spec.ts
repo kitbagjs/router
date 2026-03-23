@@ -1,7 +1,7 @@
 import { expect, test, vi } from 'vitest'
 import { createRoute } from '@/services/createRoute'
 import { component } from '@/utilities/testHelpers'
-import { createRouter } from '@/main'
+import { createRouter } from '@/services/createRouter'
 import { flushPromises } from '@vue/test-utils'
 
 test('route with title updates document title', async () => {
@@ -20,7 +20,7 @@ test('route with title updates document title', async () => {
     initialUrl: '/',
   })
 
-  router.start()
+  await router.start()
 
   await flushPromises()
 
@@ -51,7 +51,7 @@ test('route with title and parent with title does not call parent getTitle', asy
     initialUrl: '/parent/child',
   })
 
-  router.start()
+  await router.start()
 
   await flushPromises()
 
@@ -88,7 +88,7 @@ test('route with title and parent with title does call parent getTitle when call
     initialUrl: '/parent/child',
   })
 
-  router.start()
+  await router.start()
 
   await flushPromises()
 
@@ -132,7 +132,7 @@ test('route with title and parent with title does call parent getTitle when call
     initialUrl: '/parent/child/grandchild',
   })
 
-  router.start()
+  await router.start()
 
   await flushPromises()
 
@@ -161,7 +161,7 @@ test('route without title and parent with title updates document title', async (
     initialUrl: '/parent/child',
   })
 
-  router.start()
+  await router.start()
 
   await flushPromises()
 
