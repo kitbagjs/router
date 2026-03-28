@@ -289,7 +289,7 @@ export type RejectionHookContext<
   TRouteFrom extends Route = TRoutes[number]
 > = {
   to: ResolvedRouteUnion<TRouteTo> | null,
-  from: ResolvedRouteUnion<TRouteFrom> | null
+  from: ResolvedRouteUnion<TRouteFrom> | null,
 }
 
 export type RejectionHook<
@@ -307,7 +307,7 @@ export type AddRejectionHook<
 > = (hook: RejectionHook<TRejections, TRoutes, TRouteTo, TRouteFrom>) => HookRemove
 
 export type RejectionHookRunner<TRejection extends Rejection = Rejection, TRoutes extends Routes = Routes> = (
-  rejection: TRejection, 
+  rejection: TRejection,
   context: { to: RouterResolvedRouteUnion<TRoutes> | null, from: RouterResolvedRouteUnion<TRoutes> | null }
 ) => void
 
@@ -344,6 +344,6 @@ export type ErrorHookRunnerContext<TRoutes extends Routes = Routes> = {
 }
 
 export type ErrorHookRunner = (
-  error: unknown, 
+  error: unknown,
   context: ErrorHookRunnerContext
 ) => void
