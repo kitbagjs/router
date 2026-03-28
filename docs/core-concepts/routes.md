@@ -197,6 +197,37 @@ home.onBeforeRouteEnter(() => {
 })
 ```
 
+## Title
+
+The `setTitle` callback is used to set the document title for the route. The callback is given the resolved route and a context object. The callback can be async, and should return a string that should be set as the document.title.
+
+The context object has the following properties:
+
+| Property | Description |
+| -------- | ----------- |
+| from | What was the route prior to the hook's execution |
+| getParentTitle | A function that returns the title of the parent route. |
+
+```ts
+import { createRoute } from '@kitbag/router'
+
+const user = createRoute({
+  name: 'user.profile',
+  path: '/user/:userId',
+})
+
+user.setTitle((to, context) => {
+  const user = userStore.getUser(to.params.userId)
+  return `Profile: ${user.name}`
+})
+```
+
+:::info
+
+There is also a `setTitle` callback on [rejections](/advanced-concepts/rejections#title).
+
+:::
+
 ## Context
 
 The context for a route is the collection of routes and rejections that are associated with the route. The context you provide to this route will be available to the hooks and props callback functions for this route.
@@ -235,4 +266,33 @@ const home = createRoute({
     props: 'intent'
   },
 })
+```
+
+## Hoisting
+
+When the `hoist` property is true, the route will be treated as a root route.  This allows you to leverage the component nesting without having to use a nested URL.
+
+```ts
+const parentRoute = createRoute({
+  name: 'parent',
+  path: '/parent',
+})
+
+const regularChildRoute = createRoute({
+  parent: parentRoute,
+  name: 'parent.regular',
+  path: '/regular',
+})
+
+const hoistedExample = createRoute({
+  parent: parentRoute,
+  name: 'parent.nested',
+  path: '/nested',
+  hoist: true,
+})
+
+regularChildRoute.stringify() 
+// ^ "/parent/regular"
+hoistedExample.string()
+// ^ "/nested"
 ```

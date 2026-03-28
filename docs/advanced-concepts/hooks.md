@@ -24,7 +24,11 @@ onAfterRouteEnter: (to, context) => {
 
 ### On Error
 
-- **onError** Triggered whenever an unexpected error is thrown. Error hooks are run in the order they were registered.
+- **onError** Triggered whenever an unexpected error is thrown. Error hooks are run in the order they were registered. The hook is provided both the error and the [error context](/advanced-concepts/hooks#error-context).
+
+### On Rejection
+
+- **onRejection** Triggered whenever a rejection is triggered. Rejection hooks are run in the order they were registered. The hook is provided both the rejection and the [rejection context](/advanced-concepts/hooks#rejection-context).
 
 ## Context
 
@@ -43,6 +47,8 @@ If the hooks lifecycle is a [before](/advanced-concepts/hooks#before-hooks) hook
 | ---- | ---- |
 | abort | Stops the router from continuing with route change |
 
+### Error Context
+
 If the hook is `onError`, you'll also have access to the following properties in your context:
 
 | Property | Description |
@@ -50,13 +56,22 @@ If the hook is `onError`, you'll also have access to the following properties in
 | to | What was the destination route prior to the error being thrown |
 | source | String value indicating where the error occurred. Possible values are `'props'`, `'hook'`, and `'component'` |
 
+### Rejection Context
+
+If the hook is `onRejection`, you'll also have access to the following properties in your context:
+
+| Property | Description |
+| ---- | ---- |
+| to | What was the destination route prior to the rejection being triggered |
+| from | What was the route prior to the rejection being triggered |
+
 ## Levels
 
 Hooks can be registered **globally**, on your **route**, or from within a **component**. This is useful for both providing the most convenient devx, but also can be a useful tool for ensuring proper execution order of your business logic.
 
 ### Execution Order
 
-1. Global before hooks 
+1. Global before hooks
 2. Route before hooks
 3. Component before hooks
 4. Component after hooks
@@ -75,6 +90,14 @@ router.onAfterRouteEnter((to, context) => {
 
 ```ts
 route.onAfterRouteEnter((to, context) => {
+  ...
+})
+```
+
+### Rejection
+
+```ts
+rejection.onRejection((rejection, context) => {
   ...
 })
 ```

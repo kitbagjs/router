@@ -88,3 +88,26 @@ const rejection = useRejection()
 
 const rejectionType = computed(() => rejection.value.type)
 ```
+
+## Title
+
+The `setTitle` callback is used to set the document title for the rejection. The callback is given the resolved route and a context object. The callback can be async, and should return a string that should be set as the document.title.
+
+The context object has the following properties:
+
+| Property | Type | Description |
+| -------- | ---- | ----------- |
+| from | ResolvedRoute | The route that is being navigated from. |
+| getParentTitle | () => Promise<string \| undefined> | Promise that resolves to the title of the parent route. |
+
+```ts
+import { createRejection } from '@kitbag/router'
+
+const authNeededRejection = createRejection({
+  type: 'AuthNeeded',
+})
+
+authNeededRejection.setTitle((to, context) => {
+  return `Unauthorized!`
+})
+```
