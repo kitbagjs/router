@@ -276,11 +276,11 @@ export type BeforeHookResponse = CallbackContextSuccess | CallbackContextPush | 
 export type AfterHookResponse = CallbackContextSuccess | CallbackContextPush | CallbackContextReject
 
 export type BeforeHookRunner = <TRoutes extends Routes>(
-  context: { to: RouterResolvedRouteUnion<TRoutes>, from: RouterResolvedRouteUnion<TRoutes> | null }
+  context: { to: RouterResolvedRouteUnion<TRoutes>, from: RouterResolvedRouteUnion<TRoutes> | null },
 ) => Promise<BeforeHookResponse>
 
 export type AfterHookRunner = <TRoutes extends Routes>(
-  context: { to: RouterResolvedRouteUnion<TRoutes>, from: RouterResolvedRouteUnion<TRoutes> | null }
+  context: { to: RouterResolvedRouteUnion<TRoutes>, from: RouterResolvedRouteUnion<TRoutes> | null },
 ) => Promise<AfterHookResponse>
 
 export type RejectionHookContext<
@@ -308,7 +308,7 @@ export type AddRejectionHook<
 
 export type RejectionHookRunner<TRejection extends Rejection = Rejection, TRoutes extends Routes = Routes> = (
   rejection: TRejection,
-  context: { to: RouterResolvedRouteUnion<TRoutes> | null, from: RouterResolvedRouteUnion<TRoutes> | null }
+  context: { to: RouterResolvedRouteUnion<TRoutes> | null, from: RouterResolvedRouteUnion<TRoutes> | null },
 ) => void
 
 export type ErrorHookContext<
@@ -345,5 +345,5 @@ export type ErrorHookRunnerContext<TRoutes extends Routes = Routes> = {
 
 export type ErrorHookRunner = (
   error: unknown,
-  context: ErrorHookRunnerContext
+  context: ErrorHookRunnerContext,
 ) => void

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/method-signature-style */
 import { OptionalUrlParam, UrlQueryPart, ToUrlQueryPart, RequiredUrlParam, ToUrlPart, UrlParams, UrlPart } from '@/services/withParams'
 import { ExtractParamType } from '@/types/params'
 import { AllPropertiesAreOptional, Identity } from '@/types/utilities'
@@ -83,8 +84,7 @@ export type UrlParamsReading<TUrl extends Url> = ToUrlParamsReading<TUrl['params
 
 type ToUrlParamsReading<
   TParams extends UrlParams
-> =
-Identity<
+> = Identity<
   MakeOptional<{
     [K in keyof TParams]: TParams[K] extends OptionalUrlParam<infer TParam>
       ? TParam extends Required<ParamGetSet>
@@ -106,8 +106,7 @@ export type UrlParamsWriting<TUrl extends Url> = ToUrlParamsWriting<TUrl['params
 
 type ToUrlParamsWriting<
   TParams extends UrlParams
-> =
-Identity<
+> = Identity<
   MakeOptional<{
     [K in keyof TParams]: TParams[K] extends OptionalUrlParam<infer TParam>
       ? ExtractParamType<TParam> | undefined

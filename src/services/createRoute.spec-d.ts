@@ -243,10 +243,10 @@ describe('props', () => {
       component,
     })
 
-  type Source = typeof route['matched']['props']
-  type Expect = undefined
+    type Source = typeof route['matched']['props']
+    type Expect = undefined
 
-  expectTypeOf<Source>().toEqualTypeOf<Expect>()
+    expectTypeOf<Source>().toEqualTypeOf<Expect>()
   })
 
   test('options with component and optional props with second argument', () => {
@@ -254,10 +254,10 @@ describe('props', () => {
       component,
     }, () => ({ foo: 'bar' }))
 
-  type Source = typeof route['matched']['props']
-  type Expect = () => { foo: string }
+    type Source = typeof route['matched']['props']
+    type Expect = () => { foo: string }
 
-  expectTypeOf<Source>().toEqualTypeOf<Expect>()
+    expectTypeOf<Source>().toEqualTypeOf<Expect>()
   })
 
   test('options with component and required props missing second argument', () => {
@@ -266,10 +266,10 @@ describe('props', () => {
       component: echo,
     })
 
-  type Source = typeof route['matched']['props']
-  type Expect = undefined
+    type Source = typeof route['matched']['props']
+    type Expect = undefined
 
-  expectTypeOf<Source>().toEqualTypeOf<Expect>()
+    expectTypeOf<Source>().toEqualTypeOf<Expect>()
   })
 
   test('options with component and required props with second argument ', () => {
@@ -277,10 +277,10 @@ describe('props', () => {
       component: echo,
     }, () => ({ value: 'bar', extra: true }))
 
-  type Source = typeof route['matched']['props']
-  type Expect = () => { value: string, extra: boolean }
+    type Source = typeof route['matched']['props']
+    type Expect = () => { value: string, extra: boolean }
 
-  expectTypeOf<Source>().toEqualTypeOf<Expect>()
+    expectTypeOf<Source>().toEqualTypeOf<Expect>()
   })
 
   test('options with component and required props with second argument with incorrect type', () => {
@@ -289,10 +289,10 @@ describe('props', () => {
       // @ts-expect-error should not accept incorrect type
     }, () => ({ value: true, foo: 'bar' }))
 
-  type Source = typeof route['matched']['props']
-  type Expect = undefined
+    type Source = typeof route['matched']['props']
+    type Expect = undefined
 
-  expectTypeOf<Source>().toEqualTypeOf<Expect>()
+    expectTypeOf<Source>().toEqualTypeOf<Expect>()
   })
 
   test('options with components and optional props without second argument', () => {
@@ -302,10 +302,10 @@ describe('props', () => {
       },
     })
 
-  type Source = typeof route['matched']['props']
-  type Expect = undefined
+    type Source = typeof route['matched']['props']
+    type Expect = undefined
 
-  expectTypeOf<Source>().toEqualTypeOf<Expect>()
+    expectTypeOf<Source>().toEqualTypeOf<Expect>()
   })
 
   test('options with components and optional props with second argument', () => {
@@ -317,10 +317,10 @@ describe('props', () => {
       default: () => ({ foo: 'bar' }),
     })
 
-  type Source = typeof route['matched']['props']
-  type Expect = { default: () => { foo: string } }
+    type Source = typeof route['matched']['props']
+    type Expect = { default: () => { foo: string } }
 
-  expectTypeOf<Source>().toEqualTypeOf<Expect>()
+    expectTypeOf<Source>().toEqualTypeOf<Expect>()
   })
 
   test('options with components and required props missing second argument', () => {
@@ -331,10 +331,10 @@ describe('props', () => {
       },
     })
 
-  type Source = typeof route['matched']['props']
-  type Expect = undefined
+    type Source = typeof route['matched']['props']
+    type Expect = undefined
 
-  expectTypeOf<Source>().toEqualTypeOf<Expect>()
+    expectTypeOf<Source>().toEqualTypeOf<Expect>()
   })
 
   test('options with components and required props with second argument ', () => {
@@ -346,10 +346,10 @@ describe('props', () => {
       default: () => ({ value: 'bar', extra: true }),
     })
 
-  type Source = typeof route['matched']['props']
-  type Expect = { default: () => { value: string, extra: boolean } }
+    type Source = typeof route['matched']['props']
+    type Expect = { default: () => { value: string, extra: boolean } }
 
-  expectTypeOf<Source>().toEqualTypeOf<Expect>()
+    expectTypeOf<Source>().toEqualTypeOf<Expect>()
   })
 
   test('options with components and required props with second argument with incorrect type', () => {
@@ -362,10 +362,10 @@ describe('props', () => {
       default: () => ({ value: true, foo: 'bar' }),
     })
 
-  type Source = typeof route['matched']['props']
-  type Expect = undefined
+    type Source = typeof route['matched']['props']
+    type Expect = undefined
 
-  expectTypeOf<Source>().toEqualTypeOf<Expect>()
+    expectTypeOf<Source>().toEqualTypeOf<Expect>()
   })
 
   test('undefined is not a valid value for 2nd argument of createRoute', () => {
@@ -374,10 +374,10 @@ describe('props', () => {
       // @ts-expect-error should not accept undefined
     }, undefined)
 
-  type Source = typeof route['matched']['props']
-  type Expect = undefined
+    type Source = typeof route['matched']['props']
+    type Expect = undefined
 
-  expectTypeOf<Source>().toEqualTypeOf<Expect>()
+    expectTypeOf<Source>().toEqualTypeOf<Expect>()
   })
 
   test('parent props are undefined when parent has no props', () => {

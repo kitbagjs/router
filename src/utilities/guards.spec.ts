@@ -29,37 +29,37 @@ describe('hasProperty', () => {
 
 describe('stringHasValue', () => {
   test('given empty string, returns false', () => {
-  type Source = StringHasValue<''>
-  type Expect = false
+    type Source = StringHasValue<''>
+    type Expect = false
 
-  expectTypeOf<Source>().toEqualTypeOf<Expect>()
+    expectTypeOf<Source>().toEqualTypeOf<Expect>()
   })
 
   test('given generic string, returns true', () => {
-  type Source = StringHasValue<string>
-  type Expect = true
+    type Source = StringHasValue<string>
+    type Expect = true
 
-  expectTypeOf<Source>().toEqualTypeOf<Expect>()
+    expectTypeOf<Source>().toEqualTypeOf<Expect>()
   })
 
   test('given type any, returns true', () => {
-  type Source = StringHasValue<any>
-  type Expect = true
+    type Source = StringHasValue<any>
+    type Expect = true
 
-  expectTypeOf<Source>().toEqualTypeOf<Expect>()
+    expectTypeOf<Source>().toEqualTypeOf<Expect>()
   })
 
   test('given type other than string or any, returns false', () => {
-  type Source = StringHasValue<undefined>
-  type Expect = false
+    type Source = StringHasValue<undefined>
+    type Expect = false
 
-  expectTypeOf<Source>().toEqualTypeOf<Expect>()
+    expectTypeOf<Source>().toEqualTypeOf<Expect>()
   })
 
   test('given string not empty, returns true', () => {
-  type Source = StringHasValue<'foo'>
-  type Expect = true
+    type Source = StringHasValue<'foo'>
+    type Expect = true
 
-  expectTypeOf<Source>().toEqualTypeOf<Expect>()
+    expectTypeOf<Source>().toEqualTypeOf<Expect>()
   })
 })

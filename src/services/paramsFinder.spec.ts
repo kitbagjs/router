@@ -80,6 +80,6 @@ describe('setParamValueOnUrl', () => {
     const path = withParams('/simple/[simple]', {})
     const action: () => void = () => setParamValueOnUrl('/simple/[simple]', path, 'simple', undefined)
 
-    expect(action).toThrowError(InvalidRouteParamValueError)
+    expect(action).toThrow(InvalidRouteParamValueError)
   })
 })

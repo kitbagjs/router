@@ -11,12 +11,12 @@ test('given a specific Route, params are narrow', () => {
     query: withParams('foo=[paramB]&bar=[?paramC]', { paramB: Boolean }),
   })
 
-    type TestRoute = typeof testRoute
+  type TestRoute = typeof testRoute
 
-    type Source = RouterRoute<ResolvedRoute<TestRoute>>['params']
-    type Expect = { paramA: string, paramB: boolean, paramC?: string | undefined }
+  type Source = RouterRoute<ResolvedRoute<TestRoute>>['params']
+  type Expect = { paramA: string, paramB: boolean, paramC?: string | undefined }
 
-    expectTypeOf<Expect>().toEqualTypeOf<Source>()
+  expectTypeOf<Expect>().toEqualTypeOf<Source>()
 })
 
 test('without a specific Route, params are Record<string, unknown>', () => {

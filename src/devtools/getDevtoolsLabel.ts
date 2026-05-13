@@ -13,4 +13,3 @@
 export function getDevtoolsLabel(label: string, routerId: string): string {
   return routerId !== '1' ? `${label} ${routerId}` : label
 }
-

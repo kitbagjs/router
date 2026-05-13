@@ -898,7 +898,7 @@ describe('router.onError', () => {
     }))
   })
 })
-  
+
 describe('router.onRejection', () => {
   test('given router itself triggers a rejection, calls the onRejection callback with the correct context', async () => {
     const onRejection = vi.fn()
@@ -917,7 +917,7 @@ describe('router.onRejection', () => {
     const router = createRouter([route], { initialUrl: '/', rejections: [rejection] })
 
     router.onRejection(onRejection)
-     
+
     await router.start()
 
     router.reject('CustomRejection')

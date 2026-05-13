@@ -60,7 +60,7 @@ export function createRouterHooks(): RouterHooks {
 
     try {
       const results = allHooks.map((callback) => {
-        return runWithContext(() => callback(to, {
+        return Promise.resolve(runWithContext(() => callback(to, {
           // From could be null but leave hooks require that from is not null. If from is null there will be no leave hooks so this cast is purely to satisfy the type checker.
           from: from as ResolvedRoute,
           reject,
@@ -68,7 +68,7 @@ export function createRouterHooks(): RouterHooks {
           replace,
           update,
           abort,
-        }))
+        })))
       })
 
       await Promise.all(results)
@@ -124,14 +124,14 @@ export function createRouterHooks(): RouterHooks {
 
     try {
       const results = allHooks.map((callback) => {
-        return runWithContext(() => callback(to, {
+        return Promise.resolve(runWithContext(() => callback(to, {
           // From could be null but leave hooks require that from is not null. If from is null there will be no leave hooks so this cast is purely to satisfy the type checker.
           from: from as ResolvedRoute,
           reject,
           push,
           replace,
           update,
-        }))
+        })))
       })
 
       await Promise.all(results)

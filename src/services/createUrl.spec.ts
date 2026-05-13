@@ -91,7 +91,7 @@ describe('parse', () => {
       path,
     })
 
-    expect(() => url.parse(input)).toThrowError(output)
+    expect(() => url.parse(input)).toThrow(output)
   })
 
   test('given params in each part of the URL, extracts them', () => {
@@ -232,7 +232,7 @@ describe('url assembly', () => {
         path,
       })
 
-      expect(() => url.stringify()).toThrowError(InvalidRouteParamValueError)
+      expect(() => url.stringify()).toThrow(InvalidRouteParamValueError)
     })
 
     test.each([
@@ -352,7 +352,7 @@ describe('url assembly', () => {
         query,
       })
 
-      expect(() => url.stringify()).toThrowError(InvalidRouteParamValueError)
+      expect(() => url.stringify()).toThrow(InvalidRouteParamValueError)
     })
 
     test.each([
@@ -524,7 +524,7 @@ describe('url assembly', () => {
         host,
       })
 
-      expect(() => url.stringify()).toThrowError(InvalidRouteParamValueError)
+      expect(() => url.stringify()).toThrow(InvalidRouteParamValueError)
     })
 
     test.each([
@@ -618,7 +618,7 @@ describe('url assembly', () => {
         hash,
       })
 
-      expect(() => url.stringify()).toThrowError(InvalidRouteParamValueError)
+      expect(() => url.stringify()).toThrow(InvalidRouteParamValueError)
     })
 
     test.each([
