@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/method-signature-style */
 import { OptionalUrlParam, UrlQueryPart, ToUrlQueryPart, RequiredUrlParam, ToUrlPart, UrlParams, UrlPart } from '@/services/withParams'
 import { ExtractParamType } from '@/types/params'
 import { AllPropertiesAreOptional, Identity } from '@/types/utilities'
@@ -50,15 +51,15 @@ export type Url<TParams extends UrlParams = UrlParams> = {
   /**
    * Converts the url parts to a full url.
    */
-  stringify: (...params: UrlParamsArgs<TParams>) => UrlString,
+  stringify(...params: UrlParamsArgs<TParams>): UrlString,
   /**
    * Parses the url supplied and returns any params found.
    */
-  parse: (url: string, options?: ParseUrlOptions) => ToUrlParamsReading<TParams>,
+  parse(url: string, options?: ParseUrlOptions): ToUrlParamsReading<TParams>,
   /**
    * Parses the url supplied and returns any params found.
    */
-  tryParse: (url: string, options?: ParseUrlOptions) => { success: true, params: ToUrlParamsReading<TParams> } | { success: false, params: {}, error: Error },
+  tryParse(url: string, options?: ParseUrlOptions): { success: true, params: ToUrlParamsReading<TParams> } | { success: false, params: {}, error: Error },
   /**
    * True if the url is relative. False if the url is absolute.
    */
