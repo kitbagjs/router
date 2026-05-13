@@ -24,7 +24,10 @@ export type CreateUrlOptions = {
 export type ToUrl<
   TOptions extends CreateUrlOptions
 > = Url<Identity<
-  & ToUrlPart<TOptions['host']>['params'] & ToUrlPart<TOptions['path']>['params'] & ToUrlQueryPart<TOptions['query']>['params'] & ToUrlPart<TOptions['hash']>['params']
+  & ToUrlPart<TOptions['host']>['params']
+  & ToUrlPart<TOptions['path']>['params']
+  & ToUrlQueryPart<TOptions['query']>['params']
+  & ToUrlPart<TOptions['hash']>['params']
 >>
 
 export function isUrl(url: unknown): url is Url & UrlInternal {

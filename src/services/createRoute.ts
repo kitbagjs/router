@@ -29,7 +29,10 @@ type CreateRouteWithProps<
 export function createRoute<
   const TOptions extends CreateRouteOptions,
   const TProps extends CreateRouteProps<TOptions>
->(options: TOptions, ...args: CreateRouteWithProps<TOptions, TProps>): ToRoute<TOptions, TProps> & InternalRouteHooks<ToRoute<TOptions>, ExtractRouteContext<TOptions>> & RouteRedirects<ToRoute<TOptions>> & RouteSetTitle<ToRoute<TOptions>>
+>(options: TOptions, ...args: CreateRouteWithProps<TOptions, TProps>): ToRoute<TOptions, TProps>
+  & InternalRouteHooks<ToRoute<TOptions>, ExtractRouteContext<TOptions>>
+  & RouteRedirects<ToRoute<TOptions>>
+  & RouteSetTitle<ToRoute<TOptions>>
 
 export function createRoute(options: CreateRouteOptions, props?: CreateRouteProps): Route {
   const id = createRouteId()
