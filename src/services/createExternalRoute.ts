@@ -15,15 +15,11 @@ import { createRouteTitle, RouteSetTitle } from '@/types/routeTitle'
 
 export function createExternalRoute<
   const TOptions extends CreateRouteOptions & WithHost & WithoutParent
->(options: TOptions): ToRoute<TOptions>
-  & ExternalRouteHooks<ToRoute<TOptions>, TOptions['context']>
-  & RouteRedirects<ToRoute<TOptions>>
+>(options: TOptions): ToRoute<TOptions> & ExternalRouteHooks<ToRoute<TOptions>, TOptions['context']> & RouteRedirects<ToRoute<TOptions>>
 
 export function createExternalRoute<
   const TOptions extends CreateRouteOptions & WithoutHost & WithParent
->(options: TOptions): ToRoute<TOptions>
-  & ExternalRouteHooks<ToRoute<TOptions>, ExtractRouteContext<TOptions>>
-  & RouteRedirects<ToRoute<TOptions>>
+>(options: TOptions): ToRoute<TOptions> & ExternalRouteHooks<ToRoute<TOptions>, ExtractRouteContext<TOptions>> & RouteRedirects<ToRoute<TOptions>>
 
 export function createExternalRoute(options: CreateRouteOptions & (WithoutHost | WithHost)): Route {
   const id = createRouteId()

@@ -76,12 +76,12 @@ export function createRouterLink<TRouter extends Router>(routerKey: InjectionKey
     }
 
     function shouldAllowDefault(event: MouseEvent): boolean {
-      return event.defaultPrevented 
-        || event.button !== 0 
-        || event.metaKey 
-        || event.ctrlKey 
-        || event.shiftKey 
-        || event.altKey 
+      return event.defaultPrevented
+        || event.button !== 0
+        || event.metaKey
+        || event.ctrlKey
+        || event.shiftKey
+        || event.altKey
         || !targetSelf.value
     }
 

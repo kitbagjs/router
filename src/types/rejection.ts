@@ -34,8 +34,7 @@ export type Rejection<TType extends string = string> = {
   type: TType,
 }
 
-export type RejectionType<TRejections extends Rejections | undefined> =
-unknown extends TRejections
+export type RejectionType<TRejections extends Rejections | undefined> = unknown extends TRejections
   ? never
   : Rejections extends TRejections
     ? string

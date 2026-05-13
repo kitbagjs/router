@@ -160,7 +160,7 @@ export function getParamValue(value: string | undefined, { param = String, isOpt
     throw extras.invalid(`Expected value to match regex ${param.toString()}, received ${JSON.stringify(value)}`)
   }
 
-  if( isLiteralParam(param)){
+  if (isLiteralParam(param)) {
     return literal(param).get(value, extras)
   }
 

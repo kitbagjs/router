@@ -80,8 +80,8 @@ describe('getParamValue', () => {
     }
 
     expect(getParamValue('yes', { param })).toBe('yes')
-    expect(() => getParamValue('no', { param })).toThrowError()
-    expect(() => getParamValue('foo', { param })).toThrowError()
+    expect(() => getParamValue('no', { param })).toThrow()
+    expect(() => getParamValue('foo', { param })).toThrow()
   })
 
   test('Given Custom GetSet, returns correct value for ParamGetSet', () => {
@@ -97,8 +97,8 @@ describe('getParamValue', () => {
     }
 
     expect(getParamValue('yes', { param: getter })).toBe('yes')
-    expect(() => getParamValue('no', { param: getter })).toThrowError()
-    expect(() => getParamValue('foo', { param: getter })).toThrowError()
+    expect(() => getParamValue('no', { param: getter })).toThrow()
+    expect(() => getParamValue('foo', { param: getter })).toThrow()
   })
 })
 
@@ -188,7 +188,7 @@ describe('setParamValue', () => {
     }
 
     expect(setParamValue('yes', { param })).toBe('yes')
-    expect(() => setParamValue('no', { param })).toThrowError()
-    expect(() => setParamValue('foo', { param })).toThrowError()
+    expect(() => setParamValue('no', { param })).toThrow()
+    expect(() => setParamValue('foo', { param })).toThrow()
   })
 })

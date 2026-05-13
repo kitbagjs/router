@@ -95,7 +95,7 @@ export function replaceParamSyntaxWithCatchAlls(value: string): string {
 
 export function replaceIndividualParamWithCaptureGroup(path: UrlPart, paramName: string): string {
   const pattern = getParamRegexPattern(paramName)
-  const { isGreedy = false } = path.params[paramName] ?? {}
+  const { isGreedy } = path.params[paramName] ?? {}
   const capturePattern = isGreedy ? regexGreedyCaptureAll : regexCaptureAll
 
   return path.value.replace(pattern, capturePattern)

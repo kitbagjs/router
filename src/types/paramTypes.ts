@@ -16,15 +16,4 @@ export type ParamGetSet<T = any> = {
 
 export type LiteralParam = string | number | boolean
 
-export type Param =
-  | ParamGetter
-  | ParamGetSet
-  | RegExp
-  | BooleanConstructor
-  | NumberConstructor
-  | StringConstructor
-  | DateConstructor
-  | JSON
-  | ZodSchemaLike
-  | ValibotSchemaLike
-  | LiteralParam
+export type Param = | ParamGetter | ParamGetSet | RegExp | BooleanConstructor | NumberConstructor | StringConstructor | DateConstructor | JSON | ZodSchemaLike | ValibotSchemaLike | LiteralParam

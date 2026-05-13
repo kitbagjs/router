@@ -40,7 +40,7 @@ export function getRoutesForRouter(routes: Routes | Routes[], plugins: RouterPlu
       throw new DuplicateNamesError(route.name)
     }
 
-    if (existingRouteByName && existingRouteByName.id === route.id) {
+    if (existingRouteByName?.id === route.id) {
       return
     }
 

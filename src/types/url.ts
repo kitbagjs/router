@@ -23,10 +23,7 @@ export type CreateUrlOptions = {
 export type ToUrl<
   TOptions extends CreateUrlOptions
 > = Url<Identity<
-  & ToUrlPart<TOptions['host']>['params']
-  & ToUrlPart<TOptions['path']>['params']
-  & ToUrlQueryPart<TOptions['query']>['params']
-  & ToUrlPart<TOptions['hash']>['params']
+  & ToUrlPart<TOptions['host']>['params'] & ToUrlPart<TOptions['path']>['params'] & ToUrlQueryPart<TOptions['query']>['params'] & ToUrlPart<TOptions['hash']>['params']
 >>
 
 export function isUrl(url: unknown): url is Url & UrlInternal {
@@ -53,15 +50,15 @@ export type Url<TParams extends UrlParams = UrlParams> = {
   /**
    * Converts the url parts to a full url.
    */
-  stringify(...params: UrlParamsArgs<TParams>): UrlString,
+  stringify: (...params: UrlParamsArgs<TParams>) => UrlString,
   /**
    * Parses the url supplied and returns any params found.
    */
-  parse(url: string, options?: ParseUrlOptions): ToUrlParamsReading<TParams>,
+  parse: (url: string, options?: ParseUrlOptions) => ToUrlParamsReading<TParams>,
   /**
    * Parses the url supplied and returns any params found.
    */
-  tryParse(url: string, options?: ParseUrlOptions): { success: true, params: ToUrlParamsReading<TParams> } | { success: false, params: {}, error: Error },
+  tryParse: (url: string, options?: ParseUrlOptions) => { success: true, params: ToUrlParamsReading<TParams> } | { success: false, params: {}, error: Error },
   /**
    * True if the url is relative. False if the url is absolute.
    */
@@ -83,8 +80,7 @@ export type UrlParamsReading<TUrl extends Url> = ToUrlParamsReading<TUrl['params
 
 type ToUrlParamsReading<
   TParams extends UrlParams
-> =
-Identity<
+> = Identity<
   MakeOptional<{
     [K in keyof TParams]: TParams[K] extends OptionalUrlParam<infer TParam>
       ? TParam extends Required<ParamGetSet>
@@ -106,8 +102,7 @@ export type UrlParamsWriting<TUrl extends Url> = ToUrlParamsWriting<TUrl['params
 
 type ToUrlParamsWriting<
   TParams extends UrlParams
-> =
-Identity<
+> = Identity<
   MakeOptional<{
     [K in keyof TParams]: TParams[K] extends OptionalUrlParam<infer TParam>
       ? ExtractParamType<TParam> | undefined

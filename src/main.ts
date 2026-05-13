@@ -8,7 +8,7 @@ export type {
   PropsGetter,
   RouterViewPropsGetter,
   CreateRouteProps,
-  ToRoute,
+  ToRoute
 } from './types/createRouteOptions'
 export type {
   RejectionHooks,
@@ -39,7 +39,7 @@ export type {
   AddRejectionHook,
   ErrorHookContext,
   ErrorHook,
-  AddErrorHook,
+  AddErrorHook
 } from './types/hooks'
 export * from './types/paramTypes'
 export * from './types/prefetch'

@@ -58,7 +58,7 @@ test('global hooks are called correctly', async () => {
   expect(onBeforeRouteLeave).toHaveBeenCalledTimes(1)
   expect(onAfterRouteLeave).toHaveBeenCalledTimes(1)
   expect(onAfterRouteUpdate).toHaveBeenCalledTimes(2)
-  expect(onAfterRouteEnter).toHaveBeenCalledTimes(3)  
+  expect(onAfterRouteEnter).toHaveBeenCalledTimes(3)
   expect(onError).toHaveBeenCalledTimes(0)
   expect(onRejection).toHaveBeenCalledTimes(0)
 
@@ -69,7 +69,7 @@ test('global hooks are called correctly', async () => {
   expect(onBeforeRouteLeave).toHaveBeenCalledTimes(2)
   expect(onAfterRouteLeave).toHaveBeenCalledTimes(2)
   expect(onAfterRouteUpdate).toHaveBeenCalledTimes(2)
-  expect(onAfterRouteEnter).toHaveBeenCalledTimes(4)  
+  expect(onAfterRouteEnter).toHaveBeenCalledTimes(4)
   expect(onError).toHaveBeenCalledTimes(0)
   expect(onRejection).toHaveBeenCalledTimes(0)
 
@@ -80,7 +80,7 @@ test('global hooks are called correctly', async () => {
   expect(onBeforeRouteLeave).toHaveBeenCalledTimes(2)
   expect(onAfterRouteLeave).toHaveBeenCalledTimes(2)
   expect(onAfterRouteUpdate).toHaveBeenCalledTimes(2)
-  expect(onAfterRouteEnter).toHaveBeenCalledTimes(4)  
+  expect(onAfterRouteEnter).toHaveBeenCalledTimes(4)
   expect(onError).toHaveBeenCalledTimes(0)
   expect(onRejection).toHaveBeenCalledTimes(1)
 })
@@ -148,7 +148,7 @@ test('route hooks are called correctly', async () => {
   expect(parentHooks.beforeLeave).toHaveBeenCalledTimes(0)
   expect(parentHooks.afterLeave).toHaveBeenCalledTimes(0)
   expect(parentHooks.afterUpdate).toHaveBeenCalledTimes(1)
-  expect(parentHooks.afterEnter).toHaveBeenCalledTimes(1) 
+  expect(parentHooks.afterEnter).toHaveBeenCalledTimes(1)
 
   await router.push('parentA')
 
@@ -251,7 +251,7 @@ test('rejection hooks are called correctly', async () => {
   rejection.onRejection((type, { to, from }) => onRejection(type, { to, from }))
 
   const router = createRouter(routes, { initialUrl: '/', rejections: [rejection] })
-  
+
   await router.start()
 
   expect(onRejection).toHaveBeenCalledTimes(0)

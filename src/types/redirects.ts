@@ -4,7 +4,6 @@ import { RouterReplace } from './routerReplace'
 import { UrlParamsReading, UrlParamsWriting } from './url'
 import { AllPropertiesAreOptional, MaybePromise } from './utilities'
 
-
 export type RouteRedirects<
   TRoute extends Route = Route
 > = {

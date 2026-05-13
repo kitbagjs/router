@@ -138,8 +138,7 @@ type ComponentPropsAreOptional<
 type RoutePropsRecord<
   TOptions extends CreateRouteOptions = CreateRouteOptions,
   TComponents extends Record<string, Component> = Record<string, Component>
-> = { [K in keyof TComponents as ComponentPropsAreOptional<TComponents[K]> extends true ? K : never]?: PropsGetter<TOptions, TComponents[K]> }
-& { [K in keyof TComponents as ComponentPropsAreOptional<TComponents[K]> extends false ? K : never]: PropsGetter<TOptions, TComponents[K]> }
+> = { [K in keyof TComponents as ComponentPropsAreOptional<TComponents[K]> extends true ? K : never]?: PropsGetter<TOptions, TComponents[K]> } & { [K in keyof TComponents as ComponentPropsAreOptional<TComponents[K]> extends false ? K : never]: PropsGetter<TOptions, TComponents[K]> }
 
 export type CreateRouteProps<
   TOptions extends CreateRouteOptions = CreateRouteOptions

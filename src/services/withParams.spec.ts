@@ -41,7 +41,7 @@ test('given value with param types, returns each param with corresponding param'
 test('given value with the same param name, throws DuplicateParamsError', () => {
   const action: () => void = () => withParams('[foo]-[?foo]', { })
 
-  expect(action).toThrowError(DuplicateParamsError)
+  expect(action).toThrow(DuplicateParamsError)
 })
 
 describe('toUrlPart', () => {

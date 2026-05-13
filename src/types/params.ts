@@ -72,8 +72,7 @@ export type ExtractParamName<
  * @template TParam - The parameter type.
  * @returns The extracted type, or 'string' as a fallback.
  */
-export type ExtractParamType<TParam extends Param> =
-Param extends TParam
+export type ExtractParamType<TParam extends Param> = Param extends TParam
   ? unknown
   : TParam extends ParamGetSet<infer Type>
     ? Type
@@ -92,9 +91,8 @@ Param extends TParam
 export type ParamIsOptional<TParam extends string> = TParam extends `?${string}` ? true : false
 export type ParamIsGreedy<TParam extends string> = TParam extends `${string}*` ? true : false
 
-export type ParamIsOptionalOrHasDefault<TParamName extends string, TParam extends Param | undefined> =
-  ParamIsOptional<TParamName> extends true
+export type ParamIsOptionalOrHasDefault<TParamName extends string, TParam extends Param | undefined> = ParamIsOptional<TParamName> extends true
+  ? true
+  : TParam extends Required<ParamGetSet>
     ? true
-    : TParam extends Required<ParamGetSet>
-      ? true
-      : false
+    : false

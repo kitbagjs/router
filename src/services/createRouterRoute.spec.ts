@@ -26,7 +26,7 @@ test('sending state, includes state in push options', () => {
 
   routerRoute.update({}, { state: { foo: 'foo' } })
 
-  expect(push).toBeCalledWith(
+  expect(push).toHaveBeenCalledWith(
     'state',
     {},
     { state: { foo: 'foo' } },
@@ -34,7 +34,7 @@ test('sending state, includes state in push options', () => {
 
   routerRoute.update('param', 123, { state: { bar: 'bar' } })
 
-  expect(push).toBeCalledWith(
+  expect(push).toHaveBeenCalledWith(
     'state',
     { param: 123 },
     { state: { bar: 'bar' } },
