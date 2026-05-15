@@ -18,4 +18,4 @@ function createUrl<T>(options): ToUrl<T>;
 
 ## Returns
 
-[`ToUrl`](../types/ToUrl.md)\<`T`\>
+`ToUrl`\<`T`\>

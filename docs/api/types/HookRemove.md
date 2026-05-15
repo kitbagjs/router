@@ -1,4 +1,4 @@
-# Types: HookRemove()
+# Types: HookRemove
 
 ```ts
 type HookRemove = () => void;

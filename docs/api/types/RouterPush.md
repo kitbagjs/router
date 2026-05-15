@@ -1,4 +1,4 @@
-# Types: RouterPush()\<TRoutes\>
+# Types: RouterPush\<TRoutes\>
 
 ```ts
 type RouterPush<TRoutes> = {
@@ -12,7 +12,7 @@ type RouterPush<TRoutes> = {
 
 | Type Parameter | Default type |
 | ------ | ------ |
-| `TRoutes` *extends* [`Routes`](Routes.md) | `any` |
+| `TRoutes` *extends* `Routes` | `any` |
 
 ## Call Signature
 
