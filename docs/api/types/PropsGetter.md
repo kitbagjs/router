@@ -1,4 +1,4 @@
-# Types: PropsGetter()\<TOptions, TComponent\>
+# Types: PropsGetter\<TOptions, TComponent\>
 
 ```ts
 type PropsGetter<TOptions, TComponent> = (route, context) => MaybePromise<ComponentProps<TComponent>>;

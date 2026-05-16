@@ -1,4 +1,4 @@
-# Types: RouterViewPropsGetter()\<TOptions\>
+# Types: RouterViewPropsGetter\<TOptions\>
 
 ```ts
 type RouterViewPropsGetter<TOptions> = (route, context) => MaybePromise<RouterViewProps & Record<string, unknown>>;

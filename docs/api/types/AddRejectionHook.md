@@ -1,15 +1,15 @@
-# Types: AddAfterEnterHook\<TRoutes, TRejections, TRouteTo, TRouteFrom\>
+# Types: AddRejectionHook\<TRejections, TRoutes, TRouteTo, TRouteFrom\>
 
 ```ts
-type AddAfterEnterHook<TRoutes, TRejections, TRouteTo, TRouteFrom> = (hook) => HookRemove;
+type AddRejectionHook<TRejections, TRoutes, TRouteTo, TRouteFrom> = (hook) => HookRemove;
 ```
 
 ## Type Parameters
 
 | Type Parameter | Default type |
 | ------ | ------ |
+| `TRejections` *extends* `string` | `string` |
 | `TRoutes` *extends* `Routes` | `Routes` |
-| `TRejections` *extends* [`Rejections`](Rejections.md) | [`Rejections`](Rejections.md) |
 | `TRouteTo` *extends* [`Route`](Route.md) | `TRoutes`\[`number`\] |
 | `TRouteFrom` *extends* [`Route`](Route.md) | `TRoutes`\[`number`\] |
 
@@ -17,7 +17,7 @@ type AddAfterEnterHook<TRoutes, TRejections, TRouteTo, TRouteFrom> = (hook) => H
 
 | Parameter | Type |
 | ------ | ------ |
-| `hook` | [`AfterEnterHook`](AfterEnterHook.md)\<`TRoutes`, `TRejections`, `TRouteTo`, `TRouteFrom`\> |
+| `hook` | [`RejectionHook`](RejectionHook.md)\<`TRejections`, `TRoutes`, `TRouteTo`, `TRouteFrom`\> |
 
 ## Returns
 
