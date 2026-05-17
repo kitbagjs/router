@@ -1,4 +1,4 @@
-# Types: ToCallback()\<TRouter\>
+# Types: ToCallback\<TRouter\>
 
 ```ts
 type ToCallback<TRouter> = (resolve) => 

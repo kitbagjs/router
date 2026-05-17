@@ -17,5 +17,5 @@ id: string;
 ### props?
 
 ```ts
-optional props: unknown;
+optional props?: unknown;
 ```

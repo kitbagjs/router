@@ -15,15 +15,15 @@ Creates a router instance for a Vue application, equipped with methods for route
 
 | Type Parameter | Default type |
 | ------ | ------ |
-| `TRoutes` *extends* [`Routes`](../types/Routes.md) | - |
+| `TRoutes` *extends* `Routes` | - |
 | `TOptions` *extends* [`RouterOptions`](../types/RouterOptions.md) | `object` |
-| `TPlugin` *extends* [`RouterPlugin`](../types/RouterPlugin.md) | [`EmptyRouterPlugin`](../types/EmptyRouterPlugin.md) |
+| `TPlugin` *extends* [`RouterPlugin`](../types/RouterPlugin.md) | `EmptyRouterPlugin` |
 
 ### Parameters
 
 | Parameter | Type | Description |
 | ------ | ------ | ------ |
-| `routes` | `TRoutes` | [Routes](../types/Routes.md) An array of route definitions specifying the configuration of routes in the application. Use createRoute method to create the route definitions. |
+| `routes` | `TRoutes` | Routes An array of route definitions specifying the configuration of routes in the application. Use createRoute method to create the route definitions. |
 | `options?` | `TOptions` | [RouterOptions](../types/RouterOptions.md) for the router, including history mode and initial URL settings. |
 | `plugins?` | `TPlugin`[] | - |
 
@@ -64,15 +64,15 @@ Creates a router instance for a Vue application, equipped with methods for route
 
 | Type Parameter | Default type |
 | ------ | ------ |
-| `TRoutes` *extends* [`Routes`](../types/Routes.md) | - |
+| `TRoutes` *extends* `Routes` | - |
 | `TOptions` *extends* [`RouterOptions`](../types/RouterOptions.md) | `object` |
-| `TPlugin` *extends* [`RouterPlugin`](../types/RouterPlugin.md) | [`EmptyRouterPlugin`](../types/EmptyRouterPlugin.md) |
+| `TPlugin` *extends* [`RouterPlugin`](../types/RouterPlugin.md) | `EmptyRouterPlugin` |
 
 ### Parameters
 
 | Parameter | Type | Description |
 | ------ | ------ | ------ |
-| `routes` | `TRoutes`[] | [Routes](../types/Routes.md) An array of route definitions specifying the configuration of routes in the application. Use createRoute method to create the route definitions. |
+| `routes` | `TRoutes`[] | Routes An array of route definitions specifying the configuration of routes in the application. Use createRoute method to create the route definitions. |
 | `options?` | `TOptions` | [RouterOptions](../types/RouterOptions.md) for the router, including history mode and initial URL settings. |
 | `plugins?` | `TPlugin`[] | - |
 

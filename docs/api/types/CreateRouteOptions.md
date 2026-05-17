@@ -19,6 +19,7 @@ type CreateRouteOptions<TName, TMeta> = object;
 | <a id="components"></a> `components?` | `Record`\<`string`, `Component`\> | An object of named components to render using named views |
 | <a id="context"></a> `context?` | `RouteContext`[] | Related routes and rejections for the route. The context is exposed to the hooks and props callback functions for this route. |
 | <a id="hash"></a> `hash?` | `string` \| `UrlPart` | Hash part of URL. |
+| <a id="hoist"></a> `hoist?` | `boolean` | When true, the route will be hoisted to the top of the route tree. The route will continue to inherit meta, state, hooks, matches, and context from it's parent, but not the "url" properties. |
 | <a id="meta"></a> `meta?` | `TMeta` | Represents additional metadata associated with a route, customizable via declaration merging. |
 | <a id="name"></a> `name?` | `TName` | Name for route, used to create route keys and in navigation. |
 | <a id="parent"></a> `parent?` | [`Route`](Route.md) | An optional parent route to nest this route under. |

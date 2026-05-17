@@ -1,7 +1,7 @@
 {
   "name": "@kitbag/router",
   "private": false,
-  "version": "0.24.2",
+  "version": "0.24.3",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/kitbagjs/router/issues"
@@ -17,6 +17,7 @@
   "homepage": "https://github.com/kitbagjs/router#readme",
   "scripts": {
     "build": "vite build",
+    "prepublishOnly": "npm run build",
     "build:watch": "vite build --watch --minify=false",
     "dev": "vite build --watch --minify=false",
     "test": "vitest",

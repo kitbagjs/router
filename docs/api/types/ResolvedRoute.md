@@ -3,7 +3,6 @@
 ```ts
 type ResolvedRoute<TRoute> = Readonly<{
   hash: string;
-  hooks: Hooks[];
   href: UrlString;
   id: TRoute["id"];
   matched: TRoute["matched"];
@@ -12,6 +11,7 @@ type ResolvedRoute<TRoute> = Readonly<{
   params: UrlParamsReading<TRoute>;
   query: URLSearchParams;
   state: ExtractRouteStateParamsAsOptional<TRoute["state"]>;
+  title: Promise<string | undefined>;
 }>;
 ```
 
