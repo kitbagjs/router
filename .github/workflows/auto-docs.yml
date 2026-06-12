@@ -36,7 +36,7 @@ jobs:
             Please review the changes and merge if everything looks correct.
           branch: auto-docs/update
           base: main
-          delete-branch: true
+          delete-branch: 
           labels: |
             documentation
             automated
