@@ -6,6 +6,8 @@ import { RouterReplace } from './routerReplace'
 import { ExtractRouteContextRejections, ExtractRouteContextRoutes } from './routeContext'
 import { ResolvedRoute } from './resolved'
 import { RouteUpdate } from './routeUpdate'
+import { RouteViews } from '@/types/routeViews'
+import { LastInArray } from '@/types/utilities'
 
 /**
  * Context provided to props callback functions
@@ -32,9 +34,11 @@ export type PropsCallbackParent<
 type GetParentPropsReturnType<
   TParent extends Route | undefined = Route | undefined
 > = TParent extends Route
-  ? TParent['matched']['props'] extends PropsGetter
-    ? ReturnType<TParent['matched']['props']>
-    : TParent['matched']['props'] extends Record<string, PropsGetter>
-      ? { [K in keyof TParent['matched']['props']]: ReturnType<TParent['matched']['props'][K]> }
-      : undefined
+  ? LastInArray<TParent['views']> extends RouteViews<infer TProps>
+    ? TProps extends PropsGetter
+      ? ReturnType<TProps>
+      : TProps extends Record<string, PropsGetter>
+        ? { [K in keyof TProps]: ReturnType<TProps[K]> }
+        : undefined
+    : undefined
   : undefined

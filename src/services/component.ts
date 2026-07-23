@@ -2,7 +2,6 @@
 /* eslint-disable vue/one-component-per-file */
 import { AsyncComponentLoader, Component, FunctionalComponent, InjectionKey, defineComponent, getCurrentInstance, h, ref, watch } from 'vue'
 import { isPromise } from '@/utilities/promises'
-import { CreatedRouteOptions } from '@/types/route'
 import { createUsePropStore } from '@/compositions/usePropStore'
 import { Router } from '@/types/router'
 import { createUseRoute } from '@/compositions/useRoute'
@@ -18,12 +17,12 @@ export type ComponentProps<TComponent extends Component> = TComponent extends Co
       : {}
 
 type CreateComponentWrapperConfig = {
-  match: CreatedRouteOptions,
+  id: string,
   name: string,
   component: Component,
 }
 
-export function createComponentPropsWrapper(routerKey: InjectionKey<Router>, { match, name, component }: CreateComponentWrapperConfig): Component {
+export function createComponentPropsWrapper(routerKey: InjectionKey<Router>, { id, name, component }: CreateComponentWrapperConfig): Component {
   const usePropStore = createUsePropStore(routerKey)
   const useRoute = createUseRoute(routerKey)
 
@@ -36,7 +35,7 @@ export function createComponentPropsWrapper(routerKey: InjectionKey<Router>, { m
       const route = useRoute()
 
       return () => {
-        const props = store.getProps(match.id, name, route)
+        const props = store.getProps(id, name, route)
 
         if (props instanceof Error) {
           return ''
