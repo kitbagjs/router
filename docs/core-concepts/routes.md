@@ -84,12 +84,73 @@ const blogPost = createRoute({
 })
 ```
 
-## Component
+## Views
 
-The `component` property is used to define the component that will be rendered when the route is active. Component is optional and a [RouterView](/components/router-view) will be rendered if no component is provided.
+Use the chainable `addView` method to define which component(s) render when the route is active. Call it once for a single view, or chain it to register multiple views. If no view is added, a [RouterView](/components/router-view) is rendered by default.
 
 ```ts {6}
-import HomeView from './components/HomeView.svelte'
+import HomeView from './components/HomeView.vue'
+
+const home = createRoute({
+  name: 'home',
+  path: '/',
+}).addView(HomeView)
+```
+
+### Named Views
+
+Pass a name as the first argument to register a [named view](/components/router-view). A route can mix a default view with named views.
+
+```ts {8-9}
+import HomeView from './components/HomeView.vue'
+import HomeSidebar from './components/HomeSidebar.vue'
+
+const home = createRoute({
+  name: 'home',
+  path: '/',
+})
+  .addView(HomeView)
+  .addView('sidebar', HomeSidebar)
+```
+
+### Props
+
+Pass a props getter as the last argument to bind props to the view's component. It's a callback that returns an object (or a promise of one); everything returned is bound to the component. See [Component Props](/core-concepts/component-props) for more details.
+
+```ts {6}
+import UserView from './components/UserView.vue'
+
+const user = createRoute({
+  name: 'user',
+  path: '/user/[id]',
+}).addView(UserView, (route) => ({ userId: route.params.id }))
+```
+
+The getter is **required** when the component has required props, and optional otherwise. For named views, pass the getter after the component.
+
+#### Arguments
+
+The props callback receives two arguments:
+
+| Argument | Description |
+| -------- | ----------- |
+| route | The resolved route, including any params. See [Params](/core-concepts/params) for more details. |
+| context | An object with helper methods for navigation (`push`, `replace`, `reject`, `update`) and the `parent` route's props. See [PropsCallbackContext](/api/types/PropsCallbackContext) for more details. |
+
+#### Return Type
+
+The props callback must return an object or a promise that resolves to an object. The object must satisfy the props for the component. If the component has required props, TypeScript will error until the getter returns a matching object.
+
+## Component
+
+::: warning
+The `component` property is deprecated. Use [`addView`](#views) instead.
+:::
+
+The `component` property is used to define the component that will be rendered when the route is active.
+
+```ts {6}
+import HomeView from './components/HomeView.vue'
 
 const home = createRoute({
   name: 'home',
@@ -100,7 +161,11 @@ const home = createRoute({
 
 ## Components
 
-The `components` property is used to define multiple components for named views. This is used instead of the `component` property.
+::: warning
+The `components` property is deprecated. Use [`addView`](#named-views) with named views instead.
+:::
+
+The `components` property is used to define multiple components for named views.
 
 ```ts {7-10}
 import HomeView from './components/HomeView.vue'
@@ -118,6 +183,10 @@ const home = createRoute({
 
 ## Props
 
+::: warning
+The `props` argument is deprecated. Pass the props getter to [`addView`](#props) instead.
+:::
+
 The `props` argument is used to provide props for route components. It must be a callback function that returns an object. Everything returned from the callback will be bound to the component.
 
 ```ts {7}
@@ -130,53 +199,38 @@ const home = createRoute({
 }, () => ({ userId: 1 }))
 ```
 
-### Arguments
-
-The props callback receives two arguments:
-
-| Argument | Description |
-| -------- | ----------- |
-| params | An object containing the values of any params from the route. See [Params](/core-concepts/params) for more details. |
-| context | An object containing helper methods for navigation (`push`, `replace`, `reject`). See [PropsCallbackContext](/api/types/PropsCallbackContext) for more details. |
-
-### Return Type
-
-The props callback must return an object or a promise that resolves to an object. The object must satisfy the props for the component.
-
 ## Meta
 
 The `meta` property is used to define metadata for the route. Meta is optional and can be used to define static metadata for the route to reference in the [router route](/core-concepts/router-route) or in [hooks](/advanced-concepts/hooks)
 
-```ts {7-9}
+```ts {6-8}
 import HomeView from './components/HomeView.vue'
 
 const home = createRoute({
   name: 'home',
   path: '/',
-  component: HomeView,
   meta: {
     title: 'Home',
   },
-})
+}).addView(HomeView)
 ```
 
 ## State
 
 The `state` property is used to define optional data that can stored on the route in the browser's history. State is always optional, but it can be used to pass data to the route when navigating or to preserve state when navigating away from the route.
 
-```ts {7-11}
+```ts {6-10}
 import ContactView from './components/HomeView.vue'
 
 const contact = createRoute({
   name: 'contact',
   path: '/',
-  component: ContactView,
   state: {
     firstName: String,
     lastName: String,
     message: String,
   },
-})
+}).addView(ContactView)
 ```
 
 ## Hooks
@@ -189,8 +243,7 @@ import HomeView from './components/HomeView.vue'
 const home = createRoute({
   name: 'home',
   path: '/',
-  component: HomeView,
-})
+}).addView(HomeView)
 
 home.onBeforeRouteEnter(() => {
   console.log('before route enter')
@@ -236,8 +289,7 @@ The context for a route is the collection of routes and rejections that are asso
 const newHomePage = createRoute({
   name: 'new-home',
   path: '/',
-  component: NewHomePage,
-})
+}).addView(NewHomePage)
 
 const home = createRoute({
   name: 'home',

@@ -41,7 +41,6 @@ Kitbag Router does support repeatable params like [vue-router](https://router.vu
 {
   name: 'repeated-params',
   path: '/[chapters]',
-  component: ...
 },
 ```
 
@@ -71,7 +70,6 @@ Which is applied to the route with `withParams`.
 {
   name: 'repeated-params',
   path: withParams('/[chapters]', { chapters: stringArrayParam }),// [!code focus]
-  component: ...
 },
 ```
 
@@ -85,8 +83,7 @@ In order to setup redirects for your routes, you'll have to use route [hooks](/a
 const newRoute = createRoute({
   name: 'new-route',
   path: '/new',
-  component: ...
-})
+}).addView(...)
 
 const oldRoute = createRoute({
   name: 'old-route',
@@ -107,8 +104,7 @@ If you need additional routes that ultimately result in another route being load
 const actualRoute = createRoute({
   name: 'actual-route',
   path: '/new',
-  component: ...
-})
+}).addView(...)
 
 const aliasRouteA = createRoute({
   name: 'alias-route-a',
