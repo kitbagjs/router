@@ -2,11 +2,12 @@
 
 With Kitbag Router, you can pass a `props` getter when adding a view with [`addView`](/core-concepts/routes#views). Your callback is given the [`ResolvedRoute`](/api/types/ResolvedRoute) for the route and what it returns will be bound to the component when the component gets mounted inside the `<router-view />`
 
-```ts {4}
+```ts {5}
 const user = createRoute({
   name: 'user',
   path: '/user/[id]',
-}).addView(UserComponent, (route) => ({ userId: route.params.id }))
+})
+.addView(UserComponent, (route) => ({ userId: route.params.id }))
 ```
 
 This is obviously useful for assigning static values or route params down to your view components props but it also gives you
@@ -23,8 +24,8 @@ const user = createRoute({
   name: 'user',
   path: '/user/[id]',
 })
-  .addView(UserComponent, (route) => ({ userId: route.params.id }))
-  .addView('sidebar', UserSidebarComponent, (route) => ({ userId: route.params.id }))
+.addView(UserComponent, (route) => ({ userId: route.params.id }))
+.addView('sidebar', UserSidebarComponent, (route) => ({ userId: route.params.id }))
 ```
 
 ## Params Type
@@ -39,11 +40,12 @@ Your callback will throw a Typescript error if it returns anything other than th
 
 The props call back supports promises. This means you can do much more than just forward values from params or insert static values. For example, we can take an id route param and fetch the `User` before mounting the component.
 
-```ts {4-8}
+```ts {5-9}
 const user = createRoute({
   name: 'user',
   path: '/user/[id]',
-}).addView(UserComponent, async (route) => {
+})
+.addView(UserComponent, async (route) => {
   const user = await userStore.getById(route.params.id)
 
   return { user }
@@ -58,7 +60,8 @@ The [callback context](/core-concepts/component-props#context) includes a `paren
 const blogPost = createRoute({
   name: 'blog',
   path: '/blog/[blogPostId]',
-}).addView(BlogPost, async (route) => {
+})
+.addView(BlogPost, async (route) => {
   const post = await getBlogPostById(route.params.blogPostId)
 
   return {
@@ -70,7 +73,8 @@ const blogPostTabs = createRoute({
   parent: blogPost,
   name: 'tabs',
   query: '?tab=[tab]',
-}).addView(PostTabs, async (route, { parent }) => {
+})
+.addView(PostTabs, async (route, { parent }) => {
   const tab = route.query.tab
   const { post } = await parent.props
 
@@ -104,7 +108,8 @@ Unlike [hooks](/advanced-concepts/hooks), props are not awaited during navigatio
 const user = createRoute({
   name: 'user',
   path: '/user/[id]',
-}).addView(UserComponent, async (route, { reject }) => {
+})
+.addView(UserComponent, async (route, { reject }) => {
   try {
     const user = await userStore.getById(route.params.id)
 
@@ -124,7 +129,8 @@ import { inject } from 'vue'
 
 const route = createRoute({
   ...
-}).addView(SomeComponent, async () => {
+})
+.addView(SomeComponent, async () => {
   const value = inject('global')
 
   return { value }

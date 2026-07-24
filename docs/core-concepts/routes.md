@@ -88,13 +88,14 @@ const blogPost = createRoute({
 
 Use the chainable `addView` method to define which component(s) render when the route is active. Call it once for a single view, or chain it to register multiple views. If no view is added, a [RouterView](/components/router-view) is rendered by default.
 
-```ts {6}
+```ts {7}
 import HomeView from './components/HomeView.vue'
 
 const home = createRoute({
   name: 'home',
   path: '/',
-}).addView(HomeView)
+})
+.addView(HomeView)
 ```
 
 ### Named Views
@@ -109,21 +110,22 @@ const home = createRoute({
   name: 'home',
   path: '/',
 })
-  .addView(HomeView)
-  .addView('sidebar', HomeSidebar)
+.addView(HomeView)
+.addView('sidebar', HomeSidebar)
 ```
 
 ### Props
 
 Pass a props getter as the last argument to bind props to the view's component. It's a callback that returns an object (or a promise of one); everything returned is bound to the component. See [Component Props](/core-concepts/component-props) for more details.
 
-```ts {6}
+```ts {7}
 import UserView from './components/UserView.vue'
 
 const user = createRoute({
   name: 'user',
   path: '/user/[id]',
-}).addView(UserView, (route) => ({ userId: route.params.id }))
+})
+.addView(UserView, (route) => ({ userId: route.params.id }))
 ```
 
 The getter is **required** when the component has required props, and optional otherwise. For named views, pass the getter after the component.
@@ -212,7 +214,8 @@ const home = createRoute({
   meta: {
     title: 'Home',
   },
-}).addView(HomeView)
+})
+.addView(HomeView)
 ```
 
 ## State
@@ -230,7 +233,8 @@ const contact = createRoute({
     lastName: String,
     message: String,
   },
-}).addView(ContactView)
+})
+.addView(ContactView)
 ```
 
 ## Hooks
@@ -243,7 +247,8 @@ import HomeView from './components/HomeView.vue'
 const home = createRoute({
   name: 'home',
   path: '/',
-}).addView(HomeView)
+})
+.addView(HomeView)
 
 home.onBeforeRouteEnter(() => {
   console.log('before route enter')
@@ -289,7 +294,8 @@ The context for a route is the collection of routes and rejections that are asso
 const newHomePage = createRoute({
   name: 'new-home',
   path: '/',
-}).addView(NewHomePage)
+})
+.addView(NewHomePage)
 
 const home = createRoute({
   name: 'home',

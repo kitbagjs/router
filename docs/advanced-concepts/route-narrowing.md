@@ -8,25 +8,25 @@ import { createRoute, createRouter } from '@kitbag/router'
 const home = createRoute({
   name: 'home',
   path: '/',
-}).addView(...)
+})
 
 const user = createRoute({
   name: 'user',
   path: '/user/[userId]',
-}).addView(...)
+})
 
 const profile = createRoute({
   parent: user,
   name: 'user.profile',
   path: '/profile',
   query: '?tab=[tab]',
-}).addView(...)
+})
 
 const settings = createRoute({
   parent: user,
   name: 'user.settings',
   path: '/settings',
-}).addView(...)
+})
 
 const router = createRouter([home, user, profile, settings])
 

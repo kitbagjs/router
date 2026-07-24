@@ -83,7 +83,7 @@ In order to setup redirects for your routes, you'll have to use route [hooks](/a
 const newRoute = createRoute({
   name: 'new-route',
   path: '/new',
-}).addView(...)
+})
 
 const oldRoute = createRoute({
   name: 'old-route',
@@ -104,7 +104,7 @@ If you need additional routes that ultimately result in another route being load
 const actualRoute = createRoute({
   name: 'actual-route',
   path: '/new',
-}).addView(...)
+})
 
 const aliasRouteA = createRoute({
   name: 'alias-route-a',

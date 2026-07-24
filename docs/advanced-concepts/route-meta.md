@@ -12,14 +12,17 @@ const routes = [
     meta: {
       pageTitle: 'Kitbag Home'
     }
-  }).addView(Home),
+  })
+  .addView(Home),
+
   createRoute({ 
     name: 'path',
     path: '/about',
     meta: {
       pageTitle: 'Learn More About Kitbag'
     }
-  }).addView(About),
+  })
+  .addView(About),
 ] as const
 
 const router = createRouter(routes)
