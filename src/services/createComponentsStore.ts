@@ -1,27 +1,26 @@
 import { Component, InjectionKey } from 'vue'
 import { createComponentPropsWrapper } from './component'
-import { CreatedRouteOptions } from '@/types/route'
-import { isWithComponent, isWithComponents } from '@/types/createRouteOptions'
+import { RouteViews } from '@/types/routeViews'
 import { Router } from '@/types/router'
 import { createRouterView } from '@/components/routerView'
 
 export type ComponentsStore = {
-  getRouteComponents: (match: CreatedRouteOptions) => Record<string, Component>,
+  getRouteComponents: (views: RouteViews) => Record<string, Component>,
 }
 
 export function createComponentsStore<TRouter extends Router>(routerKey: InjectionKey<TRouter>): ComponentsStore {
   const store = new Map<string, Record<string, Component>>()
 
-  const getRouteComponents: ComponentsStore['getRouteComponents'] = (match) => {
-    const existing = store.get(match.id)
+  const getRouteComponents: ComponentsStore['getRouteComponents'] = (views) => {
+    const existing = store.get(views.id)
 
     if (existing) {
       return existing
     }
 
-    const components = getAllComponentsForMatch(routerKey, match)
+    const components = getComponentsForViews(routerKey, views)
 
-    store.set(match.id, components)
+    store.set(views.id, components)
 
     return components
   }
@@ -31,22 +30,14 @@ export function createComponentsStore<TRouter extends Router>(routerKey: Injecti
   }
 }
 
-function getAllComponentsForMatch(routerKey: InjectionKey<Router>, options: CreatedRouteOptions): Record<string, Component> {
+function getComponentsForViews(routerKey: InjectionKey<Router>, views: RouteViews): Record<string, Component> {
   const RouterView = createRouterView(routerKey)
 
-  if (isWithComponents(options)) {
-    return wrapAllComponents(routerKey, options, options.components)
+  if (Object.keys(views.components).length === 0) {
+    return { default: RouterView }
   }
 
-  if (isWithComponent(options)) {
-    return wrapAllComponents(routerKey, options, { default: options.component })
-  }
-
-  return { default: RouterView }
-}
-
-function wrapAllComponents(routerKey: InjectionKey<Router>, match: CreatedRouteOptions, components: Record<string, Component>): Record<string, Component> {
   return Object.fromEntries(
-    Object.entries(components).map(([name, component]) => [name, createComponentPropsWrapper(routerKey, { match, name, component })]),
+    Object.entries(views.components).map(([name, component]) => [name, createComponentPropsWrapper(routerKey, { id: views.id, name, component })]),
   )
 }

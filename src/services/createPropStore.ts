@@ -3,7 +3,7 @@ import { isWithComponentProps, isWithComponentPropsRecord, PropsGetter } from '@
 import type { PrefetchConfigs, PrefetchStrategy } from '@/types/prefetch'
 import { getPrefetchOption } from '@/utilities/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
-import { Route } from '@/types/route'
+import { RouteViews } from '@/types/routeViews'
 import { ContextPushError } from '@/errors/contextPushError'
 import { ContextRejectionError } from '@/errors/contextRejectionError'
 import { getPropsValue } from '@/utilities/props'
@@ -31,8 +31,9 @@ export function createPropStore(): PropStore {
     const { push, replace, reject, update } = createRouterCallbackContext({ to: route })
 
     return route.matches
-      .filter((match) => getPrefetchOption({ ...prefetch, routePrefetch: match.prefetch }, 'props') === strategy)
-      .flatMap((match) => getComponentProps(match))
+      .map((match, index) => ({ match, views: route.views[index] }))
+      .filter(({ match }) => getPrefetchOption({ ...prefetch, routePrefetch: match.prefetch }, 'props') === strategy)
+      .flatMap(({ views }) => getComponentProps(views))
       .reduce<Record<string, unknown>>((response, { id, name, props }) => {
         if (!props) {
           return response
@@ -61,7 +62,7 @@ export function createPropStore(): PropStore {
 
   const setProps: PropStore['setProps'] = async (route) => {
     const { push, replace, reject, update } = createRouterCallbackContext({ to: route })
-    const componentProps = route.matches.flatMap(getComponentProps)
+    const componentProps = route.views.flatMap(getComponentProps)
     const keys: string[] = []
     const promises: Promise<unknown>[] = []
 
@@ -121,51 +122,53 @@ export function createPropStore(): PropStore {
   }
 
   function getParentContext(route: ResolvedRoute, prefetch: boolean = false): PropsCallbackParent {
-    const parent = route.matches.at(-2)
+    const parentMatch = route.matches.at(-2)
+    const parentViews = route.views.at(-2)
 
-    if (!parent) {
+    if (!parentMatch || !parentViews) {
       return
     }
 
-    if (isWithComponentProps(parent)) {
+    const name = parentMatch.name ?? ''
+
+    if (isWithComponentProps(parentViews)) {
       return {
-        name: parent.name ?? '',
+        name,
         get props() {
-          return getParentProps(parent, 'default', route, prefetch)
+          return getParentProps(parentViews.id, 'default', route, prefetch)
         },
       }
     }
 
-    if (isWithComponentPropsRecord(parent)) {
+    if (isWithComponentPropsRecord(parentViews)) {
       return {
-        name: parent.name ?? '',
+        name,
         props: new Proxy({}, {
-          get(target, name) {
-            if (typeof name !== 'string') {
-              return Reflect.get(target, name)
+          get(target, propName) {
+            if (typeof propName !== 'string') {
+              return Reflect.get(target, propName)
             }
 
-            return getParentProps(parent, name, route, prefetch)
+            return getParentProps(parentViews.id, propName, route, prefetch)
           },
         }),
       }
     }
 
     return {
-      name: parent.name ?? '',
+      name,
       props: undefined,
     }
   }
 
-  function getParentProps(parent: Route['matched'], name: string, route: ResolvedRoute, prefetch: boolean = false): unknown {
-    const value = getProps(parent.id, name, route)
+  function getParentProps(id: string, name: string, route: ResolvedRoute, prefetch: boolean = false): unknown {
+    const value = getProps(id, name, route)
 
     if (prefetch && !value) {
-      const parentName = parent.name ?? 'unknown'
       const routeName = route.name || 'unknown'
 
       console.warn(`
-        Unable to access parent props "${name}" from route "${parentName}" while prefetching props for route "${routeName}".
+        Unable to access parent props "${name}" while prefetching props for route "${routeName}".
         This may occur if the parent route's props were not also prefetched.
       `)
     }
@@ -177,19 +180,19 @@ export function createPropStore(): PropStore {
     return [id, name, route.id, JSON.stringify(route.params)].join('-')
   }
 
-  function getComponentProps(options: Route['matched']): ComponentProps[] {
-    if (isWithComponentProps(options)) {
+  function getComponentProps(views: RouteViews): ComponentProps[] {
+    if (isWithComponentProps(views)) {
       return [
         {
-          id: options.id,
+          id: views.id,
           name: 'default',
-          props: options.props,
+          props: views.props,
         },
       ]
     }
 
-    if (isWithComponentPropsRecord(options)) {
-      return Object.entries(options.props).map(([name, props]) => ({ id: options.id, name, props }))
+    if (isWithComponentPropsRecord(views)) {
+      return Object.entries(views.props).map(([name, props]) => ({ id: views.id, name, props }))
     }
 
     return []

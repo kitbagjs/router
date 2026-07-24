@@ -1,6 +1,5 @@
 import { InjectionKey, MaybeRefOrGetter, ref, Ref, toValue, watch } from 'vue'
 import { createUsePropStore } from '@/compositions/usePropStore'
-import { isWithComponent, isWithComponents } from '@/types/createRouteOptions'
 import type { PrefetchConfigs, PrefetchStrategy } from '@/types/prefetch'
 import { getPrefetchOption } from '@/utilities/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
@@ -89,26 +88,26 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
 }
 
 function prefetchComponentsForRoute(strategy: PrefetchStrategy, route: ResolvedRoute, configs: PrefetchConfigs): void {
-  route.matches.forEach((route) => {
+  route.matches.forEach((match, depth) => {
     const routeStrategy = getPrefetchOption({
       ...configs,
-      routePrefetch: route.prefetch,
+      routePrefetch: match.prefetch,
     }, 'components')
 
     if (routeStrategy !== strategy) {
       return
     }
 
-    if (isWithComponent(route) && isAsyncComponent(route.component)) {
-      route.component.__asyncLoader()
+    const views = route.views.at(depth)
+
+    if (!views) {
+      return
     }
 
-    if (isWithComponents(route)) {
-      Object.values(route.components).forEach((component) => {
-        if (isAsyncComponent(component)) {
-          component.__asyncLoader()
-        }
-      })
-    }
+    Object.values(views.components).forEach((component) => {
+      if (isAsyncComponent(component)) {
+        component.__asyncLoader()
+      }
+    })
   })
 }

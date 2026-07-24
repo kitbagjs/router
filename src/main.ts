@@ -11,6 +11,12 @@ export type {
   ToRoute
 } from './types/createRouteOptions'
 export type {
+  RouteAddView,
+  AddViewPropsGetter,
+  AddViewPropsCallbackContext
+} from './types/addView'
+export type { RouteViews } from './types/routeViews'
+export type {
   RejectionHooks,
   HookRemove,
   BeforeHookLifecycle,

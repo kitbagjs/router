@@ -22,6 +22,10 @@ export type ResolvedRoute<TRoute extends Route = Route> = Readonly<{
   */
   matches: TRoute['matches'],
   /**
+   * The components and prop getters for the route and its ancestors, indexed by depth (parallel to matches).
+  */
+  views: TRoute['views'],
+  /**
    * Unique identifier for the route. Name is used for routing and for matching.
   */
   name: TRoute['name'],

@@ -12,6 +12,9 @@ import { InternalRouteHooks } from '@/types/hooks'
 import { ExtractRouteContext } from '@/types/routeContext'
 import { RouteRedirects } from '@/types/redirects'
 import { createRouteTitle, RouteSetTitle } from '@/types/routeTitle'
+import { createRouteViews } from '@/services/createRouteViews'
+import { RouteAddView } from '@/types/addView'
+import { withAddView } from '@/services/addView'
 
 type CreateRouteWithProps<
   TOptions extends CreateRouteOptions,
@@ -30,6 +33,7 @@ export function createRoute<
   const TOptions extends CreateRouteOptions,
   const TProps extends CreateRouteProps<TOptions>
 >(options: TOptions, ...args: CreateRouteWithProps<TOptions, TProps>): ToRoute<TOptions, TProps>
+  & RouteAddView<ToRoute<TOptions, TProps>>
   & InternalRouteHooks<ToRoute<TOptions>, ExtractRouteContext<TOptions>>
   & RouteRedirects<ToRoute<TOptions>>
   & RouteSetTitle<ToRoute<TOptions>>
@@ -45,7 +49,8 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
   const context = options.context ?? []
   const { store, redirect, ...hooks } = createRouteHooks()
   const { setTitle, getTitle } = createRouteTitle(options.parent)
-  const rawRoute = markRaw({ ...options, id, meta, state, props, name })
+  const views = createRouteViews(id, options, props)
+  const rawRoute = markRaw({ ...options, id, meta, state, name })
 
   const redirects = createRouteRedirects({
     getRoute: () => route,
@@ -69,6 +74,7 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
     id,
     matched: rawRoute,
     matches: [rawRoute],
+    views: [views],
     name,
     meta,
     state,
@@ -85,7 +91,7 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
     const merged = combineRoutes(options.parent, route)
 
     if (options.hoist) {
-      return merged
+      return withAddView(merged)
     }
 
     const url = combineUrl(options.parent, {
@@ -94,11 +100,11 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
       hash,
     })
 
-    return {
+    return withAddView({
       ...merged,
       ...url,
-    }
+    })
   }
 
-  return route
+  return withAddView(route)
 }

@@ -12,6 +12,7 @@ import { ExternalRouteHooks } from '@/types/hooks'
 import { ExtractRouteContext } from '@/types/routeContext'
 import { RouteRedirects } from '@/types/redirects'
 import { createRouteTitle, RouteSetTitle } from '@/types/routeTitle'
+import { createRouteViews } from '@/services/createRouteViews'
 
 export function createExternalRoute<
   const TOptions extends CreateRouteOptions & WithHost & WithoutParent
@@ -39,6 +40,7 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
   const redirects = createRouteRedirects({
     getRoute: () => route,
   })
+  const views = createRouteViews(id, options)
   const rawRoute = markRaw({ id, meta: {}, state: {}, ...options })
 
   const url = createUrl({
@@ -60,6 +62,7 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
     id,
     matched: rawRoute,
     matches: [rawRoute],
+    views: [views],
     name,
     meta,
     state: {},

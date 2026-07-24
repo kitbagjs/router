@@ -18,6 +18,7 @@ import { RouteContext, ToRouteContext } from '@/types/routeContext'
 import { RouterViewProps } from '@/components/routerView'
 import { ToUrl } from '@/types/url'
 import { CombineUrl } from '@/services/combineUrl'
+import { RouteViews } from '@/types/routeViews'
 
 export type WithHost<THost extends string | UrlPart = string | UrlPart> = {
   /**
@@ -104,10 +105,13 @@ export type CreateRouteOptions<
    * An optional component to render when this route is matched.
    *
    * @default RouterView
+   * @deprecated Use the chainable `addView` method on the route instead: `createRoute({ ... }).addView(component, props?)`.
    */
   component?: Component,
   /**
    * An object of named components to render using named views
+   *
+   * @deprecated Use the chainable `addView` method on the route instead: `createRoute({ ... }).addView(name, component, props?)`.
    */
   components?: Record<string, Component>,
   /**
@@ -129,7 +133,7 @@ export type RouterViewPropsGetter<
   TOptions extends CreateRouteOptions = CreateRouteOptions
 > = (route: ResolvedRoute<ToRoute<TOptions>>, context: PropsCallbackContext<ToRoute<TOptions>, TOptions>) => MaybePromise<RouterViewProps & Record<string, unknown>>
 
-type ComponentPropsAreOptional<
+export type ComponentPropsAreOptional<
   TComponent extends Component
 > = Partial<ComponentProps<TComponent>> extends ComponentProps<TComponent>
   ? true
@@ -150,12 +154,10 @@ export type CreateRouteProps<
     : RouterViewPropsGetter<TOptions>
 
 type ToMatch<
-  TOptions extends CreateRouteOptions,
-  TProps
-> = Omit<TOptions, 'props' | 'meta' | 'name'> & {
+  TOptions extends CreateRouteOptions
+> = Omit<TOptions, 'meta' | 'name' | 'component' | 'components'> & {
   id: string,
   name: ToName<TOptions['name']>,
-  props: TProps,
   /**
    * Represents additional metadata associated with a route. Always present, defaults to empty object.
    */
@@ -163,11 +165,21 @@ type ToMatch<
 }
 
 type ToMatches<
-  TOptions extends CreateRouteOptions,
-  TProps extends CreateRouteProps<TOptions> | undefined
+  TOptions extends CreateRouteOptions
 > = TOptions extends { parent: infer TParent extends Route }
-  ? [...TParent['matches'], ToMatch<TOptions, TProps>]
-  : [ToMatch<Identity<TOptions & WithoutComponents>, TProps>]
+  ? [...TParent['matches'], ToMatch<TOptions>]
+  : [ToMatch<TOptions>]
+
+/**
+ * The `views` tuple for a route, indexed by depth (parallel to `ToMatches`). Each entry carries the
+ * prop getter types for that route's views, used for parent props typing and refined by `addView`.
+ */
+type ToViews<
+  TOptions extends CreateRouteOptions,
+  TProps
+> = TOptions extends { parent: infer TParent extends Route }
+  ? [...TParent['views'], RouteViews<TProps>]
+  : [RouteViews<TProps>]
 
 export type ToRoute<
   TOptions extends CreateRouteOptions,
@@ -180,16 +192,18 @@ export type ToRoute<
       TOptions['hoist'] extends true ? ToUrl<TOptions & WithoutComponents> : CombineUrl<TParent, ToUrl<TOptions & WithoutComponents>>,
       CombineMeta<ToMeta<TParent['meta']>, ToMeta<TOptions['meta']>>,
       CombineState<ToState<TParent['state']>, ToState<TOptions['state']>>,
-      ToMatches<TOptions, CreateRouteProps<TOptions> extends TProps ? undefined : TProps>,
-      [...ToRouteContext<TParent['context']>, ...ToRouteContext<TOptions['context']>]
+      ToMatches<TOptions>,
+      [...ToRouteContext<TParent['context']>, ...ToRouteContext<TOptions['context']>],
+      ToViews<TOptions, CreateRouteProps<TOptions> extends TProps ? undefined : TProps>
     >
     : Route<
       ToName<TOptions['name']>,
       ToUrl<Identity<TOptions & WithoutComponents>>,
       ToMeta<TOptions['meta']>,
       ToState<TOptions['state']>,
-      ToMatches<TOptions, CreateRouteProps<TOptions> extends TProps ? undefined : TProps>,
-      ToRouteContext<TOptions['context']>
+      ToMatches<TOptions>,
+      ToRouteContext<TOptions['context']>,
+      ToViews<TOptions, CreateRouteProps<TOptions> extends TProps ? undefined : TProps>
     >
 
 export function combineRoutes(parent: Route, child: Route): Route {
@@ -203,6 +217,7 @@ export function combineRoutes(parent: Route, child: Route): Route {
     state: combineState(parent.state, child.state),
     hooks: combineHooks(parent, child),
     matches: [...parent.matches, child.matched],
+    views: [...parent.views, ...child.views],
     context: [...parent.context, ...child.context],
     depth: parent.depth + 1,
   } satisfies Route & RouteInternal
