@@ -9,19 +9,20 @@ const routes = [
   createRoute({ 
     name: 'home',
     path: '/',
-    component: Home,
     meta: {
       pageTitle: 'Kitbag Home'
     }
-  }),
+  })
+  .addView(Home),
+
   createRoute({ 
     name: 'path',
     path: '/about',
-    component: About,
     meta: {
       pageTitle: 'Learn More About Kitbag'
     }
-  }),
+  })
+  .addView(About),
 ] as const
 
 const router = createRouter(routes)

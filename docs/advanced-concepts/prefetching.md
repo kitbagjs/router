@@ -12,21 +12,21 @@ import { defineAsyncComponent } from 'vue'
 const user = createRoute({
   name: 'user',
   path: '/user/[id]',
-  component: defineAsyncComponent(() => import('./UserPage.vue')), // [!code focus]
 })
+.addView(defineAsyncComponent(() => import('./UserPage.vue'))) // [!code focus]
 ```
 
 ## Prefetching Props
 
 When your route uses the [props callback](/core-concepts/component-props), Kitbag Router can start fetching your component props before they are needed.
 
-```ts {5-9}
+```ts {5-8}
 const user = createRoute({
   name: 'user',
   path: '/user/[id]',
-  component: defineAsyncComponent(() => import('./UserPage.vue')),
-}, async (({ id }) => {
-  const user = await userStore.getById(id)
+})
+.addView(defineAsyncComponent(() => import('./UserPage.vue')), async (route) => {
+  const user = await userStore.getById(route.params.id)
   return { user }
 })
 ```
@@ -103,15 +103,15 @@ If you want to enable or disable prefetching for specific routes, you can do so 
 ```ts
 const about = createRoute({
   path: '/about',
-  component: () => import('./About.vue'),
   prefetch: true, // enable prefetching for this route
 })
+.addView(() => import('./About.vue'))
 
 const contact = createRoute({
   path: '/contact',
-  component: () => import('./Contact.vue'),
   prefetch: false, // disable prefetching for this route
 })
+.addView(() => import('./Contact.vue'))
 ```
 
 ### Per-Link Configuration
