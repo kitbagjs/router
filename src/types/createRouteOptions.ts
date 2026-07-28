@@ -1,6 +1,6 @@
 import { Component } from 'vue'
-import { CombineMeta, combineMeta } from '@/services/combineMeta'
-import { CombineState, combineState } from '@/services/combineState'
+import { combineMeta } from '@/services/combineMeta'
+import { combineState } from '@/services/combineState'
 import { combineHooks } from '@/types/hooks'
 import { Param } from '@/types/paramTypes'
 import { PrefetchConfig } from '@/types/prefetch'
@@ -11,10 +11,9 @@ import { ComponentProps } from '@/services/component'
 import { PropsCallbackContext } from '@/types/props'
 import { Identity, MaybePromise } from '@/types/utilities'
 import { ToMeta } from '@/types/meta'
-import { ToState } from '@/types/state'
 import { ToName } from '@/types/name'
 import { UrlPart, UrlQueryPart } from '@/services/withParams'
-import { RouteContext, ToRouteContext } from '@/types/routeContext'
+import { RouteContext } from '@/types/routeContext'
 import { RouterViewProps } from '@/components/routerView'
 import { ToUrl } from '@/types/url'
 import { CombineUrl } from '@/services/combineUrl'
@@ -188,21 +187,13 @@ export type ToRoute<
   ? Route
   : TOptions extends { parent: infer TParent extends Route }
     ? Route<
-      ToName<TOptions['name']>,
       TOptions['hoist'] extends true ? ToUrl<TOptions & WithoutComponents> : CombineUrl<TParent, ToUrl<TOptions & WithoutComponents>>,
-      CombineMeta<ToMeta<TParent['meta']>, ToMeta<TOptions['meta']>>,
-      CombineState<ToState<TParent['state']>, ToState<TOptions['state']>>,
       ToMatches<TOptions>,
-      [...ToRouteContext<TParent['context']>, ...ToRouteContext<TOptions['context']>],
       ToViews<TOptions, CreateRouteProps<TOptions> extends TProps ? undefined : TProps>
     >
     : Route<
-      ToName<TOptions['name']>,
       ToUrl<Identity<TOptions & WithoutComponents>>,
-      ToMeta<TOptions['meta']>,
-      ToState<TOptions['state']>,
       ToMatches<TOptions>,
-      ToRouteContext<TOptions['context']>,
       ToViews<TOptions, CreateRouteProps<TOptions> extends TProps ? undefined : TProps>
     >
 

@@ -3,7 +3,9 @@ import { PrefetchConfig } from '@/types/prefetch'
 import { RouteMeta } from '@/types/register'
 import { LastInArray } from '@/types/utilities'
 import { CreateRouteOptions } from '@/types/createRouteOptions'
-import { RouteContext } from '@/types/routeContext'
+import { RouteContext, ToRouteContext } from '@/types/routeContext'
+import { ToMeta } from '@/types/meta'
+import { ToState } from '@/types/state'
 import { Url } from '@/types/url'
 import { GetRouteTitle } from '@/types/routeTitle'
 import { Hooks } from '@/models/hooks'
@@ -36,19 +38,60 @@ export type Routes = readonly Route[]
 export type CreatedRouteOptions = Omit<CreateRouteOptions, 'component' | 'components'> & {
   id: string,
 }
+
+// `matches` is a complete per-depth snapshot of the options each route was created with, so the
+// combined name, meta, state, and context are all recoverable from it rather than needing their own
+// generic slots on Route.
+//
+// Each of the helpers below short circuits when TMatches is the unbounded `CreatedRouteOptions[]`
+// (the default `Route`), since a non-tuple array never matches the `[infer THead, ...infer TRest]`
+// pattern and would otherwise fall through to the empty base case.
+
+/**
+ * The name of the narrowest matched route.
+ */
+type RouteNameOf<TMatches extends CreatedRouteOptions[]> = LastInArray<TMatches> extends { name: infer TName extends string } ? TName : string
+
+/**
+ * The meta of every matched route, combined. Mirrors `combineMeta`, which is an intersection.
+ */
+type RouteMetaOf<TMatches extends CreatedRouteOptions[]> = CreatedRouteOptions[] extends TMatches
+  ? RouteMeta
+  : TMatches extends [infer THead, ...infer TRest extends CreatedRouteOptions[]]
+    ? ToMeta<THead extends { meta: infer TMeta extends RouteMeta } ? TMeta : undefined> & RouteMetaOf<TRest>
+    : {}
+
+/**
+ * The state of every matched route, combined. Mirrors `combineState`, which is an intersection.
+ * A match without state contributes `{}` rather than `ToState<undefined>`, which widens to
+ * `Record<string, Param>` and would swallow the rest of the intersection.
+ */
+type RouteStateOf<TMatches extends CreatedRouteOptions[]> = CreatedRouteOptions[] extends TMatches
+  ? Record<string, Param>
+  : TMatches extends [infer THead, ...infer TRest extends CreatedRouteOptions[]]
+    ? (THead extends { state: infer TState extends Record<string, Param> } ? ToState<TState> : {}) & RouteStateOf<TRest>
+    : {}
+
+/**
+ * The context of every matched route, flattened from greatest ancestor to narrowest matched.
+ */
+type RouteContextOf<TMatches extends CreatedRouteOptions[]> = CreatedRouteOptions[] extends TMatches
+  ? RouteContext[]
+  : TMatches extends [infer THead, ...infer TRest extends CreatedRouteOptions[]]
+    ? [...ToRouteContext<THead extends { context: infer TContext extends RouteContext[] } ? TContext : []>, ...RouteContextOf<TRest>]
+    : []
+
 /**
  * Represents the structure of a route within the application. Return value of `createRoute`
- * @template TName - Represents the unique name identifying the route, typically a string.
- * @template TPath - The type or structure of the route's path.
- * @template TQuery - The type or structure of the query parameters associated with the route.
+ * @template TUrl - The url the route resolves to, combined with any parents. Intersected into the route.
+ * @template TMatches - The options of the route and its ancestors, indexed by depth. Name, meta, state,
+ * and context are all derived from this.
+ * @template TViews - The components and prop getters of the route and its ancestors, indexed by depth.
+ * Refined by `addView`, so it cannot be derived from `TMatches`.
  */
 export type Route<
-  TName extends string = string,
   TUrl extends Url = Url,
-  TMeta extends RouteMeta = RouteMeta,
-  TState extends Record<string, Param> = Record<string, Param>,
   TMatches extends CreatedRouteOptions[] = CreatedRouteOptions[],
-  TContext extends RouteContext[] = RouteContext[],
   TViews extends RouteViews[] = RouteViews[]
 > = TUrl & {
   /**
@@ -72,15 +115,15 @@ export type Route<
   /**
    * Identifier for the route as defined by user. Name must be unique among named routes. Name is used for routing and for matching.
   */
-  name: TName,
+  name: RouteNameOf<TMatches>,
   /**
    * Represents additional metadata associated with a route, combined with any parents.
   */
-  meta: TMeta,
+  meta: RouteMetaOf<TMatches>,
   /**
    * Represents the schema of the route state, combined with any parents.
   */
-  state: TState,
+  state: RouteStateOf<TMatches>,
   /**
    * Determines what assets are prefetched when router-link is rendered for this route. Overrides router level prefetch.
   */
@@ -88,7 +131,7 @@ export type Route<
   /**
    * Related routes and rejections for the route. The context is exposed to the hooks and props callback functions for this route.
    */
-  context: TContext,
+  context: RouteContextOf<TMatches>,
 }
 
 export type GenericRoute = Url & {

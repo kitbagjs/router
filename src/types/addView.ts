@@ -129,12 +129,8 @@ type WithViewProps<
   TRoute extends Route,
   TNewProps
 > = Route<
-  TRoute['name'],
   Pick<TRoute, keyof Url>,
-  TRoute['meta'],
-  TRoute['state'],
   TRoute['matches'],
-  TRoute['context'],
   ReplaceLastViewProps<TRoute['views'], TNewProps>
 >
 
