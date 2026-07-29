@@ -26,5 +26,6 @@ export type PrefetchConfig = boolean | PrefetchStrategy | PrefetchConfigOptions
 export type PrefetchConfigs = {
   routerPrefetch?: PrefetchConfig,
   routePrefetch?: PrefetchConfig,
+  viewPrefetch?: PrefetchConfig,
   linkPrefetch?: PrefetchConfig,
 }

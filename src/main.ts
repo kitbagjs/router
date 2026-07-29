@@ -12,6 +12,7 @@ export type {
 } from './types/createRouteOptions'
 export type {
   RouteAddView,
+  AddViewOptions,
   AddViewPropsGetter,
   AddViewPropsCallbackContext
 } from './types/addView'

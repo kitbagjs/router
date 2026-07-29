@@ -104,13 +104,13 @@ export type CreateRouteOptions<
    * An optional component to render when this route is matched.
    *
    * @default RouterView
-   * @deprecated Use the chainable `addView` method on the route instead: `createRoute({ ... }).addView(component, props?)`.
+   * @deprecated Use the chainable `addView` method on the route instead: `createRoute({ ... }).addView(component, { props })`.
    */
   component?: Component,
   /**
    * An object of named components to render using named views
    *
-   * @deprecated Use the chainable `addView` method on the route instead: `createRoute({ ... }).addView(name, component, props?)`.
+   * @deprecated Use the chainable `addView` method on the route instead: `createRoute({ ... }).addView(component, { name, props })`.
    */
   components?: Record<string, Component>,
   /**

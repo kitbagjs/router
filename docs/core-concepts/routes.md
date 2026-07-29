@@ -98,9 +98,19 @@ const home = createRoute({
 .addView(HomeView)
 ```
 
+### Options
+
+Everything else about a view is passed in an options object as the second argument.
+
+| Option | Description |
+| ------ | ----------- |
+| name | Registers the view as a [named view](/components/router-view). Defaults to the unnamed view. |
+| props | A getter for the props bound to the component. **Required** when the component has required props. |
+| prefetch | What assets are prefetched for this view. Overrides the route's config for this view only. |
+
 ### Named Views
 
-Pass a name as the first argument to register a [named view](/components/router-view). A route can mix a default view with named views.
+Pass a `name` to register a [named view](/components/router-view). A route can mix a default view with named views.
 
 ```ts {8-9}
 import HomeView from './components/HomeView.vue'
@@ -111,12 +121,12 @@ const home = createRoute({
   path: '/',
 })
 .addView(HomeView)
-.addView('sidebar', HomeSidebar)
+.addView(HomeSidebar, { name: 'sidebar' })
 ```
 
 ### Props
 
-Pass a props getter as the last argument to bind props to the view's component. It's a callback that returns an object (or a promise of one); everything returned is bound to the component. See [Component Props](/core-concepts/component-props) for more details.
+Pass a `props` getter to bind props to the view's component. It's a callback that returns an object (or a promise of one); everything returned is bound to the component. See [Component Props](/core-concepts/component-props) for more details.
 
 ```ts {7}
 import UserView from './components/UserView.vue'
@@ -125,10 +135,10 @@ const user = createRoute({
   name: 'user',
   path: '/user/[id]',
 })
-.addView(UserView, (route) => ({ userId: route.params.id }))
+.addView(UserView, { props: (route) => ({ userId: route.params.id }) })
 ```
 
-The getter is **required** when the component has required props, and optional otherwise. For named views, pass the getter after the component.
+The getter is **required** when the component has required props, and optional otherwise.
 
 #### Arguments
 
@@ -142,6 +152,19 @@ The props callback receives two arguments:
 #### Return Type
 
 The props callback must return an object or a promise that resolves to an object. The object must satisfy the props for the component. If the component has required props, TypeScript will error until the getter returns a matching object.
+
+### Prefetch
+
+Pass a `prefetch` config to control what is prefetched for that view. It overrides the route's config for this view only, which is useful when a route has multiple views and only some are worth prefetching. See [Prefetching](/advanced-concepts/prefetching#per-view-configuration) for more details.
+
+```ts {6-7}
+const home = createRoute({
+  name: 'home',
+  path: '/',
+})
+.addView(HomeView, { prefetch: false })
+.addView(HomeSidebar, { name: 'sidebar', prefetch: 'eager' })
+```
 
 ## Component
 

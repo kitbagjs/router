@@ -712,6 +712,153 @@ describe('prefetch components', () => {
   })
 })
 
+describe('prefetch per view', () => {
+  test('only the views that opt into eager prefetching load their components', async () => {
+    const loaded: string[] = []
+
+    const asyncComponent = (name: string): ReturnType<typeof defineAsyncComponent> => defineAsyncComponent(() => {
+      return new Promise((resolve) => {
+        loaded.push(name)
+        resolve({ default: { template: name } })
+      })
+    })
+
+    const route = createRoute({
+      name: 'route',
+      path: '/route',
+    })
+      .addView(asyncComponent('default'))
+      .addView(asyncComponent('eager'), { name: 'eager', prefetch: 'eager' })
+      .addView(asyncComponent('disabled'), { name: 'disabled', prefetch: false })
+
+    const router = createRouter([route], {
+      initialUrl: '/',
+      prefetch: 'eager',
+    })
+
+    mount(RouterLink, {
+      props: {
+        to: '/route',
+      },
+      global: {
+        plugins: [router],
+      },
+    })
+
+    await flushPromises()
+
+    expect(loaded).toStrictEqual(['default', 'eager'])
+  })
+
+  test('a view config overrides the route config for that view only', async () => {
+    const loaded: string[] = []
+
+    const asyncComponent = (name: string): ReturnType<typeof defineAsyncComponent> => defineAsyncComponent(() => {
+      return new Promise((resolve) => {
+        loaded.push(name)
+        resolve({ default: { template: name } })
+      })
+    })
+
+    const route = createRoute({
+      name: 'route',
+      path: '/route',
+      prefetch: false,
+    })
+      .addView(asyncComponent('default'))
+      .addView(asyncComponent('eager'), { name: 'eager', prefetch: 'eager' })
+
+    const router = createRouter([route], {
+      initialUrl: '/',
+    })
+
+    mount(RouterLink, {
+      props: {
+        to: '/route',
+      },
+      global: {
+        plugins: [router],
+      },
+    })
+
+    await flushPromises()
+
+    expect(loaded).toStrictEqual(['eager'])
+  })
+
+  test('only the views that opt into props prefetching have their getters called', async () => {
+    const defaultProps = vi.fn(() => ({ value: 'default' }))
+    const eagerProps = vi.fn(() => ({ value: 'eager' }))
+
+    const home = createRoute({
+      name: 'home',
+      path: '/',
+    }).addView(() => h(RouterLink, { to: (resolve) => resolve('route') }))
+
+    const route = createRoute({
+      name: 'route',
+      path: '/route',
+    })
+      .addView(echo, { props: defaultProps })
+      .addView(echo, { name: 'eager', props: eagerProps, prefetch: { props: 'eager' } })
+
+    const router = createRouter([home, route], {
+      initialUrl: '/',
+    })
+
+    await router.start()
+
+    mount({ template: '<RouterView />' }, {
+      global: {
+        plugins: [router],
+      },
+    })
+
+    await flushPromises()
+
+    expect(eagerProps).toHaveBeenCalledOnce()
+    expect(defaultProps).not.toHaveBeenCalled()
+  })
+
+  test('a single view can mix component and props strategies', async () => {
+    let componentLoaded = false
+    const props = vi.fn(() => ({ value: 'value' }))
+
+    const home = createRoute({
+      name: 'home',
+      path: '/',
+    }).addView(() => h(RouterLink, { to: (resolve) => resolve('route') }))
+
+    const route = createRoute({
+      name: 'route',
+      path: '/route',
+    }).addView(defineAsyncComponent(() => {
+      return new Promise<typeof echo>((resolve) => {
+        componentLoaded = true
+        resolve(echo)
+      })
+    }), { props, prefetch: { components: 'eager', props: false } })
+
+    const router = createRouter([home, route], {
+      initialUrl: '/',
+      prefetch: { components: false, props: 'eager' },
+    })
+
+    await router.start()
+
+    mount({ template: '<RouterView />' }, {
+      global: {
+        plugins: [router],
+      },
+    })
+
+    await flushPromises()
+
+    expect(componentLoaded).toBe(true)
+    expect(props).not.toHaveBeenCalled()
+  })
+})
+
 describe('prefetch props', () => {
   test.each<PrefetchConfig | undefined>([
     undefined,
