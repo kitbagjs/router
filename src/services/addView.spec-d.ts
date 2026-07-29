@@ -14,7 +14,9 @@ describe('addView', () => {
     })
 
     test('optional props with a getter', () => {
-      const route = createRoute({ name: 'route' }).addView(component, { props: () => ({ foo: 'bar' }) })
+      const route = createRoute({ name: 'route' }).addView(component, {
+        props: () => ({ foo: 'bar' }),
+      })
 
       expectTypeOf<typeof route['views'][0]['props']>().toEqualTypeOf<() => { foo: string }>()
     })
@@ -28,21 +30,27 @@ describe('addView', () => {
 
     test('required props missing getter', () => {
       // @ts-expect-error should require a props getter
-      const route = createRoute({ name: 'route' }).addView(echo, { prefetch: false })
+      const route = createRoute({ name: 'route' }).addView(echo, {
+        prefetch: false,
+      })
 
       expectTypeOf<typeof route['views'][0]['props']>().toEqualTypeOf<undefined>()
     })
 
     test('required props with a getter', () => {
-      const route = createRoute({ name: 'route' }).addView(echo, { props: () => ({ value: 'bar', extra: true }) })
+      const route = createRoute({ name: 'route' }).addView(echo, {
+        props: () => ({ value: 'bar', extra: true }),
+      })
 
       expectTypeOf<typeof route['views'][0]['props']>().toEqualTypeOf<() => { value: string, extra: boolean }>()
     })
 
     test('required props with a getter with incorrect type', () => {
       const route = createRoute({ name: 'route' })
-        // @ts-expect-error should not accept incorrect type
-        .addView(echo, { props: () => ({ value: true }) })
+        .addView(echo, {
+          // @ts-expect-error should not accept incorrect type
+          props: () => ({ value: true }),
+        })
 
       expectTypeOf<typeof route['views'][0]['props']>().toEqualTypeOf<undefined>()
     })
@@ -50,19 +58,27 @@ describe('addView', () => {
 
   describe('named view', () => {
     test('optional props without a getter is a props no-op', () => {
-      const route = createRoute({ name: 'route' }).addView(component, { name: 'sidebar' })
+      const route = createRoute({ name: 'route' }).addView(component, {
+        name: 'sidebar',
+      })
 
       expectTypeOf<typeof route['views'][0]['props']>().toEqualTypeOf<undefined>()
     })
 
     test('optional props with a getter produces a record', () => {
-      const route = createRoute({ name: 'route' }).addView(component, { name: 'sidebar', props: () => ({ foo: 'bar' }) })
+      const route = createRoute({ name: 'route' }).addView(component, {
+        name: 'sidebar',
+        props: () => ({ foo: 'bar' }),
+      })
 
       expectTypeOf<typeof route['views'][0]['props']>().toEqualTypeOf<{ sidebar: () => { foo: string } }>()
     })
 
     test('required props with a getter produces a record', () => {
-      const route = createRoute({ name: 'route' }).addView(echo, { name: 'sidebar', props: () => ({ value: 'bar', extra: true }) })
+      const route = createRoute({ name: 'route' }).addView(echo, {
+        name: 'sidebar',
+        props: () => ({ value: 'bar', extra: true }),
+      })
 
       expectTypeOf<typeof route['views'][0]['props']>().toEqualTypeOf<{ sidebar: () => { value: string, extra: boolean } }>()
     })
@@ -70,41 +86,59 @@ describe('addView', () => {
 
   describe('prefetch', () => {
     test('prefetch alongside a getter preserves the props type', () => {
-      const route = createRoute({ name: 'route' }).addView(component, { props: () => ({ foo: 'bar' }), prefetch: 'eager' })
+      const route = createRoute({ name: 'route' }).addView(component, {
+        props: () => ({ foo: 'bar' }),
+        prefetch: 'eager',
+      })
 
       expectTypeOf<typeof route['views'][0]['props']>().toEqualTypeOf<() => { foo: string }>()
     })
 
     test('prefetch without a getter is a props no-op', () => {
-      const route = createRoute({ name: 'route' }).addView(component, { prefetch: false })
+      const route = createRoute({ name: 'route' }).addView(component, {
+        prefetch: false,
+      })
 
       expectTypeOf<typeof route['views'][0]['props']>().toEqualTypeOf<undefined>()
     })
 
     test('a named view with a getter and prefetch produces a record', () => {
       const route = createRoute({ name: 'route' })
-        .addView(component, { name: 'sidebar', props: () => ({ foo: 'bar' }), prefetch: 'eager' })
+        .addView(component, {
+          name: 'sidebar',
+          props: () => ({ foo: 'bar' }),
+          prefetch: 'eager',
+        })
 
       expectTypeOf<typeof route['views'][0]['props']>().toEqualTypeOf<{ sidebar: () => { foo: string } }>()
     })
 
     test('a named view with prefetch and no getter is a props no-op', () => {
-      const route = createRoute({ name: 'route' }).addView(component, { name: 'sidebar', prefetch: 'eager' })
+      const route = createRoute({ name: 'route' }).addView(component, {
+        name: 'sidebar',
+        prefetch: 'eager',
+      })
 
       expectTypeOf<typeof route['views'][0]['props']>().toEqualTypeOf<undefined>()
     })
 
     test('required props with a getter and prefetch', () => {
       const route = createRoute({ name: 'route' })
-        .addView(echo, { props: () => ({ value: 'bar', extra: true }), prefetch: 'intent' })
+        .addView(echo, {
+          props: () => ({ value: 'bar', extra: true }),
+          prefetch: 'intent',
+        })
 
       expectTypeOf<typeof route['views'][0]['props']>().toEqualTypeOf<() => { value: string, extra: boolean }>()
     })
 
     test('a getter alongside prefetch is still checked against the component props', () => {
       createRoute({ name: 'route' })
-        // @ts-expect-error should not accept incorrect type
-        .addView(echo, { props: () => ({ value: true }), prefetch: false })
+        .addView(echo, {
+          // @ts-expect-error should not accept incorrect type
+          props: () => ({ value: true }),
+          prefetch: false,
+        })
     })
 
     test('a getter alongside prefetch still receives the resolved route with typed params', () => {
@@ -119,36 +153,59 @@ describe('addView', () => {
     })
 
     test('accepts a boolean, a strategy, or a config object', () => {
-      createRoute({ name: 'route' }).addView(component, { prefetch: true })
-      createRoute({ name: 'route' }).addView(component, { prefetch: 'lazy' })
-      createRoute({ name: 'route' }).addView(component, { prefetch: { components: 'eager', props: false } })
+      createRoute({ name: 'route' }).addView(component, {
+        prefetch: true,
+      })
+      createRoute({ name: 'route' }).addView(component, {
+        prefetch: 'lazy',
+      })
+      createRoute({ name: 'route' }).addView(component, {
+        prefetch: { components: 'eager', props: false },
+      })
 
-      // @ts-expect-error should not accept an unknown strategy
-      createRoute({ name: 'route' }).addView(component, { prefetch: 'whenever' })
+      createRoute({ name: 'route' }).addView(component, {
+        // @ts-expect-error should not accept an unknown strategy
+        prefetch: 'whenever',
+      })
 
-      // @ts-expect-error should not accept an unknown config option
-      createRoute({ name: 'route' }).addView(component, { prefetch: { styles: true } })
+      createRoute({ name: 'route' }).addView(component, {
+        // @ts-expect-error should not accept an unknown config option
+        prefetch: { styles: true },
+      })
     })
 
     test('unknown options are rejected', () => {
-      // @ts-expect-error should not accept an unknown option
-      createRoute({ name: 'route' }).addView(component, { prefetching: true })
+      createRoute({ name: 'route' }).addView(component, {
+        // @ts-expect-error should not accept an unknown option
+        prefetching: true,
+      })
     })
   })
 
   describe('multiple views', () => {
     test('default then named promotes to a record with the default under "default"', () => {
       const route = createRoute({ name: 'route' })
-        .addView(component, { props: () => ({ foo: 'bar' }) })
-        .addView(component, { name: 'sidebar', props: () => ({ baz: 1 }) })
+        .addView(component, {
+          props: () => ({ foo: 'bar' }),
+        })
+        .addView(component, {
+          name: 'sidebar',
+          props: () => ({ baz: 1 }),
+        })
 
       expectTypeOf<typeof route['views'][0]['props']>().toEqualTypeOf<{ default: () => { foo: string }, sidebar: () => { baz: number } }>()
     })
 
     test('two named views produce a record', () => {
       const route = createRoute({ name: 'route' })
-        .addView(component, { name: 'one', props: () => ({ foo: 'bar' }) })
-        .addView(component, { name: 'two', props: () => ({ baz: 1 }) })
+        .addView(component, {
+          name: 'one',
+          props: () => ({ foo: 'bar' }),
+        })
+        .addView(component, {
+          name: 'two',
+          props: () => ({ baz: 1 }),
+        })
 
       expectTypeOf<typeof route['views'][0]['props']>().toEqualTypeOf<{ one: () => { foo: string }, two: () => { baz: number } }>()
     })
@@ -157,7 +214,10 @@ describe('addView', () => {
   describe('backwards compatibility', () => {
     test('addView merges with the deprecated component + props options', () => {
       const route = createRoute({ name: 'route', component }, () => ({ foo: 'bar' }))
-        .addView(component, { name: 'sidebar', props: () => ({ baz: 1 }) })
+        .addView(component, {
+          name: 'sidebar',
+          props: () => ({ baz: 1 }),
+        })
 
       expectTypeOf<typeof route['views'][0]['props']>().toEqualTypeOf<{ default: () => { foo: string }, sidebar: () => { baz: number } }>()
     })
@@ -165,7 +225,9 @@ describe('addView', () => {
 
   describe('parent props', () => {
     test('bare parent props (added via addView) are passed to a child', () => {
-      const parent = createRoute({ name: 'parent' }).addView(component, { props: () => ({ foo: 123 }) })
+      const parent = createRoute({ name: 'parent' }).addView(component, {
+        props: () => ({ foo: 123 }),
+      })
 
       createRoute({ name: 'child', parent }, (__, { parent }) => {
         expectTypeOf(parent.props).toEqualTypeOf<{ foo: number }>()
@@ -177,8 +239,14 @@ describe('addView', () => {
 
     test('record parent props (added via addView) are passed to a child', () => {
       const parent = createRoute({ name: 'parent' })
-        .addView(component, { name: 'one', props: () => ({ foo: 123 }) })
-        .addView(component, { name: 'two', props: async () => ({ foo: 456 }) })
+        .addView(component, {
+          name: 'one',
+          props: () => ({ foo: 123 }),
+        })
+        .addView(component, {
+          name: 'two',
+          props: async () => ({ foo: 456 }),
+        })
 
       createRoute({ name: 'child', parent }, (__, { parent }) => {
         expectTypeOf(parent.props).toEqualTypeOf<{
@@ -264,7 +332,9 @@ describe('addView', () => {
       expectTypeOf(route.redirectTo).toBeFunction()
       expectTypeOf(route.setTitle).toBeFunction()
 
-      route.addView(component, { name: 'sidebar' }).onBeforeRouteEnter((to) => {
+      route.addView(component, {
+        name: 'sidebar',
+      }).onBeforeRouteEnter((to) => {
         expectTypeOf(to.params.paramName).toEqualTypeOf<string>()
       })
     })

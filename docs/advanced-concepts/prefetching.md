@@ -156,10 +156,6 @@ const user = createRoute({
 
 Views without their own config fall back to the route's config.
 
-::: warning
-Props for a view can only reference parent props that were also prefetched. If a child view prefetches props but its parent view does not, the parent props will be unavailable during prefetching and a warning is logged.
-:::
-
 ### Per-Link Configuration
 
 You can also control prefetching at the level of individual router-links by passing a prefetch prop.

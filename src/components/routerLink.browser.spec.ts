@@ -728,8 +728,14 @@ describe('prefetch per view', () => {
       path: '/route',
     })
       .addView(asyncComponent('default'))
-      .addView(asyncComponent('eager'), { name: 'eager', prefetch: 'eager' })
-      .addView(asyncComponent('disabled'), { name: 'disabled', prefetch: false })
+      .addView(asyncComponent('eager'), {
+        name: 'eager',
+        prefetch: 'eager',
+      })
+      .addView(asyncComponent('disabled'), {
+        name: 'disabled',
+        prefetch: false,
+      })
 
     const router = createRouter([route], {
       initialUrl: '/',
@@ -766,7 +772,10 @@ describe('prefetch per view', () => {
       prefetch: false,
     })
       .addView(asyncComponent('default'))
-      .addView(asyncComponent('eager'), { name: 'eager', prefetch: 'eager' })
+      .addView(asyncComponent('eager'), {
+        name: 'eager',
+        prefetch: 'eager',
+      })
 
     const router = createRouter([route], {
       initialUrl: '/',
@@ -799,8 +808,14 @@ describe('prefetch per view', () => {
       name: 'route',
       path: '/route',
     })
-      .addView(echo, { props: defaultProps })
-      .addView(echo, { name: 'eager', props: eagerProps, prefetch: { props: 'eager' } })
+      .addView(echo, {
+        props: defaultProps,
+      })
+      .addView(echo, {
+        name: 'eager',
+        props: eagerProps,
+        prefetch: { props: 'eager' },
+      })
 
     const router = createRouter([home, route], {
       initialUrl: '/',

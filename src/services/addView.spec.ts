@@ -17,7 +17,9 @@ describe('components', () => {
   })
 
   test('a named view is stored under its name', () => {
-    const route = createRoute({ name: 'route' }).addView(component, { name: 'sidebar' })
+    const route = createRoute({ name: 'route' }).addView(component, {
+      name: 'sidebar',
+    })
 
     expect(lastView(route).components).toStrictEqual({ sidebar: component })
   })
@@ -25,7 +27,9 @@ describe('components', () => {
   test('multiple views accumulate in the same views entry', () => {
     const route = createRoute({ name: 'route' })
       .addView(component)
-      .addView(other, { name: 'sidebar' })
+      .addView(other, {
+        name: 'sidebar',
+      })
 
     expect(lastView(route).components).toStrictEqual({ default: component, sidebar: other })
   })
@@ -34,7 +38,9 @@ describe('components', () => {
 describe('props', () => {
   test('a lone default view getter is stored as bare props', () => {
     const getter = (): { foo: string } => ({ foo: 'bar' })
-    const route = createRoute({ name: 'route' }).addView(component, { props: getter })
+    const route = createRoute({ name: 'route' }).addView(component, {
+      props: getter,
+    })
 
     expect(lastView(route).props).toBe(getter)
   })
@@ -50,8 +56,13 @@ describe('props', () => {
     const sidebarGetter = (): { baz: number } => ({ baz: 1 })
 
     const route = createRoute({ name: 'route' })
-      .addView(component, { props: defaultGetter })
-      .addView(other, { name: 'sidebar', props: sidebarGetter })
+      .addView(component, {
+        props: defaultGetter,
+      })
+      .addView(other, {
+        name: 'sidebar',
+        props: sidebarGetter,
+      })
 
     expect(lastView(route).props).toStrictEqual({ default: defaultGetter, sidebar: sidebarGetter })
   })
@@ -59,7 +70,9 @@ describe('props', () => {
 
 describe('prefetch', () => {
   test('prefetch is stored under the view name', () => {
-    const route = createRoute({ name: 'route' }).addView(component, { prefetch: false })
+    const route = createRoute({ name: 'route' }).addView(component, {
+      prefetch: false,
+    })
 
     expect(lastView(route).prefetch).toStrictEqual({ default: false })
     expect(lastView(route).props).toBeUndefined()
@@ -67,21 +80,31 @@ describe('prefetch', () => {
 
   test('prefetch is stored alongside a props getter', () => {
     const getter = (): { foo: string } => ({ foo: 'bar' })
-    const route = createRoute({ name: 'route' }).addView(component, { props: getter, prefetch: 'eager' })
+    const route = createRoute({ name: 'route' }).addView(component, {
+      props: getter,
+      prefetch: 'eager',
+    })
 
     expect(lastView(route).props).toBe(getter)
     expect(lastView(route).prefetch).toStrictEqual({ default: 'eager' })
   })
 
   test('prefetch is stored under a named view name', () => {
-    const route = createRoute({ name: 'route' }).addView(component, { name: 'sidebar', prefetch: 'eager' })
+    const route = createRoute({ name: 'route' }).addView(component, {
+      name: 'sidebar',
+      prefetch: 'eager',
+    })
 
     expect(lastView(route).prefetch).toStrictEqual({ sidebar: 'eager' })
   })
 
   test('prefetch is stored alongside a named view props getter', () => {
     const getter = (): { foo: string } => ({ foo: 'bar' })
-    const route = createRoute({ name: 'route' }).addView(component, { name: 'sidebar', props: getter, prefetch: 'intent' })
+    const route = createRoute({ name: 'route' }).addView(component, {
+      name: 'sidebar',
+      props: getter,
+      prefetch: 'intent',
+    })
 
     expect(lastView(route).props).toStrictEqual({ sidebar: getter })
     expect(lastView(route).prefetch).toStrictEqual({ sidebar: 'intent' })
@@ -89,8 +112,13 @@ describe('prefetch', () => {
 
   test('each view keeps its own prefetch config', () => {
     const route = createRoute({ name: 'route' })
-      .addView(component, { prefetch: { components: 'eager', props: false } })
-      .addView(other, { name: 'sidebar', prefetch: false })
+      .addView(component, {
+        prefetch: { components: 'eager', props: false },
+      })
+      .addView(other, {
+        name: 'sidebar',
+        prefetch: false,
+      })
 
     expect(lastView(route).prefetch).toStrictEqual({
       default: { components: 'eager', props: false },
@@ -101,7 +129,10 @@ describe('prefetch', () => {
   test('views without a prefetch config are left absent', () => {
     const route = createRoute({ name: 'route' })
       .addView(component)
-      .addView(other, { name: 'sidebar', prefetch: 'intent' })
+      .addView(other, {
+        name: 'sidebar',
+        prefetch: 'intent',
+      })
 
     expect(lastView(route).prefetch).toStrictEqual({ sidebar: 'intent' })
   })
@@ -113,7 +144,10 @@ describe('backwards compatibility', () => {
     const sidebarGetter = (): { baz: number } => ({ baz: 1 })
 
     const route = createRoute({ name: 'route', component }, defaultGetter)
-      .addView(other, { name: 'sidebar', props: sidebarGetter })
+      .addView(other, {
+        name: 'sidebar',
+        props: sidebarGetter,
+      })
 
     expect(lastView(route).components).toStrictEqual({ default: component, sidebar: other })
     expect(lastView(route).props).toStrictEqual({ default: defaultGetter, sidebar: sidebarGetter })

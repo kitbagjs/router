@@ -2,12 +2,14 @@
 
 With Kitbag Router, you can pass a `props` getter in the options when adding a view with [`addView`](/core-concepts/routes#views). Your callback is given the [`ResolvedRoute`](/api/types/ResolvedRoute) for the route and what it returns will be bound to the component when the component gets mounted inside the `<router-view />`
 
-```ts {5}
+```ts {5-7}
 const user = createRoute({
   name: 'user',
   path: '/user/[id]',
 })
-.addView(UserComponent, { props: (route) => ({ userId: route.params.id }) })
+.addView(UserComponent, {
+  props: (route) => ({ userId: route.params.id }),
+})
 ```
 
 This is obviously useful for assigning static values or route params down to your view components props but it also gives you
@@ -19,13 +21,18 @@ This is obviously useful for assigning static values or route params down to you
 ## Named Views
 Each [named view](/core-concepts/routes#named-views) can have its own props getter. Just pass a `props` getter alongside the view's `name`.
 
-```ts {5-6}
+```ts {5-11}
 const user = createRoute({
   name: 'user',
   path: '/user/[id]',
 })
-.addView(UserComponent, { props: (route) => ({ userId: route.params.id }) })
-.addView(UserSidebarComponent, { name: 'sidebar', props: (route) => ({ userId: route.params.id }) })
+.addView(UserComponent, {
+  props: (route) => ({ userId: route.params.id }),
+})
+.addView(UserSidebarComponent, {
+  name: 'sidebar',
+  props: (route) => ({ userId: route.params.id }),
+})
 ```
 
 ## Params Type

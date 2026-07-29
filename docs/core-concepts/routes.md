@@ -112,7 +112,7 @@ Everything else about a view is passed in an options object as the second argume
 
 Pass a `name` to register a [named view](/components/router-view). A route can mix a default view with named views.
 
-```ts {8-9}
+```ts {8-11}
 import HomeView from './components/HomeView.vue'
 import HomeSidebar from './components/HomeSidebar.vue'
 
@@ -121,21 +121,25 @@ const home = createRoute({
   path: '/',
 })
 .addView(HomeView)
-.addView(HomeSidebar, { name: 'sidebar' })
+.addView(HomeSidebar, {
+  name: 'sidebar',
+})
 ```
 
 ### Props
 
 Pass a `props` getter to bind props to the view's component. It's a callback that returns an object (or a promise of one); everything returned is bound to the component. See [Component Props](/core-concepts/component-props) for more details.
 
-```ts {7}
+```ts {7-9}
 import UserView from './components/UserView.vue'
 
 const user = createRoute({
   name: 'user',
   path: '/user/[id]',
 })
-.addView(UserView, { props: (route) => ({ userId: route.params.id }) })
+.addView(UserView, {
+  props: (route) => ({ userId: route.params.id }),
+})
 ```
 
 The getter is **required** when the component has required props, and optional otherwise.
@@ -157,13 +161,18 @@ The props callback must return an object or a promise that resolves to an object
 
 Pass a `prefetch` config to control what is prefetched for that view. It overrides the route's config for this view only, which is useful when a route has multiple views and only some are worth prefetching. See [Prefetching](/advanced-concepts/prefetching#per-view-configuration) for more details.
 
-```ts {6-7}
+```ts {5-11}
 const home = createRoute({
   name: 'home',
   path: '/',
 })
-.addView(HomeView, { prefetch: false })
-.addView(HomeSidebar, { name: 'sidebar', prefetch: 'eager' })
+.addView(HomeView, {
+  prefetch: false,
+})
+.addView(HomeSidebar, {
+  name: 'sidebar',
+  prefetch: 'eager',
+})
 ```
 
 ## Component

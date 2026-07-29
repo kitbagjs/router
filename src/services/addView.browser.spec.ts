@@ -21,8 +21,12 @@ test('renders the default view added via addView', async () => {
 test('renders default and named views added via addView', async () => {
   const route = createRoute({ name: 'route', path: '/' })
     .addView({ template: '_default_' })
-    .addView({ template: '_one_' }, { name: 'one' })
-    .addView({ template: '_two_' }, { name: 'two' })
+    .addView({ template: '_one_' }, {
+      name: 'one',
+    })
+    .addView({ template: '_two_' }, {
+      name: 'two',
+    })
 
   const router = createRouter([route], { initialUrl: '/' })
 
@@ -42,7 +46,9 @@ test('renders default and named views added via addView', async () => {
 })
 
 test('binds props from an addView getter for the default view', async () => {
-  const route = createRoute({ name: 'route', path: '/[param]' }).addView(echo, { props: (route) => ({ value: route.params.param }) })
+  const route = createRoute({ name: 'route', path: '/[param]' }).addView(echo, {
+    props: (route) => ({ value: route.params.param }),
+  })
 
   const router = createRouter([route], { initialUrl: '/hello' })
 
@@ -57,8 +63,14 @@ test('binds props from an addView getter for the default view', async () => {
 
 test('binds props to named views added via addView', async () => {
   const route = createRoute({ name: 'route', path: '/[param]' })
-    .addView(echo, { name: 'one', props: (route) => ({ value: `one-${route.params.param}` }) })
-    .addView(echo, { name: 'two', props: (route) => ({ value: `two-${route.params.param}` }) })
+    .addView(echo, {
+      name: 'one',
+      props: (route) => ({ value: `one-${route.params.param}` }),
+    })
+    .addView(echo, {
+      name: 'two',
+      props: (route) => ({ value: `two-${route.params.param}` }),
+    })
 
   const router = createRouter([route], { initialUrl: '/x' })
 
