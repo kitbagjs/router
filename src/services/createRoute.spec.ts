@@ -219,6 +219,46 @@ describe('props', () => {
     expect(spy).toHaveBeenCalledWith({ name: 'parent', props: undefined })
   })
 
+  test('each depth is given its own parent context, not the resolved route\'s parent', async () => {
+    const seen: unknown[] = []
+
+    const grandparent = createRoute({
+      name: 'grandparent',
+      path: '/grandparent',
+    }, () => ({ level: 'grandparent' }))
+
+    const parent = createRoute({
+      name: 'parent',
+      parent: grandparent,
+      path: '/parent',
+    }, (__, { parent }) => {
+      seen.push({ self: 'parent', parentName: parent.name, parentProps: parent.props })
+
+      return { level: 'parent' }
+    })
+
+    const child = createRoute({
+      name: 'child',
+      parent,
+      path: '/child',
+    }, (__, { parent }) => {
+      seen.push({ self: 'child', parentName: parent.name, parentProps: parent.props })
+
+      return { level: 'child' }
+    })
+
+    const router = createRouter([child], {
+      initialUrl: '/grandparent/parent/child',
+    })
+
+    await router.start()
+
+    expect(seen).toStrictEqual([
+      { self: 'parent', parentName: 'grandparent', parentProps: { level: 'grandparent' } },
+      { self: 'child', parentName: 'parent', parentProps: { level: 'parent' } },
+    ])
+  })
+
   test('sync parent props are passed to child props', async () => {
     const spy = vi.fn()
 
