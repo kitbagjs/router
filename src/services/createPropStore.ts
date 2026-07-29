@@ -12,7 +12,7 @@ import { createVueAppStore, HasVueAppStore } from './createVueAppStore'
 import { CallbackContextPush, CallbackContextReject, CallbackContextSuccess } from '@/types/callbackContext'
 import { createRouterCallbackContext } from './createRouterCallbackContext'
 
-type ComponentProps = { id: string, name: string, props?: PropsGetter }
+type ComponentProps = { id: string, name: string, depth: number, props?: PropsGetter }
 
 type SetPropsResponse = CallbackContextSuccess | CallbackContextPush | CallbackContextReject
 
@@ -31,15 +31,15 @@ export function createPropStore(): PropStore {
     const { push, replace, reject, update } = createRouterCallbackContext({ to: route })
 
     return route.matches
-      .map((match, index) => ({ match, views: route.views[index] }))
-      .flatMap(({ match, views }) => getComponentProps(views).map((componentProps) => ({ match, views, componentProps })))
+      .map((match, index) => ({ match, views: route.views[index], depth: index }))
+      .flatMap(({ match, views, depth }) => getComponentProps(views, depth).map((componentProps) => ({ match, views, componentProps })))
       .filter(({ match, views, componentProps }) => getPrefetchOption({
         ...prefetch,
         routePrefetch: match.prefetch,
         viewPrefetch: views.prefetch?.[componentProps.name],
       }, 'props') === strategy)
       .map(({ componentProps }) => componentProps)
-      .reduce<Record<string, unknown>>((response, { id, name, props }) => {
+      .reduce<Record<string, unknown>>((response, { id, name, depth, props }) => {
         if (!props) {
           return response
         }
@@ -50,7 +50,7 @@ export function createPropStore(): PropStore {
           replace,
           reject,
           update,
-          parent: getParentContext(route, true),
+          parent: getParentContext(route, depth, true),
         })))
 
         response[key] = value
@@ -67,11 +67,11 @@ export function createPropStore(): PropStore {
 
   const setProps: PropStore['setProps'] = async (route) => {
     const { push, replace, reject, update } = createRouterCallbackContext({ to: route })
-    const componentProps = route.views.flatMap(getComponentProps)
+    const componentProps = route.views.flatMap((views, depth) => getComponentProps(views, depth))
     const keys: string[] = []
     const promises: Promise<unknown>[] = []
 
-    for (const { id, name, props } of componentProps) {
+    for (const { id, name, depth, props } of componentProps) {
       if (!props) {
         continue
       }
@@ -86,7 +86,7 @@ export function createPropStore(): PropStore {
           replace,
           reject,
           update,
-          parent: getParentContext(route),
+          parent: getParentContext(route, depth),
         })))
 
         store.set(key, value)
@@ -126,13 +126,17 @@ export function createPropStore(): PropStore {
     return store.get(key)
   }
 
-  function getParentContext(route: ResolvedRoute, prefetch: boolean = false): PropsCallbackParent {
-    const parentMatch = route.matches.at(-2)
-    const parentViews = route.views.at(-2)
-
-    if (!parentMatch || !parentViews) {
+  /**
+   * The parent context for the view at the given depth. Must be resolved per depth rather than from the
+   * end of the tuples: every view in a nested route gets its own parent, not the resolved route's parent.
+   */
+  function getParentContext(route: ResolvedRoute, depth: number, prefetch: boolean = false): PropsCallbackParent {
+    if (depth === 0) {
       return
     }
+
+    const parentMatch = route.matches[depth - 1]
+    const parentViews = route.views[depth - 1]
 
     const name = parentMatch.name ?? ''
 
@@ -185,19 +189,20 @@ export function createPropStore(): PropStore {
     return [id, name, route.id, JSON.stringify(route.params)].join('-')
   }
 
-  function getComponentProps(views: RouteViews): ComponentProps[] {
+  function getComponentProps(views: RouteViews, depth: number): ComponentProps[] {
     if (isWithComponentProps(views)) {
       return [
         {
           id: views.id,
           name: 'default',
+          depth,
           props: views.props,
         },
       ]
     }
 
     if (isWithComponentPropsRecord(views)) {
-      return Object.entries(views.props).map(([name, props]) => ({ id: views.id, name, props }))
+      return Object.entries(views.props).map(([name, props]) => ({ id: views.id, name, depth, props }))
     }
 
     return []
