@@ -8,8 +8,8 @@ test('route with title updates document title', async () => {
   const route = createRoute({
     name: 'root',
     path: '/',
-    component,
   })
+    .addView(component)
 
   const title = 'foo'
   const callback = vi.fn(() => title)
@@ -32,17 +32,17 @@ test('route with title and parent with title does not call parent getTitle', asy
   const parent = createRoute({
     name: 'parent',
     path: '/parent',
-    component,
   })
+    .addView(component)
   const parentGetTitle = vi.fn(() => 'parent')
   parent.setTitle(parentGetTitle)
 
   const child = createRoute({
     name: 'child',
     path: '/child',
-    component,
     parent,
   })
+    .addView(component)
 
   const childGetTitle = vi.fn(() => 'child')
   child.setTitle(childGetTitle)
@@ -64,8 +64,8 @@ test('route with title and parent with title does call parent getTitle when call
   const parent = createRoute({
     name: 'parent',
     path: '/parent',
-    component,
   })
+    .addView(component)
 
   const parentGetTitle = vi.fn(() => 'parent')
   parent.setTitle(parentGetTitle)
@@ -73,9 +73,9 @@ test('route with title and parent with title does call parent getTitle when call
   const child = createRoute({
     name: 'child',
     path: '/child',
-    component,
     parent,
   })
+    .addView(component)
 
   const childGetTitle = vi.fn(async (_to, { getParentTitle }) => {
     const parentTitle = await getParentTitle()
@@ -101,8 +101,8 @@ test('route with title and parent with title does call parent getTitle when call
   const parent = createRoute({
     name: 'parent',
     path: '/parent',
-    component,
   })
+    .addView(component)
 
   const parentGetTitle = vi.fn(() => 'parent')
   parent.setTitle(parentGetTitle)
@@ -110,16 +110,16 @@ test('route with title and parent with title does call parent getTitle when call
   const child = createRoute({
     name: 'child',
     path: '/child',
-    component,
     parent,
   })
+    .addView(component)
 
   const grandchild = createRoute({
     name: 'grandchild',
     path: '/grandchild',
-    component,
     parent: child,
   })
+    .addView(component)
 
   const grandchildGetTitle = vi.fn(async (_to, { getParentTitle }) => {
     const parentTitle = await getParentTitle()
@@ -145,17 +145,17 @@ test('route without title and parent with title updates document title', async (
   const parent = createRoute({
     name: 'parent',
     path: '/parent',
-    component,
   })
+    .addView(component)
 
   parent.setTitle(() => 'parent')
 
   const child = createRoute({
     name: 'child',
     path: '/child',
-    component,
     parent,
   })
+    .addView(component)
 
   const router = createRouter([parent, child], {
     initialUrl: '/parent/child',

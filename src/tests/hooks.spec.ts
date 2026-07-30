@@ -14,8 +14,8 @@ test('hooks are run with the correct context', async () => {
   const route = createRoute({
     path: '/',
     name: 'route',
-    component: echo,
-  }, () => ({ value: 'hello' }))
+  })
+    .addView(echo, { props: () => ({ value: 'hello' }) })
 
   route.onBeforeRouteEnter(() => {
     const value = inject('global')

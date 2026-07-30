@@ -13,7 +13,8 @@ test('given a plugin, adds the routes to the router', async () => {
   })
 
   const plugin = createRouterPlugin({
-    routes: [createRoute({ name: 'plugin', path: '/plugin', component })],
+    routes: [createRoute({ name: 'plugin', path: '/plugin' })
+      .addView(component)],
     rejections: [pluginRejection],
   })
 

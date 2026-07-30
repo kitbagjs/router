@@ -9,9 +9,12 @@ test('given routes without names, removes routes from response', () => {
 
   const { routes } = getRoutesForRouter([
     foo,
-    createRoute({ component, name: '' }),
-    createRoute({ component, name: undefined }),
-    createRoute({ component }),
+    createRoute({ name: '' })
+      .addView(component),
+    createRoute({ name: undefined })
+      .addView(component),
+    createRoute({})
+      .addView(component),
   ])
 
   expect(routes).toMatchObject([foo])
@@ -25,7 +28,8 @@ test('given named routes inside plugins, includes them in the response', () => {
         pluginFoo,
         createRoute({ name: '' }),
         createRoute({ name: undefined }),
-        createRoute({ component }),
+        createRoute({})
+          .addView(component),
       ],
     }),
   ]

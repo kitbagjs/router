@@ -1,6 +1,6 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { describe, expect, test, vi } from 'vitest'
-import { defineAsyncComponent, h, nextTick, ref } from 'vue'
+import { Component, defineAsyncComponent, h, nextTick, ref } from 'vue'
 import echo from '@/components/echo'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
@@ -22,8 +22,8 @@ test('renders an anchor tag with the correct href and slot content', () => {
   const route = createRoute({
     name: 'parent',
     path,
-    component,
   })
+    .addView(component)
 
   const router = createRouter([route], {
     initialUrl: path,
@@ -64,13 +64,13 @@ test('calls router.push with url and push options from props', async () => {
     createRoute({
       name: 'routeA',
       path: '/routeA',
-      component: { render: () => h(RouterLink, { to: (resolve) => resolve('routeB'), ...propOptions }) },
-    }),
+    })
+      .addView({ render: () => h(RouterLink, { to: (resolve) => resolve('routeB'), ...propOptions }) }),
     createRoute({
       name: 'routeB',
       path: '/routeB',
-      component,
-    }),
+    })
+      .addView(component),
   ], {
     initialUrl: '/routeA',
   })
@@ -120,16 +120,16 @@ test('calls router.push with url and push options from resolve callback', async 
     createRoute({
       name: 'routeA',
       path: '/routeA',
-      component: { render: () => h(RouterLink, { to: (resolve) => resolve('routeB', {}, resolveOptions) }) },
-    }),
+    })
+      .addView({ render: () => h(RouterLink, { to: (resolve) => resolve('routeB', {}, resolveOptions) }) }),
     createRoute({
       name: 'routeB',
       path: '/routeB',
       state: {
         zoo: String,
       },
-      component,
-    }),
+    })
+      .addView(component),
   ], {
     initialUrl: '/routeA',
   })
@@ -180,8 +180,8 @@ test('given push options from both resolve callback and props, combines query an
     createRoute({
       name: 'routeA',
       path: '/routeA',
-      component: { render: () => h(RouterLink, { to: (resolve) => resolve('routeB', {}, resolveOptions), ...propOptions }) },
-    }),
+    })
+      .addView({ render: () => h(RouterLink, { to: (resolve) => resolve('routeB', {}, resolveOptions), ...propOptions }) }),
     createRoute({
       name: 'routeB',
       path: '/routeB',
@@ -189,8 +189,8 @@ test('given push options from both resolve callback and props, combines query an
         prop: String,
         resolve: String,
       },
-      component,
-    }),
+    })
+      .addView(component),
   ], {
     initialUrl: '/routeA',
   })
@@ -229,13 +229,13 @@ test.each([
     createRoute({
       name: 'routeA',
       path: '/routeA',
-      component: { render: () => h(RouterLink, { to: (resolve) => resolve('routeB') }) },
-    }),
+    })
+      .addView({ render: () => h(RouterLink, { to: (resolve) => resolve('routeB') }) }),
     createRoute({
       name: 'routeB',
       path: '/routeB',
-      component,
-    }),
+    })
+      .addView(component),
   ], {
     initialUrl: '/routeA',
   })
@@ -264,13 +264,13 @@ test('does not call router.push when middle mouse button is clicked', async () =
     createRoute({
       name: 'routeA',
       path: '/routeA',
-      component: { render: () => h(RouterLink, { to: (resolve) => resolve('routeB') }) },
-    }),
+    })
+      .addView({ render: () => h(RouterLink, { to: (resolve) => resolve('routeB') }) }),
     createRoute({
       name: 'routeB',
       path: '/routeB',
-      component,
-    }),
+    })
+      .addView(component),
   ], {
     initialUrl: '/routeA',
   })
@@ -299,13 +299,13 @@ test('does not call router.push when anchor has target="_blank"', async () => {
     createRoute({
       name: 'routeA',
       path: '/routeA',
-      component: { render: () => h(RouterLink, { to: (resolve) => resolve('routeB'), target: '_blank' }) },
-    }),
+    })
+      .addView({ render: () => h(RouterLink, { to: (resolve) => resolve('routeB'), target: '_blank' }) }),
     createRoute({
       name: 'routeB',
       path: '/routeB',
-      component,
-    }),
+    })
+      .addView(component),
   ], {
     initialUrl: '/routeA',
   })
@@ -333,8 +333,8 @@ test('to prop as Url renders and routes correctly', async () => {
   const route = createRoute({
     name: 'route',
     path: '/route',
-    component,
   })
+    .addView(component)
   const href = new URL('/route', window.location.origin)
 
   const router = createRouter([route], {
@@ -380,14 +380,14 @@ test.each<{ to: UrlString, match: boolean, exactMatch: boolean }>([
     parent: parentRoute,
     name: 'child-route',
     path: '/child-route',
-    component,
   })
+    .addView(component)
 
   const otherRoute = createRoute({
     name: 'other',
     path: '/other',
-    component,
   })
+    .addView(component)
 
   const router = createRouter([parentRoute, childRoute, otherRoute], {
     initialUrl: '/parent-route/child-route',
@@ -433,15 +433,15 @@ test('isMatch correctly matches parent when sibling has the same url', async () 
   const siblingRoute = createRoute({
     parent: parentRoute,
     name: 'sibling',
-    component,
   })
+    .addView(component)
 
   const childRoute = createRoute({
     parent: parentRoute,
     name: 'child',
     path: '/child',
-    component: () => h(RouterLink, { to: (resolve) => resolve('parent') }, () => 'parent'),
   })
+    .addView(() => h(RouterLink, { to: (resolve) => resolve('parent') }, () => 'parent'))
 
   const router = createRouter([parentRoute, siblingRoute, childRoute], {
     initialUrl: '/parent/child',
@@ -480,14 +480,14 @@ test.each<{ to: UrlString, active: boolean, exactActive: boolean }>([
     parent: parentRoute,
     name: 'child-route',
     path: '/child-route/[param]',
-    component,
   })
+    .addView(component)
 
   const otherRoute = createRoute({
     name: 'other',
     path: '/other',
-    component,
   })
+    .addView(component)
 
   const router = createRouter([parentRoute, childRoute, otherRoute], {
     initialUrl: '/parent-route/child-route/pass',
@@ -537,8 +537,8 @@ test.each([
     parent: parentRoute,
     name: 'child-route',
     path: '/child-route',
-    component,
   })
+    .addView(component)
 
   const router = createRouter([parentRoute, childRoute], {
     initialUrl: '/parent-route',
@@ -580,13 +580,13 @@ describe('prefetch components', () => {
     const route = createRoute({
       name: 'route',
       path: '/route',
-      component: defineAsyncComponent(() => {
-        return new Promise((resolve) => {
+    })
+      .addView(defineAsyncComponent(() => {
+        return new Promise<Component>((resolve) => {
           loaded = true
           resolve({ default: { template: 'foo' } })
         })
-      }),
-    })
+      }))
 
     const router = createRouter([route], {
       initialUrl: '/',
@@ -630,13 +630,13 @@ describe('prefetch components', () => {
       name: 'route',
       path: '/route',
       prefetch,
-      component: defineAsyncComponent(() => {
-        return new Promise((resolve) => {
+    })
+      .addView(defineAsyncComponent(() => {
+        return new Promise<Component>((resolve) => {
           loaded = true
           resolve({ default: { template: 'foo' } })
         })
-      }),
-    })
+      }))
 
     const router = createRouter([route], {
       initialUrl: '/',
@@ -678,13 +678,13 @@ describe('prefetch components', () => {
     const route = createRoute({
       name: 'route',
       path: '/route',
-      component: defineAsyncComponent(() => {
-        return new Promise((resolve) => {
+    })
+      .addView(defineAsyncComponent(() => {
+        return new Promise<Component>((resolve) => {
           loaded = true
           resolve({ default: { template: 'foo' } })
         })
-      }),
-    })
+      }))
 
     const router = createRouter([route], {
       initialUrl: '/',
@@ -717,7 +717,7 @@ describe('prefetch per view', () => {
     const loaded: string[] = []
 
     const asyncComponent = (name: string): ReturnType<typeof defineAsyncComponent> => defineAsyncComponent(() => {
-      return new Promise((resolve) => {
+      return new Promise<Component>((resolve) => {
         loaded.push(name)
         resolve({ default: { template: name } })
       })
@@ -760,7 +760,7 @@ describe('prefetch per view', () => {
     const loaded: string[] = []
 
     const asyncComponent = (name: string): ReturnType<typeof defineAsyncComponent> => defineAsyncComponent(() => {
-      return new Promise((resolve) => {
+      return new Promise<Component>((resolve) => {
         loaded.push(name)
         resolve({ default: { template: name } })
       })
@@ -891,8 +891,8 @@ describe('prefetch props', () => {
     const route = createRoute({
       name: 'route',
       path: '/route',
-      component: echo,
-    }, callback)
+    })
+      .addView(echo, { props: callback })
 
     const router = createRouter([route], {
       initialUrl: '/',
@@ -933,9 +933,9 @@ describe('prefetch props', () => {
     const route = createRoute({
       name: 'route',
       path: '/route',
-      component: echo,
       prefetch,
-    }, callback)
+    })
+      .addView(echo, { props: callback })
 
     const router = createRouter([route], {
       initialUrl: '/',
@@ -975,8 +975,8 @@ describe('prefetch props', () => {
     const route = createRoute({
       name: 'route',
       path: '/route',
-      component: echo,
-    }, callback)
+    })
+      .addView(echo, { props: callback })
 
     const router = createRouter([route], {
       initialUrl: '/',
@@ -1011,15 +1011,15 @@ describe('prefetch props', () => {
     const home = createRoute({
       name: 'home',
       path: '/',
-      component: () => h(RouterLink, { to: (resolve) => resolve('echo') }),
     })
+      .addView(() => h(RouterLink, { to: (resolve) => resolve('echo') }))
 
     const route = createRoute({
       name: 'echo',
       path: '/echo',
-      component: echo,
       prefetch: { props: 'eager' },
-    }, props)
+    })
+      .addView(echo, { props: props })
 
     const router = createRouter([home, route], {
       initialUrl: '/',
@@ -1055,23 +1055,23 @@ describe('prefetch props', () => {
     const home = createRoute({
       name: 'home',
       path: '/',
-      component: () => h(RouterLink, { to: (resolve) => resolve('child') }),
     })
+      .addView(() => h(RouterLink, { to: (resolve) => resolve('child') }))
 
     const parent = createRoute({
       name: 'parent',
       path: '/parent',
-      component: echo,
       prefetch: { props: false },
-    }, parentProps)
+    })
+      .addView(echo, { props: parentProps })
 
     const child = createRoute({
       parent,
       name: 'child',
       path: '/child',
-      component: echo,
       prefetch: { props: 'eager' },
-    }, childProps)
+    })
+      .addView(echo, { props: childProps })
 
     const router = createRouter([home, child], {
       initialUrl: '/',
@@ -1099,15 +1099,15 @@ describe('prefetch props', () => {
     const routeA = createRoute({
       name: 'routeA',
       path: '/routeA',
-      component: () => h(RouterLink, { to: (resolve) => resolve('routeB') }),
     })
+      .addView(() => h(RouterLink, { to: (resolve) => resolve('routeB') }))
 
     const routeB = createRoute({
       name: 'routeB',
       path: '/routeB',
-      component: echo,
       prefetch: { props: 'lazy' },
-    }, callback)
+    })
+      .addView(echo, { props: callback })
 
     const router = createRouter([routeA, routeB], {
       initialUrl: '/routeA',
@@ -1150,20 +1150,20 @@ describe('prefetch props', () => {
     const routeA = createRoute({
       name: 'routeA',
       path: '/routeA',
-      component: () => h(RouterLink, { to: (resolve) => resolve('routeB') }),
     })
+      .addView(() => h(RouterLink, { to: (resolve) => resolve('routeB') }))
 
     const routeB = createRoute({
       name: 'routeB',
       path: '/routeB',
       prefetch: { components: 'lazy' },
-      component: defineAsyncComponent(() => {
-        return new Promise((resolve) => {
+    })
+      .addView(defineAsyncComponent(() => {
+        return new Promise<Component>((resolve) => {
           loaded = true
           resolve({ default: { template: 'foo' } })
         })
-      }),
-    })
+      }))
 
     const router = createRouter([routeA, routeB], {
       initialUrl: '/routeA',
@@ -1206,15 +1206,15 @@ describe('prefetch props', () => {
     const routeA = createRoute({
       name: 'routeA',
       path: '/routeA',
-      component: () => h(RouterLink, { to: (resolve) => resolve('routeB') }),
     })
+      .addView(() => h(RouterLink, { to: (resolve) => resolve('routeB') }))
 
     const routeB = createRoute({
       name: 'routeB',
       path: '/routeB',
-      component: echo,
       prefetch: { props: 'intent' },
-    }, callback)
+    })
+      .addView(echo, { props: callback })
 
     const router = createRouter([routeA, routeB], {
       initialUrl: '/routeA',
@@ -1251,20 +1251,20 @@ describe('prefetch props', () => {
     const routeA = createRoute({
       name: 'routeA',
       path: '/routeA',
-      component: () => h(RouterLink, { to: (resolve) => resolve('routeB') }, () => 'routeB'),
     })
+      .addView(() => h(RouterLink, { to: (resolve) => resolve('routeB') }, () => 'routeB'))
 
     const routeB = createRoute({
       name: 'routeB',
       path: '/routeB',
       prefetch: { components: 'intent' },
-      component: defineAsyncComponent(() => {
-        return new Promise((resolve) => {
+    })
+      .addView(defineAsyncComponent(() => {
+        return new Promise<Component>((resolve) => {
           loaded = true
           resolve({ template: 'bar' })
         })
-      }),
-    })
+      }))
 
     const router = createRouter([routeA, routeB], {
       initialUrl: '/routeA',

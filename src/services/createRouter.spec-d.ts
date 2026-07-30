@@ -15,21 +15,21 @@ describe('hooks', () => {
   const parent = createRoute({
     name: 'parent',
     path: '/parent/[parentParam]',
-    component,
   })
+    .addView(component)
 
   const child = createRoute({
     name: 'child',
     path: '/child/[childParam]',
     parent,
-    component,
   })
+    .addView(component)
 
   const pluginRoute = createRoute({
     name: 'plugin',
     path: '/plugin/[pluginParam]',
-    component,
   })
+    .addView(component)
 
   const routes = [parent, child] as const
 
@@ -160,8 +160,8 @@ describe('options.rejections in hooks', () => {
     const route = createRoute({
       name: 'root',
       path: '/',
-      component,
     })
+      .addView(component)
 
     const customRejection = createRejection({
       type: 'CustomRejection',
@@ -187,8 +187,8 @@ describe('options.rejections in hooks', () => {
     const route = createRoute({
       name: 'root',
       path: '/',
-      component,
     })
+      .addView(component)
 
     const customRejection = createRejection({
       type: 'CustomRejection',
@@ -213,9 +213,8 @@ describe('options.rejections in hooks', () => {
 
 describe('route', () => {
   test('route is never if there are no named routes', () => {
-    const route = createRoute({
-      component,
-    })
+    const route = createRoute({})
+      .addView(component)
 
     expectTypeOf(route.name).toEqualTypeOf<''>()
 
@@ -226,25 +225,24 @@ describe('route', () => {
 
   test('route union does not include routes without a name', () => {
     // does not include routes without a name
-    const routeA = createRoute({
-      component,
-    })
+    const routeA = createRoute({})
+      .addView(component)
 
     // does not include routes with an empty name
     const routeB = createRoute({
       name: '',
-      component,
     })
+      .addView(component)
 
     const routeC = createRoute({
       name: 'routeC',
-      component,
     })
+      .addView(component)
 
     const routeD = createRoute({
       name: 'routeD',
-      component,
     })
+      .addView(component)
 
     const router = createRouter([routeA, routeB, routeC, routeD])
 

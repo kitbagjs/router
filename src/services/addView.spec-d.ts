@@ -206,41 +206,91 @@ describe('addView', () => {
     })
   })
 
-  describe('backwards compatibility', () => {
-    test('addView merges with the deprecated component + props options', () => {
-      const route = createRoute({ name: 'route', component }, () => ({ foo: 'bar' }))
-        .addView(component, {
-          name: 'sidebar',
-          props: () => ({ baz: 1 }),
-        })
-
-      expectTypeOf<typeof route['matches'][0]['views']>().toEqualTypeOf<{ default: RouteView<{ foo: string }>, sidebar: RouteView<{ baz: number }> }>()
-    })
-  })
-
   describe('parent props', () => {
+    test('parent props are undefined when the parent has no props', () => {
+      const parent = createRoute({ name: 'parent' })
+
+      createRoute({ name: 'child', parent })
+        .addView(component, {
+          props: (__, { parent }) => {
+            expectTypeOf(parent.props).toEqualTypeOf<undefined>()
+            expectTypeOf(parent.name).toEqualTypeOf<'parent'>()
+
+            return {}
+          },
+        })
+    })
+
     test('parent props are undefined when the parent has views but no getter', () => {
       const parent = createRoute({ name: 'parent' }).addView(component)
 
-      createRoute({ name: 'child', parent }, (__, { parent }) => {
-        expectTypeOf(parent.props).toEqualTypeOf<undefined>()
-        expectTypeOf(parent.name).toEqualTypeOf<'parent'>()
+      createRoute({ name: 'child', parent })
+        .addView(component, {
+          props: (__, { parent }) => {
+            expectTypeOf(parent.props).toEqualTypeOf<undefined>()
+            expectTypeOf(parent.name).toEqualTypeOf<'parent'>()
 
-        return {}
-      })
+            return {}
+          },
+        })
     })
 
-    test('bare parent props (added via addView) are passed to a child', () => {
+    test('sync parent props are passed to a child', () => {
       const parent = createRoute({ name: 'parent' }).addView(component, {
         props: () => ({ foo: 123 }),
       })
 
-      createRoute({ name: 'child', parent }, (__, { parent }) => {
-        expectTypeOf(parent.props).toEqualTypeOf<{ foo: number }>()
-        expectTypeOf(parent.name).toEqualTypeOf<'parent'>()
+      createRoute({ name: 'child', parent })
+        .addView(component, {
+          props: (__, { parent }) => {
+            expectTypeOf(parent.props).toEqualTypeOf<{ foo: number }>()
+            expectTypeOf(parent.name).toEqualTypeOf<'parent'>()
 
-        return {}
+            return {}
+          },
+        })
+    })
+
+    test('async parent props are passed to a child', () => {
+      const parent = createRoute({ name: 'parent' }).addView(component, {
+        props: async () => ({ foo: 123 }),
       })
+
+      createRoute({ name: 'child', parent })
+        .addView(component, {
+          props: (__, { parent }) => {
+            expectTypeOf(parent.props).toEqualTypeOf<Promise<{ foo: number }>>()
+            expectTypeOf(parent.name).toEqualTypeOf<'parent'>()
+
+            return {}
+          },
+        })
+    })
+
+    test('parent props are passed to every view a child adds', () => {
+      const parent = createRoute({ name: 'parent' }).addView(component, {
+        props: async () => ({ foo: 123 }),
+      })
+
+      createRoute({ name: 'child', parent })
+        .addView(component, {
+          name: 'one',
+          props: (__, { parent }) => {
+            expectTypeOf(parent.props).toEqualTypeOf<Promise<{ foo: number }>>()
+            expectTypeOf(parent.name).toEqualTypeOf<'parent'>()
+
+            return {}
+          },
+        })
+        .addView(component, {
+          name: 'two',
+          props: (__, { parent }) => {
+            expectTypeOf(parent.props).toEqualTypeOf<Promise<{ foo: number }>>()
+            expectTypeOf(parent.name).toEqualTypeOf<'parent'>()
+
+            return {}
+          },
+        })
     })
 
     test('record parent props (added via addView) are passed to a child', () => {
@@ -254,14 +304,17 @@ describe('addView', () => {
           props: async () => ({ foo: 456 }),
         })
 
-      createRoute({ name: 'child', parent }, (__, { parent }) => {
-        expectTypeOf(parent.props).toEqualTypeOf<{
-          one: { foo: number },
-          two: Promise<{ foo: number }>,
-        }>()
+      createRoute({ name: 'child', parent })
+        .addView(component, {
+          props: (__, { parent }) => {
+            expectTypeOf(parent.props).toEqualTypeOf<{
+              one: { foo: number },
+              two: Promise<{ foo: number }>,
+            }>()
 
-        return {}
-      })
+            return {}
+          },
+        })
     })
   })
 
@@ -270,19 +323,6 @@ describe('addView', () => {
       createRoute({ name: 'route', path: '/[paramName]' }).addView(component, {
         props: (route) => {
           expectTypeOf(route.params.paramName).toEqualTypeOf<string>()
-
-          return {}
-        },
-      })
-    })
-
-    test('parent context is reconstructed from the route views/matches', () => {
-      const parent = createRoute({ name: 'parent' }, async () => ({ foo: 123 }))
-
-      createRoute({ name: 'child', parent }).addView(component, {
-        props: (__, { parent }) => {
-          expectTypeOf(parent.props).toEqualTypeOf<Promise<{ foo: number }>>()
-          expectTypeOf(parent.name).toEqualTypeOf<'parent'>()
 
           return {}
         },
@@ -309,7 +349,7 @@ describe('addView', () => {
       })
     })
 
-    test('push and update are typed to the route', () => {
+    test('push accepts urls, the current route, and routes from context', () => {
       createRoute({ name: 'route', path: '/[paramName]', context: [createRoute({ name: 'contextRoute' })] }).addView(component, {
         props: (__, context) => {
           context.push('route', { paramName: 'value' })
@@ -319,10 +359,43 @@ describe('addView', () => {
           // @ts-expect-error should not accept an invalid route name
           context.push('foo')
 
+          return {}
+        },
+      })
+    })
+
+    test('replace accepts urls, the current route, and routes from context', () => {
+      createRoute({ name: 'route', path: '/[paramName]', context: [createRoute({ name: 'contextRoute' })] }).addView(component, {
+        props: (__, context) => {
+          context.replace('route', { paramName: 'value' })
+          context.replace('contextRoute')
+          context.replace('/')
+
+          // @ts-expect-error should not accept an invalid route name
+          context.replace('foo')
+
+          return {}
+        },
+      })
+    })
+
+    test('update accepts params based on the current route', () => {
+      createRoute({ name: 'route', path: '/[paramName]' }).addView(component, {
+        props: (__, context) => {
           context.update('paramName', 'value')
 
           // @ts-expect-error should not accept an invalid param name
           context.update('invalidParamName', 'value')
+
+          context.update({ paramName: 'value' })
+
+          // @ts-expect-error should not accept invalid params
+          context.update({ invalidParamName: 'value' })
+
+          context.update({ paramName: 'value' }, { replace: true })
+
+          // @ts-expect-error should not accept invalid options
+          context.update({ paramName: 'value' }, { invalid: true })
 
           return {}
         },

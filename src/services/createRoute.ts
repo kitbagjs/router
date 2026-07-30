@@ -2,7 +2,7 @@ import { markRaw } from 'vue'
 import { createRouteId } from '@/services/createRouteId'
 import { InternalRouteHooks } from '@/types/hooks'
 import { RouteRedirects } from '@/types/redirects'
-import { CreateRouteOptions, PropsGetter, CreateRouteProps, ToRouteMatches, ToRouteUrl, combineRoutes, isWithParent, RouterViewPropsGetter } from '@/types/createRouteOptions'
+import { CreateRouteOptions, ToRouteMatches, ToRouteUrl, combineRoutes, isWithParent } from '@/types/createRouteOptions'
 import { toName } from '@/types/name'
 import { IS_ROUTE_SYMBOL, Route, RouteInternal } from '@/types/route'
 import { createRouteHooks } from '@/services/createRouteHooks'
@@ -11,29 +11,14 @@ import { createUrl } from '@/services/createUrl'
 import { createRouteRedirects } from '@/services/createRouteRedirects'
 import { combineUrl } from '@/services/combineUrl'
 import { createRouteTitle, RouteSetTitle } from '@/types/routeTitle'
-import { createRouteViews } from '@/services/createRouteViews'
 import { RouteWithMethods } from '@/types/addView'
 import { withAddView } from '@/services/addView'
 
-type CreateRouteWithProps<
-  TOptions extends CreateRouteOptions,
-  TProps extends CreateRouteProps<TOptions>
-> = CreateRouteProps<TOptions> extends RouterViewPropsGetter<TOptions>
-  ? [ props?: RouterViewPropsGetter<TOptions> ]
-  : CreateRouteProps<TOptions> extends PropsGetter<TOptions>
-    ? Partial<ReturnType<CreateRouteProps<TOptions>>> extends ReturnType<CreateRouteProps<TOptions>>
-      ? [ props?: TProps ]
-      : [ props: TProps ]
-    : Partial<CreateRouteProps<TOptions>> extends CreateRouteProps<TOptions>
-      ? [ props?: TProps ]
-      : [ props: TProps ]
-
 export function createRoute<
-  const TOptions extends CreateRouteOptions,
-  const TProps extends CreateRouteProps<TOptions>
->(options: TOptions, ...args: CreateRouteWithProps<TOptions, TProps>): RouteWithMethods<ToRouteUrl<TOptions>, ToRouteMatches<TOptions, TProps>>
+  const TOptions extends CreateRouteOptions
+>(options: TOptions): RouteWithMethods<ToRouteUrl<TOptions>, ToRouteMatches<TOptions>>
 
-export function createRoute(options: CreateRouteOptions, props?: CreateRouteProps): Route {
+export function createRoute(options: CreateRouteOptions): Route {
   const id = createRouteId()
   const name = toName(options.name)
   const path = toUrlPart(options.path)
@@ -44,8 +29,7 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
   const context = options.context ?? []
   const { store, redirect, ...hooks } = createRouteHooks()
   const { setTitle, getTitle } = createRouteTitle(options.parent)
-  const views = createRouteViews(options, props)
-  const rawRoute = markRaw({ ...options, id, meta, state, name, views })
+  const rawRoute = markRaw({ ...options, id, meta, state, name, views: {} })
 
   const redirects = createRouteRedirects({
     getRoute: () => route,

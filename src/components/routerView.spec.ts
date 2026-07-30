@@ -9,8 +9,8 @@ describe('SSR', () => {
     const route = createRoute({
       name: 'foo',
       path: '/',
-      component: { template: 'hello world' },
     })
+      .addView({ template: 'hello world' })
 
     const router = createRouter([route], {
       initialUrl: '/',

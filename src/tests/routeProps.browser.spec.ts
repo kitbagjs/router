@@ -15,7 +15,8 @@ test('components are not remounted when props change', async () => {
   const routeA = createRoute({
     name: 'routeA',
     path: '/routeA/[parentParam]',
-    component: defineComponent({
+  })
+    .addView(defineComponent({
       props: {
         value: {
           type: String,
@@ -26,34 +27,37 @@ test('components are not remounted when props change', async () => {
       render(props: { value: string }) {
         return h('div', {}, [h(echo, { value: props.value }), h(RouterView)])
       },
-    }),
-  }, (route) => {
-    return {
-      value: route.params.parentParam,
-    }
-  })
+    }), {
+      props: (route) => {
+        return {
+          value: route.params.parentParam,
+        }
+      },
+    })
 
   const routeAChild = createRoute({
     parent: routeA,
     name: 'routeA.child',
     path: '/childA/[childParam]',
-    component: defineComponent({
+  })
+    .addView(defineComponent({
       setup: setupChild,
       render(props: { value: string }) {
         return h(echo, { value: props.value })
       },
-    }),
-  }, (route) => {
-    return {
-      value: route.params.childParam,
-    }
-  })
+    }), {
+      props: (route) => {
+        return {
+          value: route.params.childParam,
+        }
+      },
+    })
 
   const routeB = createRoute({
     name: 'routeB',
     path: '/routeB',
-    component,
   })
+    .addView(component)
 
   const router = createRouter([routeA, routeAChild, routeB], {
     initialUrl: '/routeA/bar',

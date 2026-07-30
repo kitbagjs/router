@@ -13,16 +13,16 @@ test('calls hook with correct routes', () => {
   const toRoute = createRoute({
     id: Math.random().toString(),
     name: 'routeA',
-    component,
   })
+    .addView(component)
 
   toRoute.onBeforeRouteEnter(hook)
 
   const fromRoute = createRoute({
     id: Math.random().toString(),
     name: 'routeB',
-    component,
   })
+    .addView(component)
 
   const to = createResolvedRoute(toRoute, {})
   const from = createResolvedRoute(fromRoute, {})
@@ -56,16 +56,16 @@ test.each<{ type: string, status: string, hook: BeforeEnterHook }>([
   const toRoute = createRoute({
     id: Math.random().toString(),
     name: 'routeA',
-    component,
   })
+    .addView(component)
 
   toRoute.onBeforeRouteEnter(hook)
 
   const fromRoute = createRoute({
     id: Math.random().toString(),
     name: 'routeB',
-    component,
   })
+    .addView(component)
 
   fromRoute.onBeforeRouteEnter(hook)
 
@@ -86,8 +86,8 @@ test('hook is called in order', async () => {
   const toRoute = createRoute({
     id: Math.random().toString(),
     name: 'routeA',
-    component,
   })
+    .addView(component)
 
   toRoute.onBeforeRouteEnter(hookA)
   toRoute.onBeforeRouteEnter(hookB)
@@ -96,8 +96,8 @@ test('hook is called in order', async () => {
   const fromRoute = createRoute({
     id: Math.random().toString(),
     name: 'routeB',
-    component,
   })
+    .addView(component)
 
   const to = createResolvedRoute(toRoute, {})
   const from = createResolvedRoute(fromRoute, {})
@@ -128,10 +128,10 @@ test('multiple onError callbacks run in order', () => {
   const testError = new Error('Test error')
   const toRoute = createRoute({
     name: 'routeA',
-    component,
     href: '/',
     hash: '',
   })
+    .addView(component)
 
   const to = createResolvedRoute(toRoute, {})
   const from: ResolvedRoute | null = null
@@ -164,10 +164,10 @@ test('when onError callback calls reject, other onError callbacks do not run', (
   const testError = new Error('Test error')
   const toRoute = createRoute({
     name: 'routeA',
-    component,
     href: '/',
     hash: '',
   })
+    .addView(component)
 
   const to = createResolvedRoute(toRoute, {})
   const from: ResolvedRoute | null = null
@@ -197,10 +197,10 @@ test('when onError callback calls push, other onError callbacks do not run', () 
   const toRoute = createRoute({
     id: Math.random().toString(),
     name: 'routeA',
-    component,
     href: '/',
     hash: '',
   })
+    .addView(component)
 
   const to = createResolvedRoute(toRoute, {})
   const from: ResolvedRoute | null = null
@@ -229,10 +229,10 @@ test('when onError callback calls replace, other onError callbacks do not run', 
   const testError = new Error('Test error')
   const toRoute = createRoute({
     name: 'routeA',
-    component,
     href: '/',
     hash: '',
   })
+    .addView(component)
 
   const to = createResolvedRoute(toRoute, {})
   const from: ResolvedRoute | null = null

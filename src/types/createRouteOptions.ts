@@ -9,15 +9,13 @@ import { isRoute, Route, RouteInternal } from '@/types/route'
 import { ResolvedRoute } from './resolved'
 import { ComponentProps } from '@/services/component'
 import { PropsCallbackContext } from '@/types/props'
-import { AnyFunction, Identity, MaybePromise } from '@/types/utilities'
+import { MaybePromise } from '@/types/utilities'
 import { ToMeta } from '@/types/meta'
 import { ToName } from '@/types/name'
 import { UrlPart, UrlQueryPart } from '@/services/withParams'
 import { RouteContext } from '@/types/routeContext'
-import { RouterViewProps } from '@/components/routerView'
 import { ToUrl } from '@/types/url'
 import { CombineUrl } from '@/services/combineUrl'
-import { RouteView } from '@/types/routeViews'
 
 export type WithHost<THost extends string | UrlPart = string | UrlPart> = {
   /**
@@ -40,20 +38,6 @@ export function isWithParent<T extends Record<string, unknown>>(options: T): opt
 
 export type WithoutParent = {
   parent?: never,
-}
-
-/**
- * This type is used to strip the component and components properties from the options object
- * when creating a Route to simplify and minimize the output type.
- */
-type WithoutComponents = { component: never, components: never }
-
-export function isWithComponent<T extends Record<string, unknown>>(options: T): options is T & { component: Component } {
-  return 'component' in options && Boolean(options.component)
-}
-
-export function isWithComponents<T extends Record<string, unknown>>(options: T): options is T & { components: Record<string, Component> } {
-  return 'components' in options && Boolean(options.components)
 }
 
 export type CreateRouteOptions<
@@ -93,19 +77,6 @@ export type CreateRouteOptions<
    */
   parent?: Route,
   /**
-   * An optional component to render when this route is matched.
-   *
-   * @default RouterView
-   * @deprecated Use the chainable `addView` method on the route instead: `createRoute({ ... }).addView(component, { props })`.
-   */
-  component?: Component,
-  /**
-   * An object of named components to render using named views
-   *
-   * @deprecated Use the chainable `addView` method on the route instead: `createRoute({ ... }).addView(component, { name, props })`.
-   */
-  components?: Record<string, Component>,
-  /**
    * Related routes and rejections for the route. The context is exposed to the hooks and props callback functions for this route.
    */
   context?: RouteContext[],
@@ -113,6 +84,14 @@ export type CreateRouteOptions<
    * When true, the route will be hoisted to the top of the route tree. The route will continue to inherit meta, state, hooks, matches, and context from it's parent, but not the "url" properties.
    */
   hoist?: boolean,
+  /**
+   * @deprecated Removed. Use `addView` instead: `createRoute({ ... }).addView(component)`.
+   */
+  component?: 'component was removed, use addView instead',
+  /**
+   * @deprecated Removed. Use `addView` with a name instead: `createRoute({ ... }).addView(component, { name })`.
+   */
+  components?: 'components was removed, use addView with a name instead',
 }
 
 export type PropsGetter<
@@ -120,34 +99,15 @@ export type PropsGetter<
   TComponent extends Component = Component
 > = (route: ResolvedRoute<ToRoute<TOptions>>, context: PropsCallbackContext<ToRoute<TOptions>, TOptions>) => MaybePromise<ComponentProps<TComponent>>
 
-export type RouterViewPropsGetter<
-  TOptions extends CreateRouteOptions = CreateRouteOptions
-> = (route: ResolvedRoute<ToRoute<TOptions>>, context: PropsCallbackContext<ToRoute<TOptions>, TOptions>) => MaybePromise<RouterViewProps & Record<string, unknown>>
-
 export type ComponentPropsAreOptional<
   TComponent extends Component
 > = Partial<ComponentProps<TComponent>> extends ComponentProps<TComponent>
   ? true
   : false
 
-type RoutePropsRecord<
-  TOptions extends CreateRouteOptions = CreateRouteOptions,
-  TComponents extends Record<string, Component> = Record<string, Component>
-> = { [K in keyof TComponents as ComponentPropsAreOptional<TComponents[K]> extends true ? K : never]?: PropsGetter<TOptions, TComponents[K]> }
-  & { [K in keyof TComponents as ComponentPropsAreOptional<TComponents[K]> extends false ? K : never]: PropsGetter<TOptions, TComponents[K]> }
-
-export type CreateRouteProps<
-  TOptions extends CreateRouteOptions = CreateRouteOptions
-> = TOptions['component'] extends Component
-  ? PropsGetter<TOptions, TOptions['component']>
-  : TOptions['components'] extends Record<string, Component>
-    ? RoutePropsRecord<TOptions, TOptions['components']>
-    : RouterViewPropsGetter<TOptions>
-
 type ToMatch<
-  TOptions extends CreateRouteOptions,
-  TProps = undefined
-> = Omit<TOptions, 'meta' | 'name' | 'component' | 'components' | 'parent'> & {
+  TOptions extends CreateRouteOptions
+> = Omit<TOptions, 'meta' | 'name' | 'parent'> & {
   id: string,
   name: ToName<TOptions['name']>,
   /**
@@ -155,9 +115,9 @@ type ToMatch<
    */
   meta: ToMeta<TOptions['meta']>,
   /**
-   * The views this route renders, keyed by view name.
+   * The views this route renders, keyed by view name. Added by `addView`.
    */
-  views: PropsToViews<TProps>,
+  views: {},
 }
 
 /**
@@ -165,21 +125,10 @@ type ToMatch<
  * there is no second tuple to keep aligned with this one.
  */
 type ToMatches<
-  TOptions extends CreateRouteOptions,
-  TProps = undefined
+  TOptions extends CreateRouteOptions
 > = TOptions extends { parent: infer TParent extends Route }
-  ? [...TParent['matches'], ToMatch<TOptions, TProps>]
-  : [ToMatch<TOptions, TProps>]
-
-/**
- * Builds a views record from the props argument, which is either a single getter for the unnamed view or
- * a record of getters keyed by view name.
- */
-type PropsToViews<TProps> = [TProps] extends [AnyFunction]
-  ? { default: RouteView<ReturnType<TProps>> }
-  : [TProps] extends [Record<string, AnyFunction>]
-      ? { [K in keyof TProps]: RouteView<ReturnType<TProps[K]>> }
-      : {}
+  ? [...TParent['matches'], ToMatch<TOptions>]
+  : [ToMatch<TOptions>]
 
 /**
  * The url a route resolves to, combined with its parent's unless the route is hoisted.
@@ -187,23 +136,21 @@ type PropsToViews<TProps> = [TProps] extends [AnyFunction]
 export type ToRouteUrl<
   TOptions extends CreateRouteOptions
 > = TOptions extends { parent: infer TParent extends Route }
-  ? TOptions['hoist'] extends true ? ToUrl<TOptions & WithoutComponents> : CombineUrl<TParent, ToUrl<TOptions & WithoutComponents>>
-  : ToUrl<Identity<TOptions & WithoutComponents>>
+  ? TOptions['hoist'] extends true ? ToUrl<TOptions> : CombineUrl<TParent, ToUrl<TOptions>>
+  : ToUrl<TOptions>
 
 /**
  * The matches for a route, with the props argument resolved to the views of its own match.
  */
 export type ToRouteMatches<
-  TOptions extends CreateRouteOptions,
-  TProps
-> = ToMatches<TOptions, CreateRouteProps<TOptions> extends TProps ? undefined : TProps>
+  TOptions extends CreateRouteOptions
+> = ToMatches<TOptions>
 
 export type ToRoute<
-  TOptions extends CreateRouteOptions,
-  TProps extends CreateRouteProps<TOptions> | undefined = undefined
+  TOptions extends CreateRouteOptions
 > = CreateRouteOptions extends TOptions
   ? Route
-  : Route<ToRouteUrl<TOptions>, ToRouteMatches<TOptions, TProps>>
+  : Route<ToRouteUrl<TOptions>, ToRouteMatches<TOptions>>
 
 export function combineRoutes(parent: Route, child: Route): Route {
   if (!isRoute(parent) || !isRoute(child)) {
