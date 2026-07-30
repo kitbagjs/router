@@ -20,14 +20,16 @@ const user = createRoute({
 
 When your route uses the [props callback](/core-concepts/component-props), Kitbag Router can start fetching your component props before they are needed.
 
-```ts {5-8}
+```ts {5-10}
 const user = createRoute({
   name: 'user',
   path: '/user/[id]',
 })
-.addView(defineAsyncComponent(() => import('./UserPage.vue')), async (route) => {
-  const user = await userStore.getById(route.params.id)
-  return { user }
+.addView(defineAsyncComponent(() => import('./UserPage.vue')), {
+  props: async (route) => {
+    const user = await userStore.getById(route.params.id)
+    return { user }
+  },
 })
 ```
 
@@ -53,6 +55,7 @@ Prefetching can be configured at various levels. Each nested layer **overrides**
 
 - Global Configuration
 - Per-Route Configuration
+- Per-View Configuration
 - Per-Link Configuration
 
 This means that if prefetching is enabled globally, but disabled for a specific route, that route will not prefetch. Conversely, if prefetching is disabled globally, but enabled for a specific route, that route will prefetch.
@@ -113,6 +116,45 @@ const contact = createRoute({
 })
 .addView(() => import('./Contact.vue'))
 ```
+
+### Per-View Configuration
+
+When a route has multiple views, each one can carry its own prefetch config by passing a `prefetch` option to [addView](/core-concepts/routes#prefetch). This is useful when only some views are worth prefetching.
+
+```ts
+const dashboard = createRoute({
+  path: '/dashboard',
+})
+  .addView(defineAsyncComponent(() => import('./Dashboard.vue')))
+  .addView(defineAsyncComponent(() => import('./Sidebar.vue')), {
+    name: 'sidebar',
+    prefetch: 'eager', // [!code focus]
+  })
+  .addView(defineAsyncComponent(() => import('./HeavyReport.vue')), {
+    name: 'report',
+    prefetch: false, // [!code focus]
+  })
+```
+
+A single view can mix component and props strategies.
+
+```ts
+const user = createRoute({
+  path: '/user/[id]',
+})
+.addView(defineAsyncComponent(() => import('./UserPage.vue')), {
+  props: async (route) => {
+    const user = await userStore.getById(route.params.id)
+    return { user }
+  },
+  prefetch: { // [!code focus]
+    components: 'eager', // [!code focus]
+    props: 'intent', // [!code focus]
+  }, // [!code focus]
+})
+```
+
+Views without their own config fall back to the route's config.
 
 ### Per-Link Configuration
 

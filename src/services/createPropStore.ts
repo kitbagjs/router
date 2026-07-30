@@ -32,8 +32,13 @@ export function createPropStore(): PropStore {
 
     return route.matches
       .map((match, index) => ({ match, views: route.views[index] }))
-      .filter(({ match }) => getPrefetchOption({ ...prefetch, routePrefetch: match.prefetch }, 'props') === strategy)
-      .flatMap(({ views }) => getComponentProps(views))
+      .flatMap(({ match, views }) => getComponentProps(views).map((componentProps) => ({ match, views, componentProps })))
+      .filter(({ match, views, componentProps }) => getPrefetchOption({
+        ...prefetch,
+        routePrefetch: match.prefetch,
+        viewPrefetch: views.prefetch?.[componentProps.name],
+      }, 'props') === strategy)
+      .map(({ componentProps }) => componentProps)
       .reduce<Record<string, unknown>>((response, { id, name, props }) => {
         if (!props) {
           return response

@@ -12,13 +12,15 @@ function isPrefetchStrategy(value: any): value is PrefetchStrategy {
   return ['eager', 'lazy', 'intent'].includes(value)
 }
 
-export function getPrefetchOption({ routerPrefetch, routePrefetch, linkPrefetch }: PrefetchConfigs, setting: keyof PrefetchConfigOptions): false | PrefetchStrategy {
+export function getPrefetchOption({ routerPrefetch, routePrefetch, viewPrefetch, linkPrefetch }: PrefetchConfigs, setting: keyof PrefetchConfigOptions): false | PrefetchStrategy {
   const link = getPrefetchConfigValue(linkPrefetch, setting)
+  const view = getPrefetchConfigValue(viewPrefetch, setting)
   const route = getPrefetchConfigValue(routePrefetch, setting)
   const router = getPrefetchConfigValue(routerPrefetch, setting)
 
   const value = [
     link,
+    view,
     route,
     router,
     DEFAULT_PREFETCH_CONFIG[setting],

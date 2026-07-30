@@ -1,13 +1,15 @@
 # Component Props
 
-With Kitbag Router, you can pass a `props` getter when adding a view with [`addView`](/core-concepts/routes#views). Your callback is given the [`ResolvedRoute`](/api/types/ResolvedRoute) for the route and what it returns will be bound to the component when the component gets mounted inside the `<router-view />`
+With Kitbag Router, you can pass a `props` getter in the options when adding a view with [`addView`](/core-concepts/routes#views). Your callback is given the [`ResolvedRoute`](/api/types/ResolvedRoute) for the route and what it returns will be bound to the component when the component gets mounted inside the `<router-view />`
 
-```ts {5}
+```ts {5-7}
 const user = createRoute({
   name: 'user',
   path: '/user/[id]',
 })
-.addView(UserComponent, (route) => ({ userId: route.params.id }))
+.addView(UserComponent, {
+  props: (route) => ({ userId: route.params.id }),
+})
 ```
 
 This is obviously useful for assigning static values or route params down to your view components props but it also gives you
@@ -17,15 +19,20 @@ This is obviously useful for assigning static values or route params down to you
 - Support for async prop fetching.
 
 ## Named Views
-Each [named view](/core-concepts/routes#named-views) can have its own props getter. Just pass the getter after the component when calling `addView`.
+Each [named view](/core-concepts/routes#named-views) can have its own props getter. Just pass a `props` getter alongside the view's `name`.
 
-```ts {5-6}
+```ts {5-11}
 const user = createRoute({
   name: 'user',
   path: '/user/[id]',
 })
-.addView(UserComponent, (route) => ({ userId: route.params.id }))
-.addView('sidebar', UserSidebarComponent, (route) => ({ userId: route.params.id }))
+.addView(UserComponent, {
+  props: (route) => ({ userId: route.params.id }),
+})
+.addView(UserSidebarComponent, {
+  name: 'sidebar',
+  props: (route) => ({ userId: route.params.id }),
+})
 ```
 
 ## Params Type
@@ -40,15 +47,17 @@ Your callback will throw a Typescript error if it returns anything other than th
 
 The props call back supports promises. This means you can do much more than just forward values from params or insert static values. For example, we can take an id route param and fetch the `User` before mounting the component.
 
-```ts {5-9}
+```ts {5-11}
 const user = createRoute({
   name: 'user',
   path: '/user/[id]',
 })
-.addView(UserComponent, async (route) => {
-  const user = await userStore.getById(route.params.id)
+.addView(UserComponent, {
+  props: async (route) => {
+    const user = await userStore.getById(route.params.id)
 
-  return { user }
+    return { user }
+  },
 })
 ```
 
@@ -61,12 +70,14 @@ const blogPost = createRoute({
   name: 'blog',
   path: '/blog/[blogPostId]',
 })
-.addView(BlogPost, async (route) => {
-  const post = await getBlogPostById(route.params.blogPostId)
+.addView(BlogPost, {
+  props: async (route) => {
+    const post = await getBlogPostById(route.params.blogPostId)
 
-  return {
-    post,
-  }
+    return {
+      post,
+    }
+  },
 })
 
 const blogPostTabs = createRoute({
@@ -74,14 +85,16 @@ const blogPostTabs = createRoute({
   name: 'tabs',
   query: '?tab=[tab]',
 })
-.addView(PostTabs, async (route, { parent }) => {
-  const tab = route.query.tab
-  const { post } = await parent.props
+.addView(PostTabs, {
+  props: async (route, { parent }) => {
+    const tab = route.query.tab
+    const { post } = await parent.props
 
-  return {
-    tab,
-    post,
-  }
+    return {
+      tab,
+      post,
+    }
+  },
 })
 ```
 
@@ -109,14 +122,16 @@ const user = createRoute({
   name: 'user',
   path: '/user/[id]',
 })
-.addView(UserComponent, async (route, { reject }) => {
-  try {
-    const user = await userStore.getById(route.params.id)
+.addView(UserComponent, {
+  props: async (route, { reject }) => {
+    try {
+      const user = await userStore.getById(route.params.id)
 
-    return { user }
-  } catch (error) {
-    reject('NotFound')
-  }
+      return { user }
+    } catch (error) {
+      reject('NotFound')
+    }
+  },
 })
 ```
 
@@ -130,9 +145,11 @@ import { inject } from 'vue'
 const route = createRoute({
   ...
 })
-.addView(SomeComponent, async () => {
-  const value = inject('global')
+.addView(SomeComponent, {
+  props: async () => {
+    const value = inject('global')
 
-  return { value }
+    return { value }
+  },
 })
 ```

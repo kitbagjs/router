@@ -11,6 +11,7 @@ import { RouterPush } from '@/types/routerPush'
 import { RouterReject } from '@/types/routerReject'
 import { RouterReplace } from '@/types/routerReplace'
 import { RouteUpdate } from '@/types/routeUpdate'
+import { PrefetchConfig } from '@/types/prefetch'
 import { RouteViews } from '@/types/routeViews'
 import { Url } from '@/types/url'
 import { Identity, LastInArray, MaybePromise } from '@/types/utilities'
@@ -64,8 +65,8 @@ type MatchPropsReturnType<TProps> = TProps extends PropsGetter
     : undefined
 
 /**
- * When the getter argument is omitted the default type param resolves to the wide getter type, which
- * then "extends" itself and collapses to undefined. When a getter is provided it is narrower and preserved.
+ * When the getter is omitted the default type param resolves to the wide getter type, which then
+ * "extends" itself and collapses to undefined. When a getter is provided it is narrower and preserved.
  */
 type NewViewGetter<
   TRoute extends Route,
@@ -74,14 +75,59 @@ type NewViewGetter<
 > = AddViewPropsGetter<TRoute, TComponent> extends TGetter ? undefined : TGetter
 
 /**
- * The props argument for `addView`. Required when the component has required props, otherwise optional.
+ * The options for a view added via `addView`.
+ *
+ * @template TName - The view's name, inferred from the `name` option.
+ * @template TGetter - The view's props getter, inferred from the `props` option.
+ */
+export type AddViewOptions<
+  TName extends string | undefined = string,
+  TGetter = PropsGetter
+> = {
+  /**
+   * The name of the view, rendered by `<router-view name="..." />`. Defaults to the unnamed view.
+   */
+  name?: TName,
+  /**
+   * A props getter for the view. Receives the resolved route and a context object.
+   */
+  props?: TGetter,
+  /**
+   * Determines what assets are prefetched for this view when a router-link is rendered for this route.
+   * Overrides route level prefetch, and is itself overridden by link level prefetch.
+   */
+  prefetch?: PrefetchConfig,
+}
+
+/**
+ * {@link AddViewOptions} with `props` promoted to required. Only reached for components that have
+ * required props — everything else uses {@link AddViewOptions}, where `props` stays optional, so a view
+ * can always be given a name and a prefetch config without a getter.
+ *
+ * Spelled out rather than intersected with {@link AddViewOptions} so that the literal `name` still
+ * infers through the conditional args tuple.
+ */
+type AddViewOptionsWithRequiredProps<
+  TName extends string | undefined,
+  TGetter
+> = {
+  name?: TName,
+  props: TGetter,
+  prefetch?: PrefetchConfig,
+}
+
+/**
+ * The options argument for `addView`, required only when the component has required props. `TName` and
+ * `TGetter` are inferred from the object's properties rather than from the object as a whole: inferring
+ * the whole object as a `const` type param through this conditional tuple widens the literal name.
  */
 type AddViewArgs<
   TComponent extends Component,
+  TName extends string | undefined,
   TGetter
 > = ComponentPropsAreOptional<TComponent> extends true
-  ? [props?: TGetter]
-  : [props: TGetter]
+  ? [options?: AddViewOptions<TName, TGetter>]
+  : [options: AddViewOptionsWithRequiredProps<TName, TGetter>]
 
 /**
  * The current route's own view prop getters (the last entry of its `views` tuple).
@@ -158,36 +204,20 @@ type AddViewReturn<
  * including named views for named `<router-view />`s.
  */
 export type RouteAddView<TRoute extends Route = Route> = {
-  addView: {
-    /**
-     * Adds the default view for this route.
-     *
-     * @param component - The component to render in the default `<router-view />`.
-     * @param props - A props getter. Required when the component has required props.
-     */
-    <
-      TComponent extends Component,
-      const TGetter extends AddViewPropsGetter<TRoute, TComponent> = AddViewPropsGetter<TRoute, TComponent>
-    >(
-      component: TComponent,
-      ...props: AddViewArgs<TComponent, TGetter>
-    ): AddViewReturn<TRoute, AddViewProps<CurrentViewProps<TRoute>, undefined, NewViewGetter<TRoute, TComponent, TGetter>>>,
-
-    /**
-     * Adds a named view for this route, rendered by `<router-view name="..." />`.
-     *
-     * @param name - The name of the view.
-     * @param component - The component to render in the named `<router-view />`.
-     * @param props - A props getter. Required when the component has required props.
-     */
-    <
-      TName extends string,
-      TComponent extends Component,
-      const TGetter extends AddViewPropsGetter<TRoute, TComponent> = AddViewPropsGetter<TRoute, TComponent>
-    >(
-      name: TName,
-      component: TComponent,
-      ...props: AddViewArgs<TComponent, TGetter>
-    ): AddViewReturn<TRoute, AddViewProps<CurrentViewProps<TRoute>, TName, NewViewGetter<TRoute, TComponent, TGetter>>>,
-  },
+  /**
+   * Adds a view for this route.
+   *
+   * @param component - The component to render. Rendered by `<router-view name="..." />` when the
+   * options carry a name, and by the default `<router-view />` otherwise.
+   * @param options - The view's `name`, `props` getter, and `prefetch` config. Required when the
+   * component has required props, optional otherwise.
+   */
+  addView: <
+    TComponent extends Component,
+    const TName extends string | undefined = undefined,
+    const TGetter extends AddViewPropsGetter<TRoute, TComponent> = AddViewPropsGetter<TRoute, TComponent>
+  >(
+    component: TComponent,
+    ...options: AddViewArgs<TComponent, TName, TGetter>
+  ) => AddViewReturn<TRoute, AddViewProps<CurrentViewProps<TRoute>, TName, NewViewGetter<TRoute, TComponent, TGetter>>>,
 }

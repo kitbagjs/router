@@ -1,4 +1,5 @@
 import { Component } from 'vue'
+import { PrefetchConfig } from '@/types/prefetch'
 
 /**
  * The components and prop getters for a single route, keyed by view name (the default view under
@@ -22,4 +23,9 @@ export type RouteViews<TProps = unknown> = {
    * Prop getters for the route's views.
    */
   props: TProps,
+  /**
+   * Prefetch configs keyed by view name, for views that opted into their own config. Overrides the
+   * route level prefetch for that view only. Absent keys fall back to the route's config.
+   */
+  prefetch?: Record<string, PrefetchConfig>,
 }

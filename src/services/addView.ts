@@ -1,44 +1,39 @@
 import { Component } from 'vue'
 import { DEFAULT_VIEW_NAME } from '@/services/createRouteViews'
 import { PropsGetter } from '@/types/createRouteOptions'
+import { PrefetchConfig } from '@/types/prefetch'
 import { Route } from '@/types/route'
 import { RouteViews } from '@/types/routeViews'
 
-type DefaultViewArgs = [component: Component, props?: PropsGetter]
-type NamedViewArgs = [name: string, component: Component, props?: PropsGetter]
+/**
+ * The loose runtime shape of the `addView` options. Purposely wide: the getter and name types each
+ * `RouteAddView` describes are refined per route and component.
+ */
+type ViewOptions = {
+  name?: string,
+  props?: PropsGetter,
+  prefetch?: PrefetchConfig,
+}
 
 /**
- * The runtime arguments accepted by `addView`: a default view (component first) or a named view (name first).
+ * The runtime arguments accepted by `addView`.
  */
-type AddViewParameters = DefaultViewArgs | NamedViewArgs
+type AddViewParameters = [component: Component, options?: ViewOptions]
 
-type NamedView = {
+type View = {
   name: string,
   component: Component,
   props: PropsGetter | undefined,
+  prefetch: PrefetchConfig | undefined,
 }
 
-/**
- * Whether the `addView` arguments are for a named view (a name string as the first argument) rather than
- * the default view (a component as the first argument).
- */
-function isNamedView(args: AddViewParameters): args is NamedViewArgs {
-  return typeof args[0] === 'string'
-}
-
-/**
- * Normalizes `addView` arguments into a `{ name, component, props }` view, defaulting the name to 'default'.
- */
-function toNamedView(args: AddViewParameters): NamedView {
-  if (isNamedView(args)) {
-    const [name, component, props] = args
-
-    return { name, component, props }
+function toView(component: Component, options: ViewOptions | undefined): View {
+  return {
+    name: options?.name ?? DEFAULT_VIEW_NAME,
+    component,
+    props: options?.props,
+    prefetch: options?.prefetch,
   }
-
-  const [component, props] = args
-
-  return { name: DEFAULT_VIEW_NAME, component, props }
 }
 
 /**
@@ -71,16 +66,30 @@ function toPropsRecord(props: ViewProps): Record<string, PropsGetter> {
 }
 
 /**
- * Returns a new {@link RouteViews} with a view (component + optional props getter) merged in. Components
- * are always stored as a record; props keep the bare getter for a lone default view and promote to a
- * record once a named view is added (pulling any existing bare default under 'default').
+ * Returns a new {@link RouteViews} with a view (component + optional props getter + optional per-view
+ * settings) merged in. Components and prefetch configs are always stored as records keyed by view name;
+ * props keep the bare getter for a lone default view and promote to a record once a named view is added
+ * (pulling any existing bare default under 'default').
  */
-function addToViews(views: RouteViews, name: string, component: Component, props: PropsGetter | undefined): RouteViews {
+function addToViews(views: RouteViews, { name, component, props, prefetch }: View): RouteViews {
   return {
     id: views.id,
     components: { ...views.components, [name]: component },
     props: addProps(views.props as ViewProps, name, props),
+    prefetch: addPrefetch(views.prefetch, name, prefetch),
   }
+}
+
+/**
+ * Merges a view's prefetch config into the record keyed by view name. Views without their own config are
+ * left absent so they fall back to the route's config.
+ */
+function addPrefetch(current: RouteViews['prefetch'], name: string, prefetch: PrefetchConfig | undefined): RouteViews['prefetch'] {
+  if (prefetch === undefined) {
+    return current
+  }
+
+  return { ...current, [name]: prefetch }
 }
 
 function addProps(current: ViewProps, name: string, props: PropsGetter | undefined): ViewProps {
@@ -107,15 +116,15 @@ type AddView = (...args: AddViewParameters) => Route
  * mutation of the input route.
  */
 export function withAddView<TRoute extends Route>(route: TRoute): TRoute {
-  const addView: AddView = (...args) => {
-    const { name, component, props } = toNamedView(args)
+  const addView: AddView = (component, options) => {
+    const view = toView(component, options)
     const currentViews = route.views.at(-1)
 
     if (!currentViews) {
       return withAddView(route)
     }
 
-    const nextViews = addToViews(currentViews, name, component, props)
+    const nextViews = addToViews(currentViews, view)
 
     return withAddView({
       ...route,
