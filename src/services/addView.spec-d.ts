@@ -257,6 +257,45 @@ describe('addView', () => {
         return {}
       })
     })
+
+    test('bare parent props are passed to a child when the parent getter declares its arguments', () => {
+      const parent = createRoute({ name: 'parent', path: '/parent/[id]' })
+        .addView(component, {
+          props: (route, { push }) => ({ foo: route.params.id, canPush: typeof push === 'function' }),
+        })
+
+      createRoute({ name: 'child', parent }).addView(component, {
+        props: (__, { parent }) => {
+          expectTypeOf(parent.props).toEqualTypeOf<Promise<{ foo: string, canPush: boolean }>>()
+          expectTypeOf(parent.name).toEqualTypeOf<'parent'>()
+
+          return {}
+        },
+      })
+    })
+
+    test('record parent props are passed to a child when the parent getters declare their arguments', () => {
+      const parent = createRoute({ name: 'parent', path: '/parent/[id]' })
+        .addView(component, {
+          name: 'one',
+          props: (route) => ({ foo: route.params.id }),
+        })
+        .addView(component, {
+          name: 'two',
+          props: async (__, { push }) => ({ canPush: typeof push === 'function' }),
+        })
+
+      createRoute({ name: 'child', parent }).addView(component, {
+        props: (__, { parent }) => {
+          expectTypeOf(parent.props).toEqualTypeOf<{
+            one: Promise<{ foo: string }>,
+            two: Promise<{ canPush: boolean }>,
+          }>()
+
+          return {}
+        },
+      })
+    })
   })
 
   describe('props getter context', () => {
