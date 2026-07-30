@@ -120,9 +120,9 @@ type AddViewArgs<
 /**
  * The views of the route itself, from the last `matches` entry.
  */
-type CurrentViewProps<
-  TRoute extends Route
-> = LastInArray<TRoute['matches']> extends { views: infer TViews extends RouteViews } ? TViews : RouteViews
+type CurrentMatchViews<
+  TMatches extends CreatedRouteOptions[]
+> = LastInArray<TMatches> extends { views: infer TViews extends RouteViews } ? TViews : RouteViews
 
 /**
  * Computes the new view props type after adding a view. A lone default view is stored as a bare getter;
@@ -151,40 +151,40 @@ type ReplaceLastMatchViews<
   : TMatches
 
 /**
- * Rebuilds a Route with the last match's views updated. Uses Pick to recover the Url slot.
- */
-type WithViewProps<
-  TRoute extends Route,
-  TNewProps extends RouteViews
-> = Route<
-  Pick<TRoute, keyof Url>,
-  ReplaceLastMatchViews<TRoute['matches'], TNewProps>
->
-
-/**
  * A route plus every chainable/available method: addView itself, hooks, redirects, and title.
+ *
+ * Takes the url and matches rather than an assembled route so that adding a view can rebuild from them
+ * directly. Taking the route would mean re-deriving the url from it on every call, and that reference is
+ * what made chained calls nest one inside the last.
  */
-type RouteWithMethods<TRoute extends Route> = TRoute
-  & RouteAddView<TRoute>
-  & InternalRouteHooks<TRoute, TRoute['context']>
-  & RouteRedirects<TRoute>
-  & RouteSetTitle<TRoute>
+export type RouteWithMethods<
+  TUrl extends Url = Url,
+  TMatches extends CreatedRouteOptions[] = CreatedRouteOptions[]
+> = Route<TUrl, TMatches>
+  & RouteAddView<TUrl, TMatches>
+  & InternalRouteHooks<Route<TUrl, TMatches>, Route<TUrl, TMatches>['context']>
+  & RouteRedirects<Route<TUrl, TMatches>>
+  & RouteSetTitle<Route<TUrl, TMatches>>
 
 /**
- * The full return type of an `addView` call: the refined route with all methods re-attached.
+ * The full return type of an `addView` call: the same url with the last match's views replaced.
  */
 type AddViewReturn<
-  TRoute extends Route,
+  TUrl extends Url,
+  TMatches extends CreatedRouteOptions[],
   TNewProps extends RouteViews
-> = WithViewProps<TRoute, TNewProps> extends infer TNext extends Route
-  ? RouteWithMethods<TNext>
+> = ReplaceLastMatchViews<TMatches, TNewProps> extends infer TNext extends CreatedRouteOptions[]
+  ? RouteWithMethods<TUrl, TNext>
   : never
 
 /**
  * Adds a view (component + optional props getter) to a route. Chainable to register multiple views,
  * including named views for named `<router-view />`s.
  */
-export type RouteAddView<TRoute extends Route = Route> = {
+export type RouteAddView<
+  TUrl extends Url = Url,
+  TMatches extends CreatedRouteOptions[] = CreatedRouteOptions[]
+> = {
   /**
    * Adds a view for this route.
    *
@@ -196,9 +196,9 @@ export type RouteAddView<TRoute extends Route = Route> = {
   addView: <
     TComponent extends Component,
     const TName extends string | undefined = undefined,
-    const TGetter extends AddViewPropsGetter<TRoute, TComponent> = AddViewPropsGetter<TRoute, TComponent>
+    const TGetter extends AddViewPropsGetter<Route<TUrl, TMatches>, TComponent> = AddViewPropsGetter<Route<TUrl, TMatches>, TComponent>
   >(
     component: TComponent,
     ...options: AddViewArgs<TComponent, TName, TGetter>
-  ) => AddViewReturn<TRoute, AddViewProps<CurrentViewProps<TRoute>, TName, NewViewGetter<TRoute, TComponent, TGetter>>>,
+  ) => AddViewReturn<TUrl, TMatches, AddViewProps<CurrentMatchViews<TMatches>, TName, NewViewGetter<Route<TUrl, TMatches>, TComponent, TGetter>>>,
 }

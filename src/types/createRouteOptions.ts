@@ -189,20 +189,29 @@ type PropsToViews<TProps> = TProps extends AnyFunction
     ? { [K in keyof TProps]: RouteView<TProps[K]> }
     : {}
 
+/**
+ * The url a route resolves to, combined with its parent's unless the route is hoisted.
+ */
+export type ToRouteUrl<
+  TOptions extends CreateRouteOptions
+> = TOptions extends { parent: infer TParent extends Route }
+  ? TOptions['hoist'] extends true ? ToUrl<TOptions & WithoutComponents> : CombineUrl<TParent, ToUrl<TOptions & WithoutComponents>>
+  : ToUrl<Identity<TOptions & WithoutComponents>>
+
+/**
+ * The matches for a route, with the props argument resolved to the views of its own match.
+ */
+export type ToRouteMatches<
+  TOptions extends CreateRouteOptions,
+  TProps
+> = ToMatches<TOptions, CreateRouteProps<TOptions> extends TProps ? undefined : TProps>
+
 export type ToRoute<
   TOptions extends CreateRouteOptions,
   TProps extends CreateRouteProps<TOptions> | undefined = undefined
 > = CreateRouteOptions extends TOptions
   ? Route
-  : TOptions extends { parent: infer TParent extends Route }
-    ? Route<
-      TOptions['hoist'] extends true ? ToUrl<TOptions & WithoutComponents> : CombineUrl<TParent, ToUrl<TOptions & WithoutComponents>>,
-      ToMatches<TOptions, CreateRouteProps<TOptions> extends TProps ? undefined : TProps>
-    >
-    : Route<
-      ToUrl<Identity<TOptions & WithoutComponents>>,
-      ToMatches<TOptions, CreateRouteProps<TOptions> extends TProps ? undefined : TProps>
-    >
+  : Route<ToRouteUrl<TOptions>, ToRouteMatches<TOptions, TProps>>
 
 export function combineRoutes(parent: Route, child: Route): Route {
   if (!isRoute(parent) || !isRoute(child)) {
