@@ -134,9 +134,7 @@ export function createPropStore(): PropStore {
       return
     }
 
-    const parentViews = parentMatch.views
-
-    const name = parentMatch.name ?? ''
+    const { views: parentViews, name = '' } = parentMatch
 
     if (isWithBareViewProps(parentViews)) {
       return {
