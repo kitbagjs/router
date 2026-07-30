@@ -85,12 +85,18 @@ export type CreateRouteOptions<
    */
   hoist?: boolean,
   /**
-   * Removed. Declared so that passing it is an error rather than silently ignored — extra properties are
+   * Only declared so that passing it is an error rather than silently ignored — extra properties are
    * allowed when inferring against this type, so leaving it out would let the old syntax type check.
+   *
+   * @deprecated Removed. Use `addView` instead: `createRoute({ ... }).addView(component)`. Delete this
+   * property in the next major version.
    */
   component?: 'component was removed, use addView instead',
   /**
-   * Removed. See {@link CreateRouteOptions.component}.
+   * Only declared so that passing it is an error rather than silently ignored.
+   *
+   * @deprecated Removed. Use `addView` with a name instead: `createRoute({ ... }).addView(component, { name })`.
+   * Delete this property in the next major version.
    */
   components?: 'components was removed, use addView with a name instead',
 }
