@@ -219,6 +219,17 @@ describe('addView', () => {
   })
 
   describe('parent props', () => {
+    test('parent props are undefined when the parent has views but no getter', () => {
+      const parent = createRoute({ name: 'parent' }).addView(component)
+
+      createRoute({ name: 'child', parent }, (__, { parent }) => {
+        expectTypeOf(parent.props).toEqualTypeOf<undefined>()
+        expectTypeOf(parent.name).toEqualTypeOf<'parent'>()
+
+        return {}
+      })
+    })
+
     test('bare parent props (added via addView) are passed to a child', () => {
       const parent = createRoute({ name: 'parent' }).addView(component, {
         props: () => ({ foo: 123 }),
