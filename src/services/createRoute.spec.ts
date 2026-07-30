@@ -424,6 +424,42 @@ describe('props', () => {
     expect(spy).toHaveBeenCalledWith({ value1: 123, value2: 456 })
   })
 
+  test('parent props for view names without a getter are undefined rather than never settling', async () => {
+    const spy = vi.fn()
+
+    const parent = createRoute({
+      name: 'parent',
+      components: {
+        one: component,
+        two: component,
+        three: component,
+      },
+    }, {
+      one: () => ({ foo: 123 }),
+      two: () => ({ bar: 456 }),
+    })
+
+    const child = createRoute({
+      name: 'child',
+      parent: parent,
+      path: '/child',
+    }, (__, { parent }) => {
+      const props = parent.props as Record<string, unknown>
+
+      // "three" has a view but no getter, "missing" has neither — both must be
+      // undefined instead of promises that never settle
+      return spy({ three: props.three, missing: props.missing })
+    })
+
+    const router = createRouter([parent, child], {
+      initialUrl: '/child',
+    })
+
+    await router.start()
+
+    expect(spy).toHaveBeenCalledWith({ three: undefined, missing: undefined })
+  })
+
   test('async parent props with multiple views are passed to child props', async () => {
     const spy = vi.fn()
 
