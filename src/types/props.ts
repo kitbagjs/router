@@ -36,9 +36,9 @@ type GetParentPropsReturnType<
 > = TParent extends Route
   ? LastInArray<TParent['views']> extends RouteViews<infer TProps>
     ? TProps extends PropsGetter
-      ? ReturnType<TProps>
+      ? Promise<Awaited<ReturnType<TProps>>>
       : TProps extends Record<string, PropsGetter>
-        ? { [K in keyof TProps]: ReturnType<TProps[K]> }
+        ? { [K in keyof TProps]: Promise<Awaited<ReturnType<TProps[K]>>> }
         : undefined
     : undefined
   : undefined

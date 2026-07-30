@@ -57,10 +57,15 @@ type ParentMatchName<
   ? TParent['name']
   : string
 
+/**
+ * A parent's props are always given to a child as a promise. They may not have been computed when the
+ * child's getter runs — prefetching at a different strategy, or not at all, means the child has to wait
+ * for them — so the type cannot promise a value that is already available.
+ */
 type MatchPropsReturnType<TProps> = TProps extends PropsGetter
-  ? ReturnType<TProps>
+  ? Promise<Awaited<ReturnType<TProps>>>
   : TProps extends Record<string, PropsGetter>
-    ? { [K in keyof TProps]: ReturnType<TProps[K]> }
+    ? { [K in keyof TProps]: Promise<Awaited<ReturnType<TProps[K]>>> }
     : undefined
 
 /**
