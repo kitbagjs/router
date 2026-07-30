@@ -233,9 +233,12 @@ describe('props', () => {
       name: 'child',
       parent: parent,
       path: '/child',
-    }, (_, { parent }) => {
-      return spy(parent)
     })
+      .addView(component, {
+        props: (_, { parent }) => {
+          return spy(parent)
+        },
+      })
 
     const router = createRouter([parent, child], {
       initialUrl: '/parent/child',
@@ -292,18 +295,19 @@ describe('props', () => {
 
     const parent = createRoute({
       name: 'parent',
-      path: '/parent',
-    }, () => ({ foo: 123 }))
+    })
+      .addView(component, { props: () => ({ foo: 123 }) })
 
     const child = createRoute({
       name: 'child',
       parent: parent,
       path: '/child',
-    }, async (__, { parent }) => {
-      const { foo: value } = await parent.props
-
-      return spy({ value })
     })
+      .addView(component, {
+        props: (__, { parent }) => {
+          return spy({ value: parent.props.foo })
+        },
+      })
 
     const router = createRouter([parent, child], {
       initialUrl: '/parent/child',
@@ -390,21 +394,24 @@ describe('props', () => {
 
     const parent = createRoute({
       name: 'parent',
-      path: '/parent',
-    }, async () => ({ foo: 123 }))
+    })
+      .addView(component, { props: async () => ({ foo: 123 }) })
 
     const child = createRoute({
       name: 'child',
       parent: parent,
       path: '/child',
-    }, async (__, { parent }) => {
-      expect(parent.props).toBeDefined()
-      expect(parent.props).toBeInstanceOf(Promise)
-
-      const { foo: value } = await parent.props
-
-      return spy({ value })
     })
+      .addView(component, {
+        props: async (__, { parent }) => {
+          expect(parent.props).toBeDefined()
+          expect(parent.props).toBeInstanceOf(Promise)
+
+          const { foo: value } = await parent.props
+
+          return spy({ value })
+        },
+      })
 
     const router = createRouter([parent, child], {
       initialUrl: '/parent/child',
@@ -420,62 +427,24 @@ describe('props', () => {
 
     const parent = createRoute({
       name: 'parent',
-      path: '/parent',
-      components: {
-        one: component,
-        two: component,
-        three: component,
-      },
-    }, {
-      one: () => ({ foo: 123 }),
-      two: () => ({ bar: 456 }),
     })
+      .addView(component, { name: 'one', props: () => ({ foo: 123 }) })
+      .addView(component, { name: 'two', props: () => ({ bar: 456 }) })
+      .addView(component, { name: 'three' })
 
     const child = createRoute({
       name: 'child',
       parent: parent,
       path: '/child',
-    }, async (__, { parent }) => {
-      const { foo: value1 } = await parent.props.one
-      const { bar: value2 } = await parent.props.two
-
-      return spy({ value1, value2 })
     })
-
-    const router = createRouter([parent, child], {
-      initialUrl: '/parent/child',
-    })
-
-    await router.start()
-
-    expect(spy).toHaveBeenCalledWith({ value1: 123, value2: 456 })
-  })
-
-  test('parent props for view names without a getter are undefined rather than never settling', async () => {
-    const spy = vi.fn()
-
-    const parent = createRoute({
-      name: 'parent',
-      path: '/parent',
-      components: {
-        one: component,
-        two: component,
-        three: component,
-      },
-    }, {
-      one: () => ({ foo: 123 }),
-      two: () => ({ bar: 456 }),
-    })
-
-    const child = createRoute({
-      name: 'child',
-      parent: parent,
-      path: '/child',
-    }, (__, { parent }) => {
-      const props = parent.props as Record<string, unknown>
-
-      return spy({ three: props.three, missing: props.missing })
-    })
+      .addView(component, {
+        props: (__, { parent }) => {
+          return spy({
+            value1: parent.props.one.foo,
+            value2: parent.props.two.bar,
+          })
+        },
+      })
 
     const router = createRouter([parent, child], {
       initialUrl: '/parent/child',
@@ -491,34 +460,31 @@ describe('props', () => {
 
     const parent = createRoute({
       name: 'parent',
-      path: '/parent',
-      components: {
-        one: component,
-        two: component,
-        three: component,
-      },
-    }, {
-      one: async () => ({ foo: 123 }),
-      two: async () => ({ bar: 456 }),
     })
+      .addView(component, { name: 'one', props: async () => ({ foo: 123 }) })
+      .addView(component, { name: 'two', props: async () => ({ bar: 456 }) })
+      .addView(component, { name: 'three' })
 
     const child = createRoute({
       name: 'child',
       parent: parent,
       path: '/child',
-    }, async (__, { parent }) => {
-      expect(parent.props).toBeDefined()
-      expect(parent.props.one).toBeInstanceOf(Promise)
-      expect(parent.props.two).toBeInstanceOf(Promise)
-
-      const { foo: value1 } = await parent.props.one
-      const { bar: value2 } = await parent.props.two
-
-      return spy({
-        value1,
-        value2,
-      })
     })
+      .addView(component, {
+        props: async (__, { parent }) => {
+          expect(parent.props).toBeDefined()
+          expect(parent.props.one).toBeInstanceOf(Promise)
+          expect(parent.props.two).toBeInstanceOf(Promise)
+
+          const { foo: value1 } = await parent.props.one
+          const { bar: value2 } = await parent.props.two
+
+          return spy({
+            value1,
+            value2,
+          })
+        },
+      })
 
     const router = createRouter([parent, child], {
       initialUrl: '/parent/child',

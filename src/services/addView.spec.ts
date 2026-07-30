@@ -151,7 +151,8 @@ describe('backwards compatibility', () => {
     const defaultGetter = (): { foo: string } => ({ foo: 'bar' })
     const sidebarGetter = (): { baz: number } => ({ baz: 1 })
 
-    const route = createRoute({ name: 'route', component }, defaultGetter)
+    const route = createRoute({ name: 'route' })
+      .addView(component, { props: defaultGetter })
       .addView(other, {
         name: 'sidebar',
         props: sidebarGetter,

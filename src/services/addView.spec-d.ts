@@ -208,7 +208,8 @@ describe('addView', () => {
 
   describe('backwards compatibility', () => {
     test('addView merges with the deprecated component + props options', () => {
-      const route = createRoute({ name: 'route', component }, () => ({ foo: 'bar' }))
+      const route = createRoute({ name: 'route' })
+        .addView(component, { props: () => ({ foo: 'bar' }) })
         .addView(component, {
           name: 'sidebar',
           props: () => ({ baz: 1 }),
@@ -235,12 +236,15 @@ describe('addView', () => {
         props: () => ({ foo: 123 }),
       })
 
-      createRoute({ name: 'child', parent }, (__, { parent }) => {
-        expectTypeOf(parent.props).toEqualTypeOf<Promise<{ foo: number }>>()
-        expectTypeOf(parent.name).toEqualTypeOf<'parent'>()
+      createRoute({ name: 'child', parent })
+        .addView(component, {
+          props: (__, { parent }) => {
+            expectTypeOf(parent.props).toEqualTypeOf<{ foo: number }>()
+            expectTypeOf(parent.name).toEqualTypeOf<'parent'>()
 
-        return {}
-      })
+            return {}
+          },
+        })
     })
 
     test('record parent props (added via addView) are passed to a child', () => {
@@ -254,14 +258,17 @@ describe('addView', () => {
           props: async () => ({ foo: 456 }),
         })
 
-      createRoute({ name: 'child', parent }, (__, { parent }) => {
-        expectTypeOf(parent.props).toEqualTypeOf<{
-          one: Promise<{ foo: number }>,
-          two: Promise<{ foo: number }>,
-        }>()
+      createRoute({ name: 'child', parent })
+        .addView(component, {
+          props: (__, { parent }) => {
+            expectTypeOf(parent.props).toEqualTypeOf<{
+              one: { foo: number },
+              two: Promise<{ foo: number }>,
+            }>()
 
-        return {}
-      })
+            return {}
+          },
+        })
     })
 
     test('bare parent props are passed to a child when the parent getter declares its arguments', () => {
@@ -316,7 +323,8 @@ describe('addView', () => {
     })
 
     test('parent context is reconstructed from the route views/matches', () => {
-      const parent = createRoute({ name: 'parent' }, async () => ({ foo: 123 }))
+      const parent = createRoute({ name: 'parent' })
+        .addView(component, { props: async () => ({ foo: 123 }) })
 
       createRoute({ name: 'child', parent }).addView(component, {
         props: (__, { parent }) => {

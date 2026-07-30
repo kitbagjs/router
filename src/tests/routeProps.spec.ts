@@ -10,7 +10,8 @@ test('props are called each time the route is matched', async () => {
   const route = createRoute({
     name: 'test',
     path: '/[param]',
-  }, props)
+  })
+    .addView(component, { props: props })
 
   const router = createRouter([route], {
     initialUrl: '/',
@@ -37,13 +38,16 @@ test('props are called with the correct context', async () => {
   const route = createRoute({
     name: 'route',
     path: '/',
-  }, () => {
-    const value = inject('global')
-
-    props(value)
-
-    return {}
   })
+    .addView(component, {
+      props: () => {
+        const value = inject('global')
+
+        props(value)
+
+        return {}
+      },
+    })
 
   const router = createRouter([route], {
     initialUrl: '/',
