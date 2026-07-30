@@ -20,18 +20,14 @@ type ViewOptions = {
  */
 type AddViewParameters = [component: Component, options?: ViewOptions]
 
-type NamedView = {
+type View = {
   name: string,
   component: Component,
   props: PropsGetter | undefined,
   prefetch: PrefetchConfig | undefined,
 }
 
-/**
- * Normalizes `addView` arguments into a `{ name, component, props, prefetch }` view, defaulting the
- * name to 'default'.
- */
-function toNamedView(component: Component, options: ViewOptions | undefined): NamedView {
+function toView(component: Component, options: ViewOptions | undefined): View {
   return {
     name: options?.name ?? DEFAULT_VIEW_NAME,
     component,
@@ -75,7 +71,7 @@ function toPropsRecord(props: ViewProps): Record<string, PropsGetter> {
  * props keep the bare getter for a lone default view and promote to a record once a named view is added
  * (pulling any existing bare default under 'default').
  */
-function addToViews(views: RouteViews, { name, component, props, prefetch }: NamedView): RouteViews {
+function addToViews(views: RouteViews, { name, component, props, prefetch }: View): RouteViews {
   return {
     id: views.id,
     components: { ...views.components, [name]: component },
@@ -121,7 +117,7 @@ type AddView = (...args: AddViewParameters) => Route
  */
 export function withAddView<TRoute extends Route>(route: TRoute): TRoute {
   const addView: AddView = (component, options) => {
-    const view = toNamedView(component, options)
+    const view = toView(component, options)
     const currentViews = route.views.at(-1)
 
     if (!currentViews) {
