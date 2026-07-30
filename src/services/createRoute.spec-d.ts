@@ -1,5 +1,6 @@
 import { describe, expectTypeOf, test } from 'vitest'
 import { createRoute } from './createRoute'
+import { RouteView } from '@/types/routeViews'
 import { Identity } from '@/types/utilities'
 import echo from '@/components/echo'
 import { component } from '@/utilities/testHelpers'
@@ -243,8 +244,8 @@ describe('props', () => {
       component,
     })
 
-    type Source = typeof route['views'][0]['props']
-    type Expect = undefined
+    type Source = typeof route['views'][0]['views']
+    type Expect = {}
 
     expectTypeOf<Source>().toEqualTypeOf<Expect>()
   })
@@ -254,8 +255,8 @@ describe('props', () => {
       component,
     }, () => ({ foo: 'bar' }))
 
-    type Source = typeof route['views'][0]['props']
-    type Expect = () => { foo: string }
+    type Source = typeof route['views'][0]['views']
+    type Expect = { default: RouteView<() => { foo: string }> }
 
     expectTypeOf<Source>().toEqualTypeOf<Expect>()
   })
@@ -266,8 +267,8 @@ describe('props', () => {
       component: echo,
     })
 
-    type Source = typeof route['views'][0]['props']
-    type Expect = undefined
+    type Source = typeof route['views'][0]['views']
+    type Expect = {}
 
     expectTypeOf<Source>().toEqualTypeOf<Expect>()
   })
@@ -277,8 +278,8 @@ describe('props', () => {
       component: echo,
     }, () => ({ value: 'bar', extra: true }))
 
-    type Source = typeof route['views'][0]['props']
-    type Expect = () => { value: string, extra: boolean }
+    type Source = typeof route['views'][0]['views']
+    type Expect = { default: RouteView<() => { value: string, extra: boolean }> }
 
     expectTypeOf<Source>().toEqualTypeOf<Expect>()
   })
@@ -289,8 +290,8 @@ describe('props', () => {
       // @ts-expect-error should not accept incorrect type
     }, () => ({ value: true, foo: 'bar' }))
 
-    type Source = typeof route['views'][0]['props']
-    type Expect = undefined
+    type Source = typeof route['views'][0]['views']
+    type Expect = {}
 
     expectTypeOf<Source>().toEqualTypeOf<Expect>()
   })
@@ -302,8 +303,8 @@ describe('props', () => {
       },
     })
 
-    type Source = typeof route['views'][0]['props']
-    type Expect = undefined
+    type Source = typeof route['views'][0]['views']
+    type Expect = {}
 
     expectTypeOf<Source>().toEqualTypeOf<Expect>()
   })
@@ -317,8 +318,8 @@ describe('props', () => {
       default: () => ({ foo: 'bar' }),
     })
 
-    type Source = typeof route['views'][0]['props']
-    type Expect = { default: () => { foo: string } }
+    type Source = typeof route['views'][0]['views']
+    type Expect = { default: RouteView<() => { foo: string }> }
 
     expectTypeOf<Source>().toEqualTypeOf<Expect>()
   })
@@ -331,8 +332,8 @@ describe('props', () => {
       },
     })
 
-    type Source = typeof route['views'][0]['props']
-    type Expect = undefined
+    type Source = typeof route['views'][0]['views']
+    type Expect = {}
 
     expectTypeOf<Source>().toEqualTypeOf<Expect>()
   })
@@ -346,8 +347,8 @@ describe('props', () => {
       default: () => ({ value: 'bar', extra: true }),
     })
 
-    type Source = typeof route['views'][0]['props']
-    type Expect = { default: () => { value: string, extra: boolean } }
+    type Source = typeof route['views'][0]['views']
+    type Expect = { default: RouteView<() => { value: string, extra: boolean }> }
 
     expectTypeOf<Source>().toEqualTypeOf<Expect>()
   })
@@ -362,8 +363,8 @@ describe('props', () => {
       default: () => ({ value: true, foo: 'bar' }),
     })
 
-    type Source = typeof route['views'][0]['props']
-    type Expect = undefined
+    type Source = typeof route['views'][0]['views']
+    type Expect = {}
 
     expectTypeOf<Source>().toEqualTypeOf<Expect>()
   })
@@ -374,8 +375,8 @@ describe('props', () => {
       // @ts-expect-error should not accept undefined
     }, undefined)
 
-    type Source = typeof route['views'][0]['props']
-    type Expect = undefined
+    type Source = typeof route['views'][0]['views']
+    type Expect = {}
 
     expectTypeOf<Source>().toEqualTypeOf<Expect>()
   })

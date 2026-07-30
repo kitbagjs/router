@@ -128,7 +128,7 @@ type AddViewArgs<
  */
 type CurrentViewProps<
   TRoute extends Route
-> = LastInArray<TRoute['views']> extends RouteViews<infer TProps> ? TProps : undefined
+> = LastInArray<TRoute['views']> extends RouteViews<infer TViews> ? TViews : {}
 
 /**
  * Computes the new view props type after adding a view. A lone default view is stored as a bare getter;
@@ -138,11 +138,11 @@ export type AddViewProps<
   TCurrent,
   TName extends string | undefined,
   TNewGetter
-> = Identity<Omit<TCurrent, ViewName<TName>> & Record<ViewName<TName>, RouteView<NoUndefined<TNewGetter>>>>
+> = [TNewGetter] extends [undefined]
+  ? TCurrent
+  : Identity<Omit<TCurrent, ViewName<TName>> & Record<ViewName<TName>, RouteView<TNewGetter>>>
 
 type ViewName<TName extends string | undefined> = TName extends string ? TName : 'default'
-
-type NoUndefined<TGetter> = [TGetter] extends [undefined] ? never : TGetter
 
 /**
  * Replaces the props of the last view in a views tuple, preserving all ancestor views.
