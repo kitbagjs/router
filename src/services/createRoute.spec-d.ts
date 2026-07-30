@@ -10,16 +10,52 @@ import { BuiltInRejectionType } from '@/types/rejection'
 import { createRejection } from '@/services/createRejection'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouteRedirects } from '@/types/redirects'
+import { RouteSetTitle } from '@/types/routeTitle'
 import { Url } from '@/types/url'
 
-test('empty options returns an empty route', () => {
-  const route = createRoute({})
+describe('route shape', () => {
+  // a route carries the same members however it was built, so each case asserts against both
+  const cases = {
+    plain: createRoute({}),
+    withView: createRoute({}).addView(component),
+    withNamedView: createRoute({}).addView(component, { name: 'sidebar' }),
+    withProps: createRoute({}).addView(component, { props: () => ({ foo: 'bar' }) }),
+  }
 
-  type Source = typeof route
+  test('is a url', () => {
+    expectTypeOf(cases.plain).toExtend<Url>()
+    expectTypeOf(cases.withView).toExtend<Url>()
+    expectTypeOf(cases.withNamedView).toExtend<Url>()
+    expectTypeOf(cases.withProps).toExtend<Url>()
+  })
 
-  expectTypeOf<Source>().toExtend<Url>()
-  expectTypeOf<Source>().toMatchObjectType<InternalRouteHooks<Source>>()
-  expectTypeOf<Source>().toMatchObjectType<RouteRedirects>()
+  test('has hooks', () => {
+    expectTypeOf(cases.plain).toExtend<InternalRouteHooks>()
+    expectTypeOf(cases.withView).toExtend<InternalRouteHooks>()
+    expectTypeOf(cases.withNamedView).toExtend<InternalRouteHooks>()
+    expectTypeOf(cases.withProps).toExtend<InternalRouteHooks>()
+  })
+
+  test('has redirects', () => {
+    expectTypeOf(cases.plain).toExtend<RouteRedirects>()
+    expectTypeOf(cases.withView).toExtend<RouteRedirects>()
+    expectTypeOf(cases.withNamedView).toExtend<RouteRedirects>()
+    expectTypeOf(cases.withProps).toExtend<RouteRedirects>()
+  })
+
+  test('has setTitle', () => {
+    expectTypeOf(cases.plain).toExtend<RouteSetTitle>()
+    expectTypeOf(cases.withView).toExtend<RouteSetTitle>()
+    expectTypeOf(cases.withNamedView).toExtend<RouteSetTitle>()
+    expectTypeOf(cases.withProps).toExtend<RouteSetTitle>()
+  })
+
+  test('is chainable', () => {
+    expectTypeOf(cases.plain.addView).toBeFunction()
+    expectTypeOf(cases.withView.addView).toBeFunction()
+    expectTypeOf(cases.withNamedView.addView).toBeFunction()
+    expectTypeOf(cases.withProps.addView).toBeFunction()
+  })
 })
 
 test('options with name', () => {

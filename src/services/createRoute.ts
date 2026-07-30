@@ -1,6 +1,6 @@
 import { markRaw } from 'vue'
 import { createRouteId } from '@/services/createRouteId'
-import { CreateRouteOptions, PropsGetter, CreateRouteProps, ToRoute, combineRoutes, isWithParent, RouterViewPropsGetter } from '@/types/createRouteOptions'
+import { CreateRouteOptions, PropsGetter, CreateRouteProps, ToRoute, ToRouteMatches, ToRouteUrl, combineRoutes, isWithParent, RouterViewPropsGetter } from '@/types/createRouteOptions'
 import { toName } from '@/types/name'
 import { IS_ROUTE_SYMBOL, Route, RouteInternal } from '@/types/route'
 import { createRouteHooks } from '@/services/createRouteHooks'
@@ -33,7 +33,7 @@ export function createRoute<
   const TOptions extends CreateRouteOptions,
   const TProps extends CreateRouteProps<TOptions>
 >(options: TOptions, ...args: CreateRouteWithProps<TOptions, TProps>): ToRoute<TOptions, TProps>
-  & RouteAddView<ToRoute<TOptions, TProps>>
+  & RouteAddView<ToRouteUrl<TOptions>, ToRouteMatches<TOptions, TProps>>
   & InternalRouteHooks<ToRoute<TOptions>, ExtractRouteContext<TOptions>>
   & RouteRedirects<ToRoute<TOptions>>
   & RouteSetTitle<ToRoute<TOptions>>
