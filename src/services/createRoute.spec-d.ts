@@ -412,6 +412,22 @@ describe('props', () => {
     })
   })
 
+  test('parent props are passed to child props when the parent getter declares its arguments', () => {
+    const parent = createRoute({
+      name: 'parent',
+      path: '/parent/[id]',
+    }, (route, { push }) => ({ foo: route.params.id, canPush: typeof push === 'function' }))
+
+    createRoute({
+      name: 'child',
+      parent: parent,
+    }, (__, { parent }) => {
+      expectTypeOf(parent.props).toEqualTypeOf<Promise<{ foo: string, canPush: boolean }>>()
+
+      return {}
+    })
+  })
+
   test('async parent props are passed to child props', () => {
     const parent = createRoute({
       name: 'parent',

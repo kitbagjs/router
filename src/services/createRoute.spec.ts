@@ -243,8 +243,6 @@ describe('props', () => {
       parent,
       path: '/child',
     }, async (__, { parent }) => {
-      // the parent's type collapses to undefined when its getter consumes the callback context
-      // eslint-disable-next-line @typescript-eslint/await-thenable
       seen.push({ self: 'child', parentName: parent.name, parentProps: await parent.props })
 
       return { level: 'child' }

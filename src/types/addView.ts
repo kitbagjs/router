@@ -14,7 +14,7 @@ import { RouteUpdate } from '@/types/routeUpdate'
 import { PrefetchConfig } from '@/types/prefetch'
 import { RouteViews } from '@/types/routeViews'
 import { Url } from '@/types/url'
-import { Identity, LastInArray, MaybePromise } from '@/types/utilities'
+import { AnyFunction, Identity, LastInArray, MaybePromise } from '@/types/utilities'
 
 /**
  * The props getter for a view added via `addView`. Receives the same two arguments as the
@@ -61,9 +61,9 @@ type ParentMatchName<
 /**
  * Always a promise, since the parent's props may not have been computed when the child's getter runs.
  */
-type MatchPropsReturnType<TProps> = TProps extends PropsGetter
+type MatchPropsReturnType<TProps> = TProps extends AnyFunction
   ? Promise<Awaited<ReturnType<TProps>>>
-  : TProps extends Record<string, PropsGetter>
+  : TProps extends Record<string, AnyFunction>
     ? { [K in keyof TProps]: Promise<Awaited<ReturnType<TProps[K]>>> }
     : undefined
 
@@ -152,12 +152,12 @@ export type AddViewProps<
   : TName extends undefined
     ? TCurrent extends undefined
       ? TNewGetter
-      : TCurrent extends (...args: any[]) => any
+      : TCurrent extends AnyFunction
         ? TNewGetter
         : Identity<TCurrent & { default: TNewGetter }>
     : TCurrent extends undefined
       ? Identity<Record<TName & string, TNewGetter>>
-      : TCurrent extends (...args: any[]) => any
+      : TCurrent extends AnyFunction
         ? Identity<{ default: TCurrent } & Record<TName & string, TNewGetter>>
         : Identity<TCurrent & Record<TName & string, TNewGetter>>
 
