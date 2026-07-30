@@ -47,7 +47,7 @@ export function createRouterView<TRouter extends Router>(routerKey: InjectionKey
       }
 
       if (isRejection(rejection.value)) {
-        return rejection.value.route.views.at(0)?.views.default.component ?? null
+        return rejection.value.route.views.at(0)?.default.component ?? null
       }
 
       const views = route.views.at(depth)
@@ -58,7 +58,13 @@ export function createRouterView<TRouter extends Router>(routerKey: InjectionKey
 
       const name = props.name ?? 'default'
 
-      return getRouteComponents(views)[name]
+      const id = route.matches.at(depth)?.id
+
+      if (!id) {
+        return null
+      }
+
+      return getRouteComponents(id, views)[name]
     })
 
     return () => {

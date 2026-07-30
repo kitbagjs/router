@@ -17,7 +17,7 @@ import { RouteContext } from '@/types/routeContext'
 import { RouterViewProps } from '@/components/routerView'
 import { ToUrl } from '@/types/url'
 import { CombineUrl } from '@/services/combineUrl'
-import { RouteView, RouteViews } from '@/types/routeViews'
+import { RouteView } from '@/types/routeViews'
 
 export type WithHost<THost extends string | UrlPart = string | UrlPart> = {
   /**
@@ -177,8 +177,8 @@ type ToViews<
   TOptions extends CreateRouteOptions,
   TProps
 > = TOptions extends { parent: infer TParent extends Route }
-  ? [...TParent['views'], RouteViews<PropsToViews<TProps>>]
-  : [RouteViews<PropsToViews<TProps>>]
+  ? [...TParent['views'], PropsToViews<TProps>]
+  : [PropsToViews<TProps>]
 
 /**
  * Builds a views record from the props argument, which is either a single getter for the unnamed view or

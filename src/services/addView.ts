@@ -41,11 +41,8 @@ function toView(component: Component, options: ViewOptions | undefined): View {
  */
 function addToViews(views: RouteViews, { name, component, props, prefetch }: View): RouteViews {
   return {
-    id: views.id,
-    views: {
-      ...views.views,
-      [name]: { component, props, prefetch },
-    },
+    ...views,
+    [name]: { component, props, prefetch },
   }
 }
 

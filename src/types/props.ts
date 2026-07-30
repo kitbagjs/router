@@ -6,7 +6,7 @@ import { RouterReplace } from './routerReplace'
 import { ExtractRouteContextRejections, ExtractRouteContextRoutes } from './routeContext'
 import { ResolvedRoute } from './resolved'
 import { RouteUpdate } from './routeUpdate'
-import { RouteViews, ViewsPropsReturnType } from '@/types/routeViews'
+import { ViewsPropsReturnType } from '@/types/routeViews'
 import { LastInArray } from '@/types/utilities'
 
 /**
@@ -34,7 +34,5 @@ export type PropsCallbackParent<
 type GetParentPropsReturnType<
   TParent extends Route | undefined = Route | undefined
 > = TParent extends Route
-  ? LastInArray<TParent['views']> extends RouteViews<infer TViews>
-    ? ViewsPropsReturnType<TViews>
-    : undefined
+  ? ViewsPropsReturnType<LastInArray<TParent['views']>>
   : undefined
