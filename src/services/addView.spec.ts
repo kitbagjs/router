@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest'
 import { createRoute } from '@/services/createRoute'
 import { RouteViews } from '@/types/routeViews'
 import { component } from '@/utilities/testHelpers'
+import echo from '@/components/echo'
 
 const other = { template: '<div>other</div>' }
 
@@ -38,8 +39,12 @@ describe('components', () => {
       .addView(other, {
         name: 'sidebar',
       })
+      .addView(echo, {
+        name: 'echo',
+        props: () => ({ value: 'bar' }),
+      })
 
-    expect(pick(route, 'component')).toStrictEqual({ default: component, sidebar: other })
+    expect(pick(route, 'component')).toStrictEqual({ default: component, sidebar: other, echo })
   })
 })
 
