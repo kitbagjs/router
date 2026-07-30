@@ -134,11 +134,11 @@ export function createPropStore(): PropStore {
       return
     }
 
-    const { views: parentViews, name = '' } = parentMatch
+    const { views: parentViews, name: parentName = '' } = parentMatch
 
     if (isWithBareViewProps(parentViews)) {
       return {
-        name,
+        name: parentName,
         get props() {
           return getParentProps(parentMatch.id, DEFAULT_VIEW_NAME, route, prefetch)
         },
@@ -147,7 +147,7 @@ export function createPropStore(): PropStore {
 
     if (isWithViewProps(parentViews)) {
       return {
-        name,
+        name: parentName,
         props: new Proxy({}, {
           get(target, propName) {
             if (typeof propName !== 'string') {
@@ -161,7 +161,7 @@ export function createPropStore(): PropStore {
     }
 
     return {
-      name,
+      name: parentName,
       props: undefined,
     }
   }
