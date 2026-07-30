@@ -88,14 +88,8 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
 }
 
 function prefetchComponentsForRoute(strategy: PrefetchStrategy, route: ResolvedRoute, configs: PrefetchConfigs): void {
-  route.matches.forEach((match, depth) => {
-    const views = route.views.at(depth)
-
-    if (!views) {
-      return
-    }
-
-    Object.values(views).forEach((view) => {
+  route.matches.forEach((match) => {
+    Object.values(match.views).forEach((view) => {
       if (!view.component || !isAsyncComponent(view.component)) {
         return
       }

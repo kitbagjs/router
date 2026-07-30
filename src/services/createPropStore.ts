@@ -32,7 +32,7 @@ export function createPropStore(): PropStore {
     const { push, replace, reject, update } = createRouterCallbackContext({ to: route })
 
     return route.matches
-      .map((match, index) => ({ match, views: route.views[index] }))
+      .map((match) => ({ match, views: match.views }))
       .flatMap(({ match, views }) => getComponentProps(match.id, views).map((componentProps) => ({ match, views, componentProps })))
       .filter(({ match, views, componentProps }) => getPrefetchOption({
         ...prefetch,
@@ -68,7 +68,7 @@ export function createPropStore(): PropStore {
 
   const setProps: PropStore['setProps'] = async (route) => {
     const { push, replace, reject, update } = createRouterCallbackContext({ to: route })
-    const componentProps = route.views.flatMap((views, depth) => getComponentProps(route.matches[depth].id, views))
+    const componentProps = route.matches.flatMap((match) => getComponentProps(match.id, match.views))
     const keys: string[] = []
     const promises: Promise<unknown>[] = []
 
@@ -129,7 +129,7 @@ export function createPropStore(): PropStore {
 
   function getParentContext(route: ResolvedRoute, prefetch: boolean = false): PropsCallbackParent {
     const parentMatch = route.matches.at(-2)
-    const parentViews = route.views.at(-2)
+    const parentViews = route.matches.at(-2)?.views
 
     if (!parentMatch || !parentViews) {
       return

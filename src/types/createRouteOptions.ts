@@ -1,5 +1,6 @@
 import { Component } from 'vue'
 import { combineMeta } from '@/services/combineMeta'
+import { withMatched } from '@/services/withMatched'
 import { combineState } from '@/services/combineState'
 import { combineHooks } from '@/types/hooks'
 import { Param } from '@/types/paramTypes'
@@ -153,7 +154,8 @@ export type CreateRouteProps<
     : RouterViewPropsGetter<TOptions>
 
 type ToMatch<
-  TOptions extends CreateRouteOptions
+  TOptions extends CreateRouteOptions,
+  TProps = undefined
 > = Omit<TOptions, 'meta' | 'name' | 'component' | 'components'> & {
   id: string,
   name: ToName<TOptions['name']>,
@@ -161,24 +163,22 @@ type ToMatch<
    * Represents additional metadata associated with a route. Always present, defaults to empty object.
    */
   meta: ToMeta<TOptions['meta']>,
+  /**
+   * The views this route renders, keyed by view name.
+   */
+  views: PropsToViews<TProps>,
 }
 
-type ToMatches<
-  TOptions extends CreateRouteOptions
-> = TOptions extends { parent: infer TParent extends Route }
-  ? [...TParent['matches'], ToMatch<TOptions>]
-  : [ToMatch<TOptions>]
-
 /**
- * The `views` tuple for a route, indexed by depth (parallel to `ToMatches`). Each entry carries that
- * route's views, used for parent props typing and refined by `addView`.
+ * The matches for a route, from greatest ancestor to the route itself. Each carries its own views, so
+ * there is no second tuple to keep aligned with this one.
  */
-type ToViews<
+type ToMatches<
   TOptions extends CreateRouteOptions,
-  TProps
+  TProps = undefined
 > = TOptions extends { parent: infer TParent extends Route }
-  ? [...TParent['views'], PropsToViews<TProps>]
-  : [PropsToViews<TProps>]
+  ? [...TParent['matches'], ToMatch<TOptions, TProps>]
+  : [ToMatch<TOptions, TProps>]
 
 /**
  * Builds a views record from the props argument, which is either a single getter for the unnamed view or
@@ -198,13 +198,11 @@ export type ToRoute<
   : TOptions extends { parent: infer TParent extends Route }
     ? Route<
       TOptions['hoist'] extends true ? ToUrl<TOptions & WithoutComponents> : CombineUrl<TParent, ToUrl<TOptions & WithoutComponents>>,
-      ToMatches<TOptions>,
-      ToViews<TOptions, CreateRouteProps<TOptions> extends TProps ? undefined : TProps>
+      ToMatches<TOptions, CreateRouteProps<TOptions> extends TProps ? undefined : TProps>
     >
     : Route<
       ToUrl<Identity<TOptions & WithoutComponents>>,
-      ToMatches<TOptions>,
-      ToViews<TOptions, CreateRouteProps<TOptions> extends TProps ? undefined : TProps>
+      ToMatches<TOptions, CreateRouteProps<TOptions> extends TProps ? undefined : TProps>
     >
 
 export function combineRoutes(parent: Route, child: Route): Route {
@@ -212,16 +210,15 @@ export function combineRoutes(parent: Route, child: Route): Route {
     throw new Error('combineRoutes called with invalid route arguments')
   }
 
-  const route = {
+  const route = withMatched({
     ...child,
     meta: combineMeta(parent.meta, child.meta),
     state: combineState(parent.state, child.state),
     hooks: combineHooks(parent, child),
-    matches: [...parent.matches, child.matched],
-    views: [...parent.views, ...child.views],
+    matches: [...parent.matches, ...child.matches],
     context: [...parent.context, ...child.context],
     depth: parent.depth + 1,
-  } satisfies Route & RouteInternal
+  }) satisfies Route & RouteInternal
 
   return route
 }

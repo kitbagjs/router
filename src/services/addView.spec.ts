@@ -5,11 +5,11 @@ import { component } from '@/utilities/testHelpers'
 
 const other = { template: '<div>other</div>' }
 
-function lastView(route: { views: RouteViews[] }): RouteViews {
-  return route.views[route.views.length - 1]
+function lastView(route: { matches: { views: RouteViews }[] }): RouteViews {
+  return route.matches[route.matches.length - 1].views
 }
 
-function pick(route: { views: RouteViews[] }, key: 'component' | 'props' | 'prefetch'): Record<string, unknown> {
+function pick(route: { matches: { views: RouteViews }[] }, key: 'component' | 'props' | 'prefetch'): Record<string, unknown> {
   return Object.fromEntries(
     Object.entries(lastView(route))
       .filter(([, view]) => view[key] !== undefined)
@@ -179,8 +179,8 @@ describe('immutability + chaining', () => {
     const withView = child.addView(component)
 
     expect(withView.name).toBe('child')
-    expect(withView.views).toHaveLength(2)
     expect(withView.matches).toHaveLength(2)
     expect(pick(withView, 'component')).toStrictEqual({ default: component })
+    expect(withView.matched).toBe(withView.matches.at(-1))
   })
 })
