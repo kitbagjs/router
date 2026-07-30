@@ -1,7 +1,16 @@
-import { Route, Routes } from '@/types/route'
+import { CreatedRouteOptions, Route, Routes } from '@/types/route'
+import { LastInArray } from '@/types/utilities'
 import { ExtractRouteStateParamsAsOptional } from '@/types/state'
 import { UrlString } from '@/types/urlString'
 import { UrlParamsReading } from '@/types/url'
+
+/**
+ * The match a route resolved to, which is the last of its matches. Falls back to the wide match type when
+ * the matches are not a concrete tuple, so an unregistered router stays assignable.
+ */
+type MatchedRoute<TMatches> = LastInArray<TMatches, CreatedRouteOptions> extends infer TMatched
+  ? unknown extends TMatched ? CreatedRouteOptions : TMatched
+  : never
 
 /**
  * Represents a route that the router has matched to current browser location.
@@ -15,7 +24,7 @@ export type ResolvedRoute<TRoute extends Route = Route> = Readonly<{
   /**
    * The specific route properties that were matched in the current route.
   */
-  matched: TRoute['matched'],
+  matched: MatchedRoute<TRoute['matches']>,
   /**
    * The specific route properties that were matched in the current route, including any ancestors.
    * Order of routes will be from greatest ancestor to narrowest matched.

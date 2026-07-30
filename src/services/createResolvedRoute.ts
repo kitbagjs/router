@@ -16,6 +16,7 @@ export function createResolvedRoute(route: Route, params: Record<string, unknown
 
   const resolvedRoute = {
     ...route,
+    matched: route.matches[route.matches.length - 1],
     query: createResolvedRouteQuery(query),
     state: getStateValues(route.state, options.state),
     hash,

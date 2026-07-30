@@ -688,7 +688,7 @@ describe('matched.meta', () => {
       name: 'route',
     })
 
-    expectTypeOf(route.matched.meta).toEqualTypeOf<Readonly<{}>>()
+    expectTypeOf(route.matches[0].meta).toEqualTypeOf<Readonly<{}>>()
   })
 
   test('preserves provided values', () => {
@@ -699,7 +699,7 @@ describe('matched.meta', () => {
       },
     })
 
-    expectTypeOf(route.matched.meta).toEqualTypeOf<Readonly<{ foo: 'bar' }>>()
+    expectTypeOf(route.matches[0].meta).toEqualTypeOf<Readonly<{ foo: 'bar' }>>()
   })
 })
 

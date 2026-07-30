@@ -97,10 +97,6 @@ export type Route<
   */
   id: string,
   /**
-   * The specific route properties that were matched in the current route.
-  */
-  matched: LastInArray<TMatches, CreatedRouteOptions>,
-  /**
    * The specific route properties that were matched in the current route, including any ancestors.
    * Order of routes will be from greatest ancestor to narrowest matched.
   */
@@ -130,7 +126,6 @@ export type Route<
 export type GenericRoute = Url & {
   id: string,
   name: string,
-  matched: CreatedRouteOptions,
   matches: CreatedRouteOptions[],
   meta: RouteMeta,
   state: Record<string, Param>,

@@ -172,7 +172,7 @@ describe('immutability + chaining', () => {
     expect(pick(withView, 'component')).toStrictEqual({ default: component })
   })
 
-  test('addView on a child returns the merged route with a combined views tuple', () => {
+  test('addView on a child returns the merged route with its ancestors', () => {
     const parent = createRoute({ name: 'parent', path: '/parent' })
     const child = createRoute({ name: 'child', parent, path: '/child' })
 
@@ -181,6 +181,5 @@ describe('immutability + chaining', () => {
     expect(withView.name).toBe('child')
     expect(withView.matches).toHaveLength(2)
     expect(pick(withView, 'component')).toStrictEqual({ default: component })
-    expect(withView.matched).toBe(withView.matches.at(-1))
   })
 })
