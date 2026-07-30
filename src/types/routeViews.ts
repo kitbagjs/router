@@ -15,22 +15,11 @@ export type RouteView<TProps = unknown> = {
 }
 
 /**
- * The views for a single route, keyed by view name (the unnamed view under 'default'). This is a
- * first-class structure on the route, indexed by depth in `route.views` — parallel to how
- * `route.matches` indexes the matched options.
- *
- * @template TViews - The route's views, carrying each view's prop getter type.
+ * The views for a single route, keyed by view name (the unnamed view under 'default'). Indexed by depth in
+ * `route.views` — parallel to how `route.matches` indexes the matched options, which is where a route's id
+ * comes from at a given depth.
  */
-export type RouteViews<TViews extends Record<string, RouteView> = Record<string, RouteView>> = {
-  /**
-   * The id of the route these views belong to. Matches the corresponding `matched.id` at the same depth.
-   */
-  id: string,
-  /**
-   * The route's views, keyed by name. Empty when the route renders a nested RouterView with no props.
-   */
-  views: TViews,
-}
+export type RouteViews = Record<string, RouteView>
 
 /**
  * The props a child sees for a parent's views. A lone unnamed view is given directly rather than under a

@@ -1,5 +1,5 @@
 import { CreateRouteOptions, CreateRouteProps, isWithComponent, isWithComponents, PropsGetter } from '@/types/createRouteOptions'
-import { RouteView, RouteViews } from '@/types/routeViews'
+import { RouteViews } from '@/types/routeViews'
 
 export const DEFAULT_VIEW_NAME = 'default'
 
@@ -10,8 +10,8 @@ export const DEFAULT_VIEW_NAME = 'default'
  * This is where the props argument's two shapes — a single getter for the unnamed view, or a record keyed
  * by view name — are normalized, so the rest of the router only deals with views keyed by name.
  */
-export function createRouteViews(id: string, options: CreateRouteOptions, props?: CreateRouteProps): RouteViews {
-  const views: Record<string, RouteView> = {}
+export function createRouteViews(options: CreateRouteOptions, props?: CreateRouteProps): RouteViews {
+  const views: RouteViews = {}
 
   /* eslint-disable @typescript-eslint/no-deprecated -- seeds views from the deprecated component/components options */
   if (isWithComponents(options)) {
@@ -34,5 +34,5 @@ export function createRouteViews(id: string, options: CreateRouteOptions, props?
     })
   }
 
-  return { id, views }
+  return views
 }

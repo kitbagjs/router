@@ -244,7 +244,7 @@ describe('props', () => {
       component,
     })
 
-    type Source = typeof route['views'][0]['views']
+    type Source = typeof route['views'][0]
     type Expect = {}
 
     expectTypeOf<Source>().toEqualTypeOf<Expect>()
@@ -255,7 +255,7 @@ describe('props', () => {
       component,
     }, () => ({ foo: 'bar' }))
 
-    type Source = typeof route['views'][0]['views']
+    type Source = typeof route['views'][0]
     type Expect = { default: RouteView<() => { foo: string }> }
 
     expectTypeOf<Source>().toEqualTypeOf<Expect>()
@@ -267,7 +267,7 @@ describe('props', () => {
       component: echo,
     })
 
-    type Source = typeof route['views'][0]['views']
+    type Source = typeof route['views'][0]
     type Expect = {}
 
     expectTypeOf<Source>().toEqualTypeOf<Expect>()
@@ -278,7 +278,7 @@ describe('props', () => {
       component: echo,
     }, () => ({ value: 'bar', extra: true }))
 
-    type Source = typeof route['views'][0]['views']
+    type Source = typeof route['views'][0]
     type Expect = { default: RouteView<() => { value: string, extra: boolean }> }
 
     expectTypeOf<Source>().toEqualTypeOf<Expect>()
@@ -290,7 +290,7 @@ describe('props', () => {
       // @ts-expect-error should not accept incorrect type
     }, () => ({ value: true, foo: 'bar' }))
 
-    type Source = typeof route['views'][0]['views']
+    type Source = typeof route['views'][0]
     type Expect = {}
 
     expectTypeOf<Source>().toEqualTypeOf<Expect>()
@@ -303,7 +303,7 @@ describe('props', () => {
       },
     })
 
-    type Source = typeof route['views'][0]['views']
+    type Source = typeof route['views'][0]
     type Expect = {}
 
     expectTypeOf<Source>().toEqualTypeOf<Expect>()
@@ -318,7 +318,7 @@ describe('props', () => {
       default: () => ({ foo: 'bar' }),
     })
 
-    type Source = typeof route['views'][0]['views']
+    type Source = typeof route['views'][0]
     type Expect = { default: RouteView<() => { foo: string }> }
 
     expectTypeOf<Source>().toEqualTypeOf<Expect>()
@@ -332,7 +332,7 @@ describe('props', () => {
       },
     })
 
-    type Source = typeof route['views'][0]['views']
+    type Source = typeof route['views'][0]
     type Expect = {}
 
     expectTypeOf<Source>().toEqualTypeOf<Expect>()
@@ -347,7 +347,7 @@ describe('props', () => {
       default: () => ({ value: 'bar', extra: true }),
     })
 
-    type Source = typeof route['views'][0]['views']
+    type Source = typeof route['views'][0]
     type Expect = { default: RouteView<() => { value: string, extra: boolean }> }
 
     expectTypeOf<Source>().toEqualTypeOf<Expect>()
@@ -363,7 +363,7 @@ describe('props', () => {
       default: () => ({ value: true, foo: 'bar' }),
     })
 
-    type Source = typeof route['views'][0]['views']
+    type Source = typeof route['views'][0]
     type Expect = {}
 
     expectTypeOf<Source>().toEqualTypeOf<Expect>()
@@ -375,7 +375,7 @@ describe('props', () => {
       // @ts-expect-error should not accept undefined
     }, undefined)
 
-    type Source = typeof route['views'][0]['views']
+    type Source = typeof route['views'][0]
     type Expect = {}
 
     expectTypeOf<Source>().toEqualTypeOf<Expect>()

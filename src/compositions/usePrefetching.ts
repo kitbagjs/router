@@ -99,7 +99,7 @@ function prefetchComponentsForRoute(strategy: PrefetchStrategy, route: ResolvedR
       return
     }
 
-    Object.values(views.views).forEach((view) => {
+    Object.values(views).forEach((view) => {
       if (!view.component || !isAsyncComponent(view.component)) {
         return
       }

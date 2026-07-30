@@ -11,7 +11,7 @@ function lastView(route: { views: RouteViews[] }): RouteViews {
 
 function pick(route: { views: RouteViews[] }, key: 'component' | 'props' | 'prefetch'): Record<string, unknown> {
   return Object.fromEntries(
-    Object.entries(lastView(route).views)
+    Object.entries(lastView(route))
       .filter(([, view]) => view[key] !== undefined)
       .map(([name, view]) => [name, view[key]]),
   )

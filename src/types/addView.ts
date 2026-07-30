@@ -48,7 +48,7 @@ type AddViewParent<
 > = TRoute['views'] extends [...RouteViews[], infer TParentView extends RouteViews, RouteViews]
   ? {
       name: ParentMatchName<TRoute['matches']>,
-      props: ViewsPropsReturnType<TParentView['views']>,
+      props: ViewsPropsReturnType<TParentView>,
     }
   : undefined
 
@@ -128,7 +128,7 @@ type AddViewArgs<
  */
 type CurrentViewProps<
   TRoute extends Route
-> = LastInArray<TRoute['views']> extends RouteViews<infer TViews> ? TViews : {}
+> = LastInArray<TRoute['views']>
 
 /**
  * Computes the new view props type after adding a view. A lone default view is stored as a bare getter;
@@ -151,7 +151,7 @@ type ReplaceLastViewProps<
   TViews extends RouteViews[],
   TNewViews extends Record<string, RouteView>
 > = TViews extends [...infer THead extends RouteViews[], RouteViews]
-  ? [...THead, RouteViews<TNewViews>]
+  ? [...THead, TNewViews]
   : TViews
 
 /**
