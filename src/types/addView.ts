@@ -12,7 +12,7 @@ import { RouterReject } from '@/types/routerReject'
 import { RouterReplace } from '@/types/routerReplace'
 import { RouteUpdate } from '@/types/routeUpdate'
 import { PrefetchConfig } from '@/types/prefetch'
-import { RouteViews } from '@/types/routeViews'
+import { RouteView, RouteViews, ViewsPropsReturnType } from '@/types/routeViews'
 import { Url } from '@/types/url'
 import { Identity, LastInArray, MaybePromise } from '@/types/utilities'
 
@@ -48,7 +48,7 @@ type AddViewParent<
 > = TRoute['views'] extends [...RouteViews[], infer TParentView extends RouteViews, RouteViews]
   ? {
       name: ParentMatchName<TRoute['matches']>,
-      props: MatchPropsReturnType<TParentView['props']>,
+      props: ViewsPropsReturnType<TParentView['views']>,
     }
   : undefined
 
@@ -57,12 +57,6 @@ type ParentMatchName<
 > = TMatches extends [...CreatedRouteOptions[], infer TParent extends CreatedRouteOptions, CreatedRouteOptions]
   ? TParent['name']
   : string
-
-type MatchPropsReturnType<TProps> = TProps extends PropsGetter
-  ? ReturnType<TProps>
-  : TProps extends Record<string, PropsGetter>
-    ? { [K in keyof TProps]: ReturnType<TProps[K]> }
-    : undefined
 
 /**
  * When the getter is omitted the default type param resolves to the wide getter type, which then
@@ -144,28 +138,20 @@ export type AddViewProps<
   TCurrent,
   TName extends string | undefined,
   TNewGetter
-> = [TNewGetter] extends [undefined]
-  ? TCurrent
-  : TName extends undefined
-    ? TCurrent extends undefined
-      ? TNewGetter
-      : TCurrent extends (...args: any[]) => any
-        ? TNewGetter
-        : Identity<TCurrent & { default: TNewGetter }>
-    : TCurrent extends undefined
-      ? Identity<Record<TName & string, TNewGetter>>
-      : TCurrent extends (...args: any[]) => any
-        ? Identity<{ default: TCurrent } & Record<TName & string, TNewGetter>>
-        : Identity<TCurrent & Record<TName & string, TNewGetter>>
+> = Identity<Omit<TCurrent, ViewName<TName>> & Record<ViewName<TName>, RouteView<NoUndefined<TNewGetter>>>>
+
+type ViewName<TName extends string | undefined> = TName extends string ? TName : 'default'
+
+type NoUndefined<TGetter> = [TGetter] extends [undefined] ? never : TGetter
 
 /**
  * Replaces the props of the last view in a views tuple, preserving all ancestor views.
  */
 type ReplaceLastViewProps<
   TViews extends RouteViews[],
-  TNewProps
+  TNewViews extends Record<string, RouteView>
 > = TViews extends [...infer THead extends RouteViews[], RouteViews]
-  ? [...THead, RouteViews<TNewProps>]
+  ? [...THead, RouteViews<TNewViews>]
   : TViews
 
 /**
@@ -173,7 +159,7 @@ type ReplaceLastViewProps<
  */
 type WithViewProps<
   TRoute extends Route,
-  TNewProps
+  TNewProps extends Record<string, RouteView>
 > = Route<
   Pick<TRoute, keyof Url>,
   TRoute['matches'],
@@ -194,7 +180,7 @@ type RouteWithMethods<TRoute extends Route> = TRoute
  */
 type AddViewReturn<
   TRoute extends Route,
-  TNewProps
+  TNewProps extends Record<string, RouteView>
 > = WithViewProps<TRoute, TNewProps> extends infer TNext extends Route
   ? RouteWithMethods<TNext>
   : never

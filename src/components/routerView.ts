@@ -47,7 +47,7 @@ export function createRouterView<TRouter extends Router>(routerKey: InjectionKey
       }
 
       if (isRejection(rejection.value)) {
-        return rejection.value.route.views.at(0)?.components.default ?? null
+        return rejection.value.route.views.at(0)?.views.default.component ?? null
       }
 
       const views = route.views.at(depth)

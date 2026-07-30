@@ -1,4 +1,4 @@
-import { CreateRouteOptions, PropsGetter } from '@/types/createRouteOptions'
+import { CreateRouteOptions } from '@/types/createRouteOptions'
 import { Route } from '@/types/route'
 import { RouterReject } from './routerReject'
 import { RouterPush } from './routerPush'
@@ -6,7 +6,7 @@ import { RouterReplace } from './routerReplace'
 import { ExtractRouteContextRejections, ExtractRouteContextRoutes } from './routeContext'
 import { ResolvedRoute } from './resolved'
 import { RouteUpdate } from './routeUpdate'
-import { RouteViews } from '@/types/routeViews'
+import { RouteViews, ViewsPropsReturnType } from '@/types/routeViews'
 import { LastInArray } from '@/types/utilities'
 
 /**
@@ -34,11 +34,7 @@ export type PropsCallbackParent<
 type GetParentPropsReturnType<
   TParent extends Route | undefined = Route | undefined
 > = TParent extends Route
-  ? LastInArray<TParent['views']> extends RouteViews<infer TProps>
-    ? TProps extends PropsGetter
-      ? ReturnType<TProps>
-      : TProps extends Record<string, PropsGetter>
-        ? { [K in keyof TProps]: ReturnType<TProps[K]> }
-        : undefined
+  ? LastInArray<TParent['views']> extends RouteViews<infer TViews>
+    ? ViewsPropsReturnType<TViews>
     : undefined
   : undefined
