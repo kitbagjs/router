@@ -2,8 +2,7 @@ import { Component, markRaw } from 'vue'
 import { DEFAULT_VIEW_NAME } from '@/services/createRouteViews'
 import { PropsGetter } from '@/types/createRouteOptions'
 import { PrefetchConfig } from '@/types/prefetch'
-import { Route } from '@/types/route'
-import { RouteViews } from '@/types/routeViews'
+import { CreatedRouteOptions, Route } from '@/types/route'
 
 /**
  * The loose runtime shape of the `addView` options. Purposely wide: the getter and name types each
@@ -37,13 +36,19 @@ function toView(component: Component, options: ViewOptions | undefined): View {
 }
 
 /**
- * Returns a new {@link RouteViews} with a view merged in under its name.
+ * Returns a new match with the view merged into its views under the view's name.
+ *
+ * Matches are `markRaw` so that making a route reactive does not turn its components into reactive
+ * proxies. Spreading a match drops that, so the rebuilt one is marked again.
  */
-function addToViews(views: RouteViews, { name, component, props, prefetch }: View): RouteViews {
-  return {
-    ...views,
-    [name]: { component, props, prefetch },
-  }
+function addViewToMatch(match: CreatedRouteOptions, { name, component, props, prefetch }: View): CreatedRouteOptions {
+  return markRaw({
+    ...match,
+    views: {
+      ...match.views,
+      [name]: { component, props, prefetch },
+    },
+  })
 }
 
 /**
@@ -66,7 +71,7 @@ export function withAddView<TRoute extends Route>(route: TRoute): TRoute {
       return withAddView(route)
     }
 
-    const nextMatch = markRaw({ ...currentMatch, views: addToViews(currentMatch.views, view) })
+    const nextMatch = addViewToMatch(currentMatch, view)
 
     return withAddView({
       ...route,
