@@ -3,7 +3,6 @@ import { DEFAULT_VIEW_NAME } from '@/services/createRouteViews'
 import { PropsGetter } from '@/types/createRouteOptions'
 import { PrefetchConfig } from '@/types/prefetch'
 import { Route } from '@/types/route'
-import { withMatched } from '@/services/withMatched'
 import { RouteViews } from '@/types/routeViews'
 
 /**
@@ -69,10 +68,10 @@ export function withAddView<TRoute extends Route>(route: TRoute): TRoute {
 
     const nextMatch = markRaw({ ...currentMatch, views: addToViews(currentMatch.views, view) })
 
-    return withAddView(withMatched({
+    return withAddView({
       ...route,
       matches: [...route.matches.slice(0, -1), nextMatch],
-    }))
+    })
   }
 
   return {

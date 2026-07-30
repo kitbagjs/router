@@ -1,5 +1,4 @@
 import { markRaw } from 'vue'
-import { withMatched } from '@/services/withMatched'
 import { createRouteId } from '@/services/createRouteId'
 import { CreateRouteOptions, PropsGetter, CreateRouteProps, ToRoute, combineRoutes, isWithParent, RouterViewPropsGetter } from '@/types/createRouteOptions'
 import { toName } from '@/types/name'
@@ -71,7 +70,7 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
     redirect,
   } satisfies RouteInternal
 
-  const route = withMatched({
+  const route = {
     id,
     matches: [rawRoute],
     name,
@@ -84,7 +83,7 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
     ...url,
     ...hooks,
     ...internal,
-  }) satisfies Route & RouteInternal & InternalRouteHooks & RouteRedirects & RouteSetTitle
+  } satisfies Route & RouteInternal & InternalRouteHooks & RouteRedirects & RouteSetTitle
 
   if (isWithParent(options)) {
     const merged = combineRoutes(options.parent, route)

@@ -1,6 +1,5 @@
 import { Component } from 'vue'
 import { combineMeta } from '@/services/combineMeta'
-import { withMatched } from '@/services/withMatched'
 import { combineState } from '@/services/combineState'
 import { combineHooks } from '@/types/hooks'
 import { Param } from '@/types/paramTypes'
@@ -210,7 +209,7 @@ export function combineRoutes(parent: Route, child: Route): Route {
     throw new Error('combineRoutes called with invalid route arguments')
   }
 
-  const route = withMatched({
+  const route = {
     ...child,
     meta: combineMeta(parent.meta, child.meta),
     state: combineState(parent.state, child.state),
@@ -218,7 +217,7 @@ export function combineRoutes(parent: Route, child: Route): Route {
     matches: [...parent.matches, ...child.matches],
     context: [...parent.context, ...child.context],
     depth: parent.depth + 1,
-  }) satisfies Route & RouteInternal
+  } satisfies Route & RouteInternal
 
   return route
 }

@@ -71,3 +71,14 @@ describe('resolve options', () => {
     expect(response.hash).toBe('#baz')
   })
 })
+
+test('matched is the last of the resolved matches', () => {
+  const parent = createRoute({ name: 'parent', path: '/parent' })
+  const child = createRoute({ name: 'child', parent, path: '/child' })
+
+  const resolved = createResolvedRoute(child)
+
+  expect(resolved.matches).toHaveLength(2)
+  expect(resolved.matched).toBe(resolved.matches.at(-1))
+  expect(resolved.matched.name).toBe('child')
+})
