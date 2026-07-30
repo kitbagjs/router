@@ -1,9 +1,10 @@
 import { effectScope, reactive, watch, WatchHandle } from 'vue'
-import { isWithComponentProps, isWithComponentPropsRecord, PropsGetter } from '@/types/createRouteOptions'
+import { PropsGetter } from '@/types/createRouteOptions'
 import type { PrefetchConfigs, PrefetchStrategy } from '@/types/prefetch'
 import { getPrefetchOption } from '@/utilities/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouteViews } from '@/types/routeViews'
+import { DEFAULT_VIEW_NAME } from './createRouteViews'
 import { ContextPushError } from '@/errors/contextPushError'
 import { ContextRejectionError } from '@/errors/contextRejectionError'
 import { ParentPropsAbandonedError } from '@/errors/parentPropsAbandonedError'
@@ -56,7 +57,7 @@ export function createPropStore(): PropStore {
       .filter(({ match, views, componentProps }) => getPrefetchOption({
         ...prefetch,
         routePrefetch: match.prefetch,
-        viewPrefetch: views.prefetch?.[componentProps.name],
+        viewPrefetch: views.views[componentProps.name].prefetch,
       }, 'props') === strategy)
       .map(({ componentProps }) => componentProps)
       .reduce<Record<string, StoredProps>>((response, { id, name, depth, props }) => {
@@ -159,23 +160,24 @@ export function createPropStore(): PropStore {
     const parentViews = route.views[depth - 1]
 
     const name = parentMatch.name ?? ''
+    const withProps = Object.keys(parentViews.views).filter((viewName) => parentViews.views[viewName].props)
 
-    if (isWithComponentProps(parentViews)) {
+    if (withProps.length === 1 && withProps[0] === DEFAULT_VIEW_NAME) {
       return {
         name,
         get props() {
-          return getParentProps(parentViews.id, 'default', route, prefetch, pending)
+          return getParentProps(parentViews.id, DEFAULT_VIEW_NAME, route, prefetch, pending)
         },
       }
     }
 
-    if (isWithComponentPropsRecord(parentViews)) {
+    if (withProps.length > 0) {
       return {
         name,
         props: new Proxy({}, {
           get(target, propName) {
             // a name with no getter can never be stored, so waiting on it would never settle
-            if (typeof propName !== 'string' || !Object.prototype.hasOwnProperty.call(parentViews.props, propName)) {
+            if (typeof propName !== 'string' || !withProps.includes(propName)) {
               return Reflect.get(target, propName)
             }
 
@@ -309,22 +311,7 @@ export function createPropStore(): PropStore {
   }
 
   function getComponentProps(views: RouteViews, depth: number): ComponentProps[] {
-    if (isWithComponentProps(views)) {
-      return [
-        {
-          id: views.id,
-          name: 'default',
-          depth,
-          props: views.props,
-        },
-      ]
-    }
-
-    if (isWithComponentPropsRecord(views)) {
-      return Object.entries(views.props).map(([name, props]) => ({ id: views.id, name, depth, props }))
-    }
-
-    return []
+    return Object.entries(views.views).map(([name, view]) => ({ id: views.id, name, depth, props: view.props as PropsGetter | undefined }))
   }
 
   function clearUnusedStoreEntries(keysToKeep: string[]): void {

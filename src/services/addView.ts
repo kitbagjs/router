@@ -37,71 +37,16 @@ function toView(component: Component, options: ViewOptions | undefined): View {
 }
 
 /**
- * The runtime shape of a view's prop getters: a bare getter for a lone default view, a record keyed by
- * view name, or undefined when no getter has been provided.
- */
-type ViewProps = PropsGetter | Record<string, PropsGetter> | undefined
-
-function isBareProps(props: ViewProps): props is PropsGetter {
-  return typeof props === 'function'
-}
-
-function isPropsRecord(props: ViewProps): props is Record<string, PropsGetter> {
-  return typeof props === 'object'
-}
-
-/**
- * Normalizes view props into a record, moving a bare default getter under the 'default' key.
- */
-function toPropsRecord(props: ViewProps): Record<string, PropsGetter> {
-  if (isPropsRecord(props)) {
-    return { ...props }
-  }
-
-  if (isBareProps(props)) {
-    return { [DEFAULT_VIEW_NAME]: props }
-  }
-
-  return {}
-}
-
-/**
- * Returns a new {@link RouteViews} with a view (component + optional props getter + optional per-view
- * settings) merged in. Components and prefetch configs are always stored as records keyed by view name;
- * props keep the bare getter for a lone default view and promote to a record once a named view is added
- * (pulling any existing bare default under 'default').
+ * Returns a new {@link RouteViews} with a view merged in under its name.
  */
 function addToViews(views: RouteViews, { name, component, props, prefetch }: View): RouteViews {
   return {
     id: views.id,
-    components: { ...views.components, [name]: component },
-    props: addProps(views.props as ViewProps, name, props),
-    prefetch: addPrefetch(views.prefetch, name, prefetch),
+    views: {
+      ...views.views,
+      [name]: { component, props, prefetch },
+    },
   }
-}
-
-/**
- * Merges a view's prefetch config into the record keyed by view name. Views without their own config are
- * left absent so they fall back to the route's config.
- */
-function addPrefetch(current: RouteViews['prefetch'], name: string, prefetch: PrefetchConfig | undefined): RouteViews['prefetch'] {
-  if (prefetch === undefined) {
-    return current
-  }
-
-  return { ...current, [name]: prefetch }
-}
-
-function addProps(current: ViewProps, name: string, props: PropsGetter | undefined): ViewProps {
-  if (props === undefined) {
-    return current
-  }
-
-  if (name === DEFAULT_VIEW_NAME && !isPropsRecord(current)) {
-    return props
-  }
-
-  return { ...toPropsRecord(current), [name]: props }
 }
 
 /**

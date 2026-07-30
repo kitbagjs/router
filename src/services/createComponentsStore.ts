@@ -33,11 +33,19 @@ export function createComponentsStore<TRouter extends Router>(routerKey: Injecti
 function getComponentsForViews(routerKey: InjectionKey<Router>, views: RouteViews): Record<string, Component> {
   const RouterView = createRouterView(routerKey)
 
-  if (Object.keys(views.components).length === 0) {
+  const components = Object.entries(views.views).reduce<[string, Component][]>((entries, [name, view]) => {
+    if (view.component) {
+      entries.push([name, view.component])
+    }
+
+    return entries
+  }, [])
+
+  if (components.length === 0) {
     return { default: RouterView }
   }
 
   return Object.fromEntries(
-    Object.entries(views.components).map(([name, component]) => [name, createComponentPropsWrapper(routerKey, { id: views.id, name, component })]),
+    components.map(([name, component]) => [name, createComponentPropsWrapper(routerKey, { id: views.id, name, component })]),
   )
 }

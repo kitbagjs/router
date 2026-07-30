@@ -9,7 +9,7 @@ import { isRoute, Route, RouteInternal } from '@/types/route'
 import { ResolvedRoute } from './resolved'
 import { ComponentProps } from '@/services/component'
 import { PropsCallbackContext } from '@/types/props'
-import { Identity, MaybePromise } from '@/types/utilities'
+import { AnyFunction, Identity, MaybePromise } from '@/types/utilities'
 import { ToMeta } from '@/types/meta'
 import { ToName } from '@/types/name'
 import { UrlPart, UrlQueryPart } from '@/services/withParams'
@@ -17,7 +17,7 @@ import { RouteContext } from '@/types/routeContext'
 import { RouterViewProps } from '@/components/routerView'
 import { ToUrl } from '@/types/url'
 import { CombineUrl } from '@/services/combineUrl'
-import { RouteViews } from '@/types/routeViews'
+import { RouteView, RouteViews } from '@/types/routeViews'
 
 export type WithHost<THost extends string | UrlPart = string | UrlPart> = {
   /**
@@ -170,15 +170,25 @@ type ToMatches<
   : [ToMatch<TOptions>]
 
 /**
- * The `views` tuple for a route, indexed by depth (parallel to `ToMatches`). Each entry carries the
- * prop getter types for that route's views, used for parent props typing and refined by `addView`.
+ * The `views` tuple for a route, indexed by depth (parallel to `ToMatches`). Each entry carries that
+ * route's views, used for parent props typing and refined by `addView`.
  */
 type ToViews<
   TOptions extends CreateRouteOptions,
   TProps
 > = TOptions extends { parent: infer TParent extends Route }
-  ? [...TParent['views'], RouteViews<TProps>]
-  : [RouteViews<TProps>]
+  ? [...TParent['views'], RouteViews<PropsToViews<TProps>>]
+  : [RouteViews<PropsToViews<TProps>>]
+
+/**
+ * Builds a views record from the props argument, which is either a single getter for the unnamed view or
+ * a record of getters keyed by view name.
+ */
+type PropsToViews<TProps> = TProps extends AnyFunction
+  ? { default: RouteView<TProps> }
+  : TProps extends Record<string, AnyFunction>
+    ? { [K in keyof TProps]: RouteView<TProps[K]> }
+    : {}
 
 export type ToRoute<
   TOptions extends CreateRouteOptions,

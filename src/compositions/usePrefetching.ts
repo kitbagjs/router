@@ -99,22 +99,22 @@ function prefetchComponentsForRoute(strategy: PrefetchStrategy, route: ResolvedR
       return
     }
 
-    Object.entries(views.components).forEach(([name, component]) => {
-      if (!isAsyncComponent(component)) {
+    Object.values(views.views).forEach((view) => {
+      if (!view.component || !isAsyncComponent(view.component)) {
         return
       }
 
       const viewStrategy = getPrefetchOption({
         ...configs,
         routePrefetch: match.prefetch,
-        viewPrefetch: views.prefetch?.[name],
+        viewPrefetch: view.prefetch,
       }, 'components')
 
       if (viewStrategy !== strategy) {
         return
       }
 
-      component.__asyncLoader()
+      view.component.__asyncLoader()
     })
   })
 }
