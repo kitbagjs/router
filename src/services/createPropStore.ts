@@ -6,6 +6,7 @@ import { ResolvedRoute } from '@/types/resolved'
 import { RouteViews } from '@/types/routeViews'
 import { ContextPushError } from '@/errors/contextPushError'
 import { ContextRejectionError } from '@/errors/contextRejectionError'
+import { isPromise } from '@/utilities/promises'
 import { getPropsValue } from '@/utilities/props'
 import { PropsCallbackParent } from '@/types/props'
 import { createVueAppStore, HasVueAppStore } from './createVueAppStore'
@@ -180,6 +181,29 @@ export function createPropStore(): PropStore {
         Unable to access parent props "${name}" while prefetching props for route "${routeName}".
         This may occur if the parent route's props were not also prefetched.
       `)
+    }
+
+    return unwrapPropsError(value)
+  }
+
+  /**
+   * A failed props getter is stored as its error rather than thrown, so that navigation can inspect the
+   * settled value. Consumers of a parent's props expect the props themselves, so the error is rethrown
+   * here instead of being handed back as though it were a valid value.
+   */
+  function unwrapPropsError(value: unknown): unknown {
+    if (value instanceof Error) {
+      throw value
+    }
+
+    if (isPromise(value)) {
+      return value.then((resolved) => {
+        if (resolved instanceof Error) {
+          throw resolved
+        }
+
+        return resolved
+      })
     }
 
     return value
