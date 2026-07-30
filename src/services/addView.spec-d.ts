@@ -19,7 +19,7 @@ describe('addView', () => {
         props: () => ({ foo: 'bar' }),
       })
 
-      expectTypeOf<typeof route['matches'][0]['views']>().toEqualTypeOf<{ default: RouteView<() => { foo: string }> }>()
+      expectTypeOf<typeof route['matches'][0]['views']>().toEqualTypeOf<{ default: RouteView<{ foo: string }> }>()
     })
 
     test('required props missing options', () => {
@@ -39,7 +39,7 @@ describe('addView', () => {
         props: () => ({ value: 'bar', extra: true }),
       })
 
-      expectTypeOf<typeof route['matches'][0]['views']>().toEqualTypeOf<{ default: RouteView<() => { value: string, extra: boolean }> }>()
+      expectTypeOf<typeof route['matches'][0]['views']>().toEqualTypeOf<{ default: RouteView<{ value: string, extra: boolean }> }>()
     })
 
     test('required props with a getter with incorrect type', () => {
@@ -66,7 +66,7 @@ describe('addView', () => {
         props: () => ({ foo: 'bar' }),
       })
 
-      expectTypeOf<typeof route['matches'][0]['views']>().toEqualTypeOf<{ sidebar: RouteView<() => { foo: string }> }>()
+      expectTypeOf<typeof route['matches'][0]['views']>().toEqualTypeOf<{ sidebar: RouteView<{ foo: string }> }>()
     })
 
     test('required props with a getter produces a record', () => {
@@ -75,7 +75,7 @@ describe('addView', () => {
         props: () => ({ value: 'bar', extra: true }),
       })
 
-      expectTypeOf<typeof route['matches'][0]['views']>().toEqualTypeOf<{ sidebar: RouteView<() => { value: string, extra: boolean }> }>()
+      expectTypeOf<typeof route['matches'][0]['views']>().toEqualTypeOf<{ sidebar: RouteView<{ value: string, extra: boolean }> }>()
     })
   })
 
@@ -86,7 +86,7 @@ describe('addView', () => {
         prefetch: 'eager',
       })
 
-      expectTypeOf<typeof route['matches'][0]['views']>().toEqualTypeOf<{ default: RouteView<() => { foo: string }> }>()
+      expectTypeOf<typeof route['matches'][0]['views']>().toEqualTypeOf<{ default: RouteView<{ foo: string }> }>()
     })
 
     test('prefetch without a getter records the view with no props', () => {
@@ -105,7 +105,7 @@ describe('addView', () => {
           prefetch: 'eager',
         })
 
-      expectTypeOf<typeof route['matches'][0]['views']>().toEqualTypeOf<{ sidebar: RouteView<() => { foo: string }> }>()
+      expectTypeOf<typeof route['matches'][0]['views']>().toEqualTypeOf<{ sidebar: RouteView<{ foo: string }> }>()
     })
 
     test('a named view with prefetch and no getter is recorded with no props', () => {
@@ -124,7 +124,7 @@ describe('addView', () => {
           prefetch: 'intent',
         })
 
-      expectTypeOf<typeof route['matches'][0]['views']>().toEqualTypeOf<{ default: RouteView<() => { value: string, extra: boolean }> }>()
+      expectTypeOf<typeof route['matches'][0]['views']>().toEqualTypeOf<{ default: RouteView<{ value: string, extra: boolean }> }>()
     })
 
     test('a getter alongside prefetch is still checked against the component props', () => {
@@ -188,7 +188,7 @@ describe('addView', () => {
           props: () => ({ baz: 1 }),
         })
 
-      expectTypeOf<typeof route['matches'][0]['views']>().toEqualTypeOf<{ default: RouteView<() => { foo: string }>, sidebar: RouteView<() => { baz: number }> }>()
+      expectTypeOf<typeof route['matches'][0]['views']>().toEqualTypeOf<{ default: RouteView<{ foo: string }>, sidebar: RouteView<{ baz: number }> }>()
     })
 
     test('two named views produce a record', () => {
@@ -202,7 +202,7 @@ describe('addView', () => {
           props: () => ({ baz: 1 }),
         })
 
-      expectTypeOf<typeof route['matches'][0]['views']>().toEqualTypeOf<{ one: RouteView<() => { foo: string }>, two: RouteView<() => { baz: number }> }>()
+      expectTypeOf<typeof route['matches'][0]['views']>().toEqualTypeOf<{ one: RouteView<{ foo: string }>, two: RouteView<{ baz: number }> }>()
     })
   })
 
@@ -214,7 +214,7 @@ describe('addView', () => {
           props: () => ({ baz: 1 }),
         })
 
-      expectTypeOf<typeof route['matches'][0]['views']>().toEqualTypeOf<{ default: RouteView<() => { foo: string }>, sidebar: RouteView<() => { baz: number }> }>()
+      expectTypeOf<typeof route['matches'][0]['views']>().toEqualTypeOf<{ default: RouteView<{ foo: string }>, sidebar: RouteView<{ baz: number }> }>()
     })
   })
 

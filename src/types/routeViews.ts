@@ -6,11 +6,11 @@ import { AnyFunction } from '@/types/utilities'
  * A single view: what to render, how to get its props, and how to prefetch it. `component` is optional
  * because a route can bind props to the nested RouterView it renders without declaring a component.
  *
- * @template TProps - The prop getter for this view, carried so parent props can be typed from it.
+ * @template TProps - What this view's props getter returns, carried so parent props can be typed from it.
  */
 export type RouteView<TProps = undefined> = {
   component?: Component,
-  props?: TProps,
+  props?: AnyFunction<TProps>,
   prefetch?: PrefetchConfig,
 }
 
@@ -29,15 +29,22 @@ export type RouteViews = Record<string, RouteView<unknown>>
 export type ViewsPropsReturnType<TViews> = keyof ViewsWithProps<TViews> extends never
   ? undefined
   : keyof ViewsWithProps<TViews> extends 'default'
-    ? ViewPropsReturnType<Extract<ViewsWithProps<TViews>, { default: unknown }>['default']>
-    : { [K in keyof ViewsWithProps<TViews>]: ViewPropsReturnType<ViewsWithProps<TViews>[K]> }
+    ? ParentViewProps<Extract<ViewsWithProps<TViews>, { default: unknown }>['default']>
+    : { [K in keyof ViewsWithProps<TViews>]: ParentViewProps<ViewsWithProps<TViews>[K]> }
 
 type ViewsWithProps<TViews> = {
-  [K in keyof TViews as [ViewPropsGetter<TViews[K]>] extends [undefined] ? never : K]: TViews[K]
+  [K in keyof TViews as HasViewProps<TViews[K]> extends true ? K : never]: TViews[K]
 }
 
-type ViewPropsGetter<TView> = TView extends { props?: infer TGetter } ? TGetter : undefined
+/**
+ * A view has props unless its getter is absent, which is carried as props resolving to undefined. Asked
+ * both ways because a getter that only ever throws resolves to never, which is assignable to undefined
+ * without being the absent case.
+ */
+type HasViewProps<TView> = [ViewProps<TView>] extends [undefined]
+  ? [undefined] extends [ViewProps<TView>] ? false : true
+  : true
 
-type ViewPropsReturnType<TView> = NonNullable<ViewPropsGetter<TView>> extends infer TGetter
-  ? TGetter extends AnyFunction ? Promise<Awaited<ReturnType<TGetter>>> : undefined
-  : undefined
+type ViewProps<TView> = TView extends { props?: AnyFunction<infer TProps> } ? TProps : undefined
+
+type ParentViewProps<TView> = Promise<Awaited<ViewProps<TView>>>
