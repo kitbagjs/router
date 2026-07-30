@@ -4,7 +4,7 @@ import type { PrefetchConfigs, PrefetchStrategy } from '@/types/prefetch'
 import { getPrefetchOption } from '@/utilities/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouteViews } from '@/types/routeViews'
-import { DEFAULT_VIEW_NAME } from './createRouteViews'
+import { DEFAULT_VIEW_NAME, isWithBareViewProps, isWithViewProps } from './createRouteViews'
 import { ContextPushError } from '@/errors/contextPushError'
 import { ContextRejectionError } from '@/errors/contextRejectionError'
 import { getPropsValue } from '@/utilities/props'
@@ -129,16 +129,16 @@ export function createPropStore(): PropStore {
 
   function getParentContext(route: ResolvedRoute, prefetch: boolean = false): PropsCallbackParent {
     const parentMatch = route.matches.at(-2)
-    const parentViews = route.matches.at(-2)?.views
 
-    if (!parentMatch || !parentViews) {
+    if (!parentMatch) {
       return
     }
 
-    const name = parentMatch.name ?? ''
-    const withProps = Object.keys(parentViews).filter((viewName) => parentViews[viewName].props)
+    const parentViews = parentMatch.views
 
-    if (withProps.length === 1 && withProps[0] === DEFAULT_VIEW_NAME) {
+    const name = parentMatch.name ?? ''
+
+    if (isWithBareViewProps(parentViews)) {
       return {
         name,
         get props() {
@@ -147,7 +147,7 @@ export function createPropStore(): PropStore {
       }
     }
 
-    if (withProps.length > 0) {
+    if (isWithViewProps(parentViews)) {
       return {
         name,
         props: new Proxy({}, {
