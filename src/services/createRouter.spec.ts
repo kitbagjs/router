@@ -15,9 +15,9 @@ import { createRejection } from './createRejection'
 test('initial route is set', async () => {
   const foo = createRoute({
     name: 'root',
-    component,
     path: '/',
   })
+    .addView(component)
 
   const { route, start } = createRouter([foo], {
     initialUrl: '/',
@@ -45,10 +45,10 @@ test('initial state is set', async () => {
 
   const foo = createRoute({
     name: 'root',
-    component,
     path: '/',
     state: { zoo: Number },
   })
+    .addView(component)
 
   const { route, start } = createRouter([foo], {
     initialUrl: '/',
@@ -62,22 +62,22 @@ test('initial state is set', async () => {
 test('updates the route when navigating', async () => {
   const theRoute = createRoute({
     name: 'first',
-    component,
     path: '/first',
   })
+    .addView(component)
 
   const routes = [
     theRoute,
     createRoute({
       name: 'second',
-      component,
       path: '/second',
-    }),
+    })
+      .addView(component),
     createRoute({
       name: 'third',
-      component,
       path: '/third/[id]',
-    }),
+    })
+      .addView(component),
   ]
 
   const { push, route, start } = createRouter(routes, {
@@ -96,12 +96,11 @@ test('updates the route when navigating', async () => {
 })
 
 test('route update updates the current route', async () => {
-  const route = createRoute(
-    {
-      name: 'root',
-      component,
-      path: '/[param]',
-    })
+  const route = createRoute({
+    name: 'root',
+    path: '/[param]',
+  })
+    .addView(component)
 
   const router = createRouter([route], {
     initialUrl: '/one',
@@ -124,9 +123,9 @@ test.fails('route is readonly except for individual params', async () => {
   const routes = [
     createRoute({
       name: 'root',
-      component,
       path: '/',
-    }),
+    })
+      .addView(component),
   ]
 
   const { route, start } = createRouter(routes, {
@@ -155,9 +154,9 @@ test('individual params are writable', async () => {
   const routes = [
     createRoute({
       name: 'root',
-      component,
       path: '/[param]',
-    }),
+    })
+      .addView(component),
   ]
 
   const { route, start } = createRouter(routes, {
@@ -193,9 +192,9 @@ test('individual params are writable when using toRefs', async () => {
   const routes = [
     createRoute({
       name: 'root',
-      component,
       path: '/[param]',
-    }),
+    })
+      .addView(component),
   ]
 
   const { route, start } = createRouter(routes, {
@@ -217,9 +216,9 @@ test('setting an unknown param does not add its value to the route', async () =>
   const routes = [
     createRoute({
       name: 'root',
-      component,
       path: '/',
-    }),
+    })
+      .addView(component),
   ]
   const { route, start } = createRouter(routes, {
     initialUrl: '/',
@@ -240,9 +239,9 @@ test('params are writable', async () => {
   const routes = [
     createRoute({
       name: 'root',
-      component,
       path: '/[paramA]/[paramB]/[?paramC]',
-    }),
+    })
+      .addView(component),
   ]
 
   const { route, start } = createRouter(routes, {
@@ -287,9 +286,9 @@ test('params are writable', async () => {
 test('params can be destructured', async () => {
   const root = createRoute({
     name: 'root',
-    component,
     path: '/[paramA]/[paramB]',
   })
+    .addView(component)
 
   const { route, start, push } = createRouter([root], {
     initialUrl: '/one/two',
@@ -317,9 +316,9 @@ test('params can be destructured', async () => {
 test('query is writable', async () => {
   const root = createRoute({
     name: 'root',
-    component,
     path: '/',
   })
+    .addView(component)
 
   const { route, start } = createRouter([root], {
     initialUrl: '/?foo=bar&fiz=buz',
@@ -346,9 +345,9 @@ test('query is writable', async () => {
 test('query.set updates the route', async () => {
   const root = createRoute({
     name: 'root',
-    component,
     path: '/',
   })
+    .addView(component)
 
   const { route, start } = createRouter([root], {
     initialUrl: '/',
@@ -372,10 +371,10 @@ test('query.set updates the route', async () => {
 test('query.set does not duplicate existing params when updating one param', async () => {
   const root = createRoute({
     name: 'root',
-    component,
     path: '/',
     query: 'param=[param]',
   })
+    .addView(component)
 
   const { route, start } = createRouter([root], {
     initialUrl: '/?param=value&foo=1',
@@ -395,10 +394,10 @@ test('query.set does not duplicate existing params when updating one param', asy
 test('query.set can change the value of a param that is already set', async () => {
   const root = createRoute({
     name: 'root',
-    component,
     query: 'param=[param]',
     path: '/',
   })
+    .addView(component)
 
   const { route, start } = createRouter([root], {
     initialUrl: '/?param=foo&notAParam=1',
@@ -416,9 +415,9 @@ test('query.set can change the value of a param that is already set', async () =
 test('query.append updates the route', async () => {
   const root = createRoute({
     name: 'root',
-    component,
     path: '/',
   })
+    .addView(component)
 
   const { route, start } = createRouter([root], {
     initialUrl: '/',
@@ -442,9 +441,9 @@ test('query.append updates the route', async () => {
 test('query.delete updates the route', async () => {
   const root = createRoute({
     name: 'root',
-    component,
     path: '/',
   })
+    .addView(component)
 
   const { route, start } = createRouter([root], {
     initialUrl: '/?foo=bar&fiz=buz',
@@ -462,9 +461,9 @@ test('query.delete updates the route', async () => {
 test('query.values is reactive', async () => {
   const root = createRoute({
     name: 'root',
-    component,
     path: '/',
   })
+    .addView(component)
 
   const { route, start } = createRouter([root], {
     initialUrl: '/?foo=foo1&bar=bar1',
@@ -485,12 +484,16 @@ test('query.values is reactive', async () => {
 
 test('given an array of Routes with duplicate names, throws DuplicateNamesError', () => {
   const aRoutes = [
-    createRoute({ name: 'foo', component }),
-    createRoute({ name: 'bar', component }),
+    createRoute({ name: 'foo' })
+      .addView(component),
+    createRoute({ name: 'bar' })
+      .addView(component),
   ]
   const bRoutes = [
-    createRoute({ name: 'zoo', component }),
-    createRoute({ name: 'bar', component }),
+    createRoute({ name: 'zoo' })
+      .addView(component),
+    createRoute({ name: 'bar' })
+      .addView(component),
   ]
 
   const action: () => void = () => createRouter([aRoutes, bRoutes], {
@@ -501,11 +504,14 @@ test('given an array of Routes with duplicate names, throws DuplicateNamesError'
 })
 
 test('given an array of Routes with missing context, can still match missing routes', async () => {
-  const missingRoute = createRoute({ name: 'missing', path: '/missing', component })
+  const missingRoute = createRoute({ name: 'missing', path: '/missing' })
+    .addView(component)
 
   const router = createRouter([
-    createRoute({ name: 'foo', path: '/foo', component, context: [missingRoute] }),
-    createRoute({ name: 'bar', path: '/bar', component }),
+    createRoute({ name: 'foo', path: '/foo', context: [missingRoute] })
+      .addView(component),
+    createRoute({ name: 'bar', path: '/bar' })
+      .addView(component),
   ], {
     initialUrl: '/missing',
   })
@@ -516,10 +522,12 @@ test('given an array of Routes with missing context, can still match missing rou
 })
 
 test('given an array of Routes with missing context with duplicate route names, throws DuplicateNamesError', async () => {
-  const missingRoute = createRoute({ name: 'foo', component })
+  const missingRoute = createRoute({ name: 'foo' })
+    .addView(component)
 
   const action: () => void = () => createRouter([
-    createRoute({ name: 'foo', component, context: [missingRoute] }),
+    createRoute({ name: 'foo', context: [missingRoute] })
+      .addView(component),
   ], {
     initialUrl: '/missing',
   })
@@ -531,8 +539,8 @@ test('initial route is not set until the router is started', async () => {
   const route = createRoute({
     name: 'root',
     path: '/',
-    component,
   })
+    .addView(component)
 
   const router = createRouter([route], {
     initialUrl: '/',
@@ -602,13 +610,13 @@ describe('router.resolve', () => {
       createRoute({
         name: 'kebab',
         path: '/[test-param]',
-        component,
-      }),
+      })
+        .addView(component),
       createRoute({
         name: 'snake',
         path: '/[test_param]',
-        component,
-      }),
+      })
+        .addView(component),
     ]
 
     const router = createRouter(routes, { initialUrl: '/' })
@@ -718,10 +726,10 @@ describe('router.push', () => {
   test('given a resolved route with state inside, pushes state', async () => {
     const routeWithState = createRoute({
       name: 'route-with-state',
-      component,
       path: '/route-with-state',
       state: { zoo: Number },
     })
+      .addView(component)
     const router = createRouter([routeWithState], { initialUrl: '/' })
     const route = router.resolve('route-with-state', { paramA: 'bar' }, { state: { zoo: 123 } })
 
@@ -733,10 +741,10 @@ describe('router.push', () => {
   test('given a resolved route with state in options, pushes state', async () => {
     const routeWithState = createRoute({
       name: 'route-with-state',
-      component,
       path: '/route-with-state',
       state: { zoo: Number },
     })
+      .addView(component)
     const router = createRouter([routeWithState], { initialUrl: '/' })
     const route = router.resolve('route-with-state', { paramA: 'bar' })
 
@@ -748,10 +756,10 @@ describe('router.push', () => {
   test('given a route name with state in options, pushes state', async () => {
     const routeWithState = createRoute({
       name: 'route-with-state',
-      component,
       path: '/route-with-state',
       state: { zoo: Number },
     })
+      .addView(component)
     const router = createRouter([routeWithState], { initialUrl: '/' })
 
     await router.push('route-with-state', { paramA: 'bar' }, { state: { zoo: 123 } })
@@ -762,10 +770,10 @@ describe('router.push', () => {
   test('given an internal Url with state in options, pushes state', async () => {
     const routeWithState = createRoute({
       name: 'route-with-state',
-      component,
       path: '/route-with-state',
       state: { zoo: Number },
     })
+      .addView(component)
     const router = createRouter([routeWithState], { initialUrl: '/' })
 
     await router.push('/route-with-state', { state: { zoo: 123 } })
@@ -784,9 +792,9 @@ describe('router.onError', () => {
 
     const route = createRoute({
       name: 'route-with-error',
-      component,
       path: '/',
     })
+      .addView(component)
 
     const router = createRouter([route], { initialUrl: '/' })
 
@@ -812,9 +820,9 @@ describe('router.onError', () => {
 
     const route = createRoute({
       name: 'route-with-error',
-      component,
       path: '/[param]',
     })
+      .addView(component)
 
     const router = createRouter([route], { initialUrl: '/' })
     await router.start()
@@ -844,15 +852,15 @@ describe('router.onError', () => {
 
     const route1 = createRoute({
       name: 'route-1',
-      component,
       path: '/route-1',
     })
+      .addView(component)
 
     const route2 = createRoute({
       name: 'route-2',
-      component,
       path: '/route-2',
     })
+      .addView(component)
 
     const router = createRouter([route1, route2], { initialUrl: '/' })
     await router.start()
@@ -879,11 +887,13 @@ describe('router.onError', () => {
 
     const routeWithError = createRoute({
       name: 'route-with-error',
-      component,
       path: '/route-with-error',
-    }, () => {
-      throw error
     })
+      .addView(component, {
+        props: () => {
+          throw error
+        },
+      })
 
     const router = createRouter([routeWithError], { initialUrl: '/' })
     await router.start()
@@ -910,9 +920,9 @@ describe('router.onRejection', () => {
 
     const route = createRoute({
       name: 'route',
-      component,
       path: '/',
     })
+      .addView(component)
 
     const router = createRouter([route], { initialUrl: '/', rejections: [rejection] })
 
@@ -933,9 +943,9 @@ describe('router.onRejection', () => {
 
     const route = createRoute({
       name: 'route-with-rejection',
-      component,
       path: '/',
     })
+      .addView(component)
 
     route.onBeforeRouteEnter((_to, { reject }) => {
       reject('NotFound')
@@ -959,21 +969,21 @@ describe('router.onRejection', () => {
 describe('options.removeTrailingSlashes', () => {
   const foo = createRoute({
     name: 'foo',
-    component,
     path: '/foo',
   })
+    .addView(component)
 
   const fooWithTrailingSlash = createRoute({
     name: 'fooWithTrailingSlash',
-    component,
     path: '/foo/',
   })
+    .addView(component)
 
   const bar = createRoute({
     name: 'bar',
-    component,
     path: '/bar',
   })
+    .addView(component)
 
   test('when true, removes trailing slashes from the path', async () => {
     const router = createRouter([foo, fooWithTrailingSlash, bar], {

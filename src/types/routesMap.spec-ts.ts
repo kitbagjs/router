@@ -22,18 +22,20 @@ test('RoutesMap given unnamed parents, removes them from return value and childr
     parent: root,
     name: 'foo',
     path: '/foo',
-    component,
   })
+    .addView(component)
 
-  const zooFoo = createRoute({ name: 'zoofoo', path: '/zoofoo', component, parent: foo })
+  const zooFoo = createRoute({ name: 'zoofoo', path: '/zoofoo', parent: foo })
+    .addView(component)
 
   const bar = createRoute({
     parent: root,
     path: '/bar',
-    component,
   })
+    .addView(component)
 
-  const zooBar = createRoute({ name: 'zoo', path: '/zoo', component, parent: bar })
+  const zooBar = createRoute({ name: 'zoo', path: '/zoo', parent: bar })
+    .addView(component)
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const routes = [

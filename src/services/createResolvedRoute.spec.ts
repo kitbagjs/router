@@ -8,8 +8,8 @@ test('given a route with params returns all params', () => {
     name: 'route',
     path: '/[paramA]',
     query: 'paramB=[paramB]',
-    component,
   })
+    .addView(component)
   const response = createResolvedRoute(route, { paramA: 'A', paramB: 'B' })
 
   expect(response.params).toMatchObject({
@@ -28,9 +28,9 @@ test('given state that matches state params, returns state', () => {
     parent,
     name: 'foo',
     path: '/foo',
-    component,
     state: { bar: String },
   })
+    .addView(component)
 
   const response = createResolvedRoute(child, {}, { state: { foo: 'true', bar: 'abc' } })
 
@@ -43,8 +43,8 @@ describe('resolve options', () => {
       name: 'route',
       path: '/',
       query: 'foo=foo1&foo=foo2',
-      component,
     })
+      .addView(component)
 
     const response = createResolvedRoute(route, {}, { query: 'bar=bar&baz' })
 
@@ -63,8 +63,8 @@ describe('resolve options', () => {
       name: 'route',
       path: '/',
       hash: 'bar',
-      component,
     })
+      .addView(component)
 
     const response = createResolvedRoute(route, {}, { hash: 'baz' })
 

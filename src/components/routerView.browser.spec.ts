@@ -5,7 +5,6 @@ import echo from '@/components/echo'
 import helloWorld from '@/components/helloWorld'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
-import { isWithComponent } from '@/types/createRouteOptions'
 import { component, routes } from '@/utilities/testHelpers'
 import { RouterLink } from '@/main'
 import { createRejection } from '@/services/createRejection'
@@ -14,8 +13,8 @@ test('renders component for initial route', async () => {
   const route = createRoute({
     name: 'foo',
     path: '/',
-    component: { template: 'hello world' },
   })
+    .addView({ template: 'hello world' })
 
   const router = createRouter([route], {
     initialUrl: '/',
@@ -46,8 +45,8 @@ test('renders components for initial route', async () => {
     parent: parentRoute,
     name: 'child',
     path: '/child',
-    component: { template: 'Child' },
   })
+    .addView({ template: 'Child' })
 
   const router = createRouter([parentRoute, childRoute], {
     initialUrl: '/parent/child',
@@ -72,8 +71,8 @@ test('does not render component when router is not started', async () => {
   const route = createRoute({
     name: 'foo',
     path: '/',
-    component: { template: 'hello world' },
   })
+    .addView({ template: 'hello world' })
 
   const router = createRouter([route], {
     initialUrl: '/',
@@ -101,18 +100,18 @@ test('updates components when route changes', async () => {
     createRoute({
       name: 'foo',
       path: '/foo',
-      component: { template: 'Foo' },
-    }),
+    })
+      .addView({ template: 'Foo' }),
     createRoute({
       name: 'bar',
       path: '/bar',
-      component: { template: 'Bar' },
-    }),
+    })
+      .addView({ template: 'Bar' }),
     createRoute({
       name: 'zoo',
       path: '/zoo',
-      component: { template: 'Zoo' },
-    }),
+    })
+      .addView({ template: 'Zoo' }),
   ] as const
 
   const router = createRouter(routes, {
@@ -150,8 +149,8 @@ test('resolves async components', async () => {
   const route = createRoute({
     name: 'async',
     path: '/',
-    component: defineAsyncComponent(() => import('./helloWorld')),
   })
+    .addView(defineAsyncComponent(() => import('./helloWorld')))
 
   const router = createRouter([route], {
     initialUrl: '/',
@@ -219,11 +218,14 @@ test('Renders custom genericRejection component when the initialUrl does not mat
     },
   })
 
-  if (!isWithComponent(router.route.matched)) {
-    throw new Error('Matched route does not have a single component')
+  const { views } = router.route.matched
+  const rejectionComponent = 'default' in views ? views.default.component : undefined
+
+  if (!rejectionComponent) {
+    throw new Error('Matched route does not have a default view')
   }
 
-  const route = mount(router.route.matched.component)
+  const route = mount(rejectionComponent)
 
   expect(wrapper.text()).toBe(NotFound.template)
   expect(route.text()).toBe(NotFound.template)
@@ -233,8 +235,8 @@ test('Renders the NotFound component when the router.push does not match', async
   const route = createRoute({
     name: 'foo',
     path: '/',
-    component: { template: 'hello world' },
   })
+    .addView({ template: 'hello world' })
 
   const router = createRouter([route], {
     initialUrl: '/',
@@ -261,8 +263,8 @@ test('Renders the route component when the router.push does match after a reject
   const route = createRoute({
     name: 'foo',
     path: '/',
-    component: { template: 'hello world' },
   })
+    .addView({ template: 'hello world' })
 
   const router = createRouter([route], {
     initialUrl: '/does-not-exist',
@@ -291,12 +293,10 @@ test('Renders the multiple components when using named route views', async () =>
   const route = createRoute({
     name: 'foo',
     path: '/',
-    components: {
-      default: { template: '_default_' },
-      one: { template: '_one_' },
-      two: { template: '_two_' },
-    },
   })
+    .addView({ template: '_default_' }, { name: 'default' })
+    .addView({ template: '_one_' }, { name: 'one' })
+    .addView({ template: '_two_' }, { name: 'two' })
 
   const router = createRouter([route], {
     initialUrl: '/',
@@ -325,14 +325,14 @@ test('Binds props and attrs from route', async () => {
   const routeA = createRoute({
     name: 'routeA',
     path: '/routeA/[param]',
-    component: echo,
-  }, (route) => ({ value: route.params.param }))
+  })
+    .addView(echo, { props: (route) => ({ value: route.params.param }) })
 
   const routeB = createRoute({
     name: 'routeB',
     path: '/routeB/[param]',
-    component: echo,
-  }, (route) => ({ value: route.params.param }))
+  })
+    .addView(echo, { props: (route) => ({ value: route.params.param }) })
 
   const router = createRouter([routeA, routeB], {
     initialUrl: '/',
@@ -363,14 +363,14 @@ test('Updates props and attrs when route params change', async () => {
   const syncProps = createRoute({
     name: 'sync',
     path: '/sync/[param]',
-    component: echo,
-  }, (route) => ({ value: route.params.param }))
+  })
+    .addView(echo, { props: (route) => ({ value: route.params.param }) })
 
   const asyncProps = createRoute({
     name: 'async',
     path: '/async/[param]',
-    component: echo,
-  }, async (route) => ({ value: route.params.param }))
+  })
+    .addView(echo, { props: async (route) => ({ value: route.params.param }) })
 
   const router = createRouter([syncProps, asyncProps], {
     initialUrl: '/',
@@ -413,18 +413,22 @@ test('Props from route can trigger push', async () => {
   const routeA = createRoute({
     name: 'routeA',
     path: '/routeA',
-    component: echo,
-  }, (__, context) => {
-    throw context.push('/routeB')
   })
+    .addView(echo, {
+      props: (__, context) => {
+        throw context.push('/routeB')
+      },
+    })
 
   const routeB = createRoute({
     name: 'routeB',
     path: '/routeB',
-    component: echo,
-  }, () => ({
-    value: 'routeB',
-  }))
+  })
+    .addView(echo, {
+      props: () => ({
+        value: 'routeB',
+      }),
+    })
 
   const router = createRouter([routeA, routeB], {
     initialUrl: '/',
@@ -453,10 +457,12 @@ test('Props from route can trigger reject', async () => {
   const routeA = createRoute({
     name: 'routeA',
     path: '/routeA',
-    component: echo,
-  }, (__, context) => {
-    throw context.reject('NotFound')
   })
+    .addView(echo, {
+      props: (__, context) => {
+        throw context.reject('NotFound')
+      },
+    })
 
   const router = createRouter([routeA], {
     initialUrl: '/',
@@ -485,25 +491,29 @@ test('prefetched props trigger push when navigation is initiated', async () => {
   const routeA = createRoute({
     name: 'routeA',
     path: '/routeA',
-    component: { render: () => h(RouterLink, { to: (resolve) => resolve('routeB') }, () => 'routeB') },
   })
+    .addView({ render: () => h(RouterLink, { to: (resolve) => resolve('routeB') }, () => 'routeB') })
 
   const routeB = createRoute({
     name: 'routeB',
     path: '/routeB',
-    component: echo,
     prefetch: { props: true },
-  }, (__, { push }) => {
-    throw push('/routeC')
   })
+    .addView(echo, {
+      props: (__, { push }) => {
+        throw push('/routeC')
+      },
+    })
 
   const routeC = createRoute({
     name: 'routeC',
     path: '/routeC',
-    component: echo,
-  }, () => ({
-    value: 'routeC',
-  }))
+  })
+    .addView(echo, {
+      props: () => ({
+        value: 'routeC',
+      }),
+    })
 
   const router = createRouter([routeA, routeB, routeC], {
     initialUrl: '/routeA',
@@ -534,25 +544,29 @@ test('prefetched async props trigger push when navigation is initiated', async (
   const routeA = createRoute({
     name: 'routeA',
     path: '/routeA',
-    component: { render: () => h(RouterLink, { to: (resolve) => resolve('routeB') }, () => 'routeB') },
   })
+    .addView({ render: () => h(RouterLink, { to: (resolve) => resolve('routeB') }, () => 'routeB') })
 
   const routeB = createRoute({
     name: 'routeB',
     path: '/routeB',
-    component,
     prefetch: { props: true },
-  }, (__, { push }) => {
-    throw push('/routeC')
   })
+    .addView(component, {
+      props: (__, { push }) => {
+        throw push('/routeC')
+      },
+    })
 
   const routeC = createRoute({
     name: 'routeC',
     path: '/routeC',
-    component: echo,
-  }, () => ({
-    value: 'routeC',
-  }))
+  })
+    .addView(echo, {
+      props: () => ({
+        value: 'routeC',
+      }),
+    })
 
   const router = createRouter([routeA, routeB, routeC], {
     initialUrl: '/routeA',
@@ -590,18 +604,18 @@ test('Renders correct component when using default slot', async () => {
   const foo = createRoute({
     name: 'foo',
     path: '/foo',
-    component: {
-      template: 'Foo',
-    },
   })
+    .addView({
+      template: 'Foo',
+    })
 
   const bar = createRoute({
     name: 'bar',
     path: '/bar',
-    component: {
-      template: 'Bar',
-    },
   })
+    .addView({
+      template: 'Bar',
+    })
 
   const router = createRouter([foo, bar], {
     initialUrl: '/foo',
@@ -652,8 +666,8 @@ test('Renders the rejection component when the rejection is not registered on th
     name: 'foo',
     path: '/',
     context: [myRejection],
-    component: { template: 'Should not be rendered' },
   })
+    .addView({ template: 'Should not be rendered' })
 
   route.onBeforeRouteEnter((_to, { reject }) => {
     throw reject('myRejection')

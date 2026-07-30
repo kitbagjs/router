@@ -19,8 +19,8 @@ test('given path WITHOUT params, returns match', () => {
     parent: child,
     name: 'parent.child.grandchild',
     path: '/grandchild',
-    component,
   })
+    .addView(component)
 
   const routes = [parent, child, grandchild]
 
@@ -44,8 +44,8 @@ test('given path to unnamed parent, without option to get to leaf, returns no ma
   const namedGrandchild = createRoute({
     parent: unnamedChild,
     path: '/named-grandchild',
-    component,
   })
+    .addView(component)
 
   const routes = [unnamedParent, unnamedChild, namedGrandchild]
 
@@ -62,8 +62,8 @@ test('given path to unnamed  parent, with option to get to leaf, returns availab
   const unnamedChildRoot = createRoute({
     parent: unnamedParent,
     name: 'child-root',
-    component,
   })
+    .addView(component)
 
   const routes = [unnamedChildRoot, unnamedParent]
   const match = getMatchForUrl(routes, '/unnamed')
@@ -76,8 +76,8 @@ test('given route with simple string param WITHOUT value present, returns no mat
   const route = createRoute({
     name: 'simple-params',
     path: '/simple/[simple]',
-    component,
   })
+    .addView(component)
   const response = getMatchForUrl([route], '/simple/')
 
   expect(response).toBeUndefined()
@@ -88,8 +88,8 @@ test('given route with simple string query param WITHOUT value present, returns 
     name: 'simple-params',
     path: '/missing',
     query: 'simple=[simple]',
-    component,
   })
+    .addView(component)
 
   const response = getMatchForUrl([route], '/missing?without=params')
 
@@ -100,20 +100,20 @@ test('given route with equal matches, returns first match', () => {
   const firstRoute = createRoute({
     name: 'first-route',
     path: '/',
-    component,
   })
+    .addView(component)
 
   const secondRoute = createRoute({
     parent: firstRoute,
     name: 'second-route',
-    component,
   })
+    .addView(component)
 
   const thirdRoute = createRoute({
     name: 'third-route',
     path: '/',
-    component,
   })
+    .addView(component)
 
   const match = getMatchForUrl([
     firstRoute,
@@ -130,8 +130,8 @@ test('given url with query params that include params and extra values, retains 
     name: 'query-params',
     path: '/',
     query: 'foo=[param]',
-    component,
   })
+    .addView(component)
 
   const match = getMatchForUrl([route], '/?extra=42&foo=1')
 
@@ -144,8 +144,8 @@ describe('trailing slashes', () => {
     const route = createRoute({
       name: 'no-trailing-slash',
       path: '/parent/child',
-      component,
     })
+      .addView(component)
 
     const match = getMatchForUrl([route], '/parent/child/')
 
@@ -156,8 +156,8 @@ describe('trailing slashes', () => {
     const route = createRoute({
       name: 'with-trailing-slash',
       path: '/parent/child/',
-      component,
     })
+      .addView(component)
 
     const match = getMatchForUrl([route], '/parent/child')
 
