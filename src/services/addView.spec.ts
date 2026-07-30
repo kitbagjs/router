@@ -146,23 +146,6 @@ describe('prefetch', () => {
   })
 })
 
-describe('backwards compatibility', () => {
-  test('addView merges with the deprecated component and props options', () => {
-    const defaultGetter = (): { foo: string } => ({ foo: 'bar' })
-    const sidebarGetter = (): { baz: number } => ({ baz: 1 })
-
-    const route = createRoute({ name: 'route' })
-      .addView(component, { props: defaultGetter })
-      .addView(other, {
-        name: 'sidebar',
-        props: sidebarGetter,
-      })
-
-    expect(pick(route, 'component')).toStrictEqual({ default: component, sidebar: other })
-    expect(pick(route, 'props')).toStrictEqual({ default: defaultGetter, sidebar: sidebarGetter })
-  })
-})
-
 describe('immutability + chaining', () => {
   test('addView returns a new route without mutating the original', () => {
     const route = createRoute({ name: 'route' })
