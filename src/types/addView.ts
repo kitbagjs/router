@@ -40,23 +40,17 @@ export type AddViewPropsCallbackContext<
 }
 
 /**
- * The parent context ({ name, props }) reconstructed from the route's tuples: the parent's name from
- * the second-to-last `matches` entry and its prop return types from the second-to-last `views` entry.
+ * The parent context ({ name, props }) reconstructed from the second-to-last `matches` entry, which
+ * carries both the parent's name and its views.
  */
 type AddViewParent<
   TRoute extends Route
-> = TRoute['views'] extends [...RouteViews[], infer TParentView extends RouteViews, RouteViews]
+> = TRoute['matches'] extends [...CreatedRouteOptions[], infer TParent extends CreatedRouteOptions, CreatedRouteOptions]
   ? {
-      name: ParentMatchName<TRoute['matches']>,
-      props: ViewsPropsReturnType<TParentView>,
+      name: TParent['name'],
+      props: ViewsPropsReturnType<TParent['views']>,
     }
   : undefined
-
-type ParentMatchName<
-  TMatches extends CreatedRouteOptions[]
-> = TMatches extends [...CreatedRouteOptions[], infer TParent extends CreatedRouteOptions, CreatedRouteOptions]
-  ? TParent['name']
-  : string
 
 /**
  * When the getter is omitted the default type param resolves to the wide getter type, which then
@@ -124,46 +118,49 @@ type AddViewArgs<
   : [options: AddViewOptionsWithRequiredProps<TName, TGetter>]
 
 /**
- * The current route's own view prop getters (the last entry of its `views` tuple).
+ * The views of the route itself, from the last `matches` entry.
  */
 type CurrentViewProps<
   TRoute extends Route
-> = LastInArray<TRoute['views']>
+> = LastInArray<TRoute['matches']> extends { views: infer TViews extends RouteViews } ? TViews : RouteViews
 
 /**
  * Computes the new view props type after adding a view. A lone default view is stored as a bare getter;
  * adding a named view promotes to a record, pulling any existing bare default under 'default'.
  */
 export type AddViewProps<
-  TCurrent,
+  TCurrent extends RouteViews,
   TName extends string | undefined,
   TNewGetter
 > = [TNewGetter] extends [undefined]
   ? TCurrent
-  : Identity<Omit<TCurrent, ViewName<TName>> & Record<ViewName<TName>, RouteView<TNewGetter>>>
+  : Identity<Omit<TCurrent, ViewName<TName>> & Record<ViewName<TName>, RouteView<TNewGetter>>> extends infer TNext extends RouteViews
+    ? TNext
+    : TCurrent
 
 type ViewName<TName extends string | undefined> = TName extends string ? TName : 'default'
 
 /**
- * Replaces the props of the last view in a views tuple, preserving all ancestor views.
+ * Replaces the views on the last match, preserving all ancestors.
  */
-type ReplaceLastViewProps<
-  TViews extends RouteViews[],
-  TNewViews extends Record<string, RouteView>
-> = TViews extends [...infer THead extends RouteViews[], RouteViews]
-  ? [...THead, TNewViews]
-  : TViews
+type ReplaceLastMatchViews<
+  TMatches extends CreatedRouteOptions[],
+  TNewViews extends RouteViews
+> = TMatches extends [...infer THead extends CreatedRouteOptions[], infer TLast extends CreatedRouteOptions]
+  ? Identity<Omit<TLast, 'views'> & { views: TNewViews }> extends infer TNext extends CreatedRouteOptions
+    ? [...THead, TNext]
+    : TMatches
+  : TMatches
 
 /**
- * Rebuilds a Route with the last view's props updated. Uses indexed access + Pick to recover the Url slot.
+ * Rebuilds a Route with the last match's views updated. Uses Pick to recover the Url slot.
  */
 type WithViewProps<
   TRoute extends Route,
-  TNewProps extends Record<string, RouteView>
+  TNewProps extends RouteViews
 > = Route<
   Pick<TRoute, keyof Url>,
-  TRoute['matches'],
-  ReplaceLastViewProps<TRoute['views'], TNewProps>
+  ReplaceLastMatchViews<TRoute['matches'], TNewProps>
 >
 
 /**

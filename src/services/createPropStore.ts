@@ -52,7 +52,7 @@ export function createPropStore(): PropStore {
     const { push, replace, reject, update } = createRouterCallbackContext({ to: route })
 
     return route.matches
-      .map((match, index) => ({ match, views: route.views[index], depth: index }))
+      .map((match, index) => ({ match, views: match.views, depth: index }))
       .flatMap(({ match, views, depth }) => getComponentProps(match.id, views, depth).map((componentProps) => ({ match, views, componentProps })))
       .filter(({ match, views, componentProps }) => getPrefetchOption({
         ...prefetch,
@@ -88,7 +88,7 @@ export function createPropStore(): PropStore {
 
   const setProps: PropStore['setProps'] = async (route) => {
     const { push, replace, reject, update } = createRouterCallbackContext({ to: route })
-    const componentProps = route.views.flatMap((views, depth) => getComponentProps(route.matches[depth].id, views, depth))
+    const componentProps = route.matches.flatMap((match, depth) => getComponentProps(match.id, match.views, depth))
     const keys: string[] = []
     const promises: Promise<unknown>[] = []
 
@@ -149,7 +149,7 @@ export function createPropStore(): PropStore {
 
   /**
    * The parent context for the view at the given depth. Must be resolved per depth rather than from the
-   * end of the tuples: every view in a nested route gets its own parent, not the resolved route's parent.
+   * last match: every view in a nested route gets its own parent, not the resolved route's parent.
    */
   function getParentContext(route: ResolvedRoute, depth: number, prefetch: boolean = false, pending?: Record<string, StoredProps>): PropsCallbackParent {
     if (depth === 0) {
@@ -157,7 +157,7 @@ export function createPropStore(): PropStore {
     }
 
     const parentMatch = route.matches[depth - 1]
-    const parentViews = route.views[depth - 1]
+    const parentViews = parentMatch.views
 
     const name = parentMatch.name ?? ''
     const withProps = Object.keys(parentViews).filter((viewName) => parentViews[viewName].props)

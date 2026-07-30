@@ -1,8 +1,9 @@
-import { Component } from 'vue'
+import { Component, markRaw } from 'vue'
 import { DEFAULT_VIEW_NAME } from '@/services/createRouteViews'
 import { PropsGetter } from '@/types/createRouteOptions'
 import { PrefetchConfig } from '@/types/prefetch'
 import { Route } from '@/types/route'
+import { withMatched } from '@/services/withMatched'
 import { RouteViews } from '@/types/routeViews'
 
 /**
@@ -60,18 +61,18 @@ type AddView = (...args: AddViewParameters) => Route
 export function withAddView<TRoute extends Route>(route: TRoute): TRoute {
   const addView: AddView = (component, options) => {
     const view = toView(component, options)
-    const currentViews = route.views.at(-1)
+    const currentMatch = route.matches.at(-1)
 
-    if (!currentViews) {
+    if (!currentMatch) {
       return withAddView(route)
     }
 
-    const nextViews = addToViews(currentViews, view)
+    const nextMatch = markRaw({ ...currentMatch, views: addToViews(currentMatch.views, view) })
 
-    return withAddView({
+    return withAddView(withMatched({
       ...route,
-      views: [...route.views.slice(0, -1), nextViews],
-    })
+      matches: [...route.matches.slice(0, -1), nextMatch],
+    }))
   }
 
   return {

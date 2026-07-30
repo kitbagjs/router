@@ -34,5 +34,7 @@ export type PropsCallbackParent<
 type GetParentPropsReturnType<
   TParent extends Route | undefined = Route | undefined
 > = TParent extends Route
-  ? ViewsPropsReturnType<LastInArray<TParent['views']>>
+  ? LastInArray<TParent['matches']> extends { views: infer TViews }
+    ? ViewsPropsReturnType<TViews>
+    : undefined
   : undefined
