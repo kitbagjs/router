@@ -52,16 +52,8 @@ export function isWithComponent<T extends Record<string, unknown>>(options: T): 
   return 'component' in options && Boolean(options.component)
 }
 
-export function isWithComponentProps<T extends Record<string, unknown>>(options: T): options is T & { props: PropsGetter } {
-  return 'props' in options && typeof options.props === 'function'
-}
-
 export function isWithComponents<T extends Record<string, unknown>>(options: T): options is T & { components: Record<string, Component> } {
   return 'components' in options && Boolean(options.components)
-}
-
-export function isWithComponentPropsRecord<T extends Record<string, unknown>>(options: T): options is T & { props: RoutePropsRecord } {
-  return 'props' in options && typeof options.props === 'object'
 }
 
 export type CreateRouteOptions<
