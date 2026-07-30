@@ -4,7 +4,7 @@ import type { PrefetchConfigs, PrefetchStrategy } from '@/types/prefetch'
 import { getPrefetchOption } from '@/utilities/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouteViews } from '@/types/routeViews'
-import { DEFAULT_VIEW_NAME } from './createRouteViews'
+import { DEFAULT_VIEW_NAME, isWithBareViewProps, isWithViewProps } from './createRouteViews'
 import { ContextPushError } from '@/errors/contextPushError'
 import { ContextRejectionError } from '@/errors/contextRejectionError'
 import { ParentPropsAbandonedError } from '@/errors/parentPropsAbandonedError'
@@ -160,9 +160,8 @@ export function createPropStore(): PropStore {
     const parentViews = parentMatch.views
 
     const name = parentMatch.name ?? ''
-    const withProps = Object.keys(parentViews).filter((viewName) => parentViews[viewName].props)
 
-    if (withProps.length === 1 && withProps[0] === DEFAULT_VIEW_NAME) {
+    if (isWithBareViewProps(parentViews)) {
       return {
         name,
         get props() {
@@ -171,13 +170,13 @@ export function createPropStore(): PropStore {
       }
     }
 
-    if (withProps.length > 0) {
+    if (isWithViewProps(parentViews)) {
       return {
         name,
         props: new Proxy({}, {
           get(target, propName) {
             // a name with no getter can never be stored, so waiting on it would never settle
-            if (typeof propName !== 'string' || !withProps.includes(propName)) {
+            if (typeof propName !== 'string' || !(propName in parentViews) || !parentViews[propName].props) {
               return Reflect.get(target, propName)
             }
 
