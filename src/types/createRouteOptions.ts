@@ -84,6 +84,15 @@ export type CreateRouteOptions<
    * When true, the route will be hoisted to the top of the route tree. The route will continue to inherit meta, state, hooks, matches, and context from it's parent, but not the "url" properties.
    */
   hoist?: boolean,
+  /**
+   * Removed. Declared so that passing it is an error rather than silently ignored — extra properties are
+   * allowed when inferring against this type, so leaving it out would let the old syntax type check.
+   */
+  component?: 'component was removed, use addView instead',
+  /**
+   * Removed. See {@link CreateRouteOptions.component}.
+   */
+  components?: 'components was removed, use addView with a name instead',
 }
 
 export type PropsGetter<
