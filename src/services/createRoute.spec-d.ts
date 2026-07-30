@@ -698,27 +698,6 @@ describe('meta', () => {
   })
 })
 
-describe('matched.meta', () => {
-  test('is always defined', () => {
-    const route = createRoute({
-      name: 'route',
-    })
-
-    expectTypeOf(route.matches[0].meta).toEqualTypeOf<Readonly<{}>>()
-  })
-
-  test('preserves provided values', () => {
-    const route = createRoute({
-      name: 'route',
-      meta: {
-        foo: 'bar',
-      },
-    })
-
-    expectTypeOf(route.matches[0].meta).toEqualTypeOf<Readonly<{ foo: 'bar' }>>()
-  })
-})
-
 describe('matches[number].meta', () => {
   test('is always defined', () => {
     const route = createRoute({

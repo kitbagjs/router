@@ -155,7 +155,7 @@ export type CreateRouteProps<
 type ToMatch<
   TOptions extends CreateRouteOptions,
   TProps = undefined
-> = Omit<TOptions, 'meta' | 'name' | 'component' | 'components'> & {
+> = Omit<TOptions, 'meta' | 'name' | 'component' | 'components' | 'parent'> & {
   id: string,
   name: ToName<TOptions['name']>,
   /**

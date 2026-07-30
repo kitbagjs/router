@@ -141,7 +141,7 @@ test.fails('route is readonly except for individual params', async () => {
 
   // @ts-expect-error value is immutable
   route.matched = 'match'
-  expect(route.matched).toMatchObject(routes[0].matches[0])
+  expect(route.matched).toBe(route.matches.at(-1))
 
   // @ts-expect-error value is immutable
   route.matches = 'matches'
