@@ -157,11 +157,11 @@ export function createPropStore(): PropStore {
     }
 
     const parentMatch = route.matches[depth - 1]
-    const { views: parentViews, name = '' } = parentMatch
+    const { views: parentViews, name: parentName = '' } = parentMatch
 
     if (isWithBareViewProps(parentViews)) {
       return {
-        name,
+        name: parentName,
         get props() {
           return getParentProps(parentMatch.id, DEFAULT_VIEW_NAME, route, prefetch, pending)
         },
@@ -170,7 +170,7 @@ export function createPropStore(): PropStore {
 
     if (isWithViewProps(parentViews)) {
       return {
-        name,
+        name: parentName,
         props: new Proxy({}, {
           get(target, propName) {
             // a name with no getter can never be stored, so waiting on it would never settle
@@ -185,7 +185,7 @@ export function createPropStore(): PropStore {
     }
 
     return {
-      name,
+      name: parentName,
       props: undefined,
     }
   }
