@@ -157,9 +157,7 @@ export function createPropStore(): PropStore {
     }
 
     const parentMatch = route.matches[depth - 1]
-    const parentViews = parentMatch.views
-
-    const name = parentMatch.name ?? ''
+    const { views: parentViews, name = '' } = parentMatch
 
     if (isWithBareViewProps(parentViews)) {
       return {
