@@ -13,9 +13,15 @@ export function createResolvedRoute(route: Route, params: Record<string, unknown
   })
   const { query, hash } = parseUrl(href)
   const { promise: title, resolve: resolveTitle } = Promise.withResolvers<string | undefined>()
+  const matched = route.matches.at(-1)
+
+  if (!matched) {
+    throw new Error('createResolvedRoute called with a route that has no matches')
+  }
 
   const resolvedRoute = {
     ...route,
+    matched,
     query: createResolvedRouteQuery(query),
     state: getStateValues(route.state, options.state),
     hash,

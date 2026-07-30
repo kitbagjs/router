@@ -5,15 +5,23 @@ import { component } from '@/utilities/testHelpers'
 
 const other = { template: '<div>other</div>' }
 
-function lastView(route: { views: RouteViews[] }): RouteViews {
-  return route.views[route.views.length - 1]
+function lastView(route: { matches: { views: RouteViews }[] }): RouteViews {
+  return route.matches[route.matches.length - 1].views
+}
+
+function pick(route: { matches: { views: RouteViews }[] }, key: 'component' | 'props' | 'prefetch'): Record<string, unknown> {
+  return Object.fromEntries(
+    Object.entries(lastView(route))
+      .filter(([, view]) => view[key] !== undefined)
+      .map(([name, view]) => [name, view[key]]),
+  )
 }
 
 describe('components', () => {
   test('a default view is stored under "default"', () => {
     const route = createRoute({ name: 'route' }).addView(component)
 
-    expect(lastView(route).components).toStrictEqual({ default: component })
+    expect(pick(route, 'component')).toStrictEqual({ default: component })
   })
 
   test('a named view is stored under its name', () => {
@@ -21,7 +29,7 @@ describe('components', () => {
       name: 'sidebar',
     })
 
-    expect(lastView(route).components).toStrictEqual({ sidebar: component })
+    expect(pick(route, 'component')).toStrictEqual({ sidebar: component })
   })
 
   test('multiple views accumulate in the same views entry', () => {
@@ -31,7 +39,7 @@ describe('components', () => {
         name: 'sidebar',
       })
 
-    expect(lastView(route).components).toStrictEqual({ default: component, sidebar: other })
+    expect(pick(route, 'component')).toStrictEqual({ default: component, sidebar: other })
   })
 })
 
@@ -42,13 +50,13 @@ describe('props', () => {
       props: getter,
     })
 
-    expect(lastView(route).props).toBe(getter)
+    expect(pick(route, 'props')).toStrictEqual({ default: getter })
   })
 
   test('an omitted getter leaves props untouched', () => {
     const route = createRoute({ name: 'route' }).addView(component)
 
-    expect(lastView(route).props).toBeUndefined()
+    expect(pick(route, 'props')).toStrictEqual({})
   })
 
   test('adding a named getter promotes to a record, pulling the bare default under "default"', () => {
@@ -64,7 +72,7 @@ describe('props', () => {
         props: sidebarGetter,
       })
 
-    expect(lastView(route).props).toStrictEqual({ default: defaultGetter, sidebar: sidebarGetter })
+    expect(pick(route, 'props')).toStrictEqual({ default: defaultGetter, sidebar: sidebarGetter })
   })
 })
 
@@ -74,8 +82,8 @@ describe('prefetch', () => {
       prefetch: false,
     })
 
-    expect(lastView(route).prefetch).toStrictEqual({ default: false })
-    expect(lastView(route).props).toBeUndefined()
+    expect(pick(route, 'prefetch')).toStrictEqual({ default: false })
+    expect(pick(route, 'props')).toStrictEqual({})
   })
 
   test('prefetch is stored alongside a props getter', () => {
@@ -85,8 +93,8 @@ describe('prefetch', () => {
       prefetch: 'eager',
     })
 
-    expect(lastView(route).props).toBe(getter)
-    expect(lastView(route).prefetch).toStrictEqual({ default: 'eager' })
+    expect(pick(route, 'props')).toStrictEqual({ default: getter })
+    expect(pick(route, 'prefetch')).toStrictEqual({ default: 'eager' })
   })
 
   test('prefetch is stored under a named view name', () => {
@@ -95,7 +103,7 @@ describe('prefetch', () => {
       prefetch: 'eager',
     })
 
-    expect(lastView(route).prefetch).toStrictEqual({ sidebar: 'eager' })
+    expect(pick(route, 'prefetch')).toStrictEqual({ sidebar: 'eager' })
   })
 
   test('prefetch is stored alongside a named view props getter', () => {
@@ -106,8 +114,8 @@ describe('prefetch', () => {
       prefetch: 'intent',
     })
 
-    expect(lastView(route).props).toStrictEqual({ sidebar: getter })
-    expect(lastView(route).prefetch).toStrictEqual({ sidebar: 'intent' })
+    expect(pick(route, 'props')).toStrictEqual({ sidebar: getter })
+    expect(pick(route, 'prefetch')).toStrictEqual({ sidebar: 'intent' })
   })
 
   test('each view keeps its own prefetch config', () => {
@@ -120,7 +128,7 @@ describe('prefetch', () => {
         prefetch: false,
       })
 
-    expect(lastView(route).prefetch).toStrictEqual({
+    expect(pick(route, 'prefetch')).toStrictEqual({
       default: { components: 'eager', props: false },
       sidebar: false,
     })
@@ -134,7 +142,7 @@ describe('prefetch', () => {
         prefetch: 'intent',
       })
 
-    expect(lastView(route).prefetch).toStrictEqual({ sidebar: 'intent' })
+    expect(pick(route, 'prefetch')).toStrictEqual({ sidebar: 'intent' })
   })
 })
 
@@ -149,8 +157,8 @@ describe('backwards compatibility', () => {
         props: sidebarGetter,
       })
 
-    expect(lastView(route).components).toStrictEqual({ default: component, sidebar: other })
-    expect(lastView(route).props).toStrictEqual({ default: defaultGetter, sidebar: sidebarGetter })
+    expect(pick(route, 'component')).toStrictEqual({ default: component, sidebar: other })
+    expect(pick(route, 'props')).toStrictEqual({ default: defaultGetter, sidebar: sidebarGetter })
   })
 })
 
@@ -160,19 +168,18 @@ describe('immutability + chaining', () => {
     const withView = route.addView(component)
 
     expect(withView).not.toBe(route)
-    expect(lastView(route).components).toStrictEqual({})
-    expect(lastView(withView).components).toStrictEqual({ default: component })
+    expect(pick(route, 'component')).toStrictEqual({})
+    expect(pick(withView, 'component')).toStrictEqual({ default: component })
   })
 
-  test('addView on a child returns the merged route with a combined views tuple', () => {
+  test('addView on a child returns the merged route with its ancestors', () => {
     const parent = createRoute({ name: 'parent', path: '/parent' })
     const child = createRoute({ name: 'child', parent, path: '/child' })
 
     const withView = child.addView(component)
 
     expect(withView.name).toBe('child')
-    expect(withView.views).toHaveLength(2)
     expect(withView.matches).toHaveLength(2)
-    expect(lastView(withView).components).toStrictEqual({ default: component })
+    expect(pick(withView, 'component')).toStrictEqual({ default: component })
   })
 })

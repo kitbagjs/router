@@ -1,31 +1,38 @@
 import { Component } from 'vue'
 import { PrefetchConfig } from '@/types/prefetch'
+import { AnyFunction } from '@/types/utilities'
 
 /**
- * The components and prop getters for a single route, keyed by view name (the default view under
- * 'default'). This is a first-class structure on the route, indexed by depth in `route.views` —
- * parallel to how `route.matches` indexes the matched options. It is the single source of truth for
- * a route's components and prop getters; `matched` no longer carries them.
+ * A single view: what to render, how to get its props, and how to prefetch it. `component` is optional
+ * because a route can bind props to the nested RouterView it renders without declaring a component.
  *
- * @template TProps - The prop getter types for this route's views. A bare getter for a single default
- * view, or a record keyed by view name. Carries the getter types used for parent props typing.
+ * @template TProps - What this view's props getter returns, carried so parent props can be typed from it.
  */
-export type RouteViews<TProps = unknown> = {
-  /**
-   * The id of the route these views belong to. Matches the corresponding `matched.id` at the same depth.
-   */
-  id: string,
-  /**
-   * Components to render, keyed by view name. Empty when the route renders a nested RouterView.
-   */
-  components: Record<string, Component>,
-  /**
-   * Prop getters for the route's views.
-   */
-  props: TProps,
-  /**
-   * Prefetch configs keyed by view name, for views that opted into their own config. Overrides the
-   * route level prefetch for that view only. Absent keys fall back to the route's config.
-   */
-  prefetch?: Record<string, PrefetchConfig>,
+export type RouteView<TProps = undefined> = {
+  component?: Component,
+  props?: AnyFunction<TProps>,
+  prefetch?: PrefetchConfig,
 }
+
+/**
+ * The views for a single route, keyed by view name (the unnamed view under 'default'). Indexed by depth in
+ * `route.views` — parallel to how `route.matches` indexes the matched options, which is where a route's id
+ * comes from at a given depth.
+ */
+export type RouteViews = Record<string, RouteView<unknown>>
+
+/**
+ * The props a child sees for a parent's views. A lone unnamed view is given directly rather than under a
+ * 'default' key, matching how the props argument is written.
+ */
+export type ViewsPropsReturnType<TViews> = keyof ViewsWithProps<TViews> extends never
+  ? undefined
+  : keyof ViewsWithProps<TViews> extends 'default'
+    ? ViewProps<Extract<ViewsWithProps<TViews>, { default: unknown }>['default']>
+    : { [K in keyof ViewsWithProps<TViews>]: ViewProps<ViewsWithProps<TViews>[K]> }
+
+type ViewsWithProps<TViews> = {
+  [K in keyof TViews as [ViewProps<TViews[K]>] extends [undefined] ? never : K]: TViews[K]
+}
+
+type ViewProps<TView> = TView extends { props?: AnyFunction<infer TProps> } ? TProps : undefined

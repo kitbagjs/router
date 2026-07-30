@@ -21,10 +21,6 @@ export type RouterRoute<TRoute extends ResolvedRoute = ResolvedRoute> = {
    */
   readonly matches: TRoute['matches'],
   /**
-   * The components and prop getters for the route and its ancestors, indexed by depth (parallel to matches).
-   */
-  readonly views: TRoute['views'],
-  /**
    * Hash value of the route.
    */
   readonly hash: string,

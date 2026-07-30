@@ -1,9 +1,10 @@
 import { reactive } from 'vue'
-import { isWithComponentProps, isWithComponentPropsRecord, PropsGetter } from '@/types/createRouteOptions'
+import { PropsGetter } from '@/types/createRouteOptions'
 import type { PrefetchConfigs, PrefetchStrategy } from '@/types/prefetch'
 import { getPrefetchOption } from '@/utilities/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouteViews } from '@/types/routeViews'
+import { DEFAULT_VIEW_NAME, isWithBareViewProps, isWithViewProps } from './createRouteViews'
 import { ContextPushError } from '@/errors/contextPushError'
 import { ContextRejectionError } from '@/errors/contextRejectionError'
 import { getPropsValue } from '@/utilities/props'
@@ -31,12 +32,12 @@ export function createPropStore(): PropStore {
     const { push, replace, reject, update } = createRouterCallbackContext({ to: route })
 
     return route.matches
-      .map((match, index) => ({ match, views: route.views[index] }))
-      .flatMap(({ match, views }) => getComponentProps(views).map((componentProps) => ({ match, views, componentProps })))
+      .map((match) => ({ match, views: match.views }))
+      .flatMap(({ match, views }) => getComponentProps(match.id, views).map((componentProps) => ({ match, views, componentProps })))
       .filter(({ match, views, componentProps }) => getPrefetchOption({
         ...prefetch,
         routePrefetch: match.prefetch,
-        viewPrefetch: views.prefetch?.[componentProps.name],
+        viewPrefetch: views[componentProps.name].prefetch,
       }, 'props') === strategy)
       .map(({ componentProps }) => componentProps)
       .reduce<Record<string, unknown>>((response, { id, name, props }) => {
@@ -67,7 +68,7 @@ export function createPropStore(): PropStore {
 
   const setProps: PropStore['setProps'] = async (route) => {
     const { push, replace, reject, update } = createRouterCallbackContext({ to: route })
-    const componentProps = route.views.flatMap(getComponentProps)
+    const componentProps = route.matches.flatMap((match) => getComponentProps(match.id, match.views))
     const keys: string[] = []
     const promises: Promise<unknown>[] = []
 
@@ -128,40 +129,39 @@ export function createPropStore(): PropStore {
 
   function getParentContext(route: ResolvedRoute, prefetch: boolean = false): PropsCallbackParent {
     const parentMatch = route.matches.at(-2)
-    const parentViews = route.views.at(-2)
 
-    if (!parentMatch || !parentViews) {
+    if (!parentMatch) {
       return
     }
 
-    const name = parentMatch.name ?? ''
+    const { views: parentViews, name: parentName = '' } = parentMatch
 
-    if (isWithComponentProps(parentViews)) {
+    if (isWithBareViewProps(parentViews)) {
       return {
-        name,
+        name: parentName,
         get props() {
-          return getParentProps(parentViews.id, 'default', route, prefetch)
+          return getParentProps(parentMatch.id, DEFAULT_VIEW_NAME, route, prefetch)
         },
       }
     }
 
-    if (isWithComponentPropsRecord(parentViews)) {
+    if (isWithViewProps(parentViews)) {
       return {
-        name,
+        name: parentName,
         props: new Proxy({}, {
           get(target, propName) {
             if (typeof propName !== 'string') {
               return Reflect.get(target, propName)
             }
 
-            return getParentProps(parentViews.id, propName, route, prefetch)
+            return getParentProps(parentMatch.id, propName, route, prefetch)
           },
         }),
       }
     }
 
     return {
-      name,
+      name: parentName,
       props: undefined,
     }
   }
@@ -185,22 +185,8 @@ export function createPropStore(): PropStore {
     return [id, name, route.id, JSON.stringify(route.params)].join('-')
   }
 
-  function getComponentProps(views: RouteViews): ComponentProps[] {
-    if (isWithComponentProps(views)) {
-      return [
-        {
-          id: views.id,
-          name: 'default',
-          props: views.props,
-        },
-      ]
-    }
-
-    if (isWithComponentPropsRecord(views)) {
-      return Object.entries(views.props).map(([name, props]) => ({ id: views.id, name, props }))
-    }
-
-    return []
+  function getComponentProps(id: string, views: RouteViews): ComponentProps[] {
+    return Object.entries(views).map(([name, view]) => ({ id, name, props: view.props as PropsGetter | undefined }))
   }
 
   function clearUnusedStoreEntries(keysToKeep: string[]): void {

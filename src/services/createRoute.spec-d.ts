@@ -1,5 +1,6 @@
 import { describe, expectTypeOf, test } from 'vitest'
 import { createRoute } from './createRoute'
+import { RouteView } from '@/types/routeViews'
 import { Identity } from '@/types/utilities'
 import echo from '@/components/echo'
 import { component } from '@/utilities/testHelpers'
@@ -9,16 +10,52 @@ import { BuiltInRejectionType } from '@/types/rejection'
 import { createRejection } from '@/services/createRejection'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouteRedirects } from '@/types/redirects'
+import { RouteSetTitle } from '@/types/routeTitle'
 import { Url } from '@/types/url'
 
-test('empty options returns an empty route', () => {
-  const route = createRoute({})
+describe('route shape', () => {
+  // a route carries the same members however it was built, so each case asserts against both
+  const cases = {
+    plain: createRoute({}),
+    withView: createRoute({}).addView(component),
+    withNamedView: createRoute({}).addView(component, { name: 'sidebar' }),
+    withProps: createRoute({}).addView(component, { props: () => ({ foo: 'bar' }) }),
+  }
 
-  type Source = typeof route
+  test('is a url', () => {
+    expectTypeOf(cases.plain).toExtend<Url>()
+    expectTypeOf(cases.withView).toExtend<Url>()
+    expectTypeOf(cases.withNamedView).toExtend<Url>()
+    expectTypeOf(cases.withProps).toExtend<Url>()
+  })
 
-  expectTypeOf<Source>().toExtend<Url>()
-  expectTypeOf<Source>().toMatchObjectType<InternalRouteHooks<Source>>()
-  expectTypeOf<Source>().toMatchObjectType<RouteRedirects>()
+  test('has hooks', () => {
+    expectTypeOf(cases.plain).toExtend<InternalRouteHooks>()
+    expectTypeOf(cases.withView).toExtend<InternalRouteHooks>()
+    expectTypeOf(cases.withNamedView).toExtend<InternalRouteHooks>()
+    expectTypeOf(cases.withProps).toExtend<InternalRouteHooks>()
+  })
+
+  test('has redirects', () => {
+    expectTypeOf(cases.plain).toExtend<RouteRedirects>()
+    expectTypeOf(cases.withView).toExtend<RouteRedirects>()
+    expectTypeOf(cases.withNamedView).toExtend<RouteRedirects>()
+    expectTypeOf(cases.withProps).toExtend<RouteRedirects>()
+  })
+
+  test('has setTitle', () => {
+    expectTypeOf(cases.plain).toExtend<RouteSetTitle>()
+    expectTypeOf(cases.withView).toExtend<RouteSetTitle>()
+    expectTypeOf(cases.withNamedView).toExtend<RouteSetTitle>()
+    expectTypeOf(cases.withProps).toExtend<RouteSetTitle>()
+  })
+
+  test('is chainable', () => {
+    expectTypeOf(cases.plain.addView).toBeFunction()
+    expectTypeOf(cases.withView.addView).toBeFunction()
+    expectTypeOf(cases.withNamedView.addView).toBeFunction()
+    expectTypeOf(cases.withProps.addView).toBeFunction()
+  })
 })
 
 test('options with name', () => {
@@ -243,8 +280,8 @@ describe('props', () => {
       component,
     })
 
-    type Source = typeof route['views'][0]['props']
-    type Expect = undefined
+    type Source = typeof route['matches'][0]['views']
+    type Expect = {}
 
     expectTypeOf<Source>().toEqualTypeOf<Expect>()
   })
@@ -254,8 +291,8 @@ describe('props', () => {
       component,
     }, () => ({ foo: 'bar' }))
 
-    type Source = typeof route['views'][0]['props']
-    type Expect = () => { foo: string }
+    type Source = typeof route['matches'][0]['views']
+    type Expect = { default: RouteView<{ foo: string }> }
 
     expectTypeOf<Source>().toEqualTypeOf<Expect>()
   })
@@ -266,8 +303,8 @@ describe('props', () => {
       component: echo,
     })
 
-    type Source = typeof route['views'][0]['props']
-    type Expect = undefined
+    type Source = typeof route['matches'][0]['views']
+    type Expect = {}
 
     expectTypeOf<Source>().toEqualTypeOf<Expect>()
   })
@@ -277,8 +314,8 @@ describe('props', () => {
       component: echo,
     }, () => ({ value: 'bar', extra: true }))
 
-    type Source = typeof route['views'][0]['props']
-    type Expect = () => { value: string, extra: boolean }
+    type Source = typeof route['matches'][0]['views']
+    type Expect = { default: RouteView<{ value: string, extra: boolean }> }
 
     expectTypeOf<Source>().toEqualTypeOf<Expect>()
   })
@@ -289,8 +326,8 @@ describe('props', () => {
       // @ts-expect-error should not accept incorrect type
     }, () => ({ value: true, foo: 'bar' }))
 
-    type Source = typeof route['views'][0]['props']
-    type Expect = undefined
+    type Source = typeof route['matches'][0]['views']
+    type Expect = {}
 
     expectTypeOf<Source>().toEqualTypeOf<Expect>()
   })
@@ -302,8 +339,8 @@ describe('props', () => {
       },
     })
 
-    type Source = typeof route['views'][0]['props']
-    type Expect = undefined
+    type Source = typeof route['matches'][0]['views']
+    type Expect = {}
 
     expectTypeOf<Source>().toEqualTypeOf<Expect>()
   })
@@ -317,8 +354,8 @@ describe('props', () => {
       default: () => ({ foo: 'bar' }),
     })
 
-    type Source = typeof route['views'][0]['props']
-    type Expect = { default: () => { foo: string } }
+    type Source = typeof route['matches'][0]['views']
+    type Expect = { default: RouteView<{ foo: string }> }
 
     expectTypeOf<Source>().toEqualTypeOf<Expect>()
   })
@@ -331,8 +368,8 @@ describe('props', () => {
       },
     })
 
-    type Source = typeof route['views'][0]['props']
-    type Expect = undefined
+    type Source = typeof route['matches'][0]['views']
+    type Expect = {}
 
     expectTypeOf<Source>().toEqualTypeOf<Expect>()
   })
@@ -346,8 +383,8 @@ describe('props', () => {
       default: () => ({ value: 'bar', extra: true }),
     })
 
-    type Source = typeof route['views'][0]['props']
-    type Expect = { default: () => { value: string, extra: boolean } }
+    type Source = typeof route['matches'][0]['views']
+    type Expect = { default: RouteView<{ value: string, extra: boolean }> }
 
     expectTypeOf<Source>().toEqualTypeOf<Expect>()
   })
@@ -362,8 +399,8 @@ describe('props', () => {
       default: () => ({ value: true, foo: 'bar' }),
     })
 
-    type Source = typeof route['views'][0]['props']
-    type Expect = undefined
+    type Source = typeof route['matches'][0]['views']
+    type Expect = {}
 
     expectTypeOf<Source>().toEqualTypeOf<Expect>()
   })
@@ -374,8 +411,8 @@ describe('props', () => {
       // @ts-expect-error should not accept undefined
     }, undefined)
 
-    type Source = typeof route['views'][0]['props']
-    type Expect = undefined
+    type Source = typeof route['matches'][0]['views']
+    type Expect = {}
 
     expectTypeOf<Source>().toEqualTypeOf<Expect>()
   })
@@ -678,27 +715,6 @@ describe('meta', () => {
     expectTypeOf(parent.meta).toExtend<{}>()
     expectTypeOf(route.meta.bar).toEqualTypeOf<'baz'>()
     expectTypeOf(route.meta.foo).toEqualTypeOf<'bar'>()
-  })
-})
-
-describe('matched.meta', () => {
-  test('is always defined', () => {
-    const route = createRoute({
-      name: 'route',
-    })
-
-    expectTypeOf(route.matched.meta).toEqualTypeOf<Readonly<{}>>()
-  })
-
-  test('preserves provided values', () => {
-    const route = createRoute({
-      name: 'route',
-      meta: {
-        foo: 'bar',
-      },
-    })
-
-    expectTypeOf(route.matched.meta).toEqualTypeOf<Readonly<{ foo: 'bar' }>>()
   })
 })
 

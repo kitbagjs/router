@@ -12,9 +12,9 @@ import { RouterReject } from '@/types/routerReject'
 import { RouterReplace } from '@/types/routerReplace'
 import { RouteUpdate } from '@/types/routeUpdate'
 import { PrefetchConfig } from '@/types/prefetch'
-import { RouteViews } from '@/types/routeViews'
+import { RouteView, RouteViews, ViewsPropsReturnType } from '@/types/routeViews'
 import { Url } from '@/types/url'
-import { Identity, LastInArray, MaybePromise } from '@/types/utilities'
+import { AnyFunction, Identity, LastInArray, MaybePromise } from '@/types/utilities'
 
 /**
  * The props getter for a view added via `addView`. Receives the same two arguments as the
@@ -40,39 +40,28 @@ export type AddViewPropsCallbackContext<
 }
 
 /**
- * The parent context ({ name, props }) reconstructed from the route's tuples: the parent's name from
- * the second-to-last `matches` entry and its prop return types from the second-to-last `views` entry.
+ * The parent context ({ name, props }) reconstructed from the second-to-last `matches` entry, which
+ * carries both the parent's name and its views.
  */
 type AddViewParent<
   TRoute extends Route
-> = TRoute['views'] extends [...RouteViews[], infer TParentView extends RouteViews, RouteViews]
+> = TRoute['matches'] extends [...CreatedRouteOptions[], infer TParent extends CreatedRouteOptions, CreatedRouteOptions]
   ? {
-      name: ParentMatchName<TRoute['matches']>,
-      props: MatchPropsReturnType<TParentView['props']>,
+      name: TParent['name'],
+      props: ViewsPropsReturnType<TParent['views']>,
     }
   : undefined
 
-type ParentMatchName<
-  TMatches extends CreatedRouteOptions[]
-> = TMatches extends [...CreatedRouteOptions[], infer TParent extends CreatedRouteOptions, CreatedRouteOptions]
-  ? TParent['name']
-  : string
-
-type MatchPropsReturnType<TProps> = TProps extends PropsGetter
-  ? ReturnType<TProps>
-  : TProps extends Record<string, PropsGetter>
-    ? { [K in keyof TProps]: ReturnType<TProps[K]> }
-    : undefined
-
 /**
  * When the getter is omitted the default type param resolves to the wide getter type, which then
- * "extends" itself and collapses to undefined. When a getter is provided it is narrower and preserved.
+ * "extends" itself and collapses to undefined. When a getter is provided its return type is kept — the
+ * view only needs what the props resolve to, not the signature it took to get there.
  */
-type NewViewGetter<
+type NewViewProps<
   TRoute extends Route,
   TComponent extends Component,
-  TGetter
-> = AddViewPropsGetter<TRoute, TComponent> extends TGetter ? undefined : TGetter
+  TGetter extends AnyFunction
+> = AddViewPropsGetter<TRoute, TComponent> extends TGetter ? undefined : ReturnType<TGetter>
 
 /**
  * The options for a view added via `addView`.
@@ -130,80 +119,72 @@ type AddViewArgs<
   : [options: AddViewOptionsWithRequiredProps<TName, TGetter>]
 
 /**
- * The current route's own view prop getters (the last entry of its `views` tuple).
+ * The views of the route itself, from the last `matches` entry.
  */
-type CurrentViewProps<
-  TRoute extends Route
-> = LastInArray<TRoute['views']> extends RouteViews<infer TProps> ? TProps : undefined
+type CurrentMatchViews<
+  TMatches extends CreatedRouteOptions[]
+> = LastInArray<TMatches> extends { views: infer TViews extends RouteViews } ? TViews : RouteViews
 
 /**
- * Computes the new view props type after adding a view. A lone default view is stored as a bare getter;
- * adding a named view promotes to a record, pulling any existing bare default under 'default'.
+ * Computes the new views after adding a view, replacing any view already stored under the same name.
  */
 export type AddViewProps<
-  TCurrent,
+  TCurrent extends RouteViews,
   TName extends string | undefined,
-  TNewGetter
-> = [TNewGetter] extends [undefined]
-  ? TCurrent
-  : TName extends undefined
-    ? TCurrent extends undefined
-      ? TNewGetter
-      : TCurrent extends (...args: any[]) => any
-        ? TNewGetter
-        : Identity<TCurrent & { default: TNewGetter }>
-    : TCurrent extends undefined
-      ? Identity<Record<TName & string, TNewGetter>>
-      : TCurrent extends (...args: any[]) => any
-        ? Identity<{ default: TCurrent } & Record<TName & string, TNewGetter>>
-        : Identity<TCurrent & Record<TName & string, TNewGetter>>
+  TNewProps
+> = Identity<Omit<TCurrent, ViewName<TName>> & Record<ViewName<TName>, [TNewProps] extends [undefined] ? RouteView : RouteView<TNewProps>>> extends infer TNext extends RouteViews
+  ? TNext
+  : TCurrent
+
+type ViewName<TName extends string | undefined> = TName extends string ? TName : 'default'
 
 /**
- * Replaces the props of the last view in a views tuple, preserving all ancestor views.
+ * Replaces the views on the last match, preserving all ancestors.
  */
-type ReplaceLastViewProps<
-  TViews extends RouteViews[],
-  TNewProps
-> = TViews extends [...infer THead extends RouteViews[], RouteViews]
-  ? [...THead, RouteViews<TNewProps>]
-  : TViews
-
-/**
- * Rebuilds a Route with the last view's props updated. Uses indexed access + Pick to recover the Url slot.
- */
-type WithViewProps<
-  TRoute extends Route,
-  TNewProps
-> = Route<
-  Pick<TRoute, keyof Url>,
-  TRoute['matches'],
-  ReplaceLastViewProps<TRoute['views'], TNewProps>
->
+type ReplaceLastMatchViews<
+  TMatches extends CreatedRouteOptions[],
+  TNewViews extends RouteViews
+> = TMatches extends [...infer THead extends CreatedRouteOptions[], infer TLast extends CreatedRouteOptions]
+  ? Identity<Omit<TLast, 'views'> & { views: TNewViews }> extends infer TNext extends CreatedRouteOptions
+    ? [...THead, TNext]
+    : TMatches
+  : TMatches
 
 /**
  * A route plus every chainable/available method: addView itself, hooks, redirects, and title.
+ *
+ * Takes the url and matches rather than an assembled route so that adding a view can rebuild from them
+ * directly. Taking the route would mean re-deriving the url from it on every call, and that reference is
+ * what made chained calls nest one inside the last.
  */
-type RouteWithMethods<TRoute extends Route> = TRoute
-  & RouteAddView<TRoute>
-  & InternalRouteHooks<TRoute, TRoute['context']>
-  & RouteRedirects<TRoute>
-  & RouteSetTitle<TRoute>
+export type RouteWithMethods<
+  TUrl extends Url = Url,
+  TMatches extends CreatedRouteOptions[] = CreatedRouteOptions[]
+> = Route<TUrl, TMatches>
+  & RouteAddView<TUrl, TMatches>
+  & InternalRouteHooks<Route<TUrl, TMatches>, Route<TUrl, TMatches>['context']>
+  & RouteRedirects<Route<TUrl, TMatches>>
+  & RouteSetTitle<Route<TUrl, TMatches>>
 
 /**
- * The full return type of an `addView` call: the refined route with all methods re-attached.
+ * The full return type of an `addView` call: the same url with the last match's views replaced.
  */
 type AddViewReturn<
-  TRoute extends Route,
-  TNewProps
-> = WithViewProps<TRoute, TNewProps> extends infer TNext extends Route
-  ? RouteWithMethods<TNext>
+  TUrl extends Url,
+  TMatches extends CreatedRouteOptions[],
+  TNewProps extends RouteViews
+> = ReplaceLastMatchViews<TMatches, TNewProps> extends infer TNext extends CreatedRouteOptions[]
+  ? RouteWithMethods<TUrl, TNext>
   : never
 
 /**
  * Adds a view (component + optional props getter) to a route. Chainable to register multiple views,
  * including named views for named `<router-view />`s.
  */
-export type RouteAddView<TRoute extends Route = Route> = {
+export type RouteAddView<
+  TUrl extends Url = Url,
+  TMatches extends CreatedRouteOptions[] = CreatedRouteOptions[]
+> = {
   /**
    * Adds a view for this route.
    *
@@ -215,9 +196,9 @@ export type RouteAddView<TRoute extends Route = Route> = {
   addView: <
     TComponent extends Component,
     const TName extends string | undefined = undefined,
-    const TGetter extends AddViewPropsGetter<TRoute, TComponent> = AddViewPropsGetter<TRoute, TComponent>
+    const TGetter extends AddViewPropsGetter<Route<TUrl, TMatches>, TComponent> = AddViewPropsGetter<Route<TUrl, TMatches>, TComponent>
   >(
     component: TComponent,
     ...options: AddViewArgs<TComponent, TName, TGetter>
-  ) => AddViewReturn<TRoute, AddViewProps<CurrentViewProps<TRoute>, TName, NewViewGetter<TRoute, TComponent, TGetter>>>,
+  ) => AddViewReturn<TUrl, TMatches, AddViewProps<CurrentMatchViews<TMatches>, TName, NewViewProps<Route<TUrl, TMatches>, TComponent, TGetter>>>,
 }
