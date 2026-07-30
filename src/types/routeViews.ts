@@ -8,7 +8,7 @@ import { AnyFunction } from '@/types/utilities'
  *
  * @template TProps - The prop getter for this view, carried so parent props can be typed from it.
  */
-export type RouteView<TProps = unknown> = {
+export type RouteView<TProps = undefined> = {
   component?: Component,
   props?: TProps,
   prefetch?: PrefetchConfig,
@@ -19,7 +19,7 @@ export type RouteView<TProps = unknown> = {
  * `route.views` — parallel to how `route.matches` indexes the matched options, which is where a route's id
  * comes from at a given depth.
  */
-export type RouteViews = Record<string, RouteView>
+export type RouteViews = Record<string, RouteView<unknown>>
 
 /**
  * The props a child sees for a parent's views. A lone unnamed view is given directly rather than under a

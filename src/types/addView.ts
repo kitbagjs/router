@@ -132,11 +132,9 @@ export type AddViewProps<
   TCurrent extends RouteViews,
   TName extends string | undefined,
   TNewGetter
-> = [TNewGetter] extends [undefined]
-  ? TCurrent
-  : Identity<Omit<TCurrent, ViewName<TName>> & Record<ViewName<TName>, RouteView<TNewGetter>>> extends infer TNext extends RouteViews
-    ? TNext
-    : TCurrent
+> = Identity<Omit<TCurrent, ViewName<TName>> & Record<ViewName<TName>, [TNewGetter] extends [undefined] ? RouteView : RouteView<TNewGetter>>> extends infer TNext extends RouteViews
+  ? TNext
+  : TCurrent
 
 type ViewName<TName extends string | undefined> = TName extends string ? TName : 'default'
 
@@ -177,7 +175,7 @@ type RouteWithMethods<TRoute extends Route> = TRoute
  */
 type AddViewReturn<
   TRoute extends Route,
-  TNewProps extends Record<string, RouteView>
+  TNewProps extends RouteViews
 > = WithViewProps<TRoute, TNewProps> extends infer TNext extends Route
   ? RouteWithMethods<TNext>
   : never
