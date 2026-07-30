@@ -183,11 +183,11 @@ type ToMatches<
  * Builds a views record from the props argument, which is either a single getter for the unnamed view or
  * a record of getters keyed by view name.
  */
-type PropsToViews<TProps> = TProps extends AnyFunction
+type PropsToViews<TProps> = [TProps] extends [AnyFunction]
   ? { default: RouteView<TProps> }
-  : TProps extends Record<string, AnyFunction>
-    ? { [K in keyof TProps]: RouteView<TProps[K]> }
-    : {}
+  : [TProps] extends [Record<string, AnyFunction>]
+      ? { [K in keyof TProps]: RouteView<TProps[K]> }
+      : {}
 
 /**
  * The url a route resolves to, combined with its parent's unless the route is hoisted.
