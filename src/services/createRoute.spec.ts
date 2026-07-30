@@ -1,3 +1,4 @@
+import { flushPromises } from '@vue/test-utils'
 import { describe, expect, test, vi } from 'vitest'
 import { createRoute } from '@/services/createRoute'
 import { component } from '@/utilities/testHelpers'
@@ -283,6 +284,74 @@ describe('props', () => {
     expect(spy).toHaveBeenCalledWith({ value: 123 })
   })
 
+  test('awaiting parent props that rejected throws the error', async () => {
+    const error = new Error('parent props failed')
+    const caught = vi.fn()
+
+    const parent = createRoute({
+      name: 'parent',
+    }, async () => {
+      throw error
+    })
+
+    const child = createRoute({
+      name: 'child',
+      parent: parent,
+      path: '/child',
+    }, async (__, { parent }) => {
+      try {
+        await parent.props
+      } catch (thrown) {
+        caught(thrown)
+      }
+
+      return {}
+    })
+
+    const router = createRouter([parent, child], {
+      initialUrl: '/child',
+    })
+
+    await router.start()
+
+    expect(caught).toHaveBeenCalledWith(error)
+  })
+
+  test('reading parent props that threw synchronously throws the error', async () => {
+    const error = new Error('parent props failed')
+    const caught = vi.fn()
+
+    const parent = createRoute({
+      name: 'parent',
+    }, () => {
+      throw error
+    })
+
+    const child = createRoute({
+      name: 'child',
+      parent: parent,
+      path: '/child',
+    }, (__, { parent }) => {
+      try {
+        const value = parent.props
+
+        caught({ didNotThrow: value })
+      } catch (thrown) {
+        caught(thrown)
+      }
+
+      return {}
+    })
+
+    const router = createRouter([parent, child], {
+      initialUrl: '/child',
+    })
+
+    await router.start()
+
+    expect(caught).toHaveBeenCalledWith(error)
+  })
+
   test('async parent props are passed to child props', async () => {
     const spy = vi.fn()
 
@@ -385,6 +454,7 @@ describe('props', () => {
     })
 
     await router.start()
+    await flushPromises()
 
     expect(spy).toHaveBeenCalledWith({ value1: 123, value2: 456 })
   })
