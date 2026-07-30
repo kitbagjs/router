@@ -14,7 +14,7 @@ import { RouteUpdate } from '@/types/routeUpdate'
 import { PrefetchConfig } from '@/types/prefetch'
 import { RouteView, RouteViews, ViewsPropsReturnType } from '@/types/routeViews'
 import { Url } from '@/types/url'
-import { Identity, LastInArray, MaybePromise } from '@/types/utilities'
+import { AnyFunction, Identity, LastInArray, MaybePromise } from '@/types/utilities'
 
 /**
  * The props getter for a view added via `addView`. Receives the same two arguments as the
@@ -54,13 +54,14 @@ type AddViewParent<
 
 /**
  * When the getter is omitted the default type param resolves to the wide getter type, which then
- * "extends" itself and collapses to undefined. When a getter is provided it is narrower and preserved.
+ * "extends" itself and collapses to undefined. When a getter is provided its return type is kept — the
+ * view only needs what the props resolve to, not the signature it took to get there.
  */
-type NewViewGetter<
+type NewViewProps<
   TRoute extends Route,
   TComponent extends Component,
-  TGetter
-> = AddViewPropsGetter<TRoute, TComponent> extends TGetter ? undefined : TGetter
+  TGetter extends AnyFunction
+> = AddViewPropsGetter<TRoute, TComponent> extends TGetter ? undefined : ReturnType<TGetter>
 
 /**
  * The options for a view added via `addView`.
@@ -125,14 +126,13 @@ type CurrentMatchViews<
 > = LastInArray<TMatches> extends { views: infer TViews extends RouteViews } ? TViews : RouteViews
 
 /**
- * Computes the new view props type after adding a view. A lone default view is stored as a bare getter;
- * adding a named view promotes to a record, pulling any existing bare default under 'default'.
+ * Computes the new views after adding a view, replacing any view already stored under the same name.
  */
 export type AddViewProps<
   TCurrent extends RouteViews,
   TName extends string | undefined,
-  TNewGetter
-> = Identity<Omit<TCurrent, ViewName<TName>> & Record<ViewName<TName>, [TNewGetter] extends [undefined] ? RouteView : RouteView<TNewGetter>>> extends infer TNext extends RouteViews
+  TNewProps
+> = Identity<Omit<TCurrent, ViewName<TName>> & Record<ViewName<TName>, [TNewProps] extends [undefined] ? RouteView : RouteView<TNewProps>>> extends infer TNext extends RouteViews
   ? TNext
   : TCurrent
 
@@ -200,5 +200,5 @@ export type RouteAddView<
   >(
     component: TComponent,
     ...options: AddViewArgs<TComponent, TName, TGetter>
-  ) => AddViewReturn<TUrl, TMatches, AddViewProps<CurrentMatchViews<TMatches>, TName, NewViewGetter<Route<TUrl, TMatches>, TComponent, TGetter>>>,
+  ) => AddViewReturn<TUrl, TMatches, AddViewProps<CurrentMatchViews<TMatches>, TName, NewViewProps<Route<TUrl, TMatches>, TComponent, TGetter>>>,
 }

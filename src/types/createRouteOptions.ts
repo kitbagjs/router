@@ -176,9 +176,9 @@ type ToMatches<
  * a record of getters keyed by view name.
  */
 type PropsToViews<TProps> = [TProps] extends [AnyFunction]
-  ? { default: RouteView<TProps> }
+  ? { default: RouteView<ReturnType<TProps>> }
   : [TProps] extends [Record<string, AnyFunction>]
-      ? { [K in keyof TProps]: RouteView<TProps[K]> }
+      ? { [K in keyof TProps]: RouteView<ReturnType<TProps[K]>> }
       : {}
 
 /**

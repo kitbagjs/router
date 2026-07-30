@@ -12,7 +12,7 @@ export type LastInArray<T, TFallback = never> = T extends [...any[], infer Last]
 
 export type MaybePromise<T> = T | Promise<T>
 
-export type AnyFunction = (...args: any[]) => any
+export type AnyFunction<TReturn = any> = (...args: any[]) => TReturn
 
 type OnlyRequiredProperties<T> = {
   [K in keyof T as Extract<T[K], undefined> extends never ? K : never]: T[K]

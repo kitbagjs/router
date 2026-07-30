@@ -6,11 +6,11 @@ import { AnyFunction } from '@/types/utilities'
  * A single view: what to render, how to get its props, and how to prefetch it. `component` is optional
  * because a route can bind props to the nested RouterView it renders without declaring a component.
  *
- * @template TProps - The prop getter for this view, carried so parent props can be typed from it.
+ * @template TProps - What this view's props getter returns, carried so parent props can be typed from it.
  */
 export type RouteView<TProps = undefined> = {
   component?: Component,
-  props?: TProps,
+  props?: AnyFunction<TProps>,
   prefetch?: PrefetchConfig,
 }
 
@@ -28,15 +28,11 @@ export type RouteViews = Record<string, RouteView<unknown>>
 export type ViewsPropsReturnType<TViews> = keyof ViewsWithProps<TViews> extends never
   ? undefined
   : keyof ViewsWithProps<TViews> extends 'default'
-    ? ViewPropsReturnType<Extract<ViewsWithProps<TViews>, { default: unknown }>['default']>
-    : { [K in keyof ViewsWithProps<TViews>]: ViewPropsReturnType<ViewsWithProps<TViews>[K]> }
+    ? ViewProps<Extract<ViewsWithProps<TViews>, { default: unknown }>['default']>
+    : { [K in keyof ViewsWithProps<TViews>]: ViewProps<ViewsWithProps<TViews>[K]> }
 
 type ViewsWithProps<TViews> = {
-  [K in keyof TViews as [ViewPropsGetter<TViews[K]>] extends [undefined] ? never : K]: TViews[K]
+  [K in keyof TViews as [ViewProps<TViews[K]>] extends [undefined] ? never : K]: TViews[K]
 }
 
-type ViewPropsGetter<TView> = TView extends { props?: infer TGetter } ? TGetter : undefined
-
-type ViewPropsReturnType<TView> = NonNullable<ViewPropsGetter<TView>> extends infer TGetter
-  ? TGetter extends AnyFunction ? ReturnType<TGetter> : undefined
-  : undefined
+type ViewProps<TView> = TView extends { props?: AnyFunction<infer TProps> } ? TProps : undefined
