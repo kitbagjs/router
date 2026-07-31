@@ -1,3 +1,4 @@
+import { flushPromises } from '@vue/test-utils'
 import { describe, expect, test, vi } from 'vitest'
 import { createRoute } from '@/services/createRoute'
 import { component } from '@/utilities/testHelpers'
@@ -231,8 +232,8 @@ describe('props', () => {
       name: 'parent',
       parent: grandparent,
       path: '/parent',
-    }, (__, { parent }) => {
-      seen.push({ self: 'parent', parentName: parent.name, parentProps: parent.props })
+    }, async (__, { parent }) => {
+      seen.push({ self: 'parent', parentName: parent.name, parentProps: await parent.props })
 
       return { level: 'parent' }
     })
@@ -241,8 +242,8 @@ describe('props', () => {
       name: 'child',
       parent,
       path: '/child',
-    }, (__, { parent }) => {
-      seen.push({ self: 'child', parentName: parent.name, parentProps: parent.props })
+    }, async (__, { parent }) => {
+      seen.push({ self: 'child', parentName: parent.name, parentProps: await parent.props })
 
       return { level: 'child' }
     })
@@ -252,6 +253,7 @@ describe('props', () => {
     })
 
     await router.start()
+    await flushPromises()
 
     expect(seen).toStrictEqual([
       { self: 'parent', parentName: 'grandparent', parentProps: { level: 'grandparent' } },
@@ -270,8 +272,44 @@ describe('props', () => {
       name: 'child',
       parent: parent,
       path: '/child',
-    }, (__, { parent }) => {
-      return spy({ value: parent.props.foo })
+    }, async (__, { parent }) => {
+      const { foo: value } = await parent.props
+
+      return spy({ value })
+    })
+
+    const router = createRouter([parent, child], {
+      initialUrl: '/child',
+    })
+
+    await router.start()
+    await flushPromises()
+
+    expect(spy).toHaveBeenCalledWith({ value: 123 })
+  })
+
+  test('awaiting parent props that rejected throws the error', async () => {
+    const error = new Error('parent props failed')
+    const caught = vi.fn()
+
+    const parent = createRoute({
+      name: 'parent',
+    }, async () => {
+      throw error
+    })
+
+    const child = createRoute({
+      name: 'child',
+      parent: parent,
+      path: '/child',
+    }, async (__, { parent }) => {
+      try {
+        await parent.props
+      } catch (thrown) {
+        caught(thrown)
+      }
+
+      return {}
     })
 
     const router = createRouter([parent, child], {
@@ -280,7 +318,42 @@ describe('props', () => {
 
     await router.start()
 
-    expect(spy).toHaveBeenCalledWith({ value: 123 })
+    expect(caught).toHaveBeenCalledWith(error)
+  })
+
+  test('reading parent props that threw synchronously throws the error', async () => {
+    const error = new Error('parent props failed')
+    const caught = vi.fn()
+
+    const parent = createRoute({
+      name: 'parent',
+    }, () => {
+      throw error
+    })
+
+    const child = createRoute({
+      name: 'child',
+      parent: parent,
+      path: '/child',
+    }, async (__, { parent }) => {
+      try {
+        const value = await parent.props
+
+        caught({ didNotThrow: value })
+      } catch (thrown) {
+        caught(thrown)
+      }
+
+      return {}
+    })
+
+    const router = createRouter([parent, child], {
+      initialUrl: '/child',
+    })
+
+    await router.start()
+
+    expect(caught).toHaveBeenCalledWith(error)
   })
 
   test('async parent props are passed to child props', async () => {
@@ -331,11 +404,11 @@ describe('props', () => {
       name: 'child',
       parent: parent,
       path: '/child',
-    }, (__, { parent }) => {
-      return spy({
-        value1: parent.props.one.foo,
-        value2: parent.props.two.bar,
-      })
+    }, async (__, { parent }) => {
+      const { foo: value1 } = await parent.props.one
+      const { bar: value2 } = await parent.props.two
+
+      return spy({ value1, value2 })
     })
 
     const router = createRouter([parent, child], {
@@ -345,6 +418,40 @@ describe('props', () => {
     await router.start()
 
     expect(spy).toHaveBeenCalledWith({ value1: 123, value2: 456 })
+  })
+
+  test('parent props for view names without a getter are undefined rather than never settling', async () => {
+    const spy = vi.fn()
+
+    const parent = createRoute({
+      name: 'parent',
+      components: {
+        one: component,
+        two: component,
+        three: component,
+      },
+    }, {
+      one: () => ({ foo: 123 }),
+      two: () => ({ bar: 456 }),
+    })
+
+    const child = createRoute({
+      name: 'child',
+      parent: parent,
+      path: '/child',
+    }, (__, { parent }) => {
+      const props = parent.props as Record<string, unknown>
+
+      return spy({ three: props.three, missing: props.missing })
+    })
+
+    const router = createRouter([parent, child], {
+      initialUrl: '/child',
+    })
+
+    await router.start()
+
+    expect(spy).toHaveBeenCalledWith({ three: undefined, missing: undefined })
   })
 
   test('async parent props with multiple views are passed to child props', async () => {
@@ -385,6 +492,7 @@ describe('props', () => {
     })
 
     await router.start()
+    await flushPromises()
 
     expect(spy).toHaveBeenCalledWith({ value1: 123, value2: 456 })
   })

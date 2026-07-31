@@ -1,4 +1,4 @@
-import { reactive } from 'vue'
+import { effectScope, reactive, watch, WatchHandle } from 'vue'
 import { isWithComponentProps, isWithComponentPropsRecord, PropsGetter } from '@/types/createRouteOptions'
 import type { PrefetchConfigs, PrefetchStrategy } from '@/types/prefetch'
 import { getPrefetchOption } from '@/utilities/prefetch'
@@ -6,28 +6,48 @@ import { ResolvedRoute } from '@/types/resolved'
 import { RouteViews } from '@/types/routeViews'
 import { ContextPushError } from '@/errors/contextPushError'
 import { ContextRejectionError } from '@/errors/contextRejectionError'
-import { getPropsValue } from '@/utilities/props'
+import { ParentPropsAbandonedError } from '@/errors/parentPropsAbandonedError'
+import { getPropsValue, PropsResult } from '@/utilities/props'
 import { PropsCallbackParent } from '@/types/props'
+import { MaybePromise } from '@/types/utilities'
 import { createVueAppStore, HasVueAppStore } from './createVueAppStore'
 import { CallbackContextPush, CallbackContextReject, CallbackContextSuccess } from '@/types/callbackContext'
 import { createRouterCallbackContext } from './createRouterCallbackContext'
 
 type ComponentProps = { id: string, name: string, depth: number, props?: PropsGetter }
 
+type Waiter = { stop: WatchHandle, abandon: () => void }
+
 type SetPropsResponse = CallbackContextSuccess | CallbackContextPush | CallbackContextReject
 
+type StoredProps = MaybePromise<PropsResult>
+
 export type PropStore = HasVueAppStore & {
-  getPrefetchProps: (strategy: PrefetchStrategy, route: ResolvedRoute, configs: PrefetchConfigs) => Record<string, unknown>,
-  setPrefetchProps: (props: Record<string, unknown>) => void,
+  getPrefetchProps: (strategy: PrefetchStrategy, route: ResolvedRoute, configs: PrefetchConfigs, prefetched?: Record<string, StoredProps>) => Record<string, StoredProps>,
+  setPrefetchProps: (props: Record<string, StoredProps>) => void,
   setProps: (route: ResolvedRoute) => Promise<SetPropsResponse>,
-  getProps: (id: string, name: string, route: ResolvedRoute) => unknown,
+  getProps: (id: string, name: string, route: ResolvedRoute) => StoredProps,
 }
+
+/**
+ * What a view with no props getter renders with, since such a view stores nothing.
+ */
+const NO_PROPS: PropsResult = { kind: 'value', value: undefined }
 
 export function createPropStore(): PropStore {
   const { setVueApp, runWithContext } = createVueAppStore()
-  const store: Map<string, unknown> = reactive(new Map())
+  const store: Map<string, StoredProps> = reactive(new Map())
+  const waiters = new Map<string, Set<Waiter>>()
 
-  const getPrefetchProps: PropStore['getPrefetchProps'] = (strategy, route, prefetch) => {
+  /**
+   * Detached because waiters outlive the component whose prefetch created them.
+   */
+  const waiterScope = effectScope(true)
+
+  /**
+   * Seeded with props already prefetched at earlier strategies, which are not in the store until commit.
+   */
+  const getPrefetchProps: PropStore['getPrefetchProps'] = (strategy, route, prefetch, prefetched = {}) => {
     const { push, replace, reject, update } = createRouterCallbackContext({ to: route })
 
     return route.matches
@@ -39,7 +59,7 @@ export function createPropStore(): PropStore {
         viewPrefetch: views.prefetch?.[componentProps.name],
       }, 'props') === strategy)
       .map(({ componentProps }) => componentProps)
-      .reduce<Record<string, unknown>>((response, { id, name, depth, props }) => {
+      .reduce<Record<string, StoredProps>>((response, { id, name, depth, props }) => {
         if (!props) {
           return response
         }
@@ -50,13 +70,13 @@ export function createPropStore(): PropStore {
           replace,
           reject,
           update,
-          parent: getParentContext(route, depth, true),
+          parent: getParentContext(route, depth, true, response),
         })))
 
         response[key] = value
 
         return response
-      }, {})
+      }, { ...prefetched })
   }
 
   const setPrefetchProps: PropStore['setPrefetchProps'] = (props) => {
@@ -93,10 +113,10 @@ export function createPropStore(): PropStore {
       }
 
       promises.push((async () => {
-        const value = await store.get(key)
+        const result = await store.get(key)
 
-        if (value instanceof Error) {
-          throw value
+        if (result?.kind === 'error') {
+          throw result.error
         }
       })())
     }
@@ -123,14 +143,14 @@ export function createPropStore(): PropStore {
   const getProps: PropStore['getProps'] = (id, name, route) => {
     const key = getPropKey(id, name, route)
 
-    return store.get(key)
+    return store.get(key) ?? NO_PROPS
   }
 
   /**
    * The parent context for the view at the given depth. Must be resolved per depth rather than from the
    * end of the tuples: every view in a nested route gets its own parent, not the resolved route's parent.
    */
-  function getParentContext(route: ResolvedRoute, depth: number, prefetch: boolean = false): PropsCallbackParent {
+  function getParentContext(route: ResolvedRoute, depth: number, prefetch: boolean = false, pending?: Record<string, StoredProps>): PropsCallbackParent {
     if (depth === 0) {
       return
     }
@@ -144,7 +164,7 @@ export function createPropStore(): PropStore {
       return {
         name,
         get props() {
-          return getParentProps(parentViews.id, 'default', route, prefetch)
+          return getParentProps(parentViews.id, 'default', route, prefetch, pending)
         },
       }
     }
@@ -154,11 +174,12 @@ export function createPropStore(): PropStore {
         name,
         props: new Proxy({}, {
           get(target, propName) {
-            if (typeof propName !== 'string') {
+            // a name with no getter can never be stored, so waiting on it would never settle
+            if (typeof propName !== 'string' || !Object.prototype.hasOwnProperty.call(parentViews.props, propName)) {
               return Reflect.get(target, propName)
             }
 
-            return getParentProps(parentViews.id, propName, route, prefetch)
+            return getParentProps(parentViews.id, propName, route, prefetch, pending)
           },
         }),
       }
@@ -170,19 +191,117 @@ export function createPropStore(): PropStore {
     }
   }
 
-  function getParentProps(id: string, name: string, route: ResolvedRoute, prefetch: boolean = false): unknown {
-    const value = getProps(id, name, route)
+  /**
+   * Reads a parent view's props, checking the batch being prefetched before the store, and waiting for the
+   * parent's own lifecycle to compute them when neither has them yet.
+   */
+  function getParentProps(id: string, name: string, route: ResolvedRoute, prefetch: boolean = false, pending?: Record<string, StoredProps>): Promise<unknown> {
+    const props = readParentProps(id, name, route, prefetch, pending)
 
-    if (prefetch && !value) {
-      const routeName = route.name || 'unknown'
+    // reading without awaiting must not surface as an unhandled rejection
+    props.catch(() => {})
 
-      console.warn(`
-        Unable to access parent props "${name}" while prefetching props for route "${routeName}".
-        This may occur if the parent route's props were not also prefetched.
-      `)
+    return props
+  }
+
+  function readParentProps(id: string, name: string, route: ResolvedRoute, prefetch: boolean, pending?: Record<string, StoredProps>): Promise<unknown> {
+    const key = getPropKey(id, name, route)
+    const batched = pending?.[key]
+
+    if (batched !== undefined) {
+      return toParentProps(batched)
     }
 
-    return value
+    const stored = store.get(key)
+
+    if (stored !== undefined) {
+      return toParentProps(stored)
+    }
+
+    if (prefetch) {
+      warnWaitingForParentProps(name, route)
+    }
+
+    return toParentProps(waitForProps(key))
+  }
+
+  /**
+   * Resolves once the given props are stored, and rejects if navigation discards the waiter first, so a
+   * getter awaiting them resumes either way.
+   */
+  function waitForProps(key: string): Promise<PropsResult> {
+    return new Promise((resolve, reject) => {
+      const stops = waiters.get(key) ?? new Set<Waiter>()
+
+      waiters.set(key, stops)
+
+      waiterScope.run(() => {
+        const waiter: Waiter = {
+          stop: watch(() => store.get(key), (result) => {
+            if (result === undefined) {
+              return
+            }
+
+            discardWaiter(key, waiter)
+            resolve(result)
+          }),
+          abandon: () => reject(new ParentPropsAbandonedError()),
+        }
+
+        stops.add(waiter)
+      })
+    })
+  }
+
+  function discardWaiter(key: string, waiter: Waiter): void {
+    waiter.stop()
+
+    const stops = waiters.get(key)
+
+    stops?.delete(waiter)
+
+    if (stops?.size === 0) {
+      waiters.delete(key)
+    }
+  }
+
+  function discardUnusedWaiters(keysToKeep: string[]): void {
+    for (const [key, stops] of waiters) {
+      if (keysToKeep.includes(key)) {
+        continue
+      }
+
+      stops.forEach((waiter) => {
+        waiter.stop()
+        waiter.abandon()
+      })
+
+      waiters.delete(key)
+    }
+  }
+
+  function warnWaitingForParentProps(name: string, route: ResolvedRoute): void {
+    const routeName = route.name || 'unknown'
+
+    console.warn(`
+      Waiting on parent props "${name}" while prefetching props for route "${routeName}".
+      The parent's props are not being prefetched at this point, so these props cannot resolve until the
+      parent's props are computed — either by the parent's own prefetch strategy or by navigating.
+      Prefetch the parent's props with the same strategy to avoid stalling here.
+    `)
+  }
+
+  /**
+   * Always a promise, since the props may not have been computed yet. Rethrows a failed getter's error.
+   */
+  async function toParentProps(result: MaybePromise<PropsResult>): Promise<unknown> {
+    const resolved = await result
+
+    if (resolved.kind === 'error') {
+      throw resolved.error
+    }
+
+    return resolved.value
   }
 
   function getPropKey(id: string, name: string, route: ResolvedRoute): string {
@@ -216,6 +335,8 @@ export function createPropStore(): PropStore {
 
       store.delete(key)
     }
+
+    discardUnusedWaiters(keysToKeep)
   }
 
   return {

@@ -1,4 +1,4 @@
-import { CreateRouteOptions, PropsGetter } from '@/types/createRouteOptions'
+import { CreateRouteOptions } from '@/types/createRouteOptions'
 import { Route } from '@/types/route'
 import { RouterReject } from './routerReject'
 import { RouterPush } from './routerPush'
@@ -7,7 +7,7 @@ import { ExtractRouteContextRejections, ExtractRouteContextRoutes } from './rout
 import { ResolvedRoute } from './resolved'
 import { RouteUpdate } from './routeUpdate'
 import { RouteViews } from '@/types/routeViews'
-import { LastInArray } from '@/types/utilities'
+import { AnyFunction, LastInArray } from '@/types/utilities'
 
 /**
  * Context provided to props callback functions
@@ -35,10 +35,10 @@ type GetParentPropsReturnType<
   TParent extends Route | undefined = Route | undefined
 > = TParent extends Route
   ? LastInArray<TParent['views']> extends RouteViews<infer TProps>
-    ? TProps extends PropsGetter
-      ? ReturnType<TProps>
-      : TProps extends Record<string, PropsGetter>
-        ? { [K in keyof TProps]: ReturnType<TProps[K]> }
+    ? TProps extends AnyFunction
+      ? Promise<Awaited<ReturnType<TProps>>>
+      : TProps extends Record<string, AnyFunction>
+        ? { [K in keyof TProps]: Promise<Awaited<ReturnType<TProps[K]>>> }
         : undefined
     : undefined
   : undefined

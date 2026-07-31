@@ -405,8 +405,24 @@ describe('props', () => {
       name: 'child',
       parent: parent,
     }, (__, { parent }) => {
-      expectTypeOf(parent.props).toEqualTypeOf<{ foo: number }>()
+      expectTypeOf(parent.props).toEqualTypeOf<Promise<{ foo: number }>>()
       expectTypeOf(parent.name).toEqualTypeOf<'parent'>()
+
+      return {}
+    })
+  })
+
+  test('parent props are passed to child props when the parent getter declares its arguments', () => {
+    const parent = createRoute({
+      name: 'parent',
+      path: '/parent/[id]',
+    }, (route, { push }) => ({ foo: route.params.id, canPush: typeof push === 'function' }))
+
+    createRoute({
+      name: 'child',
+      parent: parent,
+    }, (__, { parent }) => {
+      expectTypeOf(parent.props).toEqualTypeOf<Promise<{ foo: string, canPush: boolean }>>()
 
       return {}
     })
@@ -445,7 +461,7 @@ describe('props', () => {
       parent: parent,
     }, (__, { parent }) => {
       expectTypeOf(parent.props).toEqualTypeOf<{
-        one: { foo: number },
+        one: Promise<{ foo: number }>,
         two: Promise<{ foo: number }>,
       }>()
       expectTypeOf(parent.name).toEqualTypeOf<'parent'>()

@@ -359,6 +359,32 @@ test('Binds props and attrs from route', async () => {
   expect(wrapper.html()).toBe('world')
 })
 
+test('Renders props the getter returned, even when they are an Error', async () => {
+  const showsType = { props: ['value'], template: '<div>rendered</div>' }
+
+  const route = createRoute({
+    name: 'route',
+    path: '/',
+    component: showsType,
+  }, () => new Error('a real prop') as never)
+
+  const router = createRouter([route], {
+    initialUrl: '/',
+  })
+
+  await router.start()
+
+  const wrapper = mount({ template: '<RouterView/>' }, {
+    global: {
+      plugins: [router],
+    },
+  })
+
+  await flushPromises()
+
+  expect(wrapper.html()).toBe('<div>rendered</div>')
+})
+
 test('Updates props and attrs when route params change', async () => {
   const syncProps = createRoute({
     name: 'sync',
