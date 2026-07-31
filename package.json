@@ -73,6 +73,6 @@
   },
   "dependencies": {
     "@standard-schema/spec": "^1.0.0",
-    "@vue/devtools-api": "^8.1.2"
+    "@vue/devtools-api": "^8.2.1"
   }
 }
