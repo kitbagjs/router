@@ -58,10 +58,13 @@ type ParentMatchName<
   ? TParent['name']
   : string
 
+/**
+ * Always a promise, since the parent's props may not have been computed when the child's getter runs.
+ */
 type MatchPropsReturnType<TProps> = TProps extends PropsGetter
-  ? ReturnType<TProps>
+  ? Promise<Awaited<ReturnType<TProps>>>
   : TProps extends Record<string, PropsGetter>
-    ? { [K in keyof TProps]: ReturnType<TProps[K]> }
+    ? { [K in keyof TProps]: Promise<Awaited<ReturnType<TProps[K]>>> }
     : undefined
 
 /**

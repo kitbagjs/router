@@ -65,6 +65,8 @@ const user = createRoute({
 
 The [callback context](/core-concepts/component-props#context) includes a `parent` property which contains the name and props of the parent route. This can be useful for passing down data to child components.
 
+`parent.props` is always a promise and must be awaited, even when the parent's getter is synchronous. The parent's props may not have been computed when your getter runs — if the parent's props are prefetched at a different strategy than yours, or not prefetched at all, awaiting them waits until they are.
+
 ```ts
 const blogPost = createRoute({
   name: 'blog',

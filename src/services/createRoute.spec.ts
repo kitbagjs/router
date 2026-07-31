@@ -232,8 +232,8 @@ describe('props', () => {
       name: 'parent',
       parent: grandparent,
       path: '/parent',
-    }, (__, { parent }) => {
-      seen.push({ self: 'parent', parentName: parent.name, parentProps: parent.props })
+    }, async (__, { parent }) => {
+      seen.push({ self: 'parent', parentName: parent.name, parentProps: await parent.props })
 
       return { level: 'parent' }
     })
@@ -242,8 +242,10 @@ describe('props', () => {
       name: 'child',
       parent,
       path: '/child',
-    }, (__, { parent }) => {
-      seen.push({ self: 'child', parentName: parent.name, parentProps: parent.props })
+    }, async (__, { parent }) => {
+      // the parent's type collapses to undefined when its getter consumes the callback context
+      // eslint-disable-next-line @typescript-eslint/await-thenable
+      seen.push({ self: 'child', parentName: parent.name, parentProps: await parent.props })
 
       return { level: 'child' }
     })
@@ -253,6 +255,7 @@ describe('props', () => {
     })
 
     await router.start()
+    await flushPromises()
 
     expect(seen).toStrictEqual([
       { self: 'parent', parentName: 'grandparent', parentProps: { level: 'grandparent' } },
@@ -271,8 +274,10 @@ describe('props', () => {
       name: 'child',
       parent: parent,
       path: '/child',
-    }, (__, { parent }) => {
-      return spy({ value: parent.props.foo })
+    }, async (__, { parent }) => {
+      const { foo: value } = await parent.props
+
+      return spy({ value })
     })
 
     const router = createRouter([parent, child], {
@@ -280,6 +285,7 @@ describe('props', () => {
     })
 
     await router.start()
+    await flushPromises()
 
     expect(spy).toHaveBeenCalledWith({ value: 123 })
   })
@@ -331,9 +337,9 @@ describe('props', () => {
       name: 'child',
       parent: parent,
       path: '/child',
-    }, (__, { parent }) => {
+    }, async (__, { parent }) => {
       try {
-        const value = parent.props
+        const value = await parent.props
 
         caught({ didNotThrow: value })
       } catch (thrown) {
@@ -400,11 +406,11 @@ describe('props', () => {
       name: 'child',
       parent: parent,
       path: '/child',
-    }, (__, { parent }) => {
-      return spy({
-        value1: parent.props.one.foo,
-        value2: parent.props.two.bar,
-      })
+    }, async (__, { parent }) => {
+      const { foo: value1 } = await parent.props.one
+      const { bar: value2 } = await parent.props.two
+
+      return spy({ value1, value2 })
     })
 
     const router = createRouter([parent, child], {
@@ -414,6 +420,40 @@ describe('props', () => {
     await router.start()
 
     expect(spy).toHaveBeenCalledWith({ value1: 123, value2: 456 })
+  })
+
+  test('parent props for view names without a getter are undefined rather than never settling', async () => {
+    const spy = vi.fn()
+
+    const parent = createRoute({
+      name: 'parent',
+      components: {
+        one: component,
+        two: component,
+        three: component,
+      },
+    }, {
+      one: () => ({ foo: 123 }),
+      two: () => ({ bar: 456 }),
+    })
+
+    const child = createRoute({
+      name: 'child',
+      parent: parent,
+      path: '/child',
+    }, (__, { parent }) => {
+      const props = parent.props as Record<string, unknown>
+
+      return spy({ three: props.three, missing: props.missing })
+    })
+
+    const router = createRouter([parent, child], {
+      initialUrl: '/child',
+    })
+
+    await router.start()
+
+    expect(spy).toHaveBeenCalledWith({ three: undefined, missing: undefined })
   })
 
   test('async parent props with multiple views are passed to child props', async () => {

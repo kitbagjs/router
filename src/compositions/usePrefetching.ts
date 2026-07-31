@@ -32,13 +32,15 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
     const { isElementVisible } = useVisibilityObserver(element)
 
     const commit: UsePrefetching['commit'] = () => {
-      const props = Array.from(prefetchedProps.values()).reduce<Record<string, MaybePromise<PropsResult>>>((accumulator, value) => {
+      setPrefetchProps(getAccumulatedProps())
+    }
+
+    function getAccumulatedProps(): Record<string, MaybePromise<PropsResult>> {
+      return Array.from(prefetchedProps.values()).reduce<Record<string, MaybePromise<PropsResult>>>((accumulator, value) => {
         Object.assign(accumulator, value)
 
         return accumulator
       }, {})
-
-      setPrefetchProps(props)
     }
 
     watch(() => toValue(config), ({ route, ...configs }) => {
@@ -78,7 +80,7 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
       prefetchComponentsForRoute(strategy, route, configs)
 
       if (!prefetchedProps.has(strategy)) {
-        prefetchedProps.set(strategy, getPrefetchProps(strategy, route, configs))
+        prefetchedProps.set(strategy, getPrefetchProps(strategy, route, configs, getAccumulatedProps()))
       }
     }
 

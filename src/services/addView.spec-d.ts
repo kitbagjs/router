@@ -230,7 +230,7 @@ describe('addView', () => {
       })
 
       createRoute({ name: 'child', parent }, (__, { parent }) => {
-        expectTypeOf(parent.props).toEqualTypeOf<{ foo: number }>()
+        expectTypeOf(parent.props).toEqualTypeOf<Promise<{ foo: number }>>()
         expectTypeOf(parent.name).toEqualTypeOf<'parent'>()
 
         return {}
@@ -250,7 +250,7 @@ describe('addView', () => {
 
       createRoute({ name: 'child', parent }, (__, { parent }) => {
         expectTypeOf(parent.props).toEqualTypeOf<{
-          one: { foo: number },
+          one: Promise<{ foo: number }>,
           two: Promise<{ foo: number }>,
         }>()
 
