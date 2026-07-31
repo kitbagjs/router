@@ -2,6 +2,7 @@
 /* eslint-disable vue/one-component-per-file */
 import { AsyncComponentLoader, Component, FunctionalComponent, InjectionKey, defineComponent, getCurrentInstance, h, ref, watch } from 'vue'
 import { isPromise } from '@/utilities/promises'
+import { PropsResult } from '@/utilities/props'
 import { createUsePropStore } from '@/compositions/usePropStore'
 import { Router } from '@/types/router'
 import { createUseRoute } from '@/compositions/useRoute'
@@ -35,69 +36,60 @@ export function createComponentPropsWrapper(routerKey: InjectionKey<Router>, { i
       const route = useRoute()
 
       return () => {
-        const props = store.getProps(id, name, route)
+        const result = store.getProps(id, name, route)
 
-        if (props instanceof Error) {
+        if (isPromise(result)) {
+          // @ts-expect-error there isn't a way to check if suspense is used in the component without accessing a private property
+          if (instance?.suspense) {
+            return h(SuspenseAsyncComponentPropsWrapper, { component, props: result })
+          }
+
+          return h(AsyncComponentPropsWrapper, { component, props: result })
+        }
+
+        if (result.kind === 'error') {
           return ''
         }
 
-        if (isPromise(props)) {
-          // @ts-expect-error there isn't a way to check if suspense is used in the component without accessing a private property
-          if (instance?.suspense) {
-            return h(SuspenseAsyncComponentPropsWrapper, { component, props })
-          }
-
-          return h(AsyncComponentPropsWrapper, { component, props })
-        }
-
-        return h(component, props)
+        return h(component, result.value)
       }
     },
   })
 }
 
-const AsyncComponentPropsWrapper = defineComponent((input: { component: Component, props: unknown }) => {
-  const values = ref()
+const AsyncComponentPropsWrapper = defineComponent((input: { component: Component, props: Promise<PropsResult> }) => {
+  const result = ref<PropsResult>()
 
   watch(() => input.props, async (props) => {
-    values.value = await props
+    result.value = await props
   }, { immediate: true, deep: true })
 
-  return () => {
-    if (values.value instanceof Error) {
-      return ''
-    }
-
-    if (values.value) {
-      return h(input.component, values.value)
-    }
-
-    return ''
-  }
+  return () => renderResult(input.component, result.value)
 }, {
   props: ['component', 'props'],
 })
 
-const SuspenseAsyncComponentPropsWrapper = defineComponent(async (input: { component: Component, props: unknown }) => {
-  const values = ref()
+const SuspenseAsyncComponentPropsWrapper = defineComponent(async (input: { component: Component, props: Promise<PropsResult> }) => {
+  const result = ref<PropsResult>()
 
-  values.value = await input.props
+  result.value = await input.props
 
-  watch(() => values.value, async (props) => {
-    values.value = await props
+  watch(() => input.props, async (props) => {
+    result.value = await props
   }, { deep: true })
 
-  return () => {
-    if (values.value instanceof Error) {
-      return ''
-    }
-
-    if (values.value) {
-      return h(input.component, values.value)
-    }
-
-    return ''
-  }
+  return () => renderResult(input.component, result.value)
 }, {
   props: ['component', 'props'],
 })
+
+/**
+ * Renders the component with whatever the getter settled on. No result means the promise has not resolved.
+ */
+function renderResult(component: Component, result: PropsResult | undefined): ReturnType<typeof h> | string {
+  if (result === undefined || result.kind === 'error') {
+    return ''
+  }
+
+  return h(component, result.value)
+}

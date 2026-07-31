@@ -7,8 +7,9 @@ import { RouteViews } from '@/types/routeViews'
 import { ContextPushError } from '@/errors/contextPushError'
 import { ContextRejectionError } from '@/errors/contextRejectionError'
 import { isPromise } from '@/utilities/promises'
-import { getPropsValue } from '@/utilities/props'
+import { getPropsValue, PropsResult } from '@/utilities/props'
 import { PropsCallbackParent } from '@/types/props'
+import { MaybePromise } from '@/types/utilities'
 import { createVueAppStore, HasVueAppStore } from './createVueAppStore'
 import { CallbackContextPush, CallbackContextReject, CallbackContextSuccess } from '@/types/callbackContext'
 import { createRouterCallbackContext } from './createRouterCallbackContext'
@@ -17,16 +18,23 @@ type ComponentProps = { id: string, name: string, depth: number, props?: PropsGe
 
 type SetPropsResponse = CallbackContextSuccess | CallbackContextPush | CallbackContextReject
 
+type StoredProps = MaybePromise<PropsResult>
+
 export type PropStore = HasVueAppStore & {
-  getPrefetchProps: (strategy: PrefetchStrategy, route: ResolvedRoute, configs: PrefetchConfigs) => Record<string, unknown>,
-  setPrefetchProps: (props: Record<string, unknown>) => void,
+  getPrefetchProps: (strategy: PrefetchStrategy, route: ResolvedRoute, configs: PrefetchConfigs) => Record<string, StoredProps>,
+  setPrefetchProps: (props: Record<string, StoredProps>) => void,
   setProps: (route: ResolvedRoute) => Promise<SetPropsResponse>,
-  getProps: (id: string, name: string, route: ResolvedRoute) => unknown,
+  getProps: (id: string, name: string, route: ResolvedRoute) => StoredProps,
 }
+
+/**
+ * What a view with no props getter renders with, since such a view stores nothing.
+ */
+const NO_PROPS: PropsResult = { kind: 'value', value: undefined }
 
 export function createPropStore(): PropStore {
   const { setVueApp, runWithContext } = createVueAppStore()
-  const store: Map<string, unknown> = reactive(new Map())
+  const store: Map<string, StoredProps> = reactive(new Map())
 
   const getPrefetchProps: PropStore['getPrefetchProps'] = (strategy, route, prefetch) => {
     const { push, replace, reject, update } = createRouterCallbackContext({ to: route })
@@ -40,7 +48,7 @@ export function createPropStore(): PropStore {
         viewPrefetch: views.prefetch?.[componentProps.name],
       }, 'props') === strategy)
       .map(({ componentProps }) => componentProps)
-      .reduce<Record<string, unknown>>((response, { id, name, depth, props }) => {
+      .reduce<Record<string, StoredProps>>((response, { id, name, depth, props }) => {
         if (!props) {
           return response
         }
@@ -94,10 +102,10 @@ export function createPropStore(): PropStore {
       }
 
       promises.push((async () => {
-        const value = await store.get(key)
+        const result = await store.get(key)
 
-        if (value instanceof Error) {
-          throw value
+        if (result?.kind === 'error') {
+          throw result.error
         }
       })())
     }
@@ -124,7 +132,7 @@ export function createPropStore(): PropStore {
   const getProps: PropStore['getProps'] = (id, name, route) => {
     const key = getPropKey(id, name, route)
 
-    return store.get(key)
+    return store.get(key) ?? NO_PROPS
   }
 
   /**
@@ -172,9 +180,10 @@ export function createPropStore(): PropStore {
   }
 
   function getParentProps(id: string, name: string, route: ResolvedRoute, prefetch: boolean = false): unknown {
-    const value = getProps(id, name, route)
+    const key = getPropKey(id, name, route)
+    const stored = store.get(key)
 
-    if (prefetch && !value) {
+    if (prefetch && stored === undefined) {
       const routeName = route.name || 'unknown'
 
       console.warn(`
@@ -183,30 +192,28 @@ export function createPropStore(): PropStore {
       `)
     }
 
-    return unwrapPropsError(value)
+    return unwrapPropsError(stored ?? NO_PROPS)
   }
 
   /**
-   * A failed props getter is stored as its error rather than thrown, so that navigation can inspect the
-   * settled value. Consumers of a parent's props expect the props themselves, so the error is rethrown
-   * here instead of being handed back as though it were a valid value.
+   * Rethrows a failed getter's error, which is otherwise recorded rather than thrown.
    */
-  function unwrapPropsError(value: unknown): unknown {
-    if (value instanceof Error) {
-      throw value
-    }
-
-    if (isPromise(value)) {
-      return value.then((resolved) => {
-        if (resolved instanceof Error) {
-          throw resolved
+  function unwrapPropsError(result: StoredProps): unknown {
+    if (isPromise(result)) {
+      return result.then((resolved) => {
+        if (resolved.kind === 'error') {
+          throw resolved.error
         }
 
-        return resolved
+        return resolved.value
       })
     }
 
-    return value
+    if (result.kind === 'error') {
+      throw result.error
+    }
+
+    return result.value
   }
 
   function getPropKey(id: string, name: string, route: ResolvedRoute): string {
