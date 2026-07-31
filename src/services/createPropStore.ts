@@ -6,6 +6,7 @@ import { ResolvedRoute } from '@/types/resolved'
 import { RouteViews } from '@/types/routeViews'
 import { ContextPushError } from '@/errors/contextPushError'
 import { ContextRejectionError } from '@/errors/contextRejectionError'
+import { ParentPropsAbandonedError } from '@/errors/parentPropsAbandonedError'
 import { getPropsValue, PropsResult } from '@/utilities/props'
 import { PropsCallbackParent } from '@/types/props'
 import { MaybePromise } from '@/types/utilities'
@@ -14,6 +15,8 @@ import { CallbackContextPush, CallbackContextReject, CallbackContextSuccess } fr
 import { createRouterCallbackContext } from './createRouterCallbackContext'
 
 type ComponentProps = { id: string, name: string, depth: number, props?: PropsGetter }
+
+type Waiter = { stop: WatchHandle, abandon: () => void }
 
 type SetPropsResponse = CallbackContextSuccess | CallbackContextPush | CallbackContextReject
 
@@ -34,7 +37,7 @@ const NO_PROPS: PropsResult = { kind: 'value', value: undefined }
 export function createPropStore(): PropStore {
   const { setVueApp, runWithContext } = createVueAppStore()
   const store: Map<string, StoredProps> = reactive(new Map())
-  const waiters = new Map<string, Set<WatchHandle>>()
+  const waiters = new Map<string, Set<Waiter>>()
 
   /**
    * Detached because waiters outlive the component whose prefetch created them.
@@ -193,6 +196,15 @@ export function createPropStore(): PropStore {
    * parent's own lifecycle to compute them when neither has them yet.
    */
   function getParentProps(id: string, name: string, route: ResolvedRoute, prefetch: boolean = false, pending?: Record<string, StoredProps>): Promise<unknown> {
+    const props = readParentProps(id, name, route, prefetch, pending)
+
+    // reading without awaiting must not surface as an unhandled rejection
+    props.catch(() => {})
+
+    return props
+  }
+
+  function readParentProps(id: string, name: string, route: ResolvedRoute, prefetch: boolean, pending?: Record<string, StoredProps>): Promise<unknown> {
     const key = getPropKey(id, name, route)
     const batched = pending?.[key]
 
@@ -214,35 +226,39 @@ export function createPropStore(): PropStore {
   }
 
   /**
-   * Resolves once the given props are stored. Never resolves if navigation discards the waiter first.
+   * Resolves once the given props are stored, and rejects if navigation discards the waiter first, so a
+   * getter awaiting them resumes either way.
    */
   function waitForProps(key: string): Promise<PropsResult> {
-    return new Promise((resolve) => {
-      const stops = waiters.get(key) ?? new Set<WatchHandle>()
+    return new Promise((resolve, reject) => {
+      const stops = waiters.get(key) ?? new Set<Waiter>()
 
       waiters.set(key, stops)
 
       waiterScope.run(() => {
-        const stop = watch(() => store.get(key), (result) => {
-          if (result === undefined) {
-            return
-          }
+        const waiter: Waiter = {
+          stop: watch(() => store.get(key), (result) => {
+            if (result === undefined) {
+              return
+            }
 
-          discardWaiter(key, stop)
-          resolve(result)
-        })
+            discardWaiter(key, waiter)
+            resolve(result)
+          }),
+          abandon: () => reject(new ParentPropsAbandonedError()),
+        }
 
-        stops.add(stop)
+        stops.add(waiter)
       })
     })
   }
 
-  function discardWaiter(key: string, stop: WatchHandle): void {
-    stop()
+  function discardWaiter(key: string, waiter: Waiter): void {
+    waiter.stop()
 
     const stops = waiters.get(key)
 
-    stops?.delete(stop)
+    stops?.delete(waiter)
 
     if (stops?.size === 0) {
       waiters.delete(key)
@@ -255,7 +271,11 @@ export function createPropStore(): PropStore {
         continue
       }
 
-      stops.forEach((stop) => stop())
+      stops.forEach((waiter) => {
+        waiter.stop()
+        waiter.abandon()
+      })
+
       waiters.delete(key)
     }
   }

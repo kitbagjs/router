@@ -11,7 +11,7 @@ import { visibilityObserverKey } from '@/compositions/useVisibilityObserver'
 import { VisibilityObserver } from '@/services/createVisibilityObserver'
 import { UrlString } from '@/types/urlString'
 import { RouterPushOptions } from '@/types/routerPush'
-import { RouterLink } from '@/main'
+import { ParentPropsAbandonedError, RouterLink } from '@/main'
 
 test('renders an anchor tag with the correct href and slot content', () => {
   const path = '/path/[paramName]'
@@ -1266,6 +1266,172 @@ describe('prefetch props', () => {
     expect(settled).toStrictEqual([undefined])
 
     warn.mockRestore()
+  })
+
+  test('a child waiting on parent props is rejected when navigation abandons them', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+    const caught: unknown[] = []
+
+    const home = createRoute({
+      name: 'home',
+      path: '/',
+      component: () => h(RouterLink, { to: (resolve) => resolve('child') }),
+    })
+
+    const other = createRoute({
+      name: 'other',
+      path: '/other',
+      component: echo,
+    }, () => ({ value: 'other' }))
+
+    const parent = createRoute({
+      name: 'parent',
+      path: '/parent',
+      component: { props: ['foo'], template: '<div><RouterView /></div>' },
+      prefetch: { props: false },
+    }, async () => ({ foo: 123 }))
+
+    const child = createRoute({
+      parent,
+      name: 'child',
+      path: '/child',
+      component: echo,
+      prefetch: { props: 'eager' },
+    }, async (__, { parent }) => {
+      try {
+        await parent.props
+      } catch (error) {
+        caught.push(error)
+      }
+
+      return { value: 'child' }
+    })
+
+    const router = createRouter([home, child, other], {
+      initialUrl: '/',
+    })
+
+    await router.start()
+
+    mount({ template: '<RouterView />' }, {
+      global: {
+        plugins: [router],
+      },
+    })
+
+    await flushPromises()
+
+    expect(caught).toStrictEqual([])
+
+    await router.push('other')
+    await flushPromises()
+
+    expect(caught).toHaveLength(1)
+    expect(caught[0]).toBeInstanceOf(ParentPropsAbandonedError)
+
+    warn.mockRestore()
+  })
+
+  test('a getter that never awaits abandoned parent props does not leak an unhandled rejection', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+    const home = createRoute({
+      name: 'home',
+      path: '/',
+      component: () => h(RouterLink, { to: (resolve) => resolve('child') }),
+    })
+
+    const other = createRoute({
+      name: 'other',
+      path: '/other',
+      component: echo,
+    }, () => ({ value: 'other' }))
+
+    const parent = createRoute({
+      name: 'parent',
+      path: '/parent',
+      component: { props: ['foo'], template: '<div><RouterView /></div>' },
+      prefetch: { props: false },
+    }, async () => ({ foo: 123 }))
+
+    const child = createRoute({
+      parent,
+      name: 'child',
+      path: '/child',
+      component: echo,
+      prefetch: { props: 'eager' },
+    }, (__, { parent }) => {
+      void parent.props
+
+      return { value: 'child' }
+    })
+
+    const router = createRouter([home, child, other], {
+      initialUrl: '/',
+    })
+
+    await router.start()
+
+    mount({ template: '<RouterView />' }, {
+      global: {
+        plugins: [router],
+      },
+    })
+
+    await flushPromises()
+
+    await router.push('other')
+    await flushPromises()
+
+    expect(router.route.name).toBe('other')
+
+    warn.mockRestore()
+  })
+
+  test('a getter that never awaits failed parent props does not leak an unhandled rejection', async () => {
+    const home = createRoute({
+      name: 'home',
+      path: '/',
+      component: () => h(RouterLink, { to: (resolve) => resolve('child') }),
+    })
+
+    const parent = createRoute({
+      name: 'parent',
+      path: '/parent',
+      component: { props: ['foo'], template: '<div><RouterView /></div>' },
+      prefetch: { props: 'eager' },
+    }, () => {
+      throw new Error('parent getter failed')
+    })
+
+    const child = createRoute({
+      parent,
+      name: 'child',
+      path: '/child',
+      component: echo,
+      prefetch: { props: 'eager' },
+    }, (__, { parent }) => {
+      void parent.props
+
+      return { value: 'child' }
+    })
+
+    const router = createRouter([home, child], {
+      initialUrl: '/',
+    })
+
+    await router.start()
+
+    mount({ template: '<RouterView />' }, {
+      global: {
+        plugins: [router],
+      },
+    })
+
+    await flushPromises()
+
+    expect(router.route.name).toBe('home')
   })
 
   test('a child does not wait when the parent props are prefetched at the same strategy', async () => {
