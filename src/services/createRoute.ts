@@ -1,6 +1,8 @@
 import { markRaw } from 'vue'
 import { createRouteId } from '@/services/createRouteId'
-import { CreateRouteOptions, PropsGetter, CreateRouteProps, ToRoute, combineRoutes, isWithParent, RouterViewPropsGetter } from '@/types/createRouteOptions'
+import { InternalRouteHooks } from '@/types/hooks'
+import { RouteRedirects } from '@/types/redirects'
+import { CreateRouteOptions, PropsGetter, CreateRouteProps, ToRouteMatches, ToRouteUrl, combineRoutes, isWithParent, RouterViewPropsGetter } from '@/types/createRouteOptions'
 import { toName } from '@/types/name'
 import { IS_ROUTE_SYMBOL, Route, RouteInternal } from '@/types/route'
 import { createRouteHooks } from '@/services/createRouteHooks'
@@ -8,12 +10,9 @@ import { toUrlPart, toUrlQueryPart } from '@/services/withParams'
 import { createUrl } from '@/services/createUrl'
 import { createRouteRedirects } from '@/services/createRouteRedirects'
 import { combineUrl } from '@/services/combineUrl'
-import { InternalRouteHooks } from '@/types/hooks'
-import { ExtractRouteContext } from '@/types/routeContext'
-import { RouteRedirects } from '@/types/redirects'
 import { createRouteTitle, RouteSetTitle } from '@/types/routeTitle'
 import { createRouteViews } from '@/services/createRouteViews'
-import { RouteAddView } from '@/types/addView'
+import { RouteWithMethods } from '@/types/addView'
 import { withAddView } from '@/services/addView'
 
 type CreateRouteWithProps<
@@ -32,11 +31,7 @@ type CreateRouteWithProps<
 export function createRoute<
   const TOptions extends CreateRouteOptions,
   const TProps extends CreateRouteProps<TOptions>
->(options: TOptions, ...args: CreateRouteWithProps<TOptions, TProps>): ToRoute<TOptions, TProps>
-  & RouteAddView<ToRoute<TOptions, TProps>>
-  & InternalRouteHooks<ToRoute<TOptions>, ExtractRouteContext<TOptions>>
-  & RouteRedirects<ToRoute<TOptions>>
-  & RouteSetTitle<ToRoute<TOptions>>
+>(options: TOptions, ...args: CreateRouteWithProps<TOptions, TProps>): RouteWithMethods<ToRouteUrl<TOptions>, ToRouteMatches<TOptions, TProps>>
 
 export function createRoute(options: CreateRouteOptions, props?: CreateRouteProps): Route {
   const id = createRouteId()
@@ -49,8 +44,8 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
   const context = options.context ?? []
   const { store, redirect, ...hooks } = createRouteHooks()
   const { setTitle, getTitle } = createRouteTitle(options.parent)
-  const views = createRouteViews(id, options, props)
-  const rawRoute = markRaw({ ...options, id, meta, state, name })
+  const views = createRouteViews(options, props)
+  const rawRoute = markRaw({ ...options, id, meta, state, name, views })
 
   const redirects = createRouteRedirects({
     getRoute: () => route,
@@ -72,9 +67,7 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
 
   const route = {
     id,
-    matched: rawRoute,
     matches: [rawRoute],
-    views: [views],
     name,
     meta,
     state,

@@ -6,8 +6,8 @@ import { RouterReplace } from './routerReplace'
 import { ExtractRouteContextRejections, ExtractRouteContextRoutes } from './routeContext'
 import { ResolvedRoute } from './resolved'
 import { RouteUpdate } from './routeUpdate'
-import { RouteViews } from '@/types/routeViews'
-import { AnyFunction, LastInArray } from '@/types/utilities'
+import { ViewsPropsReturnType } from '@/types/routeViews'
+import { LastInArray } from '@/types/utilities'
 
 /**
  * Context provided to props callback functions
@@ -34,11 +34,7 @@ export type PropsCallbackParent<
 type GetParentPropsReturnType<
   TParent extends Route | undefined = Route | undefined
 > = TParent extends Route
-  ? LastInArray<TParent['views']> extends RouteViews<infer TProps>
-    ? TProps extends AnyFunction
-      ? Promise<Awaited<ReturnType<TProps>>>
-      : TProps extends Record<string, AnyFunction>
-        ? { [K in keyof TProps]: Promise<Awaited<ReturnType<TProps[K]>>> }
-        : undefined
+  ? LastInArray<TParent['matches']> extends { views: infer TViews }
+    ? ViewsPropsReturnType<TViews>
     : undefined
   : undefined

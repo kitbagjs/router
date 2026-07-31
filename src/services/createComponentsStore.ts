@@ -5,22 +5,22 @@ import { Router } from '@/types/router'
 import { createRouterView } from '@/components/routerView'
 
 export type ComponentsStore = {
-  getRouteComponents: (views: RouteViews) => Record<string, Component>,
+  getRouteComponents: (id: string, views: RouteViews) => Record<string, Component>,
 }
 
 export function createComponentsStore<TRouter extends Router>(routerKey: InjectionKey<TRouter>): ComponentsStore {
   const store = new Map<string, Record<string, Component>>()
 
-  const getRouteComponents: ComponentsStore['getRouteComponents'] = (views) => {
-    const existing = store.get(views.id)
+  const getRouteComponents: ComponentsStore['getRouteComponents'] = (id, views) => {
+    const existing = store.get(id)
 
     if (existing) {
       return existing
     }
 
-    const components = getComponentsForViews(routerKey, views)
+    const components = getComponentsForViews(routerKey, id, views)
 
-    store.set(views.id, components)
+    store.set(id, components)
 
     return components
   }
@@ -30,14 +30,22 @@ export function createComponentsStore<TRouter extends Router>(routerKey: Injecti
   }
 }
 
-function getComponentsForViews(routerKey: InjectionKey<Router>, views: RouteViews): Record<string, Component> {
+function getComponentsForViews(routerKey: InjectionKey<Router>, id: string, views: RouteViews): Record<string, Component> {
   const RouterView = createRouterView(routerKey)
 
-  if (Object.keys(views.components).length === 0) {
+  const components = Object.entries(views).reduce<[string, Component][]>((entries, [name, view]) => {
+    if (view.component) {
+      entries.push([name, view.component])
+    }
+
+    return entries
+  }, [])
+
+  if (components.length === 0) {
     return { default: RouterView }
   }
 
   return Object.fromEntries(
-    Object.entries(views.components).map(([name, component]) => [name, createComponentPropsWrapper(routerKey, { id: views.id, name, component })]),
+    components.map(([name, component]) => [name, createComponentPropsWrapper(routerKey, { id, name, component })]),
   )
 }
