@@ -1,4 +1,5 @@
 import { flushPromises } from '@vue/test-utils'
+import echo from '@/components/echo'
 import { describe, expect, test, vi } from 'vitest'
 import { createRoute } from '@/services/createRoute'
 import { component } from '@/utilities/testHelpers'
@@ -197,6 +198,30 @@ describe('combine', () => {
 })
 
 describe('props', () => {
+  test('a navigation superseded before its props settle does not report an error', async () => {
+    const { promise, resolve } = Promise.withResolvers<{ value: string }>()
+    const onError = vi.fn()
+
+    const slow = createRoute({ name: 'slow', path: '/slow', component: echo }, () => promise)
+    const other = createRoute({ name: 'other', path: '/other', component: echo }, () => ({ value: 'other' }))
+    const home = createRoute({ name: 'home', path: '/', component: echo }, () => ({ value: 'home' }))
+
+    const router = createRouter([home, slow, other], { initialUrl: '/' })
+
+    router.onError(onError)
+
+    await router.start()
+
+    // leave slow's props in flight, then supersede it
+    void router.push('slow')
+    await router.push('other')
+
+    resolve({ value: 'slow' })
+    await flushPromises()
+
+    expect(onError).not.toHaveBeenCalled()
+  })
+
   test('parent context is passed to child props', async () => {
     const spy = vi.fn()
     const parent = createRoute({

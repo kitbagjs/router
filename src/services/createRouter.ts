@@ -203,6 +203,7 @@ export function createRouter<
 
         switch (response.status) {
           case 'SUCCESS':
+          case 'ABANDONED':
             break
 
           case 'PUSH':
