@@ -15,7 +15,7 @@ export type RouteLoader<TData = unknown> = {
 /**
  * The loaders for a single route, keyed by loader name (the unnamed loader under 'default').
  */
-export type RouteLoaders = Record<string, RouteLoader<unknown>>
+export type RouteLoaders = Record<string, RouteLoader>
 
 /**
  * The data a set of loaders resolves to. A lone unnamed loader is given directly rather than under a

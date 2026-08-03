@@ -19,6 +19,12 @@ type ViewOptions = {
  */
 type AddViewParameters = [component: Component, options?: ViewOptions]
 
+/**
+ * The loose runtime signature of the `addView` method. Purposely wide: it returns Route rather than the
+ * refined chainable route each `RouteAddView` overload describes.
+ */
+export type AddView = (...args: AddViewParameters) => Route
+
 type View = {
   name: string,
   component: Component,
@@ -26,7 +32,7 @@ type View = {
   prefetch: PrefetchConfig | undefined,
 }
 
-function toView(component: Component, options: ViewOptions | undefined): View {
+export function toView(component: Component, options: ViewOptions | undefined): View {
   return {
     name: options?.name ?? DEFAULT_VIEW_NAME,
     component,
@@ -41,7 +47,7 @@ function toView(component: Component, options: ViewOptions | undefined): View {
  * Matches are `markRaw` so that making a route reactive does not turn its components into reactive
  * proxies. Spreading a match drops that, so the rebuilt one is marked again.
  */
-function addViewToMatch(match: CreatedRouteOptions, { name, component, props, prefetch }: View): CreatedRouteOptions {
+export function addViewToMatch(match: CreatedRouteOptions, { name, component, props, prefetch }: View): CreatedRouteOptions {
   return markRaw({
     ...match,
     views: {
@@ -49,38 +55,4 @@ function addViewToMatch(match: CreatedRouteOptions, { name, component, props, pr
       [name]: { component, props, prefetch },
     },
   })
-}
-
-/**
- * The loose runtime signature of the `addView` method. Purposely wide: it returns Route rather than the
- * refined chainable route each `RouteAddView` overload describes.
- */
-type AddView = (...args: AddViewParameters) => Route
-
-/**
- * Attaches a chainable, immutable `addView` method to a route. Each call adds a view to the route's own
- * (last) `views` entry and returns a new route with the view merged in and `addView` re-attached — no
- * mutation of the input route.
- */
-export function withAddView<TRoute extends Route>(route: TRoute): TRoute {
-  const addView: AddView = (component, options) => {
-    const view = toView(component, options)
-    const currentMatch = route.matches.at(-1)
-
-    if (!currentMatch) {
-      return withAddView(route)
-    }
-
-    const nextMatch = addViewToMatch(currentMatch, view)
-
-    return withAddView({
-      ...route,
-      matches: [...route.matches.slice(0, -1), nextMatch],
-    })
-  }
-
-  return {
-    ...route,
-    addView,
-  }
 }
