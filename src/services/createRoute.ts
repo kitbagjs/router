@@ -12,8 +12,8 @@ import { createRouteRedirects } from '@/services/createRouteRedirects'
 import { combineUrl } from '@/services/combineUrl'
 import { createRouteTitle, RouteSetTitle } from '@/types/routeTitle'
 import { createRouteViews } from '@/services/createRouteViews'
-import { RouteWithMethods } from '@/types/addView'
-import { withAddView } from '@/services/addView'
+import { RouteWithMethods } from '@/types/routeWithMethods'
+import { withRouteMethods } from '@/services/withRouteMethods'
 
 type CreateRouteWithProps<
   TOptions extends CreateRouteOptions,
@@ -84,7 +84,7 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
     const merged = combineRoutes(options.parent, route)
 
     if (options.hoist) {
-      return withAddView(merged)
+      return withRouteMethods(merged)
     }
 
     const url = combineUrl(options.parent, {
@@ -93,11 +93,11 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
       hash,
     })
 
-    return withAddView({
+    return withRouteMethods({
       ...merged,
       ...url,
     })
   }
 
-  return withAddView(route)
+  return withRouteMethods(route)
 }

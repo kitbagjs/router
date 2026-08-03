@@ -1,18 +1,12 @@
 import { Component } from 'vue'
 import { ComponentProps } from '@/services/component'
 import { ComponentPropsAreOptional, PropsGetter } from '@/types/createRouteOptions'
-import { InternalRouteHooks } from '@/types/hooks'
 import { ResolvedRoute } from '@/types/resolved'
 import { CreatedRouteOptions, Route } from '@/types/route'
-import { RouteContextToRejection, RouteContextToRoute } from '@/types/routeContext'
-import { RouteRedirects } from '@/types/redirects'
-import { RouteSetTitle } from '@/types/routeTitle'
-import { RouterPush } from '@/types/routerPush'
-import { RouterReject } from '@/types/routerReject'
-import { RouterReplace } from '@/types/routerReplace'
-import { RouteUpdate } from '@/types/routeUpdate'
+import { RouteCallbackContext } from '@/types/routeCallbackContext'
+import { RouteWithMethods } from '@/types/routeWithMethods'
 import { PrefetchConfig } from '@/types/prefetch'
-import { RouteView, RouteViews, ViewsPropsReturnType } from '@/types/routeViews'
+import { RouteView, RouteViews } from '@/types/routeViews'
 import { Url } from '@/types/url'
 import { AnyFunction, Identity, LastInArray, MaybePromise } from '@/types/utilities'
 
@@ -26,31 +20,12 @@ export type AddViewPropsGetter<
 > = (route: ResolvedRoute<TRoute>, context: AddViewPropsCallbackContext<TRoute>) => MaybePromise<ComponentProps<TComponent>>
 
 /**
- * Context provided to an `addView` props getter. Sourced from the route: rejections/routes from the
- * route's context, and the parent from the route's `views`/`matches` tuples.
+ * Context provided to an `addView` props getter. The same context a loader is given, since both are
+ * callbacks attached to a route.
  */
 export type AddViewPropsCallbackContext<
   TRoute extends Route
-> = {
-  reject: RouterReject<RouteContextToRejection<TRoute['context']>>,
-  push: RouterPush<[TRoute] | RouteContextToRoute<TRoute['context']>>,
-  replace: RouterReplace<[TRoute] | RouteContextToRoute<TRoute['context']>>,
-  update: RouteUpdate<ResolvedRoute<TRoute>>,
-  parent: AddViewParent<TRoute>,
-}
-
-/**
- * The parent context ({ name, props }) reconstructed from the second-to-last `matches` entry, which
- * carries both the parent's name and its views.
- */
-type AddViewParent<
-  TRoute extends Route
-> = TRoute['matches'] extends [...CreatedRouteOptions[], infer TParent extends CreatedRouteOptions, CreatedRouteOptions]
-  ? {
-      name: TParent['name'],
-      props: ViewsPropsReturnType<TParent['views']>,
-    }
-  : undefined
+> = RouteCallbackContext<TRoute>
 
 /**
  * When the getter is omitted the default type param resolves to the wide getter type, which then
@@ -149,22 +124,6 @@ type ReplaceLastMatchViews<
     ? [...THead, TNext]
     : TMatches
   : TMatches
-
-/**
- * A route plus every chainable/available method: addView itself, hooks, redirects, and title.
- *
- * Takes the url and matches rather than an assembled route so that adding a view can rebuild from them
- * directly. Taking the route would mean re-deriving the url from it on every call, and that reference is
- * what made chained calls nest one inside the last.
- */
-export type RouteWithMethods<
-  TUrl extends Url = Url,
-  TMatches extends CreatedRouteOptions[] = CreatedRouteOptions[]
-> = Route<TUrl, TMatches>
-  & RouteAddView<TUrl, TMatches>
-  & InternalRouteHooks<Route<TUrl, TMatches>, Route<TUrl, TMatches>['context']>
-  & RouteRedirects<Route<TUrl, TMatches>>
-  & RouteSetTitle<Route<TUrl, TMatches>>
 
 /**
  * The full return type of an `addView` call: the same url with the last match's views replaced.
