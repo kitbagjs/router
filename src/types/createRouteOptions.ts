@@ -158,6 +158,11 @@ type ToMatch<
    * The views this route renders, keyed by view name.
    */
   views: PropsToViews<TProps>,
+  /**
+   * The loaders this route runs, keyed by loader name. Always empty here — loaders are only added via
+   * the route's `addLoader`.
+   */
+  loaders: {},
 }
 
 /**

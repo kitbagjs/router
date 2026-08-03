@@ -45,7 +45,7 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
   const { store, redirect, ...hooks } = createRouteHooks()
   const { setTitle, getTitle } = createRouteTitle(options.parent)
   const views = createRouteViews(options, props)
-  const rawRoute = markRaw({ ...options, id, meta, state, name, views })
+  const rawRoute = markRaw({ ...options, id, meta, state, name, views, loaders: {} })
 
   const redirects = createRouteRedirects({
     getRoute: () => route,
