@@ -91,7 +91,7 @@ type RouteLoadersOf<TMatches extends CreatedRouteOptions[]> = CreatedRouteOption
  * Undefined when nothing in the route tree declares a loader.
  */
 export type RouteDataOf<TMatches extends CreatedRouteOptions[]> = CreatedRouteOptions[] extends TMatches
-  ? Record<string, Promise<unknown>> | undefined
+  ? Promise<unknown> | Record<string, Promise<unknown>> | undefined
   : LoadersDataReturnType<RouteLoadersOf<TMatches>>
 
 /**
