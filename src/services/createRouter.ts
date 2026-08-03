@@ -165,7 +165,7 @@ export function createRouter<
     }
 
     if (!isExternal(url)) {
-      setPropsAndUpdateRoute(navigationId, to, from)
+      setPropsAndUpdateRoute(to, from)
     }
 
     const afterResponse = await hooks.runAfterRouteHooks({ to, from })
@@ -192,15 +192,9 @@ export function createRouter<
     history.startListening()
   }
 
-  function setPropsAndUpdateRoute(navigationId: string, to: ResolvedRoute, from: ResolvedRoute | null): void {
-    const currentNavigationId = navigationId
-
+  function setPropsAndUpdateRoute(to: ResolvedRoute, from: ResolvedRoute | null): void {
     propStore.setProps(to)
       .then((response) => {
-        if (currentNavigationId !== navigationId) {
-          return
-        }
-
         switch (response.status) {
           case 'SUCCESS':
           case 'ABANDONED':
