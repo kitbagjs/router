@@ -1,6 +1,6 @@
 import { computed, InjectionKey, reactive, toRefs } from 'vue'
 import { parseUrl, stringifyUrl, updateUrl } from '@/services/urlParser'
-import { ResolvedRoute } from '@/types/resolved'
+import { ResolvedRoute, ResolvedRouteWithData } from '@/types/resolved'
 import { RouterRoute } from '@/types/routerRoute'
 import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { QuerySource } from '@/types/querySource'
@@ -13,7 +13,7 @@ export function isRouterRoute(routerKey: InjectionKey<Router>, value: unknown): 
   return typeof value === 'object' && value !== null && isRouterRouteSymbol in value && routerKey in value
 }
 
-export function createRouterRoute<TRoute extends ResolvedRoute>(routerKey: InjectionKey<Router>, route: TRoute, push: RouterPush): RouterRoute<TRoute> {
+export function createRouterRoute<TRoute extends ResolvedRouteWithData>(routerKey: InjectionKey<Router>, route: TRoute, push: RouterPush): RouterRoute<TRoute> {
   function updateQuery(query: QuerySource): void {
     const routeWithoutQuery = stringifyUrl({
       ...parseUrl(route.href),
@@ -60,7 +60,7 @@ export function createRouterRoute<TRoute extends ResolvedRoute>(routerKey: Injec
     updateQuery(query)
   }
 
-  const { id, matched, matches, name, hash, href } = toRefs(route)
+  const { id, matched, matches, name, hash, href, data } = toRefs(route)
 
   const paramsProxy = new Proxy({}, {
     get(_target, property, receiver) {
@@ -125,7 +125,8 @@ export function createRouterRoute<TRoute extends ResolvedRoute>(routerKey: Injec
     },
   })
 
-  const routerRoute: RouterRoute<TRoute> = reactive({
+  // data is derived from the route's matches rather than read off the route, so its type cannot be matched here
+  const routerRoute = reactive({
     ...route,
     id,
     matched,
@@ -136,10 +137,11 @@ export function createRouterRoute<TRoute extends ResolvedRoute>(routerKey: Injec
     params,
     name,
     href,
+    data,
     update,
     [isRouterRouteSymbol]: true,
     [routerKey]: true,
-  })
+  }) as RouterRoute<TRoute>
 
   return routerRoute
 }

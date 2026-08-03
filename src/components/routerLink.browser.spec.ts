@@ -1093,7 +1093,7 @@ describe('prefetch props', () => {
     await flushPromises()
 
     expect(settled).toStrictEqual([])
-    expect(warn.mock.calls.some(([message]) => String(message).includes('Waiting on parent props'))).toBe(true)
+    expect(warn.mock.calls.some(([message]) => String(message).includes('Waiting on props'))).toBe(true)
 
     wrapper.find('a').trigger('click')
 
