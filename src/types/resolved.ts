@@ -1,4 +1,4 @@
-import { CreatedRouteOptions, Route, Routes } from '@/types/route'
+import { CreatedRouteOptions, Route, RouteDataOf, Routes } from '@/types/route'
 import { LastInArray } from '@/types/utilities'
 import { ExtractRouteStateParamsAsOptional } from '@/types/state'
 import { UrlString } from '@/types/urlString'
@@ -59,6 +59,20 @@ export type ResolvedRoute<TRoute extends Route = Route> = Readonly<{
    */
   title: Promise<string | undefined>,
 }>
+
+/**
+ * A resolved route together with what its loaders resolve to. Only the route being navigated to has data:
+ * a route the router merely resolved is not being loaded, so data on it could never settle. That is why
+ * this is separate from {@link ResolvedRoute} — the current route and a props getter's route have it,
+ * `router.resolve` and hooks do not.
+ */
+export type ResolvedRouteWithData<TRoute extends Route = Route> = ResolvedRoute<TRoute> & {
+  /**
+   * What the route's loaders resolve to, keyed by loader name. A route whose only loader is unnamed
+   * exposes that loader's data here directly. Always promises, since loaders never block rendering.
+   */
+  data: RouteDataOf<TRoute['matches']>,
+}
 
 /**
  * This type is the same as `ResolvedRoute<TRoutes[number]>` while remaining distributive
