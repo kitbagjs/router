@@ -3,6 +3,7 @@ import { createRoute } from './createRoute'
 import { RouteLoader } from '@/types/routeLoaders'
 import { BuiltInRejectionType } from '@/types/rejection'
 import { ResolvedRoute, WithData } from '@/types/resolved'
+import { RouterRoute } from '@/types/routerRoute'
 import { Route } from '@/types/route'
 import { component } from '@/utilities/testHelpers'
 import { RouteView } from '@/types/routeViews'
@@ -140,6 +141,60 @@ describe('route data', () => {
       posts: Promise<number[]>,
     }>()
   })
+
+  test('the router route exposes the route data', () => {
+    const route = createRoute({ name: 'route' }).addLoader(() => 'kitbag', { name: 'user' })
+
+    expectTypeOf<RouterRoute<ResolvedRoute<typeof route>>['data']>().toEqualTypeOf<{ user: Promise<string> }>()
+  })
+})
+
+describe('parent data', () => {
+  test('a parent with a lone unnamed loader gives its data directly', () => {
+    const parent = createRoute({ name: 'parent', path: '/parent' }).addLoader(async (): Promise<User> => ({ id: '1', name: 'kitbag' }))
+
+    createRoute({ parent, name: 'child', path: '/child' }).addLoader((_route, { parent }) => {
+      expectTypeOf(parent.data).toEqualTypeOf<Promise<User>>()
+
+      return null
+    })
+  })
+
+  test('a parent with named loaders keys its data', () => {
+    const parent = createRoute({ name: 'parent', path: '/parent' })
+      .addLoader(async (): Promise<User> => ({ id: '1', name: 'kitbag' }))
+      .addLoader(() => [1, 2], { name: 'posts' })
+
+    createRoute({ parent, name: 'child', path: '/child' }).addLoader((_route, { parent }) => {
+      expectTypeOf(parent.data).toEqualTypeOf<{ default: Promise<User>, posts: Promise<number[]> }>()
+
+      return null
+    })
+  })
+
+  test('a parent without loaders has no data', () => {
+    const parent = createRoute({ name: 'parent', path: '/parent' }).addView(component)
+
+    createRoute({ parent, name: 'child', path: '/child' }).addLoader((_route, { parent }) => {
+      expectTypeOf(parent.data).toEqualTypeOf<undefined>()
+
+      return null
+    })
+  })
+
+  test('a props getter sees the same parent data', () => {
+    const parent = createRoute({ name: 'parent', path: '/parent' }).addLoader(async (): Promise<User> => ({ id: '1', name: 'kitbag' }))
+
+    createRoute({ parent, name: 'child', path: '/child' }).addView(component, {
+      props: async (_route, { parent }) => {
+        expectTypeOf(parent.data).toEqualTypeOf<Promise<User>>()
+
+        await parent.data
+
+        return {}
+      },
+    })
+  })
 })
 
 describe('loader callback', () => {
@@ -149,6 +204,31 @@ describe('loader callback', () => {
 
       return route.params.id
     })
+  })
+
+  test('a loader is not given the data of the route it belongs to', () => {
+    createRoute({ name: 'route', path: '/' })
+      .addLoader(() => 'first', { name: 'first' })
+      .addLoader((route) => {
+        // @ts-expect-error a loader cannot read the data of the route it belongs to
+        const data = route.data
+
+        return 'second'
+      }, { name: 'second' })
+  })
+
+  test('a props getter is given the data of the route it belongs to', () => {
+    createRoute({ name: 'route', path: '/' })
+      .addLoader(async () => 'kitbag', { name: 'user' })
+      .addView(component, {
+        props: async (route) => {
+          expectTypeOf(route.data.user).toEqualTypeOf<Promise<string>>()
+
+          await route.data.user
+
+          return {}
+        },
+      })
   })
 
   test('the context includes the navigation helpers and the parent', () => {

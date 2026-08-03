@@ -6,7 +6,7 @@ import { createResolvedRoute } from './createResolvedRoute'
 
 test('isRouterRoute returns correct response', () => {
   const route = createRoute({ name: 'isRouterRoute' })
-  const resolved = createResolvedRoute(route, {})
+  const resolved = { ...createResolvedRoute(route, {}), data: undefined }
   const push = vi.fn()
   const routerKey = Symbol()
 
@@ -18,7 +18,7 @@ test('isRouterRoute returns correct response', () => {
 
 test('sending state, includes state in push options', () => {
   const route = createRoute({ name: 'state' })
-  const resolved = createResolvedRoute(route, {})
+  const resolved = { ...createResolvedRoute(route, {}), data: undefined }
   const push = vi.fn()
   const routerKey = Symbol()
 

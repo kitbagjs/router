@@ -9,8 +9,10 @@ import { Identity, LastInArray } from '@/types/utilities'
 
 /**
  * The getter for a loader added via `addLoader`. Receives the same two arguments as an `addView` props
- * getter: the resolved route and a context object. Unlike a props getter it can return anything, since
- * nothing binds what it returns to a component.
+ * getter, except that its route carries no data: a route's data includes what the loader itself is
+ * computing, so reading it could only wait on itself. A parent's data is reached through the context.
+ *
+ * Unlike a props getter it can return anything, since nothing binds what it returns to a component.
  */
 export type LoaderGetter<
   TRoute extends Route = Route

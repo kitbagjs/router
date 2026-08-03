@@ -5,6 +5,7 @@ import { RouterPush } from '@/types/routerPush'
 import { RouterReject } from '@/types/routerReject'
 import { RouterReplace } from '@/types/routerReplace'
 import { RouteUpdate } from '@/types/routeUpdate'
+import { LoadersDataReturnType } from '@/types/routeLoaders'
 import { ViewsPropsReturnType } from '@/types/routeViews'
 
 /**
@@ -22,8 +23,8 @@ export type RouteCallbackContext<
 }
 
 /**
- * The parent context ({ name, props }) reconstructed from the second-to-last `matches` entry, which
- * carries both the parent's name and its views.
+ * The parent context ({ name, props, data }) reconstructed from the second-to-last `matches` entry, which
+ * carries the parent's name, its views and its loaders.
  */
 type RouteCallbackParent<
   TRoute extends Route
@@ -31,5 +32,6 @@ type RouteCallbackParent<
   ? {
       name: TParent['name'],
       props: ViewsPropsReturnType<TParent['views']>,
+      data: LoadersDataReturnType<TParent['loaders']>,
     }
   : undefined

@@ -3,7 +3,8 @@ import { App, ref } from 'vue'
 import { createCurrentRoute } from '@/services/createCurrentRoute'
 import { createIsExternal } from '@/services/createIsExternal'
 import { parseUrl, updateUrl } from '@/services/urlParser'
-import { createPropStore } from '@/services/createPropStore'
+import { createRouteValueStore, RouteValueResponse } from '@/services/createRouteValueStore'
+import { DataKind } from '@/services/createNavigationStores'
 import { createRouterHistory } from '@/services/createRouterHistory'
 import { createRouterHooks, getRouterHooksKey } from '@/services/createRouterHooks'
 import { getInitialUrl } from '@/services/getInitialUrl'
@@ -28,7 +29,7 @@ import { getGlobalHooksForRouter } from './getGlobalHooksForRouter'
 import { createComponentsStore } from './createComponentsStore'
 import { initZod, zodParamsDetected } from './zod'
 import { getComponentsStoreKey } from '@/compositions/useComponentsStore'
-import { getPropStoreInjectionKey } from '@/compositions/usePropStore'
+import { getRouteValueStoreInjectionKey } from '@/compositions/useRouteValueStore'
 import { getRouterRejectionInjectionKey } from '@/compositions/useRejection'
 import { routerInjectionKey } from '@/keys'
 import { createRouterView } from '@/components/routerView'
@@ -91,6 +92,7 @@ export function createRouter<
   const shouldRemoveTrailingSlashes = options?.removeTrailingSlashes ?? true
   const { routes, getRouteByName, getRejectionByType } = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options)
   const notFoundRejection = getRejectionByType('NotFound')
+  const valueStore = createRouteValueStore()
   const notFoundRoute = createResolvedRoute(notFoundRejection.route)
 
   const hooks = createRouterHooks()
@@ -98,7 +100,6 @@ export function createRouter<
   hooks.addGlobalRouteHooks(getGlobalHooksForRouter(plugins))
 
   const getNavigationId = createUniqueIdSequence()
-  const propStore = createPropStore()
   const componentsStore = createComponentsStore(routerKey)
   const visibilityObserver = createVisibilityObserver()
   const history = createRouterHistory({
@@ -165,7 +166,7 @@ export function createRouter<
     }
 
     if (!isExternal(url)) {
-      setPropsAndUpdateRoute(to, from)
+      setRouteValuesAndUpdateRoute(to, from)
     }
 
     const afterResponse = await hooks.runAfterRouteHooks({ to, from })
@@ -192,8 +193,21 @@ export function createRouter<
     history.startListening()
   }
 
-  function setPropsAndUpdateRoute(to: ResolvedRoute, from: ResolvedRoute | null): void {
-    propStore.setProps(to)
+  function setRouteValuesAndUpdateRoute(to: ResolvedRoute, from: ResolvedRoute | null): void {
+    const { props, loaders } = valueStore.setRouteValues(to)
+
+    handleRouteValueResponse(props, 'props', to, from)
+    handleRouteValueResponse(loaders, 'loader', to, from)
+
+    updateRoute(to)
+  }
+
+  /**
+   * Props and loaders are handled the same way, and neither is awaited here: a push or a rejection from
+   * either is acted on whenever it arrives, without holding up the navigation that started it.
+   */
+  function handleRouteValueResponse(response: Promise<RouteValueResponse>, source: DataKind, to: ResolvedRoute, from: ResolvedRoute | null): void {
+    response
       .then((response) => {
         switch (response.status) {
           case 'SUCCESS':
@@ -210,12 +224,12 @@ export function createRouter<
 
           default:
             const exhaustive: never = response
-            throw new Error(`Switch is not exhaustive for prop store response status: ${JSON.stringify(exhaustive)}`)
+            throw new Error(`Switch is not exhaustive for route data response status: ${JSON.stringify(exhaustive)}`)
         }
       })
       .catch((error: unknown) => {
         try {
-          hooks.runErrorHooks(error, { to, from, source: 'props' })
+          hooks.runErrorHooks(error, { to, from, source })
         } catch (error) {
           if (error instanceof ContextPushError) {
             push(...error.response.to)
@@ -230,8 +244,6 @@ export function createRouter<
           throw error
         }
       })
-
-    updateRoute(to)
   }
 
   const resolve: RouterResolve<TRoutes | TPlugin['routes']> = (
@@ -324,7 +336,12 @@ export function createRouter<
   }
 
   const { currentRejection, currentRejectionRoute, updateRejection, clearRejection } = createCurrentRejection()
-  const { currentRoute, routerRoute, updateRoute } = createCurrentRoute<TRoutes | TPlugin['routes']>(routerKey, notFoundRoute, push)
+  const { currentRoute, routerRoute, updateRoute } = createCurrentRoute<TRoutes | TPlugin['routes']>({
+    routerKey,
+    fallbackRoute: notFoundRoute,
+    push,
+    getData: valueStore.getData,
+  })
 
   const initialUrl = getInitialUrl(options?.initialUrl)
   const initialState = history.location.state
@@ -369,7 +386,7 @@ export function createRouter<
 
   function install(app: App): void {
     hooks.setVueApp(app)
-    propStore.setVueApp(app)
+    valueStore.setVueApp(app)
 
     const routerView = createRouterView(routerKey)
     const routerLink = createRouterLink(routerKey)
@@ -378,7 +395,7 @@ export function createRouter<
     app.component('RouterLink', routerLink)
     app.provide(getRouterRejectionInjectionKey(routerKey), currentRejection)
     app.provide(getRouterHooksKey(routerKey), hooks)
-    app.provide(getPropStoreInjectionKey(routerKey), propStore)
+    app.provide(getRouteValueStoreInjectionKey(routerKey), valueStore)
     app.provide(getComponentsStoreKey(routerKey), componentsStore)
     app.provide(visibilityObserverKey, visibilityObserver)
 
