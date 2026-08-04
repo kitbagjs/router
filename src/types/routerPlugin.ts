@@ -91,7 +91,7 @@ export type PluginErrorHookContext<
 > = {
   to: ResolvedRoute,
   from: ResolvedRoute | null,
-  source: 'props' | 'hook' | 'component',
+  source: 'props' | 'loader' | 'hook' | 'component',
   reject: RouterReject<TRejections>,
   push: RouterPush<TRoutes>,
   replace: RouterReplace<TRoutes>,

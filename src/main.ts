@@ -81,6 +81,7 @@ export * from './types/useLink'
 
 // Errors
 export { DuplicateParamsError } from './errors/duplicateParamsError'
+export { LoaderDataAccessError } from './errors/loaderDataAccessError'
 export { LoaderNameConflict } from './errors/loaderNameConflict'
 export { MetaPropertyConflict } from './errors/metaPropertyConflict'
 export { NavigationAbandonedError } from './errors/navigationAbandonedError'
