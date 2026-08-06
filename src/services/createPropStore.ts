@@ -40,7 +40,13 @@ type SetPropsResponse = CallbackContextSuccess | CallbackContextPush | CallbackC
  * discarded otherwise.
  */
 export type PrefetchStore = {
+  /**
+   * Computes props for views whose prefetch option matches the given strategy.
+   */
   prefetch: (strategy: PrefetchStrategy, route: ResolvedRoute, configs: PrefetchConfigs) => void,
+  /**
+   * Stages the prefetched store for the next navigation to adopt.
+   */
   commit: () => void,
   /**
    * Abandons what was prefetched and starts over, for a link that now points somewhere else.
@@ -152,6 +158,8 @@ export function createPropStore(): PropStore {
       case 'value':
       case 'error':
         return result
+      default:
+        return result satisfies never
     }
   }
 
@@ -292,6 +300,10 @@ async function toResult(props: Promise<unknown>): Promise<PropsResult> {
   try {
     return { kind: 'value', value: await props }
   } catch (error) {
+    if (error instanceof NavigationAbandonedError) {
+      return NO_PROPS
+    }
+
     return { kind: 'error', error }
   }
 }

@@ -10,6 +10,9 @@ import { ResolvedRoute } from '@/types/resolved'
  * directly because a link is followed before that navigation starts.
  */
 export type NavigationStores = {
+  /**
+   * The store the rendered route reads props from.
+   */
   current: () => DataStore,
   /**
    * Parks a followed link's store for the navigation it triggered. A store already parked is disposed,
