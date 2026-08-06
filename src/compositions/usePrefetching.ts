@@ -1,4 +1,4 @@
-import { InjectionKey, MaybeRefOrGetter, ref, Ref, toValue, watch } from 'vue'
+import { InjectionKey, MaybeRefOrGetter, onScopeDispose, ref, Ref, toValue, watch } from 'vue'
 import { createUsePropStore } from '@/compositions/usePropStore'
 import type { PrefetchConfigs, PrefetchStrategy } from '@/types/prefetch'
 import { getPrefetchOption } from '@/utilities/prefetch'
@@ -7,8 +7,6 @@ import { isAsyncComponent } from '@/utilities/components'
 import { useVisibilityObserver } from './useVisibilityObserver'
 import { useEventListener } from './useEventListener'
 import { Router } from '@/types/router'
-import { PropsResult } from '@/utilities/props'
-import { MaybePromise } from '@/types/utilities'
 
 type UsePrefetchingConfig = PrefetchConfigs & {
   route: ResolvedRoute | undefined,
@@ -25,26 +23,20 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
   const usePropStore = createUsePropStore(routerKey)
 
   return (config) => {
-    const prefetchedProps = new Map<PrefetchStrategy, Record<string, MaybePromise<PropsResult>>>()
     const element = ref<HTMLElement>()
 
-    const { getPrefetchProps, setPrefetchProps } = usePropStore()
+    const { createPrefetchStore } = usePropStore()
+    const store = createPrefetchStore()
     const { isElementVisible } = useVisibilityObserver(element)
 
     const commit: UsePrefetching['commit'] = () => {
-      setPrefetchProps(getAccumulatedProps())
+      store.commit()
     }
 
-    function getAccumulatedProps(): Record<string, MaybePromise<PropsResult>> {
-      return Array.from(prefetchedProps.values()).reduce<Record<string, MaybePromise<PropsResult>>>((accumulator, value) => {
-        Object.assign(accumulator, value)
-
-        return accumulator
-      }, {})
-    }
+    onScopeDispose(() => store.dispose())
 
     watch(() => toValue(config), ({ route, ...configs }) => {
-      prefetchedProps.clear()
+      store.reset()
 
       if (!route) {
         return
@@ -78,10 +70,7 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
 
     function doPrefetchingForStrategy(strategy: PrefetchStrategy, route: ResolvedRoute, configs: PrefetchConfigs): void {
       prefetchComponentsForRoute(strategy, route, configs)
-
-      if (!prefetchedProps.has(strategy)) {
-        prefetchedProps.set(strategy, getPrefetchProps(strategy, route, configs, getAccumulatedProps()))
-      }
+      store.prefetch(strategy, route, configs)
     }
 
     return {

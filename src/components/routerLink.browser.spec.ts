@@ -11,7 +11,7 @@ import { visibilityObserverKey } from '@/compositions/useVisibilityObserver'
 import { VisibilityObserver } from '@/services/createVisibilityObserver'
 import { UrlString } from '@/types/urlString'
 import { RouterPushOptions } from '@/types/routerPush'
-import { ParentPropsAbandonedError, RouterLink } from '@/main'
+import { NavigationAbandonedError, RouterLink } from '@/main'
 
 test('renders an anchor tag with the correct href and slot content', () => {
   const path = '/path/[paramName]'
@@ -1328,7 +1328,7 @@ describe('prefetch props', () => {
     await flushPromises()
 
     expect(caught).toHaveLength(1)
-    expect(caught[0]).toBeInstanceOf(ParentPropsAbandonedError)
+    expect(caught[0]).toBeInstanceOf(NavigationAbandonedError)
 
     warn.mockRestore()
   })

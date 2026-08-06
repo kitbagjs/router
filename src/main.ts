@@ -75,7 +75,7 @@ export * from './types/useLink'
 // Errors
 export { DuplicateParamsError } from './errors/duplicateParamsError'
 export { MetaPropertyConflict } from './errors/metaPropertyConflict'
-export { ParentPropsAbandonedError } from './errors/parentPropsAbandonedError'
+export { NavigationAbandonedError } from './errors/navigationAbandonedError'
 export { RouterNotInstalledError } from './errors/routerNotInstalledError'
 export { UseRouteInvalidError } from './errors/useRouteInvalidError'
 
