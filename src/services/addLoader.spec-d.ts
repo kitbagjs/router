@@ -2,14 +2,14 @@ import { describe, expectTypeOf, test } from 'vitest'
 import { createRoute } from './createRoute'
 import { RouteLoader } from '@/types/routeLoaders'
 import { BuiltInRejectionType } from '@/types/rejection'
-import { ResolvedRouteWithData } from '@/types/resolved'
+import { ResolvedRoute, WithData } from '@/types/resolved'
 import { Route } from '@/types/route'
 import { component } from '@/utilities/testHelpers'
 import { RouteView } from '@/types/routeViews'
 
 type User = { id: string, name: string }
 
-type Data<TRoute extends Route> = ResolvedRouteWithData<TRoute>['data']
+type Data<TRoute extends Route> = (ResolvedRoute<TRoute> & WithData<TRoute>)['data']
 
 describe('addLoader', () => {
   test('an async loader carries what it returns', () => {

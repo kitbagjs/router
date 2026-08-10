@@ -61,17 +61,20 @@ export type ResolvedRoute<TRoute extends Route = Route> = Readonly<{
 }>
 
 /**
- * A resolved route together with what its loaders resolve to. Only the route being navigated to has data:
- * a route the router merely resolved is not being loaded, so data on it could never settle. That is why
- * this is separate from {@link ResolvedRoute} — the current route and a props getter's route have it,
- * `router.resolve` and hooks do not.
+ * A resolved route whose loaders' data is available. Only the route being navigated to has data: a route
+ * the router merely resolved is not being loaded, so data on it could never settle. The current route and
+ * a props getter's route have it, `router.resolve` and hooks do not.
  */
-export type ResolvedRouteWithData<TRoute extends Route = Route> = ResolvedRoute<TRoute> & {
+export type WithData<TRoute extends Route = Route> = {
   /**
    * What the route's loaders resolve to, keyed by loader name. A route whose only loader is unnamed
    * exposes that loader's data here directly. Always promises, since loaders never block rendering.
    */
   data: RouteDataOf<TRoute['matches']>,
+}
+
+export function isWithData<T extends Record<string, unknown>>(route: T): route is T & WithData {
+  return 'data' in route && route.data !== undefined
 }
 
 /**
