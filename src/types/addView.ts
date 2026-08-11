@@ -1,7 +1,7 @@
 import { Component } from 'vue'
 import { ComponentProps } from '@/services/component'
 import { ComponentPropsAreOptional, PropsGetter } from '@/types/createRouteOptions'
-import { ResolvedRouteWithData } from '@/types/resolved'
+import { ResolvedRoute, WithData } from '@/types/resolved'
 import { CreatedRouteOptions, Route } from '@/types/route'
 import { RouteCallbackContext } from '@/types/routeCallbackContext'
 import { RouteWithMethods } from '@/types/routeWithMethods'
@@ -17,7 +17,7 @@ import { AnyFunction, Identity, LastInArray, MaybePromise } from '@/types/utilit
 export type AddViewPropsGetter<
   TRoute extends Route,
   TComponent extends Component
-> = (route: ResolvedRouteWithData<TRoute>, context: AddViewPropsCallbackContext<TRoute>) => MaybePromise<ComponentProps<TComponent>>
+> = (route: ResolvedRoute<TRoute> & WithData<TRoute>, context: AddViewPropsCallbackContext<TRoute>) => MaybePromise<ComponentProps<TComponent>>
 
 /**
  * Context provided to an `addView` props getter. The same context a loader is given, since both are

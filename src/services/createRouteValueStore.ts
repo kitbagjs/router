@@ -2,7 +2,7 @@ import { markRaw } from 'vue'
 import { PropsGetter } from '@/types/createRouteOptions'
 import type { PrefetchConfig, PrefetchConfigs, PrefetchStrategy } from '@/types/prefetch'
 import { getPrefetchOption } from '@/utilities/prefetch'
-import { ResolvedRoute, ResolvedRouteWithData } from '@/types/resolved'
+import { ResolvedRoute, WithData } from '@/types/resolved'
 import { CreatedRouteOptions } from '@/types/route'
 import { DEFAULT_VIEW_NAME, viewNamesWithProps } from './createRouteViews'
 import { DEFAULT_LOADER_NAME } from './addLoader'
@@ -93,7 +93,7 @@ export type RouteValueStore = HasVueAppStore & {
    * What a route exposes as `data`. Resolved per read rather than captured, so it stays correct as
    * navigations replace the store its values live in.
    */
-  getData: (route: ResolvedRoute) => ResolvedRouteWithData['data'],
+  getData: (route: ResolvedRoute) => WithData['data'],
 }
 
 export function createRouteValueStore(): RouteValueStore {
@@ -205,7 +205,7 @@ export function createRouteValueStore(): RouteValueStore {
     }
   }
 
-  function getData(route: ResolvedRoute, store?: DataStore): ResolvedRouteWithData['data'] {
+  function getData(route: ResolvedRoute, store?: DataStore): WithData['data'] {
     const loaders = getComputations(route).filter(isKind('loader'))
 
     return toValues(loaders, DEFAULT_LOADER_NAME, route, store)
@@ -280,7 +280,7 @@ export function createRouteValueStore(): RouteValueStore {
    * A set of named values as a callback or component sees them. A lone unnamed value is given directly,
    * matching how it was written, and named values sit behind a proxy so only what is read is waited on.
    */
-  function toValues(locations: ValueLocation[], bareName: string, route: ResolvedRoute, store?: DataStore): ResolvedRouteWithData['data'] {
+  function toValues(locations: ValueLocation[], bareName: string, route: ResolvedRoute, store?: DataStore): WithData['data'] {
     if (locations.length === 0) {
       return undefined
     }

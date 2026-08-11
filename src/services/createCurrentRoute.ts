@@ -2,14 +2,14 @@ import { InjectionKey, reactive } from 'vue'
 import { createRouterRoute } from '@/services/createRouterRoute'
 import { RouteValueStore } from '@/services/createRouteValueStore'
 import { Router, RouterRouteUnion } from '@/types/router'
-import { ResolvedRoute, ResolvedRouteWithData } from '@/types/resolved'
+import { ResolvedRoute, WithData } from '@/types/resolved'
 import { Routes } from '@/types/route'
 import { RouterPush } from '@/types/routerPush'
 
 type ResolvedRouteUpdate = (route: ResolvedRoute) => void
 
 type CurrentRouteContext<TRoutes extends Routes = Routes> = {
-  currentRoute: ResolvedRouteWithData,
+  currentRoute: ResolvedRoute & WithData,
   routerRoute: RouterRouteUnion<TRoutes>,
   updateRoute: ResolvedRouteUpdate,
 }
@@ -34,7 +34,7 @@ export function createCurrentRoute({ routerKey, fallbackRoute, push, getData }: 
     Object.assign(route, withData(newRoute))
   }
 
-  function withData(route: ResolvedRoute): ResolvedRouteWithData {
+  function withData(route: ResolvedRoute): ResolvedRoute & WithData {
     return {
       ...route,
       data: getData(route),

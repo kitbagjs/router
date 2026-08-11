@@ -6,7 +6,7 @@ import { Param } from '@/types/paramTypes'
 import { PrefetchConfig } from '@/types/prefetch'
 import { RouteMeta } from '@/types/register'
 import { isRoute, Route, RouteInternal } from '@/types/route'
-import { ResolvedRouteWithData } from './resolved'
+import { ResolvedRoute, WithData } from './resolved'
 import { ComponentProps } from '@/services/component'
 import { PropsCallbackContext } from '@/types/props'
 import { AnyFunction, Identity, MaybePromise } from '@/types/utilities'
@@ -118,11 +118,11 @@ export type CreateRouteOptions<
 export type PropsGetter<
   TOptions extends CreateRouteOptions = CreateRouteOptions,
   TComponent extends Component = Component
-> = (route: ResolvedRouteWithData<ToRoute<TOptions>>, context: PropsCallbackContext<ToRoute<TOptions>, TOptions>) => MaybePromise<ComponentProps<TComponent>>
+> = (route: ResolvedRoute<ToRoute<TOptions>> & WithData<ToRoute<TOptions>>, context: PropsCallbackContext<ToRoute<TOptions>, TOptions>) => MaybePromise<ComponentProps<TComponent>>
 
 export type RouterViewPropsGetter<
   TOptions extends CreateRouteOptions = CreateRouteOptions
-> = (route: ResolvedRouteWithData<ToRoute<TOptions>>, context: PropsCallbackContext<ToRoute<TOptions>, TOptions>) => MaybePromise<RouterViewProps & Record<string, unknown>>
+> = (route: ResolvedRoute<ToRoute<TOptions>> & WithData<ToRoute<TOptions>>, context: PropsCallbackContext<ToRoute<TOptions>, TOptions>) => MaybePromise<RouterViewProps & Record<string, unknown>>
 
 export type ComponentPropsAreOptional<
   TComponent extends Component

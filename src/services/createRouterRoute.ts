@@ -1,6 +1,6 @@
 import { computed, InjectionKey, reactive, toRefs } from 'vue'
 import { parseUrl, stringifyUrl, updateUrl } from '@/services/urlParser'
-import { ResolvedRoute, ResolvedRouteWithData } from '@/types/resolved'
+import { ResolvedRoute, WithData } from '@/types/resolved'
 import { RouterRoute } from '@/types/routerRoute'
 import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { QuerySource } from '@/types/querySource'
@@ -13,7 +13,7 @@ export function isRouterRoute(routerKey: InjectionKey<Router>, value: unknown): 
   return typeof value === 'object' && value !== null && isRouterRouteSymbol in value && routerKey in value
 }
 
-export function createRouterRoute<TRoute extends ResolvedRouteWithData>(routerKey: InjectionKey<Router>, route: TRoute, push: RouterPush): RouterRoute<TRoute> {
+export function createRouterRoute<TRoute extends ResolvedRoute & WithData>(routerKey: InjectionKey<Router>, route: TRoute, push: RouterPush): RouterRoute<TRoute> {
   function updateQuery(query: QuerySource): void {
     const routeWithoutQuery = stringifyUrl({
       ...parseUrl(route.href),
