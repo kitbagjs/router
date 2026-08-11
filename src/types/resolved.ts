@@ -73,10 +73,6 @@ export type WithData<TRoute extends Route = Route> = {
   data: RouteDataOf<TRoute['matches']>,
 }
 
-export function isWithData<T extends Record<string, unknown>>(route: T): route is T & WithData {
-  return 'data' in route && route.data !== undefined
-}
-
 /**
  * This type is the same as `ResolvedRoute<TRoutes[number]>` while remaining distributive
  */
