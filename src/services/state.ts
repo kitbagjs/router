@@ -63,3 +63,50 @@ export const setStateValues = (params: Record<string, Param>, state: unknown): R
 
   return values
 }
+
+type MatchWithState = { state?: Record<string, Param> }
+
+/**
+ * Serializes state values per match for storage in history. Each match's state
+ * keys are serialized using that match's param definitions.
+ */
+export function setMatchStates(matches: MatchWithState[], state: unknown): Record<string, string | undefined>[] {
+  return matches.map((match) => {
+    const params = match.state ?? {}
+    return setStateValues(params, state)
+  })
+}
+
+/**
+ * Deserializes per-match state values. Accepts either:
+ * - An array of per-match state records (from history)
+ * - A flat state object (from user-provided values, distributed to each match)
+ */
+export function getMatchStates(matches: MatchWithState[], state: unknown): Record<string, unknown>[] {
+  if (Array.isArray(state)) {
+    return matches.map((match, index) => {
+      const params = match.state ?? {}
+      return getStateValues(params, state[index])
+    })
+  }
+
+  return matches.map((match) => {
+    const params = match.state ?? {}
+    return getStateValues(params, state)
+  })
+}
+
+/**
+ * Merges per-match state values into a single flat object. Later matches override
+ * earlier ones (child shadows parent). Optionally stops at a given match index.
+ */
+export function resolveMatchStates(matchStates: Record<string, unknown>[], upToIndex?: number): Record<string, unknown> {
+  const end = upToIndex !== undefined ? upToIndex + 1 : matchStates.length
+  const result: Record<string, unknown> = {}
+
+  for (let i = 0; i < end; i++) {
+    Object.assign(result, matchStates[i])
+  }
+
+  return result
+}

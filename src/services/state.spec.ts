@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { getStateValues, setStateValues } from '@/services/state'
+import { getMatchStates, getStateValues, resolveMatchStates, setMatchStates, setStateValues } from '@/services/state'
 import { withDefault } from '@/services/withDefault'
 
 describe('setStateValues', () => {
@@ -108,5 +108,75 @@ describe('getStateValues', () => {
     expect(response).toMatchObject({
       foo: 456,
     })
+  })
+})
+
+describe('setMatchStates', () => {
+  test('serializes state per match', () => {
+    const matches: { state: Record<string, typeof String | typeof Number> }[] = [
+      { state: { foo: String } },
+      { state: { foo: Number, bar: Number } },
+    ]
+
+    const result = setMatchStates(matches, { foo: 42, bar: 10 })
+
+    expect(result).toHaveLength(2)
+    expect(result[0]).toMatchObject({ foo: '42' })
+    expect(result[1]).toMatchObject({ foo: '42', bar: '10' })
+  })
+})
+
+describe('getMatchStates', () => {
+  test('given per-match array, deserializes each match independently', () => {
+    const matches = [
+      { state: { foo: String } },
+      { state: { foo: Number } },
+    ]
+    const stored = [
+      { foo: '42' },
+      { foo: '42' },
+    ]
+
+    const result = getMatchStates(matches, stored)
+
+    expect(result[0]).toMatchObject({ foo: '42' })
+    expect(result[1]).toMatchObject({ foo: 42 })
+  })
+
+  test('given flat state object, distributes to all matches', () => {
+    const matches = [
+      { state: { foo: String } },
+      { state: { foo: Number } },
+    ]
+
+    const result = getMatchStates(matches, { foo: 42 })
+
+    expect(result[0]).toMatchObject({ foo: 42 })
+    expect(result[1]).toMatchObject({ foo: 42 })
+  })
+})
+
+describe('resolveMatchStates', () => {
+  test('merges match states with later matches overriding', () => {
+    const matchStates = [
+      { foo: 'hello', bar: 'world' },
+      { foo: 42 },
+    ]
+
+    const result = resolveMatchStates(matchStates)
+
+    expect(result).toMatchObject({ foo: 42, bar: 'world' })
+  })
+
+  test('given upToIndex, only includes matches up to that index', () => {
+    const matchStates = [
+      { foo: 'hello', bar: 'world' },
+      { foo: 42 },
+    ]
+
+    const result = resolveMatchStates(matchStates, 0)
+
+    expect(result).toMatchObject({ foo: 'hello', bar: 'world' })
+    expect(result).not.toHaveProperty('baz')
   })
 })

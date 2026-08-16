@@ -110,6 +110,8 @@ export function createRouterRoute<TRoute extends ResolvedRoute>(routerKey: Injec
     },
   })
 
+  const matchStates = computed(() => route.matchStates)
+
   const state = computed({
     get() {
       return new Proxy(route.state, {
@@ -131,6 +133,7 @@ export function createRouterRoute<TRoute extends ResolvedRoute>(routerKey: Injec
     matched,
     matches,
     state,
+    matchStates,
     query,
     hash,
     params,

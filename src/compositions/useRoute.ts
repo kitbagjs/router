@@ -4,6 +4,7 @@ import { UseRouteInvalidError } from '@/errors/useRouteInvalidError'
 import { IsRouteOptions, createIsRoute, RouteWithMatch } from '@/guards/routes'
 import { Router, RouterRouteName } from '@/types/router'
 import { RouterRoute } from '@/types/routerRoute'
+import { resolveMatchStates } from '@/services/state'
 
 type UseRouteFunction<TRouter extends Router> = {
   (): TRouter['route'],
@@ -13,6 +14,25 @@ type UseRouteFunction<TRouter extends Router> = {
   <
     const TRouteName extends RouterRouteName<TRouter>
   >(routeName: TRouteName, options?: IsRouteOptions): RouteWithMatch<TRouter['route'], TRouteName>,
+}
+
+function createScopedRoute(route: RouterRoute, routeName: string): RouterRoute {
+  const matches = route.matches
+  const matchIndex = matches.findIndex((m) => m.name === routeName)
+
+  if (matchIndex === -1 || matchIndex === matches.length - 1) {
+    return route
+  }
+
+  return new Proxy(route, {
+    get(target, prop, receiver) {
+      if (prop === 'state') {
+        return resolveMatchStates(target.matchStates, matchIndex)
+      }
+
+      return Reflect.get(target, prop, receiver)
+    },
+  })
 }
 
 export function createUseRoute<TRouter extends Router>(routerKey: InjectionKey<TRouter>): UseRouteFunction<TRouter>
@@ -37,6 +57,10 @@ export function createUseRoute(routerKey: InjectionKey<Router>): (routeName?: st
 
     watch(router.route, checkRouteNameIsValid, { immediate: true, deep: true })
 
-    return router.route
+    if (!routeName) {
+      return router.route
+    }
+
+    return createScopedRoute(router.route, routeName)
   }
 }

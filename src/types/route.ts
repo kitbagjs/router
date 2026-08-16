@@ -63,15 +63,21 @@ type RouteMetaOf<TMatches extends CreatedRouteOptions[]> = CreatedRouteOptions[]
     : {}
 
 /**
- * The state of every matched route, combined. Mirrors `combineState`, which is an intersection.
- * A match without state contributes `{}` rather than `ToState<undefined>`, which widens to
- * `Record<string, Param>` and would swallow the rest of the intersection.
+ * The state of every matched route, combined. Later matches (children) override earlier ones
+ * (parents) when they share a key, mirroring `combineState` which uses spread semantics.
  */
 type RouteStateOf<TMatches extends CreatedRouteOptions[]> = CreatedRouteOptions[] extends TMatches
   ? Record<string, Param>
   : TMatches extends [infer THead, ...infer TRest extends CreatedRouteOptions[]]
-    ? (THead extends { state: infer TState extends Record<string, Param> } ? ToState<TState> : {}) & RouteStateOf<TRest>
+    ? Omit<THead extends { state: infer TState extends Record<string, Param> } ? ToState<TState> : {}, RouteStateKeysOf<TRest>> & RouteStateOf<TRest>
     : {}
+
+/**
+ * Collects all state keys from the given matches, used to determine which parent keys are shadowed.
+ */
+type RouteStateKeysOf<TMatches extends CreatedRouteOptions[]> = TMatches extends [infer THead, ...infer TRest extends CreatedRouteOptions[]]
+  ? (THead extends { state: infer TState extends Record<string, Param> } ? keyof TState : never) | RouteStateKeysOf<TRest>
+  : never
 
 /**
  * The context of every matched route, flattened from greatest ancestor to narrowest matched.

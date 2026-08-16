@@ -7,7 +7,7 @@ import { createPropStore } from '@/services/createPropStore'
 import { createRouterHistory } from '@/services/createRouterHistory'
 import { createRouterHooks, getRouterHooksKey } from '@/services/createRouterHooks'
 import { getInitialUrl } from '@/services/getInitialUrl'
-import { setStateValues } from '@/services/state'
+import { setMatchStates } from '@/services/state'
 import { Routes } from '@/types/route'
 import { Router, RouterOptions } from '@/types/router'
 import { RouterPush, RouterPushOptions } from '@/types/routerPush'
@@ -272,13 +272,13 @@ export function createRouter<
       const { replace, ...options }: RouterPushOptions = { ...maybeOptions }
       const params: any = { ...paramsOrOptions }
       const resolved = resolve(source, params, options)
-      const state = setStateValues({ ...resolved.matched.state }, { ...resolved.state, ...options.state })
+      const state = setMatchStates(resolved.matches, { ...resolved.state, ...options.state })
 
       return set(resolved.href, { replace, state })
     }
 
     const { replace, ...options }: RouterPushOptions = { ...paramsOrOptions }
-    const state = setStateValues({ ...source.matched.state }, { ...source.state, ...options.state })
+    const state = setMatchStates(source.matches, { ...source.state, ...options.state })
 
     const url = updateUrl(source.href, {
       query: options.query,

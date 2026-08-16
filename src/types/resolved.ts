@@ -40,8 +40,14 @@ export type ResolvedRoute<TRoute extends Route = Route> = Readonly<{
   params: UrlParamsReading<TRoute>,
   /**
    * Type for additional data intended to be stored in history state.
+   * Merged from all matches with child values overriding parent values.
    */
   state: ExtractRouteStateParamsAsOptional<TRoute['state']>,
+  /**
+   * State values stored per match, indexed by match depth.
+   * Used to resolve state scoped to a specific match level.
+   */
+  matchStates: Record<string, unknown>[],
   /**
    * String value of the resolved URL.
    */

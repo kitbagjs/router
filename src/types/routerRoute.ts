@@ -39,6 +39,7 @@ export type RouterRoute<TRoute extends ResolvedRoute = ResolvedRoute> = {
 
   params: TRoute['params'],
   state: TRoute['state'],
+  matchStates: TRoute['matchStates'],
 
   get query(): URLSearchParams,
   set query(value: QuerySource),

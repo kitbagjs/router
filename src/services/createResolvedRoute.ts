@@ -1,6 +1,6 @@
 import { parseUrl, updateUrl } from '@/services/urlParser'
 import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
-import { getStateValues } from '@/services/state'
+import { getMatchStates, resolveMatchStates } from '@/services/state'
 import { RouterResolveOptions } from '@/types/routerResolve'
 import { ResolvedRoute } from '@/types/resolved'
 import { isRoute, Route } from '@/types/route'
@@ -19,11 +19,14 @@ export function createResolvedRoute(route: Route, params: Record<string, unknown
     throw new Error('createResolvedRoute called with a route that has no matches')
   }
 
+  const matchStates = getMatchStates(route.matches, options.state)
+
   const resolvedRoute = {
     ...route,
     matched,
     query: createResolvedRouteQuery(query),
-    state: getStateValues(route.state, options.state),
+    matchStates,
+    state: resolveMatchStates(matchStates),
     hash,
     params,
     href,
