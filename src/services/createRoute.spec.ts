@@ -75,6 +75,25 @@ describe('combine', () => {
     })
   })
 
+  test('given parent and child with same state key, child overrides parent', () => {
+    const parent = createRoute({
+      state: {
+        foo: String,
+      },
+    })
+
+    const child = createRoute({
+      parent: parent,
+      state: {
+        foo: Number,
+      },
+    })
+
+    expect(child.state).toMatchObject({
+      foo: Number,
+    })
+  })
+
   test('given parent and child without state, state matches parent', () => {
     const parent = createRoute({
       state: {

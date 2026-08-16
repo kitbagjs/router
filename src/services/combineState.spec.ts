@@ -1,5 +1,4 @@
 import { expect, test } from 'vitest'
-import { DuplicateParamsError } from '@/errors/duplicateParamsError'
 import { combineState } from '@/services/combineState'
 
 test('given 2 states, returns new State joined together', () => {
@@ -14,11 +13,13 @@ test('given 2 states, returns new State joined together', () => {
   })
 })
 
-test('given 2 states with params that include duplicates, throws DuplicateParamsError', () => {
-  const aState = { foz: String }
-  const bState = { foz: Number }
+test('given 2 states with duplicate keys, child overrides parent', () => {
+  const parentState = { foz: String }
+  const childState = { foz: Number }
 
-  const action: () => void = () => combineState(aState, bState)
+  const response = combineState(parentState, childState)
 
-  expect(action).toThrow(DuplicateParamsError)
+  expect(response).toMatchObject({
+    foz: Number,
+  })
 })

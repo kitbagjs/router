@@ -772,6 +772,52 @@ describe('router.push', () => {
 
     expect(router.route.state).toMatchObject({ zoo: 123 })
   })
+
+  test('given parent and child with shadowed state key, child value wins in merged state', async () => {
+    const parent = createRoute({
+      name: 'shadowParent',
+      path: '/shadow-parent',
+      state: { foo: String },
+    })
+
+    const child = createRoute({
+      parent,
+      name: 'shadowParent.shadowChild',
+      component,
+      path: '/shadow-child',
+      state: { foo: Number },
+    })
+
+    const router = createRouter([child], { initialUrl: '/' })
+
+    await router.push('shadowParent.shadowChild', {}, { state: { foo: 42 } })
+
+    expect(router.route.state).toMatchObject({ foo: 42 })
+  })
+
+  test('given parent and child with shadowed state, matchStates stores values per match', async () => {
+    const parent = createRoute({
+      name: 'shadowParent',
+      path: '/shadow-parent',
+      state: { foo: String },
+    })
+
+    const child = createRoute({
+      parent,
+      name: 'shadowParent.shadowChild',
+      component,
+      path: '/shadow-child',
+      state: { foo: Number },
+    })
+
+    const router = createRouter([child], { initialUrl: '/' })
+
+    await router.push('shadowParent.shadowChild', {}, { state: { foo: 42 } })
+
+    expect(router.route.matchStates).toHaveLength(2)
+    expect(router.route.matchStates[0]).toMatchObject({ foo: '42' })
+    expect(router.route.matchStates[1]).toMatchObject({ foo: 42 })
+  })
 })
 
 describe('router.onError', () => {
