@@ -97,10 +97,10 @@ const protectedRoute = createRoute({
 })
   .addView(Dashboard)
 
-// Route-level hook
-protectedRoute.onBeforeRouteEnter((to, { reject, replace }) => {
+// Route-level hook — use throw to stop execution
+protectedRoute.onBeforeRouteEnter((_to, { reject }) => {
   if (!isAuthenticated()) {
-    reject('NotFound')
+    throw reject('NotFound')
   }
 })
 

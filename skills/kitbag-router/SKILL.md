@@ -46,6 +46,10 @@ const profile = createRoute({
   path: '/profile',
 })
   .addView(ProfileView)
+
+// addView also accepts render functions
+const inline = createRoute({ name: 'inline', path: '/inline' })
+  .addView({ render: () => h('div', 'Inline content') })
 ```
 
 Collect routes in an array with `as const`:
@@ -89,11 +93,70 @@ import { withParams } from '@kitbag/router'
 // Built-in types: String, Number, Boolean, Date, RegExp, JSON
 path: withParams('/user/[userId]', { userId: Number })
 
-// Query params work the same way
+// Query params — with withParams for typed params
 query: withParams('tab=[activeTab]', { activeTab: String })
+
+// Query params — shorthand string for untyped params (defaults to String)
+query: 'search=[?search]'
 ```
 
-Custom param types with `createParam` or any Zod/Valibot schema.
+### unionOf and withDefault
+
+Use `unionOf` to restrict a param to specific string values, and `withDefault` to set a default:
+
+```ts
+import { withParams, unionOf, withDefault } from '@kitbag/router'
+
+const keys = createRoute({
+  name: 'keys',
+  path: '/keys',
+  query: withParams('sort=[?sort]', {
+    sort: withDefault(unionOf(['asc', 'desc']), 'asc'),
+  }),
+})
+```
+
+### Custom param types with createParam
+
+```ts
+import { createParam } from '@kitbag/router'
+
+const sortParam = createParam((value, { invalid }) => {
+  if (['asc', 'desc'].includes(value)) return value
+  throw invalid('invalid sort direction')
+}, 'asc') // second arg is default value
+```
+
+Custom params also work with Zod/Valibot schemas.
+
+## Context
+
+Routes can declare `context` — an array of other routes or rejections that become accessible only when that route is active:
+
+```ts
+const secretPage = createRoute({
+  name: 'secret',
+  path: '/secret',
+}).addView(SecretView)
+
+const main = createRoute({
+  name: 'main',
+  path: '/main',
+  context: [secretPage],
+}).addView(MainView)
+
+// Rejections can also be scoped via context
+const notAuthorized = createRejection({
+  type: 'NotAuthorized',
+  component: LoginView,
+})
+
+const protectedRoute = createRoute({
+  name: 'protected',
+  path: '/protected',
+  context: [notAuthorized],
+})
+```
 
 ## Navigation
 
@@ -117,6 +180,22 @@ const resolved = router.resolve('post', { slug: 'hello-world' })
   <router-view />
   <!-- Named views -->
   <router-view name="sidebar" />
+</template>
+```
+
+#### Scoped slot for transitions
+
+Use the `#default` slot with `{ component }` to wrap route views in `<transition>`:
+
+```vue
+<template>
+  <router-view>
+    <template #default="{ component }">
+      <transition name="fade" mode="out-in">
+        <component :is="component" />
+      </transition>
+    </template>
+  </router-view>
 </template>
 ```
 
@@ -151,6 +230,16 @@ const postRoute = useRoute('post')
 postRoute.params.slug // string
 ```
 
+Params are reactive and support `v-model` for two-way binding (useful for query params):
+
+```vue
+<input v-model="route.params.search" />
+<select v-model="route.params.sort">
+  <option value="asc">Ascending</option>
+  <option value="desc">Descending</option>
+</select>
+```
+
 ### useRouter
 
 ```ts
@@ -176,14 +265,26 @@ import { useQueryValue } from '@kitbag/router'
 const tab = useQueryValue('tab') // Ref<string | undefined>
 ```
 
+## Type Utilities
+
+### RouterRouteName
+
+Extract the union of all route names from a router instance:
+
+```ts
+import { RouterRouteName } from '@kitbag/router'
+
+export type MyRouteNames = RouterRouteName<typeof router>
+```
+
 ## Hooks
 
-Register at route level or in components:
+Register at route level or in components. Before-hooks receive a second argument with control methods. After-hooks also receive a second argument with `push` for navigation.
 
 ```ts
 // Route-level
 myRoute.onBeforeRouteEnter((to, { reject, replace, abort }) => { ... })
-myRoute.onAfterRouteEnter((to) => { ... })
+myRoute.onAfterRouteEnter((to, { push }) => { ... })
 myRoute.onBeforeRouteLeave((to, { abort }) => { ... })
 myRoute.onBeforeRouteUpdate((to, { abort }) => { ... })
 
@@ -208,9 +309,9 @@ const router = createRouter(routes, {
   rejections: [AuthRequired],
 })
 
-// Trigger from a hook
-myRoute.onBeforeRouteEnter((to, { reject }) => {
-  reject('AuthRequired')
+// Trigger from a hook — use throw to stop execution
+myRoute.onBeforeRouteEnter((_to, { reject }) => {
+  throw reject('AuthRequired')
 })
 ```
 
@@ -226,8 +327,8 @@ import { createRouterPlugin } from '@kitbag/router'
 const authPlugin = createRouterPlugin({
   routes: [loginRoute],
   rejections: [AuthRequired],
-  onBeforeRouteEnter: [(to, { reject }) => {
-    if (!isAuthenticated()) reject('AuthRequired')
+  onBeforeRouteEnter: [(_to, { reject }) => {
+    if (!isAuthenticated()) throw reject('AuthRequired')
   }],
 })
 
@@ -244,4 +345,5 @@ const router = createRouter(routes, {
 - **Don't use `router.beforeEach`** — use `onBeforeRouteEnter` on routes or pass hooks to `createRouter`.
 - **Don't forget `as const`** on the routes array.
 - **Don't forget declaration merging** — register your router type or composables won't be typed.
-- **`useRoute().params` is reactive directly** — don't wrap in `.value`, it's not a ref.
+- **`useRoute().params` is reactive directly** — don't wrap in `.value`, it's not a ref. Supports `v-model`.
+- **Use `throw reject(...)` in hooks** — not just `reject(...)`. The `throw` is needed to stop hook execution.
