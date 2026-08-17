@@ -16,7 +16,14 @@ export type {
   AddViewPropsGetter,
   AddViewPropsCallbackContext
 } from './types/addView'
+export type {
+  RouteAddLoader,
+  AddLoaderOptions,
+  LoaderGetter
+} from './types/addLoader'
+export type { RouteCallbackContext } from './types/routeCallbackContext'
 export type { RouteViews } from './types/routeViews'
+export type { RouteLoader, RouteLoaders } from './types/routeLoaders'
 export type {
   RejectionHooks,
   HookRemove,
@@ -74,8 +81,10 @@ export * from './types/useLink'
 
 // Errors
 export { DuplicateParamsError } from './errors/duplicateParamsError'
+export { LoaderDataAccessError } from './errors/loaderDataAccessError'
+export { LoaderNameConflict } from './errors/loaderNameConflict'
 export { MetaPropertyConflict } from './errors/metaPropertyConflict'
-export { ParentPropsAbandonedError } from './errors/parentPropsAbandonedError'
+export { NavigationAbandonedError } from './errors/navigationAbandonedError'
 export { RouterNotInstalledError } from './errors/routerNotInstalledError'
 export { UseRouteInvalidError } from './errors/useRouteInvalidError'
 

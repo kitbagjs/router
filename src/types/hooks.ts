@@ -318,7 +318,7 @@ export type ErrorHookContext<
 > = {
   to: RouterResolvedRouteUnion<TRoutes>,
   from: RouterResolvedRouteUnion<TRoutes> | null,
-  source: 'props' | 'hook' | 'component',
+  source: 'props' | 'loader' | 'hook' | 'component',
   reject: RouterReject<TRejections>,
   push: RouterPush<TRoutes>,
   replace: RouterReplace<TRoutes>,
@@ -340,7 +340,7 @@ export type AddErrorHook<
 export type ErrorHookRunnerContext<TRoutes extends Routes = Routes> = {
   to: RouterResolvedRouteUnion<TRoutes>,
   from: RouterResolvedRouteUnion<TRoutes> | null,
-  source: 'props' | 'hook',
+  source: 'props' | 'loader' | 'hook',
 }
 
 export type ErrorHookRunner = (

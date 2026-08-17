@@ -3,7 +3,7 @@
 import { AsyncComponentLoader, Component, FunctionalComponent, InjectionKey, defineComponent, getCurrentInstance, h, ref, watch } from 'vue'
 import { isPromise } from '@/utilities/promises'
 import { PropsResult } from '@/utilities/props'
-import { createUsePropStore } from '@/compositions/usePropStore'
+import { createUseRouteValueStore } from '@/compositions/useRouteValueStore'
 import { Router } from '@/types/router'
 import { createUseRoute } from '@/compositions/useRoute'
 
@@ -24,7 +24,7 @@ type CreateComponentWrapperConfig = {
 }
 
 export function createComponentPropsWrapper(routerKey: InjectionKey<Router>, { id, name, component }: CreateComponentWrapperConfig): Component {
-  const usePropStore = createUsePropStore(routerKey)
+  const useRouteValueStore = createUseRouteValueStore(routerKey)
   const useRoute = createUseRoute(routerKey)
 
   return defineComponent({
@@ -32,7 +32,7 @@ export function createComponentPropsWrapper(routerKey: InjectionKey<Router>, { i
     expose: [],
     setup() {
       const instance = getCurrentInstance()
-      const store = usePropStore()
+      const store = useRouteValueStore()
       const route = useRoute()
 
       return () => {

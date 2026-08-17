@@ -39,7 +39,7 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
   const redirects = createRouteRedirects({
     getRoute: () => route,
   })
-  const rawRoute = markRaw({ id, meta: {}, state: {}, ...options, views: {} })
+  const rawRoute = markRaw({ id, meta: {}, state: {}, ...options, views: {}, loaders: {} })
 
   const url = createUrl({
     host,

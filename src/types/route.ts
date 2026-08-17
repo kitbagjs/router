@@ -11,6 +11,7 @@ import { GetRouteTitle } from '@/types/routeTitle'
 import { Hooks } from '@/models/hooks'
 import { RouteRedirect } from './redirects'
 import { RouteViews } from '@/types/routeViews'
+import { LoadersDataReturnType, RouteLoaders } from '@/types/routeLoaders'
 
 export const IS_ROUTE_SYMBOL = Symbol('IS_ROUTE_SYMBOL')
 
@@ -32,12 +33,14 @@ export type RouteInternal = {
 export type Routes = readonly Route[]
 
 /**
- * The Route properties originally provided to `createRoute`, plus the views that route renders. The
- * deprecated `component`/`components` options are folded into `views` (see {@link RouteViews}).
+ * The Route properties originally provided to `createRoute`, plus the views that route renders and the
+ * loaders it runs. The deprecated `component`/`components` options are folded into `views` (see
+ * {@link RouteViews}).
  */
 export type CreatedRouteOptions = Omit<CreateRouteOptions, 'component' | 'components'> & {
   id: string,
   views: RouteViews,
+  loaders: RouteLoaders,
 }
 
 // `matches` is a complete per-depth snapshot of the options each route was created with, so the
@@ -72,6 +75,24 @@ type RouteStateOf<TMatches extends CreatedRouteOptions[]> = CreatedRouteOptions[
   : TMatches extends [infer THead, ...infer TRest extends CreatedRouteOptions[]]
     ? (THead extends { state: infer TState extends Record<string, Param> } ? ToState<TState> : {}) & RouteStateOf<TRest>
     : {}
+
+/**
+ * The loaders of every matched route, combined. A plain intersection: a loader name is unique across a
+ * route and its ancestors, which `addLoader` enforces.
+ */
+type RouteLoadersOf<TMatches extends CreatedRouteOptions[]> = CreatedRouteOptions[] extends TMatches
+  ? RouteLoaders
+  : TMatches extends [infer THead, ...infer TRest extends CreatedRouteOptions[]]
+    ? (THead extends { loaders: infer TLoaders extends RouteLoaders } ? TLoaders : {}) & RouteLoadersOf<TRest>
+    : {}
+
+/**
+ * The data every matched route's loaders resolve to, which is what a resolved route exposes as `data`.
+ * Undefined when nothing in the route tree declares a loader.
+ */
+export type RouteDataOf<TMatches extends CreatedRouteOptions[]> = CreatedRouteOptions[] extends TMatches
+  ? Promise<unknown> | Record<string, Promise<unknown>> | undefined
+  : LoadersDataReturnType<RouteLoadersOf<TMatches>>
 
 /**
  * The context of every matched route, flattened from greatest ancestor to narrowest matched.
