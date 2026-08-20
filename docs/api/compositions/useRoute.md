@@ -14,9 +14,13 @@ if provided, throwing an error if the validation fails at any point during the c
 
 ## Template
 
+**TRouteName**
+
 A string type that should match route name of the registered router, ensuring the route name exists.
 
 ## Param
+
+**routeName**
 
 Optional. The name of the route to validate against the current active routes.
 
