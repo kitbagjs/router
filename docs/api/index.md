@@ -11,6 +11,8 @@
 ## Errors
 
 - [DuplicateParamsError](errors/DuplicateParamsError.md)
+- [LoaderDataAccessError](errors/LoaderDataAccessError.md)
+- [LoaderNameConflict](errors/LoaderNameConflict.md)
 - [MetaPropertyConflict](errors/MetaPropertyConflict.md)
 - [RouterNotInstalledError](errors/RouterNotInstalledError.md)
 - [UseRouteInvalidError](errors/UseRouteInvalidError.md)
@@ -23,6 +25,10 @@
 
 - [isRoute](type-guards/isRoute.md)
 - [isUrlString](type-guards/isUrlString.md)
+
+## Classes
+
+- [NavigationAbandonedError](classes/NavigationAbandonedError.md)
 
 ## Components
 
@@ -63,7 +69,11 @@
 - [AddBeforeLeaveHook](types/AddBeforeLeaveHook.md)
 - [AddBeforeUpdateHook](types/AddBeforeUpdateHook.md)
 - [AddErrorHook](types/AddErrorHook.md)
+- [AddLoaderOptions](types/AddLoaderOptions.md)
 - [AddRejectionHook](types/AddRejectionHook.md)
+- [AddViewOptions](types/AddViewOptions.md)
+- [AddViewPropsCallbackContext](types/AddViewPropsCallbackContext.md)
+- [AddViewPropsGetter](types/AddViewPropsGetter.md)
 - [AfterEnterHook](types/AfterEnterHook.md)
 - [AfterEnterHookContext](types/AfterEnterHookContext.md)
 - [AfterHookLifecycle](types/AfterHookLifecycle.md)
@@ -88,6 +98,7 @@
 - [HookLifecycle](types/HookLifecycle.md)
 - [HookRemove](types/HookRemove.md)
 - [LiteralParam](types/LiteralParam.md)
+- [LoaderGetter](types/LoaderGetter.md)
 - [Param](types/Param.md)
 - [ParamExtras](types/ParamExtras.md)
 - [ParamGetSet](types/ParamGetSet.md)
@@ -112,6 +123,11 @@
 - [ResolvedRoute](types/ResolvedRoute.md)
 - [ResolvedRouteUnion](types/ResolvedRouteUnion.md)
 - [Route](types/Route.md)
+- [RouteAddLoader](types/RouteAddLoader.md)
+- [RouteAddView](types/RouteAddView.md)
+- [RouteCallbackContext](types/RouteCallbackContext.md)
+- [RouteLoader](types/RouteLoader.md)
+- [RouteLoaders](types/RouteLoaders.md)
 - [RouteMeta](types/RouteMeta.md)
 - [Router](types/Router.md)
 - [RouterAssets](types/RouterAssets.md)
@@ -133,12 +149,14 @@
 - [RouterRoutes](types/RouterRoutes.md)
 - [RouterRouteUnion](types/RouterRouteUnion.md)
 - [RouterViewPropsGetter](types/RouterViewPropsGetter.md)
+- [RouteViews](types/RouteViews.md)
 - [ToCallback](types/ToCallback.md)
 - [ToRoute](types/ToRoute.md)
 - [Url](types/Url.md)
 - [UrlString](types/UrlString.md)
 - [UseLink](types/UseLink.md)
 - [UseLinkOptions](types/UseLinkOptions.md)
+- [WithData](types/WithData.md)
 - [WithHost](types/WithHost.md)
 - [WithoutHost](types/WithoutHost.md)
 - [WithoutParent](types/WithoutParent.md)

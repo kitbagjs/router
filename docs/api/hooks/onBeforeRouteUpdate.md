@@ -9,6 +9,8 @@ This is particularly useful for handling changes in route parameters or query wh
 
 ## Param
 
+**BeforeRouteHook**
+
 The hook callback function
 
 ## Returns

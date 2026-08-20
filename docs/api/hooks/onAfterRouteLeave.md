@@ -9,6 +9,8 @@ This can be used for cleanup actions after the component is no longer active, en
 
 ## Param
 
+**AfterRouteHook**
+
 The hook callback function
 
 ## Returns

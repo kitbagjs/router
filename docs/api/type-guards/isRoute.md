@@ -8,6 +8,8 @@ A guard to verify if a route or unknown value matches a given route name.
 
 ## Param
 
+**routeName**
+
 The name of the route to check against the current route.
 
 ## Returns
