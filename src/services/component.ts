@@ -1,11 +1,13 @@
 /* eslint-disable vue/require-prop-types */
 /* eslint-disable vue/one-component-per-file */
-import { AsyncComponentLoader, Component, FunctionalComponent, InjectionKey, defineComponent, getCurrentInstance, h, ref, watch } from 'vue'
+import { AsyncComponentLoader, Component, FunctionalComponent, InjectionKey, defineComponent, h, ref, watch } from 'vue'
 import { isPromise } from '@/utilities/promises'
 import { PropsResult } from '@/utilities/props'
 import { createUseRouteValueStore } from '@/compositions/useRouteValueStore'
 import { Router } from '@/types/router'
 import { createUseRoute } from '@/compositions/useRoute'
+import { useIsServerRendering } from '@/compositions/useIsServerRendering'
+import { useHasSuspenseBoundary } from '@/compositions/useHasSuspenseBoundary'
 
 type Constructor = new (...args: any) => any
 
@@ -31,16 +33,16 @@ export function createComponentPropsWrapper(routerKey: InjectionKey<Router>, { i
     name: 'PropsWrapper',
     expose: [],
     setup() {
-      const instance = getCurrentInstance()
       const store = useRouteValueStore()
       const route = useRoute()
+      const isServerRendering = useIsServerRendering()
+      const hasSuspenseBoundary = useHasSuspenseBoundary()
 
       return () => {
         const result = store.getProps(id, name, route)
 
         if (isPromise(result)) {
-          // @ts-expect-error there isn't a way to check if suspense is used in the component without accessing a private property
-          if (instance?.suspense) {
+          if (isServerRendering || hasSuspenseBoundary) {
             return h(SuspenseAsyncComponentPropsWrapper, { component, props: result })
           }
 
