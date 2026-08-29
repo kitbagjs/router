@@ -3,7 +3,7 @@ import { RouterPlugin } from '@/types/routerPlugin'
 import { DuplicateNamesError } from '@/errors/duplicateNamesError'
 import { isNamedRoute } from '@/utilities/isNamedRoute'
 import { insertBaseRoute } from '@/services/insertBaseRoute'
-import { BUILT_IN_REJECTION_TYPES, BuiltInRejectionType, isRejection, Rejection, RejectionInternal, Rejections } from '@/types/rejection'
+import { BUILT_IN_REJECTIONS, BuiltInRejectionType, isRejection, Rejection, RejectionInternal, Rejections } from '@/types/rejection'
 import { RouterOptions } from '@/types/router'
 import { createRejection } from '@/services/createRejection'
 
@@ -24,7 +24,7 @@ export function getRoutesForRouter(routes: Routes | Routes[], plugins: RouterPlu
   ]
 
   const allRejections = [
-    ...BUILT_IN_REJECTION_TYPES.map((type) => createRejection({ type })),
+    ...Object.entries(BUILT_IN_REJECTIONS).map(([type, status]) => createRejection({ type, status })),
     ...options.rejections ?? [],
     ...plugins.map((plugin) => plugin.rejections),
   ]
