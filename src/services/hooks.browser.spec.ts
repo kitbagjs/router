@@ -246,6 +246,8 @@ test('rejection hooks are called correctly', async () => {
 
   const rejection = createRejection({
     type: 'CustomRejection',
+
+    status: 404,
   })
 
   rejection.onRejection((type, { to, from }) => onRejection(type, { to, from }))

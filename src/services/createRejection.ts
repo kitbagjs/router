@@ -1,17 +1,14 @@
 import { createRejectionHooks } from '@/services/createRejectionHooks'
 import { genericRejection } from '@/components/rejection'
 import { RejectionHooks } from '@/types/hooks'
-import { IS_REJECTION_SYMBOL, Rejection, RejectionInternal } from '@/types/rejection'
-import { Component, markRaw } from 'vue'
+import { IS_REJECTION_SYMBOL, Rejection, RejectionInternal, RejectionOptions } from '@/types/rejection'
+import { markRaw } from 'vue'
 import { createRoute } from '@/services/createRoute'
 import { RouteSetTitle } from '@/types/routeTitle'
 
-export function createRejection<TType extends string>(options: {
-  type: TType,
-  component?: Component,
-}): Rejection<TType> & RejectionHooks<TType> & RouteSetTitle
+export function createRejection<TType extends string>(options: RejectionOptions<TType>): Rejection<TType> & RejectionHooks<TType> & RouteSetTitle
 
-export function createRejection({ type, component }: { type: string, component?: Component }): Rejection {
+export function createRejection({ type, component, status }: RejectionOptions): Rejection {
   const { store, ...hooks } = createRejectionHooks()
 
   const route = createRoute({
@@ -29,6 +26,7 @@ export function createRejection({ type, component }: { type: string, component?:
 
   const rejection = {
     type,
+    status,
     setTitle,
     ...hooks,
     ...internal,

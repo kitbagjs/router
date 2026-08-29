@@ -137,6 +137,8 @@ describe('rejections', () => {
   test('custom rejections are valid', () => {
     const myCustomRejection = createRejection({
       type: 'MyCustomRejection',
+
+      status: 404,
       component,
     })
 
@@ -153,6 +155,8 @@ describe('rejections', () => {
   test('custom rejections from plugins are valid', () => {
     const myPluginRejection = createRejection({
       type: 'MyPluginRejection',
+
+      status: 404,
       component,
     })
     const plugin = createRouterPlugin({
@@ -178,6 +182,8 @@ describe('options.rejections in hooks', () => {
 
     const customRejection = createRejection({
       type: 'CustomRejection',
+
+      status: 404,
       component: { template: '<div>This is a custom rejection</div>' },
     })
 
@@ -205,6 +211,8 @@ describe('options.rejections in hooks', () => {
 
     const customRejection = createRejection({
       type: 'CustomRejection',
+
+      status: 404,
       component: { template: '<div>This is a custom rejection</div>' },
     })
 
