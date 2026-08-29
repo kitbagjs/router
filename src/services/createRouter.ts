@@ -2,6 +2,10 @@ import { createPath } from '@/services/history'
 import { App, ref } from 'vue'
 import { createCurrentRoute } from '@/services/createCurrentRoute'
 import { createIsExternal } from '@/services/createIsExternal'
+import { createActivityTracker } from '@/services/createActivityTracker'
+import { getResponse } from '@/services/getResponse'
+import { RenderInBrowserError } from '@/errors/renderInBrowserError'
+import { isBrowser } from '@/utilities/isBrowser'
 import { parseUrl, updateUrl } from '@/services/urlParser'
 import { createRouteValueStore, RouteValueResponse } from '@/services/createRouteValueStore'
 import { DataKind } from '@/services/createNavigationStores'
@@ -10,7 +14,7 @@ import { createRouterHooks, getRouterHooksKey } from '@/services/createRouterHoo
 import { getInitialUrl } from '@/services/getInitialUrl'
 import { setStateValues } from '@/services/state'
 import { Routes } from '@/types/route'
-import { Router, RouterOptions } from '@/types/router'
+import { Router, RouterOptions, RouterResponse } from '@/types/router'
 import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { RouterReplace, RouterReplaceOptions } from '@/types/routerReplace'
 import { RoutesName } from '@/types/routesMap'
@@ -90,6 +94,7 @@ export function createRouter<
   const isGlobalRouter = options?.isGlobalRouter ?? true
   const routerKey = isGlobalRouter ? routerInjectionKey : Symbol()
   const shouldRemoveTrailingSlashes = options?.removeTrailingSlashes ?? true
+  const activity = createActivityTracker()
   const { routes, getRouteByName, getRejectionByType } = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options)
   const notFoundRejection = getRejectionByType('NotFound')
   const valueStore = createRouteValueStore()
@@ -119,7 +124,7 @@ export function createRouter<
     return getMatchForUrl(filteredRoutes, url, { ...resolveOptions, ...parseOptions })
   }
 
-  async function set(url: string, options: RouterUpdateOptions = {}): Promise<void> {
+  const set = activity.wrap(async (url: string, options: RouterUpdateOptions = {}): Promise<void> => {
     if (pathHasTrailingSlash(url) && shouldRemoveTrailingSlashes) {
       const cleanedUrl = removeTrailingSlashesFromPath(url)
 
@@ -199,13 +204,17 @@ export function createRouter<
     setDocumentTitle(currentRejectionRoute.value ?? to)
 
     history.startListening()
-  }
+  })
 
   function setRouteValuesAndUpdateRoute(to: ResolvedRoute, from: ResolvedRoute | null): void {
     const { props, loaders } = valueStore.setRouteValues(to)
 
-    handleRouteValueResponse(props, 'props', to, from)
-    handleRouteValueResponse(loaders, 'loader', to, from)
+    // The derived chains are tracked rather than the responses themselves: a push or rejection the
+    // response causes is new work that only exists once the response has been handled.
+    activity.add(
+      handleRouteValueResponse(props, 'props', to, from),
+      handleRouteValueResponse(loaders, 'loader', to, from),
+    )
 
     updateRoute(to)
   }
@@ -214,8 +223,8 @@ export function createRouter<
    * Props and loaders are handled the same way, and neither is awaited here: a push or a rejection from
    * either is acted on whenever it arrives, without holding up the navigation that started it.
    */
-  function handleRouteValueResponse(response: Promise<RouteValueResponse>, source: DataKind, to: ResolvedRoute, from: ResolvedRoute | null): void {
-    response
+  function handleRouteValueResponse(response: Promise<RouteValueResponse>, source: DataKind, to: ResolvedRoute, from: ResolvedRoute | null): Promise<void> {
+    return response
       .then((response) => {
         switch (response.status) {
           case 'SUCCESS':
@@ -384,6 +393,25 @@ export function createRouter<
     started.value = true
   }
 
+  /**
+   * Resolves once there is nothing left to render. `idle` follows cascades, so a loader that pushes is
+   * waited on through to the navigation it caused rather than resolving on the one it abandoned.
+   */
+  async function render(): Promise<RouterResponse> {
+    if (isBrowser()) {
+      throw new RenderInBrowserError()
+    }
+
+    await activity.idle()
+
+    return getResponse({
+      initialUrl,
+      route: currentRoute,
+      rejection: currentRejection.value,
+      removeTrailingSlashes: shouldRemoveTrailingSlashes,
+    })
+  }
+
   function stop(): void {
     history.stopListening()
   }
@@ -439,6 +467,7 @@ export function createRouter<
     prefetch: options?.prefetch,
     start,
     started,
+    render,
     stop,
     key: routerKey,
     hasDevtools: false,

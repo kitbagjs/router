@@ -63,6 +63,24 @@ export type RouterOptions = {
   isGlobalRouter?: boolean,
 }
 
+/**
+ * What a server should respond with for what the router has rendered.
+ */
+export type RouterResponse = {
+  /**
+   * Suggested HTTP status.
+   */
+  status: number,
+  /**
+   * Value for the `Location` header. Present only when `status` is a redirect.
+   */
+  location?: string,
+  /**
+   * The type of rejection in effect, or null when there is none.
+   */
+  rejection: string | null,
+}
+
 export type Router<
   TRoutes extends Routes = any,
   TOptions extends RouterOptions = any,
@@ -162,6 +180,14 @@ export type Router<
    * Returns true if the router has been started.
    */
   started: Ref<boolean>,
+  /**
+   * Resolves once the router has nothing left to render: every prop and loader has settled, following
+   * any navigation one of them caused, so this waits for the next *full* render rather than for one
+   * navigation. Resolves with what a server should respond with.
+   *
+   * Awaiting `push` only waits for the route to commit; this also waits for its data.
+   */
+  render: () => Promise<RouterResponse>,
   /**
    * Stops the router and teardown any listeners.
    */
