@@ -1,13 +1,16 @@
-import { Ref } from 'vue'
+import { Component, Ref } from 'vue'
 import { Route } from '@/types/route'
 import { Router } from '@/types/router'
 import { RouterReject } from '@/types/routerReject'
 import { Hooks } from '@/models/hooks'
 
-export const NOT_FOUND_REJECTION_TYPE = 'NotFound'
+export const BUILT_IN_REJECTIONS = {
+  NotFound: 404,
+} as const
 
-export const BUILT_IN_REJECTION_TYPES = [NOT_FOUND_REJECTION_TYPE] as const
-export type BuiltInRejectionType = (typeof BUILT_IN_REJECTION_TYPES)[number]
+export type BuiltInRejectionType = keyof typeof BUILT_IN_REJECTIONS
+
+export const NOT_FOUND_REJECTION_TYPE = 'NotFound' satisfies BuiltInRejectionType
 
 export type RouterRejection<T extends Rejection = Rejection> = Ref<T | null>
 export type RouterRejections<TRouter extends Router> = TRouter['reject'] extends RouterReject<infer TRejections extends Rejection[]> ? TRejections[number] : never
@@ -29,12 +32,24 @@ export type RejectionInternal = {
  */
 export type Rejections = readonly Rejection[]
 
-export type Rejection<TType extends string = string> = {
+export type RejectionOptions<TType extends string = string> = {
   /**
    * The type of rejection.
    */
   type: TType,
+  /**
+   * The component rendered while this rejection is in effect.
+   */
+  component?: Component,
+  /**
+   * The http status a server should respond with while this rejection is in effect. Required because no
+   * default is right for every rejection: 404 for something missing, 401 or 403 for something gated, 503
+   * for something temporary.
+   */
+  status: number,
 }
+
+export type Rejection<TType extends string = string> = Pick<RejectionOptions<TType>, 'type' | 'status'>
 
 export type RejectionType<TRejections extends Rejections | undefined> = unknown extends TRejections
   ? never
