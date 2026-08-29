@@ -36,6 +36,25 @@ export function parseUrl(value: string): UrlParts {
   return isRelative ? createRelativeUrl(value) : createAbsoluteUrl(value)
 }
 
+/**
+ * Ignores host, and sorts query params because the router reorders them when it separates declared
+ * params from the rest.
+ */
+export function isSameUrl(left: string, right: string): boolean {
+  const a = parseUrl(left)
+  const b = parseUrl(right)
+
+  return a.path === b.path && a.hash === b.hash && sortedQuery(a.query) === sortedQuery(b.query)
+}
+
+function sortedQuery(query: URLSearchParams): string {
+  const sorted = new URLSearchParams(query)
+
+  sorted.sort()
+
+  return sorted.toString()
+}
+
 export function updateUrl(url: string, updates: UrlPartsInput): UrlString
 export function updateUrl(url: Partial<UrlParts>, updates: UrlPartsInput): UrlParts
 export function updateUrl(url: string | Partial<UrlParts>, updates: UrlPartsInput): string | UrlParts {
