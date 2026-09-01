@@ -80,9 +80,9 @@ app.use(router)
 
 Params use **square brackets**, not colons:
 
-- `[id]` — required param (matches one or more characters including `/`)
-- `[?id]` — optional param
-- `[id*]` — greedy (explicitly captures multiple segments)
+- `[id]` — required param, matches a single path segment (stops at `/`)
+- `[?id]` — optional param, type is `string | undefined`
+- `[id*]` — greedy, matches across segments including `/`
 - `[?id*]` — optional greedy
 
 Type params with `withParams`:
@@ -262,7 +262,18 @@ link.push() // navigate
 
 ```ts
 import { useQueryValue } from '@kitbag/router'
-const tab = useQueryValue('tab') // Ref<string | undefined>
+
+// Returns { value, values, remove }, not a bare ref
+const { value: tab } = useQueryValue('tab')
+//              ^? Ref<string | null>
+
+// With a param type and accessing multiple values
+const { values: tabs } = useQueryValue('tab', Number)
+//              ^? Ref<number[]>
+
+// remove() deletes the query key from the URL
+const { value, remove } = useQueryValue('temp')
+remove() // removes ?temp=... from URL
 ```
 
 ## Type Utilities
@@ -309,9 +320,9 @@ const router = createRouter(routes, {
   rejections: [AuthRequired],
 })
 
-// Trigger from a hook — use throw to stop execution
+// Trigger from a hook — reject() throws internally, no `throw` needed
 myRoute.onBeforeRouteEnter((_to, { reject }) => {
-  throw reject('AuthRequired')
+  reject('AuthRequired')
 })
 ```
 
@@ -327,23 +338,24 @@ import { createRouterPlugin } from '@kitbag/router'
 const authPlugin = createRouterPlugin({
   routes: [loginRoute],
   rejections: [AuthRequired],
-  onBeforeRouteEnter: [(_to, { reject }) => {
-    if (!isAuthenticated()) throw reject('AuthRequired')
-  }],
 })
 
-const router = createRouter(routes, {
-  plugins: [authPlugin],
+// Hooks are registered as methods on the plugin, not in the options
+authPlugin.onBeforeRouteEnter((_to, { reject }) => {
+  if (!isAuthenticated()) reject('AuthRequired')
 })
+
+// Plugins are the 3rd positional argument to createRouter, not in options
+const router = createRouter(routes, { rejections: [AuthRequired] }, [authPlugin])
 ```
 
 ## Common Mistakes
 
 - **Don't use `:param` syntax** — use `[param]` with square brackets.
 - **Don't use `{ component: ... }` in route config** — use `.addView(Component)` chain.
-- **Don't use `<router-link to="/path">`** — use the callback `:to="(resolve) => resolve('name')"`.
+- **Prefer callback-style `<router-link :to="(resolve) => resolve('name')">`** for type-safe internal links. Plain URL strings and `ResolvedRoute` values are also accepted.
 - **Don't use `router.beforeEach`** — use `onBeforeRouteEnter` on routes or pass hooks to `createRouter`.
 - **Don't forget `as const`** on the routes array.
 - **Don't forget declaration merging** — register your router type or composables won't be typed.
 - **`useRoute().params` is reactive directly** — don't wrap in `.value`, it's not a ref. Supports `v-model`.
-- **Use `throw reject(...)` in hooks** — not just `reject(...)`. The `throw` is needed to stop hook execution.
+- **`reject()`, `abort()`, and `push()` throw internally** — no `throw` keyword needed in hooks.

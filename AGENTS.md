@@ -1,8 +1,18 @@
 # @kitbag/router - Agent Guide
 
 Type-safe router for Vue 3. Not a fork of vue-router — different API, different mental model.
+This file documents library usage for consumers of the npm package.
 
 Docs: https://kitbag.dev/router
+
+## Working in this repo
+
+If you are contributing to @kitbag/router itself:
+
+- `npm run test` — run Vitest tests
+- `npm run lint` — run ESLint
+- `npm run build` — build the library
+- Source code lives in `src/`, docs in `docs/`
 
 ## Install
 
@@ -107,18 +117,16 @@ const protectedRoute = createRoute({
 })
   .addView(Dashboard)
 
-// Route-level before-hook — use `throw reject(...)` to stop execution
+// Route-level before-hook — reject() throws internally, no `throw` needed
 protectedRoute.onBeforeRouteEnter((to, { reject, replace }) => {
   if (!isAuthenticated()) {
-    throw reject('NotFound')
+    reject('NotFound')
   }
 })
 
 // Route-level after-hook — second arg includes `push` for navigation
 protectedRoute.onAfterRouteEnter((to, { push }) => {
-  if (to.params.search === 'secret') {
-    push('hiddenRoute')
-  }
+  push('home')
 })
 
 // In-component hooks
@@ -197,7 +205,7 @@ Use the `#default` slot with `{ component }` to wrap route views in `<transition
 
 ## Type Inference Gotchas
 
-1. **You must register the router** via declaration merging — without this, composables like `useRoute` and `useRouter` have no type context.
+1. **You must register the router** via declaration merging — without this, composables like `useRoute` and `useRouter` have no type context. For multi-router setups with `isGlobalRouter: false`, use `createRouterAssets` to get typed composables and components bound to a specific router instance.
 2. **Routes array must use `as const`** — without it TypeScript widens route names to `string` and params lose their types.
 3. **`useRoute('name')` narrows types** — only use this inside components you know are mounted under that route. Using the wrong name gives a runtime error.
 4. **Param names must be unique** across the full route tree (including parent routes). Duplicate param names throw `DuplicateParamsError`.
@@ -206,18 +214,18 @@ Use the `#default` slot with `{ component }` to wrap route views in `<transition
 
 LLMs trained on older data may generate outdated patterns. The correct forms are:
 
-| Wrong (old/never existed) | Correct |
+| Deprecated / old form | Correct |
 |---|---|
 | `createRoute({ component: Foo })` | `createRoute({ ... }).addView(Foo)` |
 | `createRoute({ props: { ... } })` | `.addView(Foo, { props: (route) => ({ ... }) })` |
 | `router.addRoute(...)` | Routes are static — pass all routes to `createRouter(routes)` |
 | `useRoute().params.value.id` | `useRoute().params.id` (params is already reactive, not a ref) |
-| `<router-link to="/path">` | `<router-link :to="(resolve) => resolve('name', params)">` (callback style) |
+| `<router-link to="/path">` | Prefer `<router-link :to="(resolve) => resolve('name', params)">` (callback style is type-safe; plain URL strings also accepted) |
 | `<router-link :to="{ name: 'foo' }">` | `<router-link :to="(resolve) => resolve('foo')">` |
 | `router.beforeEach(...)` | Use `onBeforeRouteEnter` on the route or pass hooks to `createRouter` |
 | `{ path: '/user/:id' }` | `{ path: withParams('/user/[id]', { id: Number }) }` (square brackets, explicit type) |
 | `meta: { requiresAuth: true }` inline | `createRoute({ meta: { requiresAuth: true } })` (same place, but access differs) |
-| `reject('NotFound')` | `throw reject('NotFound')` (`throw` is needed to stop hook execution) |
+| `return next(false)` / `next('/login')` | `reject('NotFound')` (throws internally, no `return`/`throw` needed) |
 
 ## Key Differences from vue-router
 
