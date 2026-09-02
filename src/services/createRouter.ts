@@ -132,7 +132,8 @@ export function createRouter<
 
     history.stopListening()
 
-    const to = find(url, options) ?? notFoundRoute
+    const matched = find(url, options)
+    const to = matched ?? notFoundRoute
 
     const from = getFromRouteForHooks(navigationId)
 
@@ -155,10 +156,17 @@ export function createRouter<
         setRejection(beforeResponse.type, to, from)
         break
 
-      // On success update history, set the route, and clear the rejection
+      // On success update history and set the route. A url that matched nothing is a rejection rather
+      // than a successful navigation, even though the hooks had nothing to object to.
       case 'SUCCESS':
         history.update(url, options)
-        clearRejection()
+
+        if (matched) {
+          clearRejection()
+        } else {
+          setRejection('NotFound', to, from)
+        }
+
         break
 
       default:

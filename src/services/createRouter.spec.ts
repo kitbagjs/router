@@ -1017,3 +1017,48 @@ describe('options.removeTrailingSlashes', () => {
     expect(router.route.href).toBe('/')
   })
 })
+
+describe('a url that matches no route', () => {
+  test('sets the NotFound rejection', async () => {
+    const onRejection = vi.fn()
+    const route = createRoute({ name: 'route', component, path: '/foo' })
+    const router = createRouter([route], { initialUrl: '/does-not-exist' })
+
+    router.onRejection(onRejection)
+
+    await router.start()
+
+    expect(onRejection).toHaveBeenCalledWith('NotFound', {
+      to: expect.objectContaining({ name: 'NotFound' }),
+      from: null,
+    })
+  })
+
+  test('clears the rejection once a route matches again', async () => {
+    const onRejection = vi.fn()
+    const route = createRoute({ name: 'route', component, path: '/foo' })
+    const router = createRouter([route], { initialUrl: '/does-not-exist' })
+
+    router.onRejection(onRejection)
+
+    await router.start()
+
+    expect(onRejection).toHaveBeenCalledTimes(1)
+
+    await router.push('route')
+
+    expect(router.route.name).toBe('route')
+  })
+
+  test('does not set a rejection when a route does match', async () => {
+    const onRejection = vi.fn()
+    const route = createRoute({ name: 'route', component, path: '/foo' })
+    const router = createRouter([route], { initialUrl: '/foo' })
+
+    router.onRejection(onRejection)
+
+    await router.start()
+
+    expect(onRejection).not.toHaveBeenCalled()
+  })
+})

@@ -1,11 +1,14 @@
-import { Ref } from 'vue'
+import { Component, Ref } from 'vue'
 import { Route } from '@/types/route'
 import { Router } from '@/types/router'
 import { RouterReject } from '@/types/routerReject'
 import { Hooks } from '@/models/hooks'
 
-export const BUILT_IN_REJECTION_TYPES = ['NotFound'] as const
-export type BuiltInRejectionType = (typeof BUILT_IN_REJECTION_TYPES)[number]
+export const BUILT_IN_REJECTIONS = {
+  NotFound: 404,
+} as const
+
+export type BuiltInRejectionType = keyof typeof BUILT_IN_REJECTIONS
 
 export type RouterRejection<T extends Rejection = Rejection> = Ref<T | null>
 export type RouterRejections<TRouter extends Router> = TRouter['reject'] extends RouterReject<infer TRejections extends Rejection[]> ? TRejections[number] : never
@@ -27,12 +30,23 @@ export type RejectionInternal = {
  */
 export type Rejections = readonly Rejection[]
 
-export type Rejection<TType extends string = string> = {
+export type RejectionOptions<TType extends string = string> = {
   /**
    * The type of rejection.
    */
   type: TType,
+  /**
+   * The component rendered while this rejection is in effect.
+   */
+  component?: Component,
+  /**
+   * Suggested http status while this rejection is in effect, for a server to respond with. Defaults to
+   * 200: the page rendered, it just rendered a different component.
+   */
+  status?: number,
 }
+
+export type Rejection<TType extends string = string> = Pick<RejectionOptions<TType>, 'type' | 'status'>
 
 export type RejectionType<TRejections extends Rejections | undefined> = unknown extends TRejections
   ? never
