@@ -1015,8 +1015,61 @@ describe('options.removeTrailingSlashes', () => {
 
     await router.push('/bar/')
 
-    // rejects so has an empty path
-    expect(router.route.href).toBe('/')
+    // rejects so the route is unchanged
+    expect(router.route.href).toBe('/foo/')
+  })
+})
+
+test('history keeps listening when a navigation ends early', async () => {
+  const home = createRoute({ name: 'home', component, path: '/' })
+  const foo = createRoute({ name: 'foo', component, path: '/foo' })
+  const bar = createRoute({ name: 'bar', component, path: '/bar' })
+
+  bar.onBeforeRouteEnter((_to, { abort }) => abort())
+
+  const router = createRouter([home, foo, bar], { initialUrl: '/' })
+
+  await router.start()
+  await router.push('foo')
+  await router.push('bar')
+
+  router.back()
+  await flushPromises()
+
+  expect(router.route.name).toBe('home')
+})
+
+describe('a url that matches no route', () => {
+  test('rejects with NotFound', async () => {
+    const onRejection = vi.fn()
+    const route = createRoute({ name: 'route', component, path: '/foo' })
+    const router = createRouter([route], { initialUrl: '/does-not-exist' })
+
+    router.onRejection(onRejection)
+
+    await router.start()
+
+    expect(onRejection).toHaveBeenCalledWith('NotFound', {
+      to: null,
+      from: null,
+    })
+  })
+
+  test('runs leave hooks with a null to', async () => {
+    const onBeforeRouteLeave = vi.fn()
+    const onAfterRouteLeave = vi.fn()
+    const route = createRoute({ name: 'route', component, path: '/foo' })
+    const router = createRouter([route], { initialUrl: '/foo' })
+
+    await router.start()
+
+    router.onBeforeRouteLeave(onBeforeRouteLeave)
+    router.onAfterRouteLeave(onAfterRouteLeave)
+
+    await router.push('/does-not-exist')
+
+    expect(onBeforeRouteLeave).toHaveBeenCalledWith(null, expect.anything())
+    expect(onAfterRouteLeave).toHaveBeenCalledWith(null, expect.anything())
   })
 })
 

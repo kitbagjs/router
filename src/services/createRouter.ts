@@ -10,6 +10,7 @@ import { createRouterHooks, getRouterHooksKey } from '@/services/createRouterHoo
 import { getInitialUrl } from '@/services/getInitialUrl'
 import { setStateValues } from '@/services/state'
 import { Routes } from '@/types/route'
+import { NOT_FOUND_REJECTION_TYPE } from '@/types/rejection'
 import { Router, RouterOptions } from '@/types/router'
 import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { RouterReplace, RouterReplaceOptions } from '@/types/routerReplace'
@@ -22,7 +23,7 @@ import { RouterResolve, RouterResolveOptions } from '@/types/routerResolve'
 import { RouteNotFoundError } from '@/errors/routeNotFoundError'
 import { createResolvedRoute } from '@/services/createResolvedRoute'
 import { ResolvedRoute } from '@/types/resolved'
-import { RouterReject } from '@/types/routerReject'
+import { RejectContext, RouterRejectInternal } from '@/types/routerReject'
 import { EmptyRouterPlugin, RouterPlugin } from '@/types/routerPlugin'
 import { getRoutesForRouter } from './getRoutesForRouter'
 import { getGlobalHooksForRouter } from './getGlobalHooksForRouter'
@@ -132,64 +133,72 @@ export function createRouter<
 
     history.stopListening()
 
-    const to = find(url, options) ?? notFoundRoute
+    try {
+      const to = find(url, options) ?? null
+      const from = getFromRouteForHooks(navigationId)
 
-    const from = getFromRouteForHooks(navigationId)
+      function commitNavigation(): void {
+        if (!to) {
+          reject(NOT_FOUND_REJECTION_TYPE, { to, from })
 
-    const beforeResponse = await hooks.runBeforeRouteHooks({ to, from })
+          return
+        }
 
-    switch (beforeResponse.status) {
-      // On abort do nothing
-      case 'ABORT':
-        return
-
-      // On push, push the new route and return
-      case 'PUSH':
-        await push(...beforeResponse.to)
-        return
-
-      // On reject update the history, the route, and set the rejection type
-      case 'REJECT':
-        history.update(url, options)
-        setRejection(beforeResponse.type, to, from)
-        break
-
-      // On success update history, set the route, and clear the rejection
-      case 'SUCCESS':
-        history.update(url, options)
         clearRejection()
-        break
 
-      default:
-        throw new Error(`Switch is not exhaustive for before hook response status: ${JSON.stringify(beforeResponse satisfies never)}`)
+        if (!isExternal(url)) {
+          setRouteValuesAndUpdateRoute(to, from)
+        }
+      }
+
+      const beforeResponse = await hooks.runBeforeRouteHooks({ to, from })
+
+      switch (beforeResponse.status) {
+        case 'ABORT':
+          return
+
+        case 'PUSH':
+          await push(...beforeResponse.to)
+          return
+
+        case 'REJECT':
+          history.update(url, options)
+          reject(beforeResponse.type, { to, from })
+          return
+
+        case 'SUCCESS':
+          history.update(url, options)
+          break
+
+        default:
+          throw new Error(`Switch is not exhaustive for before hook response status: ${JSON.stringify(beforeResponse satisfies never)}`)
+      }
+
+      commitNavigation()
+
+      const afterResponse = await hooks.runAfterRouteHooks({ to, from })
+
+      switch (afterResponse.status) {
+        case 'PUSH':
+          await push(...afterResponse.to)
+          break
+
+        case 'REJECT':
+          reject(afterResponse.type, { to, from })
+          break
+
+        case 'SUCCESS':
+          break
+
+        default:
+          const exhaustive: never = afterResponse
+          throw new Error(`Switch is not exhaustive for after hook response status: ${JSON.stringify(exhaustive)}`)
+      }
+
+      setDocumentTitle(currentRejectionRoute.value ?? to)
+    } finally {
+      history.startListening()
     }
-
-    if (!isExternal(url)) {
-      setRouteValuesAndUpdateRoute(to, from)
-    }
-
-    const afterResponse = await hooks.runAfterRouteHooks({ to, from })
-
-    switch (afterResponse.status) {
-      case 'PUSH':
-        await push(...afterResponse.to)
-        break
-
-      case 'REJECT':
-        setRejection(afterResponse.type, to, from)
-        break
-
-      case 'SUCCESS':
-        break
-
-      default:
-        const exhaustive: never = afterResponse
-        throw new Error(`Switch is not exhaustive for after hook response status: ${JSON.stringify(exhaustive)}`)
-    }
-
-    setDocumentTitle(currentRejectionRoute.value ?? to)
-
-    history.startListening()
   }
 
   function setRouteValuesAndUpdateRoute(to: ResolvedRoute, from: ResolvedRoute | null): void {
@@ -218,7 +227,7 @@ export function createRouter<
             break
 
           case 'REJECT':
-            setRejection(response.type, to, from)
+            reject(response.type, { to, from })
             break
 
           default:
@@ -236,7 +245,7 @@ export function createRouter<
           }
 
           if (error instanceof ContextRejectionError) {
-            setRejection(error.response.type, to, from)
+            reject(error.response.type, { to, from })
             return
           }
 
@@ -317,7 +326,7 @@ export function createRouter<
     return push(source, options)
   }
 
-  function setRejection(type: string, to: ResolvedRoute | null = null, from: ResolvedRoute | null = null): void {
+  const reject: RouterRejectInternal<TOptions['rejections'] | TPlugin['rejections']> = (type: string, { to = null, from = null }: RejectContext = {}) => {
     const rejection = getRejectionByType(type)
 
     if (!rejection) {
@@ -327,10 +336,6 @@ export function createRouter<
     hooks.runRejectionHooks(rejection, { to, from })
 
     updateRejection(rejection)
-  }
-
-  const reject: RouterReject<TOptions['rejections'] | TPlugin['rejections']> = (type) => {
-    setRejection(type)
     setDocumentTitle(currentRejectionRoute.value)
   }
 

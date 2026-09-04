@@ -1,4 +1,5 @@
 import { ContextAbortError } from '@/errors/contextAbortError'
+import { UpdateWithoutRouteError } from '@/errors/updateWithoutRouteError'
 import { ContextPushError } from '@/errors/contextPushError'
 import { ContextRejectionError } from '@/errors/contextRejectionError'
 import { RouterPush, RouterPushOptions } from '@/types/routerPush'
@@ -29,9 +30,9 @@ type RouterCallbackContext<
 export function createRouterCallbackContext<
   TRoutes extends Routes,
   TRejections extends Rejections
->({ to }: { to: ResolvedRoute }): RouterCallbackContext<TRoutes, TRejections>
+>({ to }: { to: ResolvedRoute | null }): RouterCallbackContext<TRoutes, TRejections>
 
-export function createRouterCallbackContext({ to }: { to: ResolvedRoute }): RouterCallbackContext {
+export function createRouterCallbackContext({ to }: { to: ResolvedRoute | null }): RouterCallbackContext {
   const reject: RouterCallbackContext['reject'] = (type) => {
     throw new ContextRejectionError(type)
   }
@@ -52,6 +53,10 @@ export function createRouterCallbackContext({ to }: { to: ResolvedRoute }): Rout
   }
 
   const update: RouterCallbackContext['update'] = (nameOrParams: PropertyKey | Partial<ResolvedRoute['params']>, valueOrOptions?: any, maybeOptions?: RouterPushOptions) => {
+    if (!to) {
+      throw new UpdateWithoutRouteError()
+    }
+
     if (typeof nameOrParams === 'object') {
       const params = {
         ...to.params,

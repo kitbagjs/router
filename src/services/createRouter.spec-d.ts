@@ -127,6 +127,13 @@ describe('rejections', () => {
     expectTypeOf<Source>().toEqualTypeOf<Expect>()
   })
 
+  test('the routes a rejection happened between are not part of the public signature', () => {
+    const _router = createRouter([])
+
+    // @ts-expect-error reject only accepts a type
+    _router.reject('NotFound', { to: null, from: null })
+  })
+
   test('custom rejections are valid', () => {
     const myCustomRejection = createRejection({
       type: 'MyCustomRejection',

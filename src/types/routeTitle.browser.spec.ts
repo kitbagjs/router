@@ -2,6 +2,7 @@ import { expect, test, vi } from 'vitest'
 import { createRoute } from '@/services/createRoute'
 import { component } from '@/utilities/testHelpers'
 import { createRouter } from '@/services/createRouter'
+import { createRejection } from '@/services/createRejection'
 import { flushPromises } from '@vue/test-utils'
 
 test('route with title updates document title', async () => {
@@ -166,4 +167,30 @@ test('route without title and parent with title updates document title', async (
   await flushPromises()
 
   expect(document.title).toBe('parent')
+})
+
+test('rejection from a hook updates document title', async () => {
+  const locked = createRejection({ type: 'Locked', component })
+
+  locked.setTitle(() => 'locked')
+
+  const home = createRoute({ name: 'home', path: '/', component })
+  const secret = createRoute({ name: 'secret', path: '/secret', component })
+
+  const router = createRouter([home, secret], {
+    initialUrl: '/',
+    rejections: [locked],
+  })
+
+  router.onBeforeRouteEnter((to, { reject }) => {
+    if (to.name === 'secret') {
+      reject('Locked')
+    }
+  })
+
+  await router.start()
+  await router.push('secret')
+  await flushPromises()
+
+  expect(document.title).toBe('locked')
 })
