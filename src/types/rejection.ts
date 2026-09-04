@@ -4,7 +4,9 @@ import { Router } from '@/types/router'
 import { RouterReject } from '@/types/routerReject'
 import { Hooks } from '@/models/hooks'
 
-export const BUILT_IN_REJECTION_TYPES = ['NotFound'] as const
+export const NOT_FOUND_REJECTION_TYPE = 'NotFound'
+
+export const BUILT_IN_REJECTION_TYPES = [NOT_FOUND_REJECTION_TYPE] as const
 export type BuiltInRejectionType = (typeof BUILT_IN_REJECTION_TYPES)[number]
 
 export type RouterRejection<T extends Rejection = Rejection> = Ref<T | null>
