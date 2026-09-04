@@ -3,7 +3,7 @@ import { isRouteEnter, isRouteLeave, isRouteUpdate } from '@/services/hooks'
 import { Hooks } from '@/models/hooks'
 import { getHooks } from '@/types/hooks'
 
-export function getBeforeHooksFromRoutes(to: ResolvedRoute, from: ResolvedRoute | null): Hooks {
+export function getBeforeHooksFromRoutes(to: ResolvedRoute | null, from: ResolvedRoute | null): Hooks {
   const hooks = new Hooks()
 
   getHooks(to).forEach((store, depth) => {
@@ -27,7 +27,7 @@ export function getBeforeHooksFromRoutes(to: ResolvedRoute, from: ResolvedRoute 
   return hooks
 }
 
-export function getAfterHooksFromRoutes(to: ResolvedRoute, from: ResolvedRoute | null): Hooks {
+export function getAfterHooksFromRoutes(to: ResolvedRoute | null, from: ResolvedRoute | null): Hooks {
   const hooks = new Hooks()
 
   getHooks(to).forEach((store, depth) => {

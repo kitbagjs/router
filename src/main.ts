@@ -87,6 +87,7 @@ export { MetaPropertyConflict } from './errors/metaPropertyConflict'
 export { NavigationAbandonedError } from './errors/navigationAbandonedError'
 export { RouterNotInstalledError } from './errors/routerNotInstalledError'
 export { UseRouteInvalidError } from './errors/useRouteInvalidError'
+export { UpdateWithoutRouteError } from './errors/updateWithoutRouteError'
 
 // Services
 export { createRoute } from './services/createRoute'

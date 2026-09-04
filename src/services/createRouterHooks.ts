@@ -60,8 +60,8 @@ export function createRouterHooks(): RouterHooks {
 
     try {
       const results = allHooks.map((callback) => {
-        return Promise.resolve(runWithContext(() => callback(to, {
-          // From could be null but leave hooks require that from is not null. If from is null there will be no leave hooks so this cast is purely to satisfy the type checker.
+        // Enter and update hooks are only in this list when to is not null, and leave hooks are only in it when from is not null. These casts are purely to satisfy the type checker.
+        return Promise.resolve(runWithContext(() => callback(to as ResolvedRoute, {
           from: from as ResolvedRoute,
           reject,
           push,
@@ -124,8 +124,8 @@ export function createRouterHooks(): RouterHooks {
 
     try {
       const results = allHooks.map((callback) => {
-        return Promise.resolve(runWithContext(() => callback(to, {
-          // From could be null but leave hooks require that from is not null. If from is null there will be no leave hooks so this cast is purely to satisfy the type checker.
+        // Enter and update hooks are only in this list when to is not null, and leave hooks are only in it when from is not null. These casts are purely to satisfy the type checker.
+        return Promise.resolve(runWithContext(() => callback(to as ResolvedRoute, {
           from: from as ResolvedRoute,
           reject,
           push,
@@ -205,12 +205,15 @@ export function createRouterHooks(): RouterHooks {
     const hooks = componentStore[lifecycle]
 
     // Using `any` here for context because its just passed through to the hook and typing it is more complex than it's worth
-    const wrapped = (to: ResolvedRoute, context: any): MaybePromise<void> => {
+    const wrapped = (to: ResolvedRoute | null, context: any): MaybePromise<void> => {
       if (!condition(to, context.from, depth)) {
         return
       }
 
-      return hook(to, context)
+      // Only leave hooks pass the condition when to is null and those accept a null to.
+      const callback = hook as (to: ResolvedRoute | null, context: any) => MaybePromise<void>
+
+      return callback(to, context)
     }
 
     hooks.add(wrapped)

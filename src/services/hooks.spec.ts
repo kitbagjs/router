@@ -2,6 +2,7 @@ import { expect, test, vi } from 'vitest'
 import { createRouterHooks } from '@/services/createRouterHooks'
 import { BeforeEnterHook } from '@/types/hooks'
 import { ResolvedRoute } from '@/types/resolved'
+import { UpdateWithoutRouteError } from '@/errors/updateWithoutRouteError'
 import { component } from '@/utilities/testHelpers'
 import { createRoute } from './createRoute'
 import { createResolvedRoute } from './createResolvedRoute'
@@ -244,4 +245,41 @@ test('when onError callback calls replace, other onError callbacks do not run', 
   expect(errorHook1).toHaveBeenCalledOnce()
   expect(errorHook2).not.toHaveBeenCalled()
   expect(errorHook3).not.toHaveBeenCalled()
+})
+
+test('when to is null, only leave hooks are called', async () => {
+  const calls: string[] = []
+  const { runBeforeRouteHooks, ...hooks } = createRouterHooks()
+
+  hooks.onBeforeRouteEnter(() => {
+    calls.push('enter')
+  })
+  hooks.onBeforeRouteUpdate(() => {
+    calls.push('update')
+  })
+  hooks.onBeforeRouteLeave(() => {
+    calls.push('leave')
+  })
+
+  const fromRoute = createRoute({ name: 'routeA', component })
+  const from = createResolvedRoute(fromRoute, {})
+
+  await runBeforeRouteHooks({ to: null, from })
+
+  expect(calls).toEqual(['leave'])
+})
+
+test('when to is null, calling update raises an UpdateWithoutRouteError', async () => {
+  const errorHook = vi.fn()
+  const { runBeforeRouteHooks, onBeforeRouteLeave, onError } = createRouterHooks()
+
+  onBeforeRouteLeave((_to, { update }) => update('paramName', 'value'))
+  onError(errorHook)
+
+  const fromRoute = createRoute({ name: 'routeA', component })
+  const from = createResolvedRoute(fromRoute, {})
+
+  await runBeforeRouteHooks({ to: null, from })
+
+  expect(errorHook).toHaveBeenCalledWith(expect.any(UpdateWithoutRouteError), expect.anything())
 })

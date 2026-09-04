@@ -774,7 +774,7 @@ describe('hooks', () => {
     })
 
     route.onBeforeRouteLeave((to, { from }) => {
-      expectTypeOf(to).toEqualTypeOf<ResolvedRoute>()
+      expectTypeOf(to).toEqualTypeOf<ResolvedRoute | null>()
       expectTypeOf(from).toEqualTypeOf<ResolvedRoute<typeof route>>()
     })
 
@@ -789,7 +789,7 @@ describe('hooks', () => {
     })
 
     route.onAfterRouteLeave((to, { from }) => {
-      expectTypeOf(to).toEqualTypeOf<ResolvedRoute>()
+      expectTypeOf(to).toEqualTypeOf<ResolvedRoute | null>()
       expectTypeOf(from).toEqualTypeOf<ResolvedRoute<typeof route>>()
     })
   })

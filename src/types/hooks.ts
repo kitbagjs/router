@@ -194,7 +194,7 @@ export type BeforeLeaveHook<
   TRejections extends Rejections = Rejections,
   TRouteTo extends Route = TRoutes[number],
   TRouteFrom extends Route = TRoutes[number]
-> = (to: ResolvedRouteUnion<TRouteTo>, context: BeforeLeaveHookContext<TRoutes, TRejections, TRouteTo, TRouteFrom>) => MaybePromise<void>
+> = (to: ResolvedRouteUnion<TRouteTo> | null, context: BeforeLeaveHookContext<TRoutes, TRejections, TRouteTo, TRouteFrom>) => MaybePromise<void>
 
 export type AddBeforeLeaveHook<
   TRoutes extends Routes = Routes,
@@ -263,7 +263,7 @@ export type AfterLeaveHook<
   TRejections extends Rejections = Rejections,
   TRouteTo extends Route = TRoutes[number],
   TRouteFrom extends Route = TRoutes[number]
-> = (to: ResolvedRouteUnion<TRouteTo>, context: AfterLeaveHookContext<TRoutes, TRejections, TRouteTo, TRouteFrom>) => MaybePromise<void>
+> = (to: ResolvedRouteUnion<TRouteTo> | null, context: AfterLeaveHookContext<TRoutes, TRejections, TRouteTo, TRouteFrom>) => MaybePromise<void>
 
 export type AddAfterLeaveHook<
   TRoutes extends Routes = Routes,
@@ -276,11 +276,11 @@ export type BeforeHookResponse = CallbackContextSuccess | CallbackContextPush | 
 export type AfterHookResponse = CallbackContextSuccess | CallbackContextPush | CallbackContextReject
 
 export type BeforeHookRunner = <TRoutes extends Routes>(
-  context: { to: RouterResolvedRouteUnion<TRoutes>, from: RouterResolvedRouteUnion<TRoutes> | null },
+  context: { to: RouterResolvedRouteUnion<TRoutes> | null, from: RouterResolvedRouteUnion<TRoutes> | null },
 ) => Promise<BeforeHookResponse>
 
 export type AfterHookRunner = <TRoutes extends Routes>(
-  context: { to: RouterResolvedRouteUnion<TRoutes>, from: RouterResolvedRouteUnion<TRoutes> | null },
+  context: { to: RouterResolvedRouteUnion<TRoutes> | null, from: RouterResolvedRouteUnion<TRoutes> | null },
 ) => Promise<AfterHookResponse>
 
 export type RejectionHookContext<
@@ -316,7 +316,7 @@ export type ErrorHookContext<
   TRoutes extends Routes = Routes,
   TRejections extends Rejections = Rejections
 > = {
-  to: RouterResolvedRouteUnion<TRoutes>,
+  to: RouterResolvedRouteUnion<TRoutes> | null,
   from: RouterResolvedRouteUnion<TRoutes> | null,
   source: 'props' | 'loader' | 'hook' | 'component',
   reject: RouterReject<TRejections>,
@@ -338,7 +338,7 @@ export type AddErrorHook<
 > = (hook: ErrorHook<TRoute, TRoutes, TRejections>) => HookRemove
 
 export type ErrorHookRunnerContext<TRoutes extends Routes = Routes> = {
-  to: RouterResolvedRouteUnion<TRoutes>,
+  to: RouterResolvedRouteUnion<TRoutes> | null,
   from: RouterResolvedRouteUnion<TRoutes> | null,
   source: 'props' | 'loader' | 'hook',
 }
