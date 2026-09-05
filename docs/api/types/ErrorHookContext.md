@@ -20,6 +20,6 @@ type ErrorHookContext<TRoute, TRoutes, TRejections> = object;
 | <a id="push"></a> `push` | [`RouterPush`](RouterPush.md)\<`TRoutes`\> |
 | <a id="reject"></a> `reject` | [`RouterReject`](RouterReject.md)\<`TRejections`\> |
 | <a id="replace"></a> `replace` | [`RouterReplace`](RouterReplace.md)\<`TRoutes`\> |
-| <a id="source"></a> `source` | `"props"` \| `"hook"` \| `"component"` |
+| <a id="source"></a> `source` | `"props"` \| `"loader"` \| `"hook"` \| `"component"` |
 | <a id="to"></a> `to` | [`RouterResolvedRouteUnion`](RouterResolvedRouteUnion.md)\<`TRoutes`\> |
 | <a id="update"></a> `update` | `RouteUpdate`\<[`ResolvedRoute`](ResolvedRoute.md)\<`TRoute`\>\> |

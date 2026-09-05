@@ -1,7 +1,7 @@
 # Types: ToRoute\<TOptions, TProps\>
 
 ```ts
-type ToRoute<TOptions, TProps> = CreateRouteOptions extends TOptions ? Route : TOptions extends object ? Route<ToName<TOptions["name"]>, TOptions["hoist"] extends true ? ToUrl<TOptions & WithoutComponents> : CombineUrl<TParent, ToUrl<TOptions & WithoutComponents>>, CombineMeta<ToMeta<TParent["meta"]>, ToMeta<TOptions["meta"]>>, CombineState<ToState<TParent["state"]>, ToState<TOptions["state"]>>, ToMatches<TOptions, CreateRouteProps<TOptions> extends TProps ? undefined : TProps>, [...ToRouteContext<TParent["context"]>, ...ToRouteContext<TOptions["context"]>]> : Route<ToName<TOptions["name"]>, ToUrl<Identity<TOptions & WithoutComponents>>, ToMeta<TOptions["meta"]>, ToState<TOptions["state"]>, ToMatches<TOptions, CreateRouteProps<TOptions> extends TProps ? undefined : TProps>, ToRouteContext<TOptions["context"]>>;
+type ToRoute<TOptions, TProps> = CreateRouteOptions extends TOptions ? Route : Route<ToRouteUrl<TOptions>, ToRouteMatches<TOptions, TProps>>;
 ```
 
 ## Type Parameters

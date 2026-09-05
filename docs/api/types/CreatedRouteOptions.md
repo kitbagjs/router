@@ -1,10 +1,12 @@
 # Types: CreatedRouteOptions
 
 ```ts
-type CreatedRouteOptions = Omit<CreateRouteOptions, "props"> & object;
+type CreatedRouteOptions = Omit<CreateRouteOptions, "component" | "components"> & object;
 ```
 
-The Route properties originally provided to `createRoute`. The only change is normalizing meta to always default to an empty object.
+The Route properties originally provided to `createRoute`, plus the views that route renders and the
+loaders it runs. The deprecated `component`/`components` options are folded into `views` (see
+[RouteViews](RouteViews.md)).
 
 ## Type Declaration
 
@@ -14,8 +16,14 @@ The Route properties originally provided to `createRoute`. The only change is no
 id: string;
 ```
 
-### props?
+### loaders
 
 ```ts
-optional props?: unknown;
+loaders: RouteLoaders;
+```
+
+### views
+
+```ts
+views: RouteViews;
 ```

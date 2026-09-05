@@ -9,6 +9,8 @@ This is useful for performing actions or cleanups before navigating away from a 
 
 ## Param
 
+**BeforeRouteHook**
+
 The hook callback function
 
 ## Returns

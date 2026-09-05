@@ -34,6 +34,14 @@
         "link": "/api/errors/DuplicateParamsError.md"
       },
       {
+        "text": "LoaderDataAccessError",
+        "link": "/api/errors/LoaderDataAccessError.md"
+      },
+      {
+        "text": "LoaderNameConflict",
+        "link": "/api/errors/LoaderNameConflict.md"
+      },
+      {
         "text": "MetaPropertyConflict",
         "link": "/api/errors/MetaPropertyConflict.md"
       },
@@ -68,6 +76,16 @@
       {
         "text": "isUrlString",
         "link": "/api/type-guards/isUrlString.md"
+      }
+    ]
+  },
+  {
+    "text": "Classes",
+    "collapsed": true,
+    "items": [
+      {
+        "text": "NavigationAbandonedError",
+        "link": "/api/classes/NavigationAbandonedError.md"
       }
     ]
   },
@@ -206,8 +224,24 @@
         "link": "/api/types/AddErrorHook.md"
       },
       {
+        "text": "AddLoaderOptions",
+        "link": "/api/types/AddLoaderOptions.md"
+      },
+      {
         "text": "AddRejectionHook",
         "link": "/api/types/AddRejectionHook.md"
+      },
+      {
+        "text": "AddViewOptions",
+        "link": "/api/types/AddViewOptions.md"
+      },
+      {
+        "text": "AddViewPropsCallbackContext",
+        "link": "/api/types/AddViewPropsCallbackContext.md"
+      },
+      {
+        "text": "AddViewPropsGetter",
+        "link": "/api/types/AddViewPropsGetter.md"
       },
       {
         "text": "AfterEnterHook",
@@ -306,6 +340,10 @@
         "link": "/api/types/LiteralParam.md"
       },
       {
+        "text": "LoaderGetter",
+        "link": "/api/types/LoaderGetter.md"
+      },
+      {
         "text": "Param",
         "link": "/api/types/Param.md"
       },
@@ -402,6 +440,26 @@
         "link": "/api/types/Route.md"
       },
       {
+        "text": "RouteAddLoader",
+        "link": "/api/types/RouteAddLoader.md"
+      },
+      {
+        "text": "RouteAddView",
+        "link": "/api/types/RouteAddView.md"
+      },
+      {
+        "text": "RouteCallbackContext",
+        "link": "/api/types/RouteCallbackContext.md"
+      },
+      {
+        "text": "RouteLoader",
+        "link": "/api/types/RouteLoader.md"
+      },
+      {
+        "text": "RouteLoaders",
+        "link": "/api/types/RouteLoaders.md"
+      },
+      {
         "text": "RouteMeta",
         "link": "/api/types/RouteMeta.md"
       },
@@ -486,6 +544,10 @@
         "link": "/api/types/RouterViewPropsGetter.md"
       },
       {
+        "text": "RouteViews",
+        "link": "/api/types/RouteViews.md"
+      },
+      {
         "text": "ToCallback",
         "link": "/api/types/ToCallback.md"
       },
@@ -508,6 +570,10 @@
       {
         "text": "UseLinkOptions",
         "link": "/api/types/UseLinkOptions.md"
+      },
+      {
+        "text": "WithData",
+        "link": "/api/types/WithData.md"
       },
       {
         "text": "WithHost",

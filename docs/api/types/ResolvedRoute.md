@@ -5,7 +5,7 @@ type ResolvedRoute<TRoute> = Readonly<{
   hash: string;
   href: UrlString;
   id: TRoute["id"];
-  matched: TRoute["matched"];
+  matched: MatchedRoute<TRoute["matches"]>;
   matches: TRoute["matches"];
   name: TRoute["name"];
   params: UrlParamsReading<TRoute>;

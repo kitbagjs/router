@@ -15,8 +15,8 @@ type CreateRouteOptions<TName, TMeta> = object;
 
 | Property | Type | Description |
 | ------ | ------ | ------ |
-| <a id="component"></a> `component?` | `Component` | An optional component to render when this route is matched. **Default** `RouterView` |
-| <a id="components"></a> `components?` | `Record`\<`string`, `Component`\> | An object of named components to render using named views |
+| <a id="component"></a> ~~`component?`~~ | `Component` | An optional component to render when this route is matched. **Default** `RouterView` **Deprecated** Use the chainable `addView` method on the route instead: `createRoute({ ... }).addView(component, { props })`. |
+| <a id="components"></a> ~~`components?`~~ | `Record`\<`string`, `Component`\> | An object of named components to render using named views **Deprecated** Use the chainable `addView` method on the route instead: `createRoute({ ... }).addView(component, { name, props })`. |
 | <a id="context"></a> `context?` | `RouteContext`[] | Related routes and rejections for the route. The context is exposed to the hooks and props callback functions for this route. |
 | <a id="hash"></a> `hash?` | `string` \| `UrlPart` | Hash part of URL. |
 | <a id="hoist"></a> `hoist?` | `boolean` | When true, the route will be hoisted to the top of the route tree. The route will continue to inherit meta, state, hooks, matches, and context from it's parent, but not the "url" properties. |
