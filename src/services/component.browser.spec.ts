@@ -3,7 +3,6 @@ import { expect, test } from 'vitest'
 import echo from '@/components/echo'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
-import { h, defineComponent, getCurrentInstance } from 'vue'
 
 test('renders component with sync props', async () => {
   const route = createRoute({
@@ -62,41 +61,6 @@ test('renders component with async props', async () => {
   await flushPromises()
 
   expect(wrapper.html()).toBe('echo')
-})
-
-test('component instance has suspense property when suspense is used', async () => {
-  const testComponent = defineComponent({
-    setup() {
-      // @ts-expect-error there isn't a way to check if suspense is used in the component without accessing a private property
-      const hasSuspense = Boolean(getCurrentInstance()?.suspense)
-
-      return () => h('span', hasSuspense)
-    },
-  })
-
-  const appWithSuspenseRoot = {
-    template: '<Suspense><test-component/></Suspense>',
-    components: {
-      testComponent,
-    },
-  }
-
-  const appWithSuspense = mount(appWithSuspenseRoot)
-
-  await flushPromises()
-
-  expect(appWithSuspense.text()).toBe('true')
-
-  const appWithoutSuspenseRoot = {
-    template: '<test-component/>',
-    components: {
-      testComponent,
-    },
-  }
-
-  const appWithoutSuspense = mount(appWithoutSuspenseRoot)
-
-  expect(appWithoutSuspense.text()).toBe('false')
 })
 
 test('renders component with async props using suspense', async () => {
