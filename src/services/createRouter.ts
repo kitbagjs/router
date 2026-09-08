@@ -10,6 +10,8 @@ import { createRouterHooks, getRouterHooksKey } from '@/services/createRouterHoo
 import { getInitialUrl } from '@/services/getInitialUrl'
 import { setStateValues } from '@/services/state'
 import { Routes } from '@/types/route'
+import { BeforeHookResponse } from '@/types/hooks'
+import { NOT_FOUND_REJECTION_TYPE } from '@/types/rejection'
 import { Router, RouterOptions } from '@/types/router'
 import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { RouterReplace, RouterReplaceOptions } from '@/types/routerReplace'
@@ -132,11 +134,18 @@ export function createRouter<
 
     history.stopListening()
 
-    const to = find(url, options) ?? notFoundRoute
+    const matched = find(url, options)
+    const to = matched ?? notFoundRoute
 
     const from = getFromRouteForHooks(navigationId)
 
-    const beforeResponse = await hooks.runBeforeRouteHooks({ to, from })
+    const hookResponse = await hooks.runBeforeRouteHooks({ to, from })
+
+    // A url that matched nothing is a rejection, not a successful navigation. Hooks still run first, so
+    // one that redirects or rejects an unknown url wins over this.
+    const beforeResponse: BeforeHookResponse = hookResponse.status === 'SUCCESS' && !matched
+      ? { status: 'REJECT', type: NOT_FOUND_REJECTION_TYPE }
+      : hookResponse
 
     switch (beforeResponse.status) {
       // On abort do nothing

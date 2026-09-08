@@ -1017,3 +1017,69 @@ describe('options.removeTrailingSlashes', () => {
     expect(router.route.href).toBe('/')
   })
 })
+
+describe('a url that matches no route', () => {
+  test('rejects with NotFound', async () => {
+    const onRejection = vi.fn()
+    const route = createRoute({ name: 'route', component, path: '/foo' })
+    const router = createRouter([route], { initialUrl: '/does-not-exist' })
+
+    router.onRejection(onRejection)
+
+    await router.start()
+
+    expect(onRejection).toHaveBeenCalledWith('NotFound', {
+      to: expect.objectContaining({ name: 'NotFound' }),
+      from: null,
+    })
+  })
+
+  test('does not reject when a route does match', async () => {
+    const onRejection = vi.fn()
+    const route = createRoute({ name: 'route', component, path: '/foo' })
+    const router = createRouter([route], { initialUrl: '/foo' })
+
+    router.onRejection(onRejection)
+
+    await router.start()
+
+    expect(onRejection).not.toHaveBeenCalled()
+  })
+
+  test('given a hook that redirects, the redirect wins over the rejection', async () => {
+    const onRejection = vi.fn()
+    const route = createRoute({ name: 'route', component, path: '/foo' })
+    const router = createRouter([route], { initialUrl: '/does-not-exist' })
+
+    let redirected = false
+
+    router.onRejection(onRejection)
+    router.onBeforeRouteEnter((_to, { push }) => {
+      if (!redirected) {
+        redirected = true
+        push('route')
+      }
+    })
+
+    await router.start()
+
+    expect(router.route.name).toBe('route')
+    expect(onRejection).not.toHaveBeenCalled()
+  })
+
+  test('given a hook that rejects with another type, that type wins', async () => {
+    const onRejection = vi.fn()
+    const maintenance = createRejection({ type: 'Maintenance' })
+    const route = createRoute({ name: 'route', component, path: '/foo' })
+    const router = createRouter([route], { initialUrl: '/does-not-exist', rejections: [maintenance] })
+
+    router.onRejection(onRejection)
+    router.onBeforeRouteEnter((_to, { reject }) => {
+      reject('Maintenance')
+    })
+
+    await router.start()
+
+    expect(onRejection).toHaveBeenCalledWith('Maintenance', expect.anything())
+  })
+})
