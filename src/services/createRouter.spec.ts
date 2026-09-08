@@ -905,6 +905,8 @@ describe('router.onRejection', () => {
 
     const rejection = createRejection({
       type: 'CustomRejection',
+
+      status: 404,
       component: { template: '<div>This is a custom rejection</div>' },
     })
 
@@ -1069,7 +1071,7 @@ describe('a url that matches no route', () => {
 
   test('given a hook that rejects with another type, that type wins', async () => {
     const onRejection = vi.fn()
-    const maintenance = createRejection({ type: 'Maintenance' })
+    const maintenance = createRejection({ type: 'Maintenance', status: 404 })
     const route = createRoute({ name: 'route', component, path: '/foo' })
     const router = createRouter([route], { initialUrl: '/does-not-exist', rejections: [maintenance] })
 

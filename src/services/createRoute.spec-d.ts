@@ -553,6 +553,8 @@ describe('props', () => {
     test('accepts built in rejections and custom rejections when context is provided', () => {
       const rejection = createRejection({
         type: 'NotAuthorized',
+
+        status: 404,
       })
 
       createRoute({
@@ -848,7 +850,7 @@ describe('hooks', () => {
 })
 
 test('given parent, context is combined', () => {
-  const parentRejection = createRejection({ type: 'aRejection' })
+  const parentRejection = createRejection({ type: 'aRejection', status: 404 })
   const childRelated = createRoute({ name: 'bRoute' })
 
   const parent = createRoute({
