@@ -19,7 +19,8 @@ export const router = createRouter(routes, {
 })
 ```
 
-The `status` is what a server should respond with while the rejection is in effect. It is required
+The `status` is what a server should respond with while the rejection is in effect, and is read by
+[router.render](/core-concepts/router#render) when [server rendering](/advanced-concepts/server-side-rendering). It is required
 because no default suits every rejection: `404` for something missing, `401` or `403` for something
 gated, `503` for something temporary. Client only apps never read it, but it has to be decided
 somewhere and the rejection is the only place with enough context.
