@@ -1085,3 +1085,147 @@ describe('a url that matches no route', () => {
     expect(onRejection).toHaveBeenCalledWith('Maintenance', expect.anything())
   })
 })
+
+describe('router.render response', () => {
+  test('given a url that matches a route, returns 200', async () => {
+    const route = createRoute({ name: 'route', component, path: '/' })
+    const router = createRouter([route], { initialUrl: '/' })
+
+    await router.start()
+
+    const result = await router.render()
+
+    expect(result).toMatchObject({ status: 200, rejection: null })
+    expect(result.location).toBeUndefined()
+  })
+
+  test('given a url that matches no route, returns 404', async () => {
+    const route = createRoute({ name: 'route', component, path: '/foo' })
+    const router = createRouter([route], { initialUrl: '/does-not-exist' })
+
+    await router.start()
+
+    const result = await router.render()
+
+    expect(result.status).toBe(404)
+  })
+
+  test('given a hook that rejects with NotFound, returns 404', async () => {
+    const route = createRoute({ name: 'route', component, path: '/' })
+
+    route.onBeforeRouteEnter((_to, { reject }) => {
+      reject('NotFound')
+    })
+
+    const router = createRouter([route], { initialUrl: '/' })
+
+    await router.start()
+
+    const result = await router.render()
+
+    expect(result).toMatchObject({ status: 404, rejection: 'NotFound' })
+  })
+
+  test('given a rejection that declares a status, returns that status', async () => {
+    const rejection = createRejection({ type: 'Unauthorized', status: 401 })
+    const route = createRoute({ name: 'route', component, path: '/' })
+    const router = createRouter([route], { initialUrl: '/', rejections: [rejection] })
+
+    router.onBeforeRouteEnter((_to, { reject }) => {
+      reject('Unauthorized')
+    })
+
+    await router.start()
+
+    const result = await router.render()
+
+    expect(result).toMatchObject({ status: 401, rejection: 'Unauthorized' })
+  })
+
+  test('given a rejection, returns the status it declared', async () => {
+    const rejection = createRejection({ type: 'Maintenance', status: 503 })
+    const route = createRoute({ name: 'route', component, path: '/' })
+    const router = createRouter([route], { initialUrl: '/', rejections: [rejection] })
+
+    router.onBeforeRouteEnter((_to, { reject }) => {
+      reject('Maintenance')
+    })
+
+    await router.start()
+
+    const result = await router.render()
+
+    expect(result).toMatchObject({ status: 503, rejection: 'Maintenance' })
+  })
+
+  test('given a url with a trailing slash, redirects to the url without it', async () => {
+    const route = createRoute({ name: 'route', component, path: '/foo' })
+    const router = createRouter([route], { initialUrl: '/foo/' })
+
+    await router.start()
+
+    const result = await router.render()
+
+    expect(result).toMatchObject({ status: 302, location: '/foo' })
+  })
+
+  test('given redirectStatus, uses it for a normalized url', async () => {
+    const route = createRoute({ name: 'route', component, path: '/foo' })
+    const router = createRouter([route], { initialUrl: '/foo/', redirectStatus: 301 })
+
+    await router.start()
+
+    const result = await router.render()
+
+    expect(result).toMatchObject({ status: 301, location: '/foo' })
+  })
+
+  test('given removeTrailingSlashes false, does not normalize', async () => {
+    const route = createRoute({ name: 'route', component, path: '/foo' })
+    const router = createRouter([route], { initialUrl: '/foo/', removeTrailingSlashes: false })
+
+    await router.start()
+
+    const result = await router.render()
+
+    expect(result.location).toBeUndefined()
+  })
+
+  test('given a route that redirects, returns 302 to the destination', async () => {
+    const from = createRoute({ name: 'from', component, path: '/from' })
+    const to = createRoute({ name: 'to', component, path: '/to' })
+
+    from.redirectTo(to)
+
+    const router = createRouter([from, to], { initialUrl: '/from' })
+
+    await router.start()
+
+    const result = await router.render()
+
+    expect(result).toMatchObject({ status: 302, location: '/to' })
+  })
+
+  test('given extra query params that the router reorders, does not report a redirect', async () => {
+    const route = createRoute({ name: 'route', component, path: '/', query: 'foo=[param]' })
+    const router = createRouter([route], { initialUrl: '/?extra=42&foo=1' })
+
+    await router.start()
+
+    const result = await router.render()
+
+    expect(result).toMatchObject({ status: 200, rejection: null })
+  })
+
+  test('calling render again resolves with the same response', async () => {
+    const route = createRoute({ name: 'route', component, path: '/' })
+    const router = createRouter([route], { initialUrl: '/' })
+
+    await router.start()
+
+    const first = await router.render()
+    const second = await router.render()
+
+    expect(second).toStrictEqual(first)
+  })
+})
