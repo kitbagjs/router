@@ -12,14 +12,21 @@ export function createResolvedRoute(route: Route, params: Record<string, unknown
     hash: options.hash,
   })
   const { query, hash } = parseUrl(href)
-  const { promise: title, resolve: resolveTitle } = Promise.withResolvers<string | undefined>()
   const matched = route.matches.at(-1)
 
   if (!matched) {
     throw new Error('createResolvedRoute called with a route that has no matches')
   }
 
-  const resolvedRoute = {
+  async function getTitle(): Promise<string | undefined> {
+    if (!isRoute(route)) {
+      return undefined
+    }
+
+    return route.getTitle(resolvedRoute)
+  }
+
+  const resolvedRoute: ResolvedRoute = {
     ...route,
     matched,
     query: createResolvedRouteQuery(query),
@@ -27,18 +34,8 @@ export function createResolvedRoute(route: Route, params: Record<string, unknown
     hash,
     params,
     href,
-    title,
-  } satisfies ResolvedRoute
-
-  getRouteTitle(resolvedRoute).then(resolveTitle)
-
-  return resolvedRoute
-}
-
-async function getRouteTitle(route: ResolvedRoute): Promise<string | undefined> {
-  if (isRoute(route)) {
-    return route.getTitle(route)
+    getTitle,
   }
 
-  return undefined
+  return resolvedRoute
 }

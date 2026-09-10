@@ -36,7 +36,7 @@ export type RouterRoute<TRoute extends ResolvedRoute = ResolvedRoute> = {
   /**
    * Title of the route.
    */
-  readonly title: TRoute['title'],
+  readonly getTitle: TRoute['getTitle'],
   /**
    * What the route's loaders resolve to, keyed by loader name. A route whose only loader is unnamed
    * exposes that loader's data here directly.
