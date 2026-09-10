@@ -7,7 +7,7 @@ export function setDocumentTitle(to: ResolvedRoute | null): void {
     return
   }
 
-  to.title.then((value) => {
+  to.getTitle().then((value) => {
     if (value === undefined) {
       return
     }

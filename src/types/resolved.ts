@@ -55,9 +55,10 @@ export type ResolvedRoute<TRoute extends Route = Route> = Readonly<{
    */
   hash: string,
   /**
-   * Title of the route.
+   * Returns the title of the route from its `setTitle` callback, or from the closest parent route that
+   * defines one.
    */
-  title: Promise<string | undefined>,
+  getTitle: () => Promise<string | undefined>,
 }>
 
 /**

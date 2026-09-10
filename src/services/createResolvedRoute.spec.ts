@@ -82,3 +82,19 @@ test('matched is the last of the resolved matches', () => {
   expect(resolved.matched).toBe(resolved.matches.at(-1))
   expect(resolved.matched.name).toBe('child')
 })
+
+describe('getTitle', () => {
+  test('runs the callback and resolves to its value', async () => {
+    const route = createRoute({ name: 'home', path: '/', component })
+
+    route.setTitle(() => 'Home')
+
+    await expect(createResolvedRoute(route).getTitle()).resolves.toBe('Home')
+  })
+
+  test('resolves to undefined for a route with no title', async () => {
+    const route = createRoute({ name: 'home', path: '/', component })
+
+    await expect(createResolvedRoute(route).getTitle()).resolves.toBeUndefined()
+  })
+})
