@@ -163,7 +163,7 @@ export type Router<
    */
   started: Ref<boolean>,
   /**
-   * Stops the router and teardown any listeners.
+   * Stops the router and tears down its history listener. Programmatic navigations can still update the route without restarting the listener.
    */
   stop: () => void,
   /**

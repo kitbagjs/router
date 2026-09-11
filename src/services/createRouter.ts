@@ -100,6 +100,8 @@ export function createRouter<
   hooks.addGlobalRouteHooks(getGlobalHooksForRouter(plugins))
 
   const getNavigationId = createUniqueIdSequence()
+  let latestNavigationId: string | undefined
+  let historyListeningEnabled = true
   const componentsStore = createComponentsStore(routerKey)
   const visibilityObserver = createVisibilityObserver()
   const history = createRouterHistory({
@@ -130,67 +132,80 @@ export function createRouter<
 
     const navigationId = getNavigationId()
 
+    latestNavigationId = navigationId
     history.stopListening()
 
-    const to = find(url, options) ?? notFoundRoute
+    try {
+      const to = find(url, options) ?? notFoundRoute
 
-    const from = getFromRouteForHooks(navigationId)
+      const from = getFromRouteForHooks(navigationId)
 
-    const beforeResponse = await hooks.runBeforeRouteHooks({ to, from })
+      const beforeResponse = await hooks.runBeforeRouteHooks({ to, from })
 
-    switch (beforeResponse.status) {
-      // On abort do nothing
-      case 'ABORT':
+      if (navigationId !== latestNavigationId) {
         return
+      }
 
-      // On push update the history, and push new route, and return
-      case 'PUSH':
-        history.update(url, options)
-        await push(...beforeResponse.to)
+      switch (beforeResponse.status) {
+        // On abort do nothing
+        case 'ABORT':
+          return
+
+        // On push update the history, and push new route, and return
+        case 'PUSH':
+          history.update(url, options)
+          await push(...beforeResponse.to)
+          return
+
+        // On reject update the history, the route, and set the rejection type
+        case 'REJECT':
+          history.update(url, options)
+          setRejection(beforeResponse.type, to, from)
+          break
+
+        // On success update history, set the route, and clear the rejection
+        case 'SUCCESS':
+          history.update(url, options)
+          clearRejection()
+          break
+
+        default:
+          throw new Error(`Switch is not exhaustive for before hook response status: ${JSON.stringify(beforeResponse satisfies never)}`)
+      }
+
+      if (!isExternal(url)) {
+        setRouteValuesAndUpdateRoute(to, from)
+      }
+
+      const afterResponse = await hooks.runAfterRouteHooks({ to, from })
+
+      if (navigationId !== latestNavigationId) {
         return
+      }
 
-      // On reject update the history, the route, and set the rejection type
-      case 'REJECT':
-        history.update(url, options)
-        setRejection(beforeResponse.type, to, from)
-        break
+      switch (afterResponse.status) {
+        case 'PUSH':
+          await push(...afterResponse.to)
+          break
 
-      // On success update history, set the route, and clear the rejection
-      case 'SUCCESS':
-        history.update(url, options)
-        clearRejection()
-        break
+        case 'REJECT':
+          setRejection(afterResponse.type, to, from)
+          break
 
-      default:
-        throw new Error(`Switch is not exhaustive for before hook response status: ${JSON.stringify(beforeResponse satisfies never)}`)
+        case 'SUCCESS':
+          break
+
+        default:
+          const exhaustive: never = afterResponse
+          throw new Error(`Switch is not exhaustive for after hook response status: ${JSON.stringify(exhaustive)}`)
+      }
+
+      setDocumentTitle(currentRejectionRoute.value ?? to)
+    } finally {
+      if (navigationId === latestNavigationId && historyListeningEnabled) {
+        history.startListening()
+      }
     }
-
-    if (!isExternal(url)) {
-      setRouteValuesAndUpdateRoute(to, from)
-    }
-
-    const afterResponse = await hooks.runAfterRouteHooks({ to, from })
-
-    switch (afterResponse.status) {
-      case 'PUSH':
-        await push(...afterResponse.to)
-        break
-
-      case 'REJECT':
-        setRejection(afterResponse.type, to, from)
-        break
-
-      case 'SUCCESS':
-        break
-
-      default:
-        const exhaustive: never = afterResponse
-        throw new Error(`Switch is not exhaustive for after hook response status: ${JSON.stringify(exhaustive)}`)
-    }
-
-    setDocumentTitle(currentRejectionRoute.value ?? to)
-
-    history.startListening()
   }
 
   function setRouteValuesAndUpdateRoute(to: ResolvedRoute, from: ResolvedRoute | null): void {
@@ -359,7 +374,6 @@ export function createRouter<
     if (starting) {
       return initialize
     }
-
     starting = true
 
     const shouldInitZod = zodParamsDetected(routes)
@@ -370,13 +384,12 @@ export function createRouter<
 
     await set(initialUrl, { replace: true, state: initialState })
 
-    history.startListening()
-
     initialized()
     started.value = true
   }
 
   function stop(): void {
+    historyListeningEnabled = false
     history.stopListening()
   }
 

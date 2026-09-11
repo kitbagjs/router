@@ -38,7 +38,7 @@ test('initial state is set', async () => {
   }
 
   const actual = createRouterHistoryUtilities.createRouterHistory({ listener: () => {} })
-  vi.spyOn(createRouterHistoryUtilities, 'createRouterHistory').mockImplementation(() => ({
+  vi.spyOn(createRouterHistoryUtilities, 'createRouterHistory').mockImplementationOnce(() => ({
     ...actual,
     location,
   }))
@@ -93,6 +93,269 @@ test('updates the route when navigating', async () => {
   await push('/second')
 
   expect(route.matched.name).toBe('second')
+})
+
+test('continues listening to history after navigation is aborted', async () => {
+  const home = createRoute({
+    name: 'home',
+    component,
+    path: '/',
+  })
+  const first = createRoute({
+    name: 'first',
+    component,
+    path: '/first',
+  })
+  const blocked = createRoute({
+    name: 'blocked',
+    component,
+    path: '/blocked',
+  })
+
+  blocked.onBeforeRouteEnter((_to, { abort }) => {
+    abort()
+  })
+
+  const router = createRouter([home, first, blocked], {
+    initialUrl: '/',
+    historyMode: 'memory',
+  })
+
+  await router.start()
+  await router.push('first')
+  await router.push('blocked')
+
+  expect(router.route.name).toBe('first')
+
+  router.back()
+  await flushPromises()
+
+  expect(router.route.name).toBe('home')
+})
+
+test('a newer navigation supersedes a pending navigation without disabling history listening', async () => {
+  const { promise: continueNavigation, resolve } = Promise.withResolvers<undefined>()
+  const onBeforeFirst = vi.fn(() => continueNavigation)
+  const home = createRoute({
+    name: 'home',
+    component,
+    path: '/',
+  })
+  const first = createRoute({
+    name: 'first',
+    component,
+    path: '/first',
+  })
+  const current = createRoute({
+    name: 'current',
+    component,
+    path: '/current',
+  })
+  const blocked = createRoute({
+    name: 'blocked',
+    component,
+    path: '/blocked',
+  })
+
+  first.onBeforeRouteEnter(onBeforeFirst)
+  blocked.onBeforeRouteEnter((_to, { abort }) => {
+    abort()
+  })
+
+  const router = createRouter([home, first, current, blocked], {
+    initialUrl: '/',
+    historyMode: 'memory',
+  })
+
+  await router.start()
+  await router.push('current')
+
+  const firstNavigation = router.push('first')
+  await flushPromises()
+  await router.push('blocked')
+
+  router.back()
+  await flushPromises()
+
+  expect(router.route.name).toBe('home')
+
+  resolve(undefined)
+  await firstNavigation
+  await flushPromises()
+
+  expect(onBeforeFirst).toHaveBeenCalledOnce()
+  expect(router.route.name).toBe('home')
+})
+
+test('a stale navigation does not restore history listening while a newer navigation is pending', async () => {
+  const { promise: continueFirst, resolve: resolveFirst } = Promise.withResolvers<undefined>()
+  const { promise: continueSecond, resolve: resolveSecond } = Promise.withResolvers<undefined>()
+  const onBeforeSecond = vi.fn(() => continueSecond)
+  const home = createRoute({
+    name: 'home',
+    component,
+    path: '/',
+  })
+  const first = createRoute({
+    name: 'first',
+    component,
+    path: '/first',
+  })
+  const second = createRoute({
+    name: 'second',
+    component,
+    path: '/second',
+  })
+
+  first.onBeforeRouteEnter(() => continueFirst)
+  second.onBeforeRouteEnter(onBeforeSecond)
+
+  const router = createRouter([home, first, second], {
+    initialUrl: '/',
+    historyMode: 'memory',
+  })
+
+  await router.start()
+
+  const firstNavigation = router.push('first')
+  await flushPromises()
+  const secondNavigation = router.push('second')
+  await flushPromises()
+
+  resolveFirst(undefined)
+  await firstNavigation
+
+  expect(router.route.name).toBe('home')
+
+  resolveSecond(undefined)
+  await secondNavigation
+  await flushPromises()
+
+  expect(onBeforeSecond).toHaveBeenCalledOnce()
+  expect(router.route.name).toBe('second')
+})
+
+test('a stale after hook cannot redirect a newer navigation', async () => {
+  const { promise: continueAfterHook, resolve } = Promise.withResolvers<undefined>()
+  const home = createRoute({
+    name: 'home',
+    component,
+    path: '/',
+  })
+  const hijack = createRoute({
+    name: 'hijack',
+    component,
+    path: '/hijack',
+  })
+  const first = createRoute({
+    name: 'first',
+    component,
+    path: '/first',
+    context: [hijack],
+  })
+  const second = createRoute({
+    name: 'second',
+    component,
+    path: '/second',
+  })
+
+  first.onAfterRouteEnter(async (_to, { push }) => {
+    await continueAfterHook
+    push('hijack')
+  })
+
+  const router = createRouter([home, first, second, hijack], {
+    initialUrl: '/',
+    historyMode: 'memory',
+  })
+
+  await router.start()
+
+  const firstNavigation = router.push('first')
+  await flushPromises()
+
+  expect(router.route.name).toBe('first')
+
+  await router.push('second')
+  resolve(undefined)
+  await firstNavigation
+
+  expect(router.route.name).toBe('second')
+})
+
+test('does not restore history listening after the router is stopped during navigation', async () => {
+  const { promise: continueNavigation, resolve } = Promise.withResolvers<undefined>()
+  const home = createRoute({
+    name: 'home',
+    component,
+    path: '/',
+  })
+  const first = createRoute({
+    name: 'first',
+    component,
+    path: '/first',
+  })
+  const slow = createRoute({
+    name: 'slow',
+    component,
+    path: '/slow',
+  })
+
+  slow.onBeforeRouteEnter(() => continueNavigation)
+
+  const router = createRouter([home, first, slow], {
+    initialUrl: '/',
+    historyMode: 'memory',
+  })
+
+  await router.start()
+  await router.push('first')
+
+  const navigation = router.push('slow')
+  await flushPromises()
+  router.stop()
+
+  resolve(undefined)
+  await navigation
+
+  expect(router.route.name).toBe('slow')
+
+  router.back()
+  await flushPromises()
+
+  expect(router.route.name).toBe('slow')
+})
+
+test('does not restore history listening when navigating after the router is stopped', async () => {
+  const home = createRoute({
+    name: 'home',
+    component,
+    path: '/',
+  })
+  const first = createRoute({
+    name: 'first',
+    component,
+    path: '/first',
+  })
+  const second = createRoute({
+    name: 'second',
+    component,
+    path: '/second',
+  })
+  const router = createRouter([home, first, second], {
+    initialUrl: '/',
+    historyMode: 'memory',
+  })
+
+  await router.start()
+  await router.push('first')
+  router.stop()
+  await router.push('second')
+
+  router.back()
+  await flushPromises()
+
+  expect(router.route.name).toBe('second')
 })
 
 test('route update updates the current route', async () => {

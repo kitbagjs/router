@@ -39,4 +39,4 @@ type Router<TRoutes, TOptions, TPlugin> = object;
 | <a id="route"></a> `route` | \| [`RouterRouteUnion`](RouterRouteUnion.md)\<`TRoutes`\> \| [`RouterRouteUnion`](RouterRouteUnion.md)\<`TPlugin`\[`"routes"`\]\> | Manages the current route state. |
 | <a id="start"></a> `start` | () => `Promise`\<`void`\> | Initializes the router based on the initial route. Automatically called when the router is installed. Calling this more than once has no effect. |
 | <a id="started"></a> `started` | `Ref`\<`boolean`\> | Returns true if the router has been started. |
-| <a id="stop"></a> `stop` | () => `void` | Stops the router and teardown any listeners. |
+| <a id="stop"></a> `stop` | () => `void` | Stops the router and tears down its history listener. Programmatic navigations can still update the route without restarting the listener. |
