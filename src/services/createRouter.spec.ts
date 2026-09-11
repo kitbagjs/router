@@ -12,6 +12,8 @@ import { RouteNotFoundError } from '@/errors/routeNotFoundError'
 import { InvalidRouteParamValueError } from '@/errors/invalidRouteParamValueError'
 import { createRejection } from './createRejection'
 import { SsrOptionRequiredError } from '@/errors/ssrOptionRequiredError'
+import { PayloadValueError } from '@/errors/payloadValueError'
+import { RenderRedirect, RenderSuccess, ServerRenderResponse } from '@/types/router'
 
 test('initial route is set', async () => {
   const foo = createRoute({
@@ -1261,6 +1263,22 @@ test('going back from a redirect returns to the route before it', async () => {
   expect(router.route.name).toBe('home')
 })
 
+function rendered(response: ServerRenderResponse): Exclude<ServerRenderResponse, RenderRedirect> {
+  if (response.kind === 'redirect') {
+    throw new Error('expected a rendered response, got a redirect')
+  }
+
+  return response
+}
+
+function successful(response: ServerRenderResponse): RenderSuccess {
+  if (response.kind !== 'success') {
+    throw new Error(`expected a success response, got ${response.kind}`)
+  }
+
+  return response
+}
+
 describe('router.render response', () => {
   test('render requires the router to be created for server rendering', async () => {
     const route = createRoute({ name: 'route', component, path: '/' })
@@ -1278,6 +1296,115 @@ describe('router.render response', () => {
     const result = await router.render()
 
     expect(result).toMatchObject({ kind: 'success', status: 200 })
+  })
+
+  test('after hooks are left for the client even when the router starts before render', async () => {
+    const onAfterRouteEnter = vi.fn()
+
+    const route = createRoute({ name: 'route', component, path: '/' })
+    const router = createRouter([route], { ssr: true, initialUrl: '/' })
+
+    router.onAfterRouteEnter(onAfterRouteEnter)
+
+    await router.start()
+    await router.render()
+
+    expect(onAfterRouteEnter).not.toHaveBeenCalled()
+  })
+
+  test('a value json cannot write is left out of the payload and returned as a failure', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+    const circular: Record<string, unknown> = {}
+    circular.self = circular
+
+    const route = createRoute({ name: 'route', component, path: '/' }).addLoader(() => circular)
+    const router = createRouter([route], { ssr: true, initialUrl: '/' })
+
+    await router.start()
+
+    const result = successful(await router.render())
+    const payload: unknown = JSON.parse(result.payload.replace(/^<script[^>]*>/, '').replace(/<\/script>$/, ''))
+
+    expect(payload).toMatchObject({ values: [] })
+    expect(result.failures).toMatchObject([expect.any(PayloadValueError)])
+    expect(warn).toHaveBeenCalled()
+
+    warn.mockRestore()
+  })
+
+  test('returns the title of the route that rendered', async () => {
+    const route = createRoute({ name: 'route', component, path: '/' })
+
+    route.setTitle(() => 'the title')
+
+    const router = createRouter([route], { ssr: true, initialUrl: '/' })
+
+    await router.start()
+
+    const result = rendered(await router.render())
+
+    expect(result.title).toBe('the title')
+  })
+
+  test('returns the title of the rejection that rendered', async () => {
+    const locked = createRejection({ type: 'Locked', status: 423, component })
+
+    locked.setTitle(() => 'locked')
+
+    const route = createRoute({ name: 'route', component, path: '/' })
+    const router = createRouter([route], { ssr: true, initialUrl: '/', rejections: [locked] })
+
+    router.onBeforeRouteEnter((_to, { reject }) => reject('Locked'))
+
+    await router.start()
+
+    const result = rendered(await router.render())
+
+    expect(result.title).toBe('locked')
+  })
+
+  test('render leaves after hooks for the client', async () => {
+    const onAfterRouteEnter = vi.fn()
+
+    const route = createRoute({ name: 'route', component, path: '/' })
+    const router = createRouter([route], { ssr: true, initialUrl: '/' })
+
+    router.onAfterRouteEnter(onAfterRouteEnter)
+
+    await router.render()
+
+    expect(onAfterRouteEnter).not.toHaveBeenCalled()
+  })
+
+  test('a rejection without a title returns no title', async () => {
+    const locked = createRejection({ type: 'Locked', status: 423, component })
+
+    const route = createRoute({ name: 'route', component, path: '/' })
+
+    route.setTitle(() => 'the title')
+
+    const router = createRouter([route], { ssr: true, initialUrl: '/', rejections: [locked] })
+
+    router.onBeforeRouteEnter((_to, { reject }) => reject('Locked'))
+
+    await router.start()
+
+    const result = rendered(await router.render())
+
+    expect(result.title).toBeUndefined()
+  })
+
+  test('a rejected render carries the rejection in its payload', async () => {
+    const route = createRoute({ name: 'route', component, path: '/foo' })
+    const router = createRouter([route], { ssr: true, initialUrl: '/does-not-exist' })
+
+    await router.start()
+
+    const result = rendered(await router.render())
+    const payload: unknown = JSON.parse(result.payload.replace(/^<script[^>]*>/, '').replace(/<\/script>$/, ''))
+
+    expect(payload).toStrictEqual({ kind: 'reject', url: '/does-not-exist', rejection: 'NotFound' })
   })
 
   test('given a url that matches a route, returns 200', async () => {
