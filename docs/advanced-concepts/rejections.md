@@ -11,12 +11,18 @@ import { createRejection, createRouter } from '@kitbag/router'
 
 const authNeededRejection = createRejection({
   type: 'AuthNeeded',
+  status: 401,
 })
 
 export const router = createRouter(routes, {
   rejections: [authNeededRejection]
 })
 ```
+
+The `status` is what a server should respond with while the rejection is in effect. It is required
+because no default suits every rejection: `404` for something missing, `401` or `403` for something
+gated, `503` for something temporary. Client only apps never read it, but it has to be decided
+somewhere and the rejection is the only place with enough context.
 
 ## Rejection Component
 
@@ -27,6 +33,7 @@ import LoginView from '@/views/LoginView.vue'
 
 const authNeededRejection = createRejection({
   type: 'AuthNeeded',
+  status: 401,
   component: LoginView,
 })
 ```
@@ -46,6 +53,7 @@ import NotFoundPage from '@/components/NotFoundPage.vue'
 
 const notFoundRejection = createRejection({
   type: 'NotFound',
+  status: 404,
   component: NotFoundPage,
 })
 
@@ -105,6 +113,7 @@ import { createRejection } from '@kitbag/router'
 
 const authNeededRejection = createRejection({
   type: 'AuthNeeded',
+  status: 401,
 })
 
 authNeededRejection.setTitle((to, context) => {

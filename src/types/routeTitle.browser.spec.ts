@@ -170,7 +170,7 @@ test('route without title and parent with title updates document title', async (
 })
 
 test('rejection from a hook updates document title', async () => {
-  const locked = createRejection({ type: 'Locked', component })
+  const locked = createRejection({ type: 'Locked', status: 423, component })
 
   locked.setTitle(() => 'locked')
 
