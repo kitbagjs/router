@@ -55,6 +55,16 @@ export type RouterOptions = {
   removeTrailingSlashes?: boolean,
 
   /**
+   * The status `render` reports when it normalized the url it was given, such as removing a trailing
+   * slash. Defaults to 302 because a 301 is cached indefinitely by browsers and CDNs and cannot be
+   * recalled, and trailing slash removal is on by default. Set 301 to have the normalization treated as
+   * permanent.
+   *
+   * @default 302
+   */
+  redirectStatus?: RedirectStatus,
+
+  /**
    * When false, createRouterAssets must be used for component and hooks. Assets exported by the library
    * will not work with the created router instance.
    *
@@ -62,6 +72,44 @@ export type RouterOptions = {
    */
   isGlobalRouter?: boolean,
 }
+
+/**
+ * What a server should respond with for what the router rendered. `location` exists only on a redirect,
+ * so narrowing on it is what proves a `Location` header is available.
+ */
+export type RenderOutcome<TRejectionType extends string = string> = RenderResponse<TRejectionType> | RenderRedirect<TRejectionType>
+
+type RenderResponse<TRejectionType extends string> = {
+  /**
+   * Suggested http status.
+   */
+  status: number,
+  location?: undefined,
+  /**
+   * The type of rejection in effect, or null when there is none.
+   */
+  rejection: TRejectionType | null,
+}
+
+type RenderRedirect<TRejectionType extends string> = {
+  /**
+   * Suggested http status.
+   */
+  status: RedirectStatus,
+  /**
+   * Value for the `Location` header.
+   */
+  location: string,
+  /**
+   * The type of rejection in effect, or null when there is none.
+   */
+  rejection: TRejectionType | null,
+}
+
+/**
+ * The statuses the router reports for a redirect.
+ */
+export type RedirectStatus = 301 | 302
 
 export type Router<
   TRoutes extends Routes = any,
@@ -162,6 +210,16 @@ export type Router<
    * Returns true if the router has been started.
    */
   started: Ref<boolean>,
+  /**
+   * Resolves once the router has nothing left to render: every prop and loader has settled, following
+   * any navigation one of them caused, so this waits for the next *full* render rather than for one
+   * navigation. Resolves with what a server should respond with.
+   *
+   * Awaiting `push` only waits for the route to commit; this also waits for its data.
+   *
+   * Only available on the server for ssr. Throws `RenderInBrowserError` when called in the client.
+   */
+  render: () => Promise<RenderOutcome<ExtractRejectionTypes<ExtractRejections<TOptions>> | ExtractRejectionTypes<ExtractRejections<TPlugin>> | BuiltInRejectionType>>,
   /**
    * Stops the router and teardown any listeners.
    */
