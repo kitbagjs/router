@@ -143,9 +143,8 @@ export function createRouter<
       case 'ABORT':
         return
 
-      // On push update the history, and push new route, and return
+      // On push, push the new route and return
       case 'PUSH':
-        history.update(url, options)
         await push(...beforeResponse.to)
         return
 

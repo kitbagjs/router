@@ -57,6 +57,8 @@ test('initial state is set', async () => {
   await start()
 
   expect(route.state).toMatchObject({ zoo: 123 })
+
+  vi.restoreAllMocks()
 })
 
 test('updates the route when navigating', async () => {
@@ -1016,4 +1018,28 @@ describe('options.removeTrailingSlashes', () => {
     // rejects so has an empty path
     expect(router.route.href).toBe('/')
   })
+})
+
+test('going back from a redirect returns to the route before it', async () => {
+  const home = createRoute({ name: 'home', component, path: '/' })
+  const oldPath = createRoute({ name: 'oldPath', component, path: '/old' })
+  const newPath = createRoute({ name: 'newPath', component, path: '/new' })
+
+  const router = createRouter([home, oldPath, newPath], { initialUrl: '/' })
+
+  router.onBeforeRouteEnter((to, { push }) => {
+    if (to.name === 'oldPath') {
+      push('newPath')
+    }
+  })
+
+  await router.start()
+  await router.push('oldPath')
+
+  expect(router.route.name).toBe('newPath')
+
+  router.back()
+  await flushPromises()
+
+  expect(router.route.name).toBe('home')
 })
