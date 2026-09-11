@@ -1,6 +1,6 @@
 import { Rejection } from '@/types/rejection'
 import { ResolvedRoute } from '@/types/resolved'
-import { RedirectStatus, ServerRenderResponse } from '@/types/router'
+import { RedirectStatus, RenderResponse } from '@/types/router'
 import { isSameUrl } from '@/services/urlParser'
 import { pathHasTrailingSlash } from '@/utilities/trailingSlashes'
 
@@ -30,7 +30,7 @@ export type GetResponseContext = {
 /**
  * What a server should respond with, given where the router settled.
  */
-export function getResponse({ initialUrl, route, rejection, removeTrailingSlashes, redirectStatus }: GetResponseContext): ServerRenderResponse {
+export function getResponse({ initialUrl, route, rejection, removeTrailingSlashes, redirectStatus }: GetResponseContext): RenderResponse {
   const type = rejection?.type ?? null
 
   if (removeTrailingSlashes && pathHasTrailingSlash(initialUrl)) {

@@ -77,7 +77,22 @@ export type RouterOptions = {
  * What a server should respond with for what the router rendered. `location` exists only on a redirect,
  * so narrowing on it is what proves a `Location` header is available.
  */
-export type ServerRenderResponse<TRejectionType extends string = string> = RenderComplete<TRejectionType> | RenderRedirect<TRejectionType>
+export type ServerRenderResponse<TRejectionType extends string = string> = RenderResponse<TRejectionType> & {
+  /**
+   * A script tag to embed in the document sent to the client, so it adopts what this render settled on
+   * rather than working it out again.
+   */
+  payload: string,
+  /**
+   * The title of the route or rejection that rendered, for the document sent to the client.
+   */
+  title: string | undefined,
+}
+
+/**
+ * What a server should respond with, before the payload is attached.
+ */
+export type RenderResponse<TRejectionType extends string = string> = RenderComplete<TRejectionType> | RenderRedirect<TRejectionType>
 
 type RenderComplete<TRejectionType extends string> = {
   /**

@@ -12,6 +12,7 @@ import { DataKind } from '@/services/createNavigationStores'
 import { createRouterHistory } from '@/services/createRouterHistory'
 import { createRouterHooks, getRouterHooksKey } from '@/services/createRouterHooks'
 import { getInitialUrl } from '@/services/getInitialUrl'
+import { decodePayloadValues, encodePayloadValues, getHydratingPayload, payloadToScript, RouterPayload } from '@/services/payload'
 import { setStateValues } from '@/services/state'
 import { Routes } from '@/types/route'
 import { NOT_FOUND_REJECTION_TYPE } from '@/types/rejection'
@@ -50,6 +51,12 @@ import { createCurrentRejection } from '@/services/createCurrentRejection'
 type RouterUpdateOptions = {
   replace?: boolean,
   state?: any,
+}
+
+type RunAfterHooksContext = {
+  navigationId: string,
+  to: ResolvedRoute | null,
+  from: ResolvedRoute | null,
 }
 
 /**
@@ -126,6 +133,34 @@ export function createRouter<
     return getMatchForUrl(filteredRoutes, url, { ...resolveOptions, ...parseOptions })
   }
 
+  /**
+   * Runs the after hooks for a navigation and reacts to their response.
+   */
+  async function runAfterHooks({ navigationId, to, from }: RunAfterHooksContext): Promise<void> {
+    const response = await hooks.runAfterRouteHooks({ to, from })
+
+    if (!isCurrentNavigationId(navigationId)) {
+      return
+    }
+
+    switch (response.status) {
+      case 'PUSH':
+        await push(...response.to)
+        break
+
+      case 'REJECT':
+        reject(response.type, { to, from })
+        break
+
+      case 'SUCCESS':
+        break
+
+      default:
+        const exhaustive: never = response
+        throw new Error(`Switch is not exhaustive for after hook response status: ${JSON.stringify(exhaustive)}`)
+    }
+  }
+
   const set = activity.wrap(async (url: string, options: RouterUpdateOptions = {}): Promise<void> => {
     if (pathHasTrailingSlash(url) && shouldRemoveTrailingSlashes) {
       const cleanedUrl = removeTrailingSlashesFromPath(url)
@@ -184,27 +219,8 @@ export function createRouter<
     commitNavigation()
     updateTitle()
 
-    const afterResponse = await hooks.runAfterRouteHooks({ to, from })
-
-    if (!isCurrentNavigationId(navigationId)) {
-      return
-    }
-
-    switch (afterResponse.status) {
-      case 'PUSH':
-        await push(...afterResponse.to)
-        break
-
-      case 'REJECT':
-        reject(afterResponse.type, { to, from })
-        break
-
-      case 'SUCCESS':
-        break
-
-      default:
-        const exhaustive: never = afterResponse
-        throw new Error(`Switch is not exhaustive for after hook response status: ${JSON.stringify(exhaustive)}`)
+    if (!isSSR) {
+      await runAfterHooks({ navigationId, to, from })
     }
   })
 
@@ -378,11 +394,43 @@ export function createRouter<
   const isExternal = createIsExternal(host)
 
   let starting = false
+  let isSSR = false
   const started = ref(false)
 
   // eslint is just incorrect here
   // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
   const { promise: initialize, resolve: initialized } = Promise.withResolvers<void>()
+
+  /**
+   * Adopts the outcome the server rendered for the initial url, committed synchronously so the first
+   * paint matches the markup already in the dom.
+   */
+  async function hydrate(payload: RouterPayload): Promise<void> {
+    const navigationId = getNavigationId()
+    const to = find(initialUrl) ?? null
+
+    if (payload.rejection) {
+      reject(payload.rejection, { to, from: null })
+      started.value = true
+
+      return
+    }
+
+    if (!to) {
+      reject(NOT_FOUND_REJECTION_TYPE, { to, from: null })
+      started.value = true
+
+      return
+    }
+
+    const values = decodePayloadValues(payload.values)
+
+    valueStore.prefill(to, values)
+    setRouteValuesAndUpdateRoute(to, null)
+    started.value = true
+
+    await runAfterHooks({ navigationId, to, from: null })
+  }
 
   async function start(): Promise<void> {
     if (starting) {
@@ -391,7 +439,13 @@ export function createRouter<
 
     starting = true
 
-    await set(initialUrl, { replace: true, state: initialState })
+    const payload = getHydratingPayload()
+
+    if (payload) {
+      await hydrate(payload)
+    } else {
+      await set(initialUrl, { replace: true, state: initialState })
+    }
 
     history.startListening()
 
@@ -409,16 +463,31 @@ export function createRouter<
       throw new RenderInBrowserError()
     }
 
+    isSSR = true
+
     await start()
     await activity.idle()
 
-    return getResponse({
+    const response = getResponse({
       initialUrl,
       route: currentRoute,
       rejection: currentRejection.value,
       removeTrailingSlashes: shouldRemoveTrailingSlashes,
       redirectStatus,
     })
+
+    const title = await getTitle()
+    const values = encodePayloadValues(valueStore.getValues(currentRoute))
+
+    return {
+      ...response,
+      title,
+      payload: payloadToScript({
+        url: initialUrl,
+        rejection: response.rejection,
+        values,
+      }),
+    }
   }
 
   function stop(): void {
