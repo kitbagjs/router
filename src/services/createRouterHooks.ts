@@ -165,11 +165,11 @@ export function createRouterHooks(): RouterHooks {
   }
 
   const runErrorHooks: ErrorHookRunner = (error, { to, from, source }) => {
-    const { reject, push, replace, update } = createRouterCallbackContext({ to })
+    const { reject, push, replace } = createRouterCallbackContext({ to })
 
     for (const hook of globalStore.onError) {
       try {
-        hook(error, { to, from, source, reject, push, replace, update })
+        hook(error, { to, from, source, reject, push, replace })
 
         return
       } catch (hookError) {
