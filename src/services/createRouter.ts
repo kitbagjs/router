@@ -27,7 +27,6 @@ import { EmptyRouterPlugin, RouterPlugin } from '@/types/routerPlugin'
 import { getRoutesForRouter } from './getRoutesForRouter'
 import { getGlobalHooksForRouter } from './getGlobalHooksForRouter'
 import { createComponentsStore } from './createComponentsStore'
-import { initZod, zodParamsDetected } from './zod'
 import { getComponentsStoreKey } from '@/compositions/useComponentsStore'
 import { getRouteValueStoreInjectionKey } from '@/compositions/useRouteValueStore'
 import { getRouterRejectionInjectionKey } from '@/compositions/useRejection'
@@ -361,12 +360,6 @@ export function createRouter<
     }
 
     starting = true
-
-    const shouldInitZod = zodParamsDetected(routes)
-
-    if (shouldInitZod) {
-      await initZod()
-    }
 
     await set(initialUrl, { replace: true, state: initialState })
 

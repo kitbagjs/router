@@ -1,7 +1,6 @@
 import { safeGetParamValue, safeSetParamValue } from './params'
 import { z } from 'zod'
 import { test, expect } from 'vitest'
-import { initZod } from './zod'
 
 const discriminatedUnion = z.discriminatedUnion('type', [
   z.object({ type: z.literal('one'), value: z.string() }),
@@ -54,8 +53,6 @@ test.each([
   { schema: z.map(z.string(), z.number()), string: '[["one",1]]', parsed: new Map([['one', 1]]) },
   { schema: z.set(z.number()), string: '[1,2,3]', parsed: new Set([1, 2, 3]) },
 ])('given $schema, returns $parsed for $string', async ({ schema, string, parsed }) => {
-  await initZod()
-
   if (typeof parsed === 'string' || typeof parsed === 'number' || typeof parsed === 'boolean' || typeof parsed === 'bigint') {
     expect(safeGetParamValue(string, { param: schema })).toBe(parsed)
     expect(safeSetParamValue(parsed, { param: schema })).toBe(string)
@@ -69,8 +66,6 @@ test.each([
   { schema: z.intersection(z.object({ foo: z.string() }), z.object({ bar: z.number() })), type: 'Intersection' },
   { schema: z.promise(z.string()), type: 'Promise' },
 ])('$type schemas are not supported', async ({ schema }) => {
-  await initZod()
-
   expect(safeGetParamValue('test', { param: schema })).toBeUndefined()
   expect(safeSetParamValue('test', { param: schema })).toBeUndefined()
 })
