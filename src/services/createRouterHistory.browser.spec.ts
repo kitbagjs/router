@@ -36,3 +36,33 @@ test('when forward is called, forwards call to window history', () => {
 
   expect(window.history.go).toHaveBeenCalledOnce()
 })
+
+test('starting and stopping history listening is idempotent', () => {
+  const listener = vi.fn()
+  const history = createRouterHistory({
+    mode: 'memory',
+    listener,
+  })
+
+  history.startListening()
+  history.startListening()
+  history.update('/first')
+
+  expect(listener).toHaveBeenCalledOnce()
+
+  history.stopListening()
+  history.stopListening()
+  history.update('/second')
+
+  expect(listener).toHaveBeenCalledOnce()
+
+  history.startListening()
+  history.update('/third')
+
+  expect(listener).toHaveBeenCalledTimes(2)
+  expect(listener).toHaveBeenLastCalledWith(expect.objectContaining({
+    location: expect.objectContaining({
+      pathname: '/third',
+    }),
+  }))
+})
