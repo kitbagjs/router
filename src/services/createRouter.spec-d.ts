@@ -50,7 +50,7 @@ describe('hooks', () => {
     expectTypeOf(router.onAfterRouteEnter).toEqualTypeOf<AddAfterEnterHook<Routes, never>>()
     expectTypeOf(router.onAfterRouteLeave).toEqualTypeOf<AddAfterLeaveHook<Routes, never>>()
     expectTypeOf(router.onAfterRouteUpdate).toEqualTypeOf<AddAfterUpdateHook<Routes, never>>()
-    expectTypeOf(router.onError).toEqualTypeOf<AddErrorHook<Routes[number], Routes, never>>()
+    expectTypeOf(router.onError).toEqualTypeOf<AddErrorHook<Routes, never>>()
     expectTypeOf(router.onRejection).toEqualTypeOf<AddRejectionHook<BuiltInRejectionType, Routes>>()
   })
 
@@ -96,6 +96,12 @@ describe('hooks', () => {
   test('context.reject', () => {
     router.onBeforeRouteEnter((_to, context) => {
       expectTypeOf(context.reject).toEqualTypeOf(router.reject)
+    })
+  })
+
+  test('onError context has no update, which has no destination to act on', () => {
+    router.onError((_error, context) => {
+      expectTypeOf<keyof typeof context>().toEqualTypeOf<'to' | 'from' | 'source' | 'reject' | 'push' | 'replace'>()
     })
   })
 

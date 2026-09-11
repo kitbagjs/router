@@ -16,7 +16,7 @@ type RouteHooks<
   onAfterRouteEnter: AddAfterEnterHook<TRoutes, TRejections>,
   onAfterRouteUpdate: AddAfterUpdateHook<TRoutes, TRejections>,
   onAfterRouteLeave: AddAfterLeaveHook<TRoutes, TRejections>,
-  onError: AddErrorHook<TRoutes[number], TRoutes, TRejections>,
+  onError: AddErrorHook<TRoutes, TRejections>,
   onRejection: AddRejectionHook<ExtractRejectionTypes<TRejections>, TRoutes>,
   store: Hooks,
 }

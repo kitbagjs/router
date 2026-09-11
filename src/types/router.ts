@@ -141,7 +141,7 @@ export type Router<
    * Registers a hook to be called when an error occurs.
    * If the hook returns true, the error is considered handled and the other hooks are not run. If all hooks return false the error is rethrown
    */
-  onError: AddErrorHook<TRoutes[number] | TPlugin['routes'][number], TRoutes | TPlugin['routes'], ExtractRejections<TOptions> | ExtractRejections<TPlugin>>,
+  onError: AddErrorHook<TRoutes | TPlugin['routes'], ExtractRejections<TOptions> | ExtractRejections<TPlugin>>,
   /**
    * Registers a hook to be called when a rejection occurs.
    */

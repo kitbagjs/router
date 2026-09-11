@@ -794,6 +794,46 @@ describe('hooks', () => {
     })
   })
 
+  test('update is given to enter and update hooks', () => {
+    const route = createRoute({
+      name: 'route',
+      path: '/[paramName]',
+      component,
+    })
+
+    route.onBeforeRouteEnter((_to, { update }) => {
+      expectTypeOf(update).toBeCallableWith('paramName', 'value')
+    })
+
+    route.onBeforeRouteUpdate((_to, { update }) => {
+      expectTypeOf(update).toBeCallableWith('paramName', 'value')
+    })
+
+    route.onAfterRouteEnter((_to, { update }) => {
+      expectTypeOf(update).toBeCallableWith('paramName', 'value')
+    })
+
+    route.onAfterRouteUpdate((_to, { update }) => {
+      expectTypeOf(update).toBeCallableWith('paramName', 'value')
+    })
+  })
+
+  test('update is not given to leave hooks, which have no destination to update', () => {
+    const route = createRoute({
+      name: 'route',
+      path: '/[paramName]',
+      component,
+    })
+
+    route.onBeforeRouteLeave((_to, context) => {
+      expectTypeOf<keyof typeof context>().toEqualTypeOf<'from' | 'reject' | 'push' | 'replace' | 'abort'>()
+    })
+
+    route.onAfterRouteLeave((_to, context) => {
+      expectTypeOf<keyof typeof context>().toEqualTypeOf<'from' | 'reject' | 'push' | 'replace'>()
+    })
+  })
+
   test('context.push', () => {
     const contextRoute = createRoute({
       name: 'contextRoute',
