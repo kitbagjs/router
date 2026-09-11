@@ -2,10 +2,10 @@ import { ResolvedRoute } from '@/types/resolved'
 import { isRouteEnter, isRouteLeave, isRouteUpdate } from './hooks'
 import { Hooks } from '@/models/hooks'
 
-export function getGlobalBeforeHooks(to: ResolvedRoute, from: ResolvedRoute | null, globalHooks: Hooks): Hooks {
+export function getGlobalBeforeHooks(to: ResolvedRoute | null, from: ResolvedRoute | null, globalHooks: Hooks): Hooks {
   const hooks = new Hooks()
 
-  to.matches.forEach((_route, depth) => {
+  to?.matches.forEach((_route, depth) => {
     if (isRouteEnter(to, from, depth)) {
       globalHooks.onBeforeRouteEnter.forEach((hook) => hooks.onBeforeRouteEnter.add(hook))
     }
@@ -24,10 +24,10 @@ export function getGlobalBeforeHooks(to: ResolvedRoute, from: ResolvedRoute | nu
   return hooks
 }
 
-export function getGlobalAfterHooks(to: ResolvedRoute, from: ResolvedRoute | null, globalHooks: Hooks): Hooks {
+export function getGlobalAfterHooks(to: ResolvedRoute | null, from: ResolvedRoute | null, globalHooks: Hooks): Hooks {
   const hooks = new Hooks()
 
-  to.matches.forEach((_route, depth) => {
+  to?.matches.forEach((_route, depth) => {
     if (isRouteEnter(to, from, depth)) {
       globalHooks.onAfterRouteEnter.forEach((hook) => hooks.onAfterRouteEnter.add(hook))
     }
