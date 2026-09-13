@@ -1,4 +1,4 @@
-import { Param, ParamGetSet } from '@/types/paramTypes'
+import { ParamGetSet } from '@/types/paramTypes'
 import { isRecord } from '@/utilities/guards'
 import { isPromise } from '@/utilities/promises'
 import { StandardSchemaV1 } from '@standard-schema/spec'
@@ -23,18 +23,14 @@ function parse(schema: ValibotSchemaLike, value: unknown) {
   return result.value
 }
 
-function isValibotSchemaLike(param: Param): param is ValibotSchemaLike {
-  return isRecord(param)
-    && 'type' in param
-    && typeof param.type === 'string'
-    && '~standard' in param
-    && isRecord(param['~standard'])
-    && 'vendor' in param['~standard']
-    && param['~standard'].vendor === 'valibot'
-}
-
-export function isValibotParam(value: Param): value is ValibotSchemaLike {
-  return isValibotSchemaLike(value)
+export function isValibotSchema(value: unknown): value is ValibotSchemaLike {
+  return isRecord(value)
+    && 'type' in value
+    && typeof value.type === 'string'
+    && '~standard' in value
+    && isRecord(value['~standard'])
+    && 'vendor' in value['~standard']
+    && value['~standard'].vendor === 'valibot'
 }
 
 export function createValibotParam<T>(schema: ValibotSchemaLike): ParamGetSet<T> {
