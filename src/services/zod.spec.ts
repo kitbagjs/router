@@ -12,6 +12,11 @@ enum Fruits {
   Banana = '1'
 }
 
+enum Numbers {
+  One = 1,
+  Two = 2
+}
+
 test.each([
   { schema: z.literal('foo'), string: 'foo', parsed: 'foo' },
   { schema: z.literal(1), string: '1', parsed: 1 },
@@ -52,6 +57,7 @@ test.each([
   { schema: z.record(z.string(), z.object({ foo: z.string() })), string: '{"one":{"foo":"bar"}}', parsed: { one: { foo: 'bar' } } },
   { schema: z.map(z.string(), z.number()), string: '[["one",1]]', parsed: new Map([['one', 1]]) },
   { schema: z.set(z.number()), string: '[1,2,3]', parsed: new Set([1, 2, 3]) },
+  { schema: z.enum(Numbers), string: '1', parsed: Numbers.One },
 ])('given $schema, returns $parsed for $string', async ({ schema, string, parsed }) => {
   if (typeof parsed === 'string' || typeof parsed === 'number' || typeof parsed === 'boolean' || typeof parsed === 'bigint') {
     expect(safeGetParamValue(string, { param: schema })).toBe(parsed)

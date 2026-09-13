@@ -1,5 +1,4 @@
-import { ValibotSchemaLike } from '@/services/valibot'
-import { ZodSchemaLike } from '@/services/zod'
+import { ValibotSchemaLike, ZodSchemaLike } from '@/services/standardSchema'
 
 export type ParamExtras = {
   invalid: (message?: string) => never,
