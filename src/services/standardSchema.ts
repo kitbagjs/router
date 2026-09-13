@@ -13,7 +13,12 @@ export interface ValibotSchemaLike extends StandardSchemaV1<any> {
   type: string,
 }
 
-export type StandardSchemaLike = ZodSchemaLike | ValibotSchemaLike
+export interface ArkTypeSchemaLike extends StandardSchemaV1<any> {
+  extends: (def: string) => boolean,
+  branches: readonly ArkTypeSchemaLike[],
+}
+
+export type StandardSchemaLike = ZodSchemaLike | ValibotSchemaLike | ArkTypeSchemaLike
 
 export function isZodSchema(value: unknown): value is ZodSchemaLike {
   return isRecord(value)
@@ -38,8 +43,20 @@ export function isValibotSchema(value: unknown): value is ValibotSchemaLike {
     && value['~standard'].vendor === 'valibot'
 }
 
+export function isArkTypeSchema(value: unknown): value is ArkTypeSchemaLike {
+  return typeof value === 'function'
+    && 'extends' in value
+    && typeof value.extends === 'function'
+    && 'branches' in value
+    && Array.isArray(value.branches)
+    && '~standard' in value
+    && isRecord(value['~standard'])
+    && 'vendor' in value['~standard']
+    && value['~standard'].vendor === 'arktype'
+}
+
 export function isStandardSchema(value: unknown): value is StandardSchemaLike {
-  return isZodSchema(value) || isValibotSchema(value)
+  return isZodSchema(value) || isValibotSchema(value) || isArkTypeSchema(value)
 }
 
 export function createStandardSchemaParam<T>(schema: StandardSchemaLike): ParamGetSet<T> {
@@ -86,6 +103,10 @@ function getSchemaType(schema: StandardSchemaLike): string {
     return getValibotSchemaType(schema)
   }
 
+  if (isArkTypeSchema(schema)) {
+    return getArkTypeSchemaType(schema)
+  }
+
   throw new UnsupportedSchemaVendorError(schema)
 }
 
@@ -106,13 +127,66 @@ function getValibotSchemaType(schema: ValibotSchemaLike): string {
   return valibotTypeAliases[schema.type] ?? schema.type
 }
 
-function getSchemaOptions(schema: StandardSchemaLike): StandardSchemaLike[] | undefined {
+/**
+ * Arktype types describe sets rather than naming schemas, so the type is which set the schema is a
+ * subtype of. Domains come before the union fan out because arktype models booleans and enum like
+ * types as unions of units, and those coerce as their domain.
+ */
+function getArkTypeSchemaType(schema: ArkTypeSchemaLike): string {
+  if (schema.extends('Date')) {
+    return 'date'
+  }
+
+  if (schema.extends('Map')) {
+    return 'map'
+  }
+
+  if (schema.extends('Set')) {
+    return 'set'
+  }
+
+  if (schema.extends('Array')) {
+    return 'array'
+  }
+
+  if (schema.extends('string')) {
+    return 'string'
+  }
+
+  if (schema.extends('number')) {
+    return 'number'
+  }
+
+  if (schema.extends('bigint')) {
+    return 'bigint'
+  }
+
+  if (schema.extends('boolean')) {
+    return 'boolean'
+  }
+
+  if (schema.branches.length > 1) {
+    return 'union'
+  }
+
+  if (schema.extends('object')) {
+    return 'object'
+  }
+
+  return 'unknown'
+}
+
+function getSchemaOptions(schema: StandardSchemaLike): readonly StandardSchemaLike[] | undefined {
   if (isZodSchema(schema)) {
     return getZodSchemaOptions(schema)
   }
 
   if (isValibotSchema(schema)) {
     return getValibotSchemaOptions(schema)
+  }
+
+  if (isArkTypeSchema(schema)) {
+    return getArkTypeSchemaOptions(schema)
   }
 
   throw new UnsupportedSchemaVendorError(schema)
@@ -124,6 +198,10 @@ function getZodSchemaOptions(schema: ZodSchemaLike): StandardSchemaLike[] | unde
 
 function getValibotSchemaOptions(schema: ValibotSchemaLike): StandardSchemaLike[] | undefined {
   return 'options' in schema ? schema.options as StandardSchemaLike[] : undefined
+}
+
+function getArkTypeSchemaOptions(schema: ArkTypeSchemaLike): readonly StandardSchemaLike[] | undefined {
+  return schema.branches.length > 1 ? schema.branches : undefined
 }
 
 const isoDateRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/

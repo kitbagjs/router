@@ -47,6 +47,7 @@
     "@vitejs/plugin-vue": "^6.0.8",
     "@vue/language-core": "^3.3.9",
     "@vue/test-utils": "^2.5.0",
+    "arktype": "^2.2.3",
     "eslint": "^9.39.5",
     "globals": "^17.11.0",
     "happy-dom": "^20.11.12",

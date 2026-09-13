@@ -276,7 +276,7 @@ Zod param types are experimental and may change or be removed in the future.
 
 ## Valibot Param Types
 
-[Valibot](https://valibot.dev/) schemas can be used as param types rather than defining a custom param type. Some zod schemas are not supported such as `v.promise`, `v.function`, and `v.intersection`, but most schemas are supported.
+[Valibot](https://valibot.dev/) schemas can be used as param types rather than defining a custom param type. Some valibot schemas are not supported such as `v.promise`, `v.function`, and `v.intersect`, but most schemas are supported.
 
 ```ts
 import * as v from 'valibot'
@@ -291,4 +291,23 @@ const events = createRoute({
 
 :::warning
 Valibot param types are experimental and may change or be removed in the future.
+:::
+
+## ArkType Param Types
+
+[ArkType](https://arktype.io/) types can be used as param types rather than defining a custom param type. Some types are not supported such as `type('Promise')` and `type('Function')`, but most types are supported.
+
+```ts
+import { type } from 'arktype'
+
+const events = createRoute({
+  name: 'events',
+  query: {
+    category: type('"music" | "sports" | "art"'),
+  },
+})
+```
+
+:::warning
+ArkType param types are experimental and may change or be removed in the future.
 :::

@@ -143,6 +143,10 @@ export function getParamValue(value: string | undefined, { param = String, isOpt
     return jsonParam.get(value, extras)
   }
 
+  if (isStandardSchema(param)) {
+    return createStandardSchemaParam(param).get(value, extras)
+  }
+
   if (isParamGetter(param)) {
     return param(value, extras)
   }
@@ -161,10 +165,6 @@ export function getParamValue(value: string | undefined, { param = String, isOpt
 
   if (isLiteralParam(param)) {
     return literal(param).get(value, extras)
-  }
-
-  if (isStandardSchema(param)) {
-    return createStandardSchemaParam(param).get(value, extras)
   }
 
   return value
@@ -218,16 +218,16 @@ export function setParamValue(value: unknown, { param = String, isOptional = fal
     return jsonParam.set(value, extras)
   }
 
+  if (isStandardSchema(param)) {
+    return createStandardSchemaParam(param).set(value, extras)
+  }
+
   if (isParamGetSet(param)) {
     return param.set(value, extras)
   }
 
   if (isLiteralParam(param)) {
     return literal(param).set(value as LiteralParam, extras)
-  }
-
-  if (isStandardSchema(param)) {
-    return createStandardSchemaParam(param).set(value, extras)
   }
 
   try {
