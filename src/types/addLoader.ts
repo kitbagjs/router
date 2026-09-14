@@ -1,5 +1,6 @@
 import { RouteWithMethods } from '@/types/routeWithMethods'
 import { PrefetchConfig } from '@/types/prefetch'
+import { TransformerOptions } from '@/services/payload'
 import { ResolvedRoute } from '@/types/resolved'
 import { CreatedRouteOptions, Route } from '@/types/route'
 import { RouteCallbackContext } from '@/types/routeCallbackContext'
@@ -24,8 +25,9 @@ export type LoaderGetter<
  * @template TName - The loader's name, inferred from the `name` option.
  */
 export type AddLoaderOptions<
-  TName extends string | undefined = string
-> = {
+  TName extends string | undefined = string,
+  TValue = unknown
+> = TransformerOptions<TValue> & {
   /**
    * The name of the loader, which is the key its data is exposed under on the route. Defaults to the
    * unnamed loader, whose data is exposed as the route's data directly.
@@ -101,6 +103,6 @@ export type RouteAddLoader<
     const TGetter extends LoaderGetter<Route<TUrl, TMatches>> = LoaderGetter<Route<TUrl, TMatches>>
   >(
     load: TGetter,
-    options?: AddLoaderOptions<TName>,
+    options?: AddLoaderOptions<TName, Awaited<ReturnType<TGetter>>>,
   ) => AddLoaderReturn<TUrl, TMatches, AddLoaderLoaders<CurrentMatchLoaders<TMatches>, TName, ReturnType<TGetter>>>,
 }

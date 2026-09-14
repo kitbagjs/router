@@ -254,3 +254,31 @@ describe('loader callback', () => {
     })
   })
 })
+
+test('payload options are typed by what the loader resolves to', () => {
+  createRoute({ name: 'route', path: '/' }).addLoader(async () => new Map<string, number>(), {
+    transformer: {
+      stringify: (value) => {
+        expectTypeOf(value).toEqualTypeOf<Map<string, number>>()
+
+        return JSON.stringify(Array.from(value.entries()))
+      },
+      parse: (encoded) => new Map<string, number>(JSON.parse(encoded)),
+    },
+  })
+
+  createRoute({ name: 'route', path: '/' }).addLoader(async () => new Map<string, number>(), {
+    transformer: {
+      stringify: (value) => JSON.stringify(Array.from(value.entries())),
+      // @ts-expect-error parse must give back what the loader resolves to
+      parse: (encoded) => encoded,
+    },
+  })
+
+  createRoute({ name: 'route', path: '/' }).addLoader(async () => new Map<string, number>(), {
+    // @ts-expect-error a payload must declare both stringify and parse
+    transformer: {
+      stringify: (value: Map<string, number>) => JSON.stringify(Array.from(value.entries())),
+    },
+  })
+})

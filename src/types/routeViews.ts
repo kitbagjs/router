@@ -1,3 +1,4 @@
+import { AnyPayloadTransformer } from '@/services/payload'
 import { Component } from 'vue'
 import { PrefetchConfig } from '@/types/prefetch'
 import { AnyFunction } from '@/types/utilities'
@@ -12,6 +13,7 @@ export type RouteView<TProps = undefined> = {
   component?: Component,
   props?: AnyFunction<TProps>,
   prefetch?: PrefetchConfig,
+  transformer?: AnyPayloadTransformer,
 }
 
 /**

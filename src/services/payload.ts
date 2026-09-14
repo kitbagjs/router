@@ -2,7 +2,7 @@ import { DataKind } from '@/services/createNavigationStores'
 import { isRecord } from '@/utilities/guards'
 import { isBrowser } from '@/utilities/isBrowser'
 import { RouteValue } from '@/services/createRouteValueStore'
-import { getComputations } from '@/services/getComputations'
+import { Computation, getComputations } from '@/services/getComputations'
 import { PayloadValueError } from '@/errors/payloadValueError'
 import { ResolvedRoute } from '@/types/resolved'
 
@@ -25,6 +25,39 @@ export function payloadToScript(payload: RouterPayload): string {
     .replace(new RegExp(PARAGRAPH_SEPARATOR, 'g'), '\\u2029')
 
   return `<script type="application/json" id="${PAYLOAD_ELEMENT_ID}">${json}</script>`
+}
+
+export type TransformerOptions<TValue = unknown> = {
+  /**
+   * Transforms a value across the server render payload: `stringify` writes the value into the payload
+   * on the server, and `parse` reads it back on the client during hydration. Declare one for any value
+   * json cannot carry faithfully, such as a `Map`, `Set`, or `Date`, so the client adopts the same
+   * value the server rendered with. Defaults to json.
+   */
+  transformer?: PayloadTransformer<TValue>,
+}
+
+export type PayloadTransformer<TValue = unknown> = {
+  /**
+   * Turns a value into a string for the payload.
+   */
+  stringify: (value: TValue) => string,
+  /**
+   * Turns a string from the payload back into a value.
+   */
+  parse: (encoded: string) => TValue,
+}
+
+/**
+ * A transformer whose value type has been erased. Every loader's and view's transformer is stored in
+ * one record, so a stored one is typed for some value the record no longer names — `unknown` would
+ * claim it accepts anything, which a typed stringify does not.
+ */
+export type AnyPayloadTransformer = PayloadTransformer<any>
+
+export const jsonTransformer: PayloadTransformer = {
+  stringify: JSON.stringify,
+  parse: JSON.parse,
 }
 
 export type PayloadValue = {
@@ -114,16 +147,19 @@ type EncodedPayloadValues = {
 }
 
 /**
- * Encodes settled values as json for the payload. A value json cannot carry is warned about, reported
- * as a failure, and left out, so the client computes it again.
+ * Encodes settled values for the payload, each through its own stringifier or the fallback. A value that
+ * cannot be encoded is warned about, reported as a failure, and left out, so the client computes it again.
  */
-export function encodePayloadValues(values: RouteValue[]): EncodedPayloadValues {
+export function encodePayloadValues(route: ResolvedRoute, values: RouteValue[], fallback: PayloadTransformer = jsonTransformer): EncodedPayloadValues {
+  const computations = getComputations(route)
   const encoded: PayloadValue[] = []
   const failures: PayloadValueError[] = []
 
   for (const { kind, depth, name, value } of values) {
+    const transformer = findTransformer(computations, { kind, depth, name }) ?? fallback
+
     try {
-      const string = JSON.stringify(value)
+      const string = transformer.stringify(value)
 
       if (typeof string !== 'string') {
         throw new Error(`stringify returned ${typeof string}`)
@@ -142,11 +178,14 @@ export function encodePayloadValues(values: RouteValue[]): EncodedPayloadValues 
 }
 
 /**
- * Decodes payload values for the store to adopt. A value that is missing from the payload or that json
- * cannot read is warned about and left out, so its getter runs again.
+ * Decodes payload values for the store to adopt, each through its own stringifier or the fallback. A
+ * value that is missing from the payload or that cannot be read is warned about and left out, so its
+ * getter runs again.
  */
-export function decodePayloadValues(route: ResolvedRoute, values: PayloadValue[]): RouteValue[] {
-  for (const { kind, depth, name } of getComputations(route)) {
+export function decodePayloadValues(route: ResolvedRoute, values: PayloadValue[], fallback: PayloadTransformer = jsonTransformer): RouteValue[] {
+  const computations = getComputations(route)
+
+  for (const { kind, depth, name } of computations) {
     const present = values.some((value) => value.kind === kind && value.depth === depth && value.name === name)
 
     if (!present) {
@@ -155,8 +194,10 @@ export function decodePayloadValues(route: ResolvedRoute, values: PayloadValue[]
   }
 
   return values.flatMap(({ kind, depth, name, encoded }) => {
+    const transformer = findTransformer(computations, { kind, depth, name }) ?? fallback
+
     try {
-      return [{ kind, depth, name, value: JSON.parse(encoded) as unknown }]
+      return [{ kind, depth, name, value: transformer.parse(encoded) as unknown }]
     } catch (error) {
       const failure = new PayloadValueError('parse', kind, name, error)
 
@@ -165,4 +206,8 @@ export function decodePayloadValues(route: ResolvedRoute, values: PayloadValue[]
       return []
     }
   })
+}
+
+function findTransformer(computations: Computation[], { kind, depth, name }: Pick<PayloadValue, 'kind' | 'depth' | 'name'>): AnyPayloadTransformer | undefined {
+  return computations.find((computation) => computation.kind === kind && computation.depth === depth && computation.name === name)?.transformer
 }

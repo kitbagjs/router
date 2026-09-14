@@ -1,5 +1,6 @@
 import { Component, markRaw } from 'vue'
 import { DEFAULT_VIEW_NAME } from '@/services/createRouteViews'
+import { AnyPayloadTransformer } from '@/services/payload'
 import { PropsGetter } from '@/types/createRouteOptions'
 import { PrefetchConfig } from '@/types/prefetch'
 import { CreatedRouteOptions, Route } from '@/types/route'
@@ -12,6 +13,7 @@ type ViewOptions = {
   name?: string,
   props?: PropsGetter,
   prefetch?: PrefetchConfig,
+  transformer?: AnyPayloadTransformer,
 }
 
 /**
@@ -30,6 +32,7 @@ type View = {
   component: Component,
   props: PropsGetter | undefined,
   prefetch: PrefetchConfig | undefined,
+  transformer: AnyPayloadTransformer | undefined,
 }
 
 export function toView(component: Component, options: ViewOptions | undefined): View {
@@ -38,6 +41,7 @@ export function toView(component: Component, options: ViewOptions | undefined): 
     component,
     props: options?.props,
     prefetch: options?.prefetch,
+    transformer: options?.transformer,
   }
 }
 
@@ -47,12 +51,12 @@ export function toView(component: Component, options: ViewOptions | undefined): 
  * Matches are `markRaw` so that making a route reactive does not turn its components into reactive
  * proxies. Spreading a match drops that, so the rebuilt one is marked again.
  */
-export function addViewToMatch(match: CreatedRouteOptions, { name, component, props, prefetch }: View): CreatedRouteOptions {
+export function addViewToMatch(match: CreatedRouteOptions, { name, component, props, prefetch, transformer }: View): CreatedRouteOptions {
   return markRaw({
     ...match,
     views: {
       ...match.views,
-      [name]: { component, props, prefetch },
+      [name]: { component, props, prefetch, transformer },
     },
   })
 }
