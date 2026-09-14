@@ -20,7 +20,8 @@ import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { RouterReplace, RouterReplaceOptions } from '@/types/routerReplace'
 import { RoutesName } from '@/types/routesMap'
 import { UrlString, isUrlString } from '@/types/urlString'
-import { createUniqueIdSequence, isFirstUniqueSequenceId } from '@/services/createUniqueIdSequence'
+import { isFirstUniqueSequenceId } from '@/services/createUniqueIdSequence'
+import { createNavigationIds } from '@/services/createNavigationIds'
 import { createVisibilityObserver } from './createVisibilityObserver'
 import { visibilityObserverKey } from '@/compositions/useVisibilityObserver'
 import { RouterResolve, RouterResolveOptions } from '@/types/routerResolve'
@@ -106,7 +107,7 @@ export function createRouter<
 
   hooks.addGlobalRouteHooks(getGlobalHooksForRouter(plugins))
 
-  const getNavigationId = createUniqueIdSequence()
+  const { getNavigationId, isCurrentNavigationId, stop: stopNavigationIds } = createNavigationIds()
   const componentsStore = createComponentsStore(routerKey)
   const visibilityObserver = createVisibilityObserver()
   const history = createRouterHistory({
@@ -159,6 +160,10 @@ export function createRouter<
 
       const beforeResponse = await hooks.runBeforeRouteHooks({ to, from })
 
+      if (!isCurrentNavigationId(navigationId)) {
+        return
+      }
+
       switch (beforeResponse.status) {
         case 'ABORT':
           return
@@ -184,6 +189,10 @@ export function createRouter<
 
       const afterResponse = await hooks.runAfterRouteHooks({ to, from })
 
+      if (!isCurrentNavigationId(navigationId)) {
+        return
+      }
+
       switch (afterResponse.status) {
         case 'PUSH':
           await push(...afterResponse.to)
@@ -203,7 +212,9 @@ export function createRouter<
 
       setDocumentTitle(currentRejectionRoute.value ?? to)
     } finally {
-      history.startListening()
+      if (isCurrentNavigationId(navigationId)) {
+        history.startListening()
+      }
     }
   })
 
@@ -382,8 +393,6 @@ export function createRouter<
 
     await set(initialUrl, { replace: true, state: initialState })
 
-    history.startListening()
-
     initialized()
     started.value = true
   }
@@ -412,6 +421,7 @@ export function createRouter<
   }
 
   function stop(): void {
+    stopNavigationIds()
     history.stopListening()
   }
 
