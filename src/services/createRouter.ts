@@ -107,7 +107,7 @@ export function createRouter<
 
   hooks.addGlobalRouteHooks(getGlobalHooksForRouter(plugins))
 
-  const { getNavigationId, isCurrentNavigationId, stop: stopNavigationIds } = createNavigationIds()
+  const { getNavigationId, isCurrentNavigationId, stopNavigationIds } = createNavigationIds()
   const componentsStore = createComponentsStore(routerKey)
   const visibilityObserver = createVisibilityObserver()
   const history = createRouterHistory({

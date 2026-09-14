@@ -30,11 +30,11 @@ describe('createNavigationIds', () => {
   })
 
   test('after stop, no navigation id is current', () => {
-    const { getNavigationId, isCurrentNavigationId, stop } = createNavigationIds()
+    const { getNavigationId, isCurrentNavigationId, stopNavigationIds } = createNavigationIds()
 
     const before = getNavigationId()
 
-    stop()
+    stopNavigationIds()
 
     const after = getNavigationId()
 
