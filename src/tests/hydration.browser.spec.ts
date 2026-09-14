@@ -4,6 +4,7 @@ import { createRoute } from '@/services/createRoute'
 import { payloadToScript, RouterPayload } from '@/services/payload'
 import { withParams } from '@/services/withParams'
 import { z } from 'zod'
+import { PayloadValueError } from '@/errors/payloadValueError'
 
 function embed(payload: RouterPayload): void {
   document.body.innerHTML = payloadToScript(payload)
@@ -95,4 +96,45 @@ test('a payload for a url with schema params is adopted synchronously when the r
   expect(router.started.value).toBe(true)
 
   await ready
+})
+
+test('a value is adopted through its own parse', async () => {
+  embed({
+    url: '/',
+    values: [{ kind: 'loader', depth: 0, name: 'default', encoded: '[["a",1]]' }],
+  })
+
+  const load = vi.fn(() => new Map<string, number>())
+  const home = createRoute({ name: 'home', path: '/' }).addLoader(load, {
+    payload: {
+      stringify: (value) => JSON.stringify(Array.from(value.entries())),
+      parse: (encoded) => new Map(JSON.parse(encoded)),
+    },
+  })
+  const router = createRouter([home], { initialUrl: '/' })
+
+  await router.start()
+
+  await expect(router.route.data).resolves.toEqual(new Map([['a', 1]]))
+  expect(load).not.toHaveBeenCalled()
+})
+
+test('a declared payload option that cannot read a value throws', async () => {
+  embed({
+    url: '/',
+    values: [{ kind: 'loader', depth: 0, name: 'default', encoded: 'not what parse expects' }],
+  })
+
+  const home = createRoute({ name: 'home', path: '/' }).addLoader(() => 1, {
+    payload: {
+      stringify: String,
+      parse: () => {
+        throw new Error('nope')
+      },
+    },
+  })
+
+  const router = createRouter([home], { initialUrl: '/' })
+
+  await expect(router.start()).rejects.toThrow(PayloadValueError)
 })

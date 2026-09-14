@@ -100,7 +100,7 @@ describe('ancestor conflicts', () => {
     const child = createRoute({ parent, name: 'child', path: '/child' }).addLoader(other, { name: 'posts' })
 
     expect(pick(child, 'load')).toStrictEqual({ posts: other })
-    expect(child.matches[0].loaders).toStrictEqual({ default: { load, prefetch: undefined } })
+    expect(child.matches[0].loaders).toStrictEqual({ default: { load, prefetch: undefined, payload: undefined } })
   })
 })
 

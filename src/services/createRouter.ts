@@ -423,7 +423,7 @@ export function createRouter<
       return
     }
 
-    const values = decodePayloadValues(payload.values)
+    const values = decodePayloadValues(to, payload.values, options?.payload)
 
     valueStore.prefill(to, values)
     setRouteValuesAndUpdateRoute(to, null)
@@ -477,7 +477,7 @@ export function createRouter<
     })
 
     const title = await getTitle()
-    const values = encodePayloadValues(valueStore.getValues(currentRoute))
+    const values = encodePayloadValues(currentRoute, valueStore.getValues(currentRoute), options?.payload)
 
     return {
       ...response,

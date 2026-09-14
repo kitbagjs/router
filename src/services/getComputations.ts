@@ -4,6 +4,7 @@ import { ResolvedRoute } from '@/types/resolved'
 import { CreatedRouteOptions } from '@/types/route'
 import { viewNamesWithProps } from '@/services/createRouteViews'
 import { DataKind, getDataKey } from '@/services/createNavigationStores'
+import { AnyPayloadStringifier } from '@/services/payload'
 import { AnyFunction } from '@/types/utilities'
 
 /**
@@ -19,6 +20,7 @@ export type Computation = {
   run: AnyFunction,
   routePrefetch: PrefetchConfig | undefined,
   prefetch: PrefetchConfig | undefined,
+  payload: AnyPayloadStringifier | undefined,
 }
 
 /**
@@ -32,12 +34,17 @@ export type ValueLocation = {
 
 export function getComputations(route: ResolvedRoute): Computation[] {
   return route.matches.flatMap((match, depth) => [
-    ...propsLocations(match).map((location) => toComputation(location, match, depth, route, match.views[location.name].props as PropsGetter, match.views[location.name].prefetch)),
-    ...loaderLocations(match).map((location) => toComputation(location, match, depth, route, match.loaders[location.name].load, match.loaders[location.name].prefetch)),
+    ...propsLocations(match).map((location) => toComputation(location, match, depth, route, match.views[location.name].props as PropsGetter, match.views[location.name])),
+    ...loaderLocations(match).map((location) => toComputation(location, match, depth, route, match.loaders[location.name].load, match.loaders[location.name])),
   ])
 }
 
-function toComputation(location: ValueLocation, match: CreatedRouteOptions, depth: number, route: ResolvedRoute, run: AnyFunction, prefetch: PrefetchConfig | undefined): Computation {
+type ComputationOptions = {
+  prefetch?: PrefetchConfig,
+  payload?: AnyPayloadStringifier,
+}
+
+function toComputation(location: ValueLocation, match: CreatedRouteOptions, depth: number, route: ResolvedRoute, run: AnyFunction, { prefetch, payload }: ComputationOptions): Computation {
   return {
     ...location,
     depth,
@@ -45,6 +52,7 @@ function toComputation(location: ValueLocation, match: CreatedRouteOptions, dept
     run,
     routePrefetch: match.prefetch,
     prefetch,
+    payload,
   }
 }
 

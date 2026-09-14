@@ -11,6 +11,7 @@ import { createExternalRoute } from '@/services/createExternalRoute'
 import { RouteNotFoundError } from '@/errors/routeNotFoundError'
 import { InvalidRouteParamValueError } from '@/errors/invalidRouteParamValueError'
 import { createRejection } from './createRejection'
+import { PayloadValueError } from '@/errors/payloadValueError'
 
 test('initial route is set', async () => {
   const foo = createRoute({
@@ -1321,6 +1322,58 @@ describe('router.ssr response', () => {
     const result = await router.ssr()
 
     expect(result.title).toBeUndefined()
+  })
+
+  test('a value crosses the payload through its own stringify', async () => {
+    const route = createRoute({ name: 'route', component, path: '/' }).addLoader(() => new Map([['a', 1]]), {
+      payload: {
+        stringify: (value) => JSON.stringify(Array.from(value.entries())),
+        parse: (encoded) => new Map(JSON.parse(encoded)),
+      },
+    })
+
+    const router = createRouter([route], { initialUrl: '/' })
+
+    await router.start()
+
+    const response = await router.ssr()
+    const payload: unknown = JSON.parse(response.payload.replace(/^<script[^>]*>/, '').replace(/<\/script>$/, ''))
+
+    expect(payload).toMatchObject({
+      values: [{ kind: 'loader', depth: 0, name: 'default', encoded: '[["a",1]]' }],
+    })
+  })
+
+  test('a value the default json cannot write is left out of the payload', async () => {
+    const circular: Record<string, unknown> = {}
+    circular.self = circular
+
+    const route = createRoute({ name: 'route', component, path: '/' }).addLoader(() => circular)
+    const router = createRouter([route], { initialUrl: '/' })
+
+    await router.start()
+
+    const response = await router.ssr()
+    const payload: unknown = JSON.parse(response.payload.replace(/^<script[^>]*>/, '').replace(/<\/script>$/, ''))
+
+    expect(payload).toMatchObject({ values: [] })
+  })
+
+  test('a declared payload option that cannot write a value throws', async () => {
+    const route = createRoute({ name: 'route', component, path: '/' }).addLoader(() => 1, {
+      payload: {
+        stringify: () => {
+          throw new Error('nope')
+        },
+        parse: Number,
+      },
+    })
+
+    const router = createRouter([route], { initialUrl: '/' })
+
+    await router.start()
+
+    await expect(router.ssr()).rejects.toThrow(PayloadValueError)
   })
 
   test('a rejected ssr response carries the rejection in its payload', async () => {

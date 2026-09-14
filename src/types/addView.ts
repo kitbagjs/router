@@ -6,6 +6,7 @@ import { CreatedRouteOptions, Route } from '@/types/route'
 import { RouteCallbackContext } from '@/types/routeCallbackContext'
 import { RouteWithMethods } from '@/types/routeWithMethods'
 import { PrefetchConfig } from '@/types/prefetch'
+import { PayloadOptions } from '@/services/payload'
 import { RouteView, RouteViews } from '@/types/routeViews'
 import { Url } from '@/types/url'
 import { AnyFunction, Identity, LastInArray, MaybePromise } from '@/types/utilities'
@@ -47,7 +48,7 @@ type NewViewProps<
 export type AddViewOptions<
   TName extends string | undefined = string,
   TGetter = PropsGetter
-> = {
+> = PayloadOptions<PayloadValueOf<TGetter>> & {
   /**
    * The name of the view, rendered by `<router-view name="..." />`. Defaults to the unnamed view.
    */
@@ -64,6 +65,11 @@ export type AddViewOptions<
 }
 
 /**
+ * What a getter resolves to, which is what its payload options carry.
+ */
+type PayloadValueOf<TGetter> = TGetter extends (...args: any[]) => any ? Awaited<ReturnType<TGetter>> : unknown
+
+/**
  * {@link AddViewOptions} with `props` promoted to required. Only reached for components that have
  * required props — everything else uses {@link AddViewOptions}, where `props` stays optional, so a view
  * can always be given a name and a prefetch config without a getter.
@@ -74,7 +80,7 @@ export type AddViewOptions<
 type AddViewOptionsWithRequiredProps<
   TName extends string | undefined,
   TGetter
-> = {
+> = PayloadOptions<PayloadValueOf<TGetter>> & {
   name?: TName,
   props: TGetter,
   prefetch?: PrefetchConfig,
