@@ -15,7 +15,7 @@ import { getInitialUrl } from '@/services/getInitialUrl'
 import { setStateValues } from '@/services/state'
 import { Routes } from '@/types/route'
 import { NOT_FOUND_REJECTION_TYPE } from '@/types/rejection'
-import { Router, RouterOptions, RenderOutcome } from '@/types/router'
+import { Router, RouterOptions, ServerRenderResponse } from '@/types/router'
 import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { RouterReplace, RouterReplaceOptions } from '@/types/routerReplace'
 import { RoutesName } from '@/types/routesMap'
@@ -385,12 +385,11 @@ export function createRouter<
   }
 
   /**
-   * Does not resolve until the router has finished everything a view needs to render completely, and
-   * reports the status a server should respond with.
+   * Waits for the view to finish rendering and returns everything the server needs to render the page.
    *
-   * Only available on the server for ssr. Throws {@link RenderInBrowserError} when called in the client.
+   * Only available on the server. Throws {@link RenderInBrowserError} when called in the client.
    */
-  async function render(): Promise<RenderOutcome> {
+  async function render(): Promise<ServerRenderResponse> {
     if (isBrowser()) {
       throw new RenderInBrowserError()
     }
