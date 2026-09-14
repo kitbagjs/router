@@ -34,12 +34,23 @@ test.each([
   { schema: v.record(v.string(), v.object({ foo: v.string() })), string: '{"one":{"foo":"bar"}}', parsed: { one: { foo: 'bar' } } },
   { schema: v.map(v.string(), v.number()), string: '[["one",1]]', parsed: new Map([['one', 1]]) },
   { schema: v.set(v.number()), string: '[1,2,3]', parsed: new Set([1, 2, 3]) },
+  { schema: v.bigint(), string: '123', parsed: 123n },
+  { schema: v.picklist([1, 2]), string: '1', parsed: 1 },
 ])('given $schema.type, returns $parsed for $string', async ({ schema, string, parsed }) => {
-  if (typeof parsed === 'string' || typeof parsed === 'number' || typeof parsed === 'boolean') {
+  if (typeof parsed === 'string' || typeof parsed === 'number' || typeof parsed === 'boolean' || typeof parsed === 'bigint') {
     expect(safeGetParamValue(string, { param: schema })).toBe(parsed)
     expect(safeSetParamValue(parsed, { param: schema })).toBe(string)
   } else {
     expect(safeGetParamValue(string, { param: schema })).toMatchObject(parsed)
     expect(safeSetParamValue(parsed, { param: schema })).toBe(string)
   }
+})
+
+test.each([
+  { schema: v.intersect([v.object({ foo: v.string() }), v.object({ bar: v.number() })]), type: 'Intersection' },
+  { schema: v.promise(), type: 'Promise' },
+  { schema: v.function(), type: 'Function' },
+])('$type schemas are not supported', async ({ schema }) => {
+  expect(safeGetParamValue('test', { param: schema })).toBeUndefined()
+  expect(safeSetParamValue('test', { param: schema })).toBeUndefined()
 })

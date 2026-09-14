@@ -1,5 +1,4 @@
-import { ValibotSchemaLike } from '@/services/valibot'
-import { ZodSchemaLike } from '@/services/zod'
+import { ArkTypeSchemaLike, ValibotSchemaLike, ZodSchemaLike } from '@/services/standardSchema'
 
 export type ParamExtras = {
   invalid: (message?: string) => never,
@@ -26,4 +25,5 @@ export type Param = | ParamGetter
   | JSON
   | ZodSchemaLike
   | ValibotSchemaLike
+  | ArkTypeSchemaLike
   | LiteralParam

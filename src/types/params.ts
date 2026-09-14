@@ -80,10 +80,10 @@ export type ExtractParamType<TParam extends Param> = Param extends TParam
       ? Date
       : TParam extends JSON
         ? unknown
-        : TParam extends ParamGetter
-          ? ReturnType<TParam>
-          : TParam extends StandardSchemaV1
-            ? StandardSchemaV1.InferOutput<TParam>
+        : TParam extends StandardSchemaV1
+          ? StandardSchemaV1.InferOutput<TParam>
+          : TParam extends ParamGetter
+            ? ReturnType<TParam>
             : TParam extends LiteralParam
               ? TParam
               : string

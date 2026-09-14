@@ -4,8 +4,7 @@ import { UrlParam } from '@/services/withParams'
 import { ExtractParamType, isLiteralParam, isParamGetSet, isParamGetter } from '@/types/params'
 import { LiteralParam, Param, ParamExtras, ParamGetSet } from '@/types/paramTypes'
 import { stringHasValue } from '@/utilities/guards'
-import { createZodParam, isZodParam } from './zod'
-import { createValibotParam, isValibotParam } from './valibot'
+import { createStandardSchemaParam, isStandardSchema } from './standardSchema'
 import { literal } from './literal'
 
 export function getParam(params: Record<string, Param | undefined>, paramName: string): Param {
@@ -144,6 +143,10 @@ export function getParamValue(value: string | undefined, { param = String, isOpt
     return jsonParam.get(value, extras)
   }
 
+  if (isStandardSchema(param)) {
+    return createStandardSchemaParam(param).get(value, extras)
+  }
+
   if (isParamGetter(param)) {
     return param(value, extras)
   }
@@ -162,14 +165,6 @@ export function getParamValue(value: string | undefined, { param = String, isOpt
 
   if (isLiteralParam(param)) {
     return literal(param).get(value, extras)
-  }
-
-  if (isZodParam(param)) {
-    return createZodParam(param).get(value, extras)
-  }
-
-  if (isValibotParam(param)) {
-    return createValibotParam(param).get(value, extras)
   }
 
   return value
@@ -223,20 +218,16 @@ export function setParamValue(value: unknown, { param = String, isOptional = fal
     return jsonParam.set(value, extras)
   }
 
+  if (isStandardSchema(param)) {
+    return createStandardSchemaParam(param).set(value, extras)
+  }
+
   if (isParamGetSet(param)) {
     return param.set(value, extras)
   }
 
   if (isLiteralParam(param)) {
     return literal(param).set(value as LiteralParam, extras)
-  }
-
-  if (isZodParam(param)) {
-    return createZodParam(param).set(value, extras)
-  }
-
-  if (isValibotParam(param)) {
-    return createValibotParam(param).set(value, extras)
   }
 
   try {
