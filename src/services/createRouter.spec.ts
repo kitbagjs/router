@@ -1260,14 +1260,14 @@ test('going back from a redirect returns to the route before it', async () => {
   expect(router.route.name).toBe('home')
 })
 
-describe('router.render response', () => {
+describe('router.ssr response', () => {
   test('given a url that matches a route, returns 200', async () => {
     const route = createRoute({ name: 'route', component, path: '/' })
     const router = createRouter([route], { initialUrl: '/' })
 
     await router.start()
 
-    const result = await router.render()
+    const result = await router.ssr()
 
     expect(result).toMatchObject({ status: 200, rejection: null })
     expect(result.location).toBeUndefined()
@@ -1279,7 +1279,7 @@ describe('router.render response', () => {
 
     await router.start()
 
-    const result = await router.render()
+    const result = await router.ssr()
 
     expect(result.status).toBe(404)
   })
@@ -1295,7 +1295,7 @@ describe('router.render response', () => {
 
     await router.start()
 
-    const result = await router.render()
+    const result = await router.ssr()
 
     expect(result).toMatchObject({ status: 404, rejection: 'NotFound' })
   })
@@ -1311,7 +1311,7 @@ describe('router.render response', () => {
 
     await router.start()
 
-    const result = await router.render()
+    const result = await router.ssr()
 
     expect(result).toMatchObject({ status: 401, rejection: 'Unauthorized' })
   })
@@ -1327,7 +1327,7 @@ describe('router.render response', () => {
 
     await router.start()
 
-    const result = await router.render()
+    const result = await router.ssr()
 
     expect(result).toMatchObject({ status: 503, rejection: 'Maintenance' })
   })
@@ -1338,7 +1338,7 @@ describe('router.render response', () => {
 
     await router.start()
 
-    const result = await router.render()
+    const result = await router.ssr()
 
     expect(result).toMatchObject({ status: 302, location: '/foo' })
   })
@@ -1349,7 +1349,7 @@ describe('router.render response', () => {
 
     await router.start()
 
-    const result = await router.render()
+    const result = await router.ssr()
 
     expect(result).toMatchObject({ status: 301, location: '/foo' })
   })
@@ -1360,7 +1360,7 @@ describe('router.render response', () => {
 
     await router.start()
 
-    const result = await router.render()
+    const result = await router.ssr()
 
     expect(result.location).toBeUndefined()
   })
@@ -1375,7 +1375,7 @@ describe('router.render response', () => {
 
     await router.start()
 
-    const result = await router.render()
+    const result = await router.ssr()
 
     expect(result).toMatchObject({ status: 302, location: '/to' })
   })
@@ -1386,19 +1386,19 @@ describe('router.render response', () => {
 
     await router.start()
 
-    const result = await router.render()
+    const result = await router.ssr()
 
     expect(result).toMatchObject({ status: 200, rejection: null })
   })
 
-  test('calling render again resolves with the same response', async () => {
+  test('calling ssr again resolves with the same response', async () => {
     const route = createRoute({ name: 'route', component, path: '/' })
     const router = createRouter([route], { initialUrl: '/' })
 
     await router.start()
 
-    const first = await router.render()
-    const second = await router.render()
+    const first = await router.ssr()
+    const second = await router.ssr()
 
     expect(second).toStrictEqual(first)
   })

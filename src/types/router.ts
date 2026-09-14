@@ -55,7 +55,7 @@ export type RouterOptions = {
   removeTrailingSlashes?: boolean,
 
   /**
-   * The status `render` reports when it normalized the url it was given, such as removing a trailing
+   * The status `ssr` returns when it normalized the url it was given, such as removing a trailing
    * slash. Defaults to 302 because a 301 is cached indefinitely by browsers and CDNs and cannot be
    * recalled, and trailing slash removal is on by default. Set 301 to have the normalization treated as
    * permanent.
@@ -77,9 +77,9 @@ export type RouterOptions = {
  * What a server should respond with for what the router rendered. `location` exists only on a redirect,
  * so narrowing on it is what proves a `Location` header is available.
  */
-export type RenderOutcome<TRejectionType extends string = string> = RenderResponse<TRejectionType> | RenderRedirect<TRejectionType>
+export type ServerRenderResponse<TRejectionType extends string = string> = RenderComplete<TRejectionType> | RenderRedirect<TRejectionType>
 
-type RenderResponse<TRejectionType extends string> = {
+type RenderComplete<TRejectionType extends string> = {
   /**
    * Suggested http status.
    */
@@ -219,7 +219,7 @@ export type Router<
    *
    * Only available on the server for ssr. Throws `RenderInBrowserError` when called in the client.
    */
-  render: () => Promise<RenderOutcome<ExtractRejectionTypes<ExtractRejections<TOptions>> | ExtractRejectionTypes<ExtractRejections<TPlugin>> | BuiltInRejectionType>>,
+  ssr: () => Promise<ServerRenderResponse<ExtractRejectionTypes<ExtractRejections<TOptions>> | ExtractRejectionTypes<ExtractRejections<TPlugin>> | BuiltInRejectionType>>,
   /**
    * Stops the router. Tears down the history listener and ignores any navigation still in flight or started afterwards.
    */

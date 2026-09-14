@@ -10,5 +10,5 @@ test('throws in the browser, where the response it reports would be meaningless'
 
   await router.start()
 
-  await expect(router.render()).rejects.toThrow(RenderInBrowserError)
+  await expect(router.ssr()).rejects.toThrow(RenderInBrowserError)
 })
