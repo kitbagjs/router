@@ -19,10 +19,10 @@ export const router = createRouter(routes, {
 })
 ```
 
-The `status` is what a server should respond with while the rejection is in effect. It is required
-because no default suits every rejection: `404` for something missing, `401` or `403` for something
-gated, `503` for something temporary. Client only apps never read it, but it has to be decided
-somewhere and the rejection is the only place with enough context.
+The `status` is the [http status](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status) a
+server should respond with while the rejection is in effect, read by [router.render](/core-concepts/router#render)
+when [server rendering](/advanced-concepts/server-side-rendering). It is optional: a rejection without
+its own responds with the router's [`rejectStatus`](/api/types/RouterOptions#rejectstatus), `200` by default.
 
 ## Rejection Component
 
