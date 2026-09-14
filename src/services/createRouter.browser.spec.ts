@@ -43,6 +43,8 @@ describe('options.rejections', () => {
 
     const customRejection = createRejection({
       type: 'CustomRejection',
+
+      status: 404,
       component: { template: '<div>This is a custom rejection</div>' },
     })
 

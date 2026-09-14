@@ -50,7 +50,7 @@ describe('hooks', () => {
     expectTypeOf(router.onAfterRouteEnter).toEqualTypeOf<AddAfterEnterHook<Routes, never>>()
     expectTypeOf(router.onAfterRouteLeave).toEqualTypeOf<AddAfterLeaveHook<Routes, never>>()
     expectTypeOf(router.onAfterRouteUpdate).toEqualTypeOf<AddAfterUpdateHook<Routes, never>>()
-    expectTypeOf(router.onError).toEqualTypeOf<AddErrorHook<Routes[number], Routes, never>>()
+    expectTypeOf(router.onError).toEqualTypeOf<AddErrorHook<Routes, never>>()
     expectTypeOf(router.onRejection).toEqualTypeOf<AddRejectionHook<BuiltInRejectionType, Routes>>()
   })
 
@@ -99,6 +99,12 @@ describe('hooks', () => {
     })
   })
 
+  test('onError context has no update, which has no destination to act on', () => {
+    router.onError((_error, context) => {
+      expectTypeOf<keyof typeof context>().toEqualTypeOf<'to' | 'from' | 'source' | 'reject' | 'push' | 'replace'>()
+    })
+  })
+
   test('context.update', () => {
     router.onBeforeRouteEnter((_to, context) => {
       expectTypeOf(context.update).toEqualTypeOf<RouteUpdate<ResolvedRouteUnion<Routes[number]>>>()
@@ -121,9 +127,18 @@ describe('rejections', () => {
     expectTypeOf<Source>().toEqualTypeOf<Expect>()
   })
 
+  test('the routes a rejection happened between are not part of the public signature', () => {
+    const _router = createRouter([])
+
+    // @ts-expect-error reject only accepts a type
+    _router.reject('NotFound', { to: null, from: null })
+  })
+
   test('custom rejections are valid', () => {
     const myCustomRejection = createRejection({
       type: 'MyCustomRejection',
+
+      status: 404,
       component,
     })
 
@@ -140,6 +155,8 @@ describe('rejections', () => {
   test('custom rejections from plugins are valid', () => {
     const myPluginRejection = createRejection({
       type: 'MyPluginRejection',
+
+      status: 404,
       component,
     })
     const plugin = createRouterPlugin({
@@ -165,6 +182,8 @@ describe('options.rejections in hooks', () => {
 
     const customRejection = createRejection({
       type: 'CustomRejection',
+
+      status: 404,
       component: { template: '<div>This is a custom rejection</div>' },
     })
 
@@ -192,6 +211,8 @@ describe('options.rejections in hooks', () => {
 
     const customRejection = createRejection({
       type: 'CustomRejection',
+
+      status: 404,
       component: { template: '<div>This is a custom rejection</div>' },
     })
 

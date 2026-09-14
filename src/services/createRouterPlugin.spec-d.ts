@@ -10,6 +10,8 @@ import { RouterReplace } from '@/types/routerReplace'
 describe('hooks', () => {
   const NotAuthorized = createRejection({
     type: 'NotAuthorized',
+
+    status: 404,
   })
 
   const plugin = createRouterPlugin({

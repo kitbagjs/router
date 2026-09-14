@@ -553,6 +553,8 @@ describe('props', () => {
     test('accepts built in rejections and custom rejections when context is provided', () => {
       const rejection = createRejection({
         type: 'NotAuthorized',
+
+        status: 404,
       })
 
       createRoute({
@@ -774,7 +776,7 @@ describe('hooks', () => {
     })
 
     route.onBeforeRouteLeave((to, { from }) => {
-      expectTypeOf(to).toEqualTypeOf<ResolvedRoute>()
+      expectTypeOf(to).toEqualTypeOf<ResolvedRoute | null>()
       expectTypeOf(from).toEqualTypeOf<ResolvedRoute<typeof route>>()
     })
 
@@ -789,8 +791,48 @@ describe('hooks', () => {
     })
 
     route.onAfterRouteLeave((to, { from }) => {
-      expectTypeOf(to).toEqualTypeOf<ResolvedRoute>()
+      expectTypeOf(to).toEqualTypeOf<ResolvedRoute | null>()
       expectTypeOf(from).toEqualTypeOf<ResolvedRoute<typeof route>>()
+    })
+  })
+
+  test('update is given to enter and update hooks', () => {
+    const route = createRoute({
+      name: 'route',
+      path: '/[paramName]',
+      component,
+    })
+
+    route.onBeforeRouteEnter((_to, { update }) => {
+      expectTypeOf(update).toBeCallableWith('paramName', 'value')
+    })
+
+    route.onBeforeRouteUpdate((_to, { update }) => {
+      expectTypeOf(update).toBeCallableWith('paramName', 'value')
+    })
+
+    route.onAfterRouteEnter((_to, { update }) => {
+      expectTypeOf(update).toBeCallableWith('paramName', 'value')
+    })
+
+    route.onAfterRouteUpdate((_to, { update }) => {
+      expectTypeOf(update).toBeCallableWith('paramName', 'value')
+    })
+  })
+
+  test('update is not given to leave hooks, which have no destination to update', () => {
+    const route = createRoute({
+      name: 'route',
+      path: '/[paramName]',
+      component,
+    })
+
+    route.onBeforeRouteLeave((_to, context) => {
+      expectTypeOf<keyof typeof context>().toEqualTypeOf<'from' | 'reject' | 'push' | 'replace' | 'abort'>()
+    })
+
+    route.onAfterRouteLeave((_to, context) => {
+      expectTypeOf<keyof typeof context>().toEqualTypeOf<'from' | 'reject' | 'push' | 'replace'>()
     })
   })
 
@@ -848,7 +890,7 @@ describe('hooks', () => {
 })
 
 test('given parent, context is combined', () => {
-  const parentRejection = createRejection({ type: 'aRejection' })
+  const parentRejection = createRejection({ type: 'aRejection', status: 404 })
   const childRelated = createRoute({ name: 'bRoute' })
 
   const parent = createRoute({

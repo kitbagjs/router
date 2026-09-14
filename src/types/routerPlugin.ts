@@ -70,6 +70,26 @@ export type PluginBeforeRouteHook<
   TRejections extends Rejections = Rejections
 > = (to: ResolvedRoute, context: PluginBeforeRouteHookContext<TRoutes, TRejections>) => MaybePromise<void>
 
+export type PluginBeforeRouteLeaveHook<
+  TRoutes extends Routes = Routes,
+  TRejections extends Rejections = Rejections
+> = (to: ResolvedRoute | null, context: PluginBeforeRouteHookContext<TRoutes, TRejections>) => MaybePromise<void>
+
+type AddPluginBeforeRouteLeaveHook<
+  TRoutes extends Routes = Routes,
+  TRejections extends Rejections = Rejections
+> = (hook: PluginBeforeRouteLeaveHook<TRoutes, TRejections>) => HookRemove
+
+export type PluginAfterRouteLeaveHook<
+  TRoutes extends Routes = Routes,
+  TRejections extends Rejections = Rejections
+> = (to: ResolvedRoute | null, context: PluginAfterRouteHookContext<TRoutes, TRejections>) => MaybePromise<void>
+
+type AddPluginAfterRouteLeaveHook<
+  TRoutes extends Routes = Routes,
+  TRejections extends Rejections = Rejections
+> = (hook: PluginAfterRouteLeaveHook<TRoutes, TRejections>) => HookRemove
+
 export type PluginAfterRouteHook<
   TRoutes extends Routes = Routes,
   TRejections extends Rejections = Rejections
@@ -89,7 +109,7 @@ export type PluginErrorHookContext<
   TRoutes extends Routes = Routes,
   TRejections extends Rejections = Rejections
 > = {
-  to: ResolvedRoute,
+  to: ResolvedRoute | null,
   from: ResolvedRoute | null,
   source: 'props' | 'loader' | 'hook' | 'component',
   reject: RouterReject<TRejections>,
@@ -118,7 +138,7 @@ export type PluginRouteHooks<
   /**
    * Registers a global hook to be called before a route is left.
    */
-  onBeforeRouteLeave: AddPluginBeforeRouteHook<TRoutes, TRejections>,
+  onBeforeRouteLeave: AddPluginBeforeRouteLeaveHook<TRoutes, TRejections>,
   /**
    * Registers a global hook to be called before a route is updated.
    */
@@ -130,7 +150,7 @@ export type PluginRouteHooks<
   /**
    * Registers a global hook to be called after a route is left.
    */
-  onAfterRouteLeave: AddPluginAfterRouteHook<TRoutes, TRejections>,
+  onAfterRouteLeave: AddPluginAfterRouteLeaveHook<TRoutes, TRejections>,
   /**
    * Registers a global hook to be called after a route is updated.
    */

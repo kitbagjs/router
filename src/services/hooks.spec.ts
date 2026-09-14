@@ -245,3 +245,25 @@ test('when onError callback calls replace, other onError callbacks do not run', 
   expect(errorHook2).not.toHaveBeenCalled()
   expect(errorHook3).not.toHaveBeenCalled()
 })
+
+test('when to is null, only leave hooks are called', async () => {
+  const calls: string[] = []
+  const { runBeforeRouteHooks, ...hooks } = createRouterHooks()
+
+  hooks.onBeforeRouteEnter(() => {
+    calls.push('enter')
+  })
+  hooks.onBeforeRouteUpdate(() => {
+    calls.push('update')
+  })
+  hooks.onBeforeRouteLeave(() => {
+    calls.push('leave')
+  })
+
+  const fromRoute = createRoute({ name: 'routeA', component })
+  const from = createResolvedRoute(fromRoute, {})
+
+  await runBeforeRouteHooks({ to: null, from })
+
+  expect(calls).toEqual(['leave'])
+})
