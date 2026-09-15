@@ -1075,6 +1075,140 @@ describe('a url that matches no route', () => {
   })
 })
 
+describe('a navigation superseded by a newer one', () => {
+  test('does not update the route or history when its before hooks finish', async () => {
+    const { promise, resolve } = Promise.withResolvers<string>()
+    const home = createRoute({ name: 'home', component, path: '/' })
+    const slow = createRoute({ name: 'slow', component, path: '/slow' })
+    const fast = createRoute({ name: 'fast', component, path: '/fast' })
+
+    slow.onBeforeRouteEnter(async () => {
+      await promise
+    })
+
+    const router = createRouter([home, slow, fast], { initialUrl: '/' })
+
+    await router.start()
+
+    const slowNavigation = router.push('slow')
+    await router.push('fast')
+
+    resolve('continue')
+    await slowNavigation
+
+    expect(router.route.name).toBe('fast')
+
+    router.back()
+    await flushPromises()
+
+    expect(router.route.name).toBe('home')
+  })
+
+  test('does not redirect when its after hooks finish', async () => {
+    const { promise, resolve } = Promise.withResolvers<string>()
+    const home = createRoute({ name: 'home', component, path: '/' })
+    const redirect = createRoute({ name: 'redirect', component, path: '/redirect' })
+    const slow = createRoute({ name: 'slow', component, path: '/slow', context: [redirect] })
+    const fast = createRoute({ name: 'fast', component, path: '/fast' })
+
+    slow.onAfterRouteEnter(async (_to, { push }) => {
+      await promise
+
+      push('redirect')
+    })
+
+    const router = createRouter([home, slow, fast, redirect], { initialUrl: '/' })
+
+    await router.start()
+
+    const slowNavigation = router.push('slow')
+    await flushPromises()
+    await router.push('fast')
+
+    resolve('continue')
+    await slowNavigation
+
+    expect(router.route.name).toBe('fast')
+  })
+
+  test('does not resume history listening while the newer one is pending', async () => {
+    const first = Promise.withResolvers<string>()
+    const second = Promise.withResolvers<string>()
+    const onBeforeSecond = vi.fn(async () => {
+      await second.promise
+    })
+    const home = createRoute({ name: 'home', component, path: '/' })
+    const firstRoute = createRoute({ name: 'first', component, path: '/first' })
+    const secondRoute = createRoute({ name: 'second', component, path: '/second' })
+
+    firstRoute.onBeforeRouteEnter(async () => {
+      await first.promise
+    })
+    secondRoute.onBeforeRouteEnter(onBeforeSecond)
+
+    const router = createRouter([home, firstRoute, secondRoute], { initialUrl: '/' })
+
+    await router.start()
+
+    const firstNavigation = router.push('first')
+    const secondNavigation = router.push('second')
+
+    first.resolve('continue')
+    await firstNavigation
+
+    second.resolve('continue')
+    await secondNavigation
+
+    expect(onBeforeSecond).toHaveBeenCalledOnce()
+    expect(router.route.name).toBe('second')
+  })
+})
+
+describe('router.stop', () => {
+  test('a navigation in flight when the router stops does not update the route', async () => {
+    const { promise, resolve } = Promise.withResolvers<string>()
+    const home = createRoute({ name: 'home', component, path: '/' })
+    const slow = createRoute({ name: 'slow', component, path: '/slow' })
+
+    slow.onBeforeRouteEnter(async () => {
+      await promise
+    })
+
+    const router = createRouter([home, slow], { initialUrl: '/' })
+
+    await router.start()
+
+    const navigation = router.push('slow')
+    router.stop()
+
+    resolve('continue')
+    await navigation
+
+    expect(router.route.name).toBe('home')
+  })
+
+  test('navigating after stop does not update the route or resume history listening', async () => {
+    const home = createRoute({ name: 'home', component, path: '/' })
+    const foo = createRoute({ name: 'foo', component, path: '/foo' })
+    const bar = createRoute({ name: 'bar', component, path: '/bar' })
+
+    const router = createRouter([home, foo, bar], { initialUrl: '/' })
+
+    await router.start()
+    await router.push('foo')
+
+    router.stop()
+    await router.push('bar')
+
+    expect(router.route.name).toBe('foo')
+
+    router.back()
+    await flushPromises()
+
+    expect(router.route.name).toBe('foo')
+  })
+})
+
 test('going back from a redirect returns to the route before it', async () => {
   const home = createRoute({ name: 'home', component, path: '/' })
   const oldPath = createRoute({ name: 'oldPath', component, path: '/old' })

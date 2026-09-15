@@ -221,7 +221,7 @@ export type Router<
    */
   render: () => Promise<RenderOutcome<ExtractRejectionTypes<ExtractRejections<TOptions>> | ExtractRejectionTypes<ExtractRejections<TPlugin>> | BuiltInRejectionType>>,
   /**
-   * Stops the router and teardown any listeners.
+   * Stops the router. Tears down the history listener and ignores any navigation still in flight or started afterwards.
    */
   stop: () => void,
   /**
