@@ -182,6 +182,7 @@ export function createRouter<
     }
 
     commitNavigation()
+    updateTitle()
 
     const afterResponse = await hooks.runAfterRouteHooks({ to, from })
 
@@ -205,8 +206,6 @@ export function createRouter<
         const exhaustive: never = afterResponse
         throw new Error(`Switch is not exhaustive for after hook response status: ${JSON.stringify(exhaustive)}`)
     }
-
-    setDocumentTitle(currentRejectionRoute.value ?? to)
   })
 
   function setRouteValuesAndUpdateRoute(to: ResolvedRoute, from: ResolvedRoute | null): void {
@@ -346,16 +345,32 @@ export function createRouter<
     hooks.runRejectionHooks(rejection, { to, from })
 
     updateRejection(rejection)
-    setDocumentTitle(currentRejectionRoute.value)
+    updateTitle()
   }
 
-  const { currentRejection, currentRejectionRoute, updateRejection, clearRejection } = createCurrentRejection()
+  const { currentRejection, updateRejection, clearRejection } = createCurrentRejection()
   const { currentRoute, routerRoute, updateRoute } = createCurrentRoute<TRoutes | TPlugin['routes']>({
     routerKey,
     fallbackRoute: notFoundRoute,
     push,
     getData: valueStore.getData,
   })
+
+  /**
+   * The title that should currently be rendered.
+   */
+  async function getTitle(): Promise<string | undefined> {
+    return await currentRejection.value?.getTitle() ?? currentRoute.getTitle()
+  }
+
+  /**
+   * Sets the document title to the title that should currently be rendered.
+   */
+  async function updateTitle(): Promise<void> {
+    const title = await getTitle()
+
+    setDocumentTitle(title)
+  }
 
   const initialUrl = getInitialUrl(options?.initialUrl)
   const initialState = history.location.state

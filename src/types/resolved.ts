@@ -3,6 +3,7 @@ import { LastInArray } from '@/types/utilities'
 import { ExtractRouteStateParamsAsOptional } from '@/types/state'
 import { UrlString } from '@/types/urlString'
 import { UrlParamsReading } from '@/types/url'
+import { GetTitleCallback } from '@/types/routeTitle'
 
 /**
  * The match a route resolved to, which is the last of its matches. Falls back to the wide match type when
@@ -58,7 +59,7 @@ export type ResolvedRoute<TRoute extends Route = Route> = Readonly<{
    * Returns the title of the route from its `setTitle` callback, or from the closest parent route that
    * defines one.
    */
-  getTitle: () => Promise<string | undefined>,
+  getTitle: GetTitleCallback,
 }>
 
 /**

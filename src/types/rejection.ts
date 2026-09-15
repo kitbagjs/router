@@ -3,6 +3,7 @@ import { Route } from '@/types/route'
 import { Router } from '@/types/router'
 import { RouterReject } from '@/types/routerReject'
 import { Hooks } from '@/models/hooks'
+import { GetTitleCallback } from '@/types/routeTitle'
 
 export const BUILT_IN_REJECTIONS = {
   NotFound: 404,
@@ -48,7 +49,12 @@ export type RejectionOptions<TType extends string = string> = {
   status: number,
 }
 
-export type Rejection<TType extends string = string> = Pick<RejectionOptions<TType>, 'type' | 'status'>
+export type Rejection<TType extends string = string> = Pick<RejectionOptions<TType>, 'type' | 'status'> & {
+  /**
+   * Returns the title of the rejection from its `setTitle` callback.
+   */
+  getTitle: GetTitleCallback,
+}
 
 export type RejectionType<TRejections extends Rejections | undefined> = unknown extends TRejections
   ? never
