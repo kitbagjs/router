@@ -1,10 +1,6 @@
 import { markRaw } from 'vue'
-import { PropsGetter } from '@/types/createRouteOptions'
-import type { PrefetchConfig, PrefetchConfigs, PrefetchStrategy } from '@/types/prefetch'
-import { getPrefetchOption } from '@/utilities/prefetch'
 import { ResolvedRoute, WithData } from '@/types/resolved'
-import { CreatedRouteOptions } from '@/types/route'
-import { DEFAULT_VIEW_NAME, viewNamesWithProps } from './createRouteViews'
+import { DEFAULT_VIEW_NAME } from './createRouteViews'
 import { DEFAULT_LOADER_NAME } from './addLoader'
 import { ContextPushError } from '@/errors/contextPushError'
 import { LoaderDataAccessError } from '@/errors/loaderDataAccessError'
@@ -17,31 +13,8 @@ import { createRouterCallbackContext } from './createRouterCallbackContext'
 import { createDataStore, DataStore } from './createDataStore'
 import { createNavigationStores, DataKind, getDataKey } from './createNavigationStores'
 import { PropsResult } from '@/utilities/props'
-import { AnyFunction, MaybePromise } from '@/types/utilities'
-
-/**
- * Something a route computes: a view's props getter, or a loader. Both are a named callback belonging to
- * one match, so both are stored the same way — what differs is only what waits on them.
- */
-type Computation = {
-  kind: DataKind,
-  id: string,
-  name: string,
-  depth: number,
-  key: string,
-  run: AnyFunction,
-  routePrefetch: PrefetchConfig | undefined,
-  prefetch: PrefetchConfig | undefined,
-}
-
-/**
- * Where a value lives, which is all that is needed to read it back out of a store.
- */
-type ValueLocation = {
-  kind: DataKind,
-  id: string,
-  name: string,
-}
+import { MaybePromise } from '@/types/utilities'
+import { Computation, getComputations, isKind, loaderLocations, propsLocations, ValueLocation } from './getComputations'
 
 /**
  * A navigation that was superseded before its values settled. The navigation that replaced it owns the
@@ -70,7 +43,7 @@ export type PrefetchStore = {
   /**
    * Computes props for views whose prefetch option matches the given strategy.
    */
-  prefetch: (strategy: PrefetchStrategy, route: ResolvedRoute, configs: PrefetchConfigs) => void,
+  prefetch: (route: ResolvedRoute, computations: Computation[]) => void,
   /**
    * Stages the prefetched store for the next navigation to adopt.
    */
@@ -85,8 +58,26 @@ export type PrefetchStore = {
   dispose: () => void,
 }
 
+/**
+ * A value the store holds for a route: which computation it belongs to, and what it resolved to.
+ */
+export type RouteValue = {
+  kind: DataKind,
+  depth: number,
+  name: string,
+  value: unknown,
+}
+
 export type RouteValueStore = HasVueAppStore & {
   createPrefetchStore: () => PrefetchStore,
+  /**
+   * Stages values that already resolved. The next navigation adopts them in place of running their getters.
+   */
+  prefill: (route: ResolvedRoute, values: RouteValue[]) => void,
+  /**
+   * The values currently settled in the store.
+   */
+  getValues: (route: ResolvedRoute) => RouteValue[],
   setRouteValues: (route: ResolvedRoute) => RouteValueResponses,
   getProps: (id: string, name: string, route: ResolvedRoute) => MaybePromise<PropsResult>,
   /**
@@ -112,18 +103,8 @@ export function createRouteValueStore(): RouteValueStore {
       link.store = createDataStore()
     }
 
-    const prefetch: PrefetchStore['prefetch'] = (strategy, route, configs) => {
-      for (const computation of getComputations(route).filter(isKind('props'))) {
-        const option = getPrefetchOption({
-          ...configs,
-          routePrefetch: computation.routePrefetch,
-          viewPrefetch: computation.prefetch,
-        }, 'props')
-
-        if (option !== strategy) {
-          continue
-        }
-
+    const prefetch: PrefetchStore['prefetch'] = (route, computations) => {
+      for (const computation of computations) {
         link.store.set(computation.key, () => run(computation, route, link.store))
       }
     }
@@ -139,6 +120,37 @@ export function createRouteValueStore(): RouteValueStore {
       reset,
       dispose,
     }
+  }
+
+  const prefill: RouteValueStore['prefill'] = (route, values) => {
+    const store = createDataStore()
+    const computations = getComputations(route)
+
+    for (const { kind, depth, name, value } of values) {
+      const computation = computations.find((computation) => computation.kind === kind && computation.depth === depth && computation.name === name)
+
+      if (!computation) {
+        continue
+      }
+
+      store.set(computation.key, () => value)
+    }
+
+    navigation.stage(store)
+  }
+
+  const getValues: RouteValueStore['getValues'] = (route) => {
+    const store = navigation.current()
+
+    return getComputations(route).flatMap(({ kind, depth, name, key }) => {
+      const result = store.get(key)
+
+      if (result.kind !== 'value') {
+        return []
+      }
+
+      return [{ kind, depth, name, value: result.value }]
+    })
   }
 
   const setRouteValues: RouteValueStore['setRouteValues'] = (route) => {
@@ -349,46 +361,15 @@ export function createRouteValueStore(): RouteValueStore {
     return value
   }
 
-  function getComputations(route: ResolvedRoute): Computation[] {
-    return route.matches.flatMap((match, depth) => [
-      ...propsLocations(match).map((location) => toComputation(location, match, depth, route, match.views[location.name].props as PropsGetter, match.views[location.name].prefetch)),
-      ...loaderLocations(match).map((location) => toComputation(location, match, depth, route, match.loaders[location.name].load, match.loaders[location.name].prefetch)),
-    ])
-  }
-
-  function toComputation(location: ValueLocation, match: CreatedRouteOptions, depth: number, route: ResolvedRoute, run: AnyFunction, prefetch: PrefetchConfig | undefined): Computation {
-    return {
-      ...location,
-      depth,
-      key: getDataKey(location.kind, location.id, location.name, route),
-      run,
-      routePrefetch: match.prefetch,
-      prefetch,
-    }
-  }
-
   return {
     createPrefetchStore,
+    prefill,
+    getValues,
     setRouteValues,
     getProps,
     getData,
     setVueApp,
   }
-}
-
-/**
- * Only views with a getter, since a view with none is never computed and waiting on it would never settle.
- */
-function propsLocations(match: CreatedRouteOptions): ValueLocation[] {
-  return viewNamesWithProps(match.views).map((name) => ({ kind: 'props', id: match.id, name }))
-}
-
-function loaderLocations(match: CreatedRouteOptions): ValueLocation[] {
-  return Object.keys(match.loaders).map((name) => ({ kind: 'loader', id: match.id, name }))
-}
-
-function isKind(kind: DataKind): (computation: Computation) => boolean {
-  return (computation) => computation.kind === kind
 }
 
 /**
