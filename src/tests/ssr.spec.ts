@@ -8,7 +8,7 @@ const sleep = (ms: number): Promise<void> => new Promise((resolve) => {
   setTimeout(resolve, ms)
 })
 
-describe('router.render', () => {
+describe('router.ssr', () => {
   test('waits for a loader to settle', async () => {
     const { promise, resolve } = Promise.withResolvers<string>()
     const route = createRoute({ name: 'route', path: '/', component }).addLoader(() => promise)
@@ -18,7 +18,7 @@ describe('router.render', () => {
 
     let rendered = false
 
-    const rendering = router.render().then(() => {
+    const rendering = router.ssr().then(() => {
       rendered = true
     })
 
@@ -43,7 +43,7 @@ describe('router.render', () => {
 
     let rendered = false
 
-    const rendering = router.render().then(() => {
+    const rendering = router.ssr().then(() => {
       rendered = true
     })
 
@@ -76,7 +76,7 @@ describe('router.render', () => {
 
     await router.start()
 
-    await expect(router.render()).resolves.toMatchObject({ status: 200, rejection: null })
+    await expect(router.ssr()).resolves.toMatchObject({ status: 200, rejection: null })
   })
 
   test('after a push, waits for the new route data', async () => {
@@ -90,7 +90,7 @@ describe('router.render', () => {
 
     let rendered = false
 
-    const rendering = router.render().then(() => {
+    const rendering = router.ssr().then(() => {
       rendered = true
     })
 
@@ -116,7 +116,7 @@ describe('router.render', () => {
 
     await router.start()
 
-    const result = await router.render()
+    const result = await router.ssr()
 
     expect(result).toMatchObject({ status: 404, rejection: 'NotFound' })
   })
@@ -140,7 +140,7 @@ describe('router.render', () => {
 
     let rendered = false
 
-    const rendering = router.render().then(() => {
+    const rendering = router.ssr().then(() => {
       rendered = true
     })
 
@@ -174,7 +174,7 @@ describe('router.render', () => {
 
     await router.start()
 
-    const result = await router.render()
+    const result = await router.ssr()
 
     expect(result).toMatchObject({ status: 302, location: '/other' })
     expect(router.route.name).toBe('other')
@@ -199,7 +199,7 @@ describe('router.render', () => {
 
     await router.start()
 
-    const response = await router.render()
+    const response = await router.ssr()
 
     expect(response.status).toBe(302)
     expect(router.route.name).toBe('other')
@@ -215,28 +215,28 @@ describe('router.render', () => {
 
     await router.start()
 
-    const result = await router.render()
+    const result = await router.ssr()
 
     expect(router.route.name).toBe('other')
     expect(result.status).toBe(302)
   })
 })
 
-test('render starts the router when it has not been started', async () => {
+test('ssr starts the router when it has not been started', async () => {
   const route = createRoute({ name: 'route', path: '/foo', component })
   const router = createRouter([route], { initialUrl: '/foo' })
 
-  const result = await router.render()
+  const result = await router.ssr()
 
   expect(result).toMatchObject({ status: 200, rejection: null })
   expect(router.started.value).toBe(true)
 })
 
-test('render on an unstarted router does not report a bogus success for an unmatched url', async () => {
+test('ssr on an unstarted router does not report a bogus success for an unmatched url', async () => {
   const route = createRoute({ name: 'route', path: '/foo', component })
   const router = createRouter([route], { initialUrl: '/nope' })
 
-  const result = await router.render()
+  const result = await router.ssr()
 
   expect(result.status).toBe(404)
 })
