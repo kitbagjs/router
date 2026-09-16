@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 import { getResponse, GetResponseContext } from '@/services/getResponse'
-import { Rejection } from '@/types/rejection'
+import { createRejection } from '@/services/createRejection'
 import { ResolvedRoute } from '@/types/resolved'
 
 function route(href: string): ResolvedRoute {
@@ -45,28 +45,28 @@ test('given removeTrailingSlashes is false, does not report a normalization', ()
 })
 
 test('given the NotFound rejection, returns 404', () => {
-  const rejection: Rejection = { type: 'NotFound', status: 404 }
+  const rejection = createRejection({ type: 'NotFound', status: 404 })
   const response = getResponse(context({ rejection }))
 
   expect(response).toStrictEqual({ status: 404, rejection: 'NotFound' })
 })
 
 test('given a rejection with a status, returns that status', () => {
-  const rejection: Rejection = { type: 'Unauthorized', status: 401 }
+  const rejection = createRejection({ type: 'Unauthorized', status: 401 })
   const response = getResponse(context({ rejection }))
 
   expect(response).toStrictEqual({ status: 401, rejection: 'Unauthorized' })
 })
 
 test('given a rejection, returns the status it declared', () => {
-  const rejection: Rejection = { type: 'Maintenance', status: 503 }
+  const rejection = createRejection({ type: 'Maintenance', status: 503 })
   const response = getResponse(context({ rejection }))
 
   expect(response).toStrictEqual({ status: 503, rejection: 'Maintenance' })
 })
 
 test('given a rejection, prefers it over a redirect', () => {
-  const rejection: Rejection = { type: 'Unauthorized', status: 401 }
+  const rejection = createRejection({ type: 'Unauthorized', status: 401 })
   const response = getResponse(context({ rejection, route: route('/bar') }))
 
   expect(response.status).toBe(401)
