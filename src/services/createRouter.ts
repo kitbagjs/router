@@ -3,9 +3,8 @@ import { App, ref } from 'vue'
 import { createCurrentRoute } from '@/services/createCurrentRoute'
 import { createIsExternal } from '@/services/createIsExternal'
 import { createActivityTracker } from '@/services/createActivityTracker'
-import { getResponse } from '@/services/getResponse'
 import { SsrOptionRequiredError } from '@/errors/ssrOptionRequiredError'
-import { parseUrl, updateUrl } from '@/services/urlParser'
+import { isSameUrl, parseUrl, updateUrl } from '@/services/urlParser'
 import { createRouteValueStore, RouteValueResponse } from '@/services/createRouteValueStore'
 import { DataKind } from '@/services/createNavigationStores'
 import { createRouterHistory } from '@/services/createRouterHistory'
@@ -414,13 +413,21 @@ export function createRouter<
     await start()
     await activity.idle()
 
-    return getResponse({
-      initialUrl,
-      route: currentRoute,
-      rejection: currentRejection.value,
-      removeTrailingSlashes: shouldRemoveTrailingSlashes,
-      redirectStatus,
-    })
+    if (shouldRemoveTrailingSlashes && pathHasTrailingSlash(initialUrl)) {
+      return { kind: 'redirect', status: redirectStatus, location: currentRoute.href }
+    }
+
+    const rejection = currentRejection.value
+
+    if (rejection) {
+      return { kind: 'reject', status: rejection.status, rejection: rejection.type }
+    }
+
+    if (!isSameUrl(initialUrl, currentRoute.href)) {
+      return { kind: 'redirect', status: 302, location: currentRoute.href }
+    }
+
+    return { kind: 'success', status: 200 }
   }
 
   function stop(): void {

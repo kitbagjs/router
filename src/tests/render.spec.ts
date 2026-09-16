@@ -76,7 +76,7 @@ describe('router.render', () => {
 
     await router.start()
 
-    await expect(router.render()).resolves.toMatchObject({ status: 200, rejection: null })
+    await expect(router.render()).resolves.toMatchObject({ status: 200 })
   })
 
   test('after a push, waits for the new route data', async () => {
@@ -228,7 +228,7 @@ test('render starts the router when it has not been started', async () => {
 
   const result = await router.render()
 
-  expect(result).toMatchObject({ status: 200, rejection: null })
+  expect(result).toMatchObject({ status: 200 })
   expect(router.started.value).toBe(true)
 })
 
