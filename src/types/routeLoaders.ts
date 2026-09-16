@@ -1,3 +1,4 @@
+import { AnyPayloadStringifier } from '@/services/payload'
 import { PrefetchConfig } from '@/types/prefetch'
 import { AnyFunction } from '@/types/utilities'
 
@@ -10,6 +11,7 @@ import { AnyFunction } from '@/types/utilities'
 export type RouteLoader<TData = unknown> = {
   load: AnyFunction<TData>,
   prefetch?: PrefetchConfig,
+  payload?: AnyPayloadStringifier,
 }
 
 /**

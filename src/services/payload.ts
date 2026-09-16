@@ -2,6 +2,9 @@ import { DataKind } from '@/services/createNavigationStores'
 import { isRecord } from '@/utilities/guards'
 import { isBrowser } from '@/utilities/isBrowser'
 import { RouteValue } from '@/services/createRouteValueStore'
+import { Computation, getComputations } from '@/services/getComputations'
+import { PayloadValueError } from '@/errors/payloadValueError'
+import { ResolvedRoute } from '@/types/resolved'
 
 export const PAYLOAD_ELEMENT_ID = 'kitbag-payload'
 
@@ -22,6 +25,36 @@ export function payloadToScript(payload: RouterPayload): string {
     .replace(new RegExp(PARAGRAPH_SEPARATOR, 'g'), '\\u2029')
 
   return `<script type="application/json" id="${PAYLOAD_ELEMENT_ID}">${json}</script>`
+}
+
+/**
+ * How a prop or loader value is sent from a server to a client, in place of json.
+ */
+export type PayloadOptions<TValue = unknown> = {
+  payload?: PayloadStringifier<TValue>,
+}
+
+export type PayloadStringifier<TValue = unknown> = {
+  /**
+   * Turns a value into a string for the payload.
+   */
+  stringify: (value: TValue) => string,
+  /**
+   * Turns a string from the payload back into a value.
+   */
+  parse: (encoded: string) => TValue,
+}
+
+/**
+ * A stringifier whose value type has been erased. Every loader's and view's stringifier is stored in
+ * one record, so a stored one is typed for some value the record no longer names — `unknown` would
+ * claim it accepts anything, which a typed stringify does not.
+ */
+export type AnyPayloadStringifier = PayloadStringifier<any>
+
+export const jsonStringifier: PayloadStringifier = {
+  stringify: JSON.stringify,
+  parse: JSON.parse,
 }
 
 export type PayloadValue = {
@@ -87,31 +120,57 @@ export function getHydratingPayload(): RouterPayload | undefined {
 }
 
 /**
- * Encodes settled values as json for the payload. A value json cannot carry is left out, and the client
- * computes it again.
+ * Encodes settled values for the payload, each through its own stringifier or the fallback. A value the
+ * default json cannot carry is left out, and the client computes it again; a declared stringifier that
+ * fails throws a {@link PayloadValueError}.
  */
-export function encodePayloadValues(values: RouteValue[]): PayloadValue[] {
+export function encodePayloadValues(route: ResolvedRoute, values: RouteValue[], fallback: PayloadStringifier = jsonStringifier): PayloadValue[] {
+  const computations = getComputations(route)
+
   return values.flatMap(({ kind, depth, name, value }) => {
-    const encoded = JSON.stringify(value)
+    const stringifier = findStringifier(computations, { kind, depth, name }) ?? fallback
 
-    if (typeof encoded !== 'string') {
-      return []
+    try {
+      const encoded = stringifier.stringify(value)
+
+      if (typeof encoded !== 'string') {
+        throw new Error(`stringify returned ${typeof encoded}`)
+      }
+
+      return [{ kind, depth, name, encoded }]
+    } catch (error) {
+      if (stringifier === jsonStringifier) {
+        return []
+      }
+
+      throw new PayloadValueError('stringify', kind, name, error)
     }
-
-    return [{ kind, depth, name, encoded }]
   })
 }
 
 /**
- * Decodes payload values for the store to adopt. A value json cannot read is left out, and its getter
- * runs as usual.
+ * Decodes payload values for the store to adopt, each through its own stringifier or the fallback. A
+ * value the default json cannot read is left out, and its getter runs as usual; a declared parse that
+ * fails throws a {@link PayloadValueError}.
  */
-export function decodePayloadValues(values: PayloadValue[]): RouteValue[] {
+export function decodePayloadValues(route: ResolvedRoute, values: PayloadValue[], fallback: PayloadStringifier = jsonStringifier): RouteValue[] {
+  const computations = getComputations(route)
+
   return values.flatMap(({ kind, depth, name, encoded }) => {
+    const stringifier = findStringifier(computations, { kind, depth, name }) ?? fallback
+
     try {
-      return [{ kind, depth, name, value: JSON.parse(encoded) as unknown }]
-    } catch {
-      return []
+      return [{ kind, depth, name, value: stringifier.parse(encoded) as unknown }]
+    } catch (error) {
+      if (stringifier === jsonStringifier) {
+        return []
+      }
+
+      throw new PayloadValueError('parse', kind, name, error)
     }
   })
+}
+
+function findStringifier(computations: Computation[], { kind, depth, name }: Pick<PayloadValue, 'kind' | 'depth' | 'name'>): AnyPayloadStringifier | undefined {
+  return computations.find((computation) => computation.kind === kind && computation.depth === depth && computation.name === name)?.payload
 }
