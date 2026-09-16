@@ -1209,6 +1209,33 @@ describe('router.stop', () => {
   })
 })
 
+test('a back during a slow after hook navigates', async () => {
+  const { promise, resolve } = Promise.withResolvers<string>()
+  const home = createRoute({ name: 'home', component, path: '/' })
+  const slow = createRoute({ name: 'slow', component, path: '/slow' })
+
+  slow.onAfterRouteEnter(async () => {
+    await promise
+  })
+
+  const router = createRouter([home, slow], { initialUrl: '/' })
+
+  await router.start()
+
+  const navigation = router.push('slow')
+  await flushPromises()
+
+  router.back()
+  await flushPromises()
+
+  expect(router.route.name).toBe('home')
+
+  resolve('continue')
+  await navigation
+
+  expect(router.route.name).toBe('home')
+})
+
 test('going back from a redirect returns to the route before it', async () => {
   const home = createRoute({ name: 'home', component, path: '/' })
   const oldPath = createRoute({ name: 'oldPath', component, path: '/old' })

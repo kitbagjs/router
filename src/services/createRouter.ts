@@ -137,84 +137,76 @@ export function createRouter<
 
     const navigationId = getNavigationId()
 
-    history.stopListening()
+    const to = find(url, options) ?? null
+    const from = getFromRouteForHooks(navigationId)
 
-    try {
-      const to = find(url, options) ?? null
-      const from = getFromRouteForHooks(navigationId)
+    function commitNavigation(): void {
+      if (!to) {
+        reject(NOT_FOUND_REJECTION_TYPE, { to, from })
 
-      function commitNavigation(): void {
-        if (!to) {
-          reject(NOT_FOUND_REJECTION_TYPE, { to, from })
-
-          return
-        }
-
-        clearRejection()
-
-        if (!isExternal(url)) {
-          setRouteValuesAndUpdateRoute(to, from)
-        }
-      }
-
-      const beforeResponse = await hooks.runBeforeRouteHooks({ to, from })
-
-      if (!isCurrentNavigationId(navigationId)) {
         return
       }
 
-      switch (beforeResponse.status) {
-        case 'ABORT':
-          return
+      clearRejection()
 
-        case 'PUSH':
-          await push(...beforeResponse.to)
-          return
-
-        case 'REJECT':
-          history.update(url, options)
-          reject(beforeResponse.type, { to, from })
-          return
-
-        case 'SUCCESS':
-          history.update(url, options)
-          break
-
-        default:
-          throw new Error(`Switch is not exhaustive for before hook response status: ${JSON.stringify(beforeResponse satisfies never)}`)
-      }
-
-      commitNavigation()
-
-      const afterResponse = await hooks.runAfterRouteHooks({ to, from })
-
-      if (!isCurrentNavigationId(navigationId)) {
-        return
-      }
-
-      switch (afterResponse.status) {
-        case 'PUSH':
-          await push(...afterResponse.to)
-          break
-
-        case 'REJECT':
-          reject(afterResponse.type, { to, from })
-          break
-
-        case 'SUCCESS':
-          break
-
-        default:
-          const exhaustive: never = afterResponse
-          throw new Error(`Switch is not exhaustive for after hook response status: ${JSON.stringify(exhaustive)}`)
-      }
-
-      setDocumentTitle(currentRejectionRoute.value ?? to)
-    } finally {
-      if (isCurrentNavigationId(navigationId)) {
-        history.startListening()
+      if (!isExternal(url)) {
+        setRouteValuesAndUpdateRoute(to, from)
       }
     }
+
+    const beforeResponse = await hooks.runBeforeRouteHooks({ to, from })
+
+    if (!isCurrentNavigationId(navigationId)) {
+      return
+    }
+
+    switch (beforeResponse.status) {
+      case 'ABORT':
+        return
+
+      case 'PUSH':
+        await push(...beforeResponse.to)
+        return
+
+      case 'REJECT':
+        history.update(url, options)
+        reject(beforeResponse.type, { to, from })
+        return
+
+      case 'SUCCESS':
+        history.update(url, options)
+        break
+
+      default:
+        throw new Error(`Switch is not exhaustive for before hook response status: ${JSON.stringify(beforeResponse satisfies never)}`)
+    }
+
+    commitNavigation()
+
+    const afterResponse = await hooks.runAfterRouteHooks({ to, from })
+
+    if (!isCurrentNavigationId(navigationId)) {
+      return
+    }
+
+    switch (afterResponse.status) {
+      case 'PUSH':
+        await push(...afterResponse.to)
+        break
+
+      case 'REJECT':
+        reject(afterResponse.type, { to, from })
+        break
+
+      case 'SUCCESS':
+        break
+
+      default:
+        const exhaustive: never = afterResponse
+        throw new Error(`Switch is not exhaustive for after hook response status: ${JSON.stringify(exhaustive)}`)
+    }
+
+    setDocumentTitle(currentRejectionRoute.value ?? to)
   })
 
   function setRouteValuesAndUpdateRoute(to: ResolvedRoute, from: ResolvedRoute | null): void {
@@ -385,6 +377,8 @@ export function createRouter<
     starting = true
 
     await set(initialUrl, { replace: true, state: initialState })
+
+    history.startListening()
 
     initialized()
     started.value = true
