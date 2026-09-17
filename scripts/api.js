@@ -32,7 +32,7 @@ async function updateReferences(searchString, replaceString) {
 
     for (const entry of entries) {
       if (entry.isFile() && (entry.name.endsWith('.md') || entry.name.endsWith('.json'))) {
-        const fullPath = path.join(entry.path || '', entry.name)
+        const fullPath = path.join(entry.parentPath || entry.path || '', entry.name)
         const content = await fs.readFile(fullPath, 'utf8')
         const updatedContent = content.replace(new RegExp(searchString, 'g'), replaceString)
 
@@ -59,7 +59,7 @@ async function organizeFilesByGroup() {
     // First pass: collect all the moves we need to make
     for (const entry of entries) {
       if (entry.isFile() && entry.name.endsWith('.md')) {
-        const fullPath = path.join(entry.path || '', entry.name)
+        const fullPath = path.join(entry.parentPath || entry.path || '', entry.name)
         const content = await fs.readFile(fullPath, 'utf8')
 
         // Extract group from H1 heading

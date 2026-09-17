@@ -2,16 +2,16 @@
 
 ```ts
 type ResolvedRoute<TRoute> = Readonly<{
+  getTitle: GetTitleCallback;
   hash: string;
   href: UrlString;
   id: TRoute["id"];
-  matched: TRoute["matched"];
+  matched: MatchedRoute<TRoute["matches"]>;
   matches: TRoute["matches"];
   name: TRoute["name"];
   params: UrlParamsReading<TRoute>;
   query: URLSearchParams;
   state: ExtractRouteStateParamsAsOptional<TRoute["state"]>;
-  title: Promise<string | undefined>;
 }>;
 ```
 

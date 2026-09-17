@@ -9,6 +9,8 @@ This is ideal for responding to updates within the same route, such as parameter
 
 ## Param
 
+**AfterRouteHook**
+
 The hook callback function
 
 ## Returns

@@ -1,7 +1,7 @@
 # Types: AfterLeaveHookContext\<TRoutes, TRejections, TRouteTo, TRouteFrom\>
 
 ```ts
-type AfterLeaveHookContext<TRoutes, TRejections, TRouteTo, TRouteFrom> = AfterHookContext<TRouteTo, TRoutes, TRejections> & object;
+type AfterLeaveHookContext<TRoutes, TRejections, TRouteTo, TRouteFrom> = Omit<AfterHookContext<TRouteTo, TRoutes, TRejections>, "update"> & object;
 ```
 
 ## Type Declaration

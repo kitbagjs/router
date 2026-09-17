@@ -17,7 +17,7 @@ type AfterLeaveHook<TRoutes, TRejections, TRouteTo, TRouteFrom> = (to, context) 
 
 | Parameter | Type |
 | ------ | ------ |
-| `to` | [`ResolvedRouteUnion`](ResolvedRouteUnion.md)\<`TRouteTo`\> |
+| `to` | [`ResolvedRouteUnion`](ResolvedRouteUnion.md)\<`TRouteTo`\> \| `null` |
 | `context` | [`AfterLeaveHookContext`](AfterLeaveHookContext.md)\<`TRoutes`, `TRejections`, `TRouteTo`, `TRouteFrom`\> |
 
 ## Returns

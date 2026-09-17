@@ -8,6 +8,8 @@ A component to render a link to a route or any url.
 
 ## Param
 
+**props**
+
 The props to pass to the router link component.
 
 ## Returns
