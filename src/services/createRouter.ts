@@ -4,8 +4,7 @@ import { createCurrentRoute } from '@/services/createCurrentRoute'
 import { createIsExternal } from '@/services/createIsExternal'
 import { createActivityTracker } from '@/services/createActivityTracker'
 import { getResponse } from '@/services/getResponse'
-import { RenderInBrowserError } from '@/errors/renderInBrowserError'
-import { isBrowser } from '@/utilities/isBrowser'
+import { SsrOptionRequiredError } from '@/errors/ssrOptionRequiredError'
 import { parseUrl, updateUrl } from '@/services/urlParser'
 import { createRouteValueStore, RouteValueResponse } from '@/services/createRouteValueStore'
 import { DataKind } from '@/services/createNavigationStores'
@@ -96,6 +95,7 @@ export function createRouter<
   const routerKey = isGlobalRouter ? routerInjectionKey : Symbol()
   const shouldRemoveTrailingSlashes = options?.removeTrailingSlashes ?? true
   const redirectStatus = options?.redirectStatus ?? 302
+  const isSSR = options?.ssr ?? false
   const activity = createActivityTracker()
   const { routes, getRouteByName, getRejectionByType } = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options)
   const notFoundRejection = getRejectionByType('NotFound')
@@ -387,11 +387,12 @@ export function createRouter<
   /**
    * Waits for the view to finish rendering and returns everything the server needs to render the page.
    *
-   * Only available on the server. Throws {@link RenderInBrowserError} when called in the client.
+   * Requires the router to be created with the `ssr` option, and throws
+   * {@link SsrOptionRequiredError} without it.
    */
   async function render(): Promise<ServerRenderResponse> {
-    if (isBrowser()) {
-      throw new RenderInBrowserError()
+    if (!isSSR) {
+      throw new SsrOptionRequiredError()
     }
 
     await start()

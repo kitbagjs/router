@@ -25,6 +25,12 @@ export type RouterOptions = {
   initialUrl?: string,
 
   /**
+   * Marks the router as rendering on a server, so every navigation is part of the server render from
+   * the moment the router is created. Required to call `render`.
+   */
+  ssr?: boolean,
+
+  /**
    * Specifies the history mode for the router, such as "browser", "memory", or "hash".
    *
    * @default "auto"
@@ -217,7 +223,8 @@ export type Router<
    *
    * Awaiting `push` only waits for the route to commit; this also waits for its data.
    *
-   * Only available on the server for ssr. Throws `RenderInBrowserError` when called in the client.
+   * Requires the router to be created with the `ssr` option, and throws `SsrOptionRequiredError`
+   * without it.
    */
   render: () => Promise<ServerRenderResponse<ExtractRejectionTypes<ExtractRejections<TOptions>> | ExtractRejectionTypes<ExtractRejections<TPlugin>> | BuiltInRejectionType>>,
   /**

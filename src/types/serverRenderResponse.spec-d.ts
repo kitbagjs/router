@@ -7,7 +7,7 @@ import { component } from '@/utilities/testHelpers'
 test('rejection is the router\'s rejection types, not string', async () => {
   const unauthorized = createRejection({ type: 'Unauthorized', status: 401 })
   const route = createRoute({ name: 'route', path: '/', component })
-  const router = createRouter([route], { initialUrl: '/', rejections: [unauthorized] })
+  const router = createRouter([route], { ssr: true, initialUrl: '/', rejections: [unauthorized] })
 
   const response = await router.render()
 
@@ -16,7 +16,7 @@ test('rejection is the router\'s rejection types, not string', async () => {
 
 test('location narrows the status to a redirect', async () => {
   const route = createRoute({ name: 'route', path: '/', component })
-  const router = createRouter([route], { initialUrl: '/' })
+  const router = createRouter([route], { ssr: true, initialUrl: '/' })
 
   const response = await router.render()
 

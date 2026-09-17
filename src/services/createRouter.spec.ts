@@ -11,6 +11,7 @@ import { createExternalRoute } from '@/services/createExternalRoute'
 import { RouteNotFoundError } from '@/errors/routeNotFoundError'
 import { InvalidRouteParamValueError } from '@/errors/invalidRouteParamValueError'
 import { createRejection } from './createRejection'
+import { SsrOptionRequiredError } from '@/errors/ssrOptionRequiredError'
 
 test('initial route is set', async () => {
   const foo = createRoute({
@@ -1261,9 +1262,16 @@ test('going back from a redirect returns to the route before it', async () => {
 })
 
 describe('router.render response', () => {
-  test('given a url that matches a route, returns 200', async () => {
+  test('render requires the router to be created for server rendering', async () => {
     const route = createRoute({ name: 'route', component, path: '/' })
     const router = createRouter([route], { initialUrl: '/' })
+
+    await expect(router.render()).rejects.toThrow(SsrOptionRequiredError)
+  })
+
+  test('given a url that matches a route, returns 200', async () => {
+    const route = createRoute({ name: 'route', component, path: '/' })
+    const router = createRouter([route], { ssr: true, initialUrl: '/' })
 
     await router.start()
 
@@ -1275,7 +1283,7 @@ describe('router.render response', () => {
 
   test('given a url that matches no route, returns 404', async () => {
     const route = createRoute({ name: 'route', component, path: '/foo' })
-    const router = createRouter([route], { initialUrl: '/does-not-exist' })
+    const router = createRouter([route], { ssr: true, initialUrl: '/does-not-exist' })
 
     await router.start()
 
@@ -1291,7 +1299,7 @@ describe('router.render response', () => {
       reject('NotFound')
     })
 
-    const router = createRouter([route], { initialUrl: '/' })
+    const router = createRouter([route], { ssr: true, initialUrl: '/' })
 
     await router.start()
 
@@ -1303,7 +1311,7 @@ describe('router.render response', () => {
   test('given a rejection that declares a status, returns that status', async () => {
     const rejection = createRejection({ type: 'Unauthorized', status: 401 })
     const route = createRoute({ name: 'route', component, path: '/' })
-    const router = createRouter([route], { initialUrl: '/', rejections: [rejection] })
+    const router = createRouter([route], { ssr: true, initialUrl: '/', rejections: [rejection] })
 
     router.onBeforeRouteEnter((_to, { reject }) => {
       reject('Unauthorized')
@@ -1319,7 +1327,7 @@ describe('router.render response', () => {
   test('given a rejection, returns the status it declared', async () => {
     const rejection = createRejection({ type: 'Maintenance', status: 503 })
     const route = createRoute({ name: 'route', component, path: '/' })
-    const router = createRouter([route], { initialUrl: '/', rejections: [rejection] })
+    const router = createRouter([route], { ssr: true, initialUrl: '/', rejections: [rejection] })
 
     router.onBeforeRouteEnter((_to, { reject }) => {
       reject('Maintenance')
@@ -1334,7 +1342,7 @@ describe('router.render response', () => {
 
   test('given a url with a trailing slash, redirects to the url without it', async () => {
     const route = createRoute({ name: 'route', component, path: '/foo' })
-    const router = createRouter([route], { initialUrl: '/foo/' })
+    const router = createRouter([route], { ssr: true, initialUrl: '/foo/' })
 
     await router.start()
 
@@ -1345,7 +1353,7 @@ describe('router.render response', () => {
 
   test('given redirectStatus, uses it for a normalized url', async () => {
     const route = createRoute({ name: 'route', component, path: '/foo' })
-    const router = createRouter([route], { initialUrl: '/foo/', redirectStatus: 301 })
+    const router = createRouter([route], { ssr: true, initialUrl: '/foo/', redirectStatus: 301 })
 
     await router.start()
 
@@ -1356,7 +1364,7 @@ describe('router.render response', () => {
 
   test('given removeTrailingSlashes false, does not normalize', async () => {
     const route = createRoute({ name: 'route', component, path: '/foo' })
-    const router = createRouter([route], { initialUrl: '/foo/', removeTrailingSlashes: false })
+    const router = createRouter([route], { ssr: true, initialUrl: '/foo/', removeTrailingSlashes: false })
 
     await router.start()
 
@@ -1371,7 +1379,7 @@ describe('router.render response', () => {
 
     from.redirectTo(to)
 
-    const router = createRouter([from, to], { initialUrl: '/from' })
+    const router = createRouter([from, to], { ssr: true, initialUrl: '/from' })
 
     await router.start()
 
@@ -1382,7 +1390,7 @@ describe('router.render response', () => {
 
   test('given extra query params that the router reorders, does not report a redirect', async () => {
     const route = createRoute({ name: 'route', component, path: '/', query: 'foo=[param]' })
-    const router = createRouter([route], { initialUrl: '/?extra=42&foo=1' })
+    const router = createRouter([route], { ssr: true, initialUrl: '/?extra=42&foo=1' })
 
     await router.start()
 
@@ -1393,7 +1401,7 @@ describe('router.render response', () => {
 
   test('calling render again resolves with the same response', async () => {
     const route = createRoute({ name: 'route', component, path: '/' })
-    const router = createRouter([route], { initialUrl: '/' })
+    const router = createRouter([route], { ssr: true, initialUrl: '/' })
 
     await router.start()
 

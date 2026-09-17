@@ -12,7 +12,7 @@ describe('router.render', () => {
   test('waits for a loader to settle', async () => {
     const { promise, resolve } = Promise.withResolvers<string>()
     const route = createRoute({ name: 'route', path: '/', component }).addLoader(() => promise)
-    const router = createRouter([route], { initialUrl: '/' })
+    const router = createRouter([route], { ssr: true, initialUrl: '/' })
 
     await router.start()
 
@@ -37,7 +37,7 @@ describe('router.render', () => {
     const { promise, resolve } = Promise.withResolvers<string>()
     const props = vi.fn(async () => ({ value: await promise }))
     const route = createRoute({ name: 'route', path: '/' }).addView(component, { props })
-    const router = createRouter([route], { initialUrl: '/' })
+    const router = createRouter([route], { ssr: true, initialUrl: '/' })
 
     await router.start()
 
@@ -61,7 +61,7 @@ describe('router.render', () => {
   test('start does not wait for a loader', async () => {
     const { promise, resolve } = Promise.withResolvers<string>()
     const route = createRoute({ name: 'route', path: '/', component }).addLoader(() => promise)
-    const router = createRouter([route], { initialUrl: '/' })
+    const router = createRouter([route], { ssr: true, initialUrl: '/' })
 
     await router.start()
 
@@ -72,7 +72,7 @@ describe('router.render', () => {
 
   test('resolves immediately when there is nothing left to render', async () => {
     const route = createRoute({ name: 'route', path: '/', component })
-    const router = createRouter([route], { initialUrl: '/' })
+    const router = createRouter([route], { ssr: true, initialUrl: '/' })
 
     await router.start()
 
@@ -83,7 +83,7 @@ describe('router.render', () => {
     const { promise, resolve } = Promise.withResolvers<string>()
     const other = createRoute({ name: 'other', path: '/other', component }).addLoader(() => promise)
     const home = createRoute({ name: 'home', path: '/', component })
-    const router = createRouter([home, other], { initialUrl: '/' })
+    const router = createRouter([home, other], { ssr: true, initialUrl: '/' })
 
     await router.start()
     await router.push('other')
@@ -112,7 +112,7 @@ describe('router.render', () => {
         reject('NotFound')
       })
 
-    const router = createRouter([route], { initialUrl: '/' })
+    const router = createRouter([route], { ssr: true, initialUrl: '/' })
 
     await router.start()
 
@@ -134,7 +134,7 @@ describe('router.render', () => {
         push('other')
       })
 
-    const router = createRouter([route, other], { initialUrl: '/' })
+    const router = createRouter([route, other], { ssr: true, initialUrl: '/' })
 
     await router.start()
 
@@ -170,7 +170,7 @@ describe('router.render', () => {
         },
       })
 
-    const router = createRouter([route, other], { initialUrl: '/' })
+    const router = createRouter([route, other], { ssr: true, initialUrl: '/' })
 
     await router.start()
 
@@ -195,7 +195,7 @@ describe('router.render', () => {
     const route = createRoute({ name: 'route', path: '/', component, context: [other] })
       .addLoader((_route, { push }) => push('other'))
 
-    const router = createRouter([route, other], { initialUrl: '/' })
+    const router = createRouter([route, other], { ssr: true, initialUrl: '/' })
 
     await router.start()
 
@@ -211,7 +211,7 @@ describe('router.render', () => {
     const route = createRoute({ name: 'route', path: '/', component, context: [other] })
       .addLoader((_route, { push }) => push('other'))
 
-    const router = createRouter([route, other], { initialUrl: '/' })
+    const router = createRouter([route, other], { ssr: true, initialUrl: '/' })
 
     await router.start()
 
@@ -224,7 +224,7 @@ describe('router.render', () => {
 
 test('render starts the router when it has not been started', async () => {
   const route = createRoute({ name: 'route', path: '/foo', component })
-  const router = createRouter([route], { initialUrl: '/foo' })
+  const router = createRouter([route], { ssr: true, initialUrl: '/foo' })
 
   const result = await router.render()
 
@@ -234,7 +234,7 @@ test('render starts the router when it has not been started', async () => {
 
 test('render on an unstarted router does not report a bogus success for an unmatched url', async () => {
   const route = createRoute({ name: 'route', path: '/foo', component })
-  const router = createRouter([route], { initialUrl: '/nope' })
+  const router = createRouter([route], { ssr: true, initialUrl: '/nope' })
 
   const result = await router.render()
 
