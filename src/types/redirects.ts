@@ -1,5 +1,6 @@
 import { ResolvedRouteUnion } from './resolved'
 import { Route, Routes } from './route'
+import { RedirectStatus } from './router'
 import { RouterReplace } from './routerReplace'
 import { UrlParamsReading, UrlParamsWriting } from './url'
 import { AllPropertiesAreOptional, MaybePromise } from './utilities'
@@ -33,17 +34,25 @@ export type RouteRedirectCallback<
   TRouteFrom extends Route = Route
 > = (params: UrlParamsReading<TRouteFrom>) => UrlParamsWriting<TRouteTo>
 
+export type RouteRedirectOptions = {
+  /**
+   * The http status a server responds with for this redirect when server rendering. Defaults to the
+   * router's `redirectStatus`.
+   */
+  status?: RedirectStatus,
+}
+
 /**
  * This type is purposely wide to prevent type errors in RouteRedirectFrom where the TRouteTo generic cannot be inferred.
  */
-export type RouteRedirect = (to: Route, callback?: (params: any) => any) => void
+export type RouteRedirect = (to: Route, callback?: (params: any) => any, options?: RouteRedirectOptions) => void
 
 export type RedirectToArgs<
   TRouteTo extends Route = Route,
   TRouteFrom extends Route = Route
 > = AllPropertiesAreOptional<UrlParamsWriting<TRouteTo>> extends true
-  ? [to: TRouteTo, params?: RouteRedirectCallback<TRouteTo, TRouteFrom>]
-  : [to: TRouteTo, params: RouteRedirectCallback<TRouteTo, TRouteFrom>]
+  ? [to: TRouteTo, params?: RouteRedirectCallback<TRouteTo, TRouteFrom>, options?: RouteRedirectOptions]
+  : [to: TRouteTo, params: RouteRedirectCallback<TRouteTo, TRouteFrom>, options?: RouteRedirectOptions]
 
 export type RouteRedirectTo<
   TRouteFrom extends Route = Route
@@ -53,8 +62,8 @@ export type RedirectFromArgs<
   TRouteTo extends Route = Route,
   TRouteFrom extends Route = Route
 > = AllPropertiesAreOptional<UrlParamsWriting<TRouteTo>> extends true
-  ? [from: TRouteFrom, params?: RouteRedirectCallback<TRouteTo, TRouteFrom>]
-  : [from: TRouteFrom, params: RouteRedirectCallback<TRouteTo, TRouteFrom>]
+  ? [from: TRouteFrom, params?: RouteRedirectCallback<TRouteTo, TRouteFrom>, options?: RouteRedirectOptions]
+  : [from: TRouteFrom, params: RouteRedirectCallback<TRouteTo, TRouteFrom>, options?: RouteRedirectOptions]
 
 export type RouteRedirectFrom<
   TRouteTo extends Route = Route

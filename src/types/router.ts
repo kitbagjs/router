@@ -63,10 +63,8 @@ export type RouterOptions = TransformerOptions & {
   removeTrailingSlashes?: boolean,
 
   /**
-   * The status `render` returns when it normalized the url it was given, such as removing a trailing
-   * slash. Defaults to 302 because a 301 is cached indefinitely by browsers and CDNs and cannot be
-   * recalled, and trailing slash removal is on by default. Set 301 to have the normalization treated as
-   * permanent.
+   * The status `render` responds with for a normalized url or a route redirect that does not declare
+   * its own.
    *
    * @default 302
    */
