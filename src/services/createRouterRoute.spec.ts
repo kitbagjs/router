@@ -62,7 +62,7 @@ test('getTitle resolves the title of the current route', async () => {
 })
 
 test('canonical follows the current route', async () => {
-  const user = createRoute({ name: 'user', path: '/user/[id]', component }).addAlias('/member/[id]')
+  const user = createRoute({ name: 'user', path: '/user/[id]', component }).addAlias({ path: '/member/[id]' })
   const router = createRouter([user], { initialUrl: '/member/1' })
 
   await router.start()

@@ -25,7 +25,7 @@ test('given value for base, returns route with base prefixed', () => {
 })
 
 test('given value for base, prefixes the route aliases too', () => {
-  const route = createRoute({ name: 'foo', path: '/foo' }).addAlias('/bar')
+  const route = createRoute({ name: 'foo', path: '/foo' }).addAlias({ path: '/bar' })
 
   const response = insertBaseRoute(route, '/kitbag')
 

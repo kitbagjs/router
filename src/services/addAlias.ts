@@ -1,7 +1,7 @@
 import { combineUrl } from '@/services/combineUrl'
 import { createUrl } from '@/services/createUrl'
-import { isUrlPart, toUrlPart, toUrlQueryPart, UrlPart } from '@/services/withParams'
-import { AddAliasOptions, AliasPattern } from '@/types/addAlias'
+import { toUrlPart, toUrlQueryPart, UrlPart } from '@/services/withParams'
+import { AddAliasOptions } from '@/types/addAlias'
 import { AliasTransform, RouteAlias } from '@/types/routeAlias'
 import { CreatedRouteOptions, isRoute, Route } from '@/types/route'
 import { isUrl, Url } from '@/types/url'
@@ -10,7 +10,7 @@ import { isUrl, Url } from '@/types/url'
  * The loose runtime signature of the `addAlias` method. Purposely wide: it returns Route rather than the
  * refined chainable route `RouteAddAlias` describes.
  */
-export type AddAlias = (pattern: AliasPattern, transform?: AliasTransform) => Route
+export type AddAlias = (options: AddAliasOptions, transform?: AliasTransform) => Route
 
 /**
  * One level's own part of a url: its path, query, and hash, and the transform that maps what they parse
@@ -24,26 +24,16 @@ type Segment = {
 }
 
 /**
- * The segment an alias pattern describes. A string or url part replaces the route's own path; an options
- * object replaces whichever of path, query, and hash it carries. Anything not replaced is the route's own.
+ * The segment an alias describes: the route's own path, query, and hash with whichever of them the alias
+ * carries replaced.
  */
-export function toSegment(match: CreatedRouteOptions, pattern: AliasPattern = {}, transform?: AliasTransform): Segment {
-  const options = toAliasOptions(pattern)
-
+export function toSegment(match: CreatedRouteOptions, options: AddAliasOptions = {}, transform?: AliasTransform): Segment {
   return {
     path: toUrlPart(options.path ?? match.path),
     query: toUrlQueryPart(options.query ?? match.query),
     hash: toUrlPart(options.hash ?? match.hash),
     transform,
   }
-}
-
-function toAliasOptions(pattern: AliasPattern): AddAliasOptions {
-  if (typeof pattern === 'string' || isUrlPart(pattern)) {
-    return { path: pattern }
-  }
-
-  return pattern
 }
 
 /**

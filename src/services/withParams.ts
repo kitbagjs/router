@@ -44,7 +44,7 @@ export type ToUrlPart<T extends string | UrlPart | undefined> = T extends string
       ? UrlPart<{}>
       : T
 
-export function isUrlPart(maybeUrlPartsWithParams: unknown): maybeUrlPartsWithParams is UrlPart {
+function isUrlPart(maybeUrlPartsWithParams: unknown): maybeUrlPartsWithParams is UrlPart {
   return isRecord(maybeUrlPartsWithParams) && maybeUrlPartsWithParams[UrlPartsWithParamsSymbol] === true
 }
 

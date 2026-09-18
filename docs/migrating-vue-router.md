@@ -105,8 +105,8 @@ const user = createRoute({
   name: 'user',
   path: '/user/[id]',
 })
-  .addAlias('/member/[id]')
-  .addAlias('/u/[id]')
+  .addAlias({ path: '/member/[id]' })
+  .addAlias({ path: '/u/[id]' })
 ```
 
 Unlike Vue Router, an alias can declare its own params. When they differ from the route's, a transform maps them into the route's params.
@@ -115,5 +115,5 @@ Unlike Vue Router, an alias can declare its own params. When they differ from th
 const user = createRoute({
   name: 'user',
   path: '/user/[id]',
-}).addAlias('/profile/[username]', ({ params }) => ({ id: findIdByUsername(params.username) }))
+}).addAlias({ path: '/profile/[username]' }, ({ params }) => ({ id: findIdByUsername(params.username) }))
 ```
