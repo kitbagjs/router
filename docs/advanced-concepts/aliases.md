@@ -101,6 +101,14 @@ router.route.canonical // '/user/42'
 
 Pushing a resolved route pushes its `href`, so pushing the current route or updating its query while on an alias stays on the alias. Aliases are only ever matched, never generated: navigating by route name, resolving a route, and rendering a [router-link](/components/router-link) always produce the route's own url.
 
+Updating a param with `route.update` or by assigning to `route.params` navigates by route name as well, so it lands on the route's own url. A transform only runs one way, so the router cannot know how a new value should appear in the alias. To stay on an alias after changing a param, push the alias url yourself.
+
+```ts
+// at /member/42
+route.update('id', '7') // navigates to /user/7
+router.push('/member/7') // stays on the alias
+```
+
 ## Matching Order
 
 Every route's own url is tried before any alias, regardless of the order routes were defined in. An alias can never take a url away from a route whose own url matches it. See [route matching](/advanced-concepts/route-matching#aliases).

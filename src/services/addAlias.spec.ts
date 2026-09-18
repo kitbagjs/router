@@ -367,6 +367,16 @@ describe('router', () => {
     expect(router.route.href).toBe('/member/42?tab=posts')
   })
 
+  test('updating a param from an alias lands on the route url', async () => {
+    const user = createRoute({ name: 'user', path: '/user/[id]', component }).addAlias({ path: '/member/[id]' })
+    const router = createRouter([user], { initialUrl: '/member/42' })
+
+    await router.start()
+    await router.route.update('id', '7')
+
+    expect(router.route.href).toBe('/user/7')
+  })
+
   test('pushing a route by name targets its own url', async () => {
     const user = createRoute({ name: 'user', path: '/user/[id]', component }).addAlias({ path: '/member/[id]' })
     const router = createRouter([user], { initialUrl: '/member/42' })
