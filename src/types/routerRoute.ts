@@ -30,9 +30,13 @@ export type RouterRoute<TRoute extends ResolvedRoute = ResolvedRoute> = {
    */
   readonly update: RouteUpdate<TRoute>,
   /**
-   * String value of the resolved URL.
+   * String value of the resolved URL. When the route was matched through an alias this is the alias url.
    */
   readonly href: TRoute['href'],
+  /**
+   * String value of the route's own URL. The same as `href` unless the route was matched through an alias.
+   */
+  readonly canonical: TRoute['canonical'],
   /**
    * Title of the route.
    */

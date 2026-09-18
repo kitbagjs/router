@@ -60,3 +60,16 @@ test('getTitle resolves the title of the current route', async () => {
 
   await expect(router.route.getTitle()).resolves.toBe('Other')
 })
+
+test('canonical follows the current route', async () => {
+  const user = createRoute({ name: 'user', path: '/user/[id]', component }).addAlias('/member/[id]')
+  const router = createRouter([user], { initialUrl: '/member/1' })
+
+  await router.start()
+
+  expect(router.route.canonical).toBe('/user/1')
+
+  await router.push('/member/2')
+
+  expect(router.route.canonical).toBe('/user/2')
+})

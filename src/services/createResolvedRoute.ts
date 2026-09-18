@@ -4,13 +4,24 @@ import { getStateValues } from '@/services/state'
 import { RouterResolveOptions } from '@/types/routerResolve'
 import { ResolvedRoute } from '@/types/resolved'
 import { isRoute, Route } from '@/types/route'
+import { Url } from '@/types/url'
 
-export function createResolvedRoute(route: Route, params: Record<string, unknown> = {}, options: RouterResolveOptions = {}): ResolvedRoute {
-  const routeUrl = route.stringify(params)
-  const href = updateUrl(routeUrl, {
+/**
+ * The alias url a route was matched through and the params that url parsed, which is what the resolved
+ * route's `href` is built from instead of the route's own url.
+ */
+export type ResolvedRouteAlias = {
+  url: Url,
+  params: Record<string, unknown>,
+}
+
+export function createResolvedRoute(route: Route, params: Record<string, unknown> = {}, options: RouterResolveOptions = {}, alias?: ResolvedRouteAlias): ResolvedRoute {
+  const parts = {
     query: new URLSearchParams(options.query),
     hash: options.hash,
-  })
+  }
+  const canonical = updateUrl(route.stringify(params), parts)
+  const href = alias ? updateUrl(alias.url.stringify(alias.params), parts) : canonical
   const { query, hash } = parseUrl(href)
   const matched = route.matches.at(-1)
 
@@ -34,6 +45,7 @@ export function createResolvedRoute(route: Route, params: Record<string, unknown
     hash,
     params,
     href,
+    canonical,
     getTitle,
   }
 
