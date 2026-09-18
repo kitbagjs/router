@@ -20,7 +20,7 @@ Both urls resolve to `user` with `params.id` of `"42"`.
 
 ## Params
 
-An alias pattern is a path pattern, typed the same way a route path is. It can declare its own params with their own names and types using [withParams](/core-concepts/params). When the alias params already satisfy the route params, matched values pass straight through and nothing else is needed.
+An alias is typed the same way a route url is. It can declare its own params with their own names and types using [withParams](/core-concepts/params). When the alias params already satisfy the route params, matched values pass straight through and nothing else is needed.
 
 When they do not, the alias needs a `transform`. The transform receives the url that matched and the alias params, and returns the route params.
 
@@ -46,13 +46,28 @@ user.addAlias('/profile/[username]')
 
 The transform runs synchronously while the router matches the url. What it returns is written into the route's own url and parsed back out of it, the same as navigating to the route by name. If the route cannot serialize a returned value, for example a required param that is missing, the alias does not match.
 
-::: tip
-An alias is a path pattern only. The route's `query` and `hash` apply to the alias unchanged, so a transform returns any query params the route declares as well.
-:::
+## Query and Hash
+
+A string alias replaces the route's `path` and keeps the route's `query` and `hash`, so a transform returns any query params the route declares as well. To alias the query or hash, pass an object with the same `path`, `query`, and `hash` options `createRoute` takes. Any part left out is the route's own.
+
+```ts
+const user = createRoute({
+  name: 'user',
+  path: '/user/[id]',
+  query: 'tab=[tab]',
+})
+  // a different query param name, the path stays
+  .addAlias({ query: 'view=[view]' }, ({ params }) => ({ id: params.id, tab: params.view }))
+  // a different path and hash, the query stays
+  .addAlias({ path: '/member/[id]', hash: 'profile' })
+```
+
+:white_check_mark: `/user/42?view=posts`  
+:white_check_mark: `/member/42?tab=posts#profile`  
 
 ## Nested Routes
 
-An alias replaces the path of the route it is added to, not the paths of its parents. A child route is matched under every path its parent has, its own or an alias, combined with every path of its own.
+An alias replaces parts of the route it is added to, not of its parents. A child route is matched under every url its parent has, its own or an alias, combined with every url of its own.
 
 ```ts
 const user = createRoute({

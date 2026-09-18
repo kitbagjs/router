@@ -154,6 +154,69 @@ describe('matching', () => {
   })
 })
 
+describe('options', () => {
+  test('an options alias with only a path keeps the route query and hash', () => {
+    const user = createRoute({ name: 'user', path: '/user/[id]', query: 'tab=[tab]', hash: 'bio', component })
+      .addAlias({ path: '/member/[id]' })
+
+    expect(getMatchForUrl([user], '/member/42?tab=posts#bio')?.params).toEqual({ id: '42', tab: 'posts' })
+    expect(getMatchForUrl([user], '/member/42#bio')).toBeUndefined()
+  })
+
+  test('an options alias can declare its own query', () => {
+    const user = createRoute({ name: 'user', path: '/user/[id]', query: 'tab=[tab]', component })
+      .addAlias({ path: '/member/[id]', query: 'view=[view]' }, ({ params }) => ({ id: params.id, tab: params.view }))
+
+    const match = getMatchForUrl([user], '/member/42?view=posts')
+
+    expect(match?.params).toEqual({ id: '42', tab: 'posts' })
+    expect(match?.href).toBe('/member/42?view=posts')
+    expect(match?.canonical).toBe('/user/42?tab=posts')
+  })
+
+  test('an alias query param is consumed rather than carried into canonical', () => {
+    const user = createRoute({ name: 'user', path: '/user/[id]', component })
+      .addAlias({ path: '/member/[id]', query: 'legacy=[legacy]' }, ({ params }) => ({ id: params.legacy }))
+
+    const match = getMatchForUrl([user], '/member/1?legacy=42&extra=1')
+
+    expect(match?.params).toEqual({ id: '42' })
+    expect(match?.query.toString()).toBe('legacy=42&extra=1')
+    expect(match?.canonical).toBe('/user/42?extra=1')
+  })
+
+  test('an options alias can declare its own hash', () => {
+    const user = createRoute({ name: 'user', path: '/user/[id]', hash: 'bio', component })
+      .addAlias({ hash: 'about' })
+
+    const match = getMatchForUrl([user], '/user/42#about')
+
+    expect(match?.name).toBe('user')
+    expect(match?.href).toBe('/user/42#about')
+  })
+
+  test('an options alias without a path keeps the route path', () => {
+    const user = createRoute({ name: 'user', path: '/user/[id]', query: 'tab=[tab]', component })
+      .addAlias({ query: 'view=[tab]' })
+
+    const match = getMatchForUrl([user], '/user/42?view=posts')
+
+    expect(match?.params).toEqual({ id: '42', tab: 'posts' })
+    expect(match?.canonical).toBe('/user/42?tab=posts')
+  })
+
+  test('an options alias composes with a parent alias', () => {
+    const user = createRoute({ name: 'user', path: '/user/[id]' }).addAlias('/member/[id]')
+    const post = createRoute({ parent: user, name: 'post', path: '/posts/[postId]', query: 'tab=[tab]', component })
+      .addAlias({ path: '/p/[postId]', query: 'view=[view]' }, ({ params }) => ({ postId: params.postId, tab: params.view }))
+
+    const match = getMatchForUrl([post, user], '/member/1/p/2?view=comments')
+
+    expect(match?.params).toEqual({ id: '1', postId: '2', tab: 'comments' })
+    expect(match?.canonical).toBe('/user/1/posts/2?tab=comments')
+  })
+})
+
 describe('precedence', () => {
   test('a route url beats an alias defined on an earlier route', () => {
     const first = createRoute({ name: 'first', path: '/first/[id]', component }).addAlias('/second/[id]')
