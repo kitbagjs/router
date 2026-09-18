@@ -107,6 +107,7 @@ export function createRouter<
   const routerKey = isGlobalRouter ? routerInjectionKey : Symbol()
   const shouldRemoveTrailingSlashes = options?.removeTrailingSlashes ?? true
   const redirectStatus = options?.redirectStatus ?? 302
+  const rejectStatus = options?.rejectStatus ?? 200
   const isSSR = options?.ssr ?? false
   const activity = createActivityTracker()
   const { routes, getRouteByName, getRejectionByType } = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options)
@@ -562,7 +563,7 @@ export function createRouter<
 
       return {
         kind: 'reject',
-        status: rejection.status,
+        status: rejection.status ?? rejectStatus,
         rejection: rejection.type,
         title,
         payload: payloadToScript({ kind: 'reject', url: initialUrl, rejection: rejection.type }),

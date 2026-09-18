@@ -71,6 +71,13 @@ export type RouterOptions = TransformerOptions & {
   redirectStatus?: RedirectStatus,
 
   /**
+   * The status `render` responds with for a rejection that does not declare its own.
+   *
+   * @default 200
+   */
+  rejectStatus?: number,
+
+  /**
    * When false, createRouterAssets must be used for component and hooks. Assets exported by the library
    * will not work with the created router instance.
    *
