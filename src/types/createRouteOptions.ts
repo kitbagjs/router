@@ -17,6 +17,7 @@ import { RouteContext } from '@/types/routeContext'
 import { RouterViewProps } from '@/components/routerView'
 import { ToUrl } from '@/types/url'
 import { combineUrl, CombineUrl } from '@/services/combineUrl'
+import { combineSegment, toSegment } from '@/services/addAlias'
 import { RouteView } from '@/types/routeViews'
 
 export type WithHost<THost extends string | UrlPart = string | UrlPart> = {
@@ -233,8 +234,11 @@ export function combineRoutes(parent: Route, child: Route, hoisted = false): Rou
     return route
   }
 
+  const match = child.matches.at(-1)
+
   return {
     ...route,
     ...combineUrl(parent, child),
+    aliases: match ? combineSegment(parent, toSegment(match)) : [],
   }
 }

@@ -1,3 +1,4 @@
+import { RouteAddAlias } from '@/types/addAlias'
 import { RouteAddLoader } from '@/types/addLoader'
 import { RouteAddView } from '@/types/addView'
 import { InternalRouteHooks } from '@/types/hooks'
@@ -7,7 +8,7 @@ import { RouteSetTitle } from '@/types/routeTitle'
 import { Url } from '@/types/url'
 
 /**
- * A route plus every chainable/available method: addView, addLoader, hooks, redirects, and title. The type
+ * A route plus every chainable/available method: addView, addLoader, addAlias, hooks, redirects, and title. The type
  * level counterpart to `withRouteMethods`.
  *
  * Takes the url and matches rather than an assembled route so that adding a view or a loader can rebuild
@@ -20,6 +21,7 @@ export type RouteWithMethods<
 > = Route<TUrl, TMatches>
   & RouteAddView<TUrl, TMatches>
   & RouteAddLoader<TUrl, TMatches>
+  & RouteAddAlias<TUrl, TMatches>
   & InternalRouteHooks<Route<TUrl, TMatches>, Route<TUrl, TMatches>['context']>
   & RouteRedirects<Route<TUrl, TMatches>>
   & RouteSetTitle<Route<TUrl, TMatches>>
