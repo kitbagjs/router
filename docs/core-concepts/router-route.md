@@ -78,6 +78,16 @@ The href property is the current router location as a [Url](/api/types/Url.md) s
 const href = route.href
 ```
 
+When the route was matched through an [alias](/advanced-concepts/aliases), `href` is the alias url.
+
+## Canonical
+
+The canonical property is the route's own url, built from its `path` and the current params. It is the same as `href` unless the route was matched through an [alias](/advanced-concepts/aliases).
+
+```ts
+const canonical = route.canonical
+```
+
 ## Params
 
 Any [params](/core-concepts/params) that were matched to the current route are available on the `params` property. If the location is `/blog/123`, the `params` property will be `{ blogPostId: 123 }`.
