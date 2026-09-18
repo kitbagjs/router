@@ -88,6 +88,55 @@ describe('addAlias', () => {
     })
   })
 
+  test('an options alias replaces the path and keeps the route query', () => {
+    const user = createRoute({ name: 'user', path: '/user/[id]', query: 'tab=[tab]' })
+
+    user.addAlias({ path: '/member/[id]' })
+
+    user.addAlias({ path: '/member/[slug]' }, ({ params }) => {
+      expectTypeOf(params).toEqualTypeOf<{ slug: string, tab: string }>()
+
+      return { id: params.slug, tab: params.tab }
+    })
+  })
+
+  test('an options alias can declare its own query', () => {
+    const user = createRoute({ name: 'user', path: '/user/[id]', query: 'tab=[tab]' })
+
+    user.addAlias({ path: '/member/[id]', query: 'view=[view]' }, ({ params }) => {
+      expectTypeOf(params).toEqualTypeOf<{ id: string, view: string }>()
+
+      return { id: params.id, tab: params.view }
+    })
+
+    // @ts-expect-error an alias query that renames a route query param requires a transform
+    user.addAlias({ path: '/member/[id]', query: 'view=[view]' })
+  })
+
+  test('an options alias can declare its own hash', () => {
+    const user = createRoute({ name: 'user', path: '/user/[id]', hash: 'bio' })
+
+    user.addAlias({ hash: 'about' })
+
+    user.addAlias({ hash: withParams('[section]', { section: String }) }, ({ params }) => {
+      expectTypeOf(params).toEqualTypeOf<{ id: string, section: string }>()
+
+      return { id: params.id }
+    })
+  })
+
+  test('an options alias without a path keeps the route path', () => {
+    const user = createRoute({ name: 'user', path: withParams('/user/[id]', { id: Number }), query: 'tab=[?tab]' })
+
+    user.addAlias({ query: 'view=[?tab]' })
+
+    user.addAlias({ query: withParams('view=[view]', { view: Number }) }, ({ params }) => {
+      expectTypeOf(params).toEqualTypeOf<{ id: number, view: number }>()
+
+      return { id: params.id, tab: String(params.view) }
+    })
+  })
+
   test('an alias leaves the route type unchanged', () => {
     const route = createRoute({ name: 'user', path: '/user/[id]' }).addView(component)
     const aliased = route.addAlias('/member/[id]')

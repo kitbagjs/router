@@ -6,38 +6,95 @@ import { ToUrl, Url, UrlParamsReading, UrlParamsWriting } from '@/types/url'
 import { LastInArray } from '@/types/utilities'
 
 /**
- * The url of the route's own segment: its own path, query, and hash without any ancestors. An alias
- * replaces the path of this segment, so its params are what an alias transform has to produce.
+ * The parts of an alias, each replacing the route's own when given. Takes the same shapes `createRoute`
+ * does.
  */
-type OwnSegmentUrl<
+export type AddAliasOptions = {
+  /**
+   * Path part of the alias. Defaults to the route's own path.
+   */
+  path?: string | UrlPart | undefined,
+  /**
+   * Query (aka search) part of the alias. Defaults to the route's own query.
+   */
+  query?: string | UrlQueryPart | undefined,
+  /**
+   * Hash part of the alias. Defaults to the route's own hash.
+   */
+  hash?: string | UrlPart | undefined,
+}
+
+/**
+ * What `addAlias` accepts: a path pattern on its own, or the alias's parts as an options object.
+ */
+export type AliasPattern = string | UrlPart | AddAliasOptions
+
+type PathPart = string | UrlPart | undefined
+type QueryPart = string | UrlQueryPart | undefined
+
+type SegmentPath<TMatches extends CreatedRouteOptions[]> = LastInArray<TMatches> extends { path: infer TPath extends PathPart } ? TPath : undefined
+type SegmentQuery<TMatches extends CreatedRouteOptions[]> = LastInArray<TMatches> extends { query: infer TQuery extends QueryPart } ? TQuery : undefined
+type SegmentHash<TMatches extends CreatedRouteOptions[]> = LastInArray<TMatches> extends { hash: infer THash extends PathPart } ? THash : undefined
+
+/**
+ * The url of the route's own segment: its own path, query, and hash without any ancestors, with any part
+ * replaced by the one given. An alias replaces parts of this segment, so its params are what an alias
+ * transform has to produce.
+ */
+type SegmentUrl<
   TMatches extends CreatedRouteOptions[],
-  TPath = SegmentPath<TMatches>
+  TPath = SegmentPath<TMatches>,
+  TQuery = SegmentQuery<TMatches>,
+  THash = SegmentHash<TMatches>
 > = CreatedRouteOptions[] extends TMatches
   ? Url
   : ToUrl<{
-    path: TPath extends string | UrlPart | undefined ? TPath : undefined,
-    query: SegmentQuery<TMatches>,
-    hash: SegmentHash<TMatches>,
+    path: TPath extends PathPart ? TPath : undefined,
+    query: TQuery extends QueryPart ? TQuery : undefined,
+    hash: THash extends PathPart ? THash : undefined,
   }>
 
-type SegmentPath<TMatches extends CreatedRouteOptions[]> = LastInArray<TMatches> extends { path: infer TPath extends string | UrlPart | undefined } ? TPath : undefined
-type SegmentQuery<TMatches extends CreatedRouteOptions[]> = LastInArray<TMatches> extends { query: infer TQuery extends string | UrlQueryPart | undefined } ? TQuery : undefined
-type SegmentHash<TMatches extends CreatedRouteOptions[]> = LastInArray<TMatches> extends { hash: infer THash extends string | UrlPart | undefined } ? THash : undefined
+/**
+ * The part an alias options object gives, or the route's own when it does not.
+ */
+type AliasPart<
+  TOptions extends AddAliasOptions,
+  TKey extends keyof AddAliasOptions,
+  TDefault
+> = TOptions extends Record<TKey, infer TPart> ? TPart : TDefault
 
 /**
- * The params an alias pattern parses from a url, as read. The alias keeps the route's own query and hash.
+ * The url an alias matches. A path pattern keeps the route's own query and hash; an options object
+ * keeps whichever parts it leaves out.
+ */
+type AliasUrl<
+  TPattern extends AliasPattern,
+  TMatches extends CreatedRouteOptions[]
+> = TPattern extends string | UrlPart
+  ? SegmentUrl<TMatches, TPattern>
+  : TPattern extends AddAliasOptions
+    ? SegmentUrl<
+      TMatches,
+      AliasPart<TPattern, 'path', SegmentPath<TMatches>>,
+      AliasPart<TPattern, 'query', SegmentQuery<TMatches>>,
+      AliasPart<TPattern, 'hash', SegmentHash<TMatches>>
+    >
+    : Url
+
+/**
+ * The params an alias parses from a url, as read.
  */
 type AliasParams<
-  TPattern extends string | UrlPart,
+  TPattern extends AliasPattern,
   TMatches extends CreatedRouteOptions[]
-> = UrlParamsReading<OwnSegmentUrl<TMatches, TPattern>>
+> = UrlParamsReading<AliasUrl<TPattern, TMatches>>
 
 /**
  * The params the route's own segment declares, as written. What an alias transform returns.
  */
 type SegmentParams<
   TMatches extends CreatedRouteOptions[]
-> = UrlParamsWriting<OwnSegmentUrl<TMatches>>
+> = UrlParamsWriting<SegmentUrl<TMatches>>
 
 /**
  * The transform argument for `addAlias`. Optional only when the alias's params already satisfy the
@@ -46,7 +103,7 @@ type SegmentParams<
  * would silently read a promised param as undefined instead of failing.
  */
 type AddAliasArgs<
-  TPattern extends string | UrlPart,
+  TPattern extends AliasPattern,
   TMatches extends CreatedRouteOptions[]
 > = AliasParams<TPattern, TMatches> extends SegmentParams<TMatches>
   ? [transform?: AliasTransform<AliasParams<TPattern, TMatches>, SegmentParams<TMatches>>]
@@ -60,19 +117,20 @@ export type RouteAddAlias<
   TMatches extends CreatedRouteOptions[] = CreatedRouteOptions[]
 > = {
   /**
-   * Adds a path the route also matches. The address bar keeps the alias; the route resolves as if its own
-   * path had matched. Aliases only match inbound urls: links and navigation always target the route's own
-   * path.
+   * Adds a url the route also matches. The address bar keeps the alias; the route resolves as if its own
+   * url had matched. Aliases only match inbound urls: links and navigation always target the route's own
+   * url.
    *
-   * The pattern replaces this route's own path segment and composes with any aliases of its ancestors.
-   * It can declare its own params, typed like a route path with `withParams`.
+   * A path pattern replaces this route's own path and keeps its query and hash. An options object
+   * replaces whichever of `path`, `query`, and `hash` it carries. Either way the alias composes with any
+   * aliases of the route's ancestors, and can declare its own params, typed the same way a route's are.
    *
-   * @param pattern - The path pattern to also match.
+   * @param pattern - The path pattern to also match, or the alias's parts as an options object.
    * @param transform - Maps the alias's params into the params this route's own segment declares.
    * Required unless the alias's params already satisfy them.
    */
   addAlias: <
-    const TPattern extends string | UrlPart
+    const TPattern extends AliasPattern
   >(
     pattern: TPattern,
     ...args: AddAliasArgs<TPattern, TMatches>
