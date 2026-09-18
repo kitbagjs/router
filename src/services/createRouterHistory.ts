@@ -26,13 +26,21 @@ type RouterHistoryOptions = {
 export function createRouterHistory({ mode, listener }: RouterHistoryOptions): RouterHistory {
   const history = createHistory(mode)
 
-  const update: NavigationUpdate = (url, options) => {
-    if (options?.replace) {
-      history.replace(url, options.state)
-      return
-    }
+  let updating = false
 
-    history.push(url, options?.state)
+  const update: NavigationUpdate = (url, options) => {
+    updating = true
+
+    try {
+      if (options?.replace) {
+        history.replace(url, options.state)
+        return
+      }
+
+      history.push(url, options?.state)
+    } finally {
+      updating = false
+    }
   }
 
   const refresh: NavigationRefresh = () => {
@@ -45,7 +53,13 @@ export function createRouterHistory({ mode, listener }: RouterHistoryOptions): R
 
   const startListening: () => void = () => {
     removeListener?.()
-    removeListener = history.listen(listener)
+    removeListener = history.listen((event) => {
+      if (updating) {
+        return
+      }
+
+      listener(event)
+    })
   }
 
   const stopListening: () => void = () => {
