@@ -98,31 +98,22 @@ oldRoute.onBeforeRouteEnter((to, { replace }) => {
 
 ## Alias
 
-If you need additional routes that ultimately result in another route being loaded, for now you'll need to define those routes and have them redirect with route [hooks](/advanced-concepts/hooks).
+Aliases are added to a route with the chainable [addAlias](/advanced-concepts/aliases) method. As in Vue Router, the address bar keeps the alias url.
 
 ```ts
-const actualRoute = createRoute({
-  name: 'actual-route',
-  path: '/new',
+const user = createRoute({
+  name: 'user',
+  path: '/user/[id]',
 })
+  .addAlias({ path: '/member/[id]' })
+  .addAlias({ path: '/u/[id]' })
+```
 
-const aliasRouteA = createRoute({
-  name: 'alias-route-a',
-  path: '/alias-a',
-  context: [actualRoute],
-})
+Unlike Vue Router, an alias can declare its own params. When they differ from the route's, a transform maps them into the route's params.
 
-const aliasRouteB = createRoute({
-  name: 'alias-route-b',
-  path: '/alias-b',
-  context: [actualRoute],
-})
-
-aliasRouteA.onBeforeRouteEnter((to, { replace }) => {
-  replace('actual-route')
-})
-
-aliasRouteB.onBeforeRouteEnter((to, { replace }) => {
-  replace('actual-route')
-})
+```ts
+const user = createRoute({
+  name: 'user',
+  path: '/user/[id]',
+}).addAlias({ path: '/profile/[username]' }, ({ params }) => ({ id: findIdByUsername(params.username) }))
 ```

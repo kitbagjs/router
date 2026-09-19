@@ -62,6 +62,7 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
     hooks: [store],
     getTitle,
     redirect,
+    aliases: [],
   } satisfies RouteInternal
 
   const route = {

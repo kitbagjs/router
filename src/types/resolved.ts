@@ -43,9 +43,15 @@ export type ResolvedRoute<TRoute extends Route = Route> = Readonly<{
    */
   state: ExtractRouteStateParamsAsOptional<TRoute['state']>,
   /**
-   * String value of the resolved URL.
+   * String value of the resolved URL. When the route was matched through an alias this is the alias url,
+   * so navigating to it again stays where the user is.
    */
   href: UrlString,
+  /**
+   * String value of the route's own URL, built from its path and the resolved params. The same as `href`
+   * unless the route was matched through an alias.
+   */
+  canonical: UrlString,
   /**
    * Query value of the route.
    */
