@@ -37,8 +37,6 @@ const user = createRoute({
   .addAlias({ path: '/me' }, () => ({ id: session.currentUserId }))
 ```
 
-The transform runs synchronously while the router matches the url. What it returns is written into the route's own url and parsed back out of it, the same as navigating to the route by name. If the route cannot serialize a returned value, for example a required param that is missing, the alias does not match.
-
 ## Query and Hash
 
 An alias declares its whole url with the same `path`, `query`, and `hash` options `createRoute` takes. Nothing is inherited from the route: an alias without a `query` matches without one, and any query or hash param the route declares is then the transform's to supply. Because the alias's params are its own, a param can live in a different part of the url than it does on the route.
