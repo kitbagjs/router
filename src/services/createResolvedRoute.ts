@@ -15,7 +15,7 @@ type CreateResolvedRouteOptions = RouterResolveOptions & {
   alias?: RouteAliasMatch,
 }
 
-type ResolvedUrls = {
+type RouteUrls = {
   canonical: UrlString,
   href: UrlString,
 }
@@ -24,7 +24,7 @@ type ResolvedUrls = {
  * The route's own url and the url that matched, from the params each was given. The same url unless the
  * route was matched through an alias.
  */
-function getUrls(route: Route, params: Record<string, unknown>, alias: RouteAliasMatch | undefined): ResolvedUrls {
+function getRouteUrls(route: Route, params: Record<string, unknown>, alias: RouteAliasMatch | undefined): RouteUrls {
   const canonical = route.stringify(params)
 
   if (!alias) {
@@ -34,7 +34,7 @@ function getUrls(route: Route, params: Record<string, unknown>, alias: RouteAlia
   return { canonical, href: alias.url.stringify(alias.params) }
 }
 
-type ResolvedUrlParts = ResolvedUrls & {
+type ResolvedUrls = RouteUrls & {
   query: URLSearchParams,
   hash: string,
 }
@@ -43,8 +43,8 @@ type ResolvedUrlParts = ResolvedUrls & {
  * The urls with the query and hash the route did not declare applied to both, plus the query and hash the
  * resolved route ends up with.
  */
-function getResolvedUrls(route: Route, params: Record<string, unknown>, options: CreateResolvedRouteOptions): ResolvedUrlParts {
-  const urls = getUrls(route, params, options.alias)
+function getResolvedUrls(route: Route, params: Record<string, unknown>, options: CreateResolvedRouteOptions): ResolvedUrls {
+  const urls = getRouteUrls(route, params, options.alias)
   const parts = {
     query: new URLSearchParams(options.query),
     hash: options.hash,
