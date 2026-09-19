@@ -83,21 +83,30 @@ export type RouterOptions = {
  * What a server should respond with for what the router rendered. `location` exists only on a redirect,
  * so narrowing on it is what proves a `Location` header is available.
  */
-export type ServerRenderResponse<TRejectionType extends string = string> = RenderComplete<TRejectionType> | RenderRedirect<TRejectionType>
+export type ServerRenderResponse = RenderSuccess | RenderReject | RenderRedirect
 
-type RenderComplete<TRejectionType extends string> = {
+export type RenderSuccess = {
+  kind: 'success',
   /**
    * Suggested http status.
    */
   status: number,
-  location?: undefined,
-  /**
-   * The type of rejection in effect, or null when there is none.
-   */
-  rejection: TRejectionType | null,
 }
 
-type RenderRedirect<TRejectionType extends string> = {
+export type RenderReject = {
+  kind: 'reject',
+  /**
+   * Suggested http status.
+   */
+  status: number,
+  /**
+   * The type of rejection in effect.
+   */
+  rejection: string,
+}
+
+export type RenderRedirect = {
+  kind: 'redirect',
   /**
    * Suggested http status.
    */
@@ -106,10 +115,6 @@ type RenderRedirect<TRejectionType extends string> = {
    * Value for the `Location` header.
    */
   location: string,
-  /**
-   * The type of rejection in effect, or null when there is none.
-   */
-  rejection: TRejectionType | null,
 }
 
 /**
@@ -226,7 +231,7 @@ export type Router<
    * Requires the router to be created with the `ssr` option, and throws `SsrOptionRequiredError`
    * without it.
    */
-  render: () => Promise<ServerRenderResponse<ExtractRejectionTypes<ExtractRejections<TOptions>> | ExtractRejectionTypes<ExtractRejections<TPlugin>> | BuiltInRejectionType>>,
+  render: () => Promise<ServerRenderResponse>,
   /**
    * Stops the router. Tears down the history listener and ignores any navigation still in flight or started afterwards.
    */

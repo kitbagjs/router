@@ -4,23 +4,26 @@ import { createRouter } from '@/services/createRouter'
 import { createRejection } from '@/services/createRejection'
 import { component } from '@/utilities/testHelpers'
 
-test('rejection is the router\'s rejection types, not string', async () => {
+test('a reject carries the rejection as a plain string, the status is what a server acts on', async () => {
   const unauthorized = createRejection({ type: 'Unauthorized', status: 401 })
   const route = createRoute({ name: 'route', path: '/', component })
   const router = createRouter([route], { ssr: true, initialUrl: '/', rejections: [unauthorized] })
 
   const response = await router.render()
 
-  expectTypeOf(response.rejection).toEqualTypeOf<'Unauthorized' | 'NotFound' | null>()
+  if (response.kind === 'reject') {
+    expectTypeOf(response.rejection).toEqualTypeOf<string>()
+    expectTypeOf(response.status).toEqualTypeOf<number>()
+  }
 })
 
-test('location narrows the status to a redirect', async () => {
+test('kind narrows a redirect to its location and status', async () => {
   const route = createRoute({ name: 'route', path: '/', component })
   const router = createRouter([route], { ssr: true, initialUrl: '/' })
 
   const response = await router.render()
 
-  if (response.location !== undefined) {
+  if (response.kind === 'redirect') {
     expectTypeOf(response.location).toEqualTypeOf<string>()
     expectTypeOf(response.status).toEqualTypeOf<301 | 302>()
   } else {

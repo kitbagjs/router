@@ -1269,6 +1269,17 @@ describe('router.render response', () => {
     await expect(router.render()).rejects.toThrow(SsrOptionRequiredError)
   })
 
+  test('given an absolute initial url, a relative settled url is not a redirect', async () => {
+    const route = createRoute({ name: 'route', component, path: '/foo' })
+    const router = createRouter([route], { ssr: true, initialUrl: 'https://kitbag.dev/foo' })
+
+    await router.start()
+
+    const result = await router.render()
+
+    expect(result).toMatchObject({ kind: 'success', status: 200 })
+  })
+
   test('given a url that matches a route, returns 200', async () => {
     const route = createRoute({ name: 'route', component, path: '/' })
     const router = createRouter([route], { ssr: true, initialUrl: '/' })
@@ -1277,8 +1288,7 @@ describe('router.render response', () => {
 
     const result = await router.render()
 
-    expect(result).toMatchObject({ status: 200, rejection: null })
-    expect(result.location).toBeUndefined()
+    expect(result).toMatchObject({ kind: 'success', status: 200 })
   })
 
   test('given a url that matches no route, returns 404', async () => {
@@ -1370,7 +1380,7 @@ describe('router.render response', () => {
 
     const result = await router.render()
 
-    expect(result.location).toBeUndefined()
+    expect(result).toMatchObject({ kind: 'reject', status: 404, rejection: 'NotFound' })
   })
 
   test('given a route that redirects, returns 302 to the destination', async () => {
@@ -1396,7 +1406,7 @@ describe('router.render response', () => {
 
     const result = await router.render()
 
-    expect(result).toMatchObject({ status: 200, rejection: null })
+    expect(result).toMatchObject({ status: 200 })
   })
 
   test('calling render again resolves with the same response', async () => {
