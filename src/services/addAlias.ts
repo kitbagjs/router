@@ -83,14 +83,20 @@ export function combineSegment(parent: Route | undefined, segment: Segment): Rou
  * the route's params, which for the route's own url is the params themselves.
  */
 function getRouteUrls(route: Route): RouteAlias[] {
-  return [
-    { url: route, transform: pickParams(getUrlParamNames(route)) },
-    ...isRoute(route) ? route.aliases : [],
-  ]
+  const own: RouteAlias = {
+    url: route,
+    transform: pickParams(getUrlParamNames(route)),
+  }
+  const aliases = isRoute(route) ? route.aliases : []
+
+  return [own, ...aliases]
 }
 
-function toTransform({ path, query, hash, transform }: Segment): RouteAlias['transform'] {
-  const pick = pickParams([path, query, hash].flatMap((part) => Object.keys(part.params)))
+function toTransform(segment: Segment): RouteAlias['transform'] {
+  const parts = [segment.path, segment.query, segment.hash]
+  const names = parts.flatMap((part) => Object.keys(part.params))
+  const pick = pickParams(names)
+  const { transform } = segment
 
   if (!transform) {
     return pick
@@ -104,9 +110,25 @@ function getUrlParamNames(url: Url): string[] {
     return []
   }
 
-  return Object.values(url.schema).flatMap((part) => Object.keys(part.params))
+  const parts = Object.values(url.schema)
+
+  return parts.flatMap((part) => Object.keys(part.params))
 }
 
+/**
+ * A transform that passes through only the named params, which is what a segment without a transform
+ * of its own contributes.
+ */
 function pickParams(names: string[]): RouteAlias['transform'] {
-  return (_url, params) => Object.fromEntries(names.filter((name) => name in params).map((name) => [name, params[name]]))
+  return (_url, params) => {
+    const picked: Record<string, unknown> = {}
+
+    for (const name of names) {
+      if (name in params) {
+        picked[name] = params[name]
+      }
+    }
+
+    return picked
+  }
 }
