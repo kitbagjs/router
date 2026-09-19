@@ -69,7 +69,7 @@ export function combineSegment(parent: Route | undefined, segment: Segment): Rou
     return [{ url: createUrl(segment), transform }]
   }
 
-  return getRouteUrls(parent).map((parentUrl) => ({
+  return getRouteAliases(parent).map((parentUrl) => ({
     url: combineUrl(parentUrl.url, segment),
     transform: (url, params) => ({
       ...parentUrl.transform(url, params),
@@ -79,10 +79,11 @@ export function combineSegment(parent: Route | undefined, segment: Segment): Rou
 }
 
 /**
- * Every url a route matches, its own first. Each carries the transform that maps what the url parses into
- * the route's params, which for the route's own url is the params themselves.
+ * Every url a route matches, as aliases: its own url first, then its aliases. A child's alias has to be
+ * combined with each of them, so the route's own url is given the same shape with a transform that passes
+ * its params through by name. It is only ever used here, never matched as an alias.
  */
-function getRouteUrls(route: Route): RouteAlias[] {
+function getRouteAliases(route: Route): RouteAlias[] {
   const own: RouteAlias = {
     url: route,
     transform: pickParams(getUrlParamNames(route)),
