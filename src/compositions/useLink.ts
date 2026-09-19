@@ -93,6 +93,7 @@ export function createUseLink<TRouter extends Router>(routerKey: InjectionKey<TR
         query: combineUrlSearchParams(pushOptions?.query, linkOptions.value.query),
         hash: pushOptions?.hash ?? linkOptions.value.hash,
         state: { ...linkOptions.value.state, ...pushOptions?.state },
+        viewTransition: pushOptions?.viewTransition ?? linkOptions.value.viewTransition,
       }
 
       const sourceValue = toValue(source)

@@ -46,10 +46,12 @@ import { getMatchForUrl } from './getMatchesForUrl'
 import { pathHasTrailingSlash, removeTrailingSlashesFromPath } from '@/utilities/trailingSlashes'
 import { setDocumentTitle } from '@/utilities/setDocumentTitle'
 import { createCurrentRejection } from '@/services/createCurrentRejection'
+import { ViewTransitionConfig } from '@/types/viewTransition'
 
 type RouterUpdateOptions = {
   replace?: boolean,
   state?: any,
+  viewTransition?: ViewTransitionConfig,
   /**
    * A hydrating navigation adopts an outcome the server already rendered, so before hooks are not
    * consulted and the title the markup carries is kept.
@@ -372,15 +374,15 @@ export function createRouter<
     }
 
     if (typeof source === 'string') {
-      const { replace, ...options }: RouterPushOptions = { ...maybeOptions }
+      const { replace, viewTransition, ...options }: RouterPushOptions = { ...maybeOptions }
       const params: any = { ...paramsOrOptions }
       const resolved = resolve(source, params, options)
       const state = setStateValues({ ...resolved.matched.state }, { ...resolved.state, ...options.state })
 
-      return { url: resolved.href, options: { replace, state } }
+      return { url: resolved.href, options: { replace, state, viewTransition } }
     }
 
-    const { replace, ...options }: RouterPushOptions = { ...paramsOrOptions }
+    const { replace, viewTransition, ...options }: RouterPushOptions = { ...paramsOrOptions }
     const state = setStateValues({ ...source.matched.state }, { ...source.state, ...options.state })
 
     const url = updateUrl(source.href, {
@@ -388,7 +390,7 @@ export function createRouter<
       hash: options.hash,
     })
 
-    return { url, options: { replace, state } }
+    return { url, options: { replace, state, viewTransition } }
   }
 
   const push: RouterPush<TRoutes | TPlugin['routes']> = (

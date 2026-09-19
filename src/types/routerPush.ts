@@ -6,6 +6,7 @@ import { UrlString } from '@/types/urlString'
 import { AllPropertiesAreOptional } from '@/types/utilities'
 import { QuerySource } from '@/types/querySource'
 import { ResolvedRoute } from '@/types/resolved'
+import { ViewTransitionConfig } from '@/types/viewTransition'
 
 export type RouterPushOptions<
   TState = unknown
@@ -26,6 +27,10 @@ export type RouterPushOptions<
    * State values to pass to the route.
    */
   state?: Partial<TState>,
+  /**
+   * Animates the navigation with the View Transitions API. Overrides route and router level viewTransition.
+   */
+  viewTransition?: ViewTransitionConfig,
 }
 
 type RouterPushArgs<

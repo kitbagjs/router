@@ -115,6 +115,6 @@ export function createRouterLink<TRouter extends Router>(routerKey: InjectionKey
     name: 'RouterLink',
     // The prop types are defined above. Vue requires manually defining the prop names themselves here to distinguish from attrs
     // eslint-disable-next-line vue/require-prop-types
-    props: ['to', 'prefetch', 'query', 'hash', 'replace', 'state', 'target'],
+    props: ['to', 'prefetch', 'query', 'hash', 'replace', 'state', 'target', 'viewTransition'],
   })
 }

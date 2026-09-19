@@ -78,6 +78,7 @@ export * from './types/routerRoute'
 export * from './types/urlString'
 export type { Url, CreateUrlOptions, ParseUrlOptions } from './types/url'
 export * from './types/useLink'
+export * from './types/viewTransition'
 
 // Errors
 export { DuplicateParamsError } from './errors/duplicateParamsError'
