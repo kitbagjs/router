@@ -7,23 +7,23 @@ import { component } from '@/utilities/testHelpers'
 test('rejection is the router\'s rejection types, not string', async () => {
   const unauthorized = createRejection({ type: 'Unauthorized', status: 401 })
   const route = createRoute({ name: 'route', path: '/', component })
-  const router = createRouter([route], { initialUrl: '/', rejections: [unauthorized] })
+  const router = createRouter([route], { ssr: true, initialUrl: '/', rejections: [unauthorized] })
 
-  const outcome = await router.render()
+  const response = await router.render()
 
-  expectTypeOf(outcome.rejection).toEqualTypeOf<'Unauthorized' | 'NotFound' | null>()
+  expectTypeOf(response.rejection).toEqualTypeOf<'Unauthorized' | 'NotFound' | null>()
 })
 
 test('location narrows the status to a redirect', async () => {
   const route = createRoute({ name: 'route', path: '/', component })
-  const router = createRouter([route], { initialUrl: '/' })
+  const router = createRouter([route], { ssr: true, initialUrl: '/' })
 
-  const outcome = await router.render()
+  const response = await router.render()
 
-  if (outcome.location !== undefined) {
-    expectTypeOf(outcome.location).toEqualTypeOf<string>()
-    expectTypeOf(outcome.status).toEqualTypeOf<301 | 302>()
+  if (response.location !== undefined) {
+    expectTypeOf(response.location).toEqualTypeOf<string>()
+    expectTypeOf(response.status).toEqualTypeOf<301 | 302>()
   } else {
-    expectTypeOf(outcome.status).toEqualTypeOf<number>()
+    expectTypeOf(response.status).toEqualTypeOf<number>()
   }
 })
