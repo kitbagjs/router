@@ -12,6 +12,7 @@ The router link component is a wrapper around the anchor element. It is register
 | query | false | [`QuerySource`](/api/types/QuerySource) | Query parameters to append to the URL |
 | hash | false | `string` | URL hash fragment to append |
 | state | false | `unknown` | State object to associate with the history entry |
+| viewTransition | false | [`ViewTransitionConfig`](/api/types/ViewTransitionConfig) | Animates the navigation with a [view transition](/advanced-concepts/view-transitions) |
 
 ### The `to` prop
 
