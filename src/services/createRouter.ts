@@ -46,7 +46,10 @@ import { getMatchForUrl } from './getMatchesForUrl'
 import { pathHasTrailingSlash, removeTrailingSlashesFromPath } from '@/utilities/trailingSlashes'
 import { setDocumentTitle } from '@/utilities/setDocumentTitle'
 import { createCurrentRejection } from '@/services/createCurrentRejection'
-import { ViewTransitionConfig } from '@/types/viewTransition'
+import { ViewTransitionConfig, ViewTransitionTypes } from '@/types/viewTransition'
+import { createViewTransitions } from '@/services/createViewTransitions'
+import { getViewTransitionTypes, supportsViewTransitions } from '@/utilities/viewTransition'
+import { loadAsyncComponents } from '@/utilities/components'
 
 type RouterUpdateOptions = {
   replace?: boolean,
@@ -111,6 +114,7 @@ export function createRouter<
   const redirectStatus = options?.redirectStatus ?? 302
   const rejectStatus = options?.rejectStatus ?? 200
   const isSSR = options?.ssr ?? false
+  const routerViewTransition = options?.viewTransition
   const activity = createActivityTracker()
   const { routes, getRouteByName, getRejectionByType } = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options)
   const notFoundRejection = getRejectionByType('NotFound')
@@ -122,6 +126,7 @@ export function createRouter<
   hooks.addGlobalRouteHooks(getGlobalHooksForRouter(plugins))
 
   const { getNavigationId, isCurrentNavigationId, stopNavigationIds } = createNavigationIds()
+  const viewTransitions = createViewTransitions()
   const componentsStore = createComponentsStore(routerKey)
   const visibilityObserver = createVisibilityObserver()
   const history = createRouterHistory({
@@ -204,6 +209,10 @@ export function createRouter<
    * Runs the after hooks for a navigation and reacts to their response.
    */
   async function runAfterHooks({ navigationId, to, from }: RunAfterHooksContext): Promise<void> {
+    if (!isCurrentNavigationId(navigationId)) {
+      return
+    }
+
     const response = await hooks.runAfterRouteHooks({ to, from })
 
     if (!isCurrentNavigationId(navigationId)) {
@@ -258,7 +267,8 @@ export function createRouter<
       clearRejection()
 
       if (!isExternal(url)) {
-        setRouteValuesAndUpdateRoute(to, from)
+        setRouteValues(to, from)
+        updateRoute(to)
       }
 
       if (!options.hydrating) {
@@ -274,22 +284,65 @@ export function createRouter<
       }
     }
 
-    commitNavigation()
+    const transitionTypes = getViewTransition(to, from, url, options)
+
+    if (transitionTypes) {
+      await loadRouteValues(to)
+
+      if (!isCurrentNavigationId(navigationId)) {
+        return
+      }
+
+      await viewTransitions.start(commitNavigation, transitionTypes)
+    } else {
+      commitNavigation()
+    }
 
     if (!isSSR) {
       await runAfterHooks({ navigationId, to, from })
     }
   })
 
-  function setRouteValuesAndUpdateRoute(to: ResolvedRoute, from: ResolvedRoute | null): void {
+  /**
+   * The types a navigation transitions with, or false when it does not transition. The server, a browser
+   * without the api, the first navigation, external urls and urls no route matches never transition, since
+   * there is nothing to animate from or to.
+   */
+  function getViewTransition(to: ResolvedRoute | null, from: ResolvedRoute | null, url: string, options: RouterUpdateOptions): ViewTransitionTypes | false {
+    if (isSSR || !to || !from || isExternal(url) || !supportsViewTransitions()) {
+      return false
+    }
+
+    return getViewTransitionTypes({
+      routerViewTransition,
+      routeViewTransition: to.matches.findLast((match) => match.viewTransition !== undefined)?.viewTransition,
+      navigationViewTransition: options.viewTransition,
+      to,
+      from,
+    })
+  }
+
+  /**
+   * Loads everything the route renders with ahead of committing it, so a transition captures the page
+   * rather than a placeholder. How the values settled is left for the commit to act on.
+   */
+  async function loadRouteValues(route: ResolvedRoute | null): Promise<void> {
+    if (!route) {
+      return
+    }
+
+    const { props, loaders } = valueStore.staged().compute(route)
+
+    await Promise.allSettled([props, loaders, loadAsyncComponents(route)])
+  }
+
+  function setRouteValues(to: ResolvedRoute, from: ResolvedRoute | null): void {
     const { props, loaders } = valueStore.commit(to)
 
     activity.add(
       handleRouteValueResponse(props, 'props', to, from),
       handleRouteValueResponse(loaders, 'loader', to, from),
     )
-
-    updateRoute(to)
   }
 
   /**
