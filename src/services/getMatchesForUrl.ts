@@ -65,7 +65,11 @@ function getMatchForAlias(route: Route & RouteInternal, alias: RouteAlias, url: 
 
   const extras = getExtras(url, alias.url.stringify(aliasMatch.params))
 
-  return createResolvedRoute(route, params, { ...options, ...extras }, { url: alias.url, params: aliasMatch.params })
+  return createResolvedRoute(route, params, {
+    ...options,
+    ...extras,
+    alias: { url: alias.url, params: aliasMatch.params },
+  })
 }
 
 function tryStringify(route: Route, params: Record<string, unknown>): string | undefined {
