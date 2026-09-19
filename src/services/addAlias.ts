@@ -47,7 +47,12 @@ export function createAliases(match: CreatedRouteOptions, options: AddAliasOptio
   const segment = toAliasSegment(options, transform)
 
   if (!parent) {
-    return [{ url: createUrl(segment), transform: toTransform(segment) }]
+    return [
+      {
+        url: createUrl(segment),
+        transform: toTransform(segment),
+      },
+    ]
   }
 
   return combineSegment(getRouteAliases(parent), segment)

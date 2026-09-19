@@ -71,7 +71,10 @@ function getMatchForAlias(route: Route & RouteInternal, alias: RouteAlias, url: 
   return createResolvedRoute(route, params, {
     ...options,
     ...extras,
-    alias: { url: alias.url, params: aliasMatch.params },
+    alias: {
+      url: alias.url,
+      params: aliasMatch.params,
+    },
   })
 }
 
