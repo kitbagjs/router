@@ -38,3 +38,11 @@ export type RouteAlias = {
   url: Url,
   transform: (url: string, params: Record<string, unknown>) => Record<string, unknown>,
 }
+
+/**
+ * An alias a url matched and the params that alias parsed from it.
+ */
+export type RouteAliasMatch = {
+  url: RouteAlias['url'],
+  params: Record<string, unknown>,
+}
