@@ -37,13 +37,6 @@ const user = createRoute({
   .addAlias({ path: '/me' }, () => ({ id: session.currentUserId }))
 ```
 
-Whether a transform is required is checked when the alias is declared, so a shape mismatch is a type error rather than a param that is silently `undefined` at runtime.
-
-```ts
-// ❌ Error: '/profile/[username]' does not declare an 'id' param, so a transform is required
-user.addAlias({ path: '/profile/[username]' })
-```
-
 The transform runs synchronously while the router matches the url. What it returns is written into the route's own url and parsed back out of it, the same as navigating to the route by name. If the route cannot serialize a returned value, for example a required param that is missing, the alias does not match.
 
 ## Query and Hash
