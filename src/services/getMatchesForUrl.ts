@@ -20,7 +20,10 @@ export function getMatchForUrl(routes: Routes, url: string, options: MatchOption
     const { success, params } = route.tryParse(url, options)
 
     if (success) {
-      return createResolvedRoute(route, params, { ...options, ...getExtras(url, route.stringify(params)) })
+      return createResolvedRoute(route, params, {
+        ...options,
+        ...getExtras(url, route.stringify(params)),
+      })
     }
   }
 
