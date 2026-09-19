@@ -44,9 +44,10 @@ export type RejectionOptions<TType extends string = string> = {
   component?: Component,
   /**
    * The http status a server should respond with while this rejection is in effect. 404 for something
-   * missing, 401 or 403 for something gated, 503 for something temporary.
+   * missing, 401 or 403 for something gated, 503 for something temporary. Defaults to the router's
+   * `rejectStatus`.
    */
-  status: number,
+  status?: number,
 }
 
 export type Rejection<TType extends string = string> = Pick<RejectionOptions<TType>, 'type' | 'status'> & {

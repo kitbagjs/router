@@ -1523,6 +1523,54 @@ describe('router.render response', () => {
     expect(result).toMatchObject({ status: 503, rejection: 'Maintenance' })
   })
 
+  test('given a rejection without a status, responds 200', async () => {
+    const rejection = createRejection({ type: 'Locked' })
+    const route = createRoute({ name: 'route', component, path: '/' })
+    const router = createRouter([route], { ssr: true, initialUrl: '/', rejections: [rejection] })
+
+    router.onBeforeRouteEnter((_to, { reject }) => {
+      reject('Locked')
+    })
+
+    await router.start()
+
+    const result = await router.render()
+
+    expect(result).toMatchObject({ status: 200, rejection: 'Locked' })
+  })
+
+  test('given rejectStatus, uses it for a rejection without a status of its own', async () => {
+    const rejection = createRejection({ type: 'Locked' })
+    const route = createRoute({ name: 'route', component, path: '/' })
+    const router = createRouter([route], { ssr: true, initialUrl: '/', rejections: [rejection], rejectStatus: 403 })
+
+    router.onBeforeRouteEnter((_to, { reject }) => {
+      reject('Locked')
+    })
+
+    await router.start()
+
+    const result = await router.render()
+
+    expect(result).toMatchObject({ status: 403, rejection: 'Locked' })
+  })
+
+  test('a rejection status wins over rejectStatus', async () => {
+    const rejection = createRejection({ type: 'Locked', status: 423 })
+    const route = createRoute({ name: 'route', component, path: '/' })
+    const router = createRouter([route], { ssr: true, initialUrl: '/', rejections: [rejection], rejectStatus: 403 })
+
+    router.onBeforeRouteEnter((_to, { reject }) => {
+      reject('Locked')
+    })
+
+    await router.start()
+
+    const result = await router.render()
+
+    expect(result).toMatchObject({ status: 423, rejection: 'Locked' })
+  })
+
   test('given a url with a trailing slash, redirects to the url without it', async () => {
     const route = createRoute({ name: 'route', component, path: '/foo' })
     const router = createRouter([route], { ssr: true, initialUrl: '/foo/' })
