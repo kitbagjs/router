@@ -69,7 +69,7 @@ export function combineSegment(parent: Route | undefined, segment: Segment): Rou
     return [{ url: createUrl(segment), transform }]
   }
 
-  return getUrlSpace(parent).map((parentUrl) => ({
+  return getRouteUrls(parent).map((parentUrl) => ({
     url: combineUrl(parentUrl.url, segment),
     transform: (url, params) => ({
       ...parentUrl.transform(url, params),
@@ -82,7 +82,7 @@ export function combineSegment(parent: Route | undefined, segment: Segment): Rou
  * Every url a route matches, its own first. Each carries the transform that maps what the url parses into
  * the route's params, which for the route's own url is the params themselves.
  */
-function getUrlSpace(route: Route): RouteAlias[] {
+function getRouteUrls(route: Route): RouteAlias[] {
   return [
     { url: route, transform: pickParams(getUrlParamNames(route)) },
     ...isRoute(route) ? route.aliases : [],
