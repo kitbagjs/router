@@ -10,6 +10,7 @@ import { DataKind } from '@/services/createNavigationStores'
 import { createRouterHistory } from '@/services/createRouterHistory'
 import { createRouterHooks, getRouterHooksKey } from '@/services/createRouterHooks'
 import { getInitialUrl } from '@/services/getInitialUrl'
+import { decodePayloadValues, encodePayloadValues, getHydratingPayload, payloadToScript, RouterPayload } from '@/services/payload'
 import { setStateValues } from '@/services/state'
 import { Routes } from '@/types/route'
 import { NOT_FOUND_REJECTION_TYPE } from '@/types/rejection'
@@ -48,6 +49,17 @@ import { createCurrentRejection } from '@/services/createCurrentRejection'
 type RouterUpdateOptions = {
   replace?: boolean,
   state?: any,
+  /**
+   * A hydrating navigation adopts an outcome the server already rendered, so before hooks are not
+   * consulted and the title the markup carries is kept.
+   */
+  hydrating?: boolean,
+}
+
+type RunAfterHooksContext = {
+  navigationId: string,
+  to: ResolvedRoute | null,
+  from: ResolvedRoute | null,
 }
 
 /**
@@ -125,6 +137,71 @@ export function createRouter<
     return getMatchForUrl(filteredRoutes, url, { ...resolveOptions, ...parseOptions })
   }
 
+  /**
+   * Runs the before hooks for a navigation and reacts to their response. Reports whether the
+   * navigation should continue.
+   */
+  async function runBeforeHooks(navigationId: string, to: ResolvedRoute | null, from: ResolvedRoute | null, url: string, options: RouterUpdateOptions): Promise<boolean> {
+    const response = await hooks.runBeforeRouteHooks({ to, from })
+
+    if (!isCurrentNavigationId(navigationId)) {
+      return false
+    }
+
+    switch (response.status) {
+      case 'ABORT':
+        return false
+
+      case 'PUSH':
+        await push(...response.to)
+
+        return false
+
+      case 'REJECT':
+        history.update(url, options)
+        reject(response.type, { to, from })
+
+        return false
+
+      case 'SUCCESS':
+        history.update(url, options)
+
+        return true
+
+      default:
+        const exhaustive: never = response
+        throw new Error(`Switch is not exhaustive for before hook response status: ${JSON.stringify(exhaustive)}`)
+    }
+  }
+
+  /**
+   * Runs the after hooks for a navigation and reacts to their response.
+   */
+  async function runAfterHooks({ navigationId, to, from }: RunAfterHooksContext): Promise<void> {
+    const response = await hooks.runAfterRouteHooks({ to, from })
+
+    if (!isCurrentNavigationId(navigationId)) {
+      return
+    }
+
+    switch (response.status) {
+      case 'PUSH':
+        await push(...response.to)
+        break
+
+      case 'REJECT':
+        reject(response.type, { to, from })
+        break
+
+      case 'SUCCESS':
+        break
+
+      default:
+        const exhaustive: never = response
+        throw new Error(`Switch is not exhaustive for after hook response status: ${JSON.stringify(exhaustive)}`)
+    }
+  }
+
   const set = activity.wrap(async (url: string, options: RouterUpdateOptions = {}): Promise<void> => {
     if (pathHasTrailingSlash(url) && shouldRemoveTrailingSlashes) {
       const cleanedUrl = removeTrailingSlashesFromPath(url)
@@ -152,59 +229,23 @@ export function createRouter<
         setRouteValuesAndUpdateRoute(to, from)
       }
 
-      updateTitle()
+      if (!options.hydrating) {
+        updateTitle()
+      }
     }
 
-    const beforeResponse = await hooks.runBeforeRouteHooks({ to, from })
+    if (!options.hydrating) {
+      const shouldCommit = await runBeforeHooks(navigationId, to, from, url, options)
 
-    if (!isCurrentNavigationId(navigationId)) {
-      return
-    }
-
-    switch (beforeResponse.status) {
-      case 'ABORT':
+      if (!shouldCommit) {
         return
-
-      case 'PUSH':
-        await push(...beforeResponse.to)
-        return
-
-      case 'REJECT':
-        history.update(url, options)
-        reject(beforeResponse.type, { to, from })
-        return
-
-      case 'SUCCESS':
-        history.update(url, options)
-        break
-
-      default:
-        throw new Error(`Switch is not exhaustive for before hook response status: ${JSON.stringify(beforeResponse satisfies never)}`)
+      }
     }
 
     commitNavigation()
 
-    const afterResponse = await hooks.runAfterRouteHooks({ to, from })
-
-    if (!isCurrentNavigationId(navigationId)) {
-      return
-    }
-
-    switch (afterResponse.status) {
-      case 'PUSH':
-        await push(...afterResponse.to)
-        break
-
-      case 'REJECT':
-        reject(afterResponse.type, { to, from })
-        break
-
-      case 'SUCCESS':
-        break
-
-      default:
-        const exhaustive: never = afterResponse
-        throw new Error(`Switch is not exhaustive for after hook response status: ${JSON.stringify(exhaustive)}`)
+    if (!isSSR) {
+      await runAfterHooks({ navigationId, to, from })
     }
   })
 
@@ -384,6 +425,47 @@ export function createRouter<
   // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
   const { promise: initialize, resolve: initialized } = Promise.withResolvers<void>()
 
+  /**
+   * Adopts the outcome the server rendered for the initial url, committed synchronously so the first
+   * paint matches the markup already in the dom.
+   */
+  async function hydrate(payload: RouterPayload): Promise<void> {
+    const to = find(initialUrl) ?? null
+
+    if (!to) {
+      reject(NOT_FOUND_REJECTION_TYPE, { to, from: null })
+      started.value = true
+
+      return
+    }
+
+    switch (payload.kind) {
+      case 'reject':
+        reject(payload.rejection, { to, from: null })
+        started.value = true
+
+        return
+
+      case 'success': {
+        const values = decodePayloadValues(to, payload.values)
+
+        valueStore.prefill(to, values)
+
+        const navigation = set(initialUrl, { replace: true, state: initialState, hydrating: true })
+
+        started.value = true
+
+        await navigation
+
+        return
+      }
+
+      default:
+        const exhaustive: never = payload
+        throw new Error(`Switch is not exhaustive for payload kind: ${JSON.stringify(exhaustive)}`)
+    }
+  }
+
   async function start(): Promise<void> {
     if (starting) {
       return initialize
@@ -391,7 +473,13 @@ export function createRouter<
 
     starting = true
 
-    await set(initialUrl, { replace: true, state: initialState })
+    const payload = getHydratingPayload()
+
+    if (payload) {
+      await hydrate(payload)
+    } else {
+      await set(initialUrl, { replace: true, state: initialState })
+    }
 
     history.startListening()
 
@@ -420,14 +508,31 @@ export function createRouter<
     const rejection = currentRejection.value
 
     if (rejection) {
-      return { kind: 'reject', status: rejection.status, rejection: rejection.type }
+      const title = await getTitle()
+
+      return {
+        kind: 'reject',
+        status: rejection.status,
+        rejection: rejection.type,
+        title,
+        payload: payloadToScript({ kind: 'reject', url: initialUrl, rejection: rejection.type }),
+      }
     }
 
     if (!isSameUrl(initialUrl, currentRoute.href)) {
       return { kind: 'redirect', status: 302, location: currentRoute.href }
     }
 
-    return { kind: 'success', status: 200 }
+    const title = await getTitle()
+    const { values, failures } = encodePayloadValues(valueStore.getValues(currentRoute))
+
+    return {
+      kind: 'success',
+      status: 200,
+      title,
+      failures,
+      payload: payloadToScript({ kind: 'success', url: initialUrl, values }),
+    }
   }
 
   function stop(): void {

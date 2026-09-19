@@ -12,6 +12,7 @@ import { RouterReject } from '@/types/routerReject'
 import { RouterPlugin } from '@/types/routerPlugin'
 import { RoutesName } from '@/types/routesMap'
 import { ExtractRejections, ExtractRejectionTypes, Rejections, BuiltInRejectionType } from '@/types/rejection'
+import { PayloadValueError } from '@/errors/payloadValueError'
 
 /**
  * Options to initialize a {@link Router} instance.
@@ -91,6 +92,20 @@ export type RenderSuccess = {
    * Suggested http status.
    */
   status: number,
+  /**
+   * A script tag to embed in the document sent to the client, so it adopts what this render settled on
+   * rather than working it out again.
+   */
+  payload: string,
+  /**
+   * The title of the route that rendered, for the document sent to the client.
+   */
+  title: string | undefined,
+  /**
+   * Values that could not be encoded into the payload. Each was left out, so the client computes it
+   * again, which can cause a hydration mismatch. Returned so a server can log or inspect them.
+   */
+  failures: PayloadValueError[],
 }
 
 export type RenderReject = {
@@ -103,6 +118,15 @@ export type RenderReject = {
    * The type of rejection in effect.
    */
   rejection: string,
+  /**
+   * A script tag to embed in the document sent to the client, so it adopts this rejection rather than
+   * working it out again.
+   */
+  payload: string,
+  /**
+   * The title of the rejection that rendered, for the document sent to the client.
+   */
+  title: string | undefined,
 }
 
 export type RenderRedirect = {
