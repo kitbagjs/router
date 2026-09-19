@@ -2,6 +2,8 @@ import { describe, expectTypeOf, test } from 'vitest'
 import { createRoute } from './createRoute'
 import { withParams } from './withParams'
 import { ResolvedRoute } from '@/types/resolved'
+import { RouteLoader } from '@/types/routeLoaders'
+import { RouteView } from '@/types/routeViews'
 import { component } from '@/utilities/testHelpers'
 
 describe('addAlias', () => {
@@ -134,19 +136,28 @@ describe('addAlias', () => {
     profile.addAlias({ query: 'view=profile' })
   })
 
-  test('an alias leaves the route type unchanged', () => {
-    const route = createRoute({ name: 'user', path: '/user/[id]' }).addView(component)
-    const aliased = route.addAlias({ path: '/member/[id]' })
-
-    expectTypeOf(aliased).toEqualTypeOf(route)
-  })
-
-  test('an alias can be chained with views and loaders', () => {
+  test('a loader and view added after an alias are kept', () => {
     const route = createRoute({ name: 'user', path: '/user/[id]' })
       .addAlias({ path: '/member/[id]' })
       .addLoader(() => 'kitbag')
-      .addView(component)
+      .addView(component, {
+        props: () => ({ foo: 'bar' }),
+      })
 
+    expectTypeOf<typeof route['matches'][0]['loaders']>().toEqualTypeOf<{ default: RouteLoader<string> }>()
+    expectTypeOf<typeof route['matches'][0]['views']>().toEqualTypeOf<{ default: RouteView<{ foo: string }> }>()
     expectTypeOf<ResolvedRoute<typeof route>['params']>().toEqualTypeOf<{ id: string }>()
+  })
+
+  test('an alias added after a loader and view keeps them', () => {
+    const route = createRoute({ name: 'user', path: '/user/[id]' })
+      .addLoader(() => 'kitbag')
+      .addView(component, {
+        props: () => ({ foo: 'bar' }),
+      })
+      .addAlias({ path: '/member/[id]' })
+
+    expectTypeOf<typeof route['matches'][0]['loaders']>().toEqualTypeOf<{ default: RouteLoader<string> }>()
+    expectTypeOf<typeof route['matches'][0]['views']>().toEqualTypeOf<{ default: RouteView<{ foo: string }> }>()
   })
 })
