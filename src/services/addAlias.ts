@@ -23,15 +23,24 @@ type Segment = {
   transform: AliasTransform | undefined,
 }
 
-/**
- * The segment an alias describes: the route's own path, query, and hash with whichever of them the alias
- * carries replaced.
- */
-export function toSegment(match: CreatedRouteOptions, options: AddAliasOptions = {}, transform?: AliasTransform): Segment {
+export function toSegment(match: CreatedRouteOptions): Segment {
   return {
-    path: toUrlPart(options.path ?? match.path),
-    query: toUrlQueryPart(options.query ?? match.query),
-    hash: toUrlPart(options.hash ?? match.hash),
+    path: toUrlPart(match.path),
+    query: toUrlQueryPart(match.query),
+    hash: toUrlPart(match.hash),
+    transform: undefined,
+  }
+}
+
+/**
+ * An alias declares its whole segment. Nothing is taken from the route's own, so a route param the alias
+ * does not carry is the transform's to supply.
+ */
+export function toAliasSegment(options: AddAliasOptions, transform: AliasTransform | undefined): Segment {
+  return {
+    path: toUrlPart(options.path),
+    query: toUrlQueryPart(options.query),
+    hash: toUrlPart(options.hash),
     transform,
   }
 }

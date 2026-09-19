@@ -121,15 +121,19 @@ describe('matching', () => {
     expect(match?.canonical).toBe('/user/6')
   })
 
-  test('an alias keeps the query the route declares', () => {
-    const user = createRoute({ name: 'user', path: '/user/[id]', query: 'tab=[tab]', component }).addAlias({ path: '/member/[id]' })
+  test('an alias does not require the query the route declares', () => {
+    const user = createRoute({ name: 'user', path: '/user/[id]', query: 'tab=[tab]', component })
+      .addAlias({ path: '/member/[id]' }, ({ params }) => ({ id: params.id, tab: 'posts' }))
 
-    expect(getMatchForUrl([user], '/member/42')).toBeUndefined()
-    expect(getMatchForUrl([user], '/member/42?tab=posts')?.params).toEqual({ id: '42', tab: 'posts' })
+    const match = getMatchForUrl([user], '/member/42')
+
+    expect(match?.params).toEqual({ id: '42', tab: 'posts' })
+    expect(match?.canonical).toBe('/user/42?tab=posts')
   })
 
-  test('an alias keeps query values the route does not declare', () => {
-    const user = createRoute({ name: 'user', path: '/user/[id]', query: 'tab=[?tab]', component }).addAlias({ path: '/member/[id]' })
+  test('an alias keeps query values it does not declare', () => {
+    const user = createRoute({ name: 'user', path: '/user/[id]', query: 'tab=[?tab]', component })
+      .addAlias({ path: '/member/[id]', query: 'tab=[?tab]' })
 
     const match = getMatchForUrl([user], '/member/42?tab=posts&extra=1')
 
@@ -155,12 +159,15 @@ describe('matching', () => {
 })
 
 describe('parts', () => {
-  test('an alias with only a path keeps the route query and hash', () => {
-    const user = createRoute({ name: 'user', path: '/user/[id]', query: 'tab=[tab]', hash: 'bio', component })
+  test('an alias declares its whole url rather than inheriting the route query and hash', () => {
+    const user = createRoute({ name: 'user', path: '/user/[id]', query: 'tab=[?tab]', hash: 'bio', component })
       .addAlias({ path: '/member/[id]' })
 
-    expect(getMatchForUrl([user], '/member/42?tab=posts#bio')?.params).toEqual({ id: '42', tab: 'posts' })
-    expect(getMatchForUrl([user], '/member/42#bio')).toBeUndefined()
+    const match = getMatchForUrl([user], '/member/42')
+
+    expect(match?.params).toEqual({ id: '42', tab: undefined })
+    expect(match?.href).toBe('/member/42')
+    expect(match?.canonical).toBe('/user/42#bio')
   })
 
   test('an alias can declare its own query', () => {
@@ -185,24 +192,43 @@ describe('parts', () => {
     expect(match?.canonical).toBe('/user/42?extra=1')
   })
 
-  test('an alias can declare its own hash', () => {
-    const user = createRoute({ name: 'user', path: '/user/[id]', hash: 'bio', component })
-      .addAlias({ hash: 'about' })
+  test('an alias can move a param from the path to the query', () => {
+    const user = createRoute({ name: 'user', path: '/user/[id]', component })
+      .addAlias({ path: '/member', query: 'id=[id]' })
 
-    const match = getMatchForUrl([user], '/user/42#about')
+    const match = getMatchForUrl([user], '/member?id=42')
 
-    expect(match?.name).toBe('user')
-    expect(match?.href).toBe('/user/42#about')
+    expect(match?.params).toEqual({ id: '42' })
+    expect(match?.href).toBe('/member?id=42')
+    expect(match?.canonical).toBe('/user/42')
   })
 
-  test('an alias without a path keeps the route path', () => {
-    const user = createRoute({ name: 'user', path: '/user/[id]', query: 'tab=[tab]', component })
-      .addAlias({ query: 'view=[tab]' })
+  test('an alias can move a param from the query to the path', () => {
+    const user = createRoute({ name: 'user', path: '/user', query: 'id=[id]', component })
+      .addAlias({ path: '/member/[id]' })
 
-    const match = getMatchForUrl([user], '/user/42?view=posts')
+    const match = getMatchForUrl([user], '/member/42')
 
-    expect(match?.params).toEqual({ id: '42', tab: 'posts' })
-    expect(match?.canonical).toBe('/user/42?tab=posts')
+    expect(match?.params).toEqual({ id: '42' })
+    expect(match?.canonical).toBe('/user?id=42')
+  })
+
+  test('an alias can declare a hash', () => {
+    const user = createRoute({ name: 'user', path: '/user/[id]', component })
+      .addAlias({ path: '/member/[id]', hash: 'about' })
+
+    expect(getMatchForUrl([user], '/member/42#about')?.href).toBe('/member/42#about')
+    expect(getMatchForUrl([user], '/member/42')).toBeUndefined()
+  })
+
+  test('an alias without a path matches the parent url', () => {
+    const user = createRoute({ path: '/user/[id]' })
+    const profile = createRoute({ parent: user, name: 'profile', path: '/profile', component }).addAlias({})
+
+    const match = getMatchForUrl([profile, user], '/user/42')
+
+    expect(match?.name).toBe('profile')
+    expect(match?.canonical).toBe('/user/42/profile')
   })
 
   test('an alias with its own query composes with a parent alias', () => {

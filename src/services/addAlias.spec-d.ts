@@ -63,11 +63,23 @@ describe('addAlias', () => {
     user.addAlias({ path: '/me' }, () => ({ id: 'current' }))
   })
 
-  test('the transform returns query params the route declares too', () => {
+  test('a transform is required when the alias does not declare the route query', () => {
+    const user = createRoute({ name: 'user', path: '/user/[id]', query: 'tab=[tab]' })
+
+    // @ts-expect-error the route's query param is not on the alias, so a transform must supply it
+    user.addAlias({ path: '/member/[id]' })
+
+    user.addAlias({ path: '/member/[id]' }, ({ params }) => {
+      expectTypeOf(params).toEqualTypeOf<{ id: string }>()
+
+      return { id: params.id, tab: 'posts' }
+    })
+  })
+
+  test('a transform is not required for an optional route query param the alias leaves out', () => {
     const user = createRoute({ name: 'user', path: '/user/[id]', query: 'tab=[?tab]' })
 
-    user.addAlias({ path: '/me' }, () => ({ id: 'current' }))
-    user.addAlias({ path: '/me' }, ({ params }) => ({ id: 'current', tab: params.tab }))
+    user.addAlias({ path: '/member/[id]' })
   })
 
   test('a nested alias only has to satisfy the params of its own segment', () => {
@@ -88,53 +100,38 @@ describe('addAlias', () => {
     })
   })
 
-  test('an alias with only a path keeps the route query', () => {
-    const user = createRoute({ name: 'user', path: '/user/[id]', query: 'tab=[tab]' })
+  test('an alias can move a param from the path to the query', () => {
+    const user = createRoute({ name: 'user', path: '/user/[id]' })
+
+    user.addAlias({ path: '/member', query: 'id=[id]' })
+
+    user.addAlias({ path: '/member', query: withParams('user=[user]', { user: Number }) }, ({ params }) => {
+      expectTypeOf(params).toEqualTypeOf<{ user: number }>()
+
+      return { id: String(params.user) }
+    })
+  })
+
+  test('an alias can move a param from the query to the path', () => {
+    const user = createRoute({ name: 'user', path: '/user', query: 'id=[id]' })
 
     user.addAlias({ path: '/member/[id]' })
-
-    user.addAlias({ path: '/member/[slug]' }, ({ params }) => {
-      expectTypeOf(params).toEqualTypeOf<{ slug: string, tab: string }>()
-
-      return { id: params.slug, tab: params.tab }
-    })
   })
 
-  test('an alias can declare its own query', () => {
-    const user = createRoute({ name: 'user', path: '/user/[id]', query: 'tab=[tab]' })
+  test('an alias can declare a hash', () => {
+    const user = createRoute({ name: 'user', path: '/user/[id]' })
 
-    user.addAlias({ path: '/member/[id]', query: 'view=[view]' }, ({ params }) => {
-      expectTypeOf(params).toEqualTypeOf<{ id: string, view: string }>()
+    user.addAlias({ path: '/member/[id]', hash: 'about' })
 
-      return { id: params.id, tab: params.view }
-    })
-
-    // @ts-expect-error an alias query that renames a route query param requires a transform
-    user.addAlias({ path: '/member/[id]', query: 'view=[view]' })
+    user.addAlias({ path: '/member', hash: withParams('[id]', { id: String }) })
   })
 
-  test('an alias can declare its own hash', () => {
-    const user = createRoute({ name: 'user', path: '/user/[id]', hash: 'bio' })
+  test('an alias without a path matches the parent url', () => {
+    const user = createRoute({ name: 'user', path: '/user/[id]' })
+    const profile = createRoute({ parent: user, name: 'profile', path: '/profile' })
 
-    user.addAlias({ hash: 'about' })
-
-    user.addAlias({ hash: withParams('[section]', { section: String }) }, ({ params }) => {
-      expectTypeOf(params).toEqualTypeOf<{ id: string, section: string }>()
-
-      return { id: params.id }
-    })
-  })
-
-  test('an alias without a path keeps the route path', () => {
-    const user = createRoute({ name: 'user', path: withParams('/user/[id]', { id: Number }), query: 'tab=[?tab]' })
-
-    user.addAlias({ query: 'view=[?tab]' })
-
-    user.addAlias({ query: withParams('view=[view]', { view: Number }) }, ({ params }) => {
-      expectTypeOf(params).toEqualTypeOf<{ id: number, view: number }>()
-
-      return { id: params.id, tab: String(params.view) }
-    })
+    profile.addAlias({})
+    profile.addAlias({ query: 'view=profile' })
   })
 
   test('an alias leaves the route type unchanged', () => {
