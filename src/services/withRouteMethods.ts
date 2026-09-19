@@ -1,4 +1,4 @@
-import { AddAlias, combineSegment, getUrlParent, toSegment } from '@/services/addAlias'
+import { AddAlias, combineSegment, getUrlParent, toAliasSegment } from '@/services/addAlias'
 import { AddLoader, addLoaderToMatch, checkForLoaderConflict, toLoader } from '@/services/addLoader'
 import { AddView, addViewToMatch, toView } from '@/services/addView'
 import { CreatedRouteOptions, isRoute, Route } from '@/types/route'
@@ -38,14 +38,14 @@ export function withRouteMethods<TRoute extends Route>(route: TRoute): TRoute {
     return withNextMatch((match) => addLoaderToMatch(match, loader))
   }
 
-  const addAlias: AddAlias = (pattern, transform) => {
+  const addAlias: AddAlias = (options, transform) => {
     const match = route.matches.at(-1)
 
     if (!match || !isRoute(route)) {
       return withRouteMethods(route)
     }
 
-    const aliases = combineSegment(getUrlParent(match), toSegment(match, pattern, transform))
+    const aliases = combineSegment(getUrlParent(match), toAliasSegment(options, transform))
 
     return withRouteMethods({
       ...route,

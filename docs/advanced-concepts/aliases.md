@@ -48,7 +48,7 @@ The transform runs synchronously while the router matches the url. What it retur
 
 ## Query and Hash
 
-An alias takes the same `path`, `query`, and `hash` options `createRoute` does, and replaces whichever of them it carries. Any part left out is the route's own, so an alias with only a `path` keeps the route's query and hash, and a transform returns any query params the route declares as well.
+An alias declares its whole url with the same `path`, `query`, and `hash` options `createRoute` takes. Nothing is inherited from the route: an alias without a `query` matches without one, and any query or hash param the route declares is then the transform's to supply. Because the alias's params are its own, a param can live in a different part of the url than it does on the route.
 
 ```ts
 const user = createRoute({
@@ -56,18 +56,19 @@ const user = createRoute({
   path: '/user/[id]',
   query: 'tab=[tab]',
 })
-  // a different query param name, the path stays
-  .addAlias({ query: 'view=[view]' }, ({ params }) => ({ id: params.id, tab: params.view }))
-  // a different path and hash, the query stays
-  .addAlias({ path: '/member/[id]', hash: 'profile' })
+  // the route's id moves into the query, its tab is supplied
+  .addAlias({ path: '/member', query: 'id=[id]' }, ({ params }) => ({ id: params.id, tab: 'posts' }))
+  // the query param is renamed and a hash is required
+  .addAlias({ path: '/member/[id]', query: 'view=[view]', hash: 'profile' }, ({ params }) => ({ id: params.id, tab: params.view }))
 ```
 
-:white_check_mark: `/user/42?view=posts`  
-:white_check_mark: `/member/42?tab=posts#profile`  
+:white_check_mark: `/member?id=42`  
+:white_check_mark: `/member/42?view=posts#profile`  
+:x: `/member/42?view=posts`  
 
 ## Nested Routes
 
-An alias replaces parts of the route it is added to, not of its parents. A child route is matched under every url its parent has, its own or an alias, combined with every url of its own.
+An alias stands in for the route it is added to, not for its parents. A child route is matched under every url its parent has, its own or an alias, combined with every url of its own.
 
 ```ts
 const user = createRoute({
