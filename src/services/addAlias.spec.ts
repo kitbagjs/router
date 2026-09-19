@@ -5,6 +5,7 @@ import { getMatchForUrl } from '@/services/getMatchesForUrl'
 import { createRouter } from '@/services/createRouter'
 import { withParams } from '@/services/withParams'
 import { DuplicateParamsError } from '@/errors/duplicateParamsError'
+import { isRoute } from '@/types/route'
 import { component } from '@/utilities/testHelpers'
 
 describe('matching', () => {
@@ -338,6 +339,20 @@ describe('nesting', () => {
 
     expect(match?.name).toBe('post')
     expect(match?.canonical).toBe('/user/1/posts/2')
+  })
+
+  test('a child of a route without aliases has none', () => {
+    const user = createRoute({ name: 'user', path: '/user/[id]' })
+    const posts = createRoute({ parent: user, name: 'posts', path: '/posts', component })
+
+    expect(isRoute(posts) && posts.aliases).toHaveLength(0)
+  })
+
+  test('a child inherits one alias per parent alias', () => {
+    const user = createRoute({ name: 'user', path: '/user/[id]' }).addAlias({ path: '/member/[id]' })
+    const posts = createRoute({ parent: user, name: 'posts', path: '/posts', component })
+
+    expect(isRoute(posts) && posts.aliases).toHaveLength(1)
   })
 
   test('a hoisted child does not compose with its parent aliases', () => {

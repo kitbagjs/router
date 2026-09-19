@@ -23,7 +23,33 @@ type Segment = {
   transform: AliasTransform | undefined,
 }
 
-export function toSegment(match: CreatedRouteOptions): Segment {
+/**
+ * The aliases a nested route inherits: each of its parent's aliases combined with the route's own segment.
+ * The parent's own url is left out, since combined with the route's own segment it is the route's own url,
+ * not an alias.
+ */
+export function combineAliases(parent: Route, match: CreatedRouteOptions): RouteAlias[] {
+  const aliases = isRoute(parent) ? parent.aliases : []
+
+  return combineSegment(aliases, toSegment(match))
+}
+
+/**
+ * The aliases an `addAlias` call adds: the alias segment combined with every url the parent can be reached
+ * under, or standing alone when there is no parent to combine with.
+ */
+export function createAliases(match: CreatedRouteOptions, options: AddAliasOptions, transform: AliasTransform | undefined): RouteAlias[] {
+  const parent = getUrlParent(match)
+  const segment = toAliasSegment(options, transform)
+
+  if (!parent) {
+    return [{ url: createUrl(segment), transform: toTransform(segment) }]
+  }
+
+  return combineSegment(getRouteAliases(parent), segment)
+}
+
+function toSegment(match: CreatedRouteOptions): Segment {
   return {
     path: toUrlPart(match.path),
     query: toUrlQueryPart(match.query),
@@ -36,7 +62,7 @@ export function toSegment(match: CreatedRouteOptions): Segment {
  * An alias declares its whole segment. Nothing is taken from the route's own, so a route param the alias
  * does not carry is the transform's to supply.
  */
-export function toAliasSegment(options: AddAliasOptions, transform: AliasTransform | undefined): Segment {
+function toAliasSegment(options: AddAliasOptions, transform: AliasTransform | undefined): Segment {
   return {
     path: toUrlPart(options.path),
     query: toUrlQueryPart(options.query),
@@ -49,7 +75,7 @@ export function toAliasSegment(options: AddAliasOptions, transform: AliasTransfo
  * The parent whose url a match combines with. A hoisted route keeps its parent's matches but not its url,
  * so nothing of the parent's is combined with it.
  */
-export function getUrlParent(match: CreatedRouteOptions): Route | undefined {
+function getUrlParent(match: CreatedRouteOptions): Route | undefined {
   if (match.hoist || !isRoute(match.parent)) {
     return undefined
   }
@@ -58,21 +84,16 @@ export function getUrlParent(match: CreatedRouteOptions): Route | undefined {
 }
 
 /**
- * Combines a segment with each url of the parent, or stands it alone when there is no parent to combine
- * with. The parent's transform maps the parent's part of the params and the segment's maps its own, so
- * each level only ever has to know about the params it declared.
+ * Combines a segment with each of the given aliases. The alias's transform maps the parent's part of the
+ * params and the segment's maps its own, so each level only ever has to know about the params it declared.
  */
-export function combineSegment(parent: Route | undefined, segment: Segment): RouteAlias[] {
+function combineSegment(aliases: RouteAlias[], segment: Segment): RouteAlias[] {
   const transform = toTransform(segment)
 
-  if (!parent) {
-    return [{ url: createUrl(segment), transform }]
-  }
-
-  return getRouteAliases(parent).map((parentUrl) => ({
-    url: combineUrl(parentUrl.url, segment),
+  return aliases.map((alias) => ({
+    url: combineUrl(alias.url, segment),
     transform: (url, params) => ({
-      ...parentUrl.transform(url, params),
+      ...alias.transform(url, params),
       ...transform(url, params),
     }),
   }))
