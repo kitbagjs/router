@@ -1,5 +1,6 @@
 import { App, InjectionKey, Ref } from 'vue'
 import { RouterHistoryMode } from '@/services/createRouterHistory'
+import { TransformerOptions } from '@/services/payload'
 import { RouterRoute } from '@/types/routerRoute'
 import { AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, AddErrorHook, AddRejectionHook } from '@/types/hooks'
 import { PrefetchConfig } from '@/types/prefetch'
@@ -17,7 +18,7 @@ import { PayloadValueError } from '@/errors/payloadValueError'
 /**
  * Options to initialize a {@link Router} instance.
  */
-export type RouterOptions = {
+export type RouterOptions = TransformerOptions & {
   /**
    * Initial URL for the router to use. Required if using Node environment. Defaults to window.location when using browser.
    *

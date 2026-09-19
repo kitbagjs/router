@@ -1395,6 +1395,52 @@ describe('router.render response', () => {
     expect(result.title).toBeUndefined()
   })
 
+  test('a value crosses the payload through its own stringify', async () => {
+    const route = createRoute({ name: 'route', component, path: '/' }).addLoader(() => new Map([['a', 1]]), {
+      transformer: {
+        stringify: (value) => JSON.stringify(Array.from(value.entries())),
+        parse: (encoded) => new Map(JSON.parse(encoded)),
+      },
+    })
+
+    const router = createRouter([route], { ssr: true, initialUrl: '/' })
+
+    await router.start()
+
+    const response = rendered(await router.render())
+    const payload: unknown = JSON.parse(response.payload.replace(/^<script[^>]*>/, '').replace(/<\/script>$/, ''))
+
+    expect(payload).toMatchObject({
+      values: [{ kind: 'loader', depth: 0, name: 'default', encoded: '[["a",1]]' }],
+    })
+  })
+
+  test('a declared payload option that cannot write a value is left out and returned as a failure', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+    const route = createRoute({ name: 'route', component, path: '/' }).addLoader(() => 1, {
+      transformer: {
+        stringify: () => {
+          throw new Error('nope')
+        },
+        parse: Number,
+      },
+    })
+
+    const router = createRouter([route], { ssr: true, initialUrl: '/' })
+
+    await router.start()
+
+    const result = successful(await router.render())
+    const payload: unknown = JSON.parse(result.payload.replace(/^<script[^>]*>/, '').replace(/<\/script>$/, ''))
+
+    expect(payload).toMatchObject({ values: [] })
+    expect(result.failures).toMatchObject([expect.any(PayloadValueError)])
+    expect(warn).toHaveBeenCalled()
+
+    warn.mockRestore()
+  })
+
   test('a rejected render carries the rejection in its payload', async () => {
     const route = createRoute({ name: 'route', component, path: '/foo' })
     const router = createRouter([route], { ssr: true, initialUrl: '/does-not-exist' })

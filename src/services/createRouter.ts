@@ -447,7 +447,7 @@ export function createRouter<
         return
 
       case 'success': {
-        const values = decodePayloadValues(to, payload.values)
+        const values = decodePayloadValues(to, payload.values, options?.transformer)
 
         valueStore.prefill(to, values)
 
@@ -524,7 +524,7 @@ export function createRouter<
     }
 
     const title = await getTitle()
-    const { values, failures } = encodePayloadValues(valueStore.getValues(currentRoute))
+    const { values, failures } = encodePayloadValues(currentRoute, valueStore.getValues(currentRoute), options?.transformer)
 
     return {
       kind: 'success',

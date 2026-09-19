@@ -130,3 +130,53 @@ test('a value missing from the payload warns and computes again', async () => {
 
   warn.mockRestore()
 })
+
+test('a value is adopted through its own parse', async () => {
+  embed({
+    kind: 'success',
+    url: '/',
+    values: [{ kind: 'loader', depth: 0, name: 'default', encoded: '[["a",1]]' }],
+  })
+
+  const load = vi.fn(() => new Map<string, number>())
+  const home = createRoute({ name: 'home', path: '/' }).addLoader(load, {
+    transformer: {
+      stringify: (value) => JSON.stringify(Array.from(value.entries())),
+      parse: (encoded) => new Map(JSON.parse(encoded)),
+    },
+  })
+  const router = createRouter([home], { initialUrl: '/' })
+
+  await router.start()
+
+  await expect(router.route.data).resolves.toEqual(new Map([['a', 1]]))
+  expect(load).not.toHaveBeenCalled()
+})
+
+test('a declared payload option that cannot read a value warns and computes again', async () => {
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+  embed({
+    kind: 'success',
+    url: '/',
+    values: [{ kind: 'loader', depth: 0, name: 'default', encoded: 'not what parse expects' }],
+  })
+
+  const home = createRoute({ name: 'home', path: '/' }).addLoader(() => 1, {
+    transformer: {
+      stringify: String,
+      parse: () => {
+        throw new Error('nope')
+      },
+    },
+  })
+
+  const router = createRouter([home], { initialUrl: '/' })
+
+  await router.start()
+
+  await expect(router.route.data).resolves.toBe(1)
+  expect(warn.mock.calls.some(([message]) => String(message).includes('parse the payload value for loader "default"'))).toBe(true)
+
+  warn.mockRestore()
+})
