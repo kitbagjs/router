@@ -28,10 +28,16 @@ function getRouteUrls(route: Route, params: Record<string, unknown>, alias: Rout
   const canonical = route.stringify(params)
 
   if (!alias) {
-    return { canonical, href: canonical }
+    return {
+      canonical,
+      href: canonical,
+    }
   }
 
-  return { canonical, href: alias.url.stringify(alias.params) }
+  return {
+    canonical,
+    href: alias.url.stringify(alias.params),
+  }
 }
 
 type ResolvedUrls = RouteUrls & {
