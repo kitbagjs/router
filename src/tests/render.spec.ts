@@ -4,10 +4,6 @@ import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
 import { component } from '@/utilities/testHelpers'
 
-const sleep = (ms: number): Promise<void> => new Promise((resolve) => {
-  setTimeout(resolve, ms)
-})
-
 describe('router.render', () => {
   test('waits for a loader to settle', async () => {
     const { promise, resolve } = Promise.withResolvers<string>()
@@ -121,12 +117,10 @@ describe('router.render', () => {
     expect(result).toMatchObject({ status: 404, rejection: 'NotFound' })
   })
 
-  test('waits for work a cascading navigation registers after the first drain', async () => {
+  test('a navigation that cascades during the render responds with the redirect', async () => {
     const first = Promise.withResolvers<string>()
-    const second = Promise.withResolvers<string>()
 
     const other = createRoute({ name: 'other', path: '/other', component })
-      .addLoader(() => second.promise)
 
     const route = createRoute({ name: 'route', path: '/', component, context: [other] })
       .addLoader(async (_route, { push }) => {
@@ -138,22 +132,14 @@ describe('router.render', () => {
 
     await router.start()
 
-    let rendered = false
-
-    const rendering = router.render().then(() => {
-      rendered = true
-    })
+    const rendering = router.render()
 
     first.resolve('one')
-    await flushPromises()
 
-    expect(rendered).toBe(false)
+    const response = await rendering
 
-    second.resolve('two')
-    await rendering
-
-    expect(rendered).toBe(true)
-    expect(router.route.name).toBe('other')
+    expect(response).toMatchObject({ kind: 'redirect', status: 302, location: '/other' })
+    expect(router.route.name).toBe('route')
   })
 
   test('given a props getter that pushes, reports the redirect before anything renders', async () => {
@@ -177,20 +163,15 @@ describe('router.render', () => {
     const result = await router.render()
 
     expect(result).toMatchObject({ status: 302, location: '/other' })
-    expect(router.route.name).toBe('other')
+    expect(router.route.name).toBe('route')
   })
 
-  test('waits for a cascading navigation that registers its data behind a slow hook', async () => {
+  test('a redirect target is not navigated during the render', async () => {
+    const onBeforeRouteEnter = vi.fn()
+
     const other = createRoute({ name: 'other', path: '/other', component })
-      .addLoader(async () => {
-        await sleep(20)
 
-        return 'other-data'
-      })
-
-    other.onBeforeRouteEnter(async () => {
-      await sleep(20)
-    })
+    other.onBeforeRouteEnter(onBeforeRouteEnter)
 
     const route = createRoute({ name: 'route', path: '/', component, context: [other] })
       .addLoader((_route, { push }) => push('other'))
@@ -201,12 +182,12 @@ describe('router.render', () => {
 
     const response = await router.render()
 
-    expect(response.status).toBe(302)
-    expect(router.route.name).toBe('other')
-    await expect(router.route.data).resolves.toBe('other-data')
+    expect(response).toMatchObject({ kind: 'redirect', status: 302, location: '/other' })
+    expect(router.route.name).toBe('route')
+    expect(onBeforeRouteEnter).not.toHaveBeenCalled()
   })
 
-  test('given a loader that pushes, waits for the navigation it caused', async () => {
+  test('given a loader that pushes, responds with the redirect without following it', async () => {
     const other = createRoute({ name: 'other', path: '/other', component })
     const route = createRoute({ name: 'route', path: '/', component, context: [other] })
       .addLoader((_route, { push }) => push('other'))
@@ -217,8 +198,8 @@ describe('router.render', () => {
 
     const result = await router.render()
 
-    expect(router.route.name).toBe('other')
-    expect(result.status).toBe(302)
+    expect(router.route.name).toBe('route')
+    expect(result).toMatchObject({ kind: 'redirect', status: 302, location: '/other' })
   })
 })
 

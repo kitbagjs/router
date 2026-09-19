@@ -4,10 +4,11 @@ import { createCurrentRoute } from '@/services/createCurrentRoute'
 import { createIsExternal } from '@/services/createIsExternal'
 import { createActivityTracker } from '@/services/createActivityTracker'
 import { SsrOptionRequiredError } from '@/errors/ssrOptionRequiredError'
-import { isSameUrl, parseUrl, updateUrl } from '@/services/urlParser'
+import { parseUrl, updateUrl } from '@/services/urlParser'
 import { createRouteValueStore, RouteValueResponse } from '@/services/createRouteValueStore'
 import { DataKind } from '@/services/createNavigationStores'
 import { createRouterHistory } from '@/services/createRouterHistory'
+import { createServerRedirect } from '@/services/createServerRedirect'
 import { createRouterHooks, getRouterHooksKey } from '@/services/createRouterHooks'
 import { getInitialUrl } from '@/services/getInitialUrl'
 import { decodePayloadValues, encodePayloadValues, getHydratingPayload, payloadToScript, RouterPayload } from '@/services/payload'
@@ -153,6 +154,28 @@ export function createRouter<
         return false
 
       case 'PUSH':
+        if (isSSR) {
+          const navigation = getPushNavigation(...response.to)
+
+          setServerRedirect(302, navigation.url)
+
+          return false
+        }
+
+        await push(...response.to)
+
+        return false
+
+      case 'REDIRECT':
+        if (isSSR) {
+          const status = response.redirectStatus ?? redirectStatus
+          const navigation = getPushNavigation(...response.to)
+
+          setServerRedirect(status, navigation.url)
+
+          return false
+        }
+
         await push(...response.to)
 
         return false
@@ -207,6 +230,12 @@ export function createRouter<
       const cleanedUrl = removeTrailingSlashesFromPath(url)
 
       if (isUrlString(cleanedUrl)) {
+        if (isSSR) {
+          setServerRedirect(redirectStatus, cleanedUrl)
+
+          return
+        }
+
         return replace(cleanedUrl, options)
       }
     }
@@ -273,6 +302,14 @@ export function createRouter<
             break
 
           case 'PUSH':
+            if (isSSR) {
+              const navigation = getPushNavigation(...response.to)
+
+              setServerRedirect(302, navigation.url)
+
+              break
+            }
+
             push(...response.to)
             break
 
@@ -318,11 +355,11 @@ export function createRouter<
     return createResolvedRoute(match, params, options)
   }
 
-  const push: RouterPush<TRoutes | TPlugin['routes']> = (
+  function getPushNavigation(
     source: UrlString | RoutesName<TRoutes | TPlugin['routes']> | ResolvedRoute,
     paramsOrOptions?: Record<string, unknown> | RouterPushOptions,
     maybeOptions?: RouterPushOptions,
-  ) => {
+  ): { url: string, options: RouterUpdateOptions } {
     if (isUrlString(source)) {
       const options: RouterPushOptions = { ...paramsOrOptions }
       const url = updateUrl(source, {
@@ -330,7 +367,7 @@ export function createRouter<
         hash: options.hash,
       })
 
-      return set(url, options)
+      return { url, options }
     }
 
     if (typeof source === 'string') {
@@ -339,7 +376,7 @@ export function createRouter<
       const resolved = resolve(source, params, options)
       const state = setStateValues({ ...resolved.matched.state }, { ...resolved.state, ...options.state })
 
-      return set(resolved.href, { replace, state })
+      return { url: resolved.href, options: { replace, state } }
     }
 
     const { replace, ...options }: RouterPushOptions = { ...paramsOrOptions }
@@ -350,7 +387,17 @@ export function createRouter<
       hash: options.hash,
     })
 
-    return set(url, { replace, state })
+    return { url, options: { replace, state } }
+  }
+
+  const push: RouterPush<TRoutes | TPlugin['routes']> = (
+    source: UrlString | RoutesName<TRoutes | TPlugin['routes']> | ResolvedRoute,
+    paramsOrOptions?: Record<string, unknown> | RouterPushOptions,
+    maybeOptions?: RouterPushOptions,
+  ) => {
+    const { url, options } = getPushNavigation(source, paramsOrOptions, maybeOptions)
+
+    return set(url, options)
   }
 
   const replace: RouterReplace<TRoutes | TPlugin['routes']> = (
@@ -419,6 +466,7 @@ export function createRouter<
   const isExternal = createIsExternal(host)
 
   let starting = false
+  const { setServerRedirect, getServerRedirect } = createServerRedirect()
   const started = ref(false)
 
   // eslint is just incorrect here
@@ -501,8 +549,10 @@ export function createRouter<
     await start()
     await activity.idle()
 
-    if (shouldRemoveTrailingSlashes && pathHasTrailingSlash(initialUrl)) {
-      return { kind: 'redirect', status: redirectStatus, location: currentRoute.href }
+    const serverRedirect = getServerRedirect()
+
+    if (serverRedirect) {
+      return serverRedirect
     }
 
     const rejection = currentRejection.value
@@ -517,10 +567,6 @@ export function createRouter<
         title,
         payload: payloadToScript({ kind: 'reject', url: initialUrl, rejection: rejection.type }),
       }
-    }
-
-    if (!isSameUrl(initialUrl, currentRoute.href)) {
-      return { kind: 'redirect', status: 302, location: currentRoute.href }
     }
 
     const title = await getTitle()

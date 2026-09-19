@@ -1556,6 +1556,83 @@ describe('router.render response', () => {
     expect(result).toMatchObject({ kind: 'reject', status: 404, rejection: 'NotFound' })
   })
 
+  test('a hook that pushes responds 302 even with a redirect status', async () => {
+    const home = createRoute({ name: 'home', component, path: '/' })
+    const other = createRoute({ name: 'other', component, path: '/other' })
+
+    const router = createRouter([home, other], { ssr: true, initialUrl: '/', redirectStatus: 301 })
+
+    router.onBeforeRouteEnter((to, { push }) => {
+      if (to.name === 'home') {
+        push('other')
+      }
+    })
+
+    await router.start()
+
+    const result = await router.render()
+
+    expect(result).toMatchObject({ kind: 'redirect', status: 302, location: '/other' })
+  })
+
+  test('a route redirect responds with the redirect status', async () => {
+    const to = createRoute({ name: 'to', component, path: '/to' })
+    const from = createRoute({ name: 'from', component, path: '/from' })
+
+    from.redirectTo(to)
+
+    const router = createRouter([from, to], { ssr: true, initialUrl: '/from', redirectStatus: 301 })
+
+    const result = await router.render()
+
+    expect(result).toMatchObject({ kind: 'redirect', status: 301, location: '/to' })
+  })
+
+  test('a redirect declaring its own status overrides the redirect status', async () => {
+    const to = createRoute({ name: 'to', component, path: '/to' })
+    const from = createRoute({ name: 'from', component, path: '/from' })
+
+    from.redirectTo(to, undefined, { status: 301 })
+
+    const router = createRouter([from, to], { ssr: true, initialUrl: '/from' })
+
+    const result = await router.render()
+
+    expect(result).toMatchObject({ kind: 'redirect', status: 301, location: '/to' })
+  })
+
+  test('a redirect chain responds with the first hop', async () => {
+    const c = createRoute({ name: 'c', component, path: '/c' })
+    const b = createRoute({ name: 'b', component, path: '/b' })
+    const a = createRoute({ name: 'a', component, path: '/a' })
+
+    a.redirectTo(b, undefined, { status: 301 })
+    b.onBeforeRouteEnter((_to, { push }) => push('/c'))
+
+    const router = createRouter([a, b, c], { ssr: true, initialUrl: '/a' })
+
+    const result = await router.render()
+
+    expect(result).toMatchObject({ kind: 'redirect', status: 301, location: '/b' })
+  })
+
+  test('a hook that pushes during the render responds 302 without being followed', async () => {
+    const home = createRoute({ name: 'home', component, path: '/' })
+    const other = createRoute({ name: 'other', component, path: '/other' })
+
+    const router = createRouter([home, other], { ssr: true, initialUrl: '/', redirectStatus: 301 })
+
+    router.onBeforeRouteEnter((to, { push }) => {
+      if (to.name === 'home') {
+        push('/other')
+      }
+    })
+
+    const result = await router.render()
+
+    expect(result).toMatchObject({ kind: 'redirect', status: 302, location: '/other' })
+  })
+
   test('given a route that redirects, returns 302 to the destination', async () => {
     const from = createRoute({ name: 'from', component, path: '/from' })
     const to = createRoute({ name: 'to', component, path: '/to' })
