@@ -234,11 +234,9 @@ export function combineRoutes(parent: Route, child: Route, hoisted = false): Rou
     return route
   }
 
-  const match = child.matches.at(-1)
-
   return {
     ...route,
     ...combineUrl(parent, child),
-    aliases: match ? combineAliases(parent, match) : [],
+    aliases: combineAliases(parent, child),
   }
 }
