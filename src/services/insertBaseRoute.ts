@@ -4,14 +4,19 @@ import { createUrl } from '@/services/createUrl'
 import { combineUrl } from '@/services/combineUrl'
 
 export function insertBaseRoute<T extends Route>(route: T, base?: string): T {
+  if (!isRoute(route)) {
+    throw new Error('insertBaseRoute called with an invalid route')
+  }
+
   if (!stringHasValue(base)) {
     return route
   }
 
   const baseUrl = createUrl({ path: base })
-  const aliases = isRoute(route)
-    ? route.aliases.map((alias) => ({ ...alias, url: combineUrl(baseUrl, alias.url) }))
-    : []
+  const aliases = route.aliases.map((alias) => ({
+    ...alias,
+    url: combineUrl(baseUrl, alias.url),
+  }))
 
   return {
     ...route,
