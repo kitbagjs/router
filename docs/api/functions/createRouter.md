@@ -6,7 +6,8 @@
 function createRouter<TRoutes, TOptions, TPlugin>(
    routes, 
    options?, 
-plugins?): Router<TRoutes, TOptions, TPlugin>;
+   plugins?
+): Router<TRoutes, TOptions, TPlugin>;
 ```
 
 Creates a router instance for a Vue application, equipped with methods for route handling, lifecycle hooks, and state management.
@@ -55,7 +56,8 @@ const router = createRouter(routes)
 function createRouter<TRoutes, TOptions, TPlugin>(
    routes, 
    options?, 
-plugins?): Router<TRoutes, TOptions, TPlugin>;
+   plugins?
+): Router<TRoutes, TOptions, TPlugin>;
 ```
 
 Creates a router instance for a Vue application, equipped with methods for route handling, lifecycle hooks, and state management.

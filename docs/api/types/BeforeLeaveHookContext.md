@@ -1,7 +1,7 @@
 # Types: BeforeLeaveHookContext\<TRoutes, TRejections, TRouteTo, TRouteFrom\>
 
 ```ts
-type BeforeLeaveHookContext<TRoutes, TRejections, TRouteTo, TRouteFrom> = BeforeHookContext<TRouteTo, TRoutes, TRejections> & object;
+type BeforeLeaveHookContext<TRoutes, TRejections, TRouteTo, TRouteFrom> = Omit<BeforeHookContext<TRouteTo, TRoutes, TRejections>, "update"> & object;
 ```
 
 ## Type Declaration

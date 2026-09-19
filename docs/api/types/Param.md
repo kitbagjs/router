@@ -12,5 +12,6 @@ type Param =
   | JSON
   | ZodSchemaLike
   | ValibotSchemaLike
+  | ArkTypeSchemaLike
   | LiteralParam;
 ```

@@ -17,7 +17,7 @@ type BeforeLeaveHook<TRoutes, TRejections, TRouteTo, TRouteFrom> = (to, context)
 
 | Parameter | Type |
 | ------ | ------ |
-| `to` | [`ResolvedRouteUnion`](ResolvedRouteUnion.md)\<`TRouteTo`\> |
+| `to` | [`ResolvedRouteUnion`](ResolvedRouteUnion.md)\<`TRouteTo`\> \| `null` |
 | `context` | [`BeforeLeaveHookContext`](BeforeLeaveHookContext.md)\<`TRoutes`, `TRejections`, `TRouteTo`, `TRouteFrom`\> |
 
 ## Returns
