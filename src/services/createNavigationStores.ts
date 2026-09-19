@@ -20,6 +20,11 @@ export type NavigationStores = {
    */
   stage: (store: DataStore) => void,
   /**
+   * The staged store, created when no link left one, so a navigation can compute into it ahead of
+   * adopting it.
+   */
+  staged: () => DataStore,
+  /**
    * Swaps in the staged store, or a fresh one, and hands back the store being replaced for disposal.
    */
   promote: () => DataStore,
@@ -44,6 +49,12 @@ export function createNavigationStores(): NavigationStores {
     stores.staged = store
   }
 
+  const staged: NavigationStores['staged'] = () => {
+    stores.staged ??= createDataStore()
+
+    return stores.staged
+  }
+
   const promote: NavigationStores['promote'] = () => {
     const previous = stores.current
 
@@ -56,6 +67,7 @@ export function createNavigationStores(): NavigationStores {
   return {
     current,
     stage,
+    staged,
     promote,
   }
 }

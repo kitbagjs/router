@@ -78,6 +78,11 @@ export type RouteValueStore = HasVueAppStore & {
    * The values currently settled in the store.
    */
   getValues: (route: ResolvedRoute) => RouteValue[],
+  /**
+   * Computes a route's values ahead of it becoming current, into the store the next navigation adopts.
+   * The rendered route keeps reading its own values meanwhile.
+   */
+  stageRouteValues: (route: ResolvedRoute) => RouteValueResponses,
   setRouteValues: (route: ResolvedRoute) => RouteValueResponses,
   getProps: (id: string, name: string, route: ResolvedRoute) => MaybePromise<PropsResult>,
   /**
@@ -153,27 +158,38 @@ export function createRouteValueStore(): RouteValueStore {
     })
   }
 
+  const stageRouteValues: RouteValueStore['stageRouteValues'] = (route) => {
+    return computeRoute(navigation.staged(), route)
+  }
+
   const setRouteValues: RouteValueStore['setRouteValues'] = (route) => {
     const previous = navigation.promote()
-    const store = navigation.current()
 
     previous.dispose(new NavigationAbandonedError())
 
-    const computations = getComputations(route)
-
-    return {
-      props: compute(store, route, computations.filter(isKind('props'))),
-      loaders: compute(store, route, computations.filter(isKind('loader'))),
-    }
+    return computeRoute(navigation.current(), route)
   }
 
   /**
-   * Sets every computation into the navigation's store and reports how they settled. Setting happens
-   * before the first await, so everything a route computes is under way by the time the route is current.
+   * Computes everything a route has into the store, loaders first so a props getter reading the route's
+   * data finds it under way rather than missing.
+   */
+  function computeRoute(store: DataStore, route: ResolvedRoute): RouteValueResponses {
+    const computations = getComputations(route)
+    const loaders = compute(store, route, computations.filter(isKind('loader')))
+    const props = compute(store, route, computations.filter(isKind('props')))
+
+    return { props, loaders }
+  }
+
+  /**
+   * Sets every computation into the store and reports how they settled. Setting happens before the first
+   * await, so everything a route computes is under way by the time the route is current. Getters read
+   * from the same store, so one finds what a sibling is computing alongside it.
    */
   async function compute(store: DataStore, route: ResolvedRoute, computations: Computation[]): Promise<RouteValueResponse> {
     computations.forEach((computation) => {
-      store.set(computation.key, () => run(computation, route))
+      store.set(computation.key, () => run(computation, route, store))
     })
 
     try {
@@ -336,18 +352,19 @@ export function createRouteValueStore(): RouteValueStore {
   }
 
   /**
-   * A value resolves from whichever arrives first, the prefetching the reader belongs to or the
-   * navigation, so a reader never has to know which of the two will compute it.
+   * A value resolves from whichever arrives first, the store the reader belongs to or the navigation, so
+   * a reader never has to know which of the two will compute it.
    */
   function getValue(location: ValueLocation, route: ResolvedRoute, store?: DataStore): Promise<unknown> {
     const key = getDataKey(location.kind, location.id, location.name, route)
+    const current = navigation.current()
 
-    if (!store) {
-      return navigation.current().subscribe(key)
+    if (!store || store === current) {
+      return current.subscribe(key)
     }
 
-    if (store.get(key).kind === 'missing' && navigation.current().get(key).kind === 'missing') {
-      warnWaitingWhilePrefetching(location, route)
+    if (store.get(key).kind === 'missing' && current.get(key).kind === 'missing') {
+      warnWaitingOnUncomputedValue(location, route)
     }
 
     const value = firstToArrive([
@@ -365,6 +382,7 @@ export function createRouteValueStore(): RouteValueStore {
     createPrefetchStore,
     prefill,
     getValues,
+    stageRouteValues,
     setRouteValues,
     getProps,
     getData,
@@ -409,13 +427,13 @@ async function toResult(props: Promise<unknown>): Promise<PropsResult> {
   }
 }
 
-function warnWaitingWhilePrefetching({ kind, name }: ValueLocation, route: ResolvedRoute): void {
+function warnWaitingOnUncomputedValue({ kind, name }: ValueLocation, route: ResolvedRoute): void {
   const routeName = route.name || 'unknown'
   const value = kind === 'props' ? `props "${name}"` : `loader data "${name}"`
 
   console.warn(`
-    Waiting on ${value} while prefetching for route "${routeName}".
-    It is not being prefetched at this point, so it cannot resolve until it is computed — either by its
-    own prefetch strategy or by navigating. Prefetch it with the same strategy to avoid stalling here.
+    Waiting on ${value} for route "${routeName}" before anything is computing it.
+    It cannot resolve until it is computed — by its own prefetch strategy, or by navigating. When
+    prefetching, prefetch it with the same strategy to avoid stalling here.
   `)
 }
