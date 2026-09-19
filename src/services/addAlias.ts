@@ -28,10 +28,14 @@ type Segment = {
  * The parent's own url is left out, since combined with the route's own segment it is the route's own url,
  * not an alias.
  */
-export function combineAliases(parent: Route, match: CreatedRouteOptions): RouteAlias[] {
-  const aliases = isRoute(parent) ? parent.aliases : []
+export function combineAliases(parent: Route, child: Route): RouteAlias[] {
+  const match = child.matches.at(-1)
 
-  return combineSegment(aliases, toSegment(match))
+  if (!match || !isRoute(parent)) {
+    return []
+  }
+
+  return combineSegment(parent.aliases, toSegment(match))
 }
 
 /**
