@@ -1,4 +1,4 @@
-import { AddAlias, combineSegment, getUrlParent, toAliasSegment } from '@/services/addAlias'
+import { AddAlias, createAliases } from '@/services/addAlias'
 import { AddLoader, addLoaderToMatch, checkForLoaderConflict, toLoader } from '@/services/addLoader'
 import { AddView, addViewToMatch, toView } from '@/services/addView'
 import { CreatedRouteOptions, isRoute, Route } from '@/types/route'
@@ -45,7 +45,7 @@ export function withRouteMethods<TRoute extends Route>(route: TRoute): TRoute {
       return withRouteMethods(route)
     }
 
-    const aliases = combineSegment(getUrlParent(match), toAliasSegment(options, transform))
+    const aliases = createAliases(match, options, transform)
 
     return withRouteMethods({
       ...route,
