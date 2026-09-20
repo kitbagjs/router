@@ -5,16 +5,19 @@ import { createResolvedRoute } from '@/services/createResolvedRoute'
 import { createRoute } from '@/services/createRoute'
 import { component } from '@/utilities/testHelpers'
 
-test('a prefilled value is adopted in place of running its getter', async () => {
+test('a staged value is adopted in place of running its getter', async () => {
   const loader = vi.fn(() => 'computed')
   const route = createRoute({ name: 'route', path: '/', component }).addLoader(loader)
   const resolved = createResolvedRoute(route)
   const store = createRouteValueStore()
 
-  store.prefill(resolved, [{ kind: 'loader', depth: 0, name: 'default', value: 'prefilled' }])
-  store.setRouteValues(resolved)
+  const detached = store.createDetachedStore()
 
-  await expect(store.getData(resolved)).resolves.toBe('prefilled')
+  detached.fill(resolved, [{ kind: 'loader', depth: 0, name: 'default', value: 'staged' }])
+  detached.stage()
+  store.commit(resolved)
+
+  await expect(store.getData(resolved)).resolves.toBe('staged')
   expect(loader).not.toHaveBeenCalled()
 })
 
@@ -23,7 +26,7 @@ test('getValues returns the values the store resolved', async () => {
   const resolved = createResolvedRoute(route)
   const store = createRouteValueStore()
 
-  store.setRouteValues(resolved)
+  store.commit(resolved)
   await flushPromises()
 
   expect(store.getValues(resolved)).toEqual([{ kind: 'loader', depth: 0, name: 'default', value: 'value' }])
@@ -35,8 +38,8 @@ test('staged values are adopted by the next navigation without running their get
   const resolved = createResolvedRoute(route)
   const store = createRouteValueStore()
 
-  await store.stageRouteValues(resolved).loaders
-  store.setRouteValues(resolved)
+  await store.staged().compute(resolved).loaders
+  store.commit(resolved)
 
   await expect(store.getData(resolved)).resolves.toBe('value')
   expect(loader).toHaveBeenCalledTimes(1)
@@ -48,10 +51,10 @@ test('staging a route leaves the current route reading its own values', async ()
   const store = createRouteValueStore()
   const currentResolved = createResolvedRoute(current)
 
-  store.setRouteValues(currentResolved)
+  store.commit(currentResolved)
   await flushPromises()
 
-  store.stageRouteValues(createResolvedRoute(next))
+  store.staged().compute(createResolvedRoute(next))
 
   expect(store.getValues(currentResolved)).toEqual([{ kind: 'loader', depth: 0, name: 'default', value: 'current' }])
 })
@@ -63,8 +66,8 @@ test('a staged props getter can read the data its route is loading', async () =>
   const resolved = createResolvedRoute(route)
   const store = createRouteValueStore()
 
-  await store.stageRouteValues(resolved).props
-  store.setRouteValues(resolved)
+  await store.staged().compute(resolved).props
+  store.commit(resolved)
 
   expect(store.getProps(route.id, 'default', resolved)).toEqual({ kind: 'value', value: { value: 'loaded' } })
 })
@@ -80,7 +83,19 @@ test('staging reports how the values settled', async () => {
     })
   const store = createRouteValueStore()
 
-  const { props } = store.stageRouteValues(createResolvedRoute(route))
+  const { props } = store.staged().compute(createResolvedRoute(route))
 
   await expect(props).resolves.toMatchObject({ status: 'REJECT', type: 'NotFound' })
+})
+
+test('a detached store whose getter throws does not surface an unhandled rejection when nothing waits on it', async () => {
+  const route = createRoute({ name: 'route', path: '/', component }).addLoader(() => {
+    throw new Error('getter failed')
+  })
+  const store = createRouteValueStore()
+  const detached = store.createDetachedStore()
+
+  detached.compute(createResolvedRoute(route))
+
+  await flushPromises()
 })

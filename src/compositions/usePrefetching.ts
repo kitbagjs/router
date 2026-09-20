@@ -7,7 +7,7 @@ import { isAsyncComponent } from '@/utilities/components'
 import { useVisibilityObserver } from './useVisibilityObserver'
 import { useEventListener } from './useEventListener'
 import { Router } from '@/types/router'
-import { Computation, getComputations, isKind } from '@/services/getComputations'
+import { ComputationFilter } from '@/services/getComputations'
 
 type UsePrefetchingConfig = PrefetchConfigs & {
   route: ResolvedRoute | undefined,
@@ -26,12 +26,12 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
   return (config) => {
     const element = ref<HTMLElement>()
 
-    const { createPrefetchStore } = useRouteValueStore()
-    const store = createPrefetchStore()
+    const { createDetachedStore } = useRouteValueStore()
+    const store = createDetachedStore()
     const { isElementVisible } = useVisibilityObserver(element)
 
     const commit: UsePrefetching['commit'] = () => {
-      store.commit()
+      store.stage()
     }
 
     onScopeDispose(() => store.dispose())
@@ -70,10 +70,8 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
     }
 
     function doPrefetchingForStrategy(strategy: PrefetchStrategy, route: ResolvedRoute, configs: PrefetchConfigs): void {
-      const computations = getPropsComputationsForStrategy(strategy, route, configs)
-
       prefetchComponentsForRoute(strategy, route, configs)
-      store.prefetch(route, computations)
+      store.compute(route, isPropsForStrategy(strategy, configs))
     }
 
     return {
@@ -83,16 +81,12 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
   }
 }
 
-function getPropsComputationsForStrategy(strategy: PrefetchStrategy, route: ResolvedRoute, configs: PrefetchConfigs): Computation[] {
-  const selected = getComputations(route)
-    .filter(isKind('props'))
-    .filter((computation) => getPrefetchOption({
-      ...configs,
-      routePrefetch: computation.routePrefetch,
-      viewPrefetch: computation.prefetch,
-    }, 'props') === strategy)
-
-  return selected
+function isPropsForStrategy(strategy: PrefetchStrategy, configs: PrefetchConfigs): ComputationFilter {
+  return (computation) => computation.kind === 'props' && getPrefetchOption({
+    ...configs,
+    routePrefetch: computation.routePrefetch,
+    viewPrefetch: computation.prefetch,
+  }, 'props') === strategy
 }
 
 function prefetchComponentsForRoute(strategy: PrefetchStrategy, route: ResolvedRoute, configs: PrefetchConfigs): void {

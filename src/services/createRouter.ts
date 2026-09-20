@@ -280,7 +280,7 @@ export function createRouter<
   })
 
   function setRouteValuesAndUpdateRoute(to: ResolvedRoute, from: ResolvedRoute | null): void {
-    const { props, loaders } = valueStore.setRouteValues(to)
+    const { props, loaders } = valueStore.commit(to)
 
     activity.add(
       handleRouteValueResponse(props, 'props', to, from),
@@ -498,7 +498,10 @@ export function createRouter<
       case 'success': {
         const values = decodePayloadValues(to, payload.values, options?.transformer)
 
-        valueStore.prefill(to, values)
+        const store = valueStore.createDetachedStore()
+
+        store.fill(to, values)
+        store.stage()
 
         const navigation = set(initialUrl, { replace: true, state: initialState, hydrating: true })
 

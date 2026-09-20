@@ -5,9 +5,9 @@ import { ResolvedRoute } from '@/types/resolved'
 /**
  * Which store the rendered route reads from, and which one the next navigation will adopt.
  *
- * A navigation gets its own store so the one it replaces can be disposed outright. A followed link stages
- * the store it prefetched into, which the navigation it triggers picks up — staged rather than handed over
- * directly because a link is followed before that navigation starts.
+ * A navigation gets its own store so the one it replaces can be disposed outright. A store built ahead of
+ * a navigation is staged for it to pick up — staged rather than handed over directly because it is built
+ * before that navigation starts.
  */
 export type NavigationStores = {
   /**
@@ -15,12 +15,12 @@ export type NavigationStores = {
    */
   current: () => DataStore,
   /**
-   * Parks a followed link's store for the navigation it triggered. A store already parked is disposed,
-   * since following a second link before the first navigation arrives abandons the first.
+   * Parks a store for the next navigation. A store already parked is disposed, since staging a second
+   * store before a navigation arrives abandons the first.
    */
   stage: (store: DataStore) => void,
   /**
-   * The staged store, created when no link left one, so a navigation can compute into it ahead of
+   * The staged store, created when nothing was staged, so a navigation can compute into it ahead of
    * adopting it.
    */
   staged: () => DataStore,
@@ -31,8 +31,8 @@ export type NavigationStores = {
 }
 
 /**
- * The store in use, and the one a followed link left for the next navigation. Staging only happens when a
- * link is followed, so starting the router, pushing directly and history navigation all leave it unset.
+ * The store in use, and the one staged for the next navigation. Nothing is staged unless something stages
+ * a store ahead of navigating, so a navigation with nothing prepared finds it unset.
  */
 type Stores = {
   current: DataStore,

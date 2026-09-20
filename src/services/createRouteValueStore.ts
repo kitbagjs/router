@@ -14,7 +14,7 @@ import { createDataStore, DataStore } from './createDataStore'
 import { createNavigationStores, DataKind, getDataKey } from './createNavigationStores'
 import { PropsResult } from '@/utilities/props'
 import { MaybePromise } from '@/types/utilities'
-import { Computation, getComputations, isKind, loaderLocations, propsLocations, ValueLocation } from './getComputations'
+import { Computation, ComputationFilter, getComputations, isKind, loaderLocations, propsLocations, ValueLocation } from './getComputations'
 
 /**
  * A navigation that was superseded before its values settled. The navigation that replaced it owns the
@@ -36,24 +36,34 @@ export type RouteValueResponses = {
 }
 
 /**
- * A link's own bucket of prefetched values, handed to the current navigation when the link is followed and
- * discarded otherwise.
+ * A store of a route's values, whichever store that is.
  */
-export type PrefetchStore = {
+export type ValueStore = {
   /**
-   * Computes props for views whose prefetch option matches the given strategy.
+   * Computes the route's values, or only those the filter keeps, and reports how they settle.
    */
-  prefetch: (route: ResolvedRoute, computations: Computation[]) => void,
+  compute: (route: ResolvedRoute, filter?: ComputationFilter) => RouteValueResponses,
   /**
-   * Stages the prefetched store for the next navigation to adopt.
+   * Adopts values that already settled, in place of running their getters.
    */
-  commit: () => void,
+  fill: (route: ResolvedRoute, values: RouteValue[]) => void,
+}
+
+/**
+ * A store kept apart from the navigation until it is staged, so values can be computed ahead of a
+ * navigation that may never come.
+ */
+export type DetachedStore = ValueStore & {
   /**
-   * Abandons what was prefetched and starts over, for a link that now points somewhere else.
+   * Becomes the staged store, replacing whatever was staged, and starts over empty.
+   */
+  stage: () => void,
+  /**
+   * Abandons what was computed and starts over.
    */
   reset: () => void,
   /**
-   * Abandons what was prefetched, for a link that is gone.
+   * Abandons what was computed.
    */
   dispose: () => void,
 }
@@ -69,21 +79,21 @@ export type RouteValue = {
 }
 
 export type RouteValueStore = HasVueAppStore & {
-  createPrefetchStore: () => PrefetchStore,
+  createDetachedStore: () => DetachedStore,
   /**
-   * Stages values that already resolved. The next navigation adopts them in place of running their getters.
+   * The store the next navigation adopts, created when nothing is staged. Values computed into it ahead of
+   * the navigation are found under way when the navigation commits, while the rendered route keeps reading
+   * its own store meanwhile.
    */
-  prefill: (route: ResolvedRoute, values: RouteValue[]) => void,
+  staged: () => ValueStore,
+  /**
+   * Makes the staged store current and computes whatever the route still lacks.
+   */
+  commit: (route: ResolvedRoute) => RouteValueResponses,
   /**
    * The values currently settled in the store.
    */
   getValues: (route: ResolvedRoute) => RouteValue[],
-  /**
-   * Computes a route's values ahead of it becoming current, into the store the next navigation adopts.
-   * The rendered route keeps reading its own values meanwhile.
-   */
-  stageRouteValues: (route: ResolvedRoute) => RouteValueResponses,
-  setRouteValues: (route: ResolvedRoute) => RouteValueResponses,
   getProps: (id: string, name: string, route: ResolvedRoute) => MaybePromise<PropsResult>,
   /**
    * What a route exposes as `data`. Resolved per read rather than captured, so it stays correct as
@@ -96,52 +106,82 @@ export function createRouteValueStore(): RouteValueStore {
   const { setVueApp, runWithContext } = createVueAppStore()
   const navigation = createNavigationStores()
 
-  const createPrefetchStore: RouteValueStore['createPrefetchStore'] = () => {
-    const link = { store: createDataStore() }
+  const createDetachedStore: RouteValueStore['createDetachedStore'] = () => {
+    const detached = { store: createDataStore() }
 
-    const dispose: PrefetchStore['dispose'] = () => {
-      link.store.dispose(new NavigationAbandonedError())
+    const dispose: DetachedStore['dispose'] = () => {
+      detached.store.dispose(new NavigationAbandonedError())
     }
 
-    const reset: PrefetchStore['reset'] = () => {
+    const reset: DetachedStore['reset'] = () => {
       dispose()
-      link.store = createDataStore()
+      detached.store = createDataStore()
     }
 
-    const prefetch: PrefetchStore['prefetch'] = (route, computations) => {
-      for (const computation of computations) {
-        link.store.set(computation.key, () => run(computation, route, link.store))
-      }
-    }
-
-    const commit: PrefetchStore['commit'] = () => {
-      navigation.stage(link.store)
-      link.store = createDataStore()
+    const stage: DetachedStore['stage'] = () => {
+      navigation.stage(detached.store)
+      detached.store = createDataStore()
     }
 
     return {
-      prefetch,
-      commit,
+      ...createValueStore(() => detached.store),
+      stage,
       reset,
       dispose,
     }
   }
 
-  const prefill: RouteValueStore['prefill'] = (route, values) => {
-    const store = createDataStore()
-    const computations = getComputations(route)
+  const staged: RouteValueStore['staged'] = () => {
+    return createValueStore(() => navigation.staged())
+  }
 
-    for (const { kind, depth, name, value } of values) {
-      const computation = computations.find((computation) => computation.kind === kind && computation.depth === depth && computation.name === name)
+  const commit: RouteValueStore['commit'] = (route) => {
+    const previous = navigation.promote()
 
-      if (!computation) {
-        continue
-      }
+    previous.dispose(new NavigationAbandonedError())
 
-      store.set(computation.key, () => value)
+    return createValueStore(() => navigation.current()).compute(route)
+  }
+
+  /**
+   * The same api over any store. The store is looked up per call, since a detached store starts over when
+   * it is staged or reset.
+   */
+  function createValueStore(getStore: () => DataStore): ValueStore {
+    const compute: ValueStore['compute'] = (route, filter = () => true) => {
+      const store = getStore()
+      const computations = getComputations(route).filter(filter)
+
+      // loaders first, so a props getter reading the route's data finds it under way rather than missing
+      const loaders = settle(store, route, computations.filter(isKind('loader')))
+      const props = settle(store, route, computations.filter(isKind('props')))
+
+      // a caller that does not wait on these must not see a getter's error as an unhandled rejection
+      loaders.catch(() => {})
+      props.catch(() => {})
+
+      return { props, loaders }
     }
 
-    navigation.stage(store)
+    const fill: ValueStore['fill'] = (route, values) => {
+      const store = getStore()
+      const computations = getComputations(route)
+
+      for (const { kind, depth, name, value } of values) {
+        const computation = computations.find((computation) => computation.kind === kind && computation.depth === depth && computation.name === name)
+
+        if (!computation) {
+          continue
+        }
+
+        store.set(computation.key, () => value)
+      }
+    }
+
+    return {
+      compute,
+      fill,
+    }
   }
 
   const getValues: RouteValueStore['getValues'] = (route) => {
@@ -158,36 +198,12 @@ export function createRouteValueStore(): RouteValueStore {
     })
   }
 
-  const stageRouteValues: RouteValueStore['stageRouteValues'] = (route) => {
-    return computeRoute(navigation.staged(), route)
-  }
-
-  const setRouteValues: RouteValueStore['setRouteValues'] = (route) => {
-    const previous = navigation.promote()
-
-    previous.dispose(new NavigationAbandonedError())
-
-    return computeRoute(navigation.current(), route)
-  }
-
-  /**
-   * Computes everything a route has into the store, loaders first so a props getter reading the route's
-   * data finds it under way rather than missing.
-   */
-  function computeRoute(store: DataStore, route: ResolvedRoute): RouteValueResponses {
-    const computations = getComputations(route)
-    const loaders = compute(store, route, computations.filter(isKind('loader')))
-    const props = compute(store, route, computations.filter(isKind('props')))
-
-    return { props, loaders }
-  }
-
   /**
    * Sets every computation into the store and reports how they settled. Setting happens before the first
    * await, so everything a route computes is under way by the time the route is current. Getters read
    * from the same store, so one finds what a sibling is computing alongside it.
    */
-  async function compute(store: DataStore, route: ResolvedRoute, computations: Computation[]): Promise<RouteValueResponse> {
+  async function settle(store: DataStore, route: ResolvedRoute, computations: Computation[]): Promise<RouteValueResponse> {
     computations.forEach((computation) => {
       store.set(computation.key, () => run(computation, route, store))
     })
@@ -274,8 +290,8 @@ export function createRouteValueStore(): RouteValueStore {
           throw new LoaderDataAccessError(name)
         }
 
-        // computing for a link resolves data against that link's store as well as the navigation's, so a
-        // getter does not have to know which of the two will compute what it reads
+        // computing into a store that is not yet current resolves data against it as well as the
+        // navigation's, so a getter does not have to know which of the two will compute what it reads
         return getData(route, store)
       },
     })
@@ -379,11 +395,10 @@ export function createRouteValueStore(): RouteValueStore {
   }
 
   return {
-    createPrefetchStore,
-    prefill,
+    createDetachedStore,
+    staged,
+    commit,
     getValues,
-    stageRouteValues,
-    setRouteValues,
     getProps,
     getData,
     setVueApp,

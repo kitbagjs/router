@@ -32,6 +32,11 @@ export type ValueLocation = {
   name: string,
 }
 
+/**
+ * Decides which of a route's computations to compute.
+ */
+export type ComputationFilter = (computation: Computation) => boolean
+
 export function getComputations(route: ResolvedRoute): Computation[] {
   return route.matches.flatMap((match, depth) => [
     ...propsLocations(match).map((location) => toComputation(location, match, depth, route, match.views[location.name].props as PropsGetter, match.views[location.name])),
