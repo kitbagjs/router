@@ -14,7 +14,7 @@ import { RouterPlugin } from '@/types/routerPlugin'
 import { RoutesName } from '@/types/routesMap'
 import { ExtractRejections, ExtractRejectionTypes, Rejections, BuiltInRejectionType } from '@/types/rejection'
 import { PayloadValueError } from '@/errors/payloadValueError'
-import { ViewTransitionConfig } from '@/types/viewTransition'
+import { RouterViewTransition, ViewTransitionConfig } from '@/types/viewTransition'
 
 /**
  * Options to initialize a {@link Router} instance.
@@ -259,6 +259,11 @@ export type Router<
    * Returns true if the router has been started.
    */
   started: Ref<boolean>,
+  /**
+   * The view transition in flight, if any. Reactive, so a component can tell that a transition to it is
+   * about to be captured, or reach the transition itself once the browser has started it.
+   */
+  viewTransition: RouterViewTransition<TRoutes | TPlugin['routes']>,
   /**
    * Resolves once the router has nothing left to render: every prop and loader has settled, following
    * any navigation one of them caused, so this waits for the next *full* render rather than for one

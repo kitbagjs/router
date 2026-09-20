@@ -14,6 +14,7 @@ type RouterLinkSlots = {
     isActive: boolean,
     isExactActive: boolean,
     isExternal: boolean,
+    isTransitioning: boolean,
   }) => VNode[],
 }
 
@@ -36,7 +37,7 @@ export function createRouterLink<TRouter extends Router>(routerKey: InjectionKey
       return options
     })
 
-    const { element, isMatch, isExactMatch, isActive, isExactActive, isExternal, push } = useLink(() => {
+    const { element, isMatch, isExactMatch, isActive, isExactActive, isExternal, isTransitioning, push } = useLink(() => {
       if (typeof props.to === 'function') {
         return props.to(router.resolve)
       }
@@ -108,6 +109,7 @@ export function createRouterLink<TRouter extends Router>(routerKey: InjectionKey
         isActive: isActive.value,
         isExactActive: isExactActive.value,
         isExternal: isExternal.value,
+        isTransitioning: isTransitioning.value,
       }),
       )
     }

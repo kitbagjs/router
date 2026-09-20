@@ -87,9 +87,75 @@ const router = createRouter(routes, {
 
 Types are only passed to browsers that understand them. Older browsers still transition, without them.
 
+## Shared Elements
+
+Give an element a `view-transition-name` and the browser moves it between the pages rather than cross fading. Both pages must name exactly one element with that name while they are captured, so in a list every card cannot carry the name at once. A link knows when a transition to its location is in flight, through `isTransitioning` on [`RouterLink`](/components/router-link#slot) and [`useLink`](/composables/useLink), and names its element only then.
+
+```html
+<router-link
+  v-for="photo in photos"
+  :key="photo.id"
+  :to="(resolve) => resolve('photo', { id: photo.id })"
+  v-slot="{ isTransitioning }"
+>
+  <img :src="photo.thumb" :style="{ viewTransitionName: isTransitioning ? 'photo' : 'none' }" />
+</router-link>
+```
+
+The destination names its element statically.
+
+```html
+<img :src="photo.full" style="view-transition-name: photo" />
+```
+
+## The Transition in Flight
+
+`router.viewTransition`, also available as the [`useViewTransition`](/composables/useViewTransition) composable, is reactive state describing the transition in flight. It knows the navigation from the moment the transition is decided, while the page being left is still live, so any component can prepare for a navigation it did not start. Once the browser has been asked to transition, it also carries the [`ViewTransition`](https://developer.mozilla.org/en-US/docs/Web/API/ViewTransition) itself.
+
+| Property | Description |
+| --- | --- |
+| isTransitioning | True from when a navigation is decided to transition until its animation finishes |
+| to | The route being navigated to |
+| from | The route being left |
+| types | The [types](#types) the transition runs with |
+| transition | The browser's `ViewTransition`, once started |
+
+The component being navigated to mounts inside the transition, before the animation starts, so awaiting `ready` or `finished` from `onMounted` lands at the right moment.
+
+```ts
+const viewTransition = useViewTransition()
+
+onMounted(async () => {
+  await viewTransition.transition?.finished
+
+  heading.value?.focus()
+})
+```
+
 ## Custom Animations
 
-Everything about the animation lives in css. Give an element a `view-transition-name` to have it move between the pages rather than cross fade, and target the pseudo elements the browser creates to change timing or keyframes. See [Chrome's guide](https://developer.chrome.com/docs/web-platform/view-transitions/same-document) for what css can do.
+Everything about the animation can live in css. Target the pseudo elements the browser creates to change timing or keyframes, and branch on [types](#types) for different navigations. See [Chrome's guide](https://developer.chrome.com/docs/web-platform/view-transitions/same-document) for what css can do.
+
+For animations css cannot express, await `ready` on the [transition in flight](#the-transition-in-flight) and drive it with the Web Animations API.
+
+```ts
+const viewTransition = useViewTransition()
+
+onMounted(async () => {
+  const { transition, types } = viewTransition
+
+  if (!transition || !types.includes('reveal')) {
+    return
+  }
+
+  await transition.ready
+
+  document.documentElement.animate(
+    { clipPath: ['circle(0% at 50% 50%)', 'circle(150% at 50% 50%)'] },
+    { duration: 400, pseudoElement: '::view-transition-new(root)' },
+  )
+})
+```
 
 To respect users who prefer less motion, turn the animation off in css.
 

@@ -46,8 +46,8 @@ import { getMatchForUrl } from './getMatchesForUrl'
 import { pathHasTrailingSlash, removeTrailingSlashesFromPath } from '@/utilities/trailingSlashes'
 import { setDocumentTitle } from '@/utilities/setDocumentTitle'
 import { createCurrentRejection } from '@/services/createCurrentRejection'
-import { ViewTransitionConfig, ViewTransitionTypes } from '@/types/viewTransition'
-import { createViewTransitions } from '@/services/createViewTransitions'
+import { hasViewTransition, ViewTransitionConfig } from '@/types/viewTransition'
+import { createViewTransitions, PendingViewTransition } from '@/services/createViewTransitions'
 import { getViewTransitionTypes, supportsViewTransitions } from '@/utilities/viewTransition'
 import { loadAsyncComponents } from '@/utilities/components'
 
@@ -284,17 +284,22 @@ export function createRouter<
       }
     }
 
-    const transitionTypes = getViewTransition(to, from, url, options)
+    const transition = getViewTransition(to, from, url, options)
 
-    if (transitionTypes) {
-      await loadRouteValues(to)
+    if (transition) {
+      viewTransitions.prepare(transition)
+
+      await loadRouteValues(transition.to)
 
       if (!isCurrentNavigationId(navigationId)) {
+        viewTransitions.cancel(transition)
+
         return
       }
 
-      await viewTransitions.start(commitNavigation, transitionTypes)
+      await viewTransitions.start(commitNavigation)
     } else {
+      viewTransitions.reset()
       commitNavigation()
     }
 
@@ -304,36 +309,40 @@ export function createRouter<
   })
 
   /**
-   * The types a navigation transitions with, or false when it does not transition. The server, a browser
-   * without the api, the first navigation, external urls and urls no route matches never transition, since
-   * there is nothing to animate from or to.
+   * The transition a navigation makes, or false when it does not transition.
    */
-  function getViewTransition(to: ResolvedRoute | null, from: ResolvedRoute | null, url: string, options: RouterUpdateOptions): ViewTransitionTypes | false {
+  function getViewTransition(to: ResolvedRoute | null, from: ResolvedRoute | null, url: string, options: RouterUpdateOptions): PendingViewTransition | false {
     if (isSSR || !to || !from || isExternal(url) || !supportsViewTransitions()) {
       return false
     }
 
-    return getViewTransitionTypes({
+    const types = getViewTransitionTypes({
       routerViewTransition,
-      routeViewTransition: to.matches.findLast((match) => match.viewTransition !== undefined)?.viewTransition,
+      routeViewTransition: to.matches.findLast(hasViewTransition)?.viewTransition,
       navigationViewTransition: options.viewTransition,
       to,
       from,
     })
+
+    if (types === false) {
+      return false
+    }
+
+    return { to, from, types }
   }
 
   /**
    * Loads everything the route renders with ahead of committing it, so a transition captures the page
    * rather than a placeholder. How the values settled is left for the commit to act on.
    */
-  async function loadRouteValues(route: ResolvedRoute | null): Promise<void> {
-    if (!route) {
-      return
-    }
-
+  async function loadRouteValues(route: ResolvedRoute): Promise<void> {
     const { props, loaders } = valueStore.staged().compute(route)
 
-    await Promise.allSettled([props, loaders, loadAsyncComponents(route)])
+    await Promise.allSettled([
+      props,
+      loaders,
+      loadAsyncComponents(route),
+    ])
   }
 
   function setRouteValues(to: ResolvedRoute, from: ResolvedRoute | null): void {
@@ -674,6 +683,7 @@ export function createRouter<
 
   const router: Router<TRoutes, TOptions, TPlugin> = {
     route: routerRoute,
+    viewTransition: viewTransitions.viewTransition,
     resolve,
     find,
     push,

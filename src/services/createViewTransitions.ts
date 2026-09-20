@@ -1,19 +1,43 @@
-import { nextTick } from 'vue'
-import { ViewTransitionTypes } from '@/types/viewTransition'
+import { nextTick, shallowReactive } from 'vue'
+import { ResolvedRoute } from '@/types/resolved'
+import { RouterViewTransition, ViewTransitionTypes } from '@/types/viewTransition'
 import { supportsViewTransitionTypes } from '@/utilities/viewTransition'
+
+export type PendingViewTransition = {
+  to: ResolvedRoute,
+  from: ResolvedRoute,
+  types: ViewTransitionTypes,
+}
 
 export type ViewTransitions = {
   /**
-   * Runs the update inside a view transition. Resolves once the update has run, ahead of the animation,
-   * with the transition that is animating it.
+   * The transition in flight, as the router exposes it.
    */
-  start: (update: () => void, types: ViewTransitionTypes) => Promise<ViewTransition>,
+  viewTransition: RouterViewTransition,
+  /**
+   * Records the navigation about to transition, ahead of its data loading, so the page being left can
+   * prepare before it is captured.
+   */
+  prepare: (navigation: PendingViewTransition) => void,
+  /**
+   * Forgets a prepared navigation that was superseded before it transitioned, unless a newer one has
+   * taken over the state since.
+   */
+  cancel: (navigation: PendingViewTransition) => void,
+  /**
+   * Forgets the transition in flight, for a navigation that commits without one.
+   */
+  reset: () => void,
+  /**
+   * Runs the update inside a view transition. Resolves once the update has run, ahead of the animation.
+   */
+  start: (update: () => void) => Promise<void>,
 }
 
 type Pending = {
   update: () => void,
   committed: PromiseWithResolvers<void>,
-  started: PromiseWithResolvers<ViewTransition>,
+  transition?: ViewTransition,
 }
 
 /**
@@ -23,24 +47,45 @@ type Pending = {
  * animation on its own.
  */
 export function createViewTransitions(): ViewTransitions {
+  const viewTransition = shallowReactive<RouterViewTransition>(idle())
   let pending: Pending | undefined
+  let transitionId = 0
 
-  const start: ViewTransitions['start'] = (update, types) => {
+  const prepare: ViewTransitions['prepare'] = (navigation) => {
+    transitionId++
+
+    Object.assign(viewTransition, {
+      isTransitioning: true,
+      ...navigation,
+      transition: undefined,
+    })
+  }
+
+  const reset: ViewTransitions['reset'] = () => {
+    transitionId++
+
+    Object.assign(viewTransition, idle())
+  }
+
+  const cancel: ViewTransitions['cancel'] = (navigation) => {
+    if (viewTransition.to === navigation.to) {
+      reset()
+    }
+  }
+
+  const start: ViewTransitions['start'] = (update) => {
     if (pending) {
       pending.update = update
+      adopt(pending)
 
-      return settled(pending)
+      return pending.committed.promise
     }
 
-    const slot: Pending = {
-      update,
-      committed: Promise.withResolvers(),
-      started: Promise.withResolvers(),
-    }
+    const slot: Pending = { update, committed: Promise.withResolvers() }
 
     pending = slot
 
-    const transition = startViewTransition(async () => {
+    slot.transition = startViewTransition(async () => {
       pending = undefined
 
       try {
@@ -54,25 +99,55 @@ export function createViewTransitions(): ViewTransitions {
       slot.committed.resolve()
 
       await nextTick()
-    }, types)
+    }, viewTransition.types)
 
     // a transition the browser skips rejects these, and an update that throws is reported through committed
-    transition.ready.catch(() => {})
-    transition.finished.catch(() => {})
-    transition.updateCallbackDone.catch(() => {})
+    slot.transition.ready.catch(() => {})
+    slot.transition.updateCallbackDone.catch(() => {})
 
-    slot.started.resolve(transition)
+    adopt(slot)
 
-    return settled(slot)
+    return slot.committed.promise
+  }
+
+  /**
+   * Exposes the transition and forgets it once it finishes, unless a newer navigation owns the state by then.
+   */
+  function adopt({ transition }: Pending): void {
+    if (!transition) {
+      return
+    }
+
+    const id = transitionId
+
+    Object.assign(viewTransition, { transition })
+
+    const finish = (): void => {
+      if (transitionId === id) {
+        reset()
+      }
+    }
+
+    transition.finished.then(finish, finish)
   }
 
   return {
+    viewTransition,
+    prepare,
+    cancel,
+    reset,
     start,
   }
 }
 
-function settled({ committed, started }: Pending): Promise<ViewTransition> {
-  return committed.promise.then(() => started.promise)
+function idle(): RouterViewTransition {
+  return {
+    isTransitioning: false,
+    to: undefined,
+    from: undefined,
+    types: [],
+    transition: undefined,
+  }
 }
 
 function startViewTransition(update: () => Promise<void>, types: ViewTransitionTypes): ViewTransition {

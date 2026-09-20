@@ -237,6 +237,14 @@ export const useLink: RouterAssets<RegisteredRouter>['useLink'] = routerAssets.u
  */
 export const useRejection: RouterAssets<RegisteredRouter>['useRejection'] = routerAssets.useRejection
 
+/**
+ * A composition to access the view transition in flight, if any.
+ *
+ * @returns The router's view transition state.
+ * @group Compositions
+ */
+export const useViewTransition: RouterAssets<RegisteredRouter>['useViewTransition'] = routerAssets.useViewTransition
+
 declare module 'vue' {
   export interface GlobalComponents {
     RouterView: typeof RouterView,

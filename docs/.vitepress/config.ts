@@ -78,6 +78,7 @@ export default defineConfig({
             { text: 'useQueryValue', link: '/composables/useQueryValue' },
             { text: 'useRoute', link: '/composables/useRoute' },
             { text: 'useRouter', link: '/composables/useRouter' },
+            { text: 'useViewTransition', link: '/composables/useViewTransition' },
           ],
         },
         {

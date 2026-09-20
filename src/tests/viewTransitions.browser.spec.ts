@@ -6,20 +6,28 @@ import { createRouter } from '@/services/createRouter'
 import { component, stubViewTransitions } from '@/utilities/testHelpers'
 import { RouterOptions } from '@/types/router'
 import { Routes } from '@/types/route'
-import { useLink } from '@/main'
+import { useLink, useViewTransition } from '@/main'
 
 let restore = (): void => {}
+let current: ReturnType<typeof stubViewTransitions> | undefined
 
 afterEach(() => {
   restore()
 })
 
 function stub(options: { types?: boolean } = {}): ReturnType<typeof stubViewTransitions> {
-  const stubbed = stubViewTransitions(options)
+  current = stubViewTransitions(options)
+  restore = current.restore
 
-  restore = stubbed.restore
+  return current
+}
 
-  return stubbed
+function stubbed(): ReturnType<typeof stubViewTransitions> {
+  if (!current) {
+    throw new Error('stub() has not been called')
+  }
+
+  return current
 }
 
 const routeA = createRoute({ name: 'routeA', path: '/routeA', component })
@@ -322,4 +330,158 @@ test('a types callback is given the navigation and can skip the transition', asy
     to: expect.objectContaining({ name: 'routeB' }),
     from: expect.objectContaining({ name: 'routeA' }),
   })
+})
+
+test('router.viewTransition describes the navigation while its data loads, then carries the transition, then clears', async () => {
+  const { transitions } = stub()
+  const props = Promise.withResolvers<{ value: string }>()
+  const withProps = createRoute({ name: 'withProps', path: '/withProps' }).addView(component, { props: () => props.promise })
+  const router = await startRouter({ viewTransition: ['slide'] }, [routeA, withProps])
+
+  expect(router.viewTransition.isTransitioning).toBe(false)
+
+  const navigation = router.push('withProps')
+  await flushPromises()
+
+  expect(router.viewTransition).toMatchObject({
+    isTransitioning: true,
+    types: ['slide'],
+    transition: undefined,
+  })
+  expect(router.viewTransition.to?.name).toBe('withProps')
+  expect(router.viewTransition.from?.name).toBe('routeA')
+
+  props.resolve({ value: 'loaded' })
+  await flushPromises()
+
+  expect(router.viewTransition.transition).toMatchObject({ ready: expect.any(Promise) })
+
+  await transitions[0].run()
+  await navigation
+  await flushPromises()
+
+  expect(router.viewTransition.isTransitioning).toBe(false)
+  expect(router.viewTransition.to).toBeUndefined()
+})
+
+test('a navigation that does not transition clears router.viewTransition', async () => {
+  const { transitions } = stub()
+  const props = Promise.withResolvers<{ value: string }>()
+  const slow = createRoute({ name: 'slow', path: '/slow' }).addView(component, { props: () => props.promise })
+  const router = await startRouter({ viewTransition: true }, [routeA, routeB, slow])
+
+  const toSlow = router.push('slow')
+  await flushPromises()
+
+  expect(router.viewTransition.to?.name).toBe('slow')
+
+  await router.push('routeB', {}, { viewTransition: false })
+
+  expect(router.viewTransition.isTransitioning).toBe(false)
+  expect(transitions).toHaveLength(0)
+
+  props.resolve({ value: 'late' })
+  await toSlow
+})
+
+test('useViewTransition returns the router state', async () => {
+  stub()
+  const router = await startRouter({ viewTransition: true })
+  const seen = vi.fn()
+
+  const probe = defineComponent(() => {
+    const viewTransition = useViewTransition()
+
+    return () => {
+      seen(viewTransition.isTransitioning, viewTransition.to?.name)
+
+      return h('div')
+    }
+  })
+
+  mount(probe, {
+    global: {
+      plugins: [router],
+    },
+  })
+
+  expect(seen).toHaveBeenLastCalledWith(false, undefined)
+
+  const navigation = router.push('routeB')
+  await flushPromises()
+
+  expect(seen).toHaveBeenLastCalledWith(true, 'routeB')
+
+  await stubbed().transitions[0].run()
+  await navigation
+})
+
+test('a link knows when a transition to its location is in flight', async () => {
+  const { transitions } = stub()
+  const props = Promise.withResolvers<{ value: string }>()
+  const slow = createRoute({ name: 'slow', path: '/slow' }).addView(component, { props: () => props.promise })
+  const router = await startRouter({ viewTransition: true }, [routeA, routeB, slow])
+
+  const links = defineComponent(() => {
+    const toSlow = useLink('slow')
+    const toB = useLink('routeB')
+
+    return () => h('div', [
+      h('span', { id: 'slow' }, String(toSlow.isTransitioning.value)),
+      h('span', { id: 'b' }, String(toB.isTransitioning.value)),
+    ])
+  })
+
+  const wrapper = mount(links, {
+    global: {
+      plugins: [router],
+    },
+  })
+
+  expect(wrapper.find('#slow').text()).toBe('false')
+
+  const navigation = router.push('slow')
+  await flushPromises()
+
+  expect(wrapper.find('#slow').text()).toBe('true')
+  expect(wrapper.find('#b').text()).toBe('false')
+
+  props.resolve({ value: 'loaded' })
+  await flushPromises()
+  await transitions[0].run()
+  await navigation
+  await flushPromises()
+
+  expect(wrapper.find('#slow').text()).toBe('false')
+})
+
+test('router-link exposes isTransitioning to its slot', async () => {
+  const { transitions } = stub()
+  const props = Promise.withResolvers<{ value: string }>()
+  const slow = createRoute({ name: 'slow', path: '/slow' }).addView(component, { props: () => props.promise })
+  const router = await startRouter({ viewTransition: true }, [routeA, slow])
+
+  const wrapper = mount({
+    template: `
+      <RouterLink :to="(resolve) => resolve('slow')" v-slot="{ isTransitioning }">
+        <span id="state">{{ isTransitioning }}</span>
+      </RouterLink>
+    `,
+  }, {
+    global: {
+      plugins: [router],
+    },
+  })
+
+  expect(wrapper.find('#state').text()).toBe('false')
+
+  const navigation = router.push('slow')
+  await flushPromises()
+
+  expect(wrapper.find('#state').text()).toBe('true')
+
+  props.resolve({ value: 'loaded' })
+  await flushPromises()
+  await transitions[0].run()
+  await navigation
 })

@@ -72,6 +72,7 @@ export function createUseLink<TRouter extends Router>(routerKey: InjectionKey<TR
     const isActive = computed(() => isRoute(router.route) && isDefined(route.value) && router.route.href.startsWith(route.value.href))
     const isExactActive = computed(() => router.route.href === route.value?.href)
     const isExternal = computed(() => !!href.value && router.isExternal(href.value))
+    const isTransitioning = computed(() => router.viewTransition.isTransitioning && router.viewTransition.to?.href === href.value)
 
     const linkOptions = computed<UseLinkOptions>(() => {
       const sourceValue = toValue(source)
@@ -117,6 +118,7 @@ export function createUseLink<TRouter extends Router>(routerKey: InjectionKey<TR
       isActive,
       isExactActive,
       isExternal,
+      isTransitioning,
       push,
       replace,
     }
