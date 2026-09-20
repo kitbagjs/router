@@ -6,6 +6,8 @@ import { component } from '@/utilities/testHelpers'
 import { createRoute } from './createRoute'
 import { createResolvedRoute } from './createResolvedRoute'
 
+const { signal } = new AbortController()
+
 test('calls hook with correct routes', () => {
   const hook = vi.fn()
   const { runBeforeRouteHooks } = createRouterHooks()
@@ -27,7 +29,7 @@ test('calls hook with correct routes', () => {
   const to = createResolvedRoute(toRoute, {})
   const from = createResolvedRoute(fromRoute, {})
 
-  runBeforeRouteHooks({ to, from })
+  runBeforeRouteHooks({ to, from, signal })
 
   expect(hook).toHaveBeenCalledOnce()
 })
@@ -72,7 +74,7 @@ test.each<{ type: string, status: string, hook: BeforeEnterHook }>([
   const to = createResolvedRoute(toRoute, {})
   const from = createResolvedRoute(fromRoute, {})
 
-  const response = await runBeforeRouteHooks({ to, from })
+  const response = await runBeforeRouteHooks({ to, from, signal })
 
   expect(response.status).toBe(status)
 })
@@ -102,7 +104,7 @@ test('hook is called in order', async () => {
   const to = createResolvedRoute(toRoute, {})
   const from = createResolvedRoute(fromRoute, {})
 
-  await runBeforeRouteHooks({ to, from })
+  await runBeforeRouteHooks({ to, from, signal })
 
   const [orderA] = hookA.mock.invocationCallOrder
   const [orderB] = hookB.mock.invocationCallOrder
@@ -263,7 +265,7 @@ test('when to is null, only leave hooks are called', async () => {
   const fromRoute = createRoute({ name: 'routeA', component })
   const from = createResolvedRoute(fromRoute, {})
 
-  await runBeforeRouteHooks({ to: null, from })
+  await runBeforeRouteHooks({ to: null, from, signal })
 
   expect(calls).toEqual(['leave'])
 })

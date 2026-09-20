@@ -1117,6 +1117,74 @@ describe('a url that matches no route', () => {
   })
 })
 
+describe('a navigation ended by one of its hooks', () => {
+  test('aborting from a before hook aborts the signal the other before hooks were given', async () => {
+    const seen = Promise.withResolvers<AbortSignal>()
+    const home = createRoute({ name: 'home', component, path: '/' })
+    const foo = createRoute({ name: 'foo', component, path: '/foo' })
+
+    foo.onBeforeRouteEnter((_to, { signal }) => {
+      seen.resolve(signal)
+    })
+    foo.onBeforeRouteEnter((_to, { abort }) => {
+      abort()
+    })
+
+    const router = createRouter([home, foo], { initialUrl: '/' })
+
+    await router.start()
+    await router.push('foo')
+
+    const signal = await seen.promise
+
+    expect(signal.aborted).toBe(true)
+  })
+
+  test('rejecting from a before hook aborts the signal the other before hooks were given', async () => {
+    const seen = Promise.withResolvers<AbortSignal>()
+    const home = createRoute({ name: 'home', component, path: '/' })
+    const foo = createRoute({ name: 'foo', component, path: '/foo' })
+
+    foo.onBeforeRouteEnter((_to, { signal }) => {
+      seen.resolve(signal)
+    })
+    foo.onBeforeRouteEnter((_to, { reject }) => {
+      reject('NotFound')
+    })
+
+    const router = createRouter([home, foo], { initialUrl: '/' })
+
+    await router.start()
+    await router.push('foo')
+
+    const signal = await seen.promise
+
+    expect(signal.aborted).toBe(true)
+  })
+
+  test('rejecting from an after hook aborts the signal the other after hooks were given', async () => {
+    const seen = Promise.withResolvers<AbortSignal>()
+    const home = createRoute({ name: 'home', component, path: '/' })
+    const foo = createRoute({ name: 'foo', component, path: '/foo' })
+
+    foo.onAfterRouteEnter((_to, { signal }) => {
+      seen.resolve(signal)
+    })
+    foo.onAfterRouteEnter((_to, { reject }) => {
+      reject('NotFound')
+    })
+
+    const router = createRouter([home, foo], { initialUrl: '/' })
+
+    await router.start()
+    await router.push('foo')
+
+    const signal = await seen.promise
+
+    expect(signal.aborted).toBe(true)
+  })
+})
+
 describe('a navigation superseded by a newer one', () => {
   test('does not update the route or history when its before hooks finish', async () => {
     const { promise, resolve } = Promise.withResolvers<string>()
@@ -1173,6 +1241,66 @@ describe('a navigation superseded by a newer one', () => {
     expect(router.route.name).toBe('fast')
   })
 
+  test('aborts the signal its before hooks were given', async () => {
+    const { promise, resolve } = Promise.withResolvers<string>()
+    const seen = Promise.withResolvers<AbortSignal>()
+    const home = createRoute({ name: 'home', component, path: '/' })
+    const slow = createRoute({ name: 'slow', component, path: '/slow' })
+    const fast = createRoute({ name: 'fast', component, path: '/fast' })
+
+    slow.onBeforeRouteEnter(async (_to, { signal }) => {
+      seen.resolve(signal)
+
+      await promise
+    })
+
+    const router = createRouter([home, slow, fast], { initialUrl: '/' })
+
+    await router.start()
+
+    const slowNavigation = router.push('slow')
+    const signal = await seen.promise
+
+    expect(signal.aborted).toBe(false)
+
+    await router.push('fast')
+
+    expect(signal.aborted).toBe(true)
+
+    resolve('continue')
+    await slowNavigation
+  })
+
+  test('aborts the signal its after hooks were given', async () => {
+    const { promise, resolve } = Promise.withResolvers<string>()
+    const seen = Promise.withResolvers<AbortSignal>()
+    const home = createRoute({ name: 'home', component, path: '/' })
+    const slow = createRoute({ name: 'slow', component, path: '/slow' })
+    const fast = createRoute({ name: 'fast', component, path: '/fast' })
+
+    slow.onAfterRouteEnter(async (_to, { signal }) => {
+      seen.resolve(signal)
+
+      await promise
+    })
+
+    const router = createRouter([home, slow, fast], { initialUrl: '/' })
+
+    await router.start()
+
+    const slowNavigation = router.push('slow')
+    const signal = await seen.promise
+
+    expect(signal.aborted).toBe(false)
+
+    await router.push('fast')
+
+    expect(signal.aborted).toBe(true)
+
+    resolve('continue')
+    await slowNavigation
+  })
+
   test('does not resume history listening while the newer one is pending', async () => {
     const first = Promise.withResolvers<string>()
     const second = Promise.withResolvers<string>()
@@ -1227,6 +1355,33 @@ describe('router.stop', () => {
     await navigation
 
     expect(router.route.name).toBe('home')
+  })
+
+  test('aborts the signal the hooks of a navigation in flight were given', async () => {
+    const { promise, resolve } = Promise.withResolvers<string>()
+    const seen = Promise.withResolvers<AbortSignal>()
+    const home = createRoute({ name: 'home', component, path: '/' })
+    const slow = createRoute({ name: 'slow', component, path: '/slow' })
+
+    slow.onBeforeRouteEnter(async (_to, { signal }) => {
+      seen.resolve(signal)
+
+      await promise
+    })
+
+    const router = createRouter([home, slow], { initialUrl: '/' })
+
+    await router.start()
+
+    const navigation = router.push('slow')
+    const signal = await seen.promise
+
+    router.stop()
+
+    expect(signal.aborted).toBe(true)
+
+    resolve('continue')
+    await navigation
   })
 
   test('navigating after stop does not update the route or resume history listening', async () => {

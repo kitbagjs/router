@@ -21,6 +21,7 @@ export type PropsCallbackContext<
   push: RouterPush<[TRoute] | ExtractRouteContextRoutes<TOptions>>,
   replace: RouterReplace<[TRoute] | ExtractRouteContextRoutes<TOptions>>,
   update: RouteUpdate<ResolvedRoute<TRoute>>,
+  signal: AbortSignal,
   parent: PropsCallbackParent<TOptions['parent']>,
 }
 

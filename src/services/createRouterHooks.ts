@@ -42,7 +42,7 @@ export function createRouterHooks(): RouterHooks {
 
   const componentStore = new Hooks()
 
-  const runBeforeRouteHooks: BeforeHookRunner = async ({ to, from }) => {
+  const runBeforeRouteHooks: BeforeHookRunner = async ({ to, from, signal }) => {
     const { reject, push, replace, update, abort } = createRouterCallbackContext({ to })
     const routeHooks = getBeforeHooksFromRoutes(to, from)
     const globalHooks = getGlobalBeforeHooks(to, from, globalStore)
@@ -69,6 +69,7 @@ export function createRouterHooks(): RouterHooks {
           replace,
           update,
           abort,
+          signal,
         })))
       })
 
@@ -110,7 +111,7 @@ export function createRouterHooks(): RouterHooks {
     }
   }
 
-  const runAfterRouteHooks: AfterHookRunner = async ({ to, from }) => {
+  const runAfterRouteHooks: AfterHookRunner = async ({ to, from, signal }) => {
     const { reject, push, replace, update } = createRouterCallbackContext({ to })
     const routeHooks = getAfterHooksFromRoutes(to, from)
     const globalHooks = getGlobalAfterHooks(to, from, globalStore)
@@ -136,6 +137,7 @@ export function createRouterHooks(): RouterHooks {
           push,
           replace,
           update,
+          signal,
         })))
       })
 

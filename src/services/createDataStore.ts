@@ -50,6 +50,10 @@ export type DataStore = {
    */
   get: (key: string) => DataResult,
   /**
+   * Aborts when the store is disposed, so a getter still running can stop work nothing will read.
+   */
+  signal: AbortSignal,
+  /**
    * Ends the store. Every value is rejected so that anything waiting on one resumes rather than staying
    * suspended, then discarded.
    */
@@ -58,6 +62,7 @@ export type DataStore = {
 
 export function createDataStore(): DataStore {
   const entries: Map<string, Entry> = reactive(new Map())
+  const controller = new AbortController()
 
   function create(): Entry {
     const { promise, resolve, reject } = Promise.withResolvers<unknown>()
@@ -130,6 +135,8 @@ export function createDataStore(): DataStore {
   const get: DataStore['get'] = (key) => entries.get(key)?.state.value ?? MISSING
 
   const dispose: DataStore['dispose'] = (reason) => {
+    controller.abort(reason)
+
     for (const [key, dying] of entries) {
       entries.delete(key)
       settle(dying, { kind: 'error', error: reason })
@@ -140,6 +147,7 @@ export function createDataStore(): DataStore {
     subscribe,
     set,
     get,
+    signal: controller.signal,
     dispose,
   }
 }

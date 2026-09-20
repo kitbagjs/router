@@ -148,7 +148,7 @@ export function createRouter<
    * navigation should continue.
    */
   async function runBeforeHooks({ controller, to, from, url, options }: RunBeforeHooksContext): Promise<boolean> {
-    const response = await hooks.runBeforeRouteHooks({ to, from })
+    const response = await hooks.runBeforeRouteHooks({ to, from, signal: controller.signal })
 
     if (controller.signal.aborted) {
       return false
@@ -206,7 +206,7 @@ export function createRouter<
    * Runs the after hooks for a navigation and reacts to their response.
    */
   async function runAfterHooks({ controller, to, from }: RunHooksContext): Promise<void> {
-    const response = await hooks.runAfterRouteHooks({ to, from })
+    const response = await hooks.runAfterRouteHooks({ to, from, signal: controller.signal })
 
     if (controller.signal.aborted) {
       return
