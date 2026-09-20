@@ -550,6 +550,45 @@ test('initial route is not set until the router is started', async () => {
   expect(router.route.name).toBe('root')
 })
 
+test('the router is started once the initial route commits, without waiting for its after hooks', async () => {
+  const { promise, resolve } = Promise.withResolvers<string>()
+  const route = createRoute({ name: 'root', path: '/', component })
+
+  route.onAfterRouteEnter(async () => {
+    await promise
+  })
+
+  const router = createRouter([route], { initialUrl: '/' })
+
+  const start = router.start()
+  await flushPromises()
+
+  expect(router.started.value).toBe(true)
+  expect(router.route.name).toBe('root')
+
+  resolve('continue')
+  await start
+})
+
+test('a navigation begun from the initial route\'s after hooks leaves from that route', async () => {
+  const onBeforeRouteEnter = vi.fn()
+  const home = createRoute({ name: 'home', path: '/', component })
+  const next = createRoute({ name: 'next', path: '/next', component })
+
+  home.onAfterRouteEnter((_to, { push }) => {
+    push('/next')
+  })
+  next.onBeforeRouteEnter(onBeforeRouteEnter)
+
+  const router = createRouter([home, next], { initialUrl: '/' })
+
+  await router.start()
+
+  expect(onBeforeRouteEnter).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
+    from: expect.objectContaining({ name: 'home' }),
+  }))
+})
+
 describe('router.resolve', () => {
   test('when given a name that matches a route return that route', () => {
     const router = createRouter(routes, { initialUrl: '/' })

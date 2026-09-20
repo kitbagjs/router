@@ -3,9 +3,3 @@ export function createUniqueIdSequence(): () => string {
 
   return () => (++currentId).toString()
 }
-
-const FIRST_SEQUENCE_ID = createUniqueIdSequence()()
-
-export function isFirstUniqueSequenceId(id: string): boolean {
-  return id === FIRST_SEQUENCE_ID
-}
