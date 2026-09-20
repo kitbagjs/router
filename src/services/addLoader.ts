@@ -1,5 +1,6 @@
 import { markRaw } from 'vue'
 import { LoaderNameConflict } from '@/errors/loaderNameConflict'
+import { AnyPayloadTransformer } from '@/services/payload'
 import { PrefetchConfig } from '@/types/prefetch'
 import { CreatedRouteOptions, Route } from '@/types/route'
 import { AnyFunction } from '@/types/utilities'
@@ -13,6 +14,7 @@ export const DEFAULT_LOADER_NAME = 'default'
 type LoaderOptions = {
   name?: string,
   prefetch?: PrefetchConfig,
+  transformer?: AnyPayloadTransformer,
 }
 
 /**
@@ -30,6 +32,7 @@ type Loader = {
   name: string,
   load: AnyFunction,
   prefetch: PrefetchConfig | undefined,
+  transformer: AnyPayloadTransformer | undefined,
 }
 
 export function toLoader(load: AnyFunction, options: LoaderOptions | undefined): Loader {
@@ -37,6 +40,7 @@ export function toLoader(load: AnyFunction, options: LoaderOptions | undefined):
     name: options?.name ?? DEFAULT_LOADER_NAME,
     load,
     prefetch: options?.prefetch,
+    transformer: options?.transformer,
   }
 }
 
@@ -46,12 +50,12 @@ export function toLoader(load: AnyFunction, options: LoaderOptions | undefined):
  * Matches are `markRaw` so that making a route reactive does not turn its loaders into reactive proxies.
  * Spreading a match drops that, so the rebuilt one is marked again.
  */
-export function addLoaderToMatch(match: CreatedRouteOptions, { name, load, prefetch }: Loader): CreatedRouteOptions {
+export function addLoaderToMatch(match: CreatedRouteOptions, { name, load, prefetch, transformer }: Loader): CreatedRouteOptions {
   return markRaw({
     ...match,
     loaders: {
       ...match.loaders,
-      [name]: { load, prefetch },
+      [name]: { load, prefetch, transformer },
     },
   })
 }

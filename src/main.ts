@@ -85,9 +85,10 @@ export { LoaderDataAccessError } from './errors/loaderDataAccessError'
 export { LoaderNameConflict } from './errors/loaderNameConflict'
 export { MetaPropertyConflict } from './errors/metaPropertyConflict'
 export { NavigationAbandonedError } from './errors/navigationAbandonedError'
+export { PayloadValueError } from './errors/payloadValueError'
 export { RouterNotInstalledError } from './errors/routerNotInstalledError'
 export { UseRouteInvalidError } from './errors/useRouteInvalidError'
-export { RenderInBrowserError } from './errors/renderInBrowserError'
+export { SsrOptionRequiredError } from './errors/ssrOptionRequiredError'
 
 // Services
 export { createRoute } from './services/createRoute'

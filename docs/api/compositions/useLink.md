@@ -10,13 +10,19 @@ for navigating.
 
 ## Param
 
+**source**
+
 The name of the route or a valid URL.
 
 ## Param
 
+**params**
+
 If providing route name, this argument will expect corresponding params.
 
 ## Param
+
+**options**
 
 [RouterResolveOptions](../types/RouterResolveOptions.md) Same options as router resolve.
 

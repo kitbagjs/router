@@ -59,6 +59,16 @@ Both approaches achieve the same result. Choose the one that feels more natural 
 - Use `redirectTo` when you're working with the source route and want to specify where it should redirect
 - Use `redirectFrom` when you're working with the destination route and want to specify which routes should redirect to it
 
+## Server rendering
+
+When [server rendering](/advanced-concepts/server-side-rendering), a route redirect responds with the
+router's [`redirectStatus`](/api/types/RouterOptions#redirectstatus), `302` by default. A redirect can
+declare its own status:
+
+```ts
+home.redirectTo(dashboard, undefined, { status: 301 })
+```
+
 ## Parameters
 
 When redirecting between routes with parameters, you can provide a callback function to convert parameters from the source route to the destination route.

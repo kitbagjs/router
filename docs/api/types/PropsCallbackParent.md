@@ -4,6 +4,7 @@
 type PropsCallbackParent<TParent> = Route | undefined extends TParent ? 
   | undefined
   | {
+  data: unknown;
   name: string;
   props: unknown;
 } : TParent extends Route ? object : undefined;

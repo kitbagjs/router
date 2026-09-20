@@ -194,3 +194,85 @@ test('rejection from a hook updates document title', async () => {
 
   expect(document.title).toBe('locked')
 })
+
+test('rejection without a title in a before hook keeps the current route title', async () => {
+  const locked = createRejection({ type: 'Locked', status: 423, component })
+
+  const home = createRoute({ name: 'home', path: '/', component })
+  const secret = createRoute({ name: 'secret', path: '/secret', component })
+
+  home.setTitle(() => 'home')
+  secret.setTitle(() => 'secret')
+
+  const router = createRouter([home, secret], {
+    initialUrl: '/',
+    rejections: [locked],
+  })
+
+  router.onBeforeRouteEnter((to, { reject }) => {
+    if (to.name === 'secret') {
+      reject('Locked')
+    }
+  })
+
+  await router.start()
+  await flushPromises()
+  await router.push('secret')
+  await flushPromises()
+
+  expect(document.title).toBe('home')
+})
+
+test('rejection without a title in an after hook falls back to the current route title', async () => {
+  const locked = createRejection({ type: 'Locked', status: 423, component })
+
+  const home = createRoute({ name: 'home', path: '/', component })
+  const secret = createRoute({ name: 'secret', path: '/secret', component })
+
+  secret.setTitle(() => 'secret')
+
+  const router = createRouter([home, secret], {
+    initialUrl: '/',
+    rejections: [locked],
+  })
+
+  router.onAfterRouteEnter((to, { reject }) => {
+    if (to.name === 'secret') {
+      reject('Locked')
+    }
+  })
+
+  await router.start()
+  await router.push('secret')
+  await flushPromises()
+
+  expect(document.title).toBe('secret')
+})
+
+test('rejection with a title wins over the current route title', async () => {
+  const locked = createRejection({ type: 'Locked', status: 423, component })
+
+  locked.setTitle(() => 'locked')
+
+  const home = createRoute({ name: 'home', path: '/', component })
+  const secret = createRoute({ name: 'secret', path: '/secret', component })
+
+  secret.setTitle(() => 'secret')
+
+  const router = createRouter([home, secret], {
+    initialUrl: '/',
+    rejections: [locked],
+  })
+
+  router.onBeforeRouteEnter((to, { reject }) => {
+    if (to.name === 'secret') {
+      reject('Locked')
+    }
+  })
+
+  await router.start()
+  await router.push('secret')
+  await flushPromises()
+
+  expect(document.title).toBe('locked')
+})

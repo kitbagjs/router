@@ -168,3 +168,13 @@ Initializes the router based on the initial route. Automatically called when the
 ```ts
 router.start()
 ```
+
+### Render
+
+Waits until the router has finished everything a view needs to render completely, and returns everything the server needs to render the page. See [Server Side Rendering](/advanced-concepts/server-side-rendering).
+
+Requires the router to be created with the `ssr` option, and throws `SsrOptionRequiredError` without it.
+
+```ts
+const response = await router.render()
+```

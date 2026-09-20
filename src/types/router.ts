@@ -1,5 +1,6 @@
 import { App, InjectionKey, Ref } from 'vue'
 import { RouterHistoryMode } from '@/services/createRouterHistory'
+import { TransformerOptions } from '@/services/payload'
 import { RouterRoute } from '@/types/routerRoute'
 import { AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, AddErrorHook, AddRejectionHook } from '@/types/hooks'
 import { PrefetchConfig } from '@/types/prefetch'
@@ -12,17 +13,24 @@ import { RouterReject } from '@/types/routerReject'
 import { RouterPlugin } from '@/types/routerPlugin'
 import { RoutesName } from '@/types/routesMap'
 import { ExtractRejections, ExtractRejectionTypes, Rejections, BuiltInRejectionType } from '@/types/rejection'
+import { PayloadValueError } from '@/errors/payloadValueError'
 
 /**
  * Options to initialize a {@link Router} instance.
  */
-export type RouterOptions = {
+export type RouterOptions = TransformerOptions & {
   /**
    * Initial URL for the router to use. Required if using Node environment. Defaults to window.location when using browser.
    *
    * @default window.location.toString()
    */
   initialUrl?: string,
+
+  /**
+   * Marks the router as rendering on a server, so every navigation is part of the server render from
+   * the moment the router is created. Required to call `render`.
+   */
+  ssr?: boolean,
 
   /**
    * Specifies the history mode for the router, such as "browser", "memory", or "hash".
@@ -55,14 +63,19 @@ export type RouterOptions = {
   removeTrailingSlashes?: boolean,
 
   /**
-   * The status `render` reports when it normalized the url it was given, such as removing a trailing
-   * slash. Defaults to 302 because a 301 is cached indefinitely by browsers and CDNs and cannot be
-   * recalled, and trailing slash removal is on by default. Set 301 to have the normalization treated as
-   * permanent.
+   * The status `render` responds with for a normalized url or a route redirect that does not declare
+   * its own.
    *
    * @default 302
    */
   redirectStatus?: RedirectStatus,
+
+  /**
+   * The status `render` responds with for a rejection that does not declare its own.
+   *
+   * @default 200
+   */
+  rejectStatus?: number,
 
   /**
    * When false, createRouterAssets must be used for component and hooks. Assets exported by the library
@@ -77,21 +90,53 @@ export type RouterOptions = {
  * What a server should respond with for what the router rendered. `location` exists only on a redirect,
  * so narrowing on it is what proves a `Location` header is available.
  */
-export type RenderOutcome<TRejectionType extends string = string> = RenderResponse<TRejectionType> | RenderRedirect<TRejectionType>
+export type ServerRenderResponse = RenderSuccess | RenderReject | RenderRedirect
 
-type RenderResponse<TRejectionType extends string> = {
+export type RenderSuccess = {
+  kind: 'success',
   /**
    * Suggested http status.
    */
   status: number,
-  location?: undefined,
   /**
-   * The type of rejection in effect, or null when there is none.
+   * A script tag to embed in the document sent to the client, so it adopts what this render settled on
+   * rather than working it out again.
    */
-  rejection: TRejectionType | null,
+  payload: string,
+  /**
+   * The title of the route that rendered, for the document sent to the client.
+   */
+  title: string | undefined,
+  /**
+   * Values that could not be encoded into the payload. Each was left out, so the client computes it
+   * again, which can cause a hydration mismatch. Returned so a server can log or inspect them.
+   */
+  failures: PayloadValueError[],
 }
 
-type RenderRedirect<TRejectionType extends string> = {
+export type RenderReject = {
+  kind: 'reject',
+  /**
+   * Suggested http status.
+   */
+  status: number,
+  /**
+   * The type of rejection in effect.
+   */
+  rejection: string,
+  /**
+   * A script tag to embed in the document sent to the client, so it adopts this rejection rather than
+   * working it out again.
+   */
+  payload: string,
+  /**
+   * The title of the rejection that rendered, for the document sent to the client.
+   */
+  title: string | undefined,
+}
+
+export type RenderRedirect = {
+  kind: 'redirect',
   /**
    * Suggested http status.
    */
@@ -100,10 +145,6 @@ type RenderRedirect<TRejectionType extends string> = {
    * Value for the `Location` header.
    */
   location: string,
-  /**
-   * The type of rejection in effect, or null when there is none.
-   */
-  rejection: TRejectionType | null,
 }
 
 /**
@@ -217,9 +258,10 @@ export type Router<
    *
    * Awaiting `push` only waits for the route to commit; this also waits for its data.
    *
-   * Only available on the server for ssr. Throws `RenderInBrowserError` when called in the client.
+   * Requires the router to be created with the `ssr` option, and throws `SsrOptionRequiredError`
+   * without it.
    */
-  render: () => Promise<RenderOutcome<ExtractRejectionTypes<ExtractRejections<TOptions>> | ExtractRejectionTypes<ExtractRejections<TPlugin>> | BuiltInRejectionType>>,
+  render: () => Promise<ServerRenderResponse>,
   /**
    * Stops the router. Tears down the history listener and ignores any navigation still in flight or started afterwards.
    */

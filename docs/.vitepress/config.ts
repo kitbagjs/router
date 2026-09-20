@@ -92,6 +92,7 @@ export default defineConfig({
             { text: 'Route Meta', link: '/advanced-concepts/route-meta' },
             { text: 'Route State', link: '/advanced-concepts/route-state' },
             { text: 'Prefetching', link: '/advanced-concepts/prefetching' },
+            { text: 'Server Side Rendering', link: '/advanced-concepts/server-side-rendering' },
           ],
         },
         {

@@ -10,7 +10,7 @@ type CreateRouteRedirectsContext = {
 }
 
 export function createRouteRedirects({ getRoute }: CreateRouteRedirectsContext): RouteRedirects {
-  const redirectTo: RouteRedirectTo = (...[to, convertParams]: RedirectToArgs) => {
+  const redirectTo: RouteRedirectTo = (...[to, convertParams, options]: RedirectToArgs) => {
     const from = getRoute()
 
     if (!isRoute(from)) {
@@ -20,10 +20,10 @@ export function createRouteRedirects({ getRoute }: CreateRouteRedirectsContext):
     to.context.push(from)
     from.context.push(to)
 
-    from.redirect(to, convertParams)
+    from.redirect(to, convertParams, options)
   }
 
-  const redirectFrom: RouteRedirectFrom = (from, convertParams) => {
+  const redirectFrom: RouteRedirectFrom = (from, convertParams, options) => {
     const to = getRoute()
 
     if (!isRoute(from)) {
@@ -33,7 +33,7 @@ export function createRouteRedirects({ getRoute }: CreateRouteRedirectsContext):
     to.context.push(from)
     from.context.push(to)
 
-    from.redirect(to, convertParams)
+    from.redirect(to, convertParams, options)
   }
 
   return {

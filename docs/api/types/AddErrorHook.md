@@ -1,14 +1,13 @@
-# Types: AddErrorHook\<TRoute, TRoutes, TRejections\>
+# Types: AddErrorHook\<TRoutes, TRejections\>
 
 ```ts
-type AddErrorHook<TRoute, TRoutes, TRejections> = (hook) => HookRemove;
+type AddErrorHook<TRoutes, TRejections> = (hook) => HookRemove;
 ```
 
 ## Type Parameters
 
 | Type Parameter | Default type |
 | ------ | ------ |
-| `TRoute` *extends* [`Route`](Route.md) | [`Route`](Route.md) |
 | `TRoutes` *extends* `Routes` | `Routes` |
 | `TRejections` *extends* [`Rejections`](Rejections.md) | [`Rejections`](Rejections.md) |
 
@@ -16,7 +15,7 @@ type AddErrorHook<TRoute, TRoutes, TRejections> = (hook) => HookRemove;
 
 | Parameter | Type |
 | ------ | ------ |
-| `hook` | [`ErrorHook`](ErrorHook.md)\<`TRoute`, `TRoutes`, `TRejections`\> |
+| `hook` | [`ErrorHook`](ErrorHook.md)\<`TRoutes`, `TRejections`\> |
 
 ## Returns
 

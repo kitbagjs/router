@@ -1,10 +1,6 @@
 import { markRaw } from 'vue'
-import { PropsGetter } from '@/types/createRouteOptions'
-import type { PrefetchConfig, PrefetchConfigs, PrefetchStrategy } from '@/types/prefetch'
-import { getPrefetchOption } from '@/utilities/prefetch'
 import { ResolvedRoute, WithData } from '@/types/resolved'
-import { CreatedRouteOptions } from '@/types/route'
-import { DEFAULT_VIEW_NAME, viewNamesWithProps } from './createRouteViews'
+import { DEFAULT_VIEW_NAME } from './createRouteViews'
 import { DEFAULT_LOADER_NAME } from './addLoader'
 import { ContextPushError } from '@/errors/contextPushError'
 import { LoaderDataAccessError } from '@/errors/loaderDataAccessError'
@@ -17,31 +13,8 @@ import { createRouterCallbackContext } from './createRouterCallbackContext'
 import { createDataStore, DataStore } from './createDataStore'
 import { createNavigationStores, DataKind, getDataKey } from './createNavigationStores'
 import { PropsResult } from '@/utilities/props'
-import { AnyFunction, MaybePromise } from '@/types/utilities'
-
-/**
- * Something a route computes: a view's props getter, or a loader. Both are a named callback belonging to
- * one match, so both are stored the same way — what differs is only what waits on them.
- */
-type Computation = {
-  kind: DataKind,
-  id: string,
-  name: string,
-  depth: number,
-  key: string,
-  run: AnyFunction,
-  routePrefetch: PrefetchConfig | undefined,
-  prefetch: PrefetchConfig | undefined,
-}
-
-/**
- * Where a value lives, which is all that is needed to read it back out of a store.
- */
-type ValueLocation = {
-  kind: DataKind,
-  id: string,
-  name: string,
-}
+import { MaybePromise } from '@/types/utilities'
+import { Computation, ComputationFilter, getComputations, isKind, loaderLocations, propsLocations, ValueLocation } from './getComputations'
 
 /**
  * A navigation that was superseded before its values settled. The navigation that replaced it owns the
@@ -63,31 +36,64 @@ export type RouteValueResponses = {
 }
 
 /**
- * A link's own bucket of prefetched values, handed to the current navigation when the link is followed and
- * discarded otherwise.
+ * A store of a route's values, whichever store that is.
  */
-export type PrefetchStore = {
+export type ValueStore = {
   /**
-   * Computes props for views whose prefetch option matches the given strategy.
+   * Computes the route's values, or only those the filter keeps, and reports how they settle.
    */
-  prefetch: (strategy: PrefetchStrategy, route: ResolvedRoute, configs: PrefetchConfigs) => void,
+  compute: (route: ResolvedRoute, filter?: ComputationFilter) => RouteValueResponses,
   /**
-   * Stages the prefetched store for the next navigation to adopt.
+   * Adopts values that already settled, in place of running their getters.
    */
-  commit: () => void,
+  fill: (route: ResolvedRoute, values: RouteValue[]) => void,
+}
+
+/**
+ * A store kept apart from the navigation until it is staged, so values can be computed ahead of a
+ * navigation that may never come.
+ */
+export type DetachedStore = ValueStore & {
   /**
-   * Abandons what was prefetched and starts over, for a link that now points somewhere else.
+   * Becomes the staged store, replacing whatever was staged, and starts over empty.
+   */
+  stage: () => void,
+  /**
+   * Abandons what was computed and starts over.
    */
   reset: () => void,
   /**
-   * Abandons what was prefetched, for a link that is gone.
+   * Abandons what was computed.
    */
   dispose: () => void,
 }
 
+/**
+ * A value the store holds for a route: which computation it belongs to, and what it resolved to.
+ */
+export type RouteValue = {
+  kind: DataKind,
+  depth: number,
+  name: string,
+  value: unknown,
+}
+
 export type RouteValueStore = HasVueAppStore & {
-  createPrefetchStore: () => PrefetchStore,
-  setRouteValues: (route: ResolvedRoute) => RouteValueResponses,
+  createDetachedStore: () => DetachedStore,
+  /**
+   * The store the next navigation adopts, created when nothing is staged. Values computed into it ahead of
+   * the navigation are found under way when the navigation commits, while the rendered route keeps reading
+   * its own store meanwhile.
+   */
+  staged: () => ValueStore,
+  /**
+   * Makes the staged store current and computes whatever the route still lacks.
+   */
+  commit: (route: ResolvedRoute) => RouteValueResponses,
+  /**
+   * The values currently settled in the store.
+   */
+  getValues: (route: ResolvedRoute) => RouteValue[],
   getProps: (id: string, name: string, route: ResolvedRoute) => MaybePromise<PropsResult>,
   /**
    * What a route exposes as `data`. Resolved per read rather than captured, so it stays correct as
@@ -100,68 +106,106 @@ export function createRouteValueStore(): RouteValueStore {
   const { setVueApp, runWithContext } = createVueAppStore()
   const navigation = createNavigationStores()
 
-  const createPrefetchStore: RouteValueStore['createPrefetchStore'] = () => {
-    const link = { store: createDataStore() }
+  const createDetachedStore: RouteValueStore['createDetachedStore'] = () => {
+    const detached = { store: createDataStore() }
 
-    const dispose: PrefetchStore['dispose'] = () => {
-      link.store.dispose(new NavigationAbandonedError())
+    const dispose: DetachedStore['dispose'] = () => {
+      detached.store.dispose(new NavigationAbandonedError())
     }
 
-    const reset: PrefetchStore['reset'] = () => {
+    const reset: DetachedStore['reset'] = () => {
       dispose()
-      link.store = createDataStore()
+      detached.store = createDataStore()
     }
 
-    const prefetch: PrefetchStore['prefetch'] = (strategy, route, configs) => {
-      for (const computation of getComputations(route).filter(isKind('props'))) {
-        const option = getPrefetchOption({
-          ...configs,
-          routePrefetch: computation.routePrefetch,
-          viewPrefetch: computation.prefetch,
-        }, 'props')
-
-        if (option !== strategy) {
-          continue
-        }
-
-        link.store.set(computation.key, () => run(computation, route, link.store))
-      }
-    }
-
-    const commit: PrefetchStore['commit'] = () => {
-      navigation.stage(link.store)
-      link.store = createDataStore()
+    const stage: DetachedStore['stage'] = () => {
+      navigation.stage(detached.store)
+      detached.store = createDataStore()
     }
 
     return {
-      prefetch,
-      commit,
+      ...createValueStore(() => detached.store),
+      stage,
       reset,
       dispose,
     }
   }
 
-  const setRouteValues: RouteValueStore['setRouteValues'] = (route) => {
+  const staged: RouteValueStore['staged'] = () => {
+    return createValueStore(() => navigation.staged())
+  }
+
+  const commit: RouteValueStore['commit'] = (route) => {
     const previous = navigation.promote()
-    const store = navigation.current()
 
     previous.dispose(new NavigationAbandonedError())
 
-    const computations = getComputations(route)
-
-    return {
-      props: compute(store, route, computations.filter(isKind('props'))),
-      loaders: compute(store, route, computations.filter(isKind('loader'))),
-    }
+    return createValueStore(() => navigation.current()).compute(route)
   }
 
   /**
-   * Sets every computation into the navigation's store and reports how they settled. Setting happens
-   * before the first await, so everything a route computes is under way by the time the route is current.
+   * The same api over any store. The store is looked up per call, since a detached store starts over when
+   * it is staged or reset.
    */
-  async function compute(store: DataStore, route: ResolvedRoute, computations: Computation[]): Promise<RouteValueResponse> {
+  function createValueStore(getStore: () => DataStore): ValueStore {
+    const compute: ValueStore['compute'] = (route, filter = () => true) => {
+      const store = getStore()
+      const computations = getComputations(route).filter(filter)
+
+      // loaders first, so a props getter reading the route's data finds it under way rather than missing
+      const loaders = settle(store, route, computations.filter(isKind('loader')))
+      const props = settle(store, route, computations.filter(isKind('props')))
+
+      // a caller that does not wait on these must not see a getter's error as an unhandled rejection
+      loaders.catch(() => {})
+      props.catch(() => {})
+
+      return { props, loaders }
+    }
+
+    const fill: ValueStore['fill'] = (route, values) => {
+      const store = getStore()
+      const computations = getComputations(route)
+
+      for (const { kind, depth, name, value } of values) {
+        const computation = computations.find((computation) => computation.kind === kind && computation.depth === depth && computation.name === name)
+
+        if (!computation) {
+          continue
+        }
+
+        store.set(computation.key, () => value)
+      }
+    }
+
+    return {
+      compute,
+      fill,
+    }
+  }
+
+  const getValues: RouteValueStore['getValues'] = (route) => {
+    const store = navigation.current()
+
+    return getComputations(route).flatMap(({ kind, depth, name, key }) => {
+      const result = store.get(key)
+
+      if (result.kind !== 'value') {
+        return []
+      }
+
+      return [{ kind, depth, name, value: result.value }]
+    })
+  }
+
+  /**
+   * Sets every computation into the store and reports how they settled. Setting happens before the first
+   * await, so everything a route computes is under way by the time the route is current. Getters read
+   * from the same store, so one finds what a sibling is computing alongside it.
+   */
+  async function settle(store: DataStore, route: ResolvedRoute, computations: Computation[]): Promise<RouteValueResponse> {
     computations.forEach((computation) => {
-      store.set(computation.key, () => run(computation, route))
+      store.set(computation.key, () => run(computation, route, store))
     })
 
     try {
@@ -246,8 +290,8 @@ export function createRouteValueStore(): RouteValueStore {
           throw new LoaderDataAccessError(name)
         }
 
-        // computing for a link resolves data against that link's store as well as the navigation's, so a
-        // getter does not have to know which of the two will compute what it reads
+        // computing into a store that is not yet current resolves data against it as well as the
+        // navigation's, so a getter does not have to know which of the two will compute what it reads
         return getData(route, store)
       },
     })
@@ -324,18 +368,19 @@ export function createRouteValueStore(): RouteValueStore {
   }
 
   /**
-   * A value resolves from whichever arrives first, the prefetching the reader belongs to or the
-   * navigation, so a reader never has to know which of the two will compute it.
+   * A value resolves from whichever arrives first, the store the reader belongs to or the navigation, so
+   * a reader never has to know which of the two will compute it.
    */
   function getValue(location: ValueLocation, route: ResolvedRoute, store?: DataStore): Promise<unknown> {
     const key = getDataKey(location.kind, location.id, location.name, route)
+    const current = navigation.current()
 
-    if (!store) {
-      return navigation.current().subscribe(key)
+    if (!store || store === current) {
+      return current.subscribe(key)
     }
 
-    if (store.get(key).kind === 'missing' && navigation.current().get(key).kind === 'missing') {
-      warnWaitingWhilePrefetching(location, route)
+    if (store.get(key).kind === 'missing' && current.get(key).kind === 'missing') {
+      warnWaitingOnUncomputedValue(location, route)
     }
 
     const value = firstToArrive([
@@ -349,46 +394,15 @@ export function createRouteValueStore(): RouteValueStore {
     return value
   }
 
-  function getComputations(route: ResolvedRoute): Computation[] {
-    return route.matches.flatMap((match, depth) => [
-      ...propsLocations(match).map((location) => toComputation(location, match, depth, route, match.views[location.name].props as PropsGetter, match.views[location.name].prefetch)),
-      ...loaderLocations(match).map((location) => toComputation(location, match, depth, route, match.loaders[location.name].load, match.loaders[location.name].prefetch)),
-    ])
-  }
-
-  function toComputation(location: ValueLocation, match: CreatedRouteOptions, depth: number, route: ResolvedRoute, run: AnyFunction, prefetch: PrefetchConfig | undefined): Computation {
-    return {
-      ...location,
-      depth,
-      key: getDataKey(location.kind, location.id, location.name, route),
-      run,
-      routePrefetch: match.prefetch,
-      prefetch,
-    }
-  }
-
   return {
-    createPrefetchStore,
-    setRouteValues,
+    createDetachedStore,
+    staged,
+    commit,
+    getValues,
     getProps,
     getData,
     setVueApp,
   }
-}
-
-/**
- * Only views with a getter, since a view with none is never computed and waiting on it would never settle.
- */
-function propsLocations(match: CreatedRouteOptions): ValueLocation[] {
-  return viewNamesWithProps(match.views).map((name) => ({ kind: 'props', id: match.id, name }))
-}
-
-function loaderLocations(match: CreatedRouteOptions): ValueLocation[] {
-  return Object.keys(match.loaders).map((name) => ({ kind: 'loader', id: match.id, name }))
-}
-
-function isKind(kind: DataKind): (computation: Computation) => boolean {
-  return (computation) => computation.kind === kind
 }
 
 /**
@@ -428,13 +442,13 @@ async function toResult(props: Promise<unknown>): Promise<PropsResult> {
   }
 }
 
-function warnWaitingWhilePrefetching({ kind, name }: ValueLocation, route: ResolvedRoute): void {
+function warnWaitingOnUncomputedValue({ kind, name }: ValueLocation, route: ResolvedRoute): void {
   const routeName = route.name || 'unknown'
   const value = kind === 'props' ? `props "${name}"` : `loader data "${name}"`
 
   console.warn(`
-    Waiting on ${value} while prefetching for route "${routeName}".
-    It is not being prefetched at this point, so it cannot resolve until it is computed — either by its
-    own prefetch strategy or by navigating. Prefetch it with the same strategy to avoid stalling here.
+    Waiting on ${value} for route "${routeName}" before anything is computing it.
+    It cannot resolve until it is computed — by its own prefetch strategy, or by navigating. When
+    prefetching, prefetch it with the same strategy to avoid stalling here.
   `)
 }

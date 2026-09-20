@@ -54,3 +54,30 @@ describe('stage', () => {
     await expect(waiting).rejects.toThrow(NavigationAbandonedError)
   })
 })
+
+describe('staged', () => {
+  test('creates the staged store when nothing was staged', () => {
+    const stores = createNavigationStores()
+
+    const store = stores.staged()
+
+    stores.promote()
+
+    expect(stores.current()).toBe(store)
+  })
+
+  test('hands back the store a link staged', () => {
+    const stores = createNavigationStores()
+    const store = createDataStore()
+
+    stores.stage(store)
+
+    expect(stores.staged()).toBe(store)
+  })
+
+  test('hands back the same store until it is promoted', () => {
+    const stores = createNavigationStores()
+
+    expect(stores.staged()).toBe(stores.staged())
+  })
+})
