@@ -3,7 +3,7 @@ import { createUseRouteValueStore } from '@/compositions/useRouteValueStore'
 import type { PrefetchConfigs, PrefetchStrategy } from '@/types/prefetch'
 import { getPrefetchOption } from '@/utilities/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
-import { isAsyncComponent } from '@/utilities/components'
+import { loadAsyncComponents } from '@/utilities/components'
 import { useVisibilityObserver } from './useVisibilityObserver'
 import { useEventListener } from './useEventListener'
 import { Router } from '@/types/router'
@@ -90,23 +90,9 @@ function isPropsForStrategy(strategy: PrefetchStrategy, configs: PrefetchConfigs
 }
 
 function prefetchComponentsForRoute(strategy: PrefetchStrategy, route: ResolvedRoute, configs: PrefetchConfigs): void {
-  route.matches.forEach((match) => {
-    Object.values(match.views).forEach((view) => {
-      if (!view.component || !isAsyncComponent(view.component)) {
-        return
-      }
-
-      const viewStrategy = getPrefetchOption({
-        ...configs,
-        routePrefetch: match.prefetch,
-        viewPrefetch: view.prefetch,
-      }, 'components')
-
-      if (viewStrategy !== strategy) {
-        return
-      }
-
-      view.component.__asyncLoader()
-    })
-  })
+  loadAsyncComponents(route, (match, view) => getPrefetchOption({
+    ...configs,
+    routePrefetch: match.prefetch,
+    viewPrefetch: view.prefetch,
+  }, 'components') === strategy)
 }
