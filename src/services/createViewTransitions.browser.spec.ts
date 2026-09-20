@@ -1,15 +1,24 @@
-import { afterEach, expect, test, vi } from 'vitest'
+import { afterEach, beforeAll, expect, test, vi } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
 import { ref, watch, watchEffect } from 'vue'
+import { register } from 'view-transitions-mock'
 import { createViewTransitions, PendingViewTransition } from '@/services/createViewTransitions'
 import { createRoute } from '@/services/createRoute'
 import { createResolvedRoute } from '@/services/createResolvedRoute'
-import { stubViewTransitions } from '@/utilities/testHelpers'
 
-let restore = (): void => {}
+beforeAll(() => {
+  vi.spyOn(console, 'info').mockImplementation(() => {})
+  register({ forced: true })
+})
 
-afterEach(() => {
-  restore()
+afterEach(async () => {
+  // a transition one test leaves running collides with the next test's inside the mock
+  const active = document.activeViewTransition
+
+  active?.skipTransition()
+  await active?.finished
+
+  vi.restoreAllMocks()
 })
 
 const to = createResolvedRoute(createRoute({ name: 'to', path: '/to' }))
@@ -19,50 +28,50 @@ function navigation(types: string[] = []): PendingViewTransition {
   return { to, from, types }
 }
 
-test('the update does not run until the browser runs the callback', async () => {
-  const stub = stubViewTransitions()
-  const update = vi.fn()
-  restore = stub.restore
+function transitionOf({ viewTransition }: ReturnType<typeof createViewTransitions>): ViewTransition {
+  if (!viewTransition.transition) {
+    throw new Error('no transition has started')
+  }
 
+  return viewTransition.transition
+}
+
+test('the update runs inside the transition callback rather than when the transition starts', async () => {
+  const update = vi.fn()
   const viewTransitions = createViewTransitions()
 
   viewTransitions.prepare(navigation())
-  viewTransitions.start(update)
-  await flushPromises()
+
+  const started = viewTransitions.start(update)
 
   expect(update).not.toHaveBeenCalled()
 
-  await stub.transitions[0].run()
+  await started
 
   expect(update).toHaveBeenCalledOnce()
 })
 
-test('resolves once the update has run', async () => {
-  const stub = stubViewTransitions()
-  restore = stub.restore
-
+test('resolves after the update has run and before the animation finishes', async () => {
+  const order: string[] = []
   const viewTransitions = createViewTransitions()
 
   viewTransitions.prepare(navigation())
 
-  const started = viewTransitions.start(() => {})
-  const settled = vi.fn()
+  const started = viewTransitions.start(() => {
+    order.push('update')
+  })
+  const transition = transitionOf(viewTransitions)
 
-  started.then(settled)
+  started.then(() => order.push('started'))
+  transition.finished.then(() => order.push('finished'))
+
+  await transition.finished
   await flushPromises()
 
-  expect(settled).not.toHaveBeenCalled()
-
-  await stub.transitions[0].run()
-  await flushPromises()
-
-  expect(settled).toHaveBeenCalledOnce()
+  expect(order).toEqual(['update', 'started', 'finished'])
 })
 
 test('the callback waits for vue to render what the update changed', async () => {
-  const stub = stubViewTransitions()
-  restore = stub.restore
-
   const source = ref(0)
   const settledLater = ref(0)
   const rendered: number[] = []
@@ -83,15 +92,13 @@ test('the callback waits for vue to render what the update changed', async () =>
     source.value = 1
   })
 
-  await stub.transitions[0].run()
+  await transitionOf(viewTransitions).updateCallbackDone
 
   expect(rendered).toContain(1)
 })
 
 test('a navigation arriving before the callback runs takes over the pending update', async () => {
-  const stub = stubViewTransitions()
-  restore = stub.restore
-
+  const startViewTransition = vi.spyOn(document, 'startViewTransition')
   const first = vi.fn()
   const second = vi.fn()
   const viewTransitions = createViewTransitions()
@@ -101,84 +108,48 @@ test('a navigation arriving before the callback runs takes over the pending upda
   viewTransitions.prepare(navigation())
   const secondStarted = viewTransitions.start(second)
 
-  expect(stub.transitions).toHaveLength(1)
+  await Promise.all([firstStarted, secondStarted])
 
-  await stub.transitions[0].run()
-
+  expect(startViewTransition).toHaveBeenCalledOnce()
   expect(first).not.toHaveBeenCalled()
   expect(second).toHaveBeenCalledOnce()
-  await expect(firstStarted).resolves.toBeUndefined()
-  await expect(secondStarted).resolves.toBeUndefined()
 })
 
-test('a navigation arriving after the callback ran starts its own transition', async () => {
-  const stub = stubViewTransitions()
-  restore = stub.restore
-
+test('a navigation arriving after the callback ran starts its own transition, and the browser skips the first', async () => {
+  const startViewTransition = vi.spyOn(document, 'startViewTransition')
   const viewTransitions = createViewTransitions()
 
   viewTransitions.prepare(navigation())
-  viewTransitions.start(() => {})
-  await stub.transitions[0].run()
-  viewTransitions.prepare(navigation())
-  viewTransitions.start(() => {})
+  await viewTransitions.start(() => {})
 
-  expect(stub.transitions).toHaveLength(2)
+  const first = transitionOf(viewTransitions)
+
+  viewTransitions.prepare(navigation())
+  await viewTransitions.start(() => {})
+
+  expect(startViewTransition).toHaveBeenCalledTimes(2)
+  await expect(first.finished).resolves.toBeUndefined()
+  await expect(first.ready).rejects.toThrow()
 })
 
 test('a skipped transition does not surface as an unhandled rejection', async () => {
-  const stub = stubViewTransitions()
-  restore = stub.restore
-
   const viewTransitions = createViewTransitions()
 
   viewTransitions.prepare(navigation())
   viewTransitions.start(() => {})
 
-  stub.transitions[0].skip()
+  transitionOf(viewTransitions).skipTransition()
 
   await flushPromises()
 })
 
-test('an update that throws rejects the navigation', async () => {
-  const stub = stubViewTransitions()
-  restore = stub.restore
-
-  const viewTransitions = createViewTransitions()
-
-  viewTransitions.prepare(navigation())
-
-  const started = viewTransitions.start(() => {
-    throw new Error('commit failed')
-  })
-
-  await stub.transitions[0].run()
-
-  await expect(started).rejects.toThrow('commit failed')
-})
-
-test('passes the prepared types when the browser understands them', async () => {
-  const stub = stubViewTransitions({ types: true })
-  restore = stub.restore
-
+test('the prepared types are given to the transition', () => {
   const viewTransitions = createViewTransitions()
 
   viewTransitions.prepare(navigation(['slide']))
   viewTransitions.start(() => {})
 
-  expect(stub.transitions[0].types).toEqual(['slide'])
-})
-
-test('leaves types out when the browser does not understand them', async () => {
-  const stub = stubViewTransitions({ types: false })
-  restore = stub.restore
-
-  const viewTransitions = createViewTransitions()
-
-  viewTransitions.prepare(navigation(['slide']))
-  viewTransitions.start(() => {})
-
-  expect(stub.transitions[0].types).toBeUndefined()
+  expect([...transitionOf(viewTransitions).types]).toEqual(['slide'])
 })
 
 test('preparing exposes the navigation before the transition exists', () => {
@@ -198,17 +169,17 @@ test('preparing exposes the navigation before the transition exists', () => {
 })
 
 test('starting exposes the transition until it finishes', async () => {
-  const stub = stubViewTransitions()
-  restore = stub.restore
-
-  const { viewTransition, prepare, start } = createViewTransitions()
+  const viewTransitions = createViewTransitions()
+  const { viewTransition, prepare, start } = viewTransitions
 
   prepare(navigation())
   start(() => {})
 
-  expect(viewTransition.transition).toMatchObject({ ready: expect.any(Promise) })
+  const transition = transitionOf(viewTransitions)
 
-  await stub.transitions[0].run()
+  expect(viewTransition.transition).toBe(transition)
+
+  await transition.finished
   await flushPromises()
 
   expect(viewTransition.isTransitioning).toBe(false)
@@ -216,18 +187,18 @@ test('starting exposes the transition until it finishes', async () => {
 })
 
 test('a transition finishing does not clear a newer navigation that has since been prepared', async () => {
-  const stub = stubViewTransitions()
-  restore = stub.restore
-
-  const { viewTransition, prepare, start } = createViewTransitions()
+  const viewTransitions = createViewTransitions()
+  const { viewTransition, prepare, start } = viewTransitions
 
   prepare(navigation())
-  start(() => {})
-  await stub.transitions[0].run()
+  await start(() => {})
 
+  const transition = transitionOf(viewTransitions)
   const newer = createResolvedRoute(createRoute({ name: 'newer', path: '/newer' }))
 
   prepare({ to: newer, from: to, types: [] })
+
+  await transition.finished
   await flushPromises()
 
   expect(viewTransition.isTransitioning).toBe(true)

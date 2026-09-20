@@ -1,34 +1,28 @@
-import { afterEach, expect, test, vi } from 'vitest'
+import { afterEach, beforeAll, expect, MockInstance, test, vi } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import { defineAsyncComponent, defineComponent, h } from 'vue'
+import { register, unregister } from 'view-transitions-mock'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
-import { component, stubViewTransitions } from '@/utilities/testHelpers'
+import { component } from '@/utilities/testHelpers'
 import { RouterOptions } from '@/types/router'
 import { Routes } from '@/types/route'
 import { useLink, useViewTransition } from '@/main'
 
-let restore = (): void => {}
-let current: ReturnType<typeof stubViewTransitions> | undefined
-
-afterEach(() => {
-  restore()
+beforeAll(() => {
+  vi.spyOn(console, 'info').mockImplementation(() => {})
+  register({ forced: true })
 })
 
-function stub(options: { types?: boolean } = {}): ReturnType<typeof stubViewTransitions> {
-  current = stubViewTransitions(options)
-  restore = current.restore
+afterEach(async () => {
+  // a transition one test leaves running collides with the next test's inside the mock
+  const active = document.activeViewTransition
 
-  return current
-}
+  active?.skipTransition()
+  await active?.finished
 
-function stubbed(): ReturnType<typeof stubViewTransitions> {
-  if (!current) {
-    throw new Error('stub() has not been called')
-  }
-
-  return current
-}
+  vi.restoreAllMocks()
+})
 
 const routeA = createRoute({ name: 'routeA', path: '/routeA', component })
 const routeB = createRoute({ name: 'routeB', path: '/routeB', component })
@@ -41,138 +35,138 @@ async function startRouter(options: RouterOptions = {}, routes: Routes = [routeA
   return router
 }
 
+function spyOnTransitions(): MockInstance<Document['startViewTransition']> {
+  return vi.spyOn(document, 'startViewTransition')
+}
+
+function transitionOf(router: ReturnType<typeof createRouter>): ViewTransition {
+  if (!router.viewTransition.transition) {
+    throw new Error('no transition has started')
+  }
+
+  return router.viewTransition.transition
+}
+
 test('navigations do not transition unless asked to', async () => {
-  const { transitions } = stub()
+  const started = spyOnTransitions()
   const router = await startRouter()
 
   await router.push('routeB')
 
-  expect(transitions).toHaveLength(0)
+  expect(started).not.toHaveBeenCalled()
   expect(router.route.name).toBe('routeB')
 })
 
 test('the router option transitions every navigation, committing the route inside the callback', async () => {
-  const { transitions } = stub()
+  const startViewTransition = document.startViewTransition.bind(document)
   const router = await startRouter({ viewTransition: true })
+  const routeWhenStarted = vi.fn()
 
-  const navigation = router.push('routeB')
-  await flushPromises()
+  vi.spyOn(document, 'startViewTransition').mockImplementation((options) => {
+    routeWhenStarted(router.route.name)
 
-  expect(transitions).toHaveLength(1)
-  expect(router.route.name).toBe('routeA')
+    return startViewTransition(options)
+  })
 
-  await transitions[0].run()
-  await navigation
+  await router.push('routeB')
 
+  expect(routeWhenStarted).toHaveBeenCalledWith('routeA')
   expect(router.route.name).toBe('routeB')
 })
 
 test('the first navigation does not transition', async () => {
-  const { transitions } = stub()
+  const started = spyOnTransitions()
 
   await startRouter({ viewTransition: true })
 
-  expect(transitions).toHaveLength(0)
+  expect(started).not.toHaveBeenCalled()
 })
 
 test('the server does not transition', async () => {
-  const { transitions } = stub()
+  const started = spyOnTransitions()
   const router = await startRouter({ viewTransition: true, ssr: true })
 
   await router.push('routeB')
 
-  expect(transitions).toHaveLength(0)
+  expect(started).not.toHaveBeenCalled()
   expect(router.route.name).toBe('routeB')
 })
 
 test('a browser without the api navigates as before', async () => {
-  const router = await startRouter({ viewTransition: true })
+  unregister()
 
-  await router.push('routeB')
+  try {
+    const router = await startRouter({ viewTransition: true })
 
-  expect(router.route.name).toBe('routeB')
+    await router.push('routeB')
+
+    expect(router.route.name).toBe('routeB')
+  } finally {
+    register({ forced: true })
+  }
 })
 
 test('a navigation to a url no route matches does not transition', async () => {
-  const { transitions } = stub()
+  const started = spyOnTransitions()
   const router = await startRouter({ viewTransition: true })
 
   await router.push('/nowhere')
 
-  expect(transitions).toHaveLength(0)
+  expect(started).not.toHaveBeenCalled()
 })
 
 test('a route option overrides the router option', async () => {
-  const { transitions } = stub()
+  const started = spyOnTransitions()
   const off = createRoute({ name: 'off', path: '/off', component, viewTransition: false })
   const on = createRoute({ name: 'on', path: '/on', component, viewTransition: true })
   const router = await startRouter({ viewTransition: true }, [routeA, off, on])
 
   await router.push('off')
 
-  expect(transitions).toHaveLength(0)
+  expect(started).not.toHaveBeenCalled()
 
-  const navigation = router.push('on')
-  await flushPromises()
+  await router.push('on')
 
-  expect(transitions).toHaveLength(1)
-
-  await transitions[0].run()
-  await navigation
+  expect(started).toHaveBeenCalledOnce()
 })
 
 test('a child route inherits its parent route option', async () => {
-  const { transitions } = stub()
+  const started = spyOnTransitions()
   const parent = createRoute({ name: 'parent', path: '/parent', viewTransition: true })
   const child = createRoute({ parent, name: 'child', path: '/child', component })
   const router = await startRouter({}, [routeA, child])
 
-  const navigation = router.push('child')
-  await flushPromises()
+  await router.push('child')
 
-  expect(transitions).toHaveLength(1)
-
-  await transitions[0].run()
-  await navigation
+  expect(started).toHaveBeenCalledOnce()
 })
 
 test('a push option overrides the route and router options', async () => {
-  const { transitions } = stub()
+  const started = spyOnTransitions()
   const router = await startRouter({ viewTransition: true })
 
   await router.push('routeB', {}, { viewTransition: false })
 
-  expect(transitions).toHaveLength(0)
+  expect(started).not.toHaveBeenCalled()
 
-  const navigation = router.push('routeA', {}, { viewTransition: true })
-  await flushPromises()
+  await router.push('routeA', {}, { viewTransition: true })
 
-  expect(transitions).toHaveLength(1)
-
-  await transitions[0].run()
-  await navigation
+  expect(started).toHaveBeenCalledOnce()
 })
 
 test('a push option given with a url or a resolved route reaches the transition', async () => {
-  const { transitions } = stub()
+  const started = spyOnTransitions()
   const router = await startRouter()
 
-  const toB = router.push('/routeB', { viewTransition: true })
-  await flushPromises()
-  await transitions[0].run()
-  await toB
+  await router.push('/routeB', { viewTransition: true })
+  await router.push(router.resolve('routeA'), { viewTransition: true })
 
-  const toA = router.push(router.resolve('routeA'), { viewTransition: true })
-  await flushPromises()
-  await transitions[1].run()
-  await toA
-
-  expect(transitions).toHaveLength(2)
+  expect(started).toHaveBeenCalledTimes(2)
   expect(router.route.name).toBe('routeA')
 })
 
 test('useLink passes the option to the navigation', async () => {
-  const { transitions } = stub()
+  const started = spyOnTransitions()
   const router = await startRouter()
 
   const link = defineComponent(() => {
@@ -190,11 +184,11 @@ test('useLink passes the option to the navigation', async () => {
   await wrapper.find('button').trigger('click')
   await flushPromises()
 
-  expect(transitions).toHaveLength(1)
+  expect(started).toHaveBeenCalledOnce()
 })
 
 test('waits for props before the transition starts', async () => {
-  const { transitions } = stub()
+  const started = spyOnTransitions()
   const props = Promise.withResolvers<{ value: string }>()
   const withProps = createRoute({ name: 'withProps', path: '/withProps' }).addView(component, { props: () => props.promise })
   const router = await startRouter({ viewTransition: true }, [routeA, withProps])
@@ -202,21 +196,17 @@ test('waits for props before the transition starts', async () => {
   const navigation = router.push('withProps')
   await flushPromises()
 
-  expect(transitions).toHaveLength(0)
+  expect(started).not.toHaveBeenCalled()
 
   props.resolve({ value: 'loaded' })
-  await flushPromises()
-
-  expect(transitions).toHaveLength(1)
-
-  await transitions[0].run()
   await navigation
 
+  expect(started).toHaveBeenCalledOnce()
   expect(router.route.name).toBe('withProps')
 })
 
 test('waits for loaders before the transition starts', async () => {
-  const { transitions } = stub()
+  const started = spyOnTransitions()
   const loader = Promise.withResolvers<string>()
   const withLoader = createRoute({ name: 'withLoader', path: '/withLoader', component }).addLoader(() => loader.promise)
   const router = await startRouter({ viewTransition: true }, [routeA, withLoader])
@@ -224,19 +214,16 @@ test('waits for loaders before the transition starts', async () => {
   const navigation = router.push('withLoader')
   await flushPromises()
 
-  expect(transitions).toHaveLength(0)
+  expect(started).not.toHaveBeenCalled()
 
   loader.resolve('loaded')
-  await flushPromises()
-
-  expect(transitions).toHaveLength(1)
-
-  await transitions[0].run()
   await navigation
+
+  expect(started).toHaveBeenCalledOnce()
 })
 
 test('waits for async components before the transition starts', async () => {
-  const { transitions } = stub()
+  const started = spyOnTransitions()
   const chunk = Promise.withResolvers<typeof component>()
   const lazy = createRoute({ name: 'lazy', path: '/lazy', component: defineAsyncComponent(() => chunk.promise) })
   const router = await startRouter({ viewTransition: true }, [routeA, lazy])
@@ -244,42 +231,37 @@ test('waits for async components before the transition starts', async () => {
   const navigation = router.push('lazy')
   await flushPromises()
 
-  expect(transitions).toHaveLength(0)
+  expect(started).not.toHaveBeenCalled()
 
   chunk.resolve(component)
-  await flushPromises()
-
-  expect(transitions).toHaveLength(1)
-
-  await transitions[0].run()
   await navigation
+
+  expect(started).toHaveBeenCalledOnce()
 })
 
 test('a navigation that arrives while another waits on its data supersedes it', async () => {
-  const { transitions } = stub()
+  const started = spyOnTransitions()
   const props = Promise.withResolvers<{ value: string }>()
   const slow = createRoute({ name: 'slow', path: '/slow' }).addView(component, { props: () => props.promise })
   const router = await startRouter({ viewTransition: true }, [routeA, routeB, slow])
 
   const toSlow = router.push('slow')
   const toB = router.push('routeB')
-  await flushPromises()
 
-  expect(transitions).toHaveLength(1)
-
-  await transitions[0].run()
   await toB
+
+  expect(started).toHaveBeenCalledOnce()
 
   props.resolve({ value: 'late' })
   await toSlow
   await flushPromises()
 
-  expect(transitions).toHaveLength(1)
+  expect(started).toHaveBeenCalledOnce()
   expect(router.route.name).toBe('routeB')
 })
 
 test('props that reject still commit, and the rejection is handled as it is without a transition', async () => {
-  const { transitions } = stub()
+  const started = spyOnTransitions()
   const rejecting = createRoute({ name: 'rejecting', path: '/rejecting' }).addView(component, {
     props: (_route, { reject }) => {
       reject('NotFound')
@@ -292,40 +274,31 @@ test('props that reject still commit, and the rejection is handled as it is with
 
   router.onRejection(onRejection)
 
-  const navigation = router.push('rejecting')
+  await router.push('rejecting')
   await flushPromises()
 
-  expect(transitions).toHaveLength(1)
-
-  await transitions[0].run()
-  await navigation
-  await flushPromises()
-
+  expect(started).toHaveBeenCalledOnce()
   expect(onRejection).toHaveBeenCalledOnce()
 })
 
 test('the types of every level are given to the transition', async () => {
-  const { transitions } = stub()
+  const started = spyOnTransitions()
   const typed = createRoute({ name: 'typed', path: '/typed', component, viewTransition: { types: ['page'] } })
   const router = await startRouter({ viewTransition: ['app'] }, [routeA, typed])
 
-  const navigation = router.push('typed', {}, { viewTransition: ['slide-left'] })
-  await flushPromises()
+  await router.push('typed', {}, { viewTransition: ['slide-left'] })
 
-  expect(transitions[0].types).toEqual(['app', 'page', 'slide-left'])
-
-  await transitions[0].run()
-  await navigation
+  expect(started).toHaveBeenCalledWith(expect.objectContaining({ types: ['app', 'page', 'slide-left'] }))
 })
 
 test('a types callback is given the navigation and can skip the transition', async () => {
-  const { transitions } = stub()
+  const started = spyOnTransitions()
   const types = vi.fn(() => false as const)
   const router = await startRouter({ viewTransition: { types } })
 
   await router.push('routeB')
 
-  expect(transitions).toHaveLength(0)
+  expect(started).not.toHaveBeenCalled()
   expect(types).toHaveBeenCalledWith({
     to: expect.objectContaining({ name: 'routeB' }),
     from: expect.objectContaining({ name: 'routeA' }),
@@ -333,7 +306,6 @@ test('a types callback is given the navigation and can skip the transition', asy
 })
 
 test('router.viewTransition describes the navigation while its data loads, then carries the transition, then clears', async () => {
-  const { transitions } = stub()
   const props = Promise.withResolvers<{ value: string }>()
   const withProps = createRoute({ name: 'withProps', path: '/withProps' }).addView(component, { props: () => props.promise })
   const router = await startRouter({ viewTransition: ['slide'] }, [routeA, withProps])
@@ -352,12 +324,13 @@ test('router.viewTransition describes the navigation while its data loads, then 
   expect(router.viewTransition.from?.name).toBe('routeA')
 
   props.resolve({ value: 'loaded' })
-  await flushPromises()
-
-  expect(router.viewTransition.transition).toMatchObject({ ready: expect.any(Promise) })
-
-  await transitions[0].run()
   await navigation
+
+  const transition = transitionOf(router)
+
+  expect(router.viewTransition.isTransitioning).toBe(true)
+
+  await transition.finished
   await flushPromises()
 
   expect(router.viewTransition.isTransitioning).toBe(false)
@@ -365,7 +338,7 @@ test('router.viewTransition describes the navigation while its data loads, then 
 })
 
 test('a navigation that does not transition clears router.viewTransition', async () => {
-  const { transitions } = stub()
+  const started = spyOnTransitions()
   const props = Promise.withResolvers<{ value: string }>()
   const slow = createRoute({ name: 'slow', path: '/slow' }).addView(component, { props: () => props.promise })
   const router = await startRouter({ viewTransition: true }, [routeA, routeB, slow])
@@ -378,15 +351,16 @@ test('a navigation that does not transition clears router.viewTransition', async
   await router.push('routeB', {}, { viewTransition: false })
 
   expect(router.viewTransition.isTransitioning).toBe(false)
-  expect(transitions).toHaveLength(0)
+  expect(started).not.toHaveBeenCalled()
 
   props.resolve({ value: 'late' })
   await toSlow
 })
 
 test('useViewTransition returns the router state', async () => {
-  stub()
-  const router = await startRouter({ viewTransition: true })
+  const props = Promise.withResolvers<{ value: string }>()
+  const slow = createRoute({ name: 'slow', path: '/slow' }).addView(component, { props: () => props.promise })
+  const router = await startRouter({ viewTransition: true }, [routeA, slow])
   const seen = vi.fn()
 
   const probe = defineComponent(() => {
@@ -407,17 +381,16 @@ test('useViewTransition returns the router state', async () => {
 
   expect(seen).toHaveBeenLastCalledWith(false, undefined)
 
-  const navigation = router.push('routeB')
+  const navigation = router.push('slow')
   await flushPromises()
 
-  expect(seen).toHaveBeenLastCalledWith(true, 'routeB')
+  expect(seen).toHaveBeenLastCalledWith(true, 'slow')
 
-  await stubbed().transitions[0].run()
+  props.resolve({ value: 'loaded' })
   await navigation
 })
 
 test('a link knows when a transition to its location is in flight', async () => {
-  const { transitions } = stub()
   const props = Promise.withResolvers<{ value: string }>()
   const slow = createRoute({ name: 'slow', path: '/slow' }).addView(component, { props: () => props.promise })
   const router = await startRouter({ viewTransition: true }, [routeA, routeB, slow])
@@ -447,16 +420,14 @@ test('a link knows when a transition to its location is in flight', async () => 
   expect(wrapper.find('#b').text()).toBe('false')
 
   props.resolve({ value: 'loaded' })
-  await flushPromises()
-  await transitions[0].run()
   await navigation
+  await transitionOf(router).finished
   await flushPromises()
 
   expect(wrapper.find('#slow').text()).toBe('false')
 })
 
 test('router-link exposes isTransitioning to its slot', async () => {
-  const { transitions } = stub()
   const props = Promise.withResolvers<{ value: string }>()
   const slow = createRoute({ name: 'slow', path: '/slow' }).addView(component, { props: () => props.promise })
   const router = await startRouter({ viewTransition: true }, [routeA, slow])
@@ -481,7 +452,5 @@ test('router-link exposes isTransitioning to its slot', async () => {
   expect(wrapper.find('#state').text()).toBe('true')
 
   props.resolve({ value: 'loaded' })
-  await flushPromises()
-  await transitions[0].run()
   await navigation
 })
