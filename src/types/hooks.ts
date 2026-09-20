@@ -1,3 +1,4 @@
+import { RouteContextRequirement } from '@/types/routerContext'
 import { Hooks } from '@/models/hooks'
 import { RouterResolvedRouteUnion, ResolvedRouteUnion } from '@/types/resolved'
 import { MaybePromise } from '@/types/utilities'
@@ -120,6 +121,7 @@ type AfterHookContext<
   push: RouterPush<TRoutes>,
   replace: RouterReplace<TRoutes>,
   update: RouteUpdate<ResolvedRouteUnion<TRoute>>,
+  context: RouteContextRequirement<TRoute['matches']>,
 }
 
 type BeforeHookContext<
@@ -132,6 +134,7 @@ type BeforeHookContext<
   replace: RouterReplace<TRoutes>,
   update: RouteUpdate<ResolvedRouteUnion<TRouteTo>>,
   abort: RouterAbort,
+  context: RouteContextRequirement<TRouteTo['matches']>,
 }
 
 export type BeforeEnterHookContext<

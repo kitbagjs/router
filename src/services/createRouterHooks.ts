@@ -36,7 +36,11 @@ export type RouterHooks = HasVueAppStore & {
   onRejection: AddRejectionHook,
 }
 
-export function createRouterHooks(): RouterHooks {
+type RouterHooksOptions = {
+  context?: Record<string, unknown>,
+}
+
+export function createRouterHooks({ context = {} }: RouterHooksOptions = {}): RouterHooks {
   const { setVueApp, runWithContext } = createVueAppStore()
   const { store: globalStore, ...globalHooks } = createRouteHooks()
 
@@ -69,6 +73,7 @@ export function createRouterHooks(): RouterHooks {
           replace,
           update,
           abort,
+          context,
         })))
       })
 
@@ -136,6 +141,7 @@ export function createRouterHooks(): RouterHooks {
           push,
           replace,
           update,
+          context,
         })))
       })
 

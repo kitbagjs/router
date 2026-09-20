@@ -102,7 +102,11 @@ export type RouteValueStore = HasVueAppStore & {
   getData: (route: ResolvedRoute) => WithData['data'],
 }
 
-export function createRouteValueStore(): RouteValueStore {
+type RouteValueStoreOptions = {
+  context?: Record<string, unknown>,
+}
+
+export function createRouteValueStore({ context = {} }: RouteValueStoreOptions = {}): RouteValueStore {
   const { setVueApp, runWithContext } = createVueAppStore()
   const navigation = createNavigationStores()
 
@@ -264,6 +268,7 @@ export function createRouteValueStore(): RouteValueStore {
       reject,
       update,
       parent: getParentContext(route, computation.depth, store),
+      context,
     }))
   }
 

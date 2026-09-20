@@ -28,3 +28,9 @@ export type AllPropertiesAreOptional<T> = Record<string, unknown> extends T
  * rather than string | number | symbol.
  */
 export type AsString<T> = T extends string ? T : never
+
+/**
+ * Collapses a union into an intersection: `{ a: string } | { b: number }` becomes
+ * `{ a: string } & { b: number }`.
+ */
+export type UnionToIntersection<T> = (T extends unknown ? (value: T) => void : never) extends (value: infer TIntersection) => void ? TIntersection : never

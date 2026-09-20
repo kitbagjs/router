@@ -1,4 +1,5 @@
 import { ResolvedRoute } from '@/types/resolved'
+import { RouteContextRequirement } from '@/types/routerContext'
 import { CreatedRouteOptions, Route } from '@/types/route'
 import { RouteContextToRejection, RouteContextToRoute } from '@/types/routeContext'
 import { RouterPush } from '@/types/routerPush'
@@ -20,6 +21,7 @@ export type RouteCallbackContext<
   replace: RouterReplace<[TRoute] | RouteContextToRoute<TRoute['context']>>,
   update: RouteUpdate<ResolvedRoute<TRoute>>,
   parent: RouteCallbackParent<TRoute>,
+  context: RouteContextRequirement<TRoute['matches']>,
 }
 
 /**

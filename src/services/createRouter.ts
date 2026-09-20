@@ -1,3 +1,4 @@
+import { RouterContextOf, RouterContextOptions } from '@/types/routerContext'
 import { createPath } from '@/services/history'
 import { App, ref } from 'vue'
 import { createCurrentRoute } from '@/services/createCurrentRoute'
@@ -90,13 +91,13 @@ export function createRouter<
   const TRoutes extends Routes,
   const TOptions extends RouterOptions = {},
   const TPlugin extends RouterPlugin = EmptyRouterPlugin
->(routes: TRoutes, options?: TOptions, plugins?: TPlugin[]): Router<TRoutes, TOptions, TPlugin>
+>(routes: TRoutes, options?: TOptions & RouterContextOptions<TRoutes>, plugins?: TPlugin[]): Router<TRoutes, TOptions, TPlugin>
 
 export function createRouter<
   const TRoutes extends Routes,
   const TOptions extends RouterOptions = {},
   const TPlugin extends RouterPlugin = EmptyRouterPlugin
->(routes: TRoutes[], options?: TOptions, plugins?: TPlugin[]): Router<TRoutes, TOptions, TPlugin>
+>(routes: TRoutes[], options?: TOptions & RouterContextOptions<TRoutes>, plugins?: TPlugin[]): Router<TRoutes, TOptions, TPlugin>
 
 export function createRouter<
   const TRoutes extends Routes,
@@ -109,13 +110,14 @@ export function createRouter<
   const redirectStatus = options?.redirectStatus ?? 302
   const rejectStatus = options?.rejectStatus ?? 200
   const isSSR = options?.ssr ?? false
+  const context = options?.context ?? {}
   const activity = createActivityTracker()
   const { routes, getRouteByName, getRejectionByType } = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options)
   const notFoundRejection = getRejectionByType('NotFound')
-  const valueStore = createRouteValueStore()
+  const valueStore = createRouteValueStore({ context })
   const notFoundRoute = createResolvedRoute(notFoundRejection.route)
 
-  const hooks = createRouterHooks()
+  const hooks = createRouterHooks({ context })
 
   hooks.addGlobalRouteHooks(getGlobalHooksForRouter(plugins))
 
@@ -639,6 +641,7 @@ export function createRouter<
     onError: hooks.onError,
     onRejection: hooks.onRejection,
     prefetch: options?.prefetch,
+    context: context as RouterContextOf<TRoutes, TOptions>,
     start,
     started,
     render,

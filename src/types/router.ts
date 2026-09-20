@@ -1,3 +1,4 @@
+import { RouterContextOf } from '@/types/routerContext'
 import { App, InjectionKey, Ref } from 'vue'
 import { RouterHistoryMode } from '@/services/createRouterHistory'
 import { TransformerOptions } from '@/services/payload'
@@ -76,6 +77,12 @@ export type RouterOptions = TransformerOptions & {
    * @default 200
    */
   rejectStatus?: number,
+
+  /**
+   * Values scoped to this router instance, passed to every hook, props getter and loader, and read in
+   * components with `useRouterContext`. On a server, built per request; never serialized into the payload.
+   */
+  context?: Record<string, unknown>,
 
   /**
    * When false, createRouterAssets must be used for component and hooks. Assets exported by the library
@@ -243,6 +250,10 @@ export type Router<
    * Determines what assets are prefetched.
    */
   prefetch?: PrefetchConfig,
+  /**
+   * The context the router was created with.
+   */
+  context: RouterContextOf<TRoutes, TOptions>,
   /**
    * Initializes the router based on the initial route. Automatically called when the router is installed. Calling this more than once has no effect.
    */

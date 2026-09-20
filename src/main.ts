@@ -92,6 +92,8 @@ export { SsrOptionRequiredError } from './errors/ssrOptionRequiredError'
 
 // Services
 export { createRoute } from './services/createRoute'
+export { routerContext } from './types/routerContext'
+export type { RouterContextType, RouteContextRequirement, RoutesContextRequirement } from './types/routerContext'
 export { createRejection } from './services/createRejection'
 export { createExternalRoute } from './services/createExternalRoute'
 export { createRouterAssets, type RouterAssets } from './services/createRouterAssets'
@@ -206,6 +208,14 @@ export const useRoute: RouterAssets<RegisteredRouter>['useRoute'] = routerAssets
  * @group Compositions
  */
 export const useRouter: RouterAssets<RegisteredRouter>['useRouter'] = routerAssets.useRouter
+
+/**
+ * A composition to access the context the installed router was created with.
+ *
+ * @returns The router's context.
+ * @group Compositions
+ */
+export const useRouterContext: RouterAssets<RegisteredRouter>['useRouterContext'] = routerAssets.useRouterContext
 
 /**
  * A composition to access a specific query value from the current route.

@@ -5,6 +5,7 @@ import { createRouterView } from '@/components/routerView'
 import { createRouterLink } from '@/components/routerLink'
 import { createUseRoute } from '@/compositions/useRoute'
 import { createUseRouter } from '@/compositions/useRouter'
+import { createUseRouterContext } from '@/compositions/useRouterContext'
 import { createUseQueryValue } from '@/compositions/useQueryValue'
 import { createUseLink } from '@/compositions/useLink'
 import { createIsRoute } from '@/guards/routes'
@@ -107,6 +108,14 @@ export type RouterAssets<TRouter extends Router> = {
   useRouter: ReturnType<typeof createUseRouter<TRouter>>,
 
   /**
+   * A composition to access the context the installed router was created with.
+   *
+   * @returns The router's context.
+   * @group Compositions
+   */
+  useRouterContext: ReturnType<typeof createUseRouterContext<TRouter>>,
+
+  /**
    * A composition to access a specific query value from the current route.
    *
    * @returns The query value from the router.
@@ -155,6 +164,7 @@ export function createRouterAssets<TRouter extends Router>(routerOrRouterKey: TR
 
   const useRoute = createUseRoute(routerKey)
   const useRouter = createUseRouter(routerKey)
+  const useRouterContext = createUseRouterContext(routerKey)
   const useQueryValue = createUseQueryValue(routerKey)
   const useLink = createUseLink(routerKey)
   const useRejection = createUseRejection(routerKey)
@@ -169,6 +179,7 @@ export function createRouterAssets<TRouter extends Router>(routerOrRouterKey: TR
     RouterLink,
     useRoute,
     useRouter,
+    useRouterContext,
     useQueryValue,
     useLink,
     useRejection,

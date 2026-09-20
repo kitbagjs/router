@@ -1,4 +1,5 @@
 import { Component } from 'vue'
+import { RouterContextType } from '@/types/routerContext'
 import { combineMeta } from '@/services/combineMeta'
 import { combineState } from '@/services/combineState'
 import { combineHooks } from '@/types/hooks'
@@ -109,6 +110,11 @@ export type CreateRouteOptions<
    * Related routes and rejections for the route. The context is exposed to the hooks and props callback functions for this route.
    */
   context?: RouteContext[],
+  /**
+   * The context this route requires the router to be created with. Declared as a type via
+   * {@link routerContext}, inherited by children, and required by `createRouter` when the route is used.
+   */
+  routerContext?: RouterContextType,
   /**
    * When true, the route will be hoisted to the top of the route tree. The route will continue to inherit meta, state, hooks, matches, and context from it's parent, but not the "url" properties.
    */
