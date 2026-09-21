@@ -6,8 +6,12 @@ import { getHooks } from '@/types/hooks'
 export function getBeforeHooksFromRoutes(to: ResolvedRoute | null, from: ResolvedRoute | null): Hooks {
   const hooks = new Hooks()
 
-  getHooks(to).forEach((store, depth) => {
-    store.redirects.forEach((hook) => hooks.redirects.add(hook))
+  getHooks(to).forEach((store, depth, stores) => {
+    // A redirect fires only when the route that declared it is the matched route. Collected from an
+    // ancestor, it would intercept the navigation into its own subtree that the redirect itself causes.
+    if (depth === stores.length - 1) {
+      store.redirects.forEach((hook) => hooks.redirects.add(hook))
+    }
 
     if (isRouteEnter(to, from, depth)) {
       return store.onBeforeRouteEnter.forEach((hook) => hooks.onBeforeRouteEnter.add(hook))
