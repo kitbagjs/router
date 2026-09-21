@@ -10,6 +10,8 @@ import { createUseLink } from '@/compositions/useLink'
 import { createIsRoute } from '@/guards/routes'
 import { AddBeforeLeaveHook, AddBeforeUpdateHook, AddAfterLeaveHook, AddAfterUpdateHook } from '@/types/hooks'
 import { createUseRejection } from '@/compositions/useRejection'
+import { createUseNavigation } from '@/compositions/useNavigation'
+import { createUseNavigationProgress } from '@/compositions/useNavigationProgress'
 
 export type RouterAssets<TRouter extends Router> = {
   /**
@@ -134,6 +136,24 @@ export type RouterAssets<TRouter extends Router> = {
    * @group Compositions
    */
   useRejection: ReturnType<typeof createUseRejection<TRouter>>,
+
+  /**
+   * A composition to access the navigation under way: whether one is pending, and which routes it
+   * leaves and leads to.
+   *
+   * @returns {UseNavigation} Reactive state of the navigation under way.
+   * @group Compositions
+   */
+  useNavigation: ReturnType<typeof createUseNavigation<TRouter>>,
+
+  /**
+   * A composition to access how far the navigation under way has come, counted in the before hooks,
+   * props getters, loaders, and async components it waits on.
+   *
+   * @returns {UseNavigationProgress} Reactive counts of the navigation under way.
+   * @group Compositions
+   */
+  useNavigationProgress: ReturnType<typeof createUseNavigationProgress<TRouter>>,
 }
 
 export function createRouterAssets<TRouter extends Router>(router: TRouter): RouterAssets<TRouter>
@@ -158,6 +178,8 @@ export function createRouterAssets<TRouter extends Router>(routerOrRouterKey: TR
   const useQueryValue = createUseQueryValue(routerKey)
   const useLink = createUseLink(routerKey)
   const useRejection = createUseRejection(routerKey)
+  const useNavigation = createUseNavigation(routerKey)
+  const useNavigationProgress = createUseNavigationProgress(routerKey)
 
   return {
     onBeforeRouteLeave,
@@ -172,5 +194,7 @@ export function createRouterAssets<TRouter extends Router>(routerOrRouterKey: TR
     useQueryValue,
     useLink,
     useRejection,
+    useNavigation,
+    useNavigationProgress,
   }
 }

@@ -42,7 +42,7 @@ export function createRouterHooks(): RouterHooks {
 
   const componentStore = new Hooks()
 
-  const runBeforeRouteHooks: BeforeHookRunner = async ({ to, from }) => {
+  const runBeforeRouteHooks: BeforeHookRunner = async ({ to, from, ledger }) => {
     const { reject, push, replace, update, abort } = createRouterCallbackContext({ to })
     const routeHooks = getBeforeHooksFromRoutes(to, from)
     const globalHooks = getGlobalBeforeHooks(to, from, globalStore)
@@ -60,9 +60,14 @@ export function createRouterHooks(): RouterHooks {
     ]
 
     try {
-      const results = allHooks.map((callback) => {
+      const results: Promise<unknown>[] = []
+
+      // counted one at a time so a hook that throws before returning still leaves the count exact
+      for (const callback of allHooks) {
+        ledger?.expect(1)
+
         // Enter and update hooks are only in this list when to is not null, and leave hooks are only in it when from is not null. These casts are purely to satisfy the type checker.
-        return Promise.resolve(runWithContext(() => callback(to as ResolvedRoute, {
+        const result = Promise.resolve(runWithContext(() => callback(to as ResolvedRoute, {
           from: from as ResolvedRoute,
           reject,
           push,
@@ -70,7 +75,10 @@ export function createRouterHooks(): RouterHooks {
           update,
           abort,
         })))
-      })
+
+        ledger?.track(result)
+        results.push(result)
+      }
 
       await Promise.all(results)
     } catch (error) {

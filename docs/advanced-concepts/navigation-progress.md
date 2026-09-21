@@ -1,0 +1,64 @@
+# Navigation Progress
+
+A navigation is under way from the moment it is asked for until the route it leads to has everything it renders with. Kitbag Router counts the work a navigation waits on, so you can show feedback while slow hooks and data hold a page up.
+
+## What is counted
+
+Every unit of work a navigation waits on is known before it runs, so the progress is real rather than an animated guess.
+
+- **Before hooks**, including redirects and global hooks.
+- **Props getters and loaders** of every route in the match.
+- **Async components** defined with `defineAsyncComponent`.
+
+Every unit counts the same. After hooks are not counted because they do not hold up the page, and prefetching is not counted because it is not a navigation.
+
+A navigation ends when its route has everything it renders with, when it is rejected, when it is aborted, or when another navigation begins in its place. A rejection completes the count, since a rejection page is a page too. An abort wipes it. A new navigation, whether from the user or from a `push` in a hook or loader, starts a fresh count of its own.
+
+Nothing is counted while server rendering or while hydrating the server's response, since neither has anything to show.
+
+## useNavigation
+
+The `useNavigation` composable tells you whether a navigation is under way and which routes it moves between.
+
+```vue
+<script setup lang="ts">
+import { useNavigation } from '@kitbag/router'
+
+const { pending, to, from } = useNavigation()
+</script>
+
+<template>
+  <div v-if="pending">Loading {{ to?.name }}…</div>
+</template>
+```
+
+| Property | Type | Description |
+| --- | --- | --- |
+| pending | `boolean` | True while a navigation is under way |
+| to | `ResolvedRoute \| null` | The route the navigation leads to. Null when idle, or when the url matches no route |
+| from | `ResolvedRoute \| null` | The route the navigation leaves. Null when idle, or for the first navigation |
+
+## useNavigationProgress
+
+The `useNavigationProgress` composable adds the counts, for a determinate progress bar.
+
+```vue
+<script setup lang="ts">
+import { useNavigationProgress } from '@kitbag/router'
+
+const { pending, settled, total, progress } = useNavigationProgress()
+</script>
+
+<template>
+  <progress v-if="pending" :value="settled" :max="total" />
+</template>
+```
+
+| Property | Type | Description |
+| --- | --- | --- |
+| pending | `boolean` | True while a navigation is under way |
+| settled | `number` | How many units have settled so far |
+| total | `number` | How many units the navigation waits on in all |
+| progress | `number` | `settled / total`, between 0 and 1. Zero while idle |
+
+Once a navigation ends, `settled` equals `total` if it reached its route or a rejection, and both are zero if it was aborted. A bar can use that to decide between finishing and disappearing.
