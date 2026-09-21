@@ -10,7 +10,7 @@ const { signal } = new AbortController()
 
 test('calls hook with correct routes', () => {
   const hook = vi.fn()
-  const { runBeforeRouteHooks } = createRouterHooks({ redirectStatus: 302 })
+  const { runBeforeRouteHooks } = createRouterHooks()
 
   const toRoute = createRoute({
     id: Math.random().toString(),
@@ -53,7 +53,7 @@ test.each<{ type: string, status: string, hook: BeforeEnterHook }>([
     },
   },
 ])('Returns correct status when hook is called', async ({ status, hook }) => {
-  const { runBeforeRouteHooks } = createRouterHooks({ redirectStatus: 302 })
+  const { runBeforeRouteHooks } = createRouterHooks()
 
   const toRoute = createRoute({
     id: Math.random().toString(),
@@ -83,7 +83,7 @@ test('hook is called in order', async () => {
   const hookA = vi.fn()
   const hookB = vi.fn()
   const hookC = vi.fn()
-  const { runBeforeRouteHooks } = createRouterHooks({ redirectStatus: 302 })
+  const { runBeforeRouteHooks } = createRouterHooks()
 
   const toRoute = createRoute({
     id: Math.random().toString(),
@@ -121,7 +121,7 @@ test('multiple onError callbacks run in order', () => {
   const errorHook2 = vi.fn()
   const errorHook3 = vi.fn()
 
-  const { runErrorHooks, onError } = createRouterHooks({ redirectStatus: 302 })
+  const { runErrorHooks, onError } = createRouterHooks()
 
   onError(errorHook1)
   onError(errorHook2)
@@ -157,7 +157,7 @@ test('when onError callback calls reject, other onError callbacks do not run', (
   })
   const errorHook2 = vi.fn(() => false)
   const errorHook3 = vi.fn(() => false)
-  const { runErrorHooks, onError } = createRouterHooks({ redirectStatus: 302 })
+  const { runErrorHooks, onError } = createRouterHooks()
 
   onError(errorHook1)
   onError(errorHook2)
@@ -189,7 +189,7 @@ test('when onError callback calls push, other onError callbacks do not run', () 
   })
   const errorHook2 = vi.fn()
   const errorHook3 = vi.fn()
-  const { runErrorHooks, onError } = createRouterHooks({ redirectStatus: 302 })
+  const { runErrorHooks, onError } = createRouterHooks()
 
   onError(errorHook1)
   onError(errorHook2)
@@ -222,7 +222,7 @@ test('when onError callback calls replace, other onError callbacks do not run', 
   })
   const errorHook2 = vi.fn()
   const errorHook3 = vi.fn()
-  const { runErrorHooks, onError } = createRouterHooks({ redirectStatus: 302 })
+  const { runErrorHooks, onError } = createRouterHooks()
 
   onError(errorHook1)
   onError(errorHook2)
@@ -250,7 +250,7 @@ test('when onError callback calls replace, other onError callbacks do not run', 
 
 test('when to is null, only leave hooks are called', async () => {
   const calls: string[] = []
-  const { runBeforeRouteHooks, ...hooks } = createRouterHooks({ redirectStatus: 302 })
+  const { runBeforeRouteHooks, ...hooks } = createRouterHooks()
 
   hooks.onBeforeRouteEnter(() => {
     calls.push('enter')

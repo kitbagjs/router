@@ -16,8 +16,8 @@ import { setStateValues } from '@/services/state'
 import { Routes } from '@/types/route'
 import { NOT_FOUND_REJECTION_TYPE } from '@/types/rejection'
 import { Router, RouterOptions, ServerRenderResponse, RedirectStatus } from '@/types/router'
-import { RouterPush, RouterPushOptionsInternal } from '@/types/routerPush'
-import { RouterReplaceInternal, RouterReplaceOptionsInternal } from '@/types/routerReplace'
+import { RouterPush, RouterPushOptions } from '@/types/routerPush'
+import { RouterReplace, RouterReplaceOptions } from '@/types/routerReplace'
 import { RoutesName } from '@/types/routesMap'
 import { UrlString, isUrlString } from '@/types/urlString'
 import { createNavigationSignals } from '@/services/createNavigationSignals'
@@ -54,6 +54,23 @@ type RouterUpdateOptions = {
    * consulted and the title the markup carries is kept.
    */
   hydrating?: boolean,
+}
+
+/**
+ * Push and replace as the router itself calls them, which may carry the status a server responds with for
+ * the redirect. The router exposes {@link RouterPush} and {@link RouterReplace} instead.
+ */
+type RouterPushOptionsInternal = RouterPushOptions & {
+  redirectStatus?: RedirectStatus,
+}
+
+type RouterReplaceOptionsInternal = RouterReplaceOptions & {
+  redirectStatus?: RedirectStatus,
+}
+
+type RouterReplaceInternal<TRoutes extends Routes> = RouterReplace<TRoutes> & {
+  (route: ResolvedRoute, options: RouterReplaceOptionsInternal): Promise<void>,
+  (url: UrlString, options: RouterReplaceOptionsInternal): Promise<void>,
 }
 
 type RunHooksContext = {
@@ -119,7 +136,7 @@ export function createRouter<
   const valueStore = createRouteValueStore()
   const notFoundRoute = createResolvedRoute(notFoundRejection.route)
 
-  const hooks = createRouterHooks({ redirectStatus })
+  const hooks = createRouterHooks()
 
   hooks.addGlobalRouteHooks(getGlobalHooksForRouter(plugins))
 
@@ -160,6 +177,11 @@ export function createRouter<
 
       case 'PUSH':
         await push(...response.to)
+
+        return false
+
+      case 'REDIRECT':
+        await replace(resolveRoute(response.to.name, response.params), { redirectStatus: response.redirectStatus ?? redirectStatus })
 
         return false
 
@@ -319,19 +341,17 @@ export function createRouter<
       })
   }
 
-  const resolve: RouterResolve<TRoutes | TPlugin['routes']> = (
-    source: RoutesName<TRoutes | TPlugin['routes']>,
-    params: Record<string, unknown> = {},
-    options: RouterResolveOptions = {},
-  ) => {
-    const match = getRouteByName(source)
+  function resolveRoute(name: string, params: Record<string, unknown> = {}, options: RouterResolveOptions = {}): ResolvedRoute {
+    const match = getRouteByName(name)
 
     if (!match) {
-      throw new RouteNotFoundError(source)
+      throw new RouteNotFoundError(name)
     }
 
     return createResolvedRoute(match, params, options)
   }
+
+  const resolve: RouterResolve<TRoutes | TPlugin['routes']> = resolveRoute
 
   function getPushNavigation(
     source: UrlString | RoutesName<TRoutes | TPlugin['routes']> | ResolvedRoute,

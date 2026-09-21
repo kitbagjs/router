@@ -1,7 +1,7 @@
 import { ResolvedRouteUnion } from './resolved'
 import { Route, Routes } from './route'
 import { RedirectStatus } from './router'
-import { RouterReplaceInternal } from './routerReplace'
+import { RouterReplace } from './routerReplace'
 import { UrlParamsReading, UrlParamsWriting } from './url'
 import { AllPropertiesAreOptional, MaybePromise } from './utilities'
 
@@ -21,11 +21,7 @@ export type RouteRedirects<
 type RedirectHookContext<
   TRoutes extends Routes
 > = {
-  replace: RouterReplaceInternal<TRoutes>,
-  /**
-   * The router's status for a redirect that does not declare its own.
-   */
-  redirectStatus: RedirectStatus,
+  replace: RouterReplace<TRoutes>,
 }
 
 export type RedirectHook<
