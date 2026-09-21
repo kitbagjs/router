@@ -41,7 +41,9 @@ const home = createRoute({
 })
 ```
 
-Url pathnames always start with `/`, so the path of every named route must start with `/` once it is combined with its parents. A named route whose path does not start with `/` can never match a url, and the router throws an `UnreachableRouteError` when it is created.
+::: info
+The full path of a named route must start with `/`. Otherwise it can never match a url and the router throws an `UnreachableRouteError`.
+:::
 
 ## Query
 
@@ -72,8 +74,6 @@ const contact = createRoute({
 ## Parent
 
 The `parent` property is used to create nested routes. In this example, `blogPost` route's path is combined with the `blog` route's path to form the full url. A route inherits many of its parent's properties. Specifically, `path`, `query`, `meta`, `state`, `context`, and `hash` are all combined.
-
-Paths are combined as written, so `/blog` + `/:postId` is `/blog/:postId` and `/` + `dashboard` is `/dashboard`. Put the leading `/` on the root route so every named route's full path starts with `/`.
 
 ```ts {7}
 const blog = createRoute({

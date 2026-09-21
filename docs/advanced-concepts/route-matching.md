@@ -28,7 +28,11 @@ const external = createExternalRoute({
 
 ## Path Matches
 
-Routes `path` must match the structure of the URL pathname. Url pathnames always start with `/`, so a named route's path must too. The router throws an `UnreachableRouteError` for a named route whose path, combined with its parents, does not start with `/`.
+Routes `path` must match the structure of the URL pathname.
+
+::: info
+The full path of a named route must start with `/`. Otherwise it can never match a url and the router throws an `UnreachableRouteError`.
+:::
 
 ```ts
 const route = createRoute({
