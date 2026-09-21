@@ -18,3 +18,27 @@ test('defaults to window.location without protocol or host', () => {
 
   expect(response).toBe(initialRoute)
 })
+
+test('hash mode reads the initial url from the hash', () => {
+  vi.stubGlobal('location', { hash: '#/dashboard?tab=1' })
+
+  const response = getInitialUrl(undefined, 'hash')
+
+  expect(response).toBe('/dashboard?tab=1')
+})
+
+test('hash mode without a hash starts at the root', () => {
+  vi.stubGlobal('location', { hash: '' })
+
+  const response = getInitialUrl(undefined, 'hash')
+
+  expect(response).toBe('/')
+})
+
+test('a given initial url wins over the hash', () => {
+  vi.stubGlobal('location', { hash: '#/dashboard' })
+
+  const response = getInitialUrl('/given', 'hash')
+
+  expect(response).toBe('/given')
+})

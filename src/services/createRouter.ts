@@ -461,7 +461,7 @@ export function createRouter<
     setDocumentTitle(title)
   }
 
-  const initialUrl = getInitialUrl(options?.initialUrl)
+  const initialUrl = getInitialUrl(options?.initialUrl, options?.historyMode)
   const initialState = history.location.state
   const { host } = parseUrl(initialUrl)
   const isExternal = createIsExternal(host)
