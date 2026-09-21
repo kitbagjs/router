@@ -1,6 +1,4 @@
-import { RedirectStatus } from './router'
 import { RouterPush } from './routerPush'
-import { Route } from './route'
 
 export type CallbackContextSuccess = {
   status: 'SUCCESS',
@@ -13,12 +11,7 @@ export type CallbackContextPush = {
 
 export type CallbackContextRedirect = {
   status: 'REDIRECT',
-  to: Route,
-  params: Record<string, unknown> | undefined,
-  /**
-   * The status the redirect declared, or undefined to use the router's `redirectStatus`.
-   */
-  redirectStatus: RedirectStatus | undefined,
+  to: Parameters<RouterPush>,
 }
 
 export type CallbackContextReject = {

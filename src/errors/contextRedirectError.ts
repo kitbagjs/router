@@ -1,14 +1,13 @@
 import { CallbackContextRedirect } from '@/types/callbackContext'
 import { ContextError } from './contextError'
-import { RedirectStatus } from '@/types/router'
-import { Route } from '@/types/route'
+import { RouterPush } from '@/types/routerPush'
 
 export class ContextRedirectError extends ContextError {
   public response: CallbackContextRedirect
 
-  public constructor(to: Route, params: Record<string, unknown> | undefined, redirectStatus: RedirectStatus | undefined) {
+  public constructor(to: unknown[]) {
     super('Uncaught ContextRedirectError')
 
-    this.response = { status: 'REDIRECT', to, params, redirectStatus }
+    this.response = { status: 'REDIRECT', to: to as Parameters<RouterPush> }
   }
 }

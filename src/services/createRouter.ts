@@ -136,7 +136,7 @@ export function createRouter<
   const valueStore = createRouteValueStore()
   const notFoundRoute = createResolvedRoute(notFoundRejection.route)
 
-  const hooks = createRouterHooks()
+  const hooks = createRouterHooks({ redirectStatus })
 
   hooks.addGlobalRouteHooks(getGlobalHooksForRouter(plugins))
 
@@ -176,12 +176,8 @@ export function createRouter<
         return false
 
       case 'PUSH':
-        await push(...response.to)
-
-        return false
-
       case 'REDIRECT':
-        await replace(resolveRoute(response.to.name, response.params), { redirectStatus: response.redirectStatus ?? redirectStatus })
+        await push(...response.to)
 
         return false
 
@@ -341,17 +337,19 @@ export function createRouter<
       })
   }
 
-  function resolveRoute(name: string, params: Record<string, unknown> = {}, options: RouterResolveOptions = {}): ResolvedRoute {
-    const match = getRouteByName(name)
+  const resolve: RouterResolve<TRoutes | TPlugin['routes']> = (
+    source: RoutesName<TRoutes | TPlugin['routes']>,
+    params: Record<string, unknown> = {},
+    options: RouterResolveOptions = {},
+  ) => {
+    const match = getRouteByName(source)
 
     if (!match) {
-      throw new RouteNotFoundError(name)
+      throw new RouteNotFoundError(source)
     }
 
     return createResolvedRoute(match, params, options)
   }
-
-  const resolve: RouterResolve<TRoutes | TPlugin['routes']> = resolveRoute
 
   function getPushNavigation(
     source: UrlString | RoutesName<TRoutes | TPlugin['routes']> | ResolvedRoute,
