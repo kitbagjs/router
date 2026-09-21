@@ -75,30 +75,16 @@ describe('router.render', () => {
     await expect(router.render()).resolves.toMatchObject({ status: 200 })
   })
 
-  test('after a push, waits for the new route data', async () => {
-    const { promise, resolve } = Promise.withResolvers<string>()
-    const other = createRoute({ name: 'other', path: '/other', component }).addLoader(() => promise)
+  test('a push on the server is the redirect the response reports', async () => {
+    const other = createRoute({ name: 'other', path: '/other', component })
     const home = createRoute({ name: 'home', path: '/', component })
     const router = createRouter([home, other], { ssr: true, initialUrl: '/' })
 
     await router.start()
     await router.push('other')
 
-    let rendered = false
-
-    const rendering = router.render().then(() => {
-      rendered = true
-    })
-
-    await flushPromises()
-
-    expect(rendered).toBe(false)
-
-    resolve('loaded')
-    await rendering
-
-    expect(rendered).toBe(true)
-    await expect(router.route.data).resolves.toBe('loaded')
+    expect(router.route.name).toBe('home')
+    await expect(router.render()).resolves.toMatchObject({ kind: 'redirect', status: 302, location: '/other' })
   })
 
   test('given a loader that rejects the navigation, reports the rejection status', async () => {

@@ -3,7 +3,6 @@ import { Routes } from '@/types/route'
 import { Hooks } from '@/models/hooks'
 import { ExtractRejectionTypes, Rejection } from '@/types/rejection'
 import { RedirectHook, RouteRedirect } from '@/types/redirects'
-import { ContextRedirectError } from '@/errors/contextRedirectError'
 import { MultipleRouteRedirectsError } from '@/errors/multipleRouteRedirectsError'
 
 type RouteHooks<
@@ -30,8 +29,8 @@ export function createRouteHooks(): RouteHooks {
       throw new MultipleRouteRedirectsError(to.name)
     }
 
-    const hook: RedirectHook = (from) => {
-      throw new ContextRedirectError([to.name, convertParams?.(from.params), { replace: true }], options?.status)
+    const hook: RedirectHook = (from, { replace, redirectStatus }) => {
+      replace(to.name, convertParams?.(from.params), { redirectStatus: options?.status ?? redirectStatus })
     }
 
     store.redirects.add(hook)

@@ -11,11 +11,11 @@ import { createRouterKeyStore } from '@/services/createRouterKeyStore'
 import { Hooks } from '@/models/hooks'
 import { createRouterCallbackContext } from '@/services/createRouterCallbackContext'
 import { ContextError } from '@/errors/contextError'
-import { ContextRedirectError } from '@/errors/contextRedirectError'
 import { createRouteHooks } from '@/services/createRouteHooks'
 import { ResolvedRoute } from '@/types/resolved'
 import { MaybePromise } from '@/types/utilities'
 import { RedirectHook } from '@/types/redirects'
+import { RedirectStatus } from '@/types/router'
 
 export const getRouterHooksKey = createRouterKeyStore<RouterHooks>()
 
@@ -36,7 +36,11 @@ export type RouterHooks = HasVueAppStore & {
   onRejection: AddRejectionHook,
 }
 
-export function createRouterHooks(): RouterHooks {
+type RouterHooksOptions = {
+  redirectStatus: RedirectStatus,
+}
+
+export function createRouterHooks({ redirectStatus }: RouterHooksOptions): RouterHooks {
   const { setVueApp, runWithContext } = createVueAppStore()
   const { store: globalStore, ...globalHooks } = createRouteHooks()
 
@@ -70,16 +74,13 @@ export function createRouterHooks(): RouterHooks {
           update,
           abort,
           signal,
+          redirectStatus,
         })))
       })
 
       await Promise.all(results)
     } catch (error) {
       if (error instanceof ContextPushError) {
-        return error.response
-      }
-
-      if (error instanceof ContextRedirectError) {
         return error.response
       }
 

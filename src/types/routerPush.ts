@@ -6,6 +6,7 @@ import { UrlString } from '@/types/urlString'
 import { AllPropertiesAreOptional } from '@/types/utilities'
 import { QuerySource } from '@/types/querySource'
 import { ResolvedRoute } from '@/types/resolved'
+import { RedirectStatus } from '@/types/router'
 
 export type RouterPushOptions<
   TState = unknown
@@ -26,6 +27,16 @@ export type RouterPushOptions<
    * State values to pass to the route.
    */
   state?: Partial<TState>,
+}
+
+/**
+ * Options as the router itself pushes with, which may carry the status a server responds with for the
+ * push. The router exposes {@link RouterPushOptions} instead.
+ */
+export type RouterPushOptionsInternal<
+  TState = unknown
+> = RouterPushOptions<TState> & {
+  redirectStatus?: RedirectStatus,
 }
 
 type RouterPushArgs<

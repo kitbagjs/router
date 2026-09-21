@@ -16,8 +16,8 @@ import { setStateValues } from '@/services/state'
 import { Routes } from '@/types/route'
 import { NOT_FOUND_REJECTION_TYPE } from '@/types/rejection'
 import { Router, RouterOptions, ServerRenderResponse, RedirectStatus } from '@/types/router'
-import { RouterPush, RouterPushOptions } from '@/types/routerPush'
-import { RouterReplace, RouterReplaceOptions } from '@/types/routerReplace'
+import { RouterPush, RouterPushOptionsInternal } from '@/types/routerPush'
+import { RouterReplaceInternal, RouterReplaceOptionsInternal } from '@/types/routerReplace'
 import { RoutesName } from '@/types/routesMap'
 import { UrlString, isUrlString } from '@/types/urlString'
 import { createNavigationSignals } from '@/services/createNavigationSignals'
@@ -119,7 +119,7 @@ export function createRouter<
   const valueStore = createRouteValueStore()
   const notFoundRoute = createResolvedRoute(notFoundRejection.route)
 
-  const hooks = createRouterHooks()
+  const hooks = createRouterHooks({ redirectStatus })
 
   hooks.addGlobalRouteHooks(getGlobalHooksForRouter(plugins))
 
@@ -159,12 +159,7 @@ export function createRouter<
         return false
 
       case 'PUSH':
-        await followPush(response.to)
-
-        return false
-
-      case 'REDIRECT':
-        await followPush(response.to, response.redirectStatus ?? redirectStatus)
+        await push(...response.to)
 
         return false
 
@@ -219,13 +214,7 @@ export function createRouter<
       const cleanedUrl = removeTrailingSlashesFromPath(url)
 
       if (isUrlString(cleanedUrl)) {
-        if (isSSR) {
-          setServerRedirect(redirectStatus, cleanedUrl)
-
-          return
-        }
-
-        return replace(cleanedUrl, options)
+        return replace(cleanedUrl, { ...options, redirectStatus })
       }
     }
 
@@ -299,7 +288,7 @@ export function createRouter<
             break
 
           case 'PUSH':
-            followPush(response.to)
+            push(...response.to)
             break
 
           case 'REJECT':
@@ -316,7 +305,7 @@ export function createRouter<
           hooks.runErrorHooks(error, { to, from, source })
         } catch (error) {
           if (error instanceof ContextPushError) {
-            followPush(error.response.to)
+            push(...error.response.to)
             return
           }
 
@@ -346,29 +335,29 @@ export function createRouter<
 
   function getPushNavigation(
     source: UrlString | RoutesName<TRoutes | TPlugin['routes']> | ResolvedRoute,
-    paramsOrOptions?: Record<string, unknown> | RouterPushOptions,
-    maybeOptions?: RouterPushOptions,
-  ): { url: string, options: RouterUpdateOptions } {
+    paramsOrOptions?: Record<string, unknown> | RouterPushOptionsInternal,
+    maybeOptions?: RouterPushOptionsInternal,
+  ): { url: string, options: RouterUpdateOptions, redirectStatus: RedirectStatus | undefined } {
     if (isUrlString(source)) {
-      const options: RouterPushOptions = { ...paramsOrOptions }
+      const { redirectStatus, ...options }: RouterPushOptionsInternal = { ...paramsOrOptions }
       const url = updateUrl(source, {
         query: options.query,
         hash: options.hash,
       })
 
-      return { url, options }
+      return { url, options, redirectStatus }
     }
 
     if (typeof source === 'string') {
-      const { replace, ...options }: RouterPushOptions = { ...maybeOptions }
+      const { replace, redirectStatus, ...options }: RouterPushOptionsInternal = { ...maybeOptions }
       const params: any = { ...paramsOrOptions }
       const resolved = resolve(source, params, options)
       const state = setStateValues({ ...resolved.matched.state }, { ...resolved.state, ...options.state })
 
-      return { url: resolved.href, options: { replace, state } }
+      return { url: resolved.href, options: { replace, state }, redirectStatus }
     }
 
-    const { replace, ...options }: RouterPushOptions = { ...paramsOrOptions }
+    const { replace, redirectStatus, ...options }: RouterPushOptionsInternal = { ...paramsOrOptions }
     const state = setStateValues({ ...source.matched.state }, { ...source.state, ...options.state })
 
     const url = updateUrl(source.href, {
@@ -376,53 +365,44 @@ export function createRouter<
       hash: options.hash,
     })
 
-    return { url, options: { replace, state } }
+    return { url, options: { replace, state }, redirectStatus }
   }
 
-  const push: RouterPush<TRoutes | TPlugin['routes']> = (
+  const push: RouterPush<TRoutes | TPlugin['routes']> = async (
     source: UrlString | RoutesName<TRoutes | TPlugin['routes']> | ResolvedRoute,
-    paramsOrOptions?: Record<string, unknown> | RouterPushOptions,
-    maybeOptions?: RouterPushOptions,
+    paramsOrOptions?: Record<string, unknown> | RouterPushOptionsInternal,
+    maybeOptions?: RouterPushOptionsInternal,
   ) => {
-    const { url, options } = getPushNavigation(source, paramsOrOptions, maybeOptions)
+    const { url, options, redirectStatus } = getPushNavigation(source, paramsOrOptions, maybeOptions)
+
+    if (isSSR) {
+      setServerRedirect(redirectStatus ?? 302, url)
+
+      return
+    }
 
     return set(url, options)
   }
 
-  /**
-   * The server never follows a push. It is reported as the redirect for the response instead.
-   */
-  function followPush(to: Parameters<RouterPush>, status: RedirectStatus = 302): Promise<void> {
-    if (isSSR) {
-      const navigation = getPushNavigation(...to)
-
-      setServerRedirect(status, navigation.url)
-
-      return Promise.resolve()
-    }
-
-    return push(...to)
-  }
-
-  const replace: RouterReplace<TRoutes | TPlugin['routes']> = (
+  const replace: RouterReplaceInternal<TRoutes | TPlugin['routes']> = (
     source: UrlString | RoutesName<TRoutes | TPlugin['routes']> | ResolvedRoute,
-    paramsOrOptions?: Record<string, unknown> | RouterReplaceOptions,
-    maybeOptions?: RouterReplaceOptions,
+    paramsOrOptions?: Record<string, unknown> | RouterReplaceOptionsInternal,
+    maybeOptions?: RouterReplaceOptionsInternal,
   ) => {
     if (isUrlString(source)) {
-      const options: RouterPushOptions = { ...paramsOrOptions, replace: true }
+      const options: RouterPushOptionsInternal = { ...paramsOrOptions, replace: true }
 
       return push(source, options)
     }
 
     if (typeof source === 'string') {
-      const options: RouterPushOptions = { ...maybeOptions, replace: true }
+      const options: RouterPushOptionsInternal = { ...maybeOptions, replace: true }
       const params: any = { ...paramsOrOptions }
 
       return push(source, params, options)
     }
 
-    const options: RouterPushOptions = { ...paramsOrOptions, replace: true }
+    const options: RouterPushOptionsInternal = { ...paramsOrOptions, replace: true }
 
     return push(source, options)
   }

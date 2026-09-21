@@ -8,7 +8,7 @@ import { RouterReplace } from '@/types/routerReplace'
 import { isRejection, Rejection, Rejections } from '@/types/rejection'
 import { RouteContext, RouteContextToRejection, RouteContextToRoute } from '@/types/routeContext'
 import { RouterAbort } from '@/types/routerAbort'
-import { CallbackContextAbort, CallbackContextPush, CallbackContextRedirect, CallbackContextReject, CallbackContextSuccess } from '@/types/callbackContext'
+import { CallbackContextAbort, CallbackContextPush, CallbackContextReject, CallbackContextSuccess } from '@/types/callbackContext'
 import { RouteUpdate } from '@/types/routeUpdate'
 
 export function getHooks(value: Record<string, unknown> | undefined | null): Hooks[] {
@@ -274,7 +274,7 @@ export type AddAfterLeaveHook<
   TRouteFrom extends Route = TRoutes[number]
 > = (hook: AfterLeaveHook<TRoutes, TRejections, TRouteTo, TRouteFrom>) => HookRemove
 
-export type BeforeHookResponse = CallbackContextSuccess | CallbackContextPush | CallbackContextRedirect | CallbackContextReject | CallbackContextAbort
+export type BeforeHookResponse = CallbackContextSuccess | CallbackContextPush | CallbackContextReject | CallbackContextAbort
 export type AfterHookResponse = CallbackContextSuccess | CallbackContextPush | CallbackContextReject
 
 export type HookRunnerContext<TRoutes extends Routes = Routes> = {

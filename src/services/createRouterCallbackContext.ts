@@ -4,7 +4,7 @@ import { ContextPushError } from '@/errors/contextPushError'
 import { ContextRejectionError } from '@/errors/contextRejectionError'
 import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { RouterReject } from '@/types/routerReject'
-import { RouterReplace } from '@/types/routerReplace'
+import { RouterReplaceInternal } from '@/types/routerReplace'
 import { isUrlString } from '@/types/urlString'
 import { Routes } from '@/types/route'
 import { Rejections } from '@/types/rejection'
@@ -22,7 +22,7 @@ type RouterCallbackContext<
 > = {
   reject: RouterReject<TRejections>,
   push: RouterPush<TRoutes>,
-  replace: RouterReplace<TRoutes>,
+  replace: RouterReplaceInternal<TRoutes>,
   update: RouteUpdate<ResolvedRoute<TRoutes[number]>>,
   abort: CallbackContextAbort,
 }
