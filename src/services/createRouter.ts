@@ -16,8 +16,7 @@ import { setStateValues } from '@/services/state'
 import { Routes } from '@/types/route'
 import { NOT_FOUND_REJECTION_TYPE } from '@/types/rejection'
 import { Router, RouterOptions, ServerRenderResponse, RedirectStatus } from '@/types/router'
-import { RouterPush, RouterPushOptions } from '@/types/routerPush'
-import { RouterReplace, RouterReplaceOptions } from '@/types/routerReplace'
+import { RouterPushInternal, RouterPushOptionsInternal, RouterReplaceInternal, RouterReplaceOptionsInternal } from '@/types/routerNavigationInternal'
 import { RoutesName } from '@/types/routesMap'
 import { UrlString, isUrlString } from '@/types/urlString'
 import { createNavigationSignals } from '@/services/createNavigationSignals'
@@ -54,23 +53,6 @@ type RouterUpdateOptions = {
    * consulted and the title the markup carries is kept.
    */
   hydrating?: boolean,
-}
-
-/**
- * Push and replace as the router itself calls them, which may carry the status a server responds with for
- * the redirect. The router exposes {@link RouterPush} and {@link RouterReplace} instead.
- */
-type RouterPushOptionsInternal = RouterPushOptions & {
-  redirectStatus?: RedirectStatus,
-}
-
-type RouterReplaceOptionsInternal = RouterReplaceOptions & {
-  redirectStatus?: RedirectStatus,
-}
-
-type RouterReplaceInternal<TRoutes extends Routes> = RouterReplace<TRoutes> & {
-  (route: ResolvedRoute, options: RouterReplaceOptionsInternal): Promise<void>,
-  (url: UrlString, options: RouterReplaceOptionsInternal): Promise<void>,
 }
 
 type RunHooksContext = {
@@ -386,7 +368,7 @@ export function createRouter<
     return { url, options: { replace, state }, redirectStatus }
   }
 
-  const push: RouterPush<TRoutes | TPlugin['routes']> = async (
+  const push: RouterPushInternal<TRoutes | TPlugin['routes']> = async (
     source: UrlString | RoutesName<TRoutes | TPlugin['routes']> | ResolvedRoute,
     paramsOrOptions?: Record<string, unknown> | RouterPushOptionsInternal,
     maybeOptions?: RouterPushOptionsInternal,
