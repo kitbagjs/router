@@ -15,7 +15,7 @@ import { decodePayloadValues, encodePayloadValues, getHydratingPayload, payloadT
 import { setStateValues } from '@/services/state'
 import { Routes } from '@/types/route'
 import { NOT_FOUND_REJECTION_TYPE } from '@/types/rejection'
-import { Router, RouterOptions, ServerRenderResponse } from '@/types/router'
+import { Router, RouterOptions, ServerRenderResponse, RedirectStatus } from '@/types/router'
 import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { RouterReplace, RouterReplaceOptions } from '@/types/routerReplace'
 import { RoutesName } from '@/types/routesMap'
@@ -159,29 +159,12 @@ export function createRouter<
         return false
 
       case 'PUSH':
-        if (isSSR) {
-          const navigation = getPushNavigation(...response.to)
-
-          setServerRedirect(302, navigation.url)
-
-          return false
-        }
-
-        await push(...response.to)
+        await followPush(response.to)
 
         return false
 
       case 'REDIRECT':
-        if (isSSR) {
-          const status = response.redirectStatus ?? redirectStatus
-          const navigation = getPushNavigation(...response.to)
-
-          setServerRedirect(status, navigation.url)
-
-          return false
-        }
-
-        await push(...response.to)
+        await followPush(response.to, response.redirectStatus ?? redirectStatus)
 
         return false
 
@@ -316,15 +299,7 @@ export function createRouter<
             break
 
           case 'PUSH':
-            if (isSSR) {
-              const navigation = getPushNavigation(...response.to)
-
-              setServerRedirect(302, navigation.url)
-
-              break
-            }
-
-            push(...response.to)
+            followPush(response.to)
             break
 
           case 'REJECT':
@@ -341,7 +316,7 @@ export function createRouter<
           hooks.runErrorHooks(error, { to, from, source })
         } catch (error) {
           if (error instanceof ContextPushError) {
-            push(...error.response.to)
+            followPush(error.response.to)
             return
           }
 
@@ -412,6 +387,21 @@ export function createRouter<
     const { url, options } = getPushNavigation(source, paramsOrOptions, maybeOptions)
 
     return set(url, options)
+  }
+
+  /**
+   * The server never follows a push. It is reported as the redirect for the response instead.
+   */
+  function followPush(to: Parameters<RouterPush>, status: RedirectStatus = 302): Promise<void> {
+    if (isSSR) {
+      const navigation = getPushNavigation(...to)
+
+      setServerRedirect(status, navigation.url)
+
+      return Promise.resolve()
+    }
+
+    return push(...to)
   }
 
   const replace: RouterReplace<TRoutes | TPlugin['routes']> = (

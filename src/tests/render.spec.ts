@@ -201,6 +201,27 @@ describe('router.render', () => {
     expect(router.route.name).toBe('route')
     expect(result).toMatchObject({ kind: 'redirect', status: 302, location: '/other' })
   })
+
+  test('given a loader that throws and an error hook that pushes, responds with the redirect without following it', async () => {
+    const other = createRoute({ name: 'other', path: '/other', component })
+    const route = createRoute({ name: 'route', path: '/', component, context: [other] })
+      .addLoader(() => {
+        throw new Error('loader failed')
+      })
+
+    const router = createRouter([route, other], { ssr: true, initialUrl: '/' })
+
+    router.onError((_error, { push }) => {
+      push('other')
+    })
+
+    await router.start()
+
+    const result = await router.render()
+
+    expect(router.route.name).toBe('route')
+    expect(result).toMatchObject({ kind: 'redirect', status: 302, location: '/other' })
+  })
 })
 
 test('render starts the router when it has not been started', async () => {
