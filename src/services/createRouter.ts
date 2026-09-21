@@ -41,6 +41,7 @@ import { getRouterRejectionInjectionKey } from '@/compositions/useRejection'
 import { routerInjectionKey } from '@/keys'
 import { createRouterView } from '@/components/routerView'
 import { createRouterLink } from '@/components/routerLink'
+import { createRouterProgress } from '@/components/routerProgress'
 import { ContextPushError } from '@/errors/contextPushError'
 import { ContextRejectionError } from '@/errors/contextRejectionError'
 import { setupRouterDevtools } from '@/devtools/createRouterDevtools'
@@ -614,9 +615,11 @@ export function createRouter<
 
     const routerView = createRouterView(routerKey)
     const routerLink = createRouterLink(routerKey)
+    const routerProgress = createRouterProgress(routerKey)
 
     app.component('RouterView', routerView)
     app.component('RouterLink', routerLink)
+    app.component('RouterProgress', routerProgress)
     app.provide(getRouterRejectionInjectionKey(routerKey), currentRejection)
     app.provide(getRouterHooksKey(routerKey), hooks)
     app.provide(getRouteValueStoreInjectionKey(routerKey), valueStore)
