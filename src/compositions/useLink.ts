@@ -11,6 +11,8 @@ import { combineUrlSearchParams } from '@/utilities/urlSearchParams'
 import { isDefined } from '@/utilities/guards'
 import { Router, RouterRouteName, RouterRoutes } from '@/types/router'
 import { UseLink, UseLinkOptions } from '@/types/useLink'
+import { parseUrl, updateUrl } from '@/services/urlParser'
+import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
 
 type UseLinkArgs<
   TRouter extends Router,
@@ -39,17 +41,42 @@ export function createUseLink<TRouter extends Router>(routerKey: InjectionKey<TR
   ) => {
     const router = useRouter()
 
-    const route = computed(() => {
+    const isRouteName = (value: string | ResolvedRoute | undefined): value is string => typeof value === 'string' && !isUrlString(value)
+
+    const linkOptions = computed<UseLinkOptions>(() => {
       const sourceValue = toValue(source)
-      if (typeof sourceValue !== 'string') {
-        return sourceValue
+
+      return isRouteName(sourceValue) ? toValue(maybeOptions) : toValue(paramsOrOptions)
+    })
+
+    const route = computed<ResolvedRoute | undefined>(() => {
+      const sourceValue = toValue(source)
+
+      if (isRouteName(sourceValue)) {
+        return router.resolve(sourceValue, toValue(paramsOrOptions), toValue(maybeOptions))
       }
+
+      const { query, hash, state } = linkOptions.value
 
       if (isUrlString(sourceValue)) {
-        return router.find(sourceValue, toValue(maybeOptions))
+        return router.find(updateUrl(sourceValue, { query, hash }), { state })
       }
 
-      return router.resolve(sourceValue, toValue(paramsOrOptions), toValue(maybeOptions))
+      if (!sourceValue) {
+        return undefined
+      }
+
+      // Kept as the same route rather than found again by url, which could match a sibling with the same url
+      const href = updateUrl(sourceValue.href, { query, hash })
+      const parts = parseUrl(href)
+
+      return {
+        ...sourceValue,
+        href,
+        query: createResolvedRouteQuery(parts.query),
+        hash: parts.hash,
+        state: { ...sourceValue.state, ...state },
+      }
     })
 
     const href = computed(() => {
@@ -59,7 +86,9 @@ export function createUseLink<TRouter extends Router>(routerKey: InjectionKey<TR
 
       const sourceValue = toValue(source)
       if (isUrlString(sourceValue)) {
-        return sourceValue
+        const { query, hash } = linkOptions.value
+
+        return updateUrl(sourceValue, { query, hash })
       }
 
       console.error(new Error('Failed to resolve route in RouterLink.'))
@@ -72,12 +101,6 @@ export function createUseLink<TRouter extends Router>(routerKey: InjectionKey<TR
     const isActive = computed(() => isRoute(router.route) && isDefined(route.value) && router.route.href.startsWith(route.value.href))
     const isExactActive = computed(() => router.route.href === route.value?.href)
     const isExternal = computed(() => !!href.value && router.isExternal(href.value))
-
-    const linkOptions = computed<UseLinkOptions>(() => {
-      const sourceValue = toValue(source)
-
-      return typeof sourceValue !== 'string' || isUrlString(sourceValue) ? toValue(paramsOrOptions) : toValue(maybeOptions)
-    })
 
     const { element, commit } = usePrefetching(() => ({
       route: route.value,
