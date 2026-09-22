@@ -2,6 +2,7 @@ import { expect, test } from 'vitest'
 import { createRoute } from '@/services/createRoute'
 import { createResolvedRoute } from '@/services/createResolvedRoute'
 import { updateResolvedRoute } from '@/services/updateResolvedRoute'
+import { isResolvedRoute } from '@/types/resolved'
 import { component } from '@/utilities/testHelpers'
 
 const route = createRoute({
@@ -48,4 +49,10 @@ test('merges state with the new values overriding', () => {
   const response = updateResolvedRoute(resolved, { state: { bar: 'c' } })
 
   expect(response.state).toMatchObject({ foo: 'a', bar: 'c' })
+})
+
+test('returns a resolved route', () => {
+  const resolved = createResolvedRoute(route, { id: '1', sort: 'asc' })
+
+  expect(isResolvedRoute(updateResolvedRoute(resolved, { hash: 'top' }))).toBe(true)
 })

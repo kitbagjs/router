@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest'
 import { createRoute } from '@/services/createRoute'
 import { createResolvedRoute } from '@/services/createResolvedRoute'
+import { isResolvedRoute } from '@/types/resolved'
 import { component } from '@/utilities/testHelpers'
 
 test('given a route with params returns all params', () => {
@@ -97,4 +98,15 @@ describe('getTitle', () => {
 
     await expect(createResolvedRoute(route).getTitle()).resolves.toBeUndefined()
   })
+})
+
+test('is a resolved route, and the route it was created from is not', () => {
+  const route = createRoute({
+    name: 'route',
+    path: '/route',
+    component,
+  })
+
+  expect(isResolvedRoute(createResolvedRoute(route))).toBe(true)
+  expect(isResolvedRoute(route)).toBe(false)
 })

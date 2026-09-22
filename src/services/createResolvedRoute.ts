@@ -2,7 +2,7 @@ import { parseUrl, updateUrl } from '@/services/urlParser'
 import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
 import { getStateValues } from '@/services/state'
 import { RouterResolveOptions } from '@/types/routerResolve'
-import { ResolvedRoute } from '@/types/resolved'
+import { IS_RESOLVED_ROUTE_SYMBOL, ResolvedRoute, ResolvedRouteInternal } from '@/types/resolved'
 import { isRoute, Route } from '@/types/route'
 
 export function createResolvedRoute(route: Route, params: Record<string, unknown> = {}, options: RouterResolveOptions = {}): ResolvedRoute {
@@ -26,8 +26,9 @@ export function createResolvedRoute(route: Route, params: Record<string, unknown
     return route.getTitle(resolvedRoute)
   }
 
-  const resolvedRoute: ResolvedRoute = {
+  const resolvedRoute: ResolvedRoute & ResolvedRouteInternal = {
     ...route,
+    [IS_RESOLVED_ROUTE_SYMBOL]: true,
     matched,
     query: createResolvedRouteQuery(query),
     state: getStateValues(route.state, options.state),

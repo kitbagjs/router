@@ -1,7 +1,7 @@
 import { InjectionKey, MaybeRefOrGetter, computed, toValue } from 'vue'
 import { createUsePrefetching } from '@/compositions/usePrefetching'
 import { createUseRouter } from '@/compositions/useRouter'
-import { ResolvedRoute } from '@/types/resolved'
+import { isResolvedRoute, ResolvedRoute } from '@/types/resolved'
 import { RouterPushOptions } from '@/types/routerPush'
 import { RouteParamsByKey } from '@/types/routeWithParams'
 import { UrlString, isUrlString } from '@/types/urlString'
@@ -48,11 +48,12 @@ export function createUseLink<TRouter extends Router>(routerKey: InjectionKey<TR
 
     const route = computed(() => {
       const sourceValue = toValue(source)
+
       if (sourceValue === undefined) {
         return undefined
       }
 
-      if (typeof sourceValue !== 'string') {
+      if (isResolvedRoute(sourceValue)) {
         return updateResolvedRoute(sourceValue, linkOptions.value)
       }
 
