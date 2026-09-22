@@ -1,26 +1,26 @@
 # Navigation Progress
 
-A navigation is under way from the moment it is asked for until the route it leads to has everything it renders with. Kitbag Router counts the work a navigation waits on, so you can show feedback while slow hooks and data hold a page up.
+When a navigation is slow, whether that is because of a before hook, a loader, or a component that has to be fetched, users want to see that something is happening. Kitbag Router keeps track of how much work each navigation is waiting on so you can show them.
 
 ## What is counted
 
-Every unit of work a navigation waits on is known before it runs, so the progress is real rather than an animated guess.
+The router knows everything a navigation will wait on before any of it runs, so the progress it reports is real rather than an animation that guesses.
 
-- **Before hooks**, including redirects and global hooks.
-- **Props getters and loaders** of every route in the match.
-- **Async route components** defined with `defineAsyncComponent`. Only components the routes render are known to the router, so an async component elsewhere in the tree is not counted.
+- Before hooks, including redirects and global hooks.
+- Props getters and loaders for every route in the match.
+- Async route components defined with `defineAsyncComponent`. The router only knows about the components its routes render, so an async component somewhere else in the tree is not counted.
 
-Every unit counts the same. After hooks are not counted because they do not hold up the page. A route that was [prefetched](/advanced-concepts/prefetching) has some of its units settled already, so its navigation finishes sooner.
+Each of these is one unit, and they all count the same. After hooks are not counted because they do not hold up the page. If a route was [prefetched](/advanced-concepts/prefetching), some of its units are already done when the navigation starts, so it finishes sooner.
 
-A navigation ends when its route has everything it renders with, when it is rejected, when it is aborted, or when another navigation begins in its place. A rejection completes the count, since a rejection page is a page too. An abort wipes it. A new navigation, whether from the user or from a `push` in a hook or loader, starts a fresh count of its own.
+A navigation is finished once its route has everything it needs to render. It can also end early if a hook rejects or aborts it, or if another navigation starts before it is done. A rejection counts as finished, since the rejection page is a page too. An abort just clears the count. If a hook or loader pushes somewhere else, that is a new navigation with a fresh count of its own.
 
 ::: info
-Progress is tracked for client side navigations only, not while server rendering or hydrating.
+Progress is only tracked for client side navigations, not while server rendering or hydrating.
 :::
 
 ## useNavigation
 
-The `useNavigation` composable tells you whether a navigation is under way, which routes it moves between, and how far it has come.
+Use `useNavigation` to find out whether a navigation is in progress, where it is going, and how far along it is.
 
 ```vue
 <script setup lang="ts">
@@ -39,11 +39,11 @@ const { pending, to, settled, total } = useNavigation()
 
 | Property | Type | Description |
 | --- | --- | --- |
-| pending | `boolean` | True while a navigation is under way |
-| to | `ResolvedRoute \| null` | The route the navigation leads to. Null when idle, or when the url matches no route |
-| from | `ResolvedRoute \| null` | The route the navigation leaves. Null when idle, or for the first navigation |
-| settled | `number` | How many units have settled so far |
-| total | `number` | How many units the navigation waits on in all |
+| pending | `boolean` | True while a navigation is in progress |
+| to | `ResolvedRoute \| null` | The route being navigated to. Null when idle, or when the url does not match a route |
+| from | `ResolvedRoute \| null` | The route being navigated away from. Null when idle, or for the first navigation |
+| settled | `number` | How many units have finished so far |
+| total | `number` | How many units the navigation is waiting on in total |
 | progress | `number` | `settled / total`, between 0 and 1. Zero while idle |
 
-Once a navigation ends, `settled` equals `total` if it reached its route or a rejection, and both are zero if it was aborted. A bar can use that to decide between finishing and disappearing.
+After a navigation ends, `settled` equals `total` if it finished or was rejected, and both are zero if it was aborted. That is how a progress bar can tell whether to fill up or just disappear.
