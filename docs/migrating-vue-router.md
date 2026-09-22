@@ -16,7 +16,7 @@
 Child routes in vue-router have very different behavior depending on if the path starts with `/` or not. In Kitbag Router, the behavior is always the same, so add slashes where you want them and leave them off where you don't.
 
 ::: info
-A named route's full path, its own path combined with any parents, must start with `/`. Otherwise it can never match a url and the router throws an `UnreachableRouteError`.
+A named route's final path (its own path combined with any parents) must start with `/`. Otherwise it can never match a url and the router throws an `UnreachableRouteError`.
 :::
 
 ## Props Binding
