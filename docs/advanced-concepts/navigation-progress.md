@@ -20,7 +20,7 @@ Progress is only tracked for client side navigations, not while server rendering
 
 ## useNavigation
 
-Use `useNavigation` to find out whether a navigation is in progress, where it is going, and how far along it is.
+Use the [`useNavigation`](/composables/useNavigation) composable to find out whether a navigation is in progress, where it is going, and how far along it is.
 
 ```vue
 <script setup lang="ts">
@@ -36,14 +36,5 @@ const { pending, to, settled, total } = useNavigation()
   </div>
 </template>
 ```
-
-| Property | Type | Description |
-| --- | --- | --- |
-| pending | `boolean` | True while a navigation is in progress |
-| to | `ResolvedRoute \| null` | The route being navigated to. Null when idle, or when the url does not match a route |
-| from | `ResolvedRoute \| null` | The route being navigated away from. Null when idle, or for the first navigation |
-| settled | `number` | How many units have finished so far |
-| total | `number` | How many units the navigation is waiting on in total |
-| progress | `number` | `settled / total`, between 0 and 1. Zero while idle |
 
 After a navigation ends, `settled` equals `total` if it finished or was rejected, and both are zero if it was aborted. That is how a progress bar can tell whether to fill up or just disappear.
