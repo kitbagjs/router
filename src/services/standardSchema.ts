@@ -220,6 +220,19 @@ function reviver(_key: string, value: any): any {
   return value
 }
 
+// Boolean("false") is true, so only the exact strings the setter writes count as booleans
+function parseBoolean(value: string): unknown {
+  if (value === 'true') {
+    return true
+  }
+
+  if (value === 'false') {
+    return false
+  }
+
+  return value
+}
+
 function tryAll<T>(fns: (() => T)[]): T {
   for (const fn of fns) {
     try {
@@ -245,7 +258,7 @@ function parseStandardSchemaValue(value: string, schema: StandardSchemaLike): un
   }
 
   if (type === 'boolean') {
-    return parse(schema, Boolean(value))
+    return parse(schema, parseBoolean(value))
   }
 
   if (type === 'date') {
@@ -267,7 +280,7 @@ function parseStandardSchemaValue(value: string, schema: StandardSchemaLike): un
   if (type === 'literal' || type === 'enum') {
     return tryAll([
       () => parse(schema, Number(value)),
-      () => parse(schema, Boolean(value)),
+      () => parse(schema, parseBoolean(value)),
       () => parse(schema, value),
     ])
   }
