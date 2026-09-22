@@ -8,13 +8,15 @@ Every unit of work a navigation waits on is known before it runs, so the progres
 
 - **Before hooks**, including redirects and global hooks.
 - **Props getters and loaders** of every route in the match.
-- **Async components** defined with `defineAsyncComponent`.
+- **Async route components** defined with `defineAsyncComponent`. Only components the routes render are known to the router, so an async component elsewhere in the tree is not counted.
 
-Every unit counts the same. After hooks are not counted because they do not hold up the page, and prefetching is not counted because it is not a navigation.
+Every unit counts the same. After hooks are not counted because they do not hold up the page. A route that was [prefetched](/advanced-concepts/prefetching) has some of its units settled already, so its navigation finishes sooner.
 
 A navigation ends when its route has everything it renders with, when it is rejected, when it is aborted, or when another navigation begins in its place. A rejection completes the count, since a rejection page is a page too. An abort wipes it. A new navigation, whether from the user or from a `push` in a hook or loader, starts a fresh count of its own.
 
-Nothing is counted while server rendering or while hydrating the server's response, since neither has anything to show.
+::: info
+Progress is tracked for client side navigations only, not while server rendering or hydrating.
+:::
 
 ## useNavigation
 
