@@ -1,6 +1,6 @@
 # useNavigation
 
-Tells you whether a navigation is in progress, where it is going, and how far along it is. See [navigation progress](/advanced-concepts/navigation-progress) for what the router counts, and the [`UseNavigation`](/api/types/UseNavigation) api reference for the return type.
+Tells you whether a navigation is in progress, where it is going, and how far along it is. See [navigation progress](/advanced-concepts/navigation-progress) for what the router counts.
 
 ```vue
 <script setup lang="ts">
