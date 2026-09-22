@@ -11,7 +11,6 @@ import { combineUrlSearchParams } from '@/utilities/urlSearchParams'
 import { isDefined } from '@/utilities/guards'
 import { Router, RouterRouteName, RouterRoutes } from '@/types/router'
 import { UseLink, UseLinkOptions } from '@/types/useLink'
-import { updateUrl } from '@/services/urlParser'
 import { updateResolvedRoute } from '@/services/updateResolvedRoute'
 
 type UseLinkArgs<
@@ -41,32 +40,25 @@ export function createUseLink<TRouter extends Router>(routerKey: InjectionKey<TR
   ) => {
     const router = useRouter()
 
-    const isRouteName = (value: string | ResolvedRoute | undefined): value is string => typeof value === 'string' && !isUrlString(value)
-
     const linkOptions = computed<UseLinkOptions>(() => {
       const sourceValue = toValue(source)
 
-      return isRouteName(sourceValue) ? toValue(maybeOptions) : toValue(paramsOrOptions)
+      return typeof sourceValue !== 'string' || isUrlString(sourceValue) ? toValue(paramsOrOptions) : toValue(maybeOptions)
     })
 
-    const route = computed<ResolvedRoute | undefined>(() => {
+    const route = computed(() => {
       const sourceValue = toValue(source)
-
-      if (isRouteName(sourceValue)) {
-        return router.resolve(sourceValue, toValue(paramsOrOptions), toValue(maybeOptions))
+      if (typeof sourceValue !== 'string') {
+        return sourceValue && updateResolvedRoute(sourceValue, linkOptions.value)
       }
-
-      const { query, hash, state } = linkOptions.value
 
       if (isUrlString(sourceValue)) {
-        return router.find(updateUrl(sourceValue, { query, hash }), { state })
+        const found = router.find(sourceValue)
+
+        return found && updateResolvedRoute(found, linkOptions.value)
       }
 
-      if (!sourceValue) {
-        return undefined
-      }
-
-      return updateResolvedRoute(sourceValue, { query, hash, state })
+      return router.resolve(sourceValue, toValue(paramsOrOptions), toValue(maybeOptions))
     })
 
     const href = computed(() => {
@@ -76,9 +68,7 @@ export function createUseLink<TRouter extends Router>(routerKey: InjectionKey<TR
 
       const sourceValue = toValue(source)
       if (isUrlString(sourceValue)) {
-        const { query, hash } = linkOptions.value
-
-        return updateUrl(sourceValue, { query, hash })
+        return sourceValue
       }
 
       console.error(new Error('Failed to resolve route in RouterLink.'))
