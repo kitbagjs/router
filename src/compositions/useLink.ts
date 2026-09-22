@@ -48,8 +48,12 @@ export function createUseLink<TRouter extends Router>(routerKey: InjectionKey<TR
 
     const route = computed(() => {
       const sourceValue = toValue(source)
+      if (sourceValue === undefined) {
+        return undefined
+      }
+
       if (typeof sourceValue !== 'string') {
-        return sourceValue && updateResolvedRoute(sourceValue, linkOptions.value)
+        return updateResolvedRoute(sourceValue, linkOptions.value)
       }
 
       if (isUrlString(sourceValue)) {
