@@ -11,8 +11,8 @@ import { combineUrlSearchParams } from '@/utilities/urlSearchParams'
 import { isDefined } from '@/utilities/guards'
 import { Router, RouterRouteName, RouterRoutes } from '@/types/router'
 import { UseLink, UseLinkOptions } from '@/types/useLink'
-import { parseUrl, updateUrl } from '@/services/urlParser'
-import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
+import { updateUrl } from '@/services/urlParser'
+import { updateResolvedRoute } from '@/services/updateResolvedRoute'
 
 type UseLinkArgs<
   TRouter extends Router,
@@ -66,17 +66,7 @@ export function createUseLink<TRouter extends Router>(routerKey: InjectionKey<TR
         return undefined
       }
 
-      // Kept as the same route rather than found again by url, which could match a sibling with the same url
-      const href = updateUrl(sourceValue.href, { query, hash })
-      const parts = parseUrl(href)
-
-      return {
-        ...sourceValue,
-        href,
-        query: createResolvedRouteQuery(parts.query),
-        hash: parts.hash,
-        state: { ...sourceValue.state, ...state },
-      }
+      return updateResolvedRoute(sourceValue, { query, hash, state })
     })
 
     const href = computed(() => {
