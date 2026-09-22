@@ -6,7 +6,7 @@ import { createActivityTracker } from '@/services/createActivityTracker'
 import { SsrOptionRequiredError } from '@/errors/ssrOptionRequiredError'
 import { parseUrl, updateUrl } from '@/services/urlParser'
 import { createRouteValueStore, RouteValueResponse } from '@/services/createRouteValueStore'
-import { createNavigationProgress, NavigationLedger } from '@/services/createNavigationProgress'
+import { createNavigationProgress, NavigationProgressTracker } from '@/services/createNavigationProgress'
 import { getComputations } from '@/services/getComputations'
 import { getAsyncComponents, loadAsyncComponents } from '@/utilities/components'
 import { getNavigationProgressKey } from '@/compositions/useNavigation'
@@ -70,7 +70,7 @@ type RunHooksContext = {
 type RunBeforeHooksContext = RunHooksContext & {
   url: string,
   options: RouterUpdateOptions,
-  ledger: NavigationLedger,
+  progress: NavigationProgressTracker,
 }
 
 /**
@@ -120,7 +120,7 @@ export function createRouter<
   const rejectStatus = options?.rejectStatus ?? 200
   const isSSR = options?.ssr ?? false
   const activity = createActivityTracker()
-  const progress = createNavigationProgress()
+  const navigationProgress = createNavigationProgress()
   const { routes, getRouteByName, getRejectionByType } = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options)
   const notFoundRejection = getRejectionByType('NotFound')
   const valueStore = createRouteValueStore()
@@ -154,8 +154,8 @@ export function createRouter<
    * Runs the before hooks for a navigation and reacts to their response. Reports whether the
    * navigation should continue.
    */
-  async function runBeforeHooks({ navigationId, to, from, url, options, ledger }: RunBeforeHooksContext): Promise<boolean> {
-    const response = await hooks.runBeforeRouteHooks({ to, from, ledger })
+  async function runBeforeHooks({ navigationId, to, from, url, options, progress }: RunBeforeHooksContext): Promise<boolean> {
+    const response = await hooks.runBeforeRouteHooks({ to, from, progress })
 
     if (!isCurrentNavigationId(navigationId)) {
       return false
@@ -163,7 +163,7 @@ export function createRouter<
 
     switch (response.status) {
       case 'ABORT':
-        ledger.abort()
+        progress.abort()
 
         return false
 
@@ -197,7 +197,7 @@ export function createRouter<
       case 'REJECT':
         history.update(url, options)
         reject(response.type, { to, from })
-        ledger.complete()
+        progress.complete()
 
         return false
 
@@ -259,7 +259,7 @@ export function createRouter<
 
     const to = find(url, options) ?? null
     const from = getFromRouteForHooks(navigationId)
-    const ledger = progress.begin({
+    const progress = navigationProgress.begin({
       to,
       from,
       expected: countRouteUnits(url, to),
@@ -269,7 +269,7 @@ export function createRouter<
     function commitNavigation(): void {
       if (!to) {
         reject(NOT_FOUND_REJECTION_TYPE, { to, from })
-        ledger.complete()
+        progress.complete()
 
         return
       }
@@ -277,10 +277,10 @@ export function createRouter<
       clearRejection()
 
       if (!isExternal(url)) {
-        setRouteValuesAndUpdateRoute(to, from, ledger)
+        setRouteValuesAndUpdateRoute(to, from, progress)
       }
 
-      ledger.close()
+      progress.close()
 
       if (!options.hydrating) {
         updateTitle()
@@ -288,7 +288,7 @@ export function createRouter<
     }
 
     if (!options.hydrating) {
-      const shouldCommit = await runBeforeHooks({ navigationId, to, from, url, options, ledger })
+      const shouldCommit = await runBeforeHooks({ navigationId, to, from, url, options, progress })
 
       if (!shouldCommit) {
         return
@@ -314,7 +314,7 @@ export function createRouter<
     return getComputations(to).length + getAsyncComponents(to).length
   }
 
-  function setRouteValuesAndUpdateRoute(to: ResolvedRoute, from: ResolvedRoute | null, ledger: NavigationLedger): void {
+  function setRouteValuesAndUpdateRoute(to: ResolvedRoute, from: ResolvedRoute | null, progress: NavigationProgressTracker): void {
     const { props, loaders, values } = valueStore.commit(to)
 
     activity.add(
@@ -322,7 +322,7 @@ export function createRouter<
       handleRouteValueResponse(loaders, 'loader', to, from),
     )
 
-    ledger.track(...values, ...loadAsyncComponents(to))
+    progress.track(...values, ...loadAsyncComponents(to))
 
     updateRoute(to)
   }
@@ -624,7 +624,7 @@ export function createRouter<
 
   function stop(): void {
     stopNavigationIds()
-    progress.stop()
+    navigationProgress.stop()
     history.stopListening()
   }
 
@@ -645,7 +645,7 @@ export function createRouter<
     app.provide(getRouterHooksKey(routerKey), hooks)
     app.provide(getRouteValueStoreInjectionKey(routerKey), valueStore)
     app.provide(getComponentsStoreKey(routerKey), componentsStore)
-    app.provide(getNavigationProgressKey(routerKey), progress)
+    app.provide(getNavigationProgressKey(routerKey), navigationProgress)
     app.provide(visibilityObserverKey, visibilityObserver)
 
     app.provide(routerKey, router)

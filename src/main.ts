@@ -238,22 +238,13 @@ export const useLink: RouterAssets<RegisteredRouter>['useLink'] = routerAssets.u
 export const useRejection: RouterAssets<RegisteredRouter>['useRejection'] = routerAssets.useRejection
 
 /**
- * A composition to access the navigation under way: whether one is pending, and which routes it
- * leaves and leads to.
+ * A composition to access the navigation under way: whether one is pending, which routes it leaves and
+ * leads to, and how much of the work it waits on has settled.
  *
  * @returns {UseNavigation} Reactive state of the navigation under way.
  * @group Compositions
  */
 export const useNavigation: RouterAssets<RegisteredRouter>['useNavigation'] = routerAssets.useNavigation
-
-/**
- * A composition to access how far the navigation under way has come, counted in the before hooks,
- * props getters, loaders, and async components it waits on.
- *
- * @returns {UseNavigationProgress} Reactive counts of the navigation under way.
- * @group Compositions
- */
-export const useNavigationProgress: RouterAssets<RegisteredRouter>['useNavigationProgress'] = routerAssets.useNavigationProgress
 
 declare module 'vue' {
   export interface GlobalComponents {

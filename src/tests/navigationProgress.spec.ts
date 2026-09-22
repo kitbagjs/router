@@ -5,11 +5,11 @@ import { createUseRouteValueStore } from '@/compositions/useRouteValueStore'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
 import { createRouterAssets } from '@/services/createRouterAssets'
-import { UseNavigation, UseNavigationProgress } from '@/types/navigation'
+import { UseNavigation } from '@/types/navigation'
 import { Router } from '@/types/router'
 import { component } from '@/utilities/testHelpers'
 
-type Observed = UseNavigation & UseNavigationProgress & { app: App }
+type Observed = UseNavigation & { app: App }
 
 /**
  * Installing the router starts it, so the initial navigation is under way by the time this returns.
@@ -19,11 +19,10 @@ function observe(router: Router): Observed {
 
   app.use(router)
 
-  const { useNavigation, useNavigationProgress } = createRouterAssets(router)
+  const { useNavigation } = createRouterAssets(router)
 
   return app.runWithContext(() => ({
     ...useNavigation(),
-    ...useNavigationProgress(),
     app,
   }))
 }
@@ -99,7 +98,7 @@ describe('navigation progress', () => {
     expect(navigation.progress.value).toBe(0)
   })
 
-  test('a push from a loader starts a fresh ledger for the navigation it causes', async () => {
+  test('a push from a loader starts a fresh count for the navigation it causes', async () => {
     const targetLoader = Promise.withResolvers<string>()
     const source = createRoute({ name: 'source', path: '/source' }).addLoader((_route, { push }) => push('/target'))
     const target = createRoute({ name: 'target', path: '/target' }).addLoader(() => targetLoader.promise)

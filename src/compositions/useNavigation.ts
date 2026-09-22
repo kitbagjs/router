@@ -1,36 +1,30 @@
 import { InjectionKey, inject } from 'vue'
 import { RouterNotInstalledError } from '@/errors/routerNotInstalledError'
 import { createRouterKeyStore } from '@/services/createRouterKeyStore'
-import { NavigationProgressState } from '@/services/createNavigationProgress'
 import { UseNavigation } from '@/types/navigation'
 import { Router } from '@/types/router'
 
-export const getNavigationProgressKey = createRouterKeyStore<NavigationProgressState>()
+export const getNavigationProgressKey = createRouterKeyStore<UseNavigation>()
 
-export function createUseNavigationProgressState(routerKey: InjectionKey<Router>): () => NavigationProgressState {
-  const progressKey = getNavigationProgressKey(routerKey)
+export function createUseNavigation<TRouter extends Router>(routerKey: InjectionKey<TRouter>): () => UseNavigation {
+  const navigationProgressKey = getNavigationProgressKey(routerKey)
 
   return () => {
-    const progress = inject(progressKey)
+    const navigationProgress = inject(navigationProgressKey)
 
-    if (!progress) {
+    if (!navigationProgress) {
       throw new RouterNotInstalledError()
     }
 
-    return progress
-  }
-}
-
-export function createUseNavigation<TRouter extends Router>(routerKey: InjectionKey<TRouter>): () => UseNavigation {
-  const useNavigationProgressState = createUseNavigationProgressState(routerKey)
-
-  return () => {
-    const { pending, to, from } = useNavigationProgressState()
+    const { pending, to, from, settled, total, progress } = navigationProgress
 
     return {
       pending,
       to,
       from,
+      settled,
+      total,
+      progress,
     }
   }
 }

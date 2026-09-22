@@ -10,7 +10,7 @@ import { RouteContext, RouteContextToRejection, RouteContextToRoute } from '@/ty
 import { RouterAbort } from '@/types/routerAbort'
 import { CallbackContextAbort, CallbackContextPush, CallbackContextRedirect, CallbackContextReject, CallbackContextSuccess } from '@/types/callbackContext'
 import { RouteUpdate } from '@/types/routeUpdate'
-import { NavigationLedger } from '@/services/createNavigationProgress'
+import { NavigationProgressTracker } from '@/services/createNavigationProgress'
 
 export function getHooks(value: Record<string, unknown> | undefined | null): Hooks[] {
   return !!value && (isRoute(value) || isRejection(value)) ? value.hooks : []
@@ -277,7 +277,7 @@ export type BeforeHookResponse = CallbackContextSuccess | CallbackContextPush | 
 export type AfterHookResponse = CallbackContextSuccess | CallbackContextPush | CallbackContextReject
 
 export type BeforeHookRunner = <TRoutes extends Routes>(
-  context: { to: RouterResolvedRouteUnion<TRoutes> | null, from: RouterResolvedRouteUnion<TRoutes> | null, ledger?: NavigationLedger },
+  context: { to: RouterResolvedRouteUnion<TRoutes> | null, from: RouterResolvedRouteUnion<TRoutes> | null, progress?: NavigationProgressTracker },
 ) => Promise<BeforeHookResponse>
 
 export type AfterHookRunner = <TRoutes extends Routes>(

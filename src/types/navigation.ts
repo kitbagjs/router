@@ -2,8 +2,10 @@ import { ComputedRef } from 'vue'
 import { ResolvedRoute } from '@/types/resolved'
 
 /**
- * The navigation under way, if any. A navigation is under way from the moment it is asked for until the
- * route it leads to has everything it renders with, or it is rejected, aborted, or superseded.
+ * The navigation under way, if any, and how far it has come. A navigation is under way from the moment it
+ * is asked for until the route it leads to has everything it renders with, or it is rejected, aborted, or
+ * superseded. Its progress is counted in the units of work it waits on: its before hooks, its props getters
+ * and loaders, and the async components it renders. Every unit counts the same.
  */
 export type UseNavigation = {
   /**
@@ -18,17 +20,6 @@ export type UseNavigation = {
    * The route the navigation under way leaves. Null when idle, or for the first navigation.
    */
   from: ComputedRef<ResolvedRoute | null>,
-}
-
-/**
- * How far the navigation under way has come, counted in the units of work it waits on: its before hooks,
- * its props getters and loaders, and the async components it renders. Every unit counts the same.
- */
-export type UseNavigationProgress = {
-  /**
-   * True while a navigation is under way.
-   */
-  pending: ComputedRef<boolean>,
   /**
    * How many units have settled so far. Equal to `total` once a navigation ends by reaching its route
    * or a rejection, and zero once one ends by being aborted.

@@ -18,17 +18,20 @@ Nothing is counted while server rendering or while hydrating the server's respon
 
 ## useNavigation
 
-The `useNavigation` composable tells you whether a navigation is under way and which routes it moves between.
+The `useNavigation` composable tells you whether a navigation is under way, which routes it moves between, and how far it has come.
 
 ```vue
 <script setup lang="ts">
 import { useNavigation } from '@kitbag/router'
 
-const { pending, to, from } = useNavigation()
+const { pending, to, settled, total } = useNavigation()
 </script>
 
 <template>
-  <div v-if="pending">Loading {{ to?.name }}…</div>
+  <div v-if="pending">
+    Loading {{ to?.name }}…
+    <progress :value="settled" :max="total" />
+  </div>
 </template>
 ```
 
@@ -37,26 +40,6 @@ const { pending, to, from } = useNavigation()
 | pending | `boolean` | True while a navigation is under way |
 | to | `ResolvedRoute \| null` | The route the navigation leads to. Null when idle, or when the url matches no route |
 | from | `ResolvedRoute \| null` | The route the navigation leaves. Null when idle, or for the first navigation |
-
-## useNavigationProgress
-
-The `useNavigationProgress` composable adds the counts, for a determinate progress bar.
-
-```vue
-<script setup lang="ts">
-import { useNavigationProgress } from '@kitbag/router'
-
-const { pending, settled, total, progress } = useNavigationProgress()
-</script>
-
-<template>
-  <progress v-if="pending" :value="settled" :max="total" />
-</template>
-```
-
-| Property | Type | Description |
-| --- | --- | --- |
-| pending | `boolean` | True while a navigation is under way |
 | settled | `number` | How many units have settled so far |
 | total | `number` | How many units the navigation waits on in all |
 | progress | `number` | `settled / total`, between 0 and 1. Zero while idle |

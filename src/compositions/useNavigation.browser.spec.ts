@@ -1,15 +1,14 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { expect, test } from 'vitest'
 import { defineComponent, h } from 'vue'
-import { useNavigation, useNavigationProgress } from '@/main'
+import { useNavigation } from '@/main'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
 import { payloadToScript } from '@/services/payload'
 import { component } from '@/utilities/testHelpers'
 
 const progressReport = defineComponent(() => {
-  const { pending, to } = useNavigation()
-  const { settled, total, progress } = useNavigationProgress()
+  const { pending, to, settled, total, progress } = useNavigation()
 
   return () => h('div', `${pending.value} ${to.value?.name ?? 'idle'} ${settled.value}/${total.value} ${progress.value}`)
 })

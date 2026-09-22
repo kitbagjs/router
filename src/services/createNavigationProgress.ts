@@ -1,12 +1,13 @@
-import { computed, ComputedRef, ref, shallowRef } from 'vue'
+import { computed, ref, shallowRef } from 'vue'
 import { ResolvedRoute } from '@/types/resolved'
+import { UseNavigation } from '@/types/navigation'
 
 /**
  * The units of work one navigation waits on, counted as they are planned and as they settle. Every method
  * is a no-op once the navigation is over or another has begun, so a unit settling late never counts
  * against a later navigation.
  */
-export type NavigationLedger = {
+export type NavigationProgressTracker = {
   /**
    * Plans units that will be tracked later.
    */
@@ -29,15 +30,6 @@ export type NavigationLedger = {
   abort: () => void,
 }
 
-export type NavigationProgressState = {
-  pending: ComputedRef<boolean>,
-  to: ComputedRef<ResolvedRoute | null>,
-  from: ComputedRef<ResolvedRoute | null>,
-  settled: ComputedRef<number>,
-  total: ComputedRef<number>,
-  progress: ComputedRef<number>,
-}
-
 type BeginContext = {
   to: ResolvedRoute | null,
   from: ResolvedRoute | null,
@@ -46,16 +38,16 @@ type BeginContext = {
    */
   expected: number,
   /**
-   * An inert ledger counts nothing and leaves the state alone, for navigations with nothing to show.
+   * An inert tracker counts nothing and leaves the state alone, for navigations with nothing to show.
    */
   inert?: boolean,
 }
 
-export type NavigationProgress = NavigationProgressState & {
+export type NavigationProgress = UseNavigation & {
   /**
    * Begins counting a navigation, discarding whatever the navigation before it still had outstanding.
    */
-  begin: (context: BeginContext) => NavigationLedger,
+  begin: (context: BeginContext) => NavigationProgressTracker,
   /**
    * Aborts the navigation being counted, if any.
    */
@@ -69,12 +61,12 @@ export function createNavigationProgress(): NavigationProgress {
   const to = shallowRef<ResolvedRoute | null>(null)
   const from = shallowRef<ResolvedRoute | null>(null)
 
-  let current: NavigationLedger | undefined
+  let current: NavigationProgressTracker | undefined
 
   const begin: NavigationProgress['begin'] = (context) => {
     let closed = false
 
-    const isActive = (): boolean => current === ledger
+    const isActive = (): boolean => current === tracker
 
     function end(): void {
       current = undefined
@@ -98,13 +90,13 @@ export function createNavigationProgress(): NavigationProgress {
       endIfSettled()
     }
 
-    const expect: NavigationLedger['expect'] = (count) => {
+    const expect: NavigationProgressTracker['expect'] = (count) => {
       if (isActive()) {
         total.value += count
       }
     }
 
-    const track: NavigationLedger['track'] = (...units) => {
+    const track: NavigationProgressTracker['track'] = (...units) => {
       if (!isActive()) {
         return
       }
@@ -114,7 +106,7 @@ export function createNavigationProgress(): NavigationProgress {
       }
     }
 
-    const close: NavigationLedger['close'] = () => {
+    const close: NavigationProgressTracker['close'] = () => {
       if (!isActive()) {
         return
       }
@@ -123,7 +115,7 @@ export function createNavigationProgress(): NavigationProgress {
       endIfSettled()
     }
 
-    const complete: NavigationLedger['complete'] = () => {
+    const complete: NavigationProgressTracker['complete'] = () => {
       if (!isActive()) {
         return
       }
@@ -132,7 +124,7 @@ export function createNavigationProgress(): NavigationProgress {
       end()
     }
 
-    const abort: NavigationLedger['abort'] = () => {
+    const abort: NavigationProgressTracker['abort'] = () => {
       if (!isActive()) {
         return
       }
@@ -142,7 +134,7 @@ export function createNavigationProgress(): NavigationProgress {
       end()
     }
 
-    const ledger: NavigationLedger = {
+    const tracker: NavigationProgressTracker = {
       expect,
       track,
       close,
@@ -151,7 +143,7 @@ export function createNavigationProgress(): NavigationProgress {
     }
 
     if (!context.inert) {
-      current = ledger
+      current = tracker
       pending.value = true
       settled.value = 0
       total.value = context.expected
@@ -159,7 +151,7 @@ export function createNavigationProgress(): NavigationProgress {
       from.value = context.from
     }
 
-    return ledger
+    return tracker
   }
 
   const stop: NavigationProgress['stop'] = () => {
