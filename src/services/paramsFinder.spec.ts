@@ -85,6 +85,13 @@ describe('setParamValueOnUrl', () => {
     expect(response).toBe('/simple/ABC')
   })
 
+  test('given value with a percent sign or brackets, encodes them', () => {
+    const path = withParams('/simple/[simple]', {})
+
+    expect(setParamValueOnUrl('/simple/[simple]', path, 'simple', '100%')).toBe('/simple/100%25')
+    expect(setParamValueOnUrl('/simple/[simple]', path, 'simple', '[other]')).toBe('/simple/%5Bother%5D')
+  })
+
   test('given value with replacement patterns, inserts it literally', () => {
     const path = withParams('/simple/[simple]', {})
 
