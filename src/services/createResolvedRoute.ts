@@ -4,6 +4,7 @@ import { getStateValues } from '@/services/state'
 import { RouterResolveOptions } from '@/types/routerResolve'
 import { IS_RESOLVED_ROUTE_SYMBOL, ResolvedRoute, ResolvedRouteInternal } from '@/types/resolved'
 import { isRoute, Route } from '@/types/route'
+import { getHooks } from '@/types/hooks'
 
 export function createResolvedRoute(route: Route, params: Record<string, unknown> = {}, options: RouterResolveOptions = {}): ResolvedRoute {
   const routeUrl = route.stringify(params)
@@ -31,7 +32,7 @@ export function createResolvedRoute(route: Route, params: Record<string, unknown
     id: route.id,
     name: route.name,
     matches: route.matches,
-    hooks: isRoute(route) ? route.hooks : [],
+    hooks: getHooks(route),
     matched,
     query: createResolvedRouteQuery(query),
     state: getStateValues(route.state, options.state),

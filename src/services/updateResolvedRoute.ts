@@ -1,6 +1,7 @@
 import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
 import { parseUrl, updateUrl } from '@/services/urlParser'
-import { IS_RESOLVED_ROUTE_SYMBOL, isResolvedRoute, ResolvedRoute, ResolvedRouteInternal } from '@/types/resolved'
+import { IS_RESOLVED_ROUTE_SYMBOL, ResolvedRoute, ResolvedRouteInternal } from '@/types/resolved'
+import { getHooks } from '@/types/hooks'
 import { RouterResolveOptions } from '@/types/routerResolve'
 
 /**
@@ -17,7 +18,7 @@ export function updateResolvedRoute(route: ResolvedRoute, options: RouterResolve
   const updated: ResolvedRoute & ResolvedRouteInternal = {
     ...route,
     [IS_RESOLVED_ROUTE_SYMBOL]: true,
-    hooks: isResolvedRoute(route) ? route.hooks : [],
+    hooks: getHooks(route),
     href,
     query: createResolvedRouteQuery(query),
     hash,
