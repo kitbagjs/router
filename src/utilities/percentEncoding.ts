@@ -7,9 +7,14 @@ export function encodeParamValue(value: string): string {
 }
 
 /**
- * Decodes a param value taken from a url. A malformed escape is kept as written rather than thrown on.
+ * Decodes a param value taken from a url. A malformed escape is kept as written rather than thrown on,
+ * and a missing value stays missing.
  */
-export function decodeParamValue(value: string): string {
+export function decodeParamValue(value: string | undefined): string | undefined {
+  if (value === undefined) {
+    return undefined
+  }
+
   try {
     return decodeURIComponent(value)
   } catch {

@@ -11,4 +11,5 @@ test('decodes escapes and keeps a malformed escape as written', () => {
   expect(decodeParamValue('100%25')).toBe('100%')
   expect(decodeParamValue('a%2Fb')).toBe('a/b')
   expect(decodeParamValue('100%')).toBe('100%')
+  expect(decodeParamValue(undefined)).toBe(undefined)
 })

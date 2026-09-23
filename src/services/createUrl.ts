@@ -6,7 +6,7 @@ import { parseUrl, stringifyUrl } from '@/services/urlParser'
 import { IS_URL_SYMBOL, CreateUrlOptions, ToUrl, Url, ParseUrlOptions, UrlInternal } from '@/types/url'
 import { UrlString } from '@/types/urlString'
 import { checkDuplicateParams } from '@/utilities/checkDuplicateParams'
-import { isDefined, stringHasValue } from '@/utilities/guards'
+import { stringHasValue } from '@/utilities/guards'
 import { decodeParamValue } from '@/utilities/percentEncoding'
 
 export function createUrl<const T extends CreateUrlOptions>(options: T): ToUrl<T>
@@ -179,7 +179,7 @@ function getParams(path: UrlPart, url: string): Record<string, unknown> {
 
   for (const [name, urlParam] of Object.entries(path.params)) {
     const stringValue = getParamValueFromUrl(url, path, name)
-    const paramValue = getParamValue(isDefined(stringValue) ? decodeParamValue(stringValue) : undefined, urlParam)
+    const paramValue = getParamValue(decodeParamValue(stringValue), urlParam)
 
     values[name] = paramValue
   }
