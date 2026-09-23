@@ -156,6 +156,9 @@ export function getParamValue(value: string | undefined, { param = String, isOpt
   }
 
   if (param instanceof RegExp) {
+    // a regex with the g or y flag resumes from its last match, so every test starts from the beginning
+    param.lastIndex = 0
+
     if (param.test(value)) {
       return value
     }

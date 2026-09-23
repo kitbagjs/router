@@ -36,6 +36,15 @@ describe('getParamValue', () => {
     expect(() => getParamValue('foo', { param })).toThrow(InvalidRouteParamValueError)
   })
 
+  test('given Regex Param with the g or y flag, matches the same value every time', () => {
+    for (const param of [/^\d+$/g, /^\d+$/y]) {
+      expect(getParamValue('123', { param })).toBe('123')
+      expect(getParamValue('123', { param })).toBe('123')
+      expect(() => getParamValue('abc', { param })).toThrow(InvalidRouteParamValueError)
+      expect(getParamValue('123', { param })).toBe('123')
+    }
+  })
+
   test('given Literal Param, with matching value, returns value', () => {
     expect(getParamValue('foo', { param: 'foo' })).toBe('foo')
     expect(getParamValue('1', { param: 1 })).toBe(1)
