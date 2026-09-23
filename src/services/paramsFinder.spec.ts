@@ -85,6 +85,14 @@ describe('setParamValueOnUrl', () => {
     expect(response).toBe('/simple/ABC')
   })
 
+  test('given value with replacement patterns, inserts it literally', () => {
+    const path = withParams('/simple/[simple]', {})
+
+    expect(setParamValueOnUrl('/simple/[simple]', path, 'simple', '$&')).toBe('/simple/$&')
+    expect(setParamValueOnUrl('/simple/[simple]', path, 'simple', '$$')).toBe('/simple/$$')
+    expect(setParamValueOnUrl('/simple/[simple]', path, 'simple', "a$'b")).toBe("/simple/a$'b")
+  })
+
   test('given paramName that matches param on route and value is not present, throws InvalidRouteParamValueError', () => {
     const path = withParams('/simple/[simple]', {})
     const action: () => void = () => setParamValueOnUrl('/simple/[simple]', path, 'simple', undefined)

@@ -13,5 +13,6 @@ export function getParamValueFromUrl(url: string, path: UrlPart, paramName: stri
 export function setParamValueOnUrl(url: string, path: UrlPart, paramName: string, value: unknown): string {
   const paramValue = setParamValue(value, path.params[paramName])
 
-  return url.replace(getParamRegexPattern(paramName), paramValue)
+  // a function keeps replacement patterns like $& in the value literal
+  return url.replace(getParamRegexPattern(paramName), () => paramValue)
 }
