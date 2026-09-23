@@ -11,7 +11,7 @@ export const regexGreedyCatchAll = '.*'
 export const regexCaptureAll = '([^/]*)'
 export const regexGreedyCaptureAll = '(.*)'
 
-function escapeRegExp(string: string): string {
+export function escapeRegExp(string: string): string {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
@@ -24,7 +24,7 @@ export function splitByMatches(string: string, regexp: RegExp): string[] {
 
   let lastSlice = 0
   const slices = matches.reduce<string[]>((slices, match) => {
-    const slice = escapeRegExp(string.slice(lastSlice, match.index))
+    const slice = string.slice(lastSlice, match.index)
 
     if (slice.length) {
       slices.push(slice)
@@ -93,12 +93,23 @@ export function replaceParamSyntaxWithCatchAlls(value: string): string {
   })
 }
 
-export function replaceIndividualParamWithCaptureGroup(path: UrlPart, paramName: string): string {
-  const pattern = getParamRegexPattern(paramName)
-  const { isGreedy } = path.params[paramName] ?? {}
+/**
+ * A pattern that captures one param and matches the rest of the part literally, with every other param
+ * replaced by a catch-all.
+ */
+export function replaceParamWithCaptureGroupAndEscapeRest(part: UrlPart, paramName: string): string {
+  const { isGreedy } = part.params[paramName] ?? {}
   const capturePattern = isGreedy ? regexGreedyCaptureAll : regexCaptureAll
 
-  return path.value.replace(pattern, capturePattern)
+  return splitByMatches(part.value, new RegExp(paramRegex, 'g'))
+    .map((slice) => {
+      if (getParamName(slice) === paramName) {
+        return capturePattern
+      }
+
+      return replaceParamSyntaxWithCatchAllsAndEscapeRest(slice)
+    })
+    .join('')
 }
 
 export function isOptionalParamSyntax(value: string): boolean {

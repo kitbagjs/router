@@ -1,12 +1,11 @@
 import { setParamValue } from '@/services/params'
-import { getCaptureGroups, getParamRegexPattern, replaceIndividualParamWithCaptureGroup, replaceParamSyntaxWithCatchAlls } from '@/services/routeRegex'
+import { getCaptureGroups, getParamRegexPattern, replaceParamWithCaptureGroupAndEscapeRest } from '@/services/routeRegex'
 import { UrlPart } from './withParams'
 
 export function getParamValueFromUrl(url: string, path: UrlPart, paramName: string): string | undefined {
-  const paramNameCaptureGroup = replaceIndividualParamWithCaptureGroup(path, paramName)
-  const otherParamsCatchAll = replaceParamSyntaxWithCatchAlls(paramNameCaptureGroup)
+  const pattern = replaceParamWithCaptureGroupAndEscapeRest(path, paramName)
 
-  const [paramValue] = getCaptureGroups(url, new RegExp(otherParamsCatchAll, 'g'))
+  const [paramValue] = getCaptureGroups(url, new RegExp(pattern, 'g'))
 
   return paramValue
 }

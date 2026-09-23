@@ -46,6 +46,15 @@ describe('getParamValueFromUrl', () => {
     expect(response).toBe('ABC')
   })
 
+  test('given regex characters outside of params, matches them literally', () => {
+    const before = withParams('/report(1)/[id]', {})
+    const after = withParams('/[id]/report(1)', {})
+
+    expect(getParamValueFromUrl('/report(1)/123', before, 'id')).toBe('123')
+    expect(getParamValueFromUrl('/123/report(1)', after, 'id')).toBe('123')
+    expect(getParamValueFromUrl('/report1/123', before, 'id')).toBe(undefined)
+  })
+
   test('given path with greedy param, extracts multi-segment value for greedy param', () => {
     const path = withParams('/[id]/[rest*]/suffix', {})
 
