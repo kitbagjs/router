@@ -20,8 +20,7 @@ import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { RouterReplace, RouterReplaceOptions } from '@/types/routerReplace'
 import { RoutesName } from '@/types/routesMap'
 import { UrlString, isUrlString } from '@/types/urlString'
-import { isFirstUniqueSequenceId } from '@/services/createUniqueIdSequence'
-import { createNavigationIds } from '@/services/createNavigationIds'
+import { createNavigationSignals } from '@/services/createNavigationSignals'
 import { createVisibilityObserver } from './createVisibilityObserver'
 import { visibilityObserverKey } from '@/compositions/useVisibilityObserver'
 import { RouterResolve, RouterResolveOptions } from '@/types/routerResolve'
@@ -57,10 +56,15 @@ type RouterUpdateOptions = {
   hydrating?: boolean,
 }
 
-type RunAfterHooksContext = {
-  navigationId: string,
+type RunHooksContext = {
+  controller: AbortController,
   to: ResolvedRoute | null,
   from: ResolvedRoute | null,
+}
+
+type RunBeforeHooksContext = RunHooksContext & {
+  url: string,
+  options: RouterUpdateOptions,
 }
 
 /**
@@ -119,7 +123,7 @@ export function createRouter<
 
   hooks.addGlobalRouteHooks(getGlobalHooksForRouter(plugins))
 
-  const { getNavigationId, isCurrentNavigationId, stopNavigationIds } = createNavigationIds()
+  const navigations = createNavigationSignals()
   const componentsStore = createComponentsStore(routerKey)
   const visibilityObserver = createVisibilityObserver()
   const history = createRouterHistory({
@@ -143,10 +147,10 @@ export function createRouter<
    * Runs the before hooks for a navigation and reacts to their response. Reports whether the
    * navigation should continue.
    */
-  async function runBeforeHooks(navigationId: string, to: ResolvedRoute | null, from: ResolvedRoute | null, url: string, options: RouterUpdateOptions): Promise<boolean> {
-    const response = await hooks.runBeforeRouteHooks({ to, from })
+  async function runBeforeHooks({ controller, to, from, url, options }: RunBeforeHooksContext): Promise<boolean> {
+    const response = await hooks.runBeforeRouteHooks({ to, from, signal: controller.signal })
 
-    if (!isCurrentNavigationId(navigationId)) {
+    if (controller.signal.aborted) {
       return false
     }
 
@@ -201,10 +205,10 @@ export function createRouter<
   /**
    * Runs the after hooks for a navigation and reacts to their response.
    */
-  async function runAfterHooks({ navigationId, to, from }: RunAfterHooksContext): Promise<void> {
-    const response = await hooks.runAfterRouteHooks({ to, from })
+  async function runAfterHooks({ controller, to, from }: RunHooksContext): Promise<void> {
+    const response = await hooks.runAfterRouteHooks({ to, from, signal: controller.signal })
 
-    if (!isCurrentNavigationId(navigationId)) {
+    if (controller.signal.aborted) {
       return
     }
 
@@ -214,6 +218,7 @@ export function createRouter<
         break
 
       case 'REJECT':
+        controller.abort()
         reject(response.type, { to, from })
         break
 
@@ -241,10 +246,14 @@ export function createRouter<
       }
     }
 
-    const navigationId = getNavigationId()
+    const controller = navigations.begin()
+
+    if (controller.signal.aborted) {
+      return
+    }
 
     const to = find(url, options) ?? null
-    const from = getFromRouteForHooks(navigationId)
+    const from = getFromRouteForHooks()
 
     function commitNavigation(): void {
       if (!to) {
@@ -259,15 +268,19 @@ export function createRouter<
         setRouteValuesAndUpdateRoute(to, from)
       }
 
+      started.value = true
+
       if (!options.hydrating) {
         updateTitle()
       }
     }
 
     if (!options.hydrating) {
-      const shouldCommit = await runBeforeHooks(navigationId, to, from, url, options)
+      const shouldCommit = await runBeforeHooks({ controller, to, from, url, options })
 
       if (!shouldCommit) {
+        controller.abort()
+
         return
       }
     }
@@ -275,7 +288,7 @@ export function createRouter<
     commitNavigation()
 
     if (!isSSR) {
-      await runAfterHooks({ navigationId, to, from })
+      await runAfterHooks({ controller, to, from })
     }
   })
 
@@ -434,6 +447,7 @@ export function createRouter<
     hooks.runRejectionHooks(rejection, { to, from })
 
     updateRejection(rejection)
+    started.value = true
     updateTitle()
   }
 
@@ -468,6 +482,10 @@ export function createRouter<
 
   let starting = false
   const { setServerRedirect, getServerRedirect } = createServerRedirect()
+  /**
+   * Whether a route or rejection has been committed. Until then there is nothing to render, and nothing
+   * for a navigation to leave from.
+   */
   const started = ref(false)
 
   // eslint is just incorrect here
@@ -483,7 +501,6 @@ export function createRouter<
 
     if (!to) {
       reject(NOT_FOUND_REJECTION_TYPE, { to, from: null })
-      started.value = true
 
       return
     }
@@ -491,7 +508,6 @@ export function createRouter<
     switch (payload.kind) {
       case 'reject':
         reject(payload.rejection, { to, from: null })
-        started.value = true
 
         return
 
@@ -503,11 +519,7 @@ export function createRouter<
         store.fill(to, values)
         store.stage()
 
-        const navigation = set(initialUrl, { replace: true, state: initialState, hydrating: true })
-
-        started.value = true
-
-        await navigation
+        await set(initialUrl, { replace: true, state: initialState, hydrating: true })
 
         return
       }
@@ -586,12 +598,12 @@ export function createRouter<
   }
 
   function stop(): void {
-    stopNavigationIds()
+    navigations.stop()
     history.stopListening()
   }
 
-  function getFromRouteForHooks(navigationId: string): ResolvedRoute | null {
-    return isFirstUniqueSequenceId(navigationId) ? null : { ...currentRoute }
+  function getFromRouteForHooks(): ResolvedRoute | null {
+    return started.value ? { ...currentRoute } : null
   }
 
   function install(app: App): void {

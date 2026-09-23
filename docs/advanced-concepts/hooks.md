@@ -40,6 +40,7 @@ The router provides `to` and a `context` argument to your hook callback. The con
 | push | Convenient way to move the user from wherever they were to a new route. |
 | replace | Same as push, but with `options: { replace: true }`. |
 | reject | Trigger a [rejection](/advanced-concepts/rejections) for the router to handle |
+| signal | An `AbortSignal` that aborts when the router navigates away from the route. |
 
 If the hooks lifecycle is a [before](/advanced-concepts/hooks#before-hooks) hook, you'll also have access to the following property in your context:
 

@@ -120,6 +120,7 @@ type AfterHookContext<
   push: RouterPush<TRoutes>,
   replace: RouterReplace<TRoutes>,
   update: RouteUpdate<ResolvedRouteUnion<TRoute>>,
+  signal: AbortSignal,
 }
 
 type BeforeHookContext<
@@ -132,6 +133,7 @@ type BeforeHookContext<
   replace: RouterReplace<TRoutes>,
   update: RouteUpdate<ResolvedRouteUnion<TRouteTo>>,
   abort: RouterAbort,
+  signal: AbortSignal,
 }
 
 export type BeforeEnterHookContext<
@@ -275,13 +277,15 @@ export type AddAfterLeaveHook<
 export type BeforeHookResponse = CallbackContextSuccess | CallbackContextPush | CallbackContextRedirect | CallbackContextReject | CallbackContextAbort
 export type AfterHookResponse = CallbackContextSuccess | CallbackContextPush | CallbackContextReject
 
-export type BeforeHookRunner = <TRoutes extends Routes>(
-  context: { to: RouterResolvedRouteUnion<TRoutes> | null, from: RouterResolvedRouteUnion<TRoutes> | null },
-) => Promise<BeforeHookResponse>
+export type HookRunnerContext<TRoutes extends Routes = Routes> = {
+  to: RouterResolvedRouteUnion<TRoutes> | null,
+  from: RouterResolvedRouteUnion<TRoutes> | null,
+  signal: AbortSignal,
+}
 
-export type AfterHookRunner = <TRoutes extends Routes>(
-  context: { to: RouterResolvedRouteUnion<TRoutes> | null, from: RouterResolvedRouteUnion<TRoutes> | null },
-) => Promise<AfterHookResponse>
+export type BeforeHookRunner = <TRoutes extends Routes>(context: HookRunnerContext<TRoutes>) => Promise<BeforeHookResponse>
+
+export type AfterHookRunner = <TRoutes extends Routes>(context: HookRunnerContext<TRoutes>) => Promise<AfterHookResponse>
 
 export type RejectionHookContext<
   TRoutes extends Routes = Routes,

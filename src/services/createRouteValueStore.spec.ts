@@ -99,3 +99,49 @@ test('a detached store whose getter throws does not surface an unhandled rejecti
 
   await flushPromises()
 })
+
+test('disposing a detached store aborts the signal its getters were given', async () => {
+  const seen = Promise.withResolvers<AbortSignal>()
+  const route = createRoute({ name: 'route', path: '/', component }).addLoader((_route, { signal }) => {
+    seen.resolve(signal)
+
+    return 'value'
+  })
+  const store = createRouteValueStore()
+  const detached = store.createDetachedStore()
+
+  detached.compute(createResolvedRoute(route))
+
+  const signal = await seen.promise
+
+  expect(signal.aborted).toBe(false)
+
+  detached.dispose()
+
+  expect(signal.aborted).toBe(true)
+})
+
+test('a staged getter keeps its signal until the navigation that adopted it is replaced', async () => {
+  const seen = Promise.withResolvers<AbortSignal>()
+  const route = createRoute({ name: 'route', path: '/', component }).addLoader((_route, { signal }) => {
+    seen.resolve(signal)
+
+    return 'value'
+  })
+  const other = createRoute({ name: 'other', path: '/other', component }).addLoader(() => 'other')
+  const resolved = createResolvedRoute(route)
+  const store = createRouteValueStore()
+  const detached = store.createDetachedStore()
+
+  detached.compute(resolved)
+  detached.stage()
+  store.commit(resolved)
+
+  const signal = await seen.promise
+
+  expect(signal.aborted).toBe(false)
+
+  store.commit(createResolvedRoute(other))
+
+  expect(signal.aborted).toBe(true)
+})

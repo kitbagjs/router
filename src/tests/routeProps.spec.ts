@@ -58,3 +58,25 @@ test('props are called with the correct context', async () => {
 
   expect(props).toHaveBeenCalledWith('hello world')
 })
+
+test('a props getter is given a signal that aborts when the router navigates away from the route', async () => {
+  const seen = Promise.withResolvers<AbortSignal>()
+  const home = createRoute({ name: 'home', path: '/' }, (_route, { signal }) => {
+    seen.resolve(signal)
+
+    return {}
+  })
+  const other = createRoute({ name: 'other', path: '/other', component })
+
+  const router = createRouter([home, other], { initialUrl: '/' })
+
+  await router.start()
+
+  const signal = await seen.promise
+
+  expect(signal.aborted).toBe(false)
+
+  await router.push('other')
+
+  expect(signal.aborted).toBe(true)
+})

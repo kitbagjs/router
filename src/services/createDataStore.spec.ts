@@ -156,6 +156,16 @@ describe('get', () => {
 })
 
 describe('dispose', () => {
+  test('aborts the signal with the reason', () => {
+    const store = createDataStore()
+    const reason = new Error('abandoned')
+
+    store.dispose(reason)
+
+    expect(store.signal.aborted).toBe(true)
+    expect(store.signal.reason).toBe(reason)
+  })
+
   test('rejects a pending value so anything waiting resumes', async () => {
     const store = createDataStore()
     const reason = new Error('abandoned')
