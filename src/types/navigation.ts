@@ -21,8 +21,8 @@ export type UseNavigation = {
    */
   from: ComputedRef<ResolvedRoute | null>,
   /**
-   * How many units have settled so far. Equal to `total` once a navigation ends by reaching its route
-   * or a rejection, and zero once one ends by being aborted.
+   * How many units have settled so far. Equal to `total` once a navigation reaches its route, and zero
+   * once one ends by being rejected or aborted.
    */
   settled: ComputedRef<number>,
   /**

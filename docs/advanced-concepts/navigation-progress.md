@@ -12,7 +12,7 @@ The router knows everything a navigation will wait on before any of it runs, so 
 
 Each of these is one unit, and they all count the same. After hooks are not counted because they do not hold up the page. If a route was [prefetched](/advanced-concepts/prefetching), some of its units are already done when the navigation starts, so it finishes sooner.
 
-A navigation is finished once its route has everything it needs to render. It can also end early if a hook rejects or aborts it, or if another navigation starts before it is done. A rejection counts as finished, since the rejection page is a page too. An abort just clears the count. If a hook or loader pushes somewhere else, that is a new navigation with a fresh count of its own.
+A navigation is finished once its route has everything it needs to render. It can also end early if a hook rejects or aborts it, or if another navigation starts before it is done. A rejection or an abort clears the count, since the user did not get where they were going. If a hook or loader pushes somewhere else, that is a new navigation with a fresh count of its own.
 
 ::: info
 Progress is only tracked for client side navigations, not while server rendering or hydrating.
@@ -37,4 +37,4 @@ const { pending, to, settled, total } = useNavigation()
 </template>
 ```
 
-After a navigation ends, `settled` equals `total` if it finished or was rejected, and both are zero if it was aborted. That is how a progress bar can tell whether to fill up or just disappear.
+After a navigation ends, `settled` equals `total` if it reached its route, and both are zero if it was rejected or aborted. That is how a progress bar can tell whether to fill up or just disappear.

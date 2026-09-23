@@ -197,7 +197,7 @@ export function createRouter<
       case 'REJECT':
         history.update(url, options)
         reject(response.type, { to, from })
-        progress.complete()
+        progress.abort()
 
         return false
 
@@ -269,7 +269,7 @@ export function createRouter<
     function commitNavigation(): void {
       if (!to) {
         reject(NOT_FOUND_REJECTION_TYPE, { to, from })
-        progress.complete()
+        progress.abort()
 
         return
       }

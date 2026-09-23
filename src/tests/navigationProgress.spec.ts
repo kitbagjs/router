@@ -152,7 +152,7 @@ describe('navigation progress', () => {
     expect(navigation.pending.value).toBe(true)
   })
 
-  test('a rejection from a before hook completes the navigation', async () => {
+  test('a rejection from a before hook ends the navigation with its counts cleared', async () => {
     const home = createRoute({ name: 'home', path: '/', component })
 
     home.onBeforeRouteEnter(never)
@@ -164,11 +164,11 @@ describe('navigation progress', () => {
     await flushPromises()
 
     expect(navigation.pending.value).toBe(false)
-    expect(navigation.total.value).toBe(2)
-    expect(navigation.settled.value).toBe(2)
+    expect(navigation.total.value).toBe(0)
+    expect(navigation.settled.value).toBe(0)
   })
 
-  test('a url that matches no route completes the navigation', async () => {
+  test('a url that matches no route ends the navigation with its counts cleared', async () => {
     const home = createRoute({ name: 'home', path: '/', component })
     const router = createRouter([home], { initialUrl: '/nowhere' })
     const navigation = observe(router)

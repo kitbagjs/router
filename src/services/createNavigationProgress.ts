@@ -21,10 +21,6 @@ export type NavigationProgressTracker = {
    */
   close: () => void,
   /**
-   * Ends the navigation as done, whatever is still outstanding. A rejection is a page too.
-   */
-  complete: () => void,
-  /**
    * Ends the navigation as having gone nowhere, wiping its counts.
    */
   abort: () => void,
@@ -115,15 +111,6 @@ export function createNavigationProgress(): NavigationProgress {
       endIfSettled()
     }
 
-    const complete: NavigationProgressTracker['complete'] = () => {
-      if (!isActive()) {
-        return
-      }
-
-      settled.value = total.value
-      end()
-    }
-
     const abort: NavigationProgressTracker['abort'] = () => {
       if (!isActive()) {
         return
@@ -138,7 +125,6 @@ export function createNavigationProgress(): NavigationProgress {
       expect,
       track,
       close,
-      complete,
       abort,
     }
 

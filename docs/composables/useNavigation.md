@@ -28,4 +28,4 @@ Every value is a readonly ref, so you can use them in templates and watchers dir
 | total | `number` | How many units the navigation is waiting on in total |
 | progress | `number` | `settled / total`, between 0 and 1. Zero while idle |
 
-After a navigation ends, `settled` equals `total` if it finished or was rejected, and both are zero if it was aborted. That is how a progress bar can tell whether to fill up or just disappear.
+After a navigation ends, `settled` equals `total` if it reached its route, and both are zero if it was rejected or aborted. That is how a progress bar can tell whether to fill up or just disappear.

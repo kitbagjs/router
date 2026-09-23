@@ -81,18 +81,6 @@ describe('createNavigationProgress', () => {
     expect(progress.pending.value).toBe(false)
   })
 
-  test('completing ends as done whatever is outstanding', () => {
-    const progress = createNavigationProgress()
-    const tracker = begin(progress, 4)
-
-    tracker.track(new Promise(() => {}))
-    tracker.complete()
-
-    expect(progress.pending.value).toBe(false)
-    expect(progress.settled.value).toBe(4)
-    expect(progress.total.value).toBe(4)
-  })
-
   test('aborting ends with the counts wiped', async () => {
     const progress = createNavigationProgress()
     const tracker = begin(progress, 2)
@@ -119,7 +107,7 @@ describe('createNavigationProgress', () => {
     unit.resolve('done')
     await flushPromises()
     first.expect(10)
-    first.complete()
+    first.abort()
 
     expect(progress.pending.value).toBe(true)
     expect(progress.settled.value).toBe(0)
@@ -132,12 +120,12 @@ describe('createNavigationProgress', () => {
     const unit = Promise.withResolvers<string>()
 
     tracker.track(unit.promise)
-    tracker.complete()
+    tracker.abort()
 
     unit.resolve('done')
     await flushPromises()
 
-    expect(progress.settled.value).toBe(1)
+    expect(progress.settled.value).toBe(0)
     expect(progress.pending.value).toBe(false)
   })
 
