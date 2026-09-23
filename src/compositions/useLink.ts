@@ -49,10 +49,6 @@ export function createUseLink<TRouter extends Router>(routerKey: InjectionKey<TR
     const route = computed(() => {
       const sourceValue = toValue(source)
 
-      if (sourceValue === undefined) {
-        return undefined
-      }
-
       if (isResolvedRoute(sourceValue)) {
         return updateResolvedRoute(sourceValue, linkOptions.value)
       }
@@ -63,7 +59,11 @@ export function createUseLink<TRouter extends Router>(routerKey: InjectionKey<TR
         return found && updateResolvedRoute(found, linkOptions.value)
       }
 
-      return router.resolve(sourceValue, toValue(paramsOrOptions), toValue(maybeOptions))
+      if (typeof sourceValue === 'string') {
+        return router.resolve(sourceValue, toValue(paramsOrOptions), toValue(maybeOptions))
+      }
+
+      return undefined
     })
 
     const href = computed(() => {

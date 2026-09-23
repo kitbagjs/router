@@ -1,5 +1,5 @@
 import { Hooks } from '@/models/hooks'
-import { RouterResolvedRouteUnion, ResolvedRouteUnion } from '@/types/resolved'
+import { isResolvedRoute, RouterResolvedRouteUnion, ResolvedRouteUnion } from '@/types/resolved'
 import { MaybePromise } from '@/types/utilities'
 import { isRoute, Route, Routes } from '@/types/route'
 import { RouterReject } from '@/types/routerReject'
@@ -12,7 +12,7 @@ import { CallbackContextAbort, CallbackContextPush, CallbackContextRedirect, Cal
 import { RouteUpdate } from '@/types/routeUpdate'
 
 export function getHooks(value: Record<string, unknown> | undefined | null): Hooks[] {
-  return !!value && (isRoute(value) || isRejection(value)) ? value.hooks : []
+  return !!value && (isRoute(value) || isResolvedRoute(value) || isRejection(value)) ? value.hooks : []
 }
 
 export function combineHooks(parent: Route, child: Route): Hooks[] {

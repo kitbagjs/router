@@ -27,8 +27,11 @@ export function createResolvedRoute(route: Route, params: Record<string, unknown
   }
 
   const resolvedRoute: ResolvedRoute & ResolvedRouteInternal = {
-    ...route,
     [IS_RESOLVED_ROUTE_SYMBOL]: true,
+    id: route.id,
+    name: route.name,
+    matches: route.matches,
+    hooks: isRoute(route) ? route.hooks : [],
     matched,
     query: createResolvedRouteQuery(query),
     state: getStateValues(route.state, options.state),
