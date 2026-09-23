@@ -10,6 +10,7 @@ import { createUseLink } from '@/compositions/useLink'
 import { createIsRoute } from '@/guards/routes'
 import { AddBeforeLeaveHook, AddBeforeUpdateHook, AddAfterLeaveHook, AddAfterUpdateHook } from '@/types/hooks'
 import { createUseRejection } from '@/compositions/useRejection'
+import { createUseNavigation } from '@/compositions/useNavigation'
 
 export type RouterAssets<TRouter extends Router> = {
   /**
@@ -134,6 +135,15 @@ export type RouterAssets<TRouter extends Router> = {
    * @group Compositions
    */
   useRejection: ReturnType<typeof createUseRejection<TRouter>>,
+
+  /**
+   * A composition to access the navigation under way: whether one is pending, which routes it leaves and
+   * leads to, and how much of the work it waits on has settled.
+   *
+   * @returns {UseNavigation} Reactive state of the navigation under way.
+   * @group Compositions
+   */
+  useNavigation: ReturnType<typeof createUseNavigation<TRouter>>,
 }
 
 export function createRouterAssets<TRouter extends Router>(router: TRouter): RouterAssets<TRouter>
@@ -158,6 +168,7 @@ export function createRouterAssets<TRouter extends Router>(routerOrRouterKey: TR
   const useQueryValue = createUseQueryValue(routerKey)
   const useLink = createUseLink(routerKey)
   const useRejection = createUseRejection(routerKey)
+  const useNavigation = createUseNavigation(routerKey)
 
   return {
     onBeforeRouteLeave,
@@ -172,5 +183,6 @@ export function createRouterAssets<TRouter extends Router>(routerOrRouterKey: TR
     useQueryValue,
     useLink,
     useRejection,
+    useNavigation,
   }
 }

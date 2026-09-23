@@ -78,6 +78,7 @@ export * from './types/routerRoute'
 export * from './types/urlString'
 export type { Url, CreateUrlOptions, ParseUrlOptions } from './types/url'
 export * from './types/useLink'
+export * from './types/navigation'
 
 // Errors
 export { DuplicateParamsError } from './errors/duplicateParamsError'
@@ -235,6 +236,15 @@ export const useLink: RouterAssets<RegisteredRouter>['useLink'] = routerAssets.u
  * @group Compositions
  */
 export const useRejection: RouterAssets<RegisteredRouter>['useRejection'] = routerAssets.useRejection
+
+/**
+ * A composition to access the navigation under way: whether one is pending, which routes it leaves and
+ * leads to, and how much of the work it waits on has settled.
+ *
+ * @returns {UseNavigation} Reactive state of the navigation under way.
+ * @group Compositions
+ */
+export const useNavigation: RouterAssets<RegisteredRouter>['useNavigation'] = routerAssets.useNavigation
 
 declare module 'vue' {
   export interface GlobalComponents {

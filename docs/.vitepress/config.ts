@@ -75,6 +75,7 @@ export default defineConfig({
           text: 'Composables',
           items: [
             { text: 'useLink', link: '/composables/useLink' },
+            { text: 'useNavigation', link: '/composables/useNavigation' },
             { text: 'useQueryValue', link: '/composables/useQueryValue' },
             { text: 'useRoute', link: '/composables/useRoute' },
             { text: 'useRouter', link: '/composables/useRouter' },
@@ -92,6 +93,7 @@ export default defineConfig({
             { text: 'Route Meta', link: '/advanced-concepts/route-meta' },
             { text: 'Route State', link: '/advanced-concepts/route-state' },
             { text: 'Prefetching', link: '/advanced-concepts/prefetching' },
+            { text: 'Navigation Progress', link: '/advanced-concepts/navigation-progress' },
             { text: 'Server Side Rendering', link: '/advanced-concepts/server-side-rendering' },
           ],
         },

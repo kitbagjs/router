@@ -47,7 +47,7 @@ export function createRouterHooks({ redirectStatus }: RouterHooksOptions): Route
 
   const componentStore = new Hooks()
 
-  const runBeforeRouteHooks: BeforeHookRunner = async ({ to, from, signal }) => {
+  const runBeforeRouteHooks: BeforeHookRunner = async ({ to, from, signal, progress }) => {
     const { reject, push, replace, update, abort } = createRouterCallbackContext({ to })
     const routeHooks = getBeforeHooksFromRoutes(to, from)
     const globalHooks = getGlobalBeforeHooks(to, from, globalStore)
@@ -65,9 +65,14 @@ export function createRouterHooks({ redirectStatus }: RouterHooksOptions): Route
     ]
 
     try {
-      const results = allHooks.map((callback) => {
+      const results: Promise<unknown>[] = []
+
+      // counted one at a time so a hook that throws before returning still leaves the count exact
+      for (const callback of allHooks) {
+        progress?.expect(1)
+
         // Enter and update hooks are only in this list when to is not null, and leave hooks are only in it when from is not null. These casts are purely to satisfy the type checker.
-        return Promise.resolve(runWithContext(() => callback(to as ResolvedRoute, {
+        const result = Promise.resolve(runWithContext(() => callback(to as ResolvedRoute, {
           from: from as ResolvedRoute,
           reject,
           push,
@@ -77,7 +82,10 @@ export function createRouterHooks({ redirectStatus }: RouterHooksOptions): Route
           signal,
           redirectStatus,
         })))
-      })
+
+        progress?.track(result)
+        results.push(result)
+      }
 
       await Promise.all(results)
     } catch (error) {
