@@ -107,13 +107,13 @@ describe('getDataKey', () => {
     expect(a).not.toBe(b)
   })
 
-  test('includes the query and ignores the hash', () => {
+  test('includes the query and hash, since callbacks can read them', () => {
     const route = createRoute({ name: 'search', path: '/search' })
     const plain = createResolvedRoute(route)
     const withQuery = createResolvedRoute(route, {}, { query: { q: 'cats' } })
     const withHash = createResolvedRoute(route, {}, { hash: 'results' })
 
     expect(getDataKey('props', 'id', 'name', withQuery)).not.toBe(getDataKey('props', 'id', 'name', plain))
-    expect(getDataKey('props', 'id', 'name', withHash)).toBe(getDataKey('props', 'id', 'name', plain))
+    expect(getDataKey('props', 'id', 'name', withHash)).not.toBe(getDataKey('props', 'id', 'name', plain))
   })
 })

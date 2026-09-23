@@ -1,7 +1,6 @@
 import { createDataStore, DataStore } from './createDataStore'
 import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
 import { ResolvedRoute } from '@/types/resolved'
-import { parseUrl, stringifyUrl } from '@/services/urlParser'
 
 /**
  * Which store the rendered route reads from, and which one the next navigation will adopt.
@@ -80,7 +79,5 @@ export function createNavigationStores(): NavigationStores {
 export type DataKind = 'props' | 'loader'
 
 export function getDataKey(kind: DataKind, id: string, name: string, route: ResolvedRoute): string {
-  const { host, path, query } = parseUrl(route.href)
-
-  return [kind, id, name, route.id, stringifyUrl({ host, path, query })].join('-')
+  return [kind, id, name, route.id, route.href].join('-')
 }
