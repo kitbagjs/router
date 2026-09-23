@@ -73,7 +73,7 @@ export function generateRouteQueryRegexPatterns(query: string): RegExp[] {
     .map(([key, value]) => {
       const valueRegex = replaceParamSyntaxWithCatchAllsAndEscapeRest(value)
 
-      return new RegExp(`${escapeRegExp(key)}=${valueRegex}(&|$)`, 'i')
+      return new RegExp(`(^|&)${escapeRegExp(key)}=${valueRegex}(&|$)`, 'i')
     })
 }
 
