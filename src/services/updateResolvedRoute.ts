@@ -1,6 +1,6 @@
 import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
 import { parseUrl, updateUrl } from '@/services/urlParser'
-import { isResolvedRoute, ResolvedRoute } from '@/types/resolved'
+import { isResolvedRoute, ResolvedRoute, ResolvedRouteInternal } from '@/types/resolved'
 import { RouterResolveOptions } from '@/types/routerResolve'
 
 /**
@@ -8,27 +8,23 @@ import { RouterResolveOptions } from '@/types/routerResolve'
  * changes the url. Query values are appended, hash and state values override.
  */
 export function updateResolvedRoute(route: ResolvedRoute, options: RouterResolveOptions): ResolvedRoute {
+  if (!isResolvedRoute(route)) {
+    throw new Error('updateResolvedRoute called with a value that is not a resolved route')
+  }
+
   const href = updateUrl(route.href, {
     query: options.query,
     hash: options.hash,
   })
   const { query, hash } = parseUrl(href)
 
-  async function getTitle(): Promise<string | undefined> {
-    if (!isResolvedRoute(route)) {
-      return route.getTitle()
-    }
-
-    return route.getRouteTitle(updated)
-  }
-
-  const updated: ResolvedRoute = {
+  const updated: ResolvedRoute & ResolvedRouteInternal = {
     ...route,
     href,
     query: createResolvedRouteQuery(query),
     hash,
     state: { ...route.state, ...options.state },
-    getTitle,
+    getTitle: () => route.getRouteTitle(updated),
   }
 
   return updated
