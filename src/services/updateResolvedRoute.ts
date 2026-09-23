@@ -1,6 +1,6 @@
 import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
 import { parseUrl, updateUrl } from '@/services/urlParser'
-import { ResolvedRoute } from '@/types/resolved'
+import { isResolvedRoute, ResolvedRoute } from '@/types/resolved'
 import { RouterResolveOptions } from '@/types/routerResolve'
 
 /**
@@ -14,11 +14,14 @@ export function updateResolvedRoute(route: ResolvedRoute, options: RouterResolve
   })
   const { query, hash } = parseUrl(href)
 
-  return {
+  const updated: ResolvedRoute = {
     ...route,
     href,
     query: createResolvedRouteQuery(query),
     hash,
     state: { ...route.state, ...options.state },
+    getTitle: () => (isResolvedRoute(route) ? route.getRouteTitle(updated) : route.getTitle()),
   }
+
+  return updated
 }
