@@ -25,7 +25,7 @@ type UseLinkFunction<TRouter extends Router> = {
   <TRouteKey extends RouterRouteName<TRouter>>(name: MaybeRefOrGetter<TRouteKey>, ...args: UseLinkArgs<TRouter, TRouteKey>): UseLink,
   (url: MaybeRefOrGetter<UrlString>, options?: MaybeRefOrGetter<UseLinkOptions>): UseLink,
   (resolvedRoute: MaybeRefOrGetter<ResolvedRoute>, options?: MaybeRefOrGetter<UseLinkOptions>): UseLink,
-  (source: MaybeRefOrGetter<string | ResolvedRoute>, paramsOrOptions?: MaybeRefOrGetter<Record<PropertyKey, unknown> | UseLinkOptions>, maybeOptions?: MaybeRefOrGetter<UseLinkOptions>): UseLink,
+  (source: MaybeRefOrGetter<UrlString | ResolvedRoute>, options?: MaybeRefOrGetter<UseLinkOptions>): UseLink,
 }
 
 export function createUseLink<TRouter extends Router>(routerKey: InjectionKey<TRouter>): UseLinkFunction<TRouter> {
