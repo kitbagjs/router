@@ -4,6 +4,7 @@ import { getStateValues } from '@/services/state'
 import { RouterResolveOptions } from '@/types/routerResolve'
 import { IS_RESOLVED_ROUTE_SYMBOL, ResolvedRoute, ResolvedRouteInternal } from '@/types/resolved'
 import { isRoute, Route } from '@/types/route'
+import { getHooks } from '@/types/hooks'
 
 export function createResolvedRoute(route: Route, params: Record<string, unknown> = {}, options: RouterResolveOptions = {}): ResolvedRoute {
   const routeUrl = route.stringify(params)
@@ -18,24 +19,28 @@ export function createResolvedRoute(route: Route, params: Record<string, unknown
     throw new Error('createResolvedRoute called with a route that has no matches')
   }
 
-  async function getTitle(): Promise<string | undefined> {
+  async function getRouteTitle(to: ResolvedRoute): Promise<string | undefined> {
     if (!isRoute(route)) {
       return undefined
     }
 
-    return route.getTitle(resolvedRoute)
+    return route.getTitle(to)
   }
 
   const resolvedRoute: ResolvedRoute & ResolvedRouteInternal = {
-    ...route,
     [IS_RESOLVED_ROUTE_SYMBOL]: true,
+    id: route.id,
+    name: route.name,
+    matches: route.matches,
+    hooks: getHooks(route),
+    getRouteTitle,
     matched,
     query: createResolvedRouteQuery(query),
     state: getStateValues(route.state, options.state),
     hash,
     params,
     href,
-    getTitle,
+    getTitle: () => getRouteTitle(resolvedRoute),
   }
 
   return resolvedRoute
