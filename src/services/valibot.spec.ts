@@ -38,6 +38,12 @@ test.each([
   { schema: v.set(v.number()), string: '[1,2,3]', parsed: new Set([1, 2, 3]) },
   { schema: v.bigint(), string: '123', parsed: 123n },
   { schema: v.picklist([1, 2]), string: '1', parsed: 1 },
+  { schema: v.optional(v.number()), string: '12', parsed: 12 },
+  { schema: v.nullable(v.number()), string: '12', parsed: 12 },
+  { schema: v.nullish(v.string()), string: 'hello', parsed: 'hello' },
+  { schema: v.optional(v.string()), string: 'hello', parsed: 'hello' },
+  { schema: v.object({ at: v.string() }), string: '{"at":"2026-09-21T12:00:00.000Z"}', parsed: { at: '2026-09-21T12:00:00.000Z' } },
+  { schema: v.object({ at: v.date() }), string: '{"at":"2026-09-21T12:00:00.000Z"}', parsed: { at: new Date('2026-09-21T12:00:00.000Z') } },
 ])('given $schema.type, returns $parsed for $string', async ({ schema, string, parsed }) => {
   if (typeof parsed === 'string' || typeof parsed === 'number' || typeof parsed === 'boolean' || typeof parsed === 'bigint') {
     expect(safeGetParamValue(string, { param: schema })).toBe(parsed)

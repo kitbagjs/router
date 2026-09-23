@@ -28,6 +28,8 @@ test.each([
   { schema: type('Record<string, string>'), string: '{"one":"two"}', parsed: { one: 'two' } },
   { schema: type('Map'), string: '[["one",1]]', parsed: new Map([['one', 1]]) },
   { schema: type('Set'), string: '[1,2,3]', parsed: new Set([1, 2, 3]) },
+  { schema: type('number | undefined'), string: '12', parsed: 12 },
+  { schema: type({ at: 'string' }), string: '{"at":"2026-09-21T12:00:00.000Z"}', parsed: { at: '2026-09-21T12:00:00.000Z' } },
 ])('given $schema.expression, returns $parsed for $string', async ({ schema, string, parsed }) => {
   if (typeof parsed === 'string' || typeof parsed === 'number' || typeof parsed === 'boolean' || typeof parsed === 'bigint') {
     expect(safeGetParamValue(string, { param: schema })).toBe(parsed)
