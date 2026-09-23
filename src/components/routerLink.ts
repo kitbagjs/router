@@ -1,10 +1,9 @@
-import { isUrlString, UrlString } from '@/types/urlString'
 import { ResolvedRoute } from '@/types/resolved'
 import { computed, defineComponent, EmitsOptions, h, InjectionKey, SetupContext, SlotsType, VNode } from 'vue'
 import { createUseRouter } from '@/compositions/useRouter'
 import { Router } from '@/types/router'
 import { createUseLink } from '@/compositions/useLink'
-import { RouterLinkProps, ToCallback } from '@/types/routerLink'
+import { RouterLinkProps } from '@/types/routerLink'
 
 type RouterLinkSlots = {
   default?: (props: {
@@ -26,8 +25,6 @@ export function createRouterLink<TRouter extends Router>(routerKey: InjectionKey
   return defineComponent((props: RouterLinkProps<TRouter>, context: SetupContext<EmitsOptions, SlotsType<RouterLinkSlots>>) => {
     const router = useRouter()
 
-    const route = computed<ResolvedRoute | undefined>(() => getResolvedRoute(props.to))
-    const href = computed<UrlString | undefined>(() => getHref(props.to))
     const targetSelf = computed<boolean>(() => !props.target || props.target === '_self')
 
     const options = computed(() => {
@@ -36,7 +33,7 @@ export function createRouterLink<TRouter extends Router>(routerKey: InjectionKey
       return options
     })
 
-    const { element, isMatch, isExactMatch, isActive, isExactActive, isExternal, push } = useLink(() => {
+    const { element, route, href, isMatch, isExactMatch, isActive, isExactActive, isExternal, push } = useLink(() => {
       if (typeof props.to === 'function') {
         return props.to(router.resolve)
       }
@@ -50,30 +47,6 @@ export function createRouterLink<TRouter extends Router>(routerKey: InjectionKey
       'router-link--active': isActive.value,
       'router-link--exact-active': isExactActive.value,
     }))
-
-    function getResolvedRoute(to: UrlString | ResolvedRoute | ToCallback<TRouter> | undefined): ResolvedRoute | undefined {
-      if (typeof to === 'function') {
-        const callbackValue = to(router.resolve)
-
-        return getResolvedRoute(callbackValue)
-      }
-
-      return isUrlString(to) ? router.find(to) : to
-    }
-
-    function getHref(to: UrlString | ResolvedRoute | ToCallback<TRouter> | undefined): UrlString | undefined {
-      if (typeof to === 'function') {
-        const callbackValue = to(router.resolve)
-
-        return getHref(callbackValue)
-      }
-
-      if (isUrlString(to)) {
-        return to
-      }
-
-      return to?.href
-    }
 
     function shouldAllowDefault(event: MouseEvent): boolean {
       return event.defaultPrevented

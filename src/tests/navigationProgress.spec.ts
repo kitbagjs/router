@@ -81,6 +81,7 @@ describe('navigation progress', () => {
     expect(navigation.settled.value).toBe(3)
     expect(navigation.progress.value).toBe(0.5)
     expect(router.route.name).toBe('child')
+    expect(router.started.value).toBe(true)
     expect(navigation.pending.value).toBe(true)
 
     loader.resolve('data')
@@ -124,11 +125,13 @@ describe('navigation progress', () => {
 
   test('a navigation begun while one is pending resets the counts to the new one', async () => {
     const firstHook = Promise.withResolvers<string>()
+    const seen = Promise.withResolvers<AbortSignal>()
     const home = createRoute({ name: 'home', path: '/', component })
     const first = createRoute({ name: 'first', path: '/first', component })
     const second = createRoute({ name: 'second', path: '/second', component }).addLoader(never)
 
-    first.onBeforeRouteEnter(async () => {
+    first.onBeforeRouteEnter(async (_to, { signal }) => {
+      seen.resolve(signal)
       await firstHook.promise
     })
     second.onBeforeRouteEnter(never)
@@ -139,9 +142,16 @@ describe('navigation progress', () => {
     await flushPromises()
 
     router.push('/first')
+
+    const signal = await seen.promise
+
+    expect(signal.aborted).toBe(false)
+
     router.push('/second')
 
+    expect(signal.aborted).toBe(true)
     expect(navigation.to.value?.name).toBe('second')
+    expect(navigation.from.value?.name).toBe('home')
     expect(navigation.total.value).toBe(2)
 
     firstHook.resolve('ok')
@@ -289,17 +299,32 @@ describe('navigation progress', () => {
   })
 
   test('stopping the router ends the navigation under way', async () => {
+    const seen = Promise.withResolvers<AbortSignal>()
     const home = createRoute({ name: 'home', path: '/', component })
 
-    home.onBeforeRouteEnter(never)
+    home.onBeforeRouteEnter((_to, { signal }) => {
+      seen.resolve(signal)
+      return never()
+    })
 
     const router = createRouter([home], { initialUrl: '/' })
     const navigation = observe(router)
 
     expect(navigation.pending.value).toBe(true)
 
+    const signal = await seen.promise
+
     router.stop()
 
+    expect(signal.aborted).toBe(true)
     expect(navigation.pending.value).toBe(false)
+    expect(navigation.total.value).toBe(0)
+    expect(router.started.value).toBe(false)
+
+    await router.push('/')
+
+    expect(navigation.pending.value).toBe(false)
+    expect(navigation.total.value).toBe(0)
+    expect(router.started.value).toBe(false)
   })
 })

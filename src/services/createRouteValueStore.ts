@@ -265,7 +265,7 @@ export function createRouteValueStore(): RouteValueStore {
     return toValues(loaders, DEFAULT_LOADER_NAME, route, store)
   }
 
-  function run(computation: Computation, route: ResolvedRoute, store?: DataStore): unknown {
+  function run(computation: Computation, route: ResolvedRoute, store: DataStore): unknown {
     const { push, replace, reject, update } = createRouterCallbackContext({ to: route })
 
     return runWithContext(() => computation.run(toCallbackRoute(computation, route, store), {
@@ -273,6 +273,7 @@ export function createRouteValueStore(): RouteValueStore {
       replace,
       reject,
       update,
+      signal: store.signal,
       parent: getParentContext(route, computation.depth, store),
     }))
   }

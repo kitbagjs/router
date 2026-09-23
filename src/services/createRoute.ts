@@ -9,7 +9,6 @@ import { createRouteHooks } from '@/services/createRouteHooks'
 import { toUrlPart, toUrlQueryPart } from '@/services/withParams'
 import { createUrl } from '@/services/createUrl'
 import { createRouteRedirects } from '@/services/createRouteRedirects'
-import { combineUrl } from '@/services/combineUrl'
 import { createRouteTitle, RouteSetTitle } from '@/types/routeTitle'
 import { createRouteViews } from '@/services/createRouteViews'
 import { RouteWithMethods } from '@/types/routeWithMethods'
@@ -81,22 +80,9 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
   } satisfies Route & RouteInternal & InternalRouteHooks & RouteRedirects & RouteSetTitle
 
   if (isWithParent(options)) {
-    const merged = combineRoutes(options.parent, route)
+    const combined = combineRoutes(options.parent, route, options.hoist)
 
-    if (options.hoist) {
-      return withRouteMethods(merged)
-    }
-
-    const url = combineUrl(options.parent, {
-      path,
-      query,
-      hash,
-    })
-
-    return withRouteMethods({
-      ...merged,
-      ...url,
-    })
+    return withRouteMethods(combined)
   }
 
   return withRouteMethods(route)

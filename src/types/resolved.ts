@@ -3,12 +3,31 @@ import { LastInArray } from '@/types/utilities'
 import { ExtractRouteStateParamsAsOptional } from '@/types/state'
 import { UrlString } from '@/types/urlString'
 import { UrlParamsReading } from '@/types/url'
-import { GetTitleCallback } from '@/types/routeTitle'
+import { GetRouteTitle, GetTitleCallback } from '@/types/routeTitle'
+import { Hooks } from '@/models/hooks'
 
 /**
  * The match a route resolved to, which is the last of its matches. Falls back to the wide match type when
  * the matches are not a concrete tuple, so an unregistered router stays assignable.
  */
+export const IS_RESOLVED_ROUTE_SYMBOL = Symbol('IS_RESOLVED_ROUTE_SYMBOL')
+
+/**
+ * A type guard for determining if a value is a ResolvedRoute.
+ * @param value - The value to check.
+ * @returns `true` if the value is a ResolvedRoute, otherwise `false`.
+ * @group Type Guards
+ */
+export function isResolvedRoute(value: unknown): value is ResolvedRoute & ResolvedRouteInternal {
+  return typeof value === 'object' && value !== null && IS_RESOLVED_ROUTE_SYMBOL in value
+}
+
+export type ResolvedRouteInternal = {
+  [IS_RESOLVED_ROUTE_SYMBOL]: true,
+  hooks: Hooks[],
+  getRouteTitle: GetRouteTitle,
+}
+
 type MatchedRoute<TMatches> = LastInArray<TMatches, CreatedRouteOptions> extends infer TMatched
   ? unknown extends TMatched ? CreatedRouteOptions : TMatched
   : never

@@ -19,6 +19,7 @@ export type RouteCallbackContext<
   push: RouterPush<[TRoute] | RouteContextToRoute<TRoute['context']>>,
   replace: RouterReplace<[TRoute] | RouteContextToRoute<TRoute['context']>>,
   update: RouteUpdate<ResolvedRoute<TRoute>>,
+  signal: AbortSignal,
   parent: RouteCallbackParent<TRoute>,
 }
 

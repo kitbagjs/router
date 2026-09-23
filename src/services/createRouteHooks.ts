@@ -30,8 +30,8 @@ export function createRouteHooks(): RouteHooks {
       throw new MultipleRouteRedirectsError(to.name)
     }
 
-    const hook: RedirectHook = (from) => {
-      throw new ContextRedirectError([to.name, convertParams?.(from.params), { replace: true }], options?.status)
+    const hook: RedirectHook = (from, { redirectStatus }) => {
+      throw new ContextRedirectError([to.name, convertParams?.(from.params), { replace: true, redirectStatus: options?.status ?? redirectStatus }])
     }
 
     store.redirects.add(hook)

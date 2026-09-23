@@ -16,7 +16,7 @@ import { UrlPart, UrlQueryPart } from '@/services/withParams'
 import { RouteContext } from '@/types/routeContext'
 import { RouterViewProps } from '@/components/routerView'
 import { ToUrl } from '@/types/url'
-import { CombineUrl } from '@/services/combineUrl'
+import { combineUrl, CombineUrl } from '@/services/combineUrl'
 import { RouteView } from '@/types/routeViews'
 
 export type WithHost<THost extends string | UrlPart = string | UrlPart> = {
@@ -210,7 +210,11 @@ export type ToRoute<
   ? Route
   : Route<ToRouteUrl<TOptions>, ToRouteMatches<TOptions, TProps>>
 
-export function combineRoutes(parent: Route, child: Route): Route {
+/**
+ * Nests a route under its parent. A hoisted route keeps everything of its parent's except the url, which
+ * stands alone.
+ */
+export function combineRoutes(parent: Route, child: Route, hoisted = false): Route & RouteInternal {
   if (!isRoute(parent) || !isRoute(child)) {
     throw new Error('combineRoutes called with invalid route arguments')
   }
@@ -225,5 +229,12 @@ export function combineRoutes(parent: Route, child: Route): Route {
     depth: parent.depth + 1,
   } satisfies Route & RouteInternal
 
-  return route
+  if (hoisted) {
+    return route
+  }
+
+  return {
+    ...route,
+    ...combineUrl(parent, child),
+  }
 }

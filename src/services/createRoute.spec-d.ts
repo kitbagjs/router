@@ -828,11 +828,11 @@ describe('hooks', () => {
     })
 
     route.onBeforeRouteLeave((_to, context) => {
-      expectTypeOf<keyof typeof context>().toEqualTypeOf<'from' | 'reject' | 'push' | 'replace' | 'abort'>()
+      expectTypeOf<keyof typeof context>().toEqualTypeOf<'from' | 'reject' | 'push' | 'replace' | 'abort' | 'signal'>()
     })
 
     route.onAfterRouteLeave((_to, context) => {
-      expectTypeOf<keyof typeof context>().toEqualTypeOf<'from' | 'reject' | 'push' | 'replace'>()
+      expectTypeOf<keyof typeof context>().toEqualTypeOf<'from' | 'reject' | 'push' | 'replace' | 'signal'>()
     })
   })
 
