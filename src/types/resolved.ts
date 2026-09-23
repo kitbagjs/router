@@ -9,6 +9,22 @@ import { GetTitleCallback } from '@/types/routeTitle'
  * The match a route resolved to, which is the last of its matches. Falls back to the wide match type when
  * the matches are not a concrete tuple, so an unregistered router stays assignable.
  */
+export const IS_RESOLVED_ROUTE_SYMBOL = Symbol('IS_RESOLVED_ROUTE_SYMBOL')
+
+/**
+ * A type guard for determining if a value is a ResolvedRoute.
+ * @param value - The value to check.
+ * @returns `true` if the value is a ResolvedRoute, otherwise `false`.
+ * @group Type Guards
+ */
+export function isResolvedRoute(value: unknown): value is ResolvedRoute {
+  return typeof value === 'object' && value !== null && IS_RESOLVED_ROUTE_SYMBOL in value
+}
+
+export type ResolvedRouteInternal = {
+  [IS_RESOLVED_ROUTE_SYMBOL]: true,
+}
+
 type MatchedRoute<TMatches> = LastInArray<TMatches, CreatedRouteOptions> extends infer TMatched
   ? unknown extends TMatched ? CreatedRouteOptions : TMatched
   : never

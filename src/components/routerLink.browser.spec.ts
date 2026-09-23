@@ -12,6 +12,9 @@ import { VisibilityObserver } from '@/services/createVisibilityObserver'
 import { UrlString } from '@/types/urlString'
 import { RouterPushOptions } from '@/types/routerPush'
 import { NavigationAbandonedError, RouterLink } from '@/main'
+import { RouterLinkProps } from '@/types/routerLink'
+import { Router } from '@/types/router'
+import { ResolvedRoute } from '@/types/resolved'
 
 test('renders an anchor tag with the correct href and slot content', () => {
   const path = '/path/[paramName]'
@@ -1783,5 +1786,84 @@ describe('prefetch props', () => {
     await nextTick()
 
     expect(loaded).toBe(true)
+  })
+})
+
+describe('query and hash props', () => {
+  test.each<[string, RouterLinkProps<Router>['to']]>([
+    ['url string', '/search'],
+    ['resolve callback', (resolve) => resolve('search')],
+  ])('applies query and hash to the href and resolved route when to is a %s', async (_, to) => {
+    const search = createRoute({
+      name: 'search',
+      path: '/search',
+      component,
+    })
+
+    const router = createRouter([search], {
+      initialUrl: '/',
+    })
+
+    await router.start()
+
+    const wrapper = mount(RouterLink, {
+      props: {
+        to,
+        query: { q: 'cats' },
+        hash: 'results',
+      },
+      slots: {
+        default: '{{ params.route.href }}',
+      },
+      global: {
+        plugins: [router],
+      },
+    })
+
+    const anchor = wrapper.find('a')
+
+    expect(anchor.attributes('href')).toBe('/search?q=cats#results')
+    expect(anchor.text()).toBe('/search?q=cats#results')
+  })
+
+  test('eager prefetched props receive the query from props', async () => {
+    const props = vi.fn((to: ResolvedRoute) => ({ value: to.query.get('q') ?? 'missing' }))
+
+    const search = createRoute({
+      name: 'search',
+      path: '/search',
+    }).addView(echo, { props })
+
+    const router = createRouter([search], {
+      initialUrl: '/',
+    })
+
+    await router.start()
+
+    const root = {
+      template: '<RouterLink :to="to" :query="query" :prefetch="prefetch" /><RouterView />',
+      setup: () => ({
+        to: '/search',
+        query: { q: 'cats' },
+        prefetch: { props: 'eager' },
+      }),
+    }
+
+    const wrapper = mount(root, {
+      global: {
+        plugins: [router],
+      },
+    })
+
+    await flushPromises()
+
+    expect(props).toHaveBeenCalledOnce()
+
+    await wrapper.find('a').trigger('click')
+    await flushPromises()
+
+    expect(props).toHaveBeenCalledOnce()
+    expect(router.route.href).toBe('/search?q=cats')
+    expect(wrapper.text()).toBe('cats')
   })
 })
