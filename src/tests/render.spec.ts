@@ -75,30 +75,16 @@ describe('router.render', () => {
     await expect(router.render()).resolves.toMatchObject({ status: 200 })
   })
 
-  test('after a push, waits for the new route data', async () => {
-    const { promise, resolve } = Promise.withResolvers<string>()
-    const other = createRoute({ name: 'other', path: '/other', component }).addLoader(() => promise)
+  test('a push on the server is the redirect the response reports', async () => {
+    const other = createRoute({ name: 'other', path: '/other', component })
     const home = createRoute({ name: 'home', path: '/', component })
     const router = createRouter([home, other], { ssr: true, initialUrl: '/' })
 
     await router.start()
     await router.push('other')
 
-    let rendered = false
-
-    const rendering = router.render().then(() => {
-      rendered = true
-    })
-
-    await flushPromises()
-
-    expect(rendered).toBe(false)
-
-    resolve('loaded')
-    await rendering
-
-    expect(rendered).toBe(true)
-    await expect(router.route.data).resolves.toBe('loaded')
+    expect(router.route.name).toBe('home')
+    await expect(router.render()).resolves.toMatchObject({ kind: 'redirect', status: 302, location: '/other' })
   })
 
   test('given a loader that rejects the navigation, reports the rejection status', async () => {
@@ -193,6 +179,27 @@ describe('router.render', () => {
       .addLoader((_route, { push }) => push('other'))
 
     const router = createRouter([route, other], { ssr: true, initialUrl: '/' })
+
+    await router.start()
+
+    const result = await router.render()
+
+    expect(router.route.name).toBe('route')
+    expect(result).toMatchObject({ kind: 'redirect', status: 302, location: '/other' })
+  })
+
+  test('given a loader that throws and an error hook that pushes, responds with the redirect without following it', async () => {
+    const other = createRoute({ name: 'other', path: '/other', component })
+    const route = createRoute({ name: 'route', path: '/', component, context: [other] })
+      .addLoader(() => {
+        throw new Error('loader failed')
+      })
+
+    const router = createRouter([route, other], { ssr: true, initialUrl: '/' })
+
+    router.onError((_error, { push }) => {
+      push('other')
+    })
 
     await router.start()
 
