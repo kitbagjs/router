@@ -1,15 +1,14 @@
 import { test } from 'vitest'
-import { InjectionKey } from 'vue'
-import { createUseLink } from '@/compositions/useLink'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
+import { createRouterAssets } from '@/services/createRouterAssets'
 import { ResolvedRoute } from '@/types/resolved'
 
 const router = createRouter([
   createRoute({ name: 'route', path: '/route' }),
 ])
 
-const useLink = createUseLink(Symbol() as InjectionKey<typeof router>)
+const { useLink } = createRouterAssets(router)
 
 test('accepts a route name, url string, or resolved route', () => {
   useLink('route')
