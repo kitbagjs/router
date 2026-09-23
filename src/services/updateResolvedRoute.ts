@@ -14,13 +14,21 @@ export function updateResolvedRoute(route: ResolvedRoute, options: RouterResolve
   })
   const { query, hash } = parseUrl(href)
 
+  async function getTitle(): Promise<string | undefined> {
+    if (!isResolvedRoute(route)) {
+      return route.getTitle()
+    }
+
+    return route.getRouteTitle(updated)
+  }
+
   const updated: ResolvedRoute = {
     ...route,
     href,
     query: createResolvedRouteQuery(query),
     hash,
     state: { ...route.state, ...options.state },
-    getTitle: () => (isResolvedRoute(route) ? route.getRouteTitle(updated) : route.getTitle()),
+    getTitle,
   }
 
   return updated
