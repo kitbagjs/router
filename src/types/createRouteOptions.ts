@@ -17,6 +17,7 @@ import { RouteContext } from '@/types/routeContext'
 import { RouterViewProps } from '@/components/routerView'
 import { ToUrl } from '@/types/url'
 import { combineUrl, CombineUrl } from '@/services/combineUrl'
+import { combineAliases } from '@/services/addAlias'
 import { RouteView } from '@/types/routeViews'
 
 export type WithHost<THost extends string | UrlPart = string | UrlPart> = {
@@ -211,8 +212,8 @@ export type ToRoute<
   : Route<ToRouteUrl<TOptions>, ToRouteMatches<TOptions, TProps>>
 
 /**
- * Nests a route under its parent. A hoisted route keeps everything of its parent's except the url, which
- * stands alone.
+ * Nests a route under its parent. A hoisted route keeps everything of its parent's except the url: its own
+ * url stands alone and it inherits none of the parent's aliases.
  */
 export function combineRoutes(parent: Route, child: Route, hoisted = false): Route & RouteInternal {
   if (!isRoute(parent) || !isRoute(child)) {
@@ -236,5 +237,6 @@ export function combineRoutes(parent: Route, child: Route, hoisted = false): Rou
   return {
     ...route,
     ...combineUrl(parent, child),
+    aliases: combineAliases(parent, child),
   }
 }

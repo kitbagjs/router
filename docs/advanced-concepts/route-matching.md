@@ -26,6 +26,10 @@ const external = createExternalRoute({
 :x: `https://example.com/about-us`  
 :x: `/about-us`  
 
+## Aliases
+
+Every route's own url is tried before any [alias](/advanced-concepts/aliases). Only when no route's own url matches are aliases tried, in the same route order.
+
 ## Path Matches
 
 Routes `path` must match the structure of the URL pathname.
