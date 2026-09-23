@@ -7,7 +7,6 @@ import { toUrlPart, toUrlQueryPart } from '@/services/withParams'
 import { createRouteHooks } from '@/services/createRouteHooks'
 import { createUrl } from '@/services/createUrl'
 import { createRouteRedirects } from '@/services/createRouteRedirects'
-import { combineUrl } from '@/services/combineUrl'
 import { ExternalRouteHooks } from '@/types/hooks'
 import { ExtractRouteContext } from '@/types/routeContext'
 import { RouteRedirects } from '@/types/redirects'
@@ -71,17 +70,7 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
   } satisfies Route & RouteInternal & ExternalRouteHooks & RouteRedirects & RouteSetTitle
 
   if (isWithParent(options)) {
-    const merged = combineRoutes(options.parent, route)
-    const url = combineUrl(options.parent, {
-      path,
-      query,
-      hash,
-    })
-
-    return {
-      ...merged,
-      ...url,
-    }
+    return combineRoutes(options.parent, route, options.hoist)
   }
 
   return route
