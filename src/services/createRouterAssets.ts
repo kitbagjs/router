@@ -3,6 +3,7 @@ import { InjectionKey } from 'vue'
 import { createComponentHooks } from './createComponentHooks'
 import { createRouterView } from '@/components/routerView'
 import { createRouterLink } from '@/components/routerLink'
+import { createRouterProgress } from '@/components/routerProgress'
 import { createUseRoute } from '@/compositions/useRoute'
 import { createUseRouter } from '@/compositions/useRouter'
 import { createUseQueryValue } from '@/compositions/useQueryValue'
@@ -79,6 +80,16 @@ export type RouterAssets<TRouter extends Router> = {
    * @group Components
    */
   RouterLink: ReturnType<typeof createRouterLink<TRouter>>,
+
+  /**
+   * A component to render a bar across the top of the page while a navigation is pending, filled by how
+   * much of the navigation's work has settled.
+   *
+   * @param props - The props to pass to the router progress component.
+   * @returns The router progress component.
+   * @group Components
+   */
+  RouterProgress: ReturnType<typeof createRouterProgress<TRouter>>,
 
   /**
    * A composition to access the current route or verify a specific route name within a Vue component.
@@ -162,6 +173,7 @@ export function createRouterAssets<TRouter extends Router>(routerOrRouterKey: TR
 
   const RouterView = createRouterView(routerKey)
   const RouterLink = createRouterLink(routerKey)
+  const RouterProgress = createRouterProgress(routerKey)
 
   const useRoute = createUseRoute(routerKey)
   const useRouter = createUseRouter(routerKey)
@@ -178,6 +190,7 @@ export function createRouterAssets<TRouter extends Router>(routerOrRouterKey: TR
     isRoute,
     RouterView,
     RouterLink,
+    RouterProgress,
     useRoute,
     useRouter,
     useQueryValue,

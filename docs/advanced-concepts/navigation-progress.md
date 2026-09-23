@@ -2,6 +2,19 @@
 
 When a navigation is slow, whether that is because of a before hook, a loader, or a component that has to be fetched, users want to see that something is happening. Kitbag Router keeps track of how much work each navigation is waiting on so you can show them.
 
+## RouterProgress
+
+The easiest way to show progress is the [`RouterProgress`](/components/router-progress) component. It renders a bar across the top of the page that appears when a navigation takes more than a moment, fills as the navigation's work finishes, and fades out once the page is ready.
+
+```vue
+<template>
+  <router-progress />
+  <router-view />
+</template>
+```
+
+If you want something the component does not do, it is built on the [`useNavigation`](/composables/useNavigation) composable, and you can use that directly.
+
 ## What is counted
 
 The router knows everything a navigation will wait on before any of it runs, so the progress it reports is real rather than an animation that guesses.
