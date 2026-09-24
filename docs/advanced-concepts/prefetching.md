@@ -51,9 +51,11 @@ const user = createRoute({
 })
 ```
 
-In object configs, `props` controls both props getters and loaders; `components` only controls async components. Props and loaders are not prefetched by default.
+In object configs, `loaders` controls loaders, `props` controls props getters, and `components` controls async components. Props and loaders are independently disabled by default.
 
 A loader's config overrides the route and router configs, and a link's config overrides the loader's config. Clicking the link reuses its prefetched data, including a loader that is still running.
+
+Prefetching props does not automatically start loaders. If a props getter awaits `route.data`, enable loader prefetching separately or let it wait until the loader's strategy runs or navigation starts.
 
 Prefetching a child does not automatically run a parent loader that has prefetching disabled. If the child awaits `parent.data`, it waits until the parent loader's strategy runs or navigation starts.
 
@@ -80,7 +82,7 @@ Prefetching can be configured at various levels. Each nested layer **overrides**
 
 This means that if prefetching is enabled globally, but disabled for a specific route, that route will not prefetch. Conversely, if prefetching is disabled globally, but enabled for a specific route, that route will prefetch.
 
-Prefetching can be configured with a `boolean`, a `PrefetchStrategy`, or a `PrefetchConfigOptions` object.
+Prefetching can be configured with a `boolean`, a `PrefetchStrategy`, or a `PrefetchConfigOptions` object. A boolean or strategy applies to all categories at that level. An object config controls each category independently, and omitted settings inherit from the next level.
 
 ::: code-group
 
@@ -96,6 +98,7 @@ prefetch: 'lazy'
 prefetch: {
   components: 'eager',
   props: false,
+  loaders: 'intent',
 }
 ```
 

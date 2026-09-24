@@ -86,7 +86,7 @@ function isComputationForStrategy(strategy: PrefetchStrategy, configs: PrefetchC
     ...configs,
     routePrefetch: computation.routePrefetch,
     viewPrefetch: computation.prefetch,
-  }, 'props') === strategy
+  }, computation.kind === 'loader' ? 'loaders' : 'props') === strategy
 }
 
 function prefetchComponentsForRoute(strategy: PrefetchStrategy, route: ResolvedRoute, configs: PrefetchConfigs): void {
