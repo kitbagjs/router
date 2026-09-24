@@ -39,9 +39,9 @@ Props for routes and any parent routes are collected concurrently while componen
 
 ## Prefetching Loaders
 
-Loaders registered with `addLoader` can also run before navigation. Pass a `prefetch` option to control each loader independently.
+When your route uses `addLoader`, Kitbag Router can start fetching its data before it is needed. Configure prefetching with the loader's `prefetch` option.
 
-```ts
+```ts {5-7}
 const user = createRoute({
   name: 'user',
   path: '/user/[id]',
@@ -50,14 +50,6 @@ const user = createRoute({
   prefetch: 'intent',
 })
 ```
-
-In object configs, `loaders` controls loaders, `props` controls props getters, and `components` controls async components. Props and loaders are independently disabled by default.
-
-A loader's config overrides the route and router configs, and a link's config overrides the loader's config. Clicking the link reuses its prefetched data, including a loader that is still running.
-
-Prefetching props does not automatically start loaders. If a props getter awaits `route.data`, enable loader prefetching separately or let it wait until the loader's strategy runs or navigation starts.
-
-Prefetching a child does not automatically run a parent loader that has prefetching disabled. If the child awaits `parent.data`, it waits until the parent loader's strategy runs or navigation starts.
 
 ## How Prefetching Works
 
