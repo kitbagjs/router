@@ -35,7 +35,7 @@ export type AddLoaderOptions<
   name?: TName,
   /**
    * Determines whether this loader is run when a router-link is rendered for this route. Overrides route
-   * level prefetch, and is itself overridden by link level prefetch.
+   * level prefetch, and is itself overridden by link level prefetch. Object configs use the `props` setting.
    */
   prefetch?: PrefetchConfig,
 }

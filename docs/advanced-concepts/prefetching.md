@@ -37,6 +37,26 @@ const user = createRoute({
 Props for routes and any parent routes are collected concurrently while components are being mounted. This avoids a waterfall from happening for async props.
 :::
 
+## Prefetching Loaders
+
+Loaders registered with `addLoader` can also run before navigation. Pass a `prefetch` option to control each loader independently.
+
+```ts
+const user = createRoute({
+  name: 'user',
+  path: '/user/[id]',
+})
+.addLoader(async (route) => userStore.getById(route.params.id), {
+  prefetch: 'intent',
+})
+```
+
+In object configs, `props` controls both props getters and loaders; `components` only controls async components. Props and loaders are not prefetched by default.
+
+A loader's config overrides the route and router configs, and a link's config overrides the loader's config. Clicking the link reuses its prefetched data, including a loader that is still running.
+
+Prefetching a child does not automatically run a parent loader that has prefetching disabled. If the child awaits `parent.data`, it waits until the parent loader's strategy runs or navigation starts.
+
 ## How Prefetching Works
 
 Prefetching is handled automatically when using the `router-link` component or the `useLink` composable based on the prefetch strategy determined for that specific link.
@@ -55,7 +75,7 @@ Prefetching can be configured at various levels. Each nested layer **overrides**
 
 - Global Configuration
 - Per-Route Configuration
-- Per-View Configuration
+- Per-View or Per-Loader Configuration
 - Per-Link Configuration
 
 This means that if prefetching is enabled globally, but disabled for a specific route, that route will not prefetch. Conversely, if prefetching is disabled globally, but enabled for a specific route, that route will prefetch.
@@ -87,7 +107,7 @@ If the prefetch configuration is `true`, Kitbag Router will look at any override
 
 ### Global Configuration
 
-By default, prefetching components is enabled and prefetching props is disabled. However, you can modify prefetching globally in your router instance by setting the `options.prefetch` property.
+By default, prefetching components is enabled and prefetching props and loaders is disabled. However, you can modify prefetching globally in your router instance by setting the `options.prefetch` property.
 
 ```ts
 import { createRouter } from 'kitbag-router';

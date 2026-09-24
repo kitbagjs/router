@@ -12,7 +12,7 @@ export type PrefetchConfigOptions = {
    */
   components?: boolean | PrefetchStrategy,
   /**
-   * When true any props for routes will be prefetched
+   * When true route props and loaders will be prefetched
    * @default false
    */
   props?: boolean | PrefetchStrategy,
