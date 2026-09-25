@@ -1,5 +1,6 @@
+import { createScrollRestoration, ScrollTraversal } from '@/services/createScrollRestoration'
 import { createPath } from '@/services/history'
-import { App, ref } from 'vue'
+import { App, nextTick, ref } from 'vue'
 import { createCurrentRoute } from '@/services/createCurrentRoute'
 import { createIsExternal } from '@/services/createIsExternal'
 import { createActivityTracker } from '@/services/createActivityTracker'
@@ -55,6 +56,8 @@ import { getViewTransitionTypes, supportsViewTransitions } from '@/utilities/vie
 
 type RouterUpdateOptions = {
   replace?: boolean,
+  traversal?: ScrollTraversal,
+  historyTraversal?: boolean,
   state?: any,
   viewTransition?: ViewTransitionConfig,
   /**
@@ -134,16 +137,21 @@ export function createRouter<
 
   hooks.addGlobalRouteHooks(getGlobalHooksForRouter(plugins))
 
+  const scrollRestoration = createScrollRestoration({
+    enabled: options?.scrollRestoration === true && isGlobalRouter && !isSSR,
+    mode: options?.historyMode,
+  })
   const navigations = createNavigationSignals()
   const viewTransitions = createViewTransitions()
   const componentsStore = createComponentsStore(routerKey)
   const visibilityObserver = createVisibilityObserver()
   const history = createRouterHistory({
     mode: options?.historyMode,
-    listener: ({ location }) => {
+    listener: ({ location, action }) => {
       const url = createPath(location)
-
-      set(url, { state: location.state, replace: true })
+      const traversal = action === 'POP' ? scrollRestoration.take() : undefined
+      const navigation = set(url, { state: location.state, replace: true, historyTraversal: action === 'POP', traversal })
+      if (traversal) void navigation.catch(traversal.reject)
     },
   })
 
@@ -186,7 +194,7 @@ export function createRouter<
         return false
 
       case 'SUCCESS':
-        history.update(url, options)
+        if (!options.historyTraversal) history.update(url, options)
 
         return true
 
@@ -230,13 +238,31 @@ export function createRouter<
       const cleanedUrl = removeTrailingSlashesFromPath(url)
 
       if (isUrlString(cleanedUrl)) {
-        return replace(cleanedUrl, { ...options, redirectStatus })
+        options.traversal?.reject(new DOMException('Traversal redirected', 'AbortError'))
+        return push(cleanedUrl, { state: options.state, viewTransition: options.viewTransition, replace: true, redirectStatus })
       }
     }
 
     const controller = navigations.begin()
+    const traversal = options.traversal
 
     if (controller.signal.aborted) {
+      traversal?.reject(new DOMException('Router stopped', 'AbortError'))
+      return
+    }
+
+    const abort = (): void => controller.abort()
+    const aborted = (): void => traversal?.reject(new DOMException('Navigation abandoned', 'AbortError'))
+    traversal?.signal.addEventListener('abort', abort, { once: true })
+    if (traversal) {
+      controller.signal.addEventListener('abort', aborted, { once: true })
+      void traversal.finished.catch(() => {}).finally(() => {
+        traversal.signal.removeEventListener('abort', abort)
+        controller.signal.removeEventListener('abort', aborted)
+      })
+    }
+    if (traversal?.signal.aborted) {
+      controller.abort()
       return
     }
 
@@ -285,28 +311,35 @@ export function createRouter<
 
     const transition = getViewTransition(to, from, url, options)
 
-    if (transition) {
-      viewTransitions.prepare(transition)
+    if ((transition || traversal) && to) {
+      if (transition) viewTransitions.prepare(transition)
+      else viewTransitions.reset()
 
-      await loadRouteValues(transition.to)
+      const loaded = await loadRouteValues(to)
+      if (traversal && !loaded) traversal.reject(new Error('Destination route values failed'))
 
-      // The signal may have aborted while route values were loading.
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (controller.signal.aborted) {
-        viewTransitions.cancel(transition)
-
+        if (transition) viewTransitions.cancel(transition)
         return
       }
 
-      await viewTransitions.start(commitNavigation)
+      const update = async (): Promise<void> => {
+        commitNavigation()
+        if (!traversal) return
+        await traversal.wait(runAfterHooks({ controller, to, from }))
+        await nextTick()
+        if (!controller.signal.aborted && loaded) traversal.scroll()
+      }
+      if (transition) await viewTransitions.start(update)
+      else await update()
     } else {
       viewTransitions.reset()
       commitNavigation()
     }
 
-    if (!isSSR) {
-      await runAfterHooks({ controller, to, from })
-    }
+    if (!isSSR && !traversal) await runAfterHooks({ controller, to, from })
+    traversal?.resolve()
   })
 
   /**
@@ -336,14 +369,19 @@ export function createRouter<
    * Loads everything the route renders with ahead of committing it, so a transition captures the page
    * rather than a placeholder. How the values settled is left for the commit to act on.
    */
-  async function loadRouteValues(route: ResolvedRoute): Promise<void> {
+  async function loadRouteValues(route: ResolvedRoute): Promise<boolean> {
     const { props, loaders } = valueStore.staged().compute(route)
 
-    await Promise.allSettled([
+    const [propsResult, loadersResult, ...components] = await Promise.allSettled([
       props,
       loaders,
       ...loadAsyncComponents(route),
-    ])
+    ] as const)
+
+    // Observe failures for native restoration; commit keeps its existing error/rejection handling.
+    return propsResult.status === 'fulfilled' && propsResult.value.status === 'SUCCESS'
+      && loadersResult.status === 'fulfilled' && loadersResult.value.status === 'SUCCESS'
+      && components.every((result) => result.status === 'fulfilled')
   }
 
   /**
@@ -618,6 +656,7 @@ export function createRouter<
     }
 
     history.startListening()
+    scrollRestoration.start()
 
     initialized()
     started.value = true
@@ -670,6 +709,7 @@ export function createRouter<
   }
 
   function stop(): void {
+    scrollRestoration.stop()
     navigations.stop()
     navigationProgress.stop()
     history.stopListening()
@@ -698,6 +738,7 @@ export function createRouter<
     app.provide(visibilityObserverKey, visibilityObserver)
 
     app.provide(routerKey, router)
+    if (options?.scrollRestoration) app.onUnmount(stop)
 
     // Setup DevTools integration
     setupRouterDevtools({ router, app, routes })

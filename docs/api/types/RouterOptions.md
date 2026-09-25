@@ -119,6 +119,23 @@ Removes trailing slashes from the URL before matching routes. The browser's url 
 true
 ```
 
+### scrollRestoration?
+
+```ts
+optional scrollRestoration?: boolean;
+```
+
+Delays native Back/Forward viewport restoration until route data and lazy components prepare
+and Vue flushes the destination. Requires the
+Navigation API, browser history, and the global router. Leaves scroll coordinates to the browser.
+Guard vetoes suppress restoration but do not roll back an already committed browser URL.
+
+#### Default
+
+```ts
+false
+```
+
 ### ssr?
 
 ```ts
