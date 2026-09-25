@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest'
+import { describe, expect, test, vi } from 'vitest'
 import { InvalidRouteParamValueError } from '@/errors/invalidRouteParamValueError'
 import { getParamValue, setParamValue } from '@/services/params'
 import { withDefault } from '@/services/withDefault'
@@ -37,12 +37,78 @@ describe('getParamValue', () => {
   })
 
   test('given Regex Param with the g or y flag, matches the same value every time', () => {
-    for (const param of [/^\d+$/g, /^\d+$/y]) {
+    for (const param of [/^\d+$/g, /^\d+$/y, /^\d+$/gy]) {
       expect(getParamValue('123', { param })).toBe('123')
       expect(getParamValue('123', { param })).toBe('123')
       expect(() => getParamValue('abc', { param })).toThrow(InvalidRouteParamValueError)
       expect(getParamValue('123', { param })).toBe('123')
     }
+  })
+
+  test.each([
+    [/^\d+$/],
+    [/^\d+$/g],
+    [/^\d+$/y],
+    [/^\d+$/gy],
+  ])('given Regex Param %s, preserves lastIndex after successful and failed validation', (param) => {
+    param.lastIndex = 7
+
+    expect(getParamValue('123', { param })).toBe('123')
+    expect(param.lastIndex).toBe(7)
+    expect(() => getParamValue('abc', { param })).toThrow(InvalidRouteParamValueError)
+    expect(param.lastIndex).toBe(7)
+    expect(getParamValue('123', { param })).toBe('123')
+    expect(param.lastIndex).toBe(7)
+  })
+
+  test.each([
+    [/\d+/y],
+    [/\d+/gy],
+  ])('given sticky Regex Param %s, only matches at the beginning of the value', (param) => {
+    expect(getParamValue('123abc', { param })).toBe('123abc')
+    expect(() => getParamValue('abc123', { param })).toThrow(InvalidRouteParamValueError)
+  })
+
+  test('given global Regex Param, can match after the beginning of the value', () => {
+    const param = /\d+/g
+
+    expect(getParamValue('abc123', { param })).toBe('abc123')
+    expect(getParamValue('abc123', { param })).toBe('abc123')
+    expect(param.lastIndex).toBe(0)
+  })
+
+  test('given sticky Regex Param with multiline anchors, does not match a later line', () => {
+    const param = /^\d+/my
+
+    expect(() => getParamValue('abc\n123', { param })).toThrow(InvalidRouteParamValueError)
+  })
+
+  test('given stateful Regex Param, preserves other flags when copying', () => {
+    const param = /^yes$/gi
+
+    expect(getParamValue('YES', { param })).toBe('YES')
+    expect(param.lastIndex).toBe(0)
+  })
+
+  test.each([
+    [/^\d+$/],
+    [/^\d+$/g],
+    [/^\d+$/y],
+    [/^\d+$/gy],
+  ])('given frozen Regex Param %s, validates without mutating the regex', (param) => {
+    Object.freeze(param)
+
+    expect(getParamValue('123', { param })).toBe('123')
+    expect(() => getParamValue('abc', { param })).toThrow(InvalidRouteParamValueError)
+    expect(param.lastIndex).toBe(0)
+  })
+
+  test('given non-stateful Regex Param, reuses the original regex', () => {
+    const param = /^\d+$/
+    const matcher = vi.spyOn(param, 'test')
+
+    expect(getParamValue('123', { param })).toBe('123')
+    expect(matcher).toHaveBeenCalledWith('123')
   })
 
   test('given Literal Param, with matching value, returns value', () => {
