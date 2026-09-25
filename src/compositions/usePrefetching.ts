@@ -71,7 +71,7 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
 
     function doPrefetchingForStrategy(strategy: PrefetchStrategy, route: ResolvedRoute, configs: PrefetchConfigs): void {
       prefetchComponentsForRoute(strategy, route, configs)
-      store.compute(route, isPropsForStrategy(strategy, configs))
+      store.compute(route, isComputationForStrategy(strategy, configs))
     }
 
     return {
@@ -81,12 +81,12 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
   }
 }
 
-function isPropsForStrategy(strategy: PrefetchStrategy, configs: PrefetchConfigs): ComputationFilter {
-  return (computation) => computation.kind === 'props' && getPrefetchOption({
+function isComputationForStrategy(strategy: PrefetchStrategy, configs: PrefetchConfigs): ComputationFilter {
+  return (computation) => getPrefetchOption({
     ...configs,
     routePrefetch: computation.routePrefetch,
     viewPrefetch: computation.prefetch,
-  }, 'props') === strategy
+  }, computation.kind === 'loader' ? 'loaders' : 'props') === strategy
 }
 
 function prefetchComponentsForRoute(strategy: PrefetchStrategy, route: ResolvedRoute, configs: PrefetchConfigs): void {
