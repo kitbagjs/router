@@ -8,7 +8,7 @@ export default defineConfig({
     alias: [
       {
         find: '@',
-        replacement: resolve(__dirname, 'src'),
+        replacement: resolve(import.meta.dirname, 'src'),
       },
       // the package only declares a module entry, which node does not resolve
       {
@@ -47,7 +47,7 @@ export default defineConfig({
   },
   build: {
     lib: {
-      entry: resolve(__dirname, 'src/main.ts'),
+      entry: resolve(import.meta.dirname, 'src/main.ts'),
       name: '@kitbag/router',
       fileName: 'kitbag-router',
     },

@@ -89,7 +89,8 @@ test('the server does not transition', async () => {
   await router.push('routeB')
 
   expect(started).not.toHaveBeenCalled()
-  expect(router.route.name).toBe('routeB')
+  expect(router.route.name).toBe('routeA')
+  expect(await router.render()).toMatchObject({ kind: 'redirect', location: '/routeB' })
 })
 
 test('a browser without the api navigates as before', async () => {

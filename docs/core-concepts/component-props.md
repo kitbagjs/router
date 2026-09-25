@@ -114,6 +114,7 @@ The router provides a second `context` argument to your props callback. The cont
 | parent | And object containing the name and props of the parent route. |
 | replace | Same as push, but with `options: { replace: true }`. |
 | reject | Trigger a [rejection](/advanced-concepts/rejections) for the router to handle |
+| signal | An `AbortSignal` that aborts when the router navigates away from the route. |
 
 ::: warning
 Unlike [hooks](/advanced-concepts/hooks), props are not awaited during navigation. This means that any parent components will be mounted and any [After Hooks](/advanced-concepts/hooks#after-hooks) will start while any async prop fetching is happening.

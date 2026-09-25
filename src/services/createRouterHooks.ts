@@ -16,6 +16,7 @@ import { createRouteHooks } from '@/services/createRouteHooks'
 import { ResolvedRoute } from '@/types/resolved'
 import { MaybePromise } from '@/types/utilities'
 import { RedirectHook } from '@/types/redirects'
+import { RedirectStatus } from '@/types/router'
 
 export const getRouterHooksKey = createRouterKeyStore<RouterHooks>()
 
@@ -36,13 +37,17 @@ export type RouterHooks = HasVueAppStore & {
   onRejection: AddRejectionHook,
 }
 
-export function createRouterHooks(): RouterHooks {
+type RouterHooksOptions = {
+  redirectStatus: RedirectStatus,
+}
+
+export function createRouterHooks({ redirectStatus }: RouterHooksOptions): RouterHooks {
   const { setVueApp, runWithContext } = createVueAppStore()
   const { store: globalStore, ...globalHooks } = createRouteHooks()
 
   const componentStore = new Hooks()
 
-  const runBeforeRouteHooks: BeforeHookRunner = async ({ to, from }) => {
+  const runBeforeRouteHooks: BeforeHookRunner = async ({ to, from, signal, progress }) => {
     const { reject, push, replace, update, abort } = createRouterCallbackContext({ to })
     const routeHooks = getBeforeHooksFromRoutes(to, from)
     const globalHooks = getGlobalBeforeHooks(to, from, globalStore)
@@ -60,17 +65,27 @@ export function createRouterHooks(): RouterHooks {
     ]
 
     try {
-      const results = allHooks.map((callback) => {
+      const results: Promise<unknown>[] = []
+
+      // counted one at a time so a hook that throws before returning still leaves the count exact
+      for (const callback of allHooks) {
+        progress?.expect(1)
+
         // Enter and update hooks are only in this list when to is not null, and leave hooks are only in it when from is not null. These casts are purely to satisfy the type checker.
-        return Promise.resolve(runWithContext(() => callback(to as ResolvedRoute, {
+        const result = Promise.resolve(runWithContext(() => callback(to as ResolvedRoute, {
           from: from as ResolvedRoute,
           reject,
           push,
           replace,
           update,
           abort,
+          signal,
+          redirectStatus,
         })))
-      })
+
+        progress?.track(result)
+        results.push(result)
+      }
 
       await Promise.all(results)
     } catch (error) {
@@ -110,7 +125,7 @@ export function createRouterHooks(): RouterHooks {
     }
   }
 
-  const runAfterRouteHooks: AfterHookRunner = async ({ to, from }) => {
+  const runAfterRouteHooks: AfterHookRunner = async ({ to, from, signal }) => {
     const { reject, push, replace, update } = createRouterCallbackContext({ to })
     const routeHooks = getAfterHooksFromRoutes(to, from)
     const globalHooks = getGlobalAfterHooks(to, from, globalStore)
@@ -136,6 +151,7 @@ export function createRouterHooks(): RouterHooks {
           push,
           replace,
           update,
+          signal,
         })))
       })
 

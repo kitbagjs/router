@@ -66,6 +66,7 @@ export * from './types/resolved'
 export type { Route, CreatedRouteOptions } from './types/route'
 export * from './types/router'
 export * from './types/routerLink'
+export type { RouterProgressProps } from './components/routerProgress'
 export type { RouterPlugin, CreateRouterPluginOptions } from './types/routerPlugin'
 export * from './types/routerPush'
 export * from './types/routerPush'
@@ -79,6 +80,7 @@ export * from './types/urlString'
 export type { Url, CreateUrlOptions, ParseUrlOptions } from './types/url'
 export * from './types/useLink'
 export * from './types/viewTransition'
+export * from './types/navigation'
 
 // Errors
 export { DuplicateParamsError } from './errors/duplicateParamsError'
@@ -182,6 +184,16 @@ export const RouterView: RouterAssets<RegisteredRouter>['RouterView'] = routerAs
 export const RouterLink: RouterAssets<RegisteredRouter>['RouterLink'] = routerAssets.RouterLink
 
 /**
+ * A component to render a bar across the top of the page while a navigation is pending, filled by how
+ * much of the navigation's work has settled.
+ *
+ * @param props - The props to pass to the router progress component.
+ * @returns The router progress component.
+ * @group Components
+ */
+export const RouterProgress: RouterAssets<RegisteredRouter>['RouterProgress'] = routerAssets.RouterProgress
+
+/**
  * A composition to access the current route or verify a specific route name within a Vue component.
  * This function provides two overloads:
  * 1. When called without arguments, it returns the current route from the router without types.
@@ -245,9 +257,19 @@ export const useRejection: RouterAssets<RegisteredRouter>['useRejection'] = rout
  */
 export const useViewTransition: RouterAssets<RegisteredRouter>['useViewTransition'] = routerAssets.useViewTransition
 
+/**
+ * A composition to access the navigation under way: whether one is pending, which routes it leaves and
+ * leads to, and how much of the work it waits on has settled.
+ *
+ * @returns {UseNavigation} Reactive state of the navigation under way.
+ * @group Compositions
+ */
+export const useNavigation: RouterAssets<RegisteredRouter>['useNavigation'] = routerAssets.useNavigation
+
 declare module 'vue' {
   export interface GlobalComponents {
     RouterView: typeof RouterView,
     RouterLink: typeof RouterLink,
+    RouterProgress: typeof RouterProgress,
   }
 }

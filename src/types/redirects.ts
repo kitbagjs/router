@@ -22,6 +22,10 @@ type RedirectHookContext<
   TRoutes extends Routes
 > = {
   replace: RouterReplace<TRoutes>,
+  /**
+   * The router's status for a redirect that does not declare its own.
+   */
+  redirectStatus: RedirectStatus,
 }
 
 export type RedirectHook<

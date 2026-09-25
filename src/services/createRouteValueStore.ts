@@ -33,6 +33,10 @@ export type RouteValueResponse = CallbackContextSuccess | CallbackContextPush | 
 export type RouteValueResponses = {
   props: Promise<RouteValueResponse>,
   loaders: Promise<RouteValueResponse>,
+  /**
+   * Each value on its own as it settles, for whoever counts them.
+   */
+  values: Promise<unknown>[],
 }
 
 /**
@@ -160,7 +164,13 @@ export function createRouteValueStore(): RouteValueStore {
       loaders.catch(() => {})
       props.catch(() => {})
 
-      return { props, loaders }
+      const values = computations.map(({ key }) => store.subscribe(key))
+
+      return {
+        props,
+        loaders,
+        values,
+      }
     }
 
     const fill: ValueStore['fill'] = (route, values) => {
@@ -255,7 +265,7 @@ export function createRouteValueStore(): RouteValueStore {
     return toValues(loaders, DEFAULT_LOADER_NAME, route, store)
   }
 
-  function run(computation: Computation, route: ResolvedRoute, store?: DataStore): unknown {
+  function run(computation: Computation, route: ResolvedRoute, store: DataStore): unknown {
     const { push, replace, reject, update } = createRouterCallbackContext({ to: route })
 
     return runWithContext(() => computation.run(toCallbackRoute(computation, route, store), {
@@ -263,6 +273,7 @@ export function createRouteValueStore(): RouteValueStore {
       replace,
       reject,
       update,
+      signal: store.signal,
       parent: getParentContext(route, computation.depth, store),
     }))
   }

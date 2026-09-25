@@ -4,7 +4,7 @@ import { ResolvedRoute } from '@/types/resolved'
 import { Router } from '@/types/router'
 import { RouterPushOptions } from '@/types/routerPush'
 
-export type ToCallback<TRouter extends Router> = (resolve: TRouter['resolve']) => ResolvedRoute | UrlString | undefined
+export type ToCallback<TRouter extends Router> = (resolve: TRouter['resolve']) => ResolvedRoute | UrlString
 
 export type RouterLinkProps<TRouter extends Router> = RouterPushOptions & {
   /**

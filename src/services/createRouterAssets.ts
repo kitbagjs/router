@@ -3,6 +3,7 @@ import { InjectionKey } from 'vue'
 import { createComponentHooks } from './createComponentHooks'
 import { createRouterView } from '@/components/routerView'
 import { createRouterLink } from '@/components/routerLink'
+import { createRouterProgress } from '@/components/routerProgress'
 import { createUseRoute } from '@/compositions/useRoute'
 import { createUseRouter } from '@/compositions/useRouter'
 import { createUseQueryValue } from '@/compositions/useQueryValue'
@@ -11,6 +12,7 @@ import { createIsRoute } from '@/guards/routes'
 import { AddBeforeLeaveHook, AddBeforeUpdateHook, AddAfterLeaveHook, AddAfterUpdateHook } from '@/types/hooks'
 import { createUseRejection } from '@/compositions/useRejection'
 import { createUseViewTransition } from '@/compositions/useViewTransition'
+import { createUseNavigation } from '@/compositions/useNavigation'
 
 export type RouterAssets<TRouter extends Router> = {
   /**
@@ -81,6 +83,16 @@ export type RouterAssets<TRouter extends Router> = {
   RouterLink: ReturnType<typeof createRouterLink<TRouter>>,
 
   /**
+   * A component to render a bar across the top of the page while a navigation is pending, filled by how
+   * much of the navigation's work has settled.
+   *
+   * @param props - The props to pass to the router progress component.
+   * @returns The router progress component.
+   * @group Components
+   */
+  RouterProgress: ReturnType<typeof createRouterProgress<TRouter>>,
+
+  /**
    * A composition to access the current route or verify a specific route name within a Vue component.
    * This function provides two overloads:
    * 1. When called without arguments, it returns the current route from the router without types.
@@ -143,6 +155,15 @@ export type RouterAssets<TRouter extends Router> = {
    * @group Compositions
    */
   useViewTransition: ReturnType<typeof createUseViewTransition<TRouter>>,
+
+  /**
+   * A composition to access the navigation under way: whether one is pending, which routes it leaves and
+   * leads to, and how much of the work it waits on has settled.
+   *
+   * @returns {UseNavigation} Reactive state of the navigation under way.
+   * @group Compositions
+   */
+  useNavigation: ReturnType<typeof createUseNavigation<TRouter>>,
 }
 
 export function createRouterAssets<TRouter extends Router>(router: TRouter): RouterAssets<TRouter>
@@ -161,6 +182,7 @@ export function createRouterAssets<TRouter extends Router>(routerOrRouterKey: TR
 
   const RouterView = createRouterView(routerKey)
   const RouterLink = createRouterLink(routerKey)
+  const RouterProgress = createRouterProgress(routerKey)
 
   const useRoute = createUseRoute(routerKey)
   const useRouter = createUseRouter(routerKey)
@@ -168,6 +190,7 @@ export function createRouterAssets<TRouter extends Router>(routerOrRouterKey: TR
   const useLink = createUseLink(routerKey)
   const useRejection = createUseRejection(routerKey)
   const useViewTransition = createUseViewTransition(routerKey)
+  const useNavigation = createUseNavigation(routerKey)
 
   return {
     onBeforeRouteLeave,
@@ -177,11 +200,13 @@ export function createRouterAssets<TRouter extends Router>(routerOrRouterKey: TR
     isRoute,
     RouterView,
     RouterLink,
+    RouterProgress,
     useRoute,
     useRouter,
     useQueryValue,
     useLink,
     useRejection,
     useViewTransition,
+    useNavigation,
   }
 }

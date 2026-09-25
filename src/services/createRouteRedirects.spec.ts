@@ -154,3 +154,45 @@ test('to does not need to be passed into the route for redirect to work', async 
 
   expect(router.route.href).toBe('/from')
 })
+
+test('a parent redirect sends a navigation to its own route to the child', async () => {
+  const main = createRoute({
+    name: 'main',
+    path: '/',
+  })
+
+  const dashboard = createRoute({
+    parent: main,
+    name: 'dashboard',
+    path: 'dashboard',
+  })
+
+  main.redirectTo(dashboard)
+
+  const router = createRouter([main, dashboard], { initialUrl: '/' })
+
+  await router.start()
+
+  expect(router.route.name).toBe('dashboard')
+})
+
+test('a parent redirect does not intercept a navigation to its own child', async () => {
+  const main = createRoute({
+    name: 'main',
+    path: '/',
+  })
+
+  const dashboard = createRoute({
+    parent: main,
+    name: 'dashboard',
+    path: 'dashboard',
+  })
+
+  main.redirectTo(dashboard)
+
+  const router = createRouter([main, dashboard], { initialUrl: '/dashboard' })
+
+  await router.start()
+
+  expect(router.route.name).toBe('dashboard')
+})

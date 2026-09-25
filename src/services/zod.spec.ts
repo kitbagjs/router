@@ -21,9 +21,11 @@ test.each([
   { schema: z.literal('foo'), string: 'foo', parsed: 'foo' },
   { schema: z.literal(1), string: '1', parsed: 1 },
   { schema: z.literal(true), string: 'true', parsed: true },
+  { schema: z.literal(false), string: 'false', parsed: false },
   { schema: z.string(), string: 'foo', parsed: 'foo' },
   { schema: z.number(), string: '1', parsed: 1 },
   { schema: z.boolean(), string: 'true', parsed: true },
+  { schema: z.boolean(), string: 'false', parsed: false },
   { schema: z.iso.datetime(), string: '2022-01-12T00:00:00.000Z', parsed: '2022-01-12T00:00:00.000Z' },
   { schema: z.iso.date(), string: '2022-01-12', parsed: '2022-01-12' },
   { schema: z.iso.time(), string: '09:52:31', parsed: '09:52:31' },
@@ -58,6 +60,15 @@ test.each([
   { schema: z.map(z.string(), z.number()), string: '[["one",1]]', parsed: new Map([['one', 1]]) },
   { schema: z.set(z.number()), string: '[1,2,3]', parsed: new Set([1, 2, 3]) },
   { schema: z.enum(Numbers), string: '1', parsed: Numbers.One },
+  { schema: z.number().optional(), string: '12', parsed: 12 },
+  { schema: z.number().nullable(), string: '12', parsed: 12 },
+  { schema: z.number().default(1), string: '12', parsed: 12 },
+  { schema: z.string().optional(), string: 'hello', parsed: 'hello' },
+  { schema: z.string().nullable(), string: 'hello', parsed: 'hello' },
+  { schema: z.string().nullish(), string: 'hello', parsed: 'hello' },
+  { schema: z.object({ at: z.string() }), string: '{"at":"2026-09-21T12:00:00.000Z"}', parsed: { at: '2026-09-21T12:00:00.000Z' } },
+  { schema: z.object({ at: z.date() }), string: '{"at":"2026-09-21T12:00:00.000Z"}', parsed: { at: new Date('2026-09-21T12:00:00.000Z') } },
+  { schema: z.union([z.number().optional(), z.string()]), string: '12', parsed: 12 },
 ])('given $schema, returns $parsed for $string', async ({ schema, string, parsed }) => {
   if (typeof parsed === 'string' || typeof parsed === 'number' || typeof parsed === 'boolean' || typeof parsed === 'bigint') {
     expect(safeGetParamValue(string, { param: schema })).toBe(parsed)
@@ -66,6 +77,12 @@ test.each([
     expect(safeGetParamValue(string, { param: schema })).toMatchObject(parsed)
     expect(safeSetParamValue(parsed, { param: schema })).toBe(string)
   }
+})
+
+test('given a nullable schema, null round trips as the string null', () => {
+  expect(safeGetParamValue('null', { param: z.number().nullable() })).toBeNull()
+  expect(safeSetParamValue(null, { param: z.number().nullable() })).toBe('null')
+  expect(safeGetParamValue('null', { param: z.string().nullable() })).toBe('null')
 })
 
 test.each([

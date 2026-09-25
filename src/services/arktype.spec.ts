@@ -8,11 +8,13 @@ test.each([
   { schema: type('"foo"'), string: 'foo', parsed: 'foo' },
   { schema: type('1'), string: '1', parsed: 1 },
   { schema: type('true'), string: 'true', parsed: true },
+  { schema: type('false'), string: 'false', parsed: false },
   { schema: type('string'), string: 'foo', parsed: 'foo' },
   { schema: type('string.email'), string: 'test@example.com', parsed: 'test@example.com' },
   { schema: type('number'), string: '1', parsed: 1 },
   { schema: type('bigint'), string: '123', parsed: 123n },
   { schema: type('boolean'), string: 'true', parsed: true },
+  { schema: type('boolean'), string: 'false', parsed: false },
   { schema: type('Date'), string: '2022-01-12T00:00:00.000Z', parsed: new Date('2022-01-12T00:00:00.000Z') },
   { schema: type({ foo: 'string' }), string: '{"foo":"bar"}', parsed: { foo: 'bar' } },
   { schema: type('"foo" | "bar"'), string: 'foo', parsed: 'foo' },
@@ -26,6 +28,8 @@ test.each([
   { schema: type('Record<string, string>'), string: '{"one":"two"}', parsed: { one: 'two' } },
   { schema: type('Map'), string: '[["one",1]]', parsed: new Map([['one', 1]]) },
   { schema: type('Set'), string: '[1,2,3]', parsed: new Set([1, 2, 3]) },
+  { schema: type('number | undefined'), string: '12', parsed: 12 },
+  { schema: type({ at: 'string' }), string: '{"at":"2026-09-21T12:00:00.000Z"}', parsed: { at: '2026-09-21T12:00:00.000Z' } },
 ])('given $schema.expression, returns $parsed for $string', async ({ schema, string, parsed }) => {
   if (typeof parsed === 'string' || typeof parsed === 'number' || typeof parsed === 'boolean' || typeof parsed === 'bigint') {
     expect(safeGetParamValue(string, { param: schema })).toBe(parsed)

@@ -69,12 +69,14 @@ export default defineConfig({
           items: [
             { text: 'RouterView', link: '/components/router-view' },
             { text: 'RouterLink', link: '/components/router-link' },
+            { text: 'RouterProgress', link: '/components/router-progress' },
           ],
         },
         {
           text: 'Composables',
           items: [
             { text: 'useLink', link: '/composables/useLink' },
+            { text: 'useNavigation', link: '/composables/useNavigation' },
             { text: 'useQueryValue', link: '/composables/useQueryValue' },
             { text: 'useRoute', link: '/composables/useRoute' },
             { text: 'useRouter', link: '/composables/useRouter' },
@@ -94,6 +96,7 @@ export default defineConfig({
             { text: 'Route State', link: '/advanced-concepts/route-state' },
             { text: 'Prefetching', link: '/advanced-concepts/prefetching' },
             { text: 'View Transitions', link: '/advanced-concepts/view-transitions' },
+            { text: 'Navigation Progress', link: '/advanced-concepts/navigation-progress' },
             { text: 'Server Side Rendering', link: '/advanced-concepts/server-side-rendering' },
           ],
         },
