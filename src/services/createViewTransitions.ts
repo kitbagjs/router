@@ -29,13 +29,13 @@ export type ViewTransitions = {
    */
   reset: () => void,
   /**
-   * Runs the update inside a view transition. Resolves once the update has run, ahead of the animation.
+   * Runs the update inside a view transition. Resolves after the update and Vue flush, ahead of the animation.
    */
-  start: (update: () => void) => Promise<void>,
+  start: (update: () => void | Promise<void>) => Promise<void>,
 }
 
 type Pending = {
-  update: () => void,
+  update: () => void | Promise<void>,
   committed: PromiseWithResolvers<void>,
   transition?: ViewTransition,
 }
@@ -89,16 +89,14 @@ export function createViewTransitions(): ViewTransitions {
       pending = undefined
 
       try {
-        slot.update()
+        await slot.update()
+        await nextTick()
+        slot.committed.resolve()
       } catch (error) {
         slot.committed.reject(error)
 
         throw error
       }
-
-      slot.committed.resolve()
-
-      await nextTick()
     }, viewTransition.types)
 
     // a transition the browser skips rejects these, and an update that throws is reported through committed

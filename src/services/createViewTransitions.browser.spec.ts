@@ -88,11 +88,10 @@ test('the callback waits for vue to render what the update changed', async () =>
   const viewTransitions = createViewTransitions()
 
   viewTransitions.prepare(navigation())
-  viewTransitions.start(() => {
+  await viewTransitions.start(async () => {
+    await Promise.resolve()
     source.value = 1
   })
-
-  await transitionOf(viewTransitions).updateCallbackDone
 
   expect(rendered).toContain(1)
 })
