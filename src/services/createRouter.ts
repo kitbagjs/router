@@ -261,7 +261,7 @@ export function createRouter<
       started.value = true
 
       if (!options.hydrating) {
-        updateTitle()
+        updateTitle(controller.signal)
       }
     }
 
@@ -446,11 +446,13 @@ export function createRouter<
       return
     }
 
+    const controller = navigations.begin()
+
     hooks.runRejectionHooks(rejection, { to, from })
 
     updateRejection(rejection)
     started.value = true
-    updateTitle()
+    updateTitle(controller.signal)
   }
 
   const { currentRejection, updateRejection, clearRejection } = createCurrentRejection()
@@ -471,8 +473,12 @@ export function createRouter<
   /**
    * Sets the document title to the title that should currently be rendered.
    */
-  async function updateTitle(): Promise<void> {
+  async function updateTitle(signal: AbortSignal): Promise<void> {
     const title = await getTitle()
+
+    if (signal.aborted) {
+      return
+    }
 
     setDocumentTitle(title)
   }

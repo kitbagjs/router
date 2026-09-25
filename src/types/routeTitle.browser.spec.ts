@@ -276,3 +276,30 @@ test('rejection with a title wins over the current route title', async () => {
 
   expect(document.title).toBe('locked')
 })
+
+test('a slow title from a previous route does not overwrite the current title', async () => {
+  const slowTitle = Promise.withResolvers<string>()
+
+  const home = createRoute({ name: 'home', path: '/', component })
+  const slow = createRoute({ name: 'slow', path: '/slow', component })
+  const fast = createRoute({ name: 'fast', path: '/fast', component })
+
+  slow.setTitle(() => slowTitle.promise)
+  fast.setTitle(() => 'fast')
+
+  const router = createRouter([home, slow, fast], {
+    initialUrl: '/',
+  })
+
+  await router.start()
+  await router.push('/slow')
+  await router.push('/fast')
+  await flushPromises()
+
+  expect(document.title).toBe('fast')
+
+  slowTitle.resolve('slow')
+  await flushPromises()
+
+  expect(document.title).toBe('fast')
+})
