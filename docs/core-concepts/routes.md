@@ -41,6 +41,10 @@ const home = createRoute({
 })
 ```
 
+::: info
+A named route's final path (its own path combined with any parents) must start with `/`. Otherwise it can never match a url and the router throws an `UnreachableRouteError`.
+:::
+
 ## Query
 
 The `query` property is used to define the [search](https://developer.mozilla.org/en-US/docs/Web/API/URL/search) part of the route's url. If a query is provided, a url must include a search string that matches the query.

@@ -490,12 +490,12 @@ test('query.values is reactive', async () => {
 
 test('given an array of Routes with duplicate names, throws DuplicateNamesError', () => {
   const aRoutes = [
-    createRoute({ name: 'foo', component }),
-    createRoute({ name: 'bar', component }),
+    createRoute({ name: 'foo', path: '/foo', component }),
+    createRoute({ name: 'bar', path: '/bar', component }),
   ]
   const bRoutes = [
-    createRoute({ name: 'zoo', component }),
-    createRoute({ name: 'bar', component }),
+    createRoute({ name: 'zoo', path: '/zoo', component }),
+    createRoute({ name: 'bar', path: '/bar', component }),
   ]
 
   const action: () => void = () => createRouter([aRoutes, bRoutes], {
@@ -521,10 +521,10 @@ test('given an array of Routes with missing context, can still match missing rou
 })
 
 test('given an array of Routes with missing context with duplicate route names, throws DuplicateNamesError', async () => {
-  const missingRoute = createRoute({ name: 'foo', component })
+  const missingRoute = createRoute({ name: 'foo', path: '/foo', component })
 
   const action: () => void = () => createRouter([
-    createRoute({ name: 'foo', component, context: [missingRoute] }),
+    createRoute({ name: 'foo', path: '/foo', component, context: [missingRoute] }),
   ], {
     initialUrl: '/missing',
   })
