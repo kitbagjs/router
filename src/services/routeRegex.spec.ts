@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { generateRouteHostRegexPattern, generateRoutePathRegexPattern, generateRouteQueryRegexPatterns, getParamName, regexCaptureAll, regexCatchAll, regexGreedyCatchAll, regexGreedyCaptureAll, replaceIndividualParamWithCaptureGroup, splitByMatches } from '@/services/routeRegex'
+import { generateRouteHostRegexPattern, generateRoutePathRegexPattern, generateRouteQueryRegexPatterns, getParamName, regexCaptureAll, regexCatchAll, regexGreedyCatchAll, regexGreedyCaptureAll, replaceParamWithCaptureGroupAndEscapeRest, splitByMatches } from '@/services/routeRegex'
 import { withParams } from './withParams'
 
 describe('generateRouteHostRegexPattern', () => {
@@ -75,6 +75,16 @@ describe('generateRoutePathRegexPattern', () => {
 
     const expected = new RegExp('^path\\.with\\$\\]regex\\[params\\*$', 'i')
     expect(result.toString()).toBe(expected.toString())
+  })
+
+  test('given path with regex characters before a param, escapes them once', () => {
+    const path = '/v1.0/[id]'
+
+    const result = generateRoutePathRegexPattern(path)
+
+    expect(result.toString()).toBe(new RegExp(`^/v1\\.0/${regexCatchAll}$`, 'i').toString())
+    expect(result.test('/v1.0/123')).toBe(true)
+    expect(result.test('/v1x0/123')).toBe(false)
   })
 
   test('given path with greedy param, uses greedy catch-all for that segment', () => {
@@ -163,19 +173,27 @@ describe('getParamName', () => {
   })
 })
 
-describe('replaceIndividualParamWithCaptureGroup', () => {
+describe('replaceParamWithCaptureGroupAndEscapeRest', () => {
   test('given normal param, replaces with segment capture pattern', () => {
     const path = withParams('/[id]/suffix', { id: String })
 
-    const result = replaceIndividualParamWithCaptureGroup(path, 'id')
+    const result = replaceParamWithCaptureGroupAndEscapeRest(path, 'id')
 
     expect(result).toBe(`/${regexCaptureAll}/suffix`)
+  })
+
+  test('given regex characters outside of params, escapes them and catches all for other params', () => {
+    const path = withParams('/v1.0/[id]/report(1)/[other]', { id: String, other: String })
+
+    const result = replaceParamWithCaptureGroupAndEscapeRest(path, 'id')
+
+    expect(result).toBe(`/v1\\.0/${regexCaptureAll}/report\\(1\\)/${regexCatchAll}`)
   })
 
   test('given greedy param, replaces with greedy capture pattern', () => {
     const path = withParams('/[rest*]/suffix', { rest: String })
 
-    const result = replaceIndividualParamWithCaptureGroup(path, 'rest')
+    const result = replaceParamWithCaptureGroupAndEscapeRest(path, 'rest')
 
     expect(result).toBe(`/${regexGreedyCaptureAll}/suffix`)
   })
