@@ -15,6 +15,7 @@ type UseLink = object;
 | <a id="isexactmatch"></a> `isExactMatch` | `ComputedRef`\<`boolean`\> | True if route matches current URL. Route is the same as what's currently stored at `router.route`. |
 | <a id="isexternal"></a> `isExternal` | `ComputedRef`\<`boolean`\> | - |
 | <a id="ismatch"></a> `isMatch` | `ComputedRef`\<`boolean`\> | True if route matches current URL or is ancestor of route that matches current URL |
+| <a id="istransitioning"></a> `isTransitioning` | `ComputedRef`\<`boolean`\> | True while a view transition to this link's location is in flight, so the elements it animates from can be named before the page is captured. |
 | <a id="push"></a> `push` | (`options?`) => `Promise`\<`void`\> | Convenience method for executing `router.push` with route context passed in. |
 | <a id="replace"></a> `replace` | (`options?`) => `Promise`\<`void`\> | Convenience method for executing `router.replace` with route context passed in. |
 | <a id="route"></a> `route` | `ComputedRef`\<[`ResolvedRoute`](ResolvedRoute.md) \| `undefined`\> | ResolvedRoute if matched. Same value as `router.find` |

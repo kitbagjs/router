@@ -4,7 +4,7 @@
 :white_check_mark: Dynamic Routing  
 :white_check_mark: Modular, component-based router configuration  
 :white_check_mark: Route params, query, wildcards  
-:white_check_mark: View transition effects powered by Vue.js' transition system  
+:white_check_mark: View transition effects powered by Vue.js' transition system or the View Transitions API  
 :white_check_mark: Fine-grained navigation control  
 :white_check_mark: Links with automatic active CSS classes  
 :white_check_mark: HTML5 history mode or hash mode  

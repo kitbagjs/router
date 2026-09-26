@@ -108,6 +108,39 @@ test('calls router.push with url and push options from props', async () => {
   })
 })
 
+test('passes the viewTransition prop to router.push', async () => {
+  const router = createRouter([
+    createRoute({
+      name: 'routeA',
+      path: '/routeA',
+      component: { render: () => h(RouterLink, { to: (resolve) => resolve('routeB'), viewTransition: ['slide'] }) },
+    }),
+    createRoute({
+      name: 'routeB',
+      path: '/routeB',
+      component,
+    }),
+  ], {
+    initialUrl: '/routeA',
+  })
+
+  await router.start()
+
+  const spy = vi.spyOn(router, 'push')
+
+  const wrapper = mount({ template: '<RouterView />' }, {
+    global: {
+      plugins: [router],
+    },
+  })
+
+  wrapper.find('a').trigger('click')
+
+  const [, pushOptions] = spy.mock.lastCall ?? []
+
+  expect(pushOptions).toMatchObject({ viewTransition: ['slide'] })
+})
+
 test('calls router.push with url and push options from resolve callback', async () => {
   const resolveOptions: RouterPushOptions = {
     query: {

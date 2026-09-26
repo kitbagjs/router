@@ -4,6 +4,7 @@ import { combineState } from '@/services/combineState'
 import { combineHooks } from '@/types/hooks'
 import { Param } from '@/types/paramTypes'
 import { PrefetchConfig } from '@/types/prefetch'
+import { ViewTransitionConfig } from '@/types/viewTransition'
 import { RouteMeta } from '@/types/register'
 import { isRoute, Route, RouteInternal } from '@/types/route'
 import { ResolvedRoute, WithData } from './resolved'
@@ -84,6 +85,10 @@ export type CreateRouteOptions<
    * Determines what assets are prefetched when router-link is rendered for this route. Overrides router level prefetch.
    */
   prefetch?: PrefetchConfig,
+  /**
+   * Animates navigations to this route with the View Transitions API. Overrides router level viewTransition.
+   */
+  viewTransition?: ViewTransitionConfig,
   /**
    * Type params for additional data intended to be stored in history state, all keys will be optional unless a default is provided.
    */

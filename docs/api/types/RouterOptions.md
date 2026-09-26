@@ -127,3 +127,17 @@ optional ssr?: boolean;
 
 Marks the router as rendering on a server, so every navigation is part of the server render from
 the moment the router is created. Required to call `render`.
+
+### viewTransition?
+
+```ts
+optional viewTransition?: ViewTransitionConfig;
+```
+
+Animates navigations with the View Transitions API. Overridden per route and per navigation.
+
+#### Default
+
+```ts
+false
+```

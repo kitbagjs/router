@@ -41,3 +41,4 @@ type Router<TRoutes, TOptions, TPlugin> = object;
 | <a id="start"></a> `start` | () => `Promise`\<`void`\> | Initializes the router based on the initial route. Automatically called when the router is installed. Calling this more than once has no effect. |
 | <a id="started"></a> `started` | `Ref`\<`boolean`\> | Returns true if the router has been started. |
 | <a id="stop"></a> `stop` | () => `void` | Stops the router. Tears down the history listener and ignores any navigation still in flight or started afterwards. |
+| <a id="viewtransition"></a> `viewTransition` | [`RouterViewTransition`](RouterViewTransition.md)\<`TRoutes` \| `TPlugin`\[`"routes"`\]\> | The view transition in flight, if any. Reactive, so a component can tell that a transition to it is about to be captured, or reach the transition itself once the browser has started it. |

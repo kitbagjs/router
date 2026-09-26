@@ -79,6 +79,7 @@ export * from './types/routerRoute'
 export * from './types/urlString'
 export type { Url, CreateUrlOptions, ParseUrlOptions } from './types/url'
 export * from './types/useLink'
+export * from './types/viewTransition'
 export * from './types/navigation'
 
 // Errors
@@ -247,6 +248,14 @@ export const useLink: RouterAssets<RegisteredRouter>['useLink'] = routerAssets.u
  * @group Compositions
  */
 export const useRejection: RouterAssets<RegisteredRouter>['useRejection'] = routerAssets.useRejection
+
+/**
+ * A composition to access the view transition in flight, if any.
+ *
+ * @returns The router's view transition state.
+ * @group Compositions
+ */
+export const useViewTransition: RouterAssets<RegisteredRouter>['useViewTransition'] = routerAssets.useViewTransition
 
 /**
  * A composition to access the navigation under way: whether one is pending, which routes it leaves and

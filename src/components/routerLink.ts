@@ -13,6 +13,7 @@ type RouterLinkSlots = {
     isActive: boolean,
     isExactActive: boolean,
     isExternal: boolean,
+    isTransitioning: boolean,
   }) => VNode[],
 }
 
@@ -33,7 +34,7 @@ export function createRouterLink<TRouter extends Router>(routerKey: InjectionKey
       return options
     })
 
-    const { element, route, href, isMatch, isExactMatch, isActive, isExactActive, isExternal, push } = useLink(() => {
+    const { element, route, href, isMatch, isExactMatch, isActive, isExactActive, isExternal, isTransitioning, push } = useLink(() => {
       if (typeof props.to === 'function') {
         return props.to(router.resolve)
       }
@@ -80,6 +81,7 @@ export function createRouterLink<TRouter extends Router>(routerKey: InjectionKey
         isExactMatch: isExactMatch.value,
         isActive: isActive.value,
         isExactActive: isExactActive.value,
+        isTransitioning: isTransitioning.value,
         isExternal: isExternal.value,
       }),
       )
@@ -88,6 +90,6 @@ export function createRouterLink<TRouter extends Router>(routerKey: InjectionKey
     name: 'RouterLink',
     // The prop types are defined above. Vue requires manually defining the prop names themselves here to distinguish from attrs
     // eslint-disable-next-line vue/require-prop-types
-    props: ['to', 'prefetch', 'query', 'hash', 'replace', 'state', 'target'],
+    props: ['to', 'prefetch', 'query', 'hash', 'replace', 'state', 'target', 'viewTransition'],
   })
 }
