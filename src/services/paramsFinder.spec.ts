@@ -85,6 +85,21 @@ describe('setParamValueOnUrl', () => {
     expect(response).toBe('/simple/ABC')
   })
 
+  test('given value with a percent sign or brackets, encodes them', () => {
+    const path = withParams('/simple/[simple]', {})
+
+    expect(setParamValueOnUrl('/simple/[simple]', path, 'simple', '100%')).toBe('/simple/100%25')
+    expect(setParamValueOnUrl('/simple/[simple]', path, 'simple', '[other]')).toBe('/simple/%5Bother%5D')
+  })
+
+  test('given value with replacement patterns, inserts it literally', () => {
+    const path = withParams('/simple/[simple]', {})
+
+    expect(setParamValueOnUrl('/simple/[simple]', path, 'simple', '$&')).toBe('/simple/$&')
+    expect(setParamValueOnUrl('/simple/[simple]', path, 'simple', '$$')).toBe('/simple/$$')
+    expect(setParamValueOnUrl('/simple/[simple]', path, 'simple', "a$'b")).toBe("/simple/a$'b")
+  })
+
   test('given paramName that matches param on route and value is not present, throws InvalidRouteParamValueError', () => {
     const path = withParams('/simple/[simple]', {})
     const action: () => void = () => setParamValueOnUrl('/simple/[simple]', path, 'simple', undefined)

@@ -163,6 +163,36 @@ describe('parse', () => {
   })
 })
 
+describe('percent encoding', () => {
+  test.each(['100%', 'a%b', 'percent%20sign'])('round trips a path param value of %s', (value) => {
+    const url = createUrl({ path: '/test/[value]' })
+
+    const href = url.stringify({ value })
+
+    expect(href).toBe(`/test/${encodeURIComponent(value)}`)
+    expect(url.parse(href).value).toBe(value)
+  })
+
+  test('an encoded slash in a path param value stays inside the value', () => {
+    const url = createUrl({ path: '/test/[value]' })
+
+    expect(url.parse('/test/a%2Fb').value).toBe('a/b')
+  })
+
+  test('a malformed escape in a path param value is kept as written', () => {
+    const url = createUrl({ path: '/test/[value]' })
+
+    expect(url.parse('/test/100%').value).toBe('100%')
+  })
+
+  test('a param value that looks like another param is not replaced by it', () => {
+    const url = createUrl({ path: '/[a]/[b]' })
+
+    expect(url.stringify({ a: '[b]', b: 'B' })).toBe('/%5Bb%5D/B')
+    expect(url.parse('/%5Bb%5D/B')).toMatchObject({ a: '[b]', b: 'B' })
+  })
+})
+
 describe('url assembly', () => {
   describe('path params', () => {
     test.each([

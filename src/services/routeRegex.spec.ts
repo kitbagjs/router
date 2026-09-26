@@ -120,15 +120,25 @@ describe('generateRouteQueryRegexPatterns', () => {
     expect(result).toMatchObject([new RegExp('static=params')])
   })
 
+  test('given static query, matches the whole key and not a suffix of another key', () => {
+    const [pattern] = generateRouteQueryRegexPatterns('mode=edit')
+
+    expect(pattern.test('mode=edit')).toBe(true)
+    expect(pattern.test('a=b&mode=edit')).toBe(true)
+    expect(pattern.test('mode=edit&a=b')).toBe(true)
+    expect(pattern.test('notmode=edit')).toBe(false)
+    expect(pattern.test('mode=editor')).toBe(false)
+  })
+
   test('given query with regex characters outside of params, escapes regex characters', () => {
     const query = 'query=$with&normal=[param]&regex*chars=)throughout[&'
 
     const result = generateRouteQueryRegexPatterns(query)
 
     expect(result.map((pattern) => pattern.toString())).toMatchObject([
-      '/query=\\$with(&|$)/i',
-      `/normal=${regexCatchAll}(&|$)/i`,
-      '/regex\\*chars=\\)throughout\\[(&|$)/i',
+      '/(^|&)query=\\$with(&|$)/i',
+      `/(^|&)normal=${regexCatchAll}(&|$)/i`,
+      '/(^|&)regex\\*chars=\\)throughout\\[(&|$)/i',
     ])
   })
 })
