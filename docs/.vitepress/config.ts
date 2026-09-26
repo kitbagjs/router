@@ -96,6 +96,7 @@ export default defineConfig({
             { text: 'Route State', link: '/advanced-concepts/route-state' },
             { text: 'Prefetching', link: '/advanced-concepts/prefetching' },
             { text: 'View Transitions', link: '/advanced-concepts/view-transitions' },
+          { text: 'Scroll Restoration', link: '/advanced-concepts/scroll-restoration' },
             { text: 'Navigation Progress', link: '/advanced-concepts/navigation-progress' },
             { text: 'Server Side Rendering', link: '/advanced-concepts/server-side-rendering' },
           ],

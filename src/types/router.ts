@@ -41,6 +41,16 @@ export type RouterOptions = TransformerOptions & {
   historyMode?: RouterHistoryMode,
 
   /**
+   * Delays native Back/Forward viewport restoration until route data and lazy components prepare
+   * and Vue flushes the destination. Requires the
+   * Navigation API, browser history, and the global router. Leaves scroll coordinates to the browser.
+   * Guard vetoes suppress restoration but do not roll back an already committed browser URL.
+   *
+   * @default false
+   */
+  scrollRestoration?: boolean,
+
+  /**
    * Base path to be prepended to any URL. Can be used for Vue applications that run in nested folder for domain.
    * For example having `base` of `/foo` would assume all routes should start with `your.domain.com/foo`.
    */

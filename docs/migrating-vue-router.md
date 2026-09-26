@@ -8,7 +8,7 @@
 :white_check_mark: Fine-grained navigation control  
 :white_check_mark: Links with automatic active CSS classes  
 :white_check_mark: HTML5 history mode or hash mode  
-:x: Customizable Scroll Behavior  
+:x: Customizable Scroll Behavior (opt-in [native Back/Forward restoration](/advanced-concepts/scroll-restoration) is available)<br>
 :white_check_mark: Proper encoding for URLs  
 
 ## Child Routes
