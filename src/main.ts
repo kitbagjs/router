@@ -92,6 +92,7 @@ export { PayloadValueError } from './errors/payloadValueError'
 export { RouterNotInstalledError } from './errors/routerNotInstalledError'
 export { UseRouteInvalidError } from './errors/useRouteInvalidError'
 export { SsrOptionRequiredError } from './errors/ssrOptionRequiredError'
+export { UnreachableRouteError } from './errors/unreachableRouteError'
 
 // Services
 export { createRoute } from './services/createRoute'
