@@ -85,6 +85,8 @@ Each level's transform only maps the params of its own segment. A transform on `
 
 When a route is matched through an alias, the resolved route's `href` is the alias url the user visited. The route's own url is available as `canonical`.
 
+Canonical keeps query values from the visited url when the original route does not declare their keys, even if the alias declares them. It also keeps the visited hash when the original route does not declare one. The original route's declared query keys and hash always take precedence. Without an alias, `canonical` equals `href`.
+
 ```ts
 // at /member/42
 router.route.href // '/member/42'

@@ -179,10 +179,10 @@ describe('parts', () => {
 
     expect(match?.params).toEqual({ id: '42', tab: 'posts' })
     expect(match?.href).toBe('/member/42?view=posts')
-    expect(match?.canonical).toBe('/user/42?tab=posts')
+    expect(match?.canonical).toBe('/user/42?tab=posts&view=posts')
   })
 
-  test('an alias query param is consumed rather than carried into canonical', () => {
+  test('an alias query param carries into canonical when its key is not declared', () => {
     const user = createRoute({ name: 'user', path: '/user/[id]', component })
       .addAlias({ path: '/member/[id]', query: 'legacy=[legacy]' }, ({ params }) => ({ id: params.legacy }))
 
@@ -190,7 +190,7 @@ describe('parts', () => {
 
     expect(match?.params).toEqual({ id: '42' })
     expect(match?.query.toString()).toBe('legacy=42&extra=1')
-    expect(match?.canonical).toBe('/user/42?extra=1')
+    expect(match?.canonical).toBe('/user/42?legacy=42&extra=1')
   })
 
   test('an alias can move a param from the path to the query', () => {
@@ -201,7 +201,7 @@ describe('parts', () => {
 
     expect(match?.params).toEqual({ id: '42' })
     expect(match?.href).toBe('/member?id=42')
-    expect(match?.canonical).toBe('/user/42')
+    expect(match?.canonical).toBe('/user/42?id=42')
   })
 
   test('an alias can move a param from the query to the path', () => {
@@ -255,13 +255,13 @@ describe('parts', () => {
     expect(match?.canonical).toBe('/user?tab=posts&debug=true')
   })
 
-  test('a declared alias hash is consumed rather than carried into canonical', () => {
+  test('a declared alias hash carries into canonical when the route has none', () => {
     const user = createRoute({ name: 'user', path: '/user' }).addAlias({ path: '/member', hash: 'about' })
 
     const match = getMatchForUrl([user], '/member#about')
 
     expect(match?.href).toBe('/member#about')
-    expect(match?.canonical).toBe('/user')
+    expect(match?.canonical).toBe('/user#about')
   })
 
   test('undeclared query and hash carry over from an alias', () => {
@@ -300,7 +300,7 @@ describe('parts', () => {
     const match = getMatchForUrl([post, user], '/member/1/p/2?view=comments')
 
     expect(match?.params).toEqual({ id: '1', postId: '2', tab: 'comments' })
-    expect(match?.canonical).toBe('/user/1/posts/2?tab=comments')
+    expect(match?.canonical).toBe('/user/1/posts/2?tab=comments&view=comments')
   })
 })
 

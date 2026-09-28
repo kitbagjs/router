@@ -57,13 +57,11 @@ function getResolvedUrls(route: Route, params: Record<string, unknown>, options:
     hash: options.hash,
   }
   const href = updateUrl(urls.href, parts)
-  const canonical = options.alias
-    ? createCanonicalUrl(route, params, {
-        query: parts.query,
-        // A hash declared by the alias is consumed, just like its declared query values.
-        hash: parseUrl(urls.href).hash ? undefined : parts.hash,
-      })
-    : href
+  const canonical = createCanonicalUrl(href, {
+    route,
+    params,
+    alias: options.alias,
+  })
   const { query, hash } = parseUrl(href)
 
   return { canonical, href, query, hash }
