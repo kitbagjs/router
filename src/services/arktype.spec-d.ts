@@ -16,3 +16,17 @@ test('ExtractParamType returns the correct type for arktype params', () => {
 
   expectTypeOf<Input>().toEqualTypeOf<boolean>()
 })
+
+test('ExtractParamType makes defaulted collections required in the output', () => {
+  const schema = type({ values: 'string[] = []', meta: 'object = {}' })
+
+  expectTypeOf<ExtractParamType<typeof schema>>().toEqualTypeOf<{ values: string[], meta: object }>()
+})
+
+test('ExtractParamType preserves required and optional tuple elements', () => {
+  const required = type(['string', 'number?']).required()
+  const optional = type(['string', 'number']).partial()
+
+  expectTypeOf<ExtractParamType<typeof required>>().toEqualTypeOf<[string, number]>()
+  expectTypeOf<ExtractParamType<typeof optional>>().toEqualTypeOf<[string?, number?]>()
+})
