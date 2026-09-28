@@ -39,3 +39,54 @@ test.each([
     expect(safeSetParamValue(parsed, { param: schema })).toBe(string)
   }
 })
+
+test('collection defaults survive parsing and serialization', () => {
+  const schema = type({ values: 'string[] = []', meta: 'object = {}' })
+  const parsed = safeGetParamValue('{}', { param: schema })
+
+  expect(parsed).toStrictEqual({ values: [], meta: {} })
+  expect(safeSetParamValue({}, { param: schema })).toBe('{"values":[],"meta":{}}')
+  expect(safeSetParamValue(parsed, { param: schema })).toBe('{"values":[],"meta":{}}')
+
+  parsed?.values.push('changed')
+  Object.assign(parsed?.meta ?? {}, { changed: true })
+
+  expect(safeGetParamValue('{}', { param: schema })).toStrictEqual({ values: [], meta: {} })
+  expect(safeGetParamValue('{"values":[1]}', { param: schema })).toBeUndefined()
+  expect(safeSetParamValue({ values: [1] }, { param: schema })).toBeUndefined()
+})
+
+test.each([
+  { name: 'required', schema: type(['string', 'number?']).required(), values: [['foo', 1]], invalid: [[], ['foo'], ['foo', 'bad'], {}] },
+  { name: 'optional', schema: type(['string', 'number']).partial(), values: [[], ['foo'], ['foo', 1]], invalid: [[1], ['foo', 'bad'], {}] },
+])('$name tuple elements preserve array parsing and serialization', ({ schema, values, invalid }) => {
+  for (const value of values) {
+    const json = JSON.stringify(value)
+
+    expect(safeGetParamValue(json, { param: schema })).toStrictEqual(value)
+    expect(safeSetParamValue(value, { param: schema })).toBe(json)
+  }
+
+  for (const value of invalid) {
+    expect(safeGetParamValue(JSON.stringify(value), { param: schema })).toBeUndefined()
+    expect(safeSetParamValue(value, { param: schema })).toBeUndefined()
+  }
+})
+
+test.each([
+  { value: [{ kind: 'one', value: 'foo' }, { kind: 'one', value: 'bar' }], valid: true },
+  { value: [{ kind: 'two', value: 1 }, { kind: 'two', value: 2 }], valid: true },
+  { value: [], valid: true },
+  { value: [{ kind: 'one', value: 'foo' }, { kind: 'two', value: 1 }], valid: false },
+  { value: [{ kind: 'one', value: 'foo' }, null], valid: false },
+  { value: [null, { kind: 'two', value: 1 }], valid: false },
+  { value: [{ kind: 'two', value: 'bad' }], valid: false },
+  { value: { kind: 'one', value: 'foo' }, valid: false },
+])('union of object arrays accepts $value: $valid', ({ value, valid }) => {
+  const schema = type({ kind: '"one"', value: 'string' }).array()
+    .or(type({ kind: '"two"', value: 'number' }).array())
+  const json = JSON.stringify(value)
+
+  expect(safeGetParamValue(json, { param: schema })).toStrictEqual(valid ? value : undefined)
+  expect(safeSetParamValue(value, { param: schema })).toBe(valid ? json : undefined)
+})
