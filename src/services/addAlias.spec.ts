@@ -245,6 +245,43 @@ describe('parts', () => {
     expect(match?.canonical).toBe('/user#profile/42')
   })
 
+  test('extra query values cannot collide with canonical query keys', () => {
+    const user = createRoute({ name: 'user', path: '/user', query: 'tab=[tab]&sort=[?sort]' })
+      .addAlias({ path: '/member' }, () => ({ tab: 'posts' }))
+
+    const match = getMatchForUrl([user], '/member?tab=comments&sort=asc&debug=true')
+
+    expect(match?.href).toBe('/member?tab=comments&sort=asc&debug=true')
+    expect(match?.canonical).toBe('/user?tab=posts&debug=true')
+  })
+
+  test('a declared alias hash is consumed rather than carried into canonical', () => {
+    const user = createRoute({ name: 'user', path: '/user' }).addAlias({ path: '/member', hash: 'about' })
+
+    const match = getMatchForUrl([user], '/member#about')
+
+    expect(match?.href).toBe('/member#about')
+    expect(match?.canonical).toBe('/user')
+  })
+
+  test('undeclared query and hash carry over from an alias', () => {
+    const user = createRoute({ name: 'user', path: '/user' }).addAlias({ path: '/member' })
+
+    const match = getMatchForUrl([user], '/member?tag=a&tag=b#bio')
+
+    expect(match?.href).toBe('/member?tag=a&tag=b#bio')
+    expect(match?.canonical).toBe('/user?tag=a&tag=b#bio')
+  })
+
+  test('a normal match keeps canonical equal to href with extras', () => {
+    const user = createRoute({ name: 'user', path: '/user', query: 'tab=[tab]' })
+
+    const match = getMatchForUrl([user], '/user?tab=posts&tag=a&tag=b#bio')
+
+    expect(match?.href).toBe('/user?tab=posts&tag=a&tag=b#bio')
+    expect(match?.canonical).toBe(match?.href)
+  })
+
   test('an alias without a path matches the parent url', () => {
     const user = createRoute({ path: '/user/[id]' })
     const profile = createRoute({ parent: user, name: 'profile', path: '/profile', component }).addAlias({})

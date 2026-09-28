@@ -1,4 +1,5 @@
 import { parseUrl, updateUrl } from '@/services/urlParser'
+import { createCanonicalUrl } from '@/services/createCanonicalUrl'
 import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
 import { getStateValues } from '@/services/state'
 import { RouterResolveOptions } from '@/types/routerResolve'
@@ -55,10 +56,14 @@ function getResolvedUrls(route: Route, params: Record<string, unknown>, options:
     query: new URLSearchParams(options.query),
     hash: options.hash,
   }
-  // An alias's hash must not replace the hash generated from the route's own params.
-  const canonicalHash = options.alias ? parseUrl(urls.canonical).hash || options.hash : options.hash
-  const canonical = updateUrl(urls.canonical, { ...parts, hash: canonicalHash })
   const href = updateUrl(urls.href, parts)
+  const canonical = options.alias
+    ? createCanonicalUrl(route, params, {
+        query: parts.query,
+        // A hash declared by the alias is consumed, just like its declared query values.
+        hash: parseUrl(urls.href).hash ? undefined : parts.hash,
+      })
+    : href
   const { query, hash } = parseUrl(href)
 
   return { canonical, href, query, hash }
