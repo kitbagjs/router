@@ -60,7 +60,7 @@ function getMatchForAlias(route: Route & RouteInternal, alias: RouteAlias, url: 
     return undefined
   }
 
-  const { success, params } = route.tryParse(canonicalUrl)
+  const { success, params } = route.tryParse(canonicalUrl, options)
 
   if (!success) {
     return undefined

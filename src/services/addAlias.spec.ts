@@ -222,6 +222,29 @@ describe('parts', () => {
     expect(getMatchForUrl([user], '/member/42')).toBeUndefined()
   })
 
+  test('an alias hash does not overwrite the canonical hash', () => {
+    const user = createRoute({ name: 'user', path: '/user', hash: 'profile', component })
+      .addAlias({ path: '/member', hash: 'about' })
+
+    const match = getMatchForUrl([user], '/member#about')
+
+    expect(match?.href).toBe('/member#about')
+    expect(match?.hash).toBe('#about')
+    expect(match?.canonical).toBe('/user#profile')
+    expect(user.tryParse(match?.canonical ?? '').success).toBe(true)
+  })
+
+  test('an alias hash does not overwrite a canonical hash param', () => {
+    const user = createRoute({ name: 'user', path: '/user', hash: 'profile/[id]', component })
+      .addAlias({ path: '/member/[id]', hash: 'about' })
+
+    const match = getMatchForUrl([user], '/member/42#about')
+
+    expect(match?.params).toEqual({ id: '42' })
+    expect(match?.href).toBe('/member/42#about')
+    expect(match?.canonical).toBe('/user#profile/42')
+  })
+
   test('an alias without a path matches the parent url', () => {
     const user = createRoute({ path: '/user/[id]' })
     const profile = createRoute({ parent: user, name: 'profile', path: '/profile', component }).addAlias({})
@@ -374,6 +397,17 @@ describe('nesting', () => {
 })
 
 describe('router', () => {
+  test('an alias respects significant trailing slashes', async () => {
+    const user = createRoute({ name: 'user', path: '/user/', component }).addAlias({ path: '/member/' })
+    const router = createRouter([user], { initialUrl: '/member/', removeTrailingSlashes: false })
+
+    await router.start()
+
+    expect(router.route.name).toBe('user')
+    expect(router.route.href).toBe('/member/')
+    expect(router.route.canonical).toBe('/user/')
+  })
+
   test('navigating to an alias url keeps the alias in the address bar', async () => {
     const user = createRoute({ name: 'user', path: '/user/[id]', component }).addAlias({ path: '/member/[id]' })
     const router = createRouter([user], { initialUrl: '/member/42' })
