@@ -3,6 +3,7 @@ import { isParamWithDefault } from '@/services/withDefault'
 import { UrlParam } from '@/services/withParams'
 import { ExtractParamType, isLiteralParam, isParamGetSet, isParamGetter } from '@/types/params'
 import { LiteralParam, Param, ParamExtras, ParamGetSet } from '@/types/paramTypes'
+import { getRegexMatcher } from '@/utilities/getRegexMatcher'
 import { stringHasValue } from '@/utilities/guards'
 import { createStandardSchemaParam, isStandardSchema } from './standardSchema'
 import { literal } from './literal'
@@ -156,7 +157,9 @@ export function getParamValue(value: string | undefined, { param = String, isOpt
   }
 
   if (param instanceof RegExp) {
-    if (param.test(value)) {
+    const matcher = getRegexMatcher(param)
+
+    if (matcher.test(value)) {
       return value
     }
 
