@@ -15,12 +15,14 @@ test('carries extra query values and hash, retaining repeated values', () => {
     path: '/user/[id]',
   })
 
-  expect(createCanonicalUrl(asUrlString('/member?tag=a&tag=b#bio'), {
+  const url = asUrlString('/member?tag=a&tag=b#bio')
+  const canonical = createCanonicalUrl(url, {
     route,
     params: { id: '42' },
     alias,
-  }))
-    .toBe('/user/42?tag=a&tag=b#bio')
+  })
+
+  expect(canonical).toBe('/user/42?tag=a&tag=b#bio')
 })
 
 test('protects declared query keys, including omitted optional params', () => {
@@ -29,12 +31,14 @@ test('protects declared query keys, including omitted optional params', () => {
     query: 'tab=[tab]&sort=[?sort]',
   })
 
-  expect(createCanonicalUrl(asUrlString('/member?tab=comments&sort=asc&debug=true'), {
+  const url = asUrlString('/member?tab=comments&sort=asc&debug=true')
+  const canonical = createCanonicalUrl(url, {
     route,
     params: { tab: 'posts' },
     alias,
-  }))
-    .toBe('/user?tab=posts&debug=true')
+  })
+
+  expect(canonical).toBe('/user?tab=posts&debug=true')
 })
 
 test('protects the declared hash', () => {
@@ -43,11 +47,14 @@ test('protects the declared hash', () => {
     hash: 'profile/[id]',
   })
 
-  expect(createCanonicalUrl(asUrlString('/member#about'), {
+  const url = asUrlString('/member#about')
+  const canonical = createCanonicalUrl(url, {
     route,
     params: { id: '42' },
     alias,
-  })).toBe('/user#profile/42')
+  })
+
+  expect(canonical).toBe('/user#profile/42')
 })
 
 test('normal routes preserve the same query and hash overrides as href', () => {
@@ -57,9 +64,11 @@ test('normal routes preserve the same query and hash overrides as href', () => {
     hash: 'profile',
   })
 
-  expect(createCanonicalUrl(asUrlString('/user?tab=posts&tab=comments#about'), {
+  const url = asUrlString('/user?tab=posts&tab=comments#about')
+  const canonical = createCanonicalUrl(url, {
     route,
     params: {},
-  }))
-    .toBe('/user?tab=posts&tab=comments#about')
+  })
+
+  expect(canonical).toBe('/user?tab=posts&tab=comments#about')
 })
