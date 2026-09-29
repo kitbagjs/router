@@ -131,6 +131,22 @@ test('a navigation arriving after the callback ran starts its own transition, an
   await expect(first.ready).rejects.toThrow()
 })
 
+test.each([{ types: ['back'] }, { types: [] }])('a replacement navigation replaces the pending transition types with $types', async ({ types }) => {
+  const viewTransitions = createViewTransitions()
+
+  viewTransitions.prepare(navigation(['forward']))
+  const firstStarted = viewTransitions.start(() => {})
+  const transition = transitionOf(viewTransitions)
+
+  viewTransitions.prepare(navigation(types))
+  const secondStarted = viewTransitions.start(() => {})
+
+  await Promise.all([firstStarted, secondStarted])
+
+  expect(transitionOf(viewTransitions)).toBe(transition)
+  expect([...transition.types]).toEqual(types)
+})
+
 test('a skipped transition does not surface as an unhandled rejection', async () => {
   const viewTransitions = createViewTransitions()
 

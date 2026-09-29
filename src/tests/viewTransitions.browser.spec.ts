@@ -261,6 +261,31 @@ test('a navigation that arrives while another waits on its data supersedes it', 
   expect(router.route.name).toBe('routeB')
 })
 
+test('a superseding query navigation loads its own data', async () => {
+  const gate = Promise.withResolvers<undefined>()
+  const load = vi.fn(async (route: { query: URLSearchParams }) => {
+    const query = route.query.get('q')
+
+    await gate.promise
+
+    return query
+  })
+  const withLoader = createRoute({ name: 'withLoader', path: '/withLoader', component }).addLoader(load)
+  const router = await startRouter({ viewTransition: true }, [routeA, withLoader])
+
+  const first = router.push('/withLoader?q=first')
+  await flushPromises()
+  const second = router.push('/withLoader?q=second')
+  await flushPromises()
+
+  gate.resolve(undefined)
+  await Promise.all([first, second])
+
+  expect(router.route.href).toBe('/withLoader?q=second')
+  expect(await router.route.data).toBe('second')
+  expect(load).toHaveBeenCalledTimes(2)
+})
+
 test('props that reject still commit, and the rejection is handled as it is without a transition', async () => {
   const started = spyOnTransitions()
   const rejecting = createRoute({ name: 'rejecting', path: '/rejecting' }).addView(component, {

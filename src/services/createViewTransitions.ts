@@ -76,6 +76,15 @@ export function createViewTransitions(): ViewTransitions {
   const start: ViewTransitions['start'] = (update) => {
     if (pending) {
       pending.update = update
+
+      if (pending.transition && supportsViewTransitionTypes()) {
+        pending.transition.types.clear()
+
+        for (const type of viewTransition.types) {
+          pending.transition.types.add(type)
+        }
+      }
+
       adopt(pending)
 
       return pending.committed.promise
