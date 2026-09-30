@@ -41,25 +41,6 @@ const user = await route.data
 
 [Register your router](/quick-start#type-safety) to get the correct route names and data types when using `useRoute`.
 
-### Loading state
-
-Top-level `await` makes the component's setup async, so render it inside `<Suspense>`. Its fallback slot can display a loading message while the component waits for its data:
-
-```vue
-<template>
-  <router-view v-slot="{ component, route }">
-    <Suspense>
-      <component :is="component" :key="route.href" />
-      <template #fallback>
-        <p>Loading…</p>
-      </template>
-    </Suspense>
-  </router-view>
-</template>
-```
-
-The `key` recreates the view when the URL changes, so setup awaits the new loader data when navigating from one user to another. If you prefer to [reuse the component](/components/router-view#component-reuse), watch `route.data` and update the displayed value instead; a top-level `await` only runs during setup.
-
 A single unnamed loader exposes its result directly as `route.data`. This is always a promise, even if the loader returns a value synchronously. Data is also available on `router.route`, but not on a route returned by `router.resolve` or in navigation hooks.
 
 ## Named loaders
@@ -144,7 +125,7 @@ In this version, `UserPage` declares a `user` prop instead of calling `useRoute`
 
 ## Navigation and errors
 
-Loaders do not block client-side navigation or unrelated views from rendering. A component that awaits its data in setup waits before rendering, with `<Suspense>` providing the loading state. Use [RouterProgress](/components/router-progress) to show progress while route data is loading.
+Loaders do not block client-side navigation or unrelated views from rendering. A component that awaits its data in setup waits before rendering. Use [RouterProgress](/components/router-progress) to show progress while route data is loading.
 
 Navigating to different params or query values can run loaders again. If you keep a data promise from a navigation that is replaced by another navigation, it can reject with `NavigationAbandonedError`; read the current route's data for the new destination.
 
