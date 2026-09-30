@@ -39,49 +39,37 @@ The param will be used to verify any potential matches from the URL, regardless 
 
 ## Repeatable Params
 
-Kitbag Router does support repeatable params like [vue-router](https://router.vuejs.org/guide/essentials/route-matching-syntax.html#Repeatable-params), but the syntax is different. By default Kitbag params capture everything including slashes, so a route that ends in a param will be considered a match.
+Kitbag Router params match a single path segment by default. Use a [greedy param](/core-concepts/params#greedy-params) to match multiple segments, and `arrayOf` with a `/` separator to read them as an array.
 
 ```ts
-{
-  name: 'repeated-params',
-  path: '/[chapters]',
-},
+import { arrayOf, createRoute, withParams } from '@kitbag/router'
+
+const chapters = createRoute({
+  name: 'chapters',
+  path: withParams('/[chapters*]', {
+    chapters: arrayOf([String], { separator: '/' }),
+  }),
+})
 ```
 
-This param will expect at least (1) character past the slash to match, but will match
+This matches `/one`, `/one/two`, and `/one/two/three`. For `/one/two`, `params.chapters` is `['one', 'two']`.
 
-- `/one`
-- `/one/two`
-- `/one/two/three`
-- etc
-
-Then to convert the captured value into an array, you'll need to define a [custom param](/core-concepts/params#custom-param-types).
+To also match `/`, make the param optional. Use `withDefault` if you want a missing value to be an empty array rather than `undefined`.
 
 ```ts
-import { ParamGetSet } from '@kitbag/router'
+import { arrayOf, createRoute, withDefault, withParams } from '@kitbag/router'
 
-const stringArrayParam: ParamGetSet<string[]> = {
-  get: (value) => {
-    return value.split('/')
-  },
-  set: value => value.join('/'),
-}
+const chapters = createRoute({
+  name: 'chapters',
+  path: withParams('/[?chapters*]', {
+    chapters: withDefault(arrayOf([String], { separator: '/' }), []),
+  }),
+})
 ```
-
-Which is applied to the route with `withParams`.
-
-```ts
-{
-  name: 'repeated-params',
-  path: withParams('/[chapters]', { chapters: stringArrayParam }),// [!code focus]
-},
-```
-
-If you make the param optional, it will also match just a slash `/`, the param value would be an empty array `[]`.
 
 ## Redirect
 
-In order to setup redirects for your routes, you'll have to use route [hooks](/advanced-concepts/hooks).
+Use [route redirects](/advanced-concepts/redirects) to redirect one route to another. The optional second argument maps params when the destination needs different values.
 
 ```ts
 const newRoute = createRoute({
@@ -92,13 +80,13 @@ const newRoute = createRoute({
 const oldRoute = createRoute({
   name: 'old-route',
   path: '/old',
-  context: [newRoute],
 })
 
-oldRoute.onBeforeRouteEnter((to, { replace }) => {
-  replace('new-route')
-})
+oldRoute.redirectTo(newRoute)
+// Alternatively: newRoute.redirectFrom(oldRoute)
 ```
+
+Use a [before hook](/advanced-concepts/hooks) when the redirect depends on a condition, such as whether the user is signed in.
 
 ## Alias
 

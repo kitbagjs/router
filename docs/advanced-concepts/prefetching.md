@@ -105,13 +105,11 @@ If the prefetch configuration is `true`, Kitbag Router will look at any override
 By default, prefetching components is enabled and prefetching props and loaders is disabled. However, you can modify prefetching globally in your router instance by setting the `options.prefetch` property.
 
 ```ts
-import { createRouter } from 'kitbag-router';
+import { createRouter } from '@kitbag/router'
 
-const router = createRouter({
-  options: {
-    prefetch: false, // all prefetching is disabled by default
-  },
-});
+const router = createRouter(routes, {
+  prefetch: false, // disable prefetching globally
+})
 ```
 
 ### Per-Route Configuration
@@ -119,17 +117,21 @@ const router = createRouter({
 If you want to enable or disable prefetching for specific routes, you can do so by adding a prefetch property to your route definition.
 
 ```ts
+import { defineAsyncComponent } from 'vue'
+
 const about = createRoute({
+  name: 'about',
   path: '/about',
   prefetch: true, // enable prefetching for this route
 })
-.addView(() => import('./About.vue'))
+.addView(defineAsyncComponent(() => import('./About.vue')))
 
 const contact = createRoute({
+  name: 'contact',
   path: '/contact',
   prefetch: false, // disable prefetching for this route
 })
-.addView(() => import('./Contact.vue'))
+.addView(defineAsyncComponent(() => import('./Contact.vue')))
 ```
 
 ### Per-View Configuration
@@ -138,6 +140,7 @@ When a route has multiple views, each one can carry its own prefetch config by p
 
 ```ts
 const dashboard = createRoute({
+  name: 'dashboard',
   path: '/dashboard',
 })
   .addView(defineAsyncComponent(() => import('./Dashboard.vue')))
@@ -155,6 +158,7 @@ A single view can mix component and props strategies.
 
 ```ts
 const user = createRoute({
+  name: 'user',
   path: '/user/[id]',
 })
 .addView(defineAsyncComponent(() => import('./UserPage.vue')), {
@@ -184,10 +188,9 @@ You can also control prefetching at the level of individual router-links by pass
 Similarly, when using the `useLink` composable, you can pass a prefetch option.
 
 ```ts
-import { useLink } from 'kitbag-router';
+import { useLink } from '@kitbag/router'
 
-const link = useLink({
-  to: '/about',
+const link = useLink('/about', {
   prefetch: true, // enable prefetching for this link
-});
+})
 ```

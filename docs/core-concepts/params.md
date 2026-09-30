@@ -158,6 +158,7 @@ So far the examples have only used params in the `path` property. When using par
 ```ts {3}
 const events = createRoute({
   name: 'events',
+  path: '/events',
   query: 'category=[?category]',
 })
 ```
@@ -209,6 +210,7 @@ import { unionOf, withParams } from '@kitbag/router'
 
 const events = createRoute({
   name: 'events',
+  path: '/events',
   query: {
     category: unionOf(['music', 'sports', 'art']),
   },
@@ -220,10 +222,11 @@ const events = createRoute({
 The `arrayOf` utility can be used to define a param as an array of any number of [Param](/api/types/Param) arguments.
 
 ```ts
-import { arrayOf withParams } from '@kitbag/router'
+import { arrayOf } from '@kitbag/router'
 
 const events = createRoute({
   name: 'events',
+  path: '/events',
   query: {
     category: arrayOf(['music', 'sports', 'art']),
   },
@@ -249,6 +252,7 @@ import { tupleOf, withParams } from '@kitbag/router'
 
 const events = createRoute({
   name: 'events',
+  path: '/events',
   query: {
     location: tupleOf([Number, Number]),
   },
@@ -264,6 +268,7 @@ import { z } from 'zod'
 
 const events = createRoute({
   name: 'events',
+  path: '/events',
   query: {
     category: z.enum(['music', 'sports', 'art']),
   },
@@ -283,6 +288,7 @@ import * as v from 'valibot'
 
 const events = createRoute({
   name: 'events',
+  path: '/events',
   query: {
     category: v.picklist(['music', 'sports', 'art']),
   },
@@ -302,6 +308,7 @@ import { type } from 'arktype'
 
 const events = createRoute({
   name: 'events',
+  path: '/events',
   query: {
     category: type('"music" | "sports" | "art"'),
   },
