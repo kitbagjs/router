@@ -31,7 +31,9 @@
   },
   "type": "module",
   "files": [
-    "dist"
+    "dist",
+    "AGENTS.md",
+    "skills"
   ],
   "main": "./dist/kitbag-router.umd.cjs",
   "module": "./dist/kitbag-router.js",
