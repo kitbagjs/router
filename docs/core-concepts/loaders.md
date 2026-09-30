@@ -140,28 +140,6 @@ const project = createRoute({
 
 Both callbacks use the same loader result, so they do not need separate requests for the project. Each callback derives the props for its own component. Render the views with a default `<router-view />` and a named `<router-view name="tasks" />`.
 
-## Navigation and errors
-
-Loaders do not block client-side navigation or unrelated views from rendering. A component that awaits its data in setup waits before rendering. Use [RouterProgress](/components/router-progress) to show progress while route data is loading.
-
-Navigating to different params or query values can run loaders again. If you keep a data promise from a navigation that is replaced by another navigation, it can reject with `NavigationAbandonedError`; read the current route's data for the new destination.
-
-The loader's second argument provides navigation helpers, `reject`, and an `AbortSignal`. For example, reject a missing user:
-
-```ts
-.addLoader(async (route, { reject }) => {
-  const user = await getUser(route.params.id)
-
-  if (!user) {
-    reject('NotFound')
-  }
-
-  return user
-})
-```
-
-Pass the context's `signal` to `fetch` or another API that accepts an abort signal to cancel requests when the navigation is abandoned. Unexpected loader errors are reported to the router's [error hooks](/advanced-concepts/hooks#on-error); use [rejections](/advanced-concepts/rejections) for expected outcomes such as a missing record.
-
 ## Prefetching and server rendering
 
 Loader prefetching is disabled by default. Enable it with a loader's `prefetch` option or the router, route, or link configuration. See [prefetching loaders](/advanced-concepts/prefetching#prefetching-loaders).
