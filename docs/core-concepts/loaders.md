@@ -4,7 +4,7 @@ Loaders fetch data for a route and make it available as `route.data`. Use a load
 
 ## Loading data for a view
 
-Add a loader with the chainable `addLoader` method. The callback receives the resolved route, so its params are typed just like they are in a props getter. A loader can return any value or a promise of one.
+Add a loader with the chainable `addLoader` method. The callback receives the resolved route, so its params are typed just like they are in a props getter. A loader can return any value or a promise.
 
 Await `route.data` in a view's props getter to pass the result to that component:
 
