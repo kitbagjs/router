@@ -60,6 +60,15 @@ test.each([
   { schema: z.map(z.string(), z.number()), string: '[["one",1]]', parsed: new Map([['one', 1]]) },
   { schema: z.set(z.number()), string: '[1,2,3]', parsed: new Set([1, 2, 3]) },
   { schema: z.enum(Numbers), string: '1', parsed: Numbers.One },
+  { schema: z.number().optional(), string: '12', parsed: 12 },
+  { schema: z.number().nullable(), string: '12', parsed: 12 },
+  { schema: z.number().default(1), string: '12', parsed: 12 },
+  { schema: z.string().optional(), string: 'hello', parsed: 'hello' },
+  { schema: z.string().nullable(), string: 'hello', parsed: 'hello' },
+  { schema: z.string().nullish(), string: 'hello', parsed: 'hello' },
+  { schema: z.object({ at: z.string() }), string: '{"at":"2026-09-21T12:00:00.000Z"}', parsed: { at: '2026-09-21T12:00:00.000Z' } },
+  { schema: z.object({ at: z.date() }), string: '{"at":"2026-09-21T12:00:00.000Z"}', parsed: { at: new Date('2026-09-21T12:00:00.000Z') } },
+  { schema: z.union([z.number().optional(), z.string()]), string: '12', parsed: 12 },
 ])('given $schema, returns $parsed for $string', async ({ schema, string, parsed }) => {
   if (typeof parsed === 'string' || typeof parsed === 'number' || typeof parsed === 'boolean' || typeof parsed === 'bigint') {
     expect(safeGetParamValue(string, { param: schema })).toBe(parsed)
@@ -70,10 +79,90 @@ test.each([
   }
 })
 
+test('given a nullable schema, null round trips as the string null', () => {
+  expect(safeGetParamValue('null', { param: z.number().nullable() })).toBeNull()
+  expect(safeSetParamValue(null, { param: z.number().nullable() })).toBe('null')
+  expect(safeGetParamValue('null', { param: z.string().nullable() })).toBe('null')
+})
+
 test.each([
   { schema: z.intersection(z.object({ foo: z.string() }), z.object({ bar: z.number() })), type: 'Intersection' },
   { schema: z.promise(z.string()), type: 'Promise' },
 ])('$type schemas are not supported', async ({ schema }) => {
   expect(safeGetParamValue('test', { param: schema })).toBeUndefined()
   expect(safeSetParamValue('test', { param: schema })).toBeUndefined()
+})
+
+test('collection defaults survive parsing and serialization', () => {
+  const schema = z.object({
+    values: z.array(z.string()).default(() => []),
+    meta: z.record(z.string(), z.unknown()).default(() => ({})),
+  })
+  const parsed = safeGetParamValue('{}', { param: schema })
+
+  expect(parsed).toStrictEqual({ values: [], meta: {} })
+  expect(safeSetParamValue({}, { param: schema })).toBe('{"values":[],"meta":{}}')
+  expect(safeSetParamValue(parsed, { param: schema })).toBe('{"values":[],"meta":{}}')
+
+  parsed?.values.push('changed')
+  Object.assign(parsed?.meta ?? {}, { changed: true })
+
+  expect(safeGetParamValue('{}', { param: schema })).toStrictEqual({ values: [], meta: {} })
+  expect(safeGetParamValue('{"values":[1]}', { param: schema })).toBeUndefined()
+  expect(safeSetParamValue({ values: [1] }, { param: schema })).toBeUndefined()
+})
+
+test.each([
+  { name: 'required', schema: z.tuple([z.string(), z.number()]), values: [['foo', 1]], invalid: [[], ['foo'], ['foo', 'bad'], {}] },
+  // Zod 4.0.0 still requires every tuple position, even with optional element schemas.
+  { name: 'optional', schema: z.tuple([z.string().optional(), z.number().optional()]), values: [['foo', 1]], invalid: [[], ['foo'], [1], ['foo', 'bad'], {}] },
+])('$name tuple elements preserve array parsing and serialization', ({ schema, values, invalid }) => {
+  for (const value of values) {
+    const json = JSON.stringify(value)
+
+    expect(safeGetParamValue(json, { param: schema })).toStrictEqual(value)
+    expect(safeSetParamValue(value, { param: schema })).toBe(json)
+  }
+
+  for (const value of invalid) {
+    expect(safeGetParamValue(JSON.stringify(value), { param: schema })).toBeUndefined()
+    expect(safeSetParamValue(value, { param: schema })).toBeUndefined()
+  }
+})
+
+test.each([
+  { value: [{ kind: 'one', value: 'foo' }, { kind: 'one', value: 'bar' }], valid: true },
+  { value: [{ kind: 'two', value: 1 }, { kind: 'two', value: 2 }], valid: true },
+  { value: [], valid: true },
+  { value: [{ kind: 'one', value: 'foo' }, { kind: 'two', value: 1 }], valid: false },
+  { value: [{ kind: 'one', value: 'foo' }, null], valid: false },
+  { value: [null, { kind: 'two', value: 1 }], valid: false },
+  { value: [{ kind: 'two', value: 'bad' }], valid: false },
+  { value: { kind: 'one', value: 'foo' }, valid: false },
+])('union of object arrays accepts $value: $valid', ({ value, valid }) => {
+  const schema = z.union([
+    z.array(z.object({ kind: z.literal('one'), value: z.string() })),
+    z.array(z.object({ kind: z.literal('two'), value: z.number() })),
+  ])
+  const json = JSON.stringify(value)
+
+  expect(safeGetParamValue(json, { param: schema })).toStrictEqual(valid ? value : undefined)
+  expect(safeSetParamValue(value, { param: schema })).toBe(valid ? json : undefined)
+})
+
+test.each([
+  { name: 'required', schema: z.object({ value: z.string().optional() }).required(), values: [{ value: 'foo' }], invalid: [{}, { value: 1 }] },
+  { name: 'partial', schema: z.object({ value: z.string() }).partial(), values: [{}, { value: 'foo' }], invalid: [{ value: 1 }] },
+])('$name object properties are respected when parsing and serializing', ({ schema, values, invalid }) => {
+  for (const value of values) {
+    const json = JSON.stringify(value)
+
+    expect(safeGetParamValue(json, { param: schema })).toStrictEqual(value)
+    expect(safeSetParamValue(value, { param: schema })).toBe(json)
+  }
+
+  for (const value of invalid) {
+    expect(safeGetParamValue(JSON.stringify(value), { param: schema })).toBeUndefined()
+    expect(safeSetParamValue(value, { param: schema })).toBeUndefined()
+  }
 })

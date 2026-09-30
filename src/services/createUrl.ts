@@ -7,6 +7,7 @@ import { IS_URL_SYMBOL, CreateUrlOptions, ToUrl, Url, ParseUrlOptions, UrlIntern
 import { UrlString } from '@/types/urlString'
 import { checkDuplicateParams } from '@/utilities/checkDuplicateParams'
 import { stringHasValue } from '@/utilities/guards'
+import { decodeParamValue } from '@/utilities/percentEncoding'
 
 export function createUrl<const T extends CreateUrlOptions>(options: T): ToUrl<T>
 export function createUrl(urlOrOptions: CreateUrlOptions): Url {
@@ -175,11 +176,10 @@ function assembleQueryParamValues(query: UrlPart, paramValues: Record<string, un
 
 function getParams(path: UrlPart, url: string): Record<string, unknown> {
   const values: Record<string, unknown> = {}
-  const decodedValueFromUrl = decodeURIComponent(url)
 
   for (const [name, urlParam] of Object.entries(path.params)) {
-    const stringValue = getParamValueFromUrl(decodedValueFromUrl, path, name)
-    const paramValue = getParamValue(stringValue, urlParam)
+    const stringValue = getParamValueFromUrl(url, path, name)
+    const paramValue = getParamValue(decodeParamValue(stringValue), urlParam)
 
     values[name] = paramValue
   }

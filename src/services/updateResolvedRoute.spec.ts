@@ -56,3 +56,17 @@ test('returns a resolved route', () => {
 
   expect(isResolvedRoute(updateResolvedRoute(resolved, { hash: 'top' }))).toBe(true)
 })
+
+test('getTitle sees the updated route', async () => {
+  const titled = createRoute({
+    name: 'titled',
+    path: '/titled',
+    component,
+  })
+  titled.setTitle((to) => `Results for ${to.query.get('q')}`)
+  const resolved = createResolvedRoute(titled)
+
+  const response = updateResolvedRoute(resolved, { query: { q: 'cats' } })
+
+  await expect(response.getTitle()).resolves.toBe('Results for cats')
+})

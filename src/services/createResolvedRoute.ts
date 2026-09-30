@@ -7,6 +7,7 @@ import { IS_RESOLVED_ROUTE_SYMBOL, ResolvedRoute, ResolvedRouteInternal } from '
 import { isRoute, Route } from '@/types/route'
 import { RouteAliasMatch } from '@/types/routeAlias'
 import { UrlString } from '@/types/urlString'
+import { getHooks } from '@/types/hooks'
 
 type CreateResolvedRouteOptions = RouterResolveOptions & {
   /**
@@ -75,17 +76,21 @@ export function createResolvedRoute(route: Route, params: Record<string, unknown
     throw new Error('createResolvedRoute called with a route that has no matches')
   }
 
-  async function getTitle(): Promise<string | undefined> {
+  async function getRouteTitle(to: ResolvedRoute): Promise<string | undefined> {
     if (!isRoute(route)) {
       return undefined
     }
 
-    return route.getTitle(resolvedRoute)
+    return route.getTitle(to)
   }
 
   const resolvedRoute: ResolvedRoute & ResolvedRouteInternal = {
-    ...route,
     [IS_RESOLVED_ROUTE_SYMBOL]: true,
+    id: route.id,
+    name: route.name,
+    matches: route.matches,
+    hooks: getHooks(route),
+    getRouteTitle,
     matched,
     query: createResolvedRouteQuery(query),
     state: getStateValues(route.state, options.state),
@@ -93,7 +98,7 @@ export function createResolvedRoute(route: Route, params: Record<string, unknown
     params,
     href,
     canonical,
-    getTitle,
+    getTitle: () => getRouteTitle(resolvedRoute),
   }
 
   return resolvedRoute

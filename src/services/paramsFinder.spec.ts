@@ -46,6 +46,15 @@ describe('getParamValueFromUrl', () => {
     expect(response).toBe('ABC')
   })
 
+  test('given regex characters outside of params, matches them literally', () => {
+    const before = withParams('/report(1)/[id]', {})
+    const after = withParams('/[id]/report(1)', {})
+
+    expect(getParamValueFromUrl('/report(1)/123', before, 'id')).toBe('123')
+    expect(getParamValueFromUrl('/123/report(1)', after, 'id')).toBe('123')
+    expect(getParamValueFromUrl('/report1/123', before, 'id')).toBe(undefined)
+  })
+
   test('given path with greedy param, extracts multi-segment value for greedy param', () => {
     const path = withParams('/[id]/[rest*]/suffix', {})
 
@@ -74,6 +83,21 @@ describe('setParamValueOnUrl', () => {
     const response = setParamValueOnUrl('/simple/[simple]', path, 'simple', 'ABC')
 
     expect(response).toBe('/simple/ABC')
+  })
+
+  test('given value with a percent sign or brackets, encodes them', () => {
+    const path = withParams('/simple/[simple]', {})
+
+    expect(setParamValueOnUrl('/simple/[simple]', path, 'simple', '100%')).toBe('/simple/100%25')
+    expect(setParamValueOnUrl('/simple/[simple]', path, 'simple', '[other]')).toBe('/simple/%5Bother%5D')
+  })
+
+  test('given value with replacement patterns, inserts it literally', () => {
+    const path = withParams('/simple/[simple]', {})
+
+    expect(setParamValueOnUrl('/simple/[simple]', path, 'simple', '$&')).toBe('/simple/$&')
+    expect(setParamValueOnUrl('/simple/[simple]', path, 'simple', '$$')).toBe('/simple/$$')
+    expect(setParamValueOnUrl('/simple/[simple]', path, 'simple', "a$'b")).toBe("/simple/a$'b")
   })
 
   test('given paramName that matches param on route and value is not present, throws InvalidRouteParamValueError', () => {

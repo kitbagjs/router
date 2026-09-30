@@ -204,6 +204,25 @@ function getArkTypeSchemaOptions(schema: ArkTypeSchemaLike): readonly StandardSc
   return schema.branches.length > 1 ? schema.branches : undefined
 }
 
+const zodWrapperTypes = ['optional', 'nullable', 'default', 'prefault', 'nonoptional', 'catch', 'readonly']
+const valibotWrapperTypes = ['optional', 'nullable', 'nullish', 'exact_optional', 'undefinedable']
+
+/**
+ * The schema inside wrappers like optional and nullable. A wrapper decides what may be absent and says
+ * nothing about how a present value is written, so the inner schema drives parsing and stringifying.
+ */
+function unwrapSchema(schema: StandardSchemaLike): StandardSchemaLike {
+  if (isZodSchema(schema) && zodWrapperTypes.includes(schema.def.type) && 'innerType' in schema.def) {
+    return unwrapSchema(schema.def.innerType as StandardSchemaLike)
+  }
+
+  if (isValibotSchema(schema) && valibotWrapperTypes.includes(schema.type) && 'wrapped' in schema) {
+    return unwrapSchema(schema.wrapped as StandardSchemaLike)
+  }
+
+  return schema
+}
+
 const isoDateRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
 
 function reviver(_key: string, value: any): any {
@@ -247,10 +266,34 @@ function tryAll<T>(fns: (() => T)[]): T {
 
 // Sorts string schemas last
 function sortStandardSchemas(schemaA: StandardSchemaLike, schemaB: StandardSchemaLike): number {
-  return getSchemaType(schemaA) === 'string' ? 1 : getSchemaType(schemaB) === 'string' ? -1 : 0
+  return getSchemaType(unwrapSchema(schemaA)) === 'string' ? 1 : getSchemaType(unwrapSchema(schemaB)) === 'string' ? -1 : 0
+}
+
+/**
+ * Parses json for a schema, reviving nested dates only when the schema rejects the plain strings, so a
+ * string that happens to look like a date stays a string when the schema asks for one.
+ */
+function parseJsonValue(value: string, schema: StandardSchemaLike, toInput: (json: any) => unknown = (json) => json): unknown {
+  return tryAll([
+    () => parse(schema, toInput(JSON.parse(value))),
+    () => parse(schema, toInput(JSON.parse(value, reviver))),
+  ])
 }
 
 function parseStandardSchemaValue(value: string, schema: StandardSchemaLike): unknown {
+  const inner = unwrapSchema(schema)
+
+  if (inner !== schema) {
+    if (value === 'null') {
+      return tryAll([
+        () => parse(schema, parseStandardSchemaValue(value, inner)),
+        () => parse(schema, null),
+      ])
+    }
+
+    return parse(schema, parseStandardSchemaValue(value, inner))
+  }
+
   const type = getSchemaType(schema)
 
   if (type === 'string') {
@@ -286,7 +329,7 @@ function parseStandardSchemaValue(value: string, schema: StandardSchemaLike): un
   }
 
   if (type === 'object' || type === 'array' || type === 'tuple' || type === 'record') {
-    return parse(schema, JSON.parse(value, reviver))
+    return parseJsonValue(value, schema)
   }
 
   if (type === 'union') {
@@ -303,11 +346,11 @@ function parseStandardSchemaValue(value: string, schema: StandardSchemaLike): un
   }
 
   if (type === 'map') {
-    return parse(schema, new Map(JSON.parse(value, reviver)))
+    return parseJsonValue(value, schema, (json) => new Map(json))
   }
 
   if (type === 'set') {
-    return parse(schema, new Set(JSON.parse(value, reviver)))
+    return parseJsonValue(value, schema, (json) => new Set(json))
   }
 
   if (type === 'intersection') {
@@ -326,6 +369,16 @@ function parseStandardSchemaValue(value: string, schema: StandardSchemaLike): un
 }
 
 function stringifyStandardSchemaValue(value: unknown, schema: StandardSchemaLike): string {
+  const inner = unwrapSchema(schema)
+
+  if (inner !== schema) {
+    if (value === null) {
+      return String(parse(schema, null))
+    }
+
+    return stringifyStandardSchemaValue(value, inner)
+  }
+
   const type = getSchemaType(schema)
 
   if (type === 'string' || type === 'boolean' || type === 'nan' || type === 'literal' || type === 'enum') {

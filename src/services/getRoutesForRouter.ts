@@ -1,17 +1,20 @@
 import { isRoute, Route, RouteInternal, Routes } from '@/types/route'
 import { RouterPlugin } from '@/types/routerPlugin'
 import { DuplicateNamesError } from '@/errors/duplicateNamesError'
+import { UnreachableRouteError } from '@/errors/unreachableRouteError'
 import { isNamedRoute } from '@/utilities/isNamedRoute'
 import { insertBaseRoute } from '@/services/insertBaseRoute'
 import { BUILT_IN_REJECTIONS, BuiltInRejectionType, isRejection, Rejection, RejectionInternal, Rejections } from '@/types/rejection'
 import { RouterOptions } from '@/types/router'
 import { createRejection } from '@/services/createRejection'
+import { isUrl } from '@/types/url'
 
 /**
  * Takes in routes and plugins and returns a list of routes with the base route inserted if provided.
- * Also checks for duplicate names in the routes.
+ * Also checks for duplicate names and unreachable paths in the routes.
  *
  * @throws {DuplicateNamesError} If there are duplicate names in the routes.
+ * @throws {UnreachableRouteError} If a named route's path does not start with `/`.
  */
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export function getRoutesForRouter(routes: Routes | Routes[], plugins: RouterPlugin[] = [], options: RouterOptions = {}) {
@@ -44,7 +47,13 @@ export function getRoutesForRouter(routes: Routes | Routes[], plugins: RouterPlu
       return
     }
 
-    routerRoutes.set(route.name, insertBaseRoute(route, options.base))
+    const routerRoute = insertBaseRoute(route, options.base)
+
+    if (isUnreachable(routerRoute)) {
+      throw new UnreachableRouteError(route.name, getPath(routerRoute))
+    }
+
+    routerRoutes.set(route.name, routerRoute)
 
     for (const context of route.context) {
       if (isRoute(context)) {
@@ -123,4 +132,12 @@ function isRejections(rejections: Rejections | Rejection): rejections is Rejecti
 
 function sortByDepthDescending(aRoute: Route & RouteInternal, bRoute: Route & RouteInternal): number {
   return bRoute.depth - aRoute.depth
+}
+
+function getPath(route: Route): string {
+  return isUrl(route) ? route.schema.path.value : ''
+}
+
+function isUnreachable(route: Route): boolean {
+  return route.isRelative && !getPath(route).startsWith('/')
 }

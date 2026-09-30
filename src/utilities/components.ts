@@ -25,17 +25,22 @@ export function isAsyncComponent(component: Component): component is ComponentWi
 export type AsyncComponentFilter = (match: CreatedRouteOptions, view: RouteView<unknown>) => boolean
 
 /**
- * Loads the async components a route renders, or only those the filter keeps, so they are ready to render
- * synchronously.
+ * The async components a route renders, or only those the filter keeps.
  */
-export function loadAsyncComponents(route: ResolvedRoute, filter: AsyncComponentFilter = () => true): Promise<unknown> {
-  const loading = route.matches.flatMap((match) => Object.values(match.views).flatMap((view) => {
+export function getAsyncComponents(route: ResolvedRoute, filter: AsyncComponentFilter = () => true): ComponentWithAsyncLoader[] {
+  return route.matches.flatMap((match) => Object.values(match.views).flatMap((view) => {
     if (view.component && isAsyncComponent(view.component) && filter(match, view)) {
-      return [view.component.__asyncLoader()]
+      return [view.component]
     }
 
     return []
   }))
+}
 
-  return Promise.all(loading)
+/**
+ * Loads the async components a route renders, or only those the filter keeps, so they are ready to render
+ * synchronously. Each load is reported on its own.
+ */
+export function loadAsyncComponents(route: ResolvedRoute, filter: AsyncComponentFilter = () => true): Promise<unknown>[] {
+  return getAsyncComponents(route, filter).map((component) => component.__asyncLoader())
 }

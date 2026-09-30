@@ -34,6 +34,10 @@ Every route's own url is tried before any [alias](/advanced-concepts/aliases). O
 
 Routes `path` must match the structure of the URL pathname.
 
+::: info
+A named route's final path (its own path combined with any parents) must start with `/`. Otherwise it can never match a url and the router throws an `UnreachableRouteError`.
+:::
+
 ```ts
 const route = createRoute({
   ...

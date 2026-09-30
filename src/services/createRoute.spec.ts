@@ -226,6 +226,7 @@ describe('props', () => {
     const spy = vi.fn()
     const parent = createRoute({
       name: 'parent',
+      path: '/parent',
     })
 
     const child = createRoute({
@@ -237,7 +238,7 @@ describe('props', () => {
     })
 
     const router = createRouter([parent, child], {
-      initialUrl: '/child',
+      initialUrl: '/parent/child',
     })
 
     await router.start()
@@ -291,6 +292,7 @@ describe('props', () => {
 
     const parent = createRoute({
       name: 'parent',
+      path: '/parent',
     }, () => ({ foo: 123 }))
 
     const child = createRoute({
@@ -304,7 +306,7 @@ describe('props', () => {
     })
 
     const router = createRouter([parent, child], {
-      initialUrl: '/child',
+      initialUrl: '/parent/child',
     })
 
     await router.start()
@@ -319,6 +321,7 @@ describe('props', () => {
 
     const parent = createRoute({
       name: 'parent',
+      path: '/parent',
     }, async () => {
       throw error
     })
@@ -338,7 +341,7 @@ describe('props', () => {
     })
 
     const router = createRouter([parent, child], {
-      initialUrl: '/child',
+      initialUrl: '/parent/child',
     })
 
     await router.start()
@@ -352,6 +355,7 @@ describe('props', () => {
 
     const parent = createRoute({
       name: 'parent',
+      path: '/parent',
     }, () => {
       throw error
     })
@@ -373,7 +377,7 @@ describe('props', () => {
     })
 
     const router = createRouter([parent, child], {
-      initialUrl: '/child',
+      initialUrl: '/parent/child',
     })
 
     await router.start()
@@ -386,6 +390,7 @@ describe('props', () => {
 
     const parent = createRoute({
       name: 'parent',
+      path: '/parent',
     }, async () => ({ foo: 123 }))
 
     const child = createRoute({
@@ -402,7 +407,7 @@ describe('props', () => {
     })
 
     const router = createRouter([parent, child], {
-      initialUrl: '/child',
+      initialUrl: '/parent/child',
     })
 
     await router.start()
@@ -415,6 +420,7 @@ describe('props', () => {
 
     const parent = createRoute({
       name: 'parent',
+      path: '/parent',
       components: {
         one: component,
         two: component,
@@ -437,7 +443,7 @@ describe('props', () => {
     })
 
     const router = createRouter([parent, child], {
-      initialUrl: '/child',
+      initialUrl: '/parent/child',
     })
 
     await router.start()
@@ -450,6 +456,7 @@ describe('props', () => {
 
     const parent = createRoute({
       name: 'parent',
+      path: '/parent',
       components: {
         one: component,
         two: component,
@@ -471,7 +478,7 @@ describe('props', () => {
     })
 
     const router = createRouter([parent, child], {
-      initialUrl: '/child',
+      initialUrl: '/parent/child',
     })
 
     await router.start()
@@ -484,6 +491,7 @@ describe('props', () => {
 
     const parent = createRoute({
       name: 'parent',
+      path: '/parent',
       components: {
         one: component,
         two: component,
@@ -513,7 +521,7 @@ describe('props', () => {
     })
 
     const router = createRouter([parent, child], {
-      initialUrl: '/child',
+      initialUrl: '/parent/child',
     })
 
     await router.start()
