@@ -3,6 +3,7 @@
 ## Compositions
 
 - [useLink](compositions/useLink.md)
+- [useNavigation](compositions/useNavigation.md)
 - [useQueryValue](compositions/useQueryValue.md)
 - [useRejection](compositions/useRejection.md)
 - [useRoute](compositions/useRoute.md)
@@ -27,11 +28,17 @@
 ## Type Guards
 
 - [isRoute](type-guards/isRoute.md)
+- [isResolvedRoute](type-guards/isResolvedRoute.md)
 - [isUrlString](type-guards/isUrlString.md)
+
+## Classes
+
+- [UnreachableRouteError](classes/UnreachableRouteError.md)
 
 ## Components
 
 - [RouterLink](components/RouterLink.md)
+- [RouterProgress](components/RouterProgress.md)
 - [RouterView](components/RouterView.md)
 
 ## Functions
@@ -64,6 +71,7 @@
 - [AddAfterEnterHook](types/AddAfterEnterHook.md)
 - [AddAfterLeaveHook](types/AddAfterLeaveHook.md)
 - [AddAfterUpdateHook](types/AddAfterUpdateHook.md)
+- [AddAliasOptions](types/AddAliasOptions.md)
 - [AddBeforeEnterHook](types/AddBeforeEnterHook.md)
 - [AddBeforeLeaveHook](types/AddBeforeLeaveHook.md)
 - [AddBeforeUpdateHook](types/AddBeforeUpdateHook.md)
@@ -80,6 +88,8 @@
 - [AfterLeaveHookContext](types/AfterLeaveHookContext.md)
 - [AfterUpdateHook](types/AfterUpdateHook.md)
 - [AfterUpdateHookContext](types/AfterUpdateHookContext.md)
+- [AliasTransform](types/AliasTransform.md)
+- [AliasTransformContext](types/AliasTransformContext.md)
 - [BeforeEnterHook](types/BeforeEnterHook.md)
 - [BeforeEnterHookContext](types/BeforeEnterHookContext.md)
 - [BeforeHookLifecycle](types/BeforeHookLifecycle.md)
@@ -127,6 +137,7 @@
 - [ResolvedRoute](types/ResolvedRoute.md)
 - [ResolvedRouteUnion](types/ResolvedRouteUnion.md)
 - [Route](types/Route.md)
+- [RouteAddAlias](types/RouteAddAlias.md)
 - [RouteAddLoader](types/RouteAddLoader.md)
 - [RouteAddView](types/RouteAddView.md)
 - [RouteCallbackContext](types/RouteCallbackContext.md)
@@ -139,6 +150,7 @@
 - [RouterLinkProps](types/RouterLinkProps.md)
 - [RouterOptions](types/RouterOptions.md)
 - [RouterPlugin](types/RouterPlugin.md)
+- [RouterProgressProps](types/RouterProgressProps.md)
 - [RouterPush](types/RouterPush.md)
 - [RouterPushOptions](types/RouterPushOptions.md)
 - [RouterReject](types/RouterReject.md)
@@ -162,6 +174,7 @@
 - [UrlString](types/UrlString.md)
 - [UseLink](types/UseLink.md)
 - [UseLinkOptions](types/UseLinkOptions.md)
+- [UseNavigation](types/UseNavigation.md)
 - [WithData](types/WithData.md)
 - [WithHost](types/WithHost.md)
 - [WithoutHost](types/WithoutHost.md)
