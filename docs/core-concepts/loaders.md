@@ -140,8 +140,6 @@ const project = createRoute({
 
 Both callbacks use the same loader result, so they do not need separate requests for the project. Each callback derives the props for its own component. Render the views with a default `<router-view />` and a named `<router-view name="tasks" />`.
 
-## Prefetching and server rendering
+## Prefetching
 
 Loader prefetching is disabled by default. Enable it with a loader's `prefetch` option or the router, route, or link configuration. See [prefetching loaders](/advanced-concepts/prefetching#prefetching-loaders).
-
-When server rendering, `router.render()` waits for loaders and includes their results in the hydration payload. If a result needs custom serialization, set the loader's `transformer` option. See [server rendering and payload values](/advanced-concepts/server-side-rendering#payload-values).
