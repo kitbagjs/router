@@ -347,6 +347,10 @@ home.onBeforeRouteEnter((to, { replace }) => {
 })
 ```
 
+## Loaders
+
+Use `addLoader` to load data for a route and read it through `route.data` in a props getter or on the current route. See [Loaders](/core-concepts/loaders) for examples of loading data, sharing it between views, and using named loaders.
+
 ## Prefetching
 
 Routes can be prefetched to improve performance. See the [Prefetching](/advanced-concepts/prefetching) documentation for more information.

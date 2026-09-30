@@ -59,6 +59,7 @@ export default defineConfig({
             { text: 'External Routes', link: '/core-concepts/external-routes' },
             { text: 'Params', link: '/core-concepts/params' },
             { text: 'Props', link: '/core-concepts/component-props' },
+            { text: 'Loaders', link: '/core-concepts/loaders' },
             { text: 'Router', link: '/core-concepts/router' },
             { text: 'Router Route', link: '/core-concepts/router-route' },
             { text: 'Navigation', link: '/core-concepts/navigation' },
