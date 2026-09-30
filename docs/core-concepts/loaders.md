@@ -81,28 +81,28 @@ A loader cannot read `route.data` to depend on another loader on the same route.
 
 Child routes can access their ancestors' loader results through `route.data`. Give loaders distinct names across a route and its ancestors; two unnamed loaders also conflict because they both use the name `default`.
 
-When a child's loader needs a result from its parent, use `parent.data` from the callback context:
+When a child's loader needs a value returned by its parent's request, use `parent.data` from the callback context. For example, an organization's invoices require its billing account ID, which is returned with the organization and is not in the URL:
 
 ```ts
-const user = createRoute({
-  name: 'user',
-  path: '/users/[id]',
+const organization = createRoute({
+  name: 'organization',
+  path: '/organizations/[slug]',
 })
-.addLoader((route) => getUser(route.params.id), { name: 'user' })
+.addLoader((route) => getOrganization(route.params.slug), { name: 'organization' })
 
-const posts = createRoute({
-  parent: user,
-  name: 'user.posts',
-  path: '/posts',
+const invoices = createRoute({
+  parent: organization,
+  name: 'organization.invoices',
+  path: '/invoices',
 })
 .addLoader(async (_route, { parent }) => {
-  const user = await parent.data.user
+  const organization = await parent.data.organization
 
-  return getPosts(user.id)
-}, { name: 'posts' })
+  return getInvoices(organization.billingAccountId)
+}, { name: 'invoices' })
 ```
 
-The child route's data contains both `data.user` and `data.posts`. Only wait for parent data when the child actually needs it; otherwise load directly from the route params so both requests can run together.
+The child route's data contains both `data.organization` and `data.invoices`. The invoices request must wait for the billing account ID. If a child only needs a value already available in `route.params`, use that directly so the requests can run together.
 
 ## Passing loader data as props
 
