@@ -21,4 +21,5 @@ Context provided to props callback functions
 | <a id="push"></a> `push` | [`RouterPush`](RouterPush.md)\<\[`TRoute`\] \| `ExtractRouteContextRoutes`\<`TOptions`\>\> |
 | <a id="reject"></a> `reject` | [`RouterReject`](RouterReject.md)\<`ExtractRouteContextRejections`\<`TOptions`\>\> |
 | <a id="replace"></a> `replace` | [`RouterReplace`](RouterReplace.md)\<\[`TRoute`\] \| `ExtractRouteContextRoutes`\<`TOptions`\>\> |
+| <a id="signal"></a> `signal` | `AbortSignal` |
 | <a id="update"></a> `update` | `RouteUpdate`\<[`ResolvedRoute`](ResolvedRoute.md)\<`TRoute`\>\> |

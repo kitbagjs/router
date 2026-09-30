@@ -21,4 +21,5 @@ from the route: rejections/routes from the route's context, and the parent from 
 | <a id="push"></a> `push` | [`RouterPush`](RouterPush.md)\<\[`TRoute`\] \| `RouteContextToRoute`\<`TRoute`\[`"context"`\]\>\> |
 | <a id="reject"></a> `reject` | [`RouterReject`](RouterReject.md)\<`RouteContextToRejection`\<`TRoute`\[`"context"`\]\>\> |
 | <a id="replace"></a> `replace` | [`RouterReplace`](RouterReplace.md)\<\[`TRoute`\] \| `RouteContextToRoute`\<`TRoute`\[`"context"`\]\>\> |
+| <a id="signal"></a> `signal` | `AbortSignal` |
 | <a id="update"></a> `update` | `RouteUpdate`\<[`ResolvedRoute`](ResolvedRoute.md)\<`TRoute`\>\> |

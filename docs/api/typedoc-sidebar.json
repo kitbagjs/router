@@ -8,6 +8,10 @@
         "link": "/api/compositions/useLink.md"
       },
       {
+        "text": "useNavigation",
+        "link": "/api/compositions/useNavigation.md"
+      },
+      {
         "text": "useQueryValue",
         "link": "/api/compositions/useQueryValue.md"
       },
@@ -86,8 +90,22 @@
         "link": "/api/type-guards/isRoute.md"
       },
       {
+        "text": "isResolvedRoute",
+        "link": "/api/type-guards/isResolvedRoute.md"
+      },
+      {
         "text": "isUrlString",
         "link": "/api/type-guards/isUrlString.md"
+      }
+    ]
+  },
+  {
+    "text": "Classes",
+    "collapsed": true,
+    "items": [
+      {
+        "text": "UnreachableRouteError",
+        "link": "/api/classes/UnreachableRouteError.md"
       }
     ]
   },
@@ -98,6 +116,10 @@
       {
         "text": "RouterLink",
         "link": "/api/components/RouterLink.md"
+      },
+      {
+        "text": "RouterProgress",
+        "link": "/api/components/RouterProgress.md"
       },
       {
         "text": "RouterView",
@@ -210,6 +232,10 @@
         "link": "/api/types/AddAfterUpdateHook.md"
       },
       {
+        "text": "AddAliasOptions",
+        "link": "/api/types/AddAliasOptions.md"
+      },
+      {
         "text": "AddBeforeEnterHook",
         "link": "/api/types/AddBeforeEnterHook.md"
       },
@@ -272,6 +298,14 @@
       {
         "text": "AfterUpdateHookContext",
         "link": "/api/types/AfterUpdateHookContext.md"
+      },
+      {
+        "text": "AliasTransform",
+        "link": "/api/types/AliasTransform.md"
+      },
+      {
+        "text": "AliasTransformContext",
+        "link": "/api/types/AliasTransformContext.md"
       },
       {
         "text": "BeforeEnterHook",
@@ -462,6 +496,10 @@
         "link": "/api/types/Route.md"
       },
       {
+        "text": "RouteAddAlias",
+        "link": "/api/types/RouteAddAlias.md"
+      },
+      {
         "text": "RouteAddLoader",
         "link": "/api/types/RouteAddLoader.md"
       },
@@ -508,6 +546,10 @@
       {
         "text": "RouterPlugin",
         "link": "/api/types/RouterPlugin.md"
+      },
+      {
+        "text": "RouterProgressProps",
+        "link": "/api/types/RouterProgressProps.md"
       },
       {
         "text": "RouterPush",
@@ -600,6 +642,10 @@
       {
         "text": "UseLinkOptions",
         "link": "/api/types/UseLinkOptions.md"
+      },
+      {
+        "text": "UseNavigation",
+        "link": "/api/types/UseNavigation.md"
       },
       {
         "text": "WithData",

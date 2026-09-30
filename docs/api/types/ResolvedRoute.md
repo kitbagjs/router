@@ -2,6 +2,7 @@
 
 ```ts
 type ResolvedRoute<TRoute> = Readonly<{
+  canonical: UrlString;
   getTitle: GetTitleCallback;
   hash: string;
   href: UrlString;
