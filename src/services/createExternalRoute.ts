@@ -53,6 +53,7 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
     hooks: [store],
     getTitle,
     redirect,
+    aliases: [],
   } satisfies RouteInternal
 
   const route = {

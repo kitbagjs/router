@@ -12,6 +12,7 @@ import { Hooks } from '@/models/hooks'
 import { RouteRedirect } from './redirects'
 import { RouteViews } from '@/types/routeViews'
 import { LoadersDataReturnType, RouteLoaders } from '@/types/routeLoaders'
+import { RouteAlias } from '@/types/routeAlias'
 
 export const IS_ROUTE_SYMBOL = Symbol('IS_ROUTE_SYMBOL')
 
@@ -25,6 +26,7 @@ export type RouteInternal = {
   hooks: Hooks[],
   redirect: RouteRedirect,
   getTitle: GetRouteTitle,
+  aliases: RouteAlias[],
 }
 
 /**
