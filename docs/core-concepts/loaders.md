@@ -104,24 +104,41 @@ const invoices = createRoute({
 
 The child route's data contains both `data.organization` and `data.invoices`. The invoices request must wait for the billing account ID. If a child only needs a value already available in `route.params`, use that directly so the requests can run together.
 
-## Passing loader data as props
+## Using loader data in props callbacks
 
-You can also await loader data in a [props getter](/core-concepts/component-props). This is useful when the component should receive ordinary props without depending on the router, or when several views need the same loader result.
+A [props callback](/core-concepts/component-props) can await loader data and use it to build the props its view needs. If only one view needs the data, fetching it directly in that callback is often enough. A loader is useful when multiple views depend on the same data.
+
+For example, load a project once, then use it to prepare a summary and a list of incomplete tasks:
 
 ```ts
-const user = createRoute({
-  name: 'user',
-  path: '/users/[id]',
+const project = createRoute({
+  name: 'project',
+  path: '/projects/[id]',
 })
-.addLoader((route) => getUser(route.params.id))
-.addView(UserPage, {
-  props: async (route) => ({
-    user: await route.data,
-  }),
+.addLoader((route) => getProject(route.params.id))
+.addView(ProjectSummary, {
+  props: async (route) => {
+    const project = await route.data
+
+    return {
+      title: project.name,
+      completedTaskCount: project.tasks.filter((task) => task.completed).length,
+    }
+  },
+})
+.addView(TaskList, {
+  name: 'tasks',
+  props: async (route) => {
+    const project = await route.data
+
+    return {
+      tasks: project.tasks.filter((task) => !task.completed),
+    }
+  },
 })
 ```
 
-In this version, `UserPage` declares a `user` prop instead of calling `useRoute`. The props getter must satisfy the component's props, and the component renders once those props are ready.
+Both callbacks use the same loader result, so they do not need separate requests for the project. Each callback derives the props for its own component. Render the views with a default `<router-view />` and a named `<router-view name="tasks" />`.
 
 ## Navigation and errors
 
