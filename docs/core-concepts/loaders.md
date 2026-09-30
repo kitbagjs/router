@@ -1,12 +1,10 @@
 # Loaders
 
-Loaders fetch data for a route and make it available as `route.data`. Use a loader when data belongs to the route or is shared by multiple views. If data is only needed as props for one view, a [props getter](/core-concepts/component-props#async-prop-fetching) is often enough.
+Loaders fetch data for a route and make it available as `route.data`. Components can await that data in setup before rendering.
 
-## Loading data for a view
+## Loading data
 
-Add a loader with the chainable `addLoader` method. The callback receives the resolved route, so its params are typed just like they are in a props getter. A loader can return any value or a promise.
-
-Await `route.data` in a view's props getter to pass the result to that component:
+Add a loader with the chainable `addLoader` method. The callback receives the resolved route, including its typed params. A loader can return any value or a promise.
 
 ```ts
 import { createRoute } from '@kitbag/router'
@@ -18,21 +16,22 @@ export const user = createRoute({
   path: '/users/[id]',
 })
 .addLoader((route) => getUser(route.params.id))
-.addView(UserPage, {
-  props: async (route) => ({
-    user: await route.data,
-  }),
-})
+.addView(UserPage)
 ```
 
-Here `getUser` is your application's data-fetching function. Its return type determines the type of `route.data`, and the props getter must satisfy `UserPage`'s props:
+Here `getUser` is your application's data-fetching function. Register `user` in your router's routes as usual.
+
+## Reading data in a component
+
+Use `useRoute` with the route's name and await `route.data` at the top level of `<script setup>`. The result is typed from the loader's return value.
 
 ```vue
 <!-- UserPage.vue -->
 <script setup lang="ts">
-import type { User } from './api'
+import { useRoute } from '@kitbag/router'
 
-defineProps<{ user: User }>()
+const route = useRoute('user')
+const user = await route.data
 </script>
 
 <template>
@@ -40,15 +39,28 @@ defineProps<{ user: User }>()
 </template>
 ```
 
-Register `user` in your router's routes as usual. `UserPage` receives its props when the data is ready. Other views can read the same loader result from their own props getters.
+[Register your router](/quick-start#type-safety) to get the correct route names and data types when using `useRoute`.
 
-## Reading data
+### Loading state
 
-A single unnamed loader exposes its result directly as `route.data`. This is always a promise, even if the loader returns a value synchronously.
+Top-level `await` makes the component's setup async, so render it inside `<Suspense>`. Its fallback slot can display a loading message while the component waits for its data:
 
-The current route from `useRoute()` or `router.route` also exposes `data`. If you read it directly in a component, handle the pending and error states and watch for changes to `route.data` when navigation reuses that component. Using a props getter as above lets the router supply the component's props when they are ready.
+```vue
+<template>
+  <router-view v-slot="{ component, route }">
+    <Suspense>
+      <component :is="component" :key="route.href" />
+      <template #fallback>
+        <p>Loading…</p>
+      </template>
+    </Suspense>
+  </router-view>
+</template>
+```
 
-Loader data is available on the current route and in props getters. It is not available on a route returned by `router.resolve` or in navigation hooks.
+The `key` recreates the view when the URL changes, so setup awaits the new loader data when navigating from one user to another. If you prefer to [reuse the component](/components/router-view#component-reuse), watch `route.data` and update the displayed value instead; a top-level `await` only runs during setup.
+
+A single unnamed loader exposes its result directly as `route.data`. This is always a promise, even if the loader returns a value synchronously. Data is also available on `router.route`, but not on a route returned by `router.resolve` or in navigation hooks.
 
 ## Named loaders
 
@@ -61,16 +73,26 @@ const user = createRoute({
 })
 .addLoader((route) => getUser(route.params.id), { name: 'user' })
 .addLoader((route) => getPosts(route.params.id), { name: 'posts' })
-.addView(UserPage, {
-  props: async (route) => {
-    const [user, posts] = await Promise.all([route.data.user, route.data.posts])
-
-    return { user, posts }
-  },
-})
+.addView(UserPage)
 ```
 
-In this example, `UserPage` declares both `user` and `posts` props. If you mix an unnamed loader with named loaders, the unnamed result is available as `route.data.default`.
+Await the values in your component:
+
+```vue
+<script setup lang="ts">
+import { useRoute } from '@kitbag/router'
+
+const route = useRoute('user')
+const [user, posts] = await Promise.all([route.data.user, route.data.posts])
+</script>
+
+<template>
+  <h1>{{ user.name }}</h1>
+  <p>{{ posts.length }} posts</p>
+</template>
+```
+
+If you mix an unnamed loader with named loaders, the unnamed result is available as `route.data.default`.
 
 A loader cannot read `route.data` to depend on another loader on the same route. If two requests depend on each other, put them in a single loader and return the values together.
 
@@ -101,9 +123,28 @@ const posts = createRoute({
 
 The child route's data contains both `data.user` and `data.posts`. Only wait for parent data when the child actually needs it; otherwise load directly from the route params so both requests can run together.
 
+## Passing loader data as props
+
+You can also await loader data in a [props getter](/core-concepts/component-props). This is useful when the component should receive ordinary props without depending on the router, or when several views need the same loader result.
+
+```ts
+const user = createRoute({
+  name: 'user',
+  path: '/users/[id]',
+})
+.addLoader((route) => getUser(route.params.id))
+.addView(UserPage, {
+  props: async (route) => ({
+    user: await route.data,
+  }),
+})
+```
+
+In this version, `UserPage` declares a `user` prop instead of calling `useRoute`. The props getter must satisfy the component's props, and the component renders once those props are ready.
+
 ## Navigation and errors
 
-Loaders do not block client-side navigation or unrelated views from rendering. A view that awaits loader data in its props getter waits for those props before rendering. Use [RouterProgress](/components/router-progress) to show progress while route data is loading.
+Loaders do not block client-side navigation or unrelated views from rendering. A component that awaits its data in setup waits before rendering, with `<Suspense>` providing the loading state. Use [RouterProgress](/components/router-progress) to show progress while route data is loading.
 
 Navigating to different params or query values can run loaders again. If you keep a data promise from a navigation that is replaced by another navigation, it can reject with `NavigationAbandonedError`; read the current route's data for the new destination.
 
