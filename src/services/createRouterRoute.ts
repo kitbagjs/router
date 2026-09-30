@@ -60,7 +60,7 @@ export function createRouterRoute<TRoute extends ResolvedRoute & WithData>(route
     updateQuery(query)
   }
 
-  const { id, matched, matches, name, hash, href, data, getTitle } = toRefs(route)
+  const { id, matched, matches, name, hash, href, canonical, data, getTitle } = toRefs(route)
 
   const paramsProxy = new Proxy({}, {
     get(_target, property, receiver) {
@@ -137,6 +137,7 @@ export function createRouterRoute<TRoute extends ResolvedRoute & WithData>(route
     params,
     name,
     href,
+    canonical,
     data,
     getTitle,
     update,
