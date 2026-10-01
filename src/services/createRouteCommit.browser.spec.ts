@@ -101,7 +101,7 @@ test('an already abandoned navigation neither prepares nor commits', async () =>
   expect(update).not.toHaveBeenCalled()
 })
 
-test('a getter can abandon preparation before its abort listener is attached', async () => {
+test('a getter can synchronously abandon preparation', async () => {
   const controller = new AbortController()
   const route = createResolvedRoute(createRoute({ name: 'next', path: '/next' }).addLoader(() => {
     controller.abort()

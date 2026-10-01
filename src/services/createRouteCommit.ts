@@ -35,26 +35,24 @@ export type RouteCommit = {
  * prepare before capturing the outgoing page, then wrap the same commit that ordinary navigation uses.
  */
 export function createRouteCommit({ route, signal, valueStore, update }: RouteCommitOptions): RouteCommit {
+  const isAborted = (): boolean => signal.aborted
+
   const prepare: RouteCommit['prepare'] = async () => {
-    if (signal.aborted || !route) {
+    if (isAborted() || !route) {
       return
     }
 
-    const { props, loaders } = valueStore.staged().compute(route)
-    const work = Promise.allSettled([props, loaders, ...loadAsyncComponents(route)] as const)
     const abandoned = Promise.withResolvers<undefined>()
     const abort = (): void => abandoned.resolve(undefined)
 
     signal.addEventListener('abort', abort, { once: true })
-    // A getter may have synchronously abandoned the navigation before the listener was attached.
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (signal.aborted) abort()
 
     try {
+      const values = valueStore.staged().compute(route)
+      const work = Promise.allSettled([values.props, values.loaders, ...loadAsyncComponents(route)] as const)
       const results = await Promise.race([work, abandoned.promise])
 
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (!results || signal.aborted) {
+      if (!results || isAborted()) {
         return
       }
 

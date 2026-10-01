@@ -283,8 +283,6 @@ export function createRouter<
       update: commitNavigation,
     })
 
-    // Commit synchronously, preserving when after hooks run, while exposing the DOM flush separately
-    // for browser features that need to await it inside their own update callback.
     await Promise.all([
       commit(),
       isSSR ? undefined : runAfterHooks({ controller, to, from }),

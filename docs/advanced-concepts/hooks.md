@@ -22,10 +22,6 @@ onAfterRouteEnter: (to, context) => {
 - **onAfterRouteUpdate:** Triggered after a route changes. Specifically when the route changed but that parent or child didn’t.
 - **onAfterRouteEnter:** Triggered after a route is entered.
 
-After hooks run after the route is committed. They do not wait for Vue's DOM flush or pending props,
-loaders, async components, and async component setup. Use Vue's `nextTick()` inside a hook when you
-need to wait for the next DOM flush.
-
 ### On Error
 
 - **onError** Triggered whenever an unexpected error is thrown. Error hooks are run in the order they were registered. The hook is provided both the error and the [error context](/advanced-concepts/hooks#error-context).
