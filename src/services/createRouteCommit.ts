@@ -49,7 +49,11 @@ export function createRouteCommit({ route, signal, valueStore, update }: RouteCo
 
     try {
       const values = valueStore.staged().compute(route)
-      const work = Promise.allSettled([values.props, values.loaders, ...loadAsyncComponents(route)] as const)
+      const work = Promise.allSettled([
+        values.props,
+        values.loaders,
+        ...loadAsyncComponents(route),
+      ])
       const results = await Promise.race([work, abandoned.promise])
 
       if (!results || isAborted()) {
