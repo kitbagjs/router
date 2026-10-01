@@ -89,7 +89,7 @@ const blogPostTabs = createRoute({
 })
 .addView(PostTabs, {
   props: async (route, { parent }) => {
-    const tab = route.query.tab
+    const tab = route.params.tab
     const { post } = await parent.props
 
     return {

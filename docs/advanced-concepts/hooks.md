@@ -110,7 +110,7 @@ In order to register a hook from within a component, you must use the [compositi
 ```ts
 import { onBeforeRouteLeave } from '@kitbag/router'
 
-onAfterRouteEnter((to, context) => {
+onBeforeRouteLeave((to, context) => {
   ...
 })
 ```

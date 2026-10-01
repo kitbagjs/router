@@ -22,7 +22,7 @@ const blogPost = createRoute({
 The router link component makes it easy to create links to routes, external routes, or any url. See the [RouterLink](/components/router-link) docs for more info.
 
 ```vue
-<router-link to="(resolve) => resolve('blogPost', { blogPostId: 1 })">Blog Post One</router-link>
+<router-link :to="(resolve) => resolve('blogPost', { blogPostId: 1 })">Blog Post One</router-link>
 ```
 
 ## Programmatic Navigation
@@ -74,15 +74,15 @@ router.push('blogPost', {
 })
 
 // not type safe ⚠️
-router.push('/blogPost/1')
+router.push('/blog/1')
 ```
 
 ```vue [Router Link]
 <!-- type safe ✅ -->
-<router-link to="(resolve) => resolve('blogPost', { blogPostId: 1 })">Blog Post One</router-link>
+<router-link :to="(resolve) => resolve('blogPost', { blogPostId: 1 })">Blog Post One</router-link>
 
 <!-- not type safe ⚠️ -->
-<router-link to="/blogPost/1">Blog Post One</router-link>
+<router-link to="/blog/1">Blog Post One</router-link>
 ```
 
 :::
@@ -103,15 +103,15 @@ router.push('blog')
 router.replace('blog')
 
 // or
-router.push('blog', { replace: true })
+router.push('blog', {}, { replace: true })
 ```
 
 ```vue [RouterLink]
 <!-- push -->
-<router-link to="(resolve) => resolve('blog')">Blog</router-link>
+<router-link :to="(resolve) => resolve('blog')">Blog</router-link>
 
 <!-- replace -->
-<router-link to="(resolve) => resolve('blog')" replace>Blog</router-link>
+<router-link :to="(resolve) => resolve('blog')" replace>Blog</router-link>
 ```
 
 :::

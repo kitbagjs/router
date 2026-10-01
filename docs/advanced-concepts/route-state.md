@@ -7,6 +7,7 @@ import { createRoute } from '@kitbag/router'
 
 const route = createRoute({ 
   name: 'example-form',
+  path: '/example-form',
   state: {
     email: String,
     active: Boolean,
@@ -21,6 +22,7 @@ State properties are always expected to be optional. The only exception to this 
 ```ts
 const route = createRoute({ 
   name: 'example-form',
+  path: '/example-form',
   state: {
     email: String,
     active: Boolean, // [!code --]
@@ -45,7 +47,9 @@ There is a `state` property on router `push` and `replace`, which can be used to
 
 ```ts
 router.push('example-form', {}, {
-  email: 'mittens@kitbag.dev',
+  state: {
+    email: 'mittens@kitbag.dev',
+  },
 })
 ```
 

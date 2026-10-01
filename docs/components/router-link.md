@@ -57,8 +57,10 @@ You can define [external routes](/core-concepts/external-routes) in your router 
 | Property | Type | Description |
 | --- | --- | --- |
 | route | [`ResolvedRoute`](/api/types/ResolvedRoute) or `undefined` | The resolved route object for the link destination |
-| isMatch | `boolean` | Whether the current route matches the link's location |
-| isExactMatch | `boolean` | Whether the current route exactly matches the link's location |
+| isMatch | `boolean` | Whether the current route is the destination route or one of its descendants, regardless of params, query, or hash |
+| isExactMatch | `boolean` | Whether the current route is the destination route itself, regardless of params, query, or hash |
+| isActive | `boolean` | Whether the current URL starts with the destination URL |
+| isExactActive | `boolean` | Whether the current URL equals the destination URL, including query and hash |
 | isExternal | `boolean` | Whether the link points to an external URL |
 
 ```vue
@@ -69,4 +71,42 @@ You can define [external routes](/core-concepts/external-routes) in your router 
 
 ## Classes
 
-The `RouterLink` component will automatically add the `router-link--match` class to the anchor element when the current route matches the route specified in the `to` prop. It will also add the `router-link--exact-match` class when the current route matches the route specified in the `to` prop exactly.
+`RouterLink` adds CSS classes for the same matching and active states exposed by its slot.
+
+| Class | Slot property |
+| --- | --- |
+| `router-link--match` | `isMatch` |
+| `router-link--exact-match` | `isExactMatch` |
+| `router-link--active` | `isActive` |
+| `router-link--exact-active` | `isExactActive` |
+
+## Matching a route or a URL
+
+Use `isMatch` or `router-link--match` to highlight a section of your app, including its child routes. Use `isExactMatch` when only that route should count. These checks ignore param values, query, and hash: links to two different users can both match the same user route.
+
+Use `isExactActive` or `router-link--exact-active` to highlight a link to the current URL. This distinguishes different users or tabs that share a route definition. `isActive` uses a URL prefix check, so it also stays active when the current URL starts with the link's full URL; it does not check path segment boundaries.
+
+For a link to `/users/1`, with a `user` route at `/users/[id]` and a child route at `/users/[id]/details`:
+
+| Current URL | `isMatch` | `isExactMatch` | `isActive` | `isExactActive` |
+| --- | --- | --- | --- | --- |
+| `/users/1` | `true` | `true` | `true` | `true` |
+| `/users/2` | `true` | `true` | `false` | `false` |
+| `/users/1/details` | `true` | `false` | `true` | `false` |
+
+```vue
+<router-link
+  :to="(resolve) => resolve('user', { id: '1' })"
+  v-slot="{ isExactActive }"
+>
+  <span :class="{ selected: isExactActive }">User 1</span>
+</router-link>
+```
+
+Or style the link directly:
+
+```css
+.router-link--exact-active {
+  font-weight: bold;
+}
+```

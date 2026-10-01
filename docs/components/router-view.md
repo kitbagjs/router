@@ -10,7 +10,23 @@ The router view component is how route components are rendered. It is registered
 
 ### The `name` prop
 
-The `name` prop is used to specify the name of the component to render. Multiple components can be defined for a single route by using the `components` option.
+The `name` prop is used to specify the name of the component to render. Register each named view with `addView`, then use a `RouterView` with the matching name.
+
+```ts
+const dashboard = createRoute({
+  name: 'dashboard',
+  path: '/dashboard',
+})
+.addView(DashboardPage)
+.addView(DashboardSidebar, { name: 'sidebar' })
+```
+
+```vue
+<template>
+  <router-view />
+  <router-view name="sidebar" />
+</template>
+```
 
 ## Slots
 

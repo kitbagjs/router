@@ -84,7 +84,7 @@ const blog = createRoute({
 const blogPost = createRoute({
   parent: blog,
   name: 'blogPost',
-  path: '/:postId',
+  path: '/[postId]',
 })
 ```
 
@@ -307,7 +307,7 @@ import { createRoute } from '@kitbag/router'
 
 const user = createRoute({
   name: 'user.profile',
-  path: '/user/:userId',
+  path: '/user/[userId]',
 })
 
 user.setTitle((to, context) => {
@@ -391,6 +391,6 @@ const hoistedExample = createRoute({
 
 regularChildRoute.stringify() 
 // ^ "/parent/regular"
-hoistedExample.string()
+hoistedExample.stringify()
 // ^ "/nested"
 ```

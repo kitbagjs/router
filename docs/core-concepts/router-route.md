@@ -26,7 +26,7 @@ const blog = createRoute({
 const blogPost = createRoute({
   parent: blog,
   name: 'blogPost',
-  path: path('/[blogPostId]', {
+  path: withParams('/[blogPostId]', {
     blogPostId: Number,
   }),
 })
