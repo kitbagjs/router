@@ -39,7 +39,7 @@ Props for routes and any parent routes are collected concurrently while componen
 
 ## Prefetching Loaders
 
-When your route uses `addLoader`, Kitbag Router can start fetching its data before it is needed. Configure prefetching with the loader's `prefetch` option.
+When your route uses a [loader](/core-concepts/loaders), Kitbag Router can start fetching its data before it is needed. Configure prefetching with the loader's `prefetch` option.
 
 ```ts {5-7}
 const user = createRoute({
