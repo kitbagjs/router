@@ -49,6 +49,7 @@ import { getMatchForUrl } from './getMatchesForUrl'
 import { pathHasTrailingSlash, removeTrailingSlashesFromPath } from '@/utilities/trailingSlashes'
 import { setDocumentTitle } from '@/utilities/setDocumentTitle'
 import { createCurrentRejection } from '@/services/createCurrentRejection'
+import { createRouteCommit } from '@/services/createRouteCommit'
 
 type RouterUpdateOptions = {
   replace?: boolean,
@@ -275,11 +276,19 @@ export function createRouter<
       }
     }
 
-    commitNavigation()
+    const { commit } = createRouteCommit({
+      route: to,
+      signal: controller.signal,
+      valueStore,
+      update: commitNavigation,
+    })
 
-    if (!isSSR) {
-      await runAfterHooks({ controller, to, from })
-    }
+    // Commit synchronously, preserving when after hooks run, while exposing the DOM flush separately
+    // for browser features that need to await it inside their own update callback.
+    await Promise.all([
+      commit(),
+      isSSR ? undefined : runAfterHooks({ controller, to, from }),
+    ])
   })
 
   /**

@@ -18,9 +18,13 @@ onAfterRouteEnter: (to, context) => {
 
 ### After Hooks
 
-- **onAfterRouteLeave:** Triggered after a route gets unmounted.
+- **onAfterRouteLeave:** Triggered after a route is left.
 - **onAfterRouteUpdate:** Triggered after a route changes. Specifically when the route changed but that parent or child didn’t.
-- **onAfterRouteEnter:** Triggered after a route is mounted
+- **onAfterRouteEnter:** Triggered after a route is entered.
+
+After hooks run after the route is committed. They do not wait for Vue's DOM flush or pending props,
+loaders, async components, and async component setup. Use Vue's `nextTick()` inside a hook when you
+need to wait for the next DOM flush.
 
 ### On Error
 
