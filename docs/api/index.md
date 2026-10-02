@@ -8,6 +8,7 @@
 - [useRejection](compositions/useRejection.md)
 - [useRoute](compositions/useRoute.md)
 - [useRouter](compositions/useRouter.md)
+- [useViewTransition](compositions/useViewTransition.md)
 
 ## Errors
 
@@ -166,6 +167,7 @@
 - [RouterRoutes](types/RouterRoutes.md)
 - [RouterRouteUnion](types/RouterRouteUnion.md)
 - [RouterViewPropsGetter](types/RouterViewPropsGetter.md)
+- [RouterViewTransition](types/RouterViewTransition.md)
 - [RouteViews](types/RouteViews.md)
 - [ServerRenderResponse](types/ServerRenderResponse.md)
 - [ToCallback](types/ToCallback.md)
@@ -175,6 +177,12 @@
 - [UseLink](types/UseLink.md)
 - [UseLinkOptions](types/UseLinkOptions.md)
 - [UseNavigation](types/UseNavigation.md)
+- [ViewTransitionConfig](types/ViewTransitionConfig.md)
+- [ViewTransitionConfigOptions](types/ViewTransitionConfigOptions.md)
+- [ViewTransitionConfigs](types/ViewTransitionConfigs.md)
+- [ViewTransitionContext](types/ViewTransitionContext.md)
+- [ViewTransitionTypes](types/ViewTransitionTypes.md)
+- [ViewTransitionTypesCallback](types/ViewTransitionTypesCallback.md)
 - [WithData](types/WithData.md)
 - [WithHost](types/WithHost.md)
 - [WithoutHost](types/WithoutHost.md)
