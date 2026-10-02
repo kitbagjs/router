@@ -261,6 +261,40 @@ test('a navigation that arrives while another waits on its data supersedes it', 
   expect(router.route.name).toBe('routeB')
 })
 
+test.each(['supersede', 'stop'] as const)('%s releases preparation while a lazy component remains pending', async (action) => {
+  const started = spyOnTransitions()
+  const chunk = Promise.withResolvers<typeof component>()
+  const load = vi.fn(() => chunk.promise)
+  const lazy = createRoute({ name: 'lazy', path: '/lazy', component: defineAsyncComponent(load) })
+  const router = await startRouter({ viewTransition: true }, [routeA, routeB, lazy])
+  const after = vi.fn()
+
+  router.onAfterRouteEnter(after)
+
+  const pending = router.push('lazy')
+
+  await flushPromises()
+  expect(load).toHaveBeenCalledOnce()
+
+  if (action === 'supersede') {
+    await router.push('routeB')
+  } else {
+    router.stop()
+  }
+
+  await pending
+
+  expect(router.route.name).toBe(action === 'supersede' ? 'routeB' : 'routeA')
+  expect(started).toHaveBeenCalledTimes(action === 'supersede' ? 1 : 0)
+  expect(after).toHaveBeenCalledTimes(action === 'supersede' ? 1 : 0)
+
+  chunk.resolve(component)
+  await flushPromises()
+
+  expect(router.route.name).not.toBe('lazy')
+  expect(started).toHaveBeenCalledTimes(action === 'supersede' ? 1 : 0)
+})
+
 test('a superseding query navigation loads its own data', async () => {
   const gate = Promise.withResolvers<undefined>()
   const load = vi.fn(async (route: { query: URLSearchParams }) => {
