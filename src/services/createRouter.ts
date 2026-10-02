@@ -194,7 +194,11 @@ export function createRouter<
   /**
    * Runs the after hooks for a navigation and reacts to their response.
    */
-  async function runAfterHooks({ controller, to, from }: RunHooksContext): Promise<void> {
+  async function runAfterHooks({ controller, to, from }: RunHooksContext, enabled: boolean): Promise<void> {
+    if (!enabled) {
+      return
+    }
+
     const response = await hooks.runAfterRouteHooks({ to, from, signal: controller.signal })
 
     if (controller.signal.aborted) {
@@ -285,7 +289,7 @@ export function createRouter<
 
     await Promise.all([
       commit(),
-      isSSR ? undefined : runAfterHooks({ controller, to, from }),
+      runAfterHooks({ controller, to, from }, !isSSR),
     ])
   })
 
