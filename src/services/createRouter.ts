@@ -503,8 +503,6 @@ export function createRouter<
    */
   const started = ref(false)
 
-  // eslint is just incorrect here
-  // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
   const { promise: initialize, resolve: initialized } = Promise.withResolvers<void>()
 
   /**
