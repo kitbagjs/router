@@ -49,6 +49,7 @@ import { getMatchForUrl } from './getMatchesForUrl'
 import { pathHasTrailingSlash, removeTrailingSlashesFromPath } from '@/utilities/trailingSlashes'
 import { setDocumentTitle } from '@/utilities/setDocumentTitle'
 import { createCurrentRejection } from '@/services/createCurrentRejection'
+import { createRouteCommit } from '@/services/createRouteCommit'
 
 type RouterUpdateOptions = {
   replace?: boolean,
@@ -70,6 +71,10 @@ type RunBeforeHooksContext = RunHooksContext & {
   url: string,
   options: RouterUpdateOptions,
   progress: NavigationProgressTracker,
+}
+
+type RunAfterHooksContext = RunHooksContext & {
+  enabled: boolean,
 }
 
 /**
@@ -193,7 +198,11 @@ export function createRouter<
   /**
    * Runs the after hooks for a navigation and reacts to their response.
    */
-  async function runAfterHooks({ controller, to, from }: RunHooksContext): Promise<void> {
+  async function runAfterHooks({ controller, to, from, enabled }: RunAfterHooksContext): Promise<void> {
+    if (!enabled) {
+      return
+    }
+
     const response = await hooks.runAfterRouteHooks({ to, from, signal: controller.signal })
 
     if (controller.signal.aborted) {
@@ -275,11 +284,17 @@ export function createRouter<
       }
     }
 
-    commitNavigation()
+    const { commit } = createRouteCommit({
+      route: to,
+      signal: controller.signal,
+      valueStore,
+      update: commitNavigation,
+    })
 
-    if (!isSSR) {
-      await runAfterHooks({ controller, to, from })
-    }
+    await Promise.all([
+      commit(),
+      runAfterHooks({ controller, to, from, enabled: !isSSR }),
+    ])
   })
 
   /**
