@@ -47,7 +47,7 @@ export function createRouteCommit({ route, signal, valueStore, update }: RouteCo
 
     signal.addEventListener('abort', () => {
       abandoned.resolve(undefined)
-    }, { signal: listener.signal })
+    }, listener)
 
     try {
       const values = valueStore.staged().compute(route)
