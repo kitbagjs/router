@@ -43,30 +43,24 @@ export function createRouteCommit({ route, signal, valueStore, update }: RouteCo
       return
     }
 
-    const listener = new AbortController()
+    const values = valueStore.staged().compute(route)
+    const work = Promise.allSettled([
+      values.props,
+      values.loaders,
+      ...loadAsyncComponents(route),
+    ])
+    const results = await Promise.race([
+      work,
+      createAbortPromise(signal),
+    ])
 
-    try {
-      const values = valueStore.staged().compute(route)
-      const work = Promise.allSettled([
-        values.props,
-        values.loaders,
-        ...loadAsyncComponents(route),
-      ])
-      const results = await Promise.race([
-        work,
-        createAbortPromise(signal, listener),
-      ])
-
-      if (!results || isAborted()) {
-        return
-      }
-
-      const [props, loaders, ...components] = results
-
-      return { props, loaders, components }
-    } finally {
-      listener.abort()
+    if (!results || isAborted()) {
+      return
     }
+
+    const [props, loaders, ...components] = results
+
+    return { props, loaders, components }
   }
 
   const commit: RouteCommit['commit'] = () => {

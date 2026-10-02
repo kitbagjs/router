@@ -3,11 +3,9 @@ export function isPromise(value: unknown): value is Promise<unknown> {
 }
 
 /**
- * Resolves when the signal aborts, including an already aborted signal. A caller can supply a listener
- * controller to stop watching when other work finishes first; stopping the listener does not settle
- * the promise or abort the watched signal.
+ * Resolves when the signal aborts, including an already aborted signal.
  */
-export function createAbortPromise(signal: AbortSignal, listener = new AbortController()): Promise<void> {
+export function createAbortPromise(signal: AbortSignal): Promise<void> {
   if (signal.aborted) {
     return Promise.resolve()
   }
@@ -15,7 +13,6 @@ export function createAbortPromise(signal: AbortSignal, listener = new AbortCont
   return new Promise((resolve) => {
     signal.addEventListener('abort', () => {
       resolve()
-      listener.abort()
-    }, listener)
+    })
   })
 }

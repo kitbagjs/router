@@ -10,11 +10,10 @@ test('createAbortPromise resolves for an already aborted signal without adding a
   expect(addListener).not.toHaveBeenCalled()
 })
 
-test('createAbortPromise stays pending until abortion and cleans up its listener', async () => {
+test('createAbortPromise stays pending until the signal aborts', async () => {
   const controller = new AbortController()
-  const listener = new AbortController()
   const resolved = vi.fn()
-  const promise = createAbortPromise(controller.signal, listener).then(resolved)
+  const promise = createAbortPromise(controller.signal).then(resolved)
 
   await Promise.resolve()
   expect(resolved).not.toHaveBeenCalled()
@@ -23,19 +22,17 @@ test('createAbortPromise stays pending until abortion and cleans up its listener
   await promise
 
   expect(resolved).toHaveBeenCalledOnce()
-  expect(listener.signal.aborted).toBe(true)
 })
 
-test('a caller can stop watching without aborting the watched signal or settling the promise', async () => {
+test('a later abort does not change a race that already completed', async () => {
   const controller = new AbortController()
-  const listener = new AbortController()
-  const resolved = vi.fn()
-  void createAbortPromise(controller.signal, listener).then(resolved)
+  const promise = Promise.race([
+    Promise.resolve('ready'),
+    createAbortPromise(controller.signal),
+  ])
 
-  listener.abort()
-  expect(controller.signal.aborted).toBe(false)
+  await expect(promise).resolves.toBe('ready')
 
   controller.abort()
-  await Promise.resolve()
-  expect(resolved).not.toHaveBeenCalled()
+  await expect(promise).resolves.toBe('ready')
 })
