@@ -143,3 +143,67 @@ test('an aborted traversal between identical URLs restores the original state an
   expect(history.location.state).toEqual({ visit: 'first' })
   router.stop()
 })
+
+test('a superseded Back does not restore while a newer push is still awaiting its guard', async () => {
+  const { router, history } = setup()
+  await router.start()
+  await router.push('first')
+  const first = history.location
+  await router.push('second')
+  const backGuard = Promise.withResolvers<string>()
+  const pushGuard = Promise.withResolvers<string>()
+  router.onBeforeRouteEnter(async (to, { abort }) => {
+    if (to.name === 'first') {
+      await backGuard.promise
+      abort()
+    }
+
+    if (to.name === 'third') {
+      await pushGuard.promise
+    }
+  })
+
+  router.back()
+  await flushPromises()
+  const pushing = router.push('third')
+  await flushPromises()
+  backGuard.resolve('continue')
+  await flushPromises()
+
+  expect(history.location).toBe(first)
+  pushGuard.resolve('continue')
+  await pushing
+  expect(router.route.name).toBe('third')
+  router.stop()
+})
+
+test('an accepted Back is remembered before its after hooks finish', async () => {
+  const { router, history } = setup()
+  await router.start()
+  await router.push('first')
+  const first = history.location
+  await router.push('second')
+  const after = Promise.withResolvers<string>()
+  router.onAfterRouteEnter(async (to) => {
+    if (to.name === 'first') {
+      await after.promise
+    }
+  })
+  router.onBeforeRouteEnter((to, { abort }) => {
+    if (to.name === 'home') {
+      abort()
+    }
+  })
+
+  router.back()
+  await flushPromises()
+  expect(router.route.name).toBe('first')
+  router.back()
+  await flushPromises()
+
+  expect(router.route.name).toBe('first')
+  expect(history.location).toBe(first)
+  after.resolve('continue')
+  await flushPromises()
+  router.stop()
+})
