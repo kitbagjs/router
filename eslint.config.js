@@ -6,6 +6,7 @@ export default [
   {
     rules: {
       '@typescript-eslint/no-confusing-void-expression': ['off'],
+      '@typescript-eslint/no-invalid-void-type': ['off'],
       '@typescript-eslint/only-throw-error': ['off'],
       '@typescript-eslint/no-explicit-any': ['off'],
     },
