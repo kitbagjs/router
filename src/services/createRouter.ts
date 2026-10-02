@@ -73,6 +73,10 @@ type RunBeforeHooksContext = RunHooksContext & {
   progress: NavigationProgressTracker,
 }
 
+type RunAfterHooksContext = RunHooksContext & {
+  enabled: boolean,
+}
+
 /**
  * Creates a router instance for a Vue application, equipped with methods for route handling, lifecycle hooks, and state management.
  *
@@ -194,7 +198,7 @@ export function createRouter<
   /**
    * Runs the after hooks for a navigation and reacts to their response.
    */
-  async function runAfterHooks({ controller, to, from }: RunHooksContext, enabled: boolean): Promise<void> {
+  async function runAfterHooks({ controller, to, from, enabled }: RunAfterHooksContext): Promise<void> {
     if (!enabled) {
       return
     }
@@ -289,7 +293,7 @@ export function createRouter<
 
     await Promise.all([
       commit(),
-      runAfterHooks({ controller, to, from }, !isSSR),
+      runAfterHooks({ controller, to, from, enabled: !isSSR }),
     ])
   })
 
