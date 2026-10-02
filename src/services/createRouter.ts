@@ -52,6 +52,7 @@ import { createCurrentRejection } from '@/services/createCurrentRejection'
 import { hasViewTransition, ViewTransitionConfig } from '@/types/viewTransition'
 import { createViewTransitions, PendingViewTransition } from '@/services/createViewTransitions'
 import { getViewTransitionTypes, supportsViewTransitions } from '@/utilities/viewTransition'
+import { createRouteCommit } from '@/services/createRouteCommit'
 
 type RouterUpdateOptions = {
   replace?: boolean,
@@ -74,6 +75,10 @@ type RunBeforeHooksContext = RunHooksContext & {
   url: string,
   options: RouterUpdateOptions,
   progress: NavigationProgressTracker,
+}
+
+type RunAfterHooksContext = RunHooksContext & {
+  enabled: boolean,
 }
 
 /**
@@ -199,7 +204,11 @@ export function createRouter<
   /**
    * Runs the after hooks for a navigation and reacts to their response.
    */
-  async function runAfterHooks({ controller, to, from }: RunHooksContext): Promise<void> {
+  async function runAfterHooks({ controller, to, from, enabled }: RunAfterHooksContext): Promise<void> {
+    if (!enabled) {
+      return
+    }
+
     const response = await hooks.runAfterRouteHooks({ to, from, signal: controller.signal })
 
     if (controller.signal.aborted) {
@@ -250,8 +259,6 @@ export function createRouter<
     })
 
     function commitNavigation(): void {
-      if (controller.signal.aborted) return
-
       if (!to) {
         reject(NOT_FOUND_REJECTION_TYPE, { to, from })
         progress.abort()
@@ -283,30 +290,37 @@ export function createRouter<
       }
     }
 
+    const { prepare, commit } = createRouteCommit({
+      route: to,
+      signal: controller.signal,
+      valueStore,
+      update: commitNavigation,
+    })
     const transition = getViewTransition(to, from, url, options)
 
     if (transition) {
       viewTransitions.prepare(transition)
 
-      await loadRouteValues(transition.to)
+      const preparation = await prepare()
 
-      // The signal may have aborted while route values were loading.
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (controller.signal.aborted) {
+      if (!preparation) {
         viewTransitions.cancel(transition)
-
         return
       }
 
-      await viewTransitions.start(commitNavigation)
-    } else {
-      viewTransitions.reset()
-      commitNavigation()
+      await viewTransitions.start(async () => {
+        await commit()
+      })
+      await runAfterHooks({ controller, to, from, enabled: !isSSR })
+      return
     }
 
-    if (!isSSR) {
-      await runAfterHooks({ controller, to, from })
-    }
+    viewTransitions.reset()
+
+    await Promise.all([
+      commit(),
+      runAfterHooks({ controller, to, from, enabled: !isSSR }),
+    ])
   })
 
   /**
@@ -330,20 +344,6 @@ export function createRouter<
     }
 
     return { to, from, types }
-  }
-
-  /**
-   * Loads everything the route renders with ahead of committing it, so a transition captures the page
-   * rather than a placeholder. How the values settled is left for the commit to act on.
-   */
-  async function loadRouteValues(route: ResolvedRoute): Promise<void> {
-    const { props, loaders } = valueStore.staged().compute(route)
-
-    await Promise.allSettled([
-      props,
-      loaders,
-      ...loadAsyncComponents(route),
-    ])
   }
 
   /**
@@ -560,8 +560,6 @@ export function createRouter<
    */
   const started = ref(false)
 
-  // eslint is just incorrect here
-  // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
   const { promise: initialize, resolve: initialized } = Promise.withResolvers<void>()
 
   /**
