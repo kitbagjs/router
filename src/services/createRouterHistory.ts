@@ -4,7 +4,6 @@ import { isBrowser } from '@/utilities/isBrowser'
 type NavigationPushOptions = {
   replace?: boolean,
   state?: unknown,
-  traversal?: boolean,
 }
 
 type NavigationUpdate = (url: string, options?: NavigationPushOptions) => void
@@ -19,8 +18,13 @@ type RouterHistory = History & {
 
 export type RouterHistoryMode = 'auto' | 'browser' | 'memory' | 'hash'
 
+export type RouterHistoryTraversal = {
+  commit: () => void,
+  restore: () => void,
+}
+
 type RouterHistoryOptions = {
-  listener: (event: Update) => boolean | undefined | Promise<boolean | undefined>,
+  listener: (event: Update & { traversal?: RouterHistoryTraversal }) => void,
   mode?: RouterHistoryMode,
 }
 
@@ -29,23 +33,16 @@ export function createRouterHistory({ mode, listener }: RouterHistoryOptions): R
 
   let updating = false
   let revision = 0
-  let acceptedEntry = { key: history.location.key, index: history.index }
+  let committed = { key: history.location.key, index: history.index }
   let restoring: string | undefined
 
   function remember(): void {
-    acceptedEntry = { key: history.location.key, index: history.index }
+    committed = { key: history.location.key, index: history.index }
   }
 
   const update: NavigationUpdate = (url, options) => {
     revision++
     restoring = undefined
-
-    if (options?.traversal) {
-      remember()
-
-      return
-    }
-
     updating = true
 
     try {
@@ -69,49 +66,53 @@ export function createRouterHistory({ mode, listener }: RouterHistoryOptions): R
 
   let removeListener: (() => void) | undefined
 
-  async function handleChange(event: Update): Promise<void> {
-    if (updating) {
-      return
-    }
-
-    if (event.action === 'POP' && event.location.key === restoring) {
-      restoring = undefined
-
-      return
-    }
-
-    restoring = undefined
-    const currentRevision = ++revision
-
-    const accepted = await listener(event)
-
-    if (currentRevision !== revision || history.location.key !== event.location.key) {
-      return
-    }
-
-    if (accepted === true) {
-      remember()
-
-      return
-    }
-
-    if (accepted !== false || event.action !== 'POP' || acceptedEntry.index === null || history.index === null) {
-      return
-    }
-
-    const delta = acceptedEntry.index - history.index
-
-    if (delta !== 0) {
-      revision++
-      restoring = acceptedEntry.key
-      history.go(delta)
-    }
-  }
-
   const startListening: () => void = () => {
     removeListener?.()
     removeListener = history.listen((event) => {
-      void handleChange(event)
+      if (updating) {
+        return
+      }
+
+      if (event.action === 'POP' && event.location.key === restoring) {
+        restoring = undefined
+
+        return
+      }
+
+      restoring = undefined
+      const currentRevision = ++revision
+
+      if (event.action !== 'POP') {
+        listener(event)
+
+        return
+      }
+
+      const isCurrent = (): boolean => currentRevision === revision && history.location.key === event.location.key
+      const traversal: RouterHistoryTraversal = {
+        commit: () => {
+          if (isCurrent()) {
+            remember()
+          }
+        },
+        restore: () => {
+          if (!isCurrent() || committed.index === null || history.index === null || committed.key === history.location.key) {
+            return
+          }
+
+          const delta = committed.index - history.index
+
+          if (delta === 0) {
+            return
+          }
+
+          revision++
+          restoring = committed.key
+          history.go(delta)
+        },
+      }
+
+      listener({ ...event, traversal })
     })
   }
 

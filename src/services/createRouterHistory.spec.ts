@@ -1,4 +1,3 @@
-import { flushPromises } from '@vue/test-utils'
 import { expect, test, vi } from 'vitest'
 import { createRouterHistory } from '@/services/createRouterHistory'
 
@@ -33,37 +32,36 @@ test('refresh notifies the listener', () => {
   expect(listener).toHaveBeenCalledOnce()
 })
 
-test('a superseded traversal cannot restore its old entry', async () => {
-  const pending = Promise.withResolvers<boolean>()
-  const listener = vi.fn(() => pending.promise)
+test('a superseded traversal cannot restore or accept its old entry', () => {
+  const listener = vi.fn()
   const history = createRouterHistory({ mode: 'memory', listener })
   history.startListening()
   history.update('/first')
   history.update('/second')
   history.back()
+  const { traversal } = listener.mock.calls[0][0]
 
   history.update('/third')
   const current = history.location
-  pending.resolve(false)
-  await flushPromises()
+  traversal.restore()
+  traversal.commit()
 
   expect(history.location).toBe(current)
   history.stopListening()
 })
 
-test('stopping history listening invalidates pending restoration', async () => {
-  const pending = Promise.withResolvers<boolean>()
-  const listener = vi.fn(() => pending.promise)
+test('stopping history listening invalidates pending restoration', () => {
+  const listener = vi.fn()
   const history = createRouterHistory({ mode: 'memory', listener })
   history.startListening()
   history.update('/first')
   history.update('/second')
   history.back()
+  const { traversal } = listener.mock.calls[0][0]
   const current = history.location
 
   history.stopListening()
-  pending.resolve(false)
-  await flushPromises()
+  traversal.restore()
 
   expect(history.location).toBe(current)
 })
