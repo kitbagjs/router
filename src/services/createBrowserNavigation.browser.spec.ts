@@ -141,6 +141,46 @@ describe('browser navigation', () => {
     expect(router.route.name).toBe('second')
   })
 
+  test('URL normalization and a guard redirect prepare each destination before committing', async () => {
+    const destinations: string[] = []
+
+    router.onBeforeRouteEnter((to, { replace }) => {
+      destinations.push(to.name)
+      expect(window.location.pathname).toBe('/')
+
+      if (to.name === 'first') {
+        replace('second')
+      }
+    })
+
+    await router.push('/first/')
+
+    expect(destinations).toEqual(['first', 'second'])
+    expect(native.entries().map((entry) => new URL(entry.url).pathname)).toEqual(['/second'])
+    expect(router.route.name).toBe('second')
+  })
+
+  test('aborting the redirect destination preserves the entry and forward history', async () => {
+    await router.push('first')
+    await native.back().finished
+    const entries = native.entries()
+    const current = native.currentEntry
+
+    router.onBeforeRouteEnter((to, { push, abort }) => {
+      if (to.name === 'first') {
+        push('second')
+      }
+
+      abort()
+    })
+
+    await router.push('first')
+
+    expect(native.entries()).toEqual(entries)
+    expect(native.currentEntry).toBe(current)
+    expect(router.route.name).toBe('home')
+  })
+
   test('native navigations initiated outside the router use the same guards and rendering', async () => {
     const before = vi.fn()
 

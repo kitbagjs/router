@@ -1,6 +1,7 @@
 import { flushPromises } from '@vue/test-utils'
 import { expect, test, vi } from 'vitest'
-import { createRouterHistory, NavigationPrepare } from '@/services/createRouterHistory'
+import { createRouterHistory } from '@/services/createRouterHistory'
+import { NavigationPrepare } from '@/types/routerHistory'
 
 test('auto selects memory without a browser and commits only after preparation', async () => {
   const guard = Promise.withResolvers<undefined>()
@@ -53,9 +54,9 @@ test('cancellation after preparation prevents the history write', async () => {
 
 test('a redirect commits its destination without writing the original URL afterward', async () => {
   const committed: string[] = []
-  const prepare: NavigationPrepare = async (url, _options, { redirect }) => {
+  const prepare: NavigationPrepare = async (url) => {
     if (url === '/first') {
-      return redirect('/second')
+      return { redirect: '/second', options: {} }
     }
 
     return {
@@ -113,4 +114,36 @@ test('hydration adoption writes memory state without preparing a navigation', ()
   expect(history.location.pathname).toBe('/hydrated')
   expect(history.location.state).toEqual({ visit: 2 })
   expect(prepare).not.toHaveBeenCalled()
+})
+
+test('a declined redirect preserves the original entry and forwards redirect options', async () => {
+  const options = { replace: true, state: { visit: 3 } }
+  const prepare = vi.fn<NavigationPrepare>(async (url) => {
+    if (url === '/first') {
+      return { redirect: '/second', options }
+    }
+
+    return undefined
+  })
+  const history = createRouterHistory({ mode: 'memory', prepare })
+  const original = history.location
+
+  await history.push('/first')
+
+  expect(prepare).toHaveBeenLastCalledWith('/second', options, {})
+  expect(history.location).toBe(original)
+})
+
+test('preparation errors reach the caller without changing history', async () => {
+  const failure = new Error('guard failed')
+  const history = createRouterHistory({
+    mode: 'memory',
+    prepare: async () => {
+      throw failure
+    },
+  })
+  const original = history.location
+
+  await expect(history.push('/first')).rejects.toBe(failure)
+  expect(history.location).toBe(original)
 })

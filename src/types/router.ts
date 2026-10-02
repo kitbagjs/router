@@ -1,5 +1,5 @@
 import { App, InjectionKey, Ref } from 'vue'
-import { RouterHistoryMode } from '@/services/createRouterHistory'
+import { RouterHistoryMode } from '@/types/routerHistory'
 import { TransformerOptions } from '@/services/payload'
 import { RouterRoute } from '@/types/routerRoute'
 import { AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, AddErrorHook, AddRejectionHook } from '@/types/hooks'

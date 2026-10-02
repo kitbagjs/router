@@ -1,5 +1,5 @@
 import { InitialRouteMissingError } from '@/errors/initialRouteMissingError'
-import { RouterHistoryMode } from '@/services/createRouterHistory'
+import { RouterHistoryMode } from '@/types/routerHistory'
 import { isBrowser } from '@/utilities/isBrowser'
 
 export function getInitialUrl(initialUrl?: string, mode?: RouterHistoryMode): string {

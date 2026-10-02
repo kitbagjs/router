@@ -1,4 +1,5 @@
-import { PreparedNavigation, NavigationContext, NavigationPrepare, NavigationPushOptions, RouterHistory } from '@/services/createRouterHistory'
+import { PreparedNavigation, NavigationPrepare, NavigationPushOptions, RouterHistory } from '@/types/routerHistory'
+import { ignoreNavigationAbort } from '@/utilities/ignoreNavigationAbort'
 import { Location } from '@/services/history'
 import { isSameUrl } from '@/services/urlParser'
 
@@ -42,34 +43,7 @@ export function createBrowserNavigation({ prepare }: BrowserNavigationOptions): 
 
     event.intercept({
       precommitHandler: async (precommit) => {
-        const destination = new URL(event.destination.url)
-        const url = `${destination.pathname}${destination.search}${destination.hash}`
-
-        const context: NavigationContext = {
-          signal: event.signal,
-          redirect: async (url, options = {}) => {
-            const destination = new URL(url, window.location.href)
-
-            if (
-              destination.origin !== window.location.origin
-              || event.navigationType === 'traverse'
-              || event.navigationType === 'reload'
-            ) {
-              await push(url, options)
-              return undefined
-            }
-
-            precommit.redirect(url, {
-              history: options.replace ? 'replace' : 'push',
-              state: options.state,
-            })
-
-            return prepare(url, options, context)
-          },
-        }
-
-        prepared = await prepare(url, { state: event.destination.getState() }, context)
-        prepared?.signal.throwIfAborted()
+        prepared = await prepareNavigation(event, precommit)
       },
       handler: async () => {
         event.signal.throwIfAborted()
@@ -81,20 +55,53 @@ export function createBrowserNavigation({ prepare }: BrowserNavigationOptions): 
     })
   }
 
-  async function finish(result: NavigationResult): Promise<void> {
-    // Both promises reject when a navigation is canceled. Observe committed as well, even though
-    // callers only wait for finished (which includes rendering and native scrolling).
-    result.committed?.catch(() => {})
+  async function prepareNavigation(event: NavigateEvent, precommit: NavigationPrecommitController): Promise<PreparedNavigation | undefined> {
+    const destination = new URL(event.destination.url)
+    let url = `${destination.pathname}${destination.search}${destination.hash}`
+    let options: NavigationPushOptions = { state: event.destination.getState() }
 
-    try {
-      await result.finished
-    } catch (error) {
-      if (error instanceof DOMException && error.name === 'AbortError') {
-        return
+    for (;;) {
+      const prepared = await prepare(url, options, { signal: event.signal })
+
+      event.signal.throwIfAborted()
+
+      if (!prepared) {
+        return undefined
       }
 
-      throw error
+      if (!('redirect' in prepared)) {
+        prepared.signal.throwIfAborted()
+        return prepared
+      }
+
+      url = prepared.redirect
+      options = prepared.options
+
+      // Precommit redirects only support same-origin push/replace. Other redirects start a new
+      // navigation, which cancels this event before it can commit its original destination.
+      const destination = new URL(url, window.location.href)
+
+      if (
+        destination.origin !== window.location.origin
+        || event.navigationType === 'traverse'
+        || event.navigationType === 'reload'
+      ) {
+        await push(url, options)
+        return undefined
+      }
+
+      precommit.redirect(url, {
+        history: options.replace ? 'replace' : 'push',
+        state: options.state,
+      })
     }
+  }
+
+  async function finish(result: NavigationResult): Promise<void> {
+    // Both promises reject when canceled. Observe committed even though callers await finished,
+    // which also includes rendering and native scrolling.
+    result.committed?.catch(() => {})
+    await ignoreNavigationAbort(Promise.resolve(result.finished))
   }
 
   function startListening(): void {
@@ -127,13 +134,6 @@ export function createBrowserNavigation({ prepare }: BrowserNavigationOptions): 
     }))
   }
 
-  const context: NavigationContext = {
-    redirect: async (url, options) => {
-      await push(url, options)
-      return undefined
-    },
-  }
-
   async function initialize(url: string, options: NavigationPushOptions = {}): Promise<void> {
     startListening()
 
@@ -143,15 +143,23 @@ export function createBrowserNavigation({ prepare }: BrowserNavigationOptions): 
     }
 
     // Adopting the initial document does not initiate navigation or reset its scroll and focus.
-    try {
-      const prepared = await prepare(url, options, context)
+    await ignoreNavigationAbort(commitInitialRoute(url, options))
+  }
 
-      await prepared?.commit()
-    } catch (error) {
-      if (!(error instanceof DOMException && error.name === 'AbortError')) {
-        throw error
-      }
+  async function commitInitialRoute(url: string, options: NavigationPushOptions): Promise<void> {
+    const prepared = await prepare(url, options, {})
+
+    if (!prepared) {
+      return
     }
+
+    if ('redirect' in prepared) {
+      await push(prepared.redirect, prepared.options)
+      return
+    }
+
+    prepared.signal.throwIfAborted()
+    await prepared.commit()
   }
 
   return {

@@ -10,7 +10,8 @@ import { getComputations } from '@/services/getComputations'
 import { getAsyncComponents, loadAsyncComponents } from '@/utilities/components'
 import { getNavigationProgressKey } from '@/compositions/useNavigation'
 import { DataKind } from '@/services/createNavigationStores'
-import { createRouterHistory, PreparedNavigation, NavigationContext } from '@/services/createRouterHistory'
+import { createRouterHistory } from '@/services/createRouterHistory'
+import { NavigationPreparation, NavigationRedirect, NavigationContext, NavigationPushOptions } from '@/types/routerHistory'
 import { createServerRedirect } from '@/services/createServerRedirect'
 import { createRouterHooks, getRouterHooksKey } from '@/services/createRouterHooks'
 import { getInitialUrl } from '@/services/getInitialUrl'
@@ -50,16 +51,21 @@ import { setDocumentTitle } from '@/utilities/setDocumentTitle'
 import { withAbortSignal } from '@/utilities/withAbortSignal'
 import { createCurrentRejection } from '@/services/createCurrentRejection'
 
-type RouterUpdateOptions = {
-  replace?: boolean,
-  state?: any,
-}
-
 type RunHooksContext = {
   controller: AbortController,
   to: ResolvedRoute | null,
   from: ResolvedRoute | null,
-  signal?: AbortSignal,
+  signal: AbortSignal,
+}
+
+type RunAfterHooksOptions = RunHooksContext & {
+  enabled?: boolean,
+}
+
+type RouteNavigation = RunHooksContext & {
+  url: string,
+  progress: NavigationProgressTracker,
+  rejection?: string,
 }
 
 /**
@@ -124,7 +130,7 @@ export function createRouter<
   const visibilityObserver = createVisibilityObserver()
   const history = createRouterHistory({
     mode: options?.historyMode,
-    prepare: (url, options, context) => prepare(url, options, context),
+    prepare: activity.wrap(prepareNavigation),
   })
 
   function find(url: string, resolveOptions: RouterResolveOptions = {}): ResolvedRoute | undefined {
@@ -138,7 +144,17 @@ export function createRouter<
   /**
    * Runs the after hooks for a navigation and reacts to their response.
    */
-  async function runAfterHooks({ controller, to, from, signal = controller.signal }: RunHooksContext): Promise<void> {
+  async function runAfterHooks({
+    controller,
+    to,
+    from,
+    signal,
+    enabled = true,
+  }: RunAfterHooksOptions): Promise<void> {
+    if (!enabled) {
+      return
+    }
+
     const response = await hooks.runAfterRouteHooks({ to, from, signal })
 
     if (signal.aborted) {
@@ -164,17 +180,16 @@ export function createRouter<
     }
   }
 
-  const prepare = activity.wrap(async (url: string, options: RouterUpdateOptions, context: NavigationContext): Promise<PreparedNavigation | undefined> => {
+  async function prepareNavigation(
+    url: string,
+    options: NavigationPushOptions,
+    context: NavigationContext,
+  ): Promise<NavigationPreparation> {
     if (pathHasTrailingSlash(url) && shouldRemoveTrailingSlashes) {
       const cleanedUrl = removeTrailingSlashesFromPath(url)
 
       if (isUrlString(cleanedUrl)) {
-        if (isSSR) {
-          setServerRedirect(redirectStatus, cleanedUrl)
-          return undefined
-        }
-
-        return context.redirect(cleanedUrl, { ...options, replace: true })
+        return redirectNavigation(cleanedUrl, { ...options, replace: true }, redirectStatus)
       }
     }
 
@@ -183,7 +198,7 @@ export function createRouter<
 
     signal.throwIfAborted()
 
-    const to = find(url, options) ?? null
+    const to = find(url, { state: options.state ?? undefined }) ?? null
     const from = getFromRouteForHooks()
     const progress = navigationProgress.begin({
       to,
@@ -193,7 +208,7 @@ export function createRouter<
     })
     signal.addEventListener('abort', progress.abort)
 
-    let rejection: string | undefined
+    const navigation: RouteNavigation = { url, to, from, controller, signal, progress }
 
     const response = await withAbortSignal(hooks.runBeforeRouteHooks({ to, from, signal, progress }), signal)
 
@@ -211,16 +226,11 @@ export function createRouter<
 
         const destination = getPushNavigation(...response.to)
 
-        if (isSSR) {
-          setServerRedirect(destination.redirectStatus ?? 302, destination.url)
-          return undefined
-        }
-
-        return context.redirect(destination.url, destination.options)
+        return redirectNavigation(destination.url, destination.options, destination.redirectStatus ?? 302)
       }
 
       case 'REJECT':
-        rejection = response.type
+        navigation.rejection = response.type
         break
 
       case 'SUCCESS':
@@ -233,41 +243,48 @@ export function createRouter<
 
     return {
       signal,
-      commit: async ({ waitForRender = false } = {}) => {
-        signal.throwIfAborted()
-
-        if (rejection || !to) {
-          reject(rejection ?? NOT_FOUND_REJECTION_TYPE, { to, from })
-          progress.abort()
-
-          if (!rejection && !isSSR) {
-            await runAfterHooks({ controller, to, from, signal })
-          }
-
-          await nextTick()
-
-          return
-        }
-
-        clearRejection()
-        let rendered: Promise<void> = Promise.resolve()
-
-        if (!isExternal(url)) {
-          rendered = setRouteValuesAndUpdateRoute(to, from, progress)
-        }
-
-        progress.close()
-        started.value = true
-
-        updateTitle(signal)
-
-        await withAbortSignal(Promise.all([
-          waitForRender ? rendered : Promise.resolve(),
-          isSSR ? Promise.resolve() : runAfterHooks({ controller, to, from, signal }),
-        ]), signal)
-      },
+      commit: (options) => commitNavigation(navigation, options),
     }
-  })
+  }
+
+  function redirectNavigation(url: string, options: NavigationPushOptions, status: RedirectStatus): NavigationRedirect | undefined {
+    if (isSSR) {
+      setServerRedirect(status, url)
+      return undefined
+    }
+
+    return { redirect: url, options }
+  }
+
+  /** Applies an approved route and starts its after hooks; rendering can finish alongside them. */
+  async function commitNavigation(
+    { url, to, from, controller, signal, progress, rejection }: RouteNavigation,
+    { waitForRender = false }: { waitForRender?: boolean } = {},
+  ): Promise<void> {
+    signal.throwIfAborted()
+
+    if (rejection || !to) {
+      reject(rejection ?? NOT_FOUND_REJECTION_TYPE, { to, from })
+      progress.abort()
+
+      await runAfterHooks({ controller, to, from, signal, enabled: !rejection && !isSSR })
+
+      await nextTick()
+      return
+    }
+
+    clearRejection()
+    const rendered = isExternal(url) ? Promise.resolve() : setRouteValuesAndUpdateRoute(to, from, progress)
+
+    progress.close()
+    started.value = true
+    updateTitle(signal)
+
+    await withAbortSignal(Promise.all([
+      waitForRender ? rendered : Promise.resolve(),
+      runAfterHooks({ controller, to, from, signal, enabled: !isSSR }),
+    ]), signal)
+  }
 
   /**
    * The units a route needs before it has everything it renders with, known before anything runs so the
@@ -365,7 +382,7 @@ export function createRouter<
     source: UrlString | RoutesName<TRoutes | TPlugin['routes']> | ResolvedRoute,
     paramsOrOptions?: Record<string, unknown> | RouterPushOptionsInternal,
     maybeOptions?: RouterPushOptionsInternal,
-  ): { url: string, options: RouterUpdateOptions, redirectStatus: RedirectStatus | undefined } {
+  ): { url: string, options: NavigationPushOptions, redirectStatus: RedirectStatus | undefined } {
     if (isUrlString(source)) {
       const { redirectStatus, ...options }: RouterPushOptionsInternal = { ...paramsOrOptions }
       const url = updateUrl(source, {
@@ -531,9 +548,7 @@ export function createRouter<
         progress.close()
         started.value = true
 
-        if (!isSSR) {
-          await runAfterHooks({ controller, to, from: null })
-        }
+        await runAfterHooks({ controller, to, from: null, signal: controller.signal, enabled: !isSSR })
 
         return
       }

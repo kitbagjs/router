@@ -1,5 +1,6 @@
 import { expect, test, vi } from 'vitest'
-import { createRouterHistory, PreparedNavigation } from '@/services/createRouterHistory'
+import { createRouterHistory } from '@/services/createRouterHistory'
+import { PreparedNavigation } from '@/types/routerHistory'
 import { mockNavigation } from '@/tests/mockNavigation'
 
 async function prepare(): Promise<PreparedNavigation> {
