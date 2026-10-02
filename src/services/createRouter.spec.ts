@@ -40,7 +40,7 @@ test('initial state is set', async () => {
     state: { zoo: '123' },
   }
 
-  const actual = createRouterHistoryUtilities.createRouterHistory({ listener: () => {} })
+  const actual = createRouterHistoryUtilities.createRouterHistory({ listener: () => undefined })
   vi.spyOn(createRouterHistoryUtilities, 'createRouterHistory').mockImplementation(() => ({
     ...actual,
     location,
