@@ -1,9 +1,8 @@
-import { flushPromises } from '@vue/test-utils'
 import { beforeEach, expect, test, vi } from 'vitest'
 import { createRouterHistory } from '@/services/createRouterHistory'
 import { random } from '@/utilities/testHelpers'
 
-function noop(): undefined {}
+function noop(): void {}
 
 beforeEach(() => vi.resetAllMocks())
 
@@ -38,9 +37,9 @@ test('when forward is called, forwards call to window history', () => {
   expect(window.history.go).toHaveBeenCalledOnce()
 })
 
-test.each(['browser', 'hash'] as const)('restores an indexed %s entry without notifying the listener again', async (mode) => {
+test.each(['browser', 'hash'] as const)('restores an indexed %s entry without notifying the listener again', (mode) => {
   window.history.replaceState(null, '', '/')
-  const listener = vi.fn(() => false)
+  const listener = vi.fn()
   const history = createRouterHistory({ mode, listener })
   history.startListening()
   history.update('/first', { state: { visit: 'first' } })
@@ -51,7 +50,9 @@ test.each(['browser', 'hash'] as const)('restores an indexed %s entry without no
 
   window.history.replaceState(first.state, '', first.url)
   window.dispatchEvent(new PopStateEvent('popstate', { state: first.state }))
-  await flushPromises()
+  const { traversal } = listener.mock.calls[0][0]
+  traversal.restore()
+  traversal.restore()
 
   expect(go).toHaveBeenCalledOnce()
   expect(go).toHaveBeenCalledWith(1)
@@ -65,9 +66,9 @@ test.each(['browser', 'hash'] as const)('restores an indexed %s entry without no
   go.mockRestore()
 })
 
-test('does not guess a traversal distance for an entry without an index', async () => {
+test('does not guess a traversal distance for an entry without an index', () => {
   window.history.replaceState(null, '', '/')
-  const listener = vi.fn(() => false)
+  const listener = vi.fn()
   const history = createRouterHistory({ mode: 'browser', listener })
   history.startListening()
   history.update('/first')
@@ -75,7 +76,8 @@ test('does not guess a traversal distance for an entry without an index', async 
 
   window.history.replaceState({ key: 'external' }, '', '/external')
   window.dispatchEvent(new PopStateEvent('popstate', { state: window.history.state }))
-  await flushPromises()
+  const { traversal } = listener.mock.calls[0][0]
+  traversal.restore()
 
   expect(go).not.toHaveBeenCalled()
   expect(window.location.pathname).toBe('/external')

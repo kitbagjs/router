@@ -11,7 +11,7 @@ import { getComputations } from '@/services/getComputations'
 import { getAsyncComponents, loadAsyncComponents } from '@/utilities/components'
 import { getNavigationProgressKey } from '@/compositions/useNavigation'
 import { DataKind } from '@/services/createNavigationStores'
-import { createRouterHistory } from '@/services/createRouterHistory'
+import { createRouterHistory, RouterHistoryTraversal } from '@/services/createRouterHistory'
 import { createServerRedirect } from '@/services/createServerRedirect'
 import { createRouterHooks, getRouterHooksKey } from '@/services/createRouterHooks'
 import { getInitialUrl } from '@/services/getInitialUrl'
@@ -51,7 +51,7 @@ import { setDocumentTitle } from '@/utilities/setDocumentTitle'
 import { createCurrentRejection } from '@/services/createCurrentRejection'
 
 type RouterUpdateOptions = {
-  traversal?: boolean,
+  traversal?: RouterHistoryTraversal,
   replace?: boolean,
   state?: any,
   /**
@@ -135,10 +135,10 @@ export function createRouter<
   const visibilityObserver = createVisibilityObserver()
   const history = createRouterHistory({
     mode: options?.historyMode,
-    listener: ({ location, action }) => {
+    listener: ({ location, traversal }) => {
       const url = createPath(location)
 
-      return set(url, { state: location.state, replace: true, traversal: action === 'POP' })
+      set(url, { state: location.state, replace: true, traversal })
     },
   })
 
@@ -151,18 +151,19 @@ export function createRouter<
   }
 
   /**
-   * Returns true to commit, false for a guard veto, or undefined if the navigation was superseded,
-   * redirected, or handled as a rejection.
+   * Runs the before hooks for a navigation and reacts to their response. Reports whether the
+   * navigation should continue.
    */
-  async function runBeforeHooks({ controller, to, from, url, options, progress }: RunBeforeHooksContext): Promise<boolean | undefined> {
+  async function runBeforeHooks({ controller, to, from, url, options, progress }: RunBeforeHooksContext): Promise<boolean> {
     const response = await hooks.runBeforeRouteHooks({ to, from, signal: controller.signal, progress })
 
     if (controller.signal.aborted) {
-      return
+      return false
     }
 
     switch (response.status) {
       case 'ABORT':
+        options.traversal?.restore()
         progress.abort()
 
         return false
@@ -171,17 +172,25 @@ export function createRouter<
       case 'REDIRECT':
         await push(...response.to)
 
-        return
+        return false
 
       case 'REJECT':
-        history.update(url, options)
+        if (options.traversal) {
+          options.traversal.commit()
+        } else {
+          history.update(url, options)
+        }
         reject(response.type, { to, from })
         progress.abort()
 
-        return
+        return false
 
       case 'SUCCESS':
-        history.update(url, options)
+        if (options.traversal) {
+          options.traversal.commit()
+        } else {
+          history.update(url, options)
+        }
 
         return true
 
@@ -220,14 +229,12 @@ export function createRouter<
     }
   }
 
-  const set = activity.wrap(async (url: string, options: RouterUpdateOptions = {}): Promise<boolean | undefined> => {
+  const set = activity.wrap(async (url: string, options: RouterUpdateOptions = {}): Promise<void> => {
     if (pathHasTrailingSlash(url) && shouldRemoveTrailingSlashes) {
       const cleanedUrl = removeTrailingSlashesFromPath(url)
 
       if (isUrlString(cleanedUrl)) {
-        await replace(cleanedUrl, { ...options, redirectStatus })
-
-        return
+        return replace(cleanedUrl, { ...options, redirectStatus })
       }
     }
 
@@ -274,7 +281,7 @@ export function createRouter<
       if (!shouldCommit) {
         controller.abort()
 
-        return shouldCommit
+        return
       }
     }
 
@@ -283,8 +290,6 @@ export function createRouter<
     if (!isSSR) {
       await runAfterHooks({ controller, to, from })
     }
-
-    return true
   })
 
   /**
@@ -418,7 +423,7 @@ export function createRouter<
       return
     }
 
-    await set(url, options)
+    return set(url, options)
   }
 
   const replace: RouterReplaceInternal<TRoutes | TPlugin['routes']> = (
