@@ -2,6 +2,7 @@ import { nextTick } from 'vue'
 import { RouteValueResponse, RouteValueStore } from '@/services/createRouteValueStore'
 import { ResolvedRoute } from '@/types/resolved'
 import { loadAsyncComponents } from '@/utilities/components'
+import { whenAborted } from '@/utilities/promises'
 
 export type RoutePreparation = {
   props: PromiseSettledResult<RouteValueResponse>,
@@ -42,12 +43,7 @@ export function createRouteCommit({ route, signal, valueStore, update }: RouteCo
       return
     }
 
-    const abandoned = Promise.withResolvers<void>()
     const listener = new AbortController()
-
-    signal.addEventListener('abort', () => {
-      abandoned.resolve()
-    }, listener)
 
     try {
       const values = valueStore.staged().compute(route)
@@ -58,7 +54,7 @@ export function createRouteCommit({ route, signal, valueStore, update }: RouteCo
       ])
       const results = await Promise.race([
         work,
-        abandoned.promise,
+        whenAborted(signal, listener),
       ])
 
       if (!results || isAborted()) {
