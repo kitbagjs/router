@@ -2,7 +2,7 @@ import { nextTick } from 'vue'
 import { RouteValueResponse, RouteValueStore } from '@/services/createRouteValueStore'
 import { ResolvedRoute } from '@/types/resolved'
 import { loadAsyncComponents } from '@/utilities/components'
-import { whenAborted } from '@/utilities/promises'
+import { createAbortPromise } from '@/utilities/promises'
 
 export type RoutePreparation = {
   props: PromiseSettledResult<RouteValueResponse>,
@@ -54,7 +54,7 @@ export function createRouteCommit({ route, signal, valueStore, update }: RouteCo
       ])
       const results = await Promise.race([
         work,
-        whenAborted(signal, listener),
+        createAbortPromise(signal, listener),
       ])
 
       if (!results || isAborted()) {

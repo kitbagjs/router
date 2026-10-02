@@ -7,7 +7,7 @@ export function isPromise(value: unknown): value is Promise<unknown> {
  * controller to stop watching when other work finishes first; stopping the listener does not settle
  * the promise or abort the watched signal.
  */
-export function whenAborted(signal: AbortSignal, listener = new AbortController()): Promise<void> {
+export function createAbortPromise(signal: AbortSignal, listener = new AbortController()): Promise<void> {
   if (signal.aborted) {
     return Promise.resolve()
   }
