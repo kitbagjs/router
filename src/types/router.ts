@@ -33,7 +33,9 @@ export type RouterOptions = TransformerOptions & {
   ssr?: boolean,
 
   /**
-   * Specifies the history mode for the router, such as "browser", "memory", or "hash".
+   * Selects navigation behavior. In browsers, "auto" and "browser" require the Navigation API
+   * with precommit interception and use native scroll restoration and focus. There is no automatic
+   * History API fallback. "memory" and "hash" retain their existing behavior; SSR always uses memory.
    *
    * @default "auto"
    */

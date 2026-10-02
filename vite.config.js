@@ -19,6 +19,7 @@ export default defineConfig({
         test: {
           name: 'browser',
           environment: 'happy-dom',
+          setupFiles: ['src/tests/browserSetup.ts'],
           include: ['src/**/*.browser.spec.ts'],
         },
       },

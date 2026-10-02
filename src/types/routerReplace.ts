@@ -22,6 +22,11 @@ type RouterReplaceArgs<
   ? [params?: RouteParamsByKey<TRoutes, TSource>, options?: RouterReplaceOptions<RouteStateByName<TRoutes, TSource>>]
   : [params: RouteParamsByKey<TRoutes, TSource>, options?: RouterReplaceOptions<RouteStateByName<TRoutes, TSource>>]
 
+/**
+ * Replaces the current entry. In native browser mode, the promise includes route data, rendering
+ * and the browser's scroll and focus behavior. Canceled navigations resolve;
+ * cancellation before commit preserves the current entry.
+ */
 export type RouterReplace<
   TRoutes extends Routes
 > = {

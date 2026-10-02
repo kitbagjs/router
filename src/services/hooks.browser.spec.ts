@@ -206,6 +206,7 @@ test('external route hooks are called correctly', async () => {
 
   const router = createRouter([internal, external], {
     initialUrl: '/',
+    historyMode: 'memory',
   })
 
   const root = {

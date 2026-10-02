@@ -98,9 +98,10 @@ test('renders component with async props using suspense', async () => {
 
   expect(wrapper.text()).toBe(fallback)
 
-  await router.push('home')
+  const navigation = router.push('home')
 
   resolve({ value: 'hello world' })
+  await navigation
   await flushPromises()
 
   expect(wrapper.text()).toBe('hello world')

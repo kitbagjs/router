@@ -35,6 +35,11 @@ type RouterPushArgs<
   ? [params?: RouteParamsByKey<TRoutes, TSource>, options?: RouterPushOptions<RouteStateByName<TRoutes, TSource>>]
   : [params: RouteParamsByKey<TRoutes, TSource>, options?: RouterPushOptions<RouteStateByName<TRoutes, TSource>>]
 
+/**
+ * Navigates to a route. In native browser mode, the promise includes route data, rendering and
+ * the browser's scroll and focus behavior. Canceled navigations resolve;
+ * cancellation before commit preserves the current entry.
+ */
 export type RouterPush<
   TRoutes extends Routes = any
 > = {

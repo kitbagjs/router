@@ -1,10 +1,10 @@
 import { createPath } from '@/services/history'
-import { App, ref } from 'vue'
+import { App, nextTick, ref } from 'vue'
 import { createCurrentRoute } from '@/services/createCurrentRoute'
 import { createIsExternal } from '@/services/createIsExternal'
 import { createActivityTracker } from '@/services/createActivityTracker'
 import { SsrOptionRequiredError } from '@/errors/ssrOptionRequiredError'
-import { parseUrl, updateUrl } from '@/services/urlParser'
+import { isSameUrl, parseUrl, updateUrl } from '@/services/urlParser'
 import { createRouteValueStore, RouteValueResponse } from '@/services/createRouteValueStore'
 import { createNavigationProgress, NavigationProgressTracker } from '@/services/createNavigationProgress'
 import { getComputations } from '@/services/getComputations'
@@ -12,6 +12,7 @@ import { getAsyncComponents, loadAsyncComponents } from '@/utilities/components'
 import { getNavigationProgressKey } from '@/compositions/useNavigation'
 import { DataKind } from '@/services/createNavigationStores'
 import { createRouterHistory } from '@/services/createRouterHistory'
+import { BrowserNavigationContext, NavigationCommit, createBrowserNavigation, usesBrowserNavigation } from '@/services/createBrowserNavigation'
 import { createServerRedirect } from '@/services/createServerRedirect'
 import { createRouterHooks, getRouterHooksKey } from '@/services/createRouterHooks'
 import { getInitialUrl } from '@/services/getInitialUrl'
@@ -48,28 +49,21 @@ import { setupRouterDevtools } from '@/devtools/createRouterDevtools'
 import { getMatchForUrl } from './getMatchesForUrl'
 import { pathHasTrailingSlash, removeTrailingSlashesFromPath } from '@/utilities/trailingSlashes'
 import { setDocumentTitle } from '@/utilities/setDocumentTitle'
+import { withAbortSignal } from '@/utilities/withAbortSignal'
 import { createCurrentRejection } from '@/services/createCurrentRejection'
 
 type RouterUpdateOptions = {
   replace?: boolean,
   state?: any,
-  /**
-   * A hydrating navigation adopts an outcome the server already rendered, so before hooks are not
-   * consulted and the title the markup carries is kept.
-   */
-  hydrating?: boolean,
+  browser?: BrowserNavigationContext,
+  initial?: boolean,
 }
 
 type RunHooksContext = {
   controller: AbortController,
   to: ResolvedRoute | null,
   from: ResolvedRoute | null,
-}
-
-type RunBeforeHooksContext = RunHooksContext & {
-  url: string,
-  options: RouterUpdateOptions,
-  progress: NavigationProgressTracker,
+  signal?: AbortSignal,
 }
 
 /**
@@ -132,14 +126,21 @@ export function createRouter<
   const navigations = createNavigationSignals()
   const componentsStore = createComponentsStore(routerKey)
   const visibilityObserver = createVisibilityObserver()
+  const nativeBrowser = usesBrowserNavigation(options?.historyMode, isSSR)
   const history = createRouterHistory({
-    mode: options?.historyMode,
+    mode: isSSR || nativeBrowser ? 'memory' : options?.historyMode,
     listener: ({ location }) => {
       const url = createPath(location)
 
       set(url, { state: location.state, replace: true })
     },
   })
+  const browserNavigation = nativeBrowser
+    ? createBrowserNavigation({
+        prepare: (url, state, browser) => prepare(url, { state, browser }),
+      })
+    : undefined
+  const navigation = browserNavigation ?? history
 
   function find(url: string, resolveOptions: RouterResolveOptions = {}): ResolvedRoute | undefined {
     const urlIsRelative = !isExternal(url)
@@ -150,53 +151,12 @@ export function createRouter<
   }
 
   /**
-   * Runs the before hooks for a navigation and reacts to their response. Reports whether the
-   * navigation should continue.
-   */
-  async function runBeforeHooks({ controller, to, from, url, options, progress }: RunBeforeHooksContext): Promise<boolean> {
-    const response = await hooks.runBeforeRouteHooks({ to, from, signal: controller.signal, progress })
-
-    if (controller.signal.aborted) {
-      return false
-    }
-
-    switch (response.status) {
-      case 'ABORT':
-        progress.abort()
-
-        return false
-
-      case 'PUSH':
-      case 'REDIRECT':
-        await push(...response.to)
-
-        return false
-
-      case 'REJECT':
-        history.update(url, options)
-        reject(response.type, { to, from })
-        progress.abort()
-
-        return false
-
-      case 'SUCCESS':
-        history.update(url, options)
-
-        return true
-
-      default:
-        const exhaustive: never = response
-        throw new Error(`Switch is not exhaustive for before hook response status: ${JSON.stringify(exhaustive)}`)
-    }
-  }
-
-  /**
    * Runs the after hooks for a navigation and reacts to their response.
    */
-  async function runAfterHooks({ controller, to, from }: RunHooksContext): Promise<void> {
-    const response = await hooks.runAfterRouteHooks({ to, from, signal: controller.signal })
+  async function runAfterHooks({ controller, to, from, signal = controller.signal }: RunHooksContext): Promise<void> {
+    const response = await hooks.runAfterRouteHooks({ to, from, signal })
 
-    if (controller.signal.aborted) {
+    if (signal.aborted) {
       return
     }
 
@@ -219,20 +179,33 @@ export function createRouter<
     }
   }
 
-  const set = activity.wrap(async (url: string, options: RouterUpdateOptions = {}): Promise<void> => {
+  const prepare = activity.wrap(async (url: string, options: RouterUpdateOptions = {}): Promise<NavigationCommit> => {
     if (pathHasTrailingSlash(url) && shouldRemoveTrailingSlashes) {
       const cleanedUrl = removeTrailingSlashesFromPath(url)
 
       if (isUrlString(cleanedUrl)) {
-        return replace(cleanedUrl, { ...options, redirectStatus })
+        if (options.browser) {
+          if (options.browser.event.navigationType === 'traverse' || options.browser.event.navigationType === 'reload') {
+            await replace(cleanedUrl, options)
+
+            return async () => {}
+          }
+
+          options.browser.precommit.redirect(cleanedUrl, { history: 'replace', state: options.state })
+
+          return prepare(cleanedUrl, options)
+        }
+
+        await replace(cleanedUrl, { ...options, redirectStatus })
+
+        return async () => {}
       }
     }
 
     const controller = navigations.begin()
+    const signal = options.browser ? AbortSignal.any([controller.signal, options.browser.event.signal]) : controller.signal
 
-    if (controller.signal.aborted) {
-      return
-    }
+    signal.throwIfAborted()
 
     const to = find(url, options) ?? null
     const from = getFromRouteForHooks()
@@ -240,45 +213,118 @@ export function createRouter<
       to,
       from,
       expected: countRouteUnits(url, to),
-      inert: isSSR || options.hydrating,
+      inert: isSSR,
     })
+    signal.addEventListener('abort', progress.abort)
 
-    function commitNavigation(): void {
-      if (!to) {
-        reject(NOT_FOUND_REJECTION_TYPE, { to, from })
+    let rejection: string | undefined
+
+    const response = await withAbortSignal(hooks.runBeforeRouteHooks({ to, from, signal, progress }), signal)
+
+    signal.throwIfAborted()
+
+    switch (response.status) {
+      case 'ABORT':
         progress.abort()
+        controller.abort()
+        throw new DOMException('Navigation aborted by a route hook', 'AbortError')
+
+      case 'PUSH':
+      case 'REDIRECT': {
+        progress.abort()
+
+        if (options.browser) {
+          const destination = getPushNavigation(...response.to)
+
+          // Traversals, reloads and cross-origin departures need a new native navigation instead
+          // of changing the pending destination with precommit.redirect().
+          if (
+            isExternal(destination.url)
+            || options.browser.event.navigationType === 'traverse'
+            || options.browser.event.navigationType === 'reload'
+          ) {
+            await push(...response.to)
+
+            return async () => {}
+          }
+
+          options.browser.precommit.redirect(destination.url, {
+            history: destination.options.replace ? 'replace' : 'push',
+            state: destination.options.state,
+          })
+
+          return prepare(destination.url, { ...destination.options, browser: options.browser })
+        }
+
+        await push(...response.to)
+
+        return async () => {}
+      }
+
+      case 'REJECT':
+        rejection = response.type
+        break
+
+      case 'SUCCESS':
+        break
+
+      default:
+        const exhaustive: never = response
+        throw new Error(`Unexpected before hook response: ${JSON.stringify(exhaustive)}`)
+    }
+
+    return async () => {
+      signal.throwIfAborted()
+
+      // Browser URLs have already committed by the time its handler runs. Initial adoption and
+      // hydration never initiate a navigation, so they leave the browser entry and scroll alone.
+      if (!options.browser && !(nativeBrowser && options.initial)) {
+        history.update(url, options)
+      }
+
+      if (rejection || !to) {
+        reject(rejection ?? NOT_FOUND_REJECTION_TYPE, { to, from })
+        progress.abort()
+
+        if (!rejection && !isSSR) {
+          await runAfterHooks({ controller, to, from, signal })
+        }
+
+        await nextTick()
 
         return
       }
 
       clearRejection()
+      let rendered: Promise<void> = Promise.resolve()
 
       if (!isExternal(url)) {
-        setRouteValuesAndUpdateRoute(to, from, progress)
+        rendered = setRouteValuesAndUpdateRoute(to, from, progress)
       }
 
       progress.close()
       started.value = true
 
-      if (!options.hydrating) {
-        updateTitle(controller.signal)
-      }
+      updateTitle(signal)
+
+      await withAbortSignal(Promise.all([
+        options.browser ? rendered : Promise.resolve(),
+        isSSR ? Promise.resolve() : runAfterHooks({ controller, to, from, signal }),
+      ]), signal)
     }
+  })
 
-    if (!options.hydrating) {
-      const shouldCommit = await runBeforeHooks({ controller, to, from, url, options, progress })
+  const set = activity.wrap(async (url: string, options: RouterUpdateOptions = {}): Promise<void> => {
+    try {
+      const commit = await prepare(url, options)
 
-      if (!shouldCommit) {
-        controller.abort()
-
+      await commit()
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') {
         return
       }
-    }
 
-    commitNavigation()
-
-    if (!isSSR) {
-      await runAfterHooks({ controller, to, from })
+      throw error
     }
   })
 
@@ -294,7 +340,7 @@ export function createRouter<
     return getComputations(to).length + getAsyncComponents(to).length
   }
 
-  function setRouteValuesAndUpdateRoute(to: ResolvedRoute, from: ResolvedRoute | null, progress: NavigationProgressTracker): void {
+  async function setRouteValuesAndUpdateRoute(to: ResolvedRoute, from: ResolvedRoute | null, progress: NavigationProgressTracker): Promise<void> {
     const { props, loaders, values } = valueStore.commit(to)
 
     activity.add(
@@ -302,9 +348,18 @@ export function createRouter<
       handleRouteValueResponse(loaders, 'loader', to, from),
     )
 
-    progress.track(...values, ...loadAsyncComponents(to))
+    const components = loadAsyncComponents(to)
+
+    progress.track(...values, ...components)
 
     updateRoute(to)
+
+    await Promise.allSettled([
+      props,
+      loaders,
+      ...components,
+    ])
+    await nextTick()
   }
 
   /**
@@ -413,7 +468,7 @@ export function createRouter<
       return
     }
 
-    return set(url, options)
+    return browserNavigation ? browserNavigation.push(url, options) : set(url, options)
   }
 
   const replace: RouterReplaceInternal<TRoutes | TPlugin['routes']> = (
@@ -484,7 +539,7 @@ export function createRouter<
   }
 
   const initialUrl = getInitialUrl(options?.initialUrl, options?.historyMode)
-  const initialState = history.location.state
+  const initialState = browserNavigation ? browserNavigation.state : history.location.state
   const { host } = parseUrl(initialUrl)
   const isExternal = createIsExternal(host)
 
@@ -505,7 +560,7 @@ export function createRouter<
    * paint matches the markup already in the dom.
    */
   async function hydrate(payload: RouterPayload): Promise<void> {
-    const to = find(initialUrl) ?? null
+    const to = find(initialUrl, { state: initialState ?? undefined }) ?? null
 
     if (!to) {
       reject(NOT_FOUND_REJECTION_TYPE, { to, from: null })
@@ -527,7 +582,17 @@ export function createRouter<
         store.fill(to, values)
         store.stage()
 
-        await set(initialUrl, { replace: true, state: initialState, hydrating: true })
+        const controller = navigations.begin()
+        const progress = navigationProgress.begin({ to, from: null, expected: 0, inert: true })
+
+        clearRejection()
+        setRouteValuesAndUpdateRoute(to, null, progress)
+        progress.close()
+        started.value = true
+
+        if (!isSSR) {
+          await runAfterHooks({ controller, to, from: null })
+        }
 
         return
       }
@@ -545,15 +610,21 @@ export function createRouter<
 
     starting = true
 
+    browserNavigation?.startListening()
+
     const payload = getHydratingPayload()
 
     if (payload) {
       await hydrate(payload)
+    } else if (browserNavigation && !isSameUrl(initialUrl, getInitialUrl())) {
+      await browserNavigation.push(initialUrl, { replace: true, state: initialState })
     } else {
-      await set(initialUrl, { replace: true, state: initialState })
+      await set(initialUrl, { replace: true, state: initialState, initial: true })
     }
 
-    history.startListening()
+    if (!browserNavigation) {
+      history.startListening()
+    }
 
     initialized()
     started.value = true
@@ -608,7 +679,7 @@ export function createRouter<
   function stop(): void {
     navigations.stop()
     navigationProgress.stop()
-    history.stopListening()
+    navigation.stopListening()
   }
 
   function getFromRouteForHooks(): ResolvedRoute | null {
@@ -648,10 +719,10 @@ export function createRouter<
     push,
     replace,
     reject,
-    refresh: history.refresh,
-    forward: history.forward,
-    back: history.back,
-    go: history.go,
+    refresh: navigation.refresh,
+    forward: navigation.forward,
+    back: navigation.back,
+    go: navigation.go,
     install,
     isExternal,
     onBeforeRouteEnter: hooks.onBeforeRouteEnter,
