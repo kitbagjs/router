@@ -23,8 +23,12 @@ export type RouterHistoryTraversal = {
   restore: () => void,
 }
 
+type RouterHistoryUpdate = Update & {
+  traversal?: RouterHistoryTraversal,
+}
+
 type RouterHistoryOptions = {
-  listener: (event: Update & { traversal?: RouterHistoryTraversal }) => void,
+  listener: (event: RouterHistoryUpdate) => void,
   mode?: RouterHistoryMode,
 }
 
