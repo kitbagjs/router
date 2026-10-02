@@ -35,7 +35,8 @@ export type RouterOptions = TransformerOptions & {
   /**
    * Selects navigation behavior. In browsers, "auto" and "browser" require the Navigation API
    * with precommit interception and use native scroll restoration and focus. There is no automatic
-   * History API fallback. "memory" and "hash" retain their existing behavior; SSR always uses memory.
+   * History API fallback. "auto" selects memory outside a browser. Explicit modes are respected
+   * independently of the "ssr" option; "memory" and "hash" retain their existing behavior.
    *
    * @default "auto"
    */

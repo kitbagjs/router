@@ -31,6 +31,14 @@ test('initial route is set', async () => {
   expect(route.matched.name).toBe('root')
 })
 
+test('SSR respects an explicit browser mode instead of replacing it with memory', () => {
+  expect(() => createRouter(routes, {
+    initialUrl: '/',
+    ssr: true,
+    historyMode: 'browser',
+  })).toThrow('requires the Navigation API')
+})
+
 test('initial state is set', async () => {
   const location: Location = {
     key: 'foo',
@@ -40,9 +48,10 @@ test('initial state is set', async () => {
     state: { zoo: '123' },
   }
 
-  const actual = createRouterHistoryUtilities.createRouterHistory({ listener: () => {} })
-  vi.spyOn(createRouterHistoryUtilities, 'createRouterHistory').mockImplementation(() => ({
-    ...actual,
+  const createHistory = createRouterHistoryUtilities.createRouterHistory
+
+  vi.spyOn(createRouterHistoryUtilities, 'createRouterHistory').mockImplementation((options) => ({
+    ...createHistory(options),
     location,
   }))
 

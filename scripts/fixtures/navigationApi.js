@@ -282,7 +282,7 @@ try {
       loaderCalls++
       return 'server data'
     })
-    const server = createRouter([page], { ssr: true, historyMode: 'browser', initialUrl: '/__navigation' })
+    const server = createRouter([page], { ssr: true, historyMode: 'memory', initialUrl: '/__navigation' })
     const response = await server.render()
     const serverApp = createSSRApp(root)
 

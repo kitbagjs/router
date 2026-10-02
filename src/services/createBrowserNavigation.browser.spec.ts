@@ -297,18 +297,26 @@ test('an explicit initial URL uses native replace when it differs from the docum
 })
 
 describe('SSR and hydration', () => {
-  test('SSR does not require the browser API even with browser mode configured', async () => {
+  test('explicit memory mode supports SSR without the browser API', async () => {
     vi.stubGlobal('navigation', undefined)
     vi.stubGlobal('NavigationPrecommitController', undefined)
 
     const home = createRoute({ name: 'home', path: '/' }).addLoader(() => 'server value')
-    const server = createRouter([home], { ssr: true, historyMode: 'browser', initialUrl: '/' })
+    const server = createRouter([home], { ssr: true, historyMode: 'memory', initialUrl: '/' })
     const response = await server.render()
 
     expect(response.kind).toBe('success')
     await expect(server.route.data).resolves.toBe('server value')
 
     server.stop()
+  })
+
+  test.each(['auto', 'browser'] as const)('SSR does not override %s when its browser API is unavailable', (historyMode) => {
+    vi.stubGlobal('navigation', undefined)
+    vi.stubGlobal('NavigationPrecommitController', undefined)
+    const home = createRoute({ name: 'home', path: '/' })
+
+    expect(() => createRouter([home], { ssr: true, historyMode, initialUrl: '/' })).toThrow('requires the Navigation API')
   })
 
   test('hydration adopts the server values synchronously without a navigation or before hooks', async () => {

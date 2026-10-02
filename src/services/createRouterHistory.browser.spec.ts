@@ -1,38 +1,67 @@
-import { beforeEach, expect, test, vi } from 'vitest'
-import { createRouterHistory } from '@/services/createRouterHistory'
-import { random } from '@/utilities/testHelpers'
+import { expect, test, vi } from 'vitest'
+import { createRouterHistory, PreparedNavigation } from '@/services/createRouterHistory'
+import { mockNavigation } from '@/tests/mockNavigation'
 
-function noop(): void {}
+async function prepare(): Promise<PreparedNavigation> {
+  return { signal: new AbortController().signal, commit: async () => {} }
+}
 
-beforeEach(() => vi.resetAllMocks())
+test('auto selects the Navigation API in a browser', async () => {
+  const native = mockNavigation()
+  const history = createRouterHistory({ prepare })
 
-test('when go is called, forwards call to window history', () => {
-  vi.spyOn(window.history, 'go')
+  await history.push('/first')
 
-  const delta = random.number({ min: 0, max: 100 })
-  const history = createRouterHistory({ listener: noop })
-
-  history.go(delta)
-
-  expect(window.history.go).toHaveBeenCalledWith(delta)
+  expect(native.navigate).toHaveBeenCalledWith('/first', { history: 'push', state: undefined })
 })
 
-test('when back is called, forwards call to window history', () => {
-  vi.spyOn(window.history, 'go')
+test('explicit memory mode uses memory even when the browser API is available', async () => {
+  const native = mockNavigation()
+  const history = createRouterHistory({ mode: 'memory', prepare })
 
-  const history = createRouterHistory({ listener: noop })
+  await history.push('/first')
 
+  expect(history.location.pathname).toBe('/first')
+  expect(window.location.pathname).toBe('/')
+  expect(native.navigate).not.toHaveBeenCalled()
+})
+
+test('explicit hash mode retains hash navigation', async () => {
+  const native = mockNavigation()
+  const history = createRouterHistory({ mode: 'hash', prepare })
+
+  await history.push('/first')
+
+  expect(window.location.hash).toBe('#/first')
+  expect(native.navigate).not.toHaveBeenCalled()
+})
+
+test('go traverses to the native entry key', async () => {
+  const native = mockNavigation()
+  const traverse = vi.spyOn(native, 'traverseTo')
+  const history = createRouterHistory({ prepare })
+
+  await history.push('/first')
+  const first = native.currentEntry
+
+  await history.push('/second')
+  history.go(-1)
+
+  expect(traverse).toHaveBeenCalledWith(first.key)
+})
+
+test('back and forward use native traversal methods', async () => {
+  const native = mockNavigation()
+  const back = vi.spyOn(native, 'back')
+  const forward = vi.spyOn(native, 'forward')
+  const history = createRouterHistory({ prepare })
+
+  await history.push('/first')
+  await history.push('/second')
   history.back()
-
-  expect(window.history.go).toHaveBeenCalledOnce()
-})
-
-test('when forward is called, forwards call to window history', () => {
-  vi.spyOn(window.history, 'go')
-
-  const history = createRouterHistory({ listener: noop })
-
+  await back.mock.results[0].value.finished
   history.forward()
 
-  expect(window.history.go).toHaveBeenCalledOnce()
+  expect(back).toHaveBeenCalledOnce()
+  expect(forward).toHaveBeenCalledOnce()
 })
