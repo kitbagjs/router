@@ -82,6 +82,7 @@ export function createUseLink<TRouter extends Router>(routerKey: InjectionKey<TR
     const isActive = computed(() => isRoute(router.route) && isDefined(route.value) && router.route.href.startsWith(route.value.href))
     const isExactActive = computed(() => router.route.href === route.value?.href)
     const isExternal = computed(() => !!href.value && router.isExternal(href.value))
+    const isTransitioning = computed(() => router.viewTransition.isTransitioning && router.viewTransition.to?.href === href.value)
 
     const { element, commit } = usePrefetching(() => ({
       route: route.value,
@@ -97,6 +98,7 @@ export function createUseLink<TRouter extends Router>(routerKey: InjectionKey<TR
         query: combineUrlSearchParams(pushOptions?.query, linkOptions.value.query),
         hash: pushOptions?.hash ?? linkOptions.value.hash,
         state: { ...linkOptions.value.state, ...pushOptions?.state },
+        viewTransition: pushOptions?.viewTransition ?? linkOptions.value.viewTransition,
       }
 
       const sourceValue = toValue(source)
@@ -120,6 +122,7 @@ export function createUseLink<TRouter extends Router>(routerKey: InjectionKey<TR
       isActive,
       isExactActive,
       isExternal,
+      isTransitioning,
       push,
       replace,
     }

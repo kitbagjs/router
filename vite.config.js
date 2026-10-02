@@ -10,6 +10,11 @@ export default defineConfig({
         find: '@',
         replacement: resolve(import.meta.dirname, 'src'),
       },
+      // the package only declares a module entry, which node does not resolve
+      {
+        find: 'view-transitions-mock',
+        replacement: resolve(__dirname, 'node_modules/view-transitions-mock/dist/index.js'),
+      },
     ],
   },
   test: {
