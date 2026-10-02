@@ -43,9 +43,9 @@ export function createRouteCommit({ route, signal, valueStore, update }: RouteCo
     }
 
     const abandoned = Promise.withResolvers<undefined>()
-    const abort = (): void => abandoned.resolve(undefined)
+    const listener = new AbortController()
 
-    signal.addEventListener('abort', abort, { once: true })
+    signal.addEventListener('abort', () => abandoned.resolve(undefined), { signal: listener.signal })
 
     try {
       const values = valueStore.staged().compute(route)
@@ -64,7 +64,7 @@ export function createRouteCommit({ route, signal, valueStore, update }: RouteCo
 
       return { props, loaders, components }
     } finally {
-      signal.removeEventListener('abort', abort)
+      listener.abort()
     }
   }
 
