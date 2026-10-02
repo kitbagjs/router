@@ -49,16 +49,16 @@ export function createRouteCommit({ route, signal, valueStore, update }: RouteCo
       values.loaders,
       ...loadAsyncComponents(route),
     ])
-    const results = await Promise.race([
+    await Promise.race([
       work,
       createAbortPromise(signal),
     ])
 
-    if (!results || isAborted()) {
+    if (isAborted()) {
       return
     }
 
-    const [props, loaders, ...components] = results
+    const [props, loaders, ...components] = await work
 
     return { props, loaders, components }
   }
