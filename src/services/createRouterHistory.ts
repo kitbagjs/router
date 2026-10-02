@@ -1,4 +1,4 @@
-import { createBrowserHistory, createHashHistory, createMemoryHistory, createPath, History, Listener } from '@/services/history'
+import { createBrowserHistory, createHashHistory, createMemoryHistory, createPath, History, Update } from '@/services/history'
 import { isBrowser } from '@/utilities/isBrowser'
 
 type NavigationPushOptions = {
@@ -18,8 +18,13 @@ type RouterHistory = History & {
 
 export type RouterHistoryMode = 'auto' | 'browser' | 'memory' | 'hash'
 
+export type RouterHistoryTraversal = {
+  commit: () => void,
+  restore: () => void,
+}
+
 type RouterHistoryOptions = {
-  listener: Listener,
+  listener: (event: Update & { traversal?: RouterHistoryTraversal }) => void,
   mode?: RouterHistoryMode,
 }
 
@@ -27,8 +32,17 @@ export function createRouterHistory({ mode, listener }: RouterHistoryOptions): R
   const history = createHistory(mode)
 
   let updating = false
+  let revision = 0
+  let committed = { key: history.location.key, index: history.index }
+  let restoring: string | undefined
+
+  function remember(): void {
+    committed = { key: history.location.key, index: history.index }
+  }
 
   const update: NavigationUpdate = (url, options) => {
+    revision++
+    restoring = undefined
     updating = true
 
     try {
@@ -39,6 +53,7 @@ export function createRouterHistory({ mode, listener }: RouterHistoryOptions): R
 
       history.push(url, options?.state)
     } finally {
+      remember()
       updating = false
     }
   }
@@ -58,16 +73,66 @@ export function createRouterHistory({ mode, listener }: RouterHistoryOptions): R
         return
       }
 
-      listener(event)
+      if (event.action === 'POP' && event.location.key === restoring) {
+        restoring = undefined
+
+        return
+      }
+
+      restoring = undefined
+      const currentRevision = ++revision
+
+      if (event.action !== 'POP') {
+        listener(event)
+
+        return
+      }
+
+      const isCurrent = (): boolean => currentRevision === revision && history.location.key === event.location.key
+      const traversal: RouterHistoryTraversal = {
+        commit: () => {
+          if (isCurrent()) {
+            remember()
+          }
+        },
+        restore: () => {
+          if (!isCurrent() || committed.index === null || history.index === null || committed.key === history.location.key) {
+            return
+          }
+
+          const delta = committed.index - history.index
+
+          if (delta === 0) {
+            return
+          }
+
+          revision++
+          restoring = committed.key
+          history.go(delta)
+        },
+      }
+
+      listener({ ...event, traversal })
     })
   }
 
   const stopListening: () => void = () => {
+    revision++
+    restoring = undefined
     removeListener?.()
   }
 
   return {
     ...history,
+    get index() {
+      return history.index
+    },
+    get action() {
+      return history.action
+    },
+    get location() {
+      return history.location
+    },
     update,
     refresh,
     startListening,
