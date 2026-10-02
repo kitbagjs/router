@@ -31,6 +31,7 @@ export type Blocker = (tx: Transition) => void
 export type To = string | Partial<Path>
 
 export interface History {
+  readonly index: number | null,
   readonly action: Action,
   readonly location: Location,
   createHref: (to: To) => string,
@@ -159,7 +160,7 @@ export function createBrowserHistory(options: BrowserHistoryOptions = {}): Brows
     const { pathname, search, hash } = win.location
     const state = globalHistory.state ?? {}
     return [
-      state.idx,
+      state.idx ?? null,
       readOnly({
         pathname,
         search,
@@ -290,6 +291,9 @@ export function createBrowserHistory(options: BrowserHistoryOptions = {}): Brows
   }
 
   const history: BrowserHistory = {
+    get index() {
+      return index
+    },
     get action() {
       return action
     },
@@ -339,7 +343,7 @@ export function createHashHistory(options: HashHistoryOptions = {}): HashHistory
     const { pathname = '/', search = '', hash = '' } = parsePath(win.location.hash.slice(1))
     const state = globalHistory.state ?? {}
     return [
-      state.idx,
+      state.idx ?? null,
       readOnly({
         pathname,
         search,
@@ -489,6 +493,9 @@ export function createHashHistory(options: HashHistoryOptions = {}): HashHistory
   }
 
   const history: HashHistory = {
+    get index() {
+      return index
+    },
     get action() {
       return action
     },
