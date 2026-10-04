@@ -64,16 +64,9 @@ type RouteCommitOptions = {
 }
 
 type RouteCommit = {
-  /**
-   * Computes destination values in the staged store and loads its lazy components while the current
-   * route stays rendered. Outcomes are inspected by the caller; committing keeps the router's existing
-   * response handling. Returns undefined if there is no destination or this navigation is abandoned.
-   */
+  /** Call before starting a view transition. */
   prepare: () => Promise<RoutePreparation | undefined>,
-  /**
-   * Updates the route and waits for Vue's DOM flush. False means this navigation was abandoned before
-   * or during the flush. Pending route data, async setup, and later layout changes are not awaited.
-   */
+  /** Call inside the view transition callback, or directly for ordinary navigation. */
   commit: () => Promise<boolean>,
 }
 
