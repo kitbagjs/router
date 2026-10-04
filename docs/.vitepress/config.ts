@@ -69,6 +69,7 @@ export default defineConfig({
           items: [
             { text: 'RouterView', link: '/components/router-view' },
             { text: 'RouterLink', link: '/components/router-link' },
+            { text: 'ViewTransition', link: '/components/view-transition' },
             { text: 'RouterProgress', link: '/components/router-progress' },
           ],
         },

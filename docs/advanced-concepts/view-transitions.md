@@ -4,6 +4,12 @@ Kitbag Router can animate navigations with the browser's [View Transitions API](
 
 View transitions are off by default. Turn them on for the whole router, for a route, or for a single navigation.
 
+::: warning Vue transitions
+
+Avoid overlapping entering and leaving elements with the same `view-transition-name` when combining view transitions with Vue's [`<Transition>`](/components/router-view#transitions). Duplicate names cause the browser to skip the view transition. The browser captures the DOM as it appears at each snapshot, including any overlapping Vue transition content.
+
+:::
+
 ## Configuration
 
 Each level **overrides** the one before it for whether a navigation transitions.
@@ -89,28 +95,31 @@ Types are only passed to browsers that understand them. Older browsers still tra
 
 ## Shared Elements
 
-Give an element a `view-transition-name` and the browser moves it between the pages rather than cross fading. Both pages must name exactly one element with that name while they are captured, so in a list every card cannot carry the name at once. A link knows when a transition to its location is in flight, through `isTransitioning` on [`RouterLink`](/components/router-link#slot) and [`useLink`](/composables/useLink), and names its element only then.
+Use [`ViewTransition`](/components/view-transition) to name the element shared by the outgoing and incoming pages. Inside `RouterLink`, it applies the name only while transitioning to that link's destination.
 
 ```html
-<router-link
+<RouterLink
   v-for="photo in photos"
   :key="photo.id"
   :to="(resolve) => resolve('photo', { id: photo.id })"
-  v-slot="{ isTransitioning }"
 >
-  <img :src="photo.thumb" :style="{ viewTransitionName: isTransitioning ? 'photo' : 'none' }" />
-</router-link>
+  <ViewTransition name="photo" as="img" :src="photo.thumb" />
+</RouterLink>
 ```
 
-The destination names its element statically.
+Outside a link, the element always carries its name. The destination can use the same component:
 
 ```html
-<img :src="photo.full" style="view-transition-name: photo" />
+<ViewTransition name="photo" as="img" :src="photo.full" />
 ```
+
+Each captured page must contain at most one element with a given name. If multiple links point to the same destination, they share the transitioning state, so give their elements different names or name only one of them.
+
+You can also bind `view-transition-name` yourself using `isTransitioning` from [`RouterLink`](/components/router-link#slot) or [`useLink`](/composables/useLink).
 
 ## The Transition in Flight
 
-`router.viewTransition`, also available as the [`useViewTransition`](/composables/useViewTransition) composable, is reactive state describing the transition in flight. It knows the navigation from the moment the transition is decided, while the page being left is still live, so any component can prepare for a navigation it did not start. Once the browser has been asked to transition, it also carries the [`ViewTransition`](https://developer.mozilla.org/en-US/docs/Web/API/ViewTransition) itself.
+[`useViewTransition`](/composables/useViewTransition) returns reactive state describing the transition in flight. It knows the navigation from the moment the transition is decided, while the page being left is still live, so any component can prepare for a navigation it did not start. Once the browser has been asked to transition, it also carries the [`ViewTransition`](https://developer.mozilla.org/en-US/docs/Web/API/ViewTransition) itself.
 
 | Property | Description |
 | --- | --- |
@@ -171,17 +180,12 @@ To respect users who prefer less motion, turn the animation off in css.
 
 ## Async Data
 
-A navigation that transitions loads everything the destination renders with before the transition starts: the route's [props](/core-concepts/component-props), its loaders and any [async components](/advanced-concepts/prefetching#prefetching-components). The previous page stays on screen and interactive while that happens, and the browser then captures the destination with its content rather than a placeholder. Navigations that do not transition commit immediately, as they always have.
-
-Preparing values does not change how props and loader redirects, rejections or errors are handled. They follow the router's existing commit and error handling.
+A navigation that transitions loads everything the destination renders with before the transition starts: the route's [props](/core-concepts/component-props), its loaders and any [async components](/advanced-concepts/prefetching#prefetching-components). The previous page stays on screen and interactive while that happens, and the browser then captures the destination with its content rather than a placeholder. Navigations that do not transition update the route immediately.
 
 ## What Does Not Transition
 
 - The first navigation, since there is no page to animate from.
 - Navigations on the server.
 - Navigations in a browser without `document.startViewTransition`. These navigate exactly as they do with the option off.
-- Navigations to a url no route matches.
-
-## Vue Transitions
-
-View transitions and the [`<Transition>` pattern](/components/router-view#transitions) on `RouterView` do not mix. During a view transition the leaving and entering components are both in the document, so the browser captures both, and an element with a `view-transition-name` on each aborts the transition altogether. Use one or the other.
+- Navigations to external URLs.
+- Navigations to an unmatched internal URL, which currently display NotFound without a view transition.

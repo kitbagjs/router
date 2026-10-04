@@ -1,6 +1,6 @@
 # useViewTransition
 
-Returns the [view transition](/advanced-concepts/view-transitions#the-transition-in-flight) in flight, if any. The same state is available as `router.viewTransition`.
+Returns the [view transition](/advanced-concepts/view-transitions#the-transition-in-flight) in flight, if any.
 
 ```ts
 import { useViewTransition } from '@kitbag/router'

@@ -41,6 +41,7 @@
 - [RouterLink](components/RouterLink.md)
 - [RouterProgress](components/RouterProgress.md)
 - [RouterView](components/RouterView.md)
+- [ViewTransition](components/ViewTransition.md)
 
 ## Functions
 
@@ -54,6 +55,7 @@
 - [createRouterAssets](functions/createRouterAssets.md)
 - [createRouterPlugin](functions/createRouterPlugin.md)
 - [createUrl](functions/createUrl.md)
+- [hasViewTransition](functions/hasViewTransition.md)
 - [literal](functions/literal.md)
 - [tupleOf](functions/tupleOf.md)
 - [unionOf](functions/unionOf.md)
@@ -181,6 +183,7 @@
 - [ViewTransitionConfigOptions](types/ViewTransitionConfigOptions.md)
 - [ViewTransitionConfigs](types/ViewTransitionConfigs.md)
 - [ViewTransitionContext](types/ViewTransitionContext.md)
+- [ViewTransitionProps](types/ViewTransitionProps.md)
 - [ViewTransitionTypes](types/ViewTransitionTypes.md)
 - [ViewTransitionTypesCallback](types/ViewTransitionTypesCallback.md)
 - [WithData](types/WithData.md)

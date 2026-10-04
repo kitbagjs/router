@@ -29,6 +29,7 @@ type RouterAssets<TRouter> = object;
 | <a id="routerlink"></a> `RouterLink` | `ReturnType`\<*typeof* `createRouterLink`\> | A component to render a link to a route or any url. **Param** **props** The props to pass to the router link component. |
 | <a id="routerprogress"></a> `RouterProgress` | `ReturnType`\<*typeof* `createRouterProgress`\> | A component to render a bar across the top of the page while a navigation is pending, filled by how much of the navigation's work has settled. **Param** **props** The props to pass to the router progress component. |
 | <a id="routerview"></a> `RouterView` | `ReturnType`\<*typeof* `createRouterView`\> | A component to render the current route's component. **Param** **props** The props to pass to the router view component. |
+| <a id="viewtransition"></a> `ViewTransition` | *typeof* `ViewTransition` | Names a shared element for a view transition. |
 
 ## Guards
 

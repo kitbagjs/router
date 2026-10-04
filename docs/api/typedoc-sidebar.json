@@ -128,6 +128,10 @@
       {
         "text": "RouterView",
         "link": "/api/components/RouterView.md"
+      },
+      {
+        "text": "ViewTransition",
+        "link": "/api/components/ViewTransition.md"
       }
     ]
   },
@@ -174,6 +178,10 @@
       {
         "text": "createUrl",
         "link": "/api/functions/createUrl.md"
+      },
+      {
+        "text": "hasViewTransition",
+        "link": "/api/functions/hasViewTransition.md"
       },
       {
         "text": "literal",
@@ -670,6 +678,10 @@
       {
         "text": "ViewTransitionContext",
         "link": "/api/types/ViewTransitionContext.md"
+      },
+      {
+        "text": "ViewTransitionProps",
+        "link": "/api/types/ViewTransitionProps.md"
       },
       {
         "text": "ViewTransitionTypes",
