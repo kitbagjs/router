@@ -113,6 +113,8 @@ export { createParam } from './services/createParam'
 export { createRouter } from './services/createRouter'
 export { createUrl } from './services/createUrl'
 
+export type { ViewTransitionProps } from './components/viewTransition'
+
 // Assets
 import { routerInjectionKey } from './keys'
 import { createRouterAssets, RouterAssets } from './services/createRouterAssets'
@@ -186,6 +188,9 @@ export const RouterView: RouterAssets<RegisteredRouter>['RouterView'] = routerAs
  * @group Components
  */
 export const RouterLink: RouterAssets<RegisteredRouter>['RouterLink'] = routerAssets.RouterLink
+
+/** Names a shared element for a view transition. @group Components */
+export const ViewTransition = routerAssets.ViewTransition
 
 /**
  * A component to render a bar across the top of the page while a navigation is pending, filled by how

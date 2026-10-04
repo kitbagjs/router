@@ -38,6 +38,7 @@ import { createComponentsStore } from './createComponentsStore'
 import { getComponentsStoreKey } from '@/compositions/useComponentsStore'
 import { getRouteValueStoreInjectionKey } from '@/compositions/useRouteValueStore'
 import { getViewTransitionKey } from '@/compositions/useViewTransition'
+import { ViewTransition } from '@/components/viewTransition'
 import { getRouterRejectionInjectionKey } from '@/compositions/useRejection'
 import { routerInjectionKey } from '@/keys'
 import { createRouterView } from '@/components/routerView'
@@ -754,6 +755,7 @@ export function createRouter<
     app.component('RouterView', routerView)
     app.component('RouterLink', routerLink)
     app.component('RouterProgress', routerProgress)
+    app.component('ViewTransition', ViewTransition)
     app.provide(getViewTransitionKey(routerKey), viewTransitions.viewTransition)
     app.provide(getRouterRejectionInjectionKey(routerKey), currentRejection)
     app.provide(getRouterHooksKey(routerKey), hooks)
