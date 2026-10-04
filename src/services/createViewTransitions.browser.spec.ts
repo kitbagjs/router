@@ -131,7 +131,25 @@ test('a navigation arriving after the callback ran starts its own transition, an
   await expect(first.ready).rejects.toThrow()
 })
 
-test.each([{ types: ['back'] }, { types: [] }])('a replacement navigation replaces the pending transition types with $types', async ({ types }) => {
+test('a replacement navigation replaces pending transition types', async () => {
+  const types = ['back']
+  const viewTransitions = createViewTransitions()
+
+  viewTransitions.prepare(navigation(['forward']))
+  const firstStarted = viewTransitions.start(() => {})
+  const transition = transitionOf(viewTransitions)
+
+  viewTransitions.prepare(navigation(types))
+  const secondStarted = viewTransitions.start(() => {})
+
+  await Promise.all([firstStarted, secondStarted])
+
+  expect(transitionOf(viewTransitions)).toBe(transition)
+  expect([...transition.types]).toEqual(types)
+})
+
+test('a replacement navigation can clear pending transition types', async () => {
+  const types: string[] = []
   const viewTransitions = createViewTransitions()
 
   viewTransitions.prepare(navigation(['forward']))

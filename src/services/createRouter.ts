@@ -37,6 +37,8 @@ import { getGlobalHooksForRouter } from './getGlobalHooksForRouter'
 import { createComponentsStore } from './createComponentsStore'
 import { getComponentsStoreKey } from '@/compositions/useComponentsStore'
 import { getRouteValueStoreInjectionKey } from '@/compositions/useRouteValueStore'
+import { getViewTransitionKey } from '@/compositions/useViewTransition'
+import { ViewTransition } from '@/components/viewTransition'
 import { getRouterRejectionInjectionKey } from '@/compositions/useRejection'
 import { routerInjectionKey } from '@/keys'
 import { createRouterView } from '@/components/routerView'
@@ -95,6 +97,14 @@ type RunHooksContext = {
   controller: AbortController,
   to: ResolvedRoute | null,
   from: ResolvedRoute | null,
+}
+
+type ViewTransitionOptions = {
+  to: ResolvedRoute | null,
+  from: ResolvedRoute | null,
+  url: string,
+  options: RouterUpdateOptions,
+  enabled: boolean,
 }
 
 type RunBeforeHooksContext = RunHooksContext & {
@@ -316,26 +326,24 @@ export function createRouter<
       }
     }
 
-    const { prepare, commit } = createRouteCommit({
+    const routeCommit = createRouteCommit({
       route: to,
       signal: controller.signal,
       update: commitNavigation,
     })
-    const transition = getViewTransition(to, from, url, options)
+    const transition = getViewTransition({ to, from, url, options, enabled: !isSSR })
 
     if (transition) {
       viewTransitions.prepare(transition)
 
-      const preparation = await prepare()
+      const preparation = await routeCommit.prepare()
 
       if (!preparation) {
         viewTransitions.cancel(transition)
         return
       }
 
-      await viewTransitions.start(async () => {
-        await commit()
-      })
+      await viewTransitions.start(routeCommit.commit)
       await runAfterHooks({ controller, to, from, enabled: !isSSR })
       return
     }
@@ -343,7 +351,7 @@ export function createRouter<
     viewTransitions.reset()
 
     await Promise.all([
-      commit(),
+      routeCommit.commit(),
       runAfterHooks({ controller, to, from, enabled: !isSSR }),
     ])
   })
@@ -392,8 +400,8 @@ export function createRouter<
   /**
    * The transition a navigation makes, or false when it does not transition.
    */
-  function getViewTransition(to: ResolvedRoute | null, from: ResolvedRoute | null, url: string, options: RouterUpdateOptions): PendingViewTransition | false {
-    if (isSSR || !to || !from || isExternal(url) || !supportsViewTransitions()) {
+  function getViewTransition({ to, from, url, options, enabled }: ViewTransitionOptions): PendingViewTransition | false {
+    if (!enabled || !to || !from || isExternal(url) || !supportsViewTransitions()) {
       return false
     }
 
@@ -754,6 +762,8 @@ export function createRouter<
     app.component('RouterView', routerView)
     app.component('RouterLink', routerLink)
     app.component('RouterProgress', routerProgress)
+    app.component('ViewTransition', ViewTransition)
+    app.provide(getViewTransitionKey(routerKey), viewTransitions.viewTransition)
     app.provide(getRouterRejectionInjectionKey(routerKey), currentRejection)
     app.provide(getRouterHooksKey(routerKey), hooks)
     app.provide(getRouteValueStoreInjectionKey(routerKey), valueStore)
@@ -771,7 +781,6 @@ export function createRouter<
 
   const router: Router<TRoutes, TOptions, TPlugin> = {
     route: routerRoute,
-    viewTransition: viewTransitions.viewTransition,
     resolve,
     find,
     push,

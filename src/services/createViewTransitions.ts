@@ -31,11 +31,11 @@ export type ViewTransitions = {
   /**
    * Runs the update inside a view transition. Resolves after the update and Vue flush, ahead of the animation.
    */
-  start: (update: () => void | Promise<void>) => Promise<void>,
+  start: (update: () => void | Promise<unknown>) => Promise<void>,
 }
 
 type Pending = {
-  update: () => void | Promise<void>,
+  update: () => void | Promise<unknown>,
   committed: PromiseWithResolvers<void>,
   transition?: ViewTransition,
 }
