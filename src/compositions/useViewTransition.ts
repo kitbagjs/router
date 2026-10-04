@@ -1,9 +1,22 @@
-import { InjectionKey } from 'vue'
-import { createUseRouter } from '@/compositions/useRouter'
-import { Router } from '@/types/router'
+import { InjectionKey, inject } from 'vue'
+import { RouterNotInstalledError } from '@/errors/routerNotInstalledError'
+import { createRouterKeyStore } from '@/services/createRouterKeyStore'
+import { Router, RouterRoutes } from '@/types/router'
+import { RouterViewTransition } from '@/types/viewTransition'
 
-export function createUseViewTransition<TRouter extends Router>(routerKey: InjectionKey<TRouter>): () => TRouter['viewTransition'] {
-  const useRouter = createUseRouter(routerKey)
+export const getViewTransitionKey = createRouterKeyStore<RouterViewTransition>()
 
-  return () => useRouter().viewTransition
+export function createUseViewTransition<TRouter extends Router>(routerKey: InjectionKey<TRouter>): () => RouterViewTransition<RouterRoutes<TRouter>>
+export function createUseViewTransition(routerKey: InjectionKey<Router>): () => RouterViewTransition {
+  const transitionKey = getViewTransitionKey(routerKey)
+
+  return () => {
+    const transition = inject(transitionKey)
+
+    if (!transition) {
+      throw new RouterNotInstalledError()
+    }
+
+    return transition
+  }
 }

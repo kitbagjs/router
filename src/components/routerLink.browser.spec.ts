@@ -136,9 +136,10 @@ test('passes the viewTransition prop to router.push', async () => {
 
   wrapper.find('a').trigger('click')
 
-  const [, pushOptions] = spy.mock.lastCall ?? []
-
-  expect(pushOptions).toMatchObject({ viewTransition: ['slide'] })
+  expect(spy).toHaveBeenCalledWith(
+    expect.objectContaining({ name: 'routeB' }),
+    expect.objectContaining({ viewTransition: ['slide'] }),
+  )
 })
 
 test('calls router.push with url and push options from resolve callback', async () => {

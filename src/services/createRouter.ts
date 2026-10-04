@@ -1,5 +1,5 @@
 import { createPath } from '@/services/history'
-import { App, ref } from 'vue'
+import { App, nextTick, ref } from 'vue'
 import { createCurrentRoute } from '@/services/createCurrentRoute'
 import { createIsExternal } from '@/services/createIsExternal'
 import { createActivityTracker } from '@/services/createActivityTracker'
@@ -37,6 +37,8 @@ import { getGlobalHooksForRouter } from './getGlobalHooksForRouter'
 import { createComponentsStore } from './createComponentsStore'
 import { getComponentsStoreKey } from '@/compositions/useComponentsStore'
 import { getRouteValueStoreInjectionKey } from '@/compositions/useRouteValueStore'
+import { getViewTransitionKey } from '@/compositions/useViewTransition'
+import { ViewTransition } from '@/components/viewTransition'
 import { getRouterRejectionInjectionKey } from '@/compositions/useRejection'
 import { routerInjectionKey } from '@/keys'
 import { createRouterView } from '@/components/routerView'
@@ -52,7 +54,33 @@ import { createCurrentRejection } from '@/services/createCurrentRejection'
 import { hasViewTransition, ViewTransitionConfig } from '@/types/viewTransition'
 import { createViewTransitions, PendingViewTransition } from '@/services/createViewTransitions'
 import { getViewTransitionTypes, supportsViewTransitions } from '@/utilities/viewTransition'
-import { createRouteCommit } from '@/services/createRouteCommit'
+import { createAbortPromise } from '@/utilities/promises'
+
+type RoutePreparation = {
+  props: PromiseSettledResult<RouteValueResponse>,
+  loaders: PromiseSettledResult<RouteValueResponse>,
+  components: PromiseSettledResult<unknown>[],
+}
+
+type RouteCommitOptions = {
+  route: ResolvedRoute | null,
+  signal: AbortSignal,
+  update: () => void,
+}
+
+type RouteCommit = {
+  /**
+   * Computes destination values in the staged store and loads its lazy components while the current
+   * route stays rendered. Outcomes are inspected by the caller; committing keeps the router's existing
+   * response handling. Returns undefined if there is no destination or this navigation is abandoned.
+   */
+  prepare: () => Promise<RoutePreparation | undefined>,
+  /**
+   * Updates the route and waits for Vue's DOM flush. False means this navigation was abandoned before
+   * or during the flush. Pending route data, async setup, and later layout changes are not awaited.
+   */
+  commit: () => Promise<boolean>,
+}
 
 type RouterUpdateOptions = {
   replace?: boolean,
@@ -69,6 +97,14 @@ type RunHooksContext = {
   controller: AbortController,
   to: ResolvedRoute | null,
   from: ResolvedRoute | null,
+}
+
+type ViewTransitionOptions = {
+  to: ResolvedRoute | null,
+  from: ResolvedRoute | null,
+  url: string,
+  options: RouterUpdateOptions,
+  enabled: boolean,
 }
 
 type RunBeforeHooksContext = RunHooksContext & {
@@ -290,27 +326,24 @@ export function createRouter<
       }
     }
 
-    const { prepare, commit } = createRouteCommit({
+    const routeCommit = createRouteCommit({
       route: to,
       signal: controller.signal,
-      valueStore,
       update: commitNavigation,
     })
-    const transition = getViewTransition(to, from, url, options)
+    const transition = getViewTransition({ to, from, url, options, enabled: !isSSR })
 
     if (transition) {
       viewTransitions.prepare(transition)
 
-      const preparation = await prepare()
+      const preparation = await routeCommit.prepare()
 
       if (!preparation) {
         viewTransitions.cancel(transition)
         return
       }
 
-      await viewTransitions.start(async () => {
-        await commit()
-      })
+      await viewTransitions.start(routeCommit.commit)
       await runAfterHooks({ controller, to, from, enabled: !isSSR })
       return
     }
@@ -318,16 +351,57 @@ export function createRouter<
     viewTransitions.reset()
 
     await Promise.all([
-      commit(),
+      routeCommit.commit(),
       runAfterHooks({ controller, to, from, enabled: !isSSR }),
     ])
   })
 
+  function createRouteCommit({ route, signal, update }: RouteCommitOptions): RouteCommit {
+    const isAborted = (): boolean => signal.aborted
+
+    const prepare: RouteCommit['prepare'] = async () => {
+      if (isAborted() || !route) {
+        return
+      }
+
+      const values = valueStore.staged().compute(route)
+      const work = Promise.allSettled([
+        values.props,
+        values.loaders,
+        ...loadAsyncComponents(route),
+      ])
+      await Promise.race([
+        work,
+        createAbortPromise(signal),
+      ])
+
+      if (isAborted()) {
+        return
+      }
+
+      const [props, loaders, ...components] = await work
+
+      return { props, loaders, components }
+    }
+
+    const commit: RouteCommit['commit'] = () => {
+      if (signal.aborted) {
+        return Promise.resolve(false)
+      }
+
+      update()
+
+      return nextTick().then(() => !signal.aborted)
+    }
+
+    return { prepare, commit }
+  }
+
   /**
    * The transition a navigation makes, or false when it does not transition.
    */
-  function getViewTransition(to: ResolvedRoute | null, from: ResolvedRoute | null, url: string, options: RouterUpdateOptions): PendingViewTransition | false {
-    if (isSSR || !to || !from || isExternal(url) || !supportsViewTransitions()) {
+  function getViewTransition({ to, from, url, options, enabled }: ViewTransitionOptions): PendingViewTransition | false {
+    if (!enabled || !to || !from || isExternal(url) || !supportsViewTransitions()) {
       return false
     }
 
@@ -688,6 +762,8 @@ export function createRouter<
     app.component('RouterView', routerView)
     app.component('RouterLink', routerLink)
     app.component('RouterProgress', routerProgress)
+    app.component('ViewTransition', ViewTransition)
+    app.provide(getViewTransitionKey(routerKey), viewTransitions.viewTransition)
     app.provide(getRouterRejectionInjectionKey(routerKey), currentRejection)
     app.provide(getRouterHooksKey(routerKey), hooks)
     app.provide(getRouteValueStoreInjectionKey(routerKey), valueStore)
@@ -705,7 +781,6 @@ export function createRouter<
 
   const router: Router<TRoutes, TOptions, TPlugin> = {
     route: routerRoute,
-    viewTransition: viewTransitions.viewTransition,
     resolve,
     find,
     push,
