@@ -15,7 +15,9 @@ export const viewTransitionLinkKey: InjectionKey<ComputedRef<boolean>> = Symbol(
  */
 export const ViewTransition = defineComponent((props: ViewTransitionProps, { attrs, slots }) => {
   const isTransitioning = inject(viewTransitionLinkKey, undefined)
-  const transitionName = computed(() => isTransitioning?.value === false ? 'none' : props.name)
+  const transitionName = computed(() => {
+    return isTransitioning?.value === false ? 'none' : props.name
+  })
 
   return () => h(props.as ?? 'span', {
     ...attrs,
