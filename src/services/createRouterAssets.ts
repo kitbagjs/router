@@ -1,4 +1,3 @@
-import { ViewTransition } from '@/components/viewTransition'
 import { Router, RouterRoutes, RouterRejections } from '@/types/router'
 import { InjectionKey } from 'vue'
 import { createComponentHooks } from './createComponentHooks'
@@ -82,9 +81,6 @@ export type RouterAssets<TRouter extends Router> = {
    * @group Components
    */
   RouterLink: ReturnType<typeof createRouterLink<TRouter>>,
-
-  /** Names a shared element for a view transition. @group Components */
-  ViewTransition: typeof ViewTransition,
 
   /**
    * A component to render a bar across the top of the page while a navigation is pending, filled by how
@@ -204,7 +200,6 @@ export function createRouterAssets<TRouter extends Router>(routerOrRouterKey: TR
     isRoute,
     RouterView,
     RouterLink,
-    ViewTransition,
     RouterProgress,
     useRoute,
     useRouter,

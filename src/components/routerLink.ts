@@ -1,9 +1,8 @@
 import { ResolvedRoute } from '@/types/resolved'
-import { computed, defineComponent, EmitsOptions, h, InjectionKey, provide, SetupContext, SlotsType, VNode } from 'vue'
+import { computed, defineComponent, EmitsOptions, h, InjectionKey, SetupContext, SlotsType, VNode } from 'vue'
 import { createUseRouter } from '@/compositions/useRouter'
 import { Router } from '@/types/router'
 import { createUseLink } from '@/compositions/useLink'
-import { viewTransitionLinkKey } from '@/components/viewTransition'
 import { RouterLinkProps } from '@/types/routerLink'
 
 type RouterLinkSlots = {
@@ -42,8 +41,6 @@ export function createRouterLink<TRouter extends Router>(routerKey: InjectionKey
 
       return props.to
     }, options)
-
-    provide(viewTransitionLinkKey, isTransitioning)
 
     const classes = computed(() => ({
       'router-link--match': isMatch.value,
