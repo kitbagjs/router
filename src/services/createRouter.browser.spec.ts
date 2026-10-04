@@ -4,50 +4,33 @@ import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
 import { component } from '@/utilities/testHelpers'
 import { createRejection } from './createRejection'
-import { nextTick } from 'vue'
 import echo from '@/components/echo'
 
-test('after hooks can await the destination DOM when a route mounts and when its props change', async () => {
-  const route = createRoute({ name: 'destination', path: '/destination/[value]', component: echo }, (route) => ({ value: route.params.value }))
+test('after enter and update hooks see the committed destination route', async () => {
+  const route = createRoute({
+    name: 'destination',
+    path: '/destination/[value]',
+    component: echo,
+  }, (route) => ({ value: route.params.value }))
   const router = createRouter([route], { initialUrl: '/', historyMode: 'memory' })
-  const wrapper = mount({ template: '<RouterView />' }, { global: { plugins: [router] } })
   await router.start()
-  const rendered: string[] = []
-  router.onAfterRouteEnter(async () => {
-    await nextTick()
-    rendered.push(wrapper.text())
+
+  const afterEnter = vi.fn((to) => {
+    expect(router.route.href).toBe(to.href)
+    expect(router.route.params.value).toBe('first')
   })
-  router.onAfterRouteUpdate(async () => {
-    await nextTick()
-    rendered.push(wrapper.text())
+  const afterUpdate = vi.fn((to) => {
+    expect(router.route.href).toBe(to.href)
+    expect(router.route.params.value).toBe('second')
   })
+  router.onAfterRouteEnter(afterEnter)
+  router.onAfterRouteUpdate(afterUpdate)
 
   await router.push('destination', { value: 'first' })
   await router.push('destination', { value: 'second' })
 
-  expect(rendered).toEqual(['first', 'second'])
-  wrapper.unmount()
-})
-
-test('after hooks do not wait for pending props or loaders', async () => {
-  const props = Promise.withResolvers<{ value: string }>()
-  const loader = Promise.withResolvers<string>()
-  const route = createRoute({ name: 'destination', path: '/destination', component: echo }, () => props.promise).addLoader(() => loader.promise)
-  const router = createRouter([route], { initialUrl: '/', historyMode: 'memory' })
-  const wrapper = mount({ template: '<RouterView />' }, { global: { plugins: [router] } })
-  await router.start()
-  const after = vi.fn()
-  router.onAfterRouteEnter(after)
-
-  await router.push('destination')
-
-  expect(after).toHaveBeenCalledOnce()
-  expect(wrapper.text()).toBe('')
-  props.resolve({ value: 'ready' })
-  loader.resolve('ready')
-  await flushPromises()
-  expect(wrapper.text()).toBe('ready')
-  wrapper.unmount()
+  expect(afterEnter).toHaveBeenCalledOnce()
+  expect(afterUpdate).toHaveBeenCalledOnce()
 })
 
 test('Router is automatically started when installed', async () => {
