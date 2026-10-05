@@ -1,11 +1,19 @@
-import { computed, ComputedRef, defineComponent, h, inject, InjectionKey } from 'vue'
+import { computed, ComputedRef, defineComponent, h, inject, InjectionKey, NativeElements, ComponentPublicInstance, HTMLAttributes } from 'vue'
 
-export type ViewTransitionProps = {
+type ElementAttributes<TElement extends keyof HTMLElementTagNameMap> = TElement extends keyof NativeElements
+  ? NativeElements[TElement]
+  : HTMLAttributes
+
+export type ViewTransitionProps<TElement extends keyof HTMLElementTagNameMap = 'span'> = {
   /** The name shared by the outgoing and incoming elements. */
   name: string,
   /** The element to render. Defaults to span. */
-  as?: keyof HTMLElementTagNameMap,
-}
+  as?: TElement,
+} & Omit<ElementAttributes<NoInfer<TElement>>, 'name'>
+
+type ViewTransitionComponent = new <TElement extends keyof HTMLElementTagNameMap = 'span'>(
+  props: ViewTransitionProps<TElement>,
+) => ComponentPublicInstance<ViewTransitionProps<TElement>>
 
 export const viewTransitionLinkKey: InjectionKey<ComputedRef<boolean>> = Symbol()
 
@@ -13,7 +21,7 @@ export const viewTransitionLinkKey: InjectionKey<ComputedRef<boolean>> = Symbol(
  * Names an element for a view transition. Inside RouterLink the name is active only while transitioning
  * to that link's destination; elsewhere the element always carries its name.
  */
-export const ViewTransition = defineComponent((props: ViewTransitionProps, { attrs, slots }) => {
+export const ViewTransition = defineComponent((props: ViewTransitionProps<keyof HTMLElementTagNameMap>, { attrs, slots }) => {
   const isTransitioning = inject(viewTransitionLinkKey, undefined)
   const transitionName = computed(() => {
     return isTransitioning?.value === false ? 'none' : props.name
@@ -28,4 +36,4 @@ export const ViewTransition = defineComponent((props: ViewTransitionProps, { att
   inheritAttrs: false,
   // eslint-disable-next-line vue/require-prop-types
   props: ['name', 'as'],
-})
+}) as ViewTransitionComponent
