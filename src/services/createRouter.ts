@@ -95,7 +95,6 @@ type RunHooksContext = {
 type ViewTransitionOptions = {
   to: ResolvedRoute | null,
   from: ResolvedRoute | null,
-  url: string,
   options: RouterUpdateOptions,
   enabled: boolean,
 }
@@ -324,7 +323,12 @@ export function createRouter<
       signal: controller.signal,
       update: commitNavigation,
     })
-    const transition = getViewTransition({ to, from, url, options, enabled: !isSSR })
+    const transition = getViewTransition({
+      to,
+      from,
+      options,
+      enabled: !isSSR && !isExternal(url),
+    })
 
     if (transition) {
       viewTransitions.prepare(transition)
@@ -393,8 +397,8 @@ export function createRouter<
   /**
    * The transition a navigation makes, or false when it does not transition.
    */
-  function getViewTransition({ to, from, url, options, enabled }: ViewTransitionOptions): PendingViewTransition | false {
-    if (!enabled || !to || !from || isExternal(url) || !supportsViewTransitions()) {
+  function getViewTransition({ to, from, options, enabled }: ViewTransitionOptions): PendingViewTransition | false {
+    if (!enabled || !to || !from || !supportsViewTransitions()) {
       return false
     }
 
