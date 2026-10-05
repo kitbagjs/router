@@ -1,12 +1,29 @@
-# Types: ViewTransitionProps
+# Types: ViewTransitionProps\<TElement\>
 
 ```ts
-type ViewTransitionProps = object;
+type ViewTransitionProps<TElement> = object & Omit<ElementAttributes<NoInfer<TElement>>, "name">;
 ```
 
-## Properties
+## Type Declaration
 
-| Property | Type | Description |
-| ------ | ------ | ------ |
-| <a id="as"></a> `as?` | keyof `HTMLElementTagNameMap` | The element to render. Defaults to span. |
-| <a id="name"></a> `name` | `string` | The name shared by the outgoing and incoming elements. |
+### as?
+
+```ts
+optional as?: TElement;
+```
+
+The element to render. Defaults to span.
+
+### name
+
+```ts
+name: string;
+```
+
+The name shared by the outgoing and incoming elements.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `TElement` *extends* keyof `HTMLElementTagNameMap` | `"span"` |

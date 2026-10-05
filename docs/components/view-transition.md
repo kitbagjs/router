@@ -13,7 +13,7 @@
 | name | The `view-transition-name` shared by the outgoing and incoming elements. Required. |
 | as | The HTML element to render. Defaults to `span`. |
 
-Attributes, styles and default slot content are passed to the rendered element.
+Attributes, styles and default slot content are passed to the rendered element. Attribute types follow `as`: images accept `src` and `alt`, links accept `href`, and omitting `as` uses span attributes.
 
 ## Inside RouterLink
 
