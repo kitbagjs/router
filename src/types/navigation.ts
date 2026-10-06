@@ -1,6 +1,9 @@
 import { ComputedRef } from 'vue'
 import { ResolvedRoute } from '@/types/resolved'
 
+/** Whether navigation commits immediately or waits for its props, loaders, and components. */
+export type NavigationBehavior = 'progressive' | 'blocking'
+
 /**
  * The navigation under way, if any, and how far it has come. A navigation is under way from the moment it
  * is asked for until the route it leads to has everything it renders with, or it is rejected, aborted, or

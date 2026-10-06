@@ -1,3 +1,4 @@
+import { NavigationBehavior } from '@/types/navigation'
 import { Routes } from '@/types/route'
 import { RoutesName } from '@/types/routesMap'
 import { RouteParamsByKey } from '@/types/routeWithParams'
@@ -23,6 +24,8 @@ export type RouterPushOptions<
    * Whether to replace the current history entry.
    */
   replace?: boolean,
+  /** Overrides the route and router navigation behavior. */
+  navigation?: NavigationBehavior,
   /**
    * State values to pass to the route.
    */
