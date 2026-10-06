@@ -20,6 +20,7 @@ type RouterAssets<TRouter> = object;
 | <a id="userejection"></a> `useRejection` | `ReturnType`\<*typeof* `createUseRejection`\> | A composition to access the rejection from the router. |
 | <a id="useroute"></a> `useRoute` | `ReturnType`\<*typeof* `createUseRoute`\> | A composition to access the current route or verify a specific route name within a Vue component. This function provides two overloads: 1. When called without arguments, it returns the current route from the router without types. 2. When called with a route name, it checks if the current active route includes the specified route name. The function also sets up a reactive watcher on the route object from the router to continually check the validity of the route name if provided, throwing an error if the validation fails at any point during the component's lifecycle. **Template** **TRouteName** A string type that should match route name of `RouterRouteName<TRouter>`, ensuring the route name exists. **Param** **routeName** Optional. The name of the route to validate against the current active routes. **Throws** Throws an error if the provided route name is not valid or does not match the current route. |
 | <a id="userouter"></a> `useRouter` | `ReturnType`\<*typeof* `createUseRouter`\> | A composition to access the installed router instance within a Vue component. **Throws** Throws an error if the router has not been installed, ensuring the component does not operate without routing functionality. |
+| <a id="useviewtransition"></a> `useViewTransition` | `ReturnType`\<*typeof* `createUseViewTransition`\> | A composition to access the view transition in flight, if any. |
 
 ## Components
 
@@ -28,6 +29,7 @@ type RouterAssets<TRouter> = object;
 | <a id="routerlink"></a> `RouterLink` | `ReturnType`\<*typeof* `createRouterLink`\> | A component to render a link to a route or any url. **Param** **props** The props to pass to the router link component. |
 | <a id="routerprogress"></a> `RouterProgress` | `ReturnType`\<*typeof* `createRouterProgress`\> | A component to render a bar across the top of the page while a navigation is pending, filled by how much of the navigation's work has settled. **Param** **props** The props to pass to the router progress component. |
 | <a id="routerview"></a> `RouterView` | `ReturnType`\<*typeof* `createRouterView`\> | A component to render the current route's component. **Param** **props** The props to pass to the router view component. |
+| <a id="viewtransition"></a> `ViewTransition` | *typeof* `ViewTransition` | Names a shared element for a view transition. |
 
 ## Guards
 
