@@ -343,11 +343,11 @@ export function createRouter<
     if (!options.hydrating && (transition || isBlockingNavigation)) {
       const prepared = await routeCommit.prepare()
 
-      if (!prepared) {
-        if (transition) {
-          viewTransitions.cancel(transition)
-        }
+      if (!prepared && transition) {
+        viewTransitions.cancel(transition)
+      }
 
+      if (!prepared) {
         return
       }
     }
