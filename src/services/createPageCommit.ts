@@ -75,9 +75,15 @@ export function createPageCommit({ page, signal, values = emptyPageValues, updat
       return response
     }
 
-    const [valuesResponse] = await Promise.all([preparedValues, preparedComponents])
+    const responses = await Promise.all([preparedValues, preparedComponents])
 
-    return valuesResponse
+    for (const response of responses) {
+      if (response.status !== 'SUCCESS') {
+        return response
+      }
+    }
+
+    return { status: 'SUCCESS' }
   }
 
   async function prepareValues(): Promise<RouteValueResponse> {
@@ -90,13 +96,15 @@ export function createPageCommit({ page, signal, values = emptyPageValues, updat
       return response
     }
 
-    const [propsResponse, loadersResponse] = await Promise.all([props, loaders])
+    const responses = await Promise.all([props, loaders])
 
-    if (propsResponse.status !== 'SUCCESS') {
-      return propsResponse
+    for (const response of responses) {
+      if (response.status !== 'SUCCESS') {
+        return response
+      }
     }
 
-    return loadersResponse
+    return { status: 'SUCCESS' }
   }
 
   async function prepareComponents(): Promise<RouteValueResponse> {

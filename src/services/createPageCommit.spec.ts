@@ -62,6 +62,29 @@ test('preparation reports a rejection without waiting for unrelated page assets'
   }
 })
 
+test('preparation reports a loader rejection after components have already loaded', async () => {
+  const data = Promise.withResolvers<void>()
+  const route = createResolvedRoute(createRoute({ name: 'route', path: '/' })
+    .addLoader(async (_route, { reject }) => {
+      await data.promise
+      reject('NotFound')
+    }))
+  const commit = createPageCommit({
+    page: createRoutePage(route, createComponentsStore(Symbol())),
+    values: createPageValues(route, createRouteValueStore()),
+    signal: new AbortController().signal,
+    update: vi.fn(),
+    settle: (response) => response,
+  })
+  const preparing = commit.prepare()
+
+  await flushPromises()
+  data.resolve()
+
+  await expect(preparing).resolves.toEqual({ status: 'REJECT', type: 'NotFound' })
+  await expect(commit.commit()).resolves.toBe(false)
+})
+
 test('a canceled rejection preparation cannot commit its lazy page', async () => {
   const component = Promise.withResolvers<Component>()
   const load = vi.fn(() => component.promise)
