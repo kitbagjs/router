@@ -333,6 +333,7 @@ export function createRouter<
       routeNavigation: getRouteNavigationOption(to),
       navigation: options.navigation,
     })
+    const shouldPrepareNavigation = transition || isBlockingNavigation
 
     if (transition) {
       viewTransitions.prepare(transition)
@@ -340,7 +341,7 @@ export function createRouter<
       viewTransitions.reset()
     }
 
-    if (!options.hydrating && (transition || isBlockingNavigation)) {
+    if (!options.hydrating && shouldPrepareNavigation) {
       const prepared = await routeCommit.prepare()
 
       if (!prepared && transition) {
