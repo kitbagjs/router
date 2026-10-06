@@ -31,6 +31,31 @@ test('initial route is set', async () => {
   expect(route.matched.name).toBe('root')
 })
 
+test('external navigation runs hooks while retaining the current route and its data', async () => {
+  const load = vi.fn(() => 'current')
+  const home = createRoute({ name: 'home', path: '/', component }).addLoader(load)
+  const external = createExternalRoute({ name: 'external', host: 'https://kitbag.dev', path: '/' })
+  const router = createRouter([home, external], { initialUrl: '/', historyMode: 'memory' })
+
+  await router.start()
+
+  const before = vi.fn()
+  const after = vi.fn()
+
+  router.onBeforeRouteEnter(before)
+  router.onAfterRouteEnter(after)
+  await router.push('external')
+
+  const to = expect.objectContaining({ name: 'external' })
+  const context = expect.objectContaining({ from: expect.objectContaining({ name: 'home' }) })
+
+  expect(before).toHaveBeenCalledExactlyOnceWith(to, context)
+  expect(after).toHaveBeenCalledExactlyOnceWith(to, context)
+  expect(router.route.matched.name).toBe('home')
+  await expect(router.route.data).resolves.toBe('current')
+  expect(load).toHaveBeenCalledOnce()
+})
+
 test('initial state is set', async () => {
   const location: Location = {
     key: 'foo',

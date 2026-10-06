@@ -289,26 +289,7 @@ export function createRouter<
       return
     }
 
-    if (isExternal(url)) {
-      const { commit } = createNavigationCommit({
-        page: createRoutePage({ ...currentRoute }, componentsStore),
-        controller,
-        to,
-        from,
-        options,
-        progress,
-        onCommit: () => {},
-      })
-
-      await Promise.all([
-        commit(),
-        runAfterHooks({ controller, to, from, enabled: !isSSR }),
-      ])
-
-      return
-    }
-
-    const { commit } = createNavigationCommit({
+    const navigation: PageNavigationOptions = {
       page: createRoutePage(to, componentsStore),
       values: createPageValues(to, valueStore),
       controller,
@@ -317,7 +298,15 @@ export function createRouter<
       options,
       progress,
       onCommit: () => updateRoute(to),
-    })
+    }
+
+    if (isExternal(url)) {
+      navigation.page = createRoutePage({ ...currentRoute }, componentsStore)
+      navigation.values = emptyPageValues
+      navigation.onCommit = () => {}
+    }
+
+    const { commit } = createNavigationCommit(navigation)
 
     await Promise.all([
       commit(),
