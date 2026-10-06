@@ -75,9 +75,9 @@ export function createPageCommit({ page, signal, values = emptyPageValues, updat
       return response
     }
 
-    await preparedComponents
+    const [valuesResponse] = await Promise.all([preparedValues, preparedComponents])
 
-    return preparedValues
+    return valuesResponse
   }
 
   async function prepareValues(): Promise<RouteValueResponse> {
