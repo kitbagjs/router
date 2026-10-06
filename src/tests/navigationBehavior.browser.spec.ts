@@ -111,7 +111,9 @@ describe('route commitment', () => {
           return {}
         },
       })
-      .addLoader(() => (asset === 'loaders' ? loaded.promise : 'ready'))
+      .addLoader(() => {
+        return asset === 'loaders' ? loaded.promise : 'ready'
+      })
     const router = createRouter([home, page], { initialUrl: '/', historyMode: 'memory' })
     await router.start()
 
@@ -127,7 +129,9 @@ describe('route commitment', () => {
   test('parameter updates keep the current props and data until their replacements are ready', async () => {
     const loaded = Promise.withResolvers<string>()
     const props = vi.fn(async (route) => ({ value: await route.data }))
-    const load = vi.fn((route) => (route.params.id === '1' ? 'First' : loaded.promise))
+    const load = vi.fn((route) => {
+      return route.params.id === '1' ? 'First' : loaded.promise
+    })
     const page = createRoute({ name: 'page', path: '/[id]', navigation: 'blocking' })
       .addLoader(load)
       .addView({ props: ['value'], template: '<div>{{ value }}</div>' }, { props })
