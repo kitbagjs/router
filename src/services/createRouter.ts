@@ -11,7 +11,7 @@ import { getComputations } from '@/services/getComputations'
 import { getAsyncComponents, loadAsyncComponents } from '@/utilities/components'
 import { getNavigationProgressKey } from '@/compositions/useNavigation'
 import { DataKind } from '@/services/createNavigationStores'
-import { createRouterHistory } from '@/services/createRouterHistory'
+import { createRouterHistory, RouterHistoryTraversal } from '@/services/createRouterHistory'
 import { createServerRedirect } from '@/services/createServerRedirect'
 import { createRouterHooks, getRouterHooksKey } from '@/services/createRouterHooks'
 import { getInitialUrl } from '@/services/getInitialUrl'
@@ -51,6 +51,7 @@ import { setDocumentTitle } from '@/utilities/setDocumentTitle'
 import { createCurrentRejection } from '@/services/createCurrentRejection'
 
 type RouterUpdateOptions = {
+  traversal?: RouterHistoryTraversal,
   replace?: boolean,
   state?: any,
   /**
@@ -134,10 +135,10 @@ export function createRouter<
   const visibilityObserver = createVisibilityObserver()
   const history = createRouterHistory({
     mode: options?.historyMode,
-    listener: ({ location }) => {
+    listener: ({ location, traversal }) => {
       const url = createPath(location)
 
-      set(url, { state: location.state, replace: true })
+      set(url, { state: location.state, replace: true, traversal })
     },
   })
 
@@ -162,6 +163,7 @@ export function createRouter<
 
     switch (response.status) {
       case 'ABORT':
+        options.traversal?.restore()
         progress.abort()
 
         return false
@@ -173,14 +175,22 @@ export function createRouter<
         return false
 
       case 'REJECT':
-        history.update(url, options)
+        if (options.traversal) {
+          options.traversal.commit()
+        } else {
+          history.update(url, options)
+        }
         reject(response.type, { to, from })
         progress.abort()
 
         return false
 
       case 'SUCCESS':
-        history.update(url, options)
+        if (options.traversal) {
+          options.traversal.commit()
+        } else {
+          history.update(url, options)
+        }
 
         return true
 

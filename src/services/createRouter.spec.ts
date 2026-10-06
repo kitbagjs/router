@@ -1,6 +1,6 @@
 import { flushPromises } from '@vue/test-utils'
 import { Location } from '@/services/history'
-import { describe, expect, test, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { computed, toRefs } from 'vue'
 import { DuplicateNamesError } from '@/errors/duplicateNamesError'
 import { createRoute } from '@/services/createRoute'
@@ -1455,6 +1455,187 @@ test('going back from a redirect returns to the route before it', async () => {
   await flushPromises()
 
   expect(router.route.name).toBe('home')
+})
+
+describe('aborted history traversals', () => {
+  const createHistory = createRouterHistoryUtilities.createRouterHistory
+  let router: ReturnType<typeof createRouter>
+  let history: ReturnType<typeof createHistory>
+  let firstEntry: Location
+  let secondEntry: Location
+
+  beforeEach(async () => {
+    vi.spyOn(createRouterHistoryUtilities, 'createRouterHistory').mockImplementationOnce((options) => {
+      history = createHistory(options)
+
+      return history
+    })
+
+    const home = createRoute({ name: 'home', path: '/', component })
+    const first = createRoute({ name: 'first', path: '/first', component })
+    const second = createRoute({ name: 'second', path: '/second', component })
+    const third = createRoute({ name: 'third', path: '/third', component })
+    router = createRouter([home, first, second, third], { initialUrl: '/', historyMode: 'memory' })
+
+    await router.start()
+    await router.push('first')
+    firstEntry = history.location
+    await router.push('second')
+    secondEntry = history.location
+  })
+
+  afterEach(() => {
+    router.stop()
+    vi.restoreAllMocks()
+  })
+
+  test('aborting Back restores the entry without running hooks again', async () => {
+    const before = vi.fn()
+    const after = vi.fn()
+    router.onBeforeRouteEnter((_to, { abort }) => {
+      before()
+      abort()
+    })
+    router.onAfterRouteEnter(after)
+
+    router.back()
+    await flushPromises()
+
+    expect(router.route.name).toBe('second')
+    expect(history.location).toBe(secondEntry)
+    expect(before).toHaveBeenCalledOnce()
+    expect(after).not.toHaveBeenCalled()
+  })
+
+  test('aborting Forward preserves both entries and allows a later traversal', async () => {
+    router.back()
+    await flushPromises()
+    expect(history.location).toBe(firstEntry)
+
+    const removeAbort = router.onBeforeRouteEnter((_to, { abort }) => abort())
+
+    router.forward()
+    await flushPromises()
+
+    expect(router.route.name).toBe('first')
+    expect(history.location).toBe(firstEntry)
+
+    removeAbort()
+    router.forward()
+    await flushPromises()
+
+    expect(router.route.name).toBe('second')
+    expect(history.location).toBe(secondEntry)
+  })
+
+  test('aborting a multi-entry traversal restores the original entry', async () => {
+    router.onBeforeRouteEnter((_to, { abort }) => abort())
+
+    router.go(-2)
+    await flushPromises()
+
+    expect(router.route.name).toBe('second')
+    expect(history.location).toBe(secondEntry)
+  })
+
+  test('aborting between identical URLs restores the original state and key', async () => {
+    await router.push('/first', { state: { visit: 1 } })
+    const firstVisit = history.location
+    await router.push('/first', { state: { visit: 2 } })
+    const secondVisit = history.location
+    const removeAbort = router.onBeforeRouteUpdate((_to, { abort }) => abort())
+
+    router.back()
+    await flushPromises()
+
+    expect(history.location).toBe(secondVisit)
+    expect(history.location.state).toEqual({ visit: 2 })
+
+    removeAbort()
+    router.back()
+    await flushPromises()
+
+    expect(history.location).toBe(firstVisit)
+    expect(history.location.state).toEqual({ visit: 1 })
+  })
+
+  test('a delayed abort does not roll back a newer successful push', async () => {
+    const backGuard = Promise.withResolvers<string>()
+    router.onBeforeRouteEnter(async (to, { abort }) => {
+      if (to.name === 'first') {
+        await backGuard.promise
+        abort()
+      }
+    })
+
+    router.back()
+    await flushPromises()
+    await router.push('third')
+    const thirdEntry = history.location
+
+    backGuard.resolve('continue')
+    await flushPromises()
+
+    expect(router.route.name).toBe('third')
+    expect(history.location).toBe(thirdEntry)
+  })
+
+  test('a superseded Back does not restore while a newer push is awaiting its guard', async () => {
+    const backGuard = Promise.withResolvers<string>()
+    const pushGuard = Promise.withResolvers<string>()
+    router.onBeforeRouteEnter(async (to, { abort }) => {
+      if (to.name === 'first') {
+        await backGuard.promise
+        abort()
+      }
+
+      if (to.name === 'third') {
+        await pushGuard.promise
+      }
+    })
+
+    router.back()
+    await flushPromises()
+    const pushing = router.push('third')
+    await flushPromises()
+
+    backGuard.resolve('continue')
+    await flushPromises()
+
+    expect(history.location).toBe(firstEntry)
+
+    pushGuard.resolve('continue')
+    await pushing
+
+    expect(router.route.name).toBe('third')
+  })
+
+  test('an accepted Back is remembered before its after hooks finish', async () => {
+    const afterHook = Promise.withResolvers<string>()
+    router.onAfterRouteEnter(async (to) => {
+      if (to.name === 'first') {
+        await afterHook.promise
+      }
+    })
+    router.onBeforeRouteEnter((to, { abort }) => {
+      if (to.name === 'home') {
+        abort()
+      }
+    })
+
+    router.back()
+    await flushPromises()
+    expect(router.route.name).toBe('first')
+
+    router.back()
+    await flushPromises()
+
+    expect(router.route.name).toBe('first')
+    expect(history.location).toBe(firstEntry)
+
+    afterHook.resolve('continue')
+    await flushPromises()
+  })
 })
 
 function rendered(response: ServerRenderResponse): Exclude<ServerRenderResponse, RenderRedirect> {
