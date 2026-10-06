@@ -58,12 +58,6 @@ import { createAbortPromise } from '@/utilities/promises'
 import { NavigationBehavior } from '@/types/navigation'
 import { getNavigationOption, getRouteNavigationOption } from '@/utilities/navigation'
 
-type RoutePreparation = {
-  props: PromiseSettledResult<RouteValueResponse>,
-  loaders: PromiseSettledResult<RouteValueResponse>,
-  components: PromiseSettledResult<unknown>[],
-}
-
 type RouteCommitOptions = {
   route: ResolvedRoute | null,
   signal: AbortSignal,
@@ -72,7 +66,7 @@ type RouteCommitOptions = {
 
 type RouteCommit = {
   /** Call before committing when assets must be ready. */
-  prepare: () => Promise<RoutePreparation | undefined>,
+  prepare: () => Promise<boolean>,
   /** Call inside the view transition callback, or directly for ordinary navigation. */
   commit: () => Promise<boolean>,
 }
@@ -339,7 +333,6 @@ export function createRouter<
       routeNavigation: getRouteNavigationOption(to),
       navigation: options.navigation,
     })
-    const isBlocking = isBlockingNavigation && to !== null && !isExternal(url) && !options.hydrating
 
     if (transition) {
       viewTransitions.prepare(transition)
@@ -347,10 +340,10 @@ export function createRouter<
       viewTransitions.reset()
     }
 
-    if (transition || isBlocking) {
-      const preparation = await routeCommit.prepare()
+    if (!options.hydrating && (transition || isBlockingNavigation)) {
+      const prepared = await routeCommit.prepare()
 
-      if (!preparation) {
+      if (!prepared) {
         if (transition) {
           viewTransitions.cancel(transition)
         }
@@ -375,8 +368,12 @@ export function createRouter<
     const isAborted = (): boolean => signal.aborted
 
     const prepare: RouteCommit['prepare'] = async () => {
-      if (isAborted() || !route) {
-        return
+      if (isAborted()) {
+        return false
+      }
+
+      if (!route) {
+        return true
       }
 
       const values = valueStore.staged().compute(route)
@@ -390,13 +387,7 @@ export function createRouter<
         createAbortPromise(signal),
       ])
 
-      if (isAborted()) {
-        return
-      }
-
-      const [props, loaders, ...components] = await work
-
-      return { props, loaders, components }
+      return !isAborted()
     }
 
     const commit: RouteCommit['commit'] = () => {

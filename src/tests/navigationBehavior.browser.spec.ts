@@ -3,6 +3,8 @@ import { Component, createApp, defineAsyncComponent } from 'vue'
 import { afterEach, beforeAll, describe, expect, test, vi } from 'vitest'
 import { register } from 'view-transitions-mock'
 import { createRoute } from '@/services/createRoute'
+import { createExternalRoute } from '@/services/createExternalRoute'
+import { createRejection } from '@/services/createRejection'
 import { createRouter } from '@/services/createRouter'
 import { createUseLink } from '@/compositions/useLink'
 import { RouterPushOptions } from '@/types/routerPush'
@@ -35,6 +37,43 @@ function mountRouter(router: ReturnType<typeof createRouter>): ReturnType<typeof
 }
 
 describe('route commitment', () => {
+  test('blocking navigation to an unmatched URL renders NotFound', async () => {
+    const home = createRoute({ name: 'home', path: '/' }).addView({ template: '<div>Home</div>' })
+    const notFound = createRejection({ type: 'NotFound', component: { template: '<div>Not found</div>' } })
+    const router = createRouter([home], {
+      initialUrl: '/',
+      historyMode: 'memory',
+      navigation: 'blocking',
+      rejections: [notFound],
+    })
+    const wrapper = mountRouter(router)
+    await router.start()
+
+    await router.push('/missing')
+
+    expect(wrapper.text()).toBe('Not found')
+  })
+
+  test('blocking external navigation completes without replacing the local page', async () => {
+    const home = createRoute({ name: 'home', path: '/' }).addView({ template: '<div>Home</div>' })
+    const external = createExternalRoute({ name: 'external', host: 'https://kitbag.dev', path: '/' })
+    const router = createRouter([home, external], {
+      initialUrl: '/',
+      historyMode: 'memory',
+      navigation: 'blocking',
+    })
+    const wrapper = mountRouter(router)
+    await router.start()
+    const afterEnter = vi.fn()
+    router.onAfterRouteEnter(afterEnter)
+
+    await router.push('external')
+
+    expect(router.route.name).toBe('home')
+    expect(wrapper.text()).toBe('Home')
+    expect(afterEnter).toHaveBeenCalledOnce()
+  })
+
   test('progressive navigation commits while assets are loading', async () => {
     const loaded = Promise.withResolvers<string>()
     const home = createRoute({ name: 'home', path: '/' }).addView({ template: '<div>Home</div>' })
