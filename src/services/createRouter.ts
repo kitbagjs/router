@@ -326,9 +326,9 @@ export function createRouter<
     if (transition) {
       viewTransitions.prepare(transition)
 
-      const preparation = await routeCommit.prepare()
+      const prepared = await routeCommit.prepare()
 
-      if (!preparation) {
+      if (!prepared) {
         viewTransitions.cancel(transition)
         return
       }
