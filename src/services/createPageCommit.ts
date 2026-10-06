@@ -44,10 +44,9 @@ export function createPageCommit({ page, signal, values = emptyPageValues, updat
 
     status.set('preparing')
     try {
-      const aborted = createAbortPromise(signal).then((): RouteValueResponse => ({ status: 'ABANDONED' }))
-      const response = await Promise.race([prepareAssets(), aborted])
+      const response = await Promise.race([prepareAssets(), createAbortPromise(signal)])
 
-      if (isAborted()) {
+      if (isAborted() || !response) {
         dispose()
 
         return { status: 'ABANDONED' }
