@@ -254,7 +254,7 @@ export function createRouter<
       clearRejection()
 
       if (!isExternal(url)) {
-        setRouteValuesAndUpdateRoute(to, from, progress)
+        setRouteValuesAndUpdateRoute(to, from, progress, controller.signal)
       }
 
       progress.close()
@@ -294,12 +294,12 @@ export function createRouter<
     return getComputations(to).length + getAsyncComponents(to).length
   }
 
-  function setRouteValuesAndUpdateRoute(to: ResolvedRoute, from: ResolvedRoute | null, progress: NavigationProgressTracker): void {
+  function setRouteValuesAndUpdateRoute(to: ResolvedRoute, from: ResolvedRoute | null, progress: NavigationProgressTracker, signal: AbortSignal): void {
     const { props, loaders, values } = valueStore.commit(to)
 
     activity.add(
-      handleRouteValueResponse(props, 'props', to, from),
-      handleRouteValueResponse(loaders, 'loader', to, from),
+      handleRouteValueResponse(props, 'props', to, from, signal),
+      handleRouteValueResponse(loaders, 'loader', to, from, signal),
     )
 
     progress.track(...values, ...loadAsyncComponents(to))
@@ -309,11 +309,16 @@ export function createRouter<
 
   /**
    * Props and loaders are handled the same way, and neither is awaited here: a push or a rejection from
-   * either is acted on whenever it arrives, without holding up the navigation that started it.
+   * either is acted on whenever it arrives, without holding up the navigation that started it. Once that
+   * navigation is superseded, its outcomes can no longer change the page or run error hooks.
    */
-  function handleRouteValueResponse(response: Promise<RouteValueResponse>, source: DataKind, to: ResolvedRoute, from: ResolvedRoute | null): Promise<void> {
+  function handleRouteValueResponse(response: Promise<RouteValueResponse>, source: DataKind, to: ResolvedRoute, from: ResolvedRoute | null, signal: AbortSignal): Promise<void> {
     return response
       .then((response) => {
+        if (signal.aborted) {
+          return
+        }
+
         switch (response.status) {
           case 'SUCCESS':
           case 'ABANDONED':
@@ -333,6 +338,10 @@ export function createRouter<
         }
       })
       .catch((error: unknown) => {
+        if (signal.aborted) {
+          return
+        }
+
         try {
           hooks.runErrorHooks(error, { to, from, source })
         } catch (error) {
