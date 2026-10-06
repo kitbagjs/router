@@ -5,6 +5,7 @@ import { DataKind } from '@/services/createNavigationStores'
 import { loadAsyncComponents } from '@/utilities/components'
 import { PageValues, emptyPageValues } from '@/services/createPageValues'
 import { createPageStatus } from '@/services/createPageStatus'
+import { createAbortPromise } from '@/utilities/promises'
 
 export type PageCommit = {
   /** Resolves with the first replacement outcome, or success once all required assets are ready. */
@@ -24,13 +25,11 @@ type PageCommitOptions = {
 /** The same preparation and render boundary for every page, independent of how it was selected. */
 export function createPageCommit({ page, signal, values = emptyPageValues, update, settle }: PageCommitOptions): PageCommit {
   const isAborted = (): boolean => signal.aborted
-  const aborted = Promise.withResolvers<RouteValueResponse>()
   const status = createPageStatus()
 
   const dispose = (): void => {
     status.set('abandoned')
     values.dispose()
-    aborted.resolve({ status: 'ABANDONED' })
     signal.removeEventListener('abort', dispose)
   }
 
@@ -45,7 +44,8 @@ export function createPageCommit({ page, signal, values = emptyPageValues, updat
 
     status.set('preparing')
     try {
-      const response = await Promise.race([prepareAssets(), aborted.promise])
+      const aborted = createAbortPromise(signal).then((): RouteValueResponse => ({ status: 'ABANDONED' }))
+      const response = await Promise.race([prepareAssets(), aborted])
 
       if (isAborted()) {
         dispose()

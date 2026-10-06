@@ -13,6 +13,6 @@ export function createAbortPromise(signal: AbortSignal): Promise<void> {
   return new Promise((resolve) => {
     signal.addEventListener('abort', () => {
       resolve()
-    })
+    }, { once: true })
   })
 }
