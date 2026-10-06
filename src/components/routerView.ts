@@ -1,9 +1,9 @@
-import { createUseComponentsStore } from '@/compositions/useComponentsStore'
+import { createUsePage } from '@/compositions/usePage'
 import { createUseRejection } from '@/compositions/useRejection'
 import { createUseRoute } from '@/compositions/useRoute'
 import { createUseRouter } from '@/compositions/useRouter'
 import { createUseRouterDepth } from '@/compositions/useRouterDepth'
-import { isRejection, RouterRejection } from '@/types/rejection'
+import { RouterRejection } from '@/types/rejection'
 import { RouterRoute } from '@/types/routerRoute'
 import { Router } from '@/types/router'
 import { Component, computed, defineComponent, EmitsOptions, h, InjectionKey, onServerPrefetch, SetupContext, SlotsType, UnwrapRef, VNode } from 'vue'
@@ -27,38 +27,25 @@ export function createRouterView<TRouter extends Router>(routerKey: InjectionKey
   const useRouter = createUseRouter(routerKey)
   const useRejection = createUseRejection(routerKey)
   const useRouterDepth = createUseRouterDepth(routerKey)
-  const useComponentsStore = createUseComponentsStore(routerKey)
+  const usePage = createUsePage(routerKey)
 
   return defineComponent((props: RouterViewProps, context: SetupContext<EmitsOptions, SlotsType<RouterViewSlots>>) => {
     const route = useRoute()
     const router = useRouter()
     const rejection = useRejection()
     const depth = useRouterDepth({ increment: true })
+    const page = usePage()
 
     onServerPrefetch(async () => {
       await router.start()
     })
-
-    const { getRouteComponents } = useComponentsStore()
 
     const component = computed(() => {
       if (!router.started.value) {
         return null
       }
 
-      if (isRejection(rejection.value)) {
-        return rejection.value.route.matches.at(0)?.views.default.component ?? null
-      }
-
-      const match = route.matches.at(depth)
-
-      if (!match) {
-        return null
-      }
-
-      const name = props.name ?? 'default'
-
-      return getRouteComponents(match.id, match.views)[name]
+      return page.value?.getComponent(depth, props.name ?? 'default') ?? null
     })
 
     return () => {

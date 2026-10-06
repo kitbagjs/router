@@ -1,5 +1,5 @@
 import { createPath } from '@/services/history'
-import { App, nextTick, ref } from 'vue'
+import { App, computed, nextTick, ref, shallowRef } from 'vue'
 import { createCurrentRoute } from '@/services/createCurrentRoute'
 import { createIsExternal } from '@/services/createIsExternal'
 import { createActivityTracker } from '@/services/createActivityTracker'
@@ -48,7 +48,9 @@ import { setupRouterDevtools } from '@/devtools/createRouterDevtools'
 import { getMatchForUrl } from './getMatchesForUrl'
 import { pathHasTrailingSlash, removeTrailingSlashesFromPath } from '@/utilities/trailingSlashes'
 import { setDocumentTitle } from '@/utilities/setDocumentTitle'
-import { createCurrentRejection } from '@/services/createCurrentRejection'
+import { createRoutePage, createRejectionPage } from '@/services/createPage'
+import { Page } from '@/types/page'
+import { getPageKey } from '@/compositions/usePage'
 import { createAbortPromise } from '@/utilities/promises'
 
 type RouteCommitOptions = {
@@ -273,11 +275,11 @@ export function createRouter<
         return
       }
 
-      clearRejection()
-
       if (!isExternal(url)) {
         setRouteValuesAndUpdateRoute(to, from, progress, controller.signal)
       }
+
+      currentPage.value = createRoutePage({ ...currentRoute }, componentsStore)
 
       progress.close()
       started.value = true
@@ -525,12 +527,13 @@ export function createRouter<
 
     hooks.runRejectionHooks(rejection, { to, from })
 
-    updateRejection(rejection)
+    currentPage.value = createRejectionPage(rejection, currentRoute.getTitle, rejectStatus)
     started.value = true
     updateTitle(controller.signal)
   }
 
-  const { currentRejection, updateRejection, clearRejection } = createCurrentRejection()
+  const currentPage = shallowRef<Page | null>(null)
+  const currentRejection = computed(() => currentPage.value?.rejection ?? null)
   const { currentRoute, routerRoute, updateRoute } = createCurrentRoute<TRoutes | TPlugin['routes']>({
     routerKey,
     fallbackRoute: notFoundRoute,
@@ -542,7 +545,7 @@ export function createRouter<
    * The title that should currently be rendered.
    */
   async function getTitle(): Promise<string | undefined> {
-    return await currentRejection.value?.getTitle() ?? currentRoute.getTitle()
+    return (currentPage.value?.getTitle ?? currentRoute.getTitle)()
   }
 
   /**
@@ -659,7 +662,7 @@ export function createRouter<
 
       return {
         kind: 'reject',
-        status: rejection.status ?? rejectStatus,
+        status: currentPage.value?.status ?? rejectStatus,
         rejection: rejection.type,
         title,
         payload: payloadToScript({ kind: 'reject', url: initialUrl, rejection: rejection.type }),
@@ -700,6 +703,7 @@ export function createRouter<
     app.component('RouterLink', routerLink)
     app.component('RouterProgress', routerProgress)
     app.provide(getRouterRejectionInjectionKey(routerKey), currentRejection)
+    app.provide(getPageKey(routerKey), currentPage)
     app.provide(getRouterHooksKey(routerKey), hooks)
     app.provide(getRouteValueStoreInjectionKey(routerKey), valueStore)
     app.provide(getComponentsStoreKey(routerKey), componentsStore)
