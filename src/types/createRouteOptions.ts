@@ -1,3 +1,4 @@
+import { NavigationBehavior } from '@/types/navigation'
 import { Component } from 'vue'
 import { combineMeta } from '@/services/combineMeta'
 import { combineState } from '@/services/combineState'
@@ -85,6 +86,8 @@ export type CreateRouteOptions<
    * Determines what assets are prefetched when router-link is rendered for this route. Overrides router level prefetch.
    */
   prefetch?: PrefetchConfig,
+  /** Overrides the parent route and router navigation behavior. */
+  navigation?: NavigationBehavior,
   /**
    * Type params for additional data intended to be stored in history state, all keys will be optional unless a default is provided.
    */

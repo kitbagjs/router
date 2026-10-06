@@ -50,6 +50,7 @@ import { pathHasTrailingSlash, removeTrailingSlashesFromPath } from '@/utilities
 import { setDocumentTitle } from '@/utilities/setDocumentTitle'
 import { createCurrentRejection } from '@/services/createCurrentRejection'
 import { createAbortPromise } from '@/utilities/promises'
+import { NavigationBehavior } from '@/types/navigation'
 
 type RoutePreparation = {
   props: PromiseSettledResult<RouteValueResponse>,
@@ -64,13 +65,14 @@ type RouteCommitOptions = {
 }
 
 type RouteCommit = {
-  /** Call before starting a view transition. */
+  /** Call before committing when assets must be ready. */
   prepare: () => Promise<RoutePreparation | undefined>,
   /** Call inside the view transition callback, or directly for ordinary navigation. */
   commit: () => Promise<boolean>,
 }
 
 type RouterUpdateOptions = {
+  navigation?: NavigationBehavior,
   replace?: boolean,
   state?: any,
   /**
@@ -142,6 +144,7 @@ export function createRouter<
   const redirectStatus = options?.redirectStatus ?? 302
   const rejectStatus = options?.rejectStatus ?? 200
   const isSSR = options?.ssr ?? false
+  const routerNavigation = options?.navigation ?? 'progressive'
   const activity = createActivityTracker()
   const navigationProgress = createNavigationProgress()
   const { routes, getRouteByName, getRejectionByType } = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options)
@@ -303,14 +306,25 @@ export function createRouter<
       }
     }
 
-    const { commit } = createRouteCommit({
+    const routeCommit = createRouteCommit({
       route: to,
       signal: controller.signal,
       update: commitNavigation,
     })
 
+    const routeNavigation = to?.matches.findLast((match) => match.navigation !== undefined)?.navigation
+    const navigation = options.navigation ?? routeNavigation ?? routerNavigation
+
+    if (navigation === 'blocking' && to && !isExternal(url) && !options.hydrating) {
+      const preparation = await routeCommit.prepare()
+
+      if (!preparation) {
+        return
+      }
+    }
+
     await Promise.all([
-      commit(),
+      routeCommit.commit(),
       runAfterHooks({ controller, to, from, enabled: !isSSR }),
     ])
   })
@@ -455,15 +469,15 @@ export function createRouter<
     }
 
     if (typeof source === 'string') {
-      const { replace, redirectStatus, ...options }: RouterPushOptionsInternal = { ...maybeOptions }
+      const { replace, navigation, redirectStatus, ...options }: RouterPushOptionsInternal = { ...maybeOptions }
       const params: any = { ...paramsOrOptions }
       const resolved = resolve(source, params, options)
       const state = setStateValues({ ...resolved.matched.state }, { ...resolved.state, ...options.state })
 
-      return { url: resolved.href, options: { replace, state }, redirectStatus }
+      return { url: resolved.href, options: { replace, state, navigation }, redirectStatus }
     }
 
-    const { replace, redirectStatus, ...options }: RouterPushOptionsInternal = { ...paramsOrOptions }
+    const { replace, navigation, redirectStatus, ...options }: RouterPushOptionsInternal = { ...paramsOrOptions }
     const state = setStateValues({ ...source.matched.state }, { ...source.state, ...options.state })
 
     const url = updateUrl(source.href, {
@@ -471,7 +485,7 @@ export function createRouter<
       hash: options.hash,
     })
 
-    return { url, options: { replace, state }, redirectStatus }
+    return { url, options: { replace, state, navigation }, redirectStatus }
   }
 
   const push: RouterPushInternal<TRoutes | TPlugin['routes']> = async (

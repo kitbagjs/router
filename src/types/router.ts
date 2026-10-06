@@ -1,3 +1,4 @@
+import { NavigationBehavior } from '@/types/navigation'
 import { App, InjectionKey, Ref } from 'vue'
 import { RouterHistoryMode } from '@/services/createRouterHistory'
 import { TransformerOptions } from '@/services/payload'
@@ -49,6 +50,11 @@ export type RouterOptions = TransformerOptions & {
    * Determines what assets are prefetched when router-link is rendered for a specific route
    */
   prefetch?: PrefetchConfig,
+  /**
+   * Whether navigation waits for props, loaders, and components before committing.
+   * @default 'progressive'
+   */
+  navigation?: NavigationBehavior,
 
   /**
    * Components assigned to each type of rejection your router supports.
