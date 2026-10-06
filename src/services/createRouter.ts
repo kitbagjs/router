@@ -1,5 +1,5 @@
 import { createPath } from '@/services/history'
-import { App, ref } from 'vue'
+import { App, nextTick, ref } from 'vue'
 import { createCurrentRoute } from '@/services/createCurrentRoute'
 import { createIsExternal } from '@/services/createIsExternal'
 import { createActivityTracker } from '@/services/createActivityTracker'
@@ -49,6 +49,20 @@ import { getMatchForUrl } from './getMatchesForUrl'
 import { pathHasTrailingSlash, removeTrailingSlashesFromPath } from '@/utilities/trailingSlashes'
 import { setDocumentTitle } from '@/utilities/setDocumentTitle'
 import { createCurrentRejection } from '@/services/createCurrentRejection'
+import { createAbortPromise } from '@/utilities/promises'
+
+type RouteCommitOptions = {
+  route: ResolvedRoute | null,
+  signal: AbortSignal,
+  update: () => void,
+}
+
+type RouteCommit = {
+  /** Call before committing when assets must be ready. */
+  prepare: () => Promise<boolean>,
+  /** Call inside the view transition callback, or directly for ordinary navigation. */
+  commit: () => Promise<boolean>,
+}
 
 type RouterUpdateOptions = {
   replace?: boolean,
@@ -70,6 +84,10 @@ type RunBeforeHooksContext = RunHooksContext & {
   url: string,
   options: RouterUpdateOptions,
   progress: NavigationProgressTracker,
+}
+
+type RunAfterHooksContext = RunHooksContext & {
+  enabled: boolean,
 }
 
 /**
@@ -193,7 +211,11 @@ export function createRouter<
   /**
    * Runs the after hooks for a navigation and reacts to their response.
    */
-  async function runAfterHooks({ controller, to, from }: RunHooksContext): Promise<void> {
+  async function runAfterHooks({ controller, to, from, enabled }: RunAfterHooksContext): Promise<void> {
+    if (!enabled) {
+      return
+    }
+
     const response = await hooks.runAfterRouteHooks({ to, from, signal: controller.signal })
 
     if (controller.signal.aborted) {
@@ -275,12 +297,56 @@ export function createRouter<
       }
     }
 
-    commitNavigation()
+    const { commit } = createRouteCommit({
+      route: to,
+      signal: controller.signal,
+      update: commitNavigation,
+    })
 
-    if (!isSSR) {
-      await runAfterHooks({ controller, to, from })
-    }
+    await Promise.all([
+      commit(),
+      runAfterHooks({ controller, to, from, enabled: !isSSR }),
+    ])
   })
+
+  function createRouteCommit({ route, signal, update }: RouteCommitOptions): RouteCommit {
+    const isAborted = (): boolean => signal.aborted
+
+    const prepare: RouteCommit['prepare'] = async () => {
+      if (isAborted()) {
+        return false
+      }
+
+      if (!route) {
+        return true
+      }
+
+      const values = valueStore.staged().compute(route)
+      const work = Promise.allSettled([
+        values.props,
+        values.loaders,
+        ...loadAsyncComponents(route),
+      ])
+      await Promise.race([
+        work,
+        createAbortPromise(signal),
+      ])
+
+      return !isAborted()
+    }
+
+    const commit: RouteCommit['commit'] = () => {
+      if (signal.aborted) {
+        return Promise.resolve(false)
+      }
+
+      update()
+
+      return nextTick().then(() => !signal.aborted)
+    }
+
+    return { prepare, commit }
+  }
 
   /**
    * The units a route needs before it has everything it renders with, known before anything runs so the

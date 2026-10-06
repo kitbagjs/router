@@ -1,9 +1,37 @@
 import { flushPromises, mount } from '@vue/test-utils'
-import { describe, expect, test } from 'vitest'
+import { describe, expect, test, vi } from 'vitest'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
 import { component } from '@/utilities/testHelpers'
 import { createRejection } from './createRejection'
+import echo from '@/components/echo'
+
+test('after enter and update hooks see the committed destination route', async () => {
+  const route = createRoute({
+    name: 'destination',
+    path: '/destination/[value]',
+    component: echo,
+  }, (route) => ({ value: route.params.value }))
+  const router = createRouter([route], { initialUrl: '/', historyMode: 'memory' })
+  await router.start()
+
+  const afterEnter = vi.fn((to) => {
+    expect(router.route.href).toBe(to.href)
+    expect(router.route.params.value).toBe('first')
+  })
+  const afterUpdate = vi.fn((to) => {
+    expect(router.route.href).toBe(to.href)
+    expect(router.route.params.value).toBe('second')
+  })
+  router.onAfterRouteEnter(afterEnter)
+  router.onAfterRouteUpdate(afterUpdate)
+
+  await router.push('destination', { value: 'first' })
+  await router.push('destination', { value: 'second' })
+
+  expect(afterEnter).toHaveBeenCalledOnce()
+  expect(afterUpdate).toHaveBeenCalledOnce()
+})
 
 test('Router is automatically started when installed', async () => {
   const route = createRoute({
