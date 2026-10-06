@@ -27,8 +27,6 @@ export type ViewTransitions = {
    * Forgets the transition in flight, for a navigation that commits without one.
    */
   reset: () => void,
-  /** Updates a prepared destination when its data resolves to a rejection. */
-  updateDestination: (destination: { to: ViewTransitionTarget, types: ViewTransitionTypes | false }) => void,
   /**
    * Runs the update inside a view transition. Resolves after the update and Vue flush, ahead of the animation.
    */
@@ -74,22 +72,17 @@ export function createViewTransitions(): ViewTransitions {
     }
   }
 
-  const updateDestination: ViewTransitions['updateDestination'] = ({ to, types }) => {
-    Object.assign(viewTransition, { to, types: types || [] })
-
-    if (types === false) {
-      viewTransition.transition?.skipTransition()
-      return
-    }
-
-    updateTransitionTypes({ transition: viewTransition.transition, types })
-  }
-
   const start: ViewTransitions['start'] = (update) => {
     if (pending) {
       pending.update = update
 
-      updateTransitionTypes({ transition: pending.transition, types: viewTransition.types })
+      if (pending.transition && supportsViewTransitionTypes()) {
+        pending.transition.types.clear()
+
+        for (const type of viewTransition.types) {
+          pending.transition.types.add(type)
+        }
+      }
 
       adopt(pending)
 
@@ -149,20 +142,7 @@ export function createViewTransitions(): ViewTransitions {
     prepare,
     cancel,
     reset,
-    updateDestination,
     start,
-  }
-}
-
-function updateTransitionTypes({ transition, types }: { transition?: ViewTransition, types: ViewTransitionTypes }): void {
-  if (!transition || !supportsViewTransitionTypes()) {
-    return
-  }
-
-  transition.types.clear()
-
-  for (const type of types) {
-    transition.types.add(type)
   }
 }
 

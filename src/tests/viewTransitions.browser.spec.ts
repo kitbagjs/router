@@ -399,7 +399,7 @@ test('useViewTransition describes the navigation while its data loads, then carr
 
   expect(viewTransitionOf(router)).toMatchObject({
     isTransitioning: true,
-    types: ['slide'],
+    types: [],
     transition: undefined,
   })
   expect(viewTransitionOf(router).to).toMatchObject({ name: 'withProps' })

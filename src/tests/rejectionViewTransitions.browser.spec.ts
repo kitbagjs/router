@@ -7,6 +7,7 @@ import { createRejection } from '@/services/createRejection'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
 import { RouterViewTransition, ViewTransitionConfig } from '@/types/viewTransition'
+import { NavigationBehavior } from '@/types/navigation'
 import { payloadToScript } from '@/services/payload'
 
 type RejectionSource = 'before' | 'after' | 'props' | 'loader' | 'unmatched' | 'direct'
@@ -28,10 +29,11 @@ afterEach(async () => {
   document.body.innerHTML = ''
 })
 
-async function setup({ source, viewTransition = true, rejectionComponent }: {
+async function setup({ source, viewTransition = true, rejectionComponent, navigation }: {
   source?: RejectionSource,
   viewTransition?: ViewTransitionConfig,
   rejectionComponent?: Component,
+  navigation?: NavigationBehavior,
 } = {}): Promise<{
   router: ReturnType<typeof createRouter>,
   wrapper: ReturnType<typeof mount>,
@@ -72,6 +74,7 @@ async function setup({ source, viewTransition = true, rejectionComponent }: {
     initialUrl: '/',
     historyMode: 'memory',
     viewTransition,
+    navigation,
     rejections: [
       denied,
       createRejection({ type: 'NotFound', status: 404, component: { template: '<div>not found</div>' } }),
@@ -207,6 +210,7 @@ test.each(['before', 'props', 'loader'] as const)('%s rejection supplies the act
   await router.push('next')
   await flushPromises()
 
+  expect(types).toHaveBeenCalledOnce()
   expect(types).toHaveBeenLastCalledWith(expect.objectContaining({
     to: expect.objectContaining({ type: 'Denied' }),
     from: expect.objectContaining({ name: 'home' }),
@@ -256,23 +260,12 @@ test.each(['props', 'loader'] as const)('%s rejection can disable the animation 
       },
     },
   })
-  const skipped = vi.fn()
-  const start = document.startViewTransition.bind(document)
-  vi.spyOn(document, 'startViewTransition').mockImplementation((options) => {
-    const transition = start(options)
-    const skip = transition.skipTransition.bind(transition)
-    vi.spyOn(transition, 'skipTransition').mockImplementation(() => {
-      skipped()
-      skip()
-    })
-
-    return transition
-  })
+  const started = vi.spyOn(document, 'startViewTransition')
 
   await router.push('next')
   await flushPromises()
 
-  expect(skipped).toHaveBeenCalledOnce()
+  expect(started).not.toHaveBeenCalled()
   expect(wrapper.text()).toBe('denied')
 })
 
@@ -334,9 +327,154 @@ test('hydration adopts a rejection without starting a transition', async () => {
   document.body.innerHTML = payloadToScript({ kind: 'reject', url: '/', rejection: 'Denied' })
   const started = vi.spyOn(document, 'startViewTransition')
 
-  const { wrapper, state } = await setup()
+  const { wrapper, state } = await setup({ navigation: 'blocking' })
 
   expect(started).not.toHaveBeenCalled()
   expect(state.isTransitioning).toBe(false)
   expect(wrapper.text()).toBe('denied')
+})
+
+test.each(['props', 'loader'] as const)('%s rejection does not wait for assets of the abandoned page', async (source) => {
+  const denied = createRejection({ type: 'Denied', component: { template: '<div>denied</div>' } })
+  const home = createRoute({ name: 'home', path: '/', component: { template: '<div>home</div>' } })
+  const component = Promise.withResolvers<Component>()
+  const data = Promise.withResolvers<string>()
+  const next = createRoute({ name: 'next', path: '/next', context: [denied] })
+    .addView(defineAsyncComponent(() => component.promise), {
+      props: (_route, { reject }) => {
+        if (source === 'props') {
+          reject('Denied')
+        }
+
+        return data.promise.then(() => ({}))
+      },
+    })
+    .addLoader((_route, { reject }) => {
+      if (source === 'loader') {
+        reject('Denied')
+      }
+
+      return data.promise
+    })
+  const router = createRouter([home, next], { initialUrl: '/', historyMode: 'memory', viewTransition: true })
+  const wrapper = mount({ template: '<RouterView />' }, { global: { plugins: [router] } })
+  wrappers.push(wrapper)
+  await router.start()
+  const started = vi.spyOn(document, 'startViewTransition')
+
+  await router.push('next')
+  await flushPromises()
+
+  expect(started).toHaveBeenCalledOnce()
+  expect(wrapper.text()).toBe('denied')
+  expect(router.route.name).toBe('next')
+
+  component.resolve({ template: '<div>next</div>' })
+  data.resolve('ready')
+  await flushPromises()
+  expect(wrapper.text()).toBe('denied')
+})
+
+test.each(['props', 'loader'] as const)('an error hook can reject prepared %s before capture', async (source) => {
+  const denied = createRejection({ type: 'Denied', component: { template: '<div>denied</div>' } })
+  const home = createRoute({ name: 'home', path: '/', component: { template: '<div>home</div>' } })
+  const error = new Error('unavailable')
+  const next = createRoute({ name: 'next', path: '/next', context: [denied] })
+    .addView({ template: '<div>next</div>' }, {
+      props: () => {
+        if (source === 'props') {
+          throw error
+        }
+
+        return {}
+      },
+    })
+    .addLoader(() => {
+      if (source === 'loader') {
+        throw error
+      }
+
+      return 'ready'
+    })
+  const router = createRouter([home, next], { initialUrl: '/', historyMode: 'memory', viewTransition: true })
+  const onError = vi.fn((_error, { reject }) => reject('Denied'))
+  router.onError(onError)
+  const wrapper = mount({ template: '<RouterView />' }, { global: { plugins: [router] } })
+  wrappers.push(wrapper)
+  await router.start()
+  const started = vi.spyOn(document, 'startViewTransition')
+
+  await router.push('next')
+  await flushPromises()
+
+  expect(onError).toHaveBeenCalledOnce()
+  expect(onError).toHaveBeenCalledWith(error, expect.objectContaining({ source }))
+  expect(started).toHaveBeenCalledOnce()
+  expect(wrapper.text()).toBe('denied')
+})
+
+test('a blocking rejection uses the shared commit path without view transitions', async () => {
+  const { router, wrapper } = await setup({ source: 'props', navigation: 'blocking', viewTransition: false })
+  const onRejection = vi.fn()
+  router.onRejection(onRejection)
+  const started = vi.spyOn(document, 'startViewTransition')
+
+  await router.push('next')
+
+  expect(onRejection).toHaveBeenCalledOnce()
+  expect(started).not.toHaveBeenCalled()
+  expect(wrapper.text()).toBe('denied')
+  expect(router.route.name).toBe('next')
+})
+
+test('a push from prepared props transitions only to the redirected destination', async () => {
+  const home = createRoute({ name: 'home', path: '/', component: { template: '<div>home</div>' } })
+  const component = Promise.withResolvers<Component>()
+  const next = createRoute({ name: 'next', path: '/next', context: [home] })
+    .addView(defineAsyncComponent(() => component.promise), {
+      props: (_route, { push }) => push('home'),
+    })
+  const types = vi.fn(() => ['page'])
+  const router = createRouter([home, next], { initialUrl: '/', historyMode: 'memory', viewTransition: { types } })
+  const wrapper = mount({ template: '<RouterView />' }, { global: { plugins: [router] } })
+  wrappers.push(wrapper)
+  await router.start()
+  const started = vi.spyOn(document, 'startViewTransition')
+
+  await router.push('next')
+
+  expect(started).toHaveBeenCalledOnce()
+  expect(types).toHaveBeenCalledOnce()
+  expect(types).toHaveBeenCalledWith(expect.objectContaining({ to: expect.objectContaining({ name: 'home' }) }))
+  expect(router.route.name).toBe('home')
+  expect(wrapper.text()).toBe('home')
+
+  component.resolve({ template: '<div>next</div>' })
+  await flushPromises()
+  expect(wrapper.text()).toBe('home')
+})
+
+test('a late progressive rejection keeps the navigation override', async () => {
+  const denied = createRejection({ type: 'Denied', component: { template: '<div>denied</div>' } })
+  const home = createRoute({ name: 'home', path: '/', component: { template: '<div>home</div>' } })
+  const data = Promise.withResolvers<void>()
+  const next = createRoute({ name: 'next', path: '/next', context: [denied], component: { template: '<div>next</div>' } })
+    .addLoader(async (_route, { reject }) => {
+      await data.promise
+      reject('Denied')
+    })
+  const router = createRouter([home, next], { initialUrl: '/', historyMode: 'memory', viewTransition: true })
+  const wrapper = mount({ template: '<RouterView />' }, { global: { plugins: [router] } })
+  wrappers.push(wrapper)
+  await router.start()
+  const started = vi.spyOn(document, 'startViewTransition')
+
+  await router.push('next', {}, { viewTransition: false })
+  expect(wrapper.text()).toBe('next')
+
+  data.resolve()
+  await flushPromises()
+
+  expect(wrapper.text()).toBe('denied')
+  expect(started).not.toHaveBeenCalled()
 })

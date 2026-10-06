@@ -1,6 +1,12 @@
 import { ViewTransitionConfig, ViewTransitionConfigs, ViewTransitionContext, ViewTransitionTypes } from '@/types/viewTransition'
 import { isDefined } from './guards'
 
+export function isViewTransitionEnabled({ routerViewTransition, routeViewTransition, navigationViewTransition }: ViewTransitionConfigs): boolean {
+  const nearest = navigationViewTransition ?? routeViewTransition ?? routerViewTransition
+
+  return nearest !== undefined && nearest !== false
+}
+
 /**
  * The types to transition with, or `false` when the navigation should not transition. The nearest level
  * that sets the option decides whether it is on, and the types of every level that is on are combined.
