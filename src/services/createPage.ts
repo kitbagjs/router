@@ -4,6 +4,7 @@ import { Rejection, RejectionInternal } from '@/types/rejection'
 import { ComponentsStore } from '@/services/createComponentsStore'
 import { createResolvedRoute } from '@/services/createResolvedRoute'
 import { GetTitleCallback } from '@/types/routeTitle'
+import { reactive } from 'vue'
 
 export function createRoutePage(route: ResolvedRoute, components: ComponentsStore): Page {
   return {
@@ -29,7 +30,7 @@ export function createRejectionPage(rejection: Rejection & RejectionInternal, fa
     id: assets.id,
     assets,
     route: null,
-    rejection,
+    rejection: reactive(rejection),
     status: rejection.status ?? rejectStatus,
     // Rejections replace every outlet, including named and nested outlets.
     getComponent: () => component,

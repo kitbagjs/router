@@ -1,5 +1,5 @@
 import { createPath } from '@/services/history'
-import { App, computed, nextTick, ref, shallowRef } from 'vue'
+import { App, computed, nextTick, reactive, ref, shallowRef } from 'vue'
 import { createCurrentRoute } from '@/services/createCurrentRoute'
 import { createIsExternal } from '@/services/createIsExternal'
 import { createActivityTracker } from '@/services/createActivityTracker'
@@ -18,7 +18,7 @@ import { getInitialUrl } from '@/services/getInitialUrl'
 import { decodePayloadValues, encodePayloadValues, getHydratingPayload, payloadToScript, RouterPayload } from '@/services/payload'
 import { setStateValues } from '@/services/state'
 import { Routes } from '@/types/route'
-import { NOT_FOUND_REJECTION_TYPE } from '@/types/rejection'
+import { isRejection, NOT_FOUND_REJECTION_TYPE, Rejection } from '@/types/rejection'
 import { Router, RouterOptions, ServerRenderResponse, RedirectStatus } from '@/types/router'
 import { RouterPushInternal, RouterPushOptionsInternal, RouterReplaceInternal, RouterReplaceOptionsInternal } from '@/types/routerNavigationInternal'
 import { RoutesName } from '@/types/routesMap'
@@ -533,7 +533,21 @@ export function createRouter<
   }
 
   const currentPage = shallowRef<Page | null>(null)
-  const currentRejection = computed(() => currentPage.value?.rejection ?? null)
+  const currentRejection = computed({
+    get: () => currentPage.value?.rejection ?? null,
+    set: (rejection: Rejection | null) => {
+      const routePage = createRoutePage({ ...currentRoute }, componentsStore)
+
+      currentPage.value = isRejection(rejection)
+        ? createRejectionPage(rejection, currentRoute.getTitle, rejectStatus)
+        : {
+            ...routePage,
+            rejection: rejection ? reactive(rejection) : null,
+            status: rejection ? rejection.status ?? rejectStatus : 200,
+            getTitle: async () => await rejection?.getTitle() ?? routePage.getTitle(),
+          }
+    },
+  })
   const { currentRoute, routerRoute, updateRoute } = createCurrentRoute<TRoutes | TPlugin['routes']>({
     routerKey,
     fallbackRoute: notFoundRoute,
