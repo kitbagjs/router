@@ -7,6 +7,7 @@ import { createRoutePage, createRejectionPage } from '@/services/createPage'
 import { createPageCommit } from '@/services/createPageCommit'
 import { createRouteValueStore } from '@/services/createRouteValueStore'
 import { createComponentsStore } from '@/services/createComponentsStore'
+import { createPageValues } from '@/services/createPageValues'
 import { isRejection } from '@/types/rejection'
 
 test('preparation reports a rejection without waiting for unrelated page assets', async () => {
@@ -16,9 +17,11 @@ test('preparation reports a rejection without waiting for unrelated page assets'
     .addView(defineAsyncComponent(() => component.promise))
     .addLoader((_route, { reject }) => reject('NotFound'))
     .addLoader(() => data.promise, { name: 'pending' })
-  const page = createRoutePage(createResolvedRoute(route), createComponentsStore(Symbol()), createRouteValueStore())
+  const resolved = createResolvedRoute(route)
+  const page = createRoutePage(resolved, createComponentsStore(Symbol()))
+  const values = createPageValues(resolved, createRouteValueStore())
   const update = vi.fn()
-  const commit = createPageCommit({ page, signal: new AbortController().signal, update, settle: (response) => response })
+  const commit = createPageCommit({ page, values, signal: new AbortController().signal, update, settle: (response) => response })
 
   try {
     await expect(commit.prepare()).resolves.toEqual({ status: 'REJECT', type: 'NotFound' })
@@ -67,19 +70,22 @@ test('canceling preparation abandons its values instead of adopting them on the 
   const components = createComponentsStore(Symbol())
   const controller = new AbortController()
   const first = createPageCommit({
-    page: createRoutePage(route, components, values),
+    page: createRoutePage(route, components),
+    values: createPageValues(route, values),
     signal: controller.signal,
     update: vi.fn(),
     settle: (response) => response,
   })
   const preparing = first.prepare()
 
+  await expect(first.commit()).resolves.toBe(false)
   controller.abort()
   await expect(preparing).resolves.toEqual({ status: 'ABANDONED' })
   expect(signals[0].aborted).toBe(true)
 
   const next = createPageCommit({
-    page: createRoutePage(route, components, values),
+    page: createRoutePage(route, components),
+    values: createPageValues(route, values),
     signal: new AbortController().signal,
     update: vi.fn(),
     settle: (response) => response,

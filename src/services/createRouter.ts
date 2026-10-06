@@ -52,6 +52,7 @@ import { createRoutePage, createRejectionPage } from '@/services/createPage'
 import { Page } from '@/types/page'
 import { getPageKey } from '@/compositions/usePage'
 import { createPageCommit, PageCommit } from '@/services/createPageCommit'
+import { createPageValues, PageValues } from '@/services/createPageValues'
 
 type RouterUpdateOptions = {
   replace?: boolean,
@@ -81,9 +82,10 @@ type RunAfterHooksContext = RunHooksContext & {
 
 type PageNavigationOptions = RunHooksContext & {
   page: Page,
+  values?: PageValues,
   options?: RouterUpdateOptions,
   progress?: NavigationProgressTracker,
-  update?: () => void,
+  update: () => void,
 }
 
 /**
@@ -279,20 +281,34 @@ export function createRouter<
       return
     }
 
-    const external = isExternal(url)
-    const page = createRoutePage(external ? { ...currentRoute } : to, componentsStore, external ? null : valueStore)
+    if (isExternal(url)) {
+      const { commit } = createNavigationCommit({
+        page: createRoutePage({ ...currentRoute }, componentsStore),
+        controller,
+        to,
+        from,
+        options,
+        progress,
+        update: () => {},
+      })
+
+      await Promise.all([
+        commit(),
+        runAfterHooks({ controller, to, from, enabled: !isSSR }),
+      ])
+
+      return
+    }
+
     const { commit } = createNavigationCommit({
-      page,
+      page: createRoutePage(to, componentsStore),
+      values: createPageValues(to, valueStore),
       controller,
       to,
       from,
       options,
       progress,
-      update: () => {
-        if (!external) {
-          updateRoute(to)
-        }
-      },
+      update: () => updateRoute(to),
     })
 
     await Promise.all([
@@ -301,11 +317,12 @@ export function createRouter<
     ])
   })
 
-  function createNavigationCommit({ page, controller, to, from, options = {}, progress, update }: PageNavigationOptions): PageCommit {
+  function createNavigationCommit({ page, values, controller, to, from, options = {}, progress, update }: PageNavigationOptions): PageCommit {
     const { signal } = controller
 
     return createPageCommit({
       page,
+      values,
       signal,
       settle: (response, source) => getRouteValueResponse(response, source, to, from, signal),
       update: ({ props, loaders, values }, components, prepared) => {
@@ -319,7 +336,7 @@ export function createRouter<
         }
 
         progress?.track(...values, ...components)
-        update?.()
+        update()
 
         if (signal.aborted) {
           return
@@ -512,16 +529,23 @@ export function createRouter<
   const currentRejection = computed({
     get: () => currentPage.value?.rejection ?? null,
     set: (rejection: Rejection | null) => {
-      const routePage = createRoutePage({ ...currentRoute }, componentsStore, null)
+      if (isRejection(rejection)) {
+        currentPage.value = createRejectionPage(rejection, currentRoute.getTitle, rejectStatus)
 
-      currentPage.value = isRejection(rejection)
-        ? createRejectionPage(rejection, currentRoute.getTitle, rejectStatus)
-        : {
-            ...routePage,
-            rejection: rejection ? reactive(rejection) : null,
-            status: rejection ? rejection.status ?? rejectStatus : 200,
-            getTitle: async () => await rejection?.getTitle() ?? routePage.getTitle(),
-          }
+        return
+      }
+
+      const page = createRoutePage({ ...currentRoute }, componentsStore)
+
+      if (rejection) {
+        const getRouteTitle = page.getTitle
+
+        page.rejection = reactive(rejection)
+        page.status = rejection.status ?? rejectStatus
+        page.getTitle = async () => await rejection.getTitle() ?? getRouteTitle()
+      }
+
+      currentPage.value = page
     },
   })
   const { currentRoute, routerRoute, updateRoute } = createCurrentRoute<TRoutes | TPlugin['routes']>({
