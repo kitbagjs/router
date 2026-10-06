@@ -24,7 +24,6 @@ type PageCommitOptions = {
 
 /** The same preparation and render boundary for every page, independent of how it was selected. */
 export function createPageCommit({ page, signal, values = emptyPageValues, update, settle }: PageCommitOptions): PageCommit {
-  const isAborted = (): boolean => signal.aborted
   const status = createPageStatus()
 
   const dispose = (): void => {
@@ -36,7 +35,7 @@ export function createPageCommit({ page, signal, values = emptyPageValues, updat
   signal.addEventListener('abort', dispose, { once: true })
 
   const prepare: PageCommit['prepare'] = async () => {
-    if (isAborted()) {
+    if (signal.aborted) {
       dispose()
 
       return { status: 'ABANDONED' }
@@ -46,7 +45,7 @@ export function createPageCommit({ page, signal, values = emptyPageValues, updat
     try {
       const response = await Promise.race([prepareAssets(), createAbortPromise(signal)])
 
-      if (isAborted() || !response) {
+      if (!response || status.isAbandoned()) {
         dispose()
 
         return { status: 'ABANDONED' }
@@ -67,37 +66,57 @@ export function createPageCommit({ page, signal, values = emptyPageValues, updat
     }
   }
 
-  function prepareAssets(): Promise<RouteValueResponse> {
-    const responses = values.prepare()
-    const outcome = Promise.withResolvers<RouteValueResponse>()
-    const watch = async (response: Promise<RouteValueResponse>, source: DataKind): Promise<void> => {
-      const result = await settle(response, source)
+  async function prepareAssets(): Promise<RouteValueResponse> {
+    const preparedValues = prepareValues()
+    const preparedComponents = prepareComponents()
+    const response = await Promise.race([preparedValues, preparedComponents])
 
-      if (result.status !== 'SUCCESS') {
-        outcome.resolve(result)
-      }
+    if (response.status !== 'SUCCESS') {
+      return response
     }
-    const work = Promise.all([
-      watch(responses.props, 'props'),
-      watch(responses.loaders, 'loader'),
-      ...loadAsyncComponents(page.assets),
-    ])
 
-    work.then(() => outcome.resolve({ status: 'SUCCESS' }), outcome.reject)
+    await preparedComponents
 
-    return outcome.promise
+    return preparedValues
   }
 
-  const commit: PageCommit['commit'] = () => {
-    if (isAborted() || status.isPreparing() || status.isAbandoned()) {
-      return Promise.resolve(false)
+  async function prepareValues(): Promise<RouteValueResponse> {
+    const valuesToPrepare = values.prepare()
+    const props = settle(valuesToPrepare.props, 'props')
+    const loaders = settle(valuesToPrepare.loaders, 'loader')
+    const response = await Promise.race([props, loaders])
+
+    if (response.status !== 'SUCCESS') {
+      return response
+    }
+
+    const [propsResponse, loadersResponse] = await Promise.all([props, loaders])
+
+    if (propsResponse.status !== 'SUCCESS') {
+      return propsResponse
+    }
+
+    return loadersResponse
+  }
+
+  async function prepareComponents(): Promise<RouteValueResponse> {
+    await Promise.all(loadAsyncComponents(page.assets))
+
+    return { status: 'SUCCESS' }
+  }
+
+  const commit: PageCommit['commit'] = async () => {
+    if (signal.aborted || status.isPreparing() || status.isAbandoned()) {
+      return false
     }
 
     const responses = values.commit()
     signal.removeEventListener('abort', dispose)
     update(responses, loadAsyncComponents(page.assets), status.isPrepared())
 
-    return nextTick().then(() => !signal.aborted)
+    await nextTick()
+
+    return !signal.aborted
   }
 
   return { prepare, commit }

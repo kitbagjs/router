@@ -369,35 +369,36 @@ export function createRouter<
    * Props and loaders are handled the same way, and neither is awaited here: a push or a rejection from
    * either is acted on whenever it arrives, without holding up the navigation that started it.
    */
-  function handleRouteValueResponse(response: Promise<RouteValueResponse>, source: DataKind, to: ResolvedRoute | null, from: ResolvedRoute | null, signal: AbortSignal): Promise<void> {
-    return getRouteValueResponse(response, source, to, from, signal)
-      .then((response) => {
-        if (signal.aborted) {
-          return
-        }
+  async function handleRouteValueResponse(response: Promise<RouteValueResponse>, source: DataKind, to: ResolvedRoute | null, from: ResolvedRoute | null, signal: AbortSignal): Promise<void> {
+    const result = await getRouteValueResponse(response, source, to, from, signal)
 
-        switch (response.status) {
-          case 'SUCCESS':
-          case 'ABANDONED':
-            break
+    if (signal.aborted) {
+      return
+    }
 
-          case 'PUSH':
-            push(...response.to)
-            break
+    switch (result.status) {
+      case 'SUCCESS':
+      case 'ABANDONED':
+        return
 
-          case 'REJECT':
-            reject(response.type, { to, from })
-            break
+      case 'PUSH':
+        push(...result.to)
+        return
 
-          default:
-            const exhaustive: never = response
-            throw new Error(`Switch is not exhaustive for route data response status: ${JSON.stringify(exhaustive)}`)
-        }
-      })
+      case 'REJECT':
+        reject(result.type, { to, from })
+        return
+
+      default:
+        const exhaustive: never = result
+        throw new Error(`Switch is not exhaustive for route data response status: ${JSON.stringify(exhaustive)}`)
+    }
   }
 
-  function getRouteValueResponse(response: Promise<RouteValueResponse>, source: DataKind, to: ResolvedRoute | null, from: ResolvedRoute | null, signal: AbortSignal): Promise<RouteValueResponse> {
-    return response.catch((error: unknown) => {
+  async function getRouteValueResponse(response: Promise<RouteValueResponse>, source: DataKind, to: ResolvedRoute | null, from: ResolvedRoute | null, signal: AbortSignal): Promise<RouteValueResponse> {
+    try {
+      return await response
+    } catch (error) {
       if (signal.aborted) {
         return { status: 'ABANDONED' }
       }
@@ -413,7 +414,7 @@ export function createRouter<
       }
 
       return { status: 'SUCCESS' }
-    })
+    }
   }
 
   const resolve: RouterResolve<TRoutes | TPlugin['routes']> = (

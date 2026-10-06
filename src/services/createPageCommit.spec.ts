@@ -1,4 +1,5 @@
 import { expect, test, vi } from 'vitest'
+import { flushPromises } from '@vue/test-utils'
 import { Component, defineAsyncComponent } from 'vue'
 import { createRoute } from '@/services/createRoute'
 import { createRejection } from '@/services/createRejection'
@@ -9,6 +10,34 @@ import { createRouteValueStore } from '@/services/createRouteValueStore'
 import { createComponentsStore } from '@/services/createComponentsStore'
 import { createPageValues } from '@/services/createPageValues'
 import { isRejection } from '@/types/rejection'
+
+test('preparation waits for components and commits the prepared values without running loaders again', async () => {
+  const component = Promise.withResolvers<Component>()
+  const data = Promise.withResolvers<string>()
+  const load = vi.fn(() => data.promise)
+  const route = createResolvedRoute(createRoute({ name: 'route', path: '/' })
+    .addView(defineAsyncComponent(() => component.promise))
+    .addLoader(load))
+  const values = createRouteValueStore()
+  const commit = createPageCommit({
+    page: createRoutePage(route, createComponentsStore(Symbol())),
+    values: createPageValues(route, values),
+    signal: new AbortController().signal,
+    update: vi.fn(),
+    settle: (response) => response,
+  })
+  const preparing = commit.prepare()
+
+  data.resolve('prepared')
+  await flushPromises()
+  await expect(commit.commit()).resolves.toBe(false)
+
+  component.resolve({})
+  await expect(preparing).resolves.toEqual({ status: 'SUCCESS' })
+  await expect(commit.commit()).resolves.toBe(true)
+  expect(load).toHaveBeenCalledOnce()
+  await expect(values.getData(route)).resolves.toBe('prepared')
+})
 
 test('preparation reports a rejection without waiting for unrelated page assets', async () => {
   const component = Promise.withResolvers<Component>()
