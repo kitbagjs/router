@@ -1,5 +1,5 @@
 import { createPath } from '@/services/history'
-import { App, computed, reactive, ref, shallowRef } from 'vue'
+import { App, computed, nextTick, reactive, ref, shallowRef } from 'vue'
 import { createCurrentRoute } from '@/services/createCurrentRoute'
 import { createIsExternal } from '@/services/createIsExternal'
 import { createActivityTracker } from '@/services/createActivityTracker'
@@ -8,7 +8,7 @@ import { parseUrl, updateUrl } from '@/services/urlParser'
 import { createRouteValueStore, RouteValueResponse } from '@/services/createRouteValueStore'
 import { createNavigationProgress, NavigationProgressTracker } from '@/services/createNavigationProgress'
 import { getComputations } from '@/services/getComputations'
-import { getAsyncComponents } from '@/utilities/components'
+import { getAsyncComponents, loadAsyncComponents } from '@/utilities/components'
 import { getNavigationProgressKey } from '@/compositions/useNavigation'
 import { DataKind } from '@/services/createNavigationStores'
 import { createRouterHistory } from '@/services/createRouterHistory'
@@ -51,8 +51,9 @@ import { setDocumentTitle } from '@/utilities/setDocumentTitle'
 import { createRoutePage, createRejectionPage } from '@/services/createPage'
 import { Page } from '@/types/page'
 import { getPageKey } from '@/compositions/usePage'
-import { createPageCommit, PageCommit } from '@/services/createPageCommit'
-import { createPageValues, PageValues } from '@/services/createPageValues'
+import { createPageValues, emptyPageValues, PageValues } from '@/services/createPageValues'
+import { createPageStatus } from '@/services/createPageStatus'
+import { createAbortPromise } from '@/utilities/promises'
 
 type RouterUpdateOptions = {
   replace?: boolean,
@@ -80,12 +81,19 @@ type RunAfterHooksContext = RunHooksContext & {
   enabled: boolean,
 }
 
+type PageCommit = {
+  /** Resolves with the first replacement outcome, or success once all required assets are ready. */
+  prepare: () => Promise<RouteValueResponse>,
+  /** Commits synchronously, then waits for Vue's render update. */
+  commit: () => Promise<boolean>,
+}
+
 type PageNavigationOptions = RunHooksContext & {
   page: Page,
   values?: PageValues,
   options?: RouterUpdateOptions,
   progress?: NavigationProgressTracker,
-  update: () => void,
+  onCommit: () => void,
 }
 
 /**
@@ -289,7 +297,7 @@ export function createRouter<
         from,
         options,
         progress,
-        update: () => {},
+        onCommit: () => {},
       })
 
       await Promise.all([
@@ -308,7 +316,7 @@ export function createRouter<
       from,
       options,
       progress,
-      update: () => updateRoute(to),
+      onCommit: () => updateRoute(to),
     })
 
     await Promise.all([
@@ -317,40 +325,136 @@ export function createRouter<
     ])
   })
 
-  function createNavigationCommit({ page, values, controller, to, from, options = {}, progress, update }: PageNavigationOptions): PageCommit {
+  function createNavigationCommit({ page, values = emptyPageValues, controller, to, from, options = {}, progress, onCommit }: PageNavigationOptions): PageCommit {
     const { signal } = controller
+    const status = createPageStatus()
 
-    return createPageCommit({
-      page,
-      values,
-      signal,
-      settle: (response, source) => getRouteValueResponse(response, source, to, from, signal),
-      update: ({ props, loaders, values }, components, prepared) => {
-        activity.add(...components)
+    const dispose = (): void => {
+      status.set('abandoned')
+      values.dispose()
+      signal.removeEventListener('abort', dispose)
+    }
 
-        if (!prepared) {
-          activity.add(
-            handleRouteValueResponse(props, 'props', to, from, signal),
-            handleRouteValueResponse(loaders, 'loader', to, from, signal),
-          )
+    signal.addEventListener('abort', dispose, { once: true })
+
+    const prepare: PageCommit['prepare'] = async () => {
+      if (signal.aborted) {
+        dispose()
+
+        return { status: 'ABANDONED' }
+      }
+
+      status.set('preparing')
+      try {
+        const response = await Promise.race([prepareAssets(), createAbortPromise(signal)])
+
+        if (!response || status.isAbandoned()) {
+          dispose()
+
+          return { status: 'ABANDONED' }
         }
 
-        progress?.track(...values, ...components)
-        update()
+        if (response.status !== 'SUCCESS') {
+          dispose()
 
-        if (signal.aborted) {
-          return
+          return response
         }
 
-        currentPage.value = page
-        progress?.close()
-        started.value = true
+        status.set('prepared')
 
-        if (!options.hydrating) {
-          updateTitle(signal)
+        return response
+      } catch (error) {
+        dispose()
+        throw error
+      }
+    }
+
+    async function prepareAssets(): Promise<RouteValueResponse> {
+      const preparedValues = prepareValues()
+      const preparedComponents = prepareComponents()
+      const response = await Promise.race([preparedValues, preparedComponents])
+
+      if (response.status !== 'SUCCESS') {
+        return response
+      }
+
+      const responses = await Promise.all([preparedValues, preparedComponents])
+
+      for (const response of responses) {
+        if (response.status !== 'SUCCESS') {
+          return response
         }
-      },
-    })
+      }
+
+      return { status: 'SUCCESS' }
+    }
+
+    async function prepareValues(): Promise<RouteValueResponse> {
+      const valuesToPrepare = values.prepare()
+      const props = getRouteValueResponse(valuesToPrepare.props, 'props', to, from, signal)
+      const loaders = getRouteValueResponse(valuesToPrepare.loaders, 'loader', to, from, signal)
+      const response = await Promise.race([props, loaders])
+
+      if (response.status !== 'SUCCESS') {
+        return response
+      }
+
+      const responses = await Promise.all([props, loaders])
+
+      for (const response of responses) {
+        if (response.status !== 'SUCCESS') {
+          return response
+        }
+      }
+
+      return { status: 'SUCCESS' }
+    }
+
+    async function prepareComponents(): Promise<RouteValueResponse> {
+      await Promise.all(loadAsyncComponents(page.assets))
+
+      return { status: 'SUCCESS' }
+    }
+
+    async function commit(): Promise<boolean> {
+      if (signal.aborted || status.isPreparing() || status.isAbandoned()) {
+        return false
+      }
+
+      const responses = values.commit()
+      const components = loadAsyncComponents(page.assets)
+
+      activity.add(...components)
+
+      if (!status.isPrepared()) {
+        activity.add(
+          handleRouteValueResponse(responses.props, 'props', to, from, signal),
+          handleRouteValueResponse(responses.loaders, 'loader', to, from, signal),
+        )
+      }
+
+      progress?.track(...responses.values, ...components)
+      onCommit()
+
+      if (status.isAbandoned()) {
+        return false
+      }
+
+      signal.removeEventListener('abort', dispose)
+      currentPage.value = page
+      progress?.close()
+      started.value = true
+
+      if (!options.hydrating) {
+        updateTitle(signal)
+      }
+
+      await nextTick()
+
+      return !signal.aborted
+    }
+
+    return { prepare, commit }
   }
 
   /**
@@ -520,7 +624,7 @@ export function createRouter<
       controller,
       to,
       from,
-      update: () => hooks.runRejectionHooks(rejection, { to, from }),
+      onCommit: () => hooks.runRejectionHooks(rejection, { to, from }),
     })
 
     activity.add(commit())
