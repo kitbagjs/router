@@ -1,6 +1,8 @@
+import { flushPromises } from '@vue/test-utils'
 import { describe, expect, test, vi } from 'vitest'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
+import { createRejection } from '@/services/createRejection'
 import { LoaderDataAccessError } from '@/errors/loaderDataAccessError'
 import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
 import { component } from '@/utilities/testHelpers'
@@ -195,6 +197,26 @@ describe('loaders do not block', () => {
 })
 
 describe('loader context', () => {
+  test('a late loader rejection cannot replace a direct rejection', async () => {
+    const ready = Promise.withResolvers<void>()
+    const route = createRoute({ name: 'route', path: '/' })
+      .addLoader(async (_route, { reject }) => {
+        await ready.promise
+        reject('NotFound')
+      })
+    const denied = createRejection({ type: 'Denied' })
+    const router = createRouter([route], { initialUrl: '/', historyMode: 'memory', rejections: [denied] })
+    const onRejection = vi.fn()
+    router.onRejection(onRejection)
+
+    await router.start()
+    router.reject('Denied')
+    ready.resolve()
+    await flushPromises()
+
+    expect(onRejection).toHaveBeenCalledExactlyOnceWith('Denied', { to: null, from: null })
+  })
+
   test('a loader can reject', async () => {
     const onRejection = vi.fn()
 
