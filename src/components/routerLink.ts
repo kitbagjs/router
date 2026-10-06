@@ -1,8 +1,9 @@
 import { ResolvedRoute } from '@/types/resolved'
-import { computed, defineComponent, EmitsOptions, h, InjectionKey, SetupContext, SlotsType, VNode } from 'vue'
+import { computed, defineComponent, EmitsOptions, h, InjectionKey, provide, SetupContext, SlotsType, VNode } from 'vue'
 import { createUseRouter } from '@/compositions/useRouter'
 import { Router } from '@/types/router'
 import { createUseLink } from '@/compositions/useLink'
+import { viewTransitionLinkKey } from '@/components/viewTransition'
 import { RouterLinkProps } from '@/types/routerLink'
 
 type RouterLinkSlots = {
@@ -13,6 +14,7 @@ type RouterLinkSlots = {
     isActive: boolean,
     isExactActive: boolean,
     isExternal: boolean,
+    isTransitioning: boolean,
   }) => VNode[],
 }
 
@@ -33,13 +35,15 @@ export function createRouterLink<TRouter extends Router>(routerKey: InjectionKey
       return options
     })
 
-    const { element, route, href, isMatch, isExactMatch, isActive, isExactActive, isExternal, push } = useLink(() => {
+    const { element, route, href, isMatch, isExactMatch, isActive, isExactActive, isExternal, isTransitioning, push } = useLink(() => {
       if (typeof props.to === 'function') {
         return props.to(router.resolve)
       }
 
       return props.to
     }, options)
+
+    provide(viewTransitionLinkKey, isTransitioning)
 
     const classes = computed(() => ({
       'router-link--match': isMatch.value,
@@ -80,6 +84,7 @@ export function createRouterLink<TRouter extends Router>(routerKey: InjectionKey
         isExactMatch: isExactMatch.value,
         isActive: isActive.value,
         isExactActive: isExactActive.value,
+        isTransitioning: isTransitioning.value,
         isExternal: isExternal.value,
       }),
       )
@@ -88,6 +93,6 @@ export function createRouterLink<TRouter extends Router>(routerKey: InjectionKey
     name: 'RouterLink',
     // The prop types are defined above. Vue requires manually defining the prop names themselves here to distinguish from attrs
     // eslint-disable-next-line vue/require-prop-types
-    props: ['to', 'prefetch', 'query', 'hash', 'replace', 'state', 'target', 'navigation'],
+    props: ['to', 'prefetch', 'query', 'hash', 'replace', 'state', 'target', 'viewTransition', 'navigation'],
   })
 }

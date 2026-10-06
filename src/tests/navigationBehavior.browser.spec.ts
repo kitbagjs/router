@@ -1,6 +1,7 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { Component, createApp, defineAsyncComponent } from 'vue'
-import { afterEach, describe, expect, test, vi } from 'vitest'
+import { afterEach, beforeAll, describe, expect, test, vi } from 'vitest'
+import { register } from 'view-transitions-mock'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
 import { createUseLink } from '@/compositions/useLink'
@@ -10,7 +11,17 @@ import { payloadToScript } from '@/services/payload'
 
 const wrappers: ReturnType<typeof mount>[] = []
 
-afterEach(() => {
+beforeAll(() => {
+  vi.spyOn(console, 'info').mockImplementation(() => {})
+  register({ forced: true })
+})
+
+afterEach(async () => {
+  const transition = document.activeViewTransition
+  transition?.skipTransition()
+  await transition?.finished
+  vi.restoreAllMocks()
+
   wrappers.forEach((wrapper) => wrapper.unmount())
   wrappers.length = 0
   document.body.innerHTML = ''
@@ -294,6 +305,39 @@ describe('links', () => {
 
     loaded.resolve()
     await flushPromises()
+  })
+})
+
+describe('view transitions', () => {
+  test.each(['progressive', 'blocking'] as const)('%s navigation prepares assets before starting the transition', async (navigationBehavior) => {
+    const loaded = Promise.withResolvers<string>()
+    const load = vi.fn(() => loaded.promise)
+    const props = vi.fn(() => ({ label: 'Page' }))
+    const home = createRoute({ name: 'home', path: '/' }).addView({ template: '<div>Home</div>' })
+    const page = createRoute({ name: 'page', path: '/page' })
+      .addView({ props: ['label'], template: '<div>{{ label }}</div>' }, { props })
+      .addLoader(load)
+    const router = createRouter([home, page], {
+      initialUrl: '/',
+      historyMode: 'memory',
+      navigation: navigationBehavior,
+      viewTransition: true,
+    })
+    const wrapper = mountRouter(router)
+    await router.start()
+    const startTransition = vi.spyOn(document, 'startViewTransition')
+
+    const navigation = router.push('page')
+    await flushPromises()
+    expect(wrapper.text()).toBe('Home')
+    expect(startTransition).not.toHaveBeenCalled()
+
+    loaded.resolve('data')
+    await navigation
+    expect(wrapper.text()).toBe('Page')
+    expect(startTransition).toHaveBeenCalledTimes(1)
+    expect(load).toHaveBeenCalledTimes(1)
+    expect(props).toHaveBeenCalledTimes(1)
   })
 })
 

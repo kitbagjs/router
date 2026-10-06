@@ -37,6 +37,8 @@ import { getGlobalHooksForRouter } from './getGlobalHooksForRouter'
 import { createComponentsStore } from './createComponentsStore'
 import { getComponentsStoreKey } from '@/compositions/useComponentsStore'
 import { getRouteValueStoreInjectionKey } from '@/compositions/useRouteValueStore'
+import { getViewTransitionKey } from '@/compositions/useViewTransition'
+import { ViewTransition } from '@/components/viewTransition'
 import { getRouterRejectionInjectionKey } from '@/compositions/useRejection'
 import { routerInjectionKey } from '@/keys'
 import { createRouterView } from '@/components/routerView'
@@ -49,8 +51,12 @@ import { getMatchForUrl } from './getMatchesForUrl'
 import { pathHasTrailingSlash, removeTrailingSlashesFromPath } from '@/utilities/trailingSlashes'
 import { setDocumentTitle } from '@/utilities/setDocumentTitle'
 import { createCurrentRejection } from '@/services/createCurrentRejection'
+import { hasViewTransition, ViewTransitionConfig } from '@/types/viewTransition'
+import { createViewTransitions, PendingViewTransition } from '@/services/createViewTransitions'
+import { getViewTransitionTypes, supportsViewTransitions } from '@/utilities/viewTransition'
 import { createAbortPromise } from '@/utilities/promises'
 import { NavigationBehavior } from '@/types/navigation'
+import { getNavigationOption } from '@/utilities/navigation'
 
 type RoutePreparation = {
   props: PromiseSettledResult<RouteValueResponse>,
@@ -75,6 +81,7 @@ type RouterUpdateOptions = {
   navigation?: NavigationBehavior,
   replace?: boolean,
   state?: any,
+  viewTransition?: ViewTransitionConfig,
   /**
    * A hydrating navigation adopts an outcome the server already rendered, so before hooks are not
    * consulted and the title the markup carries is kept.
@@ -86,6 +93,13 @@ type RunHooksContext = {
   controller: AbortController,
   to: ResolvedRoute | null,
   from: ResolvedRoute | null,
+}
+
+type ViewTransitionOptions = {
+  to: ResolvedRoute | null,
+  from: ResolvedRoute | null,
+  options: RouterUpdateOptions,
+  enabled: boolean,
 }
 
 type RunBeforeHooksContext = RunHooksContext & {
@@ -144,7 +158,8 @@ export function createRouter<
   const redirectStatus = options?.redirectStatus ?? 302
   const rejectStatus = options?.rejectStatus ?? 200
   const isSSR = options?.ssr ?? false
-  const routerNavigation = options?.navigation ?? 'progressive'
+  const routerNavigation = options?.navigation
+  const routerViewTransition = options?.viewTransition
   const activity = createActivityTracker()
   const navigationProgress = createNavigationProgress()
   const { routes, getRouteByName, getRejectionByType } = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options)
@@ -157,6 +172,7 @@ export function createRouter<
   hooks.addGlobalRouteHooks(getGlobalHooksForRouter(plugins))
 
   const navigations = createNavigationSignals()
+  const viewTransitions = createViewTransitions()
   const componentsStore = createComponentsStore(routerKey)
   const visibilityObserver = createVisibilityObserver()
   const history = createRouterHistory({
@@ -311,16 +327,42 @@ export function createRouter<
       signal: controller.signal,
       update: commitNavigation,
     })
+    const transition = getViewTransition({
+      to,
+      from,
+      options,
+      enabled: !isSSR && !isExternal(url),
+    })
 
-    const routeNavigation = to?.matches.findLast((match) => match.navigation !== undefined)?.navigation
-    const navigation = options.navigation ?? routeNavigation ?? routerNavigation
+    const navigation = getNavigationOption({
+      routerNavigation,
+      routeNavigation: to?.matches.findLast((match) => match.navigation !== undefined)?.navigation,
+      navigation: options.navigation,
+    })
+    const isBlocking = navigation === 'blocking' && to !== null && !isExternal(url) && !options.hydrating
 
-    if (navigation === 'blocking' && to && !isExternal(url) && !options.hydrating) {
+    if (transition) {
+      viewTransitions.prepare(transition)
+    } else {
+      viewTransitions.reset()
+    }
+
+    if (transition || isBlocking) {
       const preparation = await routeCommit.prepare()
 
       if (!preparation) {
+        if (transition) {
+          viewTransitions.cancel(transition)
+        }
+
         return
       }
+    }
+
+    if (transition) {
+      await viewTransitions.start(routeCommit.commit)
+      await runAfterHooks({ controller, to, from, enabled: !isSSR })
+      return
     }
 
     await Promise.all([
@@ -368,6 +410,29 @@ export function createRouter<
     }
 
     return { prepare, commit }
+  }
+
+  /**
+   * The transition a navigation makes, or false when it does not transition.
+   */
+  function getViewTransition({ to, from, options, enabled }: ViewTransitionOptions): PendingViewTransition | false {
+    if (!enabled || !to || !from || !supportsViewTransitions()) {
+      return false
+    }
+
+    const types = getViewTransitionTypes({
+      routerViewTransition,
+      routeViewTransition: to.matches.findLast(hasViewTransition)?.viewTransition,
+      navigationViewTransition: options.viewTransition,
+      to,
+      from,
+    })
+
+    if (types === false) {
+      return false
+    }
+
+    return { to, from, types }
   }
 
   /**
@@ -469,15 +534,15 @@ export function createRouter<
     }
 
     if (typeof source === 'string') {
-      const { replace, navigation, redirectStatus, ...options }: RouterPushOptionsInternal = { ...maybeOptions }
+      const { replace, navigation, viewTransition, redirectStatus, ...options }: RouterPushOptionsInternal = { ...maybeOptions }
       const params: any = { ...paramsOrOptions }
       const resolved = resolve(source, params, options)
       const state = setStateValues({ ...resolved.matched.state }, { ...resolved.state, ...options.state })
 
-      return { url: resolved.href, options: { replace, state, navigation }, redirectStatus }
+      return { url: resolved.href, options: { replace, state, navigation, viewTransition }, redirectStatus }
     }
 
-    const { replace, navigation, redirectStatus, ...options }: RouterPushOptionsInternal = { ...paramsOrOptions }
+    const { replace, navigation, viewTransition, redirectStatus, ...options }: RouterPushOptionsInternal = { ...paramsOrOptions }
     const state = setStateValues({ ...source.matched.state }, { ...source.state, ...options.state })
 
     const url = updateUrl(source.href, {
@@ -485,7 +550,7 @@ export function createRouter<
       hash: options.hash,
     })
 
-    return { url, options: { replace, state, navigation }, redirectStatus }
+    return { url, options: { replace, state, navigation, viewTransition }, redirectStatus }
   }
 
   const push: RouterPushInternal<TRoutes | TPlugin['routes']> = async (
@@ -712,6 +777,8 @@ export function createRouter<
     app.component('RouterView', routerView)
     app.component('RouterLink', routerLink)
     app.component('RouterProgress', routerProgress)
+    app.component('ViewTransition', ViewTransition)
+    app.provide(getViewTransitionKey(routerKey), viewTransitions.viewTransition)
     app.provide(getRouterRejectionInjectionKey(routerKey), currentRejection)
     app.provide(getRouterHooksKey(routerKey), hooks)
     app.provide(getRouteValueStoreInjectionKey(routerKey), valueStore)
