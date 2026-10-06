@@ -24,6 +24,8 @@ export type NavigationStores = {
    * adopting it.
    */
   staged: () => DataStore,
+  /** Takes ownership of staged values so another preparation cannot adopt or dispose them. */
+  claim: () => DataStore,
   /**
    * Swaps in the staged store, or a fresh one, and hands back the store being replaced for disposal.
    */
@@ -55,11 +57,17 @@ export function createNavigationStores(): NavigationStores {
     return stores.staged
   }
 
+  const claim: NavigationStores['claim'] = () => {
+    const claimed = stores.staged ?? createDataStore()
+    stores.staged = undefined
+
+    return claimed
+  }
+
   const promote: NavigationStores['promote'] = () => {
     const previous = stores.current
 
-    stores.current = stores.staged ?? createDataStore()
-    stores.staged = undefined
+    stores.current = claim()
 
     return previous
   }
@@ -68,6 +76,7 @@ export function createNavigationStores(): NavigationStores {
     current,
     stage,
     staged,
+    claim,
     promote,
   }
 }

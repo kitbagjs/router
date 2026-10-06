@@ -1,5 +1,5 @@
 import { createPath } from '@/services/history'
-import { App, computed, nextTick, reactive, ref, shallowRef } from 'vue'
+import { App, computed, reactive, ref, shallowRef } from 'vue'
 import { createCurrentRoute } from '@/services/createCurrentRoute'
 import { createIsExternal } from '@/services/createIsExternal'
 import { createActivityTracker } from '@/services/createActivityTracker'
@@ -8,7 +8,7 @@ import { parseUrl, updateUrl } from '@/services/urlParser'
 import { createRouteValueStore, RouteValueResponse } from '@/services/createRouteValueStore'
 import { createNavigationProgress, NavigationProgressTracker } from '@/services/createNavigationProgress'
 import { getComputations } from '@/services/getComputations'
-import { getAsyncComponents, loadAsyncComponents } from '@/utilities/components'
+import { getAsyncComponents } from '@/utilities/components'
 import { getNavigationProgressKey } from '@/compositions/useNavigation'
 import { DataKind } from '@/services/createNavigationStores'
 import { createRouterHistory } from '@/services/createRouterHistory'
@@ -51,20 +51,7 @@ import { setDocumentTitle } from '@/utilities/setDocumentTitle'
 import { createRoutePage, createRejectionPage } from '@/services/createPage'
 import { Page } from '@/types/page'
 import { getPageKey } from '@/compositions/usePage'
-import { createAbortPromise } from '@/utilities/promises'
-
-type RouteCommitOptions = {
-  route: ResolvedRoute | null,
-  signal: AbortSignal,
-  update: () => void,
-}
-
-type RouteCommit = {
-  /** Call before committing when assets must be ready. */
-  prepare: () => Promise<boolean>,
-  /** Call inside the view transition callback, or directly for ordinary navigation. */
-  commit: () => Promise<boolean>,
-}
+import { createPageCommit, PageCommit } from '@/services/createPageCommit'
 
 type RouterUpdateOptions = {
   replace?: boolean,
@@ -90,6 +77,13 @@ type RunBeforeHooksContext = RunHooksContext & {
 
 type RunAfterHooksContext = RunHooksContext & {
   enabled: boolean,
+}
+
+type PageNavigationOptions = RunHooksContext & {
+  page: Page,
+  options?: RouterUpdateOptions,
+  progress?: NavigationProgressTracker,
+  update?: () => void,
 }
 
 /**
@@ -267,28 +261,6 @@ export function createRouter<
       inert: isSSR || options.hydrating,
     })
 
-    function commitNavigation(): void {
-      if (!to) {
-        reject(NOT_FOUND_REJECTION_TYPE, { to, from })
-        progress.abort()
-
-        return
-      }
-
-      if (!isExternal(url)) {
-        setRouteValuesAndUpdateRoute(to, from, progress, controller.signal)
-      }
-
-      currentPage.value = createRoutePage({ ...currentRoute }, componentsStore)
-
-      progress.close()
-      started.value = true
-
-      if (!options.hydrating) {
-        updateTitle(controller.signal)
-      }
-    }
-
     if (!options.hydrating) {
       const shouldCommit = await runBeforeHooks({ controller, to, from, url, options, progress })
 
@@ -299,10 +271,28 @@ export function createRouter<
       }
     }
 
-    const { commit } = createRouteCommit({
-      route: to,
-      signal: controller.signal,
-      update: commitNavigation,
+    if (!to) {
+      reject(NOT_FOUND_REJECTION_TYPE, { to, from })
+      progress.abort()
+      await runAfterHooks({ controller, to, from, enabled: !isSSR })
+
+      return
+    }
+
+    const external = isExternal(url)
+    const page = createRoutePage(external ? { ...currentRoute } : to, componentsStore, external ? null : valueStore)
+    const { commit } = createNavigationCommit({
+      page,
+      controller,
+      to,
+      from,
+      options,
+      progress,
+      update: () => {
+        if (!external) {
+          updateRoute(to)
+        }
+      },
     })
 
     await Promise.all([
@@ -311,43 +301,39 @@ export function createRouter<
     ])
   })
 
-  function createRouteCommit({ route, signal, update }: RouteCommitOptions): RouteCommit {
-    const isAborted = (): boolean => signal.aborted
+  function createNavigationCommit({ page, controller, to, from, options = {}, progress, update }: PageNavigationOptions): PageCommit {
+    const { signal } = controller
 
-    const prepare: RouteCommit['prepare'] = async () => {
-      if (isAborted()) {
-        return false
-      }
+    return createPageCommit({
+      page,
+      signal,
+      settle: (response, source) => getRouteValueResponse(response, source, to, from, signal),
+      update: ({ props, loaders, values }, components, prepared) => {
+        activity.add(...components)
 
-      if (!route) {
-        return true
-      }
+        if (!prepared) {
+          activity.add(
+            handleRouteValueResponse(props, 'props', to, from, signal),
+            handleRouteValueResponse(loaders, 'loader', to, from, signal),
+          )
+        }
 
-      const values = valueStore.staged().compute(route)
-      const work = Promise.allSettled([
-        values.props,
-        values.loaders,
-        ...loadAsyncComponents(route),
-      ])
-      await Promise.race([
-        work,
-        createAbortPromise(signal),
-      ])
+        progress?.track(...values, ...components)
+        update?.()
 
-      return !isAborted()
-    }
+        if (signal.aborted) {
+          return
+        }
 
-    const commit: RouteCommit['commit'] = () => {
-      if (signal.aborted) {
-        return Promise.resolve(false)
-      }
+        currentPage.value = page
+        progress?.close()
+        started.value = true
 
-      update()
-
-      return nextTick().then(() => !signal.aborted)
-    }
-
-    return { prepare, commit }
+        if (!options.hydrating) {
+          updateTitle(signal)
+        }
+      },
+    })
   }
 
   /**
@@ -362,26 +348,12 @@ export function createRouter<
     return getComputations(to).length + getAsyncComponents(to).length
   }
 
-  function setRouteValuesAndUpdateRoute(to: ResolvedRoute, from: ResolvedRoute | null, progress: NavigationProgressTracker, signal: AbortSignal): void {
-    const { props, loaders, values } = valueStore.commit(to)
-
-    activity.add(
-      handleRouteValueResponse(props, 'props', to, from, signal),
-      handleRouteValueResponse(loaders, 'loader', to, from, signal),
-    )
-
-    progress.track(...values, ...loadAsyncComponents(to))
-
-    updateRoute(to)
-  }
-
   /**
    * Props and loaders are handled the same way, and neither is awaited here: a push or a rejection from
-   * either is acted on whenever it arrives, without holding up the navigation that started it. Once that
-   * navigation is superseded, its outcomes can no longer change the page or run error hooks.
+   * either is acted on whenever it arrives, without holding up the navigation that started it.
    */
-  function handleRouteValueResponse(response: Promise<RouteValueResponse>, source: DataKind, to: ResolvedRoute, from: ResolvedRoute | null, signal: AbortSignal): Promise<void> {
-    return response
+  function handleRouteValueResponse(response: Promise<RouteValueResponse>, source: DataKind, to: ResolvedRoute | null, from: ResolvedRoute | null, signal: AbortSignal): Promise<void> {
+    return getRouteValueResponse(response, source, to, from, signal)
       .then((response) => {
         if (signal.aborted) {
           return
@@ -405,27 +377,26 @@ export function createRouter<
             throw new Error(`Switch is not exhaustive for route data response status: ${JSON.stringify(exhaustive)}`)
         }
       })
-      .catch((error: unknown) => {
-        if (signal.aborted) {
-          return
+  }
+
+  function getRouteValueResponse(response: Promise<RouteValueResponse>, source: DataKind, to: ResolvedRoute | null, from: ResolvedRoute | null, signal: AbortSignal): Promise<RouteValueResponse> {
+    return response.catch((error: unknown) => {
+      if (signal.aborted) {
+        return { status: 'ABANDONED' }
+      }
+
+      try {
+        hooks.runErrorHooks(error, { to, from, source })
+      } catch (error) {
+        if (error instanceof ContextPushError || error instanceof ContextRejectionError) {
+          return error.response
         }
 
-        try {
-          hooks.runErrorHooks(error, { to, from, source })
-        } catch (error) {
-          if (error instanceof ContextPushError) {
-            push(...error.response.to)
-            return
-          }
+        throw error
+      }
 
-          if (error instanceof ContextRejectionError) {
-            reject(error.response.type, { to, from })
-            return
-          }
-
-          throw error
-        }
-      })
+      return { status: 'SUCCESS' }
+    })
   }
 
   const resolve: RouterResolve<TRoutes | TPlugin['routes']> = (
@@ -525,18 +496,23 @@ export function createRouter<
 
     const controller = navigations.begin()
 
-    hooks.runRejectionHooks(rejection, { to, from })
+    const page = createRejectionPage(rejection, currentRoute.getTitle, rejectStatus)
+    const { commit } = createNavigationCommit({
+      page,
+      controller,
+      to,
+      from,
+      update: () => hooks.runRejectionHooks(rejection, { to, from }),
+    })
 
-    currentPage.value = createRejectionPage(rejection, currentRoute.getTitle, rejectStatus)
-    started.value = true
-    updateTitle(controller.signal)
+    activity.add(commit())
   }
 
   const currentPage = shallowRef<Page | null>(null)
   const currentRejection = computed({
     get: () => currentPage.value?.rejection ?? null,
     set: (rejection: Rejection | null) => {
-      const routePage = createRoutePage({ ...currentRoute }, componentsStore)
+      const routePage = createRoutePage({ ...currentRoute }, componentsStore, null)
 
       currentPage.value = isRejection(rejection)
         ? createRejectionPage(rejection, currentRoute.getTitle, rejectStatus)

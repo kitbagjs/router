@@ -84,6 +84,8 @@ export type RouteValue = {
 
 export type RouteValueStore = HasVueAppStore & {
   createDetachedStore: () => DetachedStore,
+  /** Takes staged values into a preparation's own store, which it can adopt or dispose. */
+  claimStaged: () => DetachedStore,
   /**
    * The store the next navigation adopts, created when nothing is staged. Values computed into it ahead of
    * the navigation are found under way when the navigation commits, while the rendered route keeps reading
@@ -111,7 +113,15 @@ export function createRouteValueStore(): RouteValueStore {
   const navigation = createNavigationStores()
 
   const createDetachedStore: RouteValueStore['createDetachedStore'] = () => {
-    const detached = { store: createDataStore() }
+    return createDetachedValueStore(createDataStore())
+  }
+
+  const claimStaged: RouteValueStore['claimStaged'] = () => {
+    return createDetachedValueStore(navigation.claim())
+  }
+
+  function createDetachedValueStore(store: DataStore): DetachedStore {
+    const detached = { store }
 
     const dispose: DetachedStore['dispose'] = () => {
       detached.store.dispose(new NavigationAbandonedError())
@@ -407,6 +417,7 @@ export function createRouteValueStore(): RouteValueStore {
 
   return {
     createDetachedStore,
+    claimStaged,
     staged,
     commit,
     getValues,

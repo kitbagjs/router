@@ -2,6 +2,7 @@ import { Component } from 'vue'
 import { Rejection } from '@/types/rejection'
 import { ResolvedRoute } from '@/types/resolved'
 import { GetTitleCallback } from '@/types/routeTitle'
+import { RouteValueResponses } from '@/services/createRouteValueStore'
 
 /**
  * What the router displays. A rejection's private route supplies its assets, while its public route
@@ -15,4 +16,7 @@ export type Page = {
   status: number,
   getComponent: (depth: number, name: string) => Component | null,
   getTitle: GetTitleCallback,
+  prepareValues: () => RouteValueResponses,
+  commitValues: () => RouteValueResponses,
+  disposeValues: () => void,
 }
