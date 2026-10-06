@@ -55,12 +55,6 @@ import { createViewTransitions, PendingViewTransition } from '@/services/createV
 import { getViewTransitionTypes, supportsViewTransitions } from '@/utilities/viewTransition'
 import { createAbortPromise } from '@/utilities/promises'
 
-type RoutePreparation = {
-  props: PromiseSettledResult<RouteValueResponse>,
-  loaders: PromiseSettledResult<RouteValueResponse>,
-  components: PromiseSettledResult<unknown>[],
-}
-
 type RouteCommitOptions = {
   route: ResolvedRoute | null,
   signal: AbortSignal,
@@ -68,8 +62,8 @@ type RouteCommitOptions = {
 }
 
 type RouteCommit = {
-  /** Call before starting a view transition. */
-  prepare: () => Promise<RoutePreparation | undefined>,
+  /** Call before committing when assets must be ready. */
+  prepare: () => Promise<boolean>,
   /** Call inside the view transition callback, or directly for ordinary navigation. */
   commit: () => Promise<boolean>,
 }
@@ -356,8 +350,12 @@ export function createRouter<
     const isAborted = (): boolean => signal.aborted
 
     const prepare: RouteCommit['prepare'] = async () => {
-      if (isAborted() || !route) {
-        return
+      if (isAborted()) {
+        return false
+      }
+
+      if (!route) {
+        return true
       }
 
       const values = valueStore.staged().compute(route)
@@ -371,13 +369,7 @@ export function createRouter<
         createAbortPromise(signal),
       ])
 
-      if (isAborted()) {
-        return
-      }
-
-      const [props, loaders, ...components] = await work
-
-      return { props, loaders, components }
+      return !isAborted()
     }
 
     const commit: RouteCommit['commit'] = () => {
