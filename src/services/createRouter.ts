@@ -56,7 +56,7 @@ import { createViewTransitions, PendingViewTransition } from '@/services/createV
 import { getViewTransitionTypes, supportsViewTransitions } from '@/utilities/viewTransition'
 import { createAbortPromise } from '@/utilities/promises'
 import { NavigationBehavior } from '@/types/navigation'
-import { getNavigationOption } from '@/utilities/navigation'
+import { getNavigationOption, getRouteNavigationOption } from '@/utilities/navigation'
 
 type RoutePreparation = {
   props: PromiseSettledResult<RouteValueResponse>,
@@ -334,12 +334,12 @@ export function createRouter<
       enabled: !isSSR && !isExternal(url),
     })
 
-    const navigation = getNavigationOption({
+    const { isBlockingNavigation } = getNavigationOption({
       routerNavigation,
-      routeNavigation: to?.matches.findLast((match) => match.navigation !== undefined)?.navigation,
+      routeNavigation: getRouteNavigationOption(to),
       navigation: options.navigation,
     })
-    const isBlocking = navigation === 'blocking' && to !== null && !isExternal(url) && !options.hydrating
+    const isBlocking = isBlockingNavigation && to !== null && !isExternal(url) && !options.hydrating
 
     if (transition) {
       viewTransitions.prepare(transition)
