@@ -188,4 +188,6 @@ A navigation that transitions loads everything the destination renders with befo
 - Navigations on the server.
 - Navigations in a browser without `document.startViewTransition`. These navigate exactly as they do with the option off.
 - Navigations to external URLs.
-- Navigations to an unmatched internal URL, which currently display NotFound without a view transition.
+- Navigations rejected before a route transition starts, including unmatched internal URLs that display NotFound.
+
+Rejection views are not separate transition destinations yet. If a rejection occurs during a route transition, it may appear in the captured destination, but `to` and `from` still describe routes.
