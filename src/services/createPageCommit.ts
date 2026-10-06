@@ -4,6 +4,7 @@ import { RouteValueResponse, RouteValueResponses } from '@/services/createRouteV
 import { DataKind } from '@/services/createNavigationStores'
 import { loadAsyncComponents } from '@/utilities/components'
 import { PageValues, emptyPageValues } from '@/services/createPageValues'
+import { createPageStatus } from '@/services/createPageStatus'
 
 export type PageCommit = {
   /** Resolves with the first replacement outcome, or success once all required assets are ready. */
@@ -24,10 +25,10 @@ type PageCommitOptions = {
 export function createPageCommit({ page, signal, values = emptyPageValues, update, settle }: PageCommitOptions): PageCommit {
   const isAborted = (): boolean => signal.aborted
   const abandoned = Promise.withResolvers<RouteValueResponse>()
-  let state: 'progressive' | 'preparing' | 'prepared' | 'abandoned' = 'progressive'
+  const status = createPageStatus()
 
   const dispose = (): void => {
-    state = 'abandoned'
+    status.set('abandoned')
     values.dispose()
     abandoned.resolve({ status: 'ABANDONED' })
     signal.removeEventListener('abort', dispose)
@@ -42,7 +43,7 @@ export function createPageCommit({ page, signal, values = emptyPageValues, updat
       return { status: 'ABANDONED' }
     }
 
-    state = 'preparing'
+    status.set('preparing')
     try {
       const response = await Promise.race([prepareAssets(), abandoned.promise])
 
@@ -58,7 +59,7 @@ export function createPageCommit({ page, signal, values = emptyPageValues, updat
         return response
       }
 
-      state = 'prepared'
+      status.set('prepared')
 
       return response
     } catch (error) {
@@ -89,13 +90,13 @@ export function createPageCommit({ page, signal, values = emptyPageValues, updat
   }
 
   const commit: PageCommit['commit'] = () => {
-    if (isAborted() || state === 'preparing' || state === 'abandoned') {
+    if (isAborted() || status.isPreparing() || status.isAbandoned()) {
       return Promise.resolve(false)
     }
 
     const responses = values.commit()
     signal.removeEventListener('abort', dispose)
-    update(responses, loadAsyncComponents(page.assets), state === 'prepared')
+    update(responses, loadAsyncComponents(page.assets), status.isPrepared())
 
     return nextTick().then(() => !signal.aborted)
   }
