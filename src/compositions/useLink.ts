@@ -1,5 +1,6 @@
 import { InjectionKey, MaybeRefOrGetter, computed, toValue } from 'vue'
 import { createUsePrefetching } from '@/compositions/usePrefetching'
+import { createUseViewTransition } from '@/compositions/useViewTransition'
 import { createUseRouter } from '@/compositions/useRouter'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouterPushOptions } from '@/types/routerPush'
@@ -30,6 +31,7 @@ type UseLinkFunction<TRouter extends Router> = {
 
 export function createUseLink<TRouter extends Router>(routerKey: InjectionKey<TRouter>): UseLinkFunction<TRouter> {
   const useRouter = createUseRouter(routerKey)
+  const useViewTransition = createUseViewTransition(routerKey)
   const usePrefetching = createUsePrefetching(routerKey)
   const isRoute = createIsRoute(routerKey)
 
@@ -39,6 +41,7 @@ export function createUseLink<TRouter extends Router>(routerKey: InjectionKey<TR
     maybeOptions: MaybeRefOrGetter<UseLinkOptions> = {},
   ) => {
     const router = useRouter()
+    const viewTransition = useViewTransition()
 
     const linkOptions = computed<UseLinkOptions>(() => {
       const sourceValue = toValue(source)
@@ -82,6 +85,7 @@ export function createUseLink<TRouter extends Router>(routerKey: InjectionKey<TR
     const isActive = computed(() => isRoute(router.route) && isDefined(route.value) && router.route.href.startsWith(route.value.href))
     const isExactActive = computed(() => router.route.href === route.value?.href)
     const isExternal = computed(() => !!href.value && router.isExternal(href.value))
+    const isTransitioning = computed(() => viewTransition.isTransitioning && viewTransition.to?.href === href.value)
 
     const { element, commit } = usePrefetching(() => ({
       route: route.value,
@@ -97,6 +101,7 @@ export function createUseLink<TRouter extends Router>(routerKey: InjectionKey<TR
         query: combineUrlSearchParams(pushOptions?.query, linkOptions.value.query),
         hash: pushOptions?.hash ?? linkOptions.value.hash,
         state: { ...linkOptions.value.state, ...pushOptions?.state },
+        viewTransition: pushOptions?.viewTransition ?? linkOptions.value.viewTransition,
       }
 
       const sourceValue = toValue(source)
@@ -120,6 +125,7 @@ export function createUseLink<TRouter extends Router>(routerKey: InjectionKey<TR
       isActive,
       isExactActive,
       isExternal,
+      isTransitioning,
       push,
       replace,
     }

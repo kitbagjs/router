@@ -14,6 +14,7 @@ import { RouterPlugin } from '@/types/routerPlugin'
 import { RoutesName } from '@/types/routesMap'
 import { ExtractRejections, ExtractRejectionTypes, Rejections, BuiltInRejectionType } from '@/types/rejection'
 import { PayloadValueError } from '@/errors/payloadValueError'
+import { ViewTransitionConfig } from '@/types/viewTransition'
 
 /**
  * Options to initialize a {@link Router} instance.
@@ -49,6 +50,13 @@ export type RouterOptions = TransformerOptions & {
    * Determines what assets are prefetched when router-link is rendered for a specific route
    */
   prefetch?: PrefetchConfig,
+
+  /**
+   * Animates navigations with the View Transitions API. Overridden per route and per navigation.
+   *
+   * @default false
+   */
+  viewTransition?: ViewTransitionConfig,
 
   /**
    * Components assigned to each type of rejection your router supports.
