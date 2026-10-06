@@ -24,13 +24,13 @@ type PageCommitOptions = {
 /** The same preparation and render boundary for every page, independent of how it was selected. */
 export function createPageCommit({ page, signal, values = emptyPageValues, update, settle }: PageCommitOptions): PageCommit {
   const isAborted = (): boolean => signal.aborted
-  const abandoned = Promise.withResolvers<RouteValueResponse>()
+  const aborted = Promise.withResolvers<RouteValueResponse>()
   const status = createPageStatus()
 
   const dispose = (): void => {
     status.set('abandoned')
     values.dispose()
-    abandoned.resolve({ status: 'ABANDONED' })
+    aborted.resolve({ status: 'ABANDONED' })
     signal.removeEventListener('abort', dispose)
   }
 
@@ -45,7 +45,7 @@ export function createPageCommit({ page, signal, values = emptyPageValues, updat
 
     status.set('preparing')
     try {
-      const response = await Promise.race([prepareAssets(), abandoned.promise])
+      const response = await Promise.race([prepareAssets(), aborted.promise])
 
       if (isAborted()) {
         dispose()
