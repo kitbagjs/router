@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest'
+import { describe, expect, test, vi } from 'vitest'
 import { getViewTransitionTypes, supportsViewTransitions, supportsViewTransitionTypes } from '@/utilities/viewTransition'
 import { createRoute } from '@/services/createRoute'
 import { createResolvedRoute } from '@/services/createResolvedRoute'
@@ -51,14 +51,14 @@ describe('getViewTransitionTypes', () => {
   })
 
   test('a types callback is given the navigation', () => {
+    const callback = vi.fn(() => ['from', 'to'])
     const types = getViewTransitionTypes({
-      routerViewTransition: {
-        types: (navigation) => [navigation.from.name, navigation.to.name],
-      },
+      routerViewTransition: { types: callback },
       ...context,
     })
 
     expect(types).toEqual(['from', 'to'])
+    expect(callback).toHaveBeenCalledWith(context)
   })
 
   test('a types callback returning false skips the transition', () => {

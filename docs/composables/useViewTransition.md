@@ -19,11 +19,13 @@ The returned object is reactive, so read its properties where they are used rath
 | Property | Description |
 | --- | --- |
 | isTransitioning | True from when a navigation is decided to transition until its animation finishes |
-| to | The route being navigated to |
-| from | The route being left |
+| to | The incoming route or rejection |
+| from | The outgoing route or rejection |
 | types | The types the transition runs with |
 | transition | The browser's [`ViewTransition`](https://developer.mozilla.org/en-US/docs/Web/API/ViewTransition), once started |
 
 :::tip
 [Register](/quick-start.html#type-safety) your router to get the proper types for `to` and `from` when using this composable.
 :::
+
+Use `isResolvedRoute` to narrow `to` or `from` before reading route properties. Rejection targets expose their `type` and `status`.

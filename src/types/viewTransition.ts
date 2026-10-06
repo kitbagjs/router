@@ -1,4 +1,5 @@
 import { ResolvedRoute, RouterResolvedRouteUnion } from '@/types/resolved'
+import { Rejection } from '@/types/rejection'
 import { CreatedRouteOptions, Routes } from '@/types/route'
 
 /**
@@ -7,12 +8,14 @@ import { CreatedRouteOptions, Routes } from '@/types/route'
 export type ViewTransitionTypes = string[]
 
 /**
- * The navigation a view transition animates. There is always a route to animate from, since the first
- * navigation never transitions.
+ * The page a view transition captures: a matched route or a rejection.
  */
+export type ViewTransitionTarget = ResolvedRoute | Rejection
+
+/** The outgoing and incoming pages captured by the browser. */
 export type ViewTransitionContext = {
-  to: ResolvedRoute,
-  from: ResolvedRoute,
+  to: ViewTransitionTarget,
+  from: ViewTransitionTarget,
 }
 
 /**
@@ -46,8 +49,8 @@ export type ViewTransitionConfigs = {
  */
 export type RouterViewTransition<TRoutes extends Routes = Routes> = {
   readonly isTransitioning: boolean,
-  readonly to: RouterResolvedRouteUnion<TRoutes> | undefined,
-  readonly from: RouterResolvedRouteUnion<TRoutes> | undefined,
+  readonly to: RouterResolvedRouteUnion<TRoutes> | Rejection | undefined,
+  readonly from: RouterResolvedRouteUnion<TRoutes> | Rejection | undefined,
   readonly types: ViewTransitionTypes,
   readonly transition: ViewTransition | undefined,
 }

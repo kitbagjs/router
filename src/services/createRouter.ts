@@ -18,7 +18,7 @@ import { getInitialUrl } from '@/services/getInitialUrl'
 import { decodePayloadValues, encodePayloadValues, getHydratingPayload, payloadToScript, RouterPayload } from '@/services/payload'
 import { setStateValues } from '@/services/state'
 import { Routes } from '@/types/route'
-import { NOT_FOUND_REJECTION_TYPE } from '@/types/rejection'
+import { NOT_FOUND_REJECTION_TYPE, Rejection, RejectionInternal } from '@/types/rejection'
 import { Router, RouterOptions, ServerRenderResponse, RedirectStatus } from '@/types/router'
 import { RouterPushInternal, RouterPushOptionsInternal, RouterReplaceInternal, RouterReplaceOptionsInternal } from '@/types/routerNavigationInternal'
 import { RoutesName } from '@/types/routesMap'
@@ -51,7 +51,7 @@ import { getMatchForUrl } from './getMatchesForUrl'
 import { pathHasTrailingSlash, removeTrailingSlashesFromPath } from '@/utilities/trailingSlashes'
 import { setDocumentTitle } from '@/utilities/setDocumentTitle'
 import { createCurrentRejection } from '@/services/createCurrentRejection'
-import { hasViewTransition, ViewTransitionConfig } from '@/types/viewTransition'
+import { hasViewTransition, ViewTransitionConfig, ViewTransitionTarget } from '@/types/viewTransition'
 import { createViewTransitions, PendingViewTransition } from '@/services/createViewTransitions'
 import { getViewTransitionTypes, supportsViewTransitions } from '@/utilities/viewTransition'
 import { createAbortPromise } from '@/utilities/promises'
@@ -69,6 +69,11 @@ type RouteCommit = {
   prepare: () => Promise<boolean>,
   /** Call inside the view transition callback, or directly for ordinary navigation. */
   commit: () => Promise<boolean>,
+}
+
+type RouteTransitionOptions = {
+  routeCommit: RouteCommit,
+  transition: PendingViewTransition,
 }
 
 type RouterUpdateOptions = {
@@ -90,10 +95,35 @@ type RunHooksContext = {
 }
 
 type ViewTransitionOptions = {
-  to: ResolvedRoute | null,
-  from: ResolvedRoute | null,
+  to: ViewTransitionTarget | null,
+  from: ViewTransitionTarget | null,
+  route: ResolvedRoute | null,
   options: RouterUpdateOptions,
   enabled: boolean,
+}
+
+type RouteValueCommitContext = {
+  to: ResolvedRoute,
+  from: ResolvedRoute | null,
+  progress: NavigationProgressTracker,
+  onRejection: (type: string, context: RejectContext) => void,
+}
+
+type RouteValueResponseContext = Omit<RouteValueCommitContext, 'progress'> & {
+  response: Promise<RouteValueResponse>,
+  source: DataKind,
+}
+
+type RejectionNavigationContext = RejectContext & {
+  type: string,
+  url?: string,
+  options?: RouterUpdateOptions,
+}
+
+type RejectionCommitOptions = {
+  rejection: Rejection & RejectionInternal,
+  context: RejectContext,
+  signal: AbortSignal,
 }
 
 type RunBeforeHooksContext = RunHooksContext & {
@@ -211,7 +241,7 @@ export function createRouter<
 
       case 'REJECT':
         history.update(url, options)
-        reject(response.type, { to, from })
+        await rejectNavigation({ type: response.type, to, from, url, options })
         progress.abort()
 
         return false
@@ -248,7 +278,7 @@ export function createRouter<
 
       case 'REJECT':
         controller.abort()
-        reject(response.type, { to, from })
+        await rejectNavigation({ type: response.type, to, from })
         break
 
       case 'SUCCESS':
@@ -284,9 +314,45 @@ export function createRouter<
       inert: isSSR || options.hydrating,
     })
 
+    const fromView = getViewTransitionSource()
+    let transition: PendingViewTransition | false = false
+    let rejectionWork: Promise<unknown> | undefined
+
+    function rejectRouteValues(type: string, context: RejectContext): void {
+      if (transition) {
+        // Prepared data can reject during the transition callback. Keep that rejection in this capture.
+        const rejection = getRejectionByType(type)
+
+        if (rejection) {
+          const rejectionController = navigations.begin()
+          const rejectionTransition = getViewTransition({
+            to: rejection,
+            from: fromView,
+            route: to,
+            options,
+            enabled: true,
+          })
+          viewTransitions.updateDestination({
+            to: rejection,
+            types: rejectionTransition ? rejectionTransition.types : false,
+          })
+          applyRejection({ rejection, context, signal: rejectionController.signal })
+          const work = Promise.allSettled(loadAsyncComponents(createResolvedRoute(rejection.route)))
+          rejectionWork = Promise.race([
+            work,
+            createAbortPromise(rejectionController.signal),
+          ])
+        }
+
+        return
+      }
+
+      activity.add(rejectNavigation({ type, ...context, url, options }))
+    }
+
     function commitNavigation(): void {
       if (!to) {
-        reject(NOT_FOUND_REJECTION_TYPE, { to, from })
+        rejectRouteValues(NOT_FOUND_REJECTION_TYPE, { to, from })
         progress.abort()
 
         return
@@ -295,7 +361,7 @@ export function createRouter<
       clearRejection()
 
       if (!isExternal(url)) {
-        setRouteValuesAndUpdateRoute(to, from, progress)
+        setRouteValuesAndUpdateRoute({ to, from, progress, onRejection: rejectRouteValues })
       }
 
       progress.close()
@@ -316,14 +382,17 @@ export function createRouter<
       }
     }
 
+    const notFound = getRejectionByType(NOT_FOUND_REJECTION_TYPE)
+    const destination = to ?? notFound
     const routeCommit = createRouteCommit({
-      route: to,
+      route: to ?? createResolvedRoute(notFound.route),
       signal: controller.signal,
       update: commitNavigation,
     })
-    const transition = getViewTransition({
-      to,
-      from,
+    transition = getViewTransition({
+      to: destination,
+      from: fromView,
+      route: to,
       options,
       enabled: !isSSR && !isExternal(url),
     })
@@ -354,7 +423,10 @@ export function createRouter<
     }
 
     if (transition) {
-      await viewTransitions.start(routeCommit.commit)
+      await viewTransitions.start(async () => {
+        await routeCommit.commit()
+        await rejectionWork
+      })
       await runAfterHooks({ controller, to, from, enabled: !isSSR })
       return
     }
@@ -404,17 +476,38 @@ export function createRouter<
     return { prepare, commit }
   }
 
+  async function runViewTransition({ routeCommit, transition }: RouteTransitionOptions): Promise<void> {
+    viewTransitions.prepare(transition)
+
+    const prepared = await routeCommit.prepare()
+
+    if (!prepared) {
+      viewTransitions.cancel(transition)
+      return
+    }
+
+    await viewTransitions.start(routeCommit.commit)
+  }
+
+  function getViewTransitionSource(): ViewTransitionTarget | null {
+    if (!started.value) {
+      return null
+    }
+
+    return currentRejection.value ?? getFromRouteForHooks()
+  }
+
   /**
    * The transition a navigation makes, or false when it does not transition.
    */
-  function getViewTransition({ to, from, options, enabled }: ViewTransitionOptions): PendingViewTransition | false {
+  function getViewTransition({ to, from, route, options, enabled }: ViewTransitionOptions): PendingViewTransition | false {
     if (!enabled || !to || !from || !supportsViewTransitions()) {
       return false
     }
 
     const types = getViewTransitionTypes({
       routerViewTransition,
-      routeViewTransition: to.matches.findLast(hasViewTransition)?.viewTransition,
+      routeViewTransition: route?.matches.findLast(hasViewTransition)?.viewTransition,
       navigationViewTransition: options.viewTransition,
       to,
       from,
@@ -439,12 +532,12 @@ export function createRouter<
     return getComputations(to).length + getAsyncComponents(to).length
   }
 
-  function setRouteValuesAndUpdateRoute(to: ResolvedRoute, from: ResolvedRoute | null, progress: NavigationProgressTracker): void {
+  function setRouteValuesAndUpdateRoute({ to, from, progress, onRejection }: RouteValueCommitContext): void {
     const { props, loaders, values } = valueStore.commit(to)
 
     activity.add(
-      handleRouteValueResponse(props, 'props', to, from),
-      handleRouteValueResponse(loaders, 'loader', to, from),
+      handleRouteValueResponse({ response: props, source: 'props', to, from, onRejection }),
+      handleRouteValueResponse({ response: loaders, source: 'loader', to, from, onRejection }),
     )
 
     progress.track(...values, ...loadAsyncComponents(to))
@@ -456,7 +549,7 @@ export function createRouter<
    * Props and loaders are handled the same way, and neither is awaited here: a push or a rejection from
    * either is acted on whenever it arrives, without holding up the navigation that started it.
    */
-  function handleRouteValueResponse(response: Promise<RouteValueResponse>, source: DataKind, to: ResolvedRoute, from: ResolvedRoute | null): Promise<void> {
+  function handleRouteValueResponse({ response, source, to, from, onRejection }: RouteValueResponseContext): Promise<void> {
     return response
       .then((response) => {
         switch (response.status) {
@@ -469,7 +562,7 @@ export function createRouter<
             break
 
           case 'REJECT':
-            reject(response.type, { to, from })
+            onRejection(response.type, { to, from })
             break
 
           default:
@@ -487,7 +580,7 @@ export function createRouter<
           }
 
           if (error instanceof ContextRejectionError) {
-            reject(error.response.type, { to, from })
+            onRejection(error.response.type, { to, from })
             return
           }
 
@@ -584,20 +677,49 @@ export function createRouter<
     return push(source, options)
   }
 
-  const reject: RouterRejectInternal<TOptions['rejections'] | TPlugin['rejections']> = (type: string, { to = null, from = null }: RejectContext = {}) => {
+  const reject: RouterRejectInternal<TOptions['rejections'] | TPlugin['rejections']> = (type: string, context: RejectContext = {}) => {
+    activity.add(rejectNavigation({ type, ...context }))
+  }
+
+  function rejectNavigation({ type, to = null, from = null, url = createPath(history.location), options = {} }: RejectionNavigationContext): Promise<void> {
     const rejection = getRejectionByType(type)
 
     if (!rejection) {
-      return
+      return Promise.resolve()
     }
 
+    const fromView = getViewTransitionSource()
     const controller = navigations.begin()
+    const transition = getViewTransition({
+      to: rejection,
+      from: fromView,
+      route: to,
+      options,
+      enabled: !isSSR && !isExternal(url),
+    })
+    const routeCommit = createRouteCommit({
+      route: createResolvedRoute(rejection.route),
+      signal: controller.signal,
+      update: () => applyRejection({ rejection, context: { to, from }, signal: controller.signal }),
+    })
 
+    if (transition) {
+      return runViewTransition({ routeCommit, transition })
+    }
+
+    viewTransitions.reset()
+    applyRejection({ rejection, context: { to, from }, signal: controller.signal })
+
+    return Promise.resolve()
+  }
+
+  function applyRejection({ rejection, context, signal }: RejectionCommitOptions): void {
+    const { to = null, from = null } = context
     hooks.runRejectionHooks(rejection, { to, from })
 
     updateRejection(rejection)
     started.value = true
-    updateTitle(controller.signal)
+    updateTitle(signal)
   }
 
   const { currentRejection, updateRejection, clearRejection } = createCurrentRejection()

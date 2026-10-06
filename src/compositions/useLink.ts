@@ -2,7 +2,7 @@ import { InjectionKey, MaybeRefOrGetter, computed, toValue } from 'vue'
 import { createUsePrefetching } from '@/compositions/usePrefetching'
 import { createUseViewTransition } from '@/compositions/useViewTransition'
 import { createUseRouter } from '@/compositions/useRouter'
-import { ResolvedRoute } from '@/types/resolved'
+import { isResolvedRoute, ResolvedRoute } from '@/types/resolved'
 import { RouterPushOptions } from '@/types/routerPush'
 import { RouteParamsByKey } from '@/types/routeWithParams'
 import { UrlString, isUrlString } from '@/types/urlString'
@@ -85,7 +85,11 @@ export function createUseLink<TRouter extends Router>(routerKey: InjectionKey<TR
     const isActive = computed(() => isRoute(router.route) && isDefined(route.value) && router.route.href.startsWith(route.value.href))
     const isExactActive = computed(() => router.route.href === route.value?.href)
     const isExternal = computed(() => !!href.value && router.isExternal(href.value))
-    const isTransitioning = computed(() => viewTransition.isTransitioning && viewTransition.to?.href === href.value)
+    const isTransitioning = computed(() => {
+      const { to, isTransitioning } = viewTransition
+
+      return isTransitioning && isResolvedRoute(to) && to.href === href.value
+    })
 
     const { element, commit } = usePrefetching(() => ({
       route: route.value,

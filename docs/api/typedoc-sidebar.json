@@ -684,6 +684,10 @@
         "link": "/api/types/ViewTransitionProps.md"
       },
       {
+        "text": "ViewTransitionTarget",
+        "link": "/api/types/ViewTransitionTarget.md"
+      },
+      {
         "text": "ViewTransitionTypes",
         "link": "/api/types/ViewTransitionTypes.md"
       },

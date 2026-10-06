@@ -2,6 +2,7 @@ import { afterEach, beforeAll, expect, MockInstance, test, vi } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import { createApp, defineAsyncComponent, defineComponent, h } from 'vue'
 import { register, unregister } from 'view-transitions-mock'
+import { isResolvedRoute } from '@/types/resolved'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
 import { component } from '@/utilities/testHelpers'
@@ -128,13 +129,13 @@ test('a browser without the api navigates as before', async () => {
   }
 })
 
-test('a navigation to a url no route matches does not transition', async () => {
+test('a navigation to an unmatched internal URL transitions to NotFound', async () => {
   const started = spyOnTransitions()
   const router = await startRouter({ viewTransition: true })
 
   await router.push('/nowhere')
 
-  expect(started).not.toHaveBeenCalled()
+  expect(started).toHaveBeenCalledOnce()
 })
 
 test('a route option overrides the router option', async () => {
@@ -401,8 +402,8 @@ test('useViewTransition describes the navigation while its data loads, then carr
     types: ['slide'],
     transition: undefined,
   })
-  expect(viewTransitionOf(router).to?.name).toBe('withProps')
-  expect(viewTransitionOf(router).from?.name).toBe('routeA')
+  expect(viewTransitionOf(router).to).toMatchObject({ name: 'withProps' })
+  expect(viewTransitionOf(router).from).toMatchObject({ name: 'routeA' })
 
   props.resolve({ value: 'loaded' })
   await navigation
@@ -427,7 +428,7 @@ test('a navigation that does not transition clears the transition state', async 
   const toSlow = router.push('slow')
   await flushPromises()
 
-  expect(viewTransitionOf(router).to?.name).toBe('slow')
+  expect(viewTransitionOf(router).to).toMatchObject({ name: 'slow' })
 
   await router.push('routeB', {}, { viewTransition: false })
 
@@ -448,7 +449,8 @@ test('useViewTransition returns the provided state', async () => {
     const viewTransition = useViewTransition()
 
     return () => {
-      seen(viewTransition.isTransitioning, viewTransition.to?.name)
+      const { to, isTransitioning } = viewTransition
+      seen(isTransitioning, isResolvedRoute(to) ? to.name : undefined)
 
       return h('div')
     }
@@ -549,7 +551,7 @@ test('view transition state belongs to the router that provides it', async () =>
   const navigation = first.push('slow')
   await flushPromises()
 
-  expect(firstState.to?.name).toBe('slow')
+  expect(firstState.to).toMatchObject({ name: 'slow' })
   expect(secondState.isTransitioning).toBe(false)
 
   first.stop()
