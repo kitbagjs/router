@@ -20,6 +20,7 @@
     "prepublishOnly": "npm run build",
     "build:watch": "vite build --watch --minify=false",
     "dev": "vite build --watch --minify=false",
+    "playground:view-transitions": "vite --config playground/vite.config.ts",
     "test": "vitest",
     "lint": "eslint ./src",
     "lint:fix": "eslint ./src --fix",
