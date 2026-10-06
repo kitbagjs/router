@@ -1,10 +1,11 @@
 import { flushPromises } from '@vue/test-utils'
 import { Location } from '@/services/history'
 import { describe, expect, test, vi } from 'vitest'
-import { computed, toRefs } from 'vue'
+import { computed, createApp, toRefs } from 'vue'
 import { DuplicateNamesError } from '@/errors/duplicateNamesError'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
+import { createRouterAssets } from '@/services/createRouterAssets'
 import * as createRouterHistoryUtilities from '@/services/createRouterHistory'
 import { component, routes } from '@/utilities/testHelpers'
 import { createExternalRoute } from '@/services/createExternalRoute'
@@ -54,6 +55,31 @@ test('external navigation runs hooks while retaining the current route and its d
   expect(router.route.matched.name).toBe('home')
   await expect(router.route.data).resolves.toBe('current')
   expect(load).toHaveBeenCalledOnce()
+})
+
+test('external navigation preserves the displayed rejection', async () => {
+  const home = createRoute({ name: 'home', path: '/', component })
+  const external = createExternalRoute({ name: 'external', host: 'https://kitbag.dev', path: '/' })
+  const denied = createRejection({ type: 'Denied', component })
+  const router = createRouter([home, external], { initialUrl: '/', historyMode: 'memory', rejections: [denied] })
+  const app = createApp({})
+
+  app.use(router)
+
+  const { useRejection } = createRouterAssets(router)
+  const rejection = app.runWithContext(useRejection)
+
+  await router.start()
+  router.reject('Denied')
+  await flushPromises()
+
+  const displayed = rejection.value
+
+  expect(displayed?.type).toBe('Denied')
+
+  await router.push('external')
+
+  expect(rejection.value).toBe(displayed)
 })
 
 test('initial state is set', async () => {

@@ -91,7 +91,9 @@ type PageNavigationOptions = RunHooksContext & {
   onCommit: () => void,
 }
 
-type PageNavigationRequest = Omit<PageNavigationOptions, 'controller' | 'progress'> & {
+type NavigationRequest = Omit<RunHooksContext, 'controller'> & {
+  destination?: PageDestination,
+  options?: RouterUpdateOptions,
   url?: string,
 }
 
@@ -229,19 +231,16 @@ export function createRouter<
     const to = find(url, options) ?? null
     const from = getFromRouteForHooks()
 
-    return navigate({ ...getPageDestination(to, from), to, from, url, options })
+    return navigate({ destination: getPageDestination(to, from), to, from, url, options })
   }
 
-  function getPageDestination(to: ResolvedRoute | null, from: ResolvedRoute | null): PageDestination {
+  function getPageDestination(to: ResolvedRoute | null, from: ResolvedRoute | null): PageDestination | undefined {
     if (!to) {
       return getRejectionDestination(notFoundRejection, { to, from })
     }
 
     if (isExternal(to.href)) {
-      return {
-        page: createRoutePage({ ...currentRoute }, componentsStore),
-        onCommit: () => {},
-      }
+      return
     }
 
     return {
@@ -258,7 +257,7 @@ export function createRouter<
     }
   }
 
-  const navigate = activity.wrap(async (request: PageNavigationRequest): Promise<void> => {
+  const navigate = activity.wrap(async (request: NavigationRequest): Promise<void> => {
     let controller = navigations.begin()
 
     if (controller.signal.aborted) {
@@ -270,7 +269,7 @@ export function createRouter<
     let progress = navigationProgress.begin({
       to: navigation.to,
       from,
-      expected: countPageUnits(navigation),
+      expected: countPageUnits(navigation.destination),
       inert: isSSR || options.hydrating,
     })
 
@@ -306,11 +305,11 @@ export function createRouter<
 
           controller = navigations.begin()
           progress.abort()
-          navigation = { ...navigation, ...destination, to: null, values: emptyPageValues }
+          navigation = { ...navigation, destination, to: null }
           progress = navigationProgress.begin({
             to: null,
             from,
-            expected: countPageUnits(navigation),
+            expected: countPageUnits(navigation.destination),
             inert: isSSR,
           })
           break
@@ -328,7 +327,14 @@ export function createRouter<
       }
     }
 
-    const { commit } = createNavigationCommit({ ...navigation, controller, progress })
+    if (!navigation.destination) {
+      progress.close()
+      await runAfterHooks({ controller, to: navigation.to, from, enabled: !isSSR })
+
+      return
+    }
+
+    const { commit } = createNavigationCommit({ ...navigation, ...navigation.destination, controller, progress })
 
     await Promise.all([
       commit(),
@@ -469,7 +475,12 @@ export function createRouter<
   }
 
   /** Counts the assets this page will actually compute or load. */
-  function countPageUnits({ page, values }: PageDestination): number {
+  function countPageUnits(destination?: PageDestination): number {
+    if (!destination) {
+      return 0
+    }
+
+    const { page, values } = destination
     const components = getAsyncComponents(page.assets).length
 
     if (!values || values === emptyPageValues) {
@@ -634,7 +645,7 @@ export function createRouter<
     const { to = null, from: sourceFrom = from } = context
 
     return navigate({
-      ...getRejectionDestination(rejection, { to, from: sourceFrom }),
+      destination: getRejectionDestination(rejection, { to, from: sourceFrom }),
       to: null,
       from,
       options,
