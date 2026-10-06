@@ -214,7 +214,10 @@ describe('loader context', () => {
     ready.resolve()
     await flushPromises()
 
-    expect(onRejection).toHaveBeenCalledExactlyOnceWith('Denied', { to: null, from: null })
+    expect(onRejection).toHaveBeenCalledExactlyOnceWith('Denied', {
+      to: null,
+      from: expect.objectContaining({ name: 'route' }),
+    })
   })
 
   test('a loader can reject', async () => {

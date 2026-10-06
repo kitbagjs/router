@@ -992,10 +992,11 @@ describe('router.onRejection', () => {
     await router.start()
 
     router.reject('CustomRejection')
+    await flushPromises()
 
     expect(onRejection).toHaveBeenCalledWith('CustomRejection', {
       to: null,
-      from: null,
+      from: expect.objectContaining({ name: 'route' }),
     })
   })
 
@@ -1124,9 +1125,15 @@ describe('a url that matches no route', () => {
     })
   })
 
-  test('runs leave hooks with a null to', async () => {
-    const onBeforeRouteLeave = vi.fn()
-    const onAfterRouteLeave = vi.fn()
+  test.each(['missing', 'manual'])('%s rejection runs leave hooks with a null to', async (trigger) => {
+    const events: string[] = []
+    const onBeforeRouteLeave = vi.fn(() => {
+      events.push('before leave')
+    })
+    const onAfterRouteLeave = vi.fn(() => {
+      events.push('after leave')
+    })
+    const enterOrUpdate = vi.fn()
     const route = createRoute({ name: 'route', component, path: '/foo' })
     const router = createRouter([route], { initialUrl: '/foo' })
 
@@ -1134,11 +1141,42 @@ describe('a url that matches no route', () => {
 
     router.onBeforeRouteLeave(onBeforeRouteLeave)
     router.onAfterRouteLeave(onAfterRouteLeave)
+    router.onBeforeRouteEnter(enterOrUpdate)
+    router.onBeforeRouteUpdate(enterOrUpdate)
+    router.onAfterRouteEnter(enterOrUpdate)
+    router.onAfterRouteUpdate(enterOrUpdate)
+    router.onRejection(() => {
+      events.push('reject')
+    })
 
-    await router.push('/does-not-exist')
+    if (trigger === 'missing') {
+      await router.push('/does-not-exist')
+    } else {
+      router.reject('NotFound')
+      await flushPromises()
+    }
 
-    expect(onBeforeRouteLeave).toHaveBeenCalledWith(null, expect.anything())
-    expect(onAfterRouteLeave).toHaveBeenCalledWith(null, expect.anything())
+    const context = expect.objectContaining({ from: expect.objectContaining({ name: 'route' }) })
+
+    expect(onBeforeRouteLeave).toHaveBeenCalledExactlyOnceWith(null, context)
+    expect(onAfterRouteLeave).toHaveBeenCalledExactlyOnceWith(null, context)
+    expect(enterOrUpdate).not.toHaveBeenCalled()
+    expect(events).toEqual(['before leave', 'reject', 'after leave'])
+  })
+
+  test('after-leave hooks can redirect a rejection to another route', async () => {
+    const home = createRoute({ name: 'home', component, path: '/' })
+    const next = createRoute({ name: 'next', component, path: '/next' })
+    const router = createRouter([home, next], { initialUrl: '/' })
+    const onAfterRouteLeave = vi.fn((_to, { push }) => push('next'))
+
+    await router.start()
+    router.onAfterRouteLeave(onAfterRouteLeave)
+    router.reject('NotFound')
+    await flushPromises()
+
+    expect(router.route.name).toBe('next')
+    expect(onAfterRouteLeave).toHaveBeenCalledOnce()
   })
 })
 

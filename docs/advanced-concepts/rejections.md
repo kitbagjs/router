@@ -85,6 +85,8 @@ function maybeAuthNeeded() {
 }
 ```
 
+Calling `router.reject` and navigating to an unmatched URL follow the same navigation lifecycle. The current route's `onBeforeRouteLeave` hooks run with `to: null` and can delay, cancel, or redirect the rejection. Once the rejection is committed, `onAfterRouteLeave` hooks run with `to: null`. Route enter and update hooks do not run for the rejection.
+
 ### Get Rejection
 
 Though it's uncommon, your rejection components could access to the current rejection with `useRejection` if you need it.

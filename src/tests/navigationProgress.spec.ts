@@ -191,6 +191,23 @@ describe('navigation progress', () => {
     expect(navigation.total.value).toBe(0)
   })
 
+  test('a manual rejection finishes progress while the old route still has a pending loader', async () => {
+    const home = createRoute({ name: 'home', path: '/', component }).addLoader(never)
+    const router = createRouter([home], { initialUrl: '/' })
+    const navigation = observe(router)
+
+    await router.start()
+    expect(navigation.pending.value).toBe(true)
+
+    router.reject('NotFound')
+    await flushPromises()
+
+    expect(navigation.pending.value).toBe(false)
+    expect(navigation.to.value).toBeNull()
+    expect(navigation.from.value).toBeNull()
+    expect(navigation.total.value).toBe(navigation.settled.value)
+  })
+
   test('an abort from a before hook hides the navigation without completing it', async () => {
     const home = createRoute({ name: 'home', path: '/', component })
 

@@ -18,7 +18,7 @@ import { getInitialUrl } from '@/services/getInitialUrl'
 import { decodePayloadValues, encodePayloadValues, getHydratingPayload, payloadToScript, RouterPayload } from '@/services/payload'
 import { setStateValues } from '@/services/state'
 import { Routes } from '@/types/route'
-import { isRejection, NOT_FOUND_REJECTION_TYPE, Rejection } from '@/types/rejection'
+import { isRejection, NOT_FOUND_REJECTION_TYPE, Rejection, RejectionInternal } from '@/types/rejection'
 import { Router, RouterOptions, ServerRenderResponse, RedirectStatus } from '@/types/router'
 import { RouterPushInternal, RouterPushOptionsInternal, RouterReplaceInternal, RouterReplaceOptionsInternal } from '@/types/routerNavigationInternal'
 import { RoutesName } from '@/types/routesMap'
@@ -50,6 +50,7 @@ import { pathHasTrailingSlash, removeTrailingSlashesFromPath } from '@/utilities
 import { setDocumentTitle } from '@/utilities/setDocumentTitle'
 import { createRoutePage, createRejectionPage } from '@/services/createPage'
 import { Page } from '@/types/page'
+import { BeforeHookResponse } from '@/types/hooks'
 import { getPageKey } from '@/compositions/usePage'
 import { createPageValues, emptyPageValues, PageValues } from '@/services/createPageValues'
 import { createPageStatus } from '@/services/createPageStatus'
@@ -71,12 +72,6 @@ type RunHooksContext = {
   from: ResolvedRoute | null,
 }
 
-type RunBeforeHooksContext = RunHooksContext & {
-  url: string,
-  options: RouterUpdateOptions,
-  progress: NavigationProgressTracker,
-}
-
 type RunAfterHooksContext = RunHooksContext & {
   enabled: boolean,
 }
@@ -95,6 +90,12 @@ type PageNavigationOptions = RunHooksContext & {
   progress?: NavigationProgressTracker,
   onCommit: () => void,
 }
+
+type PageNavigationRequest = Omit<PageNavigationOptions, 'controller' | 'progress'> & {
+  url?: string,
+}
+
+type PageDestination = Pick<PageNavigationOptions, 'page' | 'values' | 'onCommit'>
 
 /**
  * Creates a router instance for a Vue application, equipped with methods for route handling, lifecycle hooks, and state management.
@@ -173,45 +174,14 @@ export function createRouter<
     return getMatchForUrl(filteredRoutes, url, { ...resolveOptions, ...parseOptions })
   }
 
-  /**
-   * Runs the before hooks for a navigation and reacts to their response. Reports whether the
-   * navigation should continue.
-   */
-  async function runBeforeHooks({ controller, to, from, url, options, progress }: RunBeforeHooksContext): Promise<boolean> {
+  async function runBeforeHooks({ controller, to, from, progress }: RunHooksContext & { progress: NavigationProgressTracker }): Promise<BeforeHookResponse> {
     const response = await hooks.runBeforeRouteHooks({ to, from, signal: controller.signal, progress })
 
     if (controller.signal.aborted) {
-      return false
+      return { status: 'ABORT' }
     }
 
-    switch (response.status) {
-      case 'ABORT':
-        progress.abort()
-
-        return false
-
-      case 'PUSH':
-      case 'REDIRECT':
-        await push(...response.to)
-
-        return false
-
-      case 'REJECT':
-        history.update(url, options)
-        reject(response.type, { to, from })
-        progress.abort()
-
-        return false
-
-      case 'SUCCESS':
-        history.update(url, options)
-
-        return true
-
-      default:
-        const exhaustive: never = response
-        throw new Error(`Switch is not exhaustive for before hook response status: ${JSON.stringify(exhaustive)}`)
-    }
+    return response
   }
 
   /**
@@ -247,7 +217,7 @@ export function createRouter<
     }
   }
 
-  const set = activity.wrap(async (url: string, options: RouterUpdateOptions = {}): Promise<void> => {
+  async function set(url: string, options: RouterUpdateOptions = {}): Promise<void> {
     if (pathHasTrailingSlash(url) && shouldRemoveTrailingSlashes) {
       const cleanedUrl = removeTrailingSlashesFromPath(url)
 
@@ -256,61 +226,113 @@ export function createRouter<
       }
     }
 
-    const controller = navigations.begin()
+    const to = find(url, options) ?? null
+    const from = getFromRouteForHooks()
+
+    return navigate({ ...getPageDestination(to, from), to, from, url, options })
+  }
+
+  function getPageDestination(to: ResolvedRoute | null, from: ResolvedRoute | null): PageDestination {
+    if (!to) {
+      return getRejectionDestination(notFoundRejection, { to, from })
+    }
+
+    if (isExternal(to.href)) {
+      return {
+        page: createRoutePage({ ...currentRoute }, componentsStore),
+        onCommit: () => {},
+      }
+    }
+
+    return {
+      page: createRoutePage(to, componentsStore),
+      values: createPageValues(to, valueStore),
+      onCommit: () => updateRoute(to),
+    }
+  }
+
+  function getRejectionDestination(rejection: Rejection & RejectionInternal, context: Pick<RunHooksContext, 'to' | 'from'>): PageDestination {
+    return {
+      page: createRejectionPage(rejection, currentRoute.getTitle, rejectStatus),
+      onCommit: () => hooks.runRejectionHooks(rejection, context),
+    }
+  }
+
+  const navigate = activity.wrap(async (request: PageNavigationRequest): Promise<void> => {
+    let controller = navigations.begin()
 
     if (controller.signal.aborted) {
       return
     }
 
-    const to = find(url, options) ?? null
-    const from = getFromRouteForHooks()
-    const progress = navigationProgress.begin({
-      to,
+    let navigation = request
+    const { from, options = {} } = request
+    let progress = navigationProgress.begin({
+      to: navigation.to,
       from,
-      expected: countRouteUnits(url, to),
+      expected: countPageUnits(navigation),
       inert: isSSR || options.hydrating,
     })
 
     if (!options.hydrating) {
-      const shouldCommit = await runBeforeHooks({ controller, to, from, url, options, progress })
+      const response = await runBeforeHooks({ controller, to: navigation.to, from, progress })
 
-      if (!shouldCommit) {
-        controller.abort()
+      switch (response.status) {
+        case 'ABORT':
+          controller.abort()
+          progress.abort()
 
-        return
+          return
+
+        case 'PUSH':
+        case 'REDIRECT':
+          await push(...response.to)
+          controller.abort()
+          progress.abort()
+
+          return
+
+        case 'REJECT':
+          const rejection = getRejectionByType(response.type)
+
+          if (!rejection) {
+            controller.abort()
+            progress.abort()
+
+            return
+          }
+
+          const destination = getRejectionDestination(rejection, { to: navigation.to, from })
+
+          controller = navigations.begin()
+          progress.abort()
+          navigation = { ...navigation, ...destination, to: null, values: emptyPageValues }
+          progress = navigationProgress.begin({
+            to: null,
+            from,
+            expected: countPageUnits(navigation),
+            inert: isSSR,
+          })
+          break
+
+        case 'SUCCESS':
+          break
+
+        default:
+          const exhaustive: never = response
+          throw new Error(`Switch is not exhaustive for before hook response status: ${JSON.stringify(exhaustive)}`)
+      }
+
+      if (request.url) {
+        history.update(request.url, options)
       }
     }
 
-    if (!to) {
-      reject(NOT_FOUND_REJECTION_TYPE, { to, from })
-      progress.abort()
-      await runAfterHooks({ controller, to, from, enabled: !isSSR })
-
-      return
-    }
-
-    const navigation: PageNavigationOptions = {
-      page: createRoutePage(to, componentsStore),
-      values: createPageValues(to, valueStore),
-      controller,
-      to,
-      from,
-      options,
-      progress,
-      onCommit: () => updateRoute(to),
-    }
-
-    if (isExternal(url)) {
-      navigation.page = createRoutePage({ ...currentRoute }, componentsStore)
-      navigation.values = emptyPageValues
-      navigation.onCommit = () => {}
-    }
-
-    const { commit } = createNavigationCommit(navigation)
+    const { commit } = createNavigationCommit({ ...navigation, controller, progress })
 
     await Promise.all([
       commit(),
-      runAfterHooks({ controller, to, from, enabled: !isSSR }),
+      runAfterHooks({ controller, to: navigation.to, from, enabled: !isSSR }),
     ])
   })
 
@@ -446,16 +468,15 @@ export function createRouter<
     return { prepare, commit }
   }
 
-  /**
-   * The units a route needs before it has everything it renders with, known before anything runs so the
-   * total never grows once the before hooks are under way.
-   */
-  function countRouteUnits(url: string, to: ResolvedRoute | null): number {
-    if (!to || isExternal(url)) {
-      return 0
+  /** Counts the assets this page will actually compute or load. */
+  function countPageUnits({ page, values }: PageDestination): number {
+    const components = getAsyncComponents(page.assets).length
+
+    if (!values || values === emptyPageValues) {
+      return components
     }
 
-    return getComputations(to).length + getAsyncComponents(to).length
+    return components + getComputations(page.assets).length
   }
 
   /**
@@ -598,25 +619,26 @@ export function createRouter<
     return push(source, options)
   }
 
-  const reject: RouterRejectInternal<TOptions['rejections'] | TPlugin['rejections']> = (type: string, { to = null, from = null }: RejectContext = {}) => {
+  const reject: RouterRejectInternal<TOptions['rejections'] | TPlugin['rejections']> = (type: string, context: RejectContext = {}) => {
+    void navigateRejection(type, context)
+  }
+
+  function navigateRejection(type: string, context: RejectContext = {}, options: RouterUpdateOptions = {}): Promise<void> {
     const rejection = getRejectionByType(type)
 
     if (!rejection) {
-      return
+      return Promise.resolve()
     }
 
-    const controller = navigations.begin()
+    const from = getFromRouteForHooks()
+    const { to = null, from: sourceFrom = from } = context
 
-    const page = createRejectionPage(rejection, currentRoute.getTitle, rejectStatus)
-    const { commit } = createNavigationCommit({
-      page,
-      controller,
-      to,
+    return navigate({
+      ...getRejectionDestination(rejection, { to, from: sourceFrom }),
+      to: null,
       from,
-      onCommit: () => hooks.runRejectionHooks(rejection, { to, from }),
+      options,
     })
-
-    activity.add(commit())
   }
 
   const currentPage = shallowRef<Page | null>(null)
@@ -692,14 +714,14 @@ export function createRouter<
     const to = find(initialUrl) ?? null
 
     if (!to) {
-      reject(NOT_FOUND_REJECTION_TYPE, { to, from: null })
+      await navigateRejection(NOT_FOUND_REJECTION_TYPE, { to, from: null }, { hydrating: true })
 
       return
     }
 
     switch (payload.kind) {
       case 'reject':
-        reject(payload.rejection, { to, from: null })
+        await navigateRejection(payload.rejection, { to, from: null }, { hydrating: true })
 
         return
 
@@ -796,7 +818,11 @@ export function createRouter<
   }
 
   function getFromRouteForHooks(): ResolvedRoute | null {
-    return started.value ? { ...currentRoute } : null
+    if (!started.value || currentPage.value?.rejection) {
+      return null
+    }
+
+    return { ...currentRoute }
   }
 
   function install(app: App): void {
