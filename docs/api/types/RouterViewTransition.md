@@ -18,8 +18,8 @@ before it is captured. `transition` is set once the browser has been asked to tr
 
 | Property | Modifier | Type |
 | ------ | ------ | ------ |
-| <a id="from"></a> `from` | `readonly` | \| [`RouterResolvedRouteUnion`](RouterResolvedRouteUnion.md)\<`TRoutes`\> \| [`Rejection`](Rejection.md) \| `undefined` |
+| <a id="from"></a> `from` | `readonly` | \| [`RouterResolvedRouteUnion`](RouterResolvedRouteUnion.md)\<`TRoutes`\> \| `undefined` |
 | <a id="istransitioning"></a> `isTransitioning` | `readonly` | `boolean` |
-| <a id="to"></a> `to` | `readonly` | \| [`RouterResolvedRouteUnion`](RouterResolvedRouteUnion.md)\<`TRoutes`\> \| [`Rejection`](Rejection.md) \| `undefined` |
+| <a id="to"></a> `to` | `readonly` | \| [`RouterResolvedRouteUnion`](RouterResolvedRouteUnion.md)\<`TRoutes`\> \| `undefined` |
 | <a id="transition"></a> `transition` | `readonly` | `ViewTransition` \| `undefined` |
 | <a id="types"></a> `types` | `readonly` | [`ViewTransitionTypes`](ViewTransitionTypes.md) |

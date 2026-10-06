@@ -184,7 +184,6 @@
 - [ViewTransitionConfigs](types/ViewTransitionConfigs.md)
 - [ViewTransitionContext](types/ViewTransitionContext.md)
 - [ViewTransitionProps](types/ViewTransitionProps.md)
-- [ViewTransitionTarget](types/ViewTransitionTarget.md)
 - [ViewTransitionTypes](types/ViewTransitionTypes.md)
 - [ViewTransitionTypesCallback](types/ViewTransitionTypesCallback.md)
 - [WithData](types/WithData.md)

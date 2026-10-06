@@ -75,18 +75,12 @@ html:active-view-transition-type(slide-left) {
 }
 ```
 
-Types can also be a callback, given the outgoing `from` and incoming `to` page. Each can be a resolved route or a rejection. Use `isResolvedRoute` to narrow them before reading route properties. Returning `false` skips the transition for that navigation.
+Types can also be a callback, given the `to` and `from` routes of the navigation. Returning `false` skips the transition for that navigation.
 
 ```ts
-import { isResolvedRoute } from '@kitbag/router'
-
 const router = createRouter(routes, {
   viewTransition: {
     types: ({ to, from }) => {
-      if (!isResolvedRoute(to) || !isResolvedRoute(from)) {
-        return ['rejection']
-      }
-
       if (to.matched.id === from.matched.id) {
         return false // a param or query change on the same route does not animate
       }
@@ -130,8 +124,8 @@ You can also bind `view-transition-name` yourself using `isTransitioning` from [
 | Property | Description |
 | --- | --- |
 | isTransitioning | True from when a navigation is decided to transition until its animation finishes |
-| to | The incoming route or rejection |
-| from | The outgoing route or rejection |
+| to | The route being navigated to |
+| from | The route being left |
 | types | The [types](#types) the transition runs with |
 | transition | The browser's `ViewTransition`, once started |
 
@@ -186,9 +180,7 @@ To respect users who prefer less motion, turn the animation off in css.
 
 ## Async Data
 
-A navigation that transitions loads everything the destination renders with before the transition starts: the route's [props](/core-concepts/component-props), its loaders and any [async components](/advanced-concepts/prefetching#prefetching-components). The previous page stays on screen and interactive while that happens, and the browser then captures the destination with its content rather than a placeholder. Navigations without a view transition follow their `navigation` option.
-
-Navigations that display a rejection, including NotFound for an unmatched internal URL, also transition. The browser captures the rejection view as the destination. A subsequent navigation transitions out of that rejection view.
+A navigation that transitions loads everything the destination renders with before the transition starts: the route's [props](/core-concepts/component-props), its loaders and any [async components](/advanced-concepts/prefetching#prefetching-components). The previous page stays on screen and interactive while that happens, and the browser then captures the destination with its content rather than a placeholder. Navigations that do not transition update the route immediately.
 
 ## What Does Not Transition
 
@@ -196,3 +188,6 @@ Navigations that display a rejection, including NotFound for an unmatched intern
 - Navigations on the server.
 - Navigations in a browser without `document.startViewTransition`. These navigate exactly as they do with the option off.
 - Navigations to external URLs.
+- Navigations rejected before a route transition starts, including unmatched internal URLs that display NotFound.
+
+Rejection views are not separate transition destinations yet. If a rejection occurs during a route transition, it may appear in the captured destination, but `to` and `from` still describe routes.
