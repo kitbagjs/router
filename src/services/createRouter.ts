@@ -5,7 +5,7 @@ import { createIsExternal } from '@/services/createIsExternal'
 import { createActivityTracker } from '@/services/createActivityTracker'
 import { SsrOptionRequiredError } from '@/errors/ssrOptionRequiredError'
 import { parseUrl, updateUrl } from '@/services/urlParser'
-import { createRouteValueStore, RouteValueResponse } from '@/services/createRouteValueStore'
+import { createRouteValueStore, DetachedStore, RouteValueResponse } from '@/services/createRouteValueStore'
 import { createNavigationProgress, NavigationProgressTracker } from '@/services/createNavigationProgress'
 import { getComputations } from '@/services/getComputations'
 import { getAsyncComponents, loadAsyncComponents } from '@/utilities/components'
@@ -51,7 +51,6 @@ import { setDocumentTitle } from '@/utilities/setDocumentTitle'
 import { createRoutePage, createRejectionPage } from '@/services/createPage'
 import { Page } from '@/types/page'
 import { getPageKey } from '@/compositions/usePage'
-import { createPageValues, emptyPageValues, PageValues } from '@/services/createPageValues'
 import { createPageStatus } from '@/services/createPageStatus'
 import { createAbortPromise } from '@/utilities/promises'
 
@@ -84,7 +83,6 @@ type PageCommit = {
 
 type PageNavigationOptions = RunHooksContext & {
   page: Page,
-  values?: PageValues,
   options?: RouterUpdateOptions,
   progress?: NavigationProgressTracker,
   onCommit: () => void,
@@ -103,7 +101,7 @@ type BeforeNavigationContext = {
   progress: NavigationProgressTracker,
 }
 
-type PageDestination = Pick<PageNavigationOptions, 'page' | 'values' | 'onCommit'>
+type PageDestination = Pick<PageNavigationOptions, 'page' | 'onCommit'>
 
 /**
  * Creates a router instance for a Vue application, equipped with methods for route handling, lifecycle hooks, and state management.
@@ -240,7 +238,6 @@ export function createRouter<
 
     return {
       page: createRoutePage(to, componentsStore),
-      values: createPageValues(to, valueStore),
       onCommit: () => updateRoute(to),
     }
   }
@@ -340,13 +337,15 @@ export function createRouter<
     await commit()
   }
 
-  function createNavigationCommit({ page, values = emptyPageValues, controller, to, from, options = {}, progress, onCommit }: PageNavigationOptions): PageCommit {
+  function createNavigationCommit({ page, controller, to, from, options = {}, progress, onCommit }: PageNavigationOptions): PageCommit {
     const { signal } = controller
     const status = createPageStatus()
+    let preparedValues: DetachedStore | undefined
 
     const dispose = (): void => {
       status.set('abandoned')
-      values.dispose()
+      preparedValues?.dispose()
+      preparedValues = undefined
       signal.removeEventListener('abort', dispose)
     }
 
@@ -405,7 +404,13 @@ export function createRouter<
     }
 
     async function prepareValues(): Promise<RouteValueResponse> {
-      const valuesToPrepare = values.prepare()
+      if (!to) {
+        return { status: 'SUCCESS' }
+      }
+
+      preparedValues ??= valueStore.claimStaged()
+
+      const valuesToPrepare = preparedValues.compute(to)
       const props = getRouteValueResponse(valuesToPrepare.props, 'props', to, from, signal)
       const loaders = getRouteValueResponse(valuesToPrepare.loaders, 'loader', to, from, signal)
       const response = await Promise.race([props, loaders])
@@ -436,19 +441,26 @@ export function createRouter<
         return false
       }
 
-      const responses = values.commit()
+      if (to) {
+        preparedValues?.stage()
+        preparedValues = undefined
+
+        const responses = valueStore.commit(to)
+
+        if (!status.isPrepared()) {
+          activity.add(
+            handleRouteValueResponse(responses.props, 'props', to, from, signal),
+            handleRouteValueResponse(responses.loaders, 'loader', to, from, signal),
+          )
+        }
+
+        progress?.track(...responses.values)
+      }
+
       const components = loadAsyncComponents(page.assets)
 
       activity.add(...components)
-
-      if (!status.isPrepared()) {
-        activity.add(
-          handleRouteValueResponse(responses.props, 'props', to, from, signal),
-          handleRouteValueResponse(responses.loaders, 'loader', to, from, signal),
-        )
-      }
-
-      progress?.track(...responses.values, ...components)
+      progress?.track(...components)
       onCommit()
 
       if (status.isAbandoned()) {
@@ -478,14 +490,9 @@ export function createRouter<
       return 0
     }
 
-    const { page, values } = destination
-    const components = getAsyncComponents(page.assets).length
+    const { page } = destination
 
-    if (!values || values === emptyPageValues) {
-      return components
-    }
-
-    return components + getComputations(page.assets).length
+    return getAsyncComponents(page.assets).length + getComputations(page.assets).length
   }
 
   /**

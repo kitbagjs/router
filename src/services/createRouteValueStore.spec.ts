@@ -145,3 +145,48 @@ test('a staged getter keeps its signal until the navigation that adopted it is r
 
   expect(signal.aborted).toBe(true)
 })
+
+test('committing prepared values reuses the loaders that produced them', async () => {
+  const data = Promise.withResolvers<string>()
+  const load = vi.fn(() => data.promise)
+  const route = createResolvedRoute(createRoute({ name: 'route', path: '/' }).addLoader(load))
+  const store = createRouteValueStore()
+  const values = store.claimStaged()
+  const prepared = values.compute(route)
+
+  data.resolve('prepared')
+  await prepared.loaders
+
+  values.stage()
+
+  const committed = store.commit(route)
+
+  await committed.loaders
+  expect(load).toHaveBeenCalledOnce()
+  await expect(store.getData(route)).resolves.toBe('prepared')
+})
+
+test('disposed preparation cannot supply values to the next navigation', async () => {
+  const data = Promise.withResolvers<string>()
+  const signals: AbortSignal[] = []
+  const load = vi.fn((_route, { signal }) => {
+    signals.push(signal)
+
+    return data.promise
+  })
+  const route = createResolvedRoute(createRoute({ name: 'route', path: '/' }).addLoader(load))
+  const store = createRouteValueStore()
+  const first = store.claimStaged()
+
+  first.compute(route)
+  first.dispose()
+  expect(signals[0].aborted).toBe(true)
+
+  const committed = store.commit(route)
+
+  expect(load).toHaveBeenCalledTimes(2)
+  expect(signals[1].aborted).toBe(false)
+  data.resolve('fresh')
+  await committed.loaders
+  await expect(store.getData(route)).resolves.toBe('fresh')
+})
