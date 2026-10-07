@@ -15,4 +15,4 @@ export type RejectContext = {
  * Reject as the router itself calls it, which may name any rejection type and supply the routes the
  * rejection happened between. The router exposes {@link RouterReject} instead.
  */
-export type RouterRejectInternal<TRejections extends Rejections | undefined> = RouterReject<TRejections> & ((type: string, context?: RejectContext) => void)
+export type RouterRejectInternal<TRejections extends Rejections | undefined, TOptions = never> = RouterReject<TRejections> & ((type: string, context?: RejectContext, options?: TOptions) => Promise<void>)

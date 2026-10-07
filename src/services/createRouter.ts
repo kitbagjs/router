@@ -635,11 +635,7 @@ export function createRouter<
     return push(source, options)
   }
 
-  const reject: RouterRejectInternal<TOptions['rejections'] | TPlugin['rejections']> = (type: string, context: RejectContext = {}) => {
-    void navigateRejection(type, context)
-  }
-
-  function navigateRejection(type: string, context: RejectContext = {}, options: RouterUpdateOptions = {}): Promise<void> {
+  const reject: RouterRejectInternal<TOptions['rejections'] | TPlugin['rejections'], RouterUpdateOptions> = (type: string, context: RejectContext = {}, options: RouterUpdateOptions = {}) => {
     const rejection = getRejectionByType(type)
 
     if (!rejection) {
@@ -730,14 +726,14 @@ export function createRouter<
     const to = find(initialUrl) ?? null
 
     if (!to) {
-      await navigateRejection(NOT_FOUND_REJECTION_TYPE, { to, from: null }, { hydrating: true })
+      await reject(NOT_FOUND_REJECTION_TYPE, { to, from: null }, { hydrating: true })
 
       return
     }
 
     switch (payload.kind) {
       case 'reject':
-        await navigateRejection(payload.rejection, { to, from: null }, { hydrating: true })
+        await reject(payload.rejection, { to, from: null }, { hydrating: true })
 
         return
 
@@ -874,6 +870,7 @@ export function createRouter<
     find,
     push,
     replace,
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises -- Public reject is fire-and-forget; hydration awaits the same implementation.
     reject,
     refresh: history.refresh,
     forward: history.forward,
