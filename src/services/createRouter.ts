@@ -72,6 +72,10 @@ type RunHooksContext = {
   from: ResolvedRoute | null,
 }
 
+type RunBeforeHooksContext = RunHooksContext & {
+  progress: NavigationProgressTracker,
+}
+
 type RunAfterHooksContext = RunHooksContext & {
   enabled: boolean,
 }
@@ -176,7 +180,7 @@ export function createRouter<
     return getMatchForUrl(filteredRoutes, url, { ...resolveOptions, ...parseOptions })
   }
 
-  async function runBeforeHooks({ controller, to, from, progress }: RunHooksContext & { progress: NavigationProgressTracker }): Promise<BeforeHookResponse> {
+  async function runBeforeHooks({ controller, to, from, progress }: RunBeforeHooksContext): Promise<BeforeHookResponse> {
     const response = await hooks.runBeforeRouteHooks({ to, from, signal: controller.signal, progress })
 
     if (controller.signal.aborted) {
