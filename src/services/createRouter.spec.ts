@@ -1275,14 +1275,18 @@ describe('a navigation ended by one of its hooks', () => {
 })
 
 describe('a navigation superseded by a newer one', () => {
-  test('does not update the route or history when its before hooks finish', async () => {
+  test.each(['success', 'reject'])('does not update the route or history when its before hooks finish with %s', async (outcome) => {
     const { promise, resolve } = Promise.withResolvers<string>()
     const home = createRoute({ name: 'home', component, path: '/' })
     const slow = createRoute({ name: 'slow', component, path: '/slow' })
     const fast = createRoute({ name: 'fast', component, path: '/fast' })
 
-    slow.onBeforeRouteEnter(async () => {
+    slow.onBeforeRouteEnter(async (_to, { reject }) => {
       await promise
+
+      if (outcome === 'reject') {
+        reject('NotFound')
+      }
     })
 
     const router = createRouter([home, slow, fast], { initialUrl: '/' })

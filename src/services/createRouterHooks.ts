@@ -88,7 +88,15 @@ export function createRouterHooks({ redirectStatus }: RouterHooksOptions): Route
       }
 
       await Promise.all(results)
+
+      if (signal.aborted) {
+        return { status: 'ABORT' }
+      }
     } catch (error) {
+      if (signal.aborted) {
+        return { status: 'ABORT' }
+      }
+
       if (error instanceof ContextPushError) {
         return error.response
       }

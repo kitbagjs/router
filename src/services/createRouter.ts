@@ -50,7 +50,6 @@ import { pathHasTrailingSlash, removeTrailingSlashesFromPath } from '@/utilities
 import { setDocumentTitle } from '@/utilities/setDocumentTitle'
 import { createRoutePage, createRejectionPage } from '@/services/createPage'
 import { Page } from '@/types/page'
-import { BeforeHookResponse } from '@/types/hooks'
 import { getPageKey } from '@/compositions/usePage'
 import { createPageValues, emptyPageValues, PageValues } from '@/services/createPageValues'
 import { createPageStatus } from '@/services/createPageStatus'
@@ -70,10 +69,6 @@ type RunHooksContext = {
   controller: AbortController,
   to: ResolvedRoute | null,
   from: ResolvedRoute | null,
-}
-
-type RunBeforeHooksContext = RunHooksContext & {
-  progress: NavigationProgressTracker,
 }
 
 type RunAfterHooksContext = RunHooksContext & {
@@ -180,16 +175,6 @@ export function createRouter<
     return getMatchForUrl(filteredRoutes, url, { ...resolveOptions, ...parseOptions })
   }
 
-  async function runBeforeHooks({ controller, to, from, progress }: RunBeforeHooksContext): Promise<BeforeHookResponse> {
-    const response = await hooks.runBeforeRouteHooks({ to, from, signal: controller.signal, progress })
-
-    if (controller.signal.aborted) {
-      return { status: 'ABORT' }
-    }
-
-    return response
-  }
-
   /**
    * Runs the after hooks for a navigation and reacts to their response.
    */
@@ -278,7 +263,7 @@ export function createRouter<
     })
 
     if (!options.hydrating) {
-      const response = await runBeforeHooks({ controller, to: navigation.to, from, progress })
+      const response = await hooks.runBeforeRouteHooks({ to: navigation.to, from, signal: controller.signal, progress })
 
       switch (response.status) {
         case 'ABORT':
