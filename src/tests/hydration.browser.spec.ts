@@ -37,26 +37,20 @@ test('a payload for the initial url is adopted synchronously when the router sta
 test('a payload whose route no longer matches rejects with NotFound', async () => {
   embed({ kind: 'success', url: '/gone', values: [] })
 
-  const onRejection = vi.fn()
   const home = createRoute({ name: 'home', path: '/' })
   const router = createRouter([home], { initialUrl: '/gone' })
 
-  router.onRejection(onRejection)
-
   await router.start()
 
-  expect(onRejection).toHaveBeenCalledWith('NotFound', { to: null, from: null })
+  expect(router.route.name).toBe('NotFound')
 })
 
 test('a payload with a rejection is adopted synchronously when the router starts', async () => {
-  embed({ kind: 'reject', url: '/secret', rejection: 'Locked' })
+  embed({ kind: 'reject', url: '/secret', rejection: 'Locked', values: [] })
 
   const locked = createRejection({ type: 'Locked', status: 423 })
-  const onRejection = vi.fn()
   const secret = createRoute({ name: 'secret', path: '/secret' })
   const router = createRouter([secret], { initialUrl: '/secret', rejections: [locked] })
-
-  router.onRejection(onRejection)
 
   const ready = router.start()
 
@@ -64,22 +58,19 @@ test('a payload with a rejection is adopted synchronously when the router starts
 
   await ready
 
-  expect(onRejection).toHaveBeenCalledWith('Locked', { to: expect.objectContaining({ name: 'secret' }), from: null })
+  expect(router.route.name).toBe('Locked')
 })
 
-test('a reject payload whose url no longer matches rejects with NotFound', async () => {
-  embed({ kind: 'reject', url: '/gone', rejection: 'Locked' })
+test('a reject payload does not require its address to match a URL route', async () => {
+  embed({ kind: 'reject', url: '/gone', rejection: 'Locked', values: [] })
 
   const locked = createRejection({ type: 'Locked', status: 423 })
-  const onRejection = vi.fn()
   const home = createRoute({ name: 'home', path: '/' })
   const router = createRouter([home], { initialUrl: '/gone', rejections: [locked] })
 
-  router.onRejection(onRejection)
-
   await router.start()
 
-  expect(onRejection).toHaveBeenCalledWith('NotFound', { to: null, from: null })
+  expect(router.route.name).toBe('Locked')
 })
 
 test('adopting a payload leaves the document title the server rendered', async () => {
@@ -109,6 +100,10 @@ test('a payload for a url with schema params is adopted synchronously when the r
   const ready = router.start()
 
   expect(router.route.name).toBe('post')
+  if (router.route.name !== 'post') {
+    throw new Error('Expected post destination')
+  }
+
   expect(router.route.params.id).toBe(5)
   expect(router.started.value).toBe(true)
 
@@ -179,4 +174,22 @@ test('a declared payload option that cannot read a value warns and computes agai
   expect(warn.mock.calls.some(([message]) => String(message).includes('parse the payload value for loader "default"'))).toBe(true)
 
   warn.mockRestore()
+})
+
+test('rejection loaders hydrate from the server payload without fetching again', async () => {
+  embed({
+    kind: 'reject',
+    url: '/missing',
+    rejection: 'NotFound',
+    values: [{ kind: 'loader', depth: 0, name: 'default', encoded: JSON.stringify('from server') }],
+  })
+
+  const load = vi.fn(() => 'from client')
+  const missing = createRejection({ type: 'NotFound' }).addLoader(load)
+  const router = createRouter([missing], { initialUrl: '/missing' })
+
+  await router.start()
+
+  await expect(router.route.data).resolves.toBe('from server')
+  expect(load).not.toHaveBeenCalled()
 })

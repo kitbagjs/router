@@ -1,3 +1,5 @@
+import { isRejection } from '@/types/rejection'
+import { asUrlString } from '@/types/urlString'
 import { createResolvedRoute } from '@/services/createResolvedRoute'
 import { parseUrl } from '@/services/urlParser'
 import { filterQueryParams } from '@/services/queryParamFilter'
@@ -17,6 +19,10 @@ export function getMatchForUrl(routes: Routes, url: string, options: MatchOption
   const namedRoutes = routes.filter(isNamedRoute)
 
   for (const route of namedRoutes) {
+    if (isRejection(route)) {
+      continue
+    }
+
     const { success, params } = route.tryParse(url, options)
 
     if (success) {
@@ -52,6 +58,10 @@ function getMatchForAlias(route: Route & RouteInternal, alias: RouteAlias, url: 
 
   if (!aliasMatch.success) {
     return undefined
+  }
+
+  if (isRejection(route)) {
+    return createResolvedRoute(route, alias.transform(url, aliasMatch.params), { ...options, url: asUrlString(url) })
   }
 
   const canonicalUrl = tryStringify(route, alias.transform(url, aliasMatch.params))

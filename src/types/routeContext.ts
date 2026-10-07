@@ -2,7 +2,7 @@ import { CreateRouteOptions } from './createRouteOptions'
 import { Rejection, Rejections } from './rejection'
 import { GenericRoute, Route, Routes } from './route'
 
-export type RouteContext = GenericRoute | Rejection
+export type RouteContext = GenericRoute
 
 export type ToRouteContext<TContext extends RouteContext[] | readonly RouteContext[] | undefined> = TContext extends RouteContext[]
   ? TContext

@@ -67,28 +67,11 @@ export type PayloadValue = {
   encoded: string,
 }
 
-export type RouterPayload = SuccessPayload | RejectPayload
-
-type SuccessPayload = {
-  kind: 'success',
-  /**
-   * The url the server rendered.
-   */
+export type RouterPayload = {
+  /** The address the server rendered. */
   url: string,
   values: PayloadValue[],
-}
-
-type RejectPayload = {
-  kind: 'reject',
-  /**
-   * The url the server rendered.
-   */
-  url: string,
-  /**
-   * The type of the rejection the server rendered.
-   */
-  rejection: string,
-}
+} & ({ kind: 'success' } | { kind: 'reject', rejection: string })
 
 function isDataKind(value: unknown): value is DataKind {
   return value === 'props' || value === 'loader'
@@ -107,8 +90,12 @@ export function isRouterPayload(value: unknown): value is RouterPayload {
     return false
   }
 
+  if (!Array.isArray(value.values) || !value.values.every(isPayloadValue)) {
+    return false
+  }
+
   if (value.kind === 'success') {
-    return Array.isArray(value.values) && value.values.every(isPayloadValue)
+    return true
   }
 
   if (value.kind === 'reject') {

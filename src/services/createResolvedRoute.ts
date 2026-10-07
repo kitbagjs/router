@@ -15,6 +15,8 @@ type CreateResolvedRouteOptions = RouterResolveOptions & {
    * own url.
    */
   alias?: RouteAliasMatch,
+  /** An explicit address for a destination without a URL pattern. */
+  url?: UrlString,
 }
 
 type RouteUrls = {
@@ -52,6 +54,13 @@ type ResolvedUrls = RouteUrls & {
  * resolved route ends up with.
  */
 function getResolvedUrls(route: Route, params: Record<string, unknown>, options: CreateResolvedRouteOptions): ResolvedUrls {
+  if (options.url) {
+    const href = updateUrl(options.url, options)
+    const { query, hash } = parseUrl(href)
+
+    return { canonical: href, href, query, hash }
+  }
+
   const urls = getRouteUrls(route, params, options.alias)
   const parts = {
     query: new URLSearchParams(options.query),
@@ -87,6 +96,7 @@ export function createResolvedRoute(route: Route, params: Record<string, unknown
   const resolvedRoute: ResolvedRoute & ResolvedRouteInternal = {
     [IS_RESOLVED_ROUTE_SYMBOL]: true,
     id: route.id,
+    status: route.status,
     name: route.name,
     matches: route.matches,
     hooks: getHooks(route),

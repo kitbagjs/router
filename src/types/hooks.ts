@@ -5,7 +5,7 @@ import { isRoute, Route, Routes } from '@/types/route'
 import { RouterReject } from '@/types/routerReject'
 import { RouterPush } from '@/types/routerPush'
 import { RouterReplace } from '@/types/routerReplace'
-import { isRejection, Rejection, Rejections } from '@/types/rejection'
+import { Rejections } from '@/types/rejection'
 import { RouteContext, RouteContextToRejection, RouteContextToRoute } from '@/types/routeContext'
 import { RouterAbort } from '@/types/routerAbort'
 import { CallbackContextAbort, CallbackContextPush, CallbackContextRedirect, CallbackContextReject, CallbackContextSuccess } from '@/types/callbackContext'
@@ -13,7 +13,7 @@ import { RouteUpdate } from '@/types/routeUpdate'
 import { NavigationProgressTracker } from '@/services/createNavigationProgress'
 
 export function getHooks(value: Record<string, unknown> | undefined | null): Hooks[] {
-  return !!value && (isRoute(value) || isResolvedRoute(value) || isRejection(value)) ? value.hooks : []
+  return !!value && (isRoute(value) || isResolvedRoute(value)) ? value.hooks : []
 }
 
 export function combineHooks(parent: Route, child: Route): Hooks[] {
@@ -58,15 +58,6 @@ export type ExternalRouteHooks<
    * Registers a route hook to be called before the route is entered.
    */
   onBeforeRouteEnter: AddBeforeEnterHook<[TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>, TRoute, Route>,
-}
-
-export type RejectionHooks<
-  TRejections extends string = string
-> = {
-  /**
-   * Registers a route hook to be called when a rejection occurs.
-   */
-  onRejection: AddRejectionHook<TRejections>,
 }
 
 export type HookTiming = 'global' | 'component'
@@ -284,37 +275,13 @@ export type HookRunnerContext<TRoutes extends Routes = Routes> = {
   signal: AbortSignal,
 }
 
-export type BeforeHookRunner = <TRoutes extends Routes>(context: HookRunnerContext<TRoutes> & { progress?: NavigationProgressTracker }) => Promise<BeforeHookResponse>
-
-export type AfterHookRunner = <TRoutes extends Routes>(context: HookRunnerContext<TRoutes>) => Promise<AfterHookResponse>
-
-export type RejectionHookContext<
-  TRoutes extends Routes = Routes,
-  TRouteTo extends Route = TRoutes[number],
-  TRouteFrom extends Route = TRoutes[number]
-> = {
-  to: ResolvedRouteUnion<TRouteTo> | null,
-  from: ResolvedRouteUnion<TRouteFrom> | null,
+export type BeforeHookRunnerContext<TRoutes extends Routes = Routes> = HookRunnerContext<TRoutes> & {
+  progress?: NavigationProgressTracker,
 }
 
-export type RejectionHook<
-  TRejection extends string = string,
-  TRoutes extends Routes = Routes,
-  TRouteTo extends Route = TRoutes[number],
-  TRouteFrom extends Route = TRoutes[number]
-> = (rejection: TRejection, context: RejectionHookContext<TRoutes, TRouteTo, TRouteFrom>) => MaybePromise<void>
+export type BeforeHookRunner = <TRoutes extends Routes>(context: BeforeHookRunnerContext<TRoutes>) => Promise<BeforeHookResponse>
 
-export type AddRejectionHook<
-  TRejections extends string = string,
-  TRoutes extends Routes = Routes,
-  TRouteTo extends Route = TRoutes[number],
-  TRouteFrom extends Route = TRoutes[number]
-> = (hook: RejectionHook<TRejections, TRoutes, TRouteTo, TRouteFrom>) => HookRemove
-
-export type RejectionHookRunner<TRejection extends Rejection = Rejection, TRoutes extends Routes = Routes> = (
-  rejection: TRejection,
-  context: { to: RouterResolvedRouteUnion<TRoutes> | null, from: RouterResolvedRouteUnion<TRoutes> | null },
-) => void
+export type AfterHookRunner = <TRoutes extends Routes>(context: HookRunnerContext<TRoutes>) => Promise<AfterHookResponse>
 
 export type ErrorHookContext<
   TRoutes extends Routes = Routes,

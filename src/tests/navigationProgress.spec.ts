@@ -183,7 +183,7 @@ describe('navigation progress', () => {
     const router = createRouter([home], { initialUrl: '/nowhere' })
     const navigation = observe(router)
 
-    expect(navigation.to.value).toBeNull()
+    expect(navigation.to.value?.name).toBe('NotFound')
 
     await flushPromises()
 

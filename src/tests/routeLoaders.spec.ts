@@ -206,30 +206,26 @@ describe('loader context', () => {
       })
     const denied = createRejection({ type: 'Denied' })
     const router = createRouter([route], { initialUrl: '/', historyMode: 'memory', rejections: [denied] })
-    const onRejection = vi.fn()
-    router.onRejection(onRejection)
 
     await router.start()
     router.reject('Denied')
     ready.resolve()
     await flushPromises()
 
-    expect(onRejection).toHaveBeenCalledExactlyOnceWith('Denied', { to: null, from: null })
+    expect(router.route.name).toBe('Denied')
   })
 
   test('a loader can reject', async () => {
-    const onRejection = vi.fn()
-
     const route = createRoute({ name: 'route', path: '/' })
       .addLoader((_route, { reject }) => reject('NotFound'))
 
     const router = createRouter([route], { initialUrl: '/' })
 
-    router.onRejection(onRejection)
-
     await router.start()
 
-    expect(onRejection).toHaveBeenCalledWith('NotFound', expect.anything())
+    await flushPromises()
+
+    expect(router.route.name).toBe('NotFound')
   })
 
   test('a loader can push', async () => {

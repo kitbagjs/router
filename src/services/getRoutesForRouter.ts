@@ -4,130 +4,84 @@ import { DuplicateNamesError } from '@/errors/duplicateNamesError'
 import { UnreachableRouteError } from '@/errors/unreachableRouteError'
 import { isNamedRoute } from '@/utilities/isNamedRoute'
 import { insertBaseRoute } from '@/services/insertBaseRoute'
-import { BUILT_IN_REJECTIONS, BuiltInRejectionType, isRejection, Rejection, RejectionInternal, Rejections } from '@/types/rejection'
+import { BUILT_IN_REJECTIONS, BuiltInRejectionType, isRejection, Rejection } from '@/types/rejection'
 import { RouterOptions } from '@/types/router'
 import { createRejection } from '@/services/createRejection'
 import { isUrl } from '@/types/url'
 
-/**
- * Takes in routes and plugins and returns a list of routes with the base route inserted if provided.
- * Also checks for duplicate names and unreachable paths in the routes.
- *
- * @throws {DuplicateNamesError} If there are duplicate names in the routes.
- * @throws {UnreachableRouteError} If a named route's path does not start with `/`.
- */
+/** Registers all destinations by name, keeping URL matching limited to addressable routes. */
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export function getRoutesForRouter(routes: Routes | Routes[], plugins: RouterPlugin[] = [], options: RouterOptions = {}) {
-  const routerRoutes = new Map<string, Route & RouteInternal>()
-  const routerRejections = new Map<string, (Rejection & RejectionInternal)>()
-
-  const allRoutes = [
-    ...routes,
-    ...plugins.map((plugin) => plugin.routes),
-  ]
-
-  const allRejections = [
-    ...Object.entries(BUILT_IN_REJECTIONS).map(([type, status]) => createRejection({ type, status })),
-    ...options.rejections ?? [],
-    ...plugins.map((plugin) => plugin.rejections),
-  ]
+  const definitions = new Map<string, Route & RouteInternal>()
 
   function addRoute(route: Route): void {
     if (!isRoute(route) || !isNamedRoute(route)) {
       return
     }
 
-    const existingRouteByName = routerRoutes.get(route.name)
+    const existing = definitions.get(route.name)
 
-    if (existingRouteByName && existingRouteByName.id !== route.id) {
-      throw new DuplicateNamesError(route.name)
-    }
+    if (existing) {
+      if (existing.id !== route.id) {
+        throw new DuplicateNamesError(route.name)
+      }
 
-    if (existingRouteByName?.id === route.id) {
       return
     }
 
-    const routerRoute = insertBaseRoute(route, options.base)
+    const definition = insertBaseRoute(route, options.base)
 
-    if (isUnreachable(routerRoute)) {
-      throw new UnreachableRouteError(route.name, getPath(routerRoute))
+    if (!isRejection(route) && isUnreachable(definition)) {
+      throw new UnreachableRouteError(route.name, getPath(definition))
     }
 
-    routerRoutes.set(route.name, routerRoute)
+    definitions.set(route.name, definition)
 
     for (const context of route.context) {
       if (isRoute(context)) {
         addRoute(context)
       }
-
-      if (isRejection(context)) {
-        addRejection(context)
-      }
     }
   }
 
-  function addRejection(rejection: Rejection): void {
-    if (!isRejection(rejection)) {
-      return
-    }
+  const allRoutes = [
+    ...routes.flat(),
+    ...options.rejections ?? [],
+    ...plugins.flatMap((plugin) => [...plugin.routes, ...plugin.rejections]),
+  ]
 
-    routerRejections.set(rejection.type, rejection)
-  }
+  allRoutes.forEach(addRoute)
 
-  function addRoutes(routes: Routes): void {
-    for (const route of routes) {
-      addRoute(route)
-    }
-  }
+  for (const [type, status] of Object.entries(BUILT_IN_REJECTIONS)) {
+    const existing = definitions.get(type)
 
-  function addRejections(rejections: Rejections): void {
-    for (const rejection of rejections) {
-      addRejection(rejection)
+    if (!existing) {
+      addRoute(createRejection({ type, status }))
+    } else if (!isRejection(existing)) {
+      throw new DuplicateNamesError(type)
     }
   }
 
-  for (const route of allRoutes) {
-    if (isRoutes(route)) {
-      addRoutes(route)
-      continue
-    }
-
-    addRoute(route)
+  function getRouteByName(name: string): Route | undefined {
+    return definitions.get(name)
   }
 
-  for (const rejection of allRejections) {
-    if (isRejections(rejection)) {
-      addRejections(rejection)
-      continue
-    }
+  function getRejectionByType(type: BuiltInRejectionType): Rejection & RouteInternal
+  function getRejectionByType(type: string): (Rejection & RouteInternal) | undefined
+  function getRejectionByType(type: string): (Rejection & RouteInternal) | undefined {
+    const route = definitions.get(type)
 
-    addRejection(rejection)
+    return isRejection(route) ? route : undefined
   }
 
-  function getRouteByName(type: string): Route | undefined {
-    return routerRoutes.get(type)
-  }
-
-  function getRejectionByType(type: BuiltInRejectionType): (Rejection & RejectionInternal)
-  function getRejectionByType(type: string): (Rejection & RejectionInternal) | undefined
-  function getRejectionByType(type: string): (Rejection & RejectionInternal) | undefined {
-    return routerRejections.get(type)
-  }
+  const registered = Array.from(definitions.values())
 
   return {
-    routes: Array.from(routerRoutes.values()).sort(sortByDepthDescending),
-    rejections: Array.from(routerRejections.values()),
+    routes: registered.filter((route) => !isRejection(route) || route.aliases.length > 0).sort(sortByDepthDescending),
+    rejections: registered.filter(isRejection),
     getRouteByName,
     getRejectionByType,
   }
-}
-
-function isRoutes(routes: Routes | Route): routes is Routes {
-  return Array.isArray(routes)
-}
-
-function isRejections(rejections: Rejections | Rejection): rejections is Rejections {
-  return Array.isArray(rejections)
 }
 
 function sortByDepthDescending(aRoute: Route & RouteInternal, bRoute: Route & RouteInternal): number {

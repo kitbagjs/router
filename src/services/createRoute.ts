@@ -35,6 +35,7 @@ export function createRoute<
 export function createRoute(options: CreateRouteOptions, props?: CreateRouteProps): Route {
   const id = createRouteId()
   const name = toName(options.name)
+  const status = options.status ?? 200
   const path = toUrlPart(options.path)
   const query = toUrlQueryPart(options.query)
   const hash = toUrlPart(options.hash)
@@ -67,6 +68,7 @@ export function createRoute(options: CreateRouteOptions, props?: CreateRouteProp
 
   const route = {
     id,
+    status,
     matches: [rawRoute],
     name,
     meta,

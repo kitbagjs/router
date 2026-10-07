@@ -58,6 +58,7 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
 
   const route = {
     id,
+    status: options.status ?? 200,
     matches: [rawRoute],
     name,
     meta,

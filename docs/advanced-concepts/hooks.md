@@ -26,10 +26,6 @@ onAfterRouteEnter: (to, context) => {
 
 - **onError** Triggered whenever an unexpected error is thrown. Error hooks are run in the order they were registered. The hook is provided both the error and the [error context](/advanced-concepts/hooks#error-context).
 
-### On Rejection
-
-- **onRejection** Triggered whenever a rejection is triggered. Rejection hooks are run in the order they were registered. The hook is provided both the rejection and the [rejection context](/advanced-concepts/hooks#rejection-context).
-
 ## Context
 
 The router provides `to` and a `context` argument to your hook callback. The context will always include:
@@ -56,15 +52,6 @@ If the hook is `onError`, you'll also have access to the following properties in
 | ---- | ---- |
 | to | What was the destination route prior to the error being thrown |
 | source | String value indicating where the error occurred. Possible values are `'props'`, `'hook'`, and `'component'` |
-
-### Rejection Context
-
-If the hook is `onRejection`, you'll also have access to the following properties in your context:
-
-| Property | Description |
-| ---- | ---- |
-| to | What was the destination route prior to the rejection being triggered |
-| from | What was the route prior to the rejection being triggered |
 
 ## Levels
 
@@ -97,8 +84,10 @@ route.onAfterRouteEnter((to, context) => {
 
 ### Rejection
 
+Rejections use the same lifecycle hooks as routes.
+
 ```ts
-rejection.onRejection((rejection, context) => {
+rejection.onAfterRouteEnter((to, context) => {
   ...
 })
 ```

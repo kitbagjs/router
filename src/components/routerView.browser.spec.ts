@@ -711,3 +711,38 @@ test('Renders the rejection component when the rejection is not registered on th
 
   expect(wrapper.text()).toBe(rejectionText)
 })
+
+test('rejections declare named views and replace the previous route tree', async () => {
+  const parent = createRoute({ name: 'parent', path: '/parent', component: { template: '<RouterView/>' } })
+    .addView({ template: 'sidebar' }, { name: 'sidebar' })
+  const child = createRoute({ name: 'child', parent, path: '/child', component: { template: 'child' } })
+  const denied = createRejection({ type: 'Denied', component: { template: 'denied' } })
+    .addView({ template: 'denied-sidebar' }, { name: 'sidebar' })
+  const router = createRouter([child, denied], { initialUrl: '/parent/child' })
+  const wrapper = mount({ template: '<RouterView name="sidebar"/><RouterView/>' }, { global: { plugins: [router] } })
+
+  await router.start()
+  await flushPromises()
+  expect(wrapper.text()).toBe('sidebarchild')
+
+  await router.reject('Denied')
+  expect(wrapper.text()).toBe('denied-sidebardenied')
+
+  await router.push('child')
+  expect(wrapper.text()).toBe('sidebarchild')
+})
+
+test('rejection views receive props computed from their own loaders', async () => {
+  const denied = createRejection({ type: 'Denied' })
+    .addLoader(async () => 'Sign in to continue')
+    .addView(echo, { props: async (to) => ({ value: await to.data }) })
+  const home = createRoute({ name: 'home', path: '/', component: { template: 'home' } })
+  const router = createRouter([home, denied], { initialUrl: '/' })
+  const wrapper = mount({ template: '<RouterView/>' }, { global: { plugins: [router] } })
+
+  await router.start()
+  await router.reject('Denied')
+  await flushPromises()
+
+  expect(wrapper.text()).toBe('Sign in to continue')
+})

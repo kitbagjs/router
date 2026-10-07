@@ -8,7 +8,7 @@ import { createRejection } from './createRejection'
 
 test('given a plugin, adds the routes to the router', async () => {
   const pluginRejection = createRejection({
-    type: 'plugin',
+    type: 'PluginError',
 
     status: 404,
     component,

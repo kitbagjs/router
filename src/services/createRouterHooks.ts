@@ -1,11 +1,10 @@
-import { AddGlobalHooks, AddComponentHook, AfterHookRunner, BeforeHookRunner, AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, ErrorHookRunner, AddErrorHook, BeforeEnterHook, BeforeUpdateHook, BeforeLeaveHook, AfterEnterHook, AfterUpdateHook, AfterLeaveHook, RejectionHookRunner, RejectionHook, AddRejectionHook } from '@/types/hooks'
+import { AddGlobalHooks, AddComponentHook, AfterHookRunner, BeforeHookRunner, AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, ErrorHookRunner, AddErrorHook, BeforeEnterHook, BeforeUpdateHook, BeforeLeaveHook, AfterEnterHook, AfterUpdateHook, AfterLeaveHook } from '@/types/hooks'
 import { getRouteHookCondition } from '@/services/hooks'
 import { ContextPushError } from '@/errors/contextPushError'
 import { ContextRejectionError } from '@/errors/contextRejectionError'
 import { ContextAbortError } from '@/errors/contextAbortError'
 import { getAfterHooksFromRoutes, getBeforeHooksFromRoutes } from '@/services/getRouteHooks'
 import { getGlobalAfterHooks, getGlobalBeforeHooks } from '@/services/getGlobalRouteHooks'
-import { getRejectionHooksFromRejection } from '@/services/getRejectionHooks'
 import { createVueAppStore, HasVueAppStore } from '@/services/createVueAppStore'
 import { createRouterKeyStore } from '@/services/createRouterKeyStore'
 import { Hooks } from '@/models/hooks'
@@ -24,7 +23,6 @@ export type RouterHooks = HasVueAppStore & {
   runBeforeRouteHooks: BeforeHookRunner,
   runAfterRouteHooks: AfterHookRunner,
   runErrorHooks: ErrorHookRunner,
-  runRejectionHooks: RejectionHookRunner,
   addComponentHook: AddComponentHook,
   addGlobalRouteHooks: AddGlobalHooks,
   onBeforeRouteEnter: AddBeforeEnterHook,
@@ -34,7 +32,6 @@ export type RouterHooks = HasVueAppStore & {
   onAfterRouteUpdate: AddAfterUpdateHook,
   onAfterRouteLeave: AddAfterLeaveHook,
   onError: AddErrorHook,
-  onRejection: AddRejectionHook,
 }
 
 type RouterHooksOptions = {
@@ -88,7 +85,15 @@ export function createRouterHooks({ redirectStatus }: RouterHooksOptions): Route
       }
 
       await Promise.all(results)
+
+      if (signal.aborted) {
+        return { status: 'ABORT' }
+      }
     } catch (error) {
+      if (signal.aborted) {
+        return { status: 'ABORT' }
+      }
+
       if (error instanceof ContextPushError) {
         return error.response
       }
@@ -126,10 +131,13 @@ export function createRouterHooks({ redirectStatus }: RouterHooksOptions): Route
   }
 
   const runAfterRouteHooks: AfterHookRunner = async ({ to, from, signal }) => {
+    if (signal.aborted) {
+      return { status: 'SUCCESS' }
+    }
+
     const { reject, push, replace, update } = createRouterCallbackContext({ to })
     const routeHooks = getAfterHooksFromRoutes(to, from)
     const globalHooks = getGlobalAfterHooks(to, from, globalStore)
-
     const allHooks: (AfterLeaveHook | AfterUpdateHook | AfterEnterHook)[] = [
       ...componentStore.onAfterRouteLeave,
       ...routeHooks.onAfterRouteLeave,
@@ -208,19 +216,6 @@ export function createRouterHooks({ redirectStatus }: RouterHooksOptions): Route
     }
   }
 
-  const runRejectionHooks: RejectionHookRunner = (rejection, { to, from }) => {
-    const rejectionHooks = getRejectionHooksFromRejection(rejection)
-
-    const allHooks: RejectionHook[] = [
-      ...rejectionHooks.onRejection,
-      ...globalStore.onRejection,
-    ]
-
-    for (const hook of allHooks) {
-      hook(rejection.type, { to, from })
-    }
-  }
-
   const addComponentHook: AddComponentHook = ({ lifecycle, depth, hook }) => {
     const condition = getRouteHookCondition(lifecycle)
     const hooks = componentStore[lifecycle]
@@ -256,7 +251,6 @@ export function createRouterHooks({ redirectStatus }: RouterHooksOptions): Route
     runBeforeRouteHooks,
     runAfterRouteHooks,
     runErrorHooks,
-    runRejectionHooks,
     addComponentHook,
     addGlobalRouteHooks,
     setVueApp,

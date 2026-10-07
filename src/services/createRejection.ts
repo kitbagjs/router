@@ -1,40 +1,18 @@
-import { createRejectionHooks } from '@/services/createRejectionHooks'
 import { genericRejection } from '@/components/rejection'
-import { RejectionHooks } from '@/types/hooks'
-import { IS_REJECTION_SYMBOL, Rejection, RejectionInternal, RejectionOptions } from '@/types/rejection'
 import { markRaw } from 'vue'
 import { createRoute } from '@/services/createRoute'
-import { createResolvedRoute } from '@/services/createResolvedRoute'
-import { RouteSetTitle } from '@/types/routeTitle'
+import { RejectionMatch, RejectionOptions } from '@/types/rejection'
+import { Route } from '@/types/route'
+import { RouteWithMethods } from '@/types/routeWithMethods'
+import { ToUrl } from '@/types/url'
 
-export function createRejection<TType extends string>(options: RejectionOptions<TType>): Rejection<TType> & RejectionHooks<TType> & RouteSetTitle
+export function createRejection<const TName extends string>(options: RejectionOptions<TName>): RouteWithMethods<ToUrl<{}>, [RejectionMatch<TName>]>
 
-export function createRejection({ type, component, status }: RejectionOptions): Rejection {
-  const { store, ...hooks } = createRejectionHooks()
-
-  const route = createRoute({
+export function createRejection({ type, component, status }: RejectionOptions): Route {
+  return createRoute({
     name: type,
+    status,
+    rejection: true,
     component: markRaw(component ?? genericRejection(type)),
   })
-
-  const { setTitle } = route
-
-  const getTitle = (): Promise<string | undefined> => createResolvedRoute(route).getTitle()
-
-  const internal = {
-    [IS_REJECTION_SYMBOL]: true,
-    route,
-    hooks: [store],
-  } satisfies RejectionInternal
-
-  const rejection = {
-    type,
-    status,
-    setTitle,
-    getTitle,
-    ...hooks,
-    ...internal,
-  } satisfies Rejection & RejectionInternal & RejectionHooks & RouteSetTitle
-
-  return rejection
 }

@@ -2,7 +2,7 @@ import { App, InjectionKey, Ref } from 'vue'
 import { RouterHistoryMode } from '@/services/createRouterHistory'
 import { TransformerOptions } from '@/services/payload'
 import { RouterRoute } from '@/types/routerRoute'
-import { AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, AddErrorHook, AddRejectionHook } from '@/types/hooks'
+import { AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, AddErrorHook } from '@/types/hooks'
 import { PrefetchConfig } from '@/types/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
 import { Route, Routes } from '@/types/route'
@@ -12,7 +12,7 @@ import { RouterResolve, RouterResolveOptions } from '@/types/routerResolve'
 import { RouterReject } from '@/types/routerReject'
 import { RouterPlugin } from '@/types/routerPlugin'
 import { RoutesName } from '@/types/routesMap'
-import { ExtractRejections, ExtractRejectionTypes, Rejections, BuiltInRejectionType } from '@/types/rejection'
+import { ExtractRejections, Rejection, Rejections, ExtractRouteRejections } from '@/types/rejection'
 import { PayloadValueError } from '@/errors/payloadValueError'
 
 /**
@@ -71,13 +71,6 @@ export type RouterOptions = TransformerOptions & {
   redirectStatus?: RedirectStatus,
 
   /**
-   * The status `render` responds with for a rejection that does not declare its own.
-   *
-   * @default 200
-   */
-  rejectStatus?: number,
-
-  /**
    * When false, createRouterAssets must be used for component and hooks. Assets exported by the library
    * will not work with the created router instance.
    *
@@ -124,6 +117,7 @@ export type RenderReject = {
    * The type of rejection in effect.
    */
   rejection: string,
+  failures: PayloadValueError[],
   /**
    * A script tag to embed in the document sent to the client, so it adopts this rejection rather than
    * working it out again.
@@ -152,6 +146,23 @@ export type RenderRedirect = {
  */
 export type RedirectStatus = 301 | 302
 
+/** Context definitions are registered at runtime alongside their owning route. */
+type ContextRoutes<TRoute extends Route> = Route extends TRoute
+  ? Route
+  : TRoute extends Route
+    ? Extract<TRoute['context'][number], Route> | ContextRoutes<Extract<TRoute['context'][number], Route>>
+    : never
+
+type WithRouteContext<TRoutes extends Routes> = TRoutes | readonly ContextRoutes<TRoutes[number]>[]
+
+type WithBuiltInRejections<TRoutes extends Routes> = 'NotFound' extends RoutesName<TRoutes>
+  ? TRoutes
+  : TRoutes | [Rejection<'NotFound'>]
+
+export type RouterDefinitions<TRoutes extends Routes, TOptions extends RouterOptions, TPlugin extends RouterPlugin> = WithBuiltInRejections<WithRouteContext<TRoutes | TPlugin['routes'] | ExtractRejections<TOptions> | ExtractRejections<TPlugin>>>
+
+export type RouterRejectionDefinitions<TRoutes extends Routes, TOptions extends RouterOptions, TPlugin extends RouterPlugin> = ExtractRouteRejections<RouterDefinitions<TRoutes, TOptions, TPlugin>>
+
 export type Router<
   TRoutes extends Routes = any,
   TOptions extends RouterOptions = any,
@@ -165,11 +176,11 @@ export type Router<
   /**
    * Manages the current route state.
   */
-  route: RouterRouteUnion<TRoutes> | RouterRouteUnion<TPlugin['routes']>,
+  route: RouterRouteUnion<RouterDefinitions<TRoutes, TOptions, TPlugin>>,
   /**
    * Creates a ResolvedRoute record for a given route name and params.
    */
-  resolve: RouterResolve<TRoutes | TPlugin['routes']>,
+  resolve: RouterResolve<RouterDefinitions<TRoutes, TOptions, TPlugin>>,
   /**
    * Creates a ResolvedRoute record for a given URL.
    */
@@ -177,15 +188,15 @@ export type Router<
   /**
    * Navigates to a specified path or route object in the history stack, adding a new entry.
    */
-  push: RouterPush<TRoutes | TPlugin['routes']>,
+  push: RouterPush<RouterDefinitions<TRoutes, TOptions, TPlugin>>,
   /**
    * Replaces the current entry in the history stack with a new one.
    */
-  replace: RouterReplace<TRoutes | TPlugin['routes']>,
+  replace: RouterReplace<RouterDefinitions<TRoutes, TOptions, TPlugin>>,
   /**
-   * Handles route rejection based on a specified rejection type.
+   * Navigates to a rejection and returns a promise for the navigation.
    */
-  reject: RouterReject<[...ExtractRejections<TOptions>, ...ExtractRejections<TPlugin>]>,
+  reject: RouterReject<RouterRejectionDefinitions<TRoutes, TOptions, TPlugin>>,
   /**
    * Forces the router to re-evaluate the current route.
    */
@@ -205,36 +216,32 @@ export type Router<
   /**
    * Registers a hook to be called before a route is entered.
    */
-  onBeforeRouteEnter: AddBeforeEnterHook<TRoutes | TPlugin['routes'], ExtractRejections<TOptions> | ExtractRejections<TPlugin>>,
+  onBeforeRouteEnter: AddBeforeEnterHook<RouterDefinitions<TRoutes, TOptions, TPlugin>, RouterRejectionDefinitions<TRoutes, TOptions, TPlugin>>,
   /**
    * Registers a hook to be called before a route is left.
    */
-  onBeforeRouteLeave: AddBeforeLeaveHook<TRoutes | TPlugin['routes'], ExtractRejections<TOptions> | ExtractRejections<TPlugin>>,
+  onBeforeRouteLeave: AddBeforeLeaveHook<RouterDefinitions<TRoutes, TOptions, TPlugin>, RouterRejectionDefinitions<TRoutes, TOptions, TPlugin>>,
   /**
    * Registers a hook to be called before a route is updated.
    */
-  onBeforeRouteUpdate: AddBeforeUpdateHook<TRoutes | TPlugin['routes'], ExtractRejections<TOptions> | ExtractRejections<TPlugin>>,
+  onBeforeRouteUpdate: AddBeforeUpdateHook<RouterDefinitions<TRoutes, TOptions, TPlugin>, RouterRejectionDefinitions<TRoutes, TOptions, TPlugin>>,
   /**
    * Registers a hook to be called after a route is entered.
    */
-  onAfterRouteEnter: AddAfterEnterHook<TRoutes | TPlugin['routes'], ExtractRejections<TOptions> | ExtractRejections<TPlugin>>,
+  onAfterRouteEnter: AddAfterEnterHook<RouterDefinitions<TRoutes, TOptions, TPlugin>, RouterRejectionDefinitions<TRoutes, TOptions, TPlugin>>,
   /**
    * Registers a hook to be called after a route is left.
    */
-  onAfterRouteLeave: AddAfterLeaveHook<TRoutes | TPlugin['routes'], ExtractRejections<TOptions> | ExtractRejections<TPlugin>>,
+  onAfterRouteLeave: AddAfterLeaveHook<RouterDefinitions<TRoutes, TOptions, TPlugin>, RouterRejectionDefinitions<TRoutes, TOptions, TPlugin>>,
   /**
    * Registers a hook to be called after a route is updated.
    */
-  onAfterRouteUpdate: AddAfterUpdateHook<TRoutes | TPlugin['routes'], ExtractRejections<TOptions> | ExtractRejections<TPlugin>>,
+  onAfterRouteUpdate: AddAfterUpdateHook<RouterDefinitions<TRoutes, TOptions, TPlugin>, RouterRejectionDefinitions<TRoutes, TOptions, TPlugin>>,
   /**
    * Registers a hook to be called when an error occurs.
    * If the hook returns true, the error is considered handled and the other hooks are not run. If all hooks return false the error is rethrown
    */
-  onError: AddErrorHook<TRoutes | TPlugin['routes'], ExtractRejections<TOptions> | ExtractRejections<TPlugin>>,
-  /**
-   * Registers a hook to be called when a rejection occurs.
-   */
-  onRejection: AddRejectionHook<ExtractRejectionTypes<ExtractRejections<TOptions>> | ExtractRejectionTypes<ExtractRejections<TPlugin>> | BuiltInRejectionType, TRoutes | TPlugin['routes']>,
+  onError: AddErrorHook<RouterDefinitions<TRoutes, TOptions, TPlugin>, RouterRejectionDefinitions<TRoutes, TOptions, TPlugin>>,
   /**
   * Given a URL, returns true if host does not match host stored on router instance
   */
@@ -287,14 +294,12 @@ export type RouterRouteUnion<TRoutes extends Routes> = {
   [K in keyof TRoutes]: TRoutes[K]['name'] extends '' ? never : RouterRoute<ResolvedRoute<TRoutes[K]>>
 }[number]
 
-export type RouterRoutes<TRouter extends Router> = TRouter extends Router<infer TRoutes extends Routes>
-  ? TRoutes
+export type RouterRoutes<TRouter extends Router> = TRouter extends Router<infer TRoutes extends Routes, infer TOptions extends RouterOptions, infer TPlugin extends RouterPlugin>
+  ? RouterDefinitions<TRoutes, TOptions, TPlugin>
   : Routes
 
-export type RouterRejections<TRouter extends Router> = TRouter extends Router<any, infer TOptions extends RouterOptions, infer TPlugins extends RouterPlugin>
-  ? ExtractRejections<TOptions> | ExtractRejections<TPlugins>
+export type RouterRejections<TRouter extends Router> = TRouter extends Router<infer TRoutes extends Routes, infer TOptions extends RouterOptions, infer TPlugins extends RouterPlugin>
+  ? RouterRejectionDefinitions<TRoutes, TOptions, TPlugins>
   : []
 
-export type RouterRouteName<TRouter extends Router> = TRouter extends Router<infer TRoutes extends Routes>
-  ? RoutesName<TRoutes>
-  : RoutesName<Route[]>
+export type RouterRouteName<TRouter extends Router> = RoutesName<RouterRoutes<TRouter>>

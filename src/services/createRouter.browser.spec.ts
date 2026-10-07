@@ -17,10 +17,18 @@ test('after enter and update hooks see the committed destination route', async (
 
   const afterEnter = vi.fn((to) => {
     expect(router.route.href).toBe(to.href)
+    if (router.route.name !== 'destination') {
+      throw new Error('Expected destination')
+    }
+
     expect(router.route.params.value).toBe('first')
   })
   const afterUpdate = vi.fn((to) => {
     expect(router.route.href).toBe(to.href)
+    if (router.route.name !== 'destination') {
+      throw new Error('Expected destination')
+    }
+
     expect(router.route.params.value).toBe('second')
   })
   router.onAfterRouteEnter(afterEnter)
@@ -99,7 +107,7 @@ describe('options.rejections', () => {
 
     await flushPromises()
 
-    expect(router.route.name).toBe('root')
+    expect(router.route.name).toBe('CustomRejection')
     expect(window.location.pathname).toBe('/')
 
     expect(wrapper.html()).toBe('<div>This is a custom rejection</div>')

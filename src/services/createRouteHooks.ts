@@ -1,7 +1,7 @@
-import { AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, AddErrorHook, AddRejectionHook } from '@/types/hooks'
+import { AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, AddErrorHook } from '@/types/hooks'
 import { Routes } from '@/types/route'
 import { Hooks } from '@/models/hooks'
-import { ExtractRejectionTypes, Rejection } from '@/types/rejection'
+import { Rejection } from '@/types/rejection'
 import { RedirectHook, RouteRedirect } from '@/types/redirects'
 import { ContextRedirectError } from '@/errors/contextRedirectError'
 import { MultipleRouteRedirectsError } from '@/errors/multipleRouteRedirectsError'
@@ -18,7 +18,6 @@ type RouteHooks<
   onAfterRouteUpdate: AddAfterUpdateHook<TRoutes, TRejections>,
   onAfterRouteLeave: AddAfterLeaveHook<TRoutes, TRejections>,
   onError: AddErrorHook<TRoutes, TRejections>,
-  onRejection: AddRejectionHook<ExtractRejectionTypes<TRejections>, TRoutes>,
   store: Hooks,
 }
 
@@ -81,12 +80,6 @@ export function createRouteHooks(): RouteHooks {
     return () => store.onError.delete(hook)
   }
 
-  const onRejection: AddRejectionHook = (hook) => {
-    store.onRejection.add(hook)
-
-    return () => store.onRejection.delete(hook)
-  }
-
   return {
     redirect,
     onBeforeRouteEnter,
@@ -96,7 +89,6 @@ export function createRouteHooks(): RouteHooks {
     onAfterRouteUpdate,
     onAfterRouteLeave,
     onError,
-    onRejection,
     store,
   }
 }

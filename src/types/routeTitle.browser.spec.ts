@@ -223,7 +223,7 @@ test('rejection without a title in a before hook keeps the current route title',
   expect(document.title).toBe('home')
 })
 
-test('rejection without a title in an after hook falls back to the current route title', async () => {
+test('a destination without a title keeps the previous document title', async () => {
   const locked = createRejection({ type: 'Locked', status: 423, component })
 
   const home = createRoute({ name: 'home', path: '/', component })
@@ -246,7 +246,7 @@ test('rejection without a title in an after hook falls back to the current route
   await router.push('secret')
   await flushPromises()
 
-  expect(document.title).toBe('secret')
+  expect(document.title).toBe('home')
 })
 
 test('rejection with a title wins over the current route title', async () => {

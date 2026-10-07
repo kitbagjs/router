@@ -1,11 +1,10 @@
+import { BuiltInRejectionType, Rejection } from '@/types/rejection'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
 import { component } from '@/utilities/testHelpers'
 import { describe, test, expectTypeOf } from 'vitest'
 import { createRouterPlugin } from './createRouterPlugin'
-import { BuiltInRejectionType } from '@/types/rejection'
 import { createRejection } from './createRejection'
-import { AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, AddErrorHook, AddRejectionHook } from '@/types/hooks'
 import { RouterAbort } from '@/types/routerAbort'
 import { RouteUpdate } from '@/types/routeUpdate'
 import { ResolvedRouteUnion } from '@/types/resolved'
@@ -41,18 +40,7 @@ describe('hooks', () => {
 
   const router = createRouter(routes, { initialUrl: '/' }, [plugin])
 
-  type Routes = typeof routes | typeof pluginRoutes
-
-  test('functions are correctly typed', () => {
-    expectTypeOf(router.onBeforeRouteEnter).toEqualTypeOf<AddBeforeEnterHook<Routes, never>>()
-    expectTypeOf(router.onBeforeRouteLeave).toEqualTypeOf<AddBeforeLeaveHook<Routes, never>>()
-    expectTypeOf(router.onBeforeRouteUpdate).toEqualTypeOf<AddBeforeUpdateHook<Routes, never>>()
-    expectTypeOf(router.onAfterRouteEnter).toEqualTypeOf<AddAfterEnterHook<Routes, never>>()
-    expectTypeOf(router.onAfterRouteLeave).toEqualTypeOf<AddAfterLeaveHook<Routes, never>>()
-    expectTypeOf(router.onAfterRouteUpdate).toEqualTypeOf<AddAfterUpdateHook<Routes, never>>()
-    expectTypeOf(router.onError).toEqualTypeOf<AddErrorHook<Routes, never>>()
-    expectTypeOf(router.onRejection).toEqualTypeOf<AddRejectionHook<BuiltInRejectionType, Routes>>()
-  })
+  type Routes = typeof routes | typeof pluginRoutes | [Rejection<'NotFound'>]
 
   test('to and from can be narrowed', () => {
     router.onBeforeRouteEnter((to, context) => {
@@ -125,6 +113,7 @@ describe('rejections', () => {
     type Expect = BuiltInRejectionType
 
     expectTypeOf<Source>().toEqualTypeOf<Expect>()
+    expectTypeOf<ReturnType<typeof _router.reject>>().toEqualTypeOf<Promise<void>>()
   })
 
   test('the routes a rejection happened between are not part of the public signature', () => {
@@ -242,7 +231,7 @@ describe('route', () => {
 
     const router = createRouter([route])
 
-    expectTypeOf(router.route).toEqualTypeOf<never>()
+    expectTypeOf(router.route).toEqualTypeOf<RouterRouteUnion<[Rejection<'NotFound'>]>>()
   })
 
   test('route union does not include routes without a name', () => {
@@ -269,7 +258,7 @@ describe('route', () => {
 
     const router = createRouter([routeA, routeB, routeC, routeD])
 
-    expectTypeOf(router.route).toEqualTypeOf<RouterRouteUnion<[typeof routeC, typeof routeD]>>()
+    expectTypeOf(router.route).toEqualTypeOf<RouterRouteUnion<[typeof routeC, typeof routeD, Rejection<'NotFound'>]>>()
   })
 })
 
@@ -323,4 +312,41 @@ describe('route.matched.meta', () => {
       expectTypeOf(router.route.matched.meta.public).toEqualTypeOf<true>()
     }
   })
+})
+
+test('rejections use route-owned hook types and participate in the router destination union', () => {
+  const denied = createRejection({ type: 'Denied' }).addLoader(() => 'explanation')
+  const account = createRoute({ name: 'account', path: '/account/[id]', context: [denied] })
+  const router = createRouter([account])
+
+  account.onBeforeRouteEnter((to) => {
+    expectTypeOf(to.name).toEqualTypeOf<'account'>()
+    expectTypeOf(to.params.id).toEqualTypeOf<string>()
+  })
+  account.onAfterRouteLeave((_to, { from }) => {
+    expectTypeOf(from.name).toEqualTypeOf<'account'>()
+    expectTypeOf(from.params.id).toEqualTypeOf<string>()
+  })
+  denied.onBeforeRouteEnter((to) => {
+    expectTypeOf(to.name).toEqualTypeOf<'Denied'>()
+  })
+  denied.onAfterRouteLeave((_to, { from }) => {
+    expectTypeOf(from.name).toEqualTypeOf<'Denied'>()
+  })
+  router.onBeforeRouteEnter((to) => {
+    expectTypeOf(to.name).toEqualTypeOf<'account' | 'Denied' | 'NotFound'>()
+  })
+
+  if (router.route.name === 'Denied') {
+    expectTypeOf(router.route.data).toEqualTypeOf<Promise<string>>()
+  }
+
+  expectTypeOf(router.reject).parameters.toEqualTypeOf<['Denied' | 'NotFound']>()
+})
+
+test('a custom NotFound replaces the built-in destination in the public union', () => {
+  const missing = createRejection({ type: 'NotFound' }).addLoader(() => 'explanation')
+  const router = createRouter([missing])
+
+  expectTypeOf(router.route.data).toEqualTypeOf<Promise<string>>()
 })

@@ -32,7 +32,7 @@ const useRoute = createUseRoute(key)
 test('without arguments returns full route union', () => {
   const route = useRoute()
 
-  expectTypeOf<typeof route.name>().toEqualTypeOf<'parentA' | 'childA' | 'parentB'>()
+  expectTypeOf<typeof route.name>().toEqualTypeOf<'parentA' | 'childA' | 'parentB' | 'NotFound'>()
 })
 
 describe('with exact', () => {
@@ -121,7 +121,7 @@ test('siblings are not matched when an unnamed parent is present', () => {
 
   const anyRoute = useRoute()
 
-  expectTypeOf<typeof anyRoute.name>().toEqualTypeOf<'childA' | 'childB' | 'grandChild'>()
+  expectTypeOf<typeof anyRoute.name>().toEqualTypeOf<'childA' | 'childB' | 'grandChild' | 'NotFound'>()
 
   const childARoute = useRoute('childA')
 

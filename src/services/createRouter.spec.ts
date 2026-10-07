@@ -1,10 +1,11 @@
 import { flushPromises } from '@vue/test-utils'
 import { Location } from '@/services/history'
 import { describe, expect, test, vi } from 'vitest'
-import { computed, toRefs } from 'vue'
+import { computed, createApp, toRefs } from 'vue'
 import { DuplicateNamesError } from '@/errors/duplicateNamesError'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
+import { createRouterAssets } from '@/services/createRouterAssets'
 import * as createRouterHistoryUtilities from '@/services/createRouterHistory'
 import { component, routes } from '@/utilities/testHelpers'
 import { createExternalRoute } from '@/services/createExternalRoute'
@@ -114,6 +115,10 @@ test('route update updates the current route', async () => {
 
   await router.start()
 
+  if (router.route.name !== 'root') {
+    throw new Error('Expected root destination')
+  }
+
   await router.route.update('param', 'two')
 
   expect(router.route.params.param).toBe('two')
@@ -171,6 +176,10 @@ test('individual params are writable', async () => {
 
   await start()
 
+  if (route.name !== 'root') {
+    throw new Error('Expected root destination')
+  }
+
   route.params.param = 'goodbye'
 
   await flushPromises()
@@ -208,6 +217,10 @@ test('individual params are writable when using toRefs', async () => {
   })
 
   await start()
+
+  if (route.name !== 'root') {
+    throw new Error('Expected root destination')
+  }
 
   const { param } = toRefs(route.params)
 
@@ -301,6 +314,10 @@ test('params can be destructured', async () => {
   })
 
   await start()
+
+  if (route.name !== 'root') {
+    throw new Error('Expected root destination')
+  }
 
   const { paramA, paramB } = toRefs(route.params)
 
@@ -943,63 +960,29 @@ describe('router.onError', () => {
   })
 })
 
-describe('router.onRejection', () => {
-  test('given router itself triggers a rejection, calls the onRejection callback with the correct context', async () => {
-    const onRejection = vi.fn()
+test.each(['manual', 'hook'])('%s rejection runs the destination enter hooks', async (source) => {
+  const entered = vi.fn()
+  const denied = createRejection({ type: 'Denied' })
+  const home = createRoute({ name: 'home', path: '/' })
+  const guarded = createRoute({ name: 'guarded', path: '/guarded', context: [denied] })
+  const router = createRouter([home, guarded, denied], { initialUrl: '/' })
 
-    const rejection = createRejection({
-      type: 'CustomRejection',
+  guarded.onBeforeRouteEnter((_to, { reject }) => reject('Denied'))
+  denied.onBeforeRouteEnter(entered)
 
-      status: 404,
-      component: { template: '<div>This is a custom rejection</div>' },
-    })
+  await router.start()
 
-    const route = createRoute({
-      name: 'route',
-      component,
-      path: '/',
-    })
+  if (source === 'manual') {
+    await router.reject('Denied')
+  } else {
+    await router.push('guarded')
+  }
 
-    const router = createRouter([route], { initialUrl: '/', rejections: [rejection] })
-
-    router.onRejection(onRejection)
-
-    await router.start()
-
-    router.reject('CustomRejection')
-
-    expect(onRejection).toHaveBeenCalledWith('CustomRejection', {
-      to: null,
-      from: null,
-    })
-  })
-
-  test('given route hooks that trigger a rejection, calls the onRejection callback with the correct context', async () => {
-    const onRejection = vi.fn()
-
-    const route = createRoute({
-      name: 'route-with-rejection',
-      component,
-      path: '/',
-    })
-
-    route.onBeforeRouteEnter((_to, { reject }) => {
-      reject('NotFound')
-    })
-
-    const router = createRouter([route], { initialUrl: '/' })
-
-    router.onRejection(onRejection)
-
-    await router.start()
-
-    expect(onRejection).toHaveBeenCalledWith('NotFound', {
-      to: expect.objectContaining({
-        name: 'route-with-rejection',
-      }),
-      from: null,
-    })
-  })
+  expect(entered).toHaveBeenCalledExactlyOnceWith(
+    expect.objectContaining({ name: 'Denied' }),
+    expect.objectContaining({ from: expect.objectContaining({ name: 'home' }) }),
+  )
+  expect(router.route.name).toBe('Denied')
 })
 
 describe('options.removeTrailingSlashes', () => {
@@ -1059,8 +1042,8 @@ describe('options.removeTrailingSlashes', () => {
 
     await router.push('/bar/')
 
-    // rejects so the route is unchanged
-    expect(router.route.href).toBe('/foo/')
+    expect(router.route.name).toBe('NotFound')
+    expect(router.route.href).toBe('/bar/')
   })
 })
 
@@ -1085,21 +1068,15 @@ test('history keeps listening when a navigation ends early', async () => {
 
 describe('a url that matches no route', () => {
   test('rejects with NotFound', async () => {
-    const onRejection = vi.fn()
     const route = createRoute({ name: 'route', component, path: '/foo' })
     const router = createRouter([route], { initialUrl: '/does-not-exist' })
 
-    router.onRejection(onRejection)
-
     await router.start()
 
-    expect(onRejection).toHaveBeenCalledWith('NotFound', {
-      to: null,
-      from: null,
-    })
+    expect(router.route).toMatchObject({ name: 'NotFound', href: '/does-not-exist' })
   })
 
-  test('runs leave hooks with a null to', async () => {
+  test.each(['missing', 'manual'])('%s rejection runs leave hooks with the rejected destination', async (source) => {
     const onBeforeRouteLeave = vi.fn()
     const onAfterRouteLeave = vi.fn()
     const route = createRoute({ name: 'route', component, path: '/foo' })
@@ -1110,10 +1087,14 @@ describe('a url that matches no route', () => {
     router.onBeforeRouteLeave(onBeforeRouteLeave)
     router.onAfterRouteLeave(onAfterRouteLeave)
 
-    await router.push('/does-not-exist')
+    if (source === 'missing') {
+      await router.push('/does-not-exist')
+    } else {
+      await router.reject('NotFound')
+    }
 
-    expect(onBeforeRouteLeave).toHaveBeenCalledWith(null, expect.anything())
-    expect(onAfterRouteLeave).toHaveBeenCalledWith(null, expect.anything())
+    expect(onBeforeRouteLeave).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ name: 'NotFound' }), expect.objectContaining({ from: expect.objectContaining({ name: 'route' }) }))
+    expect(onAfterRouteLeave).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ name: 'NotFound' }), expect.objectContaining({ from: expect.objectContaining({ name: 'route' }) }))
   })
 })
 
@@ -1546,10 +1527,10 @@ describe('router.render response', () => {
 
     locked.setTitle(() => 'locked')
 
-    const route = createRoute({ name: 'route', component, path: '/' })
+    const route = createRoute({ name: 'route', component, path: '/', context: [locked] })
     const router = createRouter([route], { ssr: true, initialUrl: '/', rejections: [locked] })
 
-    router.onBeforeRouteEnter((_to, { reject }) => reject('Locked'))
+    route.onBeforeRouteEnter((_to, { reject }) => reject('Locked'))
 
     await router.start()
 
@@ -1574,13 +1555,13 @@ describe('router.render response', () => {
   test('a rejection without a title returns no title', async () => {
     const locked = createRejection({ type: 'Locked', status: 423, component })
 
-    const route = createRoute({ name: 'route', component, path: '/' })
+    const route = createRoute({ name: 'route', component, path: '/', context: [locked] })
 
     route.setTitle(() => 'the title')
 
     const router = createRouter([route], { ssr: true, initialUrl: '/', rejections: [locked] })
 
-    router.onBeforeRouteEnter((_to, { reject }) => reject('Locked'))
+    route.onBeforeRouteEnter((_to, { reject }) => reject('Locked'))
 
     await router.start()
 
@@ -1644,7 +1625,7 @@ describe('router.render response', () => {
     const result = rendered(await router.render())
     const payload: unknown = JSON.parse(result.payload.replace(/^<script[^>]*>/, '').replace(/<\/script>$/, ''))
 
-    expect(payload).toStrictEqual({ kind: 'reject', url: '/does-not-exist', rejection: 'NotFound' })
+    expect(payload).toStrictEqual({ kind: 'reject', url: '/does-not-exist', rejection: 'NotFound', values: [] })
   })
 
   test('given a url that matches a route, returns 200', async () => {
@@ -1687,10 +1668,10 @@ describe('router.render response', () => {
 
   test('given a rejection that declares a status, returns that status', async () => {
     const rejection = createRejection({ type: 'Unauthorized', status: 401 })
-    const route = createRoute({ name: 'route', component, path: '/' })
+    const route = createRoute({ name: 'route', component, path: '/', context: [rejection] })
     const router = createRouter([route], { ssr: true, initialUrl: '/', rejections: [rejection] })
 
-    router.onBeforeRouteEnter((_to, { reject }) => {
+    route.onBeforeRouteEnter((_to, { reject }) => {
       reject('Unauthorized')
     })
 
@@ -1703,10 +1684,10 @@ describe('router.render response', () => {
 
   test('given a rejection, returns the status it declared', async () => {
     const rejection = createRejection({ type: 'Maintenance', status: 503 })
-    const route = createRoute({ name: 'route', component, path: '/' })
+    const route = createRoute({ name: 'route', component, path: '/', context: [rejection] })
     const router = createRouter([route], { ssr: true, initialUrl: '/', rejections: [rejection] })
 
-    router.onBeforeRouteEnter((_to, { reject }) => {
+    route.onBeforeRouteEnter((_to, { reject }) => {
       reject('Maintenance')
     })
 
@@ -1719,10 +1700,10 @@ describe('router.render response', () => {
 
   test('given a rejection without a status, responds 200', async () => {
     const rejection = createRejection({ type: 'Locked' })
-    const route = createRoute({ name: 'route', component, path: '/' })
+    const route = createRoute({ name: 'route', component, path: '/', context: [rejection] })
     const router = createRouter([route], { ssr: true, initialUrl: '/', rejections: [rejection] })
 
-    router.onBeforeRouteEnter((_to, { reject }) => {
+    route.onBeforeRouteEnter((_to, { reject }) => {
       reject('Locked')
     })
 
@@ -1733,12 +1714,12 @@ describe('router.render response', () => {
     expect(result).toMatchObject({ status: 200, rejection: 'Locked' })
   })
 
-  test('given rejectStatus, uses it for a rejection without a status of its own', async () => {
-    const rejection = createRejection({ type: 'Locked' })
-    const route = createRoute({ name: 'route', component, path: '/' })
-    const router = createRouter([route], { ssr: true, initialUrl: '/', rejections: [rejection], rejectStatus: 403 })
+  test('a rejection registered alongside routes carries its declared status', async () => {
+    const rejection = createRejection({ type: 'Locked', status: 403 })
+    const route = createRoute({ name: 'route', component, path: '/', context: [rejection] })
+    const router = createRouter([route, rejection], { ssr: true, initialUrl: '/' })
 
-    router.onBeforeRouteEnter((_to, { reject }) => {
+    route.onBeforeRouteEnter((_to, { reject }) => {
       reject('Locked')
     })
 
@@ -1749,12 +1730,12 @@ describe('router.render response', () => {
     expect(result).toMatchObject({ status: 403, rejection: 'Locked' })
   })
 
-  test('a rejection status wins over rejectStatus', async () => {
+  test('a rejection keeps its status when registered alongside routes', async () => {
     const rejection = createRejection({ type: 'Locked', status: 423 })
-    const route = createRoute({ name: 'route', component, path: '/' })
-    const router = createRouter([route], { ssr: true, initialUrl: '/', rejections: [rejection], rejectStatus: 403 })
+    const route = createRoute({ name: 'route', component, path: '/', context: [rejection] })
+    const router = createRouter([route, rejection], { ssr: true, initialUrl: '/' })
 
-    router.onBeforeRouteEnter((_to, { reject }) => {
+    route.onBeforeRouteEnter((_to, { reject }) => {
       reject('Locked')
     })
 
@@ -1912,4 +1893,96 @@ describe('router.render response', () => {
 
     expect(second).toStrictEqual(first)
   })
+})
+
+test('a manual rejection waits for leave hooks and can be canceled', async () => {
+  const ready = Promise.withResolvers<void>()
+  const home = createRoute({ name: 'home', path: '/', component })
+  const router = createRouter([home], { initialUrl: '/', historyMode: 'memory' })
+  const afterEnter = vi.fn()
+
+  await router.start()
+  router.onAfterRouteEnter(afterEnter)
+  home.onBeforeRouteLeave(async (_to, { abort }) => {
+    await ready.promise
+    abort()
+  })
+
+  const rejected = router.reject('NotFound')
+
+  expect(afterEnter).not.toHaveBeenCalled()
+  ready.resolve()
+  await rejected
+
+  expect(afterEnter).not.toHaveBeenCalled()
+  expect(router.route.name).toBe('home')
+})
+
+test('a rejection from a leave hook runs hooks against the replacement destination', async () => {
+  const home = createRoute({ name: 'home', path: '/', component })
+  const next = createRoute({ name: 'next', path: '/next', component })
+  const leave = vi.fn()
+  const after = vi.fn()
+  const router = createRouter([home, next], { initialUrl: '/', historyMode: 'memory' })
+
+  await router.start()
+  home.onBeforeRouteLeave((to, context) => {
+    leave(to, context)
+
+    if (to?.name === 'next') {
+      context.reject('NotFound')
+    }
+  })
+  home.onAfterRouteLeave(after)
+
+  await router.push('next')
+
+  expect(leave).toHaveBeenCalledTimes(2)
+  expect(after).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ name: 'NotFound' }), expect.objectContaining({ from: expect.objectContaining({ name: 'home' }) }))
+})
+
+test('external navigation keeps the displayed rejection and the public route', async () => {
+  const home = createRoute({ name: 'home', path: '/', component })
+  const external = createExternalRoute({ name: 'external', host: 'https://kitbag.dev', path: '/' })
+  const denied = createRejection({ type: 'Denied' })
+  const router = createRouter([home, external], { initialUrl: '/', historyMode: 'memory', rejections: [denied] })
+  const app = createApp({})
+
+  app.use(router)
+
+  const { useRejection } = createRouterAssets(router)
+  const rejection = app.runWithContext(useRejection)
+
+  await router.start()
+  await router.reject('Denied')
+
+  const displayed = rejection.value
+
+  await router.push('external')
+
+  expect(displayed?.name).toBe('Denied')
+  expect(rejection.value).toBe(displayed)
+  expect(router.route.name).toBe('Denied')
+})
+
+test('reject awaits async rejection callbacks in the shared after-hook phase', async () => {
+  const ready = Promise.withResolvers<void>()
+  const denied = createRejection({ type: 'Denied' })
+  const home = createRoute({ name: 'home', path: '/', component })
+  const router = createRouter([home], { initialUrl: '/', historyMode: 'memory', rejections: [denied] })
+  let completed = false
+
+  denied.onAfterRouteEnter(() => ready.promise)
+  await router.start()
+
+  const rejected = router.reject('Denied').then(() => {
+    completed = true
+  })
+
+  await flushPromises()
+  expect(completed).toBe(false)
+
+  ready.resolve()
+  await rejected
+  expect(completed).toBe(true)
 })

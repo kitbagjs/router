@@ -18,7 +18,6 @@ test('global hooks are called correctly', async () => {
   const onAfterRouteUpdate = vi.fn()
   const onAfterRouteLeave = vi.fn()
   const onError = vi.fn()
-  const onRejection = vi.fn()
 
   router.onBeforeRouteEnter(onBeforeRouteEnter)
   router.onAfterRouteEnter(onAfterRouteEnter)
@@ -27,7 +26,6 @@ test('global hooks are called correctly', async () => {
   router.onBeforeRouteLeave(onBeforeRouteLeave)
   router.onAfterRouteLeave(onAfterRouteLeave)
   router.onError(onError)
-  router.onRejection(onRejection)
 
   await router.start()
 
@@ -38,7 +36,6 @@ test('global hooks are called correctly', async () => {
   expect(onAfterRouteUpdate).toHaveBeenCalledTimes(0)
   expect(onAfterRouteEnter).toHaveBeenCalledTimes(1)
   expect(onError).toHaveBeenCalledTimes(0)
-  expect(onRejection).toHaveBeenCalledTimes(0)
 
   await router.push('parentA.childA', { paramA: 'valueA', paramB: 'valueB' })
 
@@ -49,7 +46,6 @@ test('global hooks are called correctly', async () => {
   expect(onAfterRouteUpdate).toHaveBeenCalledTimes(1)
   expect(onAfterRouteEnter).toHaveBeenCalledTimes(2)
   expect(onError).toHaveBeenCalledTimes(0)
-  expect(onRejection).toHaveBeenCalledTimes(0)
 
   await router.push('parentA.childB', { paramA: 'valueB', paramD: 'valueD' })
 
@@ -60,7 +56,6 @@ test('global hooks are called correctly', async () => {
   expect(onAfterRouteUpdate).toHaveBeenCalledTimes(2)
   expect(onAfterRouteEnter).toHaveBeenCalledTimes(3)
   expect(onError).toHaveBeenCalledTimes(0)
-  expect(onRejection).toHaveBeenCalledTimes(0)
 
   await router.push('parentB')
 
@@ -71,18 +66,16 @@ test('global hooks are called correctly', async () => {
   expect(onAfterRouteUpdate).toHaveBeenCalledTimes(2)
   expect(onAfterRouteEnter).toHaveBeenCalledTimes(4)
   expect(onError).toHaveBeenCalledTimes(0)
-  expect(onRejection).toHaveBeenCalledTimes(0)
 
-  router.reject('NotFound')
+  await router.reject('NotFound')
 
-  expect(onBeforeRouteEnter).toHaveBeenCalledTimes(4)
+  expect(onBeforeRouteEnter).toHaveBeenCalledTimes(5)
   expect(onBeforeRouteUpdate).toHaveBeenCalledTimes(2)
-  expect(onBeforeRouteLeave).toHaveBeenCalledTimes(2)
-  expect(onAfterRouteLeave).toHaveBeenCalledTimes(2)
+  expect(onBeforeRouteLeave).toHaveBeenCalledTimes(3)
+  expect(onAfterRouteLeave).toHaveBeenCalledTimes(3)
   expect(onAfterRouteUpdate).toHaveBeenCalledTimes(2)
-  expect(onAfterRouteEnter).toHaveBeenCalledTimes(4)
+  expect(onAfterRouteEnter).toHaveBeenCalledTimes(5)
   expect(onError).toHaveBeenCalledTimes(0)
-  expect(onRejection).toHaveBeenCalledTimes(1)
 })
 
 test('route hooks are called correctly', async () => {
@@ -177,7 +170,6 @@ test('external route hooks are called correctly', async () => {
     afterEnter: vi.fn(),
     afterLeave: vi.fn(),
     afterUpdate: vi.fn(),
-    onRejection: vi.fn(),
   }
 
   const internal = createRoute({
@@ -227,7 +219,6 @@ test('external route hooks are called correctly', async () => {
   expect(internalHooks.afterUpdate).toHaveBeenCalledTimes(0)
   expect(internalHooks.afterEnter).toHaveBeenCalledTimes(1)
   expect(externalHooks.beforeEnter).toHaveBeenCalledTimes(0)
-  expect(internalHooks.onRejection).toHaveBeenCalledTimes(0)
 
   await router.push('external')
 
@@ -238,11 +229,10 @@ test('external route hooks are called correctly', async () => {
   expect(internalHooks.afterUpdate).toHaveBeenCalledTimes(0)
   expect(internalHooks.afterEnter).toHaveBeenCalledTimes(1)
   expect(externalHooks.beforeEnter).toHaveBeenCalledTimes(1)
-  expect(internalHooks.onRejection).toHaveBeenCalledTimes(0)
 })
 
-test('rejection hooks are called correctly', async () => {
-  const onRejection = vi.fn()
+test('rejection enter hooks are standard route hooks', async () => {
+  const afterEnter = vi.fn()
 
   const rejection = createRejection({
     type: 'CustomRejection',
@@ -250,20 +240,20 @@ test('rejection hooks are called correctly', async () => {
     status: 404,
   })
 
-  rejection.onRejection((type, { to, from }) => onRejection(type, { to, from }))
+  rejection.onAfterRouteEnter((to, { from }) => afterEnter(to.name, { to, from }))
 
   const router = createRouter(routes, { initialUrl: '/', rejections: [rejection] })
 
   await router.start()
 
-  expect(onRejection).toHaveBeenCalledTimes(0)
+  expect(afterEnter).toHaveBeenCalledTimes(0)
 
-  router.reject('CustomRejection')
+  await router.reject('CustomRejection')
 
-  expect(onRejection).toHaveBeenCalledTimes(1)
-  expect(onRejection).toHaveBeenCalledWith('CustomRejection', expect.objectContaining({
-    to: null,
-    from: null,
+  expect(afterEnter).toHaveBeenCalledTimes(1)
+  expect(afterEnter).toHaveBeenCalledWith('CustomRejection', expect.objectContaining({
+    to: expect.objectContaining({ name: 'CustomRejection' }),
+    from: expect.objectContaining({ name: 'parentC' }),
   }))
 })
 

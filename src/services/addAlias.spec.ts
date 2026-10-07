@@ -484,6 +484,10 @@ describe('router', () => {
     const router = createRouter([user], { initialUrl: '/member/42' })
 
     await router.start()
+    if (router.route.name !== 'user') {
+      throw new Error('Expected user destination')
+    }
+
     await router.route.update('id', '7')
 
     expect(router.route.href).toBe('/user/7')

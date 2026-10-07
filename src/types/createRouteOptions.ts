@@ -65,6 +65,10 @@ export type CreateRouteOptions<
    * Name for route, used to create route keys and in navigation.
    */
   name?: TName,
+  /** HTTP status of the rendered destination. Defaults to 200. */
+  status?: number,
+  /** Marks a destination selected by rejection rather than URL matching. */
+  rejection?: boolean,
   /**
    * Path part of URL.
    */
