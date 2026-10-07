@@ -94,6 +94,13 @@ type NavigationRequest = Omit<RunHooksContext, 'controller'> & {
   destination?: PageDestination,
   options?: RouterUpdateOptions,
   url?: string,
+  skipBeforeHooks?: boolean,
+}
+
+type BeforeNavigationContext = {
+  request: NavigationRequest,
+  controller: AbortController,
+  progress: NavigationProgressTracker,
 }
 
 type PageDestination = Pick<PageNavigationOptions, 'page' | 'values' | 'onCommit'>
@@ -195,7 +202,6 @@ export function createRouter<
         break
 
       case 'REJECT':
-        controller.abort()
         reject(response.type, { to, from })
         break
 
@@ -246,90 +252,93 @@ export function createRouter<
     }
   }
 
+  async function runBeforeHooks({ request, controller, progress }: BeforeNavigationContext): Promise<boolean> {
+    const { to, from } = request
+    const response = await hooks.runBeforeRouteHooks({ to, from, signal: controller.signal, progress })
+
+    switch (response.status) {
+      case 'SUCCESS':
+        return true
+
+      case 'ABORT':
+        controller.abort()
+        break
+
+      case 'PUSH':
+      case 'REDIRECT':
+        await push(...response.to)
+        break
+
+      case 'REJECT':
+        const rejection = getRejectionByType(response.type)
+
+        if (!rejection) {
+          controller.abort()
+          break
+        }
+
+        await navigate({
+          ...request,
+          destination: getRejectionDestination(rejection, { to, from }),
+          to: null,
+          skipBeforeHooks: true,
+        })
+        break
+
+      default:
+        const exhaustive: never = response
+        throw new Error(`Switch is not exhaustive for before hook response status: ${JSON.stringify(exhaustive)}`)
+    }
+
+    return false
+  }
+
   const navigate = activity.wrap(async (request: NavigationRequest): Promise<void> => {
-    let controller = navigations.begin()
+    const controller = navigations.begin()
 
     if (controller.signal.aborted) {
       return
     }
 
-    let navigation = request
-    const { from, options = {} } = request
-    let progress = navigationProgress.begin({
-      to: navigation.to,
+    const { to, from, destination, options = {} } = request
+    const progress = navigationProgress.begin({
+      to,
       from,
-      expected: countPageUnits(navigation.destination),
+      expected: countPageUnits(destination),
       inert: isSSR || options.hydrating,
     })
 
-    if (!options.hydrating) {
-      const response = await hooks.runBeforeRouteHooks({ to: navigation.to, from, signal: controller.signal, progress })
+    controller.signal.addEventListener('abort', progress.abort, { once: true })
 
-      switch (response.status) {
-        case 'ABORT':
-          controller.abort()
-          progress.abort()
+    if (!options.hydrating && !request.skipBeforeHooks) {
+      const proceed = await runBeforeHooks({ request, controller, progress })
 
-          return
-
-        case 'PUSH':
-        case 'REDIRECT':
-          await push(...response.to)
-          controller.abort()
-          progress.abort()
-
-          return
-
-        case 'REJECT':
-          const rejection = getRejectionByType(response.type)
-
-          if (!rejection) {
-            controller.abort()
-            progress.abort()
-
-            return
-          }
-
-          const destination = getRejectionDestination(rejection, { to: navigation.to, from })
-
-          controller = navigations.begin()
-          progress.abort()
-          navigation = { ...navigation, destination, to: null }
-          progress = navigationProgress.begin({
-            to: null,
-            from,
-            expected: countPageUnits(navigation.destination),
-            inert: isSSR,
-          })
-          break
-
-        case 'SUCCESS':
-          break
-
-        default:
-          const exhaustive: never = response
-          throw new Error(`Switch is not exhaustive for before hook response status: ${JSON.stringify(exhaustive)}`)
-      }
-
-      if (request.url) {
-        history.update(request.url, options)
+      if (!proceed) {
+        return
       }
     }
 
-    if (!navigation.destination) {
+    if (!options.hydrating && request.url) {
+      history.update(request.url, options)
+    }
+
+    await Promise.all([
+      commitDestination(request, controller, progress),
+      runAfterHooks({ controller, to, from, enabled: !isSSR }),
+    ])
+  })
+
+  async function commitDestination(request: NavigationRequest, controller: AbortController, progress: NavigationProgressTracker): Promise<void> {
+    if (!request.destination) {
       progress.close()
-      await runAfterHooks({ controller, to: navigation.to, from, enabled: !isSSR })
 
       return
     }
 
-    const { commit } = createNavigationCommit({ ...navigation, ...navigation.destination, controller, progress })
+    const { commit } = createNavigationCommit({ ...request, ...request.destination, controller, progress })
 
-    await Promise.all([
-      commit(),
-      runAfterHooks({ controller, to: navigation.to, from, enabled: !isSSR }),
-    ])
-  })
+    await commit()
+  }
 
   function createNavigationCommit({ page, values = emptyPageValues, controller, to, from, options = {}, progress, onCommit }: PageNavigationOptions): PageCommit {
     const { signal } = controller
