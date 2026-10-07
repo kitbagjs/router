@@ -85,6 +85,8 @@ function maybeAuthNeeded() {
 }
 ```
 
+`router.reject` returns `Promise<void>`, so you can await the rejection navigation just like `router.push` and `router.replace`.
+
 Calling `router.reject` and navigating to an unmatched URL follow the same navigation lifecycle. The current route's `onBeforeRouteLeave` hooks run with `to: null` and can delay, cancel, or redirect the rejection. Once the rejection is committed, `onAfterRouteLeave` hooks run with `to: null`. Route enter and update hooks do not run for the rejection.
 
 ### Get Rejection

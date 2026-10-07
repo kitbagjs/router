@@ -870,7 +870,6 @@ export function createRouter<
     find,
     push,
     replace,
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises -- Public reject is fire-and-forget; hydration awaits the same implementation.
     reject,
     refresh: history.refresh,
     forward: history.forward,

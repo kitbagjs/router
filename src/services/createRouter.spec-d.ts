@@ -125,6 +125,7 @@ describe('rejections', () => {
     type Expect = BuiltInRejectionType
 
     expectTypeOf<Source>().toEqualTypeOf<Expect>()
+    expectTypeOf<ReturnType<typeof _router.reject>>().toEqualTypeOf<Promise<void>>()
   })
 
   test('the routes a rejection happened between are not part of the public signature', () => {

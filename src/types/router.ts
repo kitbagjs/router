@@ -183,7 +183,7 @@ export type Router<
    */
   replace: RouterReplace<TRoutes | TPlugin['routes']>,
   /**
-   * Handles route rejection based on a specified rejection type.
+   * Navigates to a rejection and resolves once it is committed or the navigation is interrupted.
    */
   reject: RouterReject<[...ExtractRejections<TOptions>, ...ExtractRejections<TPlugin>]>,
   /**

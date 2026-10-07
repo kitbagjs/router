@@ -1,7 +1,7 @@
 import { BuiltInRejectionType, Rejections, RejectionType } from '@/types/rejection'
 import { ResolvedRoute } from '@/types/resolved'
 
-export type RouterReject<TRejections extends Rejections | undefined> = <TSource extends (RejectionType<TRejections> | BuiltInRejectionType)>(type: TSource) => void
+export type RouterReject<TRejections extends Rejections | undefined> = <TSource extends (RejectionType<TRejections> | BuiltInRejectionType)>(type: TSource) => Promise<void>
 
 /**
  * The routes a rejection happened between, which rejection hooks are given.

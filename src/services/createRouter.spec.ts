@@ -70,8 +70,7 @@ test('external navigation preserves the displayed rejection', async () => {
   const rejection = app.runWithContext(useRejection)
 
   await router.start()
-  router.reject('Denied')
-  await flushPromises()
+  await router.reject('Denied')
 
   const displayed = rejection.value
 
