@@ -966,7 +966,7 @@ describe('router.onRejection', () => {
 
     await router.start()
 
-    router.reject('CustomRejection')
+    await router.reject('CustomRejection')
 
     expect(onRejection).toHaveBeenCalledWith('CustomRejection', {
       to: null,

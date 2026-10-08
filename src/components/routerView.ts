@@ -1,12 +1,13 @@
-import { createUseComponentsStore } from '@/compositions/useComponentsStore'
+import { getCurrentPageKey } from '@/services/createCurrentPage'
+import { RouterNotInstalledError } from '@/errors/routerNotInstalledError'
 import { createUseRejection } from '@/compositions/useRejection'
 import { createUseRoute } from '@/compositions/useRoute'
 import { createUseRouter } from '@/compositions/useRouter'
 import { createUseRouterDepth } from '@/compositions/useRouterDepth'
-import { isRejection, RouterRejection } from '@/types/rejection'
+import { RouterRejection } from '@/types/rejection'
 import { RouterRoute } from '@/types/routerRoute'
 import { Router } from '@/types/router'
-import { Component, computed, defineComponent, EmitsOptions, h, InjectionKey, onServerPrefetch, SetupContext, SlotsType, UnwrapRef, VNode } from 'vue'
+import { Component, computed, inject, defineComponent, EmitsOptions, h, InjectionKey, onServerPrefetch, SetupContext, SlotsType, UnwrapRef, VNode } from 'vue'
 
 export type RouterViewProps = {
   name?: string,
@@ -27,7 +28,6 @@ export function createRouterView<TRouter extends Router>(routerKey: InjectionKey
   const useRouter = createUseRouter(routerKey)
   const useRejection = createUseRejection(routerKey)
   const useRouterDepth = createUseRouterDepth(routerKey)
-  const useComponentsStore = createUseComponentsStore(routerKey)
 
   return defineComponent((props: RouterViewProps, context: SetupContext<EmitsOptions, SlotsType<RouterViewSlots>>) => {
     const route = useRoute()
@@ -39,26 +39,23 @@ export function createRouterView<TRouter extends Router>(routerKey: InjectionKey
       await router.start()
     })
 
-    const { getRouteComponents } = useComponentsStore()
+    const page = inject(getCurrentPageKey(routerKey))
+
+    if (!page) {
+      throw new RouterNotInstalledError()
+    }
 
     const component = computed(() => {
       if (!router.started.value) {
         return null
       }
 
-      if (isRejection(rejection.value)) {
-        return rejection.value.route.matches.at(0)?.views.default.component ?? null
-      }
+      const view = page.value?.views.find((view) => {
+        return (view.depth === undefined || view.depth === depth)
+          && (view.name === undefined || view.name === (props.name ?? 'default'))
+      })
 
-      const match = route.matches.at(depth)
-
-      if (!match) {
-        return null
-      }
-
-      const name = props.name ?? 'default'
-
-      return getRouteComponents(match.id, match.views)[name]
+      return view?.component ?? null
     })
 
     return () => {

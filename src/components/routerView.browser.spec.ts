@@ -711,3 +711,26 @@ test('Renders the rejection component when the rejection is not registered on th
 
   expect(wrapper.text()).toBe(rejectionText)
 })
+
+test('the same outlets render route, rejection, and route pages at the same URL', async () => {
+  const route = createRoute({ name: 'home', path: '/' })
+    .addView({ template: '<div>main view</div>' })
+    .addView({ template: '<div>side view</div>' }, { name: 'side' })
+  const denied = createRejection({ type: 'Denied', component: { template: '<div>denied view</div>' } })
+  const router = createRouter([route], { initialUrl: '/', historyMode: 'memory', rejections: [denied] })
+  const wrapper = mount({ template: '<RouterView/><RouterView name="side"/>' }, { global: { plugins: [router] } })
+
+  await router.start()
+
+  expect(wrapper.text()).toBe('main viewside view')
+
+  await router.reject('Denied')
+
+  expect(wrapper.text()).toBe('denied viewdenied view')
+  expect(router.route.href).toBe('/')
+
+  await router.push('/')
+
+  expect(wrapper.text()).toBe('main viewside view')
+  wrapper.unmount()
+})

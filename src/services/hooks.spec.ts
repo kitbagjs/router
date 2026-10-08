@@ -1,3 +1,10 @@
+import { createRoutePage, createRejectionPage } from '@/services/createPage'
+import { createComponentsStore } from '@/services/createComponentsStore'
+import { createRouteValueStore } from '@/services/createRouteValueStore'
+import { createNavigationProgress } from '@/services/createNavigationProgress'
+import { createRejection } from '@/services/createRejection'
+import { isRejection } from '@/types/rejection'
+import { Page } from '@/types/page'
 import { expect, test, vi } from 'vitest'
 import { createRouterHooks } from '@/services/createRouterHooks'
 import { BeforeEnterHook } from '@/types/hooks'
@@ -10,7 +17,7 @@ const { signal } = new AbortController()
 
 test('calls hook with correct routes', () => {
   const hook = vi.fn()
-  const { runBeforeRouteHooks } = createRouterHooks({ redirectStatus: 302 })
+  const { runBeforeHooks } = createRouterHooks({ redirectStatus: 302 })
 
   const toRoute = createRoute({
     id: Math.random().toString(),
@@ -29,7 +36,7 @@ test('calls hook with correct routes', () => {
   const to = createResolvedRoute(toRoute, {})
   const from = createResolvedRoute(fromRoute, {})
 
-  runBeforeRouteHooks({ to, from, signal })
+  runBeforeHooks({ to: page(to), from: page(from), signal, progress: progress() })
 
   expect(hook).toHaveBeenCalledOnce()
 })
@@ -53,7 +60,7 @@ test.each<{ type: string, status: string, hook: BeforeEnterHook }>([
     },
   },
 ])('Returns correct status when hook is called', async ({ status, hook }) => {
-  const { runBeforeRouteHooks } = createRouterHooks({ redirectStatus: 302 })
+  const { runBeforeHooks } = createRouterHooks({ redirectStatus: 302 })
 
   const toRoute = createRoute({
     id: Math.random().toString(),
@@ -74,7 +81,7 @@ test.each<{ type: string, status: string, hook: BeforeEnterHook }>([
   const to = createResolvedRoute(toRoute, {})
   const from = createResolvedRoute(fromRoute, {})
 
-  const response = await runBeforeRouteHooks({ to, from, signal })
+  const response = await runBeforeHooks({ to: page(to), from: page(from), signal, progress: progress() })
 
   expect(response.status).toBe(status)
 })
@@ -83,7 +90,7 @@ test('hook is called in order', async () => {
   const hookA = vi.fn()
   const hookB = vi.fn()
   const hookC = vi.fn()
-  const { runBeforeRouteHooks } = createRouterHooks({ redirectStatus: 302 })
+  const { runBeforeHooks } = createRouterHooks({ redirectStatus: 302 })
 
   const toRoute = createRoute({
     id: Math.random().toString(),
@@ -104,7 +111,7 @@ test('hook is called in order', async () => {
   const to = createResolvedRoute(toRoute, {})
   const from = createResolvedRoute(fromRoute, {})
 
-  await runBeforeRouteHooks({ to, from, signal })
+  await runBeforeHooks({ to: page(to), from: page(from), signal, progress: progress() })
 
   const [orderA] = hookA.mock.invocationCallOrder
   const [orderB] = hookB.mock.invocationCallOrder
@@ -248,9 +255,9 @@ test('when onError callback calls replace, other onError callbacks do not run', 
   expect(errorHook3).not.toHaveBeenCalled()
 })
 
-test('when to is null, only leave hooks are called', async () => {
+test('when entering a rejection, only route leave hooks are called', async () => {
   const calls: string[] = []
-  const { runBeforeRouteHooks, ...hooks } = createRouterHooks({ redirectStatus: 302 })
+  const { runBeforeHooks, ...hooks } = createRouterHooks({ redirectStatus: 302 })
 
   hooks.onBeforeRouteEnter(() => {
     calls.push('enter')
@@ -265,7 +272,40 @@ test('when to is null, only leave hooks are called', async () => {
   const fromRoute = createRoute({ name: 'routeA', component })
   const from = createResolvedRoute(fromRoute, {})
 
-  await runBeforeRouteHooks({ to: null, from, signal })
+  await runBeforeHooks({ to: page(), from: page(from), signal, progress: progress() })
 
   expect(calls).toEqual(['leave'])
+})
+
+function page(route?: ResolvedRoute): Page {
+  if (route) {
+    return createRoutePage(route, { components: createComponentsStore(Symbol()), values: createRouteValueStore(), redirectStatus: 302 })
+  }
+
+  const rejection = createRejection({ type: 'NotFound' })
+
+  if (!isRejection(rejection)) {
+    throw new Error('Expected a rejection')
+  }
+
+  return createRejectionPage(rejection, {}, 404)
+}
+
+function progress(): ReturnType<ReturnType<typeof createNavigationProgress>['begin']> {
+  return createNavigationProgress().begin({ to: null, from: null, expected: 0 })
+}
+
+test('component route update hooks do not run between rejection pages', async () => {
+  const hook = vi.fn()
+  const hooks = createRouterHooks({ redirectStatus: 302 })
+
+  hooks.addComponentHook({ lifecycle: 'onBeforeRouteUpdate', depth: 0, hook })
+  hooks.addComponentHook({ lifecycle: 'onAfterRouteUpdate', depth: 0, hook })
+
+  const navigation = { to: page(), from: page(), signal, progress: progress() }
+
+  await hooks.runBeforeHooks(navigation)
+  await hooks.runAfterHooks(navigation)
+
+  expect(hook).not.toHaveBeenCalled()
 })

@@ -85,6 +85,22 @@ function maybeAuthNeeded() {
 }
 ```
 
+`router.reject` returns a promise, like `router.push` and `router.replace`. Await it to wait for the
+navigation and its hooks:
+
+```ts
+await router.reject('AuthNeeded')
+```
+
+A manual rejection or an unmatched URL runs the current route's leave hooks. Leave hooks receive
+`null` as the destination because no route is being entered. `onRejection` runs after the rejection
+becomes current, and async rejection hooks are awaited. When a before hook rejects, its pending
+hooks are cancelled and the rejection is committed without restarting those before hooks.
+
+The URL and `router.route` are independent of the displayed rejection. `router.route` retains the
+last successful route; `useRejection()` identifies the rejection currently displayed. Returning
+from a rejection runs route enter hooks with `from: null`.
+
 ### Get Rejection
 
 Though it's uncommon, your rejection components could access to the current rejection with `useRejection` if you need it.

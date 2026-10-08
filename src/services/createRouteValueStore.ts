@@ -26,6 +26,11 @@ type RouteValueAbandoned = {
 
 export type RouteValueResponse = CallbackContextSuccess | CallbackContextPush | CallbackContextReject | RouteValueAbandoned
 
+/** A computation with its public callback arguments already bound. */
+export type ValueComputation = Omit<Computation, 'run'> & {
+  run: (store: DataStore) => unknown,
+}
+
 /**
  * How a navigation's props and loaders settled. Reported separately because props are what a view renders
  * with while loaders hold nothing up, so a slow loader must not be what decides when props are known.
@@ -40,13 +45,13 @@ export type RouteValueResponses = {
 }
 
 /**
- * A store of a route's values, whichever store that is.
+ * Values computed for a page, in either a staged or detached store.
  */
 export type ValueStore = {
   /**
-   * Computes the route's values, or only those the filter keeps, and reports how they settle.
+   * Runs the supplied computations, or only those the filter keeps, and reports how they settle.
    */
-  compute: (route: ResolvedRoute, filter?: ComputationFilter) => RouteValueResponses,
+  compute: (computations: ValueComputation[], filter?: ComputationFilter) => RouteValueResponses,
   /**
    * Adopts values that already settled, in place of running their getters.
    */
@@ -91,9 +96,10 @@ export type RouteValueStore = HasVueAppStore & {
    */
   staged: () => ValueStore,
   /**
-   * Makes the staged store current and computes whatever the route still lacks.
+   * Makes the staged store current and runs any computations it does not already contain.
    */
-  commit: (route: ResolvedRoute) => RouteValueResponses,
+  commit: (computations: ValueComputation[]) => RouteValueResponses,
+  getComputations: (route: ResolvedRoute) => ValueComputation[],
   /**
    * The values currently settled in the store.
    */
@@ -139,12 +145,30 @@ export function createRouteValueStore(): RouteValueStore {
     return createValueStore(() => navigation.staged())
   }
 
-  const commit: RouteValueStore['commit'] = (route) => {
+  const commit: RouteValueStore['commit'] = (computations) => {
     const previous = navigation.promote()
 
     previous.dispose(new NavigationAbandonedError())
 
-    return createValueStore(() => navigation.current()).compute(route)
+    return computeValues(navigation.current(), computations)
+  }
+
+  function computations(route: ResolvedRoute): ValueComputation[] {
+    return getComputations(route).map((computation) => ({
+      ...computation,
+      run: (store) => run(computation, route, store),
+    }))
+  }
+
+  function computeValues(store: DataStore, computations: ValueComputation[]): RouteValueResponses {
+    // Loaders start first so props can read their data immediately.
+    const loaders = settle(store, computations.filter(isKind('loader')))
+    const props = settle(store, computations.filter(isKind('props')))
+
+    loaders.catch(() => {})
+    props.catch(() => {})
+
+    return { props, loaders, values: computations.map(({ key }) => store.subscribe(key)) }
   }
 
   /**
@@ -152,25 +176,8 @@ export function createRouteValueStore(): RouteValueStore {
    * it is staged or reset.
    */
   function createValueStore(getStore: () => DataStore): ValueStore {
-    const compute: ValueStore['compute'] = (route, filter = () => true) => {
-      const store = getStore()
-      const computations = getComputations(route).filter(filter)
-
-      // loaders first, so a props getter reading the route's data finds it under way rather than missing
-      const loaders = settle(store, route, computations.filter(isKind('loader')))
-      const props = settle(store, route, computations.filter(isKind('props')))
-
-      // a caller that does not wait on these must not see a getter's error as an unhandled rejection
-      loaders.catch(() => {})
-      props.catch(() => {})
-
-      const values = computations.map(({ key }) => store.subscribe(key))
-
-      return {
-        props,
-        loaders,
-        values,
-      }
+    const compute: ValueStore['compute'] = (computations, filter = () => true) => {
+      return computeValues(getStore(), computations.filter(filter))
     }
 
     const fill: ValueStore['fill'] = (route, values) => {
@@ -213,9 +220,9 @@ export function createRouteValueStore(): RouteValueStore {
    * await, so everything a route computes is under way by the time the route is current. Getters read
    * from the same store, so one finds what a sibling is computing alongside it.
    */
-  async function settle(store: DataStore, route: ResolvedRoute, computations: Computation[]): Promise<RouteValueResponse> {
+  async function settle(store: DataStore, computations: ValueComputation[]): Promise<RouteValueResponse> {
     computations.forEach((computation) => {
-      store.set(computation.key, () => run(computation, route, store))
+      store.set(computation.key, () => computation.run(store))
     })
 
     try {
@@ -407,6 +414,7 @@ export function createRouteValueStore(): RouteValueStore {
 
   return {
     createDetachedStore,
+    getComputations: computations,
     staged,
     commit,
     getValues,

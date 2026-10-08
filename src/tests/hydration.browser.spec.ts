@@ -67,7 +67,7 @@ test('a payload with a rejection is adopted synchronously when the router starts
   expect(onRejection).toHaveBeenCalledWith('Locked', { to: expect.objectContaining({ name: 'secret' }), from: null })
 })
 
-test('a reject payload whose url no longer matches rejects with NotFound', async () => {
+test('a rejection payload does not require a matching route', async () => {
   embed({ kind: 'reject', url: '/gone', rejection: 'Locked' })
 
   const locked = createRejection({ type: 'Locked', status: 423 })
@@ -79,7 +79,7 @@ test('a reject payload whose url no longer matches rejects with NotFound', async
 
   await router.start()
 
-  expect(onRejection).toHaveBeenCalledWith('NotFound', { to: null, from: null })
+  expect(onRejection).toHaveBeenCalledWith('Locked', { to: null, from: null })
 })
 
 test('adopting a payload leaves the document title the server rendered', async () => {
@@ -179,4 +179,17 @@ test('a declared payload option that cannot read a value warns and computes agai
   expect(warn.mock.calls.some(([message]) => String(message).includes('parse the payload value for loader "default"'))).toBe(true)
 
   warn.mockRestore()
+})
+
+test('a payload naming an unregistered rejection falls back to NotFound', async () => {
+  embed({ kind: 'reject', url: '/gone', rejection: 'Removed' })
+
+  const onRejection = vi.fn()
+  const router = createRouter([], { initialUrl: '/gone' })
+
+  router.onRejection(onRejection)
+  await router.start()
+
+  expect(router.started.value).toBe(true)
+  expect(onRejection).toHaveBeenCalledExactlyOnceWith('NotFound', { to: null, from: null })
 })

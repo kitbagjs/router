@@ -66,13 +66,12 @@ export function createRouterHistory({ mode, listener }: RouterHistoryOptions): R
     removeListener?.()
   }
 
-  return {
-    ...history,
+  return Object.assign(history, {
     update,
     refresh,
     startListening,
     stopListening,
-  }
+  })
 }
 
 function createHistory(mode: RouterHistoryMode = 'auto'): History {

@@ -6,7 +6,7 @@ import { ResolvedRoute, WithData } from '@/types/resolved'
 import { Routes } from '@/types/route'
 import { RouterPush } from '@/types/routerPush'
 
-type ResolvedRouteUpdate = (route: ResolvedRoute) => void
+type ResolvedRouteUpdate = (route: ResolvedRoute) => ResolvedRoute & WithData
 
 type CurrentRouteContext<TRoutes extends Routes = Routes> = {
   currentRoute: ResolvedRoute & WithData,
@@ -31,7 +31,11 @@ export function createCurrentRoute({ routerKey, fallbackRoute, push, getData }: 
   const route = reactive(withData(fallbackRoute))
 
   const updateRoute: ResolvedRouteUpdate = (newRoute) => {
-    Object.assign(route, withData(newRoute))
+    const snapshot = withData(newRoute)
+
+    Object.assign(route, snapshot)
+
+    return snapshot
   }
 
   function withData(route: ResolvedRoute): ResolvedRoute & WithData {

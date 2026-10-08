@@ -73,12 +73,12 @@ test('global hooks are called correctly', async () => {
   expect(onError).toHaveBeenCalledTimes(0)
   expect(onRejection).toHaveBeenCalledTimes(0)
 
-  router.reject('NotFound')
+  await router.reject('NotFound')
 
   expect(onBeforeRouteEnter).toHaveBeenCalledTimes(4)
   expect(onBeforeRouteUpdate).toHaveBeenCalledTimes(2)
-  expect(onBeforeRouteLeave).toHaveBeenCalledTimes(2)
-  expect(onAfterRouteLeave).toHaveBeenCalledTimes(2)
+  expect(onBeforeRouteLeave).toHaveBeenCalledTimes(3)
+  expect(onAfterRouteLeave).toHaveBeenCalledTimes(3)
   expect(onAfterRouteUpdate).toHaveBeenCalledTimes(2)
   expect(onAfterRouteEnter).toHaveBeenCalledTimes(4)
   expect(onError).toHaveBeenCalledTimes(0)
@@ -258,7 +258,7 @@ test('rejection hooks are called correctly', async () => {
 
   expect(onRejection).toHaveBeenCalledTimes(0)
 
-  router.reject('CustomRejection')
+  await router.reject('CustomRejection')
 
   expect(onRejection).toHaveBeenCalledTimes(1)
   expect(onRejection).toHaveBeenCalledWith('CustomRejection', expect.objectContaining({
