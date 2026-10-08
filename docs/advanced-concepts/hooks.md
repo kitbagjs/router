@@ -28,7 +28,7 @@ onAfterRouteEnter: (to, context) => {
 
 ### On Rejection
 
-- **onRejection** Triggered whenever a rejection is triggered. Rejection hooks are run in the order they were registered. The hook is provided both the rejection and the [rejection context](/advanced-concepts/hooks#rejection-context).
+- **onRejection** Runs after a rejection becomes current. Async callbacks are awaited, including during server rendering. Rejection hooks are run in the order they were registered. The hook is provided both the rejection and the [rejection context](/advanced-concepts/hooks#rejection-context).
 
 ## Context
 

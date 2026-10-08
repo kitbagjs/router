@@ -26,7 +26,7 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
   return (config) => {
     const element = ref<HTMLElement>()
 
-    const { createDetachedStore } = useRouteValueStore()
+    const { createDetachedStore, getComputations } = useRouteValueStore()
     const store = createDetachedStore()
     const { isElementVisible } = useVisibilityObserver(element)
 
@@ -71,7 +71,7 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
 
     function doPrefetchingForStrategy(strategy: PrefetchStrategy, route: ResolvedRoute, configs: PrefetchConfigs): void {
       prefetchComponentsForRoute(strategy, route, configs)
-      store.compute(route, isComputationForStrategy(strategy, configs))
+      store.compute(getComputations(route), isComputationForStrategy(strategy, configs))
     }
 
     return {

@@ -1,11 +1,8 @@
-import { AddGlobalHooks, AddComponentHook, AfterHookRunner, BeforeHookRunner, AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, ErrorHookRunner, AddErrorHook, BeforeEnterHook, BeforeUpdateHook, BeforeLeaveHook, AfterEnterHook, AfterUpdateHook, AfterLeaveHook, RejectionHookRunner, RejectionHook, AddRejectionHook } from '@/types/hooks'
+import { AddGlobalHooks, AddComponentHook, AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, ErrorHookRunner, AddErrorHook, AddRejectionHook } from '@/types/hooks'
 import { getRouteHookCondition } from '@/services/hooks'
 import { ContextPushError } from '@/errors/contextPushError'
 import { ContextRejectionError } from '@/errors/contextRejectionError'
 import { ContextAbortError } from '@/errors/contextAbortError'
-import { getAfterHooksFromRoutes, getBeforeHooksFromRoutes } from '@/services/getRouteHooks'
-import { getGlobalAfterHooks, getGlobalBeforeHooks } from '@/services/getGlobalRouteHooks'
-import { getRejectionHooksFromRejection } from '@/services/getRejectionHooks'
 import { createVueAppStore, HasVueAppStore } from '@/services/createVueAppStore'
 import { createRouterKeyStore } from '@/services/createRouterKeyStore'
 import { Hooks } from '@/models/hooks'
@@ -15,16 +12,18 @@ import { ContextRedirectError } from '@/errors/contextRedirectError'
 import { createRouteHooks } from '@/services/createRouteHooks'
 import { ResolvedRoute } from '@/types/resolved'
 import { MaybePromise } from '@/types/utilities'
-import { RedirectHook } from '@/types/redirects'
 import { RedirectStatus } from '@/types/router'
+import { BeforePageNavigation, getPageRoute, PageHook, PageHookResponse, PageNavigation } from '@/types/page'
+import { bindRouteHooks, emptyPageHooks, getGlobalPageHooks } from '@/services/getPageHooks'
+import { NavigationProgressTracker } from '@/services/createNavigationProgress'
+import { createAbortPromise } from '@/utilities/promises'
 
 export const getRouterHooksKey = createRouterKeyStore<RouterHooks>()
 
 export type RouterHooks = HasVueAppStore & {
-  runBeforeRouteHooks: BeforeHookRunner,
-  runAfterRouteHooks: AfterHookRunner,
+  runBeforeHooks: (navigation: BeforePageNavigation) => Promise<PageHookResponse>,
+  runAfterHooks: (navigation: PageNavigation) => Promise<PageHookResponse>,
   runErrorHooks: ErrorHookRunner,
-  runRejectionHooks: RejectionHookRunner,
   addComponentHook: AddComponentHook,
   addGlobalRouteHooks: AddGlobalHooks,
   onBeforeRouteEnter: AddBeforeEnterHook,
@@ -39,80 +38,88 @@ export type RouterHooks = HasVueAppStore & {
 
 type RouterHooksOptions = {
   redirectStatus: RedirectStatus,
+  ssr?: boolean,
 }
 
-export function createRouterHooks({ redirectStatus }: RouterHooksOptions): RouterHooks {
+export function createRouterHooks({ redirectStatus, ssr = false }: RouterHooksOptions): RouterHooks {
   const { setVueApp, runWithContext } = createVueAppStore()
   const { store: globalStore, ...globalHooks } = createRouteHooks()
 
   const componentStore = new Hooks()
 
-  const runBeforeRouteHooks: BeforeHookRunner = async ({ to, from, signal, progress }) => {
-    const { reject, push, replace, update, abort } = createRouterCallbackContext({ to })
-    const routeHooks = getBeforeHooksFromRoutes(to, from)
-    const globalHooks = getGlobalBeforeHooks(to, from, globalStore)
-
-    const allHooks: (RedirectHook | BeforeEnterHook | BeforeUpdateHook | BeforeLeaveHook)[] = [
-      ...routeHooks.redirects,
-      ...globalHooks.onBeforeRouteEnter,
-      ...routeHooks.onBeforeRouteEnter,
-      ...globalHooks.onBeforeRouteUpdate,
-      ...routeHooks.onBeforeRouteUpdate,
-      ...componentStore.onBeforeRouteUpdate,
-      ...globalHooks.onBeforeRouteLeave,
-      ...routeHooks.onBeforeRouteLeave,
-      ...componentStore.onBeforeRouteLeave,
+  const runBeforeHooks: RouterHooks['runBeforeHooks'] = (navigation) => {
+    const to = navigation.to.getHooks(navigation)
+    const from = navigation.from?.getHooks(navigation) ?? emptyPageHooks()
+    const global = getGlobalPageHooks(navigation, globalStore, redirectStatus, ssr)
+    const callbacks = [
+      ...to.redirects,
+      ...global.beforeEnter,
+      ...to.beforeEnter,
+      ...global.beforeUpdate,
+      ...to.beforeUpdate,
+      ...bindRouteHooks(componentStore.onBeforeRouteUpdate, navigation, redirectStatus),
+      ...global.beforeLeave,
+      ...from.beforeLeave,
+      ...bindRouteHooks(componentStore.onBeforeRouteLeave, navigation, redirectStatus),
     ]
+
+    return runHooks(callbacks, navigation, navigation.progress)
+  }
+
+  const runAfterHooks: RouterHooks['runAfterHooks'] = (navigation) => {
+    const to = navigation.to.getHooks(navigation)
+    const from = navigation.from?.getHooks(navigation) ?? emptyPageHooks()
+    const global = getGlobalPageHooks(navigation, globalStore, redirectStatus, ssr)
+    const components = ssr ? new Hooks() : componentStore
+    const callbacks = [
+      ...bindRouteHooks(components.onAfterRouteLeave, navigation, redirectStatus),
+      ...from.afterLeave,
+      ...global.afterLeave,
+      ...bindRouteHooks(components.onAfterRouteUpdate, navigation, redirectStatus),
+      ...to.afterUpdate,
+      ...global.afterUpdate,
+      ...bindRouteHooks(components.onAfterRouteEnter, navigation, redirectStatus),
+      ...to.afterEnter,
+      ...global.afterEnter,
+    ]
+
+    return runHooks(callbacks, navigation)
+  }
+
+  async function runHooks(callbacks: PageHook[], navigation: PageNavigation, progress?: NavigationProgressTracker): Promise<PageHookResponse> {
+    const { signal } = navigation
 
     try {
       const results: Promise<unknown>[] = []
 
-      // counted one at a time so a hook that throws before returning still leaves the count exact
-      for (const callback of allHooks) {
-        progress?.expect(1)
+      for (const callback of callbacks) {
+        if (signal.aborted) {
+          return { status: 'ABORT' }
+        }
 
-        // Enter and update hooks are only in this list when to is not null, and leave hooks are only in it when from is not null. These casts are purely to satisfy the type checker.
-        const result = Promise.resolve(runWithContext(() => callback(to as ResolvedRoute, {
-          from: from as ResolvedRoute,
-          reject,
-          push,
-          replace,
-          update,
-          abort,
-          signal,
-          redirectStatus,
-        })))
+        progress?.expect(1)
+        const result = Promise.resolve(runWithContext(callback))
 
         progress?.track(result)
+        // A later callback can throw synchronously before the aggregate promise is created.
+        result.catch(() => {})
         results.push(result)
       }
 
-      await Promise.all(results)
+      await Promise.race([Promise.all(results), createAbortPromise(signal)])
     } catch (error) {
-      if (error instanceof ContextPushError) {
-        return error.response
+      if (signal.aborted) {
+        return { status: 'ABORT' }
       }
 
-      if (error instanceof ContextRedirectError) {
-        return error.response
-      }
-
-      if (error instanceof ContextRejectionError) {
-        return error.response
-      }
-
-      if (error instanceof ContextAbortError) {
+      if (isHookInterruption(error)) {
         return error.response
       }
 
       try {
-        runErrorHooks(error, { to, from, source: 'hook' })
+        runErrorHooks(error, { to: getPageRoute(navigation.to), from: getPageRoute(navigation.from), source: 'hook' })
       } catch (error) {
-        if (error instanceof ContextPushError) {
-          return error.response
-        }
-
-        if (error instanceof ContextRejectionError) {
+        if (isHookInterruption(error)) {
           return error.response
         }
 
@@ -120,69 +127,11 @@ export function createRouterHooks({ redirectStatus }: RouterHooksOptions): Route
       }
     }
 
-    return {
-      status: 'SUCCESS',
-    }
-  }
-
-  const runAfterRouteHooks: AfterHookRunner = async ({ to, from, signal }) => {
-    const { reject, push, replace, update } = createRouterCallbackContext({ to })
-    const routeHooks = getAfterHooksFromRoutes(to, from)
-    const globalHooks = getGlobalAfterHooks(to, from, globalStore)
-
-    const allHooks: (AfterLeaveHook | AfterUpdateHook | AfterEnterHook)[] = [
-      ...componentStore.onAfterRouteLeave,
-      ...routeHooks.onAfterRouteLeave,
-      ...globalHooks.onAfterRouteLeave,
-      ...componentStore.onAfterRouteUpdate,
-      ...routeHooks.onAfterRouteUpdate,
-      ...globalHooks.onAfterRouteUpdate,
-      ...componentStore.onAfterRouteEnter,
-      ...routeHooks.onAfterRouteEnter,
-      ...globalHooks.onAfterRouteEnter,
-    ]
-
-    try {
-      const results = allHooks.map((callback) => {
-        // Enter and update hooks are only in this list when to is not null, and leave hooks are only in it when from is not null. These casts are purely to satisfy the type checker.
-        return Promise.resolve(runWithContext(() => callback(to as ResolvedRoute, {
-          from: from as ResolvedRoute,
-          reject,
-          push,
-          replace,
-          update,
-          signal,
-        })))
-      })
-
-      await Promise.all(results)
-    } catch (error) {
-      if (error instanceof ContextPushError) {
-        return error.response
-      }
-
-      if (error instanceof ContextRejectionError) {
-        return error.response
-      }
-
-      try {
-        runErrorHooks(error, { to, from, source: 'hook' })
-      } catch (error) {
-        if (error instanceof ContextPushError) {
-          return error.response
-        }
-
-        if (error instanceof ContextRejectionError) {
-          return error.response
-        }
-
-        throw error
-      }
+    if (signal.aborted) {
+      return { status: 'ABORT' }
     }
 
-    return {
-      status: 'SUCCESS',
-    }
+    return { status: 'SUCCESS' }
   }
 
   const runErrorHooks: ErrorHookRunner = (error, { to, from, source }) => {
@@ -205,19 +154,6 @@ export function createRouterHooks({ redirectStatus }: RouterHooksOptions): Route
 
         throw hookError
       }
-    }
-  }
-
-  const runRejectionHooks: RejectionHookRunner = (rejection, { to, from }) => {
-    const rejectionHooks = getRejectionHooksFromRejection(rejection)
-
-    const allHooks: RejectionHook[] = [
-      ...rejectionHooks.onRejection,
-      ...globalStore.onRejection,
-    ]
-
-    for (const hook of allHooks) {
-      hook(rejection.type, { to, from })
     }
   }
 
@@ -253,13 +189,16 @@ export function createRouterHooks({ redirectStatus }: RouterHooksOptions): Route
   }
 
   return {
-    runBeforeRouteHooks,
-    runAfterRouteHooks,
+    runBeforeHooks,
+    runAfterHooks,
     runErrorHooks,
-    runRejectionHooks,
     addComponentHook,
     addGlobalRouteHooks,
     setVueApp,
     ...globalHooks,
   }
+}
+
+function isHookInterruption(error: unknown): error is ContextPushError | ContextRejectionError | ContextRedirectError | ContextAbortError {
+  return error instanceof ContextPushError || error instanceof ContextRejectionError || error instanceof ContextRedirectError || error instanceof ContextAbortError
 }

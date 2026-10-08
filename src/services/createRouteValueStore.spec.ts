@@ -15,7 +15,7 @@ test('a staged value is adopted in place of running its getter', async () => {
 
   detached.fill(resolved, [{ kind: 'loader', depth: 0, name: 'default', value: 'staged' }])
   detached.stage()
-  store.commit(resolved)
+  store.commit(store.getComputations(resolved))
 
   await expect(store.getData(resolved)).resolves.toBe('staged')
   expect(loader).not.toHaveBeenCalled()
@@ -26,7 +26,7 @@ test('getValues returns the values the store resolved', async () => {
   const resolved = createResolvedRoute(route)
   const store = createRouteValueStore()
 
-  store.commit(resolved)
+  store.commit(store.getComputations(resolved))
   await flushPromises()
 
   expect(store.getValues(resolved)).toEqual([{ kind: 'loader', depth: 0, name: 'default', value: 'value' }])
@@ -38,8 +38,8 @@ test('staged values are adopted by the next navigation without running their get
   const resolved = createResolvedRoute(route)
   const store = createRouteValueStore()
 
-  await store.staged().compute(resolved).loaders
-  store.commit(resolved)
+  await store.staged().compute(store.getComputations(resolved)).loaders
+  store.commit(store.getComputations(resolved))
 
   await expect(store.getData(resolved)).resolves.toBe('value')
   expect(loader).toHaveBeenCalledTimes(1)
@@ -51,10 +51,10 @@ test('staging a route leaves the current route reading its own values', async ()
   const store = createRouteValueStore()
   const currentResolved = createResolvedRoute(current)
 
-  store.commit(currentResolved)
+  store.commit(store.getComputations(currentResolved))
   await flushPromises()
 
-  store.staged().compute(createResolvedRoute(next))
+  store.staged().compute(store.getComputations(createResolvedRoute(next)))
 
   expect(store.getValues(currentResolved)).toEqual([{ kind: 'loader', depth: 0, name: 'default', value: 'current' }])
 })
@@ -66,8 +66,8 @@ test('a staged props getter can read the data its route is loading', async () =>
   const resolved = createResolvedRoute(route)
   const store = createRouteValueStore()
 
-  await store.staged().compute(resolved).props
-  store.commit(resolved)
+  await store.staged().compute(store.getComputations(resolved)).props
+  store.commit(store.getComputations(resolved))
 
   expect(store.getProps(route.id, 'default', resolved)).toEqual({ kind: 'value', value: { value: 'loaded' } })
 })
@@ -83,7 +83,7 @@ test('staging reports how the values settled', async () => {
     })
   const store = createRouteValueStore()
 
-  const { props } = store.staged().compute(createResolvedRoute(route))
+  const { props } = store.staged().compute(store.getComputations(createResolvedRoute(route)))
 
   await expect(props).resolves.toMatchObject({ status: 'REJECT', type: 'NotFound' })
 })
@@ -95,7 +95,7 @@ test('a detached store whose getter throws does not surface an unhandled rejecti
   const store = createRouteValueStore()
   const detached = store.createDetachedStore()
 
-  detached.compute(createResolvedRoute(route))
+  detached.compute(store.getComputations(createResolvedRoute(route)))
 
   await flushPromises()
 })
@@ -110,7 +110,7 @@ test('disposing a detached store aborts the signal its getters were given', asyn
   const store = createRouteValueStore()
   const detached = store.createDetachedStore()
 
-  detached.compute(createResolvedRoute(route))
+  detached.compute(store.getComputations(createResolvedRoute(route)))
 
   const signal = await seen.promise
 
@@ -133,15 +133,15 @@ test('a staged getter keeps its signal until the navigation that adopted it is r
   const store = createRouteValueStore()
   const detached = store.createDetachedStore()
 
-  detached.compute(resolved)
+  detached.compute(store.getComputations(resolved))
   detached.stage()
-  store.commit(resolved)
+  store.commit(store.getComputations(resolved))
 
   const signal = await seen.promise
 
   expect(signal.aborted).toBe(false)
 
-  store.commit(createResolvedRoute(other))
+  store.commit(store.getComputations(createResolvedRoute(other)))
 
   expect(signal.aborted).toBe(true)
 })

@@ -233,9 +233,10 @@ describe('navigation progress', () => {
 
     await flushPromises()
 
-    const store = navigation.app.runWithContext(() => createUseRouteValueStore(router.key)().createDetachedStore())
+    const values = navigation.app.runWithContext(createUseRouteValueStore(router.key))
+    const store = values.createDetachedStore()
 
-    store.compute(router.resolve('other'))
+    store.compute(values.getComputations(router.resolve('other')))
     await flushPromises()
 
     expect(navigation.pending.value).toBe(false)
