@@ -90,11 +90,10 @@ export function createRouterHistory({ mode, listener }: RouterHistoryOptions): R
         return
       }
 
-      let restored = false
       const traversal: RouterHistoryTraversal = {
         commit: remember,
         restore: () => {
-          if (restored || committed.index === null || history.index === null) {
+          if (committed.index === null || history.index === null) {
             return
           }
 
@@ -104,7 +103,6 @@ export function createRouterHistory({ mode, listener }: RouterHistoryOptions): R
             return
           }
 
-          restored = true
           restoring = committed.key
           history.go(delta)
         },

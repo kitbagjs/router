@@ -52,7 +52,6 @@ test.each(['browser', 'hash'] as const)('restores an indexed %s entry without no
   window.dispatchEvent(new PopStateEvent('popstate', { state: first.state }))
   const { traversal } = listener.mock.calls[0][0]
   traversal.restore()
-  traversal.restore()
 
   expect(go).toHaveBeenCalledOnce()
   expect(go).toHaveBeenCalledWith(1)
