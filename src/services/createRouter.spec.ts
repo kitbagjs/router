@@ -1457,7 +1457,7 @@ test('going back from a redirect returns to the route before it', async () => {
   expect(router.route.name).toBe('home')
 })
 
-describe('aborted history traversals', () => {
+describe.each(['progressive', 'blocking'] as const)('aborted history traversals with %s navigation', (navigation) => {
   const createHistory = createRouterHistoryUtilities.createRouterHistory
   let router: ReturnType<typeof createRouter>
   let history: ReturnType<typeof createHistory>
@@ -1475,7 +1475,7 @@ describe('aborted history traversals', () => {
     const first = createRoute({ name: 'first', path: '/first', component })
     const second = createRoute({ name: 'second', path: '/second', component })
     const third = createRoute({ name: 'third', path: '/third', component })
-    router = createRouter([home, first, second, third], { initialUrl: '/', historyMode: 'memory' })
+    router = createRouter([home, first, second, third], { initialUrl: '/', historyMode: 'memory', navigation })
 
     await router.start()
     await router.push('first')

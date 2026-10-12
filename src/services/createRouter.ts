@@ -373,7 +373,6 @@ export function createRouter<
       routeCommit.commit(),
       runAfterHooks({ controller, to, from, enabled: !isSSR }),
     ])
-
   })
 
   function createRouteCommit({ route, signal, update }: RouteCommitOptions): RouteCommit {
