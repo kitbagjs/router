@@ -18,6 +18,7 @@ type RouterHistory = History & {
 
 export type RouterHistoryMode = 'auto' | 'browser' | 'memory' | 'hash'
 
+/** Called by the router while the traversal navigation is active. */
 export type RouterHistoryTraversal = {
   commit: () => void,
   restore: () => void,
@@ -36,7 +37,6 @@ export function createRouterHistory({ mode, listener }: RouterHistoryOptions): R
   const history = createHistory(mode)
 
   let updating = false
-  let revision = 0
   let committed = { key: history.location.key, index: history.index }
   let restoring: string | undefined
 
@@ -45,7 +45,6 @@ export function createRouterHistory({ mode, listener }: RouterHistoryOptions): R
   }
 
   const update: NavigationUpdate = (url, options) => {
-    revision++
     restoring = undefined
     updating = true
 
@@ -84,7 +83,6 @@ export function createRouterHistory({ mode, listener }: RouterHistoryOptions): R
       }
 
       restoring = undefined
-      const currentRevision = ++revision
 
       if (event.action !== 'POP') {
         listener(event)
@@ -92,15 +90,11 @@ export function createRouterHistory({ mode, listener }: RouterHistoryOptions): R
         return
       }
 
-      const isCurrent = (): boolean => currentRevision === revision && history.location.key === event.location.key
+      let restored = false
       const traversal: RouterHistoryTraversal = {
-        commit: () => {
-          if (isCurrent()) {
-            remember()
-          }
-        },
+        commit: remember,
         restore: () => {
-          if (!isCurrent() || committed.index === null || history.index === null || committed.key === history.location.key) {
+          if (restored || committed.index === null || history.index === null) {
             return
           }
 
@@ -110,7 +104,7 @@ export function createRouterHistory({ mode, listener }: RouterHistoryOptions): R
             return
           }
 
-          revision++
+          restored = true
           restoring = committed.key
           history.go(delta)
         },
@@ -121,7 +115,6 @@ export function createRouterHistory({ mode, listener }: RouterHistoryOptions): R
   }
 
   const stopListening: () => void = () => {
-    revision++
     restoring = undefined
     removeListener?.()
   }

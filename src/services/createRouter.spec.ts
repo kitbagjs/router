@@ -1610,6 +1610,25 @@ describe.each(['progressive', 'blocking'] as const)('aborted history traversals 
     expect(router.route.name).toBe('third')
   })
 
+  test('a delayed abort does not restore history after the router stops', async () => {
+    const backGuard = Promise.withResolvers<string>()
+    router.onBeforeRouteEnter(async (_to, { abort }) => {
+      await backGuard.promise
+      abort()
+    })
+
+    router.back()
+    await flushPromises()
+    expect(history.location).toBe(firstEntry)
+
+    router.stop()
+    backGuard.resolve('continue')
+    await flushPromises()
+
+    expect(router.route.name).toBe('second')
+    expect(history.location).toBe(firstEntry)
+  })
+
   test('an accepted Back is remembered before its after hooks finish', async () => {
     const afterHook = Promise.withResolvers<string>()
     router.onAfterRouteEnter(async (to) => {
