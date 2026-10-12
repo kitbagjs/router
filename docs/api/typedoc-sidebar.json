@@ -26,6 +26,10 @@
       {
         "text": "useRouter",
         "link": "/api/compositions/useRouter.md"
+      },
+      {
+        "text": "useViewTransition",
+        "link": "/api/compositions/useViewTransition.md"
       }
     ]
   },
@@ -124,6 +128,10 @@
       {
         "text": "RouterView",
         "link": "/api/components/RouterView.md"
+      },
+      {
+        "text": "ViewTransition",
+        "link": "/api/components/ViewTransition.md"
       }
     ]
   },
@@ -170,6 +178,10 @@
       {
         "text": "createUrl",
         "link": "/api/functions/createUrl.md"
+      },
+      {
+        "text": "hasViewTransition",
+        "link": "/api/functions/hasViewTransition.md"
       },
       {
         "text": "literal",
@@ -612,6 +624,10 @@
         "link": "/api/types/RouterViewPropsGetter.md"
       },
       {
+        "text": "RouterViewTransition",
+        "link": "/api/types/RouterViewTransition.md"
+      },
+      {
         "text": "RouteViews",
         "link": "/api/types/RouteViews.md"
       },
@@ -646,6 +662,34 @@
       {
         "text": "UseNavigation",
         "link": "/api/types/UseNavigation.md"
+      },
+      {
+        "text": "ViewTransitionConfig",
+        "link": "/api/types/ViewTransitionConfig.md"
+      },
+      {
+        "text": "ViewTransitionConfigOptions",
+        "link": "/api/types/ViewTransitionConfigOptions.md"
+      },
+      {
+        "text": "ViewTransitionConfigs",
+        "link": "/api/types/ViewTransitionConfigs.md"
+      },
+      {
+        "text": "ViewTransitionContext",
+        "link": "/api/types/ViewTransitionContext.md"
+      },
+      {
+        "text": "ViewTransitionProps",
+        "link": "/api/types/ViewTransitionProps.md"
+      },
+      {
+        "text": "ViewTransitionTypes",
+        "link": "/api/types/ViewTransitionTypes.md"
+      },
+      {
+        "text": "ViewTransitionTypesCallback",
+        "link": "/api/types/ViewTransitionTypesCallback.md"
       },
       {
         "text": "WithData",

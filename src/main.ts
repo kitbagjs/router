@@ -82,6 +82,7 @@ export * from './types/routerRoute'
 export * from './types/urlString'
 export type { Url, CreateUrlOptions, ParseUrlOptions } from './types/url'
 export * from './types/useLink'
+export * from './types/viewTransition'
 export * from './types/navigation'
 
 // Errors
@@ -111,6 +112,8 @@ export { literal } from './services/literal'
 export { createParam } from './services/createParam'
 export { createRouter } from './services/createRouter'
 export { createUrl } from './services/createUrl'
+
+export type { ViewTransitionProps } from './components/viewTransition'
 
 // Assets
 import { routerInjectionKey } from './keys'
@@ -186,6 +189,9 @@ export const RouterView: RouterAssets<RegisteredRouter>['RouterView'] = routerAs
  */
 export const RouterLink: RouterAssets<RegisteredRouter>['RouterLink'] = routerAssets.RouterLink
 
+/** Names a shared element for a view transition. @group Components */
+export const ViewTransition = routerAssets.ViewTransition
+
 /**
  * A component to render a bar across the top of the page while a navigation is pending, filled by how
  * much of the navigation's work has settled.
@@ -251,6 +257,14 @@ export const useLink: RouterAssets<RegisteredRouter>['useLink'] = routerAssets.u
  * @group Compositions
  */
 export const useRejection: RouterAssets<RegisteredRouter>['useRejection'] = routerAssets.useRejection
+
+/**
+ * A composition to access the view transition in flight, if any.
+ *
+ * @returns The router's view transition state.
+ * @group Compositions
+ */
+export const useViewTransition: RouterAssets<RegisteredRouter>['useViewTransition'] = routerAssets.useViewTransition
 
 /**
  * A composition to access the navigation under way: whether one is pending, which routes it leaves and

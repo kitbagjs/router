@@ -39,6 +39,11 @@ export type UseLink = {
    */
   isExternal: ComputedRef<boolean>,
   /**
+   * True while a view transition to this link's location is in flight, so the elements it animates from
+   * can be named before the page is captured.
+   */
+  isTransitioning: ComputedRef<boolean>,
+  /**
    * Convenience method for executing `router.push` with route context passed in.
    */
   push: (options?: RouterPushOptions) => Promise<void>,

@@ -1,3 +1,4 @@
+import { NavigationBehavior } from '@/types/navigation'
 import { Routes } from '@/types/route'
 import { RoutesName } from '@/types/routesMap'
 import { RouteParamsByKey } from '@/types/routeWithParams'
@@ -11,6 +12,8 @@ export type RouterReplaceOptions<
   TState = unknown
 > = {
   query?: QuerySource,
+  /** Overrides the route and router navigation behavior. */
+  navigation?: NavigationBehavior,
   hash?: string,
   state?: Partial<TState>,
 }

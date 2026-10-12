@@ -27,3 +27,4 @@ type CreateRouteOptions<TName, TMeta> = object;
 | <a id="prefetch"></a> `prefetch?` | [`PrefetchConfig`](PrefetchConfig.md) | Determines what assets are prefetched when router-link is rendered for this route. Overrides router level prefetch. |
 | <a id="query"></a> `query?` | `string` \| `UrlQueryPart` | Query (aka search) part of URL. |
 | <a id="state"></a> `state?` | `Record`\<`string`, [`Param`](Param.md)\> | Type params for additional data intended to be stored in history state, all keys will be optional unless a default is provided. |
+| <a id="viewtransition"></a> `viewTransition?` | [`ViewTransitionConfig`](ViewTransitionConfig.md) | Animates navigations to this route with the View Transitions API. Overrides router level viewTransition. |

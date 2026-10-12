@@ -18,3 +18,4 @@ type RouterPushOptions<TState> = object;
 | <a id="query"></a> `query?` | [`QuerySource`](QuerySource.md) | The query string to add to the url. |
 | <a id="replace"></a> `replace?` | `boolean` | Whether to replace the current history entry. |
 | <a id="state"></a> `state?` | `Partial`\<`TState`\> | State values to pass to the route. |
+| <a id="viewtransition"></a> `viewTransition?` | [`ViewTransitionConfig`](ViewTransitionConfig.md) | Animates the navigation with the View Transitions API. Overrides route and router level viewTransition. |

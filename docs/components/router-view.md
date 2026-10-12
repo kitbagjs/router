@@ -40,7 +40,7 @@ const dashboard = createRoute({
 
 ## Transitions
 
-The default slot can be used to layer in a [Vue transition](https://vuejs.org/guide/built-ins/transition.html) if desired.
+The default slot can be used to layer in a [Vue transition](https://vuejs.org/guide/built-ins/transition.html) if desired. For animations driven by the browser's View Transitions API instead, see [View Transitions](/advanced-concepts/view-transitions). The two do not mix.
 
 ```html
 <router-view>
