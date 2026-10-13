@@ -50,11 +50,11 @@ The plugin accepts optional configuration. Paths are relative to Vite's resolved
 
 | Option | Default |
 | --- | --- |
-| `routeFiles` | `['src/routes.ts', 'src/**/*.routes.ts', 'src/routes/**/*.ts']` |
+| `routeFiles` | `['src/routes.ts', 'src/**/*.route.ts', 'src/**/*.routes.ts', 'src/routes/**/*.ts']` |
 | `routeComponents` | `['src/**/*.vue']` |
 | `outputDir` | `'src/.kitbag'` |
 
-`routeFiles` discovers authored route modules whose exported `routes` arrays should be included. This supports a single registry, feature-colocated modules such as `src/features/billing/billing.routes.ts`, and a dedicated routes directory. These conventions identify registration modules, not URL paths; paths remain explicit in route definitions.
+`routeFiles` discovers authored route modules whose exported `routes` arrays should be included. This supports a single registry, feature-colocated modules such as `src/features/billing/billing.routes.ts`, single-route modules such as `src/pages/home.route.ts` beside `src/pages/home.vue`, and a dedicated routes directory. These conventions identify registration modules, not URL paths; paths remain explicit in route definitions.
 
 Each matched route module exports a `routes` array using the existing route API. Its array order is preserved. Declaration files, tests/specs, generated output, dependencies, and build output are excluded from discovery. A matched source module without a supported `routes` export produces a diagnostic; helper modules should live outside the route-module patterns.
 
