@@ -13,7 +13,7 @@ export default defineConfig({
       // the package only declares a module entry, which node does not resolve
       {
         find: 'view-transitions-mock',
-        replacement: resolve(__dirname, 'node_modules/view-transitions-mock/dist/index.js'),
+        replacement: resolve(import.meta.dirname, 'node_modules/view-transitions-mock/dist/index.js'),
       },
     ],
   },
@@ -24,6 +24,17 @@ export default defineConfig({
         test: {
           name: 'browser',
           environment: 'happy-dom',
+          environmentOptions: {
+            happyDOM: {
+              settings: {
+                navigation: {
+                  // Link tests allow native clicks, but have no server to load pages from.
+                  disableMainFrameNavigation: true,
+                  disableChildPageNavigation: true,
+                },
+              },
+            },
+          },
           include: ['src/**/*.browser.spec.ts'],
         },
       },
