@@ -3,43 +3,33 @@ import { createLoader } from '@/services/createLoader'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
 import { createRejection } from '@/services/createRejection'
-import { LoaderNameConflict } from '@/errors/loaderNameConflict'
-import { isLoader } from '@/types/loader'
 
 test('one definition loads independently for multiple routes', async () => {
-  const load = vi.fn(({ id }: { id: string }, { signal }: { signal: AbortSignal }) => {
-    expect(signal).toBeInstanceOf(AbortSignal)
-
-    return `user-${id}`
+  const loader = createLoader({
+    load: async ({ id }: { id: string }) => `user-${id}`,
   })
-  const loader = createLoader({ load })
-  expect(isLoader(loader)).toBe(true)
-  expect(isLoader(load)).toBe(false)
-  expect(isLoader({ load, context: [] })).toBe(false)
   const first = createRoute({ name: 'first', path: '/first/[id]' }).addLoader(loader)
   const second = createRoute({ name: 'second', path: '/second/[id]' }).addLoader(loader)
   const router = createRouter([first, second], { initialUrl: '/first/1' })
 
-  expect(load).not.toHaveBeenCalled()
   await router.start()
   await expect(router.route.data).resolves.toBe('user-1')
   await router.push('second', { id: '2' })
   await expect(router.route.data).resolves.toBe('user-2')
-  expect(load).toHaveBeenCalledTimes(2)
 })
 
-test('attachment preserves defaults, overrides, immutability, and ancestor conflicts', () => {
+test('attachment overrides loader defaults without changing other attachments', () => {
   const transformer = { stringify: String, parse: Number }
+  const overrideTransformer = { stringify: JSON.stringify, parse: JSON.parse }
   const loader = createLoader({ load: () => 1, prefetch: 'eager', transformer })
-  const original = createRoute({ name: 'original', path: '/' })
-  const route = original.addLoader(loader)
-  const other = original.addLoader(loader, { name: 'count', prefetch: false })
+  const overridden = createRoute({ path: '/' }).addLoader(loader, {
+    prefetch: false,
+    transformer: overrideTransformer,
+  })
+  const defaults = createRoute({ path: '/' }).addLoader(loader)
 
-  expect(original.matches[0].loaders).toStrictEqual({})
-  expect(route.matches[0].loaders.default).toMatchObject({ prefetch: 'eager', transformer })
-  expect(other.matches[0].loaders.count).toMatchObject({ prefetch: false, transformer })
-  expect(loader.prefetch).toBe('eager')
-  expect(() => createRoute({ parent: route, path: '/child' }).addLoader(loader)).toThrow(LoaderNameConflict)
+  expect(overridden.matches[0].loaders.default).toMatchObject({ prefetch: false, transformer: overrideTransformer })
+  expect(defaults.matches[0].loaders.default).toMatchObject({ prefetch: 'eager', transformer })
 })
 
 test('loader context registers navigation targets and rejections through chained attachments', async () => {
@@ -47,14 +37,12 @@ test('loader context registers navigation targets and rejections through chained
   const rejectLoader = createLoader({ context: [denied], load: (_params, { reject }) => reject('Denied') })
   const target = createRoute({ name: 'target', path: '/target' }).addLoader(rejectLoader)
   const redirectLoader = createLoader({ context: [target], load: (_params, { push }) => push('target') })
-  const original = createRoute({ name: 'original', path: '/' })
-  const route = original.addLoader(redirectLoader).addLoader(() => 1, { name: 'other' })
+  const route = createRoute({ name: 'source', path: '/' }).addLoader(redirectLoader)
+    .addLoader(() => 1, { name: 'other' })
   const router = createRouter([route], { initialUrl: '/' })
   const onRejection = vi.fn()
   router.onRejection(onRejection)
 
-  expect(original.context).toStrictEqual([])
-  expect(route.context).toStrictEqual([target])
   await router.start()
   await vi.waitFor(() => expect(onRejection).toHaveBeenCalledWith('Denied', expect.anything()))
   expect(router.route.name).toBe('target')

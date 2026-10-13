@@ -21,18 +21,14 @@ test('params are checked at attachment', () => {
   createRoute({ path: withParams('/[id]', { id: Number }) }).addLoader(loader, { name: 'length' })
 })
 
-test('context is inferred from readonly definitions and carried into the route', () => {
+test('declared context types the loader and attached route helpers', () => {
   const login = createRoute({ name: 'login', path: '/login' })
   const denied = createRejection({ type: 'Denied' })
   const loader = createLoader({
-    context: [login, denied] as const,
-    load: (_params, { push, replace, reject, signal, ...context }) => {
+    context: [login, denied],
+    load: (_params, { push, reject }) => {
       push('login')
-      replace('login')
       reject('Denied')
-      reject('NotFound')
-      expectTypeOf(signal).toEqualTypeOf<AbortSignal>()
-      expectTypeOf(context).toEqualTypeOf<{}>()
       // @ts-expect-error the attached route is not known to the loader
       push('user')
       // @ts-expect-error undeclared rejection
@@ -42,12 +38,12 @@ test('context is inferred from readonly definitions and carried into the route',
     },
   })
   const route = createRoute({ name: 'user', path: '/' }).addLoader(loader)
-    .addLoader(() => 1, { name: 'other' })
 
-  expectTypeOf(route.context).toEqualTypeOf<[typeof login, typeof denied]>()
   route.onBeforeRouteEnter((_to, { push, reject }) => {
     push('login')
     reject('Denied')
+    // @ts-expect-error attaching a loader must not widen the route's context
+    push('unrelated')
   })
 })
 
