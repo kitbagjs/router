@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["../../src/*"],
+      "@kitbag/router": ["../../src/main.ts"]
+    },
+    "types": ["vite/client"]
+  },
+  "include": ["./**/*.ts", "./**/*.vue"],
+  "exclude": ["dist", "node_modules"]
+}
