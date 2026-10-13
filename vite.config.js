@@ -24,17 +24,6 @@ export default defineConfig({
         test: {
           name: 'browser',
           environment: 'happy-dom',
-          environmentOptions: {
-            happyDOM: {
-              settings: {
-                navigation: {
-                  // Link tests allow native clicks, but have no server to load pages from.
-                  disableMainFrameNavigation: true,
-                  disableChildPageNavigation: true,
-                },
-              },
-            },
-          },
           include: ['src/**/*.browser.spec.ts'],
         },
       },
