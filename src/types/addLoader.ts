@@ -92,22 +92,6 @@ type AddLoaderReturn<
   ? RouteWithMethods<TUrl, TNext>
   : never
 
-/** Maps a route's params into the params a reusable loader requires. */
-export type LoaderParamsMapper<TRoute extends Route = Route, TParams extends object = {}> = (
-  route: ResolvedRoute<TRoute>,
-  context: RouteCallbackContext<TRoute>,
-) => TParams
-
-type AttachLoaderOptions<TRoute extends Route, TLoader extends AnyLoader, TName extends string | undefined> = AddLoaderOptions<TName, Awaited<ReturnType<TLoader['load']>>> & {
-  params?: LoaderParamsMapper<TRoute, Parameters<TLoader['load']>[0]>,
-}
-
-type AttachLoaderArguments<TRoute extends Route, TLoader extends AnyLoader, TName extends string | undefined> = UrlParamsReading<TRoute> extends Parameters<TLoader['load']>[0]
-  ? [options?: AttachLoaderOptions<TRoute, TLoader, TName>]
-  : [options: AttachLoaderOptions<TRoute, TLoader, TName> & {
-    params: LoaderParamsMapper<TRoute, Parameters<TLoader['load']>[0]>,
-  }]
-
 /**
  * Adds a loader to a route. Chainable to register multiple loaders, each exposed under its own name on
  * the resolved route's `data`.
@@ -132,7 +116,7 @@ export type RouteAddLoader<
     const TLoader extends AnyLoader,
     const TName extends string | undefined = undefined
   >(
-    loader: TLoader,
-    ...args: AttachLoaderArguments<Route<TUrl, TMatches>, TLoader, TName>
+    loader: TLoader & (UrlParamsReading<TUrl> extends Parameters<NoInfer<TLoader>['load']>[0] ? unknown : never),
+    options?: AddLoaderOptions<TName, Awaited<ReturnType<TLoader['load']>>>,
   ) => AddLoaderReturn<TUrl, TMatches, AddLoaderLoaders<CurrentMatchLoaders<TMatches>, TName, ReturnType<TLoader['load']>>, [...TLoader['context']]>),
 }

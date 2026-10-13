@@ -19,8 +19,7 @@ export type {
 export type {
   RouteAddLoader,
   AddLoaderOptions,
-  LoaderGetter,
-  LoaderParamsMapper
+  LoaderGetter
 } from './types/addLoader'
 export type { RouteAddAlias, AddAliasOptions } from './types/addAlias'
 export type { AliasTransform, AliasTransformContext } from './types/routeAlias'

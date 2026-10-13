@@ -18,7 +18,6 @@ type LoaderOptions = {
   name?: string,
   prefetch?: PrefetchConfig,
   transformer?: AnyPayloadTransformer,
-  params?: (route: ResolvedRoute, context: RouteCallbackContext<Route>) => object,
 }
 
 /**
@@ -43,7 +42,7 @@ type Loader = {
 export function toLoader(source: AnyFunction | AnyLoader, options: LoaderOptions | undefined): Loader {
   const reusable = typeof source !== 'function'
   const load = reusable
-    ? (route: ResolvedRoute, context: RouteCallbackContext<Route>) => source.load(options?.params ? options.params(route, context) : route.params, {
+    ? (route: ResolvedRoute, context: RouteCallbackContext<Route>) => source.load(route.params, {
         push: context.push,
         replace: context.replace,
         reject: context.reject,

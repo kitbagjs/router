@@ -5,7 +5,7 @@ import { createRouter } from '@/services/createRouter'
 import { createRejection } from '@/services/createRejection'
 import { LoaderNameConflict } from '@/errors/loaderNameConflict'
 
-test('one definition loads independently for routes with direct and mapped params', async () => {
+test('one definition loads independently for multiple routes', async () => {
   const load = vi.fn(({ id }: { id: string }, { signal }: { signal: AbortSignal }) => {
     expect(signal).toBeInstanceOf(AbortSignal)
 
@@ -13,15 +13,13 @@ test('one definition loads independently for routes with direct and mapped param
   })
   const loader = createLoader({ load })
   const first = createRoute({ name: 'first', path: '/first/[id]' }).addLoader(loader)
-  const second = createRoute({ name: 'second', path: '/second/[userId]' }).addLoader(loader, {
-    params: (route) => ({ id: route.params.userId }),
-  })
+  const second = createRoute({ name: 'second', path: '/second/[id]' }).addLoader(loader)
   const router = createRouter([first, second], { initialUrl: '/first/1' })
 
   expect(load).not.toHaveBeenCalled()
   await router.start()
   await expect(router.route.data).resolves.toBe('user-1')
-  await router.push('second', { userId: '2' })
+  await router.push('second', { id: '2' })
   await expect(router.route.data).resolves.toBe('user-2')
   expect(load).toHaveBeenCalledTimes(2)
 })

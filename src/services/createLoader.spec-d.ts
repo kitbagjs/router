@@ -5,26 +5,22 @@ import { createRejection } from '@/services/createRejection'
 import { withParams } from '@/services/withParams'
 import { WithData } from '@/types/resolved'
 
-test('params are checked at attachment, including mapped params', () => {
+test('params are checked at attachment', () => {
   const loader = createLoader({ load: ({ id }: { id: string }) => id.length })
   const route = createRoute({ name: 'user', path: '/users/[id]' }).addLoader(loader)
   const other = createRoute({ name: 'post', path: '/posts/[id]/[slug]' }).addLoader(loader, { name: 'length' })
-  const mapped = createRoute({ name: 'mapped', path: '/[userId]' }).addLoader(loader, {
-    params: (route) => ({ id: route.params.userId }),
-  })
 
   expectTypeOf<WithData<typeof route>['data']>().toEqualTypeOf<Promise<number>>()
   expectTypeOf<WithData<typeof other>['data']>().toEqualTypeOf<{ length: Promise<number> }>()
-  expectTypeOf<WithData<typeof mapped>['data']>().toEqualTypeOf<Promise<number>>()
 
   // @ts-expect-error the route does not provide id
   createRoute({ path: '/' }).addLoader(loader)
   // @ts-expect-error an optional id cannot satisfy a required id
   createRoute({ path: '/[?id]' }).addLoader(loader)
   // @ts-expect-error id must be a string
-  createRoute({ path: withParams('/[id]', { id: Number }) }).addLoader(loader)
-  // @ts-expect-error mapping must return the loader's required params
-  createRoute({ path: '/' }).addLoader(loader, { params: () => ({ id: 1 }) })
+  createRoute({ path: withParams('/[id]', { id: Number }) }).addLoader(loader, { name: 'length' })
+  // @ts-expect-error attachment does not support param mapping
+  createRoute({ path: '/[id]' }).addLoader(loader, { params: () => ({ id: '1' }) })
 })
 
 test('context is inferred from readonly definitions and carried into the route', () => {

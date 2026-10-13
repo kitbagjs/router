@@ -42,17 +42,6 @@ const settings = createRoute({ name: 'settings', path: '/users/[userId]/settings
 
 The loader receives params directly. A route can provide extra params, but missing params or incompatible types are rejected by TypeScript. A loader that needs no params can be attached to any route. Reusing a definition computes data separately for each route.
 
-If a route uses different param names, map them when attaching the loader:
-
-```ts
-const profile = createRoute({ name: 'profile', path: '/profiles/[id]' })
-  .addLoader(userLoader, {
-    params: (route) => ({ userId: route.params.id }),
-  })
-```
-
-The mapping runs synchronously and receives the fully typed resolved route and its callback context. Like inline loaders, it can access parent data through the context, but cannot read the current route's data.
-
 A reusable loader can declare related routes and rejections through `context`:
 
 ```ts
@@ -70,7 +59,7 @@ const sessionLoader = createLoader({
 })
 ```
 
-The loader's callback context provides `push`, `replace`, `reject`, and `signal`. Navigation targets and custom rejections are typed from its declared context, which is also included in the attached route's context. Route-specific helpers such as `update` and `parent` are available in the attachment's mapping callback instead.
+The loader's callback context provides `push`, `replace`, `reject`, and `signal`. Navigation targets and custom rejections are typed from its declared context, which is also included in the attached route's context. Use an inline loader for route-specific helpers such as `update` and `parent`.
 
 Declare `transformer` on the loader to serialize its resolved data for SSR hydration. Attachment options can override the loader's `prefetch` and `transformer` defaults without changing its definition.
 
