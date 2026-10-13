@@ -14,8 +14,8 @@ The router keeps its existing loading, prefetching, and navigation behavior. The
 
 | PR | Scope | Depends on |
 | --- | --- | --- |
-| 1 | This RFC: public API, compiler extension points, generated output, and behavior contracts | `main` |
-| 2 | Vite adapter and standalone parser/generator, with a macro registration interface | PR 1 |
+| 1 | This RFC: public API, internal compiler structure, generated output, and behavior contracts | `main` |
+| 2 | Vite adapter and standalone parser/generator, with an internal macro registration interface | PR 1 |
 | 3 | `defineLoader`: root export, extraction, discovery, promise binding, generated data types | PR 2 |
 | 4 | `defineRoute`: root export, route extraction, setup binding, colocated loader inference | PR 3 |
 | 5 | Playground demonstrating manual routes, colocated routes, nested loaders, and regeneration | PR 4 |
@@ -28,11 +28,10 @@ Each implementation PR builds on the previous branch. The playground is a consum
 | --- | --- | --- |
 | `@kitbag/router` | `defineLoader`, `defineRoute`, and their public types, alongside existing APIs | Application components |
 | `@kitbag/router/vite` | `kitbagRouter` | Vite configuration |
-| `@kitbag/router/compiler` | `createRouterGenerator`, `defineRouterMacro`, compiler types | Standalone generation and macro authors |
 
 Application macros are root exports. They have type signatures and missing-tooling diagnostics; invoking an untransformed macro does not register a route or start a request.
 
-The Vite and compiler entry points are build-time code. Importing the runtime entry point must not import filesystem access, parsers, or generation dependencies. The implementation PR will determine the dependency packaging needed to maintain that boundary.
+The Vite entry point is build-time code. The compiler, generator, macro registrations, and their types are internal implementation details; there is no public compiler entry point or custom macro API. Importing the runtime entry point must not import filesystem access, parsers, or generation dependencies. The implementation PR will determine the dependency packaging needed to maintain that boundary.
 
 ## Configure tooling
 
@@ -206,48 +205,19 @@ Generated files remain available when Vite stops. A clean checkout needs generat
 
 Loader data remains a promise. There is no resolved ref adapter, `.value` API, new loading-state abstraction, cross-navigation cache, or change to setup-await behavior in this proposal. Existing prefetch scheduling and store adoption remain in Kitbag.
 
-## Standalone generation
+## Generation engine
 
-```ts
-// scripts/generate-routes.ts
-import { createRouterGenerator } from '@kitbag/router/compiler'
+The Vite adapter uses an internal parser/generator shared with standalone generation fixtures and repository tooling. Neither the generator nor its types are package exports. A public standalone generation command is outside this API proposal; generation before a clean-checkout typecheck remains a workflow requirement to address in the implementation.
 
-const generator = createRouterGenerator({
-  root: process.cwd(),
-  routeFiles: ['src/routes.ts'],
-  routeComponents: ['src/pages/**/*.vue'],
-  outputDir: 'src/.kitbag',
-})
-
-await generator.generate()
-```
-
-The Vite adapter and standalone command use the same parser/generator and macro registrations. Resolution rules must agree between development and standalone generation, including aliases supported by the implementation. The Vite adapter adds watching, invalidation, and component transforms. The initial development behavior may regenerate and reload; replacing an already installed router's registry in place is not required.
+Resolution rules must agree between development and standalone generation, including aliases supported by the implementation. The Vite adapter adds watching, invalidation, and component transforms. The initial development behavior may regenerate and reload; replacing an already installed router's registry in place is not required.
 
 ## Adding macros
 
 The parser/generator is a reusable layer delivered before either built-in macro. Recognizing `defineLoader` or `defineRoute` must be implemented through macro registrations, not special names embedded throughout the parser.
 
-```ts
-import { kitbagRouter } from '@kitbag/router/vite'
-import { defineRouterMacro } from '@kitbag/router/compiler'
+Macro registration is internal. Users cannot supply custom macros, and `kitbagRouter` has no `macros` option. The architecture lets library maintainers add built-in macros without coupling every parser stage to their names.
 
-const customMacro = defineRouterMacro({
-  id: 'application-policy',
-  imports: [{ source: '@my-app/router', name: 'definePolicy' }],
-  collect(declaration, context) {
-    // Return generated artifacts, route contributions, and any setup/type bindings.
-    return buildPolicyContribution(declaration, context)
-  },
-})
-
-kitbagRouter({
-  routeFiles: ['src/routes.ts'],
-  macros: [customMacro],
-})
-```
-
-`macros` adds registrations to the built-ins supported by the installed version. The exact artifact record types are to be defined in PR 2, before `defineLoader` needs them. The contract must cover:
+The exact internal artifact record types are to be defined in PR 2, before `defineLoader` needs them. The internal contract must cover:
 
 - Recognition by import source and exported name, including local aliases and shadowing checks.
 - A parsed declaration with file location, binding identity, arguments, and dependencies.
@@ -257,13 +227,13 @@ kitbagRouter({
 
 The shared engine owns traversal, import relocation, output writes, and dependency invalidation. Handlers contribute declarations/artifacts through the shared context and do not edit authored files or independently write generated files. Adding a new macro handler should not require rewriting the Vite adapter or duplicating the parser.
 
-An extension can use only the stages it needs; a declaration-only macro does not need a setup binding. Application developers using the built-ins do not need to register handlers themselves.
+An internal handler can use only the stages it needs; a declaration-only macro does not need a setup binding. Applications configure the Vite plugin and use the supported built-ins.
 
 ## Decisions for implementation
 
 - Settle loader context capabilities without implying route-param or component-prop input in a route-agnostic loader.
 - Choose the stable identity/name rule for unnamed macro routes and generated route export naming across modules.
-- Define macro artifact and type-projection interfaces in PR 2; demonstrate registration with a small compiler fixture before adding the built-ins.
+- Define internal macro artifact and type-projection interfaces in PR 2; demonstrate registration with a small compiler fixture before adding the built-ins.
 - Specify component discovery escape hatches and integrations for unresolved component relationships.
 - Decide how generated route references and external parents/context are represented without creating import cycles.
 - Specify router-key selection, SSR isolation/hydration, and the Vue language-tools integration required for colocated inference.
