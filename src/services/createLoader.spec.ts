@@ -4,6 +4,7 @@ import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
 import { createRejection } from '@/services/createRejection'
 import { LoaderNameConflict } from '@/errors/loaderNameConflict'
+import { isLoader } from '@/types/loader'
 
 test('one definition loads independently for multiple routes', async () => {
   const load = vi.fn(({ id }: { id: string }, { signal }: { signal: AbortSignal }) => {
@@ -12,6 +13,9 @@ test('one definition loads independently for multiple routes', async () => {
     return `user-${id}`
   })
   const loader = createLoader({ load })
+  expect(isLoader(loader)).toBe(true)
+  expect(isLoader(load)).toBe(false)
+  expect(isLoader({ load, context: [] })).toBe(false)
   const first = createRoute({ name: 'first', path: '/first/[id]' }).addLoader(loader)
   const second = createRoute({ name: 'second', path: '/second/[id]' }).addLoader(loader)
   const router = createRouter([first, second], { initialUrl: '/first/1' })

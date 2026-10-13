@@ -4,7 +4,7 @@ import { AnyPayloadTransformer } from '@/services/payload'
 import { PrefetchConfig } from '@/types/prefetch'
 import { CreatedRouteOptions, Route } from '@/types/route'
 import { AnyFunction } from '@/types/utilities'
-import { AnyLoader } from '@/types/loader'
+import { AnyLoader, isLoader } from '@/types/loader'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouteCallbackContext } from '@/types/routeCallbackContext'
 
@@ -40,22 +40,27 @@ type Loader = {
 }
 
 export function toLoader(source: AnyFunction | AnyLoader, options: LoaderOptions | undefined): Loader {
-  const reusable = typeof source !== 'function'
-  const load = reusable
-    ? (route: ResolvedRoute, context: RouteCallbackContext<Route>) => source.load(route.params, {
-        push: context.push,
-        replace: context.replace,
-        reject: context.reject,
-        signal: context.signal,
-      })
-    : source
+  if (!isLoader(source)) {
+    return {
+      name: options?.name ?? DEFAULT_LOADER_NAME,
+      load: source,
+      prefetch: options?.prefetch,
+      transformer: options?.transformer,
+      context: [],
+    }
+  }
 
   return {
     name: options?.name ?? DEFAULT_LOADER_NAME,
-    load,
-    prefetch: options?.prefetch ?? (reusable ? source.prefetch : undefined),
-    transformer: options?.transformer ?? (reusable ? source.transformer : undefined),
-    context: reusable ? source.context : [],
+    load: (route: ResolvedRoute, context: RouteCallbackContext<Route>) => source.load(route.params, {
+      push: context.push,
+      replace: context.replace,
+      reject: context.reject,
+      signal: context.signal,
+    }),
+    prefetch: options?.prefetch ?? source.prefetch,
+    transformer: options?.transformer ?? source.transformer,
+    context: source.context,
   }
 }
 

@@ -6,6 +6,8 @@ import { RouterReject } from '@/types/routerReject'
 import { RouterReplace } from '@/types/routerReplace'
 import { AnyFunction } from '@/types/utilities'
 
+export const IS_LOADER_SYMBOL = Symbol('IS_LOADER_SYMBOL')
+
 /** Navigation helpers available to a reusable loader, typed from its declared context. */
 export type LoaderCallbackContext<TContext extends readonly RouteContext[] = []> = {
   push: RouterPush<RouteContextToRoute<[...TContext]>>,
@@ -33,12 +35,21 @@ export type Loader<
   TParams extends object = {},
   TContext extends readonly RouteContext[] = [],
   TData = unknown
-> = CreateLoaderOptions<TParams, TContext, TData> & { context: TContext }
+> = CreateLoaderOptions<TParams, TContext, TData> & {
+  [IS_LOADER_SYMBOL]: true,
+  context: TContext,
+}
 
 /** The runtime shape after a loader's param, context, and return types have been erased. */
 export type AnyLoader = {
+  [IS_LOADER_SYMBOL]: true,
   load: AnyFunction,
   context: readonly RouteContext[],
   prefetch?: PrefetchConfig,
   transformer?: AnyPayloadTransformer,
+}
+
+/** Determines whether a value is a reusable loader created by `createLoader`. */
+export function isLoader(value: unknown): value is AnyLoader {
+  return typeof value === 'object' && value !== null && IS_LOADER_SYMBOL in value
 }
