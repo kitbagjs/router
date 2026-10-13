@@ -7,6 +7,7 @@ import { AnyFunction } from '@/types/utilities'
 import { AnyLoader, isLoader } from '@/types/loader'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouteCallbackContext } from '@/types/routeCallbackContext'
+import { combineContext } from '@/services/combineContext'
 
 export const DEFAULT_LOADER_NAME = 'default'
 
@@ -73,7 +74,7 @@ export function toLoader(source: AnyFunction | AnyLoader, options: LoaderOptions
 export function addLoaderToMatch(match: CreatedRouteOptions, { name, load, prefetch, transformer, context }: Loader): CreatedRouteOptions {
   return markRaw({
     ...match,
-    ...context.length ? { context: [...match.context ?? [], ...context] } : {},
+    context: combineContext(match.context, context),
     loaders: {
       ...match.loaders,
       [name]: { load, prefetch, transformer },
