@@ -1,12 +1,12 @@
-# RFC: SFC route and loader macros
+# RFC: Component route and loader discovery
 
 Status: proposed. This RFC defines the API and delivery structure; it does not implement or publish the APIs below.
 
 ## Purpose
 
-Let components declare their routes and data requirements in a normal script block. Tooling collects those declarations into ordinary Kitbag routes before router creation. Components consume the current route and loader promises in script setup.
+Let users colocate route and loader definitions with components, either in dedicated files or a normal SFC script block. Tooling collects definitions and their component relationships into ordinary Kitbag routes before router creation. Applications import one generated registry rather than maintaining a central web of route imports. Components consume the current route and loader promises in script setup.
 
-Users can keep their existing `createRoute` definitions and introduce component loaders incrementally. `defineRoute` is an optional way to colocate a route definition with its view.
+Users can keep their existing `createRoute` definitions and introduce component loaders incrementally. File-based discovery is a primary entry point; SFC `defineRoute` and `defineLoader` declarations are optional colocation syntax over the same internal model. The implementation must not require SFC macros to discover a route module or associate a file-defined loader with a component.
 
 The router keeps its existing loading, prefetching, and navigation behavior. The additional abstraction is discovery, generation, and binding the declarations to component setup.
 
@@ -16,8 +16,8 @@ The router keeps its existing loading, prefetching, and navigation behavior. The
 | --- | --- | --- |
 | 1 | This RFC: public API, internal compiler structure, generated output, and behavior contracts | `main` |
 | 2 | Vite adapter and standalone parser/generator, with an internal macro registration interface | PR 1 |
-| 3 | `defineLoader`: root export, extraction, discovery, promise binding, generated data types | PR 2 |
-| 4 | `defineRoute`: root export, route extraction, setup binding, colocated loader inference | PR 3 |
+| 3 | Loader discovery: file declarations and `defineLoader`, component association, promise binding, generated data types | PR 2 |
+| 4 | Route discovery: file declarations and `defineRoute`, view association, setup binding, colocated loader inference | PR 3 |
 | 5 | Playground demonstrating manual routes, colocated routes, nested loaders, and regeneration | PR 4 |
 
 Each implementation PR builds on the previous branch. The playground is a consumer of the tooling, not its implementation location. The earlier [loader discovery prototype](https://github.com/kitbagjs/router/pull/940) is a reference for the design, not the base of this stack.
@@ -51,6 +51,7 @@ The plugin accepts optional configuration. Paths are relative to Vite's resolved
 | Option | Default |
 | --- | --- |
 | `routeFiles` | `['src/routes.ts', 'src/**/*.route.ts', 'src/**/*.routes.ts', 'src/routes/**/*.ts']` |
+| `loaderFiles` | `['src/**/*.loader.ts', 'src/**/*.loaders.ts']` |
 | `routeComponents` | `['src/**/*.vue']` |
 | `outputDir` | `'src/.kitbag'` |
 
@@ -75,6 +76,35 @@ router({
   outputDir: 'app/.kitbag',
 })
 ```
+
+## File declarations and component association
+
+Dedicated `.route.ts` / `.routes.ts` and `.loader.ts` / `.loaders.ts` files are first-class declaration sources. Their definitions and SFC declarations feed the same internal representation; route assembly, prefetching, deduplication, and generated typing must not depend on how a definition was authored.
+
+```text
+src/pages/
+  home.route.ts
+  home.vue
+src/components/
+  CountrySelect.vue
+  countries.loader.ts
+```
+
+Route modules use existing `createRoute` definitions and are collected automatically. Loader modules define callbacks and loader configuration without starting requests at module import. A singular file can hold one definition; plural files can group definitions. The precise loader export shape and singular-route export convenience are decisions to settle before implementation, not a commitment to a new runtime factory.
+
+`loaderFiles` identifies loader-definition modules. Explicit values replace the defaults; `[]` disables file-loader discovery. The same source exclusions and stable file identities used for route discovery apply. Finding a loader definition does not register it on every route.
+
+A component associates itself with a file-defined loader by importing and consuming its exported binding. For example, `CountrySelect.vue` imports the countries definition from `countries.loader.ts` and awaits the current navigation's countries promise in setup. This is one local dependency, not a requirement to import and assemble loaders in `routes.ts` or at `createRouter`.
+
+An SFC-local `defineLoader` associates its declaration directly with that component. Both forms create the same component-to-loader relationship. The compiler follows statically supported component imports and template usage from registered route views, then attaches each component's loaders to its consuming routes. Imports used only for types or unrelated utilities must not create loader relationships. Supported reexports and aliases must retain the original declaration identity.
+
+For example, `CheckoutPage.vue` renders `AddressForm.vue`, which renders `CountrySelect.vue`. The countries loader is added to checkout. If `ProfilePage.vue` also renders `CountrySelect.vue`, the same definition contributes to profile. The loader remains route-agnostic; using it beneath either route does not grant it that route's params or accept component props.
+
+Filenames classify declaration modules; a name such as `activeUser.loader.ts` need not match the consuming component's name. Import usage supplies that relationship. Automatic same-basename companion attachment is not required for generic loaders. Whether `home.route.ts` may infer `home.vue` as its view remains a separate route convenience to settle; explicit `.addView()` works with the existing API.
+
+An imported loader definition is not a process-global data promise. The component's consumption binding must resolve to the existing router-managed promise for its navigation, with setup awaiting it as usual. Both the component transform and editor/`vue-tsc` typing must support that contract; file discovery alone is insufficient. Outside a supported component consumption site, the export remains a definition. Exact binding syntax and its type projection are decisions for PR 3.
+
+A future `createLoader` could provide an explicitly reusable loader definition with a context contract similar to `createRoute`. It is deferred: no `createLoader` export or new context behavior is part of this stack. File discovery and component association should not depend on adding that API.
 
 ## `defineLoader` in an ordinary component
 
@@ -210,7 +240,7 @@ import { routes } from './.kitbag/routes.generated'
 export const router = createRouter(routes)
 ```
 
-`routes.generated.ts` exports the completed registry as an inferred readonly tuple and individual completed route definitions. It combines the explicitly registered manual routes and discovered macro routes. Generated callback modules are `.ts` files too; they preserve the result types of the loader code and its imports.
+`routes.generated.ts` exports the completed registry as an inferred readonly tuple and individual completed route definitions. It combines discovered route modules, explicitly registered manual routes, and SFC route declarations, augmented with their reachable loaders. Generated callback modules are `.ts` files too; they preserve the result types of the loader code and its imports.
 
 Generated code uses ordinary `createRoute`, `.addLoader`, and `.addView` calls. Their construction executes at application runtime. Discovery and module extraction occur ahead of time; the router does not inspect component source or run a component instance to discover data requirements.
 
@@ -248,6 +278,7 @@ An internal handler can use only the stages it needs; a declaration-only macro d
 
 ## Decisions for implementation
 
+- Settle file-loader export/configuration and imported consumption syntax, singular-route export conventions, and optional same-basename route/view association.
 - Settle loader context capabilities without implying route-param or component-prop input in a route-agnostic loader.
 - Choose the stable identity/name rule for unnamed macro routes and generated route export naming across modules.
 - Define internal macro artifact and type-projection interfaces in PR 2; demonstrate registration with a small compiler fixture before adding the built-ins.
