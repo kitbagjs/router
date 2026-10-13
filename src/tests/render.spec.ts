@@ -7,7 +7,8 @@ import { component } from '@/utilities/testHelpers'
 describe('router.render', () => {
   test('waits for a loader to settle', async () => {
     const { promise, resolve } = Promise.withResolvers<string>()
-    const route = createRoute({ name: 'route', path: '/', component }).addLoader(() => promise)
+    const route = createRoute({ name: 'route', path: '/' }).addView(component)
+      .addLoader(() => promise)
     const router = createRouter([route], { ssr: true, initialUrl: '/' })
 
     await router.start()
@@ -56,7 +57,8 @@ describe('router.render', () => {
 
   test('start does not wait for a loader', async () => {
     const { promise, resolve } = Promise.withResolvers<string>()
-    const route = createRoute({ name: 'route', path: '/', component }).addLoader(() => promise)
+    const route = createRoute({ name: 'route', path: '/' }).addView(component)
+      .addLoader(() => promise)
     const router = createRouter([route], { ssr: true, initialUrl: '/' })
 
     await router.start()
@@ -67,7 +69,7 @@ describe('router.render', () => {
   })
 
   test('resolves immediately when there is nothing left to render', async () => {
-    const route = createRoute({ name: 'route', path: '/', component })
+    const route = createRoute({ name: 'route', path: '/' }).addView(component)
     const router = createRouter([route], { ssr: true, initialUrl: '/' })
 
     await router.start()
@@ -76,8 +78,8 @@ describe('router.render', () => {
   })
 
   test('a push on the server is the redirect the response reports', async () => {
-    const other = createRoute({ name: 'other', path: '/other', component })
-    const home = createRoute({ name: 'home', path: '/', component })
+    const other = createRoute({ name: 'other', path: '/other' }).addView(component)
+    const home = createRoute({ name: 'home', path: '/' }).addView(component)
     const router = createRouter([home, other], { ssr: true, initialUrl: '/' })
 
     await router.start()
@@ -88,7 +90,7 @@ describe('router.render', () => {
   })
 
   test('given a loader that rejects the navigation, reports the rejection status', async () => {
-    const route = createRoute({ name: 'route', path: '/', component })
+    const route = createRoute({ name: 'route', path: '/' }).addView(component)
       .addLoader(async (_route, { reject }) => {
         await Promise.resolve()
         reject('NotFound')
@@ -106,9 +108,9 @@ describe('router.render', () => {
   test('a navigation that cascades during the render responds with the redirect', async () => {
     const first = Promise.withResolvers<string>()
 
-    const other = createRoute({ name: 'other', path: '/other', component })
+    const other = createRoute({ name: 'other', path: '/other' }).addView(component)
 
-    const route = createRoute({ name: 'route', path: '/', component, context: [other] })
+    const route = createRoute({ name: 'route', path: '/', context: [other] }).addView(component)
       .addLoader(async (_route, { push }) => {
         await first.promise
         push('other')
@@ -155,11 +157,11 @@ describe('router.render', () => {
   test('a redirect target is not navigated during the render', async () => {
     const onBeforeRouteEnter = vi.fn()
 
-    const other = createRoute({ name: 'other', path: '/other', component })
+    const other = createRoute({ name: 'other', path: '/other' }).addView(component)
 
     other.onBeforeRouteEnter(onBeforeRouteEnter)
 
-    const route = createRoute({ name: 'route', path: '/', component, context: [other] })
+    const route = createRoute({ name: 'route', path: '/', context: [other] }).addView(component)
       .addLoader((_route, { push }) => push('other'))
 
     const router = createRouter([route, other], { ssr: true, initialUrl: '/' })
@@ -174,8 +176,8 @@ describe('router.render', () => {
   })
 
   test('given a loader that pushes, responds with the redirect without following it', async () => {
-    const other = createRoute({ name: 'other', path: '/other', component })
-    const route = createRoute({ name: 'route', path: '/', component, context: [other] })
+    const other = createRoute({ name: 'other', path: '/other' }).addView(component)
+    const route = createRoute({ name: 'route', path: '/', context: [other] }).addView(component)
       .addLoader((_route, { push }) => push('other'))
 
     const router = createRouter([route, other], { ssr: true, initialUrl: '/' })
@@ -189,8 +191,8 @@ describe('router.render', () => {
   })
 
   test('given a loader that throws and an error hook that pushes, responds with the redirect without following it', async () => {
-    const other = createRoute({ name: 'other', path: '/other', component })
-    const route = createRoute({ name: 'route', path: '/', component, context: [other] })
+    const other = createRoute({ name: 'other', path: '/other' }).addView(component)
+    const route = createRoute({ name: 'route', path: '/', context: [other] }).addView(component)
       .addLoader(() => {
         throw new Error('loader failed')
       })
@@ -211,7 +213,7 @@ describe('router.render', () => {
 })
 
 test('render starts the router when it has not been started', async () => {
-  const route = createRoute({ name: 'route', path: '/foo', component })
+  const route = createRoute({ name: 'route', path: '/foo' }).addView(component)
   const router = createRouter([route], { ssr: true, initialUrl: '/foo' })
 
   const result = await router.render()
@@ -221,7 +223,7 @@ test('render starts the router when it has not been started', async () => {
 })
 
 test('render on an unstarted router does not report a bogus success for an unmatched url', async () => {
-  const route = createRoute({ name: 'route', path: '/foo', component })
+  const route = createRoute({ name: 'route', path: '/foo' }).addView(component)
   const router = createRouter([route], { ssr: true, initialUrl: '/nope' })
 
   const result = await router.render()

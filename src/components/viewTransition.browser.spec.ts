@@ -38,21 +38,14 @@ test('names the requested element and preserves its attributes, styles and conte
 
 test('names only the destination link before capture and names the destination element', async () => {
   const loaded = Promise.withResolvers<void>()
-  const gallery = createRoute({
-    name: 'gallery',
-    path: '/',
-    component: {
-      template: `
+  const gallery = createRoute({ name: 'gallery', path: '/' }).addView({
+    template: `
         <RouterLink to="/photo"><ViewTransition name="photo" as="img" src="thumb.jpg" /></RouterLink>
         <RouterLink to="/other"><ViewTransition name="photo" as="img" src="other.jpg" /></RouterLink>
       `,
-    },
   })
-  const photo = createRoute({
-    name: 'photo',
-    path: '/photo',
-    component: { template: '<ViewTransition name="photo" as="img" src="full.jpg" />' },
-  }).addLoader(() => loaded.promise)
+  const photo = createRoute({ name: 'photo', path: '/photo' }).addView({ template: '<ViewTransition name="photo" as="img" src="full.jpg" />' })
+    .addLoader(() => loaded.promise)
   const router = createRouter([gallery, photo], { initialUrl: '/', historyMode: 'memory', viewTransition: true })
   const wrapper = mount({ template: '<RouterView />' }, { global: { plugins: [router] } })
   await router.start()
@@ -82,11 +75,7 @@ test('names only the destination link before capture and names the destination e
 })
 
 test('canceling preparation removes the link element name', async () => {
-  const home = createRoute({
-    name: 'home',
-    path: '/',
-    component: { template: '<RouterLink to="/photo"><ViewTransition name="photo" as="img" /></RouterLink>' },
-  })
+  const home = createRoute({ name: 'home', path: '/' }).addView({ template: '<RouterLink to="/photo"><ViewTransition name="photo" as="img" /></RouterLink>' })
   const photo = createRoute({ name: 'photo', path: '/photo' }).addLoader(() => new Promise(() => {}))
   const router = createRouter([home, photo], { initialUrl: '/', historyMode: 'memory', viewTransition: true })
   const wrapper = mount({ template: '<RouterView />' }, { global: { plugins: [router] } })

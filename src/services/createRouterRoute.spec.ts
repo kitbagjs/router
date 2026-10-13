@@ -44,8 +44,8 @@ test('sending state, includes state in push options', () => {
 })
 
 test('getTitle resolves the title of the current route', async () => {
-  const home = createRoute({ name: 'home', path: '/', component })
-  const other = createRoute({ name: 'other', path: '/other', component })
+  const home = createRoute({ name: 'home', path: '/' }).addView(component)
+  const other = createRoute({ name: 'other', path: '/other' }).addView(component)
 
   home.setTitle(() => 'Home')
   other.setTitle(() => 'Other')
@@ -62,7 +62,8 @@ test('getTitle resolves the title of the current route', async () => {
 })
 
 test('canonical follows the current route', async () => {
-  const user = createRoute({ name: 'user', path: '/user/[id]', component }).addAlias({ path: '/member/[id]' })
+  const user = createRoute({ name: 'user', path: '/user/[id]' }).addView(component)
+    .addAlias({ path: '/member/[id]' })
   const router = createRouter([user], { initialUrl: '/member/1' })
 
   await router.start()

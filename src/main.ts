@@ -5,9 +5,6 @@ export type {
   WithParent,
   WithoutParent,
   CreateRouteOptions,
-  PropsGetter,
-  RouterViewPropsGetter,
-  CreateRouteProps,
   ToRoute
 } from './types/createRouteOptions'
 export type {

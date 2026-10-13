@@ -16,11 +16,7 @@ import { PayloadValueError } from '@/errors/payloadValueError'
 import { RenderRedirect, RenderSuccess, ServerRenderResponse } from '@/types/router'
 
 test('initial route is set', async () => {
-  const foo = createRoute({
-    name: 'root',
-    component,
-    path: '/',
-  })
+  const foo = createRoute({ name: 'root', path: '/' }).addView(component)
 
   const { route, start } = createRouter([foo], {
     initialUrl: '/',
@@ -46,12 +42,7 @@ test('initial state is set', async () => {
     location,
   }))
 
-  const foo = createRoute({
-    name: 'root',
-    component,
-    path: '/',
-    state: { zoo: Number },
-  })
+  const foo = createRoute({ name: 'root', path: '/', state: { zoo: Number } }).addView(component)
 
   const { route, start } = createRouter([foo], {
     initialUrl: '/',
@@ -65,24 +56,12 @@ test('initial state is set', async () => {
 })
 
 test('updates the route when navigating', async () => {
-  const theRoute = createRoute({
-    name: 'first',
-    component,
-    path: '/first',
-  })
+  const theRoute = createRoute({ name: 'first', path: '/first' }).addView(component)
 
   const routes = [
     theRoute,
-    createRoute({
-      name: 'second',
-      component,
-      path: '/second',
-    }),
-    createRoute({
-      name: 'third',
-      component,
-      path: '/third/[id]',
-    }),
+    createRoute({ name: 'second', path: '/second' }).addView(component),
+    createRoute({ name: 'third', path: '/third/[id]' }).addView(component),
   ]
 
   const { push, route, start } = createRouter(routes, {
@@ -101,12 +80,7 @@ test('updates the route when navigating', async () => {
 })
 
 test('route update updates the current route', async () => {
-  const route = createRoute(
-    {
-      name: 'root',
-      component,
-      path: '/[param]',
-    })
+  const route = createRoute({ name: 'root', path: '/[param]' }).addView(component)
 
   const router = createRouter([route], {
     initialUrl: '/one',
@@ -127,11 +101,7 @@ test('route update updates the current route', async () => {
 
 test.fails('route is readonly except for individual params', async () => {
   const routes = [
-    createRoute({
-      name: 'root',
-      component,
-      path: '/',
-    }),
+    createRoute({ name: 'root', path: '/' }).addView(component),
   ]
 
   const { route, start } = createRouter(routes, {
@@ -158,11 +128,7 @@ test.fails('route is readonly except for individual params', async () => {
 
 test('individual params are writable', async () => {
   const routes = [
-    createRoute({
-      name: 'root',
-      component,
-      path: '/[param]',
-    }),
+    createRoute({ name: 'root', path: '/[param]' }).addView(component),
   ]
 
   const { route, start } = createRouter(routes, {
@@ -196,11 +162,7 @@ test('individual params are writable', async () => {
 
 test('individual params are writable when using toRefs', async () => {
   const routes = [
-    createRoute({
-      name: 'root',
-      component,
-      path: '/[param]',
-    }),
+    createRoute({ name: 'root', path: '/[param]' }).addView(component),
   ]
 
   const { route, start } = createRouter(routes, {
@@ -220,11 +182,7 @@ test('individual params are writable when using toRefs', async () => {
 
 test('setting an unknown param does not add its value to the route', async () => {
   const routes = [
-    createRoute({
-      name: 'root',
-      component,
-      path: '/',
-    }),
+    createRoute({ name: 'root', path: '/' }).addView(component),
   ]
   const { route, start } = createRouter(routes, {
     initialUrl: '/',
@@ -243,11 +201,7 @@ test('setting an unknown param does not add its value to the route', async () =>
 
 test('params are writable', async () => {
   const routes = [
-    createRoute({
-      name: 'root',
-      component,
-      path: '/[paramA]/[paramB]/[?paramC]',
-    }),
+    createRoute({ name: 'root', path: '/[paramA]/[paramB]/[?paramC]' }).addView(component),
   ]
 
   const { route, start } = createRouter(routes, {
@@ -290,11 +244,7 @@ test('params are writable', async () => {
 })
 
 test('params can be destructured', async () => {
-  const root = createRoute({
-    name: 'root',
-    component,
-    path: '/[paramA]/[paramB]',
-  })
+  const root = createRoute({ name: 'root', path: '/[paramA]/[paramB]' }).addView(component)
 
   const { route, start, push } = createRouter([root], {
     initialUrl: '/one/two',
@@ -320,11 +270,7 @@ test('params can be destructured', async () => {
 })
 
 test('query is writable', async () => {
-  const root = createRoute({
-    name: 'root',
-    component,
-    path: '/',
-  })
+  const root = createRoute({ name: 'root', path: '/' }).addView(component)
 
   const { route, start } = createRouter([root], {
     initialUrl: '/?foo=bar&fiz=buz',
@@ -349,11 +295,7 @@ test('query is writable', async () => {
 })
 
 test('query.set updates the route', async () => {
-  const root = createRoute({
-    name: 'root',
-    component,
-    path: '/',
-  })
+  const root = createRoute({ name: 'root', path: '/' }).addView(component)
 
   const { route, start } = createRouter([root], {
     initialUrl: '/',
@@ -375,12 +317,7 @@ test('query.set updates the route', async () => {
 })
 
 test('query.set does not duplicate existing params when updating one param', async () => {
-  const root = createRoute({
-    name: 'root',
-    component,
-    path: '/',
-    query: 'param=[param]',
-  })
+  const root = createRoute({ name: 'root', path: '/', query: 'param=[param]' }).addView(component)
 
   const { route, start } = createRouter([root], {
     initialUrl: '/?param=value&foo=1',
@@ -398,12 +335,7 @@ test('query.set does not duplicate existing params when updating one param', asy
 })
 
 test('query.set can change the value of a param that is already set', async () => {
-  const root = createRoute({
-    name: 'root',
-    component,
-    query: 'param=[param]',
-    path: '/',
-  })
+  const root = createRoute({ name: 'root', query: 'param=[param]', path: '/' }).addView(component)
 
   const { route, start } = createRouter([root], {
     initialUrl: '/?param=foo&notAParam=1',
@@ -419,11 +351,7 @@ test('query.set can change the value of a param that is already set', async () =
 })
 
 test('query.append updates the route', async () => {
-  const root = createRoute({
-    name: 'root',
-    component,
-    path: '/',
-  })
+  const root = createRoute({ name: 'root', path: '/' }).addView(component)
 
   const { route, start } = createRouter([root], {
     initialUrl: '/',
@@ -445,11 +373,7 @@ test('query.append updates the route', async () => {
 })
 
 test('query.delete updates the route', async () => {
-  const root = createRoute({
-    name: 'root',
-    component,
-    path: '/',
-  })
+  const root = createRoute({ name: 'root', path: '/' }).addView(component)
 
   const { route, start } = createRouter([root], {
     initialUrl: '/?foo=bar&fiz=buz',
@@ -465,11 +389,7 @@ test('query.delete updates the route', async () => {
 })
 
 test('query.values is reactive', async () => {
-  const root = createRoute({
-    name: 'root',
-    component,
-    path: '/',
-  })
+  const root = createRoute({ name: 'root', path: '/' }).addView(component)
 
   const { route, start } = createRouter([root], {
     initialUrl: '/?foo=foo1&bar=bar1',
@@ -490,12 +410,12 @@ test('query.values is reactive', async () => {
 
 test('given an array of Routes with duplicate names, throws DuplicateNamesError', () => {
   const aRoutes = [
-    createRoute({ name: 'foo', path: '/foo', component }),
-    createRoute({ name: 'bar', path: '/bar', component }),
+    createRoute({ name: 'foo', path: '/foo' }).addView(component),
+    createRoute({ name: 'bar', path: '/bar' }).addView(component),
   ]
   const bRoutes = [
-    createRoute({ name: 'zoo', path: '/zoo', component }),
-    createRoute({ name: 'bar', path: '/bar', component }),
+    createRoute({ name: 'zoo', path: '/zoo' }).addView(component),
+    createRoute({ name: 'bar', path: '/bar' }).addView(component),
   ]
 
   const action: () => void = () => createRouter([aRoutes, bRoutes], {
@@ -506,11 +426,11 @@ test('given an array of Routes with duplicate names, throws DuplicateNamesError'
 })
 
 test('given an array of Routes with missing context, can still match missing routes', async () => {
-  const missingRoute = createRoute({ name: 'missing', path: '/missing', component })
+  const missingRoute = createRoute({ name: 'missing', path: '/missing' }).addView(component)
 
   const router = createRouter([
-    createRoute({ name: 'foo', path: '/foo', component, context: [missingRoute] }),
-    createRoute({ name: 'bar', path: '/bar', component }),
+    createRoute({ name: 'foo', path: '/foo', context: [missingRoute] }).addView(component),
+    createRoute({ name: 'bar', path: '/bar' }).addView(component),
   ], {
     initialUrl: '/missing',
   })
@@ -521,10 +441,10 @@ test('given an array of Routes with missing context, can still match missing rou
 })
 
 test('given an array of Routes with missing context with duplicate route names, throws DuplicateNamesError', async () => {
-  const missingRoute = createRoute({ name: 'foo', path: '/foo', component })
+  const missingRoute = createRoute({ name: 'foo', path: '/foo' }).addView(component)
 
   const action: () => void = () => createRouter([
-    createRoute({ name: 'foo', path: '/foo', component, context: [missingRoute] }),
+    createRoute({ name: 'foo', path: '/foo', context: [missingRoute] }).addView(component),
   ], {
     initialUrl: '/missing',
   })
@@ -533,11 +453,7 @@ test('given an array of Routes with missing context with duplicate route names, 
 })
 
 test('initial route is not set until the router is started', async () => {
-  const route = createRoute({
-    name: 'root',
-    path: '/',
-    component,
-  })
+  const route = createRoute({ name: 'root', path: '/' }).addView(component)
 
   const router = createRouter([route], {
     initialUrl: '/',
@@ -552,7 +468,7 @@ test('initial route is not set until the router is started', async () => {
 
 test('the router is started once the initial route commits, without waiting for its after hooks', async () => {
   const { promise, resolve } = Promise.withResolvers<string>()
-  const route = createRoute({ name: 'root', path: '/', component })
+  const route = createRoute({ name: 'root', path: '/' }).addView(component)
 
   route.onAfterRouteEnter(async () => {
     await promise
@@ -572,8 +488,8 @@ test('the router is started once the initial route commits, without waiting for 
 
 test('a navigation begun from the initial route\'s after hooks leaves from that route', async () => {
   const onBeforeRouteEnter = vi.fn()
-  const home = createRoute({ name: 'home', path: '/', component })
-  const next = createRoute({ name: 'next', path: '/next', component })
+  const home = createRoute({ name: 'home', path: '/' }).addView(component)
+  const next = createRoute({ name: 'next', path: '/next' }).addView(component)
 
   home.onAfterRouteEnter((_to, { push }) => {
     push('/next')
@@ -643,16 +559,8 @@ describe('router.resolve', () => {
 
   test('given a param with a dash or underscore resolves the correct url', () => {
     const routes = [
-      createRoute({
-        name: 'kebab',
-        path: '/[test-param]',
-        component,
-      }),
-      createRoute({
-        name: 'snake',
-        path: '/[test_param]',
-        component,
-      }),
+      createRoute({ name: 'kebab', path: '/[test-param]' }).addView(component),
+      createRoute({ name: 'snake', path: '/[test_param]' }).addView(component),
     ]
 
     const router = createRouter(routes, { initialUrl: '/' })
@@ -760,12 +668,7 @@ describe('router.push', () => {
   })
 
   test('given a resolved route with state inside, pushes state', async () => {
-    const routeWithState = createRoute({
-      name: 'route-with-state',
-      component,
-      path: '/route-with-state',
-      state: { zoo: Number },
-    })
+    const routeWithState = createRoute({ name: 'route-with-state', path: '/route-with-state', state: { zoo: Number } }).addView(component)
     const router = createRouter([routeWithState], { initialUrl: '/' })
     const route = router.resolve('route-with-state', { paramA: 'bar' }, { state: { zoo: 123 } })
 
@@ -775,12 +678,7 @@ describe('router.push', () => {
   })
 
   test('given a resolved route with state in options, pushes state', async () => {
-    const routeWithState = createRoute({
-      name: 'route-with-state',
-      component,
-      path: '/route-with-state',
-      state: { zoo: Number },
-    })
+    const routeWithState = createRoute({ name: 'route-with-state', path: '/route-with-state', state: { zoo: Number } }).addView(component)
     const router = createRouter([routeWithState], { initialUrl: '/' })
     const route = router.resolve('route-with-state', { paramA: 'bar' })
 
@@ -790,12 +688,7 @@ describe('router.push', () => {
   })
 
   test('given a route name with state in options, pushes state', async () => {
-    const routeWithState = createRoute({
-      name: 'route-with-state',
-      component,
-      path: '/route-with-state',
-      state: { zoo: Number },
-    })
+    const routeWithState = createRoute({ name: 'route-with-state', path: '/route-with-state', state: { zoo: Number } }).addView(component)
     const router = createRouter([routeWithState], { initialUrl: '/' })
 
     await router.push('route-with-state', { paramA: 'bar' }, { state: { zoo: 123 } })
@@ -804,12 +697,7 @@ describe('router.push', () => {
   })
 
   test('given an internal Url with state in options, pushes state', async () => {
-    const routeWithState = createRoute({
-      name: 'route-with-state',
-      component,
-      path: '/route-with-state',
-      state: { zoo: Number },
-    })
+    const routeWithState = createRoute({ name: 'route-with-state', path: '/route-with-state', state: { zoo: Number } }).addView(component)
     const router = createRouter([routeWithState], { initialUrl: '/' })
 
     await router.push('/route-with-state', { state: { zoo: 123 } })
@@ -826,11 +714,7 @@ describe('router.onError', () => {
     const error = new Error('Test error')
     const onError = vi.fn()
 
-    const route = createRoute({
-      name: 'route-with-error',
-      component,
-      path: '/',
-    })
+    const route = createRoute({ name: 'route-with-error', path: '/' }).addView(component)
 
     const router = createRouter([route], { initialUrl: '/' })
 
@@ -854,11 +738,7 @@ describe('router.onError', () => {
     const error = new Error('Test error')
     const onError = vi.fn()
 
-    const route = createRoute({
-      name: 'route-with-error',
-      component,
-      path: '/[param]',
-    })
+    const route = createRoute({ name: 'route-with-error', path: '/[param]' }).addView(component)
 
     const router = createRouter([route], { initialUrl: '/' })
     await router.start()
@@ -886,17 +766,9 @@ describe('router.onError', () => {
     const error = new Error('Test error')
     const onError = vi.fn()
 
-    const route1 = createRoute({
-      name: 'route-1',
-      component,
-      path: '/route-1',
-    })
+    const route1 = createRoute({ name: 'route-1', path: '/route-1' }).addView(component)
 
-    const route2 = createRoute({
-      name: 'route-2',
-      component,
-      path: '/route-2',
-    })
+    const route2 = createRoute({ name: 'route-2', path: '/route-2' }).addView(component)
 
     const router = createRouter([route1, route2], { initialUrl: '/' })
     await router.start()
@@ -921,12 +793,10 @@ describe('router.onError', () => {
     const error = new Error('Test error')
     const onError = vi.fn()
 
-    const routeWithError = createRoute({
-      name: 'route-with-error',
-      component,
-      path: '/route-with-error',
-    }, () => {
-      throw error
+    const routeWithError = createRoute({ name: 'route-with-error', path: '/route-with-error' }).addView(component, {
+      props: () => {
+        throw error
+      },
     })
 
     const router = createRouter([routeWithError], { initialUrl: '/' })
@@ -954,11 +824,7 @@ describe('router.onRejection', () => {
       component: { template: '<div>This is a custom rejection</div>' },
     })
 
-    const route = createRoute({
-      name: 'route',
-      component,
-      path: '/',
-    })
+    const route = createRoute({ name: 'route', path: '/' }).addView(component)
 
     const router = createRouter([route], { initialUrl: '/', rejections: [rejection] })
 
@@ -977,11 +843,7 @@ describe('router.onRejection', () => {
   test('given route hooks that trigger a rejection, calls the onRejection callback with the correct context', async () => {
     const onRejection = vi.fn()
 
-    const route = createRoute({
-      name: 'route-with-rejection',
-      component,
-      path: '/',
-    })
+    const route = createRoute({ name: 'route-with-rejection', path: '/' }).addView(component)
 
     route.onBeforeRouteEnter((_to, { reject }) => {
       reject('NotFound')
@@ -1003,23 +865,11 @@ describe('router.onRejection', () => {
 })
 
 describe('options.removeTrailingSlashes', () => {
-  const foo = createRoute({
-    name: 'foo',
-    component,
-    path: '/foo',
-  })
+  const foo = createRoute({ name: 'foo', path: '/foo' }).addView(component)
 
-  const fooWithTrailingSlash = createRoute({
-    name: 'fooWithTrailingSlash',
-    component,
-    path: '/foo/',
-  })
+  const fooWithTrailingSlash = createRoute({ name: 'fooWithTrailingSlash', path: '/foo/' }).addView(component)
 
-  const bar = createRoute({
-    name: 'bar',
-    component,
-    path: '/bar',
-  })
+  const bar = createRoute({ name: 'bar', path: '/bar' }).addView(component)
 
   test('when true, removes trailing slashes from the path', async () => {
     const router = createRouter([foo, fooWithTrailingSlash, bar], {
@@ -1065,9 +915,9 @@ describe('options.removeTrailingSlashes', () => {
 })
 
 test('history keeps listening when a navigation ends early', async () => {
-  const home = createRoute({ name: 'home', component, path: '/' })
-  const foo = createRoute({ name: 'foo', component, path: '/foo' })
-  const bar = createRoute({ name: 'bar', component, path: '/bar' })
+  const home = createRoute({ name: 'home', path: '/' }).addView(component)
+  const foo = createRoute({ name: 'foo', path: '/foo' }).addView(component)
+  const bar = createRoute({ name: 'bar', path: '/bar' }).addView(component)
 
   bar.onBeforeRouteEnter((_to, { abort }) => abort())
 
@@ -1086,7 +936,7 @@ test('history keeps listening when a navigation ends early', async () => {
 describe('a url that matches no route', () => {
   test('rejects with NotFound', async () => {
     const onRejection = vi.fn()
-    const route = createRoute({ name: 'route', component, path: '/foo' })
+    const route = createRoute({ name: 'route', path: '/foo' }).addView(component)
     const router = createRouter([route], { initialUrl: '/does-not-exist' })
 
     router.onRejection(onRejection)
@@ -1102,7 +952,7 @@ describe('a url that matches no route', () => {
   test('runs leave hooks with a null to', async () => {
     const onBeforeRouteLeave = vi.fn()
     const onAfterRouteLeave = vi.fn()
-    const route = createRoute({ name: 'route', component, path: '/foo' })
+    const route = createRoute({ name: 'route', path: '/foo' }).addView(component)
     const router = createRouter([route], { initialUrl: '/foo' })
 
     await router.start()
@@ -1120,8 +970,8 @@ describe('a url that matches no route', () => {
 describe('a navigation ended by one of its hooks', () => {
   test('aborting from a before hook aborts the signal the other before hooks were given', async () => {
     const seen = Promise.withResolvers<AbortSignal>()
-    const home = createRoute({ name: 'home', component, path: '/' })
-    const foo = createRoute({ name: 'foo', component, path: '/foo' })
+    const home = createRoute({ name: 'home', path: '/' }).addView(component)
+    const foo = createRoute({ name: 'foo', path: '/foo' }).addView(component)
 
     foo.onBeforeRouteEnter((_to, { signal }) => {
       seen.resolve(signal)
@@ -1142,8 +992,8 @@ describe('a navigation ended by one of its hooks', () => {
 
   test('rejecting from a before hook aborts the signal the other before hooks were given', async () => {
     const seen = Promise.withResolvers<AbortSignal>()
-    const home = createRoute({ name: 'home', component, path: '/' })
-    const foo = createRoute({ name: 'foo', component, path: '/foo' })
+    const home = createRoute({ name: 'home', path: '/' }).addView(component)
+    const foo = createRoute({ name: 'foo', path: '/foo' }).addView(component)
 
     foo.onBeforeRouteEnter((_to, { signal }) => {
       seen.resolve(signal)
@@ -1164,8 +1014,8 @@ describe('a navigation ended by one of its hooks', () => {
 
   test('rejecting from an after hook aborts the signal the other after hooks were given', async () => {
     const seen = Promise.withResolvers<AbortSignal>()
-    const home = createRoute({ name: 'home', component, path: '/' })
-    const foo = createRoute({ name: 'foo', component, path: '/foo' })
+    const home = createRoute({ name: 'home', path: '/' }).addView(component)
+    const foo = createRoute({ name: 'foo', path: '/foo' }).addView(component)
 
     foo.onAfterRouteEnter((_to, { signal }) => {
       seen.resolve(signal)
@@ -1188,9 +1038,9 @@ describe('a navigation ended by one of its hooks', () => {
 describe('a navigation superseded by a newer one', () => {
   test('does not update the route or history when its before hooks finish', async () => {
     const { promise, resolve } = Promise.withResolvers<string>()
-    const home = createRoute({ name: 'home', component, path: '/' })
-    const slow = createRoute({ name: 'slow', component, path: '/slow' })
-    const fast = createRoute({ name: 'fast', component, path: '/fast' })
+    const home = createRoute({ name: 'home', path: '/' }).addView(component)
+    const slow = createRoute({ name: 'slow', path: '/slow' }).addView(component)
+    const fast = createRoute({ name: 'fast', path: '/fast' }).addView(component)
 
     slow.onBeforeRouteEnter(async () => {
       await promise
@@ -1216,10 +1066,10 @@ describe('a navigation superseded by a newer one', () => {
 
   test('does not redirect when its after hooks finish', async () => {
     const { promise, resolve } = Promise.withResolvers<string>()
-    const home = createRoute({ name: 'home', component, path: '/' })
-    const redirect = createRoute({ name: 'redirect', component, path: '/redirect' })
-    const slow = createRoute({ name: 'slow', component, path: '/slow', context: [redirect] })
-    const fast = createRoute({ name: 'fast', component, path: '/fast' })
+    const home = createRoute({ name: 'home', path: '/' }).addView(component)
+    const redirect = createRoute({ name: 'redirect', path: '/redirect' }).addView(component)
+    const slow = createRoute({ name: 'slow', path: '/slow', context: [redirect] }).addView(component)
+    const fast = createRoute({ name: 'fast', path: '/fast' }).addView(component)
 
     slow.onAfterRouteEnter(async (_to, { push }) => {
       await promise
@@ -1244,9 +1094,9 @@ describe('a navigation superseded by a newer one', () => {
   test('aborts the signal its before hooks were given', async () => {
     const { promise, resolve } = Promise.withResolvers<string>()
     const seen = Promise.withResolvers<AbortSignal>()
-    const home = createRoute({ name: 'home', component, path: '/' })
-    const slow = createRoute({ name: 'slow', component, path: '/slow' })
-    const fast = createRoute({ name: 'fast', component, path: '/fast' })
+    const home = createRoute({ name: 'home', path: '/' }).addView(component)
+    const slow = createRoute({ name: 'slow', path: '/slow' }).addView(component)
+    const fast = createRoute({ name: 'fast', path: '/fast' }).addView(component)
 
     slow.onBeforeRouteEnter(async (_to, { signal }) => {
       seen.resolve(signal)
@@ -1274,9 +1124,9 @@ describe('a navigation superseded by a newer one', () => {
   test('aborts the signal its after hooks were given', async () => {
     const { promise, resolve } = Promise.withResolvers<string>()
     const seen = Promise.withResolvers<AbortSignal>()
-    const home = createRoute({ name: 'home', component, path: '/' })
-    const slow = createRoute({ name: 'slow', component, path: '/slow' })
-    const fast = createRoute({ name: 'fast', component, path: '/fast' })
+    const home = createRoute({ name: 'home', path: '/' }).addView(component)
+    const slow = createRoute({ name: 'slow', path: '/slow' }).addView(component)
+    const fast = createRoute({ name: 'fast', path: '/fast' }).addView(component)
 
     slow.onAfterRouteEnter(async (_to, { signal }) => {
       seen.resolve(signal)
@@ -1307,9 +1157,9 @@ describe('a navigation superseded by a newer one', () => {
     const onBeforeSecond = vi.fn(async () => {
       await second.promise
     })
-    const home = createRoute({ name: 'home', component, path: '/' })
-    const firstRoute = createRoute({ name: 'first', component, path: '/first' })
-    const secondRoute = createRoute({ name: 'second', component, path: '/second' })
+    const home = createRoute({ name: 'home', path: '/' }).addView(component)
+    const firstRoute = createRoute({ name: 'first', path: '/first' }).addView(component)
+    const secondRoute = createRoute({ name: 'second', path: '/second' }).addView(component)
 
     firstRoute.onBeforeRouteEnter(async () => {
       await first.promise
@@ -1337,8 +1187,8 @@ describe('a navigation superseded by a newer one', () => {
 describe('router.stop', () => {
   test('a navigation in flight when the router stops does not update the route', async () => {
     const { promise, resolve } = Promise.withResolvers<string>()
-    const home = createRoute({ name: 'home', component, path: '/' })
-    const slow = createRoute({ name: 'slow', component, path: '/slow' })
+    const home = createRoute({ name: 'home', path: '/' }).addView(component)
+    const slow = createRoute({ name: 'slow', path: '/slow' }).addView(component)
 
     slow.onBeforeRouteEnter(async () => {
       await promise
@@ -1360,8 +1210,8 @@ describe('router.stop', () => {
   test('aborts the signal the hooks of a navigation in flight were given', async () => {
     const { promise, resolve } = Promise.withResolvers<string>()
     const seen = Promise.withResolvers<AbortSignal>()
-    const home = createRoute({ name: 'home', component, path: '/' })
-    const slow = createRoute({ name: 'slow', component, path: '/slow' })
+    const home = createRoute({ name: 'home', path: '/' }).addView(component)
+    const slow = createRoute({ name: 'slow', path: '/slow' }).addView(component)
 
     slow.onBeforeRouteEnter(async (_to, { signal }) => {
       seen.resolve(signal)
@@ -1385,9 +1235,9 @@ describe('router.stop', () => {
   })
 
   test('navigating after stop does not update the route or resume history listening', async () => {
-    const home = createRoute({ name: 'home', component, path: '/' })
-    const foo = createRoute({ name: 'foo', component, path: '/foo' })
-    const bar = createRoute({ name: 'bar', component, path: '/bar' })
+    const home = createRoute({ name: 'home', path: '/' }).addView(component)
+    const foo = createRoute({ name: 'foo', path: '/foo' }).addView(component)
+    const bar = createRoute({ name: 'bar', path: '/bar' }).addView(component)
 
     const router = createRouter([home, foo, bar], { initialUrl: '/' })
 
@@ -1408,8 +1258,8 @@ describe('router.stop', () => {
 
 test('a back during a slow after hook navigates', async () => {
   const { promise, resolve } = Promise.withResolvers<string>()
-  const home = createRoute({ name: 'home', component, path: '/' })
-  const slow = createRoute({ name: 'slow', component, path: '/slow' })
+  const home = createRoute({ name: 'home', path: '/' }).addView(component)
+  const slow = createRoute({ name: 'slow', path: '/slow' }).addView(component)
 
   slow.onAfterRouteEnter(async () => {
     await promise
@@ -1434,9 +1284,9 @@ test('a back during a slow after hook navigates', async () => {
 })
 
 test('going back from a redirect returns to the route before it', async () => {
-  const home = createRoute({ name: 'home', component, path: '/' })
-  const oldPath = createRoute({ name: 'oldPath', component, path: '/old' })
-  const newPath = createRoute({ name: 'newPath', component, path: '/new' })
+  const home = createRoute({ name: 'home', path: '/' }).addView(component)
+  const oldPath = createRoute({ name: 'oldPath', path: '/old' }).addView(component)
+  const newPath = createRoute({ name: 'newPath', path: '/new' }).addView(component)
 
   const router = createRouter([home, oldPath, newPath], { initialUrl: '/' })
 
@@ -1471,10 +1321,10 @@ describe.each(['progressive', 'blocking'] as const)('aborted history traversals 
       return history
     })
 
-    const home = createRoute({ name: 'home', path: '/', component })
-    const first = createRoute({ name: 'first', path: '/first', component })
-    const second = createRoute({ name: 'second', path: '/second', component })
-    const third = createRoute({ name: 'third', path: '/third', component })
+    const home = createRoute({ name: 'home', path: '/' }).addView(component)
+    const first = createRoute({ name: 'first', path: '/first' }).addView(component)
+    const second = createRoute({ name: 'second', path: '/second' }).addView(component)
+    const third = createRoute({ name: 'third', path: '/third' }).addView(component)
     router = createRouter([home, first, second, third], { initialUrl: '/', historyMode: 'memory', navigation })
 
     await router.start()
@@ -1675,14 +1525,14 @@ function successful(response: ServerRenderResponse): RenderSuccess {
 
 describe('router.render response', () => {
   test('render requires the router to be created for server rendering', async () => {
-    const route = createRoute({ name: 'route', component, path: '/' })
+    const route = createRoute({ name: 'route', path: '/' }).addView(component)
     const router = createRouter([route], { initialUrl: '/' })
 
     await expect(router.render()).rejects.toThrow(SsrOptionRequiredError)
   })
 
   test('given an absolute initial url, a relative settled url is not a redirect', async () => {
-    const route = createRoute({ name: 'route', component, path: '/foo' })
+    const route = createRoute({ name: 'route', path: '/foo' }).addView(component)
     const router = createRouter([route], { ssr: true, initialUrl: 'https://kitbag.dev/foo' })
 
     await router.start()
@@ -1695,7 +1545,7 @@ describe('router.render response', () => {
   test('after hooks are left for the client even when the router starts before render', async () => {
     const onAfterRouteEnter = vi.fn()
 
-    const route = createRoute({ name: 'route', component, path: '/' })
+    const route = createRoute({ name: 'route', path: '/' }).addView(component)
     const router = createRouter([route], { ssr: true, initialUrl: '/' })
 
     router.onAfterRouteEnter(onAfterRouteEnter)
@@ -1712,7 +1562,8 @@ describe('router.render response', () => {
     const circular: Record<string, unknown> = {}
     circular.self = circular
 
-    const route = createRoute({ name: 'route', component, path: '/' }).addLoader(() => circular)
+    const route = createRoute({ name: 'route', path: '/' }).addView(component)
+      .addLoader(() => circular)
     const router = createRouter([route], { ssr: true, initialUrl: '/' })
 
     await router.start()
@@ -1728,7 +1579,7 @@ describe('router.render response', () => {
   })
 
   test('returns the title of the route that rendered', async () => {
-    const route = createRoute({ name: 'route', component, path: '/' })
+    const route = createRoute({ name: 'route', path: '/' }).addView(component)
 
     route.setTitle(() => 'the title')
 
@@ -1746,7 +1597,7 @@ describe('router.render response', () => {
 
     locked.setTitle(() => 'locked')
 
-    const route = createRoute({ name: 'route', component, path: '/' })
+    const route = createRoute({ name: 'route', path: '/' }).addView(component)
     const router = createRouter([route], { ssr: true, initialUrl: '/', rejections: [locked] })
 
     router.onBeforeRouteEnter((_to, { reject }) => reject('Locked'))
@@ -1761,7 +1612,7 @@ describe('router.render response', () => {
   test('render leaves after hooks for the client', async () => {
     const onAfterRouteEnter = vi.fn()
 
-    const route = createRoute({ name: 'route', component, path: '/' })
+    const route = createRoute({ name: 'route', path: '/' }).addView(component)
     const router = createRouter([route], { ssr: true, initialUrl: '/' })
 
     router.onAfterRouteEnter(onAfterRouteEnter)
@@ -1774,7 +1625,7 @@ describe('router.render response', () => {
   test('a rejection without a title returns no title', async () => {
     const locked = createRejection({ type: 'Locked', status: 423, component })
 
-    const route = createRoute({ name: 'route', component, path: '/' })
+    const route = createRoute({ name: 'route', path: '/' }).addView(component)
 
     route.setTitle(() => 'the title')
 
@@ -1790,12 +1641,13 @@ describe('router.render response', () => {
   })
 
   test('a value crosses the payload through its own stringify', async () => {
-    const route = createRoute({ name: 'route', component, path: '/' }).addLoader(() => new Map([['a', 1]]), {
-      transformer: {
-        stringify: (value) => JSON.stringify(Array.from(value.entries())),
-        parse: (encoded) => new Map(JSON.parse(encoded)),
-      },
-    })
+    const route = createRoute({ name: 'route', path: '/' }).addView(component)
+      .addLoader(() => new Map([['a', 1]]), {
+        transformer: {
+          stringify: (value) => JSON.stringify(Array.from(value.entries())),
+          parse: (encoded) => new Map(JSON.parse(encoded)),
+        },
+      })
 
     const router = createRouter([route], { ssr: true, initialUrl: '/' })
 
@@ -1812,14 +1664,15 @@ describe('router.render response', () => {
   test('a declared payload option that cannot write a value is left out and returned as a failure', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
-    const route = createRoute({ name: 'route', component, path: '/' }).addLoader(() => 1, {
-      transformer: {
-        stringify: () => {
-          throw new Error('nope')
+    const route = createRoute({ name: 'route', path: '/' }).addView(component)
+      .addLoader(() => 1, {
+        transformer: {
+          stringify: () => {
+            throw new Error('nope')
+          },
+          parse: Number,
         },
-        parse: Number,
-      },
-    })
+      })
 
     const router = createRouter([route], { ssr: true, initialUrl: '/' })
 
@@ -1836,7 +1689,7 @@ describe('router.render response', () => {
   })
 
   test('a rejected render carries the rejection in its payload', async () => {
-    const route = createRoute({ name: 'route', component, path: '/foo' })
+    const route = createRoute({ name: 'route', path: '/foo' }).addView(component)
     const router = createRouter([route], { ssr: true, initialUrl: '/does-not-exist' })
 
     await router.start()
@@ -1848,7 +1701,7 @@ describe('router.render response', () => {
   })
 
   test('given a url that matches a route, returns 200', async () => {
-    const route = createRoute({ name: 'route', component, path: '/' })
+    const route = createRoute({ name: 'route', path: '/' }).addView(component)
     const router = createRouter([route], { ssr: true, initialUrl: '/' })
 
     await router.start()
@@ -1859,7 +1712,7 @@ describe('router.render response', () => {
   })
 
   test('given a url that matches no route, returns 404', async () => {
-    const route = createRoute({ name: 'route', component, path: '/foo' })
+    const route = createRoute({ name: 'route', path: '/foo' }).addView(component)
     const router = createRouter([route], { ssr: true, initialUrl: '/does-not-exist' })
 
     await router.start()
@@ -1870,7 +1723,7 @@ describe('router.render response', () => {
   })
 
   test('given a hook that rejects with NotFound, returns 404', async () => {
-    const route = createRoute({ name: 'route', component, path: '/' })
+    const route = createRoute({ name: 'route', path: '/' }).addView(component)
 
     route.onBeforeRouteEnter((_to, { reject }) => {
       reject('NotFound')
@@ -1887,7 +1740,7 @@ describe('router.render response', () => {
 
   test('given a rejection that declares a status, returns that status', async () => {
     const rejection = createRejection({ type: 'Unauthorized', status: 401 })
-    const route = createRoute({ name: 'route', component, path: '/' })
+    const route = createRoute({ name: 'route', path: '/' }).addView(component)
     const router = createRouter([route], { ssr: true, initialUrl: '/', rejections: [rejection] })
 
     router.onBeforeRouteEnter((_to, { reject }) => {
@@ -1903,7 +1756,7 @@ describe('router.render response', () => {
 
   test('given a rejection, returns the status it declared', async () => {
     const rejection = createRejection({ type: 'Maintenance', status: 503 })
-    const route = createRoute({ name: 'route', component, path: '/' })
+    const route = createRoute({ name: 'route', path: '/' }).addView(component)
     const router = createRouter([route], { ssr: true, initialUrl: '/', rejections: [rejection] })
 
     router.onBeforeRouteEnter((_to, { reject }) => {
@@ -1919,7 +1772,7 @@ describe('router.render response', () => {
 
   test('given a rejection without a status, responds 200', async () => {
     const rejection = createRejection({ type: 'Locked' })
-    const route = createRoute({ name: 'route', component, path: '/' })
+    const route = createRoute({ name: 'route', path: '/' }).addView(component)
     const router = createRouter([route], { ssr: true, initialUrl: '/', rejections: [rejection] })
 
     router.onBeforeRouteEnter((_to, { reject }) => {
@@ -1935,7 +1788,7 @@ describe('router.render response', () => {
 
   test('given rejectStatus, uses it for a rejection without a status of its own', async () => {
     const rejection = createRejection({ type: 'Locked' })
-    const route = createRoute({ name: 'route', component, path: '/' })
+    const route = createRoute({ name: 'route', path: '/' }).addView(component)
     const router = createRouter([route], { ssr: true, initialUrl: '/', rejections: [rejection], rejectStatus: 403 })
 
     router.onBeforeRouteEnter((_to, { reject }) => {
@@ -1951,7 +1804,7 @@ describe('router.render response', () => {
 
   test('a rejection status wins over rejectStatus', async () => {
     const rejection = createRejection({ type: 'Locked', status: 423 })
-    const route = createRoute({ name: 'route', component, path: '/' })
+    const route = createRoute({ name: 'route', path: '/' }).addView(component)
     const router = createRouter([route], { ssr: true, initialUrl: '/', rejections: [rejection], rejectStatus: 403 })
 
     router.onBeforeRouteEnter((_to, { reject }) => {
@@ -1966,7 +1819,7 @@ describe('router.render response', () => {
   })
 
   test('given a url with a trailing slash, redirects to the url without it', async () => {
-    const route = createRoute({ name: 'route', component, path: '/foo' })
+    const route = createRoute({ name: 'route', path: '/foo' }).addView(component)
     const router = createRouter([route], { ssr: true, initialUrl: '/foo/' })
 
     await router.start()
@@ -1977,7 +1830,7 @@ describe('router.render response', () => {
   })
 
   test('given redirectStatus, uses it for a normalized url', async () => {
-    const route = createRoute({ name: 'route', component, path: '/foo' })
+    const route = createRoute({ name: 'route', path: '/foo' }).addView(component)
     const router = createRouter([route], { ssr: true, initialUrl: '/foo/', redirectStatus: 301 })
 
     await router.start()
@@ -1988,7 +1841,7 @@ describe('router.render response', () => {
   })
 
   test('given removeTrailingSlashes false, does not normalize', async () => {
-    const route = createRoute({ name: 'route', component, path: '/foo' })
+    const route = createRoute({ name: 'route', path: '/foo' }).addView(component)
     const router = createRouter([route], { ssr: true, initialUrl: '/foo/', removeTrailingSlashes: false })
 
     await router.start()
@@ -1999,8 +1852,8 @@ describe('router.render response', () => {
   })
 
   test('a hook that pushes responds 302 even with a redirect status', async () => {
-    const home = createRoute({ name: 'home', component, path: '/' })
-    const other = createRoute({ name: 'other', component, path: '/other' })
+    const home = createRoute({ name: 'home', path: '/' }).addView(component)
+    const other = createRoute({ name: 'other', path: '/other' }).addView(component)
 
     const router = createRouter([home, other], { ssr: true, initialUrl: '/', redirectStatus: 301 })
 
@@ -2018,8 +1871,8 @@ describe('router.render response', () => {
   })
 
   test('a route redirect responds with the redirect status', async () => {
-    const to = createRoute({ name: 'to', component, path: '/to' })
-    const from = createRoute({ name: 'from', component, path: '/from' })
+    const to = createRoute({ name: 'to', path: '/to' }).addView(component)
+    const from = createRoute({ name: 'from', path: '/from' }).addView(component)
 
     from.redirectTo(to)
 
@@ -2031,8 +1884,8 @@ describe('router.render response', () => {
   })
 
   test('a redirect declaring its own status overrides the redirect status', async () => {
-    const to = createRoute({ name: 'to', component, path: '/to' })
-    const from = createRoute({ name: 'from', component, path: '/from' })
+    const to = createRoute({ name: 'to', path: '/to' }).addView(component)
+    const from = createRoute({ name: 'from', path: '/from' }).addView(component)
 
     from.redirectTo(to, undefined, { status: 301 })
 
@@ -2044,9 +1897,9 @@ describe('router.render response', () => {
   })
 
   test('a redirect chain responds with the first hop', async () => {
-    const c = createRoute({ name: 'c', component, path: '/c' })
-    const b = createRoute({ name: 'b', component, path: '/b' })
-    const a = createRoute({ name: 'a', component, path: '/a' })
+    const c = createRoute({ name: 'c', path: '/c' }).addView(component)
+    const b = createRoute({ name: 'b', path: '/b' }).addView(component)
+    const a = createRoute({ name: 'a', path: '/a' }).addView(component)
 
     a.redirectTo(b, undefined, { status: 301 })
     b.onBeforeRouteEnter((_to, { push }) => push('/c'))
@@ -2059,8 +1912,8 @@ describe('router.render response', () => {
   })
 
   test('a hook that pushes during the render responds 302 without being followed', async () => {
-    const home = createRoute({ name: 'home', component, path: '/' })
-    const other = createRoute({ name: 'other', component, path: '/other' })
+    const home = createRoute({ name: 'home', path: '/' }).addView(component)
+    const other = createRoute({ name: 'other', path: '/other' }).addView(component)
 
     const router = createRouter([home, other], { ssr: true, initialUrl: '/', redirectStatus: 301 })
 
@@ -2076,8 +1929,8 @@ describe('router.render response', () => {
   })
 
   test('given a route that redirects, returns 302 to the destination', async () => {
-    const from = createRoute({ name: 'from', component, path: '/from' })
-    const to = createRoute({ name: 'to', component, path: '/to' })
+    const from = createRoute({ name: 'from', path: '/from' }).addView(component)
+    const to = createRoute({ name: 'to', path: '/to' }).addView(component)
 
     from.redirectTo(to)
 
@@ -2091,7 +1944,7 @@ describe('router.render response', () => {
   })
 
   test('given extra query params that the router reorders, does not report a redirect', async () => {
-    const route = createRoute({ name: 'route', component, path: '/', query: 'foo=[param]' })
+    const route = createRoute({ name: 'route', path: '/', query: 'foo=[param]' }).addView(component)
     const router = createRouter([route], { ssr: true, initialUrl: '/?extra=42&foo=1' })
 
     await router.start()
@@ -2102,7 +1955,7 @@ describe('router.render response', () => {
   })
 
   test('calling render again resolves with the same response', async () => {
-    const route = createRoute({ name: 'route', component, path: '/' })
+    const route = createRoute({ name: 'route', path: '/' }).addView(component)
     const router = createRouter([route], { ssr: true, initialUrl: '/' })
 
     await router.start()

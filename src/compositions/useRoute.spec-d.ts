@@ -15,14 +15,14 @@ const childA = createRoute({
   name: 'childA',
   path: '[?foo]',
   query: withParams('bar=[?bar]', { bar: Boolean }),
-  component,
 })
+  .addView(component)
 
 const parentB = createRoute({
   name: 'parentB',
   path: '/parentB',
-  component,
 })
+  .addView(component)
 
 const routes = [parentA, childA, parentB] as const
 
@@ -88,26 +88,26 @@ describe('without exact', () => {
 test('siblings are not matched when an unnamed parent is present', () => {
   const parent = createRoute({
     path: '/',
-    component,
   })
+    .addView(component)
 
   const childA = createRoute({
     parent: parent,
     name: 'childA',
-    component,
   })
+    .addView(component)
 
   const childB = createRoute({
     parent: parent,
     name: 'childB',
-    component,
   })
+    .addView(component)
 
   const grandChild = createRoute({
     parent: childA,
     name: 'grandChild',
-    component,
   })
+    .addView(component)
 
   const routes = [
     parent,

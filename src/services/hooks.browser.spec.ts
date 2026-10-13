@@ -278,7 +278,8 @@ test('component hooks are called correctly', async () => {
   const parentA = createRoute({
     name: 'parentA',
     path: '/parentA',
-    component: {
+  })
+    .addView({
       setup: () => {
         onBeforeRouteUpdate(() => parentHooks.beforeUpdate())
         onBeforeRouteLeave(() => parentHooks.beforeLeave())
@@ -286,8 +287,7 @@ test('component hooks are called correctly', async () => {
         onAfterRouteUpdate(() => parentHooks.afterUpdate())
       },
       render: () => h(RouterView),
-    },
-  })
+    })
 
   const parentB = createRoute({
     name: 'parentB',

@@ -9,8 +9,8 @@ test('route with title updates document title', async () => {
   const route = createRoute({
     name: 'root',
     path: '/',
-    component,
   })
+    .addView(component)
 
   const title = 'foo'
   const callback = vi.fn(() => title)
@@ -33,17 +33,17 @@ test('route with title and parent with title does not call parent getTitle', asy
   const parent = createRoute({
     name: 'parent',
     path: '/parent',
-    component,
   })
+    .addView(component)
   const parentGetTitle = vi.fn(() => 'parent')
   parent.setTitle(parentGetTitle)
 
   const child = createRoute({
     name: 'child',
     path: '/child',
-    component,
     parent,
   })
+    .addView(component)
 
   const childGetTitle = vi.fn(() => 'child')
   child.setTitle(childGetTitle)
@@ -65,8 +65,8 @@ test('route with title and parent with title does call parent getTitle when call
   const parent = createRoute({
     name: 'parent',
     path: '/parent',
-    component,
   })
+    .addView(component)
 
   const parentGetTitle = vi.fn(() => 'parent')
   parent.setTitle(parentGetTitle)
@@ -74,9 +74,9 @@ test('route with title and parent with title does call parent getTitle when call
   const child = createRoute({
     name: 'child',
     path: '/child',
-    component,
     parent,
   })
+    .addView(component)
 
   const childGetTitle = vi.fn(async (_to, { getParentTitle }) => {
     const parentTitle = await getParentTitle()
@@ -102,8 +102,8 @@ test('route with title and parent with title does call parent getTitle when call
   const parent = createRoute({
     name: 'parent',
     path: '/parent',
-    component,
   })
+    .addView(component)
 
   const parentGetTitle = vi.fn(() => 'parent')
   parent.setTitle(parentGetTitle)
@@ -111,16 +111,16 @@ test('route with title and parent with title does call parent getTitle when call
   const child = createRoute({
     name: 'child',
     path: '/child',
-    component,
     parent,
   })
+    .addView(component)
 
   const grandchild = createRoute({
     name: 'grandchild',
     path: '/grandchild',
-    component,
     parent: child,
   })
+    .addView(component)
 
   const grandchildGetTitle = vi.fn(async (_to, { getParentTitle }) => {
     const parentTitle = await getParentTitle()
@@ -146,17 +146,17 @@ test('route without title and parent with title updates document title', async (
   const parent = createRoute({
     name: 'parent',
     path: '/parent',
-    component,
   })
+    .addView(component)
 
   parent.setTitle(() => 'parent')
 
   const child = createRoute({
     name: 'child',
     path: '/child',
-    component,
     parent,
   })
+    .addView(component)
 
   const router = createRouter([parent, child], {
     initialUrl: '/parent/child',
@@ -174,8 +174,8 @@ test('rejection from a hook updates document title', async () => {
 
   locked.setTitle(() => 'locked')
 
-  const home = createRoute({ name: 'home', path: '/', component })
-  const secret = createRoute({ name: 'secret', path: '/secret', component })
+  const home = createRoute({ name: 'home', path: '/' }).addView(component)
+  const secret = createRoute({ name: 'secret', path: '/secret' }).addView(component)
 
   const router = createRouter([home, secret], {
     initialUrl: '/',
@@ -198,8 +198,8 @@ test('rejection from a hook updates document title', async () => {
 test('rejection without a title in a before hook keeps the current route title', async () => {
   const locked = createRejection({ type: 'Locked', status: 423, component })
 
-  const home = createRoute({ name: 'home', path: '/', component })
-  const secret = createRoute({ name: 'secret', path: '/secret', component })
+  const home = createRoute({ name: 'home', path: '/' }).addView(component)
+  const secret = createRoute({ name: 'secret', path: '/secret' }).addView(component)
 
   home.setTitle(() => 'home')
   secret.setTitle(() => 'secret')
@@ -226,8 +226,8 @@ test('rejection without a title in a before hook keeps the current route title',
 test('rejection without a title in an after hook falls back to the current route title', async () => {
   const locked = createRejection({ type: 'Locked', status: 423, component })
 
-  const home = createRoute({ name: 'home', path: '/', component })
-  const secret = createRoute({ name: 'secret', path: '/secret', component })
+  const home = createRoute({ name: 'home', path: '/' }).addView(component)
+  const secret = createRoute({ name: 'secret', path: '/secret' }).addView(component)
 
   secret.setTitle(() => 'secret')
 
@@ -254,8 +254,8 @@ test('rejection with a title wins over the current route title', async () => {
 
   locked.setTitle(() => 'locked')
 
-  const home = createRoute({ name: 'home', path: '/', component })
-  const secret = createRoute({ name: 'secret', path: '/secret', component })
+  const home = createRoute({ name: 'home', path: '/' }).addView(component)
+  const secret = createRoute({ name: 'secret', path: '/secret' }).addView(component)
 
   secret.setTitle(() => 'secret')
 
@@ -280,9 +280,9 @@ test('rejection with a title wins over the current route title', async () => {
 test('a slow title from a previous route does not overwrite the current title', async () => {
   const slowTitle = Promise.withResolvers<string>()
 
-  const home = createRoute({ name: 'home', path: '/', component })
-  const slow = createRoute({ name: 'slow', path: '/slow', component })
-  const fast = createRoute({ name: 'fast', path: '/fast', component })
+  const home = createRoute({ name: 'home', path: '/' }).addView(component)
+  const slow = createRoute({ name: 'slow', path: '/slow' }).addView(component)
+  const fast = createRoute({ name: 'fast', path: '/fast' }).addView(component)
 
   slow.setTitle(() => slowTitle.promise)
   fast.setTitle(() => 'fast')

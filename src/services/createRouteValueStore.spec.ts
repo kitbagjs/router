@@ -7,7 +7,8 @@ import { component } from '@/utilities/testHelpers'
 
 test('a staged value is adopted in place of running its getter', async () => {
   const loader = vi.fn(() => 'computed')
-  const route = createRoute({ name: 'route', path: '/', component }).addLoader(loader)
+  const route = createRoute({ name: 'route', path: '/' }).addView(component)
+    .addLoader(loader)
   const resolved = createResolvedRoute(route)
   const store = createRouteValueStore()
 
@@ -22,7 +23,8 @@ test('a staged value is adopted in place of running its getter', async () => {
 })
 
 test('getValues returns the values the store resolved', async () => {
-  const route = createRoute({ name: 'route', path: '/', component }).addLoader(() => 'value')
+  const route = createRoute({ name: 'route', path: '/' }).addView(component)
+    .addLoader(() => 'value')
   const resolved = createResolvedRoute(route)
   const store = createRouteValueStore()
 
@@ -34,7 +36,8 @@ test('getValues returns the values the store resolved', async () => {
 
 test('staged values are adopted by the next navigation without running their getters again', async () => {
   const loader = vi.fn(() => 'value')
-  const route = createRoute({ name: 'route', path: '/', component }).addLoader(loader)
+  const route = createRoute({ name: 'route', path: '/' }).addView(component)
+    .addLoader(loader)
   const resolved = createResolvedRoute(route)
   const store = createRouteValueStore()
 
@@ -46,8 +49,10 @@ test('staged values are adopted by the next navigation without running their get
 })
 
 test('staging a route leaves the current route reading its own values', async () => {
-  const current = createRoute({ name: 'current', path: '/current', component }).addLoader(() => 'current')
-  const next = createRoute({ name: 'next', path: '/next', component }).addLoader(() => 'next')
+  const current = createRoute({ name: 'current', path: '/current' }).addView(component)
+    .addLoader(() => 'current')
+  const next = createRoute({ name: 'next', path: '/next' }).addView(component)
+    .addLoader(() => 'next')
   const store = createRouteValueStore()
   const currentResolved = createResolvedRoute(current)
 
@@ -89,9 +94,10 @@ test('staging reports how the values settled', async () => {
 })
 
 test('a detached store whose getter throws does not surface an unhandled rejection when nothing waits on it', async () => {
-  const route = createRoute({ name: 'route', path: '/', component }).addLoader(() => {
-    throw new Error('getter failed')
-  })
+  const route = createRoute({ name: 'route', path: '/' }).addView(component)
+    .addLoader(() => {
+      throw new Error('getter failed')
+    })
   const store = createRouteValueStore()
   const detached = store.createDetachedStore()
 
@@ -102,11 +108,12 @@ test('a detached store whose getter throws does not surface an unhandled rejecti
 
 test('disposing a detached store aborts the signal its getters were given', async () => {
   const seen = Promise.withResolvers<AbortSignal>()
-  const route = createRoute({ name: 'route', path: '/', component }).addLoader((_route, { signal }) => {
-    seen.resolve(signal)
+  const route = createRoute({ name: 'route', path: '/' }).addView(component)
+    .addLoader((_route, { signal }) => {
+      seen.resolve(signal)
 
-    return 'value'
-  })
+      return 'value'
+    })
   const store = createRouteValueStore()
   const detached = store.createDetachedStore()
 
@@ -123,12 +130,14 @@ test('disposing a detached store aborts the signal its getters were given', asyn
 
 test('a staged getter keeps its signal until the navigation that adopted it is replaced', async () => {
   const seen = Promise.withResolvers<AbortSignal>()
-  const route = createRoute({ name: 'route', path: '/', component }).addLoader((_route, { signal }) => {
-    seen.resolve(signal)
+  const route = createRoute({ name: 'route', path: '/' }).addView(component)
+    .addLoader((_route, { signal }) => {
+      seen.resolve(signal)
 
-    return 'value'
-  })
-  const other = createRoute({ name: 'other', path: '/other', component }).addLoader(() => 'other')
+      return 'value'
+    })
+  const other = createRoute({ name: 'other', path: '/other' }).addView(component)
+    .addLoader(() => 'other')
   const resolved = createResolvedRoute(route)
   const store = createRouteValueStore()
   const detached = store.createDetachedStore()

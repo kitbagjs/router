@@ -6,7 +6,7 @@ import { component } from '@/utilities/testHelpers'
 
 test('a reject carries the rejection as a plain string, the status is what a server acts on', async () => {
   const unauthorized = createRejection({ type: 'Unauthorized', status: 401 })
-  const route = createRoute({ name: 'route', path: '/', component })
+  const route = createRoute({ name: 'route', path: '/' }).addView(component)
   const router = createRouter([route], { ssr: true, initialUrl: '/', rejections: [unauthorized] })
 
   const response = await router.render()
@@ -18,7 +18,7 @@ test('a reject carries the rejection as a plain string, the status is what a ser
 })
 
 test('kind narrows a redirect to its location and status', async () => {
-  const route = createRoute({ name: 'route', path: '/', component })
+  const route = createRoute({ name: 'route', path: '/' }).addView(component)
   const router = createRouter([route], { ssr: true, initialUrl: '/' })
 
   const response = await router.render()

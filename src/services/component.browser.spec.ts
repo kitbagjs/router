@@ -8,8 +8,8 @@ test('renders component with sync props', async () => {
   const route = createRoute({
     name: 'echo',
     path: '/echo',
-    component: echo,
-  }, () => ({ value: 'echo' }))
+  })
+    .addView(echo, { props: () => ({ value: 'echo' }) })
 
   const router = createRouter([route], {
     initialUrl: '/',
@@ -36,8 +36,8 @@ test('renders component with async props', async () => {
   const route = createRoute({
     name: 'echo',
     path: '/echo',
-    component: echo,
-  }, async () => ({ value: 'echo' }))
+  })
+    .addView(echo, { props: async () => ({ value: 'echo' }) })
 
   const router = createRouter([route], {
     initialUrl: '/',
@@ -70,8 +70,8 @@ test('renders component with async props using suspense', async () => {
   const route = createRoute({
     name: 'home',
     path: '/',
-    component: echo,
-  }, () => promise)
+  })
+    .addView(echo, { props: () => promise })
 
   const router = createRouter([route], {
     initialUrl: '/',

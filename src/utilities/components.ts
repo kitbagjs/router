@@ -29,7 +29,7 @@ export type AsyncComponentFilter = (match: CreatedRouteOptions, view: RouteView<
  */
 export function getAsyncComponents(route: ResolvedRoute, filter: AsyncComponentFilter = () => true): ComponentWithAsyncLoader[] {
   return route.matches.flatMap((match) => Object.values(match.views).flatMap((view) => {
-    if (view.component && isAsyncComponent(view.component) && filter(match, view)) {
+    if (isAsyncComponent(view.component) && filter(match, view)) {
       return [view.component]
     }
 

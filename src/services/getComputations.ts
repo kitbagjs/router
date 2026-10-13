@@ -1,8 +1,7 @@
-import { PropsGetter } from '@/types/createRouteOptions'
 import type { PrefetchConfig } from '@/types/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
 import { CreatedRouteOptions } from '@/types/route'
-import { viewNamesWithProps } from '@/services/createRouteViews'
+import { viewNamesWithProps } from '@/services/routeViews'
 import { DataKind, getDataKey } from '@/services/createNavigationStores'
 import { AnyPayloadTransformer } from '@/services/payload'
 import { AnyFunction } from '@/types/utilities'
@@ -39,7 +38,7 @@ export type ComputationFilter = (computation: Computation) => boolean
 
 export function getComputations(route: ResolvedRoute): Computation[] {
   return route.matches.flatMap((match, depth) => [
-    ...propsLocations(match).map((location) => toComputation(location, match, depth, route, match.views[location.name].props as PropsGetter, match.views[location.name])),
+    ...propsLocations(match).map((location) => toComputation(location, match, depth, route, match.views[location.name].props as AnyFunction, match.views[location.name])),
     ...loaderLocations(match).map((location) => toComputation(location, match, depth, route, match.loaders[location.name].load, match.loaders[location.name])),
   ])
 }
