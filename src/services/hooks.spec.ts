@@ -262,7 +262,7 @@ test('when to is null, only leave hooks are called', async () => {
     calls.push('leave')
   })
 
-  const fromRoute = createRoute({ name: 'routeA', component })
+  const fromRoute = createRoute({ name: 'routeA' }).addView(component)
   const from = createResolvedRoute(fromRoute, {})
 
   await runBeforeRouteHooks({ to: null, from, signal })

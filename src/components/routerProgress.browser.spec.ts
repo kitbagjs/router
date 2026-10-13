@@ -29,7 +29,7 @@ function mountPendingBar(template = '<RouterProgress />'): Pending {
   const first = Promise.withResolvers<string>()
   const second = Promise.withResolvers<string>()
   const outcome = Promise.withResolvers<Outcome>()
-  const home = createRoute({ name: 'home', path: '/', component })
+  const home = createRoute({ name: 'home', path: '/' }).addView(component)
 
   home.onBeforeRouteEnter(async () => {
     await first.promise
@@ -221,8 +221,8 @@ test('the bar is labelled for screen readers, with the label prop overriding the
 
 test('a navigation begun while another is pending starts the bar over', async () => {
   const hook = Promise.withResolvers<string>()
-  const home = createRoute({ name: 'home', path: '/', component })
-  const other = createRoute({ name: 'other', path: '/other', component })
+  const home = createRoute({ name: 'home', path: '/' }).addView(component)
+  const other = createRoute({ name: 'other', path: '/other' }).addView(component)
 
   home.onBeforeRouteEnter(async () => {
     await hook.promise

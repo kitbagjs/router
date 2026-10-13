@@ -364,11 +364,7 @@ test('Binds props and attrs from route', async () => {
 test('Renders props the getter returned, even when they are an Error', async () => {
   const showsType = { props: ['value'], template: '<div>rendered</div>' }
 
-  const route = createRoute({
-    name: 'route',
-    path: '/',
-    component: showsType,
-  }, () => new Error('a real prop') as never)
+  const route = createRoute({ name: 'route', path: '/' }).addView(showsType, { props: () => new Error('a real prop') as never })
 
   const router = createRouter([route], {
     initialUrl: '/',

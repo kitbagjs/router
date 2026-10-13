@@ -374,11 +374,7 @@ describe('hooks', () => {
   })
 
   test('update is given to enter and update hooks', () => {
-    const route = createRoute({
-      name: 'route',
-      path: '/[paramName]',
-      component,
-    })
+    const route = createRoute({ name: 'route', path: '/[paramName]' }).addView(component)
 
     route.onBeforeRouteEnter((_to, { update }) => {
       expectTypeOf(update).toBeCallableWith('paramName', 'value')
@@ -398,11 +394,7 @@ describe('hooks', () => {
   })
 
   test('update is not given to leave hooks, which have no destination to update', () => {
-    const route = createRoute({
-      name: 'route',
-      path: '/[paramName]',
-      component,
-    })
+    const route = createRoute({ name: 'route', path: '/[paramName]' }).addView(component)
 
     route.onBeforeRouteLeave((_to, context) => {
       expectTypeOf<keyof typeof context>().toEqualTypeOf<'from' | 'reject' | 'push' | 'replace' | 'abort' | 'signal'>()
@@ -492,5 +484,29 @@ test('given parent, context is combined', () => {
     push('bRoute')
     // @ts-expect-error should not accept an invalid route name
     push('fakeRoute')
+  })
+})
+
+describe('removed view options', () => {
+  test('component and components direct callers to addView', () => {
+    createRoute({
+      // @ts-expect-error component was removed in favor of addView
+      component,
+    })
+
+    createRoute({
+      // @ts-expect-error components was removed in favor of named addView calls
+      components: { default: component },
+    })
+
+    const options = { component }
+
+    // @ts-expect-error legacy options are rejected even when passed through a variable
+    createRoute(options)
+  })
+
+  test('props must be passed to addView', () => {
+    // @ts-expect-error createRoute no longer accepts a props argument
+    createRoute({ name: 'route' }, () => ({}))
   })
 })

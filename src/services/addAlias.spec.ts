@@ -10,7 +10,8 @@ import { component } from '@/utilities/testHelpers'
 
 describe('matching', () => {
   test('an alias url resolves to the route', () => {
-    const user = createRoute({ name: 'user', path: '/user/[id]', component }).addAlias({ path: '/member/[id]' })
+    const user = createRoute({ name: 'user', path: '/user/[id]' }).addView(component)
+      .addAlias({ path: '/member/[id]' })
 
     const match = getMatchForUrl([user], '/member/42')
 
@@ -19,7 +20,8 @@ describe('matching', () => {
   })
 
   test('href is the alias url and canonical is the route url', () => {
-    const user = createRoute({ name: 'user', path: '/user/[id]', component }).addAlias({ path: '/member/[id]' })
+    const user = createRoute({ name: 'user', path: '/user/[id]' }).addView(component)
+      .addAlias({ path: '/member/[id]' })
 
     const match = getMatchForUrl([user], '/member/42')
 
@@ -28,7 +30,8 @@ describe('matching', () => {
   })
 
   test('href and canonical are the same when the route url matched', () => {
-    const user = createRoute({ name: 'user', path: '/user/[id]', component }).addAlias({ path: '/member/[id]' })
+    const user = createRoute({ name: 'user', path: '/user/[id]' }).addView(component)
+      .addAlias({ path: '/member/[id]' })
 
     const match = getMatchForUrl([user], '/user/42')
 
@@ -37,7 +40,7 @@ describe('matching', () => {
   })
 
   test('a route can have several aliases', () => {
-    const user = createRoute({ name: 'user', path: '/user/[id]', component })
+    const user = createRoute({ name: 'user', path: '/user/[id]' }).addView(component)
       .addAlias({ path: '/member/[id]' })
       .addAlias({ path: '/people/[id]' })
 
@@ -46,7 +49,7 @@ describe('matching', () => {
   })
 
   test('an alias without a transform passes its params straight through', () => {
-    const user = createRoute({ name: 'user', path: withParams('/user/[id]', { id: Number }), component })
+    const user = createRoute({ name: 'user', path: withParams('/user/[id]', { id: Number }) }).addView(component)
       .addAlias({ path: withParams('/member/[id]', { id: Number }) })
 
     const match = getMatchForUrl([user], '/member/42')
@@ -55,7 +58,7 @@ describe('matching', () => {
   })
 
   test('a transform maps the alias params into the route params', () => {
-    const user = createRoute({ name: 'user', path: '/user/[id]', component })
+    const user = createRoute({ name: 'user', path: '/user/[id]' }).addView(component)
       .addAlias({ path: '/profile/[username]' }, ({ params }) => ({ id: params.username.toUpperCase() }))
 
     const match = getMatchForUrl([user], '/profile/kitbag')
@@ -66,7 +69,7 @@ describe('matching', () => {
 
   test('a transform receives the url that matched and the alias params', () => {
     const transform = vi.fn(() => ({ id: 'current' }))
-    const user = createRoute({ name: 'user', path: '/user/[id]', component })
+    const user = createRoute({ name: 'user', path: '/user/[id]' }).addView(component)
       .addAlias({ path: '/member/[slug]' }, transform)
 
     getMatchForUrl([user], '/member/kitbag?tab=posts')
@@ -75,7 +78,7 @@ describe('matching', () => {
   })
 
   test('a transform can supply a param the alias does not carry', () => {
-    const user = createRoute({ name: 'user', path: '/user/[id]', component })
+    const user = createRoute({ name: 'user', path: '/user/[id]' }).addView(component)
       .addAlias({ path: '/me' }, () => ({ id: 'current' }))
 
     const match = getMatchForUrl([user], '/me')
@@ -86,7 +89,7 @@ describe('matching', () => {
   })
 
   test('the same param name can have a different type on each side', () => {
-    const user = createRoute({ name: 'user', path: '/user/[id]', component })
+    const user = createRoute({ name: 'user', path: '/user/[id]' }).addView(component)
       .addAlias({ path: withParams('/u/[id]', { id: Number }) }, ({ params }) => ({ id: `user-${params.id + 1}` }))
 
     const match = getMatchForUrl([user], '/u/41')
@@ -95,7 +98,7 @@ describe('matching', () => {
   })
 
   test('an alias whose own params fail parsing does not match', () => {
-    const user = createRoute({ name: 'user', path: '/user/[id]', component })
+    const user = createRoute({ name: 'user', path: '/user/[id]' }).addView(component)
       .addAlias({ path: withParams('/u/[id]', { id: Number }) }, ({ params }) => ({ id: String(params.id) }))
 
     const match = getMatchForUrl([user], '/u/kitbag')
@@ -104,7 +107,7 @@ describe('matching', () => {
   })
 
   test('transformed params the route cannot serialize do not match', () => {
-    const user = createRoute({ name: 'user', path: withParams('/user/[id]', { id: Number }), component })
+    const user = createRoute({ name: 'user', path: withParams('/user/[id]', { id: Number }) }).addView(component)
       .addAlias({ path: '/profile/[username]' }, ({ params }) => ({ id: Number(params.username) }))
 
     const match = getMatchForUrl([user], '/profile/kitbag')
@@ -113,7 +116,7 @@ describe('matching', () => {
   })
 
   test('transformed params are parsed the same as the route url would be', () => {
-    const user = createRoute({ name: 'user', path: withParams('/user/[id]', { id: Number }), component })
+    const user = createRoute({ name: 'user', path: withParams('/user/[id]', { id: Number }) }).addView(component)
       .addAlias({ path: '/profile/[username]' }, ({ params }) => ({ id: params.username.length }))
 
     const match = getMatchForUrl([user], '/profile/kitbag')
@@ -123,7 +126,7 @@ describe('matching', () => {
   })
 
   test('an alias does not require the query the route declares', () => {
-    const user = createRoute({ name: 'user', path: '/user/[id]', query: 'tab=[tab]', component })
+    const user = createRoute({ name: 'user', path: '/user/[id]', query: 'tab=[tab]' }).addView(component)
       .addAlias({ path: '/member/[id]' }, ({ params }) => ({ id: params.id, tab: 'posts' }))
 
     const match = getMatchForUrl([user], '/member/42')
@@ -133,7 +136,7 @@ describe('matching', () => {
   })
 
   test('an alias keeps query values it does not declare', () => {
-    const user = createRoute({ name: 'user', path: '/user/[id]', query: 'tab=[?tab]', component })
+    const user = createRoute({ name: 'user', path: '/user/[id]', query: 'tab=[?tab]' }).addView(component)
       .addAlias({ path: '/member/[id]', query: 'tab=[?tab]' })
 
     const match = getMatchForUrl([user], '/member/42?tab=posts&extra=1')
@@ -144,7 +147,8 @@ describe('matching', () => {
   })
 
   test('an alias keeps the hash', () => {
-    const user = createRoute({ name: 'user', path: '/user/[id]', component }).addAlias({ path: '/member/[id]' })
+    const user = createRoute({ name: 'user', path: '/user/[id]' }).addView(component)
+      .addAlias({ path: '/member/[id]' })
 
     const match = getMatchForUrl([user], '/member/42#bio')
 
@@ -153,7 +157,8 @@ describe('matching', () => {
   })
 
   test('an alias on an unnamed route is not matched', () => {
-    const route = createRoute({ path: '/route', component }).addAlias({ path: '/alias' })
+    const route = createRoute({ path: '/route' }).addView(component)
+      .addAlias({ path: '/alias' })
 
     expect(getMatchForUrl([route], '/alias')).toBeUndefined()
   })
@@ -161,7 +166,7 @@ describe('matching', () => {
 
 describe('parts', () => {
   test('an alias declares its whole url rather than inheriting the route query and hash', () => {
-    const user = createRoute({ name: 'user', path: '/user/[id]', query: 'tab=[?tab]', hash: 'bio', component })
+    const user = createRoute({ name: 'user', path: '/user/[id]', query: 'tab=[?tab]', hash: 'bio' }).addView(component)
       .addAlias({ path: '/member/[id]' })
 
     const match = getMatchForUrl([user], '/member/42')
@@ -172,7 +177,7 @@ describe('parts', () => {
   })
 
   test('an alias can declare its own query', () => {
-    const user = createRoute({ name: 'user', path: '/user/[id]', query: 'tab=[tab]', component })
+    const user = createRoute({ name: 'user', path: '/user/[id]', query: 'tab=[tab]' }).addView(component)
       .addAlias({ path: '/member/[id]', query: 'view=[view]' }, ({ params }) => ({ id: params.id, tab: params.view }))
 
     const match = getMatchForUrl([user], '/member/42?view=posts')
@@ -183,7 +188,7 @@ describe('parts', () => {
   })
 
   test('an alias query param carries into canonical when its key is not declared', () => {
-    const user = createRoute({ name: 'user', path: '/user/[id]', component })
+    const user = createRoute({ name: 'user', path: '/user/[id]' }).addView(component)
       .addAlias({ path: '/member/[id]', query: 'legacy=[legacy]' }, ({ params }) => ({ id: params.legacy }))
 
     const match = getMatchForUrl([user], '/member/1?legacy=42&extra=1')
@@ -194,7 +199,7 @@ describe('parts', () => {
   })
 
   test('an alias can move a param from the path to the query', () => {
-    const user = createRoute({ name: 'user', path: '/user/[id]', component })
+    const user = createRoute({ name: 'user', path: '/user/[id]' }).addView(component)
       .addAlias({ path: '/member', query: 'id=[id]' })
 
     const match = getMatchForUrl([user], '/member?id=42')
@@ -205,7 +210,7 @@ describe('parts', () => {
   })
 
   test('an alias can move a param from the query to the path', () => {
-    const user = createRoute({ name: 'user', path: '/user', query: 'id=[id]', component })
+    const user = createRoute({ name: 'user', path: '/user', query: 'id=[id]' }).addView(component)
       .addAlias({ path: '/member/[id]' })
 
     const match = getMatchForUrl([user], '/member/42')
@@ -215,7 +220,7 @@ describe('parts', () => {
   })
 
   test('an alias can declare a hash', () => {
-    const user = createRoute({ name: 'user', path: '/user/[id]', component })
+    const user = createRoute({ name: 'user', path: '/user/[id]' }).addView(component)
       .addAlias({ path: '/member/[id]', hash: 'about' })
 
     expect(getMatchForUrl([user], '/member/42#about')?.href).toBe('/member/42#about')
@@ -223,7 +228,7 @@ describe('parts', () => {
   })
 
   test('an alias hash does not overwrite the canonical hash', () => {
-    const user = createRoute({ name: 'user', path: '/user', hash: 'profile', component })
+    const user = createRoute({ name: 'user', path: '/user', hash: 'profile' }).addView(component)
       .addAlias({ path: '/member', hash: 'about' })
 
     const match = getMatchForUrl([user], '/member#about')
@@ -235,7 +240,7 @@ describe('parts', () => {
   })
 
   test('an alias hash does not overwrite a canonical hash param', () => {
-    const user = createRoute({ name: 'user', path: '/user', hash: 'profile/[id]', component })
+    const user = createRoute({ name: 'user', path: '/user', hash: 'profile/[id]' }).addView(component)
       .addAlias({ path: '/member/[id]', hash: 'about' })
 
     const match = getMatchForUrl([user], '/member/42#about')
@@ -284,7 +289,8 @@ describe('parts', () => {
 
   test('an alias without a path matches the parent url', () => {
     const user = createRoute({ path: '/user/[id]' })
-    const profile = createRoute({ parent: user, name: 'profile', path: '/profile', component }).addAlias({})
+    const profile = createRoute({ parent: user, name: 'profile', path: '/profile' }).addView(component)
+      .addAlias({})
 
     const match = getMatchForUrl([profile, user], '/user/42')
 
@@ -294,7 +300,7 @@ describe('parts', () => {
 
   test('an alias with its own query composes with a parent alias', () => {
     const user = createRoute({ name: 'user', path: '/user/[id]' }).addAlias({ path: '/member/[id]' })
-    const post = createRoute({ parent: user, name: 'post', path: '/posts/[postId]', query: 'tab=[tab]', component })
+    const post = createRoute({ parent: user, name: 'post', path: '/posts/[postId]', query: 'tab=[tab]' }).addView(component)
       .addAlias({ path: '/p/[postId]', query: 'view=[view]' }, ({ params }) => ({ postId: params.postId, tab: params.view }))
 
     const match = getMatchForUrl([post, user], '/member/1/p/2?view=comments')
@@ -306,8 +312,9 @@ describe('parts', () => {
 
 describe('precedence', () => {
   test('a route url beats an alias defined on an earlier route', () => {
-    const first = createRoute({ name: 'first', path: '/first/[id]', component }).addAlias({ path: '/second/[id]' })
-    const second = createRoute({ name: 'second', path: '/second/[id]', component })
+    const first = createRoute({ name: 'first', path: '/first/[id]' }).addView(component)
+      .addAlias({ path: '/second/[id]' })
+    const second = createRoute({ name: 'second', path: '/second/[id]' }).addView(component)
 
     const match = getMatchForUrl([first, second], '/second/42')
 
@@ -315,9 +322,10 @@ describe('precedence', () => {
   })
 
   test('a route url beats an alias defined on a deeper route', () => {
-    const parent = createRoute({ name: 'parent', path: '/parent', component })
-    const child = createRoute({ parent, name: 'child', path: '/child', component }).addAlias({ path: '/other' })
-    const other = createRoute({ name: 'other', path: '/other', component })
+    const parent = createRoute({ name: 'parent', path: '/parent' }).addView(component)
+    const child = createRoute({ parent, name: 'child', path: '/child' }).addView(component)
+      .addAlias({ path: '/other' })
+    const other = createRoute({ name: 'other', path: '/other' }).addView(component)
 
     const match = getMatchForUrl([child, parent, other], '/other')
 
@@ -325,8 +333,10 @@ describe('precedence', () => {
   })
 
   test('the first alias in route order wins between aliases', () => {
-    const first = createRoute({ name: 'first', path: '/first', component }).addAlias({ path: '/shared' })
-    const second = createRoute({ name: 'second', path: '/second', component }).addAlias({ path: '/shared' })
+    const first = createRoute({ name: 'first', path: '/first' }).addView(component)
+      .addAlias({ path: '/shared' })
+    const second = createRoute({ name: 'second', path: '/second' }).addView(component)
+      .addAlias({ path: '/shared' })
 
     const match = getMatchForUrl([first, second], '/shared')
 
@@ -337,7 +347,7 @@ describe('precedence', () => {
 describe('nesting', () => {
   test('a child matches through its parent alias', () => {
     const user = createRoute({ name: 'user', path: '/user/[id]' }).addAlias({ path: '/member/[id]' })
-    const posts = createRoute({ parent: user, name: 'posts', path: '/posts', component })
+    const posts = createRoute({ parent: user, name: 'posts', path: '/posts' }).addView(component)
 
     const match = getMatchForUrl([posts, user], '/member/42/posts')
 
@@ -348,7 +358,7 @@ describe('nesting', () => {
 
   test('a parent alias transform maps its own segment', () => {
     const user = createRoute({ name: 'user', path: '/user/[id]' }).addAlias({ path: '/me' }, () => ({ id: 'current' }))
-    const post = createRoute({ parent: user, name: 'post', path: '/posts/[postId]', component })
+    const post = createRoute({ parent: user, name: 'post', path: '/posts/[postId]' }).addView(component)
 
     const match = getMatchForUrl([post, user], '/me/posts/7')
 
@@ -358,7 +368,7 @@ describe('nesting', () => {
 
   test('a child alias replaces only its own segment', () => {
     const user = createRoute({ name: 'user', path: '/user/[id]' })
-    const post = createRoute({ parent: user, name: 'post', path: '/posts/[postId]', component })
+    const post = createRoute({ parent: user, name: 'post', path: '/posts/[postId]' }).addView(component)
       .addAlias({ path: '/p/[slug]' }, ({ params }) => ({ postId: params.slug.toUpperCase() }))
 
     const match = getMatchForUrl([post, user], '/user/42/p/kitbag')
@@ -369,7 +379,8 @@ describe('nesting', () => {
 
   test('parent and child aliases compose', () => {
     const user = createRoute({ name: 'user', path: '/user/[id]' }).addAlias({ path: withParams('/u/[num]', { num: Number }) }, ({ params }) => ({ id: String(params.num) }))
-    const post = createRoute({ parent: user, name: 'post', path: '/posts/[postId]', component }).addAlias({ path: '/p/[postId]' })
+    const post = createRoute({ parent: user, name: 'post', path: '/posts/[postId]' }).addView(component)
+      .addAlias({ path: '/p/[postId]' })
 
     const match = getMatchForUrl([post, user], '/u/42/p/7')
 
@@ -381,7 +392,8 @@ describe('nesting', () => {
 
   test('every combination of parent and child urls resolves', () => {
     const user = createRoute({ name: 'user', path: '/user/[id]' }).addAlias({ path: '/member/[id]' })
-    const post = createRoute({ parent: user, name: 'post', path: '/posts/[postId]', component }).addAlias({ path: '/p/[postId]' })
+    const post = createRoute({ parent: user, name: 'post', path: '/posts/[postId]' }).addView(component)
+      .addAlias({ path: '/p/[postId]' })
     const routes = [post, user]
 
     expect(getMatchForUrl(routes, '/user/1/posts/2')?.canonical).toBe('/user/1/posts/2')
@@ -393,7 +405,7 @@ describe('nesting', () => {
   test('aliases compose through more than one level', () => {
     const user = createRoute({ name: 'user', path: '/user/[id]' }).addAlias({ path: '/member/[id]' })
     const posts = createRoute({ parent: user, name: 'posts', path: '/posts' }).addAlias({ path: '/p' })
-    const post = createRoute({ parent: posts, name: 'post', path: '/[postId]', component })
+    const post = createRoute({ parent: posts, name: 'post', path: '/[postId]' }).addView(component)
 
     const match = getMatchForUrl([post, posts, user], '/member/1/p/2')
 
@@ -403,21 +415,22 @@ describe('nesting', () => {
 
   test('a child of a route without aliases has none', () => {
     const user = createRoute({ name: 'user', path: '/user/[id]' })
-    const posts = createRoute({ parent: user, name: 'posts', path: '/posts', component })
+    const posts = createRoute({ parent: user, name: 'posts', path: '/posts' }).addView(component)
 
     expect(isRoute(posts) && posts.aliases).toHaveLength(0)
   })
 
   test('a child inherits one alias per parent alias', () => {
     const user = createRoute({ name: 'user', path: '/user/[id]' }).addAlias({ path: '/member/[id]' })
-    const posts = createRoute({ parent: user, name: 'posts', path: '/posts', component })
+    const posts = createRoute({ parent: user, name: 'posts', path: '/posts' }).addView(component)
 
     expect(isRoute(posts) && posts.aliases).toHaveLength(1)
   })
 
   test('a hoisted child does not compose with its parent aliases', () => {
     const user = createRoute({ name: 'user', path: '/user/[id]' }).addAlias({ path: '/member/[id]' })
-    const settings = createRoute({ parent: user, name: 'settings', path: '/settings', hoist: true, component }).addAlias({ path: '/preferences' })
+    const settings = createRoute({ parent: user, name: 'settings', path: '/settings', hoist: true }).addView(component)
+      .addAlias({ path: '/preferences' })
 
     const routes = [settings, user]
 
@@ -427,7 +440,7 @@ describe('nesting', () => {
 
   test('an alias param that collides with a parent param throws DuplicateParamsError', () => {
     const user = createRoute({ name: 'user', path: '/user/[id]' })
-    const post = createRoute({ parent: user, name: 'post', path: '/posts/[postId]', component })
+    const post = createRoute({ parent: user, name: 'post', path: '/posts/[postId]' }).addView(component)
 
     expect(() => post.addAlias({ path: '/p/[id]' }, ({ params }) => ({ postId: params.id }))).toThrow(DuplicateParamsError)
   })
@@ -435,7 +448,8 @@ describe('nesting', () => {
 
 describe('router', () => {
   test('an alias respects significant trailing slashes', async () => {
-    const user = createRoute({ name: 'user', path: '/user/', component }).addAlias({ path: '/member/' })
+    const user = createRoute({ name: 'user', path: '/user/' }).addView(component)
+      .addAlias({ path: '/member/' })
     const router = createRouter([user], { initialUrl: '/member/', removeTrailingSlashes: false })
 
     await router.start()
@@ -446,7 +460,8 @@ describe('router', () => {
   })
 
   test('navigating to an alias url keeps the alias in the address bar', async () => {
-    const user = createRoute({ name: 'user', path: '/user/[id]', component }).addAlias({ path: '/member/[id]' })
+    const user = createRoute({ name: 'user', path: '/user/[id]' }).addView(component)
+      .addAlias({ path: '/member/[id]' })
     const router = createRouter([user], { initialUrl: '/member/42' })
 
     await router.start()
@@ -457,7 +472,8 @@ describe('router', () => {
   })
 
   test('re-pushing the current route from an alias stays on the alias', async () => {
-    const user = createRoute({ name: 'user', path: '/user/[id]', component }).addAlias({ path: '/member/[id]' })
+    const user = createRoute({ name: 'user', path: '/user/[id]' }).addView(component)
+      .addAlias({ path: '/member/[id]' })
     const router = createRouter([user], { initialUrl: '/member/42' })
 
     await router.start()
@@ -467,7 +483,8 @@ describe('router', () => {
   })
 
   test('updating the query from an alias stays on the alias', async () => {
-    const user = createRoute({ name: 'user', path: '/user/[id]', component }).addAlias({ path: '/member/[id]' })
+    const user = createRoute({ name: 'user', path: '/user/[id]' }).addView(component)
+      .addAlias({ path: '/member/[id]' })
     const router = createRouter([user], { initialUrl: '/member/42' })
 
     await router.start()
@@ -480,7 +497,8 @@ describe('router', () => {
   })
 
   test('updating a param from an alias lands on the route url', async () => {
-    const user = createRoute({ name: 'user', path: '/user/[id]', component }).addAlias({ path: '/member/[id]' })
+    const user = createRoute({ name: 'user', path: '/user/[id]' }).addView(component)
+      .addAlias({ path: '/member/[id]' })
     const router = createRouter([user], { initialUrl: '/member/42' })
 
     await router.start()
@@ -490,7 +508,8 @@ describe('router', () => {
   })
 
   test('pushing a route by name targets its own url', async () => {
-    const user = createRoute({ name: 'user', path: '/user/[id]', component }).addAlias({ path: '/member/[id]' })
+    const user = createRoute({ name: 'user', path: '/user/[id]' }).addView(component)
+      .addAlias({ path: '/member/[id]' })
     const router = createRouter([user], { initialUrl: '/member/42' })
 
     await router.start()
@@ -500,7 +519,8 @@ describe('router', () => {
   })
 
   test('resolving a route by name never produces an alias url', () => {
-    const user = createRoute({ name: 'user', path: '/user/[id]', component }).addAlias({ path: '/member/[id]' })
+    const user = createRoute({ name: 'user', path: '/user/[id]' }).addView(component)
+      .addAlias({ path: '/member/[id]' })
     const router = createRouter([user], { initialUrl: '/member/42' })
 
     const resolved = router.resolve('user', { id: '7' })
@@ -510,7 +530,8 @@ describe('router', () => {
   })
 
   test('the router base applies to alias urls', async () => {
-    const user = createRoute({ name: 'user', path: '/user/[id]', component }).addAlias({ path: '/member/[id]' })
+    const user = createRoute({ name: 'user', path: '/user/[id]' }).addView(component)
+      .addAlias({ path: '/member/[id]' })
     const router = createRouter([user], { initialUrl: '/kitbag/member/42', base: '/kitbag' })
 
     await router.start()

@@ -154,7 +154,7 @@ export type ToRouteUrl<
   : ToUrl<TOptions>
 
 /**
- * The matches for a route, with the props argument resolved to the views of its own match.
+ * The matches for a route, before any views or loaders are added.
  */
 export type ToRouteMatches<
   TOptions extends CreateRouteOptions

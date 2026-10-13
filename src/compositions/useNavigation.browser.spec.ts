@@ -16,7 +16,8 @@ const progressReport = defineComponent(() => {
 test('the values update through a navigation', async () => {
   const hook = Promise.withResolvers<string>()
   const loader = Promise.withResolvers<string>()
-  const home = createRoute({ name: 'home', path: '/', component }).addLoader(() => loader.promise)
+  const home = createRoute({ name: 'home', path: '/' }).addView(component)
+    .addLoader(() => loader.promise)
 
   home.onBeforeRouteEnter(async () => {
     await hook.promise
@@ -50,7 +51,8 @@ test('a hydrating navigation counts nothing', async () => {
     values: [{ kind: 'loader', depth: 0, name: 'default', encoded: JSON.stringify('from server') }],
   })
 
-  const home = createRoute({ name: 'home', path: '/', component }).addLoader(() => 'from client')
+  const home = createRoute({ name: 'home', path: '/' }).addView(component)
+    .addLoader(() => 'from client')
   const router = createRouter([home], { initialUrl: '/' })
 
   const wrapper = mount(progressReport, {

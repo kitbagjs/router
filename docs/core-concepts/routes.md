@@ -179,62 +179,21 @@ const home = createRoute({
 })
 ```
 
-## Component
+## Migrating Deprecated View Options
 
-::: warning
-The `component` property is deprecated. Use [`addView`](#views) instead.
-:::
+The `component` and `components` options and the second `createRoute` argument have been removed. Use [`addView`](#views) for each component, pass a `name` for named views, and put the props getter in the view's `props` option.
 
-The `component` property is used to define the component that will be rendered when the route is active.
-
-```ts {6}
-import HomeView from './components/HomeView.vue'
-
+```ts
 const home = createRoute({
   name: 'home',
   path: '/',
-  component: HomeView,
 })
-```
-
-## Components
-
-::: warning
-The `components` property is deprecated. Use [`addView`](#named-views) with named views instead.
-:::
-
-The `components` property is used to define multiple components for named views.
-
-```ts {7-10}
-import HomeView from './components/HomeView.vue'
-import HomeSidebar from './components/HomeSidebar.vue'
-
-const home = createRoute({
-  name: 'home',
-  path: '/',
-  components: {
-    default: HomeView,
-    sidebar: HomeSidebar,
-  },
+.addView(HomeView, {
+  props: () => ({ userId: 1 }),
 })
-```
-
-## Props
-
-::: warning
-The `props` argument is deprecated. Pass the props getter to [`addView`](#props) instead.
-:::
-
-The `props` argument is used to provide props for route components. It must be a callback function that returns an object. Everything returned from the callback will be bound to the component.
-
-```ts {7}
-import HomeView from './components/HomeView.vue'
-
-const home = createRoute({
-  name: 'home',
-  path: '/',
-  component: HomeView,
-}, () => ({ userId: 1 }))
+.addView(HomeSidebar, {
+  name: 'sidebar',
+})
 ```
 
 ## Meta

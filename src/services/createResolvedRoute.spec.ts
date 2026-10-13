@@ -88,7 +88,7 @@ test('matched is the last of the resolved matches', () => {
 
 describe('getTitle', () => {
   test('runs the callback and resolves to its value', async () => {
-    const route = createRoute({ name: 'home', path: '/', component })
+    const route = createRoute({ name: 'home', path: '/' }).addView(component)
 
     route.setTitle(() => 'Home')
 
@@ -96,29 +96,21 @@ describe('getTitle', () => {
   })
 
   test('resolves to undefined for a route with no title', async () => {
-    const route = createRoute({ name: 'home', path: '/', component })
+    const route = createRoute({ name: 'home', path: '/' }).addView(component)
 
     await expect(createResolvedRoute(route).getTitle()).resolves.toBeUndefined()
   })
 })
 
 test('is a resolved route, and the route it was created from is not', () => {
-  const route = createRoute({
-    name: 'route',
-    path: '/route',
-    component,
-  })
+  const route = createRoute({ name: 'route', path: '/route' }).addView(component)
 
   expect(isResolvedRoute(createResolvedRoute(route))).toBe(true)
   expect(isResolvedRoute(route)).toBe(false)
 })
 
 test('is not a route or a url', () => {
-  const route = createRoute({
-    name: 'route',
-    path: '/route',
-    component,
-  })
+  const route = createRoute({ name: 'route', path: '/route' }).addView(component)
   const resolved = createResolvedRoute(route)
 
   expect(isRoute(resolved)).toBe(false)

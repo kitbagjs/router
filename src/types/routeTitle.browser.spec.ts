@@ -174,8 +174,8 @@ test('rejection from a hook updates document title', async () => {
 
   locked.setTitle(() => 'locked')
 
-  const home = createRoute({ name: 'home', path: '/', component })
-  const secret = createRoute({ name: 'secret', path: '/secret', component })
+  const home = createRoute({ name: 'home', path: '/' }).addView(component)
+  const secret = createRoute({ name: 'secret', path: '/secret' }).addView(component)
 
   const router = createRouter([home, secret], {
     initialUrl: '/',
@@ -198,8 +198,8 @@ test('rejection from a hook updates document title', async () => {
 test('rejection without a title in a before hook keeps the current route title', async () => {
   const locked = createRejection({ type: 'Locked', status: 423, component })
 
-  const home = createRoute({ name: 'home', path: '/', component })
-  const secret = createRoute({ name: 'secret', path: '/secret', component })
+  const home = createRoute({ name: 'home', path: '/' }).addView(component)
+  const secret = createRoute({ name: 'secret', path: '/secret' }).addView(component)
 
   home.setTitle(() => 'home')
   secret.setTitle(() => 'secret')
@@ -226,8 +226,8 @@ test('rejection without a title in a before hook keeps the current route title',
 test('rejection without a title in an after hook falls back to the current route title', async () => {
   const locked = createRejection({ type: 'Locked', status: 423, component })
 
-  const home = createRoute({ name: 'home', path: '/', component })
-  const secret = createRoute({ name: 'secret', path: '/secret', component })
+  const home = createRoute({ name: 'home', path: '/' }).addView(component)
+  const secret = createRoute({ name: 'secret', path: '/secret' }).addView(component)
 
   secret.setTitle(() => 'secret')
 
@@ -254,8 +254,8 @@ test('rejection with a title wins over the current route title', async () => {
 
   locked.setTitle(() => 'locked')
 
-  const home = createRoute({ name: 'home', path: '/', component })
-  const secret = createRoute({ name: 'secret', path: '/secret', component })
+  const home = createRoute({ name: 'home', path: '/' }).addView(component)
+  const secret = createRoute({ name: 'secret', path: '/secret' }).addView(component)
 
   secret.setTitle(() => 'secret')
 
@@ -280,9 +280,9 @@ test('rejection with a title wins over the current route title', async () => {
 test('a slow title from a previous route does not overwrite the current title', async () => {
   const slowTitle = Promise.withResolvers<string>()
 
-  const home = createRoute({ name: 'home', path: '/', component })
-  const slow = createRoute({ name: 'slow', path: '/slow', component })
-  const fast = createRoute({ name: 'fast', path: '/fast', component })
+  const home = createRoute({ name: 'home', path: '/' }).addView(component)
+  const slow = createRoute({ name: 'slow', path: '/slow' }).addView(component)
+  const fast = createRoute({ name: 'fast', path: '/fast' }).addView(component)
 
   slow.setTitle(() => slowTitle.promise)
   fast.setTitle(() => 'fast')

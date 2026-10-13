@@ -7,11 +7,7 @@ import { createRejection } from './createRejection'
 import echo from '@/components/echo'
 
 test('after enter and update hooks see the committed destination route', async () => {
-  const route = createRoute({
-    name: 'destination',
-    path: '/destination/[value]',
-    component: echo,
-  }, (route) => ({ value: route.params.value }))
+  const route = createRoute({ name: 'destination', path: '/destination/[value]' }).addView(echo, { props: (route) => ({ value: route.params.value }) })
   const router = createRouter([route], { initialUrl: '/', historyMode: 'memory' })
   await router.start()
 

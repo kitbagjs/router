@@ -110,16 +110,8 @@ test('calls router.push with url and push options from props', async () => {
 
 test('passes the viewTransition prop to router.push', async () => {
   const router = createRouter([
-    createRoute({
-      name: 'routeA',
-      path: '/routeA',
-      component: { render: () => h(RouterLink, { to: (resolve) => resolve('routeB'), viewTransition: ['slide'] }) },
-    }),
-    createRoute({
-      name: 'routeB',
-      path: '/routeB',
-      component,
-    }),
+    createRoute({ name: 'routeA', path: '/routeA' }).addView({ render: () => h(RouterLink, { to: (resolve) => resolve('routeB'), viewTransition: ['slide'] }) }),
+    createRoute({ name: 'routeB', path: '/routeB' }).addView(component),
   ], {
     initialUrl: '/routeA',
   })
@@ -1090,29 +1082,16 @@ describe('prefetch props', () => {
 
     const settled: unknown[] = []
 
-    const home = createRoute({
-      name: 'home',
-      path: '/',
-      component: () => h(RouterLink, { to: (resolve) => resolve('child') }),
-    })
+    const home = createRoute({ name: 'home', path: '/' }).addView(() => h(RouterLink, { to: (resolve) => resolve('child') }))
 
-    const parent = createRoute({
-      name: 'parent',
-      path: '/parent',
-      component: { props: ['foo'], template: '<div><RouterView /></div>' },
-      prefetch: { props: false },
-    }, async () => ({ foo: 123 }))
+    const parent = createRoute({ name: 'parent', path: '/parent', prefetch: { props: false } }).addView({ props: ['foo'], template: '<div><RouterView /></div>' }, { props: async () => ({ foo: 123 }) })
 
-    const child = createRoute({
-      parent,
-      name: 'child',
-      path: '/child',
-      component: echo,
-      prefetch: { props: 'eager' },
-    }, async (__, { parent }) => {
-      settled.push(await parent.props)
+    const child = createRoute({ parent, name: 'child', path: '/child', prefetch: { props: 'eager' } }).addView(echo, {
+      props: async (__, { parent }) => {
+        settled.push(await parent.props)
 
-      return { value: 'child' }
+        return { value: 'child' }
+      },
     })
 
     const router = createRouter([home, child], {
@@ -1146,29 +1125,16 @@ describe('prefetch props', () => {
 
     const settled: unknown[] = []
 
-    const home = createRoute({
-      name: 'home',
-      path: '/',
-      component: () => h(RouterLink, { to: (resolve) => resolve('child') }),
-    })
+    const home = createRoute({ name: 'home', path: '/' }).addView(() => h(RouterLink, { to: (resolve) => resolve('child') }))
 
-    const parent = createRoute({
-      name: 'parent',
-      path: '/parent',
-      component: { props: ['foo'], template: '<div><RouterView /></div>' },
-      prefetch: { props: 'intent' },
-    }, async () => ({ foo: 123 }))
+    const parent = createRoute({ name: 'parent', path: '/parent', prefetch: { props: 'intent' } }).addView({ props: ['foo'], template: '<div><RouterView /></div>' }, { props: async () => ({ foo: 123 }) })
 
-    const child = createRoute({
-      parent,
-      name: 'child',
-      path: '/child',
-      component: echo,
-      prefetch: { props: 'eager' },
-    }, async (__, { parent }) => {
-      settled.push(await parent.props)
+    const child = createRoute({ parent, name: 'child', path: '/child', prefetch: { props: 'eager' } }).addView(echo, {
+      props: async (__, { parent }) => {
+        settled.push(await parent.props)
 
-      return { value: 'child' }
+        return { value: 'child' }
+      },
     })
 
     const router = createRouter([home, child], {
@@ -1201,29 +1167,16 @@ describe('prefetch props', () => {
 
     const settled: unknown[] = []
 
-    const home = createRoute({
-      name: 'home',
-      path: '/',
-      component: () => h(RouterLink, { to: (resolve) => resolve('child') }),
-    })
+    const home = createRoute({ name: 'home', path: '/' }).addView(() => h(RouterLink, { to: (resolve) => resolve('child') }))
 
-    const parent = createRoute({
-      name: 'parent',
-      path: '/parent',
-      component: { props: ['foo'], template: '<div><RouterView /></div>' },
-      prefetch: { props: 'eager' },
-    }, async () => ({ foo: 123 }))
+    const parent = createRoute({ name: 'parent', path: '/parent', prefetch: { props: 'eager' } }).addView({ props: ['foo'], template: '<div><RouterView /></div>' }, { props: async () => ({ foo: 123 }) })
 
-    const child = createRoute({
-      parent,
-      name: 'child',
-      path: '/child',
-      component: echo,
-      prefetch: { props: 'intent' },
-    }, async (__, { parent }) => {
-      settled.push(await parent.props)
+    const child = createRoute({ parent, name: 'child', path: '/child', prefetch: { props: 'intent' } }).addView(echo, {
+      props: async (__, { parent }) => {
+        settled.push(await parent.props)
 
-      return { value: 'child' }
+        return { value: 'child' }
+      },
     })
 
     const router = createRouter([home, child], {
@@ -1255,29 +1208,16 @@ describe('prefetch props', () => {
 
     const settled: unknown[] = []
 
-    const home = createRoute({
-      name: 'home',
-      path: '/',
-      component: () => h(RouterLink, { to: (resolve) => resolve('child') }),
-    })
+    const home = createRoute({ name: 'home', path: '/' }).addView(() => h(RouterLink, { to: (resolve) => resolve('child') }))
 
-    const parent = createRoute({
-      name: 'parent',
-      path: '/parent',
-      component: { template: '<div><RouterView /></div>' },
-      prefetch: { props: false },
-    }, () => undefined as never)
+    const parent = createRoute({ name: 'parent', path: '/parent', prefetch: { props: false } }).addView({ template: '<div><RouterView /></div>' }, { props: (): Record<string, unknown> => undefined as never })
 
-    const child = createRoute({
-      parent,
-      name: 'child',
-      path: '/child',
-      component: echo,
-      prefetch: { props: 'eager' },
-    }, async (__, { parent }) => {
-      settled.push(await parent.props)
+    const child = createRoute({ parent, name: 'child', path: '/child', prefetch: { props: 'eager' } }).addView(echo, {
+      props: async (__, { parent }) => {
+        settled.push(await parent.props)
 
-      return { value: 'child' }
+        return { value: 'child' }
+      },
     })
 
     const router = createRouter([home, child], {
@@ -1310,39 +1250,22 @@ describe('prefetch props', () => {
 
     const caught: unknown[] = []
 
-    const home = createRoute({
-      name: 'home',
-      path: '/',
-      component: () => h(RouterLink, { to: (resolve) => resolve('child') }),
-    })
+    const home = createRoute({ name: 'home', path: '/' }).addView(() => h(RouterLink, { to: (resolve) => resolve('child') }))
 
-    const other = createRoute({
-      name: 'other',
-      path: '/other',
-      component: echo,
-    }, () => ({ value: 'other' }))
+    const other = createRoute({ name: 'other', path: '/other' }).addView(echo, { props: () => ({ value: 'other' }) })
 
-    const parent = createRoute({
-      name: 'parent',
-      path: '/parent',
-      component: { props: ['foo'], template: '<div><RouterView /></div>' },
-      prefetch: { props: false },
-    }, async () => ({ foo: 123 }))
+    const parent = createRoute({ name: 'parent', path: '/parent', prefetch: { props: false } }).addView({ props: ['foo'], template: '<div><RouterView /></div>' }, { props: async () => ({ foo: 123 }) })
 
-    const child = createRoute({
-      parent,
-      name: 'child',
-      path: '/child',
-      component: echo,
-      prefetch: { props: 'eager' },
-    }, async (__, { parent }) => {
-      try {
-        await parent.props
-      } catch (error) {
-        caught.push(error)
-      }
+    const child = createRoute({ parent, name: 'child', path: '/child', prefetch: { props: 'eager' } }).addView(echo, {
+      props: async (__, { parent }) => {
+        try {
+          await parent.props
+        } catch (error) {
+          caught.push(error)
+        }
 
-      return { value: 'child' }
+        return { value: 'child' }
+      },
     })
 
     const router = createRouter([home, child, other], {
@@ -1373,35 +1296,18 @@ describe('prefetch props', () => {
   test('a getter that never awaits abandoned parent props does not leak an unhandled rejection', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
-    const home = createRoute({
-      name: 'home',
-      path: '/',
-      component: () => h(RouterLink, { to: (resolve) => resolve('child') }),
-    })
+    const home = createRoute({ name: 'home', path: '/' }).addView(() => h(RouterLink, { to: (resolve) => resolve('child') }))
 
-    const other = createRoute({
-      name: 'other',
-      path: '/other',
-      component: echo,
-    }, () => ({ value: 'other' }))
+    const other = createRoute({ name: 'other', path: '/other' }).addView(echo, { props: () => ({ value: 'other' }) })
 
-    const parent = createRoute({
-      name: 'parent',
-      path: '/parent',
-      component: { props: ['foo'], template: '<div><RouterView /></div>' },
-      prefetch: { props: false },
-    }, async () => ({ foo: 123 }))
+    const parent = createRoute({ name: 'parent', path: '/parent', prefetch: { props: false } }).addView({ props: ['foo'], template: '<div><RouterView /></div>' }, { props: async () => ({ foo: 123 }) })
 
-    const child = createRoute({
-      parent,
-      name: 'child',
-      path: '/child',
-      component: echo,
-      prefetch: { props: 'eager' },
-    }, (__, { parent }) => {
-      void parent.props
+    const child = createRoute({ parent, name: 'child', path: '/child', prefetch: { props: 'eager' } }).addView(echo, {
+      props: (__, { parent }) => {
+        void parent.props
 
-      return { value: 'child' }
+        return { value: 'child' }
+      },
     })
 
     const router = createRouter([home, child, other], {
@@ -1427,31 +1333,20 @@ describe('prefetch props', () => {
   })
 
   test('a getter that never awaits failed parent props does not leak an unhandled rejection', async () => {
-    const home = createRoute({
-      name: 'home',
-      path: '/',
-      component: () => h(RouterLink, { to: (resolve) => resolve('child') }),
+    const home = createRoute({ name: 'home', path: '/' }).addView(() => h(RouterLink, { to: (resolve) => resolve('child') }))
+
+    const parent = createRoute({ name: 'parent', path: '/parent', prefetch: { props: 'eager' } }).addView({ props: ['foo'], template: '<div><RouterView /></div>' }, {
+      props: (): Record<string, unknown> => {
+        throw new Error('parent getter failed')
+      },
     })
 
-    const parent = createRoute({
-      name: 'parent',
-      path: '/parent',
-      component: { props: ['foo'], template: '<div><RouterView /></div>' },
-      prefetch: { props: 'eager' },
-    }, () => {
-      throw new Error('parent getter failed')
-    })
+    const child = createRoute({ parent, name: 'child', path: '/child', prefetch: { props: 'eager' } }).addView(echo, {
+      props: (__, { parent }) => {
+        void parent.props
 
-    const child = createRoute({
-      parent,
-      name: 'child',
-      path: '/child',
-      component: echo,
-      prefetch: { props: 'eager' },
-    }, (__, { parent }) => {
-      void parent.props
-
-      return { value: 'child' }
+        return { value: 'child' }
+      },
     })
 
     const router = createRouter([home, child], {
@@ -1476,29 +1371,16 @@ describe('prefetch props', () => {
 
     const settled: unknown[] = []
 
-    const home = createRoute({
-      name: 'home',
-      path: '/',
-      component: () => h(RouterLink, { to: (resolve) => resolve('child') }),
-    })
+    const home = createRoute({ name: 'home', path: '/' }).addView(() => h(RouterLink, { to: (resolve) => resolve('child') }))
 
-    const parent = createRoute({
-      name: 'parent',
-      path: '/parent',
-      component: { props: ['foo'], template: '<div><RouterView /></div>' },
-      prefetch: { props: 'eager' },
-    }, async () => ({ foo: 123 }))
+    const parent = createRoute({ name: 'parent', path: '/parent', prefetch: { props: 'eager' } }).addView({ props: ['foo'], template: '<div><RouterView /></div>' }, { props: async () => ({ foo: 123 }) })
 
-    const child = createRoute({
-      parent,
-      name: 'child',
-      path: '/child',
-      component: echo,
-      prefetch: { props: 'eager' },
-    }, async (__, { parent }) => {
-      settled.push(await parent.props)
+    const child = createRoute({ parent, name: 'child', path: '/child', prefetch: { props: 'eager' } }).addView(echo, {
+      props: async (__, { parent }) => {
+        settled.push(await parent.props)
 
-      return { value: 'child' }
+        return { value: 'child' }
+      },
     })
 
     const router = createRouter([home, child], {
@@ -1526,29 +1408,16 @@ describe('prefetch props', () => {
 
     let childSawParentProps: unknown = 'NOT_READ'
 
-    const home = createRoute({
-      name: 'home',
-      path: '/',
-      component: () => h(RouterLink, { to: (resolve) => resolve('child') }),
-    })
+    const home = createRoute({ name: 'home', path: '/' }).addView(() => h(RouterLink, { to: (resolve) => resolve('child') }))
 
-    const parent = createRoute({
-      name: 'parent',
-      path: '/parent',
-      component: { template: '<RouterView />' },
-      prefetch: { props: 'eager' },
-    }, async () => ({ foo: 123 }))
+    const parent = createRoute({ name: 'parent', path: '/parent', prefetch: { props: 'eager' } }).addView({ template: '<RouterView />' }, { props: async () => ({ foo: 123 }) })
 
-    const child = createRoute({
-      parent,
-      name: 'child',
-      path: '/child',
-      component: echo,
-      prefetch: { props: 'eager' },
-    }, async (__, { parent }) => {
-      childSawParentProps = await parent.props
+    const child = createRoute({ parent, name: 'child', path: '/child', prefetch: { props: 'eager' } }).addView(echo, {
+      props: async (__, { parent }) => {
+        childSawParentProps = await parent.props
 
-      return { value: 'child' }
+        return { value: 'child' }
+      },
     })
 
     const router = createRouter([home, child], {
@@ -1828,11 +1697,7 @@ describe('query and hash props', () => {
     ['url string', '/search'],
     ['resolve callback', (resolve) => resolve('search')],
   ])('applies query and hash to the href and resolved route when to is a %s', async (_, to) => {
-    const search = createRoute({
-      name: 'search',
-      path: '/search',
-      component,
-    })
+    const search = createRoute({ name: 'search', path: '/search' }).addView(component)
 
     const router = createRouter([search], {
       initialUrl: '/',
