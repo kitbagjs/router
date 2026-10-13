@@ -1,12 +1,11 @@
 # Types: CreatedRouteOptions
 
 ```ts
-type CreatedRouteOptions = Omit<CreateRouteOptions, "component" | "components"> & object;
+type CreatedRouteOptions = CreateRouteOptions & object;
 ```
 
 The Route properties originally provided to `createRoute`, plus the views that route renders and the
-loaders it runs. The deprecated `component`/`components` options are folded into `views` (see
-[RouteViews](RouteViews.md)).
+loaders it runs.
 
 ## Type Declaration
 

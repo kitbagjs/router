@@ -43,8 +43,8 @@ const Home = { template: '<div>Home</div>' }
 const About = { template: '<div>About</div>' }
 
 export const routes = [
-  createRoute({ name: 'home', path: '/', component: Home }),
-  createRoute({ name: 'path', path: '/about', component: About }),
+  createRoute({ name: 'home', path: '/' }).addView(Home),
+  createRoute({ name: 'path', path: '/about' }).addView(About),
 ] as const
 
 const router = createRouter(routes)
@@ -93,8 +93,8 @@ const Home = { template: '<div>Home</div>' }
 const About = { template: '<div>About</div>' }
 
 export const routes = [
-  createRoute({ name: 'home', path: '/', component: Home }),
-  createRoute({ name: 'path', path: '/about', component: About }),
+  createRoute({ name: 'home', path: '/' }).addView(Home),
+  createRoute({ name: 'path', path: '/about' }).addView(About),
 ] as const
 
 const router = createRouter(routes)
