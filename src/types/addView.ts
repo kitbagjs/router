@@ -1,6 +1,5 @@
 import { Component } from 'vue'
 import { ComponentProps } from '@/services/component'
-import { ComponentPropsAreOptional, PropsGetter } from '@/types/createRouteOptions'
 import { ResolvedRoute, WithData } from '@/types/resolved'
 import { CreatedRouteOptions, Route } from '@/types/route'
 import { RouteCallbackContext } from '@/types/routeCallbackContext'
@@ -12,8 +11,7 @@ import { Url } from '@/types/url'
 import { AnyFunction, Identity, LastInArray, MaybePromise } from '@/types/utilities'
 
 /**
- * The props getter for a view added via `addView`. Receives the same two arguments as the
- * `createRoute` props callback: the resolved route and a context object.
+ * The props getter for a view added via `addView`. Receives the resolved route and a context object.
  */
 export type AddViewPropsGetter<
   TRoute extends Route,
@@ -27,6 +25,10 @@ export type AddViewPropsGetter<
 export type AddViewPropsCallbackContext<
   TRoute extends Route
 > = RouteCallbackContext<TRoute>
+
+type ComponentPropsAreOptional<TComponent extends Component> = Partial<ComponentProps<TComponent>> extends ComponentProps<TComponent>
+  ? true
+  : false
 
 /**
  * When the getter is omitted the default type param resolves to the wide getter type, which then
@@ -47,7 +49,7 @@ type NewViewProps<
  */
 export type AddViewOptions<
   TName extends string | undefined = string,
-  TGetter = PropsGetter
+  TGetter = AddViewPropsGetter<Route, Component>
 > = TransformerOptions<PayloadValueOf<TGetter>> & {
   /**
    * The name of the view, rendered by `<router-view name="..." />`. Defaults to the unnamed view.

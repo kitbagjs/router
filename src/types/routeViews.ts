@@ -9,7 +9,7 @@ import { AnyFunction } from '@/types/utilities'
  * @template TProps - What this view's props getter returns, carried so parent props can be typed from it.
  */
 export type RouteView<TProps = undefined> = {
-  component?: Component,
+  component: Component,
   props?: AnyFunction<TProps>,
   prefetch?: PrefetchConfig,
   transformer?: AnyPayloadTransformer,

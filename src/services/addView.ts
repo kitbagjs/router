@@ -1,7 +1,7 @@
 import { Component, markRaw } from 'vue'
-import { DEFAULT_VIEW_NAME } from '@/services/createRouteViews'
+import { DEFAULT_VIEW_NAME } from '@/services/routeViews'
 import { AnyPayloadTransformer } from '@/services/payload'
-import { PropsGetter } from '@/types/createRouteOptions'
+import { AddViewPropsGetter } from '@/types/addView'
 import { PrefetchConfig } from '@/types/prefetch'
 import { CreatedRouteOptions, Route } from '@/types/route'
 
@@ -11,7 +11,7 @@ import { CreatedRouteOptions, Route } from '@/types/route'
  */
 type ViewOptions = {
   name?: string,
-  props?: PropsGetter,
+  props?: AddViewPropsGetter<Route, Component>,
   prefetch?: PrefetchConfig,
   transformer?: AnyPayloadTransformer,
 }
@@ -30,7 +30,7 @@ export type AddView = (...args: AddViewParameters) => Route
 type View = {
   name: string,
   component: Component,
-  props: PropsGetter | undefined,
+  props: AddViewPropsGetter<Route, Component> | undefined,
   prefetch: PrefetchConfig | undefined,
   transformer: AnyPayloadTransformer | undefined,
 }

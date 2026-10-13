@@ -31,21 +31,13 @@ export function createComponentsStore<TRouter extends Router>(routerKey: Injecti
 }
 
 function getComponentsForViews(routerKey: InjectionKey<Router>, id: string, views: RouteViews): Record<string, Component> {
-  const RouterView = createRouterView(routerKey)
-
-  const components = Object.entries(views).reduce<[string, Component][]>((entries, [name, view]) => {
-    if (view.component) {
-      entries.push([name, view.component])
-    }
-
-    return entries
-  }, [])
+  const components = Object.entries(views)
 
   if (components.length === 0) {
-    return { default: RouterView }
+    return { default: createRouterView(routerKey) }
   }
 
   return Object.fromEntries(
-    components.map(([name, component]) => [name, createComponentPropsWrapper(routerKey, { id, name, component })]),
+    components.map(([name, { component }]) => [name, createComponentPropsWrapper(routerKey, { id, name, component })]),
   )
 }

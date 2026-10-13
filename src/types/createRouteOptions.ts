@@ -1,5 +1,4 @@
 import { NavigationBehavior } from '@/types/navigation'
-import { Component } from 'vue'
 import { combineMeta } from '@/services/combineMeta'
 import { combineState } from '@/services/combineState'
 import { combineHooks } from '@/types/hooks'
@@ -8,10 +7,6 @@ import { PrefetchConfig } from '@/types/prefetch'
 import { ViewTransitionConfig } from '@/types/viewTransition'
 import { RouteMeta } from '@/types/register'
 import { isRoute, Route, RouteInternal } from '@/types/route'
-import { ResolvedRoute, WithData } from './resolved'
-import { ComponentProps } from '@/services/component'
-import { PropsCallbackContext } from '@/types/props'
-import { MaybePromise } from '@/types/utilities'
 import { ToMeta } from '@/types/meta'
 import { ToName } from '@/types/name'
 import { UrlPart, UrlQueryPart } from '@/services/withParams'
@@ -93,26 +88,7 @@ export type CreateRouteOptions<
    * When true, the route will be hoisted to the top of the route tree. The route will continue to inherit meta, state, hooks, matches, and context from it's parent, but not the "url" properties.
    */
   hoist?: boolean,
-  /**
-   * @deprecated Removed. Use `addView` instead: `createRoute({ ... }).addView(component)`.
-   */
-  component?: 'component was removed, use addView instead',
-  /**
-   * @deprecated Removed. Use `addView` with a name instead: `createRoute({ ... }).addView(component, { name })`.
-   */
-  components?: 'components was removed, use addView with a name instead',
 }
-
-export type PropsGetter<
-  TOptions extends CreateRouteOptions = CreateRouteOptions,
-  TComponent extends Component = Component
-> = (route: ResolvedRoute<ToRoute<TOptions>> & WithData<ToRoute<TOptions>>, context: PropsCallbackContext<ToRoute<TOptions>, TOptions>) => MaybePromise<ComponentProps<TComponent>>
-
-export type ComponentPropsAreOptional<
-  TComponent extends Component
-> = Partial<ComponentProps<TComponent>> extends ComponentProps<TComponent>
-  ? true
-  : false
 
 type ToMatch<
   TOptions extends CreateRouteOptions

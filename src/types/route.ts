@@ -36,10 +36,9 @@ export type Routes = readonly Route[]
 
 /**
  * The Route properties originally provided to `createRoute`, plus the views that route renders and the
- * loaders it runs. The deprecated `component`/`components` options are folded into `views` (see
- * {@link RouteViews}).
+ * loaders it runs.
  */
-export type CreatedRouteOptions = Omit<CreateRouteOptions, 'component' | 'components'> & {
+export type CreatedRouteOptions = CreateRouteOptions & {
   id: string,
   views: RouteViews,
   loaders: RouteLoaders,

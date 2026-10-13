@@ -487,26 +487,7 @@ test('given parent, context is combined', () => {
   })
 })
 
-describe('removed view options', () => {
-  test('component and components direct callers to addView', () => {
-    createRoute({
-      // @ts-expect-error component was removed in favor of addView
-      component,
-    })
-
-    createRoute({
-      // @ts-expect-error components was removed in favor of named addView calls
-      components: { default: component },
-    })
-
-    const options = { component }
-
-    // @ts-expect-error legacy options are rejected even when passed through a variable
-    createRoute(options)
-  })
-
-  test('props must be passed to addView', () => {
-    // @ts-expect-error createRoute no longer accepts a props argument
-    createRoute({ name: 'route' }, () => ({}))
-  })
+test('props must be passed to addView', () => {
+  // @ts-expect-error createRoute only accepts route options
+  createRoute({ name: 'route' }, () => ({}))
 })
