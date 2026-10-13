@@ -8,7 +8,9 @@ import { AnyFunction } from '@/types/utilities'
 
 export const IS_LOADER_SYMBOL = Symbol('IS_LOADER_SYMBOL')
 
-/** Navigation helpers available to a reusable loader, typed from its declared context. */
+/**
+ * Navigation helpers available to a reusable loader, typed from its declared context.
+ */
 export type LoaderCallbackContext<TContext extends readonly RouteContext[] = []> = {
   push: RouterPush<RouteContextToRoute<[...TContext]>>,
   replace: RouterReplace<RouteContextToRoute<[...TContext]>>,
@@ -16,21 +18,31 @@ export type LoaderCallbackContext<TContext extends readonly RouteContext[] = []>
   signal: AbortSignal,
 }
 
-/** Options for a reusable loader. Params are declared by annotating the callback's first argument. */
+/**
+ * Options for a reusable loader. Params are declared by annotating the callback's first argument.
+ */
 export type CreateLoaderOptions<
   TParams extends object = {},
   TContext extends readonly RouteContext[] = [],
   TData = unknown
 > = TransformerOptions<NoInfer<Awaited<TData>>> & {
-  /** Loads a value or promise from the params supplied by the attached route. */
+  /**
+   * Loads a value or promise from the params supplied by the attached route.
+   */
   load: (params: TParams, context: LoaderCallbackContext<TContext>) => TData,
-  /** Related routes and rejections, also included in the attached route's context. */
+  /**
+   * Related routes and rejections, also included in the attached route's context.
+   */
   context?: TContext,
-  /** Default prefetch behavior, overridable when attaching the loader. */
+  /**
+   * Default prefetch behavior, overridable when attaching the loader.
+   */
   prefetch?: PrefetchConfig,
 }
 
-/** A reusable loader definition, with its context normalized to an array. */
+/**
+ * A reusable loader definition, with its context normalized to an array.
+ */
 export type Loader<
   TParams extends object = {},
   TContext extends readonly RouteContext[] = [],
@@ -40,7 +52,9 @@ export type Loader<
   context: TContext,
 }
 
-/** The runtime shape after a loader's param, context, and return types have been erased. */
+/**
+ * The runtime shape after a loader's param, context, and return types have been erased.
+ */
 export type AnyLoader = {
   [IS_LOADER_SYMBOL]: true,
   load: AnyFunction,
@@ -49,7 +63,9 @@ export type AnyLoader = {
   transformer?: AnyPayloadTransformer,
 }
 
-/** Determines whether a value is a reusable loader created by `createLoader`. */
+/**
+ * Determines whether a value is a reusable loader created by `createLoader`.
+ */
 export function isLoader(value: unknown): value is AnyLoader {
   return typeof value === 'object' && value !== null && IS_LOADER_SYMBOL in value
 }
