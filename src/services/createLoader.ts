@@ -1,4 +1,3 @@
-import { markRaw } from 'vue'
 import { CreateLoaderOptions, IS_LOADER_SYMBOL, Loader } from '@/types/loader'
 import { RouteContext } from '@/types/routeContext'
 
@@ -10,5 +9,5 @@ export function createLoader<
 >(options: CreateLoaderOptions<TParams, TContext, TData>): Loader<TParams, TContext, TData>
 
 export function createLoader(options: CreateLoaderOptions<any, any, any>): Loader<any, any, any> {
-  return markRaw({ ...options, [IS_LOADER_SYMBOL]: true, context: [...options.context ?? []] })
+  return { ...options, [IS_LOADER_SYMBOL]: true, context: [...options.context ?? []] }
 }
