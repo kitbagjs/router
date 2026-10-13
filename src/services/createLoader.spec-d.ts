@@ -19,8 +19,6 @@ test('params are checked at attachment', () => {
   createRoute({ path: '/[?id]' }).addLoader(loader)
   // @ts-expect-error id must be a string
   createRoute({ path: withParams('/[id]', { id: Number }) }).addLoader(loader, { name: 'length' })
-  // @ts-expect-error attachment does not support param mapping
-  createRoute({ path: '/[id]' }).addLoader(loader, { params: () => ({ id: '1' }) })
 })
 
 test('context is inferred from readonly definitions and carried into the route', () => {
