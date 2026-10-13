@@ -27,7 +27,7 @@ Each implementation PR builds on the previous branch. The playground is a consum
 | Entry point | Proposed exports | Audience |
 | --- | --- | --- |
 | `@kitbag/router` | `defineLoader`, `defineRoute`, and their public types, alongside existing APIs | Application components |
-| `@kitbag/router/vite` | `kitbagRouter` | Vite configuration |
+| `@kitbag/router/vite` | Default export, documented as `router` | Vite configuration |
 
 Application macros are root exports. They have type signatures and missing-tooling diagnostics; invoking an untransformed macro does not register a route or start a request.
 
@@ -39,25 +39,42 @@ The Vite entry point is build-time code. The compiler, generator, macro registra
 // vite.config.ts
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import { kitbagRouter } from '@kitbag/router/vite'
+import router from '@kitbag/router/vite'
 
 export default defineConfig({
-  plugins: [
-    kitbagRouter({
-      routeFiles: ['src/routes.ts'],
-      routeComponents: ['src/pages/**/*.vue'],
-      outputDir: 'src/.kitbag',
-    }),
-    vue(),
-  ],
+  plugins: [router(), vue()],
 })
 ```
 
-`routeFiles` identifies authored route modules whose exported `routes` arrays should be included. Their ordering and explicit registration choices are preserved.
+The plugin accepts optional configuration. Paths are relative to Vite's resolved project root.
 
-`routeComponents` identifies SFCs to scan for route declarations. A component with a loader but no route is discovered through the views of a registered route; it does not become a route on its own. Projects using only `createRoute` can omit `routeComponents`.
+| Option | Default |
+| --- | --- |
+| `routeFiles` | `['src/routes.ts', 'src/**/*.routes.ts', 'src/routes/**/*.ts']` |
+| `routeComponents` | `['src/**/*.vue']` |
+| `outputDir` | `'src/.kitbag'` |
 
-`outputDir` holds persistent, generated TypeScript. The directory is gitignored. Generation must not edit authored route or component files.
+`routeFiles` discovers authored route modules whose exported `routes` arrays should be included. This supports a single registry, feature-colocated modules such as `src/features/billing/billing.routes.ts`, and a dedicated routes directory. These conventions identify registration modules, not URL paths; paths remain explicit in route definitions.
+
+Each matched route module exports a `routes` array using the existing route API. Its array order is preserved. Declaration files, tests/specs, generated output, dependencies, and build output are excluded from discovery. A matched source module without a supported `routes` export produces a diagnostic; helper modules should live outside the route-module patterns.
+
+Files matched by overlapping patterns are included once. Default discovery orders `src/routes.ts` first, then the remaining modules by normalized project-relative path. If routes from different registries have ambiguous precedence, applications should use a single ordered registry or configure explicit `routeFiles`. Registering the same route through multiple module registries produces a diagnostic; discovery must not silently register it twice.
+
+An explicit `routeFiles` value replaces the defaults. Patterns are processed in configured order, matches within each pattern are sorted, and the first occurrence of each file determines its position. `routeFiles: []` disables manual route discovery for macro-only projects. Missing default files and empty default patterns are allowed; explicitly configured paths or patterns with no matches produce diagnostics.
+
+`routeComponents` identifies SFCs to scan for route declarations. Scanning all source SFCs registers only explicit `defineRoute` declarations; filenames do not imply routes. A component with a loader but no route is discovered through the views of a registered route; it does not become a route on its own. `routeComponents: []` disables macro route discovery while preserving loaders reachable from manual route views.
+
+`outputDir` holds persistent, generated TypeScript. The directory is gitignored and excluded from source discovery. Generation must not edit authored route or component files. Adding, renaming, or deleting a matching source module must refresh the generated registry during development.
+
+For a different project layout or explicit registration order:
+
+```ts
+router({
+  routeFiles: ['app/routes.ts', 'app/features/**/*.routes.ts'],
+  routeComponents: ['app/**/*.vue'],
+  outputDir: 'app/.kitbag',
+})
+```
 
 ## `defineLoader` in an ordinary component
 
@@ -215,7 +232,7 @@ Resolution rules must agree between development and standalone generation, inclu
 
 The parser/generator is a reusable layer delivered before either built-in macro. Recognizing `defineLoader` or `defineRoute` must be implemented through macro registrations, not special names embedded throughout the parser.
 
-Macro registration is internal. Users cannot supply custom macros, and `kitbagRouter` has no `macros` option. The architecture lets library maintainers add built-in macros without coupling every parser stage to their names.
+Macro registration is internal. Users cannot supply custom macros, and the Vite plugin has no `macros` option. The architecture lets library maintainers add built-in macros without coupling every parser stage to their names.
 
 The exact internal artifact record types are to be defined in PR 2, before `defineLoader` needs them. The internal contract must cover:
 
