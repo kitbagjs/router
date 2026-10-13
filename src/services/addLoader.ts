@@ -4,6 +4,9 @@ import { AnyPayloadTransformer } from '@/services/payload'
 import { PrefetchConfig } from '@/types/prefetch'
 import { CreatedRouteOptions, Route } from '@/types/route'
 import { AnyFunction } from '@/types/utilities'
+import { AnyLoader } from '@/types/loader'
+import { ResolvedRoute } from '@/types/resolved'
+import { RouteCallbackContext } from '@/types/routeCallbackContext'
 
 export const DEFAULT_LOADER_NAME = 'default'
 
@@ -15,12 +18,13 @@ type LoaderOptions = {
   name?: string,
   prefetch?: PrefetchConfig,
   transformer?: AnyPayloadTransformer,
+  params?: (route: ResolvedRoute, context: RouteCallbackContext<Route>) => object,
 }
 
 /**
  * The runtime arguments accepted by `addLoader`.
  */
-type AddLoaderParameters = [load: AnyFunction, options?: LoaderOptions]
+type AddLoaderParameters = [load: AnyFunction | AnyLoader, options?: LoaderOptions]
 
 /**
  * The loose runtime signature of the `addLoader` method. Purposely wide: it returns Route rather than the
@@ -33,14 +37,26 @@ type Loader = {
   load: AnyFunction,
   prefetch: PrefetchConfig | undefined,
   transformer: AnyPayloadTransformer | undefined,
+  context: AnyLoader['context'],
 }
 
-export function toLoader(load: AnyFunction, options: LoaderOptions | undefined): Loader {
+export function toLoader(source: AnyFunction | AnyLoader, options: LoaderOptions | undefined): Loader {
+  const reusable = typeof source !== 'function'
+  const load = reusable
+    ? (route: ResolvedRoute, context: RouteCallbackContext<Route>) => source.load(options?.params ? options.params(route, context) : route.params, {
+        push: context.push,
+        replace: context.replace,
+        reject: context.reject,
+        signal: context.signal,
+      })
+    : source
+
   return {
     name: options?.name ?? DEFAULT_LOADER_NAME,
     load,
-    prefetch: options?.prefetch,
-    transformer: options?.transformer,
+    prefetch: options?.prefetch ?? (reusable ? source.prefetch : undefined),
+    transformer: options?.transformer ?? (reusable ? source.transformer : undefined),
+    context: reusable ? source.context : [],
   }
 }
 
@@ -50,9 +66,10 @@ export function toLoader(load: AnyFunction, options: LoaderOptions | undefined):
  * Matches are `markRaw` so that making a route reactive does not turn its loaders into reactive proxies.
  * Spreading a match drops that, so the rebuilt one is marked again.
  */
-export function addLoaderToMatch(match: CreatedRouteOptions, { name, load, prefetch, transformer }: Loader): CreatedRouteOptions {
+export function addLoaderToMatch(match: CreatedRouteOptions, { name, load, prefetch, transformer, context }: Loader): CreatedRouteOptions {
   return markRaw({
     ...match,
+    ...context.length ? { context: [...match.context ?? [], ...context] } : {},
     loaders: {
       ...match.loaders,
       [name]: { load, prefetch, transformer },

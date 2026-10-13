@@ -21,6 +21,59 @@ export const user = createRoute({
 
 Here `getUser` is your application's data-fetching function. Register `user` in your router's routes as usual.
 
+## Reusable loaders
+
+Create a loader separately when several routes need the same loading logic. Annotate the callback's params to declare what each route must provide:
+
+```ts
+import { createLoader, createRoute } from '@kitbag/router'
+
+const userLoader = createLoader({
+  load: ({ userId }: { userId: string }, { signal }) => getUser(userId, { signal }),
+  prefetch: 'intent',
+})
+
+const user = createRoute({ name: 'user', path: '/users/[userId]' })
+  .addLoader(userLoader)
+
+const settings = createRoute({ name: 'settings', path: '/users/[userId]/settings' })
+  .addLoader(userLoader, { name: 'user', prefetch: false })
+```
+
+The loader receives params directly. A route can provide extra params, but missing params or incompatible types are rejected by TypeScript. A loader that needs no params can be attached to any route. Reusing a definition computes data separately for each route.
+
+If a route uses different param names, map them when attaching the loader:
+
+```ts
+const profile = createRoute({ name: 'profile', path: '/profiles/[id]' })
+  .addLoader(userLoader, {
+    params: (route) => ({ userId: route.params.id }),
+  })
+```
+
+The mapping runs synchronously and receives the fully typed resolved route and its callback context. Like inline loaders, it can access parent data through the context, but cannot read the current route's data.
+
+A reusable loader can declare related routes and rejections through `context`:
+
+```ts
+const sessionLoader = createLoader({
+  context: [login],
+  load: async (_params, { push, signal }) => {
+    const session = await getSession({ signal })
+
+    if (!session) {
+      push('login')
+    }
+
+    return session
+  },
+})
+```
+
+The loader's callback context provides `push`, `replace`, `reject`, and `signal`. Navigation targets and custom rejections are typed from its declared context, which is also included in the attached route's context. Route-specific helpers such as `update` and `parent` are available in the attachment's mapping callback instead.
+
+Declare `transformer` on the loader to serialize its resolved data for SSR hydration. Attachment options can override the loader's `prefetch` and `transformer` defaults without changing its definition.
+
 ## Reading data in a component
 
 Use `useRoute` with the route's name and await `route.data` at the top level of `<script setup>`. The result is typed from the loader's return value.

@@ -19,13 +19,15 @@ export type {
 export type {
   RouteAddLoader,
   AddLoaderOptions,
-  LoaderGetter
+  LoaderGetter,
+  LoaderParamsMapper
 } from './types/addLoader'
 export type { RouteAddAlias, AddAliasOptions } from './types/addAlias'
 export type { AliasTransform, AliasTransformContext } from './types/routeAlias'
 export type { RouteCallbackContext } from './types/routeCallbackContext'
 export type { RouteViews } from './types/routeViews'
 export type { RouteLoader, RouteLoaders } from './types/routeLoaders'
+export type { CreateLoaderOptions, Loader, LoaderCallbackContext } from './types/loader'
 export type {
   RejectionHooks,
   HookRemove,
@@ -99,6 +101,7 @@ export { UnreachableRouteError } from './errors/unreachableRouteError'
 
 // Services
 export { createRoute } from './services/createRoute'
+export { createLoader } from './services/createLoader'
 export { createRejection } from './services/createRejection'
 export { createExternalRoute } from './services/createExternalRoute'
 export { createRouterAssets, type RouterAssets } from './services/createRouterAssets'

@@ -5,8 +5,10 @@ import { ResolvedRoute } from '@/types/resolved'
 import { CreatedRouteOptions, Route } from '@/types/route'
 import { RouteCallbackContext } from '@/types/routeCallbackContext'
 import { RouteLoader, RouteLoaders } from '@/types/routeLoaders'
-import { Url } from '@/types/url'
+import { Url, UrlParamsReading } from '@/types/url'
 import { Identity, LastInArray } from '@/types/utilities'
+import { AnyLoader } from '@/types/loader'
+import { RouteContext, ToRouteContext } from '@/types/routeContext'
 
 /**
  * The getter for a loader added via `addLoader`. Receives the same two arguments as an `addView` props
@@ -66,9 +68,14 @@ type LoaderName<TName extends string | undefined> = TName extends string ? TName
  */
 type ReplaceLastMatchLoaders<
   TMatches extends CreatedRouteOptions[],
-  TNewLoaders extends RouteLoaders
+  TNewLoaders extends RouteLoaders,
+  TContext extends RouteContext[]
 > = TMatches extends [...infer THead extends CreatedRouteOptions[], infer TLast extends CreatedRouteOptions]
-  ? Identity<Omit<TLast, 'loaders'> & { loaders: TNewLoaders }> extends infer TNext extends CreatedRouteOptions
+  ? Identity<Omit<TLast, 'loaders'> & { loaders: TNewLoaders } & (
+    TContext extends [] ? {} : {
+      context: [...ToRouteContext<TLast extends { context: infer TExisting extends RouteContext[] } ? TExisting : []>, ...TContext],
+    }
+  )> extends infer TNext extends CreatedRouteOptions
     ? [...THead, TNext]
     : TMatches
   : TMatches
@@ -79,10 +86,27 @@ type ReplaceLastMatchLoaders<
 type AddLoaderReturn<
   TUrl extends Url,
   TMatches extends CreatedRouteOptions[],
-  TNewLoaders extends RouteLoaders
-> = ReplaceLastMatchLoaders<TMatches, TNewLoaders> extends infer TNext extends CreatedRouteOptions[]
+  TNewLoaders extends RouteLoaders,
+  TContext extends RouteContext[] = []
+> = ReplaceLastMatchLoaders<TMatches, TNewLoaders, TContext> extends infer TNext extends CreatedRouteOptions[]
   ? RouteWithMethods<TUrl, TNext>
   : never
+
+/** Maps a route's params into the params a reusable loader requires. */
+export type LoaderParamsMapper<TRoute extends Route = Route, TParams extends object = {}> = (
+  route: ResolvedRoute<TRoute>,
+  context: RouteCallbackContext<TRoute>,
+) => TParams
+
+type AttachLoaderOptions<TRoute extends Route, TLoader extends AnyLoader, TName extends string | undefined> = AddLoaderOptions<TName, Awaited<ReturnType<TLoader['load']>>> & {
+  params?: LoaderParamsMapper<TRoute, Parameters<TLoader['load']>[0]>,
+}
+
+type AttachLoaderArguments<TRoute extends Route, TLoader extends AnyLoader, TName extends string | undefined> = UrlParamsReading<TRoute> extends Parameters<TLoader['load']>[0]
+  ? [options?: AttachLoaderOptions<TRoute, TLoader, TName>]
+  : [options: AttachLoaderOptions<TRoute, TLoader, TName> & {
+    params: LoaderParamsMapper<TRoute, Parameters<TLoader['load']>[0]>,
+  }]
 
 /**
  * Adds a loader to a route. Chainable to register multiple loaders, each exposed under its own name on
@@ -98,11 +122,17 @@ export type RouteAddLoader<
    * @param load - The loader callback. Receives the resolved route and a context object.
    * @param options - The loader's `name` and `prefetch` config.
    */
-  addLoader: <
+  addLoader: (<
     const TName extends string | undefined = undefined,
     const TGetter extends LoaderGetter<Route<TUrl, TMatches>> = LoaderGetter<Route<TUrl, TMatches>>
   >(
     load: TGetter,
     options?: AddLoaderOptions<TName, Awaited<ReturnType<TGetter>>>,
-  ) => AddLoaderReturn<TUrl, TMatches, AddLoaderLoaders<CurrentMatchLoaders<TMatches>, TName, ReturnType<TGetter>>>,
+  ) => AddLoaderReturn<TUrl, TMatches, AddLoaderLoaders<CurrentMatchLoaders<TMatches>, TName, ReturnType<TGetter>>>) & (<
+    const TLoader extends AnyLoader,
+    const TName extends string | undefined = undefined
+  >(
+    loader: TLoader,
+    ...args: AttachLoaderArguments<Route<TUrl, TMatches>, TLoader, TName>
+  ) => AddLoaderReturn<TUrl, TMatches, AddLoaderLoaders<CurrentMatchLoaders<TMatches>, TName, ReturnType<TLoader['load']>>, [...TLoader['context']]>),
 }
