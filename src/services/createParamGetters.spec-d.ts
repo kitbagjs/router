@@ -5,7 +5,7 @@ import { createRouter } from '@/services/createRouter'
 import { withParams } from '@/services/withParams'
 import { ResolvedRoute } from '@/types/resolved'
 
-test('lookup preserves the param value type on wide resolved and live routes', () => {
+test('lookup preserves the param value type on wide resolved and current routes', () => {
   const userId = createParam(Number)
   const route = createRoute({ name: 'user', path: withParams('/users/[id]', { id: userId }) })
   const router = createRouter([route])
