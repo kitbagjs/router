@@ -56,6 +56,7 @@ export type {
   AddErrorHook
 } from './types/hooks'
 export * from './types/paramTypes'
+export type { Param } from './types/param'
 export * from './types/prefetch'
 export * from './types/props'
 export * from './types/querySource'
