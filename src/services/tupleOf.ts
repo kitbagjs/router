@@ -10,16 +10,16 @@ const defaultOptions = {
   separator: ',',
 } satisfies TupleOfOptions
 
-type TupleOf<T extends ParamOptions[]> = { [K in keyof T]: ExtractParamType<T[K]> }
+type TupleOf<TParamOptions extends ParamOptions[]> = { [K in keyof TParamOptions]: ExtractParamType<TParamOptions[K]> }
 
-export function tupleOf<const T extends ParamOptions[]>(params: T, options: TupleOfOptions = {}): ParamGetSetOptions<TupleOf<T>> {
+export function tupleOf<const TParamOptions extends ParamOptions[]>(params: TParamOptions, options: TupleOfOptions = {}): ParamGetSetOptions<TupleOf<TParamOptions>> {
   const { separator } = { ...defaultOptions, ...options }
 
   return {
     get: (value) => {
       const values = value.split(separator)
 
-      return params.map((param, index) => getParamValue(values.at(index), { param })) as TupleOf<T>
+      return params.map((param, index) => getParamValue(values.at(index), { param })) as TupleOf<TParamOptions>
     },
     set: (value, { invalid }) => {
       if (!Array.isArray(value)) {

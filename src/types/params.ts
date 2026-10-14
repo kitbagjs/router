@@ -69,30 +69,30 @@ export type ExtractParamName<
 
 /**
  * Extracts the actual type from a parameter type, handling getters and setters.
- * @template TParam - The parameter type.
+ * @template TParamOptions - The parameter type.
  * @returns The extracted type, or 'string' as a fallback.
  */
-export type ExtractParamType<TParam extends ParamOptions> = ParamOptions extends TParam
+export type ExtractParamType<TParamOptions extends ParamOptions> = ParamOptions extends TParamOptions
   ? unknown
-  : TParam extends ParamGetSetOptions<infer Type>
+  : TParamOptions extends ParamGetSetOptions<infer Type>
     ? Type
-    : TParam extends DateConstructor
+    : TParamOptions extends DateConstructor
       ? Date
-      : TParam extends JSON
+      : TParamOptions extends JSON
         ? unknown
-        : TParam extends StandardSchemaV1
-          ? StandardSchemaV1.InferOutput<TParam>
-          : TParam extends ParamGetter
-            ? ReturnType<TParam>
-            : TParam extends LiteralParam
-              ? TParam
+        : TParamOptions extends StandardSchemaV1
+          ? StandardSchemaV1.InferOutput<TParamOptions>
+          : TParamOptions extends ParamGetter
+            ? ReturnType<TParamOptions>
+            : TParamOptions extends LiteralParam
+              ? TParamOptions
               : string
 
 export type ParamIsOptional<TParam extends string> = TParam extends `?${string}` ? true : false
 export type ParamIsGreedy<TParam extends string> = TParam extends `${string}*` ? true : false
 
-export type ParamIsOptionalOrHasDefault<TParamName extends string, TParam extends ParamOptions | undefined> = ParamIsOptional<TParamName> extends true
+export type ParamIsOptionalOrHasDefault<TParamName extends string, TParamOptions extends ParamOptions | undefined> = ParamIsOptional<TParamName> extends true
   ? true
-  : TParam extends Required<ParamGetSetOptions>
+  : TParamOptions extends Required<ParamGetSetOptions>
     ? true
     : false
