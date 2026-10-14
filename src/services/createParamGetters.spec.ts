@@ -5,6 +5,30 @@ import { createRouter } from '@/services/createRouter'
 import { withParams } from '@/services/withParams'
 import { withDefault } from '@/services/withDefault'
 import { createResolvedRoute } from '@/services/createResolvedRoute'
+import { literal } from '@/services/literal'
+import { arrayOf } from '@/services/arrayOf'
+import { tupleOf } from '@/services/tupleOf'
+import { unionOf } from '@/services/unionOf'
+
+test('param factory results can be looked up directly', () => {
+  const status = literal('active')
+  const ids = arrayOf([Number])
+  const pair = tupleOf([Number, String])
+  const owner = unionOf([Number, String])
+  const limit = withDefault(Number, 10)
+  const route = createRoute({
+    name: 'search',
+    path: '/search',
+    query: withParams('status=[status]&ids=[ids]&pair=[pair]&owner=[owner]&limit=[?limit]', { status, ids, pair, owner, limit }),
+  })
+  const resolved = createResolvedRoute(route, route.parse('/search?status=active&ids=1,2&pair=3,name&owner=4'))
+
+  expect(resolved.getParam(status)).toBe('active')
+  expect(resolved.getParam(ids)).toEqual([1, 2])
+  expect(resolved.getParam(pair)).toEqual([3, 'name'])
+  expect(resolved.getParam(owner)).toBe(4)
+  expect(resolved.getParam(limit)).toBe(10)
+})
 
 test('lookup matches definition identity across URL parts and skips absent values', () => {
   const userId = createParam(Number)
