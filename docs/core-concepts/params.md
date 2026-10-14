@@ -137,7 +137,7 @@ const monthParam = createParam({
 
 ## Looking up param definitions
 
-Use `getParam` and `getAllParams` to read values by their `createParam` definition, without knowing their names on the route:
+Use `getParam` and `getAllParams` to read values by their shared param definition, without knowing their names on the route:
 
 ```ts
 const userId = createParam(Number)
@@ -157,6 +157,8 @@ route.getAllParams(userId) // [1, 2], typed as number[]
 These methods work on resolved routes, the current route, and in route callbacks. `getParam` returns the first present value; `getAllParams` returns all present values in host, path, query, then hash order. Missing values return `undefined` and `[]` respectively, and absent optional params are skipped.
 
 Reuse the same definition wherever you want lookup to match. Separate `createParam(Number)` calls have different identities. `withDefault` preserves an existing definition's identity.
+
+Definitions returned by `literal`, `arrayOf`, `tupleOf`, and `unionOf` can also be used directly with these methods.
 
 ## Default Values
 
