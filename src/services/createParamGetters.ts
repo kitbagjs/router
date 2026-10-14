@@ -1,16 +1,21 @@
 import { Param } from '@/types/param'
 import { ParamGetters } from '@/types/paramGetters'
-import { UrlInternal } from '@/types/url'
+import { UrlPart } from '@/services/withParams'
 import { isSameParam } from '@/services/isSameParam'
+
+export type CreateParamGettersOptions = {
+  schema: Record<string, UrlPart>,
+  params: Record<string, unknown>,
+}
 
 /**
  * Looks up parsed param values by definition identity across host, path, query, and hash.
  */
-export function createParamGetters(schema: UrlInternal['schema'], getParams: () => Record<string, unknown>): ParamGetters {
-  const definitions = Object.values(schema).flatMap((part) => Object.entries(part.params))
+export function createParamGetters(route: CreateParamGettersOptions): ParamGetters {
+  const definitions = Object.values(route.schema).flatMap((part) => Object.entries(part.params))
 
   function getAllParams<T>(param: Param<T>): T[] {
-    const params = getParams()
+    const params = route.params
     const values: T[] = []
 
     for (const [name, definition] of definitions) {
