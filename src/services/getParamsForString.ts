@@ -2,11 +2,11 @@ import { getParam } from '@/services/params'
 import { UrlParam, UrlParams } from '@/services/withParams'
 import { isParamWithDefault } from '@/services/withDefault'
 import { getParamName, isGreedyParamSyntax, isOptionalParamSyntax, paramRegex } from '@/services/routeRegex'
-import { Param } from '@/types/paramTypes'
+import { ParamOptions } from '@/types/paramTypes'
 import { stringHasValue } from '@/utilities/guards'
 import { checkDuplicateParams } from '@/utilities/checkDuplicateParams'
 
-export function getParamsForString(string: string = '', params: Record<string, Param | undefined> = {}): UrlParams {
+export function getParamsForString(string: string = '', params: Record<string, ParamOptions | undefined> = {}): UrlParams {
   if (!stringHasValue(string)) {
     return {}
   }

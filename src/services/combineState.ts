@@ -1,13 +1,13 @@
-import { Param } from '@/types/paramTypes'
+import { ParamOptions } from '@/types/paramTypes'
 import { checkDuplicateParams } from '@/utilities/checkDuplicateParams'
 
 export type CombineState<
-  TParent extends Record<string, Param>,
-  TChild extends Record<string, Param>
+  TParent extends Record<string, ParamOptions>,
+  TChild extends Record<string, ParamOptions>
 > = TParent & TChild
 
-export function combineState<TParentState extends Record<string, Param>, TChildState extends Record<string, Param>>(parentState: TParentState, childState: TChildState): CombineState<TParentState, TChildState>
-export function combineState(parentState: Record<string, Param>, childState: Record<string, Param>): Record<string, Param> {
+export function combineState<TParentState extends Record<string, ParamOptions>, TChildState extends Record<string, ParamOptions>>(parentState: TParentState, childState: TChildState): CombineState<TParentState, TChildState>
+export function combineState(parentState: Record<string, ParamOptions>, childState: Record<string, ParamOptions>): Record<string, ParamOptions> {
   checkDuplicateParams(parentState, childState)
 
   return { ...parentState, ...childState }

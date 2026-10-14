@@ -15,7 +15,7 @@ export type ParamGetSet<T = any> = {
 
 export type LiteralParam = string | number | boolean
 
-export type Param = | ParamGetter
+export type ParamOptions = | ParamGetter
   | ParamGetSet
   | RegExp
   | BooleanConstructor
