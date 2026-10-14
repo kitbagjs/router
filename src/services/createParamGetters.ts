@@ -1,4 +1,4 @@
-import { CreatedParam, isCreatedParam, PARAM_ID_SYMBOL } from '@/types/createdParam'
+import { Param, isParam, PARAM_ID_SYMBOL } from '@/types/param'
 import { ParamGetters } from '@/types/paramGetters'
 import { UrlInternal } from '@/types/url'
 
@@ -8,12 +8,12 @@ import { UrlInternal } from '@/types/url'
 export function createParamGetters(schema: UrlInternal['schema'], getParams: () => Record<string, unknown>): ParamGetters {
   const definitions = Object.values(schema).flatMap((part) => Object.entries(part.params))
 
-  function getAllParams<T>(param: CreatedParam<T>): T[] {
+  function getAllParams<T>(param: Param<T>): T[] {
     const params = getParams()
     const values: T[] = []
 
     for (const [name, definition] of definitions) {
-      if (!isCreatedParam(definition.param) || definition.param[PARAM_ID_SYMBOL] !== param[PARAM_ID_SYMBOL]) {
+      if (!isParam(definition.param) || definition.param[PARAM_ID_SYMBOL] !== param[PARAM_ID_SYMBOL]) {
         continue
       }
 
