@@ -1,7 +1,7 @@
 import { computed, Ref, MaybeRefOrGetter, toValue, InjectionKey } from 'vue'
 import { createUseRoute } from './useRoute'
 import { Router } from '@/types/router'
-import { Param, ParamGetSet } from '@/types/paramTypes'
+import { ParamOptions, ParamGetSet } from '@/types/paramTypes'
 import { ExtractParamType } from '@/types/params'
 import { safeGetParamValue, setParamValue } from '@/services/params'
 import { isParamWithDefault } from '@/services/withDefault'
@@ -14,7 +14,7 @@ type UseQueryValue<T> = {
 
 type UseQueryValueFunction = {
   (key: MaybeRefOrGetter<string>): UseQueryValue<string | null>,
-  <TParam extends Param>(
+  <TParam extends ParamOptions>(
     key: MaybeRefOrGetter<string>,
     param: TParam,
   ): TParam extends Required<ParamGetSet<ExtractParamType<TParam>>>
@@ -25,7 +25,7 @@ type UseQueryValueFunction = {
 export function createUseQueryValue<TRouter extends Router>(key: InjectionKey<TRouter>): UseQueryValueFunction {
   const useRoute = createUseRoute(key)
 
-  return (key: MaybeRefOrGetter<string>, param: Param = String): UseQueryValue<any> => {
+  return (key: MaybeRefOrGetter<string>, param: ParamOptions = String): UseQueryValue<any> => {
     const route = useRoute()
 
     const value = computed({

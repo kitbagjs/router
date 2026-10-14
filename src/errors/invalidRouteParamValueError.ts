@@ -1,8 +1,8 @@
-import { Param } from '@/types/paramTypes'
+import { ParamOptions } from '@/types/paramTypes'
 
 export type InvalidRouteParamValueErrorContext = {
   message?: string,
-  param?: Param,
+  param?: ParamOptions,
   value?: unknown,
   isOptional?: boolean,
   isGetter?: boolean,

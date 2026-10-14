@@ -2,13 +2,13 @@ import { InvalidRouteParamValueError, InvalidRouteParamValueErrorContext } from 
 import { isParamWithDefault } from '@/services/withDefault'
 import { UrlParam } from '@/services/withParams'
 import { ExtractParamType, isLiteralParam, isParamGetSet, isParamGetter } from '@/types/params'
-import { LiteralParam, Param, ParamExtras, ParamGetSet } from '@/types/paramTypes'
+import { LiteralParam, ParamOptions, ParamExtras, ParamGetSet } from '@/types/paramTypes'
 import { getRegexMatcher } from '@/utilities/getRegexMatcher'
 import { stringHasValue } from '@/utilities/guards'
 import { createStandardSchemaParam, isStandardSchema } from './standardSchema'
 import { literal } from './literal'
 
-export function getParam(params: Record<string, Param | undefined>, paramName: string): Param {
+export function getParam(params: Record<string, ParamOptions | undefined>, paramName: string): ParamOptions {
   return params[paramName] ?? String
 }
 
@@ -109,7 +109,7 @@ const jsonParam: ParamGetSet<unknown> = {
   },
 }
 
-export function getParamValue<T extends Param>(value: string | undefined, param: Partial<UrlParam<T>>): ExtractParamType<T>
+export function getParamValue<T extends ParamOptions>(value: string | undefined, param: Partial<UrlParam<T>>): ExtractParamType<T>
 export function getParamValue(value: string | undefined, { param = String, isOptional = false }: Partial<UrlParam> = {}): unknown {
   const extras = getParamExtras({ param, value, isGetter: true })
   if (value === undefined || !stringHasValue(value)) {
@@ -173,7 +173,7 @@ export function getParamValue(value: string | undefined, { param = String, isOpt
   return value
 }
 
-export function safeGetParamValue<T extends Param>(value: string | undefined, param: Partial<UrlParam<T>>): ExtractParamType<T> | undefined {
+export function safeGetParamValue<T extends ParamOptions>(value: string | undefined, param: Partial<UrlParam<T>>): ExtractParamType<T> | undefined {
   try {
     return getParamValue(value, param)
   } catch (error) {
