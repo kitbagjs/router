@@ -1,9 +1,11 @@
 import { ParamGetter, ParamSetter } from '@/types/paramTypes'
 
+export const PARAM_ID_SYMBOL = Symbol('PARAM_ID_SYMBOL')
 export const IS_PARAM_SYMBOL = Symbol('IS_PARAM_SYMBOL')
 
 export type ParamInternal = {
   [IS_PARAM_SYMBOL]: true,
+  [PARAM_ID_SYMBOL]: symbol,
 }
 
 /**
