@@ -1,10 +1,10 @@
 import { Param } from '@/types/param'
 import { ParamGetters } from '@/types/paramGetters'
-import { UrlPart } from '@/services/withParams'
+import { UrlSchema } from '@/types/url'
 import { isSameParam } from '@/services/isSameParam'
 
 export type CreateParamGettersOptions = {
-  schema: Record<string, UrlPart>,
+  schema: UrlSchema,
   params: Record<string, unknown>,
 }
 
