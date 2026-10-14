@@ -1,8 +1,8 @@
 import { InvalidRouteParamValueError, InvalidRouteParamValueErrorContext } from '@/errors/invalidRouteParamValueError'
 import { isParamWithDefault } from '@/services/withDefault'
 import { UrlParam } from '@/services/withParams'
-import { ExtractParamType, isLiteralParam, isParamGetSet, isParamGetter } from '@/types/params'
-import { LiteralParam, ParamOptions, ParamExtras, ParamGetSet } from '@/types/paramTypes'
+import { ExtractParamType, isLiteralParam, isParamGetSetOptions, isParamGetter } from '@/types/params'
+import { LiteralParam, ParamOptions, ParamExtras, ParamGetSetOptions } from '@/types/paramTypes'
 import { getRegexMatcher } from '@/utilities/getRegexMatcher'
 import { stringHasValue } from '@/utilities/guards'
 import { createStandardSchemaParam, isStandardSchema } from './standardSchema'
@@ -20,7 +20,7 @@ function getParamExtras(seed: InvalidRouteParamValueErrorContext): ParamExtras {
   }
 }
 
-const stringParam: ParamGetSet<string> = {
+const stringParam: ParamGetSetOptions<string> = {
   get: (value) => {
     return value
   },
@@ -33,7 +33,7 @@ const stringParam: ParamGetSet<string> = {
   },
 }
 
-const booleanParam: ParamGetSet<boolean> = {
+const booleanParam: ParamGetSetOptions<boolean> = {
   get: (value, { invalid }) => {
     if (value === 'true') {
       return true
@@ -54,7 +54,7 @@ const booleanParam: ParamGetSet<boolean> = {
   },
 }
 
-const numberParam: ParamGetSet<number> = {
+const numberParam: ParamGetSetOptions<number> = {
   get: (value, { invalid }) => {
     const number = Number(value)
 
@@ -73,7 +73,7 @@ const numberParam: ParamGetSet<number> = {
   },
 }
 
-const dateParam: ParamGetSet<Date> = {
+const dateParam: ParamGetSetOptions<Date> = {
   get: (value, { invalid }) => {
     const date = new Date(value)
 
@@ -92,7 +92,7 @@ const dateParam: ParamGetSet<Date> = {
   },
 }
 
-const jsonParam: ParamGetSet<unknown> = {
+const jsonParam: ParamGetSetOptions<unknown> = {
   get: (value, { invalid }) => {
     try {
       return JSON.parse(value)
@@ -152,7 +152,7 @@ export function getParamValue(value: string | undefined, { param = String, isOpt
     return param(value, extras)
   }
 
-  if (isParamGetSet(param)) {
+  if (isParamGetSetOptions(param)) {
     return param.get(value, extras)
   }
 
@@ -225,7 +225,7 @@ export function setParamValue(value: unknown, { param = String, isOptional = fal
     return createStandardSchemaParam(param).set(value, extras)
   }
 
-  if (isParamGetSet(param)) {
+  if (isParamGetSetOptions(param)) {
     return param.set(value, extras)
   }
 

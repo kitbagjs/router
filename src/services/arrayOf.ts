@@ -1,4 +1,4 @@
-import { ParamOptions, ParamGetSet } from '@/types/paramTypes'
+import { ParamOptions, ParamGetSetOptions } from '@/types/paramTypes'
 import { ExtractParamType } from '@/types/params'
 import { unionOf } from './unionOf'
 
@@ -10,7 +10,7 @@ const defaultOptions = {
   separator: ',',
 } satisfies ArrayOfOptions
 
-export function arrayOf<const T extends ParamOptions[]>(params: T, options: ArrayOfOptions = {}): ParamGetSet<ExtractParamType<T[number]>[]> {
+export function arrayOf<const T extends ParamOptions[]>(params: T, options: ArrayOfOptions = {}): ParamGetSetOptions<ExtractParamType<T[number]>[]> {
   const { separator } = { ...defaultOptions, ...options }
   const union = unionOf(params)
 

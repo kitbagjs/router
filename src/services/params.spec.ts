@@ -2,7 +2,7 @@ import { describe, expect, test, vi } from 'vitest'
 import { InvalidRouteParamValueError } from '@/errors/invalidRouteParamValueError'
 import { getParamValue, setParamValue } from '@/services/params'
 import { withDefault } from '@/services/withDefault'
-import { ParamGetSet, ParamGetter } from '@/types/paramTypes'
+import { ParamGetSetOptions, ParamGetter } from '@/types/paramTypes'
 
 describe('getParamValue', () => {
   test('given Boolean constructor Param, returns for correct value for Boolean', () => {
@@ -159,8 +159,8 @@ describe('getParamValue', () => {
     expect(() => getParamValue('foo', { param })).toThrow()
   })
 
-  test('Given Custom GetSet, returns correct value for ParamGetSet', () => {
-    const getter: ParamGetSet<'yes'> = {
+  test('Given Custom GetSet, returns correct value for ParamGetSetOptions', () => {
+    const getter: ParamGetSetOptions<'yes'> = {
       get: (value, { invalid }) => {
         if (value !== 'yes') {
           invalid()
@@ -244,8 +244,8 @@ describe('setParamValue', () => {
     expect(setParamValue('yes', { param })).toBe('yes')
   })
 
-  test('Given Custom GetSet Param, returns correct value for ParamGetSet', () => {
-    const param: ParamGetSet = {
+  test('Given Custom GetSet Param, returns correct value for ParamGetSetOptions', () => {
+    const param: ParamGetSetOptions = {
       get: (value, { invalid }) => {
         if (value !== 'yes') {
           invalid()
