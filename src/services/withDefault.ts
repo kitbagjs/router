@@ -1,14 +1,14 @@
-import { Param } from '@/types/param'
 import { createParam } from '@/services/createParam'
 import { ExtractParamType, isParamGetSetOptions } from '@/types/params'
-import { ParamOptions } from '@/types/paramTypes'
+import { ParamOptions, ParamGetSetOptions } from '@/types/paramTypes'
+import { ParamIdentity } from '@/types/createdParam'
 
-export type ParamWithDefault<TParamOptions extends ParamOptions = ParamOptions> = Required<Param<ExtractParamType<TParamOptions>>>
+export type ParamWithDefault<TParamOptions extends ParamOptions = ParamOptions> = Required<ParamGetSetOptions<ExtractParamType<TParamOptions>>>
 
 export function isParamWithDefault(param: ParamOptions): param is ParamWithDefault {
   return isParamGetSetOptions(param) && param.defaultValue !== undefined
 }
 
-export function withDefault<TParamOptions extends ParamOptions>(param: TParamOptions, defaultValue: ExtractParamType<TParamOptions>): ParamWithDefault<TParamOptions> {
+export function withDefault<TParamOptions extends ParamOptions>(param: TParamOptions, defaultValue: ExtractParamType<TParamOptions>): ParamWithDefault<TParamOptions> & ParamIdentity {
   return createParam(param, defaultValue)
 }

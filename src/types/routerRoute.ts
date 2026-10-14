@@ -42,6 +42,14 @@ export type RouterRoute<TRoute extends ResolvedRoute = ResolvedRoute> = {
    */
   readonly getTitle: TRoute['getTitle'],
   /**
+   * Returns the first present value using the given param definition.
+   */
+  readonly getParam: TRoute['getParam'],
+  /**
+   * Returns every present value using the given param definition.
+   */
+  readonly getAllParams: TRoute['getAllParams'],
+  /**
    * What the route's loaders resolve to, keyed by loader name. A route whose only loader is unnamed
    * exposes that loader's data here directly.
    */
