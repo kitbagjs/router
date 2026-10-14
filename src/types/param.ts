@@ -9,7 +9,7 @@ export type ParamInternal = {
 }
 
 /**
- * A param definition with an identity that can be looked up independently of its URL name.
+ * A param definition that parses and stringifies values.
  */
 export type Param<T = unknown> = {
   get: ParamGetter<T>,
@@ -18,7 +18,7 @@ export type Param<T = unknown> = {
 }
 
 /**
- * Determines whether a value is a param definition with an identity.
+ * Determines whether a value is a param definition.
  */
 export function isParam(value: unknown): value is Param & ParamInternal {
   return typeof value === 'object' && value !== null && IS_PARAM_SYMBOL in value
