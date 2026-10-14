@@ -12,7 +12,11 @@ export function createParam<TParamOptions extends ParamOptions>(param: TParamOpt
   const id = getParamId(param)
 
   if (isParamGetSetOptions(param)) {
-    return { ...param, [PARAM_ID_SYMBOL]: id, defaultValue: defaultValue ?? param.defaultValue }
+    return {
+      ...param,
+      [PARAM_ID_SYMBOL]: id,
+      defaultValue: defaultValue ?? param.defaultValue,
+    }
   }
 
   return {
