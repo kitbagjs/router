@@ -47,7 +47,7 @@ export type ViewPropsGetter<TContext extends readonly RouteContext[], TProps> = 
 export type CreateViewOptions<
   TComponent extends Component = Component,
   TContext extends readonly RouteContext[] = [],
-  TProps = MaybePromise<ComponentProps<TComponent>>
+  TProps extends MaybePromise<ComponentProps<TComponent>> = MaybePromise<ComponentProps<TComponent>>
 > = TransformerOptions<NoInfer<Awaited<TProps>>> & {
   component: TComponent,
   context?: TContext,
@@ -57,7 +57,7 @@ export type CreateViewOptions<
   : { props: ViewPropsGetter<TContext, TProps> })
 
 /**
- * A reusable view definition with its resolved props and declared context.
+ * A reusable view definition with its props getter's result and declared context.
  */
 export type View<TProps = unknown, TContext extends readonly RouteContext[] = []> = TransformerOptions<Awaited<TProps>> & {
   component: Component,
