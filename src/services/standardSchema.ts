@@ -1,3 +1,4 @@
+import { createParam } from '@/services/createParam'
 import { Param } from '@/types/param'
 import { UnsupportedSchemaVendorError } from '@/errors/unsupportedSchemaVendorError'
 import { isRecord } from '@/utilities/guards'
@@ -60,7 +61,7 @@ export function isStandardSchema(value: unknown): value is StandardSchemaLike {
 }
 
 export function createStandardSchemaParam<T>(schema: StandardSchemaLike): Param<T> {
-  return {
+  return createParam({
     get: (value, { invalid }) => {
       try {
         return parseStandardSchemaValue(value, schema) as T
@@ -75,7 +76,7 @@ export function createStandardSchemaParam<T>(schema: StandardSchemaLike): Param<
         throw invalid()
       }
     },
-  }
+  })
 }
 
 // inferring the return type is preferred for this function
