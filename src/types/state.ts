@@ -7,8 +7,8 @@ import { Identity } from '@/types/utilities'
 
 export type ToState<TState extends Record<string, ParamOptions> | undefined> = TState extends undefined ? Record<string, ParamOptions> : unknown extends TState ? {} : TState
 
-export type ExtractRouteStateParamsAsOptional<TParams extends Record<string, ParamOptions>> = {
-  [K in keyof TParams]: ExtractParamType<TParams[K]> | undefined
+export type ExtractRouteStateParamsAsOptional<TParamOptions extends Record<string, ParamOptions>> = {
+  [K in keyof TParamOptions]: ExtractParamType<TParamOptions[K]> | undefined
 }
 
 export type RouteStateByName<
@@ -22,6 +22,6 @@ type ExtractStateParams<TRoute> = TRoute extends {
   ? ExtractParamTypes<TState>
   : Record<string, unknown>
 
-type ExtractParamTypes<TParams extends Record<string, ParamOptions>> = Identity<MakeOptional<{
-  [K in keyof TParams as ExtractParamName<K>]: ExtractParamType<TParams[K]>
+type ExtractParamTypes<TParamOptions extends Record<string, ParamOptions>> = Identity<MakeOptional<{
+  [K in keyof TParamOptions as ExtractParamName<K>]: ExtractParamType<TParamOptions[K]>
 }>>

@@ -109,7 +109,7 @@ const jsonParam: ParamGetSetOptions<unknown> = {
   },
 }
 
-export function getParamValue<T extends ParamOptions>(value: string | undefined, param: Partial<UrlParam<T>>): ExtractParamType<T>
+export function getParamValue<TParamOptions extends ParamOptions>(value: string | undefined, param: Partial<UrlParam<TParamOptions>>): ExtractParamType<TParamOptions>
 export function getParamValue(value: string | undefined, { param = String, isOptional = false }: Partial<UrlParam> = {}): unknown {
   const extras = getParamExtras({ param, value, isGetter: true })
   if (value === undefined || !stringHasValue(value)) {
@@ -173,7 +173,7 @@ export function getParamValue(value: string | undefined, { param = String, isOpt
   return value
 }
 
-export function safeGetParamValue<T extends ParamOptions>(value: string | undefined, param: Partial<UrlParam<T>>): ExtractParamType<T> | undefined {
+export function safeGetParamValue<TParamOptions extends ParamOptions>(value: string | undefined, param: Partial<UrlParam<TParamOptions>>): ExtractParamType<TParamOptions> | undefined {
   try {
     return getParamValue(value, param)
   } catch (error) {

@@ -14,12 +14,12 @@ type UseQueryValue<T> = {
 
 type UseQueryValueFunction = {
   (key: MaybeRefOrGetter<string>): UseQueryValue<string | null>,
-  <TParam extends ParamOptions>(
+  <TParamOptions extends ParamOptions>(
     key: MaybeRefOrGetter<string>,
-    param: TParam,
-  ): TParam extends Required<ParamGetSetOptions<ExtractParamType<TParam>>>
-    ? UseQueryValue<ExtractParamType<TParam>>
-    : UseQueryValue<ExtractParamType<TParam> | null>,
+    param: TParamOptions,
+  ): TParamOptions extends Required<ParamGetSetOptions<ExtractParamType<TParamOptions>>>
+    ? UseQueryValue<ExtractParamType<TParamOptions>>
+    : UseQueryValue<ExtractParamType<TParamOptions> | null>,
 }
 
 export function createUseQueryValue<TRouter extends Router>(key: InjectionKey<TRouter>): UseQueryValueFunction {
