@@ -14,6 +14,10 @@ export type CreateParamGettersOptions = {
 export function createParamGetters(options: CreateParamGettersOptions): ParamGetters {
   const definitions = Object.values(options.schema).flatMap((part) => Object.entries(part.params))
 
+  function getParam<T>(param: Param<T>): T | undefined {
+    return getAllParams(param)[0]
+  }
+
   function getAllParams<T>(param: Param<T>): T[] {
     const params = options.params
     const values: T[] = []
@@ -38,7 +42,7 @@ export function createParamGetters(options: CreateParamGettersOptions): ParamGet
   }
 
   return {
-    getParam: (param) => getAllParams(param)[0],
+    getParam,
     getAllParams,
   }
 }
