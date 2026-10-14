@@ -137,7 +137,7 @@ const monthParam = createParam({
 
 ## Looking up param definitions
 
-Params created with `createParam` have an identity independent of their name in a URL. Pass the definition to a resolved route's `getParam` or `getAllParams` method to read its values without knowing the names:
+Use `getParam` and `getAllParams` to read values by their `createParam` definition, without knowing their names on the route:
 
 ```ts
 const userId = createParam(Number)
@@ -154,9 +154,9 @@ route.getParam(userId) // 1, typed as number | undefined
 route.getAllParams(userId) // [1, 2], typed as number[]
 ```
 
-These methods are also available on the current route and in route callbacks. `getParam` returns the first present value; `getAllParams` returns all present values in host, path, query, then hash order. Missing optional values are skipped. With no matching values, they return `undefined` and `[]` respectively.
+These methods work on resolved routes, the current route, and in route callbacks. `getParam` returns the first present value; `getAllParams` returns all present values in host, path, query, then hash order. Missing values return `undefined` and `[]` respectively, and absent optional params are skipped.
 
-Two separately created definitions have different identities even if they use the same parser. Adding a default with `withDefault` preserves the identity of an existing definition. Custom parsers returning branded TypeScript types preserve those types in lookup results.
+Reuse the same definition wherever you want lookup to match. Separate `createParam(Number)` calls have different identities. `withDefault` preserves an existing definition's identity.
 
 ## Default Values
 
