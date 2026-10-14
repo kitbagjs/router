@@ -40,7 +40,7 @@ const settings = createRoute({ name: 'settings', path: '/users/[userId]/settings
   .addLoader(sessionLoader, { name: 'session', prefetch: false })
 ```
 
-The route has a general resolved-route type. Registering your router gives the callback a union of its resolved routes, which can be narrowed by name. If the registered router includes this loader, an explicit loader type such as `Loader<[], Session>` breaks the circular type inference. Reusing a definition computes data separately for each route.
+The route has a general resolved-route type. Registering your router gives the callback a union of its resolved routes, which can be narrowed by name. If the registered router includes this loader, an explicit loader type such as `Loader<Session>` breaks the circular type inference. Reusing a definition computes data separately for each route.
 
 A reusable loader can declare related routes and rejections through `context`:
 

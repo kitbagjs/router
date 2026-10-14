@@ -53,8 +53,8 @@ export type CreateLoaderOptions<
  * A reusable loader definition, with its context normalized to an array.
  */
 export type Loader<
-  TContext extends readonly RouteContext[] = [],
-  TData = unknown
+  TData = unknown,
+  TContext extends readonly RouteContext[] = []
 > = TransformerOptions<Awaited<TData>> & {
   [IS_LOADER_SYMBOL]: true,
   load: AnyFunction<TData>,

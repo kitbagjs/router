@@ -7,7 +7,7 @@ import { RouteContext } from '@/types/routeContext'
 export function createLoader<
   const TContext extends readonly RouteContext[] = [],
   TData = unknown
->(options: CreateLoaderOptions<TContext, TData>): Loader<TContext, TData>
+>(options: CreateLoaderOptions<TContext, TData>): Loader<TData, TContext>
 
 export function createLoader(options: CreateLoaderOptions<any, any>): Loader<any, any> {
   return { ...options, [IS_LOADER_SYMBOL]: true, context: [...options.context ?? []] }
