@@ -1,3 +1,4 @@
+import { createParam } from '@/services/createParam'
 import { Param } from '@/types/param'
 import { ParamOptions } from '@/types/paramTypes'
 import { ExtractParamType } from '@/types/params'
@@ -15,7 +16,7 @@ export function arrayOf<const TParamOptions extends ParamOptions[]>(params: TPar
   const { separator } = { ...defaultOptions, ...options }
   const union = unionOf(params)
 
-  return {
+  return createParam({
     get: (value, extras) => {
       return value.split(separator).map((value) => union.get(value, extras))
     },
@@ -26,5 +27,5 @@ export function arrayOf<const TParamOptions extends ParamOptions[]>(params: TPar
 
       return value.map((value) => union.set(value, extras)).join(separator)
     },
-  }
+  })
 }

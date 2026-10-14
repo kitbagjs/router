@@ -1,3 +1,4 @@
+import { createParam } from '@/services/createParam'
 import { Param } from '@/types/param'
 import { ParamOptions } from '@/types/paramTypes'
 import { safeGetParamValue, safeSetParamValue } from '@/services/params'
@@ -5,7 +6,7 @@ import { ExtractParamType } from '@/types/params'
 
 export function unionOf<const TParamOptions extends ParamOptions[]>(params: TParamOptions): Param<ExtractParamType<TParamOptions[number]>>
 export function unionOf(params: ParamOptions[]): Param {
-  return {
+  return createParam<Param>({
     get: (value, { invalid }) => {
       for (const param of params) {
         const result = safeGetParamValue(value, { param, isOptional: false, isGreedy: false })
@@ -28,5 +29,5 @@ export function unionOf(params: ParamOptions[]): Param {
 
       throw invalid(`Value "${value}" does not satisfy any of the possible values`)
     },
-  }
+  })
 }
