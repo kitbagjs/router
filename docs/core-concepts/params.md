@@ -135,6 +135,29 @@ const monthParam = createParam({
 })
 ```
 
+## Looking up param definitions
+
+Params created with `createParam` have an identity independent of their name in a URL. Pass the definition to a resolved route's `getParam` or `getAllParams` method to read its values without knowing the names:
+
+```ts
+const userId = createParam(Number)
+
+const users = createRoute({
+  name: 'users',
+  path: withParams('/users/[from]/[to]', { from: userId, to: userId }),
+})
+
+const router = createRouter([users])
+const route = router.resolve('users', { from: 1, to: 2 })
+
+route.getParam(userId) // 1, typed as number | undefined
+route.getAllParams(userId) // [1, 2], typed as number[]
+```
+
+These methods are also available on the current route and in route callbacks. `getParam` returns the first present value; `getAllParams` returns all present values in host, path, query, then hash order. Missing optional values are skipped. With no matching values, they return `undefined` and `[]` respectively.
+
+Two separately created definitions have different identities even if they use the same parser. Adding a default with `withDefault` preserves the identity of an existing definition. Custom parsers returning branded TypeScript types preserve those types in lookup results.
+
 ## Default Values
 
 Define a default value when creating a param or by using the `withDefault` utility. This value will be used when the param is not provided in the url. An optional param of type `String` will have the type `string | undefined` when being accessed. But when a default value is provided it will have the type `string`, even if the value is missing from the url.

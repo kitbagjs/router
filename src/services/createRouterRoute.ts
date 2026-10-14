@@ -86,6 +86,8 @@ export function createRouterRoute({ routerKey, route: initialRoute, push, getDat
   const canonical = computed(() => route.value.canonical)
   const data = computed(() => getData(route.value))
   const getTitle = computed(() => route.value.getTitle)
+  const getParam = computed(() => route.value.getParam)
+  const getAllParams = computed(() => route.value.getAllParams)
 
   const paramsProxy = new Proxy({}, {
     get(_target, property, receiver) {
@@ -172,6 +174,8 @@ export function createRouterRoute({ routerKey, route: initialRoute, push, getDat
     canonical,
     data,
     getTitle,
+    getParam,
+    getAllParams,
     update,
   }) as RouterRoute & RouterRouteInternal
 
