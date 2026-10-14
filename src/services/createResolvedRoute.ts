@@ -90,14 +90,19 @@ export function createResolvedRoute(route: Route, params: Record<string, unknown
     return route.getTitle(to)
   }
 
-  const resolved = {
-    [IS_RESOLVED_ROUTE_SYMBOL]: true as const,
+  const internal = {
+    [IS_RESOLVED_ROUTE_SYMBOL]: true,
     schema: route.schema,
+    hooks: getHooks(route),
+    getRouteTitle,
+  } satisfies ResolvedRouteInternal
+
+  const resolvedRoute: ResolvedRoute & ResolvedRouteInternal = {
+    ...internal,
+    ...createParamGetters({ schema: route.schema, params }),
     id: route.id,
     name: route.name,
     matches: route.matches,
-    hooks: getHooks(route),
-    getRouteTitle,
     matched,
     query: createResolvedRouteQuery(query),
     state: getStateValues(route.state, options.state),
@@ -105,10 +110,8 @@ export function createResolvedRoute(route: Route, params: Record<string, unknown
     params,
     href,
     canonical,
-    getTitle: (): Promise<string | undefined> => getRouteTitle(resolvedRoute),
+    getTitle: () => getRouteTitle(resolvedRoute),
   }
-
-  const resolvedRoute: ResolvedRoute & ResolvedRouteInternal = Object.assign(resolved, createParamGetters(resolved))
 
   return resolvedRoute
 }
