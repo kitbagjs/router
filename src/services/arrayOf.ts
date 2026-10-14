@@ -10,7 +10,7 @@ const defaultOptions = {
   separator: ',',
 } satisfies ArrayOfOptions
 
-export function arrayOf<const T extends ParamOptions[]>(params: T, options: ArrayOfOptions = {}): ParamGetSetOptions<ExtractParamType<T[number]>[]> {
+export function arrayOf<const TParamOptions extends ParamOptions[]>(params: TParamOptions, options: ArrayOfOptions = {}): ParamGetSetOptions<ExtractParamType<TParamOptions[number]>[]> {
   const { separator } = { ...defaultOptions, ...options }
   const union = unionOf(params)
 
