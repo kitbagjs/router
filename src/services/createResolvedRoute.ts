@@ -9,6 +9,7 @@ import { RouteAliasMatch } from '@/types/routeAlias'
 import { UrlString } from '@/types/urlString'
 import { getHooks } from '@/types/hooks'
 import { isUrl } from '@/types/url'
+import { createParamGetters } from '@/services/createParamGetters'
 
 type CreateResolvedRouteOptions = RouterResolveOptions & {
   /**
@@ -90,6 +91,7 @@ export function createResolvedRoute(route: Route, params: Record<string, unknown
   }
 
   const resolvedRoute: ResolvedRoute & ResolvedRouteInternal = {
+    ...createParamGetters(route.schema, () => resolvedRoute.params),
     [IS_RESOLVED_ROUTE_SYMBOL]: true,
     schema: route.schema,
     id: route.id,

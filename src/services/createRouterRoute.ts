@@ -93,6 +93,8 @@ export function createRouterRoute({ routerKey, route: initialRoute, push, getRou
   const canonical = computed(() => route.value.canonical)
   const data = computed(() => getRouteData(route.value))
   const getTitle = computed(() => route.value.getTitle)
+  const getParam = computed(() => route.value.getParam)
+  const getAllParams = computed(() => route.value.getAllParams)
   const loaders = computed(() => {
     const entries = route.value.matches.flatMap((match) => Object.entries(match.loaders))
 
@@ -215,6 +217,8 @@ export function createRouterRoute({ routerKey, route: initialRoute, push, getRou
     canonical,
     data,
     getTitle,
+    getParam,
+    getAllParams,
     update,
   }) as RouterRoute & RouterRouteInternal
 
