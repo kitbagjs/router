@@ -1,4 +1,4 @@
-import { LiteralParam, ParamOptions, ParamGetSet, ParamGetter } from '@/types/paramTypes'
+import { LiteralParam, ParamOptions, ParamGetSetOptions, ParamGetter } from '@/types/paramTypes'
 import { StandardSchemaV1 } from '@standard-schema/spec'
 
 export const paramStart = '['
@@ -25,11 +25,11 @@ export function isParamGetter(value: ParamOptions): value is ParamGetter {
 }
 
 /**
- * Type guard to check if a value conforms to the ParamGetSet type.
+ * Type guard to check if a value conforms to the ParamGetSetOptions type.
  * @param value - The value to check.
  * @returns True if the value is an object with both 'get' and 'set' functions defined.
  */
-export function isParamGetSet(value: ParamOptions): value is ParamGetSet {
+export function isParamGetSetOptions(value: ParamOptions): value is ParamGetSetOptions {
   return typeof value === 'object'
     && 'get' in value
     && typeof value.get === 'function'
@@ -74,7 +74,7 @@ export type ExtractParamName<
  */
 export type ExtractParamType<TParam extends ParamOptions> = ParamOptions extends TParam
   ? unknown
-  : TParam extends ParamGetSet<infer Type>
+  : TParam extends ParamGetSetOptions<infer Type>
     ? Type
     : TParam extends DateConstructor
       ? Date
@@ -93,6 +93,6 @@ export type ParamIsGreedy<TParam extends string> = TParam extends `${string}*` ?
 
 export type ParamIsOptionalOrHasDefault<TParamName extends string, TParam extends ParamOptions | undefined> = ParamIsOptional<TParamName> extends true
   ? true
-  : TParam extends Required<ParamGetSet>
+  : TParam extends Required<ParamGetSetOptions>
     ? true
     : false

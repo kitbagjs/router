@@ -1,7 +1,7 @@
-import { LiteralParam, ParamGetSet } from '@/types/paramTypes'
+import { LiteralParam, ParamGetSetOptions } from '@/types/paramTypes'
 
-export function literal<T extends LiteralParam>(value: T): ParamGetSet<T>
-export function literal(param: LiteralParam): ParamGetSet {
+export function literal<T extends LiteralParam>(value: T): ParamGetSetOptions<T>
+export function literal(param: LiteralParam): ParamGetSetOptions {
   return {
     get: (value, { invalid }) => {
       if (`${param}` === value) {
