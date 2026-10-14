@@ -283,9 +283,24 @@ test.each([
     },
   })
 
-  wrapper.find('a').trigger('click', triggerOptions)
+  const open = window.open
+  window.open = vi.fn<Window['open']>().mockReturnValue(null)
 
-  expect(spy).not.toHaveBeenCalled()
+  try {
+    const event = new MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+      button: 0,
+      ...triggerOptions,
+    })
+
+    wrapper.find('a').element.dispatchEvent(event)
+
+    expect(spy).not.toHaveBeenCalled()
+    expect(event.defaultPrevented).toBe(false)
+  } finally {
+    window.open = open
+  }
 })
 
 test('does not call router.push when middle mouse button is clicked', async () => {
@@ -318,9 +333,23 @@ test('does not call router.push when middle mouse button is clicked', async () =
     },
   })
 
-  wrapper.find('a').trigger('click', { button: 1 })
+  const open = window.open
+  window.open = vi.fn<Window['open']>().mockReturnValue(null)
 
-  expect(spy).not.toHaveBeenCalled()
+  try {
+    const event = new MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+      button: 1,
+    })
+
+    wrapper.find('a').element.dispatchEvent(event)
+
+    expect(spy).not.toHaveBeenCalled()
+    expect(event.defaultPrevented).toBe(false)
+  } finally {
+    window.open = open
+  }
 })
 
 test('does not call router.push when anchor has target="_blank"', async () => {
@@ -353,9 +382,23 @@ test('does not call router.push when anchor has target="_blank"', async () => {
     },
   })
 
-  wrapper.find('a').trigger('click')
+  const open = window.open
+  window.open = vi.fn<Window['open']>().mockReturnValue(null)
 
-  expect(spy).not.toHaveBeenCalled()
+  try {
+    const event = new MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+      button: 0,
+    })
+
+    wrapper.find('a').element.dispatchEvent(event)
+
+    expect(spy).not.toHaveBeenCalled()
+    expect(event.defaultPrevented).toBe(false)
+  } finally {
+    window.open = open
+  }
 })
 
 test('to prop as Url renders and routes correctly', async () => {
