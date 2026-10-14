@@ -59,7 +59,7 @@ export type {
 } from './types/hooks'
 export * from './types/paramTypes'
 export type { Param } from './types/param'
-export type { ParamGetters } from './types/paramGetters'
+export type { GetParam, GetAllParams, ParamGetters } from './types/paramGetters'
 export * from './types/prefetch'
 export * from './types/props'
 export * from './types/querySource'
