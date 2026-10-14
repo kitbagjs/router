@@ -1,7 +1,7 @@
 # Functions: hasViewTransition()
 
 ```ts
-function hasViewTransition(match): match is Omit<CreateRouteOptions, "component" | "components"> & { id: string; loaders: RouteLoaders; views: RouteViews } & { viewTransition: ViewTransitionConfig };
+function hasViewTransition(match): match is CreateRouteOptions & { id: string; loaders: RouteLoaders; views: RouteViews } & { viewTransition: ViewTransitionConfig };
 ```
 
 ## Parameters
@@ -12,4 +12,4 @@ function hasViewTransition(match): match is Omit<CreateRouteOptions, "component"
 
 ## Returns
 
-match is Omit\<CreateRouteOptions, "component" \| "components"\> & \{ id: string; loaders: RouteLoaders; views: RouteViews \} & \{ viewTransition: ViewTransitionConfig \}
+`match is CreateRouteOptions & { id: string; loaders: RouteLoaders; views: RouteViews } & { viewTransition: ViewTransitionConfig }`

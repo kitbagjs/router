@@ -155,7 +155,7 @@ The props callback receives two arguments:
 | Argument | Description |
 | -------- | ----------- |
 | route | The resolved route, including any params. See [Params](/core-concepts/params) for more details. |
-| context | An object with helper methods for navigation (`push`, `replace`, `reject`, `update`) and the `parent` route's props. See [PropsCallbackContext](/api/types/PropsCallbackContext) for more details. |
+| context | An object with helper methods for navigation (`push`, `replace`, `reject`, `update`) and the `parent` route's props. See [AddViewPropsCallbackContext](/api/types/AddViewPropsCallbackContext) for more details. |
 
 #### Return Type
 

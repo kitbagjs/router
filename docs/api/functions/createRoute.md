@@ -1,7 +1,7 @@
 # Functions: createRoute()
 
 ```ts
-function createRoute<TOptions, TProps>(options, ...args): RouteWithMethods<ToRouteUrl<TOptions>, ToRouteMatches<TOptions, TProps>>;
+function createRoute<TOptions>(options): RouteWithMethods<ToRouteUrl<TOptions>, ToRouteMatches<TOptions>>;
 ```
 
 ## Type Parameters
@@ -9,15 +9,13 @@ function createRoute<TOptions, TProps>(options, ...args): RouteWithMethods<ToRou
 | Type Parameter |
 | ------ |
 | `TOptions` *extends* [`CreateRouteOptions`](../types/CreateRouteOptions.md) |
-| `TProps` *extends* \| [`PropsGetter`](../types/PropsGetter.md)\<`TOptions`, `any`\[`any`\]\> \| `RoutePropsRecord`\<`TOptions`, `any`\[`any`\]\> \| [`RouterViewPropsGetter`](../types/RouterViewPropsGetter.md)\<`TOptions`\> |
 
 ## Parameters
 
 | Parameter | Type |
 | ------ | ------ |
 | `options` | `TOptions` |
-| ...`args` | `CreateRouteWithProps`\<`TOptions`, `TProps`\> |
 
 ## Returns
 
-`RouteWithMethods`\<`ToRouteUrl`\<`TOptions`\>, `ToRouteMatches`\<`TOptions`, `TProps`\>\>
+`RouteWithMethods`\<`ToRouteUrl`\<`TOptions`\>, `ToRouteMatches`\<`TOptions`\>\>

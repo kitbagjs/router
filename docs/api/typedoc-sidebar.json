@@ -356,10 +356,6 @@
         "link": "/api/types/CreateRouteOptions.md"
       },
       {
-        "text": "CreateRouteProps",
-        "link": "/api/types/CreateRouteProps.md"
-      },
-      {
         "text": "CreateRouterPluginOptions",
         "link": "/api/types/CreateRouterPluginOptions.md"
       },
@@ -390,6 +386,10 @@
       {
         "text": "LoaderGetter",
         "link": "/api/types/LoaderGetter.md"
+      },
+      {
+        "text": "NavigationBehavior",
+        "link": "/api/types/NavigationBehavior.md"
       },
       {
         "text": "Param",
@@ -432,16 +432,8 @@
         "link": "/api/types/PrefetchStrategy.md"
       },
       {
-        "text": "PropsCallbackContext",
-        "link": "/api/types/PropsCallbackContext.md"
-      },
-      {
         "text": "PropsCallbackParent",
         "link": "/api/types/PropsCallbackParent.md"
-      },
-      {
-        "text": "PropsGetter",
-        "link": "/api/types/PropsGetter.md"
       },
       {
         "text": "QuerySource",
@@ -618,10 +610,6 @@
       {
         "text": "RouterRouteUnion",
         "link": "/api/types/RouterRouteUnion.md"
-      },
-      {
-        "text": "RouterViewPropsGetter",
-        "link": "/api/types/RouterViewPropsGetter.md"
       },
       {
         "text": "RouterViewTransition",

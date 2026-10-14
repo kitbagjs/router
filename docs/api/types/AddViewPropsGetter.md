@@ -4,8 +4,7 @@
 type AddViewPropsGetter<TRoute, TComponent> = (route, context) => MaybePromise<ComponentProps<TComponent>>;
 ```
 
-The props getter for a view added via `addView`. Receives the same two arguments as the
-`createRoute` props callback: the resolved route and a context object.
+The props getter for a view added via `addView`. Receives the resolved route and a context object.
 
 ## Type Parameters
 

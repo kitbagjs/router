@@ -38,4 +38,4 @@ A props getter for the view. Receives the resolved route and a context object.
 | Type Parameter | Default type | Description |
 | ------ | ------ | ------ |
 | `TName` *extends* `string` \| `undefined` | `string` | The view's name, inferred from the `name` option. |
-| `TGetter` | [`PropsGetter`](PropsGetter.md) | The view's props getter, inferred from the `props` option. |
+| `TGetter` | [`AddViewPropsGetter`](AddViewPropsGetter.md)\<[`Route`](Route.md), `Component`\> | The view's props getter, inferred from the `props` option. |
