@@ -120,6 +120,9 @@ export type { ViewTransitionProps } from './components/viewTransition'
 import { routerInjectionKey } from './keys'
 import { createRouterAssets, RouterAssets } from './services/createRouterAssets'
 import { RegisteredRouter } from './types/register'
+import { isParam as isParamInternal, Param } from './types/param'
+
+export const isParam: (value: unknown) => value is Param = isParamInternal
 
 const routerAssets = createRouterAssets(routerInjectionKey)
 

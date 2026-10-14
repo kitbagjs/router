@@ -1,3 +1,4 @@
+import { createParam } from '@/services/createParam'
 import { Param } from '@/types/param'
 import { ParamOptions } from '@/types/paramTypes'
 import { ExtractParamType } from '@/types/params'
@@ -16,7 +17,7 @@ type TupleOf<TParamOptions extends ParamOptions[]> = { [K in keyof TParamOptions
 export function tupleOf<const TParamOptions extends ParamOptions[]>(params: TParamOptions, options: TupleOfOptions = {}): Param<TupleOf<TParamOptions>> {
   const { separator } = { ...defaultOptions, ...options }
 
-  return {
+  return createParam({
     get: (value) => {
       const values = value.split(separator)
 
@@ -33,5 +34,5 @@ export function tupleOf<const TParamOptions extends ParamOptions[]>(params: TPar
 
       return params.map((param, index) => setParamValue(value.at(index), { param })).join(separator)
     },
-  }
+  })
 }
