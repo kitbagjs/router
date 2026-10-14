@@ -5,7 +5,7 @@ import { UrlString } from '@/types/urlString'
 import { UrlParamsReading, UrlSchema } from '@/types/url'
 import { GetRouteTitle, GetTitleCallback } from '@/types/routeTitle'
 import { Hooks } from '@/models/hooks'
-import { Param } from '@/types/param'
+import { GetParam, GetAllParams } from '@/types/paramGetters'
 
 /**
  * The match a route resolved to, which is the last of its matches. Falls back to the wide match type when
@@ -63,11 +63,11 @@ export type ResolvedRoute<TRoute extends Route = Route> = Readonly<{
   /**
    * Returns the first present value using this param definition, or undefined when none is present.
    */
-  getParam: <T>(param: Param<T>) => T | undefined,
+  getParam: GetParam,
   /**
    * Returns every present value using this param definition, in URL schema order.
    */
-  getAllParams: <T>(param: Param<T>) => T[],
+  getAllParams: GetAllParams,
   /**
    * Type for additional data intended to be stored in history state.
    */
