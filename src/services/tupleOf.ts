@@ -1,4 +1,5 @@
-import { ParamOptions, ParamGetSetOptions } from '@/types/paramTypes'
+import { Param } from '@/types/param'
+import { ParamOptions } from '@/types/paramTypes'
 import { ExtractParamType } from '@/types/params'
 import { getParamValue, setParamValue } from '@/services/params'
 
@@ -12,7 +13,7 @@ const defaultOptions = {
 
 type TupleOf<TParamOptions extends ParamOptions[]> = { [K in keyof TParamOptions]: ExtractParamType<TParamOptions[K]> }
 
-export function tupleOf<const TParamOptions extends ParamOptions[]>(params: TParamOptions, options: TupleOfOptions = {}): ParamGetSetOptions<TupleOf<TParamOptions>> {
+export function tupleOf<const TParamOptions extends ParamOptions[]>(params: TParamOptions, options: TupleOfOptions = {}): Param<TupleOf<TParamOptions>> {
   const { separator } = { ...defaultOptions, ...options }
 
   return {

@@ -1,9 +1,10 @@
-import { ParamOptions, ParamGetSetOptions } from '@/types/paramTypes'
+import { Param } from '@/types/param'
+import { ParamOptions } from '@/types/paramTypes'
 import { safeGetParamValue, safeSetParamValue } from '@/services/params'
 import { ExtractParamType } from '@/types/params'
 
-export function unionOf<const TParamOptions extends ParamOptions[]>(params: TParamOptions): ParamGetSetOptions<ExtractParamType<TParamOptions[number]>>
-export function unionOf(params: ParamOptions[]): ParamGetSetOptions {
+export function unionOf<const TParamOptions extends ParamOptions[]>(params: TParamOptions): Param<ExtractParamType<TParamOptions[number]>>
+export function unionOf(params: ParamOptions[]): Param {
   return {
     get: (value, { invalid }) => {
       for (const param of params) {
