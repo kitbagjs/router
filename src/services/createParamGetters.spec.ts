@@ -23,7 +23,7 @@ test('lookup matches definition identity across URL parts and skips absent value
   expect(resolved.getAllParams(otherId)).toEqual([])
 })
 
-test('live route lookup follows navigation and definitions inherited from parents', async () => {
+test('current route lookup follows navigation and definitions inherited from parents', async () => {
   const userId = createParam(Number)
   const parent = createRoute({ name: 'user', path: withParams('/users/[id]', { id: userId }) })
   const child = createRoute({ parent, name: 'settings', path: '/settings' })
