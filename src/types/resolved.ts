@@ -2,7 +2,7 @@ import { CreatedRouteOptions, Route, RouteDataOf, Routes } from '@/types/route'
 import { LastInArray } from '@/types/utilities'
 import { ExtractRouteStateParamsAsOptional } from '@/types/state'
 import { UrlString } from '@/types/urlString'
-import { UrlParamsReading } from '@/types/url'
+import { UrlParamsReading, UrlSchema } from '@/types/url'
 import { GetRouteTitle, GetTitleCallback } from '@/types/routeTitle'
 import { Hooks } from '@/models/hooks'
 
@@ -24,6 +24,7 @@ export function isResolvedRoute(value: unknown): value is ResolvedRoute & Resolv
 
 export type ResolvedRouteInternal = {
   [IS_RESOLVED_ROUTE_SYMBOL]: true,
+  schema: UrlSchema,
   hooks: Hooks[],
   getRouteTitle: GetRouteTitle,
 }

@@ -8,6 +8,7 @@ import { isRoute, Route } from '@/types/route'
 import { RouteAliasMatch } from '@/types/routeAlias'
 import { UrlString } from '@/types/urlString'
 import { getHooks } from '@/types/hooks'
+import { isUrl } from '@/types/url'
 
 type CreateResolvedRouteOptions = RouterResolveOptions & {
   /**
@@ -69,6 +70,10 @@ function getResolvedUrls(route: Route, params: Record<string, unknown>, options:
 }
 
 export function createResolvedRoute(route: Route, params: Record<string, unknown> = {}, options: CreateResolvedRouteOptions = {}): ResolvedRoute {
+  if (!isUrl(route)) {
+    throw new Error('createResolvedRoute called with an invalid URL')
+  }
+
   const { canonical, href, query, hash } = getResolvedUrls(route, params, options)
   const matched = route.matches.at(-1)
 
@@ -86,6 +91,7 @@ export function createResolvedRoute(route: Route, params: Record<string, unknown
 
   const resolvedRoute: ResolvedRoute & ResolvedRouteInternal = {
     [IS_RESOLVED_ROUTE_SYMBOL]: true,
+    schema: route.schema,
     id: route.id,
     name: route.name,
     matches: route.matches,
