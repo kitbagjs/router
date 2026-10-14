@@ -3,7 +3,7 @@ import { OptionalUrlParam, UrlQueryPart, ToUrlQueryPart, RequiredUrlParam, ToUrl
 import { ExtractParamType } from '@/types/params'
 import { AllPropertiesAreOptional, Identity } from '@/types/utilities'
 import { UrlString } from '@/types/urlString'
-import { ParamGetSet } from '@/types/paramTypes'
+import { ParamGetSetOptions } from '@/types/paramTypes'
 import { MakeOptional } from '@/utilities/makeOptional'
 
 export const IS_URL_SYMBOL = Symbol('IS_URL_SYMBOL')
@@ -87,7 +87,7 @@ type ToUrlParamsReading<
 > = Identity<
   MakeOptional<{
     [K in keyof TParams]: TParams[K] extends OptionalUrlParam<infer TParam>
-      ? TParam extends Required<ParamGetSet>
+      ? TParam extends Required<ParamGetSetOptions>
         ? ExtractParamType<TParam>
         : ExtractParamType<TParam> | undefined
       : TParams[K] extends RequiredUrlParam<infer TParam>

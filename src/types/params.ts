@@ -1,4 +1,4 @@
-import { LiteralParam, Param, ParamGetSet, ParamGetter } from '@/types/paramTypes'
+import { LiteralParam, ParamOptions, ParamGetSetOptions, ParamGetter } from '@/types/paramTypes'
 import { StandardSchemaV1 } from '@standard-schema/spec'
 
 export const paramStart = '['
@@ -11,7 +11,7 @@ export type ParamEnd = typeof paramEnd
  * @param value - The value to check.
  * @returns True if the value is not a constructor function for String, Boolean, Date, or Number.
  */
-function isNotConstructor(value: Param): boolean {
+function isNotConstructor(value: ParamOptions): boolean {
   return value !== String && value !== Boolean && value !== Number && value !== Date
 }
 
@@ -20,16 +20,16 @@ function isNotConstructor(value: Param): boolean {
  * @param value - The value to check.
  * @returns True if the value is a function that is not a constructor.
  */
-export function isParamGetter(value: Param): value is ParamGetter {
+export function isParamGetter(value: ParamOptions): value is ParamGetter {
   return typeof value === 'function' && isNotConstructor(value)
 }
 
 /**
- * Type guard to check if a value conforms to the ParamGetSet type.
+ * Type guard to check if a value conforms to the ParamGetSetOptions type.
  * @param value - The value to check.
  * @returns True if the value is an object with both 'get' and 'set' functions defined.
  */
-export function isParamGetSet(value: Param): value is ParamGetSet {
+export function isParamGetSetOptions(value: ParamOptions): value is ParamGetSetOptions {
   return typeof value === 'object'
     && 'get' in value
     && typeof value.get === 'function'
@@ -42,7 +42,7 @@ export function isParamGetSet(value: Param): value is ParamGetSet {
  * @param value - The value to check.
  * @returns True if the value is a string, number, or boolean.
  */
-export function isLiteralParam(value: Param): value is LiteralParam {
+export function isLiteralParam(value: ParamOptions): value is LiteralParam {
   return typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean'
 }
 
@@ -69,30 +69,30 @@ export type ExtractParamName<
 
 /**
  * Extracts the actual type from a parameter type, handling getters and setters.
- * @template TParam - The parameter type.
+ * @template TParamOptions - The parameter type.
  * @returns The extracted type, or 'string' as a fallback.
  */
-export type ExtractParamType<TParam extends Param> = Param extends TParam
+export type ExtractParamType<TParamOptions extends ParamOptions> = ParamOptions extends TParamOptions
   ? unknown
-  : TParam extends ParamGetSet<infer Type>
+  : TParamOptions extends ParamGetSetOptions<infer Type>
     ? Type
-    : TParam extends DateConstructor
+    : TParamOptions extends DateConstructor
       ? Date
-      : TParam extends JSON
+      : TParamOptions extends JSON
         ? unknown
-        : TParam extends StandardSchemaV1
-          ? StandardSchemaV1.InferOutput<TParam>
-          : TParam extends ParamGetter
-            ? ReturnType<TParam>
-            : TParam extends LiteralParam
-              ? TParam
+        : TParamOptions extends StandardSchemaV1
+          ? StandardSchemaV1.InferOutput<TParamOptions>
+          : TParamOptions extends ParamGetter
+            ? ReturnType<TParamOptions>
+            : TParamOptions extends LiteralParam
+              ? TParamOptions
               : string
 
 export type ParamIsOptional<TParam extends string> = TParam extends `?${string}` ? true : false
 export type ParamIsGreedy<TParam extends string> = TParam extends `${string}*` ? true : false
 
-export type ParamIsOptionalOrHasDefault<TParamName extends string, TParam extends Param | undefined> = ParamIsOptional<TParamName> extends true
+export type ParamIsOptionalOrHasDefault<TParamName extends string, TParamOptions extends ParamOptions | undefined> = ParamIsOptional<TParamName> extends true
   ? true
-  : TParam extends Required<ParamGetSet>
+  : TParamOptions extends Required<ParamGetSetOptions>
     ? true
     : false
