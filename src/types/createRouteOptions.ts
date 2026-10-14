@@ -3,7 +3,7 @@ import { combineMeta } from '@/services/combineMeta'
 import { combineState } from '@/services/combineState'
 import { combineContext } from '@/services/combineContext'
 import { combineHooks } from '@/types/hooks'
-import { Param } from '@/types/paramTypes'
+import { ParamOptions } from '@/types/paramTypes'
 import { PrefetchConfig } from '@/types/prefetch'
 import { ViewTransitionConfig } from '@/types/viewTransition'
 import { RouteMeta } from '@/types/register'
@@ -76,7 +76,7 @@ export type CreateRouteOptions<
   /**
    * Type params for additional data intended to be stored in history state, all keys will be optional unless a default is provided.
    */
-  state?: Record<string, Param>,
+  state?: Record<string, ParamOptions>,
   /**
    * An optional parent route to nest this route under.
    */
