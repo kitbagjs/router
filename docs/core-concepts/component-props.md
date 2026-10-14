@@ -18,6 +18,24 @@ This is obviously useful for assigning static values or route params down to you
 - Correct type for return type.
 - Support for async prop fetching.
 
+## Reusable Views
+
+Use `createView` to share a component and props getter across routes:
+
+```ts
+const userView = createView({
+  component: UserComponent,
+  props: (route) => ({ userId: String(route.params.id) }),
+})
+
+const user = createRoute({ name: 'user', path: '/users/[id]' }).addView(userView)
+const archived = createRoute({ name: 'archived', path: '/archive/[id]' }).addView(userView)
+```
+
+The getter receives a general resolved route and its loader data, or the resolved route union when a router is registered. Its result is checked against the component's props. Declare `context` for typed navigation and rejection helpers; attachment includes that context in the route. Views can set `prefetch` and `transformer` defaults, overridable when attaching them along with a view `name`.
+
+When the registered router contains the view being defined, an explicit `View<Props, typeof context>` annotation breaks circular inference. Use `Promise<Props>` for an async getter. Reusable views do not have route-specific `parent` or `update` helpers.
+
 ## Named Views
 Each [named view](/core-concepts/routes#named-views) can have its own props getter. Just pass a `props` getter alongside the view's `name`.
 

@@ -95,6 +95,9 @@ export { SsrOptionRequiredError } from './errors/ssrOptionRequiredError'
 export { UnreachableRouteError } from './errors/unreachableRouteError'
 
 // Services
+export { createView } from './services/createView'
+export type { CreateViewOptions, View, ViewRoute, ViewCallbackContext } from './types/view'
+export { isView } from './types/view'
 export { createRoute } from './services/createRoute'
 export { createRejection } from './services/createRejection'
 export { createExternalRoute } from './services/createExternalRoute'

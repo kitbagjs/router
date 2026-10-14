@@ -4,6 +4,8 @@ import { AnyPayloadTransformer } from '@/services/payload'
 import { AddViewPropsGetter } from '@/types/addView'
 import { PrefetchConfig } from '@/types/prefetch'
 import { CreatedRouteOptions, Route } from '@/types/route'
+import { AnyView, isView } from '@/types/view'
+import { combineContext } from '@/services/combineContext'
 
 /**
  * The loose runtime shape of the `addView` options. Purposely wide: the getter and name types each
@@ -19,7 +21,7 @@ type ViewOptions = {
 /**
  * The runtime arguments accepted by `addView`.
  */
-type AddViewParameters = [component: Component, options?: ViewOptions]
+type AddViewParameters = [component: Component | AnyView, options?: ViewOptions]
 
 /**
  * The loose runtime signature of the `addView` method. Purposely wide: it returns Route rather than the
@@ -28,6 +30,7 @@ type AddViewParameters = [component: Component, options?: ViewOptions]
 export type AddView = (...args: AddViewParameters) => Route
 
 type View = {
+  context: AnyView['context'],
   name: string,
   component: Component,
   props: AddViewPropsGetter<Route, Component> | undefined,
@@ -35,13 +38,25 @@ type View = {
   transformer: AnyPayloadTransformer | undefined,
 }
 
-export function toView(component: Component, options: ViewOptions | undefined): View {
+export function toView(source: Component | AnyView, options: ViewOptions | undefined): View {
+  if (!isView(source)) {
+    return {
+      name: options?.name ?? DEFAULT_VIEW_NAME,
+      component: source,
+      props: options?.props,
+      prefetch: options?.prefetch,
+      transformer: options?.transformer,
+      context: [],
+    }
+  }
+
   return {
     name: options?.name ?? DEFAULT_VIEW_NAME,
-    component,
-    props: options?.props,
-    prefetch: options?.prefetch,
-    transformer: options?.transformer,
+    component: source.component,
+    props: options?.props ?? source.props,
+    prefetch: options?.prefetch ?? source.prefetch,
+    transformer: options?.transformer ?? source.transformer,
+    context: source.context,
   }
 }
 
@@ -51,9 +66,10 @@ export function toView(component: Component, options: ViewOptions | undefined): 
  * Matches are `markRaw` so that making a route reactive does not turn its components into reactive
  * proxies. Spreading a match drops that, so the rebuilt one is marked again.
  */
-export function addViewToMatch(match: CreatedRouteOptions, { name, component, props, prefetch, transformer }: View): CreatedRouteOptions {
+export function addViewToMatch(match: CreatedRouteOptions, { name, component, props, prefetch, transformer, context }: View): CreatedRouteOptions {
   return markRaw({
     ...match,
+    context: combineContext(match.context, context),
     views: {
       ...match.views,
       [name]: { component, props, prefetch, transformer },

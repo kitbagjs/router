@@ -2,6 +2,7 @@ import { AddAlias, createAliases } from '@/services/addAlias'
 import { AddLoader, addLoaderToMatch, checkForLoaderConflict, toLoader } from '@/services/addLoader'
 import { AddView, addViewToMatch, toView } from '@/services/addView'
 import { CreatedRouteOptions, isRoute, Route } from '@/types/route'
+import { combineContext } from '@/services/combineContext'
 
 type NextMatch = (match: CreatedRouteOptions) => CreatedRouteOptions
 
@@ -26,8 +27,12 @@ export function withRouteMethods<TRoute extends Route>(route: TRoute): TRoute {
 
   const addView: AddView = (component, options) => {
     const view = toView(component, options)
+    const next = withNextMatch((match) => addViewToMatch(match, view))
 
-    return withNextMatch((match) => addViewToMatch(match, view))
+    return withRouteMethods({
+      ...next,
+      context: combineContext(next.context, view.context),
+    })
   }
 
   const addLoader: AddLoader = (load, options) => {
