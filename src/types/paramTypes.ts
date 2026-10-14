@@ -7,7 +7,7 @@ export type ParamExtras = {
 export type ParamGetter<T = any> = (value: string, extras: ParamExtras) => T
 export type ParamSetter<T = any> = (value: T, extras: ParamExtras) => string
 
-export type ParamGetSet<T = any> = {
+export type ParamGetSetOptions<T = any> = {
   get: ParamGetter<T>,
   set: ParamSetter<T>,
   defaultValue?: T,
@@ -16,7 +16,7 @@ export type ParamGetSet<T = any> = {
 export type LiteralParam = string | number | boolean
 
 export type ParamOptions = | ParamGetter
-  | ParamGetSet
+  | ParamGetSetOptions
   | RegExp
   | BooleanConstructor
   | NumberConstructor

@@ -1,5 +1,5 @@
 import { UnsupportedSchemaVendorError } from '@/errors/unsupportedSchemaVendorError'
-import { ParamGetSet } from '@/types/paramTypes'
+import { ParamGetSetOptions } from '@/types/paramTypes'
 import { isRecord } from '@/utilities/guards'
 import { isPromise } from '@/utilities/promises'
 import { StandardSchemaV1 } from '@standard-schema/spec'
@@ -59,7 +59,7 @@ export function isStandardSchema(value: unknown): value is StandardSchemaLike {
   return isZodSchema(value) || isValibotSchema(value) || isArkTypeSchema(value)
 }
 
-export function createStandardSchemaParam<T>(schema: StandardSchemaLike): ParamGetSet<T> {
+export function createStandardSchemaParam<T>(schema: StandardSchemaLike): ParamGetSetOptions<T> {
   return {
     get: (value, { invalid }) => {
       try {
