@@ -95,6 +95,9 @@ export { SsrOptionRequiredError } from './errors/ssrOptionRequiredError'
 export { UnreachableRouteError } from './errors/unreachableRouteError'
 
 // Services
+export { createHook } from './services/createHook'
+export type { CreateHookOptions, Hook, HookRoute, HookCallbackContext } from './types/hook'
+export { isHook } from './types/hook'
 export { createRoute } from './services/createRoute'
 export { createRejection } from './services/createRejection'
 export { createExternalRoute } from './services/createExternalRoute'
