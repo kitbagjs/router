@@ -1,6 +1,6 @@
 import { Param } from '@/types/param'
 import { ParamGetters } from '@/types/paramGetters'
-import { UrlSchema } from '@/types/url'
+import { getUrlSchemaDefinitions, UrlSchema } from '@/types/url'
 import { isSameParam } from '@/services/isSameParam'
 
 export type CreateParamGettersOptions = {
@@ -12,7 +12,7 @@ export type CreateParamGettersOptions = {
  * Looks up parsed param values by definition identity across host, path, query, and hash.
  */
 export function createParamGetters(options: CreateParamGettersOptions): ParamGetters {
-  const definitions = Object.values(options.schema).flatMap((part) => Object.entries(part.params))
+  const definitions = getUrlSchemaDefinitions(options.schema)
 
   function getParam<T>(param: Param<T>): T | undefined {
     return getAllParams(param)[0]
