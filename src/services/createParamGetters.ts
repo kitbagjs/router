@@ -11,11 +11,11 @@ export type CreateParamGettersOptions = {
 /**
  * Looks up parsed param values by definition identity across host, path, query, and hash.
  */
-export function createParamGetters(route: CreateParamGettersOptions): ParamGetters {
-  const definitions = Object.values(route.schema).flatMap((part) => Object.entries(part.params))
+export function createParamGetters(options: CreateParamGettersOptions): ParamGetters {
+  const definitions = Object.values(options.schema).flatMap((part) => Object.entries(part.params))
 
   function getAllParams<T>(param: Param<T>): T[] {
-    const params = route.params
+    const params = options.params
     const values: T[] = []
 
     for (const [name, definition] of definitions) {
