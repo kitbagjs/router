@@ -13,7 +13,11 @@ export function createParam<TParamOptions extends ParamOptions>(param: TParamOpt
   } satisfies ParamInternal
 
   if (isParamGetSetOptions(param)) {
-    return { ...param, ...internal, defaultValue: defaultValue ?? param.defaultValue }
+    return {
+      ...param,
+      ...internal,
+      defaultValue: defaultValue ?? param.defaultValue,
+    }
   }
 
   return {
