@@ -6,16 +6,16 @@ import { createRejection } from '@/services/createRejection'
 
 test('one definition loads independently for multiple routes', async () => {
   const loader = createLoader({
-    load: async ({ id }: { id: string }) => `user-${id}`,
+    load: async (route) => `${route.name}-${route.params.id}`,
   })
   const first = createRoute({ name: 'first', path: '/first/[id]' }).addLoader(loader)
   const second = createRoute({ name: 'second', path: '/second/[id]' }).addLoader(loader)
   const router = createRouter([first, second], { initialUrl: '/first/1' })
 
   await router.start()
-  await expect(router.route.data).resolves.toBe('user-1')
+  await expect(router.route.data).resolves.toBe('first-1')
   await router.push('second', { id: '2' })
-  await expect(router.route.data).resolves.toBe('user-2')
+  await expect(router.route.data).resolves.toBe('second-2')
 })
 
 test('attachment overrides loader defaults without changing other attachments', () => {

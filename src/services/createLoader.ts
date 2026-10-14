@@ -2,14 +2,13 @@ import { CreateLoaderOptions, IS_LOADER_SYMBOL, Loader } from '@/types/loader'
 import { RouteContext } from '@/types/routeContext'
 
 /**
- * Creates a reusable loader that can be attached to routes providing its required params.
+ * Creates a reusable loader that receives the resolved route when an attached route is loaded.
  */
 export function createLoader<
-  TParams extends object = {},
   const TContext extends readonly RouteContext[] = [],
   TData = unknown
->(options: CreateLoaderOptions<TParams, TContext, TData>): Loader<TParams, TContext, TData>
+>(options: CreateLoaderOptions<TContext, TData>): Loader<TContext, TData>
 
-export function createLoader(options: CreateLoaderOptions<any, any, any>): Loader<any, any, any> {
+export function createLoader(options: CreateLoaderOptions<any, any>): Loader<any, any> {
   return { ...options, [IS_LOADER_SYMBOL]: true, context: [...options.context ?? []] }
 }

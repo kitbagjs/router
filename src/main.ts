@@ -26,7 +26,7 @@ export type { AliasTransform, AliasTransformContext } from './types/routeAlias'
 export type { RouteCallbackContext } from './types/routeCallbackContext'
 export type { RouteViews } from './types/routeViews'
 export type { RouteLoader, RouteLoaders } from './types/routeLoaders'
-export type { CreateLoaderOptions, Loader, LoaderCallbackContext } from './types/loader'
+export type { CreateLoaderOptions, Loader, LoaderCallbackContext, LoaderRoute } from './types/loader'
 export { isLoader } from './types/loader'
 export type {
   RejectionHooks,

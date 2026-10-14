@@ -23,29 +23,29 @@ Here `getUser` is your application's data-fetching function. Register `user` in 
 
 ## Reusable loaders
 
-Create a loader separately when several routes need the same loading logic. Annotate the callback's params to declare what each route must provide:
+Create a loader separately when several routes need the same loading logic. Like an inline loader, its callback receives the resolved route:
 
 ```ts
 import { createLoader, createRoute } from '@kitbag/router'
 
-const userLoader = createLoader({
-  load: ({ userId }: { userId: string }, { signal }) => getUser(userId, { signal }),
+const sessionLoader = createLoader({
+  load: (route, { signal }) => getSession({ signal, url: route.href }),
   prefetch: 'intent',
 })
 
 const user = createRoute({ name: 'user', path: '/users/[userId]' })
-  .addLoader(userLoader)
+  .addLoader(sessionLoader)
 
 const settings = createRoute({ name: 'settings', path: '/users/[userId]/settings' })
-  .addLoader(userLoader, { name: 'user', prefetch: false })
+  .addLoader(sessionLoader, { name: 'session', prefetch: false })
 ```
 
-The loader receives params directly. A route can provide extra params, but missing params or incompatible types are rejected by TypeScript. A loader that needs no params can be attached to any route. Reusing a definition computes data separately for each route.
+The route has a general resolved-route type. Registering your router gives the callback a union of its resolved routes, which can be narrowed by name. If the registered router includes this loader, an explicit loader type such as `Loader<[], Session>` breaks the circular type inference. Reusing a definition computes data separately for each route.
 
 A reusable loader can declare related routes and rejections through `context`:
 
 ```ts
-const sessionLoader = createLoader({
+const authenticatedSessionLoader = createLoader({
   context: [login],
   load: async (_params, { push, signal }) => {
     const session = await getSession({ signal })

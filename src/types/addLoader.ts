@@ -5,7 +5,7 @@ import { ResolvedRoute } from '@/types/resolved'
 import { CreatedRouteOptions, Route } from '@/types/route'
 import { RouteCallbackContext } from '@/types/routeCallbackContext'
 import { RouteLoader, RouteLoaders } from '@/types/routeLoaders'
-import { Url, UrlParamsReading } from '@/types/url'
+import { Url } from '@/types/url'
 import { Identity, LastInArray } from '@/types/utilities'
 import { AnyLoader } from '@/types/loader'
 import { RouteContext, ToRouteContext } from '@/types/routeContext'
@@ -116,7 +116,7 @@ export type RouteAddLoader<
     const TLoader extends AnyLoader,
     const TName extends string | undefined = undefined
   >(
-    loader: TLoader & (UrlParamsReading<TUrl> extends Parameters<NoInfer<TLoader>['load']>[0] ? unknown : never),
+    loader: TLoader,
     options?: AddLoaderOptions<TName, Awaited<ReturnType<TLoader['load']>>>,
   ) => AddLoaderReturn<TUrl, TMatches, AddLoaderLoaders<CurrentMatchLoaders<TMatches>, TName, ReturnType<TLoader['load']>>, [...TLoader['context']]>),
 }

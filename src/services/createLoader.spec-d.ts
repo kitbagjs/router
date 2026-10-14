@@ -2,23 +2,36 @@ import { expectTypeOf, test } from 'vitest'
 import { createLoader } from '@/services/createLoader'
 import { createRoute } from '@/services/createRoute'
 import { createRejection } from '@/services/createRejection'
-import { withParams } from '@/services/withParams'
-import { WithData } from '@/types/resolved'
+import { createRouter } from '@/services/createRouter'
+import { LoaderRoute } from '@/types/loader'
+import { ResolvedRoute, WithData } from '@/types/resolved'
 
-test('params are checked at attachment', () => {
-  const loader = createLoader({ load: ({ id }: { id: string }) => id.length })
+test('loaders receive resolved routes and preserve their data type', () => {
+  const loader = createLoader({
+    load: (route) => {
+      expectTypeOf(route).toEqualTypeOf<ResolvedRoute>()
+      // @ts-expect-error loaders cannot read their own data
+      expectTypeOf(route.data)
+
+      return route.name
+    },
+  })
   const route = createRoute({ name: 'user', path: '/users/[id]' }).addLoader(loader)
-  const other = createRoute({ name: 'post', path: '/posts/[id]/[slug]' }).addLoader(loader, { name: 'length' })
+  const other = createRoute({ name: 'post', path: '/posts' }).addLoader(loader, { name: 'name' })
 
-  expectTypeOf<WithData<typeof route>['data']>().toEqualTypeOf<Promise<number>>()
-  expectTypeOf<WithData<typeof other>['data']>().toEqualTypeOf<{ length: Promise<number> }>()
+  expectTypeOf<WithData<typeof route>['data']>().toEqualTypeOf<Promise<string>>()
+  expectTypeOf<WithData<typeof other>['data']>().toEqualTypeOf<{ name: Promise<string> }>()
+})
 
-  // @ts-expect-error the route does not provide id
-  createRoute({ path: '/' }).addLoader(loader)
-  // @ts-expect-error an optional id cannot satisfy a required id
-  createRoute({ path: '/[?id]' }).addLoader(loader)
-  // @ts-expect-error id must be a string
-  createRoute({ path: withParams('/[id]', { id: Number }) }).addLoader(loader, { name: 'length' })
+test('registered routes form a discriminated union', () => {
+  const user = createRoute({ name: 'user', path: '/users/[id]' })
+  const home = createRoute({ name: 'home', path: '/' })
+  const router = createRouter([user, home])
+
+  type RegisteredRoute = LoaderRoute<{ router: typeof router }>
+
+  expectTypeOf<Extract<RegisteredRoute, { name: 'user' }>['params']>().toEqualTypeOf<{ id: string }>()
+  expectTypeOf<Extract<RegisteredRoute, { name: 'home' }>['params']>().toEqualTypeOf<{}>()
 })
 
 test('declared context types the loader and attached route helpers', () => {

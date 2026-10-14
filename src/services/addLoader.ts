@@ -53,7 +53,7 @@ export function toLoader(source: AnyFunction | AnyLoader, options: LoaderOptions
 
   return {
     name: options?.name ?? DEFAULT_LOADER_NAME,
-    load: (route: ResolvedRoute, context: RouteCallbackContext<Route>) => source.load(route.params, {
+    load: (route: ResolvedRoute, context: RouteCallbackContext<Route>) => source.load(route, {
       push: context.push,
       replace: context.replace,
       reject: context.reject,

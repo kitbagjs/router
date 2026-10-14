@@ -5,8 +5,18 @@ import { RouterPush } from '@/types/routerPush'
 import { RouterReject } from '@/types/routerReject'
 import { RouterReplace } from '@/types/routerReplace'
 import { AnyFunction } from '@/types/utilities'
+import { Register } from '@/types/register'
+import { ResolvedRoute, RouterResolvedRouteUnion } from '@/types/resolved'
+import { Router, RouterRoutes } from '@/types/router'
 
 export const IS_LOADER_SYMBOL = Symbol('IS_LOADER_SYMBOL')
+
+/**
+ * The resolved routes a reusable loader can receive, narrowed by the registered router when available.
+ */
+export type LoaderRoute<TRegister = Register> = TRegister extends { router: infer TRouter extends Router }
+  ? RouterResolvedRouteUnion<RouterRoutes<TRouter>>
+  : ResolvedRoute
 
 /**
  * Navigation helpers available to a reusable loader, typed from its declared context.
@@ -19,17 +29,16 @@ export type LoaderCallbackContext<TContext extends readonly RouteContext[] = []>
 }
 
 /**
- * Options for a reusable loader. Params are declared by annotating the callback's first argument.
+ * Options for a reusable loader that receives the resolved route and its declared context helpers.
  */
 export type CreateLoaderOptions<
-  TParams extends object = {},
   TContext extends readonly RouteContext[] = [],
   TData = unknown
 > = TransformerOptions<NoInfer<Awaited<TData>>> & {
   /**
-   * Loads a value or promise from the params supplied by the attached route.
+   * Loads a value or promise from the resolved route.
    */
-  load: (params: TParams, context: LoaderCallbackContext<TContext>) => TData,
+  load: (route: LoaderRoute, context: LoaderCallbackContext<TContext>) => TData,
   /**
    * Related routes and rejections, also included in the attached route's context.
    */
@@ -44,16 +53,17 @@ export type CreateLoaderOptions<
  * A reusable loader definition, with its context normalized to an array.
  */
 export type Loader<
-  TParams extends object = {},
   TContext extends readonly RouteContext[] = [],
   TData = unknown
-> = CreateLoaderOptions<TParams, TContext, TData> & {
+> = TransformerOptions<Awaited<TData>> & {
   [IS_LOADER_SYMBOL]: true,
+  load: AnyFunction<TData>,
   context: TContext,
+  prefetch?: PrefetchConfig,
 }
 
 /**
- * The runtime shape after a loader's param, context, and return types have been erased.
+ * The runtime shape after a loader's route, context, and return types have been erased.
  */
 export type AnyLoader = {
   [IS_LOADER_SYMBOL]: true,
