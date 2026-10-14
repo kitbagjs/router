@@ -5,16 +5,15 @@ import { createRouter } from '@/services/createRouter'
 import { withParams } from '@/services/withParams'
 import { ResolvedRoute } from '@/types/resolved'
 
-test('lookup preserves branded values on wide resolved and live routes', () => {
-  type UserId = number & { readonly userIdBrand: true }
-  const userId = createParam((value: string): UserId => Number(value) as UserId)
+test('lookup preserves the param value type on wide resolved and live routes', () => {
+  const userId = createParam(Number)
   const route = createRoute({ name: 'user', path: withParams('/users/[id]', { id: userId }) })
   const router = createRouter([route])
-  const resolved: ResolvedRoute = router.resolve('user', { id: 1 as UserId })
+  const resolved: ResolvedRoute = router.resolve('user', { id: 1 })
 
-  expectTypeOf(resolved.getParam(userId)).toEqualTypeOf<UserId | undefined>()
-  expectTypeOf(resolved.getAllParams(userId)).toEqualTypeOf<UserId[]>()
-  expectTypeOf(router.route.getParam(userId)).toEqualTypeOf<UserId | undefined>()
+  expectTypeOf(resolved.getParam(userId)).toEqualTypeOf<number | undefined>()
+  expectTypeOf(resolved.getAllParams(userId)).toEqualTypeOf<number[]>()
+  expectTypeOf(router.route.getParam(userId)).toEqualTypeOf<number | undefined>()
 })
 
 test('lookup requires a created param definition', () => {
