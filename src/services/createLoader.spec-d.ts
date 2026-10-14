@@ -19,7 +19,7 @@ test('loaders receive resolved routes and preserve their data type', () => {
   const route = createRoute({ name: 'user', path: '/users/[id]' }).addLoader(loader)
   const other = createRoute({ name: 'post', path: '/posts' }).addLoader(loader, { name: 'name' })
 
-  expectTypeOf(loader).toMatchTypeOf<Loader<string>>()
+  expectTypeOf(loader).toExtend<Loader<string>>()
   expectTypeOf<WithData<typeof route>['data']>().toEqualTypeOf<Promise<string>>()
   expectTypeOf<WithData<typeof other>['data']>().toEqualTypeOf<{ name: Promise<string> }>()
 })
@@ -53,7 +53,7 @@ test('declared context types the loader and attached route helpers', () => {
   })
   const route = createRoute({ name: 'user', path: '/' }).addLoader(loader)
 
-  expectTypeOf(loader).toMatchTypeOf<Loader<boolean, readonly [typeof login, typeof denied]>>()
+  expectTypeOf(loader).toExtend<Loader<boolean, readonly [typeof login, typeof denied]>>()
   route.onBeforeRouteEnter((_to, { push, reject }) => {
     push('login')
     reject('Denied')
