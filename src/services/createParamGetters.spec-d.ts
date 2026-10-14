@@ -4,6 +4,23 @@ import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
 import { withParams } from '@/services/withParams'
 import { ResolvedRoute } from '@/types/resolved'
+import { createParam as createPublicParam, withDefault, isParam, Param } from '@/main'
+
+test('public param factories and guard keep identity metadata internal', () => {
+  const param = createPublicParam(Number)
+  const defaulted = withDefault(param, 1)
+  const createdWithDefault = createPublicParam(Number, 1)
+
+  expectTypeOf<keyof typeof param>().toEqualTypeOf<keyof Param<number>>()
+  expectTypeOf<Extract<keyof typeof defaulted, symbol>>().toEqualTypeOf<never>()
+  expectTypeOf(createdWithDefault).toEqualTypeOf<typeof defaulted>()
+
+  const value: unknown = param
+
+  if (isParam(value)) {
+    expectTypeOf(value).toEqualTypeOf<Param>()
+  }
+})
 
 test('lookup preserves the param value type on wide resolved and current routes', () => {
   const userId = createParam(Number)
