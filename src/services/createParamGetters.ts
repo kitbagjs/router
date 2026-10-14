@@ -1,6 +1,7 @@
-import { Param, isParam, PARAM_ID_SYMBOL } from '@/types/param'
+import { Param } from '@/types/param'
 import { ParamGetters } from '@/types/paramGetters'
 import { UrlInternal } from '@/types/url'
+import { isSameParam } from '@/services/isSameParam'
 
 /**
  * Looks up parsed param values by definition identity across host, path, query, and hash.
@@ -13,7 +14,7 @@ export function createParamGetters(schema: UrlInternal['schema'], getParams: () 
     const values: T[] = []
 
     for (const [name, definition] of definitions) {
-      if (!isParam(definition.param) || definition.param[PARAM_ID_SYMBOL] !== param[PARAM_ID_SYMBOL]) {
+      if (!isSameParam(definition.param, param)) {
         continue
       }
 
