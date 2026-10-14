@@ -15,6 +15,14 @@ test('lookup preserves branded values on wide resolved and live routes', () => {
   expectTypeOf(resolved.getParam(userId)).toEqualTypeOf<UserId | undefined>()
   expectTypeOf(resolved.getAllParams(userId)).toEqualTypeOf<UserId[]>()
   expectTypeOf(router.route.getParam(userId)).toEqualTypeOf<UserId | undefined>()
+})
+
+test('lookup requires a created param definition', () => {
+  const route = createRoute({ name: 'home', path: '/' })
+  const resolved = createRouter([route]).resolve('home')
+
   // @ts-expect-error lookup requires a created definition with an identity
   resolved.getParam(Number)
+  // @ts-expect-error collection lookup also requires a definition with an identity
+  resolved.getAllParams(Number)
 })
