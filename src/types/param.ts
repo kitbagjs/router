@@ -1,4 +1,4 @@
-import { ParamGetSetOptions } from '@/types/paramTypes'
+import { ParamGetter, ParamSetter } from '@/types/paramTypes'
 
 export const IS_PARAM_SYMBOL = Symbol('IS_PARAM_SYMBOL')
 
@@ -9,7 +9,11 @@ export type ParamInternal = {
 /**
  * A param definition that parses and stringifies values.
  */
-export type Param<T = unknown> = ParamGetSetOptions<T>
+export type Param<T = unknown> = {
+  get: ParamGetter<T>,
+  set: ParamSetter<T>,
+  defaultValue?: T,
+}
 
 /**
  * Determines whether a value is a param definition.
