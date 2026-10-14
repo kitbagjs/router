@@ -2,10 +2,9 @@ import { CreatedRouteOptions, Route, RouteDataOf, Routes } from '@/types/route'
 import { LastInArray } from '@/types/utilities'
 import { ExtractRouteStateParamsAsOptional } from '@/types/state'
 import { UrlString } from '@/types/urlString'
-import { UrlParamsReading } from '@/types/url'
+import { UrlParamsReading, UrlSchema } from '@/types/url'
 import { GetRouteTitle, GetTitleCallback } from '@/types/routeTitle'
 import { Hooks } from '@/models/hooks'
-import { UrlPart } from '@/services/withParams'
 
 /**
  * The match a route resolved to, which is the last of its matches. Falls back to the wide match type when
@@ -25,7 +24,7 @@ export function isResolvedRoute(value: unknown): value is ResolvedRoute & Resolv
 
 export type ResolvedRouteInternal = {
   [IS_RESOLVED_ROUTE_SYMBOL]: true,
-  schema: Record<string, UrlPart>,
+  schema: UrlSchema,
   hooks: Hooks[],
   getRouteTitle: GetRouteTitle,
 }
