@@ -1,6 +1,6 @@
 import { AnyPayloadTransformer, TransformerOptions } from '@/services/payload'
 import { PrefetchConfig } from '@/types/prefetch'
-import { RouteContext, RouteContextToRejection, RouteContextToRoute } from '@/types/routeContext'
+import { GetContext, RouteContext, RouteContextToRejection, RouteContextToRoute } from '@/types/routeContext'
 import { RouterPush } from '@/types/routerPush'
 import { RouterReject } from '@/types/routerReject'
 import { RouterReplace } from '@/types/routerReplace'
@@ -10,6 +10,11 @@ import { ResolvedRoute, RouterResolvedRouteUnion } from '@/types/resolved'
 import { Router, RouterRoutes } from '@/types/router'
 
 export const IS_LOADER_SYMBOL = Symbol('IS_LOADER_SYMBOL')
+
+export type LoaderInternal = {
+  [IS_LOADER_SYMBOL]: true,
+  getContext: GetContext,
+}
 
 /**
  * The resolved routes a reusable loader can receive, narrowed by the registered router when available.
@@ -56,7 +61,6 @@ export type Loader<
   TData = unknown,
   TContext extends readonly RouteContext[] = []
 > = TransformerOptions<Awaited<TData>> & {
-  [IS_LOADER_SYMBOL]: true,
   load: AnyFunction<TData>,
   context: TContext,
   prefetch?: PrefetchConfig,
@@ -66,7 +70,6 @@ export type Loader<
  * The runtime shape after a loader's route, context, and return types have been erased.
  */
 export type AnyLoader = {
-  [IS_LOADER_SYMBOL]: true,
   load: AnyFunction,
   context: readonly RouteContext[],
   prefetch?: PrefetchConfig,
@@ -76,6 +79,6 @@ export type AnyLoader = {
 /**
  * Determines whether a value is a reusable loader created by `createLoader`.
  */
-export function isLoader(value: unknown): value is AnyLoader {
+export function isLoader(value: unknown): value is AnyLoader & LoaderInternal {
   return typeof value === 'object' && value !== null && IS_LOADER_SYMBOL in value
 }

@@ -7,7 +7,7 @@ import { AnyFunction } from '@/types/utilities'
 import { AnyLoader, isLoader } from '@/types/loader'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouteCallbackContext } from '@/types/routeCallbackContext'
-import { combineContext } from '@/services/combineContext'
+import { GetContext } from '@/types/routeContext'
 
 export const DEFAULT_LOADER_NAME = 'default'
 
@@ -37,18 +37,22 @@ type Loader = {
   load: AnyFunction,
   prefetch: PrefetchConfig | undefined,
   transformer: AnyPayloadTransformer | undefined,
-  context: AnyLoader['context'],
+  getContext: GetContext,
 }
 
 export function toLoader(source: AnyFunction | AnyLoader, options: LoaderOptions | undefined): Loader {
-  if (!isLoader(source)) {
+  if (typeof source === 'function') {
     return {
       name: options?.name ?? DEFAULT_LOADER_NAME,
       load: source,
       prefetch: options?.prefetch,
       transformer: options?.transformer,
-      context: [],
+      getContext: () => [],
     }
+  }
+
+  if (!isLoader(source)) {
+    throw new TypeError('Expected a loader created by createLoader')
   }
 
   return {
@@ -61,7 +65,7 @@ export function toLoader(source: AnyFunction | AnyLoader, options: LoaderOptions
     }),
     prefetch: options?.prefetch ?? source.prefetch,
     transformer: options?.transformer ?? source.transformer,
-    context: source.context,
+    getContext: source.getContext,
   }
 }
 
@@ -71,13 +75,12 @@ export function toLoader(source: AnyFunction | AnyLoader, options: LoaderOptions
  * Matches are `markRaw` so that making a route reactive does not turn its loaders into reactive proxies.
  * Spreading a match drops that, so the rebuilt one is marked again.
  */
-export function addLoaderToMatch(match: CreatedRouteOptions, { name, load, prefetch, transformer, context }: Loader): CreatedRouteOptions {
+export function addLoaderToMatch(match: CreatedRouteOptions, { name, ...loader }: Loader): CreatedRouteOptions {
   return markRaw({
     ...match,
-    context: combineContext(match.context, context),
     loaders: {
       ...match.loaders,
-      [name]: { load, prefetch, transformer },
+      [name]: loader,
     },
   })
 }

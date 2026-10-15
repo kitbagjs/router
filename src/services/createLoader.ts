@@ -1,4 +1,4 @@
-import { CreateLoaderOptions, IS_LOADER_SYMBOL, Loader } from '@/types/loader'
+import { CreateLoaderOptions, IS_LOADER_SYMBOL, Loader, LoaderInternal } from '@/types/loader'
 import { RouteContext } from '@/types/routeContext'
 
 /**
@@ -10,5 +10,11 @@ export function createLoader<
 >(options: CreateLoaderOptions<TContext, TData>): Loader<TData, TContext>
 
 export function createLoader(options: CreateLoaderOptions<any, any>): Loader<any, any> {
-  return { ...options, [IS_LOADER_SYMBOL]: true, context: [...options.context ?? []] }
+  const context = [...options.context ?? []]
+  const internal = {
+    [IS_LOADER_SYMBOL]: true,
+    getContext: () => context,
+  } satisfies LoaderInternal
+
+  return { ...options, ...internal, context }
 }
