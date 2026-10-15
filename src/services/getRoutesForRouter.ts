@@ -1,3 +1,4 @@
+import { getRouteContext } from '@/services/getRouteContext'
 import { isRoute, Route, RouteInternal, Routes } from '@/types/route'
 import { RouterPlugin } from '@/types/routerPlugin'
 import { DuplicateNamesError } from '@/errors/duplicateNamesError'
@@ -55,7 +56,7 @@ export function getRoutesForRouter(routes: Routes | Routes[], plugins: RouterPlu
 
     routerRoutes.set(route.name, routerRoute)
 
-    for (const context of route.context) {
+    for (const context of getRouteContext(route)) {
       if (isRoute(context)) {
         addRoute(context)
       }
