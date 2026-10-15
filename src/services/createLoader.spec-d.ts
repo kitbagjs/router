@@ -40,7 +40,7 @@ test('declared context types the loader and attached route helpers', () => {
   const denied = createRejection({ type: 'Denied' })
   const loader = createLoader({
     context: [login, denied],
-    load: (_params, { push, reject }) => {
+    load: (_route, { push, reject }) => {
       push('login')
       reject('Denied')
       // @ts-expect-error the attached route is not known to the loader

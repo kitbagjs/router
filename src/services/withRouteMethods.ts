@@ -1,3 +1,4 @@
+import { createRouteRedirects } from '@/services/createRouteRedirects'
 import { withGetContext } from '@/services/withGetContext'
 import { AddAlias, createAliases } from '@/services/addAlias'
 import { AddLoader, addLoaderToMatch, checkForLoaderConflict, toLoader } from '@/services/addLoader'
@@ -9,9 +10,8 @@ import { combineContext } from '@/services/combineContext'
 type NextMatch = (match: CreatedRouteOptions) => CreatedRouteOptions
 
 /**
- * Attaches the chainable, immutable route methods — `addView`, `addLoader`, and `addAlias`. Each call
- * rebuilds the route's own (last) match, or its aliases, and returns a new route with the methods
- * re-attached, so none mutates the route it was called on, and chaining one never drops another.
+ * Attaches methods and callbacks to the current route copy. Chaining a view, loader, or alias
+ * rebuilds the route and reattaches its methods.
  */
 export function withRouteMethods<TRoute extends Route>(route: TRoute): TRoute {
   function withNextMatch(next: NextMatch, context: RouteContext[] = route.context): TRoute {
@@ -39,7 +39,7 @@ export function withRouteMethods<TRoute extends Route>(route: TRoute): TRoute {
 
     checkForLoaderConflict(route.matches.slice(0, -1), loader.name)
 
-    return withNextMatch((match) => addLoaderToMatch(match, loader), combineContext(route.context, loader.getContext?.()))
+    return withNextMatch((match) => addLoaderToMatch(match, loader), combineContext(route.context, loader.context))
   }
 
   const addAlias: AddAlias = (options, transform) => {
@@ -57,10 +57,14 @@ export function withRouteMethods<TRoute extends Route>(route: TRoute): TRoute {
     })
   }
 
-  return withGetContext({
+  const redirects = createRouteRedirects({ getRoute: () => result })
+  const result = withGetContext({
     ...route,
+    ...redirects,
     addView,
     addLoader,
     addAlias,
   })
+
+  return result
 }

@@ -1,15 +1,12 @@
-import { withGetContext } from '@/services/withGetContext'
 import { markRaw } from 'vue'
 import { createRouteId } from '@/services/createRouteId'
 import { InternalRouteHooks } from '@/types/hooks'
-import { RouteRedirects } from '@/types/redirects'
 import { CreateRouteOptions, ToRouteMatches, ToRouteUrl, combineRoutes, isWithParent } from '@/types/createRouteOptions'
 import { toName } from '@/types/name'
 import { IS_ROUTE_SYMBOL, Route, RouteInternal } from '@/types/route'
 import { createRouteHooks } from '@/services/createRouteHooks'
 import { toUrlPart, toUrlQueryPart } from '@/services/withParams'
 import { createUrl } from '@/services/createUrl'
-import { createRouteRedirects } from '@/services/createRouteRedirects'
 import { createRouteTitle, RouteSetTitle } from '@/types/routeTitle'
 import { RouteWithMethods } from '@/types/routeWithMethods'
 import { withRouteMethods } from '@/services/withRouteMethods'
@@ -31,10 +28,6 @@ export function createRoute(options: CreateRouteOptions): Route {
   const { setTitle, getTitle } = createRouteTitle(options.parent)
   const rawRoute = markRaw({ ...options, id, meta, state, name, views: {}, loaders: {} })
 
-  const redirects = createRouteRedirects({
-    getRoute: () => route,
-  })
-
   const url = createUrl({
     path,
     query,
@@ -50,7 +43,7 @@ export function createRoute(options: CreateRouteOptions): Route {
     aliases: [],
   } satisfies Omit<RouteInternal, 'getContext'>
 
-  const route = withGetContext({
+  const route = {
     id,
     matches: [rawRoute],
     name,
@@ -59,11 +52,10 @@ export function createRoute(options: CreateRouteOptions): Route {
     context,
     prefetch: options.prefetch,
     setTitle,
-    ...redirects,
     ...url,
     ...hooks,
     ...internal,
-  }) satisfies Route & RouteInternal & InternalRouteHooks & RouteRedirects & RouteSetTitle
+  } satisfies Route & Omit<RouteInternal, 'getContext'> & InternalRouteHooks & RouteSetTitle
 
   if (isWithParent(options)) {
     const combined = combineRoutes(options.parent, route, options.hoist)

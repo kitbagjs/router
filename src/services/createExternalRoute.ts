@@ -57,7 +57,7 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
     aliases: [],
   } satisfies Omit<RouteInternal, 'getContext'>
 
-  const route = withGetContext({
+  const definition = {
     id,
     matches: [rawRoute],
     name,
@@ -69,11 +69,15 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
     ...redirects,
     ...url,
     ...internal,
-  }) satisfies Route & RouteInternal & ExternalRouteHooks & RouteRedirects & RouteSetTitle
+  } satisfies Route & Omit<RouteInternal, 'getContext'> & ExternalRouteHooks & RouteRedirects & RouteSetTitle
+
+  let combined: Route = definition
 
   if (isWithParent(options)) {
-    return withGetContext(combineRoutes(options.parent, route, options.hoist))
+    combined = combineRoutes(options.parent, definition, options.hoist)
   }
+
+  const route = withGetContext(combined)
 
   return route
 }
