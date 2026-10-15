@@ -29,22 +29,77 @@ Create a loader separately when several routes need the same loading logic. Like
 import { createLoader, createRoute } from '@kitbag/router'
 
 const sessionLoader = createLoader({
-  load: (route, { signal }) => getSession({ signal, url: route.href }),
+  load: (route, { signal }) => getSession({
+    signal,
+    url: route.href,
+  }),
   prefetch: 'intent',
 })
 
-const user = createRoute({ name: 'user', path: '/users/[userId]' })
+const user = createRoute({
+  name: 'user',
+  path: '/users/[userId]',
+})
   .addLoader(sessionLoader)
 
-const settings = createRoute({ name: 'settings', path: '/users/[userId]/settings' })
-  .addLoader(sessionLoader, { name: 'session', prefetch: false })
+const settings = createRoute({
+  name: 'settings',
+  path: '/users/[userId]/settings',
+})
+  .addLoader(sessionLoader, {
+    name: 'session',
+    prefetch: false,
+  })
 ```
 
-The route has a general resolved-route type. Registering your router gives the callback a union of its resolved routes, which can be narrowed by name. If the registered router includes this loader, an explicit loader type such as `Loader<Session>` breaks the circular type inference. Reusing a definition computes data separately for each route.
+Without router registration, the callback receives a general resolved-route type. Reusing a definition computes data separately for each route.
 
 Use an inline loader for route-specific helpers such as `update` and `parent`.
 
 Declare `transformer` on the loader to serialize its resolved data for SSR hydration. Attachment options can override the loader's `prefetch` and `transformer` defaults without changing its definition.
+
+### Registration
+
+With [router registration](/quick-start#type-safety), the callback's `route` is typed as a union of the router's resolved routes. Narrow by `route.name` to access that route's typed params.
+
+::: warning Circular type inference
+If the registered router includes a route using the loader, TypeScript needs the loader's type to infer the router, while the loader's callback needs the router's type. Annotate the loader with the exported `Loader<Data>` type to break this circular inference. For an async loader, use `Promise<Result>` as its data type.
+:::
+
+```ts
+import { createLoader, createRoute, createRouter, type Loader } from '@kitbag/router'
+import { getUser, type User } from './api'
+
+const userLoader: Loader<Promise<User | null>> = createLoader({
+  load: async (route) => {
+    if (route.name === 'user') {
+      // route.params.userId is typed as string
+      return getUser(route.params.userId)
+    }
+
+    return null
+  },
+})
+
+const user = createRoute({
+  name: 'user',
+  path: '/users/[userId]',
+})
+  .addLoader(userLoader)
+
+const home = createRoute({
+  name: 'home',
+  path: '/',
+})
+
+export const router = createRouter([user, home])
+
+declare module '@kitbag/router' {
+  interface Register {
+    router: typeof router
+  }
+}
+```
 
 ## Reading data in a component
 
