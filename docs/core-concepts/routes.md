@@ -311,7 +311,7 @@ const router = createRouter([checkout])
 
 `createLoader`, `createView`, and `createHook` accept the same option. Their helpers use their own declared context, independent of the route they are attached to or the registered router. The option does not narrow the callback's incoming route or params.
 
-Attaching a loader or view includes its context in the route's context. For hooks, attach them before `createRouter` to register their context targets. Hooks attached later must reference targets already registered with the router.
+Attaching a loader or view includes its context in the route's context. Registering a hook on a route or router also registers its context targets, including when the hook is added after router creation. Removing the hook leaves those targets registered.
 
 ## Loaders
 

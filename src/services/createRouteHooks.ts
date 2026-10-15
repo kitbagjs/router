@@ -1,4 +1,4 @@
-import { AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, AddErrorHook, AddRejectionHook } from '@/types/hooks'
+import { ComponentHook, HookRemove, AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, AddErrorHook, AddRejectionHook } from '@/types/hooks'
 import { Routes } from '@/types/route'
 import { Hooks } from '@/models/hooks'
 import { ExtractRejectionTypes, Rejection } from '@/types/rejection'
@@ -39,40 +39,38 @@ export function createRouteHooks(): RouteHooks {
     return () => store.redirects.delete(hook)
   }
 
-  const onBeforeRouteEnter: AddBeforeEnterHook = (hook) => {
-    store.onBeforeRouteEnter.add(hook)
+  function addHook<THook extends ComponentHook>(hooks: Set<THook>, hook: THook): HookRemove {
+    for (const callback of store.onHookAdded) {
+      callback(hook)
+    }
 
-    return () => store.onBeforeRouteEnter.delete(hook)
+    hooks.add(hook)
+
+    return () => hooks.delete(hook)
+  }
+
+  const onBeforeRouteEnter: AddBeforeEnterHook = (hook) => {
+    return addHook(store.onBeforeRouteEnter, hook)
   }
 
   const onBeforeRouteUpdate: AddBeforeUpdateHook = (hook) => {
-    store.onBeforeRouteUpdate.add(hook)
-
-    return () => store.onBeforeRouteUpdate.delete(hook)
+    return addHook(store.onBeforeRouteUpdate, hook)
   }
 
   const onBeforeRouteLeave: AddBeforeLeaveHook = (hook) => {
-    store.onBeforeRouteLeave.add(hook)
-
-    return () => store.onBeforeRouteLeave.delete(hook)
+    return addHook(store.onBeforeRouteLeave, hook)
   }
 
   const onAfterRouteEnter: AddAfterEnterHook = (hook) => {
-    store.onAfterRouteEnter.add(hook)
-
-    return () => store.onAfterRouteEnter.delete(hook)
+    return addHook(store.onAfterRouteEnter, hook)
   }
 
   const onAfterRouteUpdate: AddAfterUpdateHook = (hook) => {
-    store.onAfterRouteUpdate.add(hook)
-
-    return () => store.onAfterRouteUpdate.delete(hook)
+    return addHook(store.onAfterRouteUpdate, hook)
   }
 
   const onAfterRouteLeave: AddAfterLeaveHook = (hook) => {
-    store.onAfterRouteLeave.add(hook)
-
-    return () => store.onAfterRouteLeave.delete(hook)
+    return addHook(store.onAfterRouteLeave, hook)
   }
 
   const onError: AddErrorHook = (hook) => {

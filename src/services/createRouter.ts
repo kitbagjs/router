@@ -157,12 +157,12 @@ export function createRouter<
   const routerViewTransition = options?.viewTransition
   const activity = createActivityTracker()
   const navigationProgress = createNavigationProgress()
-  const { routes, getRouteByName, getRejectionByType } = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options)
+  const { routes, getRouteByName, getRejectionByType, addHookContext } = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options)
   const notFoundRejection = getRejectionByType('NotFound')
   const valueStore = createRouteValueStore()
   const notFoundRoute = createResolvedRoute(notFoundRejection.route)
 
-  const hooks = createRouterHooks({ redirectStatus })
+  const hooks = createRouterHooks({ redirectStatus, onHookAdded: addHookContext })
 
   hooks.addGlobalRouteHooks(getGlobalHooksForRouter(plugins))
 

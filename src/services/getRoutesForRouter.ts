@@ -4,12 +4,34 @@ import { DuplicateNamesError } from '@/errors/duplicateNamesError'
 import { UnreachableRouteError } from '@/errors/unreachableRouteError'
 import { isNamedRoute } from '@/utilities/isNamedRoute'
 import { insertBaseRoute } from '@/services/insertBaseRoute'
-import { BUILT_IN_REJECTIONS, BuiltInRejectionType, isRejection, Rejection, RejectionInternal, Rejections } from '@/types/rejection'
+import { BUILT_IN_REJECTIONS, BuiltInRejectionType, isRejection, Rejection, RejectionInternal } from '@/types/rejection'
 import { RouterOptions } from '@/types/router'
 import { createRejection } from '@/services/createRejection'
 import { isUrl } from '@/types/url'
-import { getHooks } from '@/types/hooks'
+import { isHook } from '@/types/hook'
+import { ComponentHook, getHooks } from '@/types/hooks'
+import { Hooks } from '@/models/hooks'
+import { RouteContext } from '@/types/routeContext'
 import { getHookContext } from '@/services/getHookContext'
+
+type HookContextListener = (hook: ComponentHook) => void
+
+type HookContextSubscription = {
+  listener: HookContextListener,
+  stores: WeakRef<Hooks>[],
+}
+
+const hookContextCleanup = new FinalizationRegistry<HookContextSubscription>(({ listener, stores }) => {
+  for (const store of stores) {
+    store.deref()?.onHookAdded.delete(listener)
+  }
+})
+
+function createHookContextListener(register: HookContextListener): HookContextListener {
+  const callback = new WeakRef(register)
+
+  return (hook) => callback.deref()?.(hook)
+}
 
 /**
  * Takes in routes and plugins and returns a list of routes with the base route inserted if provided.
@@ -34,77 +56,88 @@ export function getRoutesForRouter(routes: Routes | Routes[], plugins: RouterPlu
     ...plugins.map((plugin) => plugin.rejections),
   ]
 
-  function addRoute(route: Route): void {
-    if (!isRoute(route) || !isNamedRoute(route)) {
+  const registeredRoutes: (Route & RouteInternal)[] = []
+  const observedStores = new WeakSet<Hooks>()
+  const stores: WeakRef<Hooks>[] = []
+  const onHookAdded = createHookContextListener(addHookContext)
+
+  // Shared route definitions must not keep discarded routers alive.
+  hookContextCleanup.register(addHookContext, { listener: onHookAdded, stores })
+
+  function addHookContext(hook: ComponentHook): void {
+    if (!isHook(hook)) {
       return
     }
 
-    const existingRouteByName = routerRoutes.get(route.name)
+    addContext(hook.context)
+  }
 
-    if (existingRouteByName && existingRouteByName.id !== route.id) {
-      throw new DuplicateNamesError(route.name)
-    }
+  function addContext(context: readonly RouteContext[]): void {
+    const pendingRoutes = new Map<string, Route & RouteInternal>()
+    const pendingRejections = new Map<string, Rejection & RejectionInternal>()
 
-    if (existingRouteByName?.id === route.id) {
-      return
-    }
-
-    const routerRoute = insertBaseRoute(route, options.base)
-
-    if (isUnreachable(routerRoute)) {
-      throw new UnreachableRouteError(route.name, getPath(routerRoute))
-    }
-
-    routerRoutes.set(route.name, routerRoute)
-
-    for (const context of [...route.context, ...getHookContext(getHooks(route))]) {
-      if (isRoute(context)) {
-        addRoute(context)
+    function addRoute(route: Route): void {
+      if (!isRoute(route) || !isNamedRoute(route)) {
+        return
       }
 
-      if (isRejection(context)) {
-        addRejection(context)
+      const existing = pendingRoutes.get(route.name) ?? routerRoutes.get(route.name)
+
+      if (existing && existing.id !== route.id) {
+        throw new DuplicateNamesError(route.name)
+      }
+
+      if (existing) {
+        return
+      }
+
+      const routerRoute = insertBaseRoute(route, options.base)
+
+      if (isUnreachable(routerRoute)) {
+        throw new UnreachableRouteError(route.name, getPath(routerRoute))
+      }
+
+      pendingRoutes.set(route.name, routerRoute)
+      addTargets([...route.context, ...getHookContext(getHooks(route))])
+    }
+
+    function addTargets(targets: readonly RouteContext[]): void {
+      for (const target of targets) {
+        if (isRoute(target)) {
+          addRoute(target)
+        }
+
+        if (isRejection(target)) {
+          pendingRejections.set(target.type, target)
+        }
       }
     }
-  }
 
-  function addRejection(rejection: Rejection): void {
-    if (!isRejection(rejection)) {
-      return
+    addTargets(context)
+
+    for (const [name, route] of pendingRoutes) {
+      routerRoutes.set(name, route)
+      registeredRoutes.push(route)
+
+      for (const store of getHooks(route)) {
+        if (observedStores.has(store)) {
+          continue
+        }
+
+        observedStores.add(store)
+        stores.push(new WeakRef(store))
+        store.onHookAdded.add(onHookAdded)
+      }
     }
 
-    routerRejections.set(rejection.type, rejection)
-  }
-
-  function addRoutes(routes: Routes): void {
-    for (const route of routes) {
-      addRoute(route)
-    }
-  }
-
-  function addRejections(rejections: Rejections): void {
-    for (const rejection of rejections) {
-      addRejection(rejection)
-    }
-  }
-
-  for (const route of allRoutes) {
-    if (isRoutes(route)) {
-      addRoutes(route)
-      continue
+    for (const [type, rejection] of pendingRejections) {
+      routerRejections.set(type, rejection)
     }
 
-    addRoute(route)
+    registeredRoutes.sort(sortByDepthDescending)
   }
 
-  for (const rejection of allRejections) {
-    if (isRejections(rejection)) {
-      addRejections(rejection)
-      continue
-    }
-
-    addRejection(rejection)
-  }
+  addContext([...allRoutes.flat(), ...allRejections.flat()])
 
   function getRouteByName(type: string): Route | undefined {
     return routerRoutes.get(type)
@@ -117,19 +150,14 @@ export function getRoutesForRouter(routes: Routes | Routes[], plugins: RouterPlu
   }
 
   return {
-    routes: Array.from(routerRoutes.values()).sort(sortByDepthDescending),
-    rejections: Array.from(routerRejections.values()),
+    routes: registeredRoutes,
+    get rejections(): (Rejection & RejectionInternal)[] {
+      return Array.from(routerRejections.values())
+    },
+    addHookContext,
     getRouteByName,
     getRejectionByType,
   }
-}
-
-function isRoutes(routes: Routes | Route): routes is Routes {
-  return Array.isArray(routes)
-}
-
-function isRejections(rejections: Rejections | Rejection): rejections is Rejections {
-  return Array.isArray(rejections)
 }
 
 function sortByDepthDescending(aRoute: Route & RouteInternal, bRoute: Route & RouteInternal): number {
