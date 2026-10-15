@@ -34,7 +34,7 @@ type View = {
   context?: readonly RouteContext[],
   name: string,
   component: Component,
-  props: AddViewPropsGetter<Route, Component> | undefined,
+  props?: AddViewPropsGetter<Route, Component>,
   prefetch: PrefetchConfig | undefined,
   transformer: AnyPayloadTransformer | undefined,
 }
