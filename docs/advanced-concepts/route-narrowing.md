@@ -66,7 +66,7 @@ if(isRoute(router.route, 'user', { exact: false })) {
 
 ## Callbacks
 
-With [router registration](/core-concepts/type-safety#registration), `createLoader`, `createView`, and `createHook` callbacks receive a union of the router's resolved routes. Narrow by name to access the route's typed params.
+With [registration or router assets](/core-concepts/type-safety), `createLoader`, `createView`, and `createHook` callbacks receive a union of the router's resolved routes. Narrow by name to access the route's typed params.
 
 See [Type Safety](/core-concepts/type-safety#circular-type-inference) for the explicit types used in these examples.
 
