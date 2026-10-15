@@ -140,23 +140,39 @@ Use `createHook` to define a hook independently of a route and reuse it before o
 ```ts
 const authHook = createHook({
   context: [login],
-  hook: (to, context) => {
-    if (context.kind === 'before' && !isAuthenticated()) {
-      return context.push('login')
+  hook: (_to, { push }) => {
+    if (!isAuthenticated()) {
+      return push('login')
     }
   },
 })
 
 user.onBeforeRouteEnter(authHook)
-user.onBeforeRouteUpdate(authHook)
-user.onAfterRouteEnter(authHook)
 account.onBeforeRouteEnter(authHook)
 ```
 
 The callback receives a general resolved route, or the resolved route union when a router is registered. The destination can be `null` when leaving the router. Its helpers are typed from the declared `context`, and it can read `from` and the navigation's `signal`.
 
-Narrow `context.kind` to `'before'` to call `context.abort()`. After callbacks receive `kind: 'after'` without an `abort` helper. `context.update` is optional and only available when there is a destination route.
+`context.update` is optional and only available when there is a destination route.
 
 Hooks are not tied to a lifecycle name. The same definition can be attached to any of the six route hook lifecycles. Registration still returns a function that removes the hook.
 
 Hooks attached to routes before `createRouter` register their context routes and rejections. When attaching a hook after the router has been created, include those targets in the router's routes and rejections yourself.
+
+### Aborting Navigation
+
+A reusable hook can abort only when it is called as a before hook. Narrow `context.kind` to `'before'` to access `context.abort()`:
+
+```ts
+const unsavedChangesHook = createHook({
+  hook: (_to, context) => {
+    if (context.kind === 'before' && hasUnsavedChanges()) {
+      context.abort()
+    }
+  },
+})
+
+editor.onBeforeRouteLeave(unsavedChangesHook)
+```
+
+When called as an after hook, the context has `kind: 'after'` and no `abort` helper. Calling `abort` without narrowing to the before context is a TypeScript error.
