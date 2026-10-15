@@ -11,11 +11,19 @@ test('declared context types helpers and the hook attaches to compatible lifecyc
   const denied = createRejection({ type: 'Denied' })
   const hook = createHook({
     context: [login, denied],
-    hook: (route, { from, push, reject, signal, abort }) => {
-      expectTypeOf(route).toEqualTypeOf<ResolvedRoute>()
+    hook: (route, context) => {
+      const { from, push, reject, signal } = context
+      expectTypeOf(route).toEqualTypeOf<ResolvedRoute | null>()
       expectTypeOf(from).toEqualTypeOf<ResolvedRoute | null>()
       expectTypeOf(signal).toEqualTypeOf<AbortSignal>()
-      expectTypeOf(abort).toEqualTypeOf<() => void>()
+      // @ts-expect-error abort requires narrowing to a before invocation
+      context.abort()
+      if (context.kind === 'before') {
+        expectTypeOf(context.abort).toEqualTypeOf<() => void>()
+      } else {
+        // @ts-expect-error after hooks cannot abort
+        context.abort()
+      }
       push('login')
       reject('Denied')
       // @ts-expect-error only declared named targets are known
@@ -27,10 +35,10 @@ test('declared context types helpers and the hook attaches to compatible lifecyc
   const user = createRoute({ name: 'user', path: '/users/[id]' })
   user.onBeforeRouteEnter(hook)
   user.onBeforeRouteUpdate(hook)
-  // @ts-expect-error leave hooks may receive a null destination
   user.onBeforeRouteLeave(hook)
-  // @ts-expect-error after hooks do not provide abort
   user.onAfterRouteEnter(hook)
+  user.onAfterRouteUpdate(hook)
+  user.onAfterRouteLeave(hook)
 })
 
 test('registered hook routes form a discriminated union', () => {

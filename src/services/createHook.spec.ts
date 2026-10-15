@@ -3,12 +3,59 @@ import { createHook } from '@/services/createHook'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
 import { createRejection } from '@/services/createRejection'
+import { createRouterHooks } from '@/services/createRouterHooks'
+import { createResolvedRoute } from '@/services/createResolvedRoute'
 
-test('one hook runs on enter and update across multiple routes', async () => {
-  const observed: { name: string, id: unknown }[] = []
+test('abort is available before navigation and absent after navigation', async () => {
   const hook = createHook({
-    hook: (route) => {
-      observed.push({ name: route.name, id: route.params.id })
+    hook: (route, context) => {
+      if (context.kind === 'before' && route?.name === 'blocked') {
+        context.abort()
+      }
+      if (context.kind === 'after') {
+        expect('abort' in context).toBe(false)
+      }
+    },
+  })
+  const home = createRoute({ name: 'home', path: '/' })
+  const blocked = createRoute({ name: 'blocked', path: '/blocked' })
+  home.onAfterRouteEnter(hook)
+  blocked.onBeforeRouteEnter(hook)
+  const router = createRouter([home, blocked], { initialUrl: '/' })
+
+  await router.start()
+  await router.push('blocked')
+  expect(router.route.name).toBe('home')
+})
+
+test('leave hooks handle a null destination without exposing update', async () => {
+  const observed: string[] = []
+  const hook = createHook({
+    hook: (route, context) => {
+      expect(route).toBeNull()
+      expect(context.update).toBeUndefined()
+      observed.push(context.kind)
+    },
+  })
+  const hooks = createRouterHooks({ redirectStatus: 302 })
+  hooks.onBeforeRouteLeave(hook)
+  hooks.onAfterRouteLeave(hook)
+  const navigation = {
+    to: null,
+    from: createResolvedRoute(createRoute({ name: 'home', path: '/' })),
+    signal: new AbortController().signal,
+  }
+
+  await hooks.runBeforeRouteHooks(navigation)
+  await hooks.runAfterRouteHooks(navigation)
+  expect(observed).toEqual(['before', 'after'])
+})
+
+test('one hook runs before and after enter, update, and leave', async () => {
+  const observed: string[] = []
+  const hook = createHook({
+    hook: (route, context) => {
+      observed.push(`${context.kind}:${route?.name}:${route?.params.id}`)
     },
   })
   const first = createRoute({ name: 'first', path: '/first/[id]' })
@@ -16,12 +63,26 @@ test('one hook runs on enter and update across multiple routes', async () => {
   first.onBeforeRouteEnter(hook)
   first.onBeforeRouteUpdate(hook)
   second.onBeforeRouteEnter(hook)
+  first.onBeforeRouteLeave(hook)
+  first.onAfterRouteEnter(hook)
+  first.onAfterRouteUpdate(hook)
+  first.onAfterRouteLeave(hook)
+  second.onAfterRouteEnter(hook)
   const router = createRouter([first, second], { initialUrl: '/first/1' })
 
   await router.start()
   await router.push('first', { id: '2' })
   await router.push('second', { id: '3' })
-  expect(observed).toEqual([{ name: 'first', id: '1' }, { name: 'first', id: '2' }, { name: 'second', id: '3' }])
+  expect(observed).toEqual([
+    'before:first:1',
+    'after:first:1',
+    'before:first:2',
+    'after:first:2',
+    'before:second:3',
+    'before:second:3',
+    'after:second:3',
+    'after:second:3',
+  ])
 })
 
 test('declared context registers routes and rejections before router creation', async () => {
@@ -30,7 +91,7 @@ test('declared context registers routes and rejections before router creation', 
   const hook = createHook({
     context: [target, denied],
     hook: (route, { push, reject }) => {
-      if (route.params.id === 'redirect') {
+      if (route?.params.id === 'redirect') {
         return push('target')
       }
       reject('Denied')

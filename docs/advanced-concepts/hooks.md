@@ -135,25 +135,28 @@ router.onAfterRouteEnter(() => {
 
 ## Reusable Hooks
 
-Use `createHook` to define a hook independently of a route and reuse it before enter or update:
+Use `createHook` to define a hook independently of a route and reuse it before or after enter, update, or leave:
 
 ```ts
 const authHook = createHook({
   context: [login],
-  hook: (to, { push }) => {
-    if (!isAuthenticated()) {
-      return push('login')
+  hook: (to, context) => {
+    if (context.kind === 'before' && !isAuthenticated()) {
+      return context.push('login')
     }
   },
 })
 
 user.onBeforeRouteEnter(authHook)
 user.onBeforeRouteUpdate(authHook)
+user.onAfterRouteEnter(authHook)
 account.onBeforeRouteEnter(authHook)
 ```
 
-The callback receives a general resolved route, or the resolved route union when a router is registered. Its helpers are typed from the declared `context`. It can also read `from`, call `update` or `abort`, and use the navigation's `signal`.
+The callback receives a general resolved route, or the resolved route union when a router is registered. The destination can be `null` when leaving the router. Its helpers are typed from the declared `context`, and it can read `from` and the navigation's `signal`.
 
-Hooks are not tied to a lifecycle name. Before-enter and before-update attachments accept the same definition; leave and after hooks require different callback signatures. Registration still returns a function that removes the hook.
+Narrow `context.kind` to `'before'` to call `context.abort()`. After callbacks receive `kind: 'after'` without an `abort` helper. `context.update` is optional and only available when there is a destination route.
+
+Hooks are not tied to a lifecycle name. The same definition can be attached to any of the six route hook lifecycles. Registration still returns a function that removes the hook.
 
 Hooks attached to routes before `createRouter` register their context routes and rejections. When attaching a hook after the router has been created, include those targets in the router's routes and rejections yourself.

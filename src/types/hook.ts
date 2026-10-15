@@ -25,21 +25,28 @@ export type HookRoute<TRegister = Register> = TRegister extends { router: infer 
 /**
  * Navigation helpers available to a reusable hook from its declared context.
  */
-export type HookCallbackContext<TContext extends readonly RouteContext[] = []> = {
+export type HookSharedContext<TContext extends readonly RouteContext[] = []> = {
   from: HookRoute | null,
   push: RouterPush<RouteContextToRoute<[...TContext]>>,
   replace: RouterReplace<RouteContextToRoute<[...TContext]>>,
   reject: RouterReject<RouteContextToRejection<[...TContext]>>,
-  update: RouteUpdate,
-  abort: RouterAbort,
+  update?: RouteUpdate,
   signal: AbortSignal,
 }
 
 /**
- * Options for a reusable before-enter or before-update hook.
+ * Context provided to a reusable hook, narrowed by whether it runs before or after navigation.
+ */
+export type HookCallbackContext<TContext extends readonly RouteContext[] = []> = HookSharedContext<TContext> & (
+  | { kind: 'before', abort: RouterAbort }
+  | { kind: 'after' }
+)
+
+/**
+ * Options for a reusable route hook.
  */
 export type CreateHookOptions<TContext extends readonly RouteContext[] = []> = {
-  hook: (route: HookRoute, context: HookCallbackContext<TContext>) => MaybePromise<void>,
+  hook: (route: HookRoute | null, context: HookCallbackContext<TContext>) => MaybePromise<void>,
   context?: TContext,
 }
 
@@ -51,15 +58,15 @@ export type HookInvocationContext = {
   push: AnyFunction,
   replace: AnyFunction,
   reject: AnyFunction,
-  update: AnyFunction,
-  abort: RouterAbort,
+  update?: AnyFunction,
+  abort?: RouterAbort,
   signal: AbortSignal,
 }
 
 /**
- * A reusable hook that can be attached before a route enters or updates.
+ * A reusable hook that can be attached before or after a route enters, updates, or leaves.
  */
-export type Hook<TContext extends readonly RouteContext[] = []> = ((route: ResolvedRoute, context: HookInvocationContext) => MaybePromise<void>) & {
+export type Hook<TContext extends readonly RouteContext[] = []> = ((route: ResolvedRoute | null, context: HookInvocationContext) => MaybePromise<void>) & {
   context: TContext,
 }
 

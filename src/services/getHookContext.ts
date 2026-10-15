@@ -7,7 +7,14 @@ import { RouteContext } from '@/types/routeContext'
  */
 export function getHookContext(stores: Hooks[]): RouteContext[] {
   return stores.flatMap((store) => {
-    const hooks = [...store.onBeforeRouteEnter, ...store.onBeforeRouteUpdate]
+    const hooks = [
+      ...store.onBeforeRouteEnter,
+      ...store.onBeforeRouteUpdate,
+      ...store.onBeforeRouteLeave,
+      ...store.onAfterRouteEnter,
+      ...store.onAfterRouteUpdate,
+      ...store.onAfterRouteLeave,
+    ]
 
     return hooks.flatMap((hook) => {
       if (!isHook(hook)) {
