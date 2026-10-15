@@ -1,6 +1,4 @@
 import { ComponentHook, HookRemove, AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, AddErrorHook, AddRejectionHook } from '@/types/hooks'
-import { isHook } from '@/types/hook'
-import { RouteContext } from '@/types/routeContext'
 import { Routes } from '@/types/route'
 import { Hooks } from '@/models/hooks'
 import { ExtractRejectionTypes, Rejection } from '@/types/rejection'
@@ -24,9 +22,8 @@ type RouteHooks<
   store: Hooks,
 }
 
-export function createRouteHooks(context: RouteContext[] = []): RouteHooks {
+export function createRouteHooks(): RouteHooks {
   const store = new Hooks()
-  store.context = context
 
   const redirect: RouteRedirect = (to, convertParams, options) => {
     if (store.redirects.size > 0) {
@@ -45,10 +42,6 @@ export function createRouteHooks(context: RouteContext[] = []): RouteHooks {
   function addHook<THook extends ComponentHook>(hooks: Set<THook>, hook: THook): HookRemove {
     for (const callback of store.onHookAdded) {
       callback(hook)
-    }
-
-    if (isHook(hook)) {
-      store.context.push(...hook.context)
     }
 
     hooks.add(hook)

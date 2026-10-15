@@ -52,11 +52,10 @@ test('inherited hook context reaches existing and newly created routers', async 
   const first = createRouter([source], { base: '/first', initialUrl: '/first' })
 
   const remove = parent.onAfterRouteEnter(createHook({ context: [target], hook: () => {} }))
-  remove()
-
   const extra = createRoute({ name: 'extra', path: '/extra' })
   target.onAfterRouteEnter(createHook({ context: [extra], hook: () => {} }))
   const second = createRouter([source], { base: '/second', initialUrl: '/second', isGlobalRouter: false })
+  remove()
 
   await first.start()
   await second.start()

@@ -68,7 +68,7 @@ export function getRoutesForRouter(routes: Routes | Routes[], plugins: RouterPlu
       return
     }
 
-    addContext(hook.context)
+    addContext(hook.getContext())
   }
 
   function addContext(context: readonly RouteContext[]): void {
@@ -97,7 +97,7 @@ export function getRoutesForRouter(routes: Routes | Routes[], plugins: RouterPlu
       }
 
       pendingRoutes.set(route.name, routerRoute)
-      addTargets(route.context)
+      addTargets(route.getContext())
     }
 
     function addTargets(targets: readonly RouteContext[]): void {
