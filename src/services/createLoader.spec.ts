@@ -47,3 +47,14 @@ test('loader context registers navigation targets and rejections through chained
   await vi.waitFor(() => expect(onRejection).toHaveBeenCalledWith('Denied', expect.anything()))
   expect(router.route.name).toBe('target')
 })
+
+test('replacing a loader preserves context targets available to route callbacks', async () => {
+  const target = createRoute({ name: 'target', path: '/target' })
+  const loader = createLoader({ context: [target], load: () => 1 })
+  const source = createRoute({ name: 'source', path: '/' }).addLoader(loader).addLoader(() => 2)
+  source.onBeforeRouteEnter((_to, { push }) => push('target'))
+  const router = createRouter([source], { initialUrl: '/' })
+
+  await router.start()
+  expect(router.route.name).toBe('target')
+})
