@@ -50,6 +50,9 @@ export type CreateViewOptions<
   TProps extends MaybePromise<ComponentProps<TComponent>> = MaybePromise<ComponentProps<TComponent>>
 > = TransformerOptions<NoInfer<Awaited<TProps>>> & {
   component: TComponent,
+  /**
+   * See [Context](https://kitbag-router.netlify.app/core-concepts/routes#context).
+   */
   context?: TContext,
   prefetch?: PrefetchConfig,
 } & (Partial<ComponentProps<TComponent>> extends ComponentProps<TComponent>
