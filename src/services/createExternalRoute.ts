@@ -1,4 +1,4 @@
-import { getRouteContext } from '@/services/getRouteContext'
+import { withGetContext } from '@/services/withGetContext'
 import { markRaw } from 'vue'
 import { createRouteId } from '@/services/createRouteId'
 import { combineRoutes, CreateRouteOptions, isWithParent, ToRoute, WithHost, WithoutHost, WithoutParent, WithParent } from '@/types/createRouteOptions'
@@ -52,13 +52,12 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
     [IS_ROUTE_SYMBOL]: true,
     depth: 1,
     hooks: [store],
-    getContext: getRouteContext,
     getTitle,
     redirect,
     aliases: [],
-  } satisfies RouteInternal
+  } satisfies Omit<RouteInternal, 'getContext'>
 
-  const route = {
+  const route = withGetContext({
     id,
     matches: [rawRoute],
     name,
@@ -70,10 +69,10 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
     ...redirects,
     ...url,
     ...internal,
-  } satisfies Route & RouteInternal & ExternalRouteHooks & RouteRedirects & RouteSetTitle
+  }) satisfies Route & RouteInternal & ExternalRouteHooks & RouteRedirects & RouteSetTitle
 
   if (isWithParent(options)) {
-    return combineRoutes(options.parent, route, options.hoist)
+    return withGetContext(combineRoutes(options.parent, route, options.hoist))
   }
 
   return route
