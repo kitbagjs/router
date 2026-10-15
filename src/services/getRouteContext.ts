@@ -10,6 +10,6 @@ export function getRouteContext(route: Route): RouteContext[] {
 
   return [
     ...route.context,
-    ...loaders.filter(isLoader).flatMap((loader) => loader.getContext()),
+    ...loaders.filter(isLoader).flatMap((loader) => loader.context),
   ]
 }
