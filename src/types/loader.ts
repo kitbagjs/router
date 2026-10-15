@@ -5,22 +5,13 @@ import { RouterPush } from '@/types/routerPush'
 import { RouterReject } from '@/types/routerReject'
 import { RouterReplace } from '@/types/routerReplace'
 import { AnyFunction } from '@/types/utilities'
-import { Register } from '@/types/register'
-import { ResolvedRoute, RouterResolvedRouteUnion } from '@/types/resolved'
-import { Router, RouterRoutes } from '@/types/router'
+import { ResolvedRoute } from '@/types/resolved'
 
 export const IS_LOADER_SYMBOL = Symbol('IS_LOADER_SYMBOL')
 
 export type LoaderInternal = {
   [IS_LOADER_SYMBOL]: true,
 }
-
-/**
- * The resolved routes a reusable loader can receive, narrowed by the registered router when available.
- */
-export type LoaderRoute<TRegister = Register> = TRegister extends { router: infer TRouter extends Router }
-  ? RouterResolvedRouteUnion<RouterRoutes<TRouter>>
-  : ResolvedRoute
 
 /**
  * Navigation helpers available to a reusable loader, typed from its declared context.
@@ -37,12 +28,13 @@ export type LoaderCallbackContext<TContext extends readonly RouteContext[] = []>
  */
 export type CreateLoaderOptions<
   TContext extends readonly RouteContext[] = [],
-  TData = unknown
+  TData = unknown,
+  TRoute extends ResolvedRoute = ResolvedRoute
 > = TransformerOptions<NoInfer<Awaited<TData>>> & {
   /**
    * Loads a value or promise from the resolved route.
    */
-  load: (route: LoaderRoute, context: LoaderCallbackContext<TContext>) => TData,
+  load: (route: TRoute, context: LoaderCallbackContext<TContext>) => TData,
   /**
    * See [Context](https://kitbag-router.netlify.app/core-concepts/routes#context).
    */
@@ -52,6 +44,14 @@ export type CreateLoaderOptions<
    */
   prefetch?: PrefetchConfig,
 }
+
+/**
+ * Creates loaders with callbacks typed to the router's resolved routes.
+ */
+export type CreateLoader<TRoute extends ResolvedRoute = ResolvedRoute> = <
+  const TContext extends readonly RouteContext[] = [],
+  TData = unknown
+>(options: CreateLoaderOptions<TContext, TData, TRoute>) => Loader<TData, TContext>
 
 /**
  * A reusable loader definition, with its context normalized to an array.

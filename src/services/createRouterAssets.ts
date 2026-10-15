@@ -1,3 +1,10 @@
+import { createHook } from '@/services/createHook'
+import { CreateHook } from '@/types/hook'
+import { createView } from '@/services/createView'
+import { CreateView } from '@/types/view'
+import { createLoader } from '@/services/createLoader'
+import { CreateLoader } from '@/types/loader'
+import { RouterResolvedRoute } from '@/types/resolved'
 import { ViewTransition } from '@/components/viewTransition'
 import { Router, RouterRoutes, RouterRejections } from '@/types/router'
 import { InjectionKey } from 'vue'
@@ -16,6 +23,18 @@ import { createUseViewTransition } from '@/compositions/useViewTransition'
 import { createUseNavigation } from '@/compositions/useNavigation'
 
 export type RouterAssets<TRouter extends Router> = {
+  /**
+   * Creates a reusable hook with callbacks typed to this router's resolved routes.
+   */
+  createHook: CreateHook<RouterResolvedRoute<TRouter>>,
+  /**
+   * Creates a reusable view with props callbacks typed to this router's resolved routes and loader data.
+   */
+  createView: CreateView<RouterResolvedRoute<TRouter, true>>,
+  /**
+   * Creates a reusable loader with callbacks typed to this router's resolved routes.
+   */
+  createLoader: CreateLoader<RouterResolvedRoute<TRouter>>,
   /**
    * Registers a hook that is called before a route is left. Must be called from setup.
    * This is useful for performing actions or cleanups before navigating away from a route component.
@@ -197,6 +216,9 @@ export function createRouterAssets<TRouter extends Router>(routerOrRouterKey: TR
   const useNavigation = createUseNavigation(routerKey)
 
   return {
+    createHook,
+    createView,
+    createLoader,
     onBeforeRouteLeave,
     onBeforeRouteUpdate,
     onAfterRouteLeave,
