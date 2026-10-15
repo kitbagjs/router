@@ -7,11 +7,7 @@ import { createRejection } from './createRejection'
 import echo from '@/components/echo'
 
 test('after enter and update hooks see the committed destination route', async () => {
-  const route = createRoute({
-    name: 'destination',
-    path: '/destination/[value]',
-    component: echo,
-  }, (route) => ({ value: route.params.value }))
+  const route = createRoute({ name: 'destination', path: '/destination/[value]' }).addView(echo, { props: (route) => ({ value: route.params.value }) })
   const router = createRouter([route], { initialUrl: '/', historyMode: 'memory' })
   await router.start()
 
@@ -37,8 +33,8 @@ test('Router is automatically started when installed', async () => {
   const route = createRoute({
     name: 'root',
     path: '/',
-    component,
   })
+    .addView(component)
 
   const router = createRouter([route], {
     initialUrl: '/',
@@ -66,8 +62,8 @@ describe('options.rejections', () => {
     const route = createRoute({
       name: 'root',
       path: '/',
-      component,
     })
+      .addView(component)
 
     const customRejection = createRejection({
       type: 'CustomRejection',
@@ -110,16 +106,16 @@ test('given child has hoist, keeps parent context and components without parent 
   const parent = createRoute({
     name: 'parent',
     path: '/parent',
-    component: { template: '<div class="parent"><RouterView/></div>' },
   })
+    .addView({ template: '<div class="parent"><RouterView/></div>' })
 
   const child = createRoute({
     name: 'child',
     parent,
     hoist: true,
     path: '/child/[?child]',
-    component: { template: '<i class="child" />' },
   })
+    .addView({ template: '<i class="child" />' })
 
   const router = createRouter([child], { initialUrl: '/' })
 

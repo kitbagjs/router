@@ -60,6 +60,20 @@ will not work with the created router instance.
 true
 ```
 
+### navigation?
+
+```ts
+optional navigation?: NavigationBehavior;
+```
+
+Whether navigation waits for props, loaders, and components before committing.
+
+#### Default
+
+```ts
+'progressive'
+```
+
 ### prefetch?
 
 ```ts

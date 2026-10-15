@@ -41,12 +41,7 @@ describe('navigation progress', () => {
     const load = Promise.withResolvers<Component>()
 
     const parent = createRoute({ name: 'parent', path: '/parent' }).addLoader(() => loader.promise)
-    const child = createRoute({
-      parent,
-      name: 'child',
-      path: '/child',
-      component: defineAsyncComponent(() => load.promise),
-    }, () => props.promise)
+    const child = createRoute({ parent, name: 'child', path: '/child' }).addView(defineAsyncComponent(() => load.promise), { props: () => props.promise })
 
     parent.onBeforeRouteEnter(async () => {
       await parentHook.promise
@@ -126,9 +121,10 @@ describe('navigation progress', () => {
   test('a navigation begun while one is pending resets the counts to the new one', async () => {
     const firstHook = Promise.withResolvers<string>()
     const seen = Promise.withResolvers<AbortSignal>()
-    const home = createRoute({ name: 'home', path: '/', component })
-    const first = createRoute({ name: 'first', path: '/first', component })
-    const second = createRoute({ name: 'second', path: '/second', component }).addLoader(never)
+    const home = createRoute({ name: 'home', path: '/' }).addView(component)
+    const first = createRoute({ name: 'first', path: '/first' }).addView(component)
+    const second = createRoute({ name: 'second', path: '/second' }).addView(component)
+      .addLoader(never)
 
     first.onBeforeRouteEnter(async (_to, { signal }) => {
       seen.resolve(signal)
@@ -163,7 +159,7 @@ describe('navigation progress', () => {
   })
 
   test('a rejection from a before hook ends the navigation with its counts cleared', async () => {
-    const home = createRoute({ name: 'home', path: '/', component })
+    const home = createRoute({ name: 'home', path: '/' }).addView(component)
 
     home.onBeforeRouteEnter(never)
     home.onBeforeRouteEnter((_to, { reject }) => reject('NotFound'))
@@ -179,7 +175,7 @@ describe('navigation progress', () => {
   })
 
   test('a url that matches no route ends the navigation with its counts cleared', async () => {
-    const home = createRoute({ name: 'home', path: '/', component })
+    const home = createRoute({ name: 'home', path: '/' }).addView(component)
     const router = createRouter([home], { initialUrl: '/nowhere' })
     const navigation = observe(router)
 
@@ -192,7 +188,7 @@ describe('navigation progress', () => {
   })
 
   test('an abort from a before hook hides the navigation without completing it', async () => {
-    const home = createRoute({ name: 'home', path: '/', component })
+    const home = createRoute({ name: 'home', path: '/' }).addView(component)
 
     home.onBeforeRouteEnter(never)
     home.onBeforeRouteEnter((_to, { abort }) => abort())
@@ -210,7 +206,7 @@ describe('navigation progress', () => {
   })
 
   test('after hooks are not counted', async () => {
-    const home = createRoute({ name: 'home', path: '/', component })
+    const home = createRoute({ name: 'home', path: '/' }).addView(component)
 
     home.onAfterRouteEnter(never)
 
@@ -226,8 +222,9 @@ describe('navigation progress', () => {
 
   test('prefetching is not counted, and a prefetched value still counts when navigated to', async () => {
     const loader = Promise.withResolvers<string>()
-    const home = createRoute({ name: 'home', path: '/', component })
-    const other = createRoute({ name: 'other', path: '/other', component }).addLoader(() => loader.promise)
+    const home = createRoute({ name: 'home', path: '/' }).addView(component)
+    const other = createRoute({ name: 'other', path: '/other' }).addView(component)
+      .addLoader(() => loader.promise)
     const router = createRouter([home, other], { initialUrl: '/' })
     const navigation = observe(router)
 
@@ -256,7 +253,8 @@ describe('navigation progress', () => {
   })
 
   test('a server rendering router counts nothing', async () => {
-    const home = createRoute({ name: 'home', path: '/', component }).addLoader(never)
+    const home = createRoute({ name: 'home', path: '/' }).addView(component)
+      .addLoader(never)
 
     home.onBeforeRouteEnter(never)
 
@@ -272,8 +270,8 @@ describe('navigation progress', () => {
 
   test('to and from are the routes of the navigation under way, and null once it ends', async () => {
     const hook = Promise.withResolvers<string>()
-    const home = createRoute({ name: 'home', path: '/', component })
-    const about = createRoute({ name: 'about', path: '/about', component })
+    const home = createRoute({ name: 'home', path: '/' }).addView(component)
+    const about = createRoute({ name: 'about', path: '/about' }).addView(component)
 
     about.onBeforeRouteEnter(async () => {
       await hook.promise
@@ -300,7 +298,7 @@ describe('navigation progress', () => {
 
   test('stopping the router ends the navigation under way', async () => {
     const seen = Promise.withResolvers<AbortSignal>()
-    const home = createRoute({ name: 'home', path: '/', component })
+    const home = createRoute({ name: 'home', path: '/' }).addView(component)
 
     home.onBeforeRouteEnter((_to, { signal }) => {
       seen.resolve(signal)

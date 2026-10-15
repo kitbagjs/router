@@ -17,7 +17,7 @@ test('stores whatever status was given', () => {
 })
 
 test('the built in NotFound rejection declares 404', () => {
-  const { getRejectionByType } = getRoutesForRouter([createRoute({ name: 'route', path: '/', component })])
+  const { getRejectionByType } = getRoutesForRouter([createRoute({ name: 'route', path: '/' }).addView(component)])
 
   expect(getRejectionByType('NotFound').status).toBe(404)
 })

@@ -16,8 +16,8 @@ test('router route can be narrowed', () => {
     name: 'childA',
     path: '[?foo]',
     query: withParams('bar=[?bar]', { bar: Boolean }),
-    component,
   })
+    .addView(component)
 
   const routes = [
     parentA,
@@ -25,8 +25,8 @@ test('router route can be narrowed', () => {
     createRoute({
       name: 'parentB',
       path: '/parentB',
-      component,
-    }),
+    })
+      .addView(component),
   ] as const
 
   const { route, key } = createRouter(routes)

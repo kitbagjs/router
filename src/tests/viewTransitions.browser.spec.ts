@@ -26,8 +26,8 @@ afterEach(async () => {
   vi.restoreAllMocks()
 })
 
-const routeA = createRoute({ name: 'routeA', path: '/routeA', component })
-const routeB = createRoute({ name: 'routeB', path: '/routeB', component })
+const routeA = createRoute({ name: 'routeA', path: '/routeA' }).addView(component)
+const routeB = createRoute({ name: 'routeB', path: '/routeB' }).addView(component)
 
 async function startRouter(options: RouterOptions = {}, routes: Routes = [routeA, routeB]): Promise<ReturnType<typeof createRouter>> {
   const router = createRouter(routes, { initialUrl: '/routeA', ...options })
@@ -139,8 +139,8 @@ test('a navigation to a url no route matches does not transition', async () => {
 
 test('a route option overrides the router option', async () => {
   const started = spyOnTransitions()
-  const off = createRoute({ name: 'off', path: '/off', component, viewTransition: false })
-  const on = createRoute({ name: 'on', path: '/on', component, viewTransition: true })
+  const off = createRoute({ name: 'off', path: '/off', viewTransition: false }).addView(component)
+  const on = createRoute({ name: 'on', path: '/on', viewTransition: true }).addView(component)
   const router = await startRouter({ viewTransition: true }, [routeA, off, on])
 
   await router.push('off')
@@ -155,7 +155,7 @@ test('a route option overrides the router option', async () => {
 test('a child route inherits its parent route option', async () => {
   const started = spyOnTransitions()
   const parent = createRoute({ name: 'parent', path: '/parent', viewTransition: true })
-  const child = createRoute({ parent, name: 'child', path: '/child', component })
+  const child = createRoute({ parent, name: 'child', path: '/child' }).addView(component)
   const router = await startRouter({}, [routeA, child])
 
   await router.push('child')
@@ -230,7 +230,8 @@ test('waits for props before the transition starts', async () => {
 test('waits for loaders before the transition starts', async () => {
   const started = spyOnTransitions()
   const loader = Promise.withResolvers<string>()
-  const withLoader = createRoute({ name: 'withLoader', path: '/withLoader', component }).addLoader(() => loader.promise)
+  const withLoader = createRoute({ name: 'withLoader', path: '/withLoader' }).addView(component)
+    .addLoader(() => loader.promise)
   const router = await startRouter({ viewTransition: true }, [routeA, withLoader])
 
   const navigation = router.push('withLoader')
@@ -247,7 +248,7 @@ test('waits for loaders before the transition starts', async () => {
 test('waits for async components before the transition starts', async () => {
   const started = spyOnTransitions()
   const chunk = Promise.withResolvers<typeof component>()
-  const lazy = createRoute({ name: 'lazy', path: '/lazy', component: defineAsyncComponent(() => chunk.promise) })
+  const lazy = createRoute({ name: 'lazy', path: '/lazy' }).addView(defineAsyncComponent(() => chunk.promise))
   const router = await startRouter({ viewTransition: true }, [routeA, lazy])
 
   const navigation = router.push('lazy')
@@ -286,7 +287,7 @@ test.each(['supersede', 'stop'] as const)('%s releases preparation while a lazy 
   const started = spyOnTransitions()
   const chunk = Promise.withResolvers<typeof component>()
   const load = vi.fn(() => chunk.promise)
-  const lazy = createRoute({ name: 'lazy', path: '/lazy', component: defineAsyncComponent(load) })
+  const lazy = createRoute({ name: 'lazy', path: '/lazy' }).addView(defineAsyncComponent(load))
   const router = await startRouter({ viewTransition: true }, [routeA, routeB, lazy])
   const after = vi.fn()
 
@@ -325,7 +326,8 @@ test('a superseding query navigation loads its own data', async () => {
 
     return query
   })
-  const withLoader = createRoute({ name: 'withLoader', path: '/withLoader', component }).addLoader(load)
+  const withLoader = createRoute({ name: 'withLoader', path: '/withLoader' }).addView(component)
+    .addLoader(load)
   const router = await startRouter({ viewTransition: true }, [routeA, withLoader])
 
   const first = router.push('/withLoader?q=first')
@@ -364,7 +366,7 @@ test('props that reject still commit, and the rejection is handled as it is with
 
 test('the types of every level are given to the transition', async () => {
   const started = spyOnTransitions()
-  const typed = createRoute({ name: 'typed', path: '/typed', component, viewTransition: { types: ['page'] } })
+  const typed = createRoute({ name: 'typed', path: '/typed', viewTransition: { types: ['page'] } }).addView(component)
   const router = await startRouter({ viewTransition: ['app'] }, [routeA, typed])
 
   await router.push('typed', {}, { viewTransition: ['slide-left'] })

@@ -1,12 +1,11 @@
-# Types: ToRoute\<TOptions, TProps\>
+# Types: ToRoute\<TOptions\>
 
 ```ts
-type ToRoute<TOptions, TProps> = CreateRouteOptions extends TOptions ? Route : Route<ToRouteUrl<TOptions>, ToRouteMatches<TOptions, TProps>>;
+type ToRoute<TOptions> = CreateRouteOptions extends TOptions ? Route : Route<ToRouteUrl<TOptions>, ToRouteMatches<TOptions>>;
 ```
 
 ## Type Parameters
 
-| Type Parameter | Default type |
-| ------ | ------ |
-| `TOptions` *extends* [`CreateRouteOptions`](CreateRouteOptions.md) | - |
-| `TProps` *extends* [`CreateRouteProps`](CreateRouteProps.md)\<`TOptions`\> \| `undefined` | `undefined` |
+| Type Parameter |
+| ------ |
+| `TOptions` *extends* [`CreateRouteOptions`](CreateRouteOptions.md) |

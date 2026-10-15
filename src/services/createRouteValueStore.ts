@@ -1,6 +1,6 @@
 import { markRaw } from 'vue'
 import { ResolvedRoute, WithData } from '@/types/resolved'
-import { DEFAULT_VIEW_NAME } from './createRouteViews'
+import { DEFAULT_VIEW_NAME } from './routeViews'
 import { DEFAULT_LOADER_NAME } from './addLoader'
 import { ContextPushError } from '@/errors/contextPushError'
 import { LoaderDataAccessError } from '@/errors/loaderDataAccessError'

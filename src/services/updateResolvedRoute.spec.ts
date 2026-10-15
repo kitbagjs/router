@@ -5,13 +5,7 @@ import { updateResolvedRoute } from '@/services/updateResolvedRoute'
 import { isResolvedRoute } from '@/types/resolved'
 import { component } from '@/utilities/testHelpers'
 
-const route = createRoute({
-  name: 'route',
-  path: '/route/[id]',
-  query: 'sort=[sort]',
-  state: { foo: String, bar: String },
-  component,
-})
+const route = createRoute({ name: 'route', path: '/route/[id]', query: 'sort=[sort]', state: { foo: String, bar: String } }).addView(component)
 
 test('appends query and sets hash on the href, query, and hash', () => {
   const resolved = createResolvedRoute(route, { id: '1', sort: 'asc' }, { query: { page: '2' } })
@@ -58,11 +52,7 @@ test('returns a resolved route', () => {
 })
 
 test('getTitle sees the updated route', async () => {
-  const titled = createRoute({
-    name: 'titled',
-    path: '/titled',
-    component,
-  })
+  const titled = createRoute({ name: 'titled', path: '/titled' }).addView(component)
   titled.setTitle((to) => `Results for ${to.query.get('q')}`)
   const resolved = createResolvedRoute(titled)
 

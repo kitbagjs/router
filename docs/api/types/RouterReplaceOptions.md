@@ -12,8 +12,9 @@ type RouterReplaceOptions<TState> = object;
 
 ## Properties
 
-| Property | Type |
-| ------ | ------ |
-| <a id="hash"></a> `hash?` | `string` |
-| <a id="query"></a> `query?` | [`QuerySource`](QuerySource.md) |
-| <a id="state"></a> `state?` | `Partial`\<`TState`\> |
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="hash"></a> `hash?` | `string` | - |
+| <a id="navigation"></a> `navigation?` | [`NavigationBehavior`](NavigationBehavior.md) | Overrides the route and router navigation behavior. |
+| <a id="query"></a> `query?` | [`QuerySource`](QuerySource.md) | - |
+| <a id="state"></a> `state?` | `Partial`\<`TState`\> | - |

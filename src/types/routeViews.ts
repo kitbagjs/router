@@ -4,28 +4,26 @@ import { PrefetchConfig } from '@/types/prefetch'
 import { AnyFunction } from '@/types/utilities'
 
 /**
- * A single view: what to render, how to get its props, and how to prefetch it. `component` is optional
- * because a route can bind props to the nested RouterView it renders without declaring a component.
+ * A single view: what to render, how to get its props, and how to prefetch it.
  *
  * @template TProps - What this view's props getter returns, carried so parent props can be typed from it.
  */
 export type RouteView<TProps = undefined> = {
-  component?: Component,
+  component: Component,
   props?: AnyFunction<TProps>,
   prefetch?: PrefetchConfig,
   transformer?: AnyPayloadTransformer,
 }
 
 /**
- * The views for a single route, keyed by view name (the unnamed view under 'default'). Indexed by depth in
- * `route.views` — parallel to how `route.matches` indexes the matched options, which is where a route's id
- * comes from at a given depth.
+ * The views for a single match, keyed by view name (the unnamed view under 'default'). Each match in
+ * `route.matches` carries its own views.
  */
 export type RouteViews = Record<string, RouteView<unknown>>
 
 /**
  * The props a child sees for a parent's views. A lone unnamed view is given directly rather than under a
- * 'default' key, matching how the props argument is written. Each view's props are always a promise,
+ * 'default' key. Each view's props are always a promise,
  * since the parent's props may not have been computed when the child's getter runs.
  */
 export type ViewsPropsReturnType<TViews> = keyof ViewsWithProps<TViews> extends never

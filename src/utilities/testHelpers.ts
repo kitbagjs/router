@@ -36,15 +36,13 @@ const childB = createRoute({
   parent: parentA,
   name: 'parentA.childB',
   path: '/childB/[paramD]',
-  component,
-})
+}).addView(component)
 
 const grandChild = createRoute({
   parent: childA,
   name: 'parentA.childA.grandChildA',
   path: '/[paramC]',
-  component,
-})
+}).addView(component)
 
 export const routes = [
   parentA,
@@ -54,11 +52,9 @@ export const routes = [
   createRoute({
     name: 'parentB',
     path: '/parentB',
-    component,
-  }),
+  }).addView(component),
   createRoute({
     name: 'parentC',
     path: '/',
-    component,
-  }),
+  }).addView(component),
 ] as const

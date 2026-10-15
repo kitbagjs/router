@@ -11,8 +11,8 @@ test('given a route with params returns all params', () => {
     name: 'route',
     path: '/[paramA]',
     query: 'paramB=[paramB]',
-    component,
   })
+    .addView(component)
   const response = createResolvedRoute(route, { paramA: 'A', paramB: 'B' })
 
   expect(response.params).toMatchObject({
@@ -31,9 +31,9 @@ test('given state that matches state params, returns state', () => {
     parent,
     name: 'foo',
     path: '/foo',
-    component,
     state: { bar: String },
   })
+    .addView(component)
 
   const response = createResolvedRoute(child, {}, { state: { foo: 'true', bar: 'abc' } })
 
@@ -46,8 +46,8 @@ describe('resolve options', () => {
       name: 'route',
       path: '/',
       query: 'foo=foo1&foo=foo2',
-      component,
     })
+      .addView(component)
 
     const response = createResolvedRoute(route, {}, { query: 'bar=bar&baz' })
 
@@ -66,8 +66,8 @@ describe('resolve options', () => {
       name: 'route',
       path: '/',
       hash: 'bar',
-      component,
     })
+      .addView(component)
 
     const response = createResolvedRoute(route, {}, { hash: 'baz' })
 
@@ -88,7 +88,7 @@ test('matched is the last of the resolved matches', () => {
 
 describe('getTitle', () => {
   test('runs the callback and resolves to its value', async () => {
-    const route = createRoute({ name: 'home', path: '/', component })
+    const route = createRoute({ name: 'home', path: '/' }).addView(component)
 
     route.setTitle(() => 'Home')
 
@@ -96,29 +96,21 @@ describe('getTitle', () => {
   })
 
   test('resolves to undefined for a route with no title', async () => {
-    const route = createRoute({ name: 'home', path: '/', component })
+    const route = createRoute({ name: 'home', path: '/' }).addView(component)
 
     await expect(createResolvedRoute(route).getTitle()).resolves.toBeUndefined()
   })
 })
 
 test('is a resolved route, and the route it was created from is not', () => {
-  const route = createRoute({
-    name: 'route',
-    path: '/route',
-    component,
-  })
+  const route = createRoute({ name: 'route', path: '/route' }).addView(component)
 
   expect(isResolvedRoute(createResolvedRoute(route))).toBe(true)
   expect(isResolvedRoute(route)).toBe(false)
 })
 
 test('is not a route or a url', () => {
-  const route = createRoute({
-    name: 'route',
-    path: '/route',
-    component,
-  })
+  const route = createRoute({ name: 'route', path: '/route' }).addView(component)
   const resolved = createResolvedRoute(route)
 
   expect(isRoute(resolved)).toBe(false)

@@ -3,7 +3,7 @@ import { PrefetchConfig } from '@/types/prefetch'
 import { RouteMeta } from '@/types/register'
 import { LastInArray } from '@/types/utilities'
 import { CreateRouteOptions } from '@/types/createRouteOptions'
-import { RouteContext, ToRouteContext } from '@/types/routeContext'
+import { GetContext, RouteContext, ToRouteContext } from '@/types/routeContext'
 import { ToMeta } from '@/types/meta'
 import { ToState } from '@/types/state'
 import { Url } from '@/types/url'
@@ -24,6 +24,7 @@ export type RouteInternal = {
   [IS_ROUTE_SYMBOL]: true,
   depth: number,
   hooks: Hooks[],
+  getContext: GetContext,
   redirect: RouteRedirect,
   getTitle: GetRouteTitle,
   aliases: RouteAlias[],
@@ -36,10 +37,9 @@ export type Routes = readonly Route[]
 
 /**
  * The Route properties originally provided to `createRoute`, plus the views that route renders and the
- * loaders it runs. The deprecated `component`/`components` options are folded into `views` (see
- * {@link RouteViews}).
+ * loaders it runs.
  */
-export type CreatedRouteOptions = Omit<CreateRouteOptions, 'component' | 'components'> & {
+export type CreatedRouteOptions = CreateRouteOptions & {
   id: string,
   views: RouteViews,
   loaders: RouteLoaders,

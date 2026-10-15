@@ -14,8 +14,7 @@ export function createRejection({ type, component, status }: RejectionOptions): 
 
   const route = createRoute({
     name: type,
-    component: markRaw(component ?? genericRejection(type)),
-  })
+  }).addView(markRaw(component ?? genericRejection(type)))
 
   const { setTitle } = route
 
