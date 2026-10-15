@@ -5,8 +5,6 @@ import { PrefetchConfig } from '@/types/prefetch'
 import { CreatedRouteOptions, Route } from '@/types/route'
 import { AnyFunction } from '@/types/utilities'
 import { AnyLoader, isLoader } from '@/types/loader'
-import { ResolvedRoute } from '@/types/resolved'
-import { RouteCallbackContext } from '@/types/routeCallbackContext'
 import { combineContext } from '@/services/combineContext'
 import { RouteContext } from '@/types/routeContext'
 
@@ -58,12 +56,6 @@ export function toLoader(source: AnyFunction | AnyLoader, options: LoaderOptions
   return {
     ...source,
     name: options?.name ?? DEFAULT_LOADER_NAME,
-    load: (route: ResolvedRoute, context: RouteCallbackContext<Route>) => source.load(route, {
-      push: context.push,
-      replace: context.replace,
-      reject: context.reject,
-      signal: context.signal,
-    }),
     prefetch: options?.prefetch ?? source.prefetch,
     transformer: options?.transformer ?? source.transformer,
   }
