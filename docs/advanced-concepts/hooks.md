@@ -135,29 +135,38 @@ router.onAfterRouteEnter(() => {
 
 ## Reusable Hooks
 
-Use `createHook` to define a hook once and reuse it across routes:
+Use `createHook` to define a hook once and reuse it with before or after hooks on routes or the router. Hooks can be passed [context](/core-concepts/routes#context) to enable them to reference other routes and rejections.
 
 ```ts
-const authHook = createHook({
-  context: [login],
-  hook: (_to, { push }) => {
-    if (!isAuthenticated()) {
-      return push('login')
-    }
+import { createHook } from '@kitbag/router'
+
+const logNavigation = createHook({
+  hook: (to, { from }) => {
+    console.log('Navigation', { from: from?.href, to: to?.href })
   },
 })
-
-user.onBeforeRouteEnter(authHook)
-account.onBeforeRouteEnter(authHook)
 ```
 
-See [Context](/core-concepts/routes#context) for the `context` option.
+Register the created hook on a route or on the router:
 
-The same definition can be used with before or after hooks.
+```ts
+import { createRoute, createRouter } from '@kitbag/router'
 
-### Aborting Navigation
+const account = createRoute({
+  name: 'account',
+  path: '/account',
+})
 
-Narrow `context.kind` to `'before'` to access `context.abort()`:
+account.onBeforeRouteEnter(logNavigation)
+
+const router = createRouter([account])
+
+router.onAfterRouteEnter(logNavigation)
+```
+
+### Before and After Hooks
+
+The callback receives `context.kind` as `'before'` or `'after'`, depending on where the hook is registered. Narrow it to `'before'` to access `context.abort()`. After hooks do not receive an `abort` helper.
 
 ```ts
 const unsavedChangesHook = createHook({
@@ -167,8 +176,4 @@ const unsavedChangesHook = createHook({
     }
   },
 })
-
-editor.onBeforeRouteLeave(unsavedChangesHook)
 ```
-
-After hooks receive `kind: 'after'` without an `abort` helper.
