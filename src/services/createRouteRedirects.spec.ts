@@ -196,3 +196,14 @@ test('a parent redirect does not intercept a navigation to its own child', async
 
   expect(router.route.name).toBe('dashboard')
 })
+
+test('redirect context discovers the complete child route', async () => {
+  const parent = createRoute({ path: '/parent' })
+  const child = createRoute({ parent, name: 'child', path: '/child' })
+  const target = createRoute({ name: 'target', path: '/target' })
+  child.redirectTo(target)
+  const router = createRouter([target], { initialUrl: '/parent/child' })
+
+  await router.start()
+  expect(router.route.name).toBe('target')
+})

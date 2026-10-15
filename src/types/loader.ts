@@ -1,4 +1,4 @@
-import { AnyPayloadTransformer, TransformerOptions } from '@/services/payload'
+import { TransformerOptions } from '@/services/payload'
 import { PrefetchConfig } from '@/types/prefetch'
 import { GetContext, RouteContext, RouteContextToRejection, RouteContextToRoute } from '@/types/routeContext'
 import { RouterPush } from '@/types/routerPush'
@@ -69,12 +69,7 @@ export type Loader<
 /**
  * The runtime shape after a loader's route, context, and return types have been erased.
  */
-export type AnyLoader = {
-  load: AnyFunction,
-  context: readonly RouteContext[],
-  prefetch?: PrefetchConfig,
-  transformer?: AnyPayloadTransformer,
-}
+export type AnyLoader = Loader<any, readonly RouteContext[]>
 
 /**
  * Determines whether a value is a reusable loader created by `createLoader`.

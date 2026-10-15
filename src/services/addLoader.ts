@@ -8,7 +8,7 @@ import { AnyLoader, isLoader } from '@/types/loader'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouteCallbackContext } from '@/types/routeCallbackContext'
 import { combineContext } from '@/services/combineContext'
-import { GetContext } from '@/types/routeContext'
+import { RouteContext } from '@/types/routeContext'
 
 export const DEFAULT_LOADER_NAME = 'default'
 
@@ -38,7 +38,7 @@ type Loader = {
   load: AnyFunction,
   prefetch: PrefetchConfig | undefined,
   transformer: AnyPayloadTransformer | undefined,
-  getContext?: GetContext,
+  context?: readonly RouteContext[],
 }
 
 export function toLoader(source: AnyFunction | AnyLoader, options: LoaderOptions | undefined): Loader {
@@ -78,7 +78,7 @@ export function toLoader(source: AnyFunction | AnyLoader, options: LoaderOptions
 export function addLoaderToMatch(match: CreatedRouteOptions, { name, ...loader }: Loader): CreatedRouteOptions {
   return markRaw({
     ...match,
-    context: combineContext(match.context, loader.getContext?.()),
+    context: combineContext(match.context, loader.context),
     loaders: {
       ...match.loaders,
       [name]: loader,
