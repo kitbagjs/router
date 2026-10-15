@@ -51,12 +51,11 @@ export function toView(source: Component | AnyView, options: ViewOptions | undef
   }
 
   return {
+    ...source,
     name: options?.name ?? DEFAULT_VIEW_NAME,
-    component: source.component,
     props: options?.props ?? source.props,
     prefetch: options?.prefetch ?? source.prefetch,
     transformer: options?.transformer ?? source.transformer,
-    getContext: source.getContext,
   }
 }
 

@@ -1,4 +1,5 @@
 import { expect, test, vi } from 'vitest'
+import { isView } from '@/types/view'
 import { createView } from '@/services/createView'
 import { createRoute } from '@/services/createRoute'
 import { createResolvedRoute } from '@/services/createResolvedRoute'
@@ -27,7 +28,7 @@ test('one view computes props and loader data independently for multiple routes'
   }
 })
 
-test('view context registers navigation targets and attachment overrides preserve defaults', async () => {
+test('view context registers targets and attachments preserve identity and defaults', async () => {
   const login = createRoute({ name: 'login', path: '/login' })
   const view = createView({
     component,
@@ -44,6 +45,8 @@ test('view context registers navigation targets and attachment overrides preserv
 
   await router.start()
   await vi.waitFor(() => expect(router.route.name).toBe('login'))
+  expect(isView(defaults.matches[0].views.default)).toBe(true)
+  expect(isView(override.matches[0].views.sidebar)).toBe(true)
   expect(defaults.matches[0].views.default.prefetch).toBe('eager')
   expect(override.matches[0].views.sidebar.prefetch).toBe(false)
 })
