@@ -44,8 +44,8 @@ describe('addView', () => {
 
     test('required props with a getter with incorrect type', () => {
       createRoute({ name: 'route' })
+        // @ts-expect-error should not accept incorrect type
         .addView(echo, {
-          // @ts-expect-error should not accept incorrect type
           props: () => ({ value: true }),
         })
     })
@@ -129,8 +129,8 @@ describe('addView', () => {
 
     test('a getter alongside prefetch is still checked against the component props', () => {
       createRoute({ name: 'route' })
+        // @ts-expect-error should not accept incorrect type
         .addView(echo, {
-          // @ts-expect-error should not accept incorrect type
           props: () => ({ value: true }),
           prefetch: false,
         })
@@ -158,20 +158,20 @@ describe('addView', () => {
         prefetch: { components: 'eager', props: false },
       })
 
+      // @ts-expect-error should not accept an unknown strategy
       createRoute({ name: 'route' }).addView(component, {
-        // @ts-expect-error should not accept an unknown strategy
         prefetch: 'whenever',
       })
 
+      // @ts-expect-error should not accept an unknown config option
       createRoute({ name: 'route' }).addView(component, {
-        // @ts-expect-error should not accept an unknown config option
         prefetch: { styles: true },
       })
     })
 
     test('unknown options are rejected', () => {
+      // @ts-expect-error should not accept an unknown option
       createRoute({ name: 'route' }).addView(component, {
-        // @ts-expect-error should not accept an unknown option
         prefetching: true,
       })
     })

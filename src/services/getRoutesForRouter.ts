@@ -55,7 +55,7 @@ export function getRoutesForRouter(routes: Routes | Routes[], plugins: RouterPlu
 
     routerRoutes.set(route.name, routerRoute)
 
-    for (const context of route.context) {
+    for (const context of route.getContext()) {
       if (isRoute(context)) {
         addRoute(context)
       }

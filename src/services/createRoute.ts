@@ -1,3 +1,4 @@
+import { getRouteContext } from '@/services/getRouteContext'
 import { markRaw } from 'vue'
 import { createRouteId } from '@/services/createRouteId'
 import { InternalRouteHooks } from '@/types/hooks'
@@ -44,6 +45,7 @@ export function createRoute(options: CreateRouteOptions): Route {
     [IS_ROUTE_SYMBOL]: true,
     depth: 1,
     hooks: [store],
+    getContext: getRouteContext,
     getTitle,
     redirect,
     aliases: [],

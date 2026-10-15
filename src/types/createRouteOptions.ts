@@ -1,6 +1,7 @@
 import { NavigationBehavior } from '@/types/navigation'
 import { combineMeta } from '@/services/combineMeta'
 import { combineState } from '@/services/combineState'
+import { combineContext } from '@/services/combineContext'
 import { combineHooks } from '@/types/hooks'
 import { Param } from '@/types/paramTypes'
 import { PrefetchConfig } from '@/types/prefetch'
@@ -157,7 +158,7 @@ export function combineRoutes(parent: Route, child: Route, hoisted = false): Rou
     state: combineState(parent.state, child.state),
     hooks: combineHooks(parent, child),
     matches: [...parent.matches, ...child.matches],
-    context: [...parent.context, ...child.context],
+    context: combineContext(parent.context, child.context),
     depth: parent.depth + 1,
   } satisfies Route & RouteInternal
 
