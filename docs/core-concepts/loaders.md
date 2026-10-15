@@ -46,9 +46,9 @@ const settings = createRoute({...})
   })
 ```
 
-### Registration
+### Type Safety
 
-See [registration](/core-concepts/router#circular-type-inference) for defining loaders with a registered router and [Route Narrowing](/advanced-concepts/route-narrowing#callbacks) for accessing typed params in callbacks.
+See [Type Safety](/core-concepts/type-safety#circular-type-inference) for defining loaders with a registered router and [Route Narrowing](/advanced-concepts/route-narrowing#callbacks) for accessing typed params in callbacks.
 
 ## Reading data in a component
 
