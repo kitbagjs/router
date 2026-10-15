@@ -102,7 +102,7 @@ export type { CreateHookOptions, Hook, HookRoute, HookCallbackContext } from './
 export { isHook } from './types/hook'
 export { createView } from './services/createView'
 export type { CreateViewOptions, View, ViewRoute, ViewCallbackContext } from './types/view'
-export { isView } from './types/view'
+export { isView } from './guards/views'
 export { createRoute } from './services/createRoute'
 export { createLoader } from './services/createLoader'
 export { createRejection } from './services/createRejection'
