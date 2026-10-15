@@ -1,3 +1,4 @@
+import { withRouteContext } from '@/services/withRouteContext'
 import { markRaw } from 'vue'
 import { createRouteId } from '@/services/createRouteId'
 import { combineRoutes, CreateRouteOptions, isWithParent, ToRoute, WithHost, WithoutHost, WithoutParent, WithParent } from '@/types/createRouteOptions'
@@ -71,8 +72,8 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
   } satisfies Route & RouteInternal & ExternalRouteHooks & RouteRedirects & RouteSetTitle
 
   if (isWithParent(options)) {
-    return combineRoutes(options.parent, route, options.hoist)
+    return withRouteContext(combineRoutes(options.parent, route, options.hoist))
   }
 
-  return route
+  return withRouteContext(route)
 }

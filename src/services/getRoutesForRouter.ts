@@ -12,7 +12,6 @@ import { isHook } from '@/types/hook'
 import { ComponentHook, getHooks } from '@/types/hooks'
 import { Hooks } from '@/models/hooks'
 import { RouteContext } from '@/types/routeContext'
-import { getHookContext } from '@/services/getHookContext'
 
 type HookContextListener = (hook: ComponentHook) => void
 
@@ -98,7 +97,7 @@ export function getRoutesForRouter(routes: Routes | Routes[], plugins: RouterPlu
       }
 
       pendingRoutes.set(route.name, routerRoute)
-      addTargets([...route.context, ...getHookContext(getHooks(route))])
+      addTargets(route.context)
     }
 
     function addTargets(targets: readonly RouteContext[]): void {
