@@ -1,3 +1,4 @@
+import { getRouteContext } from '@/services/getRouteContext'
 import { isRoute, Route, RouteInternal, Routes } from '@/types/route'
 import { RouterPlugin } from '@/types/routerPlugin'
 import { DuplicateNamesError } from '@/errors/duplicateNamesError'
@@ -67,7 +68,7 @@ export function getRoutesForRouter(routes: Routes | Routes[], plugins: RouterPlu
       return
     }
 
-    addContext(hook.getContext())
+    addContext(hook.context)
   }
 
   function addContext(context: readonly RouteContext[]): void {
@@ -96,7 +97,7 @@ export function getRoutesForRouter(routes: Routes | Routes[], plugins: RouterPlu
       }
 
       pendingRoutes.set(route.name, routerRoute)
-      addTargets(route.getContext())
+      addTargets(getRouteContext(route))
     }
 
     function addTargets(targets: readonly RouteContext[]): void {

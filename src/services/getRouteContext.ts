@@ -22,8 +22,8 @@ export function getRouteContext(route: Route): RouteContext[] {
 
   return [
     ...route.context,
-    ...hooks.filter(isHook).flatMap((hook) => hook.getContext()),
-    ...views.filter(isView).flatMap((view) => view.getContext()),
-    ...loaders.filter(isLoader).flatMap((loader) => loader.getContext()),
+    ...hooks.filter(isHook).flatMap((hook) => hook.context),
+    ...views.filter(isView).flatMap((view) => view.context),
+    ...loaders.filter(isLoader).flatMap((loader) => loader.context),
   ]
 }
