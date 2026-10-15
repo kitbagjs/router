@@ -8,7 +8,7 @@ import { RouteLoader, RouteLoaders } from '@/types/routeLoaders'
 import { Url } from '@/types/url'
 import { Identity, LastInArray } from '@/types/utilities'
 import { AnyLoader } from '@/types/loader'
-import { RouteContext, ToRouteContext } from '@/types/routeContext'
+import { RouteContext, WithRouteContext } from '@/types/routeContext'
 
 /**
  * The getter for a loader added via `addLoader`. Receives the same two arguments as an `addView` props
@@ -71,11 +71,7 @@ type ReplaceLastMatchLoaders<
   TNewLoaders extends RouteLoaders,
   TContext extends RouteContext[]
 > = TMatches extends [...infer THead extends CreatedRouteOptions[], infer TLast extends CreatedRouteOptions]
-  ? Identity<Omit<TLast, 'loaders'> & { loaders: TNewLoaders } & (
-    TContext extends [] ? {} : {
-      context: [...ToRouteContext<TLast extends { context: infer TExisting extends RouteContext[] } ? TExisting : []>, ...TContext],
-    }
-  )> extends infer TNext extends CreatedRouteOptions
+  ? Identity<Omit<WithRouteContext<TLast, TContext>, 'loaders'> & { loaders: TNewLoaders }> extends infer TNext extends CreatedRouteOptions
     ? [...THead, TNext]
     : TMatches
   : TMatches

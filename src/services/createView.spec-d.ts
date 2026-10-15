@@ -32,6 +32,7 @@ test('view props are checked against the component and preserved on attachment',
 })
 
 test('optional props can be omitted and declared context types both callbacks and attachments', () => {
+  const settings = createRoute({ name: 'settings', path: '/settings' })
   const empty = createView({ component })
   expectTypeOf(empty).toExtend<View<undefined>>()
   const login = createRoute({ name: 'login', path: '/login' })
@@ -48,8 +49,9 @@ test('optional props can be omitted and declared context types both callbacks an
       return {}
     },
   })
-  createRoute({ name: 'user', path: '/' }).addView(view)
+  createRoute({ name: 'user', path: '/', context: [settings] }).addView(view)
     .onBeforeRouteEnter((_route, { push }) => {
+      push('settings')
       push('login')
       // @ts-expect-error attaching the view does not widen context
       push('other')
