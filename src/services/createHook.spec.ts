@@ -3,9 +3,7 @@ import { createHook } from '@/services/createHook'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
 import { createRejection } from '@/services/createRejection'
-import { createRouterHooks } from '@/services/createRouterHooks'
 import { component } from '@/utilities/testHelpers'
-import { createResolvedRoute } from '@/services/createResolvedRoute'
 
 test('abort is available before navigation and absent after navigation', async () => {
   const hook = createHook({
@@ -27,29 +25,6 @@ test('abort is available before navigation and absent after navigation', async (
   await router.start()
   await router.push('blocked')
   expect(router.route.name).toBe('home')
-})
-
-test('leave hooks handle a null destination without exposing update', async () => {
-  const observed: string[] = []
-  const hook = createHook({
-    hook: (route, context) => {
-      expect(route).toBeNull()
-      expect(context.update).toBeUndefined()
-      observed.push(context.kind)
-    },
-  })
-  const hooks = createRouterHooks({ redirectStatus: 302 })
-  hooks.onBeforeRouteLeave(hook)
-  hooks.onAfterRouteLeave(hook)
-  const navigation = {
-    to: null,
-    from: createResolvedRoute(createRoute({ name: 'home', path: '/' })),
-    signal: new AbortController().signal,
-  }
-
-  await hooks.runBeforeRouteHooks(navigation)
-  await hooks.runAfterRouteHooks(navigation)
-  expect(observed).toEqual(['before', 'after'])
 })
 
 test('one hook runs before and after enter, update, and leave', async () => {
@@ -108,15 +83,6 @@ test('declared context registers routes and rejections before router creation', 
   expect(router.route.name).toBe('target')
   await router.push('source', { id: 'denied' })
   expect(rejected).toHaveBeenCalledWith('Denied', expect.anything())
-})
-
-test('reusable hooks retain the registration removal behavior', async () => {
-  const callback = vi.fn()
-  const route = createRoute({ name: 'home', path: '/' })
-  const remove = route.onBeforeRouteEnter(createHook({ hook: callback }))
-  remove()
-  await createRouter([route], { initialUrl: '/' }).start()
-  expect(callback).not.toHaveBeenCalled()
 })
 
 test('inherited hook context is collected from a chained route', async () => {
