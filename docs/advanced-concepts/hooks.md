@@ -135,7 +135,7 @@ router.onAfterRouteEnter(() => {
 
 ## Reusable Hooks
 
-Use `createHook` to define a hook independently of a route and reuse it before or after enter, update, or leave:
+Use `createHook` to define a hook once and reuse it across routes:
 
 ```ts
 const authHook = createHook({
@@ -151,17 +151,13 @@ user.onBeforeRouteEnter(authHook)
 account.onBeforeRouteEnter(authHook)
 ```
 
-The callback receives a general resolved route, or the resolved route union when a router is registered. The destination can be `null` when leaving the router. Its helpers are typed from the declared `context`, and it can read `from` and the navigation's `signal`.
+`context` types the hook's navigation and rejection helpers. Attaching the hook before `createRouter` also registers those context targets; targets for later attachments must already be registered.
 
-`context.update` is optional and only available when there is a destination route.
-
-Hooks are not tied to a lifecycle name. The same definition can be attached to any of the six route hook lifecycles. Registration still returns a function that removes the hook.
-
-Hooks attached to routes before `createRouter` register their context routes and rejections. When attaching a hook after the router has been created, include those targets in the router's routes and rejections yourself.
+The same definition can be used with before or after hooks.
 
 ### Aborting Navigation
 
-A reusable hook can abort only when it is called as a before hook. Narrow `context.kind` to `'before'` to access `context.abort()`:
+Narrow `context.kind` to `'before'` to access `context.abort()`:
 
 ```ts
 const unsavedChangesHook = createHook({
@@ -175,4 +171,4 @@ const unsavedChangesHook = createHook({
 editor.onBeforeRouteLeave(unsavedChangesHook)
 ```
 
-When called as an after hook, the context has `kind: 'after'` and no `abort` helper. Calling `abort` without narrowing to the before context is a TypeScript error.
+After hooks receive `kind: 'after'` without an `abort` helper.
