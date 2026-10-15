@@ -30,7 +30,7 @@ export function withRouteMethods<TRoute extends Route>(route: TRoute): TRoute {
   const addView: AddView = (component, options) => {
     const view = toView(component, options)
 
-    return withNextMatch((match) => addViewToMatch(match, view))
+    return withNextMatch((match) => addViewToMatch(match, view), combineContext(route.context, view.getContext?.()))
   }
 
   const addLoader: AddLoader = (load, options) => {

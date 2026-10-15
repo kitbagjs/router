@@ -5,6 +5,7 @@ import { AddViewPropsGetter } from '@/types/addView'
 import { PrefetchConfig } from '@/types/prefetch'
 import { CreatedRouteOptions, Route } from '@/types/route'
 import { AnyView, isView } from '@/types/view'
+import { combineContext } from '@/services/combineContext'
 import { GetContext } from '@/types/routeContext'
 
 /**
@@ -68,6 +69,7 @@ export function toView(source: Component | AnyView, options: ViewOptions | undef
 export function addViewToMatch(match: CreatedRouteOptions, { name, ...view }: View): CreatedRouteOptions {
   return markRaw({
     ...match,
+    context: combineContext(match.context, view.getContext?.()),
     views: {
       ...match.views,
       [name]: view,
