@@ -8,6 +8,15 @@ export type ToRouteContext<TContext extends RouteContext[] | readonly RouteConte
   ? TContext
   : []
 
+/**
+ * Adds context to an options type while preserving its existing properties and context.
+ */
+export type WithRouteContext<TOptions, TContext extends RouteContext[]> = TContext extends []
+  ? TOptions
+  : Omit<TOptions, 'context'> & {
+    context: [...ToRouteContext<TOptions extends { context: infer TExisting extends RouteContext[] } ? TExisting : []>, ...TContext],
+  }
+
 export type ExtractRouteContext<
   TOptions extends CreateRouteOptions
 > = TOptions extends { context: infer TContext extends RouteContext[] }
