@@ -1,3 +1,6 @@
+import { createRouterPlugin } from '@/services/createRouterPlugin'
+import { createRouterAssets } from '@/services/createRouterAssets'
+import { createRouter } from '@/services/createRouter'
 import { expectTypeOf, test } from 'vitest'
 import { defineComponent } from 'vue'
 import { createView } from '@/services/createView'
@@ -56,4 +59,26 @@ test('optional props can be omitted and declared context types both callbacks an
       // @ts-expect-error attaching the view does not widen context
       push('other')
     })
+})
+
+test('router assets type view callbacks with the matching loader data', () => {
+  const user = createRoute({ name: 'user', path: '/users/[id]' }).addLoader(() => ({ label: 'user' }))
+  const home = createRoute({ name: 'home', path: '/' }).addLoader(() => 1)
+  const plugin = createRouterPlugin({ routes: [home] })
+  const assets = createRouterAssets(createRouter([user], {}, [plugin]))
+  const view = assets.createView({
+    component: userView,
+    props: (route) => {
+      if (route.name === 'user') {
+        expectTypeOf(route.data).toEqualTypeOf<Promise<{ label: string }>>()
+        return { id: Number(route.params.id) }
+      }
+      expectTypeOf(route.data).toEqualTypeOf<Promise<number>>()
+      return { id: 0 }
+    },
+  })
+
+  expectTypeOf(view).toExtend<View<{ id: number }>>()
+  // @ts-expect-error router assets still require the component's props
+  assets.createView({ component: userView })
 })

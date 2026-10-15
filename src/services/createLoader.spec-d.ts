@@ -1,3 +1,7 @@
+import { createRouterPlugin } from '@/services/createRouterPlugin'
+import { createLoader as createDefaultLoader } from '@/main'
+import { createRouterAssets } from '@/services/createRouterAssets'
+import { createRouter } from '@/services/createRouter'
 import { expectTypeOf, test } from 'vitest'
 import { createLoader } from '@/services/createLoader'
 import { createRoute } from '@/services/createRoute'
@@ -73,6 +77,40 @@ test('async data types the transformer without widening from it', () => {
       stringify: (value) => value.toISOString(),
       // @ts-expect-error the transformer must restore the loader's resolved value
       parse: (encoded) => encoded,
+    },
+  })
+})
+
+test('router assets scope loader callbacks without widening declared context', () => {
+  const user = createRoute({ name: 'user', path: '/users/[id]' })
+  const other = createRoute({ name: 'other', path: '/other' })
+  const login = createRoute({ name: 'login', path: '/login' })
+  const assets = createRouterAssets(createRouter([user]))
+  const plugin = createRouterPlugin({ routes: [other] })
+  const otherAssets = createRouterAssets(createRouter([], {}, [plugin]))
+
+  assets.createLoader({
+    context: [login],
+    load: (route, { push }) => {
+      expectTypeOf(route.name).toEqualTypeOf<'user'>()
+      expectTypeOf(route.params.id).toEqualTypeOf<string>()
+      push('login')
+      // @ts-expect-error the router does not expand the loader's declared context
+      push('user')
+    },
+  })
+  otherAssets.createLoader({
+    load: (route) => {
+      expectTypeOf(route.name).toEqualTypeOf<'other'>()
+    },
+  })
+})
+
+test('the default loader export works without registration', () => {
+  createDefaultLoader({
+    load: (route) => {
+      expectTypeOf(route.name).toEqualTypeOf<string>()
+      expectTypeOf(route.params.id).toBeUnknown()
     },
   })
 })

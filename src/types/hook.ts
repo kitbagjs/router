@@ -1,7 +1,5 @@
 import { RouteContext, RouteContextToRejection, RouteContextToRoute } from '@/types/routeContext'
-import { Register } from '@/types/register'
-import { ResolvedRoute, RouterResolvedRouteUnion } from '@/types/resolved'
-import { Router, RouterRoutes } from '@/types/router'
+import { ResolvedRoute } from '@/types/resolved'
 import { RouterPush } from '@/types/routerPush'
 import { RouterReplace } from '@/types/routerReplace'
 import { RouterReject } from '@/types/routerReject'
@@ -16,17 +14,10 @@ export type HookInternal = {
 }
 
 /**
- * The resolved routes available to a reusable hook.
- */
-export type HookRoute<TRegister = Register> = TRegister extends { router: infer TRouter extends Router }
-  ? RouterResolvedRouteUnion<RouterRoutes<TRouter>>
-  : ResolvedRoute
-
-/**
  * Navigation helpers available to a reusable hook from its declared context.
  */
-export type HookSharedContext<TContext extends readonly RouteContext[] = []> = {
-  from: HookRoute | null,
+export type HookSharedContext<TContext extends readonly RouteContext[] = [], TRoute extends ResolvedRoute = ResolvedRoute> = {
+  from: TRoute | null,
   push: RouterPush<RouteContextToRoute<[...TContext]>>,
   replace: RouterReplace<RouteContextToRoute<[...TContext]>>,
   reject: RouterReject<RouteContextToRejection<[...TContext]>>,
@@ -37,7 +28,7 @@ export type HookSharedContext<TContext extends readonly RouteContext[] = []> = {
 /**
  * Context provided to a reusable hook, narrowed by whether it runs before or after navigation.
  */
-export type HookCallbackContext<TContext extends readonly RouteContext[] = []> = HookSharedContext<TContext> & (
+export type HookCallbackContext<TContext extends readonly RouteContext[] = [], TRoute extends ResolvedRoute = ResolvedRoute> = HookSharedContext<TContext, TRoute> & (
   | { kind: 'before', abort: RouterAbort }
   | { kind: 'after' }
 )
@@ -45,13 +36,20 @@ export type HookCallbackContext<TContext extends readonly RouteContext[] = []> =
 /**
  * Options for a reusable route hook.
  */
-export type CreateHookOptions<TContext extends readonly RouteContext[] = []> = {
-  hook: (route: HookRoute | null, context: HookCallbackContext<TContext>) => MaybePromise<void>,
+export type CreateHookOptions<TContext extends readonly RouteContext[] = [], TRoute extends ResolvedRoute = ResolvedRoute> = {
+  hook: (route: TRoute | null, context: HookCallbackContext<TContext, TRoute>) => MaybePromise<void>,
   /**
    * See [Context](https://kitbag-router.netlify.app/core-concepts/routes#context).
    */
   context?: TContext,
 }
+
+/**
+ * Creates hooks with callbacks typed to the router's resolved routes.
+ */
+export type CreateHook<TRoute extends ResolvedRoute = ResolvedRoute> = <
+  const TContext extends readonly RouteContext[] = []
+>(options: CreateHookOptions<TContext, TRoute>) => Hook<TContext>
 
 /**
  * The arguments provided when invoking a reusable hook.

@@ -3,7 +3,7 @@ import { createHook } from '@/services/createHook'
 import { createRoute } from '@/services/createRoute'
 import { createRejection } from '@/services/createRejection'
 import { createRouter } from '@/services/createRouter'
-import { HookRoute } from '@/types/hook'
+import { createRouterAssets } from '@/services/createRouterAssets'
 import { ResolvedRoute } from '@/types/resolved'
 
 test('declared context types helpers and the hook attaches to compatible lifecycles', () => {
@@ -41,10 +41,20 @@ test('declared context types helpers and the hook attaches to compatible lifecyc
   user.onAfterRouteLeave(hook)
 })
 
-test('registered hook routes form a discriminated union', () => {
+test('router assets type both routes in a reusable hook callback', () => {
   const user = createRoute({ name: 'user', path: '/users/[id]' })
-  const home = createRoute({ name: 'home', path: '/' })
-  const router = createRouter([user, home], { initialUrl: '/' })
-  type RegisteredRoute = HookRoute<{ router: typeof router }>
-  expectTypeOf<Extract<RegisteredRoute, { name: 'user' }>['params']>().toEqualTypeOf<{ id: string }>()
+  const login = createRoute({ name: 'login', path: '/login' })
+  const assets = createRouterAssets(createRouter([user]))
+  const hook = assets.createHook({
+    context: [login],
+    hook: (route, { from, push }) => {
+      expectTypeOf(route?.params.id).toEqualTypeOf<string | undefined>()
+      expectTypeOf(from?.name).toEqualTypeOf<'user' | undefined>()
+      push('login')
+      // @ts-expect-error the router does not expand the hook's declared context
+      push('user')
+    },
+  })
+
+  user.onAfterRouteEnter(hook)
 })
