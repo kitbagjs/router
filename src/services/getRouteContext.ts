@@ -12,7 +12,11 @@ export function getRouteContext(route: Route): RouteContext[] {
 
   return [
     ...route.context,
-    ...views.filter(isView).flatMap((view) => view.getContext()),
+<<<<<<< HEAD
+    ...views.filter(isView).flatMap((view) => view.context),
     ...loaders.filter(isLoader).flatMap((loader) => loader.getContext()),
+=======
+    ...loaders.filter(isLoader).flatMap((loader) => loader.context),
+>>>>>>> codex/create-loader
   ]
 }

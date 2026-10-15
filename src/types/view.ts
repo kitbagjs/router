@@ -3,7 +3,7 @@ import { ComponentProps } from '@/services/component'
 import { TransformerOptions } from '@/services/payload'
 import { PrefetchConfig } from '@/types/prefetch'
 import { Routes } from '@/types/route'
-import { GetContext, RouteContext, RouteContextToRejection, RouteContextToRoute } from '@/types/routeContext'
+import { RouteContext, RouteContextToRejection, RouteContextToRoute } from '@/types/routeContext'
 import { Register } from '@/types/register'
 import { ResolvedRoute, ResolvedRouteUnion, WithData } from '@/types/resolved'
 import { Router, RouterRoutes } from '@/types/router'
@@ -16,7 +16,6 @@ export const IS_VIEW_SYMBOL = Symbol('IS_VIEW_SYMBOL')
 
 export type ViewInternal = {
   [IS_VIEW_SYMBOL]: true,
-  getContext: GetContext,
 }
 
 /**

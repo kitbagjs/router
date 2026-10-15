@@ -1,4 +1,3 @@
-import { withGetContext } from '@/services/withGetContext'
 import { markRaw } from 'vue'
 import { createRouteId } from '@/services/createRouteId'
 import { combineRoutes, CreateRouteOptions, isWithParent, ToRoute, WithHost, WithoutHost, WithoutParent, WithParent } from '@/types/createRouteOptions'
@@ -55,7 +54,7 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
     getTitle,
     redirect,
     aliases: [],
-  } satisfies Omit<RouteInternal, 'getContext'>
+  } satisfies RouteInternal
 
   const definition = {
     id,
@@ -69,7 +68,7 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
     ...redirects,
     ...url,
     ...internal,
-  } satisfies Route & Omit<RouteInternal, 'getContext'> & ExternalRouteHooks & RouteRedirects & RouteSetTitle
+  } satisfies Route & RouteInternal & ExternalRouteHooks & RouteRedirects & RouteSetTitle
 
   let combined: Route = definition
 
@@ -77,7 +76,7 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
     combined = combineRoutes(options.parent, definition, options.hoist)
   }
 
-  const route = withGetContext(combined)
+  const route = combined
 
   return route
 }
