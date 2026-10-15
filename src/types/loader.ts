@@ -1,6 +1,6 @@
 import { TransformerOptions } from '@/services/payload'
 import { PrefetchConfig } from '@/types/prefetch'
-import { GetContext, RouteContext, RouteContextToRejection, RouteContextToRoute } from '@/types/routeContext'
+import { RouteContext, RouteContextToRejection, RouteContextToRoute } from '@/types/routeContext'
 import { RouterPush } from '@/types/routerPush'
 import { RouterReject } from '@/types/routerReject'
 import { RouterReplace } from '@/types/routerReplace'
@@ -13,7 +13,6 @@ export const IS_LOADER_SYMBOL = Symbol('IS_LOADER_SYMBOL')
 
 export type LoaderInternal = {
   [IS_LOADER_SYMBOL]: true,
-  getContext: GetContext,
 }
 
 /**

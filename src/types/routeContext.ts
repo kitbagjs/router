@@ -50,4 +50,3 @@ type FilterRouteContextRejections<TContext extends RouteContext[] | undefined> =
     : FilterRouteContextRejections<Rest>
   : []
 
-export type GetContext = () => readonly RouteContext[]
