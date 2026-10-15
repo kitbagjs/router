@@ -8,6 +8,6 @@ export class InvalidRouteRedirectError extends Error {
    * @param routeName - The name of the route that does not support redirects.
    */
   public constructor(routeName: string) {
-    super(`Invalid Route Redirect "${routeName}": Route does not support redirects. Use createRouteRedirects to create redirects.`)
+    super(`Invalid Route Redirect "${routeName}": Route does not support redirects.`)
   }
 }
