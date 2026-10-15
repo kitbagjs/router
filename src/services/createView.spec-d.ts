@@ -1,3 +1,4 @@
+import { createRouterPlugin } from '@/services/createRouterPlugin'
 import { createRouterAssets } from '@/services/createRouterAssets'
 import { createRouter } from '@/services/createRouter'
 import { expectTypeOf, test } from 'vitest'
@@ -63,7 +64,8 @@ test('optional props can be omitted and declared context types both callbacks an
 test('router assets type view callbacks with the matching loader data', () => {
   const user = createRoute({ name: 'user', path: '/users/[id]' }).addLoader(() => ({ label: 'user' }))
   const home = createRoute({ name: 'home', path: '/' }).addLoader(() => 1)
-  const assets = createRouterAssets(createRouter([user, home]))
+  const plugin = createRouterPlugin({ routes: [home] })
+  const assets = createRouterAssets(createRouter([user], {}, [plugin]))
   const view = assets.createView({
     component: userView,
     props: (route) => {

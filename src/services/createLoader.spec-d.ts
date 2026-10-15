@@ -1,3 +1,4 @@
+import { createRouterPlugin } from '@/services/createRouterPlugin'
 import { createLoader as createDefaultLoader } from '@/main'
 import { createRouterAssets } from '@/services/createRouterAssets'
 import { createRouter } from '@/services/createRouter'
@@ -85,7 +86,8 @@ test('router assets scope loader callbacks without widening declared context', (
   const other = createRoute({ name: 'other', path: '/other' })
   const login = createRoute({ name: 'login', path: '/login' })
   const assets = createRouterAssets(createRouter([user]))
-  const otherAssets = createRouterAssets(createRouter([other]))
+  const plugin = createRouterPlugin({ routes: [other] })
+  const otherAssets = createRouterAssets(createRouter([], {}, [plugin]))
 
   assets.createLoader({
     context: [login],
