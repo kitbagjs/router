@@ -1,6 +1,6 @@
 import { Component } from 'vue'
 import { AnyView } from '@/types/view'
-import { RouteContext, ToRouteContext } from '@/types/routeContext'
+import { RouteContext, WithRouteContext } from '@/types/routeContext'
 import { ComponentProps } from '@/services/component'
 import { ResolvedRoute, WithData } from '@/types/resolved'
 import { CreatedRouteOptions, Route } from '@/types/route'
@@ -131,11 +131,7 @@ type ReplaceLastMatchViews<
   TNewViews extends RouteViews,
   TContext extends RouteContext[]
 > = TMatches extends [...infer THead extends CreatedRouteOptions[], infer TLast extends CreatedRouteOptions]
-  ? Identity<Omit<TLast, 'views'> & { views: TNewViews } & (
-    TContext extends [] ? {} : {
-      context: [...ToRouteContext<TLast extends { context: infer TExisting extends RouteContext[] } ? TExisting : []>, ...TContext],
-    }
-  )> extends infer TNext extends CreatedRouteOptions
+  ? Identity<Omit<WithRouteContext<TLast, TContext>, 'views'> & { views: TNewViews }> extends infer TNext extends CreatedRouteOptions
     ? [...THead, TNext]
     : TMatches
   : TMatches
