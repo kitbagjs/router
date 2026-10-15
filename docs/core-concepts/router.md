@@ -45,6 +45,8 @@ declare module '@kitbag/router' {
 }
 ```
 
+The `createLoader` and `createView` factories returned by [`createRouterAssets`](/api/functions/createRouterAssets) use that router's route types without global registration.
+
 ### Circular type inference
 
 ::: warning

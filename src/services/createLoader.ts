@@ -1,3 +1,4 @@
+import { ResolvedRoute } from '@/types/resolved'
 import { CreateLoaderOptions, IS_LOADER_SYMBOL, Loader, LoaderInternal } from '@/types/loader'
 import { RouteContext } from '@/types/routeContext'
 
@@ -6,8 +7,9 @@ import { RouteContext } from '@/types/routeContext'
  */
 export function createLoader<
   const TContext extends readonly RouteContext[] = [],
-  TData = unknown
->(options: CreateLoaderOptions<TContext, TData>): Loader<TData, TContext>
+  TData = unknown,
+  TRoute extends ResolvedRoute = ResolvedRoute
+>(options: CreateLoaderOptions<TContext, TData, TRoute>): Loader<TData, TContext>
 
 export function createLoader(options: CreateLoaderOptions<any, any>): Loader<any, any> {
   const context = [...options.context ?? []]
