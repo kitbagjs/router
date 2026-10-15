@@ -44,18 +44,19 @@ test.each(['route', 'router'] as const)('late %s hooks register navigation and r
   expect(router.route.name).toBe('target')
 })
 
-test('shared routes register nested context in each router and observe newly discovered routes', async () => {
-  const source = createRoute({ name: 'source', path: '/' })
+test('inherited hook context reaches existing and newly created routers', async () => {
+  const parent = createRoute({ path: '/' })
+  const source = createRoute({ parent, name: 'source' })
   const fallback = createRoute({ name: 'fallback', path: '/fallback' })
   const target = createRoute({ name: 'target', path: '/target', context: [fallback] })
   const first = createRouter([source], { base: '/first', initialUrl: '/first' })
-  const second = createRouter([source], { base: '/second', initialUrl: '/second', isGlobalRouter: false })
 
-  const remove = source.onAfterRouteEnter(createHook({ context: [target], hook: () => {} }))
+  const remove = parent.onAfterRouteEnter(createHook({ context: [target], hook: () => {} }))
   remove()
 
   const extra = createRoute({ name: 'extra', path: '/extra' })
   target.onAfterRouteEnter(createHook({ context: [extra], hook: () => {} }))
+  const second = createRouter([source], { base: '/second', initialUrl: '/second', isGlobalRouter: false })
 
   await first.start()
   await second.start()
@@ -76,6 +77,7 @@ test.each([
   const hook = createHook({ context: [target, invalid], hook: callback })
 
   expect(() => home.onBeforeRouteEnter(hook)).toThrow(error)
+  expect(home.context).toEqual([])
   await router.start()
   await router.push('/target')
   expect(router.route.name).not.toBe('target')
