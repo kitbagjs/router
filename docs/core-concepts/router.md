@@ -45,6 +45,21 @@ declare module '@kitbag/router' {
 }
 ```
 
+### Circular type inference
+
+::: warning
+Using a loader in the registered router creates circular type inference. Annotate it with `Loader<Data>` to resolve this.
+:::
+
+```ts
+import { createLoader, type Loader } from '@kitbag/router'
+import { getSession, type Session } from './api'
+
+const sessionLoader: Loader<Promise<Session>> = createLoader({
+  load: () => getSession(),
+})
+```
+
 ## Router Options
 
 There are several options you can pass to the router to customize its behavior. See the [RouterOptions](/api/types/RouterOptions.md) type for more information and a list of options.
