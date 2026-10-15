@@ -6,10 +6,10 @@ import { IS_ROUTE_SYMBOL, Route, RouteInternal } from '@/types/route'
 import { toUrlPart, toUrlQueryPart } from '@/services/withParams'
 import { createRouteHooks } from '@/services/createRouteHooks'
 import { createUrl } from '@/services/createUrl'
-import { createRouteRedirects } from '@/services/createRouteRedirects'
+import { addRedirect } from '@/services/addRedirect'
 import { ExternalRouteHooks } from '@/types/hooks'
 import { ExtractRouteContext } from '@/types/routeContext'
-import { RouteRedirects } from '@/types/redirects'
+import { RouteRedirects, RouteRedirectFrom, RouteRedirectTo, RedirectToArgs } from '@/types/redirects'
 import { createRouteTitle, RouteSetTitle } from '@/types/routeTitle'
 
 export function createExternalRoute<
@@ -35,9 +35,6 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
   const context = options.context ?? []
   const { store, redirect, ...hooks } = createRouteHooks()
   const { getTitle, setTitle } = createRouteTitle(options.parent)
-  const redirects = createRouteRedirects({
-    getRoute: () => route,
-  })
   const rawRoute = markRaw({ id, meta: {}, state: {}, ...options, views: {}, loaders: {} })
 
   const url = createUrl({
@@ -56,6 +53,14 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
     aliases: [],
   } satisfies RouteInternal
 
+  const redirectTo: RouteRedirectTo = (...[to, convertParams, options]: RedirectToArgs) => {
+    addRedirect(route, to, convertParams, options)
+  }
+
+  const redirectFrom: RouteRedirectFrom = (from, convertParams, options) => {
+    addRedirect(from, route, convertParams, options)
+  }
+
   const route = {
     id,
     matches: [rawRoute],
@@ -65,7 +70,8 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
     context,
     setTitle,
     ...hooks,
-    ...redirects,
+    redirectTo,
+    redirectFrom,
     ...url,
     ...internal,
   } satisfies Route & RouteInternal & ExternalRouteHooks & RouteRedirects & RouteSetTitle

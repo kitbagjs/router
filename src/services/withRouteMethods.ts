@@ -1,4 +1,5 @@
-import { createRouteRedirects } from '@/services/createRouteRedirects'
+import { addRedirect } from '@/services/addRedirect'
+import { RouteRedirectFrom, RouteRedirectTo, RedirectToArgs } from '@/types/redirects'
 import { AddAlias, createAliases } from '@/services/addAlias'
 import { AddLoader, addLoaderToMatch, checkForLoaderConflict, toLoader } from '@/services/addLoader'
 import { AddView, addViewToMatch, toView } from '@/services/addView'
@@ -54,14 +55,20 @@ export function withRouteMethods<TRoute extends Route>(route: TRoute): TRoute {
     })
   }
 
-  const redirects = createRouteRedirects({ getRoute: () => result })
-  const result = {
+  const redirectTo: RouteRedirectTo = (...[to, convertParams, options]: RedirectToArgs) => {
+    addRedirect(route, to, convertParams, options)
+  }
+
+  const redirectFrom: RouteRedirectFrom = (from, convertParams, options) => {
+    addRedirect(from, route, convertParams, options)
+  }
+
+  return {
     ...route,
-    ...redirects,
     addView,
     addLoader,
     addAlias,
+    redirectTo,
+    redirectFrom,
   }
-
-  return result
 }
