@@ -23,7 +23,7 @@ export type { AliasTransform, AliasTransformContext } from './types/routeAlias'
 export type { RouteCallbackContext } from './types/routeCallbackContext'
 export type { RouteViews } from './types/routeViews'
 export type { RouteLoader, RouteLoaders } from './types/routeLoaders'
-export type { CreateLoaderOptions, Loader, LoaderCallbackContext, LoaderRoute } from './types/loader'
+export type { CreateLoaderOptions, Loader, LoaderCallbackContext } from './types/loader'
 export type {
   RejectionHooks,
   HookRemove,
@@ -97,7 +97,6 @@ export { UnreachableRouteError } from './errors/unreachableRouteError'
 
 // Services
 export { createRoute } from './services/createRoute'
-export { createLoader } from './services/createLoader'
 export { createRejection } from './services/createRejection'
 export { createExternalRoute } from './services/createExternalRoute'
 export { createRouterAssets, type RouterAssets } from './services/createRouterAssets'
@@ -120,6 +119,11 @@ import { createRouterAssets, RouterAssets } from './services/createRouterAssets'
 import { RegisteredRouter } from './types/register'
 
 const routerAssets = createRouterAssets(routerInjectionKey)
+
+/**
+ * Creates a reusable loader with callbacks typed to the registered router's resolved routes.
+ */
+export const createLoader: RouterAssets<RegisteredRouter>['createLoader'] = routerAssets.createLoader
 
 /**
  * Registers a hook that is called before a route is left. Must be called from setup.

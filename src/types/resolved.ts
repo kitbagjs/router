@@ -1,3 +1,4 @@
+import { Router, RouterRoutes } from '@/types/router'
 import { CreatedRouteOptions, Route, RouteDataOf, Routes } from '@/types/route'
 import { LastInArray } from '@/types/utilities'
 import { ExtractRouteStateParamsAsOptional } from '@/types/state'
@@ -106,6 +107,13 @@ export type WithData<TRoute extends Route = Route> = {
 export type RouterResolvedRouteUnion<TRoutes extends Routes> = {
   [K in keyof TRoutes]: ResolvedRoute<TRoutes[K]>
 }[number]
+
+/**
+ * The resolved routes of a router, or a general resolved route for an untyped router.
+ */
+export type RouterResolvedRoute<TRouter extends Router> = Routes extends RouterRoutes<TRouter>
+  ? ResolvedRoute
+  : RouterResolvedRouteUnion<RouterRoutes<TRouter>>
 
 /**
  * Converts a union of Route types to a union of ResolvedRoute types while preserving the discriminated union structure for narrowing.
