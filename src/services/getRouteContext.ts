@@ -1,12 +1,10 @@
 import { isHook } from '@/types/hook'
 import { getHooks } from '@/types/hooks'
 import { Route } from '@/types/route'
-import { isView } from '@/types/view'
-import { isLoader } from '@/types/loader'
 import { RouteContext } from '@/types/routeContext'
 
 /**
- * Collects a route's declared context and the context of its attached dependencies.
+ * Collects a route's context, including loaders and views merged during attachment, and its hooks' context.
  */
 export function getRouteContext(route: Route): RouteContext[] {
   const hooks = getHooks(route).flatMap((store) => [
@@ -17,13 +15,9 @@ export function getRouteContext(route: Route): RouteContext[] {
     ...store.onAfterRouteUpdate,
     ...store.onAfterRouteLeave,
   ])
-  const views = route.matches.flatMap((match) => Object.values(match.views))
-  const loaders = route.matches.flatMap((match) => Object.values(match.loaders))
 
   return [
     ...route.context,
     ...hooks.filter(isHook).flatMap((hook) => hook.context),
-    ...views.filter(isView).flatMap((view) => view.context),
-    ...loaders.filter(isLoader).flatMap((loader) => loader.context),
   ]
 }
