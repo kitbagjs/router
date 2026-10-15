@@ -56,7 +56,6 @@ export function getRoutesForRouter(routes: Routes | Routes[], plugins: RouterPlu
   ]
 
   const registeredRoutes: (Route & RouteInternal)[] = []
-  const observedStores = new WeakSet<Hooks>()
   const stores: WeakRef<Hooks>[] = []
   const onHookAdded = createHookContextListener(addHookContext)
 
@@ -119,11 +118,10 @@ export function getRoutesForRouter(routes: Routes | Routes[], plugins: RouterPlu
       registeredRoutes.push(route)
 
       for (const store of getHooks(route)) {
-        if (observedStores.has(store)) {
+        if (store.onHookAdded.has(onHookAdded)) {
           continue
         }
 
-        observedStores.add(store)
         stores.push(new WeakRef(store))
         store.onHookAdded.add(onHookAdded)
       }
