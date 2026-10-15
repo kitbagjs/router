@@ -30,7 +30,7 @@ type AddViewParameters = [component: Component | AnyView, options?: ViewOptions]
 export type AddView = (...args: AddViewParameters) => Route
 
 type View = {
-  getContext: GetContext,
+  getContext?: GetContext,
   name: string,
   component: Component,
   props: AddViewPropsGetter<Route, Component> | undefined,
@@ -46,7 +46,6 @@ export function toView(source: Component | AnyView, options: ViewOptions | undef
       props: options?.props,
       prefetch: options?.prefetch,
       transformer: options?.transformer,
-      getContext: () => [],
     }
   }
 

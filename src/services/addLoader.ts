@@ -37,7 +37,7 @@ type Loader = {
   load: AnyFunction,
   prefetch: PrefetchConfig | undefined,
   transformer: AnyPayloadTransformer | undefined,
-  getContext: GetContext,
+  getContext?: GetContext,
 }
 
 export function toLoader(source: AnyFunction | AnyLoader, options: LoaderOptions | undefined): Loader {
@@ -47,7 +47,6 @@ export function toLoader(source: AnyFunction | AnyLoader, options: LoaderOptions
       load: source,
       prefetch: options?.prefetch,
       transformer: options?.transformer,
-      getContext: () => [],
     }
   }
 
