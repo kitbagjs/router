@@ -52,28 +52,7 @@ Use an inline loader for route-specific helpers such as `update` and `parent`.
 
 ### Registration
 
-With [router registration](/quick-start#type-safety), the callback's `route` is typed as a union of the router's resolved routes. Narrow by `route.name` to access that route's typed params.
-
-::: warning Circular type inference
-Using a loader in the registered router creates circular type inference. Annotate it with `Loader<Data>` to resolve this, as shown below.
-:::
-
-```ts
-import { createLoader, type Loader } from '@kitbag/router'
-import { getUser, type User } from './api'
-
-const userLoader: Loader<Promise<User | null>> = createLoader({
-  load: async (route) => {
-    if (route.name === 'user') {
-      // route.params.userId is typed as string
-      return getUser(route.params.userId)
-    }
-
-    return null
-  },
-})
-
-```
+See [Route Narrowing](/advanced-concepts/route-narrowing#callbacks) for using reusable loaders with a registered router.
 
 ## Reading data in a component
 

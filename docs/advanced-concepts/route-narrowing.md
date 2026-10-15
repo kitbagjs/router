@@ -63,3 +63,55 @@ if(isRoute(router.route, 'user', { exact: false })) {
   router.route.params // { userId: string } | { userId: string, tab: string }
 }
 ```
+
+## Callbacks
+
+With [router registration](/quick-start#type-safety), `createLoader`, `createView`, and `createHook` callbacks receive a union of the router's resolved routes. Narrow by name to access the route's typed params.
+
+::: warning Circular type inference
+Using a loader or view in the registered router creates circular type inference. Annotate it with `Loader<Data>` or `View<Props>` to resolve this.
+:::
+
+```ts
+import { createLoader, type Loader } from '@kitbag/router'
+import { getUser, type User } from './api'
+
+const userLoader: Loader<Promise<User | null>> = createLoader({
+  load: async (route) => {
+    if (route.name === 'user') {
+      // route.params.userId is typed as string
+      return getUser(route.params.userId)
+    }
+
+    return null
+  },
+})
+```
+
+```ts
+import { createView, type View } from '@kitbag/router'
+import UserPage from './UserPage.vue'
+
+const userView: View<{ userId?: string }> = createView({
+  component: UserPage,
+  props: (route) => {
+    if (route.name === 'user') {
+      return { userId: route.params.userId }
+    }
+
+    return {}
+  },
+})
+```
+
+```ts
+import { createHook } from '@kitbag/router'
+
+const userHook = createHook({
+  hook: (route) => {
+    if (route?.name === 'user') {
+      console.log(route.params.userId)
+    }
+  },
+})
+```

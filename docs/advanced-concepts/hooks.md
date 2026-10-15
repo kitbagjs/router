@@ -165,6 +165,8 @@ const router = createRouter([account])
 router.onAfterRouteEnter(logNavigation)
 ```
 
+See [Route Narrowing](/advanced-concepts/route-narrowing#callbacks) for using reusable hooks with a registered router.
+
 ### Before and After Hooks
 
 The callback receives `context.kind` as `'before'` or `'after'`, depending on where the hook is registered. Narrow it to `'before'` to access `context.abort()`. After hooks do not receive an `abort` helper.
