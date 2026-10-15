@@ -34,7 +34,7 @@ const archived = createRoute({ name: 'archived', path: '/archive/[id]' }).addVie
 
 The getter receives a general resolved route and its loader data, or the resolved route union when a router is registered. Its result is checked against the component's props. Views can set `prefetch` and `transformer` defaults, overridable when attaching them along with a view `name`.
 
-See [Type Safety](/core-concepts/type-safety#circular-type-inference) for defining views with a registered router and [Route Narrowing](/advanced-concepts/route-narrowing#callbacks) for accessing typed params in callbacks. Reusable views do not have route-specific `parent` or `update` helpers.
+See [Type Safety](/core-concepts/type-safety) for registration and router assets and [Route Narrowing](/advanced-concepts/route-narrowing#callbacks) for accessing typed params in callbacks. Reusable views do not have route-specific `parent` or `update` helpers.
 
 ## Named Views
 Each [named view](/core-concepts/routes#named-views) can have its own props getter. Just pass a `props` getter alongside the view's `name`.

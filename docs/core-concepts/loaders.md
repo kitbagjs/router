@@ -48,7 +48,7 @@ const settings = createRoute({...})
 
 ### Type Safety
 
-See [Type Safety](/core-concepts/type-safety#circular-type-inference) for defining loaders with a registered router and [Route Narrowing](/advanced-concepts/route-narrowing#callbacks) for accessing typed params in callbacks.
+See [Type Safety](/core-concepts/type-safety) for registration and router assets and [Route Narrowing](/advanced-concepts/route-narrowing#callbacks) for accessing typed params in callbacks.
 
 ## Reading data in a component
 
@@ -68,7 +68,7 @@ const user = await route.data
 </template>
 ```
 
-[Register your router](/quick-start#type-safety) to get the correct route names and data types when using `useRoute`.
+[Register your router](/core-concepts/type-safety#registration) to get the correct route names and data types when using `useRoute`.
 
 A single unnamed loader exposes its result directly as `route.data`. This is always a promise, even if the loader returns a value synchronously. Data is also available on `router.route`, but not on a route returned by `router.resolve` or in navigation hooks.
 
