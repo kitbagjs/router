@@ -52,7 +52,7 @@ Use an inline loader for route-specific helpers such as `update` and `parent`.
 
 ### Registration
 
-See [Route Narrowing](/advanced-concepts/route-narrowing#callbacks) for using reusable loaders with a registered router.
+See [registration](/core-concepts/router#circular-type-inference) for defining loaders with a registered router and [Route Narrowing](/advanced-concepts/route-narrowing#callbacks) for accessing typed params in callbacks.
 
 ## Reading data in a component
 

@@ -45,6 +45,31 @@ declare module '@kitbag/router' {
 }
 ```
 
+### Circular type inference
+
+::: warning
+Using a loader or view in the registered router creates circular type inference. Annotate it with `Loader<Data>` or `View<Props>` to resolve this.
+:::
+
+```ts
+import { createLoader, type Loader } from '@kitbag/router'
+import { getSession, type Session } from './api'
+
+const sessionLoader: Loader<Promise<Session>> = createLoader({
+  load: () => getSession(),
+})
+```
+
+```ts
+import { createView, type View } from '@kitbag/router'
+import PageComponent from './PageComponent.vue'
+
+const pageView: View<{ url: string }> = createView({
+  component: PageComponent,
+  props: (route) => ({ url: route.href }),
+})
+```
+
 ## Router Options
 
 There are several options you can pass to the router to customize its behavior. See the [RouterOptions](/api/types/RouterOptions.md) type for more information and a list of options.
