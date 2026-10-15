@@ -98,7 +98,6 @@ export { UnreachableRouteError } from './errors/unreachableRouteError'
 // Services
 export { createHook } from './services/createHook'
 export type { CreateHookOptions, Hook, HookRoute, HookCallbackContext } from './types/hook'
-export { isHook } from './guards/hooks'
 export { createView } from './services/createView'
 export type { CreateViewOptions, View, ViewRoute, ViewCallbackContext } from './types/view'
 export { createRoute } from './services/createRoute'
