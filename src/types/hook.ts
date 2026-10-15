@@ -62,9 +62,11 @@ export type HookInvocationContext = {
   replace: AnyFunction,
   reject: AnyFunction,
   update?: AnyFunction,
-  abort?: RouterAbort,
   signal: AbortSignal,
-}
+} & (
+  | { kind: 'before', abort: RouterAbort }
+  | { kind: 'after' }
+)
 
 /**
  * A reusable hook that can be attached before or after a route enters, updates, or leaves.

@@ -1,7 +1,9 @@
 import { AfterEnterHook, AfterLeaveHook, AfterUpdateHook, BeforeEnterHook, BeforeLeaveHook, BeforeUpdateHook, ErrorHook, RejectionHook } from '@/types/hooks'
+import { RouteContext } from '@/types/routeContext'
 import { RedirectHook } from '@/types/redirects'
 
 export class Hooks {
+  public context: RouteContext[] = []
   public redirects = new Set<RedirectHook>()
   public onBeforeRouteEnter = new Set<BeforeEnterHook>()
   public onBeforeRouteUpdate = new Set<BeforeUpdateHook>()

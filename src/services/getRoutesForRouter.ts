@@ -8,8 +8,6 @@ import { BUILT_IN_REJECTIONS, BuiltInRejectionType, isRejection, Rejection, Reje
 import { RouterOptions } from '@/types/router'
 import { createRejection } from '@/services/createRejection'
 import { isUrl } from '@/types/url'
-import { getHooks } from '@/types/hooks'
-import { getHookContext } from '@/services/getHookContext'
 
 /**
  * Takes in routes and plugins and returns a list of routes with the base route inserted if provided.
@@ -57,7 +55,7 @@ export function getRoutesForRouter(routes: Routes | Routes[], plugins: RouterPlu
 
     routerRoutes.set(route.name, routerRoute)
 
-    for (const context of [...route.context, ...getHookContext(getHooks(route))]) {
+    for (const context of route.context) {
       if (isRoute(context)) {
         addRoute(context)
       }
