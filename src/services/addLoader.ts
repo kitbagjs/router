@@ -67,13 +67,13 @@ export function toLoader(source: AnyFunction | AnyLoader, options: LoaderOptions
  * Matches are `markRaw` so that making a route reactive does not turn its loaders into reactive proxies.
  * Spreading a match drops that, so the rebuilt one is marked again.
  */
-export function addLoaderToMatch(match: CreatedRouteOptions, { name, ...loader }: Loader): CreatedRouteOptions {
+export function addLoaderToMatch(match: CreatedRouteOptions, loader: Loader): CreatedRouteOptions {
   return markRaw({
     ...match,
     context: combineContext(match.context, loader.context),
     loaders: {
       ...match.loaders,
-      [name]: loader,
+      [loader.name]: loader,
     },
   })
 }
