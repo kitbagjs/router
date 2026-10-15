@@ -3,7 +3,7 @@ import { PrefetchConfig } from '@/types/prefetch'
 import { RouteMeta } from '@/types/register'
 import { LastInArray } from '@/types/utilities'
 import { CreateRouteOptions } from '@/types/createRouteOptions'
-import { GetContext, RouteContext, ToRouteContext } from '@/types/routeContext'
+import { RouteContext, ToRouteContext } from '@/types/routeContext'
 import { ToMeta } from '@/types/meta'
 import { ToState } from '@/types/state'
 import { Url } from '@/types/url'
@@ -24,7 +24,6 @@ export type RouteInternal = {
   [IS_ROUTE_SYMBOL]: true,
   depth: number,
   hooks: Hooks[],
-  getContext: GetContext,
   redirect: RouteRedirect,
   getTitle: GetRouteTitle,
   aliases: RouteAlias[],
