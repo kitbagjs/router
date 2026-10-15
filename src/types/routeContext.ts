@@ -51,11 +51,3 @@ type FilterRouteContextRejections<TContext extends RouteContext[] | undefined> =
   : []
 
 export type GetContext = () => readonly RouteContext[]
-
-export function hasGetContext<T>(value: T): value is T & { getContext: GetContext } {
-  if (typeof value !== 'function' && (typeof value !== 'object' || value === null)) {
-    return false
-  }
-
-  return 'getContext' in value && typeof value.getContext === 'function'
-}
