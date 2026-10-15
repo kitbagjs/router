@@ -24,7 +24,6 @@ export type { RouteCallbackContext } from './types/routeCallbackContext'
 export type { RouteViews } from './types/routeViews'
 export type { RouteLoader, RouteLoaders } from './types/routeLoaders'
 export type { CreateLoaderOptions, Loader, LoaderCallbackContext, LoaderRoute } from './types/loader'
-export { isLoader } from './guards/loaders'
 export type {
   RejectionHooks,
   HookRemove,
@@ -99,7 +98,6 @@ export { UnreachableRouteError } from './errors/unreachableRouteError'
 // Services
 export { createView } from './services/createView'
 export type { CreateViewOptions, View, ViewRoute, ViewCallbackContext } from './types/view'
-export { isView } from './guards/views'
 export { createRoute } from './services/createRoute'
 export { createLoader } from './services/createLoader'
 export { createRejection } from './services/createRejection'
