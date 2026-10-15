@@ -1,4 +1,4 @@
-import { getRouteContext } from '@/services/getRouteContext'
+import { withGetContext } from '@/services/withGetContext'
 import { markRaw } from 'vue'
 import { createRouteId } from '@/services/createRouteId'
 import { InternalRouteHooks } from '@/types/hooks'
@@ -45,13 +45,12 @@ export function createRoute(options: CreateRouteOptions): Route {
     [IS_ROUTE_SYMBOL]: true,
     depth: 1,
     hooks: [store],
-    getContext: getRouteContext,
     getTitle,
     redirect,
     aliases: [],
-  } satisfies RouteInternal
+  } satisfies Omit<RouteInternal, 'getContext'>
 
-  const route = {
+  const route = withGetContext({
     id,
     matches: [rawRoute],
     name,
@@ -64,7 +63,7 @@ export function createRoute(options: CreateRouteOptions): Route {
     ...url,
     ...hooks,
     ...internal,
-  } satisfies Route & RouteInternal & InternalRouteHooks & RouteRedirects & RouteSetTitle
+  }) satisfies Route & RouteInternal & InternalRouteHooks & RouteRedirects & RouteSetTitle
 
   if (isWithParent(options)) {
     const combined = combineRoutes(options.parent, route, options.hoist)

@@ -1,3 +1,4 @@
+import { withGetContext } from '@/services/withGetContext'
 import { isRoute, Route } from '@/types/route'
 import { stringHasValue } from '@/utilities/guards'
 import { createUrl } from '@/services/createUrl'
@@ -18,9 +19,9 @@ export function insertBaseRoute<T extends Route>(route: T, base?: string): T {
     url: combineUrl(baseUrl, alias.url),
   }))
 
-  return {
+  return withGetContext({
     ...route,
     ...combineUrl(baseUrl, route),
     aliases,
-  }
+  })
 }
