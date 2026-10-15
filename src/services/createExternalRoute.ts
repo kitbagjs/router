@@ -1,3 +1,4 @@
+import { getRouteContext } from '@/services/getRouteContext'
 import { markRaw } from 'vue'
 import { createRouteId } from '@/services/createRouteId'
 import { combineRoutes, CreateRouteOptions, isWithParent, ToRoute, WithHost, WithoutHost, WithoutParent, WithParent } from '@/types/createRouteOptions'
@@ -51,6 +52,7 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
     [IS_ROUTE_SYMBOL]: true,
     depth: 1,
     hooks: [store],
+    getContext: getRouteContext,
     getTitle,
     redirect,
     aliases: [],

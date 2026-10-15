@@ -23,6 +23,8 @@ export type { AliasTransform, AliasTransformContext } from './types/routeAlias'
 export type { RouteCallbackContext } from './types/routeCallbackContext'
 export type { RouteViews } from './types/routeViews'
 export type { RouteLoader, RouteLoaders } from './types/routeLoaders'
+export type { CreateLoaderOptions, Loader, LoaderCallbackContext, LoaderRoute } from './types/loader'
+export { isLoader } from './types/loader'
 export type {
   RejectionHooks,
   HookRemove,
@@ -99,6 +101,7 @@ export { createView } from './services/createView'
 export type { CreateViewOptions, View, ViewRoute, ViewCallbackContext } from './types/view'
 export { isView } from './types/view'
 export { createRoute } from './services/createRoute'
+export { createLoader } from './services/createLoader'
 export { createRejection } from './services/createRejection'
 export { createExternalRoute } from './services/createExternalRoute'
 export { createRouterAssets, type RouterAssets } from './services/createRouterAssets'
