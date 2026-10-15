@@ -1,3 +1,4 @@
+import { createRouteRedirects } from '@/services/createRouteRedirects'
 import { withGetContext } from '@/services/withGetContext'
 import { AddAlias, createAliases } from '@/services/addAlias'
 import { AddLoader, addLoaderToMatch, checkForLoaderConflict, toLoader } from '@/services/addLoader'
@@ -54,10 +55,14 @@ export function withRouteMethods<TRoute extends Route>(route: TRoute): TRoute {
     })
   }
 
-  return withGetContext({
+  const redirects = createRouteRedirects({ getRoute: () => result })
+  const result = withGetContext({
     ...route,
+    ...redirects,
     addView,
     addLoader,
     addAlias,
   })
+
+  return result
 }
