@@ -45,6 +45,8 @@ declare module '@kitbag/router' {
 }
 ```
 
+The `createLoader` returned by [`createRouterAssets`](/api/functions/createRouterAssets) uses that router's route types without global registration.
+
 ### Circular type inference
 
 ::: warning
