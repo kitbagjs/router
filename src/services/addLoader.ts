@@ -56,6 +56,7 @@ export function toLoader(source: AnyFunction | AnyLoader, options: LoaderOptions
   }
 
   return {
+    ...source,
     name: options?.name ?? DEFAULT_LOADER_NAME,
     load: (route: ResolvedRoute, context: RouteCallbackContext<Route>) => source.load(route, {
       push: context.push,
@@ -65,7 +66,6 @@ export function toLoader(source: AnyFunction | AnyLoader, options: LoaderOptions
     }),
     prefetch: options?.prefetch ?? source.prefetch,
     transformer: options?.transformer ?? source.transformer,
-    getContext: source.getContext,
   }
 }
 

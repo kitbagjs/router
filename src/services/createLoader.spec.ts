@@ -2,6 +2,7 @@ import { expect, test, vi } from 'vitest'
 import { createLoader } from '@/services/createLoader'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
+import { isLoader } from '@/types/loader'
 import { createRejection } from '@/services/createRejection'
 
 test('one definition loads independently for multiple routes', async () => {
@@ -18,7 +19,7 @@ test('one definition loads independently for multiple routes', async () => {
   await expect(router.route.data).resolves.toBe('second-2')
 })
 
-test('attachment overrides loader defaults without changing other attachments', () => {
+test('attachment preserves loader identity while overriding defaults', () => {
   const transformer = { stringify: String, parse: Number }
   const overrideTransformer = { stringify: JSON.stringify, parse: JSON.parse }
   const loader = createLoader({ load: () => 1, prefetch: 'eager', transformer })
@@ -28,6 +29,8 @@ test('attachment overrides loader defaults without changing other attachments', 
   })
   const defaults = createRoute({ path: '/' }).addLoader(loader)
 
+  expect(isLoader(overridden.matches[0].loaders.default)).toBe(true)
+  expect(isLoader(defaults.matches[0].loaders.default)).toBe(true)
   expect(overridden.matches[0].loaders.default).toMatchObject({ prefetch: false, transformer: overrideTransformer })
   expect(defaults.matches[0].loaders.default).toMatchObject({ prefetch: 'eager', transformer })
 })
