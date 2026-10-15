@@ -33,8 +33,8 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
   const hash = toUrlPart(options.hash)
   const meta = options.meta ?? {}
   const host = toUrlPart(options.host)
-  const context = options.context ?? []
-  const { store, redirect, ...hooks } = createRouteHooks()
+  const context = [...options.context ?? []]
+  const { store, redirect, ...hooks } = createRouteHooks(context)
   const { getTitle, setTitle } = createRouteTitle(options.parent)
   const redirects = createRouteRedirects({
     getRoute: () => route,

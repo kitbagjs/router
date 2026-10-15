@@ -25,8 +25,8 @@ export function createRoute(options: CreateRouteOptions): Route {
   const hash = toUrlPart(options.hash)
   const meta = options.meta ?? {}
   const state = options.state ?? {}
-  const context = options.context ?? []
-  const { store, redirect, ...hooks } = createRouteHooks()
+  const context = [...options.context ?? []]
+  const { store, redirect, ...hooks } = createRouteHooks(context)
   const { setTitle, getTitle } = createRouteTitle(options.parent)
   const rawRoute = markRaw({ ...options, id, meta, state, name, views: {}, loaders: {} })
 
