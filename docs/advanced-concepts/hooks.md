@@ -151,7 +151,7 @@ user.onBeforeRouteEnter(authHook)
 account.onBeforeRouteEnter(authHook)
 ```
 
-`context` types the hook's navigation and rejection helpers. Attaching the hook before `createRouter` also registers those context targets; targets for later attachments must already be registered.
+See [Context](/core-concepts/routes#context) for the `context` option.
 
 The same definition can be used with before or after hooks.
 

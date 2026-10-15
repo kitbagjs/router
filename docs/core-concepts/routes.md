@@ -73,7 +73,7 @@ const contact = createRoute({
 
 ## Parent
 
-The `parent` property is used to create nested routes. In this example, `blogPost` route's path is combined with the `blog` route's path to form the full url. A route inherits many of its parent's properties. Specifically, `path`, `query`, `meta`, `state`, `context`, and `hash` are all combined.
+The `parent` property is used to create nested routes. In this example, `blogPost` route's path is combined with the `blog` route's path to form the full url. A route inherits many of its parent's properties. Specifically, `path`, `query`, `meta`, `state`, [context](#context), and `hash` are all combined.
 
 ```ts {7}
 const blog = createRoute({
@@ -283,28 +283,35 @@ There is also a `setTitle` callback on [rejections](/advanced-concepts/rejection
 
 ## Context
 
-The context for a route is the collection of routes and rejections that are associated with the route. The context you provide to this route will be available to the hooks and props callback functions for this route.
+The `context` option declares route and rejection definitions used by a callback's `push`, `replace`, and `reject` helpers. These helpers are typed from those definitions, including any required route params.
 
 ```ts
-const newHomePage = createRoute({
-  name: 'new-home',
-  path: '/',
-})
-.addView(NewHomePage)
+const login = createRoute({ name: 'login', path: '/login' })
+const denied = createRejection({ type: 'Denied' })
 
-const home = createRoute({
-  name: 'home',
-  path: '/',
-  context: [newHomePage],
+const checkout = createRoute({
+  name: 'checkout',
+  path: '/checkout',
+  context: [login, denied],
 })
 
-home.onBeforeRouteEnter((to, { replace }) => {
-  if(user.isCanary) {
-    // TS knows about 'new-home' because it's in the context
-    replace('new-home')
+checkout.onBeforeRouteEnter((_to, { push, reject }) => {
+  if (!isAuthenticated()) {
+    return push('login')
+  }
+  if (!canCheckout()) {
+    reject('Denied')
   }
 })
+
+const router = createRouter([checkout])
 ```
+
+`createRouter` discovers context targets from its routes, including inherited context, so they do not need to be listed separately.
+
+`createLoader`, `createView`, and `createHook` accept the same option. Their helpers use their own declared context, independent of the route they are attached to or the registered router. The option does not narrow the callback's incoming route or params.
+
+Attaching a loader or view includes its context in the route's context. For hooks, attach them before `createRouter` to register their context targets. Hooks attached later must reference targets already registered with the router.
 
 ## Loaders
 
