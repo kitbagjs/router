@@ -65,7 +65,7 @@ Using a loader in the registered router creates circular type inference. Annotat
 :::
 
 ```ts
-import { createLoader, createRoute, createRouter, type Loader } from '@kitbag/router'
+import { createLoader, type Loader } from '@kitbag/router'
 import { getUser, type User } from './api'
 
 const userLoader: Loader<Promise<User | null>> = createLoader({
@@ -79,24 +79,6 @@ const userLoader: Loader<Promise<User | null>> = createLoader({
   },
 })
 
-const user = createRoute({
-  name: 'user',
-  path: '/users/[userId]',
-})
-  .addLoader(userLoader)
-
-const home = createRoute({
-  name: 'home',
-  path: '/',
-})
-
-export const router = createRouter([user, home])
-
-declare module '@kitbag/router' {
-  interface Register {
-    router: typeof router
-  }
-}
 ```
 
 ## Reading data in a component
