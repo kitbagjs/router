@@ -24,6 +24,7 @@ test('loaders receive resolved routes and preserve their data type', () => {
 })
 
 test('declared context types the loader and attached route helpers', () => {
+  const settings = createRoute({ name: 'settings', path: '/settings' })
   const login = createRoute({ name: 'login', path: '/login' })
   const denied = createRejection({ type: 'Denied' })
   const loader = createLoader({
@@ -39,10 +40,11 @@ test('declared context types the loader and attached route helpers', () => {
       return true
     },
   })
-  const route = createRoute({ name: 'user', path: '/' }).addLoader(loader)
+  const route = createRoute({ name: 'user', path: '/', context: [settings] }).addLoader(loader)
 
   expectTypeOf(loader).toExtend<Loader<boolean, readonly [typeof login, typeof denied]>>()
   route.onBeforeRouteEnter((_to, { push, reject }) => {
+    push('settings')
     push('login')
     reject('Denied')
     // @ts-expect-error attaching a loader must not widen the route's context
