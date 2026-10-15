@@ -6,7 +6,7 @@ import { PrefetchConfig } from '@/types/prefetch'
 import { CreatedRouteOptions, Route } from '@/types/route'
 import { AnyView, isView } from '@/types/view'
 import { combineContext } from '@/services/combineContext'
-import { GetContext } from '@/types/routeContext'
+import { RouteContext } from '@/types/routeContext'
 
 /**
  * The loose runtime shape of the `addView` options. Purposely wide: the getter and name types each
@@ -31,7 +31,7 @@ type AddViewParameters = [component: Component | AnyView, options?: ViewOptions]
 export type AddView = (...args: AddViewParameters) => Route
 
 type View = {
-  getContext?: GetContext,
+  context?: readonly RouteContext[],
   name: string,
   component: Component,
   props: AddViewPropsGetter<Route, Component> | undefined,
@@ -53,7 +53,6 @@ export function toView(source: Component | AnyView, options: ViewOptions | undef
   return {
     ...source,
     name: options?.name ?? DEFAULT_VIEW_NAME,
-    props: options?.props ?? source.props,
     prefetch: options?.prefetch ?? source.prefetch,
     transformer: options?.transformer ?? source.transformer,
   }
@@ -68,7 +67,7 @@ export function toView(source: Component | AnyView, options: ViewOptions | undef
 export function addViewToMatch(match: CreatedRouteOptions, { name, ...view }: View): CreatedRouteOptions {
   return markRaw({
     ...match,
-    context: combineContext(match.context, view.getContext?.()),
+    context: combineContext(match.context, view.context),
     views: {
       ...match.views,
       [name]: view,
