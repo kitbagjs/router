@@ -96,8 +96,7 @@ export { SsrOptionRequiredError } from './errors/ssrOptionRequiredError'
 export { UnreachableRouteError } from './errors/unreachableRouteError'
 
 // Services
-export { createView } from './services/createView'
-export type { CreateViewOptions, View, ViewRoute, ViewCallbackContext } from './types/view'
+export type { CreateViewOptions, View, ViewCallbackContext } from './types/view'
 export { createRoute } from './services/createRoute'
 export { createRejection } from './services/createRejection'
 export { createExternalRoute } from './services/createExternalRoute'
@@ -121,6 +120,11 @@ import { createRouterAssets, RouterAssets } from './services/createRouterAssets'
 import { RegisteredRouter } from './types/register'
 
 const routerAssets = createRouterAssets(routerInjectionKey)
+
+/**
+ * Creates a reusable view with props callbacks typed to the registered router's resolved routes.
+ */
+export const createView: RouterAssets<RegisteredRouter>['createView'] = routerAssets.createView
 
 /**
  * Creates a reusable loader with callbacks typed to the registered router's resolved routes.

@@ -1,3 +1,5 @@
+import { createView } from '@/services/createView'
+import { CreateView } from '@/types/view'
 import { createLoader } from '@/services/createLoader'
 import { CreateLoader } from '@/types/loader'
 import { RouterResolvedRoute } from '@/types/resolved'
@@ -19,6 +21,10 @@ import { createUseViewTransition } from '@/compositions/useViewTransition'
 import { createUseNavigation } from '@/compositions/useNavigation'
 
 export type RouterAssets<TRouter extends Router> = {
+  /**
+   * Creates a reusable view with props callbacks typed to this router's resolved routes and loader data.
+   */
+  createView: CreateView<RouterResolvedRoute<TRouter, true>>,
   /**
    * Creates a reusable loader with callbacks typed to this router's resolved routes.
    */
@@ -204,6 +210,7 @@ export function createRouterAssets<TRouter extends Router>(routerOrRouterKey: TR
   const useNavigation = createUseNavigation(routerKey)
 
   return {
+    createView,
     createLoader,
     onBeforeRouteLeave,
     onBeforeRouteUpdate,

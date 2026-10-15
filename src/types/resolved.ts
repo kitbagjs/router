@@ -104,16 +104,18 @@ export type WithData<TRoute extends Route = Route> = {
 /**
  * This type is the same as `ResolvedRoute<TRoutes[number]>` while remaining distributive
  */
-export type RouterResolvedRouteUnion<TRoutes extends Routes> = {
-  [K in keyof TRoutes]: ResolvedRoute<TRoutes[K]>
+export type RouterResolvedRouteUnion<TRoutes extends Routes, TWithData extends boolean = false> = {
+  [K in keyof TRoutes]: TWithData extends true
+    ? ResolvedRoute<TRoutes[K]> & WithData<TRoutes[K]>
+    : ResolvedRoute<TRoutes[K]>
 }[number]
 
 /**
  * The resolved routes of a router, or a general resolved route for an untyped router.
  */
-export type RouterResolvedRoute<TRouter extends Router> = Routes extends RouterRoutes<TRouter>
-  ? ResolvedRoute
-  : RouterResolvedRouteUnion<RouterRoutes<TRouter>>
+export type RouterResolvedRoute<TRouter extends Router, TWithData extends boolean = false> = Routes extends RouterRoutes<TRouter>
+  ? TWithData extends true ? ResolvedRoute & WithData : ResolvedRoute
+  : RouterResolvedRouteUnion<RouterRoutes<TRouter>, TWithData>
 
 /**
  * Converts a union of Route types to a union of ResolvedRoute types while preserving the discriminated union structure for narrowing.
