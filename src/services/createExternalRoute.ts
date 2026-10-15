@@ -56,7 +56,7 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
     aliases: [],
   } satisfies RouteInternal
 
-  const definition = {
+  const route = {
     id,
     matches: [rawRoute],
     name,
@@ -70,10 +70,8 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
     ...internal,
   } satisfies Route & RouteInternal & ExternalRouteHooks & RouteRedirects & RouteSetTitle
 
-  let route: Route = definition
-
   if (isWithParent(options)) {
-    route = combineRoutes(options.parent, definition, options.hoist)
+    return combineRoutes(options.parent, route, options.hoist)
   }
 
   return route
