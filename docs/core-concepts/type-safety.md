@@ -37,17 +37,6 @@ export const {
 } = createRouterAssets(router)
 ```
 
-If assets are needed before the router is created, pass an injection key and supply the router's type explicitly. Pass the same key to `createRouter(routes, { key: routerKey })`.
-
-```ts
-// routerAssets.ts
-import { createRouterAssets } from '@kitbag/router'
-import type { router } from './router'
-
-export const routerKey = Symbol('router')
-export const { useRoute, createLoader } = createRouterAssets<typeof router>(routerKey)
-```
-
 ## Circular type inference
 
 ::: warning
