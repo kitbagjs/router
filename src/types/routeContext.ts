@@ -49,4 +49,3 @@ type FilterRouteContextRejections<TContext extends RouteContext[] | undefined> =
     ? [First, ...FilterRouteContextRejections<Rest>]
     : FilterRouteContextRejections<Rest>
   : []
-
