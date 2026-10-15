@@ -23,7 +23,7 @@ Here `getUser` is your application's data-fetching function. Register `user` in 
 
 ## Reusable loaders
 
-Create a loader separately when several routes need the same loading logic. Like an inline loader, its callback receives the resolved route. Loaders can be passed [context](/core-concepts/routes#context) to enable them to reference other routes and rejections:
+Create a loader separately when several routes need the same loading logic. Like an inline loader, its callback receives the resolved route. Reusing a definition computes data separately for each route. Use an inline loader for route-specific helpers such as `update` and `parent`. Loaders can be passed [context](/core-concepts/routes#context) to enable them to reference other routes and rejections:
 
 ```ts
 import { createLoader, createRoute } from '@kitbag/router'
@@ -45,10 +45,6 @@ const settings = createRoute({...})
     prefetch: false,
   })
 ```
-
-Without router registration, the callback receives a general resolved-route type. Reusing a definition computes data separately for each route.
-
-Use an inline loader for route-specific helpers such as `update` and `parent`.
 
 ### Registration
 
