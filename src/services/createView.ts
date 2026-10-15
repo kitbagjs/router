@@ -21,9 +21,11 @@ export function createView<
 )): View<undefined, TContext>
 
 export function createView(options: CreateViewOptions<Component, any, any>): View<any, any> {
+  const context = [...options.context ?? []]
   const internal = {
     [IS_VIEW_SYMBOL]: true,
+    getContext: () => context,
   } satisfies ViewInternal
 
-  return { ...options, ...internal, context: [...options.context ?? []] }
+  return { ...options, ...internal, context }
 }

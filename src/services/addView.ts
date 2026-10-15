@@ -5,7 +5,7 @@ import { AddViewPropsGetter } from '@/types/addView'
 import { PrefetchConfig } from '@/types/prefetch'
 import { CreatedRouteOptions, Route } from '@/types/route'
 import { AnyView, isView } from '@/types/view'
-import { combineContext } from '@/services/combineContext'
+import { GetContext } from '@/types/routeContext'
 
 /**
  * The loose runtime shape of the `addView` options. Purposely wide: the getter and name types each
@@ -30,7 +30,7 @@ type AddViewParameters = [component: Component | AnyView, options?: ViewOptions]
 export type AddView = (...args: AddViewParameters) => Route
 
 type View = {
-  context: AnyView['context'],
+  getContext: GetContext,
   name: string,
   component: Component,
   props: AddViewPropsGetter<Route, Component> | undefined,
@@ -46,7 +46,7 @@ export function toView(source: Component | AnyView, options: ViewOptions | undef
       props: options?.props,
       prefetch: options?.prefetch,
       transformer: options?.transformer,
-      context: [],
+      getContext: () => [],
     }
   }
 
@@ -56,7 +56,7 @@ export function toView(source: Component | AnyView, options: ViewOptions | undef
     props: options?.props ?? source.props,
     prefetch: options?.prefetch ?? source.prefetch,
     transformer: options?.transformer ?? source.transformer,
-    context: source.context,
+    getContext: source.getContext,
   }
 }
 
@@ -66,13 +66,12 @@ export function toView(source: Component | AnyView, options: ViewOptions | undef
  * Matches are `markRaw` so that making a route reactive does not turn its components into reactive
  * proxies. Spreading a match drops that, so the rebuilt one is marked again.
  */
-export function addViewToMatch(match: CreatedRouteOptions, { name, component, props, prefetch, transformer, context }: View): CreatedRouteOptions {
+export function addViewToMatch(match: CreatedRouteOptions, { name, ...view }: View): CreatedRouteOptions {
   return markRaw({
     ...match,
-    context: combineContext(match.context, context),
     views: {
       ...match.views,
-      [name]: { component, props, prefetch, transformer },
+      [name]: view,
     },
   })
 }
