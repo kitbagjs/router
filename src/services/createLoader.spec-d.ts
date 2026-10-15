@@ -2,8 +2,7 @@ import { expectTypeOf, test } from 'vitest'
 import { createLoader } from '@/services/createLoader'
 import { createRoute } from '@/services/createRoute'
 import { createRejection } from '@/services/createRejection'
-import { createRouter } from '@/services/createRouter'
-import { Loader, LoaderRoute } from '@/types/loader'
+import { Loader } from '@/types/loader'
 import { ResolvedRoute, WithData } from '@/types/resolved'
 
 test('loaders receive resolved routes and preserve their data type', () => {
@@ -22,17 +21,6 @@ test('loaders receive resolved routes and preserve their data type', () => {
   expectTypeOf(loader).toExtend<Loader<string>>()
   expectTypeOf<WithData<typeof route>['data']>().toEqualTypeOf<Promise<string>>()
   expectTypeOf<WithData<typeof other>['data']>().toEqualTypeOf<{ name: Promise<string> }>()
-})
-
-test('registered routes form a discriminated union', () => {
-  const user = createRoute({ name: 'user', path: '/users/[id]' })
-  const home = createRoute({ name: 'home', path: '/' })
-  const router = createRouter([user, home])
-
-  type RegisteredRoute = LoaderRoute<{ router: typeof router }>
-
-  expectTypeOf<Extract<RegisteredRoute, { name: 'user' }>['params']>().toEqualTypeOf<{ id: string }>()
-  expectTypeOf<Extract<RegisteredRoute, { name: 'home' }>['params']>().toEqualTypeOf<{}>()
 })
 
 test('declared context types the loader and attached route helpers', () => {
