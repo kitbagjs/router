@@ -1,10 +1,10 @@
-import { assert, expect, test } from 'vitest'
+import { expect, test } from 'vitest'
 import { createRoute } from '@/services/createRoute'
 import { createExternalRoute } from '@/services/createExternalRoute'
-import { isRoute } from '@/types/route'
+import { getRouteContext } from '@/services/getRouteContext'
 import { component } from '@/utilities/testHelpers'
 
-test('context callbacks can be destructured from internal and external routes', () => {
+test('collects declared context from internal and external routes', () => {
   const target = createRoute({ name: 'target', path: '/target' })
   const routes = [
     createRoute({ name: 'source', path: '/', context: [target] }),
@@ -12,9 +12,7 @@ test('context callbacks can be destructured from internal and external routes', 
   ]
 
   for (const route of routes) {
-    assert(isRoute(route))
-    const { getContext } = route
-    expect(getContext()).toEqual([target])
+    expect(getRouteContext(route)).toEqual([target])
   }
 })
 
@@ -27,7 +25,5 @@ test('chained route copies collect their own inherited context', () => {
     .addView(component)
     .addAlias({ path: '/alias' })
 
-  assert(isRoute(child))
-  const { getContext } = child
-  expect(getContext()).toEqual([shared, own])
+  expect(getRouteContext(child)).toEqual([shared, own])
 })

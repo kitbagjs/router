@@ -41,7 +41,7 @@ export function createRoute(options: CreateRouteOptions): Route {
     getTitle,
     redirect,
     aliases: [],
-  } satisfies Omit<RouteInternal, 'getContext'>
+  } satisfies RouteInternal
 
   const route = {
     id,
@@ -55,7 +55,7 @@ export function createRoute(options: CreateRouteOptions): Route {
     ...url,
     ...hooks,
     ...internal,
-  } satisfies Route & Omit<RouteInternal, 'getContext'> & InternalRouteHooks & RouteSetTitle
+  } satisfies Route & RouteInternal & InternalRouteHooks & RouteSetTitle
 
   if (isWithParent(options)) {
     const combined = combineRoutes(options.parent, route, options.hoist)

@@ -24,7 +24,6 @@ export function createView(options: CreateViewOptions<Component, any, any>): Vie
   const context = [...options.context ?? []]
   const internal = {
     [IS_VIEW_SYMBOL]: true,
-    getContext: () => context,
   } satisfies ViewInternal
 
   return { ...options, ...internal, context }

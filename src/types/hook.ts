@@ -1,4 +1,4 @@
-import { GetContext, RouteContext, RouteContextToRejection, RouteContextToRoute } from '@/types/routeContext'
+import { RouteContext, RouteContextToRejection, RouteContextToRoute } from '@/types/routeContext'
 import { Register } from '@/types/register'
 import { ResolvedRoute, RouterResolvedRouteUnion } from '@/types/resolved'
 import { Router, RouterRoutes } from '@/types/router'
@@ -13,7 +13,6 @@ export const IS_HOOK_SYMBOL = Symbol('IS_HOOK_SYMBOL')
 
 export type HookInternal = {
   [IS_HOOK_SYMBOL]: true,
-  getContext: GetContext,
 }
 
 /**

@@ -13,7 +13,6 @@ export function createLoader(options: CreateLoaderOptions<any, any>): Loader<any
   const context = [...options.context ?? []]
   const internal = {
     [IS_LOADER_SYMBOL]: true,
-    getContext: () => context,
   } satisfies LoaderInternal
 
   return { ...options, ...internal, context }
