@@ -36,16 +36,10 @@ const sessionLoader = createLoader({
   prefetch: 'intent',
 })
 
-const user = createRoute({
-  name: 'user',
-  path: '/users/[userId]',
-})
+const user = createRoute({...})
   .addLoader(sessionLoader)
 
-const settings = createRoute({
-  name: 'settings',
-  path: '/users/[userId]/settings',
-})
+const settings = createRoute({...})
   .addLoader(sessionLoader, {
     name: 'session',
     prefetch: false,
