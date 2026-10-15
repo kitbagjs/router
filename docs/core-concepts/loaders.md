@@ -56,8 +56,6 @@ Without router registration, the callback receives a general resolved-route type
 
 Use an inline loader for route-specific helpers such as `update` and `parent`.
 
-Declare `transformer` on the loader to serialize its resolved data for SSR hydration. Attachment options can override the loader's `prefetch` and `transformer` defaults without changing its definition.
-
 ### Registration
 
 With [router registration](/quick-start#type-safety), the callback's `route` is typed as a union of the router's resolved routes. Narrow by `route.name` to access that route's typed params.
