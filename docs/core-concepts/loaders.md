@@ -42,24 +42,7 @@ const settings = createRoute({ name: 'settings', path: '/users/[userId]/settings
 
 The route has a general resolved-route type. Registering your router gives the callback a union of its resolved routes, which can be narrowed by name. If the registered router includes this loader, an explicit loader type such as `Loader<Session>` breaks the circular type inference. Reusing a definition computes data separately for each route.
 
-A reusable loader can declare related routes and rejections through `context`:
-
-```ts
-const authenticatedSessionLoader = createLoader({
-  context: [login],
-  load: async (_params, { push, signal }) => {
-    const session = await getSession({ signal })
-
-    if (!session) {
-      push('login')
-    }
-
-    return session
-  },
-})
-```
-
-The loader's callback context provides `push`, `replace`, `reject`, and `signal`. Navigation targets and custom rejections are typed from its declared context, which is also included in the attached route's context. Use an inline loader for route-specific helpers such as `update` and `parent`.
+See [Context](/core-concepts/routes#context) for the `context` option. Use an inline loader for route-specific helpers such as `update` and `parent`.
 
 Declare `transformer` on the loader to serialize its resolved data for SSR hydration. Attachment options can override the loader's `prefetch` and `transformer` defaults without changing its definition.
 

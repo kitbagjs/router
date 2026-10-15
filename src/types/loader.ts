@@ -40,7 +40,7 @@ export type CreateLoaderOptions<
    */
   load: (route: LoaderRoute, context: LoaderCallbackContext<TContext>) => TData,
   /**
-   * Related routes and rejections, also included in the attached route's context.
+   * See [Context](https://kitbag-router.netlify.app/core-concepts/routes#context).
    */
   context?: TContext,
   /**
