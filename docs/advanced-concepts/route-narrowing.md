@@ -66,7 +66,7 @@ if(isRoute(router.route, 'user', { exact: false })) {
 
 ## Callbacks
 
-With [router registration](/quick-start#type-safety), `createLoader` and `createView` callbacks receive a union of the router's resolved routes. Narrow by name to access the route's typed params.
+With [router registration](/quick-start#type-safety), `createLoader`, `createView`, and `createHook` callbacks receive a union of the router's resolved routes. Narrow by name to access the route's typed params.
 
 ::: warning Circular type inference
 Using a loader or view in the registered router creates circular type inference. Annotate it with `Loader<Data>` or `View<Props>` to resolve this.
@@ -100,6 +100,18 @@ const userView: View<{ userId?: string }> = createView({
     }
 
     return {}
+  },
+})
+```
+
+```ts
+import { createHook } from '@kitbag/router'
+
+const userHook = createHook({
+  hook: (route) => {
+    if (route?.name === 'user') {
+      console.log(route.params.userId)
+    }
   },
 })
 ```
