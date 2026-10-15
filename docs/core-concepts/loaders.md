@@ -61,7 +61,7 @@ Use an inline loader for route-specific helpers such as `update` and `parent`.
 With [router registration](/quick-start#type-safety), the callback's `route` is typed as a union of the router's resolved routes. Narrow by `route.name` to access that route's typed params.
 
 ::: warning Circular type inference
-If the registered router includes a route using the loader, TypeScript needs the loader's type to infer the router, while the loader's callback needs the router's type. Annotate the loader with the exported `Loader<Data>` type to break this circular inference. For an async loader, use `Promise<Result>` as its data type.
+Using a loader in the registered router creates circular type inference. Annotate it with `Loader<Data>` to resolve this, as shown below.
 :::
 
 ```ts
