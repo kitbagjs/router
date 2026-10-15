@@ -82,9 +82,14 @@ type ReplaceLastMatchLoaders<
 type AddLoaderReturn<
   TUrl extends Url,
   TMatches extends CreatedRouteOptions[],
-  TNewLoaders extends RouteLoaders,
+  TName extends string | undefined,
+  TData,
   TContext extends RouteContext[] = []
-> = ReplaceLastMatchLoaders<TMatches, TNewLoaders, TContext> extends infer TNext extends CreatedRouteOptions[]
+> = ReplaceLastMatchLoaders<
+  TMatches,
+  AddLoaderLoaders<CurrentMatchLoaders<TMatches>, TName, TData>,
+  TContext
+> extends infer TNext extends CreatedRouteOptions[]
   ? RouteWithMethods<TUrl, TNext>
   : never
 
@@ -102,17 +107,21 @@ export type RouteAddLoader<
    * @param load - The loader callback. Receives the resolved route and a context object.
    * @param options - The loader's `name` and `prefetch` config.
    */
-  addLoader: (<
-    const TName extends string | undefined = undefined,
-    const TGetter extends LoaderGetter<Route<TUrl, TMatches>> = LoaderGetter<Route<TUrl, TMatches>>
-  >(
-    load: TGetter,
-    options?: AddLoaderOptions<TName, Awaited<ReturnType<TGetter>>>,
-  ) => AddLoaderReturn<TUrl, TMatches, AddLoaderLoaders<CurrentMatchLoaders<TMatches>, TName, ReturnType<TGetter>>>) & (<
-    const TLoader extends AnyLoader,
-    const TName extends string | undefined = undefined
-  >(
-    loader: TLoader,
-    options?: AddLoaderOptions<TName, Awaited<ReturnType<TLoader['load']>>>,
-  ) => AddLoaderReturn<TUrl, TMatches, AddLoaderLoaders<CurrentMatchLoaders<TMatches>, TName, ReturnType<TLoader['load']>>, [...TLoader['context']]>),
+  addLoader: {
+    <
+      const TName extends string | undefined = undefined,
+      const TGetter extends LoaderGetter<Route<TUrl, TMatches>> = LoaderGetter<Route<TUrl, TMatches>>
+    >(
+      load: TGetter,
+      options?: AddLoaderOptions<TName, Awaited<ReturnType<TGetter>>>,
+    ): AddLoaderReturn<TUrl, TMatches, TName, ReturnType<TGetter>>,
+
+    <
+      const TLoader extends AnyLoader,
+      const TName extends string | undefined = undefined
+    >(
+      loader: TLoader,
+      options?: AddLoaderOptions<TName, Awaited<ReturnType<TLoader['load']>>>,
+    ): AddLoaderReturn<TUrl, TMatches, TName, ReturnType<TLoader['load']>, [...TLoader['context']]>,
+  },
 }
