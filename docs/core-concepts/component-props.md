@@ -20,7 +20,7 @@ This is obviously useful for assigning static values or route params down to you
 
 ## Reusable Views
 
-Use `createView` to share a component and props getter across routes:
+Use `createView` to share a component and props getter across routes. Views can be passed [context](/core-concepts/routes#context) to enable them to reference other routes and rejections:
 
 ```ts
 const userView = createView({
@@ -32,7 +32,7 @@ const user = createRoute({ name: 'user', path: '/users/[id]' }).addView(userView
 const archived = createRoute({ name: 'archived', path: '/archive/[id]' }).addView(userView)
 ```
 
-The getter receives a general resolved route and its loader data, or the resolved route union when a router is registered. Its result is checked against the component's props. See [Context](/core-concepts/routes#context) for the `context` option. Views can set `prefetch` and `transformer` defaults, overridable when attaching them along with a view `name`.
+The getter receives a general resolved route and its loader data, or the resolved route union when a router is registered. Its result is checked against the component's props. Views can set `prefetch` and `transformer` defaults, overridable when attaching them along with a view `name`.
 
 When the registered router contains the view being defined, an explicit `View<Props, typeof context>` annotation breaks circular inference. Use `Promise<Props>` for an async getter. Reusable views do not have route-specific `parent` or `update` helpers.
 
