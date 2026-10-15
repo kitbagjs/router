@@ -37,9 +37,9 @@ test('attachment preserves loader identity while overriding defaults', () => {
 
 test('loader context registers navigation targets and rejections through chained attachments', async () => {
   const denied = createRejection({ type: 'Denied' })
-  const rejectLoader = createLoader({ context: [denied], load: (_params, { reject }) => reject('Denied') })
+  const rejectLoader = createLoader({ context: [denied], load: (_route, { reject }) => reject('Denied') })
   const target = createRoute({ name: 'target', path: '/target' }).addLoader(rejectLoader)
-  const redirectLoader = createLoader({ context: [target], load: (_params, { push }) => push('target') })
+  const redirectLoader = createLoader({ context: [target], load: (_route, { push }) => push('target') })
   const route = createRoute({ name: 'source', path: '/' }).addLoader(redirectLoader)
     .addLoader(() => 1, { name: 'other' })
   const router = createRouter([route], { initialUrl: '/' })
@@ -61,4 +61,17 @@ test('replacing a loader preserves context targets available to route callbacks'
 
   await router.start()
   expect(router.route.name).toBe('target')
+})
+
+test('redirect discovery retains the context of chained loaders', async () => {
+  const dependency = createRoute({ name: 'dependency', path: '/dependency' })
+  const target = createRoute({ name: 'target', path: '/target' })
+  const loader = createLoader({ context: [dependency], load: () => 1 })
+  const source = createRoute({ name: 'source', path: '/source' }).addLoader(loader)
+  source.redirectTo(target)
+  const router = createRouter([target], { initialUrl: '/source' })
+
+  await router.start()
+  expect(router.route.name).toBe('target')
+  expect(router.find('/dependency')?.name).toBe('dependency')
 })
