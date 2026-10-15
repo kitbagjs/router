@@ -1,4 +1,4 @@
-import { Router, RouterRoutes } from '@/types/router'
+import { Router } from '@/types/router'
 import { CreatedRouteOptions, Route, RouteDataOf, Routes } from '@/types/route'
 import { LastInArray } from '@/types/utilities'
 import { ExtractRouteStateParamsAsOptional } from '@/types/state'
@@ -111,9 +111,11 @@ export type RouterResolvedRouteUnion<TRoutes extends Routes> = {
 /**
  * The resolved routes of a router, or a general resolved route for an untyped router.
  */
-export type RouterResolvedRoute<TRouter extends Router> = Routes extends RouterRoutes<TRouter>
-  ? ResolvedRoute
-  : RouterResolvedRouteUnion<RouterRoutes<TRouter>>
+export type RouterResolvedRoute<TRouter extends Router> = TRouter extends Router<infer TRoutes, any, infer TPlugin>
+  ? Routes extends TRoutes | TPlugin['routes']
+    ? ResolvedRoute
+    : RouterResolvedRouteUnion<[...TRoutes, ...TPlugin['routes']]>
+  : ResolvedRoute
 
 /**
  * Converts a union of Route types to a union of ResolvedRoute types while preserving the discriminated union structure for narrowing.
