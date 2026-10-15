@@ -66,9 +66,9 @@ if(isRoute(router.route, 'user', { exact: false })) {
 
 ## Callbacks
 
-With [router registration](/core-concepts/router#type-safety), reusable loader callbacks receive a union of the router's resolved routes. Narrow by name to access the route's typed params.
+With [router registration](/core-concepts/type-safety#registration), reusable loader callbacks receive a union of the router's resolved routes. Narrow by name to access the route's typed params.
 
-See [registration](/core-concepts/router#circular-type-inference) for the explicit types used in these examples.
+See [Type Safety](/core-concepts/type-safety#circular-type-inference) for the explicit types used in these examples.
 
 ```ts
 import { createLoader, type Loader } from '@kitbag/router'

@@ -35,30 +35,7 @@ app.mount('#app')
 
 ## Type Safety
 
-Kitbag Router utilizes [declaration merging](https://www.typescriptlang.org/docs/handbook/declaration-merging.html) to provide the internal types to match the actual router you're using.
-
-```ts
-declare module '@kitbag/router' {
-  interface Register {
-    router: typeof router
-  }
-}
-```
-
-### Circular type inference
-
-::: warning
-Using a loader in the registered router creates circular type inference. Annotate it with `Loader<Data>` to resolve this.
-:::
-
-```ts
-import { createLoader, type Loader } from '@kitbag/router'
-import { getSession, type Session } from './api'
-
-const sessionLoader: Loader<Promise<Session>> = createLoader({
-  load: () => getSession(),
-})
-```
+See [Type Safety](/core-concepts/type-safety) for typing Kitbag Router to your application's routes.
 
 ## Router Options
 
