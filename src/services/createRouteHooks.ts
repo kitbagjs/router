@@ -1,6 +1,4 @@
-import { ComponentHook, HookRemove, AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, AddErrorHook, AddRejectionHook } from '@/types/hooks'
-import { isHook } from '@/types/hook'
-import { RouteContext } from '@/types/routeContext'
+import { AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, AddErrorHook, AddRejectionHook } from '@/types/hooks'
 import { Routes } from '@/types/route'
 import { Hooks } from '@/models/hooks'
 import { ExtractRejectionTypes, Rejection } from '@/types/rejection'
@@ -24,9 +22,8 @@ type RouteHooks<
   store: Hooks,
 }
 
-export function createRouteHooks(context: RouteContext[] = []): RouteHooks {
+export function createRouteHooks(): RouteHooks {
   const store = new Hooks()
-  store.context = context
 
   const redirect: RouteRedirect = (to, convertParams, options) => {
     if (store.redirects.size > 0) {
@@ -42,38 +39,40 @@ export function createRouteHooks(context: RouteContext[] = []): RouteHooks {
     return () => store.redirects.delete(hook)
   }
 
-  function addHook<THook extends ComponentHook>(hooks: Set<THook>, hook: THook): HookRemove {
-    if (isHook(hook)) {
-      store.context.push(...hook.context)
-    }
-
-    hooks.add(hook)
-
-    return () => hooks.delete(hook)
-  }
-
   const onBeforeRouteEnter: AddBeforeEnterHook = (hook) => {
-    return addHook(store.onBeforeRouteEnter, hook)
+    store.onBeforeRouteEnter.add(hook)
+
+    return () => store.onBeforeRouteEnter.delete(hook)
   }
 
   const onBeforeRouteUpdate: AddBeforeUpdateHook = (hook) => {
-    return addHook(store.onBeforeRouteUpdate, hook)
+    store.onBeforeRouteUpdate.add(hook)
+
+    return () => store.onBeforeRouteUpdate.delete(hook)
   }
 
   const onBeforeRouteLeave: AddBeforeLeaveHook = (hook) => {
-    return addHook(store.onBeforeRouteLeave, hook)
+    store.onBeforeRouteLeave.add(hook)
+
+    return () => store.onBeforeRouteLeave.delete(hook)
   }
 
   const onAfterRouteEnter: AddAfterEnterHook = (hook) => {
-    return addHook(store.onAfterRouteEnter, hook)
+    store.onAfterRouteEnter.add(hook)
+
+    return () => store.onAfterRouteEnter.delete(hook)
   }
 
   const onAfterRouteUpdate: AddAfterUpdateHook = (hook) => {
-    return addHook(store.onAfterRouteUpdate, hook)
+    store.onAfterRouteUpdate.add(hook)
+
+    return () => store.onAfterRouteUpdate.delete(hook)
   }
 
   const onAfterRouteLeave: AddAfterLeaveHook = (hook) => {
-    return addHook(store.onAfterRouteLeave, hook)
+    store.onAfterRouteLeave.add(hook)
+
+    return () => store.onAfterRouteLeave.delete(hook)
   }
 
   const onError: AddErrorHook = (hook) => {

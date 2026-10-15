@@ -4,8 +4,6 @@ import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
 import { createRejection } from '@/services/createRejection'
 import { createRouterHooks } from '@/services/createRouterHooks'
-import { createExternalRoute } from '@/services/createExternalRoute'
-import { RouteContext } from '@/types/routeContext'
 import { component } from '@/utilities/testHelpers'
 import { createResolvedRoute } from '@/services/createResolvedRoute'
 
@@ -102,7 +100,6 @@ test('declared context registers routes and rejections before router creation', 
   })
   const source = createRoute({ name: 'source', path: '/source/[id]' })
   source.onBeforeRouteEnter(hook)
-  expect(source.context).toEqual([target, denied])
   const router = createRouter([source], { initialUrl: '/source/redirect' })
   const rejected = vi.fn()
   router.onRejection(rejected)
@@ -122,20 +119,14 @@ test('reusable hooks retain the registration removal behavior', async () => {
   expect(callback).not.toHaveBeenCalled()
 })
 
-test.each([
-  { name: 'internal', createParent: (context: RouteContext[]) => createRoute({ name: 'parent', path: '/parent', context }) },
-  { name: 'external', createParent: (context: RouteContext[]) => createExternalRoute({ name: 'parent', host: 'https://example.com', path: '/parent', context }) },
-])('$name route context includes hooks added after children and copies are created', ({ createParent }) => {
-  const shared = createRoute({ name: 'shared', path: '/shared' })
-  const own = createRoute({ name: 'own', path: '/own' })
+test('inherited hook context is collected from a chained route', async () => {
   const target = createRoute({ name: 'target', path: '/target' })
-  const parent = createParent([shared])
-  const child = createRoute({ parent, name: 'child', path: '/child', context: [own] })
-    .addView(component)
-    .addAlias({ path: '/alias' })
-
+  const parent = createRoute({ path: '/parent' })
   parent.onBeforeRouteEnter(createHook({ context: [target], hook: () => {} }))
+  const child = createRoute({ parent, name: 'child', path: '/child' }).addView(component)
+  const router = createRouter([child], { initialUrl: '/parent/child' })
 
-  expect(parent.context).toEqual([shared, target])
-  expect(child.context).toEqual([shared, own, target])
+  await router.start()
+  await router.push('/target')
+  expect(router.route.name).toBe('target')
 })

@@ -20,6 +20,7 @@ export function createHook(options: CreateHookOptions<any>): Hook<any> {
   }
 
   hook.context = [...options.context ?? []]
+  hook.getContext = () => hook.context
   hook[IS_HOOK_SYMBOL] = true
 
   return hook

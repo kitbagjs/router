@@ -1,4 +1,3 @@
-import { withRouteContext } from '@/services/withRouteContext'
 import { AddAlias, createAliases } from '@/services/addAlias'
 import { AddLoader, addLoaderToMatch, checkForLoaderConflict, toLoader } from '@/services/addLoader'
 import { AddView, addViewToMatch, toView } from '@/services/addView'
@@ -54,10 +53,10 @@ export function withRouteMethods<TRoute extends Route>(route: TRoute): TRoute {
     })
   }
 
-  return withRouteContext({
+  return {
     ...route,
     addView,
     addLoader,
     addAlias,
-  })
+  }
 }
