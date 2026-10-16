@@ -5,7 +5,8 @@ import { RouterPush } from '@/types/routerPush'
 import { RouterReject } from '@/types/routerReject'
 import { RouterReplace } from '@/types/routerReplace'
 import { AnyFunction } from '@/types/utilities'
-import { ResolvedRoute } from '@/types/resolved'
+import { ResolvedRouteUnion } from '@/types/resolved'
+import { Routes } from '@/types/route'
 
 export const IS_LOADER_SYMBOL = Symbol('IS_LOADER_SYMBOL')
 
@@ -29,12 +30,12 @@ export type LoaderCallbackContext<TContext extends readonly RouteContext[] = []>
 export type CreateLoaderOptions<
   TContext extends readonly RouteContext[] = [],
   TData = unknown,
-  TRoute extends ResolvedRoute = ResolvedRoute
+  TRoutes extends Routes = Routes
 > = TransformerOptions<NoInfer<Awaited<TData>>> & {
   /**
    * Loads a value or promise from the resolved route.
    */
-  load: (route: TRoute, context: LoaderCallbackContext<TContext>) => TData,
+  load: (route: ResolvedRouteUnion<TRoutes[number]>, context: LoaderCallbackContext<TContext>) => TData,
   /**
    * See [Context](https://kitbag-router.netlify.app/core-concepts/routes#context).
    */
@@ -48,10 +49,10 @@ export type CreateLoaderOptions<
 /**
  * Creates loaders with callbacks typed to the router's resolved routes.
  */
-export type CreateLoader<TRoute extends ResolvedRoute = ResolvedRoute> = <
+export type CreateLoader<TRoutes extends Routes = Routes> = <
   const TContext extends readonly RouteContext[] = [],
   TData = unknown
->(options: CreateLoaderOptions<TContext, TData, TRoute>) => Loader<TData, TContext>
+>(options: CreateLoaderOptions<TContext, TData, TRoutes>) => Loader<TData, TContext>
 
 /**
  * A reusable loader definition, with its context normalized to an array.
