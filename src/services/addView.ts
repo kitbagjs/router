@@ -64,13 +64,13 @@ export function toView(source: Component | AnyView, options: ViewOptions | undef
  * Matches are `markRaw` so that making a route reactive does not turn its components into reactive
  * proxies. Spreading a match drops that, so the rebuilt one is marked again.
  */
-export function addViewToMatch(match: CreatedRouteOptions, { name, ...view }: View): CreatedRouteOptions {
+export function addViewToMatch(match: CreatedRouteOptions, view: View): CreatedRouteOptions {
   return markRaw({
     ...match,
     context: combineContext(match.context, view.context),
     views: {
       ...match.views,
-      [name]: view,
+      [view.name]: view,
     },
   })
 }
