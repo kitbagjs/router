@@ -72,7 +72,9 @@ declare module '@kitbag/router' {
 }
 ```
 
-See [Type Safety](/core-concepts/type-safety) for registration, router assets, and circular type inference.
+Alternatively, use [`createRouterAssets`](/core-concepts/type-safety#router-assets) to get components, composables, and utilities typed for a specific router.
+
+See [Type Safety](/core-concepts/type-safety) for more details.
 
 ## RouterView
 
