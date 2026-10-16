@@ -56,6 +56,7 @@ export default defineConfig({
           text: 'Core Concepts',
           items: [
             { text: 'Routes', link: '/core-concepts/routes' },
+            { text: 'Context', link: '/core-concepts/context' },
             { text: 'External Routes', link: '/core-concepts/external-routes' },
             { text: 'Params', link: '/core-concepts/params' },
             { text: 'Props', link: '/core-concepts/component-props' },

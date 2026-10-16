@@ -37,7 +37,7 @@ export type CreateLoaderOptions<
    */
   load: (route: ResolvedRouteUnion<TRoutes[number]>, context: LoaderCallbackContext<TContext>) => TData,
   /**
-   * See [Context](https://kitbag-router.netlify.app/core-concepts/routes#context).
+   * See [Context](https://kitbag-router.netlify.app/core-concepts/context).
    */
   context?: TContext,
   /**

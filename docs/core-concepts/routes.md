@@ -73,7 +73,7 @@ const contact = createRoute({
 
 ## Parent
 
-The `parent` property is used to create nested routes. In this example, `blogPost` route's path is combined with the `blog` route's path to form the full url. A route inherits many of its parent's properties. Specifically, `path`, `query`, `meta`, `state`, [context](#context), and `hash` are all combined.
+The `parent` property is used to create nested routes. In this example, `blogPost` route's path is combined with the `blog` route's path to form the full url. A route inherits many of its parent's properties. Specifically, `path`, `query`, `meta`, `state`, [context](/core-concepts/context), and `hash` are all combined.
 
 ```ts {7}
 const blog = createRoute({
@@ -283,37 +283,7 @@ There is also a `setTitle` callback on [rejections](/advanced-concepts/rejection
 
 ## Context
 
-The `context` option declares route and rejection definitions used by a callback's `push`, `replace`, and `reject` helpers. These helpers are typed from those definitions, including any required route params.
-
-`createLoader`, `createView`, and `createHook` accept the same option. Their navigation helpers use their own declared context.
-
-`createRouter` discovers these definitions from its routes, including inherited context and context from attached loaders, views, and hooks, so they do not need to be listed separately. Registering a hook on a route or router also registers its context targets, including after router creation. Removing the hook leaves those targets registered.
-
-```ts
-const login = createRoute({
-  name: 'login',
-  path: '/login',
-})
-const denied = createRejection({ type: 'Denied' })
-
-const checkout = createRoute({
-  name: 'checkout',
-  path: '/checkout',
-  context: [login, denied],
-})
-
-checkout.onBeforeRouteEnter((_to, { push, reject }) => {
-  if (!isAuthenticated()) {
-    return push('login')
-  }
-
-  if (!canCheckout()) {
-    reject('Denied')
-  }
-})
-
-const router = createRouter([checkout])
-```
+Routes can be passed [context](/core-concepts/context) to enable their callbacks to reference other routes and rejections.
 
 ## Loaders
 

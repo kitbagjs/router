@@ -40,7 +40,7 @@ export type HookCallbackContext<TContext extends readonly RouteContext[] = [], T
 export type CreateHookOptions<TContext extends readonly RouteContext[] = [], TRoutes extends Routes = Routes> = {
   hook: (route: ResolvedRouteUnion<TRoutes[number]> | null, context: HookCallbackContext<TContext, TRoutes>) => MaybePromise<void>,
   /**
-   * See [Context](https://kitbag-router.netlify.app/core-concepts/routes#context).
+   * See [Context](https://kitbag-router.netlify.app/core-concepts/context).
    */
   context?: TContext,
 }

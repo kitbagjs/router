@@ -136,7 +136,7 @@ router.onAfterRouteEnter(() => {
 
 ## Reusable Hooks
 
-Use `createHook` to define a hook once and reuse it with before or after hooks on routes or the router. Hooks can be passed [context](/core-concepts/routes#context) to enable them to reference other routes and rejections.
+Use `createHook` to define a hook once and reuse it with before or after hooks on routes or the router. Hooks can be passed [context](/core-concepts/context) to enable them to reference other routes and rejections.
 
 ```ts
 import { createHook } from '@kitbag/router'
