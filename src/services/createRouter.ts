@@ -162,7 +162,7 @@ export function createRouter<
     getRouteByName,
     getRejectionByType,
     addHookContext,
-    stop: stopContext,
+    stop: stopRouteContext,
   } = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options)
   const notFoundRejection = getRejectionByType('NotFound')
   const valueStore = createRouteValueStore()
@@ -788,7 +788,7 @@ export function createRouter<
 
   function stop(): void {
     stopped = true
-    stopContext()
+    stopRouteContext()
     navigations.stop()
     navigationProgress.stop()
     history.stopListening()
