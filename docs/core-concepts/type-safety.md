@@ -40,9 +40,7 @@ export const {
 
 ## Circular type inference
 
-::: warning
-Using a loader or view in the router that supplies its types creates circular type inference. Annotate it with `Loader<Data>` or `View<Props>` to resolve this.
-:::
+When using registration or router assets, explicitly type reusable loaders with `Loader<Data>` and views with `View<Props>` to avoid circular type inference.
 
 ```ts
 import { createLoader, type Loader } from '@kitbag/router'
