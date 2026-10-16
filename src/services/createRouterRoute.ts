@@ -6,6 +6,7 @@ import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { QuerySource } from '@/types/querySource'
 import { Router } from '@/types/router'
 import { isPropertyKey } from '@/utilities/guards'
+import { createLoaderHandles } from '@/services/createLoaderHandles'
 
 const isRouterRouteSymbol = Symbol('isRouterRouteSymbol')
 
@@ -128,6 +129,7 @@ export function createRouterRoute<TRoute extends ResolvedRoute & WithData>(route
   // data is derived from the route's matches rather than read off the route, so its type cannot be matched here
   const routerRoute = reactive({
     ...route,
+    loaders: createLoaderHandles(routerKey, route),
     id,
     matched,
     matches,

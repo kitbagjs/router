@@ -1,6 +1,7 @@
 import { RouteUpdate } from '@/types/routeUpdate'
 import { ResolvedRoute } from '@/types/resolved'
-import { RouteDataOf } from '@/types/route'
+import { RouteDataOf, RouteLoadersOf } from '@/types/route'
+import { LoaderHandles } from '@/types/loaderHandle'
 import { QuerySource } from '@/types/querySource'
 
 export type RouterRoute<TRoute extends ResolvedRoute = ResolvedRoute> = {
@@ -46,6 +47,10 @@ export type RouterRoute<TRoute extends ResolvedRoute = ResolvedRoute> = {
    * exposes that loader's data here directly.
    */
   readonly data: RouteDataOf<TRoute['matches']>,
+  /**
+   * Handles for the current route's loaders, including inherited loaders. An unnamed loader uses `default`.
+   */
+  readonly loaders: LoaderHandles<RouteLoadersOf<TRoute['matches']>>,
 
   params: TRoute['params'],
   state: TRoute['state'],
