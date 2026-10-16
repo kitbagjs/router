@@ -4,6 +4,8 @@ Routes, loaders, views, and hooks accept a `context` option containing the route
 
 Child routes inherit their parent's context. Reusable loaders, views, and hooks use their own declared context for their navigation helpers.
 
+Routes and rejections supplied through `context` are not included in `router.push` or `router.reject` types unless they are also passed directly to `createRouter` through its routes array or `rejections` option.
+
 `createRouter` discovers these definitions from its routes, including inherited context and context from attached loaders, views, and hooks, so they do not need to be listed separately. Registering a hook on a route or router also registers its context targets, including after router creation. Removing the hook leaves those targets registered.
 
 ```ts
