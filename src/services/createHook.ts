@@ -1,5 +1,5 @@
 import { RouteContext } from '@/types/routeContext'
-import { CreateHookOptions, Hook, HookInvocationContext, HookInternal, IS_HOOK_SYMBOL } from '@/types/hook'
+import { CreateHookOptions, Hook, HookCallbackContext, HookInternal, IS_HOOK_SYMBOL } from '@/types/hook'
 import { ResolvedRoute } from '@/types/resolved'
 import { Routes } from '@/types/route'
 import { MaybePromise } from '@/types/utilities'
@@ -15,7 +15,7 @@ export function createHook<
 export function createHook(options: CreateHookOptions<any>): Hook<any> {
   const callback = options.hook
 
-  function hook(route: ResolvedRoute | null, context: HookInvocationContext): MaybePromise<void> {
+  function hook(route: ResolvedRoute | null, context: HookCallbackContext<any>): MaybePromise<void> {
     if (!route) {
       return callback(route, { ...context, update: undefined })
     }

@@ -118,7 +118,7 @@ export type AfterHookLifecycle = 'onAfterRouteEnter' | 'onAfterRouteUpdate' | 'o
  */
 export type HookLifecycle = BeforeHookLifecycle | AfterHookLifecycle
 
-type AfterHookContext<
+export type AfterHookContext<
   TRoute extends Route,
   TRoutes extends Routes,
   TRejections extends Rejections
@@ -131,7 +131,7 @@ type AfterHookContext<
   signal: AbortSignal,
 }
 
-type BeforeHookContext<
+export type BeforeHookContext<
   TRouteTo extends Route,
   TRoutes extends Routes,
   TRejections extends Rejections

@@ -1,10 +1,7 @@
 import { RouteContext, RouteContextToRejection, RouteContextToRoute } from '@/types/routeContext'
-import { ResolvedRoute, ResolvedRouteUnion } from '@/types/resolved'
-import { Routes } from '@/types/route'
-import { RouterPush } from '@/types/routerPush'
-import { RouterReplace } from '@/types/routerReplace'
-import { RouterReject } from '@/types/routerReject'
-import { RouterAbort } from '@/types/routerAbort'
+import { ResolvedRouteUnion } from '@/types/resolved'
+import { Route, Routes } from '@/types/route'
+import { BeforeHookContext, AfterHookContext } from '@/types/hooks'
 import { RouteUpdate } from '@/types/routeUpdate'
 import { AnyFunction, MaybePromise } from '@/types/utilities'
 
@@ -15,23 +12,14 @@ export type HookInternal = {
 }
 
 /**
- * Navigation helpers available to a reusable hook from its declared context.
- */
-export type HookSharedContext<TContext extends readonly RouteContext[] = [], TRoutes extends Routes = Routes> = {
-  from: ResolvedRouteUnion<TRoutes[number]> | null,
-  push: RouterPush<RouteContextToRoute<[...TContext]>>,
-  replace: RouterReplace<RouteContextToRoute<[...TContext]>>,
-  reject: RouterReject<RouteContextToRejection<[...TContext]>>,
-  update?: RouteUpdate,
-  signal: AbortSignal,
-}
-
-/**
  * Context provided to a reusable hook, narrowed by whether it runs before or after navigation.
  */
-export type HookCallbackContext<TContext extends readonly RouteContext[] = [], TRoutes extends Routes = Routes> = HookSharedContext<TContext, TRoutes> & (
-  | { lifecycle: 'before', abort: RouterAbort }
-  | { lifecycle: 'after' }
+export type HookCallbackContext<TContext extends readonly RouteContext[] = [], TRoutes extends Routes = Routes> = {
+  from: ResolvedRouteUnion<TRoutes[number]> | null,
+  update?: RouteUpdate,
+} & (
+  | Omit<BeforeHookContext<Route, RouteContextToRoute<[...TContext]>, RouteContextToRejection<[...TContext]>>, 'update'>
+  | Omit<AfterHookContext<Route, RouteContextToRoute<[...TContext]>, RouteContextToRejection<[...TContext]>>, 'update'>
 )
 
 /**
@@ -53,25 +41,10 @@ export type CreateHook<TRoutes extends Routes = Routes> = <
 >(options: CreateHookOptions<TContext, TRoutes>) => Hook<TContext>
 
 /**
- * The arguments provided when invoking a reusable hook.
- */
-export type HookInvocationContext = {
-  from: ResolvedRoute | null,
-  push: AnyFunction,
-  replace: AnyFunction,
-  reject: AnyFunction,
-  update?: AnyFunction,
-  signal: AbortSignal,
-} & (
-  | { lifecycle: 'before', abort: RouterAbort }
-  | { lifecycle: 'after' }
-)
-
-/**
  * A reusable hook that can be attached before or after a route enters, updates, or leaves.
  */
 export type Hook<TContext extends readonly RouteContext[] = []> = {
-  hook: (route: ResolvedRoute | null, context: HookInvocationContext) => MaybePromise<void>,
+  hook: AnyFunction<MaybePromise<void>>,
   context: TContext,
 }
 
