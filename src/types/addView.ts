@@ -142,9 +142,14 @@ type ReplaceLastMatchViews<
 type AddViewReturn<
   TUrl extends Url,
   TMatches extends CreatedRouteOptions[],
-  TNewProps extends RouteViews,
+  TName extends string | undefined,
+  TProps,
   TContext extends RouteContext[] = []
-> = ReplaceLastMatchViews<TMatches, TNewProps, TContext> extends infer TNext extends CreatedRouteOptions[]
+> = ReplaceLastMatchViews<
+  TMatches,
+  AddViewProps<CurrentMatchViews<TMatches>, TName, TProps>,
+  TContext
+> extends infer TNext extends CreatedRouteOptions[]
   ? RouteWithMethods<TUrl, TNext>
   : never
 
@@ -164,20 +169,24 @@ export type RouteAddView<
    * @param options - The view's `name`, `props` getter, and `prefetch` config. Required when the
    * component has required props, optional otherwise.
    */
-  addView: (<
-    const TView extends AnyView,
-    const TName extends string | undefined = undefined
-  >(
-    view: TView,
-    options?: Omit<AddViewOptions<TName>, 'props' | 'transformer'> & TransformerOptions<Awaited<ViewPropsOf<TView>>>,
-  ) => AddViewReturn<TUrl, TMatches, AddViewProps<CurrentMatchViews<TMatches>, TName, ViewPropsOf<TView>>, [...TView['context']]>) & (<
-    TComponent extends Component,
-    const TName extends string | undefined = undefined,
-    const TGetter extends AddViewPropsGetter<Route<TUrl, TMatches>, TComponent> = AddViewPropsGetter<Route<TUrl, TMatches>, TComponent>
-  >(
-    component: TComponent & (TComponent extends AnyView ? never : {}),
-    ...options: AddViewArgs<TComponent, TName, TGetter>
-  ) => AddViewReturn<TUrl, TMatches, AddViewProps<CurrentMatchViews<TMatches>, TName, NewViewProps<Route<TUrl, TMatches>, TComponent, TGetter>>>),
+  addView: {
+    <
+      const TView extends AnyView,
+      const TName extends string | undefined = undefined
+    >(
+      view: TView,
+      options?: Omit<AddViewOptions<TName, AnyFunction<ViewPropsOf<TView>>>, 'props'>,
+    ): AddViewReturn<TUrl, TMatches, TName, ViewPropsOf<TView>, [...TView['context']]>,
+
+    <
+      TComponent extends Component,
+      const TName extends string | undefined = undefined,
+      const TGetter extends AddViewPropsGetter<Route<TUrl, TMatches>, TComponent> = AddViewPropsGetter<Route<TUrl, TMatches>, TComponent>
+    >(
+      component: TComponent & (TComponent extends AnyView ? never : {}),
+      ...options: AddViewArgs<TComponent, TName, TGetter>
+    ): AddViewReturn<TUrl, TMatches, TName, NewViewProps<Route<TUrl, TMatches>, TComponent, TGetter>>,
+  },
 }
 
 type ViewPropsOf<TView extends AnyView> = TView extends { props?: AnyFunction<infer TProps> } ? TProps : undefined
