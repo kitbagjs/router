@@ -38,6 +38,7 @@ export function getRoutesForRouter(routes: Routes | Routes[], plugins: RouterPlu
   ]
 
   const registeredRoutes: (Route & RouteInternal)[] = []
+  const registeredRejections: (Rejection & RejectionInternal)[] = []
   const stores = new Set<Hooks>()
   let stopped = false
 
@@ -111,6 +112,7 @@ export function getRoutesForRouter(routes: Routes | Routes[], plugins: RouterPlu
     }
 
     registeredRoutes.sort(sortByDepthDescending)
+    registeredRejections.splice(0, registeredRejections.length, ...routerRejections.values())
   }
 
   addContext([...allRoutes.flat(), ...allRejections.flat()])
@@ -137,9 +139,7 @@ export function getRoutesForRouter(routes: Routes | Routes[], plugins: RouterPlu
 
   return {
     routes: registeredRoutes,
-    get rejections(): (Rejection & RejectionInternal)[] {
-      return Array.from(routerRejections.values())
-    },
+    rejections: registeredRejections,
     addHookContext,
     stop,
     getRouteByName,
