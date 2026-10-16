@@ -20,21 +20,27 @@ This is obviously useful for assigning static values or route params down to you
 
 ## Reusable Views
 
-Use `createView` to share a component and props getter across routes. Views can be passed [context](/core-concepts/routes#context) to enable them to reference other routes and rejections:
+Use `createView` to share a component and props getter across routes. The getter receives the resolved route, including its loader data, and its result is checked against the component's props. Views can be passed [context](/core-concepts/routes#context) to enable them to reference other routes and rejections:
 
 ```ts
-const userView = createView({
-  component: UserComponent,
-  props: (route) => ({ userId: String(route.params.id) }),
-})
+import { createView } from '@kitbag/router'
+import PageComponent from './PageComponent.vue'
 
-const user = createRoute({ name: 'user', path: '/users/[id]' }).addView(userView)
-const archived = createRoute({ name: 'archived', path: '/archive/[id]' }).addView(userView)
+const pageView = createView({
+  component: PageComponent,
+  props: (route) => ({ url: route.href }),
+})
 ```
 
-The getter receives a general resolved route and its loader data, or the resolved route union when a router is registered. Its result is checked against the component's props. Views can set `prefetch` and `transformer` defaults, overridable when attaching them along with a view `name`.
+Pass the view to `addView` on each route:
 
-See [Type Safety](/core-concepts/type-safety) for registration and router assets and [Route Narrowing](/advanced-concepts/route-narrowing#callbacks) for accessing typed params in callbacks. Reusable views do not have route-specific `parent` or `update` helpers.
+```ts
+const home = createRoute({...})
+  .addView(pageView)
+
+const about = createRoute({...})
+  .addView(pageView)
+```
 
 ## Named Views
 Each [named view](/core-concepts/routes#named-views) can have its own props getter. Just pass a `props` getter alongside the view's `name`.
