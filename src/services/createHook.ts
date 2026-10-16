@@ -1,6 +1,7 @@
 import { RouteContext } from '@/types/routeContext'
 import { CreateHookOptions, Hook, HookInvocationContext, IS_HOOK_SYMBOL } from '@/types/hook'
 import { ResolvedRoute } from '@/types/resolved'
+import { Routes } from '@/types/route'
 import { MaybePromise } from '@/types/utilities'
 
 /**
@@ -8,8 +9,8 @@ import { MaybePromise } from '@/types/utilities'
  */
 export function createHook<
   const TContext extends readonly RouteContext[] = [],
-  TRoute extends ResolvedRoute = ResolvedRoute
->(options: CreateHookOptions<TContext, TRoute>): Hook<TContext>
+  TRoutes extends Routes = Routes
+>(options: CreateHookOptions<TContext, TRoutes>): Hook<TContext>
 
 export function createHook(options: CreateHookOptions<any>): Hook<any> {
   const callback = options.hook
