@@ -26,7 +26,7 @@ export type RouterAssets<TRouter extends Router> = {
   /**
    * Creates a reusable hook with callbacks typed to this router's resolved routes.
    */
-  createHook: CreateHook<RouterResolvedRoute<TRouter>>,
+  createHook: CreateHook<ResolvedRouteUnion<RouterRoutes<TRouter>[number]>>,
   /**
    * Creates a reusable view with props callbacks typed to this router's resolved routes and loader data.
    */
