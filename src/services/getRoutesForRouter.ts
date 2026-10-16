@@ -24,7 +24,7 @@ import { RouteContext } from '@/types/routeContext'
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export function getRoutesForRouter(routes: Routes | Routes[], plugins: RouterPlugin[] = [], options: RouterOptions = {}) {
   const routerRoutes = new Map<string, Route & RouteInternal>()
-  const routerRejections = new Map<string, (Rejection & RejectionInternal)>()
+  const routerRejections = new Map<string, Rejection & RejectionInternal>()
 
   const allRoutes = [
     ...routes,
