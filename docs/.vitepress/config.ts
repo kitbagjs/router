@@ -89,13 +89,13 @@ export default defineConfig({
         {
           text: 'Advanced Concepts',
           items: [
-            { text: 'Context', link: '/advanced-concepts/context' },
             { text: 'Route Matching', link: '/advanced-concepts/route-matching' },
             { text: 'Route Narrowing', link: '/advanced-concepts/route-narrowing' },
             { text: 'Rejections', link: '/advanced-concepts/rejections' },
             { text: 'Redirects', link: '/advanced-concepts/redirects' },
             { text: 'Aliases', link: '/advanced-concepts/aliases' },
             { text: 'Hooks', link: '/advanced-concepts/hooks' },
+            { text: 'Context', link: '/advanced-concepts/context' },
             { text: 'Plugins', link: '/advanced-concepts/plugins' },
             { text: 'Route Meta', link: '/advanced-concepts/route-meta' },
             { text: 'Route State', link: '/advanced-concepts/route-state' },
