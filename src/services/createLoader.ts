@@ -1,5 +1,5 @@
 import { Routes } from '@/types/route'
-import { CreateLoaderOptions, IS_LOADER_SYMBOL, Loader, LoaderInternal } from '@/types/loader'
+import { CreateLoaderOptions, IS_LOADER_SYMBOL, LOADER_ID_SYMBOL, Loader, LoaderInternal } from '@/types/loader'
 import { RouteContext } from '@/types/routeContext'
 
 /**
@@ -15,6 +15,7 @@ export function createLoader(options: CreateLoaderOptions<any, any>): Loader<any
   const context = [...options.context ?? []]
   const internal = {
     [IS_LOADER_SYMBOL]: true,
+    [LOADER_ID_SYMBOL]: Symbol(),
   } satisfies LoaderInternal
 
   return { ...options, ...internal, context }

@@ -9,9 +9,11 @@ import { ResolvedRouteUnion } from '@/types/resolved'
 import { Routes } from '@/types/route'
 
 export const IS_LOADER_SYMBOL = Symbol('IS_LOADER_SYMBOL')
+export const LOADER_ID_SYMBOL = Symbol('LOADER_ID_SYMBOL')
 
 export type LoaderInternal = {
   [IS_LOADER_SYMBOL]: true,
+  [LOADER_ID_SYMBOL]: symbol,
 }
 
 /**
