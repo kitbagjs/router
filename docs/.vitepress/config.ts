@@ -56,7 +56,6 @@ export default defineConfig({
           text: 'Core Concepts',
           items: [
             { text: 'Routes', link: '/core-concepts/routes' },
-            { text: 'Context', link: '/core-concepts/context' },
             { text: 'External Routes', link: '/core-concepts/external-routes' },
             { text: 'Params', link: '/core-concepts/params' },
             { text: 'Props', link: '/core-concepts/component-props' },
@@ -90,6 +89,7 @@ export default defineConfig({
         {
           text: 'Advanced Concepts',
           items: [
+            { text: 'Context', link: '/advanced-concepts/context' },
             { text: 'Route Matching', link: '/advanced-concepts/route-matching' },
             { text: 'Route Narrowing', link: '/advanced-concepts/route-narrowing' },
             { text: 'Rejections', link: '/advanced-concepts/rejections' },

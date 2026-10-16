@@ -73,7 +73,7 @@ const contact = createRoute({
 
 ## Parent
 
-The `parent` property is used to create nested routes. In this example, `blogPost` route's path is combined with the `blog` route's path to form the full url. A route inherits many of its parent's properties. Specifically, `path`, `query`, `meta`, `state`, [context](/core-concepts/context), and `hash` are all combined.
+The `parent` property is used to create nested routes. In this example, `blogPost` route's path is combined with the `blog` route's path to form the full url. A route inherits many of its parent's properties. Specifically, `path`, `query`, `meta`, `state`, [context](/advanced-concepts/context), and `hash` are all combined.
 
 ```ts {7}
 const blog = createRoute({
@@ -283,7 +283,7 @@ There is also a `setTitle` callback on [rejections](/advanced-concepts/rejection
 
 ## Context
 
-Routes can be passed [context](/core-concepts/context) to enable their callbacks to reference other routes and rejections.
+Routes can be passed [context](/advanced-concepts/context) to enable their callbacks to reference other routes and rejections.
 
 ## Loaders
 

@@ -39,7 +39,7 @@ export type CreateViewOptions<
 > = TransformerOptions<NoInfer<Awaited<TProps>>> & {
   component: TComponent,
   /**
-   * See [Context](https://kitbag-router.netlify.app/core-concepts/context).
+   * See [Context](https://kitbag-router.netlify.app/advanced-concepts/context).
    */
   context?: TContext,
   prefetch?: PrefetchConfig,

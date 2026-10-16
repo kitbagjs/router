@@ -82,7 +82,7 @@ export type CreateRouteOptions<
    */
   parent?: Route,
   /**
-   * See [Context](https://kitbag-router.netlify.app/core-concepts/context).
+   * See [Context](https://kitbag-router.netlify.app/advanced-concepts/context).
    */
   context?: RouteContext[],
   /**

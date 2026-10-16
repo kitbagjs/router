@@ -20,7 +20,7 @@ This is obviously useful for assigning static values or route params down to you
 
 ## Reusable Views
 
-Use `createView` to share a component and props getter across routes. The getter receives the resolved route, including its loader data, and its result is checked against the component's props. Views can be passed [context](/core-concepts/context) to enable them to reference other routes and rejections:
+Use `createView` to share a component and props getter across routes. The getter receives the resolved route, including its loader data, and its result is checked against the component's props. Views can be passed [context](/advanced-concepts/context) to enable them to reference other routes and rejections:
 
 ```ts
 import { createView } from '@kitbag/router'
