@@ -28,21 +28,6 @@ export type AddViewPropsCallbackContext<
   TRoute extends Route
 > = RouteCallbackContext<TRoute>
 
-type ComponentPropsAreOptional<TComponent extends Component> = Partial<ComponentProps<TComponent>> extends ComponentProps<TComponent>
-  ? true
-  : false
-
-/**
- * When the getter is omitted the default type param resolves to the wide getter type, which then
- * "extends" itself and collapses to undefined. When a getter is provided its return type is kept — the
- * view only needs what the props resolve to, not the signature it took to get there.
- */
-type NewViewProps<
-  TRoute extends Route,
-  TComponent extends Component,
-  TGetter extends AnyFunction
-> = AddViewPropsGetter<TRoute, TComponent> extends TGetter ? undefined : ReturnType<TGetter>
-
 /**
  * The options for a view added via `addView`.
  *
@@ -72,36 +57,6 @@ export type AddViewOptions<
  * What a getter resolves to, which is what its payload options carry.
  */
 type PayloadValueOf<TGetter> = TGetter extends (...args: any[]) => any ? Awaited<ReturnType<TGetter>> : unknown
-
-/**
- * {@link AddViewOptions} with `props` promoted to required. Only reached for components that have
- * required props — everything else uses {@link AddViewOptions}, where `props` stays optional, so a view
- * can always be given a name and a prefetch config without a getter.
- *
- * Spelled out rather than intersected with {@link AddViewOptions} so that the literal `name` still
- * infers through the conditional args tuple.
- */
-type AddViewOptionsWithRequiredProps<
-  TName extends string | undefined,
-  TGetter
-> = TransformerOptions<PayloadValueOf<TGetter>> & {
-  name?: TName,
-  props: TGetter,
-  prefetch?: PrefetchConfig,
-}
-
-/**
- * The options argument for `addView`, required only when the component has required props. `TName` and
- * `TGetter` are inferred from the object's properties rather than from the object as a whole: inferring
- * the whole object as a `const` type param through this conditional tuple widens the literal name.
- */
-type AddViewArgs<
-  TComponent extends Component,
-  TName extends string | undefined,
-  TGetter
-> = ComponentPropsAreOptional<TComponent> extends true
-  ? [options?: AddViewOptions<TName, TGetter>]
-  : [options: AddViewOptionsWithRequiredProps<TName, TGetter>]
 
 /**
  * The views of the route itself, from the last `matches` entry.
@@ -184,8 +139,18 @@ export type RouteAddView<
       const TGetter extends AddViewPropsGetter<Route<TUrl, TMatches>, TComponent> = AddViewPropsGetter<Route<TUrl, TMatches>, TComponent>
     >(
       component: TComponent & (TComponent extends AnyView ? never : {}),
-      ...options: AddViewArgs<TComponent, TName, TGetter>
-    ): AddViewReturn<TUrl, TMatches, TName, NewViewProps<Route<TUrl, TMatches>, TComponent, TGetter>>,
+      options: AddViewOptions<TName, TGetter> & { props: TGetter },
+    ): AddViewReturn<TUrl, TMatches, TName, ReturnType<TGetter>>,
+
+    <
+      TComponent extends Component,
+      const TName extends string | undefined = undefined
+    >(
+      component: TComponent & (TComponent extends AnyView ? never : {}) & (
+        Partial<ComponentProps<TComponent>> extends ComponentProps<TComponent> ? {} : never
+      ),
+      options?: AddViewOptions<TName, undefined>,
+    ): AddViewReturn<TUrl, TMatches, TName, undefined>,
   },
 }
 
