@@ -1,3 +1,4 @@
+import { AnyHook } from '@/types/hook'
 import { InjectionKey, onUnmounted } from 'vue'
 import { createUseRouterDepth } from '@/compositions/useRouterDepth'
 import { createUseRouterHooks } from '@/compositions/useRouterHooks'
@@ -12,11 +13,11 @@ function createComponentHook<TRouter extends Router>(routerKey: InjectionKey<TRo
 function createComponentHook<TRouter extends Router>(routerKey: InjectionKey<TRouter>, lifecycle: 'onAfterRouteEnter'): AddAfterEnterHook<RouterRoutes<TRouter>, RouterRejections<TRouter>>
 function createComponentHook<TRouter extends Router>(routerKey: InjectionKey<TRouter>, lifecycle: 'onAfterRouteUpdate'): AddAfterUpdateHook<RouterRoutes<TRouter>, RouterRejections<TRouter>>
 function createComponentHook<TRouter extends Router>(routerKey: InjectionKey<TRouter>, lifecycle: 'onAfterRouteLeave'): AddAfterLeaveHook<RouterRoutes<TRouter>, RouterRejections<TRouter>>
-function createComponentHook(routerKey: symbol, lifecycle: HookLifecycle): (hook: ComponentHook) => HookRemove {
+function createComponentHook(routerKey: symbol, lifecycle: HookLifecycle): (hook: ComponentHook | AnyHook) => HookRemove {
   const useRouterDepth = createUseRouterDepth(routerKey)
   const useRouterHooks = createUseRouterHooks(routerKey)
 
-  return (hook: ComponentHook) => {
+  return (hook: ComponentHook | AnyHook) => {
     const depth = useRouterDepth()
     const hooks = useRouterHooks()
 
