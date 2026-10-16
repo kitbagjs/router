@@ -11,7 +11,7 @@ render, and `render` throws without it. `render` resolves with a
 [`ServerRenderResponse`](/api/types/ServerRenderResponse): the status to respond with, the `title` of
 the route or rejection that rendered, and a `payload` — a script tag containing the values every props
 getter and loader returned, which is what lets the client hydrate instead of computing everything
-again. Embed the title and payload in the html the server sends:
+again. Embed the title and payload in the html the server sends. Stop the router in `finally` to release per-request resources:
 
 ```ts
 import { createSSRApp } from 'vue'
@@ -27,26 +27,33 @@ export async function handleRequest(url: string) {
   })
   const app = createSSRApp(App)
 
-  app.use(router)
+  try {
+    app.use(router)
 
-  const response = await router.render()
+    const response = await router.render()
 
-  if (response.kind === 'redirect') {
-    return { status: response.status, location: response.location }
-  }
+    if (response.kind === 'redirect') {
+      return {
+        status: response.status,
+        location: response.location,
+      }
+    }
 
-  return {
-    status: response.status,
-    html: `
-      <!DOCTYPE html>
-      <html>
-        <head><title>${response.title ?? 'My App'}</title></head>
-        <body>
-          <div id="app">${await renderToString(app)}</div>
-          ${response.payload}
-        </body>
-      </html>
-    `,
+    return {
+      status: response.status,
+      html: `
+        <!DOCTYPE html>
+        <html>
+          <head><title>${response.title ?? 'My App'}</title></head>
+          <body>
+            <div id="app">${await renderToString(app)}</div>
+            ${response.payload}
+          </body>
+        </html>
+      `,
+    }
+  } finally {
+    router.stop()
   }
 }
 ```

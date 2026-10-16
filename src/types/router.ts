@@ -277,7 +277,8 @@ export type Router<
    */
   render: () => Promise<ServerRenderResponse>,
   /**
-   * Stops the router. Tears down the history listener and ignores any navigation still in flight or started afterwards.
+   * Stops the router. Releases history listeners and context subscriptions and ignores any navigation
+   * still in flight or started afterwards. Called automatically when the Vue app unmounts.
    */
   stop: () => void,
   /**

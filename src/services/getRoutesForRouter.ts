@@ -14,25 +14,6 @@ import { ComponentHook, getHooks } from '@/types/hooks'
 import { Hooks } from '@/models/hooks'
 import { RouteContext } from '@/types/routeContext'
 
-type HookContextListener = (hook: ComponentHook | AnyHook) => void
-
-type HookContextSubscription = {
-  listener: HookContextListener,
-  stores: WeakRef<Hooks>[],
-}
-
-const hookContextCleanup = new FinalizationRegistry<HookContextSubscription>(({ listener, stores }) => {
-  for (const store of stores) {
-    store.deref()?.onHookAdded.delete(listener)
-  }
-})
-
-function createHookContextListener(register: HookContextListener): HookContextListener {
-  const callback = new WeakRef(register)
-
-  return (hook) => callback.deref()?.(hook)
-}
-
 /**
  * Takes in routes and plugins and returns a list of routes with the base route inserted if provided.
  * Also checks for duplicate names and unreachable paths in the routes.
@@ -57,14 +38,11 @@ export function getRoutesForRouter(routes: Routes | Routes[], plugins: RouterPlu
   ]
 
   const registeredRoutes: (Route & RouteInternal)[] = []
-  const stores: WeakRef<Hooks>[] = []
-  const onHookAdded = createHookContextListener(addHookContext)
-
-  // Shared route definitions must not keep discarded routers alive.
-  hookContextCleanup.register(addHookContext, { listener: onHookAdded, stores })
+  const stores = new Set<Hooks>()
+  let stopped = false
 
   function addHookContext(hook: ComponentHook | AnyHook): void {
-    if (!isHook(hook)) {
+    if (stopped || !isHook(hook)) {
       return
     }
 
@@ -119,12 +97,12 @@ export function getRoutesForRouter(routes: Routes | Routes[], plugins: RouterPlu
       registeredRoutes.push(route)
 
       for (const store of getHooks(route)) {
-        if (store.onHookAdded.has(onHookAdded)) {
+        if (stores.has(store)) {
           continue
         }
 
-        stores.push(new WeakRef(store))
-        store.onHookAdded.add(onHookAdded)
+        stores.add(store)
+        store.onHookAdded.add(addHookContext)
       }
     }
 
@@ -147,12 +125,23 @@ export function getRoutesForRouter(routes: Routes | Routes[], plugins: RouterPlu
     return routerRejections.get(type)
   }
 
+  function stop(): void {
+    stopped = true
+
+    for (const store of stores) {
+      store.onHookAdded.delete(addHookContext)
+    }
+
+    stores.clear()
+  }
+
   return {
     routes: registeredRoutes,
     get rejections(): (Rejection & RejectionInternal)[] {
       return Array.from(routerRejections.values())
     },
     addHookContext,
+    stop,
     getRouteByName,
     getRejectionByType,
   }

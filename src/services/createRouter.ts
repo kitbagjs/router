@@ -157,7 +157,13 @@ export function createRouter<
   const routerViewTransition = options?.viewTransition
   const activity = createActivityTracker()
   const navigationProgress = createNavigationProgress()
-  const { routes, getRouteByName, getRejectionByType, addHookContext } = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options)
+  const {
+    routes,
+    getRouteByName,
+    getRejectionByType,
+    addHookContext,
+    stop: stopContext,
+  } = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options)
   const notFoundRejection = getRejectionByType('NotFound')
   const valueStore = createRouteValueStore()
   const notFoundRoute = createResolvedRoute(notFoundRejection.route)
@@ -653,6 +659,7 @@ export function createRouter<
   const isExternal = createIsExternal(host)
 
   let starting = false
+  let stopped = false
   const { setServerRedirect, getServerRedirect } = createServerRedirect()
   /**
    * Whether a route or rejection has been committed. Until then there is nothing to render, and nothing
@@ -701,6 +708,10 @@ export function createRouter<
   }
 
   async function start(): Promise<void> {
+    if (stopped) {
+      return
+    }
+
     if (starting) {
       return initialize
     }
@@ -713,6 +724,14 @@ export function createRouter<
       await hydrate(payload)
     } else {
       await set(initialUrl, { replace: true, state: initialState })
+    }
+
+    // stop() can run while navigation or hydration is awaited.
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (stopped) {
+      initialized()
+
+      return
     }
 
     history.startListening()
@@ -768,6 +787,8 @@ export function createRouter<
   }
 
   function stop(): void {
+    stopped = true
+    stopContext()
     navigations.stop()
     navigationProgress.stop()
     history.stopListening()
@@ -778,6 +799,7 @@ export function createRouter<
   }
 
   function install(app: App): void {
+    app.onUnmount(stop)
     hooks.setVueApp(app)
     valueStore.setVueApp(app)
 

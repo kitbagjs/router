@@ -5,6 +5,7 @@ import { createRouter } from '@/services/createRouter'
 import { createRejection } from '@/services/createRejection'
 import { DuplicateNamesError } from '@/errors/duplicateNamesError'
 import { UnreachableRouteError } from '@/errors/unreachableRouteError'
+import { getHooks } from '@/types/hooks'
 
 test.each(['route', 'router'] as const)('late %s hooks register navigation and rejection targets', async (registration) => {
   const home = createRoute({ name: 'home', path: '/' })
@@ -63,6 +64,27 @@ test('inherited hook context reaches existing and newly created routers', async 
   await second.push('/second/extra')
   expect(first.route.name).toBe('fallback')
   expect(second.route.name).toBe('extra')
+})
+
+test('stopping a router removes its subscriptions without affecting another router', () => {
+  const source = createRoute({ name: 'source', path: '/' })
+  const target = createRoute({ name: 'target', path: '/target' })
+  const first = createRouter([source], { initialUrl: '/' })
+  const second = createRouter([source], { initialUrl: '/', isGlobalRouter: false })
+  source.onAfterRouteEnter(createHook({ context: [target], hook: () => {} }))
+  const stores = [...getHooks(source), ...getHooks(target)]
+
+  expect(stores.map((store) => store.onHookAdded.size)).toEqual([2, 2])
+  first.stop()
+  first.stop()
+
+  const extra = createRoute({ name: 'extra', path: '/extra' })
+  target.onAfterRouteEnter(createHook({ context: [extra], hook: () => {} }))
+
+  expect(first.find('/extra')).toBeUndefined()
+  expect(second.find('/extra')?.name).toBe('extra')
+  second.stop()
+  expect([...stores, ...getHooks(extra)].map((store) => store.onHookAdded.size)).toEqual([0, 0, 0])
 })
 
 test.each([
