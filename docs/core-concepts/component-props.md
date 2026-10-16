@@ -24,22 +24,22 @@ Use `createView` to share a component and props getter across routes. The getter
 
 ```ts
 import { createView } from '@kitbag/router'
-import PageComponent from './PageComponent.vue'
+import SidebarComponent from './SidebarComponent.vue'
 
-const pageView = createView({
-  component: PageComponent,
+const sidebarView = createView({
+  component: SidebarComponent,
   props: (route) => ({ url: route.href }),
 })
 ```
 
-Pass the view to `addView` on each route:
+Pass the view to `addView` with the name `sidebar` on each route:
 
 ```ts
 const home = createRoute({...})
-  .addView(pageView)
+  .addView(sidebarView, { name: 'sidebar' })
 
 const about = createRoute({...})
-  .addView(pageView)
+  .addView(sidebarView, { name: 'sidebar' })
 ```
 
 ## Named Views
