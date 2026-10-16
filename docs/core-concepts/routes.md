@@ -285,7 +285,7 @@ There is also a `setTitle` callback on [rejections](/advanced-concepts/rejection
 
 The `context` option declares route and rejection definitions used by a callback's `push`, `replace`, and `reject` helpers. These helpers are typed from those definitions, including any required route params.
 
-`createLoader`, `createView`, and `createHook` accept the same option. Their navigation helpers use their own declared context. The option does not narrow the route passed to the callback.
+`createLoader`, `createView`, and `createHook` accept the same option. Their navigation helpers use their own declared context.
 
 `createRouter` discovers these definitions from its routes, including inherited context and context from attached loaders, views, and hooks, so they do not need to be listed separately. Register hooks before calling `createRouter`.
 
