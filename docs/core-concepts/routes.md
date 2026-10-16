@@ -285,8 +285,15 @@ There is also a `setTitle` callback on [rejections](/advanced-concepts/rejection
 
 The `context` option declares route and rejection definitions used by a callback's `push`, `replace`, and `reject` helpers. These helpers are typed from those definitions, including any required route params.
 
+`createLoader`, `createView`, and `createHook` accept the same option. Their navigation helpers use their own declared context. The option does not narrow the route passed to the callback.
+
+`createRouter` discovers these definitions from its routes, including inherited context and context from attached loaders, views, and hooks, so they do not need to be listed separately. Register hooks before calling `createRouter`.
+
 ```ts
-const login = createRoute({ name: 'login', path: '/login' })
+const login = createRoute({
+  name: 'login',
+  path: '/login',
+})
 const denied = createRejection({ type: 'Denied' })
 
 const checkout = createRoute({
@@ -299,6 +306,7 @@ checkout.onBeforeRouteEnter((_to, { push, reject }) => {
   if (!isAuthenticated()) {
     return push('login')
   }
+
   if (!canCheckout()) {
     reject('Denied')
   }
@@ -306,12 +314,6 @@ checkout.onBeforeRouteEnter((_to, { push, reject }) => {
 
 const router = createRouter([checkout])
 ```
-
-`createRouter` discovers context targets from its routes, including inherited context, so they do not need to be listed separately.
-
-`createLoader`, `createView`, and `createHook` accept the same option. Their helpers use their own declared context, independent of the route they are attached to or the registered router. The option does not narrow the callback's incoming route or params.
-
-The router collects context from its routes and their attached loaders, views, and hooks when it is created. Register hooks before calling `createRouter` so their context targets can be discovered.
 
 ## Loaders
 
