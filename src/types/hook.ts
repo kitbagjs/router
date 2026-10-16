@@ -30,8 +30,8 @@ export type HookSharedContext<TContext extends readonly RouteContext[] = [], TRo
  * Context provided to a reusable hook, narrowed by whether it runs before or after navigation.
  */
 export type HookCallbackContext<TContext extends readonly RouteContext[] = [], TRoutes extends Routes = Routes> = HookSharedContext<TContext, TRoutes> & (
-  | { kind: 'before', abort: RouterAbort }
-  | { kind: 'after' }
+  | { lifecycle: 'before', abort: RouterAbort }
+  | { lifecycle: 'after' }
 )
 
 /**
@@ -63,8 +63,8 @@ export type HookInvocationContext = {
   update?: AnyFunction,
   signal: AbortSignal,
 } & (
-  | { kind: 'before', abort: RouterAbort }
-  | { kind: 'after' }
+  | { lifecycle: 'before', abort: RouterAbort }
+  | { lifecycle: 'after' }
 )
 
 /**

@@ -18,7 +18,7 @@ test('declared context types helpers and the hook attaches to compatible lifecyc
       expectTypeOf(signal).toEqualTypeOf<AbortSignal>()
       // @ts-expect-error abort requires narrowing to a before invocation
       context.abort()
-      if (context.kind === 'before') {
+      if (context.lifecycle === 'before') {
         expectTypeOf(context.abort).toEqualTypeOf<() => void>()
       } else {
         // @ts-expect-error after hooks cannot abort

@@ -26,12 +26,12 @@ describe('hooks', () => {
     })
   })
 
-  test('kind identifies before and after plugin hooks', () => {
-    plugin.onBeforeRouteEnter((_to, { kind }) => {
-      expectTypeOf(kind).toEqualTypeOf<'before'>()
+  test('lifecycle identifies before and after plugin hooks', () => {
+    plugin.onBeforeRouteEnter((_to, { lifecycle }) => {
+      expectTypeOf(lifecycle).toEqualTypeOf<'before'>()
     })
-    plugin.onAfterRouteEnter((_to, { kind }) => {
-      expectTypeOf(kind).toEqualTypeOf<'after'>()
+    plugin.onAfterRouteEnter((_to, { lifecycle }) => {
+      expectTypeOf(lifecycle).toEqualTypeOf<'after'>()
     })
   })
 

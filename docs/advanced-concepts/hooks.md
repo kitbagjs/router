@@ -36,7 +36,7 @@ The router provides `to` and a `context` argument to your hook callback. The con
 
 | Property | Description |
 | ---- | ---- |
-| kind | `'before'` or `'after'`, depending on the hook's lifecycle. |
+| lifecycle | `'before'` or `'after'`, depending on the hook's lifecycle. |
 | from | What was the route prior to the hook's execution |
 | push | Convenient way to move the user from wherever they were to a new route. |
 | replace | Same as push, but with `options: { replace: true }`. |
@@ -169,12 +169,12 @@ See [Route Narrowing](/advanced-concepts/route-narrowing#callbacks) for using re
 
 ### Before and After Hooks
 
-The callback receives `context.kind` as `'before'` or `'after'`, depending on where the hook is registered. Narrow it to `'before'` to access `context.abort()`. After hooks do not receive an `abort` helper.
+The callback receives `context.lifecycle` as `'before'` or `'after'`, depending on where the hook is registered. Narrow it to `'before'` to access `context.abort()`. After hooks do not receive an `abort` helper.
 
 ```ts
 const unsavedChangesHook = createHook({
   hook: (_to, context) => {
-    if (context.kind === 'before' && hasUnsavedChanges()) {
+    if (context.lifecycle === 'before' && hasUnsavedChanges()) {
       context.abort()
     }
   },

@@ -8,15 +8,15 @@ import { createResolvedRoute } from './createResolvedRoute'
 
 const { signal } = new AbortController()
 
-test('hook context identifies the lifecycle kind', async () => {
+test('hook context identifies the lifecycle', async () => {
   const observed: string[] = []
   const hooks = createRouterHooks({ redirectStatus: 302 })
   const to = createResolvedRoute(createRoute({ name: 'home', path: '/' }))
-  hooks.onBeforeRouteEnter((_to, { kind }) => {
-    observed.push(kind)
+  hooks.onBeforeRouteEnter((_to, { lifecycle }) => {
+    observed.push(lifecycle)
   })
-  hooks.onAfterRouteEnter((_to, { kind }) => {
-    observed.push(kind)
+  hooks.onAfterRouteEnter((_to, { lifecycle }) => {
+    observed.push(lifecycle)
   })
 
   await hooks.runBeforeRouteHooks({ to, from: null, signal })
