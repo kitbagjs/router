@@ -82,7 +82,7 @@ export type CreateRouteOptions<
    */
   parent?: Route,
   /**
-   * Related routes and rejections for the route. The context is exposed to the hooks and props callback functions for this route.
+   * See [Context](https://kitbag-router.netlify.app/advanced-concepts/context).
    */
   context?: RouteContext[],
   /**
