@@ -4,7 +4,7 @@ import { isLoaderHandle, LoaderHandle } from '@/types/loaderHandle'
 import { ValueLocation } from '@/services/getComputations'
 import { isSameLoader } from '@/services/isSameLoader'
 
-export function getLoaderLocation(route: RouterRoute, source: AnyLoader | LoaderHandle): ValueLocation {
+export function getLoaderLocation(route: RouterRoute, source: AnyLoader | LoaderHandle): ValueLocation | undefined {
   if (isLoaderHandle(source)) {
     const match = route.matches.find((match) => match.id === source.matchId && source.name in match.loaders)
 
@@ -28,7 +28,7 @@ export function getLoaderLocation(route: RouterRoute, source: AnyLoader | Loader
   }
 
   if (locations.length === 0) {
-    throw new Error('This loader is not attached to the current route')
+    return
   }
 
   return locations[0]

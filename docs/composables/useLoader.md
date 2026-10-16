@@ -40,4 +40,10 @@ const user = await useLoader(userLoader)
 
 The resolved value is a snapshot. Keep the reactive result when the component needs to follow later navigations.
 
+## Unattached loaders
+
+If a reusable definition is not attached to the current route, `useLoader` warns and runs it with the current route and its declared [context](/advanced-concepts/context). Consumers share that execution for the navigation. A new navigation starts a new load and cancels pending work from the previous one.
+
+Attach the definition with `addLoader` to start loading before component setup and participate in route prefetching and SSR hydration. Calling `useLoader` does not add an attachment or change `route.data`.
+
 `useLoader` is also available through [`createRouterAssets`](/api/functions/createRouterAssets) for applications using a separate router key.

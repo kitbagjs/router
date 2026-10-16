@@ -15,6 +15,8 @@ import { createNavigationStores, DataKind, getDataKey } from './createNavigation
 import { PropsResult } from '@/utilities/props'
 import { MaybePromise } from '@/types/utilities'
 import { Computation, ComputationFilter, getComputations, isKind, loaderLocations, propsLocations, ValueLocation } from './getComputations'
+import { AnyLoader, isLoader, LOADER_ID_SYMBOL } from '@/types/loader'
+import { RouteContext } from '@/types/routeContext'
 
 /**
  * A navigation that was superseded before its values settled. The navigation that replaced it owns the
@@ -83,6 +85,8 @@ export type RouteValue = {
 }
 
 export type RouteValueStore = HasVueAppStore & {
+  loadLoader: (loader: AnyLoader, route: ResolvedRoute) => ValueLocation,
+  stop: () => void,
   createDetachedStore: () => DetachedStore,
   /**
    * The store the next navigation adopts, created when nothing is staged. Values computed into it ahead of
@@ -108,9 +112,62 @@ export type RouteValueStore = HasVueAppStore & {
   getLoaderData: (location: ValueLocation, route: ResolvedRoute) => Promise<unknown>,
 }
 
-export function createRouteValueStore(): RouteValueStore {
+type RouteValueStoreOptions = {
+  onLoaderContext?: (context: readonly RouteContext[]) => void,
+  onLoaderResponse?: (response: Promise<RouteValueResponse>, route: ResolvedRoute, signal: AbortSignal) => void,
+}
+
+export function createRouteValueStore(options: RouteValueStoreOptions = {}): RouteValueStore {
   const { setVueApp, runWithContext } = createVueAppStore()
   const navigation = createNavigationStores()
+  const fallbackIds = new Map<symbol, string>()
+
+  const loadLoader: RouteValueStore['loadLoader'] = (loader, currentRoute) => {
+    if (!isLoader(loader)) {
+      throw new TypeError('Expected a loader created by createLoader')
+    }
+
+    const store = navigation.current()
+    store.signal.throwIfAborted()
+    const identity = loader[LOADER_ID_SYMBOL]
+    let id = fallbackIds.get(identity)
+
+    if (!id) {
+      id = `fallback-${fallbackIds.size}`
+      fallbackIds.set(identity, id)
+    }
+
+    const location: ValueLocation = { kind: 'loader', id, name: 'default' }
+    const key = getDataKey(location.kind, id, location.name, currentRoute)
+
+    if (store.get(key).kind !== 'missing') {
+      return location
+    }
+
+    options.onLoaderContext?.(loader.context)
+    console.warn('This loader is not attached to the current route. It will run now; attach it with addLoader to start loading before component setup.')
+
+    const route = {
+      ...currentRoute,
+      params: { ...currentRoute.params },
+      query: new URLSearchParams(currentRoute.query),
+      state: { ...currentRoute.state },
+    }
+    const computation: Computation = {
+      ...location,
+      key,
+      depth: 0,
+      run: loader.load,
+      routePrefetch: undefined,
+      prefetch: loader.prefetch,
+      transformer: loader.transformer,
+    }
+    const response = settle(store, route, [computation])
+    response.catch(() => {})
+    options.onLoaderResponse?.(response, route, store.signal)
+
+    return location
+  }
 
   const createDetachedStore: RouteValueStore['createDetachedStore'] = () => {
     const detached = { store: createDataStore() }
@@ -268,7 +325,14 @@ export function createRouteValueStore(): RouteValueStore {
   }
 
   const getLoaderState: RouteValueStore['getLoaderState'] = (location, route) => {
-    return navigation.current().get(getDataKey(location.kind, location.id, location.name, route))
+    const store = navigation.current()
+    const result = store.get(getDataKey(location.kind, location.id, location.name, route))
+
+    if (store.signal.aborted) {
+      return { kind: 'error', error: store.signal.reason }
+    }
+
+    return result
   }
 
   function run(computation: Computation, route: ResolvedRoute, store: DataStore): unknown {
@@ -392,6 +456,14 @@ export function createRouteValueStore(): RouteValueStore {
     const key = getDataKey(location.kind, location.id, location.name, route)
     const current = navigation.current()
 
+    if (current.signal.aborted) {
+      const reason: unknown = current.signal.reason
+      const abandoned = Promise.reject(reason instanceof Error ? reason : new NavigationAbandonedError())
+      abandoned.catch(() => {})
+
+      return abandoned
+    }
+
     if (!store || store === current) {
       return current.subscribe(key)
     }
@@ -412,6 +484,8 @@ export function createRouteValueStore(): RouteValueStore {
   }
 
   return {
+    loadLoader,
+    stop: navigation.stop,
     createDetachedStore,
     staged,
     commit,
