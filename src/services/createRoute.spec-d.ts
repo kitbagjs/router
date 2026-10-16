@@ -397,13 +397,13 @@ describe('hooks', () => {
     const route = createRoute({ name: 'route', path: '/[paramName]' }).addView(component)
 
     route.onBeforeRouteLeave((_to, context) => {
-      expectTypeOf(context.kind).toEqualTypeOf<'before'>()
-      expectTypeOf<keyof typeof context>().toEqualTypeOf<'kind' | 'from' | 'reject' | 'push' | 'replace' | 'abort' | 'signal'>()
+      expectTypeOf(context.lifecycle).toEqualTypeOf<'before'>()
+      expectTypeOf<keyof typeof context>().toEqualTypeOf<'lifecycle' | 'from' | 'reject' | 'push' | 'replace' | 'abort' | 'signal'>()
     })
 
     route.onAfterRouteLeave((_to, context) => {
-      expectTypeOf(context.kind).toEqualTypeOf<'after'>()
-      expectTypeOf<keyof typeof context>().toEqualTypeOf<'kind' | 'from' | 'reject' | 'push' | 'replace' | 'signal'>()
+      expectTypeOf(context.lifecycle).toEqualTypeOf<'after'>()
+      expectTypeOf<keyof typeof context>().toEqualTypeOf<'lifecycle' | 'from' | 'reject' | 'push' | 'replace' | 'signal'>()
     })
   })
 

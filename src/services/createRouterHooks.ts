@@ -73,7 +73,7 @@ export function createRouterHooks({ redirectStatus }: RouterHooksOptions): Route
 
         // Enter and update hooks are only in this list when to is not null, and leave hooks are only in it when from is not null. These casts are purely to satisfy the type checker.
         const result = Promise.resolve(runWithContext(() => callback(to as ResolvedRoute, {
-          kind: 'before',
+          lifecycle: 'before',
           from: from as ResolvedRoute,
           reject,
           push,
@@ -147,7 +147,7 @@ export function createRouterHooks({ redirectStatus }: RouterHooksOptions): Route
       const results = allHooks.map((callback) => {
         // Enter and update hooks are only in this list when to is not null, and leave hooks are only in it when from is not null. These casts are purely to satisfy the type checker.
         return Promise.resolve(runWithContext(() => callback(to as ResolvedRoute, {
-          kind: 'after',
+          lifecycle: 'after',
           from: from as ResolvedRoute,
           reject,
           push,

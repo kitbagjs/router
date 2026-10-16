@@ -117,7 +117,7 @@ type AfterHookContext<
   TRoutes extends Routes,
   TRejections extends Rejections
 > = {
-  kind: 'after',
+  lifecycle: 'after',
   reject: RouterReject<TRejections>,
   push: RouterPush<TRoutes>,
   replace: RouterReplace<TRoutes>,
@@ -130,7 +130,7 @@ type BeforeHookContext<
   TRoutes extends Routes,
   TRejections extends Rejections
 > = {
-  kind: 'before',
+  lifecycle: 'before',
   reject: RouterReject<TRejections>,
   push: RouterPush<TRoutes>,
   replace: RouterReplace<TRoutes>,
