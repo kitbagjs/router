@@ -28,5 +28,10 @@ export function createHook(options: CreateHookOptions<any>): Hook<any> {
     [IS_HOOK_SYMBOL]: true,
   } satisfies HookInternal
 
-  return { ...options, ...internal, hook, context }
+  return {
+    ...options,
+    ...internal,
+    hook,
+    context,
+  }
 }
