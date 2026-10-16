@@ -143,7 +143,10 @@ import { createHook } from '@kitbag/router'
 
 const logNavigation = createHook({
   hook: (to, { from }) => {
-    console.log('Navigation', { from: from?.href, to: to?.href })
+    console.log('Navigation', {
+      from: from?.href,
+      to: to?.href,
+    })
   },
 })
 ```
@@ -153,10 +156,7 @@ Register the created hook on a route or on the router:
 ```ts
 import { createRoute, createRouter } from '@kitbag/router'
 
-const account = createRoute({
-  name: 'account',
-  path: '/account',
-})
+const account = createRoute({...})
 
 account.onBeforeRouteEnter(logNavigation)
 
@@ -165,11 +165,9 @@ const router = createRouter([account])
 router.onAfterRouteEnter(logNavigation)
 ```
 
-See [Route Narrowing](/advanced-concepts/route-narrowing#callbacks) for using reusable hooks with a registered router.
+### Hook Lifecycles
 
-### Before and After Hooks
-
-The callback receives `context.lifecycle` as `'before'` or `'after'`, depending on where the hook is registered. Narrow it to `'before'` to access `context.abort()`. After hooks do not receive an `abort` helper.
+Use `context.lifecycle` to distinguish before and after hooks and access `abort` when it is `'before'`:
 
 ```ts
 const unsavedChangesHook = createHook({
