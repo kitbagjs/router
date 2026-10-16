@@ -301,7 +301,7 @@ export type RouterRouteUnion<TRoutes extends Routes> = {
   [K in keyof TRoutes]: TRoutes[K]['name'] extends '' ? never : RouterRoute<ResolvedRoute<TRoutes[K]>>
 }[number]
 
-export type RouterRoutes<TRouter extends Router> = TRouter extends Router<infer TRoutes, any, infer TPlugin>
+export type RouterRoutes<TRouter extends Router> = TRouter extends Router<infer TRoutes extends Routes, any, infer TPlugin extends RouterPlugin>
   ? Routes extends TRoutes | TPlugin['routes'] ? Routes : TRoutes | TPlugin['routes']
   : Routes
 
