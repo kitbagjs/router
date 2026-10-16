@@ -95,6 +95,7 @@ export default defineConfig({
             { text: 'Redirects', link: '/advanced-concepts/redirects' },
             { text: 'Aliases', link: '/advanced-concepts/aliases' },
             { text: 'Hooks', link: '/advanced-concepts/hooks' },
+            { text: 'Context', link: '/advanced-concepts/context' },
             { text: 'Plugins', link: '/advanced-concepts/plugins' },
             { text: 'Route Meta', link: '/advanced-concepts/route-meta' },
             { text: 'Route State', link: '/advanced-concepts/route-state' },

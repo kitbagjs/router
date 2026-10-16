@@ -73,7 +73,7 @@ const contact = createRoute({
 
 ## Parent
 
-The `parent` property is used to create nested routes. In this example, `blogPost` route's path is combined with the `blog` route's path to form the full url. A route inherits many of its parent's properties. Specifically, `path`, `query`, `meta`, `state`, `context`, and `hash` are all combined.
+The `parent` property is used to create nested routes. In this example, `blogPost` route's path is combined with the `blog` route's path to form the full url. A route inherits many of its parent's properties. Specifically, `path`, `query`, `meta`, `state`, [context](/advanced-concepts/context), and `hash` are all combined.
 
 ```ts {7}
 const blog = createRoute({
@@ -283,28 +283,7 @@ There is also a `setTitle` callback on [rejections](/advanced-concepts/rejection
 
 ## Context
 
-The context for a route is the collection of routes and rejections that are associated with the route. The context you provide to this route will be available to the hooks and props callback functions for this route.
-
-```ts
-const newHomePage = createRoute({
-  name: 'new-home',
-  path: '/',
-})
-.addView(NewHomePage)
-
-const home = createRoute({
-  name: 'home',
-  path: '/',
-  context: [newHomePage],
-})
-
-home.onBeforeRouteEnter((to, { replace }) => {
-  if(user.isCanary) {
-    // TS knows about 'new-home' because it's in the context
-    replace('new-home')
-  }
-})
-```
+Routes can be passed [context](/advanced-concepts/context) to enable their callbacks to reference other routes and rejections.
 
 ## Loaders
 
