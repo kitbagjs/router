@@ -46,10 +46,6 @@ const settings = createRoute({...})
   })
 ```
 
-### Type Safety
-
-See [Type Safety](/core-concepts/type-safety) for registration and router assets and [Route Narrowing](/advanced-concepts/route-narrowing#callbacks) for accessing typed params in callbacks.
-
 ## Reading data in a component
 
 Use `useRoute` with the route's name and await `route.data` at the top level of `<script setup>`. The result is typed from the loader's return value.
