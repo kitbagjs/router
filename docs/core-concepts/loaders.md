@@ -104,6 +104,8 @@ A loader cannot read `route.data` to depend on another loader on the same route.
 
 ## Loader handles
 
+Use [`useLoader`](/composables/useLoader) with a handle or reusable definition to read reactive data, loading, and error state without suspending setup.
+
 `route.loaders` exposes handles for the current route's loaders, including inherited loaders. A handle's `data` property returns its current promise, so a saved handle follows navigation while its attachment remains matched. Unnamed loaders use `route.loaders.default`.
 
 ```ts

@@ -10,7 +10,7 @@ import { PropsCallbackParent } from '@/types/props'
 import { createVueAppStore, HasVueAppStore } from './createVueAppStore'
 import { CallbackContextPush, CallbackContextReject, CallbackContextSuccess } from '@/types/callbackContext'
 import { createRouterCallbackContext } from './createRouterCallbackContext'
-import { createDataStore, DataStore } from './createDataStore'
+import { createDataStore, DataResult, DataStore } from './createDataStore'
 import { createNavigationStores, DataKind, getDataKey } from './createNavigationStores'
 import { PropsResult } from '@/utilities/props'
 import { MaybePromise } from '@/types/utilities'
@@ -104,6 +104,8 @@ export type RouteValueStore = HasVueAppStore & {
    * navigations replace the store its values live in.
    */
   getData: (route: ResolvedRoute) => WithData['data'],
+  getLoaderState: (location: ValueLocation, route: ResolvedRoute) => DataResult,
+  getLoaderData: (location: ValueLocation, route: ResolvedRoute) => Promise<unknown>,
 }
 
 export function createRouteValueStore(): RouteValueStore {
@@ -265,6 +267,10 @@ export function createRouteValueStore(): RouteValueStore {
     return toValues(loaders, DEFAULT_LOADER_NAME, route, store)
   }
 
+  const getLoaderState: RouteValueStore['getLoaderState'] = (location, route) => {
+    return navigation.current().get(getDataKey(location.kind, location.id, location.name, route))
+  }
+
   function run(computation: Computation, route: ResolvedRoute, store: DataStore): unknown {
     const { push, replace, reject, update } = createRouterCallbackContext({ to: route })
 
@@ -412,6 +418,8 @@ export function createRouteValueStore(): RouteValueStore {
     getValues,
     getProps,
     getData,
+    getLoaderState,
+    getLoaderData: getValue,
     setVueApp,
   }
 }
