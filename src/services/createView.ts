@@ -1,4 +1,4 @@
-import { ResolvedRoute, WithData } from '@/types/resolved'
+import { Routes } from '@/types/route'
 import { Component } from 'vue'
 import { ComponentProps } from '@/services/component'
 import { RouteContext } from '@/types/routeContext'
@@ -12,14 +12,14 @@ export function createView<
   TComponent extends Component,
   const TContext extends readonly RouteContext[] = [],
   TProps extends MaybePromise<ComponentProps<TComponent>> = MaybePromise<ComponentProps<TComponent>>,
-  TRoute extends ResolvedRoute & WithData = ResolvedRoute & WithData
->(options: CreateViewOptions<TComponent, TContext, TProps, TRoute> & { props: ViewPropsGetter<TContext, TProps, TRoute> }): View<TProps, TContext>
+  TRoutes extends Routes = Routes
+>(options: CreateViewOptions<TComponent, TContext, TProps, TRoutes> & { props: ViewPropsGetter<TContext, TProps, TRoutes> }): View<TProps, TContext>
 
 export function createView<
   TComponent extends Component,
   const TContext extends readonly RouteContext[] = [],
-  TRoute extends ResolvedRoute & WithData = ResolvedRoute & WithData
->(options: Omit<CreateViewOptions<TComponent, TContext, MaybePromise<ComponentProps<TComponent>>, TRoute>, 'props'> & { props?: never } & (
+  TRoutes extends Routes = Routes
+>(options: Omit<CreateViewOptions<TComponent, TContext, MaybePromise<ComponentProps<TComponent>>, TRoutes>, 'props'> & { props?: never } & (
   Partial<ComponentProps<TComponent>> extends ComponentProps<TComponent> ? {} : never
 )): View<undefined, TContext>
 

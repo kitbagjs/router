@@ -4,7 +4,6 @@ import { createView } from '@/services/createView'
 import { CreateView } from '@/types/view'
 import { createLoader } from '@/services/createLoader'
 import { CreateLoader } from '@/types/loader'
-import { ResolvedRouteUnion, ResolvedRouteWithDataUnion } from '@/types/resolved'
 import { ViewTransition } from '@/components/viewTransition'
 import { Router, RouterRoutes, RouterRejections } from '@/types/router'
 import { InjectionKey } from 'vue'
@@ -26,15 +25,15 @@ export type RouterAssets<TRouter extends Router> = {
   /**
    * Creates a reusable hook with callbacks typed to this router's resolved routes.
    */
-  createHook: CreateHook<ResolvedRouteUnion<RouterRoutes<TRouter>[number]>>,
+  createHook: CreateHook<RouterRoutes<TRouter>>,
   /**
    * Creates a reusable view with props callbacks typed to this router's resolved routes and loader data.
    */
-  createView: CreateView<ResolvedRouteWithDataUnion<RouterRoutes<TRouter>[number]>>,
+  createView: CreateView<RouterRoutes<TRouter>>,
   /**
    * Creates a reusable loader with callbacks typed to this router's resolved routes.
    */
-  createLoader: CreateLoader<ResolvedRouteUnion<RouterRoutes<TRouter>[number]>>,
+  createLoader: CreateLoader<RouterRoutes<TRouter>>,
   /**
    * Registers a hook that is called before a route is left. Must be called from setup.
    * This is useful for performing actions or cleanups before navigating away from a route component.
