@@ -70,13 +70,16 @@ export type HookInvocationContext = {
 /**
  * A reusable hook that can be attached before or after a route enters, updates, or leaves.
  */
-export type Hook<TContext extends readonly RouteContext[] = []> = ((route: ResolvedRoute | null, context: HookInvocationContext) => MaybePromise<void>) & {
+export type Hook<TContext extends readonly RouteContext[] = []> = {
+  hook: (route: ResolvedRoute | null, context: HookInvocationContext) => MaybePromise<void>,
   context: TContext,
 }
+
+export type AnyHook = Hook<readonly RouteContext[]>
 
 /**
  * Determines whether a value is a reusable hook.
  */
-export function isHook(value: unknown): value is Hook<readonly RouteContext[]> & HookInternal {
-  return typeof value === 'function' && IS_HOOK_SYMBOL in value
+export function isHook(value: unknown): value is AnyHook & HookInternal {
+  return typeof value === 'object' && value !== null && IS_HOOK_SYMBOL in value
 }

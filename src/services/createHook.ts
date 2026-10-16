@@ -1,5 +1,5 @@
 import { RouteContext } from '@/types/routeContext'
-import { CreateHookOptions, Hook, HookInvocationContext, IS_HOOK_SYMBOL } from '@/types/hook'
+import { CreateHookOptions, Hook, HookInvocationContext, HookInternal, IS_HOOK_SYMBOL } from '@/types/hook'
 import { ResolvedRoute } from '@/types/resolved'
 import { Routes } from '@/types/route'
 import { MaybePromise } from '@/types/utilities'
@@ -23,8 +23,10 @@ export function createHook(options: CreateHookOptions<any>): Hook<any> {
     return callback(route, context)
   }
 
-  hook.context = [...options.context ?? []]
-  hook[IS_HOOK_SYMBOL] = true
+  const context = [...options.context ?? []]
+  const internal = {
+    [IS_HOOK_SYMBOL]: true,
+  } satisfies HookInternal
 
-  return hook
+  return { ...options, ...internal, hook, context }
 }

@@ -9,12 +9,12 @@ import { BUILT_IN_REJECTIONS, BuiltInRejectionType, isRejection, Rejection, Reje
 import { RouterOptions } from '@/types/router'
 import { createRejection } from '@/services/createRejection'
 import { isUrl } from '@/types/url'
-import { isHook } from '@/types/hook'
+import { AnyHook, isHook } from '@/types/hook'
 import { ComponentHook, getHooks } from '@/types/hooks'
 import { Hooks } from '@/models/hooks'
 import { RouteContext } from '@/types/routeContext'
 
-type HookContextListener = (hook: ComponentHook) => void
+type HookContextListener = (hook: ComponentHook | AnyHook) => void
 
 type HookContextSubscription = {
   listener: HookContextListener,
@@ -63,7 +63,7 @@ export function getRoutesForRouter(routes: Routes | Routes[], plugins: RouterPlu
   // Shared route definitions must not keep discarded routers alive.
   hookContextCleanup.register(addHookContext, { listener: onHookAdded, stores })
 
-  function addHookContext(hook: ComponentHook): void {
+  function addHookContext(hook: ComponentHook | AnyHook): void {
     if (!isHook(hook)) {
       return
     }

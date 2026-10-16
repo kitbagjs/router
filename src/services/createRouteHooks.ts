@@ -1,3 +1,4 @@
+import { AnyHook } from '@/types/hook'
 import { ComponentHook, HookRemove, AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, AddErrorHook, AddRejectionHook } from '@/types/hooks'
 import { Routes } from '@/types/route'
 import { Hooks } from '@/models/hooks'
@@ -39,7 +40,7 @@ export function createRouteHooks(): RouteHooks {
     return () => store.redirects.delete(hook)
   }
 
-  function addHook<THook extends ComponentHook>(hooks: Set<THook>, hook: THook): HookRemove {
+  function addHook<THook extends ComponentHook | AnyHook>(hooks: Set<THook>, hook: THook): HookRemove {
     for (const callback of store.onHookAdded) {
       callback(hook)
     }

@@ -4,6 +4,7 @@ import { createRoute } from '@/services/createRoute'
 import { createRejection } from '@/services/createRejection'
 import { createRouter } from '@/services/createRouter'
 import { createRouterAssets } from '@/services/createRouterAssets'
+import { createRouterPlugin } from '@/services/createRouterPlugin'
 import { ResolvedRoute } from '@/types/resolved'
 
 test('declared context types helpers and the hook attaches to compatible lifecycles', () => {
@@ -39,6 +40,12 @@ test('declared context types helpers and the hook attaches to compatible lifecyc
   user.onAfterRouteEnter(hook)
   user.onAfterRouteUpdate(hook)
   user.onAfterRouteLeave(hook)
+  const router = createRouter([user])
+  router.onBeforeRouteEnter(hook)
+  router.onAfterRouteLeave(hook)
+  const plugin = createRouterPlugin({ routes: [user] })
+  plugin.onBeforeRouteEnter(hook)
+  plugin.onAfterRouteLeave(hook)
 })
 
 test('router assets type both routes in a reusable hook callback', () => {
