@@ -66,9 +66,7 @@ if(isRoute(router.route, 'user', { exact: false })) {
 
 ## Callbacks
 
-With [router registration](/core-concepts/type-safety#registration), `createLoader` and `createView` callbacks receive a union of the router's resolved routes. Narrow by name to access the route's typed params.
-
-See [Type Safety](/core-concepts/type-safety#circular-type-inference) for the explicit types used in these examples.
+Narrow the route by name inside a loader callback to access its typed params.
 
 ```ts
 import { createLoader, type Loader } from '@kitbag/router'
@@ -82,22 +80,6 @@ const userLoader: Loader<Promise<User | null>> = createLoader({
     }
 
     return null
-  },
-})
-```
-
-```ts
-import { createView, type View } from '@kitbag/router'
-import UserPage from './UserPage.vue'
-
-const userView: View<{ userId?: string }> = createView({
-  component: UserPage,
-  props: (route) => {
-    if (route.name === 'user') {
-      return { userId: route.params.userId }
-    }
-
-    return {}
   },
 })
 ```
