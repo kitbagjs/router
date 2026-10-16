@@ -8,10 +8,10 @@ import { component } from '@/utilities/testHelpers'
 test('abort is available before navigation and absent after navigation', async () => {
   const hook = createHook({
     hook: (route, context) => {
-      if (context.kind === 'before' && route?.name === 'blocked') {
+      if (context.lifecycle === 'before' && route?.name === 'blocked') {
         context.abort()
       }
-      if (context.kind === 'after') {
+      if (context.lifecycle === 'after') {
         expect('abort' in context).toBe(false)
       }
     },
@@ -31,7 +31,7 @@ test('one hook runs before and after enter, update, and leave', async () => {
   const observed: string[] = []
   const hook = createHook({
     hook: (route, context) => {
-      observed.push(`${context.kind}:${route?.name}:${route?.params.id}`)
+      observed.push(`${context.lifecycle}:${route?.name}:${route?.params.id}`)
     },
   })
   const first = createRoute({ name: 'first', path: '/first/[id]' })

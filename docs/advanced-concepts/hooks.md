@@ -169,12 +169,12 @@ See [Route Narrowing](/advanced-concepts/route-narrowing#callbacks) for using re
 
 ### Before and After Hooks
 
-The callback receives `context.kind` as `'before'` or `'after'`, depending on where the hook is registered. Narrow it to `'before'` to access `context.abort()`. After hooks do not receive an `abort` helper.
+The callback receives `context.lifecycle` as `'before'` or `'after'`, depending on where the hook is registered. Narrow it to `'before'` to access `context.abort()`. After hooks do not receive an `abort` helper.
 
 ```ts
 const unsavedChangesHook = createHook({
   hook: (_to, context) => {
-    if (context.kind === 'before' && hasUnsavedChanges()) {
+    if (context.lifecycle === 'before' && hasUnsavedChanges()) {
       context.abort()
     }
   },
