@@ -1,12 +1,14 @@
 # Context
 
-Routes, loaders, views, and hooks accept a `context` option containing the route and rejection definitions their callbacks can reference through `push`, `replace`, and `reject`. These helpers are typed from those definitions, including any required route params.
+The `context` option declares route and rejection definitions that callbacks can reference through `push`, `replace`, and `reject`. These helpers are typed from those definitions, including any required route params.
 
-Child routes inherit their parent's context. Reusable loaders, views, and hooks use their own declared context for their navigation helpers.
+Child routes inherit their parent's context.
+
+Reusable loaders, views, and hooks also accept a `context` option. Their navigation helpers use their own declared context.
 
 Routes and rejections supplied through `context` are not included in `router.push` or `router.reject` types unless they are also passed directly to `createRouter` through its routes array or `rejections` option.
 
-`createRouter` discovers these definitions from its routes, including inherited context and context from attached loaders, views, and hooks, so they do not need to be listed separately. Registering a hook on a route or router also registers its context targets, including after router creation. Removing the hook leaves those targets registered.
+`createRouter` discovers context definitions from its routes, including inherited context and context from attached loaders, views, and hooks, so they do not need to be listed separately. Registering a hook on a route or router also registers its context targets, including after router creation. Removing the hook leaves those targets registered.
 
 ```ts
 const login = createRoute({
