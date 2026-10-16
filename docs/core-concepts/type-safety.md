@@ -39,9 +39,7 @@ export const {
 
 ## Circular type inference
 
-::: warning
-Using a loader in the router that supplies its types creates circular type inference. Annotate it with `Loader<Data>` to resolve this.
-:::
+When using registration or router assets, explicitly type reusable loaders with `Loader<Data>` to avoid circular type inference.
 
 ```ts
 import { createLoader, type Loader } from '@kitbag/router'
@@ -51,4 +49,3 @@ const sessionLoader: Loader<Promise<Session>> = createLoader({
   load: () => getSession(),
 })
 ```
-
