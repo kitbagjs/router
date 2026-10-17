@@ -1,3 +1,4 @@
+import { AddHook } from '@/types/hooks'
 import { HookRemove } from './hooks'
 import { Routes } from './route'
 import { Rejections } from './rejection'
@@ -80,7 +81,7 @@ export type PluginBeforeRouteLeaveHook<
 type AddPluginBeforeRouteLeaveHook<
   TRoutes extends Routes = Routes,
   TRejections extends Rejections = Rejections
-> = (hook: PluginBeforeRouteLeaveHook<TRoutes, TRejections>) => HookRemove
+> = AddHook<PluginBeforeRouteLeaveHook<TRoutes, TRejections>>
 
 export type PluginAfterRouteLeaveHook<
   TRoutes extends Routes = Routes,
@@ -90,7 +91,7 @@ export type PluginAfterRouteLeaveHook<
 type AddPluginAfterRouteLeaveHook<
   TRoutes extends Routes = Routes,
   TRejections extends Rejections = Rejections
-> = (hook: PluginAfterRouteLeaveHook<TRoutes, TRejections>) => HookRemove
+> = AddHook<PluginAfterRouteLeaveHook<TRoutes, TRejections>>
 
 export type PluginAfterRouteHook<
   TRoutes extends Routes = Routes,
@@ -100,12 +101,12 @@ export type PluginAfterRouteHook<
 type AddPluginBeforeRouteHook<
   TRoutes extends Routes,
   TRejections extends Rejections
-> = (hook: PluginBeforeRouteHook<TRoutes, TRejections>) => HookRemove
+> = AddHook<PluginBeforeRouteHook<TRoutes, TRejections>>
 
 type AddPluginAfterRouteHook<
   TRoutes extends Routes,
   TRejections extends Rejections
-> = (hook: PluginAfterRouteHook<TRoutes, TRejections>) => HookRemove
+> = AddHook<PluginAfterRouteHook<TRoutes, TRejections>>
 
 export type PluginErrorHookContext<
   TRoutes extends Routes = Routes,

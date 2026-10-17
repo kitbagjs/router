@@ -96,6 +96,7 @@ export { SsrOptionRequiredError } from './errors/ssrOptionRequiredError'
 export { UnreachableRouteError } from './errors/unreachableRouteError'
 
 // Services
+export type { CreateHookOptions, Hook, HookCallbackContext } from './types/hook'
 export type { CreateViewOptions, View, ViewCallbackContext } from './types/view'
 export { createRoute } from './services/createRoute'
 export { createRejection } from './services/createRejection'
@@ -120,6 +121,11 @@ import { createRouterAssets, RouterAssets } from './services/createRouterAssets'
 import { RegisteredRouter } from './types/register'
 
 const routerAssets = createRouterAssets(routerInjectionKey)
+
+/**
+ * Creates a reusable hook with callbacks typed to the registered router's resolved routes.
+ */
+export const createHook: RouterAssets<RegisteredRouter>['createHook'] = routerAssets.createHook
 
 /**
  * Creates a reusable view with props callbacks typed to the registered router's resolved routes.

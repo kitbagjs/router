@@ -35,6 +35,7 @@ export const {
   useRouter,
   createLoader,
   createView,
+  createHook,
 } = createRouterAssets(router)
 ```
 
