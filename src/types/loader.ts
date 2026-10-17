@@ -74,6 +74,13 @@ export type Loader<
 export type AnyLoader = Loader<any, readonly RouteContext[]>
 
 /**
+ * A loader definition with the name assigned when attached to a route.
+ */
+export type NamedLoader = AnyLoader & {
+  name: string,
+}
+
+/**
  * Determines whether a value is a reusable loader created by `createLoader`.
  */
 export function isLoader(value: unknown): value is AnyLoader & LoaderInternal {
