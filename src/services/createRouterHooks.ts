@@ -1,6 +1,6 @@
 import { AnyHook } from '@/types/hook'
 import { toHook } from '@/services/toHook'
-import { AddGlobalHooks, AddComponentHook, AfterHookRunner, BeforeHookRunner, AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, ErrorHookRunner, AddErrorHook, BeforeEnterHook, BeforeUpdateHook, BeforeLeaveHook, AfterEnterHook, AfterUpdateHook, AfterLeaveHook, RejectionHookRunner, RejectionHook, AddRejectionHook } from '@/types/hooks'
+import { ComponentHook, AddGlobalHooks, AddComponentHook, AfterHookRunner, BeforeHookRunner, AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, ErrorHookRunner, AddErrorHook, BeforeEnterHook, BeforeUpdateHook, BeforeLeaveHook, AfterEnterHook, AfterUpdateHook, AfterLeaveHook, RejectionHookRunner, RejectionHook, AddRejectionHook } from '@/types/hooks'
 import { getRouteHookCondition } from '@/services/hooks'
 import { ContextPushError } from '@/errors/contextPushError'
 import { ContextRejectionError } from '@/errors/contextRejectionError'
@@ -41,11 +41,16 @@ export type RouterHooks = HasVueAppStore & {
 
 type RouterHooksOptions = {
   redirectStatus: RedirectStatus,
+  onHookAdded?: (hook: ComponentHook | AnyHook) => void,
 }
 
-export function createRouterHooks({ redirectStatus }: RouterHooksOptions): RouterHooks {
+export function createRouterHooks({ redirectStatus, onHookAdded }: RouterHooksOptions): RouterHooks {
   const { setVueApp, runWithContext } = createVueAppStore()
   const { store: globalStore, ...globalHooks } = createRouteHooks()
+
+  if (onHookAdded) {
+    globalStore.onHookAdded.add(onHookAdded)
+  }
 
   const componentStore = new Hooks()
 
@@ -228,6 +233,7 @@ export function createRouterHooks({ redirectStatus }: RouterHooksOptions): Route
   }
 
   const addComponentHook: AddComponentHook = ({ lifecycle, depth, hook }) => {
+    onHookAdded?.(hook)
     const condition = getRouteHookCondition(lifecycle)
     const hooks = componentStore[lifecycle]
 

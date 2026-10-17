@@ -1,8 +1,9 @@
 import { AnyHook } from '@/types/hook'
-import { AfterEnterHook, AfterLeaveHook, AfterUpdateHook, BeforeEnterHook, BeforeLeaveHook, BeforeUpdateHook, ErrorHook, RejectionHook } from '@/types/hooks'
+import { ComponentHook, AfterEnterHook, AfterLeaveHook, AfterUpdateHook, BeforeEnterHook, BeforeLeaveHook, BeforeUpdateHook, ErrorHook, RejectionHook } from '@/types/hooks'
 import { RedirectHook } from '@/types/redirects'
 
 export class Hooks {
+  public onHookAdded = new Set<(hook: ComponentHook | AnyHook) => void>()
   public redirects = new Set<RedirectHook>()
   public onBeforeRouteEnter = new Set<BeforeEnterHook | AnyHook>()
   public onBeforeRouteUpdate = new Set<BeforeUpdateHook | AnyHook>()
