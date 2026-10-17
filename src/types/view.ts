@@ -34,7 +34,7 @@ export type ViewPropsGetter<TContext extends readonly RouteContext[], TProps, TR
 export type CreateViewOptions<
   TComponent extends Component = Component,
   TContext extends readonly RouteContext[] = [],
-  TProps extends MaybePromise<ComponentProps<TComponent>> = MaybePromise<ComponentProps<TComponent>>,
+  TProps extends MaybePromise<ComponentProps<TComponent>> | undefined = undefined,
   TRoutes extends Routes = Routes
 > = TransformerOptions<NoInfer<Awaited<TProps>>> & {
   component: TComponent,
@@ -44,28 +44,17 @@ export type CreateViewOptions<
   context?: TContext,
   prefetch?: PrefetchConfig,
 } & (Partial<ComponentProps<TComponent>> extends ComponentProps<TComponent>
-  ? { props?: ViewPropsGetter<TContext, TProps, TRoutes> }
-  : { props: ViewPropsGetter<TContext, TProps, TRoutes> })
+  ? { props?: ViewPropsGetter<TContext, TProps extends undefined ? MaybePromise<ComponentProps<TComponent>> : TProps, TRoutes> }
+  : { props: ViewPropsGetter<TContext, TProps extends undefined ? MaybePromise<ComponentProps<TComponent>> : TProps, TRoutes> })
 
 /**
  * Creates views with props callbacks typed to the router's resolved routes and loader data.
  */
-export type CreateView<TRoutes extends Routes = Routes> = {
-  <
-    TComponent extends Component,
-    const TContext extends readonly RouteContext[] = [],
-    TProps extends MaybePromise<ComponentProps<TComponent>> = MaybePromise<ComponentProps<TComponent>>
-  >(options: CreateViewOptions<TComponent, TContext, TProps, TRoutes> & {
-    props: ViewPropsGetter<TContext, TProps, TRoutes>,
-  }): View<TProps, TContext>,
-
-  <
-    TComponent extends Component,
-    const TContext extends readonly RouteContext[] = []
-  >(options: Omit<CreateViewOptions<TComponent, TContext, MaybePromise<ComponentProps<TComponent>>, TRoutes>, 'props'> & {
-    props?: never,
-  } & (Partial<ComponentProps<TComponent>> extends ComponentProps<TComponent> ? {} : never)): View<undefined, TContext>,
-}
+export type CreateView<TRoutes extends Routes = Routes> = <
+  TComponent extends Component,
+  const TContext extends readonly RouteContext[] = [],
+  TProps extends MaybePromise<ComponentProps<TComponent>> | undefined = undefined
+>(options: CreateViewOptions<TComponent, TContext, TProps, TRoutes>) => View<TProps, TContext>
 
 /**
  * A reusable view definition with its props getter's result and declared context.
