@@ -4,7 +4,7 @@ import { AnyPayloadTransformer } from '@/services/payload'
 import { PrefetchConfig } from '@/types/prefetch'
 import { CreatedRouteOptions, Route } from '@/types/route'
 import { AnyFunction } from '@/types/utilities'
-import { AnyLoader, isLoader } from '@/types/loader'
+import { AnyLoader, isLoader, NamedLoader } from '@/types/loader'
 import { combineContext } from '@/services/combineContext'
 import { createLoader } from '@/services/createLoader'
 
@@ -30,8 +30,6 @@ type AddLoaderParameters = [load: AnyFunction | AnyLoader, options?: LoaderOptio
  * refined chainable route each `RouteAddLoader` overload describes.
  */
 export type AddLoader = (...args: AddLoaderParameters) => Route
-
-type NamedLoader = AnyLoader & { name: string }
 
 export function toNamedLoader(source: AnyFunction | AnyLoader, options: LoaderOptions | undefined): NamedLoader {
   if (typeof source === 'function') {
