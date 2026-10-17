@@ -30,8 +30,16 @@ test('view props are checked against the component and preserved on attachment',
   createRoute({ path: '/' }).addView(view, { props: () => ({ id: 1 }) })
   // @ts-expect-error required component props need a getter
   createView({ component: userView })
-  // @ts-expect-error the getter must return the component's props
-  createView({ component: userView, props: () => ({ id: 'wrong' }) })
+  createView({
+    component: userView,
+    // @ts-expect-error the getter must return the component's props
+    props: () => ({ id: 'wrong' }),
+  })
+  createView({
+    component: userView,
+    // @ts-expect-error a getter cannot omit required component props
+    props: () => undefined,
+  })
 })
 
 test('optional props can be omitted and declared context types both callbacks and attachments', () => {
@@ -81,4 +89,19 @@ test('router assets type view callbacks with the matching loader data', () => {
   expectTypeOf(view).toExtend<View<{ id: number }>>()
   // @ts-expect-error router assets still require the component's props
   assets.createView({ component: userView })
+})
+
+test('invalid view options are reported on the field for global and router factories', () => {
+  createView({
+    component,
+    // @ts-expect-error an unknown prefetch strategy is rejected on the option
+    prefetch: 'whenever',
+  })
+
+  const assets = createRouterAssets(createRouter([]))
+  assets.createView({
+    component: userView,
+    // @ts-expect-error incorrect props are rejected on the getter
+    props: () => ({ id: 'wrong' }),
+  })
 })

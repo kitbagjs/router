@@ -1,5 +1,6 @@
 import { describe, expectTypeOf, test } from 'vitest'
 import { createRoute } from './createRoute'
+import { createLoader } from '@/services/createLoader'
 import { RouteLoader } from '@/types/routeLoaders'
 import { BuiltInRejectionType } from '@/types/rejection'
 import { ResolvedRoute, WithData } from '@/types/resolved'
@@ -267,18 +268,30 @@ test('payload options are typed by what the loader resolves to', () => {
     },
   })
 
-  // @ts-expect-error parse must give back what the loader resolves to
   createRoute({ name: 'route', path: '/' }).addLoader(async () => new Map<string, number>(), {
     transformer: {
       stringify: (value) => JSON.stringify(Array.from(value.entries())),
+      // @ts-expect-error parse must give back what the loader resolves to
       parse: (encoded) => encoded,
     },
   })
 
-  // @ts-expect-error a payload must declare both stringify and parse
   createRoute({ name: 'route', path: '/' }).addLoader(async () => new Map<string, number>(), {
+    // @ts-expect-error a payload must declare both stringify and parse
     transformer: {
       stringify: (value: Map<string, number>) => JSON.stringify(Array.from(value.entries())),
     },
+  })
+})
+
+test('attachment options report errors on their fields for callbacks and reusable loaders', () => {
+  const route = createRoute({ name: 'route' })
+  route.addLoader(() => 1, {
+    // @ts-expect-error an unknown prefetch strategy is rejected on the option
+    prefetch: 'whenever',
+  })
+  route.addLoader(createLoader({ load: () => 1 }), {
+    // @ts-expect-error an unknown prefetch strategy is rejected on the option
+    prefetch: 'whenever',
   })
 })
