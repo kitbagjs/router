@@ -107,9 +107,9 @@ export type RouteValueStore = HasVueAppStore & {
    * What a route exposes as `data`. Resolved per read rather than captured, so it stays correct as
    * navigations replace the store its values live in.
    */
-  getData: (route: ResolvedRoute) => WithData['data'],
+  getRouteData: (route: ResolvedRoute) => WithData['data'],
   getLoaderState: (location: ValueLocation, route: ResolvedRoute) => DataResult,
-  getLoaderData: (location: ValueLocation, route: ResolvedRoute) => Promise<unknown>,
+  getValue: (location: ValueLocation, route: ResolvedRoute) => Promise<unknown>,
 }
 
 type RouteValueStoreOptions = {
@@ -318,7 +318,7 @@ export function createRouteValueStore(options: RouteValueStoreOptions = {}): Rou
     }
   }
 
-  function getData(route: ResolvedRoute, store?: DataStore): WithData['data'] {
+  function getRouteData(route: ResolvedRoute, store?: DataStore): WithData['data'] {
     const loaders = getComputations(route).filter(isKind('loader'))
 
     return toValues(loaders, DEFAULT_LOADER_NAME, route, store)
@@ -373,7 +373,7 @@ export function createRouteValueStore(options: RouteValueStoreOptions = {}): Rou
 
         // computing into a store that is not yet current resolves data against it as well as the
         // navigation's, so a getter does not have to know which of the two will compute what it reads
-        return getData(route, store)
+        return getRouteData(route, store)
       },
     })
   }
@@ -491,9 +491,9 @@ export function createRouteValueStore(options: RouteValueStoreOptions = {}): Rou
     commit,
     getValues,
     getProps,
-    getData,
+    getRouteData,
     getLoaderState,
-    getLoaderData: getValue,
+    getValue,
     setVueApp,
   }
 }
