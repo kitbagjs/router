@@ -41,7 +41,7 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoader {
         await router.start()
       }
 
-      return store.getLoaderData(getLoaderLocation(router.route, loader), router.route)
+      return store.getValue(getLoaderLocation(router.route, loader), router.route)
     }
 
     return {
