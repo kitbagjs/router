@@ -1,5 +1,4 @@
-import { AnyPayloadTransformer } from '@/services/payload'
-import { PrefetchConfig } from '@/types/prefetch'
+import { AnyLoader, Loader } from '@/types/loader'
 import { AnyFunction } from '@/types/utilities'
 
 /**
@@ -8,16 +7,12 @@ import { AnyFunction } from '@/types/utilities'
  *
  * @template TData - What this loader's getter returns, carried so a route's data can be typed from it.
  */
-export type RouteLoader<TData = unknown> = {
-  load: AnyFunction<TData>,
-  prefetch?: PrefetchConfig,
-  transformer?: AnyPayloadTransformer,
-}
+export type RouteLoader<TData = unknown> = Loader<TData>
 
 /**
  * The loaders for a single route, keyed by loader name (the unnamed loader under 'default').
  */
-export type RouteLoaders = Record<string, RouteLoader>
+export type RouteLoaders = Record<string, AnyLoader>
 
 /**
  * The data a set of loaders resolves to. A lone unnamed loader is given directly rather than under a

@@ -4,7 +4,7 @@ import { expect, test, vi } from 'vitest'
 import { defineComponent, h } from 'vue'
 import { createLoader, createRoute, createRouter, createRouterAssets, LoaderResult, useLoader } from '@/main'
 
-test('definitions and handles share state through navigation without remounting', async () => {
+test('imported and route definitions share state through navigation without remounting', async () => {
   const first = Promise.withResolvers<string>()
   const second = Promise.withResolvers<string>()
   const load = vi.fn((route) => {
@@ -15,11 +15,11 @@ test('definitions and handles share state through navigation without remounting'
   const router = createRouter([route], { initialUrl: '/users/1' })
   await router.start()
   let definition!: LoaderResult<string>
-  let handle!: LoaderResult<string>
+  let attached!: LoaderResult<string>
   const setup = vi.fn(() => {
     definition = useLoader(loader)
-    handle = useLoader(router.route.loaders.user)
-    return () => h('div', handle.loading.value ? 'loading' : handle.data.value)
+    attached = useLoader(router.route.loaders.user)
+    return () => h('div', attached.loading.value ? 'loading' : attached.data.value)
   })
   const wrapper = mount(defineComponent({ setup }), { global: { plugins: [router] } })
 
@@ -27,20 +27,20 @@ test('definitions and handles share state through navigation without remounting'
   first.resolve('first')
   await flushPromises()
   await expect(definition).resolves.toBe('first')
-  expect(handle.data.value).toBe('first')
+  expect(attached.data.value).toBe('first')
   expect(load).toHaveBeenCalledTimes(1)
 
   await router.push('/users/2')
-  expect(handle.loading.value).toBe(true)
+  expect(attached.loading.value).toBe(true)
   expect(definition.data.value).toBeUndefined()
   const error = new Error('request failed')
   second.reject(error)
   await flushPromises()
 
   expect(definition.error.value).toBe(error)
-  expect(handle.error.value).toBe(error)
-  expect(handle.loading.value).toBe(false)
-  await expect(handle).rejects.toBe(error)
+  expect(attached.error.value).toBe(error)
+  expect(attached.loading.value).toBe(false)
+  await expect(attached).rejects.toBe(error)
   expect(setup).toHaveBeenCalledTimes(1)
   expect(load).toHaveBeenCalledTimes(2)
   wrapper.unmount()
@@ -67,7 +67,7 @@ test('awaiting a loader suspends setup until its data is available', async () =>
   asyncWrapper.unmount()
 })
 
-test('handles disambiguate repeated definitions and report when their attachment leaves', async () => {
+test('route definitions select attachments when a reusable definition is attached twice', async () => {
   const loader = createLoader({ load: () => 42 })
   const route = createRoute({ name: 'home', path: '/' })
     .addLoader(loader, { name: 'first' })
@@ -95,22 +95,22 @@ test('handles disambiguate repeated definitions and report when their attachment
   wrapper.unmount()
 })
 
-test('loader data and handles stay scoped to their router even with the same injection key', async () => {
+test('definitions read data from the consuming router even with the same injection key', async () => {
   const loader = createLoader({ load: (route) => String(route.params.id) })
   const route = createRoute({ name: 'user', path: '/[id]' }).addLoader(loader)
   const first = createRouter([route], { initialUrl: '/1' })
   const second = createRouter([route], { initialUrl: '/2' })
   await Promise.all([first.start(), second.start()])
   const assets = createRouterAssets(second)
-  let foreign!: LoaderResult<string>
+  let imported!: LoaderResult<string>
   let local!: LoaderResult<string>
   const wrapper = mount(defineComponent(() => {
-    foreign = assets.useLoader(first.route.loaders.default)
+    imported = assets.useLoader(first.route.loaders.default)
     local = assets.useLoader(second.route.loaders.default)
     return () => h('div')
   }), { global: { plugins: [second] } })
 
-  await expect(foreign).rejects.toThrow('different router')
+  await expect(imported).resolves.toBe('2')
   await expect(local).resolves.toBe('2')
   await expect(first.route.data).resolves.toBe('1')
   wrapper.unmount()
