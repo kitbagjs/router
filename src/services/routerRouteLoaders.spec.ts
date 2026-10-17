@@ -8,10 +8,10 @@ import { isSameLoader } from '@/services/isSameLoader'
 
 test('route.loaders exposes inline, reusable, and inherited definitions', async () => {
   const reusable = createLoader({ load: () => 'user' })
-  const parent = createRoute({ name: 'parent', path: '/' }).addLoader(async () => 42)
+  const parent = createRoute({ name: 'parent', path: '/parent' }).addLoader(async () => 42)
   const child = createRoute({ parent, name: 'child', path: '/child' })
     .addLoader(reusable, { name: 'user' })
-  const router = createRouter([child], { initialUrl: '/child' })
+  const router = createRouter([child], { initialUrl: '/parent/child' })
   await router.start()
 
   expect(isLoader(router.route.loaders.default)).toBe(true)
