@@ -267,8 +267,20 @@ export function createRouteValueStore(): RouteValueStore {
     return toValues(loaders, DEFAULT_LOADER_NAME, route, store)
   }
 
-  const getLoaderState: RouteValueStore['getLoaderState'] = (location, route) => {
+  const getLoaderState: RouteValueStore['getLoaderState'] = (location: ValueLocation, route) => {
+    if (location.kind !== 'loader') {
+      throw new TypeError('Expected a loader location')
+    }
+
     return navigation.current().get(getDataKey(location.kind, location.id, location.name, route))
+  }
+
+  const getLoaderValue: RouteValueStore['getLoaderValue'] = (location: ValueLocation, route) => {
+    if (location.kind !== 'loader') {
+      throw new TypeError('Expected a loader location')
+    }
+
+    return getValue(location, route)
   }
 
   function run(computation: Computation, route: ResolvedRoute, store: DataStore): unknown {
@@ -419,7 +431,7 @@ export function createRouteValueStore(): RouteValueStore {
     getProps,
     getRouteData,
     getLoaderState,
-    getLoaderValue: getValue,
+    getLoaderValue,
     setVueApp,
   }
 }
