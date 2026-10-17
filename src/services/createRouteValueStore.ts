@@ -104,8 +104,8 @@ export type RouteValueStore = HasVueAppStore & {
    * navigations replace the store its values live in.
    */
   getRouteData: (route: ResolvedRoute) => WithData['data'],
-  getLoaderState: (location: ValueLocation, route: ResolvedRoute) => DataResult,
-  getValue: (location: ValueLocation, route: ResolvedRoute) => Promise<unknown>,
+  getLoaderState: (location: ValueLocation<'loader'>, route: ResolvedRoute) => DataResult,
+  getLoaderValue: (location: ValueLocation<'loader'>, route: ResolvedRoute) => Promise<unknown>,
 }
 
 export function createRouteValueStore(): RouteValueStore {
@@ -419,7 +419,7 @@ export function createRouteValueStore(): RouteValueStore {
     getProps,
     getRouteData,
     getLoaderState,
-    getValue,
+    getLoaderValue: getValue,
     setVueApp,
   }
 }

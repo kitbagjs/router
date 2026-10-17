@@ -3,8 +3,8 @@ import { AnyLoader } from '@/types/loader'
 import { ValueLocation } from '@/services/getComputations'
 import { isSameLoader } from '@/services/isSameLoader'
 
-export function getLoaderLocation(route: ResolvedRoute, source: AnyLoader): ValueLocation {
-  const locations: ValueLocation[] = []
+export function getLoaderLocation(route: ResolvedRoute, source: AnyLoader): ValueLocation<'loader'> {
+  const locations: ValueLocation<'loader'>[] = []
 
   for (const match of route.matches) {
     for (const [name, loader] of Object.entries(match.loaders)) {
@@ -12,7 +12,7 @@ export function getLoaderLocation(route: ResolvedRoute, source: AnyLoader): Valu
         continue
       }
 
-      const location: ValueLocation = {
+      const location: ValueLocation<'loader'> = {
         kind: 'loader',
         id: match.id,
         name,

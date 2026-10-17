@@ -45,7 +45,7 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoader {
 
       const location = getLoaderLocation(router.route, loader)
 
-      return store.getValue(location, router.route)
+      return store.getLoaderValue(location, router.route)
     }
 
     const data = computed(() => {
