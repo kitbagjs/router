@@ -28,3 +28,25 @@ test('global hooks use general route types without registration', () => {
     expectTypeOf(route.params.id).not.toBeAny()
   })
 })
+
+test('router assets accept plugin route names and retain their parameter types', () => {
+  const home = createRoute({ name: 'home', path: '/' })
+  const user = createRoute({ name: 'user', path: '/users/[id]' })
+  const plugin = createRouterPlugin({ routes: [user] })
+  const router = createRouter([home], {}, [plugin])
+  const assets = createRouterAssets(router)
+
+  expectTypeOf(assets.useRoute('user').params.id).toEqualTypeOf<string>()
+  assets.useLink('user', { id: '1' })
+  // @ts-expect-error plugin route params are still checked
+  assets.useLink('user', { id: 1 })
+  // @ts-expect-error unknown route names are still rejected
+  assets.useRoute('missing')
+
+  const route = router.route
+
+  if (assets.isRoute(route, 'user', { exact: true })) {
+    expectTypeOf(route.name).toEqualTypeOf<'user'>()
+    expectTypeOf(route.params.id).toEqualTypeOf<string>()
+  }
+})
