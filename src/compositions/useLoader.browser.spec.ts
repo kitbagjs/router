@@ -4,6 +4,7 @@ import { defineComponent } from 'vue'
 import { createLoader, createRoute, createRouter, createRouterAssets, Router, useLoader } from '@/main'
 
 enableAutoUnmount(afterEach)
+afterEach(() => vi.restoreAllMocks())
 
 function mountConsumer<TResult>(router: Router, setup: () => TResult): TResult {
   const wrapper = mount(defineComponent({
@@ -98,23 +99,31 @@ test('failed loads expose an error, reject when awaited, and recover on navigati
   expect(result.data.value).toBe('recovered')
 })
 
-test('route definitions select a specific attachment when a reusable definition is ambiguous', async () => {
+test('ambiguous definitions share a fallback while exact attachments reuse route data', async () => {
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
   const load = vi.fn<() => number>()
     .mockReturnValueOnce(1)
     .mockReturnValueOnce(2)
+    .mockReturnValue(3)
   const loader = createLoader({ load })
   const route = createRoute({ name: 'home', path: '/' })
     .addLoader(loader, { name: 'first' })
     .addLoader(loader, { name: 'second' })
   const router = createRouter([route], { initialUrl: '/' })
   await router.start()
-  const { ambiguous, selected } = mountConsumer(router, () => ({
-    ambiguous: useLoader(loader),
+  const { first, second, selected } = mountConsumer(router, () => ({
+    first: useLoader(loader),
+    second: useLoader(loader),
     selected: useLoader(router.route.loaders.second),
   }))
 
-  await expect(ambiguous).rejects.toThrow('multiple attachments')
+  await expect(first).resolves.toBe(3)
+  await expect(second).resolves.toBe(3)
+  expect(first.error.value).toBeUndefined()
   await expect(selected).resolves.toBe(await router.route.data.second)
+  expect(load).toHaveBeenCalledTimes(3)
+  expect(warn).toHaveBeenCalledTimes(1)
+  expect(warn).toHaveBeenCalledWith(expect.stringContaining('route.loaders[name]'), loader)
 })
 
 test('router assets read the same definition from their own router stores', async () => {

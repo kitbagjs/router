@@ -27,7 +27,7 @@ export function getLoaderLocation(route: ResolvedRoute, source: AnyLoader): Valu
   }
 
   if (locations.length > 1) {
-    throw new Error('This loader has multiple attachments on the current route. Pass a definition from route.loaders to useLoader.')
+    return undefined
   }
 
   return locations[0]

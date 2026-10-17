@@ -145,7 +145,7 @@ export function createRouteValueStore(options: RouteValueStoreOptions = {}): Rou
     }
 
     options.onLoaderContext?.(loader.context)
-    console.warn('This loader is not attached to the current route. It will run now; attach it with addLoader to start loading before component setup.')
+    console.warn(`useLoader could not select a single attachment for this loader on route "${currentRoute.name || currentRoute.href}". It will run separately. Attach it with addLoader, or pass route.loaders[name] to select an attachment.`, loader)
 
     const route = {
       ...currentRoute,
