@@ -119,3 +119,10 @@ export type RouterResolvedRouteUnion<TRoutes extends Routes> = {
 export type ResolvedRouteUnion<TRoute extends Route> = TRoute extends Route
   ? ResolvedRoute<TRoute>
   : never
+
+/**
+ * Converts a route union to resolved routes with their corresponding loader data.
+ */
+export type ResolvedRouteWithDataUnion<TRoute extends Route> = TRoute extends Route
+  ? ResolvedRoute<TRoute> & WithData<TRoute>
+  : never

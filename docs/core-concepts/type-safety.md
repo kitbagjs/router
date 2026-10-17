@@ -34,12 +34,13 @@ export const {
   useRoute,
   useRouter,
   createLoader,
+  createView,
 } = createRouterAssets(router)
 ```
 
 ## Circular type inference
 
-When using registration or router assets, explicitly type reusable loaders with `Loader<Data>` to avoid circular type inference.
+When using registration or router assets, explicitly type reusable loaders with `Loader<Data>` and views with `View<Props>` to avoid circular type inference.
 
 ```ts
 import { createLoader, type Loader } from '@kitbag/router'
@@ -47,5 +48,15 @@ import { getSession, type Session } from './api'
 
 const sessionLoader: Loader<Promise<Session>> = createLoader({
   load: () => getSession(),
+})
+```
+
+```ts
+import { createView, type View } from '@kitbag/router'
+import PageComponent from './PageComponent.vue'
+
+const pageView: View<{ url: string }> = createView({
+  component: PageComponent,
+  props: (route) => ({ url: String(route.href) }),
 })
 ```
