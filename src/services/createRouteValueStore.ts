@@ -85,7 +85,7 @@ export type RouteValue = {
 }
 
 export type RouteValueStore = HasVueAppStore & {
-  loadLoader: (loader: AnyLoader, route: ResolvedRoute) => ValueLocation,
+  loadLoader: (loader: AnyLoader, route: ResolvedRoute) => ValueLocation<'loader'>,
   stop: () => void,
   createDetachedStore: () => DetachedStore,
   /**
@@ -108,8 +108,8 @@ export type RouteValueStore = HasVueAppStore & {
    * navigations replace the store its values live in.
    */
   getRouteData: (route: ResolvedRoute) => WithData['data'],
-  getLoaderState: (location: ValueLocation, route: ResolvedRoute) => DataResult,
-  getValue: (location: ValueLocation, route: ResolvedRoute) => Promise<unknown>,
+  getLoaderState: (location: ValueLocation<'loader'>, route: ResolvedRoute) => DataResult,
+  getLoaderValue: (location: ValueLocation<'loader'>, route: ResolvedRoute) => Promise<unknown>,
 }
 
 type RouteValueStoreOptions = {
@@ -137,7 +137,7 @@ export function createRouteValueStore(options: RouteValueStoreOptions = {}): Rou
       fallbackIds.set(identity, id)
     }
 
-    const location: ValueLocation = { kind: 'loader', id, name: 'default' }
+    const location: ValueLocation<'loader'> = { kind: 'loader', id, name: 'default' }
     const key = getDataKey(location.kind, id, location.name, currentRoute)
 
     if (store.get(key).kind !== 'missing') {
@@ -493,7 +493,7 @@ export function createRouteValueStore(options: RouteValueStoreOptions = {}): Rou
     getProps,
     getRouteData,
     getLoaderState,
-    getValue,
+    getLoaderValue: getValue,
     setVueApp,
   }
 }

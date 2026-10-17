@@ -25,9 +25,9 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoader {
 
     const router = useRouter()
     const store = useRouteValueStore()
-    const selection = shallowRef<{ location: ValueLocation } | { error: unknown }>()
+    const selection = shallowRef<{ location: ValueLocation<'loader'> } | { error: unknown }>()
 
-    function getLocation(): ValueLocation {
+    function getLocation(): ValueLocation<'loader'> {
       return getLoaderLocation(router.route, loader) ?? store.loadLoader(loader, router.route)
     }
 
@@ -64,7 +64,7 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoader {
 
       const location = getLocation()
 
-      return store.getValue(location, router.route)
+      return store.getLoaderValue(location, router.route)
     }
 
     const data = computed(() => {
