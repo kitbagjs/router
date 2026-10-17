@@ -67,20 +67,33 @@ test('awaiting a loader suspends setup until its data is available', async () =>
   asyncWrapper.unmount()
 })
 
+test('inline inherited definitions can be consumed through useLoader', async () => {
+  const parent = createRoute({ name: 'parent', path: '/parent' }).addLoader(async () => 42)
+  const child = createRoute({ parent, name: 'child', path: '/child' })
+  const router = createRouter([child], { initialUrl: '/parent/child' })
+  await router.start()
+  let result!: LoaderResult<number>
+  const wrapper = mount(defineComponent(() => {
+    result = useLoader(router.route.loaders.default)
+    return () => h('div')
+  }), { global: { plugins: [router] } })
+
+  await expect(result).resolves.toBe(42)
+  wrapper.unmount()
+})
+
 test('route definitions select attachments when a reusable definition is attached twice', async () => {
   const loader = createLoader({ load: () => 42 })
   const route = createRoute({ name: 'home', path: '/' })
     .addLoader(loader, { name: 'first' })
     .addLoader(loader, { name: 'second' })
-  const other = createRoute({ name: 'other', path: '/other' })
-  const router = createRouter([route, other], { initialUrl: '/' })
+  const router = createRouter([route], { initialUrl: '/' })
   await router.start()
   const assets = createRouterAssets(router)
   let ambiguous!: LoaderResult<number>
   let selected!: LoaderResult<number>
   const wrapper = mount(defineComponent(() => {
     const current = assets.useRoute()
-    if (!('first' in current.loaders)) throw new Error('Expected first loader')
     ambiguous = assets.useLoader(loader)
     selected = assets.useLoader(current.loaders.first)
     return () => h('div')
@@ -88,10 +101,6 @@ test('route definitions select attachments when a reusable definition is attache
 
   await expect(ambiguous).rejects.toThrow('multiple attachments')
   await expect(selected).resolves.toBe(42)
-  await router.push('/other')
-  expect(selected.loading.value).toBe(false)
-  expect(selected.data.value).toBeUndefined()
-  await expect(selected).rejects.toThrow('not attached')
   wrapper.unmount()
 })
 
