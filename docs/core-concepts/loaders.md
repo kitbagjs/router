@@ -99,8 +99,6 @@ const [{ data: user }, { data: posts }] = await Promise.all([
 </template>
 ```
 
-Unnamed loaders are available as `route.loaders.default`.
-
 A loader cannot read `route.data` to depend on another loader on the same route. If two requests depend on each other, put them in a single loader and return the values together.
 
 ## Loader definitions
