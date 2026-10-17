@@ -6,7 +6,7 @@ import { CreatedRouteOptions, Route } from '@/types/route'
 import { RouteCallbackContext } from '@/types/routeCallbackContext'
 import { RouteLoaders } from '@/types/routeLoaders'
 import { Url } from '@/types/url'
-import { Identity, LastInArray } from '@/types/utilities'
+import { AnyFunction, Identity, LastInArray } from '@/types/utilities'
 import { AnyLoader, Loader } from '@/types/loader'
 import { RouteContext, WithRouteContext } from '@/types/routeContext'
 
@@ -108,21 +108,13 @@ export type RouteAddLoader<
    * @param load - The loader callback. Receives the resolved route and a context object.
    * @param options - The loader's `name` and `prefetch` config.
    */
-  addLoader: {
-    <
-      const TName extends string | undefined = undefined,
-      const TGetter extends LoaderGetter<Route<TUrl, TMatches>> = LoaderGetter<Route<TUrl, TMatches>>
-    >(
-      load: TGetter,
-      options?: AddLoaderOptions<TName, Awaited<ReturnType<TGetter>>>,
-    ): AddLoaderReturn<TUrl, TMatches, TName, ReturnType<TGetter>>,
-
-    <
-      const TLoader extends AnyLoader,
-      const TName extends string | undefined = undefined
-    >(
-      loader: TLoader,
-      options?: AddLoaderOptions<TName, Awaited<ReturnType<TLoader['load']>>>,
-    ): AddLoaderReturn<TUrl, TMatches, TName, ReturnType<TLoader['load']>, TLoader['context']>,
-  },
+  addLoader: <
+    const TSource extends LoaderGetter<Route<TUrl, TMatches>> | AnyLoader,
+    const TName extends string | undefined = undefined
+  >(
+    load: TSource,
+    options?: AddLoaderOptions<TName, Awaited<LoaderDataOf<TSource>>>,
+  ) => AddLoaderReturn<TUrl, TMatches, TName, LoaderDataOf<TSource>, TSource extends AnyLoader ? TSource['context'] : []>,
 }
+
+type LoaderDataOf<TSource extends AnyFunction | AnyLoader> = ReturnType<TSource extends AnyLoader ? TSource['load'] : Extract<TSource, AnyFunction>>
