@@ -6,7 +6,7 @@ import { RouterRoute } from '@/types/routerRoute'
 import { AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, AddErrorHook, AddRejectionHook } from '@/types/hooks'
 import { PrefetchConfig } from '@/types/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
-import { Route, Routes } from '@/types/route'
+import { Routes } from '@/types/route'
 import { RouterPush } from '@/types/routerPush'
 import { RouterReplace } from '@/types/routerReplace'
 import { RouterResolve, RouterResolveOptions } from '@/types/routerResolve'
@@ -309,6 +309,4 @@ export type RouterRejections<TRouter extends Router> = TRouter extends Router<an
   ? ExtractRejections<TOptions> | ExtractRejections<TPlugins>
   : []
 
-export type RouterRouteName<TRouter extends Router> = TRouter extends Router<infer TRoutes extends Routes>
-  ? RoutesName<TRoutes>
-  : RoutesName<Route[]>
+export type RouterRouteName<TRouter extends Router> = RoutesName<RouterRoutes<TRouter>>
