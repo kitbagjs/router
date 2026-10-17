@@ -18,7 +18,7 @@ test('a staged value is adopted in place of running its getter', async () => {
   detached.stage()
   store.commit(resolved)
 
-  await expect(store.getData(resolved)).resolves.toBe('staged')
+  await expect(store.getRouteData(resolved)).resolves.toBe('staged')
   expect(loader).not.toHaveBeenCalled()
 })
 
@@ -44,7 +44,7 @@ test('staged values are adopted by the next navigation without running their get
   await store.staged().compute(resolved).loaders
   store.commit(resolved)
 
-  await expect(store.getData(resolved)).resolves.toBe('value')
+  await expect(store.getRouteData(resolved)).resolves.toBe('value')
   expect(loader).toHaveBeenCalledTimes(1)
 })
 
