@@ -23,3 +23,17 @@ test('route.loaders exposes inline, reusable, and inherited definitions', async 
   await expect(router.route.data.default).resolves.toBe(42)
   router.stop()
 })
+
+test('route.loaders follows the current matches when navigation changes routes', async () => {
+  const first = createRoute({ name: 'first', path: '/' }).addLoader(() => 1, { name: 'first' })
+  const second = createRoute({ name: 'second', path: '/second' }).addLoader(() => 2, { name: 'second' })
+  const router = createRouter([first, second], { initialUrl: '/' })
+  await router.start()
+
+  expect(Object.keys(router.route.loaders)).toEqual(['first'])
+  await router.push('second')
+  expect(Object.keys(router.route.loaders)).toEqual(['second'])
+  await router.push('first')
+  expect(Object.keys(router.route.loaders)).toEqual(['first'])
+  router.stop()
+})
