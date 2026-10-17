@@ -37,7 +37,9 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoader {
       }
 
       try {
-        selection.value = { location: getLocation() }
+        const location = getLocation()
+
+        selection.value = { location }
       } catch (error) {
         selection.value = { error }
       }
@@ -60,7 +62,9 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoader {
         await router.start()
       }
 
-      return store.getValue(getLocation(), router.route)
+      const location = getLocation()
+
+      return store.getValue(location, router.route)
     }
 
     return {
