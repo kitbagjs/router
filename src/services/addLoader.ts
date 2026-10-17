@@ -33,7 +33,7 @@ export type AddLoader = (...args: AddLoaderParameters) => Route
 
 type NamedLoader = AnyLoader & { name: string }
 
-export function toLoader(source: AnyFunction | AnyLoader, options: LoaderOptions | undefined): NamedLoader {
+export function toNamedLoader(source: AnyFunction | AnyLoader, options: LoaderOptions | undefined): NamedLoader {
   let loader = source
 
   if (typeof loader === 'function') {
