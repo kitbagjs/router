@@ -18,7 +18,7 @@ test('a staged value is adopted in place of running its getter', async () => {
   detached.stage()
   store.commit(resolved)
 
-  await expect(store.getData(resolved)).resolves.toBe('staged')
+  await expect(store.getRouteData(resolved)).resolves.toBe('staged')
   expect(loader).not.toHaveBeenCalled()
 })
 
@@ -44,7 +44,7 @@ test('staged values are adopted by the next navigation without running their get
   await store.staged().compute(resolved).loaders
   store.commit(resolved)
 
-  await expect(store.getData(resolved)).resolves.toBe('value')
+  await expect(store.getRouteData(resolved)).resolves.toBe('value')
   expect(loader).toHaveBeenCalledTimes(1)
 })
 
@@ -153,4 +153,14 @@ test('a staged getter keeps its signal until the navigation that adopted it is r
   store.commit(createResolvedRoute(other))
 
   expect(signal.aborted).toBe(true)
+})
+
+test.each(['getLoaderState', 'getLoaderValue'] as const)('%s rejects props locations at runtime', (method) => {
+  const store = createRouteValueStore()
+  const route = createResolvedRoute(createRoute({ path: '/' }))
+
+  expect(() => {
+    // @ts-expect-error props locations are also rejected when bypassing the type check
+    store[method]({ kind: 'props', id: route.id, name: 'default' }, route)
+  }).toThrow(new TypeError('Expected a loader location'))
 })

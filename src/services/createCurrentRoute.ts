@@ -18,7 +18,7 @@ type CurrentRouteOptions = {
   routerKey: InjectionKey<Router>,
   fallbackRoute: ResolvedRoute,
   push: RouterPush,
-  getData: RouteValueStore['getData'],
+  getRouteData: RouteValueStore['getRouteData'],
 }
 
 /**
@@ -27,7 +27,7 @@ type CurrentRouteOptions = {
  * know that data is attached at all.
  */
 export function createCurrentRoute<TRoutes extends Routes>(options: CurrentRouteOptions): CurrentRouteContext<TRoutes>
-export function createCurrentRoute({ routerKey, fallbackRoute, push, getData }: CurrentRouteOptions): CurrentRouteContext {
+export function createCurrentRoute({ routerKey, fallbackRoute, push, getRouteData }: CurrentRouteOptions): CurrentRouteContext {
   const route = reactive(withData(fallbackRoute))
 
   const updateRoute: ResolvedRouteUpdate = (newRoute) => {
@@ -37,7 +37,7 @@ export function createCurrentRoute({ routerKey, fallbackRoute, push, getData }: 
   function withData(route: ResolvedRoute): ResolvedRoute & WithData {
     return {
       ...route,
-      data: getData(route),
+      data: getRouteData(route),
     }
   }
 
