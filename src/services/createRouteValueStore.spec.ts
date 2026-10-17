@@ -154,3 +154,13 @@ test('a staged getter keeps its signal until the navigation that adopted it is r
 
   expect(signal.aborted).toBe(true)
 })
+
+test.each(['getLoaderState', 'getLoaderValue'] as const)('%s rejects props locations at runtime', (method) => {
+  const store = createRouteValueStore()
+  const route = createResolvedRoute(createRoute({ path: '/' }))
+
+  expect(() => {
+    // @ts-expect-error props locations are also rejected when bypassing the type check
+    store[method]({ kind: 'props', id: route.id, name: 'default' }, route)
+  }).toThrow(new TypeError('Expected a loader location'))
+})
