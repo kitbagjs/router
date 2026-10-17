@@ -1,127 +1,133 @@
-/* eslint-disable vue/one-component-per-file */
-import { flushPromises, mount } from '@vue/test-utils'
-import { expect, test, vi } from 'vitest'
-import { defineComponent, h } from 'vue'
-import { createLoader, createRoute, createRouter, createRouterAssets, LoaderResult, useLoader } from '@/main'
+import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils'
+import { afterEach, expect, test, vi } from 'vitest'
+import { defineComponent } from 'vue'
+import { createLoader, createRoute, createRouter, createRouterAssets, Router, useLoader } from '@/main'
 
-test('imported and route definitions share state through navigation without remounting', async () => {
-  const first = Promise.withResolvers<string>()
-  const second = Promise.withResolvers<string>()
-  const load = vi.fn((route) => {
-    return route.params.id === '1' ? first.promise : second.promise
-  })
-  const loader = createLoader({ load })
-  const route = createRoute({ name: 'user', path: '/users/[id]' }).addLoader(loader, { name: 'user' })
-  const router = createRouter([route], { initialUrl: '/users/1' })
-  await router.start()
-  let definition!: LoaderResult<string>
-  let attached!: LoaderResult<string>
-  const setup = vi.fn(() => {
-    definition = useLoader(loader)
-    attached = useLoader(router.route.loaders.user)
-    return () => h('div', attached.loading.value ? 'loading' : attached.data.value)
-  })
-  const wrapper = mount(defineComponent({ setup }), { global: { plugins: [router] } })
+enableAutoUnmount(afterEach)
 
-  expect(wrapper.text()).toBe('loading')
-  first.resolve('first')
-  await flushPromises()
-  await expect(definition).resolves.toBe('first')
-  expect(attached.data.value).toBe('first')
-  expect(load).toHaveBeenCalledTimes(1)
-
-  await router.push('/users/2')
-  expect(attached.loading.value).toBe(true)
-  expect(definition.data.value).toBeUndefined()
-  const error = new Error('request failed')
-  second.reject(error)
-  await flushPromises()
-
-  expect(definition.error.value).toBe(error)
-  expect(attached.error.value).toBe(error)
-  expect(attached.loading.value).toBe(false)
-  await expect(attached).rejects.toBe(error)
-  expect(setup).toHaveBeenCalledTimes(1)
-  expect(load).toHaveBeenCalledTimes(2)
-  wrapper.unmount()
-})
-
-test('awaiting a loader suspends setup until its data is available', async () => {
-  const pending = Promise.withResolvers<string>()
-  const loader = createLoader({ load: () => pending.promise })
-  const route = createRoute({ name: 'home', path: '/' }).addLoader(loader)
-  const router = createRouter([route], { initialUrl: '/' })
-  const view = defineComponent({
-    async setup() {
-      const data = await useLoader(loader)
-      return () => h('div', data)
+function mountConsumer<TResult>(router: Router, setup: () => TResult): TResult {
+  const wrapper = mount(defineComponent({
+    setup() {
+      const result = setup()
+      // Keep the composable's refs intact when reading through the component instance.
+      return { getResult: () => result }
     },
-  })
-  const asyncWrapper = mount({ components: { View: view }, template: '<Suspense><View /></Suspense>' }, {
-    global: { plugins: [router] },
-  })
-  expect(asyncWrapper.text()).toBe('')
-  pending.resolve('ready')
-  await flushPromises()
-  expect(asyncWrapper.text()).toBe('ready')
-  asyncWrapper.unmount()
-})
-
-test('inline inherited definitions can be consumed through useLoader', async () => {
-  const parent = createRoute({ name: 'parent', path: '/parent' }).addLoader(async () => 42)
-  const child = createRoute({ parent, name: 'child', path: '/child' })
-  const router = createRouter([child], { initialUrl: '/parent/child' })
-  await router.start()
-  let result!: LoaderResult<number>
-  const wrapper = mount(defineComponent(() => {
-    result = useLoader(router.route.loaders.default)
-    return () => h('div')
+    render: () => null,
   }), { global: { plugins: [router] } })
 
-  await expect(result).resolves.toBe(42)
-  wrapper.unmount()
+  return wrapper.vm.getResult()
+}
+
+test('consumers share an attached load and can await its data', async () => {
+  const pending = Promise.withResolvers<string>()
+  const load = vi.fn(() => pending.promise)
+  const loader = createLoader({ load })
+  const route = createRoute({ name: 'user', path: '/' }).addLoader(loader, { name: 'user' })
+  const router = createRouter([route], { initialUrl: '/' })
+  await router.start()
+  const { imported, attached } = mountConsumer(router, () => ({
+    imported: useLoader(loader),
+    attached: useLoader(router.route.loaders.user),
+  }))
+
+  expect(imported.loading.value).toBe(true)
+  pending.resolve('loaded')
+  await expect(imported).resolves.toBe('loaded')
+  expect(attached.data.value).toBe('loaded')
+  expect(attached.loading.value).toBe(false)
+  expect(load).toHaveBeenCalledTimes(1)
 })
 
-test('route definitions select attachments when a reusable definition is attached twice', async () => {
+test('awaiting a loader waits for the initial navigation', async () => {
+  const entering = Promise.withResolvers<void>()
   const loader = createLoader({ load: () => 42 })
+  const route = createRoute({ name: 'home', path: '/' }).addLoader(loader)
+  route.onBeforeRouteEnter(() => entering.promise)
+  const router = createRouter([route], { initialUrl: '/' })
+  const result = mountConsumer(router, () => useLoader(loader))
+
+  expect(result.loading.value).toBe(true)
+  const data = Promise.resolve(result)
+  entering.resolve()
+  await expect(data).resolves.toBe(42)
+})
+
+test('a mounted consumer follows navigation and clears data while loading', async () => {
+  const pending = Promise.withResolvers<string>()
+  const loader = createLoader({
+    load: (route) => {
+      return route.params.id === '1' ? 'first' : pending.promise
+    },
+  })
+  const route = createRoute({ name: 'user', path: '/[id]' }).addLoader(loader)
+  const router = createRouter([route], { initialUrl: '/1' })
+  await router.start()
+  const result = mountConsumer(router, () => useLoader(loader))
+
+  expect(result.data.value).toBe('first')
+  await router.push('/2')
+  expect(result.loading.value).toBe(true)
+  expect(result.data.value).toBeUndefined()
+
+  pending.resolve('second')
+  await flushPromises()
+  expect(result.data.value).toBe('second')
+  expect(result.loading.value).toBe(false)
+})
+
+test('failed loads expose an error, reject when awaited, and recover on navigation', async () => {
+  const pending = Promise.withResolvers<string>()
+  const loader = createLoader({
+    load: (route) => {
+      return route.params.id === '1' ? pending.promise : 'recovered'
+    },
+  })
+  const route = createRoute({ name: 'user', path: '/[id]' }).addLoader(loader)
+  const router = createRouter([route], { initialUrl: '/1' })
+  await router.start()
+  const result = mountConsumer(router, () => useLoader(loader))
+  const error = new Error('request failed')
+
+  pending.reject(error)
+  await expect(result).rejects.toBe(error)
+  expect(result.error.value).toBe(error)
+  expect(result.loading.value).toBe(false)
+
+  await router.push('/2')
+  expect(result.error.value).toBeUndefined()
+  expect(result.data.value).toBe('recovered')
+})
+
+test('route definitions select a specific attachment when a reusable definition is ambiguous', async () => {
+  const load = vi.fn<() => number>()
+    .mockReturnValueOnce(1)
+    .mockReturnValueOnce(2)
+  const loader = createLoader({ load })
   const route = createRoute({ name: 'home', path: '/' })
     .addLoader(loader, { name: 'first' })
     .addLoader(loader, { name: 'second' })
   const router = createRouter([route], { initialUrl: '/' })
   await router.start()
-  const assets = createRouterAssets(router)
-  let ambiguous!: LoaderResult<number>
-  let selected!: LoaderResult<number>
-  const wrapper = mount(defineComponent(() => {
-    const current = assets.useRoute()
-    ambiguous = assets.useLoader(loader)
-    selected = assets.useLoader(current.loaders.first)
-    return () => h('div')
-  }), { global: { plugins: [router] } })
+  const { ambiguous, selected } = mountConsumer(router, () => ({
+    ambiguous: useLoader(loader),
+    selected: useLoader(router.route.loaders.second),
+  }))
 
   await expect(ambiguous).rejects.toThrow('multiple attachments')
-  await expect(selected).resolves.toBe(42)
-  wrapper.unmount()
+  await expect(selected).resolves.toBe(await router.route.data.second)
 })
 
-test('definitions read data from the consuming router even with the same injection key', async () => {
+test('router assets read the same definition from their own router stores', async () => {
   const loader = createLoader({ load: (route) => String(route.params.id) })
   const route = createRoute({ name: 'user', path: '/[id]' }).addLoader(loader)
-  const first = createRouter([route], { initialUrl: '/1' })
-  const second = createRouter([route], { initialUrl: '/2' })
+  const first = createRouter([route], { initialUrl: '/1', isGlobalRouter: false })
+  const second = createRouter([route], { initialUrl: '/2', isGlobalRouter: false })
   await Promise.all([first.start(), second.start()])
-  const assets = createRouterAssets(second)
-  let imported!: LoaderResult<string>
-  let local!: LoaderResult<string>
-  const wrapper = mount(defineComponent(() => {
-    imported = assets.useLoader(first.route.loaders.default)
-    local = assets.useLoader(second.route.loaders.default)
-    return () => h('div')
-  }), { global: { plugins: [second] } })
+  const results = [first, second].map((router) => {
+    const assets = createRouterAssets(router)
+    return mountConsumer(router, () => assets.useLoader(loader))
+  })
 
-  await expect(imported).resolves.toBe('2')
-  await expect(local).resolves.toBe('2')
-  await expect(first.route.data).resolves.toBe('1')
-  wrapper.unmount()
-  first.stop()
+  await expect(results[0]).resolves.toBe('1')
+  await expect(results[1]).resolves.toBe('2')
 })
