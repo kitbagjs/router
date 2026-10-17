@@ -1,6 +1,7 @@
+/* eslint-disable vue/one-component-per-file */
 import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils'
 import { afterEach, expect, test, vi } from 'vitest'
-import { defineComponent, h } from 'vue'
+import { defineComponent, h, Suspense } from 'vue'
 import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
 import { PAYLOAD_ELEMENT_ID, payloadToScript } from '@/services/payload'
 import { createLoader, createRoute, createRouter, createRouterAssets, LoaderResult, Router, useLoader } from '@/main'
@@ -38,7 +39,11 @@ test('consumers share an attached load and can await its data', async () => {
 
   expect(imported.loading.value).toBe(true)
   pending.resolve('loaded')
-  await expect(imported).resolves.toBe('loaded')
+  const awaited = await imported
+  expect(awaited.data).toBe(imported.data)
+  expect(awaited.loading).toBe(imported.loading)
+  expect(awaited.error).toBe(imported.error)
+  expect(awaited.data.value).toBe('loaded')
   expect(attached.data.value).toBe('loaded')
   expect(attached.loading.value).toBe(false)
   expect(load).toHaveBeenCalledTimes(1)
@@ -53,32 +58,46 @@ test('awaiting a loader waits for the initial navigation', async () => {
   const result = mountConsumer(router, () => useLoader(loader))
 
   expect(result.loading.value).toBe(true)
-  const data = Promise.resolve(result)
+  const ready = Promise.resolve(result)
   entering.resolve()
-  await expect(data).resolves.toBe(42)
+  expect((await ready).data.value).toBe(42)
 })
 
-test('a mounted consumer follows navigation and clears data while loading', async () => {
-  const pending = Promise.withResolvers<string>()
+test('awaited loader refs remain reactive after Suspense resolves', async () => {
+  const first = Promise.withResolvers<string>()
+  const second = Promise.withResolvers<string>()
   const loader = createLoader({
     load: (route) => {
-      return route.params.id === '1' ? 'first' : pending.promise
+      return route.params.id === '1' ? first.promise : second.promise
     },
   })
   const route = createRoute({ name: 'user', path: '/[id]' }).addLoader(loader)
   const router = createRouter([route], { initialUrl: '/1' })
   await router.start()
-  const result = mountConsumer(router, () => useLoader(loader))
+  const consumer = defineComponent({
+    async setup() {
+      const { data, loading } = await useLoader(loader)
 
-  expect(result.data.value).toBe('first')
-  await router.push('/2')
-  expect(result.loading.value).toBe(true)
-  expect(result.data.value).toBeUndefined()
+      return () => h('div', loading.value ? 'loading' : data.value)
+    },
+  })
+  const wrapper = mount(defineComponent({
+    render: () => h(Suspense, null, {
+      default: () => h(consumer),
+      fallback: () => h('div', 'suspended'),
+    }),
+  }), { global: { plugins: [router] } })
 
-  pending.resolve('second')
+  expect(wrapper.text()).toBe('suspended')
+  first.resolve('first')
   await flushPromises()
-  expect(result.data.value).toBe('second')
-  expect(result.loading.value).toBe(false)
+  expect(wrapper.text()).toBe('first')
+
+  await router.push('/2')
+  expect(wrapper.text()).toBe('loading')
+  second.resolve('second')
+  await flushPromises()
+  expect(wrapper.text()).toBe('second')
 })
 
 test('failed loads expose an error, reject when awaited, and recover on navigation', async () => {
@@ -122,13 +141,14 @@ test('ambiguous definitions share a fallback while exact attachments reuse route
     selected: useLoader(router.route.loaders.second),
   }))
 
-  await expect(first).resolves.toBe(3)
-  await expect(second).resolves.toBe(3)
+  expect((await first).data.value).toBe(3)
+  expect((await second).data.value).toBe(3)
   expect(first.error.value).toBeUndefined()
-  await expect(selected).resolves.toBe(await router.route.data.second)
+  expect((await selected).data.value).toBe(await router.route.data.second)
   expect(load).toHaveBeenCalledTimes(3)
   expect(warn).toHaveBeenCalledTimes(1)
   expect(warn).toHaveBeenCalledWith(expect.stringContaining('multiple attachments for this loader on route "home": "first", "second"'), loader)
+
 })
 
 test('router assets read the same definition from their own router stores', async () => {
@@ -142,8 +162,8 @@ test('router assets read the same definition from their own router stores', asyn
     return mountConsumer(router, () => assets.useLoader(loader))
   })
 
-  await expect(results[0]).resolves.toBe('1')
-  await expect(results[1]).resolves.toBe('2')
+  expect((await results[0]).data.value).toBe('1')
+  expect((await results[1]).data.value).toBe('2')
 })
 
 test('fallback hydration warnings are shared and stop after the hydrated navigation', async () => {
@@ -162,13 +182,13 @@ test('fallback hydration warnings are shared and stop after the hydrated navigat
     second: useLoader(loader),
   }))
 
-  await expect(first).resolves.toBe('1')
-  await expect(second).resolves.toBe('1')
+  expect((await first).data.value).toBe('1')
+  expect((await second).data.value).toBe('1')
   expect(warn).toHaveBeenCalledTimes(2)
   expect(warn).toHaveBeenCalledWith(expect.stringContaining('not included in the SSR payload'), loader)
 
   await router.push('/2')
-  await expect(first).resolves.toBe('2')
+  expect((await first).data.value).toBe('2')
   expect(warn).toHaveBeenCalledTimes(3)
   expect(warn).toHaveBeenLastCalledWith(expect.stringContaining('not attached'), loader)
 })
@@ -217,7 +237,7 @@ test('fallback consumers share a navigation load and abandon it on navigation or
   second.resolve('current')
   await flushPromises()
   expect(wrapper.text()).toBe('current')
-  await expect(firstConsumer).resolves.toBe('current')
+  expect((await firstConsumer).data.value).toBe('current')
   expect(secondConsumer.error.value).toBeUndefined()
   expect(params).toEqual(['1', '2'])
 

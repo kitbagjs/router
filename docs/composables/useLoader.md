@@ -32,13 +32,13 @@ const user = useLoader(userLoader)
 
 ## Awaiting data
 
-Await the result to get the current load's data. A failed load rejects, and async setup can use Vue's suspense boundary:
+Await the initial load to use Vue's suspense boundary. The result contains the same reactive refs, and a failed load rejects:
 
 ```ts
-const user = await useLoader(userLoader)
+const { data: user, loading, error } = await useLoader(userLoader)
 ```
 
-The resolved value is a snapshot. Keep the reactive result when the component needs to follow later navigations.
+The refs continue following navigation after the initial load resolves.
 
 ## Fallback loads
 

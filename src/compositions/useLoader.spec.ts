@@ -17,9 +17,9 @@ test.each([true, false])('fallback loads are isolated across SSR apps (global ro
       async setup() {
         const first = readLoader(loader)
         const second = readLoader(loader)
-        const data = await first
-        expect(await second).toBe(data)
-        return () => h('div', data)
+        const { data } = await first
+        expect((await second).data.value).toBe(data.value)
+        return () => h('div', String(data.value))
       },
     }))
     app.use(router)
