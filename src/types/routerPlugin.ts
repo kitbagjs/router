@@ -48,6 +48,7 @@ type PluginBeforeRouteHookContext<
   TRoutes extends Routes,
   TRejections extends Rejections
 > = {
+  lifecycle: 'before',
   from: ResolvedRoute | null,
   reject: RouterReject<TRejections>,
   push: RouterPush<TRoutes>,
@@ -59,6 +60,7 @@ type PluginAfterRouteHookContext<
   TRoutes extends Routes,
   TRejections extends Rejections
 > = {
+  lifecycle: 'after',
   from: ResolvedRoute | null,
   reject: RouterReject<TRejections>,
   push: RouterPush<TRoutes>,

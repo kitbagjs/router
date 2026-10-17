@@ -36,6 +36,7 @@ The router provides `to` and a `context` argument to your hook callback. The con
 
 | Property | Description |
 | ---- | ---- |
+| lifecycle | `'before'` or `'after'`, depending on the hook's lifecycle. |
 | from | What was the route prior to the hook's execution |
 | push | Convenient way to move the user from wherever they were to a new route. |
 | replace | Same as push, but with `options: { replace: true }`. |

@@ -8,6 +8,22 @@ import { createResolvedRoute } from './createResolvedRoute'
 
 const { signal } = new AbortController()
 
+test('hook context identifies the lifecycle', async () => {
+  const observed: string[] = []
+  const hooks = createRouterHooks({ redirectStatus: 302 })
+  const to = createResolvedRoute(createRoute({ name: 'home', path: '/' }))
+  hooks.onBeforeRouteEnter((_to, { lifecycle }) => {
+    observed.push(lifecycle)
+  })
+  hooks.onAfterRouteEnter((_to, { lifecycle }) => {
+    observed.push(lifecycle)
+  })
+
+  await hooks.runBeforeRouteHooks({ to, from: null, signal })
+  await hooks.runAfterRouteHooks({ to, from: null, signal })
+  expect(observed).toEqual(['before', 'after'])
+})
+
 test('calls hook with correct routes', () => {
   const hook = vi.fn()
   const { runBeforeRouteHooks } = createRouterHooks({ redirectStatus: 302 })
