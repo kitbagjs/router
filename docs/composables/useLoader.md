@@ -4,10 +4,10 @@ Read a loader's data, loading state, and error without suspending component setu
 
 ```vue
 <script setup lang="ts">
-import { useLoader } from '@kitbag/router'
-import { userLoader } from './userLoader'
+import { useLoader, useRoute } from '@kitbag/router'
 
-const { data, loading, error } = useLoader(userLoader)
+const route = useRoute('user')
+const { data, loading, error } = useLoader(route.loaders.user)
 </script>
 
 <template>
@@ -19,16 +19,16 @@ const { data, loading, error } = useLoader(userLoader)
 
 The returned properties are readonly refs. Consumers share the existing route load, including prefetched or hydrated data. When navigation replaces that load, the refs follow its state and clear the previous data and error.
 
-## Route loaders
+## Reusable loaders
 
-Use a [route loader definition](/core-concepts/loaders#loader-definitions) for an inline loader or to select a specific attachment:
+Pass a [reusable loader](/core-concepts/loaders#reusable-loaders) directly to `useLoader`:
 
 ```ts
-const route = useRoute('user')
-const user = useLoader(route.loaders.user)
-```
+import { useLoader } from '@kitbag/router'
+import { userLoader } from './userLoader'
 
-An unnamed loader is available as `route.loaders.default`. If the same reusable definition has multiple attachments in the matched route, pass its definition from `route.loaders` to select an attachment.
+const user = useLoader(userLoader)
+```
 
 ## Awaiting data
 
