@@ -6,7 +6,9 @@ import { CreatedRouteOptions, Route } from '@/types/route'
 import { RouteCallbackContext } from '@/types/routeCallbackContext'
 import { RouteLoader, RouteLoaders } from '@/types/routeLoaders'
 import { Url } from '@/types/url'
-import { Identity, LastInArray } from '@/types/utilities'
+import { AnyFunction, Identity, LastInArray } from '@/types/utilities'
+import { AnyLoader } from '@/types/loader'
+import { RouteContext, WithRouteContext } from '@/types/routeContext'
 
 /**
  * The getter for a loader added via `addLoader`. Receives the same two arguments as an `addView` props
@@ -66,9 +68,10 @@ type LoaderName<TName extends string | undefined> = TName extends string ? TName
  */
 type ReplaceLastMatchLoaders<
   TMatches extends CreatedRouteOptions[],
-  TNewLoaders extends RouteLoaders
+  TNewLoaders extends RouteLoaders,
+  TContext extends RouteContext[]
 > = TMatches extends [...infer THead extends CreatedRouteOptions[], infer TLast extends CreatedRouteOptions]
-  ? Identity<Omit<TLast, 'loaders'> & { loaders: TNewLoaders }> extends infer TNext extends CreatedRouteOptions
+  ? Identity<Omit<WithRouteContext<TLast, TContext>, 'loaders'> & { loaders: TNewLoaders }> extends infer TNext extends CreatedRouteOptions
     ? [...THead, TNext]
     : TMatches
   : TMatches
@@ -79,8 +82,14 @@ type ReplaceLastMatchLoaders<
 type AddLoaderReturn<
   TUrl extends Url,
   TMatches extends CreatedRouteOptions[],
-  TNewLoaders extends RouteLoaders
-> = ReplaceLastMatchLoaders<TMatches, TNewLoaders> extends infer TNext extends CreatedRouteOptions[]
+  TName extends string | undefined,
+  TData,
+  TContext extends RouteContext[] = []
+> = ReplaceLastMatchLoaders<
+  TMatches,
+  AddLoaderLoaders<CurrentMatchLoaders<TMatches>, TName, TData>,
+  TContext
+> extends infer TNext extends CreatedRouteOptions[]
   ? RouteWithMethods<TUrl, TNext>
   : never
 
@@ -99,10 +108,12 @@ export type RouteAddLoader<
    * @param options - The loader's `name` and `prefetch` config.
    */
   addLoader: <
-    const TName extends string | undefined = undefined,
-    const TGetter extends LoaderGetter<Route<TUrl, TMatches>> = LoaderGetter<Route<TUrl, TMatches>>
+    const TSource extends LoaderGetter<Route<TUrl, TMatches>> | AnyLoader,
+    const TName extends string | undefined = undefined
   >(
-    load: TGetter,
-    options?: AddLoaderOptions<TName, Awaited<ReturnType<TGetter>>>,
-  ) => AddLoaderReturn<TUrl, TMatches, AddLoaderLoaders<CurrentMatchLoaders<TMatches>, TName, ReturnType<TGetter>>>,
+    load: TSource,
+    options?: AddLoaderOptions<TName, Awaited<LoaderDataOf<TSource>>>,
+  ) => AddLoaderReturn<TUrl, TMatches, TName, LoaderDataOf<TSource>, TSource extends AnyLoader ? [...TSource['context']] : []>,
 }
+
+type LoaderDataOf<TSource extends AnyFunction | AnyLoader> = ReturnType<TSource extends AnyLoader ? TSource['load'] : Extract<TSource, AnyFunction>>

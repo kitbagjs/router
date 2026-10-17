@@ -61,6 +61,7 @@ export default defineConfig({
             { text: 'Props', link: '/core-concepts/component-props' },
             { text: 'Loaders', link: '/core-concepts/loaders' },
             { text: 'Router', link: '/core-concepts/router' },
+            { text: 'Type Safety', link: '/core-concepts/type-safety' },
             { text: 'Router Route', link: '/core-concepts/router-route' },
             { text: 'Navigation', link: '/core-concepts/navigation' },
           ],

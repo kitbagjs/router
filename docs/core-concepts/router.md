@@ -35,15 +35,7 @@ app.mount('#app')
 
 ## Type Safety
 
-Kitbag Router utilizes [declaration merging](https://www.typescriptlang.org/docs/handbook/declaration-merging.html) to provide the internal types to match the actual router you're using.
-
-```ts
-declare module '@kitbag/router' {
-  interface Register {
-    router: typeof router
-  }
-}
-```
+See [Type Safety](/core-concepts/type-safety) for typing Kitbag Router to your application's routes.
 
 ## Router Options
 

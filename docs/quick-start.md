@@ -72,7 +72,9 @@ declare module '@kitbag/router' {
 }
 ```
 
-This means then when you import a component, composition, or hook from `@kitbag/router` it will be correctly typed. Alternatively, you can create your own typed router assets by using the [`createRouterAssets`](/api/functions/createRouterAssets) utility. This approach is especially useful for projects that use multiple routers.
+Alternatively, use [`createRouterAssets`](/core-concepts/type-safety#router-assets) to get components, composables, and utilities typed for a specific router.
+
+See [Type Safety](/core-concepts/type-safety) for more details.
 
 ## RouterView
 
