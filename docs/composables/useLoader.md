@@ -40,4 +40,12 @@ const { data: user, loading, error } = await useLoader(userLoader)
 
 The refs continue following navigation after the initial load resolves.
 
+## Fallback loads
+
+If a reusable definition is missing from the current route or has multiple attachments, `useLoader` warns and runs it separately with the current route and its declared [context](/advanced-concepts/context). Pass `route.loaders[name]` to select a specific attachment.
+
+Consumers share that execution for the navigation, and the warning is logged once per loader per navigation. The warning does not populate `error`. During hydration, fallback loads also warn that their data is not included in the SSR payload and may cause a hydration mismatch.
+
+Attach the definition with `addLoader` to start loading before component setup and participate in route prefetching and SSR hydration. Calling `useLoader` does not add an attachment or change `route.data`.
+
 `useLoader` is also available through [`createRouterAssets`](/api/functions/createRouterAssets) for applications using a separate router key.

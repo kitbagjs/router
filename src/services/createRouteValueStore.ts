@@ -15,6 +15,9 @@ import { createNavigationStores, DataKind, getDataKey } from './createNavigation
 import { PropsResult } from '@/utilities/props'
 import { MaybePromise } from '@/types/utilities'
 import { Computation, ComputationFilter, getComputations, isKind, loaderLocations, propsLocations, ValueLocation } from './getComputations'
+import { AnyLoader, isLoader, LOADER_ID_SYMBOL } from '@/types/loader'
+import { RouteContext } from '@/types/routeContext'
+import { LoaderFallback } from '@/services/getLoaderLocation'
 
 /**
  * A navigation that was superseded before its values settled. The navigation that replaced it owns the
@@ -83,6 +86,8 @@ export type RouteValue = {
 }
 
 export type RouteValueStore = HasVueAppStore & {
+  loadLoader: (loader: AnyLoader, route: ResolvedRoute, fallback: LoaderFallback) => ValueLocation<'loader'>,
+  stop: () => void,
   createDetachedStore: () => DetachedStore,
   /**
    * The store the next navigation adopts, created when nothing is staged. Values computed into it ahead of
@@ -93,7 +98,7 @@ export type RouteValueStore = HasVueAppStore & {
   /**
    * Makes the staged store current and computes whatever the route still lacks.
    */
-  commit: (route: ResolvedRoute) => RouteValueResponses,
+  commit: (route: ResolvedRoute, options?: { hydrating?: boolean }) => RouteValueResponses,
   /**
    * The values currently settled in the store.
    */
@@ -108,9 +113,75 @@ export type RouteValueStore = HasVueAppStore & {
   getLoaderValue: (location: ValueLocation<'loader'>, route: ResolvedRoute) => Promise<unknown>,
 }
 
-export function createRouteValueStore(): RouteValueStore {
+type RouteValueStoreOptions = {
+  onLoaderContext?: (context: readonly RouteContext[]) => void,
+  onLoaderResponse?: (response: Promise<RouteValueResponse>, route: ResolvedRoute, signal: AbortSignal) => void,
+}
+
+export function createRouteValueStore(options: RouteValueStoreOptions = {}): RouteValueStore {
   const { setVueApp, runWithContext } = createVueAppStore()
   const navigation = createNavigationStores()
+  const fallbackIds = new Map<symbol, string>()
+  let isHydrating = false
+
+  const loadLoader: RouteValueStore['loadLoader'] = (loader, currentRoute, fallback) => {
+    if (!isLoader(loader)) {
+      throw new TypeError('Expected a loader created by createLoader')
+    }
+
+    const store = navigation.current()
+    store.signal.throwIfAborted()
+    const identity = loader[LOADER_ID_SYMBOL]
+    let id = fallbackIds.get(identity)
+
+    if (!id) {
+      id = `fallback-${fallbackIds.size}`
+      fallbackIds.set(identity, id)
+    }
+
+    const location: ValueLocation<'loader'> = { kind: 'loader', id, name: 'default' }
+    const key = getDataKey(location.kind, id, location.name, currentRoute)
+
+    if (store.get(key).kind !== 'missing') {
+      return location
+    }
+
+    options.onLoaderContext?.(loader.context)
+    const routeName = currentRoute.name || currentRoute.href
+
+    if (fallback.reason === 'ambiguous') {
+      const names = fallback.names.map((name) => JSON.stringify(name)).join(', ')
+
+      console.warn(`useLoader found multiple attachments for this loader on route "${routeName}": ${names}. It will run separately. Pass route.loaders[name] to select an attachment.`, loader)
+    } else {
+      console.warn(`useLoader received a loader that is not attached to route "${routeName}". It will run now. Attach it with addLoader to start loading before component setup.`, loader)
+    }
+
+    if (isHydrating) {
+      console.warn(`The fallback data for this loader on route "${routeName}" is not included in the SSR payload. It will load on the client, which may cause a hydration mismatch. Attach it with addLoader, or pass route.loaders[name] to select an attachment.`, loader)
+    }
+
+    const route = {
+      ...currentRoute,
+      params: { ...currentRoute.params },
+      query: new URLSearchParams(currentRoute.query),
+      state: { ...currentRoute.state },
+    }
+    const computation: Computation = {
+      ...location,
+      key,
+      depth: 0,
+      run: loader.load,
+      routePrefetch: undefined,
+      prefetch: loader.prefetch,
+      transformer: loader.transformer,
+    }
+    const response = settle(store, route, [computation])
+    response.catch(() => {})
+    options.onLoaderResponse?.(response, route, store.signal)
+
+    return location
+  }
 
   const createDetachedStore: RouteValueStore['createDetachedStore'] = () => {
     const detached = { store: createDataStore() }
@@ -141,7 +212,9 @@ export function createRouteValueStore(): RouteValueStore {
     return createValueStore(() => navigation.staged())
   }
 
-  const commit: RouteValueStore['commit'] = (route) => {
+  const commit: RouteValueStore['commit'] = (route, { hydrating = false } = {}) => {
+    isHydrating = hydrating
+
     const previous = navigation.promote()
 
     previous.dispose(new NavigationAbandonedError())
@@ -272,7 +345,14 @@ export function createRouteValueStore(): RouteValueStore {
       throw new TypeError('Expected a loader location')
     }
 
-    return navigation.current().get(getDataKey(location.kind, location.id, location.name, route))
+    const store = navigation.current()
+    const result = store.get(getDataKey(location.kind, location.id, location.name, route))
+
+    if (store.signal.aborted) {
+      return { kind: 'error', error: store.signal.reason }
+    }
+
+    return result
   }
 
   const getLoaderValue: RouteValueStore['getLoaderValue'] = (location: ValueLocation, route) => {
@@ -404,6 +484,14 @@ export function createRouteValueStore(): RouteValueStore {
     const key = getDataKey(location.kind, location.id, location.name, route)
     const current = navigation.current()
 
+    if (current.signal.aborted) {
+      const reason: unknown = current.signal.reason
+      const abandoned = Promise.reject(reason instanceof Error ? reason : new NavigationAbandonedError())
+      abandoned.catch(() => {})
+
+      return abandoned
+    }
+
     if (!store || store === current) {
       return current.subscribe(key)
     }
@@ -424,6 +512,8 @@ export function createRouteValueStore(): RouteValueStore {
   }
 
   return {
+    loadLoader,
+    stop: navigation.stop,
     createDetachedStore,
     staged,
     commit,

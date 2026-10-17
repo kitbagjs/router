@@ -51,6 +51,10 @@ export function getRoutesForRouter(routes: Routes | Routes[], plugins: RouterPlu
   }
 
   function addContext(context: readonly RouteContext[]): void {
+    if (stopped) {
+      return
+    }
+
     const pendingRoutes = new Map<string, Route & RouteInternal>()
     const pendingRejections = new Map<string, Rejection & RejectionInternal>()
 
@@ -141,6 +145,7 @@ export function getRoutesForRouter(routes: Routes | Routes[], plugins: RouterPlu
     routes: registeredRoutes,
     rejections: registeredRejections,
     addHookContext,
+    addContext,
     stop,
     getRouteByName,
     getRejectionByType,

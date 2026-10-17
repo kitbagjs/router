@@ -28,6 +28,7 @@ export type NavigationStores = {
    * Swaps in the staged store, or a fresh one, and hands back the store being replaced for disposal.
    */
   promote: () => DataStore,
+  stop: () => void,
 }
 
 /**
@@ -69,6 +70,13 @@ export function createNavigationStores(): NavigationStores {
     stage,
     staged,
     promote,
+    stop() {
+      const error = new NavigationAbandonedError()
+
+      stores.current.dispose(error)
+      stores.staged?.dispose(error)
+      stores.staged = undefined
+    },
   }
 }
 

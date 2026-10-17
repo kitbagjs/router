@@ -162,10 +162,16 @@ export function createRouter<
     getRouteByName,
     getRejectionByType,
     addHookContext,
+    addContext,
     stop: stopRouteContext,
   } = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options)
   const notFoundRejection = getRejectionByType('NotFound')
-  const valueStore = createRouteValueStore()
+  const valueStore = createRouteValueStore({
+    onLoaderContext: addContext,
+    onLoaderResponse(response, to, signal) {
+      activity.add(handleRouteValueResponse(response, 'loader', to, getFromRouteForHooks(), signal))
+    },
+  })
   const notFoundRoute = createResolvedRoute(notFoundRejection.route)
 
   const hooks = createRouterHooks({ redirectStatus, onHookAdded: addHookContext })
@@ -311,7 +317,7 @@ export function createRouter<
       clearRejection()
 
       if (!isExternal(url)) {
-        setRouteValuesAndUpdateRoute(to, from, progress, controller.signal)
+        setRouteValuesAndUpdateRoute(to, from, progress, controller.signal, options)
       }
 
       progress.close()
@@ -455,8 +461,8 @@ export function createRouter<
     return getComputations(to).length + getAsyncComponents(to).length
   }
 
-  function setRouteValuesAndUpdateRoute(to: ResolvedRoute, from: ResolvedRoute | null, progress: NavigationProgressTracker, signal: AbortSignal): void {
-    const { props, loaders, values } = valueStore.commit(to)
+  function setRouteValuesAndUpdateRoute(to: ResolvedRoute, from: ResolvedRoute | null, progress: NavigationProgressTracker, signal: AbortSignal, options: RouterUpdateOptions): void {
+    const { props, loaders, values } = valueStore.commit(to, { hydrating: options.hydrating })
 
     activity.add(
       handleRouteValueResponse(props, 'props', to, from, signal),
@@ -790,6 +796,7 @@ export function createRouter<
     stopped = true
     stopRouteContext()
     navigations.stop()
+    valueStore.stop()
     navigationProgress.stop()
     history.stopListening()
   }

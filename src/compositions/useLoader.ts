@@ -1,4 +1,4 @@
-import { computed, InjectionKey, toRaw } from 'vue'
+import { computed, InjectionKey, shallowRef, toRaw, watch } from 'vue'
 import { AnyLoader, isLoader, Loader } from '@/types/loader'
 import { LoaderResult } from '@/types/loaderResult'
 import { Router } from '@/types/router'
@@ -7,6 +7,7 @@ import { createUseRouter } from '@/compositions/useRouter'
 import { createUseRouteValueStore } from '@/compositions/useRouteValueStore'
 import { getLoaderLocation } from '@/services/getLoaderLocation'
 import { RouteContext } from '@/types/routeContext'
+import { ValueLocation } from '@/services/getComputations'
 
 export type UseLoader = <TData>(loader: Loader<TData, readonly RouteContext[]>) => LoaderResult<Awaited<TData>>
 
@@ -24,18 +25,42 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoader {
 
     const router = useRouter()
     const store = useRouteValueStore()
-    const state = computed<DataResult>(() => {
+    const selection = shallowRef<{ location: ValueLocation<'loader'> } | { error: unknown }>()
+
+    function getLocation(): ValueLocation<'loader'> {
+      const result = getLoaderLocation(router.route, loader)
+
+      if ('location' in result) {
+        return result.location
+      }
+
+      return store.loadLoader(loader, router.route, result)
+    }
+
+    watch([() => router.route.matches, () => router.route.href, () => router.route.state, router.started], () => {
       if (!router.started.value) {
-        return { kind: 'pending' }
+        return
       }
 
       try {
-        const location = getLoaderLocation(router.route, loader)
+        const location = getLocation()
 
-        return store.getLoaderState(location, router.route)
+        selection.value = { location }
       } catch (error) {
-        return { kind: 'error', error }
+        selection.value = { error }
       }
+    }, { immediate: true })
+
+    const state = computed<DataResult>(() => {
+      if (!selection.value) {
+        return { kind: 'pending' }
+      }
+
+      if ('error' in selection.value) {
+        return { kind: 'error', error: selection.value.error }
+      }
+
+      return store.getLoaderState(selection.value.location, router.route)
     })
 
     async function getData(): Promise<unknown> {
@@ -43,7 +68,7 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoader {
         await router.start()
       }
 
-      const location = getLoaderLocation(router.route, loader)
+      const location = getLocation()
 
       return store.getLoaderValue(location, router.route)
     }
