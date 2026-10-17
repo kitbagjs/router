@@ -1,6 +1,6 @@
 # useLoader
 
-Read a loader's data, loading state, and error without suspending component setup. Pass a reusable loader definition or a handle from `route.loaders`:
+Read a loader's data, loading state, and error without suspending component setup. Pass a loader definition, either imported or read from `route.loaders`:
 
 ```vue
 <script setup lang="ts">
@@ -19,16 +19,16 @@ const { data, loading, error } = useLoader(userLoader)
 
 The returned properties are readonly refs. Consumers share the existing route load, including prefetched or hydrated data. When navigation replaces that load, the refs follow its state and clear the previous data and error.
 
-## Route loader handles
+## Route loaders
 
-Use a [loader handle](/core-concepts/loaders#loader-handles) for an inline loader or to select a specific attachment:
+Use a [route loader definition](/core-concepts/loaders#loader-definitions) for an inline loader or to select a specific attachment:
 
 ```ts
 const route = useRoute('user')
 const user = useLoader(route.loaders.user)
 ```
 
-An unnamed loader is available as `route.loaders.default`. If the same reusable definition has multiple attachments in the matched route, pass a handle to identify which one to read. A handle whose attachment leaves the matched route reports an error.
+An unnamed loader is available as `route.loaders.default`. If the same reusable definition has multiple attachments in the matched route, pass its definition from `route.loaders` to select an attachment.
 
 ## Awaiting data
 

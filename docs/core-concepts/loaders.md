@@ -102,19 +102,17 @@ If you mix an unnamed loader with named loaders, the unnamed result is available
 
 A loader cannot read `route.data` to depend on another loader on the same route. If two requests depend on each other, put them in a single loader and return the values together.
 
-## Loader handles
+## Loader definitions
 
-Use [`useLoader`](/composables/useLoader) with a handle or reusable definition to read reactive data, loading, and error state without suspending setup.
+`route.loaders` exposes the current route's loader definitions, including inline and inherited loaders. Each entry has the same `Loader` type returned by `createLoader`. Unnamed loaders use `route.loaders.default`.
 
-`route.loaders` exposes handles for the current route's loaders, including inherited loaders. A handle's `data` property returns its current promise, so a saved handle follows navigation while its attachment remains matched. Unnamed loaders use `route.loaders.default`.
+Pass a definition to [`useLoader`](/composables/useLoader) to read its reactive data, loading, and error state or await its data.
+
 
 ```ts
 const route = useRoute('user')
-const userLoader = route.loaders.user
-const user = await userLoader.data
+const user = useLoader(route.loaders.user)
 ```
-
-Reading a handle's data after its attachment leaves the matched route throws an error.
 
 ## Parent data
 

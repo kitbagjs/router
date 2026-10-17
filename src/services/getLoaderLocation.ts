@@ -1,34 +1,33 @@
-import { RouterRoute } from '@/types/routerRoute'
+import { ResolvedRoute } from '@/types/resolved'
 import { AnyLoader } from '@/types/loader'
-import { isLoaderHandle, LoaderHandle } from '@/types/loaderHandle'
 import { ValueLocation } from '@/services/getComputations'
 import { isSameLoader } from '@/services/isSameLoader'
 
-export function getLoaderLocation(route: RouterRoute, source: AnyLoader | LoaderHandle): ValueLocation | undefined {
-  if (isLoaderHandle(source)) {
-    const match = route.matches.find((match) => match.id === source.matchId && source.name in match.loaders)
+export function getLoaderLocation(route: ResolvedRoute, source: AnyLoader): ValueLocation | undefined {
+  const locations: ValueLocation[] = []
 
-    if (!match) {
-      throw new Error(`Loader "${source.name}" is not attached to the current route`)
+  for (const match of route.matches) {
+    for (const [name, loader] of Object.entries(match.loaders)) {
+      if (!isSameLoader(loader, source)) {
+        continue
+      }
+
+      const location: ValueLocation = {
+        kind: 'loader',
+        id: match.id,
+        name,
+      }
+
+      if (loader === source) {
+        return location
+      }
+
+      locations.push(location)
     }
-
-    if (route.loaders[source.name] !== source) {
-      throw new TypeError('This loader handle belongs to a different router')
-    }
-
-    return { kind: 'loader', id: match.id, name: source.name }
   }
-
-  const locations = route.matches.flatMap((match) => Object.entries(match.loaders)
-    .filter(([, loader]) => isSameLoader(loader, source))
-    .map(([name]): ValueLocation => ({ kind: 'loader', id: match.id, name })))
 
   if (locations.length > 1) {
-    throw new Error('This loader has multiple attachments on the current route. Pass a route.loaders handle to useLoader.')
-  }
-
-  if (locations.length === 0) {
-    return
+    throw new Error('This loader has multiple attachments on the current route. Pass a definition from route.loaders to useLoader.')
   }
 
   return locations[0]

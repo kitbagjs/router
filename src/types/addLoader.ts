@@ -4,10 +4,10 @@ import { TransformerOptions } from '@/services/payload'
 import { ResolvedRoute } from '@/types/resolved'
 import { CreatedRouteOptions, Route } from '@/types/route'
 import { RouteCallbackContext } from '@/types/routeCallbackContext'
-import { RouteLoader, RouteLoaders } from '@/types/routeLoaders'
+import { RouteLoaders } from '@/types/routeLoaders'
 import { Url } from '@/types/url'
 import { Identity, LastInArray } from '@/types/utilities'
-import { AnyLoader } from '@/types/loader'
+import { AnyLoader, Loader } from '@/types/loader'
 import { RouteContext, WithRouteContext } from '@/types/routeContext'
 
 /**
@@ -56,8 +56,9 @@ type CurrentMatchLoaders<
 type AddLoaderLoaders<
   TCurrent extends RouteLoaders,
   TName extends string | undefined,
-  TData
-> = Identity<Omit<TCurrent, LoaderName<TName>> & Record<LoaderName<TName>, RouteLoader<TData>>> extends infer TNext extends RouteLoaders
+  TData,
+  TContext extends readonly RouteContext[]
+> = Identity<Omit<TCurrent, LoaderName<TName>> & Record<LoaderName<TName>, Loader<TData, TContext>>> extends infer TNext extends RouteLoaders
   ? TNext
   : TCurrent
 
@@ -84,11 +85,11 @@ type AddLoaderReturn<
   TMatches extends CreatedRouteOptions[],
   TName extends string | undefined,
   TData,
-  TContext extends RouteContext[] = []
+  TContext extends readonly RouteContext[] = []
 > = ReplaceLastMatchLoaders<
   TMatches,
-  AddLoaderLoaders<CurrentMatchLoaders<TMatches>, TName, TData>,
-  TContext
+  AddLoaderLoaders<CurrentMatchLoaders<TMatches>, TName, TData, TContext>,
+  [...TContext]
 > extends infer TNext extends CreatedRouteOptions[]
   ? RouteWithMethods<TUrl, TNext>
   : never
@@ -122,6 +123,6 @@ export type RouteAddLoader<
     >(
       loader: TLoader,
       options?: AddLoaderOptions<TName, Awaited<ReturnType<TLoader['load']>>>,
-    ): AddLoaderReturn<TUrl, TMatches, TName, ReturnType<TLoader['load']>, [...TLoader['context']]>,
+    ): AddLoaderReturn<TUrl, TMatches, TName, ReturnType<TLoader['load']>, TLoader['context']>,
   },
 }

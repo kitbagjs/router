@@ -1,6 +1,5 @@
-import { computed, InjectionKey, shallowRef, watch } from 'vue'
+import { computed, InjectionKey, shallowRef, toRaw, watch } from 'vue'
 import { AnyLoader, isLoader, Loader } from '@/types/loader'
-import { isLoaderHandle, LoaderHandle } from '@/types/loaderHandle'
 import { LoaderResult } from '@/types/loaderResult'
 import { Router } from '@/types/router'
 import { DataResult } from '@/services/createDataStore'
@@ -10,20 +9,18 @@ import { getLoaderLocation } from '@/services/getLoaderLocation'
 import { RouteContext } from '@/types/routeContext'
 import { ValueLocation } from '@/services/getComputations'
 
-export type UseLoader = <TData>(loader: Loader<TData, readonly RouteContext[]> | LoaderHandle<TData>) => LoaderResult<Awaited<TData>>
+export type UseLoader = <TData>(loader: Loader<TData, readonly RouteContext[]>) => LoaderResult<Awaited<TData>>
 
 export function createUseLoader(routerKey: InjectionKey<Router>): UseLoader {
   const useRouter = createUseRouter(routerKey)
   const useRouteValueStore = createUseRouteValueStore(routerKey)
 
-  function useLoader<TData>(loader: Loader<TData, readonly RouteContext[]> | LoaderHandle<TData>): LoaderResult<Awaited<TData>>
-  function useLoader(source: AnyLoader | LoaderHandle): LoaderResult {
-    if (!isLoader(source) && !isLoaderHandle(source)) {
-      throw new TypeError('Expected a loader definition or route.loaders handle')
-    }
+  function useLoader<TData>(loader: Loader<TData, readonly RouteContext[]>): LoaderResult<Awaited<TData>>
+  function useLoader(source: AnyLoader): LoaderResult {
+    const loader = toRaw(source)
 
-    if (isLoaderHandle(source) && source.routerKey !== routerKey) {
-      throw new TypeError('This loader handle belongs to a different router')
+    if (!isLoader(loader)) {
+      throw new TypeError('Expected a loader created by createLoader')
     }
 
     const router = useRouter()
@@ -31,17 +28,7 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoader {
     const selection = shallowRef<{ location: ValueLocation } | { error: unknown }>()
 
     function getLocation(): ValueLocation {
-      const location = getLoaderLocation(router.route, source)
-
-      if (location) {
-        return location
-      }
-
-      if (isLoader(source)) {
-        return store.loadLoader(source, router.route)
-      }
-
-      throw new TypeError('Expected a loader created by createLoader')
+      return getLoaderLocation(router.route, loader) ?? store.loadLoader(loader, router.route)
     }
 
     watch([() => router.route.matches, () => router.route.href, () => router.route.state, router.started], () => {
