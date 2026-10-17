@@ -62,6 +62,12 @@ export function createRouterRoute<TRoute extends ResolvedRoute & WithData>(route
 
   const { id, matched, matches, name, hash, href, canonical, data, getTitle } = toRefs(route)
 
+  const loaders = computed(() => {
+    const entries = route.matches.flatMap((match) => Object.entries(match.loaders))
+
+    return Object.fromEntries(entries)
+  })
+
   const paramsProxy = new Proxy({}, {
     get(_target, property, receiver) {
       return Reflect.get(route.params, property, receiver)
@@ -128,7 +134,7 @@ export function createRouterRoute<TRoute extends ResolvedRoute & WithData>(route
   // data is derived from the route's matches rather than read off the route, so its type cannot be matched here
   const routerRoute = reactive({
     ...route,
-    loaders: computed(() => Object.fromEntries(route.matches.flatMap((match) => Object.entries(match.loaders)))),
+    loaders,
     id,
     matched,
     matches,
