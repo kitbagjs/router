@@ -28,7 +28,13 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoader {
     const selection = shallowRef<{ location: ValueLocation<'loader'> } | { error: unknown }>()
 
     function getLocation(): ValueLocation<'loader'> {
-      return getLoaderLocation(router.route, loader) ?? store.loadLoader(loader, router.route)
+      const result = getLoaderLocation(router.route, loader)
+
+      if ('location' in result) {
+        return result.location
+      }
+
+      return store.loadLoader(loader, router.route, result.reason)
     }
 
     watch([() => router.route.matches, () => router.route.href, () => router.route.state, router.started], () => {

@@ -35,6 +35,7 @@ test('fallback consumers share a navigation load and abandon it on navigation or
   expect(firstConsumer.loading.value).toBe(true)
   expect(load).toHaveBeenCalledTimes(1)
   expect(warn).toHaveBeenCalledTimes(1)
+  expect(warn).toHaveBeenCalledWith(expect.stringContaining('not attached'), loader)
   const abandoned = expect(Promise.resolve(firstConsumer)).rejects.toBeInstanceOf(NavigationAbandonedError)
   await flushPromises()
   await router.push('/2')
