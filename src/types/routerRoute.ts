@@ -49,7 +49,7 @@ export type RouterRoute<TRoute extends ResolvedRoute = ResolvedRoute> = {
   /**
    * Definitions for the current route's loaders, including inherited loaders. An unnamed loader uses `default`.
    */
-  readonly loaders: Readonly<RouteLoadersOf<TRoute['matches']>>,
+  readonly loaders: RouteLoadersOf<TRoute['matches']>,
 
   params: TRoute['params'],
   state: TRoute['state'],
