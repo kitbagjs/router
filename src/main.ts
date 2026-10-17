@@ -24,6 +24,7 @@ export type { RouteCallbackContext } from './types/routeCallbackContext'
 export type { RouteViews } from './types/routeViews'
 export type { RouteLoaders } from './types/routeLoaders'
 export type { CreateLoaderOptions, Loader, LoaderCallbackContext } from './types/loader'
+export type { LoaderResult, LoaderState } from './types/loaderResult'
 export type {
   RejectionHooks,
   HookRemove,
@@ -136,6 +137,11 @@ export const createView: RouterAssets<RegisteredRouter>['createView'] = routerAs
  * Creates a reusable loader with callbacks typed to the registered router's resolved routes.
  */
 export const createLoader: RouterAssets<RegisteredRouter>['createLoader'] = routerAssets.createLoader
+
+/**
+ * Reads a loader's reactive state or awaits its current data. Must be called during setup.
+ */
+export const useLoader: RouterAssets<RegisteredRouter>['useLoader'] = routerAssets.useLoader
 
 /**
  * Registers a hook that is called before a route is left. Must be called from setup.

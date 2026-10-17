@@ -20,8 +20,13 @@ import { AddBeforeLeaveHook, AddBeforeUpdateHook, AddAfterLeaveHook, AddAfterUpd
 import { createUseRejection } from '@/compositions/useRejection'
 import { createUseViewTransition } from '@/compositions/useViewTransition'
 import { createUseNavigation } from '@/compositions/useNavigation'
+import { createUseLoader, UseLoader } from '@/compositions/useLoader'
 
 export type RouterAssets<TRouter extends Router> = {
+  /**
+   * Reads a loader's reactive state or awaits its current data.
+   */
+  useLoader: UseLoader,
   /**
    * Creates a reusable hook with callbacks typed to this router's resolved routes.
    */
@@ -213,8 +218,10 @@ export function createRouterAssets<TRouter extends Router>(routerOrRouterKey: TR
   const useRejection = createUseRejection(routerKey)
   const useViewTransition = createUseViewTransition(routerKey)
   const useNavigation = createUseNavigation(routerKey)
+  const useLoader = createUseLoader(routerKey)
 
   return {
+    useLoader,
     createHook,
     createView,
     createLoader,

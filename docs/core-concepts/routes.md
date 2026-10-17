@@ -287,7 +287,7 @@ Routes can be passed [context](/advanced-concepts/context) to enable their callb
 
 ## Loaders
 
-Use `addLoader` to load data for a route and read it through `route.data` in a props getter or on the current route. See [Loaders](/core-concepts/loaders) for examples of loading data, sharing it between views, and using named loaders.
+Use `addLoader` to load data for a route. Components read it with [`useLoader`](/composables/useLoader), and props getters can await `route.data`. See [Loaders](/core-concepts/loaders) for examples of loading data, sharing it between views, and using named loaders.
 
 ## Prefetching
 
