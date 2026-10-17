@@ -30,7 +30,9 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoader {
       }
 
       try {
-        return store.getLoaderState(getLoaderLocation(router.route, loader), router.route)
+        const location = getLoaderLocation(router.route, loader)
+
+        return store.getLoaderState(location, router.route)
       } catch (error) {
         return { kind: 'error', error }
       }
@@ -41,7 +43,9 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoader {
         await router.start()
       }
 
-      return store.getValue(getLoaderLocation(router.route, loader), router.route)
+      const location = getLoaderLocation(router.route, loader)
+
+      return store.getValue(location, router.route)
     }
 
     return {
