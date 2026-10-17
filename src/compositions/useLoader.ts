@@ -66,12 +66,18 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoader {
       return undefined
     })
 
-    return {
+    const result = {
       data,
       loading,
       error,
+    }
+
+    return {
+      ...result,
       then(onfulfilled, onrejected) {
-        return getData().then(onfulfilled, onrejected)
+        return getData()
+          .then(() => result)
+          .then(onfulfilled, onrejected)
       },
     }
   }

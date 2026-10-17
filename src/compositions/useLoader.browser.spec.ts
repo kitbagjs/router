@@ -1,6 +1,7 @@
+/* eslint-disable vue/one-component-per-file */
 import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils'
 import { afterEach, expect, test, vi } from 'vitest'
-import { defineComponent } from 'vue'
+import { defineComponent, h, Suspense } from 'vue'
 import { createLoader, createRoute, createRouter, createRouterAssets, Router, useLoader } from '@/main'
 
 enableAutoUnmount(afterEach)
@@ -32,7 +33,11 @@ test('consumers share an attached load and can await its data', async () => {
 
   expect(imported.loading.value).toBe(true)
   pending.resolve('loaded')
-  await expect(imported).resolves.toBe('loaded')
+  const awaited = await imported
+  expect(awaited.data).toBe(imported.data)
+  expect(awaited.loading).toBe(imported.loading)
+  expect(awaited.error).toBe(imported.error)
+  expect(awaited.data.value).toBe('loaded')
   expect(attached.data.value).toBe('loaded')
   expect(attached.loading.value).toBe(false)
   expect(load).toHaveBeenCalledTimes(1)
@@ -47,32 +52,46 @@ test('awaiting a loader waits for the initial navigation', async () => {
   const result = mountConsumer(router, () => useLoader(loader))
 
   expect(result.loading.value).toBe(true)
-  const data = Promise.resolve(result)
+  const ready = Promise.resolve(result)
   entering.resolve()
-  await expect(data).resolves.toBe(42)
+  expect((await ready).data.value).toBe(42)
 })
 
-test('a mounted consumer follows navigation and clears data while loading', async () => {
-  const pending = Promise.withResolvers<string>()
+test('awaited loader refs remain reactive after Suspense resolves', async () => {
+  const first = Promise.withResolvers<string>()
+  const second = Promise.withResolvers<string>()
   const loader = createLoader({
     load: (route) => {
-      return route.params.id === '1' ? 'first' : pending.promise
+      return route.params.id === '1' ? first.promise : second.promise
     },
   })
   const route = createRoute({ name: 'user', path: '/[id]' }).addLoader(loader)
   const router = createRouter([route], { initialUrl: '/1' })
   await router.start()
-  const result = mountConsumer(router, () => useLoader(loader))
+  const consumer = defineComponent({
+    async setup() {
+      const { data, loading } = await useLoader(loader)
 
-  expect(result.data.value).toBe('first')
-  await router.push('/2')
-  expect(result.loading.value).toBe(true)
-  expect(result.data.value).toBeUndefined()
+      return () => h('div', loading.value ? 'loading' : data.value)
+    },
+  })
+  const wrapper = mount(defineComponent({
+    render: () => h(Suspense, null, {
+      default: () => h(consumer),
+      fallback: () => h('div', 'suspended'),
+    }),
+  }), { global: { plugins: [router] } })
 
-  pending.resolve('second')
+  expect(wrapper.text()).toBe('suspended')
+  first.resolve('first')
   await flushPromises()
-  expect(result.data.value).toBe('second')
-  expect(result.loading.value).toBe(false)
+  expect(wrapper.text()).toBe('first')
+
+  await router.push('/2')
+  expect(wrapper.text()).toBe('loading')
+  second.resolve('second')
+  await flushPromises()
+  expect(wrapper.text()).toBe('second')
 })
 
 test('failed loads expose an error, reject when awaited, and recover on navigation', async () => {
@@ -114,7 +133,7 @@ test('route definitions select a specific attachment when a reusable definition 
   }))
 
   await expect(ambiguous).rejects.toThrow('multiple attachments')
-  await expect(selected).resolves.toBe(await router.route.data.second)
+  expect((await selected).data.value).toBe(await router.route.data.second)
 })
 
 test('router assets read the same definition from their own router stores', async () => {
@@ -128,6 +147,6 @@ test('router assets read the same definition from their own router stores', asyn
     return mountConsumer(router, () => assets.useLoader(loader))
   })
 
-  await expect(results[0]).resolves.toBe('1')
-  await expect(results[1]).resolves.toBe('2')
+  expect((await results[0]).data.value).toBe('1')
+  expect((await results[1]).data.value).toBe('2')
 })

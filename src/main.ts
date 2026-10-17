@@ -24,7 +24,7 @@ export type { RouteCallbackContext } from './types/routeCallbackContext'
 export type { RouteViews } from './types/routeViews'
 export type { RouteLoaders } from './types/routeLoaders'
 export type { CreateLoaderOptions, Loader, LoaderCallbackContext } from './types/loader'
-export type { LoaderResult } from './types/loaderResult'
+export type { LoaderResult, LoaderState } from './types/loaderResult'
 export type {
   RejectionHooks,
   HookRemove,

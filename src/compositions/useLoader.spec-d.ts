@@ -1,12 +1,16 @@
 import { expectTypeOf, test } from 'vitest'
-import { createLoader, createRoute, createRouter, createRouterAssets, LoaderResult, useLoader } from '@/main'
+import { createLoader, createRoute, createRouter, createRouterAssets, LoaderResult, LoaderState, useLoader } from '@/main'
 
 test('async definitions infer resolved data for reactive and awaited consumption', async () => {
   const loader = createLoader({ load: async () => ({ name: 'kitbag' }) })
   const result = useLoader(loader)
 
   expectTypeOf(result.data.value).toEqualTypeOf<{ name: string } | undefined>()
-  expectTypeOf(await result).toEqualTypeOf<{ name: string }>()
+  const awaited = await result
+  expectTypeOf(awaited).toEqualTypeOf<LoaderState<{ name: string }>>()
+  expectTypeOf(awaited.loading.value).toEqualTypeOf<boolean>()
+  // @ts-expect-error resolved state is not itself thenable
+  expectTypeOf(awaited.then)
 })
 
 test('router assets infer data from inline route definitions', () => {
