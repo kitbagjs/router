@@ -34,21 +34,21 @@ export type AddLoader = (...args: AddLoaderParameters) => Route
 type NamedLoader = AnyLoader & { name: string }
 
 export function toNamedLoader(source: AnyFunction | AnyLoader, options: LoaderOptions | undefined): NamedLoader {
-  let loader = source
+  if (typeof source === 'function') {
+    const loader = createLoader({ load: source })
 
-  if (typeof loader === 'function') {
-    loader = createLoader({ load: loader })
+    return toNamedLoader(loader, options)
   }
 
-  if (!isLoader(loader)) {
+  if (!isLoader(source)) {
     throw new TypeError('Expected a loader created by createLoader')
   }
 
   return {
-    ...loader,
+    ...source,
     name: options?.name ?? DEFAULT_LOADER_NAME,
-    prefetch: options?.prefetch ?? loader.prefetch,
-    transformer: options?.transformer ?? loader.transformer,
+    prefetch: options?.prefetch ?? source.prefetch,
+    transformer: options?.transformer ?? source.transformer,
   }
 }
 
