@@ -34,7 +34,7 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoader {
         return result.location
       }
 
-      return store.loadLoader(loader, router.route, result.reason)
+      return store.loadLoader(loader, router.route, result)
     }
 
     watch([() => router.route.matches, () => router.route.href, () => router.route.state, router.started], () => {

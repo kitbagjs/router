@@ -17,7 +17,7 @@ import { MaybePromise } from '@/types/utilities'
 import { Computation, ComputationFilter, getComputations, isKind, loaderLocations, propsLocations, ValueLocation } from './getComputations'
 import { AnyLoader, isLoader, LOADER_ID_SYMBOL } from '@/types/loader'
 import { RouteContext } from '@/types/routeContext'
-import { LoaderFallbackReason } from '@/services/getLoaderLocation'
+import { LoaderFallback } from '@/services/getLoaderLocation'
 
 /**
  * A navigation that was superseded before its values settled. The navigation that replaced it owns the
@@ -86,7 +86,7 @@ export type RouteValue = {
 }
 
 export type RouteValueStore = HasVueAppStore & {
-  loadLoader: (loader: AnyLoader, route: ResolvedRoute, reason: LoaderFallbackReason) => ValueLocation<'loader'>,
+  loadLoader: (loader: AnyLoader, route: ResolvedRoute, fallback: LoaderFallback) => ValueLocation<'loader'>,
   stop: () => void,
   createDetachedStore: () => DetachedStore,
   /**
@@ -123,7 +123,7 @@ export function createRouteValueStore(options: RouteValueStoreOptions = {}): Rou
   const navigation = createNavigationStores()
   const fallbackIds = new Map<symbol, string>()
 
-  const loadLoader: RouteValueStore['loadLoader'] = (loader, currentRoute, reason) => {
+  const loadLoader: RouteValueStore['loadLoader'] = (loader, currentRoute, fallback) => {
     if (!isLoader(loader)) {
       throw new TypeError('Expected a loader created by createLoader')
     }
@@ -148,8 +148,10 @@ export function createRouteValueStore(options: RouteValueStoreOptions = {}): Rou
     options.onLoaderContext?.(loader.context)
     const routeName = currentRoute.name || currentRoute.href
 
-    if (reason === 'ambiguous') {
-      console.warn(`useLoader found multiple attachments for this loader on route "${routeName}". It will run separately. Pass route.loaders[name] to select an attachment.`, loader)
+    if (fallback.reason === 'ambiguous') {
+      const names = fallback.names.map((name) => JSON.stringify(name)).join(', ')
+
+      console.warn(`useLoader found multiple attachments for this loader on route "${routeName}": ${names}. It will run separately. Pass route.loaders[name] to select an attachment.`, loader)
     } else {
       console.warn(`useLoader received a loader that is not attached to route "${routeName}". It will run now. Attach it with addLoader to start loading before component setup.`, loader)
     }

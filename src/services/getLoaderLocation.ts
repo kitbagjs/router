@@ -3,9 +3,12 @@ import { AnyLoader } from '@/types/loader'
 import { ValueLocation } from '@/services/getComputations'
 import { isSameLoader } from '@/services/isSameLoader'
 
-export type LoaderFallbackReason = 'missing' | 'ambiguous'
+export type LoaderFallback = { reason: 'missing' } | {
+  reason: 'ambiguous',
+  names: string[],
+}
 
-type LoaderLocationResult = { location: ValueLocation<'loader'> } | { reason: LoaderFallbackReason }
+type LoaderLocationResult = { location: ValueLocation<'loader'> } | LoaderFallback
 
 export function getLoaderLocation(route: ResolvedRoute, source: AnyLoader): LoaderLocationResult {
   const locations: ValueLocation<'loader'>[] = []
@@ -31,7 +34,10 @@ export function getLoaderLocation(route: ResolvedRoute, source: AnyLoader): Load
   }
 
   if (locations.length > 1) {
-    return { reason: 'ambiguous' }
+    return {
+      reason: 'ambiguous',
+      names: locations.map(({ name }) => name),
+    }
   }
 
   if (locations.length === 0) {

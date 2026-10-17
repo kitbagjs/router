@@ -123,7 +123,7 @@ test('ambiguous definitions share a fallback while exact attachments reuse route
   await expect(selected).resolves.toBe(await router.route.data.second)
   expect(load).toHaveBeenCalledTimes(3)
   expect(warn).toHaveBeenCalledTimes(1)
-  expect(warn).toHaveBeenCalledWith(expect.stringContaining('multiple attachments'), loader)
+  expect(warn).toHaveBeenCalledWith(expect.stringContaining('multiple attachments for this loader on route "home": "first", "second"'), loader)
 })
 
 test('router assets read the same definition from their own router stores', async () => {
