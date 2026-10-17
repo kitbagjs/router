@@ -44,7 +44,7 @@ The resolved value is a snapshot. Keep the reactive result when the component ne
 
 If a reusable definition is missing from the current route or has multiple attachments, `useLoader` warns and runs it separately with the current route and its declared [context](/advanced-concepts/context). Pass `route.loaders[name]` to select a specific attachment.
 
-Consumers share that execution for the navigation, and the warning is logged once per loader per navigation. The warning does not populate `error`; loader execution failures still do. A new navigation starts a new load and cancels pending work from the previous one.
+Consumers share that execution for the navigation, and the warning is logged once per loader per navigation. The warning does not populate `error`.
 
 Attach the definition with `addLoader` to start loading before component setup and participate in route prefetching and SSR hydration. Calling `useLoader` does not add an attachment or change `route.data`.
 
