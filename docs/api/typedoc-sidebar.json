@@ -516,10 +516,6 @@
         "link": "/api/types/RouteCallbackContext.md"
       },
       {
-        "text": "RouteLoader",
-        "link": "/api/types/RouteLoader.md"
-      },
-      {
         "text": "RouteLoaders",
         "link": "/api/types/RouteLoaders.md"
       },

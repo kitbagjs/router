@@ -22,7 +22,7 @@ export type { RouteAddAlias, AddAliasOptions } from './types/addAlias'
 export type { AliasTransform, AliasTransformContext } from './types/routeAlias'
 export type { RouteCallbackContext } from './types/routeCallbackContext'
 export type { RouteViews } from './types/routeViews'
-export type { RouteLoader, RouteLoaders } from './types/routeLoaders'
+export type { RouteLoaders } from './types/routeLoaders'
 export type { CreateLoaderOptions, Loader, LoaderCallbackContext } from './types/loader'
 export type { LoaderResult } from './types/loaderResult'
 export type {

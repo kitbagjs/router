@@ -1,13 +1,5 @@
-import { AnyLoader, Loader } from '@/types/loader'
+import { AnyLoader } from '@/types/loader'
 import { AnyFunction } from '@/types/utilities'
-
-/**
- * A single loader: how to load its data, and how to prefetch it. Unlike a view, a loader always has a
- * getter — a loader without one would have nothing to contribute.
- *
- * @template TData - What this loader's getter returns, carried so a route's data can be typed from it.
- */
-export type RouteLoader<TData = unknown> = Loader<TData>
 
 /**
  * The loaders for a single route, keyed by loader name (the unnamed loader under 'default').
