@@ -48,16 +48,28 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoader {
       return store.getValue(location, router.route)
     }
 
+    const data = computed(() => {
+      if (state.value.kind === 'value') {
+        return state.value.value
+      }
+
+      return undefined
+    })
+
+    const loading = computed(() => ['missing', 'pending', 'running'].includes(state.value.kind))
+
+    const error = computed(() => {
+      if (state.value.kind === 'error') {
+        return state.value.error
+      }
+
+      return undefined
+    })
+
     return {
-      data: computed(() => {
-        if (state.value.kind === 'value') return state.value.value
-        return undefined
-      }),
-      loading: computed(() => ['missing', 'pending', 'running'].includes(state.value.kind)),
-      error: computed(() => {
-        if (state.value.kind === 'error') return state.value.error
-        return undefined
-      }),
+      data,
+      loading,
+      error,
       then(onfulfilled, onrejected) {
         return getData().then(onfulfilled, onrejected)
       },
