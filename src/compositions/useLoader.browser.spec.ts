@@ -1,10 +1,14 @@
 import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils'
 import { afterEach, expect, test, vi } from 'vitest'
 import { defineComponent } from 'vue'
+import { PAYLOAD_ELEMENT_ID, payloadToScript } from '@/services/payload'
 import { createLoader, createRoute, createRouter, createRouterAssets, Router, useLoader } from '@/main'
 
 enableAutoUnmount(afterEach)
-afterEach(() => vi.restoreAllMocks())
+afterEach(() => {
+  vi.restoreAllMocks()
+  document.getElementById(PAYLOAD_ELEMENT_ID)?.remove()
+})
 
 function mountConsumer<TResult>(router: Router, setup: () => TResult): TResult {
   const wrapper = mount(defineComponent({
@@ -139,4 +143,31 @@ test('router assets read the same definition from their own router stores', asyn
 
   await expect(results[0]).resolves.toBe('1')
   await expect(results[1]).resolves.toBe('2')
+})
+
+test('fallback hydration warnings are shared and stop after the hydrated navigation', async () => {
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+  document.body.insertAdjacentHTML('beforeend', payloadToScript({
+    kind: 'success',
+    url: '/1',
+    values: [],
+  }))
+  const loader = createLoader({ load: (route) => route.params.id })
+  const route = createRoute({ name: 'user', path: '/[id]' })
+  const router = createRouter([route], { initialUrl: '/1' })
+  await router.start()
+  const { first, second } = mountConsumer(router, () => ({
+    first: useLoader(loader),
+    second: useLoader(loader),
+  }))
+
+  await expect(first).resolves.toBe('1')
+  await expect(second).resolves.toBe('1')
+  expect(warn).toHaveBeenCalledTimes(2)
+  expect(warn).toHaveBeenCalledWith(expect.stringContaining('not included in the SSR payload'), loader)
+
+  await router.push('/2')
+  await expect(first).resolves.toBe('2')
+  expect(warn).toHaveBeenCalledTimes(3)
+  expect(warn).toHaveBeenLastCalledWith(expect.stringContaining('not attached'), loader)
 })

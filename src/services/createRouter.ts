@@ -317,7 +317,7 @@ export function createRouter<
       clearRejection()
 
       if (!isExternal(url)) {
-        setRouteValuesAndUpdateRoute(to, from, progress, controller.signal)
+        setRouteValuesAndUpdateRoute(to, from, progress, controller.signal, options)
       }
 
       progress.close()
@@ -461,8 +461,8 @@ export function createRouter<
     return getComputations(to).length + getAsyncComponents(to).length
   }
 
-  function setRouteValuesAndUpdateRoute(to: ResolvedRoute, from: ResolvedRoute | null, progress: NavigationProgressTracker, signal: AbortSignal): void {
-    const { props, loaders, values } = valueStore.commit(to)
+  function setRouteValuesAndUpdateRoute(to: ResolvedRoute, from: ResolvedRoute | null, progress: NavigationProgressTracker, signal: AbortSignal, options: RouterUpdateOptions): void {
+    const { props, loaders, values } = valueStore.commit(to, { hydrating: options.hydrating })
 
     activity.add(
       handleRouteValueResponse(props, 'props', to, from, signal),

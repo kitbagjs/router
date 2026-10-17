@@ -98,7 +98,7 @@ export type RouteValueStore = HasVueAppStore & {
   /**
    * Makes the staged store current and computes whatever the route still lacks.
    */
-  commit: (route: ResolvedRoute) => RouteValueResponses,
+  commit: (route: ResolvedRoute, options?: { hydrating?: boolean }) => RouteValueResponses,
   /**
    * The values currently settled in the store.
    */
@@ -122,6 +122,7 @@ export function createRouteValueStore(options: RouteValueStoreOptions = {}): Rou
   const { setVueApp, runWithContext } = createVueAppStore()
   const navigation = createNavigationStores()
   const fallbackIds = new Map<symbol, string>()
+  let isHydrating = false
 
   const loadLoader: RouteValueStore['loadLoader'] = (loader, currentRoute, fallback) => {
     if (!isLoader(loader)) {
@@ -154,6 +155,10 @@ export function createRouteValueStore(options: RouteValueStoreOptions = {}): Rou
       console.warn(`useLoader found multiple attachments for this loader on route "${routeName}": ${names}. It will run separately. Pass route.loaders[name] to select an attachment.`, loader)
     } else {
       console.warn(`useLoader received a loader that is not attached to route "${routeName}". It will run now. Attach it with addLoader to start loading before component setup.`, loader)
+    }
+
+    if (isHydrating) {
+      console.warn(`The fallback data for this loader on route "${routeName}" is not included in the SSR payload. It will load on the client, which may cause a hydration mismatch. Attach it with addLoader, or pass route.loaders[name] to select an attachment.`, loader)
     }
 
     const route = {
@@ -207,7 +212,9 @@ export function createRouteValueStore(options: RouteValueStoreOptions = {}): Rou
     return createValueStore(() => navigation.staged())
   }
 
-  const commit: RouteValueStore['commit'] = (route) => {
+  const commit: RouteValueStore['commit'] = (route, { hydrating = false } = {}) => {
+    isHydrating = hydrating
+
     const previous = navigation.promote()
 
     previous.dispose(new NavigationAbandonedError())
