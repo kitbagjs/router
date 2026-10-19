@@ -5,6 +5,30 @@ import { createRouter } from '@/services/createRouter'
 import { component } from '@/utilities/testHelpers'
 import { createRejection } from './createRejection'
 import echo from '@/components/echo'
+import { getHooks } from '@/types/hooks'
+
+test.each(['startup', 'started'] as const)('unmounting the app releases router resources during %s', async (lifecycle) => {
+  const route = createRoute({ name: 'home', path: '/' })
+  const router = createRouter([route], { initialUrl: '/' })
+  const wrapper = mount(component, {
+    global: {
+      plugins: [router],
+    },
+  })
+
+  const starting = router.start()
+
+  if (lifecycle === 'started') {
+    await starting
+  }
+
+  expect(getHooks(route)[0].onHookAdded.size).toBe(1)
+  wrapper.unmount()
+  await starting
+
+  expect(getHooks(route)[0].onHookAdded.size).toBe(0)
+  expect(router.started.value).toBe(lifecycle === 'started')
+})
 
 test('after enter and update hooks see the committed destination route', async () => {
   const route = createRoute({ name: 'destination', path: '/destination/[value]' }).addView(echo, { props: (route) => ({ value: route.params.value }) })

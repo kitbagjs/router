@@ -4,6 +4,9 @@ import { AnyPayloadTransformer } from '@/services/payload'
 import { PrefetchConfig } from '@/types/prefetch'
 import { CreatedRouteOptions, Route } from '@/types/route'
 import { AnyFunction } from '@/types/utilities'
+import { AnyLoader, isLoader } from '@/types/loader'
+import { combineContext } from '@/services/combineContext'
+import { RouteContext } from '@/types/routeContext'
 
 export const DEFAULT_LOADER_NAME = 'default'
 
@@ -20,7 +23,7 @@ type LoaderOptions = {
 /**
  * The runtime arguments accepted by `addLoader`.
  */
-type AddLoaderParameters = [load: AnyFunction, options?: LoaderOptions]
+type AddLoaderParameters = [load: AnyFunction | AnyLoader, options?: LoaderOptions]
 
 /**
  * The loose runtime signature of the `addLoader` method. Purposely wide: it returns Route rather than the
@@ -33,14 +36,28 @@ type Loader = {
   load: AnyFunction,
   prefetch: PrefetchConfig | undefined,
   transformer: AnyPayloadTransformer | undefined,
+  context?: readonly RouteContext[],
 }
 
-export function toLoader(load: AnyFunction, options: LoaderOptions | undefined): Loader {
+export function toLoader(source: AnyFunction | AnyLoader, options: LoaderOptions | undefined): Loader {
+  if (typeof source === 'function') {
+    return {
+      name: options?.name ?? DEFAULT_LOADER_NAME,
+      load: source,
+      prefetch: options?.prefetch,
+      transformer: options?.transformer,
+    }
+  }
+
+  if (!isLoader(source)) {
+    throw new TypeError('Expected a loader created by createLoader')
+  }
+
   return {
+    ...source,
     name: options?.name ?? DEFAULT_LOADER_NAME,
-    load,
-    prefetch: options?.prefetch,
-    transformer: options?.transformer,
+    prefetch: options?.prefetch ?? source.prefetch,
+    transformer: options?.transformer ?? source.transformer,
   }
 }
 
@@ -50,12 +67,13 @@ export function toLoader(load: AnyFunction, options: LoaderOptions | undefined):
  * Matches are `markRaw` so that making a route reactive does not turn its loaders into reactive proxies.
  * Spreading a match drops that, so the rebuilt one is marked again.
  */
-export function addLoaderToMatch(match: CreatedRouteOptions, { name, load, prefetch, transformer }: Loader): CreatedRouteOptions {
+export function addLoaderToMatch(match: CreatedRouteOptions, loader: Loader): CreatedRouteOptions {
   return markRaw({
     ...match,
+    context: combineContext(match.context, loader.context),
     loaders: {
       ...match.loaders,
-      [name]: { load, prefetch, transformer },
+      [loader.name]: loader,
     },
   })
 }

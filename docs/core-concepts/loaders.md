@@ -21,6 +21,31 @@ export const user = createRoute({
 
 Here `getUser` is your application's data-fetching function. Register `user` in your router's routes as usual.
 
+## Reusable loaders
+
+Create a loader separately when several routes need the same loading logic. Like an inline loader, its callback receives the resolved route. Reusing a definition computes data separately for each route. Loaders can be passed [context](/advanced-concepts/context) to enable them to reference other routes and rejections:
+
+```ts
+import { createLoader, createRoute } from '@kitbag/router'
+
+const sessionLoader = createLoader({
+  load: (route, { signal }) => getSession({
+    signal,
+    url: route.href,
+  }),
+  prefetch: 'intent',
+})
+
+const user = createRoute({...})
+  .addLoader(sessionLoader)
+
+const settings = createRoute({...})
+  .addLoader(sessionLoader, {
+    name: 'session',
+    prefetch: false,
+  })
+```
+
 ## Reading data in a component
 
 Use `useRoute` with the route's name and await `route.data` at the top level of `<script setup>`. The result is typed from the loader's return value.
@@ -39,7 +64,7 @@ const user = await route.data
 </template>
 ```
 
-[Register your router](/quick-start#type-safety) to get the correct route names and data types when using `useRoute`.
+[Register your router](/core-concepts/type-safety#registration) to get the correct route names and data types when using `useRoute`.
 
 A single unnamed loader exposes its result directly as `route.data`. This is always a promise, even if the loader returns a value synchronously. Data is also available on `router.route`, but not on a route returned by `router.resolve` or in navigation hooks.
 

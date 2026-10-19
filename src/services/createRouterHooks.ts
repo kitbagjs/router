@@ -1,4 +1,6 @@
-import { AddGlobalHooks, AddComponentHook, AfterHookRunner, BeforeHookRunner, AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, ErrorHookRunner, AddErrorHook, BeforeEnterHook, BeforeUpdateHook, BeforeLeaveHook, AfterEnterHook, AfterUpdateHook, AfterLeaveHook, RejectionHookRunner, RejectionHook, AddRejectionHook } from '@/types/hooks'
+import { AnyHook } from '@/types/hook'
+import { toHook } from '@/services/toHook'
+import { ComponentHook, AddGlobalHooks, AddComponentHook, AfterHookRunner, BeforeHookRunner, AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, ErrorHookRunner, AddErrorHook, BeforeEnterHook, BeforeUpdateHook, BeforeLeaveHook, AfterEnterHook, AfterUpdateHook, AfterLeaveHook, RejectionHookRunner, RejectionHook, AddRejectionHook } from '@/types/hooks'
 import { getRouteHookCondition } from '@/services/hooks'
 import { ContextPushError } from '@/errors/contextPushError'
 import { ContextRejectionError } from '@/errors/contextRejectionError'
@@ -39,11 +41,16 @@ export type RouterHooks = HasVueAppStore & {
 
 type RouterHooksOptions = {
   redirectStatus: RedirectStatus,
+  onHookAdded?: (hook: ComponentHook | AnyHook) => void,
 }
 
-export function createRouterHooks({ redirectStatus }: RouterHooksOptions): RouterHooks {
+export function createRouterHooks({ redirectStatus, onHookAdded }: RouterHooksOptions): RouterHooks {
   const { setVueApp, runWithContext } = createVueAppStore()
   const { store: globalStore, ...globalHooks } = createRouteHooks()
+
+  if (onHookAdded) {
+    globalStore.onHookAdded.add(onHookAdded)
+  }
 
   const componentStore = new Hooks()
 
@@ -52,7 +59,7 @@ export function createRouterHooks({ redirectStatus }: RouterHooksOptions): Route
     const routeHooks = getBeforeHooksFromRoutes(to, from)
     const globalHooks = getGlobalBeforeHooks(to, from, globalStore)
 
-    const allHooks: (RedirectHook | BeforeEnterHook | BeforeUpdateHook | BeforeLeaveHook)[] = [
+    const allHooks: (RedirectHook | BeforeEnterHook | BeforeUpdateHook | BeforeLeaveHook | AnyHook)[] = [
       ...routeHooks.redirects,
       ...globalHooks.onBeforeRouteEnter,
       ...routeHooks.onBeforeRouteEnter,
@@ -68,11 +75,13 @@ export function createRouterHooks({ redirectStatus }: RouterHooksOptions): Route
       const results: Promise<unknown>[] = []
 
       // counted one at a time so a hook that throws before returning still leaves the count exact
-      for (const callback of allHooks) {
+      for (const hook of allHooks) {
+        const callback = toHook(hook)
         progress?.expect(1)
 
         // Enter and update hooks are only in this list when to is not null, and leave hooks are only in it when from is not null. These casts are purely to satisfy the type checker.
         const result = Promise.resolve(runWithContext(() => callback(to as ResolvedRoute, {
+          lifecycle: 'before',
           from: from as ResolvedRoute,
           reject,
           push,
@@ -130,7 +139,7 @@ export function createRouterHooks({ redirectStatus }: RouterHooksOptions): Route
     const routeHooks = getAfterHooksFromRoutes(to, from)
     const globalHooks = getGlobalAfterHooks(to, from, globalStore)
 
-    const allHooks: (AfterLeaveHook | AfterUpdateHook | AfterEnterHook)[] = [
+    const allHooks: (AfterLeaveHook | AfterUpdateHook | AfterEnterHook | AnyHook)[] = [
       ...componentStore.onAfterRouteLeave,
       ...routeHooks.onAfterRouteLeave,
       ...globalHooks.onAfterRouteLeave,
@@ -143,9 +152,11 @@ export function createRouterHooks({ redirectStatus }: RouterHooksOptions): Route
     ]
 
     try {
-      const results = allHooks.map((callback) => {
+      const results = allHooks.map((hook) => {
+        const callback = toHook(hook)
         // Enter and update hooks are only in this list when to is not null, and leave hooks are only in it when from is not null. These casts are purely to satisfy the type checker.
         return Promise.resolve(runWithContext(() => callback(to as ResolvedRoute, {
+          lifecycle: 'after',
           from: from as ResolvedRoute,
           reject,
           push,
@@ -222,6 +233,7 @@ export function createRouterHooks({ redirectStatus }: RouterHooksOptions): Route
   }
 
   const addComponentHook: AddComponentHook = ({ lifecycle, depth, hook }) => {
+    onHookAdded?.(hook)
     const condition = getRouteHookCondition(lifecycle)
     const hooks = componentStore[lifecycle]
 
@@ -232,7 +244,7 @@ export function createRouterHooks({ redirectStatus }: RouterHooksOptions): Route
       }
 
       // Only leave hooks pass the condition when to is null and those accept a null to.
-      const callback = hook as (to: ResolvedRoute | null, context: any) => MaybePromise<void>
+      const callback = toHook(hook) as (to: ResolvedRoute | null, context: any) => MaybePromise<void>
 
       return callback(to, context)
     }

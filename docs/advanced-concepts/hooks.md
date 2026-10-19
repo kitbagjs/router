@@ -36,6 +36,7 @@ The router provides `to` and a `context` argument to your hook callback. The con
 
 | Property | Description |
 | ---- | ---- |
+| lifecycle | `'before'` or `'after'`, depending on the hook's lifecycle. |
 | from | What was the route prior to the hook's execution |
 | push | Convenient way to move the user from wherever they were to a new route. |
 | replace | Same as push, but with `options: { replace: true }`. |
@@ -130,5 +131,50 @@ router.onAfterRouteEnter(() => {
   const value = inject('global')
 
   ...
+})
+```
+
+## Reusable Hooks
+
+Use `createHook` to define a hook once and reuse it with before or after hooks on routes or the router. Hooks can be passed [context](/advanced-concepts/context) to enable them to reference other routes and rejections.
+
+```ts
+import { createHook } from '@kitbag/router'
+
+const logNavigation = createHook({
+  hook: (to, { from }) => {
+    console.log('Navigation', {
+      from: from?.href,
+      to: to?.href,
+    })
+  },
+})
+```
+
+Register the created hook on a route or on the router:
+
+```ts
+import { createRoute, createRouter } from '@kitbag/router'
+
+const account = createRoute({...})
+
+account.onBeforeRouteEnter(logNavigation)
+
+const router = createRouter([account])
+
+router.onAfterRouteEnter(logNavigation)
+```
+
+### Hook Lifecycles
+
+Use `context.lifecycle` to distinguish before and after hooks and access `abort` when it is `'before'`:
+
+```ts
+const unsavedChangesHook = createHook({
+  hook: (_to, context) => {
+    if (context.lifecycle === 'before' && hasUnsavedChanges()) {
+      context.abort()
+    }
+  },
 })
 ```

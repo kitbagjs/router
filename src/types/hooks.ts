@@ -1,6 +1,7 @@
+import { AnyHook } from '@/types/hook'
 import { Hooks } from '@/models/hooks'
 import { isResolvedRoute, RouterResolvedRouteUnion, ResolvedRouteUnion } from '@/types/resolved'
-import { MaybePromise } from '@/types/utilities'
+import { AnyFunction, MaybePromise } from '@/types/utilities'
 import { isRoute, Route, Routes } from '@/types/route'
 import { RouterReject } from '@/types/routerReject'
 import { RouterPush } from '@/types/routerPush'
@@ -81,7 +82,7 @@ export type ComponentHook = BeforeEnterHook | BeforeUpdateHook | BeforeLeaveHook
  */
 export type ComponentHookRegistration = {
   lifecycle: HookLifecycle,
-  hook: ComponentHook,
+  hook: ComponentHook | AnyHook,
   depth: number,
 }
 
@@ -98,6 +99,11 @@ export type AddGlobalHooks = (hooks: Hooks) => void
 export type HookRemove = () => void
 
 /**
+ * Registers an inline callback or a reusable hook definition.
+ */
+export type AddHook<THook extends AnyFunction> = (hook: THook | AnyHook) => HookRemove
+
+/**
  * Enumerates the lifecycle events for before route hooks.
  */
 export type BeforeHookLifecycle = 'onBeforeRouteEnter' | 'onBeforeRouteUpdate' | 'onBeforeRouteLeave'
@@ -112,11 +118,12 @@ export type AfterHookLifecycle = 'onAfterRouteEnter' | 'onAfterRouteUpdate' | 'o
  */
 export type HookLifecycle = BeforeHookLifecycle | AfterHookLifecycle
 
-type AfterHookContext<
+export type AfterHookContext<
   TRoute extends Route,
   TRoutes extends Routes,
   TRejections extends Rejections
 > = {
+  lifecycle: 'after',
   reject: RouterReject<TRejections>,
   push: RouterPush<TRoutes>,
   replace: RouterReplace<TRoutes>,
@@ -124,11 +131,12 @@ type AfterHookContext<
   signal: AbortSignal,
 }
 
-type BeforeHookContext<
+export type BeforeHookContext<
   TRouteTo extends Route,
   TRoutes extends Routes,
   TRejections extends Rejections
 > = {
+  lifecycle: 'before',
   reject: RouterReject<TRejections>,
   push: RouterPush<TRoutes>,
   replace: RouterReplace<TRoutes>,
@@ -158,7 +166,7 @@ export type AddBeforeEnterHook<
   TRejections extends Rejections = Rejections,
   TRouteTo extends Route = TRoutes[number],
   TRouteFrom extends Route = TRoutes[number]
-> = (hook: BeforeEnterHook<TRoutes, TRejections, TRouteTo, TRouteFrom>) => HookRemove
+> = AddHook<BeforeEnterHook<TRoutes, TRejections, TRouteTo, TRouteFrom>>
 
 export type BeforeUpdateHookContext<
   TRoutes extends Routes = Routes,
@@ -181,7 +189,7 @@ export type AddBeforeUpdateHook<
   TRejections extends Rejections = Rejections,
   TRouteTo extends Route = TRoutes[number],
   TRouteFrom extends Route = TRoutes[number]
-> = (hook: BeforeUpdateHook<TRoutes, TRejections, TRouteTo, TRouteFrom>) => HookRemove
+> = AddHook<BeforeUpdateHook<TRoutes, TRejections, TRouteTo, TRouteFrom>>
 
 export type BeforeLeaveHookContext<
   TRoutes extends Routes = Routes,
@@ -204,7 +212,7 @@ export type AddBeforeLeaveHook<
   TRejections extends Rejections = Rejections,
   TRouteTo extends Route = TRoutes[number],
   TRouteFrom extends Route = TRoutes[number]
-> = (hook: BeforeLeaveHook<TRoutes, TRejections, TRouteTo, TRouteFrom>) => HookRemove
+> = AddHook<BeforeLeaveHook<TRoutes, TRejections, TRouteTo, TRouteFrom>>
 
 export type AfterEnterHookContext<
   TRoutes extends Routes = Routes,
@@ -227,7 +235,7 @@ export type AddAfterEnterHook<
   TRejections extends Rejections = Rejections,
   TRouteTo extends Route = TRoutes[number],
   TRouteFrom extends Route = TRoutes[number]
-> = (hook: AfterEnterHook<TRoutes, TRejections, TRouteTo, TRouteFrom>) => HookRemove
+> = AddHook<AfterEnterHook<TRoutes, TRejections, TRouteTo, TRouteFrom>>
 
 export type AfterUpdateHookContext<
   TRoutes extends Routes = Routes,
@@ -250,7 +258,7 @@ export type AddAfterUpdateHook<
   TRejections extends Rejections = Rejections,
   TRouteTo extends Route = TRoutes[number],
   TRouteFrom extends Route = TRoutes[number]
-> = (hook: AfterUpdateHook<TRoutes, TRejections, TRouteTo, TRouteFrom>) => HookRemove
+> = AddHook<AfterUpdateHook<TRoutes, TRejections, TRouteTo, TRouteFrom>>
 
 export type AfterLeaveHookContext<
   TRoutes extends Routes = Routes,
@@ -273,7 +281,7 @@ export type AddAfterLeaveHook<
   TRejections extends Rejections = Rejections,
   TRouteTo extends Route = TRoutes[number],
   TRouteFrom extends Route = TRoutes[number]
-> = (hook: AfterLeaveHook<TRoutes, TRejections, TRouteTo, TRouteFrom>) => HookRemove
+> = AddHook<AfterLeaveHook<TRoutes, TRejections, TRouteTo, TRouteFrom>>
 
 export type BeforeHookResponse = CallbackContextSuccess | CallbackContextPush | CallbackContextRedirect | CallbackContextReject | CallbackContextAbort
 export type AfterHookResponse = CallbackContextSuccess | CallbackContextPush | CallbackContextReject

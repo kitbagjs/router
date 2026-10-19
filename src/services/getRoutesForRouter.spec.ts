@@ -5,6 +5,22 @@ import { component } from '@/utilities'
 import { createRouterPlugin } from '@/services/createRouterPlugin'
 import { createExternalRoute } from '@/services/createExternalRoute'
 import { UnreachableRouteError } from '@/errors/unreachableRouteError'
+import { createHook } from '@/services/createHook'
+import { createRejection } from '@/services/createRejection'
+
+test('returned rejections stay current when hook context adds or replaces definitions', () => {
+  const denied = createRejection({ type: 'Denied' })
+  const registry = getRoutesForRouter([])
+  const { rejections } = registry
+
+  registry.addHookContext(createHook({ context: [denied], hook: () => {} }))
+  expect(rejections).toContain(denied)
+
+  const replacement = createRejection({ type: 'Denied', status: 403 })
+  registry.addHookContext(createHook({ context: [replacement], hook: () => {} }))
+  expect(rejections.filter((rejection) => rejection.type === 'Denied')).toEqual([replacement])
+  expect(registry.getRejectionByType('Denied')).toBe(replacement)
+})
 
 test('given routes without names, removes routes from response', () => {
   const foo = createRoute({ name: 'foo', path: '/foo' })

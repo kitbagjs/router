@@ -63,3 +63,23 @@ if(isRoute(router.route, 'user', { exact: false })) {
   router.route.params // { userId: string } | { userId: string, tab: string }
 }
 ```
+
+## Callbacks
+
+Narrow the route by name inside a loader callback to access its typed params.
+
+```ts
+import { createLoader, type Loader } from '@kitbag/router'
+import { getUser, type User } from './api'
+
+const userLoader: Loader<Promise<User | null>> = createLoader({
+  load: async (route) => {
+    if (route.name === 'user') {
+      // route.params.userId is typed as string
+      return getUser(route.params.userId)
+    }
+
+    return null
+  },
+})
+```

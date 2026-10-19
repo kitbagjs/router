@@ -6,7 +6,7 @@ import { RouterRoute } from '@/types/routerRoute'
 import { AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, AddErrorHook, AddRejectionHook } from '@/types/hooks'
 import { PrefetchConfig } from '@/types/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
-import { Route, Routes } from '@/types/route'
+import { Routes } from '@/types/route'
 import { RouterPush } from '@/types/routerPush'
 import { RouterReplace } from '@/types/routerReplace'
 import { RouterResolve, RouterResolveOptions } from '@/types/routerResolve'
@@ -277,7 +277,8 @@ export type Router<
    */
   render: () => Promise<ServerRenderResponse>,
   /**
-   * Stops the router. Tears down the history listener and ignores any navigation still in flight or started afterwards.
+   * Stops the router. Releases history listeners and context subscriptions and ignores any navigation
+   * still in flight or started afterwards. Called automatically when the Vue app unmounts.
    */
   stop: () => void,
   /**
@@ -301,14 +302,12 @@ export type RouterRouteUnion<TRoutes extends Routes> = {
   [K in keyof TRoutes]: TRoutes[K]['name'] extends '' ? never : RouterRoute<ResolvedRoute<TRoutes[K]>>
 }[number]
 
-export type RouterRoutes<TRouter extends Router> = TRouter extends Router<infer TRoutes extends Routes>
-  ? TRoutes
+export type RouterRoutes<TRouter extends Router> = TRouter extends Router<infer TRoutes extends Routes, any, infer TPlugin extends RouterPlugin>
+  ? Routes extends TRoutes | TPlugin['routes'] ? Routes : TRoutes | TPlugin['routes']
   : Routes
 
 export type RouterRejections<TRouter extends Router> = TRouter extends Router<any, infer TOptions extends RouterOptions, infer TPlugins extends RouterPlugin>
   ? ExtractRejections<TOptions> | ExtractRejections<TPlugins>
   : []
 
-export type RouterRouteName<TRouter extends Router> = TRouter extends Router<infer TRoutes extends Routes>
-  ? RoutesName<TRoutes>
-  : RoutesName<Route[]>
+export type RouterRouteName<TRouter extends Router> = RoutesName<RouterRoutes<TRouter>>

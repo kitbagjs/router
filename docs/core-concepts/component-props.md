@@ -18,6 +18,30 @@ This is obviously useful for assigning static values or route params down to you
 - Correct type for return type.
 - Support for async prop fetching.
 
+## Reusable Views
+
+Use `createView` to share a component and props getter across routes. The getter receives the resolved route, including its loader data, and its result is checked against the component's props. Views can be passed [context](/advanced-concepts/context) to enable them to reference other routes and rejections:
+
+```ts
+import { createView } from '@kitbag/router'
+import SidebarComponent from './SidebarComponent.vue'
+
+const sidebarView = createView({
+  component: SidebarComponent,
+  props: (route) => ({ url: route.href }),
+})
+```
+
+Pass the view to `addView` with the name `sidebar` on each route:
+
+```ts
+const home = createRoute({...})
+  .addView(sidebarView, { name: 'sidebar' })
+
+const about = createRoute({...})
+  .addView(sidebarView, { name: 'sidebar' })
+```
+
 ## Named Views
 Each [named view](/core-concepts/routes#named-views) can have its own props getter. Just pass a `props` getter alongside the view's `name`.
 

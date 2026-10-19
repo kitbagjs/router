@@ -26,6 +26,15 @@ describe('hooks', () => {
     })
   })
 
+  test('lifecycle identifies before and after plugin hooks', () => {
+    plugin.onBeforeRouteEnter((_to, { lifecycle }) => {
+      expectTypeOf(lifecycle).toEqualTypeOf<'before'>()
+    })
+    plugin.onAfterRouteEnter((_to, { lifecycle }) => {
+      expectTypeOf(lifecycle).toEqualTypeOf<'after'>()
+    })
+  })
+
   test('reject should be correctly typed', () => {
     plugin.onBeforeRouteEnter((_to, { reject }) => {
       expectTypeOf(reject).toEqualTypeOf<RouterReject<[typeof NotAuthorized]>>()

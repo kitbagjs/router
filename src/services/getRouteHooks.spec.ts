@@ -9,43 +9,43 @@ test('given two ResolvedRoutes returns before timing hooks in correct order', ()
     name: 'parentA',
   })
 
-  parent.onBeforeRouteUpdate(vi.fn())
+  parent.onBeforeRouteUpdate(vi.fn(() => {}))
 
   const childA = createRoute({
     name: 'childA',
     parent: parent,
   })
 
-  childA.onBeforeRouteEnter(vi.fn())
-  childA.onBeforeRouteUpdate(vi.fn())
-  childA.onBeforeRouteLeave(vi.fn())
+  childA.onBeforeRouteEnter(vi.fn(() => {}))
+  childA.onBeforeRouteUpdate(vi.fn(() => {}))
+  childA.onBeforeRouteLeave(vi.fn(() => {}))
 
   const grandchildA = createRoute({
     name: 'grandchildA',
     parent: childA,
   })
 
-  grandchildA.onBeforeRouteEnter(vi.fn())
-  grandchildA.onBeforeRouteUpdate(vi.fn())
-  grandchildA.onBeforeRouteLeave(vi.fn())
+  grandchildA.onBeforeRouteEnter(vi.fn(() => {}))
+  grandchildA.onBeforeRouteUpdate(vi.fn(() => {}))
+  grandchildA.onBeforeRouteLeave(vi.fn(() => {}))
 
   const childB = createRoute({
     name: 'childB',
     parent: parent,
   })
 
-  childB.onBeforeRouteEnter(vi.fn())
-  childB.onBeforeRouteUpdate(vi.fn())
-  childB.onBeforeRouteLeave(vi.fn())
+  childB.onBeforeRouteEnter(vi.fn(() => {}))
+  childB.onBeforeRouteUpdate(vi.fn(() => {}))
+  childB.onBeforeRouteLeave(vi.fn(() => {}))
 
   const grandchildB = createRoute({
     name: 'grandchildB',
     parent: childB,
   })
 
-  grandchildB.onBeforeRouteEnter(vi.fn())
-  grandchildB.onBeforeRouteUpdate(vi.fn())
-  grandchildB.onBeforeRouteLeave(vi.fn())
+  grandchildB.onBeforeRouteEnter(vi.fn(() => {}))
+  grandchildB.onBeforeRouteUpdate(vi.fn(() => {}))
+  grandchildB.onBeforeRouteLeave(vi.fn(() => {}))
 
   const to = createResolvedRoute(grandchildA, {})
   const from = createResolvedRoute(grandchildB, {})
