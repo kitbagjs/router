@@ -114,9 +114,6 @@ type ToMatch<
 /**
  * The matches for a route, from greatest ancestor to the route itself. Each carries its own views, so
  * there is no second tuple to keep aligned with this one.
- *
- * The parent is read with `TOptions['parent']` rather than `infer`: inferring it produces a copy of the
- * parent route type that TypeScript then structurally compares against the original, every method included.
  */
 type ToMatches<
   TOptions extends CreateRouteOptions
