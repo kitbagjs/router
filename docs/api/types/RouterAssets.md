@@ -45,3 +45,11 @@ type RouterAssets<TRouter> = object;
 | <a id="onafterrouteupdate"></a> `onAfterRouteUpdate` | [`AddAfterUpdateHook`](AddAfterUpdateHook.md)\<[`RouterRoutes`](RouterRoutes.md)\<`TRouter`\>, [`RouterRejections`](RouterRejections.md)\<`TRouter`\>\> | Registers a hook that is called after a route has been updated. Must be called during setup. This is ideal for responding to updates within the same route, such as parameter changes, without full component reloads. **Param** **AfterRouteHook** The hook callback function |
 | <a id="onbeforerouteleave"></a> `onBeforeRouteLeave` | [`AddBeforeLeaveHook`](AddBeforeLeaveHook.md)\<[`RouterRoutes`](RouterRoutes.md)\<`TRouter`\>, [`RouterRejections`](RouterRejections.md)\<`TRouter`\>\> | Registers a hook that is called before a route is left. Must be called from setup. This is useful for performing actions or cleanups before navigating away from a route component. **Param** **BeforeRouteHook** The hook callback function |
 | <a id="onbeforerouteupdate"></a> `onBeforeRouteUpdate` | [`AddBeforeUpdateHook`](AddBeforeUpdateHook.md)\<[`RouterRoutes`](RouterRoutes.md)\<`TRouter`\>, [`RouterRejections`](RouterRejections.md)\<`TRouter`\>\> | Registers a hook that is called before a route is updated. Must be called from setup. This is particularly useful for handling changes in route parameters or query while staying within the same component. **Param** **BeforeRouteHook** The hook callback function |
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="createhook"></a> `createHook` | `CreateHook`\<[`RouterRoutes`](RouterRoutes.md)\<`TRouter`\>\> | Creates a reusable hook with callbacks typed to this router's resolved routes. |
+| <a id="createloader"></a> `createLoader` | `CreateLoader`\<[`RouterRoutes`](RouterRoutes.md)\<`TRouter`\>\> | Creates a reusable loader with callbacks typed to this router's resolved routes. |
+| <a id="createview"></a> `createView` | `CreateView`\<[`RouterRoutes`](RouterRoutes.md)\<`TRouter`\>\> | Creates a reusable view with props callbacks typed to this router's resolved routes and loader data. |

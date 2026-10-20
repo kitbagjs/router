@@ -1,7 +1,7 @@
 # Types: AddBeforeUpdateHook\<TRoutes, TRejections, TRouteTo, TRouteFrom\>
 
 ```ts
-type AddBeforeUpdateHook<TRoutes, TRejections, TRouteTo, TRouteFrom> = (hook) => HookRemove;
+type AddBeforeUpdateHook<TRoutes, TRejections, TRouteTo, TRouteFrom> = AddHook<BeforeUpdateHook<TRoutes, TRejections, TRouteTo, TRouteFrom>>;
 ```
 
 ## Type Parameters
@@ -12,13 +12,3 @@ type AddBeforeUpdateHook<TRoutes, TRejections, TRouteTo, TRouteFrom> = (hook) =>
 | `TRejections` *extends* [`Rejections`](Rejections.md) | [`Rejections`](Rejections.md) |
 | `TRouteTo` *extends* [`Route`](Route.md) | `TRoutes`\[`number`\] |
 | `TRouteFrom` *extends* [`Route`](Route.md) | `TRoutes`\[`number`\] |
-
-## Parameters
-
-| Parameter | Type |
-| ------ | ------ |
-| `hook` | [`BeforeUpdateHook`](BeforeUpdateHook.md)\<`TRoutes`, `TRejections`, `TRouteTo`, `TRouteFrom`\> |
-
-## Returns
-
-[`HookRemove`](HookRemove.md)

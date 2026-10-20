@@ -1,7 +1,7 @@
 # Types: RegisteredRouter\<T\>
 
 ```ts
-type RegisteredRouter<T> = T extends object ? TRouter : Router;
+type RegisteredRouter<T> = T extends object ? T["router"] : Router;
 ```
 
 Represents the Router property within [Register](../interfaces/Register.md)
