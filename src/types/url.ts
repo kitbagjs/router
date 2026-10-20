@@ -12,11 +12,6 @@ export type UrlInternal = {
   [IS_URL_SYMBOL]: true,
   schema: Record<string, UrlPart>,
   params: {},
-  /**
-   * Whether the url matches this url's host, path, query, and hash patterns, without parsing any params.
-   * Matching tries every route in turn and nearly all of them miss, so this lets a miss skip `tryParse`
-   * and the errors it creates.
-   */
   isMatch: (url: string, options?: ParseUrlOptions) => boolean,
 }
 
