@@ -19,8 +19,8 @@ export interface Register {}
 /**
  * Represents the Router property within {@link Register}
  */
-export type RegisteredRouter<T = Register> = T extends { router: infer TRouter }
-  ? TRouter
+export type RegisteredRouter<T = Register> = T extends { router: unknown }
+  ? T['router']
   : Router
 
 /**

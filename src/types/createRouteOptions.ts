@@ -117,8 +117,8 @@ type ToMatch<
  */
 type ToMatches<
   TOptions extends CreateRouteOptions
-> = TOptions extends { parent: infer TParent extends Route }
-  ? [...TParent['matches'], ToMatch<TOptions>]
+> = TOptions extends WithParent
+  ? [...TOptions['parent']['matches'], ToMatch<TOptions>]
   : [ToMatch<TOptions>]
 
 /**
@@ -126,8 +126,8 @@ type ToMatches<
  */
 export type ToRouteUrl<
   TOptions extends CreateRouteOptions
-> = TOptions extends { parent: infer TParent extends Route }
-  ? TOptions['hoist'] extends true ? ToUrl<TOptions> : CombineUrl<TParent, ToUrl<TOptions>>
+> = TOptions extends WithParent
+  ? TOptions['hoist'] extends true ? ToUrl<TOptions> : CombineUrl<TOptions['parent'], ToUrl<TOptions>>
   : ToUrl<TOptions>
 
 /**
