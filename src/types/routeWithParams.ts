@@ -8,8 +8,10 @@ export type RouteGetByKey<TRoutes extends Routes, TKey extends RoutesName<TRoute
 export type RouteParamsByKey<
   TRoutes extends Routes,
   TKey extends string
-> = NoInfer<TKey extends string
-  ? RouteGetByKey<TRoutes, TKey> extends Route
-    ? UrlParamsWriting<RouteGetByKey<TRoutes, TKey>>
-    : Record<string, unknown>
-  : never>
+> = NoInfer<
+  TKey extends string
+    ? RouteGetByKey<TRoutes, TKey> extends Route
+      ? UrlParamsWriting<RouteGetByKey<TRoutes, TKey>>
+      : Record<string, unknown>
+    : never
+>
