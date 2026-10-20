@@ -1,5 +1,5 @@
 import { flushPromises, mount } from '@vue/test-utils'
-import { describe, expect, test, vi } from 'vitest'
+import { describe, expect, onTestFinished, test, vi } from 'vitest'
 import { Component, defineAsyncComponent, h, nextTick, ref } from 'vue'
 import echo from '@/components/echo'
 import { createRoute } from '@/services/createRoute'
@@ -1120,8 +1120,8 @@ describe('prefetch props', () => {
     expect(wrapper.text()).toBe(value)
   })
 
-  test('a child waits for parent props that are not prefetched rather than receiving undefined', async ({ onTestFinished }) => {
-    vi.stubEnv('NODE_ENV', 'development')
+  test.each(['development', 'test', 'production'])('a child waits for parent props that are not prefetched rather than receiving undefined (%s)', async (environment) => {
+    vi.stubEnv('NODE_ENV', environment)
     onTestFinished(() => {
       vi.unstubAllEnvs()
     })
@@ -1157,7 +1157,7 @@ describe('prefetch props', () => {
     await flushPromises()
 
     expect(settled).toStrictEqual([])
-    expect(warn.mock.calls.some(([message]) => String(message).includes('Waiting on props'))).toBe(true)
+    expect(warn.mock.calls.some(([message]) => String(message).includes('Waiting on props'))).toBe(environment === 'development')
 
     wrapper.find('a').trigger('click')
 

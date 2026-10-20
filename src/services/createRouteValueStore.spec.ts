@@ -1,52 +1,9 @@
-import { expect, onTestFinished, test, vi } from 'vitest'
+import { expect, test, vi } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
 import { createRouteValueStore } from '@/services/createRouteValueStore'
 import { createResolvedRoute } from '@/services/createResolvedRoute'
 import { createRoute } from '@/services/createRoute'
 import { component } from '@/utilities/testHelpers'
-
-test.each(['development', 'test', 'production'])('only development warns when waiting on uncomputed loader data (%s)', async (environment) => {
-  vi.stubEnv('NODE_ENV', environment)
-  onTestFinished(() => {
-    vi.unstubAllEnvs()
-  })
-
-  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-  onTestFinished(() => warn.mockRestore())
-
-  const seen = vi.fn()
-  const route = createRoute({ name: 'route', path: '/' })
-    .addLoader(() => 'loaded')
-    .addView(component, {
-      props: async (route) => {
-        const value = await route.data
-
-        seen(value)
-
-        return { value }
-      },
-    })
-  const resolved = createResolvedRoute(route)
-  const store = createRouteValueStore()
-  const detached = store.createDetachedStore()
-  const { props } = detached.compute(resolved, ({ kind }) => kind === 'props')
-
-  await flushPromises()
-
-  expect(seen).not.toHaveBeenCalled()
-
-  if (environment === 'development') {
-    expect(warn).toHaveBeenCalledExactlyOnceWith(expect.stringContaining('Waiting on loader data "default"'))
-  } else {
-    expect(warn).not.toHaveBeenCalled()
-  }
-
-  await detached.compute(resolved, ({ kind }) => kind === 'loader').loaders
-  await props
-
-  expect(seen).toHaveBeenCalledExactlyOnceWith('loaded')
-  detached.dispose()
-})
 
 test('a staged value is adopted in place of running its getter', async () => {
   const loader = vi.fn(() => 'computed')
