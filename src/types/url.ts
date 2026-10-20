@@ -12,6 +12,7 @@ export type UrlInternal = {
   [IS_URL_SYMBOL]: true,
   schema: Record<string, UrlPart>,
   params: {},
+  isMatch: (url: string, options?: ParseUrlOptions) => boolean,
 }
 
 export type CreateUrlOptions = {

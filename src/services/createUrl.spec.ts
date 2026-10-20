@@ -1,5 +1,6 @@
-import { describe, expect, test, vi } from 'vitest'
+import { assert, describe, expect, test, vi } from 'vitest'
 import { createUrl } from '@/services/createUrl'
+import { CreateUrlOptions, isUrl, Url, UrlInternal } from '@/types/url'
 import { withParams } from './withParams'
 import { withDefault } from './withDefault'
 import { InvalidRouteParamValueError } from '@/errors/invalidRouteParamValueError'
@@ -160,6 +161,46 @@ describe('parse', () => {
     const response = url.parse('/?s=foo')
 
     expect(response.search).toBe('foo')
+  })
+})
+
+describe('isMatch', () => {
+  function createInternalUrl(options: CreateUrlOptions): Url & UrlInternal {
+    const url = createUrl(options)
+
+    assert(isUrl(url))
+
+    return url
+  }
+
+  test.each([
+    ['https://kitbag.dev/foo?bar=1#baz', true],
+    ['https://example.com/foo?bar=1#baz', false],
+    ['https://kitbag.dev/qux?bar=1#baz', false],
+    ['https://kitbag.dev/foo?qux=1#baz', false],
+    ['https://kitbag.dev/foo?bar=1#qux', false],
+  ])('given %s, returns %s', (input, expected) => {
+    const url = createInternalUrl({ host: 'https://kitbag.dev', path: '/foo', query: 'bar=[bar]', hash: 'baz' })
+
+    expect(url.isMatch(input)).toBe(expected)
+  })
+
+  test('given a param value the param would reject, still matches', () => {
+    const url = createInternalUrl({ path: withParams('/[id]', { id: Number }) })
+
+    expect(url.isMatch('/abc')).toBe(true)
+    expect(url.tryParse('/abc').success).toBe(false)
+  })
+
+  test.each([
+    ['/foo', true],
+    ['/foo/', true],
+    ['/foo', false],
+    ['/foo/', false],
+  ])('given %s with removeTrailingSlashes %s, agrees with tryParse', (input, removeTrailingSlashes) => {
+    const url = createInternalUrl({ path: '/foo' })
+
+    expect(url.isMatch(input, { removeTrailingSlashes })).toBe(url.tryParse(input, { removeTrailingSlashes }).success)
   })
 })
 

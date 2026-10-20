@@ -3,7 +3,7 @@ import { asUrlString, UrlString } from '@/types/urlString'
 import { stringHasValue } from '@/utilities/guards'
 import { combineUrlSearchParams } from '@/utilities/urlSearchParams'
 
-type UrlParts = {
+export type UrlParts = {
   host?: string,
   path: string,
   query: URLSearchParams,
