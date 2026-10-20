@@ -114,11 +114,14 @@ type ToMatch<
 /**
  * The matches for a route, from greatest ancestor to the route itself. Each carries its own views, so
  * there is no second tuple to keep aligned with this one.
+ *
+ * The parent is read with `TOptions['parent']` rather than `infer`: inferring it produces a copy of the
+ * parent route type that TypeScript then structurally compares against the original, every method included.
  */
 type ToMatches<
   TOptions extends CreateRouteOptions
-> = TOptions extends { parent: infer TParent extends Route }
-  ? [...TParent['matches'], ToMatch<TOptions>]
+> = TOptions extends WithParent
+  ? [...TOptions['parent']['matches'], ToMatch<TOptions>]
   : [ToMatch<TOptions>]
 
 /**
@@ -126,8 +129,8 @@ type ToMatches<
  */
 export type ToRouteUrl<
   TOptions extends CreateRouteOptions
-> = TOptions extends { parent: infer TParent extends Route }
-  ? TOptions['hoist'] extends true ? ToUrl<TOptions> : CombineUrl<TParent, ToUrl<TOptions>>
+> = TOptions extends WithParent
+  ? TOptions['hoist'] extends true ? ToUrl<TOptions> : CombineUrl<TOptions['parent'], ToUrl<TOptions>>
   : ToUrl<TOptions>
 
 /**
