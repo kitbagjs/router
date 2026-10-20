@@ -8,6 +8,7 @@ import { useVisibilityObserver } from './useVisibilityObserver'
 import { useEventListener } from './useEventListener'
 import { Router } from '@/types/router'
 import { ComputationFilter } from '@/services/getComputations'
+import { isSameResolvedRoute } from '@/utilities/isSameResolvedRoute'
 
 type UsePrefetchingConfig = PrefetchConfigs & {
   route: ResolvedRoute | undefined,
@@ -37,7 +38,7 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
     onScopeDispose(() => store.dispose())
 
     watch(() => toValue(config), ({ route, ...configs }, previous) => {
-      if (!isSameRoute(route, previous?.route)) {
+      if (!isSameResolvedRoute(route, previous?.route)) {
         store.reset()
       }
 
@@ -85,14 +86,6 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
       commit,
     }
   }
-}
-
-/**
- * Whether two resolved routes point at the same place. A link resolves a new route whenever its options
- * change, so identity alone would throw away prefetched values the store already keys by url.
- */
-function isSameRoute(route: ResolvedRoute | undefined, previous: ResolvedRoute | undefined): boolean {
-  return route?.id === previous?.id && route?.href === previous?.href
 }
 
 function isComputationForStrategy(strategy: PrefetchStrategy, configs: PrefetchConfigs): ComputationFilter {
