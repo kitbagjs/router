@@ -4,7 +4,7 @@ import { filterQueryParams } from '@/services/queryParamFilter'
 import { ResolvedRoute } from '@/types/resolved'
 import { isRoute, Route, RouteInternal, Routes } from '@/types/route'
 import { RouteAlias } from '@/types/routeAlias'
-import { ParseUrlOptions } from '@/types/url'
+import { isUrl, ParseUrlOptions, Url } from '@/types/url'
 import { isNamedRoute } from '@/utilities/isNamedRoute'
 
 type MatchOptions = { state?: Partial<unknown> } & ParseUrlOptions
@@ -17,6 +17,10 @@ export function getMatchForUrl(routes: Routes, url: string, options: MatchOption
   const namedRoutes = routes.filter(isNamedRoute)
 
   for (const route of namedRoutes) {
+    if (!isMatch(route, url, options)) {
+      continue
+    }
+
     const { success, params } = route.tryParse(url, options)
 
     if (success) {
@@ -48,6 +52,10 @@ export function getMatchForUrl(routes: Routes, url: string, options: MatchOption
  * back, mean the alias does not match, the same as a url whose params fail parsing.
  */
 function getMatchForAlias(route: Route & RouteInternal, alias: RouteAlias, url: string, options: MatchOptions): ResolvedRoute | undefined {
+  if (!isMatch(alias.url, url, options)) {
+    return undefined
+  }
+
   const aliasMatch = alias.url.tryParse(url, options)
 
   if (!aliasMatch.success) {
@@ -76,6 +84,13 @@ function getMatchForAlias(route: Route & RouteInternal, alias: RouteAlias, url: 
       params: aliasMatch.params,
     },
   })
+}
+
+/**
+ * Urls created outside of `createUrl` have no patterns to check, so they go straight to `tryParse`.
+ */
+function isMatch(value: Url, url: string, options: ParseUrlOptions): boolean {
+  return isUrl(value) ? value.isMatch(url, options) : true
 }
 
 function tryStringify(route: Route, params: Record<string, unknown>): string | undefined {

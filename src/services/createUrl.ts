@@ -2,7 +2,7 @@ import { toUrlQueryPart, toUrlPart, UrlPart } from '@/services/withParams'
 import { getParamValueFromUrl, setParamValueOnUrl } from '@/services/paramsFinder'
 import { getParamName, generateRouteHostRegexPattern, generateRoutePathRegexPattern, generateRouteQueryRegexPatterns, generateRouteHashRegexPattern } from '@/services/routeRegex'
 import { getParamValue, setParamValue } from '@/services/params'
-import { parseUrl, stringifyUrl } from '@/services/urlParser'
+import { parseUrl, stringifyUrl, UrlParts } from '@/services/urlParser'
 import { IS_URL_SYMBOL, CreateUrlOptions, ToUrl, Url, ParseUrlOptions, UrlInternal } from '@/types/url'
 import { UrlString } from '@/types/urlString'
 import { checkDuplicateParams } from '@/utilities/checkDuplicateParams'
@@ -64,33 +64,55 @@ export function createUrl(urlOrOptions: CreateUrlOptions): Url {
     })
   }
 
-  function checkMatchesRegex(url: string, options: ParseUrlOptions = {}): void {
-    const parts = parseUrl(url)
-    const shouldRemoveTrailingSlashes = options.removeTrailingSlashes ?? true
+  function isHostMatch(parts: UrlParts): boolean {
+    return host.regexp.test(parts.host ?? '')
+  }
 
-    if (!host.regexp.test(parts.host ?? '')) {
+  function isPathMatch(parts: UrlParts, options: ParseUrlOptions): boolean {
+    const shouldRemoveTrailingSlashes = options.removeTrailingSlashes ?? true
+    const pathRegex = shouldRemoveTrailingSlashes ? path.regexp.trailingSlashRemoved : path.regexp.trailingSlashIgnored
+
+    return pathRegex.test(parts.path)
+  }
+
+  function isQueryMatch(parts: UrlParts): boolean {
+    const queryString = parts.query.toString()
+
+    return query.regexp.every((pattern) => pattern.test(queryString))
+  }
+
+  function isHashMatch(parts: UrlParts): boolean {
+    return hash.regexp.test(parts.hash)
+  }
+
+  function isMatch(url: string, options: ParseUrlOptions = {}): boolean {
+    const parts = parseUrl(url)
+
+    return isHostMatch(parts) && isPathMatch(parts, options) && isQueryMatch(parts) && isHashMatch(parts)
+  }
+
+  function checkMatchesRegex(parts: UrlParts, options: ParseUrlOptions): void {
+    if (!isHostMatch(parts)) {
       throw new Error('Host does not match')
     }
 
-    const pathRegex = shouldRemoveTrailingSlashes ? path.regexp.trailingSlashRemoved : path.regexp.trailingSlashIgnored
-    if (!pathRegex.test(parts.path)) {
+    if (!isPathMatch(parts, options)) {
       throw new Error('Path does not match')
     }
 
-    const queryString = parts.query.toString()
-    if (!query.regexp.every((pattern) => pattern.test(queryString))) {
+    if (!isQueryMatch(parts)) {
       throw new Error('Query does not match')
     }
 
-    if (!hash.regexp.test(parts.hash)) {
+    if (!isHashMatch(parts)) {
       throw new Error('Hash does not match')
     }
   }
 
   function parse(url: string, options: ParseUrlOptions = {}): Record<string, unknown> {
-    checkMatchesRegex(url, options)
-
     const parts = parseUrl(url)
+
+    checkMatchesRegex(parts, options)
 
     return {
       ...getParams(host, parts.host ?? ''),
@@ -112,6 +134,7 @@ export function createUrl(urlOrOptions: CreateUrlOptions): Url {
     [IS_URL_SYMBOL]: true,
     schema: { host, path, query, hash },
     params: {},
+    isMatch,
   } as const satisfies UrlInternal
 
   const url = {
