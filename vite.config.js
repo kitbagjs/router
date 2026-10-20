@@ -64,6 +64,7 @@ export default defineConfig({
     vue(),
     dts({
       insertTypesEntry: true,
+      exclude: ['node_modules', 'dist', 'src/**/*.spec*.ts'],
     }),
   ],
 })
