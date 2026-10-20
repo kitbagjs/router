@@ -8,6 +8,7 @@ import { useVisibilityObserver } from './useVisibilityObserver'
 import { useEventListener } from './useEventListener'
 import { Router } from '@/types/router'
 import { ComputationFilter } from '@/services/getComputations'
+import { isSameResolvedRoute } from '@/utilities/isSameResolvedRoute'
 
 type UsePrefetchingConfig = PrefetchConfigs & {
   route: ResolvedRoute | undefined,
@@ -36,14 +37,20 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
 
     onScopeDispose(() => store.dispose())
 
-    watch(() => toValue(config), ({ route, ...configs }) => {
-      store.reset()
+    watch(() => toValue(config), ({ route, ...configs }, previous) => {
+      if (!isSameResolvedRoute(route, previous?.route)) {
+        store.reset()
+      }
 
       if (!route) {
         return
       }
 
       doPrefetchingForStrategy('eager', route, configs)
+
+      if (isElementVisible.value) {
+        doPrefetchingForStrategy('lazy', route, configs)
+      }
     }, { immediate: true })
 
     watch(isElementVisible, (isVisible) => {

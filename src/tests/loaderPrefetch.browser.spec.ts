@@ -391,3 +391,75 @@ test('retargeting or unmounting a link aborts its prefetched loaders', async () 
   resolve('abandoned')
   await flushPromises()
 })
+
+test.each(['eager', 'lazy'] as const)('rerendering a link with the same url keeps its %s prefetched loader', async (prefetch) => {
+  const signals: AbortSignal[] = []
+  const load = vi.fn((_route: unknown, { signal }: { signal: AbortSignal }) => {
+    signals.push(signal)
+
+    return 'data'
+  })
+  const route = createRoute({ name: 'route', path: '/route', query: 'tab=[?tab]' })
+    .addLoader(load, { prefetch })
+  const router = createRouter([route], { initialUrl: '/' })
+  const query = ref({ tab: 'a' })
+
+  const wrapper = mount({
+    setup: () => () => h(RouterLink, { to: '/route', query: query.value }),
+    provide: {
+      [visibilityObserverKey]: {
+        observe: vi.fn(),
+        unobserve: vi.fn(),
+        disconnect: vi.fn(),
+        isElementVisible: () => true,
+      } satisfies VisibilityObserver,
+    },
+  }, {
+    global: { plugins: [router] },
+  })
+
+  await nextTick()
+
+  expect(load).toHaveBeenCalledOnce()
+
+  query.value = { tab: 'a' }
+  await nextTick()
+
+  expect(load).toHaveBeenCalledOnce()
+  expect(signals[0].aborted).toBe(false)
+
+  wrapper.unmount()
+})
+
+test('retargeting a visible link prefetches its lazy loader for the new url', async () => {
+  const load = vi.fn(() => 'data')
+  const route = createRoute({ name: 'route', path: '/route/[id]' })
+    .addLoader(load, { prefetch: 'lazy' })
+  const router = createRouter([route], { initialUrl: '/' })
+  const to = ref<`/${string}`>('/route/1')
+
+  const wrapper = mount({
+    setup: () => () => h(RouterLink, { to: to.value }),
+    provide: {
+      [visibilityObserverKey]: {
+        observe: vi.fn(),
+        unobserve: vi.fn(),
+        disconnect: vi.fn(),
+        isElementVisible: () => true,
+      } satisfies VisibilityObserver,
+    },
+  }, {
+    global: { plugins: [router] },
+  })
+
+  await nextTick()
+
+  expect(load).toHaveBeenCalledOnce()
+
+  to.value = '/route/2'
+  await nextTick()
+
+  expect(load).toHaveBeenCalledTimes(2)
+
+  wrapper.unmount()
+})
