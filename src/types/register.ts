@@ -18,9 +18,13 @@ export interface Register {}
 
 /**
  * Represents the Router property within {@link Register}
+ *
+ * Indexes `T['router']` rather than using `infer`. Inferring the router hands back a re-instantiated copy
+ * of the router type, which TypeScript then structurally compares against the registered router — every
+ * route, method and hook — on each use.
  */
-export type RegisteredRouter<T = Register> = T extends { router: infer TRouter }
-  ? TRouter
+export type RegisteredRouter<T = Register> = T extends { router: unknown }
+  ? T['router']
   : Router
 
 /**
