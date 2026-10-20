@@ -15,8 +15,8 @@ type ParamPattern = {
 }
 
 export type ParamPatterns = {
-  getValue: (url: string, paramName: string) => string | undefined,
-  setValue: (url: string, paramName: string, value: unknown) => string,
+  parseValue: (url: string, paramName: string) => string | undefined,
+  stringifyValue: (url: string, paramName: string, value: unknown) => string,
 }
 
 /**
@@ -33,7 +33,7 @@ export function createParamPatterns(part: UrlPart): ParamPatterns {
     })
   }
 
-  const getValue: ParamPatterns['getValue'] = (url, paramName) => {
+  const parseValue: ParamPatterns['parseValue'] = (url, paramName) => {
     const pattern = patterns.get(paramName)
 
     if (!pattern) {
@@ -45,7 +45,7 @@ export function createParamPatterns(part: UrlPart): ParamPatterns {
     return paramValue
   }
 
-  const setValue: ParamPatterns['setValue'] = (url, paramName, value) => {
+  const stringifyValue: ParamPatterns['stringifyValue'] = (url, paramName, value) => {
     const pattern = patterns.get(paramName)
 
     if (!pattern) {
@@ -59,7 +59,7 @@ export function createParamPatterns(part: UrlPart): ParamPatterns {
   }
 
   return {
-    getValue,
-    setValue,
+    parseValue,
+    stringifyValue,
   }
 }
