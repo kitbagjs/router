@@ -1,5 +1,4 @@
 import { expect, test, vi } from 'vitest'
-import { reactive } from 'vue'
 import { createRouterRoute, isRouterRoute } from '@/services/createRouterRoute'
 import { createRoute } from './createRoute'
 import { createResolvedRoute } from './createResolvedRoute'
@@ -8,11 +7,16 @@ import { component } from '@/utilities/testHelpers'
 
 test('isRouterRoute returns correct response', () => {
   const route = createRoute({ name: 'isRouterRoute' })
-  const resolved = { ...createResolvedRoute(route, {}), data: undefined }
+  const resolved = createResolvedRoute(route, {})
   const push = vi.fn()
   const routerKey = Symbol()
 
-  const routerRoute = createRouterRoute(routerKey, reactive(resolved), push)
+  const routerRoute = createRouterRoute({
+    routerKey,
+    route: resolved,
+    push,
+    getData: () => undefined,
+  })
 
   expect(isRouterRoute(routerKey, routerRoute)).toBe(true)
   expect(isRouterRoute(routerKey, {})).toBe(false)
@@ -20,11 +24,16 @@ test('isRouterRoute returns correct response', () => {
 
 test('sending state, includes state in push options', () => {
   const route = createRoute({ name: 'state' })
-  const resolved = { ...createResolvedRoute(route, {}), data: undefined }
+  const resolved = createResolvedRoute(route, {})
   const push = vi.fn()
   const routerKey = Symbol()
 
-  const routerRoute = createRouterRoute(routerKey, reactive(resolved), push)
+  const routerRoute = createRouterRoute({
+    routerKey,
+    route: resolved,
+    push,
+    getData: () => undefined,
+  })
 
   routerRoute.update({}, { state: { foo: 'foo' } })
 

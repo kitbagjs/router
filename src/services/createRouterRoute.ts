@@ -1,22 +1,39 @@
-import { computed, InjectionKey, reactive, toRefs } from 'vue'
+import { computed, InjectionKey, reactive, shallowRef } from 'vue'
 import { parseUrl, stringifyUrl, updateUrl } from '@/services/urlParser'
-import { ResolvedRoute, WithData } from '@/types/resolved'
-import { RouterRoute } from '@/types/routerRoute'
+import { ResolvedRoute } from '@/types/resolved'
+import { IS_ROUTER_ROUTE_SYMBOL, RouterRoute, RouterRouteInternal } from '@/types/routerRoute'
 import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { QuerySource } from '@/types/querySource'
 import { Router } from '@/types/router'
+import { RouteValueStore } from '@/services/createRouteValueStore'
 import { isPropertyKey } from '@/utilities/guards'
 
-const isRouterRouteSymbol = Symbol('isRouterRouteSymbol')
-
-export function isRouterRoute(routerKey: InjectionKey<Router>, value: unknown): value is RouterRoute {
-  return typeof value === 'object' && value !== null && isRouterRouteSymbol in value && routerKey in value
+export function isRouterRoute(routerKey: InjectionKey<Router>, value: unknown): value is RouterRoute & RouterRouteInternal {
+  return typeof value === 'object' && value !== null && IS_ROUTER_ROUTE_SYMBOL in value && routerKey in value
 }
 
-export function createRouterRoute<TRoute extends ResolvedRoute & WithData>(routerKey: InjectionKey<Router>, route: TRoute, push: RouterPush): RouterRoute<TRoute> {
+type CreateRouterRouteOptions<TRouter extends Router = Router> = {
+  routerKey: InjectionKey<TRouter>,
+  route: ResolvedRoute,
+  push: RouterPush,
+  getData: RouteValueStore['getData'],
+}
+
+export function createRouterRoute<TRouter extends Router>(options: CreateRouterRouteOptions<TRouter>): TRouter['route'] & RouterRouteInternal
+export function createRouterRoute({ routerKey, route: initialRoute, push, getData }: CreateRouterRouteOptions): RouterRoute & RouterRouteInternal {
+  const route = shallowRef(initialRoute)
+
+  function getResolvedRoute(): ResolvedRoute {
+    return route.value
+  }
+
+  function updateRoute(newRoute: ResolvedRoute): void {
+    route.value = newRoute
+  }
+
   function updateQuery(query: QuerySource): void {
     const routeWithoutQuery = stringifyUrl({
-      ...parseUrl(route.href),
+      ...parseUrl(route.value.href),
       query: undefined,
     })
     const updatedHref = updateUrl(routeWithoutQuery, { query })
@@ -32,39 +49,47 @@ export function createRouterRoute<TRoute extends ResolvedRoute & WithData>(route
     const paramUpdates = individualParamNameOrAllParams
     const options = valueOrOptions
     const params = {
-      ...route.params,
+      ...route.value.params,
       ...paramUpdates,
     }
 
-    return push(route.name, params, options)
+    return push(route.value.name, params, options)
   }
 
   const querySet: URLSearchParams['set'] = (...parameters) => {
-    const query = new URLSearchParams(route.query)
+    const query = new URLSearchParams(route.value.query)
     query.set(...parameters)
 
     updateQuery(query)
   }
 
   const queryAppend: URLSearchParams['append'] = (...parameters) => {
-    const query = new URLSearchParams(route.query)
+    const query = new URLSearchParams(route.value.query)
     query.append(...parameters)
 
     updateQuery(query)
   }
 
   const queryDelete: URLSearchParams['delete'] = (...parameters) => {
-    const query = new URLSearchParams(route.query)
+    const query = new URLSearchParams(route.value.query)
     query.delete(...parameters)
 
     updateQuery(query)
   }
 
-  const { id, matched, matches, name, hash, href, canonical, data, getTitle } = toRefs(route)
+  const id = computed(() => route.value.id)
+  const matched = computed(() => route.value.matched)
+  const matches = computed(() => route.value.matches)
+  const name = computed(() => route.value.name)
+  const hash = computed(() => route.value.hash)
+  const href = computed(() => route.value.href)
+  const canonical = computed(() => route.value.canonical)
+  const data = computed(() => getData(route.value))
+  const getTitle = computed(() => route.value.getTitle)
 
   const paramsProxy = new Proxy({}, {
     get(_target, property, receiver) {
-      return Reflect.get(route.params, property, receiver)
+      return Reflect.get(route.value.params, property, receiver)
     },
     set(_target, property, value) {
       update(property, value)
@@ -72,10 +97,10 @@ export function createRouterRoute<TRoute extends ResolvedRoute & WithData>(route
       return true
     },
     ownKeys() {
-      return Reflect.ownKeys(route.params)
+      return Reflect.ownKeys(route.value.params)
     },
     getOwnPropertyDescriptor(_target, prop) {
-      return Reflect.getOwnPropertyDescriptor(route.params, prop)
+      return Reflect.getOwnPropertyDescriptor(route.value.params, prop)
     },
   })
 
@@ -90,7 +115,7 @@ export function createRouterRoute<TRoute extends ResolvedRoute & WithData>(route
 
   const query = computed({
     get() {
-      return new Proxy<URLSearchParams>(route.query, {
+      return new Proxy<URLSearchParams>(route.value.query, {
         get(target, property, receiver) {
           switch (property) {
             case 'append':
@@ -112,9 +137,9 @@ export function createRouterRoute<TRoute extends ResolvedRoute & WithData>(route
 
   const state = computed({
     get() {
-      return new Proxy(route.state, {
+      return new Proxy(route.value.state, {
         set(_target, property, value) {
-          update({}, { state: { ...route.state, [property]: value } })
+          update({}, { state: { ...route.value.state, [property]: value } })
 
           return true
         },
@@ -125,9 +150,17 @@ export function createRouterRoute<TRoute extends ResolvedRoute & WithData>(route
     },
   })
 
+  const internal = {
+    [IS_ROUTER_ROUTE_SYMBOL]: true,
+    [routerKey]: true,
+    updateRoute,
+    getResolvedRoute,
+  } satisfies RouterRouteInternal
+
   // data is derived from the route's matches rather than read off the route, so its type cannot be matched here
   const routerRoute = reactive({
-    ...route,
+    ...initialRoute,
+    ...internal,
     id,
     matched,
     matches,
@@ -141,9 +174,7 @@ export function createRouterRoute<TRoute extends ResolvedRoute & WithData>(route
     data,
     getTitle,
     update,
-    [isRouterRouteSymbol]: true,
-    [routerKey]: true,
-  }) as RouterRoute<TRoute>
+  }) as RouterRoute & RouterRouteInternal
 
   return routerRoute
 }
