@@ -16,8 +16,6 @@ import { PropsResult } from '@/utilities/props'
 import { MaybePromise } from '@/types/utilities'
 import { Computation, ComputationFilter, getComputations, isKind, loaderLocations, propsLocations, ValueLocation } from './getComputations'
 
-declare const process: { env: { NODE_ENV?: string } }
-
 /**
  * A navigation that was superseded before its values settled. The navigation that replaced it owns the
  * outcome, so this one reports that it went nowhere rather than a success it never had.
