@@ -16,6 +16,8 @@ import { PropsResult } from '@/utilities/props'
 import { MaybePromise } from '@/types/utilities'
 import { Computation, ComputationFilter, getComputations, isKind, loaderLocations, propsLocations, ValueLocation } from './getComputations'
 
+declare const process: { env: { NODE_ENV?: string } }
+
 /**
  * A navigation that was superseded before its values settled. The navigation that replaced it owns the
  * outcome, so this one reports that it went nowhere rather than a success it never had.
@@ -454,6 +456,10 @@ async function toResult(props: Promise<unknown>): Promise<PropsResult> {
 }
 
 function warnWaitingOnUncomputedValue({ kind, name }: ValueLocation, route: ResolvedRoute): void {
+  if (process.env.NODE_ENV !== 'development') {
+    return
+  }
+
   const routeName = route.name || 'unknown'
   const value = kind === 'props' ? `props "${name}"` : `loader data "${name}"`
 

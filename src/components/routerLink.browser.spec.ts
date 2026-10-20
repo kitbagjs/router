@@ -1120,7 +1120,12 @@ describe('prefetch props', () => {
     expect(wrapper.text()).toBe(value)
   })
 
-  test('a child waits for parent props that are not prefetched rather than receiving undefined', async () => {
+  test('a child waits for parent props that are not prefetched rather than receiving undefined', async ({ onTestFinished }) => {
+    vi.stubEnv('NODE_ENV', 'development')
+    onTestFinished(() => {
+      vi.unstubAllEnvs()
+    })
+
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
     const settled: unknown[] = []
