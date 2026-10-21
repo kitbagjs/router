@@ -1,11 +1,11 @@
 import { flushPromises, mount } from '@vue/test-utils'
-import { afterEach, beforeAll, expect, test, vi } from 'vitest'
+import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { register } from 'view-transitions-mock'
 import { ViewTransition } from '@/components/viewTransition'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
 
-beforeAll(() => {
+beforeEach(() => {
   vi.spyOn(console, 'info').mockImplementation(() => {})
   register({ forced: true })
 })
