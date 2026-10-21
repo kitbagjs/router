@@ -1,5 +1,5 @@
 import { InjectionKey, MaybeRefOrGetter, onScopeDispose, ref, Ref, toValue, watch } from 'vue'
-import { createUseNavigationStores } from '@/compositions/useNavigationStores'
+import { createUseRouterNavigation } from '@/compositions/useRouterNavigation'
 import type { PrefetchConfigs, PrefetchStrategy } from '@/types/prefetch'
 import { getPrefetchOption } from '@/utilities/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
@@ -22,24 +22,24 @@ type UsePrefetching = {
 type UsePrefetchingFunction = (config: MaybeRefOrGetter<UsePrefetchingConfig>) => UsePrefetching
 
 export function createUsePrefetching<TRouter extends Router>(routerKey: InjectionKey<TRouter>): UsePrefetchingFunction {
-  const useNavigationStores = createUseNavigationStores(routerKey)
+  const useRouterNavigation = createUseRouterNavigation(routerKey)
 
   return (config) => {
     const element = ref<HTMLElement>()
 
-    const { createDetachedStore } = useNavigationStores()
-    const store = createDetachedStore()
+    const { createPrefetch } = useRouterNavigation()
+    const prefetch = createPrefetch()
     const { isElementVisible } = useVisibilityObserver(element)
 
     const commit: UsePrefetching['commit'] = () => {
-      store.stage()
+      prefetch.stage()
     }
 
-    onScopeDispose(() => store.dispose())
+    onScopeDispose(() => prefetch.dispose())
 
     watch(() => toValue(config), ({ route, ...configs }, previous) => {
       if (!isSameResolvedRoute(route, previous?.route)) {
-        store.reset()
+        prefetch.reset()
       }
 
       if (!route) {
@@ -80,7 +80,7 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
       prefetchComponentsForRoute(strategy, route, configs)
       const computations = getComputationsForStrategy(route, strategy, configs)
 
-      store.compute(route, computations)
+      prefetch.compute(route, computations)
     }
 
     return {

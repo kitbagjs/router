@@ -1,7 +1,7 @@
 import { flushPromises } from '@vue/test-utils'
 import { describe, expect, test } from 'vitest'
 import { App, Component, createApp, defineAsyncComponent } from 'vue'
-import { createUseNavigationStores } from '@/compositions/useNavigationStores'
+import { createUseRouterNavigation } from '@/compositions/useRouterNavigation'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
 import { createRouterAssets } from '@/services/createRouterAssets'
@@ -231,7 +231,7 @@ describe('navigation progress', () => {
 
     await flushPromises()
 
-    const store = navigation.app.runWithContext(() => createUseNavigationStores(router.key)().createDetachedStore())
+    const store = navigation.app.runWithContext(() => createUseRouterNavigation(router.key)().createPrefetch())
 
     const route = router.resolve('other')
     store.compute(route, getComputations(route))

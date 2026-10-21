@@ -1,6 +1,6 @@
 import { expect, test, vi } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
-import { createNavigationStores } from '@/services/createNavigationStores'
+import { createNavigation } from '@/services/createNavigation'
 import { createResolvedRoute } from '@/services/createResolvedRoute'
 import { createRoute } from '@/services/createRoute'
 import { component } from '@/utilities/testHelpers'
@@ -9,17 +9,17 @@ import { getDataKey } from '@/services/getDataKey'
 import { ContextPushError } from '@/errors/contextPushError'
 import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
 
-test('pending props report abandonment when another navigation replaces their store', async () => {
+test('pending props report abandonment when another navigation replaces their navigation', async () => {
   const pending = Promise.withResolvers<{ value: string }>()
   const route = createRoute({ name: 'route', path: '/' }).addView(component, { props: () => pending.promise })
   const other = createRoute({ name: 'other', path: '/other' })
   const resolved = createResolvedRoute(route)
-  const store = createNavigationStores()
+  const navigation = createNavigation()
 
-  store.commit(resolved)
-  const props = store.getProps(route.id, 'default', resolved)
+  navigation.commit(resolved)
+  const props = navigation.getProps(route.id, 'default', resolved)
 
-  store.commit(createResolvedRoute(other))
+  navigation.commit(createResolvedRoute(other))
 
   await expect(props).resolves.toEqual({ kind: 'abandoned' })
   pending.resolve({ value: 'late' })
@@ -30,14 +30,14 @@ test('a rejected props getter reports an error before and after it settles', asy
   const pending = Promise.withResolvers<{ value: string }>()
   const route = createRoute({ name: 'route', path: '/' }).addView(component, { props: () => pending.promise })
   const resolved = createResolvedRoute(route)
-  const store = createNavigationStores()
+  const navigation = createNavigation()
 
-  store.commit(resolved)
-  const props = store.getProps(route.id, 'default', resolved)
+  navigation.commit(resolved)
+  const props = navigation.getProps(route.id, 'default', resolved)
   pending.reject(error)
 
   await expect(props).resolves.toEqual({ kind: 'error', error })
-  expect(store.getProps(route.id, 'default', resolved)).toEqual({ kind: 'error', error })
+  expect(navigation.getProps(route.id, 'default', resolved)).toEqual({ kind: 'error', error })
 })
 
 test('a props getter that throws NavigationAbandonedError reports abandonment', () => {
@@ -47,21 +47,21 @@ test('a props getter that throws NavigationAbandonedError reports abandonment', 
     },
   })
   const resolved = createResolvedRoute(route)
-  const store = createNavigationStores()
+  const navigation = createNavigation()
 
-  store.commit(resolved)
+  navigation.commit(resolved)
 
-  expect(store.getProps(route.id, 'default', resolved)).toEqual({ kind: 'abandoned' })
+  expect(navigation.getProps(route.id, 'default', resolved)).toEqual({ kind: 'abandoned' })
 })
 
 test('a view without a props getter reports a successful value with no props', () => {
   const route = createRoute({ name: 'route', path: '/' }).addView(component)
   const resolved = createResolvedRoute(route)
-  const store = createNavigationStores()
+  const navigation = createNavigation()
 
-  store.commit(resolved)
+  navigation.commit(resolved)
 
-  expect(store.getProps(route.id, 'default', resolved)).toEqual({ kind: 'value', value: undefined })
+  expect(navigation.getProps(route.id, 'default', resolved)).toEqual({ kind: 'value', value: undefined })
 })
 
 test('a staged value is adopted in place of running its getter', async () => {
@@ -69,28 +69,28 @@ test('a staged value is adopted in place of running its getter', async () => {
   const route = createRoute({ name: 'route', path: '/' }).addView(component)
     .addLoader(loader)
   const resolved = createResolvedRoute(route)
-  const store = createNavigationStores()
+  const navigation = createNavigation()
 
-  const detached = store.createDetachedStore()
+  const detached = navigation.createPrefetch()
 
   detached.fill(resolved, [{ kind: 'loader', depth: 0, name: 'default', value: 'staged' }])
   detached.stage()
-  store.commit(resolved)
+  navigation.commit(resolved)
 
-  await expect(store.getRouteData(resolved)).resolves.toBe('staged')
+  await expect(navigation.getRouteData(resolved)).resolves.toBe('staged')
   expect(loader).not.toHaveBeenCalled()
 })
 
-test('getValues returns the values the store resolved', async () => {
+test('getValues returns the values the navigation resolved', async () => {
   const route = createRoute({ name: 'route', path: '/' }).addView(component)
     .addLoader(() => 'value')
   const resolved = createResolvedRoute(route)
-  const store = createNavigationStores()
+  const navigation = createNavigation()
 
-  store.commit(resolved)
+  navigation.commit(resolved)
   await flushPromises()
 
-  expect(store.getValues(resolved)).toEqual([{ kind: 'loader', depth: 0, name: 'default', value: 'value' }])
+  expect(navigation.getValues(resolved)).toEqual([{ kind: 'loader', depth: 0, name: 'default', value: 'value' }])
 })
 
 test('staged values are adopted by the next navigation without running their getters again', async () => {
@@ -98,12 +98,12 @@ test('staged values are adopted by the next navigation without running their get
   const route = createRoute({ name: 'route', path: '/' }).addView(component)
     .addLoader(loader)
   const resolved = createResolvedRoute(route)
-  const store = createNavigationStores()
+  const navigation = createNavigation()
 
-  await store.staged().compute(resolved, getComputations(resolved)).loaders
-  store.commit(resolved)
+  await navigation.staged().compute(resolved, getComputations(resolved)).loaders
+  navigation.commit(resolved)
 
-  await expect(store.getRouteData(resolved)).resolves.toBe('value')
+  await expect(navigation.getRouteData(resolved)).resolves.toBe('value')
   expect(loader).toHaveBeenCalledTimes(1)
 })
 
@@ -112,16 +112,16 @@ test('staging a route leaves the current route reading its own values', async ()
     .addLoader(() => 'current')
   const next = createRoute({ name: 'next', path: '/next' }).addView(component)
     .addLoader(() => 'next')
-  const store = createNavigationStores()
+  const navigation = createNavigation()
   const currentResolved = createResolvedRoute(current)
   const nextResolved = createResolvedRoute(next)
 
-  store.commit(currentResolved)
+  navigation.commit(currentResolved)
   await flushPromises()
 
-  store.staged().compute(nextResolved, getComputations(nextResolved))
+  navigation.staged().compute(nextResolved, getComputations(nextResolved))
 
-  expect(store.getValues(currentResolved)).toEqual([{ kind: 'loader', depth: 0, name: 'default', value: 'current' }])
+  expect(navigation.getValues(currentResolved)).toEqual([{ kind: 'loader', depth: 0, name: 'default', value: 'current' }])
 })
 
 test('a staged props getter can read the data its route is loading', async () => {
@@ -129,12 +129,12 @@ test('a staged props getter can read the data its route is loading', async () =>
     .addLoader(() => 'loaded')
     .addView(component, { props: async (route) => ({ value: await route.data }) })
   const resolved = createResolvedRoute(route)
-  const store = createNavigationStores()
+  const navigation = createNavigation()
 
-  await store.staged().compute(resolved, getComputations(resolved)).props
-  store.commit(resolved)
+  await navigation.staged().compute(resolved, getComputations(resolved)).props
+  navigation.commit(resolved)
 
-  expect(store.getProps(route.id, 'default', resolved)).toEqual({ kind: 'value', value: { value: 'loaded' } })
+  expect(navigation.getProps(route.id, 'default', resolved)).toEqual({ kind: 'value', value: { value: 'loaded' } })
 })
 
 test('staging reports how the values settled', async () => {
@@ -146,21 +146,21 @@ test('staging reports how the values settled', async () => {
         return {}
       },
     })
-  const store = createNavigationStores()
+  const navigation = createNavigation()
 
   const resolved = createResolvedRoute(route)
-  const { props } = store.staged().compute(resolved, getComputations(resolved))
+  const { props } = navigation.staged().compute(resolved, getComputations(resolved))
 
   await expect(props).resolves.toMatchObject({ status: 'REJECT', type: 'NotFound' })
 })
 
-test('a detached store whose getter throws does not surface an unhandled rejection when nothing waits on it', async () => {
+test('a detached navigation whose getter throws does not surface an unhandled rejection when nothing waits on it', async () => {
   const route = createRoute({ name: 'route', path: '/' }).addView(component)
     .addLoader(() => {
       throw new Error('getter failed')
     })
-  const store = createNavigationStores()
-  const detached = store.createDetachedStore()
+  const navigation = createNavigation()
+  const detached = navigation.createPrefetch()
 
   const resolved = createResolvedRoute(route)
   detached.compute(resolved, getComputations(resolved))
@@ -168,7 +168,7 @@ test('a detached store whose getter throws does not surface an unhandled rejecti
   await flushPromises()
 })
 
-test('disposing a detached store aborts the signal its getters were given', async () => {
+test('disposing a detached navigation aborts the signal its getters were given', async () => {
   const seen = Promise.withResolvers<AbortSignal>()
   const route = createRoute({ name: 'route', path: '/' }).addView(component)
     .addLoader((_route, { signal }) => {
@@ -176,8 +176,8 @@ test('disposing a detached store aborts the signal its getters were given', asyn
 
       return 'value'
     })
-  const store = createNavigationStores()
-  const detached = store.createDetachedStore()
+  const navigation = createNavigation()
+  const detached = navigation.createPrefetch()
 
   const resolved = createResolvedRoute(route)
   detached.compute(resolved, getComputations(resolved))
@@ -202,32 +202,32 @@ test('a staged getter keeps its signal until the navigation that adopted it is r
   const other = createRoute({ name: 'other', path: '/other' }).addView(component)
     .addLoader(() => 'other')
   const resolved = createResolvedRoute(route)
-  const store = createNavigationStores()
-  const detached = store.createDetachedStore()
+  const navigation = createNavigation()
+  const detached = navigation.createPrefetch()
 
   detached.compute(resolved, getComputations(resolved))
   detached.stage()
-  store.commit(resolved)
+  navigation.commit(resolved)
 
   const signal = await seen.promise
 
   expect(signal.aborted).toBe(false)
 
-  store.commit(createResolvedRoute(other))
+  navigation.commit(createResolvedRoute(other))
 
   expect(signal.aborted).toBe(true)
 })
 
-test('a prefetched response is reported when its store becomes current', async () => {
+test('a prefetched response is reported when its navigation becomes current', async () => {
   const route = createResolvedRoute(createRoute({ path: '/' }).addLoader((_route, { replace }) => replace('/next')))
   const onResponse = vi.fn()
-  const store = createNavigationStores()
-  const detached = store.createDetachedStore()
+  const navigation = createNavigation()
+  const detached = navigation.createPrefetch()
 
   await detached.compute(route, getComputations(route)).loaders
 
   detached.stage()
-  store.commit(route, onResponse)
+  navigation.commit(route, onResponse)
 
   expect(onResponse).toHaveBeenCalledOnce()
 
@@ -236,19 +236,19 @@ test('a prefetched response is reported when its store becomes current', async (
   await expect(event.response).resolves.toEqual({ status: 'PUSH', to: ['/next', { replace: true }] })
 })
 
-test('resetting a detached store discards its buffered responses', async () => {
+test('resetting a detached navigation discards its buffered responses', async () => {
   const load = vi.fn(() => 'value').mockImplementationOnce(() => {
     throw new ContextPushError(['/old'])
   })
   const route = createResolvedRoute(createRoute({ path: '/' }).addLoader(load))
-  const store = createNavigationStores()
-  const detached = store.createDetachedStore()
+  const navigation = createNavigation()
+  const detached = navigation.createPrefetch()
   const onResponse = vi.fn()
 
   await detached.compute(route, getComputations(route)).loaders
   detached.reset()
   detached.stage()
-  store.commit(route, onResponse)
+  navigation.commit(route, onResponse)
 
   expect(onResponse).toHaveBeenCalledOnce()
 
@@ -261,7 +261,7 @@ test('computations added after adoption report their response once', async () =>
   const initial = createResolvedRoute(createRoute({ path: '/' }).addLoader(() => 'initial'))
   const next = createResolvedRoute(createRoute({ path: '/next' }).addLoader((_route, { push }) => push('/target')))
   const onResponse = vi.fn()
-  const navigation = createNavigationStores()
+  const navigation = createNavigation()
   const current = navigation.staged()
   await navigation.commit(initial, onResponse).loaders
   onResponse.mockClear()
@@ -277,35 +277,35 @@ test('computations added after adoption report their response once', async () =>
 })
 
 test.each(['getLoaderState', 'getLoaderValue'] as const)('%s rejects props locations at runtime', (method) => {
-  const store = createNavigationStores()
+  const navigation = createNavigation()
   const route = createResolvedRoute(createRoute({ path: '/' }))
 
   expect(() => {
     // @ts-expect-error props locations are also rejected when bypassing the type check
-    store[method]({ kind: 'props', id: route.id, name: 'default' }, route)
+    navigation[method]({ kind: 'props', id: route.id, name: 'default' }, route)
   }).toThrow(new TypeError('Expected a loader location'))
 })
 
 test('loader reads after stop report abandonment', async () => {
   const route = createRoute({ name: 'home', path: '/' }).addLoader(() => 'loaded')
   const resolved = createResolvedRoute(route)
-  const store = createNavigationStores()
-  await store.commit(resolved).loaders
+  const navigation = createNavigation()
+  await navigation.commit(resolved).loaders
   const [location] = loaderLocations(resolved.matched)
 
-  store.stop()
+  navigation.stop()
 
-  expect(store.getLoaderState(location, resolved)).toEqual({
+  expect(navigation.getLoaderState(location, resolved)).toEqual({
     kind: 'error',
     error: expect.any(NavigationAbandonedError),
   })
-  await expect(store.getLoaderValue(location, resolved)).rejects.toThrow(NavigationAbandonedError)
+  await expect(navigation.getLoaderValue(location, resolved)).rejects.toThrow(NavigationAbandonedError)
 })
 
 test('stop abandons computations in both current and staged navigations', async () => {
   const pending = Promise.withResolvers<string>()
   const route = createResolvedRoute(createRoute({ path: '/' }).addLoader(() => pending.promise))
-  const navigation = createNavigationStores()
+  const navigation = createNavigation()
   const current = navigation.commit(route)
   const staged = navigation.staged().compute(route, getComputations(route))
 
@@ -315,12 +315,12 @@ test('stop abandons computations in both current and staged navigations', async 
   await expect(staged.loaders).resolves.toEqual({ status: 'ABANDONED' })
 })
 
-test('an aborted store skips computation and filling', async () => {
+test('an aborted navigation skips computation and filling', async () => {
   const load = vi.fn(() => 'loaded')
   const route = createResolvedRoute(createRoute({ name: 'home', path: '/' }).addLoader(load))
-  const store = createNavigationStores()
-  const current = store.current()
-  store.stop()
+  const navigation = createNavigation()
+  const current = navigation.current()
+  navigation.stop()
 
   current.fill(route, [{ kind: 'loader', depth: 0, name: 'default', value: 'filled' }])
   const { props, loaders, values } = current.compute(route, getComputations(route))
@@ -329,10 +329,10 @@ test('an aborted store skips computation and filling', async () => {
   await expect(loaders).resolves.toEqual({ status: 'ABANDONED' })
   expect(values).toEqual([])
   expect(load).not.toHaveBeenCalled()
-  expect(store.getValues(route)).toEqual([])
+  expect(navigation.getValues(route)).toEqual([])
 })
 
-test('the current store shares explicitly supplied computations', async () => {
+test('the current navigation shares explicitly supplied computations', async () => {
   const attached = vi.fn(() => 'attached')
   const pending = Promise.withResolvers<string>()
   const run = vi.fn(() => pending.promise)
@@ -346,16 +346,16 @@ test('the current store shares explicitly supplied computations', async () => {
     name: 'extra',
     run,
   }
-  const store = createNavigationStores()
-  const current = store.current()
+  const navigation = createNavigation()
+  const current = navigation.current()
 
   current.compute(resolved, [computation])
   current.compute(resolved, [computation])
 
-  expect(store.getLoaderState(computation, resolved)).toEqual({ kind: 'running' })
+  expect(navigation.getLoaderState(computation, resolved)).toEqual({ kind: 'running' })
   expect(run).toHaveBeenCalledOnce()
   expect(attached).not.toHaveBeenCalled()
 
   pending.resolve('loaded')
-  await expect(store.getLoaderValue(computation, resolved)).resolves.toBe('loaded')
+  await expect(navigation.getLoaderValue(computation, resolved)).resolves.toBe('loaded')
 })
