@@ -1,5 +1,5 @@
 import { flushPromises, mount } from '@vue/test-utils'
-import { describe, expect, onTestFinished, test, vi } from 'vitest'
+import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { Component, defineAsyncComponent, h, nextTick, ref } from 'vue'
 import echo from '@/components/echo'
 import { createRoute } from '@/services/createRoute'
@@ -15,6 +15,9 @@ import { NavigationAbandonedError, RouterLink } from '@/main'
 import { RouterLinkProps } from '@/types/routerLink'
 import { Router } from '@/types/router'
 import { ResolvedRoute } from '@/types/resolved'
+import { warn } from '@/utilities/warn'
+
+vi.mock('@/utilities/warn', () => ({ warn: vi.fn() }))
 
 test('renders an anchor tag with the correct href and slot content', () => {
   const path = '/path/[paramName]'
@@ -947,6 +950,10 @@ describe('prefetch per view', () => {
 })
 
 describe('prefetch props', () => {
+  beforeEach(() => {
+    vi.mocked(warn).mockClear()
+  })
+
   test.each<PrefetchConfig | undefined>([
     undefined,
     true,
@@ -1120,14 +1127,7 @@ describe('prefetch props', () => {
     expect(wrapper.text()).toBe(value)
   })
 
-  test.each(['development', 'test', 'production'])('a child waits for parent props that are not prefetched rather than receiving undefined (%s)', async (environment) => {
-    vi.stubEnv('NODE_ENV', environment)
-    onTestFinished(() => {
-      vi.unstubAllEnvs()
-    })
-
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-
+  test('a child waits for parent props that are not prefetched rather than receiving undefined', async () => {
     const settled: unknown[] = []
 
     const home = createRoute({ name: 'home', path: '/' }).addView(() => h(RouterLink, { to: (resolve) => resolve('child') }))
@@ -1157,20 +1157,16 @@ describe('prefetch props', () => {
     await flushPromises()
 
     expect(settled).toStrictEqual([])
-    expect(warn.mock.calls.some(([message]) => String(message).includes('Waiting on props'))).toBe(environment === 'development')
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('Waiting on props "default" for route "child"'))
 
     wrapper.find('a').trigger('click')
 
     await flushPromises()
 
     expect(settled).toStrictEqual([{ foo: 123 }])
-
-    warn.mockRestore()
   })
 
   test('a child waits for parent props prefetched at a later strategy', async () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-
     const settled: unknown[] = []
 
     const home = createRoute({ name: 'home', path: '/' }).addView(() => h(RouterLink, { to: (resolve) => resolve('child') }))
@@ -1206,13 +1202,9 @@ describe('prefetch props', () => {
     await flushPromises()
 
     expect(settled).toStrictEqual([{ foo: 123 }])
-
-    warn.mockRestore()
   })
 
   test('a child prefetching by intent resolves parent props already prefetched eagerly', async () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-
     const settled: unknown[] = []
 
     const home = createRoute({ name: 'home', path: '/' }).addView(() => h(RouterLink, { to: (resolve) => resolve('child') }))
@@ -1246,14 +1238,10 @@ describe('prefetch props', () => {
     await flushPromises()
 
     expect(settled).toStrictEqual([{ foo: 123 }])
-    expect(warn.mock.calls.some(([message]) => String(message).includes('Waiting on parent props'))).toBe(false)
-
-    warn.mockRestore()
+    expect(warn).not.toHaveBeenCalled()
   })
 
   test('a child waiting on parent props settles when the parent getter returns undefined', async () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-
     const settled: unknown[] = []
 
     const home = createRoute({ name: 'home', path: '/' }).addView(() => h(RouterLink, { to: (resolve) => resolve('child') }))
@@ -1289,13 +1277,9 @@ describe('prefetch props', () => {
     await flushPromises()
 
     expect(settled).toStrictEqual([undefined])
-
-    warn.mockRestore()
   })
 
   test('a child waiting on parent props is rejected when navigation abandons them', async () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-
     const caught: unknown[] = []
 
     const home = createRoute({ name: 'home', path: '/' }).addView(() => h(RouterLink, { to: (resolve) => resolve('child') }))
@@ -1337,13 +1321,9 @@ describe('prefetch props', () => {
 
     expect(caught).toHaveLength(1)
     expect(caught[0]).toBeInstanceOf(NavigationAbandonedError)
-
-    warn.mockRestore()
   })
 
   test('a getter that never awaits abandoned parent props does not leak an unhandled rejection', async () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-
     const home = createRoute({ name: 'home', path: '/' }).addView(() => h(RouterLink, { to: (resolve) => resolve('child') }))
 
     const other = createRoute({ name: 'other', path: '/other' }).addView(echo, { props: () => ({ value: 'other' }) })
@@ -1376,8 +1356,6 @@ describe('prefetch props', () => {
     await flushPromises()
 
     expect(router.route.name).toBe('other')
-
-    warn.mockRestore()
   })
 
   test('a getter that never awaits failed parent props does not leak an unhandled rejection', async () => {
@@ -1415,8 +1393,6 @@ describe('prefetch props', () => {
   })
 
   test('a child does not wait when the parent props are prefetched at the same strategy', async () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-
     const settled: unknown[] = []
 
     const home = createRoute({ name: 'home', path: '/' }).addView(() => h(RouterLink, { to: (resolve) => resolve('child') }))
@@ -1446,19 +1422,15 @@ describe('prefetch props', () => {
     await flushPromises()
 
     expect(settled).toStrictEqual([{ foo: 123 }])
-    expect(warn.mock.calls.some(([message]) => String(message).includes('Waiting on parent props'))).toBe(false)
-
-    warn.mockRestore()
+    expect(warn).not.toHaveBeenCalled()
   })
 
   test('prefetched parent props are available to a child prefetching its own props', async () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-
     let childSawParentProps: unknown = 'NOT_READ'
 
     const home = createRoute({ name: 'home', path: '/' }).addView(() => h(RouterLink, { to: (resolve) => resolve('child') }))
 
-    const parent = createRoute({ name: 'parent', path: '/parent', prefetch: { props: 'eager' } }).addView({ template: '<RouterView />' }, { props: async () => ({ foo: 123 }) })
+    const parent = createRoute({ name: 'parent', path: '/parent', prefetch: { props: 'eager' } }).addView({ props: ['foo'], template: '<RouterView />' }, { props: async () => ({ foo: 123 }) })
 
     const child = createRoute({ parent, name: 'child', path: '/child', prefetch: { props: 'eager' } }).addView(echo, {
       props: async (__, { parent }) => {
@@ -1490,8 +1462,6 @@ describe('prefetch props', () => {
     await flushPromises()
 
     expect(wrapper.text()).toBe('child')
-
-    warn.mockRestore()
   })
 
   test('parent routes that should not prefetch props are not prefetched', async () => {
