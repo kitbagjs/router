@@ -1,9 +1,12 @@
 import { markRaw, reactive, shallowRef, ShallowRef } from 'vue'
 import { isPromise } from '@/utilities/promises'
+import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
 
 export type DataResultValue = { kind: 'value', value: unknown }
 
 export type DataResultError = { kind: 'error', error: unknown }
+
+export type DataResultAbandoned = { kind: 'abandoned' }
 
 export type DataResultPending = { kind: 'pending' }
 
@@ -15,7 +18,9 @@ export type DataResultMissing = { kind: 'missing' }
  * Where a key has got to: nothing has asked for it, something is waiting on it, its getter is in flight,
  * or how that getter settled. Tagged so that a getter returning `undefined` or an `Error` stays a value.
  */
-export type DataResult = DataResultValue | DataResultError | DataResultPending | DataResultRunning | DataResultMissing
+export type DataResult = DataResultValue | DataResultError | DataResultAbandoned | DataResultPending | DataResultRunning | DataResultMissing
+
+const ABANDONED: DataResultAbandoned = { kind: 'abandoned' }
 
 const PENDING: DataResultPending = { kind: 'pending' }
 
@@ -63,6 +68,7 @@ export type DataStore = {
 export function createDataStore(): DataStore {
   const entries: Map<string, Entry> = reactive(new Map())
   const controller = new AbortController()
+  const disposed = shallowRef(false)
 
   function create(): Entry {
     const { promise, resolve, reject } = Promise.withResolvers<unknown>()
@@ -82,6 +88,12 @@ export function createDataStore(): DataStore {
 
     const created = create()
 
+    if (disposed.value) {
+      settle(created, { kind: 'error', error: controller.signal.reason })
+
+      return created
+    }
+
     entries.set(key, created)
 
     return created
@@ -90,11 +102,15 @@ export function createDataStore(): DataStore {
   function settle(target: Entry, result: DataResultValue | DataResultError): void {
     const current = target.state.value
 
-    if (current.kind === 'value' || current.kind === 'error') {
+    if (current.kind === 'value' || current.kind === 'error' || current.kind === 'abandoned') {
       return
     }
 
-    target.state.value = result
+    if (result.kind === 'error' && result.error instanceof NavigationAbandonedError) {
+      target.state.value = ABANDONED
+    } else {
+      target.state.value = result
+    }
 
     if (result.kind === 'value') {
       target.resolve(result.value)
@@ -132,10 +148,17 @@ export function createDataStore(): DataStore {
     }
   }
 
-  const get: DataStore['get'] = (key) => entries.get(key)?.state.value ?? MISSING
+  const get: DataStore['get'] = (key) => {
+    if (disposed.value) {
+      return ABANDONED
+    }
+
+    return entries.get(key)?.state.value ?? MISSING
+  }
 
   const dispose: DataStore['dispose'] = (reason) => {
     controller.abort(reason)
+    disposed.value = true
 
     for (const [key, dying] of entries) {
       entries.delete(key)

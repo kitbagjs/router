@@ -242,7 +242,8 @@ export function createRouteValueStore(): RouteValueStore {
 
   const getProps: RouteValueStore['getProps'] = (id, name, route) => {
     const key = getDataKey('props', id, name, route)
-    const result = navigation.current().get(key)
+    const store = navigation.current()
+    const result = store.get(key)
 
     switch (result.kind) {
       case 'missing':
@@ -250,10 +251,11 @@ export function createRouteValueStore(): RouteValueStore {
 
       case 'pending':
       case 'running':
-        return toResult(navigation.current().subscribe(key))
+        return toResult(store, key)
 
       case 'value':
       case 'error':
+      case 'abandoned':
         return result
       default:
         return result satisfies never
@@ -442,15 +444,17 @@ const NO_PROPS: PropsResult = { kind: 'value', value: undefined }
  * The render layer expects every outcome as a value it can inspect, so a rejection is folded back into a
  * result rather than being handed on as one.
  */
-async function toResult(props: Promise<unknown>): Promise<PropsResult> {
+async function toResult(store: DataStore, key: string): Promise<PropsResult> {
   try {
-    return { kind: 'value', value: await props }
+    return { kind: 'value', value: await store.subscribe(key) }
   } catch (error) {
-    if (error instanceof NavigationAbandonedError) {
-      return NO_PROPS
+    const result = store.get(key)
+
+    if (result.kind === 'error' || result.kind === 'abandoned') {
+      return result
     }
 
-    return { kind: 'error', error }
+    throw error
   }
 }
 

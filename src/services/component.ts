@@ -49,11 +49,7 @@ export function createComponentPropsWrapper(routerKey: InjectionKey<Router>, { i
           return h(AsyncComponentPropsWrapper, { component, props: result })
         }
 
-        if (result.kind === 'error') {
-          return ''
-        }
-
-        return h(component, result.value)
+        return renderResult(component, result)
       }
     },
   })
@@ -89,7 +85,7 @@ const SuspenseAsyncComponentPropsWrapper = defineComponent(async (input: { compo
  * Renders the component with whatever the getter settled on. No result means the promise has not resolved.
  */
 function renderResult(component: Component, result: PropsResult | undefined): ReturnType<typeof h> | string {
-  if (result === undefined || result.kind === 'error') {
+  if (result === undefined || result.kind === 'error' || result.kind === 'abandoned') {
     return ''
   }
 

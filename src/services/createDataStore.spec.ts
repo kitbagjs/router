@@ -1,6 +1,7 @@
 import { describe, expect, test, vi } from 'vitest'
 import { effect } from 'vue'
 import { createDataStore } from './createDataStore'
+import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
 
 describe('set and subscribe', () => {
   test('a value subscribed to before anything computes it resolves when it is computed', async () => {
@@ -74,6 +75,22 @@ describe('set and subscribe', () => {
     })
 
     await expect(store.subscribe('key')).rejects.toBe(error)
+  })
+
+  test.each([false, true])('a cancelled getter reports abandonment (async: %s)', async (isAsync) => {
+    const store = createDataStore()
+    const error = new NavigationAbandonedError()
+
+    store.set('key', () => {
+      if (isAsync) {
+        return Promise.reject(error)
+      }
+
+      throw error
+    })
+
+    await expect(store.subscribe('key')).rejects.toBe(error)
+    expect(store.get('key')).toStrictEqual({ kind: 'abandoned' })
   })
 
   test('setting a key twice does not call the second getter', () => {
@@ -176,13 +193,55 @@ describe('dispose', () => {
     await expect(waiting).rejects.toBe(reason)
   })
 
-  test('discards the value', () => {
+  test('discards the value and reports abandonment', () => {
     const store = createDataStore()
 
     store.set('key', () => 'computed')
     store.dispose(new Error('abandoned'))
 
-    expect(store.get('key')).toStrictEqual({ kind: 'missing' })
+    expect(store.get('key')).toStrictEqual({ kind: 'abandoned' })
+  })
+
+  test('reactive readers see abandonment when the store is disposed', () => {
+    const store = createDataStore()
+    const seen: string[] = []
+    const runner = effect(() => seen.push(store.get('key').kind))
+
+    store.set('key', () => 'computed')
+    store.dispose(new NavigationAbandonedError())
+
+    expect(seen.at(-1)).toBe('abandoned')
+    runner.effect.stop()
+  })
+
+  test('a late getter result cannot replace abandonment', async () => {
+    const pending = Promise.withResolvers<string>()
+    const store = createDataStore()
+
+    store.set('key', () => pending.promise)
+    const waiting = store.subscribe('key')
+    const reason = new NavigationAbandonedError()
+
+    store.dispose(reason)
+    await expect(waiting).rejects.toBe(reason)
+
+    pending.resolve('late')
+    await pending.promise
+
+    expect(store.get('key')).toStrictEqual({ kind: 'abandoned' })
+  })
+
+  test('new subscribers reject and getters do not run after disposal', async () => {
+    const store = createDataStore()
+    const reason = new Error('abandoned')
+    const getter = vi.fn(() => 'unused')
+
+    store.dispose(reason)
+    store.set('key', getter)
+
+    await expect(store.subscribe('key')).rejects.toBe(reason)
+    expect(getter).not.toHaveBeenCalled()
+    expect(store.get('key')).toStrictEqual({ kind: 'abandoned' })
   })
 
   test('leaves an already settled value settled for anything holding it', async () => {
