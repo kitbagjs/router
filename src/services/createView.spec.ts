@@ -3,7 +3,7 @@ import { isView } from '@/types/view'
 import { createView } from '@/services/createView'
 import { createRoute } from '@/services/createRoute'
 import { createResolvedRoute } from '@/services/createResolvedRoute'
-import { createNavigation } from '@/services/createNavigation'
+import { createRouterNavigation } from '@/services/createRouterNavigation'
 import { createRouter } from '@/services/createRouter'
 import { component } from '@/utilities/testHelpers'
 import { getComputations } from '@/services/getComputations'
@@ -20,7 +20,7 @@ test('one view computes props and loader data independently for multiple routes'
 
   for (const [route, name] of [[first, 'default'], [second, 'sidebar']] as const) {
     const resolved = createResolvedRoute(route, { id: '1' })
-    const navigation = createNavigation()
+    const navigation = createRouterNavigation()
     await navigation.staged().compute(resolved, getComputations(resolved)).props
     navigation.commit(resolved)
     expect(navigation.getProps(route.id, name, resolved)).toEqual({

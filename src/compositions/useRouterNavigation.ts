@@ -1,17 +1,17 @@
 import { inject, InjectionKey } from 'vue'
 import { RouterNotInstalledError } from '@/errors/routerNotInstalledError'
-import { Navigation } from '@/services/createNavigation'
+import { RouterNavigationStores } from '@/services/createRouterNavigation'
 import { createRouterKeyStore } from '@/services/createRouterKeyStore'
 import { Router } from '@/types/router'
 
-export const getRouterNavigationInjectionKey = createRouterKeyStore<Navigation>()
+export const getRouterNavigationInjectionKey = createRouterKeyStore<RouterNavigationStores>()
 
-type UseRouterNavigation = () => Navigation
+type UseRouterNavigation = () => RouterNavigationStores
 
 export function createUseRouterNavigation<TRouter extends Router>(routerKey: InjectionKey<TRouter>): UseRouterNavigation {
   const routerNavigationKey = getRouterNavigationInjectionKey(routerKey)
 
-  return (): Navigation => {
+  return (): RouterNavigationStores => {
     const navigation = inject(routerNavigationKey)
 
     if (!navigation) {

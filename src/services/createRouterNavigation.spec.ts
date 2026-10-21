@@ -1,6 +1,6 @@
 import { expect, test, vi } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
-import { createNavigation } from '@/services/createNavigation'
+import { createRouterNavigation } from '@/services/createRouterNavigation'
 import { createResolvedRoute } from '@/services/createResolvedRoute'
 import { createRoute } from '@/services/createRoute'
 import { component } from '@/utilities/testHelpers'
@@ -14,7 +14,7 @@ test('pending props report abandonment when another navigation replaces their na
   const route = createRoute({ name: 'route', path: '/' }).addView(component, { props: () => pending.promise })
   const other = createRoute({ name: 'other', path: '/other' })
   const resolved = createResolvedRoute(route)
-  const navigation = createNavigation()
+  const navigation = createRouterNavigation()
 
   navigation.commit(resolved)
   const props = navigation.getProps(route.id, 'default', resolved)
@@ -30,7 +30,7 @@ test('a rejected props getter reports an error before and after it settles', asy
   const pending = Promise.withResolvers<{ value: string }>()
   const route = createRoute({ name: 'route', path: '/' }).addView(component, { props: () => pending.promise })
   const resolved = createResolvedRoute(route)
-  const navigation = createNavigation()
+  const navigation = createRouterNavigation()
 
   navigation.commit(resolved)
   const props = navigation.getProps(route.id, 'default', resolved)
@@ -47,7 +47,7 @@ test('a props getter that throws NavigationAbandonedError reports abandonment', 
     },
   })
   const resolved = createResolvedRoute(route)
-  const navigation = createNavigation()
+  const navigation = createRouterNavigation()
 
   navigation.commit(resolved)
 
@@ -57,7 +57,7 @@ test('a props getter that throws NavigationAbandonedError reports abandonment', 
 test('a view without a props getter reports a successful value with no props', () => {
   const route = createRoute({ name: 'route', path: '/' }).addView(component)
   const resolved = createResolvedRoute(route)
-  const navigation = createNavigation()
+  const navigation = createRouterNavigation()
 
   navigation.commit(resolved)
 
@@ -69,7 +69,7 @@ test('a staged value is adopted in place of running its getter', async () => {
   const route = createRoute({ name: 'route', path: '/' }).addView(component)
     .addLoader(loader)
   const resolved = createResolvedRoute(route)
-  const navigation = createNavigation()
+  const navigation = createRouterNavigation()
 
   const detached = navigation.createPrefetch()
 
@@ -85,7 +85,7 @@ test('getValues returns the values the navigation resolved', async () => {
   const route = createRoute({ name: 'route', path: '/' }).addView(component)
     .addLoader(() => 'value')
   const resolved = createResolvedRoute(route)
-  const navigation = createNavigation()
+  const navigation = createRouterNavigation()
 
   navigation.commit(resolved)
   await flushPromises()
@@ -98,7 +98,7 @@ test('staged values are adopted by the next navigation without running their get
   const route = createRoute({ name: 'route', path: '/' }).addView(component)
     .addLoader(loader)
   const resolved = createResolvedRoute(route)
-  const navigation = createNavigation()
+  const navigation = createRouterNavigation()
 
   await navigation.staged().compute(resolved, getComputations(resolved)).loaders
   navigation.commit(resolved)
@@ -112,7 +112,7 @@ test('staging a route leaves the current route reading its own values', async ()
     .addLoader(() => 'current')
   const next = createRoute({ name: 'next', path: '/next' }).addView(component)
     .addLoader(() => 'next')
-  const navigation = createNavigation()
+  const navigation = createRouterNavigation()
   const currentResolved = createResolvedRoute(current)
   const nextResolved = createResolvedRoute(next)
 
@@ -129,7 +129,7 @@ test('a staged props getter can read the data its route is loading', async () =>
     .addLoader(() => 'loaded')
     .addView(component, { props: async (route) => ({ value: await route.data }) })
   const resolved = createResolvedRoute(route)
-  const navigation = createNavigation()
+  const navigation = createRouterNavigation()
 
   await navigation.staged().compute(resolved, getComputations(resolved)).props
   navigation.commit(resolved)
@@ -146,7 +146,7 @@ test('staging reports how the values settled', async () => {
         return {}
       },
     })
-  const navigation = createNavigation()
+  const navigation = createRouterNavigation()
 
   const resolved = createResolvedRoute(route)
   const { props } = navigation.staged().compute(resolved, getComputations(resolved))
@@ -159,7 +159,7 @@ test('a detached navigation whose getter throws does not surface an unhandled re
     .addLoader(() => {
       throw new Error('getter failed')
     })
-  const navigation = createNavigation()
+  const navigation = createRouterNavigation()
   const detached = navigation.createPrefetch()
 
   const resolved = createResolvedRoute(route)
@@ -176,7 +176,7 @@ test('disposing a detached navigation aborts the signal its getters were given',
 
       return 'value'
     })
-  const navigation = createNavigation()
+  const navigation = createRouterNavigation()
   const detached = navigation.createPrefetch()
 
   const resolved = createResolvedRoute(route)
@@ -202,7 +202,7 @@ test('a staged getter keeps its signal until the navigation that adopted it is r
   const other = createRoute({ name: 'other', path: '/other' }).addView(component)
     .addLoader(() => 'other')
   const resolved = createResolvedRoute(route)
-  const navigation = createNavigation()
+  const navigation = createRouterNavigation()
   const detached = navigation.createPrefetch()
 
   detached.compute(resolved, getComputations(resolved))
@@ -221,7 +221,7 @@ test('a staged getter keeps its signal until the navigation that adopted it is r
 test('a prefetched response is reported when its navigation becomes current', async () => {
   const route = createResolvedRoute(createRoute({ path: '/' }).addLoader((_route, { replace }) => replace('/next')))
   const onResponse = vi.fn()
-  const navigation = createNavigation()
+  const navigation = createRouterNavigation()
   const detached = navigation.createPrefetch()
 
   await detached.compute(route, getComputations(route)).loaders
@@ -241,7 +241,7 @@ test('resetting a detached navigation discards its buffered responses', async ()
     throw new ContextPushError(['/old'])
   })
   const route = createResolvedRoute(createRoute({ path: '/' }).addLoader(load))
-  const navigation = createNavigation()
+  const navigation = createRouterNavigation()
   const detached = navigation.createPrefetch()
   const onResponse = vi.fn()
 
@@ -261,7 +261,7 @@ test('computations added after adoption report their response once', async () =>
   const initial = createResolvedRoute(createRoute({ path: '/' }).addLoader(() => 'initial'))
   const next = createResolvedRoute(createRoute({ path: '/next' }).addLoader((_route, { push }) => push('/target')))
   const onResponse = vi.fn()
-  const navigation = createNavigation()
+  const navigation = createRouterNavigation()
   const current = navigation.staged()
   await navigation.commit(initial, onResponse).loaders
   onResponse.mockClear()
@@ -277,7 +277,7 @@ test('computations added after adoption report their response once', async () =>
 })
 
 test.each(['getLoaderState', 'getLoaderValue'] as const)('%s rejects props locations at runtime', (method) => {
-  const navigation = createNavigation()
+  const navigation = createRouterNavigation()
   const route = createResolvedRoute(createRoute({ path: '/' }))
 
   expect(() => {
@@ -289,7 +289,7 @@ test.each(['getLoaderState', 'getLoaderValue'] as const)('%s rejects props locat
 test('loader reads after stop report abandonment', async () => {
   const route = createRoute({ name: 'home', path: '/' }).addLoader(() => 'loaded')
   const resolved = createResolvedRoute(route)
-  const navigation = createNavigation()
+  const navigation = createRouterNavigation()
   await navigation.commit(resolved).loaders
   const [location] = loaderLocations(resolved.matched)
 
@@ -305,7 +305,7 @@ test('loader reads after stop report abandonment', async () => {
 test('stop abandons computations in both current and staged navigations', async () => {
   const pending = Promise.withResolvers<string>()
   const route = createResolvedRoute(createRoute({ path: '/' }).addLoader(() => pending.promise))
-  const navigation = createNavigation()
+  const navigation = createRouterNavigation()
   const current = navigation.commit(route)
   const staged = navigation.staged().compute(route, getComputations(route))
 
@@ -318,7 +318,7 @@ test('stop abandons computations in both current and staged navigations', async 
 test('an aborted navigation skips computation and filling', async () => {
   const load = vi.fn(() => 'loaded')
   const route = createResolvedRoute(createRoute({ name: 'home', path: '/' }).addLoader(load))
-  const navigation = createNavigation()
+  const navigation = createRouterNavigation()
   const current = navigation.current()
   navigation.stop()
 
@@ -346,7 +346,7 @@ test('the current navigation shares explicitly supplied computations', async () 
     name: 'extra',
     run,
   }
-  const navigation = createNavigation()
+  const navigation = createRouterNavigation()
   const current = navigation.current()
 
   current.compute(resolved, [computation])
