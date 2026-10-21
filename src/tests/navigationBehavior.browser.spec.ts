@@ -1,6 +1,6 @@
 import { flushPromises, mount } from '@vue/test-utils'
-import { Component, createApp, defineAsyncComponent } from 'vue'
-import { afterEach, beforeAll, describe, expect, test, vi } from 'vitest'
+import { Component, defineAsyncComponent, defineComponent } from 'vue'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { register } from 'view-transitions-mock'
 import { createRoute } from '@/services/createRoute'
 import { createExternalRoute } from '@/services/createExternalRoute'
@@ -13,7 +13,7 @@ import { payloadToScript } from '@/services/payload'
 
 const wrappers: ReturnType<typeof mount>[] = []
 
-beforeAll(() => {
+beforeEach(() => {
   vi.spyOn(console, 'info').mockImplementation(() => {})
   register({ forced: true })
 })
@@ -334,12 +334,19 @@ describe('links', () => {
     const home = createRoute({ name: 'home', path: '/' })
     const page = createRoute({ name: 'page', path: '/page' }).addLoader(() => loaded.promise)
     const router = createRouter([home, page], { initialUrl: '/', historyMode: 'memory' })
-    const app = createApp({})
-    app.use(router)
+    const useLink = createUseLink(router.key)
     await router.start()
-    const link = app.runWithContext(() => createUseLink(router.key)('/page', { navigation: 'blocking' }))
+    const wrapper = mount(defineComponent({
+      setup() {
+        const { push } = useLink('/page', { navigation: 'blocking' })
 
-    await link.push({ navigation: 'progressive' })
+        return { push }
+      },
+      template: '<div />',
+    }), { global: { plugins: [router] } })
+    wrappers.push(wrapper)
+
+    await wrapper.vm.push({ navigation: 'progressive' })
     expect(router.route.name).toBe('page')
 
     loaded.resolve()

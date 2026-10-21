@@ -41,6 +41,12 @@ test('components are not remounted when props change', async () => {
     path: '/childA/[childParam]',
   })
     .addView(defineComponent({
+      props: {
+        value: {
+          type: String,
+          required: true,
+        },
+      },
       setup: setupChild,
       render(props: { value: string }) {
         return h(echo, { value: props.value })

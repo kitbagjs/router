@@ -1,4 +1,4 @@
-import { afterEach, beforeAll, expect, test, vi } from 'vitest'
+import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
 import { ref, watch, watchEffect } from 'vue'
 import { register } from 'view-transitions-mock'
@@ -6,7 +6,7 @@ import { createViewTransitions, PendingViewTransition } from '@/services/createV
 import { createRoute } from '@/services/createRoute'
 import { createResolvedRoute } from '@/services/createResolvedRoute'
 
-beforeAll(() => {
+beforeEach(() => {
   vi.spyOn(console, 'info').mockImplementation(() => {})
   register({ forced: true })
 })

@@ -1,4 +1,4 @@
-import { afterEach, beforeAll, expect, MockInstance, test, vi } from 'vitest'
+import { afterEach, beforeEach, expect, MockInstance, test, vi } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import { createApp, defineAsyncComponent, defineComponent, h } from 'vue'
 import { register, unregister } from 'view-transitions-mock'
@@ -11,7 +11,7 @@ import { createUseViewTransition } from '@/compositions/useViewTransition'
 import { RouterViewTransition } from '@/types/viewTransition'
 import { useLink, useViewTransition } from '@/main'
 
-beforeAll(() => {
+beforeEach(() => {
   vi.spyOn(console, 'info').mockImplementation(() => {})
   register({ forced: true })
 })
