@@ -5,6 +5,7 @@ import { createUseNavigationStores } from '@/compositions/useNavigationStores'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
 import { createRouterAssets } from '@/services/createRouterAssets'
+import { getComputations } from '@/services/getComputations'
 import { UseNavigation } from '@/types/navigation'
 import { Router } from '@/types/router'
 import { component } from '@/utilities/testHelpers'
@@ -232,7 +233,8 @@ describe('navigation progress', () => {
 
     const store = navigation.app.runWithContext(() => createUseNavigationStores(router.key)().createDetachedStore())
 
-    store.compute(router.resolve('other'))
+    const route = router.resolve('other')
+    store.compute(route, getComputations(route))
     await flushPromises()
 
     expect(navigation.pending.value).toBe(false)

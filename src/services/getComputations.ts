@@ -1,10 +1,12 @@
-import type { PrefetchConfig } from '@/types/prefetch'
+import type { PrefetchConfig, PrefetchConfigs, PrefetchStrategy } from '@/types/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
 import { CreatedRouteOptions } from '@/types/route'
 import { viewNamesWithProps } from '@/services/routeViews'
 import { DataKind, getDataKey } from '@/services/getDataKey'
 import { AnyPayloadTransformer } from '@/services/payload'
 import { AnyFunction } from '@/types/utilities'
+import { getPrefetchOption } from '@/utilities/prefetch'
+import { getComputationPrefetchKey } from '@/services/getComputationPrefetchKey'
 
 /**
  * Something a route computes: a view's props getter, or a loader. Both are a named callback belonging to
@@ -31,16 +33,15 @@ export type ValueLocation<TKind extends DataKind = DataKind> = {
   name: string,
 }
 
-/**
- * Decides which of a route's computations to compute.
- */
-export type ComputationFilter = (computation: Computation) => boolean
-
 export function getComputations(route: ResolvedRoute): Computation[] {
   return route.matches.flatMap((match, depth) => [
     ...propsLocations(match).map((location) => toComputation(location, match, depth, route, match.views[location.name].props as AnyFunction, match.views[location.name])),
     ...loaderLocations(match).map((location) => toComputation(location, match, depth, route, match.loaders[location.name].load, match.loaders[location.name])),
   ])
+}
+
+export function getComputationsForStrategy(route: ResolvedRoute, strategy: PrefetchStrategy, configs: PrefetchConfigs): Computation[] {
+  return getComputations(route).filter(isStrategy(strategy, configs))
 }
 
 type ComputationOptions = {
@@ -73,4 +74,12 @@ export function loaderLocations(match: CreatedRouteOptions): ValueLocation<'load
 
 export function isKind(kind: DataKind): (computation: Computation) => boolean {
   return (computation) => computation.kind === kind
+}
+
+export function isStrategy(strategy: PrefetchStrategy, configs: PrefetchConfigs): (computation: Computation) => boolean {
+  return (computation) => getPrefetchOption({
+    ...configs,
+    routePrefetch: computation.routePrefetch,
+    viewPrefetch: computation.prefetch,
+  }, getComputationPrefetchKey(computation.kind)) === strategy
 }

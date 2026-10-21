@@ -15,7 +15,7 @@ import { DataKind, getDataKey } from './getDataKey'
 import { PropsResult } from '@/utilities/props'
 import { warn } from '@/utilities/warn'
 import { MaybePromise } from '@/types/utilities'
-import { Computation, ComputationFilter, getComputations, isKind, loaderLocations, propsLocations, ValueLocation } from './getComputations'
+import { Computation, getComputations, isKind, loaderLocations, propsLocations, ValueLocation } from './getComputations'
 
 /**
  * Computation stopped because its store was disposed.
@@ -74,7 +74,7 @@ export type NavigationStore = {
   /**
    * Computes the supplied values and reports how they settle.
    */
-  compute: (route: ResolvedRoute, filter?: ComputationFilter) => RouteValueResponses,
+  compute: (route: ResolvedRoute, computations: Computation[]) => RouteValueResponses,
   /**
    * Adopts values that already settled, in place of running their getters.
    */
@@ -112,6 +112,7 @@ export type RouteValue = {
 
 export type NavigationStores = HasVueAppStore & {
   stop: () => void,
+  current: () => NavigationStore,
   createDetachedStore: () => DetachedNavigationStore,
   /**
    * The store the next navigation adopts, created when nothing is staged. Values computed into it ahead of
@@ -162,12 +163,10 @@ export function createNavigationStores(): NavigationStores {
       state.onResponse?.(response)
     }
 
-    function compute(route: ResolvedRoute, filter: ComputationFilter = () => true): RouteValueResponses {
+    function compute(route: ResolvedRoute, computations: Computation[]): RouteValueResponses {
       if (state.data.signal.aborted) {
         return ABANDONED_RESPONSES
       }
-
-      const computations = getComputations(route).filter(filter)
 
       // loaders first, so a props getter reading the route's data finds it under way rather than missing
       const loaders = settle(route, computations.filter(isKind('loader')))
@@ -230,7 +229,7 @@ export function createNavigationStores(): NavigationStores {
       const pending = state.responses.splice(0)
       pending.forEach(reportResponse)
 
-      return compute(route)
+      return compute(route, getComputations(route))
     }
 
     function dispose(reason: Error): void {
@@ -251,8 +250,8 @@ export function createNavigationStores(): NavigationStores {
   const createDetachedStore: NavigationStores['createDetachedStore'] = () => {
     let store = createStore()
 
-    const compute: DetachedNavigationStore['compute'] = (route, filter) => {
-      return store.compute(route, filter)
+    const compute: DetachedNavigationStore['compute'] = (route, computations) => {
+      return store.compute(route, computations)
     }
 
     const fill: DetachedNavigationStore['fill'] = (route, values) => {
@@ -282,6 +281,8 @@ export function createNavigationStores(): NavigationStores {
       dispose,
     }
   }
+
+  const current: NavigationStores['current'] = () => stores.current
 
   const staged: NavigationStores['staged'] = () => {
     stores.staged ??= createStore()
@@ -518,13 +519,6 @@ export function createNavigationStores(): NavigationStores {
       return abandoned
     }
 
-    if (current.signal.aborted) {
-      const abandoned = Promise.reject(new NavigationAbandonedError())
-      abandoned.catch(() => {})
-
-      return abandoned
-    }
-
     if (!store || store === current) {
       return current.subscribe(key)
     }
@@ -549,6 +543,7 @@ export function createNavigationStores(): NavigationStores {
 
   return {
     stop,
+    current,
     createDetachedStore,
     staged,
     commit,

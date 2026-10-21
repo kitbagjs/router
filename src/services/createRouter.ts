@@ -398,7 +398,7 @@ export function createRouter<
         return true
       }
 
-      const values = navigationStores.staged().compute(route)
+      const values = navigationStores.staged().compute(route, getComputations(route))
       const work = Promise.allSettled([
         values.props,
         values.loaders,
