@@ -1,5 +1,5 @@
 import { flushPromises, mount } from '@vue/test-utils'
-import { expect, test } from 'vitest'
+import { expect, test, vi } from 'vitest'
 import echo from '@/components/echo'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
@@ -96,18 +96,24 @@ test('renders component with async props using suspense', async () => {
     },
   })
 
-  expect(wrapper.text()).toBe(fallback)
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
-  await router.push('home')
+  try {
+    expect(wrapper.text()).toBe(fallback)
 
-  resolve({ value: 'hello world' })
-  await flushPromises()
+    await router.push('home')
+    await flushPromises()
 
-  expect(wrapper.text()).toBe('hello world')
+    expect(wrapper.findComponent(echo).exists()).toBe(false)
+    expect(warn).not.toHaveBeenCalled()
 
-  resolve({ value: 'hello world' })
+    resolve({ value: 'hello world' })
+    await flushPromises()
 
-  await flushPromises()
-
-  expect(wrapper.html()).toBe('hello world')
+    expect(wrapper.text()).toBe('hello world')
+    expect(warn).not.toHaveBeenCalled()
+  } finally {
+    wrapper.unmount()
+    warn.mockRestore()
+  }
 })

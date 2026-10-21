@@ -446,10 +446,6 @@ async function toResult(props: Promise<unknown>): Promise<PropsResult> {
   try {
     return { kind: 'value', value: await props }
   } catch (error) {
-    if (error instanceof NavigationAbandonedError) {
-      return NO_PROPS
-    }
-
     return { kind: 'error', error }
   }
 }
