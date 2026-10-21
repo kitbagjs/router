@@ -455,7 +455,11 @@ export function createRouter<
   }
 
   function setRouteValuesAndUpdateRoute(to: ResolvedRoute, from: ResolvedRoute | null, progress: NavigationProgressTracker, signal: AbortSignal): void {
-    const { values } = navigation.commit(to, { from, signal })
+    const { values } = navigation.commit({
+      to,
+      from,
+      signal,
+    })
 
     progress.track(...values, ...loadAsyncComponents(to))
 
