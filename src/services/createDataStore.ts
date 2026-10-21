@@ -52,7 +52,7 @@ export type DataStore = {
    */
   set: (key: string, getter: () => unknown) => void,
   /**
-   * Returns the current result for a key, or `abandoned` after disposal. Reactive, and readable during render.
+   * Returns the current result for a key without waiting. Reading it during render tracks changes.
    */
   get: (key: string) => DataResult,
   /**
