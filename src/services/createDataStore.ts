@@ -52,7 +52,7 @@ export type DataStore = {
    */
   set: (key: string, getter: () => unknown) => void,
   /**
-   * What is known about a key, without waiting for it. Reactive, and readable during render.
+   * Returns the current result for a key, or `abandoned` after disposal. Reactive, and readable during render.
    */
   get: (key: string) => DataResult,
   /**
@@ -60,8 +60,7 @@ export type DataStore = {
    */
   signal: AbortSignal,
   /**
-   * Ends the store. Pending values are rejected so anything waiting resumes, then entries are discarded.
-   * Reads report abandonment and new subscriptions reject with the disposal reason.
+   * Aborts the store's signal, clears its entries, and rejects pending and future subscriptions with `reason`.
    */
   dispose: (reason: Error) => void,
 }
