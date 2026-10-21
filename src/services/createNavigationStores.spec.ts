@@ -271,7 +271,6 @@ test('computations added after adoption report their response once', async () =>
   await expect(event.response).resolves.toEqual({ status: 'PUSH', to: ['/target'] })
 })
 
-
 test.each(['getLoaderState', 'getLoaderValue'] as const)('%s rejects props locations at runtime', (method) => {
   const store = createNavigationStores()
   const route = createResolvedRoute(createRoute({ path: '/' }))
@@ -281,7 +280,6 @@ test.each(['getLoaderState', 'getLoaderValue'] as const)('%s rejects props locat
     store[method]({ kind: 'props', id: route.id, name: 'default' }, route)
   }).toThrow(new TypeError('Expected a loader location'))
 })
-
 
 test('loader reads after stop report abandonment', async () => {
   const route = createRoute({ name: 'home', path: '/' }).addLoader(() => 'loaded')

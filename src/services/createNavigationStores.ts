@@ -342,6 +342,12 @@ export function createNavigationStores(): NavigationStores {
   }
 
   const getProps: NavigationStores['getProps'] = (id, name, route) => {
+    const match = route.matches.find((match) => match.id === id)
+
+    if (!match?.views[name]?.props) {
+      return NO_PROPS
+    }
+
     const key = getDataKey('props', id, name, route)
     const result = stores.current.data.get(key)
 
