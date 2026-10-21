@@ -16,8 +16,7 @@ export type DataResultMissing = { kind: 'missing' }
 
 /**
  * Where a key has got to: nothing has asked for it, something is waiting on it, its getter is in flight,
- * or how that getter settled, including abandonment. Tagged so that a getter returning `undefined` or an
- * `Error` stays a value.
+ * or how that getter settled. Tagged so that a getter returning `undefined` or an `Error` stays a value.
  */
 export type DataResult = DataResultValue | DataResultError | DataResultAbandoned | DataResultPending | DataResultRunning | DataResultMissing
 
@@ -52,7 +51,7 @@ export type DataStore = {
    */
   set: (key: string, getter: () => unknown) => void,
   /**
-   * Returns the current result for a key without waiting. Reading it during render tracks changes.
+   * What is known about a key, without waiting for it. Reactive, and readable during render.
    */
   get: (key: string) => DataResult,
   /**
@@ -60,7 +59,8 @@ export type DataStore = {
    */
   signal: AbortSignal,
   /**
-   * Aborts the store's signal, clears its entries, and rejects pending and future subscriptions with `reason`.
+   * Ends the store. Every value is rejected so that anything waiting on one resumes rather than staying
+   * suspended, then discarded.
    */
   dispose: (reason: Error) => void,
 }

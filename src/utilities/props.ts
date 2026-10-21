@@ -2,7 +2,7 @@ import { MaybePromise } from '@/types/utilities'
 import { isPromise } from './promises'
 
 /**
- * How props settled. Tagged so that a getter returning `undefined` or an `Error` stays a value.
+ * How a props getter settled. Tagged so that a getter returning `undefined` or an `Error` stays a value.
  */
 export type PropsResult = { kind: 'value', value: unknown } | { kind: 'error', error: unknown } | { kind: 'abandoned' }
 
