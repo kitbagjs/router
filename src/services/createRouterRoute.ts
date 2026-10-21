@@ -159,7 +159,6 @@ export function createRouterRoute({ routerKey, route: initialRoute, push, getDat
 
   // data is derived from the route's matches rather than read off the route, so its type cannot be matched here
   const routerRoute = reactive({
-    ...initialRoute,
     ...internal,
     id,
     matched,
