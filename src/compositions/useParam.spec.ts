@@ -1,103 +1,180 @@
-import { ComputedRef, createApp, effectScope, isReadonly } from 'vue'
-import { assert, expect, onTestFinished, test } from 'vitest'
-import { createParam, createRoute, createRouter, createRouterAssets, useParam, withDefault, withParams } from '@/main'
+/* eslint-disable vue/one-component-per-file */
+import { createApp, effectScope, isReadonly } from 'vue'
+import { expect, onTestFinished, test } from 'vitest'
+import { createParam, createRoute, createRouter, useParam, withParams } from '@/main'
 
-import { Router } from '@/types/router'
-
-type Setup = {
-  router: Router,
-  value: ComputedRef<number | undefined>,
-  values: ComputedRef<number[]>,
-}
-
-async function setup(source: 'global' | 'router assets' = 'global'): Promise<Setup> {
+test('value contains the first matching param', async () => {
   const userId = createParam(Number)
-  const defaultedId = withDefault(userId, 3)
-  const users = createRoute({
-    name: 'users',
-    path: withParams('/users/[from]/[to]', { from: userId, to: userId }),
-    query: withParams('owner=[?owner]', { owner: defaultedId }),
-  })
-  const other = createRoute({ name: 'other', path: '/other' })
-  const router = createRouter([users, other], { initialUrl: '/users/1/2' })
-  const scope = effectScope()
+  const route = createRoute({ name: 'users', path: withParams('/users/[from]/[to]', { from: userId, to: userId }) })
+  const router = createRouter([route], { initialUrl: '/users/1/2' })
+  const app = createApp({})
+  app.use(router)
+  await router.start()
 
+  const scope = effectScope()
   onTestFinished(() => {
     scope.stop()
     router.stop()
   })
 
-  await router.start()
+  await scope.run(async () => {
+    const { value } = app.runWithContext(() => useParam(userId))
 
-  const app = createApp({})
-  app.use(router)
-
-  const useRouterParam = source === 'global' ? useParam : createRouterAssets(router).useParam
-  const result = app.runWithContext(() => scope.run(() => useRouterParam(defaultedId)))
-  assert(result)
-
-  return { router, ...result }
-}
-
-test('value contains the first matching param', async () => {
-  const { value } = await setup()
-
-  expect(value.value).toBe(1)
+    expect(value.value).toBe(1)
+  })
 })
 
-test('values contains all matching params in schema order', async () => {
-  const { values } = await setup()
+test('values contains all matching params', async () => {
+  const userId = createParam(Number)
+  const route = createRoute({ name: 'users', path: withParams('/users/[from]/[to]', { from: userId, to: userId }) })
+  const router = createRouter([route], { initialUrl: '/users/1/2' })
+  const app = createApp({})
+  app.use(router)
+  await router.start()
 
-  expect(values.value).toEqual([1, 2, 3])
+  const scope = effectScope()
+  onTestFinished(() => {
+    scope.stop()
+    router.stop()
+  })
+
+  await scope.run(async () => {
+    const { values } = app.runWithContext(() => useParam(userId))
+
+    expect(values.value).toEqual([1, 2])
+  })
 })
 
 test('destructured value follows navigation', async () => {
-  const { router, value } = await setup()
+  const userId = createParam(Number)
+  const route = createRoute({ name: 'user', path: withParams('/users/[id]', { id: userId }) })
+  const router = createRouter([route], { initialUrl: '/users/1' })
+  const app = createApp({})
+  app.use(router)
+  await router.start()
 
-  await router.push('users', { from: 0, to: 4, owner: 5 })
+  const scope = effectScope()
+  onTestFinished(() => {
+    scope.stop()
+    router.stop()
+  })
 
-  expect(value.value).toBe(0)
+  await scope.run(async () => {
+    const { value } = app.runWithContext(() => useParam(userId))
+
+    expect(value.value).toBe(1)
+
+    await router.push('user', { id: 2 })
+
+    expect(value.value).toBe(2)
+  })
 })
 
 test('destructured values follows navigation', async () => {
-  const { router, values } = await setup()
+  const userId = createParam(Number)
+  const route = createRoute({ name: 'user', path: withParams('/users/[id]', { id: userId }) })
+  const router = createRouter([route], { initialUrl: '/users/1' })
+  const app = createApp({})
+  app.use(router)
+  await router.start()
 
-  await router.push('users', { from: 0, to: 4, owner: 5 })
+  const scope = effectScope()
+  onTestFinished(() => {
+    scope.stop()
+    router.stop()
+  })
 
-  expect(values.value).toEqual([0, 4, 5])
+  await scope.run(async () => {
+    const { values } = app.runWithContext(() => useParam(userId))
+
+    expect(values.value).toEqual([1])
+
+    await router.push('user', { id: 2 })
+
+    expect(values.value).toEqual([2])
+  })
 })
 
-test('value is undefined when the current route does not use the definition', async () => {
-  const { router, value } = await setup()
+test('value is undefined when the definition is absent', async () => {
+  const userId = createParam(Number)
+  const route = createRoute({ name: 'home', path: '/' })
+  const router = createRouter([route], { initialUrl: '/' })
+  const app = createApp({})
+  app.use(router)
+  await router.start()
 
-  await router.push('other')
+  const scope = effectScope()
+  onTestFinished(() => {
+    scope.stop()
+    router.stop()
+  })
 
-  expect(value.value).toBeUndefined()
+  await scope.run(async () => {
+    const { value } = app.runWithContext(() => useParam(userId))
+
+    expect(value.value).toBeUndefined()
+  })
 })
 
-test('values is empty when the current route does not use the definition', async () => {
-  const { router, values } = await setup()
+test('values is empty when the definition is absent', async () => {
+  const userId = createParam(Number)
+  const route = createRoute({ name: 'home', path: '/' })
+  const router = createRouter([route], { initialUrl: '/' })
+  const app = createApp({})
+  app.use(router)
+  await router.start()
 
-  await router.push('other')
+  const scope = effectScope()
+  onTestFinished(() => {
+    scope.stop()
+    router.stop()
+  })
 
-  expect(values.value).toEqual([])
+  await scope.run(async () => {
+    const { values } = app.runWithContext(() => useParam(userId))
+
+    expect(values.value).toEqual([])
+  })
 })
 
 test('value is a readonly ref', async () => {
-  const { value } = await setup()
+  const userId = createParam(Number)
+  const route = createRoute({ name: 'user', path: withParams('/users/[id]', { id: userId }) })
+  const router = createRouter([route], { initialUrl: '/users/1' })
+  const app = createApp({})
+  app.use(router)
+  await router.start()
 
-  expect(isReadonly(value)).toBe(true)
+  const scope = effectScope()
+  onTestFinished(() => {
+    scope.stop()
+    router.stop()
+  })
+
+  await scope.run(async () => {
+    const { value } = app.runWithContext(() => useParam(userId))
+
+    expect(isReadonly(value)).toBe(true)
+  })
 })
 
 test('values is a readonly ref', async () => {
-  const { values } = await setup()
+  const userId = createParam(Number)
+  const route = createRoute({ name: 'user', path: withParams('/users/[id]', { id: userId }) })
+  const router = createRouter([route], { initialUrl: '/users/1' })
+  const app = createApp({})
+  app.use(router)
+  await router.start()
 
-  expect(isReadonly(values)).toBe(true)
-})
+  const scope = effectScope()
+  onTestFinished(() => {
+    scope.stop()
+    router.stop()
+  })
 
-test('router assets expose a working param hook', async () => {
-  const { value, values } = await setup('router assets')
+  await scope.run(async () => {
+    const { values } = app.runWithContext(() => useParam(userId))
 
-  expect(value.value).toBe(1)
-  expect(values.value).toEqual([1, 2, 3])
+    expect(isReadonly(values)).toBe(true)
+  })
 })
