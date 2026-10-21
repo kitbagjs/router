@@ -1,4 +1,6 @@
 import { expect, test, vi } from 'vitest'
+import { computed, toRefs } from 'vue'
+import { flushPromises } from '@vue/test-utils'
 import { createRouterRoute, isRouterRoute } from '@/services/createRouterRoute'
 import { createRoute } from './createRoute'
 import { createResolvedRoute } from './createResolvedRoute'
@@ -175,6 +177,39 @@ test('getTitle resolves the title of the current route', async () => {
   await expect(router.route.getTitle()).resolves.toBe('Other')
 })
 
+test('params work with toRefs across navigation without warnings', async () => {
+  const home = createRoute({ name: 'home', path: '/[id]' })
+  const router = createRouter([home], { initialUrl: '/one' })
+
+  await router.start()
+
+  const params = router.route.params
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+  try {
+    const { id } = toRefs(params)
+    const currentId = computed(() => id.value)
+
+    expect(warn).not.toHaveBeenCalled()
+    expect(currentId.value).toBe('one')
+
+    await router.push('home', { id: 'two' })
+
+    expect(router.route.params).toBe(params)
+    expect(currentId.value).toBe('two')
+
+    id.value = 'three'
+    await flushPromises()
+
+    expect(currentId.value).toBe('three')
+    expect(router.route.href).toBe('/three')
+    expect(warn).not.toHaveBeenCalled()
+  } finally {
+    router.stop()
+    warn.mockRestore()
+  }
+})
+
 test('canonical follows the current route', async () => {
   const user = createRoute({ name: 'user', path: '/user/[id]' }).addView(component)
     .addAlias({ path: '/member/[id]' })
@@ -187,4 +222,110 @@ test('canonical follows the current route', async () => {
   await router.push('/member/2')
 
   expect(router.route.canonical).toBe('/user/2')
+})
+
+test('retained state refs follow navigation and update the current state without warnings', async () => {
+  const home = createRoute({ name: 'home', path: '/', state: { value: String, previous: String } })
+  const other = createRoute({ name: 'other', path: '/other', state: { value: String, current: String } })
+  const router = createRouter([home, other], { initialUrl: '/' })
+
+  await router.start()
+  await router.push('home', {}, { state: { value: 'one', previous: 'old' } })
+
+  const state = router.route.state
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+  try {
+    const { value } = toRefs(state)
+    const currentValue = computed(() => value.value)
+
+    expect(currentValue.value).toBe('one')
+    expect(warn).not.toHaveBeenCalled()
+
+    await router.push('other', {}, { state: { value: 'two', current: 'new' } })
+
+    expect(router.route.state).toBe(state)
+    expect(currentValue.value).toBe('two')
+    expect({ ...state }).toEqual({ value: 'two', current: 'new' })
+    expect('previous' in state).toBe(false)
+    expect('current' in state).toBe(true)
+
+    value.value = 'three'
+    await flushPromises()
+
+    expect(currentValue.value).toBe('three')
+    expect(router.route.state).toEqual({ value: 'three', current: 'new' })
+
+    router.route.state = { value: 'four', current: 'replaced' }
+    await flushPromises()
+
+    expect(currentValue.value).toBe('four')
+    expect({ ...state }).toEqual({ value: 'four', current: 'replaced' })
+    expect(warn).not.toHaveBeenCalled()
+  } finally {
+    router.stop()
+    warn.mockRestore()
+  }
+})
+
+test('retained query and reader methods follow navigation', async () => {
+  const home = createRoute({ name: 'home', path: '/' })
+  const router = createRouter([home], { initialUrl: '/?value=one' })
+
+  await router.start()
+
+  const query = router.route.query
+  const get = query.get
+  const value = computed(() => get('value'))
+  const size = computed(() => query.size)
+
+  try {
+    expect(value.value).toBe('one')
+    expect(size.value).toBe(1)
+
+    await router.push('/?value=two&value=three&extra=new')
+
+    expect(router.route.query).toBe(query)
+    expect(value.value).toBe('two')
+    expect(size.value).toBe(3)
+    expect(query.getAll('value')).toEqual(['two', 'three'])
+    expect(query.has('extra')).toBe(true)
+    expect([...query]).toEqual([['value', 'two'], ['value', 'three'], ['extra', 'new']])
+    expect(new URLSearchParams(query).toString()).toBe('value=two&value=three&extra=new')
+
+    router.route.query = 'value=four'
+    await flushPromises()
+
+    expect(value.value).toBe('four')
+    expect(size.value).toBe(1)
+    expect(query.has('extra')).toBe(false)
+  } finally {
+    router.stop()
+  }
+})
+
+test.each([
+  { method: 'set', mutate: (query: URLSearchParams) => query.set('value', 'three'), expected: 'value=three&extra=new' },
+  { method: 'append', mutate: (query: URLSearchParams) => query.append('value', 'three'), expected: 'value=two&extra=new&value=three' },
+  { method: 'delete', mutate: (query: URLSearchParams) => query.delete('value'), expected: 'extra=new' },
+  { method: 'sort', mutate: (query: URLSearchParams) => query.sort(), expected: 'extra=new&value=two' },
+])('retained query.$method navigates with the current query values', async ({ mutate, expected }) => {
+  const home = createRoute({ name: 'home', path: '/' })
+  const router = createRouter([home], { initialUrl: '/?value=one' })
+
+  await router.start()
+
+  const query = router.route.query
+
+  try {
+    await router.push('/?value=two&extra=new')
+
+    mutate(query)
+    await flushPromises()
+
+    expect(router.route.href).toBe(`/?${expected}`)
+    expect(query.toString()).toBe(expected)
+  } finally {
+    router.stop()
+  }
 })
