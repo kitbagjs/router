@@ -106,7 +106,11 @@ export function createDataStore(): DataStore {
       return
     }
 
-    target.state.value = result.kind === 'error' && result.error instanceof NavigationAbandonedError ? ABANDONED : result
+    if (result.kind === 'error' && result.error instanceof NavigationAbandonedError) {
+      target.state.value = ABANDONED
+    } else {
+      target.state.value = result
+    }
 
     if (result.kind === 'value') {
       target.resolve(result.value)
