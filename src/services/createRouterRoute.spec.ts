@@ -7,7 +7,7 @@ import { createResolvedRoute } from './createResolvedRoute'
 import { createRouter } from './createRouter'
 import { component } from '@/utilities/testHelpers'
 import { isResolvedRoute, ResolvedRoute } from '@/types/resolved'
-import { createNavigationStores } from './createNavigationStores'
+import { createNavigation } from './createNavigation'
 import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
 
 test('router route does not retain the initial resolved route internals', () => {
@@ -71,22 +71,22 @@ test.each([
   { named: true, pending: false },
   { named: false, pending: true },
   { named: true, pending: true },
-])('data follows a replaced store when reusing the resolved route (named: $named, pending: $pending)', async ({ named, pending }) => {
+])('data follows a replaced navigation when reusing the resolved route (named: $named, pending: $pending)', async ({ named, pending }) => {
   const first = Promise.withResolvers<string>()
   const second = Promise.withResolvers<string>()
   const load = vi.fn()
     .mockReturnValueOnce(first.promise)
     .mockReturnValueOnce(second.promise)
   const route = createResolvedRoute(createRoute({ name: 'route', path: '/' }).addLoader(load, named ? { name: 'value' } : undefined))
-  const store = createNavigationStores()
-  const routerRoute = createRouterRoute({ routerKey: Symbol(), route, push: vi.fn(), getData: store.getData })
+  const navigation = createNavigation()
+  const routerRoute = createRouterRoute({ routerKey: Symbol(), route, push: vi.fn(), getData: navigation.getData })
   const readData = (): Promise<unknown> => {
     return named
       ? (routerRoute.data as Record<string, Promise<unknown>>).value
       : routerRoute.data as Promise<unknown>
   }
 
-  const firstCommit = store.commit(route)
+  const firstCommit = navigation.commit(route)
   const previous = readData()
 
   if (!pending) {
@@ -95,7 +95,7 @@ test.each([
     await expect(previous).resolves.toBe('first')
   }
 
-  const secondCommit = store.commit(route)
+  const secondCommit = navigation.commit(route)
   routerRoute.updateRoute(route)
   const current = readData()
 
