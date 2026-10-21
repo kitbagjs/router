@@ -81,7 +81,7 @@ type RouteStateOf<TMatches extends CreatedRouteOptions[]> = CreatedRouteOptions[
  * The loaders of every matched route, combined. A plain intersection: a loader name is unique across a
  * route and its ancestors, which `addLoader` enforces.
  */
-type RouteLoadersOf<TMatches extends CreatedRouteOptions[]> = CreatedRouteOptions[] extends TMatches
+export type RouteLoadersOf<TMatches extends CreatedRouteOptions[]> = CreatedRouteOptions[] extends TMatches
   ? RouteLoaders
   : TMatches extends [infer THead, ...infer TRest extends CreatedRouteOptions[]]
     ? (THead extends { loaders: infer TLoaders extends RouteLoaders } ? TLoaders : {}) & RouteLoadersOf<TRest>
