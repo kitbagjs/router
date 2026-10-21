@@ -10,7 +10,7 @@ export type IsRouteOptions = {
 export type RouteWithMatch<
   TRoute extends RouterRoute,
   TRouteName extends TRoute['name']
-> = TRoute extends RouterRoute
+> = TRoute extends unknown
   ? TRouteName extends TRoute['matches'][number]['name']
     ? TRoute
     : never
