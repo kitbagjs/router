@@ -230,7 +230,7 @@ describe('navigation progress', () => {
 
     await flushPromises()
 
-    const store = navigation.app.runWithContext(() => createUseRouterNavigation(router.key)().createPrefetch())
+    const store = navigation.app.runWithContext(() => createUseRouterNavigation(router.key)().create())
 
     store.compute(router.resolve('other'))
     await flushPromises()
