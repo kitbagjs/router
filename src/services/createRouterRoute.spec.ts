@@ -7,7 +7,7 @@ import { createResolvedRoute } from './createResolvedRoute'
 import { createRouter } from './createRouter'
 import { component } from '@/utilities/testHelpers'
 import { isResolvedRoute, ResolvedRoute } from '@/types/resolved'
-import { createNavigation } from './createNavigation'
+import { createRouterNavigation } from './createRouterNavigation'
 import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
 
 test('router route does not retain the initial resolved route internals', () => {
@@ -78,7 +78,7 @@ test.each([
     .mockReturnValueOnce(first.promise)
     .mockReturnValueOnce(second.promise)
   const route = createResolvedRoute(createRoute({ name: 'route', path: '/' }).addLoader(load, named ? { name: 'value' } : undefined))
-  const navigation = createNavigation()
+  const navigation = createRouterNavigation()
   const routerRoute = createRouterRoute({ routerKey: Symbol(), route, push: vi.fn(), getData: navigation.getData })
   const readData = (): Promise<unknown> => {
     return named
