@@ -20,61 +20,61 @@ import { Computation, ComputationFilter, getComputations, isKind, loaderLocation
 /**
  * Computation stopped because its navigation was disposed.
  */
-type NavigationAbandoned = {
+type RouterNavigationAbandoned = {
   status: 'ABANDONED',
 }
 
-export type NavigationResponse = CallbackContextSuccess | CallbackContextPush | CallbackContextReject | NavigationAbandoned
+export type RouterNavigationResponse = CallbackContextSuccess | CallbackContextPush | CallbackContextReject | RouterNavigationAbandoned
 
-export type NavigationResponseEvent = {
-  response: Promise<NavigationResponse>,
+export type RouterNavigationResponseEvent = {
+  response: Promise<RouterNavigationResponse>,
   source: DataKind,
 }
 
-type NavigationResponseCallback = (response: NavigationResponseEvent) => void
+type RouterNavigationResponseCallback = (response: RouterNavigationResponseEvent) => void
 
-type NavigationState = {
+type RouterNavigationState = {
   data: DataStore,
-  responses: NavigationResponseEvent[],
-  onResponse: NavigationResponseCallback | undefined,
+  responses: RouterNavigationResponseEvent[],
+  onResponse: RouterNavigationResponseCallback | undefined,
   committed: boolean,
 }
 
-type NavigationInstanceInternal = {
+type RouterNavigationStoreInternal = {
   data: DataStore,
-  commit: Navigation['commit'],
+  commit: RouterNavigationStores['commit'],
   dispose: (reason: Error) => void,
 }
 
-type NavigationInstances = {
-  current: NavigationInstance & NavigationInstanceInternal,
-  staged?: NavigationInstance & NavigationInstanceInternal,
+type RouterNavigationStoreSlots = {
+  current: RouterNavigationStore & RouterNavigationStoreInternal,
+  staged?: RouterNavigationStore & RouterNavigationStoreInternal,
 }
 
 /**
  * Separate outcomes for props and loaders, so callers can wait for either independently.
  */
-export type NavigationResponses = {
-  props: Promise<NavigationResponse>,
-  loaders: Promise<NavigationResponse>,
+export type RouterNavigationResponses = {
+  props: Promise<RouterNavigationResponse>,
+  loaders: Promise<RouterNavigationResponse>,
   /**
    * Individual computations tracked by navigation progress.
    */
   values: Promise<unknown>[],
 }
 
-const ABANDONED = Promise.resolve<NavigationResponse>({ status: 'ABANDONED' })
-const ABANDONED_RESPONSES: NavigationResponses = {
+const ABANDONED = Promise.resolve<RouterNavigationResponse>({ status: 'ABANDONED' })
+const ABANDONED_RESPONSES: RouterNavigationResponses = {
   props: ABANDONED,
   loaders: ABANDONED,
   values: [],
 }
 
-export type NavigationInstance = {
+export type RouterNavigationStore = {
   /**
    * Computes the supplied values and reports how they settle.
    */
-  compute: (route: ResolvedRoute, filter?: ComputationFilter) => NavigationResponses,
+  compute: (route: ResolvedRoute, filter?: ComputationFilter) => RouterNavigationResponses,
   /**
    * Adopts values that already settled, in place of running their getters.
    */
@@ -84,7 +84,7 @@ export type NavigationInstance = {
 /**
  * Computations prepared ahead of a navigation that may never happen.
  */
-export type PrefetchNavigation = NavigationInstance & {
+export type PrefetchedRouterNavigationStore = RouterNavigationStore & {
   /**
    * Disposes of the previously staged navigation and sets this navigation as staged.
    */
@@ -109,18 +109,18 @@ export type RouteValue = {
   value: unknown,
 }
 
-export type Navigation = HasVueAppStore & {
+export type RouterNavigationStores = HasVueAppStore & {
   stop: () => void,
-  createPrefetch: () => PrefetchNavigation,
+  createPrefetch: () => PrefetchedRouterNavigationStore,
   /**
    * The navigation prepared for the next commit, created when nothing is staged.
    * The rendered route keeps reading from the current navigation until then.
    */
-  staged: () => NavigationInstance,
+  staged: () => RouterNavigationStore,
   /**
    * Makes the staged navigation current and computes whatever the route still lacks.
    */
-  commit: (route: ResolvedRoute, onResponse?: NavigationResponseCallback) => NavigationResponses,
+  commit: (route: ResolvedRoute, onResponse?: RouterNavigationResponseCallback) => RouterNavigationResponses,
   /**
    * The values currently settled in the store.
    */
@@ -135,19 +135,19 @@ export type Navigation = HasVueAppStore & {
   getLoaderValue: (location: ValueLocation<'loader'>, route: ResolvedRoute) => Promise<unknown>,
 }
 
-export function createNavigation(): Navigation {
+export function createRouterNavigation(): RouterNavigationStores {
   const { setVueApp, runWithContext } = createVueAppStore()
-  const navigations: NavigationInstances = { current: createNavigationInstance() }
+  const navigations: RouterNavigationStoreSlots = { current: createRouterNavigationStore() }
 
-  function createNavigationInstance(): NavigationInstance & NavigationInstanceInternal {
-    const state: NavigationState = {
+  function createRouterNavigationStore(): RouterNavigationStore & RouterNavigationStoreInternal {
+    const state: RouterNavigationState = {
       data: createDataStore(),
       responses: [],
       onResponse: undefined,
       committed: false,
     }
 
-    function reportResponse(response: NavigationResponseEvent): void {
+    function reportResponse(response: RouterNavigationResponseEvent): void {
       if (state.data.signal.aborted) {
         return
       }
@@ -160,7 +160,7 @@ export function createNavigation(): Navigation {
       state.onResponse?.(response)
     }
 
-    function compute(route: ResolvedRoute, filter: ComputationFilter = () => true): NavigationResponses {
+    function compute(route: ResolvedRoute, filter: ComputationFilter = () => true): RouterNavigationResponses {
       if (state.data.signal.aborted) {
         return ABANDONED_RESPONSES
       }
@@ -206,7 +206,7 @@ export function createNavigation(): Navigation {
      * Registers computations synchronously so props callbacks can subscribe to loaders immediately.
      * Existing computations keep their values and are not reported again.
      */
-    function settle(route: ResolvedRoute, computations: Computation[]): Promise<NavigationResponse> {
+    function settle(route: ResolvedRoute, computations: Computation[]): Promise<RouterNavigationResponse> {
       computations.forEach((computation) => {
         state.data.set(computation.key, () => {
           const response = toResponse(state.data.subscribe(computation.key))
@@ -221,7 +221,7 @@ export function createNavigation(): Navigation {
       return toResponse(Promise.all(computations.map(({ key }) => state.data.subscribe(key))))
     }
 
-    function commit(route: ResolvedRoute, callback?: NavigationResponseCallback): NavigationResponses {
+    function commit(route: ResolvedRoute, callback?: RouterNavigationResponseCallback): RouterNavigationResponses {
       state.onResponse = callback
       state.committed = true
 
@@ -246,30 +246,30 @@ export function createNavigation(): Navigation {
     }
   }
 
-  const createPrefetch: Navigation['createPrefetch'] = () => {
-    let instance = createNavigationInstance()
+  const createPrefetch: RouterNavigationStores['createPrefetch'] = () => {
+    let instance = createRouterNavigationStore()
 
-    const compute: PrefetchNavigation['compute'] = (route, filter) => {
+    const compute: PrefetchedRouterNavigationStore['compute'] = (route, filter) => {
       return instance.compute(route, filter)
     }
 
-    const fill: PrefetchNavigation['fill'] = (route, values) => {
+    const fill: PrefetchedRouterNavigationStore['fill'] = (route, values) => {
       instance.fill(route, values)
     }
 
-    const dispose: PrefetchNavigation['dispose'] = () => {
+    const dispose: PrefetchedRouterNavigationStore['dispose'] = () => {
       instance.dispose(new NavigationAbandonedError())
     }
 
-    const reset: PrefetchNavigation['reset'] = () => {
+    const reset: PrefetchedRouterNavigationStore['reset'] = () => {
       dispose()
-      instance = createNavigationInstance()
+      instance = createRouterNavigationStore()
     }
 
-    const stage: PrefetchNavigation['stage'] = () => {
+    const stage: PrefetchedRouterNavigationStore['stage'] = () => {
       navigations.staged?.dispose(new NavigationAbandonedError())
       navigations.staged = instance
-      instance = createNavigationInstance()
+      instance = createRouterNavigationStore()
     }
 
     return {
@@ -281,29 +281,29 @@ export function createNavigation(): Navigation {
     }
   }
 
-  const staged: Navigation['staged'] = () => {
-    navigations.staged ??= createNavigationInstance()
+  const staged: RouterNavigationStores['staged'] = () => {
+    navigations.staged ??= createRouterNavigationStore()
 
     return navigations.staged
   }
 
-  const stop: Navigation['stop'] = () => {
+  const stop: RouterNavigationStores['stop'] = () => {
     const reason = new NavigationAbandonedError()
     navigations.current.dispose(reason)
     navigations.staged?.dispose(reason)
     navigations.staged = undefined
   }
 
-  const commit: Navigation['commit'] = (route, onResponse) => {
+  const commit: RouterNavigationStores['commit'] = (route, onResponse) => {
     const previous = navigations.current
-    navigations.current = navigations.staged ?? createNavigationInstance()
+    navigations.current = navigations.staged ?? createRouterNavigationStore()
     navigations.staged = undefined
     previous.dispose(new NavigationAbandonedError())
 
     return navigations.current.commit(route, onResponse)
   }
 
-  const getValues: Navigation['getValues'] = (route) => {
+  const getValues: RouterNavigationStores['getValues'] = (route) => {
     const store = navigations.current.data
 
     return getComputations(route).flatMap(({ kind, depth, name, key }) => {
@@ -317,7 +317,7 @@ export function createNavigation(): Navigation {
     })
   }
 
-  async function toResponse(value: Promise<unknown>): Promise<NavigationResponse> {
+  async function toResponse(value: Promise<unknown>): Promise<RouterNavigationResponse> {
     try {
       await value
 
@@ -339,7 +339,7 @@ export function createNavigation(): Navigation {
     }
   }
 
-  const getProps: Navigation['getProps'] = (id, name, route) => {
+  const getProps: RouterNavigationStores['getProps'] = (id, name, route) => {
     const match = route.matches.find((match) => match.id === id)
 
     if (!match?.views[name]?.props) {
@@ -372,7 +372,7 @@ export function createNavigation(): Navigation {
     return toValues(loaders, DEFAULT_LOADER_NAME, route, store)
   }
 
-  const getLoaderState: Navigation['getLoaderState'] = (location: ValueLocation, route) => {
+  const getLoaderState: RouterNavigationStores['getLoaderState'] = (location: ValueLocation, route) => {
     if (location.kind !== 'loader') {
       throw new TypeError('Expected a loader location')
     }
@@ -387,7 +387,7 @@ export function createNavigation(): Navigation {
     return result
   }
 
-  const getLoaderValue: Navigation['getLoaderValue'] = (location: ValueLocation, route) => {
+  const getLoaderValue: RouterNavigationStores['getLoaderValue'] = (location: ValueLocation, route) => {
     if (location.kind !== 'loader') {
       throw new TypeError('Expected a loader location')
     }
