@@ -1,5 +1,5 @@
 import { toUrlQueryPart, toUrlPart, UrlPart } from '@/services/withParams'
-import { getParamValueFromUrl, setParamValueOnUrl } from '@/services/paramsFinder'
+import { createParamPatterns, ParamPatterns } from '@/services/paramsFinder'
 import { getParamName, generateRouteHostRegexPattern, generateRoutePathRegexPattern, generateRouteQueryRegexPatterns, generateRouteHashRegexPattern } from '@/services/routeRegex'
 import { getParamValue, setParamValue } from '@/services/params'
 import { parseUrl, stringifyUrl, UrlParts } from '@/services/urlParser'
@@ -20,11 +20,16 @@ export function createUrl(urlOrOptions: CreateUrlOptions): Url {
 
   checkDuplicateParams(options.path.params, options.query.params, options.host.params, options.hash.params)
 
+  const hostPatterns = createParamPatterns(options.host)
+  const pathPatterns = createParamPatterns(options.path)
+  const hashPatterns = createParamPatterns(options.hash)
+  const queryPatterns = createQueryParamPatterns(options.query)
+
   const host = {
     ...options.host,
     regexp: generateRouteHostRegexPattern(options.host.value),
     stringify(params: Record<string, unknown> = {}): string {
-      return assembleParamValues(options.host, params)
+      return stringifyParams(options.host, hostPatterns, params)
     },
   }
 
@@ -35,7 +40,7 @@ export function createUrl(urlOrOptions: CreateUrlOptions): Url {
       trailingSlashRemoved: generateRoutePathRegexPattern(options.path.value.replace(/^(.+)\/$/, '$1')),
     },
     stringify(params: Record<string, unknown> = {}): string {
-      return assembleParamValues(options.path, params)
+      return stringifyParams(options.path, pathPatterns, params)
     },
   }
 
@@ -43,7 +48,7 @@ export function createUrl(urlOrOptions: CreateUrlOptions): Url {
     ...options.query,
     regexp: generateRouteQueryRegexPatterns(options.query.value),
     stringify(params: Record<string, unknown> = {}): string {
-      return assembleQueryParamValues(options.query, params).toString()
+      return stringifyQueryParams(options.query, queryPatterns, params).toString()
     },
   }
 
@@ -51,7 +56,7 @@ export function createUrl(urlOrOptions: CreateUrlOptions): Url {
     ...options.hash,
     regexp: generateRouteHashRegexPattern(options.hash.value),
     stringify(params: Record<string, unknown> = {}): string {
-      return assembleParamValues(options.hash, params)
+      return stringifyParams(options.hash, hashPatterns, params)
     },
   }
 
@@ -115,10 +120,10 @@ export function createUrl(urlOrOptions: CreateUrlOptions): Url {
     checkMatchesRegex(parts, options)
 
     return {
-      ...getParams(host, parts.host ?? ''),
-      ...getParams(path, parts.path),
-      ...getQueryParams(query, parts.query.toString()),
-      ...getParams(hash, parts.hash),
+      ...parseParams(host, hostPatterns, parts.host ?? ''),
+      ...parseParams(path, pathPatterns, parts.path),
+      ...parseQueryParams(query, queryPatterns, parts.query.toString()),
+      ...parseParams(hash, hashPatterns, parts.hash),
     }
   }
 
@@ -162,27 +167,40 @@ function cleanQuery(query: UrlPart): UrlPart {
   }
 }
 
-function assembleParamValues(part: UrlPart, paramValues: Record<string, unknown>): string {
+function stringifyParams(part: UrlPart, patterns: ParamPatterns, paramValues: Record<string, unknown>): string {
   return Object.keys(part.params).reduce((url, name) => {
-    return setParamValueOnUrl(url, part, name, paramValues[name])
+    return patterns.stringifyValue(url, name, paramValues[name])
   }, part.value)
 }
 
-function assembleQueryParamValues(query: UrlPart, paramValues: Record<string, unknown>): URLSearchParams {
-  const search = new URLSearchParams(query.value)
+/**
+ * A query param as the route declares it: the search key, the value as written, and the param it holds.
+ */
+type QueryParamPattern = {
+  key: string,
+  value: string,
+  paramName: string,
+}
 
-  if (!query.value) {
-    return search
-  }
-
-  for (const [key, value] of Array.from(search.entries())) {
+/**
+ * The query's params, read out of its value once rather than on every parse and stringify.
+ */
+function createQueryParamPatterns(query: UrlPart): QueryParamPattern[] {
+  return Array.from(new URLSearchParams(query.value).entries()).flatMap(([key, value]) => {
     const paramName = getParamName(value)
-    const isNotParam = !paramName
 
-    if (isNotParam) {
-      continue
+    if (!paramName) {
+      return []
     }
 
+    return [{ key, value, paramName }]
+  })
+}
+
+function stringifyQueryParams(query: UrlPart, patterns: QueryParamPattern[], paramValues: Record<string, unknown>): URLSearchParams {
+  const search = new URLSearchParams(query.value)
+
+  for (const { key, value, paramName } of patterns) {
     const paramValue = setParamValue(paramValues[paramName], query.params[paramName])
     const valueNotProvidedAndNoDefaultUsed = paramValues[paramName] === undefined && paramValue === ''
     const shouldLeaveEmptyValueOut = query.params[paramName].isOptional && valueNotProvidedAndNoDefaultUsed
@@ -197,11 +215,11 @@ function assembleQueryParamValues(query: UrlPart, paramValues: Record<string, un
   return search
 }
 
-function getParams(path: UrlPart, url: string): Record<string, unknown> {
+function parseParams(part: UrlPart, patterns: ParamPatterns, url: string): Record<string, unknown> {
   const values: Record<string, unknown> = {}
 
-  for (const [name, urlParam] of Object.entries(path.params)) {
-    const stringValue = getParamValueFromUrl(url, path, name)
+  for (const [name, urlParam] of Object.entries(part.params)) {
+    const stringValue = patterns.parseValue(url, name)
     const paramValue = getParamValue(decodeParamValue(stringValue), urlParam)
 
     values[name] = paramValue
@@ -211,27 +229,20 @@ function getParams(path: UrlPart, url: string): Record<string, unknown> {
 }
 
 /**
- * This function has unique responsibilities not accounted for by getParams thanks to URLSearchParams
+ * This function has unique responsibilities not accounted for by parseParams thanks to URLSearchParams
  *
  * 1. Find query values when other query params are omitted or in a different order
  * 2. Find query values based on the url search key, which might not match the param name
  */
-function getQueryParams(query: UrlPart, url: string): Record<string, unknown> {
+function parseQueryParams(query: UrlPart, patterns: QueryParamPattern[], url: string): Record<string, unknown> {
   const values: Record<string, unknown> = {}
-  const routeSearch = new URLSearchParams(query.value)
   const actualSearch = new URLSearchParams(url)
 
-  for (const [key, value] of Array.from(routeSearch.entries())) {
-    const paramName = getParamName(value)
-    const isNotParam = !paramName
-
-    if (isNotParam) {
-      continue
-    }
-
+  for (const { key, paramName } of patterns) {
     const valueOnUrl = actualSearch.get(key) ?? undefined
     const paramValue = getParamValue(valueOnUrl, query.params[paramName])
     values[paramName] = paramValue
   }
+
   return values
 }
