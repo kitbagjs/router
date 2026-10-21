@@ -32,12 +32,15 @@ type RouterNavigationComputationResponse = {
 }
 
 type RouterNavigationCommitOptions = {
-  from: ResolvedRoute | null,
-  signal: AbortSignal,
+  to: ResolvedRoute,
+  from?: ResolvedRoute | null,
+  signal?: AbortSignal,
 }
 
-type RouterNavigationContext = RouterNavigationCommitOptions & {
+type RouterNavigationContext = {
   to: ResolvedRoute,
+  from: ResolvedRoute | null,
+  signal: AbortSignal,
 }
 
 export type RouterNavigationResponseEvent = RouterNavigationComputationResponse & RouterNavigationContext
@@ -82,7 +85,7 @@ export type RouterNavigationStore = {
    * Disposes of the previously staged navigation and sets this navigation as staged.
    */
   stage: () => void,
-  commit: (route: ResolvedRoute, options?: RouterNavigationCommitOptions) => RouterNavigationResponses,
+  commit: (options: RouterNavigationCommitOptions) => RouterNavigationResponses,
   dispose: () => void,
   /**
    * Computes the supplied values and reports how they settle.
@@ -115,7 +118,7 @@ export type RouterNavigationStores = HasVueAppStore & {
   /**
    * Makes the staged navigation current and computes whatever the route still lacks.
    */
-  commit: (route: ResolvedRoute, options?: RouterNavigationCommitOptions) => RouterNavigationResponses,
+  commit: (options: RouterNavigationCommitOptions) => RouterNavigationResponses,
   /**
    * The values currently settled in the store.
    */
@@ -213,7 +216,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
       return toResponse(Promise.all(computations.map(({ key }) => state.data.subscribe(key))))
     }
 
-    function commit(route: ResolvedRoute, options?: RouterNavigationCommitOptions): RouterNavigationResponses {
+    function commit({ to, from = null, signal = state.data.signal }: RouterNavigationCommitOptions): RouterNavigationResponses {
       const previous = navigations.current
       const staged = navigations.staged
       navigations.current = instance
@@ -228,15 +231,15 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
       }
 
       state.context = {
-        to: route,
-        from: options?.from ?? null,
-        signal: options?.signal ?? state.data.signal,
+        to,
+        from,
+        signal,
       }
 
       const pending = state.responses.splice(0)
       pending.forEach(reportResponse)
 
-      return compute(route)
+      return compute(to)
     }
 
     function dispose(): void {
@@ -277,10 +280,10 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     return navigations.staged
   }
 
-  const commit: RouterNavigationStores['commit'] = (route, options) => {
+  const commit: RouterNavigationStores['commit'] = (options) => {
     const instance = navigations.staged ?? createRouterNavigationStore()
 
-    return instance.commit(route, options)
+    return instance.commit(options)
   }
 
   const getValues: RouterNavigationStores['getValues'] = (route) => {
