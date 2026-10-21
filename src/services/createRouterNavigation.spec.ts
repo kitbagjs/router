@@ -216,17 +216,23 @@ test('a staged getter keeps its signal until the navigation that adopted it is r
 test('a prefetched response is reported when its navigation becomes current', async () => {
   const route = createResolvedRoute(createRoute({ path: '/' }).addLoader((_route, { replace }) => replace('/next')))
   const onResponse = vi.fn()
-  const navigation = createRouterNavigation()
+  const navigation = createRouterNavigation({ onResponse })
   const detached = navigation.create()
 
   await detached.compute(route).loaders
 
+  expect(onResponse).not.toHaveBeenCalled()
+  const from = createResolvedRoute(createRoute({ path: '/previous' }))
+  const { signal } = new AbortController()
+
   detached.stage()
-  navigation.commit(route, onResponse)
+  navigation.commit(route, { from, signal })
 
   expect(onResponse).toHaveBeenCalledOnce()
 
   const [event] = onResponse.mock.calls[0]
+
+  expect(event).toMatchObject({ to: route, from, signal })
 
   await expect(event.response).resolves.toEqual({ status: 'PUSH', to: ['/next', { replace: true }] })
 })
@@ -236,14 +242,14 @@ test('replacing a navigation discards its buffered responses', async () => {
     throw new ContextPushError(['/old'])
   })
   const route = createResolvedRoute(createRoute({ path: '/' }).addLoader(load))
-  const navigation = createRouterNavigation()
-  const detached = navigation.create()
   const onResponse = vi.fn()
+  const navigation = createRouterNavigation({ onResponse })
+  const detached = navigation.create()
 
   await detached.compute(route).loaders
   detached.dispose()
   navigation.create().stage()
-  navigation.commit(route, onResponse)
+  navigation.commit(route)
 
   expect(onResponse).toHaveBeenCalledOnce()
 
@@ -256,9 +262,9 @@ test('computations added after adoption report their response once', async () =>
   const initial = createResolvedRoute(createRoute({ path: '/' }).addLoader(() => 'initial'))
   const next = createResolvedRoute(createRoute({ path: '/next' }).addLoader((_route, { push }) => push('/target')))
   const onResponse = vi.fn()
-  const navigation = createRouterNavigation()
+  const navigation = createRouterNavigation({ onResponse })
   const current = navigation.staged()
-  await navigation.commit(initial, onResponse).loaders
+  await navigation.commit(initial).loaders
   onResponse.mockClear()
 
   current.compute(next)
@@ -272,7 +278,8 @@ test('computations added after adoption report their response once', async () =>
 })
 
 test.each(['getLoaderState', 'getLoaderValue'] as const)('%s rejects props locations at runtime', (method) => {
-  const navigation = createRouterNavigation()
+  const onResponse = vi.fn()
+  const navigation = createRouterNavigation({ onResponse })
   const route = createResolvedRoute(createRoute({ path: '/' }))
 
   expect(() => {
