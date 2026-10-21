@@ -84,6 +84,7 @@ export type ComponentHookRegistration = {
   lifecycle: HookLifecycle,
   hook: ComponentHook | AnyHook,
   depth: number,
+  signal?: AbortSignal,
 }
 
 /**
@@ -91,17 +92,24 @@ export type ComponentHookRegistration = {
  */
 export type AddComponentHook = (registration: ComponentHookRegistration) => HookRemove
 
-export type AddGlobalHooks = (hooks: Hooks) => void
+export type AddGlobalHooks = (hooks: Hooks[]) => void
 
 /**
  * A function to remove a previously added route hook.
  */
 export type HookRemove = () => void
 
+export type HookRegistrationOptions = {
+  /**
+   * Removes the hook when aborted.
+   */
+  signal?: AbortSignal,
+}
+
 /**
  * Registers an inline callback or a reusable hook definition.
  */
-export type AddHook<THook extends AnyFunction> = (hook: THook | AnyHook) => HookRemove
+export type AddHook<THook extends AnyFunction> = (hook: THook | AnyHook, options?: HookRegistrationOptions) => HookRemove
 
 /**
  * Enumerates the lifecycle events for before route hooks.
@@ -317,7 +325,7 @@ export type AddRejectionHook<
   TRoutes extends Routes = Routes,
   TRouteTo extends Route = TRoutes[number],
   TRouteFrom extends Route = TRoutes[number]
-> = (hook: RejectionHook<TRejections, TRoutes, TRouteTo, TRouteFrom>) => HookRemove
+> = (hook: RejectionHook<TRejections, TRoutes, TRouteTo, TRouteFrom>, options?: HookRegistrationOptions) => HookRemove
 
 export type RejectionHookRunner<TRejection extends Rejection = Rejection, TRoutes extends Routes = Routes> = (
   rejection: TRejection,
@@ -344,7 +352,7 @@ export type ErrorHook<
 export type AddErrorHook<
   TRoutes extends Routes = Routes,
   TRejections extends Rejections = Rejections
-> = (hook: ErrorHook<TRoutes, TRejections>) => HookRemove
+> = (hook: ErrorHook<TRoutes, TRejections>, options?: HookRegistrationOptions) => HookRemove
 
 export type ErrorHookRunnerContext<TRoutes extends Routes = Routes> = {
   to: RouterResolvedRouteUnion<TRoutes> | null,
