@@ -18,6 +18,11 @@ export default defineConfig({
     ],
   },
   test: {
+    onConsoleLog(log) {
+      if (log.trim() === '<Suspense> is an experimental feature and its API will likely change.') {
+        return false
+      }
+    },
     projects: [
       {
         extends: true,
