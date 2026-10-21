@@ -2,7 +2,7 @@ import type { PrefetchConfig } from '@/types/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
 import { CreatedRouteOptions } from '@/types/route'
 import { viewNamesWithProps } from '@/services/routeViews'
-import { DataKind, getDataKey } from '@/services/createNavigationStores'
+import { DataKind, getDataKey } from '@/services/getDataKey'
 import { AnyPayloadTransformer } from '@/services/payload'
 import { AnyFunction } from '@/types/utilities'
 

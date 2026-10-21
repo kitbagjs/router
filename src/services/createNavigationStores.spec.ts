@@ -1,119 +1,271 @@
-import { describe, expect, test } from 'vitest'
-import { createNavigationStores, getDataKey } from './createNavigationStores'
-import { createRoute } from '@/services/createRoute'
+import { expect, test, vi } from 'vitest'
+import { flushPromises } from '@vue/test-utils'
+import { createNavigationStores } from '@/services/createNavigationStores'
 import { createResolvedRoute } from '@/services/createResolvedRoute'
-import { createParam } from '@/services/createParam'
-import { withParams } from '@/services/withParams'
-import { createDataStore } from './createDataStore'
+import { createRoute } from '@/services/createRoute'
+import { component } from '@/utilities/testHelpers'
+import { ContextPushError } from '@/errors/contextPushError'
 import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
 
-describe('promote', () => {
-  test('adopts the staged store', () => {
-    const stores = createNavigationStores()
-    const staged = createDataStore()
+test('pending props report abandonment when another navigation replaces their store', async () => {
+  const pending = Promise.withResolvers<{ value: string }>()
+  const route = createRoute({ name: 'route', path: '/' }).addView(component, { props: () => pending.promise })
+  const other = createRoute({ name: 'other', path: '/other' })
+  const resolved = createResolvedRoute(route)
+  const store = createNavigationStores()
 
-    stores.stage(staged)
-    stores.promote()
+  store.commit(resolved)
+  const props = store.getProps(route.id, 'default', resolved)
 
-    expect(stores.current()).toBe(staged)
-  })
+  store.commit(createResolvedRoute(other))
 
-  test('starts a fresh store when nothing was staged', () => {
-    const stores = createNavigationStores()
-    const before = stores.current()
-
-    stores.promote()
-
-    expect(stores.current()).not.toBe(before)
-  })
-
-  test('hands back the store it replaced', () => {
-    const stores = createNavigationStores()
-    const before = stores.current()
-
-    expect(stores.promote()).toBe(before)
-  })
-
-  test('only adopts a staged store once', () => {
-    const stores = createNavigationStores()
-    const staged = createDataStore()
-
-    stores.stage(staged)
-    stores.promote()
-    stores.promote()
-
-    expect(stores.current()).not.toBe(staged)
-  })
+  await expect(props).resolves.toEqual({ kind: 'abandoned' })
+  pending.resolve({ value: 'late' })
 })
 
-describe('stage', () => {
-  test('disposes a store it displaces, so anything waiting on it resumes', async () => {
-    const stores = createNavigationStores()
-    const displaced = createDataStore()
-    const waiting = displaced.subscribe('key')
+test('a rejected props getter reports an error before and after it settles', async () => {
+  const error = new Error('props failed')
+  const pending = Promise.withResolvers<{ value: string }>()
+  const route = createRoute({ name: 'route', path: '/' }).addView(component, { props: () => pending.promise })
+  const resolved = createResolvedRoute(route)
+  const store = createNavigationStores()
 
-    stores.stage(displaced)
-    stores.stage(createDataStore())
+  store.commit(resolved)
+  const props = store.getProps(route.id, 'default', resolved)
+  pending.reject(error)
 
-    await expect(waiting).rejects.toThrow(NavigationAbandonedError)
-  })
+  await expect(props).resolves.toEqual({ kind: 'error', error })
+  expect(store.getProps(route.id, 'default', resolved)).toEqual({ kind: 'error', error })
 })
 
-describe('staged', () => {
-  test('creates the staged store when nothing was staged', () => {
-    const stores = createNavigationStores()
-
-    const store = stores.staged()
-
-    stores.promote()
-
-    expect(stores.current()).toBe(store)
+test('a props getter that throws NavigationAbandonedError reports abandonment', () => {
+  const route = createRoute({ name: 'route', path: '/' }).addView(component, {
+    props: () => {
+      throw new NavigationAbandonedError()
+    },
   })
+  const resolved = createResolvedRoute(route)
+  const store = createNavigationStores()
 
-  test('hands back the store a link staged', () => {
-    const stores = createNavigationStores()
-    const store = createDataStore()
+  store.commit(resolved)
 
-    stores.stage(store)
-
-    expect(stores.staged()).toBe(store)
-  })
-
-  test('hands back the same store until it is promoted', () => {
-    const stores = createNavigationStores()
-
-    expect(stores.staged()).toBe(stores.staged())
-  })
+  expect(store.getProps(route.id, 'default', resolved)).toEqual({ kind: 'abandoned' })
 })
 
-describe('getDataKey', () => {
-  test('does not throw for a bigint param', () => {
-    const bigint = createParam({ get: (value) => BigInt(value), set: (value) => String(value) })
-    const route = createRoute({ name: 'item', path: withParams('/item/[id]', { id: bigint }) })
+test('a view without a props getter reports a successful value with no props', () => {
+  const route = createRoute({ name: 'route', path: '/' }).addView(component)
+  const resolved = createResolvedRoute(route)
+  const store = createNavigationStores()
 
-    expect(() => getDataKey('loader', 'id', 'name', createResolvedRoute(route, { id: 123n }))).not.toThrow()
-  })
+  store.commit(resolved)
 
-  test('gives different set values different keys', () => {
-    const set = createParam({
-      get: (value) => new Set(value.split(',')),
-      set: (value) => Array.from(value).join(','),
+  expect(store.getProps(route.id, 'default', resolved)).toEqual({ kind: 'value', value: undefined })
+})
+
+test('a staged value is adopted in place of running its getter', async () => {
+  const loader = vi.fn(() => 'computed')
+  const route = createRoute({ name: 'route', path: '/' }).addView(component)
+    .addLoader(loader)
+  const resolved = createResolvedRoute(route)
+  const store = createNavigationStores()
+
+  const detached = store.createDetachedStore()
+
+  detached.fill(resolved, [{ kind: 'loader', depth: 0, name: 'default', value: 'staged' }])
+  detached.stage()
+  store.commit(resolved)
+
+  await expect(store.getData(resolved)).resolves.toBe('staged')
+  expect(loader).not.toHaveBeenCalled()
+})
+
+test('getValues returns the values the store resolved', async () => {
+  const route = createRoute({ name: 'route', path: '/' }).addView(component)
+    .addLoader(() => 'value')
+  const resolved = createResolvedRoute(route)
+  const store = createNavigationStores()
+
+  store.commit(resolved)
+  await flushPromises()
+
+  expect(store.getValues(resolved)).toEqual([{ kind: 'loader', depth: 0, name: 'default', value: 'value' }])
+})
+
+test('staged values are adopted by the next navigation without running their getters again', async () => {
+  const loader = vi.fn(() => 'value')
+  const route = createRoute({ name: 'route', path: '/' }).addView(component)
+    .addLoader(loader)
+  const resolved = createResolvedRoute(route)
+  const store = createNavigationStores()
+
+  await store.staged().compute(resolved).loaders
+  store.commit(resolved)
+
+  await expect(store.getData(resolved)).resolves.toBe('value')
+  expect(loader).toHaveBeenCalledTimes(1)
+})
+
+test('staging a route leaves the current route reading its own values', async () => {
+  const current = createRoute({ name: 'current', path: '/current' }).addView(component)
+    .addLoader(() => 'current')
+  const next = createRoute({ name: 'next', path: '/next' }).addView(component)
+    .addLoader(() => 'next')
+  const store = createNavigationStores()
+  const currentResolved = createResolvedRoute(current)
+
+  store.commit(currentResolved)
+  await flushPromises()
+
+  store.staged().compute(createResolvedRoute(next))
+
+  expect(store.getValues(currentResolved)).toEqual([{ kind: 'loader', depth: 0, name: 'default', value: 'current' }])
+})
+
+test('a staged props getter can read the data its route is loading', async () => {
+  const route = createRoute({ name: 'route', path: '/' })
+    .addLoader(() => 'loaded')
+    .addView(component, { props: async (route) => ({ value: await route.data }) })
+  const resolved = createResolvedRoute(route)
+  const store = createNavigationStores()
+
+  await store.staged().compute(resolved).props
+  store.commit(resolved)
+
+  expect(store.getProps(route.id, 'default', resolved)).toEqual({ kind: 'value', value: { value: 'loaded' } })
+})
+
+test('staging reports how the values settled', async () => {
+  const route = createRoute({ name: 'route', path: '/' })
+    .addView(component, {
+      props: (_route, { reject }) => {
+        reject('NotFound')
+
+        return {}
+      },
     })
-    const route = createRoute({ name: 'item', path: withParams('/item/[ids]', { ids: set }) })
+  const store = createNavigationStores()
 
-    const a = getDataKey('props', 'id', 'name', createResolvedRoute(route, { ids: new Set(['a']) }))
-    const b = getDataKey('props', 'id', 'name', createResolvedRoute(route, { ids: new Set(['b']) }))
+  const { props } = store.staged().compute(createResolvedRoute(route))
 
-    expect(a).not.toBe(b)
+  await expect(props).resolves.toMatchObject({ status: 'REJECT', type: 'NotFound' })
+})
+
+test('a detached store whose getter throws does not surface an unhandled rejection when nothing waits on it', async () => {
+  const route = createRoute({ name: 'route', path: '/' }).addView(component)
+    .addLoader(() => {
+      throw new Error('getter failed')
+    })
+  const store = createNavigationStores()
+  const detached = store.createDetachedStore()
+
+  detached.compute(createResolvedRoute(route))
+
+  await flushPromises()
+})
+
+test('disposing a detached store aborts the signal its getters were given', async () => {
+  const seen = Promise.withResolvers<AbortSignal>()
+  const route = createRoute({ name: 'route', path: '/' }).addView(component)
+    .addLoader((_route, { signal }) => {
+      seen.resolve(signal)
+
+      return 'value'
+    })
+  const store = createNavigationStores()
+  const detached = store.createDetachedStore()
+
+  detached.compute(createResolvedRoute(route))
+
+  const signal = await seen.promise
+
+  expect(signal.aborted).toBe(false)
+
+  detached.dispose()
+
+  expect(signal.aborted).toBe(true)
+})
+
+test('a staged getter keeps its signal until the navigation that adopted it is replaced', async () => {
+  const seen = Promise.withResolvers<AbortSignal>()
+  const route = createRoute({ name: 'route', path: '/' }).addView(component)
+    .addLoader((_route, { signal }) => {
+      seen.resolve(signal)
+
+      return 'value'
+    })
+  const other = createRoute({ name: 'other', path: '/other' }).addView(component)
+    .addLoader(() => 'other')
+  const resolved = createResolvedRoute(route)
+  const store = createNavigationStores()
+  const detached = store.createDetachedStore()
+
+  detached.compute(resolved)
+  detached.stage()
+  store.commit(resolved)
+
+  const signal = await seen.promise
+
+  expect(signal.aborted).toBe(false)
+
+  store.commit(createResolvedRoute(other))
+
+  expect(signal.aborted).toBe(true)
+})
+
+test('a prefetched response is reported when its store becomes current', async () => {
+  const route = createResolvedRoute(createRoute({ path: '/' }).addLoader((_route, { replace }) => replace('/next')))
+  const onResponse = vi.fn()
+  const store = createNavigationStores()
+  const detached = store.createDetachedStore()
+
+  await detached.compute(route).loaders
+
+  detached.stage()
+  store.commit(route, onResponse)
+
+  expect(onResponse).toHaveBeenCalledOnce()
+
+  const [event] = onResponse.mock.calls[0]
+
+  await expect(event.response).resolves.toEqual({ status: 'PUSH', to: ['/next', { replace: true }] })
+})
+
+test('resetting a detached store discards its buffered responses', async () => {
+  const load = vi.fn(() => 'value').mockImplementationOnce(() => {
+    throw new ContextPushError(['/old'])
   })
+  const route = createResolvedRoute(createRoute({ path: '/' }).addLoader(load))
+  const store = createNavigationStores()
+  const detached = store.createDetachedStore()
+  const onResponse = vi.fn()
 
-  test('includes the query and hash, since callbacks can read them', () => {
-    const route = createRoute({ name: 'search', path: '/search' })
-    const plain = createResolvedRoute(route)
-    const withQuery = createResolvedRoute(route, {}, { query: { q: 'cats' } })
-    const withHash = createResolvedRoute(route, {}, { hash: 'results' })
+  await detached.compute(route).loaders
+  detached.reset()
+  detached.stage()
+  store.commit(route, onResponse)
 
-    expect(getDataKey('props', 'id', 'name', withQuery)).not.toBe(getDataKey('props', 'id', 'name', plain))
-    expect(getDataKey('props', 'id', 'name', withHash)).not.toBe(getDataKey('props', 'id', 'name', plain))
-  })
+  expect(onResponse).toHaveBeenCalledOnce()
+
+  const [event] = onResponse.mock.calls[0]
+
+  await expect(event.response).resolves.toEqual({ status: 'SUCCESS' })
+})
+
+test('computations added after adoption report their response once', async () => {
+  const initial = createResolvedRoute(createRoute({ path: '/' }).addLoader(() => 'initial'))
+  const next = createResolvedRoute(createRoute({ path: '/next' }).addLoader((_route, { push }) => push('/target')))
+  const onResponse = vi.fn()
+  const navigation = createNavigationStores()
+  const current = navigation.staged()
+  await navigation.commit(initial, onResponse).loaders
+  onResponse.mockClear()
+
+  current.compute(next)
+  current.compute(next)
+
+  expect(onResponse).toHaveBeenCalledOnce()
+  const [event] = onResponse.mock.calls[0]
+
+  expect(event.source).toBe('loader')
+  await expect(event.response).resolves.toEqual({ status: 'PUSH', to: ['/target'] })
 })

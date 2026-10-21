@@ -1,5 +1,5 @@
 import { InjectionKey, MaybeRefOrGetter, onScopeDispose, ref, Ref, toValue, watch } from 'vue'
-import { createUseRouteValueStore } from '@/compositions/useRouteValueStore'
+import { createUseNavigationStores } from '@/compositions/useNavigationStores'
 import type { PrefetchConfigs, PrefetchStrategy } from '@/types/prefetch'
 import { getPrefetchOption } from '@/utilities/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
@@ -22,12 +22,12 @@ type UsePrefetching = {
 type UsePrefetchingFunction = (config: MaybeRefOrGetter<UsePrefetchingConfig>) => UsePrefetching
 
 export function createUsePrefetching<TRouter extends Router>(routerKey: InjectionKey<TRouter>): UsePrefetchingFunction {
-  const useRouteValueStore = createUseRouteValueStore(routerKey)
+  const useNavigationStores = createUseNavigationStores(routerKey)
 
   return (config) => {
     const element = ref<HTMLElement>()
 
-    const { createDetachedStore } = useRouteValueStore()
+    const { createDetachedStore } = useNavigationStores()
     const store = createDetachedStore()
     const { isElementVisible } = useVisibilityObserver(element)
 

@@ -5,12 +5,11 @@ import { createIsExternal } from '@/services/createIsExternal'
 import { createActivityTracker } from '@/services/createActivityTracker'
 import { SsrOptionRequiredError } from '@/errors/ssrOptionRequiredError'
 import { parseUrl, updateUrl } from '@/services/urlParser'
-import { createRouteValueStore, RouteValueResponse } from '@/services/createRouteValueStore'
+import { createNavigationStores, RouteValueResponseEvent } from '@/services/createNavigationStores'
 import { createNavigationProgress, NavigationProgressTracker } from '@/services/createNavigationProgress'
 import { getComputations } from '@/services/getComputations'
 import { getAsyncComponents, loadAsyncComponents } from '@/utilities/components'
 import { getNavigationProgressKey } from '@/compositions/useNavigation'
-import { DataKind } from '@/services/createNavigationStores'
 import { createRouterHistory, RouterHistoryTraversal } from '@/services/createRouterHistory'
 import { createServerRedirect } from '@/services/createServerRedirect'
 import { createRouterHooks, getRouterHooksKey } from '@/services/createRouterHooks'
@@ -36,7 +35,7 @@ import { getRoutesForRouter } from './getRoutesForRouter'
 import { getGlobalHooksForRouter } from './getGlobalHooksForRouter'
 import { createComponentsStore } from './createComponentsStore'
 import { getComponentsStoreKey } from '@/compositions/useComponentsStore'
-import { getRouteValueStoreInjectionKey } from '@/compositions/useRouteValueStore'
+import { getNavigationStoresInjectionKey } from '@/compositions/useNavigationStores'
 import { getViewTransitionKey } from '@/compositions/useViewTransition'
 import { ViewTransition } from '@/components/viewTransition'
 import { getRouterRejectionInjectionKey } from '@/compositions/useRejection'
@@ -107,6 +106,12 @@ type RunAfterHooksContext = RunHooksContext & {
   enabled: boolean,
 }
 
+type RouteValueResponseOptions = RouteValueResponseEvent & {
+  to: ResolvedRoute,
+  from: ResolvedRoute | null,
+  signal: AbortSignal,
+}
+
 /**
  * Creates a router instance for a Vue application, equipped with methods for route handling, lifecycle hooks, and state management.
  *
@@ -165,7 +170,7 @@ export function createRouter<
     stop: stopRouteContext,
   } = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options)
   const notFoundRejection = getRejectionByType('NotFound')
-  const valueStore = createRouteValueStore()
+  const navigationStores = createNavigationStores()
   const notFoundRoute = createResolvedRoute(notFoundRejection.route)
 
   const hooks = createRouterHooks({ redirectStatus, onHookAdded: addHookContext })
@@ -393,7 +398,7 @@ export function createRouter<
         return true
       }
 
-      const values = valueStore.staged().compute(route)
+      const values = navigationStores.staged().compute(route)
       const work = Promise.allSettled([
         values.props,
         values.loaders,
@@ -456,12 +461,9 @@ export function createRouter<
   }
 
   function setRouteValuesAndUpdateRoute(to: ResolvedRoute, from: ResolvedRoute | null, progress: NavigationProgressTracker, signal: AbortSignal): void {
-    const { props, loaders, values } = valueStore.commit(to)
-
-    activity.add(
-      handleRouteValueResponse(props, 'props', to, from, signal),
-      handleRouteValueResponse(loaders, 'loader', to, from, signal),
-    )
+    const { values } = navigationStores.commit(to, (response) => {
+      onRouteValueResponse({ ...response, to, from, signal })
+    })
 
     progress.track(...values, ...loadAsyncComponents(to))
 
@@ -473,8 +475,8 @@ export function createRouter<
    * either is acted on whenever it arrives, without holding up the navigation that started it. Once that
    * navigation is superseded, its outcomes can no longer change the page or run error hooks.
    */
-  function handleRouteValueResponse(response: Promise<RouteValueResponse>, source: DataKind, to: ResolvedRoute, from: ResolvedRoute | null, signal: AbortSignal): Promise<void> {
-    return response
+  function onRouteValueResponse({ response, source, to, from, signal }: RouteValueResponseOptions): void {
+    const work = response
       .then((response) => {
         if (signal.aborted) {
           return
@@ -519,6 +521,8 @@ export function createRouter<
           throw error
         }
       })
+
+    activity.add(work)
   }
 
   const resolve: RouterResolve<TRoutes | TPlugin['routes']> = (
@@ -630,7 +634,7 @@ export function createRouter<
     routerKey,
     route: notFoundRoute,
     push,
-    getData: valueStore.getData,
+    getData: navigationStores.getData,
   })
 
   /**
@@ -691,7 +695,7 @@ export function createRouter<
       case 'success': {
         const values = decodePayloadValues(to, payload.values, options?.transformer)
 
-        const store = valueStore.createDetachedStore()
+        const store = navigationStores.createDetachedStore()
 
         store.fill(to, values)
         store.stage()
@@ -776,7 +780,7 @@ export function createRouter<
 
     const title = await getTitle()
     const resolved = routerRoute.getResolvedRoute()
-    const { values, failures } = encodePayloadValues(resolved, valueStore.getValues(resolved), options?.transformer)
+    const { values, failures } = encodePayloadValues(resolved, navigationStores.getValues(resolved), options?.transformer)
 
     return {
       kind: 'success',
@@ -802,7 +806,7 @@ export function createRouter<
   function install(app: App): void {
     app.onUnmount(stop)
     hooks.setVueApp(app)
-    valueStore.setVueApp(app)
+    navigationStores.setVueApp(app)
 
     const routerView = createRouterView(routerKey)
     const routerLink = createRouterLink(routerKey)
@@ -815,7 +819,7 @@ export function createRouter<
     app.provide(getViewTransitionKey(routerKey), viewTransitions.viewTransition)
     app.provide(getRouterRejectionInjectionKey(routerKey), currentRejection)
     app.provide(getRouterHooksKey(routerKey), hooks)
-    app.provide(getRouteValueStoreInjectionKey(routerKey), valueStore)
+    app.provide(getNavigationStoresInjectionKey(routerKey), navigationStores)
     app.provide(getComponentsStoreKey(routerKey), componentsStore)
     app.provide(getNavigationProgressKey(routerKey), navigationProgress)
     app.provide(visibilityObserverKey, visibilityObserver)

@@ -3,7 +3,7 @@
 import { AsyncComponentLoader, Component, FunctionalComponent, InjectionKey, defineComponent, h, ref, watch } from 'vue'
 import { isPromise } from '@/utilities/promises'
 import { PropsResult } from '@/utilities/props'
-import { createUseRouteValueStore } from '@/compositions/useRouteValueStore'
+import { createUseNavigationStores } from '@/compositions/useNavigationStores'
 import { Router } from '@/types/router'
 import { createUseRoute } from '@/compositions/useRoute'
 import { useIsServerRendering } from '@/compositions/useIsServerRendering'
@@ -26,14 +26,14 @@ type CreateComponentWrapperConfig = {
 }
 
 export function createComponentPropsWrapper(routerKey: InjectionKey<Router>, { id, name, component }: CreateComponentWrapperConfig): Component {
-  const useRouteValueStore = createUseRouteValueStore(routerKey)
+  const useNavigationStores = createUseNavigationStores(routerKey)
   const useRoute = createUseRoute(routerKey)
 
   return defineComponent({
     name: 'PropsWrapper',
     expose: [],
     setup() {
-      const store = useRouteValueStore()
+      const store = useNavigationStores()
       const route = useRoute()
       const isServerRendering = useIsServerRendering()
       const hasSuspenseBoundary = useHasSuspenseBoundary()
