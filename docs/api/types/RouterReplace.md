@@ -12,7 +12,7 @@ type RouterReplace<TRoutes> = {
 
 | Type Parameter |
 | ------ |
-| `TRoutes` *extends* `Routes` |
+| <a id="type-parameter-troutes"></a> `TRoutes` *extends* `Routes` |
 
 ## Call Signature
 
@@ -24,7 +24,7 @@ type RouterReplace<TRoutes> = {
 
 | Type Parameter |
 | ------ |
-| `TSource` *extends* `string` |
+| <a id="type-parameter-__typetsource"></a> `TSource` *extends* `string` |
 
 ### Parameters
 

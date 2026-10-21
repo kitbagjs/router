@@ -6,6 +6,13 @@ type View<TProps, TContext> = TransformerOptions<Awaited<TProps>> & object;
 
 A reusable view definition with its props getter's result and declared context.
 
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| <a id="type-parameter-tprops"></a> `TProps` | `unknown` |
+| <a id="type-parameter-tcontext"></a> `TContext` *extends* readonly `RouteContext`[] | \[\] |
+
 ## Type Declaration
 
 ### component
@@ -31,10 +38,3 @@ optional prefetch?: PrefetchConfig;
 ```ts
 optional props?: AnyFunction<TProps>;
 ```
-
-## Type Parameters
-
-| Type Parameter | Default type |
-| ------ | ------ |
-| `TProps` | `unknown` |
-| `TContext` *extends* readonly `RouteContext`[] | \[\] |

@@ -8,7 +8,7 @@ type RejectionHooks<TRejections> = object;
 
 | Type Parameter | Default type |
 | ------ | ------ |
-| `TRejections` *extends* `string` | `string` |
+| <a id="type-parameter-trejections"></a> `TRejections` *extends* `string` | `string` |
 
 ## Properties
 

@@ -6,6 +6,14 @@ type CreateLoaderOptions<TContext, TData, TRoutes> = TransformerOptions<NoInfer<
 
 Options for a reusable loader that receives the resolved route and its declared context helpers.
 
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| <a id="type-parameter-tcontext"></a> `TContext` *extends* readonly `RouteContext`[] | \[\] |
+| <a id="type-parameter-tdata"></a> `TData` | `unknown` |
+| <a id="type-parameter-troutes"></a> `TRoutes` *extends* `Routes` | `Routes` |
+
 ## Type Declaration
 
 ### context?
@@ -42,11 +50,3 @@ optional prefetch?: PrefetchConfig;
 ```
 
 Default prefetch behavior, overridable when attaching the loader.
-
-## Type Parameters
-
-| Type Parameter | Default type |
-| ------ | ------ |
-| `TContext` *extends* readonly `RouteContext`[] | \[\] |
-| `TData` | `unknown` |
-| `TRoutes` *extends* `Routes` | `Routes` |

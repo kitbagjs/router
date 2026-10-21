@@ -11,4 +11,4 @@ Routes without a name (empty string) are excluded so that router.route.name is n
 
 | Type Parameter |
 | ------ |
-| `TRoutes` *extends* `Routes` |
+| <a id="type-parameter-troutes"></a> `TRoutes` *extends* `Routes` |

@@ -8,10 +8,10 @@ type RejectionHook<TRejection, TRoutes, TRouteTo, TRouteFrom> = (rejection, cont
 
 | Type Parameter | Default type |
 | ------ | ------ |
-| `TRejection` *extends* `string` | `string` |
-| `TRoutes` *extends* `Routes` | `Routes` |
-| `TRouteTo` *extends* [`Route`](Route.md) | `TRoutes`\[`number`\] |
-| `TRouteFrom` *extends* [`Route`](Route.md) | `TRoutes`\[`number`\] |
+| <a id="type-parameter-trejection"></a> `TRejection` *extends* `string` | `string` |
+| <a id="type-parameter-troutes"></a> `TRoutes` *extends* `Routes` | `Routes` |
+| <a id="type-parameter-trouteto"></a> `TRouteTo` *extends* [`Route`](Route.md) | `TRoutes`\[`number`\] |
+| <a id="type-parameter-troutefrom"></a> `TRouteFrom` *extends* [`Route`](Route.md) | `TRoutes`\[`number`\] |
 
 ## Parameters
 

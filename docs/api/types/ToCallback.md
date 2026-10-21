@@ -8,7 +8,7 @@ type ToCallback<TRouter> = (resolve) => ResolvedRoute | UrlString;
 
 | Type Parameter |
 | ------ |
-| `TRouter` *extends* [`Router`](Router.md) |
+| <a id="type-parameter-trouter"></a> `TRouter` *extends* [`Router`](Router.md) |
 
 ## Parameters
 

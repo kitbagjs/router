@@ -11,8 +11,8 @@ the resolved route's `data`.
 
 | Type Parameter | Default type |
 | ------ | ------ |
-| `TUrl` *extends* [`Url`](Url.md) | [`Url`](Url.md) |
-| `TMatches` *extends* [`CreatedRouteOptions`](CreatedRouteOptions.md)[] | [`CreatedRouteOptions`](CreatedRouteOptions.md)[] |
+| <a id="type-parameter-turl"></a> `TUrl` *extends* [`Url`](Url.md) | [`Url`](Url.md) |
+| <a id="type-parameter-tmatches"></a> `TMatches` *extends* [`CreatedRouteOptions`](CreatedRouteOptions.md)[] | [`CreatedRouteOptions`](CreatedRouteOptions.md)[] |
 
 ## Properties
 
