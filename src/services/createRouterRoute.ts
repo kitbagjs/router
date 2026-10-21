@@ -5,7 +5,7 @@ import { IS_ROUTER_ROUTE_SYMBOL, RouterRoute, RouterRouteInternal } from '@/type
 import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { QuerySource } from '@/types/querySource'
 import { Router } from '@/types/router'
-import { NavigationStores } from '@/services/createNavigationStores'
+import { Navigation } from '@/services/createNavigation'
 import { isPropertyKey } from '@/utilities/guards'
 
 export function isRouterRoute(routerKey: InjectionKey<Router>, value: unknown): value is RouterRoute & RouterRouteInternal {
@@ -16,7 +16,7 @@ type CreateRouterRouteOptions<TRouter extends Router = Router> = {
   routerKey: InjectionKey<TRouter>,
   route: ResolvedRoute,
   push: RouterPush,
-  getRouteData: NavigationStores['getRouteData'],
+  getRouteData: Navigation['getRouteData'],
 }
 
 export function createRouterRoute<TRouter extends Router>(options: CreateRouterRouteOptions<TRouter>): TRouter['route'] & RouterRouteInternal
