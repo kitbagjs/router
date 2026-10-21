@@ -634,7 +634,7 @@ export function createRouter<
     routerKey,
     route: notFoundRoute,
     push,
-    getData: navigationStores.getData,
+    getRouteData: navigationStores.getRouteData,
   })
 
   /**
