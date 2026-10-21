@@ -14,10 +14,10 @@ test('pending props report abandonment when another navigation replaces their na
   const resolved = createResolvedRoute(route)
   const navigation = createRouterNavigation()
 
-  navigation.commit(resolved)
+  navigation.commit({ to: resolved })
   const props = navigation.getProps(route.id, 'default', resolved)
 
-  navigation.commit(createResolvedRoute(other))
+  navigation.commit({ to: createResolvedRoute(other) })
 
   await expect(props).resolves.toEqual({ kind: 'abandoned' })
   pending.resolve({ value: 'late' })
@@ -30,7 +30,7 @@ test('a rejected props getter reports an error before and after it settles', asy
   const resolved = createResolvedRoute(route)
   const navigation = createRouterNavigation()
 
-  navigation.commit(resolved)
+  navigation.commit({ to: resolved })
   const props = navigation.getProps(route.id, 'default', resolved)
   pending.reject(error)
 
@@ -47,7 +47,7 @@ test('a props getter that throws NavigationAbandonedError reports abandonment', 
   const resolved = createResolvedRoute(route)
   const navigation = createRouterNavigation()
 
-  navigation.commit(resolved)
+  navigation.commit({ to: resolved })
 
   expect(navigation.getProps(route.id, 'default', resolved)).toEqual({ kind: 'abandoned' })
 })
@@ -57,7 +57,7 @@ test('a view without a props getter reports a successful value with no props', (
   const resolved = createResolvedRoute(route)
   const navigation = createRouterNavigation()
 
-  navigation.commit(resolved)
+  navigation.commit({ to: resolved })
 
   expect(navigation.getProps(route.id, 'default', resolved)).toEqual({ kind: 'value', value: undefined })
 })
@@ -73,7 +73,7 @@ test('a staged value is adopted in place of running its getter', async () => {
 
   detached.fill(resolved, [{ kind: 'loader', depth: 0, name: 'default', value: 'staged' }])
   detached.stage()
-  navigation.commit(resolved)
+  navigation.commit({ to: resolved })
 
   await expect(navigation.getRouteData(resolved)).resolves.toBe('staged')
   expect(loader).not.toHaveBeenCalled()
@@ -85,7 +85,7 @@ test('getValues returns the values the navigation resolved', async () => {
   const resolved = createResolvedRoute(route)
   const navigation = createRouterNavigation()
 
-  navigation.commit(resolved)
+  navigation.commit({ to: resolved })
   await flushPromises()
 
   expect(navigation.getValues(resolved)).toEqual([{ kind: 'loader', depth: 0, name: 'default', value: 'value' }])
@@ -99,7 +99,7 @@ test('staged values are adopted by the next navigation without running their get
   const navigation = createRouterNavigation()
 
   await navigation.staged().compute(resolved).loaders
-  navigation.commit(resolved)
+  navigation.commit({ to: resolved })
 
   await expect(navigation.getRouteData(resolved)).resolves.toBe('value')
   expect(loader).toHaveBeenCalledTimes(1)
@@ -113,7 +113,7 @@ test('staging a route leaves the current route reading its own values', async ()
   const navigation = createRouterNavigation()
   const currentResolved = createResolvedRoute(current)
 
-  navigation.commit(currentResolved)
+  navigation.commit({ to: currentResolved })
   await flushPromises()
 
   navigation.staged().compute(createResolvedRoute(next))
@@ -129,7 +129,7 @@ test('a staged props getter can read the data its route is loading', async () =>
   const navigation = createRouterNavigation()
 
   await navigation.staged().compute(resolved).props
-  navigation.commit(resolved)
+  navigation.commit({ to: resolved })
 
   expect(navigation.getProps(route.id, 'default', resolved)).toEqual({ kind: 'value', value: { value: 'loaded' } })
 })
@@ -201,13 +201,13 @@ test('a staged getter keeps its signal until the navigation that adopted it is r
 
   detached.compute(resolved)
   detached.stage()
-  navigation.commit(resolved)
+  navigation.commit({ to: resolved })
 
   const signal = await seen.promise
 
   expect(signal.aborted).toBe(false)
 
-  navigation.commit(createResolvedRoute(other))
+  navigation.commit({ to: createResolvedRoute(other) })
 
   expect(signal.aborted).toBe(true)
 })
@@ -225,7 +225,11 @@ test('a prefetched response is reported when its navigation becomes current', as
   const { signal } = new AbortController()
 
   detached.stage()
-  navigation.commit(route, { from, signal })
+  navigation.commit({
+    to: route,
+    from,
+    signal,
+  })
 
   expect(onResponse).toHaveBeenCalledOnce()
 
@@ -248,7 +252,7 @@ test('replacing a navigation discards its buffered responses', async () => {
   await detached.compute(route).loaders
   detached.dispose()
   navigation.create().stage()
-  navigation.commit(route)
+  navigation.commit({ to: route })
 
   expect(onResponse).toHaveBeenCalledOnce()
 
@@ -263,7 +267,7 @@ test('computations added after adoption report their response once', async () =>
   const onResponse = vi.fn()
   const navigation = createRouterNavigation({ onResponse })
   const current = navigation.staged()
-  await navigation.commit(initial).loaders
+  await navigation.commit({ to: initial }).loaders
   onResponse.mockClear()
 
   current.compute(next)
@@ -298,9 +302,9 @@ test('staging and committing the same instance preserves its computations', asyn
 
   instance.stage()
   instance.stage()
-  await instance.commit(route).loaders
+  await instance.commit({ to: route }).loaders
   instance.stage()
-  await instance.commit(route).loaders
+  await instance.commit({ to: route }).loaders
 
   expect(signal.aborted).toBe(false)
   expect(load).toHaveBeenCalledOnce()
@@ -312,13 +316,13 @@ test('staging another instance keeps the current navigation active', async () =>
   const route = createResolvedRoute(createRoute({ path: '/' }).addLoader(load))
   const navigation = createRouterNavigation()
   const instance = navigation.create()
-  await instance.commit(route).loaders
+  await instance.commit({ to: route }).loaders
   const signal = load.mock.results[0].value
 
   instance.stage()
   navigation.create().stage()
 
   expect(signal.aborted).toBe(false)
-  await navigation.commit(route).loaders
+  await navigation.commit({ to: route }).loaders
   expect(signal.aborted).toBe(true)
 })
