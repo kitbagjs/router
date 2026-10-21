@@ -1,6 +1,8 @@
+/* eslint-disable vue/one-component-per-file */
 import { createSSRApp, defineComponent, h } from 'vue'
-import { expect, test } from 'vitest'
+import { expect, test, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { renderToString } from 'vue/server-renderer'
 import { useIsServerRendering } from '@/compositions/useIsServerRendering'
 
 const component = defineComponent({
@@ -17,13 +19,41 @@ test('is false on the client', () => {
   expect(wrapper.text()).toBe('false')
 })
 
-test('is false while hydrating through createSSRApp', () => {
+test('is false while hydrating through createSSRApp', async () => {
+  const observed = vi.fn()
+  const hydrationComponent = defineComponent({
+    setup() {
+      observed(useIsServerRendering())
+
+      return () => h('div', 'hydrated')
+    },
+  })
   const element = document.createElement('div')
 
-  element.innerHTML = '<div>true</div>'
+  element.innerHTML = await renderToString(createSSRApp(hydrationComponent))
+
+  expect(observed).toHaveBeenCalledExactlyOnceWith(true)
+  observed.mockClear()
+
+  const serverNode = element.firstChild
+  const app = createSSRApp(hydrationComponent)
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+  const error = vi.spyOn(console, 'error').mockImplementation(() => {})
+
   document.body.appendChild(element)
 
-  createSSRApp({ render: () => h(component) }).mount(element)
+  try {
+    app.mount(element)
 
-  expect(element.textContent).toBe('false')
+    expect(observed).toHaveBeenCalledExactlyOnceWith(false)
+    expect(element.textContent).toBe('hydrated')
+    expect(element.firstChild).toBe(serverNode)
+    expect(warn).not.toHaveBeenCalled()
+    expect(error).not.toHaveBeenCalled()
+  } finally {
+    app.unmount()
+    element.remove()
+    warn.mockRestore()
+    error.mockRestore()
+  }
 })
