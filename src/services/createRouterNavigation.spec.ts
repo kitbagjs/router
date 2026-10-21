@@ -69,7 +69,7 @@ test('a staged value is adopted in place of running its getter', async () => {
   const resolved = createResolvedRoute(route)
   const navigation = createRouterNavigation()
 
-  const detached = navigation.createPrefetch()
+  const detached = navigation.create()
 
   detached.fill(resolved, [{ kind: 'loader', depth: 0, name: 'default', value: 'staged' }])
   detached.stage()
@@ -156,7 +156,7 @@ test('a detached navigation whose getter throws does not surface an unhandled re
       throw new Error('getter failed')
     })
   const navigation = createRouterNavigation()
-  const detached = navigation.createPrefetch()
+  const detached = navigation.create()
 
   detached.compute(createResolvedRoute(route))
 
@@ -172,7 +172,7 @@ test('disposing a detached navigation aborts the signal its getters were given',
       return 'value'
     })
   const navigation = createRouterNavigation()
-  const detached = navigation.createPrefetch()
+  const detached = navigation.create()
 
   detached.compute(createResolvedRoute(route))
 
@@ -197,7 +197,7 @@ test('a staged getter keeps its signal until the navigation that adopted it is r
     .addLoader(() => 'other')
   const resolved = createResolvedRoute(route)
   const navigation = createRouterNavigation()
-  const detached = navigation.createPrefetch()
+  const detached = navigation.create()
 
   detached.compute(resolved)
   detached.stage()
@@ -216,7 +216,7 @@ test('a prefetched response is reported when its navigation becomes current', as
   const route = createResolvedRoute(createRoute({ path: '/' }).addLoader((_route, { replace }) => replace('/next')))
   const onResponse = vi.fn()
   const navigation = createRouterNavigation()
-  const detached = navigation.createPrefetch()
+  const detached = navigation.create()
 
   await detached.compute(route).loaders
 
@@ -230,18 +230,18 @@ test('a prefetched response is reported when its navigation becomes current', as
   await expect(event.response).resolves.toEqual({ status: 'PUSH', to: ['/next', { replace: true }] })
 })
 
-test('resetting a detached navigation discards its buffered responses', async () => {
+test('replacing a navigation discards its buffered responses', async () => {
   const load = vi.fn(() => 'value').mockImplementationOnce(() => {
     throw new ContextPushError(['/old'])
   })
   const route = createResolvedRoute(createRoute({ path: '/' }).addLoader(load))
   const navigation = createRouterNavigation()
-  const detached = navigation.createPrefetch()
+  const detached = navigation.create()
   const onResponse = vi.fn()
 
   await detached.compute(route).loaders
-  detached.reset()
-  detached.stage()
+  detached.dispose()
+  navigation.create().stage()
   navigation.commit(route, onResponse)
 
   expect(onResponse).toHaveBeenCalledOnce()
@@ -279,4 +279,39 @@ test.each(['getLoaderState', 'getLoaderValue'] as const)('%s rejects props locat
     // @ts-expect-error props locations are also rejected when bypassing the type check
     navigation[method]({ kind: 'props', id: route.id, name: 'default' }, route)
   }).toThrow(new TypeError('Expected a loader location'))
+})
+
+test('staging and committing the same instance preserves its computations', async () => {
+  const load = vi.fn((_route: unknown, { signal }: { signal: AbortSignal }) => signal)
+  const route = createResolvedRoute(createRoute({ path: '/' }).addLoader(load))
+  const navigation = createRouterNavigation()
+  const instance = navigation.create()
+  await instance.compute(route).loaders
+  const signal = load.mock.results[0].value
+
+  instance.stage()
+  instance.stage()
+  await instance.commit(route).loaders
+  instance.stage()
+  await instance.commit(route).loaders
+
+  expect(signal.aborted).toBe(false)
+  expect(load).toHaveBeenCalledOnce()
+  await expect(navigation.getRouteData(route)).resolves.toBe(signal)
+})
+
+test('staging another instance keeps the current navigation active', async () => {
+  const load = vi.fn((_route: unknown, { signal }: { signal: AbortSignal }) => signal)
+  const route = createResolvedRoute(createRoute({ path: '/' }).addLoader(load))
+  const navigation = createRouterNavigation()
+  const instance = navigation.create()
+  await instance.commit(route).loaders
+  const signal = load.mock.results[0].value
+
+  instance.stage()
+  navigation.create().stage()
+
+  expect(signal.aborted).toBe(false)
+  await navigation.commit(route).loaders
+  expect(signal.aborted).toBe(true)
 })

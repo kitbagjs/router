@@ -695,7 +695,7 @@ export function createRouter<
       case 'success': {
         const values = decodePayloadValues(to, payload.values, options?.transformer)
 
-        const prefetch = navigation.createPrefetch()
+        const prefetch = navigation.create()
 
         prefetch.fill(to, values)
         prefetch.stage()
