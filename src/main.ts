@@ -269,6 +269,13 @@ export const useRouter: RouterAssets<RegisteredRouter>['useRouter'] = routerAsse
 export const useQueryValue: RouterAssets<RegisteredRouter>['useQueryValue'] = routerAssets.useQueryValue
 
 /**
+ * Reads param values by definition as readonly computed refs that follow the current route.
+ * Returns undefined and an empty array when the definition has no present values.
+ * @group Compositions
+ */
+export const useParam: RouterAssets<RegisteredRouter>['useParam'] = routerAssets.useParam
+
+/**
  * A composition to export much of the functionality that drives RouterLink component.
  * Also exports some useful context about routes relationship to current URL and convenience methods
  * for navigating.

@@ -15,6 +15,7 @@ import { createRouterSuspense } from '@/components/routerSuspense'
 import { createUseLink } from '@/compositions/useLink'
 import { createUseLoader, UseLoaderFunction } from '@/compositions/useLoader'
 import { createUseNavigation } from '@/compositions/useNavigation'
+import { createUseParam } from '@/compositions/useParam'
 import { createUseQueryValue } from '@/compositions/useQueryValue'
 import { createUseRejection } from '@/compositions/useRejection'
 import { createUseRoute } from '@/compositions/useRoute'
@@ -155,6 +156,12 @@ export type RouterAssets<TRouter extends Router> = {
   useQueryValue: ReturnType<typeof createUseQueryValue<TRouter>>,
 
   /**
+   * Reads param values by definition as readonly computed refs that follow the current route.
+   * @group Compositions
+   */
+  useParam: ReturnType<typeof createUseParam<TRouter>>,
+
+  /**
    * A composition to access the rejection from the router.
    *
    * @returns The rejection from the router.
@@ -220,6 +227,7 @@ export function createRouterAssets<TRouter extends Router>(routerOrRouterKey: TR
   const useLink = createUseLink(routerKey)
   const useLoader = createUseLoader(routerKey)
   const useNavigation = createUseNavigation(routerKey)
+  const useParam = createUseParam(routerKey)
   const useQueryValue = createUseQueryValue(routerKey)
   const useRejection = createUseRejection(routerKey)
   const useRoute = createUseRoute(routerKey)
@@ -243,6 +251,7 @@ export function createRouterAssets<TRouter extends Router>(routerOrRouterKey: TR
     useLink,
     useLoader,
     useNavigation,
+    useParam,
     useQueryValue,
     useRejection,
     useRoute,
