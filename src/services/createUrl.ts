@@ -159,6 +159,8 @@ type QueryParamPattern = {
   paramName: string,
 }
 
+const emptyQueryParamPatterns: readonly QueryParamPattern[] = []
+
 /**
  * The query's params, read out of its value once rather than on every parse and stringify.
  */
@@ -166,7 +168,11 @@ function createQueryParamPatterns(query: UrlPart): QueryParamPattern[] {
   return Array.from(new URLSearchParams(query.value).entries()).flatMap(([key, value]) => {
     const paramName = getParamName(value)
 
-    return paramName ? [{ key, value, paramName }] : []
+    if (!paramName) {
+      return emptyQueryParamPatterns
+    }
+
+    return [{ key, value, paramName }]
   })
 }
 
