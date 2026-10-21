@@ -1,5 +1,5 @@
 import { flushPromises, mount } from '@vue/test-utils'
-import { beforeEach, describe, expect, test, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { Component, defineAsyncComponent, h, nextTick, ref } from 'vue'
 import echo from '@/components/echo'
 import { createRoute } from '@/services/createRoute'
@@ -15,9 +15,7 @@ import { NavigationAbandonedError, RouterLink } from '@/main'
 import { RouterLinkProps } from '@/types/routerLink'
 import { Router } from '@/types/router'
 import { ResolvedRoute } from '@/types/resolved'
-import { warn } from '@/utilities/warn'
-
-vi.mock('@/utilities/warn', () => ({ warn: vi.fn() }))
+import * as warnUtilities from '@/utilities/warn'
 
 test('renders an anchor tag with the correct href and slot content', () => {
   const path = '/path/[paramName]'
@@ -950,8 +948,15 @@ describe('prefetch per view', () => {
 })
 
 describe('prefetch props', () => {
+  const warnMock = vi.fn()
+
   beforeEach(() => {
-    vi.mocked(warn).mockClear()
+    warnMock.mockClear()
+    vi.spyOn(warnUtilities, 'warn').mockImplementation(warnMock)
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
   })
 
   test.each<PrefetchConfig | undefined>([
@@ -1157,7 +1162,7 @@ describe('prefetch props', () => {
     await flushPromises()
 
     expect(settled).toStrictEqual([])
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining('Waiting on props "default" for route "child"'))
+    expect(warnMock).toHaveBeenCalledWith(expect.stringContaining('Waiting on props "default" for route "child"'))
 
     wrapper.find('a').trigger('click')
 
@@ -1238,7 +1243,7 @@ describe('prefetch props', () => {
     await flushPromises()
 
     expect(settled).toStrictEqual([{ foo: 123 }])
-    expect(warn).not.toHaveBeenCalled()
+    expect(warnMock).not.toHaveBeenCalled()
   })
 
   test('a child waiting on parent props settles when the parent getter returns undefined', async () => {
@@ -1422,7 +1427,7 @@ describe('prefetch props', () => {
     await flushPromises()
 
     expect(settled).toStrictEqual([{ foo: 123 }])
-    expect(warn).not.toHaveBeenCalled()
+    expect(warnMock).not.toHaveBeenCalled()
   })
 
   test('prefetched parent props are available to a child prefetching its own props', async () => {
@@ -1455,7 +1460,7 @@ describe('prefetch props', () => {
     await flushPromises()
 
     expect(childSawParentProps).toStrictEqual({ foo: 123 })
-    expect(warn).not.toHaveBeenCalled()
+    expect(warnMock).not.toHaveBeenCalled()
 
     wrapper.find('a').trigger('click')
 
