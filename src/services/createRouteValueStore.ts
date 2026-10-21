@@ -13,6 +13,7 @@ import { createRouterCallbackContext } from './createRouterCallbackContext'
 import { createDataStore, DataStore } from './createDataStore'
 import { createNavigationStores, DataKind, getDataKey } from './createNavigationStores'
 import { PropsResult } from '@/utilities/props'
+import { warn } from '@/utilities/warn'
 import { MaybePromise } from '@/types/utilities'
 import { Computation, ComputationFilter, getComputations, isKind, loaderLocations, propsLocations, ValueLocation } from './getComputations'
 
@@ -457,7 +458,7 @@ function warnWaitingOnUncomputedValue({ kind, name }: ValueLocation, route: Reso
   const routeName = route.name || 'unknown'
   const value = kind === 'props' ? `props "${name}"` : `loader data "${name}"`
 
-  console.warn(`
+  warn(`
     Waiting on ${value} for route "${routeName}" before anything is computing it.
     It cannot resolve until it is computed — by its own prefetch strategy, or by navigating. When
     prefetching, prefetch it with the same strategy to avoid stalling here.

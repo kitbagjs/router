@@ -44,6 +44,7 @@
   },
   "devDependencies": {
     "@kitbag/eslint-config": "1.0.6",
+    "@types/node": "^26.5.1",
     "@vitejs/plugin-vue": "^6.0.8",
     "@vue/language-core": "^3.3.12",
     "@vue/test-utils": "^2.5.1",
