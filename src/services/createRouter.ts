@@ -106,12 +106,6 @@ type RunAfterHooksContext = RunHooksContext & {
   enabled: boolean,
 }
 
-type RouterNavigationResponseOptions = RouterNavigationResponseEvent & {
-  to: ResolvedRoute,
-  from: ResolvedRoute | null,
-  signal: AbortSignal,
-}
-
 /**
  * Creates a router instance for a Vue application, equipped with methods for route handling, lifecycle hooks, and state management.
  *
@@ -170,7 +164,7 @@ export function createRouter<
     stop: stopRouteContext,
   } = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options)
   const notFoundRejection = getRejectionByType('NotFound')
-  const navigation = createRouterNavigation()
+  const navigation = createRouterNavigation({ onResponse: onNavigationResponse })
   const notFoundRoute = createResolvedRoute(notFoundRejection.route)
 
   const hooks = createRouterHooks({ redirectStatus, onHookAdded: addHookContext })
@@ -461,9 +455,7 @@ export function createRouter<
   }
 
   function setRouteValuesAndUpdateRoute(to: ResolvedRoute, from: ResolvedRoute | null, progress: NavigationProgressTracker, signal: AbortSignal): void {
-    const { values } = navigation.commit(to, (response) => {
-      onNavigationResponse({ ...response, to, from, signal })
-    })
+    const { values } = navigation.commit(to, { from, signal })
 
     progress.track(...values, ...loadAsyncComponents(to))
 
@@ -475,7 +467,7 @@ export function createRouter<
    * either is acted on whenever it arrives, without holding up the navigation that started it. Once that
    * navigation is superseded, its outcomes can no longer change the page or run error hooks.
    */
-  function onNavigationResponse({ response, source, to, from, signal }: RouterNavigationResponseOptions): void {
+  function onNavigationResponse({ response, source, to, from, signal }: RouterNavigationResponseEvent): void {
     const work = response
       .then((response) => {
         if (signal.aborted) {
