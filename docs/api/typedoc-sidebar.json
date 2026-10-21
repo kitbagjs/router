@@ -352,6 +352,14 @@
         "link": "/api/types/CreatedRouteOptions.md"
       },
       {
+        "text": "CreateHookOptions",
+        "link": "/api/types/CreateHookOptions.md"
+      },
+      {
+        "text": "CreateLoaderOptions",
+        "link": "/api/types/CreateLoaderOptions.md"
+      },
+      {
         "text": "CreateRouteOptions",
         "link": "/api/types/CreateRouteOptions.md"
       },
@@ -364,12 +372,24 @@
         "link": "/api/types/CreateUrlOptions.md"
       },
       {
+        "text": "CreateViewOptions",
+        "link": "/api/types/CreateViewOptions.md"
+      },
+      {
         "text": "ErrorHook",
         "link": "/api/types/ErrorHook.md"
       },
       {
         "text": "ErrorHookContext",
         "link": "/api/types/ErrorHookContext.md"
+      },
+      {
+        "text": "Hook",
+        "link": "/api/types/Hook.md"
+      },
+      {
+        "text": "HookCallbackContext",
+        "link": "/api/types/HookCallbackContext.md"
       },
       {
         "text": "HookLifecycle",
@@ -382,6 +402,14 @@
       {
         "text": "LiteralParam",
         "link": "/api/types/LiteralParam.md"
+      },
+      {
+        "text": "Loader",
+        "link": "/api/types/Loader.md"
+      },
+      {
+        "text": "LoaderCallbackContext",
+        "link": "/api/types/LoaderCallbackContext.md"
       },
       {
         "text": "LoaderGetter",
@@ -652,6 +680,14 @@
         "link": "/api/types/UseNavigation.md"
       },
       {
+        "text": "View",
+        "link": "/api/types/View.md"
+      },
+      {
+        "text": "ViewCallbackContext",
+        "link": "/api/types/ViewCallbackContext.md"
+      },
+      {
         "text": "ViewTransitionConfig",
         "link": "/api/types/ViewTransitionConfig.md"
       },
@@ -698,6 +734,24 @@
       {
         "text": "WithParent",
         "link": "/api/types/WithParent.md"
+      }
+    ]
+  },
+  {
+    "text": "Variables",
+    "collapsed": true,
+    "items": [
+      {
+        "text": "createHook",
+        "link": "/api/variables/createHook.md"
+      },
+      {
+        "text": "createLoader",
+        "link": "/api/variables/createLoader.md"
+      },
+      {
+        "text": "createView",
+        "link": "/api/variables/createView.md"
       }
     ]
   }

@@ -18,4 +18,4 @@ the resolved route's `data`.
 
 | Property | Type | Description |
 | ------ | ------ | ------ |
-| <a id="addloader"></a> `addLoader` | \<`TName`, `TGetter`\>(`load`, `options?`) => `AddLoaderReturn`\<`TUrl`, `TMatches`, `AddLoaderLoaders`\<`CurrentMatchLoaders`\<`TMatches`\>, `TName`, `ReturnType`\<`TGetter`\>\>\> | Adds a loader for this route. Loaders never block rendering, so their data is always a promise. |
+| <a id="addloader"></a> `addLoader` | \<`TSource`, `TName`\>(`load`, `options?`) => `AddLoaderReturn`\<`TUrl`, `TMatches`, `TName`, `LoaderDataOf`\<`TSource`\>, `TSource` *extends* `AnyLoader` ? \[`...TSource["context"]`\] : \[\]\> | Adds a loader for this route. Loaders never block rendering, so their data is always a promise. |

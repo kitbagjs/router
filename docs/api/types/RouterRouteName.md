@@ -1,7 +1,7 @@
 # Types: RouterRouteName\<TRouter\>
 
 ```ts
-type RouterRouteName<TRouter> = TRouter extends Router<infer TRoutes> ? RoutesName<TRoutes> : RoutesName<Route[]>;
+type RouterRouteName<TRouter> = RoutesName<RouterRoutes<TRouter>>;
 ```
 
 ## Type Parameters

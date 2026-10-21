@@ -18,4 +18,4 @@ including named views for named `<router-view />`s.
 
 | Property | Type | Description |
 | ------ | ------ | ------ |
-| <a id="addview"></a> `addView` | \<`TComponent`, `TName`, `TGetter`\>(`component`, ...`options`) => `AddViewReturn`\<`TUrl`, `TMatches`, `AddViewProps`\<`CurrentMatchViews`\<`TMatches`\>, `TName`, `NewViewProps`\<[`Route`](Route.md)\<`TUrl`, `TMatches`\>, `TComponent`, `TGetter`\>\>\> | Adds a view for this route. |
+| <a id="addview"></a> `addView` | \<`TSource`, `TName`, `TGetter`\>(`source`, ...`options`) => `TSource` *extends* `AnyView` ? `AddViewReturn`\<`TUrl`, `TMatches`, `TName`, `ViewPropsOf`\<`TSource`\>, \[`...TSource["context"]`\]\> : `AddViewReturn`\<`TUrl`, `TMatches`, `TName`, `NewViewProps`\<[`Route`](Route.md)\<`TUrl`, `TMatches`\>, `Extract`\<`TSource`, `Component`\>, `TGetter`\>\> | Adds a view for this route. |

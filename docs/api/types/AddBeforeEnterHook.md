@@ -1,7 +1,7 @@
 # Types: AddBeforeEnterHook\<TRoutes, TRejections, TRouteTo, TRouteFrom\>
 
 ```ts
-type AddBeforeEnterHook<TRoutes, TRejections, TRouteTo, TRouteFrom> = (hook) => HookRemove;
+type AddBeforeEnterHook<TRoutes, TRejections, TRouteTo, TRouteFrom> = AddHook<BeforeEnterHook<TRoutes, TRejections, TRouteTo, TRouteFrom>>;
 ```
 
 ## Type Parameters
@@ -12,13 +12,3 @@ type AddBeforeEnterHook<TRoutes, TRejections, TRouteTo, TRouteFrom> = (hook) => 
 | `TRejections` *extends* [`Rejections`](Rejections.md) | [`Rejections`](Rejections.md) |
 | `TRouteTo` *extends* [`Route`](Route.md) | `TRoutes`\[`number`\] |
 | `TRouteFrom` *extends* [`Route`](Route.md) | `TRoutes`\[`number`\] |
-
-## Parameters
-
-| Parameter | Type |
-| ------ | ------ |
-| `hook` | [`BeforeEnterHook`](BeforeEnterHook.md)\<`TRoutes`, `TRejections`, `TRouteTo`, `TRouteFrom`\> |
-
-## Returns
-
-[`HookRemove`](HookRemove.md)

@@ -15,7 +15,7 @@ type CreateRouteOptions<TName, TMeta> = object;
 
 | Property | Type | Description |
 | ------ | ------ | ------ |
-| <a id="context"></a> `context?` | `RouteContext`[] | Related routes and rejections for the route. The context is exposed to the hooks and props callback functions for this route. |
+| <a id="context"></a> `context?` | `RouteContext`[] | See [Context](https://kitbag-router.netlify.app/advanced-concepts/context). |
 | <a id="hash"></a> `hash?` | `string` \| `UrlPart` | Hash part of URL. |
 | <a id="hoist"></a> `hoist?` | `boolean` | When true, the route will be hoisted to the top of the route tree. The route will continue to inherit meta, state, hooks, matches, and context from it's parent, but not the "url" properties. |
 | <a id="meta"></a> `meta?` | `TMeta` | Represents additional metadata associated with a route, customizable via declaration merging. |
