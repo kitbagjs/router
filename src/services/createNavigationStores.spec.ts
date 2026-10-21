@@ -4,6 +4,7 @@ import { createNavigationStores } from '@/services/createNavigationStores'
 import { createResolvedRoute } from '@/services/createResolvedRoute'
 import { createRoute } from '@/services/createRoute'
 import { component } from '@/utilities/testHelpers'
+import { loaderLocations } from '@/services/getComputations'
 import { ContextPushError } from '@/errors/contextPushError'
 import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
 
@@ -279,4 +280,34 @@ test.each(['getLoaderState', 'getLoaderValue'] as const)('%s rejects props locat
     // @ts-expect-error props locations are also rejected when bypassing the type check
     store[method]({ kind: 'props', id: route.id, name: 'default' }, route)
   }).toThrow(new TypeError('Expected a loader location'))
+})
+
+
+test('loader reads after stop report abandonment', async () => {
+  const route = createRoute({ name: 'home', path: '/' }).addLoader(() => 'loaded')
+  const resolved = createResolvedRoute(route)
+  const store = createNavigationStores()
+  await store.commit(resolved).loaders
+  const [location] = loaderLocations(resolved.matched)
+
+  store.stop()
+
+  expect(store.getLoaderState(location, resolved)).toEqual({
+    kind: 'error',
+    error: expect.any(NavigationAbandonedError),
+  })
+  await expect(store.getLoaderValue(location, resolved)).rejects.toThrow(NavigationAbandonedError)
+})
+
+test('stop abandons computations in both current and staged navigations', async () => {
+  const pending = Promise.withResolvers<string>()
+  const route = createResolvedRoute(createRoute({ path: '/' }).addLoader(() => pending.promise))
+  const navigation = createNavigationStores()
+  const current = navigation.commit(route)
+  const staged = navigation.staged().compute(route)
+
+  navigation.stop()
+
+  await expect(current.loaders).resolves.toEqual({ status: 'ABANDONED' })
+  await expect(staged.loaders).resolves.toEqual({ status: 'ABANDONED' })
 })

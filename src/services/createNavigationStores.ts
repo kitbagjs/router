@@ -111,6 +111,7 @@ export type RouteValue = {
 }
 
 export type NavigationStores = HasVueAppStore & {
+  stop: () => void,
   createDetachedStore: () => DetachedNavigationStore,
   /**
    * The store the next navigation adopts, created when nothing is staged. Values computed into it ahead of
@@ -288,6 +289,13 @@ export function createNavigationStores(): NavigationStores {
     return stores.staged
   }
 
+  const stop: NavigationStores['stop'] = () => {
+    const reason = new NavigationAbandonedError()
+    stores.current.dispose(reason)
+    stores.staged?.dispose(reason)
+    stores.staged = undefined
+  }
+
   const commit: NavigationStores['commit'] = (route, onResponse) => {
     const previous = stores.current
     stores.current = stores.staged ?? createStore()
@@ -365,7 +373,14 @@ export function createNavigationStores(): NavigationStores {
       throw new TypeError('Expected a loader location')
     }
 
-    return stores.current.data.get(getDataKey(location.kind, location.id, location.name, route))
+    const store = stores.current.data
+    const result = store.get(getDataKey(location.kind, location.id, location.name, route))
+
+    if (store.signal.aborted) {
+      return { kind: 'error', error: store.signal.reason }
+    }
+
+    return result
   }
 
   const getLoaderValue: NavigationStores['getLoaderValue'] = (location: ValueLocation, route) => {
@@ -497,6 +512,13 @@ export function createNavigationStores(): NavigationStores {
       return abandoned
     }
 
+    if (current.signal.aborted) {
+      const abandoned = Promise.reject(new NavigationAbandonedError())
+      abandoned.catch(() => {})
+
+      return abandoned
+    }
+
     if (!store || store === current) {
       return current.subscribe(key)
     }
@@ -520,6 +542,7 @@ export function createNavigationStores(): NavigationStores {
   }
 
   return {
+    stop,
     createDetachedStore,
     staged,
     commit,

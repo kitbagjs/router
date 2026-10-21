@@ -798,6 +798,7 @@ export function createRouter<
     stopped = true
     stopRouteContext()
     navigations.stop()
+    navigationStores.stop()
     navigationProgress.stop()
     history.stopListening()
   }
