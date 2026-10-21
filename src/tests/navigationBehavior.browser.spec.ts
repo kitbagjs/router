@@ -1,5 +1,5 @@
 import { flushPromises, mount } from '@vue/test-utils'
-import { Component, defineAsyncComponent } from 'vue'
+import { Component, defineAsyncComponent, defineComponent } from 'vue'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { register } from 'view-transitions-mock'
 import { createRoute } from '@/services/createRoute'
@@ -10,7 +10,6 @@ import { createUseLink } from '@/compositions/useLink'
 import { RouterPushOptions } from '@/types/routerPush'
 import { NavigationBehavior } from '@/types/navigation'
 import { payloadToScript } from '@/services/payload'
-import { UseLink } from '@/types/useLink'
 
 const wrappers: ReturnType<typeof mount>[] = []
 
@@ -335,17 +334,19 @@ describe('links', () => {
     const home = createRoute({ name: 'home', path: '/' })
     const page = createRoute({ name: 'page', path: '/page' }).addLoader(() => loaded.promise)
     const router = createRouter([home, page], { initialUrl: '/', historyMode: 'memory' })
+    const useLink = createUseLink(router.key)
     await router.start()
-    let link!: UseLink
-    const wrapper = mount({
+    const wrapper = mount(defineComponent({
       setup() {
-        link = createUseLink(router.key)('/page', { navigation: 'blocking' })
+        const { push } = useLink('/page', { navigation: 'blocking' })
+
+        return { push }
       },
       template: '<div />',
-    }, { global: { plugins: [router] } })
+    }), { global: { plugins: [router] } })
     wrappers.push(wrapper)
 
-    await link.push({ navigation: 'progressive' })
+    await wrapper.vm.push({ navigation: 'progressive' })
     expect(router.route.name).toBe('page')
 
     loaded.resolve()
