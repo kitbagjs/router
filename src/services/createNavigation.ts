@@ -18,63 +18,63 @@ import { MaybePromise } from '@/types/utilities'
 import { Computation, ComputationFilter, getComputations, isKind, loaderLocations, propsLocations, ValueLocation } from './getComputations'
 
 /**
- * Computation stopped because its store was disposed.
+ * Computation stopped because its navigation was disposed.
  */
-type RouteValueAbandoned = {
+type NavigationAbandoned = {
   status: 'ABANDONED',
 }
 
-export type RouteValueResponse = CallbackContextSuccess | CallbackContextPush | CallbackContextReject | RouteValueAbandoned
+export type NavigationResponse = CallbackContextSuccess | CallbackContextPush | CallbackContextReject | NavigationAbandoned
 
-export type RouteValueResponseEvent = {
-  response: Promise<RouteValueResponse>,
+export type NavigationResponseEvent = {
+  response: Promise<NavigationResponse>,
   source: DataKind,
 }
 
-type RouteValueResponseCallback = (response: RouteValueResponseEvent) => void
+type NavigationResponseCallback = (response: NavigationResponseEvent) => void
 
-type NavigationStoreState = {
+type NavigationState = {
   data: DataStore,
-  responses: RouteValueResponseEvent[],
-  onResponse: RouteValueResponseCallback | undefined,
+  responses: NavigationResponseEvent[],
+  onResponse: NavigationResponseCallback | undefined,
   committed: boolean,
 }
 
-type NavigationStoreInternal = {
+type NavigationInstanceInternal = {
   data: DataStore,
-  commit: NavigationStores['commit'],
+  commit: Navigation['commit'],
   dispose: (reason: Error) => void,
 }
 
-type NavigationStoreSlots = {
-  current: NavigationStore & NavigationStoreInternal,
-  staged?: NavigationStore & NavigationStoreInternal,
+type NavigationInstances = {
+  current: NavigationInstance & NavigationInstanceInternal,
+  staged?: NavigationInstance & NavigationInstanceInternal,
 }
 
 /**
  * Separate outcomes for props and loaders, so callers can wait for either independently.
  */
-export type RouteValueResponses = {
-  props: Promise<RouteValueResponse>,
-  loaders: Promise<RouteValueResponse>,
+export type NavigationResponses = {
+  props: Promise<NavigationResponse>,
+  loaders: Promise<NavigationResponse>,
   /**
    * Individual computations tracked by navigation progress.
    */
   values: Promise<unknown>[],
 }
 
-const ABANDONED = Promise.resolve<RouteValueResponse>({ status: 'ABANDONED' })
-const ABANDONED_RESPONSES: RouteValueResponses = {
+const ABANDONED = Promise.resolve<NavigationResponse>({ status: 'ABANDONED' })
+const ABANDONED_RESPONSES: NavigationResponses = {
   props: ABANDONED,
   loaders: ABANDONED,
   values: [],
 }
 
-export type NavigationStore = {
+export type NavigationInstance = {
   /**
    * Computes the supplied values and reports how they settle.
    */
-  compute: (route: ResolvedRoute, filter?: ComputationFilter) => RouteValueResponses,
+  compute: (route: ResolvedRoute, filter?: ComputationFilter) => NavigationResponses,
   /**
    * Adopts values that already settled, in place of running their getters.
    */
@@ -82,12 +82,11 @@ export type NavigationStore = {
 }
 
 /**
- * A store kept apart from the navigation until it is staged, so values can be computed ahead of a
- * navigation that may never come.
+ * Computations prepared ahead of a navigation that may never happen.
  */
-export type DetachedNavigationStore = NavigationStore & {
+export type PrefetchNavigation = NavigationInstance & {
   /**
-   * Disposes of the previously staged store and sets this store as staged.
+   * Disposes of the previously staged navigation and sets this navigation as staged.
    */
   stage: () => void,
   /**
@@ -110,18 +109,17 @@ export type RouteValue = {
   value: unknown,
 }
 
-export type NavigationStores = HasVueAppStore & {
-  createDetachedStore: () => DetachedNavigationStore,
+export type Navigation = HasVueAppStore & {
+  createPrefetch: () => PrefetchNavigation,
   /**
-   * The store the next navigation adopts, created when nothing is staged. Values computed into it ahead of
-   * the navigation are found under way when the navigation commits, while the rendered route keeps reading
-   * its own store meanwhile.
+   * The navigation prepared for the next commit, created when nothing is staged.
+   * The rendered route keeps reading from the current navigation until then.
    */
-  staged: () => NavigationStore,
+  staged: () => NavigationInstance,
   /**
-   * Makes the staged store current and computes whatever the route still lacks.
+   * Makes the staged navigation current and computes whatever the route still lacks.
    */
-  commit: (route: ResolvedRoute, onResponse?: RouteValueResponseCallback) => RouteValueResponses,
+  commit: (route: ResolvedRoute, onResponse?: NavigationResponseCallback) => NavigationResponses,
   /**
    * The values currently settled in the store.
    */
@@ -134,19 +132,19 @@ export type NavigationStores = HasVueAppStore & {
   getData: (route: ResolvedRoute) => WithData['data'],
 }
 
-export function createNavigationStores(): NavigationStores {
+export function createNavigation(): Navigation {
   const { setVueApp, runWithContext } = createVueAppStore()
-  const stores: NavigationStoreSlots = { current: createStore() }
+  const navigations: NavigationInstances = { current: createNavigationInstance() }
 
-  function createStore(): NavigationStore & NavigationStoreInternal {
-    const state: NavigationStoreState = {
+  function createNavigationInstance(): NavigationInstance & NavigationInstanceInternal {
+    const state: NavigationState = {
       data: createDataStore(),
       responses: [],
       onResponse: undefined,
       committed: false,
     }
 
-    function reportResponse(response: RouteValueResponseEvent): void {
+    function reportResponse(response: NavigationResponseEvent): void {
       if (state.data.signal.aborted) {
         return
       }
@@ -159,7 +157,7 @@ export function createNavigationStores(): NavigationStores {
       state.onResponse?.(response)
     }
 
-    function compute(route: ResolvedRoute, filter: ComputationFilter = () => true): RouteValueResponses {
+    function compute(route: ResolvedRoute, filter: ComputationFilter = () => true): NavigationResponses {
       if (state.data.signal.aborted) {
         return ABANDONED_RESPONSES
       }
@@ -205,7 +203,7 @@ export function createNavigationStores(): NavigationStores {
      * Registers computations synchronously so props callbacks can subscribe to loaders immediately.
      * Existing computations keep their values and are not reported again.
      */
-    function settle(route: ResolvedRoute, computations: Computation[]): Promise<RouteValueResponse> {
+    function settle(route: ResolvedRoute, computations: Computation[]): Promise<NavigationResponse> {
       computations.forEach((computation) => {
         state.data.set(computation.key, () => {
           const response = toResponse(state.data.subscribe(computation.key))
@@ -220,7 +218,7 @@ export function createNavigationStores(): NavigationStores {
       return toResponse(Promise.all(computations.map(({ key }) => state.data.subscribe(key))))
     }
 
-    function commit(route: ResolvedRoute, callback?: RouteValueResponseCallback): RouteValueResponses {
+    function commit(route: ResolvedRoute, callback?: NavigationResponseCallback): NavigationResponses {
       state.onResponse = callback
       state.committed = true
 
@@ -245,30 +243,30 @@ export function createNavigationStores(): NavigationStores {
     }
   }
 
-  const createDetachedStore: NavigationStores['createDetachedStore'] = () => {
-    let store = createStore()
+  const createPrefetch: Navigation['createPrefetch'] = () => {
+    let instance = createNavigationInstance()
 
-    const compute: DetachedNavigationStore['compute'] = (route, filter) => {
-      return store.compute(route, filter)
+    const compute: PrefetchNavigation['compute'] = (route, filter) => {
+      return instance.compute(route, filter)
     }
 
-    const fill: DetachedNavigationStore['fill'] = (route, values) => {
-      store.fill(route, values)
+    const fill: PrefetchNavigation['fill'] = (route, values) => {
+      instance.fill(route, values)
     }
 
-    const dispose: DetachedNavigationStore['dispose'] = () => {
-      store.dispose(new NavigationAbandonedError())
+    const dispose: PrefetchNavigation['dispose'] = () => {
+      instance.dispose(new NavigationAbandonedError())
     }
 
-    const reset: DetachedNavigationStore['reset'] = () => {
+    const reset: PrefetchNavigation['reset'] = () => {
       dispose()
-      store = createStore()
+      instance = createNavigationInstance()
     }
 
-    const stage: DetachedNavigationStore['stage'] = () => {
-      stores.staged?.dispose(new NavigationAbandonedError())
-      stores.staged = store
-      store = createStore()
+    const stage: PrefetchNavigation['stage'] = () => {
+      navigations.staged?.dispose(new NavigationAbandonedError())
+      navigations.staged = instance
+      instance = createNavigationInstance()
     }
 
     return {
@@ -280,23 +278,23 @@ export function createNavigationStores(): NavigationStores {
     }
   }
 
-  const staged: NavigationStores['staged'] = () => {
-    stores.staged ??= createStore()
+  const staged: Navigation['staged'] = () => {
+    navigations.staged ??= createNavigationInstance()
 
-    return stores.staged
+    return navigations.staged
   }
 
-  const commit: NavigationStores['commit'] = (route, onResponse) => {
-    const previous = stores.current
-    stores.current = stores.staged ?? createStore()
-    stores.staged = undefined
+  const commit: Navigation['commit'] = (route, onResponse) => {
+    const previous = navigations.current
+    navigations.current = navigations.staged ?? createNavigationInstance()
+    navigations.staged = undefined
     previous.dispose(new NavigationAbandonedError())
 
-    return stores.current.commit(route, onResponse)
+    return navigations.current.commit(route, onResponse)
   }
 
-  const getValues: NavigationStores['getValues'] = (route) => {
-    const store = stores.current.data
+  const getValues: Navigation['getValues'] = (route) => {
+    const store = navigations.current.data
 
     return getComputations(route).flatMap(({ kind, depth, name, key }) => {
       const result = store.get(key)
@@ -309,7 +307,7 @@ export function createNavigationStores(): NavigationStores {
     })
   }
 
-  async function toResponse(value: Promise<unknown>): Promise<RouteValueResponse> {
+  async function toResponse(value: Promise<unknown>): Promise<NavigationResponse> {
     try {
       await value
 
@@ -331,9 +329,9 @@ export function createNavigationStores(): NavigationStores {
     }
   }
 
-  const getProps: NavigationStores['getProps'] = (id, name, route) => {
+  const getProps: Navigation['getProps'] = (id, name, route) => {
     const key = getDataKey('props', id, name, route)
-    const result = stores.current.data.get(key)
+    const result = navigations.current.data.get(key)
 
     switch (result.kind) {
       case 'missing':
@@ -341,7 +339,7 @@ export function createNavigationStores(): NavigationStores {
 
       case 'pending':
       case 'running':
-        return toResult(stores.current.data, key)
+        return toResult(navigations.current.data, key)
 
       case 'value':
       case 'error':
@@ -470,7 +468,7 @@ export function createNavigationStores(): NavigationStores {
    */
   function getValue(location: ValueLocation, route: ResolvedRoute, store?: DataStore): Promise<unknown> {
     const key = getDataKey(location.kind, location.id, location.name, route)
-    const current = stores.current.data
+    const current = navigations.current.data
 
     if (current.signal.aborted) {
       const abandoned = Promise.reject(new NavigationAbandonedError())
@@ -502,7 +500,7 @@ export function createNavigationStores(): NavigationStores {
   }
 
   return {
-    createDetachedStore,
+    createPrefetch,
     staged,
     commit,
     getValues,
@@ -529,7 +527,7 @@ async function firstToArrive(sources: Promise<unknown>[]): Promise<unknown> {
 }
 
 /**
- * What a view with no props getter renders with, since such a view stores nothing.
+ * What a view with no props getter renders with, since such a view navigations nothing.
  */
 const NO_PROPS: PropsResult = { kind: 'value', value: undefined }
 
