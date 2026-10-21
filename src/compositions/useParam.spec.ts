@@ -1,5 +1,5 @@
 /* eslint-disable vue/one-component-per-file */
-import { createApp, effectScope, isReadonly } from 'vue'
+import { createApp, isReadonly } from 'vue'
 import { expect, onTestFinished, test } from 'vitest'
 import { createParam, createRoute, createRouter, useParam, withParams } from '@/main'
 
@@ -11,17 +11,11 @@ test('value contains the first matching param', async () => {
   app.use(router)
   await router.start()
 
-  const scope = effectScope()
-  onTestFinished(() => {
-    scope.stop()
-    router.stop()
-  })
+  onTestFinished(() => router.stop())
 
-  await scope.run(async () => {
-    const { value } = app.runWithContext(() => useParam(userId))
+  const { value } = app.runWithContext(() => useParam(userId))
 
-    expect(value.value).toBe(1)
-  })
+  expect(value.value).toBe(1)
 })
 
 test('values contains all matching params', async () => {
@@ -32,17 +26,11 @@ test('values contains all matching params', async () => {
   app.use(router)
   await router.start()
 
-  const scope = effectScope()
-  onTestFinished(() => {
-    scope.stop()
-    router.stop()
-  })
+  onTestFinished(() => router.stop())
 
-  await scope.run(async () => {
-    const { values } = app.runWithContext(() => useParam(userId))
+  const { values } = app.runWithContext(() => useParam(userId))
 
-    expect(values.value).toEqual([1, 2])
-  })
+  expect(values.value).toEqual([1, 2])
 })
 
 test('destructured value follows navigation', async () => {
@@ -53,21 +41,15 @@ test('destructured value follows navigation', async () => {
   app.use(router)
   await router.start()
 
-  const scope = effectScope()
-  onTestFinished(() => {
-    scope.stop()
-    router.stop()
-  })
+  onTestFinished(() => router.stop())
 
-  await scope.run(async () => {
-    const { value } = app.runWithContext(() => useParam(userId))
+  const { value } = app.runWithContext(() => useParam(userId))
 
-    expect(value.value).toBe(1)
+  expect(value.value).toBe(1)
 
-    await router.push('user', { id: 2 })
+  await router.push('user', { id: 2 })
 
-    expect(value.value).toBe(2)
-  })
+  expect(value.value).toBe(2)
 })
 
 test('destructured values follows navigation', async () => {
@@ -78,21 +60,15 @@ test('destructured values follows navigation', async () => {
   app.use(router)
   await router.start()
 
-  const scope = effectScope()
-  onTestFinished(() => {
-    scope.stop()
-    router.stop()
-  })
+  onTestFinished(() => router.stop())
 
-  await scope.run(async () => {
-    const { values } = app.runWithContext(() => useParam(userId))
+  const { values } = app.runWithContext(() => useParam(userId))
 
-    expect(values.value).toEqual([1])
+  expect(values.value).toEqual([1])
 
-    await router.push('user', { id: 2 })
+  await router.push('user', { id: 2 })
 
-    expect(values.value).toEqual([2])
-  })
+  expect(values.value).toEqual([2])
 })
 
 test('value is undefined when the definition is absent', async () => {
@@ -103,17 +79,11 @@ test('value is undefined when the definition is absent', async () => {
   app.use(router)
   await router.start()
 
-  const scope = effectScope()
-  onTestFinished(() => {
-    scope.stop()
-    router.stop()
-  })
+  onTestFinished(() => router.stop())
 
-  await scope.run(async () => {
-    const { value } = app.runWithContext(() => useParam(userId))
+  const { value } = app.runWithContext(() => useParam(userId))
 
-    expect(value.value).toBeUndefined()
-  })
+  expect(value.value).toBeUndefined()
 })
 
 test('values is empty when the definition is absent', async () => {
@@ -124,17 +94,11 @@ test('values is empty when the definition is absent', async () => {
   app.use(router)
   await router.start()
 
-  const scope = effectScope()
-  onTestFinished(() => {
-    scope.stop()
-    router.stop()
-  })
+  onTestFinished(() => router.stop())
 
-  await scope.run(async () => {
-    const { values } = app.runWithContext(() => useParam(userId))
+  const { values } = app.runWithContext(() => useParam(userId))
 
-    expect(values.value).toEqual([])
-  })
+  expect(values.value).toEqual([])
 })
 
 test('value is a readonly ref', async () => {
@@ -145,17 +109,11 @@ test('value is a readonly ref', async () => {
   app.use(router)
   await router.start()
 
-  const scope = effectScope()
-  onTestFinished(() => {
-    scope.stop()
-    router.stop()
-  })
+  onTestFinished(() => router.stop())
 
-  await scope.run(async () => {
-    const { value } = app.runWithContext(() => useParam(userId))
+  const { value } = app.runWithContext(() => useParam(userId))
 
-    expect(isReadonly(value)).toBe(true)
-  })
+  expect(isReadonly(value)).toBe(true)
 })
 
 test('values is a readonly ref', async () => {
@@ -166,15 +124,9 @@ test('values is a readonly ref', async () => {
   app.use(router)
   await router.start()
 
-  const scope = effectScope()
-  onTestFinished(() => {
-    scope.stop()
-    router.stop()
-  })
+  onTestFinished(() => router.stop())
 
-  await scope.run(async () => {
-    const { values } = app.runWithContext(() => useParam(userId))
+  const { values } = app.runWithContext(() => useParam(userId))
 
-    expect(isReadonly(values)).toBe(true)
-  })
+  expect(isReadonly(values)).toBe(true)
 })
