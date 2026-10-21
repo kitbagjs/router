@@ -3,7 +3,7 @@ import { isView } from '@/types/view'
 import { createView } from '@/services/createView'
 import { createRoute } from '@/services/createRoute'
 import { createResolvedRoute } from '@/services/createResolvedRoute'
-import { createNavigationStores } from '@/services/createNavigationStores'
+import { createNavigation } from '@/services/createNavigation'
 import { createRouter } from '@/services/createRouter'
 import { component } from '@/utilities/testHelpers'
 
@@ -19,10 +19,10 @@ test('one view computes props and loader data independently for multiple routes'
 
   for (const [route, name] of [[first, 'default'], [second, 'sidebar']] as const) {
     const resolved = createResolvedRoute(route, { id: '1' })
-    const store = createNavigationStores()
-    await store.staged().compute(resolved).props
-    store.commit(resolved)
-    expect(store.getProps(route.id, name, resolved)).toEqual({
+    const navigation = createNavigation()
+    await navigation.staged().compute(resolved).props
+    navigation.commit(resolved)
+    expect(navigation.getProps(route.id, name, resolved)).toEqual({
       kind: 'value', value: { name: route.name, id: '1', data: `${route.name} data` },
     })
   }
