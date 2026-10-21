@@ -1,6 +1,6 @@
 import { createPath } from '@/services/history'
 import { App, nextTick, ref } from 'vue'
-import { createCurrentRoute } from '@/services/createCurrentRoute'
+import { createRouterRoute } from '@/services/createRouterRoute'
 import { createIsExternal } from '@/services/createIsExternal'
 import { createActivityTracker } from '@/services/createActivityTracker'
 import { SsrOptionRequiredError } from '@/errors/ssrOptionRequiredError'
@@ -465,7 +465,7 @@ export function createRouter<
 
     progress.track(...values, ...loadAsyncComponents(to))
 
-    updateRoute(to)
+    routerRoute.updateRoute(to)
   }
 
   /**
@@ -626,9 +626,9 @@ export function createRouter<
   }
 
   const { currentRejection, updateRejection, clearRejection } = createCurrentRejection()
-  const { currentRoute, routerRoute, updateRoute } = createCurrentRoute<TRoutes | TPlugin['routes']>({
+  const routerRoute = createRouterRoute<Router<TRoutes, TOptions, TPlugin>>({
     routerKey,
-    fallbackRoute: notFoundRoute,
+    route: notFoundRoute,
     push,
     getData: valueStore.getData,
   })
@@ -637,7 +637,7 @@ export function createRouter<
    * The title that should currently be rendered.
    */
   async function getTitle(): Promise<string | undefined> {
-    return await currentRejection.value?.getTitle() ?? currentRoute.getTitle()
+    return await currentRejection.value?.getTitle() ?? routerRoute.getResolvedRoute().getTitle()
   }
 
   /**
@@ -775,7 +775,8 @@ export function createRouter<
     }
 
     const title = await getTitle()
-    const { values, failures } = encodePayloadValues(currentRoute, valueStore.getValues(currentRoute), options?.transformer)
+    const resolved = routerRoute.getResolvedRoute()
+    const { values, failures } = encodePayloadValues(resolved, valueStore.getValues(resolved), options?.transformer)
 
     return {
       kind: 'success',
@@ -795,7 +796,7 @@ export function createRouter<
   }
 
   function getFromRouteForHooks(): ResolvedRoute | null {
-    return started.value ? { ...currentRoute } : null
+    return started.value ? routerRoute.getResolvedRoute() : null
   }
 
   function install(app: App): void {
