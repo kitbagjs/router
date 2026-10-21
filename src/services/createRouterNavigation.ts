@@ -40,15 +40,9 @@ type RouterNavigationState = {
   committed: boolean,
 }
 
-type RouterNavigationStoreInternal = {
-  data: DataStore,
-  commit: RouterNavigationStores['commit'],
-  dispose: (reason: Error) => void,
-}
-
 type RouterNavigationStoreSlots = {
-  current: RouterNavigationStore & RouterNavigationStoreInternal,
-  staged?: RouterNavigationStore & RouterNavigationStoreInternal,
+  current: RouterNavigationStore,
+  staged?: RouterNavigationStore,
 }
 
 /**
@@ -71,6 +65,13 @@ const ABANDONED_RESPONSES: RouterNavigationResponses = {
 }
 
 export type RouterNavigationStore = {
+  data: DataStore,
+  /**
+   * Disposes of the previously staged navigation and sets this navigation as staged.
+   */
+  stage: () => void,
+  commit: (route: ResolvedRoute, onResponse?: RouterNavigationResponseCallback) => RouterNavigationResponses,
+  dispose: () => void,
   /**
    * Computes the supplied values and reports how they settle.
    */
@@ -79,24 +80,6 @@ export type RouterNavigationStore = {
    * Adopts values that already settled, in place of running their getters.
    */
   fill: (route: ResolvedRoute, values: RouteValue[]) => void,
-}
-
-/**
- * Computations prepared ahead of a navigation that may never happen.
- */
-export type PrefetchedRouterNavigationStore = RouterNavigationStore & {
-  /**
-   * Disposes of the previously staged navigation and sets this navigation as staged.
-   */
-  stage: () => void,
-  /**
-   * Abandons what was computed and starts over.
-   */
-  reset: () => void,
-  /**
-   * Abandons what was computed.
-   */
-  dispose: () => void,
 }
 
 /**
@@ -112,7 +95,7 @@ export type RouteValue = {
 export type RouterNavigationStores = HasVueAppStore & {
   stop: () => void,
   current: () => RouterNavigationStore,
-  createPrefetch: () => PrefetchedRouterNavigationStore,
+  create: () => RouterNavigationStore,
   /**
    * The navigation prepared for the next commit, created when nothing is staged.
    * The rendered route keeps reading from the current navigation until then.
@@ -140,7 +123,7 @@ export function createRouterNavigation(): RouterNavigationStores {
   const { setVueApp, runWithContext } = createVueAppStore()
   const navigations: RouterNavigationStoreSlots = { current: createRouterNavigationStore() }
 
-  function createRouterNavigationStore(): RouterNavigationStore & RouterNavigationStoreInternal {
+  function createRouterNavigationStore(): RouterNavigationStore {
     const state: RouterNavigationState = {
       data: createDataStore(),
       responses: [],
@@ -221,6 +204,19 @@ export function createRouterNavigation(): RouterNavigationStores {
     }
 
     function commit(route: ResolvedRoute, callback?: RouterNavigationResponseCallback): RouterNavigationResponses {
+      const previous = navigations.current
+      const staged = navigations.staged
+      navigations.current = instance
+      navigations.staged = undefined
+
+      if (previous !== instance) {
+        previous.dispose()
+      }
+
+      if (staged && staged !== instance && staged !== previous) {
+        staged.dispose()
+      }
+
       state.onResponse = callback
       state.committed = true
 
@@ -230,54 +226,34 @@ export function createRouterNavigation(): RouterNavigationStores {
       return compute(route, getComputations(route))
     }
 
-    function dispose(reason: Error): void {
-      state.data.dispose(reason)
+    function dispose(): void {
+      state.data.dispose(new NavigationAbandonedError())
       state.responses.length = 0
       state.onResponse = undefined
     }
 
-    return {
+    function stage(): void {
+      if (navigations.staged === instance) {
+        return
+      }
+
+      if (navigations.staged !== navigations.current) {
+        navigations.staged?.dispose()
+      }
+
+      navigations.staged = instance
+    }
+
+    const instance: RouterNavigationStore = {
       data: state.data,
       compute,
       fill,
+      stage,
       commit,
       dispose,
     }
-  }
 
-  const createPrefetch: RouterNavigationStores['createPrefetch'] = () => {
-    let instance = createRouterNavigationStore()
-
-    const compute: PrefetchedRouterNavigationStore['compute'] = (route, computations) => {
-      return instance.compute(route, computations)
-    }
-
-    const fill: PrefetchedRouterNavigationStore['fill'] = (route, values) => {
-      instance.fill(route, values)
-    }
-
-    const dispose: PrefetchedRouterNavigationStore['dispose'] = () => {
-      instance.dispose(new NavigationAbandonedError())
-    }
-
-    const reset: PrefetchedRouterNavigationStore['reset'] = () => {
-      dispose()
-      instance = createRouterNavigationStore()
-    }
-
-    const stage: PrefetchedRouterNavigationStore['stage'] = () => {
-      navigations.staged?.dispose(new NavigationAbandonedError())
-      navigations.staged = instance
-      instance = createRouterNavigationStore()
-    }
-
-    return {
-      compute,
-      fill,
-      stage,
-      reset,
-      dispose,
-    }
+    return instance
   }
 
   const current: RouterNavigationStores['current'] = () => navigations.current
@@ -289,19 +265,15 @@ export function createRouterNavigation(): RouterNavigationStores {
   }
 
   const stop: RouterNavigationStores['stop'] = () => {
-    const reason = new NavigationAbandonedError()
-    navigations.current.dispose(reason)
-    navigations.staged?.dispose(reason)
+    navigations.current.dispose()
+    navigations.staged?.dispose()
     navigations.staged = undefined
   }
 
   const commit: RouterNavigationStores['commit'] = (route, onResponse) => {
-    const previous = navigations.current
-    navigations.current = navigations.staged ?? createRouterNavigationStore()
-    navigations.staged = undefined
-    previous.dispose(new NavigationAbandonedError())
+    const instance = navigations.staged ?? createRouterNavigationStore()
 
-    return navigations.current.commit(route, onResponse)
+    return instance.commit(route, onResponse)
   }
 
   const getValues: RouterNavigationStores['getValues'] = (route) => {
@@ -542,7 +514,7 @@ export function createRouterNavigation(): RouterNavigationStores {
   return {
     stop,
     current,
-    createPrefetch,
+    create: createRouterNavigationStore,
     staged,
     commit,
     getValues,

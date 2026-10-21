@@ -27,19 +27,21 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
   return (config) => {
     const element = ref<HTMLElement>()
 
-    const { createPrefetch } = useRouterNavigation()
-    const prefetch = createPrefetch()
+    const navigation = useRouterNavigation()
+    let prefetch = navigation.create()
     const { isElementVisible } = useVisibilityObserver(element)
 
     const commit: UsePrefetching['commit'] = () => {
       prefetch.stage()
+      prefetch = navigation.create()
     }
 
     onScopeDispose(() => prefetch.dispose())
 
     watch(() => toValue(config), ({ route, ...configs }, previous) => {
       if (!isSameResolvedRoute(route, previous?.route)) {
-        prefetch.reset()
+        prefetch.dispose()
+        prefetch = navigation.create()
       }
 
       if (!route) {
