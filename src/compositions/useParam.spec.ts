@@ -1,6 +1,5 @@
-import { mount } from '@vue/test-utils'
-import { isReadonly } from 'vue'
-import { expect, test } from 'vitest'
+import { createApp, effectScope, isReadonly } from 'vue'
+import { assert, expect, test } from 'vitest'
 import { createParam, createRoute, createRouter, createRouterAssets, useParam, withDefault, withParams } from '@/main'
 
 test.each(['global', 'router assets'] as const)('%s param refs follow navigation after destructuring', async (source) => {
@@ -17,38 +16,36 @@ test.each(['global', 'router assets'] as const)('%s param refs follow navigation
 
   await router.start()
 
-  const wrapper = mount({
-    template: '{{ value }}:{{ values }}',
-    setup() {
-      const { value, values } = useRouterParam(defaultedId)
+  const app = createApp({})
+  app.use(router)
 
-      expect(isReadonly(value)).toBe(true)
-      expect(isReadonly(values)).toBe(true)
+  const scope = effectScope()
+  const result = app.runWithContext(() => scope.run(() => useRouterParam(defaultedId)))
+  assert(result)
 
-      return { value, values }
-    },
-  }, {
-    global: { plugins: [router] },
-  })
+  const { value, values } = result
 
-  expect(wrapper.vm.value).toBe(1)
-  expect(wrapper.vm.values).toEqual([1, 2, 3])
+  expect(isReadonly(value)).toBe(true)
+  expect(isReadonly(values)).toBe(true)
+
+  expect(value.value).toBe(1)
+  expect(values.value).toEqual([1, 2, 3])
 
   await router.push('users', { from: 0, to: 4, owner: 5 })
 
-  expect(wrapper.vm.value).toBe(0)
-  expect(wrapper.vm.values).toEqual([0, 4, 5])
+  expect(value.value).toBe(0)
+  expect(values.value).toEqual([0, 4, 5])
 
   await router.push('other')
 
-  expect(wrapper.vm.value).toBeUndefined()
-  expect(wrapper.vm.values).toEqual([])
+  expect(value.value).toBeUndefined()
+  expect(values.value).toEqual([])
 
   await router.push('users', { from: 6, to: 7 })
 
-  expect(wrapper.vm.value).toBe(6)
-  expect(wrapper.vm.values).toEqual([6, 7, 3])
+  expect(value.value).toBe(6)
+  expect(values.value).toEqual([6, 7, 3])
 
-  wrapper.unmount()
+  scope.stop()
   router.stop()
 })
