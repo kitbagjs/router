@@ -4,6 +4,62 @@ import { createRouteValueStore } from '@/services/createRouteValueStore'
 import { createResolvedRoute } from '@/services/createResolvedRoute'
 import { createRoute } from '@/services/createRoute'
 import { component } from '@/utilities/testHelpers'
+import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
+
+test('pending props report abandonment when another navigation replaces their store', async () => {
+  const pending = Promise.withResolvers<{ value: string }>()
+  const route = createRoute({ name: 'route', path: '/' }).addView(component, { props: () => pending.promise })
+  const other = createRoute({ name: 'other', path: '/other' })
+  const resolved = createResolvedRoute(route)
+  const store = createRouteValueStore()
+
+  store.commit(resolved)
+  const props = store.getProps(route.id, 'default', resolved)
+
+  store.commit(createResolvedRoute(other))
+
+  await expect(props).resolves.toEqual({ kind: 'abandoned' })
+  pending.resolve({ value: 'late' })
+})
+
+test('a rejected props getter reports an error before and after it settles', async () => {
+  const error = new Error('props failed')
+  const pending = Promise.withResolvers<{ value: string }>()
+  const route = createRoute({ name: 'route', path: '/' }).addView(component, { props: () => pending.promise })
+  const resolved = createResolvedRoute(route)
+  const store = createRouteValueStore()
+
+  store.commit(resolved)
+  const props = store.getProps(route.id, 'default', resolved)
+  pending.reject(error)
+
+  await expect(props).resolves.toEqual({ kind: 'error', error })
+  expect(store.getProps(route.id, 'default', resolved)).toEqual({ kind: 'error', error })
+})
+
+test('a props getter that throws NavigationAbandonedError reports abandonment', () => {
+  const route = createRoute({ name: 'route', path: '/' }).addView(component, {
+    props: () => {
+      throw new NavigationAbandonedError()
+    },
+  })
+  const resolved = createResolvedRoute(route)
+  const store = createRouteValueStore()
+
+  store.commit(resolved)
+
+  expect(store.getProps(route.id, 'default', resolved)).toEqual({ kind: 'abandoned' })
+})
+
+test('a view without a props getter reports a successful value with no props', () => {
+  const route = createRoute({ name: 'route', path: '/' }).addView(component)
+  const resolved = createResolvedRoute(route)
+  const store = createRouteValueStore()
+
+  store.commit(resolved)
+
+  expect(store.getProps(route.id, 'default', resolved)).toEqual({ kind: 'value', value: undefined })
+})
 
 test('a staged value is adopted in place of running its getter', async () => {
   const loader = vi.fn(() => 'computed')

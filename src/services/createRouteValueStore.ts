@@ -253,8 +253,10 @@ export function createRouteValueStore(): RouteValueStore {
         return toResult(navigation.current().subscribe(key))
 
       case 'value':
-      case 'error':
         return result
+
+      case 'error':
+        return result.error instanceof NavigationAbandonedError ? { kind: 'abandoned' } : result
       default:
         return result satisfies never
     }
@@ -446,6 +448,10 @@ async function toResult(props: Promise<unknown>): Promise<PropsResult> {
   try {
     return { kind: 'value', value: await props }
   } catch (error) {
+    if (error instanceof NavigationAbandonedError) {
+      return { kind: 'abandoned' }
+    }
+
     return { kind: 'error', error }
   }
 }
