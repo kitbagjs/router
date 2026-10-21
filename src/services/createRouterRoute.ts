@@ -1,4 +1,4 @@
-import { computed, InjectionKey, reactive, shallowRef } from 'vue'
+import { computed, InjectionKey, reactive, shallowReactive, shallowRef } from 'vue'
 import { parseUrl, stringifyUrl, updateUrl } from '@/services/urlParser'
 import { ResolvedRoute } from '@/types/resolved'
 import { IS_ROUTER_ROUTE_SYMBOL, RouterRoute, RouterRouteInternal } from '@/types/routerRoute'
@@ -87,7 +87,7 @@ export function createRouterRoute({ routerKey, route: initialRoute, push, getDat
   const data = computed(() => getData(route.value))
   const getTitle = computed(() => route.value.getTitle)
 
-  const paramsProxy = new Proxy({}, {
+  const paramsProxy = shallowReactive(new Proxy({}, {
     get(_target, property, receiver) {
       return Reflect.get(route.value.params, property, receiver)
     },
@@ -102,7 +102,7 @@ export function createRouterRoute({ routerKey, route: initialRoute, push, getDat
     getOwnPropertyDescriptor(_target, prop) {
       return Reflect.getOwnPropertyDescriptor(route.value.params, prop)
     },
-  })
+  }))
 
   const params = computed({
     get() {

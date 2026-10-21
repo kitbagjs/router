@@ -1,4 +1,6 @@
 import { expect, test, vi } from 'vitest'
+import { computed, toRefs } from 'vue'
+import { flushPromises } from '@vue/test-utils'
 import { createRouterRoute, isRouterRoute } from '@/services/createRouterRoute'
 import { createRoute } from './createRoute'
 import { createResolvedRoute } from './createResolvedRoute'
@@ -173,6 +175,39 @@ test('getTitle resolves the title of the current route', async () => {
   await router.push('other')
 
   await expect(router.route.getTitle()).resolves.toBe('Other')
+})
+
+test('params work with toRefs across navigation without warnings', async () => {
+  const home = createRoute({ name: 'home', path: '/[id]' })
+  const router = createRouter([home], { initialUrl: '/one' })
+
+  await router.start()
+
+  const params = router.route.params
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+  try {
+    const { id } = toRefs(params)
+    const currentId = computed(() => id.value)
+
+    expect(warn).not.toHaveBeenCalled()
+    expect(currentId.value).toBe('one')
+
+    await router.push('home', { id: 'two' })
+
+    expect(router.route.params).toBe(params)
+    expect(currentId.value).toBe('two')
+
+    id.value = 'three'
+    await flushPromises()
+
+    expect(currentId.value).toBe('three')
+    expect(router.route.href).toBe('/three')
+    expect(warn).not.toHaveBeenCalled()
+  } finally {
+    router.stop()
+    warn.mockRestore()
+  }
 })
 
 test('canonical follows the current route', async () => {
