@@ -1,8 +1,11 @@
 import { ComputedRef } from 'vue'
 import { expectTypeOf, test } from 'vitest'
-import { createParam, createRoute, createRouter, createRouterAssets, literal, useParam, withDefault } from '@/main'
+import { createParam, createRoute, createRouter, createRouterAssets, literal, withDefault } from '@/main'
 
 test('param value types are preserved in readonly computed refs', () => {
+  const route = createRoute({ name: 'home', path: '/' })
+  const { useParam } = createRouterAssets(createRouter([route]))
+
   const { value, values } = useParam(createParam(Number))
 
   expectTypeOf(value).toEqualTypeOf<ComputedRef<number | undefined>>()
@@ -20,17 +23,18 @@ test('param value types are preserved in readonly computed refs', () => {
 })
 
 test('defaulted params can still be absent from the current route', () => {
+  const route = createRoute({ name: 'home', path: '/' })
+  const { useParam } = createRouterAssets(createRouter([route]))
+
   const { value, values } = useParam(withDefault(Number, 3))
 
   expectTypeOf(value).toEqualTypeOf<ComputedRef<number | undefined>>()
   expectTypeOf(values).toEqualTypeOf<ComputedRef<number[]>>()
 })
 
-test('router assets expose the same param hook types', () => {
+test('lookup requires a param definition', () => {
   const route = createRoute({ name: 'home', path: '/' })
-  const assets = createRouterAssets(createRouter([route]))
-
-  expectTypeOf(assets.useParam).toEqualTypeOf<typeof useParam>()
+  const { useParam } = createRouterAssets(createRouter([route]))
 
   // @ts-expect-error lookup requires a param definition
   useParam(Number)
