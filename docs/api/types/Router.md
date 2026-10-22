@@ -8,9 +8,9 @@ type Router<TRoutes, TOptions, TPlugin> = object;
 
 | Type Parameter | Default type |
 | ------ | ------ |
-| `TRoutes` *extends* `Routes` | `any` |
-| `TOptions` *extends* [`RouterOptions`](RouterOptions.md) | `any` |
-| `TPlugin` *extends* [`RouterPlugin`](RouterPlugin.md) | `any` |
+| <a id="type-parameter-troutes"></a> `TRoutes` *extends* `Routes` | `any` |
+| <a id="type-parameter-toptions"></a> `TOptions` *extends* [`RouterOptions`](RouterOptions.md) | `any` |
+| <a id="type-parameter-tplugin"></a> `TPlugin` *extends* [`RouterPlugin`](RouterPlugin.md) | `any` |
 
 ## Properties
 

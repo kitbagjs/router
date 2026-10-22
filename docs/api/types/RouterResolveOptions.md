@@ -8,7 +8,7 @@ type RouterResolveOptions<TState> = object;
 
 | Type Parameter | Default type |
 | ------ | ------ |
-| `TState` | `unknown` |
+| <a id="type-parameter-tstate"></a> `TState` | `unknown` |
 
 ## Properties
 

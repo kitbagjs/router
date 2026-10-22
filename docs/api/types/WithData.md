@@ -12,7 +12,7 @@ a props getter's route have it, `router.resolve` and hooks do not.
 
 | Type Parameter | Default type |
 | ------ | ------ |
-| `TRoute` *extends* [`Route`](Route.md) | [`Route`](Route.md) |
+| <a id="type-parameter-troute"></a> `TRoute` *extends* [`Route`](Route.md) | [`Route`](Route.md) |
 
 ## Properties
 

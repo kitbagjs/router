@@ -14,4 +14,4 @@ type PropsCallbackParent<TParent> = Route | undefined extends TParent ?
 
 | Type Parameter | Default type |
 | ------ | ------ |
-| `TParent` *extends* [`Route`](Route.md) \| `undefined` | [`Route`](Route.md) \| `undefined` |
+| <a id="type-parameter-tparent"></a> `TParent` *extends* [`Route`](Route.md) \| `undefined` | [`Route`](Route.md) \| `undefined` |
