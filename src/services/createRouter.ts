@@ -5,7 +5,7 @@ import { createIsExternal } from '@/services/createIsExternal'
 import { createActivityTracker } from '@/services/createActivityTracker'
 import { SsrOptionRequiredError } from '@/errors/ssrOptionRequiredError'
 import { parseUrl, updateUrl } from '@/services/urlParser'
-import { createRouterNavigation, RouterNavigationResponseEvent } from '@/services/createRouterNavigation'
+import { createRouterNavigation, RouterNavigationResponseEvent, RouterNavigationStore } from '@/services/createRouterNavigation'
 import { createNavigationProgress, NavigationProgressTracker } from '@/services/createNavigationProgress'
 import { getComputations } from '@/services/getComputations'
 import { getAsyncComponents, loadAsyncComponents } from '@/utilities/components'
@@ -60,7 +60,7 @@ import { getNavigationOption, getRouteNavigationOption } from '@/utilities/navig
 type RouteCommitOptions = {
   route: ResolvedRoute | null,
   signal: AbortSignal,
-  update: () => void,
+  update: (navigation: RouterNavigationStore) => void,
 }
 
 type RouteCommit = {
@@ -299,7 +299,7 @@ export function createRouter<
       inert: isSSR || options.hydrating,
     })
 
-    function commitNavigation(): void {
+    function commitNavigation(pending: RouterNavigationStore): void {
       if (!to) {
         reject(NOT_FOUND_REJECTION_TYPE, { to, from })
         progress.abort()
@@ -310,7 +310,7 @@ export function createRouter<
       clearRejection()
 
       if (!isExternal(url)) {
-        setRouteValuesAndUpdateRoute(to, from, progress, controller.signal)
+        setRouteValuesAndUpdateRoute(pending, to, from, progress)
       }
 
       progress.close()
@@ -320,6 +320,12 @@ export function createRouter<
         updateTitle(controller.signal)
       }
     }
+
+    const routeCommit = createRouteCommit({
+      route: to,
+      signal: controller.signal,
+      update: commitNavigation,
+    })
 
     if (!options.hydrating) {
       const shouldCommit = await runBeforeHooks({ controller, to, from, url, options, progress })
@@ -331,11 +337,6 @@ export function createRouter<
       }
     }
 
-    const routeCommit = createRouteCommit({
-      route: to,
-      signal: controller.signal,
-      update: commitNavigation,
-    })
     const transition = getViewTransition({
       to,
       from,
@@ -381,7 +382,10 @@ export function createRouter<
   })
 
   function createRouteCommit({ route, signal, update }: RouteCommitOptions): RouteCommit {
-    const isAborted = (): boolean => signal.aborted
+    const pending = navigation.staged(route)
+    signal.addEventListener('abort', pending.abandon, { once: true })
+
+    const isAborted = (): boolean => signal.aborted || pending.signal.aborted
 
     const prepare: RouteCommit['prepare'] = async () => {
       if (isAborted()) {
@@ -392,7 +396,7 @@ export function createRouter<
         return true
       }
 
-      const values = navigation.staged().compute(route, getComputations(route))
+      const values = pending.compute(route, getComputations(route))
       const work = Promise.allSettled([
         Promise.all(values),
         ...loadAsyncComponents(route),
@@ -406,11 +410,11 @@ export function createRouter<
     }
 
     const commit: RouteCommit['commit'] = () => {
-      if (signal.aborted) {
+      if (isAborted()) {
         return Promise.resolve(false)
       }
 
-      update()
+      update(pending)
 
       return nextTick().then(() => !signal.aborted)
     }
@@ -453,11 +457,10 @@ export function createRouter<
     return getComputations(to).length + getAsyncComponents(to).length
   }
 
-  function setRouteValuesAndUpdateRoute(to: ResolvedRoute, from: ResolvedRoute | null, progress: NavigationProgressTracker, signal: AbortSignal): void {
-    const values = navigation.commit({
+  function setRouteValuesAndUpdateRoute(pending: RouterNavigationStore, to: ResolvedRoute, from: ResolvedRoute | null, progress: NavigationProgressTracker): void {
+    const values = pending.commit({
       to,
       from,
-      signal,
     })
 
     progress.track(...values, ...loadAsyncComponents(to))
