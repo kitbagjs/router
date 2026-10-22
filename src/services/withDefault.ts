@@ -1,7 +1,7 @@
-import { Param } from '@/types/param'
 import { createParam } from '@/services/createParam'
 import { ExtractParamType, isParamGetSetOptions } from '@/types/params'
 import { ParamOptions } from '@/types/paramTypes'
+import { Param } from '@/types/param'
 
 export type ParamWithDefault<TParamOptions extends ParamOptions = ParamOptions> = Required<Param<ExtractParamType<TParamOptions>>>
 

@@ -135,6 +135,31 @@ const monthParam = createParam({
 })
 ```
 
+## Looking up param definitions
+
+Use `getParam` and `getAllParams` to read values by their shared param definition, without knowing their names on the route:
+
+```ts
+const userId = createParam(Number)
+
+const users = createRoute({
+  name: 'users',
+  path: withParams('/users/[from]/[to]', { from: userId, to: userId }),
+})
+
+const router = createRouter([users])
+const route = router.resolve('users', { from: 1, to: 2 })
+
+route.getParam(userId) // 1, typed as number | undefined
+route.getAllParams(userId) // [1, 2], typed as number[]
+```
+
+These methods work on resolved routes, the current route, and in route callbacks. `getParam` returns the first present value; `getAllParams` returns all present values in host, path, query, then hash order. Missing values return `undefined` and `[]` respectively, and absent optional params are skipped.
+
+Reuse the same definition wherever you want lookup to match. Separate `createParam(Number)` calls have different identities. `withDefault` preserves an existing definition's identity.
+
+Definitions returned by `literal`, `arrayOf`, `tupleOf`, and `unionOf` can also be used directly with these methods.
+
 ## Default Values
 
 Define a default value when creating a param or by using the `withDefault` utility. This value will be used when the param is not provided in the url. An optional param of type `String` will have the type `string | undefined` when being accessed. But when a default value is provided it will have the type `string`, even if the value is missing from the url.
