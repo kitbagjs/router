@@ -302,7 +302,6 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     navigations.staged.dispose()
   }
 
-
   const commit: RouterNavigationStores['commit'] = (options) => {
     const pending = staged()
 
