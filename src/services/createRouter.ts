@@ -167,6 +167,7 @@ export function createRouter<
   } = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options)
   const notFoundRejection = getRejectionByType('NotFound')
   const navigation = createRouterNavigation({ onResponse: onNavigationResponse })
+  let pendingNavigation: RouterNavigationStore | undefined
   const notFoundRoute = createResolvedRoute(notFoundRejection.route)
 
   const hooks = createRouterHooks({ redirectStatus, onHookAdded: addHookContext })
@@ -277,6 +278,12 @@ export function createRouter<
     }
   }
 
+  function discardPendingNavigation(): void {
+    const pending = pendingNavigation
+    pendingNavigation = undefined
+    pending?.dispose()
+  }
+
   const set = activity.wrap(async (url: string, options: RouterUpdateOptions = {}): Promise<void> => {
     if (pathHasTrailingSlash(url) && shouldRemoveTrailingSlashes) {
       const cleanedUrl = removeTrailingSlashesFromPath(url)
@@ -286,6 +293,7 @@ export function createRouter<
       }
     }
 
+    discardPendingNavigation()
     const controller = navigations.begin()
 
     if (controller.signal.aborted) {
@@ -293,99 +301,109 @@ export function createRouter<
     }
 
     const pending = options.prefetch ?? navigation.create()
-    pending.stage()
+    pendingNavigation = pending
 
-    const to = find(url, options) ?? null
-    const from = getFromRouteForHooks()
-    const progress = navigationProgress.begin({
-      to,
-      from,
-      expected: countRouteUnits(url, to),
-      inert: isSSR || options.hydrating,
-    })
+    try {
+      const to = find(url, options) ?? null
+      const from = getFromRouteForHooks()
+      const progress = navigationProgress.begin({
+        to,
+        from,
+        expected: countRouteUnits(url, to),
+        inert: isSSR || options.hydrating,
+      })
 
-    function commitNavigation(pending: RouterNavigationStore): void {
-      if (!to) {
-        reject(NOT_FOUND_REJECTION_TYPE, { to, from })
-        progress.abort()
+      function commitNavigation(pending: RouterNavigationStore): void {
+        if (!to) {
+          reject(NOT_FOUND_REJECTION_TYPE, { to, from })
+          progress.abort()
 
-        return
+          return
+        }
+
+        clearRejection()
+
+        if (!isExternal(url)) {
+          if (pendingNavigation === pending) {
+            pendingNavigation = undefined
+          }
+
+          setRouteValuesAndUpdateRoute(pending, to, from, progress)
+        }
+
+        progress.close()
+        started.value = true
+
+        if (!options.hydrating) {
+          updateTitle(controller.signal)
+        }
       }
 
-      clearRejection()
-
-      if (!isExternal(url)) {
-        setRouteValuesAndUpdateRoute(pending, to, from, progress)
-      }
-
-      progress.close()
-      started.value = true
+      const routeCommit = createRouteCommit({
+        route: to,
+        navigation: pending,
+        signal: controller.signal,
+        update: commitNavigation,
+      })
 
       if (!options.hydrating) {
-        updateTitle(controller.signal)
+        const shouldCommit = await runBeforeHooks({ controller, to, from, url, options, progress })
+
+        if (!shouldCommit) {
+          controller.abort()
+          pending.abandon()
+
+          return
+        }
       }
-    }
 
-    const routeCommit = createRouteCommit({
-      route: to,
-      navigation: pending,
-      signal: controller.signal,
-      update: commitNavigation,
-    })
+      const transition = getViewTransition({
+        to,
+        from,
+        options,
+        enabled: !isSSR && !isExternal(url),
+      })
 
-    if (!options.hydrating) {
-      const shouldCommit = await runBeforeHooks({ controller, to, from, url, options, progress })
+      const { isBlockingNavigation } = getNavigationOption({
+        routerNavigation,
+        routeNavigation: getRouteNavigationOption(to),
+        navigation: options.navigation,
+      })
+      const shouldPrepareNavigation = transition || isBlockingNavigation
 
-      if (!shouldCommit) {
-        controller.abort()
-        pending.abandon()
+      if (transition) {
+        viewTransitions.prepare(transition)
+      } else {
+        viewTransitions.reset()
+      }
 
+      if (!options.hydrating && shouldPrepareNavigation) {
+        const prepared = await routeCommit.prepare()
+
+        if (!prepared && transition) {
+          viewTransitions.cancel(transition)
+        }
+
+        if (!prepared) {
+          return
+        }
+      }
+
+      if (transition) {
+        await viewTransitions.start(routeCommit.commit)
+        await runAfterHooks({ controller, to, from, enabled: !isSSR })
         return
       }
-    }
 
-    const transition = getViewTransition({
-      to,
-      from,
-      options,
-      enabled: !isSSR && !isExternal(url),
-    })
-
-    const { isBlockingNavigation } = getNavigationOption({
-      routerNavigation,
-      routeNavigation: getRouteNavigationOption(to),
-      navigation: options.navigation,
-    })
-    const shouldPrepareNavigation = transition || isBlockingNavigation
-
-    if (transition) {
-      viewTransitions.prepare(transition)
-    } else {
-      viewTransitions.reset()
-    }
-
-    if (!options.hydrating && shouldPrepareNavigation) {
-      const prepared = await routeCommit.prepare()
-
-      if (!prepared && transition) {
-        viewTransitions.cancel(transition)
-      }
-
-      if (!prepared) {
-        return
+      await Promise.all([
+        routeCommit.commit(),
+        runAfterHooks({ controller, to, from, enabled: !isSSR }),
+      ])
+    } finally {
+      if (pendingNavigation === pending) {
+        discardPendingNavigation()
       }
     }
-
-    if (transition) {
-      await viewTransitions.start(routeCommit.commit)
-      await runAfterHooks({ controller, to, from, enabled: !isSSR })
-      return
-    }
-
-    await Promise.all([
-      routeCommit.commit(),
-      runAfterHooks({ controller, to, from, enabled: !isSSR }),
-    ])
   })
 
   function createRouteCommit({ route, navigation: pending, signal, update }: RouteCommitOptions): RouteCommit {
@@ -621,9 +639,8 @@ export function createRouter<
     }
 
     const controller = navigations.begin()
-    const pending = navigation.staged()
+    discardPendingNavigation()
     const current = navigation.current()
-    pending.abandon()
     current.abandon()
 
     hooks.runRejectionHooks(rejection, { to, from })
@@ -800,6 +817,7 @@ export function createRouter<
   function stop(): void {
     stopped = true
     stopRouteContext()
+    discardPendingNavigation()
     navigations.stop()
     navigationProgress.stop()
     history.stopListening()
