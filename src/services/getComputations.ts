@@ -27,8 +27,8 @@ export type Computation = {
 /**
  * Where a value lives, which is all that is needed to read it back out of a store.
  */
-export type ValueLocation = {
-  kind: DataKind,
+export type ValueLocation<TKind extends DataKind = DataKind> = {
+  kind: TKind,
   id: string,
   name: string,
 }
@@ -64,11 +64,11 @@ function toComputation(location: ValueLocation, match: CreatedRouteOptions, dept
 /**
  * Only views with a getter, since a view with none is never computed and waiting on it would never settle.
  */
-export function propsLocations(match: CreatedRouteOptions): ValueLocation[] {
+export function propsLocations(match: CreatedRouteOptions): ValueLocation<'props'>[] {
   return viewNamesWithProps(match.views).map((name) => ({ kind: 'props', id: match.id, name }))
 }
 
-export function loaderLocations(match: CreatedRouteOptions): ValueLocation[] {
+export function loaderLocations(match: CreatedRouteOptions): ValueLocation<'loader'>[] {
   return Object.keys(match.loaders).map((name) => ({ kind: 'loader', id: match.id, name }))
 }
 
