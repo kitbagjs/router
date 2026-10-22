@@ -382,13 +382,11 @@ export function createRouter<
   })
 
   function createRouteCommit({ route, signal, update }: RouteCommitOptions): RouteCommit {
-    const pending = navigation.staged(route)
+    const pending = navigation.stage(route)
     signal.addEventListener('abort', pending.abandon, { once: true })
 
-    const isAborted = (): boolean => signal.aborted || pending.signal.aborted
-
     const prepare: RouteCommit['prepare'] = async () => {
-      if (isAborted()) {
+      if (signal.aborted) {
         return false
       }
 
@@ -406,11 +404,11 @@ export function createRouter<
         createAbortPromise(signal),
       ])
 
-      return !isAborted()
+      return !signal.aborted
     }
 
     const commit: RouteCommit['commit'] = () => {
-      if (isAborted()) {
+      if (signal.aborted) {
         return Promise.resolve(false)
       }
 
