@@ -2088,7 +2088,7 @@ test('a before hook redirect discards prefetched work for the original route', a
   slow.resolve()
   await flushPromises()
 
-  expect(prepared.signal.aborted).toBe(true)
+  expect(prepared.data.signal.aborted).toBe(true)
   expect(router.route.name).toBe('target')
   router.stop()
 })
