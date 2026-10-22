@@ -4,9 +4,9 @@ import { AnyPayloadTransformer } from '@/services/payload'
 import { PrefetchConfig } from '@/types/prefetch'
 import { CreatedRouteOptions, Route } from '@/types/route'
 import { AnyFunction } from '@/types/utilities'
-import { AnyLoader, isLoader } from '@/types/loader'
+import { AnyLoader, isLoader, NamedLoader } from '@/types/loader'
 import { combineContext } from '@/services/combineContext'
-import { RouteContext } from '@/types/routeContext'
+import { createLoader } from '@/services/createLoader'
 
 export const DEFAULT_LOADER_NAME = 'default'
 
@@ -31,22 +31,11 @@ type AddLoaderParameters = [load: AnyFunction | AnyLoader, options?: LoaderOptio
  */
 export type AddLoader = (...args: AddLoaderParameters) => Route
 
-type Loader = {
-  name: string,
-  load: AnyFunction,
-  prefetch: PrefetchConfig | undefined,
-  transformer: AnyPayloadTransformer | undefined,
-  context?: readonly RouteContext[],
-}
-
-export function toLoader(source: AnyFunction | AnyLoader, options: LoaderOptions | undefined): Loader {
+export function toNamedLoader(source: AnyFunction | AnyLoader, options: LoaderOptions | undefined): NamedLoader {
   if (typeof source === 'function') {
-    return {
-      name: options?.name ?? DEFAULT_LOADER_NAME,
-      load: source,
-      prefetch: options?.prefetch,
-      transformer: options?.transformer,
-    }
+    const loader = createLoader({ load: source })
+
+    return toNamedLoader(loader, options)
   }
 
   if (!isLoader(source)) {
@@ -67,7 +56,7 @@ export function toLoader(source: AnyFunction | AnyLoader, options: LoaderOptions
  * Matches are `markRaw` so that making a route reactive does not turn its loaders into reactive proxies.
  * Spreading a match drops that, so the rebuilt one is marked again.
  */
-export function addLoaderToMatch(match: CreatedRouteOptions, loader: Loader): CreatedRouteOptions {
+export function addLoaderToMatch(match: CreatedRouteOptions, loader: NamedLoader): CreatedRouteOptions {
   return markRaw({
     ...match,
     context: combineContext(match.context, loader.context),
