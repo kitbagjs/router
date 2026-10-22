@@ -1,7 +1,7 @@
 import { DataKind } from '@/services/getDataKey'
 import { isRecord } from '@/utilities/guards'
 import { isBrowser } from '@/utilities/isBrowser'
-import { RouteValue } from '@/services/createRouteValueStore'
+import { RouteValue } from '@/services/createRouterNavigation'
 import { Computation, getComputations } from '@/services/getComputations'
 import { PayloadValueError } from '@/errors/payloadValueError'
 import { ResolvedRoute } from '@/types/resolved'

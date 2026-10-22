@@ -7,7 +7,7 @@ import { createResolvedRoute } from './createResolvedRoute'
 import { createRouter } from './createRouter'
 import { component } from '@/utilities/testHelpers'
 import { isResolvedRoute, ResolvedRoute } from '@/types/resolved'
-import { createRouteValueStore } from './createRouteValueStore'
+import { createRouterNavigation } from './createRouterNavigation'
 import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
 
 test('router route does not retain the initial resolved route internals', () => {
@@ -71,43 +71,43 @@ test.each([
   { named: true, pending: false },
   { named: false, pending: true },
   { named: true, pending: true },
-])('data follows a replaced store when reusing the resolved route (named: $named, pending: $pending)', async ({ named, pending }) => {
+])('data follows a replaced navigation when reusing the resolved route (named: $named, pending: $pending)', async ({ named, pending }) => {
   const first = Promise.withResolvers<string>()
   const second = Promise.withResolvers<string>()
   const load = vi.fn()
     .mockReturnValueOnce(first.promise)
     .mockReturnValueOnce(second.promise)
   const route = createResolvedRoute(createRoute({ name: 'route', path: '/' }).addLoader(load, named ? { name: 'value' } : undefined))
-  const store = createRouteValueStore()
-  const routerRoute = createRouterRoute({ routerKey: Symbol(), route, push: vi.fn(), getData: store.getData })
+  const navigation = createRouterNavigation()
+  const routerRoute = createRouterRoute({ routerKey: Symbol(), route, push: vi.fn(), getData: navigation.getData })
   const readData = (): Promise<unknown> => {
     return named
       ? (routerRoute.data as Record<string, Promise<unknown>>).value
       : routerRoute.data as Promise<unknown>
   }
 
-  const firstCommit = store.commit(route)
+  const firstCommit = navigation.commit(route)
   const previous = readData()
 
   if (!pending) {
     first.resolve('first')
-    await firstCommit.loaders
+    await Promise.allSettled(firstCommit.values)
     await expect(previous).resolves.toBe('first')
   }
 
-  const secondCommit = store.commit(route)
+  const secondCommit = navigation.commit(route)
   routerRoute.updateRoute(route)
   const current = readData()
 
   expect(current).not.toBe(previous)
   second.resolve('second')
-  await secondCommit.loaders
+  await Promise.all(secondCommit.values)
   await expect(current).resolves.toBe('second')
 
   if (pending) {
     await expect(previous).rejects.toBeInstanceOf(NavigationAbandonedError)
     first.resolve('late')
-    await firstCommit.loaders
+    await Promise.allSettled(firstCommit.values)
     await expect(readData()).resolves.toBe('second')
   }
 })
