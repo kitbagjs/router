@@ -47,7 +47,7 @@ describe('loader prefetch configuration', () => {
       .addLoader(load, { prefetch: loaderPrefetch })
     const router = createRouter([route], { initialUrl: '/', prefetch: routerPrefetch })
 
-    const wrapper = mount(RouterLink, {
+    mount(RouterLink, {
       props: { to: '/route', prefetch: linkPrefetch },
       global: { plugins: [router] },
     })
@@ -55,8 +55,6 @@ describe('loader prefetch configuration', () => {
     await flushPromises()
 
     expect(load).toHaveBeenCalledTimes(calls)
-
-    wrapper.unmount()
   })
 })
 
@@ -76,7 +74,7 @@ test.each<[PrefetchConfig, number, number]>([
     .addView(component, { props })
     .addLoader(load)
   const router = createRouter([route], { initialUrl: '/', prefetch })
-  const wrapper = mount(RouterLink, {
+  mount(RouterLink, {
     props: { to: '/route' },
     global: { plugins: [router] },
   })
@@ -85,8 +83,6 @@ test.each<[PrefetchConfig, number, number]>([
 
   expect(props).toHaveBeenCalledTimes(propsCalls)
   expect(load).toHaveBeenCalledTimes(loaderCalls)
-
-  wrapper.unmount()
 })
 
 test.each(['props', 'loaders'] as const)('%s can prefetch eagerly while the other waits for intent', async (eager) => {
@@ -118,8 +114,6 @@ test.each(['props', 'loaders'] as const)('%s can prefetch eagerly while the othe
 
   expect(props).toHaveBeenCalledOnce()
   expect(load).toHaveBeenCalledOnce()
-
-  wrapper.unmount()
 })
 
 test.each(['focusin', 'mouseover'] as const)('intent prefetch runs a loader once on %s', async (event) => {
@@ -140,8 +134,6 @@ test.each(['focusin', 'mouseover'] as const)('intent prefetch runs a loader once
   await wrapper.trigger(event)
 
   expect(load).toHaveBeenCalledOnce()
-
-  wrapper.unmount()
 })
 
 test.each(['lazy', true] as const)('a loader with prefetch %s waits until the link is visible', async (prefetch) => {
@@ -151,7 +143,7 @@ test.each(['lazy', true] as const)('a loader with prefetch %s waits until the li
   const router = createRouter([route], { initialUrl: '/' })
   const visible = ref(false)
 
-  const wrapper = mount({
+  mount({
     template: '<RouterLink to="/route" />',
     provide: {
       [visibilityObserverKey]: {
@@ -180,8 +172,6 @@ test.each(['lazy', true] as const)('a loader with prefetch %s waits until the li
   await nextTick()
 
   expect(load).toHaveBeenCalledOnce()
-
-  wrapper.unmount()
 })
 
 test.each([true, false])('navigation adopts a prefetched loader when already settled is %s', async (settled) => {
@@ -222,8 +212,6 @@ test.each([true, false])('navigation adopts a prefetched loader when already set
   resolve('prefetched')
 
   await expect(router.route.data).resolves.toBe('prefetched')
-
-  wrapper.unmount()
 })
 
 test('named and unnamed loaders respect their own config and feed prefetched props', async () => {
@@ -272,8 +260,6 @@ test('named and unnamed loaders respect their own config and feed prefetched pro
   expect(named).toHaveBeenCalledOnce()
   expect(disabled).toHaveBeenCalledOnce()
   expect(props).toHaveBeenCalledOnce()
-
-  wrapper.unmount()
 })
 
 test('prefetched props can wait for a loader without enabling its prefetching', async () => {
@@ -303,8 +289,6 @@ test('prefetched props can wait for a loader without enabling its prefetching', 
   expect(load).toHaveBeenCalledOnce()
   expect(props).toHaveBeenCalledOnce()
   await expect(props.mock.results[0].value).resolves.toEqual({ data: 'data' })
-
-  wrapper.unmount()
 })
 
 test.each(['eager', 'intent', false] as const)('a prefetched child can wait for a parent loader with prefetch %s', async (prefetch) => {
@@ -355,8 +339,6 @@ test.each(['eager', 'intent', false] as const)('a prefetched child can wait for 
   expect(load).toHaveBeenCalledOnce()
   expect(childStarted).toHaveBeenCalledOnce()
   expect(childData).toHaveBeenCalledExactlyOnceWith('parent data')
-
-  wrapper.unmount()
 })
 
 test('retargeting or unmounting a link aborts its prefetched loaders', async () => {
@@ -404,7 +386,7 @@ test.each(['eager', 'lazy'] as const)('rerendering a link with the same url keep
   const router = createRouter([route], { initialUrl: '/' })
   const query = ref({ tab: 'a' })
 
-  const wrapper = mount({
+  mount({
     setup: () => () => h(RouterLink, { to: '/route', query: query.value }),
     provide: {
       [visibilityObserverKey]: {
@@ -427,8 +409,6 @@ test.each(['eager', 'lazy'] as const)('rerendering a link with the same url keep
 
   expect(load).toHaveBeenCalledOnce()
   expect(signals[0].aborted).toBe(false)
-
-  wrapper.unmount()
 })
 
 test('retargeting a visible link prefetches its lazy loader for the new url', async () => {
@@ -438,7 +418,7 @@ test('retargeting a visible link prefetches its lazy loader for the new url', as
   const router = createRouter([route], { initialUrl: '/' })
   const to = ref<`/${string}`>('/route/1')
 
-  const wrapper = mount({
+  mount({
     setup: () => () => h(RouterLink, { to: to.value }),
     provide: {
       [visibilityObserverKey]: {
@@ -460,6 +440,4 @@ test('retargeting a visible link prefetches its lazy loader for the new url', as
   await nextTick()
 
   expect(load).toHaveBeenCalledTimes(2)
-
-  wrapper.unmount()
 })
