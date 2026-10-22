@@ -4,10 +4,12 @@ import { createSSRApp, defineComponent, h, inject, InjectionKey } from 'vue'
 import { renderToString } from 'vue/server-renderer'
 import { createLoader, createRoute, createRouter, useLoader } from '@/main'
 
-afterEach(() => vi.restoreAllMocks())
+afterEach(() => {
+  vi.restoreAllMocks()
+  vi.unstubAllEnvs()
+})
 
 test('unattached loader data is isolated between SSR apps', async () => {
-  vi.spyOn(console, 'warn').mockImplementation(() => {})
   const userKey: InjectionKey<string> = Symbol('user')
   const loader = createLoader({ load: async () => inject(userKey) })
   const route = createRoute({ name: 'home', path: '/' })
@@ -35,6 +37,7 @@ test('unattached loader data is isolated between SSR apps', async () => {
 })
 
 test('server-rendered fallback loaders warn that their data is absent from the payload', async () => {
+  vi.stubEnv('NODE_ENV', 'development')
   const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
   const loader = createLoader({ load: () => 'loaded' })
   const route = createRoute({ name: 'home', path: '/' })

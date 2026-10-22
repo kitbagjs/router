@@ -8,6 +8,7 @@ import { createLoader, createRejection, createRoute, createRouter, createRouterA
 enableAutoUnmount(afterEach)
 afterEach(() => {
   vi.restoreAllMocks()
+  vi.unstubAllEnvs()
 })
 
 function mountConsumer<TResult>(router: Router, setup: () => TResult): TResult {
@@ -150,7 +151,6 @@ test('router assets read the same definition from their own router stores', asyn
 
 describe('fallback loads', () => {
   test('same-URL navigation selects the new load', async () => {
-    vi.spyOn(console, 'warn').mockImplementation(() => {})
     const load = vi.fn<() => number>()
       .mockReturnValueOnce(1)
       .mockReturnValueOnce(2)
@@ -169,7 +169,6 @@ describe('fallback loads', () => {
   })
 
   test('unmounted consumers stop starting fallback loads', async () => {
-    vi.spyOn(console, 'warn').mockImplementation(() => {})
     const load = vi.fn(() => 'loaded')
     const loader = createLoader({ load })
     const route = createRoute({ name: 'home', path: '/[id]' })
@@ -191,6 +190,7 @@ describe('fallback loads', () => {
   })
 
   test('unattached consumers share a load and a warning', async () => {
+    vi.stubEnv('NODE_ENV', 'development')
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const pending = Promise.withResolvers<string>()
     const load = vi.fn(() => pending.promise)
@@ -214,6 +214,7 @@ describe('fallback loads', () => {
   })
 
   test('ambiguous definitions warn with their attachment names and run separately', async () => {
+    vi.stubEnv('NODE_ENV', 'development')
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const load = vi.fn<() => number>()
       .mockReturnValueOnce(1)
@@ -233,7 +234,6 @@ describe('fallback loads', () => {
   })
 
   test('navigation replaces fallback loads and preserves their route snapshots', async () => {
-    vi.spyOn(console, 'warn').mockImplementation(() => {})
     const first = Promise.withResolvers<string>()
     const second = Promise.withResolvers<string>()
     const signals: AbortSignal[] = []
@@ -270,7 +270,6 @@ describe('fallback loads', () => {
   })
 
   test('superseded fallback failures do not reach router error hooks', async () => {
-    vi.spyOn(console, 'warn').mockImplementation(() => {})
     const first = Promise.withResolvers<string>()
     const loader = createLoader({
       load: (route) => {
@@ -297,7 +296,6 @@ describe('fallback loads', () => {
   })
 
   test('superseded fallback redirects are ignored after same-URL navigation', async () => {
-    vi.spyOn(console, 'warn').mockImplementation(() => {})
     const first = Promise.withResolvers<void>()
     const loader = createLoader({
       load: (route, { push }) => {
@@ -325,7 +323,6 @@ describe('fallback loads', () => {
   })
 
   test('stopping the router settles a pending await with an abandonment error', async () => {
-    vi.spyOn(console, 'warn').mockImplementation(() => {})
     const pending = Promise.withResolvers<string>()
     const loader = createLoader({ load: () => pending.promise })
     const route = createRoute({ name: 'home', path: '/' })
@@ -343,7 +340,6 @@ describe('fallback loads', () => {
   })
 
   test('fallback loaders can navigate to routes in their context', async () => {
-    vi.spyOn(console, 'warn').mockImplementation(() => {})
     const home = createRoute({ name: 'home', path: '/' })
     const target = createRoute({ name: 'target', path: '/target' })
     const loader = createLoader({
@@ -365,7 +361,6 @@ describe('fallback loads', () => {
   })
 
   test('fallback loaders replace the current history entry', async () => {
-    vi.spyOn(console, 'warn').mockImplementation(() => {})
     const route = createRoute({ name: 'page', path: '/[page]' })
     const loader = createLoader({
       load: (route, { replace }) => {
@@ -390,7 +385,6 @@ describe('fallback loads', () => {
   })
 
   test('fallback loaders can reject with their declared context', async () => {
-    vi.spyOn(console, 'warn').mockImplementation(() => {})
     const denied = createRejection({ type: 'Denied' })
     const loader = createLoader({
       context: [denied],
@@ -409,7 +403,6 @@ describe('fallback loads', () => {
   })
 
   test('fallback failures reach the loader state and router error hooks', async () => {
-    vi.spyOn(console, 'warn').mockImplementation(() => {})
     const failure = new Error('Load failed')
     const loader = createLoader({
       load: () => {
