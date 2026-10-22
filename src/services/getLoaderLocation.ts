@@ -3,7 +3,14 @@ import { AnyLoader } from '@/types/loader'
 import { ValueLocation } from '@/services/getComputations'
 import { isSameLoader } from '@/services/isSameLoader'
 
-export function getLoaderLocation(route: ResolvedRoute, source: AnyLoader): ValueLocation<'loader'> {
+export type LoaderFallback = { reason: 'missing' } | {
+  reason: 'ambiguous',
+  names: string[],
+}
+
+type LoaderLocationResult = { location: ValueLocation<'loader'> } | LoaderFallback
+
+export function getLoaderLocation(route: ResolvedRoute, source: AnyLoader): LoaderLocationResult {
   const locations: ValueLocation<'loader'>[] = []
 
   for (const match of route.matches) {
@@ -19,7 +26,7 @@ export function getLoaderLocation(route: ResolvedRoute, source: AnyLoader): Valu
       }
 
       if (loader === source) {
-        return location
+        return { location }
       }
 
       locations.push(location)
@@ -27,12 +34,17 @@ export function getLoaderLocation(route: ResolvedRoute, source: AnyLoader): Valu
   }
 
   if (locations.length > 1) {
-    throw new Error('This loader has multiple attachments on the current route. Pass a definition from route.loaders to useLoader.')
+    return {
+      reason: 'ambiguous',
+      names: locations.map(({ name }) => name),
+    }
   }
 
   if (locations.length === 0) {
-    throw new Error('This loader is not attached to the current route')
+    return { reason: 'missing' }
   }
 
-  return locations[0]
+  const [location] = locations
+
+  return { location }
 }

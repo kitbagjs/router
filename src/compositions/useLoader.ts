@@ -1,12 +1,20 @@
-import { computed, InjectionKey, toRaw } from 'vue'
+import { computed, InjectionKey, onScopeDispose, shallowRef, toRaw } from 'vue'
 import { AnyLoader, isLoader, Loader } from '@/types/loader'
 import { UseLoader } from '@/types/useLoader'
 import { Router } from '@/types/router'
+import { isRouter } from '@/types/routerInternal'
 import { DataResult } from '@/services/createDataStore'
 import { createUseRouter } from '@/compositions/useRouter'
 import { createUseRouterNavigation } from '@/compositions/useRouterNavigation'
 import { getLoaderLocation } from '@/services/getLoaderLocation'
+import { isRouterRoute } from '@/services/createRouterRoute'
 import { RouteContext } from '@/types/routeContext'
+import { ValueLocation } from '@/services/getComputations'
+import { warnLoaderFallback } from '@/services/warnLoaderFallback'
+import { getFallbackLoaderLocation } from '@/services/getFallbackLoaderLocation'
+import { getFallbackLoaderComputation } from '@/services/getFallbackLoaderComputation'
+
+type LoaderSelection = { location: ValueLocation<'loader'> } | { error: unknown }
 
 export type UseLoaderFunction = <TData>(loader: Loader<TData, readonly RouteContext[]>) => UseLoader<Awaited<TData>>
 
@@ -23,27 +31,105 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunct
     }
 
     const router = useRouter()
+
+    if (!isRouter(router)) {
+      throw new TypeError('Expected a router created by createRouter')
+    }
+
     const navigation = useRouterNavigation()
-    const state = computed<DataResult>(() => {
-      if (!router.started.value) {
-        return { kind: 'pending' }
+
+    const selection = shallowRef<LoaderSelection>()
+    const controller = new AbortController()
+
+    const getLocation = (): ValueLocation<'loader'> => {
+      const result = getLoaderLocation(router.route, loader)
+
+      if ('location' in result) {
+        return result.location
+      }
+
+      const location = getFallbackLoaderLocation(loader)
+      const state = navigation.getLoaderState(location, router.route)
+
+      if (state.kind !== 'missing') {
+        return location
+      }
+
+      if (!isRouterRoute(routerKey, router.route)) {
+        throw new TypeError('Expected a router route for this router')
+      }
+
+      const route = router.route.getResolvedRoute()
+
+      warnLoaderFallback({
+        loader,
+        route,
+        fallback: result,
+        hydrating: router.isHydrating(),
+      })
+
+      const computation = getFallbackLoaderComputation(loader, route)
+      router.addContext(loader.context)
+      navigation.current().compute(route, [computation])
+
+      return location
+    }
+
+    function selectLoader(): void {
+      if (controller.signal.aborted) {
+        return
       }
 
       try {
-        const location = getLoaderLocation(router.route, loader)
+        const location = getLocation()
 
-        return navigation.getLoaderState(location, router.route)
+        selection.value = { location }
       } catch (error) {
-        return { kind: 'error', error }
+        selection.value = { error }
       }
+    }
+
+    async function initialize(): Promise<void> {
+      try {
+        if (!router.started.value) {
+          await router.start()
+        }
+
+        selectLoader()
+      } catch (error) {
+        if (controller.signal.aborted) {
+          return
+        }
+
+        selection.value = { error }
+      }
+    }
+
+    router.onAfterRouteEnter(selectLoader, { signal: controller.signal })
+    router.onAfterRouteUpdate(selectLoader, { signal: controller.signal })
+
+    onScopeDispose(() => {
+      controller.abort()
+    })
+
+    initialize()
+
+    const state = computed<DataResult>(() => {
+      if (!selection.value) {
+        return { kind: 'pending' }
+      }
+
+      if ('error' in selection.value) {
+        return { kind: 'error', error: selection.value.error }
+      }
+
+      return navigation.getLoaderState(selection.value.location, router.route)
     })
 
     async function getData(): Promise<unknown> {
-      if (!router.started.value) {
-        await router.start()
-      }
+      await router.start()
 
-      const location = getLoaderLocation(router.route, loader)
+      const location = getLocation()
 
       return navigation.getLoaderValue(location, router.route)
     }

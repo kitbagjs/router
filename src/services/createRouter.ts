@@ -162,6 +162,7 @@ export function createRouter<
     getRouteByName,
     getRejectionByType,
     addHookContext,
+    addContext,
     stop: stopRouteContext,
   } = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options)
   const notFoundRejection = getRejectionByType('NotFound')
@@ -850,6 +851,7 @@ export function createRouter<
   const internal = {
     [IS_ROUTER_SYMBOL]: true,
     isHydrating,
+    addContext,
   } satisfies RouterInternal
 
   const router: Router<TRoutes, TOptions, TPlugin> & RouterInternal = {
