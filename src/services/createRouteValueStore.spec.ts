@@ -1,3 +1,4 @@
+import { getComputations } from '@/services/getComputations'
 import { expect, test, vi } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
 import { createRouteValueStore } from '@/services/createRouteValueStore'
@@ -97,7 +98,7 @@ test('staged values are adopted by the next navigation without running their get
   const resolved = createResolvedRoute(route)
   const store = createRouteValueStore()
 
-  await store.staged().compute(resolved).loaders
+  await store.staged().compute(resolved, getComputations(resolved)).loaders
   store.commit(resolved)
 
   await expect(store.getData(resolved)).resolves.toBe('value')
@@ -115,7 +116,8 @@ test('staging a route leaves the current route reading its own values', async ()
   store.commit(currentResolved)
   await flushPromises()
 
-  store.staged().compute(createResolvedRoute(next))
+  const nextResolved = createResolvedRoute(next)
+  store.staged().compute(nextResolved, getComputations(nextResolved))
 
   expect(store.getValues(currentResolved)).toEqual([{ kind: 'loader', depth: 0, name: 'default', value: 'current' }])
 })
@@ -127,7 +129,7 @@ test('a staged props getter can read the data its route is loading', async () =>
   const resolved = createResolvedRoute(route)
   const store = createRouteValueStore()
 
-  await store.staged().compute(resolved).props
+  await store.staged().compute(resolved, getComputations(resolved)).props
   store.commit(resolved)
 
   expect(store.getProps(route.id, 'default', resolved)).toEqual({ kind: 'value', value: { value: 'loaded' } })
@@ -144,7 +146,8 @@ test('staging reports how the values settled', async () => {
     })
   const store = createRouteValueStore()
 
-  const { props } = store.staged().compute(createResolvedRoute(route))
+  const resolved = createResolvedRoute(route)
+  const { props } = store.staged().compute(resolved, getComputations(resolved))
 
   await expect(props).resolves.toMatchObject({ status: 'REJECT', type: 'NotFound' })
 })
@@ -157,7 +160,8 @@ test('a detached store whose getter throws does not surface an unhandled rejecti
   const store = createRouteValueStore()
   const detached = store.createDetachedStore()
 
-  detached.compute(createResolvedRoute(route))
+  const resolved = createResolvedRoute(route)
+  detached.compute(resolved, getComputations(resolved))
 
   await flushPromises()
 })
@@ -173,7 +177,8 @@ test('disposing a detached store aborts the signal its getters were given', asyn
   const store = createRouteValueStore()
   const detached = store.createDetachedStore()
 
-  detached.compute(createResolvedRoute(route))
+  const resolved = createResolvedRoute(route)
+  detached.compute(resolved, getComputations(resolved))
 
   const signal = await seen.promise
 
@@ -198,7 +203,7 @@ test('a staged getter keeps its signal until the navigation that adopted it is r
   const store = createRouteValueStore()
   const detached = store.createDetachedStore()
 
-  detached.compute(resolved)
+  detached.compute(resolved, getComputations(resolved))
   detached.stage()
   store.commit(resolved)
 

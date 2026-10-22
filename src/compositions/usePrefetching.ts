@@ -7,7 +7,7 @@ import { loadAsyncComponents } from '@/utilities/components'
 import { useVisibilityObserver } from './useVisibilityObserver'
 import { useEventListener } from './useEventListener'
 import { Router } from '@/types/router'
-import { ComputationFilter } from '@/services/getComputations'
+import { getComputationsForStrategy } from '@/services/getComputations'
 import { isSameResolvedRoute } from '@/utilities/isSameResolvedRoute'
 
 type UsePrefetchingConfig = PrefetchConfigs & {
@@ -78,7 +78,9 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
 
     function doPrefetchingForStrategy(strategy: PrefetchStrategy, route: ResolvedRoute, configs: PrefetchConfigs): void {
       prefetchComponentsForRoute(strategy, route, configs)
-      store.compute(route, isComputationForStrategy(strategy, configs))
+      const computations = getComputationsForStrategy(route, strategy, configs)
+
+      store.compute(route, computations)
     }
 
     return {
@@ -86,14 +88,6 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
       commit,
     }
   }
-}
-
-function isComputationForStrategy(strategy: PrefetchStrategy, configs: PrefetchConfigs): ComputationFilter {
-  return (computation) => getPrefetchOption({
-    ...configs,
-    routePrefetch: computation.routePrefetch,
-    viewPrefetch: computation.prefetch,
-  }, computation.kind === 'loader' ? 'loaders' : 'props') === strategy
 }
 
 function prefetchComponentsForRoute(strategy: PrefetchStrategy, route: ResolvedRoute, configs: PrefetchConfigs): void {

@@ -1,3 +1,4 @@
+import { getComputations } from '@/services/getComputations'
 import { flushPromises } from '@vue/test-utils'
 import { describe, expect, test } from 'vitest'
 import { App, Component, createApp, defineAsyncComponent } from 'vue'
@@ -232,7 +233,8 @@ describe('navigation progress', () => {
 
     const store = navigation.app.runWithContext(() => createUseRouteValueStore(router.key)().createDetachedStore())
 
-    store.compute(router.resolve('other'))
+    const route = router.resolve('other')
+    store.compute(route, getComputations(route))
     await flushPromises()
 
     expect(navigation.pending.value).toBe(false)

@@ -1,6 +1,5 @@
 import { createDataStore, DataStore } from './createDataStore'
 import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
-import { ResolvedRoute } from '@/types/resolved'
 
 /**
  * Which store the rendered route reads from, and which one the next navigation will adopt.
@@ -70,14 +69,4 @@ export function createNavigationStores(): NavigationStores {
     staged,
     promote,
   }
-}
-
-/**
- * What a stored value is: the props of a view, or the data of a loader. Part of the key so that a view
- * and a loader sharing a name on the same route are still two values.
- */
-export type DataKind = 'props' | 'loader'
-
-export function getDataKey(kind: DataKind, id: string, name: string, route: ResolvedRoute): string {
-  return [kind, id, name, route.id, route.href].join('-')
 }
