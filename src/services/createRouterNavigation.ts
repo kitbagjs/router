@@ -62,7 +62,6 @@ type RouterNavigationStoreSlots = {
 
 export type RouterNavigationStore = {
   data: DataStore,
-  signal: AbortSignal,
   route: ResolvedRoute | undefined,
   /**
    * Disposes of the previously staged navigation and sets this navigation as staged.
@@ -99,7 +98,11 @@ export type RouterNavigationStores = HasVueAppStore & {
    * The navigation prepared for the next commit.
    * The rendered route keeps reading from the current navigation until then.
    */
-  staged: (route?: ResolvedRoute | null) => RouterNavigationStore,
+  staged: () => RouterNavigationStore,
+  /**
+   * Reuses matching staged work or stages a fresh navigation for the route.
+   */
+  stage: (route: ResolvedRoute | null) => RouterNavigationStore,
   /**
    * Makes the staged navigation current and computes whatever the route still lacks.
    */
@@ -280,7 +283,6 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
     const instance: RouterNavigationStore = {
       data,
-      signal: data.signal,
       get route() {
         return state.route
       },
@@ -297,7 +299,9 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
   const current: RouterNavigationStores['current'] = () => navigations.current
 
-  const staged: RouterNavigationStores['staged'] = (route) => {
+  const staged: RouterNavigationStores['staged'] = () => navigations.staged
+
+  const stage: RouterNavigationStores['stage'] = (route) => {
     const pending = navigations.staged
 
     if (!route) {
@@ -306,7 +310,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
     const matches = !pending.route || isSameResolvedRoute(pending.route, route)
 
-    if (pending.signal.aborted || !matches) {
+    if (pending.data.signal.aborted || !matches) {
       pending.dispose()
       navigations.staged = createRouterNavigationStore()
     }
@@ -319,7 +323,11 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     navigations.staged.dispose()
   }
 
-  const commit: RouterNavigationStores['commit'] = (options) => staged(options.to).commit(options)
+  const commit: RouterNavigationStores['commit'] = (options) => {
+    const pending = stage(options.to)
+
+    return pending.commit(options)
+  }
 
   const getValues: RouterNavigationStores['getValues'] = (route) => {
     const store = navigations.current.data
@@ -531,6 +539,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     current,
     create: createRouterNavigationStore,
     staged,
+    stage,
     commit,
     getValues,
     getProps,
