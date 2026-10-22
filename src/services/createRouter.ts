@@ -74,6 +74,7 @@ type RouteCommit = {
 
 type RouterUpdateOptions = {
   navigation?: NavigationBehavior,
+  prefetch?: RouterNavigationStore,
   traversal?: RouterHistoryTraversal,
   replace?: boolean,
   state?: any,
@@ -175,7 +176,6 @@ export function createRouter<
   hooks.addGlobalRouteHooks(getGlobalHooksForRouter(plugins))
 
   const navigations = createNavigationSignals()
-  let activeNavigation: RouterNavigationStore | undefined
   const viewTransitions = createViewTransitions()
   const componentsStore = createComponentsStore(routerKey)
   const visibilityObserver = createVisibilityObserver()
@@ -279,12 +279,6 @@ export function createRouter<
     }
   }
 
-  function beginNavigation(): AbortController {
-    activeNavigation?.abandon()
-
-    return navigations.begin()
-  }
-
   const set = activity.wrap(async (url: string, options: RouterUpdateOptions = {}): Promise<void> => {
     if (pathHasTrailingSlash(url) && shouldRemoveTrailingSlashes) {
       const cleanedUrl = removeTrailingSlashesFromPath(url)
@@ -294,14 +288,14 @@ export function createRouter<
       }
     }
 
-    const controller = beginNavigation()
+    const controller = navigations.begin()
 
     if (controller.signal.aborted) {
       return
     }
 
-    const pending = navigation.staged()
-    activeNavigation = pending
+    const pending = options.prefetch ?? navigation.create()
+    pending.stage()
 
     const to = find(url, options) ?? null
     const from = getFromRouteForHooks()
@@ -563,15 +557,15 @@ export function createRouter<
     }
 
     if (typeof source === 'string') {
-      const { replace, navigation, viewTransition, redirectStatus, ...options }: RouterPushOptionsInternal = { ...maybeOptions }
+      const { replace, navigation, prefetch, viewTransition, redirectStatus, ...options }: RouterPushOptionsInternal = { ...maybeOptions }
       const params: any = { ...paramsOrOptions }
       const resolved = resolve(source, params, options)
       const state = setStateValues({ ...resolved.matched.state }, { ...resolved.state, ...options.state })
 
-      return { url: resolved.href, options: { replace, state, navigation, viewTransition }, redirectStatus }
+      return { url: resolved.href, options: { replace, state, navigation, prefetch, viewTransition }, redirectStatus }
     }
 
-    const { replace, navigation, viewTransition, redirectStatus, ...options }: RouterPushOptionsInternal = { ...paramsOrOptions }
+    const { replace, navigation, prefetch, viewTransition, redirectStatus, ...options }: RouterPushOptionsInternal = { ...paramsOrOptions }
     const state = setStateValues({ ...source.matched.state }, { ...source.state, ...options.state })
 
     const url = updateUrl(source.href, {
@@ -579,7 +573,7 @@ export function createRouter<
       hash: options.hash,
     })
 
-    return { url, options: { replace, state, navigation, viewTransition }, redirectStatus }
+    return { url, options: { replace, state, navigation, prefetch, viewTransition }, redirectStatus }
   }
 
   const push: RouterPushInternal<TRoutes | TPlugin['routes']> = async (
@@ -630,12 +624,11 @@ export function createRouter<
       return
     }
 
-    const controller = beginNavigation()
-
-    if (isSSR) {
-      const current = navigation.current()
-      current.abandon()
-    }
+    const controller = navigations.begin()
+    const pending = navigation.staged()
+    const current = navigation.current()
+    pending.abandon()
+    current.abandon()
 
     hooks.runRejectionHooks(rejection, { to, from })
 
@@ -717,9 +710,8 @@ export function createRouter<
         const prefetch = navigation.create()
 
         prefetch.fill(to, values)
-        prefetch.stage()
 
-        await set(initialUrl, { replace: true, state: initialState, hydrating: true })
+        await set(initialUrl, { replace: true, state: initialState, hydrating: true, prefetch })
 
         return
       }
