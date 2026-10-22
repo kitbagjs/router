@@ -44,7 +44,7 @@ test('aborting the signal unregisters a mounted component hook', async () => {
       render: () => null,
     })
   const router = createRouter([route], { initialUrl: '/1' })
-  const wrapper = mount(RouterView, { global: { plugins: [router] } })
+  mount(RouterView, { global: { plugins: [router] } })
   await router.start()
   await router.push('/2')
   expect(hook).toHaveBeenCalledOnce()
@@ -53,7 +53,6 @@ test('aborting the signal unregisters a mounted component hook', async () => {
   await router.push('/3')
 
   expect(hook).toHaveBeenCalledOnce()
-  wrapper.unmount()
 })
 
 test('component hooks with a signal still unregister on unmount', async () => {
@@ -68,7 +67,7 @@ test('component hooks with a signal still unregister on unmount', async () => {
     })
   const other = createRoute({ name: 'other', path: '/other/[id]' })
   const router = createRouter([home, other], { initialUrl: '/1' })
-  const wrapper = mount(RouterView, { global: { plugins: [router] } })
+  mount(RouterView, { global: { plugins: [router] } })
   await router.start()
   await router.push('/2')
   expect(hook).toHaveBeenCalledOnce()
@@ -77,7 +76,6 @@ test('component hooks with a signal still unregister on unmount', async () => {
   await router.push('/other/2')
 
   expect(hook).toHaveBeenCalledOnce()
-  wrapper.unmount()
 })
 
 test('global hooks are called correctly', async () => {
