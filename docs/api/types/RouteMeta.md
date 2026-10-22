@@ -10,4 +10,4 @@ Represents additional metadata associated with a route, customizable via declara
 
 | Type Parameter | Default type |
 | ------ | ------ |
-| `T` | [`Register`](../interfaces/Register.md) |
+| <a id="type-parameter-t"></a> `T` | [`Register`](../interfaces/Register.md) |

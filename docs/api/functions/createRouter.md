@@ -16,9 +16,9 @@ Creates a router instance for a Vue application, equipped with methods for route
 
 | Type Parameter | Default type |
 | ------ | ------ |
-| `TRoutes` *extends* `Routes` | - |
-| `TOptions` *extends* [`RouterOptions`](../types/RouterOptions.md) | `object` |
-| `TPlugin` *extends* [`RouterPlugin`](../types/RouterPlugin.md) | `EmptyRouterPlugin` |
+| <a id="type-parameter-troutes"></a> `TRoutes` *extends* `Routes` | - |
+| <a id="type-parameter-toptions"></a> `TOptions` *extends* [`RouterOptions`](../types/RouterOptions.md) | `object` |
+| <a id="type-parameter-tplugin"></a> `TPlugin` *extends* [`RouterPlugin`](../types/RouterPlugin.md) | `EmptyRouterPlugin` |
 
 ### Parameters
 
@@ -66,9 +66,9 @@ Creates a router instance for a Vue application, equipped with methods for route
 
 | Type Parameter | Default type |
 | ------ | ------ |
-| `TRoutes` *extends* `Routes` | - |
-| `TOptions` *extends* [`RouterOptions`](../types/RouterOptions.md) | `object` |
-| `TPlugin` *extends* [`RouterPlugin`](../types/RouterPlugin.md) | `EmptyRouterPlugin` |
+| <a id="type-parameter-troutes-1"></a> `TRoutes` *extends* `Routes` | - |
+| <a id="type-parameter-toptions-1"></a> `TOptions` *extends* [`RouterOptions`](../types/RouterOptions.md) | `object` |
+| <a id="type-parameter-tplugin-1"></a> `TPlugin` *extends* [`RouterPlugin`](../types/RouterPlugin.md) | `EmptyRouterPlugin` |
 
 ### Parameters
 

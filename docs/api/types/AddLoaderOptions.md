@@ -6,6 +6,13 @@ type AddLoaderOptions<TName, TValue> = TransformerOptions<TValue> & object;
 
 The options for a loader added via `addLoader`.
 
+## Type Parameters
+
+| Type Parameter | Default type | Description |
+| ------ | ------ | ------ |
+| <a id="type-parameter-tname"></a> `TName` *extends* `string` \| `undefined` | `string` | The loader's name, inferred from the `name` option. |
+| <a id="type-parameter-tvalue"></a> `TValue` | `unknown` | - |
+
 ## Type Declaration
 
 ### name?
@@ -25,10 +32,3 @@ optional prefetch?: PrefetchConfig;
 
 Determines whether this loader is run when a router-link is rendered for this route. Overrides route
 level prefetch, and is itself overridden by link level prefetch.
-
-## Type Parameters
-
-| Type Parameter | Default type | Description |
-| ------ | ------ | ------ |
-| `TName` *extends* `string` \| `undefined` | `string` | The loader's name, inferred from the `name` option. |
-| `TValue` | `unknown` | - |

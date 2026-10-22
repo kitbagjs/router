@@ -6,6 +6,13 @@ type Loader<TData, TContext> = TransformerOptions<Awaited<TData>> & object;
 
 A reusable loader definition, with its context normalized to an array.
 
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| <a id="type-parameter-tdata"></a> `TData` | `unknown` |
+| <a id="type-parameter-tcontext"></a> `TContext` *extends* readonly `RouteContext`[] | \[\] |
+
 ## Type Declaration
 
 ### context
@@ -25,10 +32,3 @@ load: AnyFunction<TData>;
 ```ts
 optional prefetch?: PrefetchConfig;
 ```
-
-## Type Parameters
-
-| Type Parameter | Default type |
-| ------ | ------ |
-| `TData` | `unknown` |
-| `TContext` *extends* readonly `RouteContext`[] | \[\] |

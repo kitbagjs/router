@@ -11,4 +11,4 @@ callbacks attached to a route.
 
 | Type Parameter |
 | ------ |
-| `TRoute` *extends* [`Route`](Route.md) |
+| <a id="type-parameter-troute"></a> `TRoute` *extends* [`Route`](Route.md) |

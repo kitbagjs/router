@@ -12,7 +12,7 @@ Uses a distributive conditional type to ensure unions are properly distributed.
 
 | Type Parameter |
 | ------ |
-| `TRoute` *extends* [`Route`](Route.md) |
+| <a id="type-parameter-troute"></a> `TRoute` *extends* [`Route`](Route.md) |
 
 ## Example
 

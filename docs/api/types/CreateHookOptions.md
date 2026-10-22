@@ -10,8 +10,8 @@ Options for a reusable route hook.
 
 | Type Parameter | Default type |
 | ------ | ------ |
-| `TContext` *extends* readonly `RouteContext`[] | \[\] |
-| `TRoutes` *extends* `Routes` | `Routes` |
+| <a id="type-parameter-tcontext"></a> `TContext` *extends* readonly `RouteContext`[] | \[\] |
+| <a id="type-parameter-troutes"></a> `TRoutes` *extends* `Routes` | `Routes` |
 
 ## Properties
 

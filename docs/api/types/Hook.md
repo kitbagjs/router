@@ -10,7 +10,7 @@ A reusable hook that can be attached before or after a route enters, updates, or
 
 | Type Parameter | Default type |
 | ------ | ------ |
-| `TContext` *extends* readonly `RouteContext`[] | \[\] |
+| <a id="type-parameter-tcontext"></a> `TContext` *extends* readonly `RouteContext`[] | \[\] |
 
 ## Properties
 

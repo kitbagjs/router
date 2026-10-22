@@ -8,7 +8,7 @@ type RouterRoute<TRoute> = object;
 
 | Type Parameter | Default type |
 | ------ | ------ |
-| `TRoute` *extends* [`ResolvedRoute`](ResolvedRoute.md) | [`ResolvedRoute`](ResolvedRoute.md) |
+| <a id="type-parameter-troute"></a> `TRoute` *extends* [`ResolvedRoute`](ResolvedRoute.md) | [`ResolvedRoute`](ResolvedRoute.md) |
 
 ## Accessors
 

@@ -12,7 +12,7 @@ before it is captured. `transition` is set once the browser has been asked to tr
 
 | Type Parameter | Default type |
 | ------ | ------ |
-| `TRoutes` *extends* `Routes` | `Routes` |
+| <a id="type-parameter-troutes"></a> `TRoutes` *extends* `Routes` | `Routes` |
 
 ## Properties
 
