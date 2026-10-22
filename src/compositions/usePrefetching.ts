@@ -9,7 +9,7 @@ import { useEventListener } from './useEventListener'
 import { Router } from '@/types/router'
 import { getComputationsForStrategy } from '@/services/getComputations'
 import { RouterNavigationStore } from '@/services/createRouterNavigation'
-import { isSameResolvedRoute } from '@/utilities/isSameResolvedRoute'
+import { getPrefetchKey } from '@/services/getPrefetchKey'
 
 type UsePrefetchingConfig = PrefetchConfigs & {
   route: ResolvedRoute | undefined,
@@ -30,14 +30,17 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
 
     const navigation = useRouterNavigation()
     let prefetch = navigation.create()
+    let prefetchKey: string | undefined
     const { isElementVisible } = useVisibilityObserver(element)
 
     const take: UsePrefetching['take'] = (route) => {
       const prepared = prefetch
-      const { route: prefetchedRoute } = toValue(config)
+      const key = getPrefetchKey(route)
+      const matches = key === prefetchKey
       prefetch = navigation.create()
+      prefetchKey = undefined
 
-      if (!isSameResolvedRoute(route, prefetchedRoute)) {
+      if (!matches) {
         prepared.dispose()
 
         return navigation.create()
@@ -48,10 +51,9 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
 
     onScopeDispose(() => prefetch.dispose())
 
-    watch(() => toValue(config), ({ route, ...configs }, previous) => {
-      if (!isSameResolvedRoute(route, previous?.route)) {
-        prefetch.dispose()
-        prefetch = navigation.create()
+    watch([() => toValue(config), () => getPrefetchKey(toValue(config).route)], ([{ route, ...configs }, key]) => {
+      if (key !== prefetchKey) {
+        resetPrefetch(key)
       }
 
       if (!route) {
@@ -89,10 +91,22 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
     }
 
     function doPrefetchingForStrategy(strategy: PrefetchStrategy, route: ResolvedRoute, configs: PrefetchConfigs): void {
+      const key = getPrefetchKey(route)
+
+      if (key !== prefetchKey) {
+        resetPrefetch(key)
+      }
+
       prefetchComponentsForRoute(strategy, route, configs)
       const computations = getComputationsForStrategy(route, strategy, configs)
 
       prefetch.compute(route, computations)
+    }
+
+    function resetPrefetch(key: string | undefined): void {
+      prefetch.dispose()
+      prefetch = navigation.create()
+      prefetchKey = key
     }
 
     return {

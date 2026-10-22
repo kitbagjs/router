@@ -243,6 +243,81 @@ test('link push options discard prefetching for a different url', async () => {
   expect(load).toHaveBeenCalledTimes(2)
 })
 
+test('changing RouterLink state recomputes prefetched props and loader data', async () => {
+  const load = vi.fn((value: string) => value)
+  const props = vi.fn((value: string) => ({ value }))
+  const home = createRoute({ name: 'home', path: '/' })
+  const route = createRoute({
+    name: 'route',
+    path: '/route',
+    state: { filter: JSON },
+  })
+    .addLoader((route) => load(JSON.stringify(route.state.filter)), { prefetch: 'eager' })
+    .addView(component, {
+      props: (route) => props(JSON.stringify(route.state.filter)),
+      prefetch: 'eager',
+    })
+  const router = createRouter([home, route], { initialUrl: '/' })
+  const state = ref({ filter: { page: 1 } })
+  await router.start()
+
+  const wrapper = mount({
+    setup: () => () => h(RouterLink, { to: '/route', state: state.value }),
+  }, {
+    global: { plugins: [router] },
+  })
+  await flushPromises()
+
+  state.value = { filter: { page: 1 } }
+  await flushPromises()
+  expect(load).toHaveBeenCalledOnce()
+  expect(props).toHaveBeenCalledOnce()
+
+  state.value.filter.page = 2
+  await flushPromises()
+  expect(load).toHaveBeenLastCalledWith('{"page":2}')
+  expect(props).toHaveBeenLastCalledWith('{"page":2}')
+
+  await wrapper.find('a').trigger('click')
+  await flushPromises()
+
+  await expect(router.route.data).resolves.toBe('{"page":2}')
+  expect(load).toHaveBeenCalledTimes(2)
+  expect(props).toHaveBeenCalledTimes(2)
+})
+
+test('useLink push state overrides discard prefetched data', async () => {
+  const load = vi.fn((count: number | undefined) => count)
+  const home = createRoute({ name: 'home', path: '/' })
+  const route = createRoute({
+    name: 'route',
+    path: '/route',
+    state: { count: Number },
+  })
+    .addLoader((route) => load(route.state.count), { prefetch: 'eager' })
+  const router = createRouter([home, route], { initialUrl: '/' })
+  const useLink = createUseLink(router.key)
+  await router.start()
+
+  const wrapper = mount(defineComponent({
+    setup: () => {
+      const { push } = useLink('route', {}, { state: { count: 1 } })
+
+      return { push }
+    },
+    render: () => null,
+  }), {
+    global: { plugins: [router] },
+  })
+  await flushPromises()
+  expect(load).toHaveBeenCalledExactlyOnceWith(1)
+
+  await wrapper.vm.push({ state: { count: 2 } })
+
+  await expect(router.route.data).resolves.toBe(2)
+  expect(load).toHaveBeenCalledTimes(2)
+})
+
 test('named and unnamed loaders respect their own config and feed prefetched props', async () => {
   const load = vi.fn(() => 'default data')
   const named = vi.fn(() => 'named data')

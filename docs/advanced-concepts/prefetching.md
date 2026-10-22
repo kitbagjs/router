@@ -194,3 +194,5 @@ const link = useLink('/about', {
   prefetch: true, // enable prefetching for this link
 })
 ```
+
+Pass query, hash, and state to `useLink` so prefetching uses them. Changes to these values discard prefetched props and loader data, including changes passed to `link.push()` or `link.replace()`.
