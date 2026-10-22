@@ -13,6 +13,7 @@ import { createRouterLink } from '@/components/routerLink'
 import { createRouterProgress } from '@/components/routerProgress'
 import { createUseRoute } from '@/compositions/useRoute'
 import { createUseRouter } from '@/compositions/useRouter'
+import { createUseParam } from '@/compositions/useParam'
 import { createUseQueryValue } from '@/compositions/useQueryValue'
 import { createUseLink } from '@/compositions/useLink'
 import { createIsRoute } from '@/guards/routes'
@@ -150,6 +151,12 @@ export type RouterAssets<TRouter extends Router> = {
   useQueryValue: ReturnType<typeof createUseQueryValue<TRouter>>,
 
   /**
+   * Reads param values by definition as readonly computed refs that follow the current route.
+   * @group Compositions
+   */
+  useParam: ReturnType<typeof createUseParam<TRouter>>,
+
+  /**
    * A composition to export much of the functionality that drives RouterLink component.
    * Also exports some useful context about routes relationship to current URL and convenience methods
    * for navigating.
@@ -209,6 +216,7 @@ export function createRouterAssets<TRouter extends Router>(routerOrRouterKey: TR
   const useRoute = createUseRoute(routerKey)
   const useRouter = createUseRouter(routerKey)
   const useQueryValue = createUseQueryValue(routerKey)
+  const useParam = createUseParam(routerKey)
   const useLink = createUseLink(routerKey)
   const useRejection = createUseRejection(routerKey)
   const useViewTransition = createUseViewTransition(routerKey)
@@ -230,6 +238,7 @@ export function createRouterAssets<TRouter extends Router>(routerOrRouterKey: TR
     useRoute,
     useRouter,
     useQueryValue,
+    useParam,
     useLink,
     useRejection,
     useViewTransition,
