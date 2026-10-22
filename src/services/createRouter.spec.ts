@@ -15,6 +15,7 @@ import { InvalidRouteParamValueError } from '@/errors/invalidRouteParamValueErro
 import { createRejection } from './createRejection'
 import { SsrOptionRequiredError } from '@/errors/ssrOptionRequiredError'
 import { PayloadValueError } from '@/errors/payloadValueError'
+import { RouterPushOptionsInternal } from '@/types/routerNavigationInternal'
 import { RenderRedirect, RenderSuccess, ServerRenderResponse } from '@/types/router'
 
 test('initial route is set', async () => {
@@ -2082,9 +2083,9 @@ test('a before hook redirect discards prefetched work for the original route', a
   const prepared = navigation.create()
   const route = router.resolve('prefetched')
   prepared.compute(route, getComputations(route))
-  prepared.stage()
+  const options: RouterPushOptionsInternal = { prefetch: prepared }
 
-  await router.push('prefetched')
+  await router.push(route, options)
   slow.resolve()
   await flushPromises()
 
