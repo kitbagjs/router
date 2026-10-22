@@ -1,5 +1,5 @@
 import { AddHook } from '@/types/hooks'
-import { HookRemove } from './hooks'
+import { HookRegistrationOptions, HookRemove } from './hooks'
 import { Routes } from './route'
 import { Rejections } from './rejection'
 import { Hooks } from '@/models/hooks'
@@ -128,7 +128,7 @@ export type PluginErrorHook<
 export type AddPluginErrorHook<
   TRoutes extends Routes = Routes,
   TRejections extends Rejections = Rejections
-> = (hook: PluginErrorHook<TRoutes, TRejections>) => HookRemove
+> = (hook: PluginErrorHook<TRoutes, TRejections>, options?: HookRegistrationOptions) => HookRemove
 
 export type PluginRouteHooks<
   TRoutes extends Routes = Routes,

@@ -1,5 +1,6 @@
 import { AnyHook } from '@/types/hook'
-import { ComponentHook, HookRemove, AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, AddErrorHook, AddRejectionHook } from '@/types/hooks'
+import { ComponentHook, HookRemove, HookRegistrationOptions, AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, AddErrorHook, AddRejectionHook } from '@/types/hooks'
+import { registerHook } from '@/services/registerHook'
 import { Routes } from '@/types/route'
 import { Hooks } from '@/models/hooks'
 import { ExtractRejectionTypes, Rejection } from '@/types/rejection'
@@ -40,50 +41,48 @@ export function createRouteHooks(): RouteHooks {
     return () => store.redirects.delete(hook)
   }
 
-  function addHook<THook extends ComponentHook | AnyHook>(hooks: Set<THook>, hook: THook): HookRemove {
+  function addHook<THook extends ComponentHook | AnyHook>(hooks: Set<THook>, hook: THook, options?: HookRegistrationOptions): HookRemove {
+    if (options?.signal?.aborted) {
+      return () => {}
+    }
+
     for (const callback of store.onHookAdded) {
       callback(hook)
     }
 
-    hooks.add(hook)
-
-    return () => hooks.delete(hook)
+    return registerHook(hooks, hook, options)
   }
 
-  const onBeforeRouteEnter: AddBeforeEnterHook = (hook) => {
-    return addHook(store.onBeforeRouteEnter, hook)
+  const onBeforeRouteEnter: AddBeforeEnterHook = (hook, options) => {
+    return addHook(store.onBeforeRouteEnter, hook, options)
   }
 
-  const onBeforeRouteUpdate: AddBeforeUpdateHook = (hook) => {
-    return addHook(store.onBeforeRouteUpdate, hook)
+  const onBeforeRouteUpdate: AddBeforeUpdateHook = (hook, options) => {
+    return addHook(store.onBeforeRouteUpdate, hook, options)
   }
 
-  const onBeforeRouteLeave: AddBeforeLeaveHook = (hook) => {
-    return addHook(store.onBeforeRouteLeave, hook)
+  const onBeforeRouteLeave: AddBeforeLeaveHook = (hook, options) => {
+    return addHook(store.onBeforeRouteLeave, hook, options)
   }
 
-  const onAfterRouteEnter: AddAfterEnterHook = (hook) => {
-    return addHook(store.onAfterRouteEnter, hook)
+  const onAfterRouteEnter: AddAfterEnterHook = (hook, options) => {
+    return addHook(store.onAfterRouteEnter, hook, options)
   }
 
-  const onAfterRouteUpdate: AddAfterUpdateHook = (hook) => {
-    return addHook(store.onAfterRouteUpdate, hook)
+  const onAfterRouteUpdate: AddAfterUpdateHook = (hook, options) => {
+    return addHook(store.onAfterRouteUpdate, hook, options)
   }
 
-  const onAfterRouteLeave: AddAfterLeaveHook = (hook) => {
-    return addHook(store.onAfterRouteLeave, hook)
+  const onAfterRouteLeave: AddAfterLeaveHook = (hook, options) => {
+    return addHook(store.onAfterRouteLeave, hook, options)
   }
 
-  const onError: AddErrorHook = (hook) => {
-    store.onError.add(hook)
-
-    return () => store.onError.delete(hook)
+  const onError: AddErrorHook = (hook, options) => {
+    return registerHook(store.onError, hook, options)
   }
 
-  const onRejection: AddRejectionHook = (hook) => {
-    store.onRejection.add(hook)
-
-    return () => store.onRejection.delete(hook)
+  const onRejection: AddRejectionHook = (hook, options) => {
+    return registerHook(store.onRejection, hook, options)
   }
 
   return {
