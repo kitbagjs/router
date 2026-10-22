@@ -231,7 +231,7 @@ test('a prefetched response is reported when its navigation becomes current', as
 
   const [event] = onResponse.mock.calls[0]
 
-  expect(event).toMatchObject({ to: route, from, signal: detached.signal })
+  expect(event).toMatchObject({ to: route, from, signal: detached.data.signal })
 
   await expect(event.response).resolves.toEqual({ status: 'PUSH', to: ['/next', { replace: true }] })
 })
