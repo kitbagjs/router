@@ -8,9 +8,14 @@ import { MakeOptional } from '@/utilities/makeOptional'
 
 export const IS_URL_SYMBOL = Symbol('IS_URL_SYMBOL')
 
+/**
+ * The definitions of a URL's host, path, query, and hash parts.
+ */
+export type UrlSchema = Record<string, UrlPart>
+
 export type UrlInternal = {
   [IS_URL_SYMBOL]: true,
-  schema: Record<string, UrlPart>,
+  schema: UrlSchema,
   params: {},
   isMatch: (url: string, options?: ParseUrlOptions) => boolean,
 }
