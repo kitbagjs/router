@@ -11,15 +11,16 @@ import { createComponentHooks } from './createComponentHooks'
 import { createRouterView } from '@/components/routerView'
 import { createRouterLink } from '@/components/routerLink'
 import { createRouterProgress } from '@/components/routerProgress'
+import { createUseLink } from '@/compositions/useLink'
+import { createUseLoader, UseLoaderFunction } from '@/compositions/useLoader'
+import { createUseNavigation } from '@/compositions/useNavigation'
+import { createUseQueryValue } from '@/compositions/useQueryValue'
+import { createUseRejection } from '@/compositions/useRejection'
 import { createUseRoute } from '@/compositions/useRoute'
 import { createUseRouter } from '@/compositions/useRouter'
-import { createUseQueryValue } from '@/compositions/useQueryValue'
-import { createUseLink } from '@/compositions/useLink'
+import { createUseViewTransition } from '@/compositions/useViewTransition'
 import { createIsRoute } from '@/guards/routes'
 import { AddBeforeLeaveHook, AddBeforeUpdateHook, AddAfterLeaveHook, AddAfterUpdateHook } from '@/types/hooks'
-import { createUseRejection } from '@/compositions/useRejection'
-import { createUseViewTransition } from '@/compositions/useViewTransition'
-import { createUseNavigation } from '@/compositions/useNavigation'
 
 export type RouterAssets<TRouter extends Router> = {
   /**
@@ -115,6 +116,49 @@ export type RouterAssets<TRouter extends Router> = {
   RouterProgress: ReturnType<typeof createRouterProgress<TRouter>>,
 
   /**
+   * A composition to export much of the functionality that drives RouterLink component.
+   * Also exports some useful context about routes relationship to current URL and convenience methods
+   * for navigating.
+   *
+   * @param source - The name of the route or a valid URL.
+   * @param params - If providing route name, this argument will expect corresponding params.
+   * @param options - {@link RouterResolveOptions} Same options as router resolve.
+   * @returns {UseLink} Reactive context values for as well as navigation methods.
+   * @group Compositions
+   */
+  useLink: ReturnType<typeof createUseLink<TRouter>>,
+
+  /**
+   * Reads a loader's reactive state or awaits its current data.
+   */
+  useLoader: UseLoaderFunction,
+
+  /**
+   * A composition to access the navigation under way: whether one is pending, which routes it leaves and
+   * leads to, and how much of the work it waits on has settled.
+   *
+   * @returns {UseNavigation} Reactive state of the navigation under way.
+   * @group Compositions
+   */
+  useNavigation: ReturnType<typeof createUseNavigation<TRouter>>,
+
+  /**
+   * A composition to access a specific query value from the current route.
+   *
+   * @returns The query value from the router.
+   * @group Compositions
+   */
+  useQueryValue: ReturnType<typeof createUseQueryValue<TRouter>>,
+
+  /**
+   * A composition to access the rejection from the router.
+   *
+   * @returns The rejection from the router.
+   * @group Compositions
+   */
+  useRejection: ReturnType<typeof createUseRejection<TRouter>>,
+
+  /**
    * A composition to access the current route or verify a specific route name within a Vue component.
    * This function provides two overloads:
    * 1. When called without arguments, it returns the current route from the router without types.
@@ -142,50 +186,12 @@ export type RouterAssets<TRouter extends Router> = {
   useRouter: ReturnType<typeof createUseRouter<TRouter>>,
 
   /**
-   * A composition to access a specific query value from the current route.
-   *
-   * @returns The query value from the router.
-   * @group Compositions
-   */
-  useQueryValue: ReturnType<typeof createUseQueryValue<TRouter>>,
-
-  /**
-   * A composition to export much of the functionality that drives RouterLink component.
-   * Also exports some useful context about routes relationship to current URL and convenience methods
-   * for navigating.
-   *
-   * @param source - The name of the route or a valid URL.
-   * @param params - If providing route name, this argument will expect corresponding params.
-   * @param options - {@link RouterResolveOptions} Same options as router resolve.
-   * @returns {UseLink} Reactive context values for as well as navigation methods.
-   * @group Compositions
-   */
-  useLink: ReturnType<typeof createUseLink<TRouter>>,
-
-  /**
-   * A composition to access the rejection from the router.
-   *
-   * @returns The rejection from the router.
-   * @group Compositions
-   */
-  useRejection: ReturnType<typeof createUseRejection<TRouter>>,
-
-  /**
    * A composition to access the view transition in flight, if any.
    *
    * @returns The router's view transition state.
    * @group Compositions
    */
   useViewTransition: ReturnType<typeof createUseViewTransition<TRouter>>,
-
-  /**
-   * A composition to access the navigation under way: whether one is pending, which routes it leaves and
-   * leads to, and how much of the work it waits on has settled.
-   *
-   * @returns {UseNavigation} Reactive state of the navigation under way.
-   * @group Compositions
-   */
-  useNavigation: ReturnType<typeof createUseNavigation<TRouter>>,
 }
 
 export function createRouterAssets<TRouter extends Router>(router: TRouter): RouterAssets<TRouter>
@@ -206,13 +212,14 @@ export function createRouterAssets<TRouter extends Router>(routerOrRouterKey: TR
   const RouterLink = createRouterLink(routerKey)
   const RouterProgress = createRouterProgress(routerKey)
 
+  const useLink = createUseLink(routerKey)
+  const useLoader = createUseLoader(routerKey)
+  const useNavigation = createUseNavigation(routerKey)
+  const useQueryValue = createUseQueryValue(routerKey)
+  const useRejection = createUseRejection(routerKey)
   const useRoute = createUseRoute(routerKey)
   const useRouter = createUseRouter(routerKey)
-  const useQueryValue = createUseQueryValue(routerKey)
-  const useLink = createUseLink(routerKey)
-  const useRejection = createUseRejection(routerKey)
   const useViewTransition = createUseViewTransition(routerKey)
-  const useNavigation = createUseNavigation(routerKey)
 
   return {
     createHook,
@@ -227,12 +234,13 @@ export function createRouterAssets<TRouter extends Router>(routerOrRouterKey: TR
     RouterLink,
     ViewTransition,
     RouterProgress,
+    useLink,
+    useLoader,
+    useNavigation,
+    useQueryValue,
+    useRejection,
     useRoute,
     useRouter,
-    useQueryValue,
-    useLink,
-    useRejection,
     useViewTransition,
-    useNavigation,
   }
 }
