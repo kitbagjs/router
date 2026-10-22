@@ -55,17 +55,8 @@ type RouterNavigationState = {
   context: RouterNavigationContext | undefined,
 }
 
-type RouterNavigationStoreSlots = {
-  current: RouterNavigationStore,
-  staged: RouterNavigationStore,
-}
-
 export type RouterNavigationStore = {
   data: DataStore,
-  /**
-   * Disposes of the previously staged navigation and sets this navigation as staged.
-   */
-  stage: () => void,
   commit: (options: RouterNavigationCommitOptions) => Promise<unknown>[],
   abandon: () => void,
   dispose: () => void,
@@ -93,15 +84,6 @@ export type RouterNavigationStores = HasVueAppStore & {
   current: () => RouterNavigationStore,
   create: () => RouterNavigationStore,
   /**
-   * The navigation prepared for the next commit.
-   * The rendered route keeps reading from the current navigation until then.
-   */
-  staged: () => RouterNavigationStore,
-  /**
-   * Makes the staged navigation current and computes whatever the route still lacks.
-   */
-  commit: (options: RouterNavigationCommitOptions) => Promise<unknown>[],
-  /**
    * The values currently settled in the store.
    */
   getValues: (route: ResolvedRoute) => RouteValue[],
@@ -115,10 +97,7 @@ export type RouterNavigationStores = HasVueAppStore & {
 
 export function createRouterNavigation({ onResponse }: CreateRouterNavigationOptions = {}): RouterNavigationStores {
   const { setVueApp, runWithContext } = createVueAppStore()
-  const navigations: RouterNavigationStoreSlots = {
-    current: createRouterNavigationStore(),
-    staged: createRouterNavigationStore(),
-  }
+  let currentNavigation = createRouterNavigationStore()
 
   function createRouterNavigationStore(): RouterNavigationStore {
     const data = createDataStore()
@@ -226,17 +205,11 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
       }
 
       setRoute(to)
-      const previous = navigations.current
-      const staged = navigations.staged
-      navigations.current = instance
-      navigations.staged = createRouterNavigationStore()
+      const previous = currentNavigation
+      currentNavigation = instance
 
       if (previous !== instance) {
         previous.dispose()
-      }
-
-      if (staged !== instance && staged !== previous) {
-        staged.dispose()
       }
 
       state.context ??= {
@@ -263,23 +236,10 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
       state.context = undefined
     }
 
-    function stage(): void {
-      if (data.signal.aborted || navigations.staged === instance) {
-        return
-      }
-
-      if (navigations.staged !== navigations.current) {
-        navigations.staged.dispose()
-      }
-
-      navigations.staged = instance
-    }
-
     const instance: RouterNavigationStore = {
       data,
       compute,
       fill,
-      stage,
       commit,
       abandon,
       dispose,
@@ -288,18 +248,10 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     return instance
   }
 
-  const current: RouterNavigationStores['current'] = () => navigations.current
-
-  const staged: RouterNavigationStores['staged'] = () => navigations.staged
-
-  const commit: RouterNavigationStores['commit'] = (options) => {
-    const pending = staged()
-
-    return pending.commit(options)
-  }
+  const current: RouterNavigationStores['current'] = () => currentNavigation
 
   const getValues: RouterNavigationStores['getValues'] = (route) => {
-    const store = navigations.current.data
+    const store = currentNavigation.data
 
     return getComputations(route).flatMap(({ kind, depth, name, key }) => {
       const result = store.get(key)
@@ -336,7 +288,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
   const getProps: RouterNavigationStores['getProps'] = (id, name, route) => {
     const key = getDataKey('props', id, name, route)
-    const result = navigations.current.data.get(key)
+    const result = currentNavigation.data.get(key)
 
     switch (result.kind) {
       case 'missing':
@@ -344,7 +296,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
       case 'pending':
       case 'running':
-        return toResult(navigations.current.data, key)
+        return toResult(currentNavigation.data, key)
 
       case 'value':
       case 'error':
@@ -473,7 +425,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
    */
   function getValue(location: ValueLocation, route: ResolvedRoute, store?: DataStore): Promise<unknown> {
     const key = getDataKey(location.kind, location.id, location.name, route)
-    const current = navigations.current.data
+    const current = currentNavigation.data
 
     if (!store || store === current) {
       return current.subscribe(key)
@@ -500,8 +452,6 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
   return {
     current,
     create: createRouterNavigationStore,
-    staged,
-    commit,
     getValues,
     getProps,
     getData,
