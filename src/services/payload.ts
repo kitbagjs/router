@@ -1,4 +1,4 @@
-import { DataKind } from '@/services/createNavigationStores'
+import { DataKind } from '@/services/getDataKey'
 import { isRecord } from '@/utilities/guards'
 import { isBrowser } from '@/utilities/isBrowser'
 import { RouteValue } from '@/services/createRouteValueStore'

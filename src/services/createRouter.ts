@@ -10,7 +10,7 @@ import { createNavigationProgress, NavigationProgressTracker } from '@/services/
 import { getComputations } from '@/services/getComputations'
 import { getAsyncComponents, loadAsyncComponents } from '@/utilities/components'
 import { getNavigationProgressKey } from '@/compositions/useNavigation'
-import { DataKind } from '@/services/createNavigationStores'
+import { DataKind } from '@/services/getDataKey'
 import { createRouterHistory, RouterHistoryTraversal } from '@/services/createRouterHistory'
 import { createServerRedirect } from '@/services/createServerRedirect'
 import { createRouterHooks, getRouterHooksKey } from '@/services/createRouterHooks'
@@ -393,7 +393,7 @@ export function createRouter<
         return true
       }
 
-      const values = valueStore.staged().compute(route)
+      const values = valueStore.staged().compute(route, getComputations(route))
       const work = Promise.allSettled([
         values.props,
         values.loaders,

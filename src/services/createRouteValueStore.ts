@@ -11,11 +11,12 @@ import { createVueAppStore, HasVueAppStore } from './createVueAppStore'
 import { CallbackContextPush, CallbackContextReject, CallbackContextSuccess } from '@/types/callbackContext'
 import { createRouterCallbackContext } from './createRouterCallbackContext'
 import { createDataStore, DataStore } from './createDataStore'
-import { createNavigationStores, DataKind, getDataKey } from './createNavigationStores'
+import { createNavigationStores } from './createNavigationStores'
+import { DataKind, getDataKey } from './getDataKey'
 import { PropsResult } from '@/utilities/props'
 import { warn } from '@/utilities/warn'
 import { MaybePromise } from '@/types/utilities'
-import { Computation, ComputationFilter, getComputations, isKind, loaderLocations, propsLocations, ValueLocation } from './getComputations'
+import { Computation, getComputations, isKind, loaderLocations, propsLocations, ValueLocation } from './getComputations'
 
 /**
  * A navigation that was superseded before its values settled. The navigation that replaced it owns the
@@ -45,9 +46,9 @@ export type RouteValueResponses = {
  */
 export type ValueStore = {
   /**
-   * Computes the route's values, or only those the filter keeps, and reports how they settle.
+   * Computes the supplied values and reports how they settle.
    */
-  compute: (route: ResolvedRoute, filter?: ComputationFilter) => RouteValueResponses,
+  compute: (route: ResolvedRoute, computations: Computation[]) => RouteValueResponses,
   /**
    * Adopts values that already settled, in place of running their getters.
    */
@@ -145,7 +146,7 @@ export function createRouteValueStore(): RouteValueStore {
 
     previous.dispose(new NavigationAbandonedError())
 
-    return createValueStore(() => navigation.current()).compute(route)
+    return createValueStore(() => navigation.current()).compute(route, getComputations(route))
   }
 
   /**
@@ -153,9 +154,8 @@ export function createRouteValueStore(): RouteValueStore {
    * it is staged or reset.
    */
   function createValueStore(getStore: () => DataStore): ValueStore {
-    const compute: ValueStore['compute'] = (route, filter = () => true) => {
+    const compute: ValueStore['compute'] = (route, computations) => {
       const store = getStore()
-      const computations = getComputations(route).filter(filter)
 
       // loaders first, so a props getter reading the route's data finds it under way rather than missing
       const loaders = settle(store, route, computations.filter(isKind('loader')))
