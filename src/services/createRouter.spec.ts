@@ -2145,8 +2145,8 @@ test('prefetched navigation actions win in completion order', async () => {
   await flushPromises()
   first.resolve()
   await flushPromises()
-  prepared.stage()
-  await router.push('page')
+  const options: RouterPushOptionsInternal = { prefetch: prepared }
+  await router.push(resolved, options)
 
   await vi.waitFor(() => expect(router.route.href).toBe('/second'))
   router.stop()
