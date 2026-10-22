@@ -5,6 +5,7 @@ import { Router } from '@/types/router'
 import { isRouter } from '@/types/routerInternal'
 import { DataResult } from '@/services/createDataStore'
 import { createUseRouter } from '@/compositions/useRouter'
+import { useIsServerRendering } from '@/compositions/useIsServerRendering'
 import { createUseRouterNavigation } from '@/compositions/useRouterNavigation'
 import { getLoaderLocation } from '@/services/getLoaderLocation'
 import { isRouterRoute } from '@/services/createRouterRoute'
@@ -37,6 +38,7 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunct
     }
 
     const navigation = useRouterNavigation()
+    const isServerRendering = useIsServerRendering()
 
     const selection = shallowRef<LoaderSelection>()
     const controller = new AbortController()
@@ -65,7 +67,7 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunct
         loader,
         route,
         fallback: result,
-        hydrating: router.isHydrating(),
+        isServerRendering,
       })
 
       const computation = getFallbackLoaderComputation(loader, route)

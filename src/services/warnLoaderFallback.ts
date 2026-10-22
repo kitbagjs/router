@@ -6,10 +6,10 @@ type WarnLoaderFallbackOptions = {
   loader: AnyLoader,
   route: ResolvedRoute,
   fallback: LoaderFallback,
-  hydrating: boolean,
+  isServerRendering: boolean,
 }
 
-export function warnLoaderFallback({ loader, route, fallback, hydrating }: WarnLoaderFallbackOptions): void {
+export function warnLoaderFallback({ loader, route, fallback, isServerRendering }: WarnLoaderFallbackOptions): void {
   const routeName = route.name || route.href
 
   if (fallback.reason === 'ambiguous') {
@@ -20,7 +20,7 @@ export function warnLoaderFallback({ loader, route, fallback, hydrating }: WarnL
     console.warn(`useLoader received a loader that is not attached to route "${routeName}". It will run now. Attach it with addLoader to start loading before component setup.`, loader)
   }
 
-  if (hydrating) {
-    console.warn(`The fallback data for this loader on route "${routeName}" is not included in the SSR payload. It will load on the client, which may cause a hydration mismatch. Attach it with addLoader, or pass route.loaders[name] to select an attachment.`, loader)
+  if (isServerRendering) {
+    console.warn(`The fallback data for this loader on route "${routeName}" is not included in the SSR payload. It will run again on the client. Attach it with addLoader, or pass route.loaders[name] to select an attachment.`, loader)
   }
 }

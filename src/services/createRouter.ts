@@ -173,8 +173,6 @@ export function createRouter<
 
   hooks.addGlobalRouteHooks(getGlobalHooksForRouter(plugins))
 
-  let hydrating = false
-
   const navigations = createNavigationSignals()
   const viewTransitions = createViewTransitions()
   const componentsStore = createComponentsStore(routerKey)
@@ -289,7 +287,6 @@ export function createRouter<
     }
 
     const controller = navigations.begin()
-    hydrating = options.hydrating ?? false
 
     if (controller.signal.aborted) {
       return
@@ -623,7 +620,6 @@ export function createRouter<
     }
 
     const controller = navigations.begin()
-    hydrating = false
 
     if (isSSR) {
       const current = navigation.current()
@@ -844,13 +840,8 @@ export function createRouter<
     start()
   }
 
-  function isHydrating(): boolean {
-    return hydrating
-  }
-
   const internal = {
     [IS_ROUTER_SYMBOL]: true,
-    isHydrating,
     addContext,
   } satisfies RouterInternal
 

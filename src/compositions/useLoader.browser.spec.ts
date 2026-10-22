@@ -3,13 +3,11 @@ import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import { defineComponent, h, Suspense } from 'vue'
 import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
-import { PAYLOAD_ELEMENT_ID, payloadToScript } from '@/services/payload'
 import { createLoader, createRejection, createRoute, createRouter, createRouterAssets, Router, useLoader } from '@/main'
 
 enableAutoUnmount(afterEach)
 afterEach(() => {
   vi.restoreAllMocks()
-  document.getElementById(PAYLOAD_ELEMENT_ID)?.remove()
 })
 
 function mountConsumer<TResult>(router: Router, setup: () => TResult): TResult {
@@ -234,29 +232,6 @@ describe('fallback loads', () => {
     expect((await result).data.value).toBe(3)
     expect(warn).toHaveBeenCalledTimes(1)
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('route "home": "first", "second"'), loader)
-  })
-
-  test('hydration warnings only apply to the hydrated navigation', async () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-    document.body.insertAdjacentHTML('beforeend', payloadToScript({
-      kind: 'success',
-      url: '/1',
-      values: [],
-    }))
-    const loader = createLoader({ load: (route) => route.params.id })
-    const route = createRoute({ name: 'user', path: '/[id]' })
-    const router = createRouter([route], { initialUrl: '/1' })
-    await router.start()
-    const result = mountConsumer(router, () => useLoader(loader))
-
-    expect((await result).data.value).toBe('1')
-    expect(warn).toHaveBeenCalledTimes(2)
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining('not included in the SSR payload'), loader)
-
-    await router.push('/2')
-    expect((await result).data.value).toBe('2')
-    expect(warn).toHaveBeenCalledTimes(3)
-    expect(warn).toHaveBeenLastCalledWith(expect.stringContaining('not attached'), loader)
   })
 
   test('navigation replaces fallback loads and preserves their route snapshots', async () => {
