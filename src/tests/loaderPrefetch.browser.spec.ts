@@ -1,7 +1,8 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { describe, expect, test, vi } from 'vitest'
-import { h, nextTick, ref } from 'vue'
+import { defineComponent, h, nextTick, ref } from 'vue'
 import { RouterLink } from '@/main'
+import { createUseLink } from '@/compositions/useLink'
 import { visibilityObserverKey } from '@/compositions/useVisibilityObserver'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
@@ -212,6 +213,34 @@ test.each([true, false])('navigation adopts a prefetched loader when already set
   resolve('prefetched')
 
   await expect(router.route.data).resolves.toBe('prefetched')
+})
+
+test('link push options discard prefetching for a different url', async () => {
+  const load = vi.fn(({ href }: { href: string }) => href)
+  const home = createRoute({ name: 'home', path: '/' })
+  const route = createRoute({ name: 'route', path: '/route' }).addLoader(load)
+  const router = createRouter([home, route], { initialUrl: '/' })
+  const useLink = createUseLink(router.key)
+  await router.start()
+
+  const wrapper = mount(defineComponent({
+    setup: () => {
+      const { push } = useLink('route', {}, { prefetch: 'eager' })
+
+      return { push }
+    },
+    render: () => null,
+  }), {
+    global: { plugins: [router] },
+  })
+
+  await flushPromises()
+  expect(load).toHaveBeenCalledOnce()
+
+  await wrapper.vm.push({ query: { page: '2' } })
+
+  await expect(router.route.data).resolves.toBe('/route?page=2')
+  expect(load).toHaveBeenCalledTimes(2)
 })
 
 test('named and unnamed loaders respect their own config and feed prefetched props', async () => {

@@ -8,6 +8,7 @@ import { useVisibilityObserver } from './useVisibilityObserver'
 import { useEventListener } from './useEventListener'
 import { Router } from '@/types/router'
 import { getComputationsForStrategy } from '@/services/getComputations'
+import { RouterNavigationStore } from '@/services/createRouterNavigation'
 import { isSameResolvedRoute } from '@/utilities/isSameResolvedRoute'
 
 type UsePrefetchingConfig = PrefetchConfigs & {
@@ -16,7 +17,7 @@ type UsePrefetchingConfig = PrefetchConfigs & {
 
 type UsePrefetching = {
   element: Ref<HTMLElement | undefined>,
-  commit: () => void,
+  take: (route: ResolvedRoute | undefined) => RouterNavigationStore,
 }
 
 type UsePrefetchingFunction = (config: MaybeRefOrGetter<UsePrefetchingConfig>) => UsePrefetching
@@ -31,9 +32,18 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
     let prefetch = navigation.create()
     const { isElementVisible } = useVisibilityObserver(element)
 
-    const commit: UsePrefetching['commit'] = () => {
-      prefetch.stage()
+    const take: UsePrefetching['take'] = (route) => {
+      const prepared = prefetch
+      const { route: prefetchedRoute } = toValue(config)
       prefetch = navigation.create()
+
+      if (!isSameResolvedRoute(route, prefetchedRoute)) {
+        prepared.dispose()
+
+        return navigation.create()
+      }
+
+      return prepared
     }
 
     onScopeDispose(() => prefetch.dispose())
@@ -87,7 +97,7 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
 
     return {
       element,
-      commit,
+      take,
     }
   }
 }
