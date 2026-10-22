@@ -1,4 +1,6 @@
-import { Param, ParamGetSet } from '@/types/paramTypes'
+import { createParam } from '@/services/createParam'
+import { Param } from '@/types/param'
+import { ParamOptions } from '@/types/paramTypes'
 import { ExtractParamType } from '@/types/params'
 import { unionOf } from './unionOf'
 
@@ -10,11 +12,11 @@ const defaultOptions = {
   separator: ',',
 } satisfies ArrayOfOptions
 
-export function arrayOf<const T extends Param[]>(params: T, options: ArrayOfOptions = {}): ParamGetSet<ExtractParamType<T[number]>[]> {
+export function arrayOf<const TParamOptions extends ParamOptions[]>(params: TParamOptions, options: ArrayOfOptions = {}): Param<ExtractParamType<TParamOptions[number]>[]> {
   const { separator } = { ...defaultOptions, ...options }
   const union = unionOf(params)
 
-  return {
+  return createParam({
     get: (value, extras) => {
       return value.split(separator).map((value) => union.get(value, extras))
     },
@@ -25,5 +27,5 @@ export function arrayOf<const T extends Param[]>(params: T, options: ArrayOfOpti
 
       return value.map((value) => union.set(value, extras)).join(separator)
     },
-  }
+  })
 }

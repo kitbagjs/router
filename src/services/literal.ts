@@ -1,8 +1,10 @@
-import { LiteralParam, ParamGetSet } from '@/types/paramTypes'
+import { createParam } from '@/services/createParam'
+import { Param } from '@/types/param'
+import { LiteralParam } from '@/types/paramTypes'
 
-export function literal<T extends LiteralParam>(value: T): ParamGetSet<T>
-export function literal(param: LiteralParam): ParamGetSet {
-  return {
+export function literal<T extends LiteralParam>(value: T): Param<T>
+export function literal(param: LiteralParam): Param {
+  return createParam<Param>({
     get: (value, { invalid }) => {
       if (`${param}` === value) {
         return param
@@ -17,5 +19,5 @@ export function literal(param: LiteralParam): ParamGetSet {
 
       return (value as LiteralParam).toString()
     },
-  }
+  })
 }
