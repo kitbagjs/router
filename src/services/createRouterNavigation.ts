@@ -62,7 +62,6 @@ type RouterNavigationStoreSlots = {
 
 export type RouterNavigationStore = {
   data: DataStore,
-  route: ResolvedRoute | undefined,
   /**
    * Disposes of the previously staged navigation and sets this navigation as staged.
    */
@@ -99,10 +98,6 @@ export type RouterNavigationStores = HasVueAppStore & {
    * The rendered route keeps reading from the current navigation until then.
    */
   staged: () => RouterNavigationStore,
-  /**
-   * Reuses matching staged work or stages a fresh navigation for the route.
-   */
-  stage: (route: ResolvedRoute | null) => RouterNavigationStore,
   /**
    * Makes the staged navigation current and computes whatever the route still lacks.
    */
@@ -263,6 +258,10 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     function abandon(): void {
       data.abandon(new NavigationAbandonedError())
       state.responses.clear()
+
+      if (navigations.staged === instance) {
+        navigations.staged = createRouterNavigationStore()
+      }
     }
 
     function dispose(): void {
@@ -272,7 +271,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     }
 
     function stage(): void {
-      if (navigations.staged === instance) {
+      if (data.signal.aborted || navigations.staged === instance) {
         return
       }
 
@@ -285,9 +284,6 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
     const instance: RouterNavigationStore = {
       data,
-      get route() {
-        return state.route
-      },
       compute,
       fill,
       stage,
@@ -303,30 +299,14 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
   const staged: RouterNavigationStores['staged'] = () => navigations.staged
 
-  const stage: RouterNavigationStores['stage'] = (route) => {
-    const pending = navigations.staged
-
-    if (!route) {
-      return pending
-    }
-
-    const matches = !pending.route || isSameResolvedRoute(pending.route, route)
-
-    if (pending.data.signal.aborted || !matches) {
-      pending.dispose()
-      navigations.staged = createRouterNavigationStore()
-    }
-
-    return navigations.staged
-  }
-
   const stop: RouterNavigationStores['stop'] = () => {
     navigations.current.dispose()
     navigations.staged.dispose()
   }
 
+
   const commit: RouterNavigationStores['commit'] = (options) => {
-    const pending = stage(options.to)
+    const pending = staged()
 
     return pending.commit(options)
   }
@@ -568,7 +548,6 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     current,
     create: createRouterNavigationStore,
     staged,
-    stage,
     commit,
     getValues,
     getProps,
