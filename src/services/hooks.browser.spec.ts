@@ -6,7 +6,79 @@ import { mount } from '@vue/test-utils'
 import { routes } from '@/utilities/testHelpers'
 import { createExternalRoute } from './createExternalRoute'
 import { createRejection } from './createRejection'
+import { createRouterPlugin } from './createRouterPlugin'
 import { onAfterRouteLeave, onAfterRouteUpdate, onBeforeRouteLeave, onBeforeRouteUpdate, RouterView } from '@/main'
+
+test('aborting plugin hooks removes them from an existing router', async () => {
+  const controller = new AbortController()
+  const onUpdate = vi.fn()
+  const onError = vi.fn()
+  const route = createRoute({ name: 'home', path: '/[id]' })
+  const plugin = createRouterPlugin({ routes: [route] })
+  plugin.onAfterRouteUpdate(onUpdate, { signal: controller.signal })
+  plugin.onError(onError, { signal: controller.signal })
+  const router = createRouter([], { initialUrl: '/1' }, [plugin])
+  router.onBeforeRouteUpdate(() => {
+    throw new Error('navigation failed')
+  })
+  await router.start()
+
+  await router.push('/2')
+  expect(onUpdate).toHaveBeenCalledOnce()
+  expect(onError).toHaveBeenCalledOnce()
+
+  controller.abort()
+  await router.push('/3')
+  expect(onUpdate).toHaveBeenCalledOnce()
+  expect(onError).toHaveBeenCalledOnce()
+})
+
+test('aborting the signal unregisters a mounted component hook', async () => {
+  const controller = new AbortController()
+  const hook = vi.fn()
+  const route = createRoute({ name: 'home', path: '/[id]' })
+    .addView({
+      setup() {
+        onAfterRouteUpdate(hook, { signal: controller.signal })
+      },
+      render: () => null,
+    })
+  const router = createRouter([route], { initialUrl: '/1' })
+  const wrapper = mount(RouterView, { global: { plugins: [router] } })
+  await router.start()
+  await router.push('/2')
+  expect(hook).toHaveBeenCalledOnce()
+
+  controller.abort()
+  await router.push('/3')
+
+  expect(hook).toHaveBeenCalledOnce()
+  wrapper.unmount()
+})
+
+test('component hooks with a signal still unregister on unmount', async () => {
+  const controller = new AbortController()
+  const hook = vi.fn()
+  const home = createRoute({ name: 'home', path: '/[id]' })
+    .addView({
+      setup() {
+        onAfterRouteUpdate(hook, { signal: controller.signal })
+      },
+      render: () => null,
+    })
+  const other = createRoute({ name: 'other', path: '/other/[id]' })
+  const router = createRouter([home, other], { initialUrl: '/1' })
+  const wrapper = mount(RouterView, { global: { plugins: [router] } })
+  await router.start()
+  await router.push('/2')
+  expect(hook).toHaveBeenCalledOnce()
+
+  await router.push('/other/1')
+  await router.push('/other/2')
+
+  expect(hook).toHaveBeenCalledOnce()
+  wrapper.unmount()
+})
 
 test('global hooks are called correctly', async () => {
   const router = createRouter(routes, { initialUrl: '/parentA/valueA' })

@@ -120,6 +120,20 @@ onBeforeRouteLeave((to, context) => {
 You cannot register `onBeforeRouteEnter` or `onAfterRouteEnter` hooks from within a component, since the component must have been mounted to discover the hook.
 :::
 
+## Removing Hooks
+
+Hook registration returns a function that removes the hook. You can also pass a `signal` option to remove it when an `AbortController` aborts. An already-aborted signal skips registration. Component hooks still unregister automatically on unmount.
+
+```ts
+const controller = new AbortController()
+
+router.onAfterRouteEnter((to) => {
+  console.log(to.href)
+}, { signal: controller.signal })
+
+controller.abort()
+```
+
 ## Global Injection
 
 Hooks are run within the context of the Vue app the router is installed. This means you can use vue's `inject` function to access global values.

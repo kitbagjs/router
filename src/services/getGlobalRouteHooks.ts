@@ -2,46 +2,50 @@ import { ResolvedRoute } from '@/types/resolved'
 import { isRouteEnter, isRouteLeave, isRouteUpdate } from './hooks'
 import { Hooks } from '@/models/hooks'
 
-export function getGlobalBeforeHooks(to: ResolvedRoute | null, from: ResolvedRoute | null, globalHooks: Hooks): Hooks {
+export function getGlobalBeforeHooks(to: ResolvedRoute | null, from: ResolvedRoute | null, globalStores: Hooks[]): Hooks {
   const hooks = new Hooks()
 
-  to?.matches.forEach((_route, depth) => {
-    if (isRouteEnter(to, from, depth)) {
-      globalHooks.onBeforeRouteEnter.forEach((hook) => hooks.onBeforeRouteEnter.add(hook))
-    }
+  for (const globalHooks of globalStores) {
+    to?.matches.forEach((_route, depth) => {
+      if (isRouteEnter(to, from, depth)) {
+        globalHooks.onBeforeRouteEnter.forEach((hook) => hooks.onBeforeRouteEnter.add(hook))
+      }
 
-    if (isRouteUpdate(to, from, depth)) {
-      globalHooks.onBeforeRouteUpdate.forEach((hook) => hooks.onBeforeRouteUpdate.add(hook))
-    }
-  })
+      if (isRouteUpdate(to, from, depth)) {
+        globalHooks.onBeforeRouteUpdate.forEach((hook) => hooks.onBeforeRouteUpdate.add(hook))
+      }
+    })
 
-  from?.matches.forEach((_route, depth) => {
-    if (isRouteLeave(to, from, depth)) {
-      globalHooks.onBeforeRouteLeave.forEach((hook) => hooks.onBeforeRouteLeave.add(hook))
-    }
-  })
+    from?.matches.forEach((_route, depth) => {
+      if (isRouteLeave(to, from, depth)) {
+        globalHooks.onBeforeRouteLeave.forEach((hook) => hooks.onBeforeRouteLeave.add(hook))
+      }
+    })
+  }
 
   return hooks
 }
 
-export function getGlobalAfterHooks(to: ResolvedRoute | null, from: ResolvedRoute | null, globalHooks: Hooks): Hooks {
+export function getGlobalAfterHooks(to: ResolvedRoute | null, from: ResolvedRoute | null, globalStores: Hooks[]): Hooks {
   const hooks = new Hooks()
 
-  to?.matches.forEach((_route, depth) => {
-    if (isRouteEnter(to, from, depth)) {
-      globalHooks.onAfterRouteEnter.forEach((hook) => hooks.onAfterRouteEnter.add(hook))
-    }
+  for (const globalHooks of globalStores) {
+    to?.matches.forEach((_route, depth) => {
+      if (isRouteEnter(to, from, depth)) {
+        globalHooks.onAfterRouteEnter.forEach((hook) => hooks.onAfterRouteEnter.add(hook))
+      }
 
-    if (isRouteUpdate(to, from, depth)) {
-      globalHooks.onAfterRouteUpdate.forEach((hook) => hooks.onAfterRouteUpdate.add(hook))
-    }
-  })
+      if (isRouteUpdate(to, from, depth)) {
+        globalHooks.onAfterRouteUpdate.forEach((hook) => hooks.onAfterRouteUpdate.add(hook))
+      }
+    })
 
-  from?.matches.forEach((_route, depth) => {
-    if (isRouteLeave(to, from, depth)) {
-      globalHooks.onAfterRouteLeave.forEach((hook) => hooks.onAfterRouteLeave.add(hook))
-    }
-  })
+    from?.matches.forEach((_route, depth) => {
+      if (isRouteLeave(to, from, depth)) {
+        globalHooks.onAfterRouteLeave.forEach((hook) => hooks.onAfterRouteLeave.add(hook))
+      }
+    })
+  }
 
   return hooks
 }

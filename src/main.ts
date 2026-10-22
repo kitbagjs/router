@@ -27,6 +27,7 @@ export type { CreateLoaderOptions, Loader, LoaderCallbackContext } from './types
 export type {
   RejectionHooks,
   HookRemove,
+  HookRegistrationOptions,
   BeforeHookLifecycle,
   AfterHookLifecycle,
   HookLifecycle,
