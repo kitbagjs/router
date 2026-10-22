@@ -18,7 +18,7 @@ import { MaybePromise } from '@/types/utilities'
 import { Computation, getComputations, isKind, loaderLocations, propsLocations, ValueLocation } from './getComputations'
 
 /**
- * Computation stopped because its navigation was disposed.
+ * Computation stopped because its navigation was abandoned.
  */
 type RouterNavigationAbandoned = {
   status: 'ABANDONED',
@@ -50,7 +50,7 @@ type CreateRouterNavigationOptions = {
 }
 
 type RouterNavigationState = {
-  responses: RouterNavigationComputationResponse[],
+  responses: Set<RouterNavigationComputationResponse>,
   context: RouterNavigationContext | undefined,
 }
 
@@ -66,6 +66,7 @@ export type RouterNavigationStore = {
    */
   stage: () => void,
   commit: (options: RouterNavigationCommitOptions) => Promise<unknown>[],
+  abandon: () => void,
   dispose: () => void,
   /**
    * Computes the supplied values and reports how they settle.
@@ -122,21 +123,41 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     const data = createDataStore()
 
     const state: RouterNavigationState = {
-      responses: [],
+      responses: new Set(),
       context: undefined,
     }
 
-    function reportResponse(response: RouterNavigationComputationResponse): void {
+    function reportResponse(event: RouterNavigationComputationResponse): void {
       if (data.signal.aborted) {
         return
       }
 
       if (!state.context) {
-        state.responses.push(response)
+        state.responses.add(event)
         return
       }
 
-      onResponse?.({ ...response, ...state.context })
+      const context = state.context
+      const response = event.response.then((response): RouterNavigationResponse => {
+        if (data.signal.aborted || context.signal.aborted) {
+          return { status: 'ABANDONED' }
+        }
+
+        if (response.status === 'PUSH' || response.status === 'REJECT') {
+          abandon()
+        }
+
+        return response
+      }, (error: unknown): RouterNavigationResponse => {
+        if (data.signal.aborted || context.signal.aborted) {
+          return { status: 'ABANDONED' }
+        }
+
+        throw error
+      })
+      response.catch(() => {})
+
+      onResponse?.({ ...event, ...context, response })
     }
 
     function compute(route: ResolvedRoute, computations: Computation[]): Promise<unknown>[] {
@@ -148,10 +169,18 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
       computations.forEach((computation) => {
         data.set(computation.key, () => {
-          const response = toResponse(data.subscribe(computation.key))
-          response.catch(() => {})
-
-          reportResponse({ response, source: computation.kind })
+          const event: RouterNavigationComputationResponse = {
+            response: toResponse(data.subscribe(computation.key)),
+            source: computation.kind,
+          }
+          const onSettle = (): void => {
+            // Deliver buffered outcomes in completion order when the navigation is adopted.
+            if (state.responses.delete(event)) {
+              state.responses.add(event)
+            }
+          }
+          event.response.then(onSettle, onSettle)
+          reportResponse(event)
 
           return run(computation, route, data)
         })
@@ -198,15 +227,20 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
         signal,
       }
 
-      const pending = state.responses.splice(0)
+      const pending = [...state.responses]
+      state.responses.clear()
       pending.forEach(reportResponse)
 
       return compute(to, getComputations(to))
     }
 
+    function abandon(): void {
+      data.abandon(new NavigationAbandonedError())
+    }
+
     function dispose(): void {
       data.dispose(new NavigationAbandonedError())
-      state.responses.length = 0
+      state.responses.clear()
       state.context = undefined
     }
 
@@ -228,6 +262,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
       fill,
       stage,
       commit,
+      abandon,
       dispose,
     }
 
@@ -416,13 +451,6 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
   function getValue(location: ValueLocation, route: ResolvedRoute, store?: DataStore): Promise<unknown> {
     const key = getDataKey(location.kind, location.id, location.name, route)
     const current = navigations.current.data
-
-    if (current.signal.aborted) {
-      const abandoned = Promise.reject(new NavigationAbandonedError())
-      abandoned.catch(() => {})
-
-      return abandoned
-    }
 
     if (!store || store === current) {
       return current.subscribe(key)

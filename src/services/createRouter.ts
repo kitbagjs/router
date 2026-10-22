@@ -578,6 +578,8 @@ export function createRouter<
 
     if (isSSR) {
       setServerRedirect(redirectStatus ?? 302, url)
+      const current = navigation.current()
+      current.abandon()
 
       return
     }
@@ -616,6 +618,11 @@ export function createRouter<
     }
 
     const controller = navigations.begin()
+
+    if (isSSR) {
+      const current = navigation.current()
+      current.abandon()
+    }
 
     hooks.runRejectionHooks(rejection, { to, from })
 

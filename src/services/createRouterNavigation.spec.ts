@@ -233,7 +233,8 @@ test('a prefetched response is reported when its navigation becomes current', as
 
   const [event] = onResponse.mock.calls[0]
 
-  expect(event).toMatchObject({ to: route, from, signal })
+  expect(event).toMatchObject({ to: route, from })
+  expect(event.signal.aborted).toBe(false)
 
   await expect(event.response).resolves.toEqual({ status: 'PUSH', to: ['/next', { replace: true }] })
 })
@@ -351,4 +352,35 @@ test('the current navigation shares explicitly supplied computations', async () 
 
   pending.resolve('loaded')
   await expect(values[0]).resolves.toBe('loaded')
+})
+
+test('a redirect abandons unfinished computations without a response handler', async () => {
+  const pending = Promise.withResolvers<string>()
+  const route = createResolvedRoute(createRoute({ path: '/' })
+    .addLoader((_route, { push }) => push('/next'), { name: 'redirect' })
+    .addLoader(() => pending.promise, { name: 'pending' }))
+  const navigation = createRouterNavigation()
+
+  const values = navigation.commit({ to: route })
+
+  await expect(values[1]).rejects.toBeInstanceOf(NavigationAbandonedError)
+  expect(navigation.current().data.signal.aborted).toBe(true)
+})
+
+test('an unexpected error leaves other computations running', async () => {
+  const pending = Promise.withResolvers<string>()
+  const error = new Error('failed')
+  const route = createResolvedRoute(createRoute({ path: '/' })
+    .addLoader(() => {
+      throw error
+    }, { name: 'failed' })
+    .addLoader(() => pending.promise, { name: 'pending' }))
+  const navigation = createRouterNavigation()
+
+  const values = navigation.commit({ to: route })
+
+  await expect(values[0]).rejects.toBe(error)
+  expect(navigation.current().data.signal.aborted).toBe(false)
+  pending.resolve('value')
+  await expect(values[1]).resolves.toBe('value')
 })
