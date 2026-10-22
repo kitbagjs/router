@@ -90,6 +90,7 @@ export type RouteValue = {
 
 export type RouterNavigationStores = HasVueAppStore & {
   current: () => RouterNavigationStore,
+  stop: () => void,
   create: () => RouterNavigationStore,
   /**
    * The navigation prepared for the next commit.
@@ -273,6 +274,11 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
   const staged: RouterNavigationStores['staged'] = () => navigations.staged
 
+  const stop: RouterNavigationStores['stop'] = () => {
+    navigations.current.dispose()
+    navigations.staged.dispose()
+  }
+
   const commit: RouterNavigationStores['commit'] = (options) => navigations.staged.commit(options)
 
   const getValues: RouterNavigationStores['getValues'] = (route) => {
@@ -312,6 +318,12 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
   }
 
   const getProps: RouterNavigationStores['getProps'] = (id, name, route) => {
+    const match = route.matches.find((match) => match.id === id)
+
+    if (!match?.views[name]?.props) {
+      return NO_PROPS
+    }
+
     const key = getDataKey('props', id, name, route)
     const result = navigations.current.data.get(key)
 
@@ -475,6 +487,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
   }
 
   return {
+    stop,
     current,
     create: createRouterNavigationStore,
     staged,

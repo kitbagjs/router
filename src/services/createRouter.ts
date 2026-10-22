@@ -800,6 +800,7 @@ export function createRouter<
     stopped = true
     stopRouteContext()
     navigations.stop()
+    navigation.stop()
     navigationProgress.stop()
     history.stopListening()
   }

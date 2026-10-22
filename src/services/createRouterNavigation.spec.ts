@@ -279,6 +279,19 @@ test('computations added after adoption report their response once', async () =>
   await expect(event.response).resolves.toEqual({ status: 'PUSH', to: ['/target'] })
 })
 
+test('stop abandons computations in both current and staged navigations', async () => {
+  const pending = Promise.withResolvers<string>()
+  const route = createResolvedRoute(createRoute({ path: '/' }).addLoader(() => pending.promise))
+  const navigation = createRouterNavigation()
+  const current = navigation.commit({ to: route })
+  const staged = navigation.staged().compute(route, getComputations(route))
+
+  navigation.stop()
+
+  await expect(current[0]).rejects.toBeInstanceOf(NavigationAbandonedError)
+  await expect(staged[0]).rejects.toBeInstanceOf(NavigationAbandonedError)
+})
+
 test('staging and committing the same instance preserves its computations', async () => {
   const load = vi.fn((_route: unknown, { signal }: { signal: AbortSignal }) => signal)
   const route = createResolvedRoute(createRoute({ path: '/' }).addLoader(load))
