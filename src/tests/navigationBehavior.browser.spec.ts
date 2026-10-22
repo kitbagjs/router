@@ -11,8 +11,6 @@ import { RouterPushOptions } from '@/types/routerPush'
 import { NavigationBehavior } from '@/types/navigation'
 import { payloadToScript } from '@/services/payload'
 
-const wrappers: ReturnType<typeof mount>[] = []
-
 beforeEach(() => {
   vi.spyOn(console, 'info').mockImplementation(() => {})
   register({ forced: true })
@@ -24,16 +22,11 @@ afterEach(async () => {
   await transition?.finished
   vi.restoreAllMocks()
 
-  wrappers.forEach((wrapper) => wrapper.unmount())
-  wrappers.length = 0
   document.body.innerHTML = ''
 })
 
 function mountRouter(router: ReturnType<typeof createRouter>): ReturnType<typeof mount> {
-  const wrapper = mount({ template: '<RouterView />' }, { global: { plugins: [router] } })
-  wrappers.push(wrapper)
-
-  return wrapper
+  return mount({ template: '<RouterView />' }, { global: { plugins: [router] } })
 }
 
 describe('route commitment', () => {
@@ -344,7 +337,6 @@ describe('links', () => {
       },
       template: '<div />',
     }), { global: { plugins: [router] } })
-    wrappers.push(wrapper)
 
     await wrapper.vm.push({ navigation: 'progressive' })
     expect(router.route.name).toBe('page')
