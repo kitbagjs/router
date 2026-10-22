@@ -1,10 +1,8 @@
 /* eslint-disable vue/one-component-per-file */
-import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils'
-import { afterEach, expect, test, vi } from 'vitest'
+import { flushPromises, mount } from '@vue/test-utils'
+import { expect, test, vi } from 'vitest'
 import { defineComponent, h, Suspense } from 'vue'
 import { createLoader, createRoute, createRouter, createRouterAssets, Router, useLoader } from '@/main'
-
-enableAutoUnmount(afterEach)
 
 function mountConsumer<TResult>(router: Router, setup: () => TResult): TResult {
   const wrapper = mount(defineComponent({
