@@ -68,7 +68,6 @@ export type DataStore = {
 export function createDataStore(): DataStore {
   const entries: Map<string, Entry> = reactive(new Map())
   const controller = new AbortController()
-  const disposed = shallowRef(false)
 
   function create(): Entry {
     const { promise, resolve, reject } = Promise.withResolvers<unknown>()
@@ -88,7 +87,7 @@ export function createDataStore(): DataStore {
 
     const created = create()
 
-    if (disposed.value) {
+    if (controller.signal.aborted) {
       settle(created, { kind: 'error', error: controller.signal.reason })
 
       return created
@@ -149,16 +148,17 @@ export function createDataStore(): DataStore {
   }
 
   const get: DataStore['get'] = (key) => {
-    if (disposed.value) {
+    const result = entries.get(key)?.state.value
+
+    if (!result && controller.signal.aborted) {
       return ABANDONED
     }
 
-    return entries.get(key)?.state.value ?? MISSING
+    return result ?? MISSING
   }
 
   const dispose: DataStore['dispose'] = (reason) => {
     controller.abort(reason)
-    disposed.value = true
 
     for (const [key, dying] of entries) {
       entries.delete(key)

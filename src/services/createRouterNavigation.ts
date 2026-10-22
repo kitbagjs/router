@@ -11,7 +11,6 @@ import { createVueAppStore, HasVueAppStore } from './createVueAppStore'
 import { CallbackContextPush, CallbackContextReject, CallbackContextSuccess } from '@/types/callbackContext'
 import { createRouterCallbackContext } from './createRouterCallbackContext'
 import { createDataStore, DataStore } from './createDataStore'
-import { createNavigationStores } from './createNavigationStores'
 import { DataKind, getDataKey } from './getDataKey'
 import { PropsResult } from '@/utilities/props'
 import { warn } from '@/utilities/warn'
@@ -19,59 +18,43 @@ import { MaybePromise } from '@/types/utilities'
 import { Computation, getComputations, isKind, loaderLocations, propsLocations, ValueLocation } from './getComputations'
 
 /**
- * A navigation that was superseded before its values settled. The navigation that replaced it owns the
- * outcome, so this one reports that it went nowhere rather than a success it never had.
+ * Computation stopped because its navigation was disposed.
  */
-type RouteValueAbandoned = {
+type RouterNavigationAbandoned = {
   status: 'ABANDONED',
 }
 
-export type RouteValueResponse = CallbackContextSuccess | CallbackContextPush | CallbackContextReject | RouteValueAbandoned
+export type RouterNavigationResponse = CallbackContextSuccess | CallbackContextPush | CallbackContextReject | RouterNavigationAbandoned
 
-/**
- * How a navigation's props and loaders settled. Reported separately because props are what a view renders
- * with while loaders hold nothing up, so a slow loader must not be what decides when props are known.
- */
-export type RouteValueResponses = {
-  props: Promise<RouteValueResponse>,
-  loaders: Promise<RouteValueResponse>,
-  /**
-   * Each value on its own as it settles, for whoever counts them.
-   */
+export type RouterNavigationResponses = {
+  props: Promise<RouterNavigationResponse>,
+  loaders: Promise<RouterNavigationResponse>,
   values: Promise<unknown>[],
 }
 
-/**
- * A store of a route's values, whichever store that is.
- */
-export type ValueStore = {
+const ABANDONED_RESPONSE = Promise.resolve<RouterNavigationResponse>({ status: 'ABANDONED' })
+
+type RouterNavigationStoreSlots = {
+  current: RouterNavigationStore,
+  staged: RouterNavigationStore,
+}
+
+export type RouterNavigationStore = {
+  data: DataStore,
+  /**
+   * Disposes of the previously staged navigation and sets this navigation as staged.
+   */
+  stage: () => void,
+  commit: (route: ResolvedRoute) => RouterNavigationResponses,
+  dispose: () => void,
   /**
    * Computes the supplied values and reports how they settle.
    */
-  compute: (route: ResolvedRoute, computations: Computation[]) => RouteValueResponses,
+  compute: (route: ResolvedRoute, computations: Computation[]) => RouterNavigationResponses,
   /**
    * Adopts values that already settled, in place of running their getters.
    */
   fill: (route: ResolvedRoute, values: RouteValue[]) => void,
-}
-
-/**
- * A store kept apart from the navigation until it is staged, so values can be computed ahead of a
- * navigation that may never come.
- */
-export type DetachedStore = ValueStore & {
-  /**
-   * Becomes the staged store, replacing whatever was staged, and starts over empty.
-   */
-  stage: () => void,
-  /**
-   * Abandons what was computed and starts over.
-   */
-  reset: () => void,
-  /**
-   * Abandons what was computed.
-   */
-  dispose: () => void,
 }
 
 /**
@@ -84,18 +67,18 @@ export type RouteValue = {
   value: unknown,
 }
 
-export type RouteValueStore = HasVueAppStore & {
-  createDetachedStore: () => DetachedStore,
+export type RouterNavigationStores = HasVueAppStore & {
+  current: () => RouterNavigationStore,
+  create: () => RouterNavigationStore,
   /**
-   * The store the next navigation adopts, created when nothing is staged. Values computed into it ahead of
-   * the navigation are found under way when the navigation commits, while the rendered route keeps reading
-   * its own store meanwhile.
+   * The navigation prepared for the next commit.
+   * The rendered route keeps reading from the current navigation until then.
    */
-  staged: () => ValueStore,
+  staged: () => RouterNavigationStore,
   /**
-   * Makes the staged store current and computes whatever the route still lacks.
+   * Makes the staged navigation current and computes whatever the route still lacks.
    */
-  commit: (route: ResolvedRoute) => RouteValueResponses,
+  commit: (route: ResolvedRoute) => RouterNavigationResponses,
   /**
    * The values currently settled in the store.
    */
@@ -108,74 +91,50 @@ export type RouteValueStore = HasVueAppStore & {
   getData: (route: ResolvedRoute) => WithData['data'],
 }
 
-export function createRouteValueStore(): RouteValueStore {
+export function createRouterNavigation(): RouterNavigationStores {
   const { setVueApp, runWithContext } = createVueAppStore()
-  const navigation = createNavigationStores()
-
-  const createDetachedStore: RouteValueStore['createDetachedStore'] = () => {
-    const detached = { store: createDataStore() }
-
-    const dispose: DetachedStore['dispose'] = () => {
-      detached.store.dispose(new NavigationAbandonedError())
-    }
-
-    const reset: DetachedStore['reset'] = () => {
-      dispose()
-      detached.store = createDataStore()
-    }
-
-    const stage: DetachedStore['stage'] = () => {
-      navigation.stage(detached.store)
-      detached.store = createDataStore()
-    }
-
-    return {
-      ...createValueStore(() => detached.store),
-      stage,
-      reset,
-      dispose,
-    }
+  const navigations: RouterNavigationStoreSlots = {
+    current: createRouterNavigationStore(),
+    staged: createRouterNavigationStore(),
   }
 
-  const staged: RouteValueStore['staged'] = () => {
-    return createValueStore(() => navigation.staged())
-  }
+  function createRouterNavigationStore(): RouterNavigationStore {
+    const data = createDataStore()
 
-  const commit: RouteValueStore['commit'] = (route) => {
-    const previous = navigation.promote()
+    function compute(route: ResolvedRoute, computations: Computation[]): RouterNavigationResponses {
+      if (data.signal.aborted) {
+        return {
+          props: ABANDONED_RESPONSE,
+          loaders: ABANDONED_RESPONSE,
+          values: [],
+        }
+      }
 
-    previous.dispose(new NavigationAbandonedError())
-
-    return createValueStore(() => navigation.current()).compute(route, getComputations(route))
-  }
-
-  /**
-   * The same api over any store. The store is looked up per call, since a detached store starts over when
-   * it is staged or reset.
-   */
-  function createValueStore(getStore: () => DataStore): ValueStore {
-    const compute: ValueStore['compute'] = (route, computations) => {
-      const store = getStore()
-
-      // loaders first, so a props getter reading the route's data finds it under way rather than missing
-      const loaders = settle(store, route, computations.filter(isKind('loader')))
-      const props = settle(store, route, computations.filter(isKind('props')))
-
-      // a caller that does not wait on these must not see a getter's error as an unhandled rejection
+      const loaders = settle(route, computations.filter(isKind('loader')))
+      const props = settle(route, computations.filter(isKind('props')))
       loaders.catch(() => {})
       props.catch(() => {})
-
-      const values = computations.map(({ key }) => store.subscribe(key))
 
       return {
         props,
         loaders,
-        values,
+        values: computations.map(({ key }) => data.subscribe(key)),
       }
     }
 
-    const fill: ValueStore['fill'] = (route, values) => {
-      const store = getStore()
+    function settle(route: ResolvedRoute, computations: Computation[]): Promise<RouterNavigationResponse> {
+      computations.forEach((computation) => {
+        data.set(computation.key, () => run(computation, route, data))
+      })
+
+      return toResponse(Promise.all(computations.map(({ key }) => data.subscribe(key))))
+    }
+
+    function fill(route: ResolvedRoute, values: RouteValue[]): void {
+      if (data.signal.aborted) {
+        return
+      }
+
       const computations = getComputations(route)
 
       for (const { kind, depth, name, value } of values) {
@@ -185,18 +144,63 @@ export function createRouteValueStore(): RouteValueStore {
           continue
         }
 
-        store.set(computation.key, () => value)
+        data.set(computation.key, () => value)
       }
     }
 
-    return {
+    function commit(route: ResolvedRoute): RouterNavigationResponses {
+      const previous = navigations.current
+      const staged = navigations.staged
+      navigations.current = instance
+      navigations.staged = createRouterNavigationStore()
+
+      if (previous !== instance) {
+        previous.dispose()
+      }
+
+      if (staged !== instance && staged !== previous) {
+        staged.dispose()
+      }
+
+      return compute(route, getComputations(route))
+    }
+
+    function dispose(): void {
+      data.dispose(new NavigationAbandonedError())
+    }
+
+    function stage(): void {
+      if (navigations.staged === instance) {
+        return
+      }
+
+      if (navigations.staged !== navigations.current) {
+        navigations.staged.dispose()
+      }
+
+      navigations.staged = instance
+    }
+
+    const instance: RouterNavigationStore = {
+      data,
       compute,
       fill,
+      stage,
+      commit,
+      dispose,
     }
+
+    return instance
   }
 
-  const getValues: RouteValueStore['getValues'] = (route) => {
-    const store = navigation.current()
+  const current: RouterNavigationStores['current'] = () => navigations.current
+
+  const staged: RouterNavigationStores['staged'] = () => navigations.staged
+
+  const commit: RouterNavigationStores['commit'] = (route) => navigations.staged.commit(route)
+
+  const getValues: RouterNavigationStores['getValues'] = (route) => {
+    const store = navigations.current.data
 
     return getComputations(route).flatMap(({ kind, depth, name, key }) => {
       const result = store.get(key)
@@ -209,18 +213,9 @@ export function createRouteValueStore(): RouteValueStore {
     })
   }
 
-  /**
-   * Sets every computation into the store and reports how they settled. Setting happens before the first
-   * await, so everything a route computes is under way by the time the route is current. Getters read
-   * from the same store, so one finds what a sibling is computing alongside it.
-   */
-  async function settle(store: DataStore, route: ResolvedRoute, computations: Computation[]): Promise<RouteValueResponse> {
-    computations.forEach((computation) => {
-      store.set(computation.key, () => run(computation, route, store))
-    })
-
+  async function toResponse(value: Promise<unknown>): Promise<RouterNavigationResponse> {
     try {
-      await Promise.all(computations.map(({ key }) => store.subscribe(key)))
+      await value
 
       return { status: 'SUCCESS' }
     } catch (error) {
@@ -240,10 +235,9 @@ export function createRouteValueStore(): RouteValueStore {
     }
   }
 
-  const getProps: RouteValueStore['getProps'] = (id, name, route) => {
+  const getProps: RouterNavigationStores['getProps'] = (id, name, route) => {
     const key = getDataKey('props', id, name, route)
-    const store = navigation.current()
-    const result = store.get(key)
+    const result = navigations.current.data.get(key)
 
     switch (result.kind) {
       case 'missing':
@@ -251,7 +245,7 @@ export function createRouteValueStore(): RouteValueStore {
 
       case 'pending':
       case 'running':
-        return toResult(store, key)
+        return toResult(navigations.current.data, key)
 
       case 'value':
       case 'error':
@@ -282,16 +276,9 @@ export function createRouteValueStore(): RouteValueStore {
   }
 
   /**
-   * The route a callback is given, which is the resolved route with its data answering to whoever reads it.
-   *
-   * A props getter sees the route's data, since a view is entitled to render with what the route loaded.
-   * A loader sees none of it: its own route's data includes what it is computing, so reading it could only
-   * wait on itself, or on a sibling waiting back. Loaders reach other routes' data through the parent
-   * context, which only ever points upward — that is what makes it impossible to arrange callbacks that
-   * wait on each other.
-   *
-   * A proxy rather than a copy so that the data the route already carries is read only when it is asked
-   * for. Copying would read it to carry it over, subscribing to a value nothing asked for.
+   * Loaders cannot read their own route's data, which could create circular dependencies.
+   * They can read parent data instead. Props callbacks read data from their computation store.
+   * The proxy avoids subscribing to route.data until a callback actually reads it.
    */
   function toCallbackRoute({ kind, name }: Computation, route: ResolvedRoute, store?: DataStore): ResolvedRoute {
     return new Proxy(route, {
@@ -387,19 +374,29 @@ export function createRouteValueStore(): RouteValueStore {
    */
   function getValue(location: ValueLocation, route: ResolvedRoute, store?: DataStore): Promise<unknown> {
     const key = getDataKey(location.kind, location.id, location.name, route)
-    const current = navigation.current()
+    const current = navigations.current.data
+
+    if (current.signal.aborted) {
+      const abandoned = Promise.reject(new NavigationAbandonedError())
+      abandoned.catch(() => {})
+
+      return abandoned
+    }
 
     if (!store || store === current) {
       return current.subscribe(key)
     }
 
-    if (store.get(key).kind === 'missing' && current.get(key).kind === 'missing') {
+    const stored = store.get(key)
+    const currentValue = current.get(key)
+
+    if (stored.kind === 'missing' && currentValue.kind === 'missing') {
       warnWaitingOnUncomputedValue(location, route)
     }
 
     const value = firstToArrive([
       store.subscribe(key),
-      navigation.current().subscribe(key),
+      current.subscribe(key),
     ])
 
     // firstToArrive derives a new promise, so the handler the store attached does not cover it
@@ -409,7 +406,8 @@ export function createRouteValueStore(): RouteValueStore {
   }
 
   return {
-    createDetachedStore,
+    current,
+    create: createRouterNavigationStore,
     staged,
     commit,
     getValues,

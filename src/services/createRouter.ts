@@ -5,7 +5,7 @@ import { createIsExternal } from '@/services/createIsExternal'
 import { createActivityTracker } from '@/services/createActivityTracker'
 import { SsrOptionRequiredError } from '@/errors/ssrOptionRequiredError'
 import { parseUrl, updateUrl } from '@/services/urlParser'
-import { createRouteValueStore, RouteValueResponse } from '@/services/createRouteValueStore'
+import { createRouterNavigation, RouterNavigationResponse } from '@/services/createRouterNavigation'
 import { createNavigationProgress, NavigationProgressTracker } from '@/services/createNavigationProgress'
 import { getComputations } from '@/services/getComputations'
 import { getAsyncComponents, loadAsyncComponents } from '@/utilities/components'
@@ -36,7 +36,7 @@ import { getRoutesForRouter } from './getRoutesForRouter'
 import { getGlobalHooksForRouter } from './getGlobalHooksForRouter'
 import { createComponentsStore } from './createComponentsStore'
 import { getComponentsStoreKey } from '@/compositions/useComponentsStore'
-import { getRouteValueStoreInjectionKey } from '@/compositions/useRouteValueStore'
+import { getRouterNavigationInjectionKey } from '@/compositions/useRouterNavigation'
 import { getViewTransitionKey } from '@/compositions/useViewTransition'
 import { ViewTransition } from '@/components/viewTransition'
 import { getRouterRejectionInjectionKey } from '@/compositions/useRejection'
@@ -165,7 +165,7 @@ export function createRouter<
     stop: stopRouteContext,
   } = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options)
   const notFoundRejection = getRejectionByType('NotFound')
-  const valueStore = createRouteValueStore()
+  const navigation = createRouterNavigation()
   const notFoundRoute = createResolvedRoute(notFoundRejection.route)
 
   const hooks = createRouterHooks({ redirectStatus, onHookAdded: addHookContext })
@@ -393,7 +393,7 @@ export function createRouter<
         return true
       }
 
-      const values = valueStore.staged().compute(route, getComputations(route))
+      const values = navigation.staged().compute(route, getComputations(route))
       const work = Promise.allSettled([
         values.props,
         values.loaders,
@@ -456,11 +456,11 @@ export function createRouter<
   }
 
   function setRouteValuesAndUpdateRoute(to: ResolvedRoute, from: ResolvedRoute | null, progress: NavigationProgressTracker, signal: AbortSignal): void {
-    const { props, loaders, values } = valueStore.commit(to)
+    const { props, loaders, values } = navigation.commit(to)
 
     activity.add(
-      handleRouteValueResponse(props, 'props', to, from, signal),
-      handleRouteValueResponse(loaders, 'loader', to, from, signal),
+      handleRouterNavigationResponse(props, 'props', to, from, signal),
+      handleRouterNavigationResponse(loaders, 'loader', to, from, signal),
     )
 
     progress.track(...values, ...loadAsyncComponents(to))
@@ -473,7 +473,7 @@ export function createRouter<
    * either is acted on whenever it arrives, without holding up the navigation that started it. Once that
    * navigation is superseded, its outcomes can no longer change the page or run error hooks.
    */
-  function handleRouteValueResponse(response: Promise<RouteValueResponse>, source: DataKind, to: ResolvedRoute, from: ResolvedRoute | null, signal: AbortSignal): Promise<void> {
+  function handleRouterNavigationResponse(response: Promise<RouterNavigationResponse>, source: DataKind, to: ResolvedRoute, from: ResolvedRoute | null, signal: AbortSignal): Promise<void> {
     return response
       .then((response) => {
         if (signal.aborted) {
@@ -630,7 +630,7 @@ export function createRouter<
     routerKey,
     route: notFoundRoute,
     push,
-    getData: valueStore.getData,
+    getData: navigation.getData,
   })
 
   /**
@@ -695,7 +695,7 @@ export function createRouter<
       case 'success': {
         const values = decodePayloadValues(to, payload.values, options?.transformer)
 
-        const store = valueStore.createDetachedStore()
+        const store = navigation.create()
 
         store.fill(to, values)
         store.stage()
@@ -779,7 +779,7 @@ export function createRouter<
 
     const title = await getTitle()
     const resolved = routerRoute.getResolvedRoute()
-    const { values, failures } = encodePayloadValues(resolved, valueStore.getValues(resolved), options?.transformer)
+    const { values, failures } = encodePayloadValues(resolved, navigation.getValues(resolved), options?.transformer)
 
     return {
       kind: 'success',
@@ -805,7 +805,7 @@ export function createRouter<
   function install(app: App): void {
     app.onUnmount(stop)
     hooks.setVueApp(app)
-    valueStore.setVueApp(app)
+    navigation.setVueApp(app)
 
     const routerView = createRouterView(routerKey)
     const routerLink = createRouterLink(routerKey)
@@ -818,7 +818,7 @@ export function createRouter<
     app.provide(getViewTransitionKey(routerKey), viewTransitions.viewTransition)
     app.provide(getRouterRejectionInjectionKey(routerKey), currentRejection)
     app.provide(getRouterHooksKey(routerKey), hooks)
-    app.provide(getRouteValueStoreInjectionKey(routerKey), valueStore)
+    app.provide(getRouterNavigationInjectionKey(routerKey), navigation)
     app.provide(getComponentsStoreKey(routerKey), componentsStore)
     app.provide(getNavigationProgressKey(routerKey), navigationProgress)
     app.provide(visibilityObserverKey, visibilityObserver)
