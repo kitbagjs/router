@@ -362,10 +362,11 @@ test('a redirect abandons unfinished computations without a response handler', a
     .addLoader(() => pending.promise, { name: 'pending' }))
   const navigation = createRouterNavigation()
 
-  const values = navigation.commit({ to: route })
+  const current = navigation.create()
+  const values = current.commit({ to: route })
 
   await expect(values[1]).rejects.toBeInstanceOf(NavigationAbandonedError)
-  expect(navigation.current().data.signal.aborted).toBe(true)
+  expect(current.data.signal.aborted).toBe(true)
 })
 
 test('an unexpected error leaves other computations running', async () => {
@@ -378,10 +379,11 @@ test('an unexpected error leaves other computations running', async () => {
     .addLoader(() => pending.promise, { name: 'pending' }))
   const navigation = createRouterNavigation()
 
-  const values = navigation.commit({ to: route })
+  const current = navigation.create()
+  const values = current.commit({ to: route })
 
   await expect(values[0]).rejects.toBe(error)
-  expect(navigation.current().data.signal.aborted).toBe(false)
+  expect(current.data.signal.aborted).toBe(false)
   pending.resolve('value')
   await expect(values[1]).resolves.toBe('value')
 })
