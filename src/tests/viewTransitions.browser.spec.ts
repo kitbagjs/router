@@ -557,3 +557,27 @@ test('view transition state belongs to the router that provides it', async () =>
   first.stop()
   await navigation
 })
+
+test('superseded preparation does not report late loader errors through the next transition', async () => {
+  const started = Promise.withResolvers<void>()
+  const slow = Promise.withResolvers<void>()
+  const pending = createRoute({ name: 'pending', path: '/pending' })
+    .addLoader(async () => {
+      started.resolve()
+      await slow.promise
+      throw new Error('obsolete loader')
+    })
+  const router = await startRouter({ viewTransition: true }, [routeA, pending, routeB])
+  const onError = vi.fn()
+  router.onError(onError)
+
+  const preparing = router.push('pending')
+  await started.promise
+  await router.push('routeB')
+  slow.resolve()
+  await preparing
+  await flushPromises()
+
+  expect(onError).not.toHaveBeenCalled()
+  router.stop()
+})
