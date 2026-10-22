@@ -11,4 +11,4 @@ rejection happened between. The router exposes [RouterReject](RouterReject.md) i
 
 | Type Parameter |
 | ------ |
-| `TRejections` *extends* [`Rejections`](Rejections.md) \| `undefined` |
+| <a id="type-parameter-trejections"></a> `TRejections` *extends* [`Rejections`](Rejections.md) \| `undefined` |

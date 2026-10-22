@@ -468,6 +468,45 @@ test('initial route is not set until the router is started', async () => {
   expect(router.route.name).toBe('root')
 })
 
+test('start shares one promise during and after initialization', async () => {
+  const pending = Promise.withResolvers<void>()
+  const beforeEnter = vi.fn(() => pending.promise)
+  const route = createRoute({ name: 'home', path: '/' })
+  route.onBeforeRouteEnter(beforeEnter)
+  const router = createRouter([route], { initialUrl: '/' })
+
+  const starting = router.start()
+
+  expect(router.start()).toBe(starting)
+  expect(router.started.value).toBe(false)
+  pending.resolve()
+  await starting
+
+  expect(router.start()).toBe(starting)
+  expect(router.started.value).toBe(true)
+  expect(beforeEnter).toHaveBeenCalledOnce()
+})
+
+test('start shares initialization failures with concurrent and later callers', async () => {
+  const failure = new Error('error handler failed')
+  const route = createRoute({ name: 'home', path: '/' })
+  route.onBeforeRouteEnter(() => {
+    throw new Error('navigation failed')
+  })
+  const router = createRouter([route], { initialUrl: '/' })
+  router.onError(() => {
+    throw failure
+  })
+
+  const results = await Promise.allSettled([router.start(), router.start()])
+
+  expect(results).toEqual([
+    { status: 'rejected', reason: failure },
+    { status: 'rejected', reason: failure },
+  ])
+  await expect(router.start()).rejects.toBe(failure)
+})
+
 test('the router is started once the initial route commits, without waiting for its after hooks', async () => {
   const { promise, resolve } = Promise.withResolvers<string>()
   const route = createRoute({ name: 'root', path: '/' }).addView(component)

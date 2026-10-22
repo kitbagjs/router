@@ -10,7 +10,7 @@ What an alias transform is given: the url that matched and the params the alias 
 
 | Type Parameter | Default type | Description |
 | ------ | ------ | ------ |
-| `TParams` | `Record`\<`string`, `unknown`\> | The alias's own params, typed by the alias pattern. |
+| <a id="type-parameter-tparams"></a> `TParams` | `Record`\<`string`, `unknown`\> | The alias's own params, typed by the alias pattern. |
 
 ## Properties
 

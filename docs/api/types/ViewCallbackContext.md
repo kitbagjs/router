@@ -10,7 +10,7 @@ Navigation helpers available to a reusable view from its declared context.
 
 | Type Parameter | Default type |
 | ------ | ------ |
-| `TContext` *extends* readonly `RouteContext`[] | \[\] |
+| <a id="type-parameter-tcontext"></a> `TContext` *extends* readonly `RouteContext`[] | \[\] |
 
 ## Properties
 

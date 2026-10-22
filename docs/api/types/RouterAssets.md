@@ -8,7 +8,7 @@ type RouterAssets<TRouter> = object;
 
 | Type Parameter |
 | ------ |
-| `TRouter` *extends* [`Router`](Router.md) |
+| <a id="type-parameter-trouter"></a> `TRouter` *extends* [`Router`](Router.md) |
 
 ## Compositions
 

@@ -4,6 +4,12 @@
 type RouterLinkProps<TRouter> = RouterPushOptions & object;
 ```
 
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| <a id="type-parameter-trouter"></a> `TRouter` *extends* [`Router`](Router.md) |
+
 ## Type Declaration
 
 ### prefetch?
@@ -32,9 +38,3 @@ to:
 ```
 
 The url string to navigate to or a callback that returns a url string
-
-## Type Parameters
-
-| Type Parameter |
-| ------ |
-| `TRouter` *extends* [`Router`](Router.md) |

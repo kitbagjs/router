@@ -10,8 +10,8 @@ function withParams<TValue, TParams>(value, params): UrlPart<WithParamsParamsOut
 
 | Type Parameter |
 | ------ |
-| `TValue` *extends* `string` |
-| `TParams` *extends* `MakeOptional`\<`WithParamsParamsInput`\<`TValue`\>\> |
+| <a id="type-parameter-tvalue"></a> `TValue` *extends* `string` |
+| <a id="type-parameter-tparams"></a> `TParams` *extends* `MakeOptional`\<`WithParamsParamsInput`\<`TValue`\>\> |
 
 ### Parameters
 

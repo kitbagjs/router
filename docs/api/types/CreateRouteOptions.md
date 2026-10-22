@@ -8,8 +8,8 @@ type CreateRouteOptions<TName, TMeta> = object;
 
 | Type Parameter | Default type |
 | ------ | ------ |
-| `TName` *extends* `string` \| `undefined` | `string` \| `undefined` |
-| `TMeta` *extends* [`RouteMeta`](RouteMeta.md) | [`RouteMeta`](RouteMeta.md) |
+| <a id="type-parameter-tname"></a> `TName` *extends* `string` \| `undefined` | `string` \| `undefined` |
+| <a id="type-parameter-tmeta"></a> `TMeta` *extends* [`RouteMeta`](RouteMeta.md) | [`RouteMeta`](RouteMeta.md) |
 
 ## Properties
 

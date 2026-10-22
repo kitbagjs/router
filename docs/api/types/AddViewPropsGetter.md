@@ -10,8 +10,8 @@ The props getter for a view added via `addView`. Receives the resolved route and
 
 | Type Parameter |
 | ------ |
-| `TRoute` *extends* [`Route`](Route.md) |
-| `TComponent` *extends* `Component` |
+| <a id="type-parameter-troute"></a> `TRoute` *extends* [`Route`](Route.md) |
+| <a id="type-parameter-tcomponent"></a> `TComponent` *extends* `Component` |
 
 ## Parameters
 

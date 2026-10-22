@@ -673,7 +673,11 @@ export function createRouter<
    */
   const started = ref(false)
 
-  const { promise: initialize, resolve: initialized } = Promise.withResolvers<void>()
+  const {
+    promise: startup,
+    resolve: resolveStartup,
+    reject: rejectStartup,
+  } = Promise.withResolvers<void>()
 
   /**
    * Adopts the outcome the server rendered for the initial url, committed synchronously so the first
@@ -713,17 +717,20 @@ export function createRouter<
     }
   }
 
-  async function start(): Promise<void> {
+  function start(): Promise<void> {
     if (stopped) {
-      return
+      return Promise.resolve()
     }
 
-    if (starting) {
-      return initialize
+    if (!starting) {
+      starting = true
+      initialize().then(resolveStartup, rejectStartup)
     }
 
-    starting = true
+    return startup
+  }
 
+  async function initialize(): Promise<void> {
     const payload = getHydratingPayload()
 
     if (payload) {
@@ -733,16 +740,12 @@ export function createRouter<
     }
 
     // stop() can run while navigation or hydration is awaited.
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (stopped) {
-      initialized()
-
       return
     }
 
     history.startListening()
 
-    initialized()
     started.value = true
   }
 

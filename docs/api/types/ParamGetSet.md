@@ -8,7 +8,7 @@ type ParamGetSet<T> = object;
 
 | Type Parameter | Default type |
 | ------ | ------ |
-| `T` | `any` |
+| <a id="type-parameter-t"></a> `T` | `any` |
 
 ## Properties
 

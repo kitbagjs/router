@@ -8,4 +8,4 @@ type ToRoute<TOptions> = CreateRouteOptions extends TOptions ? Route : Route<ToR
 
 | Type Parameter |
 | ------ |
-| `TOptions` *extends* [`CreateRouteOptions`](CreateRouteOptions.md) |
+| <a id="type-parameter-toptions"></a> `TOptions` *extends* [`CreateRouteOptions`](CreateRouteOptions.md) |

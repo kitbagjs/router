@@ -6,6 +6,13 @@ type AddViewOptions<TName, TGetter> = TransformerOptions<PayloadValueOf<TGetter>
 
 The options for a view added via `addView`.
 
+## Type Parameters
+
+| Type Parameter | Default type | Description |
+| ------ | ------ | ------ |
+| <a id="type-parameter-tname"></a> `TName` *extends* `string` \| `undefined` | `string` | The view's name, inferred from the `name` option. |
+| <a id="type-parameter-tgetter"></a> `TGetter` | [`AddViewPropsGetter`](AddViewPropsGetter.md)\<[`Route`](Route.md), `Component`\> | The view's props getter, inferred from the `props` option. |
+
 ## Type Declaration
 
 ### name?
@@ -32,10 +39,3 @@ optional props?: TGetter;
 ```
 
 A props getter for the view. Receives the resolved route and a context object.
-
-## Type Parameters
-
-| Type Parameter | Default type | Description |
-| ------ | ------ | ------ |
-| `TName` *extends* `string` \| `undefined` | `string` | The view's name, inferred from the `name` option. |
-| `TGetter` | [`AddViewPropsGetter`](AddViewPropsGetter.md)\<[`Route`](Route.md), `Component`\> | The view's props getter, inferred from the `props` option. |

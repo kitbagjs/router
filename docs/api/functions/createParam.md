@@ -10,7 +10,7 @@ function createParam<TParam>(param): TParam;
 
 | Type Parameter |
 | ------ |
-| `TParam` *extends* `Required`\<[`ParamGetSet`](../types/ParamGetSet.md)\<`unknown`\>\> |
+| <a id="type-parameter-tparam"></a> `TParam` *extends* `Required`\<[`ParamGetSet`](../types/ParamGetSet.md)\<`unknown`\>\> |
 
 ### Parameters
 
@@ -32,7 +32,7 @@ function createParam<TParam>(param): ParamGetSet<ExtractParamType<TParam>>;
 
 | Type Parameter |
 | ------ |
-| `TParam` *extends* [`Param`](../types/Param.md) |
+| <a id="type-parameter-tparam-1"></a> `TParam` *extends* [`Param`](../types/Param.md) |
 
 ### Parameters
 
@@ -54,7 +54,7 @@ function createParam<TParam>(param, defaultValue): ParamWithDefault<TParam>;
 
 | Type Parameter |
 | ------ |
-| `TParam` *extends* [`Param`](../types/Param.md) |
+| <a id="type-parameter-tparam-2"></a> `TParam` *extends* [`Param`](../types/Param.md) |
 
 ### Parameters
 
