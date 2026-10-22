@@ -7,6 +7,7 @@ import { createRouter } from '@/services/createRouter'
 import { getComputations } from '@/services/getComputations'
 import { createRouterAssets } from '@/services/createRouterAssets'
 import { UseNavigation } from '@/types/navigation'
+import { RouterPushOptionsInternal } from '@/types/routerNavigationInternal'
 import { Router } from '@/types/router'
 import { component } from '@/utilities/testHelpers'
 
@@ -242,8 +243,8 @@ describe('navigation progress', () => {
     expect(navigation.pending.value).toBe(false)
     expect(navigation.total.value).toBe(0)
 
-    prefetch.stage()
-    router.push('/other')
+    const options: RouterPushOptionsInternal = { prefetch }
+    router.push('/other', options)
     await flushPromises()
 
     expect(navigation.pending.value).toBe(true)
