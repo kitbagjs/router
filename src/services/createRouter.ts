@@ -59,6 +59,7 @@ import { getNavigationOption, getRouteNavigationOption } from '@/utilities/navig
 
 type RouteCommitOptions = {
   route: ResolvedRoute | null,
+  navigation: RouterNavigationStore,
   signal: AbortSignal,
   update: (navigation: RouterNavigationStore) => void,
 }
@@ -172,6 +173,7 @@ export function createRouter<
   hooks.addGlobalRouteHooks(getGlobalHooksForRouter(plugins))
 
   const navigations = createNavigationSignals()
+  let activeNavigation: RouterNavigationStore | undefined
   const viewTransitions = createViewTransitions()
   const componentsStore = createComponentsStore(routerKey)
   const visibilityObserver = createVisibilityObserver()
@@ -275,6 +277,12 @@ export function createRouter<
     }
   }
 
+  function beginNavigation(): AbortController {
+    activeNavigation?.abandon()
+
+    return navigations.begin()
+  }
+
   const set = activity.wrap(async (url: string, options: RouterUpdateOptions = {}): Promise<void> => {
     if (pathHasTrailingSlash(url) && shouldRemoveTrailingSlashes) {
       const cleanedUrl = removeTrailingSlashesFromPath(url)
@@ -284,11 +292,14 @@ export function createRouter<
       }
     }
 
-    const controller = navigations.begin()
+    const controller = beginNavigation()
 
     if (controller.signal.aborted) {
       return
     }
+
+    const pending = navigation.staged()
+    activeNavigation = pending
 
     const to = find(url, options) ?? null
     const from = getFromRouteForHooks()
@@ -323,6 +334,7 @@ export function createRouter<
 
     const routeCommit = createRouteCommit({
       route: to,
+      navigation: pending,
       signal: controller.signal,
       update: commitNavigation,
     })
@@ -332,6 +344,7 @@ export function createRouter<
 
       if (!shouldCommit) {
         controller.abort()
+        pending.abandon()
 
         return
       }
@@ -381,10 +394,7 @@ export function createRouter<
     ])
   })
 
-  function createRouteCommit({ route, signal, update }: RouteCommitOptions): RouteCommit {
-    const pending = navigation.stage(route)
-    signal.addEventListener('abort', pending.abandon, { once: true })
-
+  function createRouteCommit({ route, navigation: pending, signal, update }: RouteCommitOptions): RouteCommit {
     const prepare: RouteCommit['prepare'] = async () => {
       if (signal.aborted) {
         return false
@@ -616,7 +626,7 @@ export function createRouter<
       return
     }
 
-    const controller = navigations.begin()
+    const controller = beginNavigation()
 
     hooks.runRejectionHooks(rejection, { to, from })
 
