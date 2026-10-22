@@ -10,4 +10,4 @@ Represents the Router property within [Register](../interfaces/Register.md)
 
 | Type Parameter | Default type |
 | ------ | ------ |
-| `T` | [`Register`](../interfaces/Register.md) |
+| <a id="type-parameter-t"></a> `T` | [`Register`](../interfaces/Register.md) |

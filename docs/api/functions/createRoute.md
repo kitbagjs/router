@@ -8,7 +8,7 @@ function createRoute<TOptions>(options): RouteWithMethods<ToRouteUrl<TOptions>, 
 
 | Type Parameter |
 | ------ |
-| `TOptions` *extends* [`CreateRouteOptions`](../types/CreateRouteOptions.md) |
+| <a id="type-parameter-toptions"></a> `TOptions` *extends* [`CreateRouteOptions`](../types/CreateRouteOptions.md) |
 
 ## Parameters
 

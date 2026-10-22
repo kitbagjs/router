@@ -8,4 +8,4 @@ type RouterRouteName<TRouter> = RoutesName<RouterRoutes<TRouter>>;
 
 | Type Parameter |
 | ------ |
-| `TRouter` *extends* [`Router`](Router.md) |
+| <a id="type-parameter-trouter"></a> `TRouter` *extends* [`Router`](Router.md) |

@@ -8,7 +8,7 @@ function createUrl<T>(options): ToUrl<T>;
 
 | Type Parameter |
 | ------ |
-| `T` *extends* [`CreateUrlOptions`](../types/CreateUrlOptions.md) |
+| <a id="type-parameter-t"></a> `T` *extends* [`CreateUrlOptions`](../types/CreateUrlOptions.md) |
 
 ## Parameters
 

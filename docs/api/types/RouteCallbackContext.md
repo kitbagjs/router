@@ -11,7 +11,7 @@ from the route: rejections/routes from the route's context, and the parent from 
 
 | Type Parameter |
 | ------ |
-| `TRoute` *extends* [`Route`](Route.md) |
+| <a id="type-parameter-troute"></a> `TRoute` *extends* [`Route`](Route.md) |
 
 ## Properties
 

@@ -8,4 +8,4 @@ type RejectionType<TRejections> = unknown extends TRejections ? never : Rejectio
 
 | Type Parameter |
 | ------ |
-| `TRejections` *extends* [`Rejections`](Rejections.md) \| `undefined` |
+| <a id="type-parameter-trejections"></a> `TRejections` *extends* [`Rejections`](Rejections.md) \| `undefined` |

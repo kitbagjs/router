@@ -8,7 +8,7 @@ type WithHost<THost> = object;
 
 | Type Parameter | Default type |
 | ------ | ------ |
-| `THost` *extends* `string` \| `UrlPart` | `string` \| `UrlPart` |
+| <a id="type-parameter-thost"></a> `THost` *extends* `string` \| `UrlPart` | `string` \| `UrlPart` |
 
 ## Properties
 

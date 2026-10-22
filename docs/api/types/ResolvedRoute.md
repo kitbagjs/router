@@ -22,4 +22,4 @@ Represents a route that the router has matched to current browser location.
 
 | Type Parameter | Default type | Description |
 | ------ | ------ | ------ |
-| `TRoute` *extends* [`Route`](Route.md) | [`Route`](Route.md) | Underlying Route that has been resolved. |
+| <a id="type-parameter-troute"></a> `TRoute` *extends* [`Route`](Route.md) | [`Route`](Route.md) | Underlying Route that has been resolved. |

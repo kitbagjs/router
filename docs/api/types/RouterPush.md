@@ -12,7 +12,7 @@ type RouterPush<TRoutes> = {
 
 | Type Parameter | Default type |
 | ------ | ------ |
-| `TRoutes` *extends* `Routes` | `any` |
+| <a id="type-parameter-troutes"></a> `TRoutes` *extends* `Routes` | `any` |
 
 ## Call Signature
 
@@ -24,7 +24,7 @@ type RouterPush<TRoutes> = {
 
 | Type Parameter |
 | ------ |
-| `TSource` *extends* `string` |
+| <a id="type-parameter-__typetsource"></a> `TSource` *extends* `string` |
 
 ### Parameters
 
