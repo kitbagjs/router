@@ -19,6 +19,7 @@ import { setStateValues } from '@/services/state'
 import { Routes } from '@/types/route'
 import { NOT_FOUND_REJECTION_TYPE } from '@/types/rejection'
 import { Router, RouterOptions, ServerRenderResponse, RedirectStatus } from '@/types/router'
+import { IS_ROUTER_SYMBOL, RouterInternal } from '@/types/routerInternal'
 import { RouterPushInternal, RouterPushOptionsInternal, RouterReplaceInternal, RouterReplaceOptionsInternal } from '@/types/routerNavigationInternal'
 import { RoutesName } from '@/types/routesMap'
 import { UrlString, isUrlString } from '@/types/urlString'
@@ -171,6 +172,8 @@ export function createRouter<
 
   hooks.addGlobalRouteHooks(getGlobalHooksForRouter(plugins))
 
+  let hydrating = false
+
   const navigations = createNavigationSignals()
   const viewTransitions = createViewTransitions()
   const componentsStore = createComponentsStore(routerKey)
@@ -285,6 +288,7 @@ export function createRouter<
     }
 
     const controller = navigations.begin()
+    hydrating = options.hydrating ?? false
 
     if (controller.signal.aborted) {
       return
@@ -618,6 +622,7 @@ export function createRouter<
     }
 
     const controller = navigations.begin()
+    hydrating = false
 
     if (isSSR) {
       const current = navigation.current()
@@ -838,7 +843,17 @@ export function createRouter<
     start()
   }
 
-  const router: Router<TRoutes, TOptions, TPlugin> = {
+  function isHydrating(): boolean {
+    return hydrating
+  }
+
+  const internal = {
+    [IS_ROUTER_SYMBOL]: true,
+    isHydrating,
+  } satisfies RouterInternal
+
+  const router: Router<TRoutes, TOptions, TPlugin> & RouterInternal = {
+    ...internal,
     route: routerRoute,
     resolve,
     find,
