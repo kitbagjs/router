@@ -1966,3 +1966,21 @@ describe('router.render response', () => {
     expect(second).toStrictEqual(first)
   })
 })
+
+test('blocking navigation handles a redirect without waiting for other loaders', async () => {
+  const home = createRoute({ name: 'home', path: '/' })
+  const target = createRoute({ name: 'target', path: '/target' })
+  const page = createRoute({ name: 'page', path: '/page' })
+    .addLoader((_route, { push }) => push('/target'), { name: 'redirect' })
+    .addLoader(() => new Promise(() => {}), { name: 'pending' })
+  const router = createRouter([home, page, target], {
+    initialUrl: '/',
+    navigation: 'blocking',
+  })
+  await router.start()
+
+  await router.push('page')
+
+  await vi.waitFor(() => expect(router.route.name).toBe('target'))
+  router.stop()
+})

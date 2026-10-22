@@ -5,12 +5,11 @@ import { createIsExternal } from '@/services/createIsExternal'
 import { createActivityTracker } from '@/services/createActivityTracker'
 import { SsrOptionRequiredError } from '@/errors/ssrOptionRequiredError'
 import { parseUrl, updateUrl } from '@/services/urlParser'
-import { createRouterNavigation, RouterNavigationResponse } from '@/services/createRouterNavigation'
+import { createRouterNavigation, RouterNavigationResponseEvent } from '@/services/createRouterNavigation'
 import { createNavigationProgress, NavigationProgressTracker } from '@/services/createNavigationProgress'
 import { getComputations } from '@/services/getComputations'
 import { getAsyncComponents, loadAsyncComponents } from '@/utilities/components'
 import { getNavigationProgressKey } from '@/compositions/useNavigation'
-import { DataKind } from '@/services/getDataKey'
 import { createRouterHistory, RouterHistoryTraversal } from '@/services/createRouterHistory'
 import { createServerRedirect } from '@/services/createServerRedirect'
 import { createRouterHooks, getRouterHooksKey } from '@/services/createRouterHooks'
@@ -165,7 +164,7 @@ export function createRouter<
     stop: stopRouteContext,
   } = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options)
   const notFoundRejection = getRejectionByType('NotFound')
-  const navigation = createRouterNavigation()
+  const navigation = createRouterNavigation({ onResponse: onNavigationResponse })
   const notFoundRoute = createResolvedRoute(notFoundRejection.route)
 
   const hooks = createRouterHooks({ redirectStatus, onHookAdded: addHookContext })
@@ -395,8 +394,7 @@ export function createRouter<
 
       const values = navigation.staged().compute(route, getComputations(route))
       const work = Promise.allSettled([
-        values.props,
-        values.loaders,
+        Promise.all(values),
         ...loadAsyncComponents(route),
       ])
       await Promise.race([
@@ -456,12 +454,11 @@ export function createRouter<
   }
 
   function setRouteValuesAndUpdateRoute(to: ResolvedRoute, from: ResolvedRoute | null, progress: NavigationProgressTracker, signal: AbortSignal): void {
-    const { props, loaders, values } = navigation.commit(to)
-
-    activity.add(
-      handleRouterNavigationResponse(props, 'props', to, from, signal),
-      handleRouterNavigationResponse(loaders, 'loader', to, from, signal),
-    )
+    const values = navigation.commit({
+      to,
+      from,
+      signal,
+    })
 
     progress.track(...values, ...loadAsyncComponents(to))
 
@@ -473,8 +470,8 @@ export function createRouter<
    * either is acted on whenever it arrives, without holding up the navigation that started it. Once that
    * navigation is superseded, its outcomes can no longer change the page or run error hooks.
    */
-  function handleRouterNavigationResponse(response: Promise<RouterNavigationResponse>, source: DataKind, to: ResolvedRoute, from: ResolvedRoute | null, signal: AbortSignal): Promise<void> {
-    return response
+  function onNavigationResponse({ response, source, to, from, signal }: RouterNavigationResponseEvent): void {
+    const work = response
       .then((response) => {
         if (signal.aborted) {
           return
@@ -519,6 +516,8 @@ export function createRouter<
           throw error
         }
       })
+
+    activity.add(work)
   }
 
   const resolve: RouterResolve<TRoutes | TPlugin['routes']> = (
@@ -691,10 +690,10 @@ export function createRouter<
       case 'success': {
         const values = decodePayloadValues(to, payload.values, options?.transformer)
 
-        const store = navigation.create()
+        const prefetch = navigation.create()
 
-        store.fill(to, values)
-        store.stage()
+        prefetch.fill(to, values)
+        prefetch.stage()
 
         await set(initialUrl, { replace: true, state: initialState, hydrating: true })
 
