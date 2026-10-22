@@ -225,10 +225,6 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     function abandon(): void {
       data.abandon(new NavigationAbandonedError())
       state.responses.length = 0
-
-      if (navigations.staged === instance) {
-        navigations.staged = createRouterNavigationStore()
-      }
     }
 
     function dispose(): void {
