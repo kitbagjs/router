@@ -351,7 +351,6 @@ export function createRouter<
 
         if (!shouldCommit) {
           controller.abort()
-          pending.abandon()
 
           return
         }
