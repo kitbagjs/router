@@ -8,7 +8,7 @@ function withDefault<TParam>(param, defaultValue): ParamWithDefault<TParam>;
 
 | Type Parameter |
 | ------ |
-| `TParam` *extends* [`Param`](../types/Param.md) |
+| <a id="type-parameter-tparam"></a> `TParam` *extends* [`Param`](../types/Param.md) |
 
 ## Parameters
 

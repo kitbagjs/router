@@ -8,7 +8,7 @@ type WithParent<TParent> = object;
 
 | Type Parameter | Default type |
 | ------ | ------ |
-| `TParent` *extends* [`Route`](Route.md) | [`Route`](Route.md) |
+| <a id="type-parameter-tparent"></a> `TParent` *extends* [`Route`](Route.md) | [`Route`](Route.md) |
 
 ## Properties
 

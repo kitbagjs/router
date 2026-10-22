@@ -6,6 +6,13 @@ type Route<TUrl, TMatches> = TUrl & object;
 
 Represents the structure of a route within the application. Return value of `createRoute`
 
+## Type Parameters
+
+| Type Parameter | Default type | Description |
+| ------ | ------ | ------ |
+| <a id="type-parameter-turl"></a> `TUrl` *extends* [`Url`](Url.md) | [`Url`](Url.md) | The url the route resolves to, combined with any parents. Intersected into the route. |
+| <a id="type-parameter-tmatches"></a> `TMatches` *extends* [`CreatedRouteOptions`](CreatedRouteOptions.md)[] | [`CreatedRouteOptions`](CreatedRouteOptions.md)[] | The options of the route and its ancestors, indexed by depth. Name, meta, state, and context are all derived from this, including each route's views. |
+
 ## Type Declaration
 
 ### context
@@ -64,10 +71,3 @@ state: RouteStateOf<TMatches>;
 ```
 
 Represents the schema of the route state, combined with any parents.
-
-## Type Parameters
-
-| Type Parameter | Default type | Description |
-| ------ | ------ | ------ |
-| `TUrl` *extends* [`Url`](Url.md) | [`Url`](Url.md) | The url the route resolves to, combined with any parents. Intersected into the route. |
-| `TMatches` *extends* [`CreatedRouteOptions`](CreatedRouteOptions.md)[] | [`CreatedRouteOptions`](CreatedRouteOptions.md)[] | The options of the route and its ancestors, indexed by depth. Name, meta, state, and context are all derived from this, including each route's views. |

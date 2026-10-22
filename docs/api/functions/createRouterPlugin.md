@@ -8,8 +8,8 @@ function createRouterPlugin<TRoutes, TRejections>(plugin): RouterPlugin<TRoutes,
 
 | Type Parameter | Default type |
 | ------ | ------ |
-| `TRoutes` *extends* `Routes` | \[\] |
-| `TRejections` *extends* [`Rejections`](../types/Rejections.md) | \[\] |
+| <a id="type-parameter-troutes"></a> `TRoutes` *extends* `Routes` | \[\] |
+| <a id="type-parameter-trejections"></a> `TRejections` *extends* [`Rejections`](../types/Rejections.md) | \[\] |
 
 ## Parameters
 

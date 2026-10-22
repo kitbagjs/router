@@ -10,7 +10,7 @@ function createExternalRoute<TOptions>(options): ToRoute<TOptions> & ExternalRou
 
 | Type Parameter |
 | ------ |
-| `TOptions` *extends* [`CreateRouteOptions`](../types/CreateRouteOptions.md) & [`WithHost`](../types/WithHost.md) & [`WithoutParent`](../types/WithoutParent.md) |
+| <a id="type-parameter-toptions"></a> `TOptions` *extends* [`CreateRouteOptions`](../types/CreateRouteOptions.md) & [`WithHost`](../types/WithHost.md) & [`WithoutParent`](../types/WithoutParent.md) |
 
 ### Parameters
 
@@ -32,7 +32,7 @@ function createExternalRoute<TOptions>(options): ToRoute<TOptions> & ExternalRou
 
 | Type Parameter |
 | ------ |
-| `TOptions` *extends* [`CreateRouteOptions`](../types/CreateRouteOptions.md) & [`WithoutHost`](../types/WithoutHost.md) & [`WithParent`](../types/WithParent.md) |
+| <a id="type-parameter-toptions-1"></a> `TOptions` *extends* [`CreateRouteOptions`](../types/CreateRouteOptions.md) & [`WithoutHost`](../types/WithoutHost.md) & [`WithParent`](../types/WithParent.md) |
 
 ### Parameters
 

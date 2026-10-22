@@ -10,7 +10,7 @@ Represents the structure of a url parts. Can be used to create a url with suppor
 
 | Type Parameter | Default type |
 | ------ | ------ |
-| `TParams` *extends* `UrlParams` | `UrlParams` |
+| <a id="type-parameter-tparams"></a> `TParams` *extends* `UrlParams` | `UrlParams` |
 
 ## Methods
 

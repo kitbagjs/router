@@ -11,7 +11,7 @@ getter — a loader without one would have nothing to contribute.
 
 | Type Parameter | Default type | Description |
 | ------ | ------ | ------ |
-| `TData` | `unknown` | What this loader's getter returns, carried so a route's data can be typed from it. |
+| <a id="type-parameter-tdata"></a> `TData` | `unknown` | What this loader's getter returns, carried so a route's data can be typed from it. |
 
 ## Properties
 

@@ -8,4 +8,4 @@ type RouterRoutes<TRouter> = TRouter extends Router<infer TRoutes, any, infer TP
 
 | Type Parameter |
 | ------ |
-| `TRouter` *extends* [`Router`](Router.md) |
+| <a id="type-parameter-trouter"></a> `TRouter` *extends* [`Router`](Router.md) |

@@ -10,7 +10,7 @@ function createRouterAssets<TRouter>(router): RouterAssets<TRouter>;
 
 | Type Parameter |
 | ------ |
-| `TRouter` *extends* [`Router`](../types/Router.md) |
+| <a id="type-parameter-trouter"></a> `TRouter` *extends* [`Router`](../types/Router.md) |
 
 ### Parameters
 
@@ -32,7 +32,7 @@ function createRouterAssets<TRouter>(routerKey): RouterAssets<TRouter>;
 
 | Type Parameter |
 | ------ |
-| `TRouter` *extends* [`Router`](../types/Router.md) |
+| <a id="type-parameter-trouter-1"></a> `TRouter` *extends* [`Router`](../types/Router.md) |
 
 ### Parameters
 

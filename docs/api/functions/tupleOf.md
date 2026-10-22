@@ -8,7 +8,7 @@ function tupleOf<T>(params, options?): ParamGetSet<TupleOf<T>>;
 
 | Type Parameter |
 | ------ |
-| `T` *extends* [`Param`](../types/Param.md)[] |
+| <a id="type-parameter-t"></a> `T` *extends* [`Param`](../types/Param.md)[] |
 
 ## Parameters
 

@@ -11,8 +11,8 @@ param the route declares that the alias pattern does not carry must be supplied 
 
 | Type Parameter | Default type | Description |
 | ------ | ------ | ------ |
-| `TParams` | `Record`\<`string`, `unknown`\> | The alias's own params. |
-| `TRouteParams` | `Record`\<`string`, `unknown`\> | The params of the route the alias belongs to. |
+| <a id="type-parameter-tparams"></a> `TParams` | `Record`\<`string`, `unknown`\> | The alias's own params. |
+| <a id="type-parameter-trouteparams"></a> `TRouteParams` | `Record`\<`string`, `unknown`\> | The params of the route the alias belongs to. |
 
 ## Parameters
 

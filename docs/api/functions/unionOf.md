@@ -8,7 +8,7 @@ function unionOf<T>(params): ParamGetSet<ExtractParamType<T[number]>>;
 
 | Type Parameter |
 | ------ |
-| `T` *extends* [`Param`](../types/Param.md)[] |
+| <a id="type-parameter-t"></a> `T` *extends* [`Param`](../types/Param.md)[] |
 
 ## Parameters
 
