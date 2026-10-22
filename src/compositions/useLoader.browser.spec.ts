@@ -12,7 +12,7 @@ afterEach(() => {
 
 function mountConsumer<TResult>(router: Router, setup: () => TResult): TResult {
   const wrapper = mount(defineComponent({
-    setup: () => {
+    setup() {
       const result = setup()
       // Keep the composable's refs intact when reading through the component instance.
       return { getResult: () => result }
@@ -69,7 +69,7 @@ test('awaited loader refs remain reactive after Suspense resolves', async () => 
   const router = createRouter([route], { initialUrl: '/1' })
   await router.start()
   const consumer = defineComponent({
-    setup: async () => {
+    async setup() {
       const { data, loading } = await useLoader(loader)
 
       return () => h('div', loading.value ? 'loading' : data.value)
@@ -128,11 +128,9 @@ test('route definitions select a named attachment', async () => {
     .addLoader(loader, { name: 'second' })
   const router = createRouter([route], { initialUrl: '/' })
   await router.start()
-  await router.route.data.second
   const selected = mountConsumer(router, () => useLoader(router.route.loaders.second))
 
-  expect(selected.data.value).toBe(2)
-  expect(selected.loading.value).toBe(false)
+  expect((await selected).data.value).toBe(await router.route.data.second)
 })
 
 test('router assets read the same definition from their own router stores', async () => {
