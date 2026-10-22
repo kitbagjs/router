@@ -1,9 +1,9 @@
-import { createUseRouterNavigation } from '@/compositions/useRouterNavigation'
-import { getComputations } from '@/services/getComputations'
 import { flushPromises } from '@vue/test-utils'
 import { Location } from '@/services/history'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { computed, createApp, toRefs } from 'vue'
+import { createUseRouterNavigation } from '@/compositions/useRouterNavigation'
+import { getComputations } from '@/services/getComputations'
 import { DuplicateNamesError } from '@/errors/duplicateNamesError'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
@@ -2043,6 +2043,95 @@ test('blocking navigation handles a redirect without waiting for other loaders',
   await router.push('page')
 
   await vi.waitFor(() => expect(router.route.name).toBe('target'))
+  router.stop()
+})
+
+test.each(['redirect', 'error'] as const)('superseded preparation cannot report a late loader %s', async (outcome) => {
+  const started = Promise.withResolvers<AbortSignal>()
+  const slow = Promise.withResolvers<void>()
+  const home = createRoute({ name: 'home', path: '/' })
+  const pending = createRoute({ name: 'pending', path: '/pending' })
+    .addLoader(async (_route, { push, signal }) => {
+      started.resolve(signal)
+      await slow.promise
+
+      if (outcome === 'redirect') {
+        push('/elsewhere')
+      }
+
+      throw new Error('obsolete loader')
+    })
+  const target = createRoute({ name: 'target', path: '/target' })
+  const elsewhere = createRoute({ name: 'elsewhere', path: '/elsewhere' })
+  const router = createRouter([home, pending, target, elsewhere], { initialUrl: '/', navigation: 'blocking' })
+  const onError = vi.fn()
+  router.onError(onError)
+  await router.start()
+
+  const preparing = router.push('pending')
+  const signal = await started.promise
+  await router.push('target')
+
+  expect(signal.aborted).toBe(true)
+  slow.resolve()
+  await preparing
+  await flushPromises()
+
+  expect(router.route.name).toBe('target')
+  expect(onError).not.toHaveBeenCalled()
+  router.stop()
+})
+
+test('a before hook redirect discards prefetched work for the original route', async () => {
+  const slow = Promise.withResolvers<void>()
+  const home = createRoute({ name: 'home', path: '/' })
+  const prefetched = createRoute({ name: 'prefetched', path: '/prefetched' })
+    .addLoader(async (_route, { push }) => {
+      await slow.promise
+      push('/elsewhere')
+    })
+  prefetched.onBeforeRouteEnter((_route, { push }) => push('/target'))
+  const target = createRoute({ name: 'target', path: '/target' })
+  const elsewhere = createRoute({ name: 'elsewhere', path: '/elsewhere' })
+  const router = createRouter([home, prefetched, target, elsewhere], { initialUrl: '/' })
+  const app = createApp({ render: () => null })
+  app.use(router)
+  await router.start()
+  const useRouterNavigation = createUseRouterNavigation(router.key)
+  const navigation = app.runWithContext(useRouterNavigation)
+  const prepared = navigation.create()
+  const route = router.resolve('prefetched')
+  prepared.compute(route, getComputations(route))
+  prepared.stage()
+
+  await router.push('prefetched')
+  slow.resolve()
+  await flushPromises()
+
+  expect(prepared.signal.aborted).toBe(true)
+  expect(router.route.name).toBe('target')
+  router.stop()
+})
+
+test('settled current data remains readable while another navigation waits on a guard', async () => {
+  const waiting = Promise.withResolvers<void>()
+  const release = Promise.withResolvers<void>()
+  const home = createRoute({ name: 'home', path: '/' }).addLoader(() => 'home data')
+  const target = createRoute({ name: 'target', path: '/target' })
+  target.onBeforeRouteEnter(() => {
+    waiting.resolve()
+    return release.promise
+  })
+  const router = createRouter([home, target], { initialUrl: '/' })
+  await router.start()
+  await router.route.data
+
+  const navigating = router.push('target')
+  await waiting.promise
+
+  await expect(router.route.data).resolves.toBe('home data')
+  release.resolve()
+  await navigating
   router.stop()
 })
 
