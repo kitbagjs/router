@@ -8,7 +8,7 @@ function createRejection<TType>(options): Pick<RejectionOptions<TType>, "type" |
 
 | Type Parameter |
 | ------ |
-| `TType` *extends* `string` |
+| <a id="type-parameter-ttype"></a> `TType` *extends* `string` |
 
 ## Parameters
 
@@ -17,3 +17,5 @@ function createRejection<TType>(options): Pick<RejectionOptions<TType>, "type" |
 | `options` | `RejectionOptions`\<`TType`\> |
 
 ## Returns
+
+`Pick`\<`RejectionOptions`\<`TType`\>, `"type"` \| `"status"`\> & `object` & [`RejectionHooks`](../types/RejectionHooks.md)\<`TType`\> & `RouteSetTitle`

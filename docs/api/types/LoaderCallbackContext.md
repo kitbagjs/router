@@ -10,7 +10,7 @@ Navigation helpers available to a reusable loader, typed from its declared conte
 
 | Type Parameter | Default type |
 | ------ | ------ |
-| `TContext` *extends* readonly `RouteContext`[] | \[\] |
+| <a id="type-parameter-tcontext"></a> `TContext` *extends* readonly `RouteContext`[] | \[\] |
 
 ## Properties
 

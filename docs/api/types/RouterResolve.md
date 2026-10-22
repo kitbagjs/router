@@ -8,13 +8,13 @@ type RouterResolve<TRoutes> = <TSource>(name, ...args) => ResolvedRoute;
 
 | Type Parameter |
 | ------ |
-| `TRoutes` *extends* `Routes` |
+| <a id="type-parameter-troutes"></a> `TRoutes` *extends* `Routes` |
 
 ## Type Parameters
 
 | Type Parameter |
 | ------ |
-| `TSource` *extends* `RoutesName`\<`TRoutes`\> |
+| <a id="type-parameter-__typetsource"></a> `TSource` *extends* `RoutesName`\<`TRoutes`\> |
 
 ## Parameters
 

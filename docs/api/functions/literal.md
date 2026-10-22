@@ -8,7 +8,7 @@ function literal<T>(value): ParamGetSet<T>;
 
 | Type Parameter |
 | ------ |
-| `T` *extends* [`LiteralParam`](../types/LiteralParam.md) |
+| <a id="type-parameter-t"></a> `T` *extends* [`LiteralParam`](../types/LiteralParam.md) |
 
 ## Parameters
 
