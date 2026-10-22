@@ -4,6 +4,7 @@ import { createUseViewTransition } from '@/compositions/useViewTransition'
 import { createUseRouter } from '@/compositions/useRouter'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouterPushOptions } from '@/types/routerPush'
+import { RouterPushOptionsInternal } from '@/types/routerNavigationInternal'
 import { RouteParamsByKey } from '@/types/routeWithParams'
 import { UrlString, isUrlString } from '@/types/urlString'
 import { AllPropertiesAreOptional } from '@/types/utilities'
@@ -49,21 +50,23 @@ export function createUseLink<TRouter extends Router>(routerKey: InjectionKey<TR
       return typeof sourceValue !== 'string' || isUrlString(sourceValue) ? toValue(paramsOrOptions) : toValue(maybeOptions)
     })
 
-    const route = computed(() => {
+    function resolveRoute(options: RouterPushOptions): ResolvedRoute | undefined {
       const sourceValue = toValue(source)
 
       if (isUrlString(sourceValue)) {
         const found = router.find(sourceValue)
 
-        return found && updateResolvedRoute(found, linkOptions.value)
+        return found && updateResolvedRoute(found, options)
       }
 
       if (typeof sourceValue === 'string') {
-        return router.resolve(sourceValue, toValue(paramsOrOptions), toValue(maybeOptions))
+        return router.resolve(sourceValue, toValue(paramsOrOptions), options)
       }
 
-      return updateResolvedRoute(sourceValue, linkOptions.value)
-    })
+      return updateResolvedRoute(sourceValue, options)
+    }
+
+    const route = computed(() => resolveRoute(linkOptions.value))
 
     const href = computed(() => {
       if (route.value) {
@@ -87,16 +90,14 @@ export function createUseLink<TRouter extends Router>(routerKey: InjectionKey<TR
     const isExternal = computed(() => !!href.value && router.isExternal(href.value))
     const isTransitioning = computed(() => viewTransition.isTransitioning && viewTransition.to?.href === href.value)
 
-    const { element, commit } = usePrefetching(() => ({
+    const { element, take: takePrefetch } = usePrefetching(() => ({
       route: route.value,
       routerPrefetch: router.prefetch,
       linkPrefetch: linkOptions.value.prefetch,
     }))
 
     const push: UseLink['push'] = (pushOptions) => {
-      commit()
-
-      const options: RouterPushOptions = {
+      const options: RouterPushOptionsInternal = {
         replace: pushOptions?.replace ?? linkOptions.value.replace,
         navigation: pushOptions?.navigation ?? linkOptions.value.navigation,
         query: combineUrlSearchParams(pushOptions?.query, linkOptions.value.query),
@@ -104,6 +105,8 @@ export function createUseLink<TRouter extends Router>(routerKey: InjectionKey<TR
         state: { ...linkOptions.value.state, ...pushOptions?.state },
         viewTransition: pushOptions?.viewTransition ?? linkOptions.value.viewTransition,
       }
+
+      options.prefetch = takePrefetch(resolveRoute(options))
 
       const sourceValue = toValue(source)
       if (isUrlString(sourceValue) || typeof sourceValue === 'object') {
