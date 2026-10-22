@@ -33,7 +33,6 @@ test('names the requested element and preserves its attributes, styles and conte
   await wrapper.setProps({ name: 'avatar' })
 
   expect(wrapper.element.style.viewTransitionName).toBe('avatar')
-  wrapper.unmount()
 })
 
 test('names only the destination link before capture and names the destination element', async () => {
@@ -71,7 +70,6 @@ test('names only the destination link before capture and names the destination e
   expect(capture).toHaveBeenCalledWith(['photo', 'none'])
   expect(names()).toEqual(['photo'])
   expect(wrapper.find('img').attributes('src')).toBe('full.jpg')
-  wrapper.unmount()
 })
 
 test('canceling preparation removes the link element name', async () => {
@@ -91,5 +89,4 @@ test('canceling preparation removes the link element name', async () => {
   await flushPromises()
 
   expect(wrapper.find('img').element.style.viewTransitionName).toBe('none')
-  wrapper.unmount()
 })
