@@ -1,11 +1,10 @@
 /* eslint-disable vue/one-component-per-file */
-import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils'
+import { flushPromises, mount } from '@vue/test-utils'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import { defineComponent, h, Suspense } from 'vue'
 import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
 import { createLoader, createRejection, createRoute, createRouter, createRouterAssets, Router, useLoader } from '@/main'
 
-enableAutoUnmount(afterEach)
 afterEach(() => {
   vi.restoreAllMocks()
   vi.unstubAllEnvs()

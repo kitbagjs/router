@@ -113,7 +113,6 @@ test('renders component with async props using suspense', async () => {
     expect(wrapper.text()).toBe('hello world')
     expect(warn).not.toHaveBeenCalled()
   } finally {
-    wrapper.unmount()
     warn.mockRestore()
   }
 })
