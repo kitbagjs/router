@@ -265,3 +265,22 @@ describe('dispose', () => {
     await new Promise((resolve) => setTimeout(resolve, 10))
   })
 })
+
+test('abandon rejects unfinished work while retaining settled values', async () => {
+  const store = createDataStore()
+  const pending = Promise.withResolvers<string>()
+  const reason = new NavigationAbandonedError()
+  store.set('settled', () => 'kept')
+  store.set('pending', () => pending.promise)
+  const unfinished = store.subscribe('pending')
+
+  store.abandon(reason)
+
+  expect(store.signal.aborted).toBe(true)
+  await expect(unfinished).rejects.toBe(reason)
+  await expect(store.subscribe('settled')).resolves.toBe('kept')
+  expect(store.get('settled')).toEqual({ kind: 'value', value: 'kept' })
+
+  pending.resolve('late')
+  await expect(store.subscribe('pending')).rejects.toBe(reason)
+})

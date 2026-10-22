@@ -220,20 +220,18 @@ test('a prefetched response is reported when its navigation becomes current', as
 
   expect(onResponse).not.toHaveBeenCalled()
   const from = createResolvedRoute(createRoute({ path: '/previous' }))
-  const { signal } = new AbortController()
 
   detached.stage()
   navigation.commit({
     to: route,
     from,
-    signal,
   })
 
   expect(onResponse).toHaveBeenCalledOnce()
 
   const [event] = onResponse.mock.calls[0]
 
-  expect(event).toMatchObject({ to: route, from, signal })
+  expect(event).toMatchObject({ to: route, from, signal: detached.signal })
 
   await expect(event.response).resolves.toEqual({ status: 'PUSH', to: ['/next', { replace: true }] })
 })
@@ -268,8 +266,8 @@ test('computations added after adoption report their response once', async () =>
   await Promise.all(navigation.commit({ to: initial }))
   onResponse.mockClear()
 
-  current.compute(next, getComputations(next))
-  current.compute(next, getComputations(next))
+  current.compute(initial, getComputations(next))
+  current.compute(initial, getComputations(next))
 
   expect(onResponse).toHaveBeenCalledOnce()
   const [event] = onResponse.mock.calls[0]
