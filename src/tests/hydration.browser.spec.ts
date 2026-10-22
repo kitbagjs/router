@@ -1,14 +1,34 @@
-import { expect, test, vi } from 'vitest'
+import { assert, expect, test, vi } from 'vitest'
 import { createRouter } from '@/services/createRouter'
 import { createRoute } from '@/services/createRoute'
 import { payloadToScript, RouterPayload } from '@/services/payload'
 import { withParams } from '@/services/withParams'
 import { createRejection } from '@/services/createRejection'
 import { z } from 'zod'
+import { isRouter } from '@/types/routerInternal'
 
 function embed(payload: RouterPayload): void {
   document.body.innerHTML = payloadToScript(payload)
 }
+
+test('the router identifies the hydrated navigation until another navigation begins', async () => {
+  embed({ kind: 'success', url: '/', values: [] })
+
+  const home = createRoute({ name: 'home', path: '/' })
+  const next = createRoute({ name: 'next', path: '/next' })
+  const router = createRouter([home, next], { initialUrl: '/' })
+
+  assert(isRouter(router))
+  expect(router.isHydrating()).toBe(false)
+
+  await router.start()
+
+  expect(router.isHydrating()).toBe(true)
+
+  await router.push('next')
+
+  expect(router.isHydrating()).toBe(false)
+})
 
 test('a payload for the initial url is adopted synchronously when the router starts', async () => {
   embed({
