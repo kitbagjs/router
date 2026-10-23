@@ -1,4 +1,4 @@
-import { InjectionKey, MaybeRefOrGetter, onScopeDispose, ref, Ref, toValue, watch } from 'vue'
+import { computed, InjectionKey, MaybeRefOrGetter, onScopeDispose, ref, Ref, toValue, watch } from 'vue'
 import { createUseRouterNavigation } from '@/compositions/useRouterNavigation'
 import type { PrefetchConfigs, PrefetchStrategy } from '@/types/prefetch'
 import { getPrefetchOption } from '@/utilities/prefetch'
@@ -9,7 +9,6 @@ import { useEventListener } from './useEventListener'
 import { Router } from '@/types/router'
 import { getComputationsForStrategy } from '@/services/getComputations'
 import { RouterNavigationStore } from '@/services/createRouterNavigation'
-import { getPrefetchKey } from '@/services/getPrefetchKey'
 
 type UsePrefetchingConfig = PrefetchConfigs & {
   route: ResolvedRoute | undefined,
@@ -17,7 +16,7 @@ type UsePrefetchingConfig = PrefetchConfigs & {
 
 type UsePrefetching = {
   element: Ref<HTMLElement | undefined>,
-  take: (route: ResolvedRoute | undefined) => RouterNavigationStore,
+  take: () => RouterNavigationStore | undefined,
 }
 
 type UsePrefetchingFunction = (config: MaybeRefOrGetter<UsePrefetchingConfig>) => UsePrefetching
@@ -30,20 +29,19 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
 
     const navigation = useRouterNavigation()
     let prefetch = navigation.create()
-    let prefetchKey: string | undefined
+    let hasPrefetched = false
     const { isElementVisible } = useVisibilityObserver(element)
 
-    const take: UsePrefetching['take'] = (route) => {
+    const take: UsePrefetching['take'] = () => {
       const prepared = prefetch
-      const key = getPrefetchKey(route)
-      const matches = key === prefetchKey
+      const prefetched = hasPrefetched
       prefetch = navigation.create()
-      prefetchKey = undefined
+      hasPrefetched = false
 
-      if (!matches) {
+      if (!prefetched) {
         prepared.dispose()
 
-        return navigation.create()
+        return
       }
 
       return prepared
@@ -51,8 +49,29 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
 
     onScopeDispose(() => prefetch.dispose())
 
-    watch([() => toValue(config), () => getPrefetchKey(toValue(config).route)], ([{ route, ...configs }, key]) => {
-      preparePrefetch(key)
+    const watchedConfig = computed(() => {
+      const { route, ...configs } = toValue(config)
+      const stateNames = Object.keys(route?.matched.state ?? {})
+      const state = stateNames.length
+        ? Object.fromEntries(stateNames.map((name) => [name, route?.state[name]]))
+        : undefined
+
+      return {
+        id: route?.id,
+        href: route?.href,
+        state,
+        ...configs,
+      }
+    })
+
+    watch(watchedConfig, (current, previous) => {
+      if (current.id !== previous?.id || current.href !== previous?.href || current.state || previous?.state) {
+        prefetch.dispose()
+        prefetch = navigation.create()
+        hasPrefetched = false
+      }
+
+      const { route, ...configs } = toValue(config)
 
       if (!route) {
         return
@@ -63,7 +82,7 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
       if (isElementVisible.value) {
         doPrefetchingForStrategy('lazy', route, configs)
       }
-    }, { immediate: true })
+    }, { immediate: true, deep: true, flush: 'sync' })
 
     watch(isElementVisible, (isVisible) => {
       const { route, ...configs } = toValue(config)
@@ -72,7 +91,6 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
         return
       }
 
-      preparePrefetch(getPrefetchKey(route))
       doPrefetchingForStrategy('lazy', route, configs)
     }, { immediate: true })
 
@@ -86,7 +104,6 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
         return
       }
 
-      preparePrefetch(getPrefetchKey(route))
       doPrefetchingForStrategy('intent', route, configs)
     }
 
@@ -94,17 +111,8 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
       prefetchComponentsForRoute(strategy, route, configs)
       const computations = getComputationsForStrategy(route, strategy, configs)
 
-      prefetch.compute(route, computations)
-    }
-
-    function preparePrefetch(key: string | undefined): void {
-      if (key === prefetchKey) {
-        return
-      }
-
-      prefetch.dispose()
-      prefetch = navigation.create()
-      prefetchKey = key
+      const values = prefetch.compute(route, computations)
+      hasPrefetched = hasPrefetched || values.length > 0
     }
 
     return {
