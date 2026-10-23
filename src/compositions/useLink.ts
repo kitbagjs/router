@@ -108,7 +108,7 @@ export function createUseLink<TRouter extends Router>(routerKey: InjectionKey<TR
       if (overrides.length && options.prefetch) {
         options.prefetch.dispose()
         options.prefetch = undefined
-        warn(`Prefetched props and loader data for "${resolved?.href}" were discarded because ${overrides.join(', ')} options were passed to link.push() or link.replace(). Pass these as reactive options to useLink instead.`)
+        warn(`Prefetched props and loader data for "${href.value}" were discarded because ${overrides.join(', ')} options were passed to link.push() or link.replace(). Pass these as reactive options to useLink instead.`)
       }
 
       if (resolved) {
