@@ -3,7 +3,6 @@ import { createUsePrefetching } from '@/compositions/usePrefetching'
 import { createUseViewTransition } from '@/compositions/useViewTransition'
 import { createUseRouter } from '@/compositions/useRouter'
 import { ResolvedRoute } from '@/types/resolved'
-import { RouterPushOptions } from '@/types/routerPush'
 import { RouterPushOptionsInternal } from '@/types/routerNavigationInternal'
 import { RouteParamsByKey } from '@/types/routeWithParams'
 import { UrlString, isUrlString } from '@/types/urlString'
@@ -14,6 +13,7 @@ import { isDefined } from '@/utilities/guards'
 import { Router, RouterRouteName, RouterRoutes } from '@/types/router'
 import { UseLink, UseLinkOptions } from '@/types/useLink'
 import { updateResolvedRoute } from '@/services/updateResolvedRoute'
+import { warn } from '@/utilities/warn'
 
 type UseLinkArgs<
   TRouter extends Router,
@@ -50,23 +50,21 @@ export function createUseLink<TRouter extends Router>(routerKey: InjectionKey<TR
       return typeof sourceValue !== 'string' || isUrlString(sourceValue) ? toValue(paramsOrOptions) : toValue(maybeOptions)
     })
 
-    function resolveRoute(options: RouterPushOptions): ResolvedRoute | undefined {
+    const route = computed(() => {
       const sourceValue = toValue(source)
 
       if (isUrlString(sourceValue)) {
         const found = router.find(sourceValue)
 
-        return found && updateResolvedRoute(found, options)
+        return found && updateResolvedRoute(found, linkOptions.value)
       }
 
       if (typeof sourceValue === 'string') {
-        return router.resolve(sourceValue, toValue(paramsOrOptions), options)
+        return router.resolve(sourceValue, toValue(paramsOrOptions), toValue(maybeOptions))
       }
 
-      return updateResolvedRoute(sourceValue, options)
-    }
-
-    const route = computed(() => resolveRoute(linkOptions.value))
+      return updateResolvedRoute(sourceValue, linkOptions.value)
+    })
 
     const href = computed(() => {
       if (route.value) {
@@ -97,23 +95,41 @@ export function createUseLink<TRouter extends Router>(routerKey: InjectionKey<TR
     }))
 
     const push: UseLink['push'] = (pushOptions) => {
+      const resolved = route.value
+      const routeOptions = ['query', 'hash', 'state'] as const
+      const overrides = routeOptions.filter((option) => pushOptions?.[option] !== undefined)
       const options: RouterPushOptionsInternal = {
         replace: pushOptions?.replace ?? linkOptions.value.replace,
         navigation: pushOptions?.navigation ?? linkOptions.value.navigation,
+        viewTransition: pushOptions?.viewTransition ?? linkOptions.value.viewTransition,
+        prefetch: takePrefetch(),
+      }
+
+      if (overrides.length && options.prefetch) {
+        options.prefetch.dispose()
+        options.prefetch = undefined
+        warn(`Prefetched props and loader data for "${resolved?.href}" were discarded because ${overrides.join(', ')} options were passed to link.push() or link.replace(). Pass these as reactive options to useLink instead.`)
+      }
+
+      if (resolved) {
+        const destination = overrides.length ? updateResolvedRoute(resolved, pushOptions ?? {}) : resolved
+
+        return router.push(destination, options)
+      }
+
+      const fallbackOptions: RouterPushOptionsInternal = {
+        ...options,
         query: combineUrlSearchParams(pushOptions?.query, linkOptions.value.query),
         hash: pushOptions?.hash ?? linkOptions.value.hash,
         state: { ...linkOptions.value.state, ...pushOptions?.state },
-        viewTransition: pushOptions?.viewTransition ?? linkOptions.value.viewTransition,
       }
-
-      options.prefetch = takePrefetch(resolveRoute(options))
-
       const sourceValue = toValue(source)
+
       if (isUrlString(sourceValue) || typeof sourceValue === 'object') {
-        return router.push(sourceValue, options)
+        return router.push(sourceValue, fallbackOptions)
       }
 
-      return router.push(sourceValue, toValue(paramsOrOptions), options)
+      return router.push(sourceValue, toValue(paramsOrOptions), fallbackOptions)
     }
 
     const replace: UseLink['replace'] = (options) => {
