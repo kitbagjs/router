@@ -351,7 +351,8 @@ test('intent prefetch uses changed state before the config watcher runs', async 
   expect(load).toHaveBeenCalledTimes(2)
 })
 
-test('useLink push state overrides discard prefetched data', async () => {
+test('useLink state overrides discard prefetched data even when unchanged', async () => {
+  const warn = vi.spyOn(warnings, 'warn').mockImplementation(() => {})
   const load = vi.fn((count: number | undefined) => count)
   const home = createRoute({ name: 'home', path: '/' })
   const route = createRoute({
@@ -377,10 +378,11 @@ test('useLink push state overrides discard prefetched data', async () => {
   await flushPromises()
   expect(load).toHaveBeenCalledExactlyOnceWith(1)
 
-  await wrapper.vm.push({ state: { count: 2 } })
+  await wrapper.vm.push({ state: { count: 1 } })
 
-  await expect(router.route.data).resolves.toBe(2)
+  await expect(router.route.data).resolves.toBe(1)
   expect(load).toHaveBeenCalledTimes(2)
+  expect(warn).toHaveBeenCalledExactlyOnceWith(expect.stringContaining('state options were passed'))
 })
 
 test('named and unnamed loaders respect their own config and feed prefetched props', async () => {
