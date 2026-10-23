@@ -51,7 +51,7 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
 
     const watchedConfig = computed(() => {
       const { route, ...configs } = toValue(config)
-      const stateNames = Object.keys(route?.matched.state ?? {})
+      const stateNames = route?.matches.flatMap((match) => Object.keys(match.state ?? {})) ?? []
       const state = stateNames.length
         ? Object.fromEntries(stateNames.map((name) => [name, route?.state[name]]))
         : undefined
@@ -82,7 +82,11 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
       if (isElementVisible.value) {
         doPrefetchingForStrategy('lazy', route, configs)
       }
-    }, { immediate: true, deep: true, flush: 'sync' })
+    }, {
+      immediate: true,
+      deep: true,
+      flush: 'sync',
+    })
 
     watch(isElementVisible, (isVisible) => {
       const { route, ...configs } = toValue(config)
