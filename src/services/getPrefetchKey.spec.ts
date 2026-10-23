@@ -16,7 +16,10 @@ test('prefetch keys use param serializers and ignore undeclared state', () => {
   const resolved = createResolvedRoute(route, {}, { state: { count: 1n } })
   const extraState = {
     ...resolved,
-    state: { count: 1n, undeclared: 2n },
+    state: {
+      count: 1n,
+      undeclared: 2n,
+    },
   }
   const changedState = {
     ...resolved,
