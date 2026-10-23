@@ -286,6 +286,34 @@ test('changing RouterLink state recomputes prefetched props and loader data', as
   expect(props).toHaveBeenCalledTimes(2)
 })
 
+test('intent prefetch uses changed state before the config watcher runs', async () => {
+  const load = vi.fn((count: number | undefined) => count)
+  const route = createRoute({
+    name: 'route',
+    path: '/route',
+    state: { count: Number },
+  })
+    .addLoader((route) => load(route.state.count), { prefetch: 'intent' })
+  const router = createRouter([route], { initialUrl: '/' })
+  const state = ref({ count: 1 })
+  const wrapper = mount({
+    setup: () => () => h(RouterLink, { to: '/route', state: state.value }),
+  }, {
+    global: { plugins: [router] },
+  })
+  await flushPromises()
+  const element = wrapper.find('a').element
+  element.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }))
+  expect(load).toHaveBeenCalledExactlyOnceWith(1)
+
+  state.value.count = 2
+  element.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }))
+
+  expect(load).toHaveBeenLastCalledWith(2)
+  await flushPromises()
+  expect(load).toHaveBeenCalledTimes(2)
+})
+
 test('useLink push state overrides discard prefetched data', async () => {
   const load = vi.fn((count: number | undefined) => count)
   const home = createRoute({ name: 'home', path: '/' })

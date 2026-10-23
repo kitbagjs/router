@@ -52,9 +52,7 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
     onScopeDispose(() => prefetch.dispose())
 
     watch([() => toValue(config), () => getPrefetchKey(toValue(config).route)], ([{ route, ...configs }, key]) => {
-      if (key !== prefetchKey) {
-        resetPrefetch(key)
-      }
+      preparePrefetch(key)
 
       if (!route) {
         return
@@ -74,6 +72,7 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
         return
       }
 
+      preparePrefetch(getPrefetchKey(route))
       doPrefetchingForStrategy('lazy', route, configs)
     }, { immediate: true })
 
@@ -87,23 +86,22 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
         return
       }
 
+      preparePrefetch(getPrefetchKey(route))
       doPrefetchingForStrategy('intent', route, configs)
     }
 
     function doPrefetchingForStrategy(strategy: PrefetchStrategy, route: ResolvedRoute, configs: PrefetchConfigs): void {
-      const key = getPrefetchKey(route)
-
-      if (key !== prefetchKey) {
-        resetPrefetch(key)
-      }
-
       prefetchComponentsForRoute(strategy, route, configs)
       const computations = getComputationsForStrategy(route, strategy, configs)
 
       prefetch.compute(route, computations)
     }
 
-    function resetPrefetch(key: string | undefined): void {
+    function preparePrefetch(key: string | undefined): void {
+      if (key === prefetchKey) {
+        return
+      }
+
       prefetch.dispose()
       prefetch = navigation.create()
       prefetchKey = key
