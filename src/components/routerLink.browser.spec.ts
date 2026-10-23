@@ -52,7 +52,7 @@ test('renders an anchor tag with the correct href and slot content', () => {
   expect(element.innerHTML).toBe(content)
 })
 
-test('calls router.push with url and push options from props', async () => {
+test('passes the resolved destination and navigation options to router.push', async () => {
   const propOptions: RouterPushOptions = {
     replace: true,
     query: {
@@ -73,6 +73,7 @@ test('calls router.push with url and push options from props', async () => {
     createRoute({
       name: 'routeB',
       path: '/routeB',
+      state: { zoo: String },
     })
       .addView(component),
   ], {
@@ -95,18 +96,15 @@ test('calls router.push with url and push options from props', async () => {
 
   wrapper.find('a').trigger('click')
 
-  const [, pushOptions] = spy.mock.lastCall ?? []
+  const [destination, pushOptions] = spy.mock.lastCall ?? []
 
-  expect(pushOptions).toMatchObject({
-    replace: true,
-    query: new URLSearchParams({
-      foo: 'bar',
-    }),
-    hash: 'hash',
+  expect(destination).toMatchObject({
+    href: '/routeB?foo=bar#hash',
     state: {
       zoo: 'jar',
     },
   })
+  expect(pushOptions).toMatchObject({ replace: true })
 })
 
 test('passes the viewTransition prop to router.push', async () => {
