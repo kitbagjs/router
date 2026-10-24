@@ -3,7 +3,7 @@ import { createUsePrefetching } from '@/compositions/usePrefetching'
 import { createUseViewTransition } from '@/compositions/useViewTransition'
 import { createUseRouter } from '@/compositions/useRouter'
 import { ResolvedRoute } from '@/types/resolved'
-import { RouterPushOptions } from '@/types/routerPush'
+import { RouterPushOptionsInternal } from '@/types/routerNavigationInternal'
 import { RouteParamsByKey } from '@/types/routeWithParams'
 import { UrlString, isUrlString } from '@/types/urlString'
 import { AllPropertiesAreOptional } from '@/types/utilities'
@@ -13,6 +13,7 @@ import { isDefined } from '@/utilities/guards'
 import { Router, RouterRouteName, RouterRoutes } from '@/types/router'
 import { UseLink, UseLinkOptions } from '@/types/useLink'
 import { updateResolvedRoute } from '@/services/updateResolvedRoute'
+import { warn } from '@/utilities/warn'
 
 type UseLinkArgs<
   TRouter extends Router,
@@ -87,30 +88,46 @@ export function createUseLink<TRouter extends Router>(routerKey: InjectionKey<TR
     const isExternal = computed(() => !!href.value && router.isExternal(href.value))
     const isTransitioning = computed(() => viewTransition.isTransitioning && viewTransition.to?.href === href.value)
 
-    const { element, commit } = usePrefetching(() => ({
+    const { element, enabled: prefetchEnabled, take: takePrefetch } = usePrefetching(() => ({
       route: route.value,
       routerPrefetch: router.prefetch,
       linkPrefetch: linkOptions.value.prefetch,
     }))
 
     const push: UseLink['push'] = (pushOptions) => {
-      commit()
+      const resolved = route.value
+      const changesRoute = pushOptions?.query !== undefined || pushOptions?.hash !== undefined || pushOptions?.state !== undefined
 
-      const options: RouterPushOptions = {
+      if (changesRoute && prefetchEnabled.value) {
+        warn(`Prefetched props and loader data for "${href.value}" cannot be used when query, hash, or state options are passed to link.push() or link.replace(). Pass these as reactive options to useLink instead.`)
+      }
+
+      const options: RouterPushOptionsInternal = {
         replace: pushOptions?.replace ?? linkOptions.value.replace,
         navigation: pushOptions?.navigation ?? linkOptions.value.navigation,
+        viewTransition: pushOptions?.viewTransition ?? linkOptions.value.viewTransition,
+        prefetch: changesRoute ? undefined : takePrefetch(),
+      }
+
+      if (resolved) {
+        const destination = changesRoute ? updateResolvedRoute(resolved, pushOptions) : resolved
+
+        return router.push(destination, options)
+      }
+
+      const fallbackOptions: RouterPushOptionsInternal = {
+        ...options,
         query: combineUrlSearchParams(pushOptions?.query, linkOptions.value.query),
         hash: pushOptions?.hash ?? linkOptions.value.hash,
         state: { ...linkOptions.value.state, ...pushOptions?.state },
-        viewTransition: pushOptions?.viewTransition ?? linkOptions.value.viewTransition,
       }
-
       const sourceValue = toValue(source)
+
       if (isUrlString(sourceValue) || typeof sourceValue === 'object') {
-        return router.push(sourceValue, options)
+        return router.push(sourceValue, fallbackOptions)
       }
 
-      return router.push(sourceValue, toValue(paramsOrOptions), options)
+      return router.push(sourceValue, toValue(paramsOrOptions), fallbackOptions)
     }
 
     const replace: UseLink['replace'] = (options) => {

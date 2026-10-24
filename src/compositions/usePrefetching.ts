@@ -1,4 +1,4 @@
-import { InjectionKey, MaybeRefOrGetter, onScopeDispose, ref, Ref, toValue, watch } from 'vue'
+import { computed, InjectionKey, MaybeRefOrGetter, onScopeDispose, ref, Ref, toValue, watch } from 'vue'
 import { createUseRouterNavigation } from '@/compositions/useRouterNavigation'
 import type { PrefetchConfigs, PrefetchStrategy } from '@/types/prefetch'
 import { getPrefetchOption } from '@/utilities/prefetch'
@@ -7,7 +7,9 @@ import { loadAsyncComponents } from '@/utilities/components'
 import { useVisibilityObserver } from './useVisibilityObserver'
 import { useEventListener } from './useEventListener'
 import { Router } from '@/types/router'
-import { getComputationsForStrategy } from '@/services/getComputations'
+import { getComputations, getComputationsForStrategy } from '@/services/getComputations'
+import { RouterNavigationStore } from '@/services/createRouterNavigation'
+import { getComputationPrefetchKey } from '@/services/getComputationPrefetchKey'
 import { isSameResolvedRoute } from '@/utilities/isSameResolvedRoute'
 
 type UsePrefetchingConfig = PrefetchConfigs & {
@@ -16,7 +18,8 @@ type UsePrefetchingConfig = PrefetchConfigs & {
 
 type UsePrefetching = {
   element: Ref<HTMLElement | undefined>,
-  commit: () => void,
+  enabled: Ref<boolean>,
+  take: () => RouterNavigationStore | undefined,
 }
 
 type UsePrefetchingFunction = (config: MaybeRefOrGetter<UsePrefetchingConfig>) => UsePrefetching
@@ -29,11 +32,36 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
 
     const navigation = useRouterNavigation()
     let prefetch = navigation.create()
+    let hasPrefetched = false
     const { isElementVisible } = useVisibilityObserver(element)
 
-    const commit: UsePrefetching['commit'] = () => {
-      prefetch.stage()
+    const enabled = computed(() => {
+      const { route, ...configs } = toValue(config)
+
+      if (!route) {
+        return false
+      }
+
+      return getComputations(route).some((computation) => getPrefetchOption({
+        ...configs,
+        routePrefetch: computation.routePrefetch,
+        viewPrefetch: computation.prefetch,
+      }, getComputationPrefetchKey(computation.kind)) !== false)
+    })
+
+    const take: UsePrefetching['take'] = () => {
+      const prepared = prefetch
+      const prefetched = hasPrefetched
       prefetch = navigation.create()
+      hasPrefetched = false
+
+      if (!prefetched) {
+        prepared.dispose()
+
+        return
+      }
+
+      return prepared
     }
 
     onScopeDispose(() => prefetch.dispose())
@@ -42,6 +70,7 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
       if (!isSameResolvedRoute(route, previous?.route)) {
         prefetch.dispose()
         prefetch = navigation.create()
+        hasPrefetched = false
       }
 
       if (!route) {
@@ -82,12 +111,14 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
       prefetchComponentsForRoute(strategy, route, configs)
       const computations = getComputationsForStrategy(route, strategy, configs)
 
-      prefetch.compute(route, computations)
+      const values = prefetch.compute(route, computations)
+      hasPrefetched = hasPrefetched || values.length > 0
     }
 
     return {
       element,
-      commit,
+      enabled,
+      take,
     }
   }
 }

@@ -15,6 +15,7 @@ import { DataKind, getDataKey } from './getDataKey'
 import { PropsResult } from '@/utilities/props'
 import { warn } from '@/utilities/warn'
 import { MaybePromise } from '@/types/utilities'
+import { isSameResolvedRoute } from '@/utilities/isSameResolvedRoute'
 import { Computation, getComputations, isKind, loaderLocations, propsLocations, ValueLocation } from './getComputations'
 
 /**
@@ -26,31 +27,43 @@ type RouterNavigationAbandoned = {
 
 export type RouterNavigationResponse = CallbackContextSuccess | CallbackContextPush | CallbackContextReject | RouterNavigationAbandoned
 
-export type RouterNavigationResponses = {
-  props: Promise<RouterNavigationResponse>,
-  loaders: Promise<RouterNavigationResponse>,
-  values: Promise<unknown>[],
+type RouterNavigationComputationResponse = {
+  response: Promise<RouterNavigationResponse>,
+  source: DataKind,
 }
 
-const ABANDONED_RESPONSE = Promise.resolve<RouterNavigationResponse>({ status: 'ABANDONED' })
+type RouterNavigationCommitOptions = {
+  to: ResolvedRoute,
+  from?: ResolvedRoute | null,
+}
 
-type RouterNavigationStoreSlots = {
-  current: RouterNavigationStore,
-  staged: RouterNavigationStore,
+type RouterNavigationContext = {
+  to: ResolvedRoute,
+  from: ResolvedRoute | null,
+  signal: AbortSignal,
+}
+
+export type RouterNavigationResponseEvent = RouterNavigationComputationResponse & RouterNavigationContext
+
+type CreateRouterNavigationOptions = {
+  onResponse?: (response: RouterNavigationResponseEvent) => void,
+}
+
+type RouterNavigationState = {
+  route: ResolvedRoute | undefined,
+  responses: RouterNavigationComputationResponse[],
+  context: RouterNavigationContext | undefined,
 }
 
 export type RouterNavigationStore = {
   data: DataStore,
-  /**
-   * Disposes of the previously staged navigation and sets this navigation as staged.
-   */
-  stage: () => void,
-  commit: (route: ResolvedRoute) => RouterNavigationResponses,
+  commit: (options: RouterNavigationCommitOptions) => Promise<unknown>[],
+  abandon: () => void,
   dispose: () => void,
   /**
    * Computes the supplied values and reports how they settle.
    */
-  compute: (route: ResolvedRoute, computations: Computation[]) => RouterNavigationResponses,
+  compute: (route: ResolvedRoute, computations: Computation[]) => Promise<unknown>[],
   /**
    * Adopts values that already settled, in place of running their getters.
    */
@@ -71,15 +84,6 @@ export type RouterNavigationStores = HasVueAppStore & {
   current: () => RouterNavigationStore,
   create: () => RouterNavigationStore,
   /**
-   * The navigation prepared for the next commit.
-   * The rendered route keeps reading from the current navigation until then.
-   */
-  staged: () => RouterNavigationStore,
-  /**
-   * Makes the staged navigation current and computes whatever the route still lacks.
-   */
-  commit: (route: ResolvedRoute) => RouterNavigationResponses,
-  /**
    * The values currently settled in the store.
    */
   getValues: (route: ResolvedRoute) => RouteValue[],
@@ -91,43 +95,60 @@ export type RouterNavigationStores = HasVueAppStore & {
   getData: (route: ResolvedRoute) => WithData['data'],
 }
 
-export function createRouterNavigation(): RouterNavigationStores {
+export function createRouterNavigation({ onResponse }: CreateRouterNavigationOptions = {}): RouterNavigationStores {
   const { setVueApp, runWithContext } = createVueAppStore()
-  const navigations: RouterNavigationStoreSlots = {
-    current: createRouterNavigationStore(),
-    staged: createRouterNavigationStore(),
-  }
+  let currentNavigation = createRouterNavigationStore()
 
   function createRouterNavigationStore(): RouterNavigationStore {
     const data = createDataStore()
 
-    function compute(route: ResolvedRoute, computations: Computation[]): RouterNavigationResponses {
-      if (data.signal.aborted) {
-        return {
-          props: ABANDONED_RESPONSE,
-          loaders: ABANDONED_RESPONSE,
-          values: [],
-        }
-      }
-
-      const loaders = settle(route, computations.filter(isKind('loader')))
-      const props = settle(route, computations.filter(isKind('props')))
-      loaders.catch(() => {})
-      props.catch(() => {})
-
-      return {
-        props,
-        loaders,
-        values: computations.map(({ key }) => data.subscribe(key)),
-      }
+    const state: RouterNavigationState = {
+      route: undefined,
+      responses: [],
+      context: undefined,
     }
 
-    function settle(route: ResolvedRoute, computations: Computation[]): Promise<RouterNavigationResponse> {
+    function reportResponse(response: RouterNavigationComputationResponse): void {
+      if (data.signal.aborted) {
+        return
+      }
+
+      if (!state.context) {
+        state.responses.push(response)
+        return
+      }
+
+      onResponse?.({ ...response, ...state.context })
+    }
+
+    function setRoute(route: ResolvedRoute): void {
+      if (state.route && !isSameResolvedRoute(state.route, route)) {
+        throw new TypeError('Cannot compute values for another route in this navigation')
+      }
+
+      state.route ??= route
+    }
+
+    function compute(route: ResolvedRoute, computations: Computation[]): Promise<unknown>[] {
+      if (data.signal.aborted) {
+        return []
+      }
+
+      setRoute(route)
+      const values = computations.map(({ key }) => data.subscribe(key))
+
       computations.forEach((computation) => {
-        data.set(computation.key, () => run(computation, route, data))
+        data.set(computation.key, () => {
+          const response = toResponse(data.subscribe(computation.key))
+          response.catch(() => {})
+
+          reportResponse({ response, source: computation.kind })
+
+          return run(computation, route, data)
+        })
       })
 
-      return toResponse(Promise.all(computations.map(({ key }) => data.subscribe(key))))
+      return values
     }
 
     function fill(route: ResolvedRoute, values: RouteValue[]): void {
@@ -135,6 +156,7 @@ export function createRouterNavigation(): RouterNavigationStores {
         return
       }
 
+      setRoute(route)
       const computations = getComputations(route)
 
       for (const { kind, depth, name, value } of values) {
@@ -148,59 +170,58 @@ export function createRouterNavigation(): RouterNavigationStores {
       }
     }
 
-    function commit(route: ResolvedRoute): RouterNavigationResponses {
-      const previous = navigations.current
-      const staged = navigations.staged
-      navigations.current = instance
-      navigations.staged = createRouterNavigationStore()
+    function commit({ to, from = null }: RouterNavigationCommitOptions): Promise<unknown>[] {
+      if (data.signal.aborted) {
+        return []
+      }
+
+      setRoute(to)
+      const previous = currentNavigation
+      currentNavigation = instance
 
       if (previous !== instance) {
         previous.dispose()
       }
 
-      if (staged !== instance && staged !== previous) {
-        staged.dispose()
+      state.context ??= {
+        to: state.route ?? to,
+        from,
+        signal: data.signal,
       }
 
-      return compute(route, getComputations(route))
+      const pending = state.responses.splice(0)
+      pending.forEach(reportResponse)
+
+      return compute(to, getComputations(to))
+    }
+
+    function abandon(): void {
+      data.abandon(new NavigationAbandonedError())
+      state.responses.length = 0
     }
 
     function dispose(): void {
       data.dispose(new NavigationAbandonedError())
-    }
-
-    function stage(): void {
-      if (navigations.staged === instance) {
-        return
-      }
-
-      if (navigations.staged !== navigations.current) {
-        navigations.staged.dispose()
-      }
-
-      navigations.staged = instance
+      state.responses.length = 0
+      state.context = undefined
     }
 
     const instance: RouterNavigationStore = {
       data,
       compute,
       fill,
-      stage,
       commit,
+      abandon,
       dispose,
     }
 
     return instance
   }
 
-  const current: RouterNavigationStores['current'] = () => navigations.current
-
-  const staged: RouterNavigationStores['staged'] = () => navigations.staged
-
-  const commit: RouterNavigationStores['commit'] = (route) => navigations.staged.commit(route)
+  const current: RouterNavigationStores['current'] = () => currentNavigation
 
   const getValues: RouterNavigationStores['getValues'] = (route) => {
-    const store = navigations.current.data
+    const store = currentNavigation.data
 
     return getComputations(route).flatMap(({ kind, depth, name, key }) => {
       const result = store.get(key)
@@ -237,7 +258,7 @@ export function createRouterNavigation(): RouterNavigationStores {
 
   const getProps: RouterNavigationStores['getProps'] = (id, name, route) => {
     const key = getDataKey('props', id, name, route)
-    const result = navigations.current.data.get(key)
+    const result = currentNavigation.data.get(key)
 
     switch (result.kind) {
       case 'missing':
@@ -245,7 +266,7 @@ export function createRouterNavigation(): RouterNavigationStores {
 
       case 'pending':
       case 'running':
-        return toResult(navigations.current.data, key)
+        return toResult(currentNavigation.data, key)
 
       case 'value':
       case 'error':
@@ -374,14 +395,7 @@ export function createRouterNavigation(): RouterNavigationStores {
    */
   function getValue(location: ValueLocation, route: ResolvedRoute, store?: DataStore): Promise<unknown> {
     const key = getDataKey(location.kind, location.id, location.name, route)
-    const current = navigations.current.data
-
-    if (current.signal.aborted) {
-      const abandoned = Promise.reject(new NavigationAbandonedError())
-      abandoned.catch(() => {})
-
-      return abandoned
-    }
+    const current = currentNavigation.data
 
     if (!store || store === current) {
       return current.subscribe(key)
@@ -408,8 +422,6 @@ export function createRouterNavigation(): RouterNavigationStores {
   return {
     current,
     create: createRouterNavigationStore,
-    staged,
-    commit,
     getValues,
     getProps,
     getData,

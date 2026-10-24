@@ -55,7 +55,7 @@ export type DataStore = {
    */
   get: (key: string) => DataResult,
   /**
-   * Aborts when the store is disposed, so a getter still running can stop work nothing will read.
+   * Aborts when pending work is abandoned or the store is disposed.
    */
   signal: AbortSignal,
   /**
@@ -63,6 +63,10 @@ export type DataStore = {
    * suspended, then discarded.
    */
   dispose: (reason: Error) => void,
+  /**
+   * Rejects unfinished values and aborts their signal while retaining settled values.
+   */
+  abandon: (reason: Error) => void,
 }
 
 export function createDataStore(): DataStore {
@@ -121,6 +125,10 @@ export function createDataStore(): DataStore {
   const subscribe: DataStore['subscribe'] = (key) => entry(key).promise
 
   const set: DataStore['set'] = (key, getter) => {
+    if (controller.signal.aborted) {
+      return
+    }
+
     const target = entry(key)
 
     if (target.state.value.kind !== 'pending') {
@@ -157,13 +165,17 @@ export function createDataStore(): DataStore {
     return result ?? MISSING
   }
 
-  const dispose: DataStore['dispose'] = (reason) => {
+  const abandon: DataStore['abandon'] = (reason) => {
     controller.abort(reason)
 
-    for (const [key, dying] of entries) {
-      entries.delete(key)
-      settle(dying, { kind: 'error', error: reason })
+    for (const entry of entries.values()) {
+      settle(entry, { kind: 'error', error: reason })
     }
+  }
+
+  const dispose: DataStore['dispose'] = (reason) => {
+    abandon(reason)
+    entries.clear()
   }
 
   return {
@@ -172,5 +184,6 @@ export function createDataStore(): DataStore {
     get,
     signal: controller.signal,
     dispose,
+    abandon,
   }
 }

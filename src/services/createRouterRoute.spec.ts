@@ -86,28 +86,30 @@ test.each([
       : routerRoute.data as Promise<unknown>
   }
 
-  const firstCommit = navigation.commit(route)
+  const firstNavigation = navigation.create()
+  const firstCommit = firstNavigation.commit({ to: route })
   const previous = readData()
 
   if (!pending) {
     first.resolve('first')
-    await Promise.allSettled(firstCommit.values)
+    await Promise.allSettled(firstCommit)
     await expect(previous).resolves.toBe('first')
   }
 
-  const secondCommit = navigation.commit(route)
+  const secondNavigation = navigation.create()
+  const secondCommit = secondNavigation.commit({ to: route })
   routerRoute.updateRoute(route)
   const current = readData()
 
   expect(current).not.toBe(previous)
   second.resolve('second')
-  await Promise.all(secondCommit.values)
+  await Promise.all(secondCommit)
   await expect(current).resolves.toBe('second')
 
   if (pending) {
     await expect(previous).rejects.toBeInstanceOf(NavigationAbandonedError)
     first.resolve('late')
-    await Promise.allSettled(firstCommit.values)
+    await Promise.allSettled(firstCommit)
     await expect(readData()).resolves.toBe('second')
   }
 })
