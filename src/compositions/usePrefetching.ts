@@ -10,7 +10,6 @@ import { Router } from '@/types/router'
 import { getComputations, getComputationsForStrategy } from '@/services/getComputations'
 import { RouterNavigationStore } from '@/services/createRouterNavigation'
 import { getComputationPrefetchKey } from '@/services/getComputationPrefetchKey'
-import { isSameResolvedRoute } from '@/utilities/isSameResolvedRoute'
 
 type UsePrefetchingConfig = PrefetchConfigs & {
   route: ResolvedRoute | undefined,
@@ -66,12 +65,29 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
 
     onScopeDispose(() => prefetch.dispose())
 
-    watch(() => toValue(config), ({ route, ...configs }, previous) => {
-      if (!isSameResolvedRoute(route, previous?.route)) {
+    const watchedConfig = computed(() => {
+      const { route, ...configs } = toValue(config)
+      const stateNames = route?.matches.flatMap((match) => Object.keys(match.state ?? {})) ?? []
+      const state = stateNames.length
+        ? Object.fromEntries(stateNames.map((name) => [name, route?.state[name]]))
+        : undefined
+
+      return {
+        id: route?.id,
+        href: route?.href,
+        state,
+        ...configs,
+      }
+    })
+
+    watch(watchedConfig, (current, previous) => {
+      if (current.id !== previous?.id || current.href !== previous?.href || current.state || previous?.state) {
         prefetch.dispose()
         prefetch = navigation.create()
         hasPrefetched = false
       }
+
+      const { route, ...configs } = toValue(config)
 
       if (!route) {
         return
@@ -82,7 +98,11 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
       if (isElementVisible.value) {
         doPrefetchingForStrategy('lazy', route, configs)
       }
-    }, { immediate: true })
+    }, {
+      immediate: true,
+      deep: true,
+      flush: 'sync',
+    })
 
     watch(isElementVisible, (isVisible) => {
       const { route, ...configs } = toValue(config)
