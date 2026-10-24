@@ -4,6 +4,7 @@ import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
 import { isLoader } from '@/types/loader'
 import { createRejection } from '@/services/createRejection'
+import { isSameLoader } from '@/services/isSameLoader'
 
 test('one definition loads independently for multiple routes', async () => {
   const loader = createLoader({
@@ -31,6 +32,9 @@ test('attachment preserves loader identity while overriding defaults', () => {
 
   expect(isLoader(overridden.matches[0].loaders.default)).toBe(true)
   expect(isLoader(defaults.matches[0].loaders.default)).toBe(true)
+  expect(isSameLoader(loader, overridden.matches[0].loaders.default)).toBe(true)
+  expect(isSameLoader(loader, defaults.matches[0].loaders.default)).toBe(true)
+  expect(isSameLoader(loader, createLoader({ load: loader.load }))).toBe(false)
   expect(overridden.matches[0].loaders.default).toMatchObject({ prefetch: false, transformer: overrideTransformer })
   expect(defaults.matches[0].loaders.default).toMatchObject({ prefetch: 'eager', transformer })
 })

@@ -12,6 +12,7 @@ export const IS_LOADER_SYMBOL = Symbol('IS_LOADER_SYMBOL')
 
 export type LoaderInternal = {
   [IS_LOADER_SYMBOL]: true,
+  id: string,
 }
 
 /**
