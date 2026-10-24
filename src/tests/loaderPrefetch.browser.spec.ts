@@ -220,7 +220,7 @@ test.each([true, false])('navigation adopts a prefetched loader when already set
   await expect(router.route.data).resolves.toBe('prefetched')
 })
 
-test('link push options discard prefetching for a different url', async () => {
+test('link push options skip prefetching without discarding it', async () => {
   const warn = vi.spyOn(warnings, 'warn').mockImplementation(() => {})
   const load = vi.fn(({ href }: { href: string }) => href)
   const home = createRoute({ name: 'home', path: '/' })
@@ -250,10 +250,15 @@ test('link push options discard prefetching for a different url', async () => {
 
   await expect(router.route.data).resolves.toBe('/route?tab=a&page=2')
   expect(load).toHaveBeenCalledTimes(2)
-  expect(warn).toHaveBeenCalledExactlyOnceWith(expect.stringContaining('query options were passed'))
+  expect(warn).toHaveBeenCalledExactlyOnceWith(expect.stringContaining('cannot be used when query, hash, or state options are passed'))
+
+  await wrapper.vm.push()
+
+  await expect(router.route.data).resolves.toBe('/route?tab=a')
+  expect(load).toHaveBeenCalledTimes(2)
 })
 
-test('push options do not warn when no data was prefetched', async () => {
+test('push options warn when intent prefetching is enabled before it runs', async () => {
   const warn = vi.spyOn(warnings, 'warn').mockImplementation(() => {})
   const load = vi.fn(() => 'loaded')
   const home = createRoute({ name: 'home', path: '/' })
@@ -264,7 +269,34 @@ test('push options do not warn when no data was prefetched', async () => {
 
   const wrapper = mount(defineComponent({
     setup: () => {
-      const { push } = useLink('route')
+      const { push } = useLink('route', {}, { prefetch: 'intent' })
+
+      return { push }
+    },
+    render: () => null,
+  }), {
+    global: { plugins: [router] },
+  })
+
+  expect(load).not.toHaveBeenCalled()
+  await wrapper.vm.push({ hash: 'details' })
+
+  await expect(router.route.data).resolves.toBe('loaded')
+  expect(warn).toHaveBeenCalledExactlyOnceWith(expect.stringContaining('cannot be used'))
+})
+
+test('push options do not warn when prefetching is disabled', async () => {
+  const warn = vi.spyOn(warnings, 'warn').mockImplementation(() => {})
+  const load = vi.fn(() => 'loaded')
+  const home = createRoute({ name: 'home', path: '/' })
+  const route = createRoute({ name: 'route', path: '/route' }).addLoader(load)
+  const router = createRouter([home, route], { initialUrl: '/' })
+  const useLink = createUseLink(router.key)
+  await router.start()
+
+  const wrapper = mount(defineComponent({
+    setup: () => {
+      const { push } = useLink('route', {}, { prefetch: false })
 
       return { push }
     },
