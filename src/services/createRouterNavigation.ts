@@ -19,7 +19,7 @@ import { isSameResolvedRoute } from '@/utilities/isSameResolvedRoute'
 import { Computation, getComputations, isKind, loaderLocations, propsLocations, ValueLocation } from './getComputations'
 
 /**
- * Computation stopped because its navigation was disposed.
+ * Computation stopped because its navigation was abandoned.
  */
 type RouterNavigationAbandoned = {
   status: 'ABANDONED',
@@ -51,7 +51,7 @@ type CreateRouterNavigationOptions = {
 
 type RouterNavigationState = {
   route: ResolvedRoute | undefined,
-  responses: RouterNavigationComputationResponse[],
+  responses: Set<RouterNavigationComputationResponse>,
   context: RouterNavigationContext | undefined,
 }
 
@@ -104,21 +104,42 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
     const state: RouterNavigationState = {
       route: undefined,
-      responses: [],
+      responses: new Set(),
       context: undefined,
     }
 
-    function reportResponse(response: RouterNavigationComputationResponse): void {
+    function reportResponse(event: RouterNavigationComputationResponse): void {
       if (data.signal.aborted) {
         return
       }
 
       if (!state.context) {
-        state.responses.push(response)
+        state.responses.add(event)
         return
       }
 
-      onResponse?.({ ...response, ...state.context })
+      const context = state.context
+      const response = event.response.then((response): RouterNavigationResponse => {
+        if (data.signal.aborted) {
+          return { status: 'ABANDONED' }
+        }
+
+        return response
+      }, (error: unknown): RouterNavigationResponse => {
+        if (data.signal.aborted) {
+          return { status: 'ABANDONED' }
+        }
+
+        throw error
+      })
+      onResponse?.({ ...event, ...context, response })
+
+      // Let the router consume the winning response before aborting its navigation signal.
+      response.then((response) => {
+        if (response.status === 'PUSH' || response.status === 'REJECT') {
+          abandon()
+        }
+      }, () => {})
     }
 
     function setRoute(route: ResolvedRoute): void {
@@ -139,10 +160,18 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
       computations.forEach((computation) => {
         data.set(computation.key, () => {
-          const response = toResponse(data.subscribe(computation.key))
-          response.catch(() => {})
-
-          reportResponse({ response, source: computation.kind })
+          const event: RouterNavigationComputationResponse = {
+            response: toResponse(data.subscribe(computation.key)),
+            source: computation.kind,
+          }
+          const onSettle = (): void => {
+            // Deliver buffered outcomes in completion order when the navigation is adopted.
+            if (state.responses.delete(event)) {
+              state.responses.add(event)
+            }
+          }
+          event.response.then(onSettle, onSettle)
+          reportResponse(event)
 
           return run(computation, route, data)
         })
@@ -189,7 +218,8 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
         signal: data.signal,
       }
 
-      const pending = state.responses.splice(0)
+      const pending = [...state.responses]
+      state.responses.clear()
       pending.forEach(reportResponse)
 
       return compute(to, getComputations(to))
@@ -197,12 +227,12 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
     function abandon(): void {
       data.abandon(new NavigationAbandonedError())
-      state.responses.length = 0
+      state.responses.clear()
     }
 
     function dispose(): void {
       data.dispose(new NavigationAbandonedError())
-      state.responses.length = 0
+      state.responses.clear()
       state.context = undefined
     }
 

@@ -600,6 +600,8 @@ export function createRouter<
 
     if (isSSR) {
       setServerRedirect(redirectStatus ?? 302, url)
+      const current = navigation.current()
+      current.abandon()
 
       return
     }

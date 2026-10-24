@@ -2115,3 +2115,39 @@ test('settled current data remains readable while another navigation waits on a 
   await navigating
   router.stop()
 })
+
+test('prefetched navigation actions win in completion order', async () => {
+  const first = Promise.withResolvers<void>()
+  const second = Promise.withResolvers<void>()
+  const home = createRoute({ name: 'home', path: '/' })
+  const page = createRoute({ name: 'page', path: '/page' })
+    .addLoader(async (_route, { push }) => {
+      await first.promise
+      push('/first')
+    }, { name: 'first' })
+    .addLoader(async (_route, { push }) => {
+      await second.promise
+      push('/second')
+    }, { name: 'second' })
+  const firstTarget = createRoute({ name: 'first', path: '/first' })
+  const secondTarget = createRoute({ name: 'second', path: '/second' })
+  const router = createRouter([home, page, firstTarget, secondTarget], { initialUrl: '/' })
+  const app = createApp({ render: () => null })
+  app.use(router)
+  await router.start()
+  const useRouterNavigation = createUseRouterNavigation(router.key)
+  const navigation = app.runWithContext(useRouterNavigation)
+  const prepared = navigation.create()
+  const resolved = router.resolve('page')
+  prepared.compute(resolved, getComputations(resolved))
+
+  second.resolve()
+  await flushPromises()
+  first.resolve()
+  await flushPromises()
+  const options: RouterPushOptionsInternal = { prefetch: prepared }
+  await router.push(resolved, options)
+
+  await vi.waitFor(() => expect(router.route.href).toBe('/second'))
+  router.stop()
+})

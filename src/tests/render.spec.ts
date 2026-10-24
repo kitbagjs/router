@@ -3,6 +3,7 @@ import { describe, expect, test, vi } from 'vitest'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
 import { component } from '@/utilities/testHelpers'
+import { ErrorHook } from '@/types/hooks'
 
 describe('router.render', () => {
   test('waits for a loader to settle', async () => {
@@ -229,4 +230,46 @@ test('render on an unstarted router does not report a bogus success for an unmat
   const result = await router.render()
 
   expect(result.status).toBe(404)
+})
+
+test.each(['push', 'reject', 'error hook'] as const)('SSR abandons other loaders when a %s outcome wins', async (action) => {
+  const ready = Promise.withResolvers<void>()
+  const unfinished = Promise.withResolvers<string>()
+  const onError = vi.fn<ErrorHook>((_error, { push }) => {
+    push('/target')
+  })
+  const signals: AbortSignal[] = []
+  const page = createRoute({ name: 'page', path: '/' })
+    .addLoader(async (_route, { push, reject }) => {
+      await ready.promise
+
+      if (action === 'push') {
+        push('/target')
+      }
+
+      if (action === 'reject') {
+        reject('NotFound')
+      }
+
+      throw new Error('redirect from error hook')
+    }, { name: 'winner' })
+    .addLoader((_route, { signal }) => {
+      signals.push(signal)
+      return unfinished.promise
+    }, { name: 'pending' })
+  const router = createRouter([page], { initialUrl: '/', ssr: true })
+  router.onError(onError)
+  await router.start()
+
+  const rendering = router.render()
+  ready.resolve()
+  const result = await rendering
+
+  unfinished.reject(new Error('late failure'))
+  await flushPromises()
+
+  expect(result.kind).toBe(action === 'reject' ? 'reject' : 'redirect')
+  expect(signals[0].aborted).toBe(true)
+  expect(onError).toHaveBeenCalledTimes(action === 'error hook' ? 1 : 0)
+  router.stop()
 })
