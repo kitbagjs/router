@@ -1,8 +1,14 @@
 /* eslint-disable vue/one-component-per-file */
 import { flushPromises, mount } from '@vue/test-utils'
-import { expect, test, vi } from 'vitest'
+import { afterEach, describe, expect, test, vi } from 'vitest'
 import { defineComponent, h, Suspense } from 'vue'
-import { createLoader, createRoute, createRouter, createRouterAssets, Router, useLoader } from '@/main'
+import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
+import { createLoader, createRejection, createRoute, createRouter, createRouterAssets, Router, useLoader } from '@/main'
+
+afterEach(() => {
+  vi.restoreAllMocks()
+  vi.unstubAllEnvs()
+})
 
 function mountConsumer<TResult>(router: Router, setup: () => TResult): TResult {
   const wrapper = mount(defineComponent({
@@ -140,4 +146,276 @@ test('router assets read the same definition from their own router stores', asyn
 
   expect((await firstResult).data.value).toBe('1')
   expect((await secondResult).data.value).toBe('2')
+})
+
+describe('fallback loads', () => {
+  test('same-URL navigation selects the new load', async () => {
+    const load = vi.fn<() => number>()
+      .mockReturnValueOnce(1)
+      .mockReturnValueOnce(2)
+    const loader = createLoader({ load })
+    const route = createRoute({ name: 'home', path: '/' })
+    const router = createRouter([route], { initialUrl: '/' })
+    await router.start()
+    const result = mountConsumer(router, () => useLoader(loader))
+
+    expect((await result).data.value).toBe(1)
+    await router.push('/')
+    await flushPromises()
+
+    expect(result.data.value).toBe(2)
+    expect(load).toHaveBeenCalledTimes(2)
+  })
+
+  test('unmounted consumers stop starting fallback loads', async () => {
+    const load = vi.fn(() => 'loaded')
+    const loader = createLoader({ load })
+    const route = createRoute({ name: 'home', path: '/[id]' })
+    const router = createRouter([route], { initialUrl: '/1' })
+    await router.start()
+    const consumer = defineComponent({
+      setup: () => {
+        useLoader(loader)
+      },
+      render: () => null,
+    })
+    const wrapper = mount(consumer, { global: { plugins: [router] } })
+
+    expect(load).toHaveBeenCalledTimes(1)
+    wrapper.unmount()
+    await router.push('/2')
+
+    expect(load).toHaveBeenCalledTimes(1)
+  })
+
+  test('unattached consumers share a load and a warning', async () => {
+    vi.stubEnv('NODE_ENV', 'development')
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const pending = Promise.withResolvers<string>()
+    const load = vi.fn(() => pending.promise)
+    const loader = createLoader({ load })
+    const route = createRoute({ name: 'home', path: '/' })
+    const router = createRouter([route], { initialUrl: '/' })
+    await router.start()
+    const { first, second } = mountConsumer(router, () => ({
+      first: useLoader(loader),
+      second: useLoader(loader),
+    }))
+
+    expect(first.loading.value).toBe(true)
+    expect(load).toHaveBeenCalledTimes(1)
+    expect(warn).toHaveBeenCalledTimes(1)
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('not attached'), loader)
+
+    pending.resolve('loaded')
+    expect((await first).data.value).toBe('loaded')
+    expect((await second).data.value).toBe('loaded')
+  })
+
+  test('ambiguous definitions warn with their attachment names and run separately', async () => {
+    vi.stubEnv('NODE_ENV', 'development')
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const load = vi.fn<() => number>()
+      .mockReturnValueOnce(1)
+      .mockReturnValueOnce(2)
+      .mockReturnValue(3)
+    const loader = createLoader({ load })
+    const route = createRoute({ name: 'home', path: '/' })
+      .addLoader(loader, { name: 'first' })
+      .addLoader(loader, { name: 'second' })
+    const router = createRouter([route], { initialUrl: '/' })
+    await router.start()
+    const result = mountConsumer(router, () => useLoader(loader))
+
+    expect((await result).data.value).toBe(3)
+    expect(warn).toHaveBeenCalledTimes(1)
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('route "home": "first", "second"'), loader)
+  })
+
+  test('navigation replaces fallback loads and preserves their route snapshots', async () => {
+    const first = Promise.withResolvers<string>()
+    const second = Promise.withResolvers<string>()
+    const signals: AbortSignal[] = []
+    const params: unknown[] = []
+    const loader = createLoader({
+      load: (route, { signal }) => {
+        signals.push(signal)
+        const pending = route.params.id === '1' ? first.promise : second.promise
+
+        return pending.then((data) => {
+          params.push(route.params.id)
+          return data
+        })
+      },
+    })
+    const route = createRoute({ name: 'home', path: '/[id]' })
+    const router = createRouter([route], { initialUrl: '/1' })
+    await router.start()
+    const result = mountConsumer(router, () => useLoader(loader))
+    const settled = Promise.resolve(result)
+    await flushPromises()
+
+    await router.push('/2')
+    await settled
+    expect(signals[0].aborted).toBe(true)
+
+    first.resolve('obsolete')
+    await flushPromises()
+    expect(result.data.value).toBeUndefined()
+
+    second.resolve('current')
+    expect((await result).data.value).toBe('current')
+    expect(params).toEqual(['1', '2'])
+  })
+
+  test('superseded fallback failures do not reach router error hooks', async () => {
+    const first = Promise.withResolvers<string>()
+    const loader = createLoader({
+      load: (route) => {
+        if (route.params.id === '1') {
+          return first.promise
+        }
+
+        return 'current'
+      },
+    })
+    const route = createRoute({ name: 'home', path: '/[id]' })
+    const router = createRouter([route], { initialUrl: '/1' })
+    const onError = vi.fn()
+    router.onError(onError)
+    await router.start()
+    const result = mountConsumer(router, () => useLoader(loader))
+
+    await router.push('/2')
+    first.reject(new Error('obsolete failure'))
+    await flushPromises()
+
+    expect(onError).not.toHaveBeenCalled()
+    expect(result.data.value).toBe('current')
+  })
+
+  test('superseded fallback redirects are ignored after same-URL navigation', async () => {
+    const first = Promise.withResolvers<void>()
+    const loader = createLoader({
+      load: (route, { push }) => {
+        if (route.params.id === '1' && route.state.visit !== 2) {
+          return first.promise.then(() => push('/obsolete'))
+        }
+
+        return 'current'
+      },
+    })
+    const route = createRoute({
+      name: 'home',
+      path: '/[id]',
+      state: { visit: Number },
+    })
+    const router = createRouter([route], { initialUrl: '/1' })
+    await router.start()
+    mountConsumer(router, () => useLoader(loader))
+
+    await router.push('/1', { state: { visit: 2 } })
+    first.resolve()
+    await flushPromises()
+
+    expect(router.route.href).toBe('/1')
+  })
+
+  test('stopping the router settles a pending await with an abandonment error', async () => {
+    const pending = Promise.withResolvers<string>()
+    const loader = createLoader({ load: () => pending.promise })
+    const route = createRoute({ name: 'home', path: '/' })
+    const router = createRouter([route], { initialUrl: '/' })
+    await router.start()
+    const result = mountConsumer(router, () => useLoader(loader))
+    const settled = Promise.resolve(result)
+    await flushPromises()
+
+    router.stop()
+
+    const { loading, error } = await settled
+    expect(error.value).toBeInstanceOf(NavigationAbandonedError)
+    expect(loading.value).toBe(false)
+  })
+
+  test('fallback loaders can navigate to routes in their context', async () => {
+    const home = createRoute({ name: 'home', path: '/' })
+    const target = createRoute({ name: 'target', path: '/target' })
+    const loader = createLoader({
+      context: [target],
+      load: (route, { push }) => {
+        if (route.name === 'home') {
+          push('target')
+        }
+
+        return 'arrived'
+      },
+    })
+    const router = createRouter([home], { initialUrl: '/' })
+    await router.start()
+    const result = mountConsumer(router, () => useLoader(loader))
+
+    await vi.waitFor(() => expect(router.route.name).toBe('target'))
+    expect((await result).data.value).toBe('arrived')
+  })
+
+  test('fallback loaders replace the current history entry', async () => {
+    const route = createRoute({ name: 'page', path: '/[page]' })
+    const loader = createLoader({
+      load: (route, { replace }) => {
+        if (route.params.page === 'home') {
+          replace('/target')
+        }
+
+        return route.params.page
+      },
+    })
+    const router = createRouter([route], {
+      initialUrl: '/previous',
+      historyMode: 'memory',
+    })
+    await router.start()
+    await router.push('/home')
+    mountConsumer(router, () => useLoader(loader))
+
+    await vi.waitFor(() => expect(router.route.href).toBe('/target'))
+    router.back()
+    await vi.waitFor(() => expect(router.route.href).toBe('/previous'))
+  })
+
+  test('fallback loaders can reject with their declared context', async () => {
+    const denied = createRejection({ type: 'Denied' })
+    const loader = createLoader({
+      context: [denied],
+      load: (_route, { reject }) => reject('Denied'),
+    })
+    const route = createRoute({ name: 'home', path: '/' })
+    const router = createRouter([route], { initialUrl: '/' })
+    const onRejection = vi.fn()
+    router.onRejection(onRejection)
+    await router.start()
+    mountConsumer(router, () => useLoader(loader))
+
+    await vi.waitFor(() => {
+      expect(onRejection).toHaveBeenCalledExactlyOnceWith('Denied', expect.anything())
+    })
+  })
+
+  test('fallback failures reach the loader state and router error hooks', async () => {
+    const failure = new Error('Load failed')
+    const loader = createLoader({
+      load: () => {
+        throw failure
+      },
+    })
+    const route = createRoute({ name: 'home', path: '/' })
+    const router = createRouter([route], { initialUrl: '/' })
+    const onError = vi.fn(() => true)
+    router.onError(onError)
+    await router.start()
+    const result = mountConsumer(router, () => useLoader(loader))
+
+    expect((await result).error.value).toBe(failure)
+    expect(onError).toHaveBeenCalledExactlyOnceWith(failure, expect.objectContaining({ source: 'loader' }))
+  })
 })

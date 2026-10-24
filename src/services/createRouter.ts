@@ -19,6 +19,7 @@ import { setStateValues } from '@/services/state'
 import { Routes } from '@/types/route'
 import { NOT_FOUND_REJECTION_TYPE } from '@/types/rejection'
 import { Router, RouterOptions, ServerRenderResponse, RedirectStatus } from '@/types/router'
+import { IS_ROUTER_SYMBOL, RouterInternal } from '@/types/routerInternal'
 import { RouterPushInternal, RouterPushOptionsInternal, RouterReplaceInternal, RouterReplaceOptionsInternal } from '@/types/routerNavigationInternal'
 import { RoutesName } from '@/types/routesMap'
 import { UrlString, isUrlString } from '@/types/urlString'
@@ -163,6 +164,7 @@ export function createRouter<
     getRouteByName,
     getRejectionByType,
     addHookContext,
+    addContext,
     stop: stopRouteContext,
   } = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options)
   const notFoundRejection = getRejectionByType('NotFound')
@@ -858,7 +860,13 @@ export function createRouter<
     start()
   }
 
-  const router: Router<TRoutes, TOptions, TPlugin> = {
+  const internal = {
+    [IS_ROUTER_SYMBOL]: true,
+    addContext,
+  } satisfies RouterInternal
+
+  const router: Router<TRoutes, TOptions, TPlugin> & RouterInternal = {
+    ...internal,
     route: routerRoute,
     resolve,
     find,

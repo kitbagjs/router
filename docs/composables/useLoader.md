@@ -37,3 +37,9 @@ Await the initial load to use Vue's suspense boundary. The result contains the s
 ```ts
 const { data: user, loading, error } = await useLoader(userLoader)
 ```
+
+## Loader attachments
+
+If a reusable loader is missing from the current route or has multiple attachments, `useLoader` warns and runs it separately. Pass `route.loaders[name]` to select a specific attachment.
+
+Attach reusable loaders with `addLoader` to enable prefetching and SSR hydration.
