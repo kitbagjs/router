@@ -4,7 +4,7 @@ import { createRouterNavigation } from '@/services/createRouterNavigation'
 import { createResolvedRoute } from '@/services/createResolvedRoute'
 import { createRoute } from '@/services/createRoute'
 import { component } from '@/utilities/testHelpers'
-import { getComputations } from '@/services/getComputations'
+import { getComputations, loaderLocations } from '@/services/getComputations'
 import { ContextPushError } from '@/errors/contextPushError'
 import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
 
@@ -84,7 +84,7 @@ test('filled values are adopted in place of running their getters', async () => 
   detached.fill(resolved, [{ kind: 'loader', depth: 0, name: 'default', value: 'staged' }])
   detached.commit({ to: resolved })
 
-  await expect(navigation.getData(resolved)).resolves.toBe('staged')
+  await expect(navigation.getRouteData(resolved)).resolves.toBe('staged')
   expect(loader).not.toHaveBeenCalled()
 })
 
@@ -112,7 +112,7 @@ test('prepared values are retained when their navigation is committed', async ()
   await Promise.all(prepared.compute(resolved, getComputations(resolved)))
   prepared.commit({ to: resolved })
 
-  await expect(navigation.getData(resolved)).resolves.toBe('value')
+  await expect(navigation.getRouteData(resolved)).resolves.toBe('value')
   expect(loader).toHaveBeenCalledTimes(1)
 })
 
@@ -283,6 +283,34 @@ test('computations added after adoption report their response once', async () =>
   await expect(event.response).resolves.toEqual({ status: 'PUSH', to: ['/target'] })
 })
 
+test.each(['getLoaderState', 'getLoaderValue'] as const)('%s rejects props locations at runtime', (method) => {
+  const onResponse = vi.fn()
+  const navigation = createRouterNavigation({ onResponse })
+  const route = createResolvedRoute(createRoute({ path: '/' }))
+
+  expect(() => {
+    // @ts-expect-error props locations are also rejected when bypassing the type check
+    navigation[method]({ kind: 'props', id: route.id, name: 'default' }, route)
+  }).toThrow(new TypeError('Expected a loader location'))
+})
+
+test('loader reads after stop report abandonment', async () => {
+  const route = createRoute({ name: 'home', path: '/' }).addLoader(() => 'loaded')
+  const resolved = createResolvedRoute(route)
+  const navigation = createRouterNavigation()
+  const current = navigation.create()
+  await Promise.all(current.commit({ to: resolved }))
+  const [location] = loaderLocations(resolved.matched)
+
+  navigation.stop()
+
+  expect(navigation.getLoaderState(location, resolved)).toEqual({
+    kind: 'error',
+    error: expect.any(NavigationAbandonedError),
+  })
+  await expect(navigation.getLoaderValue(location, resolved)).rejects.toThrow(NavigationAbandonedError)
+})
+
 test('stop abandons computations in the current navigation', async () => {
   const pending = Promise.withResolvers<string>()
   const route = createResolvedRoute(createRoute({ path: '/' }).addLoader(() => pending.promise))
@@ -308,7 +336,7 @@ test('committing the same instance preserves its computations', async () => {
 
   expect(signal.aborted).toBe(false)
   expect(load).toHaveBeenCalledOnce()
-  await expect(navigation.getData(route)).resolves.toBe(signal)
+  await expect(navigation.getRouteData(route)).resolves.toBe(signal)
 })
 
 test('preparing another instance keeps the current navigation active', async () => {
@@ -365,6 +393,18 @@ test('the current navigation shares explicitly supplied computations', async () 
 
   pending.resolve('loaded')
   await expect(values[0]).resolves.toBe('loaded')
+})
+
+test('settled loader values remain readable after abandonment', async () => {
+  const route = createResolvedRoute(createRoute({ path: '/' }).addLoader(() => 'kept'))
+  const navigation = createRouterNavigation()
+  const current = navigation.create()
+  await Promise.all(current.commit({ to: route }))
+  const [location] = loaderLocations(route.matched)
+  current.abandon()
+
+  expect(navigation.getLoaderState(location, route)).toEqual({ kind: 'value', value: 'kept' })
+  await expect(navigation.getLoaderValue(location, route)).resolves.toBe('kept')
 })
 
 test('a redirect abandons unfinished computations without a response handler', async () => {

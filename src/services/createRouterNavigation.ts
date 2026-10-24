@@ -10,7 +10,7 @@ import { PropsCallbackParent } from '@/types/props'
 import { createVueAppStore, HasVueAppStore } from './createVueAppStore'
 import { CallbackContextPush, CallbackContextReject, CallbackContextSuccess } from '@/types/callbackContext'
 import { createRouterCallbackContext } from './createRouterCallbackContext'
-import { createDataStore, DataStore } from './createDataStore'
+import { createDataStore, DataResult, DataStore } from './createDataStore'
 import { DataKind, getDataKey } from './getDataKey'
 import { PropsResult } from '@/utilities/props'
 import { warn } from '@/utilities/warn'
@@ -93,7 +93,9 @@ export type RouterNavigationStores = HasVueAppStore & {
    * What a route exposes as `data`. Resolved per read rather than captured, so it stays correct as
    * navigations replace the store its values live in.
    */
-  getData: (route: ResolvedRoute) => WithData['data'],
+  getRouteData: (route: ResolvedRoute) => WithData['data'],
+  getLoaderState: (location: ValueLocation<'loader'>, route: ResolvedRoute) => DataResult,
+  getLoaderValue: (location: ValueLocation<'loader'>, route: ResolvedRoute) => Promise<unknown>,
 }
 
 export function createRouterNavigation({ onResponse }: CreateRouterNavigationOptions = {}): RouterNavigationStores {
@@ -318,10 +320,37 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     }
   }
 
-  function getData(route: ResolvedRoute, store?: DataStore): WithData['data'] {
+  function getRouteData(route: ResolvedRoute, store?: DataStore): WithData['data'] {
     const loaders = getComputations(route).filter(isKind('loader'))
 
     return toValues(loaders, DEFAULT_LOADER_NAME, route, store)
+  }
+
+  const getLoaderState: RouterNavigationStores['getLoaderState'] = (location: ValueLocation, route) => {
+    if (location.kind !== 'loader') {
+      throw new TypeError('Expected a loader location')
+    }
+
+    const store = currentNavigation.data
+    const result = store.get(getDataKey(location.kind, location.id, location.name, route))
+
+    if (result.kind === 'value' || result.kind === 'error') {
+      return result
+    }
+
+    if (store.signal.aborted) {
+      return { kind: 'error', error: store.signal.reason }
+    }
+
+    return result
+  }
+
+  const getLoaderValue: RouterNavigationStores['getLoaderValue'] = (location: ValueLocation, route) => {
+    if (location.kind !== 'loader') {
+      throw new TypeError('Expected a loader location')
+    }
+
+    return getValue(location, route)
   }
 
   function run(computation: Computation, route: ResolvedRoute, store: DataStore): unknown {
@@ -355,7 +384,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
         // computing into a store that is not yet current resolves data against it as well as the
         // navigation's, so a getter does not have to know which of the two will compute what it reads
-        return getData(route, store)
+        return getRouteData(route, store)
       },
     })
   }
@@ -466,7 +495,9 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     create: createRouterNavigationStore,
     getValues,
     getProps,
-    getData,
+    getRouteData,
+    getLoaderState,
+    getLoaderValue,
     setVueApp,
   }
 }
