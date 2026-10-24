@@ -283,6 +283,18 @@ test('computations added after adoption report their response once', async () =>
   await expect(event.response).resolves.toEqual({ status: 'PUSH', to: ['/target'] })
 })
 
+test('stop abandons computations in the current navigation', async () => {
+  const pending = Promise.withResolvers<string>()
+  const route = createResolvedRoute(createRoute({ path: '/' }).addLoader(() => pending.promise))
+  const navigation = createRouterNavigation()
+  const current = navigation.create()
+  const values = current.commit({ to: route })
+
+  navigation.stop()
+
+  await expect(values[0]).rejects.toBeInstanceOf(NavigationAbandonedError)
+})
+
 test('committing the same instance preserves its computations', async () => {
   const load = vi.fn((_route: unknown, { signal }: { signal: AbortSignal }) => signal)
   const route = createResolvedRoute(createRoute({ path: '/' }).addLoader(load))

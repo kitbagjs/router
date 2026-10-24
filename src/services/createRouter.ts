@@ -820,6 +820,7 @@ export function createRouter<
     stopRouteContext()
     discardPendingNavigation()
     navigations.stop()
+    navigation.stop()
     navigationProgress.stop()
     history.stopListening()
   }

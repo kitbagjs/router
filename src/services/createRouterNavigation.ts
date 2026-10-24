@@ -82,6 +82,7 @@ export type RouteValue = {
 
 export type RouterNavigationStores = HasVueAppStore & {
   current: () => RouterNavigationStore,
+  stop: () => void,
   create: () => RouterNavigationStore,
   /**
    * The values currently settled in the store.
@@ -250,6 +251,10 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
   const current: RouterNavigationStores['current'] = () => currentNavigation
 
+  const stop: RouterNavigationStores['stop'] = () => {
+    currentNavigation.dispose()
+  }
+
   const getValues: RouterNavigationStores['getValues'] = (route) => {
     const store = currentNavigation.data
 
@@ -287,6 +292,12 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
   }
 
   const getProps: RouterNavigationStores['getProps'] = (id, name, route) => {
+    const match = route.matches.find((match) => match.id === id)
+
+    if (!match?.views[name]?.props) {
+      return NO_PROPS
+    }
+
     const key = getDataKey('props', id, name, route)
     const result = currentNavigation.data.get(key)
 
@@ -450,6 +461,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
   }
 
   return {
+    stop,
     current,
     create: createRouterNavigationStore,
     getValues,

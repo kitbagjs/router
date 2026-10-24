@@ -15,6 +15,7 @@ import { InvalidRouteParamValueError } from '@/errors/invalidRouteParamValueErro
 import { createRejection } from './createRejection'
 import { SsrOptionRequiredError } from '@/errors/ssrOptionRequiredError'
 import { PayloadValueError } from '@/errors/payloadValueError'
+import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
 import { RouterPushOptionsInternal } from '@/types/routerNavigationInternal'
 import { RenderRedirect, RenderSuccess, ServerRenderResponse } from '@/types/router'
 
@@ -28,6 +29,25 @@ test('initial route is set', async () => {
   await start()
 
   expect(route.matched.name).toBe('root')
+})
+
+test('stopping the router aborts its loaders and settles pending data', async () => {
+  const pending = Promise.withResolvers<string>()
+  const signals: AbortSignal[] = []
+  const route = createRoute({ name: 'home', path: '/' })
+    .addLoader((_route, { signal }) => {
+      signals.push(signal)
+      return pending.promise
+    })
+  const router = createRouter([route], { initialUrl: '/' })
+  await router.start()
+  const data = router.route.data
+
+  router.stop()
+
+  expect(signals[0].aborted).toBe(true)
+  await expect(data).rejects.toThrow(NavigationAbandonedError)
+  await expect(router.route.data).rejects.toThrow(NavigationAbandonedError)
 })
 
 test('initial state is set', async () => {
