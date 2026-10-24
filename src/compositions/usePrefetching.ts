@@ -7,8 +7,9 @@ import { loadAsyncComponents } from '@/utilities/components'
 import { useVisibilityObserver } from './useVisibilityObserver'
 import { useEventListener } from './useEventListener'
 import { Router } from '@/types/router'
-import { getComputationsForStrategy } from '@/services/getComputations'
+import { getComputations, getComputationsForStrategy } from '@/services/getComputations'
 import { RouterNavigationStore } from '@/services/createRouterNavigation'
+import { getComputationPrefetchKey } from '@/services/getComputationPrefetchKey'
 
 type UsePrefetchingConfig = PrefetchConfigs & {
   route: ResolvedRoute | undefined,
@@ -16,6 +17,7 @@ type UsePrefetchingConfig = PrefetchConfigs & {
 
 type UsePrefetching = {
   element: Ref<HTMLElement | undefined>,
+  enabled: Ref<boolean>,
   take: () => RouterNavigationStore | undefined,
 }
 
@@ -31,6 +33,20 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
     let prefetch = navigation.create()
     let hasPrefetched = false
     const { isElementVisible } = useVisibilityObserver(element)
+
+    const enabled = computed(() => {
+      const { route, ...configs } = toValue(config)
+
+      if (!route) {
+        return false
+      }
+
+      return getComputations(route).some((computation) => getPrefetchOption({
+        ...configs,
+        routePrefetch: computation.routePrefetch,
+        viewPrefetch: computation.prefetch,
+      }, getComputationPrefetchKey(computation.kind)) !== false)
+    })
 
     const take: UsePrefetching['take'] = () => {
       const prepared = prefetch
@@ -121,6 +137,7 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
 
     return {
       element,
+      enabled,
       take,
     }
   }
