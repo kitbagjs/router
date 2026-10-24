@@ -1,6 +1,6 @@
 # Loaders
 
-Loaders fetch data for a route and make it available as `route.data`. Components can await that data in setup before rendering.
+Loaders fetch data for a route. Components read their reactive state with [`useLoader`](/composables/useLoader), and props callbacks can await their results through `route.data`.
 
 ## Loading data
 
@@ -48,72 +48,37 @@ const settings = createRoute({...})
 
 ## Reading data in a component
 
-Use `useRoute` with the route's name and await `route.data` at the top level of `<script setup>`. The result is typed from the loader's return value.
+Pass a definition from `route.loaders` to [`useLoader`](/composables/useLoader). Await it at the top level of `<script setup>` to use Vue’s Suspense while keeping the returned refs reactive.
 
 ```vue
 <!-- UserPage.vue -->
 <script setup lang="ts">
-import { useRoute } from '@kitbag/router'
+import { useLoader, useRoute } from '@kitbag/router'
 
 const route = useRoute('user')
-const user = await route.data
+const { data: user } = await useLoader(route.loaders.default)
 </script>
 
 <template>
-  <h1>{{ user.name }}</h1>
+  <h1 v-if="user">{{ user.name }}</h1>
 </template>
 ```
 
 [Register your router](/core-concepts/type-safety#registration) to get the correct route names and data types when using `useRoute`.
 
-A single unnamed loader exposes its result directly as `route.data`. This is always a promise, even if the loader returns a value synchronously. Data is also available on `router.route`, but not on a route returned by `router.resolve` or in navigation hooks.
-
 ## Named loaders
 
-Give loaders names when a route needs multiple values. Each name becomes a property on `route.data`, with its own promise.
+Give loaders names when a route needs multiple values. Each name becomes a property on `route.loaders`, such as `route.loaders.user` and `route.loaders.posts`:
 
 ```ts
-const user = createRoute({
-  name: 'user',
-  path: '/users/[id]',
-})
-.addLoader((route) => getUser(route.params.id), { name: 'user' })
-.addLoader((route) => getPosts(route.params.id), { name: 'posts' })
-.addView(UserPage)
-```
-
-Await the values in your component:
-
-```vue
-<script setup lang="ts">
-import { useRoute } from '@kitbag/router'
-
-const route = useRoute('user')
-const [user, posts] = await Promise.all([route.data.user, route.data.posts])
-</script>
-
-<template>
-  <h1>{{ user.name }}</h1>
-  <p>{{ posts.length }} posts</p>
-</template>
-```
-
-If you mix an unnamed loader with named loaders, the unnamed result is available as `route.data.default`.
-
-A loader cannot read `route.data` to depend on another loader on the same route. If two requests depend on each other, put them in a single loader and return the values together.
-
-## Loader definitions
-
-`route.loaders` exposes the current route's loader definitions, including inline and inherited loaders. Each entry has the same `Loader` type returned by `createLoader`. Unnamed loaders use `route.loaders.default`.
-
-```ts
-const route = useRoute('user')
-const userLoader = route.loaders.user
+const user = createRoute({...})
+  .addLoader((route) => getUser(route.params.id), { name: 'user' })
+  .addLoader((route) => getPosts(route.params.id), { name: 'posts' })
 ```
 
 ## Parent data
 
-Child routes can access their ancestors' loader results through `route.data`. Give loaders distinct names across a route and its ancestors; two unnamed loaders also conflict because they both use the name `default`.
+Child routes inherit their ancestors' loaders and their results. Give loaders distinct names across a route and its ancestors; two unnamed loaders also conflict because they both use the name `default`.
 
 When a child's loader needs a value returned by its parent's request, use `parent.data` from the callback context. For example, an organization's invoices require its billing account ID, which is returned with the organization and is not in the URL:
 
@@ -136,11 +101,9 @@ const invoices = createRoute({
 }, { name: 'invoices' })
 ```
 
-The child route's data contains both `data.organization` and `data.invoices`. The invoices request must wait for the billing account ID. If a child only needs a value already available in `route.params`, use that directly so the requests can run together.
-
 ## Using loader data in props callbacks
 
-A [props callback](/core-concepts/component-props) can await loader data and use it to build the props its view needs. If only one view needs the data, fetching it directly in that callback is often enough. A loader is useful when multiple views depend on the same data.
+A [props callback](/core-concepts/component-props) can await `route.data` to build the props its view needs.
 
 For example, load a project once, then use it to prepare a summary and a list of incomplete tasks:
 
