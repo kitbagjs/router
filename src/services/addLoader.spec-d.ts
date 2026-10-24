@@ -1,7 +1,7 @@
 import { describe, expectTypeOf, test } from 'vitest'
 import { createRoute } from './createRoute'
+import { Loader } from '@/types/loader'
 import { createLoader } from '@/services/createLoader'
-import { RouteLoader } from '@/types/routeLoaders'
 import { BuiltInRejectionType } from '@/types/rejection'
 import { ResolvedRoute, WithData } from '@/types/resolved'
 import { RouterRoute } from '@/types/routerRoute'
@@ -17,13 +17,13 @@ describe('addLoader', () => {
   test('an async loader carries what it returns', () => {
     const route = createRoute({ name: 'route' }).addLoader(async (): Promise<User> => ({ id: '1', name: 'kitbag' }))
 
-    expectTypeOf<typeof route['matches'][0]['loaders']>().toEqualTypeOf<{ default: RouteLoader<Promise<User>> }>()
+    expectTypeOf<typeof route['matches'][0]['loaders']>().toEqualTypeOf<{ default: Loader<Promise<User>> }>()
   })
 
   test('a sync loader carries what it returns', () => {
     const route = createRoute({ name: 'route' }).addLoader(() => 'kitbag')
 
-    expectTypeOf<typeof route['matches'][0]['loaders']>().toEqualTypeOf<{ default: RouteLoader<string> }>()
+    expectTypeOf<typeof route['matches'][0]['loaders']>().toEqualTypeOf<{ default: Loader<string> }>()
   })
 
   test('a named loader is carried under its name', () => {
@@ -31,7 +31,7 @@ describe('addLoader', () => {
       name: 'user',
     })
 
-    expectTypeOf<typeof route['matches'][0]['loaders']>().toEqualTypeOf<{ user: RouteLoader<Promise<User>> }>()
+    expectTypeOf<typeof route['matches'][0]['loaders']>().toEqualTypeOf<{ user: Loader<Promise<User>> }>()
   })
 
   test('multiple loaders accumulate', () => {
@@ -40,8 +40,8 @@ describe('addLoader', () => {
       .addLoader(() => [1, 2], { name: 'posts' })
 
     expectTypeOf<typeof route['matches'][0]['loaders']>().toEqualTypeOf<{
-      default: RouteLoader<Promise<User>>,
-      posts: RouteLoader<number[]>,
+      default: Loader<Promise<User>>,
+      posts: Loader<number[]>,
     }>()
   })
 
@@ -50,7 +50,7 @@ describe('addLoader', () => {
       .addLoader(() => 'first', { name: 'user' })
       .addLoader(() => 1, { name: 'user' })
 
-    expectTypeOf<typeof route['matches'][0]['loaders']>().toEqualTypeOf<{ user: RouteLoader<number> }>()
+    expectTypeOf<typeof route['matches'][0]['loaders']>().toEqualTypeOf<{ user: Loader<number> }>()
   })
 
   test('prefetch does not affect what the loader carries', () => {
@@ -58,7 +58,7 @@ describe('addLoader', () => {
       prefetch: 'eager',
     })
 
-    expectTypeOf<typeof route['matches'][0]['loaders']>().toEqualTypeOf<{ default: RouteLoader<string> }>()
+    expectTypeOf<typeof route['matches'][0]['loaders']>().toEqualTypeOf<{ default: Loader<string> }>()
   })
 
   test('a loader leaves the route views untouched', () => {
@@ -67,7 +67,7 @@ describe('addLoader', () => {
       .addLoader(() => 'kitbag')
 
     expectTypeOf<typeof route['matches'][0]['views']>().toEqualTypeOf<{ default: RouteView }>()
-    expectTypeOf<typeof route['matches'][0]['loaders']>().toEqualTypeOf<{ default: RouteLoader<string> }>()
+    expectTypeOf<typeof route['matches'][0]['loaders']>().toEqualTypeOf<{ default: Loader<string> }>()
   })
 
   test('a view added after a loader keeps the loader', () => {
@@ -78,15 +78,15 @@ describe('addLoader', () => {
       })
 
     expectTypeOf<typeof route['matches'][0]['views']>().toEqualTypeOf<{ default: RouteView<{ foo: string }> }>()
-    expectTypeOf<typeof route['matches'][0]['loaders']>().toEqualTypeOf<{ default: RouteLoader<string> }>()
+    expectTypeOf<typeof route['matches'][0]['loaders']>().toEqualTypeOf<{ default: Loader<string> }>()
   })
 
   test('an ancestor loader stays on the ancestor match', () => {
     const parent = createRoute({ name: 'parent', path: '/parent' }).addLoader(() => 'kitbag')
     const child = createRoute({ parent, name: 'child', path: '/child' }).addLoader(() => 1, { name: 'posts' })
 
-    expectTypeOf<typeof child['matches'][0]['loaders']>().toEqualTypeOf<{ default: RouteLoader<string> }>()
-    expectTypeOf<typeof child['matches'][1]['loaders']>().toEqualTypeOf<{ posts: RouteLoader<number> }>()
+    expectTypeOf<typeof child['matches'][0]['loaders']>().toEqualTypeOf<{ default: Loader<string> }>()
+    expectTypeOf<typeof child['matches'][1]['loaders']>().toEqualTypeOf<{ posts: Loader<number> }>()
   })
 })
 

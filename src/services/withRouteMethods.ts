@@ -1,7 +1,7 @@
 import { addRedirect } from '@/services/addRedirect'
 import { RouteRedirectFrom, RouteRedirectTo, RedirectToArgs } from '@/types/redirects'
 import { AddAlias, createAliases } from '@/services/addAlias'
-import { AddLoader, addLoaderToMatch, checkForLoaderConflict, toLoader } from '@/services/addLoader'
+import { AddLoader, addLoaderToMatch, checkForLoaderConflict, toNamedLoader } from '@/services/addLoader'
 import { AddView, addViewToMatch, toView } from '@/services/addView'
 import { CreatedRouteOptions, isRoute, Route } from '@/types/route'
 import { combineContext } from '@/services/combineContext'
@@ -36,7 +36,7 @@ export function withRouteMethods<TRoute extends Route>(route: TRoute): TRoute {
   }
 
   const addLoader: AddLoader = (load, options) => {
-    const loader = toLoader(load, options)
+    const loader = toNamedLoader(load, options)
 
     checkForLoaderConflict(route.matches.slice(0, -1), loader.name)
 
