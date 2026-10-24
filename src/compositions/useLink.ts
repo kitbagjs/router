@@ -88,7 +88,7 @@ export function createUseLink<TRouter extends Router>(routerKey: InjectionKey<TR
     const isExternal = computed(() => !!href.value && router.isExternal(href.value))
     const isTransitioning = computed(() => viewTransition.isTransitioning && viewTransition.to?.href === href.value)
 
-    const { element, take: takePrefetch } = usePrefetching(() => ({
+    const { element, enabled: prefetchEnabled, take: takePrefetch } = usePrefetching(() => ({
       route: route.value,
       routerPrefetch: router.prefetch,
       linkPrefetch: linkOptions.value.prefetch,
@@ -96,23 +96,21 @@ export function createUseLink<TRouter extends Router>(routerKey: InjectionKey<TR
 
     const push: UseLink['push'] = (pushOptions) => {
       const resolved = route.value
-      const routeOptions = ['query', 'hash', 'state'] as const
-      const overrides = routeOptions.filter((option) => pushOptions?.[option] !== undefined)
+      const changesRoute = pushOptions?.query !== undefined || pushOptions?.hash !== undefined || pushOptions?.state !== undefined
+
+      if (changesRoute && prefetchEnabled.value) {
+        warn(`Prefetched props and loader data for "${href.value}" cannot be used when query, hash, or state options are passed to link.push() or link.replace(). Pass these as reactive options to useLink instead.`)
+      }
+
       const options: RouterPushOptionsInternal = {
         replace: pushOptions?.replace ?? linkOptions.value.replace,
         navigation: pushOptions?.navigation ?? linkOptions.value.navigation,
         viewTransition: pushOptions?.viewTransition ?? linkOptions.value.viewTransition,
-        prefetch: takePrefetch(),
-      }
-
-      if (overrides.length && options.prefetch) {
-        options.prefetch.dispose()
-        options.prefetch = undefined
-        warn(`Prefetched props and loader data for "${href.value}" were discarded because ${overrides.join(', ')} options were passed to link.push() or link.replace(). Pass these as reactive options to useLink instead.`)
+        prefetch: changesRoute ? undefined : takePrefetch(),
       }
 
       if (resolved) {
-        const destination = overrides.length ? updateResolvedRoute(resolved, pushOptions ?? {}) : resolved
+        const destination = changesRoute ? updateResolvedRoute(resolved, pushOptions) : resolved
 
         return router.push(destination, options)
       }
