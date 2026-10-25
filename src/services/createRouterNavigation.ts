@@ -16,6 +16,7 @@ import { DataKind, getDataKey } from './getDataKey'
 import { PropsResult } from '@/utilities/props'
 import { warn } from '@/utilities/warn'
 import { MaybePromise } from '@/types/utilities'
+import { isPromise } from '@/utilities/promises'
 import { Computation, getComputations, isKind, loaderLocations, propsLocations, ValueLocation } from './getComputations'
 
 export type RouterNavigationResponse = CallbackContextPush | CallbackContextReject | {
@@ -38,7 +39,6 @@ type CreateRouterNavigationOptions = {
 }
 
 type RouterNavigationState = {
-  sources: Map<string, DataKind>,
   abandoned: boolean,
 }
 
@@ -116,7 +116,6 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     const response = Promise.withResolvers<CallbackContextPush | CallbackContextReject>()
     const committed = Promise.withResolvers<RouterNavigationCommitOptions | undefined>()
     const state: RouterNavigationState = {
-      sources: new Map(),
       abandoned: false,
     }
     const data = createDataStore({
@@ -124,7 +123,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
       onSettled: handleSettledValue,
     })
 
-    function handleSettledValue({ key, result }: DataStoreSettledEvent): void {
+    function handleSettledValue({ result }: DataStoreSettledEvent): void {
       if (controller.signal.aborted || result.kind !== 'error') {
         return
       }
@@ -137,17 +136,9 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
         return
       }
-
-      reportErrorWhenCommitted(key, error)
     }
 
-    function reportErrorWhenCommitted(key: string, error: unknown): void {
-      const source = state.sources.get(key)
-
-      if (!source) {
-        return
-      }
-
+    function reportErrorWhenCommitted(source: DataKind, error: unknown): void {
       activity.add(committed.promise.then((context) => {
         if (!context || controller.signal.aborted) {
           return
@@ -165,7 +156,6 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
       const values = computations.map(({ key }) => data.subscribe(key))
 
       for (const computation of computations) {
-        state.sources.set(computation.key, computation.kind)
         data.set(computation.key, () => run(computation, route))
       }
 
@@ -175,16 +165,34 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     }
 
     function run(computation: Computation, route: ResolvedRoute): unknown {
-      const { push, replace, reject, update } = createRouterCallbackContext({ to: route })
+      try {
+        const { push, replace, reject, update } = createRouterCallbackContext({ to: route })
 
-      return runWithContext(() => computation.run(toCallbackRoute(computation, route, data), {
-        push,
-        replace,
-        reject,
-        update,
-        signal: controller.signal,
-        parent: getParentContext(route, computation.depth, data),
-      }))
+        const value = runWithContext(() => computation.run(toCallbackRoute(computation, route, data), {
+          push,
+          replace,
+          reject,
+          update,
+          signal: controller.signal,
+          parent: getParentContext(route, computation.depth, data),
+        }))
+
+        if (isPromise(value)) {
+          return value.catch(handleError)
+        }
+
+        return value
+      } catch (error) {
+        return handleError(error)
+      }
+
+      function handleError(error: unknown): never {
+        if (!controller.signal.aborted && !(error instanceof ContextPushError) && !(error instanceof ContextRejectionError)) {
+          reportErrorWhenCommitted(computation.kind, error)
+        }
+
+        throw error
+      }
     }
 
     function fill(route: ResolvedRoute, values: RouteValue[]): void {
@@ -248,7 +256,6 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
       abandon()
       data.dispose()
-      state.sources.clear()
     }
 
     function stage(): void {

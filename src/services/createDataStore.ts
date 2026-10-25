@@ -29,12 +29,10 @@ const RUNNING: DataResultRunning = { kind: 'running' }
 const MISSING: DataResultMissing = { kind: 'missing' }
 
 export type DataStoreSettledEvent = {
-  key: string,
   result: DataResultValue | DataResultError | DataResultAbandoned,
 }
 
 type Entry = {
-  key: string,
   promise: Promise<unknown>,
   resolve: (value: unknown) => void,
   reject: (reason: unknown) => void,
@@ -74,13 +72,13 @@ type CreateDataStoreOptions = {
 export function createDataStore({ signal, onSettled }: CreateDataStoreOptions): DataStore {
   const entries: Map<string, Entry> = reactive(new Map())
 
-  function create(key: string): Entry {
+  function create(): Entry {
     const { promise, resolve, reject } = Promise.withResolvers<unknown>()
 
     // a value nobody happens to await must not surface as an unhandled rejection
     promise.catch(() => {})
 
-    return markRaw({ key, promise, resolve, reject, state: shallowRef<DataResult>(PENDING) })
+    return markRaw({ promise, resolve, reject, state: shallowRef<DataResult>(PENDING) })
   }
 
   function entry(key: string): Entry {
@@ -90,7 +88,7 @@ export function createDataStore({ signal, onSettled }: CreateDataStoreOptions): 
       return existing
     }
 
-    const created = create(key)
+    const created = create()
 
     if (signal.aborted) {
       settle(created, { kind: 'error', error: signal.reason })
@@ -121,7 +119,7 @@ export function createDataStore({ signal, onSettled }: CreateDataStoreOptions): 
       target.reject(result.error)
     }
 
-    onSettled?.({ key: target.key, result: settled })
+    onSettled?.({ result: settled })
   }
 
   const subscribe: DataStore['subscribe'] = (key) => entry(key).promise

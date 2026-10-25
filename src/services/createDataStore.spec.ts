@@ -333,7 +333,6 @@ test('onSettled reports a value once when its work finishes', async () => {
   controller.abort(new NavigationAbandonedError())
 
   expect(onSettled).toHaveBeenCalledExactlyOnceWith({
-    key: 'key',
     result: { kind: 'value', value: 'loaded' },
   })
 })
