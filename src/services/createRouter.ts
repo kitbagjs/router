@@ -316,7 +316,11 @@ export function createRouter<
         clearRejection()
 
         if (!isExternal(url)) {
-          setRouteValuesAndUpdateRoute(next, to, from, progress)
+          const values = next.commit(to, from)
+
+          progress.track(...values, ...loadAsyncComponents(to))
+
+          routerRoute.updateRoute(to)
         }
 
         progress.close()
@@ -465,14 +469,6 @@ export function createRouter<
     }
 
     return getComputations(to).length + getAsyncComponents(to).length
-  }
-
-  function setRouteValuesAndUpdateRoute(navigation: RouterNavigationStore, to: ResolvedRoute, from: ResolvedRoute | null, progress: NavigationProgressTracker): void {
-    const values = navigation.commit(to, from)
-
-    progress.track(...values, ...loadAsyncComponents(to))
-
-    routerRoute.updateRoute(to)
   }
 
   /**
