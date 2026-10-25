@@ -801,8 +801,7 @@ export function createRouter<
   function stop(): void {
     stopped = true
     stopRouteContext()
-    const staged = navigation.staged()
-    staged.dispose()
+    navigation.stop()
     navigations.stop()
     navigationProgress.stop()
     history.stopListening()

@@ -347,3 +347,19 @@ test('computations added after adoption report their response once', async () =>
   expect(event.source).toBe('loader')
   await expect(event.response).resolves.toEqual({ status: 'PUSH', to: ['/target'] })
 })
+
+test('stopping aborts current and staged computations and settles their readers', async () => {
+  const route = createResolvedRoute(createRoute({ path: '/' }).addLoader(() => new Promise(() => {})))
+  const navigation = createRouterNavigation()
+  const current = navigation.current()
+  const staged = navigation.staged()
+  const [currentValue] = current.compute(route, getComputations(route))
+  const [stagedValue] = staged.compute(route, getComputations(route))
+
+  navigation.stop()
+
+  expect(current.data.signal.aborted).toBe(true)
+  expect(staged.data.signal.aborted).toBe(true)
+  await expect(currentValue).rejects.toBeInstanceOf(NavigationAbandonedError)
+  await expect(stagedValue).rejects.toBeInstanceOf(NavigationAbandonedError)
+})
