@@ -15,7 +15,6 @@ import { DataKind, getDataKey } from './getDataKey'
 import { PropsResult } from '@/utilities/props'
 import { warn } from '@/utilities/warn'
 import { MaybePromise } from '@/types/utilities'
-import { isSameResolvedRoute } from '@/utilities/isSameResolvedRoute'
 import { Computation, getComputations, isKind, loaderLocations, propsLocations, ValueLocation } from './getComputations'
 
 /**
@@ -50,7 +49,6 @@ type CreateRouterNavigationOptions = {
 }
 
 type RouterNavigationState = {
-  route: ResolvedRoute | undefined,
   responses: RouterNavigationComputationResponse[],
   context: RouterNavigationContext | undefined,
 }
@@ -122,7 +120,6 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     const data = createDataStore()
 
     const state: RouterNavigationState = {
-      route: undefined,
       responses: [],
       context: undefined,
     }
@@ -140,20 +137,11 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
       onResponse?.({ ...response, ...state.context })
     }
 
-    function setRoute(route: ResolvedRoute): void {
-      if (state.route && !isSameResolvedRoute(state.route, route)) {
-        throw new TypeError('Cannot compute values for another route in this navigation')
-      }
-
-      state.route ??= route
-    }
-
     function compute(route: ResolvedRoute, computations: Computation[]): Promise<unknown>[] {
       if (data.signal.aborted) {
         return []
       }
 
-      setRoute(route)
       const values = computations.map(({ key }) => data.subscribe(key))
 
       computations.forEach((computation) => {
@@ -175,7 +163,6 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
         return
       }
 
-      setRoute(route)
       const computations = getComputations(route)
 
       for (const { kind, depth, name, value } of values) {
@@ -194,8 +181,6 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
         return []
       }
 
-      setRoute(to)
-
       if (stagedNavigation === instance) {
         stagedNavigation = undefined
       }
@@ -208,7 +193,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
       }
 
       state.context ??= {
-        to: state.route ?? to,
+        to,
         from,
         signal: data.signal,
       }
