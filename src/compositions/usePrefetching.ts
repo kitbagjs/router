@@ -19,7 +19,7 @@ type UsePrefetchingConfig = PrefetchConfigs & {
 type UsePrefetching = {
   element: Ref<HTMLElement | undefined>,
   enabled: Ref<boolean>,
-  take: () => RouterNavigationStore | undefined,
+  take: () => RouterNavigationStore,
 }
 
 type UsePrefetchingFunction = (config: MaybeRefOrGetter<UsePrefetchingConfig>) => UsePrefetching
@@ -32,7 +32,6 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
 
     const navigation = useRouterNavigation()
     let prefetch = navigation.create()
-    let hasPrefetched = false
     const { isElementVisible } = useVisibilityObserver(element)
 
     const enabled = computed(() => {
@@ -51,15 +50,7 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
 
     const take: UsePrefetching['take'] = () => {
       const prepared = prefetch
-      const prefetched = hasPrefetched
       prefetch = navigation.create()
-      hasPrefetched = false
-
-      if (!prefetched) {
-        prepared.dispose()
-
-        return
-      }
 
       return prepared
     }
@@ -70,7 +61,6 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
       if (!isSameResolvedRoute(route, previous?.route)) {
         prefetch.dispose()
         prefetch = navigation.create()
-        hasPrefetched = false
       }
 
       if (!route) {
@@ -111,8 +101,7 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
       prefetchComponentsForRoute(strategy, route, configs)
       const computations = getComputationsForStrategy(route, strategy, configs)
 
-      const values = prefetch.compute(route, computations)
-      hasPrefetched = hasPrefetched || values.length > 0
+      prefetch.compute(route, computations)
     }
 
     return {
