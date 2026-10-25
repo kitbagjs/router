@@ -384,7 +384,7 @@ test('intent prefetch uses changed state before the config watcher runs', async 
 })
 
 test('useLink state overrides skip prefetching even when unchanged', async () => {
-  const warn = vi.spyOn(warnings, 'warn').mockImplementation(() => {})
+  const warn = vi.spyOn(warnings, 'warnPrefetchInvalidated').mockImplementation(() => {})
   const load = vi.fn((count: number | undefined) => count)
   const home = createRoute({ name: 'home', path: '/' })
   const route = createRoute({
@@ -414,7 +414,7 @@ test('useLink state overrides skip prefetching even when unchanged', async () =>
 
   await expect(router.route.data).resolves.toBe(1)
   expect(load).toHaveBeenCalledTimes(2)
-  expect(warn).toHaveBeenCalledExactlyOnceWith(expect.stringContaining('cannot be used when query, hash, or state options are passed'))
+  expect(warn).toHaveBeenCalledExactlyOnceWith('/route')
 })
 
 test('named and unnamed loaders respect their own config and feed prefetched props', async () => {
