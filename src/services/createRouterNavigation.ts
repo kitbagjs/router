@@ -83,6 +83,8 @@ export type RouteValue = {
 export type RouterNavigationStores = HasVueAppStore & {
   current: () => RouterNavigationStore,
   create: () => RouterNavigationStore,
+  stage: (navigation: RouterNavigationStore) => void,
+  discard: (navigation?: RouterNavigationStore) => void,
   /**
    * The values currently settled in the store.
    */
@@ -98,6 +100,23 @@ export type RouterNavigationStores = HasVueAppStore & {
 export function createRouterNavigation({ onResponse }: CreateRouterNavigationOptions = {}): RouterNavigationStores {
   const { setVueApp, runWithContext } = createVueAppStore()
   let currentNavigation = createRouterNavigationStore()
+  let stagedNavigation: RouterNavigationStore | undefined
+
+  function stage(navigation: RouterNavigationStore): void {
+    if (stagedNavigation === navigation) {
+      return
+    }
+
+    discard()
+    stagedNavigation = navigation
+  }
+
+  function discard(navigation = stagedNavigation): void {
+    if (navigation && navigation === stagedNavigation) {
+      stagedNavigation = undefined
+      navigation.dispose()
+    }
+  }
 
   function createRouterNavigationStore(): RouterNavigationStore {
     const data = createDataStore()
@@ -176,6 +195,11 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
       }
 
       setRoute(to)
+
+      if (stagedNavigation === instance) {
+        stagedNavigation = undefined
+      }
+
       const previous = currentNavigation
       currentNavigation = instance
 
@@ -201,6 +225,10 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     }
 
     function dispose(): void {
+      if (stagedNavigation === instance) {
+        stagedNavigation = undefined
+      }
+
       data.dispose(new NavigationAbandonedError())
       state.responses.length = 0
       state.context = undefined
@@ -422,6 +450,8 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
   return {
     current,
     create: createRouterNavigationStore,
+    stage,
+    discard,
     getValues,
     getProps,
     getData,

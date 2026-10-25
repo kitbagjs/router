@@ -167,7 +167,6 @@ export function createRouter<
   } = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options)
   const notFoundRejection = getRejectionByType('NotFound')
   const navigation = createRouterNavigation({ onResponse: onNavigationResponse })
-  let pendingNavigation: RouterNavigationStore | undefined
   const notFoundRoute = createResolvedRoute(notFoundRejection.route)
 
   const hooks = createRouterHooks({ redirectStatus, onHookAdded: addHookContext })
@@ -278,12 +277,6 @@ export function createRouter<
     }
   }
 
-  function discardPendingNavigation(): void {
-    const pending = pendingNavigation
-    pendingNavigation = undefined
-    pending?.dispose()
-  }
-
   const set = activity.wrap(async (url: string, options: RouterUpdateOptions = {}): Promise<void> => {
     if (pathHasTrailingSlash(url) && shouldRemoveTrailingSlashes) {
       const cleanedUrl = removeTrailingSlashesFromPath(url)
@@ -293,7 +286,7 @@ export function createRouter<
       }
     }
 
-    discardPendingNavigation()
+    navigation.discard()
     const controller = navigations.begin()
 
     if (controller.signal.aborted) {
@@ -301,7 +294,7 @@ export function createRouter<
     }
 
     const pending = options.prefetch ?? navigation.create()
-    pendingNavigation = pending
+    navigation.stage(pending)
 
     try {
       const to = find(url, options) ?? null
@@ -324,10 +317,6 @@ export function createRouter<
         clearRejection()
 
         if (!isExternal(url)) {
-          if (pendingNavigation === pending) {
-            pendingNavigation = undefined
-          }
-
           setRouteValuesAndUpdateRoute(pending, to, from, progress)
         }
 
@@ -399,9 +388,7 @@ export function createRouter<
         runAfterHooks({ controller, to, from, enabled: !isSSR }),
       ])
     } finally {
-      if (pendingNavigation === pending) {
-        discardPendingNavigation()
-      }
+      navigation.discard(pending)
     }
   })
 
@@ -638,7 +625,7 @@ export function createRouter<
     }
 
     const controller = navigations.begin()
-    discardPendingNavigation()
+    navigation.discard()
     const current = navigation.current()
     current.abandon()
 
@@ -816,7 +803,7 @@ export function createRouter<
   function stop(): void {
     stopped = true
     stopRouteContext()
-    discardPendingNavigation()
+    navigation.discard()
     navigations.stop()
     navigationProgress.stop()
     history.stopListening()

@@ -283,6 +283,41 @@ test('computations added after adoption report their response once', async () =>
   await expect(event.response).resolves.toEqual({ status: 'PUSH', to: ['/target'] })
 })
 
+test('staging a replacement disposes the previous attempt without affecting the current navigation', async () => {
+  const route = createResolvedRoute(createRoute({ path: '/' }).addLoader(() => new Promise(() => {})))
+  const navigation = createRouterNavigation()
+  const current = navigation.current()
+  const first = navigation.create()
+  const second = navigation.create()
+  const [value] = first.compute(route, getComputations(route))
+
+  navigation.stage(first)
+  navigation.stage(second)
+  navigation.discard(first)
+
+  await expect(value).rejects.toBeInstanceOf(NavigationAbandonedError)
+  expect(second.data.signal.aborted).toBe(false)
+  expect(current.data.signal.aborted).toBe(false)
+
+  navigation.discard()
+  expect(second.data.signal.aborted).toBe(true)
+})
+
+test('committing a staged navigation preserves its values when the attempt is cleaned up', async () => {
+  const route = createResolvedRoute(createRoute({ path: '/' }).addLoader(() => 'loaded'))
+  const navigation = createRouterNavigation()
+  const instance = navigation.create()
+
+  navigation.stage(instance)
+  await Promise.all(instance.commit({ to: route }))
+  navigation.discard(instance)
+  navigation.discard()
+
+  expect(navigation.current()).toBe(instance)
+  expect(instance.data.signal.aborted).toBe(false)
+  await expect(navigation.getData(route)).resolves.toBe('loaded')
+})
+
 test('committing the same instance preserves its computations', async () => {
   const load = vi.fn((_route: unknown, { signal }: { signal: AbortSignal }) => signal)
   const route = createResolvedRoute(createRoute({ path: '/' }).addLoader(load))
