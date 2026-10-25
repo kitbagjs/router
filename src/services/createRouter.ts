@@ -620,10 +620,8 @@ export function createRouter<
     }
 
     const controller = navigations.begin()
-    const staged = navigation.staged()
-    staged.dispose()
-    const current = navigation.current()
-    current.abandon()
+    navigation.staged().dispose()
+    navigation.current().abandon()
 
     hooks.runRejectionHooks(rejection, { to, from })
 
