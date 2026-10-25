@@ -316,10 +316,7 @@ export function createRouter<
         clearRejection()
 
         if (!isExternal(url)) {
-          const values = next.commit({
-            to,
-            from,
-          })
+          const values = next.commit({ to, from })
 
           progress.track(...values, ...loadAsyncComponents(to))
 
