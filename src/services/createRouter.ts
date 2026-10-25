@@ -291,102 +291,105 @@ export function createRouter<
       return
     }
 
-    const staged = options.prefetch ?? navigation.create()
-    staged.stage()
+    const next = options.prefetch ?? navigation.create()
+    next.stage()
 
-    const to = find(url, options) ?? null
-    const from = getFromRouteForHooks()
-    const progress = navigationProgress.begin({
-      to,
-      from,
-      expected: countRouteUnits(url, to),
-      inert: isSSR || options.hydrating,
-    })
+    try {
+      const to = find(url, options) ?? null
+      const from = getFromRouteForHooks()
+      const progress = navigationProgress.begin({
+        to,
+        from,
+        expected: countRouteUnits(url, to),
+        inert: isSSR || options.hydrating,
+      })
 
-    function commitNavigation(): void {
-      if (!to) {
-        reject(NOT_FOUND_REJECTION_TYPE, { to, from })
-        progress.abort()
+      function commitNavigation(): void {
+        if (!to) {
+          reject(NOT_FOUND_REJECTION_TYPE, { to, from })
+          progress.abort()
 
-        return
+          return
+        }
+
+        clearRejection()
+
+        if (!isExternal(url)) {
+          setRouteValuesAndUpdateRoute(to, from, progress)
+        }
+
+        progress.close()
+        started.value = true
+
+        if (!options.hydrating) {
+          updateTitle(controller.signal)
+        }
       }
-
-      clearRejection()
-
-      if (!isExternal(url)) {
-        setRouteValuesAndUpdateRoute(to, from, progress)
-      } else {
-        staged.dispose()
-      }
-
-      progress.close()
-      started.value = true
 
       if (!options.hydrating) {
-        updateTitle(controller.signal)
+        const shouldCommit = await runBeforeHooks({ controller, to, from, url, options, progress })
+
+        if (!shouldCommit) {
+          controller.abort()
+
+          return
+        }
       }
-    }
 
-    if (!options.hydrating) {
-      const shouldCommit = await runBeforeHooks({ controller, to, from, url, options, progress })
+      const routeCommit = createRouteCommit({
+        route: to,
+        signal: controller.signal,
+        update: commitNavigation,
+      })
+      const transition = getViewTransition({
+        to,
+        from,
+        options,
+        enabled: !isSSR && !isExternal(url),
+      })
 
-      if (!shouldCommit) {
-        controller.abort()
-        staged.dispose()
+      const { isBlockingNavigation } = getNavigationOption({
+        routerNavigation,
+        routeNavigation: getRouteNavigationOption(to),
+        navigation: options.navigation,
+      })
+      const shouldPrepareNavigation = transition || isBlockingNavigation
 
+      if (transition) {
+        viewTransitions.prepare(transition)
+      } else {
+        viewTransitions.reset()
+      }
+
+      if (!options.hydrating && shouldPrepareNavigation) {
+        const prepared = await routeCommit.prepare()
+
+        if (!prepared && transition) {
+          viewTransitions.cancel(transition)
+        }
+
+        if (!prepared) {
+          return
+        }
+      }
+
+      if (transition) {
+        await viewTransitions.start(routeCommit.commit)
+        await runAfterHooks({ controller, to, from, enabled: !isSSR })
         return
       }
-    }
 
-    const routeCommit = createRouteCommit({
-      route: to,
-      signal: controller.signal,
-      update: commitNavigation,
-    })
-    const transition = getViewTransition({
-      to,
-      from,
-      options,
-      enabled: !isSSR && !isExternal(url),
-    })
+      await Promise.all([
+        routeCommit.commit(),
+        runAfterHooks({ controller, to, from, enabled: !isSSR }),
+      ])
+    } finally {
+      const staged = navigation.staged()
 
-    const { isBlockingNavigation } = getNavigationOption({
-      routerNavigation,
-      routeNavigation: getRouteNavigationOption(to),
-      navigation: options.navigation,
-    })
-    const shouldPrepareNavigation = transition || isBlockingNavigation
-
-    if (transition) {
-      viewTransitions.prepare(transition)
-    } else {
-      viewTransitions.reset()
-    }
-
-    if (!options.hydrating && shouldPrepareNavigation) {
-      const prepared = await routeCommit.prepare()
-
-      if (!prepared && transition) {
-        viewTransitions.cancel(transition)
-      }
-
-      if (!prepared) {
-        staged.dispose()
-
-        return
+      if (staged === next) {
+        next.dispose()
       }
     }
-
-    if (transition) {
-      await viewTransitions.start(routeCommit.commit)
-      await runAfterHooks({ controller, to, from, enabled: !isSSR })
-      return
-    }
-
-    await Promise.all([
-      routeCommit.commit(),
-      runAfterHooks({ controller, to, from, enabled: !isSSR }),
-    ])
   })
 
   function createRouteCommit({ route, signal, update }: RouteCommitOptions): RouteCommit {
