@@ -98,47 +98,46 @@ export function createUseLink<TRouter extends Router>(routerKey: InjectionKey<TR
 
     const push: UseLink['push'] = (pushOptions) => {
       const resolved = route.value
-      const options: RouterPushOptions = {
-        ...pushOptions,
-        replace: pushOptions?.replace ?? linkOptions.value.replace,
-        navigation: pushOptions?.navigation ?? linkOptions.value.navigation,
-        viewTransition: pushOptions?.viewTransition ?? linkOptions.value.viewTransition,
-      }
 
       if (resolved) {
-        return pushResolvedRoute(resolved, options)
+        return pushResolvedRoute(resolved, pushOptions)
       }
 
       const url = toValue(source)
 
       if (isUrlString(url)) {
-        return pushUrl(url, options)
+        return pushUrl(url, pushOptions)
       }
 
       throw new Error('Failed to resolve route in useLink.')
     }
 
-    function pushResolvedRoute(resolved: ResolvedRoute, options: RouterPushOptions): Promise<void> {
-      const changesRoute = hasRouteChanges(options)
+    function pushResolvedRoute(resolved: ResolvedRoute, pushOptions: RouterPushOptions = {}): Promise<void> {
+      const changesRoute = hasRouteChanges(pushOptions)
 
       if (changesRoute && prefetchEnabled.value) {
         warn(`Prefetched props and loader data for "${resolved.href}" cannot be used when query, hash, or state options are passed to link.push() or link.replace(). Pass these as reactive options to useLink instead.`)
       }
 
-      const resolvedOptions: RouterPushOptionsInternal = {
-        ...options,
+      const options: RouterPushOptionsInternal = {
+        ...pushOptions,
+        replace: pushOptions.replace ?? linkOptions.value.replace,
+        navigation: pushOptions.navigation ?? linkOptions.value.navigation,
+        viewTransition: pushOptions.viewTransition ?? linkOptions.value.viewTransition,
         prefetch: changesRoute ? undefined : takePrefetch(),
       }
 
-      return router.push(resolved, resolvedOptions)
+      return router.push(resolved, options)
     }
 
-    function pushUrl(url: UrlString, options: RouterPushOptions): Promise<void> {
+    function pushUrl(url: UrlString, pushOptions: RouterPushOptions = {}): Promise<void> {
       return router.push(url, {
-        ...options,
-        query: combineUrlSearchParams(options.query, linkOptions.value.query),
-        hash: options.hash ?? linkOptions.value.hash,
-        state: { ...linkOptions.value.state, ...options.state },
+        replace: pushOptions.replace ?? linkOptions.value.replace,
+        navigation: pushOptions.navigation ?? linkOptions.value.navigation,
+        viewTransition: pushOptions.viewTransition ?? linkOptions.value.viewTransition,
+        query: combineUrlSearchParams(pushOptions.query, linkOptions.value.query),
+        hash: pushOptions.hash ?? linkOptions.value.hash,
+        state: { ...linkOptions.value.state, ...pushOptions.state },
       })
     }
 
