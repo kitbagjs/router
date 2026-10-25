@@ -407,7 +407,7 @@ export function createRouter<
       }
 
       const work = Promise.allSettled([
-        ...navigation.compute(route, getComputations(route)),
+        Promise.all(navigation.compute(route, getComputations(route))),
         ...loadAsyncComponents(route),
       ])
       await Promise.race([
