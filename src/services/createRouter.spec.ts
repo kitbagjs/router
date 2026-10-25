@@ -2065,9 +2065,11 @@ test.each(['redirect', 'error'] as const)('superseded preparation cannot report 
 
 test('a before hook redirect discards prefetched work for the original route', async () => {
   const slow = Promise.withResolvers<void>()
+  const started = Promise.withResolvers<AbortSignal>()
   const home = createRoute({ name: 'home', path: '/' })
   const prefetched = createRoute({ name: 'prefetched', path: '/prefetched' })
-    .addLoader(async (_route, { push }) => {
+    .addLoader(async (_route, { push, signal }) => {
+      started.resolve(signal)
       await slow.promise
       push('/elsewhere')
     })
@@ -2089,7 +2091,8 @@ test('a before hook redirect discards prefetched work for the original route', a
   slow.resolve()
   await flushPromises()
 
-  expect(prepared.data.signal.aborted).toBe(true)
+  const signal = await started.promise
+  expect(signal.aborted).toBe(true)
   expect(router.route.name).toBe('target')
   router.stop()
 })

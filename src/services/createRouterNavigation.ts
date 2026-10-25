@@ -36,21 +36,20 @@ type RouterNavigationCommitOptions = {
   from: ResolvedRoute | null,
 }
 
-type RouterNavigationContext = {
+export type RouterNavigationResponseEvent = RouterNavigationComputationResponse & {
   to: ResolvedRoute,
   from: ResolvedRoute | null,
   signal: AbortSignal,
 }
-
-export type RouterNavigationResponseEvent = RouterNavigationComputationResponse & RouterNavigationContext
 
 type CreateRouterNavigationOptions = {
   onResponse?: (response: RouterNavigationResponseEvent) => void,
 }
 
 type RouterNavigationState = {
+  to: ResolvedRoute | undefined,
+  from: ResolvedRoute | null,
   responses: RouterNavigationComputationResponse[],
-  context: RouterNavigationContext | undefined,
 }
 
 type RouterNavigationStoreSlots = {
@@ -120,28 +119,35 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
   }
 
   function createRouterNavigationStore(): RouterNavigationStore {
-    const data = createDataStore()
+    const controller = new AbortController()
+    const data = createDataStore({ signal: controller.signal })
 
     const state: RouterNavigationState = {
+      to: undefined,
+      from: null,
       responses: [],
-      context: undefined,
     }
 
     function reportResponse(response: RouterNavigationComputationResponse): void {
-      if (data.signal.aborted) {
+      if (controller.signal.aborted) {
         return
       }
 
-      if (!state.context) {
+      if (!state.to) {
         state.responses.push(response)
         return
       }
 
-      onResponse?.({ ...response, ...state.context })
+      onResponse?.({
+        ...response,
+        to: state.to,
+        from: state.from,
+        signal: controller.signal,
+      })
     }
 
     function compute(route: ResolvedRoute, computations: Computation[]): Promise<unknown>[] {
-      if (data.signal.aborted) {
+      if (controller.signal.aborted) {
         return []
       }
 
@@ -154,7 +160,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
           reportResponse({ response, source: computation.kind })
 
-          return run(computation, route, data)
+          return run(computation, route, data, controller.signal)
         })
       })
 
@@ -162,7 +168,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     }
 
     function fill(route: ResolvedRoute, values: RouteValue[]): void {
-      if (data.signal.aborted) {
+      if (controller.signal.aborted) {
         return
       }
 
@@ -180,7 +186,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     }
 
     function commit({ to, from }: RouterNavigationCommitOptions): Promise<unknown>[] {
-      if (data.signal.aborted) {
+      if (controller.signal.aborted) {
         return []
       }
 
@@ -197,11 +203,8 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
         staged.dispose()
       }
 
-      state.context ??= {
-        to,
-        from,
-        signal: data.signal,
-      }
+      state.to = to
+      state.from = from
 
       const pending = state.responses.splice(0)
       pending.forEach(reportResponse)
@@ -210,7 +213,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     }
 
     function abandon(): void {
-      data.abandon(new NavigationAbandonedError())
+      controller.abort(new NavigationAbandonedError())
       state.responses.length = 0
     }
 
@@ -219,9 +222,11 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
         navigations.staged = createRouterNavigationStore()
       }
 
-      data.dispose(new NavigationAbandonedError())
+      controller.abort(new NavigationAbandonedError())
+      data.dispose()
       state.responses.length = 0
-      state.context = undefined
+      state.to = undefined
+      state.from = null
     }
 
     function stage(): void {
@@ -323,7 +328,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     return toValues(loaders, DEFAULT_LOADER_NAME, route, store)
   }
 
-  function run(computation: Computation, route: ResolvedRoute, store: DataStore): unknown {
+  function run(computation: Computation, route: ResolvedRoute, store: DataStore, signal: AbortSignal): unknown {
     const { push, replace, reject, update } = createRouterCallbackContext({ to: route })
 
     return runWithContext(() => computation.run(toCallbackRoute(computation, route, store), {
@@ -331,7 +336,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
       replace,
       reject,
       update,
-      signal: store.signal,
+      signal,
       parent: getParentContext(route, computation.depth, store),
     }))
   }

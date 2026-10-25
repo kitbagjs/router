@@ -303,7 +303,7 @@ test('a prefetched response is reported when its navigation becomes current', as
 
   const [event] = onResponse.mock.calls[0]
 
-  expect(event).toMatchObject({ to: route, from, signal: detached.data.signal })
+  expect(event).toMatchObject({ to: route, from })
 
   await expect(event.response).resolves.toEqual({ status: 'PUSH', to: ['/next', { replace: true }] })
 })
@@ -349,7 +349,12 @@ test('computations added after adoption report their response once', async () =>
 })
 
 test('stopping aborts current and staged computations and settles their readers', async () => {
-  const route = createResolvedRoute(createRoute({ path: '/' }).addLoader(() => new Promise(() => {})))
+  const signals: AbortSignal[] = []
+  const route = createResolvedRoute(createRoute({ path: '/' }).addLoader((_route, { signal }) => {
+    signals.push(signal)
+
+    return new Promise(() => {})
+  }))
   const navigation = createRouterNavigation()
   const current = navigation.current()
   const staged = navigation.staged()
@@ -358,8 +363,8 @@ test('stopping aborts current and staged computations and settles their readers'
 
   navigation.stop()
 
-  expect(current.data.signal.aborted).toBe(true)
-  expect(staged.data.signal.aborted).toBe(true)
+  expect(signals).toHaveLength(2)
+  expect(signals.every((signal) => signal.aborted)).toBe(true)
   await expect(currentValue).rejects.toBeInstanceOf(NavigationAbandonedError)
   await expect(stagedValue).rejects.toBeInstanceOf(NavigationAbandonedError)
 })

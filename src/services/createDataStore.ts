@@ -55,23 +55,17 @@ export type DataStore = {
    */
   get: (key: string) => DataResult,
   /**
-   * Aborts when pending work is abandoned or the store is disposed.
+   * Discards stored values after their signal has been aborted.
    */
-  signal: AbortSignal,
-  /**
-   * Ends the store. Every value is rejected so that anything waiting on one resumes rather than staying
-   * suspended, then discarded.
-   */
-  dispose: (reason: Error) => void,
-  /**
-   * Rejects unfinished values and aborts their signal while retaining settled values.
-   */
-  abandon: (reason: Error) => void,
+  dispose: () => void,
 }
 
-export function createDataStore(): DataStore {
+type CreateDataStoreOptions = {
+  signal: AbortSignal,
+}
+
+export function createDataStore({ signal }: CreateDataStoreOptions): DataStore {
   const entries: Map<string, Entry> = reactive(new Map())
-  const controller = new AbortController()
 
   function create(): Entry {
     const { promise, resolve, reject } = Promise.withResolvers<unknown>()
@@ -91,8 +85,8 @@ export function createDataStore(): DataStore {
 
     const created = create()
 
-    if (controller.signal.aborted) {
-      settle(created, { kind: 'error', error: controller.signal.reason })
+    if (signal.aborted) {
+      settle(created, { kind: 'error', error: signal.reason })
 
       return created
     }
@@ -125,7 +119,7 @@ export function createDataStore(): DataStore {
   const subscribe: DataStore['subscribe'] = (key) => entry(key).promise
 
   const set: DataStore['set'] = (key, getter) => {
-    if (controller.signal.aborted) {
+    if (signal.aborted) {
       return
     }
 
@@ -158,23 +152,20 @@ export function createDataStore(): DataStore {
   const get: DataStore['get'] = (key) => {
     const result = entries.get(key)?.state.value
 
-    if (!result && controller.signal.aborted) {
+    if (!result && signal.aborted) {
       return ABANDONED
     }
 
     return result ?? MISSING
   }
 
-  const abandon: DataStore['abandon'] = (reason) => {
-    controller.abort(reason)
-
+  signal.addEventListener('abort', () => {
     for (const entry of entries.values()) {
-      settle(entry, { kind: 'error', error: reason })
+      settle(entry, { kind: 'error', error: signal.reason })
     }
-  }
+  }, { once: true })
 
-  const dispose: DataStore['dispose'] = (reason) => {
-    abandon(reason)
+  const dispose: DataStore['dispose'] = () => {
     entries.clear()
   }
 
@@ -182,8 +173,6 @@ export function createDataStore(): DataStore {
     subscribe,
     set,
     get,
-    signal: controller.signal,
     dispose,
-    abandon,
   }
 }
