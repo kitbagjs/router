@@ -59,6 +59,7 @@ import { getNavigationOption, getRouteNavigationOption } from '@/utilities/navig
 
 type RouteCommitOptions = {
   route: ResolvedRoute | null,
+  navigation: RouterNavigationStore,
   signal: AbortSignal,
   update: () => void,
 }
@@ -315,7 +316,7 @@ export function createRouter<
         clearRejection()
 
         if (!isExternal(url)) {
-          setRouteValuesAndUpdateRoute(to, from, progress)
+          setRouteValuesAndUpdateRoute(next, to, from, progress)
         }
 
         progress.close()
@@ -338,6 +339,7 @@ export function createRouter<
 
       const routeCommit = createRouteCommit({
         route: to,
+        navigation: next,
         signal: controller.signal,
         update: commitNavigation,
       })
@@ -392,9 +394,8 @@ export function createRouter<
     }
   })
 
-  function createRouteCommit({ route, signal, update }: RouteCommitOptions): RouteCommit {
+  function createRouteCommit({ route, navigation, signal, update }: RouteCommitOptions): RouteCommit {
     const isAborted = (): boolean => signal.aborted
-    const staged = navigation.staged()
 
     const prepare: RouteCommit['prepare'] = async () => {
       if (isAborted()) {
@@ -405,7 +406,7 @@ export function createRouter<
         return true
       }
 
-      const values = staged.compute(route, getComputations(route))
+      const values = navigation.compute(route, getComputations(route))
       const work = Promise.allSettled([
         Promise.all(values),
         ...loadAsyncComponents(route),
@@ -466,7 +467,7 @@ export function createRouter<
     return getComputations(to).length + getAsyncComponents(to).length
   }
 
-  function setRouteValuesAndUpdateRoute(to: ResolvedRoute, from: ResolvedRoute | null, progress: NavigationProgressTracker): void {
+  function setRouteValuesAndUpdateRoute(navigation: RouterNavigationStore, to: ResolvedRoute, from: ResolvedRoute | null, progress: NavigationProgressTracker): void {
     const values = navigation.commit(to, from)
 
     progress.track(...values, ...loadAsyncComponents(to))
