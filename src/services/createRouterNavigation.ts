@@ -53,6 +53,11 @@ type RouterNavigationState = {
   context: RouterNavigationContext | undefined,
 }
 
+type RouterNavigationStoreSlots = {
+  current: RouterNavigationStore,
+  staged: RouterNavigationStore | undefined,
+}
+
 export type RouterNavigationStore = {
   data: DataStore,
   commit: (options: RouterNavigationCommitOptions) => Promise<unknown>[],
@@ -97,21 +102,23 @@ export type RouterNavigationStores = HasVueAppStore & {
 
 export function createRouterNavigation({ onResponse }: CreateRouterNavigationOptions = {}): RouterNavigationStores {
   const { setVueApp, runWithContext } = createVueAppStore()
-  let currentNavigation = createRouterNavigationStore()
-  let stagedNavigation: RouterNavigationStore | undefined
+  const navigations: RouterNavigationStoreSlots = {
+    current: createRouterNavigationStore(),
+    staged: undefined,
+  }
 
   function stage(navigation: RouterNavigationStore): void {
-    if (stagedNavigation === navigation) {
+    if (navigations.staged === navigation) {
       return
     }
 
     discard()
-    stagedNavigation = navigation
+    navigations.staged = navigation
   }
 
-  function discard(navigation = stagedNavigation): void {
-    if (navigation && navigation === stagedNavigation) {
-      stagedNavigation = undefined
+  function discard(navigation = navigations.staged): void {
+    if (navigation && navigation === navigations.staged) {
+      navigations.staged = undefined
       navigation.dispose()
     }
   }
@@ -181,12 +188,12 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
         return []
       }
 
-      if (stagedNavigation === instance) {
-        stagedNavigation = undefined
+      if (navigations.staged === instance) {
+        navigations.staged = undefined
       }
 
-      const previous = currentNavigation
-      currentNavigation = instance
+      const previous = navigations.current
+      navigations.current = instance
 
       if (previous !== instance) {
         previous.dispose()
@@ -210,8 +217,8 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     }
 
     function dispose(): void {
-      if (stagedNavigation === instance) {
-        stagedNavigation = undefined
+      if (navigations.staged === instance) {
+        navigations.staged = undefined
       }
 
       data.dispose(new NavigationAbandonedError())
@@ -231,10 +238,10 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     return instance
   }
 
-  const current: RouterNavigationStores['current'] = () => currentNavigation
+  const current: RouterNavigationStores['current'] = () => navigations.current
 
   const getValues: RouterNavigationStores['getValues'] = (route) => {
-    const store = currentNavigation.data
+    const store = navigations.current.data
 
     return getComputations(route).flatMap(({ kind, depth, name, key }) => {
       const result = store.get(key)
@@ -271,7 +278,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
   const getProps: RouterNavigationStores['getProps'] = (id, name, route) => {
     const key = getDataKey('props', id, name, route)
-    const result = currentNavigation.data.get(key)
+    const result = navigations.current.data.get(key)
 
     switch (result.kind) {
       case 'missing':
@@ -279,7 +286,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
       case 'pending':
       case 'running':
-        return toResult(currentNavigation.data, key)
+        return toResult(navigations.current.data, key)
 
       case 'value':
       case 'error':
@@ -408,7 +415,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
    */
   function getValue(location: ValueLocation, route: ResolvedRoute, store?: DataStore): Promise<unknown> {
     const key = getDataKey(location.kind, location.id, location.name, route)
-    const current = currentNavigation.data
+    const current = navigations.current.data
 
     if (!store || store === current) {
       return current.subscribe(key)
