@@ -129,14 +129,16 @@ export function createUseLink<TRouter extends Router>(routerKey: InjectionKey<TR
     }
 
     function pushUrl(url: UrlString, pushOptions: RouterPushOptions = {}): Promise<void> {
-      return router.push(url, {
+      const options: RouterPushOptions = {
         replace: pushOptions.replace ?? linkOptions.value.replace,
         navigation: pushOptions.navigation ?? linkOptions.value.navigation,
         viewTransition: pushOptions.viewTransition ?? linkOptions.value.viewTransition,
         query: combineUrlSearchParams(pushOptions.query, linkOptions.value.query),
         hash: pushOptions.hash ?? linkOptions.value.hash,
         state: { ...linkOptions.value.state, ...pushOptions.state },
-      })
+      }
+
+      return router.push(url, options)
     }
 
     const replace: UseLink['replace'] = (options) => {
