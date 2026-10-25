@@ -1,4 +1,5 @@
 import { markRaw } from 'vue'
+import { createActivityTracker } from './createActivityTracker'
 import { ResolvedRoute, WithData } from '@/types/resolved'
 import { DEFAULT_VIEW_NAME } from './routeViews'
 import { DEFAULT_LOADER_NAME } from './addLoader'
@@ -8,26 +9,18 @@ import { ContextRejectionError } from '@/errors/contextRejectionError'
 import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
 import { PropsCallbackParent } from '@/types/props'
 import { createVueAppStore, HasVueAppStore } from './createVueAppStore'
-import { CallbackContextPush, CallbackContextReject, CallbackContextSuccess } from '@/types/callbackContext'
+import { CallbackContextPush, CallbackContextReject } from '@/types/callbackContext'
 import { createRouterCallbackContext } from './createRouterCallbackContext'
-import { createDataStore, DataStore } from './createDataStore'
+import { createDataStore, DataStore, DataStoreSettledEvent } from './createDataStore'
 import { DataKind, getDataKey } from './getDataKey'
 import { PropsResult } from '@/utilities/props'
 import { warn } from '@/utilities/warn'
 import { MaybePromise } from '@/types/utilities'
 import { Computation, getComputations, isKind, loaderLocations, propsLocations, ValueLocation } from './getComputations'
 
-/**
- * Computation stopped because its navigation was disposed.
- */
-type RouterNavigationAbandoned = {
-  status: 'ABANDONED',
-}
-
-export type RouterNavigationResponse = CallbackContextSuccess | CallbackContextPush | CallbackContextReject | RouterNavigationAbandoned
-
-type RouterNavigationComputationResponse = {
-  response: Promise<RouterNavigationResponse>,
+export type RouterNavigationResponse = CallbackContextPush | CallbackContextReject | {
+  status: 'ERROR',
+  error: unknown,
   source: DataKind,
 }
 
@@ -36,10 +29,8 @@ type RouterNavigationCommitOptions = {
   from: ResolvedRoute | null,
 }
 
-export type RouterNavigationResponseEvent = RouterNavigationComputationResponse & {
-  to: ResolvedRoute,
-  from: ResolvedRoute | null,
-  signal: AbortSignal,
+export type RouterNavigationResponseEvent = RouterNavigationCommitOptions & {
+  response: RouterNavigationResponse,
 }
 
 type CreateRouterNavigationOptions = {
@@ -47,9 +38,8 @@ type CreateRouterNavigationOptions = {
 }
 
 type RouterNavigationState = {
-  to: ResolvedRoute | undefined,
-  from: ResolvedRoute | null,
-  responses: RouterNavigationComputationResponse[],
+  sources: Map<string, DataKind>,
+  abandoned: boolean,
 }
 
 type RouterNavigationStoreSlots = {
@@ -59,6 +49,7 @@ type RouterNavigationStoreSlots = {
 
 export type RouterNavigationStore = {
   data: DataStore,
+  idle: () => Promise<void>,
   /**
    * Disposes of the previously staged navigation and sets this navigation as staged.
    */
@@ -67,7 +58,7 @@ export type RouterNavigationStore = {
   abandon: () => void,
   dispose: () => void,
   /**
-   * Computes the supplied values and reports how they settle.
+   * Computes the supplied values.
    */
   compute: (route: ResolvedRoute, computations: Computation[]) => Promise<unknown>[],
   /**
@@ -88,6 +79,7 @@ export type RouteValue = {
 
 export type RouterNavigationStores = HasVueAppStore & {
   current: () => RouterNavigationStore,
+  idle: () => Promise<void>,
   stop: () => void,
   create: () => RouterNavigationStore,
   /**
@@ -120,30 +112,49 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
   function createRouterNavigationStore(): RouterNavigationStore {
     const controller = new AbortController()
-    const data = createDataStore({ signal: controller.signal })
-
+    const activity = createActivityTracker()
+    const response = Promise.withResolvers<CallbackContextPush | CallbackContextReject>()
+    const committed = Promise.withResolvers<RouterNavigationCommitOptions | undefined>()
     const state: RouterNavigationState = {
-      to: undefined,
-      from: null,
-      responses: [],
+      sources: new Map(),
+      abandoned: false,
+    }
+    const data = createDataStore({
+      signal: controller.signal,
+      onSettled: handleSettledValue,
+    })
+
+    function handleSettledValue({ key, result }: DataStoreSettledEvent): void {
+      if (controller.signal.aborted || result.kind !== 'error') {
+        return
+      }
+
+      const { error } = result
+
+      if (error instanceof ContextPushError || error instanceof ContextRejectionError) {
+        response.resolve(error.response)
+        controller.abort(new NavigationAbandonedError())
+
+        return
+      }
+
+      reportErrorWhenCommitted(key, error)
     }
 
-    function reportResponse(response: RouterNavigationComputationResponse): void {
-      if (controller.signal.aborted) {
+    function reportErrorWhenCommitted(key: string, error: unknown): void {
+      const source = state.sources.get(key)
+
+      if (!source) {
         return
       }
 
-      if (!state.to) {
-        state.responses.push(response)
-        return
-      }
+      activity.add(committed.promise.then((context) => {
+        if (!context || controller.signal.aborted) {
+          return
+        }
 
-      onResponse?.({
-        ...response,
-        to: state.to,
-        from: state.from,
-        signal: controller.signal,
-      })
+        onResponse?.({ response: { status: 'ERROR', error, source }, ...context })
+      }))
     }
 
     function compute(route: ResolvedRoute, computations: Computation[]): Promise<unknown>[] {
@@ -153,18 +164,27 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
       const values = computations.map(({ key }) => data.subscribe(key))
 
-      computations.forEach((computation) => {
-        data.set(computation.key, () => {
-          const response = toResponse(data.subscribe(computation.key))
-          response.catch(() => {})
+      for (const computation of computations) {
+        state.sources.set(computation.key, computation.kind)
+        data.set(computation.key, () => run(computation, route))
+      }
 
-          reportResponse({ response, source: computation.kind })
-
-          return run(computation, route, data, controller.signal)
-        })
-      })
+      activity.add(...values)
 
       return values
+    }
+
+    function run(computation: Computation, route: ResolvedRoute): unknown {
+      const { push, replace, reject, update } = createRouterCallbackContext({ to: route })
+
+      return runWithContext(() => computation.run(toCallbackRoute(computation, route, data), {
+        push,
+        replace,
+        reject,
+        update,
+        signal: controller.signal,
+        parent: getParentContext(route, computation.depth, data),
+      }))
     }
 
     function fill(route: ResolvedRoute, values: RouteValue[]): void {
@@ -186,7 +206,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     }
 
     function commit({ to, from }: RouterNavigationCommitOptions): Promise<unknown>[] {
-      if (controller.signal.aborted) {
+      if (state.abandoned) {
         return []
       }
 
@@ -203,18 +223,22 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
         staged.dispose()
       }
 
-      state.to = to
-      state.from = from
+      committed.resolve({ to, from })
+      response.promise.then((outcome) => {
+        if (state.abandoned || navigations.current !== instance) {
+          return
+        }
 
-      const pending = state.responses.splice(0)
-      pending.forEach(reportResponse)
+        onResponse?.({ response: outcome, to, from })
+      })
 
       return compute(to, getComputations(to))
     }
 
     function abandon(): void {
+      state.abandoned = true
       controller.abort(new NavigationAbandonedError())
-      state.responses.length = 0
+      committed.resolve(undefined)
     }
 
     function dispose(): void {
@@ -222,11 +246,9 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
         navigations.staged = createRouterNavigationStore()
       }
 
-      controller.abort(new NavigationAbandonedError())
+      abandon()
       data.dispose()
-      state.responses.length = 0
-      state.to = undefined
-      state.from = null
+      state.sources.clear()
     }
 
     function stage(): void {
@@ -243,6 +265,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
     const instance: RouterNavigationStore = {
       data,
+      idle: activity.idle,
       compute,
       fill,
       stage,
@@ -255,6 +278,8 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
   }
 
   const current: RouterNavigationStores['current'] = () => navigations.current
+
+  const idle: RouterNavigationStores['idle'] = () => navigations.current.idle()
 
   const stop: RouterNavigationStores['stop'] = () => {
     navigations.current.dispose()
@@ -277,28 +302,6 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
       return [{ kind, depth, name, value: result.value }]
     })
-  }
-
-  async function toResponse(value: Promise<unknown>): Promise<RouterNavigationResponse> {
-    try {
-      await value
-
-      return { status: 'SUCCESS' }
-    } catch (error) {
-      if (error instanceof NavigationAbandonedError) {
-        return { status: 'ABANDONED' }
-      }
-
-      if (error instanceof ContextPushError) {
-        return error.response
-      }
-
-      if (error instanceof ContextRejectionError) {
-        return error.response
-      }
-
-      throw error
-    }
   }
 
   const getProps: RouterNavigationStores['getProps'] = (id, name, route) => {
@@ -326,19 +329,6 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     const loaders = getComputations(route).filter(isKind('loader'))
 
     return toValues(loaders, DEFAULT_LOADER_NAME, route, store)
-  }
-
-  function run(computation: Computation, route: ResolvedRoute, store: DataStore, signal: AbortSignal): unknown {
-    const { push, replace, reject, update } = createRouterCallbackContext({ to: route })
-
-    return runWithContext(() => computation.run(toCallbackRoute(computation, route, store), {
-      push,
-      replace,
-      reject,
-      update,
-      signal,
-      parent: getParentContext(route, computation.depth, store),
-    }))
   }
 
   /**
@@ -466,6 +456,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
   return {
     current,
+    idle,
     stop,
     create: createRouterNavigationStore,
     staged,

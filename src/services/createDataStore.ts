@@ -28,7 +28,13 @@ const RUNNING: DataResultRunning = { kind: 'running' }
 
 const MISSING: DataResultMissing = { kind: 'missing' }
 
+export type DataStoreSettledEvent = {
+  key: string,
+  result: DataResultValue | DataResultError | DataResultAbandoned,
+}
+
 type Entry = {
+  key: string,
   promise: Promise<unknown>,
   resolve: (value: unknown) => void,
   reject: (reason: unknown) => void,
@@ -62,18 +68,19 @@ export type DataStore = {
 
 type CreateDataStoreOptions = {
   signal: AbortSignal,
+  onSettled?: (event: DataStoreSettledEvent) => void,
 }
 
-export function createDataStore({ signal }: CreateDataStoreOptions): DataStore {
+export function createDataStore({ signal, onSettled }: CreateDataStoreOptions): DataStore {
   const entries: Map<string, Entry> = reactive(new Map())
 
-  function create(): Entry {
+  function create(key: string): Entry {
     const { promise, resolve, reject } = Promise.withResolvers<unknown>()
 
     // a value nobody happens to await must not surface as an unhandled rejection
     promise.catch(() => {})
 
-    return markRaw({ promise, resolve, reject, state: shallowRef<DataResult>(PENDING) })
+    return markRaw({ key, promise, resolve, reject, state: shallowRef<DataResult>(PENDING) })
   }
 
   function entry(key: string): Entry {
@@ -83,7 +90,7 @@ export function createDataStore({ signal }: CreateDataStoreOptions): DataStore {
       return existing
     }
 
-    const created = create()
+    const created = create(key)
 
     if (signal.aborted) {
       settle(created, { kind: 'error', error: signal.reason })
@@ -103,17 +110,18 @@ export function createDataStore({ signal }: CreateDataStoreOptions): DataStore {
       return
     }
 
-    if (result.kind === 'error' && result.error instanceof NavigationAbandonedError) {
-      target.state.value = ABANDONED
-    } else {
-      target.state.value = result
-    }
+    const settled = result.kind === 'error' && result.error instanceof NavigationAbandonedError
+      ? ABANDONED
+      : result
+    target.state.value = settled
 
     if (result.kind === 'value') {
       target.resolve(result.value)
     } else {
       target.reject(result.error)
     }
+
+    onSettled?.({ key: target.key, result: settled })
   }
 
   const subscribe: DataStore['subscribe'] = (key) => entry(key).promise

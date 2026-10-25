@@ -474,38 +474,19 @@ export function createRouter<
    * either is acted on whenever it arrives, without holding up the navigation that started it. Once that
    * navigation is superseded, its outcomes can no longer change the page or run error hooks.
    */
-  function onNavigationResponse({ response, source, to, from, signal }: RouterNavigationResponseEvent): void {
-    const work = response
-      .then((response) => {
-        if (signal.aborted) {
-          return
-        }
+  function onNavigationResponse({ response, to, from }: RouterNavigationResponseEvent): void {
+    switch (response.status) {
+      case 'PUSH':
+        push(...response.to)
+        break
 
-        switch (response.status) {
-          case 'SUCCESS':
-          case 'ABANDONED':
-            break
+      case 'REJECT':
+        reject(response.type, { to, from })
+        break
 
-          case 'PUSH':
-            push(...response.to)
-            break
-
-          case 'REJECT':
-            reject(response.type, { to, from })
-            break
-
-          default:
-            const exhaustive: never = response
-            throw new Error(`Switch is not exhaustive for route data response status: ${JSON.stringify(exhaustive)}`)
-        }
-      })
-      .catch((error: unknown) => {
-        if (signal.aborted) {
-          return
-        }
-
+      case 'ERROR':
         try {
-          hooks.runErrorHooks(error, { to, from, source })
+          hooks.runErrorHooks(response.error, { to, from, source: response.source })
         } catch (error) {
           if (error instanceof ContextPushError) {
             push(...error.response.to)
@@ -519,9 +500,12 @@ export function createRouter<
 
           throw error
         }
-      })
+        break
 
-    activity.add(work)
+      default:
+        const exhaustive: never = response
+        throw new Error(`Switch is not exhaustive for route data response status: ${JSON.stringify(exhaustive)}`)
+    }
   }
 
   const resolve: RouterResolve<TRoutes | TPlugin['routes']> = (
@@ -759,6 +743,7 @@ export function createRouter<
     }
 
     await start()
+    await navigation.idle()
     await activity.idle()
 
     const serverRedirect = getServerRedirect()

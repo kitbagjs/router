@@ -298,6 +298,7 @@ test('a prefetched response is reported when its navigation becomes current', as
 
   detached.stage()
   navigation.commit({ to: route, from })
+  await flushPromises()
 
   expect(onResponse).toHaveBeenCalledOnce()
 
@@ -305,7 +306,7 @@ test('a prefetched response is reported when its navigation becomes current', as
 
   expect(event).toMatchObject({ to: route, from })
 
-  await expect(event.response).resolves.toEqual({ status: 'PUSH', to: ['/next', { replace: true }] })
+  expect(event.response).toEqual({ status: 'PUSH', to: ['/next', { replace: true }] })
 })
 
 test('replacing a navigation discards its buffered responses', async () => {
@@ -320,13 +321,11 @@ test('replacing a navigation discards its buffered responses', async () => {
   await Promise.allSettled(detached.compute(route, getComputations(route)))
   detached.dispose()
   const replacement = navigation.create()
-  replacement.commit({ to: route, from: null })
+  await Promise.all(replacement.commit({ to: route, from: null }))
+  await flushPromises()
 
-  expect(onResponse).toHaveBeenCalledOnce()
-
-  const [event] = onResponse.mock.calls[0]
-
-  await expect(event.response).resolves.toEqual({ status: 'SUCCESS' })
+  expect(onResponse).not.toHaveBeenCalled()
+  await expect(navigation.getData(route)).resolves.toBe('value')
 })
 
 test('computations added after adoption report their response once', async () => {
@@ -340,12 +339,12 @@ test('computations added after adoption report their response once', async () =>
 
   current.compute(initial, getComputations(next))
   current.compute(initial, getComputations(next))
+  await flushPromises()
 
   expect(onResponse).toHaveBeenCalledOnce()
   const [event] = onResponse.mock.calls[0]
 
-  expect(event.source).toBe('loader')
-  await expect(event.response).resolves.toEqual({ status: 'PUSH', to: ['/target'] })
+  expect(event.response).toEqual({ status: 'PUSH', to: ['/target'] })
 })
 
 test('stopping aborts current and staged computations and settles their readers', async () => {
@@ -367,4 +366,70 @@ test('stopping aborts current and staged computations and settles their readers'
   expect(signals.every((signal) => signal.aborted)).toBe(true)
   await expect(currentValue).rejects.toBeInstanceOf(NavigationAbandonedError)
   await expect(stagedValue).rejects.toBeInstanceOf(NavigationAbandonedError)
+})
+
+test('an unexpected error waits for commit without preventing a later redirect', async () => {
+  const error = new Error('failed loader')
+  const pending = Promise.withResolvers<void>()
+  const route = createResolvedRoute(createRoute({ path: '/' })
+    .addLoader(() => {
+      throw error
+    }, { name: 'broken' })
+    .addLoader(async (_route, { push }) => {
+      await pending.promise
+      push('/next')
+    }, { name: 'later' }))
+  const onResponse = vi.fn()
+  const navigation = createRouterNavigation({ onResponse })
+  const instance = navigation.staged()
+  instance.compute(route, getComputations(route))
+  await flushPromises()
+  expect(onResponse).not.toHaveBeenCalled()
+
+  instance.commit({ to: route, from: null })
+  await flushPromises()
+  expect(onResponse).toHaveBeenCalledExactlyOnceWith({
+    response: { status: 'ERROR', error, source: 'loader' },
+    to: route,
+    from: null,
+  })
+
+  pending.resolve()
+  await instance.idle()
+  await flushPromises()
+  expect(onResponse).toHaveBeenCalledTimes(2)
+  expect(onResponse).toHaveBeenLastCalledWith({
+    response: { status: 'PUSH', to: ['/next'] },
+    to: route,
+    from: null,
+  })
+})
+
+test('disposing a committed navigation prevents delivery of its settled redirect', async () => {
+  const route = createResolvedRoute(createRoute({ path: '/' }).addLoader((_route, { push }) => push('/next')))
+  const onResponse = vi.fn()
+  const navigation = createRouterNavigation({ onResponse })
+  const instance = navigation.staged()
+
+  instance.commit({ to: route, from: null })
+  instance.dispose()
+  await flushPromises()
+
+  expect(onResponse).not.toHaveBeenCalled()
+})
+
+test('disposing before commit releases pending error reporting', async () => {
+  const route = createResolvedRoute(createRoute({ path: '/' }).addLoader(() => {
+    throw new Error('unused prefetch')
+  }))
+  const onResponse = vi.fn()
+  const navigation = createRouterNavigation({ onResponse })
+  const instance = navigation.staged()
+
+  instance.compute(route, getComputations(route))
+  const idle = instance.idle()
+  instance.dispose()
+  await idle
+
+  expect(onResponse).not.toHaveBeenCalled()
 })

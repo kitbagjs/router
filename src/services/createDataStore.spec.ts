@@ -317,3 +317,23 @@ test('aborting rejects unfinished work while retaining settled values', async ()
   pending.resolve('late')
   await expect(store.subscribe('pending')).rejects.toBe(reason)
 })
+
+test('onSettled reports a value once when its work finishes', async () => {
+  const controller = new AbortController()
+  const onSettled = vi.fn()
+  const store = createDataStore({ signal: controller.signal, onSettled })
+  const pending = Promise.withResolvers<string>()
+
+  store.set('key', () => pending.promise)
+  store.set('key', () => 'duplicate')
+  expect(onSettled).not.toHaveBeenCalled()
+
+  pending.resolve('loaded')
+  await store.subscribe('key')
+  controller.abort(new NavigationAbandonedError())
+
+  expect(onSettled).toHaveBeenCalledExactlyOnceWith({
+    key: 'key',
+    result: { kind: 'value', value: 'loaded' },
+  })
+})
