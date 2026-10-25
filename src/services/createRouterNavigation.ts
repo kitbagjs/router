@@ -31,11 +31,6 @@ type RouterNavigationComputationResponse = {
   source: DataKind,
 }
 
-type RouterNavigationCommitOptions = {
-  to: ResolvedRoute,
-  from?: ResolvedRoute | null,
-}
-
 type RouterNavigationContext = {
   to: ResolvedRoute,
   from: ResolvedRoute | null,
@@ -60,7 +55,11 @@ type RouterNavigationStoreSlots = {
 
 export type RouterNavigationStore = {
   data: DataStore,
-  commit: (options: RouterNavigationCommitOptions) => Promise<unknown>[],
+  /**
+   * Disposes of the previously staged navigation and sets this navigation as staged.
+   */
+  stage: () => void,
+  commit: (route: ResolvedRoute, from?: ResolvedRoute | null) => Promise<unknown>[],
   abandon: () => void,
   dispose: () => void,
   /**
@@ -86,8 +85,15 @@ export type RouteValue = {
 export type RouterNavigationStores = HasVueAppStore & {
   current: () => RouterNavigationStore,
   create: () => RouterNavigationStore,
-  stage: (navigation: RouterNavigationStore) => void,
-  discard: (navigation?: RouterNavigationStore) => void,
+  /**
+   * The navigation prepared for the next commit.
+   * The rendered route keeps reading from the current navigation until then.
+   */
+  staged: () => RouterNavigationStore,
+  /**
+   * Makes the staged navigation current and computes whatever the route still lacks.
+   */
+  commit: (route: ResolvedRoute, from?: ResolvedRoute | null) => Promise<unknown>[],
   /**
    * The values currently settled in the store.
    */
@@ -105,22 +111,6 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
   const navigations: RouterNavigationStoreSlots = {
     current: createRouterNavigationStore(),
     staged: createRouterNavigationStore(),
-  }
-
-  function stage(navigation: RouterNavigationStore): void {
-    if (navigations.staged === navigation) {
-      return
-    }
-
-    discard()
-    navigations.staged = navigation
-  }
-
-  function discard(navigation = navigations.staged): void {
-    if (navigation === navigations.staged) {
-      navigations.staged = createRouterNavigationStore()
-      navigation.dispose()
-    }
   }
 
   function createRouterNavigationStore(): RouterNavigationStore {
@@ -183,20 +173,22 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
       }
     }
 
-    function commit({ to, from = null }: RouterNavigationCommitOptions): Promise<unknown>[] {
+    function commit(to: ResolvedRoute, from: ResolvedRoute | null = null): Promise<unknown>[] {
       if (data.signal.aborted) {
         return []
       }
 
-      if (navigations.staged === instance) {
-        navigations.staged = createRouterNavigationStore()
-      }
-
       const previous = navigations.current
+      const staged = navigations.staged
       navigations.current = instance
+      navigations.staged = createRouterNavigationStore()
 
       if (previous !== instance) {
         previous.dispose()
+      }
+
+      if (staged !== instance && staged !== previous) {
+        staged.dispose()
       }
 
       state.context ??= {
@@ -226,10 +218,23 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
       state.context = undefined
     }
 
+    function stage(): void {
+      if (navigations.staged === instance) {
+        return
+      }
+
+      if (navigations.staged !== navigations.current) {
+        navigations.staged.dispose()
+      }
+
+      navigations.staged = instance
+    }
+
     const instance: RouterNavigationStore = {
       data,
       compute,
       fill,
+      stage,
       commit,
       abandon,
       dispose,
@@ -239,6 +244,10 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
   }
 
   const current: RouterNavigationStores['current'] = () => navigations.current
+
+  const staged: RouterNavigationStores['staged'] = () => navigations.staged
+
+  const commit: RouterNavigationStores['commit'] = (route, from) => navigations.staged.commit(route, from)
 
   const getValues: RouterNavigationStores['getValues'] = (route) => {
     const store = navigations.current.data
@@ -442,8 +451,8 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
   return {
     current,
     create: createRouterNavigationStore,
-    stage,
-    discard,
+    staged,
+    commit,
     getValues,
     getProps,
     getData,

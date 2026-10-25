@@ -59,9 +59,8 @@ import { getNavigationOption, getRouteNavigationOption } from '@/utilities/navig
 
 type RouteCommitOptions = {
   route: ResolvedRoute | null,
-  navigation: RouterNavigationStore,
   signal: AbortSignal,
-  update: (navigation: RouterNavigationStore) => void,
+  update: () => void,
 }
 
 type RouteCommit = {
@@ -286,115 +285,116 @@ export function createRouter<
       }
     }
 
-    navigation.discard()
     const controller = navigations.begin()
 
     if (controller.signal.aborted) {
       return
     }
 
-    const pending = options.prefetch ?? navigation.create()
-    navigation.stage(pending)
+    const staged = options.prefetch ?? navigation.create()
+    staged.stage()
 
-    try {
-      const to = find(url, options) ?? null
-      const from = getFromRouteForHooks()
-      const progress = navigationProgress.begin({
-        to,
-        from,
-        expected: countRouteUnits(url, to),
-        inert: isSSR || options.hydrating,
-      })
+    const to = find(url, options) ?? null
+    const from = getFromRouteForHooks()
+    const progress = navigationProgress.begin({
+      to,
+      from,
+      expected: countRouteUnits(url, to),
+      inert: isSSR || options.hydrating,
+    })
 
-      function commitNavigation(pending: RouterNavigationStore): void {
-        if (!to) {
-          reject(NOT_FOUND_REJECTION_TYPE, { to, from })
-          progress.abort()
+    function commitNavigation(): void {
+      if (!to) {
+        reject(NOT_FOUND_REJECTION_TYPE, { to, from })
+        progress.abort()
 
-          return
-        }
-
-        clearRejection()
-
-        if (!isExternal(url)) {
-          setRouteValuesAndUpdateRoute(pending, to, from, progress)
-        }
-
-        progress.close()
-        started.value = true
-
-        if (!options.hydrating) {
-          updateTitle(controller.signal)
-        }
-      }
-
-      const routeCommit = createRouteCommit({
-        route: to,
-        navigation: pending,
-        signal: controller.signal,
-        update: commitNavigation,
-      })
-
-      if (!options.hydrating) {
-        const shouldCommit = await runBeforeHooks({ controller, to, from, url, options, progress })
-
-        if (!shouldCommit) {
-          controller.abort()
-
-          return
-        }
-      }
-
-      const transition = getViewTransition({
-        to,
-        from,
-        options,
-        enabled: !isSSR && !isExternal(url),
-      })
-
-      const { isBlockingNavigation } = getNavigationOption({
-        routerNavigation,
-        routeNavigation: getRouteNavigationOption(to),
-        navigation: options.navigation,
-      })
-      const shouldPrepareNavigation = transition || isBlockingNavigation
-
-      if (transition) {
-        viewTransitions.prepare(transition)
-      } else {
-        viewTransitions.reset()
-      }
-
-      if (!options.hydrating && shouldPrepareNavigation) {
-        const prepared = await routeCommit.prepare()
-
-        if (!prepared && transition) {
-          viewTransitions.cancel(transition)
-        }
-
-        if (!prepared) {
-          return
-        }
-      }
-
-      if (transition) {
-        await viewTransitions.start(routeCommit.commit)
-        await runAfterHooks({ controller, to, from, enabled: !isSSR })
         return
       }
 
-      await Promise.all([
-        routeCommit.commit(),
-        runAfterHooks({ controller, to, from, enabled: !isSSR }),
-      ])
-    } finally {
-      navigation.discard(pending)
+      clearRejection()
+
+      if (!isExternal(url)) {
+        setRouteValuesAndUpdateRoute(to, from, progress)
+      } else {
+        staged.dispose()
+      }
+
+      progress.close()
+      started.value = true
+
+      if (!options.hydrating) {
+        updateTitle(controller.signal)
+      }
     }
+
+    if (!options.hydrating) {
+      const shouldCommit = await runBeforeHooks({ controller, to, from, url, options, progress })
+
+      if (!shouldCommit) {
+        controller.abort()
+        staged.dispose()
+
+        return
+      }
+    }
+
+    const routeCommit = createRouteCommit({
+      route: to,
+      signal: controller.signal,
+      update: commitNavigation,
+    })
+    const transition = getViewTransition({
+      to,
+      from,
+      options,
+      enabled: !isSSR && !isExternal(url),
+    })
+
+    const { isBlockingNavigation } = getNavigationOption({
+      routerNavigation,
+      routeNavigation: getRouteNavigationOption(to),
+      navigation: options.navigation,
+    })
+    const shouldPrepareNavigation = transition || isBlockingNavigation
+
+    if (transition) {
+      viewTransitions.prepare(transition)
+    } else {
+      viewTransitions.reset()
+    }
+
+    if (!options.hydrating && shouldPrepareNavigation) {
+      const prepared = await routeCommit.prepare()
+
+      if (!prepared && transition) {
+        viewTransitions.cancel(transition)
+      }
+
+      if (!prepared) {
+        staged.dispose()
+
+        return
+      }
+    }
+
+    if (transition) {
+      await viewTransitions.start(routeCommit.commit)
+      await runAfterHooks({ controller, to, from, enabled: !isSSR })
+      return
+    }
+
+    await Promise.all([
+      routeCommit.commit(),
+      runAfterHooks({ controller, to, from, enabled: !isSSR }),
+    ])
   })
 
-  function createRouteCommit({ route, navigation: pending, signal, update }: RouteCommitOptions): RouteCommit {
+  function createRouteCommit({ route, signal, update }: RouteCommitOptions): RouteCommit {
+    const isAborted = (): boolean => signal.aborted
+    const staged = navigation.staged()
+
     const prepare: RouteCommit['prepare'] = async () => {
-      if (signal.aborted) {
+      if (isAborted()) {
         return false
       }
 
@@ -402,7 +402,7 @@ export function createRouter<
         return true
       }
 
-      const values = pending.compute(route, getComputations(route))
+      const values = staged.compute(route, getComputations(route))
       const work = Promise.allSettled([
         Promise.all(values),
         ...loadAsyncComponents(route),
@@ -412,7 +412,7 @@ export function createRouter<
         createAbortPromise(signal),
       ])
 
-      return !signal.aborted
+      return !isAborted()
     }
 
     const commit: RouteCommit['commit'] = () => {
@@ -420,7 +420,7 @@ export function createRouter<
         return Promise.resolve(false)
       }
 
-      update(pending)
+      update()
 
       return nextTick().then(() => !signal.aborted)
     }
@@ -463,11 +463,8 @@ export function createRouter<
     return getComputations(to).length + getAsyncComponents(to).length
   }
 
-  function setRouteValuesAndUpdateRoute(pending: RouterNavigationStore, to: ResolvedRoute, from: ResolvedRoute | null, progress: NavigationProgressTracker): void {
-    const values = pending.commit({
-      to,
-      from,
-    })
+  function setRouteValuesAndUpdateRoute(to: ResolvedRoute, from: ResolvedRoute | null, progress: NavigationProgressTracker): void {
+    const values = navigation.commit(to, from)
 
     progress.track(...values, ...loadAsyncComponents(to))
 
@@ -625,7 +622,8 @@ export function createRouter<
     }
 
     const controller = navigations.begin()
-    navigation.discard()
+    const staged = navigation.staged()
+    staged.dispose()
     const current = navigation.current()
     current.abandon()
 
@@ -706,11 +704,11 @@ export function createRouter<
       case 'success': {
         const values = decodePayloadValues(to, payload.values, options?.transformer)
 
-        const prefetch = navigation.create()
+        const store = navigation.create()
 
-        prefetch.fill(to, values)
+        store.fill(to, values)
 
-        await set(initialUrl, { replace: true, state: initialState, hydrating: true, prefetch })
+        await set(initialUrl, { replace: true, state: initialState, hydrating: true, prefetch: store })
 
         return
       }
@@ -803,7 +801,8 @@ export function createRouter<
   function stop(): void {
     stopped = true
     stopRouteContext()
-    navigation.discard()
+    const staged = navigation.staged()
+    staged.dispose()
     navigations.stop()
     navigationProgress.stop()
     history.stopListening()
