@@ -23,7 +23,7 @@ test('one view computes props and loader data independently for multiple routes'
     const navigation = createRouterNavigation()
     const values = navigation.staged().compute(resolved, getComputations(resolved))
     await Promise.all(values)
-    navigation.commit(resolved)
+    navigation.commit({ to: resolved, from: null })
     expect(navigation.getProps(route.id, name, resolved)).toEqual({
       kind: 'value', value: { name: route.name, id: '1', data: `${route.name} data` },
     })
