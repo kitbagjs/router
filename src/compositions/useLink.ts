@@ -15,7 +15,7 @@ import { isDefined } from '@/utilities/guards'
 import { Router, RouterRouteName, RouterRoutes } from '@/types/router'
 import { UseLink, UseLinkOptions } from '@/types/useLink'
 import { updateResolvedRoute } from '@/services/updateResolvedRoute'
-import { warn } from '@/utilities/warn'
+import { warnPrefetchInvalidated } from '@/utilities/warnPrefetchInvalidated'
 
 type UseLinkArgs<
   TRouter extends Router,
@@ -114,7 +114,7 @@ export function createUseLink<TRouter extends Router>(routerKey: InjectionKey<TR
       const changesRoute = hasRouteChanges(pushOptions)
 
       if (changesRoute && prefetchEnabled.value) {
-        warn(`Prefetched props and loader data for "${resolved.href}" cannot be used when query, hash, or state options are passed to link.push() or link.replace(). Pass these as reactive options to useLink instead.`)
+        warnPrefetchInvalidated(resolved.href)
       }
 
       const options: RouterPushOptionsInternal = {
