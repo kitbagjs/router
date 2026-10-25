@@ -3,6 +3,8 @@ import { createUsePrefetching } from '@/compositions/usePrefetching'
 import { createUseViewTransition } from '@/compositions/useViewTransition'
 import { createUseRouter } from '@/compositions/useRouter'
 import { ResolvedRoute } from '@/types/resolved'
+import { RouterPushOptions } from '@/types/routerPush'
+import { hasRouteChanges } from '@/utilities/hasRouteChanges'
 import { RouterPushOptionsInternal } from '@/types/routerNavigationInternal'
 import { RouteParamsByKey } from '@/types/routeWithParams'
 import { UrlString, isUrlString } from '@/types/urlString'
@@ -96,40 +98,48 @@ export function createUseLink<TRouter extends Router>(routerKey: InjectionKey<TR
 
     const push: UseLink['push'] = (pushOptions) => {
       const resolved = route.value
-      const options: RouterPushOptionsInternal = {
+      const options: RouterPushOptions = {
+        ...pushOptions,
         replace: pushOptions?.replace ?? linkOptions.value.replace,
         navigation: pushOptions?.navigation ?? linkOptions.value.navigation,
         viewTransition: pushOptions?.viewTransition ?? linkOptions.value.viewTransition,
       }
 
       if (resolved) {
-        const changesRoute = pushOptions?.query !== undefined || pushOptions?.hash !== undefined || pushOptions?.state !== undefined
-
-        if (changesRoute && prefetchEnabled.value) {
-          warn(`Prefetched props and loader data for "${resolved.href}" cannot be used when query, hash, or state options are passed to link.push() or link.replace(). Pass these as reactive options to useLink instead.`)
-        }
-
-        const resolvedOptions: RouterPushOptionsInternal = {
-          ...pushOptions,
-          ...options,
-          prefetch: changesRoute ? undefined : takePrefetch(),
-        }
-
-        return router.push(resolved, resolvedOptions)
+        return pushResolvedRoute(resolved, options)
       }
 
       const url = toValue(source)
 
       if (isUrlString(url)) {
-        return router.push(url, {
-          ...options,
-          query: combineUrlSearchParams(pushOptions?.query, linkOptions.value.query),
-          hash: pushOptions?.hash ?? linkOptions.value.hash,
-          state: { ...linkOptions.value.state, ...pushOptions?.state },
-        })
+        return pushUrl(url, options)
       }
 
       throw new Error('Failed to resolve route in useLink.')
+    }
+
+    function pushResolvedRoute(resolved: ResolvedRoute, options: RouterPushOptions): Promise<void> {
+      const changesRoute = hasRouteChanges(options)
+
+      if (changesRoute && prefetchEnabled.value) {
+        warn(`Prefetched props and loader data for "${resolved.href}" cannot be used when query, hash, or state options are passed to link.push() or link.replace(). Pass these as reactive options to useLink instead.`)
+      }
+
+      const resolvedOptions: RouterPushOptionsInternal = {
+        ...options,
+        prefetch: changesRoute ? undefined : takePrefetch(),
+      }
+
+      return router.push(resolved, resolvedOptions)
+    }
+
+    function pushUrl(url: UrlString, options: RouterPushOptions): Promise<void> {
+      return router.push(url, {
+        ...options,
+        query: combineUrlSearchParams(options.query, linkOptions.value.query),
+        hash: options.hash ?? linkOptions.value.hash,
+        state: { ...linkOptions.value.state, ...options.state },
+      })
     }
 
     const replace: UseLink['replace'] = (options) => {
