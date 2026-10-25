@@ -386,9 +386,9 @@ export function createRouter<
         runAfterHooks({ controller, to, from, enabled: !isSSR }),
       ])
     } finally {
-      const staged = navigation.staged()
+      const current = navigation.current()
 
-      if (staged === next) {
+      if (current !== next) {
         next.dispose()
       }
     }
