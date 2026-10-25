@@ -55,7 +55,7 @@ type RouterNavigationState = {
 
 type RouterNavigationStoreSlots = {
   current: RouterNavigationStore,
-  staged: RouterNavigationStore | undefined,
+  staged: RouterNavigationStore,
 }
 
 export type RouterNavigationStore = {
@@ -104,7 +104,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
   const { setVueApp, runWithContext } = createVueAppStore()
   const navigations: RouterNavigationStoreSlots = {
     current: createRouterNavigationStore(),
-    staged: undefined,
+    staged: createRouterNavigationStore(),
   }
 
   function stage(navigation: RouterNavigationStore): void {
@@ -117,8 +117,8 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
   }
 
   function discard(navigation = navigations.staged): void {
-    if (navigation && navigation === navigations.staged) {
-      navigations.staged = undefined
+    if (navigation === navigations.staged) {
+      navigations.staged = createRouterNavigationStore()
       navigation.dispose()
     }
   }
@@ -189,7 +189,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
       }
 
       if (navigations.staged === instance) {
-        navigations.staged = undefined
+        navigations.staged = createRouterNavigationStore()
       }
 
       const previous = navigations.current
@@ -218,7 +218,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
     function dispose(): void {
       if (navigations.staged === instance) {
-        navigations.staged = undefined
+        navigations.staged = createRouterNavigationStore()
       }
 
       data.dispose(new NavigationAbandonedError())
