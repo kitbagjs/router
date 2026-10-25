@@ -97,10 +97,8 @@ export function createUseLink<TRouter extends Router>(routerKey: InjectionKey<TR
     }))
 
     const push: UseLink['push'] = (pushOptions) => {
-      const resolved = route.value
-
-      if (resolved) {
-        return pushResolvedRoute(resolved, pushOptions)
+      if (route.value) {
+        return pushResolvedRoute(route.value, pushOptions)
       }
 
       const url = toValue(source)
