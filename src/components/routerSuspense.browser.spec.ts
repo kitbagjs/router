@@ -23,6 +23,7 @@ test('shows fallback while setup is pending', async () => {
   const router = createRouter([createRoute({ name: 'home', path: '/' })], { initialUrl: '/' })
   await router.start()
   const wrapper = mount(RouterSuspense, {
+    props: { catch: true },
     slots: {
       default: () => h(child),
       fallback: () => h('p', 'loading'),
@@ -53,6 +54,7 @@ test.each([
   const errorSlot = vi.fn(() => h('p', 'failed'))
   const appError = vi.fn()
   const wrapper = mount(RouterSuspense, {
+    props: { catch: true },
     slots: { default: () => h(child), error: errorSlot },
     global: { plugins: [router], config: { errorHandler: appError } },
   })
@@ -67,7 +69,7 @@ test('shows a default error when no error slot is provided', async () => {
   const child = createFailingComponent(new Error('private failure details'))
   const router = createRouter([createRoute({ name: 'home', path: '/' })], { initialUrl: '/' })
   await router.start()
-  const wrapper = mount(RouterSuspense, { slots: { default: () => h(child) }, global: { plugins: [router] } })
+  const wrapper = mount(RouterSuspense, { props: { catch: true }, slots: { default: () => h(child) }, global: { plugins: [router] } })
 
   await flushPromises()
   expect(wrapper.get('[role="alert"]').text()).toBe('Unable to load this content.')
@@ -79,8 +81,9 @@ test('handles errors in the nearest boundary', async () => {
   await router.start()
   const outerError = vi.fn(() => h('p', 'outer error'))
   const wrapper = mount(RouterSuspense, {
+    props: { catch: true },
     slots: {
-      default: () => h(RouterSuspense, null, {
+      default: () => h(RouterSuspense, { catch: true }, {
         default: () => h(child),
         error: () => h('p', 'inner error'),
       }),
@@ -112,6 +115,7 @@ test('remounts content when the route is refreshed', async () => {
   const router = createRouter([createRoute({ name: 'home', path: '/' })], { initialUrl: '/' })
   await router.start()
   const wrapper = mount(RouterSuspense, {
+    props: { catch: true },
     slots: { default: () => h(child), error: () => h('p', 'failed') },
     global: { plugins: [router] },
   })
@@ -132,8 +136,9 @@ test('passes error slot failures to the parent boundary', async () => {
   await router.start()
   const outerError = vi.fn(() => h('p', 'outer error'))
   const wrapper = mount(RouterSuspense, {
+    props: { catch: true },
     slots: {
-      default: () => h(RouterSuspense, null, {
+      default: () => h(RouterSuspense, { catch: true }, {
         default: () => h(child),
         error: () => h(errorView),
       }),
@@ -155,6 +160,7 @@ test('keeps the error visible when navigation is aborted', async () => {
   const child = createFailingComponent()
   const errorSlot = vi.fn(() => h('p', 'failed'))
   const wrapper = mount(RouterSuspense, {
+    props: { catch: true },
     slots: { default: () => h(child), error: errorSlot },
     global: { plugins: [router] },
   })
@@ -181,6 +187,7 @@ test('resets only when its own router refreshes', async () => {
     },
   })
   mount(assets.RouterSuspense, {
+    props: { catch: true },
     slots: { default: () => h(child) },
     global: { plugins: [first, second] },
   })

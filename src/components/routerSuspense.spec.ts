@@ -32,7 +32,7 @@ test('forwards server errors to the app error handler', async () => {
   })
   const router = createRouter([createRoute({ name: 'home', path: '/' })], { initialUrl: '/', ssr: true })
   const errorSlot = vi.fn(() => h('p', 'client error'))
-  const app = createSSRApp({ render: () => h(RouterSuspense, null, { default: () => h(child), error: errorSlot }) })
+  const app = createSSRApp({ render: () => h(RouterSuspense, { catch: true }, { default: () => h(child), error: errorSlot }) })
   const onError = vi.fn()
   app.config.errorHandler = onError
   app.use(router)

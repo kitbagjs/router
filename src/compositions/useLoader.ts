@@ -14,6 +14,7 @@ import { ValueLocation } from '@/services/getComputations'
 import { warnLoaderFallback } from '@/services/warnLoaderFallback'
 import { getFallbackLoaderLocation } from '@/services/getFallbackLoaderLocation'
 import { getFallbackLoaderComputation } from '@/services/getFallbackLoaderComputation'
+import { createUseRouterSuspense } from '@/compositions/useRouterSuspense'
 
 type LoaderSelection = { location: ValueLocation<'loader'> } | { error: unknown }
 
@@ -22,6 +23,7 @@ export type UseLoaderFunction = <TData>(loader: Loader<TData, readonly RouteCont
 export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunction {
   const useRouter = createUseRouter(routerKey)
   const useRouterNavigation = createUseRouterNavigation(routerKey)
+  const useRouterSuspense = createUseRouterSuspense(routerKey)
 
   function useLoader<TData>(loader: Loader<TData, readonly RouteContext[]>): UseLoader<Awaited<TData>>
   function useLoader(source: AnyLoader): UseLoader {
@@ -38,6 +40,7 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunct
     }
 
     const navigation = useRouterNavigation()
+    const reportError = useRouterSuspense()
     const isServerRendering = useIsServerRendering()
 
     const selection = shallowRef<LoaderSelection>()
@@ -147,7 +150,13 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunct
 
     // Later failures belong to the component's error boundary; the initial await is already settled.
     watch([state, resolved], ([current, hasResolved]) => {
-      if (hasResolved && current.status === 'ERROR') {
+      if (!hasResolved || current.status !== 'ERROR') {
+        return
+      }
+
+      const handled = reportError(current.error)
+
+      if (!handled) {
         throw current.error
       }
     }, { flush: 'post' })
@@ -208,6 +217,9 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunct
             resolved.value = true
 
             return { data: loadedData, loading }
+          }, (error: unknown) => {
+            reportError(error, { rethrow: true })
+            throw error
           })
           .then(onfulfilled, onrejected)
       },

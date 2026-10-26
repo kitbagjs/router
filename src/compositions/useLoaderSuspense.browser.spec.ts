@@ -95,7 +95,9 @@ test.each(loaderAttachments)('shows the error slot when the initial load fails (
   })
   const errorSlot = vi.fn(() => h('p', 'failed'))
   const appError = vi.fn()
+  const predicate = vi.fn(() => false)
   const wrapper = mount(RouterSuspense, {
+    props: { catch: predicate },
     slots: { default: () => h(consumer), fallback: () => h('p', 'waiting'), error: errorSlot },
     global: { plugins: [router], config: { errorHandler: appError } },
   })
@@ -106,6 +108,7 @@ test.each(loaderAttachments)('shows the error slot when the initial load fails (
   expect(wrapper.text()).toBe('failed')
   expect(errorSlot).toHaveBeenCalledWith({ error: failure })
   expect(appError).not.toHaveBeenCalled()
+  expect(predicate).not.toHaveBeenCalled()
 })
 
 test.each(loaderAttachments)('reports later errors even when data is not read ($attachment loader)', async ({ attached }) => {
@@ -127,7 +130,9 @@ test.each(loaderAttachments)('reports later errors even when data is not read ($
   })
   const errorSlot = vi.fn(() => h('p', 'failed'))
   const appError = vi.fn()
+  const predicate = vi.fn(() => false)
   const wrapper = mount(RouterSuspense, {
+    props: { catch: predicate },
     slots: { default: () => h(consumer), error: errorSlot },
     global: { plugins: [router], config: { errorHandler: appError } },
   })
@@ -141,6 +146,7 @@ test.each(loaderAttachments)('reports later errors even when data is not read ($
   expect(wrapper.text()).toBe('failed')
   expect(errorSlot).toHaveBeenCalledWith({ error: failure })
   expect(appError).not.toHaveBeenCalled()
+  expect(predicate).not.toHaveBeenCalled()
 })
 
 test('shows synchronous load errors after navigation', async () => {
@@ -295,4 +301,34 @@ test('stops reporting errors when the component unmounts', async () => {
   await flushPromises()
 
   expect(appError).not.toHaveBeenCalled()
+})
+
+test('keeps component errors out of the error state after loading succeeds', async () => {
+  const failure = new Error('click failed')
+  const loader = createLoader({ load: () => 'loaded' })
+  const route = createRoute({ name: 'home', path: '/' }).addLoader(loader)
+  const router = createRouter([route], { initialUrl: '/' })
+  await router.start()
+  const consumer = defineComponent({
+    async setup() {
+      const { data } = await useLoader(loader)
+      return () => h('button', {
+        onClick: () => {
+          throw failure
+        },
+      }, data.value)
+    },
+  })
+  const errorSlot = vi.fn(() => h('p', 'failed'))
+  const appError = vi.fn()
+  const wrapper = mount(RouterSuspense, {
+    slots: { default: () => h(consumer), error: errorSlot },
+    global: { plugins: [router], config: { errorHandler: appError } },
+  })
+  await flushPromises()
+  await wrapper.get('button').trigger('click')
+
+  expect(wrapper.text()).toBe('loaded')
+  expect(errorSlot).not.toHaveBeenCalled()
+  expect(appError.mock.calls[0][0]).toBe(failure)
 })
