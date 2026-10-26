@@ -178,15 +178,16 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
         }))
 
         if (isPromise(value)) {
-          return value.then(
-            (value): CallbackContextResponse => ({ status: 'SUCCESS', value }),
-            toErrorResponse,
-          )
+          return value.then(toSuccessResponse, toErrorResponse)
         }
 
-        return { status: 'SUCCESS', value }
+        return toSuccessResponse(value)
       } catch (error) {
         return toErrorResponse(error)
+      }
+
+      function toSuccessResponse(value: unknown): CallbackContextResponse {
+        return { status: 'SUCCESS', value }
       }
 
       function toErrorResponse(error: unknown): CallbackContextResponse {
