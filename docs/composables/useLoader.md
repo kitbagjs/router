@@ -34,7 +34,7 @@ const user = useLoader(userLoader)
 
 ## Awaiting data
 
-Await `useLoader` to wait for the initial data.
+Await `useLoader` to use Vue's Suspense boundary:
 
 ```ts
 const { data: user, loading, error } = await useLoader(userLoader)
