@@ -10,16 +10,11 @@ import { Router } from '@/types/router'
 import { getComputations, getComputationsForStrategy } from '@/services/getComputations'
 import { RouterNavigationStore } from '@/services/createRouterNavigation'
 import { getComputationPrefetchKey } from '@/services/getComputationPrefetchKey'
-import { isSameResolvedRoute } from '@/utilities/isSameResolvedRoute'
-import { isSameState } from '@/utilities/isSameState'
+import { Destination, isSameDestination } from '@/utilities/isSameDestination'
 import { setStateValues } from '@/services/state'
 
 type UsePrefetchingConfig = PrefetchConfigs & {
   route: ResolvedRoute | undefined,
-}
-
-type PrefetchDestination = Pick<ResolvedRoute, 'id' | 'href'> & {
-  state: Record<string, string | undefined>,
 }
 
 type UsePrefetching = {
@@ -63,7 +58,7 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
 
     onScopeDispose(() => prefetch.dispose())
 
-    const destination = computed<PrefetchDestination | undefined>((previous) => {
+    const destination = computed<Destination | undefined>((previous) => {
       const { route } = toValue(config)
 
       if (!route) {
@@ -72,7 +67,7 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
 
       const current = getPrefetchDestination(route)
 
-      return isSamePrefetchDestination(current, previous) ? previous : current
+      return isSameDestination(current, previous) ? previous : current
     })
 
     watch(destination, () => {
@@ -142,7 +137,7 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
   }
 }
 
-function getPrefetchDestination(route: ResolvedRoute): PrefetchDestination {
+function getPrefetchDestination(route: ResolvedRoute): Destination {
   const params = Object.fromEntries(route.matches.flatMap((match) => Object.entries(match.state ?? {})))
 
   return {
@@ -150,14 +145,6 @@ function getPrefetchDestination(route: ResolvedRoute): PrefetchDestination {
     href: route.href,
     state: setStateValues(params, route.state),
   }
-}
-
-function isSamePrefetchDestination(current: PrefetchDestination, previous: PrefetchDestination | undefined): boolean {
-  if (!previous || !isSameResolvedRoute(current, previous)) {
-    return false
-  }
-
-  return isSameState(current.state, previous.state)
 }
 
 function prefetchComponentsForRoute(strategy: PrefetchStrategy, route: ResolvedRoute, configs: PrefetchConfigs): void {
