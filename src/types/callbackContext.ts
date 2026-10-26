@@ -3,6 +3,7 @@ import { DataKind } from '@/services/getDataKey'
 
 export type CallbackContextSuccess = {
   status: 'SUCCESS',
+  value: unknown,
 }
 
 export type CallbackContextPush = {
