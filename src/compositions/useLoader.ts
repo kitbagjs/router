@@ -144,10 +144,6 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunct
       waiting = undefined
     }, { flush: 'sync' })
 
-    onScopeDispose(() => {
-      waiting = undefined
-    })
-
     async function getData(): Promise<unknown> {
       if (controller.signal.aborted) {
         return new Promise<never>(() => {})
