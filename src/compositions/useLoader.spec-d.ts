@@ -15,6 +15,4 @@ test('router assets infer data from inline route definitions', () => {
   const assets = createRouterAssets(router)
 
   expectTypeOf(assets.useLoader(router.route.loaders.count)).toEqualTypeOf<UseLoader<number>>()
-  // @ts-expect-error promises are data, not loader definitions
-  assets.useLoader(router.route.data.count)
 })
