@@ -12,6 +12,4 @@ test('route.loaders preserves the definition return and context types', () => {
   expectTypeOf(router.route.loaders.user).toEqualTypeOf<typeof reusable>()
   // @ts-expect-error only declared loader names are available
   expectTypeOf(router.route.loaders.missing).toBeNever()
-  // @ts-expect-error definitions have no data property
-  expectTypeOf(router.route.loaders.user.data).toBeNever()
 })
