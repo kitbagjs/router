@@ -3,10 +3,14 @@ import { AnyLoader } from '@/types/loader'
 import { ValueLocation } from '@/services/getComputations'
 import { isSameLoader } from '@/services/isSameLoader'
 
-export type LoaderFallback = { reason: 'missing' } | {
+export type LoaderFallbackMissing = { reason: 'missing' }
+
+export type LoaderFallbackAmbiguous = {
   reason: 'ambiguous',
   names: string[],
 }
+
+export type LoaderFallback = LoaderFallbackMissing | LoaderFallbackAmbiguous
 
 type LoaderLocationResult = { location: ValueLocation<'loader'> } | LoaderFallback
 
