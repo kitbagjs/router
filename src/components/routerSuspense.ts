@@ -38,7 +38,11 @@ export function createRouterSuspense<TRouter extends Router>(routerKey: Injectio
 
       if (!isServerRendering) {
         onErrorCaptured((error) => {
-          failure.value ??= { error }
+          if (failure.value) {
+            return
+          }
+
+          failure.value = { error }
           return false
         })
       }

@@ -122,6 +122,37 @@ test('refresh resets the error and remounts the content at the same URL', async 
   expect(setup).toHaveBeenCalledTimes(2)
 })
 
+test('an error in the error slot reaches the outer boundary', async () => {
+  const child = defineComponent({
+    setup: () => () => {
+      throw new Error('content failed')
+    },
+  })
+  const failure = new Error('error view failed')
+  const errorView = defineComponent({
+    setup: () => () => {
+      throw failure
+    },
+  })
+  const router = createRouter([createRoute({ name: 'home', path: '/' })], { initialUrl: '/' })
+  await router.start()
+  const outerError = vi.fn(() => h('p', 'outer error'))
+  const wrapper = mount(RouterSuspense, {
+    slots: {
+      default: () => h(RouterSuspense, null, {
+        default: () => h(child),
+        error: () => h(errorView),
+      }),
+      error: outerError,
+    },
+    global: { plugins: [router] },
+  })
+  await flushPromises()
+
+  expect(wrapper.text()).toBe('outer error')
+  expect(outerError).toHaveBeenCalledWith({ error: failure })
+})
+
 test('an aborted navigation keeps the current error state', async () => {
   const route = createRoute({ name: 'home', path: '/[id]' })
   route.onBeforeRouteUpdate((_to, { abort }) => abort())
