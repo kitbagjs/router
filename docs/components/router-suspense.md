@@ -30,8 +30,8 @@ server error handler.
 
 ## Recovery
 
-A committed navigation resets the error state. Call `router.refresh()` to restart the current route
-and render the content again, including when the URL has not changed.
+Call `router.refresh()` to restart the current route and render the content again, including when the
+URL has not changed.
 
 ```vue
 <script setup lang="ts">
