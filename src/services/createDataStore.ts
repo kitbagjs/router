@@ -5,13 +5,13 @@ import { ComputationResponse } from '@/types/computationResponse'
 
 export type DataResultAbandoned = { status: 'ABANDONED' }
 
-export type DataResultSettled = ComputationResponse | DataResultAbandoned
-
 export type DataResultPending = { status: 'PENDING' }
 
 export type DataResultRunning = { status: 'RUNNING' }
 
 export type DataResultMissing = { status: 'MISSING' }
+
+export type DataResultSettled = ComputationResponse | DataResultAbandoned
 
 /**
  * A computation response or its current lifecycle state.
