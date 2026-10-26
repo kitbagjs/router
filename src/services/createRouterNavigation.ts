@@ -3,8 +3,8 @@ import { createActivityTracker } from './createActivityTracker'
 import { ResolvedRoute, WithData } from '@/types/resolved'
 import { DEFAULT_VIEW_NAME } from './routeViews'
 import { DEFAULT_LOADER_NAME } from './addLoader'
-import { ContextCallbackError } from '@/errors/contextCallbackError'
-import { unwrapContextError } from '@/utilities/unwrapContextError'
+import { unwrapComputationResponse } from '@/utilities/unwrapComputationResponse'
+import { ComputationResponse } from '@/types/computationResponse'
 import { ContextPushError } from '@/errors/contextPushError'
 import { LoaderDataAccessError } from '@/errors/loaderDataAccessError'
 import { ContextRejectionError } from '@/errors/contextRejectionError'
@@ -46,7 +46,7 @@ type RouterNavigationStoreSlots = {
 }
 
 export type RouterNavigationStore = {
-  data: DataStore,
+  data: DataStore<ComputationResponse>,
   idle: () => Promise<void>,
   /**
    * Disposes of the previously staged navigation and sets this navigation as staged.
@@ -116,39 +116,43 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     const state: RouterNavigationState = {
       abandoned: false,
     }
-    const data = createDataStore({
+    const data = createDataStore<ComputationResponse>({
       signal: controller.signal,
       onSettled: handleSettledValue,
     })
 
-    function handleSettledValue({ result }: DataStoreSettledEvent): void {
-      if (controller.signal.aborted || result.kind !== 'error') {
+    function handleSettledValue({ result }: DataStoreSettledEvent<ComputationResponse>): void {
+      if (controller.signal.aborted || result.kind !== 'value') {
         return
       }
 
-      const { error } = result
+      const outcome = result.value
 
-      if (error instanceof ContextCallbackError) {
-        reportErrorWhenCommitted(error.response)
-
-        return
-      }
-
-      if (error instanceof ContextPushError || error instanceof ContextRejectionError) {
-        response.resolve(error.response)
-        controller.abort(new NavigationAbandonedError())
-
-        return
+      switch (outcome.status) {
+        case 'SUCCESS':
+          return
+        case 'ERROR':
+          reportErrorWhenCommitted(outcome)
+          return
+        case 'PUSH':
+        case 'REJECT':
+          response.resolve(outcome)
+          controller.abort(new NavigationAbandonedError())
+          return
+        default: {
+          const exhaustive: never = outcome
+          throw new Error(`Switch is not exhaustive for computation response: ${JSON.stringify(exhaustive)}`)
+        }
       }
     }
 
-    function reportErrorWhenCommitted(error: CallbackContextError): void {
+    function reportErrorWhenCommitted(response: CallbackContextError): void {
       activity.add(committed.promise.then((context) => {
         if (!context || controller.signal.aborted) {
           return
         }
 
-        onResponse?.({ response: error, ...context })
+        onResponse?.({ response, ...context })
       }))
     }
 
@@ -157,7 +161,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
         return []
       }
 
-      const values = computations.map(({ key }) => data.subscribe(key))
+      const values = computations.map(({ key }) => toDataValue(data.subscribe(key)))
 
       for (const computation of computations) {
         data.set(computation.key, () => run(computation, route))
@@ -168,7 +172,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
       return values
     }
 
-    function run(computation: Computation, route: ResolvedRoute): unknown {
+    function run(computation: Computation, route: ResolvedRoute): MaybePromise<ComputationResponse> {
       try {
         const { push, replace, reject, update } = createRouterCallbackContext({ to: route })
 
@@ -182,20 +186,23 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
         }))
 
         if (isPromise(value)) {
-          return value.catch(handleError)
+          return value.then(
+            (value): ComputationResponse => ({ status: 'SUCCESS', value }),
+            toErrorResponse,
+          )
         }
 
-        return value
+        return { status: 'SUCCESS', value }
       } catch (error) {
-        return handleError(error)
+        return toErrorResponse(error)
       }
 
-      function handleError(error: unknown): never {
-        if (error instanceof ContextPushError || error instanceof ContextRejectionError || error instanceof ContextCallbackError) {
-          throw error
+      function toErrorResponse(error: unknown): ComputationResponse {
+        if (error instanceof ContextPushError || error instanceof ContextRejectionError) {
+          return error.response
         }
 
-        throw new ContextCallbackError(error, computation.kind)
+        return { status: 'ERROR', error, source: computation.kind }
       }
     }
 
@@ -213,7 +220,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
           continue
         }
 
-        data.set(computation.key, () => value)
+        data.set(computation.key, () => ({ status: 'SUCCESS', value }))
       }
     }
 
@@ -307,11 +314,11 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     return getComputations(route).flatMap(({ kind, depth, name, key }) => {
       const result = store.get(key)
 
-      if (result.kind !== 'value') {
+      if (result.kind !== 'value' || result.value.status !== 'SUCCESS') {
         return []
       }
 
-      return [{ kind, depth, name, value: result.value }]
+      return [{ kind, depth, name, value: result.value.value }]
     })
   }
 
@@ -327,10 +334,10 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
       case 'running':
         return toResult(navigations.current.data, key)
 
-      case 'error':
-        return { kind: 'error', error: unwrapContextError(result.error) }
-
       case 'value':
+        return toPropsResult(result.value)
+
+      case 'error':
       case 'abandoned':
         return result
       default:
@@ -338,7 +345,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     }
   }
 
-  function getData(route: ResolvedRoute, store?: DataStore): WithData['data'] {
+  function getData(route: ResolvedRoute, store?: DataStore<ComputationResponse>): WithData['data'] {
     const loaders = getComputations(route).filter(isKind('loader'))
 
     return toValues(loaders, DEFAULT_LOADER_NAME, route, store)
@@ -349,7 +356,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
    * They can read parent data instead. Props callbacks read data from their computation store.
    * The proxy avoids subscribing to route.data until a callback actually reads it.
    */
-  function toCallbackRoute({ kind, name }: Computation, route: ResolvedRoute, store?: DataStore): ResolvedRoute {
+  function toCallbackRoute({ kind, name }: Computation, route: ResolvedRoute, store?: DataStore<ComputationResponse>): ResolvedRoute {
     return new Proxy(route, {
       get(target, property, receiver) {
         if (property !== 'data') {
@@ -371,7 +378,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
    * The parent context for the callback at the given depth. Resolved per depth rather than from the last
    * match: every view in a nested route gets its own parent, not the resolved route's parent.
    */
-  function getParentContext(route: ResolvedRoute, depth: number, store?: DataStore): PropsCallbackParent {
+  function getParentContext(route: ResolvedRoute, depth: number, store?: DataStore<ComputationResponse>): PropsCallbackParent {
     if (depth === 0) {
       return
     }
@@ -394,7 +401,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
    * A set of named values as a callback or component sees them. A lone unnamed value is given directly,
    * matching how it was written, and named values sit behind a proxy so only what is read is waited on.
    */
-  function toValues(locations: ValueLocation[], bareName: string, route: ResolvedRoute, store?: DataStore): WithData['data'] {
+  function toValues(locations: ValueLocation[], bareName: string, route: ResolvedRoute, store?: DataStore<ComputationResponse>): WithData['data'] {
     if (locations.length === 0) {
       return undefined
     }
@@ -441,7 +448,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
    * A value resolves from whichever arrives first, the store the reader belongs to or the navigation, so
    * a reader never has to know which of the two will compute it.
    */
-  function getValue(location: ValueLocation, route: ResolvedRoute, store?: DataStore): Promise<unknown> {
+  function getValue(location: ValueLocation, route: ResolvedRoute, store?: DataStore<ComputationResponse>): Promise<unknown> {
     const key = getDataKey(location.kind, location.id, location.name, route)
     const current = navigations.current.data
 
@@ -456,10 +463,12 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
       warnWaitingOnUncomputedValue(location, route)
     }
 
-    const value = toDataValue(firstToArrive([
-      store.subscribe(key),
-      current.subscribe(key),
-    ]))
+    const value = firstToArrive([
+      toDataValue(store.subscribe(key)),
+      toDataValue(current.subscribe(key)),
+    ])
+
+    value.catch(() => {})
 
     return value
   }
@@ -503,17 +512,13 @@ const NO_PROPS: PropsResult = { kind: 'value', value: undefined }
  * The render layer expects every outcome as a value it can inspect, so a rejection is folded back into a
  * result rather than being handed on as one.
  */
-async function toResult(store: DataStore, key: string): Promise<PropsResult> {
+async function toResult(store: DataStore<ComputationResponse>, key: string): Promise<PropsResult> {
   try {
-    return { kind: 'value', value: await store.subscribe(key) }
+    return toPropsResult(await store.subscribe(key))
   } catch (error) {
     const result = store.get(key)
 
-    if (result.kind === 'error') {
-      return { kind: 'error', error: unwrapContextError(result.error) }
-    }
-
-    if (result.kind === 'abandoned') {
+    if (result.kind === 'error' || result.kind === 'abandoned') {
       return result
     }
 
@@ -532,12 +537,18 @@ function warnWaitingOnUncomputedValue({ kind, name }: ValueLocation, route: Reso
   `)
 }
 
-function toDataValue(value: Promise<unknown>): Promise<unknown> {
-  const unwrapped = value.catch((error: unknown) => {
-    throw unwrapContextError(error)
-  })
+function toDataValue(value: Promise<ComputationResponse>): Promise<unknown> {
+  const unwrapped = value.then(unwrapComputationResponse)
 
   unwrapped.catch(() => {})
 
   return unwrapped
+}
+
+function toPropsResult(response: ComputationResponse): PropsResult {
+  try {
+    return { kind: 'value', value: unwrapComputationResponse(response) }
+  } catch (error) {
+    return { kind: 'error', error }
+  }
 }

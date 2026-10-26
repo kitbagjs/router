@@ -55,6 +55,15 @@ test('loader data rejects with the original callback error', async () => {
 
   await expect(data).rejects.toBe(error)
   await expect(navigation.getData(route)).rejects.toBe(error)
+
+  const [computation] = getComputations(route)
+  const current = navigation.current()
+
+  await expect(current.data.subscribe(computation.key)).resolves.toEqual({
+    status: 'ERROR',
+    error,
+    source: 'loader',
+  })
 })
 
 test('a props getter that throws NavigationAbandonedError reports an error', () => {
