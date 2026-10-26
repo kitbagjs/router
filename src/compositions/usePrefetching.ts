@@ -10,6 +10,7 @@ import { Router } from '@/types/router'
 import { getComputations, getComputationsForStrategy } from '@/services/getComputations'
 import { RouterNavigationStore } from '@/services/createRouterNavigation'
 import { getComputationPrefetchKey } from '@/services/getComputationPrefetchKey'
+import { isSameResolvedRoute } from '@/utilities/isSameResolvedRoute'
 
 type UsePrefetchingConfig = PrefetchConfigs & {
   route: ResolvedRoute | undefined,
@@ -64,15 +65,14 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
         : undefined
 
       return {
-        id: route?.id,
-        href: route?.href,
+        route: route ? { id: route.id, href: route.href } : undefined,
         state,
         ...configs,
       }
     })
 
     watch(watchedConfig, (current, previous) => {
-      const routeChanged = current.id !== previous?.id || current.href !== previous?.href
+      const routeChanged = !isSameResolvedRoute(current.route, previous?.route)
       const hasState = current.state !== undefined || previous?.state !== undefined
 
       if (routeChanged || hasState) {

@@ -1,5 +1,7 @@
 import { ResolvedRoute } from '@/types/resolved'
 
-export function isSameResolvedRoute(route: ResolvedRoute | undefined, other: ResolvedRoute | undefined): boolean {
+type RouteIdentity = Pick<ResolvedRoute, 'id' | 'href'>
+
+export function isSameResolvedRoute(route: RouteIdentity | undefined, other: RouteIdentity | undefined): boolean {
   return route?.id === other?.id && route?.href === other?.href
 }
