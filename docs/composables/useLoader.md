@@ -19,7 +19,11 @@ const { data, loading, error } = useLoader(route.loaders.user)
 
 ## Reusable loaders
 
-Pass a [reusable loader](/core-concepts/loaders#reusable-loaders) directly to `useLoader`:
+Pass a [reusable loader](/core-concepts/loaders#reusable-loaders) directly to `useLoader`. It looks for
+that definition on the current route, including parent routes, and uses the matching attachment.
+
+If the definition is missing or attached more than once, `useLoader` warns and runs it separately.
+Pass `route.loaders[name]` to select a specific attachment.
 
 ```ts
 import { useLoader } from '@kitbag/router'
@@ -37,7 +41,5 @@ const { data: user, loading, error } = await useLoader(userLoader)
 ```
 
 ## Loader attachments
-
-If a reusable loader is missing from the current route or has multiple attachments, `useLoader` warns and runs it separately. Pass `route.loaders[name]` to select a specific attachment.
 
 Attach reusable loaders with `addLoader` to enable prefetching and SSR hydration.
