@@ -1,6 +1,6 @@
 import { ContextPushError } from '@/errors/contextPushError'
 import { ContextRejectionError } from '@/errors/contextRejectionError'
-import { ComputationResponse } from '@/types/computationResponse'
+import { ComputationResponse } from '@/types/callbackContext'
 
 export function unwrapComputationResponse(response: ComputationResponse): unknown {
   switch (response.status) {

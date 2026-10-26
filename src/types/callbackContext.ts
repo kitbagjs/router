@@ -30,3 +30,5 @@ export type CallbackContextError = {
   error: unknown,
   source: DataKind,
 }
+
+export type ComputationResponse = CallbackContextSuccess | CallbackContextPush | CallbackContextReject | CallbackContextError

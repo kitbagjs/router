@@ -3,7 +3,7 @@ import { effect } from 'vue'
 import { flushPromises } from '@vue/test-utils'
 import { createDataStore } from './createDataStore'
 import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
-import { ComputationResponse } from '@/types/computationResponse'
+import { ComputationResponse } from '@/types/callbackContext'
 
 const computedResponse: ComputationResponse = {
   status: 'SUCCESS',

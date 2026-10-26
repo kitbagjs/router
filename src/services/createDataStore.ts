@@ -1,7 +1,7 @@
 import { markRaw, reactive, shallowRef, ShallowRef } from 'vue'
 import { isPromise } from '@/utilities/promises'
 import { MaybePromise } from '@/types/utilities'
-import { ComputationResponse } from '@/types/computationResponse'
+import { ComputationResponse } from '@/types/callbackContext'
 
 export type DataResultAbandoned = { status: 'ABANDONED' }
 
