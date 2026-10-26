@@ -16,8 +16,7 @@ type UsePrefetchingConfig = PrefetchConfigs & {
   route: ResolvedRoute | undefined,
 }
 
-type PrefetchDestination = {
-  route: Pick<ResolvedRoute, 'id' | 'href'> | undefined,
+type PrefetchDestination = Pick<ResolvedRoute, 'id' | 'href'> & {
   state: unknown[],
 }
 
@@ -62,23 +61,16 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
 
     onScopeDispose(() => prefetch.dispose())
 
-    const destination = computed<PrefetchDestination>((previous) => {
+    const destination = computed<PrefetchDestination | undefined>((previous) => {
       const { route } = toValue(config)
-      const stateNames = route?.matches.flatMap((match) => Object.keys(match.state ?? {})) ?? []
-      const state = stateNames.map((name) => route?.state[name])
 
-      // Configuration changes can resolve the same destination again without changing its state.
-      if (previous
-        && isSameResolvedRoute(route, previous.route)
-        && state.length === previous.state.length
-        && state.every((value, index) => Object.is(value, previous.state[index]))) {
-        return previous
+      if (!route) {
+        return
       }
 
-      return {
-        route: route ? { id: route.id, href: route.href } : undefined,
-        state,
-      }
+      const current = getPrefetchDestination(route)
+
+      return isSamePrefetchDestination(current, previous) ? previous : current
     })
 
     watch(destination, () => {
@@ -147,6 +139,25 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
       take,
     }
   }
+}
+
+function getPrefetchDestination(route: ResolvedRoute): PrefetchDestination {
+  const stateNames = route.matches.flatMap((match) => Object.keys(match.state ?? {}))
+
+  return {
+    id: route.id,
+    href: route.href,
+    state: stateNames.map((name) => route.state[name]),
+  }
+}
+
+function isSamePrefetchDestination(current: PrefetchDestination, previous: PrefetchDestination | undefined): boolean {
+  if (!previous || !isSameResolvedRoute(current, previous)) {
+    return false
+  }
+
+  return current.state.length === previous.state.length
+    && current.state.every((value, index) => Object.is(value, previous.state[index]))
 }
 
 function prefetchComponentsForRoute(strategy: PrefetchStrategy, route: ResolvedRoute, configs: PrefetchConfigs): void {
