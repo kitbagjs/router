@@ -4,7 +4,12 @@ import { expect, test, vi } from 'vitest'
 import { defineComponent, h, onErrorCaptured, Suspense } from 'vue'
 import { createLoader, createRoute, createRouter, RouterSuspense, UseLoader, UseLoaderResolved, useLoader } from '@/main'
 
-test.each([true, false])('awaited loader data stays defined through replacement loading with attached=%s', async (attached) => {
+const loaderAttachments = [
+  { attachment: 'attached', attached: true },
+  { attachment: 'fallback', attached: false },
+]
+
+test.each(loaderAttachments)('retains data while the next load is pending ($attachment loader)', async ({ attached }) => {
   const first = Promise.withResolvers<string>()
   const second = Promise.withResolvers<string>()
   const loader = createLoader({
@@ -50,7 +55,7 @@ test.each([true, false])('awaited loader data stays defined through replacement 
   expect(loaded?.loading.value).toBe(false)
 })
 
-test.each(['throw', 'reject'] as const)('a failed await propagates the original %s error', async (action) => {
+test.each(['throw', 'reject'] as const)('rejects with the original loader error (%s)', async (action) => {
   const failure = new Error('failed')
   const loader = createLoader({
     load: () => {
@@ -75,7 +80,7 @@ test.each(['throw', 'reject'] as const)('a failed await propagates the original 
   await expect(state).rejects.toBe(failure)
 })
 
-test.each([true, false])('initial loader failure reaches the RouterSuspense error slot with attached=%s', async (attached) => {
+test.each(loaderAttachments)('shows the error slot when the initial load fails ($attachment loader)', async ({ attached }) => {
   const pending = Promise.withResolvers<string>()
   const loader = createLoader({ load: () => pending.promise })
   const home = createRoute({ name: 'home', path: '/' })
@@ -103,7 +108,7 @@ test.each([true, false])('initial loader failure reaches the RouterSuspense erro
   expect(appError).not.toHaveBeenCalled()
 })
 
-test.each([true, false])('later failures reach the boundary even without reading data with attached=%s', async (attached) => {
+test.each(loaderAttachments)('reports later errors even when data is not read ($attachment loader)', async ({ attached }) => {
   const pending = Promise.withResolvers<string>()
   const loader = createLoader({
     load: (route) => {
@@ -138,7 +143,7 @@ test.each([true, false])('later failures reach the boundary even without reading
   expect(appError).not.toHaveBeenCalled()
 })
 
-test('a synchronous replacement failure is not cleared by the navigation reset', async () => {
+test('shows synchronous load errors after navigation', async () => {
   const failure = new Error('later failure')
   const loader = createLoader({
     load: (route) => {
@@ -171,7 +176,7 @@ test('a synchronous replacement failure is not cleared by the navigation reset',
   expect(errorSlot).toHaveBeenCalledWith({ error: failure })
 })
 
-test.each([true, false])('router.refresh restarts a failed load and recovers the boundary with attached=%s', async (attached) => {
+test.each(loaderAttachments)('reloads failed data and clears the error on refresh ($attachment loader)', async ({ attached }) => {
   const failure = new Error('failed')
   const load = vi.fn<() => Promise<string>>()
     .mockRejectedValueOnce(failure)
@@ -203,7 +208,7 @@ test.each([true, false])('router.refresh restarts a failed load and recovers the
   expect(load).toHaveBeenCalledTimes(2)
 })
 
-test('non-awaited failures inside RouterSuspense remain reactive error state', async () => {
+test('uses the error ref when the result is not awaited', async () => {
   const pending = Promise.withResolvers<string>()
   const loader = createLoader({ load: () => pending.promise })
   const route = createRoute({ name: 'home', path: '/' }).addLoader(loader)
@@ -227,7 +232,7 @@ test('non-awaited failures inside RouterSuspense remain reactive error state', a
   expect(errorSlot).not.toHaveBeenCalled()
 })
 
-test('ordinary Vue error capture also receives later awaited loader errors', async () => {
+test('reports later errors to Vue error handlers', async () => {
   const pending = Promise.withResolvers<string>()
   const loader = createLoader({
     load: (route) => {
@@ -262,7 +267,7 @@ test('ordinary Vue error capture also receives later awaited loader errors', asy
   expect(captured).toHaveBeenCalledExactlyOnceWith(failure)
 })
 
-test('unmounting stops later awaited loader error reporting', async () => {
+test('stops reporting errors when the component unmounts', async () => {
   const pending = Promise.withResolvers<string>()
   const loader = createLoader({
     load: (route) => {

@@ -4,7 +4,7 @@ import { expect, test, vi } from 'vitest'
 import { Component, defineComponent, h, Suspense } from 'vue'
 import { createLoader, createRejection, createRoute, createRouter, RouterView, useLoader } from '@/main'
 
-test('a suspended consumer follows a replacement load without publishing cancellation', async () => {
+test('waits for replacement data after a loader redirects', async () => {
   const redirect = Promise.withResolvers<void>()
   const loaded = Promise.withResolvers<string>()
   const setup = vi.fn()
@@ -60,7 +60,7 @@ test('a suspended consumer follows a replacement load without publishing cancell
   wrapper.unmount()
 })
 
-test('a rejection replaces a suspended view without resolving or rejecting its setup', async () => {
+test('shows the rejection view without resuming setup', async () => {
   const rejected = Promise.withResolvers<void>()
   const continued = vi.fn()
   const error = vi.fn()
@@ -105,7 +105,7 @@ test('a rejection replaces a suspended view without resolving or rejecting its s
   wrapper.unmount()
 })
 
-test('an aborted replacement leaves a consumer pending until a later successful navigation', async () => {
+test('keeps waiting when replacement navigation is aborted', async () => {
   const redirect = Promise.withResolvers<void>()
   const loader = createLoader({
     load: async (route, { push }) => {
@@ -151,7 +151,7 @@ test('an aborted replacement leaves a consumer pending until a later successful 
   wrapper.unmount()
 })
 
-test('unmounting a consumer releases its wait without continuing user setup', async () => {
+test('does not resume setup after the component unmounts', async () => {
   const loaded = Promise.withResolvers<string>()
   const continued = vi.fn()
   const loader = createLoader({ load: () => loaded.promise })
