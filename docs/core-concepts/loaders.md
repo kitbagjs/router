@@ -48,7 +48,7 @@ const settings = createRoute({...})
 
 ## Reading data in a component
 
-Pass a definition from `route.loaders` to [`useLoader`](/composables/useLoader). Await it at the top level of `<script setup>` to use Vue’s Suspense while keeping the returned refs reactive.
+Pass a definition from `route.loaders` to [`useLoader`](/composables/useLoader). Await it at the top level of `<script setup>` to use Vue’s Suspense.
 
 ```vue
 <!-- UserPage.vue -->
