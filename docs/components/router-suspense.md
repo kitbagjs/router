@@ -29,11 +29,6 @@ Without an error slot, the component displays a generic error message.
 | --- | --- | --- | --- | --- |
 | catch | false | `boolean` or `(error: unknown) => boolean` | `false` | Includes all component errors when true, or only errors matching the predicate |
 
-### The `catch` prop
-
-By default, `RouterSuspense` does not catch errors. Set `catch` to catch all component errors,
-or pass a predicate to catch only matching errors.
-
 ```vue
 <RouterSuspense catch>
   <AsyncPage />
