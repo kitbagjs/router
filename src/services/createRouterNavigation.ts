@@ -46,7 +46,7 @@ type RouterNavigationStoreSlots = {
 }
 
 export type RouterNavigationStore = {
-  data: DataStore<ComputationResponse>,
+  data: DataStore,
   idle: () => Promise<void>,
   /**
    * Disposes of the previously staged navigation and sets this navigation as staged.
@@ -116,12 +116,12 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     const state: RouterNavigationState = {
       abandoned: false,
     }
-    const data = createDataStore<ComputationResponse>({
+    const data = createDataStore({
       signal: controller.signal,
       onSettled: handleSettledValue,
     })
 
-    function handleSettledValue({ result }: DataStoreSettledEvent<ComputationResponse>): void {
+    function handleSettledValue({ result }: DataStoreSettledEvent): void {
       if (controller.signal.aborted || result.kind !== 'value') {
         return
       }
@@ -345,7 +345,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     }
   }
 
-  function getData(route: ResolvedRoute, store?: DataStore<ComputationResponse>): WithData['data'] {
+  function getData(route: ResolvedRoute, store?: DataStore): WithData['data'] {
     const loaders = getComputations(route).filter(isKind('loader'))
 
     return toValues(loaders, DEFAULT_LOADER_NAME, route, store)
@@ -356,7 +356,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
    * They can read parent data instead. Props callbacks read data from their computation store.
    * The proxy avoids subscribing to route.data until a callback actually reads it.
    */
-  function toCallbackRoute({ kind, name }: Computation, route: ResolvedRoute, store?: DataStore<ComputationResponse>): ResolvedRoute {
+  function toCallbackRoute({ kind, name }: Computation, route: ResolvedRoute, store?: DataStore): ResolvedRoute {
     return new Proxy(route, {
       get(target, property, receiver) {
         if (property !== 'data') {
@@ -378,7 +378,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
    * The parent context for the callback at the given depth. Resolved per depth rather than from the last
    * match: every view in a nested route gets its own parent, not the resolved route's parent.
    */
-  function getParentContext(route: ResolvedRoute, depth: number, store?: DataStore<ComputationResponse>): PropsCallbackParent {
+  function getParentContext(route: ResolvedRoute, depth: number, store?: DataStore): PropsCallbackParent {
     if (depth === 0) {
       return
     }
@@ -401,7 +401,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
    * A set of named values as a callback or component sees them. A lone unnamed value is given directly,
    * matching how it was written, and named values sit behind a proxy so only what is read is waited on.
    */
-  function toValues(locations: ValueLocation[], bareName: string, route: ResolvedRoute, store?: DataStore<ComputationResponse>): WithData['data'] {
+  function toValues(locations: ValueLocation[], bareName: string, route: ResolvedRoute, store?: DataStore): WithData['data'] {
     if (locations.length === 0) {
       return undefined
     }
@@ -448,7 +448,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
    * A value resolves from whichever arrives first, the store the reader belongs to or the navigation, so
    * a reader never has to know which of the two will compute it.
    */
-  function getValue(location: ValueLocation, route: ResolvedRoute, store?: DataStore<ComputationResponse>): Promise<unknown> {
+  function getValue(location: ValueLocation, route: ResolvedRoute, store?: DataStore): Promise<unknown> {
     const key = getDataKey(location.kind, location.id, location.name, route)
     const current = navigations.current.data
 
@@ -512,7 +512,7 @@ const NO_PROPS: PropsResult = { kind: 'value', value: undefined }
  * The render layer expects every outcome as a value it can inspect, so a rejection is folded back into a
  * result rather than being handed on as one.
  */
-async function toResult(store: DataStore<ComputationResponse>, key: string): Promise<PropsResult> {
+async function toResult(store: DataStore, key: string): Promise<PropsResult> {
   try {
     return toPropsResult(await store.subscribe(key))
   } catch (error) {

@@ -2,6 +2,12 @@ import { describe, expect, test, vi } from 'vitest'
 import { effect } from 'vue'
 import { createDataStore } from './createDataStore'
 import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
+import { ComputationResponse } from '@/types/computationResponse'
+
+const computedResponse: ComputationResponse = {
+  status: 'SUCCESS',
+  value: 'computed',
+}
 
 describe('set and subscribe', () => {
   test('a value subscribed to before anything computes it resolves when it is computed', async () => {
@@ -13,45 +19,53 @@ describe('set and subscribe', () => {
 
     expect(settled).toStrictEqual([])
 
-    store.set('key', () => 'computed')
+    store.set('key', () => computedResponse)
 
     await Promise.resolve()
 
-    expect(settled).toStrictEqual(['computed'])
+    expect(settled).toStrictEqual([computedResponse])
   })
 
   test('a value subscribed to after it is computed resolves immediately', async () => {
     const controller = new AbortController()
     const store = createDataStore({ signal: controller.signal })
 
-    store.set('key', () => 'computed')
+    store.set('key', () => computedResponse)
 
-    await expect(store.subscribe('key')).resolves.toBe('computed')
+    await expect(store.subscribe('key')).resolves.toBe(computedResponse)
   })
 
   test('an async getter resolves the value when it settles', async () => {
     const controller = new AbortController()
     const store = createDataStore({ signal: controller.signal })
 
-    store.set('key', async () => 'computed')
+    store.set('key', async () => computedResponse)
 
-    await expect(store.subscribe('key')).resolves.toBe('computed')
+    await expect(store.subscribe('key')).resolves.toBe(computedResponse)
   })
 
-  test('a getter that returns undefined resolves with undefined', async () => {
+  test('a successful response preserves undefined data', async () => {
     const controller = new AbortController()
     const store = createDataStore({ signal: controller.signal })
 
-    store.set('key', () => undefined)
+    const response: ComputationResponse = {
+      status: 'SUCCESS',
+      value: undefined,
+    }
 
-    await expect(store.subscribe('key')).resolves.toBeUndefined()
-    expect(store.get('key')).toStrictEqual({ kind: 'value', value: undefined })
+    store.set('key', () => response)
+
+    await expect(store.subscribe('key')).resolves.toBe(response)
+    expect(store.get('key')).toStrictEqual({ kind: 'value', value: response })
   })
 
-  test('a getter that returns an Error resolves with it as a value', async () => {
+  test('a successful response preserves an Error as data', async () => {
     const controller = new AbortController()
     const store = createDataStore({ signal: controller.signal })
-    const value = new Error('a real value')
+    const value: ComputationResponse = {
+      status: 'SUCCESS',
+      value: new Error('a real value'),
+    }
 
     store.set('key', () => value)
 
@@ -106,17 +120,17 @@ describe('set and subscribe', () => {
     const store = createDataStore({ signal: controller.signal })
     const second = vi.fn()
 
-    store.set('key', () => 'first')
+    store.set('key', () => computedResponse)
     store.set('key', second)
 
     expect(second).not.toHaveBeenCalled()
-    expect(store.get('key')).toStrictEqual({ kind: 'value', value: 'first' })
+    expect(store.get('key')).toStrictEqual({ kind: 'value', value: computedResponse })
   })
 
   test('subscribing to a key does not count as setting it', () => {
     const controller = new AbortController()
     const store = createDataStore({ signal: controller.signal })
-    const getter = vi.fn(() => 'computed')
+    const getter = vi.fn(() => computedResponse)
 
     store.subscribe('key')
     store.set('key', getter)
@@ -130,13 +144,13 @@ describe('get', () => {
     const controller = new AbortController()
     const store = createDataStore({ signal: controller.signal })
 
-    store.set('key', async () => 'computed')
+    store.set('key', async () => computedResponse)
 
     expect(store.get('key')).toStrictEqual({ kind: 'running' })
 
     await store.subscribe('key')
 
-    expect(store.get('key')).toStrictEqual({ kind: 'value', value: 'computed' })
+    expect(store.get('key')).toStrictEqual({ kind: 'value', value: computedResponse })
   })
 
   test('tells apart nothing asked for it, something waiting on it, and its getter in flight', () => {
@@ -144,7 +158,7 @@ describe('get', () => {
     const store = createDataStore({ signal: controller.signal })
 
     store.subscribe('waited')
-    store.set('running', async () => 'computed')
+    store.set('running', async () => computedResponse)
 
     expect(store.get('never')).toStrictEqual({ kind: 'missing' })
     expect(store.get('waited')).toStrictEqual({ kind: 'pending' })
@@ -155,28 +169,28 @@ describe('get', () => {
     const controller = new AbortController()
     const store = createDataStore({ signal: controller.signal })
 
-    store.set('key', () => 'computed')
+    store.set('key', () => computedResponse)
 
-    expect(store.get('key')).toStrictEqual({ kind: 'value', value: 'computed' })
+    expect(store.get('key')).toStrictEqual({ kind: 'value', value: computedResponse })
   })
 
   test('tracks reactively, so a render reading it updates when the value settles', async () => {
     const controller = new AbortController()
     const store = createDataStore({ signal: controller.signal })
-    const seen: (string | undefined)[] = []
+    const seen: (ComputationResponse | undefined)[] = []
 
     effect(() => {
       const result = store.get('key')
 
-      seen.push(result.kind === 'value' ? String(result.value) : undefined)
+      seen.push(result.kind === 'value' ? result.value : undefined)
     })
 
     expect(seen).toStrictEqual([undefined])
 
-    store.set('key', async () => 'computed')
+    store.set('key', async () => computedResponse)
     await store.subscribe('key')
 
-    expect(seen.at(-1)).toBe('computed')
+    expect(seen.at(-1)).toBe(computedResponse)
   })
 
   test('is missing for a key nothing has touched', () => {
@@ -204,7 +218,7 @@ describe('dispose', () => {
     const controller = new AbortController()
     const store = createDataStore({ signal: controller.signal })
 
-    store.set('key', () => 'computed')
+    store.set('key', () => computedResponse)
     controller.abort(new Error('abandoned'))
     store.dispose()
 
@@ -217,7 +231,7 @@ describe('dispose', () => {
     const seen: string[] = []
     const runner = effect(() => seen.push(store.get('key').kind))
 
-    store.set('key', () => 'computed')
+    store.set('key', () => computedResponse)
     controller.abort(new NavigationAbandonedError())
     store.dispose()
 
@@ -226,7 +240,7 @@ describe('dispose', () => {
   })
 
   test('a late getter result cannot replace abandonment', async () => {
-    const pending = Promise.withResolvers<string>()
+    const pending = Promise.withResolvers<ComputationResponse>()
     const controller = new AbortController()
     const store = createDataStore({ signal: controller.signal })
 
@@ -238,7 +252,7 @@ describe('dispose', () => {
     store.dispose()
     await expect(waiting).rejects.toBe(reason)
 
-    pending.resolve('late')
+    pending.resolve({ status: 'SUCCESS', value: 'late' })
     await pending.promise
 
     expect(store.get('key')).toStrictEqual({ kind: 'abandoned' })
@@ -248,7 +262,7 @@ describe('dispose', () => {
     const controller = new AbortController()
     const store = createDataStore({ signal: controller.signal })
     const reason = new Error('abandoned')
-    const getter = vi.fn(() => 'unused')
+    const getter = vi.fn(() => computedResponse)
 
     controller.abort(reason)
     store.dispose()
@@ -263,14 +277,14 @@ describe('dispose', () => {
     const controller = new AbortController()
     const store = createDataStore({ signal: controller.signal })
 
-    store.set('key', () => 'computed')
+    store.set('key', () => computedResponse)
 
     const held = store.subscribe('key')
 
     controller.abort(new Error('abandoned'))
     store.dispose()
 
-    await expect(held).resolves.toBe('computed')
+    await expect(held).resolves.toBe(computedResponse)
   })
 
   test('a value nobody is waiting on does not leak an unhandled rejection', async () => {
@@ -302,19 +316,19 @@ test('an already aborted signal rejects subscribers and skips getters', async ()
 test('aborting rejects unfinished work while retaining settled values', async () => {
   const controller = new AbortController()
   const store = createDataStore({ signal: controller.signal })
-  const pending = Promise.withResolvers<string>()
+  const pending = Promise.withResolvers<ComputationResponse>()
   const reason = new NavigationAbandonedError()
-  store.set('settled', () => 'kept')
+  store.set('settled', () => computedResponse)
   store.set('pending', () => pending.promise)
   const unfinished = store.subscribe('pending')
 
   controller.abort(reason)
 
   await expect(unfinished).rejects.toBe(reason)
-  await expect(store.subscribe('settled')).resolves.toBe('kept')
-  expect(store.get('settled')).toEqual({ kind: 'value', value: 'kept' })
+  await expect(store.subscribe('settled')).resolves.toBe(computedResponse)
+  expect(store.get('settled')).toEqual({ kind: 'value', value: computedResponse })
 
-  pending.resolve('late')
+  pending.resolve({ status: 'SUCCESS', value: 'late' })
   await expect(store.subscribe('pending')).rejects.toBe(reason)
 })
 
@@ -322,17 +336,17 @@ test('onSettled reports a value once when its work finishes', async () => {
   const controller = new AbortController()
   const onSettled = vi.fn()
   const store = createDataStore({ signal: controller.signal, onSettled })
-  const pending = Promise.withResolvers<string>()
+  const pending = Promise.withResolvers<ComputationResponse>()
 
   store.set('key', () => pending.promise)
-  store.set('key', () => 'duplicate')
+  store.set('key', () => computedResponse)
   expect(onSettled).not.toHaveBeenCalled()
 
-  pending.resolve('loaded')
+  pending.resolve(computedResponse)
   await store.subscribe('key')
   controller.abort(new NavigationAbandonedError())
 
   expect(onSettled).toHaveBeenCalledExactlyOnceWith({
-    result: { kind: 'value', value: 'loaded' },
+    result: { kind: 'value', value: computedResponse },
   })
 })

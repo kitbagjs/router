@@ -1,14 +1,15 @@
 import { markRaw, reactive, shallowRef, ShallowRef } from 'vue'
 import { isPromise } from '@/utilities/promises'
 import { MaybePromise } from '@/types/utilities'
+import { ComputationResponse } from '@/types/computationResponse'
 
-export type DataResultValue<T = unknown> = { kind: 'value', value: T }
+export type DataResultValue = { kind: 'value', value: ComputationResponse }
 
 export type DataResultError = { kind: 'error', error: unknown }
 
 export type DataResultAbandoned = { kind: 'abandoned' }
 
-export type DataResultSettled<T = unknown> = DataResultValue<T> | DataResultError | DataResultAbandoned
+export type DataResultSettled = DataResultValue | DataResultError | DataResultAbandoned
 
 export type DataResultPending = { kind: 'pending' }
 
@@ -20,7 +21,7 @@ export type DataResultMissing = { kind: 'missing' }
  * Where a key has got to: nothing has asked for it, something is waiting on it, its getter is in flight,
  * or how that getter settled. Tagged so that a getter returning `undefined` or an `Error` stays a value.
  */
-export type DataResult<T = unknown> = DataResultValue<T> | DataResultError | DataResultAbandoned | DataResultPending | DataResultRunning | DataResultMissing
+export type DataResult = DataResultValue | DataResultError | DataResultAbandoned | DataResultPending | DataResultRunning | DataResultMissing
 
 const ABANDONED: DataResultAbandoned = { kind: 'abandoned' }
 
@@ -30,60 +31,60 @@ const RUNNING: DataResultRunning = { kind: 'running' }
 
 const MISSING: DataResultMissing = { kind: 'missing' }
 
-export type DataStoreSettledEvent<T = unknown> = {
-  result: DataResultSettled<T>,
+export type DataStoreSettledEvent = {
+  result: DataResultSettled,
 }
 
-type Entry<T> = {
-  promise: Promise<T>,
-  resolve: (value: T | PromiseLike<T>) => void,
+type Entry = {
+  promise: Promise<ComputationResponse>,
+  resolve: (value: ComputationResponse | PromiseLike<ComputationResponse>) => void,
   reject: (reason: unknown) => void,
-  state: ShallowRef<DataResult<T>>,
+  state: ShallowRef<DataResult>,
 }
 
 /**
  * A set of values that live and die together. A link owns one for whatever it points at, and the current
  * navigation owns one.
  */
-export type DataStore<T = unknown> = {
+export type DataStore = {
   /**
    * The value for a key, whether or not anything has computed it yet. Subscribing to a key nobody has set
    * leaves a promise waiting for whoever does.
    */
-  subscribe: (key: string) => Promise<T>,
+  subscribe: (key: string) => Promise<ComputationResponse>,
   /**
    * Computes a key, unless something already has. A key promoted from another store while its getter is
    * still running is left alone, so navigation adopts it rather than computing it a second time.
    */
-  set: (key: string, getter: () => MaybePromise<T>) => void,
+  set: (key: string, getter: () => MaybePromise<ComputationResponse>) => void,
   /**
    * What is known about a key, without waiting for it. Reactive, and readable during render.
    */
-  get: (key: string) => DataResult<T>,
+  get: (key: string) => DataResult,
   /**
    * Discards stored values after their signal has been aborted.
    */
   dispose: () => void,
 }
 
-type CreateDataStoreOptions<T> = {
+type CreateDataStoreOptions = {
   signal: AbortSignal,
-  onSettled?: (event: DataStoreSettledEvent<T>) => void,
+  onSettled?: (event: DataStoreSettledEvent) => void,
 }
 
-export function createDataStore<T = unknown>({ signal, onSettled }: CreateDataStoreOptions<T>): DataStore<T> {
-  const entries: Map<string, Entry<T>> = reactive(new Map())
+export function createDataStore({ signal, onSettled }: CreateDataStoreOptions): DataStore {
+  const entries: Map<string, Entry> = reactive(new Map())
 
-  function create(): Entry<T> {
-    const { promise, resolve, reject } = Promise.withResolvers<T>()
+  function create(): Entry {
+    const { promise, resolve, reject } = Promise.withResolvers<ComputationResponse>()
 
     // a value nobody happens to await must not surface as an unhandled rejection
     promise.catch(() => {})
 
-    return markRaw({ promise, resolve, reject, state: shallowRef<DataResult<T>>(PENDING) })
+    return markRaw({ promise, resolve, reject, state: shallowRef<DataResult>(PENDING) })
   }
 
-  function entry(key: string): Entry<T> {
+  function entry(key: string): Entry {
     const existing = entries.get(key)
 
     if (existing) {
@@ -103,7 +104,7 @@ export function createDataStore<T = unknown>({ signal, onSettled }: CreateDataSt
     return created
   }
 
-  function settle(target: Entry<T>, result: DataResultSettled<T>): void {
+  function settle(target: Entry, result: DataResultSettled): void {
     const current = target.state.value
 
     if (current.kind === 'value' || current.kind === 'error' || current.kind === 'abandoned') {
@@ -131,9 +132,9 @@ export function createDataStore<T = unknown>({ signal, onSettled }: CreateDataSt
     onSettled?.({ result: target.state.value })
   }
 
-  const subscribe: DataStore<T>['subscribe'] = (key) => entry(key).promise
+  const subscribe: DataStore['subscribe'] = (key) => entry(key).promise
 
-  const set: DataStore<T>['set'] = (key, getter) => {
+  const set: DataStore['set'] = (key, getter) => {
     if (signal.aborted) {
       return
     }
@@ -164,7 +165,7 @@ export function createDataStore<T = unknown>({ signal, onSettled }: CreateDataSt
     }
   }
 
-  const get: DataStore<T>['get'] = (key) => {
+  const get: DataStore['get'] = (key) => {
     const result = entries.get(key)?.state.value
 
     if (!result && signal.aborted) {
@@ -180,7 +181,7 @@ export function createDataStore<T = unknown>({ signal, onSettled }: CreateDataSt
     }
   }, { once: true })
 
-  const dispose: DataStore<T>['dispose'] = () => {
+  const dispose: DataStore['dispose'] = () => {
     entries.clear()
   }
 
