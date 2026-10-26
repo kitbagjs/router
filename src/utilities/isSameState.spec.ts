@@ -17,6 +17,7 @@ test('given an additional key, returns false', () => {
   expect(isSameState({ page: '1' }, { page: '1', filter: 'active' })).toBe(false)
 })
 
-test('given different keys with undefined values, returns false', () => {
-  expect(isSameState({ page: undefined }, { filter: undefined })).toBe(false)
+test('given missing and undefined values, returns true', () => {
+  expect(isSameState({}, { page: undefined })).toBe(true)
+  expect(isSameState({ page: undefined }, {})).toBe(true)
 })
