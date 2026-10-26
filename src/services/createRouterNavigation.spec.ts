@@ -4,7 +4,7 @@ import { createRouterNavigation } from '@/services/createRouterNavigation'
 import { createResolvedRoute } from '@/services/createResolvedRoute'
 import { createRoute } from '@/services/createRoute'
 import { component } from '@/utilities/testHelpers'
-import { getComputations } from '@/services/getComputations'
+import { getComputations, loaderLocations } from '@/services/getComputations'
 import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
 
 afterEach(() => {
@@ -49,11 +49,11 @@ test('loader data rejects with the original callback error', async () => {
   const navigation = createRouterNavigation()
 
   navigation.commit({ to: route, from: null })
-  const data = navigation.getData(route)
+  const data = navigation.getRouteData(route)
   pending.reject(error)
 
   await expect(data).rejects.toBe(error)
-  await expect(navigation.getData(route)).rejects.toBe(error)
+  await expect(navigation.getRouteData(route)).rejects.toBe(error)
 })
 
 test('a view without a props getter reports no props before and after stop', () => {
@@ -83,7 +83,7 @@ test('a staged value is adopted in place of running its getter', async () => {
   detached.stage()
   navigation.commit({ to: resolved, from: null })
 
-  await expect(navigation.getData(resolved)).resolves.toBe('staged')
+  await expect(navigation.getRouteData(resolved)).resolves.toBe('staged')
   expect(loader).not.toHaveBeenCalled()
 })
 
@@ -109,7 +109,7 @@ test('staged values are adopted by the next navigation without running their get
   await Promise.all(navigation.staged().compute(resolved, getComputations(resolved)))
   navigation.commit({ to: resolved, from: null })
 
-  await expect(navigation.getData(resolved)).resolves.toBe('value')
+  await expect(navigation.getRouteData(resolved)).resolves.toBe('value')
   expect(loader).toHaveBeenCalledTimes(1)
 })
 
@@ -229,7 +229,7 @@ test('staging and committing the same instance preserves its computations', asyn
 
   expect(signal.aborted).toBe(false)
   expect(load).toHaveBeenCalledOnce()
-  await expect(navigation.getData(route)).resolves.toBe(signal)
+  await expect(navigation.getRouteData(route)).resolves.toBe(signal)
 })
 
 test('staging another instance keeps the current navigation active', async () => {
@@ -324,7 +324,7 @@ test('discarded prefetch redirects do not affect the next navigation', async () 
   await flushPromises()
 
   expect(onResponse).not.toHaveBeenCalled()
-  await expect(navigation.getData(target)).resolves.toBe('value')
+  await expect(navigation.getRouteData(target)).resolves.toBe('value')
 })
 
 test('a loader started after commit reports its redirect', async () => {
@@ -439,4 +439,29 @@ test('a redirect abandons running loaders without a response handler', async () 
   await expect(redirect).resolves.toEqual({ status: 'PUSH', to: ['/next'] })
   await expect(value).rejects.toBeInstanceOf(NavigationAbandonedError)
   expect(signal.aborted).toBe(true)
+})
+
+
+test.each(['getLoaderState', 'getLoaderValue'] as const)('%s rejects props locations at runtime', (method) => {
+  const onResponse = vi.fn()
+  const navigation = createRouterNavigation({ onResponse })
+  const route = createResolvedRoute(createRoute({ path: '/' }))
+
+  expect(() => {
+    // @ts-expect-error props locations are also rejected when bypassing the type check
+    navigation[method]({ kind: 'props', id: route.id, name: 'default' }, route)
+  }).toThrow(new TypeError('Expected a loader location'))
+})
+
+
+test('settled loader values remain readable after abandonment', async () => {
+  const route = createResolvedRoute(createRoute({ path: '/' }).addLoader(() => 'kept'))
+  const navigation = createRouterNavigation()
+  const current = navigation.create()
+  await Promise.all(current.commit({ to: route, from: null }))
+  const [location] = loaderLocations(route.matched)
+  current.abandon()
+
+  expect(navigation.getLoaderState(location, route)).toEqual({ status: 'SUCCESS', value: 'kept' })
+  await expect(navigation.getLoaderValue(location, route)).resolves.toBe('kept')
 })
