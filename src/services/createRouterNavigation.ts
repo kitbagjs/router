@@ -2,68 +2,60 @@ import { markRaw } from 'vue'
 import { ResolvedRoute, WithData } from '@/types/resolved'
 import { DEFAULT_VIEW_NAME } from './routeViews'
 import { DEFAULT_LOADER_NAME } from './addLoader'
+import { unwrapComputationResponse } from '@/utilities/unwrapComputationResponse'
 import { ContextPushError } from '@/errors/contextPushError'
 import { LoaderDataAccessError } from '@/errors/loaderDataAccessError'
 import { ContextRejectionError } from '@/errors/contextRejectionError'
 import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
 import { PropsCallbackParent } from '@/types/props'
 import { createVueAppStore, HasVueAppStore } from './createVueAppStore'
-import { CallbackContextPush, CallbackContextReject, CallbackContextSuccess } from '@/types/callbackContext'
+import { CallbackContextError, CallbackContextPush, CallbackContextReject, CallbackContextResponse } from '@/types/callbackContext'
 import { createRouterCallbackContext } from './createRouterCallbackContext'
-import { createDataStore, DataStore } from './createDataStore'
+import { createDataStore, DataStore, DataStoreSettledEvent } from './createDataStore'
 import { DataKind, getDataKey } from './getDataKey'
 import { PropsResult } from '@/utilities/props'
 import { warn } from '@/utilities/warn'
 import { MaybePromise } from '@/types/utilities'
-import { isSameResolvedRoute } from '@/utilities/isSameResolvedRoute'
+import { isPromise } from '@/utilities/promises'
 import { Computation, getComputations, isKind, loaderLocations, propsLocations, ValueLocation } from './getComputations'
 
-/**
- * Computation stopped because its navigation was abandoned.
- */
-type RouterNavigationAbandoned = {
-  status: 'ABANDONED',
-}
-
-export type RouterNavigationResponse = CallbackContextSuccess | CallbackContextPush | CallbackContextReject | RouterNavigationAbandoned
-
-type RouterNavigationComputationResponse = {
-  response: Promise<RouterNavigationResponse>,
-  source: DataKind,
-}
+export type RouterNavigationResponse = CallbackContextPush | CallbackContextReject | CallbackContextError
 
 type RouterNavigationCommitOptions = {
   to: ResolvedRoute,
-  from?: ResolvedRoute | null,
-}
-
-type RouterNavigationContext = {
-  to: ResolvedRoute,
   from: ResolvedRoute | null,
-  signal: AbortSignal,
 }
 
-export type RouterNavigationResponseEvent = RouterNavigationComputationResponse & RouterNavigationContext
+export type RouterNavigationResponseEvent = RouterNavigationCommitOptions & {
+  response: RouterNavigationResponse,
+}
 
 type CreateRouterNavigationOptions = {
-  onResponse?: (response: RouterNavigationResponseEvent) => void,
+  onResponse?: (response: RouterNavigationResponseEvent) => MaybePromise<void>,
 }
 
 type RouterNavigationState = {
-  route: ResolvedRoute | undefined,
-  responses: Set<RouterNavigationComputationResponse>,
-  context: RouterNavigationContext | undefined,
+  abandoned: boolean,
+}
+
+type RouterNavigationStoreSlots = {
+  current: RouterNavigationStore,
+  staged: RouterNavigationStore,
 }
 
 export type RouterNavigationStore = {
   data: DataStore,
-  commit: (options: RouterNavigationCommitOptions) => Promise<unknown>[],
+  /**
+   * Disposes of the previously staged navigation and sets this navigation as staged.
+   */
+  stage: () => void,
+  commit: (options: RouterNavigationCommitOptions) => Promise<CallbackContextResponse>[],
   abandon: () => void,
   dispose: () => void,
   /**
-   * Computes the supplied values and reports how they settle.
+   * Computes the supplied values.
    */
-  compute: (route: ResolvedRoute, computations: Computation[]) => Promise<unknown>[],
+  compute: (route: ResolvedRoute, computations: Computation[]) => Promise<CallbackContextResponse>[],
   /**
    * Adopts values that already settled, in place of running their getters.
    */
@@ -82,7 +74,17 @@ export type RouteValue = {
 
 export type RouterNavigationStores = HasVueAppStore & {
   current: () => RouterNavigationStore,
+  stop: () => void,
   create: () => RouterNavigationStore,
+  /**
+   * The navigation prepared for the next commit.
+   * The rendered route keeps reading from the current navigation until then.
+   */
+  staged: () => RouterNavigationStore,
+  /**
+   * Makes the staged navigation current and computes whatever the route still lacks.
+   */
+  commit: (options: RouterNavigationCommitOptions) => Promise<CallbackContextResponse>[],
   /**
    * The values currently settled in the store.
    */
@@ -97,95 +99,111 @@ export type RouterNavigationStores = HasVueAppStore & {
 
 export function createRouterNavigation({ onResponse }: CreateRouterNavigationOptions = {}): RouterNavigationStores {
   const { setVueApp, runWithContext } = createVueAppStore()
-  let currentNavigation = createRouterNavigationStore()
+  const navigations: RouterNavigationStoreSlots = {
+    current: createRouterNavigationStore(),
+    staged: createRouterNavigationStore(),
+  }
 
   function createRouterNavigationStore(): RouterNavigationStore {
-    const data = createDataStore()
-
+    const controller = new AbortController()
+    const response = Promise.withResolvers<CallbackContextPush | CallbackContextReject>()
+    const committed = Promise.withResolvers<RouterNavigationCommitOptions | undefined>()
     const state: RouterNavigationState = {
-      route: undefined,
-      responses: new Set(),
-      context: undefined,
+      abandoned: false,
+    }
+    const data = createDataStore({
+      signal: controller.signal,
+      onSettled: handleSettledValue,
+    })
+
+    function handleSettledValue({ result }: DataStoreSettledEvent): void {
+      if (controller.signal.aborted) {
+        return
+      }
+
+      switch (result.status) {
+        case 'SUCCESS':
+        case 'ABANDONED':
+          return
+        case 'ERROR':
+          reportErrorWhenCommitted(result)
+          return
+        case 'PUSH':
+        case 'REJECT':
+          response.resolve(result)
+          controller.abort(new NavigationAbandonedError())
+          return
+        default: {
+          const exhaustive: never = result
+          throw new Error(`Switch is not exhaustive for computation response: ${JSON.stringify(exhaustive)}`)
+        }
+      }
     }
 
-    function reportResponse(event: RouterNavigationComputationResponse): void {
-      if (data.signal.aborted) {
-        return
-      }
-
-      if (!state.context) {
-        state.responses.add(event)
-        return
-      }
-
-      const context = state.context
-      const response = event.response.then((response): RouterNavigationResponse => {
-        if (data.signal.aborted) {
-          return { status: 'ABANDONED' }
+    function reportErrorWhenCommitted(response: CallbackContextError): void {
+      committed.promise.then((context) => {
+        if (!context || controller.signal.aborted) {
+          return
         }
 
-        return response
-      }, (error: unknown): RouterNavigationResponse => {
-        if (data.signal.aborted) {
-          return { status: 'ABANDONED' }
-        }
-
-        throw error
+        onResponse?.({ response, ...context })
       })
-      onResponse?.({ ...event, ...context, response })
-
-      // Let the router consume the winning response before aborting its navigation signal.
-      response.then((response) => {
-        if (response.status === 'PUSH' || response.status === 'REJECT') {
-          abandon()
-        }
-      }, () => {})
     }
 
-    function setRoute(route: ResolvedRoute): void {
-      if (state.route && !isSameResolvedRoute(state.route, route)) {
-        throw new TypeError('Cannot compute values for another route in this navigation')
-      }
-
-      state.route ??= route
-    }
-
-    function compute(route: ResolvedRoute, computations: Computation[]): Promise<unknown>[] {
-      if (data.signal.aborted) {
+    function compute(route: ResolvedRoute, computations: Computation[]): Promise<CallbackContextResponse>[] {
+      if (controller.signal.aborted) {
         return []
       }
 
-      setRoute(route)
       const values = computations.map(({ key }) => data.subscribe(key))
 
-      computations.forEach((computation) => {
-        data.set(computation.key, () => {
-          const event: RouterNavigationComputationResponse = {
-            response: toResponse(data.subscribe(computation.key)),
-            source: computation.kind,
-          }
-          const onSettle = (): void => {
-            // Deliver buffered outcomes in completion order when the navigation is adopted.
-            if (state.responses.delete(event)) {
-              state.responses.add(event)
-            }
-          }
-          event.response.then(onSettle, onSettle)
-          reportResponse(event)
-
-          return run(computation, route, data)
-        })
-      })
+      for (const computation of computations) {
+        data.set(computation.key, () => run(computation, route))
+      }
 
       return values
     }
 
+    function run(computation: Computation, route: ResolvedRoute): MaybePromise<CallbackContextResponse> {
+      try {
+        const { push, replace, reject, update } = createRouterCallbackContext({ to: route })
+
+        const value = runWithContext(() => computation.run(toCallbackRoute(computation, route, data), {
+          push,
+          replace,
+          reject,
+          update,
+          signal: controller.signal,
+          parent: getParentContext(route, computation.depth, data),
+        }))
+
+        if (isPromise(value)) {
+          return value.then(toSuccessResponse, toErrorResponse)
+        }
+
+        return toSuccessResponse(value)
+      } catch (error) {
+        return toErrorResponse(error)
+      }
+
+      function toSuccessResponse(value: unknown): CallbackContextResponse {
+        return { status: 'SUCCESS', value }
+      }
+
+      function toErrorResponse(error: unknown): CallbackContextResponse {
+        if (error instanceof ContextPushError || error instanceof ContextRejectionError) {
+          return error.response
+        }
+
+        return { status: 'ERROR', error, source: computation.kind }
+      }
+    }
+
     function fill(route: ResolvedRoute, values: RouteValue[]): void {
-      if (data.signal.aborted) {
+      if (controller.signal.aborted) {
         return
       }
 
-      setRoute(route)
       const computations = getComputations(route)
 
       for (const { kind, depth, name, value } of values) {
@@ -195,51 +213,72 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
           continue
         }
 
-        data.set(computation.key, () => value)
+        data.set(computation.key, () => ({ status: 'SUCCESS', value }))
       }
     }
 
-    function commit({ to, from = null }: RouterNavigationCommitOptions): Promise<unknown>[] {
-      if (data.signal.aborted) {
+    function commit({ to, from }: RouterNavigationCommitOptions): Promise<CallbackContextResponse>[] {
+      if (state.abandoned) {
         return []
       }
 
-      setRoute(to)
-      const previous = currentNavigation
-      currentNavigation = instance
+      const previous = navigations.current
+      const staged = navigations.staged
+      navigations.current = instance
+      navigations.staged = createRouterNavigationStore()
 
       if (previous !== instance) {
         previous.dispose()
       }
 
-      state.context ??= {
-        to: state.route ?? to,
-        from,
-        signal: data.signal,
+      if (staged !== instance && staged !== previous) {
+        staged.dispose()
       }
 
-      const pending = [...state.responses]
-      state.responses.clear()
-      pending.forEach(reportResponse)
+      committed.resolve({ to, from })
+      response.promise.then((outcome) => {
+        if (state.abandoned || navigations.current !== instance) {
+          return
+        }
+
+        onResponse?.({ response: outcome, to, from })
+      })
 
       return compute(to, getComputations(to))
     }
 
     function abandon(): void {
-      data.abandon(new NavigationAbandonedError())
-      state.responses.clear()
+      state.abandoned = true
+      controller.abort(new NavigationAbandonedError())
+      committed.resolve(undefined)
     }
 
     function dispose(): void {
-      data.dispose(new NavigationAbandonedError())
-      state.responses.clear()
-      state.context = undefined
+      if (navigations.staged === instance) {
+        navigations.staged = createRouterNavigationStore()
+      }
+
+      abandon()
+      data.dispose()
+    }
+
+    function stage(): void {
+      if (navigations.staged === instance) {
+        return
+      }
+
+      if (navigations.staged !== navigations.current) {
+        navigations.staged.dispose()
+      }
+
+      navigations.staged = instance
     }
 
     const instance: RouterNavigationStore = {
       data,
       compute,
       fill,
+      stage,
       commit,
       abandon,
       dispose,
@@ -248,15 +287,24 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     return instance
   }
 
-  const current: RouterNavigationStores['current'] = () => currentNavigation
+  const current: RouterNavigationStores['current'] = () => navigations.current
+
+  const stop: RouterNavigationStores['stop'] = () => {
+    navigations.current.dispose()
+    navigations.staged.dispose()
+  }
+
+  const staged: RouterNavigationStores['staged'] = () => navigations.staged
+
+  const commit: RouterNavigationStores['commit'] = (options) => navigations.staged.commit(options)
 
   const getValues: RouterNavigationStores['getValues'] = (route) => {
-    const store = currentNavigation.data
+    const store = navigations.current.data
 
     return getComputations(route).flatMap(({ kind, depth, name, key }) => {
       const result = store.get(key)
 
-      if (result.kind !== 'value') {
+      if (result.status !== 'SUCCESS') {
         return []
       }
 
@@ -264,44 +312,26 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     })
   }
 
-  async function toResponse(value: Promise<unknown>): Promise<RouterNavigationResponse> {
-    try {
-      await value
-
-      return { status: 'SUCCESS' }
-    } catch (error) {
-      if (error instanceof NavigationAbandonedError) {
-        return { status: 'ABANDONED' }
-      }
-
-      if (error instanceof ContextPushError) {
-        return error.response
-      }
-
-      if (error instanceof ContextRejectionError) {
-        return error.response
-      }
-
-      throw error
-    }
-  }
-
   const getProps: RouterNavigationStores['getProps'] = (id, name, route) => {
     const key = getDataKey('props', id, name, route)
-    const result = currentNavigation.data.get(key)
+    const result = navigations.current.data.get(key)
 
-    switch (result.kind) {
-      case 'missing':
+    switch (result.status) {
+      case 'MISSING':
         return NO_PROPS
 
-      case 'pending':
-      case 'running':
-        return toResult(currentNavigation.data, key)
+      case 'PENDING':
+      case 'RUNNING':
+        return toResult(navigations.current.data, key)
 
-      case 'value':
-      case 'error':
-      case 'abandoned':
-        return result
+      case 'ABANDONED':
+        return { kind: 'abandoned' }
+
+      case 'SUCCESS':
+      case 'ERROR':
+      case 'PUSH':
+      case 'REJECT':
+        return toPropsResult(result)
       default:
         return result satisfies never
     }
@@ -311,19 +341,6 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     const loaders = getComputations(route).filter(isKind('loader'))
 
     return toValues(loaders, DEFAULT_LOADER_NAME, route, store)
-  }
-
-  function run(computation: Computation, route: ResolvedRoute, store: DataStore): unknown {
-    const { push, replace, reject, update } = createRouterCallbackContext({ to: route })
-
-    return runWithContext(() => computation.run(toCallbackRoute(computation, route, store), {
-      push,
-      replace,
-      reject,
-      update,
-      signal: store.signal,
-      parent: getParentContext(route, computation.depth, store),
-    }))
   }
 
   /**
@@ -425,25 +442,24 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
    */
   function getValue(location: ValueLocation, route: ResolvedRoute, store?: DataStore): Promise<unknown> {
     const key = getDataKey(location.kind, location.id, location.name, route)
-    const current = currentNavigation.data
+    const current = navigations.current.data
 
     if (!store || store === current) {
-      return current.subscribe(key)
+      return toDataValue(current.subscribe(key))
     }
 
     const stored = store.get(key)
     const currentValue = current.get(key)
 
-    if (stored.kind === 'missing' && currentValue.kind === 'missing') {
+    if (stored.status === 'MISSING' && currentValue.status === 'MISSING') {
       warnWaitingOnUncomputedValue(location, route)
     }
 
     const value = firstToArrive([
-      store.subscribe(key),
-      current.subscribe(key),
+      toDataValue(store.subscribe(key)),
+      toDataValue(current.subscribe(key)),
     ])
 
-    // firstToArrive derives a new promise, so the handler the store attached does not cover it
     value.catch(() => {})
 
     return value
@@ -451,7 +467,10 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
   return {
     current,
+    stop,
     create: createRouterNavigationStore,
+    staged,
+    commit,
     getValues,
     getProps,
     getData,
@@ -486,12 +505,12 @@ const NO_PROPS: PropsResult = { kind: 'value', value: undefined }
  */
 async function toResult(store: DataStore, key: string): Promise<PropsResult> {
   try {
-    return { kind: 'value', value: await store.subscribe(key) }
+    return toPropsResult(await store.subscribe(key))
   } catch (error) {
     const result = store.get(key)
 
-    if (result.kind === 'error' || result.kind === 'abandoned') {
-      return result
+    if (result.status === 'ABANDONED') {
+      return { kind: 'abandoned' }
     }
 
     throw error
@@ -507,4 +526,20 @@ function warnWaitingOnUncomputedValue({ kind, name }: ValueLocation, route: Reso
     It cannot resolve until it is computed — by its own prefetch strategy, or by navigating. When
     prefetching, prefetch it with the same strategy to avoid stalling here.
   `)
+}
+
+function toDataValue(value: Promise<CallbackContextResponse>): Promise<unknown> {
+  const unwrapped = value.then(unwrapComputationResponse)
+
+  unwrapped.catch(() => {})
+
+  return unwrapped
+}
+
+function toPropsResult(response: CallbackContextResponse): PropsResult {
+  try {
+    return { kind: 'value', value: unwrapComputationResponse(response) }
+  } catch (error) {
+    return { kind: 'error', error }
+  }
 }

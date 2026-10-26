@@ -133,6 +133,7 @@ export function createRouterHooks({ redirectStatus, onHookAdded }: RouterHooksOp
 
     return {
       status: 'SUCCESS',
+      value: undefined,
     }
   }
 
@@ -195,6 +196,7 @@ export function createRouterHooks({ redirectStatus, onHookAdded }: RouterHooksOp
 
     return {
       status: 'SUCCESS',
+      value: undefined,
     }
   }
 

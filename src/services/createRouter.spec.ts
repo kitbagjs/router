@@ -2027,7 +2027,7 @@ test('blocking navigation handles a redirect without waiting for other loaders',
   router.stop()
 })
 
-test.each(['redirect', 'error'] as const)('superseded preparation cannot report a late loader %s', async (outcome) => {
+test('superseded preparation ignores a late loader redirect', async () => {
   const started = Promise.withResolvers<AbortSignal>()
   const slow = Promise.withResolvers<void>()
   const home = createRoute({ name: 'home', path: '/' })
@@ -2035,18 +2035,11 @@ test.each(['redirect', 'error'] as const)('superseded preparation cannot report 
     .addLoader(async (_route, { push, signal }) => {
       started.resolve(signal)
       await slow.promise
-
-      if (outcome === 'redirect') {
-        push('/elsewhere')
-      }
-
-      throw new Error('obsolete loader')
+      push('/elsewhere')
     })
   const target = createRoute({ name: 'target', path: '/target' })
   const elsewhere = createRoute({ name: 'elsewhere', path: '/elsewhere' })
   const router = createRouter([home, pending, target, elsewhere], { initialUrl: '/', navigation: 'blocking' })
-  const onError = vi.fn()
-  router.onError(onError)
   await router.start()
 
   const preparing = router.push('pending')
@@ -2059,15 +2052,44 @@ test.each(['redirect', 'error'] as const)('superseded preparation cannot report 
   await flushPromises()
 
   expect(router.route.name).toBe('target')
+  router.stop()
+})
+
+test('superseded preparation ignores a late loader error', async () => {
+  const started = Promise.withResolvers<void>()
+  const slow = Promise.withResolvers<void>()
+  const home = createRoute({ name: 'home', path: '/' })
+  const pending = createRoute({ name: 'pending', path: '/pending' })
+    .addLoader(async () => {
+      started.resolve()
+      await slow.promise
+      throw new Error('obsolete loader')
+    })
+  const target = createRoute({ name: 'target', path: '/target' })
+  const router = createRouter([home, pending, target], { initialUrl: '/', navigation: 'blocking' })
+  const onError = vi.fn()
+  router.onError(onError)
+  await router.start()
+
+  const preparing = router.push('pending')
+  await started.promise
+  await router.push('target')
+  slow.resolve()
+  await preparing
+  await flushPromises()
+
+  expect(router.route.name).toBe('target')
   expect(onError).not.toHaveBeenCalled()
   router.stop()
 })
 
 test('a before hook redirect discards prefetched work for the original route', async () => {
   const slow = Promise.withResolvers<void>()
+  const started = Promise.withResolvers<AbortSignal>()
   const home = createRoute({ name: 'home', path: '/' })
   const prefetched = createRoute({ name: 'prefetched', path: '/prefetched' })
-    .addLoader(async (_route, { push }) => {
+    .addLoader(async (_route, { push, signal }) => {
+      started.resolve(signal)
       await slow.promise
       push('/elsewhere')
     })
@@ -2089,7 +2111,8 @@ test('a before hook redirect discards prefetched work for the original route', a
   slow.resolve()
   await flushPromises()
 
-  expect(prepared.data.signal.aborted).toBe(true)
+  const signal = await started.promise
+  expect(signal.aborted).toBe(true)
   expect(router.route.name).toBe('target')
   router.stop()
 })
