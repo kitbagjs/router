@@ -31,7 +31,7 @@ Without an error slot, the component displays a generic error message.
 
 ```vue
 <RouterSuspense catch>
-  <AsyncPage />
+  <RouterView />
 </RouterSuspense>
 ```
 
@@ -44,7 +44,7 @@ const catchError = (error: unknown) => error instanceof ExpectedError
 
 <template>
   <RouterSuspense :catch="catchError">
-    <AsyncPage />
+    <RouterView />
   </RouterSuspense>
 </template>
 ```
