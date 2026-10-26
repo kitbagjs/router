@@ -3,16 +3,16 @@ import { AnyLoader } from '@/types/loader'
 import { ValueLocation } from '@/services/getComputations'
 import { isSameLoader } from '@/services/isSameLoader'
 
-export type LoaderFallbackMissing = { reason: 'missing' }
+export type LoaderLocationMissing = { reason: 'missing' }
 
-export type LoaderFallbackAmbiguous = {
+export type LoaderLocationAmbiguous = {
   reason: 'ambiguous',
   names: string[],
 }
 
-export type LoaderFallback = LoaderFallbackMissing | LoaderFallbackAmbiguous
+export type LoaderLocationSuccess = { location: ValueLocation<'loader'> }
 
-type LoaderLocationResult = { location: ValueLocation<'loader'> } | LoaderFallback
+type LoaderLocationResult = LoaderLocationMissing | LoaderLocationAmbiguous | LoaderLocationSuccess
 
 export function getLoaderLocation(route: ResolvedRoute, source: AnyLoader): LoaderLocationResult {
   const locations: ValueLocation<'loader'>[] = []
