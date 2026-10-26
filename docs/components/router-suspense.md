@@ -23,9 +23,13 @@ Without an error slot, the component displays a generic error message.
 </template>
 ```
 
-## Component errors
+## Props
 
-Pass a predicate to `catch` to include only errors your app expects.
+### catch
+
+Accepts a boolean or an `(error: unknown) => boolean` predicate. Defaults to `false`.
+By default, `RouterSuspense` does not catch errors. Set `catch` to catch all component errors,
+or pass a predicate to catch only matching errors.
 
 ```vue
 <RouterSuspense catch>
