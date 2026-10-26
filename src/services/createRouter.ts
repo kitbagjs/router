@@ -166,7 +166,7 @@ export function createRouter<
     stop: stopRouteContext,
   } = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options)
   const notFoundRejection = getRejectionByType('NotFound')
-  const navigation = createRouterNavigation({ onResponse: onNavigationResponse })
+  const navigation = createRouterNavigation({ onResponse: activity.wrap(onNavigationResponse) })
   const notFoundRoute = createResolvedRoute(notFoundRejection.route)
 
   const hooks = createRouterHooks({ redirectStatus, onHookAdded: addHookContext })
@@ -318,6 +318,7 @@ export function createRouter<
         if (!isExternal(url)) {
           const values = next.commit({ to, from })
 
+          activity.add(...values)
           progress.track(...values, ...loadAsyncComponents(to))
 
           routerRoute.updateRoute(to)
@@ -474,7 +475,7 @@ export function createRouter<
    * either is acted on whenever it arrives, without holding up the navigation that started it. Once that
    * navigation is superseded, its outcomes can no longer change the page or run error hooks.
    */
-  function onNavigationResponse({ response, to, from }: RouterNavigationResponseEvent): void {
+  async function onNavigationResponse({ response, to, from }: RouterNavigationResponseEvent): Promise<void> {
     switch (response.status) {
       case 'PUSH':
         push(...response.to)
@@ -743,7 +744,6 @@ export function createRouter<
     }
 
     await start()
-    await navigation.idle()
     await activity.idle()
 
     const serverRedirect = getServerRedirect()

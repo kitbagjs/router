@@ -419,7 +419,6 @@ test('an unexpected error waits for commit without preventing a later redirect',
   })
 
   pending.resolve()
-  await instance.idle()
   await flushPromises()
   expect(onResponse).toHaveBeenCalledTimes(2)
   expect(onResponse).toHaveBeenLastCalledWith({
@@ -442,7 +441,7 @@ test('disposing a committed navigation prevents delivery of its settled redirect
   expect(onResponse).not.toHaveBeenCalled()
 })
 
-test('disposing before commit releases pending error reporting', async () => {
+test('disposing before commit prevents reporting its settled error', async () => {
   const route = createResolvedRoute(createRoute({ path: '/' }).addLoader(() => {
     throw new Error('unused prefetch')
   }))
@@ -451,9 +450,8 @@ test('disposing before commit releases pending error reporting', async () => {
   const instance = navigation.staged()
 
   instance.compute(route, getComputations(route))
-  const idle = instance.idle()
   instance.dispose()
-  await idle
+  await flushPromises()
 
   expect(onResponse).not.toHaveBeenCalled()
 })

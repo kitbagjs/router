@@ -1,5 +1,4 @@
 import { markRaw } from 'vue'
-import { createActivityTracker } from './createActivityTracker'
 import { ResolvedRoute, WithData } from '@/types/resolved'
 import { DEFAULT_VIEW_NAME } from './routeViews'
 import { DEFAULT_LOADER_NAME } from './addLoader'
@@ -33,7 +32,7 @@ export type RouterNavigationResponseEvent = RouterNavigationCommitOptions & {
 }
 
 type CreateRouterNavigationOptions = {
-  onResponse?: (response: RouterNavigationResponseEvent) => void,
+  onResponse?: (response: RouterNavigationResponseEvent) => MaybePromise<void>,
 }
 
 type RouterNavigationState = {
@@ -47,7 +46,6 @@ type RouterNavigationStoreSlots = {
 
 export type RouterNavigationStore = {
   data: DataStore,
-  idle: () => Promise<void>,
   /**
    * Disposes of the previously staged navigation and sets this navigation as staged.
    */
@@ -77,7 +75,6 @@ export type RouteValue = {
 
 export type RouterNavigationStores = HasVueAppStore & {
   current: () => RouterNavigationStore,
-  idle: () => Promise<void>,
   stop: () => void,
   create: () => RouterNavigationStore,
   /**
@@ -110,7 +107,6 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
   function createRouterNavigationStore(): RouterNavigationStore {
     const controller = new AbortController()
-    const activity = createActivityTracker()
     const response = Promise.withResolvers<CallbackContextPush | CallbackContextReject>()
     const committed = Promise.withResolvers<RouterNavigationCommitOptions | undefined>()
     const state: RouterNavigationState = {
@@ -146,13 +142,13 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     }
 
     function reportErrorWhenCommitted(response: CallbackContextError): void {
-      activity.add(committed.promise.then((context) => {
+      committed.promise.then((context) => {
         if (!context || controller.signal.aborted) {
           return
         }
 
         onResponse?.({ response, ...context })
-      }))
+      })
     }
 
     function compute(route: ResolvedRoute, computations: Computation[]): Promise<unknown>[] {
@@ -165,8 +161,6 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
       for (const computation of computations) {
         data.set(computation.key, () => run(computation, route))
       }
-
-      activity.add(...values)
 
       return values
     }
@@ -282,7 +276,6 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
     const instance: RouterNavigationStore = {
       data,
-      idle: activity.idle,
       compute,
       fill,
       stage,
@@ -295,8 +288,6 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
   }
 
   const current: RouterNavigationStores['current'] = () => navigations.current
-
-  const idle: RouterNavigationStores['idle'] = () => navigations.current.idle()
 
   const stop: RouterNavigationStores['stop'] = () => {
     navigations.current.dispose()
@@ -476,7 +467,6 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
   return {
     current,
-    idle,
     stop,
     create: createRouterNavigationStore,
     staged,
