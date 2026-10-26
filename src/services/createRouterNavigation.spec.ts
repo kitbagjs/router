@@ -281,7 +281,7 @@ test('the current navigation shares explicitly supplied computations', async () 
   expect(attached).not.toHaveBeenCalled()
 
   pending.resolve('loaded')
-  await expect(values[0]).resolves.toBe('loaded')
+  await expect(values[0]).resolves.toEqual({ status: 'SUCCESS', value: 'loaded' })
 })
 
 test('a prefetched response is reported when its navigation becomes current', async () => {

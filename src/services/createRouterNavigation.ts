@@ -50,13 +50,13 @@ export type RouterNavigationStore = {
    * Disposes of the previously staged navigation and sets this navigation as staged.
    */
   stage: () => void,
-  commit: (options: RouterNavigationCommitOptions) => Promise<unknown>[],
+  commit: (options: RouterNavigationCommitOptions) => Promise<ComputationResponse>[],
   abandon: () => void,
   dispose: () => void,
   /**
    * Computes the supplied values.
    */
-  compute: (route: ResolvedRoute, computations: Computation[]) => Promise<unknown>[],
+  compute: (route: ResolvedRoute, computations: Computation[]) => Promise<ComputationResponse>[],
   /**
    * Adopts values that already settled, in place of running their getters.
    */
@@ -85,7 +85,7 @@ export type RouterNavigationStores = HasVueAppStore & {
   /**
    * Makes the staged navigation current and computes whatever the route still lacks.
    */
-  commit: (options: RouterNavigationCommitOptions) => Promise<unknown>[],
+  commit: (options: RouterNavigationCommitOptions) => Promise<ComputationResponse>[],
   /**
    * The values currently settled in the store.
    */
@@ -151,12 +151,12 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
       })
     }
 
-    function compute(route: ResolvedRoute, computations: Computation[]): Promise<unknown>[] {
+    function compute(route: ResolvedRoute, computations: Computation[]): Promise<ComputationResponse>[] {
       if (controller.signal.aborted) {
         return []
       }
 
-      const values = computations.map(({ key }) => toDataValue(data.subscribe(key)))
+      const values = computations.map(({ key }) => data.subscribe(key))
 
       for (const computation of computations) {
         data.set(computation.key, () => run(computation, route))
@@ -217,7 +217,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
       }
     }
 
-    function commit({ to, from }: RouterNavigationCommitOptions): Promise<unknown>[] {
+    function commit({ to, from }: RouterNavigationCommitOptions): Promise<ComputationResponse>[] {
       if (state.abandoned) {
         return []
       }
