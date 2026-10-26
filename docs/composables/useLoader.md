@@ -32,6 +32,19 @@ import { userLoader } from './userLoader'
 const user = useLoader(userLoader)
 ```
 
+## Awaiting data
+
+Await `useLoader` inside [RouterSuspense](/components/router-suspense) to use its loading and error
+slots. The awaited result contains `data` and `loading`; `data` has the loader's return type without
+an added `undefined`, and there is no `error` ref.
+
+```ts
+const { data: user, loading } = await useLoader(userLoader)
+```
+
+During subsequent loads, `data` retains its last successful value until the replacement is ready.
+Failures after a successful await are handled by the surrounding error boundary.
+
 ## Loader attachments
 
 Attach reusable loaders with `addLoader` to enable prefetching and SSR hydration.

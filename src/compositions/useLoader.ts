@@ -1,4 +1,4 @@
-import { computed, InjectionKey, onScopeDispose, shallowRef, toRaw } from 'vue'
+import { computed, InjectionKey, onScopeDispose, shallowRef, toRaw, watch } from 'vue'
 import { AnyLoader, isLoader, Loader } from '@/types/loader'
 import { UseLoader } from '@/types/useLoader'
 import { Router } from '@/types/router'
@@ -128,6 +128,50 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunct
       return navigation.getLoaderState(selection.value.location, router.route)
     })
 
+    const resolved = shallowRef(false)
+    const lastSuccess = shallowRef<{ value: unknown }>()
+    let waiting: PromiseWithResolvers<unknown> | undefined
+
+    watch(state, (current) => {
+      if (current.status === 'SUCCESS') {
+        lastSuccess.value = { value: current.value }
+        waiting?.resolve(current.value)
+      } else if (current.status === 'ERROR') {
+        waiting?.reject(current.error)
+      } else {
+        return
+      }
+
+      waiting = undefined
+    }, { immediate: true, flush: 'sync' })
+
+    // Later failures belong to the component's error boundary; the initial await is already settled.
+    watch([state, resolved], ([current, hasResolved]) => {
+      if (hasResolved && current.status === 'ERROR') {
+        throw current.error
+      }
+    }, { flush: 'post' })
+
+    async function getData(): Promise<unknown> {
+      if (controller.signal.aborted) {
+        return new Promise<never>(() => {})
+      }
+
+      const current = state.value
+
+      if (current.status === 'SUCCESS') {
+        return current.value
+      }
+
+      if (current.status === 'ERROR') {
+        throw current.error
+      }
+
+      waiting ??= Promise.withResolvers<unknown>()
+
+      return waiting.promise
+    }
+
     const data = computed(() => {
       if (state.value.status === 'SUCCESS') {
         return state.value.value
@@ -154,7 +198,20 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunct
       error,
     }
 
-    return result
+    const loadedData = computed(() => lastSuccess.value?.value)
+
+    return {
+      ...result,
+      then: (onfulfilled, onrejected) => {
+        return getData()
+          .then(() => {
+            resolved.value = true
+
+            return { data: loadedData, loading }
+          })
+          .then(onfulfilled, onrejected)
+      },
+    }
   }
 
   return useLoader

@@ -6,7 +6,7 @@ test('async definitions infer resolved data for reactive consumption', () => {
   const result = useLoader(loader)
 
   expectTypeOf(result.data.value).toEqualTypeOf<{ name: string } | undefined>()
-  expectTypeOf(result).not.toHaveProperty('then')
+  expectTypeOf(result).toHaveProperty('then')
 })
 
 test('router assets infer data from inline route definitions', () => {

@@ -3,6 +3,10 @@
 Wrap async content with `RouterSuspense` to provide loading and error states. It is registered
 globally by the [router plugin](/quick-start#vue-plugin).
 
+Components can await [useLoader](/composables/useLoader#awaiting-data) inside the default slot.
+Initial and subsequent loader failures are handled by the nearest `RouterSuspense`. A non-awaited
+`useLoader` continues exposing failures through its own `error` ref.
+
 Use the default slot for content, `#fallback` while it awaits setup, and `#error` for a failure.
 Without an error slot, the component displays a generic error message.
 The error slot handles client-side failures; server-rendering errors continue to the application's

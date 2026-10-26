@@ -48,7 +48,8 @@ const settings = createRoute({...})
 
 ## Reading data in a component
 
-Pass a definition from `route.loaders` to [`useLoader`](/composables/useLoader).
+Pass a definition from `route.loaders` to [`useLoader`](/composables/useLoader). Await it inside
+[RouterSuspense](/components/router-suspense) to use its loading and error slots.
 
 ```vue
 <!-- UserPage.vue -->
@@ -56,11 +57,11 @@ Pass a definition from `route.loaders` to [`useLoader`](/composables/useLoader).
 import { useLoader, useRoute } from '@kitbag/router'
 
 const route = useRoute('user')
-const { data: user } = useLoader(route.loaders.default)
+const { data: user } = await useLoader(route.loaders.default)
 </script>
 
 <template>
-  <h1 v-if="user">{{ user.name }}</h1>
+  <h1>{{ user.name }}</h1>
 </template>
 ```
 
