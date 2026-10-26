@@ -34,17 +34,8 @@ const user = useLoader(userLoader)
 
 ## Awaiting data
 
-Await the initial load to use Vue's suspense boundary. A successful await returns the same reactive
-refs:
+Await `useLoader` to use Vue's Suspense boundary:
 
 ```ts
 const { data: user, loading, error } = await useLoader(userLoader)
 ```
-
-If the initial load fails, the await rejects with the original error, which can be handled with
-`try/catch`. An uncaught failure from async setup reaches Vue's error handling. `Suspense` handles
-loading; a parent's `onErrorCaptured()` hook can handle async setup errors.
-
-Without an await, failures are exposed through the reactive `error` ref. After a successful await,
-the refs continue following navigation: later failures update `error` without rejecting an await
-that has already resolved.
