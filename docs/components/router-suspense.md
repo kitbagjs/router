@@ -30,9 +30,12 @@ Expected navigation outcomes from `context.push()` or `context.reject()` do not 
 
 ## Props
 
-### catch
+| Prop | Required | Type | Default | Description |
+| --- | --- | --- | --- | --- |
+| catch | false | `boolean` or `(error: unknown) => boolean` | `false` | Includes all component errors when true, or only errors matching the predicate |
 
-Accepts a boolean or an `(error: unknown) => boolean` predicate. Defaults to `false`.
+### The `catch` prop
+
 By default, only unexpected errors from route props getters and awaited loaders trigger the error
 state. Set `catch` to include all component errors, or pass a predicate to include only matching errors.
 Props getter and awaited loader failures are always included, regardless of the predicate.
