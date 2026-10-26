@@ -3,13 +3,15 @@ import { createActivityTracker } from './createActivityTracker'
 import { ResolvedRoute, WithData } from '@/types/resolved'
 import { DEFAULT_VIEW_NAME } from './routeViews'
 import { DEFAULT_LOADER_NAME } from './addLoader'
+import { ContextCallbackError } from '@/errors/contextCallbackError'
+import { unwrapContextError } from '@/utilities/unwrapContextError'
 import { ContextPushError } from '@/errors/contextPushError'
 import { LoaderDataAccessError } from '@/errors/loaderDataAccessError'
 import { ContextRejectionError } from '@/errors/contextRejectionError'
 import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
 import { PropsCallbackParent } from '@/types/props'
 import { createVueAppStore, HasVueAppStore } from './createVueAppStore'
-import { CallbackContextPush, CallbackContextReject } from '@/types/callbackContext'
+import { CallbackContextError, CallbackContextPush, CallbackContextReject } from '@/types/callbackContext'
 import { createRouterCallbackContext } from './createRouterCallbackContext'
 import { createDataStore, DataStore, DataStoreSettledEvent } from './createDataStore'
 import { DataKind, getDataKey } from './getDataKey'
@@ -19,11 +21,7 @@ import { MaybePromise } from '@/types/utilities'
 import { isPromise } from '@/utilities/promises'
 import { Computation, getComputations, isKind, loaderLocations, propsLocations, ValueLocation } from './getComputations'
 
-export type RouterNavigationResponse = CallbackContextPush | CallbackContextReject | {
-  status: 'ERROR',
-  error: unknown,
-  source: DataKind,
-}
+export type RouterNavigationResponse = CallbackContextPush | CallbackContextReject | CallbackContextError
 
 type RouterNavigationCommitOptions = {
   to: ResolvedRoute,
@@ -130,6 +128,12 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
       const { error } = result
 
+      if (error instanceof ContextCallbackError) {
+        reportErrorWhenCommitted(error.response)
+
+        return
+      }
+
       if (error instanceof ContextPushError || error instanceof ContextRejectionError) {
         response.resolve(error.response)
         controller.abort(new NavigationAbandonedError())
@@ -138,13 +142,13 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
       }
     }
 
-    function reportErrorWhenCommitted(source: DataKind, error: unknown): void {
+    function reportErrorWhenCommitted(error: CallbackContextError): void {
       activity.add(committed.promise.then((context) => {
         if (!context || controller.signal.aborted) {
           return
         }
 
-        onResponse?.({ response: { status: 'ERROR', error, source }, ...context })
+        onResponse?.({ response: error, ...context })
       }))
     }
 
@@ -187,11 +191,11 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
       }
 
       function handleError(error: unknown): never {
-        if (!controller.signal.aborted && !(error instanceof ContextPushError) && !(error instanceof ContextRejectionError)) {
-          reportErrorWhenCommitted(computation.kind, error)
+        if (error instanceof ContextPushError || error instanceof ContextRejectionError || error instanceof ContextCallbackError) {
+          throw error
         }
 
-        throw error
+        throw new ContextCallbackError(error, computation.kind)
       }
     }
 
@@ -323,8 +327,10 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
       case 'running':
         return toResult(navigations.current.data, key)
 
-      case 'value':
       case 'error':
+        return { kind: 'error', error: unwrapContextError(result.error) }
+
+      case 'value':
       case 'abandoned':
         return result
       default:
@@ -440,7 +446,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     const current = navigations.current.data
 
     if (!store || store === current) {
-      return current.subscribe(key)
+      return toDataValue(current.subscribe(key))
     }
 
     const stored = store.get(key)
@@ -450,13 +456,10 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
       warnWaitingOnUncomputedValue(location, route)
     }
 
-    const value = firstToArrive([
+    const value = toDataValue(firstToArrive([
       store.subscribe(key),
       current.subscribe(key),
-    ])
-
-    // firstToArrive derives a new promise, so the handler the store attached does not cover it
-    value.catch(() => {})
+    ]))
 
     return value
   }
@@ -506,7 +509,11 @@ async function toResult(store: DataStore, key: string): Promise<PropsResult> {
   } catch (error) {
     const result = store.get(key)
 
-    if (result.kind === 'error' || result.kind === 'abandoned') {
+    if (result.kind === 'error') {
+      return { kind: 'error', error: unwrapContextError(result.error) }
+    }
+
+    if (result.kind === 'abandoned') {
       return result
     }
 
@@ -523,4 +530,14 @@ function warnWaitingOnUncomputedValue({ kind, name }: ValueLocation, route: Reso
     It cannot resolve until it is computed — by its own prefetch strategy, or by navigating. When
     prefetching, prefetch it with the same strategy to avoid stalling here.
   `)
+}
+
+function toDataValue(value: Promise<unknown>): Promise<unknown> {
+  const unwrapped = value.catch((error: unknown) => {
+    throw unwrapContextError(error)
+  })
+
+  unwrapped.catch(() => {})
+
+  return unwrapped
 }

@@ -43,6 +43,20 @@ test('a rejected props getter reports an error before and after it settles', asy
   expect(navigation.getProps(route.id, 'default', resolved)).toEqual({ kind: 'error', error })
 })
 
+test('loader data rejects with the original callback error', async () => {
+  const error = new Error('loader failed')
+  const pending = Promise.withResolvers<string>()
+  const route = createResolvedRoute(createRoute({ path: '/' }).addLoader(() => pending.promise))
+  const navigation = createRouterNavigation()
+
+  navigation.commit({ to: route, from: null })
+  const data = navigation.getData(route)
+  pending.reject(error)
+
+  await expect(data).rejects.toBe(error)
+  await expect(navigation.getData(route)).rejects.toBe(error)
+})
+
 test('a props getter that throws NavigationAbandonedError reports an error', () => {
   const error = new NavigationAbandonedError()
   const route = createRoute({ name: 'route', path: '/' }).addView(component, {
