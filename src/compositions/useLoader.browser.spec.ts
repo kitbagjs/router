@@ -2,7 +2,6 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import { defineComponent, h, onErrorCaptured, shallowRef, Suspense } from 'vue'
-import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
 import { createLoader, createRejection, createRoute, createRouter, createRouterAssets, Router, useLoader } from '@/main'
 
 afterEach(() => {
@@ -374,11 +373,13 @@ describe('fallback loads', () => {
     const router = createRouter([route], { initialUrl: '/1' })
     await router.start()
     const result = mountConsumer(router, () => useLoader(loader))
-    const settled = expect(Promise.resolve(result)).rejects.toBeInstanceOf(NavigationAbandonedError)
+    const settled = vi.fn()
+    Promise.resolve(result).then(settled, settled)
     await flushPromises()
 
     await router.push('/2')
-    await settled
+    await flushPromises()
+    expect(settled).not.toHaveBeenCalled()
     expect(signals[0].aborted).toBe(true)
 
     first.resolve('obsolete')
@@ -443,22 +444,23 @@ describe('fallback loads', () => {
     expect(router.route.href).toBe('/1')
   })
 
-  test('stopping the router settles a pending await with an abandonment error', async () => {
+  test('stopping the router keeps cancellation out of loader state and pending awaits', async () => {
     const pending = Promise.withResolvers<string>()
     const loader = createLoader({ load: () => pending.promise })
     const route = createRoute({ name: 'home', path: '/' })
     const router = createRouter([route], { initialUrl: '/' })
     await router.start()
     const result = mountConsumer(router, () => useLoader(loader))
-    const settled = expect(Promise.resolve(result)).rejects.toBeInstanceOf(NavigationAbandonedError)
+    const settled = vi.fn()
+    Promise.resolve(result).then(settled, settled)
     await flushPromises()
 
     router.stop()
 
-    await settled
-    const { loading, error } = result
-    expect(error.value).toBeInstanceOf(NavigationAbandonedError)
-    expect(loading.value).toBe(false)
+    await flushPromises()
+    expect(settled).not.toHaveBeenCalled()
+    expect(result.error.value).toBeUndefined()
+    expect(result.loading.value).toBe(true)
   })
 
   test('fallback loaders can navigate to routes in their context', async () => {

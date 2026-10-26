@@ -4,7 +4,6 @@ import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
 import { createRejection } from '@/services/createRejection'
 import { LoaderDataAccessError } from '@/errors/loaderDataAccessError'
-import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
 import { component } from '@/utilities/testHelpers'
 
 /**
@@ -154,7 +153,10 @@ describe('re-running loaders', () => {
 
     await router.push('fast')
 
-    await expect(abandoned).rejects.toThrow(NavigationAbandonedError)
+    const settled = vi.fn()
+    abandoned.then(settled, settled)
+    await flushPromises()
+    expect(settled).not.toHaveBeenCalled()
     await expect(router.route.data).resolves.toBe('fast')
   })
 })

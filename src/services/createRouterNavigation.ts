@@ -193,6 +193,10 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
       }
 
       function toErrorResponse(error: unknown): CallbackContextResponse {
+        if (error instanceof NavigationAbandonedError) {
+          controller.abort(error)
+        }
+
         if (error instanceof ContextPushError || error instanceof ContextRejectionError) {
           return error.response
         }
@@ -358,8 +362,10 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
     const result = navigations.current.data.get(getDataKey(location.kind, location.id, location.name, route))
 
-    if (result.status === 'ABANDONED') {
-      return { status: 'ERROR', error: new NavigationAbandonedError(), source: 'loader' }
+    const abandoned = result.status === 'ERROR' && result.error instanceof NavigationAbandonedError
+
+    if (result.status === 'PUSH' || result.status === 'REJECT' || abandoned) {
+      return { status: 'ABANDONED' }
     }
 
     return result
@@ -474,8 +480,20 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     const key = getDataKey(location.kind, location.id, location.name, route)
     const current = navigations.current.data
 
-    if (!store || store === current) {
-      return toDataValue(current.subscribe(key))
+    if (!store) {
+      const value = toComponentValue(current.subscribe(key))
+
+      value.catch(() => {})
+
+      return value
+    }
+
+    if (store === current) {
+      const value = waitForCallbackValue(toDataValue(store.subscribe(key)), store.signal)
+
+      value.catch(() => {})
+
+      return value
     }
 
     const stored = store.get(key)
@@ -485,10 +503,10 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
       warnWaitingOnUncomputedValue(location, route)
     }
 
-    const value = firstToArrive([
+    const value = waitForCallbackValue(firstToArrive([
       toDataValue(store.subscribe(key)),
       toDataValue(current.subscribe(key)),
-    ])
+    ]), store.signal)
 
     value.catch(() => {})
 
@@ -569,9 +587,41 @@ function toDataValue(value: Promise<CallbackContextResponse>): Promise<unknown> 
 }
 
 function toPropsResult(response: CallbackContextResponse): PropsResult {
+  const abandoned = response.status === 'ERROR' && response.error instanceof NavigationAbandonedError
+
+  if (response.status === 'PUSH' || response.status === 'REJECT' || abandoned) {
+    return { kind: 'abandoned' }
+  }
+
   try {
     return { kind: 'value', value: unwrapComputationResponse(response) }
   } catch (error) {
     return { kind: 'error', error }
   }
+}
+
+async function toComponentValue(response: Promise<CallbackContextResponse>): Promise<unknown> {
+  try {
+    return await toDataValue(response)
+  } catch (error) {
+    if (error instanceof NavigationAbandonedError) {
+      return new Promise<never>(() => {})
+    }
+
+    throw error
+  }
+}
+
+function waitForCallbackValue(value: Promise<unknown>, signal: AbortSignal): Promise<unknown> {
+  return new Promise((resolve, reject) => {
+    const onAbort = (): void => reject(new NavigationAbandonedError())
+
+    if (signal.aborted) {
+      onAbort()
+    } else {
+      signal.addEventListener('abort', onAbort, { once: true })
+    }
+
+    value.then(resolve, reject).finally(() => signal.removeEventListener('abort', onAbort))
+  })
 }

@@ -56,6 +56,54 @@ test('loader data rejects with the original callback error', async () => {
   await expect(navigation.getRouteData(route)).rejects.toBe(error)
 })
 
+test('component data remains pending when its loader pushes', async () => {
+  const route = createResolvedRoute(createRoute({ path: '/' }).addLoader((_route, { push }) => push('/next')))
+  const onResponse = vi.fn()
+  const navigation = createRouterNavigation({ onResponse })
+
+  navigation.commit({ to: route, from: null })
+
+  const settled = vi.fn()
+  Promise.resolve(navigation.getRouteData(route)).then(settled, settled)
+  await flushPromises()
+  expect(settled).not.toHaveBeenCalled()
+  expect(onResponse).toHaveBeenCalledExactlyOnceWith({
+    response: { status: 'PUSH', to: ['/next'] },
+    to: route,
+    from: null,
+  })
+})
+
+test('component data remains pending when its loader rejects', async () => {
+  const route = createResolvedRoute(createRoute({ path: '/' }).addLoader((_route, { reject }) => reject('NotFound')))
+  const onResponse = vi.fn()
+  const navigation = createRouterNavigation({ onResponse })
+
+  navigation.commit({ to: route, from: null })
+
+  const settled = vi.fn()
+  Promise.resolve(navigation.getRouteData(route)).then(settled, settled)
+  await flushPromises()
+  expect(settled).not.toHaveBeenCalled()
+  expect(onResponse).toHaveBeenCalledExactlyOnceWith({
+    response: { status: 'REJECT', type: 'NotFound' },
+    to: route,
+    from: null,
+  })
+})
+
+test('redirecting props are abandoned instead of reported as render errors', () => {
+  const route = createRoute({ path: '/' }).addView(component, {
+    props: (_route, { push }) => push('/next'),
+  })
+  const resolved = createResolvedRoute(route)
+  const navigation = createRouterNavigation()
+
+  navigation.commit({ to: resolved, from: null })
+
+  expect(navigation.getProps(route.id, 'default', resolved)).toEqual({ kind: 'abandoned' })
+})
+
 test('a view without a props getter reports no props before and after stop', () => {
   const route = createRoute({ name: 'route', path: '/' }).addView(component)
   const resolved = createResolvedRoute(route)
@@ -441,7 +489,6 @@ test('a redirect abandons running loaders without a response handler', async () 
   expect(signal.aborted).toBe(true)
 })
 
-
 test.each(['getLoaderState', 'getLoaderValue'] as const)('%s rejects props locations at runtime', (method) => {
   const onResponse = vi.fn()
   const navigation = createRouterNavigation({ onResponse })
@@ -453,6 +500,24 @@ test.each(['getLoaderState', 'getLoaderValue'] as const)('%s rejects props locat
   }).toThrow(new TypeError('Expected a loader location'))
 })
 
+test('loader reads after stop report abandonment', async () => {
+  const route = createRoute({ name: 'home', path: '/' }).addLoader(() => 'loaded')
+  const resolved = createResolvedRoute(route)
+  const navigation = createRouterNavigation()
+  const current = navigation.create()
+  await Promise.all(current.commit({ to: resolved, from: null }))
+  const [location] = loaderLocations(resolved.matched)
+
+  navigation.stop()
+
+  expect(navigation.getLoaderState(location, resolved)).toEqual({
+    status: 'ABANDONED',
+  })
+  const settled = vi.fn()
+  navigation.getLoaderValue(location, resolved).then(settled, settled)
+  await flushPromises()
+  expect(settled).not.toHaveBeenCalled()
+})
 
 test('settled loader values remain readable after abandonment', async () => {
   const route = createResolvedRoute(createRoute({ path: '/' }).addLoader(() => 'kept'))
@@ -464,4 +529,87 @@ test('settled loader values remain readable after abandonment', async () => {
 
   expect(navigation.getLoaderState(location, route)).toEqual({ status: 'SUCCESS', value: 'kept' })
   await expect(navigation.getLoaderValue(location, route)).resolves.toBe('kept')
+})
+
+test.each(['push', 'reject'] as const)('a loader %s unwinds callback dependencies without reporting errors', async (action) => {
+  const gate = Promise.withResolvers<void>()
+  const cleaned = vi.fn()
+  const continued = vi.fn()
+  const caught: unknown[] = []
+  const onResponse = vi.fn()
+  const parent = createRoute({ path: '/' }).addLoader(async (_route, context) => {
+    await gate.promise
+
+    if (action === 'push') {
+      context.push('/next')
+    } else {
+      context.reject('NotFound')
+    }
+  }, { name: 'base' })
+    .addView(component, {
+      props: async (route) => {
+        try {
+          await route.data.base
+          continued()
+        } catch (error) {
+          caught.push(error)
+          throw error
+        } finally {
+          cleaned('route.data')
+        }
+      },
+    })
+  const child = createRoute({ parent, path: 'child' }).addLoader(async (_route, { parent }) => {
+    try {
+      await parent.data.base
+      continued()
+    } finally {
+      cleaned('parent.data')
+    }
+  }, { name: 'child' })
+    .addView(component, {
+      props: async (_route, { parent }) => {
+        try {
+          await parent.props
+          continued()
+        } finally {
+          cleaned('parent.props')
+        }
+      },
+    })
+  const route = createResolvedRoute(child)
+  const navigation = createRouterNavigation({ onResponse })
+  navigation.commit({ to: route, from: null })
+  gate.resolve()
+  await flushPromises()
+
+  expect(cleaned).toHaveBeenCalledTimes(3)
+  expect(continued).not.toHaveBeenCalled()
+  expect(caught).toEqual([expect.any(NavigationAbandonedError)])
+  expect(onResponse).toHaveBeenCalledTimes(1)
+  expect(onResponse.mock.calls[0][0].response.status).toBe(action === 'push' ? 'PUSH' : 'REJECT')
+})
+
+test('discarding a prefetch unwinds a callback even while the current store has no parent value', async () => {
+  const cleaned = vi.fn()
+  const parent = createRoute({ path: '/' }).addView(component, { props: () => new Promise(() => {}) })
+  const child = createRoute({ parent, path: 'child' }).addView(component, {
+    props: async (_route, { parent }) => {
+      try {
+        await parent.props
+      } finally {
+        cleaned()
+      }
+    },
+  })
+  const route = createResolvedRoute(child)
+  const navigation = createRouterNavigation()
+  const prefetch = navigation.create()
+  const values = prefetch.compute(route, getComputations(route))
+
+  prefetch.dispose()
+  await Promise.allSettled(values)
+  await flushPromises()
+
+  expect(cleaned).toHaveBeenCalledTimes(1)
 })

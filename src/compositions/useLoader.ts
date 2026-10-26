@@ -1,4 +1,4 @@
-import { computed, InjectionKey, onScopeDispose, shallowRef, toRaw } from 'vue'
+import { computed, InjectionKey, onScopeDispose, shallowRef, toRaw, watch } from 'vue'
 import { AnyLoader, isLoader, Loader } from '@/types/loader'
 import { UseLoader } from '@/types/useLoader'
 import { Router } from '@/types/router'
@@ -128,12 +128,45 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunct
       return navigation.getLoaderState(selection.value.location, router.route)
     })
 
+    const waiting = new Set<{
+      resolve: (value: unknown) => void,
+      reject: (error: unknown) => void,
+    }>()
+
+    watch(state, (current) => {
+      if (current.status !== 'SUCCESS' && current.status !== 'ERROR') {
+        return
+      }
+
+      for (const waiter of waiting) {
+        if (current.status === 'SUCCESS') {
+          waiter.resolve(current.value)
+        } else {
+          waiter.reject(current.error)
+        }
+      }
+
+      waiting.clear()
+    }, { flush: 'sync' })
+
+    onScopeDispose(() => waiting.clear())
+
     async function getData(): Promise<unknown> {
-      await router.start()
+      if (controller.signal.aborted) {
+        return new Promise<never>(() => {})
+      }
 
-      const location = getLocation()
+      const current = state.value
 
-      return navigation.getLoaderValue(location, router.route)
+      if (current.status === 'SUCCESS') {
+        return current.value
+      }
+
+      if (current.status === 'ERROR') {
+        throw current.error
+      }
+
+      return new Promise((resolve, reject) => waiting.add({ resolve, reject }))
     }
 
     const data = computed(() => {
@@ -145,7 +178,7 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunct
     })
 
     const loading = computed(() => {
-      return ['MISSING', 'PENDING', 'RUNNING'].includes(state.value.status)
+      return ['MISSING', 'PENDING', 'RUNNING', 'ABANDONED'].includes(state.value.status)
     })
 
     const error = computed(() => {

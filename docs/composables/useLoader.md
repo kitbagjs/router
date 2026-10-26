@@ -47,6 +47,21 @@ Without an await, failures are exposed through the reactive `error` ref. After a
 the refs continue following navigation: later failures update `error` without rejecting an await
 that has already resolved.
 
+A loader that pushes or rejects the navigation does not put a cancellation error in `error`. Its unfinished consumers stay loading while navigation changes the page. An awaiting component that survives the navigation waits for its replacement load. Unmounting the component releases its subscription without resuming its abandoned setup.
+
+If a guard prevents the replacement navigation, the cancelled consumer stays pending until a later navigation provides a replacement load.
+
+Place `Suspense` inside the `RouterView` slot so a replacement route or rejection view replaces its pending root:
+
+```vue
+<RouterView v-slot="{ component }">
+  <Suspense>
+    <component :is="component" v-if="component" />
+    <template #fallback>Loading…</template>
+  </Suspense>
+</RouterView>
+```
+
 ## Loader attachments
 
 If a reusable loader is missing from the current route or has multiple attachments, `useLoader` warns and runs it separately. Pass `route.loaders[name]` to select a specific attachment.

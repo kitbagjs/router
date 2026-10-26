@@ -42,6 +42,7 @@ type Entry = {
  * navigation owns one.
  */
 export type DataStore = {
+  readonly signal: AbortSignal,
   /**
    * The value for a key, whether or not anything has computed it yet. Subscribing to a key nobody has set
    * leaves a promise waiting for whoever does.
@@ -174,6 +175,7 @@ export function createDataStore({ signal, onSettled }: CreateDataStoreOptions): 
   }
 
   return {
+    signal,
     subscribe,
     set,
     get,

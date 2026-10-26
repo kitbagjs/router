@@ -8,7 +8,6 @@ import { createRouter } from './createRouter'
 import { component } from '@/utilities/testHelpers'
 import { isResolvedRoute, ResolvedRoute } from '@/types/resolved'
 import { createRouterNavigation } from './createRouterNavigation'
-import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
 
 test('router route does not retain the initial resolved route internals', () => {
   const initial = createResolvedRoute(createRoute({ name: 'initial' }))
@@ -105,7 +104,10 @@ test.each([
   await expect(current).resolves.toBe('second')
 
   if (pending) {
-    await expect(previous).rejects.toBeInstanceOf(NavigationAbandonedError)
+    const settled = vi.fn()
+    previous.then(settled, settled)
+    await flushPromises()
+    expect(settled).not.toHaveBeenCalled()
     first.resolve('late')
     await Promise.allSettled(firstCommit)
     await expect(readData()).resolves.toBe('second')
