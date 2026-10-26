@@ -3,33 +3,28 @@ import { isPromise } from '@/utilities/promises'
 import { MaybePromise } from '@/types/utilities'
 import { ComputationResponse } from '@/types/computationResponse'
 
-export type DataResultValue = { kind: 'value', value: ComputationResponse }
+export type DataResultAbandoned = { status: 'ABANDONED' }
 
-export type DataResultError = { kind: 'error', error: unknown }
+export type DataResultSettled = ComputationResponse | DataResultAbandoned
 
-export type DataResultAbandoned = { kind: 'abandoned' }
+export type DataResultPending = { status: 'PENDING' }
 
-export type DataResultSettled = DataResultValue | DataResultError | DataResultAbandoned
+export type DataResultRunning = { status: 'RUNNING' }
 
-export type DataResultPending = { kind: 'pending' }
-
-export type DataResultRunning = { kind: 'running' }
-
-export type DataResultMissing = { kind: 'missing' }
+export type DataResultMissing = { status: 'MISSING' }
 
 /**
- * Where a key has got to: nothing has asked for it, something is waiting on it, its getter is in flight,
- * or how that getter settled. Tagged so that a getter returning `undefined` or an `Error` stays a value.
+ * A computation response or its current lifecycle state.
  */
-export type DataResult = DataResultValue | DataResultError | DataResultAbandoned | DataResultPending | DataResultRunning | DataResultMissing
+export type DataResult = DataResultSettled | DataResultPending | DataResultRunning | DataResultMissing
 
-const ABANDONED: DataResultAbandoned = { kind: 'abandoned' }
+const ABANDONED: DataResultAbandoned = { status: 'ABANDONED' }
 
-const PENDING: DataResultPending = { kind: 'pending' }
+const PENDING: DataResultPending = { status: 'PENDING' }
 
-const RUNNING: DataResultRunning = { kind: 'running' }
+const RUNNING: DataResultRunning = { status: 'RUNNING' }
 
-const MISSING: DataResultMissing = { kind: 'missing' }
+const MISSING: DataResultMissing = { status: 'MISSING' }
 
 export type DataStoreSettledEvent = {
   result: DataResultSettled,
@@ -107,20 +102,20 @@ export function createDataStore({ signal, onSettled }: CreateDataStoreOptions): 
   function settle(target: Entry, result: DataResultSettled): void {
     const current = target.state.value
 
-    if (current.kind === 'value' || current.kind === 'error' || current.kind === 'abandoned') {
+    if (current.status !== 'PENDING' && current.status !== 'RUNNING') {
       return
     }
 
     target.state.value = result
 
-    switch (result.kind) {
-      case 'value':
-        target.resolve(result.value)
+    switch (result.status) {
+      case 'SUCCESS':
+      case 'ERROR':
+      case 'PUSH':
+      case 'REJECT':
+        target.resolve(result)
         break
-      case 'error':
-        target.reject(result.error)
-        break
-      case 'abandoned':
+      case 'ABANDONED':
         target.reject(signal.reason)
         break
       default: {
@@ -141,28 +136,21 @@ export function createDataStore({ signal, onSettled }: CreateDataStoreOptions): 
 
     const target = entry(key)
 
-    if (target.state.value.kind !== 'pending') {
+    if (target.state.value.status !== 'PENDING') {
       return
     }
 
     target.state.value = RUNNING
 
-    try {
-      const value = getter()
+    const result = getter()
 
-      if (isPromise(value)) {
-        value.then(
-          (resolved) => settle(target, { kind: 'value', value: resolved }),
-          (error: unknown) => settle(target, { kind: 'error', error }),
-        )
+    if (isPromise(result)) {
+      result.then((resolved) => settle(target, resolved))
 
-        return
-      }
-
-      settle(target, { kind: 'value', value })
-    } catch (error) {
-      settle(target, { kind: 'error', error })
+      return
     }
+
+    settle(target, result)
   }
 
   const get: DataStore['get'] = (key) => {

@@ -56,7 +56,7 @@ describe('set and subscribe', () => {
     store.set('key', () => response)
 
     await expect(store.subscribe('key')).resolves.toBe(response)
-    expect(store.get('key')).toStrictEqual({ kind: 'value', value: response })
+    expect(store.get('key')).toStrictEqual(response)
   })
 
   test('a successful response preserves an Error as data', async () => {
@@ -70,49 +70,24 @@ describe('set and subscribe', () => {
     store.set('key', () => value)
 
     await expect(store.subscribe('key')).resolves.toBe(value)
-    expect(store.get('key')).toStrictEqual({ kind: 'value', value })
+    expect(store.get('key')).toStrictEqual(value)
   })
 
-  test('a getter that throws rejects the value', async () => {
+  test('an error response retains the original error and source', async () => {
     const controller = new AbortController()
-    const store = createDataStore({ signal: controller.signal })
-    const error = new Error('failed')
+    const onSettled = vi.fn()
+    const store = createDataStore({ signal: controller.signal, onSettled })
+    const response: ComputationResponse = {
+      status: 'ERROR',
+      error: new Error('failed'),
+      source: 'loader',
+    }
 
-    store.set('key', () => {
-      throw error
-    })
+    store.set('key', () => response)
 
-    await expect(store.subscribe('key')).rejects.toBe(error)
-    expect(store.get('key')).toStrictEqual({ kind: 'error', error })
-  })
-
-  test('an async getter that rejects rejects the value', async () => {
-    const controller = new AbortController()
-    const store = createDataStore({ signal: controller.signal })
-    const error = new Error('failed')
-
-    store.set('key', async () => {
-      throw error
-    })
-
-    await expect(store.subscribe('key')).rejects.toBe(error)
-  })
-
-  test.each([false, true])('a getter throwing NavigationAbandonedError remains an error (async: %s)', async (isAsync) => {
-    const controller = new AbortController()
-    const store = createDataStore({ signal: controller.signal })
-    const error = new NavigationAbandonedError()
-
-    store.set('key', () => {
-      if (isAsync) {
-        return Promise.reject(error)
-      }
-
-      throw error
-    })
-
-    await expect(store.subscribe('key')).rejects.toBe(error)
-    expect(store.get('key')).toStrictEqual({ kind: 'error', error })
+    await expect(store.subscribe('key')).resolves.toBe(response)
+    expect(store.get('key')).toBe(response)
+    expect(onSettled).toHaveBeenCalledExactlyOnceWith({ result: response })
   })
 
   test('setting a key twice does not call the second getter', () => {
@@ -124,7 +99,7 @@ describe('set and subscribe', () => {
     store.set('key', second)
 
     expect(second).not.toHaveBeenCalled()
-    expect(store.get('key')).toStrictEqual({ kind: 'value', value: computedResponse })
+    expect(store.get('key')).toStrictEqual(computedResponse)
   })
 
   test('subscribing to a key does not count as setting it', () => {
@@ -146,11 +121,11 @@ describe('get', () => {
 
     store.set('key', async () => computedResponse)
 
-    expect(store.get('key')).toStrictEqual({ kind: 'running' })
+    expect(store.get('key')).toStrictEqual({ status: 'RUNNING' })
 
     await store.subscribe('key')
 
-    expect(store.get('key')).toStrictEqual({ kind: 'value', value: computedResponse })
+    expect(store.get('key')).toStrictEqual(computedResponse)
   })
 
   test('tells apart nothing asked for it, something waiting on it, and its getter in flight', () => {
@@ -160,9 +135,9 @@ describe('get', () => {
     store.subscribe('waited')
     store.set('running', async () => computedResponse)
 
-    expect(store.get('never')).toStrictEqual({ kind: 'missing' })
-    expect(store.get('waited')).toStrictEqual({ kind: 'pending' })
-    expect(store.get('running')).toStrictEqual({ kind: 'running' })
+    expect(store.get('never')).toStrictEqual({ status: 'MISSING' })
+    expect(store.get('waited')).toStrictEqual({ status: 'PENDING' })
+    expect(store.get('running')).toStrictEqual({ status: 'RUNNING' })
   })
 
   test('a sync getter settles without waiting a tick', () => {
@@ -171,7 +146,7 @@ describe('get', () => {
 
     store.set('key', () => computedResponse)
 
-    expect(store.get('key')).toStrictEqual({ kind: 'value', value: computedResponse })
+    expect(store.get('key')).toStrictEqual(computedResponse)
   })
 
   test('tracks reactively, so a render reading it updates when the value settles', async () => {
@@ -182,7 +157,7 @@ describe('get', () => {
     effect(() => {
       const result = store.get('key')
 
-      seen.push(result.kind === 'value' ? result.value : undefined)
+      seen.push(result.status === 'SUCCESS' ? result : undefined)
     })
 
     expect(seen).toStrictEqual([undefined])
@@ -197,7 +172,7 @@ describe('get', () => {
     const controller = new AbortController()
     const store = createDataStore({ signal: controller.signal })
 
-    expect(store.get('key')).toStrictEqual({ kind: 'missing' })
+    expect(store.get('key')).toStrictEqual({ status: 'MISSING' })
   })
 })
 
@@ -222,20 +197,20 @@ describe('dispose', () => {
     controller.abort(new Error('abandoned'))
     store.dispose()
 
-    expect(store.get('key')).toStrictEqual({ kind: 'abandoned' })
+    expect(store.get('key')).toStrictEqual({ status: 'ABANDONED' })
   })
 
   test('reactive readers see abandonment when the store is disposed', () => {
     const controller = new AbortController()
     const store = createDataStore({ signal: controller.signal })
     const seen: string[] = []
-    const runner = effect(() => seen.push(store.get('key').kind))
+    const runner = effect(() => seen.push(store.get('key').status))
 
     store.set('key', () => computedResponse)
     controller.abort(new NavigationAbandonedError())
     store.dispose()
 
-    expect(seen.at(-1)).toBe('abandoned')
+    expect(seen.at(-1)).toBe('ABANDONED')
     runner.effect.stop()
   })
 
@@ -255,7 +230,7 @@ describe('dispose', () => {
     pending.resolve({ status: 'SUCCESS', value: 'late' })
     await pending.promise
 
-    expect(store.get('key')).toStrictEqual({ kind: 'abandoned' })
+    expect(store.get('key')).toStrictEqual({ status: 'ABANDONED' })
   })
 
   test('new subscribers reject and getters do not run after disposal', async () => {
@@ -270,7 +245,7 @@ describe('dispose', () => {
 
     await expect(store.subscribe('key')).rejects.toBe(reason)
     expect(getter).not.toHaveBeenCalled()
-    expect(store.get('key')).toStrictEqual({ kind: 'abandoned' })
+    expect(store.get('key')).toStrictEqual({ status: 'ABANDONED' })
   })
 
   test('leaves an already settled value settled for anything holding it', async () => {
@@ -310,7 +285,7 @@ test('an already aborted signal rejects subscribers and skips getters', async ()
 
   await expect(store.subscribe('key')).rejects.toBe(reason)
   expect(getter).not.toHaveBeenCalled()
-  expect(store.get('key')).toEqual({ kind: 'abandoned' })
+  expect(store.get('key')).toEqual({ status: 'ABANDONED' })
 })
 
 test('aborting rejects unfinished work while retaining settled values', async () => {
@@ -326,7 +301,7 @@ test('aborting rejects unfinished work while retaining settled values', async ()
 
   await expect(unfinished).rejects.toBe(reason)
   await expect(store.subscribe('settled')).resolves.toBe(computedResponse)
-  expect(store.get('settled')).toEqual({ kind: 'value', value: computedResponse })
+  expect(store.get('settled')).toEqual(computedResponse)
 
   pending.resolve({ status: 'SUCCESS', value: 'late' })
   await expect(store.subscribe('pending')).rejects.toBe(reason)
@@ -347,6 +322,6 @@ test('onSettled reports a value once when its work finishes', async () => {
   controller.abort(new NavigationAbandonedError())
 
   expect(onSettled).toHaveBeenCalledExactlyOnceWith({
-    result: { kind: 'value', value: computedResponse },
+    result: computedResponse,
   })
 })

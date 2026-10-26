@@ -301,7 +301,7 @@ test('the current navigation shares explicitly supplied computations', async () 
   const values = current.compute(route, [computation])
   current.compute(route, [computation])
 
-  expect(current.data.get(computation.key)).toEqual({ kind: 'running' })
+  expect(current.data.get(computation.key)).toEqual({ status: 'RUNNING' })
   expect(run).toHaveBeenCalledOnce()
   expect(attached).not.toHaveBeenCalled()
 

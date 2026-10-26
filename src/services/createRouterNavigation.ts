@@ -122,25 +122,24 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     })
 
     function handleSettledValue({ result }: DataStoreSettledEvent): void {
-      if (controller.signal.aborted || result.kind !== 'value') {
+      if (controller.signal.aborted) {
         return
       }
 
-      const outcome = result.value
-
-      switch (outcome.status) {
+      switch (result.status) {
         case 'SUCCESS':
+        case 'ABANDONED':
           return
         case 'ERROR':
-          reportErrorWhenCommitted(outcome)
+          reportErrorWhenCommitted(result)
           return
         case 'PUSH':
         case 'REJECT':
-          response.resolve(outcome)
+          response.resolve(result)
           controller.abort(new NavigationAbandonedError())
           return
         default: {
-          const exhaustive: never = outcome
+          const exhaustive: never = result
           throw new Error(`Switch is not exhaustive for computation response: ${JSON.stringify(exhaustive)}`)
         }
       }
@@ -314,11 +313,11 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     return getComputations(route).flatMap(({ kind, depth, name, key }) => {
       const result = store.get(key)
 
-      if (result.kind !== 'value' || result.value.status !== 'SUCCESS') {
+      if (result.status !== 'SUCCESS') {
         return []
       }
 
-      return [{ kind, depth, name, value: result.value.value }]
+      return [{ kind, depth, name, value: result.value }]
     })
   }
 
@@ -326,20 +325,22 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     const key = getDataKey('props', id, name, route)
     const result = navigations.current.data.get(key)
 
-    switch (result.kind) {
-      case 'missing':
+    switch (result.status) {
+      case 'MISSING':
         return NO_PROPS
 
-      case 'pending':
-      case 'running':
+      case 'PENDING':
+      case 'RUNNING':
         return toResult(navigations.current.data, key)
 
-      case 'value':
-        return toPropsResult(result.value)
+      case 'ABANDONED':
+        return { kind: 'abandoned' }
 
-      case 'error':
-      case 'abandoned':
-        return result
+      case 'SUCCESS':
+      case 'ERROR':
+      case 'PUSH':
+      case 'REJECT':
+        return toPropsResult(result)
       default:
         return result satisfies never
     }
@@ -459,7 +460,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     const stored = store.get(key)
     const currentValue = current.get(key)
 
-    if (stored.kind === 'missing' && currentValue.kind === 'missing') {
+    if (stored.status === 'MISSING' && currentValue.status === 'MISSING') {
       warnWaitingOnUncomputedValue(location, route)
     }
 
@@ -518,8 +519,8 @@ async function toResult(store: DataStore, key: string): Promise<PropsResult> {
   } catch (error) {
     const result = store.get(key)
 
-    if (result.kind === 'error' || result.kind === 'abandoned') {
-      return result
+    if (result.status === 'ABANDONED') {
+      return { kind: 'abandoned' }
     }
 
     throw error
