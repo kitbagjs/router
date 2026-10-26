@@ -362,9 +362,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
     const result = navigations.current.data.get(getDataKey(location.kind, location.id, location.name, route))
 
-    const abandoned = result.status === 'ERROR' && result.error instanceof NavigationAbandonedError
-
-    if (result.status === 'PUSH' || result.status === 'REJECT' || abandoned) {
+    if (result.status === 'PUSH' || result.status === 'REJECT') {
       return { status: 'ABANDONED' }
     }
 
@@ -587,9 +585,7 @@ function toDataValue(value: Promise<CallbackContextResponse>): Promise<unknown> 
 }
 
 function toPropsResult(response: CallbackContextResponse): PropsResult {
-  const abandoned = response.status === 'ERROR' && response.error instanceof NavigationAbandonedError
-
-  if (response.status === 'PUSH' || response.status === 'REJECT' || abandoned) {
+  if (response.status === 'PUSH' || response.status === 'REJECT') {
     return { kind: 'abandoned' }
   }
 
