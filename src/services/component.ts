@@ -1,6 +1,6 @@
 /* eslint-disable vue/require-prop-types */
 /* eslint-disable vue/one-component-per-file */
-import { AsyncComponentLoader, Component, FunctionalComponent, InjectionKey, defineComponent, h, ref, watch } from 'vue'
+import { AsyncComponentLoader, Component, computed, FunctionalComponent, InjectionKey, defineComponent, h, ref, watch } from 'vue'
 import { isPromise } from '@/utilities/promises'
 import { PropsResult } from '@/utilities/props'
 import { createUseRouterNavigation } from '@/compositions/useRouterNavigation'
@@ -8,6 +8,7 @@ import { Router } from '@/types/router'
 import { createUseRoute } from '@/compositions/useRoute'
 import { useIsServerRendering } from '@/compositions/useIsServerRendering'
 import { useHasSuspenseBoundary } from '@/compositions/useHasSuspenseBoundary'
+import { createUseRouterSuspense } from '@/compositions/useRouterSuspense'
 
 type Constructor = new (...args: any) => any
 
@@ -28,6 +29,7 @@ type CreateComponentWrapperConfig = {
 export function createComponentPropsWrapper(routerKey: InjectionKey<Router>, { id, name, component }: CreateComponentWrapperConfig): Component {
   const useRouterNavigation = createUseRouterNavigation(routerKey)
   const useRoute = createUseRoute(routerKey)
+  const useRouterSuspense = createUseRouterSuspense(routerKey)
 
   return defineComponent({
     name: 'PropsWrapper',
@@ -37,9 +39,23 @@ export function createComponentPropsWrapper(routerKey: InjectionKey<Router>, { i
       const route = useRoute()
       const isServerRendering = useIsServerRendering()
       const hasSuspenseBoundary = useHasSuspenseBoundary()
+      const reportError = useRouterSuspense()
+      const props = computed(() => navigation.getProps(id, name, route))
+
+      watch(props, async (props) => {
+        const owner = navigation.current()
+        const result = await props
+        const current = navigation.current()
+
+        if (current !== owner || result.kind !== 'error') {
+          return
+        }
+
+        reportError(result.error)
+      }, { immediate: true, flush: 'post' })
 
       return () => {
-        const result = navigation.getProps(id, name, route)
+        const result = props.value
 
         if (isPromise(result)) {
           if (isServerRendering || hasSuspenseBoundary) {

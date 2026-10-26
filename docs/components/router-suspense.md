@@ -4,12 +4,14 @@ Wrap async content with `RouterSuspense` to provide loading and error states. It
 globally by the [router plugin](/quick-start#vue-plugin).
 
 Use the default slot for content, `#fallback` while it awaits setup, and `#error` for failures.
-Set `catch` to include all component errors, or pass a predicate to include specific errors.
-Without an error slot, the component displays a generic error message.
+By default, only route props getter failures trigger the error state. Without an error slot, the
+component displays a generic error message.
+
+Expected navigation outcomes from `context.push()` or `context.reject()` do not trigger the error state.
 
 ```vue
 <template>
-  <RouterSuspense catch>
+  <RouterSuspense>
     <RouterView />
 
     <template #fallback>
@@ -25,7 +27,8 @@ Without an error slot, the component displays a generic error message.
 
 ## Component errors
 
-Pass a predicate to `catch` to include only errors your app expects.
+Set `catch` to include all component errors, or pass a predicate to include only errors your app
+expects. Props getter failures are always included, regardless of the predicate.
 
 ```vue
 <RouterSuspense catch>
@@ -60,7 +63,7 @@ const router = useRouter()
 </script>
 
 <template>
-  <RouterSuspense catch>
+  <RouterSuspense>
     <RouterView />
 
     <template #error>
