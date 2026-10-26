@@ -72,7 +72,10 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
     })
 
     watch(watchedConfig, (current, previous) => {
-      if (current.id !== previous?.id || current.href !== previous?.href || current.state || previous?.state) {
+      const routeChanged = current.id !== previous?.id || current.href !== previous?.href
+      const hasState = current.state !== undefined || previous?.state !== undefined
+
+      if (routeChanged || hasState) {
         prefetch.dispose()
         prefetch = navigation.create()
       }

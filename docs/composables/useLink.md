@@ -11,7 +11,3 @@ const link = useLink('profile', { userId: 123 })
 :::tip
 [Register](/quick-start.html#type-safety) your router to get the proper types when using this composable.
 :::
-
-::: warning Prefetching
-Passing query, hash, or state options to `link.push()` or `link.replace()` changes the route and breaks prefetching. Pass them as reactive values to `useLink` instead.
-:::

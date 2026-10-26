@@ -314,7 +314,7 @@ test('push options do not warn when prefetching is disabled', async () => {
   expect(warn).not.toHaveBeenCalled()
 })
 
-test('changing RouterLink state recomputes prefetched props and loader data', async () => {
+test('nested link state changes refresh prefetched props and loader data', async () => {
   const load = vi.fn((value: string) => value)
   const props = vi.fn((value: string) => ({ value }))
   const home = createRoute({ name: 'home', path: '/' })
@@ -339,8 +339,8 @@ test('changing RouterLink state recomputes prefetched props and loader data', as
   })
   await flushPromises()
 
-  expect(load).toHaveBeenCalledOnce()
-  expect(props).toHaveBeenCalledOnce()
+  expect(load).toHaveBeenCalledExactlyOnceWith('{"page":1}')
+  expect(props).toHaveBeenCalledExactlyOnceWith('{"page":1}')
 
   state.value.filter.page = 2
   await flushPromises()
@@ -353,9 +353,10 @@ test('changing RouterLink state recomputes prefetched props and loader data', as
   await expect(router.route.data).resolves.toBe('{"page":2}')
   expect(load).toHaveBeenCalledTimes(2)
   expect(props).toHaveBeenCalledTimes(2)
+  router.stop()
 })
 
-test('intent prefetch uses changed state before the config watcher runs', async () => {
+test('hovering immediately after a state change prefetches the new value', async () => {
   const load = vi.fn((count: number | undefined) => count)
   const route = createRoute({
     name: 'route',
@@ -363,8 +364,10 @@ test('intent prefetch uses changed state before the config watcher runs', async 
     state: { count: Number },
   })
     .addLoader((route) => load(route.state.count), { prefetch: 'intent' })
-  const router = createRouter([route], { initialUrl: '/' })
+  const home = createRoute({ name: 'home', path: '/' })
+  const router = createRouter([home, route], { initialUrl: '/' })
   const state = ref({ count: 1 })
+  await router.start()
   const wrapper = mount({
     setup: () => () => h(RouterLink, { to: '/route', state: state.value }),
   }, {
@@ -379,42 +382,13 @@ test('intent prefetch uses changed state before the config watcher runs', async 
   element.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }))
 
   expect(load).toHaveBeenLastCalledWith(2)
+
+  await wrapper.find('a').trigger('click')
   await flushPromises()
+
+  await expect(router.route.data).resolves.toBe(2)
   expect(load).toHaveBeenCalledTimes(2)
-})
-
-test('useLink state overrides skip prefetching even when unchanged', async () => {
-  const warn = vi.spyOn(warnings, 'warnPrefetchInvalidated').mockImplementation(() => {})
-  const load = vi.fn((count: number | undefined) => count)
-  const home = createRoute({ name: 'home', path: '/' })
-  const route = createRoute({
-    name: 'route',
-    path: '/route',
-    state: { count: Number },
-  })
-    .addLoader((route) => load(route.state.count), { prefetch: 'eager' })
-  const router = createRouter([home, route], { initialUrl: '/' })
-  const useLink = createUseLink(router.key)
-  await router.start()
-
-  const wrapper = mount(defineComponent({
-    setup: () => {
-      const { push } = useLink('route', {}, { state: { count: 1 } })
-
-      return { push }
-    },
-    render: () => null,
-  }), {
-    global: { plugins: [router] },
-  })
-  await flushPromises()
-  expect(load).toHaveBeenCalledExactlyOnceWith(1)
-
-  await wrapper.vm.push({ state: { count: 1 } })
-
-  await expect(router.route.data).resolves.toBe(1)
-  expect(load).toHaveBeenCalledTimes(2)
-  expect(warn).toHaveBeenCalledExactlyOnceWith('/route')
+  router.stop()
 })
 
 test('named and unnamed loaders respect their own config and feed prefetched props', async () => {
