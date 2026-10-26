@@ -86,8 +86,7 @@ test.each([
       : routerRoute.data as Promise<unknown>
   }
 
-  const firstNavigation = navigation.create()
-  const firstCommit = firstNavigation.commit({ to: route })
+  const firstCommit = navigation.commit({ to: route, from: null })
   const previous = readData()
 
   if (!pending) {
@@ -96,8 +95,7 @@ test.each([
     await expect(previous).resolves.toBe('first')
   }
 
-  const secondNavigation = navigation.create()
-  const secondCommit = secondNavigation.commit({ to: route })
+  const secondCommit = navigation.commit({ to: route, from: route })
   routerRoute.updateRoute(route)
   const current = readData()
 
