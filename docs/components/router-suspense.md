@@ -28,10 +28,14 @@ Expected navigation outcomes from `context.push()` or `context.reject()` do not 
 </template>
 ```
 
-## Component errors
+## Props
 
-Set `catch` to include all component errors, or pass a predicate to include only errors your app
-expects. Props getter and awaited loader failures are always included, regardless of the predicate.
+### catch
+
+Accepts a boolean or an `(error: unknown) => boolean` predicate. Defaults to `false`.
+By default, only unexpected errors from route props getters and awaited loaders trigger the error
+state. Set `catch` to include all component errors, or pass a predicate to include only matching errors.
+Props getter and awaited loader failures are always included, regardless of the predicate.
 
 ```vue
 <RouterSuspense catch>
