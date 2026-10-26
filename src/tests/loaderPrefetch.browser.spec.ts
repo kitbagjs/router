@@ -11,6 +11,19 @@ import { PrefetchConfig } from '@/types/prefetch'
 import { component } from '@/utilities/testHelpers'
 import * as warnings from '@/utilities/warnPrefetchInvalidated'
 
+const homeRoute = createRoute({ name: 'home', path: '/' })
+const baseRoute = createRoute({ name: 'route', path: '/route' })
+const filterRoute = createRoute({
+  name: 'route',
+  path: '/route',
+  state: { filter: JSON },
+})
+const countRoute = createRoute({
+  name: 'route',
+  path: '/route',
+  state: { count: Number },
+})
+
 afterEach(() => {
   vi.restoreAllMocks()
 })
@@ -76,7 +89,7 @@ test.each<[PrefetchConfig, number, number]>([
 ])('prefetch %j runs props %s times and loaders %s times', async (prefetch, propsCalls, loaderCalls) => {
   const props = vi.fn(() => ({}))
   const load = vi.fn(() => 'data')
-  const route = createRoute({ name: 'route', path: '/route' })
+  const route = baseRoute
     .addView(component, { props })
     .addLoader(load)
   const router = createRouter([route], { initialUrl: '/', prefetch })
@@ -124,7 +137,7 @@ test.each(['props', 'loaders'] as const)('%s can prefetch eagerly while the othe
 
 test.each(['focusin', 'mouseover'] as const)('intent prefetch runs a loader once on %s', async (event) => {
   const load = vi.fn(() => 'data')
-  const route = createRoute({ name: 'route', path: '/route' })
+  const route = baseRoute
     .addLoader(load, { prefetch: 'intent' })
   const router = createRouter([route], { initialUrl: '/' })
   const wrapper = mount(RouterLink, {
@@ -144,7 +157,7 @@ test.each(['focusin', 'mouseover'] as const)('intent prefetch runs a loader once
 
 test.each(['lazy', true] as const)('a loader with prefetch %s waits until the link is visible', async (prefetch) => {
   const load = vi.fn(() => 'data')
-  const route = createRoute({ name: 'route', path: '/route' })
+  const route = baseRoute
     .addLoader(load, { prefetch })
   const router = createRouter([route], { initialUrl: '/' })
   const visible = ref(false)
@@ -184,16 +197,16 @@ test.each([true, false])('navigation adopts a prefetched loader when already set
   const { promise, resolve } = Promise.withResolvers<string>()
   const load = vi.fn(() => promise)
   const signals: AbortSignal[] = []
-  const home = createRoute({ name: 'home', path: '/' })
+  const homeWithLink = homeRoute
     .addView(() => h(RouterLink, { to: '/route' }))
-  const route = createRoute({ name: 'route', path: '/route' })
+  const route = baseRoute
     .addView(component)
     .addLoader((_route, { signal }) => {
       signals.push(signal)
 
       return load()
     }, { prefetch: 'eager' })
-  const router = createRouter([home, route], { initialUrl: '/' })
+  const router = createRouter([homeWithLink, route], { initialUrl: '/' })
 
   await router.start()
 
@@ -223,9 +236,8 @@ test.each([true, false])('navigation adopts a prefetched loader when already set
 test('link push options skip prefetching without discarding it', async () => {
   const warn = vi.spyOn(warnings, 'warnPrefetchInvalidated').mockImplementation(() => {})
   const load = vi.fn(({ href }: { href: string }) => href)
-  const home = createRoute({ name: 'home', path: '/' })
-  const route = createRoute({ name: 'route', path: '/route' }).addLoader(load)
-  const router = createRouter([home, route], { initialUrl: '/' })
+  const route = baseRoute.addLoader(load)
+  const router = createRouter([homeRoute, route], { initialUrl: '/' })
   const useLink = createUseLink(router.key)
   await router.start()
 
@@ -261,9 +273,8 @@ test('link push options skip prefetching without discarding it', async () => {
 test('push options warn when intent prefetching is enabled before it runs', async () => {
   const warn = vi.spyOn(warnings, 'warnPrefetchInvalidated').mockImplementation(() => {})
   const load = vi.fn(() => 'loaded')
-  const home = createRoute({ name: 'home', path: '/' })
-  const route = createRoute({ name: 'route', path: '/route' }).addLoader(load)
-  const router = createRouter([home, route], { initialUrl: '/' })
+  const route = baseRoute.addLoader(load)
+  const router = createRouter([homeRoute, route], { initialUrl: '/' })
   const useLink = createUseLink(router.key)
   await router.start()
 
@@ -288,9 +299,8 @@ test('push options warn when intent prefetching is enabled before it runs', asyn
 test('push options do not warn when prefetching is disabled', async () => {
   const warn = vi.spyOn(warnings, 'warnPrefetchInvalidated').mockImplementation(() => {})
   const load = vi.fn(() => 'loaded')
-  const home = createRoute({ name: 'home', path: '/' })
-  const route = createRoute({ name: 'route', path: '/route' }).addLoader(load)
-  const router = createRouter([home, route], { initialUrl: '/' })
+  const route = baseRoute.addLoader(load)
+  const router = createRouter([homeRoute, route], { initialUrl: '/' })
   const useLink = createUseLink(router.key)
   await router.start()
 
@@ -317,18 +327,13 @@ test('push options do not warn when prefetching is disabled', async () => {
 test('changing a nested state value reruns prefetch', async () => {
   const load = vi.fn((value: string) => value)
   const props = vi.fn((value: string) => ({ value }))
-  const home = createRoute({ name: 'home', path: '/' })
-  const route = createRoute({
-    name: 'route',
-    path: '/route',
-    state: { filter: JSON },
-  })
+  const route = filterRoute
     .addLoader((route) => load(JSON.stringify(route.state.filter)), { prefetch: 'eager' })
     .addView(component, {
       props: (route) => props(JSON.stringify(route.state.filter)),
       prefetch: 'eager',
     })
-  const router = createRouter([home, route], { initialUrl: '/' })
+  const router = createRouter([homeRoute, route], { initialUrl: '/' })
   const state = ref({ filter: { page: 1 } })
   await router.start()
 
@@ -358,14 +363,9 @@ test('changing a nested state value reruns prefetch', async () => {
 
 test('replacing state with the same values does not rerun the loader', async () => {
   const load = vi.fn((value: string) => value)
-  const home = createRoute({ name: 'home', path: '/' })
-  const route = createRoute({
-    name: 'route',
-    path: '/route',
-    state: { filter: JSON },
-  })
+  const route = filterRoute
     .addLoader((route) => load(JSON.stringify(route.state.filter)), { prefetch: 'eager' })
-  const router = createRouter([home, route], { initialUrl: '/' })
+  const router = createRouter([homeRoute, route], { initialUrl: '/' })
   const state = ref({ filter: { page: 1 } })
   await router.start()
 
@@ -389,14 +389,9 @@ test('replacing state with the same values does not rerun the loader', async () 
 
 test('hovering immediately after a state change prefetches the new value', async () => {
   const load = vi.fn((count: number | undefined) => count)
-  const route = createRoute({
-    name: 'route',
-    path: '/route',
-    state: { count: Number },
-  })
+  const route = countRoute
     .addLoader((route) => load(route.state.count), { prefetch: 'intent' })
-  const home = createRoute({ name: 'home', path: '/' })
-  const router = createRouter([home, route], { initialUrl: '/' })
+  const router = createRouter([homeRoute, route], { initialUrl: '/' })
   const state = ref({ count: 1 })
   await router.start()
   const wrapper = mount({
@@ -424,14 +419,9 @@ test('hovering immediately after a state change prefetches the new value', async
 
 test('changing prefetch strategy does not rerun the loader', async () => {
   const load = vi.fn((count: number | undefined) => count)
-  const home = createRoute({ name: 'home', path: '/' })
-  const route = createRoute({
-    name: 'route',
-    path: '/route',
-    state: { count: Number },
-  })
+  const route = countRoute
     .addLoader((route) => load(route.state.count))
-  const router = createRouter([home, route], { initialUrl: '/' })
+  const router = createRouter([homeRoute, route], { initialUrl: '/' })
   const prefetch = ref<PrefetchConfig>('eager')
   const state = { count: 1 }
   await router.start()
@@ -460,8 +450,7 @@ test('named and unnamed loaders respect their own config and feed prefetched pro
   const named = vi.fn(() => 'named data')
   const disabled = vi.fn(() => 'not prefetched')
   const props = vi.fn()
-  const home = createRoute({ name: 'home', path: '/' })
-  const route = createRoute({ name: 'route', path: '/route' })
+  const route = baseRoute
     .addLoader(load, { prefetch: 'eager' })
     .addLoader(named, { name: 'named', prefetch: 'eager' })
     .addLoader(disabled, { name: 'disabled', prefetch: false })
@@ -473,7 +462,7 @@ test('named and unnamed loaders respect their own config and feed prefetched pro
       },
       prefetch: { props: 'eager' },
     })
-  const router = createRouter([home, route], { initialUrl: '/' })
+  const router = createRouter([homeRoute, route], { initialUrl: '/' })
 
   await router.start()
 
@@ -506,11 +495,10 @@ test('named and unnamed loaders respect their own config and feed prefetched pro
 test('prefetched props can wait for a loader without enabling its prefetching', async () => {
   const load = vi.fn(() => 'data')
   const props = vi.fn(async (route) => ({ data: await route.data }))
-  const home = createRoute({ name: 'home', path: '/' })
-  const route = createRoute({ name: 'route', path: '/route' })
+  const route = baseRoute
     .addLoader(load)
     .addView(component, { props, prefetch: { props: 'eager' } })
-  const router = createRouter([home, route], { initialUrl: '/' })
+  const router = createRouter([homeRoute, route], { initialUrl: '/' })
 
   await router.start()
 
@@ -536,7 +524,6 @@ test.each(['eager', 'intent', false] as const)('a prefetched child can wait for 
   const load = vi.fn(() => 'parent data')
   const childStarted = vi.fn()
   const childData = vi.fn()
-  const home = createRoute({ name: 'home', path: '/' })
   const parent = createRoute({ name: 'parent', path: '/parent' })
     .addLoader(load, { prefetch })
   const child = createRoute({ parent, name: 'child', path: '/child' })
@@ -548,7 +535,7 @@ test.each(['eager', 'intent', false] as const)('a prefetched child can wait for 
 
       return `child of ${value}`
     }, { name: 'child', prefetch: 'eager' })
-  const router = createRouter([home, child], { initialUrl: '/' })
+  const router = createRouter([homeRoute, child], { initialUrl: '/' })
 
   await router.start()
 
