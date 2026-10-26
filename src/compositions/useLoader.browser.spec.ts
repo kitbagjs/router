@@ -17,7 +17,7 @@ function mountConsumer<TResult>(router: Router, setup: () => TResult): TResult {
   return wrapper.vm.getResult()
 }
 
-test('consumers share the route load', async () => {
+test('shares the route load between consumers', async () => {
   const pending = Promise.withResolvers<string>()
   const load = vi.fn(() => pending.promise)
   const loader = createLoader({ load })
@@ -38,7 +38,7 @@ test('consumers share the route load', async () => {
   expect(load).toHaveBeenCalledTimes(1)
 })
 
-test('loading tracks the initial navigation', async () => {
+test('sets loading while the initial navigation is pending', async () => {
   const entering = Promise.withResolvers<void>()
   const loader = createLoader({ load: () => 42 })
   const route = createRoute({ name: 'home', path: '/' }).addLoader(loader)
@@ -52,7 +52,7 @@ test('loading tracks the initial navigation', async () => {
   expect(result.data.value).toBe(42)
 })
 
-test('failed loader refs stay reactive through recovery', async () => {
+test('clears error and updates data after a successful navigation', async () => {
   const pending = Promise.withResolvers<string>()
   const loader = createLoader({
     load: (route) => {
@@ -77,7 +77,7 @@ test('failed loader refs stay reactive through recovery', async () => {
   expect(data.value).toBe('recovered')
 })
 
-test('a non-awaited loader exposes failure through its error ref', async () => {
+test('sets error and clears data when loading fails', async () => {
   const pending = Promise.withResolvers<string>()
   const loader = createLoader({ load: () => pending.promise })
   const route = createRoute({ name: 'home', path: '/' }).addLoader(loader)
@@ -94,7 +94,7 @@ test('a non-awaited loader exposes failure through its error ref', async () => {
   expect(result.loading.value).toBe(false)
 })
 
-test('route definitions select a named attachment', async () => {
+test('reads the selected named attachment', async () => {
   const load = vi.fn<() => number>()
     .mockReturnValueOnce(1)
     .mockReturnValueOnce(2)
@@ -109,7 +109,7 @@ test('route definitions select a named attachment', async () => {
   expect(selected.data.value).toBe(await router.route.data.second)
 })
 
-test('router assets read the same definition from their own router stores', async () => {
+test('keeps loader data isolated between routers', async () => {
   const loader = createLoader({ load: (route) => String(route.params.id) })
   const route = createRoute({ name: 'user', path: '/[id]' }).addLoader(loader)
   const first = createRouter([route], { initialUrl: '/1', isGlobalRouter: false })
