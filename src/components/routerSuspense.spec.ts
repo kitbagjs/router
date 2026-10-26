@@ -4,7 +4,7 @@ import { createSSRApp, defineComponent, h } from 'vue'
 import { renderToString } from 'vue/server-renderer'
 import { createRoute, createRouter, RouterSuspense } from '@/main'
 
-test('server rendering waits for async content', async () => {
+test('renders async content on the server', async () => {
   const child = defineComponent({
     async setup() {
       await Promise.resolve()
@@ -22,11 +22,10 @@ test('server rendering waits for async content', async () => {
   }
 })
 
-test('server errors reach the app error handler instead of being swallowed by the boundary', async () => {
+test('forwards server errors to the app error handler', async () => {
   const failure = new Error('failed')
   const child = defineComponent({
     async setup() {
-      await Promise.resolve()
       throw failure
     },
     render: () => null,
