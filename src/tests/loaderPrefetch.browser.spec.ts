@@ -314,7 +314,7 @@ test('push options do not warn when prefetching is disabled', async () => {
   expect(warn).not.toHaveBeenCalled()
 })
 
-test('nested link state changes refresh prefetched props and loader data', async () => {
+test('changing a nested state value reruns prefetch', async () => {
   const load = vi.fn((value: string) => value)
   const props = vi.fn((value: string) => ({ value }))
   const home = createRoute({ name: 'home', path: '/' })
@@ -422,7 +422,7 @@ test('hovering immediately after a state change prefetches the new value', async
   router.stop()
 })
 
-test('changing prefetch strategy preserves cached data for a link with state', async () => {
+test('changing prefetch strategy does not rerun the loader', async () => {
   const load = vi.fn((count: number | undefined) => count)
   const home = createRoute({ name: 'home', path: '/' })
   const route = createRoute({
