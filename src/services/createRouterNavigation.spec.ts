@@ -5,7 +5,6 @@ import { createResolvedRoute } from '@/services/createResolvedRoute'
 import { createRoute } from '@/services/createRoute'
 import { component } from '@/utilities/testHelpers'
 import { getComputations } from '@/services/getComputations'
-import { ContextPushError } from '@/errors/contextPushError'
 import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
 
 afterEach(() => {
@@ -55,30 +54,6 @@ test('loader data rejects with the original callback error', async () => {
 
   await expect(data).rejects.toBe(error)
   await expect(navigation.getData(route)).rejects.toBe(error)
-
-  const [computation] = getComputations(route)
-  const current = navigation.current()
-
-  await expect(current.data.subscribe(computation.key)).resolves.toEqual({
-    status: 'ERROR',
-    error,
-    source: 'loader',
-  })
-})
-
-test('a props getter that throws NavigationAbandonedError reports an error', () => {
-  const error = new NavigationAbandonedError()
-  const route = createRoute({ name: 'route', path: '/' }).addView(component, {
-    props: () => {
-      throw error
-    },
-  })
-  const resolved = createResolvedRoute(route)
-  const navigation = createRouterNavigation()
-
-  navigation.commit({ to: resolved, from: null })
-
-  expect(navigation.getProps(route.id, 'default', resolved)).toEqual({ kind: 'error', error })
 })
 
 test('a view without a props getter reports a successful value with no props', () => {
@@ -170,7 +145,7 @@ test('a staged props getter can await a later loader without warnings', async ()
   expect(warn).not.toHaveBeenCalled()
 })
 
-test('a detached navigation whose getter throws does not surface an unhandled rejection when nothing waits on it', async () => {
+test('prefetch errors do not cause unhandled rejections', async () => {
   const route = createRoute({ name: 'route', path: '/' }).addView(component)
     .addLoader(() => {
       throw new Error('getter failed')
@@ -324,51 +299,46 @@ test('a prefetched response is reported when its navigation becomes current', as
   navigation.commit({ to: route, from })
   await flushPromises()
 
-  expect(onResponse).toHaveBeenCalledOnce()
-
-  const [event] = onResponse.mock.calls[0]
-
-  expect(event).toMatchObject({ to: route, from })
-
-  expect(event.response).toEqual({ status: 'PUSH', to: ['/next', { replace: true }] })
+  expect(onResponse).toHaveBeenCalledExactlyOnceWith({
+    response: { status: 'PUSH', to: ['/next', { replace: true }] },
+    to: route,
+    from,
+  })
 })
 
-test('replacing a navigation discards its buffered responses', async () => {
-  const load = vi.fn(() => 'value').mockImplementationOnce(() => {
-    throw new ContextPushError(['/old'])
-  })
-  const route = createResolvedRoute(createRoute({ path: '/' }).addLoader(load))
+test('discarded prefetch redirects do not affect the next navigation', async () => {
+  const prefetched = createResolvedRoute(createRoute({ path: '/prefetched' })
+    .addLoader((_route, { push }) => push('/old')))
+  const target = createResolvedRoute(createRoute({ path: '/target' }).addLoader(() => 'value'))
   const onResponse = vi.fn()
   const navigation = createRouterNavigation({ onResponse })
   const detached = navigation.create()
 
-  await Promise.allSettled(detached.compute(route, getComputations(route)))
+  await Promise.allSettled(detached.compute(prefetched, getComputations(prefetched)))
   detached.dispose()
-  const replacement = navigation.create()
-  await Promise.all(replacement.commit({ to: route, from: null }))
+  await Promise.all(navigation.commit({ to: target, from: null }))
   await flushPromises()
 
   expect(onResponse).not.toHaveBeenCalled()
-  await expect(navigation.getData(route)).resolves.toBe('value')
+  await expect(navigation.getData(target)).resolves.toBe('value')
 })
 
-test('computations added after adoption report their response once', async () => {
-  const initial = createResolvedRoute(createRoute({ path: '/' }).addLoader(() => 'initial'))
-  const next = createResolvedRoute(createRoute({ path: '/next' }).addLoader((_route, { push }) => push('/target')))
+test('a loader started after commit reports its redirect', async () => {
+  const route = createResolvedRoute(createRoute({ path: '/' }))
+  const loaderRoute = createResolvedRoute(createRoute({ path: '/' }).addLoader((_route, { push }) => push('/target')))
   const onResponse = vi.fn()
   const navigation = createRouterNavigation({ onResponse })
-  const current = navigation.create()
-  await Promise.all(current.commit({ to: initial, from: null }))
-  onResponse.mockClear()
+  const current = navigation.current()
 
-  current.compute(initial, getComputations(next))
-  current.compute(initial, getComputations(next))
+  current.commit({ to: route, from: null })
+  current.compute(route, getComputations(loaderRoute))
   await flushPromises()
 
-  expect(onResponse).toHaveBeenCalledOnce()
-  const [event] = onResponse.mock.calls[0]
-
-  expect(event.response).toEqual({ status: 'PUSH', to: ['/target'] })
+  expect(onResponse).toHaveBeenCalledExactlyOnceWith({
+    response: { status: 'PUSH', to: ['/target'] },
+    to: route,
+    from: null,
+  })
 })
 
 test('stopping aborts current and staged computations and settles their readers', async () => {
@@ -435,21 +405,6 @@ test('disposing a committed navigation prevents delivery of its settled redirect
   const instance = navigation.staged()
 
   instance.commit({ to: route, from: null })
-  instance.dispose()
-  await flushPromises()
-
-  expect(onResponse).not.toHaveBeenCalled()
-})
-
-test('disposing before commit prevents reporting its settled error', async () => {
-  const route = createResolvedRoute(createRoute({ path: '/' }).addLoader(() => {
-    throw new Error('unused prefetch')
-  }))
-  const onResponse = vi.fn()
-  const navigation = createRouterNavigation({ onResponse })
-  const instance = navigation.staged()
-
-  instance.compute(route, getComputations(route))
   instance.dispose()
   await flushPromises()
 

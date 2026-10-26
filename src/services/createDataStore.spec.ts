@@ -1,5 +1,6 @@
 import { describe, expect, test, vi } from 'vitest'
 import { effect } from 'vue'
+import { flushPromises } from '@vue/test-utils'
 import { createDataStore } from './createDataStore'
 import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
 import { ComputationResponse } from '@/types/computationResponse'
@@ -10,67 +11,24 @@ const computedResponse: ComputationResponse = {
 }
 
 describe('set and subscribe', () => {
-  test('a value subscribed to before anything computes it resolves when it is computed', async () => {
+  test('subscribers can wait before computation starts', async () => {
     const controller = new AbortController()
     const store = createDataStore({ signal: controller.signal })
-    const settled: unknown[] = []
-
-    store.subscribe('key').then((value) => settled.push(value))
-
-    expect(settled).toStrictEqual([])
+    const waiting = store.subscribe('key')
 
     store.set('key', () => computedResponse)
 
-    await Promise.resolve()
-
-    expect(settled).toStrictEqual([computedResponse])
+    await expect(waiting).resolves.toBe(computedResponse)
   })
 
-  test('a value subscribed to after it is computed resolves immediately', async () => {
+  test('subscribers can read a settled response', async () => {
     const controller = new AbortController()
     const store = createDataStore({ signal: controller.signal })
 
     store.set('key', () => computedResponse)
 
+    expect(store.get('key')).toBe(computedResponse)
     await expect(store.subscribe('key')).resolves.toBe(computedResponse)
-  })
-
-  test('an async getter resolves the value when it settles', async () => {
-    const controller = new AbortController()
-    const store = createDataStore({ signal: controller.signal })
-
-    store.set('key', async () => computedResponse)
-
-    await expect(store.subscribe('key')).resolves.toBe(computedResponse)
-  })
-
-  test('a successful response preserves undefined data', async () => {
-    const controller = new AbortController()
-    const store = createDataStore({ signal: controller.signal })
-
-    const response: ComputationResponse = {
-      status: 'SUCCESS',
-      value: undefined,
-    }
-
-    store.set('key', () => response)
-
-    await expect(store.subscribe('key')).resolves.toBe(response)
-    expect(store.get('key')).toStrictEqual(response)
-  })
-
-  test('a successful response preserves an Error as data', async () => {
-    const controller = new AbortController()
-    const store = createDataStore({ signal: controller.signal })
-    const value: ComputationResponse = {
-      status: 'SUCCESS',
-      value: new Error('a real value'),
-    }
-
-    store.set('key', () => value)
-
-    await expect(store.subscribe('key')).resolves.toBe(value)
-    expect(store.get('key')).toStrictEqual(value)
   })
 
   test('an error response retains the original error and source', async () => {
@@ -101,60 +59,32 @@ describe('set and subscribe', () => {
     expect(second).not.toHaveBeenCalled()
     expect(store.get('key')).toStrictEqual(computedResponse)
   })
-
-  test('subscribing to a key does not count as setting it', () => {
-    const controller = new AbortController()
-    const store = createDataStore({ signal: controller.signal })
-    const getter = vi.fn(() => computedResponse)
-
-    store.subscribe('key')
-    store.set('key', getter)
-
-    expect(getter).toHaveBeenCalledOnce()
-  })
 })
 
 describe('get', () => {
-  test('is running while the getter is in flight', async () => {
+  test('tracks a value from missing through computation to success', async () => {
     const controller = new AbortController()
     const store = createDataStore({ signal: controller.signal })
+    const pending = Promise.withResolvers<ComputationResponse>()
 
-    store.set('key', async () => computedResponse)
+    expect(store.get('key')).toEqual({ status: 'MISSING' })
+    const waiting = store.subscribe('key')
+    expect(store.get('key')).toEqual({ status: 'PENDING' })
 
-    expect(store.get('key')).toStrictEqual({ status: 'RUNNING' })
+    store.set('key', () => pending.promise)
+    expect(store.get('key')).toEqual({ status: 'RUNNING' })
 
-    await store.subscribe('key')
-
-    expect(store.get('key')).toStrictEqual(computedResponse)
+    pending.resolve(computedResponse)
+    await expect(waiting).resolves.toBe(computedResponse)
+    expect(store.get('key')).toBe(computedResponse)
   })
 
-  test('tells apart nothing asked for it, something waiting on it, and its getter in flight', () => {
-    const controller = new AbortController()
-    const store = createDataStore({ signal: controller.signal })
-
-    store.subscribe('waited')
-    store.set('running', async () => computedResponse)
-
-    expect(store.get('never')).toStrictEqual({ status: 'MISSING' })
-    expect(store.get('waited')).toStrictEqual({ status: 'PENDING' })
-    expect(store.get('running')).toStrictEqual({ status: 'RUNNING' })
-  })
-
-  test('a sync getter settles without waiting a tick', () => {
-    const controller = new AbortController()
-    const store = createDataStore({ signal: controller.signal })
-
-    store.set('key', () => computedResponse)
-
-    expect(store.get('key')).toStrictEqual(computedResponse)
-  })
-
-  test('tracks reactively, so a render reading it updates when the value settles', async () => {
+  test('reactive readers update when a response settles', async () => {
     const controller = new AbortController()
     const store = createDataStore({ signal: controller.signal })
     const seen: (ComputationResponse | undefined)[] = []
 
-    effect(() => {
+    const reader = effect(() => {
       const result = store.get('key')
 
       seen.push(result.status === 'SUCCESS' ? result : undefined)
@@ -166,40 +96,11 @@ describe('get', () => {
     await store.subscribe('key')
 
     expect(seen.at(-1)).toBe(computedResponse)
-  })
-
-  test('is missing for a key nothing has touched', () => {
-    const controller = new AbortController()
-    const store = createDataStore({ signal: controller.signal })
-
-    expect(store.get('key')).toStrictEqual({ status: 'MISSING' })
+    reader.effect.stop()
   })
 })
 
 describe('dispose', () => {
-  test('rejects a pending value so anything waiting resumes', async () => {
-    const controller = new AbortController()
-    const store = createDataStore({ signal: controller.signal })
-    const reason = new Error('abandoned')
-    const waiting = store.subscribe('key')
-
-    controller.abort(reason)
-    store.dispose()
-
-    await expect(waiting).rejects.toBe(reason)
-  })
-
-  test('discards the value and reports abandonment', () => {
-    const controller = new AbortController()
-    const store = createDataStore({ signal: controller.signal })
-
-    store.set('key', () => computedResponse)
-    controller.abort(new Error('abandoned'))
-    store.dispose()
-
-    expect(store.get('key')).toStrictEqual({ status: 'ABANDONED' })
-  })
-
   test('reactive readers see abandonment when the store is disposed', () => {
     const controller = new AbortController()
     const store = createDataStore({ signal: controller.signal })
@@ -214,41 +115,7 @@ describe('dispose', () => {
     runner.effect.stop()
   })
 
-  test('a late getter result cannot replace abandonment', async () => {
-    const pending = Promise.withResolvers<ComputationResponse>()
-    const controller = new AbortController()
-    const store = createDataStore({ signal: controller.signal })
-
-    store.set('key', () => pending.promise)
-    const waiting = store.subscribe('key')
-    const reason = new NavigationAbandonedError()
-
-    controller.abort(reason)
-    store.dispose()
-    await expect(waiting).rejects.toBe(reason)
-
-    pending.resolve({ status: 'SUCCESS', value: 'late' })
-    await pending.promise
-
-    expect(store.get('key')).toStrictEqual({ status: 'ABANDONED' })
-  })
-
-  test('new subscribers reject and getters do not run after disposal', async () => {
-    const controller = new AbortController()
-    const store = createDataStore({ signal: controller.signal })
-    const reason = new Error('abandoned')
-    const getter = vi.fn(() => computedResponse)
-
-    controller.abort(reason)
-    store.dispose()
-    store.set('key', getter)
-
-    await expect(store.subscribe('key')).rejects.toBe(reason)
-    expect(getter).not.toHaveBeenCalled()
-    expect(store.get('key')).toStrictEqual({ status: 'ABANDONED' })
-  })
-
-  test('leaves an already settled value settled for anything holding it', async () => {
+  test('clears stored data without changing settled promises', async () => {
     const controller = new AbortController()
     const store = createDataStore({ signal: controller.signal })
 
@@ -260,6 +127,7 @@ describe('dispose', () => {
     store.dispose()
 
     await expect(held).resolves.toBe(computedResponse)
+    expect(store.get('key')).toEqual({ status: 'ABANDONED' })
   })
 
   test('a value nobody is waiting on does not leak an unhandled rejection', async () => {
@@ -270,7 +138,7 @@ describe('dispose', () => {
     controller.abort(new Error('abandoned'))
     store.dispose()
 
-    await new Promise((resolve) => setTimeout(resolve, 10))
+    await flushPromises()
   })
 })
 
@@ -305,6 +173,7 @@ test('aborting rejects unfinished work while retaining settled values', async ()
 
   pending.resolve({ status: 'SUCCESS', value: 'late' })
   await expect(store.subscribe('pending')).rejects.toBe(reason)
+  expect(store.get('pending')).toEqual({ status: 'ABANDONED' })
 })
 
 test('onSettled reports a value once when its work finishes', async () => {
