@@ -356,7 +356,7 @@ test('nested link state changes refresh prefetched props and loader data', async
   router.stop()
 })
 
-test('equivalent JSON state reuses prefetched data', async () => {
+test('replacing state with the same values does not rerun the loader', async () => {
   const load = vi.fn((value: string) => value)
   const home = createRoute({ name: 'home', path: '/' })
   const route = createRoute({
