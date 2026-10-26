@@ -1,12 +1,12 @@
 import { AnyLoader } from '@/types/loader'
 import { ResolvedRoute } from '@/types/resolved'
-import { LoaderFallback } from '@/services/getLoaderLocation'
+import { LoaderLocationMissing, LoaderLocationAmbiguous } from '@/services/getLoaderLocation'
 import { warn } from '@/utilities/warn'
 
 type WarnLoaderFallbackOptions = {
   loader: AnyLoader,
   route: ResolvedRoute,
-  fallback: LoaderFallback,
+  fallback: LoaderLocationMissing | LoaderLocationAmbiguous,
   isServerRendering: boolean,
 }
 
