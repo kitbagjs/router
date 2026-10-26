@@ -11,13 +11,14 @@ import { getComputations, getComputationsForStrategy } from '@/services/getCompu
 import { RouterNavigationStore } from '@/services/createRouterNavigation'
 import { getComputationPrefetchKey } from '@/services/getComputationPrefetchKey'
 import { isSameResolvedRoute } from '@/utilities/isSameResolvedRoute'
+import { isSameState } from '@/utilities/isSameState'
 
 type UsePrefetchingConfig = PrefetchConfigs & {
   route: ResolvedRoute | undefined,
 }
 
 type PrefetchDestination = Pick<ResolvedRoute, 'id' | 'href'> & {
-  state: unknown[],
+  state: Record<string, unknown>,
 }
 
 type UsePrefetching = {
@@ -147,7 +148,7 @@ function getPrefetchDestination(route: ResolvedRoute): PrefetchDestination {
   return {
     id: route.id,
     href: route.href,
-    state: stateNames.map((name) => route.state[name]),
+    state: Object.fromEntries(stateNames.map((name) => [name, route.state[name]])),
   }
 }
 
@@ -156,8 +157,7 @@ function isSamePrefetchDestination(current: PrefetchDestination, previous: Prefe
     return false
   }
 
-  return current.state.length === previous.state.length
-    && current.state.every((value, index) => Object.is(value, previous.state[index]))
+  return isSameState(current.state, previous.state)
 }
 
 function prefetchComponentsForRoute(strategy: PrefetchStrategy, route: ResolvedRoute, configs: PrefetchConfigs): void {
