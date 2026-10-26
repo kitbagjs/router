@@ -166,7 +166,7 @@ export function createRouter<
     stop: stopRouteContext,
   } = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options)
   const notFoundRejection = getRejectionByType('NotFound')
-  const navigation = createRouterNavigation({ onResponse: activity.wrap(onNavigationResponse) })
+  const navigation = createRouterNavigation({ onResponse: onNavigationResponse })
   const notFoundRoute = createResolvedRoute(notFoundRejection.route)
 
   const hooks = createRouterHooks({ redirectStatus, onHookAdded: addHookContext })
@@ -475,38 +475,42 @@ export function createRouter<
    * either is acted on whenever it arrives, without holding up the navigation that started it. Once that
    * navigation is superseded, its outcomes can no longer change the page or run error hooks.
    */
-  async function onNavigationResponse({ response, to, from }: RouterNavigationResponseEvent): Promise<void> {
-    switch (response.status) {
-      case 'PUSH':
-        push(...response.to)
-        break
+  function onNavigationResponse({ response, to, from }: RouterNavigationResponseEvent): void {
+    const work = (async (): Promise<void> => {
+      switch (response.status) {
+        case 'PUSH':
+          push(...response.to)
+          break
 
-      case 'REJECT':
-        reject(response.type, { to, from })
-        break
+        case 'REJECT':
+          reject(response.type, { to, from })
+          break
 
-      case 'ERROR':
-        try {
-          hooks.runErrorHooks(response.error, { to, from, source: response.source })
-        } catch (error) {
-          if (error instanceof ContextPushError) {
-            push(...error.response.to)
-            return
+        case 'ERROR':
+          try {
+            hooks.runErrorHooks(response.error, { to, from, source: response.source })
+          } catch (error) {
+            if (error instanceof ContextPushError) {
+              push(...error.response.to)
+              return
+            }
+
+            if (error instanceof ContextRejectionError) {
+              reject(error.response.type, { to, from })
+              return
+            }
+
+            throw error
           }
+          break
 
-          if (error instanceof ContextRejectionError) {
-            reject(error.response.type, { to, from })
-            return
-          }
+        default:
+          const exhaustive: never = response
+          throw new Error(`Switch is not exhaustive for route data response status: ${JSON.stringify(exhaustive)}`)
+      }
+    })()
 
-          throw error
-        }
-        break
-
-      default:
-        const exhaustive: never = response
-        throw new Error(`Switch is not exhaustive for route data response status: ${JSON.stringify(exhaustive)}`)
-    }
+    activity.add(work)
   }
 
   const resolve: RouterResolve<TRoutes | TPlugin['routes']> = (
