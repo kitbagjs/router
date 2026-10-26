@@ -22,7 +22,7 @@ function mountConsumer<TResult>(router: Router, setup: () => TResult): TResult {
   return wrapper.vm.getResult()
 }
 
-test('consumers share the route load', async () => {
+test('shares the route load between consumers', async () => {
   const pending = Promise.withResolvers<string>()
   const load = vi.fn(() => pending.promise)
   const loader = createLoader({ load })
@@ -43,7 +43,7 @@ test('consumers share the route load', async () => {
   expect(load).toHaveBeenCalledTimes(1)
 })
 
-test('loading tracks the initial navigation', async () => {
+test('sets loading while the initial navigation is pending', async () => {
   const entering = Promise.withResolvers<void>()
   const loader = createLoader({ load: () => 42 })
   const route = createRoute({ name: 'home', path: '/' }).addLoader(loader)
@@ -57,7 +57,7 @@ test('loading tracks the initial navigation', async () => {
   expect(result.data.value).toBe(42)
 })
 
-test('failed loader refs stay reactive through recovery', async () => {
+test('clears error and updates data after a successful navigation', async () => {
   const pending = Promise.withResolvers<string>()
   const loader = createLoader({
     load: (route) => {
@@ -82,7 +82,7 @@ test('failed loader refs stay reactive through recovery', async () => {
   expect(data.value).toBe('recovered')
 })
 
-test('a non-awaited loader exposes failure through its error ref', async () => {
+test('sets error and clears data when loading fails', async () => {
   const pending = Promise.withResolvers<string>()
   const loader = createLoader({ load: () => pending.promise })
   const route = createRoute({ name: 'home', path: '/' }).addLoader(loader)
@@ -99,7 +99,7 @@ test('a non-awaited loader exposes failure through its error ref', async () => {
   expect(result.loading.value).toBe(false)
 })
 
-test('route definitions select a named attachment', async () => {
+test('reads the selected named attachment', async () => {
   const load = vi.fn<() => number>()
     .mockReturnValueOnce(1)
     .mockReturnValueOnce(2)
@@ -114,7 +114,7 @@ test('route definitions select a named attachment', async () => {
   expect(selected.data.value).toBe(await router.route.data.second)
 })
 
-test('router assets read the same definition from their own router stores', async () => {
+test('keeps loader data isolated between routers', async () => {
   const loader = createLoader({ load: (route) => String(route.params.id) })
   const route = createRoute({ name: 'user', path: '/[id]' }).addLoader(loader)
   const first = createRouter([route], { initialUrl: '/1', isGlobalRouter: false })
@@ -129,8 +129,8 @@ test('router assets read the same definition from their own router stores', asyn
   expect(secondResult.data.value).toBe('2')
 })
 
-describe('fallback loads', () => {
-  test('same-URL navigation selects the new load', async () => {
+describe('fallback loaders', () => {
+  test('reloads data after navigation to the same URL', async () => {
     const load = vi.fn<() => number>()
       .mockReturnValueOnce(1)
       .mockReturnValueOnce(2)
@@ -148,7 +148,7 @@ describe('fallback loads', () => {
     expect(load).toHaveBeenCalledTimes(2)
   })
 
-  test('unmounted consumers stop starting fallback loads', async () => {
+  test('stops loading when the component unmounts', async () => {
     const load = vi.fn(() => 'loaded')
     const loader = createLoader({ load })
     const route = createRoute({ name: 'home', path: '/[id]' })
@@ -169,7 +169,7 @@ describe('fallback loads', () => {
     expect(load).toHaveBeenCalledTimes(1)
   })
 
-  test('unattached consumers share a load and a warning', async () => {
+  test('shares one load and warning between consumers', async () => {
     vi.stubEnv('NODE_ENV', 'development')
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const pending = Promise.withResolvers<string>()
@@ -194,7 +194,7 @@ describe('fallback loads', () => {
     expect(second.data.value).toBe('loaded')
   })
 
-  test('ambiguous definitions warn with their attachment names and run separately', async () => {
+  test('warns and loads separately when multiple attachments match', async () => {
     vi.stubEnv('NODE_ENV', 'development')
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const load = vi.fn<() => number>()
@@ -214,7 +214,7 @@ describe('fallback loads', () => {
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('route "home": "first", "second"'), loader)
   })
 
-  test('navigation replaces fallback loads and preserves their route snapshots', async () => {
+  test('cancels the previous load and preserves its route snapshot', async () => {
     const first = Promise.withResolvers<string>()
     const second = Promise.withResolvers<string>()
     const signals: AbortSignal[] = []
@@ -249,7 +249,7 @@ describe('fallback loads', () => {
     expect(params).toEqual(['1', '2'])
   })
 
-  test('superseded fallback failures do not reach router error hooks', async () => {
+  test('ignores errors from a previous navigation', async () => {
     const first = Promise.withResolvers<string>()
     const loader = createLoader({
       load: (route) => {
@@ -275,7 +275,7 @@ describe('fallback loads', () => {
     expect(result.data.value).toBe('current')
   })
 
-  test('superseded fallback redirects are ignored after same-URL navigation', async () => {
+  test('ignores previous redirects after navigation to the same URL', async () => {
     const first = Promise.withResolvers<void>()
     const loader = createLoader({
       load: (route, { push }) => {
@@ -302,7 +302,7 @@ describe('fallback loads', () => {
     expect(router.route.href).toBe('/1')
   })
 
-  test('stopping the router keeps cancellation out of loader state', async () => {
+  test('keeps loading without an error when the router stops', async () => {
     const pending = Promise.withResolvers<string>()
     const loader = createLoader({ load: () => pending.promise })
     const route = createRoute({ name: 'home', path: '/' })
@@ -318,7 +318,7 @@ describe('fallback loads', () => {
     expect(loading.value).toBe(true)
   })
 
-  test('fallback loaders can navigate to routes in their context', async () => {
+  test('supports push to routes in the loader context', async () => {
     const home = createRoute({ name: 'home', path: '/' })
     const target = createRoute({ name: 'target', path: '/target' })
     const loader = createLoader({
@@ -339,7 +339,7 @@ describe('fallback loads', () => {
     expect(result.data.value).toBe('arrived')
   })
 
-  test('fallback loaders replace the current history entry', async () => {
+  test('supports replace without adding a history entry', async () => {
     const route = createRoute({ name: 'page', path: '/[page]' })
     const loader = createLoader({
       load: (route, { replace }) => {
@@ -363,7 +363,7 @@ describe('fallback loads', () => {
     await vi.waitFor(() => expect(router.route.href).toBe('/previous'))
   })
 
-  test('fallback loaders can reject with their declared context', async () => {
+  test('supports rejections from the loader context', async () => {
     const denied = createRejection({ type: 'Denied' })
     const loader = createLoader({
       context: [denied],
@@ -381,7 +381,7 @@ describe('fallback loads', () => {
     })
   })
 
-  test('fallback failures reach the loader state and router error hooks', async () => {
+  test('reports load errors through error and router error hooks', async () => {
     const failure = new Error('Load failed')
     const loader = createLoader({
       load: () => {
