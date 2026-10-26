@@ -356,6 +356,37 @@ test('nested link state changes refresh prefetched props and loader data', async
   router.stop()
 })
 
+test('equivalent JSON state reuses prefetched data', async () => {
+  const load = vi.fn((value: string) => value)
+  const home = createRoute({ name: 'home', path: '/' })
+  const route = createRoute({
+    name: 'route',
+    path: '/route',
+    state: { filter: JSON },
+  })
+    .addLoader((route) => load(JSON.stringify(route.state.filter)), { prefetch: 'eager' })
+  const router = createRouter([home, route], { initialUrl: '/' })
+  const state = ref({ filter: { page: 1 } })
+  await router.start()
+
+  const wrapper = mount({
+    setup: () => () => h(RouterLink, { to: '/route', state: state.value }),
+  }, {
+    global: { plugins: [router] },
+  })
+  await flushPromises()
+  expect(load).toHaveBeenCalledExactlyOnceWith('{"page":1}')
+
+  state.value.filter = { page: 1 }
+  await flushPromises()
+  await wrapper.find('a').trigger('click')
+  await flushPromises()
+
+  await expect(router.route.data).resolves.toBe('{"page":1}')
+  expect(load).toHaveBeenCalledOnce()
+  router.stop()
+})
+
 test('hovering immediately after a state change prefetches the new value', async () => {
   const load = vi.fn((count: number | undefined) => count)
   const route = createRoute({

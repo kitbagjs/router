@@ -12,13 +12,14 @@ import { RouterNavigationStore } from '@/services/createRouterNavigation'
 import { getComputationPrefetchKey } from '@/services/getComputationPrefetchKey'
 import { isSameResolvedRoute } from '@/utilities/isSameResolvedRoute'
 import { isSameState } from '@/utilities/isSameState'
+import { setStateValues } from '@/services/state'
 
 type UsePrefetchingConfig = PrefetchConfigs & {
   route: ResolvedRoute | undefined,
 }
 
 type PrefetchDestination = Pick<ResolvedRoute, 'id' | 'href'> & {
-  state: Record<string, unknown>,
+  state: Record<string, string | undefined>,
 }
 
 type UsePrefetching = {
@@ -80,7 +81,6 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
       prefetchRoute()
     }, {
       immediate: true,
-      deep: true,
       flush: 'sync',
     })
 
@@ -143,12 +143,12 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
 }
 
 function getPrefetchDestination(route: ResolvedRoute): PrefetchDestination {
-  const stateNames = route.matches.flatMap((match) => Object.keys(match.state ?? {}))
+  const params = Object.fromEntries(route.matches.flatMap((match) => Object.entries(match.state ?? {})))
 
   return {
     id: route.id,
     href: route.href,
-    state: Object.fromEntries(stateNames.map((name) => [name, route.state[name]])),
+    state: setStateValues(params, route.state),
   }
 }
 
