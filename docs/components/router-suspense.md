@@ -6,11 +6,11 @@ globally by the [router plugin](/quick-start#vue-plugin).
 Components can await [useLoader](/composables/useLoader#awaiting-data) inside the default slot.
 A non-awaited `useLoader` continues exposing failures through its own `error` ref.
 
-Use the default slot for content, `#fallback` while it awaits setup, and `#error` when a route props
-getter or awaited loader fails. Without an error slot, the component displays a generic error message.
-Other component errors continue through Vue's error handling by default.
-The error slot handles client-side failures; server-rendering errors continue to the application's
-server error handler.
+Use the default slot for content, `#fallback` while it awaits setup, and `#error` for failures.
+By default, only unexpected errors from route props getters and awaited loaders trigger the error
+state. Without an error slot, the component displays a generic error message.
+
+Expected navigation outcomes from `context.push()` or `context.reject()` do not trigger the error state.
 
 ```vue
 <template>
