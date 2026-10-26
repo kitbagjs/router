@@ -128,28 +128,25 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunct
       return navigation.getLoaderState(selection.value.location, router.route)
     })
 
-    const waiting = new Set<{
-      resolve: (value: unknown) => void,
-      reject: (error: unknown) => void,
-    }>()
+    let waiting: PromiseWithResolvers<unknown> | undefined
 
     watch(state, (current) => {
       if (current.status !== 'SUCCESS' && current.status !== 'ERROR') {
         return
       }
 
-      for (const waiter of waiting) {
-        if (current.status === 'SUCCESS') {
-          waiter.resolve(current.value)
-        } else {
-          waiter.reject(current.error)
-        }
+      if (current.status === 'SUCCESS') {
+        waiting?.resolve(current.value)
+      } else {
+        waiting?.reject(current.error)
       }
 
-      waiting.clear()
+      waiting = undefined
     }, { flush: 'sync' })
 
-    onScopeDispose(() => waiting.clear())
+    onScopeDispose(() => {
+      waiting = undefined
+    })
 
     async function getData(): Promise<unknown> {
       if (controller.signal.aborted) {
@@ -166,11 +163,9 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunct
         throw current.error
       }
 
-      const { promise, resolve, reject } = Promise.withResolvers<unknown>()
+      waiting ??= Promise.withResolvers<unknown>()
 
-      waiting.add({ resolve, reject })
-
-      return promise
+      return waiting.promise
     }
 
     const data = computed(() => {
