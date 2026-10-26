@@ -46,3 +46,9 @@ loading; a parent's `onErrorCaptured()` hook can handle async setup errors.
 Without an await, failures are exposed through the reactive `error` ref. After a successful await,
 the refs continue following navigation: later failures update `error` without rejecting an await
 that has already resolved.
+
+## Loader attachments
+
+If a reusable loader is missing from the current route or has multiple attachments, `useLoader` warns and runs it separately. Pass `route.loaders[name]` to select a specific attachment.
+
+Attach reusable loaders with `addLoader` to enable prefetching and SSR hydration.
