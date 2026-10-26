@@ -108,10 +108,11 @@ export function createDataStore({ signal, onSettled }: CreateDataStoreOptions): 
       return
     }
 
-    const settled = result.kind === 'error' && result.error instanceof NavigationAbandonedError
-      ? ABANDONED
-      : result
-    target.state.value = settled
+    if (result.kind === 'error' && result.error instanceof NavigationAbandonedError) {
+      target.state.value = ABANDONED
+    } else {
+      target.state.value = result
+    }
 
     if (result.kind === 'value') {
       target.resolve(result.value)
@@ -119,7 +120,7 @@ export function createDataStore({ signal, onSettled }: CreateDataStoreOptions): 
       target.reject(result.error)
     }
 
-    onSettled?.({ result: settled })
+    onSettled?.({ result: target.state.value })
   }
 
   const subscribe: DataStore['subscribe'] = (key) => entry(key).promise
