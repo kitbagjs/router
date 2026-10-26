@@ -32,7 +32,7 @@ const user = useLoader(userLoader)
 
 ## Awaiting data
 
-Await `useLoader` to wait for the initial data. The returned refs continue to update as you navigate.
+Await `useLoader` to wait for the initial data.
 
 ```ts
 const { data: user, loading, error } = await useLoader(userLoader)
