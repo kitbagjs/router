@@ -44,6 +44,7 @@ import { routerInjectionKey } from '@/keys'
 import { createRouterView } from '@/components/routerView'
 import { createRouterLink } from '@/components/routerLink'
 import { createRouterProgress } from '@/components/routerProgress'
+import { createRouterSuspense } from '@/components/routerSuspense'
 import { ContextPushError } from '@/errors/contextPushError'
 import { ContextRejectionError } from '@/errors/contextRejectionError'
 import { setupRouterDevtools } from '@/devtools/createRouterDevtools'
@@ -808,10 +809,12 @@ export function createRouter<
     const routerView = createRouterView(routerKey)
     const routerLink = createRouterLink(routerKey)
     const routerProgress = createRouterProgress(routerKey)
+    const routerSuspense = createRouterSuspense(routerKey)
 
     app.component('RouterView', routerView)
     app.component('RouterLink', routerLink)
     app.component('RouterProgress', routerProgress)
+    app.component('RouterSuspense', routerSuspense)
     app.component('ViewTransition', ViewTransition)
     app.provide(getViewTransitionKey(routerKey), viewTransitions.viewTransition)
     app.provide(getRouterRejectionInjectionKey(routerKey), currentRejection)

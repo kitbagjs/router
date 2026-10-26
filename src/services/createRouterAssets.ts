@@ -11,6 +11,7 @@ import { createComponentHooks } from './createComponentHooks'
 import { createRouterView } from '@/components/routerView'
 import { createRouterLink } from '@/components/routerLink'
 import { createRouterProgress } from '@/components/routerProgress'
+import { createRouterSuspense } from '@/components/routerSuspense'
 import { createUseLink } from '@/compositions/useLink'
 import { createUseLoader, UseLoaderFunction } from '@/compositions/useLoader'
 import { createUseNavigation } from '@/compositions/useNavigation'
@@ -115,6 +116,9 @@ export type RouterAssets<TRouter extends Router> = {
    */
   RouterProgress: ReturnType<typeof createRouterProgress<TRouter>>,
 
+  /** Wraps async content with loading and error slots. @group Components */
+  RouterSuspense: ReturnType<typeof createRouterSuspense<TRouter>>,
+
   /**
    * A composition to export much of the functionality that drives RouterLink component.
    * Also exports some useful context about routes relationship to current URL and convenience methods
@@ -211,6 +215,7 @@ export function createRouterAssets<TRouter extends Router>(routerOrRouterKey: TR
   const RouterView = createRouterView(routerKey)
   const RouterLink = createRouterLink(routerKey)
   const RouterProgress = createRouterProgress(routerKey)
+  const RouterSuspense = createRouterSuspense(routerKey)
 
   const useLink = createUseLink(routerKey)
   const useLoader = createUseLoader(routerKey)
@@ -234,6 +239,7 @@ export function createRouterAssets<TRouter extends Router>(routerOrRouterKey: TR
     RouterLink,
     ViewTransition,
     RouterProgress,
+    RouterSuspense,
     useLink,
     useLoader,
     useNavigation,

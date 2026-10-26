@@ -224,6 +224,9 @@ export const ViewTransition = routerAssets.ViewTransition
  */
 export const RouterProgress: RouterAssets<RegisteredRouter>['RouterProgress'] = routerAssets.RouterProgress
 
+/** Wraps async content with loading and error slots. @group Components */
+export const RouterSuspense: RouterAssets<RegisteredRouter>['RouterSuspense'] = routerAssets.RouterSuspense
+
 /**
  * A composition to access the current route or verify a specific route name within a Vue component.
  * This function provides two overloads:

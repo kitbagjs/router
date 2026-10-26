@@ -73,6 +73,7 @@ export default defineConfig({
             { text: 'RouterLink', link: '/components/router-link' },
             { text: 'ViewTransition', link: '/components/view-transition' },
             { text: 'RouterProgress', link: '/components/router-progress' },
+            { text: 'RouterSuspense', link: '/components/router-suspense' },
           ],
         },
         {
