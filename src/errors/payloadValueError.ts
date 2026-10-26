@@ -1,4 +1,4 @@
-import { DataKind } from '@/services/createNavigationStores'
+import { DataKind } from '@/services/getDataKey'
 
 /**
  * A payload value that could not be written into the payload or read back out. Reported rather than

@@ -1,5 +1,5 @@
-import { InjectionKey, MaybeRefOrGetter, onScopeDispose, ref, Ref, toValue, watch } from 'vue'
-import { createUseRouteValueStore } from '@/compositions/useRouteValueStore'
+import { computed, InjectionKey, MaybeRefOrGetter, onScopeDispose, ref, Ref, toValue, watch } from 'vue'
+import { createUseRouterNavigation } from '@/compositions/useRouterNavigation'
 import type { PrefetchConfigs, PrefetchStrategy } from '@/types/prefetch'
 import { getPrefetchOption } from '@/utilities/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
@@ -7,7 +7,9 @@ import { loadAsyncComponents } from '@/utilities/components'
 import { useVisibilityObserver } from './useVisibilityObserver'
 import { useEventListener } from './useEventListener'
 import { Router } from '@/types/router'
-import { ComputationFilter } from '@/services/getComputations'
+import { getComputations, getComputationsForStrategy } from '@/services/getComputations'
+import { RouterNavigationStore } from '@/services/createRouterNavigation'
+import { getComputationPrefetchKey } from '@/services/getComputationPrefetchKey'
 import { isSameResolvedRoute } from '@/utilities/isSameResolvedRoute'
 
 type UsePrefetchingConfig = PrefetchConfigs & {
@@ -16,30 +18,49 @@ type UsePrefetchingConfig = PrefetchConfigs & {
 
 type UsePrefetching = {
   element: Ref<HTMLElement | undefined>,
-  commit: () => void,
+  enabled: Ref<boolean>,
+  take: () => RouterNavigationStore,
 }
 
 type UsePrefetchingFunction = (config: MaybeRefOrGetter<UsePrefetchingConfig>) => UsePrefetching
 
 export function createUsePrefetching<TRouter extends Router>(routerKey: InjectionKey<TRouter>): UsePrefetchingFunction {
-  const useRouteValueStore = createUseRouteValueStore(routerKey)
+  const useRouterNavigation = createUseRouterNavigation(routerKey)
 
   return (config) => {
     const element = ref<HTMLElement>()
 
-    const { createDetachedStore } = useRouteValueStore()
-    const store = createDetachedStore()
+    const navigation = useRouterNavigation()
+    let prefetch = navigation.create()
     const { isElementVisible } = useVisibilityObserver(element)
 
-    const commit: UsePrefetching['commit'] = () => {
-      store.stage()
+    const enabled = computed(() => {
+      const { route, ...configs } = toValue(config)
+
+      if (!route) {
+        return false
+      }
+
+      return getComputations(route).some((computation) => getPrefetchOption({
+        ...configs,
+        routePrefetch: computation.routePrefetch,
+        viewPrefetch: computation.prefetch,
+      }, getComputationPrefetchKey(computation.kind)) !== false)
+    })
+
+    const take: UsePrefetching['take'] = () => {
+      const prepared = prefetch
+      prefetch = navigation.create()
+
+      return prepared
     }
 
-    onScopeDispose(() => store.dispose())
+    onScopeDispose(() => prefetch.dispose())
 
     watch(() => toValue(config), ({ route, ...configs }, previous) => {
       if (!isSameResolvedRoute(route, previous?.route)) {
-        store.reset()
+        prefetch.dispose()
+        prefetch = navigation.create()
       }
 
       if (!route) {
@@ -78,22 +99,17 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
 
     function doPrefetchingForStrategy(strategy: PrefetchStrategy, route: ResolvedRoute, configs: PrefetchConfigs): void {
       prefetchComponentsForRoute(strategy, route, configs)
-      store.compute(route, isComputationForStrategy(strategy, configs))
+      const computations = getComputationsForStrategy(route, strategy, configs)
+
+      prefetch.compute(route, computations)
     }
 
     return {
       element,
-      commit,
+      enabled,
+      take,
     }
   }
-}
-
-function isComputationForStrategy(strategy: PrefetchStrategy, configs: PrefetchConfigs): ComputationFilter {
-  return (computation) => getPrefetchOption({
-    ...configs,
-    routePrefetch: computation.routePrefetch,
-    viewPrefetch: computation.prefetch,
-  }, computation.kind === 'loader' ? 'loaders' : 'props') === strategy
 }
 
 function prefetchComponentsForRoute(strategy: PrefetchStrategy, route: ResolvedRoute, configs: PrefetchConfigs): void {

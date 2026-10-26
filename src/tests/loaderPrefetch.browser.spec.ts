@@ -1,13 +1,19 @@
 import { flushPromises, mount } from '@vue/test-utils'
-import { describe, expect, test, vi } from 'vitest'
-import { h, nextTick, ref } from 'vue'
+import { afterEach, describe, expect, test, vi } from 'vitest'
+import { defineComponent, h, nextTick, ref } from 'vue'
 import { RouterLink } from '@/main'
+import { createUseLink } from '@/compositions/useLink'
 import { visibilityObserverKey } from '@/compositions/useVisibilityObserver'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
 import { VisibilityObserver } from '@/services/createVisibilityObserver'
 import { PrefetchConfig } from '@/types/prefetch'
 import { component } from '@/utilities/testHelpers'
+import * as warnings from '@/utilities/warnPrefetchInvalidated'
+
+afterEach(() => {
+  vi.restoreAllMocks()
+})
 
 describe('loader prefetch configuration', () => {
   test.each<{
@@ -212,6 +218,100 @@ test.each([true, false])('navigation adopts a prefetched loader when already set
   resolve('prefetched')
 
   await expect(router.route.data).resolves.toBe('prefetched')
+})
+
+test('link push options skip prefetching without discarding it', async () => {
+  const warn = vi.spyOn(warnings, 'warnPrefetchInvalidated').mockImplementation(() => {})
+  const load = vi.fn(({ href }: { href: string }) => href)
+  const home = createRoute({ name: 'home', path: '/' })
+  const route = createRoute({ name: 'route', path: '/route' }).addLoader(load)
+  const router = createRouter([home, route], { initialUrl: '/' })
+  const useLink = createUseLink(router.key)
+  await router.start()
+
+  const wrapper = mount(defineComponent({
+    setup: () => {
+      const { push } = useLink('route', {}, {
+        prefetch: 'eager',
+        query: { tab: 'a' },
+      })
+
+      return { push }
+    },
+    render: () => null,
+  }), {
+    global: { plugins: [router] },
+  })
+
+  await flushPromises()
+  expect(load).toHaveBeenCalledOnce()
+
+  await wrapper.vm.push({ query: { page: '2' } })
+
+  await expect(router.route.data).resolves.toBe('/route?tab=a&page=2')
+  expect(load).toHaveBeenCalledTimes(2)
+  expect(warn).toHaveBeenCalledExactlyOnceWith('/route?tab=a')
+
+  await wrapper.vm.push()
+
+  await expect(router.route.data).resolves.toBe('/route?tab=a')
+  expect(load).toHaveBeenCalledTimes(2)
+})
+
+test('push options warn when intent prefetching is enabled before it runs', async () => {
+  const warn = vi.spyOn(warnings, 'warnPrefetchInvalidated').mockImplementation(() => {})
+  const load = vi.fn(() => 'loaded')
+  const home = createRoute({ name: 'home', path: '/' })
+  const route = createRoute({ name: 'route', path: '/route' }).addLoader(load)
+  const router = createRouter([home, route], { initialUrl: '/' })
+  const useLink = createUseLink(router.key)
+  await router.start()
+
+  const wrapper = mount(defineComponent({
+    setup: () => {
+      const { push } = useLink('route', {}, { prefetch: 'intent' })
+
+      return { push }
+    },
+    render: () => null,
+  }), {
+    global: { plugins: [router] },
+  })
+
+  expect(load).not.toHaveBeenCalled()
+  await wrapper.vm.push({ hash: 'details' })
+
+  await expect(router.route.data).resolves.toBe('loaded')
+  expect(warn).toHaveBeenCalledExactlyOnceWith('/route')
+})
+
+test('push options do not warn when prefetching is disabled', async () => {
+  const warn = vi.spyOn(warnings, 'warnPrefetchInvalidated').mockImplementation(() => {})
+  const load = vi.fn(() => 'loaded')
+  const home = createRoute({ name: 'home', path: '/' })
+  const route = createRoute({ name: 'route', path: '/route' }).addLoader(load)
+  const router = createRouter([home, route], { initialUrl: '/' })
+  const useLink = createUseLink(router.key)
+  await router.start()
+
+  const wrapper = mount(defineComponent({
+    setup: () => {
+      const { push } = useLink('route', {}, { prefetch: false })
+
+      return { push }
+    },
+    render: () => null,
+  }), {
+    global: { plugins: [router] },
+  })
+  await flushPromises()
+  expect(load).not.toHaveBeenCalled()
+
+  await wrapper.vm.push({ query: { page: '2' } })
+
+  await expect(router.route.data).resolves.toBe('loaded')
+  expect(load).toHaveBeenCalledOnce()
+  expect(warn).not.toHaveBeenCalled()
 })
 
 test('named and unnamed loaders respect their own config and feed prefetched props', async () => {

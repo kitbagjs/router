@@ -3,6 +3,7 @@ import { describe, expect, test, vi } from 'vitest'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
 import { component } from '@/utilities/testHelpers'
+import { ErrorHook } from '@/types/hooks'
 
 describe('router.render', () => {
   test('waits for a loader to settle', async () => {
@@ -229,4 +230,71 @@ test('render on an unstarted router does not report a bogus success for an unmat
   const result = await router.render()
 
   expect(result.status).toBe(404)
+})
+
+test('SSR returns a loader redirect without waiting for other loaders', async () => {
+  const ready = Promise.withResolvers<void>()
+  const pending = Promise.withResolvers<string>()
+  const page = createRoute({ name: 'page', path: '/' })
+    .addLoader(async (_route, { push }) => {
+      await ready.promise
+      push('/target')
+    }, { name: 'redirect' })
+    .addLoader(() => pending.promise, { name: 'pending' })
+  const router = createRouter([page], { initialUrl: '/', ssr: true })
+  await router.start()
+
+  const rendering = router.render()
+  ready.resolve()
+
+  await expect(rendering).resolves.toMatchObject({ kind: 'redirect', status: 302, location: '/target' })
+  router.stop()
+})
+
+test('SSR returns a loader rejection without waiting for other loaders', async () => {
+  const ready = Promise.withResolvers<void>()
+  const pending = Promise.withResolvers<string>()
+  const page = createRoute({ name: 'page', path: '/' })
+    .addLoader(async (_route, { reject }) => {
+      await ready.promise
+      reject('NotFound')
+    }, { name: 'rejection' })
+    .addLoader(() => pending.promise, { name: 'pending' })
+  const router = createRouter([page], { initialUrl: '/', ssr: true })
+  await router.start()
+
+  const rendering = router.render()
+  ready.resolve()
+
+  await expect(rendering).resolves.toMatchObject({ kind: 'reject', status: 404, rejection: 'NotFound' })
+  router.stop()
+})
+
+test('SSR returns an error hook redirect and ignores late loader errors', async () => {
+  const ready = Promise.withResolvers<void>()
+  const pending = Promise.withResolvers<string>()
+  const error = new Error('loader failed')
+  const onError = vi.fn<ErrorHook>((_error, { push }) => {
+    push('/target')
+  })
+  const page = createRoute({ name: 'page', path: '/' })
+    .addLoader(async () => {
+      await ready.promise
+      throw error
+    }, { name: 'failed' })
+    .addLoader(() => pending.promise, { name: 'pending' })
+  const router = createRouter([page], { initialUrl: '/', ssr: true })
+  router.onError(onError)
+  await router.start()
+
+  const rendering = router.render()
+  ready.resolve()
+
+  await expect(rendering).resolves.toMatchObject({ kind: 'redirect', status: 302, location: '/target' })
+
+  pending.reject(new Error('late failure'))
+  await flushPromises()
+
+  expect(onError).toHaveBeenCalledExactlyOnceWith(error, expect.anything())
+  router.stop()
 })

@@ -1,11 +1,13 @@
 import { flushPromises } from '@vue/test-utils'
 import { describe, expect, test } from 'vitest'
 import { App, Component, createApp, defineAsyncComponent } from 'vue'
-import { createUseRouteValueStore } from '@/compositions/useRouteValueStore'
+import { createUseRouterNavigation } from '@/compositions/useRouterNavigation'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
+import { getComputations } from '@/services/getComputations'
 import { createRouterAssets } from '@/services/createRouterAssets'
 import { UseNavigation } from '@/types/navigation'
+import { RouterPushOptionsInternal } from '@/types/routerNavigationInternal'
 import { Router } from '@/types/router'
 import { component } from '@/utilities/testHelpers'
 
@@ -230,16 +232,19 @@ describe('navigation progress', () => {
 
     await flushPromises()
 
-    const store = navigation.app.runWithContext(() => createUseRouteValueStore(router.key)().createDetachedStore())
+    const useRouterNavigation = createUseRouterNavigation(router.key)
+    const routerNavigation = navigation.app.runWithContext(useRouterNavigation)
+    const prefetch = routerNavigation.create()
 
-    store.compute(router.resolve('other'))
+    const route = router.resolve('other')
+    prefetch.compute(route, getComputations(route))
     await flushPromises()
 
     expect(navigation.pending.value).toBe(false)
     expect(navigation.total.value).toBe(0)
 
-    store.stage()
-    router.push('/other')
+    const options: RouterPushOptionsInternal = { prefetch }
+    router.push('/other', options)
     await flushPromises()
 
     expect(navigation.pending.value).toBe(true)

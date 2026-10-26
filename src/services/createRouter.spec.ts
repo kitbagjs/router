@@ -1,7 +1,9 @@
 import { flushPromises } from '@vue/test-utils'
 import { Location } from '@/services/history'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
-import { computed, toRefs } from 'vue'
+import { computed, createApp, toRefs } from 'vue'
+import { createUseRouterNavigation } from '@/compositions/useRouterNavigation'
+import { getComputations } from '@/services/getComputations'
 import { DuplicateNamesError } from '@/errors/duplicateNamesError'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
@@ -13,6 +15,8 @@ import { InvalidRouteParamValueError } from '@/errors/invalidRouteParamValueErro
 import { createRejection } from './createRejection'
 import { SsrOptionRequiredError } from '@/errors/ssrOptionRequiredError'
 import { PayloadValueError } from '@/errors/payloadValueError'
+import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
+import { RouterPushOptionsInternal } from '@/types/routerNavigationInternal'
 import { RenderRedirect, RenderSuccess, ServerRenderResponse } from '@/types/router'
 
 test('initial route is set', async () => {
@@ -25,6 +29,25 @@ test('initial route is set', async () => {
   await start()
 
   expect(route.matched.name).toBe('root')
+})
+
+test('stopping the router aborts its loaders and settles pending data', async () => {
+  const pending = Promise.withResolvers<string>()
+  const signals: AbortSignal[] = []
+  const route = createRoute({ name: 'home', path: '/' })
+    .addLoader((_route, { signal }) => {
+      signals.push(signal)
+      return pending.promise
+    })
+  const router = createRouter([route], { initialUrl: '/' })
+  await router.start()
+  const data = router.route.data
+
+  router.stop()
+
+  expect(signals[0].aborted).toBe(true)
+  await expect(data).rejects.toThrow(NavigationAbandonedError)
+  await expect(router.route.data).rejects.toThrow(NavigationAbandonedError)
 })
 
 test('initial state is set', async () => {
@@ -2004,4 +2027,170 @@ describe('router.render response', () => {
 
     expect(second).toStrictEqual(first)
   })
+})
+
+test('blocking navigation handles a redirect without waiting for other loaders', async () => {
+  const home = createRoute({ name: 'home', path: '/' })
+  const target = createRoute({ name: 'target', path: '/target' })
+  const page = createRoute({ name: 'page', path: '/page' })
+    .addLoader((_route, { push }) => push('/target'), { name: 'redirect' })
+    .addLoader(() => new Promise(() => {}), { name: 'pending' })
+  const router = createRouter([home, page, target], {
+    initialUrl: '/',
+    navigation: 'blocking',
+  })
+  await router.start()
+
+  await router.push('page')
+
+  await vi.waitFor(() => expect(router.route.name).toBe('target'))
+  router.stop()
+})
+
+test('superseded preparation ignores a late loader redirect', async () => {
+  const started = Promise.withResolvers<AbortSignal>()
+  const slow = Promise.withResolvers<void>()
+  const home = createRoute({ name: 'home', path: '/' })
+  const pending = createRoute({ name: 'pending', path: '/pending' })
+    .addLoader(async (_route, { push, signal }) => {
+      started.resolve(signal)
+      await slow.promise
+      push('/elsewhere')
+    })
+  const target = createRoute({ name: 'target', path: '/target' })
+  const elsewhere = createRoute({ name: 'elsewhere', path: '/elsewhere' })
+  const router = createRouter([home, pending, target, elsewhere], { initialUrl: '/', navigation: 'blocking' })
+  await router.start()
+
+  const preparing = router.push('pending')
+  const signal = await started.promise
+  await router.push('target')
+
+  expect(signal.aborted).toBe(true)
+  slow.resolve()
+  await preparing
+  await flushPromises()
+
+  expect(router.route.name).toBe('target')
+  router.stop()
+})
+
+test('superseded preparation ignores a late loader error', async () => {
+  const started = Promise.withResolvers<void>()
+  const slow = Promise.withResolvers<void>()
+  const home = createRoute({ name: 'home', path: '/' })
+  const pending = createRoute({ name: 'pending', path: '/pending' })
+    .addLoader(async () => {
+      started.resolve()
+      await slow.promise
+      throw new Error('obsolete loader')
+    })
+  const target = createRoute({ name: 'target', path: '/target' })
+  const router = createRouter([home, pending, target], { initialUrl: '/', navigation: 'blocking' })
+  const onError = vi.fn()
+  router.onError(onError)
+  await router.start()
+
+  const preparing = router.push('pending')
+  await started.promise
+  await router.push('target')
+  slow.resolve()
+  await preparing
+  await flushPromises()
+
+  expect(router.route.name).toBe('target')
+  expect(onError).not.toHaveBeenCalled()
+  router.stop()
+})
+
+test('a before hook redirect discards prefetched work for the original route', async () => {
+  const slow = Promise.withResolvers<void>()
+  const started = Promise.withResolvers<AbortSignal>()
+  const home = createRoute({ name: 'home', path: '/' })
+  const prefetched = createRoute({ name: 'prefetched', path: '/prefetched' })
+    .addLoader(async (_route, { push, signal }) => {
+      started.resolve(signal)
+      await slow.promise
+      push('/elsewhere')
+    })
+  prefetched.onBeforeRouteEnter((_route, { push }) => push('/target'))
+  const target = createRoute({ name: 'target', path: '/target' })
+  const elsewhere = createRoute({ name: 'elsewhere', path: '/elsewhere' })
+  const router = createRouter([home, prefetched, target, elsewhere], { initialUrl: '/' })
+  const app = createApp({ render: () => null })
+  app.use(router)
+  await router.start()
+  const useRouterNavigation = createUseRouterNavigation(router.key)
+  const navigation = app.runWithContext(useRouterNavigation)
+  const prepared = navigation.create()
+  const route = router.resolve('prefetched')
+  prepared.compute(route, getComputations(route))
+  const options: RouterPushOptionsInternal = { prefetch: prepared }
+
+  await router.push(route, options)
+  slow.resolve()
+  await flushPromises()
+
+  const signal = await started.promise
+  expect(signal.aborted).toBe(true)
+  expect(router.route.name).toBe('target')
+  router.stop()
+})
+
+test('settled current data remains readable while another navigation waits on a guard', async () => {
+  const waiting = Promise.withResolvers<void>()
+  const release = Promise.withResolvers<void>()
+  const home = createRoute({ name: 'home', path: '/' }).addLoader(() => 'home data')
+  const target = createRoute({ name: 'target', path: '/target' })
+  target.onBeforeRouteEnter(() => {
+    waiting.resolve()
+    return release.promise
+  })
+  const router = createRouter([home, target], { initialUrl: '/' })
+  await router.start()
+  await router.route.data
+
+  const navigating = router.push('target')
+  await waiting.promise
+
+  await expect(router.route.data).resolves.toBe('home data')
+  release.resolve()
+  await navigating
+  router.stop()
+})
+
+test('prefetched navigation actions win in completion order', async () => {
+  const first = Promise.withResolvers<void>()
+  const second = Promise.withResolvers<void>()
+  const home = createRoute({ name: 'home', path: '/' })
+  const page = createRoute({ name: 'page', path: '/page' })
+    .addLoader(async (_route, { push }) => {
+      await first.promise
+      push('/first')
+    }, { name: 'first' })
+    .addLoader(async (_route, { push }) => {
+      await second.promise
+      push('/second')
+    }, { name: 'second' })
+  const firstTarget = createRoute({ name: 'first', path: '/first' })
+  const secondTarget = createRoute({ name: 'second', path: '/second' })
+  const router = createRouter([home, page, firstTarget, secondTarget], { initialUrl: '/' })
+  const app = createApp({ render: () => null })
+  app.use(router)
+  await router.start()
+  const useRouterNavigation = createUseRouterNavigation(router.key)
+  const navigation = app.runWithContext(useRouterNavigation)
+  const prepared = navigation.create()
+  const resolved = router.resolve('page')
+  prepared.compute(resolved, getComputations(resolved))
+
+  second.resolve()
+  await flushPromises()
+  first.resolve()
+  await flushPromises()
+  const options: RouterPushOptionsInternal = { prefetch: prepared }
+  await router.push(resolved, options)
+
+  await vi.waitFor(() => expect(router.route.href).toBe('/second'))
+  router.stop()
 })

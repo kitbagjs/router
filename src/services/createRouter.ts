@@ -5,12 +5,11 @@ import { createIsExternal } from '@/services/createIsExternal'
 import { createActivityTracker } from '@/services/createActivityTracker'
 import { SsrOptionRequiredError } from '@/errors/ssrOptionRequiredError'
 import { parseUrl, updateUrl } from '@/services/urlParser'
-import { createRouteValueStore, RouteValueResponse } from '@/services/createRouteValueStore'
+import { createRouterNavigation, RouterNavigationResponseEvent, RouterNavigationStore } from '@/services/createRouterNavigation'
 import { createNavigationProgress, NavigationProgressTracker } from '@/services/createNavigationProgress'
 import { getComputations } from '@/services/getComputations'
 import { getAsyncComponents, loadAsyncComponents } from '@/utilities/components'
 import { getNavigationProgressKey } from '@/compositions/useNavigation'
-import { DataKind } from '@/services/createNavigationStores'
 import { createRouterHistory, RouterHistoryTraversal } from '@/services/createRouterHistory'
 import { createServerRedirect } from '@/services/createServerRedirect'
 import { createRouterHooks, getRouterHooksKey } from '@/services/createRouterHooks'
@@ -36,7 +35,7 @@ import { getRoutesForRouter } from './getRoutesForRouter'
 import { getGlobalHooksForRouter } from './getGlobalHooksForRouter'
 import { createComponentsStore } from './createComponentsStore'
 import { getComponentsStoreKey } from '@/compositions/useComponentsStore'
-import { getRouteValueStoreInjectionKey } from '@/compositions/useRouteValueStore'
+import { getRouterNavigationInjectionKey } from '@/compositions/useRouterNavigation'
 import { getViewTransitionKey } from '@/compositions/useViewTransition'
 import { ViewTransition } from '@/components/viewTransition'
 import { getRouterRejectionInjectionKey } from '@/compositions/useRejection'
@@ -60,6 +59,7 @@ import { getNavigationOption, getRouteNavigationOption } from '@/utilities/navig
 
 type RouteCommitOptions = {
   route: ResolvedRoute | null,
+  navigation: RouterNavigationStore,
   signal: AbortSignal,
   update: () => void,
 }
@@ -73,6 +73,7 @@ type RouteCommit = {
 
 type RouterUpdateOptions = {
   navigation?: NavigationBehavior,
+  prefetch?: RouterNavigationStore,
   traversal?: RouterHistoryTraversal,
   replace?: boolean,
   state?: any,
@@ -165,7 +166,7 @@ export function createRouter<
     stop: stopRouteContext,
   } = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options)
   const notFoundRejection = getRejectionByType('NotFound')
-  const valueStore = createRouteValueStore()
+  const navigation = createRouterNavigation({ onResponse: onNavigationResponse })
   const notFoundRoute = createResolvedRoute(notFoundRejection.route)
 
   const hooks = createRouterHooks({ redirectStatus, onHookAdded: addHookContext })
@@ -291,97 +292,112 @@ export function createRouter<
       return
     }
 
-    const to = find(url, options) ?? null
-    const from = getFromRouteForHooks()
-    const progress = navigationProgress.begin({
-      to,
-      from,
-      expected: countRouteUnits(url, to),
-      inert: isSSR || options.hydrating,
-    })
+    const next = options.prefetch ?? navigation.create()
+    next.stage()
 
-    function commitNavigation(): void {
-      if (!to) {
-        reject(NOT_FOUND_REJECTION_TYPE, { to, from })
-        progress.abort()
+    try {
+      const to = find(url, options) ?? null
+      const from = getFromRouteForHooks()
+      const progress = navigationProgress.begin({
+        to,
+        from,
+        expected: countRouteUnits(url, to),
+        inert: isSSR || options.hydrating,
+      })
 
-        return
+      function commitNavigation(): void {
+        if (!to) {
+          reject(NOT_FOUND_REJECTION_TYPE, { to, from })
+          progress.abort()
+
+          return
+        }
+
+        clearRejection()
+
+        if (!isExternal(url)) {
+          const values = next.commit({ to, from })
+
+          activity.add(...values)
+          progress.track(...values, ...loadAsyncComponents(to))
+
+          routerRoute.updateRoute(to)
+        }
+
+        progress.close()
+        started.value = true
+
+        if (!options.hydrating) {
+          updateTitle(controller.signal)
+        }
       }
-
-      clearRejection()
-
-      if (!isExternal(url)) {
-        setRouteValuesAndUpdateRoute(to, from, progress, controller.signal)
-      }
-
-      progress.close()
-      started.value = true
 
       if (!options.hydrating) {
-        updateTitle(controller.signal)
+        const shouldCommit = await runBeforeHooks({ controller, to, from, url, options, progress })
+
+        if (!shouldCommit) {
+          controller.abort()
+
+          return
+        }
       }
-    }
 
-    if (!options.hydrating) {
-      const shouldCommit = await runBeforeHooks({ controller, to, from, url, options, progress })
+      const routeCommit = createRouteCommit({
+        route: to,
+        navigation: next,
+        signal: controller.signal,
+        update: commitNavigation,
+      })
+      const transition = getViewTransition({
+        to,
+        from,
+        options,
+        enabled: !isSSR && !isExternal(url),
+      })
 
-      if (!shouldCommit) {
-        controller.abort()
+      const { isBlockingNavigation } = getNavigationOption({
+        routerNavigation,
+        routeNavigation: getRouteNavigationOption(to),
+        navigation: options.navigation,
+      })
+      const shouldPrepareNavigation = transition || isBlockingNavigation
 
+      if (transition) {
+        viewTransitions.prepare(transition)
+      } else {
+        viewTransitions.reset()
+      }
+
+      if (!options.hydrating && shouldPrepareNavigation) {
+        const prepared = await routeCommit.prepare()
+
+        if (!prepared && transition) {
+          viewTransitions.cancel(transition)
+        }
+
+        if (!prepared) {
+          return
+        }
+      }
+
+      if (transition) {
+        await viewTransitions.start(routeCommit.commit)
+        await runAfterHooks({ controller, to, from, enabled: !isSSR })
         return
       }
-    }
 
-    const routeCommit = createRouteCommit({
-      route: to,
-      signal: controller.signal,
-      update: commitNavigation,
-    })
-    const transition = getViewTransition({
-      to,
-      from,
-      options,
-      enabled: !isSSR && !isExternal(url),
-    })
-
-    const { isBlockingNavigation } = getNavigationOption({
-      routerNavigation,
-      routeNavigation: getRouteNavigationOption(to),
-      navigation: options.navigation,
-    })
-    const shouldPrepareNavigation = transition || isBlockingNavigation
-
-    if (transition) {
-      viewTransitions.prepare(transition)
-    } else {
-      viewTransitions.reset()
-    }
-
-    if (!options.hydrating && shouldPrepareNavigation) {
-      const prepared = await routeCommit.prepare()
-
-      if (!prepared && transition) {
-        viewTransitions.cancel(transition)
-      }
-
-      if (!prepared) {
-        return
+      await Promise.all([
+        routeCommit.commit(),
+        runAfterHooks({ controller, to, from, enabled: !isSSR }),
+      ])
+    } finally {
+      if (next !== navigation.current()) {
+        next.dispose()
       }
     }
-
-    if (transition) {
-      await viewTransitions.start(routeCommit.commit)
-      await runAfterHooks({ controller, to, from, enabled: !isSSR })
-      return
-    }
-
-    await Promise.all([
-      routeCommit.commit(),
-      runAfterHooks({ controller, to, from, enabled: !isSSR }),
-    ])
   })
 
-  function createRouteCommit({ route, signal, update }: RouteCommitOptions): RouteCommit {
+  function createRouteCommit({ route, navigation, signal, update }: RouteCommitOptions): RouteCommit {
     const isAborted = (): boolean => signal.aborted
 
     const prepare: RouteCommit['prepare'] = async () => {
@@ -393,10 +409,9 @@ export function createRouter<
         return true
       }
 
-      const values = valueStore.staged().compute(route)
+      const values = navigation.compute(route, getComputations(route))
       const work = Promise.allSettled([
-        values.props,
-        values.loaders,
+        Promise.all(values),
         ...loadAsyncComponents(route),
       ])
       await Promise.race([
@@ -455,70 +470,47 @@ export function createRouter<
     return getComputations(to).length + getAsyncComponents(to).length
   }
 
-  function setRouteValuesAndUpdateRoute(to: ResolvedRoute, from: ResolvedRoute | null, progress: NavigationProgressTracker, signal: AbortSignal): void {
-    const { props, loaders, values } = valueStore.commit(to)
-
-    activity.add(
-      handleRouteValueResponse(props, 'props', to, from, signal),
-      handleRouteValueResponse(loaders, 'loader', to, from, signal),
-    )
-
-    progress.track(...values, ...loadAsyncComponents(to))
-
-    routerRoute.updateRoute(to)
-  }
-
   /**
    * Props and loaders are handled the same way, and neither is awaited here: a push or a rejection from
    * either is acted on whenever it arrives, without holding up the navigation that started it. Once that
    * navigation is superseded, its outcomes can no longer change the page or run error hooks.
    */
-  function handleRouteValueResponse(response: Promise<RouteValueResponse>, source: DataKind, to: ResolvedRoute, from: ResolvedRoute | null, signal: AbortSignal): Promise<void> {
-    return response
-      .then((response) => {
-        if (signal.aborted) {
-          return
-        }
+  function onNavigationResponse({ response, to, from }: RouterNavigationResponseEvent): void {
+    const work = (async (): Promise<void> => {
+      switch (response.status) {
+        case 'PUSH':
+          push(...response.to)
+          break
 
-        switch (response.status) {
-          case 'SUCCESS':
-          case 'ABANDONED':
-            break
+        case 'REJECT':
+          reject(response.type, { to, from })
+          break
 
-          case 'PUSH':
-            push(...response.to)
-            break
+        case 'ERROR':
+          try {
+            hooks.runErrorHooks(response.error, { to, from, source: response.source })
+          } catch (error) {
+            if (error instanceof ContextPushError) {
+              push(...error.response.to)
+              return
+            }
 
-          case 'REJECT':
-            reject(response.type, { to, from })
-            break
+            if (error instanceof ContextRejectionError) {
+              reject(error.response.type, { to, from })
+              return
+            }
 
-          default:
-            const exhaustive: never = response
-            throw new Error(`Switch is not exhaustive for route data response status: ${JSON.stringify(exhaustive)}`)
-        }
-      })
-      .catch((error: unknown) => {
-        if (signal.aborted) {
-          return
-        }
-
-        try {
-          hooks.runErrorHooks(error, { to, from, source })
-        } catch (error) {
-          if (error instanceof ContextPushError) {
-            push(...error.response.to)
-            return
+            throw error
           }
+          break
 
-          if (error instanceof ContextRejectionError) {
-            reject(error.response.type, { to, from })
-            return
-          }
+        default:
+          const exhaustive: never = response
+          throw new Error(`Switch is not exhaustive for route data response status: ${JSON.stringify(exhaustive)}`)
+      }
+    })()
 
-          throw error
-        }
-      })
+    activity.add(work)
   }
 
   const resolve: RouterResolve<TRoutes | TPlugin['routes']> = (
@@ -551,15 +543,15 @@ export function createRouter<
     }
 
     if (typeof source === 'string') {
-      const { replace, navigation, viewTransition, redirectStatus, ...options }: RouterPushOptionsInternal = { ...maybeOptions }
+      const { replace, navigation, prefetch, viewTransition, redirectStatus, ...options }: RouterPushOptionsInternal = { ...maybeOptions }
       const params: any = { ...paramsOrOptions }
       const resolved = resolve(source, params, options)
       const state = setStateValues({ ...resolved.matched.state }, { ...resolved.state, ...options.state })
 
-      return { url: resolved.href, options: { replace, state, navigation, viewTransition }, redirectStatus }
+      return { url: resolved.href, options: { replace, state, navigation, prefetch, viewTransition }, redirectStatus }
     }
 
-    const { replace, navigation, viewTransition, redirectStatus, ...options }: RouterPushOptionsInternal = { ...paramsOrOptions }
+    const { replace, navigation, prefetch, viewTransition, redirectStatus, ...options }: RouterPushOptionsInternal = { ...paramsOrOptions }
     const state = setStateValues({ ...source.matched.state }, { ...source.state, ...options.state })
 
     const url = updateUrl(source.href, {
@@ -567,7 +559,7 @@ export function createRouter<
       hash: options.hash,
     })
 
-    return { url, options: { replace, state, navigation, viewTransition }, redirectStatus }
+    return { url, options: { replace, state, navigation, prefetch, viewTransition }, redirectStatus }
   }
 
   const push: RouterPushInternal<TRoutes | TPlugin['routes']> = async (
@@ -579,6 +571,8 @@ export function createRouter<
 
     if (isSSR) {
       setServerRedirect(redirectStatus ?? 302, url)
+      const current = navigation.current()
+      current.abandon()
 
       return
     }
@@ -617,6 +611,8 @@ export function createRouter<
     }
 
     const controller = navigations.begin()
+    navigation.staged().dispose()
+    navigation.current().abandon()
 
     hooks.runRejectionHooks(rejection, { to, from })
 
@@ -630,7 +626,7 @@ export function createRouter<
     routerKey,
     route: notFoundRoute,
     push,
-    getData: valueStore.getData,
+    getData: navigation.getData,
   })
 
   /**
@@ -695,12 +691,11 @@ export function createRouter<
       case 'success': {
         const values = decodePayloadValues(to, payload.values, options?.transformer)
 
-        const store = valueStore.createDetachedStore()
+        const store = navigation.create()
 
         store.fill(to, values)
-        store.stage()
 
-        await set(initialUrl, { replace: true, state: initialState, hydrating: true })
+        await set(initialUrl, { replace: true, state: initialState, hydrating: true, prefetch: store })
 
         return
       }
@@ -779,7 +774,7 @@ export function createRouter<
 
     const title = await getTitle()
     const resolved = routerRoute.getResolvedRoute()
-    const { values, failures } = encodePayloadValues(resolved, valueStore.getValues(resolved), options?.transformer)
+    const { values, failures } = encodePayloadValues(resolved, navigation.getValues(resolved), options?.transformer)
 
     return {
       kind: 'success',
@@ -793,6 +788,7 @@ export function createRouter<
   function stop(): void {
     stopped = true
     stopRouteContext()
+    navigation.stop()
     navigations.stop()
     navigationProgress.stop()
     history.stopListening()
@@ -805,7 +801,7 @@ export function createRouter<
   function install(app: App): void {
     app.onUnmount(stop)
     hooks.setVueApp(app)
-    valueStore.setVueApp(app)
+    navigation.setVueApp(app)
 
     const routerView = createRouterView(routerKey)
     const routerLink = createRouterLink(routerKey)
@@ -818,7 +814,7 @@ export function createRouter<
     app.provide(getViewTransitionKey(routerKey), viewTransitions.viewTransition)
     app.provide(getRouterRejectionInjectionKey(routerKey), currentRejection)
     app.provide(getRouterHooksKey(routerKey), hooks)
-    app.provide(getRouteValueStoreInjectionKey(routerKey), valueStore)
+    app.provide(getRouterNavigationInjectionKey(routerKey), navigation)
     app.provide(getComponentsStoreKey(routerKey), componentsStore)
     app.provide(getNavigationProgressKey(routerKey), navigationProgress)
     app.provide(visibilityObserverKey, visibilityObserver)

@@ -1,36 +1,38 @@
 import { markRaw, reactive, shallowRef, ShallowRef } from 'vue'
 import { isPromise } from '@/utilities/promises'
-import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
+import { MaybePromise } from '@/types/utilities'
+import { CallbackContextResponse } from '@/types/callbackContext'
 
-export type DataResultValue = { kind: 'value', value: unknown }
+export type DataResultAbandoned = { status: 'ABANDONED' }
 
-export type DataResultError = { kind: 'error', error: unknown }
+export type DataResultPending = { status: 'PENDING' }
 
-export type DataResultAbandoned = { kind: 'abandoned' }
+export type DataResultRunning = { status: 'RUNNING' }
 
-export type DataResultPending = { kind: 'pending' }
+export type DataResultMissing = { status: 'MISSING' }
 
-export type DataResultRunning = { kind: 'running' }
-
-export type DataResultMissing = { kind: 'missing' }
+export type DataResultSettled = CallbackContextResponse | DataResultAbandoned
 
 /**
- * Where a key has got to: nothing has asked for it, something is waiting on it, its getter is in flight,
- * or how that getter settled. Tagged so that a getter returning `undefined` or an `Error` stays a value.
+ * A computation response or its current lifecycle state.
  */
-export type DataResult = DataResultValue | DataResultError | DataResultAbandoned | DataResultPending | DataResultRunning | DataResultMissing
+export type DataResult = DataResultSettled | DataResultPending | DataResultRunning | DataResultMissing
 
-const ABANDONED: DataResultAbandoned = { kind: 'abandoned' }
+const ABANDONED: DataResultAbandoned = { status: 'ABANDONED' }
 
-const PENDING: DataResultPending = { kind: 'pending' }
+const PENDING: DataResultPending = { status: 'PENDING' }
 
-const RUNNING: DataResultRunning = { kind: 'running' }
+const RUNNING: DataResultRunning = { status: 'RUNNING' }
 
-const MISSING: DataResultMissing = { kind: 'missing' }
+const MISSING: DataResultMissing = { status: 'MISSING' }
+
+export type DataStoreSettledEvent = {
+  result: DataResultSettled,
+}
 
 type Entry = {
-  promise: Promise<unknown>,
-  resolve: (value: unknown) => void,
+  promise: Promise<CallbackContextResponse>,
+  resolve: (value: CallbackContextResponse | PromiseLike<CallbackContextResponse>) => void,
   reject: (reason: unknown) => void,
   state: ShallowRef<DataResult>,
 }
@@ -44,34 +46,32 @@ export type DataStore = {
    * The value for a key, whether or not anything has computed it yet. Subscribing to a key nobody has set
    * leaves a promise waiting for whoever does.
    */
-  subscribe: (key: string) => Promise<unknown>,
+  subscribe: (key: string) => Promise<CallbackContextResponse>,
   /**
    * Computes a key, unless something already has. A key promoted from another store while its getter is
    * still running is left alone, so navigation adopts it rather than computing it a second time.
    */
-  set: (key: string, getter: () => unknown) => void,
+  set: (key: string, getter: () => MaybePromise<CallbackContextResponse>) => void,
   /**
    * What is known about a key, without waiting for it. Reactive, and readable during render.
    */
   get: (key: string) => DataResult,
   /**
-   * Aborts when the store is disposed, so a getter still running can stop work nothing will read.
+   * Discards stored values after their signal has been aborted.
    */
-  signal: AbortSignal,
-  /**
-   * Ends the store. Every value is rejected so that anything waiting on one resumes rather than staying
-   * suspended, then discarded.
-   */
-  dispose: (reason: Error) => void,
+  dispose: () => void,
 }
 
-export function createDataStore(): DataStore {
+type CreateDataStoreOptions = {
+  signal: AbortSignal,
+  onSettled?: (event: DataStoreSettledEvent) => void,
+}
+
+export function createDataStore({ signal, onSettled }: CreateDataStoreOptions): DataStore {
   const entries: Map<string, Entry> = reactive(new Map())
-  const controller = new AbortController()
-  const disposed = shallowRef(false)
 
   function create(): Entry {
-    const { promise, resolve, reject } = Promise.withResolvers<unknown>()
+    const { promise, resolve, reject } = Promise.withResolvers<CallbackContextResponse>()
 
     // a value nobody happens to await must not surface as an unhandled rejection
     promise.catch(() => {})
@@ -88,8 +88,8 @@ export function createDataStore(): DataStore {
 
     const created = create()
 
-    if (disposed.value) {
-      settle(created, { kind: 'error', error: controller.signal.reason })
+    if (signal.aborted) {
+      settle(created, ABANDONED)
 
       return created
     }
@@ -99,78 +99,84 @@ export function createDataStore(): DataStore {
     return created
   }
 
-  function settle(target: Entry, result: DataResultValue | DataResultError): void {
+  function settle(target: Entry, result: DataResultSettled): void {
     const current = target.state.value
 
-    if (current.kind === 'value' || current.kind === 'error' || current.kind === 'abandoned') {
+    if (current.status !== 'PENDING' && current.status !== 'RUNNING') {
       return
     }
 
-    if (result.kind === 'error' && result.error instanceof NavigationAbandonedError) {
-      target.state.value = ABANDONED
-    } else {
-      target.state.value = result
+    target.state.value = result
+
+    switch (result.status) {
+      case 'SUCCESS':
+      case 'ERROR':
+      case 'PUSH':
+      case 'REJECT':
+        target.resolve(result)
+        break
+      case 'ABANDONED':
+        target.reject(signal.reason)
+        break
+      default: {
+        const exhaustive: never = result
+        throw new Error(`Switch is not exhaustive for data result: ${JSON.stringify(exhaustive)}`)
+      }
     }
 
-    if (result.kind === 'value') {
-      target.resolve(result.value)
-    } else {
-      target.reject(result.error)
-    }
+    onSettled?.({ result: target.state.value })
   }
 
   const subscribe: DataStore['subscribe'] = (key) => entry(key).promise
 
   const set: DataStore['set'] = (key, getter) => {
+    if (signal.aborted) {
+      return
+    }
+
     const target = entry(key)
 
-    if (target.state.value.kind !== 'pending') {
+    if (target.state.value.status !== 'PENDING') {
       return
     }
 
     target.state.value = RUNNING
 
-    try {
-      const value = getter()
+    const result = getter()
 
-      if (isPromise(value)) {
-        value.then(
-          (resolved) => settle(target, { kind: 'value', value: resolved }),
-          (error: unknown) => settle(target, { kind: 'error', error }),
-        )
+    if (isPromise(result)) {
+      result.then((resolved) => settle(target, resolved))
 
-        return
-      }
-
-      settle(target, { kind: 'value', value })
-    } catch (error) {
-      settle(target, { kind: 'error', error })
+      return
     }
+
+    settle(target, result)
   }
 
   const get: DataStore['get'] = (key) => {
-    if (disposed.value) {
+    const result = entries.get(key)?.state.value
+
+    if (!result && signal.aborted) {
       return ABANDONED
     }
 
-    return entries.get(key)?.state.value ?? MISSING
+    return result ?? MISSING
   }
 
-  const dispose: DataStore['dispose'] = (reason) => {
-    controller.abort(reason)
-    disposed.value = true
-
-    for (const [key, dying] of entries) {
-      entries.delete(key)
-      settle(dying, { kind: 'error', error: reason })
+  signal.addEventListener('abort', () => {
+    for (const entry of entries.values()) {
+      settle(entry, ABANDONED)
     }
+  }, { once: true })
+
+  const dispose: DataStore['dispose'] = () => {
+    entries.clear()
   }
 
   return {
     subscribe,
     set,
     get,
-    signal: controller.signal,
     dispose,
   }
 }
