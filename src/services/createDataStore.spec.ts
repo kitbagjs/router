@@ -3,9 +3,9 @@ import { effect } from 'vue'
 import { flushPromises } from '@vue/test-utils'
 import { createDataStore } from './createDataStore'
 import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
-import { ComputationResponse } from '@/types/callbackContext'
+import { CallbackContextResponse } from '@/types/callbackContext'
 
-const computedResponse: ComputationResponse = {
+const computedResponse: CallbackContextResponse = {
   status: 'SUCCESS',
   value: 'computed',
 }
@@ -35,7 +35,7 @@ describe('set and subscribe', () => {
     const controller = new AbortController()
     const onSettled = vi.fn()
     const store = createDataStore({ signal: controller.signal, onSettled })
-    const response: ComputationResponse = {
+    const response: CallbackContextResponse = {
       status: 'ERROR',
       error: new Error('failed'),
       source: 'loader',
@@ -65,7 +65,7 @@ describe('get', () => {
   test('tracks a value from missing through computation to success', async () => {
     const controller = new AbortController()
     const store = createDataStore({ signal: controller.signal })
-    const pending = Promise.withResolvers<ComputationResponse>()
+    const pending = Promise.withResolvers<CallbackContextResponse>()
 
     expect(store.get('key')).toEqual({ status: 'MISSING' })
     const waiting = store.subscribe('key')
@@ -82,7 +82,7 @@ describe('get', () => {
   test('reactive readers update when a response settles', async () => {
     const controller = new AbortController()
     const store = createDataStore({ signal: controller.signal })
-    const seen: (ComputationResponse | undefined)[] = []
+    const seen: (CallbackContextResponse | undefined)[] = []
 
     const reader = effect(() => {
       const result = store.get('key')
@@ -159,7 +159,7 @@ test('an already aborted signal rejects subscribers and skips getters', async ()
 test('aborting rejects unfinished work while retaining settled values', async () => {
   const controller = new AbortController()
   const store = createDataStore({ signal: controller.signal })
-  const pending = Promise.withResolvers<ComputationResponse>()
+  const pending = Promise.withResolvers<CallbackContextResponse>()
   const reason = new NavigationAbandonedError()
   store.set('settled', () => computedResponse)
   store.set('pending', () => pending.promise)
@@ -180,7 +180,7 @@ test('onSettled reports a value once when its work finishes', async () => {
   const controller = new AbortController()
   const onSettled = vi.fn()
   const store = createDataStore({ signal: controller.signal, onSettled })
-  const pending = Promise.withResolvers<ComputationResponse>()
+  const pending = Promise.withResolvers<CallbackContextResponse>()
 
   store.set('key', () => pending.promise)
   store.set('key', () => computedResponse)

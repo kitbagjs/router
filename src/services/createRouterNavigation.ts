@@ -9,7 +9,7 @@ import { ContextRejectionError } from '@/errors/contextRejectionError'
 import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
 import { PropsCallbackParent } from '@/types/props'
 import { createVueAppStore, HasVueAppStore } from './createVueAppStore'
-import { CallbackContextError, CallbackContextPush, CallbackContextReject, ComputationResponse } from '@/types/callbackContext'
+import { CallbackContextError, CallbackContextPush, CallbackContextReject, CallbackContextResponse } from '@/types/callbackContext'
 import { createRouterCallbackContext } from './createRouterCallbackContext'
 import { createDataStore, DataStore, DataStoreSettledEvent } from './createDataStore'
 import { DataKind, getDataKey } from './getDataKey'
@@ -49,13 +49,13 @@ export type RouterNavigationStore = {
    * Disposes of the previously staged navigation and sets this navigation as staged.
    */
   stage: () => void,
-  commit: (options: RouterNavigationCommitOptions) => Promise<ComputationResponse>[],
+  commit: (options: RouterNavigationCommitOptions) => Promise<CallbackContextResponse>[],
   abandon: () => void,
   dispose: () => void,
   /**
    * Computes the supplied values.
    */
-  compute: (route: ResolvedRoute, computations: Computation[]) => Promise<ComputationResponse>[],
+  compute: (route: ResolvedRoute, computations: Computation[]) => Promise<CallbackContextResponse>[],
   /**
    * Adopts values that already settled, in place of running their getters.
    */
@@ -84,7 +84,7 @@ export type RouterNavigationStores = HasVueAppStore & {
   /**
    * Makes the staged navigation current and computes whatever the route still lacks.
    */
-  commit: (options: RouterNavigationCommitOptions) => Promise<ComputationResponse>[],
+  commit: (options: RouterNavigationCommitOptions) => Promise<CallbackContextResponse>[],
   /**
    * The values currently settled in the store.
    */
@@ -150,7 +150,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
       })
     }
 
-    function compute(route: ResolvedRoute, computations: Computation[]): Promise<ComputationResponse>[] {
+    function compute(route: ResolvedRoute, computations: Computation[]): Promise<CallbackContextResponse>[] {
       if (controller.signal.aborted) {
         return []
       }
@@ -164,7 +164,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
       return values
     }
 
-    function run(computation: Computation, route: ResolvedRoute): MaybePromise<ComputationResponse> {
+    function run(computation: Computation, route: ResolvedRoute): MaybePromise<CallbackContextResponse> {
       try {
         const { push, replace, reject, update } = createRouterCallbackContext({ to: route })
 
@@ -179,7 +179,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
         if (isPromise(value)) {
           return value.then(
-            (value): ComputationResponse => ({ status: 'SUCCESS', value }),
+            (value): CallbackContextResponse => ({ status: 'SUCCESS', value }),
             toErrorResponse,
           )
         }
@@ -189,7 +189,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
         return toErrorResponse(error)
       }
 
-      function toErrorResponse(error: unknown): ComputationResponse {
+      function toErrorResponse(error: unknown): CallbackContextResponse {
         if (error instanceof ContextPushError || error instanceof ContextRejectionError) {
           return error.response
         }
@@ -216,7 +216,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
       }
     }
 
-    function commit({ to, from }: RouterNavigationCommitOptions): Promise<ComputationResponse>[] {
+    function commit({ to, from }: RouterNavigationCommitOptions): Promise<CallbackContextResponse>[] {
       if (state.abandoned) {
         return []
       }
@@ -527,7 +527,7 @@ function warnWaitingOnUncomputedValue({ kind, name }: ValueLocation, route: Reso
   `)
 }
 
-function toDataValue(value: Promise<ComputationResponse>): Promise<unknown> {
+function toDataValue(value: Promise<CallbackContextResponse>): Promise<unknown> {
   const unwrapped = value.then(unwrapComputationResponse)
 
   unwrapped.catch(() => {})
@@ -535,7 +535,7 @@ function toDataValue(value: Promise<ComputationResponse>): Promise<unknown> {
   return unwrapped
 }
 
-function toPropsResult(response: ComputationResponse): PropsResult {
+function toPropsResult(response: CallbackContextResponse): PropsResult {
   try {
     return { kind: 'value', value: unwrapComputationResponse(response) }
   } catch (error) {

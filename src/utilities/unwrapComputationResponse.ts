@@ -1,8 +1,8 @@
 import { ContextPushError } from '@/errors/contextPushError'
 import { ContextRejectionError } from '@/errors/contextRejectionError'
-import { ComputationResponse } from '@/types/callbackContext'
+import { CallbackContextResponse } from '@/types/callbackContext'
 
-export function unwrapComputationResponse(response: ComputationResponse): unknown {
+export function unwrapComputationResponse(response: CallbackContextResponse): unknown {
   switch (response.status) {
     case 'SUCCESS':
       return response.value

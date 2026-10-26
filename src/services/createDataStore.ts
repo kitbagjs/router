@@ -1,7 +1,7 @@
 import { markRaw, reactive, shallowRef, ShallowRef } from 'vue'
 import { isPromise } from '@/utilities/promises'
 import { MaybePromise } from '@/types/utilities'
-import { ComputationResponse } from '@/types/callbackContext'
+import { CallbackContextResponse } from '@/types/callbackContext'
 
 export type DataResultAbandoned = { status: 'ABANDONED' }
 
@@ -11,7 +11,7 @@ export type DataResultRunning = { status: 'RUNNING' }
 
 export type DataResultMissing = { status: 'MISSING' }
 
-export type DataResultSettled = ComputationResponse | DataResultAbandoned
+export type DataResultSettled = CallbackContextResponse | DataResultAbandoned
 
 /**
  * A computation response or its current lifecycle state.
@@ -31,8 +31,8 @@ export type DataStoreSettledEvent = {
 }
 
 type Entry = {
-  promise: Promise<ComputationResponse>,
-  resolve: (value: ComputationResponse | PromiseLike<ComputationResponse>) => void,
+  promise: Promise<CallbackContextResponse>,
+  resolve: (value: CallbackContextResponse | PromiseLike<CallbackContextResponse>) => void,
   reject: (reason: unknown) => void,
   state: ShallowRef<DataResult>,
 }
@@ -46,12 +46,12 @@ export type DataStore = {
    * The value for a key, whether or not anything has computed it yet. Subscribing to a key nobody has set
    * leaves a promise waiting for whoever does.
    */
-  subscribe: (key: string) => Promise<ComputationResponse>,
+  subscribe: (key: string) => Promise<CallbackContextResponse>,
   /**
    * Computes a key, unless something already has. A key promoted from another store while its getter is
    * still running is left alone, so navigation adopts it rather than computing it a second time.
    */
-  set: (key: string, getter: () => MaybePromise<ComputationResponse>) => void,
+  set: (key: string, getter: () => MaybePromise<CallbackContextResponse>) => void,
   /**
    * What is known about a key, without waiting for it. Reactive, and readable during render.
    */
@@ -71,7 +71,7 @@ export function createDataStore({ signal, onSettled }: CreateDataStoreOptions): 
   const entries: Map<string, Entry> = reactive(new Map())
 
   function create(): Entry {
-    const { promise, resolve, reject } = Promise.withResolvers<ComputationResponse>()
+    const { promise, resolve, reject } = Promise.withResolvers<CallbackContextResponse>()
 
     // a value nobody happens to await must not surface as an unhandled rejection
     promise.catch(() => {})

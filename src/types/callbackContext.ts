@@ -31,4 +31,4 @@ export type CallbackContextError = {
   source: DataKind,
 }
 
-export type ComputationResponse = CallbackContextSuccess | CallbackContextPush | CallbackContextReject | CallbackContextError
+export type CallbackContextResponse = CallbackContextSuccess | CallbackContextPush | CallbackContextReject | CallbackContextError
