@@ -17,8 +17,6 @@ const { data, loading, error } = useLoader(route.loaders.user)
 </template>
 ```
 
-The returned properties are readonly refs. Consumers share the existing route load, including prefetched or hydrated data. When navigation replaces that load, the refs follow its state and clear the previous data and error.
-
 ## Reusable loaders
 
 Pass a [reusable loader](/core-concepts/loaders#reusable-loaders) directly to `useLoader`:
