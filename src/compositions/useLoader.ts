@@ -166,7 +166,11 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunct
         throw current.error
       }
 
-      return new Promise((resolve, reject) => waiting.add({ resolve, reject }))
+      const { promise, resolve, reject } = Promise.withResolvers<unknown>()
+
+      waiting.add({ resolve, reject })
+
+      return promise
     }
 
     const data = computed(() => {
