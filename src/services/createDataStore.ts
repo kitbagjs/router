@@ -7,6 +7,8 @@ export type DataResultError = { kind: 'error', error: unknown }
 
 export type DataResultAbandoned = { kind: 'abandoned' }
 
+export type DataResultSettled = DataResultValue | DataResultError | DataResultAbandoned
+
 export type DataResultPending = { kind: 'pending' }
 
 export type DataResultRunning = { kind: 'running' }
@@ -28,7 +30,7 @@ const RUNNING: DataResultRunning = { kind: 'running' }
 const MISSING: DataResultMissing = { kind: 'missing' }
 
 export type DataStoreSettledEvent = {
-  result: DataResultValue | DataResultError | DataResultAbandoned,
+  result: DataResultSettled,
 }
 
 type Entry = {
@@ -100,7 +102,7 @@ export function createDataStore({ signal, onSettled }: CreateDataStoreOptions): 
     return created
   }
 
-  function settle(target: Entry, result: DataResultValue | DataResultError | DataResultAbandoned): void {
+  function settle(target: Entry, result: DataResultSettled): void {
     const current = target.state.value
 
     if (current.kind === 'value' || current.kind === 'error' || current.kind === 'abandoned') {
