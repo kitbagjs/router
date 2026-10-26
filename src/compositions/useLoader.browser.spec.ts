@@ -1,13 +1,15 @@
-import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
 /* eslint-disable vue/one-component-per-file */
 import { flushPromises, mount } from '@vue/test-utils'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import { defineComponent } from 'vue'
 import { createLoader, createRejection, createRoute, createRouter, createRouterAssets, Router, useLoader } from '@/main'
+import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
+import { warnLoaderFallback } from '@/services/warnLoaderFallback'
+
+vi.mock('@/services/warnLoaderFallback', () => ({ warnLoaderFallback: vi.fn() }))
 
 afterEach(() => {
-  vi.restoreAllMocks()
-  vi.unstubAllEnvs()
+  vi.clearAllMocks()
 })
 
 function mountConsumer<TResult>(router: Router, setup: () => TResult): TResult {
@@ -131,7 +133,7 @@ test('keeps loader data isolated between routers', async () => {
 })
 
 describe('fallback loaders', () => {
-  test('reloads data after navigation to the same URL', async () => {
+  test('starts a new load when navigating to the same URL', async () => {
     const load = vi.fn<() => number>()
       .mockReturnValueOnce(1)
       .mockReturnValueOnce(2)
@@ -149,7 +151,7 @@ describe('fallback loaders', () => {
     expect(load).toHaveBeenCalledTimes(2)
   })
 
-  test('stops loading when the component unmounts', async () => {
+  test('does not start new loads after the component unmounts', async () => {
     const load = vi.fn(() => 'loaded')
     const loader = createLoader({ load })
     const route = createRoute({ name: 'home', path: '/[id]' })
@@ -170,9 +172,7 @@ describe('fallback loaders', () => {
     expect(load).toHaveBeenCalledTimes(1)
   })
 
-  test('shares one load and warning between consumers', async () => {
-    vi.stubEnv('NODE_ENV', 'development')
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+  test('loads a missing definition once for all consumers', async () => {
     const pending = Promise.withResolvers<string>()
     const load = vi.fn(() => pending.promise)
     const loader = createLoader({ load })
@@ -186,8 +186,12 @@ describe('fallback loaders', () => {
 
     expect(first.loading.value).toBe(true)
     expect(load).toHaveBeenCalledTimes(1)
-    expect(warn).toHaveBeenCalledTimes(1)
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining('not attached'), loader)
+    expect(warnLoaderFallback).toHaveBeenCalledExactlyOnceWith({
+      loader,
+      route: expect.objectContaining({ name: 'home', href: '/' }),
+      fallback: { reason: 'missing' },
+      isServerRendering: false,
+    })
 
     pending.resolve('loaded')
     await flushPromises()
@@ -195,9 +199,7 @@ describe('fallback loaders', () => {
     expect(second.data.value).toBe('loaded')
   })
 
-  test('warns and loads separately when multiple attachments match', async () => {
-    vi.stubEnv('NODE_ENV', 'development')
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+  test('loads ambiguous definitions separately from route attachments', async () => {
     const load = vi.fn<() => number>()
       .mockReturnValueOnce(1)
       .mockReturnValueOnce(2)
@@ -211,11 +213,15 @@ describe('fallback loaders', () => {
     const result = mountConsumer(router, () => useLoader(loader))
 
     expect(result.data.value).toBe(3)
-    expect(warn).toHaveBeenCalledTimes(1)
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining('route "home": "first", "second"'), loader)
+    expect(warnLoaderFallback).toHaveBeenCalledExactlyOnceWith({
+      loader,
+      route: expect.objectContaining({ name: 'home', href: '/' }),
+      fallback: { reason: 'ambiguous', names: ['first', 'second'] },
+      isServerRendering: false,
+    })
   })
 
-  test('cancels the previous load and preserves its route snapshot', async () => {
+  test('aborts the previous load and keeps its original route', async () => {
     const first = Promise.withResolvers<string>()
     const second = Promise.withResolvers<string>()
     const signals: AbortSignal[] = []
@@ -250,7 +256,7 @@ describe('fallback loaders', () => {
     expect(params).toEqual(['1', '2'])
   })
 
-  test('ignores errors from a previous navigation', async () => {
+  test('ignores errors after a load is replaced', async () => {
     const first = Promise.withResolvers<string>()
     const loader = createLoader({
       load: (route) => {
@@ -276,7 +282,7 @@ describe('fallback loaders', () => {
     expect(result.data.value).toBe('current')
   })
 
-  test('ignores previous redirects after navigation to the same URL', async () => {
+  test('ignores redirects after a load is replaced', async () => {
     const first = Promise.withResolvers<void>()
     const loader = createLoader({
       load: (route, { push }) => {
@@ -303,7 +309,7 @@ describe('fallback loaders', () => {
     expect(router.route.href).toBe('/1')
   })
 
-  test('abandons pending loads when the router stops', async () => {
+  test('aborts pending loads when the router stops', async () => {
     const pending = Promise.withResolvers<string>()
     const loader = createLoader({ load: () => pending.promise })
     const route = createRoute({ name: 'home', path: '/' })
@@ -319,7 +325,7 @@ describe('fallback loaders', () => {
     expect(loading.value).toBe(false)
   })
 
-  test('supports push to routes in the loader context', async () => {
+  test('navigates to routes declared by the loader', async () => {
     const home = createRoute({ name: 'home', path: '/' })
     const target = createRoute({ name: 'target', path: '/target' })
     const loader = createLoader({
@@ -340,7 +346,7 @@ describe('fallback loaders', () => {
     expect(result.data.value).toBe('arrived')
   })
 
-  test('supports replace without adding a history entry', async () => {
+  test('replaces the current history entry when the loader calls replace', async () => {
     const route = createRoute({ name: 'page', path: '/[page]' })
     const loader = createLoader({
       load: (route, { replace }) => {
@@ -364,7 +370,7 @@ describe('fallback loaders', () => {
     await vi.waitFor(() => expect(router.route.href).toBe('/previous'))
   })
 
-  test('supports rejections from the loader context', async () => {
+  test('rejects navigation with rejections declared by the loader', async () => {
     const denied = createRejection({ type: 'Denied' })
     const loader = createLoader({
       context: [denied],
@@ -382,7 +388,7 @@ describe('fallback loaders', () => {
     })
   })
 
-  test('reports load errors through error and router error hooks', async () => {
+  test('sets error and calls the router error hook when loading fails', async () => {
     const failure = new Error('Load failed')
     const loader = createLoader({
       load: () => {
