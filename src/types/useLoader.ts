@@ -10,7 +10,6 @@ type UseLoaderResponse<TData = unknown> = {
 }
 
 /**
- * Reactive loader state that can also be awaited until a current load settles.
- * If navigation abandons that load, the await follows its replacement while the consumer remains mounted.
+ * Reactive loader state that can also be awaited for its initial load to settle.
  */
 export type UseLoader<TData = unknown> = UseLoaderResponse<TData> & PromiseLike<UseLoaderResponse<TData>>
