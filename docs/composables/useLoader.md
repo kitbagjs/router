@@ -32,34 +32,10 @@ const user = useLoader(userLoader)
 
 ## Awaiting data
 
-Await the initial load to use Vue's suspense boundary. A successful await returns the same reactive
-refs:
+Await `useLoader` to wait for the initial data. The returned refs continue to update as you navigate.
 
 ```ts
 const { data: user, loading, error } = await useLoader(userLoader)
-```
-
-If the initial load fails, the await rejects with the original error, which can be handled with
-`try/catch`. An uncaught failure from async setup reaches Vue's error handling. `Suspense` handles
-loading; a parent's `onErrorCaptured()` hook can handle async setup errors.
-
-Without an await, failures are exposed through the reactive `error` ref. After a successful await,
-the refs continue following navigation: later failures update `error` without rejecting an await
-that has already resolved.
-
-A loader that pushes or rejects the navigation does not put a cancellation error in `error`. Its unfinished consumers stay loading while navigation changes the page. An awaiting component that survives the navigation waits for its replacement load. Unmounting the component releases its subscription without resuming its abandoned setup.
-
-If a guard prevents the replacement navigation, the cancelled consumer stays pending until a later navigation provides a replacement load.
-
-Place `Suspense` inside the `RouterView` slot so a replacement route or rejection view replaces its pending root:
-
-```vue
-<RouterView v-slot="{ component }">
-  <Suspense>
-    <component :is="component" v-if="component" />
-    <template #fallback>Loading…</template>
-  </Suspense>
-</RouterView>
 ```
 
 ## Loader attachments
