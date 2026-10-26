@@ -42,17 +42,16 @@ export function createComponentPropsWrapper(routerKey: InjectionKey<Router>, { i
       const reportError = useRouterSuspense()
       const props = computed(() => navigation.getProps(id, name, route))
 
-      watch(props, async (props, _previous, onCleanup) => {
-        const state = { active: true }
-        onCleanup(() => {
-          state.active = false
-        })
-
+      watch(props, async (props) => {
+        const owner = navigation.current()
         const result = await props
+        const current = navigation.current()
 
-        if (state.active && result.kind === 'error') {
-          reportError(result.error)
+        if (current !== owner || result.kind !== 'error') {
+          return
         }
+
+        reportError(result.error)
       }, { immediate: true, flush: 'post' })
 
       return () => {

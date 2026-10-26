@@ -133,8 +133,9 @@ test('ignores props failures from a replaced navigation', async () => {
     global: { plugins: [router] },
   })
 
-  await router.push('/2')
+  const navigating = router.push('/2')
   pending.reject(new Error('obsolete failure'))
+  await navigating
   await flushPromises()
   expect(wrapper.text()).toBe('ready')
   expect(errorSlot).not.toHaveBeenCalled()
