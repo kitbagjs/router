@@ -16,6 +16,11 @@ type UsePrefetchingConfig = PrefetchConfigs & {
   route: ResolvedRoute | undefined,
 }
 
+type PrefetchDestination = {
+  route: Pick<ResolvedRoute, 'id' | 'href'> | undefined,
+  state: unknown[],
+}
+
 type UsePrefetching = {
   element: Ref<HTMLElement | undefined>,
   enabled: Ref<boolean>,
@@ -57,29 +62,42 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
 
     onScopeDispose(() => prefetch.dispose())
 
-    const watchedConfig = computed(() => {
-      const { route, ...configs } = toValue(config)
+    const destination = computed<PrefetchDestination>((previous) => {
+      const { route } = toValue(config)
       const stateNames = route?.matches.flatMap((match) => Object.keys(match.state ?? {})) ?? []
-      const state = stateNames.length
-        ? Object.fromEntries(stateNames.map((name) => [name, route?.state[name]]))
-        : undefined
+      const state = stateNames.map((name) => route?.state[name])
+
+      // Configuration changes can resolve the same destination again without changing its state.
+      if (previous
+        && isSameResolvedRoute(route, previous.route)
+        && state.length === previous.state.length
+        && state.every((value, index) => Object.is(value, previous.state[index]))) {
+        return previous
+      }
 
       return {
         route: route ? { id: route.id, href: route.href } : undefined,
         state,
-        ...configs,
       }
     })
 
-    watch(watchedConfig, (current, previous) => {
-      const routeChanged = !isSameResolvedRoute(current.route, previous?.route)
-      const hasState = current.state !== undefined || previous?.state !== undefined
+    watch(destination, () => {
+      prefetch.dispose()
+      prefetch = navigation.create()
+      prefetchRoute()
+    }, {
+      immediate: true,
+      deep: true,
+      flush: 'sync',
+    })
 
-      if (routeChanged || hasState) {
-        prefetch.dispose()
-        prefetch = navigation.create()
-      }
+    watch(() => {
+      const { route, ...configs } = toValue(config)
 
+      return configs
+    }, prefetchRoute, { deep: true })
+
+    function prefetchRoute(): void {
       const { route, ...configs } = toValue(config)
 
       if (!route) {
@@ -91,11 +109,7 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
       if (isElementVisible.value) {
         doPrefetchingForStrategy('lazy', route, configs)
       }
-    }, {
-      immediate: true,
-      deep: true,
-      flush: 'sync',
-    })
+    }
 
     watch(isElementVisible, (isVisible) => {
       const { route, ...configs } = toValue(config)

@@ -391,6 +391,39 @@ test('hovering immediately after a state change prefetches the new value', async
   router.stop()
 })
 
+test('changing prefetch strategy preserves cached data for a link with state', async () => {
+  const load = vi.fn((count: number | undefined) => count)
+  const home = createRoute({ name: 'home', path: '/' })
+  const route = createRoute({
+    name: 'route',
+    path: '/route',
+    state: { count: Number },
+  })
+    .addLoader((route) => load(route.state.count))
+  const router = createRouter([home, route], { initialUrl: '/' })
+  const prefetch = ref<PrefetchConfig>('eager')
+  const state = { count: 1 }
+  await router.start()
+
+  const wrapper = mount({
+    setup: () => () => h(RouterLink, { to: '/route', state, prefetch: prefetch.value }),
+  }, {
+    global: { plugins: [router] },
+  })
+  await flushPromises()
+  expect(load).toHaveBeenCalledExactlyOnceWith(1)
+
+  prefetch.value = 'intent'
+  await flushPromises()
+  await wrapper.find('a').trigger('mouseover')
+  await wrapper.find('a').trigger('click')
+  await flushPromises()
+
+  await expect(router.route.data).resolves.toBe(1)
+  expect(load).toHaveBeenCalledOnce()
+  router.stop()
+})
+
 test('named and unnamed loaders respect their own config and feed prefetched props', async () => {
   const load = vi.fn(() => 'default data')
   const named = vi.fn(() => 'named data')
