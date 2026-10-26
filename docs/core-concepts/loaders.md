@@ -48,7 +48,7 @@ const settings = createRoute({...})
 
 ## Reading data in a component
 
-Pass a definition from `route.loaders` to [`useLoader`](/composables/useLoader). Await it at the top level of `<script setup>` to use Vue’s Suspense.
+Pass a definition from `route.loaders` to [`useLoader`](/composables/useLoader).
 
 ```vue
 <!-- UserPage.vue -->
@@ -56,7 +56,7 @@ Pass a definition from `route.loaders` to [`useLoader`](/composables/useLoader).
 import { useLoader, useRoute } from '@kitbag/router'
 
 const route = useRoute('user')
-const { data: user } = await useLoader(route.loaders.default)
+const { data: user } = useLoader(route.loaders.default)
 </script>
 
 <template>

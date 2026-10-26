@@ -140,7 +140,7 @@ export const createView: RouterAssets<RegisteredRouter>['createView'] = routerAs
 export const createLoader: RouterAssets<RegisteredRouter>['createLoader'] = routerAssets.createLoader
 
 /**
- * Reads a loader's reactive state or awaits its current data. Must be called during setup.
+ * Reads a loader's reactive state. Must be called during setup.
  */
 export const useLoader: RouterAssets<RegisteredRouter>['useLoader'] = routerAssets.useLoader
 

@@ -38,16 +38,6 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunct
       }
     })
 
-    async function getData(): Promise<unknown> {
-      if (!router.started.value) {
-        await router.start()
-      }
-
-      const location = getLoaderLocation(router.route, loader)
-
-      return navigation.getLoaderValue(location, router.route)
-    }
-
     const data = computed(() => {
       if (state.value.status === 'SUCCESS') {
         return state.value.value
@@ -74,14 +64,7 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunct
       error,
     }
 
-    return {
-      ...result,
-      then: (onfulfilled, onrejected) => {
-        return getData()
-          .then(() => result)
-          .then(onfulfilled, onrejected)
-      },
-    }
+    return result
   }
 
   return useLoader
