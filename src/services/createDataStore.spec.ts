@@ -84,7 +84,7 @@ describe('set and subscribe', () => {
     await expect(store.subscribe('key')).rejects.toBe(error)
   })
 
-  test.each([false, true])('a cancelled getter reports abandonment (async: %s)', async (isAsync) => {
+  test.each([false, true])('a getter throwing NavigationAbandonedError remains an error (async: %s)', async (isAsync) => {
     const controller = new AbortController()
     const store = createDataStore({ signal: controller.signal })
     const error = new NavigationAbandonedError()
@@ -98,7 +98,7 @@ describe('set and subscribe', () => {
     })
 
     await expect(store.subscribe('key')).rejects.toBe(error)
-    expect(store.get('key')).toStrictEqual({ kind: 'abandoned' })
+    expect(store.get('key')).toStrictEqual({ kind: 'error', error })
   })
 
   test('setting a key twice does not call the second getter', () => {

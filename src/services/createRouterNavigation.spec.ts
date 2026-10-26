@@ -43,10 +43,11 @@ test('a rejected props getter reports an error before and after it settles', asy
   expect(navigation.getProps(route.id, 'default', resolved)).toEqual({ kind: 'error', error })
 })
 
-test('a props getter that throws NavigationAbandonedError reports abandonment', () => {
+test('a props getter that throws NavigationAbandonedError reports an error', () => {
+  const error = new NavigationAbandonedError()
   const route = createRoute({ name: 'route', path: '/' }).addView(component, {
     props: () => {
-      throw new NavigationAbandonedError()
+      throw error
     },
   })
   const resolved = createResolvedRoute(route)
@@ -54,7 +55,7 @@ test('a props getter that throws NavigationAbandonedError reports abandonment', 
 
   navigation.commit({ to: resolved, from: null })
 
-  expect(navigation.getProps(route.id, 'default', resolved)).toEqual({ kind: 'abandoned' })
+  expect(navigation.getProps(route.id, 'default', resolved)).toEqual({ kind: 'error', error })
 })
 
 test('a view without a props getter reports a successful value with no props', () => {

@@ -1,6 +1,5 @@
 import { markRaw, reactive, shallowRef, ShallowRef } from 'vue'
 import { isPromise } from '@/utilities/promises'
-import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
 
 export type DataResultValue = { kind: 'value', value: unknown }
 
@@ -91,7 +90,7 @@ export function createDataStore({ signal, onSettled }: CreateDataStoreOptions): 
     const created = create()
 
     if (signal.aborted) {
-      settle(created, { kind: 'error', error: signal.reason })
+      settle(created, ABANDONED)
 
       return created
     }
@@ -101,23 +100,29 @@ export function createDataStore({ signal, onSettled }: CreateDataStoreOptions): 
     return created
   }
 
-  function settle(target: Entry, result: DataResultValue | DataResultError): void {
+  function settle(target: Entry, result: DataResultValue | DataResultError | DataResultAbandoned): void {
     const current = target.state.value
 
     if (current.kind === 'value' || current.kind === 'error' || current.kind === 'abandoned') {
       return
     }
 
-    if (result.kind === 'error' && result.error instanceof NavigationAbandonedError) {
-      target.state.value = ABANDONED
-    } else {
-      target.state.value = result
-    }
+    target.state.value = result
 
-    if (result.kind === 'value') {
-      target.resolve(result.value)
-    } else {
-      target.reject(result.error)
+    switch (result.kind) {
+      case 'value':
+        target.resolve(result.value)
+        break
+      case 'error':
+        target.reject(result.error)
+        break
+      case 'abandoned':
+        target.reject(signal.reason)
+        break
+      default: {
+        const exhaustive: never = result
+        throw new Error(`Switch is not exhaustive for data result: ${JSON.stringify(exhaustive)}`)
+      }
     }
 
     onSettled?.({ result: target.state.value })
@@ -168,7 +173,7 @@ export function createDataStore({ signal, onSettled }: CreateDataStoreOptions): 
 
   signal.addEventListener('abort', () => {
     for (const entry of entries.values()) {
-      settle(entry, { kind: 'error', error: signal.reason })
+      settle(entry, ABANDONED)
     }
   }, { once: true })
 
