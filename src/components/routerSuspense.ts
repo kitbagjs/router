@@ -1,6 +1,7 @@
 import { defineComponent, h, InjectionKey, onErrorCaptured, shallowRef, SlotsType, Suspense, VNode, watch } from 'vue'
 import { createUseRouter } from '@/compositions/useRouter'
 import { createUseRejection } from '@/compositions/useRejection'
+import { useIsServerRendering } from '@/compositions/useIsServerRendering'
 import { isRouterRoute } from '@/services/createRouterRoute'
 import { Router } from '@/types/router'
 
@@ -24,6 +25,7 @@ export function createRouterSuspense<TRouter extends Router>(routerKey: Injectio
       const router = useRouter()
       const route = router.route
       const rejection = useRejection()
+      const isServerRendering = useIsServerRendering()
       const failure = shallowRef<{ error: unknown }>()
 
       if (!isRouterRoute(routerKey, route)) {
@@ -34,10 +36,12 @@ export function createRouterSuspense<TRouter extends Router>(routerKey: Injectio
         failure.value = undefined
       }, { flush: 'sync' })
 
-      onErrorCaptured((error) => {
-        failure.value ??= { error }
-        return false
-      })
+      if (!isServerRendering) {
+        onErrorCaptured((error) => {
+          failure.value ??= { error }
+          return false
+        })
+      }
 
       return () => {
         if (failure.value) {

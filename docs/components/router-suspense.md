@@ -5,6 +5,8 @@ globally by the [router plugin](/quick-start#vue-plugin).
 
 Use the default slot for content, `#fallback` while it awaits setup, and `#error` for a failure.
 Without an error slot, the component displays a generic error message.
+The error slot handles client-side failures; server-rendering errors continue to the application's
+server error handler.
 
 ```vue
 <template>
