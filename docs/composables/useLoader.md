@@ -19,7 +19,11 @@ const { data, loading, error } = useLoader(route.loaders.user)
 
 ## Reusable loaders
 
-Pass a [reusable loader](/core-concepts/loaders#reusable-loaders) directly to `useLoader`:
+Pass a [reusable loader](/core-concepts/loaders#reusable-loaders) directly to `useLoader`. It looks for
+that definition on the current route, including parent routes, and uses the matching attachment.
+
+If the definition is missing or attached more than once, `error` reports the selection error and
+awaiting it rejects. Pass `route.loaders[name]` to select a specific attachment.
 
 ```ts
 import { useLoader } from '@kitbag/router'
