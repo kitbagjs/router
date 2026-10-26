@@ -1,10 +1,18 @@
 /* eslint-disable vue/one-component-per-file */
 import { flushPromises, mount } from '@vue/test-utils'
 import { expect, test, vi } from 'vitest'
-import { defineComponent, h } from 'vue'
+import { Component, defineComponent, h } from 'vue'
 import { createRoute, createRouter, createRouterAssets, RouterSuspense } from '@/main'
 
-test('renders the loading slot while async setup is pending', async () => {
+function createFailingComponent(error: unknown = new Error('failed')): Component {
+  return defineComponent({
+    setup: () => () => {
+      throw error
+    },
+  })
+}
+
+test('shows fallback while setup is pending', async () => {
   const pending = Promise.withResolvers<void>()
   const child = defineComponent({
     async setup() {
@@ -28,12 +36,15 @@ test('renders the loading slot while async setup is pending', async () => {
   expect(wrapper.text()).toBe('ready')
 })
 
-test.each([new Error('failed'), undefined, null, false])('passes the original async setup failure %s to the error slot', async (failure) => {
-  const pending = Promise.withResolvers<void>()
+test.each([
+  { name: 'an Error', error: new Error('failed') },
+  { name: 'undefined', error: undefined },
+  { name: 'null', error: null },
+  { name: 'false', error: false },
+])('passes $name to the error slot', async ({ error }) => {
   const child = defineComponent({
     async setup() {
-      await pending.promise
-      throw failure
+      throw error
     },
     render: () => null,
   })
@@ -46,19 +57,14 @@ test.each([new Error('failed'), undefined, null, false])('passes the original as
     global: { plugins: [router], config: { errorHandler: appError } },
   })
 
-  pending.resolve()
   await flushPromises()
   expect(wrapper.text()).toBe('failed')
-  expect(errorSlot).toHaveBeenCalledWith({ error: failure })
+  expect(errorSlot).toHaveBeenCalledWith({ error })
   expect(appError).not.toHaveBeenCalled()
 })
 
-test('renders a generic error state when there is no error slot', async () => {
-  const child = defineComponent({
-    setup: () => () => {
-      throw new Error('private failure details')
-    },
-  })
+test('shows a default error when no error slot is provided', async () => {
+  const child = createFailingComponent(new Error('private failure details'))
   const router = createRouter([createRoute({ name: 'home', path: '/' })], { initialUrl: '/' })
   await router.start()
   const wrapper = mount(RouterSuspense, { slots: { default: () => h(child) }, global: { plugins: [router] } })
@@ -67,12 +73,8 @@ test('renders a generic error state when there is no error slot', async () => {
   expect(wrapper.get('[role="alert"]').text()).toBe('Unable to load this content.')
 })
 
-test('the nearest boundary handles the error', async () => {
-  const child = defineComponent({
-    setup: () => () => {
-      throw new Error('failed')
-    },
-  })
+test('handles errors in the nearest boundary', async () => {
+  const child = createFailingComponent()
   const router = createRouter([createRoute({ name: 'home', path: '/' })], { initialUrl: '/' })
   await router.start()
   const outerError = vi.fn(() => h('p', 'outer error'))
@@ -92,7 +94,7 @@ test('the nearest boundary handles the error', async () => {
   expect(outerError).not.toHaveBeenCalled()
 })
 
-test('refresh resets the error and remounts the content at the same URL', async () => {
+test('remounts content when the route is refreshed', async () => {
   const setup = vi.fn()
   let failed = true
   const child = defineComponent({
@@ -122,18 +124,10 @@ test('refresh resets the error and remounts the content at the same URL', async 
   expect(setup).toHaveBeenCalledTimes(2)
 })
 
-test('an error in the error slot reaches the outer boundary', async () => {
-  const child = defineComponent({
-    setup: () => () => {
-      throw new Error('content failed')
-    },
-  })
+test('passes error slot failures to the parent boundary', async () => {
+  const child = createFailingComponent(new Error('content failed'))
   const failure = new Error('error view failed')
-  const errorView = defineComponent({
-    setup: () => () => {
-      throw failure
-    },
-  })
+  const errorView = createFailingComponent(failure)
   const router = createRouter([createRoute({ name: 'home', path: '/' })], { initialUrl: '/' })
   await router.start()
   const outerError = vi.fn(() => h('p', 'outer error'))
@@ -153,16 +147,12 @@ test('an error in the error slot reaches the outer boundary', async () => {
   expect(outerError).toHaveBeenCalledWith({ error: failure })
 })
 
-test('an aborted navigation keeps the current error state', async () => {
+test('keeps the error visible when navigation is aborted', async () => {
   const route = createRoute({ name: 'home', path: '/[id]' })
   route.onBeforeRouteUpdate((_to, { abort }) => abort())
   const router = createRouter([route], { initialUrl: '/1' })
   await router.start()
-  const child = defineComponent({
-    setup: () => () => {
-      throw new Error('failed')
-    },
-  })
+  const child = createFailingComponent()
   const errorSlot = vi.fn(() => h('p', 'failed'))
   const wrapper = mount(RouterSuspense, {
     slots: { default: () => h(child), error: errorSlot },
@@ -175,7 +165,7 @@ test('an aborted navigation keeps the current error state', async () => {
   expect(errorSlot).toHaveBeenCalledTimes(1)
 })
 
-test('router assets reset only for their own router', async () => {
+test('resets only when its own router refreshes', async () => {
   const route = createRoute({ name: 'home', path: '/' })
   const first = createRouter([route], { initialUrl: '/', isGlobalRouter: false })
   const second = createRouter([route], { initialUrl: '/', isGlobalRouter: false })
