@@ -1,7 +1,7 @@
 # Types: AddErrorHook\<TRoutes, TRejections\>
 
 ```ts
-type AddErrorHook<TRoutes, TRejections> = (hook) => HookRemove;
+type AddErrorHook<TRoutes, TRejections> = (hook, options?) => HookRemove;
 ```
 
 ## Type Parameters
@@ -16,6 +16,7 @@ type AddErrorHook<TRoutes, TRejections> = (hook) => HookRemove;
 | Parameter | Type |
 | ------ | ------ |
 | `hook` | [`ErrorHook`](ErrorHook.md)\<`TRoutes`, `TRejections`\> |
+| `options?` | [`HookRegistrationOptions`](HookRegistrationOptions.md) |
 
 ## Returns
 

@@ -112,6 +112,7 @@
 - [Hook](types/Hook.md)
 - [HookCallbackContext](types/HookCallbackContext.md)
 - [HookLifecycle](types/HookLifecycle.md)
+- [HookRegistrationOptions](types/HookRegistrationOptions.md)
 - [HookRemove](types/HookRemove.md)
 - [LiteralParam](types/LiteralParam.md)
 - [Loader](types/Loader.md)
