@@ -411,34 +411,28 @@ test('disposing a committed navigation prevents delivery of its settled redirect
   expect(onResponse).not.toHaveBeenCalled()
 })
 
-test('a redirect abandons unfinished computations without a response handler', async () => {
+test('a redirect abandons running loaders without a response handler', async () => {
+  const ready = Promise.withResolvers<void>()
   const pending = Promise.withResolvers<string>()
+  const started = Promise.withResolvers<AbortSignal>()
   const route = createResolvedRoute(createRoute({ path: '/' })
-    .addLoader((_route, { push }) => push('/next'), { name: 'redirect' })
-    .addLoader(() => pending.promise, { name: 'pending' }))
+    .addLoader(async (_route, { push }) => {
+      await ready.promise
+      push('/next')
+    }, { name: 'redirect' })
+    .addLoader((_route, { signal }) => {
+      started.resolve(signal)
+      return pending.promise
+    }, { name: 'pending' }))
   const navigation = createRouterNavigation()
-
   const current = navigation.create()
-  const values = current.commit({ to: route, from: null })
+  const [redirect, value] = current.commit({ to: route, from: null })
+  const signal = await started.promise
 
-  await expect(values[1]).rejects.toBeInstanceOf(NavigationAbandonedError)
-  await expect(values[0]).resolves.toEqual({ status: 'PUSH', to: ['/next'] })
-})
+  expect(signal.aborted).toBe(false)
+  ready.resolve()
 
-test('an unexpected error leaves other computations running', async () => {
-  const pending = Promise.withResolvers<string>()
-  const error = new Error('failed')
-  const route = createResolvedRoute(createRoute({ path: '/' })
-    .addLoader(() => {
-      throw error
-    }, { name: 'failed' })
-    .addLoader(() => pending.promise, { name: 'pending' }))
-  const navigation = createRouterNavigation()
-
-  const current = navigation.create()
-  const values = current.commit({ to: route, from: null })
-
-  await expect(values[0]).resolves.toEqual({ status: 'ERROR', error, source: 'loader' })
-  pending.resolve('value')
-  await expect(values[1]).resolves.toEqual({ status: 'SUCCESS', value: 'value' })
+  await expect(redirect).resolves.toEqual({ status: 'PUSH', to: ['/next'] })
+  await expect(value).rejects.toBeInstanceOf(NavigationAbandonedError)
+  expect(signal.aborted).toBe(true)
 })

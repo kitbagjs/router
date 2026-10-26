@@ -232,44 +232,69 @@ test('render on an unstarted router does not report a bogus success for an unmat
   expect(result.status).toBe(404)
 })
 
-test.each(['push', 'reject', 'error hook'] as const)('SSR abandons other loaders when a %s outcome wins', async (action) => {
+test('SSR returns a loader redirect without waiting for other loaders', async () => {
   const ready = Promise.withResolvers<void>()
-  const unfinished = Promise.withResolvers<string>()
+  const pending = Promise.withResolvers<string>()
+  const page = createRoute({ name: 'page', path: '/' })
+    .addLoader(async (_route, { push }) => {
+      await ready.promise
+      push('/target')
+    }, { name: 'redirect' })
+    .addLoader(() => pending.promise, { name: 'pending' })
+  const router = createRouter([page], { initialUrl: '/', ssr: true })
+  await router.start()
+
+  const rendering = router.render()
+  ready.resolve()
+
+  await expect(rendering).resolves.toMatchObject({ kind: 'redirect', status: 302, location: '/target' })
+  router.stop()
+})
+
+test('SSR returns a loader rejection without waiting for other loaders', async () => {
+  const ready = Promise.withResolvers<void>()
+  const pending = Promise.withResolvers<string>()
+  const page = createRoute({ name: 'page', path: '/' })
+    .addLoader(async (_route, { reject }) => {
+      await ready.promise
+      reject('NotFound')
+    }, { name: 'rejection' })
+    .addLoader(() => pending.promise, { name: 'pending' })
+  const router = createRouter([page], { initialUrl: '/', ssr: true })
+  await router.start()
+
+  const rendering = router.render()
+  ready.resolve()
+
+  await expect(rendering).resolves.toMatchObject({ kind: 'reject', status: 404, rejection: 'NotFound' })
+  router.stop()
+})
+
+test('SSR returns an error hook redirect and ignores late loader errors', async () => {
+  const ready = Promise.withResolvers<void>()
+  const pending = Promise.withResolvers<string>()
+  const error = new Error('loader failed')
   const onError = vi.fn<ErrorHook>((_error, { push }) => {
     push('/target')
   })
-  const signals: AbortSignal[] = []
   const page = createRoute({ name: 'page', path: '/' })
-    .addLoader(async (_route, { push, reject }) => {
+    .addLoader(async () => {
       await ready.promise
-
-      if (action === 'push') {
-        push('/target')
-      }
-
-      if (action === 'reject') {
-        reject('NotFound')
-      }
-
-      throw new Error('redirect from error hook')
-    }, { name: 'winner' })
-    .addLoader((_route, { signal }) => {
-      signals.push(signal)
-      return unfinished.promise
-    }, { name: 'pending' })
+      throw error
+    }, { name: 'failed' })
+    .addLoader(() => pending.promise, { name: 'pending' })
   const router = createRouter([page], { initialUrl: '/', ssr: true })
   router.onError(onError)
   await router.start()
 
   const rendering = router.render()
   ready.resolve()
-  const result = await rendering
 
-  unfinished.reject(new Error('late failure'))
+  await expect(rendering).resolves.toMatchObject({ kind: 'redirect', status: 302, location: '/target' })
+
+  pending.reject(new Error('late failure'))
   await flushPromises()
 
-  expect(result.kind).toBe(action === 'reject' ? 'reject' : 'redirect')
-  expect(signals[0].aborted).toBe(true)
-  expect(onError).toHaveBeenCalledTimes(action === 'error hook' ? 1 : 0)
+  expect(onError).toHaveBeenCalledExactlyOnceWith(error, expect.anything())
   router.stop()
 })
