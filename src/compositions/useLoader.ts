@@ -1,4 +1,4 @@
-import { computed, InjectionKey, onScopeDispose, shallowRef, toRaw, watch } from 'vue'
+import { computed, InjectionKey, onScopeDispose, shallowRef, toRaw } from 'vue'
 import { AnyLoader, isLoader, Loader } from '@/types/loader'
 import { UseLoader } from '@/types/useLoader'
 import { Router } from '@/types/router'
@@ -128,42 +128,6 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunct
       return navigation.getLoaderState(selection.value.location, router.route)
     })
 
-    let waiting: PromiseWithResolvers<unknown> | undefined
-
-    watch(state, (current) => {
-      if (current.status !== 'SUCCESS' && current.status !== 'ERROR') {
-        return
-      }
-
-      if (current.status === 'SUCCESS') {
-        waiting?.resolve(current.value)
-      } else {
-        waiting?.reject(current.error)
-      }
-
-      waiting = undefined
-    }, { flush: 'sync' })
-
-    async function getData(): Promise<unknown> {
-      if (controller.signal.aborted) {
-        return new Promise<never>(() => {})
-      }
-
-      const current = state.value
-
-      if (current.status === 'SUCCESS') {
-        return current.value
-      }
-
-      if (current.status === 'ERROR') {
-        throw current.error
-      }
-
-      waiting ??= Promise.withResolvers<unknown>()
-
-      return waiting.promise
-    }
-
     const data = computed(() => {
       if (state.value.status === 'SUCCESS') {
         return state.value.value
@@ -190,14 +154,7 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunct
       error,
     }
 
-    return {
-      ...result,
-      then: (onfulfilled, onrejected) => {
-        return getData()
-          .then(() => result)
-          .then(onfulfilled, onrejected)
-      },
-    }
+    return result
   }
 
   return useLoader
