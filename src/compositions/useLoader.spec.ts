@@ -11,14 +11,14 @@ afterEach(() => {
 
 test('unattached loader data is isolated between SSR apps', async () => {
   const userKey: InjectionKey<string> = Symbol('user')
-  const loader = createLoader({ load: async () => inject(userKey) })
+  const loader = createLoader({ load: () => inject(userKey) })
   const route = createRoute({ name: 'home', path: '/' })
 
   async function render(user: string): Promise<string> {
     const router = createRouter([route], { initialUrl: '/', ssr: true })
     const app = createSSRApp(defineComponent({
-      setup: async () => {
-        const { data } = await useLoader(loader)
+      setup: () => {
+        const { data } = useLoader(loader)
 
         return () => h('div', String(data.value))
       },
@@ -27,6 +27,7 @@ test('unattached loader data is isolated between SSR apps', async () => {
     app.use(router)
 
     try {
+      await router.start()
       return await renderToString(app)
     } finally {
       router.stop()
@@ -43,8 +44,8 @@ test('server-rendered fallback loaders warn that their data is absent from the p
   const route = createRoute({ name: 'home', path: '/' })
   const router = createRouter([route], { initialUrl: '/', ssr: true })
   const app = createSSRApp(defineComponent({
-    setup: async () => {
-      const { data } = await useLoader(loader)
+    setup: () => {
+      const { data } = useLoader(loader)
 
       return () => h('div', data.value)
     },
@@ -52,6 +53,7 @@ test('server-rendered fallback loaders warn that their data is absent from the p
   app.use(router)
 
   try {
+    await router.start()
     expect(await renderToString(app)).toBe('<div>loaded</div>')
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('not included in the SSR payload. It will run again on the client.'), loader)
   } finally {

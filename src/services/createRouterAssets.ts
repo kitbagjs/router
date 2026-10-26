@@ -129,7 +129,7 @@ export type RouterAssets<TRouter extends Router> = {
   useLink: ReturnType<typeof createUseLink<TRouter>>,
 
   /**
-   * Reads a loader's reactive state or awaits its current data.
+   * Reads a loader's reactive state.
    */
   useLoader: UseLoaderFunction,
 
