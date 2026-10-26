@@ -102,6 +102,15 @@ If you mix an unnamed loader with named loaders, the unnamed result is available
 
 A loader cannot read `route.data` to depend on another loader on the same route. If two requests depend on each other, put them in a single loader and return the values together.
 
+## Loader definitions
+
+`route.loaders` exposes the current route's loader definitions, including inline and inherited loaders. Each entry has the same `Loader` type returned by `createLoader`. Unnamed loaders use `route.loaders.default`.
+
+```ts
+const route = useRoute('user')
+const userLoader = route.loaders.user
+```
+
 ## Parent data
 
 Child routes can access their ancestors' loader results through `route.data`. Give loaders distinct names across a route and its ancestors; two unnamed loaders also conflict because they both use the name `default`.
