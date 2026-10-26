@@ -33,7 +33,7 @@ Expected navigation outcomes from `context.push()` or `context.reject()` do not 
 
 ```vue
 <RouterSuspense catch>
-  <AsyncPage />
+  <RouterView />
 </RouterSuspense>
 ```
 
@@ -46,7 +46,7 @@ const catchError = (error: unknown) => error instanceof ExpectedError
 
 <template>
   <RouterSuspense :catch="catchError">
-    <AsyncPage />
+    <RouterView />
   </RouterSuspense>
 </template>
 ```
