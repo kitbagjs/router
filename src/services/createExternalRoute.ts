@@ -1,4 +1,4 @@
-import { withRouteHooks } from '@/services/withRouteHooks'
+import { withRouteMethods } from '@/services/withRouteMethods'
 import { ExternalRouteWithMethods } from '@/types/routeWithMethods'
 import { markRaw } from 'vue'
 import { createRouteId } from '@/services/createRouteId'
@@ -8,10 +8,8 @@ import { IS_ROUTE_SYMBOL, Route, RouteInternal } from '@/types/route'
 import { toUrlPart, toUrlQueryPart } from '@/services/withParams'
 import { createRouteHooks } from '@/services/createRouteHooks'
 import { createUrl } from '@/services/createUrl'
-import { addRedirect } from '@/services/addRedirect'
 import { ExternalRouteHooks } from '@/types/hooks'
 import { ExtractRouteContext } from '@/types/routeContext'
-import { RouteRedirects, RouteRedirectFrom, RouteRedirectTo, RedirectToArgs } from '@/types/redirects'
 import { createRouteTitle, RouteSetTitle } from '@/types/routeTitle'
 
 export function createExternalRoute<
@@ -51,14 +49,6 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
     aliases: [],
   } satisfies RouteInternal
 
-  const redirectTo: RouteRedirectTo = (...[to, convertParams, options]: RedirectToArgs) => {
-    addRedirect(route, to, convertParams, options)
-  }
-
-  const redirectFrom: RouteRedirectFrom = (from, convertParams, options) => {
-    addRedirect(from, route, convertParams, options)
-  }
-
   const route = {
     id,
     matches: [rawRoute],
@@ -68,15 +58,13 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
     context,
     setTitle,
     ...hooks,
-    redirectTo,
-    redirectFrom,
     ...url,
     ...internal,
-  } satisfies Route & RouteInternal & ExternalRouteHooks & RouteRedirects & RouteSetTitle
+  } satisfies Route & RouteInternal & ExternalRouteHooks & RouteSetTitle
 
   if (isWithParent(options)) {
-    return withRouteHooks(combineRoutes(options.parent, route, options.hoist))
+    return withRouteMethods(combineRoutes(options.parent, route, options.hoist))
   }
 
-  return withRouteHooks(route)
+  return withRouteMethods(route)
 }

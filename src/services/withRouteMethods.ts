@@ -1,4 +1,5 @@
-import { withRouteHooks } from '@/services/withRouteHooks'
+import { AnyHook } from '@/types/hook'
+import { ComponentHook, HookLifecycle, HookRegistrationOptions, InternalRouteHooks } from '@/types/hooks'
 import { addRedirect } from '@/services/addRedirect'
 import { RouteRedirectFrom, RouteRedirectTo, RedirectToArgs } from '@/types/redirects'
 import { AddAlias, createAliases } from '@/services/addAlias'
@@ -67,12 +68,36 @@ export function withRouteMethods<TRoute extends Route>(route: TRoute): TRoute {
     addRedirect(from, route, convertParams, options)
   }
 
-  return withRouteHooks({
+  const result = {
     ...route,
     addView,
     addLoader,
     addAlias,
     redirectTo,
     redirectFrom,
-  })
+  }
+
+  const hooks = route as TRoute & InternalRouteHooks
+  const lifecycles: HookLifecycle[] = [
+    'onBeforeRouteEnter',
+    'onBeforeRouteUpdate',
+    'onBeforeRouteLeave',
+    'onAfterRouteEnter',
+    'onAfterRouteUpdate',
+    'onAfterRouteLeave',
+  ]
+
+  for (const lifecycle of lifecycles) {
+    const register = hooks[lifecycle] as (hook: ComponentHook | AnyHook, options?: HookRegistrationOptions) => unknown
+
+    Object.assign(result, {
+      [lifecycle]: (hook: ComponentHook | AnyHook, options?: HookRegistrationOptions) => {
+        register(hook, options)
+
+        return result
+      },
+    })
+  }
+
+  return result
 }
