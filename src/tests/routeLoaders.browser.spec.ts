@@ -1,25 +1,20 @@
-/* eslint-disable @typescript-eslint/no-deprecated -- Keep legacy route.data compatibility coverage until removal. */
 /* eslint-disable vue/one-component-per-file */
 import { flushPromises, mount } from '@vue/test-utils'
 import { expect, test } from 'vitest'
-import { defineComponent, h, ref, watch } from 'vue'
+import { defineComponent, h } from 'vue'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
-import { useRoute } from '@/main'
+import { useLoader, useRoute } from '@/main'
 
 /**
- * A view that renders whatever the route's data resolves to, and 'loading' until it does.
+ * A view that renders whatever the loader resolves to, and 'loading' until it does.
  */
 const dataView = defineComponent({
   setup() {
     const route = useRoute()
-    const data = ref<string>()
+    const { data } = useLoader(route.loaders.default)
 
-    watch(() => route.data as Promise<string>, async (loading) => {
-      data.value = await loading
-    }, { immediate: true })
-
-    return () => h('div', {}, data.value ?? 'loading')
+    return () => h('div', {}, String(data.value ?? 'loading'))
   },
 })
 
@@ -31,9 +26,9 @@ test('a component renders before its loader settles', async () => {
     .addLoader(() => promise)
 
   const router = createRouter([route], { initialUrl: '/' })
+  await router.start()
   const wrapper = mount({ template: '<RouterView />' }, { global: { plugins: [router] } })
 
-  await router.start()
   await flushPromises()
 
   expect(wrapper.text()).toBe('loading')
@@ -44,15 +39,15 @@ test('a component renders before its loader settles', async () => {
   expect(wrapper.text()).toBe('kitbag')
 })
 
-test('data is a new promise for each navigation', async () => {
+test('loader data follows navigation', async () => {
   const route = createRoute({ name: 'route', path: '/[id]' })
     .addView(dataView)
     .addLoader(async (route) => `user-${route.params.id}`)
 
   const router = createRouter([route], { initialUrl: '/1' })
+  await router.start()
   const wrapper = mount({ template: '<RouterView />' }, { global: { plugins: [router] } })
 
-  await router.start()
   await flushPromises()
 
   expect(wrapper.text()).toBe('user-1')
@@ -69,9 +64,9 @@ test('a component can await data in setup under suspense', async () => {
   const suspendingView = defineComponent({
     async setup() {
       const route = useRoute()
-      const data = await (route.data as Promise<string>)
+      const { data } = await useLoader(route.loaders.default)
 
-      return () => h('div', {}, data)
+      return () => h('div', {}, String(data.value))
     },
   })
 
@@ -80,9 +75,9 @@ test('a component can await data in setup under suspense', async () => {
     .addLoader(() => promise)
 
   const router = createRouter([route], { initialUrl: '/' })
+  await router.start()
   const wrapper = mount({ template: '<Suspense><RouterView /></Suspense>' }, { global: { plugins: [router] } })
 
-  await router.start()
   await flushPromises()
 
   expect(wrapper.text()).toBe('')
@@ -105,11 +100,7 @@ test('a view renders with its props while a loader is still running', async () =
     },
     setup(props) {
       const route = useRoute()
-      const data = ref<string>()
-
-      watch(() => route.data as Promise<string>, async (loading) => {
-        data.value = await loading
-      }, { immediate: true })
+      const { data } = useLoader(route.loaders.default)
 
       return () => h('div', {}, `${props.value}:${data.value ?? 'loading'}`)
     },
@@ -120,9 +111,9 @@ test('a view renders with its props while a loader is still running', async () =
     .addLoader(() => promise)
 
   const router = createRouter([route], { initialUrl: '/' })
+  await router.start()
   const wrapper = mount({ template: '<RouterView />' }, { global: { plugins: [router] } })
 
-  await router.start()
   await flushPromises()
 
   expect(wrapper.text()).toBe('props:loading')

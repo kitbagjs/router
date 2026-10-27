@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-deprecated -- Keep legacy route.data compatibility coverage until removal. */
 import { flushPromises } from '@vue/test-utils'
 import { Location } from '@/services/history'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
@@ -31,7 +30,7 @@ test('initial route is set', async () => {
   expect(route.matched.name).toBe('root')
 })
 
-test('stopping the router aborts its loaders without exposing cancellation to data consumers', async () => {
+test('stopping the router aborts its loaders', async () => {
   const pending = Promise.withResolvers<string>()
   const signals: AbortSignal[] = []
   const route = createRoute({ name: 'home', path: '/' })
@@ -41,16 +40,10 @@ test('stopping the router aborts its loaders without exposing cancellation to da
     })
   const router = createRouter([route], { initialUrl: '/' })
   await router.start()
-  const data = router.route.data
 
   router.stop()
 
   expect(signals[0].aborted).toBe(true)
-  const settled = vi.fn()
-  data.then(settled, settled)
-  router.route.data.then(settled, settled)
-  await flushPromises()
-  expect(settled).not.toHaveBeenCalled()
 })
 
 test('initial state is set', async () => {
@@ -2137,28 +2130,6 @@ test('a before hook redirect discards prefetched work for the original route', a
   const signal = await started.promise
   expect(signal.aborted).toBe(true)
   expect(router.route.name).toBe('target')
-  router.stop()
-})
-
-test('settled current data remains readable while another navigation waits on a guard', async () => {
-  const waiting = Promise.withResolvers<void>()
-  const release = Promise.withResolvers<void>()
-  const home = createRoute({ name: 'home', path: '/' }).addLoader(() => 'home data')
-  const target = createRoute({ name: 'target', path: '/target' })
-  target.onBeforeRouteEnter(() => {
-    waiting.resolve()
-    return release.promise
-  })
-  const router = createRouter([home, target], { initialUrl: '/' })
-  await router.start()
-  await router.route.data
-
-  const navigating = router.push('target')
-  await waiting.promise
-
-  await expect(router.route.data).resolves.toBe('home data')
-  release.resolve()
-  await navigating
   router.stop()
 })
 

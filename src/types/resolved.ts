@@ -88,9 +88,7 @@ export type ResolvedRoute<TRoute extends Route = Route> = Readonly<{
 }>
 
 /**
- * A resolved route whose loaders' data is available. Only the route being navigated to has data: a route
- * the router merely resolved is not being loaded, so data on it could never settle. The current route and
- * a props getter's route have it, `router.resolve` and hooks do not.
+ * A resolved route supplied to a props callback with access to its loaders' data.
  */
 export type WithData<TRoute extends Route = Route> = {
   /**

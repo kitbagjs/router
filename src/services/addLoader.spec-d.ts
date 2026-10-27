@@ -4,7 +4,6 @@ import { Loader } from '@/types/loader'
 import { createLoader } from '@/services/createLoader'
 import { BuiltInRejectionType } from '@/types/rejection'
 import { ResolvedRoute, WithData } from '@/types/resolved'
-import { RouterRoute } from '@/types/routerRoute'
 import { Route } from '@/types/route'
 import { component } from '@/utilities/testHelpers'
 import { RouteView } from '@/types/routeViews'
@@ -141,12 +140,6 @@ describe('route data', () => {
       default: Promise<User>,
       posts: Promise<number[]>,
     }>()
-  })
-
-  test('the router route exposes the route data', () => {
-    const route = createRoute({ name: 'route' }).addLoader(() => 'kitbag', { name: 'user' })
-
-    expectTypeOf<RouterRoute<ResolvedRoute<typeof route>>['data']>().toEqualTypeOf<{ user: Promise<string> }>()
   })
 })
 
