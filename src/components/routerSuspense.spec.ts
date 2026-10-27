@@ -4,7 +4,7 @@ import { createSSRApp, defineComponent, h } from 'vue'
 import { renderToString } from 'vue/server-renderer'
 import { createRoute, createRouter, RouterSuspense } from '@/main'
 
-test('renders async content on the server', async () => {
+test('renders content after async setup resolves on the server', async () => {
   const child = defineComponent({
     async setup() {
       await Promise.resolve()
@@ -22,7 +22,7 @@ test('renders async content on the server', async () => {
   }
 })
 
-test('forwards server errors to the app error handler', async () => {
+test('forwards server errors to the app error handler even when catch is enabled', async () => {
   const failure = new Error('failed')
   const child = defineComponent({
     async setup() {
@@ -31,15 +31,16 @@ test('forwards server errors to the app error handler', async () => {
     render: () => null,
   })
   const router = createRouter([createRoute({ name: 'home', path: '/' })], { initialUrl: '/', ssr: true })
-  const errorSlot = vi.fn(() => h('p', 'client error'))
+  const errorSlot = vi.fn(() => h('p', 'failed'))
   const app = createSSRApp({ render: () => h(RouterSuspense, { catch: true }, { default: () => h(child), error: errorSlot }) })
-  const onError = vi.fn()
-  app.config.errorHandler = onError
+  const appErrorHandler = vi.fn()
+  app.config.errorHandler = appErrorHandler
   app.use(router)
 
   try {
     await renderToString(app)
-    expect(onError.mock.calls[0][0]).toBe(failure)
+    expect(appErrorHandler).toHaveBeenCalledTimes(1)
+    expect(appErrorHandler.mock.calls[0][0]).toBe(failure)
     expect(errorSlot).not.toHaveBeenCalled()
   } finally {
     router.stop()
