@@ -32,6 +32,7 @@ outer boundary or Vue's app error handler.
 
 | Prop | Required | Type | Default | Description |
 | --- | --- | --- | --- | --- |
+| props | false | `boolean` | `true` | Includes route props getter errors |
 | catch | false | `boolean` or `(error: unknown) => boolean` | `false` | Includes all component errors when true, or only errors matching the predicate |
 
 ```vue

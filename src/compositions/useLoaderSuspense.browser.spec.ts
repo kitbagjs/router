@@ -97,7 +97,7 @@ test.each(loaderAttachments)('shows the error slot when the initial load fails (
   const appError = vi.fn()
   const predicate = vi.fn(() => false)
   const wrapper = mount(RouterSuspense, {
-    props: { catch: predicate },
+    props: { props: false, catch: predicate },
     slots: { default: () => h(consumer), fallback: () => h('p', 'waiting'), error: errorSlot },
     global: { plugins: [router], config: { errorHandler: appError } },
   })
@@ -132,7 +132,7 @@ test.each(loaderAttachments)('reports later errors even when data is not read ($
   const appError = vi.fn()
   const predicate = vi.fn(() => false)
   const wrapper = mount(RouterSuspense, {
-    props: { catch: predicate },
+    props: { props: false, catch: predicate },
     slots: { default: () => h(consumer), error: errorSlot },
     global: { plugins: [router], config: { errorHandler: appError } },
   })

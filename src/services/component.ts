@@ -39,7 +39,7 @@ export function createComponentPropsWrapper(routerKey: InjectionKey<Router>, { i
       const route = useRoute()
       const isServerRendering = useIsServerRendering()
       const hasSuspenseBoundary = useHasSuspenseBoundary()
-      const reportError = useRouterSuspense()
+      const reportError = useRouterSuspense('props')
       const props = computed(() => navigation.getProps(id, name, route))
 
       watch(props, async (props) => {

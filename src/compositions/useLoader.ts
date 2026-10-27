@@ -40,7 +40,7 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunct
     }
 
     const navigation = useRouterNavigation()
-    const reportError = useRouterSuspense()
+    const reportError = useRouterSuspense('loader')
     const isServerRendering = useIsServerRendering()
 
     const selection = shallowRef<LoaderSelection>()
