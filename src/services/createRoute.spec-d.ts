@@ -28,7 +28,12 @@ describe('route shape', () => {
 
   test('has hooks', () => {
     type Hooks = {
-      [TKey in keyof InternalRouteHooks]: (...args: Parameters<InternalRouteHooks[TKey]>) => unknown
+      onBeforeRouteEnter: (...args: Parameters<InternalRouteHooks['onBeforeRouteEnter']>) => unknown,
+      onBeforeRouteUpdate: (...args: Parameters<InternalRouteHooks['onBeforeRouteUpdate']>) => unknown,
+      onBeforeRouteLeave: (...args: Parameters<InternalRouteHooks['onBeforeRouteLeave']>) => unknown,
+      onAfterRouteEnter: (...args: Parameters<InternalRouteHooks['onAfterRouteEnter']>) => unknown,
+      onAfterRouteUpdate: (...args: Parameters<InternalRouteHooks['onAfterRouteUpdate']>) => unknown,
+      onAfterRouteLeave: (...args: Parameters<InternalRouteHooks['onAfterRouteLeave']>) => unknown,
     }
 
     expectTypeOf(cases.plain).toExtend<Hooks>()
