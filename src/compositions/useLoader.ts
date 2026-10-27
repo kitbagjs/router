@@ -1,4 +1,4 @@
-import { computed, InjectionKey, onScopeDispose, shallowRef, toRaw, watch } from 'vue'
+import { computed, InjectionKey, onScopeDispose, shallowRef, toRaw } from 'vue'
 import { AnyLoader, isLoader, Loader } from '@/types/loader'
 import { UseLoader } from '@/types/useLoader'
 import { Router } from '@/types/router'
@@ -14,7 +14,7 @@ import { ValueLocation } from '@/services/getComputations'
 import { warnLoaderFallback } from '@/services/warnLoaderFallback'
 import { getFallbackLoaderLocation } from '@/services/getFallbackLoaderLocation'
 import { getFallbackLoaderComputation } from '@/services/getFallbackLoaderComputation'
-import { createUseRouterSuspense } from '@/compositions/useRouterSuspense'
+import { createUseAwaitedLoader } from '@/compositions/useAwaitedLoader'
 
 type LoaderSelection = { location: ValueLocation<'loader'> } | { error: unknown }
 
@@ -23,7 +23,7 @@ export type UseLoaderFunction = <TData>(loader: Loader<TData, readonly RouteCont
 export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunction {
   const useRouter = createUseRouter(routerKey)
   const useRouterNavigation = createUseRouterNavigation(routerKey)
-  const useRouterSuspense = createUseRouterSuspense(routerKey)
+  const useAwaitedLoader = createUseAwaitedLoader(routerKey)
 
   function useLoader<TData>(loader: Loader<TData, readonly RouteContext[]>): UseLoader<Awaited<TData>>
   function useLoader(source: AnyLoader): UseLoader {
@@ -40,7 +40,6 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunct
     }
 
     const navigation = useRouterNavigation()
-    const reportError = useRouterSuspense('loader')
     const isServerRendering = useIsServerRendering()
 
     const selection = shallowRef<LoaderSelection>()
@@ -131,65 +130,6 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunct
       return navigation.getLoaderState(selection.value.location, router.route)
     })
 
-    const resolved = shallowRef(false)
-    const loadedData = computed((previous: unknown) => {
-      const current = state.value
-
-      if (current.status === 'SUCCESS') {
-        return current.value
-      }
-
-      return previous
-    })
-    let waiting: PromiseWithResolvers<unknown> | undefined
-
-    watch(state, (current) => {
-      if (current.status === 'SUCCESS') {
-        // Read every success so the next load retains it even when the component has not read data.
-        const value = loadedData.value
-        waiting?.resolve(value)
-      } else if (current.status === 'ERROR') {
-        waiting?.reject(current.error)
-      } else {
-        return
-      }
-
-      waiting = undefined
-    }, { immediate: true, flush: 'sync' })
-
-    // Later failures belong to the component's error boundary; the initial await is already settled.
-    watch([state, resolved], ([current, hasResolved]) => {
-      if (!hasResolved || current.status !== 'ERROR') {
-        return
-      }
-
-      const handled = reportError(current.error)
-
-      if (!handled) {
-        throw current.error
-      }
-    }, { flush: 'post' })
-
-    async function getData(): Promise<unknown> {
-      if (controller.signal.aborted) {
-        return new Promise<never>(() => {})
-      }
-
-      const current = state.value
-
-      if (current.status === 'SUCCESS') {
-        return current.value
-      }
-
-      if (current.status === 'ERROR') {
-        throw current.error
-      }
-
-      waiting ??= Promise.withResolvers<unknown>()
-
-      return waiting.promise
-    }
-
     const data = computed(() => {
       if (state.value.status === 'SUCCESS') {
         return state.value.value
@@ -210,31 +150,17 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunct
       return undefined
     })
 
-    const result = {
+    const awaited = useAwaitedLoader({
+      state,
+      loading,
+      signal: controller.signal,
+    })
+
+    return {
       data,
       loading,
       error,
-    }
-
-    return {
-      ...result,
-      then: (onfulfilled, onrejected) => {
-        return getData()
-          .then(() => {
-            resolved.value = true
-
-            return { data: loadedData, loading }
-          }, (error: unknown) => {
-            const handled = reportError(error)
-
-            if (handled) {
-              return new Promise<never>(() => {})
-            }
-
-            throw error
-          })
-          .then(onfulfilled, onrejected)
-      },
+      then: awaited.then,
     }
   }
 
