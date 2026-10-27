@@ -7,7 +7,7 @@ export function getRejectionHooksFromRejection(rejection: Rejection): HooksColle
   const hooks = createHooksCollection()
 
   getHooks(rejection).forEach((store) => {
-    hooks.onRejection.push(...store.onRejection)
+    hooks.add(store, 'onRejection')
   })
 
   return hooks

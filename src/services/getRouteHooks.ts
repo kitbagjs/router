@@ -11,21 +11,21 @@ export function getBeforeHooksFromRoutes(to: ResolvedRoute | null, from: Resolve
     // A redirect fires only when the route that declared it is the matched route. Collected from an
     // ancestor, it would intercept the navigation into its own subtree that the redirect itself causes.
     if (depth === stores.length - 1) {
-      hooks.redirects.push(...store.redirects)
+      hooks.add(store, 'redirects')
     }
 
     if (isRouteEnter(to, from, depth)) {
-      return hooks.onBeforeRouteEnter.push(...store.onBeforeRouteEnter)
+      return hooks.add(store, 'onBeforeRouteEnter')
     }
 
     if (isRouteUpdate(to, from, depth)) {
-      return hooks.onBeforeRouteUpdate.push(...store.onBeforeRouteUpdate)
+      return hooks.add(store, 'onBeforeRouteUpdate')
     }
   })
 
   getHooks(from).forEach((store, depth) => {
     if (isRouteLeave(to, from, depth)) {
-      return hooks.onBeforeRouteLeave.push(...store.onBeforeRouteLeave)
+      return hooks.add(store, 'onBeforeRouteLeave')
     }
   })
 
@@ -37,17 +37,17 @@ export function getAfterHooksFromRoutes(to: ResolvedRoute | null, from: Resolved
 
   getHooks(to).forEach((store, depth) => {
     if (isRouteEnter(to, from, depth)) {
-      return hooks.onAfterRouteEnter.push(...store.onAfterRouteEnter)
+      return hooks.add(store, 'onAfterRouteEnter')
     }
 
     if (isRouteUpdate(to, from, depth)) {
-      return hooks.onAfterRouteUpdate.push(...store.onAfterRouteUpdate)
+      return hooks.add(store, 'onAfterRouteUpdate')
     }
   })
 
   getHooks(from).forEach((store, depth) => {
     if (isRouteLeave(to, from, depth)) {
-      return hooks.onAfterRouteLeave.push(...store.onAfterRouteLeave)
+      return hooks.add(store, 'onAfterRouteLeave')
     }
   })
 
