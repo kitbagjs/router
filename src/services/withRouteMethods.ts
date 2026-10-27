@@ -17,8 +17,9 @@ export function withRouteMethods<TRoute extends Route>(route: TRoute, hooks: Int
   function withNextMatch(next: NextMatch): TRoute {
     const currentMatch = route.matches.at(-1)
 
+    // Created routes always have a match; this check narrows the array access for TypeScript.
     if (!currentMatch) {
-      return withRouteMethods(route, hooks)
+      throw new Error('Expected the route to have at least one match')
     }
 
     const nextMatch = next(currentMatch)
