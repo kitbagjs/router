@@ -52,14 +52,7 @@ test('given two ResolvedRoutes returns before timing hooks in correct order', ()
 
   const hooks = getBeforeHooksFromRoutes(to, from)
 
-  expect(Array.from(hooks.get('onBeforeRouteEnter'))).toMatchObject([...Array.from(getHooks(childA).at(-1)
-    ?.get('onBeforeRouteEnter') ?? []),
-  ...Array.from(getHooks(grandchildA).at(-1)
-    ?.get('onBeforeRouteEnter') ?? [])])
-  expect(Array.from(hooks.get('onBeforeRouteUpdate'))).toMatchObject([...Array.from(getHooks(parent).at(-1)
-    ?.get('onBeforeRouteUpdate') ?? [])])
-  expect(Array.from(hooks.get('onBeforeRouteLeave'))).toMatchObject([...Array.from(getHooks(childB).at(-1)
-    ?.get('onBeforeRouteLeave') ?? []),
-  ...Array.from(getHooks(grandchildB).at(-1)
-    ?.get('onBeforeRouteLeave') ?? [])])
+  expect(Array.from(hooks.onBeforeRouteEnter)).toMatchObject([...Array.from(getHooks(childA).at(-1)?.onBeforeRouteEnter ?? []), ...Array.from(getHooks(grandchildA).at(-1)?.onBeforeRouteEnter ?? [])])
+  expect(Array.from(hooks.onBeforeRouteUpdate)).toMatchObject([...Array.from(getHooks(parent).at(-1)?.onBeforeRouteUpdate ?? [])])
+  expect(Array.from(hooks.onBeforeRouteLeave)).toMatchObject([...Array.from(getHooks(childB).at(-1)?.onBeforeRouteLeave ?? []), ...Array.from(getHooks(grandchildB).at(-1)?.onBeforeRouteLeave ?? [])])
 })

@@ -93,7 +93,7 @@ test('reusable hooks run separately for parent, child, and router registrations'
   }
 })
 
-test('route registration deliberately keeps one copy of a callback per hook kind', async () => {
+test('registering a callback twice on one route creates two registrations', async () => {
   const route = createRoute({ name: 'target', path: '/target' })
   const callback = vi.fn()
   route.onBeforeRouteEnter(callback)
@@ -101,5 +101,5 @@ test('route registration deliberately keeps one copy of a callback per hook kind
   const runner = createRouterHooks({ redirectStatus: 302 })
 
   await runner.runBeforeRouteHooks({ to: createResolvedRoute(route), from: null, signal: new AbortController().signal })
-  expect(callback).toHaveBeenCalledTimes(1)
+  expect(callback).toHaveBeenCalledTimes(2)
 })

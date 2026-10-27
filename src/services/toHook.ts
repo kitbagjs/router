@@ -1,7 +1,7 @@
 import { AnyHook, isHook } from '@/types/hook'
 import { AnyFunction } from '@/types/utilities'
 
-export function toHook<THook extends AnyFunction>(hook: THook | AnyHook): THook | AnyHook['hook'] {
+export function toHook(hook: AnyFunction | AnyHook): AnyHook['hook'] {
   if (typeof hook === 'function') {
     return hook
   }

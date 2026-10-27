@@ -15,7 +15,7 @@ export function createRejectionHooks(): RejectionHooks {
   const store = new Hooks()
 
   const onRejection: AddRejectionHook = (hook, options) => {
-    return registerHook(store, hook, 'onRejection', options)
+    return registerHook(store.onRejection, hook, options)
   }
 
   return {

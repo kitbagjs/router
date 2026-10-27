@@ -76,20 +76,6 @@ export type HookTiming = 'global' | 'component'
 export type BeforeHook = RedirectHook | BeforeEnterHook | BeforeUpdateHook | BeforeLeaveHook | AnyHook
 export type AfterHook = AfterEnterHook | AfterUpdateHook | AfterLeaveHook | AnyHook
 
-export type HookTypes = {
-  redirects: RedirectHook,
-  onBeforeRouteEnter: BeforeEnterHook | AnyHook,
-  onBeforeRouteUpdate: BeforeUpdateHook | AnyHook,
-  onBeforeRouteLeave: BeforeLeaveHook | AnyHook,
-  onAfterRouteEnter: AfterEnterHook | AnyHook,
-  onAfterRouteUpdate: AfterUpdateHook | AnyHook,
-  onAfterRouteLeave: AfterLeaveHook | AnyHook,
-  onError: ErrorHook,
-  onRejection: RejectionHook,
-}
-
-export type HookStoreKey = keyof HookTypes
-
 /**
  * Union type for all component route hooks.
  */
@@ -116,12 +102,6 @@ export type AddGlobalHooks = (hooks: Hooks[]) => void
  * A function to remove a previously added route hook.
  */
 export type HookRemove = () => void
-
-export type HookEntry<THook> = {
-  lifecycle: HookStoreKey,
-  hook: THook,
-  remove: HookRemove,
-}
 
 export type HookRegistrationOptions = {
   /**

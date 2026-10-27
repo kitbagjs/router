@@ -16,10 +16,10 @@ test.each([
   const hook = vi.fn()
 
   hooks[lifecycle](hook, { signal: controller.signal })
-  expect(hooks.store.get(lifecycle).some((entry) => entry.hook === hook)).toBe(true)
+  expect(hooks.store[lifecycle]).toHaveLength(1)
 
   controller.abort()
-  expect(hooks.store.get(lifecycle).some((entry) => entry.hook === hook)).toBe(false)
+  expect(hooks.store[lifecycle]).toHaveLength(0)
 })
 
 test('an already-aborted signal skips registration and context discovery', () => {
@@ -29,7 +29,7 @@ test('an already-aborted signal skips registration and context discovery', () =>
 
   hooks.onBeforeRouteEnter(() => {}, { signal: AbortSignal.abort() })
 
-  expect(hooks.store.get('onBeforeRouteEnter').length).toBe(0)
+  expect(hooks.store.onBeforeRouteEnter.length).toBe(0)
   expect(onHookAdded).not.toHaveBeenCalled()
 })
 
@@ -43,5 +43,5 @@ test('manual removal detaches the signal from a later registration', () => {
   hooks.onAfterRouteEnter(hook)
   controller.abort()
 
-  expect(hooks.store.get('onAfterRouteEnter').some((entry) => entry.hook === hook)).toBe(true)
+  expect(hooks.store.onAfterRouteEnter).toHaveLength(1)
 })

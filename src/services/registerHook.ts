@@ -1,26 +1,28 @@
-import { Hooks } from '@/models/hooks'
-import { HookRegistrationOptions, HookRemove, HookStoreKey, HookTypes } from '@/types/hooks'
+import { AnyHook, isHook } from '@/types/hook'
+import { HookRegistrationOptions, HookRemove } from '@/types/hooks'
+import { MaybePromise } from '@/types/utilities'
+import { toHook } from '@/services/toHook'
 
-export function registerHook<TLifecycle extends HookStoreKey>(store: Hooks, hook: HookTypes[TLifecycle], lifecycle: TLifecycle, options: HookRegistrationOptions = {}): HookRemove {
-  if (options.signal?.aborted) {
+export function registerHook<TValue, TContext extends object>(hooks: (((value: TValue, context: TContext) => MaybePromise<void>) | AnyHook)[], hook: ((value: TValue, context: TContext) => MaybePromise<void>) | AnyHook, { signal }: HookRegistrationOptions = {}): HookRemove {
+  if (signal?.aborted) {
     return () => {}
   }
 
-  const existing = store.get(lifecycle).find((entry) => entry.hook === hook)
-
-  if (existing) {
-    return existing.remove
-  }
-
-  const { signal } = options
-  const entry = { lifecycle, hook, remove }
+  const callback = toHook(hook)
+  const wrapped = (value: TValue, context: TContext): MaybePromise<void> => callback(value, context)
+  const registered = isHook(hook) ? { ...hook, hook: wrapped } : wrapped
 
   function remove(): void {
-    store.delete(entry)
+    const index = hooks.indexOf(registered)
+
+    if (index !== -1) {
+      hooks.splice(index, 1)
+    }
+
     signal?.removeEventListener('abort', remove)
   }
 
-  store.add(entry)
+  hooks.push(registered)
   signal?.addEventListener('abort', remove, { once: true })
 
   return remove
