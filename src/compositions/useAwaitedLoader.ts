@@ -1,4 +1,4 @@
-import { computed, ComputedRef, InjectionKey, shallowRef, watch } from 'vue'
+import { computed, ComputedRef, InjectionKey, watch } from 'vue'
 import { DataResult } from '@/services/createDataStore'
 import { Router } from '@/types/router'
 import { UseLoaderResolved } from '@/types/useLoader'
@@ -18,7 +18,6 @@ export function createUseAwaitedLoader(routerKey: InjectionKey<Router>): UseAwai
   return ({ state, loading, signal }) => {
     const reportError = useRouterSuspense('loader')
 
-    const resolved = shallowRef(false)
     const loadedData = computed((previous: unknown) => {
       const current = state.value
 
@@ -45,8 +44,8 @@ export function createUseAwaitedLoader(routerKey: InjectionKey<Router>): UseAwai
     }, { immediate: true, flush: 'sync' })
 
     // Later failures belong to the component's error boundary; the initial await is already settled.
-    watch([state, resolved], ([current, hasResolved]) => {
-      if (!hasResolved || current.status !== 'ERROR') {
+    const errorWatcher = watch(state, (current) => {
+      if (current.status !== 'ERROR') {
         return
       }
 
@@ -56,6 +55,7 @@ export function createUseAwaitedLoader(routerKey: InjectionKey<Router>): UseAwai
         throw current.error
       }
     }, { flush: 'post' })
+    errorWatcher.pause()
 
     async function getData(): Promise<unknown> {
       if (signal.aborted) {
@@ -81,7 +81,7 @@ export function createUseAwaitedLoader(routerKey: InjectionKey<Router>): UseAwai
       then: (onfulfilled, onrejected) => {
         return getData()
           .then(() => {
-            resolved.value = true
+            errorWatcher.resume()
 
             return { data: loadedData, loading }
           }, (error: unknown) => {
