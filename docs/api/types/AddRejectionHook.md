@@ -1,7 +1,7 @@
 # Types: AddRejectionHook\<TRejections, TRoutes, TRouteTo, TRouteFrom\>
 
 ```ts
-type AddRejectionHook<TRejections, TRoutes, TRouteTo, TRouteFrom> = (hook) => HookRemove;
+type AddRejectionHook<TRejections, TRoutes, TRouteTo, TRouteFrom> = (hook, options?) => HookRemove;
 ```
 
 ## Type Parameters
@@ -18,6 +18,7 @@ type AddRejectionHook<TRejections, TRoutes, TRouteTo, TRouteFrom> = (hook) => Ho
 | Parameter | Type |
 | ------ | ------ |
 | `hook` | [`RejectionHook`](RejectionHook.md)\<`TRejections`, `TRoutes`, `TRouteTo`, `TRouteFrom`\> |
+| `options?` | [`HookRegistrationOptions`](HookRegistrationOptions.md) |
 
 ## Returns
 

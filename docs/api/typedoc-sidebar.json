@@ -396,6 +396,10 @@
         "link": "/api/types/HookLifecycle.md"
       },
       {
+        "text": "HookRegistrationOptions",
+        "link": "/api/types/HookRegistrationOptions.md"
+      },
+      {
         "text": "HookRemove",
         "link": "/api/types/HookRemove.md"
       },
