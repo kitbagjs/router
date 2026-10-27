@@ -1,6 +1,6 @@
 import { AnyHook } from '@/types/hook'
 import { toHook } from '@/services/toHook'
-import { ComponentHook, AddGlobalHooks, AddComponentHook, AfterHookRunner, BeforeHookRunner, AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, ErrorHookRunner, AddErrorHook, BeforeEnterHook, BeforeUpdateHook, BeforeLeaveHook, AfterEnterHook, AfterUpdateHook, AfterLeaveHook, RejectionHookRunner, RejectionHook, AddRejectionHook } from '@/types/hooks'
+import { ComponentHook, AddGlobalHooks, AddComponentHook, AfterHookRunner, BeforeHookRunner, AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, ErrorHookRunner, AddErrorHook, RejectionHookRunner, AddRejectionHook } from '@/types/hooks'
 import { getRouteHookCondition } from '@/services/hooks'
 import { ContextPushError } from '@/errors/contextPushError'
 import { ContextRejectionError } from '@/errors/contextRejectionError'
@@ -17,7 +17,6 @@ import { ContextRedirectError } from '@/errors/contextRedirectError'
 import { createRouteHooks } from '@/services/createRouteHooks'
 import { ResolvedRoute } from '@/types/resolved'
 import { MaybePromise } from '@/types/utilities'
-import { RedirectHook } from '@/types/redirects'
 import { RedirectStatus } from '@/types/router'
 import { registerHook } from '@/services/registerHook'
 
@@ -61,23 +60,22 @@ export function createRouterHooks({ redirectStatus, onHookAdded }: RouterHooksOp
     const routeHooks = getBeforeHooksFromRoutes(to, from)
     const globalHooks = getGlobalBeforeHooks(to, from, globalStores)
 
-    const allHooks: (RedirectHook | BeforeEnterHook | BeforeUpdateHook | BeforeLeaveHook | AnyHook)[] = [
-      ...routeHooks.redirects,
-      ...globalHooks.onBeforeRouteEnter,
-      ...routeHooks.onBeforeRouteEnter,
-      ...globalHooks.onBeforeRouteUpdate,
-      ...routeHooks.onBeforeRouteUpdate,
-      ...componentStore.onBeforeRouteUpdate,
-      ...globalHooks.onBeforeRouteLeave,
-      ...routeHooks.onBeforeRouteLeave,
-      ...componentStore.onBeforeRouteLeave,
-    ]
+    const allHooks = new Hooks()
+    allHooks.add(routeHooks, 'redirects')
+    allHooks.add(globalHooks, 'onBeforeRouteEnter')
+    allHooks.add(routeHooks, 'onBeforeRouteEnter')
+    allHooks.add(globalHooks, 'onBeforeRouteUpdate')
+    allHooks.add(routeHooks, 'onBeforeRouteUpdate')
+    allHooks.add(componentStore, 'onBeforeRouteUpdate')
+    allHooks.add(globalHooks, 'onBeforeRouteLeave')
+    allHooks.add(routeHooks, 'onBeforeRouteLeave')
+    allHooks.add(componentStore, 'onBeforeRouteLeave')
 
     try {
       const results: Promise<unknown>[] = []
 
       // counted one at a time so a hook that throws before returning still leaves the count exact
-      for (const hook of allHooks) {
+      for (const { hook } of allHooks.getBeforeHooks()) {
         const callback = toHook(hook)
         progress?.expect(1)
 
@@ -142,20 +140,19 @@ export function createRouterHooks({ redirectStatus, onHookAdded }: RouterHooksOp
     const routeHooks = getAfterHooksFromRoutes(to, from)
     const globalHooks = getGlobalAfterHooks(to, from, globalStores)
 
-    const allHooks: (AfterLeaveHook | AfterUpdateHook | AfterEnterHook | AnyHook)[] = [
-      ...componentStore.onAfterRouteLeave,
-      ...routeHooks.onAfterRouteLeave,
-      ...globalHooks.onAfterRouteLeave,
-      ...componentStore.onAfterRouteUpdate,
-      ...routeHooks.onAfterRouteUpdate,
-      ...globalHooks.onAfterRouteUpdate,
-      ...componentStore.onAfterRouteEnter,
-      ...routeHooks.onAfterRouteEnter,
-      ...globalHooks.onAfterRouteEnter,
-    ]
+    const allHooks = new Hooks()
+    allHooks.add(componentStore, 'onAfterRouteLeave')
+    allHooks.add(routeHooks, 'onAfterRouteLeave')
+    allHooks.add(globalHooks, 'onAfterRouteLeave')
+    allHooks.add(componentStore, 'onAfterRouteUpdate')
+    allHooks.add(routeHooks, 'onAfterRouteUpdate')
+    allHooks.add(globalHooks, 'onAfterRouteUpdate')
+    allHooks.add(componentStore, 'onAfterRouteEnter')
+    allHooks.add(routeHooks, 'onAfterRouteEnter')
+    allHooks.add(globalHooks, 'onAfterRouteEnter')
 
     try {
-      const results = allHooks.map((hook) => {
+      const results = allHooks.getAfterHooks().map(({ hook }) => {
         const callback = toHook(hook)
         // Enter and update hooks are only in this list when to is not null, and leave hooks are only in it when from is not null. These casts are purely to satisfy the type checker.
         return Promise.resolve(runWithContext(() => callback(to as ResolvedRoute, {
@@ -203,9 +200,13 @@ export function createRouterHooks({ redirectStatus, onHookAdded }: RouterHooksOp
   const runErrorHooks: ErrorHookRunner = (error, { to, from, source }) => {
     const { reject, push, replace } = createRouterCallbackContext({ to })
 
-    const errorHooks = globalStores.flatMap((store) => [...store.onError])
+    const errorHooks = new Hooks()
 
-    for (const hook of errorHooks) {
+    for (const store of globalStores) {
+      errorHooks.add(store, 'onError')
+    }
+
+    for (const { hook } of errorHooks.get('onError')) {
       try {
         hook(error, { to, from, source, reject, push, replace })
 
@@ -228,12 +229,11 @@ export function createRouterHooks({ redirectStatus, onHookAdded }: RouterHooksOp
   const runRejectionHooks: RejectionHookRunner = (rejection, { to, from }) => {
     const rejectionHooks = getRejectionHooksFromRejection(rejection)
 
-    const allHooks: RejectionHook[] = [
-      ...rejectionHooks.onRejection,
-      ...globalStore.onRejection,
-    ]
+    const allHooks = new Hooks()
+    allHooks.add(rejectionHooks, 'onRejection')
+    allHooks.add(globalStore, 'onRejection')
 
-    for (const hook of allHooks) {
+    for (const { hook } of allHooks.get('onRejection')) {
       hook(rejection.type, { to, from })
     }
   }
@@ -245,7 +245,6 @@ export function createRouterHooks({ redirectStatus, onHookAdded }: RouterHooksOp
 
     onHookAdded?.(hook)
     const condition = getRouteHookCondition(lifecycle)
-    const hooks: Set<ComponentHook | AnyHook> = componentStore[lifecycle]
 
     // Using `any` here for context because its just passed through to the hook and typing it is more complex than it's worth
     const wrapped = (to: ResolvedRoute | null, context: any): MaybePromise<void> => {
@@ -259,21 +258,21 @@ export function createRouterHooks({ redirectStatus, onHookAdded }: RouterHooksOp
       return callback(to, context)
     }
 
-    return registerHook(hooks, wrapped, { signal })
+    return registerHook(componentStore, wrapped, lifecycle, { signal })
   }
 
   const addGlobalRouteHooks: AddGlobalHooks = (stores) => {
     for (const store of stores) {
       const hooks = [
-        ...store.onBeforeRouteEnter,
-        ...store.onBeforeRouteUpdate,
-        ...store.onBeforeRouteLeave,
-        ...store.onAfterRouteEnter,
-        ...store.onAfterRouteUpdate,
-        ...store.onAfterRouteLeave,
+        ...store.get('onBeforeRouteEnter'),
+        ...store.get('onBeforeRouteUpdate'),
+        ...store.get('onBeforeRouteLeave'),
+        ...store.get('onAfterRouteEnter'),
+        ...store.get('onAfterRouteUpdate'),
+        ...store.get('onAfterRouteLeave'),
       ]
 
-      hooks.forEach((hook) => onHookAdded?.(hook))
+      hooks.forEach(({ hook }) => onHookAdded?.(hook))
     }
 
     globalStores.unshift(...stores)

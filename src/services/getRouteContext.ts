@@ -8,16 +8,17 @@ import { RouteContext } from '@/types/routeContext'
  */
 export function getRouteContext(route: Route): RouteContext[] {
   const hooks = getHooks(route).flatMap((store) => [
-    ...store.onBeforeRouteEnter,
-    ...store.onBeforeRouteUpdate,
-    ...store.onBeforeRouteLeave,
-    ...store.onAfterRouteEnter,
-    ...store.onAfterRouteUpdate,
-    ...store.onAfterRouteLeave,
+    ...store.get('onBeforeRouteEnter'),
+    ...store.get('onBeforeRouteUpdate'),
+    ...store.get('onBeforeRouteLeave'),
+    ...store.get('onAfterRouteEnter'),
+    ...store.get('onAfterRouteUpdate'),
+    ...store.get('onAfterRouteLeave'),
   ])
 
   return [
     ...route.context,
-    ...hooks.filter(isHook).flatMap((hook) => hook.context),
+    ...hooks.map(({ hook }) => hook).filter(isHook)
+      .flatMap((hook) => hook.context),
   ]
 }

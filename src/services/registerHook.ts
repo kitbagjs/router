@@ -1,18 +1,16 @@
-import { HookRegistrationOptions, HookRemove } from '@/types/hooks'
+import { Hooks } from '@/models/hooks'
+import { HookRegistrationOptions, HookRemove, HookStoreKey, HookTypes } from '@/types/hooks'
 
-export function registerHook<THook>(hooks: Set<THook>, hook: THook, { signal }: HookRegistrationOptions = {}): HookRemove {
-  if (signal?.aborted) {
+export function registerHook<TLifecycle extends HookStoreKey>(store: Hooks, hook: HookTypes[TLifecycle], lifecycle: TLifecycle, options: HookRegistrationOptions = {}): HookRemove {
+  if (options.signal?.aborted) {
     return () => {}
   }
 
-  hooks.add(hook)
+  const existing = store.get(lifecycle).find((entry) => entry.hook === hook)
 
-  function remove(): void {
-    hooks.delete(hook)
-    signal?.removeEventListener('abort', remove)
+  if (existing) {
+    return existing.remove
   }
 
-  signal?.addEventListener('abort', remove, { once: true })
-
-  return remove
+  return store.add(hook, lifecycle, options).remove
 }

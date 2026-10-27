@@ -1,11 +1,10 @@
+import { Hooks } from '@/models/hooks'
 import { ResolvedRoute } from '@/types/resolved'
 import { isRouteEnter, isRouteLeave, isRouteUpdate } from '@/services/hooks'
-import { HooksCollection } from '@/types/hooksCollection'
-import { createHooksCollection } from '@/services/createHooksCollection'
 import { getHooks } from '@/types/hooks'
 
-export function getBeforeHooksFromRoutes(to: ResolvedRoute | null, from: ResolvedRoute | null): HooksCollection {
-  const hooks = createHooksCollection()
+export function getBeforeHooksFromRoutes(to: ResolvedRoute | null, from: ResolvedRoute | null): Hooks {
+  const hooks = new Hooks()
 
   getHooks(to).forEach((store, depth, stores) => {
     // A redirect fires only when the route that declared it is the matched route. Collected from an
@@ -32,8 +31,8 @@ export function getBeforeHooksFromRoutes(to: ResolvedRoute | null, from: Resolve
   return hooks
 }
 
-export function getAfterHooksFromRoutes(to: ResolvedRoute | null, from: ResolvedRoute | null): HooksCollection {
-  const hooks = createHooksCollection()
+export function getAfterHooksFromRoutes(to: ResolvedRoute | null, from: ResolvedRoute | null): Hooks {
+  const hooks = new Hooks()
 
   getHooks(to).forEach((store, depth) => {
     if (isRouteEnter(to, from, depth)) {

@@ -9,6 +9,7 @@ import { RouterReplace } from '@/types/routerReplace'
 import { isRejection, Rejection, Rejections } from '@/types/rejection'
 import { RouteContext, RouteContextToRejection, RouteContextToRoute } from '@/types/routeContext'
 import { RouterAbort } from '@/types/routerAbort'
+import { RedirectHook } from '@/types/redirects'
 import { CallbackContextAbort, CallbackContextPush, CallbackContextRedirect, CallbackContextReject, CallbackContextSuccess } from '@/types/callbackContext'
 import { RouteUpdate } from '@/types/routeUpdate'
 import { NavigationProgressTracker } from '@/services/createNavigationProgress'
@@ -72,6 +73,23 @@ export type RejectionHooks<
 
 export type HookTiming = 'global' | 'component'
 
+export type BeforeHook = RedirectHook | BeforeEnterHook | BeforeUpdateHook | BeforeLeaveHook | AnyHook
+export type AfterHook = AfterEnterHook | AfterUpdateHook | AfterLeaveHook | AnyHook
+
+export type HookTypes = {
+  redirects: RedirectHook,
+  onBeforeRouteEnter: BeforeEnterHook | AnyHook,
+  onBeforeRouteUpdate: BeforeUpdateHook | AnyHook,
+  onBeforeRouteLeave: BeforeLeaveHook | AnyHook,
+  onAfterRouteEnter: AfterEnterHook | AnyHook,
+  onAfterRouteUpdate: AfterUpdateHook | AnyHook,
+  onAfterRouteLeave: AfterLeaveHook | AnyHook,
+  onError: ErrorHook,
+  onRejection: RejectionHook,
+}
+
+export type HookStoreKey = keyof HookTypes
+
 /**
  * Union type for all component route hooks.
  */
@@ -98,6 +116,11 @@ export type AddGlobalHooks = (hooks: Hooks[]) => void
  * A function to remove a previously added route hook.
  */
 export type HookRemove = () => void
+
+export type HookEntry<THook> = {
+  hook: THook,
+  remove: HookRemove,
+}
 
 export type HookRegistrationOptions = {
   /**
