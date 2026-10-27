@@ -1,5 +1,5 @@
 import { AnyHook } from '@/types/hook'
-import { ComponentHook, HookRegistrationOptions, AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, AddErrorHook, AddRejectionHook } from '@/types/hooks'
+import { ComponentHook, HookRemove, HookRegistrationOptions, AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, AddErrorHook, AddRejectionHook } from '@/types/hooks'
 import { registerHook } from '@/services/registerHook'
 import { Routes } from '@/types/route'
 import { Hooks } from '@/models/hooks'
@@ -39,50 +39,40 @@ export function createRouteHooks(): RouteHooks {
     return registerHook(store.redirects, hook)
   }
 
-  function notifyHookAdded(hook: ComponentHook | AnyHook, options?: HookRegistrationOptions): void {
+  function addHook<THook extends ComponentHook | AnyHook>(hooks: THook[], hook: THook, options?: HookRegistrationOptions): HookRemove {
     if (options?.signal?.aborted) {
-      return
+      return () => {}
     }
 
     for (const callback of store.onHookAdded) {
       callback(hook)
     }
+
+    return registerHook<any, any>(hooks, hook, options)
   }
 
   const onBeforeRouteEnter: AddBeforeEnterHook = (hook, options) => {
-    notifyHookAdded(hook, options)
-
-    return registerHook(store.onBeforeRouteEnter, hook, options)
+    return addHook(store.onBeforeRouteEnter, hook, options)
   }
 
   const onBeforeRouteUpdate: AddBeforeUpdateHook = (hook, options) => {
-    notifyHookAdded(hook, options)
-
-    return registerHook(store.onBeforeRouteUpdate, hook, options)
+    return addHook(store.onBeforeRouteUpdate, hook, options)
   }
 
   const onBeforeRouteLeave: AddBeforeLeaveHook = (hook, options) => {
-    notifyHookAdded(hook, options)
-
-    return registerHook(store.onBeforeRouteLeave, hook, options)
+    return addHook(store.onBeforeRouteLeave, hook, options)
   }
 
   const onAfterRouteEnter: AddAfterEnterHook = (hook, options) => {
-    notifyHookAdded(hook, options)
-
-    return registerHook(store.onAfterRouteEnter, hook, options)
+    return addHook(store.onAfterRouteEnter, hook, options)
   }
 
   const onAfterRouteUpdate: AddAfterUpdateHook = (hook, options) => {
-    notifyHookAdded(hook, options)
-
-    return registerHook(store.onAfterRouteUpdate, hook, options)
+    return addHook(store.onAfterRouteUpdate, hook, options)
   }
 
   const onAfterRouteLeave: AddAfterLeaveHook = (hook, options) => {
-    notifyHookAdded(hook, options)
-
-    return registerHook(store.onAfterRouteLeave, hook, options)
+    return addHook(store.onAfterRouteLeave, hook, options)
   }
 
   const onError: AddErrorHook = (hook, options) => {
