@@ -11,7 +11,7 @@ import { PropsCallbackParent } from '@/types/props'
 import { createVueAppStore, HasVueAppStore } from './createVueAppStore'
 import { CallbackContextError, CallbackContextPush, CallbackContextReject, CallbackContextResponse } from '@/types/callbackContext'
 import { createRouterCallbackContext } from './createRouterCallbackContext'
-import { createDataStore, DataStore, DataStoreSettledEvent } from './createDataStore'
+import { createDataStore, DataResult, DataStore, DataStoreSettledEvent } from './createDataStore'
 import { DataKind, getDataKey } from './getDataKey'
 import { PropsResult } from '@/utilities/props'
 import { warn } from '@/utilities/warn'
@@ -32,6 +32,11 @@ export type RouterNavigationResponseEvent = RouterNavigationCommitOptions & {
 
 type CreateRouterNavigationOptions = {
   onResponse?: (response: RouterNavigationResponseEvent) => MaybePromise<void>,
+}
+
+type CallbackValueContext = {
+  store: DataStore,
+  signal: AbortSignal,
 }
 
 type RouterNavigationState = {
@@ -94,7 +99,9 @@ export type RouterNavigationStores = HasVueAppStore & {
    * What a route exposes as `data`. Resolved per read rather than captured, so it stays correct as
    * navigations replace the store its values live in.
    */
-  getData: (route: ResolvedRoute) => WithData['data'],
+  getRouteData: (route: ResolvedRoute) => WithData['data'],
+  getLoaderState: (location: ValueLocation<'loader'>, route: ResolvedRoute) => DataResult,
+  getLoaderValue: (location: ValueLocation<'loader'>, route: ResolvedRoute) => Promise<unknown>,
 }
 
 export function createRouterNavigation({ onResponse }: CreateRouterNavigationOptions = {}): RouterNavigationStores {
@@ -168,13 +175,18 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
       try {
         const { push, replace, reject, update } = createRouterCallbackContext({ to: route })
 
-        const value = runWithContext(() => computation.run(toCallbackRoute(computation, route, data), {
+        const context: CallbackValueContext = {
+          store: data,
+          signal: controller.signal,
+        }
+
+        const value = runWithContext(() => computation.run(toCallbackRoute(computation, route, context), {
           push,
           replace,
           reject,
           update,
           signal: controller.signal,
-          parent: getParentContext(route, computation.depth, data),
+          parent: getParentContext(route, computation.depth, context),
         }))
 
         if (isPromise(value)) {
@@ -191,6 +203,10 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
       }
 
       function toErrorResponse(error: unknown): CallbackContextResponse {
+        if (error instanceof NavigationAbandonedError) {
+          controller.abort(error)
+        }
+
         if (error instanceof ContextPushError || error instanceof ContextRejectionError) {
           return error.response
         }
@@ -343,10 +359,32 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     }
   }
 
-  function getData(route: ResolvedRoute, store?: DataStore): WithData['data'] {
+  function getRouteData(route: ResolvedRoute): WithData['data'] {
     const loaders = getComputations(route).filter(isKind('loader'))
 
-    return toValues(loaders, DEFAULT_LOADER_NAME, route, store)
+    return toValues(loaders, DEFAULT_LOADER_NAME, (location) => getComponentValue(location, route))
+  }
+
+  const getLoaderState: RouterNavigationStores['getLoaderState'] = (location: ValueLocation, route) => {
+    if (location.kind !== 'loader') {
+      throw new TypeError('Expected a loader location')
+    }
+
+    const result = navigations.current.data.get(getDataKey(location.kind, location.id, location.name, route))
+
+    if (result.status === 'PUSH' || result.status === 'REJECT') {
+      return { status: 'ABANDONED' }
+    }
+
+    return result
+  }
+
+  const getLoaderValue: RouterNavigationStores['getLoaderValue'] = (location: ValueLocation, route) => {
+    if (location.kind !== 'loader') {
+      throw new TypeError('Expected a loader location')
+    }
+
+    return getComponentValue(location, route)
   }
 
   /**
@@ -354,7 +392,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
    * They can read parent data instead. Props callbacks read data from their computation store.
    * The proxy avoids subscribing to route.data until a callback actually reads it.
    */
-  function toCallbackRoute({ kind, name }: Computation, route: ResolvedRoute, store?: DataStore): ResolvedRoute {
+  function toCallbackRoute({ kind, name }: Computation, route: ResolvedRoute, context: CallbackValueContext): ResolvedRoute {
     return new Proxy(route, {
       get(target, property, receiver) {
         if (property !== 'data') {
@@ -367,7 +405,9 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
         // computing into a store that is not yet current resolves data against it as well as the
         // navigation's, so a getter does not have to know which of the two will compute what it reads
-        return getData(route, store)
+        const loaders = getComputations(route).filter(isKind('loader'))
+
+        return toValues(loaders, DEFAULT_LOADER_NAME, (location) => getCallbackValue(location, route, context))
       },
     })
   }
@@ -376,7 +416,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
    * The parent context for the callback at the given depth. Resolved per depth rather than from the last
    * match: every view in a nested route gets its own parent, not the resolved route's parent.
    */
-  function getParentContext(route: ResolvedRoute, depth: number, store?: DataStore): PropsCallbackParent {
+  function getParentContext(route: ResolvedRoute, depth: number, context: CallbackValueContext): PropsCallbackParent {
     if (depth === 0) {
       return
     }
@@ -387,10 +427,10 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     return {
       name: parentName,
       get props() {
-        return toValues(propsLocations(parentMatch), DEFAULT_VIEW_NAME, route, store)
+        return toValues(propsLocations(parentMatch), DEFAULT_VIEW_NAME, (location) => getCallbackValue(location, route, context))
       },
       get data() {
-        return toValues(loaderLocations(parentMatch), DEFAULT_LOADER_NAME, route, store)
+        return toValues(loaderLocations(parentMatch), DEFAULT_LOADER_NAME, (location) => getCallbackValue(location, route, context))
       },
     }
   }
@@ -399,7 +439,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
    * A set of named values as a callback or component sees them. A lone unnamed value is given directly,
    * matching how it was written, and named values sit behind a proxy so only what is read is waited on.
    */
-  function toValues(locations: ValueLocation[], bareName: string, route: ResolvedRoute, store?: DataStore): WithData['data'] {
+  function toValues(locations: ValueLocation[], bareName: string, read: (location: ValueLocation) => Promise<unknown>): WithData['data'] {
     if (locations.length === 0) {
       return undefined
     }
@@ -407,7 +447,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     const [only] = locations
 
     if (locations.length === 1 && only.name === bareName) {
-      return getValue(only, route, store)
+      return read(only)
     }
 
     const find = (property: string | symbol): ValueLocation | undefined => locations.find(({ name }) => name === property)
@@ -418,7 +458,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
       get(target, property) {
         const location = find(property)
 
-        return location ? getValue(location, route, store) : Reflect.get(target, property)
+        return location ? read(location) : Reflect.get(target, property)
       },
       has(target, property) {
         return Boolean(find(property)) || Reflect.has(target, property)
@@ -436,22 +476,27 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
         return {
           configurable: true,
           enumerable: true,
-          value: getValue(location, route, store),
+          value: read(location),
         }
       },
     }))
   }
 
-  /**
-   * A value resolves from whichever arrives first, the store the reader belongs to or the navigation, so
-   * a reader never has to know which of the two will compute it.
-   */
-  function getValue(location: ValueLocation, route: ResolvedRoute, store?: DataStore): Promise<unknown> {
+  function getComponentValue(location: ValueLocation, route: ResolvedRoute): Promise<unknown> {
+    const key = getDataKey(location.kind, location.id, location.name, route)
+    const value = toComponentValue(navigations.current.data.subscribe(key))
+
+    value.catch(() => {})
+
+    return value
+  }
+
+  function getCallbackValue(location: ValueLocation, route: ResolvedRoute, { store, signal }: CallbackValueContext): Promise<unknown> {
     const key = getDataKey(location.kind, location.id, location.name, route)
     const current = navigations.current.data
 
-    if (!store || store === current) {
-      return toDataValue(current.subscribe(key))
+    if (store === current) {
+      return toDataValue(store.subscribe(key))
     }
 
     const stored = store.get(key)
@@ -461,10 +506,10 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
       warnWaitingOnUncomputedValue(location, route)
     }
 
-    const value = firstToArrive([
+    const value = waitForDependency([
       toDataValue(store.subscribe(key)),
       toDataValue(current.subscribe(key)),
-    ])
+    ], signal)
 
     value.catch(() => {})
 
@@ -479,7 +524,9 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     commit,
     getValues,
     getProps,
-    getData,
+    getRouteData,
+    getLoaderState,
+    getLoaderValue,
     setVueApp,
   }
 }
@@ -543,9 +590,48 @@ function toDataValue(value: Promise<CallbackContextResponse>): Promise<unknown> 
 }
 
 function toPropsResult(response: CallbackContextResponse): PropsResult {
+  if (response.status === 'PUSH' || response.status === 'REJECT') {
+    return { kind: 'abandoned' }
+  }
+
   try {
     return { kind: 'value', value: unwrapComputationResponse(response) }
   } catch (error) {
     return { kind: 'error', error }
+  }
+}
+
+async function toComponentValue(response: Promise<CallbackContextResponse>): Promise<unknown> {
+  try {
+    return await toDataValue(response)
+  } catch (error) {
+    if (error instanceof NavigationAbandonedError) {
+      return new Promise<never>(() => {})
+    }
+
+    throw error
+  }
+}
+
+async function waitForDependency(sources: Promise<unknown>[], signal: AbortSignal): Promise<unknown> {
+  const cancelled = Promise.withResolvers<never>()
+
+  function onAbort(): void {
+    cancelled.reject(new NavigationAbandonedError())
+  }
+
+  if (signal.aborted) {
+    onAbort()
+  } else {
+    signal.addEventListener('abort', onAbort, { once: true })
+  }
+
+  try {
+    return await Promise.race([
+      firstToArrive(sources),
+      cancelled.promise,
+    ])
+  } finally {
+    signal.removeEventListener('abort', onAbort)
   }
 }

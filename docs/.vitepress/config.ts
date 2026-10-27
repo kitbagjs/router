@@ -73,12 +73,14 @@ export default defineConfig({
             { text: 'RouterLink', link: '/components/router-link' },
             { text: 'ViewTransition', link: '/components/view-transition' },
             { text: 'RouterProgress', link: '/components/router-progress' },
+            { text: 'RouterSuspense', link: '/components/router-suspense' },
           ],
         },
         {
           text: 'Composables',
           items: [
             { text: 'useLink', link: '/composables/useLink' },
+            { text: 'useLoader', link: '/composables/useLoader' },
             { text: 'useNavigation', link: '/composables/useNavigation' },
             { text: 'useQueryValue', link: '/composables/useQueryValue' },
             { text: 'useRoute', link: '/composables/useRoute' },

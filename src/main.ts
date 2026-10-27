@@ -22,8 +22,9 @@ export type { RouteAddAlias, AddAliasOptions } from './types/addAlias'
 export type { AliasTransform, AliasTransformContext } from './types/routeAlias'
 export type { RouteCallbackContext } from './types/routeCallbackContext'
 export type { RouteViews } from './types/routeViews'
-export type { RouteLoader, RouteLoaders } from './types/routeLoaders'
+export type { RouteLoaders } from './types/routeLoaders'
 export type { CreateLoaderOptions, Loader, LoaderCallbackContext } from './types/loader'
+export type { UseLoader, UseLoaderResolved } from './types/useLoader'
 export type {
   RejectionHooks,
   HookRemove,
@@ -69,6 +70,7 @@ export type { Route, CreatedRouteOptions } from './types/route'
 export * from './types/router'
 export * from './types/routerLink'
 export type { RouterProgressProps } from './components/routerProgress'
+export type { RouterSuspenseProps } from './components/routerSuspense'
 export type { RouterPlugin, CreateRouterPluginOptions } from './types/routerPlugin'
 export * from './types/routerPush'
 export * from './types/routerPush'
@@ -137,6 +139,11 @@ export const createView: RouterAssets<RegisteredRouter>['createView'] = routerAs
  * Creates a reusable loader with callbacks typed to the registered router's resolved routes.
  */
 export const createLoader: RouterAssets<RegisteredRouter>['createLoader'] = routerAssets.createLoader
+
+/**
+ * Reads a loader's reactive state or awaits its initial data. Must be called during setup.
+ */
+export const useLoader: RouterAssets<RegisteredRouter>['useLoader'] = routerAssets.useLoader
 
 /**
  * Registers a hook that is called before a route is left. Must be called from setup.
@@ -217,6 +224,9 @@ export const ViewTransition = routerAssets.ViewTransition
  * @group Components
  */
 export const RouterProgress: RouterAssets<RegisteredRouter>['RouterProgress'] = routerAssets.RouterProgress
+
+/** Wraps async content with loading and error slots. @group Components */
+export const RouterSuspense: RouterAssets<RegisteredRouter>['RouterSuspense'] = routerAssets.RouterSuspense
 
 /**
  * A composition to access the current route or verify a specific route name within a Vue component.

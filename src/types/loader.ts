@@ -12,6 +12,7 @@ export const IS_LOADER_SYMBOL = Symbol('IS_LOADER_SYMBOL')
 
 export type LoaderInternal = {
   [IS_LOADER_SYMBOL]: true,
+  id: string,
 }
 
 /**
@@ -70,6 +71,13 @@ export type Loader<
  * The runtime shape after a loader's route, context, and return types have been erased.
  */
 export type AnyLoader = Loader<any, readonly RouteContext[]>
+
+/**
+ * A loader definition with the name assigned when attached to a route.
+ */
+export type NamedLoader = AnyLoader & {
+  name: string,
+}
 
 /**
  * Determines whether a value is a reusable loader created by `createLoader`.

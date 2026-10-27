@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-deprecated -- Keep legacy route.data compatibility coverage until removal. */
 import { expect, test, vi } from 'vitest'
 import { computed, toRefs } from 'vue'
 import { flushPromises } from '@vue/test-utils'
@@ -8,13 +9,12 @@ import { createRouter } from './createRouter'
 import { component } from '@/utilities/testHelpers'
 import { isResolvedRoute, ResolvedRoute } from '@/types/resolved'
 import { createRouterNavigation } from './createRouterNavigation'
-import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
 
 test('router route does not retain the initial resolved route internals', () => {
   const initial = createResolvedRoute(createRoute({ name: 'initial' }))
   const next = createResolvedRoute(createRoute({ name: 'next' }))
   const routerKey = Symbol()
-  const routerRoute = createRouterRoute({ routerKey, route: initial, push: vi.fn(), getData: () => undefined })
+  const routerRoute = createRouterRoute({ routerKey, route: initial, push: vi.fn(), getRouteData: () => undefined })
 
   for (const route of [initial, next]) {
     routerRoute.updateRoute(route)
@@ -30,7 +30,7 @@ test('router route does not retain the initial resolved route internals', () => 
 test('updateRoute updates the derived fields and the current resolved route', () => {
   const initial = createResolvedRoute(createRoute({ name: 'initial', path: '/initial/[id]' }), { id: '1' }, { query: { page: '1' } })
   const next = createResolvedRoute(createRoute({ name: 'next', path: '/next/[id]' }), { id: '2' }, { query: { page: '2' }, hash: 'details' })
-  const routerRoute = createRouterRoute({ routerKey: Symbol(), route: initial, push: vi.fn(), getData: () => undefined })
+  const routerRoute = createRouterRoute({ routerKey: Symbol(), route: initial, push: vi.fn(), getRouteData: () => undefined })
 
   expect(routerRoute.name).toBe('initial')
   expect({ ...routerRoute.params }).toEqual({ id: '1' })
@@ -51,19 +51,19 @@ test('updateRoute updates the derived fields and the current resolved route', ()
   expect(routerRoute.getResolvedRoute()).toBe(next)
 })
 
-test('data is refreshed from getData when the resolved route changes', async () => {
+test('data is refreshed from getRouteData when the resolved route changes', async () => {
   const initial = createResolvedRoute(createRoute({ name: 'initial' }))
   const next = createResolvedRoute(createRoute({ name: 'next' }))
-  const getData = vi.fn((route: ResolvedRoute) => Promise.resolve(route.name))
-  const routerRoute = createRouterRoute({ routerKey: Symbol(), route: initial, push: vi.fn(), getData })
+  const getRouteData = vi.fn((route: ResolvedRoute) => Promise.resolve(route.name))
+  const routerRoute = createRouterRoute({ routerKey: Symbol(), route: initial, push: vi.fn(), getRouteData })
 
   await expect(routerRoute.data).resolves.toBe('initial')
-  expect(getData).toHaveBeenLastCalledWith(initial)
+  expect(getRouteData).toHaveBeenLastCalledWith(initial)
 
   routerRoute.updateRoute(next)
 
   await expect(routerRoute.data).resolves.toBe('next')
-  expect(getData).toHaveBeenLastCalledWith(next)
+  expect(getRouteData).toHaveBeenLastCalledWith(next)
 })
 
 test.each([
@@ -79,7 +79,7 @@ test.each([
     .mockReturnValueOnce(second.promise)
   const route = createResolvedRoute(createRoute({ name: 'route', path: '/' }).addLoader(load, named ? { name: 'value' } : undefined))
   const navigation = createRouterNavigation()
-  const routerRoute = createRouterRoute({ routerKey: Symbol(), route, push: vi.fn(), getData: navigation.getData })
+  const routerRoute = createRouterRoute({ routerKey: Symbol(), route, push: vi.fn(), getRouteData: navigation.getRouteData })
   const readData = (): Promise<unknown> => {
     return named
       ? (routerRoute.data as Record<string, Promise<unknown>>).value
@@ -105,7 +105,10 @@ test.each([
   await expect(current).resolves.toBe('second')
 
   if (pending) {
-    await expect(previous).rejects.toBeInstanceOf(NavigationAbandonedError)
+    const settled = vi.fn()
+    previous.then(settled, settled)
+    await flushPromises()
+    expect(settled).not.toHaveBeenCalled()
     first.resolve('late')
     await Promise.allSettled(firstCommit)
     await expect(readData()).resolves.toBe('second')
@@ -122,7 +125,7 @@ test('isRouterRoute returns correct response', () => {
     routerKey,
     route: resolved,
     push,
-    getData: () => undefined,
+    getRouteData: () => undefined,
   })
 
   expect(isRouterRoute(routerKey, routerRoute)).toBe(true)
@@ -139,7 +142,7 @@ test('sending state, includes state in push options', () => {
     routerKey,
     route: resolved,
     push,
-    getData: () => undefined,
+    getRouteData: () => undefined,
   })
 
   routerRoute.update({}, { state: { foo: 'foo' } })

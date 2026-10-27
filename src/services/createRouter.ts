@@ -19,6 +19,7 @@ import { setStateValues } from '@/services/state'
 import { Routes } from '@/types/route'
 import { NOT_FOUND_REJECTION_TYPE } from '@/types/rejection'
 import { Router, RouterOptions, ServerRenderResponse, RedirectStatus } from '@/types/router'
+import { IS_ROUTER_SYMBOL, RouterInternal } from '@/types/routerInternal'
 import { RouterPushInternal, RouterPushOptionsInternal, RouterReplaceInternal, RouterReplaceOptionsInternal } from '@/types/routerNavigationInternal'
 import { RoutesName } from '@/types/routesMap'
 import { UrlString, isUrlString } from '@/types/urlString'
@@ -43,6 +44,7 @@ import { routerInjectionKey } from '@/keys'
 import { createRouterView } from '@/components/routerView'
 import { createRouterLink } from '@/components/routerLink'
 import { createRouterProgress } from '@/components/routerProgress'
+import { createRouterSuspense } from '@/components/routerSuspense'
 import { ContextPushError } from '@/errors/contextPushError'
 import { ContextRejectionError } from '@/errors/contextRejectionError'
 import { setupRouterDevtools } from '@/devtools/createRouterDevtools'
@@ -163,6 +165,7 @@ export function createRouter<
     getRouteByName,
     getRejectionByType,
     addHookContext,
+    addContext,
     stop: stopRouteContext,
   } = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options)
   const notFoundRejection = getRejectionByType('NotFound')
@@ -626,7 +629,7 @@ export function createRouter<
     routerKey,
     route: notFoundRoute,
     push,
-    getData: navigation.getData,
+    getRouteData: navigation.getRouteData,
   })
 
   /**
@@ -806,10 +809,12 @@ export function createRouter<
     const routerView = createRouterView(routerKey)
     const routerLink = createRouterLink(routerKey)
     const routerProgress = createRouterProgress(routerKey)
+    const routerSuspense = createRouterSuspense(routerKey)
 
     app.component('RouterView', routerView)
     app.component('RouterLink', routerLink)
     app.component('RouterProgress', routerProgress)
+    app.component('RouterSuspense', routerSuspense)
     app.component('ViewTransition', ViewTransition)
     app.provide(getViewTransitionKey(routerKey), viewTransitions.viewTransition)
     app.provide(getRouterRejectionInjectionKey(routerKey), currentRejection)
@@ -827,7 +832,13 @@ export function createRouter<
     start()
   }
 
-  const router: Router<TRoutes, TOptions, TPlugin> = {
+  const internal = {
+    [IS_ROUTER_SYMBOL]: true,
+    addContext,
+  } satisfies RouterInternal
+
+  const router: Router<TRoutes, TOptions, TPlugin> & RouterInternal = {
+    ...internal,
     route: routerRoute,
     resolve,
     find,

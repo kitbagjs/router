@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-deprecated -- Keep legacy route.data compatibility coverage until removal. */
 import { flushPromises } from '@vue/test-utils'
 import { Location } from '@/services/history'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
@@ -15,7 +16,6 @@ import { InvalidRouteParamValueError } from '@/errors/invalidRouteParamValueErro
 import { createRejection } from './createRejection'
 import { SsrOptionRequiredError } from '@/errors/ssrOptionRequiredError'
 import { PayloadValueError } from '@/errors/payloadValueError'
-import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
 import { RouterPushOptionsInternal } from '@/types/routerNavigationInternal'
 import { RenderRedirect, RenderSuccess, ServerRenderResponse } from '@/types/router'
 
@@ -31,7 +31,7 @@ test('initial route is set', async () => {
   expect(route.matched.name).toBe('root')
 })
 
-test('stopping the router aborts its loaders and settles pending data', async () => {
+test('stopping the router aborts its loaders without exposing cancellation to data consumers', async () => {
   const pending = Promise.withResolvers<string>()
   const signals: AbortSignal[] = []
   const route = createRoute({ name: 'home', path: '/' })
@@ -46,8 +46,11 @@ test('stopping the router aborts its loaders and settles pending data', async ()
   router.stop()
 
   expect(signals[0].aborted).toBe(true)
-  await expect(data).rejects.toThrow(NavigationAbandonedError)
-  await expect(router.route.data).rejects.toThrow(NavigationAbandonedError)
+  const settled = vi.fn()
+  data.then(settled, settled)
+  router.route.data.then(settled, settled)
+  await flushPromises()
+  expect(settled).not.toHaveBeenCalled()
 })
 
 test('initial state is set', async () => {

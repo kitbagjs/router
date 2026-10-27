@@ -16,11 +16,11 @@ type CreateRouterRouteOptions<TRouter extends Router = Router> = {
   routerKey: InjectionKey<TRouter>,
   route: ResolvedRoute,
   push: RouterPush,
-  getData: RouterNavigationStores['getData'],
+  getRouteData: RouterNavigationStores['getRouteData'],
 }
 
 export function createRouterRoute<TRouter extends Router>(options: CreateRouterRouteOptions<TRouter>): TRouter['route'] & RouterRouteInternal
-export function createRouterRoute({ routerKey, route: initialRoute, push, getData }: CreateRouterRouteOptions): RouterRoute & RouterRouteInternal {
+export function createRouterRoute({ routerKey, route: initialRoute, push, getRouteData }: CreateRouterRouteOptions): RouterRoute & RouterRouteInternal {
   const route = shallowRef(initialRoute)
 
   function getResolvedRoute(): ResolvedRoute {
@@ -91,8 +91,13 @@ export function createRouterRoute({ routerKey, route: initialRoute, push, getDat
   const hash = computed(() => route.value.hash)
   const href = computed(() => route.value.href)
   const canonical = computed(() => route.value.canonical)
-  const data = computed(() => getData(route.value))
+  const data = computed(() => getRouteData(route.value))
   const getTitle = computed(() => route.value.getTitle)
+  const loaders = computed(() => {
+    const entries = route.value.matches.flatMap((match) => Object.entries(match.loaders))
+
+    return Object.fromEntries(entries)
+  })
 
   const paramsProxy = shallowReactive(new Proxy({}, {
     get(_target, property, receiver) {
@@ -197,6 +202,7 @@ export function createRouterRoute({ routerKey, route: initialRoute, push, getDat
   // data is derived from the route's matches rather than read off the route, so its type cannot be matched here
   const routerRoute = reactive({
     ...internal,
+    loaders,
     id,
     matched,
     matches,
