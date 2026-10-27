@@ -10,7 +10,8 @@ import { Router } from '@/types/router'
 import { getComputations, getComputationsForStrategy } from '@/services/getComputations'
 import { RouterNavigationStore } from '@/services/createRouterNavigation'
 import { getComputationPrefetchKey } from '@/services/getComputationPrefetchKey'
-import { isSameResolvedRoute } from '@/utilities/isSameResolvedRoute'
+import { Destination, isSameDestination } from '@/utilities/isSameDestination'
+import { setStateValues } from '@/services/state'
 
 type UsePrefetchingConfig = PrefetchConfigs & {
   route: ResolvedRoute | undefined,
@@ -57,11 +58,35 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
 
     onScopeDispose(() => prefetch.dispose())
 
-    watch(() => toValue(config), ({ route, ...configs }, previous) => {
-      if (!isSameResolvedRoute(route, previous?.route)) {
-        prefetch.dispose()
-        prefetch = navigation.create()
+    const destination = computed<Destination | undefined>((previous) => {
+      const { route } = toValue(config)
+
+      if (!route) {
+        return
       }
+
+      const current = getPrefetchDestination(route)
+
+      return isSameDestination(current, previous) ? previous : current
+    })
+
+    watch(destination, () => {
+      prefetch.dispose()
+      prefetch = navigation.create()
+      prefetchRoute()
+    }, {
+      immediate: true,
+      flush: 'sync',
+    })
+
+    watch(() => {
+      const { route, ...configs } = toValue(config)
+
+      return configs
+    }, prefetchRoute, { deep: true })
+
+    function prefetchRoute(): void {
+      const { route, ...configs } = toValue(config)
 
       if (!route) {
         return
@@ -72,7 +97,7 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
       if (isElementVisible.value) {
         doPrefetchingForStrategy('lazy', route, configs)
       }
-    }, { immediate: true })
+    }
 
     watch(isElementVisible, (isVisible) => {
       const { route, ...configs } = toValue(config)
@@ -109,6 +134,16 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
       enabled,
       take,
     }
+  }
+}
+
+function getPrefetchDestination(route: ResolvedRoute): Destination {
+  const params = Object.fromEntries(route.matches.flatMap((match) => Object.entries(match.state ?? {})))
+
+  return {
+    id: route.id,
+    href: route.href,
+    state: setStateValues(params, route.state),
   }
 }
 
