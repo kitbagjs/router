@@ -1,7 +1,7 @@
 /* eslint-disable vue/one-component-per-file */
 import { flushPromises, mount } from '@vue/test-utils'
 import { expect, test, vi } from 'vitest'
-import { defineComponent, h, onErrorCaptured, Suspense } from 'vue'
+import { defineComponent, h, onErrorCaptured, onScopeDispose, Suspense } from 'vue'
 import { createLoader, createRoute, createRouter, RouterSuspense, UseLoader, UseLoaderResolved, useLoader } from '@/main'
 
 const loaderAttachments = [
@@ -87,10 +87,19 @@ test.each(loaderAttachments)('shows the error slot when the initial load fails (
   const route = attached ? home.addLoader(loader) : home
   const router = createRouter([route], { initialUrl: '/' })
   await router.start()
+  const onSettled = vi.fn()
+  const onDisposed = vi.fn()
   const consumer = defineComponent({
     async setup() {
-      const { data } = await useLoader(loader)
-      return () => h('p', data.value)
+      onScopeDispose(onDisposed)
+
+      try {
+        await useLoader(loader)
+      } finally {
+        onSettled()
+      }
+
+      return () => h('p', 'ready')
     },
   })
   const errorSlot = vi.fn(() => h('p', 'failed'))
@@ -106,6 +115,8 @@ test.each(loaderAttachments)('shows the error slot when the initial load fails (
   await flushPromises()
 
   expect(wrapper.text()).toBe('failed')
+  expect(onSettled).not.toHaveBeenCalled()
+  expect(onDisposed).toHaveBeenCalledTimes(1)
   expect(errorSlot).toHaveBeenCalledWith({ error: failure })
   expect(appError).not.toHaveBeenCalled()
   expect(predicate).not.toHaveBeenCalled()

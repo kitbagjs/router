@@ -218,7 +218,12 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunct
 
             return { data: loadedData, loading }
           }, (error: unknown) => {
-            reportError(error, { rethrow: true })
+            const handled = reportError(error)
+
+            if (handled) {
+              return new Promise<never>(() => {})
+            }
+
             throw error
           })
           .then(onfulfilled, onrejected)

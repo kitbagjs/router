@@ -1,5 +1,5 @@
 /* eslint-disable vue/one-component-per-file */
-import { ComponentPublicInstance, defineComponent, h, InjectionKey, onErrorCaptured, onScopeDispose, PropType, provide, renderSlot, shallowRef, SlotsType, Suspense, VNode, watch } from 'vue'
+import { defineComponent, h, InjectionKey, onErrorCaptured, onScopeDispose, PropType, provide, renderSlot, shallowRef, SlotsType, Suspense, VNode, watch } from 'vue'
 import { createUseRouter } from '@/compositions/useRouter'
 import { createUseRejection } from '@/compositions/useRejection'
 import { useIsServerRendering } from '@/compositions/useIsServerRendering'
@@ -69,7 +69,6 @@ export function createRouterSuspense<TRouter extends Router>(routerKey: Injectio
       const rejection = useRejection()
       const isServerRendering = useIsServerRendering()
       const failure = shallowRef<{ error: unknown }>()
-      const reported = new Map<ComponentPublicInstance | null, unknown[]>()
       let active = true
 
       if (!isRouterRoute(routerKey, route)) {
@@ -78,16 +77,14 @@ export function createRouterSuspense<TRouter extends Router>(routerKey: Injectio
 
       watch([() => route.getResolvedRoute(), rejection], () => {
         failure.value = undefined
-        reported.clear()
       }, { flush: 'sync' })
 
       onScopeDispose(() => {
         active = false
-        reported.clear()
       })
 
       const context: RouterSuspenseContext = {
-        reportError(error, kind, source) {
+        reportError(error, kind) {
           if (!active || isServerRendering) {
             return false
           }
@@ -96,34 +93,11 @@ export function createRouterSuspense<TRouter extends Router>(routerKey: Injectio
             return false
           }
 
-          if (source !== undefined) {
-            const errors = reported.get(source) ?? []
-            reported.set(source, [...errors, error])
-          }
-
           failure.value ??= { error }
           return true
         },
-        captureError(error, source) {
-          if (!active || isServerRendering) {
-            return
-          }
-
-          const errors = reported.get(source)
-          const index = errors?.findIndex((reported) => Object.is(reported, error)) ?? -1
-
-          // Consume an initial loader rejection that already reported to this boundary.
-          if (errors && index !== -1) {
-            errors.splice(index, 1)
-
-            if (errors.length === 0) {
-              reported.delete(source)
-            }
-
-            return false
-          }
-
-          if (failure.value) {
+        captureError(error) {
+          if (!active || isServerRendering || failure.value) {
             return
           }
 
