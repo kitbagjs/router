@@ -3,14 +3,9 @@
 Wrap async content with `RouterSuspense` to provide loading and error states. It is registered
 globally by the [router plugin](/quick-start#vue-plugin).
 
-Components can await [useLoader](/composables/useLoader#awaiting-data) inside the default slot.
-A non-awaited `useLoader` continues exposing failures through its own `error` ref.
-
-Use the default slot for content, `#fallback` while it awaits setup, and `#error` for failures.
-By default, only unexpected errors from route props getters and awaited loaders trigger the error
-state. Without an error slot, the component displays a generic error message.
-Only errors from the default slot are caught. Errors in the fallback and error slots continue to an
-outer boundary or Vue's app error handler.
+`RouterSuspense` automatically detects errors from [props getters](/core-concepts/component-props)
+and awaited [useLoader](/composables/useLoader#awaiting-data) calls. To catch errors unrelated to
+routing, use the `catch` prop.
 
 ```vue
 <template>
