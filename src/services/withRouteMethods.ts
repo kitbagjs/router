@@ -48,8 +48,9 @@ export function withRouteMethods<TRoute extends Route>(route: TRoute, hooks: Int
   const addAlias: AddAlias = (options, transform) => {
     const match = route.matches.at(-1)
 
+    // Created routes always have a match and internal metadata; this check narrows their types for TypeScript.
     if (!match || !isRoute(route)) {
-      return withRouteMethods(route, hooks)
+      throw new Error('Expected a created route with at least one match')
     }
 
     const aliases = createAliases(match, options, transform)
