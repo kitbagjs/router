@@ -48,8 +48,7 @@ const settings = createRoute({...})
 
 ## Reading data in a component
 
-Pass a definition from `route.loaders` to [`useLoader`](/composables/useLoader). Await it inside
-[RouterSuspense](/components/router-suspense) to use its loading and error slots.
+Pass a definition from `route.loaders` to [`useLoader`](/composables/useLoader).
 
 ```vue
 <!-- UserPage.vue -->
@@ -57,15 +56,25 @@ Pass a definition from `route.loaders` to [`useLoader`](/composables/useLoader).
 import { useLoader, useRoute } from '@kitbag/router'
 
 const route = useRoute('user')
-const { data: user } = await useLoader(route.loaders.default)
+const { data: user } = useLoader(route.loaders.default)
 </script>
 
 <template>
-  <h1>{{ user.name }}</h1>
+  <h1 v-if="user">{{ user.name }}</h1>
 </template>
 ```
 
 [Register your router](/core-concepts/type-safety#registration) to get the correct route names and data types when using `useRoute`.
+
+## Suspense
+
+Await `useLoader` at the top level of `<script setup>` to use Vue's Suspense.
+
+```ts
+const { data: user } = await useLoader(route.loaders.default)
+```
+
+Use [RouterSuspense](/components/router-suspense) to provide loading and error states.
 
 ## Named loaders
 
