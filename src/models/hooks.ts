@@ -14,6 +14,9 @@ export class Hooks {
   public onHookAdded = new Set<(hook: ComponentHook | AnyHook) => void>()
   private readonly registrations: Registration[] = []
 
+  /**
+   * Returns a snapshot of registrations for one hook kind.
+   */
   public get<TLifecycle extends HookStoreKey>(lifecycle: TLifecycle): HookEntry<HookTypes[TLifecycle]>[] {
     return this.registrations
       .filter((registration) => registration.lifecycle === lifecycle)
@@ -24,6 +27,10 @@ export class Hooks {
     return this.get(lifecycle).some((entry) => entry === hook || entry.hook === hook)
   }
 
+  /**
+   * Creates an owned registration for a callback, or appends existing registrations
+   * without changing their original removers.
+   */
   public add(source: Hooks, lifecycle: HookStoreKey): void
   public add<TLifecycle extends HookStoreKey>(entry: HookEntry<HookTypes[TLifecycle]>, lifecycle: TLifecycle): void
   public add<TLifecycle extends HookStoreKey>(hook: HookTypes[TLifecycle], lifecycle: TLifecycle, options?: HookRegistrationOptions): HookEntry<HookTypes[TLifecycle]>
@@ -68,6 +75,9 @@ export class Hooks {
     return entry
   }
 
+  /**
+   * Unregisters the first matching callback or entry and removes it from this container.
+   */
   public delete<TLifecycle extends HookStoreKey>(hook: HookTypes[TLifecycle] | HookEntry<HookTypes[TLifecycle]>, lifecycle: TLifecycle): boolean {
     const index = this.registrations.findIndex((registration) => registration.lifecycle === lifecycle
       && (registration.entry === hook || registration.entry.hook === hook))
