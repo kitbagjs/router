@@ -48,8 +48,7 @@ const settings = createRoute({...})
 
 ## Reading data in a component
 
-Pass a definition from `route.loaders` to [`useLoader`](/composables/useLoader). Accessing
-`route.data` in components is deprecated; callbacks can continue using `route.data`.
+Pass a definition from `route.loaders` to [`useLoader`](/composables/useLoader).
 
 ```vue
 <!-- UserPage.vue -->
