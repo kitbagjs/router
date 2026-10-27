@@ -1,6 +1,6 @@
-import { CollectedHooks } from '@/types/collectedHooks'
+import { HooksCollection } from '@/types/hooksCollection'
 
-export function createCollectedHooks(): CollectedHooks {
+export function createHooksCollection(): HooksCollection {
   return {
     redirects: [],
     onBeforeRouteEnter: [],
