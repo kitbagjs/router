@@ -246,7 +246,7 @@ export function createRouterHooks({ redirectStatus, onHookAdded }: RouterHooksOp
 
     onHookAdded?.(hook)
     const condition = getRouteHookCondition(lifecycle)
-    const hooks: (ComponentHook | AnyHook)[] = componentStore[lifecycle]
+    const hooks = componentStore[lifecycle]
 
     // Using `any` here for context because its just passed through to the hook and typing it is more complex than it's worth
     const wrapped = (to: ResolvedRoute | null, context: any): MaybePromise<void> => {
