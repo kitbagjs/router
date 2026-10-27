@@ -130,8 +130,9 @@ Use `remove` from the callback context to remove a hook. You can also pass a `si
 const controller = new AbortController()
 
 const route = createRoute({...})
-  .onAfterRouteEnter((to) => {
+  .onAfterRouteEnter((to, { remove }) => {
     console.log(to.href)
+    remove()
   }, { signal: controller.signal })
 
 controller.abort()
