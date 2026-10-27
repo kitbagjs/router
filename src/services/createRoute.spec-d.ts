@@ -3,7 +3,7 @@ import { createRoute } from './createRoute'
 import { Identity } from '@/types/utilities'
 import { component } from '@/utilities/testHelpers'
 import { withParams } from '@/services/withParams'
-import { InternalRouteHooks } from '@/types/hooks'
+import { RouteHooks } from '@/types/routeHooks'
 import { createRejection } from '@/services/createRejection'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouteRedirects } from '@/types/redirects'
@@ -27,19 +27,10 @@ describe('route shape', () => {
   })
 
   test('has hooks', () => {
-    type Hooks = {
-      onBeforeRouteEnter: (...args: Parameters<InternalRouteHooks['onBeforeRouteEnter']>) => unknown,
-      onBeforeRouteUpdate: (...args: Parameters<InternalRouteHooks['onBeforeRouteUpdate']>) => unknown,
-      onBeforeRouteLeave: (...args: Parameters<InternalRouteHooks['onBeforeRouteLeave']>) => unknown,
-      onAfterRouteEnter: (...args: Parameters<InternalRouteHooks['onAfterRouteEnter']>) => unknown,
-      onAfterRouteUpdate: (...args: Parameters<InternalRouteHooks['onAfterRouteUpdate']>) => unknown,
-      onAfterRouteLeave: (...args: Parameters<InternalRouteHooks['onAfterRouteLeave']>) => unknown,
-    }
-
-    expectTypeOf(cases.plain).toExtend<Hooks>()
-    expectTypeOf(cases.withView).toExtend<Hooks>()
-    expectTypeOf(cases.withNamedView).toExtend<Hooks>()
-    expectTypeOf(cases.withProps).toExtend<Hooks>()
+    expectTypeOf(cases.plain).toExtend<RouteHooks>()
+    expectTypeOf(cases.withView).toExtend<RouteHooks>()
+    expectTypeOf(cases.withNamedView).toExtend<RouteHooks>()
+    expectTypeOf(cases.withProps).toExtend<RouteHooks>()
   })
 
   test('has redirects', () => {
