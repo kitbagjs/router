@@ -143,6 +143,7 @@ export type AfterHookContext<
   TRejections extends Rejections
 > = {
   lifecycle: 'after',
+  remove: HookRemove,
   reject: RouterReject<TRejections>,
   push: RouterPush<TRoutes>,
   replace: RouterReplace<TRoutes>,
@@ -156,6 +157,7 @@ export type BeforeHookContext<
   TRejections extends Rejections
 > = {
   lifecycle: 'before',
+  remove: HookRemove,
   reject: RouterReject<TRejections>,
   push: RouterPush<TRoutes>,
   replace: RouterReplace<TRoutes>,
@@ -320,6 +322,7 @@ export type RejectionHookContext<
   TRouteTo extends Route = TRoutes[number],
   TRouteFrom extends Route = TRoutes[number]
 > = {
+  remove: HookRemove,
   to: ResolvedRouteUnion<TRouteTo> | null,
   from: ResolvedRouteUnion<TRouteFrom> | null,
 }
@@ -347,6 +350,7 @@ export type ErrorHookContext<
   TRoutes extends Routes = Routes,
   TRejections extends Rejections = Rejections
 > = {
+  remove: HookRemove,
   to: RouterResolvedRouteUnion<TRoutes> | null,
   from: RouterResolvedRouteUnion<TRoutes> | null,
   source: 'props' | 'loader' | 'hook' | 'component',

@@ -398,12 +398,12 @@ describe('hooks', () => {
 
     route.onBeforeRouteLeave((_to, context) => {
       expectTypeOf(context.lifecycle).toEqualTypeOf<'before'>()
-      expectTypeOf<keyof typeof context>().toEqualTypeOf<'lifecycle' | 'from' | 'reject' | 'push' | 'replace' | 'abort' | 'signal'>()
+      expectTypeOf<keyof typeof context>().toEqualTypeOf<'lifecycle' | 'from' | 'reject' | 'push' | 'replace' | 'abort' | 'signal' | 'remove'>()
     })
 
     route.onAfterRouteLeave((_to, context) => {
       expectTypeOf(context.lifecycle).toEqualTypeOf<'after'>()
-      expectTypeOf<keyof typeof context>().toEqualTypeOf<'lifecycle' | 'from' | 'reject' | 'push' | 'replace' | 'signal'>()
+      expectTypeOf<keyof typeof context>().toEqualTypeOf<'lifecycle' | 'from' | 'reject' | 'push' | 'replace' | 'signal' | 'remove'>()
     })
   })
 

@@ -76,13 +76,14 @@ export function createRouterHooks({ redirectStatus, onHookAdded }: RouterHooksOp
       const results: Promise<unknown>[] = []
 
       // counted one at a time so a hook that throws before returning still leaves the count exact
-      for (const { hook } of allHooks) {
+      for (const { hook, remove } of allHooks) {
         const callback = toHookCallback(hook)
         progress?.expect(1)
 
         // Enter and update hooks are only in this list when to is not null, and leave hooks are only in it when from is not null. These casts are purely to satisfy the type checker.
         const result = Promise.resolve(runWithContext(() => callback(to as ResolvedRoute, {
           lifecycle: 'before',
+          remove,
           from: from as ResolvedRoute,
           reject,
           push,
@@ -154,11 +155,12 @@ export function createRouterHooks({ redirectStatus, onHookAdded }: RouterHooksOp
     ]
 
     try {
-      const results = allHooks.map(({ hook }) => {
+      const results = allHooks.map(({ hook, remove }) => {
         const callback = toHookCallback(hook)
         // Enter and update hooks are only in this list when to is not null, and leave hooks are only in it when from is not null. These casts are purely to satisfy the type checker.
         return Promise.resolve(runWithContext(() => callback(to as ResolvedRoute, {
           lifecycle: 'after',
+          remove,
           from: from as ResolvedRoute,
           reject,
           push,
@@ -204,10 +206,10 @@ export function createRouterHooks({ redirectStatus, onHookAdded }: RouterHooksOp
 
     const errorHooks = globalStores.flatMap((store) => store.onError)
 
-    for (const { hook } of errorHooks) {
+    for (const { hook, remove } of errorHooks) {
       try {
         const callback = toHookCallback(hook)
-        callback(error, { to, from, source, reject, push, replace })
+        callback(error, { to, from, source, reject, push, replace, remove })
 
         return
       } catch (hookError) {
@@ -233,9 +235,9 @@ export function createRouterHooks({ redirectStatus, onHookAdded }: RouterHooksOp
       ...globalStore.onRejection,
     ]
 
-    for (const { hook } of allHooks) {
+    for (const { hook, remove } of allHooks) {
       const callback = toHookCallback(hook)
-      callback(rejection.type, { to, from })
+      callback(rejection.type, { to, from, remove })
     }
   }
 

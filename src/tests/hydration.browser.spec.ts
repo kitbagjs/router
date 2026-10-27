@@ -45,7 +45,7 @@ test('a payload whose route no longer matches rejects with NotFound', async () =
 
   await router.start()
 
-  expect(onRejection).toHaveBeenCalledWith('NotFound', { to: null, from: null })
+  expect(onRejection).toHaveBeenCalledWith('NotFound', { to: null, from: null, remove: expect.any(Function) })
 })
 
 test('a payload with a rejection is adopted synchronously when the router starts', async () => {
@@ -64,7 +64,7 @@ test('a payload with a rejection is adopted synchronously when the router starts
 
   await ready
 
-  expect(onRejection).toHaveBeenCalledWith('Locked', { to: expect.objectContaining({ name: 'secret' }), from: null })
+  expect(onRejection).toHaveBeenCalledWith('Locked', { to: expect.objectContaining({ name: 'secret' }), from: null, remove: expect.any(Function) })
 })
 
 test('a reject payload whose url no longer matches rejects with NotFound', async () => {
@@ -79,7 +79,7 @@ test('a reject payload whose url no longer matches rejects with NotFound', async
 
   await router.start()
 
-  expect(onRejection).toHaveBeenCalledWith('NotFound', { to: null, from: null })
+  expect(onRejection).toHaveBeenCalledWith('NotFound', { to: null, from: null, remove: expect.any(Function) })
 })
 
 test('adopting a payload leaves the document title the server rendered', async () => {

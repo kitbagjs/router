@@ -50,6 +50,7 @@ type PluginBeforeRouteHookContext<
   TRejections extends Rejections
 > = {
   lifecycle: 'before',
+  remove: HookRemove,
   from: ResolvedRoute | null,
   reject: RouterReject<TRejections>,
   push: RouterPush<TRoutes>,
@@ -62,6 +63,7 @@ type PluginAfterRouteHookContext<
   TRejections extends Rejections
 > = {
   lifecycle: 'after',
+  remove: HookRemove,
   from: ResolvedRoute | null,
   reject: RouterReject<TRejections>,
   push: RouterPush<TRoutes>,
@@ -112,6 +114,7 @@ export type PluginErrorHookContext<
   TRoutes extends Routes = Routes,
   TRejections extends Rejections = Rejections
 > = {
+  remove: HookRemove,
   to: ResolvedRoute | null,
   from: ResolvedRoute | null,
   source: 'props' | 'loader' | 'hook' | 'component',
