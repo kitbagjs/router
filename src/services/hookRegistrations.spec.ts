@@ -40,7 +40,8 @@ test('one inherited registration runs once and removal leaves another store regi
   const parent = createRoute({ name: 'parent', path: '/parent' })
   const child = createRoute({ parent, name: 'child', path: '/child' })
   const callback = vi.fn()
-  const removeParent = parent.onBeforeRouteEnter(callback)
+  const controller = new AbortController()
+  parent.onBeforeRouteEnter(callback, { signal: controller.signal })
   const runner = createRouterHooks({ redirectStatus: 302 })
   const context = { to: createResolvedRoute(child), from: null, signal: new AbortController().signal }
 
@@ -48,7 +49,7 @@ test('one inherited registration runs once and removal leaves another store regi
   expect(callback).toHaveBeenCalledTimes(1)
 
   child.onBeforeRouteEnter(callback)
-  removeParent()
+  controller.abort()
   await runner.runBeforeRouteHooks(context)
   expect(callback).toHaveBeenCalledTimes(2)
 })
