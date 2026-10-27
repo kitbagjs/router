@@ -2,7 +2,7 @@ import { RouteContext } from '@/types/routeContext'
 import { RouteAddAlias } from '@/types/addAlias'
 import { RouteAddLoader } from '@/types/addLoader'
 import { RouteAddView } from '@/types/addView'
-import { RouteHooks, ExternalRouteChainableHooks } from '@/types/routeHooks'
+import { RouteHooks, ExternalRouteHooks } from '@/types/routeHooks'
 import { RouteRedirects } from '@/types/redirects'
 import { CreatedRouteOptions, Route } from '@/types/route'
 import { RouteSetTitle } from '@/types/routeTitle'
@@ -31,5 +31,5 @@ export type ExternalRouteWithMethods<
   TRoute extends Route = Route,
   TContext extends RouteContext[] | undefined = undefined
 > = TRoute
-  & ExternalRouteChainableHooks<TRoute, TContext>
+  & ExternalRouteHooks<TRoute, TContext>
   & RouteRedirects<TRoute>

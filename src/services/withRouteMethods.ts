@@ -14,6 +14,8 @@ type NextMatch = (match: CreatedRouteOptions) => CreatedRouteOptions
  * rebuilds the route and reattaches its methods.
  */
 export function withRouteMethods<TRoute extends Route>(route: TRoute, hooks: InternalRouteHooks): TRoute {
+  type HookMethods = InternalRouteHooks<Route, undefined, TRoute>
+
   function withNextMatch(next: NextMatch): TRoute {
     const currentMatch = route.matches.at(-1)
 
@@ -69,37 +71,37 @@ export function withRouteMethods<TRoute extends Route>(route: TRoute, hooks: Int
     addRedirect(from, route, convertParams, options)
   }
 
-  const onBeforeRouteEnter: (...args: Parameters<InternalRouteHooks['onBeforeRouteEnter']>) => TRoute = (hook, options) => {
+  const onBeforeRouteEnter: HookMethods['onBeforeRouteEnter'] = (hook, options) => {
     hooks.onBeforeRouteEnter(hook, options)
 
     return result
   }
 
-  const onBeforeRouteUpdate: (...args: Parameters<InternalRouteHooks['onBeforeRouteUpdate']>) => TRoute = (hook, options) => {
+  const onBeforeRouteUpdate: HookMethods['onBeforeRouteUpdate'] = (hook, options) => {
     hooks.onBeforeRouteUpdate(hook, options)
 
     return result
   }
 
-  const onBeforeRouteLeave: (...args: Parameters<InternalRouteHooks['onBeforeRouteLeave']>) => TRoute = (hook, options) => {
+  const onBeforeRouteLeave: HookMethods['onBeforeRouteLeave'] = (hook, options) => {
     hooks.onBeforeRouteLeave(hook, options)
 
     return result
   }
 
-  const onAfterRouteEnter: (...args: Parameters<InternalRouteHooks['onAfterRouteEnter']>) => TRoute = (hook, options) => {
+  const onAfterRouteEnter: HookMethods['onAfterRouteEnter'] = (hook, options) => {
     hooks.onAfterRouteEnter(hook, options)
 
     return result
   }
 
-  const onAfterRouteUpdate: (...args: Parameters<InternalRouteHooks['onAfterRouteUpdate']>) => TRoute = (hook, options) => {
+  const onAfterRouteUpdate: HookMethods['onAfterRouteUpdate'] = (hook, options) => {
     hooks.onAfterRouteUpdate(hook, options)
 
     return result
   }
 
-  const onAfterRouteLeave: (...args: Parameters<InternalRouteHooks['onAfterRouteLeave']>) => TRoute = (hook, options) => {
+  const onAfterRouteLeave: HookMethods['onAfterRouteLeave'] = (hook, options) => {
     hooks.onAfterRouteLeave(hook, options)
 
     return result

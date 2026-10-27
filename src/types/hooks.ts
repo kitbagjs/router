@@ -24,42 +24,33 @@ export function combineHooks(parent: Route, child: Route): Hooks[] {
 
 export type InternalRouteHooks<
   TRoute extends Route = Route,
-  TContext extends RouteContext[] | undefined = undefined
+  TContext extends RouteContext[] | undefined = undefined,
+  TReturn = HookRemove
 > = {
   /**
    * Registers a route hook to be called before the route is entered.
    */
-  onBeforeRouteEnter: AddBeforeEnterHook<[TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>, TRoute, Route>,
+  onBeforeRouteEnter: AddHook<BeforeEnterHook<[TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>, TRoute, Route>, TReturn>,
   /**
    * Registers a route hook to be called before the route is left.
    */
-  onBeforeRouteLeave: AddBeforeLeaveHook<[TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>, Route, TRoute>,
+  onBeforeRouteLeave: AddHook<BeforeLeaveHook<[TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>, Route, TRoute>, TReturn>,
   /**
    * Registers a route hook to be called before the route is updated.
    */
-  onBeforeRouteUpdate: AddBeforeUpdateHook<[TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>, TRoute, Route>,
+  onBeforeRouteUpdate: AddHook<BeforeUpdateHook<[TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>, TRoute, Route>, TReturn>,
   /**
    * Registers a route hook to be called after the route is entered.
    */
-  onAfterRouteEnter: AddAfterEnterHook<[TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>, TRoute, Route>,
+  onAfterRouteEnter: AddHook<AfterEnterHook<[TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>, TRoute, Route>, TReturn>,
   /**
    * Registers a route hook to be called after the route is left.
    */
-  onAfterRouteLeave: AddAfterLeaveHook<[TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>, Route, TRoute>,
+  onAfterRouteLeave: AddHook<AfterLeaveHook<[TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>, Route, TRoute>, TReturn>,
   /**
    * Registers a route hook to be called after the route is updated.
    */
-  onAfterRouteUpdate: AddAfterUpdateHook<[TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>, TRoute, Route>,
-}
-
-export type ExternalRouteHooks<
-  TRoute extends Route = Route,
-  TContext extends RouteContext[] | undefined = undefined
-> = {
-  /**
-   * Registers a route hook to be called before the route is entered.
-   */
-  onBeforeRouteEnter: AddBeforeEnterHook<[TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>, TRoute, Route>,
+  onAfterRouteUpdate: AddHook<AfterUpdateHook<[TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>, TRoute, Route>, TReturn>,
 }
 
 export type RejectionHooks<
@@ -120,7 +111,7 @@ export type HookRegistrationOptions = {
 /**
  * Registers an inline callback or a reusable hook definition.
  */
-export type AddHook<THook extends AnyFunction> = (hook: THook | AnyHook, options?: HookRegistrationOptions) => HookRemove
+export type AddHook<THook extends AnyFunction, TReturn = HookRemove> = (hook: THook | AnyHook, options?: HookRegistrationOptions) => TReturn
 
 /**
  * Enumerates the lifecycle events for before route hooks.
