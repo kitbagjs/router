@@ -6,7 +6,6 @@ import { useIsServerRendering } from '@/compositions/useIsServerRendering'
 import { isRouterRoute } from '@/services/createRouterRoute'
 import { Router } from '@/types/router'
 import { getRouterSuspenseInjectionKey, RouterSuspenseContext } from '@/compositions/useRouterSuspense'
-import { RouterSuspenseError } from '@/components/routerSuspenseError'
 
 export type RouterSuspenseProps = {
   /** Includes component errors when true or when the predicate returns true. */
@@ -38,6 +37,13 @@ export function createRouterSuspense<TRouter extends Router>(routerKey: Injectio
       }
 
       return () => renderSlot(slots, 'default')
+    },
+  })
+
+  const RouterSuspenseError = defineComponent({
+    name: 'RouterSuspenseError',
+    setup() {
+      return () => h('p', { role: 'alert' }, 'Unable to load this content.')
     },
   })
 
