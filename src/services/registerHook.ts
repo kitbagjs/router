@@ -3,7 +3,15 @@ import { HookRegistrationOptions, HookRemove } from '@/types/hooks'
 import { MaybePromise } from '@/types/utilities'
 import { toHook } from '@/services/toHook'
 
-export function registerHook<TValue, TContext extends object>(hooks: (((value: TValue, context: TContext) => MaybePromise<void>) | AnyHook)[], hook: ((value: TValue, context: TContext) => MaybePromise<void>) | AnyHook, { signal }: HookRegistrationOptions = {}): HookRemove {
+/**
+ * Registers a distinct wrapper so removal targets only this registration.
+ * Reusable definitions keep their marker and declared context.
+ */
+export function registerHook<TValue, TContext extends object>(
+  hooks: (((value: TValue, context: TContext) => MaybePromise<void>) | AnyHook)[],
+  hook: ((value: TValue, context: TContext) => MaybePromise<void>) | AnyHook,
+  { signal }: HookRegistrationOptions = {},
+): HookRemove {
   if (signal?.aborted) {
     return () => {}
   }
