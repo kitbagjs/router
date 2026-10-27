@@ -5,7 +5,6 @@ import { IS_ROUTER_ROUTE_SYMBOL, RouterRoute, RouterRouteInternal } from '@/type
 import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { QuerySource } from '@/types/querySource'
 import { Router } from '@/types/router'
-import { RouterNavigationStores } from '@/services/createRouterNavigation'
 import { isPropertyKey } from '@/utilities/guards'
 
 export function isRouterRoute(routerKey: InjectionKey<Router>, value: unknown): value is RouterRoute & RouterRouteInternal {
@@ -16,11 +15,10 @@ type CreateRouterRouteOptions<TRouter extends Router = Router> = {
   routerKey: InjectionKey<TRouter>,
   route: ResolvedRoute,
   push: RouterPush,
-  getRouteData: RouterNavigationStores['getRouteData'],
 }
 
 export function createRouterRoute<TRouter extends Router>(options: CreateRouterRouteOptions<TRouter>): TRouter['route'] & RouterRouteInternal
-export function createRouterRoute({ routerKey, route: initialRoute, push, getRouteData }: CreateRouterRouteOptions): RouterRoute & RouterRouteInternal {
+export function createRouterRoute({ routerKey, route: initialRoute, push }: CreateRouterRouteOptions): RouterRoute & RouterRouteInternal {
   const route = shallowRef(initialRoute)
 
   function getResolvedRoute(): ResolvedRoute {
@@ -91,7 +89,6 @@ export function createRouterRoute({ routerKey, route: initialRoute, push, getRou
   const hash = computed(() => route.value.hash)
   const href = computed(() => route.value.href)
   const canonical = computed(() => route.value.canonical)
-  const data = computed(() => getRouteData(route.value))
   const getTitle = computed(() => route.value.getTitle)
   const loaders = computed(() => {
     const entries = route.value.matches.flatMap((match) => Object.entries(match.loaders))
@@ -199,7 +196,6 @@ export function createRouterRoute({ routerKey, route: initialRoute, push, getRou
     getResolvedRoute,
   } satisfies RouterRouteInternal
 
-  // data is derived from the route's matches rather than read off the route, so its type cannot be matched here
   const routerRoute = reactive({
     ...internal,
     loaders,
@@ -213,7 +209,6 @@ export function createRouterRoute({ routerKey, route: initialRoute, push, getRou
     name,
     href,
     canonical,
-    data,
     getTitle,
     update,
   }) as RouterRoute & RouterRouteInternal

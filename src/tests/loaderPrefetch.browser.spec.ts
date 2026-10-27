@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-deprecated -- Keep legacy route.data compatibility coverage until removal. */
 import { flushPromises, mount } from '@vue/test-utils'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import { defineComponent, h, nextTick, ref } from 'vue'
@@ -217,8 +216,6 @@ test.each([true, false])('navigation adopts a prefetched loader when already set
   expect(signals[0].aborted).toBe(false)
 
   resolve('prefetched')
-
-  await expect(router.route.data).resolves.toBe('prefetched')
 })
 
 test('link push options skip prefetching without discarding it', async () => {
@@ -249,13 +246,12 @@ test('link push options skip prefetching without discarding it', async () => {
 
   await wrapper.vm.push({ query: { page: '2' } })
 
-  await expect(router.route.data).resolves.toBe('/route?tab=a&page=2')
   expect(load).toHaveBeenCalledTimes(2)
   expect(warn).toHaveBeenCalledExactlyOnceWith('/route?tab=a')
 
   await wrapper.vm.push()
 
-  await expect(router.route.data).resolves.toBe('/route?tab=a')
+  expect(router.route.href).toBe('/route?tab=a')
   expect(load).toHaveBeenCalledTimes(2)
 })
 
@@ -282,7 +278,6 @@ test('push options warn when intent prefetching is enabled before it runs', asyn
   expect(load).not.toHaveBeenCalled()
   await wrapper.vm.push({ hash: 'details' })
 
-  await expect(router.route.data).resolves.toBe('loaded')
   expect(warn).toHaveBeenCalledExactlyOnceWith('/route')
 })
 
@@ -310,7 +305,6 @@ test('push options do not warn when prefetching is disabled', async () => {
 
   await wrapper.vm.push({ query: { page: '2' } })
 
-  await expect(router.route.data).resolves.toBe('loaded')
   expect(load).toHaveBeenCalledOnce()
   expect(warn).not.toHaveBeenCalled()
 })
@@ -352,11 +346,6 @@ test('named and unnamed loaders respect their own config and feed prefetched pro
   await wrapper.trigger('click')
   await flushPromises()
 
-  const data = router.route.data as Record<string, Promise<unknown>>
-
-  await expect(data.default).resolves.toBe('default data')
-  await expect(data.named).resolves.toBe('named data')
-  await expect(data.disabled).resolves.toBe('not prefetched')
   expect(load).toHaveBeenCalledOnce()
   expect(named).toHaveBeenCalledOnce()
   expect(disabled).toHaveBeenCalledOnce()
@@ -434,9 +423,6 @@ test.each(['eager', 'intent', false] as const)('a prefetched child can wait for 
   await wrapper.trigger('click')
   await flushPromises()
 
-  const data = router.route.data as Record<string, Promise<unknown>>
-
-  await expect(data.child).resolves.toBe('child of parent data')
   expect(load).toHaveBeenCalledOnce()
   expect(childStarted).toHaveBeenCalledOnce()
   expect(childData).toHaveBeenCalledExactlyOnceWith('parent data')

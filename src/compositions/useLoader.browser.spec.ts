@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-deprecated -- Keep legacy route.data compatibility coverage until removal. */
 /* eslint-disable vue/one-component-per-file */
 import { flushPromises, mount } from '@vue/test-utils'
 import { afterEach, describe, expect, test, vi } from 'vitest'
@@ -114,7 +113,7 @@ test('reads the selected named attachment', async () => {
   await router.start()
   const selected = mountConsumer(router, () => useLoader(router.route.loaders.second))
 
-  expect(selected.data.value).toBe(await router.route.data.second)
+  expect(selected.data.value).toBe(2)
 })
 
 test('keeps loader data isolated between routers', async () => {

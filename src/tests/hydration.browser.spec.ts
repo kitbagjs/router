@@ -1,4 +1,6 @@
-/* eslint-disable @typescript-eslint/no-deprecated -- Keep legacy route.data compatibility coverage until removal. */
+import { mount } from '@vue/test-utils'
+import { Ref } from 'vue'
+import { useLoader } from '@/main'
 import { expect, test, vi } from 'vitest'
 import { createRouter } from '@/services/createRouter'
 import { createRoute } from '@/services/createRoute'
@@ -31,7 +33,15 @@ test('a payload for the initial url is adopted synchronously when the router sta
 
   await ready
 
-  await expect(router.route.data).resolves.toBe('from server')
+  let data: Ref<unknown> | undefined
+  mount({
+    setup() {
+      const loader = useLoader(router.route.loaders.default)
+      data = loader.data
+      return () => null
+    },
+  }, { global: { plugins: [router] } })
+  expect(data?.value).toBe('from server')
   expect(load).not.toHaveBeenCalled()
 })
 
@@ -126,7 +136,15 @@ test('a value missing from the payload warns and computes again', async () => {
 
   await router.start()
 
-  await expect(router.route.data).resolves.toBe('computed')
+  let data: Ref<unknown> | undefined
+  mount({
+    setup() {
+      const loader = useLoader(router.route.loaders.default)
+      data = loader.data
+      return () => null
+    },
+  }, { global: { plugins: [router] } })
+  expect(data?.value).toBe('computed')
   expect(warn.mock.calls.some(([message]) => String(message).includes('loader "default"'))).toBe(true)
 
   warn.mockRestore()
@@ -150,7 +168,15 @@ test('a value is adopted through its own parse', async () => {
 
   await router.start()
 
-  await expect(router.route.data).resolves.toEqual(new Map([['a', 1]]))
+  let data: Ref<unknown> | undefined
+  mount({
+    setup() {
+      const loader = useLoader(router.route.loaders.default)
+      data = loader.data
+      return () => null
+    },
+  }, { global: { plugins: [router] } })
+  expect(data?.value).toEqual(new Map([['a', 1]]))
   expect(load).not.toHaveBeenCalled()
 })
 
@@ -176,7 +202,15 @@ test('a declared payload option that cannot read a value warns and computes agai
 
   await router.start()
 
-  await expect(router.route.data).resolves.toBe(1)
+  let data: Ref<unknown> | undefined
+  mount({
+    setup() {
+      const loader = useLoader(router.route.loaders.default)
+      data = loader.data
+      return () => null
+    },
+  }, { global: { plugins: [router] } })
+  expect(data?.value).toBe(1)
   expect(warn.mock.calls.some(([message]) => String(message).includes('parse the payload value for loader "default"'))).toBe(true)
 
   warn.mockRestore()
