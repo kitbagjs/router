@@ -457,10 +457,9 @@ describe('addView', () => {
       })
     })
 
-    test('hooks and setTitle do not return the route (cannot chain addView after them)', () => {
+    test('hooks return the route while setTitle returns void', () => {
       const route = createRoute({ name: 'route' })
 
-      // @ts-expect-error onBeforeRouteEnter returns a HookRemove, not the route
       route.onBeforeRouteEnter(() => {}).addView(component)
 
       // @ts-expect-error setTitle returns void, not the route
