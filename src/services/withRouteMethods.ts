@@ -1,5 +1,4 @@
-import { AnyHook } from '@/types/hook'
-import { ComponentHook, HookLifecycle, HookRegistrationOptions, InternalRouteHooks } from '@/types/hooks'
+import { InternalRouteHooks } from '@/types/hooks'
 import { addRedirect } from '@/services/addRedirect'
 import { RouteRedirectFrom, RouteRedirectTo, RedirectToArgs } from '@/types/redirects'
 import { AddAlias, createAliases } from '@/services/addAlias'
@@ -68,6 +67,7 @@ export function withRouteMethods<TRoute extends Route>(route: TRoute): TRoute {
     addRedirect(from, route, convertParams, options)
   }
 
+  const hooks = route as TRoute & InternalRouteHooks
   const result = {
     ...route,
     addView,
@@ -75,28 +75,36 @@ export function withRouteMethods<TRoute extends Route>(route: TRoute): TRoute {
     addAlias,
     redirectTo,
     redirectFrom,
-  }
+    onBeforeRouteEnter: (...args: Parameters<InternalRouteHooks['onBeforeRouteEnter']>): TRoute => {
+      hooks.onBeforeRouteEnter(...args)
 
-  const hooks = route as TRoute & InternalRouteHooks
-  const lifecycles: HookLifecycle[] = [
-    'onBeforeRouteEnter',
-    'onBeforeRouteUpdate',
-    'onBeforeRouteLeave',
-    'onAfterRouteEnter',
-    'onAfterRouteUpdate',
-    'onAfterRouteLeave',
-  ]
+      return result
+    },
+    onBeforeRouteUpdate: (...args: Parameters<InternalRouteHooks['onBeforeRouteUpdate']>): TRoute => {
+      hooks.onBeforeRouteUpdate(...args)
 
-  for (const lifecycle of lifecycles) {
-    const register = hooks[lifecycle] as (hook: ComponentHook | AnyHook, options?: HookRegistrationOptions) => unknown
+      return result
+    },
+    onBeforeRouteLeave: (...args: Parameters<InternalRouteHooks['onBeforeRouteLeave']>): TRoute => {
+      hooks.onBeforeRouteLeave(...args)
 
-    Object.assign(result, {
-      [lifecycle]: (hook: ComponentHook | AnyHook, options?: HookRegistrationOptions) => {
-        register(hook, options)
+      return result
+    },
+    onAfterRouteEnter: (...args: Parameters<InternalRouteHooks['onAfterRouteEnter']>): TRoute => {
+      hooks.onAfterRouteEnter(...args)
 
-        return result
-      },
-    })
+      return result
+    },
+    onAfterRouteUpdate: (...args: Parameters<InternalRouteHooks['onAfterRouteUpdate']>): TRoute => {
+      hooks.onAfterRouteUpdate(...args)
+
+      return result
+    },
+    onAfterRouteLeave: (...args: Parameters<InternalRouteHooks['onAfterRouteLeave']>): TRoute => {
+      hooks.onAfterRouteLeave(...args)
+
+      return result
+    },
   }
 
   return result
