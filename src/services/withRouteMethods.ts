@@ -68,6 +68,43 @@ export function withRouteMethods<TRoute extends Route>(route: TRoute): TRoute {
   }
 
   const hooks = route as TRoute & InternalRouteHooks
+
+  const onBeforeRouteEnter: (...args: Parameters<InternalRouteHooks['onBeforeRouteEnter']>) => TRoute = (hook, options) => {
+    hooks.onBeforeRouteEnter(hook, options)
+
+    return result
+  }
+
+  const onBeforeRouteUpdate: (...args: Parameters<InternalRouteHooks['onBeforeRouteUpdate']>) => TRoute = (hook, options) => {
+    hooks.onBeforeRouteUpdate(hook, options)
+
+    return result
+  }
+
+  const onBeforeRouteLeave: (...args: Parameters<InternalRouteHooks['onBeforeRouteLeave']>) => TRoute = (hook, options) => {
+    hooks.onBeforeRouteLeave(hook, options)
+
+    return result
+  }
+
+  const onAfterRouteEnter: (...args: Parameters<InternalRouteHooks['onAfterRouteEnter']>) => TRoute = (hook, options) => {
+    hooks.onAfterRouteEnter(hook, options)
+
+    return result
+  }
+
+  const onAfterRouteUpdate: (...args: Parameters<InternalRouteHooks['onAfterRouteUpdate']>) => TRoute = (hook, options) => {
+    hooks.onAfterRouteUpdate(hook, options)
+
+    return result
+  }
+
+  const onAfterRouteLeave: (...args: Parameters<InternalRouteHooks['onAfterRouteLeave']>) => TRoute = (hook, options) => {
+    hooks.onAfterRouteLeave(hook, options)
+
+    return result
+  }
+
   const result = {
     ...route,
     addView,
@@ -75,36 +112,12 @@ export function withRouteMethods<TRoute extends Route>(route: TRoute): TRoute {
     addAlias,
     redirectTo,
     redirectFrom,
-    onBeforeRouteEnter: (...args: Parameters<InternalRouteHooks['onBeforeRouteEnter']>): TRoute => {
-      hooks.onBeforeRouteEnter(...args)
-
-      return result
-    },
-    onBeforeRouteUpdate: (...args: Parameters<InternalRouteHooks['onBeforeRouteUpdate']>): TRoute => {
-      hooks.onBeforeRouteUpdate(...args)
-
-      return result
-    },
-    onBeforeRouteLeave: (...args: Parameters<InternalRouteHooks['onBeforeRouteLeave']>): TRoute => {
-      hooks.onBeforeRouteLeave(...args)
-
-      return result
-    },
-    onAfterRouteEnter: (...args: Parameters<InternalRouteHooks['onAfterRouteEnter']>): TRoute => {
-      hooks.onAfterRouteEnter(...args)
-
-      return result
-    },
-    onAfterRouteUpdate: (...args: Parameters<InternalRouteHooks['onAfterRouteUpdate']>): TRoute => {
-      hooks.onAfterRouteUpdate(...args)
-
-      return result
-    },
-    onAfterRouteLeave: (...args: Parameters<InternalRouteHooks['onAfterRouteLeave']>): TRoute => {
-      hooks.onAfterRouteLeave(...args)
-
-      return result
-    },
+    onBeforeRouteEnter,
+    onBeforeRouteUpdate,
+    onBeforeRouteLeave,
+    onAfterRouteEnter,
+    onAfterRouteUpdate,
+    onAfterRouteLeave,
   }
 
   return result
