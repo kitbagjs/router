@@ -104,25 +104,30 @@ test.each(['true', 'predicate'] as const)('forwards fallback errors to the paren
   }
 })
 
-test('catches errors thrown by the default slot', async () => {
+test('forwards slot function errors to the parent boundary', async () => {
   const failure = new Error('default slot failed')
   const router = createRouter([createRoute({ name: 'home', path: '/' })], { initialUrl: '/' })
   await router.start()
-  const errorSlot = vi.fn(() => h('p', 'failed'))
+  const innerErrorSlot = vi.fn(() => h('p', 'inner error'))
+  const outerErrorSlot = vi.fn(() => h('p', 'outer error'))
   const appErrorHandler = vi.fn()
   const wrapper = mount(RouterSuspense, {
     props: { catch: true },
     slots: {
-      default: () => {
-        throw failure
-      },
-      error: errorSlot,
+      default: () => h(RouterSuspense, { catch: true }, {
+        default: () => {
+          throw failure
+        },
+        error: innerErrorSlot,
+      }),
+      error: outerErrorSlot,
     },
     global: { plugins: [router], config: { errorHandler: appErrorHandler } },
   })
 
   await flushPromises()
-  expect(wrapper.text()).toBe('failed')
-  expect(errorSlot).toHaveBeenCalledWith({ error: failure })
+  expect(wrapper.text()).toBe('outer error')
+  expect(outerErrorSlot).toHaveBeenCalledWith({ error: failure })
+  expect(innerErrorSlot).not.toHaveBeenCalled()
   expect(appErrorHandler).not.toHaveBeenCalled()
 })

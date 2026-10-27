@@ -1,11 +1,12 @@
 /* eslint-disable vue/one-component-per-file */
-import { ComponentPublicInstance, defineComponent, h, InjectionKey, onErrorCaptured, onScopeDispose, PropType, provide, shallowRef, SlotsType, Suspense, VNode, watch } from 'vue'
+import { ComponentPublicInstance, defineComponent, h, InjectionKey, onErrorCaptured, onScopeDispose, PropType, provide, renderSlot, shallowRef, SlotsType, Suspense, VNode, watch } from 'vue'
 import { createUseRouter } from '@/compositions/useRouter'
 import { createUseRejection } from '@/compositions/useRejection'
 import { useIsServerRendering } from '@/compositions/useIsServerRendering'
 import { isRouterRoute } from '@/services/createRouterRoute'
 import { Router } from '@/types/router'
 import { getRouterSuspenseInjectionKey, RouterSuspenseContext } from '@/compositions/useRouterSuspense'
+import { RouterSuspenseError } from '@/components/routerSuspenseError'
 
 export type RouterSuspenseProps = {
   /** Includes component errors when true or when the predicate returns true. */
@@ -34,20 +35,7 @@ export function createRouterSuspense<TRouter extends Router>(routerKey: Injectio
         onErrorCaptured(props.context.captureError)
       }
 
-      return () => {
-        try {
-          const children = slots.default?.()
-          return children?.length === 1 ? children[0] : children
-        } catch (error) {
-          const handled = props.context.captureError(error, null)
-
-          if (handled !== false) {
-            throw error
-          }
-
-          return null
-        }
-      }
+      return () => renderSlot(slots, 'default')
     },
   })
 
@@ -133,14 +121,18 @@ export function createRouterSuspense<TRouter extends Router>(routerKey: Injectio
       }
 
       return () => {
-        if (failure.value) {
-          return slots.error?.(failure.value) ?? h('p', { role: 'alert' }, 'Unable to load this content.')
+        if (!failure.value) {
+          return h(Suspense, attrs, {
+            default: () => h(Content, { context }, slots.default),
+            fallback: slots.fallback,
+          })
         }
 
-        return h(Suspense, attrs, {
-          default: () => h(Content, { context }, slots.default),
-          fallback: slots.fallback,
-        })
+        if (slots.error) {
+          return slots.error(failure.value)
+        }
+
+        return h(RouterSuspenseError)
       }
     },
   })
