@@ -118,6 +118,7 @@ export type AddGlobalHooks = (hooks: Hooks[]) => void
 export type HookRemove = () => void
 
 export type HookEntry<THook> = {
+  lifecycle: HookStoreKey,
   hook: THook,
   remove: HookRemove,
 }

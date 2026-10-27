@@ -7,15 +7,15 @@ export function getGlobalBeforeHooks(to: ResolvedRoute | null, from: ResolvedRou
 
   for (const globalHooks of globalStores) {
     if (to?.matches.some((_route, depth) => isRouteEnter(to, from, depth))) {
-      hooks.add(globalHooks, 'onBeforeRouteEnter')
+      hooks.add(...globalHooks.get('onBeforeRouteEnter'))
     }
 
     if (to?.matches.some((_route, depth) => isRouteUpdate(to, from, depth))) {
-      hooks.add(globalHooks, 'onBeforeRouteUpdate')
+      hooks.add(...globalHooks.get('onBeforeRouteUpdate'))
     }
 
     if (from?.matches.some((_route, depth) => isRouteLeave(to, from, depth))) {
-      hooks.add(globalHooks, 'onBeforeRouteLeave')
+      hooks.add(...globalHooks.get('onBeforeRouteLeave'))
     }
   }
 
@@ -27,15 +27,15 @@ export function getGlobalAfterHooks(to: ResolvedRoute | null, from: ResolvedRout
 
   for (const globalHooks of globalStores) {
     if (to?.matches.some((_route, depth) => isRouteEnter(to, from, depth))) {
-      hooks.add(globalHooks, 'onAfterRouteEnter')
+      hooks.add(...globalHooks.get('onAfterRouteEnter'))
     }
 
     if (to?.matches.some((_route, depth) => isRouteUpdate(to, from, depth))) {
-      hooks.add(globalHooks, 'onAfterRouteUpdate')
+      hooks.add(...globalHooks.get('onAfterRouteUpdate'))
     }
 
     if (from?.matches.some((_route, depth) => isRouteLeave(to, from, depth))) {
-      hooks.add(globalHooks, 'onAfterRouteLeave')
+      hooks.add(...globalHooks.get('onAfterRouteLeave'))
     }
   }
 

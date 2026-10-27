@@ -61,15 +61,15 @@ export function createRouterHooks({ redirectStatus, onHookAdded }: RouterHooksOp
     const globalHooks = getGlobalBeforeHooks(to, from, globalStores)
 
     const allHooks = new Hooks()
-    allHooks.add(routeHooks, 'redirects')
-    allHooks.add(globalHooks, 'onBeforeRouteEnter')
-    allHooks.add(routeHooks, 'onBeforeRouteEnter')
-    allHooks.add(globalHooks, 'onBeforeRouteUpdate')
-    allHooks.add(routeHooks, 'onBeforeRouteUpdate')
-    allHooks.add(componentStore, 'onBeforeRouteUpdate')
-    allHooks.add(globalHooks, 'onBeforeRouteLeave')
-    allHooks.add(routeHooks, 'onBeforeRouteLeave')
-    allHooks.add(componentStore, 'onBeforeRouteLeave')
+    allHooks.add(...routeHooks.get('redirects'))
+    allHooks.add(...globalHooks.get('onBeforeRouteEnter'))
+    allHooks.add(...routeHooks.get('onBeforeRouteEnter'))
+    allHooks.add(...globalHooks.get('onBeforeRouteUpdate'))
+    allHooks.add(...routeHooks.get('onBeforeRouteUpdate'))
+    allHooks.add(...componentStore.get('onBeforeRouteUpdate'))
+    allHooks.add(...globalHooks.get('onBeforeRouteLeave'))
+    allHooks.add(...routeHooks.get('onBeforeRouteLeave'))
+    allHooks.add(...componentStore.get('onBeforeRouteLeave'))
 
     try {
       const results: Promise<unknown>[] = []
@@ -141,15 +141,15 @@ export function createRouterHooks({ redirectStatus, onHookAdded }: RouterHooksOp
     const globalHooks = getGlobalAfterHooks(to, from, globalStores)
 
     const allHooks = new Hooks()
-    allHooks.add(componentStore, 'onAfterRouteLeave')
-    allHooks.add(routeHooks, 'onAfterRouteLeave')
-    allHooks.add(globalHooks, 'onAfterRouteLeave')
-    allHooks.add(componentStore, 'onAfterRouteUpdate')
-    allHooks.add(routeHooks, 'onAfterRouteUpdate')
-    allHooks.add(globalHooks, 'onAfterRouteUpdate')
-    allHooks.add(componentStore, 'onAfterRouteEnter')
-    allHooks.add(routeHooks, 'onAfterRouteEnter')
-    allHooks.add(globalHooks, 'onAfterRouteEnter')
+    allHooks.add(...componentStore.get('onAfterRouteLeave'))
+    allHooks.add(...routeHooks.get('onAfterRouteLeave'))
+    allHooks.add(...globalHooks.get('onAfterRouteLeave'))
+    allHooks.add(...componentStore.get('onAfterRouteUpdate'))
+    allHooks.add(...routeHooks.get('onAfterRouteUpdate'))
+    allHooks.add(...globalHooks.get('onAfterRouteUpdate'))
+    allHooks.add(...componentStore.get('onAfterRouteEnter'))
+    allHooks.add(...routeHooks.get('onAfterRouteEnter'))
+    allHooks.add(...globalHooks.get('onAfterRouteEnter'))
 
     try {
       const results = allHooks.getAfterHooks().map(({ hook }) => {
@@ -203,7 +203,7 @@ export function createRouterHooks({ redirectStatus, onHookAdded }: RouterHooksOp
     const errorHooks = new Hooks()
 
     for (const store of globalStores) {
-      errorHooks.add(store, 'onError')
+      errorHooks.add(...store.get('onError'))
     }
 
     for (const { hook } of errorHooks.get('onError')) {
@@ -230,8 +230,8 @@ export function createRouterHooks({ redirectStatus, onHookAdded }: RouterHooksOp
     const rejectionHooks = getRejectionHooksFromRejection(rejection)
 
     const allHooks = new Hooks()
-    allHooks.add(rejectionHooks, 'onRejection')
-    allHooks.add(globalStore, 'onRejection')
+    allHooks.add(...rejectionHooks.get('onRejection'))
+    allHooks.add(...globalStore.get('onRejection'))
 
     for (const { hook } of allHooks.get('onRejection')) {
       hook(rejection.type, { to, from })

@@ -12,5 +12,16 @@ export function registerHook<TLifecycle extends HookStoreKey>(store: Hooks, hook
     return existing.remove
   }
 
-  return store.add(hook, lifecycle, options).remove
+  const { signal } = options
+  const entry = { lifecycle, hook, remove }
+
+  function remove(): void {
+    store.delete(entry)
+    signal?.removeEventListener('abort', remove)
+  }
+
+  store.add(entry)
+  signal?.addEventListener('abort', remove, { once: true })
+
+  return remove
 }

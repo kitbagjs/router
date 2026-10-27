@@ -1,114 +1,69 @@
 import { expect, test, vi } from 'vitest'
 import { Hooks } from '@/models/hooks'
-import { createRouteHooks } from '@/services/createRouteHooks'
+import { BeforeEnterHook, HookEntry } from '@/types/hooks'
 
-test('aggregation preserves registration order across stores and selects one hook kind', () => {
-  const first = createRouteHooks()
-  const second = createRouteHooks()
-  const shared = vi.fn()
-  const other = vi.fn()
-  first.onBeforeRouteEnter(shared)
-  first.onBeforeRouteEnter(other)
-  first.onAfterRouteEnter(other)
-  second.onBeforeRouteEnter(shared)
+function createEntry(): HookEntry<BeforeEnterHook> {
+  return { lifecycle: 'onBeforeRouteEnter', hook: vi.fn(), remove: vi.fn() }
+}
+
+test('add preserves entry order and allows deliberate duplicates', () => {
   const hooks = new Hooks()
+  const first = createEntry()
+  const second = createEntry()
+  hooks.add(first, second, first)
 
-  hooks.add(first.store, 'onBeforeRouteEnter')
-  hooks.add(second.store, 'onBeforeRouteEnter')
-
-  expect(hooks.get('onBeforeRouteEnter').map(({ hook }) => hook)).toEqual([shared, other, shared])
+  expect(hooks.get('onBeforeRouteEnter')).toEqual([first, second, first])
   expect(hooks.get('onAfterRouteEnter')).toEqual([])
-  expect(first.store.get('onBeforeRouteEnter').map(({ hook }) => hook)).toEqual([shared, other])
-  expect(second.store.get('onBeforeRouteEnter').map(({ hook }) => hook)).toEqual([shared])
+  expect(hooks.has(first)).toBe(true)
+  expect(hooks.delete(first)).toBe(true)
+  expect(hooks.get('onBeforeRouteEnter')).toEqual([second, first])
+  expect(hooks.delete(first)).toBe(true)
+  expect(hooks.delete(first)).toBe(false)
+  expect(hooks.has(first)).toBe(false)
 })
 
-test('aggregation takes a snapshot without changing the source registrations', () => {
-  const source = new Hooks()
-  const original = vi.fn()
-  const replacement = vi.fn()
-  const entry = source.add(original, 'onBeforeRouteEnter')
+test('get returns a snapshot of the selected entries', () => {
   const hooks = new Hooks()
-  hooks.add(source, 'onBeforeRouteEnter')
+  const original = createEntry()
+  const replacement = createEntry()
+  hooks.add(original)
+  const snapshot = hooks.get('onBeforeRouteEnter')
 
-  entry.remove()
-  source.add(replacement, 'onBeforeRouteEnter')
-  expect(hooks.get('onBeforeRouteEnter')).toEqual([entry])
-
-  const next = new Hooks()
-  next.add(source, 'onBeforeRouteEnter')
-  expect(next.get('onBeforeRouteEnter').map(({ hook }) => hook)).toEqual([replacement])
+  hooks.delete(original)
+  hooks.add(replacement)
+  expect(snapshot).toEqual([original])
+  expect(hooks.get('onBeforeRouteEnter')).toEqual([replacement])
+  snapshot.pop()
+  expect(hooks.get('onBeforeRouteEnter')).toEqual([replacement])
 })
 
-test('aggregation through multiple containers retains one original remover', () => {
+test('aggregation retains the same entry and remover across containers', () => {
   const source = new Hooks()
-  const callback = vi.fn()
-  const entry = source.add(callback, 'onBeforeRouteEnter')
+  const entry = createEntry()
+  source.add(entry)
   const intermediate = new Hooks()
-  intermediate.add(entry, 'onBeforeRouteEnter')
+  intermediate.add(...source.get('onBeforeRouteEnter'))
   const execution = new Hooks()
-  execution.add(intermediate, 'onBeforeRouteEnter')
+  execution.add(...intermediate.getBeforeHooks())
 
-  expect(execution.get('onBeforeRouteEnter')[0]).toBe(entry)
-  execution.get('onBeforeRouteEnter')[0].remove()
-  expect(source.has(callback, 'onBeforeRouteEnter')).toBe(false)
-  expect(intermediate.get('onBeforeRouteEnter')[0]).toBe(entry)
-})
-
-test('add permits separate registrations and delete removes only the selected registration', () => {
-  const hooks = new Hooks()
-  const callback = vi.fn()
-  const first = hooks.add(callback, 'onBeforeRouteEnter')
-  const second = hooks.add(callback, 'onBeforeRouteEnter')
-
-  expect(hooks.has(first, 'onBeforeRouteEnter')).toBe(true)
-  expect(hooks.delete(first, 'onBeforeRouteEnter')).toBe(true)
-  expect(hooks.delete(first, 'onBeforeRouteEnter')).toBe(false)
-  expect(hooks.get('onBeforeRouteEnter')).toEqual([second])
-  expect(hooks.has(callback, 'onBeforeRouteEnter')).toBe(true)
-  expect(hooks.delete(callback, 'onBeforeRouteEnter')).toBe(true)
-  expect(hooks.has(callback, 'onBeforeRouteEnter')).toBe(false)
-})
-
-test('delete on an aggregate unregisters only the matching source registration', () => {
-  const first = new Hooks()
-  const second = new Hooks()
-  const callback = vi.fn()
-  const entry = first.add(callback, 'onBeforeRouteEnter')
-  second.add(callback, 'onBeforeRouteEnter')
-  const execution = new Hooks()
-  execution.add(first, 'onBeforeRouteEnter')
-  execution.add(second, 'onBeforeRouteEnter')
-
-  execution.delete(entry, 'onBeforeRouteEnter')
-  expect(first.has(callback, 'onBeforeRouteEnter')).toBe(false)
-  expect(second.has(callback, 'onBeforeRouteEnter')).toBe(true)
-  expect(execution.get('onBeforeRouteEnter')).toEqual(second.get('onBeforeRouteEnter'))
+  expect(execution.getBeforeHooks()[0]).toBe(entry)
+  execution.getBeforeHooks()[0].remove()
+  expect(entry.remove).toHaveBeenCalledOnce()
+  expect(source.has(entry)).toBe(true)
+  execution.delete(entry)
+  expect(execution.has(entry)).toBe(false)
+  expect(source.has(entry)).toBe(true)
+  expect(entry.remove).toHaveBeenCalledOnce()
 })
 
 test('has allows callers to opt into deduplication', () => {
   const hooks = new Hooks()
-  const callback = vi.fn()
-  hooks.add(callback, 'onBeforeRouteEnter')
+  const entry = createEntry()
+  hooks.add(entry)
 
-  if (!hooks.has(callback, 'onBeforeRouteEnter')) {
-    hooks.add(callback, 'onBeforeRouteEnter')
+  if (!hooks.has(entry)) {
+    hooks.add(entry)
   }
 
-  expect(hooks.get('onBeforeRouteEnter')).toHaveLength(1)
-})
-
-test('aborted signals skip registration and deletion detaches the signal listener', () => {
-  const hooks = new Hooks()
-  const callback = vi.fn()
-  hooks.add(callback, 'onBeforeRouteEnter', { signal: AbortSignal.abort() })
-  expect(hooks.has(callback, 'onBeforeRouteEnter')).toBe(false)
-  const controller = new AbortController()
-  const removeEventListener = vi.spyOn(controller.signal, 'removeEventListener')
-  const entry = hooks.add(callback, 'onBeforeRouteEnter', { signal: controller.signal })
-
-  hooks.delete(entry, 'onBeforeRouteEnter')
-  expect(removeEventListener).toHaveBeenCalledExactlyOnceWith('abort', entry.remove)
-  const replacement = hooks.add(callback, 'onBeforeRouteEnter')
-  controller.abort()
-  expect(hooks.get('onBeforeRouteEnter')).toEqual([replacement])
+  expect(hooks.getBeforeHooks()).toEqual([entry])
 })

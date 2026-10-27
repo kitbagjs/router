@@ -37,7 +37,7 @@ export function createRouteHooks(): RouteHooks {
       throw new ContextRedirectError([to.name, convertParams?.(from.params), { replace: true, redirectStatus: options?.status ?? redirectStatus }])
     }
 
-    return store.add(hook, 'redirects').remove
+    return registerHook(store, hook, 'redirects')
   }
 
   function addHook<TLifecycle extends HookLifecycle>(lifecycle: TLifecycle, hook: HookTypes[TLifecycle], options?: HookRegistrationOptions): HookRemove {
