@@ -15,7 +15,7 @@ export class Hooks {
    * Returns a snapshot of registrations for one hook kind.
    */
   public get<TLifecycle extends HookStoreKey>(lifecycle: TLifecycle): HookEntry<HookTypes[TLifecycle]>[] {
-    return this.entries.filter((entry) => entry.lifecycle === lifecycle) as HookEntry<HookTypes[TLifecycle]>[]
+    return this.entries.filter((entry): entry is HookEntry<HookTypes[TLifecycle]> => entry.lifecycle === lifecycle)
   }
 
   public has(entry: Entry): boolean {
