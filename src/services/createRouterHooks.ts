@@ -60,7 +60,7 @@ export function createRouterHooks({ redirectStatus, onHookAdded }: RouterHooksOp
     const routeHooks = getBeforeHooksFromRoutes(to, from)
     const globalHooks = getGlobalBeforeHooks(to, from, globalStores)
 
-    const allHooks: BeforeHook[] = [
+    const allHooks: (BeforeHook | AnyHook)[] = [
       ...routeHooks.redirects,
       ...globalHooks.onBeforeRouteEnter,
       ...routeHooks.onBeforeRouteEnter,
@@ -141,7 +141,7 @@ export function createRouterHooks({ redirectStatus, onHookAdded }: RouterHooksOp
     const routeHooks = getAfterHooksFromRoutes(to, from)
     const globalHooks = getGlobalAfterHooks(to, from, globalStores)
 
-    const allHooks: AfterHook[] = [
+    const allHooks: (AfterHook | AnyHook)[] = [
       ...componentStore.onAfterRouteLeave,
       ...routeHooks.onAfterRouteLeave,
       ...globalHooks.onAfterRouteLeave,

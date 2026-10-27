@@ -1,7 +1,7 @@
 import { AnyHook, isHook } from '@/types/hook'
-import { AnyFunction } from '@/types/utilities'
+import { HookCallback } from '@/types/hooks'
 
-export function toHook(hook: AnyFunction | AnyHook): AnyHook['hook'] {
+export function toHook(hook: HookCallback | AnyHook): AnyHook['hook'] {
   if (typeof hook === 'function') {
     return hook
   }

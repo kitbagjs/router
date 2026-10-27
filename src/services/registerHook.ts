@@ -1,6 +1,6 @@
 import { AnyHook, isHook } from '@/types/hook'
-import { HookRegistrationOptions, HookRemove } from '@/types/hooks'
-import { AnyFunction, MaybePromise } from '@/types/utilities'
+import { HookCallback, HookRegistrationOptions, HookRemove } from '@/types/hooks'
+import { MaybePromise } from '@/types/utilities'
 import { toHook } from '@/services/toHook'
 
 /**
@@ -8,8 +8,8 @@ import { toHook } from '@/services/toHook'
  * Reusable definitions keep their marker and declared context.
  */
 export function registerHook(
-  hooks: (AnyFunction<MaybePromise<void>> | AnyHook)[],
-  hook: AnyFunction<MaybePromise<void>> | AnyHook,
+  hooks: (HookCallback | AnyHook)[],
+  hook: HookCallback | AnyHook,
   { signal }: HookRegistrationOptions = {},
 ): HookRemove {
   if (signal?.aborted) {

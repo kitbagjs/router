@@ -73,13 +73,15 @@ export type RejectionHooks<
 
 export type HookTiming = 'global' | 'component'
 
-export type BeforeHook = RedirectHook | BeforeEnterHook | BeforeUpdateHook | BeforeLeaveHook | AnyHook
-export type AfterHook = AfterEnterHook | AfterUpdateHook | AfterLeaveHook | AnyHook
+export type BeforeHook = RedirectHook | BeforeEnterHook | BeforeUpdateHook | BeforeLeaveHook
+export type AfterHook = AfterEnterHook | AfterUpdateHook | AfterLeaveHook
 
 /**
  * Union type for all component route hooks.
  */
 export type ComponentHook = BeforeEnterHook | BeforeUpdateHook | BeforeLeaveHook | AfterEnterHook | AfterUpdateHook | AfterLeaveHook
+
+export type HookCallback = ComponentHook | RedirectHook | ErrorHook | RejectionHook
 
 /**
  * Registration object for adding a component route hook.
