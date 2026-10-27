@@ -55,6 +55,74 @@ test.each(loaderAttachments)('retains data while the next load is pending ($atta
   expect(loaded?.loading.value).toBe(false)
 })
 
+test.each(loaderAttachments)('retains the latest success even when data was not read ($attachment loader)', async ({ attached }) => {
+  const second = Promise.withResolvers<string>()
+  const third = Promise.withResolvers<string>()
+  const loader = createLoader({
+    load: (route) => {
+      if (route.params.id === '1') {
+        return 'first'
+      }
+
+      return route.params.id === '2' ? second.promise : third.promise
+    },
+  })
+  const user = createRoute({ name: 'user', path: '/[id]' })
+  const route = attached ? user.addLoader(loader) : user
+  const router = createRouter([route], { initialUrl: '/1' })
+  await router.start()
+  let loaded: UseLoaderResolved<string> | undefined
+  const consumer = defineComponent({
+    async setup() {
+      loaded = await useLoader(loader)
+      return () => null
+    },
+  })
+  mount(RouterSuspense, {
+    slots: { default: () => h(consumer) },
+    global: { plugins: [router] },
+  })
+  await flushPromises()
+
+  await router.push('/2')
+  second.resolve('second')
+  await flushPromises()
+  await router.push('/3')
+
+  expect(loaded?.data.value).toBe('second')
+  expect(loaded?.loading.value).toBe(true)
+  third.resolve('third')
+  await flushPromises()
+})
+
+test.each(loaderAttachments)('accepts undefined as a successful loader value ($attachment loader)', async ({ attached }) => {
+  const loader = createLoader({
+    load: (route) => {
+      return route.params.id === '1' ? 'first' : undefined
+    },
+  })
+  const user = createRoute({ name: 'user', path: '/[id]' })
+  const route = attached ? user.addLoader(loader) : user
+  const router = createRouter([route], { initialUrl: '/1' })
+  await router.start()
+  const consumer = defineComponent({
+    async setup() {
+      const { data } = await useLoader(loader)
+      return () => h('p', String(data.value))
+    },
+  })
+  const wrapper = mount(RouterSuspense, {
+    slots: { default: () => h(consumer) },
+    global: { plugins: [router] },
+  })
+  await flushPromises()
+  expect(wrapper.text()).toBe('first')
+
+  await router.push('/2')
+  await flushPromises()
+  expect(wrapper.text()).toBe('undefined')
+})
+
 test.each(['throw', 'reject'] as const)('rejects with the original loader error (%s)', async (action) => {
   const failure = new Error('failed')
   const loader = createLoader({

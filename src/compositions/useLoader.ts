@@ -132,13 +132,22 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunct
     })
 
     const resolved = shallowRef(false)
-    const lastSuccess = shallowRef<{ value: unknown }>()
+    const loadedData = computed((previous: unknown) => {
+      const current = state.value
+
+      if (current.status === 'SUCCESS') {
+        return current.value
+      }
+
+      return previous
+    })
     let waiting: PromiseWithResolvers<unknown> | undefined
 
     watch(state, (current) => {
       if (current.status === 'SUCCESS') {
-        lastSuccess.value = { value: current.value }
-        waiting?.resolve(current.value)
+        // Read every success so the next load retains it even when the component has not read data.
+        const value = loadedData.value
+        waiting?.resolve(value)
       } else if (current.status === 'ERROR') {
         waiting?.reject(current.error)
       } else {
@@ -206,8 +215,6 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunct
       loading,
       error,
     }
-
-    const loadedData = computed(() => lastSuccess.value?.value)
 
     return {
       ...result,
