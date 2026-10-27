@@ -3,7 +3,7 @@ import { RouteAddAlias } from '@/types/addAlias'
 import { RouteAddLoader } from '@/types/addLoader'
 import { RouteAddView } from '@/types/addView'
 import { RouteHooks, ExternalRouteHooks } from '@/types/routeHooks'
-import { RedirectToArgs, RedirectFromArgs } from '@/types/redirects'
+import { RouteRedirects, ExternalRouteRedirects } from '@/types/routeRedirects'
 import { CreatedRouteOptions, Route } from '@/types/route'
 import { RouteSetTitle } from '@/types/routeTitle'
 import { Url } from '@/types/url'
@@ -24,10 +24,7 @@ export type RouteWithMethods<
   & RouteAddLoader<TUrl, TMatches>
   & RouteAddAlias<TUrl, TMatches>
   & RouteHooks<TUrl, TMatches>
-  & {
-    redirectTo: <TRouteTo extends Route>(...args: RedirectToArgs<TRouteTo, Route<TUrl, TMatches>>) => RouteWithMethods<TUrl, TMatches>,
-    redirectFrom: <TRouteFrom extends Route>(...args: RedirectFromArgs<Route<TUrl, TMatches>, TRouteFrom>) => RouteWithMethods<TUrl, TMatches>,
-  }
+  & RouteRedirects<TUrl, TMatches>
   & RouteSetTitle<Route<TUrl, TMatches>>
 
 export type ExternalRouteWithMethods<
@@ -35,7 +32,4 @@ export type ExternalRouteWithMethods<
   TContext extends RouteContext[] | undefined = undefined
 > = TRoute
   & ExternalRouteHooks<TRoute, TContext>
-  & {
-    redirectTo: <TRouteTo extends Route>(...args: RedirectToArgs<TRouteTo, TRoute>) => ExternalRouteWithMethods<TRoute, TContext>,
-    redirectFrom: <TRouteFrom extends Route>(...args: RedirectFromArgs<TRoute, TRouteFrom>) => ExternalRouteWithMethods<TRoute, TContext>,
-  }
+  & ExternalRouteRedirects<TRoute, TContext>

@@ -63,13 +63,13 @@ export function withRouteMethods<TRoute extends Route>(route: TRoute, hooks: Int
     }, hooks)
   }
 
-  const redirectTo: RouteRedirectTo = (...[to, convertParams, options]: RedirectToArgs) => {
+  const redirectTo: RouteRedirectTo<Route, TRoute> = (...[to, convertParams, options]: RedirectToArgs) => {
     addRedirect(route, to, convertParams, options)
 
     return result
   }
 
-  const redirectFrom: RouteRedirectFrom = (from, convertParams, options) => {
+  const redirectFrom: RouteRedirectFrom<Route, TRoute> = (from, convertParams, options) => {
     addRedirect(from, route, convertParams, options)
 
     return result
