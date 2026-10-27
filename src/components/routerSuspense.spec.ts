@@ -16,7 +16,7 @@ test('renders content after async setup resolves on the server', async () => {
   app.use(router)
 
   try {
-    expect(await renderToString(app)).toBe('<p>ready</p>')
+    expect(await renderToString(app)).toBe('<!--[--><p>ready</p><!--]-->')
   } finally {
     router.stop()
   }
