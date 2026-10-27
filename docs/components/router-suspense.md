@@ -1,11 +1,9 @@
 # RouterSuspense
 
-Wrap async content with `RouterSuspense` to provide loading and error states. It is registered
-globally by the [router plugin](/quick-start#vue-plugin).
-
-`RouterSuspense` automatically detects errors from [props getters](/core-concepts/component-props)
-and awaited [useLoader](/composables/useLoader#awaiting-data) calls. To catch errors unrelated to
-routing, use the `catch` prop.
+`RouterSuspense` provides loading and error states for async content and automatically detects errors
+from [props getters](/core-concepts/component-props) and awaited
+[useLoader](/composables/useLoader#awaiting-data) calls. To catch errors unrelated to routing, use the
+`catch` prop.
 
 ```vue
 <template>
