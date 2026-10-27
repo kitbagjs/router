@@ -65,10 +65,14 @@ export function withRouteMethods<TRoute extends Route>(route: TRoute, hooks: Int
 
   const redirectTo: RouteRedirectTo = (...[to, convertParams, options]: RedirectToArgs) => {
     addRedirect(route, to, convertParams, options)
+
+    return result
   }
 
   const redirectFrom: RouteRedirectFrom = (from, convertParams, options) => {
     addRedirect(from, route, convertParams, options)
+
+    return result
   }
 
   const onBeforeRouteEnter: HookMethods['onBeforeRouteEnter'] = (hook, options) => {
