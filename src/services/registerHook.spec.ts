@@ -4,7 +4,7 @@ import { registerHook } from '@/services/registerHook'
 import { createHook } from '@/services/createHook'
 import { createRoute } from '@/services/createRoute'
 import { isHook } from '@/types/hook'
-import { toHook } from '@/services/toHook'
+import { toHookCallback } from '@/services/toHookCallback'
 
 test('a collected entry retains the remover for its source array', () => {
   const source = new Hooks()
@@ -47,7 +47,7 @@ test('registration retains the original reusable definition and context', () => 
   expect(isHook(registered.hook)).toBe(true)
   expect(registered.hook).toBe(hook)
   expect(registered.hook).toMatchObject({ context: hook.context })
-  expect(toHook(registered.hook)).toBe(hook.hook)
+  expect(toHookCallback(registered.hook)).toBe(hook.hook)
 })
 
 test('removal detaches the signal without affecting a later registration', () => {

@@ -1,5 +1,5 @@
 import { AnyHook } from '@/types/hook'
-import { toHook } from '@/services/toHook'
+import { toHookCallback } from '@/services/toHookCallback'
 import { BeforeHook, AfterHook, HookEntry, ComponentHook, AddGlobalHooks, AddComponentHook, AfterHookRunner, BeforeHookRunner, AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, ErrorHookRunner, AddErrorHook, RejectionHookRunner, RejectionHook, AddRejectionHook } from '@/types/hooks'
 import { getRouteHookCondition } from '@/services/hooks'
 import { ContextPushError } from '@/errors/contextPushError'
@@ -77,7 +77,7 @@ export function createRouterHooks({ redirectStatus, onHookAdded }: RouterHooksOp
 
       // counted one at a time so a hook that throws before returning still leaves the count exact
       for (const { hook } of allHooks) {
-        const callback = toHook(hook)
+        const callback = toHookCallback(hook)
         progress?.expect(1)
 
         // Enter and update hooks are only in this list when to is not null, and leave hooks are only in it when from is not null. These casts are purely to satisfy the type checker.
@@ -155,7 +155,7 @@ export function createRouterHooks({ redirectStatus, onHookAdded }: RouterHooksOp
 
     try {
       const results = allHooks.map(({ hook }) => {
-        const callback = toHook(hook)
+        const callback = toHookCallback(hook)
         // Enter and update hooks are only in this list when to is not null, and leave hooks are only in it when from is not null. These casts are purely to satisfy the type checker.
         return Promise.resolve(runWithContext(() => callback(to as ResolvedRoute, {
           lifecycle: 'after',
@@ -206,7 +206,7 @@ export function createRouterHooks({ redirectStatus, onHookAdded }: RouterHooksOp
 
     for (const { hook } of errorHooks) {
       try {
-        const callback = toHook(hook)
+        const callback = toHookCallback(hook)
         callback(error, { to, from, source, reject, push, replace })
 
         return
@@ -234,7 +234,7 @@ export function createRouterHooks({ redirectStatus, onHookAdded }: RouterHooksOp
     ]
 
     for (const { hook } of allHooks) {
-      const callback = toHook(hook)
+      const callback = toHookCallback(hook)
       callback(rejection.type, { to, from })
     }
   }
@@ -255,7 +255,7 @@ export function createRouterHooks({ redirectStatus, onHookAdded }: RouterHooksOp
       }
 
       // Only leave hooks pass the condition when to is null and those accept a null to.
-      const callback = toHook(hook) as (to: ResolvedRoute | null, context: any) => MaybePromise<void>
+      const callback = toHookCallback(hook) as (to: ResolvedRoute | null, context: any) => MaybePromise<void>
 
       return callback(to, context)
     }
