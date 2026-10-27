@@ -1,7 +1,7 @@
 import { AnyHook } from '@/types/hook'
 import { HookCallback, HookEntry, HookRegistrationOptions, HookRemove } from '@/types/hooks'
 
-export function registerHook<THook extends HookCallback | AnyHook>(hooks: HookEntry<THook>[], hook: THook, { signal }: HookRegistrationOptions = {}): HookRemove {
+export function registerHook(hooks: HookEntry<HookCallback | AnyHook>[], hook: HookCallback | AnyHook, { signal }: HookRegistrationOptions = {}): HookRemove {
   if (signal?.aborted) {
     return () => {}
   }

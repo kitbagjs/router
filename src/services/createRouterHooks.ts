@@ -260,7 +260,7 @@ export function createRouterHooks({ redirectStatus, onHookAdded }: RouterHooksOp
       return callback(to, context)
     }
 
-    return registerHook<ComponentHook | AnyHook>(hooks, wrapped, { signal })
+    return registerHook(hooks, wrapped, { signal })
   }
 
   const addGlobalRouteHooks: AddGlobalHooks = (stores) => {
