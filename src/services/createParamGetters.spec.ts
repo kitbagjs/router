@@ -63,12 +63,15 @@ test('current route lookup follows navigation and definitions inherited from par
 })
 
 test('loader callbacks read tagged params when an alias uses a different name', async () => {
+  expect.assertions(1)
+
   const userId = createParam(Number)
   const route = createRoute({ name: 'user', path: withParams('/users/[id]', { id: userId }) })
     .addAlias({ path: '/people/[person]' }, ({ params }) => ({ id: Number(params.person) }))
-    .addLoader((route) => route.getParam(userId))
+    .addLoader((route) => {
+      expect(route.getParam(userId)).toBe(1)
+    })
   const router = createRouter([route], { initialUrl: '/people/1' })
 
   await router.start()
-  await expect(router.route.data).resolves.toBe(1)
 })
