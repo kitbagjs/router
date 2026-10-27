@@ -5,7 +5,7 @@ import { RouteAddView } from '@/types/addView'
 import { RouteHooks, ExternalRouteHooks } from '@/types/routeHooks'
 import { RouteRedirects, ExternalRouteRedirects } from '@/types/routeRedirects'
 import { CreatedRouteOptions, Route } from '@/types/route'
-import { SetRouteTitleCallback } from '@/types/routeTitle'
+import { RouteTitle } from '@/types/routeTitle'
 import { Url } from '@/types/url'
 
 /**
@@ -25,9 +25,7 @@ export type RouteWithMethods<
   & RouteAddAlias<TUrl, TMatches>
   & RouteHooks<TUrl, TMatches>
   & RouteRedirects<TUrl, TMatches>
-  & {
-    setTitle: (callback: SetRouteTitleCallback<Route<TUrl, TMatches>>) => RouteWithMethods<TUrl, TMatches>,
-  }
+  & RouteTitle<TUrl, TMatches>
 
 export type ExternalRouteWithMethods<
   TRoute extends Route = Route,

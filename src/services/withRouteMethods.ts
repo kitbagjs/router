@@ -76,7 +76,7 @@ export function withRouteMethods<TRoute extends Route>(route: TRoute, hooks: Int
     return result
   }
 
-  const setTitle: SetRouteTitle = (callback) => {
+  const setTitle: SetRouteTitle<Route, TRoute> = (callback) => {
     const title = route as TRoute & RouteSetTitle
 
     title.setTitle(callback)
