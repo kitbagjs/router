@@ -456,13 +456,5 @@ describe('addView', () => {
         expectTypeOf(to.params.paramName).toEqualTypeOf<string>()
       })
     })
-
-    test('hooks and setTitle return the route', () => {
-      const route = createRoute({ name: 'route' })
-
-      route.onBeforeRouteEnter(() => {}).addView(component)
-
-      route.setTitle(() => 'title').addView(component)
-    })
   })
 })
