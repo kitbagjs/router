@@ -1,3 +1,4 @@
+import { RouteSetTitle, SetRouteTitle } from '@/types/routeTitle'
 import { InternalRouteHooks } from '@/types/hooks'
 import { addRedirect } from '@/services/addRedirect'
 import { RouteRedirectFrom, RouteRedirectTo, RedirectToArgs } from '@/types/redirects'
@@ -75,6 +76,14 @@ export function withRouteMethods<TRoute extends Route>(route: TRoute, hooks: Int
     return result
   }
 
+  const setTitle: SetRouteTitle = (callback) => {
+    const title = route as TRoute & RouteSetTitle
+
+    title.setTitle(callback)
+
+    return result
+  }
+
   const onBeforeRouteEnter: HookMethods['onBeforeRouteEnter'] = (hook, options) => {
     hooks.onBeforeRouteEnter(hook, options)
 
@@ -118,6 +127,7 @@ export function withRouteMethods<TRoute extends Route>(route: TRoute, hooks: Int
     addAlias,
     redirectTo,
     redirectFrom,
+    setTitle,
     onBeforeRouteEnter,
     onBeforeRouteUpdate,
     onBeforeRouteLeave,

@@ -457,12 +457,11 @@ describe('addView', () => {
       })
     })
 
-    test('hooks return the route while setTitle returns void', () => {
+    test('hooks and setTitle return the route', () => {
       const route = createRoute({ name: 'route' })
 
       route.onBeforeRouteEnter(() => {}).addView(component)
 
-      // @ts-expect-error setTitle returns void, not the route
       route.setTitle(() => 'title').addView(component)
     })
   })
