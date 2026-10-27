@@ -27,10 +27,14 @@ describe('route shape', () => {
   })
 
   test('has hooks', () => {
-    expectTypeOf(cases.plain).toExtend<InternalRouteHooks>()
-    expectTypeOf(cases.withView).toExtend<InternalRouteHooks>()
-    expectTypeOf(cases.withNamedView).toExtend<InternalRouteHooks>()
-    expectTypeOf(cases.withProps).toExtend<InternalRouteHooks>()
+    type Hooks = {
+      [TKey in keyof InternalRouteHooks]: (...args: Parameters<InternalRouteHooks[TKey]>) => unknown
+    }
+
+    expectTypeOf(cases.plain).toExtend<Hooks>()
+    expectTypeOf(cases.withView).toExtend<Hooks>()
+    expectTypeOf(cases.withNamedView).toExtend<Hooks>()
+    expectTypeOf(cases.withProps).toExtend<Hooks>()
   })
 
   test('has redirects', () => {

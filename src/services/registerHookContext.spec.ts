@@ -29,9 +29,13 @@ test.each(['route', 'router'] as const)('late %s hooks register navigation and r
       reject('Denied')
     },
   })
-  const remove = registration === 'route'
-    ? source.onBeforeRouteEnter(hook)
-    : router.onBeforeRouteEnter(hook)
+  const controller = new AbortController()
+
+  if (registration === 'route') {
+    source.onBeforeRouteEnter(hook, { signal: controller.signal })
+  } else {
+    router.onBeforeRouteEnter(hook, { signal: controller.signal })
+  }
 
   await router.push('source', { id: 'redirect' })
   expect(router.route.name).toBe('target')
@@ -40,7 +44,7 @@ test.each(['route', 'router'] as const)('late %s hooks register navigation and r
   await router.push('source', { id: 'denied' })
   expect(rejected).toHaveBeenCalledWith('Denied', expect.anything())
 
-  remove()
+  controller.abort()
   await router.push('/app/target')
   expect(router.route.name).toBe('target')
 })
@@ -52,11 +56,12 @@ test('inherited hook context reaches existing and newly created routers', async 
   const target = createRoute({ name: 'target', path: '/target', context: [fallback] })
   const first = createRouter([source], { base: '/first', initialUrl: '/first' })
 
-  const remove = parent.onAfterRouteEnter(createHook({ context: [target], hook: () => {} }))
+  const controller = new AbortController()
+  parent.onAfterRouteEnter(createHook({ context: [target], hook: () => {} }), { signal: controller.signal })
   const extra = createRoute({ name: 'extra', path: '/extra' })
   target.onAfterRouteEnter(createHook({ context: [extra], hook: () => {} }))
   const second = createRouter([source], { base: '/second', initialUrl: '/second', isGlobalRouter: false })
-  remove()
+  controller.abort()
 
   await first.start()
   await second.start()

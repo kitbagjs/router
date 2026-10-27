@@ -1,3 +1,5 @@
+import { withRouteHooks } from '@/services/withRouteHooks'
+import { ExternalRouteWithMethods } from '@/types/routeWithMethods'
 import { markRaw } from 'vue'
 import { createRouteId } from '@/services/createRouteId'
 import { combineRoutes, CreateRouteOptions, isWithParent, ToRoute, WithHost, WithoutHost, WithoutParent, WithParent } from '@/types/createRouteOptions'
@@ -14,15 +16,11 @@ import { createRouteTitle, RouteSetTitle } from '@/types/routeTitle'
 
 export function createExternalRoute<
   const TOptions extends CreateRouteOptions & WithHost & WithoutParent
->(options: TOptions): ToRoute<TOptions>
-  & ExternalRouteHooks<ToRoute<TOptions>, TOptions['context']>
-  & RouteRedirects<ToRoute<TOptions>>
+>(options: TOptions): ExternalRouteWithMethods<ToRoute<TOptions>, TOptions['context']>
 
 export function createExternalRoute<
   const TOptions extends CreateRouteOptions & WithoutHost & WithParent
->(options: TOptions): ToRoute<TOptions>
-  & ExternalRouteHooks<ToRoute<TOptions>, ExtractRouteContext<TOptions>>
-  & RouteRedirects<ToRoute<TOptions>>
+>(options: TOptions): ExternalRouteWithMethods<ToRoute<TOptions>, ExtractRouteContext<TOptions>>
 
 export function createExternalRoute(options: CreateRouteOptions & (WithoutHost | WithHost)): Route {
   const id = createRouteId()
@@ -77,8 +75,8 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
   } satisfies Route & RouteInternal & ExternalRouteHooks & RouteRedirects & RouteSetTitle
 
   if (isWithParent(options)) {
-    return combineRoutes(options.parent, route, options.hoist)
+    return withRouteHooks(combineRoutes(options.parent, route, options.hoist))
   }
 
-  return route
+  return withRouteHooks(route)
 }

@@ -1,3 +1,4 @@
+import { withRouteHooks } from '@/services/withRouteHooks'
 import { addRedirect } from '@/services/addRedirect'
 import { RouteRedirectFrom, RouteRedirectTo, RedirectToArgs } from '@/types/redirects'
 import { AddAlias, createAliases } from '@/services/addAlias'
@@ -66,12 +67,12 @@ export function withRouteMethods<TRoute extends Route>(route: TRoute): TRoute {
     addRedirect(from, route, convertParams, options)
   }
 
-  return {
+  return withRouteHooks({
     ...route,
     addView,
     addLoader,
     addAlias,
     redirectTo,
     redirectFrom,
-  }
+  })
 }
