@@ -52,6 +52,7 @@ export type RouterRoute<TRoute extends ResolvedRoute = ResolvedRoute> = {
   /**
    * What the route's loaders resolve to, keyed by loader name. A route whose only loader is unnamed
    * exposes that loader's data here directly.
+   * @deprecated Use useLoader in components. Callback route.data remains supported.
    */
   readonly data: RouteDataOf<TRoute['matches']>,
   /**
