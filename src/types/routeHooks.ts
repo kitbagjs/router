@@ -21,9 +21,14 @@ export type RouteHooks<
   onAfterRouteLeave: RouteHookMethods<TUrl, TMatches>['onAfterRouteLeave'],
 }
 
+type ExternalRouteHookMethods<
+  TRoute extends Route,
+  TContext extends RouteContext[] | undefined
+> = InternalRouteHooks<TRoute, TContext, ExternalRouteWithMethods<TRoute, TContext>>
+
 export type ExternalRouteHooks<
   TRoute extends Route = Route,
   TContext extends RouteContext[] | undefined = undefined
 > = {
-  onBeforeRouteEnter: InternalRouteHooks<TRoute, TContext, ExternalRouteWithMethods<TRoute, TContext>>['onBeforeRouteEnter'],
+  onBeforeRouteEnter: ExternalRouteHookMethods<TRoute, TContext>['onBeforeRouteEnter'],
 }
