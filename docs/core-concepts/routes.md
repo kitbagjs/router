@@ -243,11 +243,10 @@ const home = createRoute({
   name: 'home',
   path: '/',
 })
-.addView(HomeView)
-
-home.onBeforeRouteEnter(() => {
-  console.log('before route enter')
-})
+  .addView(HomeView)
+  .onBeforeRouteEnter(() => {
+    console.log('before route enter')
+  })
 ```
 
 ## Title
@@ -268,11 +267,10 @@ const user = createRoute({
   name: 'user.profile',
   path: '/user/[userId]',
 })
-
-user.setTitle((to, context) => {
-  const user = userStore.getUser(to.params.userId)
-  return `Profile: ${user.name}`
-})
+  .setTitle((to, context) => {
+    const user = userStore.getUser(to.params.userId)
+    return `Profile: ${user.name}`
+  })
 ```
 
 :::info

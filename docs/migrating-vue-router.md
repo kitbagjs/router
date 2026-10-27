@@ -81,9 +81,7 @@ const oldRoute = createRoute({
   name: 'old-route',
   path: '/old',
 })
-
-oldRoute.redirectTo(newRoute)
-// Alternatively: newRoute.redirectFrom(oldRoute)
+  .redirectTo(newRoute)
 ```
 
 Use a [before hook](/advanced-concepts/hooks) when the redirect depends on a condition, such as whether the user is signed in.

@@ -20,18 +20,16 @@ The `redirectTo` method is called on the source route (the route you want to red
 ```ts
 import { createRoute, createRouter } from '@kitbag/router'
 
-const home = createRoute({
-  name: 'home',
-  path: '/home',
-})
-
 const dashboard = createRoute({
   name: 'dashboard',
   path: '/dashboard',
 })
 
-// Redirect from 'home' to 'dashboard'
-home.redirectTo(dashboard)
+const home = createRoute({
+  name: 'home',
+  path: '/home',
+})
+  .redirectTo(dashboard)
 ```
 
 ### Using `redirectFrom`
@@ -50,9 +48,7 @@ const dashboard = createRoute({
   name: 'dashboard',
   path: '/dashboard',
 })
-
-// Redirect from 'home' to 'dashboard'
-dashboard.redirectFrom(home)
+  .redirectFrom(home)
 ```
 
 Both approaches achieve the same result. Choose the one that feels more natural for your use case:
@@ -66,7 +62,11 @@ router's [`redirectStatus`](/api/types/RouterOptions#redirectstatus), `302` by d
 declare its own status:
 
 ```ts
-home.redirectTo(dashboard, undefined, { status: 301 })
+const home = createRoute({
+  name: 'home',
+  path: '/home',
+})
+  .redirectTo(dashboard, undefined, { status: 301 })
 ```
 
 ## Parameters
@@ -78,20 +78,18 @@ When redirecting between routes with parameters, you can provide a callback func
 ```ts
 import { createRoute, createRouter } from '@kitbag/router'
 
-const oldPost = createRoute({
-  name: 'old-post',
-  path: '/blog/[blogId]',
-})
-
 const newPost = createRoute({
   name: 'new-post',
   path: '/articles/[articleId]',
 })
 
-// Convert 'blogId' parameter to 'articleId'
-oldPost.redirectTo(newPost, ({ blogId }) => {
-  return { articleId: blogId }
+const oldPost = createRoute({
+  name: 'old-post',
+  path: '/blog/[blogId]',
 })
+  .redirectTo(newPost, ({ blogId }) => {
+    return { articleId: blogId }
+  })
 ```
 
 ## Restrictions
@@ -103,13 +101,33 @@ Each route can only have one redirect configured. Attempting to configure multip
 ```ts
 import { createRoute } from '@kitbag/router'
 
-const routeA = createRoute({ name: 'a', path: '/a' })
-const routeB = createRoute({ name: 'b', path: '/b' })
-const routeC = createRoute({ name: 'c', path: '/c' })
+const routeB = createRoute({
+  name: 'b',
+  path: '/b',
+})
+const routeC = createRoute({
+  name: 'c',
+  path: '/c',
+})
 
-routeA.redirectTo(routeB)
+const routeA = createRoute({
+  name: 'a',
+  path: '/a',
+})
+  .redirectTo(routeB)
+  .redirectTo(routeC) // ❌ Error (routeA already redirects to routeB)
+```
 
-// This will throw MultipleRouteRedirectsError
-routeA.redirectTo(routeC) // ❌ Error (routeA already redirects to routeB)
-routeB.redirectFrom(routeA) // ❌ Error (routeA already redirects to routeB)
+```ts
+const routeA = createRoute({
+  name: 'a',
+  path: '/a',
+})
+  .redirectTo(routeB)
+
+const routeC = createRoute({
+  name: 'c',
+  path: '/c',
+})
+  .redirectFrom(routeA) // ❌ Error (routeA already redirects to routeB)
 ```

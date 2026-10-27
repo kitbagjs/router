@@ -3,9 +3,10 @@
 Hooks offer a way to register callbacks on router lifecycle events.  
 
 ```ts
-onAfterRouteEnter: (to, context) => {
-   ...
-}
+const route = createRoute({...})
+  .onAfterRouteEnter((to, context) => {
+    ...
+  })
 ```
 
 ## Lifecycle
@@ -91,9 +92,10 @@ router.onAfterRouteEnter((to, context) => {
 ### Route
 
 ```ts
-route.onAfterRouteEnter((to, context) => {
-  ...
-})
+const route = createRoute({...})
+  .onAfterRouteEnter((to, context) => {
+    ...
+  })
 ```
 
 ### Rejection
@@ -122,14 +124,15 @@ You cannot register `onBeforeRouteEnter` or `onAfterRouteEnter` hooks from withi
 
 ## Removing Hooks
 
-Hook registration returns a function that removes the hook. You can also pass a `signal` option to remove it when an `AbortController` aborts. An already-aborted signal skips registration. Component hooks still unregister automatically on unmount.
+Use `remove` from the callback context to remove a hook. You can also pass a `signal` option to remove it when an `AbortController` aborts. An already-aborted signal skips registration. Component hooks still unregister automatically on unmount.
 
 ```ts
 const controller = new AbortController()
 
-router.onAfterRouteEnter((to) => {
-  console.log(to.href)
-}, { signal: controller.signal })
+const route = createRoute({...})
+  .onAfterRouteEnter((to) => {
+    console.log(to.href)
+  }, { signal: controller.signal })
 
 controller.abort()
 ```
@@ -171,8 +174,7 @@ Register the created hook on a route or on the router:
 import { createRoute, createRouter } from '@kitbag/router'
 
 const account = createRoute({...})
-
-account.onBeforeRouteEnter(logNavigation)
+  .onBeforeRouteEnter(logNavigation)
 
 const router = createRouter([account])
 

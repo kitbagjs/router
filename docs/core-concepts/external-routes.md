@@ -24,8 +24,7 @@ const docs = createExternalRoute({
   name: 'docs',
   host: 'https://router.kitbag.dev',
 })
-
-docs.onBeforeRouteEnter(() => {
-  console.log('before route enter')
-})
+  .onBeforeRouteEnter(() => {
+    console.log('before route enter')
+  })
 ```
