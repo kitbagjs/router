@@ -48,7 +48,7 @@ export function createRouteHooks(): RouteHooks {
       callback(hook)
     }
 
-    return registerHook<any, any>(hooks, hook, options)
+    return registerHook(hooks, hook, options)
   }
 
   const onBeforeRouteEnter: AddBeforeEnterHook = (hook, options) => {
