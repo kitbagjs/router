@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-deprecated -- Keep legacy route.data compatibility coverage until removal. */
 import { expect, test, vi } from 'vitest'
 import { computed, toRefs } from 'vue'
 import { flushPromises } from '@vue/test-utils'

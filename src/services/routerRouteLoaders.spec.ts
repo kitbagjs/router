@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-deprecated -- Keep legacy route.data compatibility coverage until removal. */
 import { expect, test } from 'vitest'
 import { toRaw } from 'vue'
 import { createLoader } from '@/services/createLoader'
