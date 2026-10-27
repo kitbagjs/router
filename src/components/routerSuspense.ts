@@ -29,9 +29,24 @@ export function createRouterSuspense<TRouter extends Router>(routerKey: Injectio
     props: { context: { type: Object as PropType<RouterSuspenseContext>, required: true } },
     setup(props, { slots }) {
       provide(key, props.context)
+
+      if (!useIsServerRendering()) {
+        onErrorCaptured(props.context.captureError)
+      }
+
       return () => {
-        const children = slots.default?.()
-        return children?.length === 1 ? children[0] : children
+        try {
+          const children = slots.default?.()
+          return children?.length === 1 ? children[0] : children
+        } catch (error) {
+          const handled = props.context.captureError(error, null)
+
+          if (handled !== false) {
+            throw error
+          }
+
+          return null
+        }
       }
     },
   })
@@ -75,11 +90,8 @@ export function createRouterSuspense<TRouter extends Router>(routerKey: Injectio
           failure.value ??= { error }
           return true
         },
-      }
-
-      if (!isServerRendering) {
-        onErrorCaptured((error) => {
-          if (failure.value) {
+        captureError(error) {
+          if (!active || isServerRendering || failure.value) {
             return
           }
 
@@ -91,7 +103,7 @@ export function createRouterSuspense<TRouter extends Router>(routerKey: Injectio
 
           failure.value = { error }
           return false
-        })
+        },
       }
 
       return () => {

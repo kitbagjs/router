@@ -1,8 +1,9 @@
-import { inject, InjectionKey, onScopeDispose } from 'vue'
+import { ComponentPublicInstance, inject, InjectionKey, onScopeDispose } from 'vue'
 import { createRouterKeyStore } from '@/services/createRouterKeyStore'
 import { Router } from '@/types/router'
 
 export type RouterSuspenseContext = {
+  captureError: (error: unknown, source: ComponentPublicInstance | null) => false | void,
   reportError: (error: unknown) => boolean,
 }
 
