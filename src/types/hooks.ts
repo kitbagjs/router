@@ -77,11 +77,17 @@ export type HookCallback = ComponentHook | RedirectHook | ErrorHook | RejectionH
 /**
  * Registration object for adding a component route hook.
  */
-export type ComponentHookRegistration = {
-  lifecycle: HookLifecycle,
-  hook: ComponentHook | AnyHook,
+export type ComponentHookRegistrationOptions = HookRegistrationOptions & (
+  | { lifecycle: 'onBeforeRouteEnter', hook: BeforeEnterHook | AnyHook }
+  | { lifecycle: 'onBeforeRouteUpdate', hook: BeforeUpdateHook | AnyHook }
+  | { lifecycle: 'onBeforeRouteLeave', hook: BeforeLeaveHook | AnyHook }
+  | { lifecycle: 'onAfterRouteEnter', hook: AfterEnterHook | AnyHook }
+  | { lifecycle: 'onAfterRouteUpdate', hook: AfterUpdateHook | AnyHook }
+  | { lifecycle: 'onAfterRouteLeave', hook: AfterLeaveHook | AnyHook }
+)
+
+export type ComponentHookRegistration = ComponentHookRegistrationOptions & {
   depth: number,
-  signal?: AbortSignal,
 }
 
 /**

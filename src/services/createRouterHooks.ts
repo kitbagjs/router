@@ -1,6 +1,6 @@
 import { AnyHook } from '@/types/hook'
 import { toHookCallback } from '@/services/toHookCallback'
-import { BeforeHook, AfterHook, HookEntry, ComponentHook, AddGlobalHooks, AddComponentHook, AfterHookRunner, BeforeHookRunner, AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, ErrorHookRunner, AddErrorHook, RejectionHookRunner, RejectionHook, AddRejectionHook } from '@/types/hooks'
+import { BeforeHook, AfterHook, BeforeEnterHook, BeforeLeaveHook, AfterEnterHook, AfterLeaveHook, HookEntry, ComponentHook, AddGlobalHooks, AddComponentHook, AfterHookRunner, BeforeHookRunner, AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, ErrorHookRunner, AddErrorHook, RejectionHookRunner, RejectionHook, AddRejectionHook } from '@/types/hooks'
 import { getRouteHookCondition } from '@/services/hooks'
 import { ContextPushError } from '@/errors/contextPushError'
 import { ContextRejectionError } from '@/errors/contextRejectionError'
@@ -16,7 +16,6 @@ import { ContextError } from '@/errors/contextError'
 import { ContextRedirectError } from '@/errors/contextRedirectError'
 import { createRouteHooks } from '@/services/createRouteHooks'
 import { ResolvedRoute } from '@/types/resolved'
-import { MaybePromise } from '@/types/utilities'
 import { RedirectStatus } from '@/types/router'
 import { registerHook } from '@/services/registerHook'
 
@@ -241,28 +240,72 @@ export function createRouterHooks({ redirectStatus, onHookAdded }: RouterHooksOp
     }
   }
 
-  const addComponentHook: AddComponentHook = ({ lifecycle, depth, hook, signal }) => {
+  const addComponentHook: AddComponentHook = (registration) => {
+    const { lifecycle, depth, signal } = registration
+
     if (signal?.aborted) {
       return () => {}
     }
 
-    onHookAdded?.(hook)
+    onHookAdded?.(registration.hook)
     const condition = getRouteHookCondition(lifecycle)
-    const hooks = componentStore[lifecycle]
 
-    // Using `any` here for context because its just passed through to the hook and typing it is more complex than it's worth
-    const wrapped = (to: ResolvedRoute | null, context: any): MaybePromise<void> => {
-      if (!condition(to, context.from, depth)) {
-        return
+    switch (registration.lifecycle) {
+      case 'onBeforeRouteEnter':
+      case 'onBeforeRouteUpdate': {
+        const hook = registration.hook
+        const wrapped: BeforeEnterHook = (to, context) => {
+          if (!condition(to, context.from, depth)) {
+            return
+          }
+
+          const callback = toHookCallback(hook)
+          return callback(to, context)
+        }
+
+        return registerHook(componentStore[lifecycle], wrapped, { signal })
       }
+      case 'onBeforeRouteLeave': {
+        const hook = registration.hook
+        const wrapped: BeforeLeaveHook = (to, context) => {
+          if (!condition(to, context.from, depth)) {
+            return
+          }
 
-      // Only leave hooks pass the condition when to is null and those accept a null to.
-      const callback = toHookCallback(hook) as (to: ResolvedRoute | null, context: any) => MaybePromise<void>
+          const callback = toHookCallback(hook)
+          return callback(to, context)
+        }
 
-      return callback(to, context)
+        return registerHook(componentStore.onBeforeRouteLeave, wrapped, { signal })
+      }
+      case 'onAfterRouteEnter':
+      case 'onAfterRouteUpdate': {
+        const hook = registration.hook
+        const wrapped: AfterEnterHook = (to, context) => {
+          if (!condition(to, context.from, depth)) {
+            return
+          }
+
+          const callback = toHookCallback(hook)
+          return callback(to, context)
+        }
+
+        return registerHook(componentStore[lifecycle], wrapped, { signal })
+      }
+      case 'onAfterRouteLeave': {
+        const hook = registration.hook
+        const wrapped: AfterLeaveHook = (to, context) => {
+          if (!condition(to, context.from, depth)) {
+            return
+          }
+
+          const callback = toHookCallback(hook)
+          return callback(to, context)
+        }
+
+        return registerHook(componentStore.onAfterRouteLeave, wrapped, { signal })
+      }
     }
-
-    return registerHook(hooks, wrapped, { signal })
   }
 
   const addGlobalRouteHooks: AddGlobalHooks = (stores) => {
