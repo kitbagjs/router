@@ -1,6 +1,5 @@
 import { markRaw } from 'vue'
 import { createRouteId } from '@/services/createRouteId'
-import { InternalRouteHooks } from '@/types/hooks'
 import { CreateRouteOptions, ToRouteMatches, ToRouteUrl, combineRoutes, isWithParent } from '@/types/createRouteOptions'
 import { toName } from '@/types/name'
 import { IS_ROUTE_SYMBOL, Route, RouteInternal } from '@/types/route'
@@ -53,15 +52,14 @@ export function createRoute(options: CreateRouteOptions): Route {
     prefetch: options.prefetch,
     setTitle,
     ...url,
-    ...hooks,
     ...internal,
-  } satisfies Route & RouteInternal & InternalRouteHooks & RouteSetTitle
+  } satisfies Route & RouteInternal & RouteSetTitle
 
   if (isWithParent(options)) {
     const combined = combineRoutes(options.parent, route, options.hoist)
 
-    return withRouteMethods(combined)
+    return withRouteMethods(combined, hooks)
   }
 
-  return withRouteMethods(route)
+  return withRouteMethods(route, hooks)
 }

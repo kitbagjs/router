@@ -13,12 +13,12 @@ type NextMatch = (match: CreatedRouteOptions) => CreatedRouteOptions
  * Attaches methods and callbacks to the current route copy. Chaining a view, loader, or alias
  * rebuilds the route and reattaches its methods.
  */
-export function withRouteMethods<TRoute extends Route>(route: TRoute): TRoute {
+export function withRouteMethods<TRoute extends Route>(route: TRoute, hooks: InternalRouteHooks): TRoute {
   function withNextMatch(next: NextMatch): TRoute {
     const currentMatch = route.matches.at(-1)
 
     if (!currentMatch) {
-      return withRouteMethods(route)
+      return withRouteMethods(route, hooks)
     }
 
     const nextMatch = next(currentMatch)
@@ -27,7 +27,7 @@ export function withRouteMethods<TRoute extends Route>(route: TRoute): TRoute {
       ...route,
       context: combineContext(route.context, nextMatch.context),
       matches: [...route.matches.slice(0, -1), nextMatch],
-    })
+    }, hooks)
   }
 
   const addView: AddView = (component, options) => {
@@ -48,7 +48,7 @@ export function withRouteMethods<TRoute extends Route>(route: TRoute): TRoute {
     const match = route.matches.at(-1)
 
     if (!match || !isRoute(route)) {
-      return withRouteMethods(route)
+      return withRouteMethods(route, hooks)
     }
 
     const aliases = createAliases(match, options, transform)
@@ -56,7 +56,7 @@ export function withRouteMethods<TRoute extends Route>(route: TRoute): TRoute {
     return withRouteMethods({
       ...route,
       aliases: [...route.aliases, ...aliases],
-    })
+    }, hooks)
   }
 
   const redirectTo: RouteRedirectTo = (...[to, convertParams, options]: RedirectToArgs) => {
@@ -66,8 +66,6 @@ export function withRouteMethods<TRoute extends Route>(route: TRoute): TRoute {
   const redirectFrom: RouteRedirectFrom = (from, convertParams, options) => {
     addRedirect(from, route, convertParams, options)
   }
-
-  const hooks = route as TRoute & InternalRouteHooks
 
   const onBeforeRouteEnter: (...args: Parameters<InternalRouteHooks['onBeforeRouteEnter']>) => TRoute = (hook, options) => {
     hooks.onBeforeRouteEnter(hook, options)

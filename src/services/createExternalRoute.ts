@@ -8,7 +8,6 @@ import { IS_ROUTE_SYMBOL, Route, RouteInternal } from '@/types/route'
 import { toUrlPart, toUrlQueryPart } from '@/services/withParams'
 import { createRouteHooks } from '@/services/createRouteHooks'
 import { createUrl } from '@/services/createUrl'
-import { ExternalRouteHooks } from '@/types/hooks'
 import { ExtractRouteContext } from '@/types/routeContext'
 import { createRouteTitle, RouteSetTitle } from '@/types/routeTitle'
 
@@ -57,14 +56,13 @@ export function createExternalRoute(options: CreateRouteOptions & (WithoutHost |
     state: {},
     context,
     setTitle,
-    ...hooks,
     ...url,
     ...internal,
-  } satisfies Route & RouteInternal & ExternalRouteHooks & RouteSetTitle
+  } satisfies Route & RouteInternal & RouteSetTitle
 
   if (isWithParent(options)) {
-    return withRouteMethods(combineRoutes(options.parent, route, options.hoist))
+    return withRouteMethods(combineRoutes(options.parent, route, options.hoist), hooks)
   }
 
-  return withRouteMethods(route)
+  return withRouteMethods(route, hooks)
 }
