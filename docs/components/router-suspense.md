@@ -6,6 +6,8 @@ globally by the [router plugin](/quick-start#vue-plugin).
 Use the default slot for content, `#fallback` while it awaits setup, and `#error` for failures.
 Set `catch` to include all component errors, or pass a predicate to include specific errors.
 Without an error slot, the component displays a generic error message.
+Only errors from the default slot are caught. Errors in the fallback and error slots continue to an
+outer boundary or Vue's app error handler.
 
 ```vue
 <template>
