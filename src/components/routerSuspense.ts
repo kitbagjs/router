@@ -8,6 +8,8 @@ import { Router } from '@/types/router'
 import { getRouterSuspenseInjectionKey, RouterSuspenseContext } from '@/compositions/useRouterSuspense'
 
 export type RouterSuspenseProps = {
+  /** Includes route props getter errors. Defaults to true. */
+  props?: boolean,
   /** Includes component errors when true or when the predicate returns true. */
   catch?: boolean | ((error: unknown) => boolean),
 }
@@ -51,6 +53,10 @@ export function createRouterSuspense<TRouter extends Router>(routerKey: Injectio
     name: 'RouterSuspense',
     inheritAttrs: false,
     props: {
+      props: {
+        type: Boolean,
+        default: true,
+      },
       catch: {
         type: [Boolean, Function] as PropType<RouterSuspenseProps['catch']>,
         default: false,
@@ -78,8 +84,12 @@ export function createRouterSuspense<TRouter extends Router>(routerKey: Injectio
       })
 
       const context: RouterSuspenseContext = {
-        reportError(error) {
+        reportError(error, kind) {
           if (!active || isServerRendering) {
+            return false
+          }
+
+          if (kind === 'props' && !props.props) {
             return false
           }
 

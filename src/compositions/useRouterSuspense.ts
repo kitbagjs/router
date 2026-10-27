@@ -2,19 +2,21 @@ import { ComponentPublicInstance, inject, InjectionKey, onScopeDispose } from 'v
 import { createRouterKeyStore } from '@/services/createRouterKeyStore'
 import { Router } from '@/types/router'
 
+export type RouterSuspenseErrorKind = 'props' | 'loader'
+
 export type RouterSuspenseContext = {
   captureError: (error: unknown, source: ComponentPublicInstance | null) => false | void,
-  reportError: (error: unknown) => boolean,
+  reportError: (error: unknown, kind: RouterSuspenseErrorKind) => boolean,
 }
 
 export const getRouterSuspenseInjectionKey = createRouterKeyStore<RouterSuspenseContext>()
 
 type ReportRouterError = (error: unknown) => boolean
 
-export function createUseRouterSuspense(routerKey: InjectionKey<Router>): () => ReportRouterError {
+export function createUseRouterSuspense(routerKey: InjectionKey<Router>): (kind: RouterSuspenseErrorKind) => ReportRouterError {
   const key = getRouterSuspenseInjectionKey(routerKey)
 
-  return () => {
+  return (kind) => {
     const boundary = inject(key, undefined)
     let active = true
 
@@ -27,7 +29,7 @@ export function createUseRouterSuspense(routerKey: InjectionKey<Router>): () => 
         return false
       }
 
-      return boundary?.reportError(error) ?? false
+      return boundary?.reportError(error, kind) ?? false
     }
   }
 }

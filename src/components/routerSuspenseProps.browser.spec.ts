@@ -36,6 +36,37 @@ test.each(['sync', 'async'] as const)('shows errors from %s props getters by def
   expect(predicate).not.toHaveBeenCalled()
 })
 
+test.each(['sync', 'async'] as const)('ignores %s props getter errors when props is false', async (mode) => {
+  const failure = new Error('props failed')
+  const pending = Promise.withResolvers<Record<string, unknown>>()
+  const route = createRoute({ name: 'home', path: '/' })
+    .addView({ render: () => h('p', 'ready') }, {
+      props: () => {
+        if (mode === 'async') {
+          return pending.promise
+        }
+
+        throw failure
+      },
+    })
+  const router = createRouter([route], { initialUrl: '/' })
+  await router.start()
+  const errorSlot = vi.fn(() => h('p', 'failed'))
+  const wrapper = mount(RouterSuspense, {
+    props: { props: false, catch: true },
+    slots: { default: () => h(RouterView), error: errorSlot },
+    global: { plugins: [router] },
+  })
+
+  if (mode === 'async') {
+    pending.reject(failure)
+  }
+
+  await flushPromises()
+  expect(wrapper.text()).toBe('')
+  expect(errorSlot).not.toHaveBeenCalled()
+})
+
 test('shows props failures after a successful navigation', async () => {
   const failure = new Error('props failed')
   const route = createRoute({ name: 'home', path: '/[id]' })
