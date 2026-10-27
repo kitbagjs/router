@@ -3,6 +3,7 @@ import { createRouterKeyStore } from '@/services/createRouterKeyStore'
 import { Router } from '@/types/router'
 
 export type RouterSuspenseContext = {
+  captureError: (error: unknown, source: ComponentPublicInstance | null) => false | void,
   reportError: (error: unknown, source?: ComponentPublicInstance | null) => boolean,
 }
 
