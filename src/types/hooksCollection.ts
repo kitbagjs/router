@@ -1,4 +1,7 @@
 import { Hooks } from '@/models/hooks'
+import { AnyHook } from '@/types/hook'
+import { AfterEnterHook, AfterLeaveHook, AfterUpdateHook, BeforeEnterHook, BeforeLeaveHook, BeforeUpdateHook, ErrorHook, RejectionHook } from '@/types/hooks'
+import { RedirectHook } from '@/types/redirects'
 
 export type HookStoreKey = Exclude<keyof Hooks, 'onHookAdded'>
 
@@ -8,8 +11,15 @@ export type HookStoreKey = Exclude<keyof Hooks, 'onHookAdded'>
  * stores continue to own registration and removal.
  */
 export type HooksCollection = {
-  [TKey in HookStoreKey]: Hooks[TKey] extends Set<infer THook> ? THook[] : never
-} & {
+  redirects: RedirectHook[],
+  onBeforeRouteEnter: (BeforeEnterHook | AnyHook)[],
+  onBeforeRouteUpdate: (BeforeUpdateHook | AnyHook)[],
+  onBeforeRouteLeave: (BeforeLeaveHook | AnyHook)[],
+  onAfterRouteEnter: (AfterEnterHook | AnyHook)[],
+  onAfterRouteUpdate: (AfterUpdateHook | AnyHook)[],
+  onAfterRouteLeave: (AfterLeaveHook | AnyHook)[],
+  onError: ErrorHook[],
+  onRejection: RejectionHook[],
   /**
    * Appends one store's registrations for the selected hook kind in insertion order.
    */
