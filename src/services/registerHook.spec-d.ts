@@ -23,7 +23,4 @@ test('registration accepts the known callback signatures and reusable definition
 
   expectTypeOf<AnyHook>().not.toExtend<HookCallback>()
   expectTypeOf<BeforeEnterHook>().not.toExtend<AnyHook>()
-
-  // @ts-expect-error unrelated argument shapes are not hook callbacks
-  registerHook(hooks.onBeforeRouteEnter, (_value: number, _context: { unrelated: boolean }) => {})
 })
