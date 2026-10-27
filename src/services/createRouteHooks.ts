@@ -1,5 +1,5 @@
 import { AnyHook } from '@/types/hook'
-import { ComponentHook, HookRemove, HookRegistrationOptions, AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, AddErrorHook, AddRejectionHook } from '@/types/hooks'
+import { ComponentHook, HookEntry, HookRemove, HookRegistrationOptions, AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, AddErrorHook, AddRejectionHook } from '@/types/hooks'
 import { registerHook } from '@/services/registerHook'
 import { Routes } from '@/types/route'
 import { Hooks } from '@/models/hooks'
@@ -39,7 +39,7 @@ export function createRouteHooks(): RouteHooks {
     return registerHook(store.redirects, hook)
   }
 
-  function addHook<THook extends ComponentHook | AnyHook>(hooks: THook[], hook: THook, options?: HookRegistrationOptions): HookRemove {
+  function addHook<THook extends ComponentHook | AnyHook>(hooks: HookEntry<THook>[], hook: THook, options?: HookRegistrationOptions): HookRemove {
     if (options?.signal?.aborted) {
       return () => {}
     }

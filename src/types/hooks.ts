@@ -105,6 +105,11 @@ export type AddGlobalHooks = (hooks: Hooks[]) => void
  */
 export type HookRemove = () => void
 
+export type HookEntry<THook> = {
+  hook: THook,
+  remove: HookRemove,
+}
+
 export type HookRegistrationOptions = {
   /**
    * Removes the hook when aborted.

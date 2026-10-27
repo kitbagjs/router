@@ -6,7 +6,7 @@ import { createRoute } from '@/services/createRoute'
 import { isHook } from '@/types/hook'
 import { toHook } from '@/services/toHook'
 
-test('a collected wrapper retains the remover for its source array', () => {
+test('a collected entry retains the remover for its source array', () => {
   const source = new Hooks()
   const callback = vi.fn()
   const remove = registerHook(source.onBeforeRouteEnter, callback)
@@ -19,7 +19,7 @@ test('a collected wrapper retains the remover for its source array', () => {
   expect(execution.onBeforeRouteEnter).toHaveLength(1)
 })
 
-test('duplicate callbacks get independent wrappers and removal functions', () => {
+test('duplicate callbacks get independent entries and removal functions', () => {
   const source = new Hooks()
   const callback = vi.fn()
   const removeFirst = registerHook(source.onBeforeRouteEnter, callback)
@@ -27,6 +27,8 @@ test('duplicate callbacks get independent wrappers and removal functions', () =>
   const removeSecond = registerHook(source.onBeforeRouteEnter, callback)
   const second = source.onBeforeRouteEnter[1]
 
+  expect(first.hook).toBe(callback)
+  expect(second.hook).toBe(callback)
   expect(first).not.toBe(second)
   removeSecond()
   expect(source.onBeforeRouteEnter).toEqual([first])
@@ -34,7 +36,7 @@ test('duplicate callbacks get independent wrappers and removal functions', () =>
   expect(source.onBeforeRouteEnter).toEqual([])
 })
 
-test('reusable wrappers preserve hook identity metadata and declared context', () => {
+test('registration retains the original reusable definition and context', () => {
   const source = new Hooks()
   const target = createRoute({ name: 'target', path: '/target' })
   const callback = vi.fn()
@@ -42,10 +44,10 @@ test('reusable wrappers preserve hook identity metadata and declared context', (
   registerHook(source.onBeforeRouteEnter, hook)
   const registered = source.onBeforeRouteEnter[0]
 
-  expect(isHook(registered)).toBe(true)
-  expect(registered).not.toBe(hook)
-  expect(registered).toMatchObject({ context: hook.context })
-  expect(toHook(registered)).not.toBe(hook.hook)
+  expect(isHook(registered.hook)).toBe(true)
+  expect(registered.hook).toBe(hook)
+  expect(registered.hook).toMatchObject({ context: hook.context })
+  expect(toHook(registered.hook)).toBe(hook.hook)
 })
 
 test('removal detaches the signal without affecting a later registration', () => {

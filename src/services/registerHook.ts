@@ -1,27 +1,15 @@
-import { AnyHook, isHook } from '@/types/hook'
-import { HookCallback, HookRegistrationOptions, HookRemove } from '@/types/hooks'
-import { MaybePromise } from '@/types/utilities'
-import { toHook } from '@/services/toHook'
+import { AnyHook } from '@/types/hook'
+import { HookCallback, HookEntry, HookRegistrationOptions, HookRemove } from '@/types/hooks'
 
-/**
- * Registers a distinct wrapper so removal targets only this registration.
- * Reusable definitions keep their marker and declared context.
- */
-export function registerHook(
-  hooks: (HookCallback | AnyHook)[],
-  hook: HookCallback | AnyHook,
-  { signal }: HookRegistrationOptions = {},
-): HookRemove {
+export function registerHook<THook extends HookCallback | AnyHook>(hooks: HookEntry<THook>[], hook: THook, { signal }: HookRegistrationOptions = {}): HookRemove {
   if (signal?.aborted) {
     return () => {}
   }
 
-  const callback = toHook(hook)
-  const wrapped = (value: unknown, context: object): MaybePromise<void> => callback(value, context)
-  const registered = isHook(hook) ? { ...hook, hook: wrapped } : wrapped
+  const entry = { hook, remove }
 
   function remove(): void {
-    const index = hooks.indexOf(registered)
+    const index = hooks.indexOf(entry)
 
     if (index !== -1) {
       hooks.splice(index, 1)
@@ -30,7 +18,7 @@ export function registerHook(
     signal?.removeEventListener('abort', remove)
   }
 
-  hooks.push(registered)
+  hooks.push(entry)
   signal?.addEventListener('abort', remove, { once: true })
 
   return remove

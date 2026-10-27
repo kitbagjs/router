@@ -1,8 +1,8 @@
 import { AnyHook, isHook } from '@/types/hook'
 import { HookCallback } from '@/types/hooks'
-import { AnyFunction, MaybePromise } from '@/types/utilities'
 
-export function toHook(hook: HookCallback | AnyHook): AnyFunction<MaybePromise<void>> {
+export function toHook<THook extends HookCallback>(hook: THook | AnyHook): THook
+export function toHook(hook: HookCallback | AnyHook): HookCallback {
   if (typeof hook === 'function') {
     return hook
   }
