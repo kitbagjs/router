@@ -29,9 +29,11 @@ export function createRouterSuspense<TRouter extends Router>(routerKey: Injectio
     name: 'RouterSuspenseContent',
     props: { context: { type: Object as PropType<RouterSuspenseContext>, required: true } },
     setup(props, { slots }) {
+      const isServerRendering = useIsServerRendering()
+
       provide(key, props.context)
 
-      if (!useIsServerRendering()) {
+      if (!isServerRendering) {
         onErrorCaptured(props.context.captureError)
       }
 
