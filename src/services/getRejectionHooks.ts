@@ -1,12 +1,12 @@
-import { Hooks } from '@/models/hooks'
+import { CollectedHooks } from '@/models/collectedHooks'
 import { getHooks } from '@/types/hooks'
 import { Rejection } from '@/types/rejection'
 
-export function getRejectionHooksFromRejection(rejection: Rejection): Hooks {
-  const hooks = new Hooks()
+export function getRejectionHooksFromRejection(rejection: Rejection): CollectedHooks {
+  const hooks = new CollectedHooks()
 
   getHooks(rejection).forEach((store) => {
-    store.onRejection.forEach((hook) => hooks.onRejection.add(hook))
+    hooks.onRejection.push(...store.onRejection)
   })
 
   return hooks

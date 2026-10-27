@@ -203,7 +203,7 @@ export function createRouterHooks({ redirectStatus, onHookAdded }: RouterHooksOp
   const runErrorHooks: ErrorHookRunner = (error, { to, from, source }) => {
     const { reject, push, replace } = createRouterCallbackContext({ to })
 
-    const errorHooks = new Set(globalStores.flatMap((store) => [...store.onError]))
+    const errorHooks = globalStores.flatMap((store) => [...store.onError])
 
     for (const hook of errorHooks) {
       try {
