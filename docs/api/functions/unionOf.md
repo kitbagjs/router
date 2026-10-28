@@ -1,21 +1,21 @@
 # Functions: unionOf()
 
 ```ts
-function unionOf<T>(params): ParamGetSet<ExtractParamType<T[number]>>;
+function unionOf<TParamOptions>(params): Param<ExtractParamType<TParamOptions[number]>>;
 ```
 
 ## Type Parameters
 
 | Type Parameter |
 | ------ |
-| <a id="type-parameter-t"></a> `T` *extends* [`Param`](../types/Param.md)[] |
+| <a id="type-parameter-tparamoptions"></a> `TParamOptions` *extends* [`ParamOptions`](../types/ParamOptions.md)[] |
 
 ## Parameters
 
 | Parameter | Type |
 | ------ | ------ |
-| `params` | `T` |
+| `params` | `TParamOptions` |
 
 ## Returns
 
-[`ParamGetSet`](../types/ParamGetSet.md)\<`ExtractParamType`\<`T`\[`number`\]\>\>
+[`Param`](../types/Param.md)\<`ExtractParamType`\<`TParamOptions`\[`number`\]\>\>

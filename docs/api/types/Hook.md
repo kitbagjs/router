@@ -17,4 +17,4 @@ A reusable hook that can be attached before or after a route enters, updates, or
 | Property | Type |
 | ------ | ------ |
 | <a id="context"></a> `context` | `TContext` |
-| <a id="hook"></a> `hook` | `AnyFunction`\<`MaybePromise`\<`void`\>\> |
+| <a id="hook"></a> `hook` | `HookCallback` |

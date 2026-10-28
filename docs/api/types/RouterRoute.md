@@ -46,6 +46,8 @@ set query(value): void;
 | ------ | ------ | ------ | ------ |
 | <a id="canonical"></a> `canonical` | `readonly` | `TRoute`\[`"canonical"`\] | String value of the route's own URL. The same as `href` unless the route was matched through an alias. |
 | <a id="data"></a> ~~`data`~~ | `readonly` | `RouteDataOf`\<`TRoute`\[`"matches"`\]\> | What the route's loaders resolve to, keyed by loader name. A route whose only loader is unnamed exposes that loader's data here directly. **Deprecated** Use useLoader in components. Callback route.data remains supported. |
+| <a id="getallparams"></a> `getAllParams` | `readonly` | `TRoute`\[`"getAllParams"`\] | Returns every present value using the given param definition. |
+| <a id="getparam"></a> `getParam` | `readonly` | `TRoute`\[`"getParam"`\] | Returns the first present value using the given param definition. |
 | <a id="gettitle"></a> `getTitle` | `readonly` | `TRoute`\[`"getTitle"`\] | Title of the route. |
 | <a id="hash"></a> `hash` | `readonly` | `string` | Hash value of the route. |
 | <a id="href"></a> `href` | `readonly` | `TRoute`\[`"href"`\] | String value of the resolved URL. When the route was matched through an alias this is the alias url. |

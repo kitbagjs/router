@@ -1,22 +1,22 @@
 # Functions: arrayOf()
 
 ```ts
-function arrayOf<T>(params, options?): ParamGetSet<ExtractParamType<T[number]>[]>;
+function arrayOf<TParamOptions>(params, options?): Param<ExtractParamType<TParamOptions[number]>[]>;
 ```
 
 ## Type Parameters
 
 | Type Parameter |
 | ------ |
-| <a id="type-parameter-t"></a> `T` *extends* [`Param`](../types/Param.md)[] |
+| <a id="type-parameter-tparamoptions"></a> `TParamOptions` *extends* [`ParamOptions`](../types/ParamOptions.md)[] |
 
 ## Parameters
 
 | Parameter | Type |
 | ------ | ------ |
-| `params` | `T` |
+| `params` | `TParamOptions` |
 | `options?` | `ArrayOfOptions` |
 
 ## Returns
 
-[`ParamGetSet`](../types/ParamGetSet.md)\<`ExtractParamType`\<`T`\[`number`\]\>[]\>
+[`Param`](../types/Param.md)\<`ExtractParamType`\<`TParamOptions`\[`number`\]\>[]\>

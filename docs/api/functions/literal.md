@@ -1,7 +1,7 @@
 # Functions: literal()
 
 ```ts
-function literal<T>(value): ParamGetSet<T>;
+function literal<T>(value): Param<T>;
 ```
 
 ## Type Parameters
@@ -18,4 +18,4 @@ function literal<T>(value): ParamGetSet<T>;
 
 ## Returns
 
-[`ParamGetSet`](../types/ParamGetSet.md)\<`T`\>
+[`Param`](../types/Param.md)\<`T`\>

@@ -3,66 +3,66 @@
 ## Call Signature
 
 ```ts
-function createParam<TParam>(param): TParam;
+function createParam<TParamOptions>(param): TParamOptions;
 ```
 
 ### Type Parameters
 
 | Type Parameter |
 | ------ |
-| <a id="type-parameter-tparam"></a> `TParam` *extends* `Required`\<[`ParamGetSet`](../types/ParamGetSet.md)\<`unknown`\>\> |
+| <a id="type-parameter-tparamoptions"></a> `TParamOptions` *extends* `Required`\<[`Param`](../types/Param.md)\<`unknown`\>\> |
 
 ### Parameters
 
 | Parameter | Type |
 | ------ | ------ |
-| `param` | `TParam` |
+| `param` | `TParamOptions` |
 
 ### Returns
 
-`TParam`
+`TParamOptions`
 
 ## Call Signature
 
 ```ts
-function createParam<TParam>(param): ParamGetSet<ExtractParamType<TParam>>;
+function createParam<TParamOptions>(param): Param<ExtractParamType<TParamOptions>>;
 ```
 
 ### Type Parameters
 
 | Type Parameter |
 | ------ |
-| <a id="type-parameter-tparam-1"></a> `TParam` *extends* [`Param`](../types/Param.md) |
+| <a id="type-parameter-tparamoptions-1"></a> `TParamOptions` *extends* [`ParamOptions`](../types/ParamOptions.md) |
 
 ### Parameters
 
 | Parameter | Type |
 | ------ | ------ |
-| `param` | `TParam` |
+| `param` | `TParamOptions` |
 
 ### Returns
 
-[`ParamGetSet`](../types/ParamGetSet.md)\<`ExtractParamType`\<`TParam`\>\>
+[`Param`](../types/Param.md)\<`ExtractParamType`\<`TParamOptions`\>\>
 
 ## Call Signature
 
 ```ts
-function createParam<TParam>(param, defaultValue): ParamWithDefault<TParam>;
+function createParam<TParamOptions>(param, defaultValue): ParamWithDefault<TParamOptions>;
 ```
 
 ### Type Parameters
 
 | Type Parameter |
 | ------ |
-| <a id="type-parameter-tparam-2"></a> `TParam` *extends* [`Param`](../types/Param.md) |
+| <a id="type-parameter-tparamoptions-2"></a> `TParamOptions` *extends* [`ParamOptions`](../types/ParamOptions.md) |
 
 ### Parameters
 
 | Parameter | Type |
 | ------ | ------ |
-| `param` | `TParam` |
-| `defaultValue` | `NoInfer`\<`ExtractParamType`\<`TParam`\>\> |
+| `param` | `TParamOptions` |
+| `defaultValue` | `NoInfer`\<`ExtractParamType`\<`TParamOptions`\>\> |
 
 ### Returns
 
-`ParamWithDefault`\<`TParam`\>
+`ParamWithDefault`\<`TParamOptions`\>
