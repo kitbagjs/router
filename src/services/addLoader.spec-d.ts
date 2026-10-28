@@ -40,12 +40,13 @@ describe('addLoader', () => {
     }>()
   })
 
-  test('a loader added under a name the route already used replaces it', () => {
-    const route = createRoute({ name: 'route' })
-      .addLoader(() => 'first', { name: 'user' })
-      .addLoader(() => 1, { name: 'user' })
+  test('a loader cannot reuse an existing name', () => {
+    const route = createRoute({ name: 'route' }).addLoader(() => 'first', { name: 'user' })
 
-    expectTypeOf<typeof route['matches'][0]['loaders']>().toEqualTypeOf<{ user: Loader<number> }>()
+    // @ts-expect-error loader names must be unique on a route
+    route.addLoader(() => 1, { name: 'user' })
+    // @ts-expect-error reusable loaders also require a unique name
+    route.addLoader(createLoader({ load: () => 1 }), { name: 'user' })
   })
 
   test('prefetch does not affect what the loader carries', () => {
