@@ -1,17 +1,24 @@
-import { HookRegistrationOptions, HookRemove } from '@/types/hooks'
+import { AnyHook } from '@/types/hook'
+import { HookCallback, HookEntry, HookRegistrationOptions, HookRemove } from '@/types/hooks'
 
-export function registerHook<THook>(hooks: Set<THook>, hook: THook, { signal }: HookRegistrationOptions = {}): HookRemove {
+export function registerHook(hooks: HookEntry<HookCallback | AnyHook>[], hook: HookCallback | AnyHook, { signal }: HookRegistrationOptions = {}): HookRemove {
   if (signal?.aborted) {
     return () => {}
   }
 
-  hooks.add(hook)
+  const entry = { hook, remove }
 
   function remove(): void {
-    hooks.delete(hook)
+    const index = hooks.indexOf(entry)
+
+    if (index !== -1) {
+      hooks.splice(index, 1)
+    }
+
     signal?.removeEventListener('abort', remove)
   }
 
+  hooks.push(entry)
   signal?.addEventListener('abort', remove, { once: true })
 
   return remove

@@ -59,8 +59,9 @@ export type RedirectToArgs<
   : [to: TRouteTo, params: RouteRedirectCallback<TRouteTo, TRouteFrom>, options?: RouteRedirectOptions]
 
 export type RouteRedirectTo<
-  TRouteFrom extends Route = Route
-> = <TRouteTo extends Route>(...args: RedirectToArgs<TRouteTo, TRouteFrom>) => void
+  TRouteFrom extends Route = Route,
+  TReturn = void
+> = <TRouteTo extends Route>(...args: RedirectToArgs<TRouteTo, TRouteFrom>) => TReturn
 
 export type RedirectFromArgs<
   TRouteTo extends Route = Route,
@@ -70,5 +71,6 @@ export type RedirectFromArgs<
   : [from: TRouteFrom, params: RouteRedirectCallback<TRouteTo, TRouteFrom>, options?: RouteRedirectOptions]
 
 export type RouteRedirectFrom<
-  TRouteTo extends Route = Route
-> = <TRouteFrom extends Route>(...args: RedirectFromArgs<TRouteTo, TRouteFrom>) => void
+  TRouteTo extends Route = Route,
+  TReturn = void
+> = <TRouteFrom extends Route>(...args: RedirectFromArgs<TRouteTo, TRouteFrom>) => TReturn

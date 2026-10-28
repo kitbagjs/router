@@ -1,3 +1,4 @@
+import { registerHook } from '@/services/registerHook'
 import { AddRejectionHook } from '@/types/hooks'
 import { Routes } from '@/types/route'
 import { Hooks } from '@/models/hooks'
@@ -13,10 +14,8 @@ type RejectionHooks<
 export function createRejectionHooks(): RejectionHooks {
   const store = new Hooks()
 
-  const onRejection: AddRejectionHook = (hook) => {
-    store.onRejection.add(hook)
-
-    return () => store.onRejection.delete(hook)
+  const onRejection: AddRejectionHook = (hook, options) => {
+    return registerHook(store.onRejection, hook, options)
   }
 
   return {

@@ -456,15 +456,5 @@ describe('addView', () => {
         expectTypeOf(to.params.paramName).toEqualTypeOf<string>()
       })
     })
-
-    test('hooks and setTitle do not return the route (cannot chain addView after them)', () => {
-      const route = createRoute({ name: 'route' })
-
-      // @ts-expect-error onBeforeRouteEnter returns a HookRemove, not the route
-      route.onBeforeRouteEnter(() => {}).addView(component)
-
-      // @ts-expect-error setTitle returns void, not the route
-      route.setTitle(() => 'title').addView(component)
-    })
   })
 })

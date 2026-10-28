@@ -1,9 +1,9 @@
 import { RouteContext, RouteContextToRejection, RouteContextToRoute } from '@/types/routeContext'
 import { ResolvedRouteUnion } from '@/types/resolved'
 import { Route, Routes } from '@/types/route'
-import { BeforeHookContext, AfterHookContext } from '@/types/hooks'
+import { BeforeHookContext, AfterHookContext, HookCallback } from '@/types/hooks'
 import { RouteUpdate } from '@/types/routeUpdate'
-import { AnyFunction, MaybePromise } from '@/types/utilities'
+import { MaybePromise } from '@/types/utilities'
 
 export const IS_HOOK_SYMBOL = Symbol('IS_HOOK_SYMBOL')
 
@@ -44,7 +44,7 @@ export type CreateHook<TRoutes extends Routes = Routes> = <
  * A reusable hook that can be attached before or after a route enters, updates, or leaves.
  */
 export type Hook<TContext extends readonly RouteContext[] = []> = {
-  hook: AnyFunction<MaybePromise<void>>,
+  hook: HookCallback,
   context: TContext,
 }
 

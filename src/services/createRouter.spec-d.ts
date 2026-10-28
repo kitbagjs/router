@@ -101,7 +101,7 @@ describe('hooks', () => {
 
   test('onError context has no update, which has no destination to act on', () => {
     router.onError((_error, context) => {
-      expectTypeOf<keyof typeof context>().toEqualTypeOf<'to' | 'from' | 'source' | 'reject' | 'push' | 'replace'>()
+      expectTypeOf<keyof typeof context>().toEqualTypeOf<'to' | 'from' | 'source' | 'reject' | 'push' | 'replace' | 'remove'>()
     })
   })
 

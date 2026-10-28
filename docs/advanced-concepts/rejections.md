@@ -67,9 +67,10 @@ export const router = createRouter(routes, {
 Any of the [hooks](/advanced-concepts/hooks) will provided a `reject` function in the context argument. The [props getter](/core-concepts/component-props#async-prop-fetching) passed to `addView` also provides a `reject` function.
 
 ```ts
-route.onBeforeRouteEnter((to, { reject }) => {
-  reject('AuthNeeded')
-})
+const route = createRoute({...})
+  .onBeforeRouteEnter((to, { reject }) => {
+    reject('AuthNeeded')
+  })
 ```
 
 Alternatively, you can always trigger a rejection from `router.reject`.

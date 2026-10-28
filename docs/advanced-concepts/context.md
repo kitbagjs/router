@@ -22,16 +22,15 @@ const checkout = createRoute({
   path: '/checkout',
   context: [login, denied],
 })
+  .onBeforeRouteEnter((_to, { push, reject }) => {
+    if (!isAuthenticated()) {
+      return push('login')
+    }
 
-checkout.onBeforeRouteEnter((_to, { push, reject }) => {
-  if (!isAuthenticated()) {
-    return push('login')
-  }
-
-  if (!canCheckout()) {
-    reject('Denied')
-  }
-})
+    if (!canCheckout()) {
+      reject('Denied')
+    }
+  })
 
 const router = createRouter([checkout])
 ```

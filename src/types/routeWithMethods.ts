@@ -1,10 +1,11 @@
+import { RouteContext } from '@/types/routeContext'
 import { RouteAddAlias } from '@/types/addAlias'
 import { RouteAddLoader } from '@/types/addLoader'
 import { RouteAddView } from '@/types/addView'
-import { InternalRouteHooks } from '@/types/hooks'
-import { RouteRedirects } from '@/types/redirects'
+import { RouteHooks, ExternalRouteHooks } from '@/types/routeHooks'
+import { RouteRedirects, ExternalRouteRedirects } from '@/types/routeRedirects'
 import { CreatedRouteOptions, Route } from '@/types/route'
-import { RouteSetTitle } from '@/types/routeTitle'
+import { RouteTitle } from '@/types/routeTitle'
 import { Url } from '@/types/url'
 
 /**
@@ -22,6 +23,13 @@ export type RouteWithMethods<
   & RouteAddView<TUrl, TMatches>
   & RouteAddLoader<TUrl, TMatches>
   & RouteAddAlias<TUrl, TMatches>
-  & InternalRouteHooks<Route<TUrl, TMatches>, Route<TUrl, TMatches>['context']>
-  & RouteRedirects<Route<TUrl, TMatches>>
-  & RouteSetTitle<Route<TUrl, TMatches>>
+  & RouteHooks<TUrl, TMatches>
+  & RouteRedirects<TUrl, TMatches>
+  & RouteTitle<TUrl, TMatches>
+
+export type ExternalRouteWithMethods<
+  TRoute extends Route = Route,
+  TContext extends RouteContext[] | undefined = undefined
+> = TRoute
+  & ExternalRouteHooks<TRoute, TContext>
+  & ExternalRouteRedirects<TRoute, TContext>

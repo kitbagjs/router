@@ -900,6 +900,7 @@ describe('router.onRejection', () => {
     router.reject('CustomRejection')
 
     expect(onRejection).toHaveBeenCalledWith('CustomRejection', {
+      remove: expect.any(Function),
       to: null,
       from: null,
     })
@@ -921,6 +922,7 @@ describe('router.onRejection', () => {
     await router.start()
 
     expect(onRejection).toHaveBeenCalledWith('NotFound', {
+      remove: expect.any(Function),
       to: expect.objectContaining({
         name: 'route-with-rejection',
       }),
@@ -1009,6 +1011,7 @@ describe('a url that matches no route', () => {
     await router.start()
 
     expect(onRejection).toHaveBeenCalledWith('NotFound', {
+      remove: expect.any(Function),
       to: null,
       from: null,
     })

@@ -3,7 +3,7 @@ import { createRoute } from './createRoute'
 import { Identity } from '@/types/utilities'
 import { component } from '@/utilities/testHelpers'
 import { withParams } from '@/services/withParams'
-import { InternalRouteHooks } from '@/types/hooks'
+import { RouteHooks } from '@/types/routeHooks'
 import { createRejection } from '@/services/createRejection'
 import { ResolvedRoute } from '@/types/resolved'
 import { RouteRedirects } from '@/types/redirects'
@@ -27,10 +27,10 @@ describe('route shape', () => {
   })
 
   test('has hooks', () => {
-    expectTypeOf(cases.plain).toExtend<InternalRouteHooks>()
-    expectTypeOf(cases.withView).toExtend<InternalRouteHooks>()
-    expectTypeOf(cases.withNamedView).toExtend<InternalRouteHooks>()
-    expectTypeOf(cases.withProps).toExtend<InternalRouteHooks>()
+    expectTypeOf(cases.plain).toExtend<RouteHooks>()
+    expectTypeOf(cases.withView).toExtend<RouteHooks>()
+    expectTypeOf(cases.withNamedView).toExtend<RouteHooks>()
+    expectTypeOf(cases.withProps).toExtend<RouteHooks>()
   })
 
   test('has redirects', () => {
@@ -398,12 +398,12 @@ describe('hooks', () => {
 
     route.onBeforeRouteLeave((_to, context) => {
       expectTypeOf(context.lifecycle).toEqualTypeOf<'before'>()
-      expectTypeOf<keyof typeof context>().toEqualTypeOf<'lifecycle' | 'from' | 'reject' | 'push' | 'replace' | 'abort' | 'signal'>()
+      expectTypeOf<keyof typeof context>().toEqualTypeOf<'lifecycle' | 'from' | 'reject' | 'push' | 'replace' | 'abort' | 'signal' | 'remove'>()
     })
 
     route.onAfterRouteLeave((_to, context) => {
       expectTypeOf(context.lifecycle).toEqualTypeOf<'after'>()
-      expectTypeOf<keyof typeof context>().toEqualTypeOf<'lifecycle' | 'from' | 'reject' | 'push' | 'replace' | 'signal'>()
+      expectTypeOf<keyof typeof context>().toEqualTypeOf<'lifecycle' | 'from' | 'reject' | 'push' | 'replace' | 'signal' | 'remove'>()
     })
   })
 

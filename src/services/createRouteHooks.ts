@@ -1,5 +1,5 @@
 import { AnyHook } from '@/types/hook'
-import { ComponentHook, HookRemove, HookRegistrationOptions, AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, AddErrorHook, AddRejectionHook } from '@/types/hooks'
+import { ComponentHook, HookEntry, HookRemove, HookRegistrationOptions, AddBeforeEnterHook, AddBeforeUpdateHook, AddBeforeLeaveHook, AddAfterEnterHook, AddAfterUpdateHook, AddAfterLeaveHook, AddErrorHook, AddRejectionHook } from '@/types/hooks'
 import { registerHook } from '@/services/registerHook'
 import { Routes } from '@/types/route'
 import { Hooks } from '@/models/hooks'
@@ -28,7 +28,7 @@ export function createRouteHooks(): RouteHooks {
   const store = new Hooks()
 
   const redirect: RouteRedirect = (to, convertParams, options) => {
-    if (store.redirects.size > 0) {
+    if (store.redirects.length > 0) {
       throw new MultipleRouteRedirectsError(to.name)
     }
 
@@ -36,12 +36,10 @@ export function createRouteHooks(): RouteHooks {
       throw new ContextRedirectError([to.name, convertParams?.(from.params), { replace: true, redirectStatus: options?.status ?? redirectStatus }])
     }
 
-    store.redirects.add(hook)
-
-    return () => store.redirects.delete(hook)
+    return registerHook(store.redirects, hook)
   }
 
-  function addHook<THook extends ComponentHook | AnyHook>(hooks: Set<THook>, hook: THook, options?: HookRegistrationOptions): HookRemove {
+  function addHook<THook extends ComponentHook | AnyHook>(hooks: HookEntry<THook>[], hook: THook, options?: HookRegistrationOptions): HookRemove {
     if (options?.signal?.aborted) {
       return () => {}
     }

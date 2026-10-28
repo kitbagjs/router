@@ -9,6 +9,7 @@ import { RouterReplace } from '@/types/routerReplace'
 import { isRejection, Rejection, Rejections } from '@/types/rejection'
 import { RouteContext, RouteContextToRejection, RouteContextToRoute } from '@/types/routeContext'
 import { RouterAbort } from '@/types/routerAbort'
+import { RedirectHook } from '@/types/redirects'
 import { CallbackContextAbort, CallbackContextPush, CallbackContextRedirect, CallbackContextReject, CallbackContextSuccess } from '@/types/callbackContext'
 import { RouteUpdate } from '@/types/routeUpdate'
 import { NavigationProgressTracker } from '@/services/createNavigationProgress'
@@ -23,42 +24,33 @@ export function combineHooks(parent: Route, child: Route): Hooks[] {
 
 export type InternalRouteHooks<
   TRoute extends Route = Route,
-  TContext extends RouteContext[] | undefined = undefined
+  TContext extends RouteContext[] | undefined = undefined,
+  TReturn = HookRemove
 > = {
   /**
    * Registers a route hook to be called before the route is entered.
    */
-  onBeforeRouteEnter: AddBeforeEnterHook<[TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>, TRoute, Route>,
+  onBeforeRouteEnter: AddHook<BeforeEnterHook<[TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>, TRoute, Route>, TReturn>,
   /**
    * Registers a route hook to be called before the route is left.
    */
-  onBeforeRouteLeave: AddBeforeLeaveHook<[TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>, Route, TRoute>,
+  onBeforeRouteLeave: AddHook<BeforeLeaveHook<[TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>, Route, TRoute>, TReturn>,
   /**
    * Registers a route hook to be called before the route is updated.
    */
-  onBeforeRouteUpdate: AddBeforeUpdateHook<[TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>, TRoute, Route>,
+  onBeforeRouteUpdate: AddHook<BeforeUpdateHook<[TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>, TRoute, Route>, TReturn>,
   /**
    * Registers a route hook to be called after the route is entered.
    */
-  onAfterRouteEnter: AddAfterEnterHook<[TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>, TRoute, Route>,
+  onAfterRouteEnter: AddHook<AfterEnterHook<[TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>, TRoute, Route>, TReturn>,
   /**
    * Registers a route hook to be called after the route is left.
    */
-  onAfterRouteLeave: AddAfterLeaveHook<[TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>, Route, TRoute>,
+  onAfterRouteLeave: AddHook<AfterLeaveHook<[TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>, Route, TRoute>, TReturn>,
   /**
    * Registers a route hook to be called after the route is updated.
    */
-  onAfterRouteUpdate: AddAfterUpdateHook<[TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>, TRoute, Route>,
-}
-
-export type ExternalRouteHooks<
-  TRoute extends Route = Route,
-  TContext extends RouteContext[] | undefined = undefined
-> = {
-  /**
-   * Registers a route hook to be called before the route is entered.
-   */
-  onBeforeRouteEnter: AddBeforeEnterHook<[TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>, TRoute, Route>,
+  onAfterRouteUpdate: AddHook<AfterUpdateHook<[TRoute] | RouteContextToRoute<TContext>, RouteContextToRejection<TContext>, TRoute, Route>, TReturn>,
 }
 
 export type RejectionHooks<
@@ -72,19 +64,30 @@ export type RejectionHooks<
 
 export type HookTiming = 'global' | 'component'
 
+export type BeforeHook = RedirectHook | BeforeEnterHook | BeforeUpdateHook | BeforeLeaveHook
+export type AfterHook = AfterEnterHook | AfterUpdateHook | AfterLeaveHook
+
 /**
  * Union type for all component route hooks.
  */
 export type ComponentHook = BeforeEnterHook | BeforeUpdateHook | BeforeLeaveHook | AfterEnterHook | AfterUpdateHook | AfterLeaveHook
 
+export type HookCallback = ComponentHook | RedirectHook | ErrorHook | RejectionHook
+
 /**
  * Registration object for adding a component route hook.
  */
-export type ComponentHookRegistration = {
-  lifecycle: HookLifecycle,
-  hook: ComponentHook | AnyHook,
+export type ComponentHookRegistrationOptions = HookRegistrationOptions & (
+  | { lifecycle: 'onBeforeRouteEnter', hook: BeforeEnterHook | AnyHook }
+  | { lifecycle: 'onBeforeRouteUpdate', hook: BeforeUpdateHook | AnyHook }
+  | { lifecycle: 'onBeforeRouteLeave', hook: BeforeLeaveHook | AnyHook }
+  | { lifecycle: 'onAfterRouteEnter', hook: AfterEnterHook | AnyHook }
+  | { lifecycle: 'onAfterRouteUpdate', hook: AfterUpdateHook | AnyHook }
+  | { lifecycle: 'onAfterRouteLeave', hook: AfterLeaveHook | AnyHook }
+)
+
+export type ComponentHookRegistration = ComponentHookRegistrationOptions & {
   depth: number,
-  signal?: AbortSignal,
 }
 
 /**
@@ -99,6 +102,11 @@ export type AddGlobalHooks = (hooks: Hooks[]) => void
  */
 export type HookRemove = () => void
 
+export type HookEntry<THook> = {
+  hook: THook,
+  remove: HookRemove,
+}
+
 export type HookRegistrationOptions = {
   /**
    * Removes the hook when aborted.
@@ -109,7 +117,7 @@ export type HookRegistrationOptions = {
 /**
  * Registers an inline callback or a reusable hook definition.
  */
-export type AddHook<THook extends AnyFunction> = (hook: THook | AnyHook, options?: HookRegistrationOptions) => HookRemove
+export type AddHook<THook extends AnyFunction, TReturn = HookRemove> = (hook: THook | AnyHook, options?: HookRegistrationOptions) => TReturn
 
 /**
  * Enumerates the lifecycle events for before route hooks.
@@ -132,6 +140,7 @@ export type AfterHookContext<
   TRejections extends Rejections
 > = {
   lifecycle: 'after',
+  remove: HookRemove,
   reject: RouterReject<TRejections>,
   push: RouterPush<TRoutes>,
   replace: RouterReplace<TRoutes>,
@@ -145,6 +154,7 @@ export type BeforeHookContext<
   TRejections extends Rejections
 > = {
   lifecycle: 'before',
+  remove: HookRemove,
   reject: RouterReject<TRejections>,
   push: RouterPush<TRoutes>,
   replace: RouterReplace<TRoutes>,
@@ -309,6 +319,7 @@ export type RejectionHookContext<
   TRouteTo extends Route = TRoutes[number],
   TRouteFrom extends Route = TRoutes[number]
 > = {
+  remove: HookRemove,
   to: ResolvedRouteUnion<TRouteTo> | null,
   from: ResolvedRouteUnion<TRouteFrom> | null,
 }
@@ -336,6 +347,7 @@ export type ErrorHookContext<
   TRoutes extends Routes = Routes,
   TRejections extends Rejections = Rejections
 > = {
+  remove: HookRemove,
   to: RouterResolvedRouteUnion<TRoutes> | null,
   from: RouterResolvedRouteUnion<TRoutes> | null,
   source: 'props' | 'loader' | 'hook' | 'component',

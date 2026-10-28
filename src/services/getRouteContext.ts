@@ -18,6 +18,7 @@ export function getRouteContext(route: Route): RouteContext[] {
 
   return [
     ...route.context,
-    ...hooks.filter(isHook).flatMap((hook) => hook.context),
+    ...hooks.map(({ hook }) => hook).filter(isHook)
+      .flatMap((hook) => hook.context),
   ]
 }
