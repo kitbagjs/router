@@ -125,7 +125,7 @@ test('route update updates the current route', async () => {
   expect(router.route.params.param).toBe('three')
 })
 
-test.fails('route is readonly except for individual params', async () => {
+test.each(['name', 'matched', 'matches'] as const)('route.%s is readonly', async (property) => {
   const routes = [
     createRoute({ name: 'root', path: '/' }).addView(component),
   ]
@@ -136,20 +136,14 @@ test.fails('route is readonly except for individual params', async () => {
 
   await start()
 
-  // @ts-expect-error value is immutable
-  route.name = 'child'
-  expect(route.name).toBe('root')
+  const original = route[property]
 
-  // @ts-expect-error value is immutable
-  route.matched = 'match'
-  expect(route.matched).toBe(route.matches.at(-1))
+  expect(() => {
+    // @ts-expect-error value is immutable
+    route[property] = 'changed'
+  }).toThrow(TypeError)
 
-  // @ts-expect-error value is immutable
-  route.matches = 'matches'
-  expect(route.matches).toMatchObject(routes[0].matches)
-
-  route.params = { foo: 'bar' }
-  expect(route.params).toMatchObject({})
+  expect(route[property]).toBe(original)
 })
 
 test('individual params are writable', async () => {
