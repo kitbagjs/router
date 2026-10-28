@@ -25,14 +25,9 @@ from [props getters](/core-concepts/component-props) and awaited
 
 | Prop | Required | Type | Default | Description |
 | --- | --- | --- | --- | --- |
+| loaders | false | `boolean` | `true` | Includes awaited `useLoader` errors |
 | props | false | `boolean` | `true` | Includes route props getter errors |
 | catch | false | `boolean` or `(error: unknown) => boolean` | `false` | Includes all component errors when true, or only errors matching the predicate |
-
-```vue
-<RouterSuspense catch>
-  <RouterView />
-</RouterSuspense>
-```
 
 ```vue
 <script setup lang="ts">
