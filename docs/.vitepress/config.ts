@@ -99,6 +99,7 @@ export default defineConfig({
             { text: 'Hooks', link: '/advanced-concepts/hooks' },
             { text: 'Context', link: '/advanced-concepts/context' },
             { text: 'Plugins', link: '/advanced-concepts/plugins' },
+            { text: 'Route Discovery', link: '/advanced-concepts/route-discovery' },
             { text: 'Route Meta', link: '/advanced-concepts/route-meta' },
             { text: 'Route State', link: '/advanced-concepts/route-state' },
             { text: 'Prefetching', link: '/advanced-concepts/prefetching' },
