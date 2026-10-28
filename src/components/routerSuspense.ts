@@ -8,6 +8,8 @@ import { Router } from '@/types/router'
 import { getRouterSuspenseInjectionKey, RouterSuspenseContext } from '@/compositions/useRouterSuspense'
 
 export type RouterSuspenseProps = {
+  /** Includes awaited loader errors. Defaults to true. */
+  loaders?: boolean,
   /** Includes route props getter errors. Defaults to true. */
   props?: boolean,
   /** Includes component errors when true or when the predicate returns true. */
@@ -53,6 +55,10 @@ export function createRouterSuspense<TRouter extends Router>(routerKey: Injectio
     name: 'RouterSuspense',
     inheritAttrs: false,
     props: {
+      loaders: {
+        type: Boolean,
+        default: true,
+      },
       props: {
         type: Boolean,
         default: true,
@@ -90,6 +96,10 @@ export function createRouterSuspense<TRouter extends Router>(routerKey: Injectio
           }
 
           if (kind === 'props' && !props.props) {
+            return false
+          }
+
+          if (kind === 'loader' && !props.loaders) {
             return false
           }
 

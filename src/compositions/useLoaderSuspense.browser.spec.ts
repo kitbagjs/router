@@ -228,6 +228,59 @@ test.each(loaderAttachments)('reports later errors even when data is not read ($
   expect(predicate).not.toHaveBeenCalled()
 })
 
+test.each(loaderAttachments.flatMap((attachment) => [
+  { ...attachment, later: false, catchErrors: false },
+  { ...attachment, later: false, catchErrors: true },
+  { ...attachment, later: true, catchErrors: false },
+  { ...attachment, later: true, catchErrors: true },
+]))('propagates loader errors when loaders is false ($attachment, later: $later, catch: $catchErrors)', async ({ attached, later, catchErrors }) => {
+  const pending = Promise.withResolvers<string>()
+  const loader = createLoader({
+    load: (route) => {
+      return later && route.params.id === '1' ? 'loaded' : pending.promise
+    },
+  })
+  const user = createRoute({ name: 'user', path: '/[id]' })
+  const route = attached ? user.addLoader(loader) : user
+  const router = createRouter([route], { initialUrl: '/1' })
+  await router.start()
+  const consumer = defineComponent({
+    async setup() {
+      const { data } = await useLoader(loader)
+      return () => h('p', data.value)
+    },
+  })
+  const errorSlot = vi.fn(() => h('p', 'failed'))
+  const appError = vi.fn()
+  const predicate = vi.fn(() => catchErrors)
+  const wrapper = mount(RouterSuspense, {
+    props: { loaders: false, catch: predicate },
+    slots: { default: () => h(consumer), fallback: () => h('p', 'waiting'), error: errorSlot },
+    global: { plugins: [router], config: { errorHandler: appError } },
+  })
+  await flushPromises()
+  expect(wrapper.text()).toBe(later ? 'loaded' : 'waiting')
+
+  if (later) {
+    await router.push('/2')
+  }
+
+  const failure = new Error('loader failed')
+  pending.reject(failure)
+  await flushPromises()
+
+  expect(predicate).toHaveBeenCalledExactlyOnceWith(failure)
+
+  if (catchErrors) {
+    expect(wrapper.text()).toBe('failed')
+    expect(errorSlot).toHaveBeenCalledWith({ error: failure })
+    expect(appError).not.toHaveBeenCalled()
+  } else {
+    expect(errorSlot).not.toHaveBeenCalled()
+    expect(appError.mock.calls[0][0]).toBe(failure)
+  }
+})
+
 test('shows synchronous load errors after navigation', async () => {
   const failure = new Error('later failure')
   const loader = createLoader({
