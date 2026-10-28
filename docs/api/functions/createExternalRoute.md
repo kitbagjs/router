@@ -3,7 +3,7 @@
 ## Call Signature
 
 ```ts
-function createExternalRoute<TOptions>(options): ToRoute<TOptions> & ExternalRouteHooks<ToRoute<TOptions>, TOptions["context"]> & RouteRedirects<ToRoute<TOptions>>;
+function createExternalRoute<TOptions>(options): ExternalRouteWithMethods<ToRoute<TOptions>, TOptions["context"]>;
 ```
 
 ### Type Parameters
@@ -20,12 +20,12 @@ function createExternalRoute<TOptions>(options): ToRoute<TOptions> & ExternalRou
 
 ### Returns
 
-[`ToRoute`](../types/ToRoute.md)\<`TOptions`\> & `ExternalRouteHooks`\<[`ToRoute`](../types/ToRoute.md)\<`TOptions`\>, `TOptions`\[`"context"`\]\> & [`RouteRedirects`](../types/RouteRedirects.md)\<[`ToRoute`](../types/ToRoute.md)\<`TOptions`\>\>
+`ExternalRouteWithMethods`\<[`ToRoute`](../types/ToRoute.md)\<`TOptions`\>, `TOptions`\[`"context"`\]\>
 
 ## Call Signature
 
 ```ts
-function createExternalRoute<TOptions>(options): ToRoute<TOptions> & ExternalRouteHooks<ToRoute<TOptions>, ExtractRouteContext<TOptions>> & RouteRedirects<ToRoute<TOptions>>;
+function createExternalRoute<TOptions>(options): ExternalRouteWithMethods<ToRoute<TOptions>, ExtractRouteContext<TOptions>>;
 ```
 
 ### Type Parameters
@@ -42,4 +42,4 @@ function createExternalRoute<TOptions>(options): ToRoute<TOptions> & ExternalRou
 
 ### Returns
 
-[`ToRoute`](../types/ToRoute.md)\<`TOptions`\> & `ExternalRouteHooks`\<[`ToRoute`](../types/ToRoute.md)\<`TOptions`\>, `ExtractRouteContext`\<`TOptions`\>\> & [`RouteRedirects`](../types/RouteRedirects.md)\<[`ToRoute`](../types/ToRoute.md)\<`TOptions`\>\>
+`ExternalRouteWithMethods`\<[`ToRoute`](../types/ToRoute.md)\<`TOptions`\>, `ExtractRouteContext`\<`TOptions`\>\>

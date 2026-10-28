@@ -1,22 +1,22 @@
 # Functions: tupleOf()
 
 ```ts
-function tupleOf<T>(params, options?): ParamGetSet<TupleOf<T>>;
+function tupleOf<TParamOptions>(params, options?): Param<TupleOf<TParamOptions>>;
 ```
 
 ## Type Parameters
 
 | Type Parameter |
 | ------ |
-| <a id="type-parameter-t"></a> `T` *extends* [`Param`](../types/Param.md)[] |
+| <a id="type-parameter-tparamoptions"></a> `TParamOptions` *extends* [`ParamOptions`](../types/ParamOptions.md)[] |
 
 ## Parameters
 
 | Parameter | Type |
 | ------ | ------ |
-| `params` | `T` |
+| `params` | `TParamOptions` |
 | `options?` | `TupleOfOptions` |
 
 ## Returns
 
-[`ParamGetSet`](../types/ParamGetSet.md)\<`TupleOf`\<`T`\>\>
+[`Param`](../types/Param.md)\<`TupleOf`\<`TParamOptions`\>\>

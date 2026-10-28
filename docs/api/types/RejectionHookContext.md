@@ -17,4 +17,5 @@ type RejectionHookContext<TRoutes, TRouteTo, TRouteFrom> = object;
 | Property | Type |
 | ------ | ------ |
 | <a id="from"></a> `from` | [`ResolvedRouteUnion`](ResolvedRouteUnion.md)\<`TRouteFrom`\> \| `null` |
+| <a id="remove"></a> `remove` | [`HookRemove`](HookRemove.md) |
 | <a id="to"></a> `to` | [`ResolvedRouteUnion`](ResolvedRouteUnion.md)\<`TRouteTo`\> \| `null` |
