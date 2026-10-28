@@ -19,7 +19,7 @@ Options for a reusable loader that receives the resolved route and its declared 
 ### context?
 
 ```ts
-optional context?: TContext;
+context?: TContext;
 ```
 
 See [Context](https://kitbag-router.netlify.app/advanced-concepts/context).
@@ -46,7 +46,7 @@ Loads a value or promise from the resolved route.
 ### prefetch?
 
 ```ts
-optional prefetch?: PrefetchConfig;
+prefetch?: PrefetchConfig;
 ```
 
 Default prefetch behavior, overridable when attaching the loader.

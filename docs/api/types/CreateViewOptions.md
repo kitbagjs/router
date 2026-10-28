@@ -1,7 +1,7 @@
 # Types: CreateViewOptions\<TComponent, TContext, TProps, TRoutes\>
 
 ```ts
-type CreateViewOptions<TComponent, TContext, TProps, TRoutes> = TransformerOptions<NoInfer<Awaited<TProps>>> & object & Partial<ComponentProps<TComponent>> extends ComponentProps<TComponent> ? object : object;
+type CreateViewOptions<TComponent, TContext, TProps, TRoutes> = TransformerOptions<NoInfer<Awaited<TProps>>> & object & (Partial<ComponentProps<TComponent>> extends ComponentProps<TComponent> ? object : object);
 ```
 
 Options for a reusable component and its props getter.
@@ -26,7 +26,7 @@ component: TComponent;
 ### context?
 
 ```ts
-optional context?: TContext;
+context?: TContext;
 ```
 
 See [Context](https://kitbag-router.netlify.app/advanced-concepts/context).
@@ -34,5 +34,5 @@ See [Context](https://kitbag-router.netlify.app/advanced-concepts/context).
 ### prefetch?
 
 ```ts
-optional prefetch?: PrefetchConfig;
+prefetch?: PrefetchConfig;
 ```

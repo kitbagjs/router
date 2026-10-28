@@ -30,11 +30,11 @@ context: TContext;
 ### prefetch?
 
 ```ts
-optional prefetch?: PrefetchConfig;
+prefetch?: PrefetchConfig;
 ```
 
 ### props?
 
 ```ts
-optional props?: AnyFunction<TProps>;
+props?: AnyFunction<TProps>;
 ```

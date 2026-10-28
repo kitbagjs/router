@@ -59,7 +59,7 @@ Identifier for the route as defined by user. Name must be unique among named rou
 ### prefetch?
 
 ```ts
-optional prefetch?: PrefetchConfig;
+prefetch?: PrefetchConfig;
 ```
 
 Determines what assets are prefetched when router-link is rendered for this route. Overrides router level prefetch.

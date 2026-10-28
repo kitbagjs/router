@@ -40,6 +40,7 @@
 
 - [RouterLink](components/RouterLink.md)
 - [RouterProgress](components/RouterProgress.md)
+- [RouterSuspense](components/RouterSuspense.md)
 - [RouterView](components/RouterView.md)
 - [ViewTransition](components/ViewTransition.md)
 
@@ -150,7 +151,6 @@
 - [RouteAddLoader](types/RouteAddLoader.md)
 - [RouteAddView](types/RouteAddView.md)
 - [RouteCallbackContext](types/RouteCallbackContext.md)
-- [RouteLoader](types/RouteLoader.md)
 - [RouteLoaders](types/RouteLoaders.md)
 - [RouteMeta](types/RouteMeta.md)
 - [Router](types/Router.md)
@@ -174,6 +174,7 @@
 - [RouterRouteName](types/RouterRouteName.md)
 - [RouterRoutes](types/RouterRoutes.md)
 - [RouterRouteUnion](types/RouterRouteUnion.md)
+- [RouterSuspenseProps](types/RouterSuspenseProps.md)
 - [RouterViewTransition](types/RouterViewTransition.md)
 - [RouteViews](types/RouteViews.md)
 - [ServerRenderResponse](types/ServerRenderResponse.md)
@@ -183,6 +184,8 @@
 - [UrlString](types/UrlString.md)
 - [UseLink](types/UseLink.md)
 - [UseLinkOptions](types/UseLinkOptions.md)
+- [UseLoader](types/UseLoader.md)
+- [UseLoaderResolved](types/UseLoaderResolved.md)
 - [UseNavigation](types/UseNavigation.md)
 - [View](types/View.md)
 - [ViewCallbackContext](types/ViewCallbackContext.md)
@@ -204,3 +207,4 @@
 - [createHook](variables/createHook.md)
 - [createLoader](variables/createLoader.md)
 - [createView](variables/createView.md)
+- [useLoader](variables/useLoader.md)

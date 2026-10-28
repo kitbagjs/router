@@ -126,6 +126,10 @@
         "link": "/api/components/RouterProgress.md"
       },
       {
+        "text": "RouterSuspense",
+        "link": "/api/components/RouterSuspense.md"
+      },
+      {
         "text": "RouterView",
         "link": "/api/components/RouterView.md"
       },
@@ -640,6 +644,10 @@
         "link": "/api/types/RouterRouteUnion.md"
       },
       {
+        "text": "RouterSuspenseProps",
+        "link": "/api/types/RouterSuspenseProps.md"
+      },
+      {
         "text": "RouterViewTransition",
         "link": "/api/types/RouterViewTransition.md"
       },
@@ -674,6 +682,14 @@
       {
         "text": "UseLinkOptions",
         "link": "/api/types/UseLinkOptions.md"
+      },
+      {
+        "text": "UseLoader",
+        "link": "/api/types/UseLoader.md"
+      },
+      {
+        "text": "UseLoaderResolved",
+        "link": "/api/types/UseLoaderResolved.md"
       },
       {
         "text": "UseNavigation",
@@ -752,6 +768,10 @@
       {
         "text": "createView",
         "link": "/api/variables/createView.md"
+      },
+      {
+        "text": "useLoader",
+        "link": "/api/variables/useLoader.md"
       }
     ]
   }

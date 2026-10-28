@@ -15,7 +15,7 @@ type ViewTransitionProps<TElement> = object & Omit<ElementAttributes<NoInfer<TEl
 ### as?
 
 ```ts
-optional as?: TElement;
+as?: TElement;
 ```
 
 The element to render. Defaults to span.

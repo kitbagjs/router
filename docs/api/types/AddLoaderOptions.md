@@ -18,7 +18,7 @@ The options for a loader added via `addLoader`.
 ### name?
 
 ```ts
-optional name?: TName;
+name?: TName;
 ```
 
 The name of the loader, which is the key its data is exposed under on the route. Defaults to the
@@ -27,7 +27,7 @@ unnamed loader, whose data is exposed as the route's data directly.
 ### prefetch?
 
 ```ts
-optional prefetch?: PrefetchConfig;
+prefetch?: PrefetchConfig;
 ```
 
 Determines whether this loader is run when a router-link is rendered for this route. Overrides route
