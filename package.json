@@ -27,7 +27,11 @@
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
-    "docs:generate": "vite build && typedoc && sleep 5 && node ./scripts/api.js"
+    "docs:generate": "vite build && typedoc && sleep 5 && node ./scripts/api.js",
+    "discovery:dev": "vite --config examples/route-discovery/vite.config.ts",
+    "discovery:generate": "node bin/router.mjs generate --config examples/route-discovery/vite.config.ts",
+    "discovery:types": "npm run discovery:generate && vue-tsc --noEmit -p examples/route-discovery/tsconfig.json",
+    "discovery:build": "vite build --config examples/route-discovery/vite.config.ts"
   },
   "type": "module",
   "bin": {
