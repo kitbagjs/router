@@ -160,6 +160,8 @@ Reuse the same definition wherever you want lookup to match. Separate `createPar
 
 Definitions returned by `literal`, `arrayOf`, `tupleOf`, and `unionOf` can also be used directly with these methods.
 
+In components, use [`useParam`](/composables/useParam) to read values by definition as readonly computed refs that follow the current route.
+
 ## Default Values
 
 Define a default value when creating a param or by using the `withDefault` utility. This value will be used when the param is not provided in the url. An optional param of type `String` will have the type `string | undefined` when being accessed. But when a default value is provided it will have the type `string`, even if the value is missing from the url.
