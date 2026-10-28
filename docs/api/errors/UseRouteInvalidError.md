@@ -30,9 +30,7 @@ This detailed error message aids in quickly identifying and resolving mismatches
 
 #### Overrides
 
-```ts
-Error.constructor
-```
+`Error.constructor`
 
 ## Methods
 
@@ -56,9 +54,7 @@ Indicates whether the argument provided is a built-in Error instance or not.
 
 #### Inherited from
 
-```ts
-Error.isError
-```
+`Error.isError`
 
 ## Properties
 

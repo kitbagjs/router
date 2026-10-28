@@ -11,7 +11,7 @@ Options to initialize a [Router](Router.md) instance.
 ### base?
 
 ```ts
-optional base?: string;
+base?: string;
 ```
 
 Base path to be prepended to any URL. Can be used for Vue applications that run in nested folder for domain.
@@ -20,7 +20,7 @@ For example having `base` of `/foo` would assume all routes should start with `y
 ### historyMode?
 
 ```ts
-optional historyMode?: RouterHistoryMode;
+historyMode?: RouterHistoryMode;
 ```
 
 Specifies the history mode for the router, such as "browser", "memory", or "hash".
@@ -34,7 +34,7 @@ Specifies the history mode for the router, such as "browser", "memory", or "hash
 ### initialUrl?
 
 ```ts
-optional initialUrl?: string;
+initialUrl?: string;
 ```
 
 Initial URL for the router to use. Required if using Node environment. Defaults to window.location when using browser.
@@ -48,7 +48,7 @@ window.location.toString()
 ### isGlobalRouter?
 
 ```ts
-optional isGlobalRouter?: boolean;
+isGlobalRouter?: boolean;
 ```
 
 When false, createRouterAssets must be used for component and hooks. Assets exported by the library
@@ -63,7 +63,7 @@ true
 ### navigation?
 
 ```ts
-optional navigation?: NavigationBehavior;
+navigation?: NavigationBehavior;
 ```
 
 Whether navigation waits for props, loaders, and components before committing.
@@ -77,7 +77,7 @@ Whether navigation waits for props, loaders, and components before committing.
 ### prefetch?
 
 ```ts
-optional prefetch?: PrefetchConfig;
+prefetch?: PrefetchConfig;
 ```
 
 Determines what assets are prefetched when router-link is rendered for a specific route
@@ -85,7 +85,7 @@ Determines what assets are prefetched when router-link is rendered for a specifi
 ### redirectStatus?
 
 ```ts
-optional redirectStatus?: RedirectStatus;
+redirectStatus?: RedirectStatus;
 ```
 
 The status `render` responds with for a normalized url or a route redirect that does not declare
@@ -100,7 +100,7 @@ its own.
 ### rejections?
 
 ```ts
-optional rejections?: Rejections;
+rejections?: Rejections;
 ```
 
 Components assigned to each type of rejection your router supports.
@@ -108,7 +108,7 @@ Components assigned to each type of rejection your router supports.
 ### rejectStatus?
 
 ```ts
-optional rejectStatus?: number;
+rejectStatus?: number;
 ```
 
 The status `render` responds with for a rejection that does not declare its own.
@@ -122,7 +122,7 @@ The status `render` responds with for a rejection that does not declare its own.
 ### removeTrailingSlashes?
 
 ```ts
-optional removeTrailingSlashes?: boolean;
+removeTrailingSlashes?: boolean;
 ```
 
 Removes trailing slashes from the URL before matching routes. The browser's url is updated to reflect using `router.replace`.
@@ -136,7 +136,7 @@ true
 ### ssr?
 
 ```ts
-optional ssr?: boolean;
+ssr?: boolean;
 ```
 
 Marks the router as rendering on a server, so every navigation is part of the server render from
@@ -145,7 +145,7 @@ the moment the router is created. Required to call `render`.
 ### viewTransition?
 
 ```ts
-optional viewTransition?: ViewTransitionConfig;
+viewTransition?: ViewTransitionConfig;
 ```
 
 Animates navigations with the View Transitions API. Overridden per route and per navigation.

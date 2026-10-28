@@ -1,7 +1,7 @@
 # Components: ViewTransition
 
 ```ts
-const ViewTransition: <TElement>(props) => ComponentPublicInstance;
+const ViewTransition: new <TElement>(props) => ComponentPublicInstance;
 ```
 
 Names a shared element for a view transition.

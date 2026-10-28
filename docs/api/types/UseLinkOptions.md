@@ -9,5 +9,5 @@ type UseLinkOptions = RouterPushOptions & object;
 ### prefetch?
 
 ```ts
-optional prefetch?: PrefetchConfig;
+prefetch?: PrefetchConfig;
 ```

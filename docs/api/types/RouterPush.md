@@ -2,7 +2,7 @@
 
 ```ts
 type RouterPush<TRoutes> = {
-<TSource>  (name, ...args): Promise<void>;
+  <TSource>(name, ...args): Promise<void>;
   (route, options?): Promise<void>;
   (url, options?): Promise<void>;
 };

@@ -1,7 +1,7 @@
 # Types: RouterRejectInternal\<TRejections\>
 
 ```ts
-type RouterRejectInternal<TRejections> = RouterReject<TRejections> & (type, context?) => void;
+type RouterRejectInternal<TRejections> = RouterReject<TRejections> & ((type, context?) => void);
 ```
 
 Reject as the router itself calls it, which may name any rejection type and supply the routes the

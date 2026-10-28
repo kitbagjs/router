@@ -30,5 +30,5 @@ load: AnyFunction<TData>;
 ### prefetch?
 
 ```ts
-optional prefetch?: PrefetchConfig;
+prefetch?: PrefetchConfig;
 ```

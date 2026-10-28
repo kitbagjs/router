@@ -30,9 +30,7 @@ Constructs a new DuplicateParamsError instance with a message indicating the pro
 
 #### Overrides
 
-```ts
-Error.constructor
-```
+`Error.constructor`
 
 ## Methods
 
@@ -56,9 +54,7 @@ Indicates whether the argument provided is a built-in Error instance or not.
 
 #### Inherited from
 
-```ts
-Error.isError
-```
+`Error.isError`
 
 ## Properties
 

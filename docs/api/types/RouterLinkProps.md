@@ -15,7 +15,7 @@ type RouterLinkProps<TRouter> = RouterPushOptions & object;
 ### prefetch?
 
 ```ts
-optional prefetch?: PrefetchConfig;
+prefetch?: PrefetchConfig;
 ```
 
 Determines what assets are prefetched when router-link is rendered for this route. Overrides route level prefetch.
@@ -23,7 +23,7 @@ Determines what assets are prefetched when router-link is rendered for this rout
 ### target?
 
 ```ts
-optional target?: string;
+target?: string;
 ```
 
 The target attribute for the anchor element.

@@ -28,6 +28,7 @@ type RouterAssets<TRouter> = object;
 | ------ | ------ | ------ |
 | <a id="routerlink"></a> `RouterLink` | `ReturnType`\<*typeof* `createRouterLink`\> | A component to render a link to a route or any url. **Param** **props** The props to pass to the router link component. |
 | <a id="routerprogress"></a> `RouterProgress` | `ReturnType`\<*typeof* `createRouterProgress`\> | A component to render a bar across the top of the page while a navigation is pending, filled by how much of the navigation's work has settled. **Param** **props** The props to pass to the router progress component. |
+| <a id="routersuspense"></a> `RouterSuspense` | `ReturnType`\<*typeof* `createRouterSuspense`\> | Wraps async content with loading and error slots. |
 | <a id="routerview"></a> `RouterView` | `ReturnType`\<*typeof* `createRouterView`\> | A component to render the current route's component. **Param** **props** The props to pass to the router view component. |
 | <a id="viewtransition"></a> `ViewTransition` | *typeof* `ViewTransition` | Names a shared element for a view transition. |
 
@@ -53,3 +54,4 @@ type RouterAssets<TRouter> = object;
 | <a id="createhook"></a> `createHook` | `CreateHook`\<[`RouterRoutes`](RouterRoutes.md)\<`TRouter`\>\> | Creates a reusable hook with callbacks typed to this router's resolved routes. |
 | <a id="createloader"></a> `createLoader` | `CreateLoader`\<[`RouterRoutes`](RouterRoutes.md)\<`TRouter`\>\> | Creates a reusable loader with callbacks typed to this router's resolved routes. |
 | <a id="createview"></a> `createView` | `CreateView`\<[`RouterRoutes`](RouterRoutes.md)\<`TRouter`\>\> | Creates a reusable view with props callbacks typed to this router's resolved routes and loader data. |
+| <a id="useloader"></a> `useLoader` | `UseLoaderFunction` | Reads a loader's reactive state. |

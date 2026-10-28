@@ -1,9 +1,9 @@
 # Types: HookCallbackContext\<TContext, TRoutes\>
 
 ```ts
-type HookCallbackContext<TContext, TRoutes> = object & 
+type HookCallbackContext<TContext, TRoutes> = object & (
   | Omit<BeforeHookContext<Route, RouteContextToRoute<[...TContext]>, RouteContextToRejection<[...TContext]>>, "update">
-| Omit<AfterHookContext<Route, RouteContextToRoute<[...TContext]>, RouteContextToRejection<[...TContext]>>, "update">;
+  | Omit<AfterHookContext<Route, RouteContextToRoute<[...TContext]>, RouteContextToRejection<[...TContext]>>, "update">);
 ```
 
 Context provided to a reusable hook, narrowed by whether it runs before or after navigation.
@@ -28,5 +28,5 @@ from:
 ### update?
 
 ```ts
-optional update?: RouteUpdate;
+update?: RouteUpdate;
 ```
