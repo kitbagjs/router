@@ -29,21 +29,6 @@ from [props getters](/core-concepts/component-props) and awaited
 | props | false | `boolean` | `true` | Includes route props getter errors |
 | catch | false | `boolean` or `(error: unknown) => boolean` | `false` | Includes all component errors when true, or only errors matching the predicate |
 
-Set `loaders` to `false` to let awaited `useLoader` errors propagate to Vue's error handlers.
-The `catch` prop can still capture these errors as component errors.
-
-```vue
-<RouterSuspense :loaders="false">
-  <RouterView />
-</RouterSuspense>
-```
-
-```vue
-<RouterSuspense catch>
-  <RouterView />
-</RouterSuspense>
-```
-
 ```vue
 <script setup lang="ts">
 import { ExpectedError } from './errors'
