@@ -1,16 +1,28 @@
 /* eslint-disable @typescript-eslint/method-signature-style */
-import { OptionalUrlParam, UrlQueryPart, ToUrlQueryPart, RequiredUrlParam, ToUrlPart, UrlParams, UrlPart } from '@/services/withParams'
+import { OptionalUrlParam, UrlQueryPart, ToUrlQueryPart, RequiredUrlParam, ToUrlPart, UrlParams, UrlPart, UrlParam } from '@/services/withParams'
 import { ExtractParamType } from '@/types/params'
 import { AllPropertiesAreOptional, Identity } from '@/types/utilities'
 import { UrlString } from '@/types/urlString'
-import { ParamGetSet } from '@/types/paramTypes'
+import { ParamGetSetOptions } from '@/types/paramTypes'
 import { MakeOptional } from '@/utilities/makeOptional'
 
 export const IS_URL_SYMBOL = Symbol('IS_URL_SYMBOL')
 
+/**
+ * The definitions of a URL's host, path, query, and hash parts.
+ */
+export type UrlSchema = Record<string, UrlPart>
+
+/**
+ * Returns the named param definitions from each part of a URL schema.
+ */
+export function getUrlSchemaDefinitions(schema: UrlSchema): [string, UrlParam][] {
+  return Object.values(schema).flatMap((part) => Object.entries(part.params))
+}
+
 export type UrlInternal = {
   [IS_URL_SYMBOL]: true,
-  schema: Record<string, UrlPart>,
+  schema: UrlSchema,
   params: {},
   isMatch: (url: string, options?: ParseUrlOptions) => boolean,
 }
@@ -88,7 +100,7 @@ type ToUrlParamsReading<
 > = Identity<
   MakeOptional<{
     [K in keyof TParams]: TParams[K] extends OptionalUrlParam<infer TParam>
-      ? TParam extends Required<ParamGetSet>
+      ? TParam extends Required<ParamGetSetOptions>
         ? ExtractParamType<TParam>
         : ExtractParamType<TParam> | undefined
       : TParams[K] extends RequiredUrlParam<infer TParam>

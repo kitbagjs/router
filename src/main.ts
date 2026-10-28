@@ -58,6 +58,8 @@ export type {
   AddErrorHook
 } from './types/hooks'
 export * from './types/paramTypes'
+export type { Param } from './types/param'
+export type { GetParam, GetAllParams, ParamGetters } from './types/paramGetters'
 export * from './types/prefetch'
 export * from './types/props'
 export * from './types/querySource'
@@ -122,6 +124,9 @@ export type { ViewTransitionProps } from './components/viewTransition'
 import { routerInjectionKey } from './keys'
 import { createRouterAssets, RouterAssets } from './services/createRouterAssets'
 import { RegisteredRouter } from './types/register'
+import { isParam as isParamInternal, Param } from './types/param'
+
+export const isParam: (value: unknown) => value is Param = isParamInternal
 
 const routerAssets = createRouterAssets(routerInjectionKey)
 
@@ -262,6 +267,13 @@ export const useRouter: RouterAssets<RegisteredRouter>['useRouter'] = routerAsse
  * @group Compositions
  */
 export const useQueryValue: RouterAssets<RegisteredRouter>['useQueryValue'] = routerAssets.useQueryValue
+
+/**
+ * Reads param values by definition as readonly computed refs that follow the current route.
+ * Returns undefined and an empty array when the definition has no present values.
+ * @group Compositions
+ */
+export const useParam: RouterAssets<RegisteredRouter>['useParam'] = routerAssets.useParam
 
 /**
  * A composition to export much of the functionality that drives RouterLink component.

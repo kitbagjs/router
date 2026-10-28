@@ -1,4 +1,4 @@
-import { Param } from '@/types/paramTypes'
+import { ParamOptions } from '@/types/paramTypes'
 import { PrefetchConfig } from '@/types/prefetch'
 import { RouteMeta } from '@/types/register'
 import { LastInArray } from '@/types/utilities'
@@ -69,12 +69,12 @@ type RouteMetaOf<TMatches extends CreatedRouteOptions[]> = CreatedRouteOptions[]
 /**
  * The state of every matched route, combined. Mirrors `combineState`, which is an intersection.
  * A match without state contributes `{}` rather than `ToState<undefined>`, which widens to
- * `Record<string, Param>` and would swallow the rest of the intersection.
+ * `Record<string, ParamOptions>` and would swallow the rest of the intersection.
  */
 type RouteStateOf<TMatches extends CreatedRouteOptions[]> = CreatedRouteOptions[] extends TMatches
-  ? Record<string, Param>
+  ? Record<string, ParamOptions>
   : TMatches extends [infer THead, ...infer TRest extends CreatedRouteOptions[]]
-    ? (THead extends { state: infer TState extends Record<string, Param> } ? ToState<TState> : {}) & RouteStateOf<TRest>
+    ? (THead extends { state: infer TState extends Record<string, ParamOptions> } ? ToState<TState> : {}) & RouteStateOf<TRest>
     : {}
 
 /**
@@ -150,6 +150,6 @@ export type GenericRoute = Url & {
   name: string,
   matches: CreatedRouteOptions[],
   meta: RouteMeta,
-  state: Record<string, Param>,
+  state: Record<string, ParamOptions>,
   prefetch?: PrefetchConfig,
 }

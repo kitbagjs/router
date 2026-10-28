@@ -8,6 +8,8 @@ import { isRoute, Route } from '@/types/route'
 import { RouteAliasMatch } from '@/types/routeAlias'
 import { UrlString } from '@/types/urlString'
 import { getHooks } from '@/types/hooks'
+import { isUrl } from '@/types/url'
+import { createParamGetters } from '@/services/createParamGetters'
 
 type CreateResolvedRouteOptions = RouterResolveOptions & {
   /**
@@ -69,6 +71,10 @@ function getResolvedUrls(route: Route, params: Record<string, unknown>, options:
 }
 
 export function createResolvedRoute(route: Route, params: Record<string, unknown> = {}, options: CreateResolvedRouteOptions = {}): ResolvedRoute {
+  if (!isUrl(route)) {
+    throw new Error('createResolvedRoute called with an invalid URL')
+  }
+
   const { canonical, href, query, hash } = getResolvedUrls(route, params, options)
   const matched = route.matches.at(-1)
 
@@ -84,13 +90,19 @@ export function createResolvedRoute(route: Route, params: Record<string, unknown
     return route.getTitle(to)
   }
 
-  const resolvedRoute: ResolvedRoute & ResolvedRouteInternal = {
+  const internal = {
     [IS_RESOLVED_ROUTE_SYMBOL]: true,
+    schema: route.schema,
+    hooks: getHooks(route),
+    getRouteTitle,
+  } satisfies ResolvedRouteInternal
+
+  const resolvedRoute: ResolvedRoute & ResolvedRouteInternal = {
+    ...internal,
+    ...createParamGetters({ schema: route.schema, params }),
     id: route.id,
     name: route.name,
     matches: route.matches,
-    hooks: getHooks(route),
-    getRouteTitle,
     matched,
     query: createResolvedRouteQuery(query),
     state: getStateValues(route.state, options.state),

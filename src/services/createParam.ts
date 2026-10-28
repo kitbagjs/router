@@ -1,17 +1,29 @@
 import { getParamValue, setParamValue } from '@/services/params'
 import { ParamWithDefault } from '@/services/withDefault'
-import { ExtractParamType, isParamGetSet } from '@/types/params'
-import { Param, ParamGetSet } from '@/types/paramTypes'
+import { ExtractParamType, isParamGetSetOptions } from '@/types/params'
+import { ParamOptions } from '@/types/paramTypes'
+import { Param, PARAM_ID_SYMBOL, IS_PARAM_SYMBOL, ParamInternal } from '@/types/param'
+import { getParamId } from '@/services/getParamId'
 
-export function createParam<TParam extends ParamWithDefault>(param: TParam): TParam
-export function createParam<TParam extends Param>(param: TParam): ParamGetSet<ExtractParamType<TParam>>
-export function createParam<TParam extends Param>(param: TParam, defaultValue: NoInfer<ExtractParamType<TParam>>): ParamWithDefault<TParam>
-export function createParam<TParam extends Param>(param: TParam, defaultValue?: ExtractParamType<TParam>): ParamGetSet<ExtractParamType<TParam>> {
-  if (isParamGetSet(param)) {
-    return { ...param, defaultValue: defaultValue ?? param.defaultValue }
+export function createParam<TParamOptions extends ParamWithDefault>(param: TParamOptions): TParamOptions
+export function createParam<TParamOptions extends ParamOptions>(param: TParamOptions): Param<ExtractParamType<TParamOptions>>
+export function createParam<TParamOptions extends ParamOptions>(param: TParamOptions, defaultValue: NoInfer<ExtractParamType<TParamOptions>>): ParamWithDefault<TParamOptions>
+export function createParam<TParamOptions extends ParamOptions>(param: TParamOptions, defaultValue?: ExtractParamType<TParamOptions>): Param<ExtractParamType<TParamOptions>> {
+  const internal = {
+    [IS_PARAM_SYMBOL]: true,
+    [PARAM_ID_SYMBOL]: getParamId(param),
+  } satisfies ParamInternal
+
+  if (isParamGetSetOptions(param)) {
+    return {
+      ...param,
+      ...internal,
+      defaultValue: defaultValue ?? param.defaultValue,
+    }
   }
 
   return {
+    ...internal,
     get: (value) => getParamValue(value, { param }),
     set: (value) => setParamValue(value, { param }),
     defaultValue,
