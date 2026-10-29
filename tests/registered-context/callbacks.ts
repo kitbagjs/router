@@ -1,5 +1,5 @@
 import { expectTypeOf } from 'vitest'
-import { createRoute, createExternalRoute, createRouter, createRouterAssets, createRouterPlugin, createHook, createLoader, createView, createRejection, type Hook, type ResolvedRoute } from '@kitbag/router'
+import { createRoute, createExternalRoute, createRouter, createRouterAssets, createRouterPlugin, createHook, createLoader, createView, createRejection, type Hook, type ResolvedRoute, type BeforeEnterHook } from '@kitbag/router'
 import { defineComponent } from 'vue'
 
 const component = defineComponent(() => () => null)
@@ -8,14 +8,6 @@ const expired = createRejection({ type: 'Expired' })
 const extra = createRoute({
   name: 'extra',
   path: '/extra/[slug]',
-})
-const login = createRoute({
-  name: 'login',
-  path: '/login',
-})
-const user = createRoute({
-  name: 'user',
-  path: '/users/[id]',
 })
 const logoutHook: Hook = createHook({
   hook: (to, { from, replace, reject }) => {
@@ -40,15 +32,27 @@ const contextHook: Hook<readonly [typeof extra, typeof expired]> = createHook({
     push('extra')
   },
 })
-const logout = createRoute({
-  name: 'logout',
-  path: '/logout',
-  context: [extra, expired],
-})
-  .onBeforeRouteEnter(logoutHook)
+const routes = [
+  createRoute({
+    name: 'login',
+    path: '/login',
+  })
+    .addView(component),
+  createRoute({
+    name: 'logout',
+    path: '/logout',
+    context: [extra, expired],
+  })
+    .onBeforeRouteEnter(logoutHook),
+  createRoute({
+    name: 'user',
+    path: '/users/[id]',
+  }),
+] as const
+const logout = routes[1]
 const pluginRoute = createRoute({ name: 'plugin' })
 const plugin = createRouterPlugin({ routes: [pluginRoute] })
-export const router = createRouter([login, logout, user], { rejections: [denied] }, [plugin])
+export const router = createRouter(routes, { rejections: [denied] }, [plugin])
 
 declare module '@kitbag/router' {
   interface Register {
@@ -253,3 +257,38 @@ externalWithContext.onBeforeRouteEnter((_to, { push, reject }) => {
   reject('Denied')
   reject('Expired')
 })
+
+for (const lifecycle of [
+  'onBeforeRouteEnter',
+  'onBeforeRouteUpdate',
+  'onBeforeRouteLeave',
+  'onAfterRouteEnter',
+  'onAfterRouteUpdate',
+  'onAfterRouteLeave',
+] as const) {
+  logout[lifecycle]((to, context) => {
+    expectTypeOf(to).toEqualTypeOf<ResolvedRoute | null>()
+    context.push('login')
+    context.replace('extra', { slug: 'one' })
+    context.reject('Denied')
+    context.reject('Expired')
+    // @ts-expect-error dynamically selected lifecycles still check route names
+    context.push('missing')
+    // @ts-expect-error dynamically selected lifecycles still check registered params
+    context.push('user')
+    // @ts-expect-error dynamically selected lifecycles still check context params
+    context.replace('extra', { slug: 1 })
+    // @ts-expect-error dynamically selected lifecycles still check rejection types
+    context.reject('Missing')
+    if (context.lifecycle === 'before') {
+      context.abort()
+    } else {
+      // @ts-expect-error after callbacks cannot abort navigation
+      context.abort()
+    }
+  })
+}
+
+const beforeOnly: BeforeEnterHook = (_to, { abort }) => abort()
+// @ts-expect-error an after hook cannot require before-only context
+logout.onAfterRouteEnter(beforeOnly)
