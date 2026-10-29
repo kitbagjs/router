@@ -329,7 +329,7 @@ describe('fallback loaders', () => {
     const home = createRoute({ name: 'home', path: '/' })
     const target = createRoute({ name: 'target', path: '/target' })
     const loader = createLoader({
-      context: [home, target],
+      context: [target],
       load: (route, { push }) => {
         if (route.name === 'home') {
           push('target')

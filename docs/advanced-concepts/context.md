@@ -4,7 +4,7 @@ The `context` option declares route and rejection definitions that callbacks can
 
 Child routes inherit their parent's context.
 
-Reusable loaders, views, and hooks also accept a `context` option. Their callback route arguments and navigation helpers combine their declared context with the registered router.
+Reusable loaders, views, and hooks also accept a `context` option. Their navigation helpers combine their declared context with the registered router. Their route arguments use the registered router's routes, or general resolved route types when no router is registered.
 
 Routes and rejections supplied through `context` are not included in `router.push` or `router.reject` types unless they are also passed directly to `createRouter` through its routes array or `rejections` option.
 

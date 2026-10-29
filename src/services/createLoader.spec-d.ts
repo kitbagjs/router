@@ -33,7 +33,8 @@ test('declared context types the loader and attached route helpers', () => {
   const denied = createRejection({ type: 'Denied' })
   const loader = createLoader({
     context: [login, denied],
-    load: (_route, { push, reject }) => {
+    load: (route, { push, reject }) => {
+      expectTypeOf(route).toEqualTypeOf<ResolvedRoute>()
       push('login')
       reject('Denied')
       // @ts-expect-error the attached route is not known to the loader
@@ -92,10 +93,8 @@ test('router assets merge loader context with their routes', () => {
   assets.createLoader({
     context: [login],
     load: (route, { push }) => {
-      expectTypeOf(route.name).toEqualTypeOf<'user' | 'login'>()
-      if (route.name === 'user') {
-        expectTypeOf(route.params.id).toEqualTypeOf<string>()
-      }
+      expectTypeOf(route.name).toEqualTypeOf<'user'>()
+      expectTypeOf(route.params.id).toEqualTypeOf<string>()
       push('login')
       push('user', { id: '1' })
       // @ts-expect-error router route params are still required

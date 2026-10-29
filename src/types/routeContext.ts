@@ -79,12 +79,6 @@ export type ContextRejections<
   TRejections extends Rejections = RegisteredContextRejections
 > = [...(Rejections extends TRejections ? [] : TRejections), ...RouteContextToRejection<TContext>]
 
-export type CallbackRoutes<TRoutes extends Routes, TRoute extends Route = never> = [TRoutes[number]] extends [never]
-  ? Routes
-  : Routes extends TRoutes
-    ? Routes
-    : TRoutes | [TRoute]
-
 type ContextRouteDefinitions<T> = T extends readonly GenericRoute[]
   ? { [K in keyof T]: T[K] extends Route ? T[K] : T[K] & { context: [] } }
   : []

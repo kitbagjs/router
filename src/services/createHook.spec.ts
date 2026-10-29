@@ -64,16 +64,16 @@ test('one hook runs before and after enter, update, and leave', async () => {
 test('declared context registers routes and rejections before router creation', async () => {
   const target = createRoute({ name: 'target', path: '/target' })
   const denied = createRejection({ type: 'Denied' })
-  const source = createRoute({ name: 'source', path: '/source/[id]' })
   const hook = createHook({
-    context: [source, target, denied],
+    context: [target, denied],
     hook: (route, { push, reject }) => {
-      if (route?.name === 'source' && route.params.id === 'redirect') {
+      if (route?.params.id === 'redirect') {
         return push('target')
       }
       reject('Denied')
     },
   })
+  const source = createRoute({ name: 'source', path: '/source/[id]' })
   source.onBeforeRouteEnter(hook)
   const router = createRouter([source], { initialUrl: '/source/redirect' })
   const rejected = vi.fn()

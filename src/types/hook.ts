@@ -1,5 +1,5 @@
 import { Rejections } from '@/types/rejection'
-import { CallbackRoutes, ContextRejections, ContextRoutes, RouteContext } from '@/types/routeContext'
+import { ContextRejections, ContextRoutes, RouteContext } from '@/types/routeContext'
 import { ResolvedRouteUnion } from '@/types/resolved'
 import { Route, Routes } from '@/types/route'
 import { BeforeHookContext, AfterHookContext, HookCallback } from '@/types/hooks'
@@ -20,7 +20,7 @@ export type HookCallbackContext<
   TRoutes extends Routes = Routes,
   TRejections extends Rejections = []
 > = {
-  from: ResolvedRouteUnion<CallbackRoutes<ContextRoutes<TContext, TRoutes>>[number]> | null,
+  from: ResolvedRouteUnion<TRoutes[number]> | null,
   update?: RouteUpdate,
 } & (
   | Omit<BeforeHookContext<Route, ContextRoutes<TContext, TRoutes>, ContextRejections<TContext, TRejections>>, 'update'>
@@ -35,7 +35,7 @@ export type CreateHookOptions<
   TRoutes extends Routes = Routes,
   TRejections extends Rejections = []
 > = {
-  hook: (route: ResolvedRouteUnion<CallbackRoutes<ContextRoutes<TContext, TRoutes>>[number]> | null, context: HookCallbackContext<TContext, TRoutes, TRejections>) => MaybePromise<void>,
+  hook: (route: ResolvedRouteUnion<TRoutes[number]> | null, context: HookCallbackContext<TContext, TRoutes, TRejections>) => MaybePromise<void>,
   /**
    * See [Context](https://kitbag-router.netlify.app/advanced-concepts/context).
    */

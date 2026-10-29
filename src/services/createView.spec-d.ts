@@ -51,7 +51,8 @@ test('optional props can be omitted and declared context types both callbacks an
   const view = createView({
     component,
     context: [login, denied],
-    props: (_route, { push, reject, signal }) => {
+    props: (route, { push, reject, signal }) => {
+      expectTypeOf(route).toEqualTypeOf<ResolvedRoute & WithData>()
       push('login')
       reject('Denied')
       expectTypeOf(signal).toEqualTypeOf<AbortSignal>()
@@ -74,7 +75,7 @@ test('router assets type view callbacks with the matching loader data', () => {
   const home = createRoute({ name: 'home', path: '/' }).addLoader(() => 1)
   const plugin = createRouterPlugin({ routes: [home] })
   const assets = createRouterAssets(createRouter([user], {}, [plugin]))
-  const login = createRoute({ name: 'login', path: '/login' }).addLoader(() => true)
+  const login = createRoute({ name: 'login', path: '/login' })
   const view = assets.createView({
     component: userView,
     context: [login],
@@ -87,11 +88,7 @@ test('router assets type view callbacks with the matching loader data', () => {
         expectTypeOf(route.data).toEqualTypeOf<Promise<{ label: string }>>()
         return { id: Number(route.params.id) }
       }
-      if (route.name === 'home') {
-        expectTypeOf(route.data).toEqualTypeOf<Promise<number>>()
-      } else {
-        expectTypeOf(route.data).toEqualTypeOf<Promise<boolean>>()
-      }
+      expectTypeOf(route.data).toEqualTypeOf<Promise<number>>()
       return { id: 0 }
     },
   })

@@ -1,7 +1,7 @@
 import { Rejections } from '@/types/rejection'
 import { TransformerOptions } from '@/services/payload'
 import { PrefetchConfig } from '@/types/prefetch'
-import { CallbackRoutes, ContextRejections, ContextRoutes, RouteContext } from '@/types/routeContext'
+import { ContextRejections, ContextRoutes, RouteContext } from '@/types/routeContext'
 import { RouterPush } from '@/types/routerPush'
 import { RouterReject } from '@/types/routerReject'
 import { RouterReplace } from '@/types/routerReplace'
@@ -42,7 +42,7 @@ export type CreateLoaderOptions<
   /**
    * Loads a value or promise from the resolved route.
    */
-  load: (route: ResolvedRouteUnion<CallbackRoutes<ContextRoutes<TContext, TRoutes>>[number]>, context: LoaderCallbackContext<TContext, TRoutes, TRejections>) => TData,
+  load: (route: ResolvedRouteUnion<TRoutes[number]>, context: LoaderCallbackContext<TContext, TRoutes, TRejections>) => TData,
   /**
    * See [Context](https://kitbag-router.netlify.app/advanced-concepts/context).
    */

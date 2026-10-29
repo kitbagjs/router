@@ -3,7 +3,7 @@ import { Component } from 'vue'
 import { ComponentProps } from '@/services/component'
 import { TransformerOptions } from '@/services/payload'
 import { PrefetchConfig } from '@/types/prefetch'
-import { CallbackRoutes, ContextRejections, ContextRoutes, RouteContext } from '@/types/routeContext'
+import { ContextRejections, ContextRoutes, RouteContext } from '@/types/routeContext'
 import { ResolvedRouteWithDataUnion } from '@/types/resolved'
 import { Routes } from '@/types/route'
 import { RouterPush } from '@/types/routerPush'
@@ -31,7 +31,7 @@ export type ViewCallbackContext<
   signal: AbortSignal,
 }
 
-export type ViewPropsGetter<TContext extends readonly RouteContext[], TProps, TRoutes extends Routes = Routes, TRejections extends Rejections = []> = (route: ResolvedRouteWithDataUnion<CallbackRoutes<ContextRoutes<TContext, TRoutes>>[number]>, context: ViewCallbackContext<TContext, TRoutes, TRejections>) => TProps
+export type ViewPropsGetter<TContext extends readonly RouteContext[], TProps, TRoutes extends Routes = Routes, TRejections extends Rejections = []> = (route: ResolvedRouteWithDataUnion<TRoutes[number]>, context: ViewCallbackContext<TContext, TRoutes, TRejections>) => TProps
 
 /**
  * Options for a reusable component and its props getter.
