@@ -1,4 +1,4 @@
-import { InternalRouteHooks, HookRegistrationOptions } from '@/types/hooks'
+import { InternalRouteHooks } from '@/types/hooks'
 import { RouteContext } from '@/types/routeContext'
 import { CreatedRouteOptions, Route } from '@/types/route'
 import { RouteWithMethods, ExternalRouteWithMethods } from '@/types/routeWithMethods'
@@ -13,12 +13,12 @@ export type RouteHooks<
   TUrl extends Url = Url,
   TMatches extends CreatedRouteOptions[] = CreatedRouteOptions[]
 > = {
-  onBeforeRouteEnter: (hook: Parameters<RouteHookMethods<TUrl, TMatches>['onBeforeRouteEnter']>[0], options?: HookRegistrationOptions) => RouteWithMethods<TUrl, TMatches>,
-  onBeforeRouteUpdate: (hook: Parameters<RouteHookMethods<TUrl, TMatches>['onBeforeRouteUpdate']>[0], options?: HookRegistrationOptions) => RouteWithMethods<TUrl, TMatches>,
-  onBeforeRouteLeave: (hook: Parameters<RouteHookMethods<TUrl, TMatches>['onBeforeRouteLeave']>[0], options?: HookRegistrationOptions) => RouteWithMethods<TUrl, TMatches>,
-  onAfterRouteEnter: (hook: Parameters<RouteHookMethods<TUrl, TMatches>['onAfterRouteEnter']>[0], options?: HookRegistrationOptions) => RouteWithMethods<TUrl, TMatches>,
-  onAfterRouteUpdate: (hook: Parameters<RouteHookMethods<TUrl, TMatches>['onAfterRouteUpdate']>[0], options?: HookRegistrationOptions) => RouteWithMethods<TUrl, TMatches>,
-  onAfterRouteLeave: (hook: Parameters<RouteHookMethods<TUrl, TMatches>['onAfterRouteLeave']>[0], options?: HookRegistrationOptions) => RouteWithMethods<TUrl, TMatches>,
+  onBeforeRouteEnter: (...args: Parameters<RouteHookMethods<TUrl, TMatches>['onBeforeRouteEnter']>) => RouteWithMethods<TUrl, TMatches>,
+  onBeforeRouteUpdate: (...args: Parameters<RouteHookMethods<TUrl, TMatches>['onBeforeRouteUpdate']>) => RouteWithMethods<TUrl, TMatches>,
+  onBeforeRouteLeave: (...args: Parameters<RouteHookMethods<TUrl, TMatches>['onBeforeRouteLeave']>) => RouteWithMethods<TUrl, TMatches>,
+  onAfterRouteEnter: (...args: Parameters<RouteHookMethods<TUrl, TMatches>['onAfterRouteEnter']>) => RouteWithMethods<TUrl, TMatches>,
+  onAfterRouteUpdate: (...args: Parameters<RouteHookMethods<TUrl, TMatches>['onAfterRouteUpdate']>) => RouteWithMethods<TUrl, TMatches>,
+  onAfterRouteLeave: (...args: Parameters<RouteHookMethods<TUrl, TMatches>['onAfterRouteLeave']>) => RouteWithMethods<TUrl, TMatches>,
 }
 
 type ExternalRouteHookMethods<
@@ -30,5 +30,5 @@ export type ExternalRouteHooks<
   TRoute extends Route = Route,
   TContext extends RouteContext[] | undefined = undefined
 > = {
-  onBeforeRouteEnter: (hook: Parameters<ExternalRouteHookMethods<TRoute, TContext>['onBeforeRouteEnter']>[0], options?: HookRegistrationOptions) => ExternalRouteWithMethods<TRoute, TContext>,
+  onBeforeRouteEnter: (...args: Parameters<ExternalRouteHookMethods<TRoute, TContext>['onBeforeRouteEnter']>) => ExternalRouteWithMethods<TRoute, TContext>,
 }
