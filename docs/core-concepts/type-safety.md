@@ -41,7 +41,7 @@ export const {
 
 ## Circular type inference
 
-When using registration or router assets, explicitly type reusable loaders with `Loader<Data>` and views with `View<Props>` to avoid circular type inference.
+When using registration or router assets, explicitly type reusable hooks with `Hook`, loaders with `Loader<Data>`, and views with `View<Props>` to avoid circular type inference.
 
 ```ts
 import { createLoader, type Loader } from '@kitbag/router'
@@ -61,3 +61,26 @@ const pageView: View<{ url: string }> = createView({
   props: (route) => ({ url: String(route.href) }),
 })
 ```
+
+A reusable hook can be annotated before attaching it to a route, keeping the route definition chainable:
+
+```ts
+import { createHook, createRoute, type Hook } from '@kitbag/router'
+
+const login = createRoute({
+  name: 'login',
+  path: '/login',
+})
+
+const logoutHook: Hook = createHook({
+  hook: (_to, { replace }) => replace('login'),
+})
+
+const logout = createRoute({
+  name: 'logout',
+  path: '/logout',
+})
+  .onBeforeRouteEnter(logoutHook)
+```
+
+When a reusable definition declares explicit context, include its context tuple in the annotation, for example `Hook<readonly [typeof login]>`.

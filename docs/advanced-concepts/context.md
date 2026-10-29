@@ -35,17 +35,4 @@ const checkout = createRoute({
 const router = createRouter([checkout])
 ```
 
-## Circular type inference
-
-When a callback references the same router being inferred, chaining the callback onto a route definition can cause circular TypeScript inference. Define the route first, then attach the callback separately:
-
-```ts
-const logout = createRoute({
-  name: 'logout',
-  path: '/logout',
-})
-
-const router = createRouter([login, logout])
-
-logout.onBeforeRouteEnter((_to, { replace }) => replace('login'))
-```
+For callbacks that reference their own router, see [Circular type inference](/core-concepts/type-safety#circular-type-inference).
