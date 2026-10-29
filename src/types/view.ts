@@ -1,8 +1,9 @@
+import { Rejections } from '@/types/rejection'
 import { Component } from 'vue'
 import { ComponentProps } from '@/services/component'
 import { TransformerOptions } from '@/services/payload'
 import { PrefetchConfig } from '@/types/prefetch'
-import { RouteContext, RouteContextToRejection, RouteContextToRoute } from '@/types/routeContext'
+import { ContextRejections, ContextRoutes, RouteContext } from '@/types/routeContext'
 import { ResolvedRouteWithDataUnion } from '@/types/resolved'
 import { Routes } from '@/types/route'
 import { RouterPush } from '@/types/routerPush'
@@ -17,16 +18,25 @@ export type ViewInternal = {
 }
 
 /**
- * Navigation helpers available to a reusable view from its declared context.
+ * Navigation helpers available to a reusable view from its router and declared context.
  */
-export type ViewCallbackContext<TContext extends readonly RouteContext[] = []> = {
-  push: RouterPush<RouteContextToRoute<[...TContext]>>,
-  replace: RouterReplace<RouteContextToRoute<[...TContext]>>,
-  reject: RouterReject<RouteContextToRejection<[...TContext]>>,
+export type ViewCallbackContext<
+  TContext extends readonly RouteContext[] = [],
+  TRoutes extends Routes = Routes,
+  TRejections extends Rejections = []
+> = {
+  push: RouterPush<ContextRoutes<TContext, TRoutes>>,
+  replace: RouterReplace<ContextRoutes<TContext, TRoutes>>,
+  reject: RouterReject<ContextRejections<TContext, TRejections>>,
   signal: AbortSignal,
 }
 
-export type ViewPropsGetter<TContext extends readonly RouteContext[], TProps, TRoutes extends Routes = Routes> = (route: ResolvedRouteWithDataUnion<TRoutes[number]>, context: ViewCallbackContext<TContext>) => TProps
+export type ViewPropsGetter<
+  TContext extends readonly RouteContext[],
+  TProps,
+  TRoutes extends Routes = Routes,
+  TRejections extends Rejections = []
+> = (route: ResolvedRouteWithDataUnion<TRoutes[number]>, context: ViewCallbackContext<TContext, TRoutes, TRejections>) => TProps
 
 /**
  * Options for a reusable component and its props getter.
@@ -35,7 +45,8 @@ export type CreateViewOptions<
   TComponent extends Component = Component,
   TContext extends readonly RouteContext[] = [],
   TProps extends MaybePromise<ComponentProps<TComponent>> | undefined = undefined,
-  TRoutes extends Routes = Routes
+  TRoutes extends Routes = Routes,
+  TRejections extends Rejections = []
 > = TransformerOptions<NoInfer<Awaited<TProps>>> & {
   component: TComponent,
   /**
@@ -44,17 +55,17 @@ export type CreateViewOptions<
   context?: TContext,
   prefetch?: PrefetchConfig,
 } & (Partial<ComponentProps<TComponent>> extends ComponentProps<TComponent>
-  ? { props?: ViewPropsGetter<TContext, TProps extends undefined ? MaybePromise<ComponentProps<TComponent>> : TProps, TRoutes> }
-  : { props: ViewPropsGetter<TContext, TProps extends undefined ? MaybePromise<ComponentProps<TComponent>> : TProps, TRoutes> })
+  ? { props?: ViewPropsGetter<TContext, TProps extends undefined ? MaybePromise<ComponentProps<TComponent>> : TProps, TRoutes, TRejections> }
+  : { props: ViewPropsGetter<TContext, TProps extends undefined ? MaybePromise<ComponentProps<TComponent>> : TProps, TRoutes, TRejections> })
 
 /**
  * Creates views with props callbacks typed to the router's resolved routes and loader data.
  */
-export type CreateView<TRoutes extends Routes = Routes> = <
+export type CreateView<TRoutes extends Routes = Routes, TRejections extends Rejections = []> = <
   TComponent extends Component,
   const TContext extends readonly RouteContext[] = [],
   TProps extends MaybePromise<ComponentProps<TComponent>> | undefined = undefined
->(options: CreateViewOptions<TComponent, TContext, TProps, TRoutes>) => View<TProps, TContext>
+>(options: CreateViewOptions<TComponent, TContext, TProps, TRoutes, TRejections>) => View<TProps, TContext>
 
 /**
  * A reusable view definition with its props getter's result and declared context.
