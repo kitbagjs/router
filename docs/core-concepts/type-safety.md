@@ -4,7 +4,7 @@ Use router registration to type imports from `@kitbag/router`, or create router 
 
 ## Registration
 
-Extend the `Register` interface with your router's type. Components, composables, and reusable callbacks imported from `@kitbag/router` will then use that router's types.
+Extend the `Register` interface with your router's type. Components, composables, and reusable callbacks imported from `@kitbag/router` will then use that router's types. Callback navigation helpers use registered routes and rejections alongside any explicit [context](/advanced-concepts/context).
 
 ```ts
 import { createRouter } from '@kitbag/router'
