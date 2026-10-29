@@ -1,8 +1,6 @@
 import { CreateRouteOptions } from './createRouteOptions'
 import { Rejection, Rejections } from './rejection'
 import { GenericRoute, Route, Routes } from './route'
-import { Register } from './register'
-import { Router, RouterRoutes, RouterRejections } from './router'
 
 export type RouteContext = GenericRoute | Rejection
 
@@ -29,48 +27,34 @@ export type ExtractRouteContext<
     ? ToRouteContext<TParent['context']>
     : []
 
-export type ContextRoutes<
-  TContext extends readonly RouteContext[] | undefined,
-  TRoutes extends Routes = RegisteredContextRoutes
-> = [
-  ...(Routes extends TRoutes ? [] : TRoutes),
-  ...(RouteContext[] extends TContext
-    ? Routes
-    : undefined extends TContext
-      ? Routes
-      : FilterRouteContextRoutes<TContext>)
-]
+export type ExtractRouteContextRoutes<
+  TOptions extends CreateRouteOptions
+> = RouteContextToRoute<ExtractRouteContext<TOptions>>
 
-type FilterRouteContextRoutes<
-  TContext extends readonly RouteContext[] | undefined
-> = TContext extends readonly [infer First, ...infer Rest extends RouteContext[]]
+export type ExtractRouteContextRejections<
+  TOptions extends CreateRouteOptions
+> = RouteContextToRejection<ExtractRouteContext<TOptions>>
+
+export type RouteContextToRoute<TContext extends RouteContext[] | undefined> = RouteContext[] extends TContext
+  ? Routes
+  : undefined extends TContext
+    ? Routes
+    : FilterRouteContextRoutes<TContext>
+
+type FilterRouteContextRoutes<TContext extends RouteContext[] | undefined> = TContext extends [infer First, ...infer Rest extends RouteContext[]]
   ? First extends GenericRoute
     ? [First, ...FilterRouteContextRoutes<Rest>]
     : FilterRouteContextRoutes<Rest>
   : []
 
-export type ContextRejections<
-  TContext extends readonly RouteContext[] | undefined,
-  TRejections extends Rejections = RegisteredContextRejections
-> = [
-  ...(Rejections extends TRejections ? [] : TRejections),
-  ...(RouteContext[] extends TContext
+export type RouteContextToRejection<TContext extends RouteContext[] | undefined> = RouteContext[] extends TContext
+  ? Rejections
+  : undefined extends TContext
     ? Rejections
-    : undefined extends TContext
-      ? Rejections
-      : FilterRouteContextRejections<TContext>)
-]
+    : FilterRouteContextRejections<TContext>
 
-type FilterRouteContextRejections<TContext extends readonly RouteContext[] | undefined> = TContext extends readonly [infer First, ...infer Rest extends RouteContext[]]
+type FilterRouteContextRejections<TContext extends RouteContext[] | undefined> = TContext extends [infer First, ...infer Rest extends RouteContext[]]
   ? First extends Rejection
     ? [First, ...FilterRouteContextRejections<Rest>]
     : FilterRouteContextRejections<Rest>
-  : []
-
-export type RegisteredContextRoutes<T = Register> = T extends { router: infer TRouter extends Router }
-  ? RouterRoutes<TRouter>
-  : []
-
-export type RegisteredContextRejections<T = Register> = T extends { router: infer TRouter extends Router }
-  ? RouterRejections<TRouter>
   : []

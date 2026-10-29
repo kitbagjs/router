@@ -58,8 +58,7 @@ test('router assets type both routes in a reusable hook callback', () => {
       expectTypeOf(route?.params.id).toEqualTypeOf<string | undefined>()
       expectTypeOf(from?.name).toEqualTypeOf<'user' | undefined>()
       push('login')
-      push('user', { id: '1' })
-      // @ts-expect-error router route params are still required
+      // @ts-expect-error the router does not expand the hook's declared context
       push('user')
     },
   })

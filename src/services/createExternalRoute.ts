@@ -13,7 +13,7 @@ import { createRouteTitle, RouteSetTitle } from '@/types/routeTitle'
 
 export function createExternalRoute<
   const TOptions extends CreateRouteOptions & WithHost & WithoutParent
->(options: TOptions): ExternalRouteWithMethods<ToRoute<TOptions>, ExtractRouteContext<TOptions>>
+>(options: TOptions): ExternalRouteWithMethods<ToRoute<TOptions>, TOptions['context']>
 
 export function createExternalRoute<
   const TOptions extends CreateRouteOptions & WithoutHost & WithParent

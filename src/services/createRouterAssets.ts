@@ -28,15 +28,15 @@ export type RouterAssets<TRouter extends Router> = {
   /**
    * Creates a reusable hook with callbacks typed to this router's resolved routes.
    */
-  createHook: CreateHook<RouterRoutes<TRouter>, RouterRejections<TRouter>>,
+  createHook: CreateHook<RouterRoutes<TRouter>>,
   /**
    * Creates a reusable view with props callbacks typed to this router's resolved routes and loader data.
    */
-  createView: CreateView<RouterRoutes<TRouter>, RouterRejections<TRouter>>,
+  createView: CreateView<RouterRoutes<TRouter>>,
   /**
    * Creates a reusable loader with callbacks typed to this router's resolved routes.
    */
-  createLoader: CreateLoader<RouterRoutes<TRouter>, RouterRejections<TRouter>>,
+  createLoader: CreateLoader<RouterRoutes<TRouter>>,
   /**
    * Registers a hook that is called before a route is left. Must be called from setup.
    * This is useful for performing actions or cleanups before navigating away from a route component.
