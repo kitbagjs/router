@@ -1,34 +1,64 @@
-import { InternalRouteHooks } from '@/types/hooks'
-import { RouteContext } from '@/types/routeContext'
+import { AnyHook, HookCallbackContext } from '@/types/hook'
+import { HookLifecycle, HookRegistrationOptions, HookRemove, InternalRouteHooks } from '@/types/hooks'
+import { Register } from '@/types/register'
+import { RegisteredContextRejections, RegisteredContextRoutes, RouteContext } from '@/types/routeContext'
 import { CreatedRouteOptions, Route } from '@/types/route'
 import { RouteWithMethods, ExternalRouteWithMethods } from '@/types/routeWithMethods'
 import { Url } from '@/types/url'
+import { ResolvedRoute } from '@/types/resolved'
+import { MaybePromise } from '@/types/utilities'
 
-type RouteHookMethods<
+type RouteHookCallback<
   TUrl extends Url,
-  TMatches extends CreatedRouteOptions[]
-> = InternalRouteHooks<Route<TUrl, TMatches>, Route<TUrl, TMatches>['context']>
+  TMatches extends CreatedRouteOptions[],
+  TRegister
+> = (
+  route: ResolvedRoute | null,
+  context: HookCallbackContext<[
+    Route<TUrl, TMatches>,
+    ...Route<TUrl, TMatches>['context'],
+    ...RegisteredContextRoutes<TRegister>,
+    ...RegisteredContextRejections<TRegister>
+  ]>,
+) => MaybePromise<void>
+
+type RouteHookMethod<
+  TUrl extends Url,
+  TMatches extends CreatedRouteOptions[],
+  TLifecycle extends HookLifecycle
+> = {
+  // Attaching a typed hook must not resolve registration while the route is being inferred.
+  (hook: AnyHook, options?: HookRegistrationOptions): RouteWithMethods<TUrl, TMatches>,
+  <TRegister = Register>(
+    ...args: Parameters<InternalRouteHooks<Route<TUrl, TMatches>, Route<TUrl, TMatches>['context'], HookRemove, TRegister>[TLifecycle]>
+  ): RouteWithMethods<TUrl, TMatches>,
+  // Keep a shared callback signature for dynamically selected lifecycles.
+  <TRegister = Register>(
+    hook: RouteHookCallback<TUrl, TMatches, TRegister>,
+    options?: HookRegistrationOptions
+  ): RouteWithMethods<TUrl, TMatches>,
+}
 
 export type RouteHooks<
   TUrl extends Url = Url,
   TMatches extends CreatedRouteOptions[] = CreatedRouteOptions[]
 > = {
-  onBeforeRouteEnter: (...args: Parameters<RouteHookMethods<TUrl, TMatches>['onBeforeRouteEnter']>) => RouteWithMethods<TUrl, TMatches>,
-  onBeforeRouteUpdate: (...args: Parameters<RouteHookMethods<TUrl, TMatches>['onBeforeRouteUpdate']>) => RouteWithMethods<TUrl, TMatches>,
-  onBeforeRouteLeave: (...args: Parameters<RouteHookMethods<TUrl, TMatches>['onBeforeRouteLeave']>) => RouteWithMethods<TUrl, TMatches>,
-  onAfterRouteEnter: (...args: Parameters<RouteHookMethods<TUrl, TMatches>['onAfterRouteEnter']>) => RouteWithMethods<TUrl, TMatches>,
-  onAfterRouteUpdate: (...args: Parameters<RouteHookMethods<TUrl, TMatches>['onAfterRouteUpdate']>) => RouteWithMethods<TUrl, TMatches>,
-  onAfterRouteLeave: (...args: Parameters<RouteHookMethods<TUrl, TMatches>['onAfterRouteLeave']>) => RouteWithMethods<TUrl, TMatches>,
+  onBeforeRouteEnter: RouteHookMethod<TUrl, TMatches, 'onBeforeRouteEnter'>,
+  onBeforeRouteUpdate: RouteHookMethod<TUrl, TMatches, 'onBeforeRouteUpdate'>,
+  onBeforeRouteLeave: RouteHookMethod<TUrl, TMatches, 'onBeforeRouteLeave'>,
+  onAfterRouteEnter: RouteHookMethod<TUrl, TMatches, 'onAfterRouteEnter'>,
+  onAfterRouteUpdate: RouteHookMethod<TUrl, TMatches, 'onAfterRouteUpdate'>,
+  onAfterRouteLeave: RouteHookMethod<TUrl, TMatches, 'onAfterRouteLeave'>,
 }
-
-type ExternalRouteHookMethods<
-  TRoute extends Route,
-  TContext extends RouteContext[] | undefined
-> = InternalRouteHooks<TRoute, TContext>
 
 export type ExternalRouteHooks<
   TRoute extends Route = Route,
   TContext extends RouteContext[] | undefined = undefined
 > = {
-  onBeforeRouteEnter: (...args: Parameters<ExternalRouteHookMethods<TRoute, TContext>['onBeforeRouteEnter']>) => ExternalRouteWithMethods<TRoute, TContext>,
+  onBeforeRouteEnter: {
+    (hook: AnyHook, options?: HookRegistrationOptions): ExternalRouteWithMethods<TRoute, TContext>,
+    <TRegister = Register>(
+      ...args: Parameters<InternalRouteHooks<TRoute, TContext, HookRemove, TRegister>['onBeforeRouteEnter']>
+    ): ExternalRouteWithMethods<TRoute, TContext>,
+  },
 }

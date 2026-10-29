@@ -7,7 +7,7 @@ import { RouterReject } from '@/types/routerReject'
 import { RouterPush } from '@/types/routerPush'
 import { RouterReplace } from '@/types/routerReplace'
 import { isRejection, Rejection, Rejections } from '@/types/rejection'
-import { ContextRejections, ContextRoutes, RouteContext } from '@/types/routeContext'
+import { ContextRejections, ContextRoutes, RegisteredContextRejections, RegisteredContextRoutes, RouteContext } from '@/types/routeContext'
 import { RouterAbort } from '@/types/routerAbort'
 import { RedirectHook } from '@/types/redirects'
 import { CallbackContextAbort, CallbackContextPush, CallbackContextRedirect, CallbackContextReject, CallbackContextSuccess } from '@/types/callbackContext'
@@ -25,32 +25,33 @@ export function combineHooks(parent: Route, child: Route): Hooks[] {
 export type InternalRouteHooks<
   TRoute extends Route = Route,
   TContext extends RouteContext[] | undefined = undefined,
-  TReturn = HookRemove
+  TReturn = HookRemove,
+  TRegister = unknown
 > = {
   /**
    * Registers a route hook to be called before the route is entered.
    */
-  onBeforeRouteEnter: AddHook<BeforeEnterHook<[TRoute] | ContextRoutes<TContext>, ContextRejections<TContext>, TRoute, Route>, TReturn>,
+  onBeforeRouteEnter: AddHook<BeforeEnterHook<[TRoute] | ContextRoutes<TContext, RegisteredContextRoutes<TRegister>>, ContextRejections<TContext, RegisteredContextRejections<TRegister>>, TRoute, Route>, TReturn>,
   /**
    * Registers a route hook to be called before the route is left.
    */
-  onBeforeRouteLeave: AddHook<BeforeLeaveHook<[TRoute] | ContextRoutes<TContext>, ContextRejections<TContext>, Route, TRoute>, TReturn>,
+  onBeforeRouteLeave: AddHook<BeforeLeaveHook<[TRoute] | ContextRoutes<TContext, RegisteredContextRoutes<TRegister>>, ContextRejections<TContext, RegisteredContextRejections<TRegister>>, Route, TRoute>, TReturn>,
   /**
    * Registers a route hook to be called before the route is updated.
    */
-  onBeforeRouteUpdate: AddHook<BeforeUpdateHook<[TRoute] | ContextRoutes<TContext>, ContextRejections<TContext>, TRoute, Route>, TReturn>,
+  onBeforeRouteUpdate: AddHook<BeforeUpdateHook<[TRoute] | ContextRoutes<TContext, RegisteredContextRoutes<TRegister>>, ContextRejections<TContext, RegisteredContextRejections<TRegister>>, TRoute, Route>, TReturn>,
   /**
    * Registers a route hook to be called after the route is entered.
    */
-  onAfterRouteEnter: AddHook<AfterEnterHook<[TRoute] | ContextRoutes<TContext>, ContextRejections<TContext>, TRoute, Route>, TReturn>,
+  onAfterRouteEnter: AddHook<AfterEnterHook<[TRoute] | ContextRoutes<TContext, RegisteredContextRoutes<TRegister>>, ContextRejections<TContext, RegisteredContextRejections<TRegister>>, TRoute, Route>, TReturn>,
   /**
    * Registers a route hook to be called after the route is left.
    */
-  onAfterRouteLeave: AddHook<AfterLeaveHook<[TRoute] | ContextRoutes<TContext>, ContextRejections<TContext>, Route, TRoute>, TReturn>,
+  onAfterRouteLeave: AddHook<AfterLeaveHook<[TRoute] | ContextRoutes<TContext, RegisteredContextRoutes<TRegister>>, ContextRejections<TContext, RegisteredContextRejections<TRegister>>, Route, TRoute>, TReturn>,
   /**
    * Registers a route hook to be called after the route is updated.
    */
-  onAfterRouteUpdate: AddHook<AfterUpdateHook<[TRoute] | ContextRoutes<TContext>, ContextRejections<TContext>, TRoute, Route>, TReturn>,
+  onAfterRouteUpdate: AddHook<AfterUpdateHook<[TRoute] | ContextRoutes<TContext, RegisteredContextRoutes<TRegister>>, ContextRejections<TContext, RegisteredContextRejections<TRegister>>, TRoute, Route>, TReturn>,
 }
 
 export type RejectionHooks<
