@@ -195,7 +195,6 @@ test('rejection from a hook updates document title', async () => {
 
   expect(document.title).toBe('locked')
   expect(callback).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ name: 'Locked' }), {
-    from: expect.objectContaining({ name: 'home' }),
     getParentTitle: expect.any(Function),
   })
 })
@@ -309,7 +308,7 @@ test('a slow title from a previous route does not overwrite the current title', 
   expect(document.title).toBe('fast')
 })
 
-test('title callbacks receive the destination and previous route', async () => {
+test('title callbacks receive the destination and only getParentTitle in the context', async () => {
   const home = createRoute({ name: 'home', path: '/' }).addView(component)
   const about = createRoute({ name: 'about', path: '/about' }).addView(component)
   const callback = vi.fn(() => 'About')
@@ -318,12 +317,10 @@ test('title callbacks receive the destination and previous route', async () => {
   const router = createRouter([home, about], { initialUrl: '/' })
 
   await router.start()
-  const from = expect.objectContaining({ name: 'home', href: '/' })
   await router.push('about')
   await flushPromises()
 
   expect(callback).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ name: 'about' }), {
-    from,
     getParentTitle: expect.any(Function),
   })
   expect(document.title).toBe('About')
@@ -332,12 +329,11 @@ test('title callbacks receive the destination and previous route', async () => {
   await router.route.getTitle()
 
   expect(callback).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ name: 'about' }), {
-    from: null,
     getParentTitle: expect.any(Function),
   })
 })
 
-test('initial title callbacks have no previous route', async () => {
+test('initial title callbacks only provide getParentTitle in the context', async () => {
   const home = createRoute({ name: 'home', path: '/' }).addView(component)
   const callback = vi.fn(() => 'Home')
   home.setTitle(callback)
@@ -348,12 +344,11 @@ test('initial title callbacks have no previous route', async () => {
   await flushPromises()
 
   expect(callback).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ name: 'home' }), {
-    from: null,
     getParentTitle: expect.any(Function),
   })
 })
 
-test.each(['fallback', 'composition'] as const)('parent titles receive the navigation context through %s', async (mode) => {
+test.each(['fallback', 'composition'] as const)('parent titles only provide getParentTitle in the context through %s', async (mode) => {
   const home = createRoute({ name: 'home', path: '/' }).addView(component)
   const parent = createRoute({ name: 'parent', path: '/parent' }).addView(component)
   const child = createRoute({ name: 'child', path: '/child', parent }).addView(component)
@@ -367,12 +362,10 @@ test.each(['fallback', 'composition'] as const)('parent titles receive the navig
   const router = createRouter([home, parent, child], { initialUrl: '/' })
 
   await router.start()
-  const from = expect.objectContaining({ name: 'home', href: '/' })
   await router.push('child')
   await flushPromises()
 
   expect(parentCallback).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ name: 'child' }), {
-    from,
     getParentTitle: expect.any(Function),
   })
   expect(document.title).toBe(mode === 'composition' ? 'Parent - Child' : 'Parent')

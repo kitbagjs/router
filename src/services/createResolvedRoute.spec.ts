@@ -95,7 +95,7 @@ describe('getTitle', () => {
     await expect(createResolvedRoute(route).getTitle()).resolves.toBe('Home')
   })
 
-  test('direct title resolution has no previous route', async () => {
+  test('direct title resolution only provides getParentTitle in the context', async () => {
     const route = createRoute({ name: 'home', path: '/' }).addView(component)
     const callback = vi.fn(() => 'Home')
     route.setTitle(callback)
@@ -104,7 +104,6 @@ describe('getTitle', () => {
     await resolved.getTitle()
 
     expect(callback).toHaveBeenCalledExactlyOnceWith(resolved, {
-      from: null,
       getParentTitle: expect.any(Function),
     })
   })

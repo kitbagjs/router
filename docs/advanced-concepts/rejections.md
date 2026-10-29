@@ -106,7 +106,6 @@ The context object has the following properties:
 
 | Property | Type | Description |
 | -------- | ---- | ----------- |
-| from | ResolvedRoute | The route that is being navigated from. |
 | getParentTitle | () => Promise<string \| undefined> | Promise that resolves to the title of the parent route. |
 
 ```ts

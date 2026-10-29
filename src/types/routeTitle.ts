@@ -1,19 +1,17 @@
-import { ResolvedRoute, ResolvedRouteUnion } from '@/types/resolved'
+import { ResolvedRouteUnion } from '@/types/resolved'
 import { isRoute, Route, CreatedRouteOptions } from './route'
 import { RouteWithMethods } from '@/types/routeWithMethods'
 import { Url } from '@/types/url'
 import { MaybePromise } from './utilities'
 
-export type GetTitleCallback = (from?: ResolvedRoute | null) => Promise<string | undefined>
+export type GetTitleCallback = () => Promise<string | undefined>
 
 export type SetRouteTitleContext = {
-  /** The previous route, or null during initial navigation or title resolution without a navigation. */
-  from: ResolvedRoute | null,
-  getParentTitle: () => Promise<string | undefined>,
+  getParentTitle: GetTitleCallback,
 }
 
 export type SetRouteTitleCallback<TRoute extends Route = Route> = (to: ResolvedRouteUnion<TRoute>, context: SetRouteTitleContext) => MaybePromise<string>
-export type GetRouteTitle<TRoute extends Route = Route> = (to: ResolvedRouteUnion<TRoute>, from?: ResolvedRoute | null) => Promise<string | undefined>
+export type GetRouteTitle<TRoute extends Route = Route> = (to: ResolvedRouteUnion<TRoute>) => Promise<string | undefined>
 export type SetRouteTitle<TRoute extends Route = Route, TReturn = void> = (callback: SetRouteTitleCallback<TRoute>) => TReturn
 
 export type RouteSetTitle<TRoute extends Route = Route> = {
@@ -42,10 +40,10 @@ export function createRouteTitle(parent?: Route): CreateRouteTitle {
     setTitleCallback = callback
   }
 
-  const getTitle: GetRouteTitle = async (to, from = null) => {
+  const getTitle: GetRouteTitle = async (to) => {
     const getParentTitle = async (): Promise<string | undefined> => {
       if (parent && isRoute(parent)) {
-        return parent.getTitle(to, from)
+        return parent.getTitle(to)
       }
 
       return undefined
@@ -56,7 +54,6 @@ export function createRouteTitle(parent?: Route): CreateRouteTitle {
     }
 
     return setTitleCallback(to, {
-      from,
       getParentTitle,
     })
   }
