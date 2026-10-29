@@ -153,6 +153,13 @@ Loader prefetching is disabled by default. Enable it with a loader's `prefetch` 
 
 ## Navigation cancellation
 
-When a loader pushes or rejects the navigation, component reads of `route.data` remain pending instead of receiving a control error. A new read after navigation uses the new route's data. Use `useLoader` when a component needs reactive state that follows navigation.
+Dependency reads inside callbacks are cancelled with the navigation: awaiting `route.data`, `parent.data`, or `parent.props` rejects with `NavigationAbandonedError` when the computation is abandoned. This stops the dependent callback and runs its `finally` blocks. The router handles this cancellation without calling application error hooks. If a callback catches dependency errors, rethrow cancellation so it can unwind normally.
 
-Dependency reads inside callbacks behave differently: awaiting `route.data`, `parent.data`, or `parent.props` rejects with `NavigationAbandonedError` when the computation is abandoned. This stops the dependent callback and runs its `finally` blocks. The router handles this cancellation without calling application error hooks. If a callback catches dependency errors, rethrow cancellation so it can unwind normally.
+## Migrating component data reads
+
+The deprecated `router.route.data` property has been removed. In components, use [`useLoader`](/composables/useLoader) with a reusable loader or a definition from `route.loaders`:
+
+```ts
+const route = useRoute()
+const { data, loading, error } = useLoader(route.loaders.default)
+```

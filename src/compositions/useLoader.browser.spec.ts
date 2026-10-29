@@ -1,15 +1,17 @@
-/* eslint-disable @typescript-eslint/no-deprecated -- Keep legacy route.data compatibility coverage until removal. */
+import { payloadToScript } from '@/services/payload'
+import { component } from '@/utilities/testHelpers'
 /* eslint-disable vue/one-component-per-file */
 import { flushPromises, mount } from '@vue/test-utils'
 import { afterEach, describe, expect, test, vi } from 'vitest'
-import { defineComponent } from 'vue'
-import { createLoader, createRejection, createRoute, createRouter, createRouterAssets, Router, useLoader } from '@/main'
+import { defineComponent, h } from 'vue'
+import { createLoader, createRejection, createRoute, createRouter, createRouterAssets, Router, useLoader, useRoute } from '@/main'
 import { warnLoaderFallback } from '@/services/warnLoaderFallback'
 
 vi.mock('@/services/warnLoaderFallback', () => ({ warnLoaderFallback: vi.fn() }))
 
 afterEach(() => {
   vi.clearAllMocks()
+  document.body.innerHTML = ''
 })
 
 function mountConsumer<TResult>(router: Router, setup: () => TResult): TResult {
@@ -114,7 +116,7 @@ test('reads the selected named attachment', async () => {
   await router.start()
   const selected = mountConsumer(router, () => useLoader(router.route.loaders.second))
 
-  expect(selected.data.value).toBe(await router.route.data.second)
+  expect(selected.data.value).toBe(2)
 })
 
 test('keeps loader data isolated between routers', async () => {
@@ -407,4 +409,217 @@ describe('fallback loaders', () => {
     expect(result.error.value).toBe(failure)
     expect(onError).toHaveBeenCalledExactlyOnceWith(failure, expect.objectContaining({ source: 'loader' }))
   })
+})
+
+test('reads inline default and named loaders inherited from matched routes', async () => {
+  const parent = createRoute({ path: '/parent' }).addLoader(async () => 'parent')
+  const child = createRoute({ parent, name: 'child', path: '/child' })
+    .addLoader(() => [1, 2], { name: 'posts' })
+  const router = createRouter([child], { initialUrl: '/parent/child' })
+  await router.start()
+  const { inherited, posts } = mountConsumer(router, () => ({
+    inherited: useLoader(router.route.loaders.default),
+    posts: useLoader(router.route.loaders.posts),
+  }))
+
+  await flushPromises()
+  expect(inherited.data.value).toBe('parent')
+  expect(posts.data.value).toEqual([1, 2])
+  router.stop()
+})
+
+test('updates inline loader data when params or query change', async () => {
+  const load = vi.fn((id: string, page: string | null) => `${id}:${page}`)
+  const route = createRoute({ name: 'route', path: '/[id]' })
+    .addLoader((route) => load(route.params.id, route.query.get('page')))
+  const router = createRouter([route], { initialUrl: '/1?page=a' })
+  await router.start()
+  const result = mountConsumer(router, () => useLoader(router.route.loaders.default))
+  await flushPromises()
+  expect(result.data.value).toBe('1:a')
+
+  await router.push('route', { id: '2' }, { query: { page: 'a' } })
+  await flushPromises()
+  expect(result.data.value).toBe('2:a')
+
+  await router.push('route', { id: '2' }, { query: { page: 'b' } })
+  await flushPromises()
+  expect(result.data.value).toBe('2:b')
+  expect(load).toHaveBeenCalledTimes(3)
+  router.stop()
+})
+
+test('reads the default loader independently of default view props', async () => {
+  const route = createRoute({ name: 'route', path: '/' })
+    .addView(component, { props: () => ({ value: 'props' }) })
+    .addLoader(() => 'loader')
+  const router = createRouter([route], { initialUrl: '/' })
+  await router.start()
+  const result = mountConsumer(router, () => useLoader(router.route.loaders.default))
+
+  await flushPromises()
+  expect(result.data.value).toBe('loader')
+  router.stop()
+})
+
+test('retains settled data while another navigation waits on a guard', async () => {
+  const waiting = Promise.withResolvers<void>()
+  const release = Promise.withResolvers<void>()
+  const loader = createLoader({ load: () => 'home data' })
+  const home = createRoute({ name: 'home', path: '/' }).addLoader(loader)
+  const target = createRoute({ name: 'target', path: '/target' })
+  target.onBeforeRouteEnter(() => {
+    waiting.resolve()
+    return release.promise
+  })
+  const router = createRouter([home, target], { initialUrl: '/' })
+  await router.start()
+  const result = mountConsumer(router, () => useLoader(loader))
+  await flushPromises()
+  expect(result.data.value).toBe('home data')
+
+  const navigating = router.push('target')
+  await waiting.promise
+
+  expect(result.data.value).toBe('home data')
+  expect(result.loading.value).toBe(false)
+  release.resolve()
+  await navigating
+  router.stop()
+})
+
+test('reads hydrated data without rerunning the loader', async () => {
+  document.body.innerHTML = payloadToScript({
+    kind: 'success',
+    url: '/',
+    values: [{ kind: 'loader', depth: 0, name: 'default', encoded: JSON.stringify('from server') }],
+  })
+  const load = vi.fn(() => 'from client')
+  const route = createRoute({ name: 'home', path: '/' }).addLoader(load)
+  const router = createRouter([route], { initialUrl: '/' })
+  await router.start()
+  const result = mountConsumer(router, () => useLoader(router.route.loaders.default))
+
+  await flushPromises()
+  expect(result.data.value).toBe('from server')
+  expect(load).not.toHaveBeenCalled()
+  router.stop()
+})
+
+/**
+ * A view that renders whatever the route's data resolves to, and 'loading' until it does.
+ */
+const dataView = defineComponent({
+  setup() {
+    const route = useRoute()
+    const { data } = useLoader(route.loaders.default)
+
+    return () => h('div', {}, String(data.value ?? 'loading'))
+  },
+})
+
+test('a component renders before its loader settles', async () => {
+  const { promise, resolve } = Promise.withResolvers<string>()
+
+  const route = createRoute({ name: 'route', path: '/' })
+    .addView(dataView)
+    .addLoader(() => promise)
+
+  const router = createRouter([route], { initialUrl: '/' })
+  const wrapper = mount({ template: '<RouterView />' }, { global: { plugins: [router] } })
+
+  await router.start()
+  await flushPromises()
+
+  expect(wrapper.text()).toBe('loading')
+
+  resolve('kitbag')
+  await flushPromises()
+
+  expect(wrapper.text()).toBe('kitbag')
+})
+
+test('loader data follows navigation', async () => {
+  const route = createRoute({ name: 'route', path: '/[id]' })
+    .addView(dataView)
+    .addLoader(async (route) => `user-${route.params.id}`)
+
+  const router = createRouter([route], { initialUrl: '/1' })
+  const wrapper = mount({ template: '<RouterView />' }, { global: { plugins: [router] } })
+
+  await router.start()
+  await flushPromises()
+
+  expect(wrapper.text()).toBe('user-1')
+
+  await router.push('route', { id: '2' })
+  await flushPromises()
+
+  expect(wrapper.text()).toBe('user-2')
+})
+
+test('a component can await data in setup under suspense', async () => {
+  const { promise, resolve } = Promise.withResolvers<string>()
+
+  const suspendingView = defineComponent({
+    async setup() {
+      const route = useRoute()
+      const { data } = await useLoader(route.loaders.default)
+
+      return () => h('div', {}, String(data.value))
+    },
+  })
+
+  const route = createRoute({ name: 'route', path: '/' })
+    .addView(suspendingView)
+    .addLoader(() => promise)
+
+  const router = createRouter([route], { initialUrl: '/' })
+  const wrapper = mount({ template: '<Suspense><RouterView /></Suspense>' }, { global: { plugins: [router] } })
+
+  await router.start()
+  await flushPromises()
+
+  expect(wrapper.text()).toBe('')
+
+  resolve('kitbag')
+  await flushPromises()
+
+  expect(wrapper.text()).toBe('kitbag')
+})
+
+test('a view renders with its props while a loader is still running', async () => {
+  const { promise, resolve } = Promise.withResolvers<string>()
+
+  const view = defineComponent({
+    props: {
+      value: {
+        type: String,
+        required: true,
+      },
+    },
+    setup(props) {
+      const route = useRoute()
+      const { data } = useLoader(route.loaders.default)
+
+      return () => h('div', {}, `${props.value}:${data.value ?? 'loading'}`)
+    },
+  })
+
+  const route = createRoute({ name: 'route', path: '/' })
+    .addView(view, { props: () => ({ value: 'props' }) })
+    .addLoader(() => promise)
+
+  const router = createRouter([route], { initialUrl: '/' })
+  const wrapper = mount({ template: '<RouterView />' }, { global: { plugins: [router] } })
+
+  await router.start()
+  await flushPromises()
+
+  expect(wrapper.text()).toBe('props:loading')
+
+  resolve('data')
+  await flushPromises()
+
+  expect(wrapper.text()).toBe('props:data')
 })

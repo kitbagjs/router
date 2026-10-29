@@ -1,6 +1,6 @@
 import { RouteUpdate } from '@/types/routeUpdate'
 import { ResolvedRoute } from '@/types/resolved'
-import { RouteDataOf, RouteLoadersOf } from '@/types/route'
+import { RouteLoadersOf } from '@/types/route'
 import { QuerySource } from '@/types/querySource'
 
 export const IS_ROUTER_ROUTE_SYMBOL = Symbol('IS_ROUTER_ROUTE_SYMBOL')
@@ -57,12 +57,6 @@ export type RouterRoute<TRoute extends ResolvedRoute = ResolvedRoute> = {
    * Returns every present value using the given param definition.
    */
   readonly getAllParams: TRoute['getAllParams'],
-  /**
-   * What the route's loaders resolve to, keyed by loader name. A route whose only loader is unnamed
-   * exposes that loader's data here directly.
-   * @deprecated Use useLoader in components. Callback route.data remains supported.
-   */
-  readonly data: RouteDataOf<TRoute['matches']>,
   /**
    * Definitions for the current route's loaders, including inherited loaders. An unnamed loader uses `default`.
    */

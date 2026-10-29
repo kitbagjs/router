@@ -17,7 +17,7 @@ test('redirect chains retain the receiving route and parameter inference', () =>
   const legacy = createRoute({ path: '/legacy/[id]' })
 
   expectTypeOf(route.redirectFrom(legacy, ({ id }) => ({ id }))).toEqualTypeOf(route)
-  expectTypeOf(createRouter([route]).route.data).toEqualTypeOf<Promise<number>>()
+  expectTypeOf(createRouter([route]).route.loaders.default.load).returns.toEqualTypeOf<number>()
   // @ts-expect-error target requires id
   route.redirectTo(target)
   // @ts-expect-error target id must be a string
