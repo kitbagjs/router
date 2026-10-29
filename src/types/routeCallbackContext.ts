@@ -1,6 +1,6 @@
 import { ResolvedRoute } from '@/types/resolved'
 import { CreatedRouteOptions, Route } from '@/types/route'
-import { RouteContextToRejection, RouteContextToRoute } from '@/types/routeContext'
+import { RouteContextToRejections, RouteContextToRoute } from '@/types/routeContext'
 import { RouterPush } from '@/types/routerPush'
 import { RouterReject } from '@/types/routerReject'
 import { RouterReplace } from '@/types/routerReplace'
@@ -15,7 +15,7 @@ import { ViewsPropsReturnType } from '@/types/routeViews'
 export type RouteCallbackContext<
   TRoute extends Route
 > = {
-  reject: RouterReject<RouteContextToRejection<TRoute['context']>>,
+  reject: RouterReject<RouteContextToRejections<TRoute['context']>>,
   push: RouterPush<[TRoute] | RouteContextToRoute<TRoute['context']>>,
   replace: RouterReplace<[TRoute] | RouteContextToRoute<TRoute['context']>>,
   update: RouteUpdate<ResolvedRoute<TRoute>>,

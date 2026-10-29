@@ -47,7 +47,7 @@ type FilterRouteContextRoutes<TContext extends readonly RouteContext[] | undefin
     : FilterRouteContextRoutes<Rest>
   : []
 
-export type RouteContextToRejection<
+export type RouteContextToRejections<
   TContext extends readonly RouteContext[] | undefined,
   TRejections extends Rejections = RegisteredContextRejections
 > = [
