@@ -41,7 +41,7 @@ export const {
 
 ## Circular type inference
 
-When using registration or router assets, explicitly type reusable hooks with `Hook`, loaders with `Loader<Data>`, and views with `View<Props>` to avoid circular type inference.
+When using router registration, explicitly type reusable hooks with `Hook`, loaders with `Loader<Data>`, and views with `View<Props>` to avoid circular type inference.
 
 ```ts
 import { createLoader, type Loader } from '@kitbag/router'
