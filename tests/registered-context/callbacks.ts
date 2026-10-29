@@ -1,5 +1,5 @@
 import { expectTypeOf } from 'vitest'
-import { createRoute, createExternalRoute, createRouter, createRouterAssets, createRouterPlugin, createHook, createLoader, createView, createRejection, type Hook } from '@kitbag/router'
+import { createRoute, createExternalRoute, createRouter, createRouterAssets, createRouterPlugin, createHook, createLoader, createView, createRejection, type Hook, type ResolvedRoute } from '@kitbag/router'
 import { defineComponent } from 'vue'
 
 const component = defineComponent(() => () => null)
@@ -59,7 +59,7 @@ declare module '@kitbag/router' {
 logout.onAfterRouteEnter(contextHook)
 logout.onBeforeRouteEnter((to, { from, replace, reject, update }) => {
   expectTypeOf(to.name).toEqualTypeOf<'logout'>()
-  expectTypeOf(from?.name).toEqualTypeOf<'login' | 'logout' | 'user' | 'plugin' | 'extra' | undefined>()
+  expectTypeOf(from).toEqualTypeOf<ResolvedRoute | null>()
   expectTypeOf(update).toBeCallableWith({})
   reject('Denied')
   reject('Expired')
@@ -74,7 +74,7 @@ logout.onBeforeRouteEnter((to, { from, replace, reject, update }) => {
 })
 logout.onAfterRouteLeave((to, { from, push }) => {
   expectTypeOf(from.name).toEqualTypeOf<'logout'>()
-  expectTypeOf(to?.name).toEqualTypeOf<'login' | 'logout' | 'user' | 'plugin' | 'extra' | undefined>()
+  expectTypeOf(to).toEqualTypeOf<ResolvedRoute | null>()
   push('plugin')
 })
 logout.addLoader((route, { push, reject }) => {
@@ -130,10 +130,10 @@ createView({
 createHook({
   context: [extra, expired],
   hook: (to, { from, push, reject }) => {
-    expectTypeOf(to?.name).toEqualTypeOf<'login' | 'logout' | 'user' | 'plugin' | 'extra' | undefined>()
-    expectTypeOf(from?.name).toEqualTypeOf<'login' | 'logout' | 'user' | 'plugin' | 'extra' | undefined>()
-    if (to?.name === 'extra') {
-      expectTypeOf(to.params.slug).toEqualTypeOf<string>()
+    expectTypeOf(to?.name).toEqualTypeOf<'login' | 'logout' | 'user' | 'plugin' | undefined>()
+    expectTypeOf(from?.name).toEqualTypeOf<'login' | 'logout' | 'user' | 'plugin' | undefined>()
+    if (to?.name === 'user') {
+      expectTypeOf(to.params.id).toEqualTypeOf<string>()
     }
     push('login')
     push('extra', { slug: 'one' })
@@ -146,7 +146,7 @@ createHook({
 createLoader({
   context: [extra, expired],
   load: (route, { replace, reject }) => {
-    expectTypeOf(route.name).toEqualTypeOf<'login' | 'logout' | 'user' | 'plugin' | 'extra'>()
+    expectTypeOf(route.name).toEqualTypeOf<'login' | 'logout' | 'user' | 'plugin'>()
     replace('login')
     replace('extra', { slug: 'one' })
     reject('Denied')
@@ -158,7 +158,7 @@ createView({
   component,
   context: [extra, expired],
   props: (route, { push, reject }) => {
-    expectTypeOf(route.name).toEqualTypeOf<'login' | 'logout' | 'user' | 'plugin' | 'extra'>()
+    expectTypeOf(route.name).toEqualTypeOf<'login' | 'logout' | 'user' | 'plugin'>()
     push('login')
     push('extra', { slug: 'one' })
     reject('Denied')
@@ -173,7 +173,7 @@ const assets = createRouterAssets(createRouter([other], { rejections: [otherDeni
 assets.createHook({
   context: [extra, expired],
   hook: (to, { push, reject }) => {
-    expectTypeOf(to?.name).toEqualTypeOf<'other' | 'extra' | undefined>()
+    expectTypeOf(to?.name).toEqualTypeOf<'other' | undefined>()
     push('other')
     reject('OtherDenied')
     push('extra', { slug: 'one' })
@@ -187,14 +187,14 @@ assets.createHook({
 
 logout.setTitle((to, { from }) => {
   expectTypeOf(to.name).toEqualTypeOf<'logout'>()
-  expectTypeOf(from.name).toEqualTypeOf<'login' | 'logout' | 'user' | 'plugin' | 'extra'>()
+  expectTypeOf(from).toEqualTypeOf<ResolvedRoute>()
   return to.name
 })
 
 assets.createLoader({
   context: [extra, expired],
   load: (route, { push, reject }) => {
-    expectTypeOf(route.name).toEqualTypeOf<'other' | 'extra'>()
+    expectTypeOf(route.name).toEqualTypeOf<'other'>()
     push('other')
     reject('OtherDenied')
     reject('Expired')
@@ -209,7 +209,7 @@ assets.createView({
   component,
   context: [extra, expired],
   props: (route, { push, reject }) => {
-    expectTypeOf(route.name).toEqualTypeOf<'other' | 'extra'>()
+    expectTypeOf(route.name).toEqualTypeOf<'other'>()
     push('other')
     reject('OtherDenied')
     reject('Expired')
