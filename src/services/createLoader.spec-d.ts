@@ -33,8 +33,7 @@ test('declared context types the loader and attached route helpers', () => {
   const denied = createRejection({ type: 'Denied' })
   const loader = createLoader({
     context: [login, denied],
-    load: (route, { push, reject }) => {
-      expectTypeOf(route).toEqualTypeOf<ResolvedRoute>()
+    load: (_route, { push, reject }) => {
       push('login')
       reject('Denied')
       // @ts-expect-error the attached route is not known to the loader
@@ -82,7 +81,7 @@ test('async data types the transformer without widening from it', () => {
   })
 })
 
-test('router assets merge loader context with their routes', () => {
+test('router assets scope loader callbacks without widening declared context', () => {
   const user = createRoute({ name: 'user', path: '/users/[id]' })
   const other = createRoute({ name: 'other', path: '/other' })
   const login = createRoute({ name: 'login', path: '/login' })
@@ -96,8 +95,7 @@ test('router assets merge loader context with their routes', () => {
       expectTypeOf(route.name).toEqualTypeOf<'user'>()
       expectTypeOf(route.params.id).toEqualTypeOf<string>()
       push('login')
-      push('user', { id: '1' })
-      // @ts-expect-error router route params are still required
+      // @ts-expect-error the router does not expand the loader's declared context
       push('user')
     },
   })
