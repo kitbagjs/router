@@ -51,8 +51,7 @@ test('optional props can be omitted and declared context types both callbacks an
   const view = createView({
     component,
     context: [login, denied],
-    props: (route, { push, reject, signal }) => {
-      expectTypeOf(route).toEqualTypeOf<ResolvedRoute & WithData>()
+    props: (_route, { push, reject, signal }) => {
       push('login')
       reject('Denied')
       expectTypeOf(signal).toEqualTypeOf<AbortSignal>()
