@@ -331,7 +331,7 @@ export function createRouter<
         started.value = true
 
         if (!options.hydrating) {
-          updateTitle(controller.signal)
+          updateTitle(controller.signal, from)
         }
       }
 
@@ -621,7 +621,7 @@ export function createRouter<
 
     updateRejection(rejection)
     started.value = true
-    updateTitle(controller.signal)
+    updateTitle(controller.signal, from)
   }
 
   const { currentRejection, updateRejection, clearRejection } = createCurrentRejection()
@@ -635,15 +635,15 @@ export function createRouter<
   /**
    * The title that should currently be rendered.
    */
-  async function getTitle(): Promise<string | undefined> {
-    return await currentRejection.value?.getTitle() ?? routerRoute.getResolvedRoute().getTitle()
+  async function getTitle(from: ResolvedRoute | null = null): Promise<string | undefined> {
+    return await currentRejection.value?.getTitle(from) ?? routerRoute.getResolvedRoute().getTitle(from)
   }
 
   /**
    * Sets the document title to the title that should currently be rendered.
    */
-  async function updateTitle(signal: AbortSignal): Promise<void> {
-    const title = await getTitle()
+  async function updateTitle(signal: AbortSignal, from: ResolvedRoute | null): Promise<void> {
+    const title = await getTitle(from)
 
     if (signal.aborted) {
       return

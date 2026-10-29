@@ -5,7 +5,7 @@ import { IS_REJECTION_SYMBOL, Rejection, RejectionInternal, RejectionOptions } f
 import { markRaw } from 'vue'
 import { createRoute } from '@/services/createRoute'
 import { createResolvedRoute } from '@/services/createResolvedRoute'
-import { RouteSetTitle } from '@/types/routeTitle'
+import { GetTitleCallback, RouteSetTitle } from '@/types/routeTitle'
 
 export function createRejection<TType extends string>(options: RejectionOptions<TType>): Rejection<TType> & RejectionHooks<TType> & RouteSetTitle
 
@@ -18,7 +18,7 @@ export function createRejection({ type, component, status }: RejectionOptions): 
 
   const { setTitle } = route
 
-  const getTitle = (): Promise<string | undefined> => createResolvedRoute(route).getTitle()
+  const getTitle: GetTitleCallback = (from) => createResolvedRoute(route).getTitle(from)
 
   const internal = {
     [IS_REJECTION_SYMBOL]: true,

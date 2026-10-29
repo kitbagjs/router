@@ -1,4 +1,4 @@
-import { expect, test } from 'vitest'
+import { expect, test, vi } from 'vitest'
 import { createRoute } from '@/services/createRoute'
 import { createResolvedRoute } from '@/services/createResolvedRoute'
 import { updateResolvedRoute } from '@/services/updateResolvedRoute'
@@ -59,4 +59,19 @@ test('getTitle sees the updated route', async () => {
   const response = updateResolvedRoute(resolved, { query: { q: 'cats' } })
 
   await expect(response.getTitle()).resolves.toBe('Results for cats')
+})
+
+test('getTitle passes the previous route with the updated destination', async () => {
+  const titled = createRoute({ name: 'titled', path: '/titled' }).addView(component)
+  const callback = vi.fn(() => 'Title')
+  titled.setTitle(callback)
+  const resolved = createResolvedRoute(titled)
+  const updated = updateResolvedRoute(resolved, { query: { q: 'cats' } })
+
+  await updated.getTitle(resolved)
+
+  expect(callback).toHaveBeenCalledExactlyOnceWith(updated, {
+    from: resolved,
+    getParentTitle: expect.any(Function),
+  })
 })

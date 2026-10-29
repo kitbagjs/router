@@ -24,7 +24,7 @@ export function updateResolvedRoute(route: ResolvedRoute, options: RouterResolve
     query: createResolvedRouteQuery(query),
     hash,
     state: { ...route.state, ...options.state },
-    getTitle: () => route.getRouteTitle(updated),
+    getTitle: (from) => route.getRouteTitle(updated, from),
   }
 
   return updated
