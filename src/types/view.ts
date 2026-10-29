@@ -31,7 +31,12 @@ export type ViewCallbackContext<
   signal: AbortSignal,
 }
 
-export type ViewPropsGetter<TContext extends readonly RouteContext[], TProps, TRoutes extends Routes = Routes, TRejections extends Rejections = []> = (route: ResolvedRouteWithDataUnion<TRoutes[number]>, context: ViewCallbackContext<TContext, TRoutes, TRejections>) => TProps
+export type ViewPropsGetter<
+  TContext extends readonly RouteContext[],
+  TProps,
+  TRoutes extends Routes = Routes,
+  TRejections extends Rejections = []
+> = (route: ResolvedRouteWithDataUnion<TRoutes[number]>, context: ViewCallbackContext<TContext, TRoutes, TRejections>) => TProps
 
 /**
  * Options for a reusable component and its props getter.
