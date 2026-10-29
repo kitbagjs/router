@@ -1,5 +1,5 @@
 import { expectTypeOf } from 'vitest'
-import { createRoute, createExternalRoute, createRouter, createRouterAssets, createRouterPlugin, createHook, createLoader, createView, createRejection } from '@kitbag/router'
+import { createRoute, createExternalRoute, createRouter, createRouterAssets, createRouterPlugin, createHook, createLoader, createView, createRejection, type Hook } from '@kitbag/router'
 import { defineComponent } from 'vue'
 
 const component = defineComponent(() => () => null)
@@ -17,11 +17,35 @@ const user = createRoute({
   name: 'user',
   path: '/users/[id]',
 })
+const logoutHook: Hook = createHook({
+  hook: (to, { from, replace, reject }) => {
+    expectTypeOf(to?.name).toEqualTypeOf<'login' | 'logout' | 'user' | 'plugin' | undefined>()
+    expectTypeOf(from?.name).toEqualTypeOf<'login' | 'logout' | 'user' | 'plugin' | undefined>()
+    reject('Denied')
+    // @ts-expect-error annotating the hook must not widen route names
+    replace('missing')
+    // @ts-expect-error annotating the hook must not widen rejection types
+    reject('Missing')
+    return replace('login')
+  },
+})
+const contextHook: Hook<readonly [typeof extra, typeof expired]> = createHook({
+  context: [extra, expired],
+  hook: (_to, { push, reject }) => {
+    push('login')
+    push('extra', { slug: 'one' })
+    reject('Denied')
+    reject('Expired')
+    // @ts-expect-error an annotated context retains its required params
+    push('extra')
+  },
+})
 const logout = createRoute({
   name: 'logout',
   path: '/logout',
   context: [extra, expired],
 })
+  .onBeforeRouteEnter(logoutHook)
 const pluginRoute = createRoute({ name: 'plugin' })
 const plugin = createRouterPlugin({ routes: [pluginRoute] })
 export const router = createRouter([login, logout, user], { rejections: [denied] }, [plugin])
@@ -32,6 +56,7 @@ declare module '@kitbag/router' {
   }
 }
 
+logout.onAfterRouteEnter(contextHook)
 logout.onBeforeRouteEnter((to, { from, replace, reject, update }) => {
   expectTypeOf(to.name).toEqualTypeOf<'logout'>()
   expectTypeOf(from?.name).toEqualTypeOf<'login' | 'logout' | 'user' | 'plugin' | 'extra' | undefined>()
