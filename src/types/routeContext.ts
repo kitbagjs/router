@@ -34,11 +34,11 @@ export type ContextRoutes<
   TRoutes extends Routes = RegisteredContextRoutes
 > = [
   ...(Routes extends TRoutes ? [] : TRoutes),
-  ...ContextRouteDefinitions<RouteContext[] extends TContext
+  ...(RouteContext[] extends TContext
     ? Routes
     : undefined extends TContext
       ? Routes
-      : FilterRouteContextRoutes<TContext>>
+      : FilterRouteContextRoutes<TContext>)
 ]
 
 type FilterRouteContextRoutes<TContext extends readonly RouteContext[] | undefined> = TContext extends readonly [infer First, ...infer Rest extends RouteContext[]]
@@ -71,8 +71,4 @@ export type RegisteredContextRoutes<T = Register> = T extends { router: infer TR
 
 export type RegisteredContextRejections<T = Register> = T extends { router: infer TRouter extends Router }
   ? RouterRejections<TRouter>
-  : []
-
-type ContextRouteDefinitions<T> = T extends readonly GenericRoute[]
-  ? { [K in keyof T]: T[K] extends Route ? T[K] : T[K] & { context: [] } }
   : []

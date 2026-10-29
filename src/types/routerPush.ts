@@ -1,5 +1,5 @@
 import { NavigationBehavior } from '@/types/navigation'
-import { Routes } from '@/types/route'
+import { GenericRoutes } from '@/types/route'
 import { RoutesName } from '@/types/routesMap'
 import { RouteParamsByKey } from '@/types/routeWithParams'
 import { RouteStateByName } from '@/types/state'
@@ -37,14 +37,14 @@ export type RouterPushOptions<
 }
 
 type RouterPushArgs<
-  TRoutes extends Routes,
+  TRoutes extends GenericRoutes,
   TSource extends RoutesName<TRoutes>
 > = AllPropertiesAreOptional<RouteParamsByKey<TRoutes, TSource>> extends true
   ? [params?: RouteParamsByKey<TRoutes, TSource>, options?: RouterPushOptions<RouteStateByName<TRoutes, TSource>>]
   : [params: RouteParamsByKey<TRoutes, TSource>, options?: RouterPushOptions<RouteStateByName<TRoutes, TSource>>]
 
 export type RouterPush<
-  TRoutes extends Routes = any
+  TRoutes extends GenericRoutes = any
 > = {
   <TSource extends RoutesName<TRoutes>>(name: TSource, ...args: RouterPushArgs<TRoutes, TSource>): Promise<void>,
   (route: ResolvedRoute, options?: RouterPushOptions): Promise<void>,

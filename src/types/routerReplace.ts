@@ -1,5 +1,5 @@
 import { NavigationBehavior } from '@/types/navigation'
-import { Routes } from '@/types/route'
+import { GenericRoutes } from '@/types/route'
 import { RoutesName } from '@/types/routesMap'
 import { RouteParamsByKey } from '@/types/routeWithParams'
 import { RouteStateByName } from '@/types/state'
@@ -19,14 +19,14 @@ export type RouterReplaceOptions<
 }
 
 type RouterReplaceArgs<
-  TRoutes extends Routes,
+  TRoutes extends GenericRoutes,
   TSource extends RoutesName<TRoutes>
 > = AllPropertiesAreOptional<RouteParamsByKey<TRoutes, TSource>> extends true
   ? [params?: RouteParamsByKey<TRoutes, TSource>, options?: RouterReplaceOptions<RouteStateByName<TRoutes, TSource>>]
   : [params: RouteParamsByKey<TRoutes, TSource>, options?: RouterReplaceOptions<RouteStateByName<TRoutes, TSource>>]
 
 export type RouterReplace<
-  TRoutes extends Routes
+  TRoutes extends GenericRoutes
 > = {
   <TSource extends RoutesName<TRoutes>>(name: TSource, ...args: RouterReplaceArgs<TRoutes, TSource>): Promise<void>,
   (route: ResolvedRoute, options?: RouterReplaceOptions): Promise<void>,
