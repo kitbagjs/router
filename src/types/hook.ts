@@ -1,5 +1,5 @@
 import { Rejections } from '@/types/rejection'
-import { RouteContextToRejection, RouteContextToRoute, RouteContext } from '@/types/routeContext'
+import { ContextRejections, ContextRoutes, RouteContext } from '@/types/routeContext'
 import { ResolvedRouteUnion } from '@/types/resolved'
 import { Route, Routes } from '@/types/route'
 import { BeforeHookContext, AfterHookContext, HookCallback } from '@/types/hooks'
@@ -23,8 +23,8 @@ export type HookCallbackContext<
   from: ResolvedRouteUnion<TRoutes[number]> | null,
   update?: RouteUpdate,
 } & (
-  | Omit<BeforeHookContext<Route, RouteContextToRoute<TContext, TRoutes>, RouteContextToRejection<TContext, TRejections>>, 'update'>
-  | Omit<AfterHookContext<Route, RouteContextToRoute<TContext, TRoutes>, RouteContextToRejection<TContext, TRejections>>, 'update'>
+  | Omit<BeforeHookContext<Route, ContextRoutes<TContext, TRoutes>, ContextRejections<TContext, TRejections>>, 'update'>
+  | Omit<AfterHookContext<Route, ContextRoutes<TContext, TRoutes>, ContextRejections<TContext, TRejections>>, 'update'>
 )
 
 /**

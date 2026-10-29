@@ -1,7 +1,7 @@
 import { Rejections } from '@/types/rejection'
 import { TransformerOptions } from '@/services/payload'
 import { PrefetchConfig } from '@/types/prefetch'
-import { RouteContextToRejection, RouteContextToRoute, RouteContext } from '@/types/routeContext'
+import { ContextRejections, ContextRoutes, RouteContext } from '@/types/routeContext'
 import { RouterPush } from '@/types/routerPush'
 import { RouterReject } from '@/types/routerReject'
 import { RouterReplace } from '@/types/routerReplace'
@@ -24,9 +24,9 @@ export type LoaderCallbackContext<
   TRoutes extends Routes = Routes,
   TRejections extends Rejections = []
 > = {
-  push: RouterPush<RouteContextToRoute<TContext, TRoutes>>,
-  replace: RouterReplace<RouteContextToRoute<TContext, TRoutes>>,
-  reject: RouterReject<RouteContextToRejection<TContext, TRejections>>,
+  push: RouterPush<ContextRoutes<TContext, TRoutes>>,
+  replace: RouterReplace<ContextRoutes<TContext, TRoutes>>,
+  reject: RouterReject<ContextRejections<TContext, TRejections>>,
   signal: AbortSignal,
 }
 

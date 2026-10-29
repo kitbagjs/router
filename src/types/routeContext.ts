@@ -29,7 +29,7 @@ export type ExtractRouteContext<
     ? ToRouteContext<TParent['context']>
     : []
 
-export type RouteContextToRoute<
+export type ContextRoutes<
   TContext extends readonly RouteContext[] | undefined,
   TRoutes extends Routes = RegisteredContextRoutes
 > = [
@@ -47,7 +47,7 @@ type FilterRouteContextRoutes<TContext extends readonly RouteContext[] | undefin
     : FilterRouteContextRoutes<Rest>
   : []
 
-export type RouteContextToRejection<
+export type ContextRejections<
   TContext extends readonly RouteContext[] | undefined,
   TRejections extends Rejections = RegisteredContextRejections
 > = [
