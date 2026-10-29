@@ -1,16 +1,16 @@
+import { LoadersData } from '@/types/routeLoaders'
 import { describe, expectTypeOf, test } from 'vitest'
 import { createRoute } from './createRoute'
 import { Loader } from '@/types/loader'
 import { createLoader } from '@/services/createLoader'
 import { BuiltInRejectionType } from '@/types/rejection'
-import { ResolvedRoute, WithData } from '@/types/resolved'
-import { Route } from '@/types/route'
+import { Route, RouteLoadersOf } from '@/types/route'
 import { component } from '@/utilities/testHelpers'
 import { RouteView } from '@/types/routeViews'
 
 type User = { id: string, name: string }
 
-type Data<TRoute extends Route> = (ResolvedRoute<TRoute> & WithData<TRoute>)['data']
+type Data<TRoute extends Route> = LoadersData<RouteLoadersOf<TRoute['matches']>>
 
 describe('addLoader', () => {
   test('an async loader carries what it returns', () => {
@@ -93,19 +93,19 @@ describe('route data', () => {
   test('a route without loaders has no data', () => {
     const route = createRoute({ name: 'route' }).addView(component)
 
-    expectTypeOf<Data<typeof route>>().toEqualTypeOf<undefined>()
+    expectTypeOf<Data<typeof route>>().toEqualTypeOf<{}>()
   })
 
-  test('a lone unnamed loader is the data itself', () => {
+  test('a lone unnamed loader is keyed by default', () => {
     const route = createRoute({ name: 'route' }).addLoader(async (): Promise<User> => ({ id: '1', name: 'kitbag' }))
 
-    expectTypeOf<Data<typeof route>>().toEqualTypeOf<Promise<User>>()
+    expectTypeOf<Data<typeof route>>().toEqualTypeOf<{ default: Promise<User> }>()
   })
 
   test('a synchronous loader still resolves as a promise', () => {
     const route = createRoute({ name: 'route' }).addLoader(() => 'kitbag')
 
-    expectTypeOf<Data<typeof route>>().toEqualTypeOf<Promise<string>>()
+    expectTypeOf<Data<typeof route>>().toEqualTypeOf<{ default: Promise<string> }>()
   })
 
   test('a lone named loader is keyed by its name', () => {
@@ -129,7 +129,7 @@ describe('route data', () => {
     const parent = createRoute({ name: 'parent', path: '/parent' }).addLoader(async (): Promise<User> => ({ id: '1', name: 'kitbag' }))
     const child = createRoute({ parent, name: 'child', path: '/child' })
 
-    expectTypeOf<Data<typeof child>>().toEqualTypeOf<Promise<User>>()
+    expectTypeOf<Data<typeof child>>().toEqualTypeOf<{ default: Promise<User> }>()
   })
 
   test('a named loader on a child keys the ancestor loader too', () => {
@@ -216,9 +216,9 @@ describe('loader callback', () => {
       .addLoader(async () => 'kitbag', { name: 'user' })
       .addView(component, {
         props: async (route) => {
-          expectTypeOf(route.data.user).toEqualTypeOf<Promise<string>>()
+          expectTypeOf(route.getData('user')).toEqualTypeOf<Promise<string>>()
 
-          await route.data.user
+          await route.getData('user')
 
           return {}
         },

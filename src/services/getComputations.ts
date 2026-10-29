@@ -72,10 +72,6 @@ export function loaderLocations(match: CreatedRouteOptions): ValueLocation<'load
   return Object.keys(match.loaders).map((name) => ({ kind: 'loader', id: match.id, name }))
 }
 
-export function isKind(kind: DataKind): (computation: Computation) => boolean {
-  return (computation) => computation.kind === kind
-}
-
 export function isStrategy(strategy: PrefetchStrategy, configs: PrefetchConfigs): (computation: Computation) => boolean {
   return (computation) => getPrefetchOption({
     ...configs,

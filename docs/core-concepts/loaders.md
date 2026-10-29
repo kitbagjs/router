@@ -1,6 +1,6 @@
 # Loaders
 
-Loaders fetch data for a route. Components read their reactive state with [`useLoader`](/composables/useLoader), and props callbacks can await their results through `route.data`.
+Loaders fetch data for a route. Components read their reactive state with [`useLoader`](/composables/useLoader), and props callbacks can await their results through `route.getData()`.
 
 ## Loading data
 
@@ -113,7 +113,7 @@ const invoices = createRoute({
 
 ## Using loader data in props callbacks
 
-A [props callback](/core-concepts/component-props) can await `route.data` to build the props its view needs.
+A [props callback](/core-concepts/component-props) can await `route.getData()` to read the default loader, or `route.getData('name')` to read a named loader, and build the props its view needs.
 
 For example, load a project once, then use it to prepare a summary and a list of incomplete tasks:
 
@@ -125,7 +125,7 @@ const project = createRoute({
 .addLoader((route) => getProject(route.params.id))
 .addView(ProjectSummary, {
   props: async (route) => {
-    const project = await route.data
+    const project = await route.getData()
 
     return {
       title: project.name,
@@ -136,7 +136,7 @@ const project = createRoute({
 .addView(TaskList, {
   name: 'tasks',
   props: async (route) => {
-    const project = await route.data
+    const project = await route.getData()
 
     return {
       tasks: project.tasks.filter((task) => !task.completed),
@@ -153,7 +153,7 @@ Loader prefetching is disabled by default. Enable it with a loader's `prefetch` 
 
 ## Navigation cancellation
 
-Dependency reads inside callbacks are cancelled with the navigation: awaiting `route.data`, `parent.data`, or `parent.props` rejects with `NavigationAbandonedError` when the computation is abandoned. This stops the dependent callback and runs its `finally` blocks. The router handles this cancellation without calling application error hooks. If a callback catches dependency errors, rethrow cancellation so it can unwind normally.
+Dependency reads inside callbacks are cancelled with the navigation: awaiting `route.getData()`, `parent.data`, or `parent.props` rejects with `NavigationAbandonedError` when the computation is abandoned. This stops the dependent callback and runs its `finally` blocks. The router handles this cancellation without calling application error hooks. If a callback catches dependency errors, rethrow cancellation so it can unwind normally.
 
 ## Migrating component data reads
 
@@ -163,3 +163,7 @@ The deprecated `router.route.data` property has been removed. In components, use
 const route = useRoute()
 const { data, loading, error } = useLoader(route.loaders.default)
 ```
+
+## Migrating callback data reads
+
+The callback `route.data` property is deprecated. Props callbacks should call `route.getData()` for the default loader or `route.getData('name')` for a named loader. Replace `await route.data` with `await route.getData()` and `await route.data.user` with `await route.getData('user')`.

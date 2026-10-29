@@ -459,7 +459,7 @@ test('named and unnamed loaders respect their own config and feed prefetched pro
     .addLoader(disabled, { name: 'disabled', prefetch: false })
     .addView(component, {
       props: async (route) => {
-        props(await route.data.default, await route.data.named)
+        props(await route.getData('default'), await route.getData('named'))
 
         return {}
       },
@@ -492,7 +492,7 @@ test('named and unnamed loaders respect their own config and feed prefetched pro
 
 test('prefetched props can wait for a loader without enabling its prefetching', async () => {
   const load = vi.fn(() => 'data')
-  const props = vi.fn(async (route) => ({ data: await route.data }))
+  const props = vi.fn(async (route) => ({ data: await route.getData() }))
   const home = createRoute({ name: 'home', path: '/' })
   const route = createRoute({ name: 'route', path: '/route' })
     .addLoader(load)
