@@ -26,3 +26,9 @@ jobs:
 
       - name: Run tsc
         run: npm run types
+
+      - name: Build package declarations
+        run: npm run build
+
+      - name: Check registered callback types
+        run: npx vue-tsc --noEmit -p tests/registered-context/tsconfig.json
