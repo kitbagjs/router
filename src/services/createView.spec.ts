@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-deprecated -- Keep deprecated callback property compatibility coverage until removal. */
 import { expect, test, vi } from 'vitest'
 import { isView } from '@/types/view'
 import { createView } from '@/services/createView'

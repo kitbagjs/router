@@ -21,6 +21,7 @@ test('hooks preserve route, loader, and view types through a chain', () => {
 
   expectTypeOf(router.route.name).toEqualTypeOf<'user'>()
   expectTypeOf(router.route.params.id).toEqualTypeOf<string>()
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- Verify the deprecated current route property until its separate removal.
   expectTypeOf(router.route.data).toEqualTypeOf<Promise<number>>()
   expectTypeOf(route.onBeforeRouteEnter(() => {})).toEqualTypeOf(route)
 })

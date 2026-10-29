@@ -17,6 +17,7 @@ test('redirect chains retain the receiving route and parameter inference', () =>
   const legacy = createRoute({ path: '/legacy/[id]' })
 
   expectTypeOf(route.redirectFrom(legacy, ({ id }) => ({ id }))).toEqualTypeOf(route)
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- Verify the deprecated current route property until its separate removal.
   expectTypeOf(createRouter([route]).route.data).toEqualTypeOf<Promise<number>>()
   // @ts-expect-error target requires id
   route.redirectTo(target)

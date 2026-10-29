@@ -17,6 +17,7 @@ test('setTitle chains preserve route types and type the title callback', () => {
     .setTitle(() => 'User')
 
   expectTypeOf(route.setTitle(() => 'Updated')).toEqualTypeOf(route)
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- Verify the deprecated current route property until its separate removal.
   expectTypeOf(createRouter([route]).route.data).toEqualTypeOf<Promise<number>>()
   // @ts-expect-error titles must resolve to strings
   route.setTitle(() => 42)

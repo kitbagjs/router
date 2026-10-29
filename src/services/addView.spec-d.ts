@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-deprecated -- Keep deprecated parent.data and parent.props compatibility coverage until removal. */
 import { describe, expectTypeOf, test } from 'vitest'
 import { createRoute } from './createRoute'
 import { RouteView } from '@/types/routeViews'

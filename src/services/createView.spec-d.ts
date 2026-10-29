@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-deprecated -- Keep deprecated callback property compatibility coverage until removal. */
 import { createRouterPlugin } from '@/services/createRouterPlugin'
 import { createRouterAssets } from '@/services/createRouterAssets'
 import { createRouter } from '@/services/createRouter'
