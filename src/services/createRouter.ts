@@ -643,6 +643,10 @@ export function createRouter<
    * Sets the document title to the title that should currently be rendered.
    */
   async function updateTitle(signal: AbortSignal): Promise<void> {
+    if (isSSR) {
+      return
+    }
+
     const title = await getTitle()
 
     if (signal.aborted) {

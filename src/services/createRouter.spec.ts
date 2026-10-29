@@ -1642,33 +1642,106 @@ describe('router.render response', () => {
 
   test('returns the title of the route that rendered', async () => {
     const route = createRoute({ name: 'route', path: '/' }).addView(component)
+    const title = vi.fn(() => 'the title')
 
-    route.setTitle(() => 'the title')
+    route.setTitle(title)
 
     const router = createRouter([route], { ssr: true, initialUrl: '/' })
-
-    await router.start()
 
     const result = rendered(await router.render())
 
     expect(result.title).toBe('the title')
+    expect(title).toHaveBeenCalledTimes(1)
   })
 
   test('returns the title of the rejection that rendered', async () => {
     const locked = createRejection({ type: 'Locked', status: 423, component })
+    const title = vi.fn(() => 'locked')
 
-    locked.setTitle(() => 'locked')
+    locked.setTitle(title)
 
     const route = createRoute({ name: 'route', path: '/' }).addView(component)
     const router = createRouter([route], { ssr: true, initialUrl: '/', rejections: [locked] })
 
     router.onBeforeRouteEnter((_to, { reject }) => reject('Locked'))
 
-    await router.start()
-
     const result = rendered(await router.render())
 
     expect(result.title).toBe('locked')
+    expect(title).toHaveBeenCalledTimes(1)
+  })
+
+  test('a rejection without a title resolves the current route title once', async () => {
+    const locked = createRejection({ type: 'Locked', component })
+    const route = createRoute({ name: 'route', path: '/' }).addView(component)
+    const title = vi.fn(() => 'the title')
+
+    route.setTitle(title)
+
+    const router = createRouter([route], { ssr: true, initialUrl: '/', rejections: [locked] })
+
+    await router.start()
+
+    router.reject('Locked')
+
+    const result = rendered(await router.render())
+
+    expect(result).toMatchObject({ kind: 'reject', title: 'the title' })
+    expect(title).toHaveBeenCalledTimes(1)
+  })
+
+  test.each(['success', 'reject'] as const)('awaits the async title for a %s response', async (kind) => {
+    const pending = Promise.withResolvers<string>()
+    const title = vi.fn(() => pending.promise)
+    const locked = createRejection({ type: 'Locked', component })
+    const route = createRoute({ name: 'route', path: '/' }).addView(component)
+
+    route.setTitle(title)
+    locked.setTitle(title)
+
+    const router = createRouter([route], { ssr: true, initialUrl: '/', rejections: [locked] })
+
+    if (kind === 'reject') {
+      router.onBeforeRouteEnter((_to, { reject }) => reject('Locked'))
+    }
+
+    const settled = vi.fn()
+    const rendering = router.render().then((response) => {
+      settled()
+
+      return response
+    })
+
+    await flushPromises()
+
+    expect(title).toHaveBeenCalledTimes(1)
+    expect(settled).not.toHaveBeenCalled()
+
+    pending.resolve('async title')
+
+    expect(await rendering).toMatchObject({ kind, title: 'async title' })
+  })
+
+  test.each(['success', 'reject'] as const)('a failed title rejects render for a %s response', async (kind) => {
+    const failure = new Error('title failed')
+    const title = vi.fn(async () => {
+      throw failure
+    })
+    const locked = createRejection({ type: 'Locked', component })
+    const route = createRoute({ name: 'route', path: '/' }).addView(component)
+
+    route.setTitle(title)
+    locked.setTitle(title)
+
+    const router = createRouter([route], { ssr: true, initialUrl: '/', rejections: [locked] })
+
+    if (kind === 'reject') {
+      router.onBeforeRouteEnter((_to, { reject }) => reject('Locked'))
+    }
+
+    await expect(router.render()).rejects.toBe(failure)
+
+    expect(title).toHaveBeenCalledTimes(1)
   })
 
   test('render leaves after hooks for the client', async () => {
