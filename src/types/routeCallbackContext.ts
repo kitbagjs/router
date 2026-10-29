@@ -1,6 +1,6 @@
 import { ResolvedRoute } from '@/types/resolved'
 import { CreatedRouteOptions, Route } from '@/types/route'
-import { RouteContextToRejection, RouteContextToRoute } from '@/types/routeContext'
+import { ContextRejections, ContextRoutes } from '@/types/routeContext'
 import { RouterPush } from '@/types/routerPush'
 import { RouterReject } from '@/types/routerReject'
 import { RouterReplace } from '@/types/routerReplace'
@@ -10,14 +10,14 @@ import { ViewsPropsReturnType } from '@/types/routeViews'
 
 /**
  * Context provided to a callback attached to a route — an `addView` props getter, or a loader. Sourced
- * from the route: rejections/routes from the route's context, and the parent from the route's `matches`.
+ * from the route's context and registered router, and the parent from the route's `matches`.
  */
 export type RouteCallbackContext<
   TRoute extends Route
 > = {
-  reject: RouterReject<RouteContextToRejection<TRoute['context']>>,
-  push: RouterPush<[TRoute] | RouteContextToRoute<TRoute['context']>>,
-  replace: RouterReplace<[TRoute] | RouteContextToRoute<TRoute['context']>>,
+  reject: RouterReject<ContextRejections<TRoute['context']>>,
+  push: RouterPush<[TRoute] | ContextRoutes<TRoute['context']>>,
+  replace: RouterReplace<[TRoute] | ContextRoutes<TRoute['context']>>,
   update: RouteUpdate<ResolvedRoute<TRoute>>,
   signal: AbortSignal,
   parent: RouteCallbackParent<TRoute>,

@@ -14,8 +14,8 @@ test('declared context types helpers and the hook attaches to compatible lifecyc
     context: [login, denied],
     hook: (route, context) => {
       const { from, push, reject, signal } = context
-      expectTypeOf(route).toEqualTypeOf<ResolvedRoute | null>()
-      expectTypeOf(from).toEqualTypeOf<ResolvedRoute | null>()
+      expectTypeOf(route).toEqualTypeOf<ResolvedRoute<typeof login> | null>()
+      expectTypeOf(from).toEqualTypeOf<ResolvedRoute<typeof login> | null>()
       expectTypeOf(signal).toEqualTypeOf<AbortSignal>()
       // @ts-expect-error abort requires narrowing to a before invocation
       context.abort()
@@ -55,10 +55,13 @@ test('router assets type both routes in a reusable hook callback', () => {
   const hook = assets.createHook({
     context: [login],
     hook: (route, { from, push }) => {
-      expectTypeOf(route?.params.id).toEqualTypeOf<string | undefined>()
-      expectTypeOf(from?.name).toEqualTypeOf<'user' | undefined>()
+      if (route?.name === 'user') {
+        expectTypeOf(route.params.id).toEqualTypeOf<string>()
+      }
+      expectTypeOf(from?.name).toEqualTypeOf<'user' | 'login' | undefined>()
       push('login')
-      // @ts-expect-error the router does not expand the hook's declared context
+      push('user', { id: '1' })
+      // @ts-expect-error router route params are still required
       push('user')
     },
   })

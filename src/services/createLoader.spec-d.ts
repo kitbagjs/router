@@ -81,7 +81,7 @@ test('async data types the transformer without widening from it', () => {
   })
 })
 
-test('router assets scope loader callbacks without widening declared context', () => {
+test('router assets merge loader context with their routes', () => {
   const user = createRoute({ name: 'user', path: '/users/[id]' })
   const other = createRoute({ name: 'other', path: '/other' })
   const login = createRoute({ name: 'login', path: '/login' })
@@ -92,10 +92,13 @@ test('router assets scope loader callbacks without widening declared context', (
   assets.createLoader({
     context: [login],
     load: (route, { push }) => {
-      expectTypeOf(route.name).toEqualTypeOf<'user'>()
-      expectTypeOf(route.params.id).toEqualTypeOf<string>()
+      expectTypeOf(route.name).toEqualTypeOf<'user' | 'login'>()
+      if (route.name === 'user') {
+        expectTypeOf(route.params.id).toEqualTypeOf<string>()
+      }
       push('login')
-      // @ts-expect-error the router does not expand the loader's declared context
+      push('user', { id: '1' })
+      // @ts-expect-error router route params are still required
       push('user')
     },
   })

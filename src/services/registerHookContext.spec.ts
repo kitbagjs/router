@@ -18,7 +18,7 @@ test.each(['route', 'router'] as const)('late %s hooks register navigation and r
   await router.start()
 
   const hook = createHook({
-    context: [target, denied],
+    context: [source, target, denied],
     hook: (to, { push, reject }) => {
       if (to?.name !== 'source') {
         return

@@ -1,4 +1,5 @@
-import { ResolvedRoute, ResolvedRouteUnion } from '@/types/resolved'
+import { CallbackRoutes, ContextRoutes } from '@/types/routeContext'
+import { ResolvedRouteUnion } from '@/types/resolved'
 import { isRoute, Route, CreatedRouteOptions } from './route'
 import { RouteWithMethods } from '@/types/routeWithMethods'
 import { Url } from '@/types/url'
@@ -6,12 +7,12 @@ import { MaybePromise } from './utilities'
 
 export type GetTitleCallback = () => Promise<string | undefined>
 
-export type SetRouteTitleContext = {
-  from: ResolvedRoute,
+export type SetRouteTitleContext<TRoute extends Route = Route> = {
+  from: ResolvedRouteUnion<CallbackRoutes<ContextRoutes<TRoute['context']>, TRoute>[number]>,
   getParentTitle: GetTitleCallback,
 }
 
-export type SetRouteTitleCallback<TRoute extends Route = Route> = (to: ResolvedRouteUnion<TRoute>, context: SetRouteTitleContext) => MaybePromise<string>
+export type SetRouteTitleCallback<TRoute extends Route = Route> = (to: ResolvedRouteUnion<TRoute>, context: SetRouteTitleContext<TRoute>) => MaybePromise<string>
 export type GetRouteTitle<TRoute extends Route = Route> = (to: ResolvedRouteUnion<TRoute>) => Promise<string | undefined>
 export type SetRouteTitle<TRoute extends Route = Route, TReturn = void> = (callback: SetRouteTitleCallback<TRoute>) => TReturn
 

@@ -74,19 +74,29 @@ test('router assets type view callbacks with the matching loader data', () => {
   const home = createRoute({ name: 'home', path: '/' }).addLoader(() => 1)
   const plugin = createRouterPlugin({ routes: [home] })
   const assets = createRouterAssets(createRouter([user], {}, [plugin]))
+  const login = createRoute({ name: 'login', path: '/login' }).addLoader(() => true)
   const view = assets.createView({
     component: userView,
-    props: (route) => {
+    context: [login],
+    props: (route, { push }) => {
+      push('login')
+      push('user', { id: '1' })
+      // @ts-expect-error required router params are preserved
+      push('user')
       if (route.name === 'user') {
         expectTypeOf(route.data).toEqualTypeOf<Promise<{ label: string }>>()
         return { id: Number(route.params.id) }
       }
-      expectTypeOf(route.data).toEqualTypeOf<Promise<number>>()
+      if (route.name === 'home') {
+        expectTypeOf(route.data).toEqualTypeOf<Promise<number>>()
+      } else {
+        expectTypeOf(route.data).toEqualTypeOf<Promise<boolean>>()
+      }
       return { id: 0 }
     },
   })
 
-  expectTypeOf(view).toExtend<View<{ id: number }>>()
+  expectTypeOf(view).toExtend<View<{ id: number }, readonly [typeof login]>>()
   // @ts-expect-error router assets still require the component's props
   assets.createView({ component: userView })
 })
