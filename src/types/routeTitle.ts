@@ -1,4 +1,4 @@
-import { ResolvedRoute, ResolvedRouteUnion } from '@/types/resolved'
+import { ResolvedRouteUnion } from '@/types/resolved'
 import { isRoute, Route, CreatedRouteOptions } from './route'
 import { RouteWithMethods } from '@/types/routeWithMethods'
 import { Url } from '@/types/url'
@@ -7,7 +7,6 @@ import { MaybePromise } from './utilities'
 export type GetTitleCallback = () => Promise<string | undefined>
 
 export type SetRouteTitleContext = {
-  from: ResolvedRoute,
   getParentTitle: GetTitleCallback,
 }
 
@@ -55,7 +54,6 @@ export function createRouteTitle(parent?: Route): CreateRouteTitle {
     }
 
     return setTitleCallback(to, {
-      from: to,
       getParentTitle,
     })
   }
