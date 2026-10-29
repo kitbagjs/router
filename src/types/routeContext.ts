@@ -41,7 +41,9 @@ export type ContextRoutes<
       : FilterRouteContextRoutes<TContext>)
 ]
 
-type FilterRouteContextRoutes<TContext extends readonly RouteContext[] | undefined> = TContext extends readonly [infer First, ...infer Rest extends RouteContext[]]
+type FilterRouteContextRoutes<
+  TContext extends readonly RouteContext[] | undefined
+> = TContext extends readonly [infer First, ...infer Rest extends RouteContext[]]
   ? First extends GenericRoute
     ? [First, ...FilterRouteContextRoutes<Rest>]
     : FilterRouteContextRoutes<Rest>
