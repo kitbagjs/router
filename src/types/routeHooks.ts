@@ -1,4 +1,4 @@
-import { AnyHook, HookCallbackContext } from '@/types/hook'
+import { HookInternal, HookCallbackContext } from '@/types/hook'
 import { HookLifecycle, HookRegistrationOptions, HookRemove, InternalRouteHooks } from '@/types/hooks'
 import { Register } from '@/types/register'
 import { RegisteredContextRejections, RegisteredContextRoutes, RouteContext } from '@/types/routeContext'
@@ -28,7 +28,7 @@ type RouteHookMethod<
   TLifecycle extends HookLifecycle
 > = {
   // Attaching a typed hook must not resolve registration while the route is being inferred.
-  (hook: AnyHook, options?: HookRegistrationOptions): RouteWithMethods<TUrl, TMatches>,
+  (hook: HookInternal, options?: HookRegistrationOptions): RouteWithMethods<TUrl, TMatches>,
   <TRegister = Register>(
     ...args: Parameters<InternalRouteHooks<Route<TUrl, TMatches>, Route<TUrl, TMatches>['context'], HookRemove, TRegister>[TLifecycle]>
   ): RouteWithMethods<TUrl, TMatches>,
@@ -55,7 +55,7 @@ type ExternalRouteHookMethod<
   TRoute extends Route,
   TContext extends RouteContext[] | undefined
 > = {
-  (hook: AnyHook, options?: HookRegistrationOptions): ExternalRouteWithMethods<TRoute, TContext>,
+  (hook: HookInternal, options?: HookRegistrationOptions): ExternalRouteWithMethods<TRoute, TContext>,
   <TRegister = Register>(
     ...args: Parameters<InternalRouteHooks<TRoute, TContext, HookRemove, TRegister>['onBeforeRouteEnter']>
   ): ExternalRouteWithMethods<TRoute, TContext>,

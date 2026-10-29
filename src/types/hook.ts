@@ -55,7 +55,7 @@ export type CreateHook<
 /**
  * A reusable hook that can be attached before or after a route enters, updates, or leaves.
  */
-export type Hook<TContext extends readonly RouteContext[] = []> = {
+export type Hook<TContext extends readonly RouteContext[] = []> = HookInternal & {
   hook: HookCallback,
   context: TContext,
 }

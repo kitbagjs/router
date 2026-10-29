@@ -9,6 +9,19 @@ const extra = createRoute({
   name: 'extra',
   path: '/extra/[slug]',
 })
+const fallback = createRoute({
+  name: 'fallback',
+  path: '/fallback',
+})
+  .addView(component)
+const fallbackHook: Hook<readonly [typeof fallback]> = createHook({
+  context: [fallback],
+  hook: (_to, { replace }) => {
+    // @ts-expect-error explicit context must not widen route names
+    replace('missing')
+    return replace('fallback')
+  },
+})
 const logoutHook: Hook = createHook({
   hook: (to, { from, replace, reject }) => {
     expectTypeOf(to?.name).toEqualTypeOf<'login' | 'logout' | 'user' | 'plugin' | undefined>()
@@ -43,7 +56,12 @@ const routes = [
     path: '/logout',
     context: [extra, expired],
   })
-    .onBeforeRouteEnter(logoutHook),
+    .onBeforeRouteEnter(logoutHook)
+    .onBeforeRouteUpdate(logoutHook)
+    .onBeforeRouteLeave(logoutHook)
+    .onAfterRouteEnter(fallbackHook)
+    .onAfterRouteUpdate(logoutHook)
+    .onAfterRouteLeave(logoutHook),
   createRoute({
     name: 'user',
     path: '/users/[id]',
@@ -292,3 +310,10 @@ for (const lifecycle of [
 const beforeOnly: BeforeEnterHook = (_to, { abort }) => abort()
 // @ts-expect-error an after hook cannot require before-only context
 logout.onAfterRouteEnter(beforeOnly)
+
+const unmarkedHook = {
+  hook: () => {},
+  context: [],
+}
+// @ts-expect-error reusable hooks must carry the factory's marker
+logout.onBeforeRouteEnter(unmarkedHook)
