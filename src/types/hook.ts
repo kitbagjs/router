@@ -45,7 +45,10 @@ export type CreateHookOptions<
 /**
  * Creates hooks with callbacks typed to the router's resolved routes.
  */
-export type CreateHook<TRoutes extends Routes = Routes, TRejections extends Rejections = []> = <
+export type CreateHook<
+  TRoutes extends Routes = Routes,
+  TRejections extends Rejections = []
+> = <
   const TContext extends readonly RouteContext[] = []
 >(options: CreateHookOptions<TContext, TRoutes, TRejections>) => Hook<TContext>
 
