@@ -3,7 +3,7 @@ import { Component } from 'vue'
 import { ComponentProps } from '@/services/component'
 import { TransformerOptions } from '@/services/payload'
 import { PrefetchConfig } from '@/types/prefetch'
-import { RouteContextToRejections, RouteContextToRoute, RouteContext } from '@/types/routeContext'
+import { RouteContextToRejection, RouteContextToRoute, RouteContext } from '@/types/routeContext'
 import { ResolvedRouteWithDataUnion } from '@/types/resolved'
 import { Routes } from '@/types/route'
 import { RouterPush } from '@/types/routerPush'
@@ -27,7 +27,7 @@ export type ViewCallbackContext<
 > = {
   push: RouterPush<RouteContextToRoute<TContext, TRoutes>>,
   replace: RouterReplace<RouteContextToRoute<TContext, TRoutes>>,
-  reject: RouterReject<RouteContextToRejections<TContext, TRejections>>,
+  reject: RouterReject<RouteContextToRejection<TContext, TRejections>>,
   signal: AbortSignal,
 }
 
