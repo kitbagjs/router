@@ -51,14 +51,19 @@ export type RouteHooks<
   onAfterRouteLeave: RouteHookMethod<TUrl, TMatches, 'onAfterRouteLeave'>,
 }
 
+type ExternalRouteHookMethod<
+  TRoute extends Route,
+  TContext extends RouteContext[] | undefined
+> = {
+  (hook: AnyHook, options?: HookRegistrationOptions): ExternalRouteWithMethods<TRoute, TContext>,
+  <TRegister = Register>(
+    ...args: Parameters<InternalRouteHooks<TRoute, TContext, HookRemove, TRegister>['onBeforeRouteEnter']>
+  ): ExternalRouteWithMethods<TRoute, TContext>,
+}
+
 export type ExternalRouteHooks<
   TRoute extends Route = Route,
   TContext extends RouteContext[] | undefined = undefined
 > = {
-  onBeforeRouteEnter: {
-    (hook: AnyHook, options?: HookRegistrationOptions): ExternalRouteWithMethods<TRoute, TContext>,
-    <TRegister = Register>(
-      ...args: Parameters<InternalRouteHooks<TRoute, TContext, HookRemove, TRegister>['onBeforeRouteEnter']>
-    ): ExternalRouteWithMethods<TRoute, TContext>,
-  },
+  onBeforeRouteEnter: ExternalRouteHookMethod<TRoute, TContext>,
 }
