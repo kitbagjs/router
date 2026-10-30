@@ -47,12 +47,16 @@ describe('loaders', () => {
     expect(lastMatch(route).loaders).toStrictEqual({})
   })
 
-  test('adding a loader under a name the route already used overrides it', () => {
-    const route = createRoute({ name: 'route' })
-      .addLoader(load, { name: 'posts' })
-      .addLoader(other, { name: 'posts' })
+  test.each([
+    { first: undefined, second: undefined },
+    { first: undefined, second: 'default' },
+    { first: 'default', second: undefined },
+    { first: 'posts', second: 'posts' },
+  ])('duplicate loaders on the same route throw ($first, $second)', ({ first, second }) => {
+    const route = createRoute({ name: 'route' }).addLoader(load, { name: first })
 
-    expect(pick(route, 'load')).toStrictEqual({ posts: other })
+    expect(() => route.addLoader(other, { name: second })).toThrow(LoaderNameConflict)
+    expect(pick(route, 'load')).toStrictEqual({ [first ?? 'default']: load })
   })
 })
 
@@ -93,6 +97,30 @@ describe('ancestor conflicts', () => {
     const child = createRoute({ parent, name: 'child', path: '/child' })
 
     expect(() => child.addLoader(other, { name: 'posts' })).toThrow(LoaderNameConflict)
+  })
+
+  test('a loader with the same name as a grandparent throws', () => {
+    const grandparent = createRoute({ path: '/grandparent' }).addLoader(load, { name: 'posts' })
+    const parent = createRoute({ parent: grandparent, path: '/parent' })
+    const child = createRoute({ parent, path: '/child' })
+
+    expect(() => child.addLoader(other, { name: 'posts' })).toThrow(LoaderNameConflict)
+  })
+
+  test('separate sibling routes can use the same loader name', () => {
+    const parent = createRoute({ path: '/parent' })
+    const first = createRoute({ parent, path: '/first' }).addLoader(load)
+    const second = createRoute({ parent, path: '/second' }).addLoader(other)
+
+    expect(pick(first, 'load')).toStrictEqual({ default: load })
+    expect(pick(second, 'load')).toStrictEqual({ default: other })
+  })
+
+  test('loader names can match inherited object properties', () => {
+    const route = createRoute({ path: '/' }).addLoader(load, { name: 'toString' })
+
+    expect(pick(route, 'load')).toStrictEqual({ toString: load })
+    expect(() => route.addLoader(other, { name: 'toString' })).toThrow(LoaderNameConflict)
   })
 
   test('a loader with a name no ancestor uses is added', () => {

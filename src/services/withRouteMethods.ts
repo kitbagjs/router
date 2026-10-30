@@ -43,7 +43,7 @@ export function withRouteMethods<TRoute extends Route>(route: TRoute, hooks: Int
   const addLoader: AddLoader = (load, options) => {
     const loader = toNamedLoader(load, options)
 
-    checkForLoaderConflict(route.matches.slice(0, -1), loader.name)
+    checkForLoaderConflict(route.matches, loader.name)
 
     return withNextMatch((match) => addLoaderToMatch(match, loader))
   }

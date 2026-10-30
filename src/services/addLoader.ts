@@ -68,11 +68,10 @@ export function addLoaderToMatch(match: CreatedRouteOptions, loader: NamedLoader
 }
 
 /**
- * A route's data combines the loaders of every match, so a name an ancestor already uses would be
- * ambiguous. Adding a loader the route itself already has is an override, and allowed.
+ * Loader names share one namespace across a route and its ancestors.
  */
-export function checkForLoaderConflict(ancestors: CreatedRouteOptions[], name: string): void {
-  if (ancestors.some((ancestor) => name in ancestor.loaders)) {
+export function checkForLoaderConflict(matches: CreatedRouteOptions[], name: string): void {
+  if (matches.some((match) => Object.hasOwn(match.loaders, name))) {
     throw new LoaderNameConflict(name)
   }
 }
