@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-deprecated -- Keep legacy route.data compatibility coverage until removal. */
 import { expect, test } from 'vitest'
 import { toRaw } from 'vue'
 import { createLoader } from '@/services/createLoader'
@@ -21,7 +20,6 @@ test('route.loaders exposes inline, reusable, and inherited definitions', async 
   expect(isSameLoader(router.route.loaders.user, reusable)).toBe(true)
   expect(router.route.loaders.user.load).toBe(reusable.load)
   expect('data' in router.route.loaders.user).toBe(false)
-  await expect(router.route.data.default).resolves.toBe(42)
   router.stop()
 })
 

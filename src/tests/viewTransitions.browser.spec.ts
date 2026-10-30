@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-deprecated -- Keep legacy route.data compatibility coverage until removal. */
 import { afterEach, beforeEach, expect, MockInstance, test, vi } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import { createApp, defineAsyncComponent, defineComponent, h } from 'vue'
@@ -340,7 +339,7 @@ test('a superseding query navigation loads its own data', async () => {
   await Promise.all([first, second])
 
   expect(router.route.href).toBe('/withLoader?q=second')
-  expect(await router.route.data).toBe('second')
+  await expect(load.mock.results[1].value).resolves.toBe('second')
   expect(load).toHaveBeenCalledTimes(2)
 })
 

@@ -17,7 +17,7 @@ test('setTitle chains preserve route types and type the title callback', () => {
     .setTitle(() => 'User')
 
   expectTypeOf(route.setTitle(() => 'Updated')).toEqualTypeOf(route)
-  expectTypeOf(createRouter([route]).route.data).toEqualTypeOf<Promise<number>>()
+  expectTypeOf(createRouter([route]).route.loaders.default.load).returns.toEqualTypeOf<number>()
   // @ts-expect-error titles must resolve to strings
   route.setTitle(() => 42)
 })
