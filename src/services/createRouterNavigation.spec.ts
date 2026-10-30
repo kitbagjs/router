@@ -183,7 +183,7 @@ test('a staged props getter can await a later loader without warnings', async ()
   const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
   const route = createRoute({ name: 'route', path: '/' })
     .addLoader(() => 'loaded')
-    .addView(component, { props: async (route) => ({ value: await route.data }) })
+    .addView(component, { props: async (route) => ({ value: await route.getData() }) })
   const resolved = createResolvedRoute(route)
   const navigation = createRouterNavigation()
 
@@ -550,7 +550,7 @@ test.each(['push', 'reject'] as const)('a loader %s unwinds callback dependencie
     .addView(component, {
       props: async (route) => {
         try {
-          await route.data.base
+          await route.getData('base')
           continued()
         } catch (error) {
           caught.push(error)

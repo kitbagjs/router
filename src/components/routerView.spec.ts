@@ -75,7 +75,7 @@ describe('SSR', () => {
 
         return 'craig'
       })
-      .addView(view, { props: async (route) => ({ name: await route.data }) })
+      .addView(view, { props: async (route) => ({ name: await route.getData() }) })
 
     const router = createRouter([route], { initialUrl: '/' })
 

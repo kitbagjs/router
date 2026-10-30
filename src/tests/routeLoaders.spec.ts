@@ -325,7 +325,7 @@ describe('loader context', () => {
       .addLoader(async () => 'loaded', { name: 'thing' })
       .addView(component, {
         props: async (route) => {
-          seen(await route.data.thing)
+          seen(await route.getData('thing'))
 
           return {}
         },

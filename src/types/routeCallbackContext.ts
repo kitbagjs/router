@@ -5,7 +5,7 @@ import { RouterPush } from '@/types/routerPush'
 import { RouterReject } from '@/types/routerReject'
 import { RouterReplace } from '@/types/routerReplace'
 import { RouteUpdate } from '@/types/routeUpdate'
-import { LoadersDataReturnType } from '@/types/routeLoaders'
+import { GetData, LoadersData, LoadersDataReturnType } from '@/types/routeLoaders'
 import { ViewsPropsReturnType } from '@/types/routeViews'
 
 /**
@@ -32,6 +32,7 @@ type RouteCallbackParent<
 > = TRoute['matches'] extends [...CreatedRouteOptions[], infer TParent extends CreatedRouteOptions, CreatedRouteOptions]
   ? {
       name: TParent['name'],
+      getData: GetData<LoadersData<TParent['loaders']>>,
       /** @deprecated Use parent.getProps() or parent.getProps(name). */
       props: ViewsPropsReturnType<TParent['views']>,
       /** @deprecated Use parent.getData() or parent.getData(name). */
