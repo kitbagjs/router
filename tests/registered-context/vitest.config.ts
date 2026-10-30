@@ -10,6 +10,8 @@ export default defineConfig({
       enabled: true,
       only: true,
       checker: 'vue-tsc',
+      // Source types are checked separately without this Register augmentation.
+      ignoreSourceErrors: true,
       tsconfig: './tests/registered-context/tsconfig.json',
       include: ['tests/registered-context/**/*.spec-d.ts'],
     },

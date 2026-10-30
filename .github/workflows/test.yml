@@ -28,4 +28,4 @@ jobs:
         run: npm run types
 
       - name: Check registered callback types
-        run: npm run test:registered
+        run: npm run test:registered -- --run
