@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-deprecated -- Keep deprecated callback property compatibility coverage until removal. */
 import { describe, expectTypeOf, test } from 'vitest'
 import { createRoute } from './createRoute'
 import { Loader } from '@/types/loader'
