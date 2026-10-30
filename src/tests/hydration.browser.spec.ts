@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-deprecated -- Keep legacy route.data compatibility coverage until removal. */
 import { expect, test, vi } from 'vitest'
 import { createRouter } from '@/services/createRouter'
 import { createRoute } from '@/services/createRoute'
@@ -31,7 +30,6 @@ test('a payload for the initial url is adopted synchronously when the router sta
 
   await ready
 
-  await expect(router.route.data).resolves.toBe('from server')
   expect(load).not.toHaveBeenCalled()
 })
 
@@ -121,12 +119,13 @@ test('a value missing from the payload warns and computes again', async () => {
 
   embed({ kind: 'success', url: '/', values: [] })
 
-  const home = createRoute({ name: 'home', path: '/' }).addLoader(() => 'computed')
+  const load = vi.fn(() => 'computed')
+  const home = createRoute({ name: 'home', path: '/' }).addLoader(load)
   const router = createRouter([home], { initialUrl: '/' })
 
   await router.start()
 
-  await expect(router.route.data).resolves.toBe('computed')
+  expect(load).toHaveBeenCalledOnce()
   expect(warn.mock.calls.some(([message]) => String(message).includes('loader "default"'))).toBe(true)
 
   warn.mockRestore()
@@ -140,17 +139,18 @@ test('a value is adopted through its own parse', async () => {
   })
 
   const load = vi.fn(() => new Map<string, number>())
+  const parse = vi.fn((encoded: string) => new Map<string, number>(JSON.parse(encoded)))
   const home = createRoute({ name: 'home', path: '/' }).addLoader(load, {
     transformer: {
       stringify: (value) => JSON.stringify(Array.from(value.entries())),
-      parse: (encoded) => new Map(JSON.parse(encoded)),
+      parse,
     },
   })
   const router = createRouter([home], { initialUrl: '/' })
 
   await router.start()
 
-  await expect(router.route.data).resolves.toEqual(new Map([['a', 1]]))
+  expect(parse).toHaveBeenCalledExactlyOnceWith('[["a",1]]')
   expect(load).not.toHaveBeenCalled()
 })
 
@@ -163,7 +163,8 @@ test('a declared payload option that cannot read a value warns and computes agai
     values: [{ kind: 'loader', depth: 0, name: 'default', encoded: 'not what parse expects' }],
   })
 
-  const home = createRoute({ name: 'home', path: '/' }).addLoader(() => 1, {
+  const load = vi.fn(() => 1)
+  const home = createRoute({ name: 'home', path: '/' }).addLoader(load, {
     transformer: {
       stringify: String,
       parse: () => {
@@ -176,7 +177,7 @@ test('a declared payload option that cannot read a value warns and computes agai
 
   await router.start()
 
-  await expect(router.route.data).resolves.toBe(1)
+  expect(load).toHaveBeenCalledOnce()
   expect(warn.mock.calls.some(([message]) => String(message).includes('parse the payload value for loader "default"'))).toBe(true)
 
   warn.mockRestore()

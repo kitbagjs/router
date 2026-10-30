@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-deprecated -- Keep legacy route.data compatibility coverage until removal. */
 import { flushPromises } from '@vue/test-utils'
 import { describe, expect, test, vi } from 'vitest'
 import { createRoute } from '@/services/createRoute'
@@ -29,7 +28,6 @@ describe('router.render', () => {
     await rendering
 
     expect(rendered).toBe(true)
-    await expect(router.route.data).resolves.toBe('loaded')
   })
 
   test('waits for props to settle', async () => {
