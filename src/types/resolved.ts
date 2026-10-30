@@ -31,7 +31,7 @@ export type ResolvedRouteInternal = {
   getRouteTitle: GetRouteTitle,
 }
 
-type MatchedRoute<TMatches> = LastInArray<TMatches, CreatedRouteOptions> extends infer TMatched
+type MatchedRoute<TMatches extends CreatedRouteOptions[]> = LastInArray<TMatches> extends infer TMatched
   ? unknown extends TMatched ? CreatedRouteOptions : TMatched
   : never
 
@@ -99,16 +99,13 @@ export type ResolvedRoute<TRoute extends Route = Route> = Readonly<{
 }>
 
 /**
- * A resolved route with loader data access, as received by props getters. A route the router merely
- * resolved is not being loaded, so data on it could never settle. `router.resolve` and hooks do not
- * receive these accessors.
+ * The resolved route passed to a props callback, including its loader getter.
  */
-export type WithData<TRoute extends Route = Route> = {
-  /**
-   * Returns a loader's promise by name. Defaults to the unnamed loader.
-   */
-  getData: GetData<RouteLoadersOf<TRoute['matches']>>,
-}
+export type PropsCallbackRoute<TRoute extends Route = Route> = TRoute extends Route
+  ? ResolvedRoute<TRoute> & {
+    getData: GetData<RouteLoadersOf<TRoute['matches']>>,
+  }
+  : never
 
 /**
  * This type is the same as `ResolvedRoute<TRoutes[number]>` while remaining distributive
@@ -128,11 +125,4 @@ export type RouterResolvedRouteUnion<TRoutes extends Routes> = {
  */
 export type ResolvedRouteUnion<TRoute extends Route> = TRoute extends Route
   ? ResolvedRoute<TRoute>
-  : never
-
-/**
- * Converts a route union to resolved routes with their corresponding loader data.
- */
-export type ResolvedRouteWithDataUnion<TRoute extends Route> = TRoute extends Route
-  ? ResolvedRoute<TRoute> & WithData<TRoute>
   : never

@@ -6,9 +6,9 @@ import { defineComponent } from 'vue'
 import { createView } from '@/services/createView'
 import { createRoute } from '@/services/createRoute'
 import { createRejection } from '@/services/createRejection'
-import { View } from '@/types/view'
-import { RouteView } from '@/types/routeViews'
-import { ResolvedRoute, WithData } from '@/types/resolved'
+import { View, ViewWithProps } from '@/types/view'
+import { RouteViewWithProps } from '@/types/routeViews'
+import { PropsCallbackRoute } from '@/types/resolved'
 import { component } from '@/utilities/testHelpers'
 
 const userView = defineComponent((props: { id: number }) => () => props.id)
@@ -17,15 +17,15 @@ test('view props are checked against the component and preserved on attachment',
   const view = createView({
     component: userView,
     props: async (route) => {
-      expectTypeOf(route).toEqualTypeOf<ResolvedRoute & WithData>()
+      expectTypeOf(route).toEqualTypeOf<PropsCallbackRoute>()
       return { id: Number(route.params.id) }
     },
     transformer: { stringify: (value) => String(value.id), parse: (value) => ({ id: Number(value) }) },
   })
   const route = createRoute({ path: '/' }).addView(view, { name: 'user' })
 
-  expectTypeOf(view).toExtend<View<Promise<{ id: number }>>>()
-  expectTypeOf<typeof route['matches'][0]['views']>().toEqualTypeOf<{ user: RouteView<Promise<{ id: number }>> }>()
+  expectTypeOf(view).toExtend<ViewWithProps<Promise<{ id: number }>>>()
+  expectTypeOf<typeof route['matches'][0]['views']>().toEqualTypeOf<{ user: RouteViewWithProps<Promise<{ id: number }>> }>()
   // @ts-expect-error reusable view props are defined when creating the view
   createRoute({ path: '/' }).addView(view, { props: () => ({ id: 1 }) })
   // @ts-expect-error required component props need a getter
@@ -86,7 +86,7 @@ test('router assets type view callbacks with the matching loader data', () => {
     },
   })
 
-  expectTypeOf(view).toExtend<View<{ id: number }>>()
+  expectTypeOf(view).toExtend<ViewWithProps<{ id: number }>>()
   // @ts-expect-error router assets still require the component's props
   assets.createView({ component: userView })
 })

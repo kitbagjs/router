@@ -4,7 +4,7 @@ import { Loader } from '@/types/loader'
 import { createLoader } from '@/services/createLoader'
 import { BuiltInRejectionType } from '@/types/rejection'
 import { component } from '@/utilities/testHelpers'
-import { RouteView } from '@/types/routeViews'
+import { RouteView, RouteViewWithProps } from '@/types/routeViews'
 
 type User = { id: string, name: string }
 
@@ -73,7 +73,7 @@ describe('addLoader', () => {
         props: () => ({ foo: 'bar' }),
       })
 
-    expectTypeOf<typeof route['matches'][0]['views']>().toEqualTypeOf<{ default: RouteView<{ foo: string }> }>()
+    expectTypeOf<typeof route['matches'][0]['views']>().toEqualTypeOf<{ default: RouteViewWithProps<{ foo: string }> }>()
     expectTypeOf<typeof route['matches'][0]['loaders']>().toEqualTypeOf<{ default: Loader<string> }>()
   })
 
