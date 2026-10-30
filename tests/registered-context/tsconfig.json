@@ -4,5 +4,5 @@
     "skipLibCheck": false,
     "paths": { "@kitbag/router": ["./dist/kitbag-router.d.ts"] }
   },
-  "include": ["./*.ts"]
+  "include": ["./*.spec-d.ts"]
 }
