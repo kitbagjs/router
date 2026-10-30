@@ -48,17 +48,15 @@ const other = createRoute({ name: 'other' })
 const otherDenied = createRejection({ type: 'OtherDenied' })
 const assets = createRouterAssets(createRouter([other], { rejections: [otherDenied] }))
 
-test('Hook annotations preserve registered routes and rejections', () => {
+test('Hook annotations preserve registered callback routes', () => {
   const logoutHook: Hook = createHook({
     hook: (to, { from, replace, reject }) => {
       expectTypeOf(to?.name).toEqualTypeOf<'login' | 'logout' | 'user' | 'plugin' | undefined>()
       expectTypeOf(from?.name).toEqualTypeOf<'login' | 'logout' | 'user' | 'plugin' | undefined>()
+      // @ts-expect-error registered routes are not navigation context
+      replace('login')
+      // @ts-expect-error registered rejections are not navigation context
       reject('Denied')
-      // @ts-expect-error annotating the hook must not widen route names
-      replace('missing')
-      // @ts-expect-error annotating the hook must not widen rejection types
-      reject('Missing')
-      return replace('login')
     },
   })
 
@@ -69,9 +67,7 @@ test('Hook context annotations preserve required params', () => {
   const contextHook: Hook<readonly [typeof extra, typeof expired]> = createHook({
     context: [extra, expired],
     hook: (_to, { push, reject }) => {
-      push('login')
       push('extra', { slug: 'one' })
-      reject('Denied')
       reject('Expired')
       // @ts-expect-error an annotated context retains its required params
       push('extra')
@@ -90,14 +86,14 @@ test('onBeforeRouteEnter preserves callback route types', () => {
   })
 })
 
-test('onBeforeRouteEnter combines registration with context', () => {
+test('onBeforeRouteEnter uses declared navigation context', () => {
   logout.onBeforeRouteEnter((_to, { replace, reject }) => {
-    reject('Denied')
     reject('Expired')
     replace('extra', { slug: 'one' })
-    // @ts-expect-error unknown rejection
-    reject('Missing')
-    return replace('login')
+    // @ts-expect-error registered routes are not navigation context
+    replace('login')
+    // @ts-expect-error registered rejections are not navigation context
+    reject('Denied')
   })
 })
 
@@ -108,130 +104,109 @@ test('onAfterRouteLeave preserves callback route types', () => {
   })
 })
 
-test('addLoader combines registration with context', () => {
+test('addLoader uses declared navigation context', () => {
   logout.addLoader((route, { push, reject }) => {
     expectTypeOf(route.name).toEqualTypeOf<'logout'>()
-    push('login')
     push('extra', { slug: 'one' })
-    reject('Denied')
     reject('Expired')
+    // @ts-expect-error registered routes are not navigation context
+    push('login')
+    // @ts-expect-error registered rejections are not navigation context
+    reject('Denied')
     return 123
   })
 })
 
-test('addView combines registration with context', () => {
+test('addView uses declared navigation context', () => {
   logout.addView(component, {
     props: (route, { replace, reject }) => {
       expectTypeOf(route.name).toEqualTypeOf<'logout'>()
-      replace('login')
       replace('extra', { slug: 'one' })
-      reject('Denied')
       reject('Expired')
-      return {}
-    },
-  })
-})
-
-test('setTitle preserves callback route types', () => {
-  logout.setTitle((to, { from }) => {
-    expectTypeOf(to.name).toEqualTypeOf<'logout'>()
-    expectTypeOf(from).toEqualTypeOf<ResolvedRoute>()
-    return to.name
-  })
-})
-
-test('createHook infers registered routes and rejections', () => {
-  createHook({
-    hook: (to, { from, push, reject }) => {
-      expectTypeOf(to?.name).toEqualTypeOf<'login' | 'logout' | 'user' | 'plugin' | undefined>()
-      expectTypeOf(from?.name).toEqualTypeOf<'login' | 'logout' | 'user' | 'plugin' | undefined>()
-      push('login')
-      push('plugin')
-      reject('Denied')
-      // @ts-expect-error unknown route
-      push('missing')
-      // @ts-expect-error unknown rejection
-      reject('Missing')
-    },
-  })
-})
-
-test('createHook preserves registered route params', () => {
-  createHook({
-    hook: (_to, { push }) => {
-      push('user', { id: '1' })
-      // @ts-expect-error registered params are required
-      push('user')
-      // @ts-expect-error registered params retain their types
-      push('user', { id: 1 })
-    },
-  })
-})
-
-test('createLoader infers registered routes and rejections', () => {
-  createLoader({
-    load: (route, { replace, reject }) => {
-      expectTypeOf(route.name).toEqualTypeOf<'login' | 'logout' | 'user' | 'plugin'>()
+      // @ts-expect-error registered routes are not navigation context
       replace('login')
-      reject('Denied')
-      return true
-    },
-  })
-})
-
-test('createView infers registered routes and rejections', () => {
-  createView({
-    component,
-    props: (route, { push, reject }) => {
-      expectTypeOf(route.name).toEqualTypeOf<'login' | 'logout' | 'user' | 'plugin'>()
-      push('login')
+      // @ts-expect-error registered rejections are not navigation context
       reject('Denied')
       return {}
     },
   })
 })
 
-test('createHook combines registration with context', () => {
+test('createHook infers registered callback routes', () => {
   createHook({
-    context: [extra, expired],
-    hook: (to, { from, push, reject }) => {
+    hook: (to, { from }) => {
       expectTypeOf(to?.name).toEqualTypeOf<'login' | 'logout' | 'user' | 'plugin' | undefined>()
       expectTypeOf(from?.name).toEqualTypeOf<'login' | 'logout' | 'user' | 'plugin' | undefined>()
       if (to?.name === 'user') {
         expectTypeOf(to.params.id).toEqualTypeOf<string>()
       }
-      push('login')
-      push('extra', { slug: 'one' })
-      reject('Denied')
-      reject('Expired')
     },
   })
 })
 
-test('createLoader combines registration with context', () => {
+test('createLoader infers registered callback routes', () => {
   createLoader({
-    context: [extra, expired],
-    load: (route, { replace, reject }) => {
+    load: (route) => {
       expectTypeOf(route.name).toEqualTypeOf<'login' | 'logout' | 'user' | 'plugin'>()
-      replace('login')
-      replace('extra', { slug: 'one' })
-      reject('Denied')
-      reject('Expired')
       return true
     },
   })
 })
 
-test('createView combines registration with context', () => {
+test('createView infers registered callback routes', () => {
+  createView({
+    component,
+    props: (route) => {
+      expectTypeOf(route.name).toEqualTypeOf<'login' | 'logout' | 'user' | 'plugin'>()
+      return {}
+    },
+  })
+})
+
+test('createHook uses declared navigation context', () => {
+  createHook({
+    context: [extra, expired],
+    hook: (to, { from, push, reject }) => {
+      expectTypeOf(to?.name).toEqualTypeOf<'login' | 'logout' | 'user' | 'plugin' | undefined>()
+      expectTypeOf(from?.name).toEqualTypeOf<'login' | 'logout' | 'user' | 'plugin' | undefined>()
+      push('extra', { slug: 'one' })
+      reject('Expired')
+      // @ts-expect-error registered routes are not navigation context
+      push('login')
+      // @ts-expect-error registered rejections are not navigation context
+      reject('Denied')
+    },
+  })
+})
+
+test('createLoader uses declared navigation context', () => {
+  createLoader({
+    context: [extra, expired],
+    load: (route, { replace, reject }) => {
+      expectTypeOf(route.name).toEqualTypeOf<'login' | 'logout' | 'user' | 'plugin'>()
+      replace('extra', { slug: 'one' })
+      reject('Expired')
+      // @ts-expect-error registered routes are not navigation context
+      replace('login')
+      // @ts-expect-error registered rejections are not navigation context
+      reject('Denied')
+      return true
+    },
+  })
+})
+
+test('createView uses declared navigation context', () => {
   createView({
     component,
     context: [extra, expired],
     props: (route, { push, reject }) => {
       expectTypeOf(route.name).toEqualTypeOf<'login' | 'logout' | 'user' | 'plugin'>()
-      push('login')
       push('extra', { slug: 'one' })
-      reject('Denied')
       reject('Expired')
+      // @ts-expect-error registered routes are not navigation context
+      push('login')
+      // @ts-expect-error registered rejections are not navigation context
+      reject('Denied')
       return {}
     },
   })
@@ -242,14 +217,12 @@ test('assets.createHook uses its router types', () => {
     context: [extra, expired],
     hook: (to, { push, reject }) => {
       expectTypeOf(to?.name).toEqualTypeOf<'other' | undefined>()
-      push('other')
-      reject('OtherDenied')
       push('extra', { slug: 'one' })
       reject('Expired')
-      // @ts-expect-error a specific router does not inherit global registration
-      push('login')
-      // @ts-expect-error a specific router does not inherit global rejections
-      reject('Denied')
+      // @ts-expect-error router routes are not navigation context
+      push('other')
+      // @ts-expect-error router rejections are not navigation context
+      reject('OtherDenied')
     },
   })
 })
@@ -259,13 +232,12 @@ test('assets.createLoader uses its router types', () => {
     context: [extra, expired],
     load: (route, { push, reject }) => {
       expectTypeOf(route.name).toEqualTypeOf<'other'>()
-      push('other')
-      reject('OtherDenied')
+      push('extra', { slug: 'one' })
       reject('Expired')
-      // @ts-expect-error a specific router does not inherit global registration
-      push('login')
-      // @ts-expect-error a specific router does not inherit global rejections
-      reject('Denied')
+      // @ts-expect-error router routes are not navigation context
+      push('other')
+      // @ts-expect-error router rejections are not navigation context
+      reject('OtherDenied')
       return true
     },
   })
@@ -277,29 +249,30 @@ test('assets.createView uses its router types', () => {
     context: [extra, expired],
     props: (route, { push, reject }) => {
       expectTypeOf(route.name).toEqualTypeOf<'other'>()
-      push('other')
-      reject('OtherDenied')
+      push('extra', { slug: 'one' })
       reject('Expired')
-      // @ts-expect-error a specific router does not inherit global registration
-      push('login')
-      // @ts-expect-error a specific router does not inherit global rejections
-      reject('Denied')
+      // @ts-expect-error router routes are not navigation context
+      push('other')
+      // @ts-expect-error router rejections are not navigation context
+      reject('OtherDenied')
       return {}
     },
   })
 })
 
-test('createHook preserves registration with an empty context', () => {
+test('createHook does not infer navigation context from registration', () => {
   createHook({
     context: [],
     hook: (_to, { push, reject }) => {
+      // @ts-expect-error registered routes are not navigation context
       push('login')
+      // @ts-expect-error registered rejections are not navigation context
       reject('Denied')
     },
   })
 })
 
-test('createExternalRoute infers registered helpers without context', () => {
+test('createExternalRoute leaves omitted navigation context unrestricted', () => {
   const external = createExternalRoute({
     name: 'external',
     host: 'https://example.com',
@@ -308,23 +281,23 @@ test('createExternalRoute infers registered helpers without context', () => {
     expectTypeOf(to.name).toEqualTypeOf<'external'>()
     push('login')
     reject('Denied')
-    // @ts-expect-error an omitted external context must not widen route names
     push('missing')
-    // @ts-expect-error an omitted external context must not widen rejection types
     reject('Missing')
   })
 })
 
-test('createExternalRoute combines registration with context', () => {
+test('createExternalRoute uses declared navigation context', () => {
   const externalWithContext = createExternalRoute({
     name: 'externalWithContext',
     host: 'https://example.com',
     context: [extra, expired],
   })
   externalWithContext.onBeforeRouteEnter((_to, { push, reject }) => {
-    push('login')
     push('extra', { slug: 'one' })
-    reject('Denied')
     reject('Expired')
+    // @ts-expect-error registered routes are not navigation context
+    push('login')
+    // @ts-expect-error registered rejections are not navigation context
+    reject('Denied')
   })
 })
