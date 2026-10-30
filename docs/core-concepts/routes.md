@@ -257,7 +257,6 @@ The context object has the following properties:
 
 | Property | Description |
 | -------- | ----------- |
-| from | What was the route prior to the hook's execution |
 | getParentTitle | A function that returns the title of the parent route. |
 
 ```ts

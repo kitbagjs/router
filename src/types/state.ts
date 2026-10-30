@@ -1,6 +1,6 @@
 import { ExtractParamName, ExtractParamType } from '@/types/params'
 import { ParamOptions } from '@/types/paramTypes'
-import { GenericRoutes } from '@/types/route'
+import { Routes } from '@/types/route'
 import { RouteGetByKey } from '@/types/routeWithParams'
 import { MakeOptional } from '@/utilities/makeOptional'
 import { Identity } from '@/types/utilities'
@@ -12,7 +12,7 @@ export type ExtractRouteStateParamsAsOptional<TParamOptions extends Record<strin
 }
 
 export type RouteStateByName<
-  TRoutes extends GenericRoutes,
+  TRoutes extends Routes,
   TName extends string
 > = ExtractStateParams<RouteGetByKey<TRoutes, TName>>
 

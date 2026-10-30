@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest'
+import { describe, expect, test, vi } from 'vitest'
 import { createRoute } from '@/services/createRoute'
 import { createResolvedRoute } from '@/services/createResolvedRoute'
 import { isResolvedRoute } from '@/types/resolved'
@@ -93,6 +93,19 @@ describe('getTitle', () => {
     route.setTitle(() => 'Home')
 
     await expect(createResolvedRoute(route).getTitle()).resolves.toBe('Home')
+  })
+
+  test('direct title resolution only provides getParentTitle in the context', async () => {
+    const route = createRoute({ name: 'home', path: '/' }).addView(component)
+    const callback = vi.fn(() => 'Home')
+    route.setTitle(callback)
+    const resolved = createResolvedRoute(route)
+
+    await resolved.getTitle()
+
+    expect(callback).toHaveBeenCalledExactlyOnceWith(resolved, {
+      getParentTitle: expect.any(Function),
+    })
   })
 
   test('resolves to undefined for a route with no title', async () => {

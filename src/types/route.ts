@@ -153,5 +153,3 @@ export type GenericRoute = Url & {
   state: Record<string, ParamOptions>,
   prefetch?: PrefetchConfig,
 }
-
-export type GenericRoutes = readonly GenericRoute[]
