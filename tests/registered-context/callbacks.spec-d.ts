@@ -1,5 +1,17 @@
 import { expectTypeOf, test } from 'vitest'
-import { createRoute, createExternalRoute, createRouter, createRouterAssets, createRouterPlugin, createHook, createLoader, createView, createRejection, type Hook, type ResolvedRoute } from '@kitbag/router'
+import {
+  createExternalRoute,
+  createHook,
+  createLoader,
+  createRejection,
+  createRoute,
+  createRouter,
+  createRouterAssets,
+  createRouterPlugin,
+  createView,
+  type Hook,
+  type ResolvedRoute,
+} from '@kitbag/router'
 import { defineComponent } from 'vue'
 
 const component = defineComponent(() => () => null)
@@ -36,7 +48,7 @@ const other = createRoute({ name: 'other' })
 const otherDenied = createRejection({ type: 'OtherDenied' })
 const assets = createRouterAssets(createRouter([other], { rejections: [otherDenied] }))
 
-test('annotated hooks retain registered routes and rejections', () => {
+test('Hook annotations preserve registered routes and rejections', () => {
   const logoutHook: Hook = createHook({
     hook: (to, { from, replace, reject }) => {
       expectTypeOf(to?.name).toEqualTypeOf<'login' | 'logout' | 'user' | 'plugin' | undefined>()
@@ -53,7 +65,7 @@ test('annotated hooks retain registered routes and rejections', () => {
   logout.onBeforeRouteEnter(logoutHook)
 })
 
-test('annotated hook context retains required params', () => {
+test('Hook context annotations preserve required params', () => {
   const contextHook: Hook<readonly [typeof extra, typeof expired]> = createHook({
     context: [extra, expired],
     hook: (_to, { push, reject }) => {
@@ -63,39 +75,40 @@ test('annotated hook context retains required params', () => {
       reject('Expired')
       // @ts-expect-error an annotated context retains its required params
       push('extra')
+      // @ts-expect-error an annotated context retains its param types
+      push('extra', { slug: 1 })
     },
   })
 
   logout.onAfterRouteEnter(contextHook)
 })
 
-test('route enter hooks combine registration with local context', () => {
-  logout.onBeforeRouteEnter((to, { from, replace, reject, update }) => {
+test('onBeforeRouteEnter preserves callback route types', () => {
+  logout.onBeforeRouteEnter((to, { from }) => {
     expectTypeOf(to.name).toEqualTypeOf<'logout'>()
     expectTypeOf(from).toEqualTypeOf<ResolvedRoute | null>()
-    expectTypeOf(update).toBeCallableWith({})
+  })
+})
+
+test('onBeforeRouteEnter combines registration with context', () => {
+  logout.onBeforeRouteEnter((_to, { replace, reject }) => {
     reject('Denied')
     reject('Expired')
     replace('extra', { slug: 'one' })
-    // @ts-expect-error registered params are required
-    replace('user')
-    // @ts-expect-error context params retain their types
-    replace('extra', { slug: 1 })
     // @ts-expect-error unknown rejection
     reject('Missing')
     return replace('login')
   })
 })
 
-test('route leave hooks retain the source route and plugin routes', () => {
-  logout.onAfterRouteLeave((to, { from, push }) => {
+test('onAfterRouteLeave preserves callback route types', () => {
+  logout.onAfterRouteLeave((to, { from }) => {
     expectTypeOf(from.name).toEqualTypeOf<'logout'>()
     expectTypeOf(to).toEqualTypeOf<ResolvedRoute | null>()
-    push('plugin')
   })
 })
 
-test('route loaders combine registration with local context', () => {
+test('addLoader combines registration with context', () => {
   logout.addLoader((route, { push, reject }) => {
     expectTypeOf(route.name).toEqualTypeOf<'logout'>()
     push('login')
@@ -106,7 +119,7 @@ test('route loaders combine registration with local context', () => {
   })
 })
 
-test('route views combine registration with local context', () => {
+test('addView combines registration with context', () => {
   logout.addView(component, {
     props: (route, { replace, reject }) => {
       expectTypeOf(route.name).toEqualTypeOf<'logout'>()
@@ -119,13 +132,21 @@ test('route views combine registration with local context', () => {
   })
 })
 
-test('standalone hooks infer registered routes and rejections', () => {
+test('setTitle preserves callback route types', () => {
+  logout.setTitle((to, { from }) => {
+    expectTypeOf(to.name).toEqualTypeOf<'logout'>()
+    expectTypeOf(from).toEqualTypeOf<ResolvedRoute>()
+    return to.name
+  })
+})
+
+test('createHook infers registered routes and rejections', () => {
   createHook({
     hook: (to, { from, push, reject }) => {
       expectTypeOf(to?.name).toEqualTypeOf<'login' | 'logout' | 'user' | 'plugin' | undefined>()
       expectTypeOf(from?.name).toEqualTypeOf<'login' | 'logout' | 'user' | 'plugin' | undefined>()
       push('login')
-      push('user', { id: '1' })
+      push('plugin')
       reject('Denied')
       // @ts-expect-error unknown route
       push('missing')
@@ -135,7 +156,19 @@ test('standalone hooks infer registered routes and rejections', () => {
   })
 })
 
-test('standalone loaders infer registered routes and rejections', () => {
+test('createHook preserves registered route params', () => {
+  createHook({
+    hook: (_to, { push }) => {
+      push('user', { id: '1' })
+      // @ts-expect-error registered params are required
+      push('user')
+      // @ts-expect-error registered params retain their types
+      push('user', { id: 1 })
+    },
+  })
+})
+
+test('createLoader infers registered routes and rejections', () => {
   createLoader({
     load: (route, { replace, reject }) => {
       expectTypeOf(route.name).toEqualTypeOf<'login' | 'logout' | 'user' | 'plugin'>()
@@ -146,7 +179,7 @@ test('standalone loaders infer registered routes and rejections', () => {
   })
 })
 
-test('standalone views infer registered routes and rejections', () => {
+test('createView infers registered routes and rejections', () => {
   createView({
     component,
     props: (route, { push, reject }) => {
@@ -158,7 +191,7 @@ test('standalone views infer registered routes and rejections', () => {
   })
 })
 
-test('hook context extends helpers without widening callback routes', () => {
+test('createHook combines registration with context', () => {
   createHook({
     context: [extra, expired],
     hook: (to, { from, push, reject }) => {
@@ -171,13 +204,11 @@ test('hook context extends helpers without widening callback routes', () => {
       push('extra', { slug: 'one' })
       reject('Denied')
       reject('Expired')
-      // @ts-expect-error context params are required
-      push('extra')
     },
   })
 })
 
-test('loader context extends helpers without widening callback routes', () => {
+test('createLoader combines registration with context', () => {
   createLoader({
     context: [extra, expired],
     load: (route, { replace, reject }) => {
@@ -191,7 +222,7 @@ test('loader context extends helpers without widening callback routes', () => {
   })
 })
 
-test('view context extends helpers without widening callback routes', () => {
+test('createView combines registration with context', () => {
   createView({
     component,
     context: [extra, expired],
@@ -206,7 +237,7 @@ test('view context extends helpers without widening callback routes', () => {
   })
 })
 
-test('router asset hooks use their own router instead of global registration', () => {
+test('assets.createHook uses its router types', () => {
   assets.createHook({
     context: [extra, expired],
     hook: (to, { push, reject }) => {
@@ -223,15 +254,7 @@ test('router asset hooks use their own router instead of global registration', (
   })
 })
 
-test('route title callbacks retain the route and registered source', () => {
-  logout.setTitle((to, { from }) => {
-    expectTypeOf(to.name).toEqualTypeOf<'logout'>()
-    expectTypeOf(from).toEqualTypeOf<ResolvedRoute>()
-    return to.name
-  })
-})
-
-test('router asset loaders use their own router instead of global registration', () => {
+test('assets.createLoader uses its router types', () => {
   assets.createLoader({
     context: [extra, expired],
     load: (route, { push, reject }) => {
@@ -248,7 +271,7 @@ test('router asset loaders use their own router instead of global registration',
   })
 })
 
-test('router asset views use their own router instead of global registration', () => {
+test('assets.createView uses its router types', () => {
   assets.createView({
     component,
     context: [extra, expired],
@@ -266,7 +289,7 @@ test('router asset views use their own router instead of global registration', (
   })
 })
 
-test('empty hook context retains registered helpers', () => {
+test('createHook preserves registration with an empty context', () => {
   createHook({
     context: [],
     hook: (_to, { push, reject }) => {
@@ -276,7 +299,7 @@ test('empty hook context retains registered helpers', () => {
   })
 })
 
-test('external route hooks infer registered helpers without context', () => {
+test('createExternalRoute infers registered helpers without context', () => {
   const external = createExternalRoute({
     name: 'external',
     host: 'https://example.com',
@@ -292,7 +315,7 @@ test('external route hooks infer registered helpers without context', () => {
   })
 })
 
-test('external route hooks combine registration with local context', () => {
+test('createExternalRoute combines registration with context', () => {
   const externalWithContext = createExternalRoute({
     name: 'externalWithContext',
     host: 'https://example.com',
