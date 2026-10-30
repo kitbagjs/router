@@ -87,9 +87,7 @@ const user = createRoute({
 
 ## Parent Props
 
-The [callback context](/core-concepts/component-props#context) includes a `parent` property which contains the name and props of the parent route. This can be useful for passing down data to child components.
-
-`parent.props` is always a promise and must be awaited, even when the parent's getter is synchronous. The parent's props may not have been computed when your getter runs — if the parent's props are prefetched at a different strategy than yours, or not prefetched at all, awaiting them waits until they are.
+The [callback context](#context) includes `parent.getProps` for reading parent props.
 
 ```ts
 const blogPost = createRoute({
@@ -114,7 +112,7 @@ const blogPostTabs = createRoute({
 .addView(PostTabs, {
   props: async (route, { parent }) => {
     const tab = route.params.tab
-    const { post } = await parent.props
+    const { post } = await parent.getProps()
 
     return {
       tab,
@@ -135,7 +133,7 @@ The router provides a second `context` argument to your props callback. The cont
 | Property | Description |
 | ---- | ---- |
 | push | Convenient way to move the user from wherever they were to a new route. |
-| parent | And object containing the name and props of the parent route. |
+| parent | The parent's name, `getData`, and `getProps`. |
 | replace | Same as push, but with `options: { replace: true }`. |
 | reject | Trigger a [rejection](/advanced-concepts/rejections) for the router to handle |
 | signal | An `AbortSignal` that aborts when the router navigates away from the route. |

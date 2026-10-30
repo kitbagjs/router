@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-deprecated -- Keep deprecated parent.data and parent.props compatibility coverage until removal. */
 import { flushPromises, mount } from '@vue/test-utils'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { Component, defineAsyncComponent, h, nextTick, ref } from 'vue'
@@ -1140,7 +1139,7 @@ describe('prefetch props', () => {
 
     const child = createRoute({ parent, name: 'child', path: '/child', prefetch: { props: 'eager' } }).addView(echo, {
       props: async (__, { parent }) => {
-        settled.push(await parent.props)
+        settled.push(await parent.getProps())
 
         return { value: 'child' }
       },
@@ -1179,7 +1178,7 @@ describe('prefetch props', () => {
 
     const child = createRoute({ parent, name: 'child', path: '/child', prefetch: { props: 'eager' } }).addView(echo, {
       props: async (__, { parent }) => {
-        settled.push(await parent.props)
+        settled.push(await parent.getProps())
 
         return { value: 'child' }
       },
@@ -1217,7 +1216,7 @@ describe('prefetch props', () => {
 
     const child = createRoute({ parent, name: 'child', path: '/child', prefetch: { props: 'intent' } }).addView(echo, {
       props: async (__, { parent }) => {
-        settled.push(await parent.props)
+        settled.push(await parent.getProps())
 
         return { value: 'child' }
       },
@@ -1254,7 +1253,7 @@ describe('prefetch props', () => {
 
     const child = createRoute({ parent, name: 'child', path: '/child', prefetch: { props: 'eager' } }).addView(echo, {
       props: async (__, { parent }) => {
-        settled.push(await parent.props)
+        settled.push(await parent.getProps())
 
         return { value: 'child' }
       },
@@ -1295,7 +1294,7 @@ describe('prefetch props', () => {
     const child = createRoute({ parent, name: 'child', path: '/child', prefetch: { props: 'eager' } }).addView(echo, {
       props: async (__, { parent }) => {
         try {
-          await parent.props
+          await parent.getProps()
         } catch (error) {
           caught.push(error)
         }
@@ -1336,7 +1335,7 @@ describe('prefetch props', () => {
 
     const child = createRoute({ parent, name: 'child', path: '/child', prefetch: { props: 'eager' } }).addView(echo, {
       props: (__, { parent }) => {
-        void parent.props
+        void parent.getProps()
 
         return { value: 'child' }
       },
@@ -1373,7 +1372,7 @@ describe('prefetch props', () => {
 
     const child = createRoute({ parent, name: 'child', path: '/child', prefetch: { props: 'eager' } }).addView(echo, {
       props: (__, { parent }) => {
-        void parent.props
+        void parent.getProps()
 
         return { value: 'child' }
       },
@@ -1405,7 +1404,7 @@ describe('prefetch props', () => {
 
     const child = createRoute({ parent, name: 'child', path: '/child', prefetch: { props: 'eager' } }).addView(echo, {
       props: async (__, { parent }) => {
-        settled.push(await parent.props)
+        settled.push(await parent.getProps())
 
         return { value: 'child' }
       },
@@ -1438,7 +1437,7 @@ describe('prefetch props', () => {
 
     const child = createRoute({ parent, name: 'child', path: '/child', prefetch: { props: 'eager' } }).addView(echo, {
       props: async (__, { parent }) => {
-        childSawParentProps = await parent.props
+        childSawParentProps = await parent.getProps()
 
         return { value: 'child' }
       },

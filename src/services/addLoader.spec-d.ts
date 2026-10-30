@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-deprecated -- Keep deprecated callback property compatibility coverage until removal. */
 import { describe, expectTypeOf, test } from 'vitest'
 import { createRoute } from './createRoute'
 import { Loader } from '@/types/loader'
@@ -189,7 +188,7 @@ describe('loader callback', () => {
       // @ts-expect-error should not accept an invalid param name
       context.update('invalidParamName', 'value')
 
-      return await context.parent.props
+      return await context.parent.getProps()
     })
   })
 })

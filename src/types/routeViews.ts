@@ -48,3 +48,10 @@ type HasViewProps<TView> = [ViewProps<TView>] extends [undefined]
 type ViewProps<TView> = TView extends { props?: AnyFunction<infer TProps> } ? TProps : undefined
 
 type ParentViewProps<TView> = Promise<Awaited<ViewProps<TView>>>
+
+/**
+ * Reads view props by name. Omitting the name selects `default` when declared.
+ */
+export type GetProps<TViews extends RouteViews = RouteViews> = <TName extends keyof ViewsWithProps<TViews> & string = Extract<'default', keyof ViewsWithProps<TViews>>>(
+  ...args: TName extends 'default' ? [name?: TName] : [name: TName]
+) => Promise<Awaited<ViewProps<TViews[TName]>>>
