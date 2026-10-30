@@ -49,6 +49,21 @@ export default defineConfig({
           },
         },
       },
+      {
+        extends: true,
+        test: {
+          name: 'registered-context',
+          include: [],
+          // Keep Register augmentation separate from the source test suite.
+          typecheck: {
+            enabled: true,
+            checker: 'vue-tsc',
+            ignoreSourceErrors: true,
+            tsconfig: './tests/registered-context/tsconfig.json',
+            include: ['tests/registered-context/**/*.spec-d.ts'],
+          },
+        },
+      },
     ],
   },
   build: {
