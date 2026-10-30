@@ -12,7 +12,7 @@ test('router route does not retain the initial resolved route internals', () => 
   const initial = createResolvedRoute(createRoute({ name: 'initial' }))
   const next = createResolvedRoute(createRoute({ name: 'next' }))
   const routerKey = Symbol()
-  const routerRoute = createRouterRoute({ routerKey, route: initial, push: vi.fn(), getRouteData: () => undefined })
+  const routerRoute = createRouterRoute({ routerKey, route: initial, push: vi.fn(), getRouteData: () => ({}) })
 
   for (const route of [initial, next]) {
     routerRoute.updateRoute(route)
@@ -28,7 +28,7 @@ test('router route does not retain the initial resolved route internals', () => 
 test('updateRoute updates the derived fields and the current resolved route', () => {
   const initial = createResolvedRoute(createRoute({ name: 'initial', path: '/initial/[id]' }), { id: '1' }, { query: { page: '1' } })
   const next = createResolvedRoute(createRoute({ name: 'next', path: '/next/[id]' }), { id: '2' }, { query: { page: '2' }, hash: 'details' })
-  const routerRoute = createRouterRoute({ routerKey: Symbol(), route: initial, push: vi.fn(), getRouteData: () => undefined })
+  const routerRoute = createRouterRoute({ routerKey: Symbol(), route: initial, push: vi.fn(), getRouteData: () => ({}) })
 
   expect(routerRoute.name).toBe('initial')
   expect({ ...routerRoute.params }).toEqual({ id: '1' })
@@ -59,7 +59,7 @@ test('isRouterRoute returns correct response', () => {
     routerKey,
     route: resolved,
     push,
-    getRouteData: () => undefined,
+    getRouteData: () => ({}),
   })
 
   expect(isRouterRoute(routerKey, routerRoute)).toBe(true)
@@ -76,7 +76,7 @@ test('sending state, includes state in push options', () => {
     routerKey,
     route: resolved,
     push,
-    getRouteData: () => undefined,
+    getRouteData: () => ({}),
   })
 
   routerRoute.update({}, { state: { foo: 'foo' } })

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-deprecated -- Keep deprecated callback property compatibility coverage until removal. */
 import { flushPromises } from '@vue/test-utils'
 import { describe, expect, test, vi } from 'vitest'
 import { createRoute } from '@/services/createRoute'
@@ -12,7 +11,7 @@ import { component } from '@/utilities/testHelpers'
  * would do.
  */
 function readOwnData(route: object): unknown {
-  return (route as { data: unknown }).data
+  return (route as { getData: () => unknown }).getData()
 }
 
 describe('loaders do not block', () => {
@@ -127,7 +126,7 @@ describe('loader context', () => {
     const child = createRoute({ parent, name: 'child', path: '/child' })
       .addView(component, {
         props: async (_route, { parent }) => {
-          props(await parent.data)
+          props(await parent.getData())
 
           return {}
         },
@@ -178,7 +177,7 @@ describe('loader context', () => {
       .addLoader(async () => 'loaded', { name: 'thing' })
       .addView(component, {
         props: async (route) => {
-          seen(await route.data.thing)
+          seen(await route.getData('thing'))
 
           return {}
         },
@@ -197,7 +196,7 @@ describe('loader context', () => {
       .addLoader(async () => 'from parent', { name: 'parentData' })
 
     const child = createRoute({ parent, name: 'child', path: '/child' })
-      .addLoader(async (_route, { parent }) => received(await parent.data.parentData))
+      .addLoader(async (_route, { parent }) => received(await parent.getData('parentData')))
 
     const router = createRouter([parent, child], { initialUrl: '/parent/child' })
 

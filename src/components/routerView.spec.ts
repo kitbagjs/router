@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-deprecated -- Keep deprecated callback property compatibility coverage until removal. */
 /* eslint-disable vue/one-component-per-file */
 import { createSSRApp, defineComponent, h } from 'vue'
 import { describe, it, expect } from 'vitest'
@@ -75,7 +74,7 @@ describe('SSR', () => {
 
         return 'craig'
       })
-      .addView(view, { props: async (route) => ({ name: await route.data }) })
+      .addView(view, { props: async (route) => ({ name: await route.getData() }) })
 
     const router = createRouter([route], { initialUrl: '/' })
 

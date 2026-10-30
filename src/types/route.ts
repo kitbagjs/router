@@ -83,8 +83,8 @@ type RouteStateOf<TMatches extends CreatedRouteOptions[]> = CreatedRouteOptions[
  */
 export type RouteLoadersOf<TMatches extends CreatedRouteOptions[]> = CreatedRouteOptions[] extends TMatches
   ? RouteLoaders
-  : TMatches extends [infer THead, ...infer TRest extends CreatedRouteOptions[]]
-    ? (THead extends { loaders: infer TLoaders extends RouteLoaders } ? TLoaders : {}) & RouteLoadersOf<TRest>
+  : TMatches extends [infer THead extends CreatedRouteOptions, ...infer TRest extends CreatedRouteOptions[]]
+    ? THead['loaders'] & RouteLoadersOf<TRest>
     : {}
 
 /**

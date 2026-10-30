@@ -1,12 +1,14 @@
 import { markRaw } from 'vue'
-import { ResolvedRoute, WithData } from '@/types/resolved'
-import { DEFAULT_VIEW_NAME } from './routeViews'
+import { getRouteLoaderLocation } from '@/services/getRouteLoaderLocation'
+import { ResolvedRoute } from '@/types/resolved'
 import { DEFAULT_LOADER_NAME } from './addLoader'
+import { toLegacyValues } from '@/utilities/toLegacyValues'
 import { unwrapComputationResponse } from '@/utilities/unwrapComputationResponse'
 import { ContextPushError } from '@/errors/contextPushError'
 import { LoaderDataAccessError } from '@/errors/loaderDataAccessError'
 import { ContextRejectionError } from '@/errors/contextRejectionError'
 import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
+import { DataRecord } from '@/types/data'
 import { PropsCallbackParent } from '@/types/props'
 import { createVueAppStore, HasVueAppStore } from './createVueAppStore'
 import { CallbackContextError, CallbackContextPush, CallbackContextReject, CallbackContextResponse } from '@/types/callbackContext'
@@ -96,10 +98,9 @@ export type RouterNavigationStores = HasVueAppStore & {
   getValues: (route: ResolvedRoute) => RouteValue[],
   getProps: (id: string, name: string, route: ResolvedRoute) => MaybePromise<PropsResult>,
   /**
-   * What a route exposes as `data`. Resolved per read rather than captured, so it stays correct as
-   * navigations replace the store its values live in.
+   * Loader promises keyed by name, resolved against the current navigation on each read.
    */
-  getRouteData: (route: ResolvedRoute) => WithData['data'],
+  getRouteData: (route: ResolvedRoute) => DataRecord,
   getLoaderState: (location: ValueLocation<'loader'>, route: ResolvedRoute) => DataResult,
   getLoaderValue: (location: ValueLocation<'loader'>, route: ResolvedRoute) => Promise<unknown>,
 }
@@ -359,10 +360,10 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     }
   }
 
-  function getRouteData(route: ResolvedRoute): WithData['data'] {
+  function getRouteData(route: ResolvedRoute): DataRecord {
     const loaders = getComputations(route).filter(isKind('loader'))
 
-    return toValues(loaders, DEFAULT_LOADER_NAME, (location) => getComponentValue(location, route))
+    return toValues(loaders, (location) => getComponentValue(location, route))
   }
 
   const getLoaderState: RouterNavigationStores['getLoaderState'] = (location: ValueLocation, route) => {
@@ -390,12 +391,18 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
   /**
    * Loaders cannot read their own route's data, which could create circular dependencies.
    * They can read parent data instead. Props callbacks read data from their computation store.
-   * The proxy avoids subscribing to route.data until a callback actually reads it.
+   * The proxy avoids subscribing to loader data until a callback calls route.getData().
    */
   function toCallbackRoute({ kind, name }: Computation, route: ResolvedRoute, context: CallbackValueContext): ResolvedRoute {
+    function getData(name = DEFAULT_LOADER_NAME): Promise<unknown> {
+      const location = getRouteLoaderLocation(route, name)
+
+      return getCallbackValue(location, route, context)
+    }
+
     return new Proxy(route, {
       get(target, property, receiver) {
-        if (property !== 'data') {
+        if (property !== 'data' && property !== 'getData') {
           return Reflect.get(target, property, receiver)
         }
 
@@ -403,11 +410,14 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
           throw new LoaderDataAccessError(name)
         }
 
-        // computing into a store that is not yet current resolves data against it as well as the
-        // navigation's, so a getter does not have to know which of the two will compute what it reads
-        const loaders = getComputations(route).filter(isKind('loader'))
+        if (property === 'data') {
+          const loaders = getComputations(route).filter(isKind('loader'))
+          const values = toValues(loaders, (location) => getCallbackValue(location, route, context))
 
-        return toValues(loaders, DEFAULT_LOADER_NAME, (location) => getCallbackValue(location, route, context))
+          return toLegacyValues(values)
+        }
+
+        return getData
       },
     })
   }
@@ -426,39 +436,41 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
     return {
       name: parentName,
+      getData(name = DEFAULT_LOADER_NAME) {
+        const location = getRouteLoaderLocation(route, name, route.matches.slice(0, depth))
+
+        return getCallbackValue(location, route, context)
+      },
       get props() {
-        return toValues(propsLocations(parentMatch), DEFAULT_VIEW_NAME, (location) => getCallbackValue(location, route, context))
+        const values = toValues(propsLocations(parentMatch), (location) => getCallbackValue(location, route, context))
+
+        return toLegacyValues(values)
       },
       get data() {
-        return toValues(loaderLocations(parentMatch), DEFAULT_LOADER_NAME, (location) => getCallbackValue(location, route, context))
+        const values = toValues(loaderLocations(parentMatch), (location) => getCallbackValue(location, route, context))
+
+        return toLegacyValues(values)
       },
     }
   }
 
   /**
-   * A set of named values as a callback or component sees them. A lone unnamed value is given directly,
-   * matching how it was written, and named values sit behind a proxy so only what is read is waited on.
+   * Named promises are read lazily so only requested values subscribe to the computation store.
    */
-  function toValues(locations: ValueLocation[], bareName: string, read: (location: ValueLocation) => Promise<unknown>): WithData['data'] {
-    if (locations.length === 0) {
-      return undefined
-    }
-
-    const [only] = locations
-
-    if (locations.length === 1 && only.name === bareName) {
-      return read(only)
-    }
-
+  function toValues(locations: ValueLocation[], read: (location: ValueLocation) => Promise<unknown>): DataRecord {
     const find = (property: string | symbol): ValueLocation | undefined => locations.find(({ name }) => name === property)
 
-    const values: Record<string, Promise<unknown>> = {}
+    const values: DataRecord = {}
 
     return markRaw(new Proxy(values, {
       get(target, property) {
         const location = find(property)
 
-        return location ? read(location) : Reflect.get(target, property)
+        if (location) {
+          return read(location)
+        }
+
+        return Reflect.get(target, property)
       },
       has(target, property) {
         return Boolean(find(property)) || Reflect.has(target, property)

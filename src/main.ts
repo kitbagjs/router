@@ -21,8 +21,9 @@ export type {
 export type { RouteAddAlias, AddAliasOptions } from './types/addAlias'
 export type { AliasTransform, AliasTransformContext } from './types/routeAlias'
 export type { RouteCallbackContext } from './types/routeCallbackContext'
+export type { DataRecord } from './types/data'
 export type { RouteViews } from './types/routeViews'
-export type { RouteLoaders } from './types/routeLoaders'
+export type { GetData, RouteLoaders } from './types/routeLoaders'
 export type { CreateLoaderOptions, Loader, LoaderCallbackContext } from './types/loader'
 export type { UseLoader, UseLoaderResolved } from './types/useLoader'
 export type {
