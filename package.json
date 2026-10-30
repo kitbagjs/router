@@ -21,7 +21,7 @@
     "build:watch": "vite build --watch --minify=false",
     "dev": "vite build --watch --minify=false",
     "test": "vitest",
-    "test:registered": "vitest --config tests/registered-context/vitest.config.ts",
+    "test:registered": "vitest --project registered-context",
     "lint": "eslint ./src",
     "lint:fix": "eslint ./src --fix",
     "types": "vue-tsc --noEmit",

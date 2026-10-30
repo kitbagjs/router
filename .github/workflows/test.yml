@@ -26,6 +26,3 @@ jobs:
 
       - name: Run tsc
         run: npm run types
-
-      - name: Check registered callback types
-        run: npm run test:registered -- --run
