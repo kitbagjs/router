@@ -236,7 +236,7 @@ export function createRouterAssets<TRouter extends Router>(routerOrRouterKey: TR
 
   return {
     createHook,
-    createView,
+    createView: createView as CreateView<RouterRoutes<TRouter>>,
     createLoader,
     onBeforeRouteLeave,
     onBeforeRouteUpdate,
