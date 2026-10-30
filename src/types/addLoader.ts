@@ -2,7 +2,7 @@ import { RouteWithMethods } from '@/types/routeWithMethods'
 import { PrefetchConfig } from '@/types/prefetch'
 import { TransformerOptions } from '@/services/payload'
 import { ResolvedRoute } from '@/types/resolved'
-import { CreatedRouteOptions, Route } from '@/types/route'
+import { CreatedRouteOptions, Route, RouteLoadersOf } from '@/types/route'
 import { RouteCallbackContext } from '@/types/routeCallbackContext'
 import { RouteLoaders } from '@/types/routeLoaders'
 import { Url } from '@/types/url'
@@ -50,8 +50,7 @@ type CurrentMatchLoaders<
 > = LastInArray<TMatches> extends { loaders: infer TLoaders extends RouteLoaders } ? TLoaders : RouteLoaders
 
 /**
- * Computes the new loaders after adding a loader, replacing any loader the route already stored under
- * the same name.
+ * Computes the new loaders after adding a loader with a unique name.
  */
 type AddLoaderLoaders<
   TCurrent extends RouteLoaders,
@@ -94,9 +93,19 @@ type AddLoaderReturn<
   ? RouteWithMethods<TUrl, TNext>
   : never
 
+type AddLoaderArgs<
+  TMatches extends CreatedRouteOptions[],
+  TName extends string | undefined,
+  TData
+> = string extends keyof RouteLoadersOf<TMatches>
+  ? [options?: AddLoaderOptions<TName, TData>]
+  : 'default' extends keyof RouteLoadersOf<TMatches>
+    ? [options: AddLoaderOptions<TName, TData> & { name: Exclude<TName, keyof RouteLoadersOf<TMatches> | undefined> }]
+    : [options?: AddLoaderOptions<TName, TData> & { name?: Exclude<TName, keyof RouteLoadersOf<TMatches>> }]
+
 /**
  * Adds a loader to a route. Chainable to register multiple loaders, each exposed under its own name on
- * the resolved route's `data`.
+ * the resolved route's `data`. Names must be unique across the route and its ancestors.
  */
 export type RouteAddLoader<
   TUrl extends Url = Url,
@@ -113,7 +122,7 @@ export type RouteAddLoader<
     const TName extends string | undefined = undefined
   >(
     load: TSource,
-    options?: AddLoaderOptions<TName, Awaited<LoaderDataOf<TSource>>>,
+    ...options: AddLoaderArgs<TMatches, TName, Awaited<LoaderDataOf<TSource>>>
   ) => AddLoaderReturn<TUrl, TMatches, TName, LoaderDataOf<TSource>, TSource extends AnyLoader ? TSource['context'] : []>,
 }
 

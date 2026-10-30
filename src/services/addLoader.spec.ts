@@ -89,6 +89,7 @@ describe('ancestor conflicts', () => {
     const parent = createRoute({ name: 'parent', path: '/parent' }).addLoader(load)
     const child = createRoute({ parent, name: 'child', path: '/child' })
 
+    // @ts-expect-error exercise runtime validation despite the type restriction
     expect(() => child.addLoader(other)).toThrow(LoaderNameConflict)
   })
 
@@ -96,6 +97,7 @@ describe('ancestor conflicts', () => {
     const parent = createRoute({ name: 'parent', path: '/parent' }).addLoader(load, { name: 'posts' })
     const child = createRoute({ parent, name: 'child', path: '/child' })
 
+    // @ts-expect-error exercise runtime validation despite the type restriction
     expect(() => child.addLoader(other, { name: 'posts' })).toThrow(LoaderNameConflict)
   })
 
@@ -104,6 +106,7 @@ describe('ancestor conflicts', () => {
     const parent = createRoute({ parent: grandparent, path: '/parent' })
     const child = createRoute({ parent, path: '/child' })
 
+    // @ts-expect-error exercise runtime validation despite the type restriction
     expect(() => child.addLoader(other, { name: 'posts' })).toThrow(LoaderNameConflict)
   })
 
@@ -120,6 +123,7 @@ describe('ancestor conflicts', () => {
     const route = createRoute({ path: '/' }).addLoader(load, { name: 'toString' })
 
     expect(pick(route, 'load')).toStrictEqual({ toString: load })
+    // @ts-expect-error exercise runtime validation despite the type restriction
     expect(() => route.addLoader(other, { name: 'toString' })).toThrow(LoaderNameConflict)
   })
 
