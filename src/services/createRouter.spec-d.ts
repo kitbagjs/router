@@ -322,3 +322,11 @@ describe('route.matched.meta', () => {
     }
   })
 })
+
+test('the current route does not expose loader data', () => {
+  const route = createRoute({ name: 'route' }).addLoader(() => 'loaded')
+  const router = createRouter([route])
+
+  // @ts-expect-error components read loader results through useLoader
+  expectTypeOf(router.route.data)
+})

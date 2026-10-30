@@ -95,11 +95,6 @@ export type RouterNavigationStores = HasVueAppStore & {
    */
   getValues: (route: ResolvedRoute) => RouteValue[],
   getProps: (id: string, name: string, route: ResolvedRoute) => MaybePromise<PropsResult>,
-  /**
-   * What a route exposes as `data`. Resolved per read rather than captured, so it stays correct as
-   * navigations replace the store its values live in.
-   */
-  getRouteData: (route: ResolvedRoute) => WithData['data'],
   getLoaderState: (location: ValueLocation<'loader'>, route: ResolvedRoute) => DataResult,
   getLoaderValue: (location: ValueLocation<'loader'>, route: ResolvedRoute) => Promise<unknown>,
 }
@@ -359,12 +354,6 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     }
   }
 
-  function getRouteData(route: ResolvedRoute): WithData['data'] {
-    const loaders = getComputations(route).filter(isKind('loader'))
-
-    return toValues(loaders, DEFAULT_LOADER_NAME, (location) => getComponentValue(location, route))
-  }
-
   const getLoaderState: RouterNavigationStores['getLoaderState'] = (location: ValueLocation, route) => {
     if (location.kind !== 'loader') {
       throw new TypeError('Expected a loader location')
@@ -524,7 +513,6 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     commit,
     getValues,
     getProps,
-    getRouteData,
     getLoaderState,
     getLoaderValue,
     setVueApp,
