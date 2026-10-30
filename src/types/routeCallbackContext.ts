@@ -32,7 +32,9 @@ type RouteCallbackParent<
 > = TRoute['matches'] extends [...CreatedRouteOptions[], infer TParent extends CreatedRouteOptions, CreatedRouteOptions]
   ? {
       name: TParent['name'],
+      /** @deprecated Use parent.getProps() or parent.getProps(name). */
       props: ViewsPropsReturnType<TParent['views']>,
+      /** @deprecated Use parent.getData() or parent.getData(name). */
       data: LoadersDataReturnType<TParent['loaders']>,
     }
   : undefined
