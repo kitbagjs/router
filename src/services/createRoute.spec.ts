@@ -242,7 +242,7 @@ describe('props', () => {
 
     await router.start()
 
-    expect(spy).toHaveBeenCalledWith({ name: 'parent', props: undefined })
+    expect(spy).toHaveBeenCalledWith(expect.objectContaining({ name: 'parent', props: undefined }))
   })
 
   test('each depth is given its own parent context, not the resolved route\'s parent', async () => {

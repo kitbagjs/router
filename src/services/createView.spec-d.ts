@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-deprecated -- Keep deprecated callback property compatibility coverage until removal. */
 import { createRouterPlugin } from '@/services/createRouterPlugin'
 import { createRouterAssets } from '@/services/createRouterAssets'
 import { createRouter } from '@/services/createRouter'
@@ -79,10 +78,10 @@ test('router assets type view callbacks with the matching loader data', () => {
     component: userView,
     props: (route) => {
       if (route.name === 'user') {
-        expectTypeOf(route.data).toEqualTypeOf<Promise<{ label: string }>>()
+        expectTypeOf(route.getData()).toEqualTypeOf<Promise<{ label: string }>>()
         return { id: Number(route.params.id) }
       }
-      expectTypeOf(route.data).toEqualTypeOf<Promise<number>>()
+      expectTypeOf(route.getData()).toEqualTypeOf<Promise<number>>()
       return { id: 0 }
     },
   })

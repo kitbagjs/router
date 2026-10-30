@@ -1,6 +1,6 @@
 # Loaders
 
-Loaders fetch data for a route. Components read their reactive state with [`useLoader`](/composables/useLoader), and props callbacks can await their results through `route.data`.
+Loaders fetch data for a route. Components read their reactive state with [`useLoader`](/composables/useLoader), and props callbacks can await their results through `route.getData()`.
 
 ## Loading data
 
@@ -90,7 +90,7 @@ const user = createRoute({...})
 
 Child routes inherit their ancestors' loaders and their results. Give loaders distinct names across a route and its ancestors; two unnamed loaders also conflict because they both use the name `default`.
 
-When a child's loader needs a value returned by its parent's request, use `parent.data` from the callback context. For example, an organization's invoices require its billing account ID, which is returned with the organization and is not in the URL:
+Loader callbacks have access to `parent.getData`. For example, an organization's invoices need the billing account ID returned by the organization's loader:
 
 ```ts
 const organization = createRoute({
@@ -105,7 +105,7 @@ const invoices = createRoute({
   path: '/invoices',
 })
 .addLoader(async (_route, { parent }) => {
-  const organization = await parent.data.organization
+  const organization = await parent.getData('organization')
 
   return getInvoices(organization.billingAccountId)
 }, { name: 'invoices' })
@@ -113,7 +113,7 @@ const invoices = createRoute({
 
 ## Using loader data in props callbacks
 
-A [props callback](/core-concepts/component-props) can await `route.data` to build the props its view needs.
+Props callbacks can access loader data with `route.getData`.
 
 For example, load a project once, then use it to prepare a summary and a list of incomplete tasks:
 
@@ -125,7 +125,7 @@ const project = createRoute({
 .addLoader((route) => getProject(route.params.id))
 .addView(ProjectSummary, {
   props: async (route) => {
-    const project = await route.data
+    const project = await route.getData()
 
     return {
       title: project.name,
@@ -136,7 +136,7 @@ const project = createRoute({
 .addView(TaskList, {
   name: 'tasks',
   props: async (route) => {
-    const project = await route.data
+    const project = await route.getData()
 
     return {
       tasks: project.tasks.filter((task) => !task.completed),
@@ -155,4 +155,4 @@ Loader prefetching is disabled by default. Enable it with a loader's `prefetch` 
 
 When a loader pushes or rejects the navigation, component reads of `route.data` remain pending instead of receiving a control error. A new read after navigation uses the new route's data. Use `useLoader` when a component needs reactive state that follows navigation.
 
-Dependency reads inside callbacks behave differently: awaiting `route.data`, `parent.data`, or `parent.props` rejects with `NavigationAbandonedError` when the computation is abandoned. This stops the dependent callback and runs its `finally` blocks. The router handles this cancellation without calling application error hooks. If a callback catches dependency errors, rethrow cancellation so it can unwind normally.
+When a callback is no longer needed, such as after navigating to another route, pending getter calls reject with `NavigationAbandonedError`. The router handles this cancellation without calling application error hooks. If you catch errors from a getter, rethrow `NavigationAbandonedError`.

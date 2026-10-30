@@ -1,10 +1,11 @@
-import { CreatedRouteOptions, Route, RouteDataOf, Routes } from '@/types/route'
+import { CreatedRouteOptions, Route, RouteDataOf, RouteLoadersOf, Routes } from '@/types/route'
 import { LastInArray } from '@/types/utilities'
 import { ExtractRouteStateParamsAsOptional } from '@/types/state'
 import { UrlString } from '@/types/urlString'
 import { UrlParamsReading, UrlSchema } from '@/types/url'
 import { GetRouteTitle, GetTitleCallback } from '@/types/routeTitle'
 import { Hooks } from '@/models/hooks'
+import { GetData } from '@/types/routeLoaders'
 import { GetParam, GetAllParams } from '@/types/paramGetters'
 
 /**
@@ -98,9 +99,9 @@ export type ResolvedRoute<TRoute extends Route = Route> = Readonly<{
 }>
 
 /**
- * A resolved route whose loaders' data is available. Only the route being navigated to has data: a route
- * the router merely resolved is not being loaded, so data on it could never settle. The current route and
- * a props getter's route have it, `router.resolve` and hooks do not.
+ * A resolved route with loader data access, as received by props getters. A route the router merely
+ * resolved is not being loaded, so data on it could never settle. `router.resolve` and hooks do not
+ * receive these accessors.
  */
 export type WithData<TRoute extends Route = Route> = {
   /**
@@ -109,6 +110,10 @@ export type WithData<TRoute extends Route = Route> = {
    * @deprecated Use route.getData() or route.getData(name). See https://github.com/kitbagjs/router/issues/1056.
    */
   data: RouteDataOf<TRoute['matches']>,
+  /**
+   * Returns a loader's promise by name. Defaults to the unnamed loader.
+   */
+  getData: GetData<RouteLoadersOf<TRoute['matches']>>,
 }
 
 /**

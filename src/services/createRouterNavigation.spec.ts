@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-deprecated -- Keep deprecated parent.data and parent.props compatibility coverage until removal. */
+/* eslint-disable @typescript-eslint/no-deprecated -- Keep deprecated parent.getData() and parent.props compatibility coverage until removal. */
 import { afterEach, expect, test, vi } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
 import { createRouterNavigation } from '@/services/createRouterNavigation'
@@ -183,7 +183,7 @@ test('a staged props getter can await a later loader without warnings', async ()
   const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
   const route = createRoute({ name: 'route', path: '/' })
     .addLoader(() => 'loaded')
-    .addView(component, { props: async (route) => ({ value: await route.data }) })
+    .addView(component, { props: async (route) => ({ value: await route.getData() }) })
   const resolved = createResolvedRoute(route)
   const navigation = createRouterNavigation()
 
@@ -550,22 +550,22 @@ test.each(['push', 'reject'] as const)('a loader %s unwinds callback dependencie
     .addView(component, {
       props: async (route) => {
         try {
-          await route.data.base
+          await route.getData('base')
           continued()
         } catch (error) {
           caught.push(error)
           throw error
         } finally {
-          cleaned('route.data')
+          cleaned('route.getData()')
         }
       },
     })
   const child = createRoute({ parent, path: 'child' }).addLoader(async (_route, { parent }) => {
     try {
-      await parent.data.base
+      await parent.getData('base')
       continued()
     } finally {
-      cleaned('parent.data')
+      cleaned('parent.getData()')
     }
   }, { name: 'child' })
     .addView(component, {

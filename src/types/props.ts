@@ -1,10 +1,11 @@
-import { Route } from '@/types/route'
-import { LoadersDataReturnType } from '@/types/routeLoaders'
+import { Route, RouteLoadersOf } from '@/types/route'
+import { GetData, LoadersDataReturnType } from '@/types/routeLoaders'
 import { ViewsPropsReturnType } from '@/types/routeViews'
 import { LastInArray } from '@/types/utilities'
 
 type GenericParent = {
   name: string,
+  getData: GetData,
   /** @deprecated Use parent.getProps() or parent.getProps(name). */
   props: unknown,
   /** @deprecated Use parent.getData() or parent.getData(name). */
@@ -18,6 +19,7 @@ export type PropsCallbackParent<
   : TParent extends Route
     ? {
         name: TParent['name'],
+        getData: GetData<RouteLoadersOf<TParent['matches']>>,
         /** @deprecated Use parent.getProps() or parent.getProps(name). */
         props: GetParentPropsReturnType<TParent>,
         /** @deprecated Use parent.getData() or parent.getData(name). */

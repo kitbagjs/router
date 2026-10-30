@@ -171,7 +171,7 @@ describe('route commitment', () => {
 
   test('parameter updates keep the current props and data until their replacements are ready', async () => {
     const loaded = Promise.withResolvers<string>()
-    const props = vi.fn(async (route) => ({ value: await route.data }))
+    const props = vi.fn(async (route) => ({ value: await route.getData() }))
     const load = vi.fn((route) => {
       return route.params.id === '1' ? 'First' : loaded.promise
     })

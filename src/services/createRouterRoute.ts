@@ -1,4 +1,5 @@
 import { computed, InjectionKey, reactive, shallowReactive, shallowRef } from 'vue'
+import { getRouteLoaders } from '@/services/getRouteLoaders'
 import { parseUrl, stringifyUrl, updateUrl } from '@/services/urlParser'
 import { ResolvedRoute } from '@/types/resolved'
 import { IS_ROUTER_ROUTE_SYMBOL, RouterRoute, RouterRouteInternal } from '@/types/routerRoute'
@@ -6,6 +7,7 @@ import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { QuerySource } from '@/types/querySource'
 import { Router } from '@/types/router'
 import { RouterNavigationStores } from '@/services/createRouterNavigation'
+import { toLegacyValues } from '@/utilities/toLegacyValues'
 import { isPropertyKey } from '@/utilities/guards'
 
 export function isRouterRoute(routerKey: InjectionKey<Router>, value: unknown): value is RouterRoute & RouterRouteInternal {
@@ -91,15 +93,11 @@ export function createRouterRoute({ routerKey, route: initialRoute, push, getRou
   const hash = computed(() => route.value.hash)
   const href = computed(() => route.value.href)
   const canonical = computed(() => route.value.canonical)
-  const data = computed(() => getRouteData(route.value))
+  const data = computed(() => toLegacyValues(getRouteData(route.value)))
   const getTitle = computed(() => route.value.getTitle)
   const getParam = computed(() => route.value.getParam)
   const getAllParams = computed(() => route.value.getAllParams)
-  const loaders = computed(() => {
-    const entries = route.value.matches.flatMap((match) => Object.entries(match.loaders))
-
-    return Object.fromEntries(entries)
-  })
+  const loaders = computed(() => getRouteLoaders(route.value))
 
   const paramsProxy = shallowReactive(new Proxy({}, {
     get(_target, property, receiver) {
