@@ -33,15 +33,9 @@ type ComponentPropsAreOptional<TComponent extends Component> = Partial<Component
   : false
 
 /**
- * When the getter is omitted the default type param resolves to the wide getter type, which then
- * "extends" itself and collapses to undefined. When a getter is provided its return type is kept — the
- * view only needs what the props resolve to, not the signature it took to get there.
+ * The supplied option keys distinguish an omitted getter from a broadly typed getter.
  */
-type NewViewProps<
-  TRoute extends Route,
-  TComponent extends Component,
-  TGetter extends AnyFunction
-> = AddViewPropsGetter<TRoute, TComponent> extends TGetter ? undefined : ReturnType<TGetter>
+type NewViewProps<TGetter extends AnyFunction, TKeys> = 'props' extends TKeys ? ReturnType<TGetter> : undefined
 
 /**
  * The options for a view added via `addView`.
@@ -98,10 +92,11 @@ type AddViewOptionsWithRequiredProps<
 type AddViewArgs<
   TComponent extends Component,
   TName extends string | undefined,
-  TGetter
+  TGetter,
+  TKeys extends keyof AddViewOptions
 > = ComponentPropsAreOptional<TComponent> extends true
-  ? [options?: AddViewOptions<TName, TGetter>]
-  : [options: AddViewOptionsWithRequiredProps<TName, TGetter>]
+  ? [options?: AddViewOptions<TName, TGetter> & Record<TKeys, unknown>]
+  : [options: AddViewOptionsWithRequiredProps<TName, TGetter> & Record<TKeys, unknown>]
 
 /**
  * The views of the route itself, from the last `matches` entry.
@@ -117,11 +112,16 @@ export type AddViewProps<
   TCurrent extends RouteViews,
   TName extends string | undefined,
   TNewProps
-> = Identity<Omit<TCurrent, ViewName<TName>> & Record<ViewName<TName>, [TNewProps] extends [undefined] ? RouteView : RouteView<TNewProps>>> extends infer TNext extends RouteViews
+> = Identity<Omit<TCurrent, ViewName<TName>> & Record<ViewName<TName>, ToRouteView<TNewProps>>> extends infer TNext extends RouteViews
   ? TNext
   : TCurrent
 
 type ViewName<TName extends string | undefined> = TName extends string ? TName : 'default'
+
+// A getter that always throws resolves to never; only undefined marks an omitted getter.
+type ToRouteView<TProps> = [TProps] extends [undefined]
+  ? [undefined] extends [TProps] ? RouteView : RouteView<TProps>
+  : RouteView<TProps>
 
 /**
  * Replaces the views on the last match, preserving all ancestors.
@@ -172,15 +172,16 @@ export type RouteAddView<
   addView: <
     TSource extends Component | AnyView,
     const TName extends string | undefined = undefined,
-    const TGetter extends AddViewPropsGetter<Route<TUrl, TMatches>, Extract<TSource, Component>> = AddViewPropsGetter<Route<TUrl, TMatches>, Extract<TSource, Component>>
+    const TGetter extends AddViewPropsGetter<Route<TUrl, TMatches>, Extract<TSource, Component>> = AddViewPropsGetter<Route<TUrl, TMatches>, Extract<TSource, Component>>,
+    TKeys extends keyof AddViewOptions = never
   >(
     source: TSource,
     ...options: TSource extends AnyView
       ? [options?: Omit<AddViewOptions<TName, AnyFunction<ViewPropsOf<TSource>>>, 'props'>]
-      : AddViewArgs<Extract<TSource, Component>, TName, TGetter>
+      : AddViewArgs<Extract<TSource, Component>, TName, TGetter, TKeys>
   ) => TSource extends AnyView
     ? AddViewReturn<TUrl, TMatches, TName, ViewPropsOf<TSource>, [...TSource['context']]>
-    : AddViewReturn<TUrl, TMatches, TName, NewViewProps<Route<TUrl, TMatches>, Extract<TSource, Component>, TGetter>>,
+    : AddViewReturn<TUrl, TMatches, TName, NewViewProps<TGetter, TKeys>>,
 }
 
 type ViewPropsOf<TView extends AnyView> = TView extends { props?: AnyFunction<infer TProps> } ? TProps : undefined

@@ -443,6 +443,15 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
         return getCallbackValue({ kind: 'loader', id: parentMatch.id, name }, route, context)
       },
+      getProps(name: string = DEFAULT_VIEW_NAME) {
+        const view = parentMatch.views[name]
+
+        if (!Object.hasOwn(parentMatch.views, name) || !view.props) {
+          throw new TypeError(`Parent route "${parentName}" has no props getter named "${name}"`)
+        }
+
+        return getCallbackValue({ kind: 'props', id: parentMatch.id, name }, route, context)
+      },
       get props() {
         return toValues(propsLocations(parentMatch), DEFAULT_VIEW_NAME, (location) => getCallbackValue(location, route, context))
       },

@@ -6,7 +6,7 @@ import { RouterReject } from '@/types/routerReject'
 import { RouterReplace } from '@/types/routerReplace'
 import { RouteUpdate } from '@/types/routeUpdate'
 import { GetData, LoadersData, LoadersDataReturnType } from '@/types/routeLoaders'
-import { ViewsPropsReturnType } from '@/types/routeViews'
+import { GetProps, ViewsProps, ViewsPropsReturnType } from '@/types/routeViews'
 
 /**
  * Context provided to a callback attached to a route — an `addView` props getter, or a loader. Sourced
@@ -33,6 +33,7 @@ type RouteCallbackParent<
   ? {
       name: TParent['name'],
       getData: GetData<LoadersData<TParent['loaders']>>,
+      getProps: GetProps<ViewsProps<TParent['views']>>,
       /** @deprecated Use parent.getProps() or parent.getProps(name). */
       props: ViewsPropsReturnType<TParent['views']>,
       /** @deprecated Use parent.getData() or parent.getData(name). */

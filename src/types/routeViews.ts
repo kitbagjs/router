@@ -48,3 +48,16 @@ type HasViewProps<TView> = [ViewProps<TView>] extends [undefined]
 type ViewProps<TView> = TView extends { props?: AnyFunction<infer TProps> } ? TProps : undefined
 
 type ParentViewProps<TView> = Promise<Awaited<ViewProps<TView>>>
+
+/**
+ * Parent view props keyed by name. Views without a props getter are excluded.
+ */
+export type ViewsProps<TViews extends RouteViews> = {
+  [TName in keyof ViewsWithProps<TViews>]: ParentViewProps<ViewsWithProps<TViews>[TName]>
+}
+
+export type ViewPropsRecord = Record<string, Promise<unknown>>
+
+export type GetProps<TProps extends ViewPropsRecord = ViewPropsRecord> = <TName extends keyof TProps & string = Extract<'default', keyof TProps>>(
+  ...args: TName extends 'default' ? [name?: TName] : [name: TName]
+) => TProps[TName]
