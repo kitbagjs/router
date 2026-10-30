@@ -1,12 +1,11 @@
 import { ResolvedRoute } from '@/types/resolved'
-import { CreatedRouteOptions, Route, RouteLoadersOf } from '@/types/route'
+import { CreatedRouteOptions, Route } from '@/types/route'
 import { RouteContextToRejection, RouteContextToRoute } from '@/types/routeContext'
 import { RouterPush } from '@/types/routerPush'
 import { RouterReject } from '@/types/routerReject'
 import { RouterReplace } from '@/types/routerReplace'
 import { RouteUpdate } from '@/types/routeUpdate'
-import { GetData, LoadersDataReturnType } from '@/types/routeLoaders'
-import { GetProps, ViewsPropsReturnType } from '@/types/routeViews'
+import { ParentContext } from '@/types/props'
 
 /**
  * Context provided to a callback attached to a route — an `addView` props getter, or a loader. Sourced
@@ -28,14 +27,6 @@ export type RouteCallbackContext<
  */
 type RouteCallbackParent<
   TRoute extends Route
-> = TRoute['matches'] extends [...infer TAncestors extends CreatedRouteOptions[], infer TParent extends CreatedRouteOptions, CreatedRouteOptions]
-  ? {
-      name: TParent['name'],
-      getData: GetData<RouteLoadersOf<[...TAncestors, TParent]>>,
-      getProps: GetProps<TParent['views']>,
-      /** @deprecated Use parent.getProps() or parent.getProps(name). */
-      props: ViewsPropsReturnType<TParent['views']>,
-      /** @deprecated Use parent.getData() or parent.getData(name). */
-      data: LoadersDataReturnType<TParent['loaders']>,
-    }
+> = TRoute['matches'] extends [...infer TParentMatches extends [CreatedRouteOptions, ...CreatedRouteOptions[]], CreatedRouteOptions]
+  ? ParentContext<TParentMatches>
   : undefined
