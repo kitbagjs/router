@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-deprecated -- Keep deprecated parent.data and parent.props compatibility coverage until removal. */
 import { flushPromises } from '@vue/test-utils'
 import echo from '@/components/echo'
 import { describe, expect, test, vi } from 'vitest'
@@ -242,7 +241,7 @@ describe('props', () => {
 
     await router.start()
 
-    expect(spy).toHaveBeenCalledWith(expect.objectContaining({ name: 'parent', props: undefined }))
+    expect(spy).toHaveBeenCalledWith(expect.objectContaining({ name: 'parent', getData: expect.any(Function), getProps: expect.any(Function) }))
   })
 
   test('each depth is given its own parent context, not the resolved route\'s parent', async () => {
@@ -252,7 +251,7 @@ describe('props', () => {
 
     const parent = createRoute({ name: 'parent', parent: grandparent, path: '/parent' }).addView(component, {
       props: async (__, { parent }) => {
-        seen.push({ self: 'parent', parentName: parent.name, parentProps: await parent.props })
+        seen.push({ self: 'parent', parentName: parent.name, parentProps: await parent.getProps() })
 
         return { level: 'parent' }
       },
@@ -260,7 +259,7 @@ describe('props', () => {
 
     const child = createRoute({ name: 'child', parent, path: '/child' }).addView(component, {
       props: async (__, { parent }) => {
-        seen.push({ self: 'child', parentName: parent.name, parentProps: await parent.props })
+        seen.push({ self: 'child', parentName: parent.name, parentProps: await parent.getProps() })
 
         return { level: 'child' }
       },
@@ -286,7 +285,7 @@ describe('props', () => {
 
     const child = createRoute({ name: 'child', parent: parent, path: '/child' }).addView(component, {
       props: async (__, { parent }) => {
-        const { foo: value } = await parent.props
+        const { foo: value } = await parent.getProps()
 
         return spy({ value })
       },
@@ -315,7 +314,7 @@ describe('props', () => {
     const child = createRoute({ name: 'child', parent: parent, path: '/child' }).addView(component, {
       props: async (__, { parent }) => {
         try {
-          await parent.props
+          await parent.getProps()
         } catch (thrown) {
           caught(thrown)
         }
@@ -346,7 +345,7 @@ describe('props', () => {
     const child = createRoute({ name: 'child', parent: parent, path: '/child' }).addView(component, {
       props: async (__, { parent }) => {
         try {
-          const value = await parent.props
+          const value = await parent.getProps()
 
           caught({ didNotThrow: value })
         } catch (thrown) {
@@ -373,10 +372,10 @@ describe('props', () => {
 
     const child = createRoute({ name: 'child', parent: parent, path: '/child' }).addView(component, {
       props: async (__, { parent }) => {
-        expect(parent.props).toBeDefined()
-        expect(parent.props).toBeInstanceOf(Promise)
+        expect(parent.getProps()).toBeDefined()
+        expect(parent.getProps()).toBeInstanceOf(Promise)
 
-        const { foo: value } = await parent.props
+        const { foo: value } = await parent.getProps()
 
         return spy({ value })
       },
@@ -400,8 +399,8 @@ describe('props', () => {
 
     const child = createRoute({ name: 'child', parent: parent, path: '/child' }).addView(component, {
       props: async (__, { parent }) => {
-        const { foo: value1 } = await parent.props.one
-        const { bar: value2 } = await parent.props.two
+        const { foo: value1 } = await parent.getProps('one')
+        const { bar: value2 } = await parent.getProps('two')
 
         return spy({ value1, value2 })
       },
@@ -416,7 +415,7 @@ describe('props', () => {
     expect(spy).toHaveBeenCalledWith({ value1: 123, value2: 456 })
   })
 
-  test('parent props for view names without a getter are undefined rather than never settling', async () => {
+  test('parent getters reject views without a props getter rather than never settling', async () => {
     const spy = vi.fn()
 
     const parent = createRoute({ name: 'parent', path: '/parent' }).addView(component, { name: 'one', props: () => ({ foo: 123 }) })
@@ -425,9 +424,11 @@ describe('props', () => {
 
     const child = createRoute({ name: 'child', parent: parent, path: '/child' }).addView(component, {
       props: (__, { parent }) => {
-        const props = parent.props as Record<string, unknown>
+        for (const name of ['three', 'missing']) {
+          expect(() => Reflect.apply(parent.getProps, undefined, [name])).toThrow(TypeError)
+        }
 
-        return spy({ three: props.three, missing: props.missing })
+        return spy({ rejected: true })
       },
     })
 
@@ -437,7 +438,7 @@ describe('props', () => {
 
     await router.start()
 
-    expect(spy).toHaveBeenCalledWith({ three: undefined, missing: undefined })
+    expect(spy).toHaveBeenCalledWith({ rejected: true })
   })
 
   test('async parent props with multiple views are passed to child props', async () => {
@@ -449,12 +450,11 @@ describe('props', () => {
 
     const child = createRoute({ name: 'child', parent: parent, path: '/child' }).addView(component, {
       props: async (__, { parent }) => {
-        expect(parent.props).toBeDefined()
-        expect(parent.props.one).toBeInstanceOf(Promise)
-        expect(parent.props.two).toBeInstanceOf(Promise)
+        expect(parent.getProps('one')).toBeInstanceOf(Promise)
+        expect(parent.getProps('two')).toBeInstanceOf(Promise)
 
-        const { foo: value1 } = await parent.props.one
-        const { bar: value2 } = await parent.props.two
+        const { foo: value1 } = await parent.getProps('one')
+        const { bar: value2 } = await parent.getProps('two')
 
         return spy({
           value1,

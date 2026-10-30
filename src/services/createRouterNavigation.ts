@@ -1,6 +1,7 @@
 import { markRaw } from 'vue'
 import { getRouteLoaderLocation } from '@/services/getRouteLoaderLocation'
 import { ResolvedRoute } from '@/types/resolved'
+import { DEFAULT_VIEW_NAME } from './routeViews'
 import { DEFAULT_LOADER_NAME } from './addLoader'
 import { toLegacyValues } from '@/utilities/toLegacyValues'
 import { unwrapComputationResponse } from '@/utilities/unwrapComputationResponse'
@@ -440,6 +441,15 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
         const location = getRouteLoaderLocation(route, name, route.matches.slice(0, depth))
 
         return getCallbackValue(location, route, context)
+      },
+      getProps(name: string = DEFAULT_VIEW_NAME) {
+        const view = parentMatch.views[name]
+
+        if (!Object.hasOwn(parentMatch.views, name) || !view.props) {
+          throw new TypeError(`Parent route "${parentName}" has no props getter named "${name}"`)
+        }
+
+        return getCallbackValue({ kind: 'props', id: parentMatch.id, name }, route, context)
       },
       get props() {
         const values = toValues(propsLocations(parentMatch), (location) => getCallbackValue(location, route, context))

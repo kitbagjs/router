@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-deprecated -- Keep deprecated parent.getData() and parent.props compatibility coverage until removal. */
 import { afterEach, expect, test, vi } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
 import { createRouterNavigation } from '@/services/createRouterNavigation'
@@ -571,10 +570,10 @@ test.each(['push', 'reject'] as const)('a loader %s unwinds callback dependencie
     .addView(component, {
       props: async (_route, { parent }) => {
         try {
-          await parent.props
+          await parent.getProps()
           continued()
         } finally {
-          cleaned('parent.props')
+          cleaned('parent.getProps()')
         }
       },
     })
@@ -597,7 +596,7 @@ test('discarding a prefetch unwinds a callback even while the current store has 
   const child = createRoute({ parent, path: 'child' }).addView(component, {
     props: async (_route, { parent }) => {
       try {
-        await parent.props
+        await parent.getProps()
       } finally {
         cleaned()
       }
