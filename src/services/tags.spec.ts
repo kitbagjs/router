@@ -1,6 +1,7 @@
-import { describe, expect, test } from 'vitest'
+import { assert, describe, expect, test } from 'vitest'
 import { createTagsBuilder } from '@/services/createTagsBuilder'
 import { mergeTags } from '@/services/mergeTags'
+import { flattenTags } from '@/services/flattenTags'
 import { TagElement, TagLayer, MetaTag, Tags } from '@/types/tags'
 
 function layer(callback: (tags: Tags) => void): TagLayer {
@@ -25,7 +26,7 @@ function image(url: string, alt?: string): MetaTag {
 }
 
 function elements(...layers: TagLayer[]): readonly TagElement[] {
-  return mergeTags(layers).flatMap((group) => group.elements)
+  return flattenTags(mergeTags(layers))
 }
 
 function contents(...layers: TagLayer[]): (string | undefined)[] {
@@ -167,7 +168,7 @@ describe('related metadata', () => {
     })
 
     expect(contents(value)).toEqual(['Item', 'Detail', 'Label', 'Sibling', 'Next item'])
-    expect(mergeTags([value]).map((group) => group.elements.length)).toEqual([4, 1])
+    expect(mergeTags([value]).map((group) => flattenTags([group]).length)).toEqual([4, 1])
     expect(elements(value).every((element) => !('related' in element.attributes))).toBe(true)
   })
 
@@ -512,8 +513,221 @@ describe('builder ownership', () => {
     expect(builder.finish()).toBe(value)
     expect(() => builder.tags.title.set('Late')).toThrow()
     expect(Reflect.set(value, '0', {})).toBe(false)
-    expect(Reflect.set(merged[0].elements[1].attributes, 'content', 'Changed')).toBe(false)
-    expect(Reflect.set(merged[0].selector.attributes, 'key', 'Changed')).toBe(false)
+    expect(Reflect.set(flattenTags(merged)[1].attributes, 'content', 'Changed')).toBe(false)
+    expect(Reflect.set(merged[0].attributes, 'key', 'Changed')).toBe(false)
     expect(contents(value)).toEqual(['/original.jpg', 'Original'])
+  })
+})
+
+describe('scoped reads', () => {
+  test('returns empty values when no layer contributes tags', async () => {
+    const { tags } = createTagsBuilder()
+
+    await expect(tags.get()).resolves.toEqual({
+      title: undefined,
+      meta: [],
+      link: [],
+    })
+    await expect(tags.title.get()).resolves.toBeUndefined()
+    await expect(tags.meta.get()).resolves.toEqual([])
+    await expect(tags.link.get()).resolves.toEqual([])
+  })
+
+  test('combines inherited values with local writes, additions, and deletions', async () => {
+    const parent = layer((tags) => {
+      tags.title.set('Store')
+      tags.meta.add(image('/parent.jpg', 'Parent'))
+      tags.meta.set({
+        name: 'description',
+        content: 'Parent description',
+      })
+      tags.link.set({
+        rel: 'canonical',
+        href: '/store',
+      })
+    })
+    const { tags } = createTagsBuilder({ getParentLayers: () => [parent] })
+
+    await expect(tags.title.get()).resolves.toBe('Store')
+
+    tags.title.set('Product')
+    tags.meta.add(image('/child.jpg', 'Child'))
+    tags.meta.delete({ name: 'description' })
+    tags.link.set({
+      rel: 'canonical',
+      href: '/product',
+    })
+
+    await expect(tags.title.get()).resolves.toBe('Product')
+    await expect(tags.meta.get({ property: 'og:image' })).resolves.toEqual([
+      image('/parent.jpg', 'Parent'),
+      image('/child.jpg', 'Child'),
+    ])
+    await expect(tags.meta.get({ name: 'description' })).resolves.toEqual([])
+    await expect(tags.link.get({ rel: 'canonical' })).resolves.toEqual([{
+      rel: 'canonical',
+      href: '/product',
+    }])
+    await expect(tags.get()).resolves.toEqual({
+      title: 'Product',
+      meta: [image('/parent.jpg', 'Parent'), image('/child.jpg', 'Child')],
+      link: [{
+        rel: 'canonical',
+        href: '/product',
+      }],
+    })
+  })
+
+  test('awaits inherited computations and reads only local writes made before the call', async () => {
+    const pending = Promise.withResolvers<readonly TagLayer[]>()
+    const parent = layer((tags) => tags.title.set('Parent'))
+    const { tags } = createTagsBuilder({ getParentLayers: () => pending.promise })
+    const beforeWrite = tags.title.get()
+
+    tags.title.set('Local')
+
+    pending.resolve([parent])
+
+    await expect(beforeWrite).resolves.toBe('Parent')
+    await expect(tags.title.get()).resolves.toBe('Local')
+  })
+
+  test('does not resolve ancestors for a write-only callback', () => {
+    let reads = 0
+    const builder = createTagsBuilder({
+      getParentLayers: () => {
+        reads++
+        return []
+      },
+    })
+
+    builder.tags.title.set('Local')
+    builder.finish()
+
+    expect(reads).toBe(0)
+  })
+
+  test('captures selectors before awaiting inherited values', async () => {
+    const pending = Promise.withResolvers<readonly TagLayer[]>()
+    const parent = layer((tags) => {
+      tags.meta.add({
+        name: 'description',
+        content: 'Description',
+      })
+      tags.link.add({
+        rel: 'icon',
+        href: '/icon.svg',
+      })
+    })
+    const { tags } = createTagsBuilder({ getParentLayers: () => pending.promise })
+    const metaSelector = { name: 'description' }
+    const linkSelector = { rel: 'icon' }
+    const metadata = tags.meta.get(metaSelector)
+    const links = tags.link.get(linkSelector)
+
+    metaSelector.name = 'author'
+    linkSelector.rel = 'canonical'
+    pending.resolve([parent])
+
+    await expect(metadata).resolves.toEqual([{
+      name: 'description',
+      content: 'Description',
+    }])
+    await expect(links).resolves.toEqual([{
+      rel: 'icon',
+      href: '/icon.svg',
+    }])
+  })
+
+  test('reads the current supplied ancestor layers without retaining a previous snapshot', async () => {
+    let parent = layer((tags) => tags.title.set('Original'))
+    const { tags } = createTagsBuilder({ getParentLayers: () => [parent] })
+    const original = await tags.get()
+
+    parent = layer((tags) => tags.title.set('Updated'))
+
+    await expect(tags.title.get()).resolves.toBe('Updated')
+    expect(original.title).toBe('Original')
+  })
+
+  test('preserves the descriptor tree and returns deeply immutable snapshots even after hydration', async () => {
+    const descriptor: MetaTag = {
+      property: 'custom:item',
+      content: 'Item',
+      related: [{
+        property: 'custom:detail',
+        content: 'Detail',
+        related: [{
+          name: 'label',
+          content: 'Label',
+        }],
+      }],
+    }
+    const parent = layer((tags) => tags.meta.add(descriptor))
+    const hydrated: TagLayer = JSON.parse(JSON.stringify(parent))
+    const { tags } = createTagsBuilder({ getParentLayers: () => [hydrated] })
+    const snapshot = await tags.get()
+    const related = snapshot.meta[0].related ?? []
+    const grandchild = related[0]?.related?.[0]
+
+    assert(grandchild)
+
+    expect(snapshot.meta).toEqual([descriptor])
+    expect(Reflect.set(snapshot, 'title', 'Changed')).toBe(false)
+    expect(Reflect.set(snapshot.meta, '0', {})).toBe(false)
+    expect(Reflect.set(related, '0', {})).toBe(false)
+    expect(Reflect.set(grandchild, 'content', 'Changed')).toBe(false)
+    expect(mergeTags([hydrated])[0]).toEqual(mergeTags([parent])[0])
+    await expect(tags.meta.get()).resolves.toEqual([descriptor])
+  })
+
+  test('filters primary entries without detaching related tags', async () => {
+    const parent = layer((tags) => {
+      tags.meta.add({ ...image('/wide.jpg', 'Wide'), key: 'wide' })
+      tags.meta.add({ ...image('/square.jpg', 'Square'), key: 'square' })
+      tags.link.add({
+        rel: 'icon',
+        href: '/small.png',
+        sizes: '16x16',
+      })
+      tags.link.add({
+        rel: 'icon',
+        href: '/large.png',
+        sizes: '32x32',
+      })
+    })
+    const { tags } = createTagsBuilder({ getParentLayers: () => [parent] })
+
+    await expect(tags.meta.get({ property: 'og:image', key: 'square' })).resolves.toEqual([
+      { ...image('/square.jpg', 'Square'), key: 'square' },
+    ])
+    await expect(tags.meta.get({ property: 'og:image:alt' })).resolves.toEqual([])
+    await expect(tags.link.get({ rel: 'icon', sizes: '32x32' })).resolves.toEqual([{
+      rel: 'icon',
+      href: '/large.png',
+      sizes: '32x32',
+    }])
+  })
+
+  test('a fresh evaluation does not inherit the previous evaluation of its own scope', async () => {
+    const parent = layer((tags) => tags.title.set('Parent'))
+    const previous = createTagsBuilder({ getParentLayers: () => [parent] })
+
+    previous.tags.title.set('Previous local')
+    previous.finish()
+
+    const current = createTagsBuilder({ getParentLayers: () => [parent] })
+
+    await expect(current.tags.title.get()).resolves.toBe('Parent')
+  })
+
+  test('propagates failed ancestor reads without changing local operations', async () => {
+    const error = new Error('Parent failed')
+    const builder = createTagsBuilder({ getParentLayers: () => Promise.reject(error) })
+
+    builder.tags.title.set('Local')
+
+    await expect(builder.tags.title.get()).rejects.toBe(error)
+    expect(contents(builder.finish())).toEqual(['Local'])
   })
 })

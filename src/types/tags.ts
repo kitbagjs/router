@@ -14,10 +14,18 @@ export type TagSelector = Readonly<{
   attributes: Readonly<Partial<Record<string, string>>>,
 }>
 
-/** A primary tag and its related tags are replaced or removed together. */
-export type TagGroup = Readonly<{
-  selector: TagSelector,
-  elements: readonly TagElement[],
+/** A primary tag retains its related descriptor tree until rendering. */
+export type TagGroup = | Readonly<TagSelector & {
+  tag: 'title',
+  value: string,
+}>
+| Readonly<TagSelector & {
+  tag: 'meta',
+  value: ResolvedMetaTag,
+}>
+| Readonly<TagSelector & {
+  tag: 'link',
+  value: ResolvedLinkTag,
 }>
 
 export type TagOperation = | Readonly<{
@@ -61,17 +69,35 @@ export type LinkTag = LinkBase & LinkTagSelector & {
   related?: readonly LinkTag[],
 }
 
+export type ResolvedMetaTag = Readonly<MetaTagIdentifier> & Readonly<Omit<MetaTag, 'name' | 'property' | 'related'>> & {
+  readonly related?: readonly ResolvedMetaTag[],
+}
+
+export type ResolvedLinkTag = Readonly<Omit<LinkTag, 'related'>> & {
+  readonly related?: readonly ResolvedLinkTag[],
+}
+
+export type TagsSnapshot = Readonly<{
+  title: string | undefined,
+  meta: readonly ResolvedMetaTag[],
+  link: readonly ResolvedLinkTag[],
+}>
+
 export type Tags = {
+  get: () => Promise<TagsSnapshot>,
   title: {
+    get: () => Promise<string | undefined>,
     set: (value: string) => void,
     delete: () => void,
   },
   meta: {
+    get: (selector?: MetaTagSelector) => Promise<readonly ResolvedMetaTag[]>,
     set: (descriptor: MetaTag) => void,
     add: (descriptor: MetaTag) => void,
     delete: (selector: MetaTagSelector) => void,
   },
   link: {
+    get: (selector?: LinkTagSelector) => Promise<readonly ResolvedLinkTag[]>,
     set: (descriptor: LinkTag) => void,
     add: (descriptor: LinkTag) => void,
     delete: (selector: LinkTagSelector) => void,

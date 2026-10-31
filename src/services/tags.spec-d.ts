@@ -73,3 +73,31 @@ test('requires explicit attributes and validates related descriptors recursively
   // @ts-expect-error head tags do not accept scripts
   tags.script.add({ src: '/script.js' })
 })
+
+test('reads are asynchronous and recursively readonly', async () => {
+  const { tags } = createTagsBuilder()
+  const snapshot = await tags.get()
+  const meta = await tags.meta.get({ property: 'og:image' })
+  const links = await tags.link.get({ rel: 'icon' })
+
+  expectTypeOf(tags.title.get()).toEqualTypeOf<Promise<string | undefined>>()
+  expectTypeOf(meta[0].content).toEqualTypeOf<NonNullable<Meta['content']>>()
+  expectTypeOf(links[0].as).toEqualTypeOf<LinkBase['as']>()
+
+  // @ts-expect-error a snapshot is a value, not another mutable builder
+  snapshot.title = 'Changed'
+  // @ts-expect-error returned collections are readonly
+  meta.push({ property: 'og:image', content: '/changed.jpg' })
+  // @ts-expect-error returned descriptors are readonly
+  meta[0].content = 'Changed'
+  const related = meta[0].related
+
+  if (related) {
+    // @ts-expect-error nested related descriptors are also readonly
+    related[0].content = 'Changed'
+  }
+  // @ts-expect-error metadata identifiers remain readonly too
+  meta[0].property = 'custom:changed'
+  // @ts-expect-error links cannot be changed through a read
+  links[0].href = '/changed.svg'
+})
