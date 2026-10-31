@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest'
 import { createHeadTagsBuilder } from '@/services/createHeadTagsBuilder'
 import { mergeHeadLayers } from '@/services/mergeHeadLayers'
-import { HeadElement, HeadLayer, HeadTags } from '@/types/headTags'
+import { HeadElement, HeadLayer, HeadMetaDescriptor, HeadTags } from '@/types/headTags'
 
 function layer(callback: (tags: HeadTags) => void): HeadLayer {
   const builder = createHeadTagsBuilder()
@@ -9,6 +9,19 @@ function layer(callback: (tags: HeadTags) => void): HeadLayer {
   callback(builder.tags)
 
   return builder.finish()
+}
+
+function image(url: string, alt?: string): HeadMetaDescriptor {
+  return {
+    property: 'og:image',
+    content: url,
+    related: alt === undefined
+      ? []
+      : [{
+          property: 'og:image:alt',
+          content: alt,
+        }],
+  }
 }
 
 function elements(...layers: HeadLayer[]): readonly HeadElement[] {
@@ -23,12 +36,21 @@ describe('layers', () => {
   test('inherits untouched tags and replaces the title and description', () => {
     const parent = layer((tags) => {
       tags.title.set('Store')
-      tags.meta.set('description', 'Browse products')
-      tags.meta.set('og:site_name', 'Kitbag')
+      tags.meta.set({
+        name: 'description',
+        content: 'Browse products',
+      })
+      tags.meta.set({
+        property: 'og:site_name',
+        content: 'Kitbag',
+      })
     })
     const child = layer((tags) => {
       tags.title.set('Keyboard')
-      tags.meta.set('description', 'Mechanical keyboard')
+      tags.meta.set({
+        name: 'description',
+        content: 'Mechanical keyboard',
+      })
     })
 
     expect(contents(parent, child)).toEqual(['Kitbag', 'Keyboard', 'Mechanical keyboard'])
@@ -36,9 +58,18 @@ describe('layers', () => {
 
   test('applies operations in declaration order and permits an empty title', () => {
     const value = layer((tags) => {
-      tags.meta.add('author', 'First')
-      tags.meta.set('author', 'Replacement')
-      tags.meta.add('author', 'Last')
+      tags.meta.add({
+        name: 'author',
+        content: 'First',
+      })
+      tags.meta.set({
+        name: 'author',
+        content: 'Replacement',
+      })
+      tags.meta.add({
+        name: 'author',
+        content: 'Last',
+      })
       tags.title.set('')
     })
 
@@ -50,7 +81,10 @@ describe('layers', () => {
     const updatedParent = layer((tags) => tags.title.set('Updated'))
     const child = layer((tags) => {
       tags.title.set('Override')
-      tags.meta.add('author', 'Guest')
+      tags.meta.add({
+        name: 'author',
+        content: 'Guest',
+      })
     })
 
     expect(contents(parent, child)).toEqual(['Override', 'Guest'])
@@ -69,34 +103,27 @@ describe('layers', () => {
     expect(contents(parent)).toEqual(['Parent'])
   })
 
-  test('can replay serialized layers without a builder or DOM', () => {
-    const parent = layer((tags) => tags.meta.set('description', 'Parent'))
+  test('can replay serialized related tags and deletions without a builder or DOM', () => {
+    const parent = layer((tags) => tags.meta.set(image('/parent.jpg', 'Parent')))
     const child = layer((tags) => {
-      tags.meta.delete('description')
+      tags.meta.delete({ property: 'og:image' })
       tags.title.set('A <title> & text')
+      tags.meta.add(image('/child.jpg', 'Child'))
     })
     const serialized: HeadLayer[] = JSON.parse(JSON.stringify([parent, child]))
 
     expect(mergeHeadLayers(serialized)).toEqual(mergeHeadLayers([parent, child]))
-    expect(contents(...serialized)).toEqual(['A <title> & text'])
+    expect(contents(...serialized)).toEqual(['A <title> & text', '/child.jpg', 'Child'])
   })
 })
 
-describe('metadata', () => {
-  test('replaces complete image groups without retaining parent structured properties', () => {
-    const parent = layer((tags) => tags.meta.set('og:image', [
-      {
-        url: '/front.jpg',
-        alt: 'Front',
-        width: 1200,
-        height: 630,
-      },
-      {
-        url: '/back.jpg',
-        alt: 'Back',
-      },
-    ]))
-    const child = layer((tags) => tags.meta.set('og:image', '/child.jpg'))
+describe('related metadata', () => {
+  test('replaces complete image groups without retaining parent related tags', () => {
+    const parent = layer((tags) => {
+      tags.meta.add(image('/front.jpg', 'Front'))
+      tags.meta.add(image('/back.jpg', 'Back'))
+    })
+    const child = layer((tags) => tags.meta.set(image('/child.jpg')))
 
     expect(contents(parent, child)).toEqual(['/child.jpg'])
     expect(elements(parent, child)[0].attributes).toEqual({
@@ -105,164 +132,152 @@ describe('metadata', () => {
     })
   })
 
-  test('appends whole image groups in order, including repeated values', () => {
-    const image = {
-      url: '/image.jpg',
-      alt: 'Image',
-    }
-    const parent = layer((tags) => tags.meta.set('og:image', image))
-    const child = layer((tags) => tags.meta.add('og:image', image))
-    const merged = mergeHeadLayers([parent, child])
+  test('appends whole groups in order, including repeated values', () => {
+    const parent = layer((tags) => tags.meta.set(image('/image.jpg', 'Image')))
+    const child = layer((tags) => tags.meta.add(image('/image.jpg', 'Image')))
 
-    expect(merged).toHaveLength(2)
+    expect(mergeHeadLayers([parent, child])).toHaveLength(2)
     expect(contents(parent, child)).toEqual(['/image.jpg', 'Image', '/image.jpg', 'Image'])
   })
 
-  test('raw media descriptors and shorthand replace the same complete groups', () => {
-    const parent = layer((tags) => tags.meta.set('og:image', {
-      url: '/parent.jpg',
-      alt: 'Parent',
-    }))
-    const raw = layer((tags) => tags.meta.set({
-      property: 'og:image',
-      content: '/raw.jpg',
-    }))
-    const child = layer((tags) => tags.meta.set('og:image', '/child.jpg'))
-
-    expect(contents(parent, raw)).toEqual(['/raw.jpg'])
-    expect(contents(raw, child)).toEqual(['/child.jpg'])
-  })
-
-  test('clears a collection with an empty set and restores it when that layer leaves', () => {
-    const parent = layer((tags) => tags.meta.set('og:image', {
-      url: '/image.jpg',
-      alt: 'Image',
-    }))
-    const child = layer((tags) => {
-      tags.meta.set('og:image', [])
-      tags.meta.add('author', [])
-    })
-
-    expect(contents(parent, child)).toEqual([])
-    expect(contents(parent)).toEqual(['/image.jpg', 'Image'])
-  })
-
-  test('deletes an entire image group', () => {
-    const parent = layer((tags) => tags.meta.set('og:image', {
-      url: '/image.jpg',
-      alt: 'Image',
-      secureUrl: 'https://example.com/image.jpg',
-      type: 'image/jpeg',
-    }))
-    const child = layer((tags) => tags.meta.delete('og:image'))
-
-    expect(contents(parent, child)).toEqual([])
-    expect(contents(parent)).toEqual(['/image.jpg', 'https://example.com/image.jpg', 'image/jpeg', 'Image'])
-  })
-
-  test('groups video and audio properties as well as images', () => {
-    const parent = layer((tags) => {
-      tags.meta.set('og:video', {
-        url: '/video.mp4',
-        width: 1920,
-        height: 1080,
+  test('recursively flattens related tags before the next sibling without interpreting their names', () => {
+    const value = layer((tags) => {
+      tags.meta.add({
+        property: 'custom:item',
+        content: 'Item',
+        related: [
+          {
+            property: 'different:detail',
+            content: 'Detail',
+            related: [{
+              name: 'label',
+              content: 'Label',
+            }],
+          },
+          {
+            property: 'custom:sibling',
+            content: 'Sibling',
+          },
+        ],
       })
-      tags.meta.set('og:audio', {
-        url: '/audio.mp3',
-        type: 'audio/mpeg',
+      tags.meta.add({
+        property: 'custom:item',
+        content: 'Next item',
       })
     })
 
-    expect(elements(parent).map((element) => element.attributes.property)).toEqual([
-      'og:video', 'og:video:width', 'og:video:height', 'og:audio', 'og:audio:type',
-    ])
+    expect(contents(value)).toEqual(['Item', 'Detail', 'Label', 'Sibling', 'Next item'])
+    expect(mergeHeadLayers([value]).map((group) => group.elements.length)).toEqual([4, 1])
+    expect(elements(value).every((element) => !('related' in element.attributes))).toBe(true)
   })
 
+  test('deletes the complete recursive subtree and restores it when that layer leaves', () => {
+    const parent = layer((tags) => tags.meta.set({
+      property: 'new:root',
+      content: 'Root',
+      related: [{
+        property: 'new:child',
+        content: 'Child',
+        related: [{
+          property: 'new:grandchild',
+          content: 'Grandchild',
+        }],
+      }],
+    }))
+    const child = layer((tags) => tags.meta.delete({ property: 'new:root' }))
+
+    expect(contents(parent, child)).toEqual([])
+    expect(contents(parent)).toEqual(['Root', 'Child', 'Grandchild'])
+  })
+
+  test('replacing a primary tag also replaces all levels of its related subtree', () => {
+    const parent = layer((tags) => tags.meta.set({
+      property: 'new:root',
+      content: 'Parent',
+      related: [{
+        property: 'new:detail',
+        content: 'Parent detail',
+        related: [{
+          property: 'new:label',
+          content: 'Parent label',
+        }],
+      }],
+    }))
+    const child = layer((tags) => tags.meta.set({
+      property: 'new:root',
+      content: 'Child',
+      related: [{
+        property: 'new:detail',
+        content: 'Child detail',
+      }],
+    }))
+
+    expect(contents(parent, child)).toEqual(['Child', 'Child detail'])
+  })
+
+  test('a related tag does not overwrite an independent entry with the same property', () => {
+    const parent = layer((tags) => tags.meta.add({
+      property: 'custom:detail',
+      content: 'Independent',
+    }))
+    const child = layer((tags) => tags.meta.add({
+      property: 'custom:item',
+      content: 'Item',
+      related: [{
+        property: 'custom:detail',
+        content: 'Related',
+      }],
+    }))
+
+    expect(contents(parent, child)).toEqual(['Independent', 'Item', 'Related'])
+    expect(contents(parent)).toEqual(['Independent'])
+  })
+})
+
+describe('metadata identity', () => {
   test('overrides one theme-color variant and can delete every variant', () => {
-    const parent = layer((tags) => tags.meta.set('theme-color', [
-      {
+    const parent = layer((tags) => {
+      tags.meta.add({
+        name: 'theme-color',
         content: 'white',
         media: '(prefers-color-scheme: light)',
-      },
-      {
+      })
+      tags.meta.add({
+        name: 'theme-color',
         content: 'black',
         media: '(prefers-color-scheme: dark)',
-      },
-    ]))
-    const child = layer((tags) => tags.meta.set('theme-color', {
+      })
+    })
+    const child = layer((tags) => tags.meta.set({
+      name: 'theme-color',
       content: 'navy',
       media: '(prefers-color-scheme: dark)',
     }))
-    const deleted = layer((tags) => tags.meta.delete('theme-color'))
+    const deleted = layer((tags) => tags.meta.delete({ name: 'theme-color' }))
+    const darkDeleted = layer((tags) => tags.meta.delete({
+      name: 'theme-color',
+      media: '(prefers-color-scheme: dark)',
+    }))
 
     expect(contents(parent, child)).toEqual(['white', 'navy'])
     expect(contents(parent, child, deleted)).toEqual([])
+    expect(contents(parent, child, darkDeleted)).toEqual(['white'])
   })
 
-  test('sets several variants without leaving inherited copies or changing their order', () => {
-    const parent = layer((tags) => tags.meta.set('theme-color', [
-      {
-        content: 'white',
-        media: 'light',
-      },
-      {
-        content: 'black',
-        media: 'dark',
-      },
-    ]))
-    const child = layer((tags) => tags.meta.set('theme-color', [
-      {
-        content: 'navy',
-        media: 'dark',
-      },
-      {
-        content: 'ivory',
-        media: 'light',
-      },
-    ]))
-
-    expect(contents(parent, child)).toEqual(['navy', 'ivory'])
-  })
-
-  test('deletes just the selected media variant', () => {
-    const parent = layer((tags) => tags.meta.set('theme-color', [
-      {
-        content: 'white',
-        media: 'light',
-      },
-      {
-        content: 'black',
-        media: 'dark',
-      },
-    ]))
-    const child = layer((tags) => tags.meta.delete('theme-color', { media: 'dark' }))
-
-    expect(contents(parent, child)).toEqual(['white'])
-  })
-
-  test('an explicit key replaces a selected image group without becoming an HTML attribute', () => {
+  test('an explicit key replaces a selected group without becoming an HTML attribute', () => {
     const parent = layer((tags) => {
-      tags.meta.add('og:image', {
-        url: '/wide.jpg',
-        alt: 'Wide',
-        key: 'wide',
-      })
-      tags.meta.add('og:image', {
-        url: '/square.jpg',
-        alt: 'Square',
-        key: 'square',
-      })
+      tags.meta.add({ ...image('/wide.jpg', 'Wide'), key: 'wide' })
+      tags.meta.add({ ...image('/square.jpg', 'Square'), key: 'square' })
     })
-    const child = layer((tags) => tags.meta.set('og:image', {
-      url: '/new-wide.jpg',
-      key: 'wide',
-    }))
+    const child = layer((tags) => tags.meta.set({ ...image('/new-wide.jpg'), key: 'wide' }))
+    const replacement = layer((tags) => tags.meta.set(image('/all.jpg')))
 
     expect(contents(parent, child)).toEqual(['/square.jpg', 'Square', '/new-wide.jpg'])
+    expect(contents(parent, replacement)).toEqual(['/all.jpg'])
     expect(elements(parent, child).every((element) => !('key' in element.attributes))).toBe(true)
   })
 
-  test('distinguishes name from property and accepts custom property descriptors', () => {
+  test('distinguishes name from property and accepts arbitrary values for either', () => {
     const parent = layer((tags) => {
       tags.meta.set({
         name: 'custom:field',
@@ -272,12 +287,24 @@ describe('metadata', () => {
         property: 'custom:field',
         content: 'Property',
       })
-      tags.meta.set('twitter:card', 'summary')
+      tags.meta.set({
+        name: 'twitter:card',
+        content: 'summary',
+      })
     })
     const child = layer((tags) => tags.meta.delete({ property: 'custom:field' }))
 
     expect(contents(parent, child)).toEqual(['Named', 'summary'])
     expect(elements(parent)[2].attributes.name).toBe('twitter:card')
+  })
+
+  test('normalizes scalar content types supported by zhead', () => {
+    const value = layer((tags) => tags.meta.add({
+      property: 'og:image:width',
+      content: 1200,
+    }))
+
+    expect(contents(value)).toEqual(['1200'])
   })
 })
 
@@ -394,7 +421,7 @@ describe('links', () => {
     expect(contents(parent, child)).toEqual(['/large.png'])
   })
 
-  test('link deletion can match attributes beyond the default identity', () => {
+  test('deletion can match attributes beyond the default identity', () => {
     const parent = layer((tags) => tags.link.set({
       rel: 'canonical',
       href: '/product',
@@ -429,33 +456,55 @@ describe('links', () => {
     })
     expect(contents(parent, child)).toEqual([])
   })
+
+  test('related links use the same ownership and ordering as related metadata', () => {
+    const parent = layer((tags) => tags.link.add({
+      rel: 'alternate',
+      hreflang: 'en',
+      href: '/en',
+      related: [{
+        rel: 'alternate',
+        hreflang: 'es',
+        href: '/es',
+      }],
+    }))
+    const child = layer((tags) => tags.link.delete({
+      rel: 'alternate',
+      hreflang: 'en',
+    }))
+
+    expect(contents(parent)).toEqual(['/en', '/es'])
+    expect(contents(parent, child)).toEqual([])
+  })
 })
 
 describe('builder ownership', () => {
-  test('copies supplied descriptors before they can be changed by their owner', () => {
-    const image = {
-      url: '/original.jpg',
-      alt: 'Original',
-    }
-    const link = {
-      rel: 'icon',
-      href: '/original.svg',
+  test('copies related descriptors before their owner can change them', () => {
+    const descriptor = {
+      property: 'og:image',
+      content: '/original.jpg',
+      related: [{
+        property: 'og:image:alt',
+        content: 'Original',
+      }],
     }
     const value = layer((tags) => {
-      tags.meta.set('og:image', image)
-      tags.link.set(link)
-      image.url = '/changed.jpg'
-      image.alt = 'Changed'
-      link.href = '/changed.svg'
+      tags.meta.set(descriptor)
+      descriptor.content = '/changed.jpg'
+      descriptor.related[0].content = 'Changed'
+      descriptor.related.push({
+        property: 'og:image:width',
+        content: '1200',
+      })
     })
 
-    expect(contents(value)).toEqual(['/original.jpg', 'Original', '/original.svg'])
+    expect(contents(value)).toEqual(['/original.jpg', 'Original'])
   })
 
   test('finishes once, freezes nested values, and rejects late writes', () => {
     const builder = createHeadTagsBuilder()
 
-    builder.tags.title.set('Original')
+    builder.tags.meta.set(image('/original.jpg', 'Original'))
 
     const value = builder.finish()
     const merged = mergeHeadLayers([value])
@@ -463,9 +512,8 @@ describe('builder ownership', () => {
     expect(builder.finish()).toBe(value)
     expect(() => builder.tags.title.set('Late')).toThrow()
     expect(Reflect.set(value, '0', {})).toBe(false)
-    expect(Reflect.set(merged[0].elements[0], 'textContent', 'Changed')).toBe(false)
+    expect(Reflect.set(merged[0].elements[1].attributes, 'content', 'Changed')).toBe(false)
     expect(Reflect.set(merged[0].selector.attributes, 'key', 'Changed')).toBe(false)
-    expect(Reflect.set(merged[0].elements[0].attributes, 'name', 'Changed')).toBe(false)
-    expect(contents(value)).toEqual(['Original'])
+    expect(contents(value)).toEqual(['/original.jpg', 'Original'])
   })
 })
