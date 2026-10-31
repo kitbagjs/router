@@ -1,18 +1,37 @@
 # Migrating from Vue Router
 
-This guide maps common Vue Router patterns to Kitbag Router. Start with the [Quick Start](/quick-start) for installation and TypeScript setup.
+Kitbag Router covers many of the same routing needs as Vue Router, with some differences in built-in features. The comparison below focuses on capabilities; the sections that follow explain how to migrate. See the [Quick Start](/quick-start) for installation and TypeScript setup.
 
-| Vue Router | Kitbag Router |
-| --- | --- |
-| Route records with `component` | `createRoute({...}).addView(Component)` |
-| Nested `children` | A child route's `parent` option |
-| `:id` and `:id?` | `[id]` and `[?id]` |
-| `props: true` or a props callback | `addView(Component, { props: ... })` |
-| `createWebHistory()` | `historyMode: 'browser'` |
-| `createWebHashHistory()` | `historyMode: 'hash'` |
-| `createMemoryHistory()` | `historyMode: 'memory'` |
-| `router.push({ name, params })` | `router.push(name, params)` |
-| `redirect` and `alias` options | `redirectTo` and `addAlias` methods |
+## Feature Parity
+
+### Available in Both
+
+- **Nested routes and named views** for composing page layouts.
+- **Dynamic URL params**, including optional params, regex validation, and matching multiple path segments.
+- **Named routes, redirects, and aliases**.
+- **Programmatic navigation and links with active states**.
+- **Navigation guards** for controlling access and responding to route changes.
+- **Route metadata and component props binding**.
+- **Browser, hash, and memory history**, including support for server rendering.
+- **Lazy-loaded components and Vue transitions**.
+- **Typed navigation and route data loading.** Vue Router provides [typed routes](https://router.vuejs.org/guide/advanced/typed-routes.html) and [data loaders](https://router.vuejs.org/data-loaders/); Kitbag provides [inferred route types](/core-concepts/type-safety) and [loaders](/core-concepts/loaders). Their setup and behavior differ.
+
+### Available in Vue Router, Missing in Kitbag
+
+- **Runtime route registration.** Vue Router can [add and remove routes while the app is running](https://router.vuejs.org/guide/advanced/dynamic-routing.html). Kitbag's routes are defined when creating the router.
+- **Custom scroll behavior and restoration.** Vue Router provides [navigation-aware scroll handling](https://router.vuejs.org/guide/advanced/scroll-behavior.html). Kitbag applications need to manage scrolling separately.
+- **File-based routing.** Vue Router provides a [plugin that generates routes from page files](https://router.vuejs.org/file-based-routing/). Kitbag has no built-in equivalent.
+
+### Built Into Kitbag, Without a Direct Vue Router Equivalent
+
+These are router-provided features in Kitbag. Similar behavior in Vue Router may require application code or additional integrations.
+
+- **Typed rejection views.** Register responses such as unauthorized or not found with their own views and HTTP status codes. See [Rejections](/advanced-concepts/rejections).
+- **Async component props.** Load data in a view's props getter, with the returned values checked against the component's required props. See [Component Props](/core-concepts/component-props).
+- **Automatic link-driven prefetching.** Prefetch components, props, and loaders when links become visible or users hover or focus them. See [Prefetching](/advanced-concepts/prefetching).
+- **Typed external routes.** Define external destinations with typed params and navigate to them through the router. See [External Routes](/core-concepts/external-routes).
+- **Typed, reactive history state.** Define state fields and defaults on routes, then read and update them through the current route. See [Route State](/advanced-concepts/route-state).
+- **Route title management.** Define titles on routes and compose them with parent titles. See [Title](/core-concepts/routes#title).
 
 ## Route Configuration
 
@@ -221,9 +240,3 @@ const user = createRoute({
 })
   .addAlias({ path: '/profile/[username]' }, ({ params }) => ({ id: findIdByUsername(params.username) }))
 ```
-
-## Dynamic Route Registration and Scroll Behavior
-
-Kitbag supports dynamic URL params, but does not expose equivalents to Vue Router's runtime `addRoute` and `removeRoute` methods. Define the routes when creating the router.
-
-There is also no built-in equivalent to Vue Router's `scrollBehavior` option. Applications that depend on custom scrolling or scroll restoration need to handle that separately.
