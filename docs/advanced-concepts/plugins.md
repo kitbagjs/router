@@ -1,5 +1,7 @@
 # Plugins
 
+> Plugin hook options were deprecated in [0.20.11](/upgrading/0.20.11#plugin-hook-options) and removed in [0.21.0](/upgrading/0.21.0#hook-registration).
+
 Plugins are a way to extend the router with additional functionality. They are used to add routes and rejections to the router.
 
 ```ts

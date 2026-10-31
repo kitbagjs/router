@@ -129,6 +129,8 @@ router.find('/users/1')
 
 ### Resolve
 
+> Resolution changed from URL strings to route objects in [0.14.0](/upgrading/0.14.0). URL lookup moved to `find` in [0.14.1](/upgrading/0.14.1).
+
 Creates a ResolvedRoute record for a given route.
 
 A [ResolvedRoute](/api/types/ResolvedRoute) is the base of what makes up the [Router Route](/core-concepts/router-route). It represents a [route](/core-concepts/routes) that has been matched to a specific url. It includes any params, state, query, and hash values for that location. Resolved routes are how Kitbag Router ensures type safety when navigating.
@@ -154,6 +156,8 @@ router.install(app)
 ```
 
 ### Start
+
+> Explicit startup replaced `router.initialized` in [0.11.0](/upgrading/0.11.0).
 
 Initializes the router based on the initial route. Automatically called when the router is installed as a vue plugin. Calling this more than once has no effect.
 

@@ -1,5 +1,7 @@
 # Route Meta
 
+> Meta registration moved to `Register.routeMeta` in [0.7.0](/upgrading/0.7.0#route-meta-registration).
+
 It may be useful to store additional information about your route to be used in a hook, or within a component. Meta data might be useful for authorization, analytics, and much more. For example, below we will use route meta to configure the document title per route.
 
 ```ts

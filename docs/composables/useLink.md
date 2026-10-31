@@ -1,5 +1,7 @@
 # useLink
 
+> Undefined destinations and the broad string overload were removed in [0.27.0](/upgrading/0.27.0#link-destinations).
+
 Used to create a link to a route. Generally the [`RouterLink`](/components/router-link) component should be used instead of this composable. See the ['UseLink'](/api/types/UseLink) api reference for more information on the return type.
 
 ```ts

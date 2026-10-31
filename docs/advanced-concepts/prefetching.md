@@ -57,6 +57,8 @@ Prefetching is handled automatically when using the `router-link` component or t
 
 ## Prefetch Strategies
 
+> The default enabled strategy changed from `eager` to `lazy` in [0.13.3](/upgrading/0.13.3#default-prefetch-strategy).
+
 The following prefetch strategies are supported:
 
 - `eager` - Prefetch immediately when the link is rendered.

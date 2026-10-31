@@ -61,7 +61,9 @@ const user = createRoute({
 
 ## Params Type
 
-The params passed to your callback has all of the type context including params from parents and any defaults applied.
+> Props callbacks receive the resolved route rather than just params since [0.13.0](/upgrading/0.13.0). Props moved to a second factory argument in [0.16.0](/upgrading/0.16.0), then to `addView` in [0.25.0](/upgrading/0.25.0#view-options).
+
+The callback receives the resolved route. Its `params` include types from parents and any defaults applied.
 
 ## Return Type
 
@@ -86,6 +88,8 @@ const user = createRoute({
 ```
 
 ## Parent Props
+
+> `parent.getProps` replaces callback `parent.props` on main. See the [unreleased migration](/upgrading/unreleased#callback-data-and-parent-props).
 
 The [callback context](#context) includes `parent.getProps` for reading parent props.
 

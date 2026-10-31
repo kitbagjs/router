@@ -33,6 +33,8 @@ const route = createRoute({...})
 
 ## Context
 
+> Leave and error hooks lost `update` and gained nullable destinations in [0.26.0](/upgrading/0.26.0#leave-and-error-hook-context).
+
 The router provides `to` and a `context` argument to your hook callback. The context will always include:
 
 | Property | Description |
@@ -57,7 +59,7 @@ If the hook is `onError`, you'll also have access to the following properties in
 | Property | Description |
 | ---- | ---- |
 | to | What was the destination route prior to the error being thrown |
-| source | String value indicating where the error occurred. Possible values are `'props'`, `'hook'`, and `'component'` |
+| source | String value indicating where the error occurred. Possible values are `'props'`, `'loader'`, `'hook'`, and `'component'` |
 
 ### Rejection Context
 
@@ -91,6 +93,8 @@ router.onAfterRouteEnter((to, context) => {
 
 ### Route
 
+> Hook options were deprecated in [0.20.8](/upgrading/0.20.8#hook-options) and removed in [0.21.0](/upgrading/0.21.0#hook-registration).
+
 ```ts
 const route = createRoute({...})
   .onAfterRouteEnter((to, context) => {
@@ -108,6 +112,8 @@ rejection.onRejection((rejection, context) => {
 
 ### Component
 
+> The component `onAfterRouteEnter` export was removed in [0.15.3](/upgrading/0.15.3).
+
 In order to register a hook from within a component, you must use the [composition API](https://vuejs.org/guide/extras/composition-api-faq.html#composition-api-faq).
 
 ```ts
@@ -123,6 +129,8 @@ You cannot register `onBeforeRouteEnter` or `onAfterRouteEnter` hooks from withi
 :::
 
 ## Removing Hooks
+
+> Route hook methods return the route for chaining since [0.32.0](/upgrading/0.32.0#route-hook-return-values).
 
 Use `remove` from the callback context to remove a hook. You can also pass a `signal` option to remove it when an `AbortController` aborts. An already-aborted signal skips registration. Component hooks still unregister automatically on unmount.
 

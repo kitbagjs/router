@@ -32,6 +32,8 @@ Every route's own url is tried before any [alias](/advanced-concepts/aliases). O
 
 ## Path Matches
 
+> Trailing slashes no longer distinguish routes under the default configuration since [0.22.6](/upgrading/0.22.6).
+
 Routes `path` must match the structure of the URL pathname.
 
 ::: info

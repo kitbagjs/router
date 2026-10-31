@@ -72,7 +72,7 @@ const hash = route.hash
 
 ## Href
 
-The href property is the current router location as a [Url](/api/types/Url.md) string. This will reflect the current browser [location](https://developer.mozilla.org/en-US/docs/Web/API/Location).
+The href property is the current router location as a [UrlString](/api/types/UrlString.md). This will reflect the current browser [location](https://developer.mozilla.org/en-US/docs/Web/API/Location).
 
 ```ts
 const href = route.href

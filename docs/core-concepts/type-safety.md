@@ -4,6 +4,8 @@ Use router registration to type imports from `@kitbag/router`, or create router 
 
 ## Registration
 
+> Registered helper types were deprecated in [0.20.8](/upgrading/0.20.8#registered-helper-types) and removed in [0.21.0](/upgrading/0.21.0#registered-and-hook-types). Infer application types from your router.
+
 Extend the `Register` interface with your router's type. Components, composables, and reusable callbacks imported from `@kitbag/router` will then use that router's types.
 
 ```ts

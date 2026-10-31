@@ -1,5 +1,7 @@
 # useLoader
 
+> `useLoader` replaces component reads of `route.data`, deprecated in [0.31.0](/upgrading/0.31.0#component-loader-data).
+
 Read a loader's data, loading state, and error. Pass a loader definition, either imported or read from `route.loaders`:
 
 ```vue
