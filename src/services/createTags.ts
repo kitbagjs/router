@@ -1,4 +1,4 @@
-import { TagGroup, TagLayer, LinkTag, LinkTagSelector, MetaTag, MetaTagSelector, TagOperation, TagSelector, Tags, TagsSnapshot, ResolvedMetaTag, ResolvedLinkTag } from '@/types/tags'
+import { TagGroup, TagLayer, LinkTag, LinkTagSelector, MetaTag, MetaTagSelector, TagOperation, TagSelector, Tags, ResolvedMetaTag, ResolvedLinkTag } from '@/types/tags'
 import { MaybePromise } from '@/types/utilities'
 import { matchesTag, mergeTags } from '@/services/mergeTags'
 
@@ -93,7 +93,7 @@ export function createTags({ getParentLayers = () => [] }: CreateTagsOptions = {
     return mergeTags([...parents, local])
   }
 
-  async function get(): Promise<TagsSnapshot> {
+  const get: Tags['get'] = async () => {
     const groups = await readGroups()
     const meta: ResolvedMetaTag[] = []
     const link: ResolvedLinkTag[] = []
@@ -133,56 +133,104 @@ export function createTags({ getParentLayers = () => [] }: CreateTagsOptions = {
     record({ kind, target, groups: Object.freeze([group]) })
   }
 
-  return {
+  const getTitle: Tags['title']['get'] = async () => {
+    const snapshot = await get()
+
+    return snapshot.title
+  }
+
+  const setTitle: Tags['title']['set'] = (value) => {
+    const target = createSelector('title', {})
+    const group: TagGroup = Object.freeze({ ...target, value })
+
+    record({ kind: 'set', target, groups: Object.freeze([group]) })
+  }
+
+  const deleteTitle: Tags['title']['delete'] = () => {
+    const target = createSelector('title', {})
+
+    record({ kind: 'delete', target })
+  }
+
+  const getMeta: Tags['meta']['get'] = async (selector) => {
+    const target = selector === undefined ? undefined : metaSelector(selector, false)
+    const groups = await readGroups()
+    const values = groups.flatMap((group) => {
+      if (group.tag === 'meta' && (!target || matchesTag(group, target))) {
+        return [copyMeta(group.value)]
+      }
+
+      return []
+    })
+
+    return Object.freeze(values)
+  }
+
+  const setMeta: Tags['meta']['set'] = (descriptor) => writeMeta('set', descriptor)
+
+  const addMeta: Tags['meta']['add'] = (descriptor) => writeMeta('add', descriptor)
+
+  const deleteMeta: Tags['meta']['delete'] = (selector) => {
+    const target = metaSelector(selector, false)
+
+    record({ kind: 'delete', target })
+  }
+
+  const getLink: Tags['link']['get'] = async (selector) => {
+    const target = selector === undefined ? undefined : linkSelector(selector, false)
+    const groups = await readGroups()
+    const values = groups.flatMap((group) => {
+      if (group.tag === 'link' && (!target || matchesTag(group, target))) {
+        return [copyLink(group.value)]
+      }
+
+      return []
+    })
+
+    return Object.freeze(values)
+  }
+
+  const setLink: Tags['link']['set'] = (descriptor) => writeLink('set', descriptor)
+
+  const addLink: Tags['link']['add'] = (descriptor) => writeLink('add', descriptor)
+
+  const deleteLink: Tags['link']['delete'] = (selector) => {
+    const target = linkSelector(selector, false)
+
+    record({ kind: 'delete', target })
+  }
+
+  const title: Tags['title'] = {
+    get: getTitle,
+    set: setTitle,
+    delete: deleteTitle,
+  }
+
+  const meta: Tags['meta'] = {
+    get: getMeta,
+    set: setMeta,
+    add: addMeta,
+    delete: deleteMeta,
+  }
+
+  const link: Tags['link'] = {
+    get: getLink,
+    set: setLink,
+    add: addLink,
+    delete: deleteLink,
+  }
+
+  const getLayer = (): TagLayer => Object.freeze([...operations])
+
+  const tags = {
     get,
     get layer() {
-      return Object.freeze([...operations])
+      return getLayer()
     },
-    title: {
-      get: async () => (await get()).title,
-      set: (value) => {
-        const target = createSelector('title', {})
-        const group: TagGroup = Object.freeze({ ...target, value })
-
-        record({ kind: 'set', target, groups: Object.freeze([group]) })
-      },
-      delete: () => record({ kind: 'delete', target: createSelector('title', {}) }),
-    },
-    meta: {
-      get: async (selector) => {
-        const target = selector === undefined ? undefined : metaSelector(selector, false)
-        const groups = await readGroups()
-        const values = groups.flatMap((group) => {
-          if (group.tag === 'meta' && (!target || matchesTag(group, target))) {
-            return [copyMeta(group.value)]
-          }
-
-          return []
-        })
-
-        return Object.freeze(values)
-      },
-      set: (descriptor) => writeMeta('set', descriptor),
-      add: (descriptor) => writeMeta('add', descriptor),
-      delete: (selector) => record({ kind: 'delete', target: metaSelector(selector, false) }),
-    },
-    link: {
-      get: async (selector) => {
-        const target = selector === undefined ? undefined : linkSelector(selector, false)
-        const groups = await readGroups()
-        const values = groups.flatMap((group) => {
-          if (group.tag === 'link' && (!target || matchesTag(group, target))) {
-            return [copyLink(group.value)]
-          }
-
-          return []
-        })
-
-        return Object.freeze(values)
-      },
-      set: (descriptor) => writeLink('set', descriptor),
-      add: (descriptor) => writeLink('add', descriptor),
-      delete: (selector) => record({ kind: 'delete', target: linkSelector(selector, false) }),
-    },
+    title,
+    meta,
+    link,
   }
+
+  return tags
 }
