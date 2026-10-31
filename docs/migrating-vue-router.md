@@ -5,6 +5,7 @@
 | [Nested routes](/core-concepts/routes#parent) | ✅ | ✅ |
 | [Named views](/core-concepts/routes#named-views) | ✅ | ✅ |
 | [Typed routes](/core-concepts/type-safety) | ✅ | ✅ |
+| [Typed params](/core-concepts/params#param-types) | [🧪 Experimental](https://router.vuejs.org/experimental/param-parsers) | ✅ |
 | [Navigation guards](/advanced-concepts/hooks) | ✅ | ✅ |
 | [Redirects](/advanced-concepts/redirects) and [aliases](/advanced-concepts/aliases) | ✅ | ✅ |
 | [Data loaders](/core-concepts/loaders) | ✅ | ✅ |
