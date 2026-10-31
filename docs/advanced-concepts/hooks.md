@@ -57,7 +57,7 @@ If the hook is `onError`, you'll also have access to the following properties in
 | Property | Description |
 | ---- | ---- |
 | to | What was the destination route prior to the error being thrown |
-| source | String value indicating where the error occurred. Possible values are `'props'`, `'hook'`, and `'component'` |
+| source | String value indicating where the error occurred. Possible values are `'props'`, `'loader'`, `'hook'`, and `'component'` |
 
 ### Rejection Context
 
@@ -67,6 +67,12 @@ If the hook is `onRejection`, you'll also have access to the following propertie
 | ---- | ---- |
 | to | What was the destination route prior to the rejection being triggered |
 | from | What was the route prior to the rejection being triggered |
+
+<aside class="version-note" role="note">
+
+**Version note:** Leave and error hooks lost `update` and gained nullable destinations in [0.26.0](/upgrading/0.26.0#leave-and-error-hook-context).
+
+</aside>
 
 ## Levels
 
@@ -98,6 +104,12 @@ const route = createRoute({...})
   })
 ```
 
+<aside class="version-note" role="note">
+
+**Version note:** Hook options were deprecated in [0.20.8](/upgrading/0.20.8#hook-options) and removed in [0.21.0](/upgrading/0.21.0#hook-registration).
+
+</aside>
+
 ### Rejection
 
 ```ts
@@ -122,6 +134,12 @@ onBeforeRouteLeave((to, context) => {
 You cannot register `onBeforeRouteEnter` or `onAfterRouteEnter` hooks from within a component, since the component must have been mounted to discover the hook.
 :::
 
+<aside class="version-note" role="note">
+
+**Version note:** The component `onAfterRouteEnter` export was removed in [0.15.3](/upgrading/0.15.3).
+
+</aside>
+
 ## Removing Hooks
 
 Use `remove` from the callback context to remove a hook. You can also pass a `signal` option to remove it when an `AbortController` aborts. An already-aborted signal skips registration. Component hooks still unregister automatically on unmount.
@@ -137,6 +155,12 @@ const route = createRoute({...})
 
 controller.abort()
 ```
+
+<aside class="version-note" role="note">
+
+**Version note:** Route hook methods return the route for chaining since [0.32.0](/upgrading/0.32.0#route-hook-return-values).
+
+</aside>
 
 ## Global Injection
 

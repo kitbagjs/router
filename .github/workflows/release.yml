@@ -16,3 +16,7 @@ jobs:
       - uses: kitbagjs/actions-create-release@main
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Link upgrade guide
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/link-upgrade-guide.js "$GITHUB_REF_NAME"

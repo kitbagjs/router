@@ -74,6 +74,12 @@ const route = createRoute({
 :white_check_mark: `parent//child`  
 :x: `parent/child`  
 
+<aside class="version-note" role="note">
+
+**Version note:** Trailing slashes no longer distinguish routes under the default configuration since [0.22.6](/upgrading/0.22.6).
+
+</aside>
+
 ## Query Matches
 
 Routes `query` must match the structure of the URL search.
@@ -169,4 +175,4 @@ const route = createRoute({
 :white_check_mark: `parent/123`  
 :white_check_mark: `parent/123?tab=true`  
 :x: `parent/123?tab=github`  
-:x: `parent/ABC?tab=true`  
+:x: `parent/ABC?tab=true`

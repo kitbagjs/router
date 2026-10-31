@@ -30,6 +30,14 @@ The name property is optional, but a route without a name cannot be navigated to
 - any hooks defined on the parent run when the child is matched
 - the parents [state](/advanced-concepts/route-state#route-state) is merged with the child
 
+<aside class="version-note" role="note">
+
+**Version note:** Generated route keys were replaced by explicit names in [0.7.2](/upgrading/0.7.2).
+
+The `disabled` option was removed in [0.7.0](/upgrading/0.7.0#disabled-routes).
+
+</aside>
+
 ## Path
 
 The `path` property is used to define the [pathname](https://developer.mozilla.org/en-US/docs/Web/API/URL/pathname) part of the route's url.
@@ -44,6 +52,12 @@ const home = createRoute({
 ::: info
 A named route's final path (its own path combined with any parents) must start with `/`. Otherwise it can never match a url and the router throws an `UnreachableRouteError`.
 :::
+
+<aside class="version-note" role="note">
+
+**Version note:** This validation was introduced in [0.27.0](/upgrading/0.27.0#reachable-route-paths).
+
+</aside>
 
 ## Query
 
@@ -87,6 +101,12 @@ const blogPost = createRoute({
   path: '/[postId]',
 })
 ```
+
+<aside class="version-note" role="note">
+
+**Version note:** Parent references replaced nested `createRoutes` arrays in [0.6.0](/upgrading/0.6.0).
+
+</aside>
 
 ## Views
 
@@ -179,22 +199,11 @@ const home = createRoute({
 })
 ```
 
-## Migrating Deprecated View Options
+<aside class="version-note" role="note">
 
-The `component` and `components` options and the second `createRoute` argument have been removed. Use [`addView`](#views) for each component, pass a `name` for named views, and put the props getter in the view's `props` option.
+**Version note:** `addView` replaced the legacy view options in [0.25.0](/upgrading/0.25.0#view-options). Those options were removed in [0.28.0](/upgrading/0.28.0).
 
-```ts
-const home = createRoute({
-  name: 'home',
-  path: '/',
-})
-.addView(HomeView, {
-  props: () => ({ userId: 1 }),
-})
-.addView(HomeSidebar, {
-  name: 'sidebar',
-})
-```
+</aside>
 
 ## Meta
 
@@ -277,6 +286,12 @@ const user = createRoute({
 There is also a `setTitle` callback on [rejections](/advanced-concepts/rejections#title).
 
 :::
+
+<aside class="version-note" role="note">
+
+**Version note:** Resolved routes expose `getTitle()` instead of a `title` promise since [0.26.0](/upgrading/0.26.0#resolved-route-titles).
+
+</aside>
 
 ## Context
 

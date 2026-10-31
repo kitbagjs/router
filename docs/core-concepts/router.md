@@ -137,6 +137,12 @@ A [ResolvedRoute](/api/types/ResolvedRoute) is the base of what makes up the [Ro
 router.resolve('users', { id: 1 })
 ```
 
+<aside class="version-note" role="note">
+
+**Version note:** Resolution changed from URL strings to route objects in [0.14.0](/upgrading/0.14.0). URL lookup moved to `find` in [0.14.1](/upgrading/0.14.1).
+
+</aside>
+
 ### IsExternal
 
 Checks if a given URL is external to the router instance.
@@ -160,6 +166,12 @@ Initializes the router based on the initial route. Automatically called when the
 ```ts
 router.start()
 ```
+
+<aside class="version-note" role="note">
+
+**Version note:** Explicit startup replaced `router.initialized` in [0.11.0](/upgrading/0.11.0).
+
+</aside>
 
 ### Stop
 

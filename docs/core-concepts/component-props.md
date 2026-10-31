@@ -61,7 +61,13 @@ const user = createRoute({
 
 ## Params Type
 
-The params passed to your callback has all of the type context including params from parents and any defaults applied.
+The callback receives the resolved route. Its `params` include types from parents and any defaults applied.
+
+<aside class="version-note" role="note">
+
+**Version note:** Props callbacks receive the resolved route rather than just params since [0.13.0](/upgrading/0.13.0). Props moved to a second factory argument in [0.16.0](/upgrading/0.16.0), then to `addView` in [0.25.0](/upgrading/0.25.0#view-options).
+
+</aside>
 
 ## Return Type
 

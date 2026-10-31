@@ -109,6 +109,10 @@ export default defineConfig({
           ],
         },
         {
+          text: "Upgrading",
+          link: "/upgrading/"
+        },
+        {
           text: "Migrating from vue-router",
           link: "/migrating-vue-router"
         }

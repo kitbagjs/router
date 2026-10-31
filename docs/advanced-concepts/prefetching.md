@@ -63,6 +63,12 @@ The following prefetch strategies are supported:
 - `lazy` - Prefetch when the link is visible in the viewport.
 - `intent` - Prefetch when the link is focused or hovered.
 
+<aside class="version-note" role="note">
+
+**Version note:** The default enabled strategy changed from `eager` to `lazy` in [0.13.3](/upgrading/0.13.3#default-prefetch-strategy).
+
+</aside>
+
 ## Configuration
 
 Prefetching can be configured at various levels. Each nested layer **overrides** the parent configuration.

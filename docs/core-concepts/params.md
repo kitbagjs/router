@@ -17,6 +17,12 @@ const events = createRoute({
 Param names must be unique. This includes all properties that have params as well as between a child route and it's parent route.
 :::
 
+<aside class="version-note" role="note">
+
+**Version note:** Bracket syntax replaced colon params in [0.2.0](/upgrading/0.2.0).
+
+</aside>
+
 ## Optional Params
 
 Params can be made optional by adding a `?` before the name. The `year` param is not optional and will have the type `string` when being accessed. But the `month` param is optional and will have the type `string | undefined` when being accessed.
@@ -42,6 +48,12 @@ const route = createRoute({
 ```
 
 Use greedy params when a param value can contain slashes (e.g. file paths or encoded segments).
+
+<aside class="version-note" role="note">
+
+**Version note:** Single-segment matching became the default in [0.22.1](/upgrading/0.22.1#greedy-params).
+
+</aside>
 
 ## Param Types
 
@@ -76,6 +88,12 @@ Kitbag Router comes with a few built-in param types:
 | `Date`   |         | Any value that can be parsed with the `Date` constructor. Uses `toISOString` when serializing |
 | `RegExp` |         | A literal regex expression                                                                    |
 | `JSON`   |         | Any value that can be parsed with the `JSON.parse` method                                     |
+
+<aside class="version-note" role="note">
+
+**Version note:** `withParams` replaced the `path`, `query`, and `host` helpers in [0.17.3](/upgrading/0.17.3); the aliases were removed in [0.21.0](/upgrading/0.21.0#url-template-helpers).
+
+</aside>
 
 ## Custom Param Types
 
@@ -134,6 +152,12 @@ const monthParam = createParam({
   },
 })
 ```
+
+<aside class="version-note" role="note">
+
+**Version note:** Param input types were renamed in [0.32.0](/upgrading/0.32.0#param-input-types).
+
+</aside>
 
 ## Looking up param definitions
 
@@ -244,6 +268,12 @@ const events = createRoute({
 })
 ```
 
+<aside class="version-note" role="note">
+
+**Version note:** `unionOf`, `arrayOf`, and `tupleOf` accept an array of param types since [0.19.0](/upgrading/0.19.0).
+
+</aside>
+
 ## Arrays
 
 The `arrayOf` utility can be used to define a param as an array of any number of [Param](/api/types/Param) arguments.
@@ -305,6 +335,12 @@ const events = createRoute({
 :::warning
 Zod param types are experimental and may change or be removed in the future.
 :::
+
+<aside class="version-note" role="note">
+
+**Version note:** Zod support moved from version 3 to version 4 in [0.20.11](/upgrading/0.20.11#zod-version).
+
+</aside>
 
 ## Valibot Param Types
 

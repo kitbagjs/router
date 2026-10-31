@@ -70,3 +70,9 @@ child.meta.public
 ### Meta Property Conflict
 
 Unlike other cascading properties like params, a child **can** also define duplicate keys in meta. However, in order for the types to be accurate child properties must match the `typeof` on the parent meta. When the router finds a duplicate key with conflicting types it will throw a [MetaPropertyConflict](/api/errors/MetaPropertyConflict) error.
+
+<aside class="version-note" role="note">
+
+**Version note:** Meta registration moved to `Register.routeMeta` in [0.7.0](/upgrading/0.7.0#route-meta-registration).
+
+</aside>

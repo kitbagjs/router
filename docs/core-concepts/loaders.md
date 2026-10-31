@@ -66,6 +66,12 @@ const { data: user } = useLoader(route.loaders.default)
 
 [Register your router](/core-concepts/type-safety#registration) to get the correct route names and data types when using `useRoute`.
 
+<aside class="version-note" role="note">
+
+**Version note:** Component reads of `route.data` were deprecated in [0.31.0](/upgrading/0.31.0#component-loader-data).
+
+</aside>
+
 ## Suspense
 
 Await `useLoader` at the top level of `<script setup>` to use Vue's Suspense.
@@ -153,6 +159,6 @@ Loader prefetching is disabled by default. Enable it with a loader's `prefetch` 
 
 ## Navigation cancellation
 
-When a loader pushes or rejects the navigation, component reads of `route.data` remain pending instead of receiving a control error. A new read after navigation uses the new route's data. Use `useLoader` when a component needs reactive state that follows navigation.
+When a loader redirects or rejects a navigation, `useLoader` follows the current route without exposing the router's navigation control errors as loader failures.
 
 When a callback is no longer needed, such as after navigating to another route, pending getter calls reject with `NavigationAbandonedError`. The router handles this cancellation without calling application error hooks. If you catch errors from a getter, rethrow `NavigationAbandonedError`.

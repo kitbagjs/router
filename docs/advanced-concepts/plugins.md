@@ -40,3 +40,9 @@ plugin.onBeforeRouteEnter(() => {
   console.log('before route enter')
 })
 ```
+
+<aside class="version-note" role="note">
+
+**Version note:** Plugin hook options were deprecated in [0.20.11](/upgrading/0.20.11#plugin-hook-options) and removed in [0.21.0](/upgrading/0.21.0#hook-registration).
+
+</aside>

@@ -24,6 +24,12 @@ server should respond with while the rejection is in effect, read by [router.ren
 when [server rendering](/advanced-concepts/server-side-rendering). It is optional: a rejection without
 its own responds with the router's [`rejectStatus`](/api/types/RouterOptions#rejectstatus), `200` by default.
 
+<aside class="version-note" role="note">
+
+**Version note:** Rejections became inferred from router options in [0.8.1](/upgrading/0.8.1); reusable rejection definitions replaced the options object in [0.20.11](/upgrading/0.20.11#rejection-definitions).
+
+</aside>
+
 ## Rejection Component
 
 When a rejection happens, Kitbag router mounts whatever component you passed in to the `component` property. If no component was assigned, Kitbag router will use the default rejection component that ships with Kitbag Router.

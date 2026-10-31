@@ -19,6 +19,12 @@ declare module '@kitbag/router' {
 }
 ```
 
+<aside class="version-note" role="note">
+
+**Version note:** Registered helper types were deprecated in [0.20.8](/upgrading/0.20.8#registered-helper-types) and removed in [0.21.0](/upgrading/0.21.0#registered-and-hook-types). Infer application types from your router.
+
+</aside>
+
 ## Router Assets
 
 Use [`createRouterAssets`](/api/functions/createRouterAssets) to get exports typed for a specific router, such as when an application uses multiple routers. Import the resulting exports from your own module instead of `@kitbag/router`.
