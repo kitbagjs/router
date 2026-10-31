@@ -61,9 +61,13 @@ const user = createRoute({
 
 ## Params Type
 
-> Props callbacks receive the resolved route rather than just params since [0.13.0](/upgrading/0.13.0). Props moved to a second factory argument in [0.16.0](/upgrading/0.16.0), then to `addView` in [0.25.0](/upgrading/0.25.0#view-options).
-
 The callback receives the resolved route. Its `params` include types from parents and any defaults applied.
+
+<aside class="version-note" role="note">
+
+**Version note:** Props callbacks receive the resolved route rather than just params since [0.13.0](/upgrading/0.13.0). Props moved to a second factory argument in [0.16.0](/upgrading/0.16.0), then to `addView` in [0.25.0](/upgrading/0.25.0#view-options).
+
+</aside>
 
 ## Return Type
 
@@ -88,8 +92,6 @@ const user = createRoute({
 ```
 
 ## Parent Props
-
-> `parent.getProps` replaces callback `parent.props` on main. See the [unreleased migration](/upgrading/unreleased#callback-data-and-parent-props).
 
 The [callback context](#context) includes `parent.getProps` for reading parent props.
 
@@ -129,6 +131,12 @@ const blogPostTabs = createRoute({
 :::warning
 Awaiting parent props will create a waterfall of async operations which can make your app feel sluggish.
 :::
+
+<aside class="version-note" role="note">
+
+**Version note:** `parent.getProps` replaces callback `parent.props` on main. See the [unreleased migration](/upgrading/unreleased#callback-data-and-parent-props).
+
+</aside>
 
 ## Context
 

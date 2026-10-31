@@ -1,0 +1,17 @@
+.vp-doc .version-note {
+  margin: 24px 0 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--vp-c-divider);
+  color: var(--vp-c-text-2);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.vp-doc .version-note p {
+  margin: 0;
+  line-height: inherit;
+}
+
+.vp-doc .version-note strong {
+  font-weight: 500;
+}

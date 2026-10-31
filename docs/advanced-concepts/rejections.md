@@ -4,8 +4,6 @@ Kitbag Router ships with built in support for rejection handling. Each rejection
 
 ## Rejection Types
 
-> Rejections became inferred from router options in [0.8.1](/upgrading/0.8.1); reusable rejection definitions replaced the options object in [0.20.11](/upgrading/0.20.11#rejection-definitions).
-
 Creating custom rejections is extremely easily with the [`createRejection`](/api/functions/createRejection) utility. For example, we can add a custom rejection for "AuthNeeded".
 
 ```ts
@@ -25,6 +23,12 @@ The `status` is the [http status](https://developer.mozilla.org/en-US/docs/Web/H
 server should respond with while the rejection is in effect, read by [router.render](/core-concepts/router#render)
 when [server rendering](/advanced-concepts/server-side-rendering). It is optional: a rejection without
 its own responds with the router's [`rejectStatus`](/api/types/RouterOptions#rejectstatus), `200` by default.
+
+<aside class="version-note" role="note">
+
+**Version note:** Rejections became inferred from router options in [0.8.1](/upgrading/0.8.1); reusable rejection definitions replaced the options object in [0.20.11](/upgrading/0.20.11#rejection-definitions).
+
+</aside>
 
 ## Rejection Component
 

@@ -33,8 +33,6 @@ const route = createRoute({...})
 
 ## Context
 
-> Leave and error hooks lost `update` and gained nullable destinations in [0.26.0](/upgrading/0.26.0#leave-and-error-hook-context).
-
 The router provides `to` and a `context` argument to your hook callback. The context will always include:
 
 | Property | Description |
@@ -70,6 +68,12 @@ If the hook is `onRejection`, you'll also have access to the following propertie
 | to | What was the destination route prior to the rejection being triggered |
 | from | What was the route prior to the rejection being triggered |
 
+<aside class="version-note" role="note">
+
+**Version note:** Leave and error hooks lost `update` and gained nullable destinations in [0.26.0](/upgrading/0.26.0#leave-and-error-hook-context).
+
+</aside>
+
 ## Levels
 
 Hooks can be registered **globally**, on your **route**, or from within a **component**. This is useful for both providing the most convenient devx, but also can be a useful tool for ensuring proper execution order of your business logic.
@@ -93,14 +97,18 @@ router.onAfterRouteEnter((to, context) => {
 
 ### Route
 
-> Hook options were deprecated in [0.20.8](/upgrading/0.20.8#hook-options) and removed in [0.21.0](/upgrading/0.21.0#hook-registration).
-
 ```ts
 const route = createRoute({...})
   .onAfterRouteEnter((to, context) => {
     ...
   })
 ```
+
+<aside class="version-note" role="note">
+
+**Version note:** Hook options were deprecated in [0.20.8](/upgrading/0.20.8#hook-options) and removed in [0.21.0](/upgrading/0.21.0#hook-registration).
+
+</aside>
 
 ### Rejection
 
@@ -111,8 +119,6 @@ rejection.onRejection((rejection, context) => {
 ```
 
 ### Component
-
-> The component `onAfterRouteEnter` export was removed in [0.15.3](/upgrading/0.15.3).
 
 In order to register a hook from within a component, you must use the [composition API](https://vuejs.org/guide/extras/composition-api-faq.html#composition-api-faq).
 
@@ -128,9 +134,13 @@ onBeforeRouteLeave((to, context) => {
 You cannot register `onBeforeRouteEnter` or `onAfterRouteEnter` hooks from within a component, since the component must have been mounted to discover the hook.
 :::
 
-## Removing Hooks
+<aside class="version-note" role="note">
 
-> Route hook methods return the route for chaining since [0.32.0](/upgrading/0.32.0#route-hook-return-values).
+**Version note:** The component `onAfterRouteEnter` export was removed in [0.15.3](/upgrading/0.15.3).
+
+</aside>
+
+## Removing Hooks
 
 Use `remove` from the callback context to remove a hook. You can also pass a `signal` option to remove it when an `AbortController` aborts. An already-aborted signal skips registration. Component hooks still unregister automatically on unmount.
 
@@ -145,6 +155,12 @@ const route = createRoute({...})
 
 controller.abort()
 ```
+
+<aside class="version-note" role="note">
+
+**Version note:** Route hook methods return the route for chaining since [0.32.0](/upgrading/0.32.0#route-hook-return-values).
+
+</aside>
 
 ## Global Injection
 

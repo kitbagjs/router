@@ -48,8 +48,6 @@ const settings = createRoute({...})
 
 ## Reading data in a component
 
-> Component reads of `route.data` were deprecated in [0.31.0](/upgrading/0.31.0#component-loader-data).
-
 Pass a definition from `route.loaders` to [`useLoader`](/composables/useLoader).
 
 ```vue
@@ -67,6 +65,12 @@ const { data: user } = useLoader(route.loaders.default)
 ```
 
 [Register your router](/core-concepts/type-safety#registration) to get the correct route names and data types when using `useRoute`.
+
+<aside class="version-note" role="note">
+
+**Version note:** Component reads of `route.data` were deprecated in [0.31.0](/upgrading/0.31.0#component-loader-data).
+
+</aside>
 
 ## Suspense
 
@@ -115,8 +119,6 @@ const invoices = createRoute({
 
 ## Using loader data in props callbacks
 
-> Callback data getters replace `route.data` and `parent.data` on main. See the [unreleased migration](/upgrading/unreleased#callback-data-and-parent-props).
-
 Props callbacks can access loader data with `route.getData`.
 
 For example, load a project once, then use it to prepare a summary and a list of incomplete tasks:
@@ -150,6 +152,12 @@ const project = createRoute({
 ```
 
 Both callbacks use the same loader result, so they do not need separate requests for the project. Each callback derives the props for its own component. Render the views with a default `<router-view />` and a named `<router-view name="tasks" />`.
+
+<aside class="version-note" role="note">
+
+**Version note:** Callback data getters replace `route.data` and `parent.data` on main. See the [unreleased migration](/upgrading/unreleased#callback-data-and-parent-props).
+
+</aside>
 
 ## Prefetching
 

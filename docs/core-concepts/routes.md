@@ -13,8 +13,6 @@ const home = createRoute({
 
 ## Name
 
-> Generated route keys were replaced by explicit names in [0.7.2](/upgrading/0.7.2).
-
 The `name` property is used to identify the route. Each route mush have a unique name.
 
 ```ts {2}
@@ -26,13 +24,19 @@ const home = createRoute({
 
 ### Routes without names
 
-> The `disabled` option was removed in [0.7.0](/upgrading/0.7.0#disabled-routes).
-
 The name property is optional, but a route without a name cannot be navigated to. It can be useful to have unnamed routes for organizing related routes under a shared unnamed parent. Even though the parent can't be navigated to, this still ensures
 
 - the parents properties are merged with the child (`path`, `query`, `meta`, and `hash`)
 - any hooks defined on the parent run when the child is matched
 - the parents [state](/advanced-concepts/route-state#route-state) is merged with the child
+
+<aside class="version-note" role="note">
+
+**Version note:** Generated route keys were replaced by explicit names in [0.7.2](/upgrading/0.7.2).
+
+The `disabled` option was removed in [0.7.0](/upgrading/0.7.0#disabled-routes).
+
+</aside>
 
 ## Path
 
@@ -47,9 +51,13 @@ const home = createRoute({
 
 ::: info
 A named route's final path (its own path combined with any parents) must start with `/`. Otherwise it can never match a url and the router throws an `UnreachableRouteError`.
-
-This validation was introduced in [0.27.0](/upgrading/0.27.0#reachable-route-paths).
 :::
+
+<aside class="version-note" role="note">
+
+**Version note:** This validation was introduced in [0.27.0](/upgrading/0.27.0#reachable-route-paths).
+
+</aside>
 
 ## Query
 
@@ -79,8 +87,6 @@ const contact = createRoute({
 
 ## Parent
 
-> Parent references replaced nested `createRoutes` arrays in [0.6.0](/upgrading/0.6.0).
-
 The `parent` property is used to create nested routes. In this example, `blogPost` route's path is combined with the `blog` route's path to form the full url. A route inherits many of its parent's properties. Specifically, `path`, `query`, `meta`, `state`, [context](/advanced-concepts/context), and `hash` are all combined.
 
 ```ts {7}
@@ -96,9 +102,13 @@ const blogPost = createRoute({
 })
 ```
 
-## Views
+<aside class="version-note" role="note">
 
-> `addView` replaced the legacy view options in [0.25.0](/upgrading/0.25.0#view-options). Those options were removed in [0.28.0](/upgrading/0.28.0).
+**Version note:** Parent references replaced nested `createRoutes` arrays in [0.6.0](/upgrading/0.6.0).
+
+</aside>
+
+## Views
 
 Use the chainable `addView` method to define which component(s) render when the route is active. Call it once for a single view, or chain it to register multiple views. If no view is added, a [RouterView](/components/router-view) is rendered by default.
 
@@ -189,6 +199,12 @@ const home = createRoute({
 })
 ```
 
+<aside class="version-note" role="note">
+
+**Version note:** `addView` replaced the legacy view options in [0.25.0](/upgrading/0.25.0#view-options). Those options were removed in [0.28.0](/upgrading/0.28.0).
+
+</aside>
+
 ## Meta
 
 The `meta` property is used to define metadata for the route. Meta is optional and can be used to define static metadata for the route to reference in the [router route](/core-concepts/router-route) or in [hooks](/advanced-concepts/hooks)
@@ -244,8 +260,6 @@ const home = createRoute({
 
 ## Title
 
-> Resolved routes expose `getTitle()` instead of a `title` promise since [0.26.0](/upgrading/0.26.0#resolved-route-titles).
-
 The `setTitle` callback is used to set the document title for the route. The callback is given the resolved route and a context object. The callback can be async, and should return a string that should be set as the document.title.
 
 The context object has the following properties:
@@ -272,6 +286,12 @@ const user = createRoute({
 There is also a `setTitle` callback on [rejections](/advanced-concepts/rejections#title).
 
 :::
+
+<aside class="version-note" role="note">
+
+**Version note:** Resolved routes expose `getTitle()` instead of a `title` promise since [0.26.0](/upgrading/0.26.0#resolved-route-titles).
+
+</aside>
 
 ## Context
 

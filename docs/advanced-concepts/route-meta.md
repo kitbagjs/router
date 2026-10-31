@@ -1,7 +1,5 @@
 # Route Meta
 
-> Meta registration moved to `Register.routeMeta` in [0.7.0](/upgrading/0.7.0#route-meta-registration).
-
 It may be useful to store additional information about your route to be used in a hook, or within a component. Meta data might be useful for authorization, analytics, and much more. For example, below we will use route meta to configure the document title per route.
 
 ```ts
@@ -72,3 +70,9 @@ child.meta.public
 ### Meta Property Conflict
 
 Unlike other cascading properties like params, a child **can** also define duplicate keys in meta. However, in order for the types to be accurate child properties must match the `typeof` on the parent meta. When the router finds a duplicate key with conflicting types it will throw a [MetaPropertyConflict](/api/errors/MetaPropertyConflict) error.
+
+<aside class="version-note" role="note">
+
+**Version note:** Meta registration moved to `Register.routeMeta` in [0.7.0](/upgrading/0.7.0#route-meta-registration).
+
+</aside>

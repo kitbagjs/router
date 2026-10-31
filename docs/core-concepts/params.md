@@ -4,8 +4,6 @@ Params are used to define the dynamic parts of a route. Params can be used in th
 
 ## Param Names
 
-> Bracket syntax replaced colon params in [0.2.0](/upgrading/0.2.0).
-
 Param names are defined using square brackets. What is inside the brackets is the name of the param and is used when accessing the param value and when providing the param value when navigating to the route.
 
 ```ts {3}
@@ -18,6 +16,12 @@ const events = createRoute({
 :::warning
 Param names must be unique. This includes all properties that have params as well as between a child route and it's parent route.
 :::
+
+<aside class="version-note" role="note">
+
+**Version note:** Bracket syntax replaced colon params in [0.2.0](/upgrading/0.2.0).
+
+</aside>
 
 ## Optional Params
 
@@ -32,8 +36,6 @@ const events = createRoute({
 
 ## Greedy Params
 
-> Single-segment matching became the default in [0.22.1](/upgrading/0.22.1#greedy-params).
-
 By default, a path param matches only up to the next `/` (a single path segment). For example, the path `/photos/[date]` matches `/photos/2026` (param is `"2026"`) but not `/photos/2026/01`.
 
 A **greedy param** matches across one or more path segments (including `/`). Add a `*` after the param name: `[param*]` or `[?param*]`. The path `/photos/[date*]` then matches both `/photos/2026` (param is `"2026"`) and `/photos/2026/01` (param is `"2026/01`).
@@ -47,9 +49,13 @@ const route = createRoute({
 
 Use greedy params when a param value can contain slashes (e.g. file paths or encoded segments).
 
-## Param Types
+<aside class="version-note" role="note">
 
-> `withParams` replaced the `path`, `query`, and `host` helpers in [0.17.3](/upgrading/0.17.3); the aliases were removed in [0.21.0](/upgrading/0.21.0#url-template-helpers).
+**Version note:** Single-segment matching became the default in [0.22.1](/upgrading/0.22.1#greedy-params).
+
+</aside>
+
+## Param Types
 
 By default all params are strings. However, using the `withParams` utility, you can assign different param types.
 
@@ -83,9 +89,13 @@ Kitbag Router comes with a few built-in param types:
 | `RegExp` |         | A literal regex expression                                                                    |
 | `JSON`   |         | Any value that can be parsed with the `JSON.parse` method                                     |
 
-## Custom Param Types
+<aside class="version-note" role="note">
 
-> Param input types were renamed in [0.32.0](/upgrading/0.32.0#param-input-types).
+**Version note:** `withParams` replaced the `path`, `query`, and `host` helpers in [0.17.3](/upgrading/0.17.3); the aliases were removed in [0.21.0](/upgrading/0.21.0#url-template-helpers).
+
+</aside>
+
+## Custom Param Types
 
 Define your own param types using the `createParam` utility.
 
@@ -142,6 +152,12 @@ const monthParam = createParam({
   },
 })
 ```
+
+<aside class="version-note" role="note">
+
+**Version note:** Param input types were renamed in [0.32.0](/upgrading/0.32.0#param-input-types).
+
+</aside>
 
 ## Looking up param definitions
 
@@ -238,8 +254,6 @@ const events = createRoute({
 
 ## Unions
 
-> `unionOf`, `arrayOf`, and `tupleOf` accept an array of param types since [0.19.0](/upgrading/0.19.0).
-
 The `unionOf` utility can be used to define a param as a union of any number of [Param](/api/types/Param) arguments.
 
 ```ts
@@ -253,6 +267,12 @@ const events = createRoute({
   },
 })
 ```
+
+<aside class="version-note" role="note">
+
+**Version note:** `unionOf`, `arrayOf`, and `tupleOf` accept an array of param types since [0.19.0](/upgrading/0.19.0).
+
+</aside>
 
 ## Arrays
 
@@ -298,8 +318,6 @@ const events = createRoute({
 
 ## Zod Param Types
 
-> Zod support moved from version 3 to version 4 in [0.20.11](/upgrading/0.20.11#zod-version).
-
 [Zod](https://zod.dev/) schemas can be used as param types rather than defining a custom param type. Some zod schemas are not supported such as `z.promise`, `z.function`, and `z.intersection`, but most schemas are supported.
 
 ```ts
@@ -317,6 +335,12 @@ const events = createRoute({
 :::warning
 Zod param types are experimental and may change or be removed in the future.
 :::
+
+<aside class="version-note" role="note">
+
+**Version note:** Zod support moved from version 3 to version 4 in [0.20.11](/upgrading/0.20.11#zod-version).
+
+</aside>
 
 ## Valibot Param Types
 

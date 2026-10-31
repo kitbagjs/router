@@ -1,7 +1,5 @@
 # useLoader
 
-> `useLoader` replaces component reads of `route.data`, deprecated in [0.31.0](/upgrading/0.31.0#component-loader-data).
-
 Read a loader's data, loading state, and error. Pass a loader definition, either imported or read from `route.loaders`:
 
 ```vue
@@ -50,3 +48,9 @@ Failures after a successful await are handled by the surrounding error boundary.
 ## Loader attachments
 
 Attach reusable loaders with `addLoader` to enable prefetching and SSR hydration.
+
+<aside class="version-note" role="note">
+
+**Version note:** `useLoader` replaces component reads of `route.data`, deprecated in [0.31.0](/upgrading/0.31.0#component-loader-data).
+
+</aside>
