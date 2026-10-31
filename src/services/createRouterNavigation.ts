@@ -1,6 +1,6 @@
 import { markRaw } from 'vue'
 import { getRouteLoaderLocation } from '@/services/getRouteLoaderLocation'
-import { ResolvedRoute } from '@/types/resolved'
+import { ResolvedRoute, PropsCallbackRoute } from '@/types/resolved'
 import { DEFAULT_VIEW_NAME } from './routeViews'
 import { DEFAULT_LOADER_NAME } from './addLoader'
 import { unwrapComputationResponse } from '@/utilities/unwrapComputationResponse'
@@ -363,7 +363,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
   function getRouteData(route: ResolvedRoute): DataRecord {
     const loaders = getComputations(route).filter(isKind('loader'))
 
-    return toValues(loaders, (location) => getComponentValue(location, route))
+    return toValues(loaders, route)
   }
 
   const getLoaderState: RouterNavigationStores['getLoaderState'] = (location: ValueLocation, route) => {
@@ -389,30 +389,23 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
   }
 
   /**
-   * Loaders cannot read their own route's data, which could create circular dependencies.
-   * They can read parent data instead. Props callbacks read data from their computation store.
-   * The proxy avoids subscribing to loader data until a callback calls route.getData().
+   * Loader callbacks cannot read their own data. Props callbacks read lazily from their computation store.
    */
-  function toCallbackRoute({ kind, name }: Computation, route: ResolvedRoute, context: CallbackValueContext): ResolvedRoute {
-    function getData(name = DEFAULT_LOADER_NAME): Promise<unknown> {
-      const location = getRouteLoaderLocation(route, name)
+  function toCallbackRoute({ kind, name }: Computation, route: ResolvedRoute, context: CallbackValueContext): PropsCallbackRoute {
+    function getData(loaderName = DEFAULT_LOADER_NAME): Promise<unknown> {
+      if (kind === 'loader') {
+        throw new LoaderDataAccessError(name)
+      }
+
+      const location = getRouteLoaderLocation(route, loaderName)
 
       return getCallbackValue(location, route, context)
     }
 
-    return new Proxy(route, {
-      get(target, property, receiver) {
-        if (property !== 'getData') {
-          return Reflect.get(target, property, receiver)
-        }
-
-        if (kind === 'loader') {
-          throw new LoaderDataAccessError(name)
-        }
-
-        return getData
-      },
-    })
+    return {
+      ...route,
+      getData,
+    }
   }
 
   /**
@@ -449,7 +442,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
   /**
    * Named promises are read lazily so only requested values subscribe to the computation store.
    */
-  function toValues(locations: ValueLocation[], read: (location: ValueLocation) => Promise<unknown>): DataRecord {
+  function toValues(locations: ValueLocation[], route: ResolvedRoute): DataRecord {
     const find = (property: string | symbol): ValueLocation | undefined => locations.find(({ name }) => name === property)
 
     const values: DataRecord = {}
@@ -459,7 +452,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
         const location = find(property)
 
         if (location) {
-          return read(location)
+          return getComponentValue(location, route)
         }
 
         return Reflect.get(target, property)
@@ -480,7 +473,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
         return {
           configurable: true,
           enumerable: true,
-          value: read(location),
+          value: getComponentValue(location, route),
         }
       },
     }))

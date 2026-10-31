@@ -8,37 +8,34 @@ import { AnyFunction } from '@/types/utilities'
  *
  * @template TProps - What this view's props getter returns, carried so parent props can be typed from it.
  */
-export type RouteView<TProps = undefined> = {
+export type RouteView<TProps = unknown> = {
   component: Component,
   props?: AnyFunction<TProps>,
   prefetch?: PrefetchConfig,
   transformer?: AnyPayloadTransformer,
 }
 
+export type RouteViewWithProps<TProps = unknown> = RouteView<TProps> & {
+  props: AnyFunction<TProps>,
+}
+
 /**
  * The views for a single match, keyed by view name (the unnamed view under 'default'). Each match in
  * `route.matches` carries its own views.
  */
-export type RouteViews = Record<string, RouteView<unknown>>
+export type RouteViews = Record<string, RouteView>
 
-type ViewsWithProps<TViews> = {
+type ViewsWithProps<TViews extends RouteViews> = {
   [K in keyof TViews as HasViewProps<TViews[K]> extends true ? K : never]: TViews[K]
 }
 
-/**
- * A view has props unless its getter is absent, which is carried as props resolving to undefined. Asked
- * both ways because a getter that only ever throws resolves to never, which is assignable to undefined
- * without being the absent case.
- */
-type HasViewProps<TView> = [ViewProps<TView>] extends [undefined]
-  ? [undefined] extends [ViewProps<TView>] ? false : true
-  : true
+type HasViewProps<TView extends RouteView> = TView extends { props: AnyFunction } ? true : false
 
-type ViewProps<TView> = TView extends { props?: AnyFunction<infer TProps> } ? TProps : undefined
+type ViewProps<TView extends RouteView> = ReturnType<NonNullable<TView['props']>>
 
 /**
  * Reads view props by name. Omitting the name selects `default` when declared.
  */
-export type GetProps<TViews extends RouteViews = RouteViews> = <TName extends keyof ViewsWithProps<TViews> & string = Extract<'default', keyof ViewsWithProps<TViews>>>(
+export type GetProps<TViews extends RouteViews = Record<string, RouteViewWithProps>> = <TName extends keyof ViewsWithProps<TViews> & string = Extract<'default', keyof ViewsWithProps<TViews>>>(
   ...args: TName extends 'default' ? [name?: TName] : [name: TName]
 ) => Promise<Awaited<ViewProps<TViews[TName]>>>
