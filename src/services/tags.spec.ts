@@ -1,17 +1,17 @@
 import { describe, expect, test } from 'vitest'
-import { createHeadTagsBuilder } from '@/services/createHeadTagsBuilder'
-import { mergeHeadLayers } from '@/services/mergeHeadLayers'
-import { HeadElement, HeadLayer, HeadMetaDescriptor, HeadTags } from '@/types/headTags'
+import { createTagsBuilder } from '@/services/createTagsBuilder'
+import { mergeTags } from '@/services/mergeTags'
+import { TagElement, TagLayer, MetaTag, Tags } from '@/types/tags'
 
-function layer(callback: (tags: HeadTags) => void): HeadLayer {
-  const builder = createHeadTagsBuilder()
+function layer(callback: (tags: Tags) => void): TagLayer {
+  const builder = createTagsBuilder()
 
   callback(builder.tags)
 
   return builder.finish()
 }
 
-function image(url: string, alt?: string): HeadMetaDescriptor {
+function image(url: string, alt?: string): MetaTag {
   return {
     property: 'og:image',
     content: url,
@@ -24,11 +24,11 @@ function image(url: string, alt?: string): HeadMetaDescriptor {
   }
 }
 
-function elements(...layers: HeadLayer[]): readonly HeadElement[] {
-  return mergeHeadLayers(layers).flatMap((group) => group.elements)
+function elements(...layers: TagLayer[]): readonly TagElement[] {
+  return mergeTags(layers).flatMap((group) => group.elements)
 }
 
-function contents(...layers: HeadLayer[]): (string | undefined)[] {
+function contents(...layers: TagLayer[]): (string | undefined)[] {
   return elements(...layers).map((element) => element.textContent ?? element.attributes.content ?? element.attributes.href)
 }
 
@@ -110,9 +110,9 @@ describe('layers', () => {
       tags.title.set('A <title> & text')
       tags.meta.add(image('/child.jpg', 'Child'))
     })
-    const serialized: HeadLayer[] = JSON.parse(JSON.stringify([parent, child]))
+    const serialized: TagLayer[] = JSON.parse(JSON.stringify([parent, child]))
 
-    expect(mergeHeadLayers(serialized)).toEqual(mergeHeadLayers([parent, child]))
+    expect(mergeTags(serialized)).toEqual(mergeTags([parent, child]))
     expect(contents(...serialized)).toEqual(['A <title> & text', '/child.jpg', 'Child'])
   })
 })
@@ -136,7 +136,7 @@ describe('related metadata', () => {
     const parent = layer((tags) => tags.meta.set(image('/image.jpg', 'Image')))
     const child = layer((tags) => tags.meta.add(image('/image.jpg', 'Image')))
 
-    expect(mergeHeadLayers([parent, child])).toHaveLength(2)
+    expect(mergeTags([parent, child])).toHaveLength(2)
     expect(contents(parent, child)).toEqual(['/image.jpg', 'Image', '/image.jpg', 'Image'])
   })
 
@@ -167,7 +167,7 @@ describe('related metadata', () => {
     })
 
     expect(contents(value)).toEqual(['Item', 'Detail', 'Label', 'Sibling', 'Next item'])
-    expect(mergeHeadLayers([value]).map((group) => group.elements.length)).toEqual([4, 1])
+    expect(mergeTags([value]).map((group) => group.elements.length)).toEqual([4, 1])
     expect(elements(value).every((element) => !('related' in element.attributes))).toBe(true)
   })
 
@@ -502,12 +502,12 @@ describe('builder ownership', () => {
   })
 
   test('finishes once, freezes nested values, and rejects late writes', () => {
-    const builder = createHeadTagsBuilder()
+    const builder = createTagsBuilder()
 
     builder.tags.meta.set(image('/original.jpg', 'Original'))
 
     const value = builder.finish()
-    const merged = mergeHeadLayers([value])
+    const merged = mergeTags([value])
 
     expect(builder.finish()).toBe(value)
     expect(() => builder.tags.title.set('Late')).toThrow()
