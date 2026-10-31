@@ -254,6 +254,39 @@ const account = createRoute({
 
 :::
 
+## Typed Params
+
+Kitbag parses and validates params using their declared types. Vue Router supports this through its [experimental param parsers](https://router.vuejs.org/experimental/param-parsers#setup), which require the experimental router and plugin setup. Both examples expose `id` as a number for `/users/42`. See [Param Types](/core-concepts/params#param-types).
+
+::: code-group
+
+```vue [Vue Router]
+<!-- src/pages/users/[id=int].vue -->
+<script setup lang="ts">
+const route = useRoute('/users/[id=int]')
+
+route.params.id // 42 (number)
+</script>
+```
+
+```ts [Kitbag Router]
+import { createRoute, useRoute, withParams } from '@kitbag/router'
+
+const user = createRoute({
+  name: 'user',
+  path: withParams('/users/[id]', {
+    id: Number,
+  }),
+})
+
+// In the component, after registering the route:
+const route = useRoute('user')
+
+route.params.id // 42 (number)
+```
+
+:::
+
 ## Route Regex
 
 Validate params with regular expressions using `withParams`. See [Param Types](/core-concepts/params#param-types).
