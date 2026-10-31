@@ -21,55 +21,89 @@ See the [Quick Start](/quick-start) for installation and TypeScript setup.
 
 ## Route Configuration
 
-Create routes individually, attach their views with `addView`, and pass the routes to `createRouter`. Routes need a name to be navigable. See [Routes](/core-concepts/routes) and [Router](/core-concepts/router).
+Define named routes with `createRoute`, then attach components with `addView`. See [Routes](/core-concepts/routes) and [Router](/core-concepts/router).
 
-```ts
-import { createRoute, createRouter } from '@kitbag/router'
-import UserView from './UserView.vue'
+::: code-group
 
-const user = createRoute({
-  name: 'user',
-  path: '/users/[id]',
+```ts [Vue Router]
+import { createRouter, createWebHistory } from 'vue-router'
+import HomeView from './HomeView.vue'
+
+const router = createRouter({
+  history: createWebHistory(),
+  routes: [{
+    name: 'home',
+    path: '/',
+    component: HomeView,
+  }],
 })
-  .addView(UserView, {
-    props: (route) => ({ userId: route.params.id }),
-  })
+```
 
-export const router = createRouter([user], {
+```ts [Kitbag Router]
+import { createRoute, createRouter } from '@kitbag/router'
+import HomeView from './HomeView.vue'
+
+const home = createRoute({
+  name: 'home',
+  path: '/',
+})
+  .addView(HomeView)
+
+const router = createRouter([home], {
   historyMode: 'browser',
 })
 ```
 
+:::
+
 ## Child Routes
 
-Replace Vue Router's `children` array with a `parent` reference. Include the child in the routes passed to `createRouter`.
+Use a `parent` reference instead of `children`. Kitbag joins paths literally: `/users` + `/[id]` becomes `/users/[id]`. Use [hoisting](/core-concepts/routes#hoisting) for a child with an independent URL.
 
-Kitbag concatenates parent and child paths literally. A leading `/` on the child does not make it an absolute path: `/users` + `/[id]` becomes `/users/[id]`. Without the slash, `/users` + `[id]` becomes `/users[id]`.
+::: code-group
 
-```ts
-const users = createRoute({
-  name: 'users',
+```ts [Vue Router]
+const routes = [{
   path: '/users',
-})
+  children: [{
+    name: 'user',
+    path: ':id',
+    component: UserView,
+  }],
+}]
+```
+
+```ts [Kitbag Router]
+const users = createRoute({ path: '/users' })
 
 const user = createRoute({
   parent: users,
   name: 'user',
   path: '/[id]',
 })
+  .addView(UserView)
 
-const router = createRouter([users, user])
+const routes = [user]
 ```
 
-Use [`hoist: true`](/core-concepts/routes#hoisting) when a child should keep its component nesting but have an independent URL.
-
-A named route's final path must start with `/`. Otherwise the router throws an `UnreachableRouteError`.
+:::
 
 ## Props Binding
 
-Replace `props: true` with an explicit props getter in `addView`. Kitbag checks the returned props against the component's props, and requires a getter when the component has required props.
+Bind props through `addView`. Kitbag checks them against the component and requires a getter for required props. See [Component Props](/core-concepts/component-props).
 
-```ts
+::: code-group
+
+```ts [Vue Router]
+const user = {
+  name: 'user',
+  path: '/users/:id',
+  component: UserView,
+  props: (route) => ({ userId: route.params.id }),
+}
+```
+
+```ts [Kitbag Router]
 const user = createRoute({
   name: 'user',
   path: '/users/[id]',
@@ -79,70 +113,160 @@ const user = createRoute({
   })
 ```
 
-For Vue Router's `components` option, call `addView` for each component and pass a `name` for each named view. See [Component Props](/core-concepts/component-props) and [Named Views](/core-concepts/routes#named-views).
+:::
+
+## Named Views
+
+Call `addView` for each component, with a `name` for named views. See [Named Views](/core-concepts/routes#named-views).
+
+::: code-group
+
+```ts [Vue Router]
+const home = {
+  name: 'home',
+  path: '/',
+  components: {
+    default: HomeView,
+    sidebar: SidebarView,
+  },
+}
+```
+
+```ts [Kitbag Router]
+const home = createRoute({
+  name: 'home',
+  path: '/',
+})
+  .addView(HomeView)
+  .addView(SidebarView, { name: 'sidebar' })
+```
+
+:::
 
 ## Navigation
 
-Pass the route name and params as separate arguments instead of a Vue Router location object. Using the `user` route above:
+Pass the route name and params separately. See [Navigation](/core-concepts/navigation).
 
-```ts
+::: code-group
+
+```ts [Vue Router]
+router.push({
+  name: 'user',
+  params: { id: '123' },
+})
+
+router.replace({
+  name: 'user',
+  params: { id: '456' },
+})
+```
+
+```ts [Kitbag Router]
 router.push('user', { id: '123' })
 router.replace('user', { id: '456' })
 ```
 
-For `RouterLink`, use its resolver callback to build a typed destination.
+:::
 
-```vue
+## Links
+
+Use the resolver callback for typed link destinations. See [RouterLink](/components/router-link).
+
+::: code-group
+
+```vue [Vue Router]
+<RouterLink :to="{
+  name: 'user',
+  params: { id: '123' },
+}">
+  View user
+</RouterLink>
+```
+
+```vue [Kitbag Router]
 <RouterLink :to="(resolve) => resolve('user', { id: '123' })">
   View user
 </RouterLink>
 ```
 
-See [Navigation](/core-concepts/navigation) and [RouterLink](/components/router-link).
+:::
 
 ## Reading the Current Route
 
-Import `useRoute` from `@kitbag/router`. You can pass a route name to narrow its type; this throws if the current route does not match that name.
+Kitbag exposes query values through `URLSearchParams` and matched routes through `matches`. Declared query params are also available in `route.params`. See [Router Route](/core-concepts/router-route).
 
-```ts
-import { useRoute } from '@kitbag/router'
+::: code-group
 
-const route = useRoute('user')
+```ts [Vue Router]
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
+
+const page = route.query.page
+const matches = route.matched
+const hash = route.hash // '#comments'
 ```
 
-Some current-route properties differ from Vue Router:
+```ts [Kitbag Router]
+import { useRoute } from '@kitbag/router'
 
-| Vue Router | Kitbag Router |
-| --- | --- |
-| `route.query.page` | `route.query.get('page')` (`query` is a `URLSearchParams`) |
-| `route.matched` | `route.matches` for the matched route and its parents |
-| `route.hash` includes `#` | `route.hash` excludes `#` |
+const route = useRoute()
 
-Query params declared in the route definition are also available in `route.params`, with their declared types. See [Query Params](/core-concepts/params#query-params), [Router Route](/core-concepts/router-route), and [useRoute](/composables/useRoute).
+const page = route.query.get('page')
+const matches = route.matches
+const hash = route.hash // 'comments'
+```
+
+:::
 
 ## Navigation Guards
 
-Kitbag hooks receive `(to, context)`. Read the previous route from `context.from`, and use `context.abort()` to cancel navigation or `context.replace()` to redirect. Do not use Vue Router's `next` callback or return a location object to redirect.
+Use context helpers to redirect or cancel navigation. The previous route is available as `context.from`. See [Hooks](/advanced-concepts/hooks).
 
-This route hook redirects requests for `/old` to `/new`:
+::: code-group
 
-```ts
-const oldRoute = createRoute({
-  name: 'old',
-  path: '/old',
+```ts [Vue Router]
+const account = {
+  name: 'account',
+  path: '/account',
+  component: AccountView,
+  beforeEnter: () => {
+    if (!isSignedIn()) {
+      return '/login'
+    }
+  },
+}
+```
+
+```ts [Kitbag Router]
+const account = createRoute({
+  name: 'account',
+  path: '/account',
 })
+  .addView(AccountView)
   .onBeforeRouteEnter((to, context) => {
-    context.replace('/new')
+    if (!isSignedIn()) {
+      context.replace('/login')
+    }
   })
 ```
 
-Use `onBeforeRouteEnter`, `onBeforeRouteUpdate`, and `onBeforeRouteLeave` for the corresponding lifecycle events. Hooks can be registered on routes, on the router, or in components. See [Hooks](/advanced-concepts/hooks) for lifecycle details and [Context](/core-concepts/routes#context) for navigating to other named routes from route callbacks.
+:::
 
 ## Route Regex
 
-Use `withParams` to validate a param with a regular expression instead of putting the expression in the path string. The route only matches when the param passes validation.
+Validate params with regular expressions using `withParams`. See [Param Types](/core-concepts/params#param-types).
 
-```ts
+::: code-group
+
+```ts [Vue Router]
+const archive = {
+  name: 'archive',
+  path: '/archive/:date(\\d{2}-\\d{2}-\\d{4})',
+}
+```
+
+```ts [Kitbag Router]
 import { createRoute, withParams } from '@kitbag/router'
 
 const archive = createRoute({
@@ -153,13 +277,24 @@ const archive = createRoute({
 })
 ```
 
-See [Param Types](/core-concepts/params#param-types). Use a greedy param when the value must span multiple path segments.
+:::
 
 ## Repeatable Params
 
-Kitbag Router params match a single path segment by default. Use a [greedy param](/core-concepts/params#greedy-params) to match multiple segments, and `arrayOf` with a `/` separator to read them as an array.
+Combine a [greedy param](/core-concepts/params#greedy-params) with `arrayOf` to read multiple path segments as an array. Both examples match `/one/two` with chapters `['one', 'two']`.
 
-```ts
+To also match `/`, use `[?chapters*]`. Add `withDefault` for an empty array when the param is missing. See [Default Values](/core-concepts/params#default-values).
+
+::: code-group
+
+```ts [Vue Router]
+const chapters = {
+  name: 'chapters',
+  path: '/:chapters+',
+}
+```
+
+```ts [Kitbag Router]
 import { arrayOf, createRoute, withParams } from '@kitbag/router'
 
 const chapters = createRoute({
@@ -170,59 +305,62 @@ const chapters = createRoute({
 })
 ```
 
-This matches `/one`, `/one/two`, and `/one/two/three`. For `/one/two`, `params.chapters` is `['one', 'two']`.
+:::
 
-To also match `/`, make the param optional. Use `withDefault` if you want a missing value to be an empty array rather than `undefined`.
+## Redirects
 
-```ts
-import { arrayOf, createRoute, withDefault, withParams } from '@kitbag/router'
+Use `redirectTo` for a fixed destination and a before hook for conditional redirects. See [Redirects](/advanced-concepts/redirects).
 
-const chapters = createRoute({
-  name: 'chapters',
-  path: withParams('/[?chapters*]', {
-    chapters: withDefault(arrayOf([String], { separator: '/' }), []),
-  }),
-})
+::: code-group
+
+```ts [Vue Router]
+const routes = [{
+  name: 'new',
+  path: '/new',
+}, {
+  name: 'old',
+  path: '/old',
+  redirect: { name: 'new' },
+}]
 ```
 
-## Redirect
-
-Use [route redirects](/advanced-concepts/redirects) to redirect one route to another. The optional second argument maps params when the destination needs different values.
-
-```ts
+```ts [Kitbag Router]
 const newRoute = createRoute({
-  name: 'new-route',
+  name: 'new',
   path: '/new',
 })
 
 const oldRoute = createRoute({
-  name: 'old-route',
+  name: 'old',
   path: '/old',
 })
   .redirectTo(newRoute)
+
+const routes = [newRoute, oldRoute]
 ```
 
-Use a [before hook](/advanced-concepts/hooks) when the redirect depends on a condition, such as whether the user is signed in.
+:::
 
-## Alias
+## Aliases
 
-Aliases are added to a route with the chainable [addAlias](/advanced-concepts/aliases) method. As in Vue Router, the address bar keeps the alias url.
+Both routers keep the alias URL in the address bar. Kitbag also supports aliases with different params through a transform. See [Aliases](/advanced-concepts/aliases).
 
-```ts
+::: code-group
+
+```ts [Vue Router]
+const user = {
+  name: 'user',
+  path: '/users/:id',
+  alias: '/members/:id',
+}
+```
+
+```ts [Kitbag Router]
 const user = createRoute({
   name: 'user',
-  path: '/user/[id]',
+  path: '/users/[id]',
 })
-  .addAlias({ path: '/member/[id]' })
-  .addAlias({ path: '/u/[id]' })
+  .addAlias({ path: '/members/[id]' })
 ```
 
-Unlike Vue Router, an alias can declare its own params. When they differ from the route's, a transform maps them into the route's params.
-
-```ts
-const user = createRoute({
-  name: 'user',
-  path: '/user/[id]',
-})
-  .addAlias({ path: '/profile/[username]' }, ({ params }) => ({ id: findIdByUsername(params.username) }))
-```
+:::
