@@ -2,7 +2,7 @@ import { TagGroup, TagLayer, LinkTag, LinkTagSelector, MetaTag, MetaTagSelector,
 import { MaybePromise } from '@/types/utilities'
 import { matchesTag, mergeTags } from '@/services/mergeTags'
 
-type CreateTagsBuilderOptions = {
+type CreateTagsOptions = {
   /** Supplies ancestor layers only; reads must exclude this scope's previous evaluation and its descendants. */
   getParentLayers?: () => MaybePromise<readonly TagLayer[]>,
 }
@@ -75,18 +75,13 @@ function linkSelector(value: LinkTagSelector, exact: boolean): TagSelector & { t
 }
 
 /**
- * Supplies a fresh callback scope. Reads resolve ancestor layers lazily and include this evaluation's
- * operations. Finish after the callback settles to seal its serializable layer and reject late writes.
+ * Supplies a fresh callback scope. Reads include ancestor layers and local writes; the internal
+ * layer getter snapshots only this scope's operations for navigation storage.
  */
-export function createTagsBuilder({ getParentLayers = () => [] }: CreateTagsBuilderOptions = {}): { tags: Tags, finish: () => TagLayer } {
+export function createTags({ getParentLayers = () => [] }: CreateTagsOptions = {}): Tags & { readonly layer: TagLayer } {
   const operations: TagOperation[] = []
-  let finished = false
 
   function record(operation: TagOperation): void {
-    if (finished) {
-      throw new Error('Cannot modify a finished tag layer')
-    }
-
     operations.push(Object.freeze(operation))
   }
 
@@ -138,8 +133,11 @@ export function createTagsBuilder({ getParentLayers = () => [] }: CreateTagsBuil
     record({ kind, target, groups: Object.freeze([group]) })
   }
 
-  const tags: Tags = {
+  return {
     get,
+    get layer() {
+      return Object.freeze([...operations])
+    },
     title: {
       get: async () => (await get()).title,
       set: (value) => {
@@ -185,15 +183,6 @@ export function createTagsBuilder({ getParentLayers = () => [] }: CreateTagsBuil
       set: (descriptor) => writeLink('set', descriptor),
       add: (descriptor) => writeLink('add', descriptor),
       delete: (selector) => record({ kind: 'delete', target: linkSelector(selector, false) }),
-    },
-  }
-
-  return {
-    tags,
-    finish: () => {
-      finished = true
-
-      return Object.freeze(operations)
     },
   }
 }
