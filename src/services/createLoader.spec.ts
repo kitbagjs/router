@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-deprecated -- Keep legacy route.data compatibility coverage until removal. */
 import { expect, test, vi } from 'vitest'
 import { createLoader } from '@/services/createLoader'
 import { createRoute } from '@/services/createRoute'
@@ -8,17 +7,17 @@ import { createRejection } from '@/services/createRejection'
 import { isSameLoader } from '@/services/isSameLoader'
 
 test('one definition loads independently for multiple routes', async () => {
-  const loader = createLoader({
-    load: async (route) => `${route.name}-${route.params.id}`,
-  })
+  const load = vi.fn((route: { name: string, params: Record<string, unknown> }) => `${route.name}-${route.params.id}`)
+  const loader = createLoader({ load })
   const first = createRoute({ name: 'first', path: '/first/[id]' }).addLoader(loader)
   const second = createRoute({ name: 'second', path: '/second/[id]' }).addLoader(loader)
   const router = createRouter([first, second], { initialUrl: '/first/1' })
 
   await router.start()
-  await expect(router.route.data).resolves.toBe('first-1')
+  expect(load).toHaveBeenLastCalledWith(expect.objectContaining({ name: 'first', params: { id: '1' } }), expect.anything())
   await router.push('second', { id: '2' })
-  await expect(router.route.data).resolves.toBe('second-2')
+  expect(load).toHaveBeenLastCalledWith(expect.objectContaining({ name: 'second', params: { id: '2' } }), expect.anything())
+  expect(load).toHaveBeenCalledTimes(2)
 })
 
 test('attachment preserves loader identity while overriding defaults', () => {
@@ -56,11 +55,11 @@ test('loader context registers navigation targets and rejections through chained
   expect(router.route.name).toBe('target')
 })
 
-test('replacing a loader preserves context targets available to route callbacks', async () => {
+test('adding a loader preserves context targets available to route callbacks', async () => {
   const target = createRoute({ name: 'target', path: '/target' })
   const loader = createLoader({ context: [target], load: () => 1 })
   const source = createRoute({ name: 'source', path: '/' }).addLoader(loader)
-    .addLoader(() => 2)
+    .addLoader(() => 2, { name: 'other' })
   source.onBeforeRouteEnter((_to, { push }) => push('target'))
   const router = createRouter([source], { initialUrl: '/' })
 

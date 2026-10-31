@@ -11,7 +11,7 @@ import { getComputations } from '@/services/getComputations'
 test('one view computes props and loader data independently for multiple routes', async () => {
   const view = createView({
     component,
-    props: async (route) => ({ name: route.name, id: route.params.id, data: await route.data }),
+    props: async (route) => ({ name: route.name, id: route.params.id, data: await route.getData() }),
   })
   const first = createRoute({ name: 'first', path: '/first/[id]' }).addLoader(() => 'first data')
     .addView(view)

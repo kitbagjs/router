@@ -21,7 +21,7 @@ test('hooks preserve route, loader, and view types through a chain', () => {
 
   expectTypeOf(router.route.name).toEqualTypeOf<'user'>()
   expectTypeOf(router.route.params.id).toEqualTypeOf<string>()
-  expectTypeOf(router.route.data).toEqualTypeOf<Promise<number>>()
+  expectTypeOf(router.route.loaders.default.load).returns.toEqualTypeOf<number>()
   expectTypeOf(route.onBeforeRouteEnter(() => {})).toEqualTypeOf(route)
 })
 

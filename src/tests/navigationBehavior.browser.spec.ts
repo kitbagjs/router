@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-deprecated -- Keep legacy route.data compatibility coverage until removal. */
 import { flushPromises, mount } from '@vue/test-utils'
 import { Component, defineAsyncComponent, defineComponent } from 'vue'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
@@ -172,7 +171,7 @@ describe('route commitment', () => {
 
   test('parameter updates keep the current props and data until their replacements are ready', async () => {
     const loaded = Promise.withResolvers<string>()
-    const props = vi.fn(async (route) => ({ value: await route.data }))
+    const props = vi.fn(async (route) => ({ value: await route.getData() }))
     const load = vi.fn((route) => {
       return route.params.id === '1' ? 'First' : loaded.promise
     })
@@ -187,7 +186,6 @@ describe('route commitment', () => {
     await flushPromises()
     expect(router.route.params.id).toBe('1')
     expect(wrapper.text()).toBe('First')
-    await expect(router.route.data).resolves.toBe('First')
 
     loaded.resolve('Second')
     await navigation
@@ -393,7 +391,7 @@ describe('initial navigation', () => {
     const response = await rendering
     expect(response.status).toBe(200)
     expect(router.route.name).toBe('page')
-    await expect(router.route.data).resolves.toBe('server data')
+    expect(response).toMatchObject({ kind: 'success', payload: expect.stringContaining('server data') })
   })
 
   test('hydration still adopts the server result synchronously with blocking configured', async () => {

@@ -3,15 +3,10 @@ import { createRoute } from './createRoute'
 import { Loader } from '@/types/loader'
 import { createLoader } from '@/services/createLoader'
 import { BuiltInRejectionType } from '@/types/rejection'
-import { ResolvedRoute, WithData } from '@/types/resolved'
-import { RouterRoute } from '@/types/routerRoute'
-import { Route } from '@/types/route'
 import { component } from '@/utilities/testHelpers'
 import { RouteView } from '@/types/routeViews'
 
 type User = { id: string, name: string }
-
-type Data<TRoute extends Route> = (ResolvedRoute<TRoute> & WithData<TRoute>)['data']
 
 describe('addLoader', () => {
   test('an async loader carries what it returns', () => {
@@ -45,12 +40,13 @@ describe('addLoader', () => {
     }>()
   })
 
-  test('a loader added under a name the route already used replaces it', () => {
-    const route = createRoute({ name: 'route' })
-      .addLoader(() => 'first', { name: 'user' })
-      .addLoader(() => 1, { name: 'user' })
+  test('a loader cannot reuse an existing name', () => {
+    const route = createRoute({ name: 'route' }).addLoader(() => 'first', { name: 'user' })
 
-    expectTypeOf<typeof route['matches'][0]['loaders']>().toEqualTypeOf<{ user: Loader<number> }>()
+    // @ts-expect-error loader names must be unique on a route
+    route.addLoader(() => 1, { name: 'user' })
+    // @ts-expect-error reusable loaders also require a unique name
+    route.addLoader(createLoader({ load: () => 1 }), { name: 'user' })
   })
 
   test('prefetch does not affect what the loader carries', () => {
@@ -90,107 +86,49 @@ describe('addLoader', () => {
   })
 })
 
-describe('route data', () => {
-  test('a route without loaders has no data', () => {
-    const route = createRoute({ name: 'route' }).addView(component)
-
-    expectTypeOf<Data<typeof route>>().toEqualTypeOf<undefined>()
-  })
-
-  test('a lone unnamed loader is the data itself', () => {
-    const route = createRoute({ name: 'route' }).addLoader(async (): Promise<User> => ({ id: '1', name: 'kitbag' }))
-
-    expectTypeOf<Data<typeof route>>().toEqualTypeOf<Promise<User>>()
-  })
-
-  test('a synchronous loader still resolves as a promise', () => {
-    const route = createRoute({ name: 'route' }).addLoader(() => 'kitbag')
-
-    expectTypeOf<Data<typeof route>>().toEqualTypeOf<Promise<string>>()
-  })
-
-  test('a lone named loader is keyed by its name', () => {
-    const route = createRoute({ name: 'route' }).addLoader(() => 'kitbag', { name: 'user' })
-
-    expectTypeOf<Data<typeof route>>().toEqualTypeOf<{ user: Promise<string> }>()
-  })
-
-  test('named loaders alongside an unnamed one are all keyed', () => {
-    const route = createRoute({ name: 'route' })
-      .addLoader(async (): Promise<User> => ({ id: '1', name: 'kitbag' }))
-      .addLoader(() => [1, 2], { name: 'posts' })
-
-    expectTypeOf<Data<typeof route>>().toEqualTypeOf<{
-      default: Promise<User>,
-      posts: Promise<number[]>,
-    }>()
-  })
-
-  test('an ancestor loader is part of the route data', () => {
-    const parent = createRoute({ name: 'parent', path: '/parent' }).addLoader(async (): Promise<User> => ({ id: '1', name: 'kitbag' }))
-    const child = createRoute({ parent, name: 'child', path: '/child' })
-
-    expectTypeOf<Data<typeof child>>().toEqualTypeOf<Promise<User>>()
-  })
-
-  test('a named loader on a child keys the ancestor loader too', () => {
-    const parent = createRoute({ name: 'parent', path: '/parent' }).addLoader(async (): Promise<User> => ({ id: '1', name: 'kitbag' }))
-    const child = createRoute({ parent, name: 'child', path: '/child' }).addLoader(() => [1, 2], { name: 'posts' })
-
-    expectTypeOf<Data<typeof child>>().toEqualTypeOf<{
-      default: Promise<User>,
-      posts: Promise<number[]>,
-    }>()
-  })
-
-  test('the router route exposes the route data', () => {
-    const route = createRoute({ name: 'route' }).addLoader(() => 'kitbag', { name: 'user' })
-
-    expectTypeOf<RouterRoute<ResolvedRoute<typeof route>>['data']>().toEqualTypeOf<{ user: Promise<string> }>()
-  })
-})
-
 describe('parent data', () => {
-  test('a parent with a lone unnamed loader gives its data directly', () => {
+  test('the default parent loader returns its data promise', () => {
     const parent = createRoute({ name: 'parent', path: '/parent' }).addLoader(async (): Promise<User> => ({ id: '1', name: 'kitbag' }))
 
     createRoute({ parent, name: 'child', path: '/child' }).addLoader((_route, { parent }) => {
-      expectTypeOf(parent.data).toEqualTypeOf<Promise<User>>()
+      expectTypeOf(parent.getData()).toEqualTypeOf<Promise<User>>()
 
       return null
-    })
+    }, { name: 'child' })
   })
 
-  test('a parent with named loaders keys its data', () => {
+  test('named parent loaders retain their return types', () => {
     const parent = createRoute({ name: 'parent', path: '/parent' })
       .addLoader(async (): Promise<User> => ({ id: '1', name: 'kitbag' }))
       .addLoader(() => [1, 2], { name: 'posts' })
 
     createRoute({ parent, name: 'child', path: '/child' }).addLoader((_route, { parent }) => {
-      expectTypeOf(parent.data).toEqualTypeOf<{ default: Promise<User>, posts: Promise<number[]> }>()
+      expectTypeOf(parent.getData()).toEqualTypeOf<Promise<User>>()
+      expectTypeOf(parent.getData('posts')).toEqualTypeOf<Promise<number[]>>()
 
       return null
-    })
+    }, { name: 'child' })
   })
 
-  test('a parent without loaders has no data', () => {
+  test('parents without loaders reject all names', () => {
     const parent = createRoute({ name: 'parent', path: '/parent' }).addView(component)
 
     createRoute({ parent, name: 'child', path: '/child' }).addLoader((_route, { parent }) => {
-      expectTypeOf(parent.data).toEqualTypeOf<undefined>()
+      // @ts-expect-error the parent has no loader to select
+      parent.getData()
 
       return null
     })
   })
 
-  test('a props getter sees the same parent data', () => {
+  test('props getters can read parent loader data', () => {
     const parent = createRoute({ name: 'parent', path: '/parent' }).addLoader(async (): Promise<User> => ({ id: '1', name: 'kitbag' }))
 
     createRoute({ parent, name: 'child', path: '/child' }).addView(component, {
       props: async (_route, { parent }) => {
-        expectTypeOf(parent.data).toEqualTypeOf<Promise<User>>()
+        expectTypeOf(parent.getData()).toEqualTypeOf<Promise<User>>()
 
-        await parent.data
+        await parent.getData()
 
         return {}
       },
@@ -212,7 +150,7 @@ describe('loader callback', () => {
       .addLoader(() => 'first', { name: 'first' })
       .addLoader((route) => {
         // @ts-expect-error a loader cannot read the data of the route it belongs to
-        const data = route.data
+        const data = route.getData()
 
         return 'second'
       }, { name: 'second' })
@@ -223,9 +161,9 @@ describe('loader callback', () => {
       .addLoader(async () => 'kitbag', { name: 'user' })
       .addView(component, {
         props: async (route) => {
-          expectTypeOf(route.data.user).toEqualTypeOf<Promise<string>>()
+          expectTypeOf(route.getData('user')).toEqualTypeOf<Promise<string>>()
 
-          await route.data.user
+          await route.getData('user')
 
           return {}
         },
@@ -251,7 +189,7 @@ describe('loader callback', () => {
       // @ts-expect-error should not accept an invalid param name
       context.update('invalidParamName', 'value')
 
-      return await context.parent.props
+      return await context.parent.getProps()
     })
   })
 })

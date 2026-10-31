@@ -207,13 +207,14 @@ describe('addView', () => {
   })
 
   describe('parent props', () => {
-    test('parent props are undefined when the parent has no props', () => {
+    test('parent props cannot be selected when the parent has no props', () => {
       const parent = createRoute({ name: 'parent' })
 
       createRoute({ name: 'child', parent })
         .addView(component, {
           props: (__, { parent }) => {
-            expectTypeOf(parent.props).toEqualTypeOf<undefined>()
+            // @ts-expect-error the parent has no props getter to select
+            parent.getProps()
             expectTypeOf(parent.name).toEqualTypeOf<'parent'>()
 
             return {}
@@ -221,13 +222,14 @@ describe('addView', () => {
         })
     })
 
-    test('parent props are undefined when the parent has views but no getter', () => {
+    test('parent props cannot be selected when the parent has views but no getter', () => {
       const parent = createRoute({ name: 'parent' }).addView(component)
 
       createRoute({ name: 'child', parent })
         .addView(component, {
           props: (__, { parent }) => {
-            expectTypeOf(parent.props).toEqualTypeOf<undefined>()
+            // @ts-expect-error the parent has no props getter to select
+            parent.getProps()
             expectTypeOf(parent.name).toEqualTypeOf<'parent'>()
 
             return {}
@@ -243,7 +245,7 @@ describe('addView', () => {
       createRoute({ name: 'child', parent })
         .addView(component, {
           props: (__, { parent }) => {
-            expectTypeOf(parent.props).toEqualTypeOf<Promise<{ foo: number }>>()
+            expectTypeOf(parent.getProps()).toEqualTypeOf<Promise<{ foo: number }>>()
             expectTypeOf(parent.name).toEqualTypeOf<'parent'>()
 
             return {}
@@ -259,7 +261,7 @@ describe('addView', () => {
       createRoute({ name: 'child', parent })
         .addView(component, {
           props: (__, { parent }) => {
-            expectTypeOf(parent.props).toEqualTypeOf<Promise<{ foo: number }>>()
+            expectTypeOf(parent.getProps()).toEqualTypeOf<Promise<{ foo: number }>>()
             expectTypeOf(parent.name).toEqualTypeOf<'parent'>()
 
             return {}
@@ -276,7 +278,7 @@ describe('addView', () => {
         .addView(component, {
           name: 'one',
           props: (__, { parent }) => {
-            expectTypeOf(parent.props).toEqualTypeOf<Promise<{ foo: number }>>()
+            expectTypeOf(parent.getProps()).toEqualTypeOf<Promise<{ foo: number }>>()
             expectTypeOf(parent.name).toEqualTypeOf<'parent'>()
 
             return {}
@@ -285,7 +287,7 @@ describe('addView', () => {
         .addView(component, {
           name: 'two',
           props: (__, { parent }) => {
-            expectTypeOf(parent.props).toEqualTypeOf<Promise<{ foo: number }>>()
+            expectTypeOf(parent.getProps()).toEqualTypeOf<Promise<{ foo: number }>>()
             expectTypeOf(parent.name).toEqualTypeOf<'parent'>()
 
             return {}
@@ -293,7 +295,7 @@ describe('addView', () => {
         })
     })
 
-    test('record parent props (added via addView) are passed to a child', () => {
+    test('named parent props (added via addView) are passed to a child', () => {
       const parent = createRoute({ name: 'parent' })
         .addView(component, {
           name: 'one',
@@ -307,17 +309,15 @@ describe('addView', () => {
       createRoute({ name: 'child', parent })
         .addView(component, {
           props: (__, { parent }) => {
-            expectTypeOf(parent.props).toEqualTypeOf<{
-              one: Promise<{ foo: number }>,
-              two: Promise<{ foo: number }>,
-            }>()
+            expectTypeOf(parent.getProps('one')).toEqualTypeOf<Promise<{ foo: number }>>()
+            expectTypeOf(parent.getProps('two')).toEqualTypeOf<Promise<{ foo: number }>>()
 
             return {}
           },
         })
     })
 
-    test('bare parent props are passed to a child when the parent getter declares its arguments', () => {
+    test('default parent props are passed to a child when the parent getter declares its arguments', () => {
       const parent = createRoute({ name: 'parent', path: '/parent/[id]' })
         .addView(component, {
           props: (route, { push }) => ({ foo: route.params.id, canPush: typeof push === 'function' }),
@@ -325,7 +325,7 @@ describe('addView', () => {
 
       createRoute({ name: 'child', parent }).addView(component, {
         props: (__, { parent }) => {
-          expectTypeOf(parent.props).toEqualTypeOf<Promise<{ foo: string, canPush: boolean }>>()
+          expectTypeOf(parent.getProps()).toEqualTypeOf<Promise<{ foo: string, canPush: boolean }>>()
           expectTypeOf(parent.name).toEqualTypeOf<'parent'>()
 
           return {}
@@ -333,7 +333,7 @@ describe('addView', () => {
       })
     })
 
-    test('record parent props are passed to a child when the parent getters declare their arguments', () => {
+    test('named parent props are passed to a child when the parent getters declare their arguments', () => {
       const parent = createRoute({ name: 'parent', path: '/parent/[id]' })
         .addView(component, {
           name: 'one',
@@ -346,10 +346,8 @@ describe('addView', () => {
 
       createRoute({ name: 'child', parent }).addView(component, {
         props: (__, { parent }) => {
-          expectTypeOf(parent.props).toEqualTypeOf<{
-            one: Promise<{ foo: string }>,
-            two: Promise<{ canPush: boolean }>,
-          }>()
+          expectTypeOf(parent.getProps('one')).toEqualTypeOf<Promise<{ foo: string }>>()
+          expectTypeOf(parent.getProps('two')).toEqualTypeOf<Promise<{ canPush: boolean }>>()
 
           return {}
         },

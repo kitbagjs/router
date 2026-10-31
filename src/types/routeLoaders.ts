@@ -1,4 +1,4 @@
-import { AnyLoader } from '@/types/loader'
+import { AnyLoader, Loader } from '@/types/loader'
 import { AnyFunction } from '@/types/utilities'
 
 /**
@@ -7,9 +7,7 @@ import { AnyFunction } from '@/types/utilities'
 export type RouteLoaders = Record<string, AnyLoader>
 
 /**
- * The data a set of loaders resolves to. A lone unnamed loader is given directly rather than under a
- * 'default' key, matching how the loader is written. Each loader's data is always a promise, since a
- * loader never blocks rendering, even when the loader itself is synchronous.
+ * Legacy loader results unwrap a lone default loader; named loaders expose promises keyed by name.
  */
 export type LoadersDataReturnType<TLoaders> = keyof TLoaders extends never
   ? undefined
@@ -18,3 +16,10 @@ export type LoadersDataReturnType<TLoaders> = keyof TLoaders extends never
     : { [K in keyof TLoaders]: LoaderData<TLoaders[K]> }
 
 type LoaderData<TLoader> = TLoader extends { load: AnyFunction<infer TData> } ? Promise<Awaited<TData>> : never
+
+/**
+ * Reads a loader by name. Omitting the name selects `default` when declared.
+ */
+export type GetData<TLoaders extends RouteLoaders = Record<string, Loader>> = <TName extends keyof TLoaders & string = Extract<'default', keyof TLoaders>>(
+  ...args: TName extends 'default' ? [name?: TName] : [name: TName]
+) => Promise<Awaited<ReturnType<TLoaders[TName]['load']>>>

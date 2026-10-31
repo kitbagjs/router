@@ -49,11 +49,11 @@ test('loader data rejects with the original callback error', async () => {
   const navigation = createRouterNavigation()
 
   navigation.commit({ to: route, from: null })
-  const data = navigation.getRouteData(route)
+  const data = navigation.getLoaderValue(loaderLocations(route.matches[0])[0], route)
   pending.reject(error)
 
   await expect(data).rejects.toBe(error)
-  await expect(navigation.getRouteData(route)).rejects.toBe(error)
+  await expect(navigation.getLoaderValue(loaderLocations(route.matches[0])[0], route)).rejects.toBe(error)
 })
 
 test('component data remains pending when its loader pushes', async () => {
@@ -64,7 +64,7 @@ test('component data remains pending when its loader pushes', async () => {
   navigation.commit({ to: route, from: null })
 
   const settled = vi.fn()
-  Promise.resolve(navigation.getRouteData(route)).then(settled, settled)
+  Promise.resolve(navigation.getLoaderValue(loaderLocations(route.matches[0])[0], route)).then(settled, settled)
   await flushPromises()
   expect(settled).not.toHaveBeenCalled()
   expect(onResponse).toHaveBeenCalledExactlyOnceWith({
@@ -82,7 +82,7 @@ test('component data remains pending when its loader rejects', async () => {
   navigation.commit({ to: route, from: null })
 
   const settled = vi.fn()
-  Promise.resolve(navigation.getRouteData(route)).then(settled, settled)
+  Promise.resolve(navigation.getLoaderValue(loaderLocations(route.matches[0])[0], route)).then(settled, settled)
   await flushPromises()
   expect(settled).not.toHaveBeenCalled()
   expect(onResponse).toHaveBeenCalledExactlyOnceWith({
@@ -131,7 +131,7 @@ test('a staged value is adopted in place of running its getter', async () => {
   detached.stage()
   navigation.commit({ to: resolved, from: null })
 
-  await expect(navigation.getRouteData(resolved)).resolves.toBe('staged')
+  await expect(navigation.getLoaderValue(loaderLocations(resolved.matches[0])[0], resolved)).resolves.toBe('staged')
   expect(loader).not.toHaveBeenCalled()
 })
 
@@ -157,7 +157,7 @@ test('staged values are adopted by the next navigation without running their get
   await Promise.all(navigation.staged().compute(resolved, getComputations(resolved)))
   navigation.commit({ to: resolved, from: null })
 
-  await expect(navigation.getRouteData(resolved)).resolves.toBe('value')
+  await expect(navigation.getLoaderValue(loaderLocations(resolved.matches[0])[0], resolved)).resolves.toBe('value')
   expect(loader).toHaveBeenCalledTimes(1)
 })
 
@@ -182,7 +182,7 @@ test('a staged props getter can await a later loader without warnings', async ()
   const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
   const route = createRoute({ name: 'route', path: '/' })
     .addLoader(() => 'loaded')
-    .addView(component, { props: async (route) => ({ value: await route.data }) })
+    .addView(component, { props: async (route) => ({ value: await route.getData() }) })
   const resolved = createResolvedRoute(route)
   const navigation = createRouterNavigation()
 
@@ -277,7 +277,7 @@ test('staging and committing the same instance preserves its computations', asyn
 
   expect(signal.aborted).toBe(false)
   expect(load).toHaveBeenCalledOnce()
-  await expect(navigation.getRouteData(route)).resolves.toBe(signal)
+  await expect(navigation.getLoaderValue(loaderLocations(route.matches[0])[0], route)).resolves.toBe(signal)
 })
 
 test('staging another instance keeps the current navigation active', async () => {
@@ -372,7 +372,7 @@ test('discarded prefetch redirects do not affect the next navigation', async () 
   await flushPromises()
 
   expect(onResponse).not.toHaveBeenCalled()
-  await expect(navigation.getRouteData(target)).resolves.toBe('value')
+  await expect(navigation.getLoaderValue(loaderLocations(target.matches[0])[0], target)).resolves.toBe('value')
 })
 
 test('a loader started after commit reports its redirect', async () => {
@@ -549,31 +549,31 @@ test.each(['push', 'reject'] as const)('a loader %s unwinds callback dependencie
     .addView(component, {
       props: async (route) => {
         try {
-          await route.data.base
+          await route.getData('base')
           continued()
         } catch (error) {
           caught.push(error)
           throw error
         } finally {
-          cleaned('route.data')
+          cleaned('route.getData()')
         }
       },
     })
   const child = createRoute({ parent, path: 'child' }).addLoader(async (_route, { parent }) => {
     try {
-      await parent.data.base
+      await parent.getData('base')
       continued()
     } finally {
-      cleaned('parent.data')
+      cleaned('parent.getData()')
     }
   }, { name: 'child' })
     .addView(component, {
       props: async (_route, { parent }) => {
         try {
-          await parent.props
+          await parent.getProps()
           continued()
         } finally {
-          cleaned('parent.props')
+          cleaned('parent.getProps()')
         }
       },
     })
@@ -596,7 +596,7 @@ test('discarding a prefetch unwinds a callback even while the current store has 
   const child = createRoute({ parent, path: 'child' }).addView(component, {
     props: async (_route, { parent }) => {
       try {
-        await parent.props
+        await parent.getProps()
       } finally {
         cleaned()
       }
