@@ -7,7 +7,7 @@ import { createLoader } from '@/services/createLoader'
 import { createRoute } from '@/services/createRoute'
 import { createRejection } from '@/services/createRejection'
 import { Loader } from '@/types/loader'
-import { ResolvedRoute, WithData } from '@/types/resolved'
+import { ResolvedRoute, PropsCallbackRoute } from '@/types/resolved'
 
 test('loaders receive resolved routes and preserve their data type', () => {
   const loader = createLoader({
@@ -23,8 +23,8 @@ test('loaders receive resolved routes and preserve their data type', () => {
   const other = createRoute({ name: 'post', path: '/posts' }).addLoader(loader, { name: 'name' })
 
   expectTypeOf(loader).toExtend<Loader<string>>()
-  expectTypeOf<ReturnType<WithData<typeof route>['getData']>>().toEqualTypeOf<Promise<string>>()
-  expectTypeOf<ReturnType<WithData<typeof other>['getData']>>().toEqualTypeOf<Promise<string>>()
+  expectTypeOf<ReturnType<PropsCallbackRoute<typeof route>['getData']>>().toEqualTypeOf<Promise<string>>()
+  expectTypeOf<ReturnType<PropsCallbackRoute<typeof other>['getData']>>().toEqualTypeOf<Promise<string>>()
 })
 
 test('declared context types the loader and attached route helpers', () => {
@@ -70,7 +70,7 @@ test('async data types the transformer without widening from it', () => {
   })
   const route = createRoute({ path: '/' }).addLoader(loader)
 
-  expectTypeOf<ReturnType<WithData<typeof route>['getData']>>().toEqualTypeOf<Promise<Date>>()
+  expectTypeOf<ReturnType<PropsCallbackRoute<typeof route>['getData']>>().toEqualTypeOf<Promise<Date>>()
   createLoader({
     load: async () => new Date(),
     transformer: {
