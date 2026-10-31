@@ -1,4 +1,5 @@
-import { expect, test, vi } from 'vitest'
+import { isRouterRoute } from '@/services/createRouterRoute'
+import { assert, expect, test, vi } from 'vitest'
 import { createRoute } from '@/services/createRoute'
 import { component } from '@/utilities/testHelpers'
 import { createRouter } from '@/services/createRouter'
@@ -326,6 +327,7 @@ test('title callbacks receive the destination and only getParentTitle in the con
   expect(document.title).toBe('About')
 
   callback.mockClear()
+  assert(isRouterRoute(router.key, router.route))
   await router.route.getTitle()
 
   expect(callback).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ name: 'about' }), {

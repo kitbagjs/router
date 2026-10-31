@@ -17,7 +17,7 @@ import { getInitialUrl } from '@/services/getInitialUrl'
 import { decodePayloadValues, encodePayloadValues, getHydratingPayload, payloadToScript, RouterPayload } from '@/services/payload'
 import { setStateValues } from '@/services/state'
 import { Routes } from '@/types/route'
-import { NOT_FOUND_REJECTION_TYPE } from '@/types/rejection'
+import { isRejection, NOT_FOUND_REJECTION_TYPE } from '@/types/rejection'
 import { Router, RouterOptions, ServerRenderResponse, RedirectStatus } from '@/types/router'
 import { IS_ROUTER_SYMBOL, RouterInternal } from '@/types/routerInternal'
 import { RouterPushInternal, RouterPushOptionsInternal, RouterReplaceInternal, RouterReplaceOptionsInternal } from '@/types/routerNavigationInternal'
@@ -636,7 +636,10 @@ export function createRouter<
    * The title that should currently be rendered.
    */
   async function getTitle(): Promise<string | undefined> {
-    return await currentRejection.value?.getTitle() ?? routerRoute.getResolvedRoute().getTitle()
+    const rejection = currentRejection.value
+    const title = isRejection(rejection) ? await rejection.getTitle() : undefined
+
+    return title ?? routerRoute.getTitle()
   }
 
   /**

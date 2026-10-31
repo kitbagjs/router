@@ -24,13 +24,13 @@ export function createRejection({ type, component, status }: RejectionOptions): 
     [IS_REJECTION_SYMBOL]: true,
     route,
     hooks: [store],
+    getTitle,
   } satisfies RejectionInternal
 
   const rejection = {
     type,
     status,
     setTitle,
-    getTitle,
     ...hooks,
     ...internal,
   } satisfies Rejection & RejectionInternal & RejectionHooks & RouteSetTitle

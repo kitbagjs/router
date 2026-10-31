@@ -67,7 +67,15 @@ export * from './types/querySource'
 export type { RouteRedirects } from './types/redirects'
 export * from './types/register'
 export type { Rejection, RejectionType, Rejections } from './types/rejection'
-export { isResolvedRoute } from './types/resolved'
+import { isResolvedRoute as isResolvedRouteInternal, ResolvedRoute } from './types/resolved'
+
+/**
+ * A type guard for determining if a value is a ResolvedRoute.
+ * @param value - The value to check.
+ * @returns `true` if the value is a ResolvedRoute, otherwise `false`.
+ * @group Type Guards
+ */
+export const isResolvedRoute: (value: unknown) => value is ResolvedRoute = isResolvedRouteInternal
 export type { ResolvedRoute, WithData, ResolvedRouteUnion, RouterResolvedRouteUnion } from './types/resolved'
 export type { Route, CreatedRouteOptions } from './types/route'
 export * from './types/router'

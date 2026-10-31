@@ -26,6 +26,7 @@ export type RejectionInternal = {
   [IS_REJECTION_SYMBOL]: true,
   route: Route,
   hooks: Hooks[],
+  getTitle: GetTitleCallback,
 }
 
 /**
@@ -50,12 +51,7 @@ export type RejectionOptions<TType extends string = string> = {
   status?: number,
 }
 
-export type Rejection<TType extends string = string> = Pick<RejectionOptions<TType>, 'type' | 'status'> & {
-  /**
-   * Returns the title of the rejection from its `setTitle` callback.
-   */
-  getTitle: GetTitleCallback,
-}
+export type Rejection<TType extends string = string> = Pick<RejectionOptions<TType>, 'type' | 'status'>
 
 export type RejectionType<TRejections extends Rejections | undefined> = unknown extends TRejections
   ? never

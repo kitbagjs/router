@@ -29,6 +29,7 @@ export type ResolvedRouteInternal = {
   schema: UrlSchema,
   hooks: Hooks[],
   getRouteTitle: GetRouteTitle,
+  getTitle: GetTitleCallback,
 }
 
 type MatchedRoute<TMatches> = LastInArray<TMatches, CreatedRouteOptions> extends infer TMatched
@@ -91,11 +92,6 @@ export type ResolvedRoute<TRoute extends Route = Route> = Readonly<{
    * Hash value of the route.
    */
   hash: string,
-  /**
-   * Returns the title of the route from its `setTitle` callback, or from the closest parent route that
-   * defines one.
-   */
-  getTitle: GetTitleCallback,
 }>
 
 /**

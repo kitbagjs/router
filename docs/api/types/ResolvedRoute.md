@@ -5,7 +5,6 @@ type ResolvedRoute<TRoute> = Readonly<{
   canonical: UrlString;
   getAllParams: GetAllParams;
   getParam: GetParam;
-  getTitle: GetTitleCallback;
   hash: string;
   href: UrlString;
   id: TRoute["id"];

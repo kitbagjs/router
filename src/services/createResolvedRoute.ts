@@ -70,7 +70,7 @@ function getResolvedUrls(route: Route, params: Record<string, unknown>, options:
   return { canonical, href, query, hash }
 }
 
-export function createResolvedRoute(route: Route, params: Record<string, unknown> = {}, options: CreateResolvedRouteOptions = {}): ResolvedRoute {
+export function createResolvedRoute(route: Route, params: Record<string, unknown> = {}, options: CreateResolvedRouteOptions = {}): ResolvedRoute & ResolvedRouteInternal {
   if (!isUrl(route)) {
     throw new Error('createResolvedRoute called with an invalid URL')
   }
@@ -95,6 +95,7 @@ export function createResolvedRoute(route: Route, params: Record<string, unknown
     schema: route.schema,
     hooks: getHooks(route),
     getRouteTitle,
+    getTitle: (): Promise<string | undefined> => getRouteTitle(resolvedRoute),
   } satisfies ResolvedRouteInternal
 
   const resolvedRoute: ResolvedRoute & ResolvedRouteInternal = {
@@ -110,7 +111,6 @@ export function createResolvedRoute(route: Route, params: Record<string, unknown
     params,
     href,
     canonical,
-    getTitle: () => getRouteTitle(resolvedRoute),
   }
 
   return resolvedRoute

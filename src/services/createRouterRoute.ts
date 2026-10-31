@@ -1,7 +1,7 @@
 import { computed, InjectionKey, reactive, shallowReactive, shallowRef } from 'vue'
 import { getRouteLoaders } from '@/services/getRouteLoaders'
 import { parseUrl, stringifyUrl, updateUrl } from '@/services/urlParser'
-import { ResolvedRoute } from '@/types/resolved'
+import { isResolvedRoute, ResolvedRoute, ResolvedRouteInternal } from '@/types/resolved'
 import { IS_ROUTER_ROUTE_SYMBOL, RouterRoute, RouterRouteInternal } from '@/types/routerRoute'
 import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { QuerySource } from '@/types/querySource'
@@ -25,8 +25,14 @@ export function createRouterRoute<TRouter extends Router>(options: CreateRouterR
 export function createRouterRoute({ routerKey, route: initialRoute, push, getRouteData }: CreateRouterRouteOptions): RouterRoute & RouterRouteInternal {
   const route = shallowRef(initialRoute)
 
-  function getResolvedRoute(): ResolvedRoute {
-    return route.value
+  function getResolvedRoute(): ResolvedRoute & ResolvedRouteInternal {
+    const currentRoute = route.value
+
+    if (!isResolvedRoute(currentRoute)) {
+      throw new Error('Current route is not a resolved route')
+    }
+
+    return currentRoute
   }
 
   function updateRoute(newRoute: ResolvedRoute): void {
@@ -94,7 +100,7 @@ export function createRouterRoute({ routerKey, route: initialRoute, push, getRou
   const href = computed(() => route.value.href)
   const canonical = computed(() => route.value.canonical)
   const data = computed(() => toLegacyValues(getRouteData(route.value)))
-  const getTitle = computed(() => route.value.getTitle)
+  const getTitle = (): Promise<string | undefined> => getResolvedRoute().getTitle()
   const getParam = computed(() => route.value.getParam)
   const getAllParams = computed(() => route.value.getAllParams)
   const loaders = computed(() => getRouteLoaders(route.value))
@@ -197,6 +203,7 @@ export function createRouterRoute({ routerKey, route: initialRoute, push, getRou
     [routerKey]: true,
     updateRoute,
     getResolvedRoute,
+    getTitle,
   } satisfies RouterRouteInternal
 
   // data is derived from the route's matches rather than read off the route, so its type cannot be matched here
@@ -214,7 +221,6 @@ export function createRouterRoute({ routerKey, route: initialRoute, push, getRou
     href,
     canonical,
     data,
-    getTitle,
     getParam,
     getAllParams,
     update,

@@ -1,7 +1,7 @@
 # Functions: createRejection()
 
 ```ts
-function createRejection<TType>(options): Pick<RejectionOptions<TType>, "type" | "status"> & object & RejectionHooks<TType> & RouteSetTitle;
+function createRejection<TType>(options): Rejection<TType> & RejectionHooks<TType> & RouteSetTitle;
 ```
 
 ## Type Parameters
@@ -18,4 +18,4 @@ function createRejection<TType>(options): Pick<RejectionOptions<TType>, "type" |
 
 ## Returns
 
-`Pick`\<`RejectionOptions`\<`TType`\>, `"type"` \| `"status"`\> & `object` & [`RejectionHooks`](../types/RejectionHooks.md)\<`TType`\> & `RouteSetTitle`
+[`Rejection`](../types/Rejection.md)\<`TType`\> & [`RejectionHooks`](../types/RejectionHooks.md)\<`TType`\> & `RouteSetTitle`

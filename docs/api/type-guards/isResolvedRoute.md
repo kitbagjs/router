@@ -1,7 +1,7 @@
-# Type Guards: isResolvedRoute()
+# Type Guards: isResolvedRoute
 
 ```ts
-function isResolvedRoute(value): value is Readonly<{ canonical: UrlString; getAllParams: GetAllParams; getParam: GetParam; getTitle: GetTitleCallback; hash: string; href: UrlString; id: string; matched: CreatedRouteOptions; matches: CreatedRouteOptions[]; name: string; params: { [key: string]: unknown }; query: URLSearchParams; state: ExtractRouteStateParamsAsOptional<TRoute["state"]> }> & ResolvedRouteInternal;
+const isResolvedRoute: (value) => value is ResolvedRoute;
 ```
 
 A type guard for determining if a value is a ResolvedRoute.
@@ -14,6 +14,6 @@ A type guard for determining if a value is a ResolvedRoute.
 
 ## Returns
 
-`value is Readonly<{ canonical: UrlString; getAllParams: GetAllParams; getParam: GetParam; getTitle: GetTitleCallback; hash: string; href: UrlString; id: string; matched: CreatedRouteOptions; matches: CreatedRouteOptions[]; name: string; params: { [key: string]: unknown }; query: URLSearchParams; state: ExtractRouteStateParamsAsOptional<TRoute["state"]> }> & ResolvedRouteInternal`
+`value is ResolvedRoute`
 
 `true` if the value is a ResolvedRoute, otherwise `false`.

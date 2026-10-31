@@ -7,7 +7,7 @@ import { RouterResolveOptions } from '@/types/routerResolve'
  * Applies query, hash, and state to an already resolved route the same way a push with those options
  * changes the url. Query values are appended, hash and state values override.
  */
-export function updateResolvedRoute(route: ResolvedRoute, options: RouterResolveOptions): ResolvedRoute {
+export function updateResolvedRoute(route: ResolvedRoute, options: RouterResolveOptions): ResolvedRoute & ResolvedRouteInternal {
   if (!isResolvedRoute(route)) {
     throw new Error('updateResolvedRoute called with a value that is not a resolved route')
   }

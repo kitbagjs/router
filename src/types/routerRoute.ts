@@ -1,5 +1,5 @@
 import { RouteUpdate } from '@/types/routeUpdate'
-import { ResolvedRoute } from '@/types/resolved'
+import { ResolvedRoute, ResolvedRouteInternal } from '@/types/resolved'
 import { RouteDataOf, RouteLoadersOf } from '@/types/route'
 import { QuerySource } from '@/types/querySource'
 
@@ -8,7 +8,8 @@ export const IS_ROUTER_ROUTE_SYMBOL = Symbol('IS_ROUTER_ROUTE_SYMBOL')
 export type RouterRouteInternal = {
   [IS_ROUTER_ROUTE_SYMBOL]: true,
   updateRoute: (route: ResolvedRoute) => void,
-  getResolvedRoute: () => ResolvedRoute,
+  getResolvedRoute: () => ResolvedRoute & ResolvedRouteInternal,
+  readonly getTitle: ResolvedRouteInternal['getTitle'],
 }
 
 export type RouterRoute<TRoute extends ResolvedRoute = ResolvedRoute> = {
@@ -45,10 +46,6 @@ export type RouterRoute<TRoute extends ResolvedRoute = ResolvedRoute> = {
    * String value of the route's own URL. The same as `href` unless the route was matched through an alias.
    */
   readonly canonical: TRoute['canonical'],
-  /**
-   * Title of the route.
-   */
-  readonly getTitle: TRoute['getTitle'],
   /**
    * Returns the first present value using the given param definition.
    */
