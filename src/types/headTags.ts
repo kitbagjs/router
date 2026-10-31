@@ -1,3 +1,5 @@
+import type { LinkBase, Meta } from 'zhead'
+
 export type HeadTagName = 'title' | 'meta' | 'link'
 
 export type HeadElement = Readonly<{
@@ -12,7 +14,7 @@ export type HeadSelector = Readonly<{
   attributes: Readonly<Partial<Record<string, string>>>,
 }>
 
-/** An image and its structured properties stay together when a layer replaces or removes it. */
+/** A primary tag and its related tags are replaced or removed together. */
 export type HeadGroup = Readonly<{
   selector: HeadSelector,
   elements: readonly HeadElement[],
@@ -31,67 +33,32 @@ export type HeadOperation = | Readonly<{
 /** Operations are retained instead of a flattened head so removing a layer reveals current lower values. */
 export type HeadLayer = readonly HeadOperation[]
 
-export type HeadMetaSelector = {
-  media?: string,
+export type HeadMetaIdentifier = | {
+  name: NonNullable<Meta['name']>,
+  property?: never,
+}
+| {
+  property: NonNullable<Meta['property']>,
+  name?: never,
+}
+
+export type HeadMetaSelector = HeadMetaIdentifier & Pick<Meta, 'media' | 'id'> & {
   key?: string,
 }
 
-export type HeadMetaContent = HeadMetaSelector & {
-  content: string,
+export type HeadMetaDescriptor = HeadMetaSelector & Pick<Meta, 'content'> & {
+  content: NonNullable<Meta['content']>,
+  related?: readonly HeadMetaDescriptor[],
 }
 
-export type HeadMetaIdentifier = | { name: string, property?: never }
-  | { property: string, name?: never }
-
-export type HeadMetaDescriptor = HeadMetaIdentifier & HeadMetaContent
-
-export type HeadMedia = {
-  url: string,
-  secureUrl?: string,
-  type?: string,
+export type HeadLinkSelector = Pick<LinkBase, 'type' | 'sizes' | 'media' | 'hreflang' | 'href' | 'id'> & {
+  rel: NonNullable<LinkBase['rel']>,
   key?: string,
 }
 
-export type HeadImage = HeadMedia & {
-  alt?: string,
-  width?: number,
-  height?: number,
-}
-
-export type HeadMetaValue<TName extends string> = TName extends 'og:image' | 'og:video'
-  ? string | HeadImage
-  : TName extends 'og:audio'
-    ? string | HeadMedia
-    : string | HeadMetaContent
-
-export type HeadMetaMethod = {
-  <TName extends string>(name: TName, value: HeadMetaValue<TName> | readonly HeadMetaValue<TName>[]): void,
-  (descriptor: HeadMetaDescriptor): void,
-}
-
-export type HeadMetaDelete = {
-  (name: string, selector?: HeadMetaSelector): void,
-  (selector: HeadMetaIdentifier & HeadMetaSelector): void,
-}
-
-export type HeadLinkSelector = {
-  rel: string,
-  type?: string,
-  sizes?: string,
-  media?: string,
-  hreflang?: string,
-  href?: string,
-  key?: string,
-}
-
-export type HeadLink = HeadLinkSelector & {
+export type HeadLink = LinkBase & HeadLinkSelector & {
   href: string,
-  as?: string,
-  crossorigin?: '' | 'anonymous' | 'use-credentials',
-  integrity?: string,
-  referrerpolicy?: ReferrerPolicy,
-  fetchpriority?: 'high' | 'low' | 'auto',
-  color?: string,
+  related?: readonly HeadLink[],
 }
 
 export type HeadTags = {
@@ -100,13 +67,13 @@ export type HeadTags = {
     delete: () => void,
   },
   meta: {
-    set: HeadMetaMethod,
-    add: HeadMetaMethod,
-    delete: HeadMetaDelete,
+    set: (descriptor: HeadMetaDescriptor) => void,
+    add: (descriptor: HeadMetaDescriptor) => void,
+    delete: (selector: HeadMetaSelector) => void,
   },
   link: {
-    set: (value: HeadLink) => void,
-    add: (value: HeadLink) => void,
+    set: (descriptor: HeadLink) => void,
+    add: (descriptor: HeadLink) => void,
     delete: (selector: HeadLinkSelector) => void,
   },
 }
