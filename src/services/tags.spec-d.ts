@@ -1,10 +1,10 @@
 import { expectTypeOf, test } from 'vitest'
 import type { LinkBase, Meta } from 'zhead'
-import { createTagsBuilder } from '@/services/createTagsBuilder'
-import { TagLayer, LinkTag, MetaTag } from '@/types/tags'
+import { createTags } from '@/services/createTags'
+import { TagLayer, LinkTag, MetaTag, Tags } from '@/types/tags'
 
 test('uses zhead attribute types while allowing custom metadata and recursive related entries', () => {
-  const { tags, finish } = createTagsBuilder()
+  const tags = createTags()
 
   tags.title.set('Product')
   tags.meta.set({
@@ -42,11 +42,11 @@ test('uses zhead attribute types while allowing custom metadata and recursive re
   expectTypeOf<MetaTag['name']>().toEqualTypeOf<Meta['name']>()
   expectTypeOf<MetaTag['content']>().toEqualTypeOf<NonNullable<Meta['content']>>()
   expectTypeOf<LinkTag['as']>().toEqualTypeOf<LinkBase['as']>()
-  expectTypeOf(finish()).toEqualTypeOf<TagLayer>()
+  expectTypeOf(tags.layer).toEqualTypeOf<TagLayer>()
 })
 
 test('requires explicit attributes and validates related descriptors recursively', () => {
-  const { tags } = createTagsBuilder()
+  const tags = createTags()
 
   // @ts-expect-error titles are single string values
   tags.title.set(42)
@@ -75,7 +75,7 @@ test('requires explicit attributes and validates related descriptors recursively
 })
 
 test('reads are asynchronous and recursively readonly', async () => {
-  const { tags } = createTagsBuilder()
+  const tags = createTags()
   const snapshot = await tags.get()
   const meta = await tags.meta.get({ property: 'og:image' })
   const links = await tags.link.get({ rel: 'icon' })
@@ -100,4 +100,13 @@ test('reads are asynchronous and recursively readonly', async () => {
   meta[0].property = 'custom:changed'
   // @ts-expect-error links cannot be changed through a read
   links[0].href = '/changed.svg'
+})
+
+test('callbacks receive the scoped API without lifecycle or storage methods', () => {
+  const tags: Tags = createTags()
+
+  // @ts-expect-error there is no finalization step
+  tags.finish()
+  // @ts-expect-error the local layer is internal to the callback runner
+  expectTypeOf(tags.layer)
 })

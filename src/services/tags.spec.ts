@@ -1,15 +1,15 @@
 import { assert, describe, expect, test } from 'vitest'
-import { createTagsBuilder } from '@/services/createTagsBuilder'
+import { createTags } from '@/services/createTags'
 import { mergeTags } from '@/services/mergeTags'
 import { flattenTags } from '@/services/flattenTags'
 import { TagElement, TagLayer, MetaTag, Tags } from '@/types/tags'
 
 function layer(callback: (tags: Tags) => void): TagLayer {
-  const builder = createTagsBuilder()
+  const tags = createTags()
 
-  callback(builder.tags)
+  callback(tags)
 
-  return builder.finish()
+  return tags.layer
 }
 
 function image(url: string, alt?: string): MetaTag {
@@ -479,7 +479,7 @@ describe('links', () => {
   })
 })
 
-describe('builder ownership', () => {
+describe('tag ownership', () => {
   test('copies related descriptors before their owner can change them', () => {
     const descriptor = {
       property: 'og:image',
@@ -502,16 +502,17 @@ describe('builder ownership', () => {
     expect(contents(value)).toEqual(['/original.jpg', 'Original'])
   })
 
-  test('finishes once, freezes nested values, and rejects late writes', () => {
-    const builder = createTagsBuilder()
+  test('takes immutable layer snapshots without closing the scoped API', () => {
+    const tags = createTags()
 
-    builder.tags.meta.set(image('/original.jpg', 'Original'))
+    tags.meta.set(image('/original.jpg', 'Original'))
 
-    const value = builder.finish()
+    const value = tags.layer
     const merged = mergeTags([value])
 
-    expect(builder.finish()).toBe(value)
-    expect(() => builder.tags.title.set('Late')).toThrow()
+    tags.title.set('Updated')
+
+    expect(contents(tags.layer)).toEqual(['/original.jpg', 'Original', 'Updated'])
     expect(Reflect.set(value, '0', {})).toBe(false)
     expect(Reflect.set(flattenTags(merged)[1].attributes, 'content', 'Changed')).toBe(false)
     expect(Reflect.set(merged[0].attributes, 'key', 'Changed')).toBe(false)
@@ -521,7 +522,7 @@ describe('builder ownership', () => {
 
 describe('scoped reads', () => {
   test('returns empty values when no layer contributes tags', async () => {
-    const { tags } = createTagsBuilder()
+    const tags = createTags()
 
     await expect(tags.get()).resolves.toEqual({
       title: undefined,
@@ -546,7 +547,7 @@ describe('scoped reads', () => {
         href: '/store',
       })
     })
-    const { tags } = createTagsBuilder({ getParentLayers: () => [parent] })
+    const tags = createTags({ getParentLayers: () => [parent] })
 
     await expect(tags.title.get()).resolves.toBe('Store')
 
@@ -581,7 +582,7 @@ describe('scoped reads', () => {
   test('awaits inherited computations and reads only local writes made before the call', async () => {
     const pending = Promise.withResolvers<readonly TagLayer[]>()
     const parent = layer((tags) => tags.title.set('Parent'))
-    const { tags } = createTagsBuilder({ getParentLayers: () => pending.promise })
+    const tags = createTags({ getParentLayers: () => pending.promise })
     const beforeWrite = tags.title.get()
 
     tags.title.set('Local')
@@ -594,16 +595,16 @@ describe('scoped reads', () => {
 
   test('does not resolve ancestors for a write-only callback', () => {
     let reads = 0
-    const builder = createTagsBuilder({
+    const tags = createTags({
       getParentLayers: () => {
         reads++
         return []
       },
     })
 
-    builder.tags.title.set('Local')
-    builder.finish()
+    tags.title.set('Local')
 
+    expect(contents(tags.layer)).toEqual(['Local'])
     expect(reads).toBe(0)
   })
 
@@ -619,7 +620,7 @@ describe('scoped reads', () => {
         href: '/icon.svg',
       })
     })
-    const { tags } = createTagsBuilder({ getParentLayers: () => pending.promise })
+    const tags = createTags({ getParentLayers: () => pending.promise })
     const metaSelector = { name: 'description' }
     const linkSelector = { rel: 'icon' }
     const metadata = tags.meta.get(metaSelector)
@@ -641,7 +642,7 @@ describe('scoped reads', () => {
 
   test('reads the current supplied ancestor layers without retaining a previous snapshot', async () => {
     let parent = layer((tags) => tags.title.set('Original'))
-    const { tags } = createTagsBuilder({ getParentLayers: () => [parent] })
+    const tags = createTags({ getParentLayers: () => [parent] })
     const original = await tags.get()
 
     parent = layer((tags) => tags.title.set('Updated'))
@@ -665,7 +666,7 @@ describe('scoped reads', () => {
     }
     const parent = layer((tags) => tags.meta.add(descriptor))
     const hydrated: TagLayer = JSON.parse(JSON.stringify(parent))
-    const { tags } = createTagsBuilder({ getParentLayers: () => [hydrated] })
+    const tags = createTags({ getParentLayers: () => [hydrated] })
     const snapshot = await tags.get()
     const related = snapshot.meta[0].related ?? []
     const grandchild = related[0]?.related?.[0]
@@ -696,7 +697,7 @@ describe('scoped reads', () => {
         sizes: '32x32',
       })
     })
-    const { tags } = createTagsBuilder({ getParentLayers: () => [parent] })
+    const tags = createTags({ getParentLayers: () => [parent] })
 
     await expect(tags.meta.get({ property: 'og:image', key: 'square' })).resolves.toEqual([
       { ...image('/square.jpg', 'Square'), key: 'square' },
@@ -711,23 +712,24 @@ describe('scoped reads', () => {
 
   test('a fresh evaluation does not inherit the previous evaluation of its own scope', async () => {
     const parent = layer((tags) => tags.title.set('Parent'))
-    const previous = createTagsBuilder({ getParentLayers: () => [parent] })
+    const previous = createTags({ getParentLayers: () => [parent] })
 
-    previous.tags.title.set('Previous local')
-    previous.finish()
+    previous.title.set('Previous local')
 
-    const current = createTagsBuilder({ getParentLayers: () => [parent] })
+    expect(contents(previous.layer)).toEqual(['Previous local'])
 
-    await expect(current.tags.title.get()).resolves.toBe('Parent')
+    const current = createTags({ getParentLayers: () => [parent] })
+
+    await expect(current.title.get()).resolves.toBe('Parent')
   })
 
   test('propagates failed ancestor reads without changing local operations', async () => {
     const error = new Error('Parent failed')
-    const builder = createTagsBuilder({ getParentLayers: () => Promise.reject(error) })
+    const tags = createTags({ getParentLayers: () => Promise.reject(error) })
 
-    builder.tags.title.set('Local')
+    tags.title.set('Local')
 
-    await expect(builder.tags.title.get()).rejects.toBe(error)
-    expect(contents(builder.finish())).toEqual(['Local'])
+    await expect(tags.title.get()).rejects.toBe(error)
+    expect(contents(tags.layer)).toEqual(['Local'])
   })
 })
