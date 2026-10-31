@@ -1,45 +1,35 @@
-import { TagElement, TagGroup, TagLayer, LinkTag, LinkTagSelector, MetaTag, MetaTagSelector, TagOperation, TagSelector, Tags } from '@/types/tags'
+import { TagGroup, TagLayer, LinkTag, LinkTagSelector, MetaTag, MetaTagSelector, TagOperation, TagSelector, Tags, TagsSnapshot, ResolvedMetaTag, ResolvedLinkTag } from '@/types/tags'
+import { MaybePromise } from '@/types/utilities'
+import { matchesTag, mergeTags } from '@/services/mergeTags'
 
-function createSelector(tag: TagSelector['tag'], attributes: Record<string, string>): TagSelector {
+type CreateTagsBuilderOptions = {
+  /** Supplies ancestor layers only; reads must exclude this scope's previous evaluation and its descendants. */
+  getParentLayers?: () => MaybePromise<readonly TagLayer[]>,
+}
+
+function createSelector<TTag extends TagSelector['tag']>(tag: TTag, attributes: Record<string, string>): TagSelector & { tag: TTag } {
   return Object.freeze({ tag, attributes: Object.freeze(attributes) })
 }
 
-function createElement(tag: TagElement['tag'], attributes: Record<string, string>, textContent?: string): TagElement {
+function copyMeta(descriptor: MetaTag): ResolvedMetaTag {
+  const related = descriptor.related?.map(copyMeta)
+
   return Object.freeze({
-    tag,
-    attributes: Object.freeze(attributes),
-    ...textContent === undefined ? {} : { textContent },
+    ...descriptor,
+    ...related === undefined ? {} : { related: Object.freeze(related) },
   })
 }
 
-function createGroup(selector: TagSelector, elements: TagElement[]): TagGroup {
-  return Object.freeze({ selector, elements: Object.freeze(elements) })
+function copyLink(descriptor: LinkTag): ResolvedLinkTag {
+  const related = descriptor.related?.map(copyLink)
+
+  return Object.freeze({
+    ...descriptor,
+    ...related === undefined ? {} : { related: Object.freeze(related) },
+  })
 }
 
-function attributesOf(value: object): Record<string, string> {
-  const attributes: Record<string, string> = {}
-
-  for (const [name, content] of Object.entries(value)) {
-    if (name === 'key' || name === 'related') {
-      continue
-    }
-
-    if (typeof content === 'string' || typeof content === 'number' || typeof content === 'boolean') {
-      attributes[name] = String(content)
-    }
-  }
-
-  return attributes
-}
-
-function relatedElements<T extends { related?: readonly T[] }>(tag: TagElement['tag'], value: T): TagElement[] {
-  return [
-    createElement(tag, attributesOf(value)),
-    ...value.related?.flatMap((related) => relatedElements(tag, related)) ?? [],
-  ]
-}
-
-function metaSelector({ name, property, media, key, id }: MetaTagSelector, exact: boolean): TagSelector {
+function metaSelector({ name, property, media, key, id }: MetaTagSelector, exact: boolean): TagSelector & { tag: 'meta' } {
   const identifier: Record<string, string> = property === undefined ? { name } : { property }
 
   return createSelector('meta', {
@@ -50,14 +40,16 @@ function metaSelector({ name, property, media, key, id }: MetaTagSelector, exact
   })
 }
 
-function linkSelector(value: LinkTagSelector, exact: boolean): TagSelector {
+function linkSelector(value: LinkTagSelector, exact: boolean): TagSelector & { tag: 'link' } {
   const { rel, key, type, sizes, media, hreflang, href } = value
 
   if (!exact) {
-    const attributes = attributesOf(value)
+    const attributes: Record<string, string> = {}
 
-    if (key !== undefined) {
-      attributes.key = key
+    for (const [name, content] of Object.entries<string | undefined>(value)) {
+      if (content !== undefined) {
+        attributes[name] = content
+      }
     }
 
     return createSelector('link', attributes)
@@ -83,10 +75,10 @@ function linkSelector(value: LinkTagSelector, exact: boolean): TagSelector {
 }
 
 /**
- * Supplies the callback's tags and retains its operations without reading any parent layer.
- * Finish after the callback settles to seal the serializable layer and reject late writes.
+ * Supplies a fresh callback scope. Reads resolve ancestor layers lazily and include this evaluation's
+ * operations. Finish after the callback settles to seal its serializable layer and reject late writes.
  */
-export function createTagsBuilder(): { tags: Tags, finish: () => TagLayer } {
+export function createTagsBuilder({ getParentLayers = () => [] }: CreateTagsBuilderOptions = {}): { tags: Tags, finish: () => TagLayer } {
   const operations: TagOperation[] = []
   let finished = false
 
@@ -98,37 +90,98 @@ export function createTagsBuilder(): { tags: Tags, finish: () => TagLayer } {
     operations.push(Object.freeze(operation))
   }
 
+  async function readGroups(): Promise<readonly TagGroup[]> {
+    // Capture local writes before awaiting ancestors; later writes belong to the next read.
+    const local = Object.freeze([...operations])
+    const parents = await getParentLayers()
+
+    return mergeTags([...parents, local])
+  }
+
+  async function get(): Promise<TagsSnapshot> {
+    const groups = await readGroups()
+    const meta: ResolvedMetaTag[] = []
+    const link: ResolvedLinkTag[] = []
+    let title: string | undefined
+
+    for (const group of groups) {
+      switch (group.tag) {
+        case 'title':
+          title = group.value
+          break
+        case 'meta':
+          meta.push(copyMeta(group.value))
+          break
+        case 'link':
+          link.push(copyLink(group.value))
+          break
+        default:
+          group satisfies never
+      }
+    }
+
+    return Object.freeze({ title, meta: Object.freeze(meta), link: Object.freeze(link) })
+  }
+
   function writeMeta(kind: 'set' | 'add', descriptor: MetaTag): void {
     const selector = metaSelector(descriptor, true)
     const target = metaSelector(descriptor, descriptor.key === undefined)
-    const group = createGroup(selector, relatedElements('meta', descriptor))
+    const group: TagGroup = Object.freeze({ ...selector, value: copyMeta(descriptor) })
 
     record({ kind, target, groups: Object.freeze([group]) })
   }
 
   function writeLink(kind: 'set' | 'add', descriptor: LinkTag): void {
     const target = linkSelector(descriptor, true)
-    const group = createGroup(target, relatedElements('link', descriptor))
+    const group: TagGroup = Object.freeze({ ...target, value: copyLink(descriptor) })
 
     record({ kind, target, groups: Object.freeze([group]) })
   }
 
   const tags: Tags = {
+    get,
     title: {
+      get: async () => (await get()).title,
       set: (value) => {
         const target = createSelector('title', {})
-        const group = createGroup(target, [createElement('title', {}, value)])
+        const group: TagGroup = Object.freeze({ ...target, value })
 
         record({ kind: 'set', target, groups: Object.freeze([group]) })
       },
       delete: () => record({ kind: 'delete', target: createSelector('title', {}) }),
     },
     meta: {
+      get: async (selector) => {
+        const target = selector === undefined ? undefined : metaSelector(selector, false)
+        const groups = await readGroups()
+        const values = groups.flatMap((group) => {
+          if (group.tag === 'meta' && (!target || matchesTag(group, target))) {
+            return [copyMeta(group.value)]
+          }
+
+          return []
+        })
+
+        return Object.freeze(values)
+      },
       set: (descriptor) => writeMeta('set', descriptor),
       add: (descriptor) => writeMeta('add', descriptor),
       delete: (selector) => record({ kind: 'delete', target: metaSelector(selector, false) }),
     },
     link: {
+      get: async (selector) => {
+        const target = selector === undefined ? undefined : linkSelector(selector, false)
+        const groups = await readGroups()
+        const values = groups.flatMap((group) => {
+          if (group.tag === 'link' && (!target || matchesTag(group, target))) {
+            return [copyLink(group.value)]
+          }
+
+          return []
+        })
+
+        return Object.freeze(values)
+      },
       set: (descriptor) => writeLink('set', descriptor),
       add: (descriptor) => writeLink('add', descriptor),
       delete: (selector) => record({ kind: 'delete', target: linkSelector(selector, false) }),

@@ -1,12 +1,12 @@
 import { TagGroup, TagLayer, TagSelector } from '@/types/tags'
 
-function matches(group: TagGroup, target: TagSelector): boolean {
-  if (group.selector.tag !== target.tag) {
+export function matchesTag(group: TagGroup, target: TagSelector): boolean {
+  if (group.tag !== target.tag) {
     return false
   }
 
   return Object.entries(target.attributes).every(([name, value]) => {
-    const attribute = group.selector.attributes[name] ?? group.elements.at(0)?.attributes[name]
+    const attribute: unknown = group.attributes[name] ?? (group.tag === 'title' ? undefined : Reflect.get(group.value, name))
 
     return attribute === value
   })
@@ -18,7 +18,7 @@ export function mergeTags(layers: readonly TagLayer[]): readonly TagGroup[] {
   for (const layer of layers) {
     for (const operation of layer) {
       if (operation.kind !== 'add') {
-        groups = groups.filter((group) => !matches(group, operation.target))
+        groups = groups.filter((group) => !matchesTag(group, operation.target))
       }
 
       if (operation.kind !== 'delete') {
