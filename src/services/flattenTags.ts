@@ -13,16 +13,18 @@ function flattenRelated<T extends { related?: readonly T[] }>(tag: 'meta' | 'lin
     }
   }
 
-  return [
-    Object.freeze({ tag, attributes: Object.freeze(attributes) }),
-    ...descriptor.related?.flatMap((related) => flattenRelated(tag, related)) ?? [],
-  ]
+  const element = Object.freeze({ tag, attributes: Object.freeze(attributes) })
+  const related = descriptor.related?.flatMap((related) => flattenRelated(tag, related)) ?? []
+
+  return [element, ...related]
 }
 
 export function flattenTags(groups: readonly TagGroup[]): readonly TagElement[] {
-  return Object.freeze(groups.flatMap((group) => {
+  const elements = groups.flatMap((group) => {
     if (group.tag === 'title') {
-      return [Object.freeze({ tag: group.tag, attributes: Object.freeze({}), textContent: group.value })]
+      const title = Object.freeze({ tag: group.tag, attributes: Object.freeze({}), textContent: group.value })
+
+      return [title]
     }
 
     if (group.tag === 'meta') {
@@ -30,5 +32,7 @@ export function flattenTags(groups: readonly TagGroup[]): readonly TagElement[] 
     }
 
     return flattenRelated('link', group.value)
-  }))
+  })
+
+  return Object.freeze(elements)
 }
