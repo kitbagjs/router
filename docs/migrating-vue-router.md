@@ -17,8 +17,6 @@
 | [Prefetching](/advanced-concepts/prefetching) | ❌ | ✅ |
 | [Typed external routes](/core-concepts/external-routes) | ❌ | ✅ |
 
-✅ Built-in support · ❌ No built-in equivalent
-
 See the [Quick Start](/quick-start) for installation and TypeScript setup.
 
 ## Route Configuration
