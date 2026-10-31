@@ -1,6 +1,7 @@
 import { expectTypeOf, test } from 'vitest'
 import type { LinkBase, Meta } from 'zhead'
 import { createTags } from '@/services/createTags'
+import { toTagLayer } from '@/services/toTagLayer'
 import { TagLayer, LinkTag, MetaTag, Tags } from '@/types/tags'
 
 test('uses zhead attribute types while allowing custom metadata and recursive related entries', () => {
@@ -42,7 +43,8 @@ test('uses zhead attribute types while allowing custom metadata and recursive re
   expectTypeOf<MetaTag['name']>().toEqualTypeOf<Meta['name']>()
   expectTypeOf<MetaTag['content']>().toEqualTypeOf<NonNullable<Meta['content']>>()
   expectTypeOf<LinkTag['as']>().toEqualTypeOf<LinkBase['as']>()
-  expectTypeOf(tags.layer).toEqualTypeOf<TagLayer>()
+  expectTypeOf(toTagLayer(tags)).toEqualTypeOf<TagLayer>()
+  expectTypeOf(createTags()).toEqualTypeOf<Tags>()
 })
 
 test('requires explicit attributes and validates related descriptors recursively', () => {
@@ -103,7 +105,7 @@ test('reads are asynchronous and recursively readonly', async () => {
 })
 
 test('callbacks receive the scoped API without lifecycle or storage methods', () => {
-  const tags: Tags = createTags()
+  const tags = createTags()
 
   // @ts-expect-error there is no finalization step
   tags.finish()

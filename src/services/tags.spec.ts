@@ -1,5 +1,6 @@
 import { assert, describe, expect, test } from 'vitest'
 import { createTags } from '@/services/createTags'
+import { toTagLayer } from '@/services/toTagLayer'
 import { mergeTags } from '@/services/mergeTags'
 import { flattenTags } from '@/services/flattenTags'
 import { TagElement, TagLayer, MetaTag, Tags } from '@/types/tags'
@@ -9,7 +10,7 @@ function layer(callback: (tags: Tags) => void): TagLayer {
 
   callback(tags)
 
-  return tags.layer
+  return toTagLayer(tags)
 }
 
 function image(url: string, alt?: string): MetaTag {
@@ -480,6 +481,27 @@ describe('links', () => {
 })
 
 describe('tag ownership', () => {
+  test('converts only local operations, preserving deletions without including inherited values', async () => {
+    const parent = layer((tags) => {
+      tags.title.set('Parent')
+      tags.meta.set({
+        name: 'description',
+        content: 'Parent description',
+      })
+    })
+    const tags = createTags({ getParentLayers: () => [parent] })
+
+    tags.meta.delete({ name: 'description' })
+
+    await expect(tags.title.get()).resolves.toBe('Parent')
+
+    const local = toTagLayer(tags)
+
+    expect(contents(local)).toEqual([])
+    expect(contents(parent, local)).toEqual(['Parent'])
+    expect(contents(parent)).toEqual(['Parent', 'Parent description'])
+  })
+
   test('copies related descriptors before their owner can change them', () => {
     const descriptor = {
       property: 'og:image',
@@ -507,12 +529,12 @@ describe('tag ownership', () => {
 
     tags.meta.set(image('/original.jpg', 'Original'))
 
-    const value = tags.layer
+    const value = toTagLayer(tags)
     const merged = mergeTags([value])
 
     tags.title.set('Updated')
 
-    expect(contents(tags.layer)).toEqual(['/original.jpg', 'Original', 'Updated'])
+    expect(contents(toTagLayer(tags))).toEqual(['/original.jpg', 'Original', 'Updated'])
     expect(Reflect.set(value, '0', {})).toBe(false)
     expect(Reflect.set(flattenTags(merged)[1].attributes, 'content', 'Changed')).toBe(false)
     expect(Reflect.set(merged[0].attributes, 'key', 'Changed')).toBe(false)
@@ -604,7 +626,7 @@ describe('scoped reads', () => {
 
     tags.title.set('Local')
 
-    expect(contents(tags.layer)).toEqual(['Local'])
+    expect(contents(toTagLayer(tags))).toEqual(['Local'])
     expect(reads).toBe(0)
   })
 
@@ -716,7 +738,7 @@ describe('scoped reads', () => {
 
     previous.title.set('Previous local')
 
-    expect(contents(previous.layer)).toEqual(['Previous local'])
+    expect(contents(toTagLayer(previous))).toEqual(['Previous local'])
 
     const current = createTags({ getParentLayers: () => [parent] })
 
@@ -730,6 +752,6 @@ describe('scoped reads', () => {
     tags.title.set('Local')
 
     await expect(tags.title.get()).rejects.toBe(error)
-    expect(contents(tags.layer)).toEqual(['Local'])
+    expect(contents(toTagLayer(tags))).toEqual(['Local'])
   })
 })
