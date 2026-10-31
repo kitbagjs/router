@@ -132,12 +132,6 @@ const blogPostTabs = createRoute({
 Awaiting parent props will create a waterfall of async operations which can make your app feel sluggish.
 :::
 
-<aside class="version-note" role="note">
-
-**Version note:** `parent.getProps` replaces callback `parent.props` on main. See the [unreleased migration](/upgrading/unreleased#callback-data-and-parent-props).
-
-</aside>
-
 ## Context
 
 The router provides a second `context` argument to your props callback. The context will always include:

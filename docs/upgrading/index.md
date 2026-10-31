@@ -6,8 +6,6 @@ If you skip versions, follow the applicable guides in release order, from your i
 
 This timeline covers released tags through **0.32.0**. See the [full release history](https://github.com/kitbagjs/router/releases) for features and fixes that do not need migration. Older GitHub release notes sometimes group several tags; these guides assign changes to the first tag that contains them.
 
-[Unreleased changes](/upgrading/unreleased) are on main but have no released version yet.
-
 ## Releases
 
 - [0.32.0](/upgrading/0.32.0) — Chainable route hooks and renamed param input types.

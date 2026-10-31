@@ -153,12 +153,6 @@ const project = createRoute({
 
 Both callbacks use the same loader result, so they do not need separate requests for the project. Each callback derives the props for its own component. Render the views with a default `<router-view />` and a named `<router-view name="tasks" />`.
 
-<aside class="version-note" role="note">
-
-**Version note:** Callback data getters replace `route.data` and `parent.data` on main. See the [unreleased migration](/upgrading/unreleased#callback-data-and-parent-props).
-
-</aside>
-
 ## Prefetching
 
 Loader prefetching is disabled by default. Enable it with a loader's `prefetch` option or the router, route, or link configuration. See [prefetching loaders](/advanced-concepts/prefetching#prefetching-loaders).
