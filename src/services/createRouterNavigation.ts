@@ -3,14 +3,13 @@ import { getRouteLoaderLocation } from '@/services/getRouteLoaderLocation'
 import { ResolvedRoute } from '@/types/resolved'
 import { DEFAULT_VIEW_NAME } from './routeViews'
 import { DEFAULT_LOADER_NAME } from './addLoader'
-import { toLegacyValues } from '@/utilities/toLegacyValues'
 import { unwrapComputationResponse } from '@/utilities/unwrapComputationResponse'
 import { ContextPushError } from '@/errors/contextPushError'
 import { LoaderDataAccessError } from '@/errors/loaderDataAccessError'
 import { ContextRejectionError } from '@/errors/contextRejectionError'
 import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
 import { DataRecord } from '@/types/data'
-import { PropsCallbackParent } from '@/types/props'
+import { ParentContext } from '@/types/props'
 import { createVueAppStore, HasVueAppStore } from './createVueAppStore'
 import { CallbackContextError, CallbackContextPush, CallbackContextReject, CallbackContextResponse } from '@/types/callbackContext'
 import { createRouterCallbackContext } from './createRouterCallbackContext'
@@ -20,7 +19,7 @@ import { PropsResult } from '@/utilities/props'
 import { warn } from '@/utilities/warn'
 import { MaybePromise } from '@/types/utilities'
 import { isPromise } from '@/utilities/promises'
-import { Computation, getComputations, isKind, loaderLocations, propsLocations, ValueLocation } from './getComputations'
+import { Computation, getComputations, isKind, ValueLocation } from './getComputations'
 
 export type RouterNavigationResponse = CallbackContextPush | CallbackContextReject | CallbackContextError
 
@@ -403,19 +402,12 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
     return new Proxy(route, {
       get(target, property, receiver) {
-        if (property !== 'data' && property !== 'getData') {
+        if (property !== 'getData') {
           return Reflect.get(target, property, receiver)
         }
 
         if (kind === 'loader') {
           throw new LoaderDataAccessError(name)
-        }
-
-        if (property === 'data') {
-          const loaders = getComputations(route).filter(isKind('loader'))
-          const values = toValues(loaders, (location) => getCallbackValue(location, route, context))
-
-          return toLegacyValues(values)
         }
 
         return getData
@@ -427,7 +419,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
    * The parent context for the callback at the given depth. Resolved per depth rather than from the last
    * match: every view in a nested route gets its own parent, not the resolved route's parent.
    */
-  function getParentContext(route: ResolvedRoute, depth: number, context: CallbackValueContext): PropsCallbackParent {
+  function getParentContext(route: ResolvedRoute, depth: number, context: CallbackValueContext): ParentContext | undefined {
     if (depth === 0) {
       return
     }
@@ -450,16 +442,6 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
         }
 
         return getCallbackValue({ kind: 'props', id: parentMatch.id, name }, route, context)
-      },
-      get props() {
-        const values = toValues(propsLocations(parentMatch), (location) => getCallbackValue(location, route, context))
-
-        return toLegacyValues(values)
-      },
-      get data() {
-        const values = toValues(loaderLocations(parentMatch), (location) => getCallbackValue(location, route, context))
-
-        return toLegacyValues(values)
       },
     }
   }

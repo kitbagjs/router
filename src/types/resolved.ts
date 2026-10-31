@@ -1,4 +1,4 @@
-import { CreatedRouteOptions, Route, RouteDataOf, RouteLoadersOf, Routes } from '@/types/route'
+import { CreatedRouteOptions, Route, RouteLoadersOf, Routes } from '@/types/route'
 import { LastInArray } from '@/types/utilities'
 import { ExtractRouteStateParamsAsOptional } from '@/types/state'
 import { UrlString } from '@/types/urlString'
@@ -104,12 +104,6 @@ export type ResolvedRoute<TRoute extends Route = Route> = Readonly<{
  * receive these accessors.
  */
 export type WithData<TRoute extends Route = Route> = {
-  /**
-   * What the route's loaders resolve to, keyed by loader name. A route whose only loader is unnamed
-   * exposes that loader's data here directly. Always promises, since loaders never block rendering.
-   * @deprecated Use route.getData() or route.getData(name). See https://github.com/kitbagjs/router/issues/1056.
-   */
-  data: RouteDataOf<TRoute['matches']>,
   /**
    * Returns a loader's promise by name. Defaults to the unnamed loader.
    */
