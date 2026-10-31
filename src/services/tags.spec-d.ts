@@ -1,10 +1,10 @@
 import { expectTypeOf, test } from 'vitest'
 import type { LinkBase, Meta } from 'zhead'
-import { createHeadTagsBuilder } from '@/services/createHeadTagsBuilder'
-import { HeadLayer, HeadLink, HeadMetaDescriptor } from '@/types/headTags'
+import { createTagsBuilder } from '@/services/createTagsBuilder'
+import { TagLayer, LinkTag, MetaTag } from '@/types/tags'
 
 test('uses zhead attribute types while allowing custom metadata and recursive related entries', () => {
-  const { tags, finish } = createHeadTagsBuilder()
+  const { tags, finish } = createTagsBuilder()
 
   tags.title.set('Product')
   tags.meta.set({
@@ -38,15 +38,15 @@ test('uses zhead attribute types while allowing custom metadata and recursive re
     imagesrcset: '/image.jpg 1x, /large.jpg 2x',
   })
 
-  expectTypeOf<HeadMetaDescriptor['property']>().toEqualTypeOf<Meta['property']>()
-  expectTypeOf<HeadMetaDescriptor['name']>().toEqualTypeOf<Meta['name']>()
-  expectTypeOf<HeadMetaDescriptor['content']>().toEqualTypeOf<NonNullable<Meta['content']>>()
-  expectTypeOf<HeadLink['as']>().toEqualTypeOf<LinkBase['as']>()
-  expectTypeOf(finish()).toEqualTypeOf<HeadLayer>()
+  expectTypeOf<MetaTag['property']>().toEqualTypeOf<Meta['property']>()
+  expectTypeOf<MetaTag['name']>().toEqualTypeOf<Meta['name']>()
+  expectTypeOf<MetaTag['content']>().toEqualTypeOf<NonNullable<Meta['content']>>()
+  expectTypeOf<LinkTag['as']>().toEqualTypeOf<LinkBase['as']>()
+  expectTypeOf(finish()).toEqualTypeOf<TagLayer>()
 })
 
 test('requires explicit attributes and validates related descriptors recursively', () => {
-  const { tags } = createHeadTagsBuilder()
+  const { tags } = createTagsBuilder()
 
   // @ts-expect-error titles are single string values
   tags.title.set(42)

@@ -1,6 +1,6 @@
-import { HeadGroup, HeadLayer, HeadSelector } from '@/types/headTags'
+import { TagGroup, TagLayer, TagSelector } from '@/types/tags'
 
-function matches(group: HeadGroup, target: HeadSelector): boolean {
+function matches(group: TagGroup, target: TagSelector): boolean {
   if (group.selector.tag !== target.tag) {
     return false
   }
@@ -12,8 +12,8 @@ function matches(group: HeadGroup, target: HeadSelector): boolean {
   })
 }
 
-export function mergeHeadLayers(layers: readonly HeadLayer[]): readonly HeadGroup[] {
-  let groups: HeadGroup[] = []
+export function mergeTags(layers: readonly TagLayer[]): readonly TagGroup[] {
+  let groups: TagGroup[] = []
 
   for (const layer of layers) {
     for (const operation of layer) {
