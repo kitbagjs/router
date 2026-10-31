@@ -1,4 +1,4 @@
-import { TagGroup, TagLayer, LinkTag, LinkTagSelector, MetaTag, MetaTagSelector, TagOperation, TagSelector, Tags, ResolvedMetaTag, ResolvedLinkTag } from '@/types/tags'
+import { TagGroup, TagLayer, LinkTag, LinkTagSelector, MetaTag, MetaTagSelector, TagOperation, TagSelector, Tags, ResolvedMetaTag, ResolvedLinkTag, TagsInternal, TAG_OPERATIONS_SYMBOL } from '@/types/tags'
 import { MaybePromise } from '@/types/utilities'
 import { matchesTag, mergeTags } from '@/services/mergeTags'
 
@@ -75,10 +75,10 @@ function linkSelector(value: LinkTagSelector, exact: boolean): TagSelector & { t
 }
 
 /**
- * Supplies a fresh callback scope. Reads include ancestor layers and local writes; the internal
- * layer getter snapshots only this scope's operations for navigation storage.
+ * Supplies a fresh callback scope. Reads include ancestor layers and local writes; toTagLayer
+ * snapshots only this scope's recorded operations for navigation storage.
  */
-export function createTags({ getParentLayers = () => [] }: CreateTagsOptions = {}): Tags & { readonly layer: TagLayer } {
+export function createTags({ getParentLayers = () => [] }: CreateTagsOptions = {}): Tags {
   const operations: TagOperation[] = []
 
   function record(operation: TagOperation): void {
@@ -220,13 +220,13 @@ export function createTags({ getParentLayers = () => [] }: CreateTagsOptions = {
     delete: deleteLink,
   }
 
-  const getLayer = (): TagLayer => Object.freeze([...operations])
+  const internal = {
+    [TAG_OPERATIONS_SYMBOL]: operations,
+  } satisfies TagsInternal
 
   const tags = {
+    ...internal,
     get,
-    get layer() {
-      return getLayer()
-    },
     title,
     meta,
     link,
