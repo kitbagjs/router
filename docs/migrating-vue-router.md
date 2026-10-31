@@ -1,37 +1,25 @@
 # Migrating from Vue Router
 
-Kitbag Router covers many of the same routing needs as Vue Router, with some differences in built-in features. The comparison below focuses on capabilities; the sections that follow explain how to migrate. See the [Quick Start](/quick-start) for installation and TypeScript setup.
+| Feature | Vue Router | Kitbag Router |
+| --- | :---: | :---: |
+| [Nested routes](/core-concepts/routes#parent) | ✅ | ✅ |
+| [Named views](/core-concepts/routes#named-views) | ✅ | ✅ |
+| [Typed routes](/core-concepts/type-safety) | ✅ | ✅ |
+| [Navigation guards](/advanced-concepts/hooks) | ✅ | ✅ |
+| [Redirects](/advanced-concepts/redirects) and [aliases](/advanced-concepts/aliases) | ✅ | ✅ |
+| [Data loaders](/core-concepts/loaders) | ✅ | ✅ |
+| [Server rendering](/advanced-concepts/server-side-rendering) | ✅ | ✅ |
+| [Dynamic route registration](https://router.vuejs.org/guide/advanced/dynamic-routing.html) | ✅ | ❌ |
+| [Scroll behavior](https://router.vuejs.org/guide/advanced/scroll-behavior.html) | ✅ | ❌ |
+| [File-based routing](https://router.vuejs.org/file-based-routing/) | ✅ | ❌ |
+| [Rejection views](/advanced-concepts/rejections) | ❌ | ✅ |
+| [Async props](/core-concepts/component-props) | ❌ | ✅ |
+| [Prefetching](/advanced-concepts/prefetching) | ❌ | ✅ |
+| [Typed external routes](/core-concepts/external-routes) | ❌ | ✅ |
 
-## Feature Parity
+✅ Built-in support · ❌ No built-in equivalent
 
-### Available in Both
-
-- **Nested routes and named views** for composing page layouts.
-- **Dynamic URL params**, including optional params, regex validation, and matching multiple path segments.
-- **Named routes, redirects, and aliases**.
-- **Programmatic navigation and links with active states**.
-- **Navigation guards** for controlling access and responding to route changes.
-- **Route metadata and component props binding**.
-- **Browser, hash, and memory history**, including support for server rendering.
-- **Lazy-loaded components and Vue transitions**.
-- **Typed navigation and route data loading.** Vue Router provides [typed routes](https://router.vuejs.org/guide/advanced/typed-routes.html) and [data loaders](https://router.vuejs.org/data-loaders/); Kitbag provides [inferred route types](/core-concepts/type-safety) and [loaders](/core-concepts/loaders). Their setup and behavior differ.
-
-### Available in Vue Router, Missing in Kitbag
-
-- **Runtime route registration.** Vue Router can [add and remove routes while the app is running](https://router.vuejs.org/guide/advanced/dynamic-routing.html). Kitbag's routes are defined when creating the router.
-- **Custom scroll behavior and restoration.** Vue Router provides [navigation-aware scroll handling](https://router.vuejs.org/guide/advanced/scroll-behavior.html). Kitbag applications need to manage scrolling separately.
-- **File-based routing.** Vue Router provides a [plugin that generates routes from page files](https://router.vuejs.org/file-based-routing/). Kitbag has no built-in equivalent.
-
-### Built Into Kitbag, Without a Direct Vue Router Equivalent
-
-These are router-provided features in Kitbag. Similar behavior in Vue Router may require application code or additional integrations.
-
-- **Typed rejection views.** Register responses such as unauthorized or not found with their own views and HTTP status codes. See [Rejections](/advanced-concepts/rejections).
-- **Async component props.** Load data in a view's props getter, with the returned values checked against the component's required props. See [Component Props](/core-concepts/component-props).
-- **Automatic link-driven prefetching.** Prefetch components, props, and loaders when links become visible or users hover or focus them. See [Prefetching](/advanced-concepts/prefetching).
-- **Typed external routes.** Define external destinations with typed params and navigate to them through the router. See [External Routes](/core-concepts/external-routes).
-- **Typed, reactive history state.** Define state fields and defaults on routes, then read and update them through the current route. See [Route State](/advanced-concepts/route-state).
-- **Route title management.** Define titles on routes and compose them with parent titles. See [Title](/core-concepts/routes#title).
+See the [Quick Start](/quick-start) for installation and TypeScript setup.
 
 ## Route Configuration
 
