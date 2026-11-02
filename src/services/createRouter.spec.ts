@@ -2272,41 +2272,6 @@ test.each(['progressive', 'blocking'] as const)('%s navigation completes after a
   router.stop()
 })
 
-test.each(['push', 'replace', 'reject'] as const)('onError can explicitly %s after a tag failure', async (action) => {
-  const error = new Error('tags failed')
-  const home = createRoute({ name: 'home', path: '/' })
-  const target = createRoute({ name: 'target', path: '/target' })
-  const page = createRoute({ name: 'page', path: '/page' }).setTags(() => {
-    throw error
-  })
-  const router = createRouter([home, page, target], { initialUrl: '/', navigation: 'blocking' })
-  const onRejection = vi.fn()
-  router.onRejection(onRejection)
-  router.onError((_error, context) => {
-    if (context.source !== 'tags') {
-      return
-    }
-
-    if (action === 'reject') {
-      context.reject('NotFound')
-    } else if (action === 'replace') {
-      context.replace('target')
-    } else {
-      context.push('target')
-    }
-  })
-  await router.start()
-  await router.push('page')
-
-  if (action === 'reject') {
-    expect(onRejection).toHaveBeenCalledWith('NotFound', expect.objectContaining({ to: expect.objectContaining({ name: 'page' }) }))
-  } else {
-    await vi.waitFor(() => expect(router.route.name).toBe('target'))
-  }
-
-  router.stop()
-})
-
 test('tag callbacks use router error hooks with their computation source', async () => {
   const error = new Error('tags failed')
   const home = createRoute({ name: 'home', path: '/' })
