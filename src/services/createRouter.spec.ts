@@ -2245,18 +2245,65 @@ test.each(['progressive', 'blocking'] as const)('%s navigation follows its exist
   router.stop()
 })
 
-test('blocking tag redirects do not wait for other pending computations', async () => {
+test.each(['progressive', 'blocking'] as const)('%s navigation completes after async tag failure and reports the error', async (navigation) => {
+  const error = new Error('tags failed')
+  const pending = Promise.withResolvers<void>()
+  const started = Promise.withResolvers<void>()
   const home = createRoute({ name: 'home', path: '/' })
-  const target = createRoute({ name: 'target', path: '/target' })
-  const page = createRoute({ name: 'page', path: '/page', context: [target] })
-    .addLoader(() => new Promise(() => {}))
-    .setTags((_tags, { push }) => push('target'))
-  const router = createRouter([home, page, target], { initialUrl: '/', navigation: 'blocking' })
+  const page = createRoute({ name: 'page', path: '/page' }).setTags(async (tags) => {
+    tags.title.set('Partial title')
+    started.resolve()
+    await pending.promise
+    throw error
+  })
+  const router = createRouter([home, page], { initialUrl: '/', navigation })
+  const onError = vi.fn()
+  router.onError(onError)
   await router.start()
 
+  const pushing = router.push('page')
+  await started.promise
+  pending.resolve()
+  await pushing
+  await flushPromises()
+
+  expect(router.route.name).toBe('page')
+  expect(onError).toHaveBeenCalledExactlyOnceWith(error, expect.objectContaining({ source: 'tags' }))
+  router.stop()
+})
+
+test.each(['push', 'replace', 'reject'] as const)('onError can explicitly %s after a tag failure', async (action) => {
+  const error = new Error('tags failed')
+  const home = createRoute({ name: 'home', path: '/' })
+  const target = createRoute({ name: 'target', path: '/target' })
+  const page = createRoute({ name: 'page', path: '/page' }).setTags(() => {
+    throw error
+  })
+  const router = createRouter([home, page, target], { initialUrl: '/', navigation: 'blocking' })
+  const onRejection = vi.fn()
+  router.onRejection(onRejection)
+  router.onError((_error, context) => {
+    if (context.source !== 'tags') {
+      return
+    }
+
+    if (action === 'reject') {
+      context.reject('NotFound')
+    } else if (action === 'replace') {
+      context.replace('target')
+    } else {
+      context.push('target')
+    }
+  })
+  await router.start()
   await router.push('page')
 
-  await vi.waitFor(() => expect(router.route.name).toBe('target'))
+  if (action === 'reject') {
+    expect(onRejection).toHaveBeenCalledWith('NotFound', expect.objectContaining({ to: expect.objectContaining({ name: 'page' }) }))
+  } else {
+    await vi.waitFor(() => expect(router.route.name).toBe('target'))
+  }
+
   router.stop()
 })
 

@@ -6,7 +6,7 @@ import { Tags } from '@/types/tags'
 import { Url } from '@/types/url'
 import { MaybePromise } from '@/types/utilities'
 
-export type SetRouteTagsContext<TRoute extends Route = Route> = RouteCallbackContext<TRoute> & {
+export type SetRouteTagsContext<TRoute extends Route = Route> = Pick<RouteCallbackContext<TRoute>, 'signal' | 'parent'> & {
   to: ResolvedRoute<TRoute> & WithData<TRoute>,
 }
 

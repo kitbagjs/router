@@ -1,20 +1,19 @@
 import { expectTypeOf, test } from 'vitest'
 import { createRoute } from '@/services/createRoute'
-import { createRejection } from '@/services/createRejection'
 import { withParams } from '@/services/withParams'
 import { Tags } from '@/types/tags'
 
-test('setTags receives the scoped API and destination with typed loader data and route helpers', () => {
-  const login = createRoute({ name: 'login', path: '/login' })
-  const denied = createRejection({ type: 'Denied' })
+test('setTags receives the scoped API, destination loader data, and cancellation context', () => {
   const route = createRoute({
     name: 'product',
     path: withParams('/products/[id]', { id: Number }),
-    context: [login, denied],
   })
     .addLoader(() => ({ title: 'Product' }))
 
-  const result = route.setTags(async (tags, { to, signal, push, replace, reject, update, parent }) => {
+  const result = route.setTags(async (tags, context) => {
+    const { to, signal, parent } = context
+
+    expectTypeOf<keyof typeof context>().toEqualTypeOf<'to' | 'signal' | 'parent'>()
     expectTypeOf(tags).toEqualTypeOf<Tags>()
     expectTypeOf(to.params.id).toEqualTypeOf<number>()
     expectTypeOf(signal).toEqualTypeOf<AbortSignal>()
@@ -23,17 +22,6 @@ test('setTags receives the scoped API and destination with typed loader data and
     const data = await to.getData()
 
     tags.title.set(data.title)
-    push('login')
-    replace('product', { id: 1 })
-    reject('Denied')
-    update({ id: 2 })
-
-    // @ts-expect-error params keep their declared types
-    push('product', { id: 'wrong' })
-    // @ts-expect-error helpers only include declared context routes
-    push('unknown')
-    // @ts-expect-error rejections must be declared in context
-    reject('Unknown')
   })
 
   expectTypeOf(result).toEqualTypeOf<typeof route>()
