@@ -7,14 +7,33 @@ test('returns the scoped Tags API', () => {
   expectTypeOf(createTags()).toEqualTypeOf<Tags>()
 })
 
-test('accepts string titles and named metadata', () => {
+test('accepts a single string title', () => {
   const tags = createTags()
 
   tags.title.set('Product')
+
+  // @ts-expect-error titles are single string values
+  tags.title.set(42)
+  // @ts-expect-error titles cannot be appended
+  tags.title.add('Another title')
+})
+
+test('requires explicit metadata identifiers and content', () => {
+  const tags = createTags()
+
   tags.meta.set({
     name: 'description',
     content: 'Product details',
   })
+
+  // @ts-expect-error descriptors are explicit; there is no inferred property/name shorthand
+  tags.meta.set('og:image', '/image.jpg')
+  // @ts-expect-error metadata must identify its name or property
+  tags.meta.set({ content: 'Missing identifier' })
+  // @ts-expect-error metadata cannot be both name and property metadata
+  tags.meta.set({ name: 'description', property: 'og:description', content: 'Ambiguous' })
+  // @ts-expect-error content is required
+  tags.meta.set({ property: 'og:image' })
 })
 
 test('accepts recursive related metadata', () => {
@@ -32,6 +51,11 @@ test('accepts recursive related metadata', () => {
       }],
     }],
   })
+
+  // @ts-expect-error nested related descriptors also require an identifier
+  tags.meta.add({ property: 'custom:root', content: 'Root', related: [{ content: 'Missing identifier' }] })
+  // @ts-expect-error related tags are descriptors, not callbacks
+  tags.meta.add({ property: 'custom:root', content: 'Root', related: () => [] })
 })
 
 test('accepts custom metadata identifiers with numeric and boolean content', () => {
@@ -56,35 +80,13 @@ test('accepts zhead link attributes', () => {
     as: 'image',
     imagesrcset: '/image.jpg 1x, /large.jpg 2x',
   })
-})
 
-test('requires explicit attributes and validates related descriptors recursively', () => {
-  const tags = createTags()
-
-  // @ts-expect-error titles are single string values
-  tags.title.set(42)
-  // @ts-expect-error titles cannot be appended
-  tags.title.add('Another title')
-  // @ts-expect-error descriptors are explicit; there is no inferred property/name shorthand
-  tags.meta.set('og:image', '/image.jpg')
-  // @ts-expect-error metadata must identify its name or property
-  tags.meta.set({ content: 'Missing identifier' })
-  // @ts-expect-error metadata cannot be both name and property metadata
-  tags.meta.set({ name: 'description', property: 'og:description', content: 'Ambiguous' })
-  // @ts-expect-error content is required
-  tags.meta.set({ property: 'og:image' })
-  // @ts-expect-error nested related descriptors also require an identifier
-  tags.meta.add({ property: 'custom:root', content: 'Root', related: [{ content: 'Missing identifier' }] })
-  // @ts-expect-error related tags are descriptors, not callbacks
-  tags.meta.add({ property: 'custom:root', content: 'Root', related: () => [] })
   // @ts-expect-error links require a destination
   tags.link.set({ rel: 'icon' })
   // @ts-expect-error zhead constrains the resource destination type
   tags.link.set({ rel: 'preload', href: '/image.jpg', as: 'unsupported' })
   // @ts-expect-error link handlers are not part of the tag data schema
   tags.link.set({ rel: 'icon', href: '/icon.svg', onload: 'run()' })
-  // @ts-expect-error head tags do not accept scripts
-  tags.script.add({ src: '/script.js' })
 })
 
 test('reads are asynchronous and recursively readonly', async () => {
@@ -122,4 +124,7 @@ test('callbacks receive the scoped API without lifecycle or storage methods', ()
   tags.finish()
   // @ts-expect-error the local layer is internal to the callback runner
   expectTypeOf(tags.layer)
+
+  // @ts-expect-error head tags do not accept scripts
+  tags.script.add({ src: '/script.js' })
 })
