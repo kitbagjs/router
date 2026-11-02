@@ -27,5 +27,5 @@ export function mergeTags(layers: readonly TagLayer[]): readonly TagGroup[] {
     }
   }
 
-  return Object.freeze(groups)
+  return groups
 }

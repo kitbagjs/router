@@ -7,5 +7,5 @@ export function toTagLayer(tags: Tags): TagLayer {
 
   const operations = [...tags[TAG_OPERATIONS_SYMBOL]]
 
-  return Object.freeze(operations)
+  return operations
 }
