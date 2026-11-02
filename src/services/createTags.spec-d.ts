@@ -3,7 +3,11 @@ import type { LinkBase, Meta } from 'zhead'
 import { createTags } from '@/services/createTags'
 import { Tags } from '@/types/tags'
 
-test('uses zhead attribute types while allowing custom metadata and recursive related entries', () => {
+test('returns the scoped Tags API', () => {
+  expectTypeOf(createTags()).toEqualTypeOf<Tags>()
+})
+
+test('accepts string titles and named metadata', () => {
   const tags = createTags()
 
   tags.title.set('Product')
@@ -11,6 +15,11 @@ test('uses zhead attribute types while allowing custom metadata and recursive re
     name: 'description',
     content: 'Product details',
   })
+})
+
+test('accepts recursive related metadata', () => {
+  const tags = createTags()
+
   tags.meta.set({
     property: 'og:image',
     content: '/product.jpg',
@@ -23,6 +32,11 @@ test('uses zhead attribute types while allowing custom metadata and recursive re
       }],
     }],
   })
+})
+
+test('accepts custom metadata identifiers with numeric and boolean content', () => {
+  const tags = createTags()
+
   tags.meta.add({
     property: 'new:property',
     content: 42,
@@ -31,14 +45,17 @@ test('uses zhead attribute types while allowing custom metadata and recursive re
     name: 'new:name',
     content: true,
   })
+})
+
+test('accepts zhead link attributes', () => {
+  const tags = createTags()
+
   tags.link.set({
     rel: 'preload',
     href: '/image.jpg',
     as: 'image',
     imagesrcset: '/image.jpg 1x, /large.jpg 2x',
   })
-
-  expectTypeOf(createTags()).toEqualTypeOf<Tags>()
 })
 
 test('requires explicit attributes and validates related descriptors recursively', () => {
