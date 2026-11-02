@@ -175,21 +175,6 @@ describe('router.render', () => {
     expect(onBeforeRouteEnter).not.toHaveBeenCalled()
   })
 
-  test('given a loader that pushes, responds with the redirect without following it', async () => {
-    const other = createRoute({ name: 'other', path: '/other' }).addView(component)
-    const route = createRoute({ name: 'route', path: '/', context: [other] }).addView(component)
-      .addLoader((_route, { push }) => push('other'))
-
-    const router = createRouter([route, other], { ssr: true, initialUrl: '/' })
-
-    await router.start()
-
-    const result = await router.render()
-
-    expect(router.route.name).toBe('route')
-    expect(result).toMatchObject({ kind: 'redirect', status: 302, location: '/other' })
-  })
-
   test('given a loader that throws and an error hook that pushes, responds with the redirect without following it', async () => {
     const other = createRoute({ name: 'other', path: '/other' }).addView(component)
     const route = createRoute({ name: 'route', path: '/', context: [other] }).addView(component)

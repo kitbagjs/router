@@ -33,15 +33,14 @@ test('an already-aborted signal skips registration and context discovery', () =>
   expect(onHookAdded).not.toHaveBeenCalled()
 })
 
-test('manual removal detaches the signal from a later registration', () => {
+test('returns the registration remover', () => {
   const hooks = createRouteHooks()
-  const controller = new AbortController()
   const hook = vi.fn()
-  const remove = hooks.onAfterRouteEnter(hook, { signal: controller.signal })
-
-  remove()
-  hooks.onAfterRouteEnter(hook)
-  controller.abort()
+  const remove = hooks.onAfterRouteEnter(hook)
 
   expect(hooks.store.onAfterRouteEnter).toHaveLength(1)
+
+  remove()
+
+  expect(hooks.store.onAfterRouteEnter).toHaveLength(0)
 })

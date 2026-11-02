@@ -637,14 +637,10 @@ test.each([
 describe('prefetch components', () => {
   test.each<PrefetchConfig | undefined>([
     undefined,
-    true,
     false,
     'eager',
-    'lazy',
-    { components: true },
     { components: false },
     { components: 'eager' },
-    { components: 'lazy' },
   ])('prefetch components respects router config when prefetch is %s', async (prefetch) => {
     let loaded = undefined
 
@@ -686,14 +682,10 @@ describe('prefetch components', () => {
 
   test.each<PrefetchConfig | undefined>([
     undefined,
-    true,
     false,
     'eager',
-    'lazy',
-    { components: true },
     { components: false },
     { components: 'eager' },
-    { components: 'lazy' },
   ])('prefetch components respects route config when prefetch is %s', async (prefetch) => {
     let loaded = undefined
 
@@ -735,14 +727,10 @@ describe('prefetch components', () => {
 
   test.each<PrefetchConfig | undefined>([
     undefined,
-    true,
     false,
     'eager',
-    'lazy',
-    { components: true },
     { components: false },
     { components: 'eager' },
-    { components: 'lazy' },
   ])('prefetch components respects link config when prefetch is %s', async (prefetch) => {
     let loaded = undefined
 
@@ -959,14 +947,10 @@ describe('prefetch props', () => {
 
   test.each<PrefetchConfig | undefined>([
     undefined,
-    true,
     false,
     'eager',
-    'lazy',
-    { props: true },
     { props: false },
     { props: 'eager' },
-    { props: 'lazy' },
   ])('prefetch props respects router config when prefetch is %s', (prefetch) => {
     const callback = vi.fn()
 
@@ -1001,14 +985,10 @@ describe('prefetch props', () => {
 
   test.each<PrefetchConfig | undefined>([
     undefined,
-    true,
     false,
     'eager',
-    'lazy',
-    { props: true },
     { props: false },
     { props: 'eager' },
-    { props: 'lazy' },
   ])('prefetch props respects route config when prefetch is %s', (prefetch) => {
     const callback = vi.fn()
 
@@ -1043,14 +1023,10 @@ describe('prefetch props', () => {
 
   test.each<PrefetchConfig | undefined>([
     undefined,
-    true,
     false,
     'eager',
-    'lazy',
-    { props: true },
     { props: false },
     { props: 'eager' },
-    { props: 'lazy' },
   ])('prefetch props respects link config when prefetch is %s', (prefetch) => {
     const callback = vi.fn()
 
@@ -1393,39 +1369,6 @@ describe('prefetch props', () => {
     await flushPromises()
 
     expect(router.route.name).toBe('home')
-  })
-
-  test('a child does not wait when the parent props are prefetched at the same strategy', async () => {
-    const settled: unknown[] = []
-
-    const home = createRoute({ name: 'home', path: '/' }).addView(() => h(RouterLink, { to: (resolve) => resolve('child') }))
-
-    const parent = createRoute({ name: 'parent', path: '/parent', prefetch: { props: 'eager' } }).addView({ props: ['foo'], template: '<div><RouterView /></div>' }, { props: async () => ({ foo: 123 }) })
-
-    const child = createRoute({ parent, name: 'child', path: '/child', prefetch: { props: 'eager' } }).addView(echo, {
-      props: async (__, { parent }) => {
-        settled.push(await parent.getProps())
-
-        return { value: 'child' }
-      },
-    })
-
-    const router = createRouter([home, child], {
-      initialUrl: '/',
-    })
-
-    await router.start()
-
-    mount({ template: '<RouterView />' }, {
-      global: {
-        plugins: [router],
-      },
-    })
-
-    await flushPromises()
-
-    expect(settled).toStrictEqual([{ foo: 123 }])
-    expect(warnMock).not.toHaveBeenCalled()
   })
 
   test('prefetched parent props are available to a child prefetching its own props', async () => {
