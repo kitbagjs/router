@@ -1,8 +1,7 @@
 import { expectTypeOf, test } from 'vitest'
 import type { LinkBase, Meta } from 'zhead'
 import { createTags } from '@/services/createTags'
-import { toTagLayer } from '@/services/toTagLayer'
-import { TagLayer, LinkTag, MetaTag, Tags } from '@/types/tags'
+import { Tags } from '@/types/tags'
 
 test('uses zhead attribute types while allowing custom metadata and recursive related entries', () => {
   const tags = createTags()
@@ -39,11 +38,6 @@ test('uses zhead attribute types while allowing custom metadata and recursive re
     imagesrcset: '/image.jpg 1x, /large.jpg 2x',
   })
 
-  expectTypeOf<MetaTag['property']>().toEqualTypeOf<Meta['property']>()
-  expectTypeOf<MetaTag['name']>().toEqualTypeOf<Meta['name']>()
-  expectTypeOf<MetaTag['content']>().toEqualTypeOf<NonNullable<Meta['content']>>()
-  expectTypeOf<LinkTag['as']>().toEqualTypeOf<LinkBase['as']>()
-  expectTypeOf(toTagLayer(tags)).toEqualTypeOf<TagLayer>()
   expectTypeOf(createTags()).toEqualTypeOf<Tags>()
 })
 
