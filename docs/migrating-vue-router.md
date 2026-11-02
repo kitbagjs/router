@@ -205,10 +205,34 @@ Vue Router supports view transitions through links. Kitbag also supports router 
 </RouterLink>
 ```
 
-```vue [Kitbag Router]
-<RouterLink to="/about" view-transition>
-  About
-</RouterLink>
+```ts [Kitbag Router]
+import { createRoute, createRouter } from '@kitbag/router'
+
+const photo = createRoute({
+  name: 'photo',
+  path: '/photos/[id]',
+})
+
+const settings = createRoute({
+  name: 'settings',
+  path: '/settings',
+  viewTransition: false,
+})
+
+const router = createRouter([photo, settings], {
+  viewTransition: {
+    types: ({ to }) => to.name === 'photo' ? ['expand'] : ['fade'],
+  },
+})
+
+// Uses the router's "expand" transition type.
+router.push('photo', { id: '1' })
+
+// Adds "slide-left" for this navigation.
+router.push('photo', { id: '2' }, { viewTransition: ['slide-left'] })
+
+// The route opts out of transitions.
+router.push('settings')
 ```
 
 :::
