@@ -2,13 +2,13 @@ import { Component } from 'vue'
 import { AnyView } from '@/types/view'
 import { RouteContext, WithRouteContext } from '@/types/routeContext'
 import { ComponentProps } from '@/services/component'
-import { ResolvedRoute, WithData } from '@/types/resolved'
+import { PropsCallbackRoute } from '@/types/resolved'
 import { CreatedRouteOptions, Route } from '@/types/route'
 import { RouteCallbackContext } from '@/types/routeCallbackContext'
 import { RouteWithMethods } from '@/types/routeWithMethods'
 import { PrefetchConfig } from '@/types/prefetch'
 import { TransformerOptions } from '@/services/payload'
-import { RouteView, RouteViews } from '@/types/routeViews'
+import { RouteView, RouteViews, RouteViewWithProps } from '@/types/routeViews'
 import { Url } from '@/types/url'
 import { AnyFunction, Identity, LastInArray, MaybePromise } from '@/types/utilities'
 
@@ -18,7 +18,7 @@ import { AnyFunction, Identity, LastInArray, MaybePromise } from '@/types/utilit
 export type AddViewPropsGetter<
   TRoute extends Route,
   TComponent extends Component
-> = (route: ResolvedRoute<TRoute> & WithData<TRoute>, context: AddViewPropsCallbackContext<TRoute>) => MaybePromise<ComponentProps<TComponent>>
+> = (route: PropsCallbackRoute<TRoute>, context: AddViewPropsCallbackContext<TRoute>) => MaybePromise<ComponentProps<TComponent>>
 
 /**
  * Context provided to an `addView` props getter. The same context a loader is given, since both are
@@ -31,17 +31,6 @@ export type AddViewPropsCallbackContext<
 type ComponentPropsAreOptional<TComponent extends Component> = Partial<ComponentProps<TComponent>> extends ComponentProps<TComponent>
   ? true
   : false
-
-/**
- * When the getter is omitted the default type param resolves to the wide getter type, which then
- * "extends" itself and collapses to undefined. When a getter is provided its return type is kept — the
- * view only needs what the props resolve to, not the signature it took to get there.
- */
-type NewViewProps<
-  TRoute extends Route,
-  TComponent extends Component,
-  TGetter extends AnyFunction
-> = AddViewPropsGetter<TRoute, TComponent> extends TGetter ? undefined : ReturnType<TGetter>
 
 /**
  * The options for a view added via `addView`.
@@ -95,13 +84,21 @@ type AddViewOptionsWithRequiredProps<
  * `TGetter` are inferred from the object's properties rather than from the object as a whole: inferring
  * the whole object as a `const` type param through this conditional tuple widens the literal name.
  */
-type AddViewArgs<
+type AddComponentViewArgs<
+  TRoute extends Route,
   TComponent extends Component,
   TName extends string | undefined,
   TGetter
 > = ComponentPropsAreOptional<TComponent> extends true
-  ? [options?: AddViewOptions<TName, TGetter>]
-  : [options: AddViewOptionsWithRequiredProps<TName, TGetter>]
+  ? [options?: AddViewOptions<TName, AddViewPropsGetter<TRoute, TComponent> & TGetter>]
+  : [options: AddViewOptionsWithRequiredProps<TName, AddViewPropsGetter<TRoute, TComponent> & TGetter>]
+
+type ViewSource = Pick<AnyView, 'component' | 'context' | 'props'>
+
+type AddReusableViewArgs<
+  TView extends ViewSource,
+  TName extends string | undefined
+> = [options?: Omit<AddViewOptions<TName, NonNullable<TView['props']>>, 'props'>]
 
 /**
  * The views of the route itself, from the last `matches` entry.
@@ -116,8 +113,8 @@ type CurrentMatchViews<
 export type AddViewProps<
   TCurrent extends RouteViews,
   TName extends string | undefined,
-  TNewProps
-> = Identity<Omit<TCurrent, ViewName<TName>> & Record<ViewName<TName>, [TNewProps] extends [undefined] ? RouteView : RouteView<TNewProps>>> extends infer TNext extends RouteViews
+  TView extends RouteView
+> = Identity<Omit<TCurrent, ViewName<TName>> & Record<ViewName<TName>, TView>> extends infer TNext extends RouteViews
   ? TNext
   : TCurrent
 
@@ -143,11 +140,11 @@ type AddViewReturn<
   TUrl extends Url,
   TMatches extends CreatedRouteOptions[],
   TName extends string | undefined,
-  TProps,
+  TView extends RouteView,
   TContext extends RouteContext[] = []
 > = ReplaceLastMatchViews<
   TMatches,
-  AddViewProps<CurrentMatchViews<TMatches>, TName, TProps>,
+  AddViewProps<CurrentMatchViews<TMatches>, TName, TView>,
   TContext
 > extends infer TNext extends CreatedRouteOptions[]
   ? RouteWithMethods<TUrl, TNext>
@@ -170,17 +167,22 @@ export type RouteAddView<
    * component has required props, optional otherwise.
    */
   addView: <
-    TSource extends Component | AnyView,
+    TSource extends Component | ViewSource,
     const TName extends string | undefined = undefined,
-    const TGetter extends AddViewPropsGetter<Route<TUrl, TMatches>, Extract<TSource, Component>> = AddViewPropsGetter<Route<TUrl, TMatches>, Extract<TSource, Component>>
+    const TGetter = unknown
   >(
     source: TSource,
-    ...options: TSource extends AnyView
-      ? [options?: Omit<AddViewOptions<TName, AnyFunction<ViewPropsOf<TSource>>>, 'props'>]
-      : AddViewArgs<Extract<TSource, Component>, TName, TGetter>
-  ) => TSource extends AnyView
-    ? AddViewReturn<TUrl, TMatches, TName, ViewPropsOf<TSource>, [...TSource['context']]>
-    : AddViewReturn<TUrl, TMatches, TName, NewViewProps<Route<TUrl, TMatches>, Extract<TSource, Component>, TGetter>>,
+    ...options: TSource extends ViewSource
+      ? AddReusableViewArgs<TSource, TName>
+      : AddComponentViewArgs<
+        Route<TUrl, TMatches>,
+        Extract<TSource, Component>,
+        TName,
+        TGetter
+      >
+  ) => TSource extends ViewSource
+    ? AddViewReturn<TUrl, TMatches, TName, RouteViewOf<TSource>, [...TSource['context']]>
+    : AddViewReturn<TUrl, TMatches, TName, RouteViewOf<{ props: TGetter }>>,
 }
 
-type ViewPropsOf<TView extends AnyView> = TView extends { props?: AnyFunction<infer TProps> } ? TProps : undefined
+type RouteViewOf<TView> = TView extends { props: AnyFunction } ? RouteViewWithProps<ReturnType<TView['props']>> : RouteView

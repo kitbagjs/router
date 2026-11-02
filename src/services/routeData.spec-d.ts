@@ -2,7 +2,7 @@ import { expectTypeOf, test } from 'vitest'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
 import { component } from '@/utilities/testHelpers'
-import { ResolvedRoute, WithData } from '@/types/resolved'
+import { PropsCallbackRoute } from '@/types/resolved'
 
 test('default and named selections retain their loader return types', () => {
   createRoute({ name: 'route', path: '/' })
@@ -73,7 +73,7 @@ test('routes without a default loader require a declared name', () => {
 })
 
 test('generic callbacks can read data but loaders and unresolved routes cannot', () => {
-  const callback = (route: ResolvedRoute & WithData): void => {
+  const callback = (route: PropsCallbackRoute): void => {
     expectTypeOf(route.getData()).toExtend<Promise<unknown>>()
     expectTypeOf(route.getData('named')).toExtend<Promise<unknown>>()
   }

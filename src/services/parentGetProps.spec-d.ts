@@ -1,5 +1,5 @@
 import { expectTypeOf, test } from 'vitest'
-import { defineComponent } from 'vue'
+import { defineComponent, FunctionalComponent } from 'vue'
 import { createRoute } from '@/services/createRoute'
 import { createView } from '@/services/createView'
 import { component } from '@/utilities/testHelpers'
@@ -61,6 +61,62 @@ test('parents without getters accept no names', () => {
       parent.getProps()
       // @ts-expect-error a view without a getter has no named promises
       parent.getProps('default')
+      return {}
+    },
+  })
+})
+
+test('optional components and throwing getters preserve getter presence', () => {
+  const empty = createView({ component })
+  const explicitEmpty = createView({ component, props: undefined })
+  const reusable = createView({
+    component,
+    props: () => {
+      throw new Error('failed')
+    },
+  })
+  const parent = createRoute({ path: '/parent' }).addView(component)
+    .addView(component, { name: 'optional', props: () => ({ value: 'parent' }) })
+    .addView(Page, {
+      name: 'throwing',
+      props: () => {
+        throw new Error('failed')
+      },
+    })
+    .addView(component, { name: 'undefined', props: undefined })
+    .addView(empty, { name: 'empty' })
+    .addView(explicitEmpty, { name: 'explicitEmpty' })
+    .addView(reusable, { name: 'reusable' })
+
+  createRoute({ parent, path: '/child' }).addView(component, {
+    props: (_route, { parent }) => {
+      expectTypeOf(parent.getProps('optional')).toEqualTypeOf<Promise<{ value: string }>>()
+      expectTypeOf(parent.getProps('throwing')).toEqualTypeOf<Promise<never>>()
+      expectTypeOf(parent.getProps('reusable')).toEqualTypeOf<Promise<never>>()
+      // @ts-expect-error the default view has no getter
+      parent.getProps()
+      // @ts-expect-error the reusable view has no getter
+      parent.getProps('empty')
+      // @ts-expect-error undefined is not a getter
+      parent.getProps('undefined')
+      // @ts-expect-error the reusable view has no getter
+      parent.getProps('explicitEmpty')
+      return {}
+    },
+  })
+})
+
+test('a getter returning undefined remains readable', () => {
+  const page: FunctionalComponent<unknown> = () => null
+  const view = createView({ component: page, props: () => undefined })
+  const parent = createRoute({ path: '/parent' })
+    .addView(page, { props: () => undefined })
+    .addView(view, { name: 'reusable' })
+
+  createRoute({ parent, path: '/child' }).addView(component, {
+    props: (_route, { parent }) => {
+      expectTypeOf(parent.getProps()).toEqualTypeOf<Promise<undefined>>()
+      expectTypeOf(parent.getProps('reusable')).toEqualTypeOf<Promise<undefined>>()
       return {}
     },
   })

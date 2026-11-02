@@ -3,7 +3,7 @@ import { ComponentProps } from '@/services/component'
 import { TransformerOptions } from '@/services/payload'
 import { PrefetchConfig } from '@/types/prefetch'
 import { RouteContext, RouteContextToRejection, RouteContextToRoute } from '@/types/routeContext'
-import { ResolvedRouteWithDataUnion } from '@/types/resolved'
+import { PropsCallbackRoute } from '@/types/resolved'
 import { Routes } from '@/types/route'
 import { RouterPush } from '@/types/routerPush'
 import { RouterReplace } from '@/types/routerReplace'
@@ -26,7 +26,7 @@ export type ViewCallbackContext<TContext extends readonly RouteContext[] = []> =
   signal: AbortSignal,
 }
 
-export type ViewPropsGetter<TContext extends readonly RouteContext[], TProps, TRoutes extends Routes = Routes> = (route: ResolvedRouteWithDataUnion<TRoutes[number]>, context: ViewCallbackContext<TContext>) => TProps
+export type ViewPropsGetter<TContext extends readonly RouteContext[], TProps, TRoutes extends Routes = Routes> = (route: PropsCallbackRoute<TRoutes[number]>, context: ViewCallbackContext<TContext>) => TProps
 
 /**
  * Options for a reusable component and its props getter.
@@ -53,8 +53,9 @@ export type CreateViewOptions<
 export type CreateView<TRoutes extends Routes = Routes> = <
   TComponent extends Component,
   const TContext extends readonly RouteContext[] = [],
-  TProps extends MaybePromise<ComponentProps<TComponent>> | undefined = undefined
->(options: CreateViewOptions<TComponent, TContext, TProps, TRoutes>) => View<TProps, TContext>
+  TProps extends MaybePromise<ComponentProps<TComponent>> | undefined = undefined,
+  TGetter = unknown
+>(options: CreateViewOptions<TComponent, TContext, TProps, TRoutes> & { props?: TGetter }) => TGetter extends AnyFunction ? ViewWithProps<TProps, TContext> : View<TProps, TContext>
 
 /**
  * A reusable view definition with its props getter's result and declared context.
@@ -64,6 +65,10 @@ export type View<TProps = unknown, TContext extends readonly RouteContext[] = []
   props?: AnyFunction<TProps>,
   context: TContext,
   prefetch?: PrefetchConfig,
+}
+
+export type ViewWithProps<TProps = unknown, TContext extends readonly RouteContext[] = []> = View<TProps, TContext> & {
+  props: AnyFunction<TProps>,
 }
 
 export type AnyView = View<any, readonly RouteContext[]>

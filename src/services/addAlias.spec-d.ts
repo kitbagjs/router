@@ -3,7 +3,7 @@ import { createRoute } from './createRoute'
 import { withParams } from './withParams'
 import { ResolvedRoute } from '@/types/resolved'
 import { Loader } from '@/types/loader'
-import { RouteView } from '@/types/routeViews'
+import { RouteViewWithProps } from '@/types/routeViews'
 import { component } from '@/utilities/testHelpers'
 
 describe('addAlias', () => {
@@ -145,7 +145,7 @@ describe('addAlias', () => {
       })
 
     expectTypeOf<typeof route['matches'][0]['loaders']>().toEqualTypeOf<{ default: Loader<string> }>()
-    expectTypeOf<typeof route['matches'][0]['views']>().toEqualTypeOf<{ default: RouteView<{ foo: string }> }>()
+    expectTypeOf<typeof route['matches'][0]['views']>().toEqualTypeOf<{ default: RouteViewWithProps<{ foo: string }> }>()
     expectTypeOf<ResolvedRoute<typeof route>['params']>().toEqualTypeOf<{ id: string }>()
   })
 
@@ -158,6 +158,6 @@ describe('addAlias', () => {
       .addAlias({ path: '/member/[id]' })
 
     expectTypeOf<typeof route['matches'][0]['loaders']>().toEqualTypeOf<{ default: Loader<string> }>()
-    expectTypeOf<typeof route['matches'][0]['views']>().toEqualTypeOf<{ default: RouteView<{ foo: string }> }>()
+    expectTypeOf<typeof route['matches'][0]['views']>().toEqualTypeOf<{ default: RouteViewWithProps<{ foo: string }> }>()
   })
 })
