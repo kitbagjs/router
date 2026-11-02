@@ -81,7 +81,18 @@ Links expose the same option and pass it into navigation.
 
 ### Router, route, and view policies
 
-The router option supplies the application policy. Route policies specialize it; view policies allow named views to behave differently within the same navigation. View registration can override a reusable view's policy, following the existing view-option pattern.
+The router option supplies the application policy. Route policies, including child route policies, are navigation-wide fallbacks for the document and registered scroll areas. Resolve the destination route chain from the deepest match outward: an omitted option or `inherit` continues to the parent, while `default` stops inheritance and chooses built-in behavior. This route fallback is independent of which view contains an area.
+
+View policies apply only to descendant `RouterScroll` areas through Vue's component context. They do not control document scrolling or a container surrounding the view. A view without a descendant `RouterScroll` has no area on which to apply its policy. View registration can override a reusable view's policy, following the existing view-option pattern.
+
+| Configuration | Scope |
+| --- | --- |
+| Router | Application-wide fallback |
+| Route, including child route | Navigation-wide fallback for document and element areas |
+| View | Descendant `RouterScroll` areas |
+| `RouterScroll` | Its own element |
+
+For the following view policies to take effect, `ProductList` and `ProductSidebar` each render a `RouterScroll` around their scrolling content. Their policies override the route fallback for those areas; the document uses the route's `preserve` policy.
 
 ```ts
 const products = createRoute({
@@ -98,7 +109,23 @@ const products = createRoute({
 const router = createRouter([products], { scroll: 'default' })
 ```
 
-`createView` also accepts `scroll`, so reusable views can carry their policy.
+`createView` also accepts `scroll`, so reusable views can carry their policy. The components in the example provide their own areas:
+
+```vue
+<!-- ProductList.vue -->
+<RouterScroll name="main">
+  <ProductListContent />
+</RouterScroll>
+```
+
+```vue
+<!-- ProductSidebar.vue -->
+<RouterScroll name="sidebar">
+  <ProductSidebarContent />
+</RouterScroll>
+```
+
+A parent route with `scroll: 'preserve'` and a child route with `scroll: 'top'` causes navigation to the child to reset the document and areas that reach the route fallback. A sidebar with its own `scroll: 'preserve'` still captures and restores its position. Child routes do not require a `RouterScroll` to affect document scrolling. To scope a child's policy to its content pane, configure its view or `RouterScroll` instead.
 
 ### Param policies
 
@@ -167,7 +194,9 @@ One history entry can store positions for the document, main, sidebar, and furth
 
 Use a stable name unique within a router instance, reserving `document` for its automatic area. Duplicate active names should produce a development diagnostic rather than silently overwrite positions. Names allow restoration after an element unmounts and remounts. Remove registrations on unmount and scope state to the router instance.
 
-Views provide the policy context for their areas. A component inside a routed view can inherit its owning view. The common inverse layout, `RouterScroll` wrapping `RouterView`, also needs an ownership relationship. The exact rule for a container surrounding multiple named views is an open design question; it must not silently depend on mount order.
+`RouterView` provides its view's policy context to descendants. A `RouterScroll` uses its nearest enclosing routed view's policy when its own option inherits, then falls back to the destination route chain. Nested routed views establish their own view context; their omitted view policy falls back to route policy rather than searching ancestor view policies.
+
+A `RouterScroll` surrounding one or more `RouterView` components does not adopt their policies. Configure that surrounding container directly, as in the layout example above, or let it use its enclosing view context and route fallback. The router does not inspect child views to infer ownership. This rule also applies when the container surrounds multiple named views.
 
 Saved positions include both axes, with a bottom marker replacing the vertical offset when captured at the end. Element restoration uses that element's own scroll range. Anchor scrolling must avoid moving unrelated registered areas and should respect CSS scroll margins/padding. A sidebar's ordinary `preserve` policy still allows its saved position to restore on history traversal.
 
@@ -178,8 +207,8 @@ Resolve separately for each area. The following precedence is proposed for revie
 1. Explicit navigation option, including a link's option.
 2. Changed-param policies.
 3. The area's `RouterScroll` policy.
-4. Its destination view policy, with registration overriding reusable-view defaults.
-5. The nearest matched route policy, walking outward through parents.
+4. Its nearest enclosing routed view's policy, with registration overriding reusable-view defaults. Skip this level for the document or an area outside a routed view.
+5. The destination route policy, walking from the deepest matched route outward through parents, regardless of the area's enclosing view.
 6. Router policy.
 7. Built-in behavior.
 
@@ -187,7 +216,7 @@ Resolve separately for each area. The following precedence is proposed for revie
 
 On history traversal, restore a saved area position before applying ordinary param, container, view, route, or router defaults. This preserves history semantics even when the destination page normally resets on pagination. A future explicit traversal override, if added, would be separate from a policy remembered from the original push.
 
-All registered destination areas are considered so a navigation callback can explicitly control an otherwise unchanged sidebar. Built-in behavior preserves unchanged view-owned areas on ordinary navigation. Explicit policies can override that result. Document behavior follows the default table. Deciding whether a reused view participates in a meaningful update is part of the ownership questions below.
+All registered destination areas are considered so a navigation callback can explicitly control an otherwise unchanged sidebar. Built-in behavior preserves unchanged view-owned areas on ordinary navigation. Explicit policies can override that result. Document behavior follows the default table. Deciding whether a reused view participates in a meaningful update remains a review question below.
 
 ## Saving and restoring the bottom
 
@@ -239,6 +268,8 @@ Browser coverage should establish:
 - Query, state, hash, repeated-anchor, push, and replace behavior.
 - Every policy level, explicit `default` versus `inherit`, per-area callbacks, and simultaneous param changes.
 - Nested areas, unmount/remount, duplicate names, and multiple named views.
+- View policies reaching descendant areas only, with no effect on document scrolling or surrounding containers.
+- Child route policies applying as navigation-wide fallbacks, including document scrolling, while explicit area/view policies retain their scope.
 - Blocking and progressive rendering with delayed loaders, props, and lazy components.
 - A superseding navigation during each asynchronous phase and an aborted history traversal.
 - Redirects, rejection views, and loader/props failures without stale or indefinitely pending scroll work.
@@ -252,7 +283,7 @@ Browser coverage should establish:
 
 The shared values, per-area callbacks, multiple independent areas, and lifecycle-only timing are the core proposal. Resolve these details before implementation:
 
-1. How does a surrounding `RouterScroll` choose an owner when it contains multiple views? When does a reused view count as updated for its built-in policy?
+1. When does a reused view count as updated for its built-in policy?
 2. Is the proposed precedence correct, particularly changed params versus container/view policies? Is `top > bottom > preserve > default` the right reduction for multiple changed params?
 3. How are changed params compared when getters return objects, dates, or arrays? Reference equality alone would make reparsing appear to change values.
 4. Should all element areas require explicit names, or can stable names be inferred safely for simple layouts?
