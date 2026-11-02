@@ -1,13 +1,7 @@
 # Types: PropsCallbackParent\<TParent\>
 
 ```ts
-type PropsCallbackParent<TParent> = Route | undefined extends TParent ? 
-  | undefined
-  | {
-  data: unknown;
-  name: string;
-  props: unknown;
-} : TParent extends Route ? object : undefined;
+type PropsCallbackParent<TParent> = Route | undefined extends TParent ? GenericParent | undefined : TParent extends Route ? object : undefined;
 ```
 
 ## Type Parameters

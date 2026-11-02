@@ -5,7 +5,7 @@ type RouteAddLoader<TUrl, TMatches> = object;
 ```
 
 Adds a loader to a route. Chainable to register multiple loaders, each exposed under its own name on
-the resolved route's `data`.
+the resolved route's `data`. Names must be unique across the route and its ancestors.
 
 ## Type Parameters
 
@@ -18,4 +18,4 @@ the resolved route's `data`.
 
 | Property | Type | Description |
 | ------ | ------ | ------ |
-| <a id="addloader"></a> `addLoader` | \<`TSource`, `TName`\>(`load`, `options?`) => `AddLoaderReturn`\<`TUrl`, `TMatches`, `TName`, `LoaderDataOf`\<`TSource`\>, `TSource` *extends* `AnyLoader` ? `TSource`\[`"context"`\] : \[\]\> | Adds a loader for this route. Loaders never block rendering, so their data is always a promise. |
+| <a id="addloader"></a> `addLoader` | \<`TSource`, `TName`\>(`load`, ...`options`) => `AddLoaderReturn`\<`TUrl`, `TMatches`, `TName`, `LoaderDataOf`\<`TSource`\>, `TSource` *extends* `AnyLoader` ? `TSource`\[`"context"`\] : \[\]\> | Adds a loader for this route. Loaders never block rendering, so their data is always a promise. |
