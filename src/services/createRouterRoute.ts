@@ -6,7 +6,7 @@ import { IS_ROUTER_ROUTE_SYMBOL, RouterRoute, RouterRouteInternal } from '@/type
 import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { QuerySource } from '@/types/querySource'
 import { Router } from '@/types/router'
-import { RouterNavigationStores } from '@/services/createRouterNavigation'
+import { DataRecord } from '@/types/data'
 import { toLegacyValues } from '@/utilities/toLegacyValues'
 import { isPropertyKey } from '@/utilities/guards'
 
@@ -18,7 +18,7 @@ type CreateRouterRouteOptions<TRouter extends Router = Router> = {
   routerKey: InjectionKey<TRouter>,
   route: ResolvedRoute,
   push: RouterPush,
-  getRouteData: RouterNavigationStores['getRouteData'],
+  getRouteData: (route: ResolvedRoute) => DataRecord,
 }
 
 export function createRouterRoute<TRouter extends Router>(options: CreateRouterRouteOptions<TRouter>): TRouter['route'] & RouterRouteInternal

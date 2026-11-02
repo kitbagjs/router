@@ -1,3 +1,4 @@
+import { getRouteProps } from '@/services/getRouteProps'
 import { expect, test } from 'vitest'
 import { defineComponent } from 'vue'
 import { createRoute } from '@/services/createRoute'
@@ -24,7 +25,7 @@ test('parent.getProps selects default and named getters', async () => {
 
   navigation.commit({ to: resolved, from: null })
 
-  await expect(navigation.getProps(child.id, 'default', resolved)).resolves.toEqual({
+  await expect(getRouteProps(navigation.current(), { kind: 'props', id: child.id, name: 'default' }, resolved)).resolves.toEqual({
     kind: 'value',
     value: { implicit: 'first', explicit: 'first', named: 'later' },
   })
@@ -65,7 +66,7 @@ test('parent.getProps rejects absent getters and views outside the immediate par
 
   navigation.commit({ to: resolved, from: null })
 
-  await expect(navigation.getProps(child.id, 'default', resolved)).resolves.toEqual({ kind: 'value', value: { value: 'parent' } })
+  await expect(getRouteProps(navigation.current(), { kind: 'props', id: child.id, name: 'default' }, resolved)).resolves.toEqual({ kind: 'value', value: { value: 'parent' } })
   navigation.stop()
 })
 
@@ -87,6 +88,6 @@ test('parent.getProps preserves getter failures', async () => {
 
   navigation.commit({ to: resolved, from: null })
 
-  await expect(navigation.getProps(child.id, 'default', resolved)).resolves.toEqual({ kind: 'error', error })
+  await expect(getRouteProps(navigation.current(), { kind: 'props', id: child.id, name: 'default' }, resolved)).resolves.toEqual({ kind: 'error', error })
   navigation.stop()
 })

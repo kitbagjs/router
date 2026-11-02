@@ -7,6 +7,7 @@ import { SsrOptionRequiredError } from '@/errors/ssrOptionRequiredError'
 import { parseUrl, updateUrl } from '@/services/urlParser'
 import { createRouterNavigation, RouterNavigationResponseEvent, RouterNavigationStore } from '@/services/createRouterNavigation'
 import { createNavigationProgress, NavigationProgressTracker } from '@/services/createNavigationProgress'
+import { getRouteData } from '@/services/getRouteData'
 import { getComputations } from '@/services/getComputations'
 import { getAsyncComponents, loadAsyncComponents } from '@/utilities/components'
 import { getNavigationProgressKey } from '@/compositions/useNavigation'
@@ -629,7 +630,7 @@ export function createRouter<
     routerKey,
     route: notFoundRoute,
     push,
-    getRouteData: navigation.getRouteData,
+    getRouteData: (route) => getRouteData(navigation, route),
   })
 
   /**

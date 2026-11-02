@@ -2,23 +2,34 @@ import type { PrefetchConfig, PrefetchConfigs, PrefetchStrategy } from '@/types/
 import { ResolvedRoute } from '@/types/resolved'
 import { CreatedRouteOptions } from '@/types/route'
 import { viewNamesWithProps } from '@/services/routeViews'
-import { DataKind, getDataKey } from '@/services/getDataKey'
+import { DataKind } from '@/services/getDataKey'
 import { AnyPayloadTransformer } from '@/services/payload'
+import { DataResult } from '@/services/createDataStore'
+import { CallbackContextResponse } from '@/types/callbackContext'
+import { createRouteComputation } from '@/services/createRouteComputation'
 import { AnyFunction } from '@/types/utilities'
 import { getPrefetchOption } from '@/utilities/prefetch'
 import { getComputationPrefetchKey } from '@/services/getComputationPrefetchKey'
 
 /**
- * Something a route computes: a view's props getter, or a loader. Both are a named callback belonging to
- * one match, so both are stored the same way — what differs is only what waits on them.
+ * Reads are scoped to the computation's navigation. Subscriptions prefer a local computation and fall
+ * back to the committed navigation when missing. Value reads retain the first successful source.
  */
+export type ComputationContext = {
+  to: ResolvedRoute,
+  signal: AbortSignal,
+  getState: (location: ValueLocation) => DataResult,
+  subscribe: (location: ValueLocation) => Promise<CallbackContextResponse>,
+  getValue: (location: ValueLocation) => Promise<unknown>,
+}
+
 export type Computation = {
   kind: DataKind,
   id: string,
   name: string,
   depth: number,
   key: string,
-  run: AnyFunction,
+  run: (context: ComputationContext) => unknown,
   routePrefetch: PrefetchConfig | undefined,
   prefetch: PrefetchConfig | undefined,
   transformer: AnyPayloadTransformer | undefined,
@@ -50,15 +61,15 @@ type ComputationOptions = {
 }
 
 function toComputation(location: ValueLocation, match: CreatedRouteOptions, depth: number, route: ResolvedRoute, run: AnyFunction, { prefetch, transformer }: ComputationOptions): Computation {
-  return {
-    ...location,
+  return createRouteComputation({
+    location,
+    route,
     depth,
-    key: getDataKey(location.kind, location.id, location.name, route),
-    run,
+    callback: run,
     routePrefetch: match.prefetch,
     prefetch,
     transformer,
-  }
+  })
 }
 
 /**

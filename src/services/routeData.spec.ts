@@ -1,3 +1,4 @@
+import { getRouteProps } from '@/services/getRouteProps'
 import { expect, test } from 'vitest'
 import { defineComponent } from 'vue'
 import { createRoute } from '@/services/createRoute'
@@ -18,7 +19,7 @@ test('getData() keeps selecting the default loader after another loader is added
 
   navigation.commit({ to: resolved, from: null })
 
-  await expect(navigation.getProps(route.id, 'default', resolved)).resolves.toEqual({ kind: 'value', value: { value: 'first' } })
+  await expect(getRouteProps(navigation.current(), { kind: 'props', id: route.id, name: 'default' }, resolved)).resolves.toEqual({ kind: 'value', value: { value: 'first' } })
   navigation.stop()
 })
 
@@ -32,7 +33,7 @@ test('a parent callback still selects its default loader when a child adds a loa
 
   navigation.commit({ to: resolved, from: null })
 
-  await expect(navigation.getProps(parent.id, 'default', resolved)).resolves.toEqual({ kind: 'value', value: { value: 'first' } })
+  await expect(getRouteProps(navigation.current(), { kind: 'props', id: parent.id, name: 'default' }, resolved)).resolves.toEqual({ kind: 'value', value: { value: 'first' } })
   navigation.stop()
 })
 
@@ -46,7 +47,7 @@ test('a staged callback reads named data from its computation store', async () =
   await Promise.all(navigation.staged().compute(resolved, getComputations(resolved)))
   navigation.commit({ to: resolved, from: null })
 
-  expect(navigation.getProps(route.id, 'default', resolved)).toEqual({ kind: 'value', value: { value: 'named' } })
+  expect(getRouteProps(navigation.current(), { kind: 'props', id: route.id, name: 'default' }, resolved)).toEqual({ kind: 'value', value: { value: 'named' } })
   navigation.stop()
 })
 
@@ -61,7 +62,7 @@ test('a loader cannot read its own route with getData()', async () => {
 
   navigation.commit({ to: resolved, from: null })
 
-  await expect(navigation.getProps(route.id, 'default', resolved)).resolves.toEqual({ kind: 'value', value: { value: 'loaded' } })
+  await expect(getRouteProps(navigation.current(), { kind: 'props', id: route.id, name: 'default' }, resolved)).resolves.toEqual({ kind: 'value', value: { value: 'loaded' } })
   navigation.stop()
 })
 
@@ -76,7 +77,7 @@ test('getData() preserves a loader rejection', async () => {
 
   navigation.commit({ to: resolved, from: null })
 
-  await expect(navigation.getProps(route.id, 'default', resolved)).resolves.toEqual({ kind: 'error', error })
+  await expect(getRouteProps(navigation.current(), { kind: 'props', id: route.id, name: 'default' }, resolved)).resolves.toEqual({ kind: 'error', error })
   navigation.stop()
 })
 
@@ -102,7 +103,7 @@ test.each([false, true])('deprecated data preserves its legacy shape with named 
 
   navigation.commit({ to: resolved, from: null })
 
-  await expect(navigation.getProps(route.id, 'default', resolved)).resolves.toEqual({ kind: 'value', value: { value: 'default' } })
+  await expect(getRouteProps(navigation.current(), { kind: 'props', id: route.id, name: 'default' }, resolved)).resolves.toEqual({ kind: 'value', value: { value: 'default' } })
   navigation.stop()
 })
 
@@ -119,6 +120,6 @@ test('deprecated data remains undefined without loaders', async () => {
 
   navigation.commit({ to: resolved, from: null })
 
-  expect(await navigation.getProps(route.id, 'default', resolved)).toEqual({ kind: 'value', value: { value: 'empty' } })
+  expect(await getRouteProps(navigation.current(), { kind: 'props', id: route.id, name: 'default' }, resolved)).toEqual({ kind: 'value', value: { value: 'empty' } })
   navigation.stop()
 })

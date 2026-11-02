@@ -1,3 +1,4 @@
+import { getRouteProps } from '@/services/getRouteProps'
 import { expect, test, vi } from 'vitest'
 import { createRoute } from '@/services/createRoute'
 import { createResolvedRoute } from '@/services/createResolvedRoute'
@@ -22,7 +23,7 @@ test('parent.getData selects default and named loaders independently of child lo
 
   navigation.commit({ to: resolved, from: null })
 
-  await expect(navigation.getProps(child.id, 'default', resolved)).resolves.toEqual({
+  await expect(getRouteProps(navigation.current(), { kind: 'props', id: child.id, name: 'default' }, resolved)).resolves.toEqual({
     kind: 'value',
     value: { implicit: 'parent', explicit: 'parent', named: 42 },
   })
@@ -62,7 +63,7 @@ test('parent.getData includes ancestor loaders and excludes child loaders', asyn
 
   navigation.commit({ to: resolved, from: null })
 
-  await expect(navigation.getProps(child.id, 'default', resolved)).resolves.toEqual({ kind: 'value', value: { value: 'parent', ancestor: 'ancestor' } })
+  await expect(getRouteProps(navigation.current(), { kind: 'props', id: child.id, name: 'default' }, resolved)).resolves.toEqual({ kind: 'value', value: { value: 'parent', ancestor: 'ancestor' } })
   navigation.stop()
 })
 
@@ -79,6 +80,6 @@ test('parent.getData preserves loader failures', async () => {
 
   navigation.commit({ to: resolved, from: null })
 
-  await expect(navigation.getProps(child.id, 'default', resolved)).resolves.toEqual({ kind: 'error', error })
+  await expect(getRouteProps(navigation.current(), { kind: 'props', id: child.id, name: 'default' }, resolved)).resolves.toEqual({ kind: 'error', error })
   navigation.stop()
 })
