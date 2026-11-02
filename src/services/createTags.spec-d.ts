@@ -120,8 +120,8 @@ test('callbacks receive the scoped API without lifecycle or storage methods', ()
 
   // @ts-expect-error there is no finalization step
   tags.finish()
-  // @ts-expect-error the local layer is internal to the callback runner
-  expectTypeOf(tags.layer)
+  // @ts-expect-error recorded operations are internal to the callback runner
+  expectTypeOf(tags.operations)
 
   // @ts-expect-error head tags do not accept scripts
   tags.script.add({ src: '/script.js' })

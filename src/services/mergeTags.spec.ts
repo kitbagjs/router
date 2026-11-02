@@ -1,16 +1,17 @@
-import { describe, expect, test } from 'vitest'
+import { assert, describe, expect, test } from 'vitest'
 import { createTags } from '@/services/createTags'
-import { toTagLayer } from '@/services/toTagLayer'
 import { mergeTags } from '@/services/mergeTags'
 import { flattenTags } from '@/services/flattenTags'
-import { TagElement, TagLayer, MetaTag, Tags } from '@/types/tags'
+import { TagElement, TagLayer, MetaTag, Tags, isTags } from '@/types/tags'
 
 function layer(callback: (tags: Tags) => void): TagLayer {
   const tags = createTags()
 
   callback(tags)
 
-  return toTagLayer(tags)
+  assert(isTags(tags))
+
+  return [...tags.operations]
 }
 
 function image(url: string, alt?: string): MetaTag {

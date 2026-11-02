@@ -1,16 +1,17 @@
 import { assert, describe, expect, test } from 'vitest'
 import { createTags } from '@/services/createTags'
-import { toTagLayer } from '@/services/toTagLayer'
 import { mergeTags } from '@/services/mergeTags'
 import { flattenTags } from '@/services/flattenTags'
-import { TagElement, TagLayer, MetaTag, Tags } from '@/types/tags'
+import { TagElement, TagLayer, MetaTag, Tags, isTags } from '@/types/tags'
 
 function layer(callback: (tags: Tags) => void): TagLayer {
   const tags = createTags()
 
   callback(tags)
 
-  return toTagLayer(tags)
+  assert(isTags(tags))
+
+  return [...tags.operations]
 }
 
 function image(url: string, alt?: string): MetaTag {
@@ -375,7 +376,9 @@ describe('createTags', () => {
 
     tags.title.set('Local')
 
-    expect(contents(toTagLayer(tags))).toEqual(['Local'])
+    assert(isTags(tags))
+
+    expect(contents(tags.operations)).toEqual(['Local'])
     expect(reads).toBe(0)
   })
 
@@ -487,7 +490,9 @@ describe('createTags', () => {
 
     previous.title.set('Previous local')
 
-    expect(contents(toTagLayer(previous))).toEqual(['Previous local'])
+    assert(isTags(previous))
+
+    expect(contents(previous.operations)).toEqual(['Previous local'])
 
     const current = createTags({ getParentLayers: () => [parent] })
 
@@ -501,6 +506,31 @@ describe('createTags', () => {
     tags.title.set('Local')
 
     await expect(tags.title.get()).rejects.toBe(error)
-    expect(contents(toTagLayer(tags))).toEqual(['Local'])
+    assert(isTags(tags))
+
+    expect(contents(tags.operations)).toEqual(['Local'])
+  })
+
+  test('records only local operations, preserving deletions without including inherited values', async () => {
+    const parent = layer((tags) => {
+      tags.title.set('Parent')
+      tags.meta.set({
+        name: 'description',
+        content: 'Parent description',
+      })
+    })
+    const tags = createTags({ getParentLayers: () => [parent] })
+
+    tags.meta.delete({ name: 'description' })
+
+    await expect(tags.title.get()).resolves.toBe('Parent')
+
+    assert(isTags(tags))
+
+    const local = [...tags.operations]
+
+    expect(contents(local)).toEqual([])
+    expect(contents(parent, local)).toEqual(['Parent'])
+    expect(contents(parent)).toEqual(['Parent', 'Parent description'])
   })
 })

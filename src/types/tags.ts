@@ -1,7 +1,5 @@
 import type { LinkBase, Meta } from 'zhead'
 
-export const TAG_OPERATIONS_SYMBOL = Symbol('TAG_OPERATIONS_SYMBOL')
-
 export type TagName = 'title' | 'meta' | 'link'
 
 export type TagElement = Readonly<{
@@ -44,7 +42,7 @@ export type TagOperation = | Readonly<{
 export type TagLayer = readonly TagOperation[]
 
 export type TagsInternal = {
-  [TAG_OPERATIONS_SYMBOL]: TagLayer,
+  operations: TagLayer,
 }
 
 export type MetaTagIdentifier = | {
@@ -111,5 +109,5 @@ export type Tags = {
 }
 
 export function isTags(value: unknown): value is Tags & TagsInternal {
-  return typeof value === 'object' && value !== null && TAG_OPERATIONS_SYMBOL in value
+  return typeof value === 'object' && value !== null && 'operations' in value
 }
