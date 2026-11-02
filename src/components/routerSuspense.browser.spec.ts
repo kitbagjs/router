@@ -322,10 +322,11 @@ test('retries content only when its own router refreshes', async () => {
       }
     },
   })
+  mount({ render: () => null }, { global: { plugins: [second] } })
   mount(assets.RouterSuspense, {
     props: { catch: true },
     slots: { default: () => h(child) },
-    global: { plugins: [first, second] },
+    global: { plugins: [first] },
   })
   await flushPromises()
   second.refresh()

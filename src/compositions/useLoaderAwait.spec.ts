@@ -72,7 +72,7 @@ test('forwards server loader failures without leaving rendering pending', async 
       await useLoader(loader)
       return () => null
     },
-    render: () => null,
+    template: '<span />',
   })
   const errorSlot = vi.fn(() => h('p', 'failed'))
   const appErrorHandler = vi.fn()
