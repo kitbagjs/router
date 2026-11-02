@@ -14,15 +14,19 @@ function layer(callback: (tags: Tags) => void): TagLayer {
 }
 
 function image(url: string, alt?: string): MetaTag {
+  const related: MetaTag[] = []
+
+  if (alt !== undefined) {
+    related.push({
+      property: 'og:image:alt',
+      content: alt,
+    })
+  }
+
   return {
     property: 'og:image',
     content: url,
-    related: alt === undefined
-      ? []
-      : [{
-          property: 'og:image:alt',
-          content: alt,
-        }],
+    related,
   }
 }
 
