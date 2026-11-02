@@ -125,7 +125,9 @@ const router = createRouter([products], { scroll: 'default' })
 </RouterScroll>
 ```
 
-A parent route with `scroll: 'preserve'` and a child route with `scroll: 'top'` causes navigation to the child to reset the document and areas that reach the route fallback. A sidebar with its own `scroll: 'preserve'` still captures and restores its position. Child routes do not require a `RouterScroll` to affect document scrolling. To scope a child's policy to its content pane, configure its view or `RouterScroll` instead.
+The document is managed automatically. Independently scrolling elements must be registered with `RouterScroll`; a route or view policy alone does not register an element for scrolling.
+
+A child route's `scroll: 'top'` applies to the document and registered `RouterScroll` areas that inherit route behavior. An independently scrolling sidebar must use `RouterScroll`; setting `scroll: 'preserve'` on that component overrides the route policy. A view-level policy likewise requires a descendant `RouterScroll` to take effect.
 
 ### Param policies
 
