@@ -10,6 +10,7 @@
 | [Redirects](/advanced-concepts/redirects) and [aliases](/advanced-concepts/aliases) | ✅ | ✅ |
 | [Data loaders](/core-concepts/loaders) | ✅ | ✅ |
 | [Server rendering](/advanced-concepts/server-side-rendering) | ✅ | ✅ |
+| [View transitions](/advanced-concepts/view-transitions) | [🟡](https://router.vuejs.org/api/interfaces/routerlinkprops#viewtransition) | ✅ |
 | [Dynamic route registration](https://router.vuejs.org/guide/advanced/dynamic-routing.html) | ✅ | ❌ |
 | [Scroll behavior](https://router.vuejs.org/guide/advanced/scroll-behavior.html) | ✅ | ❌ |
 | [File-based routing](https://router.vuejs.org/file-based-routing/) | ✅ | ❌ |
@@ -187,6 +188,26 @@ Use the resolver callback for typed link destinations. See [RouterLink](/compone
 ```vue [Kitbag Router]
 <RouterLink :to="(resolve) => resolve('user', { id: '123' })">
   View user
+</RouterLink>
+```
+
+:::
+
+## View Transitions
+
+Vue Router supports view transitions through links. Kitbag also supports router and route defaults, programmatic navigation, transition types, and shared-element helpers. See [View Transitions](/advanced-concepts/view-transitions).
+
+::: code-group
+
+```vue [Vue Router]
+<RouterLink to="/about" view-transition>
+  About
+</RouterLink>
+```
+
+```vue [Kitbag Router]
+<RouterLink to="/about" view-transition>
+  About
 </RouterLink>
 ```
 
