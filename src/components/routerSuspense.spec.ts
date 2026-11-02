@@ -28,7 +28,7 @@ test('forwards server errors to the app error handler even when catch is enabled
     async setup() {
       throw failure
     },
-    render: () => null,
+    template: '<span />',
   })
   const router = createRouter([createRoute({ name: 'home', path: '/' })], { initialUrl: '/', ssr: true })
   const errorSlot = vi.fn(() => h('p', 'failed'))

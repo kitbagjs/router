@@ -249,6 +249,7 @@ test.each(loaderAttachments.flatMap((attachment) => [
       const { data } = await useLoader(loader)
       return () => h('p', data.value)
     },
+    render: () => null,
   })
   const errorSlot = vi.fn(() => h('p', 'failed'))
   const appError = vi.fn()

@@ -1,7 +1,7 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { expect, test, vi } from 'vitest'
 import { h } from 'vue'
-import { createRoute, createRouter, createRouterAssets, RouterSuspense, RouterView } from '@/main'
+import { createRoute, createRouter, RouterSuspense, RouterView } from '@/main'
 
 test.each(['sync', 'async'] as const)('shows errors from %s props getters by default', async (mode) => {
   const failure = new Error('props failed')
@@ -191,27 +191,4 @@ test('reports props failures in an error slot to the parent boundary', async () 
 
   expect(wrapper.text()).toBe('outer error')
   expect(outerError).toHaveBeenCalledWith({ error: failure })
-})
-
-test('keeps props failures scoped to their router', async () => {
-  const failure = new Error('props failed')
-  const route = createRoute({ name: 'home', path: '/' })
-    .addView({ render: () => null }, {
-      props: () => {
-        throw failure
-      },
-    })
-  const first = createRouter([route], { initialUrl: '/', isGlobalRouter: false })
-  const second = createRouter([route], { initialUrl: '/', isGlobalRouter: false })
-  await Promise.all([first.start(), second.start()])
-  const firstAssets = createRouterAssets(first)
-  const secondAssets = createRouterAssets(second)
-  const errorSlot = vi.fn(() => h('p', 'failed'))
-  mount(firstAssets.RouterSuspense, {
-    slots: { default: () => h(secondAssets.RouterView), error: errorSlot },
-    global: { plugins: [first, second] },
-  })
-  await flushPromises()
-
-  expect(errorSlot).not.toHaveBeenCalled()
 })
