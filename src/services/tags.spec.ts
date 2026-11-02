@@ -524,20 +524,16 @@ describe('tag ownership', () => {
     expect(contents(value)).toEqual(['/original.jpg', 'Original'])
   })
 
-  test('takes immutable layer snapshots without closing the scoped API', () => {
+  test('snapshots local operations without closing the scoped API', () => {
     const tags = createTags()
 
     tags.meta.set(image('/original.jpg', 'Original'))
 
     const value = toTagLayer(tags)
-    const merged = mergeTags([value])
 
     tags.title.set('Updated')
 
     expect(contents(toTagLayer(tags))).toEqual(['/original.jpg', 'Original', 'Updated'])
-    expect(Reflect.set(value, '0', {})).toBe(false)
-    expect(Reflect.set(flattenTags(merged)[1].attributes, 'content', 'Changed')).toBe(false)
-    expect(Reflect.set(merged[0].attributes, 'key', 'Changed')).toBe(false)
     expect(contents(value)).toEqual(['/original.jpg', 'Original'])
   })
 })
@@ -673,7 +669,7 @@ describe('scoped reads', () => {
     expect(original.title).toBe('Original')
   })
 
-  test('preserves the descriptor tree and returns deeply immutable snapshots even after hydration', async () => {
+  test('copies descriptor trees when reading hydrated layers', async () => {
     const descriptor: MetaTag = {
       property: 'custom:item',
       content: 'Item',
@@ -696,10 +692,10 @@ describe('scoped reads', () => {
     assert(grandchild)
 
     expect(snapshot.meta).toEqual([descriptor])
-    expect(Reflect.set(snapshot, 'title', 'Changed')).toBe(false)
-    expect(Reflect.set(snapshot.meta, '0', {})).toBe(false)
-    expect(Reflect.set(related, '0', {})).toBe(false)
-    expect(Reflect.set(grandchild, 'content', 'Changed')).toBe(false)
+    Reflect.set(grandchild, 'content', 'Changed')
+    Reflect.set(related, '0', {})
+    Reflect.set(snapshot.meta, '0', {})
+    Reflect.set(snapshot, 'title', 'Changed')
     expect(mergeTags([hydrated])[0]).toEqual(mergeTags([parent])[0])
     await expect(tags.meta.get()).resolves.toEqual([descriptor])
   })

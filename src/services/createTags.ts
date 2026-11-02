@@ -8,25 +8,25 @@ type CreateTagsOptions = {
 }
 
 function createSelector<TTag extends TagSelector['tag']>(tag: TTag, attributes: Record<string, string>): TagSelector & { tag: TTag } {
-  return Object.freeze({ tag, attributes: Object.freeze(attributes) })
+  return { tag, attributes }
 }
 
 function copyMeta(descriptor: MetaTag): ResolvedMetaTag {
   const related = descriptor.related?.map(copyMeta)
 
-  return Object.freeze({
+  return {
     ...descriptor,
-    ...related === undefined ? {} : { related: Object.freeze(related) },
-  })
+    ...related === undefined ? {} : { related },
+  }
 }
 
 function copyLink(descriptor: LinkTag): ResolvedLinkTag {
   const related = descriptor.related?.map(copyLink)
 
-  return Object.freeze({
+  return {
     ...descriptor,
-    ...related === undefined ? {} : { related: Object.freeze(related) },
-  })
+    ...related === undefined ? {} : { related },
+  }
 }
 
 function metaSelector({ name, property, media, key, id }: MetaTagSelector, exact: boolean): TagSelector & { tag: 'meta' } {
@@ -82,12 +82,12 @@ export function createTags({ getParentLayers = () => [] }: CreateTagsOptions = {
   const operations: TagOperation[] = []
 
   function record(operation: TagOperation): void {
-    operations.push(Object.freeze(operation))
+    operations.push(operation)
   }
 
   async function readGroups(): Promise<readonly TagGroup[]> {
     // Capture local writes before awaiting ancestors; later writes belong to the next read.
-    const local = Object.freeze([...operations])
+    const local = [...operations]
     const parents = await getParentLayers()
 
     return mergeTags([...parents, local])
@@ -115,22 +115,22 @@ export function createTags({ getParentLayers = () => [] }: CreateTagsOptions = {
       }
     }
 
-    return Object.freeze({ title, meta: Object.freeze(meta), link: Object.freeze(link) })
+    return { title, meta, link }
   }
 
   function writeMeta(kind: 'set' | 'add', descriptor: MetaTag): void {
     const selector = metaSelector(descriptor, true)
     const target = metaSelector(descriptor, descriptor.key === undefined)
-    const group: TagGroup = Object.freeze({ ...selector, value: copyMeta(descriptor) })
+    const group: TagGroup = { ...selector, value: copyMeta(descriptor) }
 
-    record({ kind, target, groups: Object.freeze([group]) })
+    record({ kind, target, groups: [group] })
   }
 
   function writeLink(kind: 'set' | 'add', descriptor: LinkTag): void {
     const target = linkSelector(descriptor, true)
-    const group: TagGroup = Object.freeze({ ...target, value: copyLink(descriptor) })
+    const group: TagGroup = { ...target, value: copyLink(descriptor) }
 
-    record({ kind, target, groups: Object.freeze([group]) })
+    record({ kind, target, groups: [group] })
   }
 
   const getTitle: Tags['title']['get'] = async () => {
@@ -141,9 +141,9 @@ export function createTags({ getParentLayers = () => [] }: CreateTagsOptions = {
 
   const setTitle: Tags['title']['set'] = (value) => {
     const target = createSelector('title', {})
-    const group: TagGroup = Object.freeze({ ...target, value })
+    const group: TagGroup = { ...target, value }
 
-    record({ kind: 'set', target, groups: Object.freeze([group]) })
+    record({ kind: 'set', target, groups: [group] })
   }
 
   const deleteTitle: Tags['title']['delete'] = () => {
@@ -163,7 +163,7 @@ export function createTags({ getParentLayers = () => [] }: CreateTagsOptions = {
       return []
     })
 
-    return Object.freeze(values)
+    return values
   }
 
   const setMeta: Tags['meta']['set'] = (descriptor) => writeMeta('set', descriptor)
@@ -187,7 +187,7 @@ export function createTags({ getParentLayers = () => [] }: CreateTagsOptions = {
       return []
     })
 
-    return Object.freeze(values)
+    return values
   }
 
   const setLink: Tags['link']['set'] = (descriptor) => writeLink('set', descriptor)
