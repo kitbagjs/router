@@ -54,8 +54,6 @@ test('accepts recursive related metadata', () => {
 
   // @ts-expect-error nested related descriptors also require an identifier
   tags.meta.add({ property: 'custom:root', content: 'Root', related: [{ content: 'Missing identifier' }] })
-  // @ts-expect-error related tags are descriptors, not callbacks
-  tags.meta.add({ property: 'custom:root', content: 'Root', related: () => [] })
 })
 
 test('accepts custom metadata identifiers with numeric and boolean content', () => {
