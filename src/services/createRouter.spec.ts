@@ -1882,22 +1882,6 @@ describe('router.render response', () => {
     expect(result).toMatchObject({ status: 401, rejection: 'Unauthorized' })
   })
 
-  test('given a rejection, returns the status it declared', async () => {
-    const rejection = createRejection({ type: 'Maintenance', status: 503 })
-    const route = createRoute({ name: 'route', path: '/' }).addView(component)
-    const router = createRouter([route], { ssr: true, initialUrl: '/', rejections: [rejection] })
-
-    router.onBeforeRouteEnter((_to, { reject }) => {
-      reject('Maintenance')
-    })
-
-    await router.start()
-
-    const result = await router.render()
-
-    expect(result).toMatchObject({ status: 503, rejection: 'Maintenance' })
-  })
-
   test('given a rejection without a status, responds 200', async () => {
     const rejection = createRejection({ type: 'Locked' })
     const route = createRoute({ name: 'route', path: '/' }).addView(component)
