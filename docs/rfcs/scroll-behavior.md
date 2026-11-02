@@ -44,11 +44,15 @@ type ScrollConfig = ScrollBehavior | ((context: ScrollContext) => ScrollBehavior
 | --- | --- |
 | `default` | Stop policy inheritance and use Kitbag's built-in behavior |
 | `inherit` | Continue to the next applicable policy |
-| `preserve` | Do not write a scroll position for this navigation |
+| `preserve` | Capture this area's position before navigation and restore it after the destination renders |
 | `top` | Scroll to the vertical start, preserving the horizontal position and overriding anchor behavior |
 | `bottom` | Scroll to the current vertical end, preserving the horizontal position and overriding anchor behavior |
 
-An omitted option is equivalent to `inherit`. Callbacks return a named behavior, including `inherit`; `undefined` is not another public behavior. Preserving does not prevent browser clamping when content becomes shorter.
+An omitted option is equivalent to `inherit`. Callbacks return a named behavior, including `inherit`; `undefined` is not another public behavior. A preserved numeric position can still be clamped if the destination is shorter at the restoration milestone.
+
+`preserve` actively restores the outgoing area's captured position at the normal scroll application milestone. Capture both axes, using a bottom marker when detected. This survives temporary scroll clamping while content is replaced or a loading fallback is visible. Do not recapture that temporary position before restoring. Built-in behavior described as preserving a position uses the same capture-and-restore semantics.
+
+On ordinary navigation, preservation carries the outgoing area's position into the destination area with the same identity. On Back/Forward, the destination history entry's saved position takes precedence; do not substitute the outgoing page's position. Preservation is not an opt-out from scroll management.
 
 Callbacks are synchronous policy decisions. Async readiness, arbitrary coordinates, and custom element targets are outside the initial shared option. This avoids ambiguous merging when multiple changed params supply policies.
 
@@ -221,7 +225,7 @@ Coordinate automatic browser restoration with Kitbag so two owners do not write 
 
 Persist bounded, namespaced position data by history-entry and area identity if supporting reload restoration; unavailable storage must not break navigation. Initial hydration, reload, and back-forward-cache resume require dedicated handling and browser tests. The precise persistence mechanism and document-owner arbitration remain implementation details to settle before shipping.
 
-This is a behavior change: applications currently preserving scroll incidentally on new-page navigation will begin resetting. A router-level `scroll: 'preserve'` suppresses ordinary navigation writes but retains history restoration. A complete opt-out from Kitbag's scroll management is a separate release decision, not another meaning of `preserve`.
+This is a behavior change: applications currently preserving scroll incidentally on new-page navigation will begin resetting. A router-level `scroll: 'preserve'` captures and restores outgoing positions on ordinary navigation while retaining destination-entry restoration on history traversal. A complete opt-out from Kitbag's scroll management is a separate release decision, not another meaning of `preserve`.
 
 ## Validation for implementation
 
@@ -239,6 +243,8 @@ Browser coverage should establish:
 - A superseding navigation during each asynchronous phase and an aborted history traversal.
 - Redirects, rejection views, and loader/props failures without stale or indefinitely pending scroll work.
 - View Transition snapshots containing the intended destination position.
+- Preservation restoring the outgoing position after a temporary fallback clamps scrolling, including both axes and detected bottom markers.
+- History traversal restoring the destination entry rather than the outgoing position even when its ordinary policy is `preserve`.
 - A too-short destination clamping once, with no later retry or observer-driven jump.
 - Hydration, reload, back-forward cache, storage failure, SSR, and multiple router instances.
 
