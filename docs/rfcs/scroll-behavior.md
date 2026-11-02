@@ -37,6 +37,7 @@ Every configuration level accepts the same behavior or callback:
 ```ts
 type ScrollBehavior = 'default' | 'inherit' | 'preserve' | 'top' | 'bottom'
 
+// ScrollContext carries the area-name union inferred from registration or context.
 type ScrollConfig = ScrollBehavior | ((context: ScrollContext) => ScrollBehavior)
 ```
 
@@ -156,18 +157,18 @@ Param callbacks receive the shared scroll context plus the param name and previo
 
 ### Callbacks are evaluated per area
 
-The callback context includes `to`, `from`, navigation kind (`push`, `replace`, `traverse`, or `initial`), the area's saved position if present, an abort signal, and the area being evaluated. The proposed area descriptor has `kind` (`document` or `element`), a stable `name`, and owning view information when available. Exact exported context types should retain Kitbag's route inference.
+The callback accepts a single context object containing `to`, `from`, and `area`, plus navigation kind (`push`, `replace`, `traverse`, or `initial`), the area's saved position if present, and an abort signal. `area` is a name string, not a descriptor or definition object. Router-level and navigation callbacks infer its literal union from registered scroll-area definitions, including the built-in `document` area. Exact exported context types should retain Kitbag's route inference. Additional area metadata can be exposed separately if a concrete use case requires it.
 
 A single navigation can reset the sidebar and preserve the main area without a separate target option:
 
 ```ts
 await router.push('/products?page=2', {
   scroll: ({ area }) => {
-    if (area.name === 'sidebar') {
+    if (area === 'sidebar') {
       return 'top'
     }
 
-    if (area.name === 'main') {
+    if (area === 'main') {
       return 'preserve'
     }
 
@@ -177,6 +178,57 @@ await router.push('/products?page=2', {
 ```
 
 The same callback form works at every configuration level. Evaluate only callbacks needed by policy resolution. Callbacks should not rely on order or perform scrolling themselves. A link's physical location does not limit its scope: a sidebar link can navigate main content.
+
+## Named scroll-area definitions and type safety
+
+`createScrollArea` returns a `ScrollArea` definition that preserves its literal name. Define areas once and register them with the router, following Kitbag's named-definition pattern. These definitions describe available areas; they do not contain DOM elements or mutable scroll positions.
+
+```ts
+export const sidebar = createScrollArea({ name: 'sidebar' })
+export const main = createScrollArea({ name: 'main' })
+```
+
+Register the definitions through `scrollAreas` when creating the router. The built-in `document` name is included automatically and needs no user definition.
+
+```ts
+const router = createRouter(routes, {
+  scrollAreas: [sidebar, main],
+})
+
+await router.push('/products', {
+  scroll: ({ area }) => {
+    // area: 'document' | 'sidebar' | 'main'
+    return area === 'sidebar' ? 'preserve' : 'top'
+  },
+})
+```
+
+Carry this name union through router-level policies, navigation options, links, and router-typed `RouterScroll` components. Use Kitbag's existing registered-router and `createRouterAssets` mechanisms to provide the router type to components. A typed component rejects an unregistered name; callbacks can compare `area` directly to a registered string literal without importing its definition.
+
+```vue
+<RouterScroll name="sidebar">
+  <SidebarContent />
+</RouterScroll>
+```
+
+Definition registration does not register a scrollable element. The corresponding `RouterScroll` must mount before that element can be captured or restored. A declared area can be absent because of conditional rendering or layout differences; the type guarantees a known name, not a mounted element. Keep runtime state scoped to the router instance and use stable names for persisted positions.
+
+### Context for standalone definitions
+
+Routes and reusable views or params may be defined before the router exists. Later router registration cannot retroactively infer those callbacks' contextual types. Extend applicable definition context to accept scroll-area definitions so local callbacks can declare the area names they need. The proposed route syntax is:
+
+```ts
+const products = createRoute({
+  name: 'products',
+  path: '/products',
+  context: [sidebar, main],
+  scroll: ({ area }) => area === 'sidebar' ? 'preserve' : 'inherit',
+})
+```
+
+The exact relationship between local context, runtime applicability, and router discovery remains open. If a callback declares only `sidebar` but is invoked for other mounted areas, typing its input as only `'sidebar'` would be incorrect. Before implementation, choose whether local context scopes callback applicability (other areas inherit), whether unknown areas remain representable in its input type, or another sound mechanism. Do not silently narrow the input while still invoking it with undeclared names. Document how the built-in document area participates as well.
+
+Also settle whether context discovery registers definitions automatically and how discovered names contribute to the router's public union. Do not require duplicate declarations without a clear purpose. The extension needed for standalone param definitions, which do not currently have their own context option, requires a concrete typing design. None of these declarations changes the established route/view/container policy scopes.
 
 ## RouterScroll
 
@@ -194,7 +246,7 @@ The document is registered automatically. `RouterScroll` registers an element as
 
 One history entry can store positions for the document, main, sidebar, and further nested `RouterScroll` elements. Each component owns only its own element; restoring a parent does not recursively reset child areas. Ordinary policy inheritance is separate from DOM nesting.
 
-Use a stable name unique within a router instance, reserving `document` for its automatic area. Duplicate active names should produce a development diagnostic rather than silently overwrite positions. Names allow restoration after an element unmounts and remounts. Remove registrations on unmount and scope state to the router instance.
+Use a registered stable name unique within a router instance, reserving `document` for its automatic area. Conflicting definitions with the same name and duplicate active elements should produce development diagnostics rather than silently overwrite positions. Names allow restoration after an element unmounts and remounts. Remove mounted-element registrations on unmount while retaining the definition and saved history positions. Scope state to the router instance.
 
 `RouterView` provides its view's policy context to descendants. A `RouterScroll` uses its nearest enclosing routed view's policy when its own option inherits, then falls back to the destination route chain. Nested routed views establish their own view context; their omitted view policy falls back to route policy rather than searching ancestor view policies.
 
@@ -260,6 +312,8 @@ This is a behavior change: applications currently preserving scroll incidentally
 
 ## Validation for implementation
 
+Type checks should establish literal-name inference, rejection of unknown component names, the built-in document name, propagation through navigation/link options and router assets, and sound local-context typing once its applicability rules are chosen.
+
 Browser coverage should establish:
 
 - Independent positions for repeated visits to one URL and for document/main/sidebar areas.
@@ -288,7 +342,7 @@ The shared values, per-area callbacks, multiple independent areas, and lifecycle
 1. When does a reused view count as updated for its built-in policy?
 2. Is the proposed precedence correct, particularly changed params versus container/view policies? Is `top > bottom > preserve > default` the right reduction for multiple changed params?
 3. How are changed params compared when getters return objects, dates, or arrays? Reference equality alone would make reparsing appear to change values.
-4. Should all element areas require explicit names, or can stable names be inferred safely for simple layouts?
+4. How does local scroll-area context constrain callback applicability without excluding runtime values from its declared type? How should context discovery affect router registration and its public name union, including standalone params?
 5. What full opt-out should applications with an existing scroll manager use, and should it be part of the initial release?
 6. Which persisted positions should initial hydration adopt, and how should multiple browser routers arbitrate document ownership?
 
