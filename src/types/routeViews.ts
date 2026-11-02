@@ -21,17 +21,6 @@ export type RouteView<TProps = undefined> = {
  */
 export type RouteViews = Record<string, RouteView<unknown>>
 
-/**
- * The props a child sees for a parent's views. A lone unnamed view is given directly rather than under a
- * 'default' key. Each view's props are always a promise,
- * since the parent's props may not have been computed when the child's getter runs.
- */
-export type ViewsPropsReturnType<TViews> = keyof ViewsWithProps<TViews> extends never
-  ? undefined
-  : keyof ViewsWithProps<TViews> extends 'default'
-    ? ParentViewProps<Extract<ViewsWithProps<TViews>, { default: unknown }>['default']>
-    : { [K in keyof ViewsWithProps<TViews>]: ParentViewProps<ViewsWithProps<TViews>[K]> }
-
 type ViewsWithProps<TViews> = {
   [K in keyof TViews as HasViewProps<TViews[K]> extends true ? K : never]: TViews[K]
 }
@@ -46,8 +35,6 @@ type HasViewProps<TView> = [ViewProps<TView>] extends [undefined]
   : true
 
 type ViewProps<TView> = TView extends { props?: AnyFunction<infer TProps> } ? TProps : undefined
-
-type ParentViewProps<TView> = Promise<Awaited<ViewProps<TView>>>
 
 /**
  * Reads view props by name. Omitting the name selects `default` when declared.
