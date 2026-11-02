@@ -35,7 +35,7 @@ Initial loading and hydration must coordinate with the browser's existing positi
 Every configuration level accepts the same behavior or callback:
 
 ```ts
-type ScrollBehavior = 'default' | 'inherit' | 'preserve' | 'top'
+type ScrollBehavior = 'default' | 'inherit' | 'preserve' | 'top' | 'bottom'
 
 type ScrollConfig = ScrollBehavior | ((context: ScrollContext) => ScrollBehavior)
 ```
@@ -45,7 +45,8 @@ type ScrollConfig = ScrollBehavior | ((context: ScrollContext) => ScrollBehavior
 | `default` | Stop policy inheritance and use Kitbag's built-in behavior |
 | `inherit` | Continue to the next applicable policy |
 | `preserve` | Do not write a scroll position for this navigation |
-| `top` | Scroll to the top-left, overriding anchor behavior |
+| `top` | Scroll to the vertical start, preserving the horizontal position and overriding anchor behavior |
+| `bottom` | Scroll to the current vertical end, preserving the horizontal position and overriding anchor behavior |
 
 An omitted option is equivalent to `inherit`. Callbacks return a named behavior, including `inherit`; `undefined` is not another public behavior. Preserving does not prevent browser clamping when content becomes shorter.
 
@@ -58,6 +59,12 @@ Pagination can reset scroll explicitly, and a URL update can preserve it. Named-
 ```ts
 await router.push('/products?page=2', { scroll: 'top' })
 await router.replace('/products?sort=price', { scroll: 'preserve' })
+```
+
+A chat or activity view can request its current bottom explicitly. `bottom` is available at every configuration level, including callback results.
+
+```ts
+await router.push('/chat/general', { scroll: 'bottom' })
 ```
 
 Links expose the same option and pass it into navigation.
@@ -158,7 +165,7 @@ Use a stable name unique within a router instance, reserving `document` for its 
 
 Views provide the policy context for their areas. A component inside a routed view can inherit its owning view. The common inverse layout, `RouterScroll` wrapping `RouterView`, also needs an ownership relationship. The exact rule for a container surrounding multiple named views is an open design question; it must not silently depend on mount order.
 
-Saved positions include both axes. Element restoration uses coordinates on that element. Anchor scrolling must avoid moving unrelated registered areas and should respect CSS scroll margins/padding. A sidebar's ordinary `preserve` policy still allows its saved position to restore on history traversal.
+Saved positions include both axes, with a bottom marker replacing the vertical offset when captured at the end. Element restoration uses that element's own scroll range. Anchor scrolling must avoid moving unrelated registered areas and should respect CSS scroll margins/padding. A sidebar's ordinary `preserve` policy still allows its saved position to restore on history traversal.
 
 ## Policy resolution
 
@@ -172,11 +179,23 @@ Resolve separately for each area. The following precedence is proposed for revie
 6. Router policy.
 7. Built-in behavior.
 
-`inherit` advances through this chain; `default` stops and selects built-in behavior. For simultaneous changed params, the proposed deterministic combination is `top`, then `preserve`, then `default`; all `inherit` results fall through. This detail needs review, especially for explicit `default` mixed with another param's override.
+`inherit` advances through this chain; `default` stops and selects built-in behavior. For simultaneous changed params, the proposed deterministic combination is `top`, then `bottom`, then `preserve`, then `default`; all `inherit` results fall through. This detail needs review, especially for conflicting `top` and `bottom` requests or explicit `default` mixed with another param's override.
 
 On history traversal, restore a saved area position before applying ordinary param, container, view, route, or router defaults. This preserves history semantics even when the destination page normally resets on pagination. A future explicit traversal override, if added, would be separate from a policy remembered from the original push.
 
 All registered destination areas are considered so a navigation callback can explicitly control an otherwise unchanged sidebar. Built-in behavior preserves unchanged view-owned areas on ordinary navigation. Explicit policies can override that result. Document behavior follows the default table. Deciding whether a reused view participates in a meaningful update is part of the ownership questions below.
+
+## Saving and restoring the bottom
+
+Automatically detect the bottom for both the document and registered `RouterScroll` areas when capturing positions. No opt-in is required. Save a vertical `bottom` marker when the area overflows vertically and its offset is within a small rounding tolerance of the maximum scroll offset. The proposed tolerance is one CSS pixel. Normalize browser overscroll before comparing; reverse-flow layouts need equivalent normalization rather than assuming every browser offset is nonnegative.
+
+If the area does not overflow vertically, save numeric zero. Such an area is simultaneously at its top and bottom, and must not jump to the bottom if its content is longer on return. Otherwise, save the numeric vertical offset when away from the bottom. Always save the horizontal offset independently.
+
+At restoration, resolve a bottom marker against the area's current maximum vertical offset and restore its saved horizontal offset. Numeric positions continue to restore their saved coordinates. The callback context's saved position must preserve the distinction between numeric offsets and bottom markers.
+
+For example, leaving a chat at its bottom and returning after more messages have loaded restores to the new bottom. Leaving halfway through restores the previous numeric position. This deliberately remembers being at the end rather than the old end's pixel offset. A destination that no longer overflows restores its bottom marker to zero.
+
+Both an explicit `bottom` policy and a saved bottom marker apply once at the normal restoration milestone. They do not keep a view pinned as messages arrive afterward. Measuring the scroll range at capture and application does not introduce height observation, readiness checks, or retries. `start` and `end` are outside this proposal.
 
 ## Capture and restoration lifecycle
 
@@ -192,7 +211,7 @@ Progressive navigation may display fallbacks while work is pending. Its scroll o
 
 Apply each area's resolved policy once. Check the navigation's abort signal after every wait and before writing positions. Redirects and superseding navigations discard the old scroll operation. Failed navigations that leave the current view in place do not scroll it. A committed rejection/error view needs an explicit completion path; waiting for progress that was aborted must not leave an operation hanging.
 
-No ResizeObserver, MutationObserver, height threshold, layout quiet period, timeout retry, or user-intent detection participates in restoration. If the saved position exceeds the final scroll range at the milestone, let the browser clamp it. Do not retry when the page later grows. Positions restore instantly rather than animating from the outgoing page's offset.
+No ResizeObserver, MutationObserver, height threshold, layout quiet period, timeout retry, or user-intent detection participates in restoration. If a saved numeric position exceeds the final scroll range at the milestone, let the browser clamp it. Do not retry when the page later grows. Positions restore instantly rather than animating from the outgoing page's offset.
 
 This milestone covers router-tracked work, not arbitrary async setup, independently fetched content, images, or CSS transitions. Applications should reserve image dimensions and use loaders/props for content needed by restoration. A public manual/readiness API is deferred until concrete use cases justify it; none is required by this RFC.
 
@@ -210,6 +229,9 @@ Browser coverage should establish:
 
 - Independent positions for repeated visits to one URL and for document/main/sidebar areas.
 - Back/Forward restoration taking precedence over pagination and anchors.
+- Automatic bottom capture for document and element areas, rounding tolerance, overscroll normalization, and non-overflowing areas saving zero.
+- Bottom markers restoring against a changed scroll range while restoring the saved horizontal offset; numeric offsets remaining numeric away from the bottom.
+- Explicit `top` and `bottom` preserving the current horizontal position, and bottom restoration running only once despite later content growth.
 - Query, state, hash, repeated-anchor, push, and replace behavior.
 - Every policy level, explicit `default` versus `inherit`, per-area callbacks, and simultaneous param changes.
 - Nested areas, unmount/remount, duplicate names, and multiple named views.
@@ -225,7 +247,7 @@ Browser coverage should establish:
 The shared values, per-area callbacks, multiple independent areas, and lifecycle-only timing are the core proposal. Resolve these details before implementation:
 
 1. How does a surrounding `RouterScroll` choose an owner when it contains multiple views? When does a reused view count as updated for its built-in policy?
-2. Is the proposed precedence correct, particularly changed params versus container/view policies? Is `top > preserve > default` the right reduction for multiple changed params?
+2. Is the proposed precedence correct, particularly changed params versus container/view policies? Is `top > bottom > preserve > default` the right reduction for multiple changed params?
 3. How are changed params compared when getters return objects, dates, or arrays? Reference equality alone would make reparsing appear to change values.
 4. Should all element areas require explicit names, or can stable names be inferred safely for simple layouts?
 5. What full opt-out should applications with an existing scroll manager use, and should it be part of the initial release?
