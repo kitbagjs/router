@@ -12,32 +12,49 @@ function createSelector<TTag extends TagSelector['tag']>(tag: TTag, attributes: 
 }
 
 function copyMeta(descriptor: MetaTag): ResolvedMetaTag {
-  const related = descriptor.related?.map(copyMeta)
+  const copy = { ...descriptor }
 
-  return {
-    ...descriptor,
-    ...related === undefined ? {} : { related },
+  if (descriptor.related !== undefined) {
+    copy.related = descriptor.related.map(copyMeta)
   }
+
+  return copy
 }
 
 function copyLink(descriptor: LinkTag): ResolvedLinkTag {
-  const related = descriptor.related?.map(copyLink)
+  const copy = { ...descriptor }
 
-  return {
-    ...descriptor,
-    ...related === undefined ? {} : { related },
+  if (descriptor.related !== undefined) {
+    copy.related = descriptor.related.map(copyLink)
   }
+
+  return copy
 }
 
 function metaSelector({ name, property, media, key, id }: MetaTagSelector, exact: boolean): TagSelector & { tag: 'meta' } {
-  const identifier: Record<string, string> = property === undefined ? { name } : { property }
+  const attributes: Record<string, string> = {}
 
-  return createSelector('meta', {
-    ...identifier,
-    ...key === undefined ? {} : { key },
-    ...exact || media !== undefined ? { media: media ?? '' } : {},
-    ...id === undefined ? {} : { id },
-  })
+  if (property === undefined) {
+    attributes.name = name
+  } else {
+    attributes.property = property
+  }
+
+  if (key !== undefined) {
+    attributes.key = key
+  }
+
+  if (media !== undefined) {
+    attributes.media = media
+  } else if (exact) {
+    attributes.media = ''
+  }
+
+  if (id !== undefined) {
+    attributes.id = id
+  }
+
+  return createSelector('meta', attributes)
 }
 
 function linkSelector(value: LinkTagSelector, exact: boolean): TagSelector & { tag: 'link' } {
@@ -153,7 +170,12 @@ export function createTags({ getParentLayers = () => [] }: CreateTagsOptions = {
   }
 
   const getMeta: Tags['meta']['get'] = async (selector) => {
-    const target = selector === undefined ? undefined : metaSelector(selector, false)
+    let target: TagSelector | undefined
+
+    if (selector !== undefined) {
+      target = metaSelector(selector, false)
+    }
+
     const groups = await readGroups()
     const values = groups.flatMap((group) => {
       if (group.tag === 'meta' && (!target || matchesTag(group, target))) {
@@ -177,7 +199,12 @@ export function createTags({ getParentLayers = () => [] }: CreateTagsOptions = {
   }
 
   const getLink: Tags['link']['get'] = async (selector) => {
-    const target = selector === undefined ? undefined : linkSelector(selector, false)
+    let target: TagSelector | undefined
+
+    if (selector !== undefined) {
+      target = linkSelector(selector, false)
+    }
+
     const groups = await readGroups()
     const values = groups.flatMap((group) => {
       if (group.tag === 'link' && (!target || matchesTag(group, target))) {
