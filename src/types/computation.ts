@@ -3,7 +3,7 @@ import { PrefetchConfig, PrefetchConfigOptions } from '@/types/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
 import { AnyFunction } from '@/types/utilities'
 
-const DATA_KINDS = ['props', 'loader'] as const
+const DATA_KINDS = ['props', 'loader', 'tags'] as const
 
 /**
  * What a stored value is: the props of a view, or the data of a loader. Part of the key so that a view

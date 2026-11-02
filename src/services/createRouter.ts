@@ -475,8 +475,8 @@ export function createRouter<
   }
 
   /**
-   * Props and loaders are handled the same way, and neither is awaited here: a push or a rejection from
-   * either is acted on whenever it arrives, without holding up the navigation that started it. Once that
+   * Props, loaders, and tags share this response path: a push or a rejection from any computation is
+   * acted on whenever it arrives, without holding up the navigation that started it. Once that
    * navigation is superseded, its outcomes can no longer change the page or run error hooks.
    */
   function onNavigationResponse({ response, to, from }: RouterNavigationResponseEvent): void {

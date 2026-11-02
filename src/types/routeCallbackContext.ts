@@ -9,7 +9,7 @@ import { GetData, LoadersDataReturnType } from '@/types/routeLoaders'
 import { GetProps, ViewsPropsReturnType } from '@/types/routeViews'
 
 /**
- * Context provided to a callback attached to a route — an `addView` props getter, or a loader. Sourced
+ * Context provided to a callback attached to a route — a props getter, loader, or tags callback. Sourced
  * from the route: rejections/routes from the route's context, and the parent from the route's `matches`.
  */
 export type RouteCallbackContext<
