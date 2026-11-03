@@ -65,7 +65,7 @@ export type RouterNavigationStore = NavigationData & {
   /**
    * Adopts values that already settled, in place of running their getters.
    */
-  fill: (route: ResolvedRoute, values: RouteValue[]) => void,
+  setSnapshot: (route: ResolvedRoute, values: RouteValue[]) => void,
 }
 
 /**
@@ -94,7 +94,7 @@ export type RouterNavigationStores = HasVueAppStore & NavigationData & {
   /**
    * Snapshots of the successfully settled values, used for navigation payloads.
    */
-  getSettledValues: (route: ResolvedRoute, kind?: DataKind) => RouteValue[],
+  getSnapshot: (route: ResolvedRoute, kind?: DataKind) => RouteValue[],
 }
 
 export function createRouterNavigation({ onResponse }: CreateRouterNavigationOptions = {}): RouterNavigationStores {
@@ -203,7 +203,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
       }
     }
 
-    function fill(route: ResolvedRoute, values: RouteValue[]): void {
+    function setSnapshot(route: ResolvedRoute, values: RouteValue[]): void {
       if (controller.signal.aborted) {
         return
       }
@@ -301,7 +301,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
       getValue,
       getValues,
       compute,
-      fill,
+      setSnapshot,
       stage,
       commit,
       abandon,
@@ -330,7 +330,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
   const getValues: NavigationData['getValues'] = (locations, route) => navigations.current.getValues(locations, route)
 
-  const getSettledValues: RouterNavigationStores['getSettledValues'] = (route, expectedKind) => {
+  const getSnapshot: RouterNavigationStores['getSnapshot'] = (route, expectedKind) => {
     const store = navigations.current.data
 
     return getComputations(route).flatMap(({ kind, depth, name, key }) => {
@@ -400,7 +400,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     create: createRouterNavigationStore,
     staged,
     commit,
-    getSettledValues,
+    getSnapshot,
     getValues,
     getState,
     subscribe,

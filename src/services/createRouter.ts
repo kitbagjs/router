@@ -701,7 +701,7 @@ export function createRouter<
 
         const store = navigation.create()
 
-        store.fill(to, values)
+        store.setSnapshot(to, values)
 
         await set(initialUrl, { replace: true, state: initialState, hydrating: true, prefetch: store })
 
@@ -782,7 +782,7 @@ export function createRouter<
 
     const title = await getTitle()
     const resolved = routerRoute.getResolvedRoute()
-    const { values, failures } = encodePayloadValues(resolved, navigation.getSettledValues(resolved), options?.transformer)
+    const { values, failures } = encodePayloadValues(resolved, navigation.getSnapshot(resolved), options?.transformer)
 
     return {
       kind: 'success',

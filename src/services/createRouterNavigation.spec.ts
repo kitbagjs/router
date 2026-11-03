@@ -77,7 +77,7 @@ describe('reads', () => {
     await expect(navigation.subscribe(computation, route)).resolves.toEqual({ status: 'ERROR', source: kind, error })
   })
 
-  test('getSettledValues collects successful values and can restrict their kind', async () => {
+  test('getSnapshot collects successful values and can restrict their kind', async () => {
     const { route, computation } = createFixture(() => 'loaded')
     const props = createComputation(route, () => ({ value: 'props' }), 'props')
     registry.set(route.id, [computation, props])
@@ -86,9 +86,9 @@ describe('reads', () => {
     const loaderValue = { kind: 'loader', depth: 0, name: 'default', value: 'loaded' }
     const propsValue = { kind: 'props', depth: 0, name: 'default', value: { value: 'props' } }
 
-    expect(navigation.getSettledValues(route)).toEqual([loaderValue, propsValue])
-    expect(navigation.getSettledValues(route, 'loader')).toEqual([loaderValue])
-    expect(navigation.getSettledValues(route, 'props')).toEqual([propsValue])
+    expect(navigation.getSnapshot(route)).toEqual([loaderValue, propsValue])
+    expect(navigation.getSnapshot(route, 'loader')).toEqual([loaderValue])
+    expect(navigation.getSnapshot(route, 'props')).toEqual([propsValue])
   })
 
   test('getValues preserves input order and distinct locations sharing a name', async () => {
@@ -114,7 +114,7 @@ describe('navigation lifetime', () => {
     const { route, computation } = createFixture(run)
     const navigation = createRouterNavigation()
     const prepared = navigation.create()
-    prepared.fill(route, [{ kind: 'loader', depth: 0, name: 'default', value: 'filled' }])
+    prepared.setSnapshot(route, [{ kind: 'loader', depth: 0, name: 'default', value: 'filled' }])
     prepared.stage()
     await Promise.all(navigation.commit({ to: route, from: null }))
 
@@ -180,7 +180,7 @@ describe('navigation lifetime', () => {
     const navigation = createRouterNavigation()
     const prepared = navigation.create()
     prepared.dispose()
-    prepared.fill(route, [{ kind: 'loader', depth: 0, name: 'default', value: 'filled' }])
+    prepared.setSnapshot(route, [{ kind: 'loader', depth: 0, name: 'default', value: 'filled' }])
 
     expect(prepared.compute(route, [computation])).toEqual([])
     expect(prepared.commit({ to: route, from: null })).toEqual([])
