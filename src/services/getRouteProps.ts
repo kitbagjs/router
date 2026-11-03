@@ -1,4 +1,5 @@
-import { NavigationData } from '@/services/createRouterNavigation'
+import { getDataKey } from '@/services/getDataKey'
+import { NavigationData } from '@/services/createRouterNavigationStore'
 import { ValueLocation } from '@/services/getComputations'
 import { ResolvedRoute } from '@/types/resolved'
 import { MaybePromise } from '@/types/utilities'
@@ -14,7 +15,7 @@ export function getRouteProps(store: Pick<NavigationData, 'getState' | 'subscrib
   }
 
   const location: ValueLocation<'props'> = { kind: 'props', id, name }
-  const result = store.getState(location, route)
+  const result = store.getState(getDataKey(location.kind, location.id, location.name, route))
 
   switch (result.status) {
     case 'MISSING':
@@ -48,9 +49,9 @@ const NO_PROPS: PropsResult = { kind: 'value', value: undefined }
  */
 async function toResult(store: Pick<NavigationData, 'getState' | 'subscribe'>, location: ValueLocation<'props'>, route: ResolvedRoute): Promise<PropsResult> {
   try {
-    return toPropsResult(await store.subscribe(location, route))
+    return toPropsResult(await store.subscribe(getDataKey(location.kind, location.id, location.name, route)))
   } catch (error) {
-    const result = store.getState(location, route)
+    const result = store.getState(getDataKey(location.kind, location.id, location.name, route))
 
     if (result.status === 'ABANDONED') {
       return { kind: 'abandoned' }

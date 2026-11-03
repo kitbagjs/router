@@ -1,12 +1,12 @@
 /* eslint-disable vue/require-prop-types */
 /* eslint-disable vue/one-component-per-file */
-import { AsyncComponentLoader, Component, computed, FunctionalComponent, InjectionKey, defineComponent, h, ref, watch } from 'vue'
+import { AsyncComponentLoader, Component, computed, FunctionalComponent, InjectionKey, defineComponent, h, provide, ref, shallowRef, watch } from 'vue'
 import { isPromise } from '@/utilities/promises'
 import { getRouteProps } from '@/services/getRouteProps'
 import { PropsResult } from '@/utilities/props'
 import { createUseRouterNavigation } from '@/compositions/useRouterNavigation'
 import { Router } from '@/types/router'
-import { createUseRoute } from '@/compositions/useRoute'
+import { createUseViewRoute, getViewRouteInjectionKey } from '@/compositions/useViewRoute'
 import { useIsServerRendering } from '@/compositions/useIsServerRendering'
 import { useHasSuspenseBoundary } from '@/compositions/useHasSuspenseBoundary'
 import { createUseRouterSuspense } from '@/compositions/useRouterSuspense'
@@ -29,7 +29,7 @@ type CreateComponentWrapperConfig = {
 
 export function createComponentPropsWrapper(routerKey: InjectionKey<Router>, { id, name, component }: CreateComponentWrapperConfig): Component {
   const useRouterNavigation = createUseRouterNavigation(routerKey)
-  const useRoute = createUseRoute(routerKey)
+  const useViewRoute = createUseViewRoute(routerKey)
   const useRouterSuspense = createUseRouterSuspense(routerKey)
 
   return defineComponent({
@@ -37,16 +37,24 @@ export function createComponentPropsWrapper(routerKey: InjectionKey<Router>, { i
     expose: [],
     setup() {
       const navigation = useRouterNavigation()
-      const route = useRoute()
+      const source = useViewRoute()
+      const route = shallowRef(source.value)
+
+      provide(getViewRouteInjectionKey(routerKey), route)
+      watch(source, (next) => {
+        if (next.matches.some((match) => match.id === id)) {
+          route.value = next
+        }
+      }, { flush: 'pre' })
       const isServerRendering = useIsServerRendering()
       const hasSuspenseBoundary = useHasSuspenseBoundary()
       const reportError = useRouterSuspense('props')
-      const props = computed(() => getRouteProps(navigation.current(), { kind: 'props', id, name }, route))
+      const props = computed(() => getRouteProps(navigation.get(route.value), { kind: 'props', id, name }, route.value))
 
       watch(props, async (props) => {
-        const owner = navigation.current()
+        const owner = route.value
         const result = await props
-        const current = navigation.current()
+        const current = source.value
 
         if (current !== owner || result.kind !== 'error') {
           return

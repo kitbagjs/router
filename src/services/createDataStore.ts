@@ -30,6 +30,11 @@ export type DataStoreSettledEvent = {
   result: DataResultSettled,
 }
 
+export type DataEntry = {
+  key: string,
+  value: DataResult,
+}
+
 type Entry = {
   promise: Promise<CallbackContextResponse>,
   resolve: (value: CallbackContextResponse | PromiseLike<CallbackContextResponse>) => void,
@@ -38,8 +43,7 @@ type Entry = {
 }
 
 /**
- * A set of values that live and die together. A link owns one for whatever it points at, and the current
- * navigation owns one.
+ * Values sharing a cancellation signal. Settled results remain readable after cancellation.
  */
 export type DataStore = {
   /**
@@ -48,18 +52,14 @@ export type DataStore = {
    */
   subscribe: (key: string) => Promise<CallbackContextResponse>,
   /**
-   * Computes a key, unless something already has. A key promoted from another store while its getter is
-   * still running is left alone, so navigation adopts it rather than computing it a second time.
+   * Computes a key unless it already has a result or a getter running.
    */
   set: (key: string, getter: () => MaybePromise<CallbackContextResponse>) => void,
   /**
    * What is known about a key, without waiting for it. Reactive, and readable during render.
    */
   get: (key: string) => DataResult,
-  /**
-   * Discards stored values after their signal has been aborted.
-   */
-  dispose: () => void,
+  getEntries: () => DataEntry[],
 }
 
 type CreateDataStoreOptions = {
@@ -169,14 +169,12 @@ export function createDataStore({ signal, onSettled }: CreateDataStoreOptions): 
     }
   }, { once: true })
 
-  const dispose: DataStore['dispose'] = () => {
-    entries.clear()
-  }
+  const getEntries: DataStore['getEntries'] = () => Array.from(entries, ([key, entry]) => ({ key, value: entry.state.value }))
 
   return {
     subscribe,
     set,
     get,
-    dispose,
+    getEntries,
   }
 }

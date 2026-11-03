@@ -5,7 +5,8 @@ import { createIsExternal } from '@/services/createIsExternal'
 import { createActivityTracker } from '@/services/createActivityTracker'
 import { SsrOptionRequiredError } from '@/errors/ssrOptionRequiredError'
 import { parseUrl, updateUrl } from '@/services/urlParser'
-import { createRouterNavigation, RouterNavigationResponseEvent, RouterNavigationStore } from '@/services/createRouterNavigation'
+import { createRouterNavigation } from '@/services/createRouterNavigation'
+import { RouterNavigationResponse, RouterNavigationStore } from '@/services/createRouterNavigationStore'
 import { createNavigationProgress, NavigationProgressTracker } from '@/services/createNavigationProgress'
 import { getRouteData } from '@/services/getRouteData'
 import { getComputations } from '@/services/getComputations'
@@ -170,7 +171,7 @@ export function createRouter<
     stop: stopRouteContext,
   } = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options)
   const notFoundRejection = getRejectionByType('NotFound')
-  const navigation = createRouterNavigation({ onResponse: onNavigationResponse })
+  const navigation = createRouterNavigation()
   const notFoundRoute = createResolvedRoute(notFoundRejection.route)
 
   const hooks = createRouterHooks({ redirectStatus, onHookAdded: addHookContext })
@@ -296,12 +297,22 @@ export function createRouter<
       return
     }
 
+    const to = find(url, options) ?? null
     const next = options.prefetch ?? navigation.create()
-    next.stage()
 
     try {
-      const to = find(url, options) ?? null
       const from = getFromRouteForHooks()
+
+      if (to) {
+        navigation.set(to, next)
+      }
+
+      controller.signal.addEventListener('abort', () => {
+        if (!to || routerRoute.getResolvedRoute() !== to) {
+          next.abandon()
+        }
+      }, { once: true })
+
       const progress = navigationProgress.begin({
         to,
         from,
@@ -320,12 +331,14 @@ export function createRouter<
         clearRejection()
 
         if (!isExternal(url)) {
-          const values = next.commit({ to, from })
+          const previous = routerRoute.getResolvedRoute()
+          navigation.abandon(previous)
+          routerRoute.updateRoute(to)
+          next.onResponse((response) => onNavigationResponse({ response, to, from }), controller.signal)
+          const values = next.compute(to, getComputations(to))
 
           activity.add(...values)
           progress.track(...values, ...loadAsyncComponents(to))
-
-          routerRoute.updateRoute(to)
         }
 
         progress.close()
@@ -395,8 +408,8 @@ export function createRouter<
         runAfterHooks({ controller, to, from, enabled: !isSSR }),
       ])
     } finally {
-      if (next !== navigation.current()) {
-        next.dispose()
+      if (!to || routerRoute.getResolvedRoute() !== to) {
+        next.abandon()
       }
     }
   })
@@ -479,7 +492,7 @@ export function createRouter<
    * either is acted on whenever it arrives, without holding up the navigation that started it. Once that
    * navigation is superseded, its outcomes can no longer change the page or run error hooks.
    */
-  function onNavigationResponse({ response, to, from }: RouterNavigationResponseEvent): void {
+  function onNavigationResponse({ response, to, from }: { response: RouterNavigationResponse, to: ResolvedRoute, from: ResolvedRoute | null }): void {
     const work = (async (): Promise<void> => {
       switch (response.status) {
         case 'PUSH':
@@ -575,8 +588,7 @@ export function createRouter<
 
     if (isSSR) {
       setServerRedirect(redirectStatus ?? 302, url)
-      const current = navigation.current()
-      current.abandon()
+      navigation.abandon(routerRoute.getResolvedRoute())
 
       return
     }
@@ -615,8 +627,7 @@ export function createRouter<
     }
 
     const controller = navigations.begin()
-    navigation.staged().dispose()
-    navigation.current().abandon()
+    navigation.abandon(routerRoute.getResolvedRoute())
 
     hooks.runRejectionHooks(rejection, { to, from })
 
@@ -630,7 +641,7 @@ export function createRouter<
     routerKey,
     route: notFoundRoute,
     push,
-    getRouteData: (route) => getRouteData(navigation, route),
+    getRouteData: (route) => getRouteData(navigation.get(route), route),
   })
 
   /**
@@ -701,7 +712,7 @@ export function createRouter<
 
         const store = navigation.create()
 
-        store.setSnapshot(to, values)
+        store.setEntries(values)
 
         await set(initialUrl, { replace: true, state: initialState, hydrating: true, prefetch: store })
 
@@ -782,7 +793,7 @@ export function createRouter<
 
     const title = await getTitle()
     const resolved = routerRoute.getResolvedRoute()
-    const { values, failures } = encodePayloadValues(resolved, navigation.getSnapshot(resolved), options?.transformer)
+    const { values, failures } = encodePayloadValues(resolved, navigation.get(resolved).getEntries(), options?.transformer)
 
     return {
       kind: 'success',
@@ -796,7 +807,7 @@ export function createRouter<
   function stop(): void {
     stopped = true
     stopRouteContext()
-    navigation.stop()
+    navigation.abandon(routerRoute.getResolvedRoute())
     navigations.stop()
     navigationProgress.stop()
     history.stopListening()

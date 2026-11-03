@@ -1,13 +1,14 @@
+import { getDataKey } from '@/services/getDataKey'
 import { expect, test, vi } from 'vitest'
 import { createResolvedRoute } from '@/services/createResolvedRoute'
 import { createRoute } from '@/services/createRoute'
 import { getRouteProps } from '@/services/getRouteProps'
 import { CallbackContextResponse } from '@/types/callbackContext'
-import { NavigationData } from '@/services/createRouterNavigation'
+import { NavigationData } from '@/services/createRouterNavigationStore'
 import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
 import { component } from '@/utilities/testHelpers'
 
-test('pending props report abandonment when their navigation is disposed', async () => {
+test('pending props report abandonment when their navigation is abandoned', async () => {
   const route = createResolvedRoute(createRoute({ path: '/' }).addView(component, { props: () => ({}) }))
   const pending = Promise.withResolvers<CallbackContextResponse>()
   const getState = vi.fn<NavigationData['getState']>().mockReturnValue({ status: 'RUNNING' })
@@ -15,7 +16,7 @@ test('pending props report abandonment when their navigation is disposed', async
   const location = { kind: 'props', id: route.id, name: 'default' } as const
   const props = getRouteProps({ getState, subscribe }, location, route)
 
-  expect(subscribe).toHaveBeenCalledExactlyOnceWith(location, route)
+  expect(subscribe).toHaveBeenCalledExactlyOnceWith(getDataKey(location.kind, location.id, location.name, route))
   getState.mockReturnValue({ status: 'ABANDONED' })
   pending.reject(new NavigationAbandonedError())
 

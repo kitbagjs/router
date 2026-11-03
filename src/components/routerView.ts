@@ -1,3 +1,4 @@
+import { createUseViewRoute } from '@/compositions/useViewRoute'
 import { createUseComponentsStore } from '@/compositions/useComponentsStore'
 import { createUseRejection } from '@/compositions/useRejection'
 import { createUseRoute } from '@/compositions/useRoute'
@@ -23,6 +24,7 @@ type RouterViewSlots = {
 // Inferring the return type of the component is more accurate than defining it manually
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export function createRouterView<TRouter extends Router>(routerKey: InjectionKey<TRouter>) {
+  const useViewRoute = createUseViewRoute(routerKey)
   const useRoute = createUseRoute(routerKey)
   const useRouter = createUseRouter(routerKey)
   const useRejection = createUseRejection(routerKey)
@@ -31,6 +33,7 @@ export function createRouterView<TRouter extends Router>(routerKey: InjectionKey
 
   return defineComponent((props: RouterViewProps, context: SetupContext<EmitsOptions, SlotsType<RouterViewSlots>>) => {
     const route = useRoute()
+    const resolved = useViewRoute()
     const router = useRouter()
     const rejection = useRejection()
     const depth = useRouterDepth({ increment: true })
@@ -50,7 +53,7 @@ export function createRouterView<TRouter extends Router>(routerKey: InjectionKey
         return rejection.value.route.matches.at(0)?.views.default.component ?? null
       }
 
-      const match = route.matches.at(depth)
+      const match = resolved.value.matches.at(depth)
 
       if (!match) {
         return null

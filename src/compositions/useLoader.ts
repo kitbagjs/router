@@ -1,4 +1,4 @@
-import { computed, InjectionKey, onScopeDispose, shallowRef, toRaw } from 'vue'
+import { computed, InjectionKey, onScopeDispose, shallowRef, toRaw, watch } from 'vue'
 import { AnyLoader, isLoader, Loader } from '@/types/loader'
 import { UseLoader } from '@/types/useLoader'
 import { Router } from '@/types/router'
@@ -8,7 +8,8 @@ import { createUseRouter } from '@/compositions/useRouter'
 import { useIsServerRendering } from '@/compositions/useIsServerRendering'
 import { createUseRouterNavigation } from '@/compositions/useRouterNavigation'
 import { getLoaderLocation } from '@/services/getLoaderLocation'
-import { isRouterRoute } from '@/services/createRouterRoute'
+import { createUseViewRoute } from '@/compositions/useViewRoute'
+import { getDataKey } from '@/services/getDataKey'
 import { RouteContext } from '@/types/routeContext'
 import { ValueLocation } from '@/services/getComputations'
 import { warnLoaderFallback } from '@/services/warnLoaderFallback'
@@ -23,6 +24,7 @@ export type UseLoaderFunction = <TData>(loader: Loader<TData, readonly RouteCont
 export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunction {
   const useRouter = createUseRouter(routerKey)
   const useRouterNavigation = createUseRouterNavigation(routerKey)
+  const useViewRoute = createUseViewRoute(routerKey)
   const useAwaitedLoader = createUseAwaitedLoader(routerKey)
 
   function useLoader<TData>(loader: Loader<TData, readonly RouteContext[]>): UseLoader<Awaited<TData>>
@@ -40,41 +42,38 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunct
     }
 
     const navigation = useRouterNavigation()
+    const route = useViewRoute()
     const isServerRendering = useIsServerRendering()
 
     const selection = shallowRef<LoaderSelection>()
     const controller = new AbortController()
 
     const getLocation = (): ValueLocation<'loader'> => {
-      const result = getLoaderLocation(router.route, loader)
+      const result = getLoaderLocation(route.value, loader)
 
       if ('location' in result) {
         return result.location
       }
 
       const location = getFallbackLoaderLocation(loader)
-      const state = navigation.getState(location, router.route)
+      const state = navigation.get(route.value).getState(getDataKey(location.kind, location.id, location.name, route.value))
 
       if (state.status !== 'MISSING') {
         return location
       }
 
-      if (!isRouterRoute(routerKey, router.route)) {
-        throw new TypeError('Expected a router route for this router')
-      }
-
-      const route = router.route.getResolvedRoute()
+      const resolved = route.value
 
       warnLoaderFallback({
         loader,
-        route,
+        route: resolved,
         fallback: result,
         isServerRendering,
       })
 
-      const computation = getFallbackLoaderComputation(loader, route)
+      const computation = getFallbackLoaderComputation(loader, resolved)
       router.addContext(loader.context)
-      navigation.current().compute(route, [computation])
+      navigation.get(resolved).compute(resolved, [computation])
 
       return location
     }
@@ -109,8 +108,11 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunct
       }
     }
 
-    router.onAfterRouteEnter(selectLoader, { signal: controller.signal })
-    router.onAfterRouteUpdate(selectLoader, { signal: controller.signal })
+    watch(route, () => {
+      if (router.started.value) {
+        selectLoader()
+      }
+    }, { flush: 'sync' })
 
     onScopeDispose(() => {
       controller.abort()
@@ -127,7 +129,8 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunct
         return { status: 'ERROR', error: selection.value.error, source: 'loader' }
       }
 
-      const result = navigation.getState(selection.value.location, router.route)
+      const { location } = selection.value
+      const result = navigation.get(route.value).getState(getDataKey(location.kind, location.id, location.name, route.value))
 
       if (result.status === 'PUSH' || result.status === 'REJECT') {
         return { status: 'ABANDONED' }

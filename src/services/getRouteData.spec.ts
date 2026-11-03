@@ -1,3 +1,4 @@
+import { getDataKey } from '@/services/getDataKey'
 import { flushPromises } from '@vue/test-utils'
 import { assert, expect, test, vi } from 'vitest'
 import { createRoute } from '@/services/createRoute'
@@ -18,7 +19,7 @@ test('legacy route data reads only the selected loader through navigation', asyn
   expect(Object.keys(data)).toEqual(['parent', 'default'])
   expect(getValue).not.toHaveBeenCalled()
   await expect(data.parent).resolves.toBe('loaded')
-  expect(getValue).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ kind: 'loader', id: parent.id, name: 'parent' }), route)
+  expect(getValue).toHaveBeenCalledExactlyOnceWith(getDataKey('loader', parent.id, 'parent', route))
 })
 
 test('route data forwards value reader errors', async () => {

@@ -1,4 +1,4 @@
-import { RouterNavigationStore } from '@/services/createRouterNavigation'
+import { RouterNavigationStore } from '@/services/createRouterNavigationStore'
 import { ResolvedRoute } from '@/types/resolved'
 import { Routes } from '@/types/route'
 import { RedirectStatus } from '@/types/router'

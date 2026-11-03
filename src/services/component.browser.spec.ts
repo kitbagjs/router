@@ -1,3 +1,6 @@
+import { Component, computed, defineComponent, h, onBeforeUnmount } from 'vue'
+import { createLoader, RouterView, useLoader } from '@/main'
+import { RouterRoute } from '@/types/routerRoute'
 import { flushPromises, mount } from '@vue/test-utils'
 import { expect, test, vi } from 'vitest'
 import echo from '@/components/echo'
@@ -115,4 +118,45 @@ test('renders component with async props using suspense', async () => {
   } finally {
     warn.mockRestore()
   }
+})
+
+test('an outgoing keyed view retains its loader data while the next visit uses a new store', async () => {
+  const retained: (() => unknown)[] = []
+  const atUnmount: unknown[] = []
+  const loader = createLoader({ load: (route) => route.params.id })
+  const view = defineComponent({
+    setup() {
+      const result = useLoader(loader)
+      const value = computed(() => result.data.value)
+      retained.push(() => value.value)
+      onBeforeUnmount(() => atUnmount.push(value.value))
+
+      return () => h('p', String(value.value))
+    },
+  })
+  const definition = createRoute({ name: 'user', path: '/[id]' }).addLoader(loader)
+    .addView(view)
+  const router = createRouter([definition], { initialUrl: '/1' })
+  await router.start()
+  const wrapper = mount(RouterView, {
+    slots: {
+      default: ({ component, route }: { component: Component | null, route: RouterRoute }) => {
+        if (!component) {
+          return null
+        }
+
+        return h(component, { key: String(route.params.id) })
+      },
+    },
+    global: { plugins: [router] },
+  })
+  await flushPromises()
+  await router.push('/2')
+  await flushPromises()
+
+  expect(wrapper.text()).toBe('2')
+  expect(atUnmount).toEqual(['1'])
+  expect(retained.map((read) => read())).toEqual(['1', '2'])
+  wrapper.unmount()
+  router.stop()
 })

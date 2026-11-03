@@ -1160,7 +1160,7 @@ describe('prefetch props', () => {
     await flushPromises()
 
     expect(settled).toStrictEqual([])
-    expect(warnMock).toHaveBeenCalledWith(expect.stringContaining('Waiting on props "default" for route "child"'))
+    expect(warnMock).not.toHaveBeenCalled()
 
     wrapper.find('a').trigger('click')
 

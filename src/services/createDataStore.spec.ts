@@ -1,6 +1,5 @@
 import { describe, expect, test, vi } from 'vitest'
 import { effect } from 'vue'
-import { flushPromises } from '@vue/test-utils'
 import { createDataStore } from './createDataStore'
 import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
 import { CallbackContextResponse } from '@/types/callbackContext'
@@ -100,48 +99,6 @@ describe('get', () => {
   })
 })
 
-describe('dispose', () => {
-  test('reactive readers see abandonment when the store is disposed', () => {
-    const controller = new AbortController()
-    const store = createDataStore({ signal: controller.signal })
-    const seen: string[] = []
-    const runner = effect(() => seen.push(store.get('key').status))
-
-    store.set('key', () => computedResponse)
-    controller.abort(new NavigationAbandonedError())
-    store.dispose()
-
-    expect(seen.at(-1)).toBe('ABANDONED')
-    runner.effect.stop()
-  })
-
-  test('clears stored data without changing settled promises', async () => {
-    const controller = new AbortController()
-    const store = createDataStore({ signal: controller.signal })
-
-    store.set('key', () => computedResponse)
-
-    const held = store.subscribe('key')
-
-    controller.abort(new Error('abandoned'))
-    store.dispose()
-
-    await expect(held).resolves.toBe(computedResponse)
-    expect(store.get('key')).toEqual({ status: 'ABANDONED' })
-  })
-
-  test('a value nobody is waiting on does not leak an unhandled rejection', async () => {
-    const controller = new AbortController()
-    const store = createDataStore({ signal: controller.signal })
-
-    store.subscribe('key')
-    controller.abort(new Error('abandoned'))
-    store.dispose()
-
-    await flushPromises()
-  })
-})
-
 test('an already aborted signal rejects subscribers and skips getters', async () => {
   const controller = new AbortController()
   const reason = new NavigationAbandonedError()
@@ -193,4 +150,26 @@ test('onSettled reports a value once when its work finishes', async () => {
   expect(onSettled).toHaveBeenCalledExactlyOnceWith({
     result: computedResponse,
   })
+})
+
+test('getEntries includes pending, running, successful, failed, and abandoned results', async () => {
+  const controller = new AbortController()
+  const store = createDataStore({ signal: controller.signal })
+  const error = new Error('failed')
+  store.subscribe('pending')
+  store.set('running', () => new Promise(() => {}))
+  store.set('success', () => computedResponse)
+  store.set('error', () => ({ status: 'ERROR', source: 'loader', error }))
+
+  expect(store.getEntries()).toEqual([
+    { key: 'pending', value: { status: 'PENDING' } },
+    { key: 'running', value: { status: 'RUNNING' } },
+    { key: 'success', value: computedResponse },
+    { key: 'error', value: { status: 'ERROR', source: 'loader', error } },
+  ])
+  controller.abort(new NavigationAbandonedError())
+  expect(store.getEntries().slice(0, 2)).toEqual([
+    { key: 'pending', value: { status: 'ABANDONED' } },
+    { key: 'running', value: { status: 'ABANDONED' } },
+  ])
 })

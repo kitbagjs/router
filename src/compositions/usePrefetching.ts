@@ -8,7 +8,7 @@ import { useVisibilityObserver } from './useVisibilityObserver'
 import { useEventListener } from './useEventListener'
 import { Router } from '@/types/router'
 import { getComputations, getComputationsForStrategy } from '@/services/getComputations'
-import { RouterNavigationStore } from '@/services/createRouterNavigation'
+import { RouterNavigationStore } from '@/services/createRouterNavigationStore'
 import { getComputationPrefetchKey } from '@/services/getComputationPrefetchKey'
 import { Destination, isSameDestination } from '@/utilities/isSameDestination'
 import { setStateValues } from '@/services/state'
@@ -56,7 +56,7 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
       return prepared
     }
 
-    onScopeDispose(() => prefetch.dispose())
+    onScopeDispose(() => prefetch.abandon())
 
     const destination = computed<Destination | undefined>((previous) => {
       const { route } = toValue(config)
@@ -71,7 +71,7 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
     })
 
     watch(destination, () => {
-      prefetch.dispose()
+      prefetch.abandon()
       prefetch = navigation.create()
       prefetchRoute()
     }, {

@@ -5,7 +5,7 @@ import { toLegacyValues } from '@/utilities/toLegacyValues'
 import { LoaderDataAccessError } from '@/errors/loaderDataAccessError'
 import { PropsCallbackParent } from '@/types/props'
 import { ResolvedRoute } from '@/types/resolved'
-import { Computation, ComputationContext, loaderLocations, propsLocations, ValueLocation } from '@/services/getComputations'
+import { Computation, loaderLocations, propsLocations, ValueLocation } from '@/services/getComputations'
 import { createRouterCallbackContext } from '@/services/createRouterCallbackContext'
 import { getDataKey } from '@/services/getDataKey'
 import { PrefetchConfig } from '@/types/prefetch'
@@ -26,8 +26,9 @@ export function createRouteComputation({ location, route, depth, callback, route
   const run: Computation['run'] = (context) => {
     const { to, signal } = context
     const { push, replace, reject, update } = createRouterCallbackContext({ to })
-    const callbackRoute = toCallbackRoute(location, to, context)
-    const parent = getParentContext(to, depth, context)
+    const getValue = (location: ValueLocation): Promise<unknown> => context.getValue(getDataKey(location.kind, location.id, location.name, to))
+    const callbackRoute = toCallbackRoute(location, to, getValue)
+    const parent = getParentContext(to, depth, getValue)
 
     return callback(callbackRoute, { push, replace, reject, update, signal, parent })
   }
@@ -51,7 +52,7 @@ export function createRouteComputation({ location, route, depth, callback, route
  * They can read parent data instead. Props callbacks read data from their computation store.
  * The proxy avoids subscribing to loader data until a callback calls route.getData().
  */
-function toCallbackRoute({ kind, name }: ValueLocation, route: ResolvedRoute, { getValue }: ComputationContext): ResolvedRoute {
+function toCallbackRoute({ kind, name }: ValueLocation, route: ResolvedRoute, getValue: (location: ValueLocation) => Promise<unknown>): ResolvedRoute {
   function getData(name = DEFAULT_LOADER_NAME): Promise<unknown> {
     const location = getRouteLoaderLocation(route, name)
 
@@ -82,7 +83,7 @@ function toCallbackRoute({ kind, name }: ValueLocation, route: ResolvedRoute, { 
  * The parent context for the callback at the given depth. Resolved per depth rather than from the last
  * match: every view in a nested route gets its own parent, not the resolved route's parent.
  */
-function getParentContext(route: ResolvedRoute, depth: number, { getValue }: ComputationContext): PropsCallbackParent {
+function getParentContext(route: ResolvedRoute, depth: number, getValue: (location: ValueLocation) => Promise<unknown>): PropsCallbackParent {
   if (depth === 0) {
     return
   }

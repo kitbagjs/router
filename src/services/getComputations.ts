@@ -4,24 +4,15 @@ import { CreatedRouteOptions } from '@/types/route'
 import { viewNamesWithProps } from '@/services/routeViews'
 import { DataKind } from '@/services/getDataKey'
 import { AnyPayloadTransformer } from '@/services/payload'
-import { DataResult } from '@/services/createDataStore'
-import { CallbackContextResponse } from '@/types/callbackContext'
 import { createRouteComputation } from '@/services/createRouteComputation'
 import { AnyFunction } from '@/types/utilities'
 import { getPrefetchOption } from '@/utilities/prefetch'
 import { getComputationPrefetchKey } from '@/services/getComputationPrefetchKey'
 
-/**
- * Reads are scoped to the computation's navigation. Subscriptions prefer a local computation and fall
- * back to the committed navigation when missing. Value reads retain the first successful source.
- */
 export type ComputationContext = {
   to: ResolvedRoute,
   signal: AbortSignal,
-  getState: (location: ValueLocation) => DataResult,
-  subscribe: (location: ValueLocation) => Promise<CallbackContextResponse>,
-  getValue: (location: ValueLocation) => Promise<unknown>,
-  getValues: (locations: readonly ValueLocation[]) => Promise<unknown>[],
+  getValue: (key: string) => Promise<unknown>,
 }
 
 export type Computation = {
