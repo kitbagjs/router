@@ -8,7 +8,7 @@ test('uncomputed dependency warnings use the shared warning utility', () => {
   const warn = vi.spyOn(warnings, 'warn').mockImplementation(() => {})
   const route = createResolvedRoute(createRoute({ path: '/', name: 'home' }))
 
-  warnWaitingOnUncomputedValue({ kind: 'loader', id: route.id, name: 'default' }, route)
+  warnWaitingOnUncomputedValue({ kind: 'loader', depth: 0, name: 'default' }, route)
 
   expect(warn).toHaveBeenCalledOnce()
   warn.mockRestore()

@@ -10,7 +10,7 @@ describe('getDataKey', () => {
     const bigint = createParam({ get: (value) => BigInt(value), set: (value) => String(value) })
     const route = createRoute({ name: 'item', path: withParams('/item/[id]', { id: bigint }) })
 
-    expect(() => getDataKey('loader', 'id', 'name', createResolvedRoute(route, { id: 123n }))).not.toThrow()
+    expect(() => getDataKey({ kind: 'loader', depth: 0, name: 'name', route: createResolvedRoute(route, { id: 123n }) })).not.toThrow()
   })
 
   test('gives different set values different keys', () => {
@@ -20,8 +20,8 @@ describe('getDataKey', () => {
     })
     const route = createRoute({ name: 'item', path: withParams('/item/[ids]', { ids: set }) })
 
-    const a = getDataKey('props', 'id', 'name', createResolvedRoute(route, { ids: new Set(['a']) }))
-    const b = getDataKey('props', 'id', 'name', createResolvedRoute(route, { ids: new Set(['b']) }))
+    const a = getDataKey({ kind: 'props', depth: 0, name: 'name', route: createResolvedRoute(route, { ids: new Set(['a']) }) })
+    const b = getDataKey({ kind: 'props', depth: 0, name: 'name', route: createResolvedRoute(route, { ids: new Set(['b']) }) })
 
     expect(a).not.toBe(b)
   })
@@ -32,8 +32,8 @@ describe('getDataKey', () => {
     const withQuery = createResolvedRoute(route, {}, { query: { q: 'cats' } })
     const withHash = createResolvedRoute(route, {}, { hash: 'results' })
 
-    expect(getDataKey('props', 'id', 'name', withQuery)).not.toBe(getDataKey('props', 'id', 'name', plain))
-    expect(getDataKey('props', 'id', 'name', withHash)).not.toBe(getDataKey('props', 'id', 'name', plain))
+    expect(getDataKey({ kind: 'props', depth: 0, name: 'name', route: withQuery })).not.toBe(getDataKey({ kind: 'props', depth: 0, name: 'name', route: plain }))
+    expect(getDataKey({ kind: 'props', depth: 0, name: 'name', route: withHash })).not.toBe(getDataKey({ kind: 'props', depth: 0, name: 'name', route: plain }))
   })
 })
 
@@ -45,8 +45,8 @@ test('the same route structure produces the same keys despite different generate
   const client = createResolvedRoute(createRoute({ parent: clientParent, name: 'user', path: '[id]' }), { id: '42' })
 
   expect(server.id).not.toBe(client.id)
-  expect(getDataKey('props', serverParent.id, 'default', server)).toBe(getDataKey('props', clientParent.id, 'default', client))
-  expect(getDataKey('loader', server.id, 'user', server)).toBe(getDataKey('loader', client.id, 'user', client))
+  expect(getDataKey({ kind: 'props', depth: 0, name: 'default', route: server })).toBe(getDataKey({ kind: 'props', depth: 0, name: 'default', route: client }))
+  expect(getDataKey({ kind: 'loader', depth: 1, name: 'user', route: server })).toBe(getDataKey({ kind: 'loader', depth: 1, name: 'user', route: client }))
 })
 
 test('distinguishes owning matches, kinds, names, and destination routes', () => {
@@ -54,11 +54,11 @@ test('distinguishes owning matches, kinds, names, and destination routes', () =>
   const first = createResolvedRoute(createRoute({ parent, name: 'first', path: 'page' }))
   const second = createResolvedRoute(createRoute({ parent, name: 'second', path: 'page' }))
   const keys = [
-    getDataKey('props', parent.id, 'default', first),
-    getDataKey('props', first.id, 'default', first),
-    getDataKey('loader', first.id, 'default', first),
-    getDataKey('loader', first.id, 'other', first),
-    getDataKey('props', parent.id, 'default', second),
+    getDataKey({ kind: 'props', depth: 0, name: 'default', route: first }),
+    getDataKey({ kind: 'props', depth: 1, name: 'default', route: first }),
+    getDataKey({ kind: 'loader', depth: 1, name: 'default', route: first }),
+    getDataKey({ kind: 'loader', depth: 1, name: 'other', route: first }),
+    getDataKey({ kind: 'props', depth: 0, name: 'default', route: second }),
   ]
 
   expect(new Set(keys).size).toBe(keys.length)
@@ -70,10 +70,10 @@ test('includes serialized state from both parent and child matches', () => {
   const first = createResolvedRoute(route, {}, { state: { locale: 'en', page: 1 } })
   const changedParent = createResolvedRoute(route, {}, { state: { locale: 'fr', page: 1 } })
   const changedChild = createResolvedRoute(route, {}, { state: { locale: 'en', page: 2 } })
-  const key = getDataKey('loader', route.id, 'default', first)
+  const key = getDataKey({ kind: 'loader', depth: 1, name: 'default', route: first })
 
-  expect(getDataKey('loader', route.id, 'default', changedParent)).not.toBe(key)
-  expect(getDataKey('loader', route.id, 'default', changedChild)).not.toBe(key)
+  expect(getDataKey({ kind: 'loader', depth: 1, name: 'default', route: changedParent })).not.toBe(key)
+  expect(getDataKey({ kind: 'loader', depth: 1, name: 'default', route: changedChild })).not.toBe(key)
 })
 
 test('uses state serializers and ignores state declaration order', () => {
@@ -83,11 +83,11 @@ test('uses state serializers and ignores state declaration order', () => {
   const server = createResolvedRoute(serverRoute, {}, { state: { date: new Date('2026-01-01'), page: 1 } })
   const client = createResolvedRoute(clientRoute, {}, { state: { page: 1, date: '2026-01-01T00:00:00.000Z' } })
 
-  expect(getDataKey('loader', server.id, 'default', server)).toBe(getDataKey('loader', client.id, 'default', client))
+  expect(getDataKey({ kind: 'loader', depth: 0, name: 'default', route: server })).toBe(getDataKey({ kind: 'loader', depth: 0, name: 'default', route: client }))
 })
 
 test('unattached loader keys remain distinct', () => {
   const route = createResolvedRoute(createRoute({ name: 'home', path: '/' }))
 
-  expect(getDataKey('loader', 'fallback-1', 'default', route)).not.toBe(getDataKey('loader', 'fallback-2', 'default', route))
+  expect(getDataKey({ kind: 'loader', depth: -1, name: 'fallback-1', route })).not.toBe(getDataKey({ kind: 'loader', depth: -1, name: 'fallback-2', route }))
 })

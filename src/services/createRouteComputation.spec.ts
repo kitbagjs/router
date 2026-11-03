@@ -29,9 +29,8 @@ function runCallback<TRoute extends Route>(definition: TRoute, { kind = 'props',
   const signal = new AbortController().signal
   const callback = vi.fn()
   const computation = createRouteComputation({
-    location: { kind, id: definition.id, name: 'default' },
+    location: { kind, depth, name: 'default' },
     route: to,
-    depth,
     callback,
   })
 
@@ -52,9 +51,9 @@ test('route data selects default and named loaders lazily', async () => {
   await route.getData()
   await route.getData('default')
   await route.getData('count')
-  expect(getValue).toHaveBeenNthCalledWith(1, { kind: 'loader', id: definition.id, name: 'default' })
-  expect(getValue).toHaveBeenNthCalledWith(2, { kind: 'loader', id: definition.id, name: 'default' })
-  expect(getValue).toHaveBeenNthCalledWith(3, { kind: 'loader', id: definition.id, name: 'count' })
+  expect(getValue).toHaveBeenNthCalledWith(1, { kind: 'loader', depth: 0, name: 'default' })
+  expect(getValue).toHaveBeenNthCalledWith(2, { kind: 'loader', depth: 0, name: 'default' })
+  expect(getValue).toHaveBeenNthCalledWith(3, { kind: 'loader', depth: 0, name: 'count' })
 })
 
 test('parent data includes ancestors and excludes child loaders', async () => {
@@ -69,9 +68,9 @@ test('parent data includes ancestors and excludes child loaders', async () => {
   await context.parent.getData('ancestor')
   await context.parent.getData('count')
   expect(() => Reflect.apply(context.parent.getData, undefined, ['child'])).toThrow(TypeError)
-  expect(getValue).toHaveBeenNthCalledWith(1, { kind: 'loader', id: root.id, name: 'default' })
-  expect(getValue).toHaveBeenNthCalledWith(2, { kind: 'loader', id: root.id, name: 'ancestor' })
-  expect(getValue).toHaveBeenNthCalledWith(3, { kind: 'loader', id: parent.id, name: 'count' })
+  expect(getValue).toHaveBeenNthCalledWith(1, { kind: 'loader', depth: 0, name: 'default' })
+  expect(getValue).toHaveBeenNthCalledWith(2, { kind: 'loader', depth: 0, name: 'ancestor' })
+  expect(getValue).toHaveBeenNthCalledWith(3, { kind: 'loader', depth: 1, name: 'count' })
 })
 
 test('parent props select getters only from the immediate parent', async () => {
@@ -87,8 +86,8 @@ test('parent props select getters only from the immediate parent', async () => {
   for (const name of ['empty', 'ancestor']) {
     expect(() => Reflect.apply(context.parent.getProps, undefined, [name])).toThrow(TypeError)
   }
-  expect(getValue).toHaveBeenNthCalledWith(1, { kind: 'props', id: parent.id, name: 'default' })
-  expect(getValue).toHaveBeenNthCalledWith(2, { kind: 'props', id: parent.id, name: 'summary' })
+  expect(getValue).toHaveBeenNthCalledWith(1, { kind: 'props', depth: 1, name: 'default' })
+  expect(getValue).toHaveBeenNthCalledWith(2, { kind: 'props', depth: 1, name: 'summary' })
 })
 
 test('callback data and parent getters preserve reader failures', async () => {
@@ -116,11 +115,11 @@ test('legacy getters delegate names and their reader to the legacy adapter', () 
   expect(Reflect.get(context.parent, 'data')).toBe(legacy)
   expect(Reflect.get(context.parent, 'props')).toBe(legacy)
   expect(adapt).toHaveBeenNthCalledWith(1, [
-    expect.objectContaining({ kind: 'loader', id: parent.id, name: 'default' }),
-    expect.objectContaining({ kind: 'loader', id: child.id, name: 'child' }),
+    expect.objectContaining({ kind: 'loader', depth: 0, name: 'default' }),
+    expect.objectContaining({ kind: 'loader', depth: 1, name: 'child' }),
   ], getValue)
-  expect(adapt).toHaveBeenNthCalledWith(2, [{ kind: 'loader', id: parent.id, name: 'default' }], getValue)
-  expect(adapt).toHaveBeenNthCalledWith(3, [{ kind: 'props', id: parent.id, name: 'default' }], getValue)
+  expect(adapt).toHaveBeenNthCalledWith(2, [{ kind: 'loader', depth: 0, name: 'default' }], getValue)
+  expect(adapt).toHaveBeenNthCalledWith(3, [{ kind: 'props', depth: 0, name: 'default' }], getValue)
   expect(getValue).not.toHaveBeenCalled()
 })
 

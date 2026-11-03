@@ -238,13 +238,13 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     }
 
     const getState: NavigationData['getState'] = (location, route) => {
-      const key = getDataKey(location.kind, location.id, location.name, route)
+      const key = getDataKey({ ...location, route })
 
       return data.get(key)
     }
 
     const subscribe: NavigationData['subscribe'] = (location, route) => {
-      const key = getDataKey(location.kind, location.id, location.name, route)
+      const key = getDataKey({ ...location, route })
 
       return data.subscribe(key)
     }
@@ -293,7 +293,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
   const setEntries: NavigationData['setEntries'] = (entries) => navigations.current.setEntries(entries)
 
   function getCallbackValue(location: ValueLocation, route: ResolvedRoute, { store, signal }: CallbackValueContext): Promise<unknown> {
-    const key = getDataKey(location.kind, location.id, location.name, route)
+    const key = getDataKey({ ...location, route })
     const current = navigations.current.data
 
     if (store === current) {

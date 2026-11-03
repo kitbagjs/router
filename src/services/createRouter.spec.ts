@@ -1786,7 +1786,7 @@ describe('router.render response', () => {
     const payload: unknown = JSON.parse(response.payload.replace(/^<script[^>]*>/, '').replace(/<\/script>$/, ''))
 
     expect(payload).toMatchObject({
-      values: [{ key: getDataKey('loader', route.id, 'default', router.resolve('route')), encoded: '[["a",1]]' }],
+      values: [{ key: getDataKey({ kind: 'loader', depth: 0, name: 'default', route: router.resolve('route') }), encoded: '[["a",1]]' }],
     })
   })
 

@@ -26,9 +26,8 @@ afterEach(() => {
 function createComputation(route: ResolvedRoute, run: Computation['run'], kind: DataKind = 'loader', name = 'default'): Computation {
   return {
     kind,
-    id: route.id,
     name,
-    key: getDataKey(kind, route.id, name, route),
+    key: getDataKey({ kind, depth: 0, name, route }),
     depth: 0,
     run,
     routePrefetch: undefined,

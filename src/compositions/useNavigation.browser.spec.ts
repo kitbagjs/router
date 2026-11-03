@@ -48,7 +48,7 @@ test('the values update through a navigation', async () => {
 
 test('a hydrating navigation counts nothing', async () => {
   const serverRoute = createResolvedRoute(createRoute({ name: 'home', path: '/' }))
-  const key = getDataKey('loader', serverRoute.id, 'default', serverRoute)
+  const key = getDataKey({ kind: 'loader', depth: 0, name: 'default', route: serverRoute })
 
   document.body.innerHTML = payloadToScript({
     kind: 'success',

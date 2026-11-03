@@ -12,7 +12,7 @@ test('pending props report abandonment when their navigation is disposed', async
   const pending = Promise.withResolvers<CallbackContextResponse>()
   const getState = vi.fn<NavigationData['getState']>().mockReturnValue({ status: 'RUNNING' })
   const subscribe = vi.fn<NavigationData['subscribe']>().mockReturnValue(pending.promise)
-  const location = { kind: 'props', id: route.id, name: 'default' } as const
+  const location = { kind: 'props', depth: 0, name: 'default' } as const
   const props = getRouteProps({ getState, subscribe }, location, route)
 
   expect(subscribe).toHaveBeenCalledExactlyOnceWith(location, route)
@@ -27,7 +27,7 @@ test('pending and settled errors become props error results', async () => {
   const pending = Promise.withResolvers<CallbackContextResponse>()
   const getState = vi.fn<NavigationData['getState']>().mockReturnValue({ status: 'RUNNING' })
   const subscribe = vi.fn<NavigationData['subscribe']>().mockReturnValue(pending.promise)
-  const location = { kind: 'props', id: route.id, name: 'default' } as const
+  const location = { kind: 'props', depth: 0, name: 'default' } as const
   const props = getRouteProps({ getState, subscribe }, location, route)
   const error = new Error('props failed')
   const response = { status: 'ERROR', source: 'props', error } as const
@@ -47,7 +47,7 @@ test.each([
   const getState = vi.fn<NavigationData['getState']>().mockReturnValue(response)
   const subscribe = vi.fn<NavigationData['subscribe']>()
 
-  expect(getRouteProps({ getState, subscribe }, { kind: 'props', id: route.id, name: 'default' }, route)).toEqual({ kind: 'abandoned' })
+  expect(getRouteProps({ getState, subscribe }, { kind: 'props', depth: 0, name: 'default' }, route)).toEqual({ kind: 'abandoned' })
   expect(subscribe).not.toHaveBeenCalled()
 })
 
@@ -56,7 +56,17 @@ test('a view without a props getter does not read or subscribe to a computation'
   const getState = vi.fn<NavigationData['getState']>()
   const subscribe = vi.fn<NavigationData['subscribe']>()
 
-  expect(getRouteProps({ getState, subscribe }, { kind: 'props', id: route.id, name: 'default' }, route)).toEqual({ kind: 'value', value: undefined })
+  expect(getRouteProps({ getState, subscribe }, { kind: 'props', depth: 0, name: 'default' }, route)).toEqual({ kind: 'value', value: undefined })
+  expect(getState).not.toHaveBeenCalled()
+  expect(subscribe).not.toHaveBeenCalled()
+})
+
+test('a view whose route is no longer matched does not read destination props', () => {
+  const route = createResolvedRoute(createRoute({ path: '/next' }).addView(component, { props: () => ({ value: 'next' }) }))
+  const getState = vi.fn<NavigationData['getState']>()
+  const subscribe = vi.fn<NavigationData['subscribe']>()
+
+  expect(getRouteProps({ getState, subscribe }, { kind: 'props', depth: -1, name: 'default' }, route)).toEqual({ kind: 'value', value: undefined })
   expect(getState).not.toHaveBeenCalled()
   expect(subscribe).not.toHaveBeenCalled()
 })

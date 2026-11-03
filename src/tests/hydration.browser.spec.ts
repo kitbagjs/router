@@ -11,7 +11,7 @@ import { z } from 'zod'
 function getServerKey(): string {
   const route = createResolvedRoute(createRoute({ name: 'home', path: '/' }))
 
-  return getDataKey('loader', route.id, 'default', route)
+  return getDataKey({ kind: 'loader', depth: 0, name: 'default', route })
 }
 
 function embed(payload: RouterPayload): void {
@@ -197,7 +197,7 @@ test('hydration uses the initial history state when matching stored values', asy
   window.history.replaceState({ usr: { page: '2' } }, '')
 
   const serverRoute = createResolvedRoute(createRoute({ name: 'home', path: '/', state: { page: Number } }), {}, { state: { page: 2 } })
-  const key = getDataKey('loader', serverRoute.id, 'default', serverRoute)
+  const key = getDataKey({ kind: 'loader', depth: 0, name: 'default', route: serverRoute })
 
   embed({
     kind: 'success',

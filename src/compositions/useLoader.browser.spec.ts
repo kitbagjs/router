@@ -491,7 +491,7 @@ test('retains settled data while another navigation waits on a guard', async () 
 
 test('reads hydrated data without rerunning the loader', async () => {
   const serverRoute = createResolvedRoute(createRoute({ name: 'home', path: '/' }))
-  const key = getDataKey('loader', serverRoute.id, 'default', serverRoute)
+  const key = getDataKey({ kind: 'loader', depth: 0, name: 'default', route: serverRoute })
 
   document.body.insertAdjacentHTML('beforeend', payloadToScript({
     kind: 'success',

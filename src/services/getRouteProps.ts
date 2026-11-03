@@ -6,14 +6,18 @@ import { CallbackContextResponse } from '@/types/callbackContext'
 import { PropsResult } from '@/utilities/props'
 import { unwrapComputationResponse } from '@/utilities/unwrapComputationResponse'
 
-export function getRouteProps(store: Pick<NavigationData, 'getState' | 'subscribe'>, { id, name }: ValueLocation<'props'>, route: ResolvedRoute): MaybePromise<PropsResult> {
-  const match = route.matches.find((match) => match.id === id)
+export function getRouteProps(store: Pick<NavigationData, 'getState' | 'subscribe'>, { depth, name }: ValueLocation<'props'>, route: ResolvedRoute): MaybePromise<PropsResult> {
+  if (depth < 0) {
+    return NO_PROPS
+  }
+
+  const match = route.matches.at(depth)
 
   if (!match?.views[name]?.props) {
     return NO_PROPS
   }
 
-  const location: ValueLocation<'props'> = { kind: 'props', id, name }
+  const location: ValueLocation<'props'> = { kind: 'props', depth, name }
   const result = store.getState(location, route)
 
   switch (result.status) {
