@@ -6,8 +6,7 @@ import { IS_ROUTER_ROUTE_SYMBOL, RouterRoute, RouterRouteInternal } from '@/type
 import { RouterPush, RouterPushOptions } from '@/types/routerPush'
 import { QuerySource } from '@/types/querySource'
 import { Router } from '@/types/router'
-import { DataRecord } from '@/types/data'
-import { toLegacyValues } from '@/utilities/toLegacyValues'
+import { LegacyValues } from '@/utilities/toLegacyValues'
 import { isPropertyKey } from '@/utilities/guards'
 
 export function isRouterRoute(routerKey: InjectionKey<Router>, value: unknown): value is RouterRoute & RouterRouteInternal {
@@ -18,7 +17,7 @@ type CreateRouterRouteOptions<TRouter extends Router = Router> = {
   routerKey: InjectionKey<TRouter>,
   route: ResolvedRoute,
   push: RouterPush,
-  getRouteData: (route: ResolvedRoute) => DataRecord,
+  getRouteData: (route: ResolvedRoute) => LegacyValues,
 }
 
 export function createRouterRoute<TRouter extends Router>(options: CreateRouterRouteOptions<TRouter>): TRouter['route'] & RouterRouteInternal
@@ -93,7 +92,7 @@ export function createRouterRoute({ routerKey, route: initialRoute, push, getRou
   const hash = computed(() => route.value.hash)
   const href = computed(() => route.value.href)
   const canonical = computed(() => route.value.canonical)
-  const data = computed(() => toLegacyValues(getRouteData(route.value)))
+  const data = computed(() => getRouteData(route.value))
   const getTitle = computed(() => route.value.getTitle)
   const getParam = computed(() => route.value.getParam)
   const getAllParams = computed(() => route.value.getAllParams)

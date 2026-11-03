@@ -1,16 +1,26 @@
+import { markRaw } from 'vue'
+import { ValueLocation } from '@/services/getComputations'
 import { DataRecord } from '@/types/data'
 
-export function toLegacyValues(values: DataRecord): Promise<unknown> | DataRecord | undefined {
-  // Inspect names without reading descriptors so unused values stay lazy.
-  const names = Object.getOwnPropertyNames(values)
+export type LegacyValues = Promise<unknown> | DataRecord | undefined
 
-  if (names.length === 0) {
+export function toLegacyValues(locations: readonly ValueLocation[], getValue: (location: ValueLocation) => Promise<unknown>): LegacyValues {
+  if (locations.length === 0) {
     return undefined
   }
 
-  if (names.length === 1 && names[0] === 'default') {
-    return values.default
+  if (locations.length === 1 && locations[0].name === 'default') {
+    return getValue(locations[0])
   }
 
-  return values
+  const values: DataRecord = {}
+
+  for (const location of locations) {
+    Object.defineProperty(values, location.name, {
+      enumerable: true,
+      get: () => getValue(location),
+    })
+  }
+
+  return markRaw(values)
 }

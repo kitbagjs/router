@@ -4,7 +4,6 @@ import { CreatedRouteOptions } from '@/types/route'
 import { viewNamesWithProps } from '@/services/routeViews'
 import { DataKind } from '@/services/getDataKey'
 import { AnyPayloadTransformer } from '@/services/payload'
-import { DataRecord } from '@/types/data'
 import { DataResult } from '@/services/createDataStore'
 import { CallbackContextResponse } from '@/types/callbackContext'
 import { createRouteComputation } from '@/services/createRouteComputation'
@@ -22,7 +21,7 @@ export type ComputationContext = {
   getState: (location: ValueLocation) => DataResult,
   subscribe: (location: ValueLocation) => Promise<CallbackContextResponse>,
   getValue: (location: ValueLocation) => Promise<unknown>,
-  getValues: (locations: readonly ValueLocation[]) => DataRecord,
+  getValues: (locations: readonly ValueLocation[]) => Promise<unknown>[],
 }
 
 export type Computation = {

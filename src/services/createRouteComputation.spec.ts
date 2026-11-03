@@ -15,11 +15,10 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
-function runCallback<TRoute extends Route>(definition: TRoute, { kind = 'props', depth = 0, getValue = vi.fn().mockResolvedValue('value'), getValues = vi.fn().mockReturnValue({}) }: {
+function runCallback<TRoute extends Route>(definition: TRoute, { kind = 'props', depth = 0, getValue = vi.fn().mockResolvedValue('value') }: {
   kind?: DataKind,
   depth?: number,
   getValue?: ComputationContext['getValue'],
-  getValues?: ComputationContext['getValues'],
 } = {}): {
   route: ResolvedRoute<TRoute> & WithData<TRoute>,
   context: RouteCallbackContext<TRoute>,
@@ -36,7 +35,7 @@ function runCallback<TRoute extends Route>(definition: TRoute, { kind = 'props',
     callback,
   })
 
-  computation.run({ to, signal, getValue, getValues, getState: vi.fn(), subscribe: vi.fn() })
+  computation.run({ to, signal, getValue, getValues: vi.fn(), getState: vi.fn(), subscribe: vi.fn() })
   const [route, context] = callback.mock.calls[0]
 
   return { route, context, getValue, signal }
@@ -105,26 +104,23 @@ test('callback data and parent getters preserve reader failures', async () => {
   await expect(context.parent.getProps()).rejects.toBe(error)
 })
 
-test('legacy getters request value records from their computation context', () => {
-  const values = { default: Promise.resolve('value') }
-  const getValues = vi.fn<ComputationContext['getValues']>().mockReturnValue(values)
+test('legacy getters delegate names and their reader to the legacy adapter', () => {
   const legacy = Promise.resolve('legacy')
   const adapt = vi.spyOn(legacyValues, 'toLegacyValues').mockReturnValue(legacy)
   const parent = createRoute({ path: '/' }).addLoader(() => 'parent')
     .addView(component, { props: () => ({}) })
   const child = createRoute({ parent, path: 'child' }).addLoader(() => 'child', { name: 'child' })
-  const { route, context, getValue } = runCallback(child, { depth: 1, getValues })
+  const { route, context, getValue } = runCallback(child, { depth: 1 })
 
   expect(Reflect.get(route, 'data')).toBe(legacy)
   expect(Reflect.get(context.parent, 'data')).toBe(legacy)
   expect(Reflect.get(context.parent, 'props')).toBe(legacy)
-  expect(getValues).toHaveBeenNthCalledWith(1, [
+  expect(adapt).toHaveBeenNthCalledWith(1, [
     expect.objectContaining({ kind: 'loader', id: parent.id, name: 'default' }),
     expect.objectContaining({ kind: 'loader', id: child.id, name: 'child' }),
-  ])
-  expect(getValues).toHaveBeenNthCalledWith(2, [{ kind: 'loader', id: parent.id, name: 'default' }])
-  expect(getValues).toHaveBeenNthCalledWith(3, [{ kind: 'props', id: parent.id, name: 'default' }])
-  expect(adapt).toHaveBeenCalledWith(values)
+  ], getValue)
+  expect(adapt).toHaveBeenNthCalledWith(2, [{ kind: 'loader', id: parent.id, name: 'default' }], getValue)
+  expect(adapt).toHaveBeenNthCalledWith(3, [{ kind: 'props', id: parent.id, name: 'default' }], getValue)
   expect(getValue).not.toHaveBeenCalled()
 })
 

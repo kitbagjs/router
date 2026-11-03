@@ -91,34 +91,20 @@ describe('reads', () => {
     expect(navigation.getSettledValues(route, 'props')).toEqual([propsValue])
   })
 
-  test('value records enumerate names without reading and resolve properties lazily', async () => {
-    const { route, computation } = createFixture(() => 'default')
-    const named = createComputation(route, () => 42, 'loader', 'count')
-    registry.set(route.id, [computation, named])
+  test('getValues preserves input order and distinct locations sharing a name', async () => {
+    const first = Promise.withResolvers<string>()
+    const second = Promise.withResolvers<string>()
+    const { route, computation } = createFixture(() => first.promise)
+    const props = createComputation(route, () => second.promise, 'props')
+    registry.set(route.id, [computation, props])
     const navigation = createRouterNavigation()
-    await Promise.all(navigation.commit({ to: route, from: null }))
-    const read = vi.spyOn(navigation.current(), 'getValue')
-    const values = navigation.getValues([computation, named], route)
+    navigation.commit({ to: route, from: null })
+    const values = navigation.getValues([props, computation], route)
 
-    expect(Object.getOwnPropertyNames(values)).toEqual(['default', 'count'])
-    expect('count' in values).toBe(true)
-    expect(read).not.toHaveBeenCalled()
-    await expect(values.count).resolves.toBe(42)
-    expect(read).toHaveBeenCalledExactlyOnceWith(named, route)
-    expect(values.missing).toBeUndefined()
-  })
+    first.resolve('loader')
+    second.resolve('props')
 
-  test('retained value records follow the current navigation instead of caching earlier values', async () => {
-    let value = 'first'
-    const { route, computation } = createFixture(() => value)
-    const navigation = createRouterNavigation()
-    await Promise.all(navigation.commit({ to: route, from: null }))
-    const values = navigation.getValues([computation], route)
-
-    await expect(values.default).resolves.toBe('first')
-    value = 'second'
-    await Promise.all(navigation.commit({ to: route, from: route }))
-    await expect(values.default).resolves.toBe('second')
+    await expect(Promise.all(values)).resolves.toEqual(['props', 'loader'])
   })
 })
 
@@ -362,7 +348,7 @@ describe('dependencies', () => {
     const { route, computation } = createFixture(() => 'loaded')
     const dependent = createComputation(route, (context) => {
       if (read === 'getValues') {
-        return context.getValues([computation]).default
+        return context.getValues([computation])[0]
       }
 
       return context.getValue(computation)

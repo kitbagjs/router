@@ -1,33 +1,37 @@
-import { expect, test, vi } from 'vitest'
-import { DataRecord } from '@/types/data'
+import { assert, expect, test, vi } from 'vitest'
+import { ValueLocation } from '@/services/getComputations'
 import { toLegacyValues } from '@/utilities/toLegacyValues'
 
-test('adapting named legacy values does not read their property descriptors', () => {
-  const descriptor = vi.fn(Reflect.getOwnPropertyDescriptor)
-  const values = new Proxy<DataRecord>({
-    first: Promise.resolve('first'),
-    second: Promise.resolve('second'),
-  }, { getOwnPropertyDescriptor: descriptor })
+test('no locations have no legacy value and do not read', () => {
+  const getValue = vi.fn()
 
-  expect(toLegacyValues(values)).toBe(values)
-  expect(descriptor).not.toHaveBeenCalled()
+  expect(toLegacyValues([], getValue)).toBeUndefined()
+  expect(getValue).not.toHaveBeenCalled()
 })
 
-test('empty records have no legacy value', () => {
-  expect(toLegacyValues({})).toBeUndefined()
-})
-
-test('a single default loader keeps its promise as the legacy value', () => {
+test('a single default location returns its promise directly', () => {
   const value = Promise.resolve('default')
+  const getValue = vi.fn().mockReturnValue(value)
+  const location = { kind: 'loader', id: 'route', name: 'default' } as const
 
-  expect(toLegacyValues({ default: value })).toBe(value)
+  expect(toLegacyValues([location], getValue)).toBe(value)
+  expect(getValue).toHaveBeenCalledExactlyOnceWith(location)
 })
 
-test('named loaders retain the record even when a default loader is present', () => {
-  const values = {
-    default: Promise.resolve('default'),
-    count: Promise.resolve(42),
-  }
+test.each([
+  { names: ['count'] },
+  { names: ['default', 'count'] },
+])('named locations $names produce a lazy record', async ({ names }) => {
+  const locations = names.map((name): ValueLocation => ({ kind: 'loader', id: 'route', name }))
+  const getValue = vi.fn((location: ValueLocation) => Promise.resolve(location.name))
+  const values = toLegacyValues(locations, getValue)
+  assert(values && !(values instanceof Promise))
 
-  expect(toLegacyValues(values)).toBe(values)
+  expect(Object.keys(values)).toEqual(names)
+  expect('count' in values).toBe(true)
+  expect(getValue).not.toHaveBeenCalled()
+  await expect(values.count).resolves.toBe('count')
+  expect(getValue).toHaveBeenCalledExactlyOnceWith({ kind: 'loader', id: 'route', name: 'count' })
+  getValue.mockResolvedValue('updated')
+  await expect(values.count).resolves.toBe('updated')
 })
