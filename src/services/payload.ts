@@ -1,4 +1,3 @@
-import { DataKind } from '@/services/getDataKey'
 import { isRecord } from '@/utilities/guards'
 import { isBrowser } from '@/utilities/isBrowser'
 import { DataEntry } from '@/services/createDataStore'
@@ -61,9 +60,7 @@ export const jsonTransformer: PayloadTransformer = {
 }
 
 export type PayloadValue = {
-  kind: DataKind,
-  depth: number,
-  name: string,
+  key: string,
   encoded: string,
 }
 
@@ -90,15 +87,9 @@ type RejectPayload = {
   rejection: string,
 }
 
-function isDataKind(value: unknown): value is DataKind {
-  return value === 'props' || value === 'loader'
-}
-
 function isPayloadValue(value: unknown): value is PayloadValue {
   return isRecord(value)
-    && isDataKind(value.kind)
-    && typeof value.depth === 'number'
-    && typeof value.name === 'string'
+    && typeof value.key === 'string'
     && typeof value.encoded === 'string'
 }
 
@@ -162,7 +153,7 @@ export function encodePayloadValues(route: ResolvedRoute, values: DataEntry[], f
       continue
     }
 
-    const { kind, depth, name, transformer = fallback } = computation
+    const { kind, name, transformer = fallback } = computation
 
     try {
       const string = transformer.stringify(value)
@@ -171,7 +162,7 @@ export function encodePayloadValues(route: ResolvedRoute, values: DataEntry[], f
         throw new Error(`stringify returned ${typeof string}`)
       }
 
-      encoded.push({ kind, depth, name, encoded: string })
+      encoded.push({ key, encoded: string })
     } catch (error) {
       const failure = new PayloadValueError('stringify', kind, name, error)
 
@@ -191,25 +182,25 @@ export function encodePayloadValues(route: ResolvedRoute, values: DataEntry[], f
 export function decodePayloadValues(route: ResolvedRoute, values: PayloadValue[], fallback: PayloadTransformer = jsonTransformer): DataEntry[] {
   const computations = getComputations(route)
 
-  for (const { kind, depth, name } of computations) {
-    const present = values.some((value) => value.kind === kind && value.depth === depth && value.name === name)
+  for (const { kind, key, name } of computations) {
+    const present = values.some((value) => value.key === key)
 
     if (!present) {
       console.warn(`The payload has no value for ${kind} "${name}". Its getter runs again, which can cause a hydration mismatch.`)
     }
   }
 
-  return values.flatMap(({ kind, depth, name, encoded }) => {
-    const computation = computations.find((computation) => computation.kind === kind && computation.depth === depth && computation.name === name)
+  return values.flatMap(({ key, encoded }) => {
+    const computation = computations.find((computation) => computation.key === key)
 
     if (!computation) {
       return []
     }
 
-    const transformer = computation.transformer ?? fallback
+    const { kind, name, transformer = fallback } = computation
 
     try {
-      return [{ key: computation.key, value: transformer.parse(encoded) as unknown }]
+      return [{ key, value: transformer.parse(encoded) as unknown }]
     } catch (error) {
       const failure = new PayloadValueError('parse', kind, name, error)
 

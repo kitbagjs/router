@@ -682,7 +682,7 @@ export function createRouter<
    * paint matches the markup already in the dom.
    */
   async function hydrate(payload: RouterPayload): Promise<void> {
-    const to = find(initialUrl) ?? null
+    const to = find(initialUrl, { state: initialState ?? undefined }) ?? null
 
     if (!to) {
       reject(NOT_FOUND_REJECTION_TYPE, { to, from: null })
