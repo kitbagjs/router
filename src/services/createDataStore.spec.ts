@@ -195,42 +195,37 @@ test('onSettled reports a value once when its work finishes', async () => {
   })
 })
 
-test('getEntries includes pending, running, successful, failed, and abandoned results', () => {
+test('getEntries returns resolved values and omits unfinished or failed work', () => {
   const controller = new AbortController()
   const store = createDataStore({ signal: controller.signal })
-  const error = new Error('failed')
   store.subscribe('pending')
   store.set('running', () => new Promise(() => {}))
   store.set('success', () => computedResponse)
-  store.set('error', () => ({ status: 'ERROR', source: 'loader', error }))
+  store.set('undefined', () => ({ status: 'SUCCESS', value: undefined }))
+  store.set('error', () => ({ status: 'ERROR', source: 'loader', error: new Error('failed') }))
+  const expected = [
+    { key: 'success', value: 'computed' },
+    { key: 'undefined', value: undefined },
+  ]
 
-  expect(store.getEntries()).toEqual([
-    { key: 'pending', value: { status: 'PENDING' } },
-    { key: 'running', value: { status: 'RUNNING' } },
-    { key: 'success', value: computedResponse },
-    { key: 'error', value: { status: 'ERROR', source: 'loader', error } },
-  ])
+  expect(store.getEntries()).toEqual(expected)
 
   controller.abort(new NavigationAbandonedError())
 
-  expect(store.getEntries().slice(0, 2)).toEqual([
-    { key: 'pending', value: { status: 'ABANDONED' } },
-    { key: 'running', value: { status: 'ABANDONED' } },
-  ])
+  expect(store.getEntries()).toEqual(expected)
 })
 
-test('setEntries fills settled results and resolves existing subscribers', async () => {
+test('setEntries fills values and resolves existing subscribers', async () => {
   const store = createDataStore({ signal: new AbortController().signal })
-  const error = new Error('failed')
-  const waiting = store.subscribe('success')
-  const values: { key: string, value: CallbackContextResponse }[] = [
-    { key: 'success', value: { status: 'SUCCESS', value: undefined } },
-    { key: 'error', value: { status: 'ERROR', source: 'loader', error } },
+  const waiting = store.subscribe('value')
+  const values = [
+    { key: 'value', value: 'loaded' },
+    { key: 'undefined', value: undefined },
   ]
 
   store.setEntries(values)
 
   expect(store.getEntries()).toEqual(values)
-  await expect(waiting).resolves.toEqual({ status: 'SUCCESS', value: undefined })
-  await expect(store.subscribe('error')).resolves.toEqual({ status: 'ERROR', source: 'loader', error })
+  await expect(waiting).resolves.toEqual({ status: 'SUCCESS', value: 'loaded' })
+  await expect(store.subscribe('undefined')).resolves.toEqual({ status: 'SUCCESS', value: undefined })
 })

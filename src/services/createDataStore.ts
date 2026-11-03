@@ -30,9 +30,9 @@ export type DataStoreSettledEvent = {
   result: DataResultSettled,
 }
 
-export type DataEntry<TValue extends DataResult = DataResult> = {
+export type DataEntry = {
   key: string,
-  value: TValue,
+  value: unknown,
 }
 
 type Entry = {
@@ -48,8 +48,8 @@ type Entry = {
  */
 export type DataStore = {
   getEntries: () => DataEntry[],
-  /** Fills settled responses without replacing existing results or running computations. */
-  setEntries: (entries: DataEntry<CallbackContextResponse>[]) => void,
+  /** Fills resolved values without replacing existing results or running computations. */
+  setEntries: (entries: DataEntry[]) => void,
   /**
    * The value for a key, whether or not anything has computed it yet. Subscribing to a key nobody has set
    * leaves a promise waiting for whoever does.
@@ -177,11 +177,23 @@ export function createDataStore({ signal, onSettled }: CreateDataStoreOptions): 
     }
   }, { once: true })
 
-  const getEntries: DataStore['getEntries'] = () => Array.from(entries, ([key, entry]) => ({ key, value: entry.state.value }))
+  const getEntries: DataStore['getEntries'] = () => {
+    const values: DataEntry[] = []
+
+    for (const [key, entry] of entries) {
+      const result = entry.state.value
+
+      if (result.status === 'SUCCESS') {
+        values.push({ key, value: result.value })
+      }
+    }
+
+    return values
+  }
 
   const setEntries: DataStore['setEntries'] = (values) => {
     for (const { key, value } of values) {
-      set(key, () => value)
+      set(key, () => ({ status: 'SUCCESS', value }))
     }
   }
 

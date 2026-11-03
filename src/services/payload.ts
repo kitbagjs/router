@@ -2,7 +2,6 @@ import { DataKind } from '@/services/getDataKey'
 import { isRecord } from '@/utilities/guards'
 import { isBrowser } from '@/utilities/isBrowser'
 import { DataEntry } from '@/services/createDataStore'
-import { CallbackContextSuccess } from '@/types/callbackContext'
 import { getComputations } from '@/services/getComputations'
 import { PayloadValueError } from '@/errors/payloadValueError'
 import { ResolvedRoute } from '@/types/resolved'
@@ -156,15 +155,14 @@ export function encodePayloadValues(route: ResolvedRoute, values: DataEntry[], f
   const encoded: PayloadValue[] = []
   const failures: PayloadValueError[] = []
 
-  for (const { key, value: result } of values) {
+  for (const { key, value } of values) {
     const computation = computations.find((computation) => computation.key === key)
 
-    if (!computation || result.status !== 'SUCCESS') {
+    if (!computation) {
       continue
     }
 
     const { kind, depth, name, transformer = fallback } = computation
-    const { value } = result
 
     try {
       const string = transformer.stringify(value)
@@ -190,7 +188,7 @@ export function encodePayloadValues(route: ResolvedRoute, values: DataEntry[], f
  * value that is missing from the payload or that cannot be read is warned about and left out, so its
  * getter runs again.
  */
-export function decodePayloadValues(route: ResolvedRoute, values: PayloadValue[], fallback: PayloadTransformer = jsonTransformer): DataEntry<CallbackContextSuccess>[] {
+export function decodePayloadValues(route: ResolvedRoute, values: PayloadValue[], fallback: PayloadTransformer = jsonTransformer): DataEntry[] {
   const computations = getComputations(route)
 
   for (const { kind, depth, name } of computations) {
@@ -211,7 +209,7 @@ export function decodePayloadValues(route: ResolvedRoute, values: PayloadValue[]
     const transformer = computation.transformer ?? fallback
 
     try {
-      return [{ key: computation.key, value: { status: 'SUCCESS', value: transformer.parse(encoded) as unknown } }]
+      return [{ key: computation.key, value: transformer.parse(encoded) as unknown }]
     } catch (error) {
       const failure = new PayloadValueError('parse', kind, name, error)
 

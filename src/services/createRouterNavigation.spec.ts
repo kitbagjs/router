@@ -83,8 +83,8 @@ describe('reads', () => {
     registry.set(route.id, [computation, props])
     const navigation = createRouterNavigation()
     await Promise.all(navigation.commit({ to: route, from: null }))
-    const loaderValue = { key: computation.key, value: { status: 'SUCCESS', value: 'loaded' } }
-    const propsValue = { key: props.key, value: { status: 'SUCCESS', value: { value: 'props' } } }
+    const loaderValue = { key: computation.key, value: 'loaded' }
+    const propsValue = { key: props.key, value: { value: 'props' } }
 
     expect(navigation.getEntries()).toEqual([loaderValue, propsValue])
   })
@@ -94,17 +94,17 @@ describe('reads', () => {
     const navigation = createRouterNavigation()
     const current = navigation.current()
     const prepared = navigation.create()
-    navigation.setEntries([{ key: computation.key, value: { status: 'SUCCESS', value: 'current' } }])
-    prepared.setEntries([{ key: computation.key, value: { status: 'SUCCESS', value: 'prepared' } }])
+    navigation.setEntries([{ key: computation.key, value: 'current' }])
+    prepared.setEntries([{ key: computation.key, value: 'prepared' }])
 
     expect(navigation.getEntries()).toEqual(current.getEntries())
-    expect(prepared.getEntries()).toEqual([{ key: computation.key, value: { status: 'SUCCESS', value: 'prepared' } }])
+    expect(prepared.getEntries()).toEqual([{ key: computation.key, value: 'prepared' }])
     prepared.stage()
     prepared.commit({ to: route, from: null })
-    navigation.setEntries([{ key: 'extra', value: { status: 'SUCCESS', value: 'extra' } }])
+    navigation.setEntries([{ key: 'extra', value: 'extra' }])
 
     expect(navigation.getEntries()).toEqual(prepared.getEntries())
-    expect(prepared.getEntries()).toContainEqual({ key: 'extra', value: { status: 'SUCCESS', value: 'extra' } })
+    expect(prepared.getEntries()).toContainEqual({ key: 'extra', value: 'extra' })
   })
 })
 
@@ -114,7 +114,7 @@ describe('navigation lifetime', () => {
     const { route, computation } = createFixture(run)
     const navigation = createRouterNavigation()
     const prepared = navigation.create()
-    prepared.setEntries([{ key: computation.key, value: { status: 'SUCCESS', value: 'filled' } }])
+    prepared.setEntries([{ key: computation.key, value: 'filled' }])
     prepared.stage()
     await Promise.all(navigation.commit({ to: route, from: null }))
 
@@ -180,7 +180,7 @@ describe('navigation lifetime', () => {
     const navigation = createRouterNavigation()
     const prepared = navigation.create()
     prepared.dispose()
-    prepared.setEntries([{ key: computation.key, value: { status: 'SUCCESS', value: 'filled' } }])
+    prepared.setEntries([{ key: computation.key, value: 'filled' }])
 
     expect(prepared.compute(route, [computation])).toEqual([])
     expect(prepared.commit({ to: route, from: null })).toEqual([])

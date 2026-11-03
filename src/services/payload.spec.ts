@@ -13,7 +13,7 @@ test('a payload is one of the two kinds the server renders', () => {
   expect(isRouterPayload({ url: '/', values: [] })).toBe(false)
 })
 
-test('encoding selects successful entries and decoding uses the client computation keys', async () => {
+test('encoding and decoding map values between server and client computation keys', async () => {
   const server = createResolvedRoute(createRoute({ path: '/' }).addLoader(() => 'loaded')
     .addLoader(() => new Promise(() => {}), { name: 'pending' })
     .addLoader(() => {
@@ -31,6 +31,6 @@ test('encoding selects successful entries and decoding uses the client computati
   const decoded = decodePayloadValues(client, values)
 
   expect(client.id).not.toBe(server.id)
-  expect(decoded).toEqual([{ key: computation.key, value: { status: 'SUCCESS', value: 'loaded' } }])
+  expect(decoded).toEqual([{ key: computation.key, value: 'loaded' }])
   store.abandon()
 })
