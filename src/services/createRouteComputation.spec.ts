@@ -15,10 +15,11 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
-function runCallback<TRoute extends Route>(definition: TRoute, { kind = 'props', depth = 0, getValue = vi.fn().mockResolvedValue('value') }: {
+function runCallback<TRoute extends Route>(definition: TRoute, { kind = 'props', depth = 0, getValue = vi.fn().mockResolvedValue('value'), getValues = vi.fn().mockReturnValue({}) }: {
   kind?: DataKind,
   depth?: number,
   getValue?: ComputationContext['getValue'],
+  getValues?: ComputationContext['getValues'],
 } = {}): {
   route: ResolvedRoute<TRoute> & WithData<TRoute>,
   context: RouteCallbackContext<TRoute>,
@@ -35,7 +36,7 @@ function runCallback<TRoute extends Route>(definition: TRoute, { kind = 'props',
     callback,
   })
 
-  computation.run({ to, signal, getValue, getState: vi.fn(), subscribe: vi.fn() })
+  computation.run({ to, signal, getValue, getValues, getState: vi.fn(), subscribe: vi.fn() })
   const [route, context] = callback.mock.calls[0]
 
   return { route, context, getValue, signal }
@@ -104,22 +105,26 @@ test('callback data and parent getters preserve reader failures', async () => {
   await expect(context.parent.getProps()).rejects.toBe(error)
 })
 
-test('legacy data and props getters delegate their lazy records to the legacy adapter', () => {
+test('legacy getters request value records from their computation context', () => {
+  const values = { default: Promise.resolve('value') }
+  const getValues = vi.fn<ComputationContext['getValues']>().mockReturnValue(values)
   const legacy = Promise.resolve('legacy')
   const adapt = vi.spyOn(legacyValues, 'toLegacyValues').mockReturnValue(legacy)
   const parent = createRoute({ path: '/' }).addLoader(() => 'parent')
     .addView(component, { props: () => ({}) })
   const child = createRoute({ parent, path: 'child' }).addLoader(() => 'child', { name: 'child' })
-  const { route, context, getValue } = runCallback(child, { depth: 1 })
+  const { route, context, getValue } = runCallback(child, { depth: 1, getValues })
 
   expect(Reflect.get(route, 'data')).toBe(legacy)
   expect(Reflect.get(context.parent, 'data')).toBe(legacy)
   expect(Reflect.get(context.parent, 'props')).toBe(legacy)
-  expect(adapt.mock.calls.map(([values]) => Object.getOwnPropertyNames(values))).toEqual([
-    ['default', 'child'],
-    ['default'],
-    ['default'],
+  expect(getValues).toHaveBeenNthCalledWith(1, [
+    expect.objectContaining({ kind: 'loader', id: parent.id, name: 'default' }),
+    expect.objectContaining({ kind: 'loader', id: child.id, name: 'child' }),
   ])
+  expect(getValues).toHaveBeenNthCalledWith(2, [{ kind: 'loader', id: parent.id, name: 'default' }])
+  expect(getValues).toHaveBeenNthCalledWith(3, [{ kind: 'props', id: parent.id, name: 'default' }])
+  expect(adapt).toHaveBeenCalledWith(values)
   expect(getValue).not.toHaveBeenCalled()
 })
 

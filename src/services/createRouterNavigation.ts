@@ -1,3 +1,5 @@
+import { markRaw } from 'vue'
+import { DataRecord } from '@/types/data'
 import { unwrapComputationResponse } from '@/utilities/unwrapComputationResponse'
 import { ResolvedRoute } from '@/types/resolved'
 import { ContextPushError } from '@/errors/contextPushError'
@@ -45,6 +47,8 @@ export type NavigationData = {
   getState: (location: ValueLocation, route: ResolvedRoute) => DataResult,
   subscribe: (location: ValueLocation, route: ResolvedRoute) => Promise<CallbackContextResponse>,
   getValue: (location: ValueLocation, route: ResolvedRoute) => Promise<unknown>,
+  /** A lazy record keyed by location name. */
+  getValues: (locations: readonly ValueLocation[], route: ResolvedRoute) => DataRecord,
 }
 
 export type RouterNavigationStore = NavigationData & {
@@ -90,9 +94,9 @@ export type RouterNavigationStores = HasVueAppStore & NavigationData & {
    */
   commit: (options: RouterNavigationCommitOptions) => Promise<CallbackContextResponse>[],
   /**
-   * The values currently settled in the store.
+   * Snapshots of the successfully settled values, used for navigation payloads.
    */
-  getValues: (route: ResolvedRoute, kind?: DataKind) => RouteValue[],
+  getSettledValues: (route: ResolvedRoute, kind?: DataKind) => RouteValue[],
 }
 
 export function createRouterNavigation({ onResponse }: CreateRouterNavigationOptions = {}): RouterNavigationStores {
@@ -170,6 +174,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
           getState: (location) => getState(location, route),
           subscribe: (location) => getCallbackResponse(location, route, { store: data, signal: controller.signal }),
           getValue: (location) => getCallbackValue(location, route, { store: data, signal: controller.signal }),
+          getValues: (locations) => toValueRecord(locations, (location) => getCallbackValue(location, route, { store: data, signal: controller.signal })),
         }))
 
         if (isPromise(value)) {
@@ -287,11 +292,14 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
     const getValue: NavigationData['getValue'] = (location, route) => toDataValue(subscribe(location, route))
 
+    const getValues: NavigationData['getValues'] = (locations, route) => toValueRecord(locations, (location) => getValue(location, route))
+
     const instance: RouterNavigationStore = {
       data,
       getState,
       subscribe,
       getValue,
+      getValues,
       compute,
       fill,
       stage,
@@ -320,7 +328,9 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
   const getValue: NavigationData['getValue'] = (location, route) => navigations.current.getValue(location, route)
 
-  const getValues: RouterNavigationStores['getValues'] = (route, expectedKind) => {
+  const getValues: NavigationData['getValues'] = (locations, route) => toValueRecord(locations, (location) => getValue(location, route))
+
+  const getSettledValues: RouterNavigationStores['getSettledValues'] = (route, expectedKind) => {
     const store = navigations.current.data
 
     return getComputations(route).flatMap(({ kind, depth, name, key }) => {
@@ -390,6 +400,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     create: createRouterNavigationStore,
     staged,
     commit,
+    getSettledValues,
     getValues,
     getState,
     subscribe,
@@ -443,4 +454,41 @@ async function firstToArrive(sources: Promise<unknown>[]): Promise<unknown> {
 
     throw error
   }
+}
+
+function toValueRecord(locations: readonly ValueLocation[], read: (location: ValueLocation) => Promise<unknown>): DataRecord {
+  const find = (property: string | symbol): ValueLocation | undefined => locations.find(({ name }) => name === property)
+
+  const values: DataRecord = {}
+
+  return markRaw(new Proxy(values, {
+    get(target, property) {
+      const location = find(property)
+
+      if (location) {
+        return read(location)
+      }
+
+      return Reflect.get(target, property)
+    },
+    has(target, property) {
+      return Boolean(find(property)) || Reflect.has(target, property)
+    },
+    ownKeys() {
+      return locations.map(({ name }) => name)
+    },
+    getOwnPropertyDescriptor(target, property) {
+      const location = find(property)
+
+      if (!location) {
+        return Reflect.getOwnPropertyDescriptor(target, property)
+      }
+
+      return {
+        configurable: true,
+        enumerable: true,
+        value: read(location),
+      }
+    },
+  }))
 }

@@ -1,32 +1,47 @@
 import { NavigationData } from '@/services/createRouterNavigation'
 import { getComputations, isKind } from '@/services/getComputations'
-import { toValueRecord } from '@/services/toValueRecord'
-import { CallbackContextResponse } from '@/types/callbackContext'
 import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
-import { unwrapComputationResponse } from '@/utilities/unwrapComputationResponse'
+import { isPromise } from '@/utilities/promises'
 import { DataRecord } from '@/types/data'
 import { ResolvedRoute } from '@/types/resolved'
 
-export function getRouteData(navigation: Pick<NavigationData, 'subscribe'>, route: ResolvedRoute): DataRecord {
+export function getRouteData(navigation: Pick<NavigationData, 'getValues'>, route: ResolvedRoute): DataRecord {
   const loaders = getComputations(route).filter(isKind('loader'))
+  const values = navigation.getValues(loaders, route)
+  const data = new Proxy(values, {
+    get(target, property, receiver) {
+      const value = Reflect.get(target, property, receiver)
 
-  return toValueRecord(loaders, (location) => {
-    const value = toComponentValue(navigation.subscribe(location, route))
+      if (isPromise(value)) {
+        return toComponentValue(value)
+      }
 
-    value.catch(() => {})
+      return value
+    },
+    getOwnPropertyDescriptor(target, property) {
+      const descriptor = Reflect.getOwnPropertyDescriptor(target, property)
 
-    return value
+      if (descriptor && isPromise(descriptor.value)) {
+        descriptor.value = toComponentValue(descriptor.value)
+      }
+
+      return descriptor
+    },
   })
+
+  return data
 }
 
-async function toComponentValue(response: Promise<CallbackContextResponse>): Promise<unknown> {
-  try {
-    return await response.then(unwrapComputationResponse)
-  } catch (error) {
+function toComponentValue(promise: Promise<unknown>): Promise<unknown> {
+  const value = promise.catch((error: unknown) => {
     if (error instanceof NavigationAbandonedError) {
       return new Promise<never>(() => {})
     }
 
     throw error
-  }
+  })
+
+  value.catch(() => {})
+
+  return value
 }

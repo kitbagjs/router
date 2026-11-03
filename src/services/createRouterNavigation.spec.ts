@@ -77,7 +77,7 @@ describe('reads', () => {
     await expect(navigation.subscribe(computation, route)).resolves.toEqual({ status: 'ERROR', source: kind, error })
   })
 
-  test('getValues collects successful values and can restrict their kind', async () => {
+  test('getSettledValues collects successful values and can restrict their kind', async () => {
     const { route, computation } = createFixture(() => 'loaded')
     const props = createComputation(route, () => ({ value: 'props' }), 'props')
     registry.set(route.id, [computation, props])
@@ -86,9 +86,39 @@ describe('reads', () => {
     const loaderValue = { kind: 'loader', depth: 0, name: 'default', value: 'loaded' }
     const propsValue = { kind: 'props', depth: 0, name: 'default', value: { value: 'props' } }
 
-    expect(navigation.getValues(route)).toEqual([loaderValue, propsValue])
-    expect(navigation.getValues(route, 'loader')).toEqual([loaderValue])
-    expect(navigation.getValues(route, 'props')).toEqual([propsValue])
+    expect(navigation.getSettledValues(route)).toEqual([loaderValue, propsValue])
+    expect(navigation.getSettledValues(route, 'loader')).toEqual([loaderValue])
+    expect(navigation.getSettledValues(route, 'props')).toEqual([propsValue])
+  })
+
+  test('value records enumerate names without reading and resolve properties lazily', async () => {
+    const { route, computation } = createFixture(() => 'default')
+    const named = createComputation(route, () => 42, 'loader', 'count')
+    registry.set(route.id, [computation, named])
+    const navigation = createRouterNavigation()
+    await Promise.all(navigation.commit({ to: route, from: null }))
+    const read = vi.spyOn(navigation.current(), 'getValue')
+    const values = navigation.getValues([computation, named], route)
+
+    expect(Object.getOwnPropertyNames(values)).toEqual(['default', 'count'])
+    expect('count' in values).toBe(true)
+    expect(read).not.toHaveBeenCalled()
+    await expect(values.count).resolves.toBe(42)
+    expect(read).toHaveBeenCalledExactlyOnceWith(named, route)
+    expect(values.missing).toBeUndefined()
+  })
+
+  test('retained value records follow the current navigation instead of caching earlier values', async () => {
+    let value = 'first'
+    const { route, computation } = createFixture(() => value)
+    const navigation = createRouterNavigation()
+    await Promise.all(navigation.commit({ to: route, from: null }))
+    const values = navigation.getValues([computation], route)
+
+    await expect(values.default).resolves.toBe('first')
+    value = 'second'
+    await Promise.all(navigation.commit({ to: route, from: route }))
+    await expect(values.default).resolves.toBe('second')
   })
 })
 
@@ -327,10 +357,16 @@ describe('response delivery', () => {
 })
 
 describe('dependencies', () => {
-  test('all subscriptions are queued before callbacks read later computations', async () => {
+  test.each(['getValue', 'getValues'] as const)('%s reads from the computation navigation after subscriptions are queued', async (read) => {
     const warn = vi.spyOn(waitingWarnings, 'warnWaitingOnUncomputedValue').mockImplementation(() => {})
     const { route, computation } = createFixture(() => 'loaded')
-    const dependent = createComputation(route, ({ getValue }) => getValue(computation), 'props')
+    const dependent = createComputation(route, (context) => {
+      if (read === 'getValues') {
+        return context.getValues([computation]).default
+      }
+
+      return context.getValue(computation)
+    }, 'props')
     registry.set(route.id, [dependent, computation])
     const navigation = createRouterNavigation()
     const prepared = navigation.create()
