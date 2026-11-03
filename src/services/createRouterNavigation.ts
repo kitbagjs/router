@@ -47,6 +47,14 @@ export type NavigationData = {
   getValue: (location: ValueLocation, route: ResolvedRoute) => Promise<unknown>,
   /** Promises in the same order as the supplied locations. */
   getValues: (locations: readonly ValueLocation[], route: ResolvedRoute) => Promise<unknown>[],
+  /**
+   * Snapshots of the successfully settled values, used for navigation payloads.
+   */
+  getSnapshot: (route: ResolvedRoute) => RouteValue[],
+  /**
+   * Adopts values that already settled, in place of running their getters.
+   */
+  setSnapshot: (route: ResolvedRoute, values: RouteValue[]) => void,
 }
 
 export type RouterNavigationStore = NavigationData & {
@@ -62,10 +70,6 @@ export type RouterNavigationStore = NavigationData & {
    * Computes the supplied values.
    */
   compute: (route: ResolvedRoute, computations: Computation[]) => Promise<CallbackContextResponse>[],
-  /**
-   * Adopts values that already settled, in place of running their getters.
-   */
-  setSnapshot: (route: ResolvedRoute, values: RouteValue[]) => void,
 }
 
 /**
@@ -91,10 +95,6 @@ export type RouterNavigationStores = HasVueAppStore & NavigationData & {
    * Makes the staged navigation current and computes whatever the route still lacks.
    */
   commit: (options: RouterNavigationCommitOptions) => Promise<CallbackContextResponse>[],
-  /**
-   * Snapshots of the successfully settled values, used for navigation payloads.
-   */
-  getSnapshot: (route: ResolvedRoute, kind?: DataKind) => RouteValue[],
 }
 
 export function createRouterNavigation({ onResponse }: CreateRouterNavigationOptions = {}): RouterNavigationStores {
@@ -203,6 +203,18 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
       }
     }
 
+    function getSnapshot(route: ResolvedRoute): RouteValue[] {
+      return getComputations(route).flatMap(({ kind, depth, name, key }) => {
+        const result = data.get(key)
+
+        if (result.status !== 'SUCCESS') {
+          return []
+        }
+
+        return [{ kind, depth, name, value: result.value }]
+      })
+    }
+
     function setSnapshot(route: ResolvedRoute, values: RouteValue[]): void {
       if (controller.signal.aborted) {
         return
@@ -301,6 +313,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
       getValue,
       getValues,
       compute,
+      getSnapshot,
       setSnapshot,
       stage,
       commit,
@@ -330,23 +343,9 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
   const getValues: NavigationData['getValues'] = (locations, route) => navigations.current.getValues(locations, route)
 
-  const getSnapshot: RouterNavigationStores['getSnapshot'] = (route, expectedKind) => {
-    const store = navigations.current.data
+  const getSnapshot: NavigationData['getSnapshot'] = (route) => navigations.current.getSnapshot(route)
 
-    return getComputations(route).flatMap(({ kind, depth, name, key }) => {
-      if (expectedKind !== undefined && kind !== expectedKind) {
-        return []
-      }
-
-      const result = store.get(key)
-
-      if (result.status !== 'SUCCESS') {
-        return []
-      }
-
-      return [{ kind, depth, name, value: result.value }]
-    })
-  }
+  const setSnapshot: NavigationData['setSnapshot'] = (route, values) => navigations.current.setSnapshot(route, values)
 
   function getCallbackValue(location: ValueLocation, route: ResolvedRoute, { store, signal }: CallbackValueContext): Promise<unknown> {
     const key = getDataKey(location.kind, location.id, location.name, route)
@@ -401,6 +400,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     staged,
     commit,
     getSnapshot,
+    setSnapshot,
     getValues,
     getState,
     subscribe,

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
-import { createRouterNavigation } from '@/services/createRouterNavigation'
+import { createRouterNavigation, RouteValue } from '@/services/createRouterNavigation'
 import { createResolvedRoute } from '@/services/createResolvedRoute'
 import { createRoute } from '@/services/createRoute'
 import { Computation } from '@/services/getComputations'
@@ -77,7 +77,7 @@ describe('reads', () => {
     await expect(navigation.subscribe(computation, route)).resolves.toEqual({ status: 'ERROR', source: kind, error })
   })
 
-  test('getSnapshot collects successful values and can restrict their kind', async () => {
+  test('getSnapshot collects successful values across kinds', async () => {
     const { route, computation } = createFixture(() => 'loaded')
     const props = createComputation(route, () => ({ value: 'props' }), 'props')
     registry.set(route.id, [computation, props])
@@ -87,8 +87,33 @@ describe('reads', () => {
     const propsValue = { kind: 'props', depth: 0, name: 'default', value: { value: 'props' } }
 
     expect(navigation.getSnapshot(route)).toEqual([loaderValue, propsValue])
-    expect(navigation.getSnapshot(route, 'loader')).toEqual([loaderValue])
-    expect(navigation.getSnapshot(route, 'props')).toEqual([propsValue])
+    expect(navigation.current().getSnapshot(route)).toEqual([loaderValue, propsValue])
+  })
+
+  test('snapshot methods use their own store and manager methods follow the current store', () => {
+    const { route } = createFixture(() => 'computed')
+    const navigation = createRouterNavigation()
+    const current = navigation.current()
+    const prepared = navigation.create()
+    const currentValues: RouteValue[] = [{ kind: 'loader', depth: 0, name: 'default', value: 'current' }]
+    const preparedValues: RouteValue[] = [{ kind: 'loader', depth: 0, name: 'default', value: 'prepared' }]
+
+    navigation.setSnapshot(route, currentValues)
+    prepared.setSnapshot(route, preparedValues)
+
+    expect(current.getSnapshot(route)).toEqual(currentValues)
+    expect(prepared.getSnapshot(route)).toEqual(preparedValues)
+    expect(navigation.getSnapshot(route)).toEqual(currentValues)
+
+    prepared.stage()
+    prepared.commit({ to: route, from: null })
+
+    const next = createFixture(() => 'next')
+    const nextValues: RouteValue[] = [{ kind: 'loader', depth: 0, name: 'default', value: 'next' }]
+    navigation.setSnapshot(next.route, nextValues)
+
+    expect(navigation.getSnapshot(route)).toEqual(preparedValues)
+    expect(prepared.getSnapshot(next.route)).toEqual(nextValues)
   })
 
   test('getValues preserves input order and distinct locations sharing a name', async () => {
