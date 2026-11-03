@@ -13,6 +13,5 @@ test('navigation readers accept locations for every computation kind', () => {
   expectTypeOf(navigation.getState(location, route)).toEqualTypeOf<DataResult>()
   expectTypeOf(navigation.subscribe(location, route)).toEqualTypeOf<Promise<CallbackContextResponse>>()
   expectTypeOf(navigation.getValue(location, route)).toEqualTypeOf<Promise<unknown>>()
-  expectTypeOf(navigation.getValues([location], route)).toEqualTypeOf<Promise<unknown>[]>()
   expectTypeOf(navigation.getState({ kind: 'props', id: route.id, name: 'default' }, route)).toEqualTypeOf<DataResult>()
 })

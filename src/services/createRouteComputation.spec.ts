@@ -35,7 +35,7 @@ function runCallback<TRoute extends Route>(definition: TRoute, { kind = 'props',
     callback,
   })
 
-  computation.run({ to, signal, getValue, getValues: vi.fn(), getState: vi.fn(), subscribe: vi.fn() })
+  computation.run({ to, signal, getValue, getState: vi.fn(), subscribe: vi.fn() })
   const [route, context] = callback.mock.calls[0]
 
   return { route, context, getValue, signal }

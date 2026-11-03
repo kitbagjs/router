@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
-import { createRouterNavigation, RouteValue } from '@/services/createRouterNavigation'
+import { createRouterNavigation } from '@/services/createRouterNavigation'
 import { createResolvedRoute } from '@/services/createResolvedRoute'
 import { createRoute } from '@/services/createRoute'
 import { Computation } from '@/services/getComputations'
@@ -77,7 +77,7 @@ describe('reads', () => {
     await expect(navigation.subscribe(computation, route)).resolves.toEqual({ status: 'ERROR', source: kind, error })
   })
 
-  test('getSnapshot collects successful values across kinds', async () => {
+  test('getValues collects successful values across kinds', async () => {
     const { route, computation } = createFixture(() => 'loaded')
     const props = createComputation(route, () => ({ value: 'props' }), 'props')
     registry.set(route.id, [computation, props])
@@ -86,50 +86,7 @@ describe('reads', () => {
     const loaderValue = { kind: 'loader', depth: 0, name: 'default', value: 'loaded' }
     const propsValue = { kind: 'props', depth: 0, name: 'default', value: { value: 'props' } }
 
-    expect(navigation.getSnapshot(route)).toEqual([loaderValue, propsValue])
-    expect(navigation.current().getSnapshot(route)).toEqual([loaderValue, propsValue])
-  })
-
-  test('snapshot methods use their own store and manager methods follow the current store', () => {
-    const { route } = createFixture(() => 'computed')
-    const navigation = createRouterNavigation()
-    const current = navigation.current()
-    const prepared = navigation.create()
-    const currentValues: RouteValue[] = [{ kind: 'loader', depth: 0, name: 'default', value: 'current' }]
-    const preparedValues: RouteValue[] = [{ kind: 'loader', depth: 0, name: 'default', value: 'prepared' }]
-
-    navigation.setSnapshot(route, currentValues)
-    prepared.setSnapshot(route, preparedValues)
-
-    expect(current.getSnapshot(route)).toEqual(currentValues)
-    expect(prepared.getSnapshot(route)).toEqual(preparedValues)
-    expect(navigation.getSnapshot(route)).toEqual(currentValues)
-
-    prepared.stage()
-    prepared.commit({ to: route, from: null })
-
-    const next = createFixture(() => 'next')
-    const nextValues: RouteValue[] = [{ kind: 'loader', depth: 0, name: 'default', value: 'next' }]
-    navigation.setSnapshot(next.route, nextValues)
-
-    expect(navigation.getSnapshot(route)).toEqual(preparedValues)
-    expect(prepared.getSnapshot(next.route)).toEqual(nextValues)
-  })
-
-  test('getValues preserves input order and distinct locations sharing a name', async () => {
-    const first = Promise.withResolvers<string>()
-    const second = Promise.withResolvers<string>()
-    const { route, computation } = createFixture(() => first.promise)
-    const props = createComputation(route, () => second.promise, 'props')
-    registry.set(route.id, [computation, props])
-    const navigation = createRouterNavigation()
-    navigation.commit({ to: route, from: null })
-    const values = navigation.getValues([props, computation], route)
-
-    first.resolve('loader')
-    second.resolve('props')
-
-    await expect(Promise.all(values)).resolves.toEqual(['props', 'loader'])
+    expect(navigation.getValues(route)).toEqual([loaderValue, propsValue])
   })
 })
 
@@ -139,7 +96,7 @@ describe('navigation lifetime', () => {
     const { route, computation } = createFixture(run)
     const navigation = createRouterNavigation()
     const prepared = navigation.create()
-    prepared.setSnapshot(route, [{ kind: 'loader', depth: 0, name: 'default', value: 'filled' }])
+    prepared.fill(route, [{ kind: 'loader', depth: 0, name: 'default', value: 'filled' }])
     prepared.stage()
     await Promise.all(navigation.commit({ to: route, from: null }))
 
@@ -205,7 +162,7 @@ describe('navigation lifetime', () => {
     const navigation = createRouterNavigation()
     const prepared = navigation.create()
     prepared.dispose()
-    prepared.setSnapshot(route, [{ kind: 'loader', depth: 0, name: 'default', value: 'filled' }])
+    prepared.fill(route, [{ kind: 'loader', depth: 0, name: 'default', value: 'filled' }])
 
     expect(prepared.compute(route, [computation])).toEqual([])
     expect(prepared.commit({ to: route, from: null })).toEqual([])
@@ -368,14 +325,10 @@ describe('response delivery', () => {
 })
 
 describe('dependencies', () => {
-  test.each(['getValue', 'getValues'] as const)('%s reads from the computation navigation after subscriptions are queued', async (read) => {
+  test('getValue reads from the computation navigation after subscriptions are queued', async () => {
     const warn = vi.spyOn(waitingWarnings, 'warnWaitingOnUncomputedValue').mockImplementation(() => {})
     const { route, computation } = createFixture(() => 'loaded')
     const dependent = createComputation(route, (context) => {
-      if (read === 'getValues') {
-        return context.getValues([computation])[0]
-      }
-
       return context.getValue(computation)
     }, 'props')
     registry.set(route.id, [dependent, computation])

@@ -45,16 +45,6 @@ export type NavigationData = {
   getState: (location: ValueLocation, route: ResolvedRoute) => DataResult,
   subscribe: (location: ValueLocation, route: ResolvedRoute) => Promise<CallbackContextResponse>,
   getValue: (location: ValueLocation, route: ResolvedRoute) => Promise<unknown>,
-  /** Promises in the same order as the supplied locations. */
-  getValues: (locations: readonly ValueLocation[], route: ResolvedRoute) => Promise<unknown>[],
-  /**
-   * Snapshots of the successfully settled values, used for navigation payloads.
-   */
-  getSnapshot: (route: ResolvedRoute) => RouteValue[],
-  /**
-   * Adopts values that already settled, in place of running their getters.
-   */
-  setSnapshot: (route: ResolvedRoute, values: RouteValue[]) => void,
 }
 
 export type RouterNavigationStore = NavigationData & {
@@ -70,6 +60,10 @@ export type RouterNavigationStore = NavigationData & {
    * Computes the supplied values.
    */
   compute: (route: ResolvedRoute, computations: Computation[]) => Promise<CallbackContextResponse>[],
+  /**
+   * Adopts values that already settled, in place of running their getters.
+   */
+  fill: (route: ResolvedRoute, values: RouteValue[]) => void,
 }
 
 /**
@@ -95,6 +89,10 @@ export type RouterNavigationStores = HasVueAppStore & NavigationData & {
    * Makes the staged navigation current and computes whatever the route still lacks.
    */
   commit: (options: RouterNavigationCommitOptions) => Promise<CallbackContextResponse>[],
+  /**
+   * The values currently settled in the store.
+   */
+  getValues: (route: ResolvedRoute) => RouteValue[],
 }
 
 export function createRouterNavigation({ onResponse }: CreateRouterNavigationOptions = {}): RouterNavigationStores {
@@ -174,7 +172,6 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
           getState: (location) => getState(location, route),
           subscribe: (location) => getCallbackResponse(location, route, context),
           getValue,
-          getValues: (locations) => locations.map(getValue),
         }))
 
         if (isPromise(value)) {
@@ -203,19 +200,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
       }
     }
 
-    function getSnapshot(route: ResolvedRoute): RouteValue[] {
-      return getComputations(route).flatMap(({ kind, depth, name, key }) => {
-        const result = data.get(key)
-
-        if (result.status !== 'SUCCESS') {
-          return []
-        }
-
-        return [{ kind, depth, name, value: result.value }]
-      })
-    }
-
-    function setSnapshot(route: ResolvedRoute, values: RouteValue[]): void {
+    function fill(route: ResolvedRoute, values: RouteValue[]): void {
       if (controller.signal.aborted) {
         return
       }
@@ -304,17 +289,13 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
     const getValue: NavigationData['getValue'] = (location, route) => toDataValue(subscribe(location, route))
 
-    const getValues: NavigationData['getValues'] = (locations, route) => locations.map((location) => getValue(location, route))
-
     const instance: RouterNavigationStore = {
       data,
       getState,
       subscribe,
       getValue,
-      getValues,
       compute,
-      getSnapshot,
-      setSnapshot,
+      fill,
       stage,
       commit,
       abandon,
@@ -341,11 +322,19 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
   const getValue: NavigationData['getValue'] = (location, route) => navigations.current.getValue(location, route)
 
-  const getValues: NavigationData['getValues'] = (locations, route) => navigations.current.getValues(locations, route)
+  const getValues: RouterNavigationStores['getValues'] = (route) => {
+    const store = navigations.current.data
 
-  const getSnapshot: NavigationData['getSnapshot'] = (route) => navigations.current.getSnapshot(route)
+    return getComputations(route).flatMap(({ kind, depth, name, key }) => {
+      const result = store.get(key)
 
-  const setSnapshot: NavigationData['setSnapshot'] = (route, values) => navigations.current.setSnapshot(route, values)
+      if (result.status !== 'SUCCESS') {
+        return []
+      }
+
+      return [{ kind, depth, name, value: result.value }]
+    })
+  }
 
   function getCallbackValue(location: ValueLocation, route: ResolvedRoute, { store, signal }: CallbackValueContext): Promise<unknown> {
     const key = getDataKey(location.kind, location.id, location.name, route)
@@ -399,8 +388,6 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     create: createRouterNavigationStore,
     staged,
     commit,
-    getSnapshot,
-    setSnapshot,
     getValues,
     getState,
     subscribe,

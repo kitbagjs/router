@@ -21,7 +21,6 @@ export type ComputationContext = {
   getState: (location: ValueLocation) => DataResult,
   subscribe: (location: ValueLocation) => Promise<CallbackContextResponse>,
   getValue: (location: ValueLocation) => Promise<unknown>,
-  getValues: (locations: readonly ValueLocation[]) => Promise<unknown>[],
 }
 
 export type Computation = {
