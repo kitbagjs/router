@@ -6,7 +6,12 @@ import { CallbackContextResponse } from '@/types/callbackContext'
 import { PropsResult } from '@/utilities/props'
 import { unwrapComputationResponse } from '@/utilities/unwrapComputationResponse'
 
-export function getRouteProps(store: Pick<NavigationData, 'getState' | 'subscribe'>, { depth, name }: ValueLocation<'props'>, route: ResolvedRoute): MaybePromise<PropsResult> {
+type RoutePropsLocation = {
+  depth: number,
+  name: string,
+}
+
+export function getRouteProps(store: NavigationData, { depth, name }: RoutePropsLocation, route: ResolvedRoute): MaybePromise<PropsResult> {
   if (depth < 0) {
     return NO_PROPS
   }
@@ -50,7 +55,7 @@ const NO_PROPS: PropsResult = { kind: 'value', value: undefined }
  * The render layer expects every outcome as a value it can inspect, so a rejection is folded back into a
  * result rather than being handed on as one.
  */
-async function toResult(store: Pick<NavigationData, 'getState' | 'subscribe'>, location: ValueLocation<'props'>, route: ResolvedRoute): Promise<PropsResult> {
+async function toResult(store: NavigationData, location: ValueLocation<'props'>, route: ResolvedRoute): Promise<PropsResult> {
   try {
     return toPropsResult(await store.subscribe(location, route))
   } catch (error) {

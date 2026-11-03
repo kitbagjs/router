@@ -2,7 +2,7 @@ import type { PrefetchConfig, PrefetchConfigs, PrefetchStrategy } from '@/types/
 import { ResolvedRoute } from '@/types/resolved'
 import { CreatedRouteOptions } from '@/types/route'
 import { viewNamesWithProps } from '@/services/routeViews'
-import { GetDataKeyOptions, DataKind } from '@/services/getDataKey'
+import { DataKind } from '@/services/getDataKey'
 import { AnyPayloadTransformer } from '@/services/payload'
 import { createRouteComputation } from '@/services/createRouteComputation'
 import { AnyFunction } from '@/types/utilities'
@@ -30,8 +30,10 @@ export type Computation = ValueLocation & {
 /**
  * Where a value lives, which is all that is needed to read it back out of a store.
  */
-export type ValueLocation<TKind extends DataKind = DataKind> = Pick<GetDataKeyOptions, 'depth' | 'name'> & {
+export type ValueLocation<TKind extends DataKind = DataKind> = {
   kind: TKind,
+  depth: number,
+  name: string,
 }
 
 export function getComputations(route: ResolvedRoute): Computation[] {

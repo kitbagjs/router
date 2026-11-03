@@ -5,7 +5,7 @@ import { ContextRejectionError } from '@/errors/contextRejectionError'
 import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
 import { createVueAppStore, HasVueAppStore } from './createVueAppStore'
 import { CallbackContextError, CallbackContextPush, CallbackContextReject, CallbackContextResponse } from '@/types/callbackContext'
-import { createDataStore, DataResult, DataStore, DataStoreSettledEvent } from './createDataStore'
+import { createDataStore, DataEntry, DataResult, DataStore, DataStoreSettledEvent } from './createDataStore'
 import { getDataKey } from './getDataKey'
 import { MaybePromise } from '@/types/utilities'
 import { isPromise } from '@/utilities/promises'
@@ -41,7 +41,9 @@ type RouterNavigationStoreSlots = {
   staged: RouterNavigationStore,
 }
 
-export type NavigationData = Pick<DataStore, 'getEntries' | 'setEntries'> & {
+export type NavigationData = {
+  getEntries: () => DataEntry[],
+  setEntries: (entries: DataEntry[]) => void,
   getState: (location: ValueLocation, route: ResolvedRoute) => DataResult,
   subscribe: (location: ValueLocation, route: ResolvedRoute) => Promise<CallbackContextResponse>,
   getValue: (location: ValueLocation, route: ResolvedRoute) => Promise<unknown>,

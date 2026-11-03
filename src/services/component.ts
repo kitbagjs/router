@@ -45,7 +45,7 @@ export function createComponentPropsWrapper(routerKey: InjectionKey<Router>, { i
       const props = computed(() => {
         const depth = route.matches.findIndex((match) => match.id === id)
 
-        return getRouteProps(navigation.current(), { kind: 'props', depth, name }, route)
+        return getRouteProps(navigation.current(), { depth, name }, route)
       })
 
       watch(props, async (props) => {
