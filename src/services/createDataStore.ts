@@ -30,6 +30,11 @@ export type DataStoreSettledEvent = {
   result: DataResultSettled,
 }
 
+export type DataEntry<TValue extends DataResult = DataResult> = {
+  key: string,
+  value: TValue,
+}
+
 type Entry = {
   promise: Promise<CallbackContextResponse>,
   resolve: (value: CallbackContextResponse | PromiseLike<CallbackContextResponse>) => void,
@@ -42,6 +47,9 @@ type Entry = {
  * navigation owns one.
  */
 export type DataStore = {
+  getEntries: () => DataEntry[],
+  /** Fills settled responses without replacing existing results or running computations. */
+  setEntries: (entries: DataEntry<CallbackContextResponse>[]) => void,
   /**
    * The value for a key, whether or not anything has computed it yet. Subscribing to a key nobody has set
    * leaves a promise waiting for whoever does.
@@ -169,6 +177,14 @@ export function createDataStore({ signal, onSettled }: CreateDataStoreOptions): 
     }
   }, { once: true })
 
+  const getEntries: DataStore['getEntries'] = () => Array.from(entries, ([key, entry]) => ({ key, value: entry.state.value }))
+
+  const setEntries: DataStore['setEntries'] = (values) => {
+    for (const { key, value } of values) {
+      set(key, () => value)
+    }
+  }
+
   const dispose: DataStore['dispose'] = () => {
     entries.clear()
   }
@@ -178,5 +194,7 @@ export function createDataStore({ signal, onSettled }: CreateDataStoreOptions): 
     set,
     get,
     dispose,
+    getEntries,
+    setEntries,
   }
 }
