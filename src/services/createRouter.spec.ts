@@ -2217,7 +2217,10 @@ test('prefetched navigation actions win in completion order', async () => {
   router.stop()
 })
 
-test.each(['progressive', 'blocking'] as const)('%s navigation follows its existing timing for async tags', async (navigation) => {
+test.each([
+  { navigation: 'progressive', beforeCompletion: 'page' },
+  { navigation: 'blocking', beforeCompletion: 'home' },
+] as const)('$navigation navigation follows its timing for async tags', async ({ navigation, beforeCompletion }) => {
   const pending = Promise.withResolvers<void>()
   const started = Promise.withResolvers<void>()
   const home = createRoute({ name: 'home', path: '/' })
@@ -2233,11 +2236,7 @@ test.each(['progressive', 'blocking'] as const)('%s navigation follows its exist
   await started.promise
   await flushPromises()
 
-  if (navigation === 'blocking') {
-    expect(router.route.name).toBe('home')
-  } else {
-    expect(router.route.name).toBe('page')
-  }
+  expect(router.route.name).toBe(beforeCompletion)
 
   pending.resolve()
   await pushing
@@ -2250,8 +2249,7 @@ test.each(['progressive', 'blocking'] as const)('%s navigation completes after a
   const pending = Promise.withResolvers<void>()
   const started = Promise.withResolvers<void>()
   const home = createRoute({ name: 'home', path: '/' })
-  const page = createRoute({ name: 'page', path: '/page' }).setTags(async (tags) => {
-    tags.title.set('Partial title')
+  const page = createRoute({ name: 'page', path: '/page' }).setTags(async () => {
     started.resolve()
     await pending.promise
     throw error
@@ -2268,23 +2266,9 @@ test.each(['progressive', 'blocking'] as const)('%s navigation completes after a
   await flushPromises()
 
   expect(router.route.name).toBe('page')
-  expect(onError).toHaveBeenCalledExactlyOnceWith(error, expect.objectContaining({ source: 'tags' }))
-  router.stop()
-})
-
-test('tag callbacks use router error hooks with their computation source', async () => {
-  const error = new Error('tags failed')
-  const home = createRoute({ name: 'home', path: '/' })
-  const page = createRoute({ name: 'page', path: '/page' }).setTags(() => {
-    throw error
-  })
-  const router = createRouter([home, page], { initialUrl: '/' })
-  const onError = vi.fn()
-  router.onError(onError)
-  await router.start()
-  await router.push('page')
-  await flushPromises()
-
-  expect(onError).toHaveBeenCalledWith(error, expect.objectContaining({ source: 'tags', to: expect.objectContaining({ name: 'page' }) }))
+  expect(onError).toHaveBeenCalledExactlyOnceWith(error, expect.objectContaining({
+    source: 'tags',
+    to: expect.objectContaining({ name: 'page' }),
+  }))
   router.stop()
 })

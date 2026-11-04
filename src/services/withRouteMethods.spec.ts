@@ -1,6 +1,5 @@
 import { expect, test, vi } from 'vitest'
 import { createRoute } from '@/services/createRoute'
-import { component } from '@/utilities/testHelpers'
 import { CreatedRouteOptions } from '@/types/route'
 
 test('setTags registers on the current match and remains chainable', () => {
@@ -12,8 +11,7 @@ test('setTags registers on the current match and remains chainable', () => {
 
   expect(result).toBe(child)
 
-  const route = result.addLoader(() => 'data').addView(component)
-  const matches: CreatedRouteOptions[] = route.matches
+  const matches: CreatedRouteOptions[] = result.matches
 
   expect(matches.map(({ tags }) => tags)).toEqual([parentTags, childTags])
 })

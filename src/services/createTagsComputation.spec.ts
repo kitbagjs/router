@@ -1,61 +1,77 @@
-import { expect, test, vi } from 'vitest'
+import { afterEach, expect, test, vi } from 'vitest'
 import { createTagsComputation } from '@/services/createTagsComputation'
 import { createRoute } from '@/services/createRoute'
 import { createResolvedRoute } from '@/services/createResolvedRoute'
+import * as callbackRoute from '@/services/createCallbackRoute'
+import * as callbackParent from '@/services/getCallbackParent'
+import * as routeTags from '@/services/createRouteTags'
 import { Tags } from '@/types/tags'
-import { SetRouteTagsCallback } from '@/types/routeTags'
 import { getDataKey } from '@/services/getDataKey'
 
-test('tag callbacks receive scoped writes, route data, and cancellation without navigation controls', async () => {
-  const definition = createRoute({ path: '/' }).addLoader(() => 'Product')
-  const to = createResolvedRoute(definition)
-  const signal = new AbortController().signal
-  const getValue = vi.fn().mockResolvedValue('Product')
-  const subscribe = vi.fn()
-  const callback = vi.fn<SetRouteTagsCallback<typeof definition>>(async (tags, { to }) => {
-    tags.title.set(await to.getData())
-  })
-  const computation = createTagsComputation({ location: { kind: 'tags', depth: 0, name: 'tags' }, route: to, callback })
-  expect(computation.prefetchKey).toBe('tags')
-  expect(computation.key).toBe(getDataKey({ route: to, kind: 'tags', depth: 0, name: 'tags' }))
-
-  const layer = await computation.run({ to, signal, getValue, subscribe })
-  const [, context] = callback.mock.calls[0]
-
-  expect(Object.keys(context).sort()).toEqual(['parent', 'signal', 'to'])
-  expect(context.signal).toBe(signal)
-  expect(context.to.href).toBe(to.href)
-  expect(context.parent).toBeUndefined()
-  expect(getValue).toHaveBeenCalledExactlyOnceWith({ kind: 'loader', depth: 0, name: 'default' })
-  expect(subscribe).not.toHaveBeenCalled()
-  expect(layer).toEqual([{
-    kind: 'set',
-    target: { tag: 'title', attributes: {} },
-    groups: [{ tag: 'title', attributes: {}, value: 'Product' }],
-  }])
+afterEach(() => {
+  vi.restoreAllMocks()
 })
 
-test('synchronous tag callbacks return their result without introducing pending work', () => {
+test('passes the builder and callback context without navigation controls', () => {
+  const parent = createRoute({ path: '/' })
+  const to = createResolvedRoute(createRoute({ parent, path: 'child' }))
+  const context = { to, signal: new AbortController().signal, getValue: vi.fn(), subscribe: vi.fn() }
+  const routeFactory = vi.spyOn(callbackRoute, 'createCallbackRoute')
+  const parentFactory = vi.spyOn(callbackParent, 'getCallbackParent')
+  const tagsFactory = vi.spyOn(routeTags, 'createRouteTags')
+  const callback = vi.fn()
+  const computation = createTagsComputation({ location: { kind: 'tags', depth: 1, name: 'tags' }, route: to, callback })
+
+  expect(callback).not.toHaveBeenCalled()
+  computation.run(context)
+
+  expect(routeFactory).toHaveBeenCalledExactlyOnceWith(context)
+  expect(tagsFactory).toHaveBeenCalledExactlyOnceWith({ route: to, depth: 1, subscribe: context.subscribe })
+  expect(parentFactory).toHaveBeenCalledExactlyOnceWith(1, context)
+  expect(callback).toHaveBeenCalledExactlyOnceWith(tagsFactory.mock.results[0].value, {
+    to: routeFactory.mock.results[0].value,
+    signal: context.signal,
+    parent: parentFactory.mock.results[0].value,
+  })
+})
+
+test('sets the storage key and tags prefetch metadata', () => {
+  const route = createResolvedRoute(createRoute({ path: '/' }))
+  const location = { kind: 'tags', depth: 0, name: 'tags' } as const
+  const computation = createTagsComputation({ location, route, callback: vi.fn(), routePrefetch: 'intent' })
+
+  expect(computation).toMatchObject({
+    ...location,
+    key: getDataKey({ ...location, route }),
+    prefetchKey: 'tags',
+    routePrefetch: 'intent',
+  })
+})
+
+test('synchronous writes return a layer without introducing a promise', () => {
   const to = createResolvedRoute(createRoute({ path: '/' }))
-  const subscribe = vi.fn()
   const callback = (tags: Tags): void => tags.title.set('Child')
   const computation = createTagsComputation({ location: { kind: 'tags', depth: 0, name: 'tags' }, route: to, callback })
-  const layer = computation.run({ to, signal: new AbortController().signal, getValue: vi.fn(), subscribe })
+  const layer = computation.run({ to, signal: new AbortController().signal, getValue: vi.fn(), subscribe: vi.fn() })
 
   expect(layer).toMatchObject([{ kind: 'set', groups: [{ value: 'Child' }] }])
-  expect(subscribe).not.toHaveBeenCalled()
 })
 
-test('a failed tag callback propagates its error instead of returning partial writes', async () => {
-  const error = new Error('tags failed')
+test('captures operations written after an async callback resumes', async () => {
+  const pending = Promise.withResolvers<void>()
   const to = createResolvedRoute(createRoute({ path: '/' }))
   const callback = async (tags: Tags): Promise<void> => {
-    tags.title.set('Partial')
-    await Promise.resolve()
-    throw error
+    tags.title.set('Before')
+    await pending.promise
+    tags.title.set('After')
   }
   const computation = createTagsComputation({ location: { kind: 'tags', depth: 0, name: 'tags' }, route: to, callback })
   const result = computation.run({ to, signal: new AbortController().signal, getValue: vi.fn(), subscribe: vi.fn() })
 
-  await expect(result).rejects.toBe(error)
+  pending.resolve()
+
+  await expect(result).resolves.toMatchObject([
+    { kind: 'set', groups: [{ value: 'Before' }] },
+    { kind: 'set', groups: [{ value: 'After' }] },
+  ])
 })

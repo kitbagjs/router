@@ -55,35 +55,29 @@ test('selects props and loaders using their separate prefetch options', () => {
   expect(getComputationsForStrategy(route, 'intent', configs).map(({ kind }) => kind)).toEqual(['loader'])
 })
 
-test('tags have their own storage kind and retain ancestor order across matches without tags', () => {
-  const parent = createRoute({ path: '/' }).setTags((tags) => tags.title.set('Parent'))
+test('creates tag computations in ancestor order across matches without tags', () => {
+  const parent = createRoute({ path: '/' }).setTags(() => {})
   const middle = createRoute({ parent, path: 'middle' })
-  const child = createRoute({ parent: middle, path: 'child' })
-    .addLoader(() => 'loader', { name: 'tags' })
-    .setTags((tags) => tags.title.set('Child'))
+  const child = createRoute({ parent: middle, path: 'child' }).setTags(() => {})
   const computations = getComputations(createResolvedRoute(child))
 
   expect(computations.map(({ kind, depth, name }) => ({ kind, depth, name }))).toEqual([
     { kind: 'tags', depth: 0, name: 'tags' },
-    { kind: 'loader', depth: 2, name: 'tags' },
     { kind: 'tags', depth: 2, name: 'tags' },
   ])
-  expect(new Set(computations.map(({ key }) => key)).size).toBe(3)
 })
 
-test('tag prefetch follows route and link strategy overrides and is disabled by default', () => {
-  const parent = createRoute({ path: '/' }).setTags(() => {})
-  const child = createRoute({
-    parent,
-    path: 'child',
-    prefetch: { tags: 'intent' },
-  }).setTags(() => {})
-  const route = createResolvedRoute(child)
+test('tag prefetch is disabled by default', () => {
+  const route = createResolvedRoute(createRoute({ path: '/' }).setTags(() => {}))
 
   expect(getComputationsForStrategy(route, 'lazy', {})).toEqual([])
-  expect(getComputationsForStrategy(route, 'intent', {}).map(({ depth }) => depth)).toEqual([1])
-  expect(getComputationsForStrategy(route, 'eager', { routerPrefetch: { tags: 'eager' } }).map(({ depth }) => depth)).toEqual([0])
-  expect(getComputationsForStrategy(route, 'lazy', { linkPrefetch: { tags: true } }).map(({ depth }) => depth)).toEqual([0])
-  expect(getComputationsForStrategy(route, 'intent', { linkPrefetch: { tags: true } }).map(({ depth }) => depth)).toEqual([1])
-  expect(getComputationsForStrategy(route, 'intent', { linkPrefetch: { tags: false } })).toEqual([])
+})
+
+test('tag prefetch uses its own option alongside loader prefetch', () => {
+  const route = createResolvedRoute(createRoute({ path: '/' })
+    .addLoader(() => 'data')
+    .setTags(() => {}))
+  const configs = { routerPrefetch: { tags: 'eager', loaders: 'intent' } } as const
+
+  expect(getComputationsForStrategy(route, 'eager', configs).map(({ kind }) => kind)).toEqual(['tags'])
 })

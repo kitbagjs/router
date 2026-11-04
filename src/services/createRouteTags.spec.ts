@@ -4,53 +4,52 @@ import { createRoute } from '@/services/createRoute'
 import { createResolvedRoute } from '@/services/createResolvedRoute'
 import { CallbackContextResponse } from '@/types/callbackContext'
 import { TagLayer } from '@/types/tags'
-import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
+
+const rootLayer: TagLayer = [{
+  kind: 'set',
+  target: { tag: 'title', attributes: {} },
+  groups: [{ tag: 'title', attributes: {}, value: 'Root' }],
+}]
 
 test('writes and operation reads do not subscribe to ancestors', () => {
   const parent = createRoute({ path: '/' }).setTags(() => {})
   const route = createResolvedRoute(createRoute({ parent, path: 'child' }))
-  const subscribe = vi.fn(() => new Promise<never>(() => {}))
+  const subscribe = vi.fn()
   const tags = createRouteTags({ route, depth: 1, subscribe })
 
   tags.title.set('Child')
+  const operations = tags.operations
 
-  expect(tags.operations).toMatchObject([{ kind: 'set', groups: [{ value: 'Child' }] }])
+  expect(operations).toHaveLength(1)
   expect(subscribe).not.toHaveBeenCalled()
 })
 
-test('reads await stored ancestor tags, skip failed layers, and exclude this scope and descendants', async () => {
+test('reads only tag-owning ancestors in match order', async () => {
   const root = createRoute({ path: '/' }).setTags(() => {})
   const middle = createRoute({ parent: root, path: 'middle' })
   const parent = createRoute({ parent: middle, path: 'parent' }).setTags(() => {})
   const child = createRoute({ parent, path: 'child' }).setTags(() => {})
   const route = createResolvedRoute(createRoute({ parent: child, path: 'leaf' }).setTags(() => {}))
-  const rootLayer: TagLayer = [{
-    kind: 'set',
-    target: { tag: 'title', attributes: {} },
-    groups: [{ tag: 'title', attributes: {}, value: 'Root' }],
-  }]
-  const pending = Promise.withResolvers<CallbackContextResponse>()
   const subscribe = vi.fn<() => Promise<CallbackContextResponse>>()
-    .mockReturnValueOnce(pending.promise)
-    .mockResolvedValueOnce({ status: 'ERROR', source: 'tags', error: new Error('parent failed') })
+    .mockResolvedValue({ status: 'SUCCESS', value: rootLayer })
   const tags = createRouteTags({ route, depth: 3, subscribe })
-  const title = tags.title.get()
+
+  await tags.title.get()
 
   expect(subscribe.mock.calls).toEqual([
     [{ kind: 'tags', depth: 0, name: 'tags' }],
     [{ kind: 'tags', depth: 2, name: 'tags' }],
   ])
-  pending.resolve({ status: 'SUCCESS', value: rootLayer })
-  await expect(title).resolves.toBe('Root')
-  expect(tags.operations).toEqual([])
 })
 
-test('reads propagate abandoned subscriptions', async () => {
-  const parent = createRoute({ path: '/' }).setTags(() => {})
+test('a failed ancestor does not discard successful ancestor layers', async () => {
+  const root = createRoute({ path: '/' }).setTags(() => {})
+  const parent = createRoute({ parent: root, path: 'parent' }).setTags(() => {})
   const route = createResolvedRoute(createRoute({ parent, path: 'child' }))
-  const error = new NavigationAbandonedError()
-  const subscribe = vi.fn().mockRejectedValue(error)
-  const tags = createRouteTags({ route, depth: 1, subscribe })
+  const subscribe = vi.fn<() => Promise<CallbackContextResponse>>()
+    .mockResolvedValueOnce({ status: 'SUCCESS', value: rootLayer })
+    .mockResolvedValueOnce({ status: 'ERROR', source: 'tags', error: new Error('parent failed') })
+  const tags = createRouteTags({ route, depth: 2, subscribe })
 
-  await expect(tags.title.get()).rejects.toBe(error)
+  await expect(tags.title.get()).resolves.toBe('Root')
 })

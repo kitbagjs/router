@@ -339,18 +339,21 @@ describe('response delivery', () => {
 })
 
 describe('dependencies', () => {
-  test.each(['success', 'error'] as const)('repeated subscriptions retain the current %s outcome when no local work owns it', async (outcome) => {
-    const error = new Error('failed')
-    const { route, computation } = createFixture(() => {
-      if (outcome === 'error') {
-        throw error
-      }
+  const dependencyError = new Error('failed')
 
-      return 'loaded'
-    })
+  test.each([
+    { outcome: 'success', run: () => 'loaded', response: { status: 'SUCCESS', value: 'loaded' } },
+    {
+      outcome: 'error',
+      run: () => {
+        throw dependencyError
+      },
+      response: { status: 'ERROR', source: 'loader', error: dependencyError },
+    },
+  ])('repeated subscriptions retain the current $outcome outcome when no local work owns it', async ({ run, response }) => {
+    const { route, computation } = createFixture(run)
     const navigation = createRouterNavigation()
     await Promise.all(navigation.commit({ to: route, from: null }))
-    const response = await navigation.subscribe(computation, route)
     const dependent = createComputation(route, ({ subscribe }) => {
       return Promise.all([subscribe(computation), subscribe(computation)])
     }, 'props')
