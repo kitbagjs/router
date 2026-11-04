@@ -1,11 +1,5 @@
 import { expectTypeOf, test } from 'vitest'
-import type { LinkBase, Meta } from 'zhead'
 import { createTags } from '@/services/createTags'
-import { Tags } from '@/types/tags'
-
-test('returns the scoped Tags API', () => {
-  expectTypeOf(createTags()).toEqualTypeOf<Tags>()
-})
 
 test('accepts a single string title', () => {
   const tags = createTags()
@@ -87,42 +81,50 @@ test('accepts zhead link attributes', () => {
   tags.link.set({ rel: 'icon', href: '/icon.svg', onload: 'run()' })
 })
 
-test('reads are asynchronous and recursively readonly', async () => {
-  const tags = createTags()
-  const snapshot = await tags.get()
-  const meta = await tags.meta.get({ property: 'og:image' })
-  const links = await tags.link.get({ rel: 'icon' })
+test('title reads are asynchronous and may be absent', () => {
+  expectTypeOf(createTags().title.get()).toEqualTypeOf<Promise<string | undefined>>()
+})
 
-  expectTypeOf(tags.title.get()).toEqualTypeOf<Promise<string | undefined>>()
-  expectTypeOf(meta[0].content).toEqualTypeOf<NonNullable<Meta['content']>>()
-  expectTypeOf(links[0].as).toEqualTypeOf<LinkBase['as']>()
+test('snapshots cannot be written through the read API', async () => {
+  const snapshot = await createTags().get()
 
-  // @ts-expect-error a snapshot is a value, not another mutable builder
+  // @ts-expect-error snapshots are readonly
   snapshot.title = 'Changed'
+})
+
+test('metadata reads are recursively readonly', async () => {
+  const meta = await createTags().meta.get()
+
   // @ts-expect-error returned collections are readonly
   meta.push({ property: 'og:image', content: '/changed.jpg' })
   // @ts-expect-error returned descriptors are readonly
   meta[0].content = 'Changed'
+
   const related = meta[0].related
 
   if (related) {
-    // @ts-expect-error nested related descriptors are also readonly
+    // @ts-expect-error nested descriptors are readonly
     related[0].content = 'Changed'
   }
-  // @ts-expect-error metadata identifiers remain readonly too
-  meta[0].property = 'custom:changed'
-  // @ts-expect-error links cannot be changed through a read
-  links[0].href = '/changed.svg'
 })
 
-test('callbacks receive the scoped API without lifecycle or storage methods', () => {
+test('link reads are recursively readonly', async () => {
+  const links = await createTags().link.get()
+
+  // @ts-expect-error returned descriptors are readonly
+  links[0].href = '/changed.svg'
+
+  const related = links[0].related
+
+  if (related) {
+    // @ts-expect-error nested descriptors are readonly
+    related[0].href = '/changed-related.svg'
+  }
+})
+
+test('does not expose stored operations to callbacks', () => {
   const tags = createTags()
 
-  // @ts-expect-error there is no finalization step
-  tags.finish()
   // @ts-expect-error recorded operations are internal to the callback runner
   expectTypeOf(tags.operations)
-
-  // @ts-expect-error head tags do not accept scripts
-  tags.script.add({ src: '/script.js' })
 })

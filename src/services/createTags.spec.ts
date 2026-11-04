@@ -1,548 +1,319 @@
-import { assert, describe, expect, test } from 'vitest'
+import { assert, expect, test, vi } from 'vitest'
 import { createTags } from '@/services/createTags'
-import { mergeTags } from '@/services/mergeTags'
-import { flattenTags } from '@/services/flattenTags'
-import { TagElement, TagLayer, MetaTag, Tags, isTags } from '@/types/tags'
+import { TagLayer, MetaTag, LinkTag, Tags, isTags } from '@/types/tags'
 
 function layer(callback: (tags: Tags) => void): TagLayer {
   const tags = createTags()
 
   callback(tags)
-
   assert(isTags(tags))
 
   return tags.operations
 }
 
-function image(url: string, alt?: string): MetaTag {
-  const related: MetaTag[] = []
+test('records title writes and deletions in order, including an empty title', () => {
+  const operations = layer((tags) => {
+    tags.title.set('')
+    tags.title.delete()
+  })
 
-  if (alt !== undefined) {
-    related.push({
-      property: 'og:image:alt',
-      content: alt,
-    })
-  }
+  expect(operations).toEqual([
+    { kind: 'set', target: { tag: 'title', attributes: {} }, groups: [{ tag: 'title', attributes: {}, value: '' }] },
+    { kind: 'delete', target: { tag: 'title', attributes: {} } },
+  ])
+})
 
-  return {
+test.each<{
+  name: string,
+  descriptor: MetaTag,
+  attributes: Record<string, string>,
+  target: Record<string, string>,
+}>([
+  {
+    name: 'named metadata',
+    descriptor: { name: 'custom:field', content: 'Named' },
+    attributes: { name: 'custom:field', media: '' },
+    target: { name: 'custom:field', media: '' },
+  },
+  {
+    name: 'property metadata',
+    descriptor: { property: 'custom:field', content: 'Property' },
+    attributes: { property: 'custom:field', media: '' },
+    target: { property: 'custom:field', media: '' },
+  },
+  {
+    name: 'media variants',
+    descriptor: { name: 'theme-color', content: 'black', media: 'dark' },
+    attributes: { name: 'theme-color', media: 'dark' },
+    target: { name: 'theme-color', media: 'dark' },
+  },
+  {
+    name: 'explicit metadata keys',
+    descriptor: { property: 'og:image', content: '/wide.jpg', key: 'wide' },
+    attributes: { property: 'og:image', key: 'wide', media: '' },
+    target: { property: 'og:image', key: 'wide' },
+  },
+  {
+    name: 'metadata ids',
+    descriptor: { name: 'description', content: 'Product', id: 'summary' },
+    attributes: { name: 'description', id: 'summary', media: '' },
+    target: { name: 'description', id: 'summary', media: '' },
+  },
+])('records the identity of $name', ({ descriptor, attributes, target }) => {
+  const operations = layer((tags) => {
+    tags.meta.set(descriptor)
+    tags.meta.add(descriptor)
+  })
+  const group = { tag: 'meta', attributes, value: descriptor }
+
+  expect(operations).toEqual([
+    { kind: 'set', target: { tag: 'meta', attributes: target }, groups: [group] },
+    { kind: 'add', target: { tag: 'meta', attributes: target }, groups: [group] },
+  ])
+})
+
+test('metadata deletion constrains only supplied selector fields', () => {
+  const operations = layer((tags) => {
+    tags.meta.delete({ name: 'theme-color', media: undefined })
+    tags.meta.delete({ name: 'theme-color', media: 'dark' })
+  })
+
+  expect(operations).toEqual([
+    { kind: 'delete', target: { tag: 'meta', attributes: { name: 'theme-color' } } },
+    { kind: 'delete', target: { tag: 'meta', attributes: { name: 'theme-color', media: 'dark' } } },
+  ])
+})
+
+test.each<{
+  name: string,
+  descriptor: LinkTag,
+  attributes: Record<string, string>,
+}>([
+  {
+    name: 'canonical links',
+    descriptor: { rel: 'canonical', href: '/product', key: 'ignored' },
+    attributes: { rel: 'canonical' },
+  },
+  {
+    name: 'language alternates',
+    descriptor: { rel: 'alternate', href: '/es', hreflang: 'es', key: 'ignored' },
+    attributes: { rel: 'alternate', hreflang: 'es' },
+  },
+  {
+    name: 'sized icons',
+    descriptor: { rel: 'icon', href: '/small.png', sizes: '16x16', type: 'image/png' },
+    attributes: { rel: 'icon', sizes: '16x16', type: 'image/png', media: '' },
+  },
+  {
+    name: 'touch icons',
+    descriptor: { rel: 'apple-touch-icon', href: '/touch.png' },
+    attributes: { rel: 'apple-touch-icon', sizes: '', type: '', media: '' },
+  },
+  {
+    name: 'mask icons',
+    descriptor: { rel: 'mask-icon', href: '/mask.svg', media: 'dark' },
+    attributes: { rel: 'mask-icon', sizes: '', type: '', media: 'dark' },
+  },
+  {
+    name: 'explicit link keys',
+    descriptor: { rel: 'preconnect', href: 'https://api.example.com', key: 'api' },
+    attributes: { rel: 'preconnect', key: 'api' },
+  },
+  {
+    name: 'generic link destinations',
+    descriptor: { rel: 'preconnect', href: 'https://api.example.com' },
+    attributes: { rel: 'preconnect', href: 'https://api.example.com' },
+  },
+])('records the identity of $name', ({ descriptor, attributes }) => {
+  const operations = layer((tags) => {
+    tags.link.set(descriptor)
+    tags.link.add(descriptor)
+  })
+  const target = { tag: 'link', attributes }
+  const group = { ...target, value: descriptor }
+
+  expect(operations).toEqual([
+    { kind: 'set', target, groups: [group] },
+    { kind: 'add', target, groups: [group] },
+  ])
+})
+
+test('link deletion retains explicit filters beyond the default identity', () => {
+  const operations = layer((tags) => {
+    tags.link.delete({ rel: 'canonical', href: '/product', media: undefined })
+    tags.link.delete({ rel: 'icon' })
+  })
+
+  expect(operations).toEqual([
+    { kind: 'delete', target: { tag: 'link', attributes: { rel: 'canonical', href: '/product' } } },
+    { kind: 'delete', target: { tag: 'link', attributes: { rel: 'icon' } } },
+  ])
+})
+
+test('copies metadata and its related descriptors when recording a write', () => {
+  const descriptor = {
     property: 'og:image',
-    content: url,
-    related,
+    content: '/original.jpg',
+    related: [{ property: 'og:image:alt', content: 'Original' }],
   }
-}
+  const operations = layer((tags) => tags.meta.set(descriptor))
 
-function elements(...layers: TagLayer[]): readonly TagElement[] {
-  return flattenTags(mergeTags(layers))
-}
+  descriptor.content = '/changed.jpg'
+  descriptor.related[0].content = 'Changed'
+  descriptor.related.push({ property: 'og:image:width', content: '1200' })
 
-function contents(...layers: TagLayer[]): (string | undefined)[] {
-  return elements(...layers).map((element) => element.textContent ?? element.attributes.content ?? element.attributes.href)
-}
+  expect(operations).toMatchObject([{
+    groups: [{ value: { property: 'og:image', content: '/original.jpg', related: [{ property: 'og:image:alt', content: 'Original' }] } }],
+  }])
+})
 
-describe('createTags', () => {
-  test('overrides one theme-color variant and can delete every variant', () => {
-    const parent = layer((tags) => {
-      tags.meta.add({
-        name: 'theme-color',
-        content: 'white',
-        media: '(prefers-color-scheme: light)',
-      })
-      tags.meta.add({
-        name: 'theme-color',
-        content: 'black',
-        media: '(prefers-color-scheme: dark)',
-      })
-    })
-    const child = layer((tags) => tags.meta.set({
-      name: 'theme-color',
-      content: 'navy',
-      media: '(prefers-color-scheme: dark)',
-    }))
-    const deleted = layer((tags) => tags.meta.delete({ name: 'theme-color' }))
-    const darkDeleted = layer((tags) => tags.meta.delete({
-      name: 'theme-color',
-      media: '(prefers-color-scheme: dark)',
-    }))
+test('copies links and their related descriptors when recording a write', () => {
+  const descriptor = { rel: 'alternate', href: '/en', related: [{ rel: 'alternate', href: '/es' }] }
+  const operations = layer((tags) => tags.link.add(descriptor))
 
-    expect(contents(parent, child)).toEqual(['white', 'navy'])
-    expect(contents(parent, child, deleted)).toEqual([])
-    expect(contents(parent, child, darkDeleted)).toEqual(['white'])
+  descriptor.href = '/changed'
+  descriptor.related[0].href = '/changed-related'
+
+  expect(operations).toMatchObject([{
+    groups: [{ value: { rel: 'alternate', href: '/en', related: [{ rel: 'alternate', href: '/es' }] } }],
+  }])
+})
+
+test('returns an empty snapshot when no layer contributes tags', async () => {
+  const tags = createTags()
+
+  await expect(tags.get()).resolves.toEqual({ title: undefined, meta: [], link: [] })
+})
+
+test('get returns title, metadata, and links in their snapshot fields', async () => {
+  const tags = createTags()
+  tags.title.set('Product')
+  tags.meta.set({ name: 'description', content: 'Product details' })
+  tags.link.set({ rel: 'canonical', href: '/product' })
+
+  await expect(tags.get()).resolves.toEqual({
+    title: 'Product',
+    meta: [{ name: 'description', content: 'Product details' }],
+    link: [{ rel: 'canonical', href: '/product' }],
   })
+})
 
-  test('an explicit key replaces a selected group without becoming an HTML attribute', () => {
-    const parent = layer((tags) => {
-      tags.meta.add({ ...image('/wide.jpg', 'Wide'), key: 'wide' })
-      tags.meta.add({ ...image('/square.jpg', 'Square'), key: 'square' })
-    })
-    const child = layer((tags) => tags.meta.set({ ...image('/new-wide.jpg'), key: 'wide' }))
-    const replacement = layer((tags) => tags.meta.set(image('/all.jpg')))
-
-    expect(contents(parent, child)).toEqual(['/square.jpg', 'Square', '/new-wide.jpg'])
-    expect(contents(parent, replacement)).toEqual(['/all.jpg'])
-    expect(elements(parent, child).every((element) => !('key' in element.attributes))).toBe(true)
+test('reads inherited tags with local changes without storing the inherited operations', async () => {
+  const parent = layer((tags) => {
+    tags.title.set('Parent')
+    tags.meta.set({ name: 'description', content: 'Parent description' })
   })
-
-  test('distinguishes name from property and accepts arbitrary values for either', () => {
-    const parent = layer((tags) => {
-      tags.meta.set({
-        name: 'custom:field',
-        content: 'Named',
-      })
-      tags.meta.set({
-        property: 'custom:field',
-        content: 'Property',
-      })
-      tags.meta.set({
-        name: 'twitter:card',
-        content: 'summary',
-      })
-    })
-    const child = layer((tags) => tags.meta.delete({ property: 'custom:field' }))
-
-    expect(contents(parent, child)).toEqual(['Named', 'summary'])
-    expect(elements(parent)[2].attributes.name).toBe('twitter:card')
-  })
-
-  test('canonical links replace by relation regardless of href or key', () => {
-    const parent = layer((tags) => tags.link.set({
-      rel: 'canonical',
-      href: '/parent',
-      key: 'parent',
-    }))
-    const child = layer((tags) => tags.link.set({
-      rel: 'canonical',
-      href: '/child',
-      key: 'child',
-    }))
-
-    expect(contents(parent, child)).toEqual(['/child'])
-  })
-
-  test('language alternates replace only the matching language', () => {
-    const parent = layer((tags) => {
-      tags.link.add({
-        rel: 'alternate',
-        hreflang: 'en',
-        href: '/en',
-      })
-      tags.link.add({
-        rel: 'alternate',
-        hreflang: 'es',
-        href: '/es',
-      })
-    })
-    const child = layer((tags) => tags.link.set({
-      rel: 'alternate',
-      hreflang: 'es',
-      href: '/es/product',
-    }))
-
-    expect(contents(parent, child)).toEqual(['/en', '/es/product'])
-  })
-
-  test('icons coexist by size, format, and media; matching variants replace', () => {
-    const parent = layer((tags) => {
-      tags.link.add({
-        rel: 'icon',
-        href: '/small.png',
-        sizes: '16x16',
-        type: 'image/png',
-      })
-      tags.link.add({
-        rel: 'icon',
-        href: '/dark.svg',
-        type: 'image/svg+xml',
-        media: '(prefers-color-scheme: dark)',
-      })
-    })
-    const child = layer((tags) => tags.link.set({
-      rel: 'icon',
-      href: '/unread.svg',
-      type: 'image/svg+xml',
-      media: '(prefers-color-scheme: dark)',
-    }))
-    const deleted = layer((tags) => tags.link.delete({ rel: 'icon' }))
-
-    expect(contents(parent, child)).toEqual(['/small.png', '/unread.svg'])
-    expect(contents(parent, child, deleted)).toEqual([])
-  })
-
-  test('generic links coexist by href and can be explicitly keyed', () => {
-    const parent = layer((tags) => {
-      tags.link.add({
-        rel: 'preconnect',
-        href: 'https://first.example.com',
-      })
-      tags.link.add({
-        rel: 'preconnect',
-        href: 'https://second.example.com',
-        key: 'api',
-      })
-    })
-    const child = layer((tags) => tags.link.set({
-      rel: 'preconnect',
-      href: 'https://new.example.com',
-      key: 'api',
-      crossorigin: 'anonymous',
-    }))
-
-    expect(contents(parent, child)).toEqual(['https://first.example.com', 'https://new.example.com'])
-    expect(elements(parent, child)[1].attributes).toEqual({
-      rel: 'preconnect',
-      href: 'https://new.example.com',
-      crossorigin: 'anonymous',
-    })
-  })
-
-  test('deleting a link variant retains other links', () => {
-    const parent = layer((tags) => {
-      tags.link.add({
-        rel: 'icon',
-        href: '/small.png',
-        sizes: '16x16',
-      })
-      tags.link.add({
-        rel: 'icon',
-        href: '/large.png',
-        sizes: '32x32',
-      })
-    })
-    const child = layer((tags) => tags.link.delete({
-      rel: 'icon',
-      sizes: '16x16',
-    }))
-
-    expect(contents(parent, child)).toEqual(['/large.png'])
-  })
-
-  test('deletion can match attributes beyond the default identity', () => {
-    const parent = layer((tags) => tags.link.set({
-      rel: 'canonical',
-      href: '/product',
-    }))
-    const other = layer((tags) => tags.link.delete({
-      rel: 'canonical',
-      href: '/other',
-    }))
-    const matching = layer((tags) => tags.link.delete({
-      rel: 'canonical',
-      href: '/product',
-    }))
-
-    expect(contents(parent, other)).toEqual(['/product'])
-    expect(contents(parent, matching)).toEqual([])
-  })
-
-  test('omits explicitly undefined optional attributes and selector fields', () => {
-    const parent = layer((tags) => tags.link.set({
-      rel: 'icon',
-      href: '/icon.svg',
-      media: undefined,
-    }))
-    const child = layer((tags) => tags.link.delete({
-      rel: 'icon',
-      media: undefined,
-    }))
-
-    expect(elements(parent)[0].attributes).toEqual({
-      rel: 'icon',
-      href: '/icon.svg',
-    })
-    expect(contents(parent, child)).toEqual([])
-  })
-
-  test('related links use the same ownership and ordering as related metadata', () => {
-    const parent = layer((tags) => tags.link.add({
-      rel: 'alternate',
-      hreflang: 'en',
-      href: '/en',
-      related: [{
-        rel: 'alternate',
-        hreflang: 'es',
-        href: '/es',
-      }],
-    }))
-    const child = layer((tags) => tags.link.delete({
-      rel: 'alternate',
-      hreflang: 'en',
-    }))
-
-    expect(contents(parent)).toEqual(['/en', '/es'])
-    expect(contents(parent, child)).toEqual([])
-  })
-
-  test('copies related descriptors before their owner can change them', () => {
-    const descriptor = {
-      property: 'og:image',
-      content: '/original.jpg',
-      related: [{
-        property: 'og:image:alt',
-        content: 'Original',
-      }],
-    }
-    const value = layer((tags) => {
-      tags.meta.set(descriptor)
-      descriptor.content = '/changed.jpg'
-      descriptor.related[0].content = 'Changed'
-      descriptor.related.push({
-        property: 'og:image:width',
-        content: '1200',
-      })
-    })
-
-    expect(contents(value)).toEqual(['/original.jpg', 'Original'])
-  })
-
-  test('returns empty values when no layer contributes tags', async () => {
-    const tags = createTags()
-
-    await expect(tags.get()).resolves.toEqual({
-      title: undefined,
-      meta: [],
-      link: [],
-    })
-    await expect(tags.title.get()).resolves.toBeUndefined()
-    await expect(tags.meta.get()).resolves.toEqual([])
-    await expect(tags.link.get()).resolves.toEqual([])
-  })
-
-  test('combines inherited values with local writes, additions, and deletions', async () => {
-    const parent = layer((tags) => {
-      tags.title.set('Store')
-      tags.meta.add(image('/parent.jpg', 'Parent'))
-      tags.meta.set({
-        name: 'description',
-        content: 'Parent description',
-      })
-      tags.link.set({
-        rel: 'canonical',
-        href: '/store',
-      })
-    })
-    const tags = createTags({ getParentLayers: () => [parent] })
-
-    await expect(tags.title.get()).resolves.toBe('Store')
-
-    tags.title.set('Product')
-    tags.meta.add(image('/child.jpg', 'Child'))
-    tags.meta.delete({ name: 'description' })
-    tags.link.set({
-      rel: 'canonical',
-      href: '/product',
-    })
-
-    await expect(tags.title.get()).resolves.toBe('Product')
-    await expect(tags.meta.get({ property: 'og:image' })).resolves.toEqual([
-      image('/parent.jpg', 'Parent'),
-      image('/child.jpg', 'Child'),
-    ])
-    await expect(tags.meta.get({ name: 'description' })).resolves.toEqual([])
-    await expect(tags.link.get({ rel: 'canonical' })).resolves.toEqual([{
-      rel: 'canonical',
-      href: '/product',
-    }])
-    await expect(tags.get()).resolves.toEqual({
-      title: 'Product',
-      meta: [image('/parent.jpg', 'Parent'), image('/child.jpg', 'Child')],
-      link: [{
-        rel: 'canonical',
-        href: '/product',
-      }],
-    })
-  })
-
-  test('awaits inherited computations and reads only local writes made before the call', async () => {
-    const pending = Promise.withResolvers<readonly TagLayer[]>()
-    const parent = layer((tags) => tags.title.set('Parent'))
-    const tags = createTags({ getParentLayers: () => pending.promise })
-    const beforeWrite = tags.title.get()
-
-    tags.title.set('Local')
-
-    pending.resolve([parent])
-
-    await expect(beforeWrite).resolves.toBe('Parent')
-    await expect(tags.title.get()).resolves.toBe('Local')
-  })
-
-  test('does not resolve ancestors for a write-only callback', () => {
-    let reads = 0
-    const tags = createTags({
-      getParentLayers: () => {
-        reads++
-        return []
-      },
-    })
-
-    tags.title.set('Local')
-
-    assert(isTags(tags))
-
-    expect(contents(tags.operations)).toEqual(['Local'])
-    expect(reads).toBe(0)
-  })
-
-  test('captures selectors before awaiting inherited values', async () => {
-    const pending = Promise.withResolvers<readonly TagLayer[]>()
-    const parent = layer((tags) => {
-      tags.meta.add({
-        name: 'description',
-        content: 'Description',
-      })
-      tags.link.add({
-        rel: 'icon',
-        href: '/icon.svg',
-      })
-    })
-    const tags = createTags({ getParentLayers: () => pending.promise })
-    const metaSelector = { name: 'description' }
-    const linkSelector = { rel: 'icon' }
-    const metadata = tags.meta.get(metaSelector)
-    const links = tags.link.get(linkSelector)
-
-    metaSelector.name = 'author'
-    linkSelector.rel = 'canonical'
-    pending.resolve([parent])
-
-    await expect(metadata).resolves.toEqual([{
-      name: 'description',
-      content: 'Description',
-    }])
-    await expect(links).resolves.toEqual([{
-      rel: 'icon',
-      href: '/icon.svg',
-    }])
-  })
-
-  test('reads the current supplied ancestor layers without retaining a previous snapshot', async () => {
-    let parent = layer((tags) => tags.title.set('Original'))
-    const tags = createTags({ getParentLayers: () => [parent] })
-    const original = await tags.get()
-
-    parent = layer((tags) => tags.title.set('Updated'))
-
-    await expect(tags.title.get()).resolves.toBe('Updated')
-    expect(original.title).toBe('Original')
-  })
-
-  test('copies descriptor trees when reading hydrated layers', async () => {
-    const descriptor: MetaTag = {
-      property: 'custom:item',
-      content: 'Item',
-      related: [{
-        property: 'custom:detail',
-        content: 'Detail',
-        related: [{
-          name: 'label',
-          content: 'Label',
-        }],
-      }],
-    }
-    const parent = layer((tags) => tags.meta.add(descriptor))
-    const hydrated: TagLayer = JSON.parse(JSON.stringify(parent))
-    const tags = createTags({ getParentLayers: () => [hydrated] })
-    const snapshot = await tags.get()
-    const related = snapshot.meta[0].related ?? []
-    const grandchild = related[0]?.related?.[0]
-
-    assert(grandchild)
-
-    expect(snapshot.meta).toEqual([descriptor])
-    Reflect.set(grandchild, 'content', 'Changed')
-    Reflect.set(related, '0', {})
-    Reflect.set(snapshot.meta, '0', {})
-    Reflect.set(snapshot, 'title', 'Changed')
-    expect(mergeTags([hydrated])[0]).toEqual(mergeTags([parent])[0])
-    await expect(tags.meta.get()).resolves.toEqual([descriptor])
-  })
-
-  test('filters primary entries without detaching related tags', async () => {
-    const parent = layer((tags) => {
-      tags.meta.add({ ...image('/wide.jpg', 'Wide'), key: 'wide' })
-      tags.meta.add({ ...image('/square.jpg', 'Square'), key: 'square' })
-      tags.link.add({
-        rel: 'icon',
-        href: '/small.png',
-        sizes: '16x16',
-      })
-      tags.link.add({
-        rel: 'icon',
-        href: '/large.png',
-        sizes: '32x32',
-      })
-    })
-    const tags = createTags({ getParentLayers: () => [parent] })
-
-    await expect(tags.meta.get({ property: 'og:image', key: 'square' })).resolves.toEqual([
-      { ...image('/square.jpg', 'Square'), key: 'square' },
-    ])
-    await expect(tags.meta.get({ property: 'og:image:alt' })).resolves.toEqual([])
-    await expect(tags.link.get({ rel: 'icon', sizes: '32x32' })).resolves.toEqual([{
-      rel: 'icon',
-      href: '/large.png',
-      sizes: '32x32',
-    }])
-  })
-
-  test('a fresh evaluation does not inherit the previous evaluation of its own scope', async () => {
-    const parent = layer((tags) => tags.title.set('Parent'))
-    const previous = createTags({ getParentLayers: () => [parent] })
-
-    previous.title.set('Previous local')
-
-    assert(isTags(previous))
-
-    expect(contents(previous.operations)).toEqual(['Previous local'])
-
-    const current = createTags({ getParentLayers: () => [parent] })
-
-    await expect(current.title.get()).resolves.toBe('Parent')
-  })
-
-  test('propagates failed ancestor reads without changing local operations', async () => {
-    const error = new Error('Parent failed')
-    const tags = createTags({ getParentLayers: () => Promise.reject(error) })
-
-    tags.title.set('Local')
-
-    await expect(tags.title.get()).rejects.toBe(error)
-    assert(isTags(tags))
-
-    expect(contents(tags.operations)).toEqual(['Local'])
-  })
-
-  test('records only local operations, preserving deletions without including inherited values', async () => {
-    const parent = layer((tags) => {
-      tags.title.set('Parent')
-      tags.meta.set({
-        name: 'description',
-        content: 'Parent description',
-      })
-    })
-    const tags = createTags({ getParentLayers: () => [parent] })
-
-    tags.meta.delete({ name: 'description' })
-
-    await expect(tags.title.get()).resolves.toBe('Parent')
-
-    assert(isTags(tags))
-
-    const local = tags.operations
-
-    expect(contents(local)).toEqual([])
-    expect(contents(parent, local)).toEqual(['Parent'])
-    expect(contents(parent)).toEqual(['Parent', 'Parent description'])
-  })
-
-  test('operation snapshots do not include subsequent writes', () => {
-    const tags = createTags()
-    tags.title.set('Original')
-    assert(isTags(tags))
-    const operations = tags.operations
-
-    tags.title.set('Later')
-
-    expect(contents(operations)).toEqual(['Original'])
-    expect(contents(tags.operations)).toEqual(['Later'])
-  })
+  const tags = createTags({ getParentLayers: () => [parent] })
+  tags.meta.delete({ name: 'description' })
+
+  await expect(tags.get()).resolves.toEqual({ title: 'Parent', meta: [], link: [] })
+  assert(isTags(tags))
+  expect(tags.operations).toEqual([{ kind: 'delete', target: { tag: 'meta', attributes: { name: 'description' } } }])
+})
+
+test('captures local writes before awaiting inherited values', async () => {
+  const pending = Promise.withResolvers<readonly TagLayer[]>()
+  const parent = layer((tags) => tags.title.set('Parent'))
+  const tags = createTags({ getParentLayers: () => pending.promise })
+  const beforeWrite = tags.title.get()
+
+  tags.title.set('Local')
+  pending.resolve([parent])
+
+  await expect(beforeWrite).resolves.toBe('Parent')
+  await expect(tags.title.get()).resolves.toBe('Local')
+})
+
+test('writes and operation snapshots do not read inherited layers', () => {
+  const getParentLayers = vi.fn(() => [])
+  const tags = createTags({ getParentLayers })
+  tags.title.set('Local')
+  assert(isTags(tags))
+
+  expect(tags.operations).toHaveLength(1)
+  expect(getParentLayers).not.toHaveBeenCalled()
+})
+
+test('captures a metadata selector before awaiting inherited values', async () => {
+  const pending = Promise.withResolvers<readonly TagLayer[]>()
+  const parent = layer((tags) => tags.meta.add({ name: 'description', content: 'Description' }))
+  const tags = createTags({ getParentLayers: () => pending.promise })
+  const selector = { name: 'description' }
+  const metadata = tags.meta.get(selector)
+
+  selector.name = 'author'
+  pending.resolve([parent])
+
+  await expect(metadata).resolves.toEqual([{ name: 'description', content: 'Description' }])
+})
+
+test('captures a link selector before awaiting inherited values', async () => {
+  const pending = Promise.withResolvers<readonly TagLayer[]>()
+  const parent = layer((tags) => tags.link.add({ rel: 'icon', href: '/icon.svg' }))
+  const tags = createTags({ getParentLayers: () => pending.promise })
+  const selector = { rel: 'icon' }
+  const links = tags.link.get(selector)
+
+  selector.rel = 'canonical'
+  pending.resolve([parent])
+
+  await expect(links).resolves.toEqual([{ rel: 'icon', href: '/icon.svg' }])
+})
+
+test('each read uses the latest ancestor layers', async () => {
+  let parent = layer((tags) => tags.title.set('Original'))
+  const tags = createTags({ getParentLayers: () => [parent] })
+  const original = await tags.get()
+
+  parent = layer((tags) => tags.title.set('Updated'))
+
+  await expect(tags.title.get()).resolves.toBe('Updated')
+  expect(original.title).toBe('Original')
+})
+
+test('returned metadata trees do not share mutable descriptors with stored layers', async () => {
+  const descriptor: MetaTag = {
+    property: 'custom:item',
+    content: 'Item',
+    related: [{ property: 'custom:detail', content: 'Detail', related: [{ name: 'label', content: 'Label' }] }],
+  }
+  const parent = layer((tags) => tags.meta.add(descriptor))
+  const tags = createTags({ getParentLayers: () => [parent] })
+  const snapshot = await tags.get()
+  const grandchild = snapshot.meta[0].related?.[0].related?.[0]
+  assert(grandchild)
+
+  Reflect.set(grandchild, 'content', 'Changed')
+
+  await expect(tags.meta.get()).resolves.toEqual([descriptor])
+})
+
+test('metadata reads select primary entries and retain their related tags', async () => {
+  const selected = { property: 'og:image', content: '/square.jpg', key: 'square', related: [{ property: 'og:image:alt', content: 'Square' }] }
+  const tags = createTags()
+  tags.meta.add({ property: 'og:image', content: '/wide.jpg', key: 'wide' })
+  tags.meta.add(selected)
+
+  await expect(tags.meta.get({ property: 'og:image', key: 'square' })).resolves.toEqual([selected])
+  await expect(tags.meta.get({ property: 'og:image:alt' })).resolves.toEqual([])
+})
+
+test('link reads select matching variants', async () => {
+  const tags = createTags()
+  tags.link.add({ rel: 'icon', href: '/small.png', sizes: '16x16' })
+  tags.link.add({ rel: 'icon', href: '/large.png', sizes: '32x32' })
+
+  await expect(tags.link.get({ rel: 'icon', sizes: '32x32' })).resolves.toEqual([{ rel: 'icon', href: '/large.png', sizes: '32x32' }])
+})
+
+test('operation snapshots do not include subsequent writes', () => {
+  const tags = createTags()
+  tags.title.set('Original')
+  assert(isTags(tags))
+  const operations = tags.operations
+
+  tags.title.set('Later')
+
+  expect(operations).toMatchObject([{ kind: 'set', groups: [{ value: 'Original' }] }])
+  expect(tags.operations).toHaveLength(2)
 })

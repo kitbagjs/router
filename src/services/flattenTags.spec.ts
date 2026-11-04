@@ -52,9 +52,13 @@ test('recursively flattens related metadata before the next sibling without inte
   ]
   const elements = flattenTags(groups)
 
-  expect(elements.map((element) => element.attributes.content)).toEqual(['Item', 'Detail', 'Label', 'Sibling', 'Next item'])
-  expect(groups.map((group) => flattenTags([group]).length)).toEqual([4, 1])
-  expect(elements.every((element) => !('related' in element.attributes) && !('key' in element.attributes))).toBe(true)
+  expect(elements).toEqual([
+    { tag: 'meta', attributes: { property: 'custom:item', content: 'Item' } },
+    { tag: 'meta', attributes: { property: 'different:detail', content: 'Detail' } },
+    { tag: 'meta', attributes: { name: 'label', content: 'Label' } },
+    { tag: 'meta', attributes: { property: 'custom:sibling', content: 'Sibling' } },
+    { tag: 'meta', attributes: { property: 'custom:item', content: 'Next item' } },
+  ])
 })
 
 test('converts numeric and boolean metadata content to strings', () => {
