@@ -5,16 +5,14 @@ import { toLegacyValues } from '@/utilities/toLegacyValues'
 import { LoaderDataAccessError } from '@/errors/loaderDataAccessError'
 import { PropsCallbackParent } from '@/types/props'
 import { ResolvedRoute } from '@/types/resolved'
-import { Computation, ComputationContext, loaderLocations, propsLocations, tagsLocations, ValueLocation } from '@/services/getComputations'
+import { Computation, ComputationContext, loaderLocations, propsLocations, ValueLocation } from '@/services/getComputations'
 import { createRouterCallbackContext } from '@/services/createRouterCallbackContext'
 import { getDataKey } from '@/services/getDataKey'
 import { PrefetchConfig } from '@/types/prefetch'
 import { AnyPayloadTransformer } from '@/services/payload'
 import { AnyFunction } from '@/types/utilities'
-import { createTags } from '@/services/createTags'
-import { isTags, TagLayer } from '@/types/tags'
+import { createRouteTags } from '@/services/createRouteTags'
 import { isPromise } from '@/utilities/promises'
-import { unwrapComputationResponse } from '@/utilities/unwrapComputationResponse'
 
 type CreateRouteComputationOptions = {
   location: ValueLocation,
@@ -32,20 +30,14 @@ export function createRouteComputation({ location, route, callback, routePrefetc
     const parent = getParentContext(to, location.depth, context)
 
     if (location.kind === 'tags') {
-      const tags = createTags({ getParentLayers: () => getParentTagLayers(to, location.depth, context) })
-
-      if (!isTags(tags)) {
-        throw new TypeError('Expected tags created by createTags')
-      }
-
-      const { operations } = tags
+      const tags = createRouteTags({ route: to, depth: location.depth, subscribe: context.subscribe })
       const result = callback(tags, { to: callbackRoute, signal, parent })
 
       if (isPromise(result)) {
-        return result.then(() => [...operations])
+        return result.then(() => tags.operations)
       }
 
-      return [...operations]
+      return tags.operations
     }
 
     const { push, replace, reject, update } = createRouterCallbackContext({ to })
@@ -64,22 +56,6 @@ export function createRouteComputation({ location, route, callback, routePrefetc
   }
 
   return computation
-}
-
-async function getParentTagLayers(route: ResolvedRoute, depth: number, { subscribe }: ComputationContext): Promise<TagLayer[]> {
-  const ancestors = route.matches.slice(0, depth).flatMap(tagsLocations)
-  const responses = await Promise.all(ancestors.map((location) => subscribe(location)))
-  const layers: TagLayer[] = []
-
-  for (const response of responses) {
-    if (response.status === 'ERROR') {
-      continue
-    }
-
-    layers.push(unwrapComputationResponse(response) as TagLayer)
-  }
-
-  return layers
 }
 
 /**
