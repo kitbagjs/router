@@ -1,9 +1,10 @@
 import { DataKind } from '@/services/getDataKey'
+import { SerializedStateEntry } from '@/types/state'
 
 export type DataKeyParts = [
   routeName: string,
   href: string,
-  state: [name: string, value: string | null][],
+  state: SerializedStateEntry[],
   depth: number,
   kind: DataKind,
   name: string
@@ -26,16 +27,36 @@ function isDataKeyParts(value: unknown): value is DataKeyParts {
 
   const [routeName, href, state, depth, kind, name] = value
 
-  return typeof routeName === 'string'
-    && typeof href === 'string'
-    && Array.isArray(state)
-    && state.every((entry) => Array.isArray(entry)
-      && entry.length === 2
-      && typeof entry[0] === 'string'
-      && (typeof entry[1] === 'string' || entry[1] === null))
-    && typeof depth === 'number'
-    && Number.isInteger(depth)
-    && depth >= -1
-    && (kind === 'props' || kind === 'loader')
-    && typeof name === 'string'
+  return isString(routeName)
+    && isString(href)
+    && isStateEntries(state)
+    && isDepth(depth)
+    && isDataKind(kind)
+    && isString(name)
+}
+
+function isString(value: unknown): value is string {
+  return typeof value === 'string'
+}
+
+function isStateEntries(value: unknown): value is SerializedStateEntry[] {
+  return Array.isArray(value) && value.every(isStateEntry)
+}
+
+function isStateEntry(value: unknown): value is SerializedStateEntry {
+  if (!Array.isArray(value) || value.length !== 2) {
+    return false
+  }
+
+  const [name, stateValue] = value
+
+  return isString(name) && (isString(stateValue) || stateValue === null)
+}
+
+function isDepth(value: unknown): value is number {
+  return typeof value === 'number' && Number.isInteger(value) && value >= -1
+}
+
+function isDataKind(value: unknown): value is DataKind {
+  return value === 'props' || value === 'loader'
 }

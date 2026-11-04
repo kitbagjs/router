@@ -5,6 +5,8 @@ import { RouteGetByKey } from '@/types/routeWithParams'
 import { MakeOptional } from '@/utilities/makeOptional'
 import { Identity } from '@/types/utilities'
 
+export type SerializedStateEntry = [name: string, value: string | null]
+
 export type ToState<TState extends Record<string, ParamOptions> | undefined> = TState extends undefined ? Record<string, ParamOptions> : unknown extends TState ? {} : TState
 
 export type ExtractRouteStateParamsAsOptional<TParamOptions extends Record<string, ParamOptions>> = {
