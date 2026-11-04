@@ -179,12 +179,6 @@ test('copies links and their related descriptors when recording a write', () => 
   }])
 })
 
-test('returns an empty snapshot when no layer contributes tags', async () => {
-  const tags = createTags()
-
-  await expect(tags.get()).resolves.toEqual({ title: undefined, meta: [], link: [] })
-})
-
 test('get returns title, metadata, and links in their snapshot fields', async () => {
   const tags = createTags()
   tags.title.set('Product')

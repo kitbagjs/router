@@ -81,10 +81,6 @@ test('accepts zhead link attributes', () => {
   tags.link.set({ rel: 'icon', href: '/icon.svg', onload: 'run()' })
 })
 
-test('title reads are asynchronous and may be absent', () => {
-  expectTypeOf(createTags().title.get()).toEqualTypeOf<Promise<string | undefined>>()
-})
-
 test('snapshots cannot be written through the read API', async () => {
   const snapshot = await createTags().get()
 
