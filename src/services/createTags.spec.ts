@@ -1,4 +1,4 @@
-import { assert, expect, test, vi } from 'vitest'
+import { assert, expect, test } from 'vitest'
 import { createTags } from '@/services/createTags'
 import { TagLayer, MetaTag, LinkTag, Tags, isTags } from '@/types/tags'
 
@@ -192,74 +192,12 @@ test('get returns title, metadata, and links in their snapshot fields', async ()
   })
 })
 
-test('reads inherited tags with local changes without storing the inherited operations', async () => {
-  const parent = layer((tags) => {
-    tags.title.set('Parent')
-    tags.meta.set({ name: 'description', content: 'Parent description' })
-  })
-  const tags = createTags({ getParentLayers: () => [parent] })
-  tags.meta.delete({ name: 'description' })
-
-  await expect(tags.get()).resolves.toEqual({ title: 'Parent', meta: [], link: [] })
-  assert(isTags(tags))
-  expect(tags.operations).toEqual([{ kind: 'delete', target: { tag: 'meta', attributes: { name: 'description' } } }])
-})
-
-test('captures local writes before awaiting inherited values', async () => {
-  const pending = Promise.withResolvers<readonly TagLayer[]>()
-  const parent = layer((tags) => tags.title.set('Parent'))
-  const tags = createTags({ getParentLayers: () => pending.promise })
-  const beforeWrite = tags.title.get()
-
-  tags.title.set('Local')
-  pending.resolve([parent])
-
-  await expect(beforeWrite).resolves.toBe('Parent')
-  await expect(tags.title.get()).resolves.toBe('Local')
-})
-
-test('writes and operation snapshots do not read inherited layers', () => {
-  const getParentLayers = vi.fn(() => [])
-  const tags = createTags({ getParentLayers })
-  tags.title.set('Local')
-  assert(isTags(tags))
-
-  expect(tags.operations).toHaveLength(1)
-  expect(getParentLayers).not.toHaveBeenCalled()
-})
-
-test('captures a metadata selector before awaiting inherited values', async () => {
-  const pending = Promise.withResolvers<readonly TagLayer[]>()
-  const parent = layer((tags) => tags.meta.add({ name: 'description', content: 'Description' }))
-  const tags = createTags({ getParentLayers: () => pending.promise })
-  const selector = { name: 'description' }
-  const metadata = tags.meta.get(selector)
-
-  selector.name = 'author'
-  pending.resolve([parent])
-
-  await expect(metadata).resolves.toEqual([{ name: 'description', content: 'Description' }])
-})
-
-test('captures a link selector before awaiting inherited values', async () => {
-  const pending = Promise.withResolvers<readonly TagLayer[]>()
-  const parent = layer((tags) => tags.link.add({ rel: 'icon', href: '/icon.svg' }))
-  const tags = createTags({ getParentLayers: () => pending.promise })
-  const selector = { rel: 'icon' }
-  const links = tags.link.get(selector)
-
-  selector.rel = 'canonical'
-  pending.resolve([parent])
-
-  await expect(links).resolves.toEqual([{ rel: 'icon', href: '/icon.svg' }])
-})
-
-test('each read uses the latest ancestor layers', async () => {
-  let parent = layer((tags) => tags.title.set('Original'))
-  const tags = createTags({ getParentLayers: () => [parent] })
+test('reads reflect local writes without changing earlier snapshots', async () => {
+  const tags = createTags()
+  tags.title.set('Original')
   const original = await tags.get()
 
-  parent = layer((tags) => tags.title.set('Updated'))
+  tags.title.set('Updated')
 
   await expect(tags.title.get()).resolves.toBe('Updated')
   expect(original.title).toBe('Original')
@@ -271,8 +209,8 @@ test('returned metadata trees do not share mutable descriptors with stored layer
     content: 'Item',
     related: [{ property: 'custom:detail', content: 'Detail', related: [{ name: 'label', content: 'Label' }] }],
   }
-  const parent = layer((tags) => tags.meta.add(descriptor))
-  const tags = createTags({ getParentLayers: () => [parent] })
+  const tags = createTags()
+  tags.meta.add(descriptor)
   const snapshot = await tags.get()
   const grandchild = snapshot.meta[0].related?.[0].related?.[0]
   assert(grandchild)

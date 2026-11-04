@@ -1,34 +1,10 @@
-import { IS_TAGS_SYMBOL, TagGroup, TagLayer, LinkTag, LinkTagSelector, MetaTag, MetaTagSelector, TagOperation, TagSelector, Tags, ResolvedMetaTag, ResolvedLinkTag, TagsInternal } from '@/types/tags'
-import { MaybePromise } from '@/types/utilities'
+import { IS_TAGS_SYMBOL, TagGroup, TagLayer, LinkTag, LinkTagSelector, MetaTag, MetaTagSelector, TagOperation, TagSelector, Tags, TagsInternal } from '@/types/tags'
 import { matchesTag, mergeTags } from '@/services/mergeTags'
-
-type CreateTagsOptions = {
-  /** Supplies ancestor layers only; reads must exclude this scope's previous evaluation and its descendants. */
-  getParentLayers?: () => MaybePromise<readonly TagLayer[]>,
-}
+import { copyTag } from '@/utilities/copyTag'
+import { toTagsSnapshot } from '@/utilities/toTagsSnapshot'
 
 function createSelector<TTag extends TagSelector['tag']>(tag: TTag, attributes: Record<string, string>): TagSelector & { tag: TTag } {
   return { tag, attributes }
-}
-
-function copyMeta(descriptor: MetaTag): ResolvedMetaTag {
-  const copy = { ...descriptor }
-
-  if (descriptor.related !== undefined) {
-    copy.related = descriptor.related.map(copyMeta)
-  }
-
-  return copy
-}
-
-function copyLink(descriptor: LinkTag): ResolvedLinkTag {
-  const copy = { ...descriptor }
-
-  if (descriptor.related !== undefined) {
-    copy.related = descriptor.related.map(copyLink)
-  }
-
-  return copy
 }
 
 function metaSelector({ name, property, media, key, id }: MetaTagSelector, exact: boolean): TagSelector & { tag: 'meta' } {
@@ -92,60 +68,37 @@ function linkSelector(value: LinkTagSelector, exact: boolean): TagSelector & { t
 }
 
 /**
- * Supplies a fresh callback scope. Reads include ancestor layers and local writes.
+ * Supplies a fresh callback scope. Reads include only its local writes.
  * Internal operations contain only this scope's writes for navigation storage.
  */
-export function createTags({ getParentLayers = () => [] }: CreateTagsOptions = {}): Tags {
+export function createTags(): Tags {
   const operations: TagOperation[] = []
 
   function record(operation: TagOperation): void {
     operations.push(operation)
   }
 
-  async function readGroups(): Promise<readonly TagGroup[]> {
-    // Capture local writes before awaiting ancestors; later writes belong to the next read.
-    const local = [...operations]
-    const parents = await getParentLayers()
-
-    return mergeTags([...parents, local])
+  function readGroups(): readonly TagGroup[] {
+    return mergeTags([operations])
   }
 
   const get: Tags['get'] = async () => {
-    const groups = await readGroups()
-    const meta: ResolvedMetaTag[] = []
-    const link: ResolvedLinkTag[] = []
-    let title: string | undefined
+    const groups = readGroups()
 
-    for (const group of groups) {
-      switch (group.tag) {
-        case 'title':
-          title = group.value
-          break
-        case 'meta':
-          meta.push(copyMeta(group.value))
-          break
-        case 'link':
-          link.push(copyLink(group.value))
-          break
-        default:
-          group satisfies never
-      }
-    }
-
-    return { title, meta, link }
+    return toTagsSnapshot(groups)
   }
 
   function writeMeta(kind: 'set' | 'add', descriptor: MetaTag): void {
     const selector = metaSelector(descriptor, true)
     const target = metaSelector(descriptor, descriptor.key === undefined)
-    const group: TagGroup = { ...selector, value: copyMeta(descriptor) }
+    const group: TagGroup = { ...selector, value: copyTag(descriptor) }
 
     record({ kind, target, groups: [group] })
   }
 
   function writeLink(kind: 'set' | 'add', descriptor: LinkTag): void {
     const target = linkSelector(descriptor, true)
-    const group: TagGroup = { ...target, value: copyLink(descriptor) }
+    const group: TagGroup = { ...target, value: copyTag(descriptor) }
 
     record({ kind, target, groups: [group] })
   }
@@ -176,10 +129,10 @@ export function createTags({ getParentLayers = () => [] }: CreateTagsOptions = {
       target = metaSelector(selector, false)
     }
 
-    const groups = await readGroups()
+    const groups = readGroups()
     const values = groups.flatMap((group) => {
       if (group.tag === 'meta' && (!target || matchesTag(group, target))) {
-        return [copyMeta(group.value)]
+        return [copyTag(group.value)]
       }
 
       return []
@@ -205,10 +158,10 @@ export function createTags({ getParentLayers = () => [] }: CreateTagsOptions = {
       target = linkSelector(selector, false)
     }
 
-    const groups = await readGroups()
+    const groups = readGroups()
     const values = groups.flatMap((group) => {
       if (group.tag === 'link' && (!target || matchesTag(group, target))) {
-        return [copyLink(group.value)]
+        return [copyTag(group.value)]
       }
 
       return []
