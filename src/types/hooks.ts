@@ -343,7 +343,7 @@ export type RejectionHookRunner<TRejection extends Rejection = Rejection, TRoute
   context: { to: RouterResolvedRouteUnion<TRoutes> | null, from: RouterResolvedRouteUnion<TRoutes> | null },
 ) => void
 
-export type ErrorHookSource = 'props' | 'loader' | 'hook' | 'component'
+export type ErrorHookSource = 'props' | 'loader' | 'hook' | 'component' | 'tags'
 
 export type ErrorHookContext<
   TRoutes extends Routes = Routes,
