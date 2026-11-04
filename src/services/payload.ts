@@ -2,6 +2,7 @@ import { isRecord } from '@/utilities/guards'
 import { isBrowser } from '@/utilities/isBrowser'
 import { DataEntry } from '@/services/createDataStore'
 import { getComputations } from '@/services/getComputations'
+import { getHydrationKey } from '@/services/getHydrationKey'
 import { PayloadValueError } from '@/errors/payloadValueError'
 import { ResolvedRoute } from '@/types/resolved'
 
@@ -177,27 +178,20 @@ export function encodePayloadValues(route: ResolvedRoute, values: DataEntry[], f
 /**
  * Decodes payload values for the store to adopt, each through its own stringifier or the fallback. A
  * value that is missing from the payload or that cannot be read is warned about and left out, so its
- * getter runs again.
+ * getter runs again. Matching ignores hash and state, then adopts values under the full client keys.
  */
 export function decodePayloadValues(route: ResolvedRoute, values: PayloadValue[], fallback: PayloadTransformer = jsonTransformer): DataEntry[] {
   const computations = getComputations(route)
+  const encodedValues = new Map(values.map(({ key, encoded }) => [getHydrationKey(key), encoded]))
 
-  for (const { kind, key, name } of computations) {
-    const present = values.some((value) => value.key === key)
+  return computations.flatMap(({ kind, key, name, transformer = fallback }) => {
+    const encoded = encodedValues.get(getHydrationKey(key))
 
-    if (!present) {
+    if (encoded === undefined) {
       console.warn(`The payload has no value for ${kind} "${name}". Its getter runs again, which can cause a hydration mismatch.`)
-    }
-  }
 
-  return values.flatMap(({ key, encoded }) => {
-    const computation = computations.find((computation) => computation.key === key)
-
-    if (!computation) {
       return []
     }
-
-    const { kind, name, transformer = fallback } = computation
 
     try {
       return [{ key, value: transformer.parse(encoded) as unknown }]

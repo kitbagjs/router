@@ -7,6 +7,9 @@ import { payloadToScript, RouterPayload } from '@/services/payload'
 import { withParams } from '@/services/withParams'
 import { createRejection } from '@/services/createRejection'
 import { z } from 'zod'
+import { mount } from '@vue/test-utils'
+import { defineComponent, h } from 'vue'
+import { useLoader } from '@/main'
 
 function getServerKey(): string {
   const route = createResolvedRoute(createRoute({ name: 'home', path: '/' }))
@@ -213,5 +216,47 @@ test('hydration uses the initial history state when matching stored values', asy
   await router.start()
 
   expect(router.route.state.page).toBe(2)
+  expect(load).not.toHaveBeenCalled()
+})
+
+test.each([
+  { initialUrl: '/#details', state: undefined },
+  { initialUrl: '/', state: { page: '2' } },
+  { initialUrl: '/#details', state: { page: '2' } },
+])('adopts a rendered payload with browser-only inputs: %j', async ({ initialUrl, state }) => {
+  const previousState = window.history.state
+  const previousUrl = window.location.href
+  onTestFinished(() => window.history.replaceState(previousState, '', previousUrl))
+  window.history.replaceState(null, '', '/')
+  document.body.innerHTML = ''
+
+  const serverRoute = createRoute({ name: 'home', path: '/', state: { page: Number } }).addLoader(() => 'from server')
+  const server = createRouter([serverRoute], { ssr: true, initialUrl: '/' })
+  onTestFinished(() => server.stop())
+  const rendered = await server.render()
+
+  if (rendered.kind !== 'success') {
+    throw new Error('Expected a successful server render')
+  }
+
+  document.body.innerHTML = rendered.payload
+  window.history.replaceState({ usr: state }, '', '/')
+
+  const load = vi.fn(() => 'from client')
+  const clientRoute = createRoute({ name: 'home', path: '/', state: { page: Number } }).addLoader(load)
+  const client = createRouter([clientRoute], { initialUrl })
+  onTestFinished(() => client.stop())
+
+  await client.start()
+
+  const wrapper = mount(defineComponent({
+    setup() {
+      const { data } = useLoader(client.route.loaders.default)
+
+      return () => h('p', data.value)
+    },
+  }), { global: { plugins: [client] } })
+
+  expect(wrapper.text()).toBe('from server')
   expect(load).not.toHaveBeenCalled()
 })
