@@ -24,7 +24,9 @@ export type ComputationContext = {
   to: ResolvedRoute,
   signal: AbortSignal,
   getValue: (location: ValueLocation) => Promise<unknown>,
-  /** Reads the local outcome when scheduled here, otherwise waits on this or the current navigation. */
+  /**
+   * Reads the local outcome when scheduled here, otherwise waits on this or the current navigation.
+   */
   subscribe: (location: ValueLocation) => Promise<CallbackContextResponse>,
 }
 
