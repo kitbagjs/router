@@ -1,4 +1,4 @@
-import { DataKind } from '@/services/getDataKey'
+import { DataKind, isDataKind } from '@/types/computation'
 import { SerializedStateEntry } from '@/types/state'
 
 export type DataKeyParts = [
@@ -55,8 +55,4 @@ function isStateEntry(value: unknown): value is SerializedStateEntry {
 
 function isDepth(value: unknown): value is number {
   return typeof value === 'number' && Number.isInteger(value) && value >= -1
-}
-
-function isDataKind(value: unknown): value is DataKind {
-  return value === 'props' || value === 'loader'
 }

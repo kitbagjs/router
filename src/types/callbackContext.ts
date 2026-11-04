@@ -1,5 +1,5 @@
+import { DataKind } from '@/types/computation'
 import { RouterPush } from './routerPush'
-import { DataKind } from '@/services/getDataKey'
 
 export type CallbackContextSuccess = {
   status: 'SUCCESS',

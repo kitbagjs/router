@@ -9,7 +9,6 @@ import { useEventListener } from './useEventListener'
 import { Router } from '@/types/router'
 import { getComputations, getComputationsForStrategy } from '@/services/getComputations'
 import { RouterNavigationStore } from '@/services/createRouterNavigation'
-import { getComputationPrefetchKey } from '@/services/getComputationPrefetchKey'
 import { Destination, isSameDestination } from '@/utilities/isSameDestination'
 import { setStateValues } from '@/services/state'
 
@@ -46,7 +45,7 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
         ...configs,
         routePrefetch: computation.routePrefetch,
         viewPrefetch: computation.prefetch,
-      }, getComputationPrefetchKey(computation.kind)) !== false)
+      }, computation.prefetchKey) !== false)
     })
 
     const take: UsePrefetching['take'] = () => {

@@ -1,10 +1,10 @@
+import { Computation, DataKind } from '@/types/computation'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
 import { createRouterNavigation } from '@/services/createRouterNavigation'
 import { createResolvedRoute } from '@/services/createResolvedRoute'
 import { createRoute } from '@/services/createRoute'
-import { Computation } from '@/services/getComputations'
-import { DataKind, getDataKey } from '@/services/getDataKey'
+import { getDataKey } from '@/services/getDataKey'
 import { ResolvedRoute } from '@/types/resolved'
 import { ContextPushError } from '@/errors/contextPushError'
 import { ContextRejectionError } from '@/errors/contextRejectionError'
@@ -28,6 +28,7 @@ function createComputation(route: ResolvedRoute, run: Computation['run'], kind: 
     kind,
     name,
     key: getDataKey({ kind, depth: 0, name, route }),
+    prefetchKey: 'loaders',
     depth: 0,
     run,
     routePrefetch: undefined,

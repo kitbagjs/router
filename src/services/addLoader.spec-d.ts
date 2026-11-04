@@ -151,6 +151,8 @@ describe('loader callback', () => {
       .addLoader((route) => {
         // @ts-expect-error a loader cannot read the data of the route it belongs to
         const data = route.getData()
+        // @ts-expect-error loaders do not receive legacy data either
+        const legacy = route.data
 
         return 'second'
       }, { name: 'second' })

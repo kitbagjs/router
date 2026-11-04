@@ -1,4 +1,4 @@
-import { ValueLocation } from '@/services/getComputations'
+import { ValueLocation } from '@/types/computation'
 import { ResolvedRoute } from '@/types/resolved'
 import { warn } from '@/utilities/warn'
 

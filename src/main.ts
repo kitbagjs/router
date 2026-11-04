@@ -54,6 +54,7 @@ export type {
   RejectionHookContext,
   RejectionHook,
   AddRejectionHook,
+  ErrorHookSource,
   ErrorHookContext,
   ErrorHook,
   AddErrorHook

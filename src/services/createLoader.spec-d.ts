@@ -15,6 +15,8 @@ test('loaders receive resolved routes and preserve their data type', () => {
       expectTypeOf(route).toEqualTypeOf<ResolvedRoute>()
       // @ts-expect-error loaders cannot read their own data
       expectTypeOf(route.getData())
+      // @ts-expect-error loaders do not receive legacy data either
+      expectTypeOf(route.data)
 
       return route.name
     },

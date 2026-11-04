@@ -1,4 +1,4 @@
-import { AddHook } from '@/types/hooks'
+import { AddHook, ErrorHookSource } from '@/types/hooks'
 import { HookRegistrationOptions, HookRemove } from './hooks'
 import { Routes } from './route'
 import { Rejections } from './rejection'
@@ -117,7 +117,7 @@ export type PluginErrorHookContext<
   remove: HookRemove,
   to: ResolvedRoute | null,
   from: ResolvedRoute | null,
-  source: 'props' | 'loader' | 'hook' | 'component',
+  source: ErrorHookSource,
   reject: RouterReject<TRejections>,
   push: RouterPush<TRoutes>,
   replace: RouterReplace<TRoutes>,
