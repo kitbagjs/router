@@ -371,7 +371,7 @@ export type AddErrorHook<
 export type ErrorHookRunnerContext<TRoutes extends Routes = Routes> = {
   to: RouterResolvedRouteUnion<TRoutes> | null,
   from: RouterResolvedRouteUnion<TRoutes> | null,
-  source: Exclude<ErrorHookSource, 'component'>,
+  source: ErrorHookSource,
 }
 
 export type ErrorHookRunner = (
