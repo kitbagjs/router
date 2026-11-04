@@ -11,7 +11,7 @@ function layer(callback: (tags: Tags) => void): TagLayer {
 
   assert(isTags(tags))
 
-  return [...tags.operations]
+  return tags.operations
 }
 
 function image(url: string, alt?: string): MetaTag {
@@ -527,10 +527,22 @@ describe('createTags', () => {
 
     assert(isTags(tags))
 
-    const local = [...tags.operations]
+    const local = tags.operations
 
     expect(contents(local)).toEqual([])
     expect(contents(parent, local)).toEqual(['Parent'])
     expect(contents(parent)).toEqual(['Parent', 'Parent description'])
+  })
+
+  test('operation snapshots do not include subsequent writes', () => {
+    const tags = createTags()
+    tags.title.set('Original')
+    assert(isTags(tags))
+    const operations = tags.operations
+
+    tags.title.set('Later')
+
+    expect(contents(operations)).toEqual(['Original'])
+    expect(contents(tags.operations)).toEqual(['Later'])
   })
 })

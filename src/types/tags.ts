@@ -42,7 +42,7 @@ export type TagOperation = | Readonly<{
 export type TagLayer = readonly TagOperation[]
 
 export type TagsInternal = {
-  operations: TagLayer,
+  readonly operations: TagLayer,
 }
 
 export type MetaTagIdentifier = | {

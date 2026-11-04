@@ -248,7 +248,9 @@ export function createTags({ getParentLayers = () => [] }: CreateTagsOptions = {
   }
 
   const tags = {
-    operations,
+    get operations(): TagLayer {
+      return [...operations]
+    },
     get,
     title,
     meta,
