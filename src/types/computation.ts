@@ -3,19 +3,16 @@ import { PrefetchConfig, PrefetchConfigOptions } from '@/types/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
 import { AnyFunction } from '@/types/utilities'
 
-export const COMPUTATION_PREFETCH_KEYS = {
-  props: 'props',
-  loader: 'loaders',
-} as const satisfies Record<string, keyof PrefetchConfigOptions>
+const DATA_KINDS = ['props', 'loader'] as const
 
 /**
  * What a stored value is: the props of a view, or the data of a loader. Part of the key so that a view
  * and a loader sharing a name on the same route are still two values.
  */
-export type DataKind = keyof typeof COMPUTATION_PREFETCH_KEYS
+export type DataKind = typeof DATA_KINDS[number]
 
 export function isDataKind(value: unknown): value is DataKind {
-  return typeof value === 'string' && Object.hasOwn(COMPUTATION_PREFETCH_KEYS, value)
+  return DATA_KINDS.some((kind) => kind === value)
 }
 
 /**
@@ -30,6 +27,7 @@ export type ComputationContext = {
 
 export type Computation = ValueLocation & {
   key: string,
+  prefetchKey: keyof PrefetchConfigOptions,
   run: (context: ComputationContext) => unknown,
   routePrefetch: PrefetchConfig | undefined,
   prefetch: PrefetchConfig | undefined,

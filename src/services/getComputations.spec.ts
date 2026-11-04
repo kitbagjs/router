@@ -1,7 +1,7 @@
 import { afterEach, expect, test, vi } from 'vitest'
 import { createRoute } from '@/services/createRoute'
 import { createResolvedRoute } from '@/services/createResolvedRoute'
-import { getComputations } from '@/services/getComputations'
+import { getComputations, getComputationsForStrategy } from '@/services/getComputations'
 import * as propsFactory from '@/services/createPropsComputation'
 import * as loaderFactory from '@/services/createLoaderComputation'
 import { component } from '@/utilities/testHelpers'
@@ -43,4 +43,15 @@ test('creates computations with each matched callback and its options', () => {
   expect(computations).toEqual([createProps.mock.results[0].value, createLoader.mock.results[0].value])
   expect(props).not.toHaveBeenCalled()
   expect(load).not.toHaveBeenCalled()
+})
+
+test('selects props and loaders using their separate prefetch options', () => {
+  const definition = createRoute({ path: '/' })
+    .addView(component, { props: () => ({}) })
+    .addLoader(() => 'data')
+  const route = createResolvedRoute(definition)
+  const configs = { routerPrefetch: { props: 'eager', loaders: 'intent' } } as const
+
+  expect(getComputationsForStrategy(route, 'eager', configs).map(({ kind }) => kind)).toEqual(['props'])
+  expect(getComputationsForStrategy(route, 'intent', configs).map(({ kind }) => kind)).toEqual(['loader'])
 })
