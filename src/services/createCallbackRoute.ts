@@ -1,6 +1,6 @@
 import { DEFAULT_LOADER_NAME } from '@/services/addLoader'
 import { getRouteLoaderLocation } from '@/services/getRouteLoaderLocation'
-import { loaderLocations } from '@/services/getComputations'
+import { loaderLocations } from '@/services/loaderLocations'
 import { ComputationContext } from '@/types/computation'
 import { ResolvedRoute, WithData } from '@/types/resolved'
 import { toLegacyValues } from '@/utilities/toLegacyValues'

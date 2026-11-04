@@ -1,8 +1,8 @@
-import { Computation, ValueLocation, DataKind } from '@/types/computation'
+import { Computation, DataKind } from '@/types/computation'
 import type { PrefetchConfigs, PrefetchStrategy } from '@/types/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
-import { CreatedRouteOptions } from '@/types/route'
-import { viewNamesWithProps } from '@/services/routeViews'
+import { propsLocations } from '@/services/propsLocations'
+import { loaderLocations } from '@/services/loaderLocations'
 import { createPropsComputation } from '@/services/createPropsComputation'
 import { createLoaderComputation } from '@/services/createLoaderComputation'
 import { AnyFunction } from '@/types/utilities'
@@ -41,17 +41,6 @@ export function getComputations(route: ResolvedRoute): Computation[] {
 
 export function getComputationsForStrategy(route: ResolvedRoute, strategy: PrefetchStrategy, configs: PrefetchConfigs): Computation[] {
   return getComputations(route).filter(isStrategy(strategy, configs))
-}
-
-/**
- * Only views with a getter, since a view with none is never computed and waiting on it would never settle.
- */
-export function propsLocations(match: CreatedRouteOptions, depth: number): ValueLocation<'props'>[] {
-  return viewNamesWithProps(match.views).map((name) => ({ kind: 'props', depth, name }))
-}
-
-export function loaderLocations(match: CreatedRouteOptions, depth: number): ValueLocation<'loader'>[] {
-  return Object.keys(match.loaders).map((name) => ({ kind: 'loader', depth, name }))
 }
 
 export function isKind(kind: DataKind): (computation: Computation) => boolean {

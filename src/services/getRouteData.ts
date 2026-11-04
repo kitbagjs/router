@@ -1,6 +1,6 @@
 import { ValueLocation } from '@/types/computation'
 import { NavigationData } from '@/services/createRouterNavigation'
-import { loaderLocations } from '@/services/getComputations'
+import { loaderLocations } from '@/services/loaderLocations'
 import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
 import { LegacyValues, toLegacyValues } from '@/utilities/toLegacyValues'
 import { ResolvedRoute } from '@/types/resolved'
