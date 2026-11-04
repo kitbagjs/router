@@ -1,42 +1,42 @@
 import { Computation, DataKind } from '@/types/computation'
 import type { PrefetchConfigs, PrefetchStrategy } from '@/types/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
-import { propsLocations } from '@/services/propsLocations'
-import { loaderLocations } from '@/services/loaderLocations'
 import { createPropsComputation } from '@/services/createPropsComputation'
 import { createLoaderComputation } from '@/services/createLoaderComputation'
-import { AnyFunction } from '@/types/utilities'
 import { getPrefetchOption } from '@/utilities/prefetch'
 
 export function getComputations(route: ResolvedRoute): Computation[] {
-  return route.matches.flatMap((match, depth) => {
-    const props = propsLocations(match, depth).map((location) => {
-      const view = match.views[location.name]
+  const computations: Computation[] = []
 
-      return createPropsComputation({
-        location,
+  for (const [depth, match] of route.matches.entries()) {
+    for (const [name, { props, prefetch, transformer }] of Object.entries(match.views)) {
+      if (!props) {
+        continue
+      }
+
+      computations.push(createPropsComputation({
+        location: { kind: 'props', depth, name },
         route,
-        callback: view.props as AnyFunction,
+        callback: props,
         routePrefetch: match.prefetch,
-        prefetch: view.prefetch,
-        transformer: view.transformer,
-      })
-    })
-    const loaders = loaderLocations(match, depth).map((location) => {
-      const loader = match.loaders[location.name]
+        prefetch,
+        transformer,
+      }))
+    }
 
-      return createLoaderComputation({
-        location,
+    for (const [name, { load, prefetch, transformer }] of Object.entries(match.loaders)) {
+      computations.push(createLoaderComputation({
+        location: { kind: 'loader', depth, name },
         route,
-        callback: loader.load,
+        callback: load,
         routePrefetch: match.prefetch,
-        prefetch: loader.prefetch,
-        transformer: loader.transformer,
-      })
-    })
+        prefetch,
+        transformer,
+      }))
+    }
+  }
 
-    return [...props, ...loaders]
-  })
+  return computations
 }
 
 export function getComputationsForStrategy(route: ResolvedRoute, strategy: PrefetchStrategy, configs: PrefetchConfigs): Computation[] {
