@@ -31,6 +31,7 @@ type CreateRouterNavigationOptions = {
 type CallbackValueContext = {
   store: DataStore,
   signal: AbortSignal,
+  computedKeys: Set<string>,
 }
 
 type RouterNavigationState = {
@@ -89,6 +90,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
   function createRouterNavigationStore(): RouterNavigationStore {
     const controller = new AbortController()
+    const computedKeys = new Set<string>()
     const response = Promise.withResolvers<CallbackContextPush | CallbackContextReject>()
     const committed = Promise.withResolvers<RouterNavigationCommitOptions | undefined>()
     const state: RouterNavigationState = {
@@ -138,6 +140,10 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
         return []
       }
 
+      for (const { key } of computations) {
+        computedKeys.add(key)
+      }
+
       const values = computations.map(({ key }) => data.subscribe(key))
 
       for (const computation of computations) {
@@ -149,12 +155,14 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
     function run(computation: Computation, route: ResolvedRoute): MaybePromise<CallbackContextResponse> {
       try {
-        const context: CallbackValueContext = { store: data, signal: controller.signal }
+        const context: CallbackValueContext = { store: data, signal: controller.signal, computedKeys }
         const getValue = (location: ValueLocation): Promise<unknown> => getCallbackValue(location, route, context)
+        const subscribe = (location: ValueLocation): Promise<CallbackContextResponse> => getCallbackResponse(location, route, context)
         const value = runWithContext(() => computation.run({
           to: route,
           signal: controller.signal,
           getValue,
+          subscribe,
         }))
 
         if (isPromise(value)) {
@@ -226,6 +234,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
       abandon()
       data.dispose()
+      computedKeys.clear()
     }
 
     function stage(): void {
@@ -320,6 +329,28 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     return value
   }
 
+  function getCallbackResponse(location: ValueLocation, route: ResolvedRoute, { store, signal, computedKeys }: CallbackValueContext): Promise<CallbackContextResponse> {
+    const key = getDataKey({ ...location, route })
+    const current = navigations.current.data
+    const local = store.get(key)
+    const hasLocalResult = local.status !== 'MISSING' && local.status !== 'PENDING'
+
+    if (computedKeys.has(key) || hasLocalResult || store === current) {
+      return store.subscribe(key)
+    }
+
+    const currentValue = current.get(key)
+
+    if (local.status === 'MISSING' && currentValue.status === 'MISSING') {
+      warnWaitingOnUncomputedValue(location, route)
+    }
+
+    return waitForDependency([
+      store.subscribe(key),
+      current.subscribe(key),
+    ], signal)
+  }
+
   return {
     current,
     stop,
@@ -343,7 +374,7 @@ function toDataValue(value: Promise<CallbackContextResponse>): Promise<unknown> 
   return unwrapped
 }
 
-async function waitForDependency(sources: Promise<unknown>[], signal: AbortSignal): Promise<unknown> {
+async function waitForDependency<T>(sources: Promise<T>[], signal: AbortSignal): Promise<T> {
   const cancelled = Promise.withResolvers<never>()
 
   function onAbort(): void {
@@ -370,7 +401,7 @@ async function waitForDependency(sources: Promise<unknown>[], signal: AbortSigna
  * The first source to produce a value. Both failing surfaces a real callback error over an abandonment,
  * since abandonment only says nobody is computing that source any more.
  */
-async function firstToArrive(sources: Promise<unknown>[]): Promise<unknown> {
+async function firstToArrive<T>(sources: Promise<T>[]): Promise<T> {
   try {
     return await Promise.any(sources)
   } catch (error) {

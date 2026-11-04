@@ -5,6 +5,7 @@ import { createRouterNavigation } from './createRouterNavigation'
 import { expect, test, vi } from 'vitest'
 import { decodePayloadValues, encodePayloadValues, isRouterPayload } from '@/services/payload'
 import { getDataKey } from '@/services/getDataKey'
+import { Tags } from '@/types/tags'
 
 test('a payload is one of the two kinds the server renders', () => {
   expect(isRouterPayload({ kind: 'reject', url: '/', rejection: 'NotFound' })).toBe(true)
@@ -67,4 +68,35 @@ test('decodes matching server values with client transformers and full client ke
     { key: clientChild.key, value: new Map([['a', 1]]) },
   ])
   expect(parse).toHaveBeenCalledExactlyOnceWith('[["a",1]]')
+})
+
+test('tag layers survive payload serialization and adoption under the client keys', async () => {
+  const callback = vi.fn((tags: Tags) => {
+    tags.meta.add({
+      property: 'og:image',
+      content: '/image.jpg',
+      related: [{ property: 'og:image:alt', content: 'Image' }],
+    })
+    tags.meta.delete({ name: 'description' })
+  })
+  const definition = createRoute({ path: '/', state: { page: Number } }).setTags(callback)
+  const serverRoute = createResolvedRoute(definition)
+  const server = createRouterNavigation()
+  await Promise.all(server.commit({ to: serverRoute, from: null }))
+  const { values } = encodePayloadValues(serverRoute, server.getEntries())
+  const payload = JSON.parse(JSON.stringify({ kind: 'success', url: '/', values }))
+
+  expect(isRouterPayload(payload)).toBe(true)
+
+  const clientRoute = createResolvedRoute(definition, {}, { hash: 'details', state: { page: 2 } })
+  const client = createRouterNavigation()
+  const prepared = client.create()
+  prepared.setEntries(decodePayloadValues(clientRoute, payload.values))
+  await Promise.all(prepared.commit({ to: clientRoute, from: null }))
+  const location = { kind: 'tags', depth: 0, name: 'tags' } as const
+
+  expect(await client.getValue(location, clientRoute)).toEqual(await server.getValue(location, serverRoute))
+  expect(callback).toHaveBeenCalledOnce()
+  client.stop()
+  server.stop()
 })

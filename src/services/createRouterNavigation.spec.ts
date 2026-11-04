@@ -339,6 +339,48 @@ describe('response delivery', () => {
 })
 
 describe('dependencies', () => {
+  test.each(['success', 'error'] as const)('repeated subscriptions retain the current %s outcome when no local work owns it', async (outcome) => {
+    const error = new Error('failed')
+    const { route, computation } = createFixture(() => {
+      if (outcome === 'error') {
+        throw error
+      }
+
+      return 'loaded'
+    })
+    const navigation = createRouterNavigation()
+    await Promise.all(navigation.commit({ to: route, from: null }))
+    const response = await navigation.subscribe(computation, route)
+    const dependent = createComputation(route, ({ subscribe }) => {
+      return Promise.all([subscribe(computation), subscribe(computation)])
+    }, 'props')
+    const prepared = navigation.create()
+    await Promise.all(prepared.compute(route, [dependent]))
+
+    await expect(prepared.getValue(dependent, route)).resolves.toEqual([response, response])
+    prepared.dispose()
+    navigation.stop()
+  })
+
+  test('subscriptions wait for scheduled local work instead of an older committed outcome', async () => {
+    const { route, computation } = createFixture(() => 'old')
+    const navigation = createRouterNavigation()
+    await Promise.all(navigation.commit({ to: route, from: null }))
+    const pending = Promise.withResolvers<string>()
+    const updated = { ...computation, run: () => pending.promise }
+    const dependent = createComputation(route, ({ subscribe }) => subscribe(updated), 'props')
+    const prepared = navigation.create()
+    const work = prepared.compute(route, [dependent, updated])
+    await flushPromises()
+
+    expect(prepared.getState(dependent, route)).toEqual({ status: 'RUNNING' })
+    pending.resolve('new')
+    await Promise.all(work)
+    await expect(prepared.getValue(dependent, route)).resolves.toEqual({ status: 'SUCCESS', value: 'new' })
+    prepared.dispose()
+    navigation.stop()
+  })
+
   test('getValue reads from the computation navigation after subscriptions are queued', async () => {
     const warn = vi.spyOn(waitingWarnings, 'warnWaitingOnUncomputedValue').mockImplementation(() => {})
     const { route, computation } = createFixture(() => 'loaded')
@@ -354,12 +396,12 @@ describe('dependencies', () => {
     expect(warn).not.toHaveBeenCalled()
   })
 
-  test('disposing a prefetch unwinds a pending dependency', async () => {
+  test.each(['getValue', 'subscribe'] as const)('disposing a prefetch unwinds a pending %s dependency', async (read) => {
     const cleaned = vi.fn()
     const { route, computation } = createFixture(() => new Promise(() => {}))
     const dependent = createComputation(route, async (context) => {
       try {
-        await context.getValue(computation)
+        await context[read](computation)
       } finally {
         cleaned()
       }

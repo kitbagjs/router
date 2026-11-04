@@ -1,8 +1,7 @@
 import { expect, test, vi } from 'vitest'
 import { createRoute } from '@/services/createRoute'
-import { createResolvedRoute } from '@/services/createResolvedRoute'
-import { getComputations } from '@/services/getComputations'
 import { component } from '@/utilities/testHelpers'
+import { CreatedRouteOptions } from '@/types/route'
 
 test('setTags registers on the current match and remains chainable', () => {
   const parentTags = vi.fn()
@@ -14,9 +13,9 @@ test('setTags registers on the current match and remains chainable', () => {
   expect(result).toBe(child)
 
   const route = result.addLoader(() => 'data').addView(component)
-  const callbacks = getComputations(createResolvedRoute(route)).filter(({ kind }) => kind === 'tags')
+  const matches: CreatedRouteOptions[] = route.matches
 
-  expect(callbacks.map(({ run }) => run)).toEqual([parentTags, childTags])
+  expect(matches.map(({ tags }) => tags)).toEqual([parentTags, childTags])
 })
 
 test('setTags replaces only the current match callback without requiring a returned route', () => {
@@ -26,7 +25,7 @@ test('setTags replaces only the current match callback without requiring a retur
 
   route.setTags(replacement)
 
-  const callbacks = getComputations(createResolvedRoute(route)).filter(({ kind }) => kind === 'tags')
+  const matches: CreatedRouteOptions[] = route.matches
 
-  expect(callbacks.map(({ run }) => run)).toEqual([replacement])
+  expect(matches.map(({ tags }) => tags)).toEqual([replacement])
 })
