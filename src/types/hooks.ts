@@ -1,3 +1,4 @@
+import { DataKind } from '@/types/computation'
 import { AnyHook } from '@/types/hook'
 import { Hooks } from '@/models/hooks'
 import { isResolvedRoute, RouterResolvedRouteUnion, ResolvedRouteUnion } from '@/types/resolved'
@@ -350,7 +351,7 @@ export type ErrorHookContext<
   remove: HookRemove,
   to: RouterResolvedRouteUnion<TRoutes> | null,
   from: RouterResolvedRouteUnion<TRoutes> | null,
-  source: 'props' | 'loader' | 'hook' | 'component',
+  source: DataKind | 'hook' | 'component',
   reject: RouterReject<TRejections>,
   push: RouterPush<TRoutes>,
   replace: RouterReplace<TRoutes>,
@@ -369,7 +370,7 @@ export type AddErrorHook<
 export type ErrorHookRunnerContext<TRoutes extends Routes = Routes> = {
   to: RouterResolvedRouteUnion<TRoutes> | null,
   from: RouterResolvedRouteUnion<TRoutes> | null,
-  source: 'props' | 'loader' | 'hook',
+  source: DataKind | 'hook',
 }
 
 export type ErrorHookRunner = (

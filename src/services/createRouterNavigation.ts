@@ -1,3 +1,4 @@
+import { Computation, ValueLocation } from '@/types/computation'
 import { unwrapComputationResponse } from '@/utilities/unwrapComputationResponse'
 import { ResolvedRoute } from '@/types/resolved'
 import { ContextPushError } from '@/errors/contextPushError'
@@ -9,7 +10,7 @@ import { createDataStore, DataEntry, DataResult, DataStore, DataStoreSettledEven
 import { getDataKey } from './getDataKey'
 import { MaybePromise } from '@/types/utilities'
 import { isPromise } from '@/utilities/promises'
-import { Computation, getComputations, ValueLocation } from './getComputations'
+import { getComputations } from './getComputations'
 import { warnWaitingOnUncomputedValue } from '@/services/warnWaitingOnUncomputedValue'
 
 export type RouterNavigationResponse = CallbackContextPush | CallbackContextReject | CallbackContextError

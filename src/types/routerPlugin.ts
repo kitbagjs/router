@@ -1,3 +1,4 @@
+import { DataKind } from '@/types/computation'
 import { AddHook } from '@/types/hooks'
 import { HookRegistrationOptions, HookRemove } from './hooks'
 import { Routes } from './route'
@@ -117,7 +118,7 @@ export type PluginErrorHookContext<
   remove: HookRemove,
   to: ResolvedRoute | null,
   from: ResolvedRoute | null,
-  source: 'props' | 'loader' | 'hook' | 'component',
+  source: DataKind | 'hook' | 'component',
   reject: RouterReject<TRejections>,
   push: RouterPush<TRoutes>,
   replace: RouterReplace<TRoutes>,

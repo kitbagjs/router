@@ -1,11 +1,6 @@
-import { DataKind } from '@/services/getDataKey'
+import { COMPUTATION_PREFETCH_KEYS, DataKind } from '@/types/computation'
 import { PrefetchConfigOptions } from '@/types/prefetch'
 
-const PREFETCH_KEYS: Record<DataKind, keyof PrefetchConfigOptions> = {
-  loader: 'loaders',
-  props: 'props',
-}
-
 export function getComputationPrefetchKey(kind: DataKind): keyof PrefetchConfigOptions {
-  return PREFETCH_KEYS[kind]
+  return COMPUTATION_PREFETCH_KEYS[kind]
 }

@@ -1,4 +1,4 @@
-import { ValueLocation } from '@/services/getComputations'
+import { ValueLocation } from '@/types/computation'
 import { LoaderInternal } from '@/types/loader'
 
 export function getFallbackLoaderLocation(loader: LoaderInternal): ValueLocation<'loader'> {

@@ -1,11 +1,6 @@
+import { DataKind } from '@/types/computation'
 import { ResolvedRoute } from '@/types/resolved'
 import { setStateValues } from '@/services/state'
-
-/**
- * What a stored value is: the props of a view, or the data of a loader. Part of the key so that a view
- * and a loader sharing a name on the same route are still two values.
- */
-export type DataKind = 'props' | 'loader'
 
 export type GetDataKeyOptions = {
   /**

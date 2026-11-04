@@ -1,40 +1,13 @@
+import { Computation, ValueLocation, DataKind } from '@/types/computation'
 import type { PrefetchConfig, PrefetchConfigs, PrefetchStrategy } from '@/types/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
 import { CreatedRouteOptions } from '@/types/route'
 import { viewNamesWithProps } from '@/services/routeViews'
-import { DataKind } from '@/services/getDataKey'
 import { AnyPayloadTransformer } from '@/services/payload'
 import { createRouteComputation } from '@/services/createRouteComputation'
 import { AnyFunction } from '@/types/utilities'
 import { getPrefetchOption } from '@/utilities/prefetch'
 import { getComputationPrefetchKey } from '@/services/getComputationPrefetchKey'
-
-/**
- * Reads are scoped to the computation's navigation and retain the first successful value from its
- * own store or the committed navigation.
- */
-export type ComputationContext = {
-  to: ResolvedRoute,
-  signal: AbortSignal,
-  getValue: (location: ValueLocation) => Promise<unknown>,
-}
-
-export type Computation = ValueLocation & {
-  key: string,
-  run: (context: ComputationContext) => unknown,
-  routePrefetch: PrefetchConfig | undefined,
-  prefetch: PrefetchConfig | undefined,
-  transformer: AnyPayloadTransformer | undefined,
-}
-
-/**
- * Where a value lives, which is all that is needed to read it back out of a store.
- */
-export type ValueLocation<TKind extends DataKind = DataKind> = {
-  kind: TKind,
-  depth: number,
-  name: string,
-}
 
 export function getComputations(route: ResolvedRoute): Computation[] {
   return route.matches.flatMap((match, depth) => [

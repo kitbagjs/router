@@ -1,5 +1,5 @@
+import { ValueLocation } from '@/types/computation'
 import { assert, expect, test, vi } from 'vitest'
-import { ValueLocation } from '@/services/getComputations'
 import { toLegacyValues } from '@/utilities/toLegacyValues'
 
 test('no locations have no legacy value and do not read', () => {

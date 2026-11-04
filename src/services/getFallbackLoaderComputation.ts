@@ -1,5 +1,5 @@
+import { Computation } from '@/types/computation'
 import { createRouteComputation } from '@/services/createRouteComputation'
-import { Computation } from '@/services/getComputations'
 import { getFallbackLoaderLocation } from '@/services/getFallbackLoaderLocation'
 import { AnyLoader, LoaderInternal } from '@/types/loader'
 import { ResolvedRoute } from '@/types/resolved'

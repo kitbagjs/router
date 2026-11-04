@@ -1,5 +1,5 @@
+import { ValueLocation } from '@/types/computation'
 import { markRaw } from 'vue'
-import { ValueLocation } from '@/services/getComputations'
 import { DataRecord } from '@/types/data'
 
 export type LegacyValues = Promise<unknown> | DataRecord | undefined

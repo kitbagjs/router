@@ -1,5 +1,5 @@
+import { ValueLocation } from '@/types/computation'
 import { NavigationData } from '@/services/createRouterNavigation'
-import { ValueLocation } from '@/services/getComputations'
 import { ResolvedRoute } from '@/types/resolved'
 import { MaybePromise } from '@/types/utilities'
 import { CallbackContextResponse } from '@/types/callbackContext'

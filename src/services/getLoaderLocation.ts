@@ -1,6 +1,6 @@
+import { ValueLocation } from '@/types/computation'
 import { ResolvedRoute } from '@/types/resolved'
 import { AnyLoader } from '@/types/loader'
-import { ValueLocation } from '@/services/getComputations'
 import { isSameLoader } from '@/services/isSameLoader'
 
 export type LoaderLocationMissing = { reason: 'missing' }
