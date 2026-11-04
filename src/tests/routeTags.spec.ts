@@ -1,6 +1,7 @@
 import { expect, onTestFinished, test, vi } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
 import { createRoute } from '@/services/createRoute'
+import { createRouter } from '@/services/createRouter'
 import { createResolvedRoute } from '@/services/createResolvedRoute'
 import { createRouterNavigation } from '@/services/createRouterNavigation'
 import { getComputations } from '@/services/getComputations'
@@ -135,4 +136,22 @@ test('setTags can await destination loader data', async () => {
   await expect(navigation.getValue({ kind: 'tags', depth: 0, name: 'tags' }, route)).resolves.toMatchObject([
     { kind: 'set', groups: [{ value: 'Product' }] },
   ])
+})
+
+test('a tag callback failure reaches onError with a tags source', async () => {
+  const error = new Error('tags failed')
+  const home = createRoute({ name: 'home', path: '/' })
+  const page = createRoute({ name: 'page', path: '/page' }).setTags(async () => {
+    throw error
+  })
+  const router = createRouter([home, page], { initialUrl: '/' })
+  const onError = vi.fn()
+  onTestFinished(() => router.stop())
+  router.onError(onError)
+
+  await router.start()
+  await router.push('/page')
+  await flushPromises()
+
+  expect(onError).toHaveBeenCalledExactlyOnceWith(error, expect.objectContaining({ source: 'tags' }))
 })
