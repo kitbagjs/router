@@ -340,44 +340,12 @@ describe('dependencies', () => {
     expect(warn).not.toHaveBeenCalled()
   })
 
-  test('subscriptions prefer a local computation over an older committed value', async () => {
-    let value = Promise.resolve('original')
-    const { route, computation } = createFixture(() => value)
-    const dependent = createComputation(route, ({ subscribe }) => subscribe(computation), 'props')
-    registry.set(route.id, [computation, dependent])
-    const navigation = createRouterNavigation()
-    await Promise.all(navigation.commit({ to: route, from: null }))
-    const pending = Promise.withResolvers<string>()
-    value = pending.promise
-    const prepared = navigation.create()
-    const work = prepared.compute(route, [computation, dependent])
-
-    expect(prepared.getState(dependent, route).status).toBe('RUNNING')
-    pending.resolve('updated')
-    await Promise.all(work)
-    await expect(prepared.getValue(dependent, route)).resolves.toEqual({ status: 'SUCCESS', value: 'updated' })
-  })
-
-  test('subscriptions preserve errors from a committed fallback source', async () => {
-    const error = new Error('dependency failed')
-    const { route, computation } = createFixture(() => {
-      throw error
-    })
-    const navigation = createRouterNavigation()
-    await Promise.all(navigation.commit({ to: route, from: null }))
-    const dependent = createComputation(route, ({ subscribe }) => subscribe(computation), 'props')
-    const prepared = navigation.create()
-    await Promise.all(prepared.compute(route, [dependent]))
-
-    await expect(prepared.getValue(dependent, route)).resolves.toEqual({ status: 'ERROR', source: 'loader', error })
-  })
-
-  test.each(['getValue', 'subscribe'] as const)('disposing a prefetch unwinds a pending %s dependency', async (read) => {
+  test('disposing a prefetch unwinds a pending dependency', async () => {
     const cleaned = vi.fn()
     const { route, computation } = createFixture(() => new Promise(() => {}))
     const dependent = createComputation(route, async (context) => {
       try {
-        await context[read](computation)
+        await context.getValue(computation)
       } finally {
         cleaned()
       }

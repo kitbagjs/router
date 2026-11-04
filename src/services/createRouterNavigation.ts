@@ -169,8 +169,6 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
         const value = runWithContext(() => computation.run({
           to: route,
           signal: controller.signal,
-          getState: (location) => getState(location, route),
-          subscribe: (location) => getCallbackResponse(location, route, context),
           getValue,
         }))
 
@@ -359,27 +357,6 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     value.catch(() => {})
 
     return value
-  }
-
-  function getCallbackResponse(location: ValueLocation, route: ResolvedRoute, { store, signal }: CallbackValueContext): Promise<CallbackContextResponse> {
-    const key = getDataKey(location.kind, location.id, location.name, route)
-    const local = store.get(key)
-    const current = navigations.current.data
-
-    if (local.status !== 'MISSING' || store === current) {
-      return store.subscribe(key)
-    }
-
-    const currentValue = current.get(key)
-
-    if (currentValue.status === 'MISSING') {
-      warnWaitingOnUncomputedValue(location, route)
-    }
-
-    return waitForDependency([
-      store.subscribe(key),
-      current.subscribe(key),
-    ], signal) as Promise<CallbackContextResponse>
   }
 
   return {
