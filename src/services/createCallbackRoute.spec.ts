@@ -14,7 +14,7 @@ test('route data selects default and named loaders lazily', async () => {
     .addLoader(() => 42, { name: 'count' })
   const to = createResolvedRoute(definition)
   const getValue = vi.fn().mockResolvedValue('value')
-  const route = createCallbackRoute({ to, getValue, signal: new AbortController().signal })
+  const route = createCallbackRoute({ to, getValue })
 
   expect(getValue).not.toHaveBeenCalled()
   expect(route.href).toBe(to.href)
@@ -34,7 +34,7 @@ test('preserves reader failures', async () => {
   const error = new Error('reader failed')
   const to = createResolvedRoute(createRoute({ path: '/' }).addLoader(() => 'data'))
   const getValue = vi.fn().mockRejectedValue(error)
-  const route = createCallbackRoute({ to, getValue, signal: new AbortController().signal })
+  const route = createCallbackRoute({ to, getValue })
 
   await expect(route.getData()).rejects.toBe(error)
 })
@@ -46,7 +46,7 @@ test('legacy data delegates locations and the reader to the legacy adapter', () 
   const child = createRoute({ parent, path: 'child' }).addLoader(() => 'child', { name: 'child' })
   const to = createResolvedRoute(child)
   const getValue = vi.fn()
-  const route = createCallbackRoute({ to, getValue, signal: new AbortController().signal })
+  const route = createCallbackRoute({ to, getValue })
 
   expect(adapt).not.toHaveBeenCalled()
   expect(Reflect.get(route, 'data')).toBe(legacy)

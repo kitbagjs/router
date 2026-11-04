@@ -16,7 +16,7 @@ test('parent data includes ancestors and excludes child loaders', async () => {
   const child = createRoute({ parent, path: 'child' }).addLoader(() => 'child', { name: 'child' })
   const to = createResolvedRoute(child)
   const getValue = vi.fn().mockResolvedValue('value')
-  const result = getCallbackParent(2, { to, getValue, signal: new AbortController().signal })
+  const result = getCallbackParent(2, { to, getValue })
 
   assert(result)
 
@@ -40,7 +40,7 @@ test('parent props select getters only from the immediate parent', async () => {
   const child = createRoute({ parent, path: 'child' })
   const to = createResolvedRoute(child)
   const getValue = vi.fn().mockResolvedValue('value')
-  const result = getCallbackParent(2, { to, getValue, signal: new AbortController().signal })
+  const result = getCallbackParent(2, { to, getValue })
 
   assert(result)
 
@@ -57,7 +57,7 @@ test('parent props select getters only from the immediate parent', async () => {
 
 test.each([0, -1])('has no parent at depth %s', (depth) => {
   const to = createResolvedRoute(createRoute({ path: '/' }))
-  const result = getCallbackParent(depth, { to, getValue: vi.fn(), signal: new AbortController().signal })
+  const result = getCallbackParent(depth, { to, getValue: vi.fn() })
 
   expect(result).toBeUndefined()
 })
@@ -69,7 +69,7 @@ test('parent getters preserve reader failures', async () => {
   const child = createRoute({ parent, path: 'child' })
   const to = createResolvedRoute(child)
   const getValue = vi.fn().mockRejectedValue(error)
-  const result = getCallbackParent(1, { to, getValue, signal: new AbortController().signal })
+  const result = getCallbackParent(1, { to, getValue })
 
   assert(result)
 
@@ -85,7 +85,7 @@ test('legacy getters delegate parent locations and the reader to the legacy adap
   const child = createRoute({ parent, path: 'child' }).addLoader(() => 'child', { name: 'child' })
   const to = createResolvedRoute(child)
   const getValue = vi.fn()
-  const result = getCallbackParent(1, { to, getValue, signal: new AbortController().signal })
+  const result = getCallbackParent(1, { to, getValue })
 
   assert(result)
 

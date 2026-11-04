@@ -4,14 +4,20 @@ import { DEFAULT_LOADER_NAME } from '@/services/addLoader'
 import { loaderLocations } from '@/services/loaderLocations'
 import { propsLocations } from '@/services/propsLocations'
 import { PropsCallbackParent } from '@/types/props'
-import { ComputationContext } from '@/types/computation'
+import { ResolvedRoute } from '@/types/resolved'
+import { ValueLocation } from '@/types/computation'
 import { toLegacyValues } from '@/utilities/toLegacyValues'
+
+type GetCallbackParentOptions = {
+  to: ResolvedRoute,
+  getValue: (location: ValueLocation) => Promise<unknown>,
+}
 
 /**
  * The parent context for the callback at the given depth. Resolved per depth rather than from the last
  * match: every view in a nested route gets its own parent, not the resolved route's parent.
  */
-export function getCallbackParent(depth: number, { to: route, getValue }: ComputationContext): PropsCallbackParent {
+export function getCallbackParent(depth: number, { to: route, getValue }: GetCallbackParentOptions): PropsCallbackParent {
   if (depth <= 0) {
     return
   }
