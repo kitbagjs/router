@@ -5,6 +5,7 @@ import { loaderLocations } from '@/services/loaderLocations'
 import { propsLocations } from '@/services/propsLocations'
 import { PropsCallbackParent } from '@/types/props'
 import { ResolvedRoute } from '@/types/resolved'
+import { RouteView } from '@/types/routeViews'
 import { ValueLocation } from '@/types/computation'
 import { toLegacyValues } from '@/utilities/toLegacyValues'
 
@@ -32,7 +33,7 @@ export function getCallbackParent(depth: number, { to: route, getValue }: GetCal
   }
 
   function getProps(name: string = DEFAULT_VIEW_NAME): Promise<unknown> {
-    const view = parentMatch.views[name]
+    const view = parentMatch.views[name] as RouteView<unknown> | undefined
 
     if (!view?.props) {
       throw new TypeError(`Parent route "${parentName}" has no props getter named "${name}"`)
