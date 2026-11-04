@@ -94,9 +94,9 @@ prefetch: 'lazy'
 
 ```ts [PrefetchConfigOptions]
 prefetch: {
-  components: 'eager',
+  component: 'eager',
   props: false,
-  loaders: 'intent',
+  loader: 'intent',
 }
 ```
 
@@ -173,7 +173,7 @@ const user = createRoute({
     return { user }
   },
   prefetch: { // [!code focus]
-    components: 'eager', // [!code focus]
+    component: 'eager', // [!code focus]
     props: 'intent', // [!code focus]
   }, // [!code focus]
 })

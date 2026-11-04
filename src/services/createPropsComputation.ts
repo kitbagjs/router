@@ -7,7 +7,6 @@ import { Computation, CreateComputationOptions } from '@/types/computation'
 export function createPropsComputation(options: CreateComputationOptions<'props'>): Computation {
   const { location, route, callback, routePrefetch, prefetch, transformer } = options
   const key = getDataKey({ ...location, route })
-  const prefetchKey = 'props'
   const run: Computation['run'] = (context) => {
     const { to, signal } = context
     const route = createCallbackRoute(context)
@@ -17,5 +16,5 @@ export function createPropsComputation(options: CreateComputationOptions<'props'
     return callback(route, { push, replace, reject, update, signal, parent })
   }
 
-  return { ...location, key, prefetchKey, run, routePrefetch, prefetch, transformer }
+  return { ...location, key, run, routePrefetch, prefetch, transformer }
 }

@@ -310,8 +310,8 @@ const home = createRoute({
   name: 'home',
   path: '/',
   prefetch: {
-    components: 'lazy',
-    props: 'intent'
+    component: 'lazy',
+    props: 'intent',
   },
 })
 ```

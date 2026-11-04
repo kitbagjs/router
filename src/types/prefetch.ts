@@ -10,7 +10,7 @@ export type PrefetchConfigOptions = {
    * When true any component that is wrapped in vue's defineAsyncComponent will be prefetched
    * @default 'eager'
    */
-  components?: boolean | PrefetchStrategy,
+  component?: boolean | PrefetchStrategy,
   /**
    * When true route props will be prefetched
    * @default false
@@ -20,7 +20,7 @@ export type PrefetchConfigOptions = {
    * When true route loaders will be prefetched
    * @default false
    */
-  loaders?: boolean | PrefetchStrategy,
+  loader?: boolean | PrefetchStrategy,
 }
 
 /**

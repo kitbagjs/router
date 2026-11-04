@@ -1,5 +1,5 @@
 import { AnyPayloadTransformer } from '@/services/payload'
-import { PrefetchConfig, PrefetchConfigOptions } from '@/types/prefetch'
+import { PrefetchConfig } from '@/types/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
 import { AnyFunction } from '@/types/utilities'
 
@@ -27,7 +27,6 @@ export type ComputationContext = {
 
 export type Computation = ValueLocation & {
   key: string,
-  prefetchKey: keyof PrefetchConfigOptions,
   run: (context: ComputationContext) => unknown,
   routePrefetch: PrefetchConfig | undefined,
   prefetch: PrefetchConfig | undefined,

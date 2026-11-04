@@ -24,7 +24,7 @@ test.each([{ value: 'sync' }, Promise.resolve({ value: 'async' })])('passes the 
   const transformer = { stringify: JSON.stringify, parse: JSON.parse }
   const computation = createPropsComputation({ location, route: to, callback, routePrefetch: 'lazy', prefetch: 'eager', transformer })
 
-  expect(computation).toMatchObject({ ...location, key: getDataKey({ ...location, route: to }), prefetchKey: 'props', routePrefetch: 'lazy', prefetch: 'eager', transformer })
+  expect(computation).toMatchObject({ ...location, key: getDataKey({ ...location, route: to }), routePrefetch: 'lazy', prefetch: 'eager', transformer })
   expect(callback).not.toHaveBeenCalled()
   const result = computation.run(context)
   const { push, replace, reject, update } = controlsFactory.mock.results[0].value
