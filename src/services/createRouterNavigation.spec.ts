@@ -28,6 +28,7 @@ function createComputation(route: ResolvedRoute, run: Computation['run'], kind: 
     kind,
     name,
     key: getDataKey({ kind, depth: 0, name, route }),
+    prefetchKey: 'loaders',
     depth: 0,
     run,
     routePrefetch: undefined,

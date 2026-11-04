@@ -639,8 +639,8 @@ describe('prefetch components', () => {
     undefined,
     false,
     'eager',
-    { component: false },
-    { component: 'eager' },
+    { components: false },
+    { components: 'eager' },
   ])('prefetch components respects router config when prefetch is %s', async (prefetch) => {
     let loaded = undefined
 
@@ -671,7 +671,7 @@ describe('prefetch components', () => {
 
     await flushPromises()
 
-    const value = getPrefetchConfigValue(prefetch, 'component')
+    const value = getPrefetchConfigValue(prefetch, 'components')
 
     if (value === 'eager') {
       expect(loaded).toBe(true)
@@ -684,8 +684,8 @@ describe('prefetch components', () => {
     undefined,
     false,
     'eager',
-    { component: false },
-    { component: 'eager' },
+    { components: false },
+    { components: 'eager' },
   ])('prefetch components respects route config when prefetch is %s', async (prefetch) => {
     let loaded = undefined
 
@@ -716,7 +716,7 @@ describe('prefetch components', () => {
 
     await flushPromises()
 
-    const value = getPrefetchConfigValue(prefetch, 'component')
+    const value = getPrefetchConfigValue(prefetch, 'components')
 
     if (value === 'eager') {
       expect(loaded).toBe(true)
@@ -729,8 +729,8 @@ describe('prefetch components', () => {
     undefined,
     false,
     'eager',
-    { component: false },
-    { component: 'eager' },
+    { components: false },
+    { components: 'eager' },
   ])('prefetch components respects link config when prefetch is %s', async (prefetch) => {
     let loaded = undefined
 
@@ -761,7 +761,7 @@ describe('prefetch components', () => {
 
     await flushPromises()
 
-    const value = getPrefetchConfigValue(prefetch, 'component')
+    const value = getPrefetchConfigValue(prefetch, 'components')
 
     if (value === 'eager') {
       expect(loaded).toBe(true)
@@ -911,11 +911,11 @@ describe('prefetch per view', () => {
         componentLoaded = true
         resolve(echo)
       })
-    }), { props, prefetch: { component: 'eager', props: false } })
+    }), { props, prefetch: { components: 'eager', props: false } })
 
     const router = createRouter([home, route], {
       initialUrl: '/',
-      prefetch: { component: false, props: 'eager' },
+      prefetch: { components: false, props: 'eager' },
     })
 
     await router.start()
@@ -1518,7 +1518,7 @@ describe('prefetch props', () => {
     const routeB = createRoute({
       name: 'routeB',
       path: '/routeB',
-      prefetch: { component: 'lazy' },
+      prefetch: { components: 'lazy' },
     })
       .addView(defineAsyncComponent(() => {
         return new Promise<Component>((resolve) => {
@@ -1619,7 +1619,7 @@ describe('prefetch props', () => {
     const routeB = createRoute({
       name: 'routeB',
       path: '/routeB',
-      prefetch: { component: 'intent' },
+      prefetch: { components: 'intent' },
     })
       .addView(defineAsyncComponent(() => {
         return new Promise<Component>((resolve) => {

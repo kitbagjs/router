@@ -17,7 +17,7 @@ function pick(route: { matches: { views: RouteViews }[] }, key: 'component' | 'p
   )
 }
 
-describe('component', () => {
+describe('components', () => {
   test('a default view is stored under "default"', () => {
     const route = createRoute({ name: 'route' }).addView(component)
 
@@ -121,7 +121,7 @@ describe('prefetch', () => {
   test('each view keeps its own prefetch config', () => {
     const route = createRoute({ name: 'route' })
       .addView(component, {
-        prefetch: { component: 'eager', props: false },
+        prefetch: { components: 'eager', props: false },
       })
       .addView(other, {
         name: 'sidebar',
@@ -129,7 +129,7 @@ describe('prefetch', () => {
       })
 
     expect(pick(route, 'prefetch')).toStrictEqual({
-      default: { component: 'eager', props: false },
+      default: { components: 'eager', props: false },
       sidebar: false,
     })
   })

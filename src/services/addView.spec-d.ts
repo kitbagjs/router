@@ -155,7 +155,7 @@ describe('addView', () => {
         prefetch: 'lazy',
       })
       createRoute({ name: 'route' }).addView(component, {
-        prefetch: { component: 'eager', props: false },
+        prefetch: { components: 'eager', props: false },
       })
 
       createRoute({ name: 'route' }).addView(component, {

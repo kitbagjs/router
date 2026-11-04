@@ -45,7 +45,7 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
         ...configs,
         routePrefetch: computation.routePrefetch,
         viewPrefetch: computation.prefetch,
-      }, computation.kind) !== false)
+      }, computation.prefetchKey) !== false)
     })
 
     const take: UsePrefetching['take'] = () => {
@@ -151,5 +151,5 @@ function prefetchComponentsForRoute(strategy: PrefetchStrategy, route: ResolvedR
     ...configs,
     routePrefetch: match.prefetch,
     viewPrefetch: view.prefetch,
-  }, 'component') === strategy)
+  }, 'components') === strategy)
 }

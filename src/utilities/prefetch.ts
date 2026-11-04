@@ -4,9 +4,9 @@ import { isRecord } from './guards'
 export const DEFAULT_PREFETCH_STRATEGY: PrefetchStrategy = 'lazy'
 
 const DEFAULT_PREFETCH_CONFIG: Required<PrefetchConfigOptions> = {
-  component: true,
+  components: true,
   props: false,
-  loader: false,
+  loaders: false,
 }
 
 function isPrefetchStrategy(value: any): value is PrefetchStrategy {

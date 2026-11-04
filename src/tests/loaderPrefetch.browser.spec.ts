@@ -26,26 +26,26 @@ describe('loader prefetch configuration', () => {
   }>([
     { name: 'is disabled by default', calls: 0 },
     { name: 'inherits router strategy', routerPrefetch: 'eager', calls: 1 },
-    { name: 'uses the loader setting', routerPrefetch: { loader: 'eager' }, calls: 1 },
+    { name: 'uses the loaders setting', routerPrefetch: { loaders: 'eager' }, calls: 1 },
     { name: 'ignores the props setting', routerPrefetch: { props: 'eager' }, calls: 0 },
-    { name: 'ignores the component setting', routerPrefetch: { component: 'eager' }, calls: 0 },
+    { name: 'ignores the components setting', routerPrefetch: { components: 'eager' }, calls: 0 },
     { name: 'lets a route enable prefetch', routerPrefetch: false, routePrefetch: 'eager', calls: 1 },
     { name: 'lets a route disable prefetch', routerPrefetch: 'eager', routePrefetch: false, calls: 0 },
-    { name: 'lets a route enable loaders', routerPrefetch: false, routePrefetch: { loader: 'eager' }, calls: 1 },
-    { name: 'lets a route disable loaders', routerPrefetch: 'eager', routePrefetch: { loader: false }, calls: 0 },
-    { name: 'inherits loaders when a route only configures props', routerPrefetch: { loader: 'eager' }, routePrefetch: { props: false }, calls: 1 },
+    { name: 'lets a route enable loaders', routerPrefetch: false, routePrefetch: { loaders: 'eager' }, calls: 1 },
+    { name: 'lets a route disable loaders', routerPrefetch: 'eager', routePrefetch: { loaders: false }, calls: 0 },
+    { name: 'inherits loaders when a route only configures props', routerPrefetch: { loaders: 'eager' }, routePrefetch: { props: false }, calls: 1 },
     { name: 'lets a loader enable prefetch', routePrefetch: false, loaderPrefetch: 'eager', calls: 1 },
     { name: 'lets a loader disable prefetch', routePrefetch: 'eager', loaderPrefetch: false, calls: 0 },
-    { name: 'accepts a loader-specific config', loaderPrefetch: { loader: 'eager' }, calls: 1 },
+    { name: 'accepts a loader loaders config', loaderPrefetch: { loaders: 'eager' }, calls: 1 },
     { name: 'ignores a loader props config', loaderPrefetch: { props: 'eager' }, calls: 0 },
-    { name: 'lets a loader disable its loader setting', routePrefetch: 'eager', loaderPrefetch: { loader: false }, calls: 0 },
+    { name: 'lets a loader disable its loaders setting', routePrefetch: 'eager', loaderPrefetch: { loaders: false }, calls: 0 },
     { name: 'inherits the strategy when a loader enables prefetch', routePrefetch: 'eager', loaderPrefetch: true, calls: 1 },
     { name: 'lets a link enable prefetch', loaderPrefetch: false, linkPrefetch: 'eager', calls: 1 },
     { name: 'lets a link disable prefetch', loaderPrefetch: 'eager', linkPrefetch: false, calls: 0 },
-    { name: 'lets a link override the loader setting', loaderPrefetch: false, linkPrefetch: { loader: 'eager' }, calls: 1 },
+    { name: 'lets a link override the loaders setting', loaderPrefetch: false, linkPrefetch: { loaders: 'eager' }, calls: 1 },
     { name: 'does not enable loaders when a link enables props', loaderPrefetch: false, linkPrefetch: { props: 'eager' }, calls: 0 },
     { name: 'does not disable loaders when a link disables props', loaderPrefetch: 'eager', linkPrefetch: { props: false }, calls: 1 },
-    { name: 'lets a link disable the loader setting', loaderPrefetch: 'eager', linkPrefetch: { loader: false }, calls: 0 },
+    { name: 'lets a link disable the loaders setting', loaderPrefetch: 'eager', linkPrefetch: { loaders: false }, calls: 0 },
     { name: 'preserves lazy as the default strategy', loaderPrefetch: true, calls: 0 },
   ])('$name', async ({ routerPrefetch, routePrefetch, loaderPrefetch, linkPrefetch, calls }) => {
     const load = vi.fn(() => 'data')
@@ -66,11 +66,11 @@ describe('loader prefetch configuration', () => {
 
 test.each<[PrefetchConfig, number, number]>([
   [{ props: 'eager' }, 1, 0],
-  [{ loader: 'eager' }, 0, 1],
-  [{ props: 'eager', loader: false }, 1, 0],
-  [{ props: false, loader: 'eager' }, 0, 1],
-  [{ props: 'eager', loader: 'eager' }, 1, 1],
-  [{ props: false, loader: false }, 0, 0],
+  [{ loaders: 'eager' }, 0, 1],
+  [{ props: 'eager', loaders: false }, 1, 0],
+  [{ props: false, loaders: 'eager' }, 0, 1],
+  [{ props: 'eager', loaders: 'eager' }, 1, 1],
+  [{ props: false, loaders: false }, 0, 0],
   ['eager', 1, 1],
   [false, 0, 0],
 ])('prefetch %j runs props %s times and loaders %s times', async (prefetch, propsCalls, loaderCalls) => {
@@ -91,7 +91,7 @@ test.each<[PrefetchConfig, number, number]>([
   expect(load).toHaveBeenCalledTimes(loaderCalls)
 })
 
-test.each(['props', 'loader'] as const)('%s can prefetch eagerly while the other waits for intent', async (eager) => {
+test.each(['props', 'loaders'] as const)('%s can prefetch eagerly while the other waits for intent', async (eager) => {
   const props = vi.fn(() => ({}))
   const load = vi.fn(() => 'data')
   const route = createRoute({
@@ -99,7 +99,7 @@ test.each(['props', 'loader'] as const)('%s can prefetch eagerly while the other
     path: '/route',
     prefetch: {
       props: eager === 'props' ? 'eager' : 'intent',
-      loader: eager === 'loader' ? 'eager' : 'intent',
+      loaders: eager === 'loaders' ? 'eager' : 'intent',
     },
   })
     .addView(component, { props })
@@ -113,7 +113,7 @@ test.each(['props', 'loader'] as const)('%s can prefetch eagerly while the other
   await flushPromises()
 
   expect(props).toHaveBeenCalledTimes(eager === 'props' ? 1 : 0)
-  expect(load).toHaveBeenCalledTimes(eager === 'loader' ? 1 : 0)
+  expect(load).toHaveBeenCalledTimes(eager === 'loaders' ? 1 : 0)
 
   await wrapper.trigger('mouseover')
   await flushPromises()

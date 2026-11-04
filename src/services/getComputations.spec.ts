@@ -50,7 +50,7 @@ test('selects props and loaders using their separate prefetch options', () => {
     .addView(component, { props: () => ({}) })
     .addLoader(() => 'data')
   const route = createResolvedRoute(definition)
-  const configs = { routerPrefetch: { props: 'eager', loader: 'intent' } } as const
+  const configs = { routerPrefetch: { props: 'eager', loaders: 'intent' } } as const
 
   expect(getComputationsForStrategy(route, 'eager', configs).map(({ kind }) => kind)).toEqual(['props'])
   expect(getComputationsForStrategy(route, 'intent', configs).map(({ kind }) => kind)).toEqual(['loader'])
