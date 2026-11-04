@@ -937,7 +937,6 @@ describe('prefetch props', () => {
   const warnMock = vi.fn()
 
   beforeEach(() => {
-    warnMock.mockClear()
     vi.spyOn(warnUtilities, 'warn').mockImplementation(warnMock)
   })
 

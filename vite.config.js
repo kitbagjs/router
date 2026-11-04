@@ -19,6 +19,8 @@ export default defineConfig({
   },
   test: {
     restoreMocks: true,
+    unstubEnvs: true,
+    unstubGlobals: true,
     onConsoleLog(log) {
       if (log.trim() === '<Suspense> is an experimental feature and its API will likely change.') {
         return false

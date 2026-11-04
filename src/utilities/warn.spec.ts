@@ -1,9 +1,5 @@
-import { afterEach, expect, test, vi } from 'vitest'
+import { expect, test, vi } from 'vitest'
 import { warn } from '@/utilities/warn'
-
-afterEach(() => {
-  vi.unstubAllEnvs()
-})
 
 test('forwards all arguments to console.warn in development', () => {
   vi.stubEnv('NODE_ENV', 'development')
