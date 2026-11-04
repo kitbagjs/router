@@ -8,7 +8,6 @@ import { createLoaderComputation } from '@/services/createLoaderComputation'
 import { createTagsComputation } from '@/services/createTagsComputation'
 import { AnyFunction } from '@/types/utilities'
 import { getPrefetchOption } from '@/utilities/prefetch'
-import { getComputationPrefetchKey } from '@/services/getComputationPrefetchKey'
 
 export function getComputations(route: ResolvedRoute): Computation[] {
   return route.matches.flatMap((match, depth) => {
@@ -80,5 +79,5 @@ export function isStrategy(strategy: PrefetchStrategy, configs: PrefetchConfigs)
     ...configs,
     routePrefetch: computation.routePrefetch,
     viewPrefetch: computation.prefetch,
-  }, getComputationPrefetchKey(computation.kind)) === strategy
+  }, computation.prefetchKey) === strategy
 }
