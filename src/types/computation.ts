@@ -45,8 +45,8 @@ export type ValueLocation<TKind extends DataKind = DataKind> = {
   name: string,
 }
 
-export type CreateRouteComputationOptions = {
-  location: ValueLocation,
+export type CreateComputationOptions<TKind extends DataKind> = {
+  location: ValueLocation<TKind>,
   route: ResolvedRoute,
   callback: AnyFunction,
   routePrefetch?: PrefetchConfig,

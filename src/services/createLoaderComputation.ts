@@ -1,10 +1,11 @@
-import { createComputation } from '@/services/createComputation'
+import { getDataKey } from '@/services/getDataKey'
 import { createRouterCallbackContext } from '@/services/createRouterCallbackContext'
 import { getCallbackParent } from '@/services/getCallbackParent'
-import { Computation, CreateRouteComputationOptions } from '@/types/computation'
+import { Computation, CreateComputationOptions } from '@/types/computation'
 
-export function createLoaderComputation(options: CreateRouteComputationOptions): Computation {
-  const { location, callback } = options
+export function createLoaderComputation(options: CreateComputationOptions<'loader'>): Computation {
+  const { location, route, callback, routePrefetch, prefetch, transformer } = options
+  const key = getDataKey({ ...location, route })
   const run: Computation['run'] = (context) => {
     const { to, signal } = context
     const { push, replace, reject, update } = createRouterCallbackContext({ to })
@@ -13,5 +14,5 @@ export function createLoaderComputation(options: CreateRouteComputationOptions):
     return callback(to, { push, replace, reject, update, signal, parent })
   }
 
-  return createComputation({ ...options, run })
+  return { ...location, key, run, routePrefetch, prefetch, transformer }
 }

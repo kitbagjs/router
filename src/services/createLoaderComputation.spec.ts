@@ -4,6 +4,8 @@ import * as routerContext from '@/services/createRouterCallbackContext'
 import * as callbackParent from '@/services/getCallbackParent'
 import { createRoute } from '@/services/createRoute'
 import { createResolvedRoute } from '@/services/createResolvedRoute'
+import { getDataKey } from '@/services/getDataKey'
+import { ValueLocation } from '@/types/computation'
 
 afterEach(() => {
   vi.restoreAllMocks()
@@ -16,8 +18,11 @@ test.each([{ value: 'sync' }, Promise.resolve({ value: 'async' })])('passes the 
   const controlsFactory = vi.spyOn(routerContext, 'createRouterCallbackContext')
   const parentFactory = vi.spyOn(callbackParent, 'getCallbackParent')
   const callback = vi.fn().mockReturnValue(value)
-  const computation = createLoaderComputation({ location: { kind: 'loader', depth: 1, name: 'default' }, route: to, callback })
+  const location: ValueLocation<'loader'> = { kind: 'loader', depth: 1, name: 'default' }
+  const transformer = { stringify: JSON.stringify, parse: JSON.parse }
+  const computation = createLoaderComputation({ location, route: to, callback, routePrefetch: 'lazy', prefetch: 'eager', transformer })
 
+  expect(computation).toMatchObject({ ...location, key: getDataKey({ ...location, route: to }), routePrefetch: 'lazy', prefetch: 'eager', transformer })
   expect(callback).not.toHaveBeenCalled()
   const result = computation.run(context)
   const { push, replace, reject, update } = controlsFactory.mock.results[0].value
