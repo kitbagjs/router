@@ -8,7 +8,6 @@ import { isPromise } from '@/utilities/promises'
 export function createTagsComputation(options: CreateComputationOptions<'tags'>): Computation {
   const { location, route, callback, routePrefetch, prefetch, transformer } = options
   const key = getDataKey({ ...location, route })
-  const prefetchKey = 'tags'
   const run: Computation['run'] = (context) => {
     const { to, signal, subscribe } = context
     const route = createCallbackRoute(context)
@@ -23,5 +22,5 @@ export function createTagsComputation(options: CreateComputationOptions<'tags'>)
     return tags.operations
   }
 
-  return { ...location, key, prefetchKey, run, routePrefetch, prefetch, transformer }
+  return { ...location, key, run, routePrefetch, prefetch, transformer }
 }

@@ -79,5 +79,5 @@ export function isStrategy(strategy: PrefetchStrategy, configs: PrefetchConfigs)
     ...configs,
     routePrefetch: computation.routePrefetch,
     viewPrefetch: computation.prefetch,
-  }, computation.prefetchKey) === strategy
+  }, computation.kind) === strategy
 }
