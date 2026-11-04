@@ -1,3 +1,4 @@
+import { TagsSnapshot } from '@/types/tags'
 import { ResolvedRoute } from '@/types/resolved'
 import { CreatedRouteOptions, Route, RouteLoadersOf } from '@/types/route'
 import { RouteContextToRejection, RouteContextToRoute } from '@/types/routeContext'
@@ -24,7 +25,7 @@ export type RouteCallbackContext<
 }
 
 /**
- * The parent context uses the parent match for its name and views, and includes ancestor loaders.
+ * The parent context uses the parent match for its name and views, and includes ancestor loaders and tags.
  */
 export type RouteCallbackParent<
   TRoute extends Route
@@ -33,6 +34,7 @@ export type RouteCallbackParent<
       name: TParent['name'],
       getData: GetData<RouteLoadersOf<[...TAncestors, TParent]>>,
       getProps: GetProps<TParent['views']>,
+      getTags: () => Promise<TagsSnapshot>,
       /** @deprecated Use parent.getProps() or parent.getProps(name). */
       props: ViewsPropsReturnType<TParent['views']>,
       /** @deprecated Use parent.getData() or parent.getData(name). */

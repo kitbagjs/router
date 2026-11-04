@@ -39,6 +39,10 @@ test('setTags inherits loader data and parent context through chained route meth
     expectTypeOf(await parent.getData('count')).toEqualTypeOf<number>()
     expectTypeOf(parent.name).toEqualTypeOf<'parent'>()
 
-    tags.title.set(await to.getData())
+    const inherited = await parent.getTags()
+    tags.title.set(`${inherited.title} - ${await to.getData()}`)
+
+    // @ts-expect-error parent snapshots are readonly
+    inherited.title = 'Changed'
   })
 })
