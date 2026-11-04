@@ -3,7 +3,6 @@ import { warn } from '@/utilities/warn'
 
 afterEach(() => {
   vi.unstubAllEnvs()
-  vi.restoreAllMocks()
 })
 
 test('forwards all arguments to console.warn in development', () => {

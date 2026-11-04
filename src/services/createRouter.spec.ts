@@ -71,8 +71,6 @@ test('initial state is set', async () => {
   await start()
 
   expect(route.state).toMatchObject({ zoo: 123 })
-
-  vi.restoreAllMocks()
 })
 
 test('updates the route when navigating', async () => {
@@ -1392,7 +1390,6 @@ describe.each(['progressive', 'blocking'] as const)('aborted history traversals 
 
   afterEach(() => {
     router.stop()
-    vi.restoreAllMocks()
   })
 
   test('aborting Back restores the entry without running hooks again', async () => {
@@ -1630,8 +1627,6 @@ describe('router.render response', () => {
     expect(payload).toMatchObject({ values: [] })
     expect(result.failures).toMatchObject([expect.any(PayloadValueError)])
     expect(warn).toHaveBeenCalled()
-
-    warn.mockRestore()
   })
 
   test('returns the title of the route that rendered', async () => {
@@ -1813,8 +1808,6 @@ describe('router.render response', () => {
     expect(payload).toMatchObject({ values: [] })
     expect(result.failures).toMatchObject([expect.any(PayloadValueError)])
     expect(warn).toHaveBeenCalled()
-
-    warn.mockRestore()
   })
 
   test('a rejected render carries the rejection in its payload', async () => {

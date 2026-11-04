@@ -20,7 +20,6 @@ afterEach(async () => {
   const transition = document.activeViewTransition
   transition?.skipTransition()
   await transition?.finished
-  vi.restoreAllMocks()
 
   document.body.innerHTML = ''
 })

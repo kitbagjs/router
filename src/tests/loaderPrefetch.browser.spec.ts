@@ -1,5 +1,5 @@
 import { flushPromises, mount } from '@vue/test-utils'
-import { afterEach, describe, expect, test, vi } from 'vitest'
+import { describe, expect, test, vi } from 'vitest'
 import { defineComponent, h, nextTick, ref } from 'vue'
 import { RouterLink } from '@/main'
 import { createUseLink } from '@/compositions/useLink'
@@ -10,10 +10,6 @@ import { VisibilityObserver } from '@/services/createVisibilityObserver'
 import { PrefetchConfig } from '@/types/prefetch'
 import { component } from '@/utilities/testHelpers'
 import * as warnings from '@/utilities/warnPrefetchInvalidated'
-
-afterEach(() => {
-  vi.restoreAllMocks()
-})
 
 describe('loader prefetch configuration', () => {
   test.each<{

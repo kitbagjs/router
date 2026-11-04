@@ -143,7 +143,6 @@ test('params work with toRefs across navigation without warnings', async () => {
     expect(warn).not.toHaveBeenCalled()
   } finally {
     router.stop()
-    warn.mockRestore()
   }
 })
 
@@ -201,7 +200,6 @@ test('retained state refs follow navigation and update the current state without
     expect(warn).not.toHaveBeenCalled()
   } finally {
     router.stop()
-    warn.mockRestore()
   }
 })
 

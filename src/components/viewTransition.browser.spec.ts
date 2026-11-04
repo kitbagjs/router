@@ -14,7 +14,6 @@ afterEach(async () => {
   const transition = document.activeViewTransition
   transition?.skipTransition()
   await transition?.finished
-  vi.restoreAllMocks()
 })
 
 test('names the requested element and preserves its attributes, styles and content', async () => {

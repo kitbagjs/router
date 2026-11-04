@@ -1,5 +1,5 @@
 import { flushPromises, mount } from '@vue/test-utils'
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { Component, defineAsyncComponent, h, nextTick, ref } from 'vue'
 import echo from '@/components/echo'
 import { createRoute } from '@/services/createRoute'
@@ -939,10 +939,6 @@ describe('prefetch props', () => {
   beforeEach(() => {
     warnMock.mockClear()
     vi.spyOn(warnUtilities, 'warn').mockImplementation(warnMock)
-  })
-
-  afterEach(() => {
-    vi.restoreAllMocks()
   })
 
   test.each<PrefetchConfig | undefined>([

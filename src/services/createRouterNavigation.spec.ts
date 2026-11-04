@@ -1,5 +1,5 @@
 import { Computation, DataKind } from '@/types/computation'
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
 import { createRouterNavigation } from '@/services/createRouterNavigation'
 import { createResolvedRoute } from '@/services/createResolvedRoute'
@@ -17,10 +17,6 @@ const registry = new Map<string, Computation[]>()
 beforeEach(() => {
   registry.clear()
   vi.spyOn(computations, 'getComputations').mockImplementation((route) => registry.get(route.id) ?? [])
-})
-
-afterEach(() => {
-  vi.restoreAllMocks()
 })
 
 function createComputation(route: ResolvedRoute, run: Computation['run'], kind: DataKind = 'loader', name = 'default'): Computation {

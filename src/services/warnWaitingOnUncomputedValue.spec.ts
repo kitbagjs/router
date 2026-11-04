@@ -11,5 +11,4 @@ test('uncomputed dependency warnings use the shared warning utility', () => {
   warnWaitingOnUncomputedValue({ kind: 'loader', depth: 0, name: 'default' }, route)
 
   expect(warn).toHaveBeenCalledOnce()
-  warn.mockRestore()
 })

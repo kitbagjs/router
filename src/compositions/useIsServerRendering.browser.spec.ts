@@ -53,7 +53,5 @@ test('is false while hydrating through createSSRApp', async () => {
   } finally {
     app.unmount()
     element.remove()
-    warn.mockRestore()
-    error.mockRestore()
   }
 })

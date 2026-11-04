@@ -5,7 +5,6 @@ import { renderToString } from 'vue/server-renderer'
 import { createLoader, createRoute, createRouter, RouterSuspense, useLoader } from '@/main'
 
 afterEach(() => {
-  vi.restoreAllMocks()
   vi.unstubAllEnvs()
 })
 
