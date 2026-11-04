@@ -1,3 +1,5 @@
+import { createResolvedRoute } from '@/services/createResolvedRoute'
+import { getDataKey } from '@/services/getDataKey'
 import { PAYLOAD_ELEMENT_ID, payloadToScript } from '@/services/payload'
 import { component } from '@/utilities/testHelpers'
 /* eslint-disable vue/one-component-per-file */
@@ -488,10 +490,13 @@ test('retains settled data while another navigation waits on a guard', async () 
 })
 
 test('reads hydrated data without rerunning the loader', async () => {
+  const serverRoute = createResolvedRoute(createRoute({ name: 'home', path: '/' }))
+  const key = getDataKey({ kind: 'loader', depth: 0, name: 'default', route: serverRoute })
+
   document.body.insertAdjacentHTML('beforeend', payloadToScript({
     kind: 'success',
     url: '/',
-    values: [{ kind: 'loader', depth: 0, name: 'default', encoded: JSON.stringify('from server') }],
+    values: [{ key, encoded: JSON.stringify('from server') }],
   }))
   const payload = document.getElementById(PAYLOAD_ELEMENT_ID)
   onTestFinished(() => payload?.remove())

@@ -1,3 +1,5 @@
+import { createResolvedRoute } from '@/services/createResolvedRoute'
+import { getDataKey } from '@/services/getDataKey'
 import { flushPromises, mount } from '@vue/test-utils'
 import { expect, test } from 'vitest'
 import { defineComponent, h } from 'vue'
@@ -45,10 +47,13 @@ test('the values update through a navigation', async () => {
 })
 
 test('a hydrating navigation counts nothing', async () => {
+  const serverRoute = createResolvedRoute(createRoute({ name: 'home', path: '/' }))
+  const key = getDataKey({ kind: 'loader', depth: 0, name: 'default', route: serverRoute })
+
   document.body.innerHTML = payloadToScript({
     kind: 'success',
     url: '/',
-    values: [{ kind: 'loader', depth: 0, name: 'default', encoded: JSON.stringify('from server') }],
+    values: [{ key, encoded: JSON.stringify('from server') }],
   })
 
   const home = createRoute({ name: 'home', path: '/' }).addView(component)

@@ -8,8 +8,8 @@ test('default selection remains separate from subsequently added named loaders',
     .addLoader(() => 42, { name: 'count' })
   const route = createResolvedRoute(definition)
 
-  expect(getRouteLoaderLocation(route, 'default')).toEqual({ kind: 'loader', id: definition.id, name: 'default' })
-  expect(getRouteLoaderLocation(route, 'count')).toEqual({ kind: 'loader', id: definition.id, name: 'count' })
+  expect(getRouteLoaderLocation(route, 'default')).toEqual({ kind: 'loader', depth: 0, name: 'default' })
+  expect(getRouteLoaderLocation(route, 'count')).toEqual({ kind: 'loader', depth: 0, name: 'count' })
 })
 
 test('selection uses only the supplied matches and rejects unavailable names', () => {
@@ -18,7 +18,7 @@ test('selection uses only the supplied matches and rejects unavailable names', (
   const route = createResolvedRoute(child)
   const ancestors = route.matches.slice(0, 1)
 
-  expect(getRouteLoaderLocation(route, 'default', ancestors)).toEqual({ kind: 'loader', id: parent.id, name: 'default' })
+  expect(getRouteLoaderLocation(route, 'default', ancestors)).toEqual({ kind: 'loader', depth: 0, name: 'default' })
   expect(() => getRouteLoaderLocation(route, 'child', ancestors)).toThrow(TypeError)
   expect(() => getRouteLoaderLocation(route, 'missing')).toThrow(TypeError)
 })

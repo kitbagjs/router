@@ -18,7 +18,7 @@ test('legacy route data reads only the selected loader through navigation', asyn
   expect(Object.keys(data)).toEqual(['parent', 'default'])
   expect(getValue).not.toHaveBeenCalled()
   await expect(data.parent).resolves.toBe('loaded')
-  expect(getValue).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ kind: 'loader', id: parent.id, name: 'parent' }), route)
+  expect(getValue).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ kind: 'loader', depth: 0, name: 'parent' }), route)
 })
 
 test('route data forwards value reader errors', async () => {

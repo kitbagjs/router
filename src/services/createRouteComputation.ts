@@ -15,28 +15,26 @@ import { AnyFunction } from '@/types/utilities'
 type CreateRouteComputationOptions = {
   location: ValueLocation,
   route: ResolvedRoute,
-  depth: number,
   callback: AnyFunction,
   routePrefetch?: PrefetchConfig,
   prefetch?: PrefetchConfig,
   transformer?: AnyPayloadTransformer,
 }
 
-export function createRouteComputation({ location, route, depth, callback, routePrefetch, prefetch, transformer }: CreateRouteComputationOptions): Computation {
+export function createRouteComputation({ location, route, callback, routePrefetch, prefetch, transformer }: CreateRouteComputationOptions): Computation {
   const run: Computation['run'] = (context) => {
     const { to, signal } = context
     const { push, replace, reject, update } = createRouterCallbackContext({ to })
     const callbackRoute = toCallbackRoute(location, to, context)
-    const parent = getParentContext(to, depth, context)
+    const parent = getParentContext(to, location.depth, context)
 
     return callback(callbackRoute, { push, replace, reject, update, signal, parent })
   }
 
-  const key = getDataKey(location.kind, location.id, location.name, route)
+  const key = getDataKey({ ...location, route })
   const computation = {
     ...location,
     key,
-    depth,
     run,
     routePrefetch,
     prefetch,
@@ -83,7 +81,7 @@ function toCallbackRoute({ kind, name }: ValueLocation, route: ResolvedRoute, { 
  * match: every view in a nested route gets its own parent, not the resolved route's parent.
  */
 function getParentContext(route: ResolvedRoute, depth: number, { getValue }: ComputationContext): PropsCallbackParent {
-  if (depth === 0) {
+  if (depth <= 0) {
     return
   }
 
@@ -104,13 +102,13 @@ function getParentContext(route: ResolvedRoute, depth: number, { getValue }: Com
         throw new TypeError(`Parent route "${parentName}" has no props getter named "${name}"`)
       }
 
-      return getValue({ kind: 'props', id: parentMatch.id, name })
+      return getValue({ kind: 'props', depth: depth - 1, name })
     },
     get props() {
-      return toLegacyValues(propsLocations(parentMatch), getValue)
+      return toLegacyValues(propsLocations(parentMatch, depth - 1), getValue)
     },
     get data() {
-      return toLegacyValues(loaderLocations(parentMatch), getValue)
+      return toLegacyValues(loaderLocations(parentMatch, depth - 1), getValue)
     },
   }
 }

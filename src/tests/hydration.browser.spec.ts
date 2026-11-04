@@ -1,10 +1,18 @@
-import { expect, test, vi } from 'vitest'
+import { createResolvedRoute } from '@/services/createResolvedRoute'
+import { getDataKey } from '@/services/getDataKey'
+import { expect, onTestFinished, test, vi } from 'vitest'
 import { createRouter } from '@/services/createRouter'
 import { createRoute } from '@/services/createRoute'
 import { payloadToScript, RouterPayload } from '@/services/payload'
 import { withParams } from '@/services/withParams'
 import { createRejection } from '@/services/createRejection'
 import { z } from 'zod'
+
+function getServerKey(): string {
+  const route = createResolvedRoute(createRoute({ name: 'home', path: '/' }))
+
+  return getDataKey({ kind: 'loader', depth: 0, name: 'default', route })
+}
 
 function embed(payload: RouterPayload): void {
   document.body.innerHTML = payloadToScript(payload)
@@ -14,7 +22,7 @@ test('a payload for the initial url is adopted synchronously when the router sta
   embed({
     kind: 'success',
     url: '/',
-    values: [{ kind: 'loader', depth: 0, name: 'default', encoded: JSON.stringify('from server') }],
+    values: [{ key: getServerKey(), encoded: JSON.stringify('from server') }],
   })
 
   const load = vi.fn(() => 'from client')
@@ -135,7 +143,7 @@ test('a value is adopted through its own parse', async () => {
   embed({
     kind: 'success',
     url: '/',
-    values: [{ kind: 'loader', depth: 0, name: 'default', encoded: '[["a",1]]' }],
+    values: [{ key: getServerKey(), encoded: '[["a",1]]' }],
   })
 
   const load = vi.fn(() => new Map<string, number>())
@@ -160,7 +168,7 @@ test('a declared payload option that cannot read a value warns and computes agai
   embed({
     kind: 'success',
     url: '/',
-    values: [{ kind: 'loader', depth: 0, name: 'default', encoded: 'not what parse expects' }],
+    values: [{ key: getServerKey(), encoded: 'not what parse expects' }],
   })
 
   const load = vi.fn(() => 1)
@@ -181,4 +189,29 @@ test('a declared payload option that cannot read a value warns and computes agai
   expect(warn.mock.calls.some(([message]) => String(message).includes('parse the payload value for loader "default"'))).toBe(true)
 
   warn.mockRestore()
+})
+
+test('hydration uses the initial history state when matching stored values', async () => {
+  const previousState = window.history.state
+  onTestFinished(() => window.history.replaceState(previousState, ''))
+  window.history.replaceState({ usr: { page: '2' } }, '')
+
+  const serverRoute = createResolvedRoute(createRoute({ name: 'home', path: '/', state: { page: Number } }), {}, { state: { page: 2 } })
+  const key = getDataKey({ kind: 'loader', depth: 0, name: 'default', route: serverRoute })
+
+  embed({
+    kind: 'success',
+    url: '/',
+    values: [{ key, encoded: JSON.stringify('from server') }],
+  })
+
+  const load = vi.fn(() => 'from client')
+  const home = createRoute({ name: 'home', path: '/', state: { page: Number } }).addLoader(load)
+  const router = createRouter([home], { initialUrl: '/' })
+  onTestFinished(() => router.stop())
+
+  await router.start()
+
+  expect(router.route.state.page).toBe(2)
+  expect(load).not.toHaveBeenCalled()
 })

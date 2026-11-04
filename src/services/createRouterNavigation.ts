@@ -5,7 +5,7 @@ import { ContextRejectionError } from '@/errors/contextRejectionError'
 import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
 import { createVueAppStore, HasVueAppStore } from './createVueAppStore'
 import { CallbackContextError, CallbackContextPush, CallbackContextReject, CallbackContextResponse } from '@/types/callbackContext'
-import { createDataStore, DataResult, DataStore, DataStoreSettledEvent } from './createDataStore'
+import { createDataStore, DataEntry, DataResult, DataStore, DataStoreSettledEvent } from './createDataStore'
 import { getDataKey } from './getDataKey'
 import { MaybePromise } from '@/types/utilities'
 import { isPromise } from '@/utilities/promises'
@@ -41,7 +41,9 @@ type RouterNavigationStoreSlots = {
   staged: RouterNavigationStore,
 }
 
-export type NavigationData = Pick<DataStore, 'getEntries' | 'setEntries'> & {
+export type NavigationData = {
+  getEntries: () => DataEntry[],
+  setEntries: (entries: DataEntry[]) => void,
   getState: (location: ValueLocation, route: ResolvedRoute) => DataResult,
   subscribe: (location: ValueLocation, route: ResolvedRoute) => Promise<CallbackContextResponse>,
   getValue: (location: ValueLocation, route: ResolvedRoute) => Promise<unknown>,
@@ -238,13 +240,13 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     }
 
     const getState: NavigationData['getState'] = (location, route) => {
-      const key = getDataKey(location.kind, location.id, location.name, route)
+      const key = getDataKey({ ...location, route })
 
       return data.get(key)
     }
 
     const subscribe: NavigationData['subscribe'] = (location, route) => {
-      const key = getDataKey(location.kind, location.id, location.name, route)
+      const key = getDataKey({ ...location, route })
 
       return data.subscribe(key)
     }
@@ -293,7 +295,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
   const setEntries: NavigationData['setEntries'] = (entries) => navigations.current.setEntries(entries)
 
   function getCallbackValue(location: ValueLocation, route: ResolvedRoute, { store, signal }: CallbackValueContext): Promise<unknown> {
-    const key = getDataKey(location.kind, location.id, location.name, route)
+    const key = getDataKey({ ...location, route })
     const current = navigations.current.data
 
     if (store === current) {

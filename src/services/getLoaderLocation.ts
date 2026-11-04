@@ -17,7 +17,7 @@ type LoaderLocationResult = LoaderLocationMissing | LoaderLocationAmbiguous | Lo
 export function getLoaderLocation(route: ResolvedRoute, source: AnyLoader): LoaderLocationResult {
   const locations: ValueLocation<'loader'>[] = []
 
-  for (const match of route.matches) {
+  for (const [depth, match] of route.matches.entries()) {
     for (const [name, loader] of Object.entries(match.loaders)) {
       if (!isSameLoader(loader, source)) {
         continue
@@ -25,7 +25,7 @@ export function getLoaderLocation(route: ResolvedRoute, source: AnyLoader): Load
 
       const location: ValueLocation<'loader'> = {
         kind: 'loader',
-        id: match.id,
+        depth,
         name,
       }
 

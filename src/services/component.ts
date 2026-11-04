@@ -6,6 +6,7 @@ import { getRouteProps } from '@/services/getRouteProps'
 import { PropsResult } from '@/utilities/props'
 import { createUseRouterNavigation } from '@/compositions/useRouterNavigation'
 import { Router } from '@/types/router'
+import { ResolvedRoute } from '@/types/resolved'
 import { createUseRoute } from '@/compositions/useRoute'
 import { useIsServerRendering } from '@/compositions/useIsServerRendering'
 import { useHasSuspenseBoundary } from '@/compositions/useHasSuspenseBoundary'
@@ -37,11 +38,15 @@ export function createComponentPropsWrapper(routerKey: InjectionKey<Router>, { i
     expose: [],
     setup() {
       const navigation = useRouterNavigation()
-      const route = useRoute()
+      const route: ResolvedRoute = useRoute()
       const isServerRendering = useIsServerRendering()
       const hasSuspenseBoundary = useHasSuspenseBoundary()
       const reportError = useRouterSuspense('props')
-      const props = computed(() => getRouteProps(navigation.current(), { kind: 'props', id, name }, route))
+      const props = computed(() => {
+        const depth = route.matches.findIndex((match) => match.id === id)
+
+        return getRouteProps(navigation.current(), { depth, name }, route)
+      })
 
       watch(props, async (props) => {
         const owner = navigation.current()

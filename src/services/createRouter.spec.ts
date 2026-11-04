@@ -1,3 +1,4 @@
+import { getDataKey } from '@/services/getDataKey'
 import { flushPromises } from '@vue/test-utils'
 import { Location } from '@/services/history'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
@@ -1785,7 +1786,7 @@ describe('router.render response', () => {
     const payload: unknown = JSON.parse(response.payload.replace(/^<script[^>]*>/, '').replace(/<\/script>$/, ''))
 
     expect(payload).toMatchObject({
-      values: [{ kind: 'loader', depth: 0, name: 'default', encoded: '[["a",1]]' }],
+      values: [{ key: getDataKey({ kind: 'loader', depth: 0, name: 'default', route: router.resolve('route') }), encoded: '[["a",1]]' }],
     })
   })
 

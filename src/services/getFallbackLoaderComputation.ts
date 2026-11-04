@@ -10,7 +10,6 @@ export function getFallbackLoaderComputation(loader: AnyLoader & LoaderInternal,
   return createRouteComputation({
     location,
     route,
-    depth: 0,
     callback: loader.load,
     prefetch: loader.prefetch,
     transformer: loader.transformer,
