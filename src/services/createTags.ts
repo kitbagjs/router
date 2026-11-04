@@ -1,4 +1,4 @@
-import { TagGroup, TagLayer, LinkTag, LinkTagSelector, MetaTag, MetaTagSelector, TagOperation, TagSelector, Tags, ResolvedMetaTag, ResolvedLinkTag, TagsInternal } from '@/types/tags'
+import { IS_TAGS_SYMBOL, TagGroup, TagLayer, LinkTag, LinkTagSelector, MetaTag, MetaTagSelector, TagOperation, TagSelector, Tags, ResolvedMetaTag, ResolvedLinkTag, TagsInternal } from '@/types/tags'
 import { MaybePromise } from '@/types/utilities'
 import { matchesTag, mergeTags } from '@/services/mergeTags'
 
@@ -248,6 +248,7 @@ export function createTags({ getParentLayers = () => [] }: CreateTagsOptions = {
   }
 
   const tags = {
+    [IS_TAGS_SYMBOL]: true,
     get operations(): TagLayer {
       return [...operations]
     },
