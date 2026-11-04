@@ -2,6 +2,7 @@ import { afterEach, expect, test, vi } from 'vitest'
 import { createCallbackRoute } from '@/services/createCallbackRoute'
 import { createRoute } from '@/services/createRoute'
 import { createResolvedRoute } from '@/services/createResolvedRoute'
+import { isResolvedRoute } from '@/types/resolved'
 import * as legacyValues from '@/utilities/toLegacyValues'
 
 afterEach(() => {
@@ -17,6 +18,10 @@ test('route data selects default and named loaders lazily', async () => {
 
   expect(getValue).not.toHaveBeenCalled()
   expect(route.href).toBe(to.href)
+  expect(route.params).toBe(to.params)
+  expect(route.matches).toBe(to.matches)
+  expect(route.getParam).toBe(to.getParam)
+  expect(isResolvedRoute(route)).toBe(true)
   await route.getData()
   await route.getData('default')
   await route.getData('count')
@@ -43,6 +48,7 @@ test('legacy data delegates locations and the reader to the legacy adapter', () 
   const getValue = vi.fn()
   const route = createCallbackRoute({ to, getValue, signal: new AbortController().signal })
 
+  expect(adapt).not.toHaveBeenCalled()
   expect(Reflect.get(route, 'data')).toBe(legacy)
   expect(adapt).toHaveBeenCalledWith([
     { kind: 'loader', depth: 0, name: 'default' },
