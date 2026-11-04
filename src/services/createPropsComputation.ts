@@ -2,13 +2,20 @@ import { createCallbackRoute } from '@/services/createCallbackRoute'
 import { getDataKey } from '@/services/getDataKey'
 import { createRouterCallbackContext } from '@/services/createRouterCallbackContext'
 import { getCallbackParent } from '@/services/getCallbackParent'
-import { Computation, CreateComputationOptions } from '@/types/computation'
+import { Computation, CreateComputationOptions, ValueLocation } from '@/types/computation'
+import { ResolvedRoute } from '@/types/resolved'
 
-export function createPropsComputation(options: CreateComputationOptions<'props'>): Computation {
+type PropsComputationContext = {
+  to: ResolvedRoute,
+  signal: AbortSignal,
+  getValue: (location: ValueLocation) => Promise<unknown>,
+}
+
+export function createPropsComputation(options: CreateComputationOptions<'props'>): Computation<PropsComputationContext> {
   const { location, route, callback, routePrefetch, prefetch, transformer } = options
   const key = getDataKey({ ...location, route })
   const prefetchKey = 'props'
-  const run: Computation['run'] = (context) => {
+  const run = (context: PropsComputationContext): unknown => {
     const { to, signal } = context
     const route = createCallbackRoute(context)
     const { push, replace, reject, update } = createRouterCallbackContext({ to })

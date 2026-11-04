@@ -25,10 +25,10 @@ export type ComputationContext = {
   getValue: (location: ValueLocation) => Promise<unknown>,
 }
 
-export type Computation = ValueLocation & {
+export type Computation<TContext = ComputationContext> = ValueLocation & {
   key: string,
   prefetchKey: keyof PrefetchConfigOptions,
-  run: (context: ComputationContext) => unknown,
+  run: (context: TContext) => unknown,
   routePrefetch: PrefetchConfig | undefined,
   prefetch: PrefetchConfig | undefined,
   transformer: AnyPayloadTransformer | undefined,
