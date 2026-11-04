@@ -1,24 +1,16 @@
-import { LoaderDataAccessError } from '@/errors/loaderDataAccessError'
 import { createComputation } from '@/services/createComputation'
-import { createRouteCallbackContext } from '@/services/createRouteCallbackContext'
+import { createRouterCallbackContext } from '@/services/createRouterCallbackContext'
+import { getCallbackParent } from '@/services/getCallbackParent'
 import { Computation, CreateRouteComputationOptions } from '@/types/computation'
 
 export function createLoaderComputation(options: CreateRouteComputationOptions): Computation {
   const { location, callback } = options
   const run: Computation['run'] = (context) => {
-    // Loaders read parent data instead: reading their own route could create circular dependencies.
-    const route = {
-      ...context.to,
-      get data(): never {
-        throw new LoaderDataAccessError(location.name)
-      },
-      get getData(): never {
-        throw new LoaderDataAccessError(location.name)
-      },
-    }
-    const callbackContext = createRouteCallbackContext(location.depth, context)
+    const { to, signal } = context
+    const { push, replace, reject, update } = createRouterCallbackContext({ to })
+    const parent = getCallbackParent(location.depth, context)
 
-    return callback(route, callbackContext)
+    return callback(to, { push, replace, reject, update, signal, parent })
   }
 
   return createComputation({ ...options, run })

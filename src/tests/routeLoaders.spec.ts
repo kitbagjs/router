@@ -3,16 +3,7 @@ import { describe, expect, test, vi } from 'vitest'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
 import { createRejection } from '@/services/createRejection'
-import { LoaderDataAccessError } from '@/errors/loaderDataAccessError'
 import { component } from '@/utilities/testHelpers'
-
-/**
- * The route a loader is given carries no data, so reaching for it is what a loader written without types
- * would do.
- */
-function readOwnData(route: object): unknown {
-  return (route as { getData: () => unknown }).getData()
-}
 
 describe('loaders do not block', () => {
   test('the route is current before its loader settles', async () => {
@@ -137,37 +128,6 @@ describe('loader context', () => {
     await router.start()
 
     expect(props).toHaveBeenCalledWith('user-1')
-  })
-
-  test('a loader reading the data of its own route errors', async () => {
-    const onError = vi.fn()
-
-    const route = createRoute({ name: 'route', path: '/' })
-      .addLoader((route) => readOwnData(route))
-
-    const router = createRouter([route], { initialUrl: '/' })
-
-    router.onError(onError)
-
-    await router.start()
-
-    expect(onError).toHaveBeenCalledWith(expect.any(LoaderDataAccessError), expect.objectContaining({ source: 'loader' }))
-  })
-
-  test('a loader reading a sibling loader on its own route errors', async () => {
-    const onError = vi.fn()
-
-    const route = createRoute({ name: 'route', path: '/' })
-      .addLoader(async () => 'sibling', { name: 'sibling' })
-      .addLoader((route) => readOwnData(route), { name: 'reader' })
-
-    const router = createRouter([route], { initialUrl: '/' })
-
-    router.onError(onError)
-
-    await router.start()
-
-    expect(onError).toHaveBeenCalledWith(expect.any(LoaderDataAccessError), expect.objectContaining({ source: 'loader' }))
   })
 
   test('a props getter can read the data of its own route', async () => {
