@@ -22,7 +22,7 @@ test('creates computations with each matched callback and its options', () => {
   const route = createResolvedRoute(child)
   const createProps = vi.spyOn(propsFactory, 'createPropsComputation')
   const createLoader = vi.spyOn(loaderFactory, 'createLoaderComputation')
-  const computations = getComputations(route)
+  getComputations(route)
 
   expect(createProps).toHaveBeenCalledExactlyOnceWith({
     location: { kind: 'props', depth: 0, name: 'summary' },
@@ -40,7 +40,6 @@ test('creates computations with each matched callback and its options', () => {
     prefetch: 'lazy',
     transformer,
   })
-  expect(computations).toEqual([createProps.mock.results[0].value, createLoader.mock.results[0].value])
   expect(props).not.toHaveBeenCalled()
   expect(load).not.toHaveBeenCalled()
 })

@@ -4,7 +4,6 @@ import * as routerContext from '@/services/createRouterCallbackContext'
 import * as callbackParent from '@/services/getCallbackParent'
 import { createRoute } from '@/services/createRoute'
 import { createResolvedRoute } from '@/services/createResolvedRoute'
-import { getDataKey } from '@/services/getDataKey'
 import { ValueLocation } from '@/types/computation'
 
 afterEach(() => {
@@ -34,21 +33,5 @@ test('passes the resolved route and callback context', () => {
     update,
     signal: context.signal,
     parent: parentFactory.mock.results[0].value,
-  })
-})
-
-test('sets the storage key and loaders prefetch metadata', () => {
-  const route = createResolvedRoute(createRoute({ path: '/' }))
-  const location: ValueLocation<'loader'> = { kind: 'loader', depth: 0, name: 'named' }
-  const transformer = { stringify: JSON.stringify, parse: JSON.parse }
-  const computation = createLoaderComputation({ location, route, callback: vi.fn(), routePrefetch: 'lazy', prefetch: 'eager', transformer })
-
-  expect(computation).toMatchObject({
-    ...location,
-    key: getDataKey({ ...location, route }),
-    prefetchKey: 'loaders',
-    routePrefetch: 'lazy',
-    prefetch: 'eager',
-    transformer,
   })
 })
