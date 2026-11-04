@@ -9,32 +9,26 @@ import { decodePayloadValues, encodePayloadValues } from '@/services/payload'
 import { Tags } from '@/types/tags'
 import * as waitingWarnings from '@/services/warnWaitingOnUncomputedValue'
 
-test('child-only prefetch skips a failed parent without adopting its partial writes', async () => {
-  const inherited = vi.fn()
-  const parent = createRoute({ path: '/' }).setTags((tags) => {
+test('a failed parent also fails a dependent child while preserving successful ancestor tags', async () => {
+  const error = new Error('parent failed')
+  const grandparent = createRoute({ path: '/' }).setTags((tags) => tags.title.set('Grandparent'))
+  const parent = createRoute({ parent: grandparent, path: 'parent' }).setTags((tags) => {
     tags.title.set('Partial')
-    throw new Error('parent failed')
+    throw error
   })
   const route = createResolvedRoute(createRoute({ parent, path: 'child' }).setTags(async (tags) => {
-    inherited(await tags.title.get())
-    tags.title.set('Fallback')
+    tags.title.set(`${await tags.title.get()} - Child`)
   }))
   const navigation = createRouterNavigation()
-  const prepared = navigation.create()
-  onTestFinished(() => {
-    prepared.dispose()
-    navigation.stop()
-  })
+  onTestFinished(() => navigation.stop())
+
   await Promise.all(navigation.commit({ to: route, from: null }))
-  inherited.mockClear()
-  const child = getComputations(route).filter(({ kind, depth }) => kind === 'tags' && depth === 1)
-  await Promise.all(prepared.compute(route, child))
 
-  expect(inherited).toHaveBeenCalledExactlyOnceWith(undefined)
-
-  await expect(prepared.getValue(child[0], route)).resolves.toMatchObject([
-    { kind: 'set', groups: [{ value: 'Fallback' }] },
+  await expect(navigation.getValue({ kind: 'tags', depth: 0, name: 'tags' }, route)).resolves.toMatchObject([
+    { kind: 'set', groups: [{ value: 'Grandparent' }] },
   ])
+  await expect(navigation.getValue({ kind: 'tags', depth: 1, name: 'tags' }, route)).rejects.toBe(error)
+  await expect(navigation.getValue({ kind: 'tags', depth: 2, name: 'tags' }, route)).rejects.toBe(error)
 })
 
 test('child-only prefetch can wait for ancestor tags that start when navigation commits', async () => {

@@ -8,7 +8,7 @@ test('synchronous writes return a layer without introducing a promise', () => {
   const to = createResolvedRoute(createRoute({ path: '/' }))
   const callback = (tags: Tags): void => tags.title.set('Child')
   const computation = createTagsComputation({ location: { kind: 'tags', depth: 0, name: 'tags' }, route: to, callback })
-  const layer = computation.run({ to, signal: new AbortController().signal, getValue: vi.fn(), subscribe: vi.fn() })
+  const layer = computation.run({ to, signal: new AbortController().signal, getValue: vi.fn() })
 
   expect(layer).toMatchObject([{ kind: 'set', groups: [{ value: 'Child' }] }])
 })

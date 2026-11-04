@@ -354,12 +354,12 @@ describe('dependencies', () => {
     expect(warn).not.toHaveBeenCalled()
   })
 
-  test.each(['getValue', 'subscribe'] as const)('disposing a prefetch unwinds a pending %s dependency', async (read) => {
+  test('disposing a prefetch unwinds a pending dependency', async () => {
     const cleaned = vi.fn()
     const { route, computation } = createFixture(() => new Promise(() => {}))
     const dependent = createComputation(route, async (context) => {
       try {
-        await context[read](computation)
+        await context.getValue(computation)
       } finally {
         cleaned()
       }

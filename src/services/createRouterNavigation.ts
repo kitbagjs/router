@@ -151,12 +151,10 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
       try {
         const context: CallbackValueContext = { store: data, signal: controller.signal }
         const getValue = (location: ValueLocation): Promise<unknown> => getCallbackValue(location, route, context)
-        const subscribe = (location: ValueLocation): Promise<CallbackContextResponse> => getCallbackResponse(location, route, context)
         const value = runWithContext(() => computation.run({
           to: route,
           signal: controller.signal,
           getValue,
-          subscribe,
         }))
 
         if (isPromise(value)) {
@@ -322,27 +320,6 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     return value
   }
 
-  function getCallbackResponse(location: ValueLocation, route: ResolvedRoute, { store, signal }: CallbackValueContext): Promise<CallbackContextResponse> {
-    const key = getDataKey({ ...location, route })
-    const current = navigations.current.data
-
-    if (store === current) {
-      return store.subscribe(key)
-    }
-
-    const stored = store.get(key)
-    const currentValue = current.get(key)
-
-    if (stored.status === 'MISSING' && currentValue.status === 'MISSING') {
-      warnWaitingOnUncomputedValue(location, route)
-    }
-
-    return waitForDependency([
-      store.subscribe(key),
-      current.subscribe(key),
-    ], signal)
-  }
-
   return {
     current,
     stop,
@@ -366,7 +343,7 @@ function toDataValue(value: Promise<CallbackContextResponse>): Promise<unknown> 
   return unwrapped
 }
 
-async function waitForDependency<T>(sources: Promise<T>[], signal: AbortSignal): Promise<T> {
+async function waitForDependency(sources: Promise<unknown>[], signal: AbortSignal): Promise<unknown> {
   const cancelled = Promise.withResolvers<never>()
 
   function onAbort(): void {
@@ -393,7 +370,7 @@ async function waitForDependency<T>(sources: Promise<T>[], signal: AbortSignal):
  * The first source to produce a value. Both failing surfaces a real callback error over an abandonment,
  * since abandonment only says nobody is computing that source any more.
  */
-async function firstToArrive<T>(sources: Promise<T>[]): Promise<T> {
+async function firstToArrive(sources: Promise<unknown>[]): Promise<unknown> {
   try {
     return await Promise.any(sources)
   } catch (error) {

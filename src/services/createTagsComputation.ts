@@ -10,10 +10,10 @@ export function createTagsComputation(options: CreateComputationOptions<'tags'>)
   const key = getDataKey({ ...location, route })
   const prefetchKey = 'tags'
   const run: Computation['run'] = (context) => {
-    const { to, signal, subscribe } = context
+    const { to, signal, getValue } = context
     const route = createCallbackRoute(context)
     const parent = getCallbackParent(location.depth, context)
-    const tags = createRouteTags({ route: to, depth: location.depth, subscribe })
+    const tags = createRouteTags({ route: to, depth: location.depth, getValue })
     const result = callback(tags, { to: route, signal, parent })
 
     if (isPromise(result)) {

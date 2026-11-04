@@ -1,4 +1,3 @@
-import { CallbackContextResponse } from '@/types/callbackContext'
 import { AnyPayloadTransformer } from '@/services/payload'
 import { PrefetchConfig, PrefetchConfigOptions } from '@/types/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
@@ -24,10 +23,6 @@ export type ComputationContext = {
   to: ResolvedRoute,
   signal: AbortSignal,
   getValue: (location: ValueLocation) => Promise<unknown>,
-  /**
-   * Reads the first outcome from this or the current navigation, including callback failures.
-   */
-  subscribe: (location: ValueLocation) => Promise<CallbackContextResponse>,
 }
 
 export type Computation<TContext = ComputationContext> = ValueLocation & {
