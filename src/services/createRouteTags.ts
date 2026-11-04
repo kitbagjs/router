@@ -1,5 +1,5 @@
 import { createTags } from '@/services/createTags'
-import { tagsLocations } from '@/services/getComputations'
+import { tagsLocations } from '@/services/tagsLocations'
 import { ValueLocation } from '@/types/computation'
 import { CallbackContextResponse } from '@/types/callbackContext'
 import { ResolvedRoute } from '@/types/resolved'
