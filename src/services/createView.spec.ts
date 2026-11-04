@@ -1,3 +1,4 @@
+import { getRouteProps } from '@/services/getRouteProps'
 import { expect, test, vi } from 'vitest'
 import { isView } from '@/types/view'
 import { createView } from '@/services/createView'
@@ -24,7 +25,7 @@ test('one view computes props and loader data independently for multiple routes'
     const values = navigation.staged().compute(resolved, getComputations(resolved))
     await Promise.all(values)
     navigation.commit({ to: resolved, from: null })
-    expect(navigation.getProps(route.id, name, resolved)).toEqual({
+    expect(getRouteProps(navigation.current(), { kind: 'props', id: route.id, name: name }, resolved)).toEqual({
       kind: 'value', value: { name: route.name, id: '1', data: `${route.name} data` },
     })
   }

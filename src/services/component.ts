@@ -2,6 +2,7 @@
 /* eslint-disable vue/one-component-per-file */
 import { AsyncComponentLoader, Component, computed, FunctionalComponent, InjectionKey, defineComponent, h, ref, watch } from 'vue'
 import { isPromise } from '@/utilities/promises'
+import { getRouteProps } from '@/services/getRouteProps'
 import { PropsResult } from '@/utilities/props'
 import { createUseRouterNavigation } from '@/compositions/useRouterNavigation'
 import { Router } from '@/types/router'
@@ -40,7 +41,7 @@ export function createComponentPropsWrapper(routerKey: InjectionKey<Router>, { i
       const isServerRendering = useIsServerRendering()
       const hasSuspenseBoundary = useHasSuspenseBoundary()
       const reportError = useRouterSuspense('props')
-      const props = computed(() => navigation.getProps(id, name, route))
+      const props = computed(() => getRouteProps(navigation.current(), { kind: 'props', id, name }, route))
 
       watch(props, async (props) => {
         const owner = navigation.current()

@@ -1,615 +1,390 @@
-import { afterEach, expect, test, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
 import { createRouterNavigation } from '@/services/createRouterNavigation'
 import { createResolvedRoute } from '@/services/createResolvedRoute'
 import { createRoute } from '@/services/createRoute'
-import { component } from '@/utilities/testHelpers'
-import { getComputations, loaderLocations } from '@/services/getComputations'
+import { Computation } from '@/services/getComputations'
+import { DataKind, getDataKey } from '@/services/getDataKey'
+import { ResolvedRoute } from '@/types/resolved'
+import { ContextPushError } from '@/errors/contextPushError'
+import { ContextRejectionError } from '@/errors/contextRejectionError'
 import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
+import * as computations from '@/services/getComputations'
+import * as waitingWarnings from '@/services/warnWaitingOnUncomputedValue'
+
+const registry = new Map<string, Computation[]>()
+
+beforeEach(() => {
+  registry.clear()
+  vi.spyOn(computations, 'getComputations').mockImplementation((route) => registry.get(route.id) ?? [])
+})
 
 afterEach(() => {
   vi.restoreAllMocks()
 })
 
-test('pending props report abandonment when another navigation replaces their navigation', async () => {
-  const pending = Promise.withResolvers<{ value: string }>()
-  const route = createRoute({ name: 'route', path: '/' }).addView(component, { props: () => pending.promise })
-  const other = createRoute({ name: 'other', path: '/other' })
-  const resolved = createResolvedRoute(route)
-  const navigation = createRouterNavigation()
-
-  navigation.commit({ to: resolved, from: null })
-  const props = navigation.getProps(route.id, 'default', resolved)
-
-  navigation.commit({ to: createResolvedRoute(other), from: resolved })
-
-  await expect(props).resolves.toEqual({ kind: 'abandoned' })
-  pending.resolve({ value: 'late' })
-})
-
-test('a rejected props getter reports an error before and after it settles', async () => {
-  const error = new Error('props failed')
-  const pending = Promise.withResolvers<{ value: string }>()
-  const route = createRoute({ name: 'route', path: '/' }).addView(component, { props: () => pending.promise })
-  const resolved = createResolvedRoute(route)
-  const navigation = createRouterNavigation()
-
-  navigation.commit({ to: resolved, from: null })
-  const props = navigation.getProps(route.id, 'default', resolved)
-  pending.reject(error)
-
-  await expect(props).resolves.toEqual({ kind: 'error', error })
-  expect(navigation.getProps(route.id, 'default', resolved)).toEqual({ kind: 'error', error })
-})
-
-test('loader data rejects with the original callback error', async () => {
-  const error = new Error('loader failed')
-  const pending = Promise.withResolvers<string>()
-  const route = createResolvedRoute(createRoute({ path: '/' }).addLoader(() => pending.promise))
-  const navigation = createRouterNavigation()
-
-  navigation.commit({ to: route, from: null })
-  const data = navigation.getLoaderValue(loaderLocations(route.matches[0])[0], route)
-  pending.reject(error)
-
-  await expect(data).rejects.toBe(error)
-  await expect(navigation.getLoaderValue(loaderLocations(route.matches[0])[0], route)).rejects.toBe(error)
-})
-
-test('component data remains pending when its loader pushes', async () => {
-  const route = createResolvedRoute(createRoute({ path: '/' }).addLoader((_route, { push }) => push('/next')))
-  const onResponse = vi.fn()
-  const navigation = createRouterNavigation({ onResponse })
-
-  navigation.commit({ to: route, from: null })
-
-  const settled = vi.fn()
-  Promise.resolve(navigation.getLoaderValue(loaderLocations(route.matches[0])[0], route)).then(settled, settled)
-  await flushPromises()
-  expect(settled).not.toHaveBeenCalled()
-  expect(onResponse).toHaveBeenCalledExactlyOnceWith({
-    response: { status: 'PUSH', to: ['/next'] },
-    to: route,
-    from: null,
-  })
-})
-
-test('component data remains pending when its loader rejects', async () => {
-  const route = createResolvedRoute(createRoute({ path: '/' }).addLoader((_route, { reject }) => reject('NotFound')))
-  const onResponse = vi.fn()
-  const navigation = createRouterNavigation({ onResponse })
-
-  navigation.commit({ to: route, from: null })
-
-  const settled = vi.fn()
-  Promise.resolve(navigation.getLoaderValue(loaderLocations(route.matches[0])[0], route)).then(settled, settled)
-  await flushPromises()
-  expect(settled).not.toHaveBeenCalled()
-  expect(onResponse).toHaveBeenCalledExactlyOnceWith({
-    response: { status: 'REJECT', type: 'NotFound' },
-    to: route,
-    from: null,
-  })
-})
-
-test('redirecting props are abandoned instead of reported as render errors', () => {
-  const route = createRoute({ path: '/' }).addView(component, {
-    props: (_route, { push }) => push('/next'),
-  })
-  const resolved = createResolvedRoute(route)
-  const navigation = createRouterNavigation()
-
-  navigation.commit({ to: resolved, from: null })
-
-  expect(navigation.getProps(route.id, 'default', resolved)).toEqual({ kind: 'abandoned' })
-})
-
-test('a view without a props getter reports no props before and after stop', () => {
-  const route = createRoute({ name: 'route', path: '/' }).addView(component)
-  const resolved = createResolvedRoute(route)
-  const navigation = createRouterNavigation()
-
-  navigation.commit({ to: resolved, from: null })
-
-  expect(navigation.getProps(route.id, 'default', resolved)).toEqual({ kind: 'value', value: undefined })
-
-  navigation.stop()
-
-  expect(navigation.getProps(route.id, 'default', resolved)).toEqual({ kind: 'value', value: undefined })
-})
-
-test('a staged value is adopted in place of running its getter', async () => {
-  const loader = vi.fn(() => 'computed')
-  const route = createRoute({ name: 'route', path: '/' }).addView(component)
-    .addLoader(loader)
-  const resolved = createResolvedRoute(route)
-  const navigation = createRouterNavigation()
-
-  const detached = navigation.create()
-
-  detached.fill(resolved, [{ kind: 'loader', depth: 0, name: 'default', value: 'staged' }])
-  detached.stage()
-  navigation.commit({ to: resolved, from: null })
-
-  await expect(navigation.getLoaderValue(loaderLocations(resolved.matches[0])[0], resolved)).resolves.toBe('staged')
-  expect(loader).not.toHaveBeenCalled()
-})
-
-test('getValues returns the values the navigation resolved', async () => {
-  const route = createRoute({ name: 'route', path: '/' }).addView(component)
-    .addLoader(() => 'value')
-  const resolved = createResolvedRoute(route)
-  const navigation = createRouterNavigation()
-
-  navigation.commit({ to: resolved, from: null })
-  await flushPromises()
-
-  expect(navigation.getValues(resolved)).toEqual([{ kind: 'loader', depth: 0, name: 'default', value: 'value' }])
-})
-
-test('staged values are adopted by the next navigation without running their getters again', async () => {
-  const loader = vi.fn(() => 'value')
-  const route = createRoute({ name: 'route', path: '/' }).addView(component)
-    .addLoader(loader)
-  const resolved = createResolvedRoute(route)
-  const navigation = createRouterNavigation()
-
-  await Promise.all(navigation.staged().compute(resolved, getComputations(resolved)))
-  navigation.commit({ to: resolved, from: null })
-
-  await expect(navigation.getLoaderValue(loaderLocations(resolved.matches[0])[0], resolved)).resolves.toBe('value')
-  expect(loader).toHaveBeenCalledTimes(1)
-})
-
-test('staging a route leaves the current route reading its own values', async () => {
-  const current = createRoute({ name: 'current', path: '/current' }).addView(component)
-    .addLoader(() => 'current')
-  const next = createRoute({ name: 'next', path: '/next' }).addView(component)
-    .addLoader(() => 'next')
-  const navigation = createRouterNavigation()
-  const currentResolved = createResolvedRoute(current)
-  const nextResolved = createResolvedRoute(next)
-
-  navigation.commit({ to: currentResolved, from: null })
-  await flushPromises()
-
-  navigation.staged().compute(nextResolved, getComputations(nextResolved))
-
-  expect(navigation.getValues(currentResolved)).toEqual([{ kind: 'loader', depth: 0, name: 'default', value: 'current' }])
-})
-
-test('a staged props getter can await a later loader without warnings', async () => {
-  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-  const route = createRoute({ name: 'route', path: '/' })
-    .addLoader(() => 'loaded')
-    .addView(component, { props: async (route) => ({ value: await route.getData() }) })
-  const resolved = createResolvedRoute(route)
-  const navigation = createRouterNavigation()
-
-  const staged = navigation.staged()
-  const computations = getComputations(resolved)
-  const values = staged.compute(resolved, computations)
-
-  await Promise.all(values)
-  navigation.commit({ to: resolved, from: null })
-
-  expect(navigation.getProps(route.id, 'default', resolved)).toEqual({ kind: 'value', value: { value: 'loaded' } })
-  expect(warn).not.toHaveBeenCalled()
-})
-
-test('prefetch errors do not cause unhandled rejections', async () => {
-  const route = createRoute({ name: 'route', path: '/' }).addView(component)
-    .addLoader(() => {
-      throw new Error('getter failed')
-    })
-  const navigation = createRouterNavigation()
-  const detached = navigation.create()
-
-  const resolved = createResolvedRoute(route)
-  detached.compute(resolved, getComputations(resolved))
-
-  await flushPromises()
-})
-
-test('disposing a detached navigation aborts the signal its getters were given', async () => {
-  const seen = Promise.withResolvers<AbortSignal>()
-  const route = createRoute({ name: 'route', path: '/' }).addView(component)
-    .addLoader((_route, { signal }) => {
-      seen.resolve(signal)
-
-      return 'value'
-    })
-  const navigation = createRouterNavigation()
-  const detached = navigation.create()
-
-  const resolved = createResolvedRoute(route)
-  detached.compute(resolved, getComputations(resolved))
-
-  const signal = await seen.promise
-
-  expect(signal.aborted).toBe(false)
-
-  detached.dispose()
-
-  expect(signal.aborted).toBe(true)
-})
-
-test('a staged getter keeps its signal until the navigation that adopted it is replaced', async () => {
-  const seen = Promise.withResolvers<AbortSignal>()
-  const route = createRoute({ name: 'route', path: '/' }).addView(component)
-    .addLoader((_route, { signal }) => {
-      seen.resolve(signal)
-
-      return 'value'
-    })
-  const other = createRoute({ name: 'other', path: '/other' }).addView(component)
-    .addLoader(() => 'other')
-  const resolved = createResolvedRoute(route)
-  const navigation = createRouterNavigation()
-  const detached = navigation.create()
-
-  detached.compute(resolved, getComputations(resolved))
-  detached.stage()
-  navigation.commit({ to: resolved, from: null })
-
-  const signal = await seen.promise
-
-  expect(signal.aborted).toBe(false)
-
-  navigation.commit({ to: createResolvedRoute(other), from: resolved })
-
-  expect(signal.aborted).toBe(true)
-})
-
-test('staging and committing the same instance preserves its computations', async () => {
-  const load = vi.fn((_route: unknown, { signal }: { signal: AbortSignal }) => signal)
-  const route = createResolvedRoute(createRoute({ path: '/' }).addLoader(load))
-  const navigation = createRouterNavigation()
-  const instance = navigation.create()
-  await Promise.all(instance.compute(route, getComputations(route)))
-  const signal = load.mock.results[0].value
-
-  instance.stage()
-  instance.stage()
-  await Promise.all(instance.commit({ to: route, from: null }))
-  instance.stage()
-  await Promise.all(instance.commit({ to: route, from: null }))
-
-  expect(signal.aborted).toBe(false)
-  expect(load).toHaveBeenCalledOnce()
-  await expect(navigation.getLoaderValue(loaderLocations(route.matches[0])[0], route)).resolves.toBe(signal)
-})
-
-test('staging another instance keeps the current navigation active', async () => {
-  const load = vi.fn((_route: unknown, { signal }: { signal: AbortSignal }) => signal)
-  const route = createResolvedRoute(createRoute({ path: '/' }).addLoader(load))
-  const navigation = createRouterNavigation()
-  const instance = navigation.create()
-  await Promise.all(instance.commit({ to: route, from: null }))
-  const signal = load.mock.results[0].value
-
-  instance.stage()
-  navigation.create().stage()
-
-  expect(signal.aborted).toBe(false)
-  await Promise.all(navigation.commit({ to: route, from: null }))
-  expect(signal.aborted).toBe(true)
-})
-
-test('an aborted navigation skips computation and filling', async () => {
-  const load = vi.fn(() => 'loaded')
-  const route = createResolvedRoute(createRoute({ path: '/' }).addLoader(load))
-  const navigation = createRouterNavigation()
-  const current = navigation.current()
-  current.dispose()
-
-  current.fill(route, [{ kind: 'loader', depth: 0, name: 'default', value: 'filled' }])
-  const values = current.compute(route, getComputations(route))
-
-  expect(values).toEqual([])
-  expect(load).not.toHaveBeenCalled()
-  expect(navigation.getValues(route)).toEqual([])
-})
-
-test('the current navigation shares explicitly supplied computations', async () => {
-  const attached = vi.fn(() => 'attached')
-  const pending = Promise.withResolvers<string>()
-  const run = vi.fn(() => pending.promise)
-  const route = createResolvedRoute(createRoute({ path: '/' }).addLoader(attached))
-  const computation = {
-    ...getComputations(route)[0],
-    key: 'extra',
-    name: 'extra',
+function createComputation(route: ResolvedRoute, run: Computation['run'], kind: DataKind = 'loader', name = 'default'): Computation {
+  return {
+    kind,
+    id: route.id,
+    name,
+    key: getDataKey(kind, route.id, name, route),
+    depth: 0,
     run,
+    routePrefetch: undefined,
+    prefetch: undefined,
+    transformer: undefined,
   }
-  const navigation = createRouterNavigation()
-  const current = navigation.current()
+}
 
-  const values = current.compute(route, [computation])
-  current.compute(route, [computation])
-
-  expect(current.data.get(computation.key)).toEqual({ status: 'RUNNING' })
-  expect(run).toHaveBeenCalledOnce()
-  expect(attached).not.toHaveBeenCalled()
-
-  pending.resolve('loaded')
-  await expect(values[0]).resolves.toEqual({ status: 'SUCCESS', value: 'loaded' })
-})
-
-test('a prefetched response is reported when its navigation becomes current', async () => {
-  const route = createResolvedRoute(createRoute({ path: '/' }).addLoader((_route, { replace }) => replace('/next')))
-  const onResponse = vi.fn()
-  const navigation = createRouterNavigation({ onResponse })
-  const detached = navigation.create()
-
-  await Promise.allSettled(detached.compute(route, getComputations(route)))
-
-  expect(onResponse).not.toHaveBeenCalled()
-  const from = createResolvedRoute(createRoute({ path: '/previous' }))
-
-  detached.stage()
-  navigation.commit({ to: route, from })
-  await flushPromises()
-
-  expect(onResponse).toHaveBeenCalledExactlyOnceWith({
-    response: { status: 'PUSH', to: ['/next', { replace: true }] },
-    to: route,
-    from,
-  })
-})
-
-test('discarded prefetch redirects do not affect the next navigation', async () => {
-  const prefetched = createResolvedRoute(createRoute({ path: '/prefetched' })
-    .addLoader((_route, { push }) => push('/old')))
-  const target = createResolvedRoute(createRoute({ path: '/target' }).addLoader(() => 'value'))
-  const onResponse = vi.fn()
-  const navigation = createRouterNavigation({ onResponse })
-  const detached = navigation.create()
-
-  await Promise.allSettled(detached.compute(prefetched, getComputations(prefetched)))
-  detached.dispose()
-  await Promise.all(navigation.commit({ to: target, from: null }))
-  await flushPromises()
-
-  expect(onResponse).not.toHaveBeenCalled()
-  await expect(navigation.getLoaderValue(loaderLocations(target.matches[0])[0], target)).resolves.toBe('value')
-})
-
-test('a loader started after commit reports its redirect', async () => {
+function createFixture(run: Computation['run'], kind: DataKind = 'loader'): { route: ResolvedRoute, computation: Computation } {
   const route = createResolvedRoute(createRoute({ path: '/' }))
-  const loaderRoute = createResolvedRoute(createRoute({ path: '/' }).addLoader((_route, { push }) => push('/target')))
-  const onResponse = vi.fn()
-  const navigation = createRouterNavigation({ onResponse })
-  const current = navigation.current()
+  const computation = createComputation(route, run, kind)
 
-  current.commit({ to: route, from: null })
-  current.compute(route, getComputations(loaderRoute))
-  await flushPromises()
+  registry.set(route.id, [computation])
 
-  expect(onResponse).toHaveBeenCalledExactlyOnceWith({
-    response: { status: 'PUSH', to: ['/target'] },
-    to: route,
-    from: null,
+  return { route, computation }
+}
+
+describe('reads', () => {
+  test.each(['loader', 'props'] as const)('reads pending and settled %s computations by location', async (kind) => {
+    const pending = Promise.withResolvers<string>()
+    const { route, computation } = createFixture(() => pending.promise, kind)
+    const navigation = createRouterNavigation()
+    navigation.commit({ to: route, from: null })
+
+    expect(navigation.getState(computation, route)).toEqual({ status: 'RUNNING' })
+    const response = navigation.subscribe(computation, route)
+    const value = navigation.getValue(computation, route)
+    pending.resolve('loaded')
+
+    await expect(response).resolves.toEqual({ status: 'SUCCESS', value: 'loaded' })
+    await expect(value).resolves.toBe('loaded')
+    expect(navigation.getState(computation, route)).toEqual({ status: 'SUCCESS', value: 'loaded' })
+  })
+
+  test.each(['loader', 'props'] as const)('%s value reads reject with the original error before and after settlement', async (kind) => {
+    const error = new Error('computation failed')
+    const pending = Promise.withResolvers<string>()
+    const { route, computation } = createFixture(() => pending.promise, kind)
+    const navigation = createRouterNavigation()
+    navigation.commit({ to: route, from: null })
+    const value = navigation.getValue(computation, route)
+    pending.reject(error)
+
+    await expect(value).rejects.toBe(error)
+    await expect(navigation.getValue(computation, route)).rejects.toBe(error)
+    await expect(navigation.subscribe(computation, route)).resolves.toEqual({ status: 'ERROR', source: kind, error })
+  })
+
+  test('getValues collects successful values across kinds', async () => {
+    const { route, computation } = createFixture(() => 'loaded')
+    const props = createComputation(route, () => ({ value: 'props' }), 'props')
+    registry.set(route.id, [computation, props])
+    const navigation = createRouterNavigation()
+    await Promise.all(navigation.commit({ to: route, from: null }))
+    const loaderValue = { kind: 'loader', depth: 0, name: 'default', value: 'loaded' }
+    const propsValue = { kind: 'props', depth: 0, name: 'default', value: { value: 'props' } }
+
+    expect(navigation.getValues(route)).toEqual([loaderValue, propsValue])
   })
 })
 
-test('stopping aborts current and staged computations and settles their readers', async () => {
-  const signals: AbortSignal[] = []
-  const route = createResolvedRoute(createRoute({ path: '/' }).addLoader((_route, { signal }) => {
-    signals.push(signal)
+describe('navigation lifetime', () => {
+  test('filled values are adopted instead of running their computation', async () => {
+    const run = vi.fn(() => 'computed')
+    const { route, computation } = createFixture(run)
+    const navigation = createRouterNavigation()
+    const prepared = navigation.create()
+    prepared.fill(route, [{ kind: 'loader', depth: 0, name: 'default', value: 'filled' }])
+    prepared.stage()
+    await Promise.all(navigation.commit({ to: route, from: null }))
 
-    return new Promise(() => {})
-  }))
-  const navigation = createRouterNavigation()
-  const current = navigation.current()
-  const staged = navigation.staged()
-  const [currentValue] = current.compute(route, getComputations(route))
-  const [stagedValue] = staged.compute(route, getComputations(route))
+    await expect(navigation.getValue(computation, route)).resolves.toBe('filled')
+    expect(run).not.toHaveBeenCalled()
+  })
 
-  navigation.stop()
+  test('repeated staging and commit adopt the same computation and signal', async () => {
+    const run = vi.fn<Computation['run']>(({ signal }) => signal)
+    const { route, computation } = createFixture(run)
+    const navigation = createRouterNavigation()
+    const prepared = navigation.create()
+    await Promise.all(prepared.compute(route, [computation]))
+    const signal = run.mock.calls[0][0].signal
+    prepared.stage()
+    prepared.stage()
+    await Promise.all(navigation.commit({ to: route, from: null }))
+    prepared.stage()
+    await Promise.all(prepared.commit({ to: route, from: null }))
 
-  expect(signals).toHaveLength(2)
-  expect(signals.every((signal) => signal.aborted)).toBe(true)
-  await expect(currentValue).rejects.toBeInstanceOf(NavigationAbandonedError)
-  await expect(stagedValue).rejects.toBeInstanceOf(NavigationAbandonedError)
+    expect(run).toHaveBeenCalledOnce()
+    expect(signal.aborted).toBe(false)
+    await expect(navigation.getValue(computation, route)).resolves.toBe(signal)
+
+    navigation.commit({ to: createFixture(() => 'next').route, from: route })
+    expect(signal.aborted).toBe(true)
+  })
+
+  test('staging a replacement preserves current values and signal until commit', async () => {
+    const run = vi.fn<Computation['run']>(() => 'current')
+    const current = createFixture(run)
+    const next = createFixture(() => 'next')
+    const navigation = createRouterNavigation()
+    await Promise.all(navigation.commit({ to: current.route, from: null }))
+    const signal = run.mock.calls[0][0].signal
+    const prepared = navigation.create()
+    await Promise.all(prepared.compute(next.route, [next.computation]))
+    prepared.stage()
+
+    expect(signal.aborted).toBe(false)
+    await expect(navigation.getValue(current.computation, current.route)).resolves.toBe('current')
+    await Promise.all(navigation.commit({ to: next.route, from: current.route }))
+    expect(signal.aborted).toBe(true)
+    await expect(navigation.getValue(next.computation, next.route)).resolves.toBe('next')
+  })
+
+  test('disposing a detached navigation aborts its computation signal', async () => {
+    const run = vi.fn<Computation['run']>(({ signal }) => signal)
+    const { route, computation } = createFixture(run)
+    const navigation = createRouterNavigation()
+    const prepared = navigation.create()
+    await Promise.all(prepared.compute(route, [computation]))
+    const signal = run.mock.calls[0][0].signal
+
+    prepared.dispose()
+
+    expect(signal.aborted).toBe(true)
+  })
+
+  test('disposed navigations skip computation, filling, and commit', () => {
+    const run = vi.fn()
+    const { route, computation } = createFixture(run)
+    const navigation = createRouterNavigation()
+    const prepared = navigation.create()
+    prepared.dispose()
+    prepared.fill(route, [{ kind: 'loader', depth: 0, name: 'default', value: 'filled' }])
+
+    expect(prepared.compute(route, [computation])).toEqual([])
+    expect(prepared.commit({ to: route, from: null })).toEqual([])
+    expect(run).not.toHaveBeenCalled()
+    expect(prepared.getState(computation, route)).toEqual({ status: 'ABANDONED' })
+  })
+
+  test('compute shares explicitly supplied work without running other registered computations', async () => {
+    const registered = vi.fn()
+    const { route } = createFixture(registered)
+    const pending = Promise.withResolvers<string>()
+    const run = vi.fn(() => pending.promise)
+    const extra = createComputation(route, run, 'props', 'extra')
+    const navigation = createRouterNavigation()
+    const current = navigation.current()
+    const [value] = current.compute(route, [extra])
+    current.compute(route, [extra])
+
+    expect(current.getState(extra, route)).toEqual({ status: 'RUNNING' })
+    expect(run).toHaveBeenCalledOnce()
+    expect(registered).not.toHaveBeenCalled()
+    pending.resolve('loaded')
+    await expect(value).resolves.toEqual({ status: 'SUCCESS', value: 'loaded' })
+  })
+
+  test('stop aborts current and staged work and rejects pending and subsequent reads', async () => {
+    const run = vi.fn(() => new Promise(() => {}))
+    const { route, computation } = createFixture(run)
+    const navigation = createRouterNavigation()
+    const [current] = navigation.current().compute(route, [computation])
+    const [staged] = navigation.staged().compute(route, [computation])
+
+    navigation.stop()
+
+    expect(run.mock.calls).toHaveLength(2)
+    await expect(current).rejects.toBeInstanceOf(NavigationAbandonedError)
+    await expect(staged).rejects.toBeInstanceOf(NavigationAbandonedError)
+    expect(navigation.getState(computation, route)).toEqual({ status: 'ABANDONED' })
+    await expect(navigation.getValue(computation, route)).rejects.toBeInstanceOf(NavigationAbandonedError)
+  })
+
+  test('settled values remain readable after abandonment', async () => {
+    const { route, computation } = createFixture(() => 'kept')
+    const navigation = createRouterNavigation()
+    const current = navigation.current()
+    await Promise.all(current.commit({ to: route, from: null }))
+    current.abandon()
+
+    expect(navigation.getState(computation, route)).toEqual({ status: 'SUCCESS', value: 'kept' })
+    await expect(navigation.getValue(computation, route)).resolves.toBe('kept')
+  })
 })
 
-test('an unexpected error waits for commit without preventing a later redirect', async () => {
-  const error = new Error('failed loader')
-  const pending = Promise.withResolvers<void>()
-  const route = createResolvedRoute(createRoute({ path: '/' })
-    .addLoader(() => {
+const actions = [
+  new ContextPushError(['/next']),
+  new ContextRejectionError('NotFound'),
+]
+
+describe('response delivery', () => {
+  test.each(actions)('subscriptions preserve $response.status and report it only after commit', async (error) => {
+    const { route, computation } = createFixture(() => {
       throw error
-    }, { name: 'broken' })
-    .addLoader(async (_route, { push }) => {
+    })
+    const onResponse = vi.fn()
+    const navigation = createRouterNavigation({ onResponse })
+    const prepared = navigation.create()
+    await Promise.all(prepared.compute(route, [computation]))
+
+    await expect(prepared.subscribe(computation, route)).resolves.toEqual(error.response)
+    expect(onResponse).not.toHaveBeenCalled()
+    prepared.commit({ to: route, from: null })
+    await flushPromises()
+    expect(onResponse).toHaveBeenCalledExactlyOnceWith({ response: error.response, to: route, from: null })
+  })
+
+  test('prefetched errors are stored without reporting until commit', async () => {
+    const error = new Error('computation failed')
+    const { route, computation } = createFixture(() => {
+      throw error
+    })
+    const onResponse = vi.fn()
+    const navigation = createRouterNavigation({ onResponse })
+    const prepared = navigation.create()
+    prepared.compute(route, [computation])
+    await flushPromises()
+
+    expect(prepared.getState(computation, route)).toEqual({ status: 'ERROR', source: 'loader', error })
+    expect(onResponse).not.toHaveBeenCalled()
+    prepared.commit({ to: route, from: null })
+    await flushPromises()
+    expect(onResponse).toHaveBeenCalledExactlyOnceWith({ response: { status: 'ERROR', source: 'loader', error }, to: route, from: null })
+  })
+
+  test('an error does not prevent a later navigation action', async () => {
+    const error = new Error('failed')
+    const pending = Promise.withResolvers<void>()
+    const { route, computation } = createFixture(() => {
+      throw error
+    })
+    const later = createComputation(route, async () => {
       await pending.promise
-      push('/next')
-    }, { name: 'later' }))
-  const onResponse = vi.fn()
-  const navigation = createRouterNavigation({ onResponse })
-  const instance = navigation.staged()
-  instance.compute(route, getComputations(route))
-  await flushPromises()
-  expect(onResponse).not.toHaveBeenCalled()
+      throw new ContextPushError(['/next'])
+    }, 'props')
+    registry.set(route.id, [computation, later])
+    const onResponse = vi.fn()
+    const navigation = createRouterNavigation({ onResponse })
+    navigation.commit({ to: route, from: null })
+    await flushPromises()
+    expect(onResponse).toHaveBeenCalledOnce()
 
-  instance.commit({ to: route, from: null })
-  await flushPromises()
-  expect(onResponse).toHaveBeenCalledExactlyOnceWith({
-    response: { status: 'ERROR', error, source: 'loader' },
-    to: route,
-    from: null,
+    pending.resolve()
+    await flushPromises()
+    expect(onResponse).toHaveBeenCalledTimes(2)
+    expect(onResponse).toHaveBeenLastCalledWith({ response: { status: 'PUSH', to: ['/next'] }, to: route, from: null })
   })
 
-  pending.resolve()
-  await flushPromises()
-  expect(onResponse).toHaveBeenCalledTimes(2)
-  expect(onResponse).toHaveBeenLastCalledWith({
-    response: { status: 'PUSH', to: ['/next'] },
-    to: route,
-    from: null,
-  })
-})
-
-test('disposing a committed navigation prevents delivery of its settled redirect', async () => {
-  const route = createResolvedRoute(createRoute({ path: '/' }).addLoader((_route, { push }) => push('/next')))
-  const onResponse = vi.fn()
-  const navigation = createRouterNavigation({ onResponse })
-  const instance = navigation.staged()
-
-  instance.commit({ to: route, from: null })
-  instance.dispose()
-  await flushPromises()
-
-  expect(onResponse).not.toHaveBeenCalled()
-})
-
-test('a redirect abandons running loaders without a response handler', async () => {
-  const ready = Promise.withResolvers<void>()
-  const pending = Promise.withResolvers<string>()
-  const started = Promise.withResolvers<AbortSignal>()
-  const route = createResolvedRoute(createRoute({ path: '/' })
-    .addLoader(async (_route, { push }) => {
-      await ready.promise
-      push('/next')
-    }, { name: 'redirect' })
-    .addLoader((_route, { signal }) => {
-      started.resolve(signal)
-      return pending.promise
-    }, { name: 'pending' }))
-  const navigation = createRouterNavigation()
-  const current = navigation.create()
-  const [redirect, value] = current.commit({ to: route, from: null })
-  const signal = await started.promise
-
-  expect(signal.aborted).toBe(false)
-  ready.resolve()
-
-  await expect(redirect).resolves.toEqual({ status: 'PUSH', to: ['/next'] })
-  await expect(value).rejects.toBeInstanceOf(NavigationAbandonedError)
-  expect(signal.aborted).toBe(true)
-})
-
-test.each(['getLoaderState', 'getLoaderValue'] as const)('%s rejects props locations at runtime', (method) => {
-  const onResponse = vi.fn()
-  const navigation = createRouterNavigation({ onResponse })
-  const route = createResolvedRoute(createRoute({ path: '/' }))
-
-  expect(() => {
-    // @ts-expect-error props locations are also rejected when bypassing the type check
-    navigation[method]({ kind: 'props', id: route.id, name: 'default' }, route)
-  }).toThrow(new TypeError('Expected a loader location'))
-})
-
-test('loader reads after stop report abandonment', async () => {
-  const route = createRoute({ name: 'home', path: '/' }).addLoader(() => 'loaded')
-  const resolved = createResolvedRoute(route)
-  const navigation = createRouterNavigation()
-  const current = navigation.create()
-  await Promise.all(current.commit({ to: resolved, from: null }))
-  const [location] = loaderLocations(resolved.matched)
-
-  navigation.stop()
-
-  expect(navigation.getLoaderState(location, resolved)).toEqual({
-    status: 'ABANDONED',
-  })
-  const settled = vi.fn()
-  navigation.getLoaderValue(location, resolved).then(settled, settled)
-  await flushPromises()
-  expect(settled).not.toHaveBeenCalled()
-})
-
-test('settled loader values remain readable after abandonment', async () => {
-  const route = createResolvedRoute(createRoute({ path: '/' }).addLoader(() => 'kept'))
-  const navigation = createRouterNavigation()
-  const current = navigation.create()
-  await Promise.all(current.commit({ to: route, from: null }))
-  const [location] = loaderLocations(route.matched)
-  current.abandon()
-
-  expect(navigation.getLoaderState(location, route)).toEqual({ status: 'SUCCESS', value: 'kept' })
-  await expect(navigation.getLoaderValue(location, route)).resolves.toBe('kept')
-})
-
-test.each(['push', 'reject'] as const)('a loader %s unwinds callback dependencies without reporting errors', async (action) => {
-  const gate = Promise.withResolvers<void>()
-  const cleaned = vi.fn()
-  const continued = vi.fn()
-  const caught: unknown[] = []
-  const onResponse = vi.fn()
-  const parent = createRoute({ path: '/' }).addLoader(async (_route, context) => {
-    await gate.promise
-
-    if (action === 'push') {
-      context.push('/next')
-    } else {
-      context.reject('NotFound')
-    }
-  }, { name: 'base' })
-    .addView(component, {
-      props: async (route) => {
-        try {
-          await route.getData('base')
-          continued()
-        } catch (error) {
-          caught.push(error)
-          throw error
-        } finally {
-          cleaned('route.getData()')
-        }
-      },
+  test('discarded prefetched responses do not affect the next navigation', async () => {
+    const prefetched = createFixture(() => {
+      throw new ContextPushError(['/old'])
     })
-  const child = createRoute({ parent, path: 'child' }).addLoader(async (_route, { parent }) => {
-    try {
-      await parent.getData('base')
-      continued()
-    } finally {
-      cleaned('parent.getData()')
-    }
-  }, { name: 'child' })
-    .addView(component, {
-      props: async (_route, { parent }) => {
-        try {
-          await parent.getProps()
-          continued()
-        } finally {
-          cleaned('parent.getProps()')
-        }
-      },
-    })
-  const route = createResolvedRoute(child)
-  const navigation = createRouterNavigation({ onResponse })
-  navigation.commit({ to: route, from: null })
-  gate.resolve()
-  await flushPromises()
+    const target = createFixture(() => 'target')
+    const onResponse = vi.fn()
+    const navigation = createRouterNavigation({ onResponse })
+    const prepared = navigation.create()
+    await Promise.all(prepared.compute(prefetched.route, [prefetched.computation]))
+    prepared.dispose()
+    await Promise.all(navigation.commit({ to: target.route, from: null }))
+    await flushPromises()
 
-  expect(cleaned).toHaveBeenCalledTimes(3)
-  expect(continued).not.toHaveBeenCalled()
-  expect(caught).toEqual([expect.any(NavigationAbandonedError)])
-  expect(onResponse).toHaveBeenCalledTimes(1)
-  expect(onResponse.mock.calls[0][0].response.status).toBe(action === 'push' ? 'PUSH' : 'REJECT')
+    expect(onResponse).not.toHaveBeenCalled()
+    await expect(navigation.getValue(target.computation, target.route)).resolves.toBe('target')
+  })
+
+  test('disposing immediately after commit prevents delivery of a settled response', async () => {
+    const { route } = createFixture(() => {
+      throw new ContextPushError(['/next'])
+    })
+    const onResponse = vi.fn()
+    const navigation = createRouterNavigation({ onResponse })
+    navigation.commit({ to: route, from: null })
+    navigation.current().dispose()
+    await flushPromises()
+
+    expect(onResponse).not.toHaveBeenCalled()
+  })
+
+  test('late work started on a committed navigation reports its response', async () => {
+    const { route } = createFixture(() => 'initial')
+    const onResponse = vi.fn()
+    const navigation = createRouterNavigation({ onResponse })
+    await Promise.all(navigation.commit({ to: route, from: null }))
+    const late = createComputation(route, () => {
+      throw new ContextPushError(['/next'])
+    }, 'props', 'late')
+    await Promise.all(navigation.current().compute(route, [late]))
+    await flushPromises()
+
+    expect(onResponse).toHaveBeenCalledExactlyOnceWith({ response: { status: 'PUSH', to: ['/next'] }, to: route, from: null })
+  })
 })
 
-test('discarding a prefetch unwinds a callback even while the current store has no parent value', async () => {
-  const cleaned = vi.fn()
-  const parent = createRoute({ path: '/' }).addView(component, { props: () => new Promise(() => {}) })
-  const child = createRoute({ parent, path: 'child' }).addView(component, {
-    props: async (_route, { parent }) => {
+describe('dependencies', () => {
+  test('getValue reads from the computation navigation after subscriptions are queued', async () => {
+    const warn = vi.spyOn(waitingWarnings, 'warnWaitingOnUncomputedValue').mockImplementation(() => {})
+    const { route, computation } = createFixture(() => 'loaded')
+    const dependent = createComputation(route, (context) => {
+      return context.getValue(computation)
+    }, 'props')
+    registry.set(route.id, [dependent, computation])
+    const navigation = createRouterNavigation()
+    const prepared = navigation.create()
+    await Promise.all(prepared.compute(route, [dependent, computation]))
+
+    await expect(prepared.getValue(dependent, route)).resolves.toBe('loaded')
+    expect(warn).not.toHaveBeenCalled()
+  })
+
+  test('disposing a prefetch unwinds a pending dependency', async () => {
+    const cleaned = vi.fn()
+    const { route, computation } = createFixture(() => new Promise(() => {}))
+    const dependent = createComputation(route, async (context) => {
       try {
-        await parent.getProps()
+        await context.getValue(computation)
       } finally {
         cleaned()
       }
-    },
+    }, 'props')
+    const navigation = createRouterNavigation()
+    const prepared = navigation.create()
+    const work = prepared.compute(route, [computation, dependent])
+    prepared.dispose()
+    await Promise.allSettled(work)
+    await flushPromises()
+
+    expect(cleaned).toHaveBeenCalledOnce()
   })
-  const route = createResolvedRoute(child)
-  const navigation = createRouterNavigation()
-  const prefetch = navigation.create()
-  const values = prefetch.compute(route, getComputations(route))
 
-  prefetch.dispose()
-  await Promise.allSettled(values)
-  await flushPromises()
+  test.each(actions)('$response.status abandons pending computations and unwinds their dependencies', async (error) => {
+    const gate = Promise.withResolvers<void>()
+    const cleaned = vi.fn()
+    const continued = vi.fn()
+    const { route, computation } = createFixture(async () => {
+      await gate.promise
+      throw error
+    })
+    const dependent = createComputation(route, async ({ getValue }) => {
+      try {
+        await getValue(computation)
+        continued()
+      } finally {
+        cleaned()
+      }
+    }, 'props')
+    registry.set(route.id, [computation, dependent])
+    const navigation = createRouterNavigation()
+    const work = navigation.commit({ to: route, from: null })
+    gate.resolve()
+    await Promise.allSettled(work)
+    await flushPromises()
 
-  expect(cleaned).toHaveBeenCalledTimes(1)
+    expect(cleaned).toHaveBeenCalledOnce()
+    expect(continued).not.toHaveBeenCalled()
+    expect(navigation.getState(dependent, route)).toEqual({ status: 'ABANDONED' })
+  })
 })

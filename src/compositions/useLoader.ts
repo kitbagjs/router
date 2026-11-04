@@ -53,7 +53,7 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunct
       }
 
       const location = getFallbackLoaderLocation(loader)
-      const state = navigation.getLoaderState(location, router.route)
+      const state = navigation.getState(location, router.route)
 
       if (state.status !== 'MISSING') {
         return location
@@ -127,7 +127,13 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunct
         return { status: 'ERROR', error: selection.value.error, source: 'loader' }
       }
 
-      return navigation.getLoaderState(selection.value.location, router.route)
+      const result = navigation.getState(selection.value.location, router.route)
+
+      if (result.status === 'PUSH' || result.status === 'REJECT') {
+        return { status: 'ABANDONED' }
+      }
+
+      return result
     })
 
     const data = computed(() => {

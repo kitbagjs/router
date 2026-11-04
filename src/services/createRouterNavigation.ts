@@ -1,26 +1,16 @@
-import { markRaw } from 'vue'
-import { getRouteLoaderLocation } from '@/services/getRouteLoaderLocation'
-import { ResolvedRoute } from '@/types/resolved'
-import { DEFAULT_VIEW_NAME } from './routeViews'
-import { DEFAULT_LOADER_NAME } from './addLoader'
-import { toLegacyValues } from '@/utilities/toLegacyValues'
 import { unwrapComputationResponse } from '@/utilities/unwrapComputationResponse'
+import { ResolvedRoute } from '@/types/resolved'
 import { ContextPushError } from '@/errors/contextPushError'
-import { LoaderDataAccessError } from '@/errors/loaderDataAccessError'
 import { ContextRejectionError } from '@/errors/contextRejectionError'
 import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
-import { DataRecord } from '@/types/data'
-import { PropsCallbackParent } from '@/types/props'
 import { createVueAppStore, HasVueAppStore } from './createVueAppStore'
 import { CallbackContextError, CallbackContextPush, CallbackContextReject, CallbackContextResponse } from '@/types/callbackContext'
-import { createRouterCallbackContext } from './createRouterCallbackContext'
 import { createDataStore, DataResult, DataStore, DataStoreSettledEvent } from './createDataStore'
 import { DataKind, getDataKey } from './getDataKey'
-import { PropsResult } from '@/utilities/props'
-import { warn } from '@/utilities/warn'
 import { MaybePromise } from '@/types/utilities'
 import { isPromise } from '@/utilities/promises'
-import { Computation, getComputations, isKind, loaderLocations, propsLocations, ValueLocation } from './getComputations'
+import { Computation, getComputations, ValueLocation } from './getComputations'
+import { warnWaitingOnUncomputedValue } from '@/services/warnWaitingOnUncomputedValue'
 
 export type RouterNavigationResponse = CallbackContextPush | CallbackContextReject | CallbackContextError
 
@@ -51,7 +41,13 @@ type RouterNavigationStoreSlots = {
   staged: RouterNavigationStore,
 }
 
-export type RouterNavigationStore = {
+export type NavigationData = {
+  getState: (location: ValueLocation, route: ResolvedRoute) => DataResult,
+  subscribe: (location: ValueLocation, route: ResolvedRoute) => Promise<CallbackContextResponse>,
+  getValue: (location: ValueLocation, route: ResolvedRoute) => Promise<unknown>,
+}
+
+export type RouterNavigationStore = NavigationData & {
   data: DataStore,
   /**
    * Disposes of the previously staged navigation and sets this navigation as staged.
@@ -80,7 +76,7 @@ export type RouteValue = {
   value: unknown,
 }
 
-export type RouterNavigationStores = HasVueAppStore & {
+export type RouterNavigationStores = HasVueAppStore & NavigationData & {
   current: () => RouterNavigationStore,
   stop: () => void,
   create: () => RouterNavigationStore,
@@ -97,13 +93,6 @@ export type RouterNavigationStores = HasVueAppStore & {
    * The values currently settled in the store.
    */
   getValues: (route: ResolvedRoute) => RouteValue[],
-  getProps: (id: string, name: string, route: ResolvedRoute) => MaybePromise<PropsResult>,
-  /**
-   * Loader promises keyed by name, resolved against the current navigation on each read.
-   */
-  getRouteData: (route: ResolvedRoute) => DataRecord,
-  getLoaderState: (location: ValueLocation<'loader'>, route: ResolvedRoute) => DataResult,
-  getLoaderValue: (location: ValueLocation<'loader'>, route: ResolvedRoute) => Promise<unknown>,
 }
 
 export function createRouterNavigation({ onResponse }: CreateRouterNavigationOptions = {}): RouterNavigationStores {
@@ -175,20 +164,12 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
     function run(computation: Computation, route: ResolvedRoute): MaybePromise<CallbackContextResponse> {
       try {
-        const { push, replace, reject, update } = createRouterCallbackContext({ to: route })
-
-        const context: CallbackValueContext = {
-          store: data,
+        const context: CallbackValueContext = { store: data, signal: controller.signal }
+        const getValue = (location: ValueLocation): Promise<unknown> => getCallbackValue(location, route, context)
+        const value = runWithContext(() => computation.run({
+          to: route,
           signal: controller.signal,
-        }
-
-        const value = runWithContext(() => computation.run(toCallbackRoute(computation, route, context), {
-          push,
-          replace,
-          reject,
-          update,
-          signal: controller.signal,
-          parent: getParentContext(route, computation.depth, context),
+          getValue,
         }))
 
         if (isPromise(value)) {
@@ -292,8 +273,25 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
       navigations.staged = instance
     }
 
+    const getState: NavigationData['getState'] = (location, route) => {
+      const key = getDataKey(location.kind, location.id, location.name, route)
+
+      return data.get(key)
+    }
+
+    const subscribe: NavigationData['subscribe'] = (location, route) => {
+      const key = getDataKey(location.kind, location.id, location.name, route)
+
+      return data.subscribe(key)
+    }
+
+    const getValue: NavigationData['getValue'] = (location, route) => toDataValue(subscribe(location, route))
+
     const instance: RouterNavigationStore = {
       data,
+      getState,
+      subscribe,
+      getValue,
       compute,
       fill,
       stage,
@@ -316,6 +314,12 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
   const commit: RouterNavigationStores['commit'] = (options) => navigations.staged.commit(options)
 
+  const getState: NavigationData['getState'] = (location, route) => navigations.current.getState(location, route)
+
+  const subscribe: NavigationData['subscribe'] = (location, route) => navigations.current.subscribe(location, route)
+
+  const getValue: NavigationData['getValue'] = (location, route) => navigations.current.getValue(location, route)
+
   const getValues: RouterNavigationStores['getValues'] = (route) => {
     const store = navigations.current.data
 
@@ -328,189 +332,6 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
       return [{ kind, depth, name, value: result.value }]
     })
-  }
-
-  const getProps: RouterNavigationStores['getProps'] = (id, name, route) => {
-    const match = route.matches.find((match) => match.id === id)
-
-    if (!match?.views[name]?.props) {
-      return NO_PROPS
-    }
-
-    const key = getDataKey('props', id, name, route)
-    const result = navigations.current.data.get(key)
-
-    switch (result.status) {
-      case 'MISSING':
-        return NO_PROPS
-
-      case 'PENDING':
-      case 'RUNNING':
-        return toResult(navigations.current.data, key)
-
-      case 'ABANDONED':
-        return { kind: 'abandoned' }
-
-      case 'SUCCESS':
-      case 'ERROR':
-      case 'PUSH':
-      case 'REJECT':
-        return toPropsResult(result)
-      default:
-        return result satisfies never
-    }
-  }
-
-  function getRouteData(route: ResolvedRoute): DataRecord {
-    const loaders = getComputations(route).filter(isKind('loader'))
-
-    return toValues(loaders, (location) => getComponentValue(location, route))
-  }
-
-  const getLoaderState: RouterNavigationStores['getLoaderState'] = (location: ValueLocation, route) => {
-    if (location.kind !== 'loader') {
-      throw new TypeError('Expected a loader location')
-    }
-
-    const result = navigations.current.data.get(getDataKey(location.kind, location.id, location.name, route))
-
-    if (result.status === 'PUSH' || result.status === 'REJECT') {
-      return { status: 'ABANDONED' }
-    }
-
-    return result
-  }
-
-  const getLoaderValue: RouterNavigationStores['getLoaderValue'] = (location: ValueLocation, route) => {
-    if (location.kind !== 'loader') {
-      throw new TypeError('Expected a loader location')
-    }
-
-    return getComponentValue(location, route)
-  }
-
-  /**
-   * Loaders cannot read their own route's data, which could create circular dependencies.
-   * They can read parent data instead. Props callbacks read data from their computation store.
-   * The proxy avoids subscribing to loader data until a callback calls route.getData().
-   */
-  function toCallbackRoute({ kind, name }: Computation, route: ResolvedRoute, context: CallbackValueContext): ResolvedRoute {
-    function getData(name = DEFAULT_LOADER_NAME): Promise<unknown> {
-      const location = getRouteLoaderLocation(route, name)
-
-      return getCallbackValue(location, route, context)
-    }
-
-    return new Proxy(route, {
-      get(target, property, receiver) {
-        if (property !== 'data' && property !== 'getData') {
-          return Reflect.get(target, property, receiver)
-        }
-
-        if (kind === 'loader') {
-          throw new LoaderDataAccessError(name)
-        }
-
-        if (property === 'data') {
-          const loaders = getComputations(route).filter(isKind('loader'))
-          const values = toValues(loaders, (location) => getCallbackValue(location, route, context))
-
-          return toLegacyValues(values)
-        }
-
-        return getData
-      },
-    })
-  }
-
-  /**
-   * The parent context for the callback at the given depth. Resolved per depth rather than from the last
-   * match: every view in a nested route gets its own parent, not the resolved route's parent.
-   */
-  function getParentContext(route: ResolvedRoute, depth: number, context: CallbackValueContext): PropsCallbackParent {
-    if (depth === 0) {
-      return
-    }
-
-    const parentMatch = route.matches[depth - 1]
-    const { name: parentName = '' } = parentMatch
-
-    return {
-      name: parentName,
-      getData(name = DEFAULT_LOADER_NAME) {
-        const location = getRouteLoaderLocation(route, name, route.matches.slice(0, depth))
-
-        return getCallbackValue(location, route, context)
-      },
-      getProps(name: string = DEFAULT_VIEW_NAME) {
-        const view = parentMatch.views[name]
-
-        if (!Object.hasOwn(parentMatch.views, name) || !view.props) {
-          throw new TypeError(`Parent route "${parentName}" has no props getter named "${name}"`)
-        }
-
-        return getCallbackValue({ kind: 'props', id: parentMatch.id, name }, route, context)
-      },
-      get props() {
-        const values = toValues(propsLocations(parentMatch), (location) => getCallbackValue(location, route, context))
-
-        return toLegacyValues(values)
-      },
-      get data() {
-        const values = toValues(loaderLocations(parentMatch), (location) => getCallbackValue(location, route, context))
-
-        return toLegacyValues(values)
-      },
-    }
-  }
-
-  /**
-   * Named promises are read lazily so only requested values subscribe to the computation store.
-   */
-  function toValues(locations: ValueLocation[], read: (location: ValueLocation) => Promise<unknown>): DataRecord {
-    const find = (property: string | symbol): ValueLocation | undefined => locations.find(({ name }) => name === property)
-
-    const values: DataRecord = {}
-
-    return markRaw(new Proxy(values, {
-      get(target, property) {
-        const location = find(property)
-
-        if (location) {
-          return read(location)
-        }
-
-        return Reflect.get(target, property)
-      },
-      has(target, property) {
-        return Boolean(find(property)) || Reflect.has(target, property)
-      },
-      ownKeys() {
-        return locations.map(({ name }) => name)
-      },
-      getOwnPropertyDescriptor(target, property) {
-        const location = find(property)
-
-        if (!location) {
-          return Reflect.getOwnPropertyDescriptor(target, property)
-        }
-
-        return {
-          configurable: true,
-          enumerable: true,
-          value: read(location),
-        }
-      },
-    }))
-  }
-
-  function getComponentValue(location: ValueLocation, route: ResolvedRoute): Promise<unknown> {
-    const key = getDataKey(location.kind, location.id, location.name, route)
-    const value = toComponentValue(navigations.current.data.subscribe(key))
-
-    value.catch(() => {})
-
-    return value
   }
 
   function getCallbackValue(location: ValueLocation, route: ResolvedRoute, { store, signal }: CallbackValueContext): Promise<unknown> {
@@ -545,62 +366,11 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     staged,
     commit,
     getValues,
-    getProps,
-    getRouteData,
-    getLoaderState,
-    getLoaderValue,
+    getState,
+    subscribe,
+    getValue,
     setVueApp,
   }
-}
-
-/**
- * The first source to produce a value. Both failing surfaces a real callback error over an abandonment,
- * since abandonment only says nobody is computing that source any more.
- */
-async function firstToArrive(sources: Promise<unknown>[]): Promise<unknown> {
-  try {
-    return await Promise.any(sources)
-  } catch (error) {
-    if (error instanceof AggregateError) {
-      throw error.errors.find((reason) => !(reason instanceof NavigationAbandonedError)) ?? error.errors[0]
-    }
-
-    throw error
-  }
-}
-
-/**
- * What a view with no props getter renders with, since such a view stores nothing.
- */
-const NO_PROPS: PropsResult = { kind: 'value', value: undefined }
-
-/**
- * The render layer expects every outcome as a value it can inspect, so a rejection is folded back into a
- * result rather than being handed on as one.
- */
-async function toResult(store: DataStore, key: string): Promise<PropsResult> {
-  try {
-    return toPropsResult(await store.subscribe(key))
-  } catch (error) {
-    const result = store.get(key)
-
-    if (result.status === 'ABANDONED') {
-      return { kind: 'abandoned' }
-    }
-
-    throw error
-  }
-}
-
-function warnWaitingOnUncomputedValue({ kind, name }: ValueLocation, route: ResolvedRoute): void {
-  const routeName = route.name || 'unknown'
-  const value = kind === 'props' ? `props "${name}"` : `loader data "${name}"`
-
-  warn(`
-    Waiting on ${value} for route "${routeName}" before anything is computing it.
-    It cannot resolve until it is computed — by its own prefetch strategy, or by navigating. When
-    prefetching, prefetch it with the same strategy to avoid stalling here.
-  `)
 }
 
 function toDataValue(value: Promise<CallbackContextResponse>): Promise<unknown> {
@@ -609,30 +379,6 @@ function toDataValue(value: Promise<CallbackContextResponse>): Promise<unknown> 
   unwrapped.catch(() => {})
 
   return unwrapped
-}
-
-function toPropsResult(response: CallbackContextResponse): PropsResult {
-  if (response.status === 'PUSH' || response.status === 'REJECT') {
-    return { kind: 'abandoned' }
-  }
-
-  try {
-    return { kind: 'value', value: unwrapComputationResponse(response) }
-  } catch (error) {
-    return { kind: 'error', error }
-  }
-}
-
-async function toComponentValue(response: Promise<CallbackContextResponse>): Promise<unknown> {
-  try {
-    return await toDataValue(response)
-  } catch (error) {
-    if (error instanceof NavigationAbandonedError) {
-      return new Promise<never>(() => {})
-    }
-
-    throw error
-  }
 }
 
 async function waitForDependency(sources: Promise<unknown>[], signal: AbortSignal): Promise<unknown> {
@@ -655,5 +401,21 @@ async function waitForDependency(sources: Promise<unknown>[], signal: AbortSigna
     ])
   } finally {
     signal.removeEventListener('abort', onAbort)
+  }
+}
+
+/**
+ * The first source to produce a value. Both failing surfaces a real callback error over an abandonment,
+ * since abandonment only says nobody is computing that source any more.
+ */
+async function firstToArrive(sources: Promise<unknown>[]): Promise<unknown> {
+  try {
+    return await Promise.any(sources)
+  } catch (error) {
+    if (error instanceof AggregateError) {
+      throw error.errors.find((reason) => !(reason instanceof NavigationAbandonedError)) ?? error.errors[0]
+    }
+
+    throw error
   }
 }
