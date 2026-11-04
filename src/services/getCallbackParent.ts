@@ -34,7 +34,7 @@ export function getCallbackParent(depth: number, { to: route, getValue }: GetCal
   function getProps(name: string = DEFAULT_VIEW_NAME): Promise<unknown> {
     const view = parentMatch.views[name]
 
-    if (!Object.hasOwn(parentMatch.views, name) || !view.props) {
+    if (!view?.props) {
       throw new TypeError(`Parent route "${parentName}" has no props getter named "${name}"`)
     }
 
