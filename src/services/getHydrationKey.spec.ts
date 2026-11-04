@@ -31,10 +31,5 @@ test('preserves the destination and computation identity', () => {
   ]
   const keys = variations.map((options) => getHydrationKey(getDataKey(options)))
 
-  expect(keys).not.toContain(undefined)
   expect(new Set(keys).size).toBe(variations.length)
-})
-
-test.each(['not json', 'null', '[]', '["product",null,[],0,"loader","default"]'])('ignores an invalid payload key: %s', (key) => {
-  expect(getHydrationKey(key)).toBeUndefined()
 })

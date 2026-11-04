@@ -4,6 +4,7 @@ import { getComputations } from './getComputations'
 import { createRouterNavigation } from './createRouterNavigation'
 import { expect, test, vi } from 'vitest'
 import { decodePayloadValues, encodePayloadValues, isRouterPayload } from '@/services/payload'
+import { getDataKey } from '@/services/getDataKey'
 
 test('a payload is one of the two kinds the server renders', () => {
   expect(isRouterPayload({ kind: 'reject', url: '/', rejection: 'NotFound' })).toBe(true)
@@ -51,10 +52,11 @@ test('decodes matching server values with client transformers and full client ke
   const client = createResolvedRoute(route, {}, { hash: 'details', state: { page: 2 } })
   const [serverParent, serverChild] = getComputations(server)
   const [clientParent, clientChild] = getComputations(client)
+  const unrelatedKey = getDataKey({ route: server, depth: 1, kind: 'loader', name: 'other' })
 
   const decoded = decodePayloadValues(client, [
     { key: serverChild.key, encoded: '[["a",1]]' },
-    { key: 'unknown', encoded: 'ignored' },
+    { key: unrelatedKey, encoded: 'ignored' },
     { key: serverParent.key, encoded: '"from server"' },
   ])
 
