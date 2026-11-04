@@ -1,12 +1,13 @@
 import { createCallbackRoute } from '@/services/createCallbackRoute'
-import { createComputation } from '@/services/createComputation'
+import { getDataKey } from '@/services/getDataKey'
 import { createRouteTags } from '@/services/createRouteTags'
 import { getCallbackParent } from '@/services/getCallbackParent'
-import { Computation, CreateRouteComputationOptions } from '@/types/computation'
+import { Computation, CreateComputationOptions } from '@/types/computation'
 import { isPromise } from '@/utilities/promises'
 
-export function createTagsComputation(options: CreateRouteComputationOptions): Computation {
-  const { location, callback } = options
+export function createTagsComputation(options: CreateComputationOptions<'tags'>): Computation {
+  const { location, route, callback, routePrefetch, prefetch, transformer } = options
+  const key = getDataKey({ ...location, route })
   const run: Computation['run'] = (context) => {
     const { to, signal, subscribe } = context
     const route = createCallbackRoute(context)
@@ -21,5 +22,5 @@ export function createTagsComputation(options: CreateRouteComputationOptions): C
     return tags.operations
   }
 
-  return createComputation({ ...options, run })
+  return { ...location, key, run, routePrefetch, prefetch, transformer }
 }

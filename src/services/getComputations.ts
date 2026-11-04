@@ -1,40 +1,55 @@
 import { Computation, ValueLocation, DataKind } from '@/types/computation'
-import type { PrefetchConfig, PrefetchConfigs, PrefetchStrategy } from '@/types/prefetch'
+import type { PrefetchConfigs, PrefetchStrategy } from '@/types/prefetch'
 import { ResolvedRoute } from '@/types/resolved'
 import { CreatedRouteOptions } from '@/types/route'
 import { viewNamesWithProps } from '@/services/routeViews'
-import { AnyPayloadTransformer } from '@/services/payload'
-import { createRouteComputation } from '@/services/createRouteComputation'
+import { createPropsComputation } from '@/services/createPropsComputation'
+import { createLoaderComputation } from '@/services/createLoaderComputation'
+import { createTagsComputation } from '@/services/createTagsComputation'
 import { AnyFunction } from '@/types/utilities'
 import { getPrefetchOption } from '@/utilities/prefetch'
 import { getComputationPrefetchKey } from '@/services/getComputationPrefetchKey'
 
 export function getComputations(route: ResolvedRoute): Computation[] {
-  return route.matches.flatMap((match, depth) => [
-    ...propsLocations(match, depth).map((location) => toComputation(location, match, route, match.views[location.name].props as AnyFunction, match.views[location.name])),
-    ...loaderLocations(match, depth).map((location) => toComputation(location, match, route, match.loaders[location.name].load, match.loaders[location.name])),
-    ...tagsLocations(match, depth).map((location) => toComputation(location, match, route, match.tags as AnyFunction, {})),
-  ])
+  return route.matches.flatMap((match, depth) => {
+    const props = propsLocations(match, depth).map((location) => {
+      const view = match.views[location.name]
+
+      return createPropsComputation({
+        location,
+        route,
+        callback: view.props as AnyFunction,
+        routePrefetch: match.prefetch,
+        prefetch: view.prefetch,
+        transformer: view.transformer,
+      })
+    })
+    const loaders = loaderLocations(match, depth).map((location) => {
+      const loader = match.loaders[location.name]
+
+      return createLoaderComputation({
+        location,
+        route,
+        callback: loader.load,
+        routePrefetch: match.prefetch,
+        prefetch: loader.prefetch,
+        transformer: loader.transformer,
+      })
+    })
+
+    const tags = tagsLocations(match, depth).map((location) => createTagsComputation({
+      location,
+      route,
+      callback: match.tags as AnyFunction,
+      routePrefetch: match.prefetch,
+    }))
+
+    return [...props, ...loaders, ...tags]
+  })
 }
 
 export function getComputationsForStrategy(route: ResolvedRoute, strategy: PrefetchStrategy, configs: PrefetchConfigs): Computation[] {
   return getComputations(route).filter(isStrategy(strategy, configs))
-}
-
-type ComputationOptions = {
-  prefetch?: PrefetchConfig,
-  transformer?: AnyPayloadTransformer,
-}
-
-function toComputation(location: ValueLocation, match: CreatedRouteOptions, route: ResolvedRoute, run: AnyFunction, { prefetch, transformer }: ComputationOptions): Computation {
-  return createRouteComputation({
-    location,
-    route,
-    callback: run,
-    routePrefetch: match.prefetch,
-    prefetch,
-    transformer,
-  })
 }
 
 /**

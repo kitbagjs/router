@@ -4,6 +4,7 @@ import { createRoute } from '@/services/createRoute'
 import { createResolvedRoute } from '@/services/createResolvedRoute'
 import { Tags } from '@/types/tags'
 import { SetRouteTagsCallback } from '@/types/routeTags'
+import { getDataKey } from '@/services/getDataKey'
 
 test('tag callbacks receive scoped writes, route data, and cancellation without navigation controls', async () => {
   const definition = createRoute({ path: '/' }).addLoader(() => 'Product')
@@ -15,6 +16,8 @@ test('tag callbacks receive scoped writes, route data, and cancellation without 
     tags.title.set(await to.getData())
   })
   const computation = createTagsComputation({ location: { kind: 'tags', depth: 0, name: 'tags' }, route: to, callback })
+  expect(computation.key).toBe(getDataKey({ route: to, kind: 'tags', depth: 0, name: 'tags' }))
+
   const layer = await computation.run({ to, signal, getValue, subscribe })
   const [, context] = callback.mock.calls[0]
 
