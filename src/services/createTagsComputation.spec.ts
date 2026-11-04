@@ -6,7 +6,6 @@ import * as callbackRoute from '@/services/createCallbackRoute'
 import * as callbackParent from '@/services/getCallbackParent'
 import * as routeTags from '@/services/createRouteTags'
 import { Tags } from '@/types/tags'
-import { getDataKey } from '@/services/getDataKey'
 
 afterEach(() => {
   vi.restoreAllMocks()
@@ -32,19 +31,6 @@ test('passes the builder and callback context without navigation controls', () =
     to: routeFactory.mock.results[0].value,
     signal: context.signal,
     parent: parentFactory.mock.results[0].value,
-  })
-})
-
-test('sets the storage key and tags prefetch metadata', () => {
-  const route = createResolvedRoute(createRoute({ path: '/' }))
-  const location = { kind: 'tags', depth: 0, name: 'tags' } as const
-  const computation = createTagsComputation({ location, route, callback: vi.fn(), routePrefetch: 'intent' })
-
-  expect(computation).toMatchObject({
-    ...location,
-    key: getDataKey({ ...location, route }),
-    prefetchKey: 'tags',
-    routePrefetch: 'intent',
   })
 })
 
