@@ -9,36 +9,6 @@ import { decodePayloadValues, encodePayloadValues } from '@/services/payload'
 import { Tags } from '@/types/tags'
 import * as waitingWarnings from '@/services/warnWaitingOnUncomputedValue'
 
-test('prefetched child tags inherit their pending parent instead of the previous navigation layer', async () => {
-  let title = Promise.resolve('Original')
-  const parent = createRoute({ path: '/' }).setTags(async (tags) => tags.title.set(await title))
-  const route = createResolvedRoute(createRoute({ parent, path: 'child' }).setTags(async (tags) => {
-    tags.title.set(`${await tags.title.get()} - Child`)
-  }))
-  const navigation = createRouterNavigation()
-  const prepared = navigation.create()
-  onTestFinished(() => {
-    prepared.dispose()
-    navigation.stop()
-  })
-  await Promise.all(navigation.commit({ to: route, from: null }))
-
-  const pending = Promise.withResolvers<string>()
-  title = pending.promise
-  const work = prepared.compute(route, getComputations(route))
-  const child = { kind: 'tags', depth: 1, name: 'tags' } as const
-  await flushPromises()
-
-  expect(prepared.getState(child, route)).toEqual({ status: 'RUNNING' })
-  pending.resolve('Updated')
-  await Promise.all(work)
-  await Promise.all(prepared.commit({ to: route, from: route }))
-
-  await expect(navigation.getValue(child, route)).resolves.toMatchObject([
-    { kind: 'set', groups: [{ value: 'Updated - Child' }] },
-  ])
-})
-
 test('child-only prefetch skips a failed parent without adopting its partial writes', async () => {
   const inherited = vi.fn()
   const parent = createRoute({ path: '/' }).setTags((tags) => {

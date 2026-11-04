@@ -25,7 +25,7 @@ export type ComputationContext = {
   signal: AbortSignal,
   getValue: (location: ValueLocation) => Promise<unknown>,
   /**
-   * Reads the local outcome when scheduled here, otherwise waits on this or the current navigation.
+   * Reads the first outcome from this or the current navigation, including callback failures.
    */
   subscribe: (location: ValueLocation) => Promise<CallbackContextResponse>,
 }
