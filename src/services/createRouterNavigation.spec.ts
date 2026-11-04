@@ -77,16 +77,34 @@ describe('reads', () => {
     await expect(navigation.subscribe(computation, route)).resolves.toEqual({ status: 'ERROR', source: kind, error })
   })
 
-  test('getValues collects successful values across kinds', async () => {
+  test('getEntries collects entries across kinds', async () => {
     const { route, computation } = createFixture(() => 'loaded')
     const props = createComputation(route, () => ({ value: 'props' }), 'props')
     registry.set(route.id, [computation, props])
     const navigation = createRouterNavigation()
     await Promise.all(navigation.commit({ to: route, from: null }))
-    const loaderValue = { kind: 'loader', depth: 0, name: 'default', value: 'loaded' }
-    const propsValue = { kind: 'props', depth: 0, name: 'default', value: { value: 'props' } }
+    const loaderValue = { key: computation.key, value: 'loaded' }
+    const propsValue = { key: props.key, value: { value: 'props' } }
 
-    expect(navigation.getValues(route)).toEqual([loaderValue, propsValue])
+    expect(navigation.getEntries()).toEqual([loaderValue, propsValue])
+  })
+
+  test('entry methods stay scoped to their store and manager methods follow the current store', () => {
+    const { route, computation } = createFixture(() => 'computed')
+    const navigation = createRouterNavigation()
+    const current = navigation.current()
+    const prepared = navigation.create()
+    navigation.setEntries([{ key: computation.key, value: 'current' }])
+    prepared.setEntries([{ key: computation.key, value: 'prepared' }])
+
+    expect(navigation.getEntries()).toEqual(current.getEntries())
+    expect(prepared.getEntries()).toEqual([{ key: computation.key, value: 'prepared' }])
+    prepared.stage()
+    prepared.commit({ to: route, from: null })
+    navigation.setEntries([{ key: 'extra', value: 'extra' }])
+
+    expect(navigation.getEntries()).toEqual(prepared.getEntries())
+    expect(prepared.getEntries()).toContainEqual({ key: 'extra', value: 'extra' })
   })
 })
 
@@ -96,7 +114,7 @@ describe('navigation lifetime', () => {
     const { route, computation } = createFixture(run)
     const navigation = createRouterNavigation()
     const prepared = navigation.create()
-    prepared.fill(route, [{ kind: 'loader', depth: 0, name: 'default', value: 'filled' }])
+    prepared.setEntries([{ key: computation.key, value: 'filled' }])
     prepared.stage()
     await Promise.all(navigation.commit({ to: route, from: null }))
 
@@ -162,7 +180,7 @@ describe('navigation lifetime', () => {
     const navigation = createRouterNavigation()
     const prepared = navigation.create()
     prepared.dispose()
-    prepared.fill(route, [{ kind: 'loader', depth: 0, name: 'default', value: 'filled' }])
+    prepared.setEntries([{ key: computation.key, value: 'filled' }])
 
     expect(prepared.compute(route, [computation])).toEqual([])
     expect(prepared.commit({ to: route, from: null })).toEqual([])

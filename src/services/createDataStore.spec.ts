@@ -194,3 +194,38 @@ test('onSettled reports a value once when its work finishes', async () => {
     result: computedResponse,
   })
 })
+
+test('getEntries returns resolved values and omits unfinished or failed work', () => {
+  const controller = new AbortController()
+  const store = createDataStore({ signal: controller.signal })
+  store.subscribe('pending')
+  store.set('running', () => new Promise(() => {}))
+  store.set('success', () => computedResponse)
+  store.set('undefined', () => ({ status: 'SUCCESS', value: undefined }))
+  store.set('error', () => ({ status: 'ERROR', source: 'loader', error: new Error('failed') }))
+  const expected = [
+    { key: 'success', value: 'computed' },
+    { key: 'undefined', value: undefined },
+  ]
+
+  expect(store.getEntries()).toEqual(expected)
+
+  controller.abort(new NavigationAbandonedError())
+
+  expect(store.getEntries()).toEqual(expected)
+})
+
+test('setEntries fills values and resolves existing subscribers', async () => {
+  const store = createDataStore({ signal: new AbortController().signal })
+  const waiting = store.subscribe('value')
+  const values = [
+    { key: 'value', value: 'loaded' },
+    { key: 'undefined', value: undefined },
+  ]
+
+  store.setEntries(values)
+
+  expect(store.getEntries()).toEqual(values)
+  await expect(waiting).resolves.toEqual({ status: 'SUCCESS', value: 'loaded' })
+  await expect(store.subscribe('undefined')).resolves.toEqual({ status: 'SUCCESS', value: undefined })
+})

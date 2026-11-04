@@ -30,6 +30,11 @@ export type DataStoreSettledEvent = {
   result: DataResultSettled,
 }
 
+export type DataEntry = {
+  key: string,
+  value: unknown,
+}
+
 type Entry = {
   promise: Promise<CallbackContextResponse>,
   resolve: (value: CallbackContextResponse | PromiseLike<CallbackContextResponse>) => void,
@@ -42,6 +47,9 @@ type Entry = {
  * navigation owns one.
  */
 export type DataStore = {
+  getEntries: () => DataEntry[],
+  /** Fills resolved values without replacing existing results or running computations. */
+  setEntries: (entries: DataEntry[]) => void,
   /**
    * The value for a key, whether or not anything has computed it yet. Subscribing to a key nobody has set
    * leaves a promise waiting for whoever does.
@@ -169,6 +177,26 @@ export function createDataStore({ signal, onSettled }: CreateDataStoreOptions): 
     }
   }, { once: true })
 
+  const getEntries: DataStore['getEntries'] = () => {
+    const values: DataEntry[] = []
+
+    for (const [key, entry] of entries) {
+      const result = entry.state.value
+
+      if (result.status === 'SUCCESS') {
+        values.push({ key, value: result.value })
+      }
+    }
+
+    return values
+  }
+
+  const setEntries: DataStore['setEntries'] = (values) => {
+    for (const { key, value } of values) {
+      set(key, () => ({ status: 'SUCCESS', value }))
+    }
+  }
+
   const dispose: DataStore['dispose'] = () => {
     entries.clear()
   }
@@ -178,5 +206,7 @@ export function createDataStore({ signal, onSettled }: CreateDataStoreOptions): 
     set,
     get,
     dispose,
+    getEntries,
+    setEntries,
   }
 }

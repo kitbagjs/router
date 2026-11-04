@@ -6,7 +6,7 @@ import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
 import { createVueAppStore, HasVueAppStore } from './createVueAppStore'
 import { CallbackContextError, CallbackContextPush, CallbackContextReject, CallbackContextResponse } from '@/types/callbackContext'
 import { createDataStore, DataResult, DataStore, DataStoreSettledEvent } from './createDataStore'
-import { DataKind, getDataKey } from './getDataKey'
+import { getDataKey } from './getDataKey'
 import { MaybePromise } from '@/types/utilities'
 import { isPromise } from '@/utilities/promises'
 import { Computation, getComputations, ValueLocation } from './getComputations'
@@ -41,7 +41,7 @@ type RouterNavigationStoreSlots = {
   staged: RouterNavigationStore,
 }
 
-export type NavigationData = {
+export type NavigationData = Pick<DataStore, 'getEntries' | 'setEntries'> & {
   getState: (location: ValueLocation, route: ResolvedRoute) => DataResult,
   subscribe: (location: ValueLocation, route: ResolvedRoute) => Promise<CallbackContextResponse>,
   getValue: (location: ValueLocation, route: ResolvedRoute) => Promise<unknown>,
@@ -60,20 +60,6 @@ export type RouterNavigationStore = NavigationData & {
    * Computes the supplied values.
    */
   compute: (route: ResolvedRoute, computations: Computation[]) => Promise<CallbackContextResponse>[],
-  /**
-   * Adopts values that already settled, in place of running their getters.
-   */
-  fill: (route: ResolvedRoute, values: RouteValue[]) => void,
-}
-
-/**
- * A value the store holds for a route: which computation it belongs to, and what it resolved to.
- */
-export type RouteValue = {
-  kind: DataKind,
-  depth: number,
-  name: string,
-  value: unknown,
 }
 
 export type RouterNavigationStores = HasVueAppStore & NavigationData & {
@@ -89,10 +75,6 @@ export type RouterNavigationStores = HasVueAppStore & NavigationData & {
    * Makes the staged navigation current and computes whatever the route still lacks.
    */
   commit: (options: RouterNavigationCommitOptions) => Promise<CallbackContextResponse>[],
-  /**
-   * The values currently settled in the store.
-   */
-  getValues: (route: ResolvedRoute) => RouteValue[],
 }
 
 export function createRouterNavigation({ onResponse }: CreateRouterNavigationOptions = {}): RouterNavigationStores {
@@ -198,24 +180,6 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
       }
     }
 
-    function fill(route: ResolvedRoute, values: RouteValue[]): void {
-      if (controller.signal.aborted) {
-        return
-      }
-
-      const computations = getComputations(route)
-
-      for (const { kind, depth, name, value } of values) {
-        const computation = computations.find((computation) => computation.kind === kind && computation.depth === depth && computation.name === name)
-
-        if (!computation) {
-          continue
-        }
-
-        data.set(computation.key, () => ({ status: 'SUCCESS', value }))
-      }
-    }
-
     function commit({ to, from }: RouterNavigationCommitOptions): Promise<CallbackContextResponse>[] {
       if (state.abandoned) {
         return []
@@ -287,13 +251,17 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
     const getValue: NavigationData['getValue'] = (location, route) => toDataValue(subscribe(location, route))
 
+    const getEntries = data.getEntries
+    const setEntries = data.setEntries
+
     const instance: RouterNavigationStore = {
       data,
       getState,
       subscribe,
       getValue,
       compute,
-      fill,
+      getEntries,
+      setEntries,
       stage,
       commit,
       abandon,
@@ -320,19 +288,9 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
 
   const getValue: NavigationData['getValue'] = (location, route) => navigations.current.getValue(location, route)
 
-  const getValues: RouterNavigationStores['getValues'] = (route) => {
-    const store = navigations.current.data
+  const getEntries: NavigationData['getEntries'] = () => navigations.current.getEntries()
 
-    return getComputations(route).flatMap(({ kind, depth, name, key }) => {
-      const result = store.get(key)
-
-      if (result.status !== 'SUCCESS') {
-        return []
-      }
-
-      return [{ kind, depth, name, value: result.value }]
-    })
-  }
+  const setEntries: NavigationData['setEntries'] = (entries) => navigations.current.setEntries(entries)
 
   function getCallbackValue(location: ValueLocation, route: ResolvedRoute, { store, signal }: CallbackValueContext): Promise<unknown> {
     const key = getDataKey(location.kind, location.id, location.name, route)
@@ -365,7 +323,8 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     create: createRouterNavigationStore,
     staged,
     commit,
-    getValues,
+    getEntries,
+    setEntries,
     getState,
     subscribe,
     getValue,
