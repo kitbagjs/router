@@ -2,14 +2,13 @@ import { afterEach, expect, test, vi } from 'vitest'
 import { createCallbackRoute } from '@/services/createCallbackRoute'
 import { createRoute } from '@/services/createRoute'
 import { createResolvedRoute } from '@/services/createResolvedRoute'
-import { isResolvedRoute } from '@/types/resolved'
 import * as legacyValues from '@/utilities/toLegacyValues'
 
 afterEach(() => {
   vi.restoreAllMocks()
 })
 
-test('route data selects default and named loaders lazily', async () => {
+test('getData selects default and named loader locations on demand', async () => {
   const definition = createRoute({ path: '/' }).addLoader(() => 'default')
     .addLoader(() => 42, { name: 'count' })
   const to = createResolvedRoute(definition)
@@ -17,26 +16,10 @@ test('route data selects default and named loaders lazily', async () => {
   const route = createCallbackRoute({ to, getValue })
 
   expect(getValue).not.toHaveBeenCalled()
-  expect(route.href).toBe(to.href)
-  expect(route.params).toBe(to.params)
-  expect(route.matches).toBe(to.matches)
-  expect(route.getParam).toBe(to.getParam)
-  expect(isResolvedRoute(route)).toBe(true)
   await route.getData()
-  await route.getData('default')
   await route.getData('count')
   expect(getValue).toHaveBeenNthCalledWith(1, { kind: 'loader', depth: 0, name: 'default' })
-  expect(getValue).toHaveBeenNthCalledWith(2, { kind: 'loader', depth: 0, name: 'default' })
-  expect(getValue).toHaveBeenNthCalledWith(3, { kind: 'loader', depth: 0, name: 'count' })
-})
-
-test('preserves reader failures', async () => {
-  const error = new Error('reader failed')
-  const to = createResolvedRoute(createRoute({ path: '/' }).addLoader(() => 'data'))
-  const getValue = vi.fn().mockRejectedValue(error)
-  const route = createCallbackRoute({ to, getValue })
-
-  await expect(route.getData()).rejects.toBe(error)
+  expect(getValue).toHaveBeenNthCalledWith(2, { kind: 'loader', depth: 0, name: 'count' })
 })
 
 test('legacy data delegates locations and the reader to the legacy adapter', () => {

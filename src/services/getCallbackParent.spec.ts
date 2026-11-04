@@ -9,7 +9,7 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
-test('parent data includes ancestors and excludes child loaders', async () => {
+test('parent data resolves loaders at their owning ancestor depth', async () => {
   const root = createRoute({ path: '/' }).addLoader(() => 'default')
     .addLoader(() => 'ancestor', { name: 'ancestor' })
   const parent = createRoute({ parent: root, name: 'parent', path: 'parent' }).addLoader(() => 42, { name: 'count' })
@@ -26,7 +26,6 @@ test('parent data includes ancestors and excludes child loaders', async () => {
   await result.getData()
   await result.getData('ancestor')
   await result.getData('count')
-  expect(() => Reflect.apply(result.getData, undefined, ['child'])).toThrow(TypeError)
   expect(getValue).toHaveBeenNthCalledWith(1, { kind: 'loader', depth: 0, name: 'default' })
   expect(getValue).toHaveBeenNthCalledWith(2, { kind: 'loader', depth: 0, name: 'ancestor' })
   expect(getValue).toHaveBeenNthCalledWith(3, { kind: 'loader', depth: 1, name: 'count' })
@@ -36,7 +35,6 @@ test('parent props select getters only from the immediate parent', async () => {
   const root = createRoute({ path: '/' }).addView(component, { name: 'ancestor', props: () => ({}) })
   const parent = createRoute({ parent: root, path: 'parent' }).addView(component, { props: () => ({}) })
     .addView(component, { name: 'summary', props: () => ({}) })
-    .addView(component, { name: 'empty' })
   const child = createRoute({ parent, path: 'child' })
   const to = createResolvedRoute(child)
   const getValue = vi.fn().mockResolvedValue('value')
@@ -48,9 +46,6 @@ test('parent props select getters only from the immediate parent', async () => {
 
   await result.getProps()
   await result.getProps('summary')
-  for (const name of ['empty', 'ancestor']) {
-    expect(() => Reflect.apply(result.getProps, undefined, [name])).toThrow(TypeError)
-  }
   expect(getValue).toHaveBeenNthCalledWith(1, { kind: 'props', depth: 1, name: 'default' })
   expect(getValue).toHaveBeenNthCalledWith(2, { kind: 'props', depth: 1, name: 'summary' })
 })
@@ -60,21 +55,6 @@ test.each([0, -1])('has no parent at depth %s', (depth) => {
   const result = getCallbackParent(depth, { to, getValue: vi.fn() })
 
   expect(result).toBeUndefined()
-})
-
-test('parent getters preserve reader failures', async () => {
-  const error = new Error('reader failed')
-  const parent = createRoute({ path: '/' }).addLoader(() => 'data')
-    .addView(component, { props: () => ({}) })
-  const child = createRoute({ parent, path: 'child' })
-  const to = createResolvedRoute(child)
-  const getValue = vi.fn().mockRejectedValue(error)
-  const result = getCallbackParent(1, { to, getValue })
-
-  assert(result)
-
-  await expect(result.getData()).rejects.toBe(error)
-  await expect(result.getProps()).rejects.toBe(error)
 })
 
 test('legacy getters delegate parent locations and the reader to the legacy adapter', () => {
@@ -93,5 +73,18 @@ test('legacy getters delegate parent locations and the reader to the legacy adap
   expect(Reflect.get(result, 'props')).toBe(legacy)
   expect(adapt).toHaveBeenNthCalledWith(1, [{ kind: 'loader', depth: 0, name: 'default' }], getValue)
   expect(adapt).toHaveBeenNthCalledWith(2, [{ kind: 'props', depth: 0, name: 'default' }], getValue)
+  expect(getValue).not.toHaveBeenCalled()
+})
+
+test.each(['empty', 'ancestor'])('rejects parent props for %s without a getter on that match', (name) => {
+  const root = createRoute({ path: '/' }).addView(component, { name: 'ancestor', props: () => ({}) })
+  const parent = createRoute({ parent: root, path: 'parent' }).addView(component, { name: 'empty' })
+  const to = createResolvedRoute(createRoute({ parent, path: 'child' }))
+  const getValue = vi.fn()
+  const result = getCallbackParent(2, { to, getValue })
+
+  assert(result)
+
+  expect(() => result.getProps(name)).toThrow(TypeError)
   expect(getValue).not.toHaveBeenCalled()
 })

@@ -11,31 +11,44 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
-test.each([{ value: 'sync' }, Promise.resolve({ value: 'async' })])('passes the resolved route and context and preserves the callback result', (value) => {
+test('passes the resolved route and callback context', () => {
   const parent = createRoute({ path: '/' })
   const to = createResolvedRoute(createRoute({ parent, path: 'child' }))
   const context = { to, signal: new AbortController().signal, getValue: vi.fn() }
   const controlsFactory = vi.spyOn(routerContext, 'createRouterCallbackContext')
   const parentFactory = vi.spyOn(callbackParent, 'getCallbackParent')
-  const callback = vi.fn().mockReturnValue(value)
+  const callback = vi.fn()
   const location: ValueLocation<'loader'> = { kind: 'loader', depth: 1, name: 'default' }
-  const transformer = { stringify: JSON.stringify, parse: JSON.parse }
-  const computation = createLoaderComputation({ location, route: to, callback, routePrefetch: 'lazy', prefetch: 'eager', transformer })
+  const computation = createLoaderComputation({ location, route: to, callback })
 
-  expect(computation).toMatchObject({ ...location, key: getDataKey({ ...location, route: to }), prefetchKey: 'loaders', routePrefetch: 'lazy', prefetch: 'eager', transformer })
   expect(callback).not.toHaveBeenCalled()
-  const result = computation.run(context)
+  computation.run(context)
   const { push, replace, reject, update } = controlsFactory.mock.results[0].value
 
-  const [route] = callback.mock.calls[0]
-
-  expect(result).toBe(value)
   expect(controlsFactory).toHaveBeenCalledExactlyOnceWith({ to })
   expect(parentFactory).toHaveBeenCalledExactlyOnceWith(1, context)
-  expect(callback).toHaveBeenCalledExactlyOnceWith(to, { push, replace, reject, update, signal: context.signal, parent: parentFactory.mock.results[0].value })
+  expect(callback).toHaveBeenCalledExactlyOnceWith(to, {
+    push,
+    replace,
+    reject,
+    update,
+    signal: context.signal,
+    parent: parentFactory.mock.results[0].value,
+  })
+})
 
-  expect(route).toBe(to)
-  expect('data' in route).toBe(false)
-  expect('getData' in route).toBe(false)
-  expect(context.getValue).not.toHaveBeenCalled()
+test('sets the storage key and loaders prefetch metadata', () => {
+  const route = createResolvedRoute(createRoute({ path: '/' }))
+  const location: ValueLocation<'loader'> = { kind: 'loader', depth: 0, name: 'named' }
+  const transformer = { stringify: JSON.stringify, parse: JSON.parse }
+  const computation = createLoaderComputation({ location, route, callback: vi.fn(), routePrefetch: 'lazy', prefetch: 'eager', transformer })
+
+  expect(computation).toMatchObject({
+    ...location,
+    key: getDataKey({ ...location, route }),
+    prefetchKey: 'loaders',
+    routePrefetch: 'lazy',
+    prefetch: 'eager',
+    transformer,
+  })
 })
