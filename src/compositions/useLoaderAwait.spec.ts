@@ -1,13 +1,8 @@
 /* eslint-disable vue/one-component-per-file */
-import { afterEach, expect, test, vi } from 'vitest'
+import { expect, test, vi } from 'vitest'
 import { createSSRApp, defineComponent, h, inject, InjectionKey } from 'vue'
 import { renderToString } from 'vue/server-renderer'
 import { createLoader, createRoute, createRouter, RouterSuspense, useLoader } from '@/main'
-
-afterEach(() => {
-  vi.restoreAllMocks()
-  vi.unstubAllEnvs()
-})
 
 test('unattached loader data is isolated between SSR apps', async () => {
   const userKey: InjectionKey<string> = Symbol('user')

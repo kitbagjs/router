@@ -1,10 +1,8 @@
-import { beforeEach, expect, test, vi } from 'vitest'
+import { expect, test, vi } from 'vitest'
 import { createRouterHistory } from '@/services/createRouterHistory'
 import { random } from '@/utilities/testHelpers'
 
 function noop(): void {}
-
-beforeEach(() => vi.resetAllMocks())
 
 test('when go is called, forwards call to window history', () => {
   vi.spyOn(window.history, 'go')
@@ -62,7 +60,6 @@ test.each(['browser', 'hash'] as const)('restores an indexed %s entry without no
   expect(history.location.key).toBe(second.state.key)
   expect(history.location.state).toEqual({ visit: 'second' })
   history.stopListening()
-  go.mockRestore()
 })
 
 test('does not guess a traversal distance for an entry without an index', () => {
@@ -81,5 +78,4 @@ test('does not guess a traversal distance for an entry without an index', () => 
   expect(go).not.toHaveBeenCalled()
   expect(window.location.pathname).toBe('/external')
   history.stopListening()
-  go.mockRestore()
 })

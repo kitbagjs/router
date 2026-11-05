@@ -98,21 +98,17 @@ test('renders component with async props using suspense', async () => {
 
   const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
-  try {
-    expect(wrapper.text()).toBe(fallback)
+  expect(wrapper.text()).toBe(fallback)
 
-    await router.push('home')
-    await flushPromises()
+  await router.push('home')
+  await flushPromises()
 
-    expect(wrapper.findComponent(echo).exists()).toBe(false)
-    expect(warn).not.toHaveBeenCalled()
+  expect(wrapper.findComponent(echo).exists()).toBe(false)
+  expect(warn).not.toHaveBeenCalled()
 
-    resolve({ value: 'hello world' })
-    await flushPromises()
+  resolve({ value: 'hello world' })
+  await flushPromises()
 
-    expect(wrapper.text()).toBe('hello world')
-    expect(warn).not.toHaveBeenCalled()
-  } finally {
-    warn.mockRestore()
-  }
+  expect(wrapper.text()).toBe('hello world')
+  expect(warn).not.toHaveBeenCalled()
 })

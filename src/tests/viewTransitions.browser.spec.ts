@@ -22,8 +22,6 @@ afterEach(async () => {
 
   active?.skipTransition()
   await active?.finished
-
-  vi.restoreAllMocks()
 })
 
 const routeA = createRoute({ name: 'routeA', path: '/routeA' }).addView(component)

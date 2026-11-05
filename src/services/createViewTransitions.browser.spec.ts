@@ -17,8 +17,6 @@ afterEach(async () => {
 
   active?.skipTransition()
   await active?.finished
-
-  vi.restoreAllMocks()
 })
 
 const to = createResolvedRoute(createRoute({ name: 'to', path: '/to' }))

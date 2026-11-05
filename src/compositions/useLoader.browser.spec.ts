@@ -4,16 +4,12 @@ import { PAYLOAD_ELEMENT_ID, payloadToScript } from '@/services/payload'
 import { component } from '@/utilities/testHelpers'
 /* eslint-disable vue/one-component-per-file */
 import { flushPromises, mount } from '@vue/test-utils'
-import { afterEach, describe, expect, onTestFinished, test, vi } from 'vitest'
+import { describe, expect, onTestFinished, test, vi } from 'vitest'
 import { defineComponent, h } from 'vue'
 import { createLoader, createRejection, createRoute, createRouter, createRouterAssets, Router, useLoader, useRoute } from '@/main'
 import { warnLoaderFallback } from '@/services/warnLoaderFallback'
 
 vi.mock('@/services/warnLoaderFallback', () => ({ warnLoaderFallback: vi.fn() }))
-
-afterEach(() => {
-  vi.clearAllMocks()
-})
 
 function mountConsumer<TResult>(router: Router, setup: () => TResult): TResult {
   const wrapper = mount(defineComponent({

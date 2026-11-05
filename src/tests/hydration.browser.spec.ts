@@ -138,8 +138,6 @@ test('a value missing from the payload warns and computes again', async () => {
 
   expect(load).toHaveBeenCalledOnce()
   expect(warn.mock.calls.some(([message]) => String(message).includes('loader "default"'))).toBe(true)
-
-  warn.mockRestore()
 })
 
 test('a value is adopted through its own parse', async () => {
@@ -190,8 +188,6 @@ test('a declared payload option that cannot read a value warns and computes agai
 
   expect(load).toHaveBeenCalledOnce()
   expect(warn.mock.calls.some(([message]) => String(message).includes('parse the payload value for loader "default"'))).toBe(true)
-
-  warn.mockRestore()
 })
 
 test('hydration uses the initial history state when matching stored values', async () => {
