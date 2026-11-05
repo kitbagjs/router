@@ -83,15 +83,12 @@ export function createResolvedRoute(route: Route, params: Record<string, unknown
     throw new Error('createResolvedRoute called with a route that has no matches')
   }
 
-  async function getRouteTitle(to: ResolvedRoute): Promise<string | undefined> {
-    return resolveRouteTitle(to)
-  }
+  const getTitle = (): Promise<string | undefined> => resolveRouteTitle(resolvedRoute)
 
   const internal = {
     [IS_RESOLVED_ROUTE_SYMBOL]: true,
     schema: route.schema,
     hooks: getHooks(route),
-    getRouteTitle,
   } satisfies ResolvedRouteInternal
 
   const resolvedRoute: ResolvedRoute & ResolvedRouteInternal = {
@@ -107,7 +104,7 @@ export function createResolvedRoute(route: Route, params: Record<string, unknown
     params,
     href,
     canonical,
-    getTitle: () => getRouteTitle(resolvedRoute),
+    getTitle,
   }
 
   return resolvedRoute

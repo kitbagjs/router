@@ -20,7 +20,6 @@ test('router route does not retain the initial resolved route internals', () => 
     expect(isRouterRoute(routerKey, routerRoute)).toBe(true)
     expect(isResolvedRoute(routerRoute)).toBe(false)
     expect(routerRoute).not.toHaveProperty('hooks')
-    expect(routerRoute).not.toHaveProperty('getRouteTitle')
     expect(routerRoute.getResolvedRoute()).toBe(route)
   }
 })
