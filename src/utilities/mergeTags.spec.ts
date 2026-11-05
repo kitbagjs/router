@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { matchesTag, mergeTags } from '@/services/mergeTags'
+import { matchesTag, mergeTags } from '@/utilities/mergeTags'
 import { TagGroup, TagLayer, TagSelector } from '@/types/tags'
 
 const description: TagGroup = {

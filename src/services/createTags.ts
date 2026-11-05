@@ -1,7 +1,7 @@
 import { IS_TAGS_SYMBOL, TagGroup, TagLayer, LinkTag, LinkTagSelector, MetaTag, MetaTagSelector, TagOperation, TagSelector, Tags, TagsInternal } from '@/types/tags'
-import { mergeTags } from '@/services/mergeTags'
+import { mergeTags } from '@/utilities/mergeTags'
 import { copyTag } from '@/utilities/copyTag'
-import { toTagsSnapshot } from '@/utilities/toTagsSnapshot'
+import { toResolvedTags } from '@/utilities/toResolvedTags'
 
 function createSelector<TTag extends TagSelector['tag']>(tag: TTag, attributes: Record<string, string>): TagSelector & { tag: TTag } {
   return { tag, attributes }
@@ -85,7 +85,7 @@ export function createTags(): Tags {
   const get: Tags['get'] = async () => {
     const groups = readGroups()
 
-    return toTagsSnapshot(groups)
+    return toResolvedTags(groups)
   }
 
   function writeMeta(kind: 'set' | 'add', descriptor: MetaTag): void {
@@ -104,9 +104,9 @@ export function createTags(): Tags {
   }
 
   const getTitle: Tags['title']['get'] = async () => {
-    const snapshot = await get()
+    const resolved = await get()
 
-    return snapshot.title
+    return resolved.title
   }
 
   const setTitle: Tags['title']['set'] = (value) => {
@@ -124,9 +124,9 @@ export function createTags(): Tags {
 
   const getMeta: Tags['meta']['get'] = async (selector) => {
     const groups = readGroups()
-    const snapshot = toTagsSnapshot(groups)
+    const resolved = toResolvedTags(groups)
 
-    return snapshot.meta.get(selector)
+    return resolved.meta.get(selector)
   }
 
   const setMeta: Tags['meta']['set'] = (descriptor) => writeMeta('set', descriptor)
@@ -141,9 +141,9 @@ export function createTags(): Tags {
 
   const getLink: Tags['link']['get'] = async (selector) => {
     const groups = readGroups()
-    const snapshot = toTagsSnapshot(groups)
+    const resolved = toResolvedTags(groups)
 
-    return snapshot.link.get(selector)
+    return resolved.link.get(selector)
   }
 
   const setLink: Tags['link']['set'] = (descriptor) => writeLink('set', descriptor)

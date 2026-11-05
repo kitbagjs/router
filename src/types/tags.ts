@@ -84,7 +84,7 @@ export type ResolvedLinkTag = Readonly<Omit<LinkTag, 'related'>> & {
   readonly related?: readonly ResolvedLinkTag[],
 }
 
-export type TagsSnapshot = Readonly<{
+export type ResolvedTags = Readonly<{
   title: string | undefined,
   meta: Readonly<{
     get: (selector?: MetaTagSelector) => readonly ResolvedMetaTag[],
@@ -95,7 +95,7 @@ export type TagsSnapshot = Readonly<{
 }>
 
 export type Tags = {
-  get: () => Promise<TagsSnapshot>,
+  get: () => Promise<ResolvedTags>,
   title: {
     get: () => Promise<string | undefined>,
     set: (value: string) => void,

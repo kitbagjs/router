@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { flattenTags } from '@/services/flattenTags'
+import { flattenTags } from '@/utilities/flattenTags'
 import { TagGroup } from '@/types/tags'
 
 test('preserves title text for the renderer', () => {

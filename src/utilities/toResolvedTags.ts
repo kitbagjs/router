@@ -1,5 +1,5 @@
-import { LinkTagSelector, MetaTagSelector, TagGroup, TagName, TagSelector, TagsSnapshot } from '@/types/tags'
-import { matchesTag } from '@/services/mergeTags'
+import { LinkTagSelector, MetaTagSelector, TagGroup, TagName, TagSelector, ResolvedTags } from '@/types/tags'
+import { matchesTag } from '@/utilities/mergeTags'
 import { copyTag } from '@/utilities/copyTag'
 
 function toSelector(tag: TagName, selector: MetaTagSelector | LinkTagSelector): TagSelector {
@@ -14,7 +14,7 @@ function toSelector(tag: TagName, selector: MetaTagSelector | LinkTagSelector): 
   return { tag, attributes }
 }
 
-export function toTagsSnapshot(groups: readonly TagGroup[]): TagsSnapshot {
+export function toResolvedTags(groups: readonly TagGroup[]): ResolvedTags {
   const metaGroups: TagGroup[] = []
   const linkGroups: TagGroup[] = []
   let title: string | undefined
@@ -35,7 +35,7 @@ export function toTagsSnapshot(groups: readonly TagGroup[]): TagsSnapshot {
     }
   }
 
-  const getMeta: TagsSnapshot['meta']['get'] = (selector) => {
+  const getMeta: ResolvedTags['meta']['get'] = (selector) => {
     let target: TagSelector | undefined
 
     if (selector !== undefined) {
@@ -51,7 +51,7 @@ export function toTagsSnapshot(groups: readonly TagGroup[]): TagsSnapshot {
     })
   }
 
-  const getLink: TagsSnapshot['link']['get'] = (selector) => {
+  const getLink: ResolvedTags['link']['get'] = (selector) => {
     let target: TagSelector | undefined
 
     if (selector !== undefined) {

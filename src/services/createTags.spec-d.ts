@@ -81,23 +81,23 @@ test('accepts zhead link attributes', () => {
   tags.link.set({ rel: 'icon', href: '/icon.svg', onload: 'run()' })
 })
 
-test('snapshots cannot be written through the read API', async () => {
-  const snapshot = await createTags().get()
+test('resolved tags cannot be written through the read API', async () => {
+  const resolved = await createTags().get()
 
-  // @ts-expect-error snapshots are readonly
-  snapshot.title = 'Changed'
+  // @ts-expect-error resolved tags are readonly
+  resolved.title = 'Changed'
 
-  // @ts-expect-error snapshot metadata has no write API
-  snapshot.meta.set({ name: 'description', content: 'Changed' })
-  // @ts-expect-error snapshot links have no write API
-  snapshot.link.add({ rel: 'icon', href: '/changed.svg' })
+  // @ts-expect-error resolved metadata has no write API
+  resolved.meta.set({ name: 'description', content: 'Changed' })
+  // @ts-expect-error resolved links have no write API
+  resolved.link.add({ rel: 'icon', href: '/changed.svg' })
 
-  const images = snapshot.meta.get({ property: 'og:image' })
-  // @ts-expect-error snapshot descriptors are readonly
+  const images = resolved.meta.get({ property: 'og:image' })
+  // @ts-expect-error resolved descriptors are readonly
   images[0].content = 'Changed'
 
-  const links = snapshot.link.get({ rel: 'icon' })
-  // @ts-expect-error snapshot collections are readonly
+  const links = resolved.link.get({ rel: 'icon' })
+  // @ts-expect-error resolved collections are readonly
   links.push({ rel: 'icon', href: '/changed.svg' })
 })
 

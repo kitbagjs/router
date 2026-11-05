@@ -185,14 +185,14 @@ test('get exposes local title, metadata, and links', async () => {
   tags.meta.set({ name: 'description', content: 'Product details' })
   tags.link.set({ rel: 'canonical', href: '/product' })
 
-  const snapshot = await tags.get()
+  const resolved = await tags.get()
 
-  expect(snapshot.title).toBe('Product')
-  expect(snapshot.meta.get()).toEqual([{ name: 'description', content: 'Product details' }])
-  expect(snapshot.link.get()).toEqual([{ rel: 'canonical', href: '/product' }])
+  expect(resolved.title).toBe('Product')
+  expect(resolved.meta.get()).toEqual([{ name: 'description', content: 'Product details' }])
+  expect(resolved.link.get()).toEqual([{ rel: 'canonical', href: '/product' }])
 })
 
-test('reads reflect local writes without changing earlier snapshots', async () => {
+test('reads reflect local writes without changing earlier results', async () => {
   const tags = createTags()
   tags.title.set('Original')
   const original = await tags.get()
@@ -211,13 +211,13 @@ test('returned metadata trees do not share mutable descriptors with stored layer
   }
   const tags = createTags()
   tags.meta.add(descriptor)
-  const snapshot = await tags.get()
-  const grandchild = snapshot.meta.get()[0].related?.[0].related?.[0]
+  const resolved = await tags.get()
+  const grandchild = resolved.meta.get()[0].related?.[0].related?.[0]
   assert(grandchild)
 
   Reflect.set(grandchild, 'content', 'Changed')
 
-  expect(snapshot.meta.get()).toEqual([descriptor])
+  expect(resolved.meta.get()).toEqual([descriptor])
   await expect(tags.meta.get()).resolves.toEqual([descriptor])
 })
 
@@ -239,7 +239,7 @@ test('link reads select matching variants', async () => {
   await expect(tags.link.get({ rel: 'icon', sizes: '32x32' })).resolves.toEqual([{ rel: 'icon', href: '/large.png', sizes: '32x32' }])
 })
 
-test('operation snapshots do not include subsequent writes', () => {
+test('operation reads do not include subsequent writes', () => {
   const tags = createTags()
   tags.title.set('Original')
   assert(isTags(tags))
