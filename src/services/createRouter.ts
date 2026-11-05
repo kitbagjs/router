@@ -612,7 +612,7 @@ export function createRouter<
     return push(source, options)
   }
 
-  function commitRejection(type: string, { to = null, from = null }: RejectContext = {}, payloadValues?: PayloadValue[]): void {
+  const reject: RouterRejectInternal<TOptions['rejections'] | TPlugin['rejections']> = (type: string, { to = null, from = null }: RejectContext = {}, payloadValues?: PayloadValue[]) => {
     const rejection = getRejectionByType(type)
 
     if (!rejection) {
@@ -640,8 +640,6 @@ export function createRouter<
     started.value = true
     updateTitle(controller.signal)
   }
-
-  const reject: RouterRejectInternal<TOptions['rejections'] | TPlugin['rejections']> = commitRejection
 
   const currentRejection = shallowRef<Rejection | null>(null)
   const routeEntry = shallowRef<NavigationEntry | null>(null)
@@ -720,23 +718,19 @@ export function createRouter<
   async function hydrate(payload: RouterPayload): Promise<void> {
     const to = find(initialUrl, { state: initialState ?? undefined }) ?? null
 
-    if (!to) {
-      if (payload.kind === 'reject' && payload.rejection === NOT_FOUND_REJECTION_TYPE) {
-        commitRejection(NOT_FOUND_REJECTION_TYPE, { to, from: null }, payload.values)
-      } else {
-        reject(NOT_FOUND_REJECTION_TYPE, { to, from: null })
-      }
-
-      return
-    }
-
     switch (payload.kind) {
       case 'reject':
-        commitRejection(payload.rejection, { to, from: null }, payload.values)
+        reject(payload.rejection, { to, from: null }, payload.values)
 
         return
 
       case 'success': {
+        if (!to) {
+          reject(NOT_FOUND_REJECTION_TYPE, { to, from: null })
+
+          return
+        }
+
         const values = decodePayloadValues(to, payload.values, options?.transformer)
 
         const store = navigation.create()
