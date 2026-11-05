@@ -15,6 +15,7 @@ test('parent tags merge ancestors in match order and stay separate from local wr
     await pending.promise
     tags.title.set('Root')
     tags.meta.set({ name: 'description', content: 'Root description' })
+    tags.link.set({ rel: 'icon', href: '/root.svg' })
   })
   const parent = createRoute({ parent: root, path: 'parent' }).setTags((tags) => tags.title.set('Parent'))
   const layout = createRoute({ parent, path: 'layout' })
@@ -23,8 +24,13 @@ test('parent tags merge ancestors in match order and stay separate from local wr
   const child = createRoute({ parent: layout, path: 'child' }).setTags(async (tags, { parent }) => {
     tags.title.set('Local')
     const snapshot = await parent.getTags()
-    inherited(snapshot)
-    local(await tags.get())
+    inherited({
+      title: snapshot.title,
+      meta: snapshot.meta.get({ name: 'description' }),
+      link: snapshot.link.get({ rel: 'icon' }),
+    })
+    const current = await tags.get()
+    local({ title: current.title, meta: current.meta.get(), link: current.link.get() })
     tags.title.set(`${snapshot.title} - Child`)
   })
   const route = createResolvedRoute(createRoute({ parent: child, path: 'leaf' }).setTags((tags) => tags.title.set('Leaf')))
@@ -37,7 +43,7 @@ test('parent tags merge ancestors in match order and stay separate from local wr
   expect(inherited).toHaveBeenCalledExactlyOnceWith({
     title: 'Parent',
     meta: [{ name: 'description', content: 'Root description' }],
-    link: [],
+    link: [{ rel: 'icon', href: '/root.svg' }],
   })
   expect(local).toHaveBeenCalledExactlyOnceWith({ title: 'Local', meta: [], link: [] })
 })

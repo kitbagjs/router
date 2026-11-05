@@ -42,6 +42,14 @@ test('setTags inherits loader data and parent context through chained route meth
     const inherited = await parent.getTags()
     tags.title.set(`${inherited.title} - ${await to.getData()}`)
 
+    for (const image of inherited.meta.get({ property: 'og:image' })) {
+      tags.meta.add(image)
+    }
+
+    for (const icon of inherited.link.get({ rel: 'icon' })) {
+      tags.link.add(icon)
+    }
+
     // @ts-expect-error parent snapshots are readonly
     inherited.title = 'Changed'
   })
