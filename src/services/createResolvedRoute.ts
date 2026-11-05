@@ -4,12 +4,13 @@ import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
 import { getStateValues } from '@/services/state'
 import { RouterResolveOptions } from '@/types/routerResolve'
 import { IS_RESOLVED_ROUTE_SYMBOL, ResolvedRoute, ResolvedRouteInternal } from '@/types/resolved'
-import { isRoute, Route } from '@/types/route'
+import { Route } from '@/types/route'
 import { RouteAliasMatch } from '@/types/routeAlias'
 import { UrlString } from '@/types/urlString'
 import { getHooks } from '@/types/hooks'
 import { isUrl } from '@/types/url'
 import { createParamGetters } from '@/services/createParamGetters'
+import { resolveRouteTitle } from '@/services/resolveRouteTitle'
 
 type CreateResolvedRouteOptions = RouterResolveOptions & {
   /**
@@ -83,11 +84,7 @@ export function createResolvedRoute(route: Route, params: Record<string, unknown
   }
 
   async function getRouteTitle(to: ResolvedRoute): Promise<string | undefined> {
-    if (!isRoute(route)) {
-      return undefined
-    }
-
-    return route.getTitle(to)
+    return resolveRouteTitle(to)
   }
 
   const internal = {

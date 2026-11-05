@@ -26,13 +26,14 @@ export type RouteCallbackContext<
 /**
  * The parent context uses the parent match for its name and views, and includes ancestor loaders.
  */
-type RouteCallbackParent<
+export type RouteCallbackParent<
   TRoute extends Route
 > = TRoute['matches'] extends [...infer TAncestors extends CreatedRouteOptions[], infer TParent extends CreatedRouteOptions, CreatedRouteOptions]
   ? {
       name: TParent['name'],
       getData: GetData<RouteLoadersOf<[...TAncestors, TParent]>>,
       getProps: GetProps<TParent['views']>,
+      getTitle: () => Promise<string | undefined>,
       /** @deprecated Use parent.getProps() or parent.getProps(name). */
       props: ViewsPropsReturnType<TParent['views']>,
       /** @deprecated Use parent.getData() or parent.getData(name). */
