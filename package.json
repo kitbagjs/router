@@ -70,6 +70,10 @@
   },
   "dependencies": {
     "@standard-schema/spec": "^1.0.0",
-    "@vue/devtools-api": "^8.2.1"
+    "@vue/compiler-dom": "^3.5.44",
+    "@vue/compiler-sfc": "^3.5.44",
+    "@vue/devtools-api": "^8.2.1",
+    "fast-glob": "^3.3.3",
+    "ts-morph": "^28.0.0"
   }
 }
