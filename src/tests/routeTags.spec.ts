@@ -74,7 +74,6 @@ test('a failed parent also fails a dependent child while preserving successful a
 
 test('child-only prefetch can wait for ancestor tags that start when navigation commits', async () => {
   const warn = vi.spyOn(waitingWarnings, 'warnWaitingOnUncomputedValue').mockImplementation(() => {})
-  onTestFinished(() => warn.mockRestore())
   const parent = createRoute({ path: '/' }).setTags((tags) => tags.title.set('Parent'))
   const route = createResolvedRoute(createRoute({ parent, path: 'child' }).setTags(async (tags, { parent }) => {
     const inherited = await parent.getTags()
