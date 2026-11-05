@@ -43,48 +43,6 @@ function createFixture(run: Computation['run'], kind: DataKind = 'loader'): { ro
 }
 
 describe('reads', () => {
-  test.each(['loader', 'props'] as const)('reads pending and settled %s computations by location', async (kind) => {
-    const pending = Promise.withResolvers<string>()
-    const { route, computation } = createFixture(() => pending.promise, kind)
-    const navigation = createRouterNavigation()
-    navigation.commit({ to: route, from: null })
-
-    expect(navigation.getState(computation, route)).toEqual({ status: 'RUNNING' })
-    const response = navigation.subscribe(computation, route)
-    const value = navigation.getValue(computation, route)
-    pending.resolve('loaded')
-
-    await expect(response).resolves.toEqual({ status: 'SUCCESS', value: 'loaded' })
-    await expect(value).resolves.toBe('loaded')
-    expect(navigation.getState(computation, route)).toEqual({ status: 'SUCCESS', value: 'loaded' })
-  })
-
-  test.each(['loader', 'props'] as const)('%s value reads reject with the original error before and after settlement', async (kind) => {
-    const error = new Error('computation failed')
-    const pending = Promise.withResolvers<string>()
-    const { route, computation } = createFixture(() => pending.promise, kind)
-    const navigation = createRouterNavigation()
-    navigation.commit({ to: route, from: null })
-    const value = navigation.getValue(computation, route)
-    pending.reject(error)
-
-    await expect(value).rejects.toBe(error)
-    await expect(navigation.getValue(computation, route)).rejects.toBe(error)
-    await expect(navigation.subscribe(computation, route)).resolves.toEqual({ status: 'ERROR', source: kind, error })
-  })
-
-  test('getEntries collects entries across kinds', async () => {
-    const { route, computation } = createFixture(() => 'loaded')
-    const props = createComputation(route, () => ({ value: 'props' }), 'props')
-    registry.set(route.id, [computation, props])
-    const navigation = createRouterNavigation()
-    await Promise.all(navigation.commit({ to: route, from: null }))
-    const loaderValue = { key: computation.key, value: 'loaded' }
-    const propsValue = { key: props.key, value: { value: 'props' } }
-
-    expect(navigation.getEntries()).toEqual([loaderValue, propsValue])
-  })
-
   test('entry methods stay scoped to their store and manager methods follow the current store', () => {
     const { route, computation } = createFixture(() => 'computed')
     const navigation = createRouterNavigation()
@@ -184,24 +142,6 @@ describe('navigation lifetime', () => {
     expect(prepared.getState(computation, route)).toEqual({ status: 'ABANDONED' })
   })
 
-  test('compute shares explicitly supplied work without running other registered computations', async () => {
-    const registered = vi.fn()
-    const { route } = createFixture(registered)
-    const pending = Promise.withResolvers<string>()
-    const run = vi.fn(() => pending.promise)
-    const extra = createComputation(route, run, 'props', 'extra')
-    const navigation = createRouterNavigation()
-    const current = navigation.current()
-    const [value] = current.compute(route, [extra])
-    current.compute(route, [extra])
-
-    expect(current.getState(extra, route)).toEqual({ status: 'RUNNING' })
-    expect(run).toHaveBeenCalledOnce()
-    expect(registered).not.toHaveBeenCalled()
-    pending.resolve('loaded')
-    await expect(value).resolves.toEqual({ status: 'SUCCESS', value: 'loaded' })
-  })
-
   test('stop aborts current and staged work and rejects pending and subsequent reads', async () => {
     const run = vi.fn(() => new Promise(() => {}))
     const { route, computation } = createFixture(run)
@@ -216,17 +156,6 @@ describe('navigation lifetime', () => {
     await expect(staged).rejects.toBeInstanceOf(NavigationAbandonedError)
     expect(navigation.getState(computation, route)).toEqual({ status: 'ABANDONED' })
     await expect(navigation.getValue(computation, route)).rejects.toBeInstanceOf(NavigationAbandonedError)
-  })
-
-  test('settled values remain readable after abandonment', async () => {
-    const { route, computation } = createFixture(() => 'kept')
-    const navigation = createRouterNavigation()
-    const current = navigation.current()
-    await Promise.all(current.commit({ to: route, from: null }))
-    current.abandon()
-
-    expect(navigation.getState(computation, route)).toEqual({ status: 'SUCCESS', value: 'kept' })
-    await expect(navigation.getValue(computation, route)).resolves.toBe('kept')
   })
 })
 

@@ -1,5 +1,5 @@
 import { ValueLocation } from '@/types/computation'
-import { computed, InjectionKey, onScopeDispose, shallowRef, toRaw } from 'vue'
+import { computed, InjectionKey, onScopeDispose, shallowRef, toRaw, watch } from 'vue'
 import { AnyLoader, isLoader, Loader } from '@/types/loader'
 import { UseLoader } from '@/types/useLoader'
 import { Router } from '@/types/router'
@@ -7,9 +7,8 @@ import { isRouter } from '@/types/routerInternal'
 import { DataResult } from '@/services/createDataStore'
 import { createUseRouter } from '@/compositions/useRouter'
 import { useIsServerRendering } from '@/compositions/useIsServerRendering'
-import { createUseRouterNavigation } from '@/compositions/useRouterNavigation'
+import { createUseNavigationEntry } from '@/compositions/useNavigationEntry'
 import { getLoaderLocation } from '@/services/getLoaderLocation'
-import { isRouterRoute } from '@/services/createRouterRoute'
 import { RouteContext } from '@/types/routeContext'
 import { warnLoaderFallback } from '@/services/warnLoaderFallback'
 import { getFallbackLoaderLocation } from '@/services/getFallbackLoaderLocation'
@@ -22,7 +21,7 @@ export type UseLoaderFunction = <TData>(loader: Loader<TData, readonly RouteCont
 
 export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunction {
   const useRouter = createUseRouter(routerKey)
-  const useRouterNavigation = createUseRouterNavigation(routerKey)
+  const useNavigationEntry = createUseNavigationEntry(routerKey)
   const useAwaitedLoader = createUseAwaitedLoader(routerKey)
 
   function useLoader<TData>(loader: Loader<TData, readonly RouteContext[]>): UseLoader<Awaited<TData>>
@@ -39,31 +38,30 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunct
       throw new TypeError('Expected a router created by createRouter')
     }
 
-    const navigation = useRouterNavigation()
+    const entry = useNavigationEntry()
     const isServerRendering = useIsServerRendering()
 
     const selection = shallowRef<LoaderSelection>()
     const controller = new AbortController()
 
     const getLocation = (): ValueLocation<'loader'> => {
-      const result = getLoaderLocation(router.route, loader)
+      if (!entry.value) {
+        throw new Error('Expected a navigation entry before selecting a loader')
+      }
+
+      const { route, store } = entry.value
+      const result = getLoaderLocation(route, loader)
 
       if ('location' in result) {
         return result.location
       }
 
       const location = getFallbackLoaderLocation(loader)
-      const state = navigation.getState(location, router.route)
+      const state = store.getState(location, route)
 
       if (state.status !== 'MISSING') {
         return location
       }
-
-      if (!isRouterRoute(routerKey, router.route)) {
-        throw new TypeError('Expected a router route for this router')
-      }
-
-      const route = router.route.getResolvedRoute()
 
       warnLoaderFallback({
         loader,
@@ -74,7 +72,7 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunct
 
       const computation = getFallbackLoaderComputation(loader, route)
       router.addContext(loader.context)
-      navigation.current().compute(route, [computation])
+      store.compute(route, [computation])
 
       return location
     }
@@ -109,8 +107,7 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunct
       }
     }
 
-    router.onAfterRouteEnter(selectLoader, { signal: controller.signal })
-    router.onAfterRouteUpdate(selectLoader, { signal: controller.signal })
+    watch(entry, selectLoader)
 
     onScopeDispose(() => {
       controller.abort()
@@ -119,7 +116,7 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunct
     initialize()
 
     const state = computed<DataResult>(() => {
-      if (!selection.value) {
+      if (!selection.value || !entry.value) {
         return { status: 'PENDING' }
       }
 
@@ -127,7 +124,7 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunct
         return { status: 'ERROR', error: selection.value.error, source: 'loader' }
       }
 
-      const result = navigation.getState(selection.value.location, router.route)
+      const result = entry.value.store.getState(selection.value.location, entry.value.route)
 
       if (result.status === 'PUSH' || result.status === 'REJECT') {
         return { status: 'ABANDONED' }

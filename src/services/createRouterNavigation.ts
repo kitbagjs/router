@@ -1,190 +1,73 @@
-import { Computation, ValueLocation } from '@/types/computation'
-import { unwrapComputationResponse } from '@/utilities/unwrapComputationResponse'
+import { shallowReactive } from 'vue'
+import { createComputationStore, ComputationStore, ComputationCommitOptions, ComputationResponseEvent, NavigationData } from '@/services/createComputationStore'
+import { createVueAppStore, HasVueAppStore } from '@/services/createVueAppStore'
+import { DataEntry } from '@/services/createDataStore'
 import { ResolvedRoute } from '@/types/resolved'
-import { ContextPushError } from '@/errors/contextPushError'
-import { ContextRejectionError } from '@/errors/contextRejectionError'
-import { NavigationAbandonedError } from '@/errors/navigationAbandonedError'
-import { createVueAppStore, HasVueAppStore } from './createVueAppStore'
-import { CallbackContextError, CallbackContextPush, CallbackContextReject, CallbackContextResponse } from '@/types/callbackContext'
-import { createDataStore, DataEntry, DataResult, DataStore, DataStoreSettledEvent } from './createDataStore'
-import { getDataKey } from './getDataKey'
+import { Rejection } from '@/types/rejection'
+import { CallbackContextResponse } from '@/types/callbackContext'
 import { MaybePromise } from '@/types/utilities'
-import { isPromise } from '@/utilities/promises'
-import { getComputations } from './getComputations'
-import { warnWaitingOnUncomputedValue } from '@/services/warnWaitingOnUncomputedValue'
 
-export type RouterNavigationResponse = CallbackContextPush | CallbackContextReject | CallbackContextError
-
-type RouterNavigationCommitOptions = {
-  to: ResolvedRoute,
-  from: ResolvedRoute | null,
-}
-
-export type RouterNavigationResponseEvent = RouterNavigationCommitOptions & {
-  response: RouterNavigationResponse,
-}
+export type { NavigationData } from '@/services/createComputationStore'
 
 type CreateRouterNavigationOptions = {
-  onResponse?: (response: RouterNavigationResponseEvent) => MaybePromise<void>,
+  onResponse?: (response: ComputationResponseEvent) => MaybePromise<void>,
 }
 
-type CallbackValueContext = {
-  store: DataStore,
-  signal: AbortSignal,
+export type NavigationEntry = {
+  route: ResolvedRoute,
+  store: ComputationStore,
 }
 
-type RouterNavigationState = {
-  abandoned: boolean,
+type RejectionEntry = NavigationEntry & {
+  rejection: Rejection,
 }
 
-type RouterNavigationStoreSlots = {
-  current: RouterNavigationStore,
-  staged: RouterNavigationStore,
+type NavigationEntries = {
+  route: NavigationEntry | null,
+  rejection: RejectionEntry | null,
 }
 
-export type NavigationData = {
-  getEntries: () => DataEntry[],
-  setEntries: (entries: DataEntry[]) => void,
-  getState: (location: ValueLocation, route: ResolvedRoute) => DataResult,
-  subscribe: (location: ValueLocation, route: ResolvedRoute) => Promise<CallbackContextResponse>,
-  getValue: (location: ValueLocation, route: ResolvedRoute) => Promise<unknown>,
+type RejectionCommitOptions = {
+  route: ResolvedRoute,
+  to: ResolvedRoute | null,
+  from: ResolvedRoute | null,
+  rejection: Rejection,
+  values?: DataEntry[],
 }
 
-export type RouterNavigationStore = NavigationData & {
-  data: DataStore,
-  /**
-   * Disposes of the previously staged navigation and sets this navigation as staged.
-   */
+export type RouterNavigationStore = ComputationStore & {
   stage: () => void,
-  commit: (options: RouterNavigationCommitOptions) => Promise<CallbackContextResponse>[],
-  abandon: () => void,
-  dispose: () => void,
-  /**
-   * Computes the supplied values.
-   */
-  compute: (route: ResolvedRoute, computations: Computation[]) => Promise<CallbackContextResponse>[],
 }
 
 export type RouterNavigationStores = HasVueAppStore & NavigationData & {
+  entries: Readonly<NavigationEntries>,
+  active: () => NavigationEntry | null,
   current: () => RouterNavigationStore,
   stop: () => void,
   create: () => RouterNavigationStore,
-  /**
-   * The navigation prepared for the next commit.
-   * The rendered route keeps reading from the current navigation until then.
-   */
   staged: () => RouterNavigationStore,
-  /**
-   * Makes the staged navigation current and computes whatever the route still lacks.
-   */
-  commit: (options: RouterNavigationCommitOptions) => Promise<CallbackContextResponse>[],
+  commit: (options: ComputationCommitOptions) => Promise<CallbackContextResponse>[],
+  clearRejection: () => void,
+  reject: (options: RejectionCommitOptions) => Promise<CallbackContextResponse>[],
 }
 
 export function createRouterNavigation({ onResponse }: CreateRouterNavigationOptions = {}): RouterNavigationStores {
   const { setVueApp, runWithContext } = createVueAppStore()
-  const navigations: RouterNavigationStoreSlots = {
+  const entries = shallowReactive<NavigationEntries>({ route: null, rejection: null })
+  const navigations = {
     current: createRouterNavigationStore(),
     staged: createRouterNavigationStore(),
   }
 
   function createRouterNavigationStore(): RouterNavigationStore {
-    const controller = new AbortController()
-    const response = Promise.withResolvers<CallbackContextPush | CallbackContextReject>()
-    const committed = Promise.withResolvers<RouterNavigationCommitOptions | undefined>()
-    const state: RouterNavigationState = {
-      abandoned: false,
-    }
-    const data = createDataStore({
-      signal: controller.signal,
-      onSettled: handleSettledValue,
+    const store = createComputationStore({
+      runWithContext,
+      onResponse,
+      getCurrent: () => navigations.current.data,
     })
 
-    function handleSettledValue({ result }: DataStoreSettledEvent): void {
-      if (controller.signal.aborted) {
-        return
-      }
-
-      switch (result.status) {
-        case 'SUCCESS':
-        case 'ABANDONED':
-          return
-        case 'ERROR':
-          reportErrorWhenCommitted(result)
-          return
-        case 'PUSH':
-        case 'REJECT':
-          response.resolve(result)
-          controller.abort(new NavigationAbandonedError())
-          return
-        default: {
-          const exhaustive: never = result
-          throw new Error(`Switch is not exhaustive for computation response: ${JSON.stringify(exhaustive)}`)
-        }
-      }
-    }
-
-    function reportErrorWhenCommitted(response: CallbackContextError): void {
-      committed.promise.then((context) => {
-        if (!context || controller.signal.aborted) {
-          return
-        }
-
-        onResponse?.({ response, ...context })
-      })
-    }
-
-    function compute(route: ResolvedRoute, computations: Computation[]): Promise<CallbackContextResponse>[] {
-      if (controller.signal.aborted) {
-        return []
-      }
-
-      const values = computations.map(({ key }) => data.subscribe(key))
-
-      for (const computation of computations) {
-        data.set(computation.key, () => run(computation, route))
-      }
-
-      return values
-    }
-
-    function run(computation: Computation, route: ResolvedRoute): MaybePromise<CallbackContextResponse> {
-      try {
-        const context: CallbackValueContext = { store: data, signal: controller.signal }
-        const getValue = (location: ValueLocation): Promise<unknown> => getCallbackValue(location, route, context)
-        const value = runWithContext(() => computation.run({
-          to: route,
-          signal: controller.signal,
-          getValue,
-        }))
-
-        if (isPromise(value)) {
-          return value.then(toSuccessResponse, toErrorResponse)
-        }
-
-        return toSuccessResponse(value)
-      } catch (error) {
-        return toErrorResponse(error)
-      }
-
-      function toSuccessResponse(value: unknown): CallbackContextResponse {
-        return { status: 'SUCCESS', value }
-      }
-
-      function toErrorResponse(error: unknown): CallbackContextResponse {
-        if (error instanceof NavigationAbandonedError) {
-          controller.abort(error)
-        }
-
-        if (error instanceof ContextPushError || error instanceof ContextRejectionError) {
-          return error.response
-        }
-
-        return { status: 'ERROR', error, source: computation.kind }
-      }
-    }
-
-    function commit({ to, from }: RouterNavigationCommitOptions): Promise<CallbackContextResponse>[] {
-      if (state.abandoned) {
+    function commit(options: ComputationCommitOptions): Promise<CallbackContextResponse>[] {
+      if (store.abandoned) {
         return []
       }
 
@@ -201,22 +84,10 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
         staged.dispose()
       }
 
-      committed.resolve({ to, from })
-      response.promise.then((outcome) => {
-        if (state.abandoned || navigations.current !== instance) {
-          return
-        }
+      clearRejection()
+      entries.route = { route: options.to, store: instance }
 
-        onResponse?.({ response: outcome, to, from })
-      })
-
-      return compute(to, getComputations(to))
-    }
-
-    function abandon(): void {
-      state.abandoned = true
-      controller.abort(new NavigationAbandonedError())
-      committed.resolve(undefined)
+      return store.commit(options)
     }
 
     function dispose(): void {
@@ -224,8 +95,7 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
         navigations.staged = createRouterNavigationStore()
       }
 
-      abandon()
-      data.dispose()
+      store.dispose()
     }
 
     function stage(): void {
@@ -240,144 +110,69 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
       navigations.staged = instance
     }
 
-    const getState: NavigationData['getState'] = (location, route) => {
-      const key = getDataKey({ ...location, route })
-
-      return data.get(key)
-    }
-
-    const subscribe: NavigationData['subscribe'] = (location, route) => {
-      const key = getDataKey({ ...location, route })
-
-      return data.subscribe(key)
-    }
-
-    const getValue: NavigationData['getValue'] = (location, route) => toDataValue(subscribe(location, route))
-
-    const getEntries = data.getEntries
-    const setEntries = data.setEntries
-
     const instance: RouterNavigationStore = {
-      data,
-      getState,
-      subscribe,
-      getValue,
-      compute,
-      getEntries,
-      setEntries,
+      ...store,
+      get abandoned() {
+        return store.abandoned
+      },
       stage,
       commit,
-      abandon,
       dispose,
     }
 
     return instance
   }
 
-  const current: RouterNavigationStores['current'] = () => navigations.current
-
-  const stop: RouterNavigationStores['stop'] = () => {
-    navigations.current.dispose()
+  function reject({ route, to, from, rejection, values = [] }: RejectionCommitOptions): Promise<CallbackContextResponse>[] {
     navigations.staged.dispose()
+    navigations.current.abandon()
+    entries.rejection?.store.dispose()
+
+    const handleResponse = (event: ComputationResponseEvent): MaybePromise<void> => onResponse?.({ ...event, to, from })
+    const store = createComputationStore({ runWithContext, onResponse: handleResponse })
+    store.setEntries(values)
+    entries.rejection = { route, store, rejection }
+
+    return store.commit({ to: route, from })
   }
 
-  const staged: RouterNavigationStores['staged'] = () => navigations.staged
+  function clearRejection(): void {
+    entries.rejection?.store.dispose()
+    entries.rejection = null
+  }
 
+  const active = (): NavigationEntry | null => entries.rejection ?? entries.route
+  const current = (): RouterNavigationStore => navigations.current
+  const staged = (): RouterNavigationStore => navigations.staged
   const commit: RouterNavigationStores['commit'] = (options) => navigations.staged.commit(options)
 
-  const getState: NavigationData['getState'] = (location, route) => navigations.current.getState(location, route)
-
-  const subscribe: NavigationData['subscribe'] = (location, route) => navigations.current.subscribe(location, route)
-
-  const getValue: NavigationData['getValue'] = (location, route) => navigations.current.getValue(location, route)
-
-  const getEntries: NavigationData['getEntries'] = () => navigations.current.getEntries()
-
-  const setEntries: NavigationData['setEntries'] = (entries) => navigations.current.setEntries(entries)
-
-  function getCallbackValue(location: ValueLocation, route: ResolvedRoute, { store, signal }: CallbackValueContext): Promise<unknown> {
-    const key = getDataKey({ ...location, route })
-    const current = navigations.current.data
-
-    if (store === current) {
-      return toDataValue(store.subscribe(key))
-    }
-
-    const stored = store.get(key)
-    const currentValue = current.get(key)
-
-    if (stored.status === 'MISSING' && currentValue.status === 'MISSING') {
-      warnWaitingOnUncomputedValue(location, route)
-    }
-
-    const value = waitForDependency([
-      toDataValue(store.subscribe(key)),
-      toDataValue(current.subscribe(key)),
-    ], signal)
-
-    value.catch(() => {})
-
-    return value
+  function stop(): void {
+    navigations.current.dispose()
+    navigations.staged.dispose()
+    entries.rejection?.store.dispose()
   }
 
+  const getState: NavigationData['getState'] = (location, route) => navigations.current.getState(location, route)
+  const subscribe: NavigationData['subscribe'] = (location, route) => navigations.current.subscribe(location, route)
+  const getValue: NavigationData['getValue'] = (location, route) => navigations.current.getValue(location, route)
+  const getEntries: NavigationData['getEntries'] = () => navigations.current.getEntries()
+  const setEntries: NavigationData['setEntries'] = (values) => navigations.current.setEntries(values)
+
   return {
+    entries,
+    active,
     current,
-    stop,
-    create: createRouterNavigationStore,
     staged,
     commit,
+    reject,
+    clearRejection,
+    stop,
+    create: createRouterNavigationStore,
     getEntries,
     setEntries,
     getState,
     subscribe,
     getValue,
     setVueApp,
-  }
-}
-
-function toDataValue(value: Promise<CallbackContextResponse>): Promise<unknown> {
-  const unwrapped = value.then(unwrapComputationResponse)
-
-  unwrapped.catch(() => {})
-
-  return unwrapped
-}
-
-async function waitForDependency(sources: Promise<unknown>[], signal: AbortSignal): Promise<unknown> {
-  const cancelled = Promise.withResolvers<never>()
-
-  function onAbort(): void {
-    cancelled.reject(new NavigationAbandonedError())
-  }
-
-  if (signal.aborted) {
-    onAbort()
-  } else {
-    signal.addEventListener('abort', onAbort, { once: true })
-  }
-
-  try {
-    return await Promise.race([
-      firstToArrive(sources),
-      cancelled.promise,
-    ])
-  } finally {
-    signal.removeEventListener('abort', onAbort)
-  }
-}
-
-/**
- * The first source to produce a value. Both failing surfaces a real callback error over an abandonment,
- * since abandonment only says nobody is computing that source any more.
- */
-async function firstToArrive(sources: Promise<unknown>[]): Promise<unknown> {
-  try {
-    return await Promise.any(sources)
-  } catch (error) {
-    if (error instanceof AggregateError) {
-      throw error.errors.find((reason) => !(reason instanceof NavigationAbandonedError)) ?? error.errors[0]
-    }
-
-    throw error
   }
 }

@@ -1819,7 +1819,7 @@ describe('router.render response', () => {
     const result = rendered(await router.render())
     const payload: unknown = JSON.parse(result.payload.replace(/^<script[^>]*>/, '').replace(/<\/script>$/, ''))
 
-    expect(payload).toStrictEqual({ kind: 'reject', url: '/does-not-exist', rejection: 'NotFound' })
+    expect(payload).toStrictEqual({ kind: 'reject', url: '/does-not-exist', rejection: 'NotFound', values: [] })
   })
 
   test('given a url that matches a route, returns 200', async () => {

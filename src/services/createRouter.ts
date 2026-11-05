@@ -1,11 +1,11 @@
 import { createPath } from '@/services/history'
-import { App, nextTick, ref } from 'vue'
+import { computed, App, nextTick, ref } from 'vue'
 import { createRouterRoute } from '@/services/createRouterRoute'
 import { createIsExternal } from '@/services/createIsExternal'
 import { createActivityTracker } from '@/services/createActivityTracker'
 import { SsrOptionRequiredError } from '@/errors/ssrOptionRequiredError'
 import { parseUrl, updateUrl } from '@/services/urlParser'
-import { createRouterNavigation, RouterNavigationResponseEvent, RouterNavigationStore } from '@/services/createRouterNavigation'
+import { createRouterNavigation, RouterNavigationStore } from '@/services/createRouterNavigation'
 import { createNavigationProgress, NavigationProgressTracker } from '@/services/createNavigationProgress'
 import { getRouteData } from '@/services/getRouteData'
 import { getComputations } from '@/services/getComputations'
@@ -15,7 +15,7 @@ import { createRouterHistory, RouterHistoryTraversal } from '@/services/createRo
 import { createServerRedirect } from '@/services/createServerRedirect'
 import { createRouterHooks, getRouterHooksKey } from '@/services/createRouterHooks'
 import { getInitialUrl } from '@/services/getInitialUrl'
-import { decodePayloadValues, encodePayloadValues, getHydratingPayload, payloadToScript, RouterPayload } from '@/services/payload'
+import { decodePayloadValues, encodePayloadValues, getHydratingPayload, payloadToScript, PayloadValue, RouterPayload } from '@/services/payload'
 import { setStateValues } from '@/services/state'
 import { Routes } from '@/types/route'
 import { NOT_FOUND_REJECTION_TYPE } from '@/types/rejection'
@@ -52,7 +52,7 @@ import { setupRouterDevtools } from '@/devtools/createRouterDevtools'
 import { getMatchForUrl } from './getMatchesForUrl'
 import { pathHasTrailingSlash, removeTrailingSlashesFromPath } from '@/utilities/trailingSlashes'
 import { setDocumentTitle } from '@/utilities/setDocumentTitle'
-import { createCurrentRejection } from '@/services/createCurrentRejection'
+import { ComputationResponseEvent } from '@/services/createComputationStore'
 import { hasViewTransition, ViewTransitionConfig } from '@/types/viewTransition'
 import { createViewTransitions, PendingViewTransition } from '@/services/createViewTransitions'
 import { getViewTransitionTypes, supportsViewTransitions } from '@/utilities/viewTransition'
@@ -317,8 +317,6 @@ export function createRouter<
           return
         }
 
-        clearRejection()
-
         if (!isExternal(url)) {
           const values = next.commit({ to, from })
 
@@ -326,6 +324,8 @@ export function createRouter<
           progress.track(...values, ...loadAsyncComponents(to))
 
           routerRoute.updateRoute(to)
+        } else {
+          navigation.clearRejection()
         }
 
         progress.close()
@@ -479,7 +479,7 @@ export function createRouter<
    * either is acted on whenever it arrives, without holding up the navigation that started it. Once that
    * navigation is superseded, its outcomes can no longer change the page or run error hooks.
    */
-  function onNavigationResponse({ response, to, from }: RouterNavigationResponseEvent): void {
+  function onNavigationResponse({ response, to, from }: ComputationResponseEvent): void {
     const work = (async (): Promise<void> => {
       switch (response.status) {
         case 'PUSH':
@@ -607,7 +607,7 @@ export function createRouter<
     return push(source, options)
   }
 
-  const reject: RouterRejectInternal<TOptions['rejections'] | TPlugin['rejections']> = (type: string, { to = null, from = null }: RejectContext = {}) => {
+  function commitRejection(type: string, { to = null, from = null }: RejectContext = {}, payloadValues?: PayloadValue[]): void {
     const rejection = getRejectionByType(type)
 
     if (!rejection) {
@@ -615,17 +615,24 @@ export function createRouter<
     }
 
     const controller = navigations.begin()
-    navigation.staged().dispose()
-    navigation.current().abandon()
-
     hooks.runRejectionHooks(rejection, { to, from })
 
-    updateRejection(rejection)
+    const route = createResolvedRoute(rejection.route)
+    let values
+
+    if (payloadValues) {
+      values = decodePayloadValues(route, payloadValues, options?.transformer)
+    }
+
+    const work = navigation.reject({ route, to, from, rejection, values })
+    activity.add(...work, ...loadAsyncComponents(route))
     started.value = true
     updateTitle(controller.signal)
   }
 
-  const { currentRejection, updateRejection, clearRejection } = createCurrentRejection()
+  const reject: RouterRejectInternal<TOptions['rejections'] | TPlugin['rejections']> = commitRejection
+
+  const currentRejection = computed(() => navigation.entries.rejection?.rejection ?? null)
   const routerRoute = createRouterRoute<Router<TRoutes, TOptions, TPlugin>>({
     routerKey,
     route: notFoundRoute,
@@ -637,7 +644,19 @@ export function createRouter<
    * The title that should currently be rendered.
    */
   async function getTitle(): Promise<string | undefined> {
-    return await currentRejection.value?.getTitle() ?? routerRoute.getResolvedRoute().getTitle()
+    for (const entry of [navigation.entries.rejection, navigation.entries.route]) {
+      if (!entry) {
+        continue
+      }
+
+      const title = await entry.route.getTitle()
+
+      if (title !== undefined) {
+        return title
+      }
+    }
+
+    return undefined
   }
 
   /**
@@ -685,14 +704,18 @@ export function createRouter<
     const to = find(initialUrl, { state: initialState ?? undefined }) ?? null
 
     if (!to) {
-      reject(NOT_FOUND_REJECTION_TYPE, { to, from: null })
+      if (payload.kind === 'reject' && payload.rejection === NOT_FOUND_REJECTION_TYPE) {
+        commitRejection(NOT_FOUND_REJECTION_TYPE, { to, from: null }, payload.values)
+      } else {
+        reject(NOT_FOUND_REJECTION_TYPE, { to, from: null })
+      }
 
       return
     }
 
     switch (payload.kind) {
       case 'reject':
-        reject(payload.rejection, { to, from: null })
+        commitRejection(payload.rejection, { to, from: null }, payload.values)
 
         return
 
@@ -767,22 +790,25 @@ export function createRouter<
     }
 
     const rejection = currentRejection.value
+    const entry = navigation.active()
+
+    if (!entry) {
+      throw new Error('Expected a navigation entry after rendering')
+    }
+
+    const title = await getTitle()
+    const { values, failures } = encodePayloadValues(entry.route, entry.store.getEntries(), options?.transformer)
 
     if (rejection) {
-      const title = await getTitle()
-
       return {
         kind: 'reject',
         status: rejection.status ?? rejectStatus,
         rejection: rejection.type,
         title,
-        payload: payloadToScript({ kind: 'reject', url: initialUrl, rejection: rejection.type }),
+        failures,
+        payload: payloadToScript({ kind: 'reject', url: initialUrl, rejection: rejection.type, values }),
       }
     }
-
-    const title = await getTitle()
-    const resolved = routerRoute.getResolvedRoute()
-    const { values, failures } = encodePayloadValues(resolved, navigation.getEntries(), options?.transformer)
 
     return {
       kind: 'success',
