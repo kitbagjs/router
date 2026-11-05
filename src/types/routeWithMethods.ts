@@ -6,10 +6,11 @@ import { RouteHooks, ExternalRouteHooks } from '@/types/routeHooks'
 import { RouteRedirects, ExternalRouteRedirects } from '@/types/routeRedirects'
 import { CreatedRouteOptions, Route } from '@/types/route'
 import { RouteTitle } from '@/types/routeTitle'
+import { RouteTags } from '@/types/routeTags'
 import { Url } from '@/types/url'
 
 /**
- * A route plus every chainable/available method: addView, addLoader, addAlias, hooks, redirects, and title. The type
+ * A route plus every chainable/available method: addView, addLoader, addAlias, hooks, redirects, title, and tags. The type
  * level counterpart to `withRouteMethods`.
  *
  * Takes the url and matches rather than an assembled route so that adding a view or a loader can rebuild
@@ -26,6 +27,7 @@ export type RouteWithMethods<
   & RouteHooks<TUrl, TMatches>
   & RouteRedirects<TUrl, TMatches>
   & RouteTitle<TUrl, TMatches>
+  & RouteTags<TUrl, TMatches>
 
 export type ExternalRouteWithMethods<
   TRoute extends Route = Route,
