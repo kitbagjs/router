@@ -4,10 +4,11 @@ Each guide covers the breaking changes and deprecations introduced by that relea
 
 If you skip versions, follow the applicable guides in release order, from your installed version toward your target version. Examples show the API for the release named on the page; later guides may replace that syntax again. The core and advanced guides describe the current API.
 
-This timeline covers released tags through **0.32.0**. See the [full release history](https://github.com/kitbagjs/router/releases) for features and fixes that do not need migration. Older GitHub release notes sometimes group several tags; these guides assign changes to the first tag that contains them.
+This timeline covers released tags through **0.33.0**. See the [full release history](https://github.com/kitbagjs/router/releases) for features and fixes that do not need migration. Older GitHub release notes sometimes group several tags; these guides assign changes to the first tag that contains them.
 
 ## Releases
 
+- [0.33.0](/upgrading/0.33.0) — Loader and parent props getters, unique loader names, and title callback context.
 - [0.32.0](/upgrading/0.32.0) — Chainable route hooks and renamed param input types.
 - [0.31.0](/upgrading/0.31.0) — Use useLoader in components; remove RouteLoader.
 - [0.28.0](/upgrading/0.28.0) — Remove legacy view options.
