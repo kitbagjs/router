@@ -23,15 +23,15 @@ test('parent tags merge ancestors in match order and stay separate from local wr
   const local = vi.fn()
   const child = createRoute({ parent: layout, path: 'child' }).setTags(async (tags, { parent }) => {
     tags.title.set('Local')
-    const snapshot = await parent.getTags()
+    const parentTags = await parent.getTags()
     inherited({
-      title: snapshot.title,
-      meta: snapshot.meta.get({ name: 'description' }),
-      link: snapshot.link.get({ rel: 'icon' }),
+      title: parentTags.title,
+      meta: parentTags.meta.get({ name: 'description' }),
+      link: parentTags.link.get({ rel: 'icon' }),
     })
     const current = await tags.get()
     local({ title: current.title, meta: current.meta.get(), link: current.link.get() })
-    tags.title.set(`${snapshot.title} - Child`)
+    tags.title.set(`${parentTags.title} - Child`)
   })
   const route = createResolvedRoute(createRoute({ parent: child, path: 'leaf' }).setTags((tags) => tags.title.set('Leaf')))
   const navigation = createRouterNavigation()

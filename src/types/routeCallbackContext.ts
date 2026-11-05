@@ -1,4 +1,4 @@
-import { TagsSnapshot } from '@/types/tags'
+import { ResolvedTags } from '@/types/tags'
 import { ResolvedRoute } from '@/types/resolved'
 import { CreatedRouteOptions, Route, RouteLoadersOf } from '@/types/route'
 import { RouteContextToRejection, RouteContextToRoute } from '@/types/routeContext'
@@ -34,7 +34,7 @@ export type RouteCallbackParent<
       name: TParent['name'],
       getData: GetData<RouteLoadersOf<[...TAncestors, TParent]>>,
       getProps: GetProps<TParent['views']>,
-      getTags: () => Promise<TagsSnapshot>,
+      getTags: () => Promise<ResolvedTags>,
       /** @deprecated Use parent.getProps() or parent.getProps(name). */
       props: ViewsPropsReturnType<TParent['views']>,
       /** @deprecated Use parent.getData() or parent.getData(name). */

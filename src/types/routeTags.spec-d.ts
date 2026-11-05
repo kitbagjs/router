@@ -50,7 +50,7 @@ test('setTags inherits loader data and parent context through chained route meth
       tags.link.add(icon)
     }
 
-    // @ts-expect-error parent snapshots are readonly
+    // @ts-expect-error inherited tags are readonly
     inherited.title = 'Changed'
   })
 })
