@@ -1,6 +1,6 @@
 import { BuiltInRejectionType, Rejections, RejectionType } from '@/types/rejection'
 import { ResolvedRoute } from '@/types/resolved'
-import { PayloadValue } from '@/services/payload'
+import { ComputationStore } from '@/services/createComputationStore'
 
 export type RouterReject<TRejections extends Rejections | undefined> = <TSource extends (RejectionType<TRejections> | BuiltInRejectionType)>(type: TSource) => void
 
@@ -14,7 +14,7 @@ export type RejectContext = {
 
 /**
  * Reject as the router itself calls it, which may name any rejection type and supply the routes the
- * rejection happened between and values to restore during hydration. The router exposes
+ * rejection happened between and a prepared computation store. The router exposes
  * {@link RouterReject} instead.
  */
-export type RouterRejectInternal<TRejections extends Rejections | undefined> = RouterReject<TRejections> & ((type: string, context?: RejectContext, values?: PayloadValue[]) => void)
+export type RouterRejectInternal<TRejections extends Rejections | undefined> = RouterReject<TRejections> & ((type: string, context?: RejectContext, prefetch?: ComputationStore) => void)

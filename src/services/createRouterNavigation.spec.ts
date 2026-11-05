@@ -53,8 +53,8 @@ describe('reads', () => {
 
     expect(navigation.getEntries()).toEqual(current.getEntries())
     expect(prepared.getEntries()).toEqual([{ key: computation.key, value: 'prepared' }])
-    prepared.stage()
-    prepared.commit({ to: route, from: null })
+    navigation.stage(prepared)
+    navigation.commit({ to: route, from: null })
     navigation.setEntries([{ key: 'extra', value: 'extra' }])
 
     expect(navigation.getEntries()).toEqual(prepared.getEntries())
@@ -69,7 +69,7 @@ describe('navigation lifetime', () => {
     const navigation = createRouterNavigation()
     const prepared = navigation.create()
     prepared.setEntries([{ key: computation.key, value: 'filled' }])
-    prepared.stage()
+    navigation.stage(prepared)
     await Promise.all(navigation.commit({ to: route, from: null }))
 
     await expect(navigation.getValue(computation, route)).resolves.toBe('filled')
@@ -83,11 +83,11 @@ describe('navigation lifetime', () => {
     const prepared = navigation.create()
     await Promise.all(prepared.compute(route, [computation]))
     const signal = run.mock.calls[0][0].signal
-    prepared.stage()
-    prepared.stage()
+    navigation.stage(prepared)
+    navigation.stage(prepared)
     await Promise.all(navigation.commit({ to: route, from: null }))
-    prepared.stage()
-    await Promise.all(prepared.commit({ to: route, from: null }))
+    navigation.stage(prepared)
+    await Promise.all(navigation.commit({ to: route, from: null }))
 
     expect(run).toHaveBeenCalledOnce()
     expect(signal.aborted).toBe(false)
@@ -106,7 +106,7 @@ describe('navigation lifetime', () => {
     const signal = run.mock.calls[0][0].signal
     const prepared = navigation.create()
     await Promise.all(prepared.compute(next.route, [next.computation]))
-    prepared.stage()
+    navigation.stage(prepared)
 
     expect(signal.aborted).toBe(false)
     await expect(navigation.getValue(current.computation, current.route)).resolves.toBe('current')
@@ -176,7 +176,8 @@ describe('response delivery', () => {
 
     await expect(prepared.subscribe(computation, route)).resolves.toEqual(error.response)
     expect(onResponse).not.toHaveBeenCalled()
-    prepared.commit({ to: route, from: null })
+    navigation.stage(prepared)
+    navigation.commit({ to: route, from: null })
     await flushPromises()
     expect(onResponse).toHaveBeenCalledExactlyOnceWith({ response: error.response, to: route, from: null })
   })
@@ -194,7 +195,8 @@ describe('response delivery', () => {
 
     expect(prepared.getState(computation, route)).toEqual({ status: 'ERROR', source: 'loader', error })
     expect(onResponse).not.toHaveBeenCalled()
-    prepared.commit({ to: route, from: null })
+    navigation.stage(prepared)
+    navigation.commit({ to: route, from: null })
     await flushPromises()
     expect(onResponse).toHaveBeenCalledExactlyOnceWith({ response: { status: 'ERROR', source: 'loader', error }, to: route, from: null })
   })

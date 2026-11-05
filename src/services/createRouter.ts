@@ -5,7 +5,7 @@ import { createIsExternal } from '@/services/createIsExternal'
 import { createActivityTracker } from '@/services/createActivityTracker'
 import { SsrOptionRequiredError } from '@/errors/ssrOptionRequiredError'
 import { parseUrl, updateUrl } from '@/services/urlParser'
-import { createRouterNavigation, NavigationEntry, RouterNavigationStore } from '@/services/createRouterNavigation'
+import { createRouterNavigation, NavigationEntry } from '@/services/createRouterNavigation'
 import { createNavigationProgress, NavigationProgressTracker } from '@/services/createNavigationProgress'
 import { getRouteData } from '@/services/getRouteData'
 import { getComputations } from '@/services/getComputations'
@@ -15,7 +15,7 @@ import { createRouterHistory, RouterHistoryTraversal } from '@/services/createRo
 import { createServerRedirect } from '@/services/createServerRedirect'
 import { createRouterHooks, getRouterHooksKey } from '@/services/createRouterHooks'
 import { getInitialUrl } from '@/services/getInitialUrl'
-import { decodePayloadValues, encodePayloadValues, getHydratingPayload, payloadToScript, PayloadValue, RouterPayload } from '@/services/payload'
+import { decodePayloadValues, encodePayloadValues, getHydratingPayload, payloadToScript, RouterPayload } from '@/services/payload'
 import { setStateValues } from '@/services/state'
 import { Routes } from '@/types/route'
 import { NOT_FOUND_REJECTION_TYPE, Rejection } from '@/types/rejection'
@@ -53,7 +53,7 @@ import { setupRouterDevtools } from '@/devtools/createRouterDevtools'
 import { getMatchForUrl } from './getMatchesForUrl'
 import { pathHasTrailingSlash, removeTrailingSlashesFromPath } from '@/utilities/trailingSlashes'
 import { setDocumentTitle } from '@/utilities/setDocumentTitle'
-import { ComputationResponseEvent } from '@/services/createComputationStore'
+import { ComputationResponseEvent, ComputationStore } from '@/services/createComputationStore'
 import { hasViewTransition, ViewTransitionConfig } from '@/types/viewTransition'
 import { createViewTransitions, PendingViewTransition } from '@/services/createViewTransitions'
 import { getViewTransitionTypes, supportsViewTransitions } from '@/utilities/viewTransition'
@@ -63,7 +63,7 @@ import { getNavigationOption, getRouteNavigationOption } from '@/utilities/navig
 
 type RouteCommitOptions = {
   route: ResolvedRoute | null,
-  navigation: RouterNavigationStore,
+  navigation: ComputationStore,
   signal: AbortSignal,
   update: () => void,
 }
@@ -77,7 +77,7 @@ type RouteCommit = {
 
 type RouterUpdateOptions = {
   navigation?: NavigationBehavior,
-  prefetch?: RouterNavigationStore,
+  prefetch?: ComputationStore,
   traversal?: RouterHistoryTraversal,
   replace?: boolean,
   state?: any,
@@ -298,7 +298,7 @@ export function createRouter<
     }
 
     const next = options.prefetch ?? navigation.create()
-    next.stage()
+    navigation.stage(next)
 
     try {
       const to = find(url, options) ?? null
@@ -319,7 +319,7 @@ export function createRouter<
         }
 
         if (!isExternal(url)) {
-          const values = next.commit({ to, from })
+          const values = navigation.commit({ to, from })
 
           activity.add(...values)
           progress.track(...values, ...loadAsyncComponents(to))
@@ -612,7 +612,7 @@ export function createRouter<
     return push(source, options)
   }
 
-  const reject: RouterRejectInternal<TOptions['rejections'] | TPlugin['rejections']> = (type: string, { to = null, from = null }: RejectContext = {}, payloadValues?: PayloadValue[]) => {
+  const reject: RouterRejectInternal<TOptions['rejections'] | TPlugin['rejections']> = (type: string, { to = null, from = null }: RejectContext = {}, prefetch?: ComputationStore) => {
     const rejection = getRejectionByType(type)
 
     if (!rejection) {
@@ -626,11 +626,7 @@ export function createRouter<
 
     const route = createResolvedRoute(rejection.route)
     const handleResponse = (event: ComputationResponseEvent): void => onNavigationResponse({ ...event, to, from })
-    const store = navigation.createStore(handleResponse)
-
-    if (payloadValues) {
-      store.setEntries(decodePayloadValues(route, payloadValues, options?.transformer))
-    }
+    const store = prefetch ?? navigation.create(handleResponse)
 
     const entry = { route, store }
     navigation.setActive([...getRouteEntries(), entry])
@@ -717,30 +713,39 @@ export function createRouter<
    */
   async function hydrate(payload: RouterPayload): Promise<void> {
     const to = find(initialUrl, { state: initialState ?? undefined }) ?? null
+    let route = to
+
+    if (payload.kind === 'reject') {
+      const rejection = getRejectionByType(payload.rejection)
+
+      if (!rejection) {
+        return
+      }
+
+      route = createResolvedRoute(rejection.route)
+    }
+
+    if (!route) {
+      reject(NOT_FOUND_REJECTION_TYPE, { to, from: null })
+
+      return
+    }
+
+    const handleResponse = (event: ComputationResponseEvent): void => onNavigationResponse({ ...event, to, from: null })
+    const store = navigation.create(handleResponse)
+    const values = decodePayloadValues(route, payload.values, options?.transformer)
+    store.setEntries(values)
 
     switch (payload.kind) {
       case 'reject':
-        reject(payload.rejection, { to, from: null }, payload.values)
+        reject(payload.rejection, { to, from: null }, store)
 
         return
 
-      case 'success': {
-        if (!to) {
-          reject(NOT_FOUND_REJECTION_TYPE, { to, from: null })
-
-          return
-        }
-
-        const values = decodePayloadValues(to, payload.values, options?.transformer)
-
-        const store = navigation.create()
-
-        store.setEntries(values)
-
+      case 'success':
         await set(initialUrl, { replace: true, state: initialState, hydrating: true, prefetch: store })
 
         return
-      }
 
       default:
         const exhaustive: never = payload
