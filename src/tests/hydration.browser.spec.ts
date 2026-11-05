@@ -59,7 +59,7 @@ test('a payload whose route no longer matches rejects with NotFound', async () =
 })
 
 test('a payload with a rejection is adopted synchronously when the router starts', async () => {
-  embed({ kind: 'reject', url: '/secret', rejection: 'Locked' })
+  embed({ kind: 'reject', url: '/secret', rejection: 'Locked', values: [] })
 
   const locked = createRejection({ type: 'Locked', status: 423 })
   const onRejection = vi.fn()
@@ -78,7 +78,7 @@ test('a payload with a rejection is adopted synchronously when the router starts
 })
 
 test('a reject payload whose url no longer matches rejects with NotFound', async () => {
-  embed({ kind: 'reject', url: '/gone', rejection: 'Locked' })
+  embed({ kind: 'reject', url: '/gone', rejection: 'Locked', values: [] })
 
   const locked = createRejection({ type: 'Locked', status: 423 })
   const onRejection = vi.fn()
