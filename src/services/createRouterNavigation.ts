@@ -1,9 +1,7 @@
-import { shallowReactive } from 'vue'
+import { shallowRef, Ref } from 'vue'
 import { createComputationStore, ComputationStore, ComputationCommitOptions, ComputationResponseEvent, NavigationData } from '@/services/createComputationStore'
 import { createVueAppStore, HasVueAppStore } from '@/services/createVueAppStore'
-import { DataEntry } from '@/services/createDataStore'
 import { ResolvedRoute } from '@/types/resolved'
-import { Rejection } from '@/types/rejection'
 import { CallbackContextResponse } from '@/types/callbackContext'
 import { MaybePromise } from '@/types/utilities'
 
@@ -18,42 +16,25 @@ export type NavigationEntry = {
   store: ComputationStore,
 }
 
-type RejectionEntry = NavigationEntry & {
-  rejection: Rejection,
-}
-
-type NavigationEntries = {
-  route: NavigationEntry | null,
-  rejection: RejectionEntry | null,
-}
-
-type RejectionCommitOptions = {
-  route: ResolvedRoute,
-  to: ResolvedRoute | null,
-  from: ResolvedRoute | null,
-  rejection: Rejection,
-  values?: DataEntry[],
-}
-
 export type RouterNavigationStore = ComputationStore & {
   stage: () => void,
 }
 
 export type RouterNavigationStores = HasVueAppStore & NavigationData & {
-  entries: Readonly<NavigationEntries>,
+  entries: Readonly<Ref<readonly NavigationEntry[]>>,
+  setActive: (entries: NavigationEntry[]) => void,
+  createStore: (onResponse?: (response: ComputationResponseEvent) => MaybePromise<void>) => ComputationStore,
   active: () => NavigationEntry | null,
   current: () => RouterNavigationStore,
   stop: () => void,
   create: () => RouterNavigationStore,
   staged: () => RouterNavigationStore,
   commit: (options: ComputationCommitOptions) => Promise<CallbackContextResponse>[],
-  clearRejection: () => void,
-  reject: (options: RejectionCommitOptions) => Promise<CallbackContextResponse>[],
 }
 
 export function createRouterNavigation({ onResponse }: CreateRouterNavigationOptions = {}): RouterNavigationStores {
   const { setVueApp, runWithContext } = createVueAppStore()
-  const entries = shallowReactive<NavigationEntries>({ route: null, rejection: null })
+  const entries = shallowRef<readonly NavigationEntry[]>([])
   const navigations = {
     current: createRouterNavigationStore(),
     staged: createRouterNavigationStore(),
@@ -83,9 +64,6 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
       if (staged !== instance && staged !== previous) {
         staged.dispose()
       }
-
-      clearRejection()
-      entries.route = { route: options.to, store: instance }
 
       return store.commit(options)
     }
@@ -123,33 +101,33 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     return instance
   }
 
-  function reject({ route, to, from, rejection, values = [] }: RejectionCommitOptions): Promise<CallbackContextResponse>[] {
-    navigations.staged.dispose()
-    navigations.current.abandon()
-    entries.rejection?.store.dispose()
-
-    const handleResponse = (event: ComputationResponseEvent): MaybePromise<void> => onResponse?.({ ...event, to, from })
-    const store = createComputationStore({ runWithContext, onResponse: handleResponse })
-    store.setEntries(values)
-    entries.rejection = { route, store, rejection }
-
-    return store.commit({ to: route, from })
+  function createStore(handleResponse = onResponse): ComputationStore {
+    return createComputationStore({ runWithContext, onResponse: handleResponse })
   }
 
-  function clearRejection(): void {
-    entries.rejection?.store.dispose()
-    entries.rejection = null
+  function setActive(next: NavigationEntry[]): void {
+    const stores = new Set(next.map(({ store }) => store))
+
+    for (const { store } of entries.value) {
+      if (!stores.has(store)) {
+        store.dispose()
+      }
+    }
+
+    entries.value = next
   }
 
-  const active = (): NavigationEntry | null => entries.rejection ?? entries.route
+  const active = (): NavigationEntry | null => entries.value.at(-1) ?? null
   const current = (): RouterNavigationStore => navigations.current
   const staged = (): RouterNavigationStore => navigations.staged
   const commit: RouterNavigationStores['commit'] = (options) => navigations.staged.commit(options)
 
   function stop(): void {
-    navigations.current.dispose()
-    navigations.staged.dispose()
-    entries.rejection?.store.dispose()
+    const stores = new Set([navigations.current, navigations.staged, ...entries.value.map(({ store }) => store)])
+
+    for (const store of stores) {
+      store.dispose()
+    }
   }
 
   const getState: NavigationData['getState'] = (location, route) => navigations.current.getState(location, route)
@@ -164,8 +142,8 @@ export function createRouterNavigation({ onResponse }: CreateRouterNavigationOpt
     current,
     staged,
     commit,
-    reject,
-    clearRejection,
+    setActive,
+    createStore,
     stop,
     create: createRouterNavigationStore,
     getEntries,

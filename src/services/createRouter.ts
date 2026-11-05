@@ -1,11 +1,11 @@
 import { createPath } from '@/services/history'
-import { computed, App, nextTick, ref } from 'vue'
+import { App, nextTick, ref, shallowRef } from 'vue'
 import { createRouterRoute } from '@/services/createRouterRoute'
 import { createIsExternal } from '@/services/createIsExternal'
 import { createActivityTracker } from '@/services/createActivityTracker'
 import { SsrOptionRequiredError } from '@/errors/ssrOptionRequiredError'
 import { parseUrl, updateUrl } from '@/services/urlParser'
-import { createRouterNavigation, RouterNavigationStore } from '@/services/createRouterNavigation'
+import { createRouterNavigation, NavigationEntry, RouterNavigationStore } from '@/services/createRouterNavigation'
 import { createNavigationProgress, NavigationProgressTracker } from '@/services/createNavigationProgress'
 import { getRouteData } from '@/services/getRouteData'
 import { getComputations } from '@/services/getComputations'
@@ -18,7 +18,7 @@ import { getInitialUrl } from '@/services/getInitialUrl'
 import { decodePayloadValues, encodePayloadValues, getHydratingPayload, payloadToScript, PayloadValue, RouterPayload } from '@/services/payload'
 import { setStateValues } from '@/services/state'
 import { Routes } from '@/types/route'
-import { NOT_FOUND_REJECTION_TYPE } from '@/types/rejection'
+import { NOT_FOUND_REJECTION_TYPE, Rejection } from '@/types/rejection'
 import { Router, RouterOptions, ServerRenderResponse, RedirectStatus } from '@/types/router'
 import { IS_ROUTER_SYMBOL, RouterInternal } from '@/types/routerInternal'
 import { RouterPushInternal, RouterPushOptionsInternal, RouterReplaceInternal, RouterReplaceOptionsInternal } from '@/types/routerNavigationInternal'
@@ -38,6 +38,7 @@ import { getGlobalHooksForRouter } from './getGlobalHooksForRouter'
 import { createComponentsStore } from './createComponentsStore'
 import { getComponentsStoreKey } from '@/compositions/useComponentsStore'
 import { getRouterNavigationInjectionKey } from '@/compositions/useRouterNavigation'
+import { getNavigationEntryKey } from '@/compositions/useNavigationEntry'
 import { getViewTransitionKey } from '@/compositions/useViewTransition'
 import { ViewTransition } from '@/components/viewTransition'
 import { getRouterRejectionInjectionKey } from '@/compositions/useRejection'
@@ -323,10 +324,14 @@ export function createRouter<
           activity.add(...values)
           progress.track(...values, ...loadAsyncComponents(to))
 
+          routeEntry.value = { route: to, store: next }
+          navigation.setActive([routeEntry.value])
           routerRoute.updateRoute(to)
         } else {
-          navigation.clearRejection()
+          navigation.setActive(getRouteEntries())
         }
+
+        currentRejection.value = null
 
         progress.close()
         started.value = true
@@ -615,16 +620,22 @@ export function createRouter<
     }
 
     const controller = navigations.begin()
+    navigation.staged().dispose()
+    navigation.current().abandon()
     hooks.runRejectionHooks(rejection, { to, from })
 
     const route = createResolvedRoute(rejection.route)
-    let values
+    const handleResponse = (event: ComputationResponseEvent): void => onNavigationResponse({ ...event, to, from })
+    const store = navigation.createStore(handleResponse)
 
     if (payloadValues) {
-      values = decodePayloadValues(route, payloadValues, options?.transformer)
+      store.setEntries(decodePayloadValues(route, payloadValues, options?.transformer))
     }
 
-    const work = navigation.reject({ route, to, from, rejection, values })
+    const entry = { route, store }
+    navigation.setActive([...getRouteEntries(), entry])
+    currentRejection.value = rejection
+    const work = store.commit({ to: route, from })
     activity.add(...work, ...loadAsyncComponents(route))
     started.value = true
     updateTitle(controller.signal)
@@ -632,7 +643,17 @@ export function createRouter<
 
   const reject: RouterRejectInternal<TOptions['rejections'] | TPlugin['rejections']> = commitRejection
 
-  const currentRejection = computed(() => navigation.entries.rejection?.rejection ?? null)
+  const currentRejection = shallowRef<Rejection | null>(null)
+  const routeEntry = shallowRef<NavigationEntry | null>(null)
+
+  function getRouteEntries(): NavigationEntry[] {
+    if (!routeEntry.value) {
+      return []
+    }
+
+    return [routeEntry.value]
+  }
+
   const routerRoute = createRouterRoute<Router<TRoutes, TOptions, TPlugin>>({
     routerKey,
     route: notFoundRoute,
@@ -644,11 +665,7 @@ export function createRouter<
    * The title that should currently be rendered.
    */
   async function getTitle(): Promise<string | undefined> {
-    for (const entry of [navigation.entries.rejection, navigation.entries.route]) {
-      if (!entry) {
-        continue
-      }
-
+    for (const entry of navigation.entries.value.toReversed()) {
       const title = await entry.route.getTitle()
 
       if (title !== undefined) {
@@ -851,6 +868,7 @@ export function createRouter<
     app.provide(getRouterRejectionInjectionKey(routerKey), currentRejection)
     app.provide(getRouterHooksKey(routerKey), hooks)
     app.provide(getRouterNavigationInjectionKey(routerKey), navigation)
+    app.provide(getNavigationEntryKey(routerKey), routeEntry)
     app.provide(getComponentsStoreKey(routerKey), componentsStore)
     app.provide(getNavigationProgressKey(routerKey), navigationProgress)
     app.provide(visibilityObserverKey, visibilityObserver)
