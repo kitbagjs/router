@@ -1,3 +1,4 @@
+import { getRouteTitle } from '@/services/getRouteTitle'
 import { getRouteLoaderLocation } from '@/services/getRouteLoaderLocation'
 import { DEFAULT_VIEW_NAME } from '@/services/routeViews'
 import { DEFAULT_LOADER_NAME } from '@/services/addLoader'
@@ -42,7 +43,12 @@ export function getCallbackParent(depth: number, { to: route, getValue }: GetCal
     return getValue({ kind: 'props', depth: depth - 1, name })
   }
 
+  function getTitle(): Promise<string | undefined> {
+    return getRouteTitle(route, getValue, depth)
+  }
+
   return {
+    getTitle,
     name: parentName,
     getData,
     getProps,

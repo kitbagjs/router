@@ -95,7 +95,7 @@ describe('getTitle', () => {
     await expect(createResolvedRoute(route).getTitle()).resolves.toBe('Home')
   })
 
-  test('direct title resolution only provides getParentTitle in the context', async () => {
+  test('direct title resolution provides parent access and cancellation in the context', async () => {
     const route = createRoute({ name: 'home', path: '/' }).addView(component)
     const callback = vi.fn(() => 'Home')
     route.setTitle(callback)
@@ -105,6 +105,8 @@ describe('getTitle', () => {
 
     expect(callback).toHaveBeenCalledExactlyOnceWith(resolved, {
       getParentTitle: expect.any(Function),
+      signal: expect.any(AbortSignal),
+      parent: undefined,
     })
   })
 
@@ -128,4 +130,20 @@ test('is not a route or a url', () => {
 
   expect(isRoute(resolved)).toBe(false)
   expect(isUrl(resolved)).toBe(false)
+})
+
+test('direct title reads run only requested dependencies and share them within the read', async () => {
+  const load = vi.fn(() => ({ name: 'Product' }))
+  const unused = vi.fn(() => 'unused')
+  const parent = createRoute({ path: '/parent' }).addLoader(load)
+  const child = createRoute({ parent, path: '/child' })
+    .addLoader(unused, { name: 'unused' })
+    .setTitle(async (_to, { parent }) => {
+      const [first, second] = await Promise.all([parent.getData(), parent.getData()])
+      return `${first.name} - ${second.name}`
+    })
+
+  await expect(createResolvedRoute(child).getTitle()).resolves.toBe('Product - Product')
+  expect(load).toHaveBeenCalledOnce()
+  expect(unused).not.toHaveBeenCalled()
 })

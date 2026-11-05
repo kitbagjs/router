@@ -1,4 +1,4 @@
-import { RouteSetTitle, SetRouteTitle } from '@/types/routeTitle'
+import { SetRouteTitle } from '@/types/routeTitle'
 import { InternalRouteHooks } from '@/types/hooks'
 import { addRedirect } from '@/services/addRedirect'
 import { RouteRedirectFrom, RouteRedirectTo, RedirectToArgs } from '@/types/redirects'
@@ -77,9 +77,13 @@ export function withRouteMethods<TRoute extends Route>(route: TRoute, hooks: Int
   }
 
   const setTitle: SetRouteTitle<Route, TRoute> = (callback) => {
-    const title = route as TRoute & RouteSetTitle
+    const match = route.matches.at(-1)
 
-    title.setTitle(callback)
+    if (!match) {
+      throw new Error('Expected the route to have at least one match')
+    }
+
+    match.title = callback
 
     return result
   }

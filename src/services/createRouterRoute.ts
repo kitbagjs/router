@@ -18,10 +18,11 @@ type CreateRouterRouteOptions<TRouter extends Router = Router> = {
   route: ResolvedRoute,
   push: RouterPush,
   getRouteData: (route: ResolvedRoute) => LegacyValues,
+  getRouteTitle: (route: ResolvedRoute) => Promise<string | undefined>,
 }
 
 export function createRouterRoute<TRouter extends Router>(options: CreateRouterRouteOptions<TRouter>): TRouter['route'] & RouterRouteInternal
-export function createRouterRoute({ routerKey, route: initialRoute, push, getRouteData }: CreateRouterRouteOptions): RouterRoute & RouterRouteInternal {
+export function createRouterRoute({ routerKey, route: initialRoute, push, getRouteData, getRouteTitle }: CreateRouterRouteOptions): RouterRoute & RouterRouteInternal {
   const route = shallowRef(initialRoute)
 
   function getResolvedRoute(): ResolvedRoute {
@@ -93,7 +94,7 @@ export function createRouterRoute({ routerKey, route: initialRoute, push, getRou
   const href = computed(() => route.value.href)
   const canonical = computed(() => route.value.canonical)
   const data = computed(() => getRouteData(route.value))
-  const getTitle = computed(() => route.value.getTitle)
+  const getTitle = (): Promise<string | undefined> => getRouteTitle(route.value)
   const getParam = computed(() => route.value.getParam)
   const getAllParams = computed(() => route.value.getAllParams)
   const loaders = computed(() => getRouteLoaders(route.value))

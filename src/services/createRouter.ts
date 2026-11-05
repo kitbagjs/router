@@ -8,6 +8,7 @@ import { parseUrl, updateUrl } from '@/services/urlParser'
 import { createRouterNavigation, RouterNavigationResponseEvent, RouterNavigationStore } from '@/services/createRouterNavigation'
 import { createNavigationProgress, NavigationProgressTracker } from '@/services/createNavigationProgress'
 import { getRouteData } from '@/services/getRouteData'
+import { getRouteTitle } from '@/services/getRouteTitle'
 import { getComputations } from '@/services/getComputations'
 import { getAsyncComponents, loadAsyncComponents } from '@/utilities/components'
 import { getNavigationProgressKey } from '@/compositions/useNavigation'
@@ -171,6 +172,8 @@ export function createRouter<
   } = getRoutesForRouter(routesOrArrayOfRoutes, plugins, options)
   const notFoundRejection = getRejectionByType('NotFound')
   const navigation = createRouterNavigation({ onResponse: onNavigationResponse })
+  const rejectionNavigation = createRouterNavigation({ onResponse: onNavigationResponse })
+  let rejectionRoute: ResolvedRoute | undefined
   const notFoundRoute = createResolvedRoute(notFoundRejection.route)
 
   const hooks = createRouterHooks({ redirectStatus, onHookAdded: addHookContext })
@@ -621,23 +624,42 @@ export function createRouter<
     hooks.runRejectionHooks(rejection, { to, from })
 
     updateRejection(rejection)
+    rejectionRoute = createResolvedRoute(rejection.route)
+    const values = rejectionNavigation.commit({ to: rejectionRoute, from })
+    activity.add(...values)
     started.value = true
     updateTitle(controller.signal)
   }
 
-  const { currentRejection, updateRejection, clearRejection } = createCurrentRejection()
+  const { currentRejection, updateRejection, clearRejection: resetRejection } = createCurrentRejection()
+
+  function clearRejection(): void {
+    rejectionNavigation.stop()
+    rejectionRoute = undefined
+    resetRejection()
+  }
   const routerRoute = createRouterRoute<Router<TRoutes, TOptions, TPlugin>>({
     routerKey,
     route: notFoundRoute,
     push,
     getRouteData: (route) => getRouteData(navigation, route),
+    getRouteTitle: (route) => getRouteTitle(route, (location) => navigation.getValue(location, route)),
   })
 
   /**
    * The title that should currently be rendered.
    */
   async function getTitle(): Promise<string | undefined> {
-    return await currentRejection.value?.getTitle() ?? routerRoute.getResolvedRoute().getTitle()
+    if (rejectionRoute) {
+      const route = rejectionRoute
+      const title = await getRouteTitle(route, (location) => rejectionNavigation.getValue(location, route)).catch(() => undefined)
+
+      if (title !== undefined) {
+        return title
+      }
+    }
+
+    return routerRoute.getTitle().catch(() => undefined)
   }
 
   /**
@@ -797,6 +819,7 @@ export function createRouter<
     stopped = true
     stopRouteContext()
     navigation.stop()
+    rejectionNavigation.stop()
     navigations.stop()
     navigationProgress.stop()
     history.stopListening()
@@ -810,6 +833,7 @@ export function createRouter<
     app.onUnmount(stop)
     hooks.setVueApp(app)
     navigation.setVueApp(app)
+    rejectionNavigation.setVueApp(app)
 
     const routerView = createRouterView(routerKey)
     const routerLink = createRouterLink(routerKey)

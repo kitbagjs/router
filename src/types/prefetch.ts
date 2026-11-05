@@ -7,6 +7,11 @@ export type PrefetchStrategy = 'eager' | 'lazy' | 'intent'
 
 export type PrefetchConfigOptions = {
   /**
+   * When true route titles will be prefetched.
+   * @default false
+   */
+  title?: boolean | PrefetchStrategy,
+  /**
    * When true any component that is wrapped in vue's defineAsyncComponent will be prefetched
    * @default 'eager'
    */
