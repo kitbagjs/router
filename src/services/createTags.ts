@@ -1,5 +1,5 @@
 import { IS_TAGS_SYMBOL, TagGroup, TagLayer, LinkTag, LinkTagSelector, MetaTag, MetaTagSelector, TagOperation, TagSelector, Tags, TagsInternal } from '@/types/tags'
-import { matchesTag, mergeTags } from '@/services/mergeTags'
+import { mergeTags } from '@/services/mergeTags'
 import { copyTag } from '@/utilities/copyTag'
 import { toTagsSnapshot } from '@/utilities/toTagsSnapshot'
 
@@ -123,22 +123,10 @@ export function createTags(): Tags {
   }
 
   const getMeta: Tags['meta']['get'] = async (selector) => {
-    let target: TagSelector | undefined
-
-    if (selector !== undefined) {
-      target = metaSelector(selector, false)
-    }
-
     const groups = readGroups()
-    const values = groups.flatMap((group) => {
-      if (group.tag === 'meta' && (!target || matchesTag(group, target))) {
-        return [copyTag(group.value)]
-      }
+    const snapshot = toTagsSnapshot(groups)
 
-      return []
-    })
-
-    return values
+    return snapshot.meta.get(selector)
   }
 
   const setMeta: Tags['meta']['set'] = (descriptor) => writeMeta('set', descriptor)
@@ -152,22 +140,10 @@ export function createTags(): Tags {
   }
 
   const getLink: Tags['link']['get'] = async (selector) => {
-    let target: TagSelector | undefined
-
-    if (selector !== undefined) {
-      target = linkSelector(selector, false)
-    }
-
     const groups = readGroups()
-    const values = groups.flatMap((group) => {
-      if (group.tag === 'link' && (!target || matchesTag(group, target))) {
-        return [copyTag(group.value)]
-      }
+    const snapshot = toTagsSnapshot(groups)
 
-      return []
-    })
-
-    return values
+    return snapshot.link.get(selector)
   }
 
   const setLink: Tags['link']['set'] = (descriptor) => writeLink('set', descriptor)

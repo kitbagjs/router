@@ -86,8 +86,12 @@ export type ResolvedLinkTag = Readonly<Omit<LinkTag, 'related'>> & {
 
 export type TagsSnapshot = Readonly<{
   title: string | undefined,
-  meta: readonly ResolvedMetaTag[],
-  link: readonly ResolvedLinkTag[],
+  meta: Readonly<{
+    get: (selector?: MetaTagSelector) => readonly ResolvedMetaTag[],
+  }>,
+  link: Readonly<{
+    get: (selector?: LinkTagSelector) => readonly ResolvedLinkTag[],
+  }>,
 }>
 
 export type Tags = {

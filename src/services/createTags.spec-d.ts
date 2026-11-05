@@ -86,6 +86,19 @@ test('snapshots cannot be written through the read API', async () => {
 
   // @ts-expect-error snapshots are readonly
   snapshot.title = 'Changed'
+
+  // @ts-expect-error snapshot metadata has no write API
+  snapshot.meta.set({ name: 'description', content: 'Changed' })
+  // @ts-expect-error snapshot links have no write API
+  snapshot.link.add({ rel: 'icon', href: '/changed.svg' })
+
+  const images = snapshot.meta.get({ property: 'og:image' })
+  // @ts-expect-error snapshot descriptors are readonly
+  images[0].content = 'Changed'
+
+  const links = snapshot.link.get({ rel: 'icon' })
+  // @ts-expect-error snapshot collections are readonly
+  links.push({ rel: 'icon', href: '/changed.svg' })
 })
 
 test('metadata reads are recursively readonly', async () => {
