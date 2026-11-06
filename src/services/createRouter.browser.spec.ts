@@ -7,6 +7,42 @@ import { createRejection } from './createRejection'
 import echo from '@/components/echo'
 import { getHooks } from '@/types/hooks'
 
+test('lifecycle hooks receive the source that initiated navigation', async () => {
+  const routes = ['initial', 'pushed', 'replaced', 'linked'].map((name) => createRoute({
+    name,
+    path: `/${name}`,
+  }).addView(component))
+  const router = createRouter(routes, {
+    initialUrl: '/initial',
+    historyMode: 'memory',
+  })
+  const beforeEnter = vi.fn()
+  const afterEnter = vi.fn()
+  router.onBeforeRouteEnter(beforeEnter)
+  router.onAfterRouteEnter(afterEnter)
+
+  const wrapper = mount({ template: '<RouterLink to="/linked">Link</RouterLink>' }, {
+    global: {
+      plugins: [router],
+    },
+  })
+
+  await router.start()
+  await router.push('/pushed')
+  await router.replace('/replaced')
+  await wrapper.get('a').trigger('click')
+  await flushPromises()
+  router.back()
+  await vi.waitFor(() => expect(afterEnter).toHaveBeenCalledTimes(5))
+  await router.push('/missing')
+
+  const sources = ['initial', 'push', 'replace', 'link', 'history', 'push']
+  expect(beforeEnter.mock.calls.map(([, context]) => context.source)).toEqual(sources)
+  expect(afterEnter.mock.calls.map(([, context]) => context.source)).toEqual(sources)
+
+  wrapper.unmount()
+})
+
 test.each(['startup', 'started'] as const)('unmounting the app releases router resources during %s', async (lifecycle) => {
   const route = createRoute({ name: 'home', path: '/' })
   const router = createRouter([route], { initialUrl: '/' })

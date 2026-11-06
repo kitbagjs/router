@@ -322,3 +322,5 @@ declare module 'vue' {
     RouterProgress: typeof RouterProgress,
   }
 }
+
+export type { NavigationSource } from '@/types/hooks'

@@ -138,12 +138,15 @@ export type AfterHookLifecycle = 'onAfterRouteEnter' | 'onAfterRouteUpdate' | 'o
  */
 export type HookLifecycle = BeforeHookLifecycle | AfterHookLifecycle
 
+export type NavigationSource = 'push' | 'replace' | 'link' | 'history' | 'initial' | 'rejection'
+
 export type AfterHookContext<
   TRoute extends Route,
   TRoutes extends Routes,
   TRejections extends Rejections
 > = {
   lifecycle: 'after',
+  source: NavigationSource,
   remove: HookRemove,
   reject: RouterReject<TRejections>,
   push: RouterPush<TRoutes>,
@@ -158,6 +161,7 @@ export type BeforeHookContext<
   TRejections extends Rejections
 > = {
   lifecycle: 'before',
+  source: NavigationSource,
   remove: HookRemove,
   reject: RouterReject<TRejections>,
   push: RouterPush<TRoutes>,
@@ -312,6 +316,7 @@ export type HookRunnerContext<TRoutes extends Routes = Routes> = {
   to: RouterResolvedRouteUnion<TRoutes> | null,
   from: RouterResolvedRouteUnion<TRoutes> | null,
   signal: AbortSignal,
+  source?: NavigationSource,
 }
 
 export type BeforeHookRunner = <TRoutes extends Routes>(context: HookRunnerContext<TRoutes> & { progress?: NavigationProgressTracker }) => Promise<BeforeHookResponse>
