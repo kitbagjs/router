@@ -6,8 +6,6 @@ import { getRouteProps } from '@/services/getRouteProps'
 import { PropsResult } from '@/utilities/props'
 import { createUseRouterNavigation } from '@/compositions/useRouterNavigation'
 import { Router } from '@/types/router'
-import { ResolvedRoute } from '@/types/resolved'
-import { createUseRoute } from '@/compositions/useRoute'
 import { useIsServerRendering } from '@/compositions/useIsServerRendering'
 import { useHasSuspenseBoundary } from '@/compositions/useHasSuspenseBoundary'
 import { createUseRouterSuspense } from '@/compositions/useRouterSuspense'
@@ -30,28 +28,31 @@ type CreateComponentWrapperConfig = {
 
 export function createComponentPropsWrapper(routerKey: InjectionKey<Router>, { id, name, component }: CreateComponentWrapperConfig): Component {
   const useRouterNavigation = createUseRouterNavigation(routerKey)
-  const useRoute = createUseRoute(routerKey)
   const useRouterSuspense = createUseRouterSuspense(routerKey)
 
   return defineComponent({
     name: 'PropsWrapper',
     expose: [],
     setup() {
-      const navigation = useRouterNavigation()
-      const route: ResolvedRoute = useRoute()
+      const { active } = useRouterNavigation()
       const isServerRendering = useIsServerRendering()
       const hasSuspenseBoundary = useHasSuspenseBoundary()
       const reportError = useRouterSuspense('props')
       const props = computed(() => {
-        const depth = route.matches.findIndex((match) => match.id === id)
+        if (!active.value?.route) {
+          return { kind: 'abandoned' } as const
+        }
 
-        return getRouteProps(navigation.current(), { depth, name }, route)
+        const { route, store } = active.value
+        const depth = route.views.findIndex((match) => match.id === id)
+
+        return getRouteProps(store, { depth, name }, route)
       })
 
       watch(props, async (props) => {
-        const owner = navigation.current()
+        const owner = active.value
         const result = await props
-        const current = navigation.current()
+        const current = active.value
 
         if (current !== owner || result.kind !== 'error') {
           return

@@ -15,7 +15,11 @@ import { RouteUpdate } from '@/types/routeUpdate'
 import { NavigationProgressTracker } from '@/services/createNavigationProgress'
 
 export function getHooks(value: Record<string, unknown> | undefined | null): Hooks[] {
-  return !!value && (isRoute(value) || isResolvedRoute(value) || isRejection(value)) ? value.hooks : []
+  if (isResolvedRoute(value)) {
+    return [value.hooks]
+  }
+
+  return !!value && (isRoute(value) || isRejection(value)) ? value.hooks : []
 }
 
 export function combineHooks(parent: Route, child: Route): Hooks[] {

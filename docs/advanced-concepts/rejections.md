@@ -2,6 +2,10 @@
 
 Kitbag Router ships with built in support for rejection handling. Each rejection type you need is registered with a corresponding view, if rejections happen at any point in the router lifecycle the router will handle it.
 
+A rejection starts a new navigation without changing the browser URL. It replaces the rendered views and runs the normal leave and enter hooks. Guards can use `isResolvedRejection(to)` to skip checks that should only apply to ordinary routes.
+
+`useRoute()` describes the attempted destination when navigation rejects, or the current route when `router.reject()` is called directly. Its URL, params, state, and original matches remain available. A rejection gets a fresh computation store; a rejection view can request an original loader through `useLoader`, but the original route's loaders do not all run automatically. Navigating to the same URL again returns to the ordinary route.
+
 ## Rejection Types
 
 Creating custom rejections is extremely easily with the [`createRejection`](/api/functions/createRejection) utility. For example, we can add a custom rejection for "AuthNeeded".

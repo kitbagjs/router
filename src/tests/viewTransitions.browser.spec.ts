@@ -126,13 +126,13 @@ test('a browser without the api navigates as before', async () => {
   }
 })
 
-test('a navigation to a url no route matches does not transition', async () => {
+test('a navigation to a url no route matches transitions to NotFound', async () => {
   const started = spyOnTransitions()
   const router = await startRouter({ viewTransition: true })
 
   await router.push('/nowhere')
 
-  expect(started).not.toHaveBeenCalled()
+  expect(started).toHaveBeenCalledOnce()
 })
 
 test('a route option overrides the router option', async () => {
@@ -341,7 +341,7 @@ test('a superseding query navigation loads its own data', async () => {
   expect(load).toHaveBeenCalledTimes(2)
 })
 
-test('props that reject still commit, and the rejection is handled as it is without a transition', async () => {
+test('props that reject start a new transition to the rejection', async () => {
   const started = spyOnTransitions()
   const rejecting = createRoute({ name: 'rejecting', path: '/rejecting' }).addView(component, {
     props: (_route, { reject }) => {
@@ -358,7 +358,7 @@ test('props that reject still commit, and the rejection is handled as it is with
   await router.push('rejecting')
   await flushPromises()
 
-  expect(started).toHaveBeenCalledOnce()
+  expect(started).toHaveBeenCalledTimes(2)
   expect(onRejection).toHaveBeenCalledOnce()
 })
 

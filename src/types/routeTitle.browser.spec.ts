@@ -1,3 +1,4 @@
+import { isResolvedRejection } from '@/types/resolved'
 import { expect, test, vi } from 'vitest'
 import { createRoute } from '@/services/createRoute'
 import { component } from '@/utilities/testHelpers'
@@ -184,6 +185,10 @@ test('rejection from a hook updates document title', async () => {
   })
 
   router.onBeforeRouteEnter((to, { reject }) => {
+    if (isResolvedRejection(to)) {
+      return
+    }
+
     if (to.name === 'secret') {
       reject('Locked')
     }
@@ -194,12 +199,12 @@ test('rejection from a hook updates document title', async () => {
   await flushPromises()
 
   expect(document.title).toBe('locked')
-  expect(callback).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ name: 'Locked' }), {
+  expect(callback).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ name: 'secret' }), {
     getParentTitle: expect.any(Function),
   })
 })
 
-test('rejection without a title in a before hook keeps the current route title', async () => {
+test('rejection without a title in a before hook uses the attempted route title', async () => {
   const locked = createRejection({ type: 'Locked', status: 423, component })
 
   const home = createRoute({ name: 'home', path: '/' }).addView(component)
@@ -214,6 +219,10 @@ test('rejection without a title in a before hook keeps the current route title',
   })
 
   router.onBeforeRouteEnter((to, { reject }) => {
+    if (isResolvedRejection(to)) {
+      return
+    }
+
     if (to.name === 'secret') {
       reject('Locked')
     }
@@ -224,7 +233,7 @@ test('rejection without a title in a before hook keeps the current route title',
   await router.push('secret')
   await flushPromises()
 
-  expect(document.title).toBe('home')
+  expect(document.title).toBe('secret')
 })
 
 test('rejection without a title in an after hook falls back to the current route title', async () => {
@@ -241,6 +250,10 @@ test('rejection without a title in an after hook falls back to the current route
   })
 
   router.onAfterRouteEnter((to, { reject }) => {
+    if (isResolvedRejection(to)) {
+      return
+    }
+
     if (to.name === 'secret') {
       reject('Locked')
     }
@@ -269,6 +282,10 @@ test('rejection with a title wins over the current route title', async () => {
   })
 
   router.onBeforeRouteEnter((to, { reject }) => {
+    if (isResolvedRejection(to)) {
+      return
+    }
+
     if (to.name === 'secret') {
       reject('Locked')
     }
