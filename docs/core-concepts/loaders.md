@@ -48,7 +48,7 @@ const settings = createRoute({...})
 
 ## Reading data in a component
 
-Pass a definition from `route.loaders` to [`useLoader`](/composables/useLoader).
+Pass a definition from `route.loaders` to [`useLoader`](/composables/useLoader) inside a component rendered beneath `RouterView`. For shared UI such as a header, use a layout or named view so its loaders belong to that navigation.
 
 ```vue
 <!-- UserPage.vue -->

@@ -1,6 +1,6 @@
 # useLoader
 
-Read a loader's data, loading state, and error. Pass a loader definition, either imported or read from `route.loaders`:
+Read a loader's data, loading state, and error from a component beneath `RouterView`. Calling `useLoader` outside a view throws an error. Pass a loader definition, either imported or read from `route.loaders`:
 
 ```vue
 <script setup lang="ts">

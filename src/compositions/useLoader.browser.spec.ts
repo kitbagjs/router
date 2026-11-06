@@ -12,16 +12,28 @@ import { warnLoaderFallback } from '@/services/warnLoaderFallback'
 vi.mock('@/services/warnLoaderFallback', () => ({ warnLoaderFallback: vi.fn() }))
 
 function mountConsumer<TResult>(router: Router, setup: () => TResult): TResult {
-  const wrapper = mount(defineComponent({
+  let result!: TResult
+  const consumer = defineComponent({
     setup() {
-      const result = setup()
-      // Keep the composable's refs intact when reading through the component instance.
-      return { getResult: () => result }
+      result = setup()
+      return () => null
     },
-    render: () => null,
-  }), { global: { plugins: [router] } })
+  })
+  const { RouterView } = createRouterAssets(router)
+  mount(RouterView, {
+    slots: {
+      default: ({ rejection, component }) => {
+        if (rejection && component) {
+          return h(component)
+        }
 
-  return wrapper.vm.getResult()
+        return h(consumer)
+      },
+    },
+    global: { plugins: [router] },
+  })
+
+  return result
 }
 
 test('shares the route load between consumers', async () => {
@@ -162,7 +174,8 @@ describe('fallback loaders', () => {
       },
       render: () => null,
     })
-    const wrapper = mount(consumer, { global: { plugins: [router] } })
+    const { RouterView } = createRouterAssets(router)
+    const wrapper = mount(RouterView, { slots: { default: () => h(consumer) }, global: { plugins: [router] } })
 
     expect(load).toHaveBeenCalledTimes(1)
     wrapper.unmount()
@@ -625,4 +638,21 @@ test('a view renders with its props while a loader is still running', async () =
   await flushPromises()
 
   expect(wrapper.text()).toBe('props:data')
+})
+
+test('requires a RouterView ancestor', async () => {
+  const loader = createLoader({ load: vi.fn() })
+  const router = createRouter([createRoute({ path: '/' })], { initialUrl: '/' })
+  const error = vi.fn()
+  const consumer = defineComponent({
+    setup() {
+      useLoader(loader)
+    },
+    render: () => null,
+  })
+  expect(() => mount(consumer, { global: { plugins: [router], config: { errorHandler: error } } })).toThrow('useLoader must be called inside a RouterView')
+  await router.start()
+
+  expect(error).toHaveBeenCalledWith(new Error('useLoader must be called inside a RouterView'), expect.anything(), 'setup function')
+  expect(loader.load).not.toHaveBeenCalled()
 })
