@@ -147,6 +147,10 @@ export type RenderReject = {
    * The title of the rejection that rendered, for the document sent to the client.
    */
   title: string | undefined,
+  /**
+   * Computed values that could not be encoded into the payload.
+   */
+  failures: PayloadValueError[],
 }
 
 export type RenderRedirect = {

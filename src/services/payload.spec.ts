@@ -7,9 +7,9 @@ import { decodePayloadValues, encodePayloadValues, isRouterPayload } from '@/ser
 import { getDataKey } from '@/services/getDataKey'
 
 test('a payload is one of the two kinds the server renders', () => {
-  expect(isRouterPayload({ kind: 'reject', url: '/', rejection: 'NotFound' })).toBe(true)
+  expect(isRouterPayload({ kind: 'reject', url: '/', rejection: 'NotFound', values: [] })).toBe(true)
   expect(isRouterPayload({ kind: 'success', url: '/', values: [] })).toBe(true)
-  expect(isRouterPayload({ kind: 'reject', url: '/', rejection: 404 })).toBe(false)
+  expect(isRouterPayload({ kind: 'reject', url: '/', rejection: 404, values: [] })).toBe(false)
   expect(isRouterPayload({ kind: 'success', url: '/' })).toBe(false)
   expect(isRouterPayload({ url: '/', values: [] })).toBe(false)
 })
@@ -20,7 +20,7 @@ test('encoding and decoding preserve the same key across server and client', asy
     .addLoader(() => {
       throw new Error('failed')
     }, { name: 'failed' }))
-  const store = createRouterNavigation().create()
+  const store = createRouterNavigation().createStore()
   store.compute(server, getComputations(server))
   const { values, failures } = encodePayloadValues(server, store.getEntries())
 

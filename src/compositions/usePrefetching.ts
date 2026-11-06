@@ -8,7 +8,7 @@ import { useVisibilityObserver } from './useVisibilityObserver'
 import { useEventListener } from './useEventListener'
 import { Router } from '@/types/router'
 import { getComputations, getComputationsForStrategy } from '@/services/getComputations'
-import { RouterNavigationStore } from '@/services/createRouterNavigation'
+import { ComputationStore } from '@/services/createComputationStore'
 import { Destination, isSameDestination } from '@/utilities/isSameDestination'
 import { setStateValues } from '@/services/state'
 
@@ -19,7 +19,7 @@ type UsePrefetchingConfig = PrefetchConfigs & {
 type UsePrefetching = {
   element: Ref<HTMLElement | undefined>,
   enabled: Ref<boolean>,
-  take: () => RouterNavigationStore,
+  take: () => ComputationStore,
 }
 
 type UsePrefetchingFunction = (config: MaybeRefOrGetter<UsePrefetchingConfig>) => UsePrefetching
@@ -31,7 +31,7 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
     const element = ref<HTMLElement>()
 
     const navigation = useRouterNavigation()
-    let prefetch = navigation.create()
+    let prefetch = navigation.createStore()
     const { isElementVisible } = useVisibilityObserver(element)
 
     const enabled = computed(() => {
@@ -50,7 +50,7 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
 
     const take: UsePrefetching['take'] = () => {
       const prepared = prefetch
-      prefetch = navigation.create()
+      prefetch = navigation.createStore()
 
       return prepared
     }
@@ -71,7 +71,7 @@ export function createUsePrefetching<TRouter extends Router>(routerKey: Injectio
 
     watch(destination, () => {
       prefetch.dispose()
-      prefetch = navigation.create()
+      prefetch = navigation.createStore()
       prefetchRoute()
     }, {
       immediate: true,

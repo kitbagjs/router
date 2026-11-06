@@ -86,6 +86,10 @@ type RejectPayload = {
    * The type of the rejection the server rendered.
    */
   rejection: string,
+  /**
+   * Computed values for the rejection route.
+   */
+  values: PayloadValue[],
 }
 
 function isPayloadValue(value: unknown): value is PayloadValue {
@@ -99,8 +103,12 @@ export function isRouterPayload(value: unknown): value is RouterPayload {
     return false
   }
 
+  if (!Array.isArray(value.values) || !value.values.every(isPayloadValue)) {
+    return false
+  }
+
   if (value.kind === 'success') {
-    return Array.isArray(value.values) && value.values.every(isPayloadValue)
+    return true
   }
 
   if (value.kind === 'reject') {

@@ -3,10 +3,11 @@ import { createUseRejection } from '@/compositions/useRejection'
 import { createUseRoute } from '@/compositions/useRoute'
 import { createUseRouter } from '@/compositions/useRouter'
 import { createUseRouterDepth } from '@/compositions/useRouterDepth'
-import { isRejection, RouterRejection } from '@/types/rejection'
+import { RouterRejection } from '@/types/rejection'
 import { RouterRoute } from '@/types/routerRoute'
 import { Router } from '@/types/router'
-import { Component, computed, defineComponent, EmitsOptions, h, InjectionKey, onServerPrefetch, SetupContext, SlotsType, UnwrapRef, VNode } from 'vue'
+import { createUseRouterNavigation, getViewNavigationKey } from '@/compositions/useRouterNavigation'
+import { Component, computed, defineComponent, EmitsOptions, h, InjectionKey, onServerPrefetch, provide, SetupContext, SlotsType, UnwrapRef, VNode } from 'vue'
 
 export type RouterViewProps = {
   name?: string,
@@ -23,6 +24,7 @@ type RouterViewSlots = {
 // Inferring the return type of the component is more accurate than defining it manually
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export function createRouterView<TRouter extends Router>(routerKey: InjectionKey<TRouter>) {
+  const useRouterNavigation = createUseRouterNavigation(routerKey)
   const useRoute = createUseRoute(routerKey)
   const useRouter = createUseRouter(routerKey)
   const useRejection = createUseRejection(routerKey)
@@ -34,6 +36,9 @@ export function createRouterView<TRouter extends Router>(routerKey: InjectionKey
     const router = useRouter()
     const rejection = useRejection()
     const depth = useRouterDepth({ increment: true })
+    const navigation = useRouterNavigation()
+    const active = navigation.active
+    provide(getViewNavigationKey(routerKey), active)
 
     onServerPrefetch(async () => {
       await router.start()
@@ -46,11 +51,7 @@ export function createRouterView<TRouter extends Router>(routerKey: InjectionKey
         return null
       }
 
-      if (isRejection(rejection.value)) {
-        return rejection.value.route.matches.at(0)?.views.default.component ?? null
-      }
-
-      const match = route.matches.at(depth)
+      const match = active.value?.route?.matches.at(depth)
 
       if (!match) {
         return null

@@ -59,7 +59,7 @@ test('a payload whose route no longer matches rejects with NotFound', async () =
 })
 
 test('a payload with a rejection is adopted synchronously when the router starts', async () => {
-  embed({ kind: 'reject', url: '/secret', rejection: 'Locked' })
+  embed({ kind: 'reject', url: '/secret', rejection: 'Locked', values: [] })
 
   const locked = createRejection({ type: 'Locked', status: 423 })
   const onRejection = vi.fn()
@@ -77,8 +77,8 @@ test('a payload with a rejection is adopted synchronously when the router starts
   expect(onRejection).toHaveBeenCalledWith('Locked', { to: expect.objectContaining({ name: 'secret' }), from: null, remove: expect.any(Function) })
 })
 
-test('a reject payload whose url no longer matches rejects with NotFound', async () => {
-  embed({ kind: 'reject', url: '/gone', rejection: 'Locked' })
+test('a rejection payload is restored even when its url has no matching route', async () => {
+  embed({ kind: 'reject', url: '/gone', rejection: 'Locked', values: [] })
 
   const locked = createRejection({ type: 'Locked', status: 423 })
   const onRejection = vi.fn()
@@ -89,7 +89,7 @@ test('a reject payload whose url no longer matches rejects with NotFound', async
 
   await router.start()
 
-  expect(onRejection).toHaveBeenCalledWith('NotFound', { to: null, from: null, remove: expect.any(Function) })
+  expect(onRejection).toHaveBeenCalledWith('Locked', { to: null, from: null, remove: expect.any(Function) })
 })
 
 test('adopting a payload leaves the document title the server rendered', async () => {
