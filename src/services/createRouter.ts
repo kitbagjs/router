@@ -10,7 +10,7 @@ import { SsrOptionRequiredError } from '@/errors/ssrOptionRequiredError'
 import { parseUrl, updateUrl } from '@/services/urlParser'
 import { createRouterNavigation } from '@/services/createRouterNavigation'
 import { BeforeNavigationResult } from '@/services/createNavigation'
-import { createNavigationProgress, NavigationProgressTracker } from '@/services/createNavigationProgress'
+import { createNavigationProgress } from '@/services/createNavigationProgress'
 import { getRouteData } from '@/services/getRouteData'
 import { getComputations } from '@/services/getComputations'
 import { getAsyncComponents, loadAsyncComponents } from '@/utilities/components'
@@ -82,26 +82,10 @@ type RouterUpdateOptions = {
   hydrating?: boolean,
 }
 
-type RunHooksContext = {
-  controller: AbortController,
-  to: ResolvedRoute | null,
-  from: ResolvedRoute | null,
-}
-
 type ViewTransitionOptions = {
   to: ResolvedRoute | null,
   from: ResolvedRoute | null,
   options: RouterUpdateOptions,
-  enabled: boolean,
-}
-
-type RunBeforeHooksContext = RunHooksContext & {
-  url: string,
-  options: RouterUpdateOptions,
-  progress: NavigationProgressTracker,
-}
-
-type RunAfterHooksContext = RunHooksContext & {
   enabled: boolean,
 }
 
@@ -191,100 +175,6 @@ export function createRouter<
     return getMatchForUrl(filteredRoutes, url, { ...resolveOptions, ...parseOptions })
   }
 
-  /**
-   * Runs the before hooks for a navigation and reacts to their response. Reports whether the
-   * navigation should continue.
-   */
-  async function runBeforeHooks({ controller, to, from, url, options, progress }: RunBeforeHooksContext): Promise<boolean> {
-    const response = await hooks.runBeforeRouteHooks({ to, from, signal: controller.signal, progress })
-
-    if (controller.signal.aborted) {
-      return false
-    }
-
-    switch (response.status) {
-      case 'ABORT':
-        options.traversal?.restore()
-        progress.abort()
-
-        return false
-
-      case 'PUSH':
-      case 'REDIRECT':
-        await push(...response.to)
-
-        return false
-
-      case 'REJECT':
-        if (options.updateHistory === false) {
-          reject(response.type, { to, from })
-          progress.abort()
-
-          return false
-        }
-
-        if (options.traversal) {
-          options.traversal.commit()
-        } else {
-          history.update(url, options)
-        }
-        reject(response.type, { to, from })
-        progress.abort()
-
-        return false
-
-      case 'SUCCESS':
-        if (options.updateHistory === false) {
-          return true
-        }
-
-        if (options.traversal) {
-          options.traversal.commit()
-        } else {
-          history.update(url, options)
-        }
-
-        return true
-
-      default:
-        const exhaustive: never = response
-        throw new Error(`Switch is not exhaustive for before hook response status: ${JSON.stringify(exhaustive)}`)
-    }
-  }
-
-  /**
-   * Runs the after hooks for a navigation and reacts to their response.
-   */
-  async function runAfterHooks({ controller, to, from, enabled }: RunAfterHooksContext): Promise<void> {
-    if (!enabled) {
-      return
-    }
-
-    const response = await hooks.runAfterRouteHooks({ to, from, signal: controller.signal })
-
-    if (controller.signal.aborted) {
-      return
-    }
-
-    switch (response.status) {
-      case 'PUSH':
-        await push(...response.to)
-        break
-
-      case 'REJECT':
-        controller.abort()
-        reject(response.type, { to, from })
-        break
-
-      case 'SUCCESS':
-        break
-
-      default:
-        const exhaustive: never = response
-        throw new Error(`Switch is not exhaustive for after hook response status: ${JSON.stringify(exhaustive)}`)
-    }
-  }
-
   const set = activity.wrap(async (url: string, options: RouterUpdateOptions = {}): Promise<void> => {
     if (pathHasTrailingSlash(url) && shouldRemoveTrailingSlashes) {
       const cleanedUrl = removeTrailingSlashesFromPath(url)
@@ -330,11 +220,52 @@ export function createRouter<
       navigation: options.navigation,
     })
 
-    async function beforeNavigation(controller: AbortController): Promise<BeforeNavigationResult> {
-      const allowed = await runBeforeHooks({ controller, to, from, url, options, progress })
+    function updateNavigationHistory(): void {
+      if (options.updateHistory === false) {
+        return
+      }
 
-      if (!allowed) {
+      if (options.traversal) {
+        options.traversal.commit()
+      } else {
+        history.update(url, options)
+      }
+    }
+
+    async function beforeNavigation(controller: AbortController): Promise<BeforeNavigationResult> {
+      const response = await hooks.runBeforeRouteHooks({ to, from, signal: controller.signal, progress })
+
+      if (controller.signal.aborted) {
         return 'abort'
+      }
+
+      switch (response.status) {
+        case 'ABORT':
+          options.traversal?.restore()
+          progress.abort()
+
+          return 'abort'
+
+        case 'PUSH':
+        case 'REDIRECT':
+          await push(...response.to)
+
+          return 'abort'
+
+        case 'REJECT':
+          updateNavigationHistory()
+          reject(response.type, { to, from })
+          progress.abort()
+
+          return 'abort'
+
+        case 'SUCCESS':
+          updateNavigationHistory()
+          break
+
+        default:
+          const exhaustive: never = response
+          throw new Error(`Switch is not exhaustive for before hook response status: ${JSON.stringify(exhaustive)}`)
       }
 
       if (external) {
@@ -350,8 +281,34 @@ export function createRouter<
       return 'continue'
     }
 
-    function afterNavigation(controller: AbortController): Promise<void> {
-      return runAfterHooks({ controller, to, from, enabled: !isSSR })
+    async function afterNavigation(controller: AbortController): Promise<void> {
+      if (isSSR) {
+        return
+      }
+
+      const response = await hooks.runAfterRouteHooks({ to, from, signal: controller.signal })
+
+      if (controller.signal.aborted) {
+        return
+      }
+
+      switch (response.status) {
+        case 'PUSH':
+          await push(...response.to)
+          break
+
+        case 'REJECT':
+          controller.abort()
+          reject(response.type, { to, from })
+          break
+
+        case 'SUCCESS':
+          break
+
+        default:
+          const exhaustive: never = response
+          throw new Error(`Switch is not exhaustive for after hook response status: ${JSON.stringify(exhaustive)}`)
+      }
     }
 
     function commitNavigation(work: Promise<unknown>[], controller: AbortController): void {
