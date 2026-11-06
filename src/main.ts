@@ -325,3 +325,4 @@ declare module 'vue' {
 
 export { isResolvedRejection } from '@/types/resolved'
 export type { Resolved, ResolvedRejection } from '@/types/resolved'
+export type { NavigationSource } from '@/types/hooks'

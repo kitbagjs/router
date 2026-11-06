@@ -1,4 +1,5 @@
 import { RouterRoute } from '@/types/routerRoute'
+import { NavigationSource } from '@/types/hooks'
 import { ComputationStore } from '@/services/createComputationStore'
 import { ResolvedRoute } from '@/types/resolved'
 import { Routes } from '@/types/route'
@@ -17,6 +18,7 @@ import { UrlString } from '@/types/urlString'
 export type RouterPushOptionsInternal<
   TState = unknown
 > = RouterPushOptions<TState> & {
+  source?: NavigationSource,
   redirectStatus?: RedirectStatus,
   prefetch?: ComputationStore,
 }
@@ -24,6 +26,7 @@ export type RouterPushOptionsInternal<
 export type RouterReplaceOptionsInternal<
   TState = unknown
 > = RouterReplaceOptions<TState> & {
+  source?: NavigationSource,
   redirectStatus?: RedirectStatus,
   prefetch?: ComputationStore,
 }
