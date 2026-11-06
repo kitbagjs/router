@@ -189,7 +189,12 @@ export function createRouter<
     }
 
     const to = find(url, options) ?? null
-    if (!to && !isExternal(url)) {
+
+    if (isExternal(url)) {
+      return navigate(to, url, options)
+    }
+
+    if (!to) {
       const route = createResolvedRejection(getUnmatchedRoute(url), notFoundRejection)
       hooks.runRejectionHooks(notFoundRejection, { to: null, from: getFromRouteForHooks() })
 
