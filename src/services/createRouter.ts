@@ -33,7 +33,7 @@ import { RouterResolve, RouterResolveOptions } from '@/types/routerResolve'
 import { RouteNotFoundError } from '@/errors/routeNotFoundError'
 import { createResolvedRoute } from '@/services/createResolvedRoute'
 import { isResolvedRejection, ResolvedRoute } from '@/types/resolved'
-import { RejectContext, RouterRejectInternal } from '@/types/routerReject'
+import { RejectContext, RouterReject } from '@/types/routerReject'
 import { EmptyRouterPlugin, RouterPlugin } from '@/types/routerPlugin'
 import { getRoutesForRouter } from './getRoutesForRouter'
 import { getGlobalHooksForRouter } from './getGlobalHooksForRouter'
@@ -80,6 +80,10 @@ type RouterUpdateOptions = {
    * consulted and the title the markup carries is kept.
    */
   hydrating?: boolean,
+}
+
+type RejectOptions = RouterUpdateOptions & RejectContext & {
+  url?: string,
 }
 
 type ViewTransitionOptions = {
@@ -195,10 +199,12 @@ export function createRouter<
     }
 
     if (!to) {
-      const route = createResolvedRejection(getUnmatchedRoute(url), notFoundRejection)
-      hooks.runRejectionHooks(notFoundRejection, { to: null, from: getFromRouteForHooks() })
-
-      return navigate(route, url, options)
+      return reject('NotFound', {
+        updateHistory: true,
+        ...options,
+        to: null,
+        url,
+      })
     }
 
     return navigate(to, url, options)
@@ -540,7 +546,7 @@ export function createRouter<
     return push(source, options)
   }
 
-  const reject: RouterRejectInternal<TOptions['rejections'] | TPlugin['rejections']> = (type: string, context: RejectContext = {}) => {
+  function reject(type: string, options: RejectOptions = {}): Promise<void> | void {
     const rejection = getRejectionByType(type)
 
     if (!rejection || stopped) {
@@ -548,12 +554,16 @@ export function createRouter<
     }
 
     const current = getFromRouteForHooks()
-    const to = context.to ?? current ?? getUnmatchedRoute(initialUrl)
-    const from = context.from ?? current
-    const route = createResolvedRejection(to, rejection)
+    const {
+      to = current ?? getUnmatchedRoute(initialUrl),
+      from = current,
+      url = to?.href ?? initialUrl,
+      ...navigationOptions
+    } = options
+    const route = createResolvedRejection(to ?? getUnmatchedRoute(url), rejection)
 
     hooks.runRejectionHooks(rejection, { to, from })
-    navigate(route, route.href, { updateHistory: false })
+    return navigate(route, url, { updateHistory: false, ...navigationOptions })
   }
 
   const currentRejection = computed(() => {
@@ -802,6 +812,10 @@ export function createRouter<
     addContext,
   } satisfies RouterInternal
 
+  const routerReject: RouterReject<TOptions['rejections'] | TPlugin['rejections']> = (type) => {
+    void reject(type)
+  }
+
   const router: Router<TRoutes, TOptions, TPlugin> & RouterInternal = {
     ...internal,
     route: routerRoute,
@@ -809,7 +823,7 @@ export function createRouter<
     find,
     push,
     replace,
-    reject,
+    reject: routerReject,
     refresh: history.refresh,
     forward: history.forward,
     back: history.back,
