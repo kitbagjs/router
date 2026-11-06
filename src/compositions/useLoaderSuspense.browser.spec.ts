@@ -2,7 +2,7 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { expect, test, vi } from 'vitest'
 import { defineComponent, h, onErrorCaptured, onScopeDispose, Suspense } from 'vue'
-import { createLoader, createRoute, createRouter, RouterSuspense, UseLoader, UseLoaderResolved, useLoader } from '@/main'
+import { createLoader, createRoute, createRouter, RouterView, RouterSuspense, UseLoader, UseLoaderResolved, useLoader } from '@/main'
 
 const loaderAttachments = [
   { attachment: 'attached', attached: true },
@@ -32,7 +32,7 @@ test.each(loaderAttachments)('retains data while the next load is pending ($atta
     },
   })
   const wrapper = mount(RouterSuspense, {
-    slots: { default: () => h(consumer), fallback: () => h('p', 'waiting') },
+    slots: { default: () => h(RouterView, null, { default: () => h(consumer) }), fallback: () => h('p', 'waiting') },
     global: { plugins: [router] },
   })
 
@@ -79,7 +79,7 @@ test.each(loaderAttachments)('retains the latest success even when data was not 
     },
   })
   mount(RouterSuspense, {
-    slots: { default: () => h(consumer) },
+    slots: { default: () => h(RouterView, null, { default: () => h(consumer) }) },
     global: { plugins: [router] },
   })
   await flushPromises()
@@ -112,7 +112,7 @@ test.each(loaderAttachments)('accepts undefined as a successful loader value ($a
     },
   })
   const wrapper = mount(RouterSuspense, {
-    slots: { default: () => h(consumer) },
+    slots: { default: () => h(RouterView, null, { default: () => h(consumer) }) },
     global: { plugins: [router] },
   })
   await flushPromises()
@@ -138,12 +138,13 @@ test.each(['throw', 'reject'] as const)('rejects with the original loader error 
   const router = createRouter([route], { initialUrl: '/' })
   await router.start()
   let state: UseLoader<string> | undefined
-  mount(defineComponent({
+  const consumer = defineComponent({
     setup() {
       state = useLoader(loader)
       return () => null
     },
-  }), { global: { plugins: [router] } })
+  })
+  mount(RouterView, { slots: { default: () => h(consumer) }, global: { plugins: [router] } })
 
   await expect(state).rejects.toBe(failure)
 })
@@ -175,7 +176,7 @@ test.each(loaderAttachments)('shows the error slot when the initial load fails (
   const predicate = vi.fn(() => false)
   const wrapper = mount(RouterSuspense, {
     props: { props: false, catch: predicate },
-    slots: { default: () => h(consumer), fallback: () => h('p', 'waiting'), error: errorSlot },
+    slots: { default: () => h(RouterView, null, { default: () => h(consumer) }), fallback: () => h('p', 'waiting'), error: errorSlot },
     global: { plugins: [router], config: { errorHandler: appError } },
   })
   const failure = new Error('failed')
@@ -212,7 +213,7 @@ test.each(loaderAttachments)('reports later errors even when data is not read ($
   const predicate = vi.fn(() => false)
   const wrapper = mount(RouterSuspense, {
     props: { props: false, catch: predicate },
-    slots: { default: () => h(consumer), error: errorSlot },
+    slots: { default: () => h(RouterView, null, { default: () => h(consumer) }), error: errorSlot },
     global: { plugins: [router], config: { errorHandler: appError } },
   })
   await flushPromises()
@@ -256,7 +257,7 @@ test.each(loaderAttachments.flatMap((attachment) => [
   const predicate = vi.fn(() => catchErrors)
   const wrapper = mount(RouterSuspense, {
     props: { loaders: false, catch: predicate },
-    slots: { default: () => h(consumer), fallback: () => h('p', 'waiting'), error: errorSlot },
+    slots: { default: () => h(RouterView, null, { default: () => h(consumer) }), fallback: () => h('p', 'waiting'), error: errorSlot },
     global: { plugins: [router], config: { errorHandler: appError } },
   })
   await flushPromises()
@@ -304,7 +305,7 @@ test('shows synchronous load errors after navigation', async () => {
   })
   const errorSlot = vi.fn(() => h('p', 'failed'))
   const wrapper = mount(RouterSuspense, {
-    slots: { default: () => h(consumer), error: errorSlot },
+    slots: { default: () => h(RouterView, null, { default: () => h(consumer) }), error: errorSlot },
     global: { plugins: [router] },
   })
   await flushPromises()
@@ -333,7 +334,7 @@ test.each(loaderAttachments)('reloads failed data and clears the error on refres
   })
   const wrapper = mount(RouterSuspense, {
     slots: {
-      default: () => h(consumer),
+      default: () => h(RouterView, null, { default: () => h(consumer) }),
       error: () => h('button', { onClick: () => router.refresh() }, 'retry'),
     },
     global: { plugins: [router] },
@@ -361,7 +362,7 @@ test('uses the error ref when the result is not awaited', async () => {
   })
   const errorSlot = vi.fn(() => h('p', 'boundary'))
   const wrapper = mount(RouterSuspense, {
-    slots: { default: () => h(consumer), error: errorSlot },
+    slots: { default: () => h(RouterView, null, { default: () => h(consumer) }), error: errorSlot },
     global: { plugins: [router] },
   })
   pending.reject(new Error('failed'))
@@ -394,7 +395,7 @@ test('reports later errors to Vue error handlers', async () => {
         captured(error)
         return false
       })
-      return () => h(Suspense, null, { default: () => h(consumer) })
+      return () => h(Suspense, null, { default: () => h(RouterView, null, { default: () => h(consumer) }) })
     },
   }), { global: { plugins: [router] } })
   await flushPromises()
@@ -424,7 +425,7 @@ test('stops reporting errors when the component unmounts', async () => {
   })
   const appError = vi.fn()
   const wrapper = mount(RouterSuspense, {
-    slots: { default: () => h(consumer) },
+    slots: { default: () => h(RouterView, null, { default: () => h(consumer) }) },
     global: { plugins: [router], config: { errorHandler: appError } },
   })
   await flushPromises()
@@ -455,7 +456,7 @@ test('keeps component errors out of the error state after loading succeeds', asy
   const errorSlot = vi.fn(() => h('p', 'failed'))
   const appError = vi.fn()
   const wrapper = mount(RouterSuspense, {
-    slots: { default: () => h(consumer), error: errorSlot },
+    slots: { default: () => h(RouterView, null, { default: () => h(consumer) }), error: errorSlot },
     global: { plugins: [router], config: { errorHandler: appError } },
   })
   await flushPromises()
