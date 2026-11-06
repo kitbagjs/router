@@ -6,6 +6,7 @@ import { createActivityTracker } from '@/services/createActivityTracker'
 import { SsrOptionRequiredError } from '@/errors/ssrOptionRequiredError'
 import { parseUrl, updateUrl } from '@/services/urlParser'
 import { createRouterNavigation } from '@/services/createRouterNavigation'
+import { BeforeNavigationResult } from '@/services/createNavigation'
 import { createNavigationProgress, NavigationProgressTracker } from '@/services/createNavigationProgress'
 import { getRouteData } from '@/services/getRouteData'
 import { getComputations } from '@/services/getComputations'
@@ -285,6 +286,15 @@ export function createRouter<
 
     const to = find(url, options) ?? null
     const from = getFromRouteForHooks()
+    const external = isExternal(url)
+    let route = to
+    let rejection: Rejection | undefined
+
+    if (!to && !external) {
+      rejection = notFoundRejection
+      route = createResolvedRoute(notFoundRejection.route)
+    }
+
     const progress = navigationProgress.begin({
       to,
       from,
@@ -295,7 +305,7 @@ export function createRouter<
       to,
       from,
       options,
-      enabled: !isSSR && !isExternal(url),
+      enabled: !isSSR && !external,
     })
     const { isBlockingNavigation } = getNavigationOption({
       routerNavigation,
@@ -303,29 +313,19 @@ export function createRouter<
       navigation: options.navigation,
     })
 
-    async function before(controller: AbortController): Promise<boolean> {
+    async function beforeNavigation(controller: AbortController): Promise<BeforeNavigationResult> {
       const allowed = await runBeforeHooks({ controller, to, from, url, options, progress })
 
       if (!allowed) {
-        return false
+        return 'abort'
       }
 
-      if (!to) {
-        reject(NOT_FOUND_REJECTION_TYPE, { to, from })
-        progress.abort()
-        await runAfterHooks({ controller, to, from, enabled: !isSSR })
-
-        return false
+      if (external) {
+        return 'complete'
       }
 
-      if (isExternal(url)) {
-        currentRejection.value = null
-        started.value = true
-        progress.close()
-        updateTitle(controller.signal)
-        await runAfterHooks({ controller, to, from, enabled: !isSSR })
-
-        return false
+      if (rejection) {
+        hooks.runRejectionHooks(rejection, { to, from })
       }
 
       if (transition) {
@@ -334,13 +334,42 @@ export function createRouter<
         viewTransitions.reset()
       }
 
-      return true
+      return 'continue'
     }
 
-    let beforeNavigation
+    function afterNavigation(controller: AbortController): Promise<void> {
+      return runAfterHooks({ controller, to, from, enabled: !isSSR })
+    }
+
+    function commitNavigation(work: Promise<unknown>[], controller: AbortController): void {
+      if (external) {
+        progress.close()
+
+        return
+      }
+
+      activity.add(...work)
+      progress.track(...work)
+      currentRejection.value = rejection ?? null
+
+      if (rejection) {
+        progress.abort()
+      } else if (to) {
+        routerRoute.updateRoute(to)
+        progress.close()
+      }
+
+      started.value = true
+
+      if (!options.hydrating) {
+        updateTitle(controller.signal)
+      }
+    }
+
+    let before
 
     if (!options.hydrating) {
-      beforeNavigation = before
+      before = beforeNavigation
     }
 
     let startTransition
@@ -351,37 +380,16 @@ export function createRouter<
 
     try {
       await navigation.run({
-        route: to,
-        computations: to ? getComputations(to) : [],
-        loadViews: () => {
-          if (!to) {
-            return []
-          }
-
-          return loadAsyncComponents(to)
-        },
+        route,
+        computations: getComputations(route),
+        loadViews: () => loadAsyncComponents(route),
         prefetch: options.prefetch,
-        before: beforeNavigation,
-        after: (controller) => runAfterHooks({ controller, to, from, enabled: !isSSR }),
+        before,
+        after: afterNavigation,
         prepare: !options.hydrating && (Boolean(transition) || isBlockingNavigation),
         transition: startTransition,
         onResponse: (response) => onNavigationResponse({ response, to, from }),
-        onCommit: (work, controller) => {
-          if (!to) {
-            return
-          }
-
-          activity.add(...work)
-          progress.track(...work)
-          routerRoute.updateRoute(to)
-          currentRejection.value = null
-          progress.close()
-          started.value = true
-
-          if (!options.hydrating) {
-            updateTitle(controller.signal)
-          }
-        },
+        onCommit: commitNavigation,
       })
     } finally {
       if (navigation.active.value?.route !== to && transition) {
@@ -418,7 +426,7 @@ export function createRouter<
    * total never grows once the before hooks are under way.
    */
   function countRouteUnits(url: string, to: ResolvedRoute | null): number {
-    if (!to || isExternal(url)) {
+    if (isExternal(url)) {
       return 0
     }
 
@@ -572,7 +580,7 @@ export function createRouter<
       before: () => {
         hooks.runRejectionHooks(rejection, { to, from })
 
-        return true
+        return 'continue'
       },
       onResponse: (response) => onNavigationResponse({ response, to, from }),
       onCommit: (work, controller) => {
@@ -767,7 +775,6 @@ export function createRouter<
         status: rejection.status ?? rejectStatus,
         rejection: rejection.type,
         title,
-        failures,
         payload: payloadToScript({ kind: 'reject', url: initialUrl, rejection: rejection.type, values }),
       }
     }

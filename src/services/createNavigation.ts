@@ -12,11 +12,16 @@ export type Navigation = {
   run: () => Promise<void>,
 }
 
+/**
+ * Complete finishes without preparing or activating a local view. Abort skips completion and after hooks.
+ */
+export type BeforeNavigationResult = 'continue' | 'complete' | 'abort'
+
 export type NavigationOptions = {
   route: ResolvedRoute | null,
   computations: Computation[],
   loadViews: () => Promise<unknown>[],
-  before?: (controller: AbortController) => MaybePromise<boolean>,
+  before?: (controller: AbortController) => MaybePromise<BeforeNavigationResult>,
   after?: (controller: AbortController) => MaybePromise<void>,
   onCommit: (work: Promise<unknown>[], controller: AbortController) => void,
   onResponse?: (response: ComputationResponse) => MaybePromise<void>,
@@ -66,18 +71,25 @@ export function createNavigation({ route, computations, loadViews, store, before
       return Promise.resolve()
     }
 
-    const allowed = before?.(controller)
+    const result = before?.(controller)
 
-    if (isPromise(allowed)) {
-      return allowed.then(proceed)
+    if (isPromise(result)) {
+      return result.then(proceed)
     }
 
-    return proceed(allowed)
+    return proceed(result)
   }
 
-  async function proceed(allowed: boolean | undefined): Promise<void> {
-    if (allowed === false || isAborted()) {
+  async function proceed(result: BeforeNavigationResult | undefined): Promise<void> {
+    if (result === 'abort' || isAborted()) {
       controller.abort()
+
+      return
+    }
+
+    if (result === 'complete') {
+      onCommit([], controller)
+      await after?.(controller)
 
       return
     }

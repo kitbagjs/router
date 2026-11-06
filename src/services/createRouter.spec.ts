@@ -1003,7 +1003,7 @@ describe('a url that matches no route', () => {
     })
   })
 
-  test('runs leave hooks with a null to', async () => {
+  test('completes unmatched navigation with the original hook context and live signal', async () => {
     const onBeforeRouteLeave = vi.fn()
     const onAfterRouteLeave = vi.fn()
     const route = createRoute({ name: 'route', path: '/foo' }).addView(component)
@@ -1016,8 +1016,13 @@ describe('a url that matches no route', () => {
 
     await router.push('/does-not-exist')
 
-    expect(onBeforeRouteLeave).toHaveBeenCalledWith(null, expect.anything())
-    expect(onAfterRouteLeave).toHaveBeenCalledWith(null, expect.anything())
+    expect(onBeforeRouteLeave).toHaveBeenCalledExactlyOnceWith(null, expect.anything())
+    const context = onBeforeRouteLeave.mock.calls[0][1]
+    expect(onAfterRouteLeave).toHaveBeenCalledExactlyOnceWith(null, expect.objectContaining({
+      from: context.from,
+      signal: context.signal,
+    }))
+    expect(context.signal.aborted).toBe(false)
   })
 })
 
