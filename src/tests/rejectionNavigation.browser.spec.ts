@@ -37,8 +37,8 @@ test('a rejected destination preserves route context and runs a new navigation l
   const rejection = enter.mock.calls[0][0]
   assert(isResolvedRejection(rejection))
   expect(rejection.rejection).toBe(denied)
-  expect(enter).toHaveBeenCalledExactlyOnceWith(rejection, expect.anything())
-  expect(leave).toHaveBeenLastCalledWith(rejection, expect.anything())
+  expect(enter).toHaveBeenCalledExactlyOnceWith(rejection, expect.objectContaining({ source: 'rejection' }))
+  expect(leave).toHaveBeenLastCalledWith(rejection, expect.objectContaining({ source: 'rejection' }))
 })
 
 test('navigating to the same URL replaces a rejection and computes a fresh route', async () => {

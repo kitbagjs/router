@@ -2,6 +2,7 @@ import { App, computed, ref } from 'vue'
 import { RouterRoute } from '@/types/routerRoute'
 import { createResolvedRejection } from '@/services/createResolvedRejection'
 import { createResolvedRouteQuery } from '@/services/createResolvedRouteQuery'
+import { NavigationSource } from '@/types/hooks'
 import { createPath } from '@/services/history'
 import { createRouterRoute } from '@/services/createRouterRoute'
 import { createIsExternal } from '@/services/createIsExternal'
@@ -68,6 +69,7 @@ type NavigationResponse = {
 
 type RouterUpdateOptions = {
   updateHistory?: boolean,
+  source?: NavigationSource,
   navigation?: NavigationBehavior,
   prefetch?: ComputationStore,
   traversal?: RouterHistoryTraversal,
@@ -166,7 +168,7 @@ export function createRouter<
     listener: ({ location, traversal }) => {
       const url = createPath(location)
 
-      set(url, { state: location.state, replace: true, traversal })
+      set(url, { state: location.state, replace: true, traversal, source: 'history' })
     },
   })
 
@@ -212,6 +214,7 @@ export function createRouter<
   const navigate = activity.wrap(async (to: ResolvedRoute | null, url: string, options: RouterUpdateOptions = {}): Promise<void> => {
     const from = getFromRouteForHooks()
     const external = isExternal(url)
+    const source = options.source ?? 'push'
     const progress = navigationProgress.begin({
       to,
       from,
@@ -243,7 +246,7 @@ export function createRouter<
     }
 
     async function beforeNavigation(controller: AbortController): Promise<void> {
-      const response = await hooks.runBeforeRouteHooks({ to, from, signal: controller.signal, progress })
+      const response = await hooks.runBeforeRouteHooks({ to, from, signal: controller.signal, progress, source })
 
       if (controller.signal.aborted) {
         return
@@ -297,7 +300,7 @@ export function createRouter<
         return
       }
 
-      const response = await hooks.runAfterRouteHooks({ to, from, signal: controller.signal })
+      const response = await hooks.runAfterRouteHooks({ to, from, signal: controller.signal, source })
 
       if (controller.signal.aborted) {
         return
@@ -482,15 +485,15 @@ export function createRouter<
     }
 
     if (typeof source === 'string') {
-      const { replace, navigation, prefetch, viewTransition, redirectStatus, ...options }: RouterPushOptionsInternal = { ...maybeOptions }
+      const { replace, navigation, prefetch, viewTransition, redirectStatus, source: navigationSource, ...options }: RouterPushOptionsInternal = { ...maybeOptions }
       const params: any = { ...paramsOrOptions }
       const resolved = resolve(source, params, options)
       const state = setStateValues({ ...resolved.matched.state }, { ...resolved.state, ...options.state })
 
-      return { url: resolved.href, options: { replace, state, navigation, prefetch, viewTransition }, redirectStatus }
+      return { url: resolved.href, options: { replace, state, navigation, prefetch, viewTransition, source: navigationSource }, redirectStatus }
     }
 
-    const { replace, navigation, prefetch, viewTransition, redirectStatus, ...options }: RouterPushOptionsInternal = { ...paramsOrOptions }
+    const { replace, navigation, prefetch, viewTransition, redirectStatus, source: navigationSource, ...options }: RouterPushOptionsInternal = { ...paramsOrOptions }
     const state = setStateValues({ ...source.matched.state }, { ...source.state, ...options.state })
 
     const url = updateUrl(source.href, {
@@ -498,7 +501,7 @@ export function createRouter<
       hash: options.hash,
     })
 
-    return { url, options: { replace, state, navigation, prefetch, viewTransition }, redirectStatus }
+    return { url, options: { replace, state, navigation, prefetch, viewTransition, source: navigationSource }, redirectStatus }
   }
 
   const push: RouterPushInternal<TRoutes | TPlugin['routes']> = async (
@@ -515,7 +518,7 @@ export function createRouter<
       return
     }
 
-    return set(url, options)
+    return set(url, { ...options, source: options.source ?? (options.replace ? 'replace' : 'push') })
   }
 
   const replace: RouterReplaceInternal<TRoutes | TPlugin['routes']> = (
@@ -558,7 +561,7 @@ export function createRouter<
     const route = createResolvedRejection(to ?? getUnmatchedRoute(url), rejection)
 
     hooks.runRejectionHooks(rejection, { to, from })
-    return navigate(route, url, { updateHistory: false, ...navigationOptions })
+    return navigate(route, url, { source: 'rejection', updateHistory: false, ...navigationOptions })
   }
 
   const currentRejection = computed(() => {
@@ -675,6 +678,7 @@ export function createRouter<
       state: initialState,
       hydrating: true,
       prefetch: store,
+      source: 'initial',
     })
   }
 
@@ -697,7 +701,7 @@ export function createRouter<
     if (payload) {
       await hydrate(payload)
     } else {
-      await set(initialUrl, { replace: true, state: initialState })
+      await set(initialUrl, { replace: true, state: initialState, source: 'initial' })
     }
 
     // stop() can run while navigation or hydration is awaited.

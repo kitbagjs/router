@@ -118,6 +118,7 @@ export function createUseLink<TRouter extends Router>(routerKey: InjectionKey<TR
       }
 
       const options: RouterPushOptionsInternal = {
+        source: 'link',
         ...pushOptions,
         replace: pushOptions.replace ?? linkOptions.value.replace,
         navigation: pushOptions.navigation ?? linkOptions.value.navigation,
@@ -129,7 +130,8 @@ export function createUseLink<TRouter extends Router>(routerKey: InjectionKey<TR
     }
 
     function pushUrl(url: UrlString, pushOptions: RouterPushOptions = {}): Promise<void> {
-      const options: RouterPushOptions = {
+      const options: RouterPushOptionsInternal = {
+        source: 'link',
         replace: pushOptions.replace ?? linkOptions.value.replace,
         navigation: pushOptions.navigation ?? linkOptions.value.navigation,
         viewTransition: pushOptions.viewTransition ?? linkOptions.value.viewTransition,
