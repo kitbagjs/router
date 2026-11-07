@@ -20,7 +20,7 @@ export type NavigationOptions<TResolved extends Resolved = ResolvedRoute> = {
   onResponse?: (response: ComputationResponse) => MaybePromise<void>,
   commit?: boolean,
   prepare?: boolean,
-  transition?: (commit: () => Promise<boolean>) => Promise<void>,
+  transition?: (commit: () => void) => Promise<void>,
 }
 
 type CreateNavigationOptions<TResolved extends Resolved> = NavigationOptions<TResolved> & {
@@ -47,9 +47,9 @@ export function createNavigation<TResolved extends Resolved>({ route, compute: c
     ])
   }
 
-  function commit(): Promise<boolean> {
+  function commit(): void {
     if (isAborted() || store.abandoned) {
-      return Promise.resolve(false)
+      return
     }
 
     activate(navigation)
@@ -60,8 +60,6 @@ export function createNavigation<TResolved extends Resolved>({ route, compute: c
     })
     const work = compute()
     onCommit(work, controller)
-
-    return nextTick().then(() => !controller.signal.aborted)
   }
 
   async function run(): Promise<void> {
@@ -75,8 +73,6 @@ export function createNavigation<TResolved extends Resolved>({ route, compute: c
       return
     }
 
-    let committed: Promise<boolean> | undefined
-
     if (shouldCommit) {
       if (shouldPrepare) {
         await prepare()
@@ -89,14 +85,12 @@ export function createNavigation<TResolved extends Resolved>({ route, compute: c
       if (transition) {
         await transition(commit)
       } else {
-        committed = commit()
+        commit()
       }
     }
 
-    await Promise.all([
-      committed,
-      after?.(controller),
-    ])
+    await after?.(controller)
+    await nextTick()
   }
 
   const navigation = {
