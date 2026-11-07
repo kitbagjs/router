@@ -10,11 +10,10 @@ import { createActivityTracker } from '@/services/createActivityTracker'
 import { SsrOptionRequiredError } from '@/errors/ssrOptionRequiredError'
 import { parseUrl, updateUrl } from '@/services/urlParser'
 import { createRouterNavigation } from '@/services/createRouterNavigation'
-import { createNavigationProgress } from '@/services/createNavigationProgress'
+import { NavigationProgressTracker } from '@/services/createNavigationProgress'
 import { getRouteData } from '@/services/getRouteData'
 import { getComputations } from '@/services/getComputations'
 import { getAsyncComponents, loadAsyncComponents } from '@/utilities/components'
-import { getNavigationProgressKey } from '@/compositions/useNavigation'
 import { createRouterHistory, RouterHistoryTraversal } from '@/services/createRouterHistory'
 import { createServerRedirect } from '@/services/createServerRedirect'
 import { createRouterHooks, getRouterHooksKey } from '@/services/createRouterHooks'
@@ -143,7 +142,6 @@ export function createRouter<
   const routerNavigation = options?.navigation
   const routerViewTransition = options?.viewTransition
   const activity = createActivityTracker()
-  const navigationProgress = createNavigationProgress()
   const {
     routes,
     getRouteByName,
@@ -215,12 +213,6 @@ export function createRouter<
     const from = getFromRouteForHooks()
     const external = isExternal(url)
     const source = options.source ?? 'push'
-    const progress = navigationProgress.begin({
-      to,
-      from,
-      expected: countRouteUnits(url, to),
-      inert: isSSR || options.hydrating,
-    })
     const transition = getViewTransition({
       to,
       from,
@@ -245,7 +237,7 @@ export function createRouter<
       }
     }
 
-    async function beforeNavigation(controller: AbortController): Promise<void> {
+    async function beforeNavigation(controller: AbortController, progress: NavigationProgressTracker): Promise<void> {
       const response = await hooks.runBeforeRouteHooks({ to, from, signal: controller.signal, progress, source })
 
       if (controller.signal.aborted) {
@@ -255,7 +247,6 @@ export function createRouter<
       switch (response.status) {
         case 'ABORT':
           options.traversal?.restore()
-          progress.abort()
           controller.abort()
 
           return
@@ -270,7 +261,6 @@ export function createRouter<
         case 'REJECT':
           updateNavigationHistory()
           reject(response.type, { to, from })
-          progress.abort()
           controller.abort()
 
           return
@@ -292,10 +282,6 @@ export function createRouter<
     }
 
     async function afterNavigation(controller: AbortController): Promise<void> {
-      if (external) {
-        progress.close()
-      }
-
       if (isSSR) {
         return
       }
@@ -327,10 +313,8 @@ export function createRouter<
 
     function commitNavigation(work: Promise<unknown>[], controller: AbortController): void {
       activity.add(...work)
-      progress.track(...work)
       if (to) {
         routerRoute.updateRoute(to)
-        progress.close()
       }
 
       started.value = true
@@ -355,6 +339,11 @@ export function createRouter<
     try {
       await navigation.run({
         route: to,
+        from,
+        progress: {
+          expected: countRouteUnits(url, to),
+          inert: isSSR || options.hydrating,
+        },
         compute: (store) => {
           if (!to) {
             return []
@@ -767,7 +756,6 @@ export function createRouter<
     stopped = true
     stopRouteContext()
     navigation.stop()
-    navigationProgress.stop()
     history.stopListening()
   }
 
@@ -795,7 +783,6 @@ export function createRouter<
     app.provide(getRouterHooksKey(routerKey), hooks)
     app.provide(getRouterNavigationInjectionKey(routerKey), navigation)
     app.provide(getComponentsStoreKey(routerKey), componentsStore)
-    app.provide(getNavigationProgressKey(routerKey), navigationProgress)
     app.provide(visibilityObserverKey, visibilityObserver)
 
     app.provide(routerKey, router)

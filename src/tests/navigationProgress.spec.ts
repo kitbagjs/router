@@ -34,6 +34,31 @@ function never(): Promise<never> {
 }
 
 describe('navigation progress', () => {
+  test('blocking navigation reports destination progress while the previous route stays active', async () => {
+    const loader = Promise.withResolvers<string>()
+    const home = createRoute({ name: 'home', path: '/' })
+    const destination = createRoute({ name: 'destination', path: '/destination' }).addLoader(() => loader.promise)
+    const router = createRouter([home, destination], { initialUrl: '/', navigation: 'blocking' })
+    const progress = observe(router)
+    await router.start()
+
+    const navigating = router.push('/destination')
+    await flushPromises()
+
+    expect(router.route.name).toBe('home')
+    expect(progress.pending.value).toBe(true)
+    expect(progress.to.value?.name).toBe('destination')
+    expect(progress.from.value?.name).toBe('home')
+    expect(progress.total.value).toBe(1)
+
+    loader.resolve('data')
+    await navigating
+
+    expect(router.route.name).toBe('destination')
+    expect(progress.pending.value).toBe(false)
+    expect(progress.settled.value).toBe(1)
+  })
+
   test('counts the before hooks, props getters, loaders and async components of a nested route', async () => {
     const globalHook = Promise.withResolvers<string>()
     const parentHook = Promise.withResolvers<string>()
