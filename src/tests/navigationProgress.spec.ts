@@ -181,7 +181,7 @@ describe('navigation progress', () => {
     const router = createRouter([home], { initialUrl: '/nowhere' })
     const navigation = observe(router)
 
-    expect(navigation.to.value).toBeNull()
+    expect(navigation.to.value).toMatchObject({ href: '/nowhere' })
 
     await flushPromises()
 
@@ -234,7 +234,7 @@ describe('navigation progress', () => {
 
     const useRouterNavigation = createUseRouterNavigation(router.key)
     const routerNavigation = navigation.app.runWithContext(useRouterNavigation)
-    const prefetch = routerNavigation.create()
+    const prefetch = routerNavigation.createStore()
 
     const route = router.resolve('other')
     prefetch.compute(route, getComputations(route))

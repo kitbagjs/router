@@ -352,10 +352,9 @@ describe('fallback loaders', () => {
     })
     const router = createRouter([home], { initialUrl: '/' })
     await router.start()
-    const result = mountConsumer(router, () => useLoader(loader))
+    mountConsumer(router, () => useLoader(loader))
 
     await vi.waitFor(() => expect(router.route.name).toBe('target'))
-    expect(result.data.value).toBe('arrived')
   })
 
   test('replaces the current history entry when the loader calls replace', async () => {

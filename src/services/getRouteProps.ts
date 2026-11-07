@@ -16,7 +16,7 @@ export function getRouteProps(store: NavigationData, { depth, name }: RouteProps
     return NO_PROPS
   }
 
-  const match = route.matches.at(depth)
+  const match = route.views.at(depth)
 
   if (!match?.views[name]?.props) {
     return NO_PROPS

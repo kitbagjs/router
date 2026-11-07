@@ -1,3 +1,5 @@
+import { getLoaderComputation } from '@/services/getLoaderComputation'
+import { Computation } from '@/types/computation'
 import { isRecord } from '@/utilities/guards'
 import { isBrowser } from '@/utilities/isBrowser'
 import { DataEntry } from '@/services/createDataStore'
@@ -86,6 +88,10 @@ type RejectPayload = {
    * The type of the rejection the server rendered.
    */
   rejection: string,
+  /**
+   * Computed values for the rejection route.
+   */
+  values: PayloadValue[],
 }
 
 function isPayloadValue(value: unknown): value is PayloadValue {
@@ -99,8 +105,12 @@ export function isRouterPayload(value: unknown): value is RouterPayload {
     return false
   }
 
+  if (!Array.isArray(value.values) || !value.values.every(isPayloadValue)) {
+    return false
+  }
+
   if (value.kind === 'success') {
-    return Array.isArray(value.values) && value.values.every(isPayloadValue)
+    return true
   }
 
   if (value.kind === 'reject') {
@@ -143,7 +153,7 @@ type EncodedPayloadValues = {
  * cannot be encoded is warned about, reported as a failure, and left out, so the client computes it again.
  */
 export function encodePayloadValues(route: ResolvedRoute, values: DataEntry[], fallback: PayloadTransformer = jsonTransformer): EncodedPayloadValues {
-  const computations = getComputations(route)
+  const computations = getPayloadComputations(route)
   const encoded: PayloadValue[] = []
   const failures: PayloadValueError[] = []
 
@@ -181,11 +191,16 @@ export function encodePayloadValues(route: ResolvedRoute, values: DataEntry[], f
  * getter runs again. Matching ignores hash and state, then adopts values under the full client keys.
  */
 export function decodePayloadValues(route: ResolvedRoute, values: PayloadValue[], fallback: PayloadTransformer = jsonTransformer): DataEntry[] {
-  const computations = getComputations(route)
+  const automatic = new Set(getComputations(route).map(({ key }) => key))
+  const computations = getPayloadComputations(route)
   const encodedValues = new Map(values.map(({ key, encoded }) => [getHydrationKey(key), encoded]))
 
   return computations.flatMap(({ kind, key, name, transformer = fallback }) => {
     const encoded = encodedValues.get(getHydrationKey(key))
+
+    if (encoded === undefined && !automatic.has(key)) {
+      return []
+    }
 
     if (encoded === undefined) {
       console.warn(`The payload has no value for ${kind} "${name}". Its getter runs again, which can cause a hydration mismatch.`)
@@ -203,4 +218,18 @@ export function decodePayloadValues(route: ResolvedRoute, values: PayloadValue[]
       return []
     }
   })
+}
+
+/**
+ * Registered loaders can be requested by rejection views without being scheduled automatically.
+ */
+function getPayloadComputations(route: ResolvedRoute): Computation[] {
+  const computations = new Map(getComputations(route).map((computation) => [computation.key, computation]))
+
+  for (const name of Object.keys(route.loaders)) {
+    const computation = getLoaderComputation(route, name)
+    computations.set(computation.key, computation)
+  }
+
+  return [...computations.values()]
 }
