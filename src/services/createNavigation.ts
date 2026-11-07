@@ -64,21 +64,17 @@ export function createNavigation<TResolved extends Resolved>({ route, compute: c
     return nextTick().then(() => !controller.signal.aborted)
   }
 
-  function run(): Promise<void> {
+  async function run(): Promise<void> {
     if (isAborted()) {
-      return Promise.resolve()
+      return
     }
 
     const result = before?.(controller)
 
     if (isPromise(result)) {
-      return result.then(proceed)
+      await result
     }
 
-    return proceed()
-  }
-
-  async function proceed(): Promise<void> {
     if (isAborted()) {
       return
     }
