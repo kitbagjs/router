@@ -11,18 +11,14 @@ export type Navigation<TResolved extends Resolved = ResolvedRoute> = {
   run: () => Promise<void>,
 }
 
-/**
- * Complete finishes without preparing or activating a local view. Abort skips completion and after hooks.
- */
-export type BeforeNavigationResult = 'continue' | 'complete' | 'abort'
-
 export type NavigationOptions<TResolved extends Resolved = ResolvedRoute> = {
   route: TResolved | null,
   compute: (store: ComputationStore) => Promise<unknown>[],
-  before?: (controller: AbortController) => MaybePromise<BeforeNavigationResult>,
+  before?: (controller: AbortController) => MaybePromise<void>,
   after?: (controller: AbortController) => MaybePromise<void>,
   onCommit: (work: Promise<unknown>[], controller: AbortController) => void,
   onResponse?: (response: ComputationResponse) => MaybePromise<void>,
+  commit?: boolean,
   prepare?: boolean,
   transition?: (commit: () => Promise<boolean>) => Promise<void>,
 }
@@ -32,7 +28,7 @@ type CreateNavigationOptions<TResolved extends Resolved> = NavigationOptions<TRe
   activate: (navigation: Navigation<TResolved>) => void,
 }
 
-export function createNavigation<TResolved extends Resolved>({ route, compute: computeValues, store, before, after, onCommit, onResponse, prepare: shouldPrepare, transition, activate }: CreateNavigationOptions<TResolved>): Navigation<TResolved> {
+export function createNavigation<TResolved extends Resolved>({ route, compute: computeValues, store, before, after, onCommit, onResponse, commit: shouldCommit = true, prepare: shouldPrepare, transition, activate }: CreateNavigationOptions<TResolved>): Navigation<TResolved> {
   const controller = new AbortController()
   const isAborted = (): boolean => controller.signal.aborted
 
@@ -79,17 +75,15 @@ export function createNavigation<TResolved extends Resolved>({ route, compute: c
       return result.then(proceed)
     }
 
-    return proceed(result)
+    return proceed()
   }
 
-  async function proceed(result: BeforeNavigationResult | undefined): Promise<void> {
-    if (result === 'abort' || isAborted()) {
-      controller.abort()
-
+  async function proceed(): Promise<void> {
+    if (isAborted()) {
       return
     }
 
-    if (result === 'complete') {
+    if (!shouldCommit) {
       onCommit([], controller)
       await after?.(controller)
 

@@ -9,7 +9,6 @@ import { createActivityTracker } from '@/services/createActivityTracker'
 import { SsrOptionRequiredError } from '@/errors/ssrOptionRequiredError'
 import { parseUrl, updateUrl } from '@/services/urlParser'
 import { createRouterNavigation } from '@/services/createRouterNavigation'
-import { BeforeNavigationResult } from '@/services/createNavigation'
 import { createNavigationProgress } from '@/services/createNavigationProgress'
 import { getRouteData } from '@/services/getRouteData'
 import { getComputations } from '@/services/getComputations'
@@ -243,32 +242,35 @@ export function createRouter<
       }
     }
 
-    async function beforeNavigation(controller: AbortController): Promise<BeforeNavigationResult> {
+    async function beforeNavigation(controller: AbortController): Promise<void> {
       const response = await hooks.runBeforeRouteHooks({ to, from, signal: controller.signal, progress })
 
       if (controller.signal.aborted) {
-        return 'abort'
+        return
       }
 
       switch (response.status) {
         case 'ABORT':
           options.traversal?.restore()
           progress.abort()
+          controller.abort()
 
-          return 'abort'
+          return
 
         case 'PUSH':
         case 'REDIRECT':
+          controller.abort()
           await push(...response.to)
 
-          return 'abort'
+          return
 
         case 'REJECT':
           updateNavigationHistory()
           reject(response.type, { to, from })
           progress.abort()
+          controller.abort()
 
-          return 'abort'
+          return
 
         case 'SUCCESS':
           updateNavigationHistory()
@@ -279,17 +281,11 @@ export function createRouter<
           throw new Error(`Switch is not exhaustive for before hook response status: ${JSON.stringify(exhaustive)}`)
       }
 
-      if (external) {
-        return 'complete'
-      }
-
       if (transition) {
         viewTransitions.prepare(transition)
-      } else {
+      } else if (!external) {
         viewTransitions.reset()
       }
-
-      return 'continue'
     }
 
     async function afterNavigation(controller: AbortController): Promise<void> {
@@ -368,6 +364,7 @@ export function createRouter<
         prefetch: options.prefetch,
         before,
         after: afterNavigation,
+        commit: !external,
         prepare: !options.hydrating && (Boolean(transition) || isBlockingNavigation),
         transition: startTransition,
         onResponse: (response) => onNavigationResponse({ response, to, from }),
