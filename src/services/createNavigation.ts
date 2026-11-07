@@ -75,30 +75,26 @@ export function createNavigation<TResolved extends Resolved>({ route, compute: c
       return
     }
 
-    if (!shouldCommit) {
-      await after?.(controller)
+    let committed: Promise<boolean> | undefined
 
-      return
-    }
+    if (shouldCommit) {
+      if (shouldPrepare) {
+        await prepare()
+      }
 
-    if (shouldPrepare) {
-      await prepare()
-    }
+      if (isAborted()) {
+        return
+      }
 
-    if (isAborted()) {
-      return
-    }
-
-    if (transition) {
-      await transition(commit)
-
-      await after?.(controller)
-
-      return
+      if (transition) {
+        await transition(commit)
+      } else {
+        committed = commit()
+      }
     }
 
     await Promise.all([
-      commit(),
+      committed,
       after?.(controller),
     ])
   }
