@@ -84,7 +84,6 @@ export function createNavigation<TResolved extends Resolved>({ route, compute: c
     }
 
     if (!shouldCommit) {
-      onCommit([], controller)
       await after?.(controller)
 
       return

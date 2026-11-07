@@ -289,6 +289,10 @@ export function createRouter<
     }
 
     async function afterNavigation(controller: AbortController): Promise<void> {
+      if (external) {
+        progress.close()
+      }
+
       if (isSSR) {
         return
       }
@@ -319,12 +323,6 @@ export function createRouter<
     }
 
     function commitNavigation(work: Promise<unknown>[], controller: AbortController): void {
-      if (external) {
-        progress.close()
-
-        return
-      }
-
       activity.add(...work)
       progress.track(...work)
       if (to) {
