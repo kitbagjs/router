@@ -95,7 +95,9 @@ test('stop cancels active and pending computations and prevents future activatio
 
   await expect(activeValue).rejects.toBeInstanceOf(NavigationAbandonedError)
   await expect(pendingValue).rejects.toBeInstanceOf(NavigationAbandonedError)
+  const before = vi.fn()
   const onCommit = vi.fn()
-  await navigation.run({ ...createPlan(() => 'stopped'), onCommit })
+  await navigation.run({ ...createPlan(() => 'stopped'), before, onCommit })
+  expect(before).not.toHaveBeenCalled()
   expect(onCommit).not.toHaveBeenCalled()
 })

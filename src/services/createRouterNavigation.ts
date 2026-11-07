@@ -48,6 +48,10 @@ export function createRouterNavigation(): RouterNavigation {
       pending.store.dispose()
     }
 
+    if (stopped) {
+      return Promise.resolve()
+    }
+
     const next = createNavigation({
       ...options,
       store: prefetch ?? createStore(),
@@ -55,10 +59,6 @@ export function createRouterNavigation(): RouterNavigation {
     })
     pending = next
     controller = next.controller
-
-    if (stopped) {
-      next.controller.abort()
-    }
 
     function cleanup(): void {
       if (pending === next) {

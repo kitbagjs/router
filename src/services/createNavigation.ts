@@ -65,10 +65,6 @@ export function createNavigation<TResolved extends Resolved>({ route, compute: c
   }
 
   async function run(): Promise<void> {
-    if (isAborted()) {
-      return
-    }
-
     const result = before?.(controller)
 
     if (isPromise(result)) {
