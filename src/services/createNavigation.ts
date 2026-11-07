@@ -1,4 +1,5 @@
 import { nextTick } from 'vue'
+import { createNavigationProgress, NavigationProgress, NavigationProgressOptions, NavigationProgressTracker } from '@/services/createNavigationProgress'
 import { ComputationStore, ComputationResponse } from '@/services/createComputationStore'
 import { Resolved, ResolvedRoute } from '@/types/resolved'
 import { MaybePromise } from '@/types/utilities'
@@ -6,6 +7,8 @@ import { createAbortPromise, isPromise } from '@/utilities/promises'
 
 export type Navigation<TResolved extends Resolved = ResolvedRoute> = {
   route: TResolved | null,
+  from: TResolved | null,
+  progress: NavigationProgress,
   store: ComputationStore,
   controller: AbortController,
   run: () => Promise<void>,
@@ -13,8 +16,10 @@ export type Navigation<TResolved extends Resolved = ResolvedRoute> = {
 
 export type NavigationOptions<TResolved extends Resolved = ResolvedRoute> = {
   route: TResolved | null,
+  from?: TResolved | null,
+  progress?: NavigationProgressOptions,
   compute: (store: ComputationStore) => Promise<unknown>[],
-  before?: (controller: AbortController) => MaybePromise<void>,
+  before?: (controller: AbortController, progress: NavigationProgressTracker) => MaybePromise<void>,
   after?: (controller: AbortController) => MaybePromise<void>,
   onCommit: (work: Promise<unknown>[], controller: AbortController) => void,
   onResponse?: (response: ComputationResponse) => MaybePromise<void>,
@@ -28,8 +33,9 @@ type CreateNavigationOptions<TResolved extends Resolved> = NavigationOptions<TRe
   activate: (navigation: Navigation<TResolved>) => void,
 }
 
-export function createNavigation<TResolved extends Resolved>({ route, compute: computeValues, store, before, after, onCommit, onResponse, commit: shouldCommit = true, prepare: shouldPrepare, transition, activate }: CreateNavigationOptions<TResolved>): Navigation<TResolved> {
+export function createNavigation<TResolved extends Resolved>({ route, from = null, progress: progressOptions, compute: computeValues, store, before, after, onCommit, onResponse, commit: shouldCommit = true, prepare: shouldPrepare, transition, activate }: CreateNavigationOptions<TResolved>): Navigation<TResolved> {
   const controller = new AbortController()
+  const progress = createNavigationProgress({ ...progressOptions, signal: controller.signal })
   const isAborted = (): boolean => controller.signal.aborted
 
   function compute(): Promise<unknown>[] {
@@ -59,11 +65,13 @@ export function createNavigation<TResolved extends Resolved>({ route, compute: c
       }
     })
     const work = compute()
+    progress.track(...work)
     onCommit(work, controller)
+    progress.close()
   }
 
   async function run(): Promise<void> {
-    const result = before?.(controller)
+    const result = before?.(controller, progress)
 
     if (isPromise(result)) {
       await result
@@ -87,6 +95,8 @@ export function createNavigation<TResolved extends Resolved>({ route, compute: c
       } else {
         commit()
       }
+    } else {
+      progress.close()
     }
 
     await after?.(controller)
@@ -95,6 +105,8 @@ export function createNavigation<TResolved extends Resolved>({ route, compute: c
 
   const navigation = {
     route,
+    from,
+    progress,
     store,
     controller,
     run,

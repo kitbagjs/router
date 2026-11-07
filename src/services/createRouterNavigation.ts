@@ -1,6 +1,7 @@
-import { shallowRef, Ref } from 'vue'
+import { computed, shallowRef, Ref } from 'vue'
 import { createComputationStore, ComputationStore } from '@/services/createComputationStore'
 import { createNavigation, Navigation, NavigationOptions } from '@/services/createNavigation'
+import { UseNavigation } from '@/types/navigation'
 import { createVueAppStore, HasVueAppStore } from '@/services/createVueAppStore'
 
 export type { NavigationData } from '@/services/createComputationStore'
@@ -11,6 +12,7 @@ type RunNavigationOptions = NavigationOptions & {
 
 export type RouterNavigation = HasVueAppStore & {
   active: Readonly<Ref<Navigation | null>>,
+  progress: UseNavigation,
   run: (options: RunNavigationOptions) => Promise<void>,
   createStore: () => ComputationStore,
   stop: () => void,
@@ -19,8 +21,7 @@ export type RouterNavigation = HasVueAppStore & {
 export function createRouterNavigation(): RouterNavigation {
   const { setVueApp, runWithContext } = createVueAppStore()
   const active = shallowRef<Navigation | null>(null)
-  let pending: Navigation | null = null
-  let controller: AbortController | undefined
+  const latest = shallowRef<Navigation | null>(null)
   let stopped = false
 
   function createStore(): ComputationStore {
@@ -42,10 +43,11 @@ export function createRouterNavigation(): RouterNavigation {
   }
 
   function run({ prefetch, ...options }: RunNavigationOptions): Promise<void> {
-    controller?.abort()
+    const previous = latest.value
+    previous?.controller.abort()
 
-    if (pending && pending !== active.value) {
-      pending.store.dispose()
+    if (previous && previous !== active.value) {
+      previous.store.dispose()
     }
 
     if (stopped) {
@@ -57,14 +59,9 @@ export function createRouterNavigation(): RouterNavigation {
       store: prefetch ?? createStore(),
       activate,
     })
-    pending = next
-    controller = next.controller
+    latest.value = next
 
     function cleanup(): void {
-      if (pending === next) {
-        pending = null
-      }
-
       if (active.value !== next) {
         next.store.dispose()
       }
@@ -81,13 +78,41 @@ export function createRouterNavigation(): RouterNavigation {
 
   function stop(): void {
     stopped = true
-    controller?.abort()
-    pending?.store.abandon()
+    latest.value?.controller.abort()
+    latest.value?.store.abandon()
     active.value?.store.abandon()
+  }
+
+  const pending = computed(() => latest.value?.progress.pending.value ?? false)
+  const to = computed(() => {
+    if (!pending.value) {
+      return null
+    }
+
+    return latest.value?.route ?? null
+  })
+  const from = computed(() => {
+    if (!pending.value) {
+      return null
+    }
+
+    return latest.value?.from ?? null
+  })
+  const settled = computed(() => latest.value?.progress.settled.value ?? 0)
+  const total = computed(() => latest.value?.progress.total.value ?? 0)
+  const percentage = computed(() => latest.value?.progress.progress.value ?? 0)
+  const progress: UseNavigation = {
+    pending,
+    to,
+    from,
+    settled,
+    total,
+    progress: percentage,
   }
 
   return {
     active,
+    progress,
     run,
     createStore,
     stop,
