@@ -322,6 +322,3 @@ declare module 'vue' {
     RouterProgress: typeof RouterProgress,
   }
 }
-
-export { isResolvedRejection } from '@/types/resolved'
-export type { Resolved, ResolvedRejection } from '@/types/resolved'

@@ -4,7 +4,8 @@ import { renderToString } from 'vue/server-renderer'
 /* eslint-disable vue/one-component-per-file */
 import { flushPromises, mount } from '@vue/test-utils'
 import { assert, expect, onTestFinished, test, vi } from 'vitest'
-import { createRejection, createRoute, createRouter, RouterView, useLoader, useRoute, isResolvedRejection } from '@/main'
+import { createRejection, createRoute, createRouter, RouterView, useLoader, useRoute } from '@/main'
+import { isResolvedRejection } from '@/types/resolved'
 import { warnLoaderFallback } from '@/services/warnLoaderFallback'
 
 vi.mock('@/services/warnLoaderFallback', () => ({ warnLoaderFallback: vi.fn() }))
