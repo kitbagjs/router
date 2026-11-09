@@ -3,7 +3,7 @@
 import { AsyncComponentLoader, Component, computed, FunctionalComponent, InjectionKey, defineComponent, h, ref, watch } from 'vue'
 import { isPromise } from '@/utilities/promises'
 import { getRouteProps } from '@/services/getRouteProps'
-import { PropsResult } from '@/utilities/props'
+import { PropsResponse, PropsResult } from '@/utilities/props'
 import { createUseRouterNavigation } from '@/compositions/useRouterNavigation'
 import { Router } from '@/types/router'
 import { ResolvedRoute } from '@/types/resolved'
@@ -11,7 +11,6 @@ import { createUseRoute } from '@/compositions/useRoute'
 import { useIsServerRendering } from '@/compositions/useIsServerRendering'
 import { useHasSuspenseBoundary } from '@/compositions/useHasSuspenseBoundary'
 import { createUseRouterSuspense } from '@/compositions/useRouterSuspense'
-import { MaybePromise } from '@/types/utilities'
 
 type Constructor = new (...args: any) => any
 
@@ -43,7 +42,7 @@ export function createComponentPropsWrapper(routerKey: InjectionKey<Router>, { i
       const isServerRendering = useIsServerRendering()
       const hasSuspenseBoundary = useHasSuspenseBoundary()
       const reportError = useRouterSuspense('props')
-      const props = computed<MaybePromise<PropsResult> | undefined>((previous) => {
+      const props = computed<PropsResponse | undefined>((previous) => {
         const depth = route.matches.findIndex((match) => match.id === id)
 
         if (depth < 0) {
