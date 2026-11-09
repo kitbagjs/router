@@ -301,6 +301,46 @@ test.each(['progressive', 'blocking'] as const)('a %s loader rejection keeps one
   expect(router.route.name).toBe('home')
 })
 
+test('persistent loaders select rejection data synchronously in global after hooks', async () => {
+  const pending = Promise.withResolvers<string>()
+  const loader = createLoader({
+    load: (to) => {
+      return to.kind === 'rejection' ? pending.promise : 'home'
+    },
+  })
+  const home = createRoute({ name: 'home', path: '/' }).addLoader(loader)
+  const denied = createRejection({ name: 'Denied' }).addLoader(loader)
+  const router = createRouter([home], { initialUrl: '/', rejections: [denied] })
+  onTestFinished(router.stop)
+  let result: ReturnType<typeof useLoader> | undefined
+  const wrapper = mount(defineComponent({
+    setup() {
+      result = useLoader(loader)
+      return () => null
+    },
+  }), { global: { plugins: [router] } })
+  onTestFinished(() => wrapper.unmount())
+  await router.start()
+  expect(result?.data.value).toBe('home')
+  const after = vi.fn((to) => {
+    if (to.kind === 'rejection') {
+      expect(result?.loading.value).toBe(true)
+      expect(result?.data.value).toBeUndefined()
+    }
+  })
+  router.onAfterRouteEnter(after)
+  router.onAfterRouteUpdate(after)
+
+  await router.reject('Denied')
+  await router.reject('Denied')
+
+  expect(after).toHaveBeenCalledTimes(2)
+  pending.resolve('denied')
+  await flushPromises()
+  expect(result?.data.value).toBe('denied')
+  expect(warnLoaderFallback).not.toHaveBeenCalled()
+})
+
 test('rejections run enter, update, and leave hooks locally and globally', async () => {
   const local: string[] = []
   const global: string[] = []
