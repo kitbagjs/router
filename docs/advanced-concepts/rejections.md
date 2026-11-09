@@ -10,7 +10,7 @@ Creating custom rejections is extremely easily with the [`createRejection`](/api
 import { createRejection, createRouter } from '@kitbag/router'
 
 const authNeededRejection = createRejection({
-  type: 'AuthNeeded',
+  name: 'AuthNeeded',
   status: 401,
 })
 
@@ -30,6 +30,8 @@ its own responds with the router's [`rejectStatus`](/api/types/RouterOptions#rej
 
 </aside>
 
+The `type` option and rejection `.type` property are deprecated aliases for `name`. Existing definitions continue to work.
+
 ## Rejection Component
 
 When a rejection happens, Kitbag router mounts whatever component you passed in to the `component` property. If no component was assigned, Kitbag router will use the default rejection component that ships with Kitbag Router.
@@ -38,7 +40,7 @@ When a rejection happens, Kitbag router mounts whatever component you passed in 
 import LoginView from '@/views/LoginView.vue'
 
 const authNeededRejection = createRejection({
-  type: 'AuthNeeded',
+  name: 'AuthNeeded',
   status: 401,
   component: LoginView,
 })
@@ -58,7 +60,7 @@ You'll probably want to provide your own component to display to users when they
 import NotFoundPage from '@/components/NotFoundPage.vue'
 
 const notFoundRejection = createRejection({
-  type: 'NotFound',
+  name: 'NotFound',
   status: 404,
   component: NotFoundPage,
 })
@@ -101,7 +103,7 @@ import { useRejection } from '@kitbag/router'
 
 const rejection = useRejection()
 
-const rejectionType = computed(() => rejection.value.type)
+const rejectionName = computed(() => rejection.value?.name)
 ```
 
 ## Title
@@ -118,7 +120,7 @@ The context object has the following properties:
 import { createRejection } from '@kitbag/router'
 
 const authNeededRejection = createRejection({
-  type: 'AuthNeeded',
+  name: 'AuthNeeded',
   status: 401,
 })
 

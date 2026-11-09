@@ -18,7 +18,7 @@ test('returned rejections stay current when hook context adds or replaces defini
 
   const replacement = createRejection({ type: 'Denied', status: 403 })
   registry.addHookContext(createHook({ context: [replacement], hook: () => {} }))
-  expect(rejections.filter((rejection) => rejection.type === 'Denied')).toEqual([replacement])
+  expect(rejections.filter((rejection) => rejection.name === 'Denied')).toEqual([replacement])
   expect(registry.getRejectionByType('Denied')).toBe(replacement)
 })
 

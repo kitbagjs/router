@@ -10,7 +10,7 @@ const routes = [
 ] as const
 
 const rejections = [
-  createRejection({ type: 'RequiresAuth' }),
+  createRejection({ name: 'RequiresAuth' }),
 ] as const
 
 const plugin = createRouterPlugin({
