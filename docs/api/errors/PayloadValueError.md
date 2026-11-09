@@ -25,7 +25,7 @@ new PayloadValueError(
 | Parameter | Type |
 | ------ | ------ |
 | `action` | `"stringify"` \| `"parse"` |
-| `kind` | `DataKind` |
+| `kind` | `"props"` \| `"loader"` |
 | `name` | `string` |
 | `cause` | `unknown` |
 
