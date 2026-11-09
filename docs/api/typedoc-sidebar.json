@@ -384,6 +384,10 @@
         "link": "/api/types/CreateViewOptions.md"
       },
       {
+        "text": "DataRecord",
+        "link": "/api/types/DataRecord.md"
+      },
+      {
         "text": "ErrorHook",
         "link": "/api/types/ErrorHook.md"
       },
@@ -396,8 +400,16 @@
         "link": "/api/types/GetAllParams.md"
       },
       {
+        "text": "GetData",
+        "link": "/api/types/GetData.md"
+      },
+      {
         "text": "GetParam",
         "link": "/api/types/GetParam.md"
+      },
+      {
+        "text": "GetProps",
+        "link": "/api/types/GetProps.md"
       },
       {
         "text": "Hook",
