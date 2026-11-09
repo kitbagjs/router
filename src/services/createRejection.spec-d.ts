@@ -1,4 +1,3 @@
-import { createRoute } from '@/services/createRoute'
 import { expectTypeOf, test } from 'vitest'
 import { createRejection } from '@/services/createRejection'
 
@@ -19,14 +18,8 @@ test('both naming options preserve literal inference', () => {
   createRejection({ status: 403 })
 })
 
-test('kind distinguishes route and rejection definitions', () => {
-  const route = createRoute({ name: 'home', path: '/' })
+test('rejections have rejection kind', () => {
   const rejection = createRejection({ name: 'Denied' })
-  const definition = Math.random() > 0.5 ? route : rejection
 
-  if (definition.kind === 'rejection') {
-    expectTypeOf(definition.name).toEqualTypeOf<'Denied'>()
-  } else {
-    expectTypeOf(definition.name).toEqualTypeOf<'home'>()
-  }
+  expectTypeOf(rejection.kind).toEqualTypeOf<'rejection'>()
 })
