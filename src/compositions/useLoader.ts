@@ -17,6 +17,7 @@ import { getFallbackLoaderComputation } from '@/services/getFallbackLoaderComput
 import { createUseAwaitedLoader } from '@/compositions/useAwaitedLoader'
 import { createUseRouterDepth } from '@/compositions/useRouterDepth'
 import { RouterNavigationStore } from '@/services/createRouterNavigation'
+import { ResolvedRoute } from '@/types/resolved'
 
 type LoaderSelection = { location: ValueLocation<'loader'>, navigation: RouterNavigationStore } | { error: unknown }
 
@@ -44,12 +45,15 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunct
 
     const navigation = useRouterNavigation()
     const isServerRendering = useIsServerRendering()
-    const depth = useRouterDepth()
-    const routeId = depth > 0 ? router.route.matches.at(depth - 1)?.id : undefined
+    const route: ResolvedRoute = router.route
+    const depth = useRouterDepth() - 1
+    const routeId = route.matches[depth]?.id
     const isRouteActive = computed(() => {
-      const match = router.route.matches.at(depth - 1)
+      if (!routeId) {
+        return true
+      }
 
-      return !routeId || match?.id === routeId
+      return route.matches.some((match) => match.id === routeId)
     })
 
     const selection = shallowRef<LoaderSelection>()
