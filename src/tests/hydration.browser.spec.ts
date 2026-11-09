@@ -9,7 +9,7 @@ import { createRejection } from '@/services/createRejection'
 import { z } from 'zod'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
-import { useLoader } from '@/main'
+import { RouterView, useLoader } from '@/main'
 
 function getServerKey(): string {
   const route = createResolvedRoute(createRoute({ name: 'home', path: '/' }))
@@ -245,13 +245,14 @@ test.each([
 
   await client.start()
 
-  const wrapper = mount(defineComponent({
+  const consumer = defineComponent({
     setup() {
       const { data } = useLoader(client.route.loaders.default)
 
       return () => h('p', data.value)
     },
-  }), { global: { plugins: [client] } })
+  })
+  const wrapper = mount(RouterView, { slots: { default: () => h(consumer) }, global: { plugins: [client] } })
 
   expect(wrapper.text()).toBe('from server')
   expect(load).not.toHaveBeenCalled()
