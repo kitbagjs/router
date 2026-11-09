@@ -1,17 +1,22 @@
 import { ResolvedRouteUnion } from '@/types/resolved'
-import { isRoute, Route, CreatedRouteOptions } from './route'
+import { Route, CreatedRouteOptions } from './route'
 import { RouteWithMethods } from '@/types/routeWithMethods'
 import { Url } from '@/types/url'
 import { MaybePromise } from './utilities'
+import { RouteCallbackParent } from '@/types/routeCallbackContext'
 
 export type GetTitleCallback = () => Promise<string | undefined>
 
-export type SetRouteTitleContext = {
+export type SetRouteTitleContext<TRoute extends Route = Route> = {
+  signal: AbortSignal,
+  parent: RouteCallbackParent<TRoute>,
+  /**
+   * @deprecated Use parent.getTitle() instead.
+   */
   getParentTitle: GetTitleCallback,
 }
 
-export type SetRouteTitleCallback<TRoute extends Route = Route> = (to: ResolvedRouteUnion<TRoute>, context: SetRouteTitleContext) => MaybePromise<string>
-export type GetRouteTitle<TRoute extends Route = Route> = (to: ResolvedRouteUnion<TRoute>) => Promise<string | undefined>
+export type SetRouteTitleCallback<TRoute extends Route = Route> = (to: ResolvedRouteUnion<TRoute>, context: SetRouteTitleContext<TRoute>) => MaybePromise<string>
 export type SetRouteTitle<TRoute extends Route = Route, TReturn = void> = (callback: SetRouteTitleCallback<TRoute>) => TReturn
 
 export type RouteSetTitle<TRoute extends Route = Route> = {
@@ -26,40 +31,4 @@ export type RouteTitle<
   TMatches extends CreatedRouteOptions[] = CreatedRouteOptions[]
 > = {
   setTitle: SetRouteTitle<Route<TUrl, TMatches>, RouteWithMethods<TUrl, TMatches>>,
-}
-
-type CreateRouteTitle = {
-  setTitle: SetRouteTitle,
-  getTitle: GetRouteTitle,
-}
-
-export function createRouteTitle(parent?: Route): CreateRouteTitle {
-  let setTitleCallback: SetRouteTitleCallback | undefined
-
-  const setTitle: SetRouteTitle = (callback) => {
-    setTitleCallback = callback
-  }
-
-  const getTitle: GetRouteTitle = async (to) => {
-    const getParentTitle = async (): Promise<string | undefined> => {
-      if (parent && isRoute(parent)) {
-        return parent.getTitle(to)
-      }
-
-      return undefined
-    }
-
-    if (!setTitleCallback) {
-      return getParentTitle()
-    }
-
-    return setTitleCallback(to, {
-      getParentTitle,
-    })
-  }
-
-  return {
-    setTitle,
-    getTitle,
-  }
 }

@@ -7,6 +7,7 @@ type GenericParent = {
   name: string,
   getData: GetData,
   getProps: GetProps,
+  getTitle: () => Promise<string | undefined>,
   /** @deprecated Use parent.getProps() or parent.getProps(name). */
   props: unknown,
   /** @deprecated Use parent.getData() or parent.getData(name). */
@@ -22,6 +23,7 @@ export type PropsCallbackParent<
         name: TParent['name'],
         getData: GetData<RouteLoadersOf<TParent['matches']>>,
         getProps: GetParentPropsGetter<TParent>,
+        getTitle: () => Promise<string | undefined>,
         /** @deprecated Use parent.getProps() or parent.getProps(name). */
         props: GetParentPropsReturnType<TParent>,
         /** @deprecated Use parent.getData() or parent.getData(name). */

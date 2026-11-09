@@ -7,7 +7,7 @@ import { RouteContext, ToRouteContext } from '@/types/routeContext'
 import { ToMeta } from '@/types/meta'
 import { ToState } from '@/types/state'
 import { Url } from '@/types/url'
-import { GetRouteTitle } from '@/types/routeTitle'
+import { SetRouteTitleCallback } from '@/types/routeTitle'
 import { Hooks } from '@/models/hooks'
 import { RouteRedirect } from './redirects'
 import { RouteViews } from '@/types/routeViews'
@@ -25,7 +25,6 @@ export type RouteInternal = {
   depth: number,
   hooks: Hooks[],
   redirect: RouteRedirect,
-  getTitle: GetRouteTitle,
   aliases: RouteAlias[],
 }
 
@@ -42,6 +41,7 @@ export type CreatedRouteOptions = CreateRouteOptions & {
   id: string,
   views: RouteViews,
   loaders: RouteLoaders,
+  title?: SetRouteTitleCallback,
 }
 
 // `matches` is a complete per-depth snapshot of the options each route was created with, so the
