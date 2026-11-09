@@ -55,7 +55,7 @@ export function createRouterHooks({ redirectStatus, onHookAdded }: RouterHooksOp
   const componentStore = new Hooks()
   const globalStores = [globalStore]
 
-  const runBeforeRouteHooks: BeforeHookRunner = async ({ to, from, signal, progress }) => {
+  const runBeforeRouteHooks: BeforeHookRunner = async ({ to, from, signal, progress, source = 'push' }) => {
     const { reject, push, replace, update, abort } = createRouterCallbackContext({ to })
     const routeHooks = getBeforeHooksFromRoutes(to, from)
     const globalHooks = getGlobalBeforeHooks(to, from, globalStores)
@@ -83,6 +83,7 @@ export function createRouterHooks({ redirectStatus, onHookAdded }: RouterHooksOp
         // Enter and update hooks are only in this list when to is not null, and leave hooks are only in it when from is not null. These casts are purely to satisfy the type checker.
         const result = Promise.resolve(runWithContext(() => callback(to as ResolvedRoute, {
           lifecycle: 'before',
+          source,
           remove,
           from: from as ResolvedRoute,
           reject,
@@ -137,7 +138,7 @@ export function createRouterHooks({ redirectStatus, onHookAdded }: RouterHooksOp
     }
   }
 
-  const runAfterRouteHooks: AfterHookRunner = async ({ to, from, signal }) => {
+  const runAfterRouteHooks: AfterHookRunner = async ({ to, from, signal, source = 'push' }) => {
     const { reject, push, replace, update } = createRouterCallbackContext({ to })
     const routeHooks = getAfterHooksFromRoutes(to, from)
     const globalHooks = getGlobalAfterHooks(to, from, globalStores)
@@ -160,6 +161,7 @@ export function createRouterHooks({ redirectStatus, onHookAdded }: RouterHooksOp
         // Enter and update hooks are only in this list when to is not null, and leave hooks are only in it when from is not null. These casts are purely to satisfy the type checker.
         return Promise.resolve(runWithContext(() => callback(to as ResolvedRoute, {
           lifecycle: 'after',
+          source,
           remove,
           from: from as ResolvedRoute,
           reject,
