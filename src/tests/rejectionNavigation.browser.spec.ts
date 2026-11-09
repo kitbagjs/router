@@ -4,6 +4,7 @@ import { renderToString } from 'vue/server-renderer'
 import { flushPromises, mount } from '@vue/test-utils'
 import { assert, expect, onTestFinished, test, vi } from 'vitest'
 import { createLoader, createRejection, createRoute, createRouter, createRouterAssets, RouterView, useLoader, useRoute } from '@/main'
+import echo from '@/components/echo'
 import { warnLoaderFallback } from '@/services/warnLoaderFallback'
 
 vi.mock('@/services/warnLoaderFallback', () => ({ warnLoaderFallback: vi.fn() }))
@@ -504,4 +505,49 @@ test('departing views retain their props and loader data when a rejection replac
   expect(beforeUnmount).toHaveBeenCalledExactlyOnceWith('Home props', 'home')
   expect(load).toHaveBeenCalledTimes(2)
   expect(warnLoaderFallback).not.toHaveBeenCalled()
+})
+
+test.each([undefined, { template: 'Legacy default' }])('addView replaces the default rejection view and supports named views and loader props (%j)', async (component) => {
+  const denied = createRejection({ name: 'Denied', status: 403, component })
+    .addLoader(() => 'Sign in', { name: 'reason' })
+    .addView(echo, {
+      props: async (to) => ({ value: `${await to.getData('reason')}: ${to.name}` }),
+    })
+    .addView(echo, {
+      name: 'sidebar',
+      props: (to) => ({ value: to.href }),
+    })
+    .setTitle(() => 'Sign in')
+  const project = createRoute({ name: 'project', path: '/projects/[id]', context: [denied] })
+    .onBeforeRouteEnter((_to, { reject }) => reject('Denied'))
+  const router = createRouter([project], { initialUrl: '/projects/42?tab=details' })
+  onTestFinished(router.stop)
+  const wrapper = mount({
+    render: () => h('main', [h(RouterView), h(RouterView, { name: 'sidebar' })]),
+  }, { global: { plugins: [router] } })
+  onTestFinished(() => wrapper.unmount())
+
+  await router.start()
+  await flushPromises()
+
+  expect(wrapper.text()).toBe('Sign in: Denied/projects/42?tab=details')
+  expect(router.route.name).toBe('Denied')
+  await expect(router.route.getTitle()).resolves.toBe('Sign in')
+})
+
+test('adding a named rejection view preserves the legacy component as the default view', async () => {
+  const denied = createRejection({ name: 'Denied', component: { template: 'Legacy default' } })
+    .addView({ template: 'Support sidebar' }, { name: 'sidebar' })
+  const router = createRouter([], { initialUrl: '/', rejections: [denied] })
+  onTestFinished(router.stop)
+  const wrapper = mount({
+    render: () => h('main', [h(RouterView), h(RouterView, { name: 'sidebar' })]),
+  }, { global: { plugins: [router] } })
+  onTestFinished(() => wrapper.unmount())
+
+  await router.start()
+  await router.reject('Denied')
+  await flushPromises()
+
+  expect(wrapper.text()).toBe('Legacy defaultSupport sidebar')
 })

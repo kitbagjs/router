@@ -34,16 +34,18 @@ The `type` option and rejection `.type` property are deprecated aliases for `nam
 
 ## Rejection Component
 
-When a rejection happens, Kitbag router mounts whatever component you passed in to the `component` property. If no component was assigned, Kitbag router will use the default rejection component that ships with Kitbag Router.
+When a rejection happens, Kitbag router mounts whatever component you passed to `addView`. If no component was assigned, Kitbag router will use the default rejection component that ships with Kitbag Router.
 
-```ts {1,5}
+`addView` supports [named views](/core-concepts/routes#named-views) and [props getters](/core-concepts/component-props). The `component` option remains supported but is deprecated in favor of `addView`.
+
+```ts {1,7}
 import LoginView from '@/views/LoginView.vue'
 
 const authNeededRejection = createRejection({
   name: 'AuthNeeded',
   status: 401,
-  component: LoginView,
 })
+  .addView(LoginView)
 ```
 
 Now if your `AuthNeeded` rejection is triggered, the `LoginView` component will be mounted.
@@ -62,8 +64,8 @@ import NotFoundPage from '@/components/NotFoundPage.vue'
 const notFoundRejection = createRejection({
   name: 'NotFound',
   status: 404,
-  component: NotFoundPage,
 })
+  .addView(NotFoundPage)
 
 export const router = createRouter(routes, {
   rejections: [notFoundRejection]

@@ -25,9 +25,10 @@ export type RouteWithMethods<
   & RouteTitle<TUrl, TMatches>
   & RouteHooks<TUrl, TMatches>
   & RouteAddLoader<TUrl, TMatches>
+  & RouteAddView<TUrl, TMatches>
   & (Route<TUrl, TMatches>['kind'] extends 'rejection'
     ? { status?: number } & RejectionIdentity<Route<TUrl, TMatches>['name']> & RejectionHooks<Route<TUrl, TMatches>['name']>
-    : RouteAddView<TUrl, TMatches> & RouteAddAlias<TUrl, TMatches> & RouteRedirects<TUrl, TMatches>)
+    : RouteAddAlias<TUrl, TMatches> & RouteRedirects<TUrl, TMatches>)
 
 export type ExternalRouteWithMethods<
   TRoute extends Route = Route,
