@@ -98,7 +98,7 @@ function maybeAuthNeeded() {
 }
 ```
 
-Call `router.refresh()` to retry the requested URL after resolving the rejection, for example after signing in. Rejections run `onRejection` hooks rather than ordinary route-enter or route-update hooks.
+Call `router.refresh()` to retry the requested URL after resolving the rejection, for example after signing in. Rejections support the same before/after enter, update, and leave hooks as routes, including navigation controls. Global hooks also run for rejections; check `to.kind === 'rejection'` when a guard should skip them. `onRejection` still fires when a rejection is requested, before its navigation begins.
 
 ### Get Rejection
 
