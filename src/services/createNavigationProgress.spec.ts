@@ -1,155 +1,100 @@
 import { flushPromises } from '@vue/test-utils'
-import { describe, expect, test } from 'vitest'
-import { createNavigationProgress, NavigationProgress, NavigationProgressTracker } from '@/services/createNavigationProgress'
-import { createResolvedRoute } from '@/services/createResolvedRoute'
-import { routes } from '@/utilities/testHelpers'
+import { expect, test } from 'vitest'
+import { createNavigationProgress } from '@/services/createNavigationProgress'
 
-const to = createResolvedRoute(routes[0], { paramA: 'a' })
+test('each tracked unit advances progress as it settles, however it settles', async () => {
+  const controller = new AbortController()
+  const progress = createNavigationProgress({ signal: controller.signal, expected: 1 })
+  const first = Promise.withResolvers<string>()
+  const second = Promise.withResolvers<string>()
 
-function begin(navigationProgress: NavigationProgress, expected: number): NavigationProgressTracker {
-  return navigationProgress.begin({ to, from: null, expected })
-}
+  progress.expect(1)
+  progress.track(first.promise, second.promise)
 
-describe('createNavigationProgress', () => {
-  test('is idle until a navigation begins', () => {
-    const progress = createNavigationProgress()
+  first.resolve('done')
+  await flushPromises()
 
-    expect(progress.pending.value).toBe(false)
-    expect(progress.progress.value).toBe(0)
-    expect(progress.to.value).toBeNull()
-  })
+  expect(progress.total.value).toBe(2)
+  expect(progress.settled.value).toBe(1)
+  expect(progress.progress.value).toBe(0.5)
 
-  test('beginning a navigation is pending with the expected units and its routes', () => {
-    const progress = createNavigationProgress()
+  second.reject(new Error('failed'))
+  await flushPromises()
 
-    progress.begin({ to, from: null, expected: 3 })
+  expect(progress.settled.value).toBe(2)
+  expect(progress.pending.value).toBe(true)
+})
 
-    expect(progress.pending.value).toBe(true)
-    expect(progress.total.value).toBe(3)
-    expect(progress.settled.value).toBe(0)
-    expect(progress.to.value).toBe(to)
-    expect(progress.from.value).toBeNull()
-  })
+test('ends once closed and every unit has settled, not before', async () => {
+  const controller = new AbortController()
+  const progress = createNavigationProgress({ signal: controller.signal, expected: 1 })
+  const unit = Promise.withResolvers<string>()
 
-  test('each tracked unit advances settled as it settles, however it settles', async () => {
-    const progress = createNavigationProgress()
-    const tracker = begin(progress, 0)
-    const first = Promise.withResolvers<string>()
-    const second = Promise.withResolvers<string>()
+  progress.track(unit.promise)
+  progress.close()
 
-    tracker.expect(2)
-    tracker.track(first.promise, second.promise)
+  expect(progress.pending.value).toBe(true)
 
-    first.resolve('done')
-    await flushPromises()
+  unit.resolve('done')
+  await flushPromises()
 
-    expect(progress.settled.value).toBe(1)
-    expect(progress.progress.value).toBe(0.5)
+  expect(progress.pending.value).toBe(false)
+  expect(progress.settled.value).toBe(1)
+  expect(progress.total.value).toBe(1)
+  expect(progress.progress.value).toBe(0)
+})
 
-    second.reject(new Error('failed'))
-    await flushPromises()
+test('closing with nothing outstanding ends immediately', () => {
+  const controller = new AbortController()
+  const progress = createNavigationProgress({ signal: controller.signal })
 
-    expect(progress.settled.value).toBe(2)
-  })
+  progress.close()
 
-  test('ends once closed and every unit has settled, not before', async () => {
-    const progress = createNavigationProgress()
-    const tracker = begin(progress, 1)
-    const unit = Promise.withResolvers<string>()
+  expect(progress.pending.value).toBe(false)
+})
 
-    tracker.track(unit.promise)
-    tracker.close()
+test('aborting clears the counts and ignores late results', async () => {
+  const controller = new AbortController()
+  const progress = createNavigationProgress({ signal: controller.signal, expected: 2 })
+  const pending = Promise.withResolvers<string>()
 
-    expect(progress.pending.value).toBe(true)
+  progress.track(Promise.resolve('done'), pending.promise)
+  await flushPromises()
+  expect(progress.settled.value).toBe(1)
 
-    unit.resolve('done')
-    await flushPromises()
+  controller.abort()
+  pending.resolve('late')
+  await flushPromises()
 
-    expect(progress.pending.value).toBe(false)
-    expect(progress.settled.value).toBe(1)
-    expect(progress.total.value).toBe(1)
-    expect(progress.progress.value).toBe(0)
-    expect(progress.to.value).toBeNull()
-  })
+  expect(progress.pending.value).toBe(false)
+  expect(progress.settled.value).toBe(0)
+  expect(progress.total.value).toBe(0)
+})
 
-  test('closing with nothing outstanding ends immediately', () => {
-    const progress = createNavigationProgress()
-    const tracker = begin(progress, 0)
+test('aborting after completion preserves the final counts', async () => {
+  const controller = new AbortController()
+  const progress = createNavigationProgress({ signal: controller.signal, expected: 1 })
 
-    tracker.close()
+  progress.track(Promise.resolve('done'))
+  progress.close()
+  await flushPromises()
+  controller.abort()
 
-    expect(progress.pending.value).toBe(false)
-  })
+  expect(progress.pending.value).toBe(false)
+  expect(progress.total.value).toBe(1)
+  expect(progress.settled.value).toBe(1)
+})
 
-  test('aborting ends with the counts wiped', async () => {
-    const progress = createNavigationProgress()
-    const tracker = begin(progress, 2)
+test('an inert tracker counts nothing', async () => {
+  const controller = new AbortController()
+  const progress = createNavigationProgress({ signal: controller.signal, expected: 3, inert: true })
 
-    tracker.track(Promise.resolve('done'))
-    await flushPromises()
-    tracker.abort()
+  progress.expect(1)
+  progress.track(Promise.resolve('done'))
+  await flushPromises()
+  progress.close()
 
-    expect(progress.pending.value).toBe(false)
-    expect(progress.settled.value).toBe(0)
-    expect(progress.total.value).toBe(0)
-  })
-
-  test('beginning another navigation discards the one before it', async () => {
-    const progress = createNavigationProgress()
-    const first = begin(progress, 1)
-    const unit = Promise.withResolvers<string>()
-
-    first.track(unit.promise)
-    first.close()
-
-    progress.begin({ to, from: null, expected: 5 })
-
-    unit.resolve('done')
-    await flushPromises()
-    first.expect(10)
-    first.abort()
-
-    expect(progress.pending.value).toBe(true)
-    expect(progress.settled.value).toBe(0)
-    expect(progress.total.value).toBe(5)
-  })
-
-  test('a unit settling after the navigation ended counts for nothing', async () => {
-    const progress = createNavigationProgress()
-    const tracker = begin(progress, 1)
-    const unit = Promise.withResolvers<string>()
-
-    tracker.track(unit.promise)
-    tracker.abort()
-
-    unit.resolve('done')
-    await flushPromises()
-
-    expect(progress.settled.value).toBe(0)
-    expect(progress.pending.value).toBe(false)
-  })
-
-  test('an inert tracker counts nothing and leaves the state alone', async () => {
-    const progress = createNavigationProgress()
-    const tracker = progress.begin({ to, from: null, expected: 3, inert: true })
-
-    tracker.expect(1)
-    tracker.track(Promise.resolve('done'))
-    await flushPromises()
-    tracker.close()
-
-    expect(progress.pending.value).toBe(false)
-    expect(progress.total.value).toBe(0)
-    expect(progress.to.value).toBeNull()
-  })
-
-  test('stopping aborts the navigation being counted', () => {
-    const progress = createNavigationProgress()
-
-    begin(progress, 2)
-    progress.stop()
-
-    expect(progress.pending.value).toBe(false)
-    expect(progress.total.value).toBe(0)
-  })
+  expect(progress.pending.value).toBe(false)
+  expect(progress.total.value).toBe(0)
+  expect(progress.settled.value).toBe(0)
 })
