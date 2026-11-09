@@ -1,3 +1,4 @@
+import { isResolvedRejection } from '@/types/resolved'
 import { expect, test, vi } from 'vitest'
 import { createHook } from '@/services/createHook'
 import { createRoute } from '@/services/createRoute'
@@ -20,6 +21,10 @@ test.each(['route', 'router'] as const)('late %s hooks register navigation and r
   const hook = createHook({
     context: [target, denied],
     hook: (to, { push, reject }) => {
+      if (isResolvedRejection(to)) {
+        return
+      }
+
       if (to?.name !== 'source') {
         return
       }

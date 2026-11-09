@@ -1,3 +1,4 @@
+import { isResolvedRejection } from '@/types/resolved'
 import { getDataKey } from '@/services/getDataKey'
 import { flushPromises } from '@vue/test-utils'
 import { Location } from '@/services/history'
@@ -887,8 +888,8 @@ describe('router.onRejection', () => {
 
     expect(onRejection).toHaveBeenCalledWith('CustomRejection', {
       remove: expect.any(Function),
-      to: null,
-      from: null,
+      to: expect.objectContaining({ name: 'route' }),
+      from: expect.objectContaining({ name: 'route' }),
     })
   })
 
@@ -962,8 +963,8 @@ describe('options.removeTrailingSlashes', () => {
 
     await router.push('/bar/')
 
-    // rejects so the route is unchanged
-    expect(router.route.href).toBe('/foo/')
+    // NotFound preserves the requested URL
+    expect(router.route.href).toBe('/bar/')
   })
 })
 
@@ -1003,7 +1004,7 @@ describe('a url that matches no route', () => {
     })
   })
 
-  test('runs leave hooks with a null to', async () => {
+  test('completes unmatched navigation with a resolved rejection and live signal', async () => {
     const onBeforeRouteLeave = vi.fn()
     const onAfterRouteLeave = vi.fn()
     const route = createRoute({ name: 'route', path: '/foo' }).addView(component)
@@ -1016,8 +1017,13 @@ describe('a url that matches no route', () => {
 
     await router.push('/does-not-exist')
 
-    expect(onBeforeRouteLeave).toHaveBeenCalledWith(null, expect.anything())
-    expect(onAfterRouteLeave).toHaveBeenCalledWith(null, expect.anything())
+    expect(onBeforeRouteLeave).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ href: '/does-not-exist' }), expect.anything())
+    const context = onBeforeRouteLeave.mock.calls[0][1]
+    expect(onAfterRouteLeave).toHaveBeenCalledExactlyOnceWith(onBeforeRouteLeave.mock.calls[0][0], expect.objectContaining({
+      from: context.from,
+      signal: context.signal,
+    }))
+    expect(context.signal.aborted).toBe(false)
   })
 })
 
@@ -1652,7 +1658,11 @@ describe('router.render response', () => {
     const route = createRoute({ name: 'route', path: '/' }).addView(component)
     const router = createRouter([route], { ssr: true, initialUrl: '/', rejections: [locked] })
 
-    router.onBeforeRouteEnter((_to, { reject }) => reject('Locked'))
+    router.onBeforeRouteEnter((to, { reject }) => {
+      if (!isResolvedRejection(to)) {
+        reject('Locked')
+      }
+    })
 
     const result = rendered(await router.render())
 
@@ -1691,7 +1701,11 @@ describe('router.render response', () => {
     const router = createRouter([route], { ssr: true, initialUrl: '/', rejections: [locked] })
 
     if (kind === 'reject') {
-      router.onBeforeRouteEnter((_to, { reject }) => reject('Locked'))
+      router.onBeforeRouteEnter((to, { reject }) => {
+        if (!isResolvedRejection(to)) {
+          reject('Locked')
+        }
+      })
     }
 
     const settled = vi.fn()
@@ -1725,7 +1739,11 @@ describe('router.render response', () => {
     const router = createRouter([route], { ssr: true, initialUrl: '/', rejections: [locked] })
 
     if (kind === 'reject') {
-      router.onBeforeRouteEnter((_to, { reject }) => reject('Locked'))
+      router.onBeforeRouteEnter((to, { reject }) => {
+        if (!isResolvedRejection(to)) {
+          reject('Locked')
+        }
+      })
     }
 
     await expect(router.render()).rejects.toBe(failure)
@@ -1746,7 +1764,7 @@ describe('router.render response', () => {
     expect(onAfterRouteEnter).not.toHaveBeenCalled()
   })
 
-  test('a rejection without a title returns no title', async () => {
+  test('a rejection without a title uses the attempted route title', async () => {
     const locked = createRejection({ type: 'Locked', status: 423, component })
 
     const route = createRoute({ name: 'route', path: '/' }).addView(component)
@@ -1755,13 +1773,17 @@ describe('router.render response', () => {
 
     const router = createRouter([route], { ssr: true, initialUrl: '/', rejections: [locked] })
 
-    router.onBeforeRouteEnter((_to, { reject }) => reject('Locked'))
+    router.onBeforeRouteEnter((to, { reject }) => {
+      if (!isResolvedRejection(to)) {
+        reject('Locked')
+      }
+    })
 
     await router.start()
 
     const result = rendered(await router.render())
 
-    expect(result.title).toBeUndefined()
+    expect(result.title).toBe('the title')
   })
 
   test('a value crosses the payload through its own stringify', async () => {
@@ -1819,7 +1841,7 @@ describe('router.render response', () => {
     const result = rendered(await router.render())
     const payload: unknown = JSON.parse(result.payload.replace(/^<script[^>]*>/, '').replace(/<\/script>$/, ''))
 
-    expect(payload).toStrictEqual({ kind: 'reject', url: '/does-not-exist', rejection: 'NotFound' })
+    expect(payload).toStrictEqual({ kind: 'reject', url: '/does-not-exist', rejection: 'NotFound', values: [] })
   })
 
   test('given a url that matches a route, returns 200', async () => {
@@ -1865,7 +1887,11 @@ describe('router.render response', () => {
     const route = createRoute({ name: 'route', path: '/' }).addView(component)
     const router = createRouter([route], { ssr: true, initialUrl: '/', rejections: [rejection] })
 
-    router.onBeforeRouteEnter((_to, { reject }) => {
+    router.onBeforeRouteEnter((to, { reject }) => {
+      if (isResolvedRejection(to)) {
+        return
+      }
+
       reject('Unauthorized')
     })
 
@@ -1881,7 +1907,11 @@ describe('router.render response', () => {
     const route = createRoute({ name: 'route', path: '/' }).addView(component)
     const router = createRouter([route], { ssr: true, initialUrl: '/', rejections: [rejection] })
 
-    router.onBeforeRouteEnter((_to, { reject }) => {
+    router.onBeforeRouteEnter((to, { reject }) => {
+      if (isResolvedRejection(to)) {
+        return
+      }
+
       reject('Locked')
     })
 
@@ -1897,7 +1927,11 @@ describe('router.render response', () => {
     const route = createRoute({ name: 'route', path: '/' }).addView(component)
     const router = createRouter([route], { ssr: true, initialUrl: '/', rejections: [rejection], rejectStatus: 403 })
 
-    router.onBeforeRouteEnter((_to, { reject }) => {
+    router.onBeforeRouteEnter((to, { reject }) => {
+      if (isResolvedRejection(to)) {
+        return
+      }
+
       reject('Locked')
     })
 
@@ -1913,7 +1947,11 @@ describe('router.render response', () => {
     const route = createRoute({ name: 'route', path: '/' }).addView(component)
     const router = createRouter([route], { ssr: true, initialUrl: '/', rejections: [rejection], rejectStatus: 403 })
 
-    router.onBeforeRouteEnter((_to, { reject }) => {
+    router.onBeforeRouteEnter((to, { reject }) => {
+      if (isResolvedRejection(to)) {
+        return
+      }
+
       reject('Locked')
     })
 
@@ -2166,7 +2204,7 @@ test('a before hook redirect discards prefetched work for the original route', a
   await router.start()
   const useRouterNavigation = createUseRouterNavigation(router.key)
   const navigation = app.runWithContext(useRouterNavigation)
-  const prepared = navigation.create()
+  const prepared = navigation.createStore()
   const route = router.resolve('prefetched')
   prepared.compute(route, getComputations(route))
   const options: RouterPushOptionsInternal = { prefetch: prepared }
@@ -2202,7 +2240,7 @@ test('prefetched navigation actions win in completion order', async () => {
   await router.start()
   const useRouterNavigation = createUseRouterNavigation(router.key)
   const navigation = app.runWithContext(useRouterNavigation)
-  const prepared = navigation.create()
+  const prepared = navigation.createStore()
   const resolved = router.resolve('page')
   prepared.compute(resolved, getComputations(resolved))
 

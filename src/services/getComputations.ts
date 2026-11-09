@@ -1,14 +1,18 @@
 import { Computation, DataKind } from '@/types/computation'
 import type { PrefetchConfigs, PrefetchStrategy } from '@/types/prefetch'
-import { ResolvedRoute } from '@/types/resolved'
+import { isResolvedRejection, ResolvedRoute } from '@/types/resolved'
 import { createPropsComputation } from '@/services/createPropsComputation'
-import { createLoaderComputation } from '@/services/createLoaderComputation'
+import { getLoaderComputation } from '@/services/getLoaderComputation'
 import { getPrefetchOption } from '@/utilities/prefetch'
 
-export function getComputations(route: ResolvedRoute): Computation[] {
+export function getComputations(route: ResolvedRoute | null): Computation[] {
   const computations: Computation[] = []
 
-  for (const [depth, match] of route.matches.entries()) {
+  if (!route) {
+    return computations
+  }
+
+  for (const [depth, match] of route.views.entries()) {
     for (const [name, { props, prefetch, transformer }] of Object.entries(match.views)) {
       if (!props) {
         continue
@@ -23,16 +27,11 @@ export function getComputations(route: ResolvedRoute): Computation[] {
         transformer,
       }))
     }
+  }
 
-    for (const [name, { load, prefetch, transformer }] of Object.entries(match.loaders)) {
-      computations.push(createLoaderComputation({
-        location: { kind: 'loader', depth, name },
-        route,
-        callback: load,
-        routePrefetch: match.prefetch,
-        prefetch,
-        transformer,
-      }))
+  if (!isResolvedRejection(route)) {
+    for (const name of Object.keys(route.loaders)) {
+      computations.push(getLoaderComputation(route, name))
     }
   }
 
