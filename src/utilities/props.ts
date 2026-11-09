@@ -6,11 +6,13 @@ import { isPromise } from './promises'
  */
 export type PropsResult = { kind: 'value', value: unknown } | { kind: 'error', error: unknown } | { kind: 'abandoned' }
 
+export type PropsResponse = MaybePromise<PropsResult>
+
 /**
  * Runs a props callback and captures how it settled rather than letting it throw, so that navigation can
  * tell a push or rejection apart from a genuine failure. Sync getters settle synchronously.
  */
-export function getPropsValue(callback: () => unknown): MaybePromise<PropsResult> {
+export function getPropsValue(callback: () => unknown): PropsResponse {
   try {
     const value = callback()
 

@@ -1,9 +1,8 @@
 import { ValueLocation } from '@/types/computation'
 import { NavigationData } from '@/services/createRouterNavigation'
 import { ResolvedRoute } from '@/types/resolved'
-import { MaybePromise } from '@/types/utilities'
 import { CallbackContextResponse } from '@/types/callbackContext'
-import { PropsResult } from '@/utilities/props'
+import { PropsResponse, PropsResult } from '@/utilities/props'
 import { unwrapComputationResponse } from '@/utilities/unwrapComputationResponse'
 
 type RoutePropsLocation = {
@@ -11,7 +10,7 @@ type RoutePropsLocation = {
   name: string,
 }
 
-export function getRouteProps(store: NavigationData, { depth, name }: RoutePropsLocation, route: ResolvedRoute): MaybePromise<PropsResult> {
+export function getRouteProps(store: NavigationData, { depth, name }: RoutePropsLocation, route: ResolvedRoute): PropsResponse {
   if (depth < 0) {
     return NO_PROPS
   }

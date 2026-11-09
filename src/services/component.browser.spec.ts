@@ -3,6 +3,31 @@ import { expect, test, vi } from 'vitest'
 import echo from '@/components/echo'
 import { createRoute } from '@/services/createRoute'
 import { createRouter } from '@/services/createRouter'
+import { createComponentPropsWrapper } from '@/services/component'
+
+test('preserves the latest props when the owning route leaves', async () => {
+  const first = createRoute({ name: 'first', path: '/first/[id]' })
+    .addView(echo, { props: (route) => ({ value: `first:${route.params.id}` }) })
+  const second = createRoute({ name: 'second', path: '/second' })
+    .addView(echo, { props: () => ({ value: 'second' }) })
+  const router = createRouter([first, second], { initialUrl: '/first/1' })
+  await router.start()
+
+  // Keep the wrapper mounted so unmounting cannot hide changes to its props during departure.
+  const view = createComponentPropsWrapper(router.key, { id: first.id, name: 'default', component: echo })
+  const wrapper = mount(view, { global: { plugins: [router] } })
+  await flushPromises()
+  expect(wrapper.text()).toBe('first:1')
+
+  await router.push('/first/2')
+  await flushPromises()
+  expect(wrapper.text()).toBe('first:2')
+
+  await router.push('/second')
+  await flushPromises()
+
+  expect(wrapper.text()).toBe('first:2')
+})
 
 test('renders component with sync props', async () => {
   const route = createRoute({

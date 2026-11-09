@@ -15,8 +15,11 @@ import { warnLoaderFallback } from '@/services/warnLoaderFallback'
 import { getFallbackLoaderLocation } from '@/services/getFallbackLoaderLocation'
 import { getFallbackLoaderComputation } from '@/services/getFallbackLoaderComputation'
 import { createUseAwaitedLoader } from '@/compositions/useAwaitedLoader'
+import { createUseRouterDepth } from '@/compositions/useRouterDepth'
+import { RouterNavigationStore } from '@/services/createRouterNavigation'
+import { ResolvedRoute } from '@/types/resolved'
 
-type LoaderSelection = { location: ValueLocation<'loader'> } | { error: unknown }
+type LoaderSelection = { location: ValueLocation<'loader'>, navigation: RouterNavigationStore } | { error: unknown }
 
 export type UseLoaderFunction = <TData>(loader: Loader<TData, readonly RouteContext[]>) => UseLoader<Awaited<TData>>
 
@@ -24,6 +27,7 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunct
   const useRouter = createUseRouter(routerKey)
   const useRouterNavigation = createUseRouterNavigation(routerKey)
   const useAwaitedLoader = createUseAwaitedLoader(routerKey)
+  const useRouterDepth = createUseRouterDepth(routerKey)
 
   function useLoader<TData>(loader: Loader<TData, readonly RouteContext[]>): UseLoader<Awaited<TData>>
   function useLoader(source: AnyLoader): UseLoader {
@@ -41,6 +45,16 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunct
 
     const navigation = useRouterNavigation()
     const isServerRendering = useIsServerRendering()
+    const route: ResolvedRoute = router.route
+    const depth = useRouterDepth()
+    const routeId = route.matches[depth - 1]?.id
+    const isRouteActive = computed(() => {
+      if (!routeId) {
+        return true
+      }
+
+      return route.matches.some((match) => match.id === routeId)
+    })
 
     const selection = shallowRef<LoaderSelection>()
     const controller = new AbortController()
@@ -80,14 +94,14 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunct
     }
 
     function selectLoader(): void {
-      if (controller.signal.aborted) {
+      if (controller.signal.aborted || !isRouteActive.value) {
         return
       }
 
       try {
         const location = getLocation()
 
-        selection.value = { location }
+        selection.value = { location, navigation: navigation.current() }
       } catch (error) {
         selection.value = { error }
       }
@@ -118,13 +132,22 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunct
 
     initialize()
 
-    const state = computed<DataResult>(() => {
+    const state = computed<DataResult>((previous) => {
+      if (!isRouteActive.value) {
+        return previous ?? { status: 'PENDING' }
+      }
+
       if (!selection.value) {
         return { status: 'PENDING' }
       }
 
       if ('error' in selection.value) {
         return { status: 'ERROR', error: selection.value.error, source: 'loader' }
+      }
+
+      // The old store is disposed before the route changes. Preserve its last result until reselection.
+      if (selection.value.navigation !== navigation.current()) {
+        return previous ?? { status: 'PENDING' }
       }
 
       const result = navigation.getState(selection.value.location, router.route)

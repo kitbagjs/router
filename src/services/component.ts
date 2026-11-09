@@ -3,7 +3,7 @@
 import { AsyncComponentLoader, Component, computed, FunctionalComponent, InjectionKey, defineComponent, h, ref, watch } from 'vue'
 import { isPromise } from '@/utilities/promises'
 import { getRouteProps } from '@/services/getRouteProps'
-import { PropsResult } from '@/utilities/props'
+import { PropsResponse, PropsResult } from '@/utilities/props'
 import { createUseRouterNavigation } from '@/compositions/useRouterNavigation'
 import { Router } from '@/types/router'
 import { ResolvedRoute } from '@/types/resolved'
@@ -42,8 +42,12 @@ export function createComponentPropsWrapper(routerKey: InjectionKey<Router>, { i
       const isServerRendering = useIsServerRendering()
       const hasSuspenseBoundary = useHasSuspenseBoundary()
       const reportError = useRouterSuspense('props')
-      const props = computed(() => {
+      const props = computed<PropsResponse | undefined>((previous) => {
         const depth = route.matches.findIndex((match) => match.id === id)
+
+        if (depth < 0) {
+          return previous
+        }
 
         return getRouteProps(navigation.current(), { depth, name }, route)
       })
@@ -53,7 +57,7 @@ export function createComponentPropsWrapper(routerKey: InjectionKey<Router>, { i
         const result = await props
         const current = navigation.current()
 
-        if (current !== owner || result.kind !== 'error') {
+        if (current !== owner || result?.kind !== 'error') {
           return
         }
 
