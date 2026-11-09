@@ -9,17 +9,16 @@ import { createUseRouter } from '@/compositions/useRouter'
 import { useIsServerRendering } from '@/compositions/useIsServerRendering'
 import { createUseRouterNavigation } from '@/compositions/useRouterNavigation'
 import { getLoaderLocation } from '@/services/getLoaderLocation'
-import { isRouterRoute } from '@/services/createRouterRoute'
 import { RouteContext } from '@/types/routeContext'
 import { warnLoaderFallback } from '@/services/warnLoaderFallback'
 import { getFallbackLoaderLocation } from '@/services/getFallbackLoaderLocation'
 import { getFallbackLoaderComputation } from '@/services/getFallbackLoaderComputation'
 import { createUseAwaitedLoader } from '@/compositions/useAwaitedLoader'
 import { createUseRouterDepth } from '@/compositions/useRouterDepth'
-import { RouterNavigationStore } from '@/services/createRouterNavigation'
+import { ComputationStore } from '@/services/createComputationStore'
 import { ResolvedRoute } from '@/types/resolved'
 
-type LoaderSelection = { location: ValueLocation<'loader'>, navigation: RouterNavigationStore } | { error: unknown }
+type LoaderSelection = { location: ValueLocation<'loader'>, route: ResolvedRoute, store: ComputationStore } | { error: unknown }
 
 export type UseLoaderFunction = <TData>(loader: Loader<TData, readonly RouteContext[]>) => UseLoader<Awaited<TData>>
 
@@ -59,25 +58,19 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunct
     const selection = shallowRef<LoaderSelection>()
     const controller = new AbortController()
 
-    const getLocation = (): ValueLocation<'loader'> => {
-      const result = getLoaderLocation(router.route, loader)
+    const getLocation = (route: ResolvedRoute, store: ComputationStore): ValueLocation<'loader'> => {
+      const result = getLoaderLocation(route, loader)
 
       if ('location' in result) {
         return result.location
       }
 
       const location = getFallbackLoaderLocation(loader)
-      const state = navigation.getState(location, router.route)
+      const state = store.getState(location, route)
 
       if (state.status !== 'MISSING') {
         return location
       }
-
-      if (!isRouterRoute(routerKey, router.route)) {
-        throw new TypeError('Expected a router route for this router')
-      }
-
-      const route = router.route.getResolvedRoute()
 
       warnLoaderFallback({
         loader,
@@ -88,7 +81,7 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunct
 
       const computation = getFallbackLoaderComputation(loader, route)
       router.addContext(loader.context)
-      navigation.current().compute(route, [computation])
+      store.compute(route, [computation])
 
       return location
     }
@@ -99,9 +92,16 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunct
       }
 
       try {
-        const location = getLocation()
+        const active = navigation.active.value
 
-        selection.value = { location, navigation: navigation.current() }
+        if (!active?.route) {
+          return
+        }
+
+        const { route, store } = active
+        const location = getLocation(route, store)
+
+        selection.value = { location, route, store }
       } catch (error) {
         selection.value = { error }
       }
@@ -145,12 +145,12 @@ export function createUseLoader(routerKey: InjectionKey<Router>): UseLoaderFunct
         return { status: 'ERROR', error: selection.value.error, source: 'loader' }
       }
 
-      // The old store is disposed before the route changes. Preserve its last result until reselection.
-      if (selection.value.navigation !== navigation.current()) {
+      // Preserve the last result until the consumer selects the newly active store.
+      if (selection.value.store !== navigation.active.value?.store) {
         return previous ?? { status: 'PENDING' }
       }
 
-      const result = navigation.getState(selection.value.location, router.route)
+      const result = selection.value.store.getState(selection.value.location, selection.value.route)
 
       if (result.status === 'PUSH' || result.status === 'REJECT') {
         return { status: 'ABANDONED' }

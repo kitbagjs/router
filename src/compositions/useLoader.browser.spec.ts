@@ -784,3 +784,33 @@ test('a view renders with its props while a loader is still running', async () =
 
   expect(wrapper.text()).toBe('props:data')
 })
+
+test('selects the committed loader before later global after-update hooks run', async () => {
+  const pending = Promise.withResolvers<string>()
+  let updating = false
+  const loader = createLoader({
+    load: () => {
+      return updating ? pending.promise : 'first'
+    },
+  })
+  const route = createRoute({ name: 'page', path: '/[id]' }).addLoader(loader)
+  const router = createRouter([route], { initialUrl: '/1' })
+  onTestFinished(router.stop)
+  await router.start()
+  const result = mountConsumer(router, () => useLoader(loader))
+  expect(result.data.value).toBe('first')
+  const afterUpdate = vi.fn(() => {
+    expect(router.route.params.id).toBe('2')
+    expect(result.loading.value).toBe(true)
+    expect(result.data.value).toBeUndefined()
+  })
+  router.onAfterRouteUpdate(afterUpdate)
+  updating = true
+
+  await router.push('page', { id: '2' })
+
+  expect(afterUpdate).toHaveBeenCalledOnce()
+  pending.resolve('second')
+  await flushPromises()
+  expect(result.data.value).toBe('second')
+})

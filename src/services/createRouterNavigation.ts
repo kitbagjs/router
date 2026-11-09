@@ -1,162 +1,107 @@
-import { Computation } from '@/types/computation'
-import { ResolvedRoute } from '@/types/resolved'
-import { createVueAppStore, HasVueAppStore } from './createVueAppStore'
-import { CallbackContextError, CallbackContextPush, CallbackContextReject, CallbackContextResponse } from '@/types/callbackContext'
-import { DataStore } from './createDataStore'
-import { createComputationStore, NavigationData } from '@/services/createComputationStore'
-import { MaybePromise } from '@/types/utilities'
-import { getComputations } from './getComputations'
+import { shallowRef, Ref } from 'vue'
+import { createComputationStore, ComputationStore } from '@/services/createComputationStore'
+import { createNavigation, Navigation, NavigationOptions } from '@/services/createNavigation'
+import { createVueAppStore, HasVueAppStore } from '@/services/createVueAppStore'
 
 export type { NavigationData } from '@/services/createComputationStore'
 
-export type RouterNavigationResponse = CallbackContextPush | CallbackContextReject | CallbackContextError
-
-type RouterNavigationCommitOptions = {
-  to: ResolvedRoute,
-  from: ResolvedRoute | null,
+type RunNavigationOptions = NavigationOptions & {
+  prefetch?: ComputationStore,
 }
 
-export type RouterNavigationResponseEvent = RouterNavigationCommitOptions & {
-  response: RouterNavigationResponse,
-}
-
-type CreateRouterNavigationOptions = {
-  onResponse?: (response: RouterNavigationResponseEvent) => MaybePromise<void>,
-}
-
-type RouterNavigationStoreSlots = {
-  current: RouterNavigationStore,
-  staged: RouterNavigationStore,
-}
-
-export type RouterNavigationStore = NavigationData & {
-  data: DataStore,
-  /**
-   * Disposes of the previously staged navigation and sets this navigation as staged.
-   */
-  stage: () => void,
-  commit: (options: RouterNavigationCommitOptions) => Promise<CallbackContextResponse>[],
-  abandon: () => void,
-  dispose: () => void,
-  /**
-   * Computes the supplied values.
-   */
-  compute: (route: ResolvedRoute, computations: Computation[]) => Promise<CallbackContextResponse>[],
-}
-
-export type RouterNavigationStores = HasVueAppStore & NavigationData & {
-  current: () => RouterNavigationStore,
+export type RouterNavigation = HasVueAppStore & {
+  active: Readonly<Ref<Navigation | null>>,
+  run: (options: RunNavigationOptions) => Promise<void>,
+  createStore: () => ComputationStore,
+  cancel: () => AbortSignal,
   stop: () => void,
-  create: () => RouterNavigationStore,
-  /**
-   * The navigation prepared for the next commit.
-   * The rendered route keeps reading from the current navigation until then.
-   */
-  staged: () => RouterNavigationStore,
-  /**
-   * Makes the staged navigation current and computes whatever the route still lacks.
-   */
-  commit: (options: RouterNavigationCommitOptions) => Promise<CallbackContextResponse>[],
 }
 
-export function createRouterNavigation({ onResponse }: CreateRouterNavigationOptions = {}): RouterNavigationStores {
+export function createRouterNavigation(): RouterNavigation {
   const { setVueApp, runWithContext } = createVueAppStore()
-  const navigations: RouterNavigationStoreSlots = {
-    current: createRouterNavigationStore(),
-    staged: createRouterNavigationStore(),
-  }
+  const active = shallowRef<Navigation | null>(null)
+  let pending: Navigation | null = null
+  let controller: AbortController | undefined
+  let stopped = false
 
-  function createRouterNavigationStore(): RouterNavigationStore {
-    const store = createComputationStore({
+  function createStore(): ComputationStore {
+    const store: ComputationStore = createComputationStore({
       runWithContext,
-      getCurrent: () => navigations.current.data,
+      getCurrent: () => active.value?.store.data ?? store.data,
     })
 
-    function commit({ to, from }: RouterNavigationCommitOptions): Promise<CallbackContextResponse>[] {
-      if (store.abandoned) {
-        return []
-      }
-
-      const previous = navigations.current
-      const staged = navigations.staged
-      navigations.current = instance
-      navigations.staged = createRouterNavigationStore()
-
-      if (previous !== instance) {
-        previous.dispose()
-      }
-
-      if (staged !== instance && staged !== previous) {
-        staged.dispose()
-      }
-
-      store.activate((response) => onResponse?.({ response, to, from }))
-
-      return store.compute(to, getComputations(to))
-    }
-
-    function dispose(): void {
-      if (navigations.staged === instance) {
-        navigations.staged = createRouterNavigationStore()
-      }
-
-      store.dispose()
-    }
-
-    function stage(): void {
-      if (navigations.staged === instance) {
-        return
-      }
-
-      if (navigations.staged !== navigations.current) {
-        navigations.staged.dispose()
-      }
-
-      navigations.staged = instance
-    }
-
-    const instance: RouterNavigationStore = {
-      ...store,
-      stage,
-      commit,
-      dispose,
-    }
-
-    return instance
+    return store
   }
 
-  const current: RouterNavigationStores['current'] = () => navigations.current
+  function activate(next: Navigation): void {
+    const previous = active.value
+    active.value = next
 
-  const stop: RouterNavigationStores['stop'] = () => {
-    navigations.current.dispose()
-    navigations.staged.dispose()
+    if (previous && previous.store !== next.store) {
+      previous.store.abandon()
+    }
   }
 
-  const staged: RouterNavigationStores['staged'] = () => navigations.staged
+  function run({ prefetch, ...options }: RunNavigationOptions): Promise<void> {
+    controller?.abort()
 
-  const commit: RouterNavigationStores['commit'] = (options) => navigations.staged.commit(options)
+    if (pending && pending !== active.value) {
+      pending.store.dispose()
+    }
 
-  const getState: NavigationData['getState'] = (location, route) => navigations.current.getState(location, route)
+    if (stopped) {
+      return Promise.resolve()
+    }
 
-  const subscribe: NavigationData['subscribe'] = (location, route) => navigations.current.subscribe(location, route)
+    const next = createNavigation({
+      ...options,
+      store: prefetch ?? createStore(),
+      activate,
+    })
+    pending = next
+    controller = next.controller
 
-  const getValue: NavigationData['getValue'] = (location, route) => navigations.current.getValue(location, route)
+    function cleanup(): void {
+      if (pending === next) {
+        pending = null
+      }
 
-  const getEntries: NavigationData['getEntries'] = () => navigations.current.getEntries()
+      if (active.value !== next) {
+        next.store.dispose()
+      }
+    }
 
-  const setEntries: NavigationData['setEntries'] = (entries) => navigations.current.setEntries(entries)
+    try {
+      return next.run().finally(cleanup)
+    } catch (error) {
+      cleanup()
+
+      throw error
+    }
+  }
+
+  function cancel(): AbortSignal {
+    controller?.abort()
+    pending?.store.abandon()
+    active.value?.store.abandon()
+    controller = new AbortController()
+
+    return controller.signal
+  }
+
+  function stop(): void {
+    stopped = true
+    controller?.abort()
+    pending?.store.abandon()
+    active.value?.store.abandon()
+  }
 
   return {
-    current,
+    active,
+    run,
+    createStore,
+    cancel,
     stop,
-    create: createRouterNavigationStore,
-    staged,
-    commit,
-    getEntries,
-    setEntries,
-    getState,
-    subscribe,
-    getValue,
     setVueApp,
   }
 }

@@ -10,7 +10,7 @@ import { component } from '@/utilities/testHelpers'
 test('pending props report abandonment when their navigation is disposed', async () => {
   const route = createResolvedRoute(createRoute({ path: '/' }).addView(component, { props: () => ({}) }))
   const pending = Promise.withResolvers<CallbackContextResponse>()
-  const store = createRouterNavigation().current()
+  const store = createRouterNavigation().createStore()
   const getState = vi.spyOn(store, 'getState').mockReturnValue({ status: 'RUNNING' })
   const subscribe = vi.spyOn(store, 'subscribe').mockReturnValue(pending.promise)
   const location = { depth: 0, name: 'default' } as const
@@ -26,7 +26,7 @@ test('pending props report abandonment when their navigation is disposed', async
 test('pending and settled errors become props error results', async () => {
   const route = createResolvedRoute(createRoute({ path: '/' }).addView(component, { props: () => ({}) }))
   const pending = Promise.withResolvers<CallbackContextResponse>()
-  const store = createRouterNavigation().current()
+  const store = createRouterNavigation().createStore()
   const getState = vi.spyOn(store, 'getState').mockReturnValue({ status: 'RUNNING' })
   vi.spyOn(store, 'subscribe').mockReturnValue(pending.promise)
   const location = { depth: 0, name: 'default' } as const
@@ -46,7 +46,7 @@ test.each([
   { status: 'REJECT', type: 'NotFound' },
 ] satisfies CallbackContextResponse[])('a $status response becomes an abandoned props result', (response) => {
   const route = createResolvedRoute(createRoute({ path: '/' }).addView(component, { props: () => ({}) }))
-  const store = createRouterNavigation().current()
+  const store = createRouterNavigation().createStore()
   vi.spyOn(store, 'getState').mockReturnValue(response)
   const subscribe = vi.spyOn(store, 'subscribe')
 
@@ -56,7 +56,7 @@ test.each([
 
 test('a view without a props getter does not read or subscribe to a computation', () => {
   const route = createResolvedRoute(createRoute({ path: '/' }).addView(component))
-  const store = createRouterNavigation().current()
+  const store = createRouterNavigation().createStore()
   const getState = vi.spyOn(store, 'getState')
   const subscribe = vi.spyOn(store, 'subscribe')
 
@@ -67,7 +67,7 @@ test('a view without a props getter does not read or subscribe to a computation'
 
 test('a view whose route is no longer matched does not read destination props', () => {
   const route = createResolvedRoute(createRoute({ path: '/next' }).addView(component, { props: () => ({ value: 'next' }) }))
-  const store = createRouterNavigation().current()
+  const store = createRouterNavigation().createStore()
   const getState = vi.spyOn(store, 'getState')
   const subscribe = vi.spyOn(store, 'subscribe')
 

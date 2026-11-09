@@ -6,7 +6,7 @@ import { DataResult } from '@/services/createDataStore'
 import { CallbackContextResponse } from '@/types/callbackContext'
 
 test('navigation readers accept locations for every computation kind', () => {
-  const navigation = createRouterNavigation()
+  const navigation = createRouterNavigation().createStore()
   const route = createResolvedRoute(createRoute({ path: '/' }))
   const location = { kind: 'loader', depth: 0, name: 'default' } as const
 
